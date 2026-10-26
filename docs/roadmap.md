@@ -19,7 +19,7 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
 
 ## Milestone A: foundation and performance gate
 - [ ] **1. Monorepo scaffold.**
-  - pnpm workspaces (`shared`, `client`, `server`), TypeScript, ESLint and Prettier, Vitest.
+  - npm workspaces (`shared`, `client`, `server`), TypeScript, ESLint and Prettier, Vitest.
   - A Vite client showing an empty three.js scene, and a "hello" Worker.
   - Deploy both to Cloudflare. Document dev commands and how to test on the phone over the local network.
   - *Done when* the deployed URL opens on the iPhone and the Worker responds.

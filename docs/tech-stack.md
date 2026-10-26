@@ -10,7 +10,8 @@ React Native / Expo Go was considered and rejected:
 
 Mobile Safari has a JIT and WebAssembly, needs no build step and no Apple developer account, and installs from Add to Home Screen. Every iOS browser uses Safari's engine underneath, so Chrome on iOS makes no difference.
 
-## Repo layout (pnpm workspaces monorepo)
+## Repo layout (npm workspaces monorepo)
+npm, not pnpm (the user's choice, 2026-10-26). Each package lists every dependency it imports, since npm won't catch a package using a dependency that only another package declared.
 ```
 packages/
   shared/    # game simulation, rules, data schemas. No three.js, React or DOM.
