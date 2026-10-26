@@ -1,0 +1,8 @@
+{
+  "formatVersion": 3,
+  "id": "armour-repair-kit",
+  "name": "Armour repair kit",
+  "type": "repair",
+  "size": [2, 1],
+  "points": 60
+}

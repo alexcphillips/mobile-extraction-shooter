@@ -10,6 +10,7 @@ import {
 import { loadContent } from '../content/format';
 import { createRng } from '../rng';
 import { CollisionWorld } from '../world/collision-world';
+import { carriedAmmo, heldWeapon } from './gear';
 import { equipLoadout } from './loadout';
 import { createState, spawnCharacter, type Character } from './state';
 import { TEST_ITEMS } from './test-items';
@@ -51,9 +52,9 @@ describe('loadouts', () => {
     let helmets = 0;
     for (let i = 0; i < 2000; i++) {
       equipLoadout(c, TEST_ITEMS, kit, rng);
-      if (c.weapon!.item === 'rifle') rifles++;
-      if (c.helmet) helmets++;
-      expect(c.bodyArmour).toBeNull();
+      if (heldWeapon(c)!.item === 'rifle') rifles++;
+      if (c.gear.helmet) helmets++;
+      expect(c.gear.bodyArmour).toBeNull();
     }
     expect(rifles / 2000).toBeCloseTo(0.75, 1);
     expect(helmets / 2000).toBeCloseTo(0.5, 1);
@@ -80,17 +81,17 @@ describe('loadouts', () => {
     let suppressed = 0;
     for (let i = 0; i < 400; i++) {
       equipLoadout(c, TEST_ITEMS, kit, rng);
-      const w = c.weapon!;
-      expect(w.reserve).toBeGreaterThanOrEqual(10);
-      expect(w.reserve).toBeLessThanOrEqual(20);
+      const w = heldWeapon(c)!;
+      expect(carriedAmmo(c, 'round')).toBeGreaterThanOrEqual(10);
+      expect(carriedAmmo(c, 'round')).toBeLessThanOrEqual(20);
       expect(w.attachments.magazine).toBe('big-mag');
       expect(w.attachments.optic).toBeNull();
       // A full magazine, with the big mag's extra rounds.
       expect(w.mag).toBeGreaterThan(30);
       if (w.attachments.muzzle) suppressed++;
       const full = 50;
-      expect(c.bodyArmour!.durability).toBeGreaterThanOrEqual(full * 0.5 - 1e-9);
-      expect(c.bodyArmour!.durability).toBeLessThanOrEqual(full * 0.6 + 1e-9);
+      expect(c.gear.bodyArmour!.durability).toBeGreaterThanOrEqual(full * 0.5 - 1e-9);
+      expect(c.gear.bodyArmour!.durability).toBeLessThanOrEqual(full * 0.6 + 1e-9);
     }
     expect(suppressed / 400).toBeCloseTo(0.5, 1);
   });
@@ -123,6 +124,31 @@ describe('loadouts', () => {
       }),
     ).toThrow(/doesn't fit/);
     expect(bad({ helmets: [{ weight: 1, item: 'vest' }] })).toThrow(/not helmet armour/);
+    expect(bad({ rigs: [{ weight: 1, item: 'backpack' }] })).toThrow(/not a rig/);
+    expect(bad({ backpacks: [{ weight: 1, item: 'watch' }] })).toThrow(/not a backpack/);
+  });
+
+  it('puts a pistol in the sidearm slot, wears a rig and backpack, and stows the spare rounds', () => {
+    const kit = loadout({
+      weapons: [{ weight: 1, item: 'pistol', spare: [250, 250] }],
+      rigs: [{ weight: 1, item: 'rig' }],
+      backpacks: [{ weight: 1, item: 'backpack' }],
+    });
+    const c = character();
+    equipLoadout(c, TEST_ITEMS, kit, createRng(1));
+    expect(c.gear.hand).toBe('sidearm');
+    expect(c.gear.sidearm?.item).toBe('pistol');
+    expect(c.gear.primary1).toBeNull();
+    expect(c.gear.rig?.item).toBe('rig');
+    expect(c.gear.backpack?.grid.w).toBe(4);
+    // Stacks of 100: pockets take all 250, in three cells.
+    expect(carriedAmmo(c, 'round')).toBe(250);
+    expect(c.gear.pockets.items.map((g) => g.item.count)).toEqual([100, 100, 50]);
+    // Rolling again starts over rather than piling on, and keeps the vault.
+    c.gear.vault!.items.push({ x: 0, y: 0, rotated: false, item: { item: 'watch', count: 1 } });
+    equipLoadout(c, TEST_ITEMS, kit, createRng(1));
+    expect(carriedAmmo(c, 'round')).toBe(250);
+    expect(c.gear.vault!.items).toHaveLength(1);
   });
 
   it('rejects a backwards range or a condition above 1', () => {

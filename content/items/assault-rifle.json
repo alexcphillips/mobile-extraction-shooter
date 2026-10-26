@@ -1,8 +1,9 @@
 {
-  "formatVersion": 2,
+  "formatVersion": 3,
   "id": "assault-rifle",
   "name": "Assault rifle",
   "type": "weapon",
+  "size": [4, 2],
   "ammo": "ammo-556",
   "hold": "rifle",
   "fireMode": "auto",

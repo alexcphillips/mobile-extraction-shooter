@@ -1,0 +1,9 @@
+{
+  "formatVersion": 3,
+  "id": "chest-rig",
+  "name": "Chest rig",
+  "type": "container",
+  "size": [2, 3],
+  "slot": "rig",
+  "grid": [4, 2]
+}

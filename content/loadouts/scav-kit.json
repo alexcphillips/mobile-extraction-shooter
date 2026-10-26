@@ -25,5 +25,13 @@
   "bodyArmour": [
     { "weight": 4, "item": null },
     { "weight": 1, "item": "plate-carrier", "condition": [0.3, 0.9] }
+  ],
+  "rigs": [
+    { "weight": 2, "item": null },
+    { "weight": 1, "item": "chest-rig" }
+  ],
+  "backpacks": [
+    { "weight": 3, "item": null },
+    { "weight": 1, "item": "small-backpack" }
   ]
 }

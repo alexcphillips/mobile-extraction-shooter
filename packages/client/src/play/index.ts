@@ -32,6 +32,10 @@ import {
   type PlayerInput,
   type TickInputs,
   type Zone,
+  heldWeapon,
+  createItem,
+  equip,
+  stow,
 } from '@mes/shared';
 import * as THREE from 'three';
 import { startLoop } from '../app/loop';
@@ -150,10 +154,24 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     spawns.find((m) => m.id === options.spawn) ?? pick(createRng(Date.now() >>> 0), spawns);
   // Below the spawn's height plus a little, so a spawn under a roof stays inside.
   const player = spawnCharacter(sim, world, spawn.x, spawn.z, spawn.yaw, spawn.y + 0.5);
-  giveWeapon(player, items, options.weapon, SPARE_ROUNDS, options.attachments);
+  // Until stash loadouts (session 13): both guns (the one asked for in hand), armour, a
+  // rig and backpack, spare rounds and a few meds.
+  for (const id of ['assault-rifle', 'pistol']) {
+    if (id !== options.weapon) giveWeapon(player, items, id);
+  }
+  giveWeapon(player, items, options.weapon, options.attachments);
   wearArmour(player, items, 'steel-helmet');
   wearArmour(player, items, 'plate-carrier');
-  if (player.weapon) viewmodel.setGun(player.weapon, items);
+  equip(player, items, 'knife', createItem(items, 'knife'));
+  equip(player, items, 'rig', createItem(items, 'chest-rig'));
+  equip(player, items, 'backpack', createItem(items, 'small-backpack'));
+  stow(player, items, createItem(items, 'ammo-556', SPARE_ROUNDS));
+  stow(player, items, createItem(items, 'ammo-9mm', 45));
+  for (const id of ['bandage', 'bandage', 'splint', 'medkit']) {
+    stow(player, items, createItem(items, id));
+  }
+  const held = heldWeapon(player);
+  if (held) viewmodel.setGun(held, items);
   controls.yaw = spawn.yaw;
 
   // Enemies: their type's skill, and its loadout (or the spawn's) rolled.
@@ -240,8 +258,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const aimWorld = createRayHit();
   /** Whether the crosshair (with recoil) is on a living enemy in range and in sight. */
   function onTarget(): boolean {
-    if (!player.weapon) return false;
-    const range = weaponDef(items, player.weapon.item).range;
+    const w = heldWeapon(player);
+    if (!w) return false;
+    const range = weaponDef(items, w.item).range;
     const yaw = controls.yaw + player.recoilYaw;
     const pitch = controls.pitch + player.recoilPitch;
     const cp = Math.cos(pitch);
@@ -259,7 +278,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
 
   /** Debug: the next attachment that fits in a slot of the player's gun, then none. */
   function nextAttachment(slot: AttachmentSlot): void {
-    const w = player.weapon;
+    const w = heldWeapon(player);
     if (!w) return;
     const gun = weaponDef(items, w.item);
     const choices = [...items.values()]
@@ -267,8 +286,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       .filter((a) => fits(gun, a))
       .map((a) => a.id);
     const next = choices[choices.indexOf(w.attachments[slot] ?? '') + 1];
-    if (next) attach(w, items, next);
-    else detach(w, items, slot);
+    const out = next ? attach(w, items, next) : detach(w, items, slot);
+    if (out > 0) stow(player, items, createItem(items, gun.ammo, out));
   }
 
   const debugRng = createRng(1);
@@ -306,9 +325,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const target = !dead && onTarget();
     controls.assist = target ? ASSIST[settings.current.aimAssist] : 1;
     let fire = controls.fire;
-    if (target && settings.current.fire === 'auto' && player.weapon) {
+    const held = heldWeapon(player);
+    if (target && settings.current.fire === 'auto' && held) {
       // Auto-fire holds the trigger; a semi-automatic gun is pulled every other tick.
-      const semi = weaponDef(items, player.weapon.item).fireMode === 'semi';
+      const semi = weaponDef(items, held.item).fireMode === 'semi';
       fire ||= !semi || sim.tick % 2 === 0;
     }
     input.moveX = controls.moveX;
@@ -433,7 +453,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       0,
     );
     const aim = lerp(prev.aim, cur.aim);
-    const w = player.weapon;
+    const w = heldWeapon(player);
     const optic = w?.attachments.optic
       ? (attachmentDef(items, w.attachments.optic).optic ?? null)
       : null;

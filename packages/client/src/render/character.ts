@@ -11,7 +11,7 @@ export const WEAPON_BONE = 'weapon';
 
 /**
  * Where worn and carried gear attaches: a bone each. Gear is drawn in the rest pose and
- * moves rigidly with its bone. The backpack's is unused until backpacks (session 9).
+ * moves rigidly with its bone.
  */
 export const MOUNTS = {
   helmet: 'DEF-head',
@@ -91,9 +91,17 @@ const VEST: Shape[] = [
   gearBox(0.11, 1.4, 0, 0.04, 0.02, 0.12, 0x3d4733),
 ];
 
+/** On the back, behind the vest (+z is the front). */
+const BACKPACK: Shape[] = [
+  gearBox(0, 1.2, -0.23, 0.15, 0.2, 0.09, 0x4a4f3a),
+  gearBox(0, 1.4, -0.22, 0.14, 0.03, 0.08, 0x3f4432),
+  gearBox(0, 1.08, -0.33, 0.11, 0.07, 0.03, 0x3f4432),
+];
+
 export interface Gear {
   helmet: boolean;
   vest: boolean;
+  backpack: boolean;
   /** The gun's shapes, in its own frame; drawn on the weapon bone. */
   gun: readonly Shape[] | null;
 }
@@ -224,7 +232,7 @@ export async function loadCharacter(url: string): Promise<CharacterTemplate> {
   return template;
 }
 
-const NO_GEAR: Gear = { helmet: false, vest: false, gun: null };
+const NO_GEAR: Gear = { helmet: false, vest: false, backpack: false, gun: null };
 
 /**
  * The geometry for one look: the body in an outfit's colours, plus gear. Cached by look,
@@ -235,13 +243,14 @@ export function characterGeometry(
   outfit: Outfit,
   gear: Gear,
 ): THREE.BufferGeometry {
-  const key = `${PARTS.map((p) => outfit[p]).join()} ${gear.helmet} ${gear.vest} ${JSON.stringify(gear.gun)}`;
+  const key = `${PARTS.map((p) => outfit[p]).join()} ${gear.helmet} ${gear.vest} ${gear.backpack} ${JSON.stringify(gear.gun)}`;
   const cached = t.looks.get(key);
   if (cached) return cached;
 
   const pieces: { shapes: readonly Shape[]; bone: number }[] = [];
   if (gear.helmet) pieces.push({ shapes: HELMET, bone: t.bones.get(MOUNTS.helmet)! });
   if (gear.vest) pieces.push({ shapes: VEST, bone: t.bones.get(MOUNTS.armour)! });
+  if (gear.backpack) pieces.push({ shapes: BACKPACK, bone: t.bones.get(MOUNTS.backpack)! });
   if (gear.gun) pieces.push({ shapes: gear.gun, bone: t.bones.get(MOUNTS.weapon)! });
   const built = pieces.map((piece) => {
     const b = new TriangleBuilder(false);

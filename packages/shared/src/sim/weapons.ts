@@ -8,10 +8,12 @@ import {
   type ItemDb,
   type WeaponDef,
 } from '../content/items';
+import type { Item } from '../inventory/grid';
 import { nextFloat } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import { createRayHit, type CollisionWorld } from '../world/collision-world';
 import { HEALTH, brokenArms, shootCharacter } from './health';
+import { carriedAmmo, equip, heldWeapon, takeAmmo } from './gear';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import {
   entityById,
@@ -27,13 +29,13 @@ const DEG = Math.PI / 180;
 /** Recoil never pushes the view up further than this, in radians. */
 const MAX_RECOIL = 20 * DEG;
 
-/** A carried gun. Reserve is the ammo carried for it until session 9's inventory. */
-export interface WeaponState {
-  item: string;
+/**
+ * A gun, in a gear slot or in a grid. Reloading takes rounds from the ammo carried (see
+ * gear.ts). The timers only matter while it's in someone's hands.
+ */
+export interface WeaponState extends Item {
   /** Rounds in the gun. */
   mag: number;
-  /** Spare rounds that reloading takes from. */
-  reserve: number;
   /** Seconds until it can fire again; dips below 0 while the trigger is held, to keep the rate exact. */
   cooldown: number;
   /** Seconds left of a reload, or 0. */
@@ -116,18 +118,16 @@ export interface ShotEvent {
 // Scratch for working out stats, so a tick allocates nothing.
 const stats = createWeaponStats();
 
-/** Gives a character a gun with its attachments, a full magazine and some spare rounds. */
-export function giveWeapon(
-  c: Character,
+/** A new gun with its attachments and a full magazine. */
+export function createWeapon(
   items: ItemDb,
   id: string,
-  reserve: number,
   attachments: readonly string[] = [],
-): void {
+): WeaponState {
   const w: WeaponState = {
     item: id,
+    count: 1,
     mag: 0,
-    reserve,
     cooldown: 0,
     reloading: 0,
     triggerHeld: false,
@@ -135,36 +135,54 @@ export function giveWeapon(
   };
   for (const a of attachments) attach(w, items, a);
   w.mag = weaponStats(items, w, stats).magazine;
-  c.weapon = w;
+  return w;
+}
+
+/**
+ * Gives a character a new gun (see createWeapon) and takes it out: a pistol in the
+ * sidearm slot, anything else in the first primary. Replaces whatever was there.
+ */
+export function giveWeapon(
+  c: Character,
+  items: ItemDb,
+  id: string,
+  attachments: readonly string[] = [],
+): WeaponState {
+  const w = createWeapon(items, id, attachments);
+  const slot = weaponDef(items, id).hold === 'pistol' ? 'sidearm' : 'primary1';
+  equip(c, items, slot, w);
+  c.gear.hand = slot;
+  return w;
 }
 
 /**
  * Puts an attachment on a gun, replacing whatever was in its slot. Throws if it doesn't
- * fit, so check with fits() first.
+ * fit, so check with fits() first. Returns the rounds that no longer fit (a smaller
+ * magazine), which the caller should put somewhere.
  */
-export function attach(w: WeaponState, items: ItemDb, id: string): void {
+export function attach(w: WeaponState, items: ItemDb, id: string): number {
   const a = attachmentDef(items, id);
   if (!fits(weaponDef(items, w.item), a)) throw new Error(`"${id}" doesn't fit "${w.item}"`);
   w.attachments[a.slot] = id;
-  if (a.slot === 'magazine') magazineChanged(w, items);
+  return a.slot === 'magazine' ? magazineChanged(w, items) : 0;
 }
 
-/** Takes the attachment out of a slot, returning its item id (or null if it was empty). */
-export function detach(w: WeaponState, items: ItemDb, slot: AttachmentSlot): string | null {
-  const id = w.attachments[slot];
+/**
+ * Takes the attachment out of a slot (read it from w.attachments first). Returns the
+ * rounds that no longer fit, which the caller should put somewhere.
+ */
+export function detach(w: WeaponState, items: ItemDb, slot: AttachmentSlot): number {
   w.attachments[slot] = null;
-  if (slot === 'magazine') magazineChanged(w, items);
-  return id;
+  return slot === 'magazine' ? magazineChanged(w, items) : 0;
 }
 
-/** Rounds that no longer fit go back to the spare ammo, and a reload in progress stops. */
-function magazineChanged(w: WeaponState, items: ItemDb): void {
+/** Rounds that no longer fit come out, and a reload in progress stops. */
+function magazineChanged(w: WeaponState, items: ItemDb): number {
   const capacity = weaponStats(items, w, stats).magazine;
-  if (w.mag > capacity) {
-    w.reserve += w.mag - capacity;
-    w.mag = capacity;
-  }
+  const out = Math.max(0, w.mag - capacity);
+  w.mag -= out;
   w.reloading = 0;
+  return out;
 }
 
 /** Spread and aim time are worse with broken arms. */
@@ -184,7 +202,7 @@ export function updateWeapon(
   world: CollisionWorld,
   items: ItemDb,
 ): void {
-  const w = c.weapon;
+  const w = heldWeapon(c);
   if (!w) {
     c.aim = 0;
     return;
@@ -205,12 +223,10 @@ export function updateWeapon(
     w.reloading -= DT;
     if (w.reloading <= 0) {
       w.reloading = 0;
-      const rounds = Math.min(s.magazine - w.mag, w.reserve);
-      w.mag += rounds;
-      w.reserve -= rounds;
+      w.mag += takeAmmo(c, def.ammo, s.magazine - w.mag);
     }
   } else if (input?.reload) {
-    startReload(w, s);
+    startReload(c, def, w, s);
   }
 
   const trigger = !!input?.fire && free;
@@ -218,7 +234,7 @@ export function updateWeapon(
   w.triggerHeld = trigger;
   if (trigger && w.reloading === 0) {
     if (w.mag === 0) {
-      startReload(w, s);
+      startReload(c, def, w, s);
     } else if (def.fireMode === 'auto' || pulled) {
       // The epsilon stops rounding from delaying a shot by a tick.
       while (w.cooldown <= 1e-9 && w.mag > 0) {
@@ -232,8 +248,8 @@ export function updateWeapon(
   w.cooldown = Math.max(w.cooldown - DT, trigger ? -DT : 0);
 }
 
-function startReload(w: WeaponState, s: WeaponStats): void {
-  if (w.mag < s.magazine && w.reserve > 0) w.reloading = s.reloadTime;
+function startReload(c: Character, def: WeaponDef, w: WeaponState, s: WeaponStats): void {
+  if (w.mag < s.magazine && carriedAmmo(c, def.ammo) > 0) w.reloading = s.reloadTime;
 }
 
 function towardZero(v: number, step: number): number {

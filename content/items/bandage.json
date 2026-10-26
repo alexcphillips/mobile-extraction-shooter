@@ -1,0 +1,9 @@
+{
+  "formatVersion": 3,
+  "id": "bandage",
+  "name": "Bandage",
+  "type": "med",
+  "size": [1, 1],
+  "effect": "bandage",
+  "useTime": 2
+}

@@ -77,12 +77,21 @@ const armourOptionSchema = z.strictObject({
   condition: rangeOf(fraction).optional(),
 });
 
+const containerOptionSchema = z.strictObject({
+  weight: positive,
+  /** null: nothing in this slot. Worn empty; loot tables fill them (session 11). */
+  item: idSchema.nullable(),
+});
+
 export const loadoutSchema = z.strictObject({
   formatVersion: z.literal(LOADOUT_FORMAT_VERSION),
   id: idSchema,
+  /** A pistol goes in the sidearm slot, anything else in the first primary. */
   weapons: z.array(weaponOptionSchema).min(1),
   helmets: z.array(armourOptionSchema).optional(),
   bodyArmour: z.array(armourOptionSchema).optional(),
+  rigs: z.array(containerOptionSchema).optional(),
+  backpacks: z.array(containerOptionSchema).optional(),
 });
 
 export type EnemyDef = z.infer<typeof enemySchema>;
@@ -91,6 +100,7 @@ export type Outfit = z.infer<typeof outfitSchema>;
 export type LoadoutDef = z.infer<typeof loadoutSchema>;
 export type WeaponOption = z.infer<typeof weaponOptionSchema>;
 export type ArmourOption = z.infer<typeof armourOptionSchema>;
+export type ContainerOption = z.infer<typeof containerOptionSchema>;
 
 export const ENEMY_FORMAT: ContentFormat<EnemyDef> = {
   kind: 'enemy',
@@ -147,6 +157,17 @@ export function checkEnemies(
         const item = items.get(o.item);
         if (item?.type !== 'armour' || item.slot !== slot)
           throw new ContentError(source, `"${o.item}" is not ${slot} armour`);
+      }
+    }
+    for (const [slot, options] of [
+      ['rig', l.rigs],
+      ['backpack', l.backpacks],
+    ] as const) {
+      for (const o of options ?? []) {
+        if (o.item === null) continue;
+        const item = items.get(o.item);
+        if (item?.type !== 'container' || item.slot !== slot)
+          throw new ContentError(source, `"${o.item}" is not a ${slot}`);
       }
     }
   }

@@ -5,6 +5,10 @@ import {
   wearArmour,
   type Character,
   type ItemDb,
+  heldWeapon,
+  createGear,
+  createItem,
+  equip,
 } from '@mes/shared';
 import * as THREE from 'three';
 import { loadItems } from '../content';
@@ -19,8 +23,8 @@ interface Pose {
 }
 
 const rifle = (c: Character, items: ItemDb): void =>
-  giveWeapon(c, items, 'assault-rifle', 0, ['red-dot']);
-const pistol = (c: Character, items: ItemDb): void => giveWeapon(c, items, 'pistol', 0);
+  void giveWeapon(c, items, 'assault-rifle', ['red-dot']);
+const pistol = (c: Character, items: ItemDb): void => void giveWeapon(c, items, 'pistol');
 const moving = (fwd: number, right: number) => (c: Character) => {
   // Facing −z: forward is −z and right is +x.
   c.vx = right;
@@ -47,7 +51,7 @@ const POSES: Pose[] = [
     name: 'crouch walk',
     set: (c, i) => (rifle(c, i), (c.height = MOVEMENT.crouchHeight), moving(1.5, 0)(c)),
   },
-  { name: 'reload', set: (c, i) => (rifle(c, i), (c.weapon!.reloading = 2.4)) },
+  { name: 'reload', set: (c, i) => (rifle(c, i), (heldWeapon(c)!.reloading = 2.4)) },
   { name: 'dead', set: (c, i) => (rifle(c, i), (c.health.dead = true)) },
   { name: 'unarmed', set: () => {} },
 ];
@@ -70,9 +74,7 @@ function character(id: number, x: number): Character {
     jumpHeld: false,
     landingSpeed: 0,
     health: createHealth(),
-    helmet: null,
-    bodyArmour: null,
-    weapon: null,
+    gear: createGear(false),
     aim: 0,
     recoilPitch: 0,
     recoilYaw: 0,
@@ -107,6 +109,7 @@ export async function startBodies(canvas: HTMLCanvasElement, status: HTMLElement
     const c = character(i + 1, (i - (POSES.length - 1) / 2) * spacing);
     if (i % 3 === 1) wearArmour(c, items, 'steel-helmet');
     if (i % 2 === 0) wearArmour(c, items, 'plate-carrier');
+    if (i % 4 === 1) equip(c, items, 'backpack', createItem(items, 'small-backpack'));
     pose.set(c, items);
     const body = new CharacterBody(rig, DEFAULT_OUTFIT, c);
     scene.add(body.root);
@@ -166,9 +169,10 @@ export async function startBodies(canvas: HTMLCanvasElement, status: HTMLElement
       elapsed += d;
       for (const { c, body, zones } of shown) {
         // Reloads go round again.
-        if (c.weapon && c.weapon.reloading > 0) {
-          c.weapon.reloading -= d;
-          if (c.weapon.reloading <= 0) c.weapon.reloading = 2.4;
+        const w = heldWeapon(c);
+        if (w && w.reloading > 0) {
+          w.reloading -= d;
+          if (w.reloading <= 0) w.reloading = 2.4;
         }
         body.update(c, items, 1, d, camera, frustum);
         zones?.update(c, items);

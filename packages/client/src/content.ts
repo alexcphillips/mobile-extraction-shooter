@@ -112,3 +112,12 @@ export function checkEnemySpawns(map: CompiledMap): void {
       throw new Error(`enemy spawn ${m.id}: no loadout "${m.loadout}"`);
   }
 }
+
+/** Checks that a map's locked doors name key items that exist. */
+export function checkDoorKeys(map: CompiledMap): void {
+  const items = loadItems();
+  for (const d of map.doors) {
+    if (d.key !== undefined && items.get(d.key)?.type !== 'key')
+      throw new Error(`door ${d.id}: "${d.key}" is not a key item`);
+  }
+}

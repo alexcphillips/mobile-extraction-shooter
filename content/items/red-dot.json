@@ -1,8 +1,9 @@
 {
-  "formatVersion": 2,
+  "formatVersion": 3,
   "id": "red-dot",
   "name": "Red dot sight",
   "type": "attachment",
+  "size": [1, 1],
   "slot": "optic",
   "optic": {
     "zoom": 1,

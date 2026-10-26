@@ -1,8 +1,9 @@
 {
-  "formatVersion": 2,
+  "formatVersion": 3,
   "id": "scope-4x",
   "name": "4× scope",
   "type": "attachment",
+  "size": [2, 1],
   "slot": "optic",
   "weapons": ["assault-rifle"],
   "mods": { "aimTime": 1.4 },

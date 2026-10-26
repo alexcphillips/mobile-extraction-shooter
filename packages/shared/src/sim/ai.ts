@@ -16,6 +16,7 @@ import {
   type PlayerInput,
   type SimState,
 } from './state';
+import { carriedAmmo, heldWeapon } from './gear';
 import { createWeaponStats, weaponStats } from './weapons';
 
 /*
@@ -347,7 +348,7 @@ export function spawnEnemy(
     }
   }
   // Below the spawn's height plus a little, so a spawn under a roof stays inside.
-  const c = spawnCharacter(state, world, sx, sz, yaw, y + 0.5);
+  const c = spawnCharacter(state, world, sx, sz, yaw, y + 0.5, false);
   c.ai = {
     awareness: 'unaware',
     activity: 'guard',
@@ -903,7 +904,7 @@ function behave(
           break;
         }
       }
-      const w = c.weapon;
+      const w = heldWeapon(c);
       if (!w) {
         // Unarmed: faces you and closes in.
         faceYaw = yawTo(c, ai.focusX, ai.focusZ);
@@ -958,7 +959,7 @@ function behave(
       // means it's seen from somewhere else: this cover is no good.
       ai.exposed += DT;
       if (ai.seesTarget && ai.exposed > AI.settleInCover) backToFight(state, ai);
-      else if (ai.timer <= 0 && !c.weapon?.reloading) {
+      else if (ai.timer <= 0 && !heldWeapon(c)?.reloading) {
         ai.activity = 'peek';
         ai.hasGoal = false;
         ai.timer =
@@ -1175,7 +1176,7 @@ function fight(
   nav: NavGrid,
   target: Character,
 ): void {
-  const w = c.weapon!;
+  const w = heldWeapon(c)!;
   const def = weaponDef(items, w.item);
   const input = ai.input;
   const sees = ai.seesTarget;
@@ -1301,8 +1302,8 @@ function sidestep(state: SimState, c: Character, ai: AiState, nav: NavGrid): boo
 
 /** Reloads when the magazine is below this fraction of full (0: only when empty). */
 function reloadIfLow(c: Character, items: ItemDb, fraction: number): void {
-  const w = c.weapon;
-  if (!w || w.reloading > 0 || w.reserve === 0) return;
+  const w = heldWeapon(c);
+  if (!w || w.reloading > 0 || carriedAmmo(c, weaponDef(items, w.item).ammo) === 0) return;
   const full = weaponStats(items, w, gunStats).magazine;
   if (w.mag === 0 || w.mag < full * fraction) c.ai!.input.reload = true;
 }

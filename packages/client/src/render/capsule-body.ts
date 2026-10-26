@@ -78,9 +78,9 @@ export class CapsuleBody {
       else if (left > 0.5) colour.lerpColors(HALF, FULL, (left - 0.5) * 2);
       else colour.lerpColors(LOW, HALF, left * 2);
     }
-    this.helmet.visible = !!c.helmet;
-    if (c.helmet) this.helmet.material.color.set(armourColour(c.helmet, items));
-    this.vest.visible = !!c.bodyArmour;
-    if (c.bodyArmour) this.vest.material.color.set(armourColour(c.bodyArmour, items));
+    this.helmet.visible = !!c.gear.helmet;
+    if (c.gear.helmet) this.helmet.material.color.set(armourColour(c.gear.helmet, items));
+    this.vest.visible = !!c.gear.bodyArmour;
+    if (c.gear.bodyArmour) this.vest.material.color.set(armourColour(c.gear.bodyArmour, items));
   }
 }

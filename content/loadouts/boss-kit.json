@@ -15,5 +15,7 @@
     }
   ],
   "helmets": [{ "weight": 1, "item": "steel-helmet" }],
-  "bodyArmour": [{ "weight": 1, "item": "plate-carrier" }]
+  "bodyArmour": [{ "weight": 1, "item": "plate-carrier" }],
+  "rigs": [{ "weight": 1, "item": "chest-rig" }],
+  "backpacks": [{ "weight": 1, "item": "large-backpack" }]
 }

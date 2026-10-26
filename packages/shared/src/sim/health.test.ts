@@ -100,13 +100,13 @@ describe('armour', () => {
     shootCharacter(state, TEST_ITEMS, c, HEAD, ammoDef(TEST_ITEMS, 'bleeder'), 0);
     // 10 × 1.5 = 15; the helmet takes half.
     expect(c.health.hp[HEAD]).toBeCloseTo(35 - 7.5);
-    expect(c.helmet?.durability).toBeCloseTo(30 - 7.5);
+    expect(c.gear.helmet?.durability).toBeCloseTo(30 - 7.5);
   });
 
   it('absorbs nothing when broken, and does not cover other zones', () => {
     const { state, c } = setup();
     wearArmour(c, TEST_ITEMS, 'vest');
-    c.bodyArmour!.durability = 0;
+    c.gear.bodyArmour!.durability = 0;
     shootCharacter(state, TEST_ITEMS, c, CHEST, round, 0);
     expect(c.health.hp[CHEST]).toBe(85 - 40);
     shootCharacter(state, TEST_ITEMS, c, LEFT_LEG, round, 0);
@@ -119,7 +119,7 @@ describe('armour', () => {
     shootCharacter(state, TEST_ITEMS, c, CHEST, round, 0);
     restoreHealth(c, TEST_ITEMS);
     expect(totalHp(c.health)).toBe(TOTAL_HP);
-    expect(c.bodyArmour?.durability).toBe(50);
+    expect(c.gear.bodyArmour?.durability).toBe(50);
   });
 });
 

@@ -21,7 +21,14 @@ import {
 } from './state';
 import { step } from './step';
 import { TEST_ITEMS } from './test-items';
+import { carriedAmmo, heldWeapon, stow } from './gear';
 import { attach, createWeaponStats, detach, giveWeapon, weaponStats } from './weapons';
+
+/** Gives a character a gun and some spare rounds in its pockets. */
+function arm(c: Character, id: string, spare: number, attachments: string[] = []): void {
+  giveWeapon(c, TEST_ITEMS, id, attachments);
+  if (spare > 0) stow(c, TEST_ITEMS, { item: 'round', count: spare });
+}
 
 function makeWorld(boxes: ConstructorParameters<typeof CollisionWorld>[0]['boxes'] = []) {
   return new CollisionWorld({
@@ -187,19 +194,19 @@ describe('firing', () => {
 
   it('hits what it aims at and leaves an event', () => {
     const { world, state, shooter, target } = range();
-    giveWeapon(shooter, TEST_ITEMS, 'rifle', 0);
+    giveWeapon(shooter, TEST_ITEMS, 'rifle');
     // The chest, below the arms held in front of it.
     const aim = lookAt(shooter, 0, 1.0, 0);
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ ...aim, fire: true }) });
     expect(target.health.hp[CHEST]).toBe(85 - 40);
-    expect(shooter.weapon?.mag).toBe(29);
+    expect(heldWeapon(shooter)?.mag).toBe(29);
     const shot = state.events.find((e) => e.type === 'shot');
     expect(shot).toMatchObject({ by: shooter.id, hit: 'character', target: target.id });
   });
 
   it('fires at the weapon rate while held, and kicks the view up', () => {
     const { world, state, shooter } = range();
-    giveWeapon(shooter, TEST_ITEMS, 'rifle', 0);
+    giveWeapon(shooter, TEST_ITEMS, 'rifle');
     const fire = input({ pitch: 1, fire: true });
     let shots = 0;
     for (let i = 0; i < TICK_RATE; i++) {
@@ -216,33 +223,34 @@ describe('firing', () => {
 
   it('fires semi-automatic guns once per pull', () => {
     const { world, state, shooter } = range();
-    giveWeapon(shooter, TEST_ITEMS, 'pistol', 0);
+    giveWeapon(shooter, TEST_ITEMS, 'pistol');
     for (let i = 0; i < 10; i++) {
       step(state, world, TEST_ITEMS, { [shooter.id]: input({ pitch: 1, fire: true }) });
     }
-    expect(shooter.weapon?.mag).toBe(11);
+    expect(heldWeapon(shooter)?.mag).toBe(11);
   });
 
   it('is stopped by walls', () => {
     const wall = { x: 0, y: 1, z: 5, hx: 2, hy: 1, hz: 0.1, yaw: 0 };
     const { world, state, shooter, target } = range([wall]);
-    giveWeapon(shooter, TEST_ITEMS, 'rifle', 0);
+    giveWeapon(shooter, TEST_ITEMS, 'rifle');
     const aim = lookAt(shooter, 0, 1.2, 0);
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ ...aim, fire: true }) });
     expect(totalHp(target.health)).toBe(TOTAL_HP);
     expect(state.events.find((e) => e.type === 'shot')).toMatchObject({ hit: 'world' });
   });
 
-  it('reloads from the reserve, and on pulling the trigger when empty', () => {
+  it('reloads from the rounds carried, and on pulling the trigger when empty', () => {
     const { world, state, shooter } = range();
-    giveWeapon(shooter, TEST_ITEMS, 'pistol', 5);
-    const w = shooter.weapon!;
+    arm(shooter, 'pistol', 5);
+    const w = heldWeapon(shooter)!;
     w.mag = 0;
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ pitch: 1, fire: true }) });
     expect(w.reloading).toBeGreaterThan(0);
     for (let i = 0; i < TICK_RATE * 2; i++) step(state, world, TEST_ITEMS, {});
     expect(w.mag).toBe(5);
-    expect(w.reserve).toBe(0);
+    expect(carriedAmmo(shooter, 'round')).toBe(0);
+    expect(shooter.gear.pockets.items).toEqual([]);
     // Nothing left to reload with.
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ reload: true }) });
     expect(w.reloading).toBe(0);
@@ -250,16 +258,16 @@ describe('firing', () => {
 
   it('cannot fire while reloading', () => {
     const { world, state, shooter } = range();
-    giveWeapon(shooter, TEST_ITEMS, 'rifle', 30);
-    shooter.weapon!.mag = 10;
+    arm(shooter, 'rifle', 30);
+    heldWeapon(shooter)!.mag = 10;
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ reload: true }) });
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ pitch: 1, fire: true }) });
-    expect(shooter.weapon?.mag).toBe(10);
+    expect(heldWeapon(shooter)?.mag).toBe(10);
   });
 
   it('aims in over the aim time, slower with a broken arm', () => {
     const { world, state, shooter } = range();
-    giveWeapon(shooter, TEST_ITEMS, 'rifle', 0);
+    giveWeapon(shooter, TEST_ITEMS, 'rifle');
     const aim = input({ aim: true });
     for (let i = 0; i < 3; i++) step(state, world, TEST_ITEMS, { [shooter.id]: aim });
     expect(shooter.aim).toBeCloseTo(0.5);
@@ -271,7 +279,7 @@ describe('firing', () => {
 
   it('stops sprinting while firing', () => {
     const { world, state, shooter } = range();
-    giveWeapon(shooter, TEST_ITEMS, 'rifle', 0);
+    giveWeapon(shooter, TEST_ITEMS, 'rifle');
     step(state, world, TEST_ITEMS, {
       [shooter.id]: input({ moveY: 1, sprint: true, fire: true, pitch: 1 }),
     });
@@ -280,8 +288,8 @@ describe('firing', () => {
 
   it('kills, and the dead stop acting', () => {
     const { world, state, shooter, target } = range();
-    giveWeapon(shooter, TEST_ITEMS, 'rifle', 0);
-    giveWeapon(target, TEST_ITEMS, 'rifle', 0);
+    giveWeapon(shooter, TEST_ITEMS, 'rifle');
+    giveWeapon(target, TEST_ITEMS, 'rifle');
     const aim = lookAt(shooter, 0, 1.62, 0);
     for (let i = 0; i < 3 && !target.health.dead; i++) {
       step(state, world, TEST_ITEMS, { [shooter.id]: input({ ...aim, fire: true }) });
@@ -289,13 +297,13 @@ describe('firing', () => {
     expect(target.health.dead).toBe(true);
     expect(state.events).toContainEqual({ type: 'death', target: target.id, by: shooter.id });
     step(state, world, TEST_ITEMS, { [target.id]: input({ fire: true, moveY: 1 }) });
-    expect(target.weapon?.mag).toBe(30);
+    expect(heldWeapon(target)?.mag).toBe(30);
     expect(target.vz).toBe(0);
   });
 
   it('damages legs as well as the head', () => {
     const { world, state, shooter, target } = range();
-    giveWeapon(shooter, TEST_ITEMS, 'rifle', 0);
+    giveWeapon(shooter, TEST_ITEMS, 'rifle');
     const aim = lookAt(shooter, 0.11, 0.4, 0);
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ ...aim, fire: true }) });
     expect(target.health.hp[LEFT_LEG]).toBeLessThan(65);
@@ -308,8 +316,8 @@ describe('attachments', () => {
   it('changes the stats and the shot loudness', () => {
     const state = createState(1);
     const shooter = spawnCharacter(state, world, 0, 0);
-    giveWeapon(shooter, TEST_ITEMS, 'rifle', 0, ['suppressor', 'scope']);
-    const s = weaponStats(TEST_ITEMS, shooter.weapon!, createWeaponStats());
+    giveWeapon(shooter, TEST_ITEMS, 'rifle', ['suppressor', 'scope']);
+    const s = weaponStats(TEST_ITEMS, heldWeapon(shooter)!, createWeaponStats());
     expect(s.loudness).toBe(150 * 0.25);
     expect(s.recoilUp).toBe(0.5);
     expect(s.aimTime).toBe(0.4);
@@ -322,8 +330,8 @@ describe('attachments', () => {
   it('fills a bigger magazine, and reloads up to it', () => {
     const state = createState(1);
     const shooter = spawnCharacter(state, world, 0, 0);
-    giveWeapon(shooter, TEST_ITEMS, 'rifle', 100, ['big-mag']);
-    const w = shooter.weapon!;
+    arm(shooter, 'rifle', 100, ['big-mag']);
+    const w = heldWeapon(shooter)!;
     expect(w.mag).toBe(50);
     w.mag = 0;
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ reload: true }) });
@@ -332,27 +340,27 @@ describe('attachments', () => {
     expect(w.mag).toBe(0);
     for (let i = 0; i < 4; i++) step(state, world, TEST_ITEMS, {});
     expect(w.mag).toBe(50);
-    expect(w.reserve).toBe(50);
+    expect(carriedAmmo(shooter, 'round')).toBe(50);
   });
 
-  it('puts rounds that no longer fit back in the reserve when the magazine comes off', () => {
+  it('hands back rounds that no longer fit when the magazine comes off', () => {
     const state = createState(1);
     const shooter = spawnCharacter(state, world, 0, 0);
-    giveWeapon(shooter, TEST_ITEMS, 'rifle', 10, ['big-mag']);
-    const w = shooter.weapon!;
+    giveWeapon(shooter, TEST_ITEMS, 'rifle', ['big-mag']);
+    const w = heldWeapon(shooter)!;
     w.reloading = 1;
-    expect(detach(w, TEST_ITEMS, 'magazine')).toBe('big-mag');
+    expect(detach(w, TEST_ITEMS, 'magazine')).toBe(20);
+    expect(w.attachments.magazine).toBe(null);
     expect(w.mag).toBe(30);
-    expect(w.reserve).toBe(30);
     expect(w.reloading).toBe(0);
-    expect(detach(w, TEST_ITEMS, 'magazine')).toBe(null);
+    expect(detach(w, TEST_ITEMS, 'magazine')).toBe(0);
   });
 
   it('only goes on guns it fits', () => {
     const state = createState(1);
     const shooter = spawnCharacter(state, world, 0, 0);
-    giveWeapon(shooter, TEST_ITEMS, 'pistol', 0);
-    const w = shooter.weapon!;
+    giveWeapon(shooter, TEST_ITEMS, 'pistol');
+    const w = heldWeapon(shooter)!;
     // The pistol has no optic slot, and the big magazine is for the rifle only.
     expect(() => attach(w, TEST_ITEMS, 'scope')).toThrow(/doesn't fit/);
     expect(() => attach(w, TEST_ITEMS, 'big-mag')).toThrow(/doesn't fit/);

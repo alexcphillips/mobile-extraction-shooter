@@ -1,4 +1,4 @@
-import { MOVEMENT, type Character, type ItemDb, type Outfit } from '@mes/shared';
+import { MOVEMENT, heldWeapon, type Character, type ItemDb, type Outfit } from '@mes/shared';
 import * as THREE from 'three';
 import {
   WEAPON_BONE,
@@ -400,15 +400,17 @@ export class CharacterBody {
 
   /** Rebuilds the mesh's geometry only when the gear changes. */
   private setLook(ch: Character, items: ItemDb): void {
-    const w = ch.weapon;
-    const key = `${!!ch.helmet} ${!!ch.bodyArmour} ${w ? gunKey(w) : ''}`;
+    const w = heldWeapon(ch);
+    const g = ch.gear;
+    const key = `${!!g.helmet} ${!!g.bodyArmour} ${!!g.backpack} ${w ? gunKey(w) : ''}`;
     if (key === this.look) return;
     this.look = key;
     this.gun = w ? gunModel(w, items) : null;
     this.hold = this.gun?.hold ?? 'rifle';
     const gear: Gear = {
-      helmet: !!ch.helmet,
-      vest: !!ch.bodyArmour,
+      helmet: !!g.helmet,
+      vest: !!g.bodyArmour,
+      backpack: !!g.backpack,
       gun: this.gun?.shapes ?? null,
     };
     this.mesh.geometry = characterGeometry(this.rig.template, this.outfit, gear);
@@ -445,7 +447,7 @@ export class CharacterBody {
     this.legs.play(legs, TUNE.fadeLegs, pace, !!natural, dead);
 
     // The upper body.
-    const w = ch.weapon;
+    const w = heldWeapon(ch);
     let mode: Upper;
     if (dead) mode = 'dead';
     else if (!w || ch.mode !== 'ground' || legs === CLIP.sprint) mode = 'free';

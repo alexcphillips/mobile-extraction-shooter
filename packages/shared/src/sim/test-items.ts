@@ -1,10 +1,15 @@
 import { ITEM_FORMAT_VERSION, type ItemDb, type ItemDef } from '../content/items';
 
+function common(id: string, size: [number, number]) {
+  return { formatVersion: ITEM_FORMAT_VERSION as typeof ITEM_FORMAT_VERSION, id, name: id, size };
+}
+
 /** A small item set for tests, independent of content/. */
 const defs: ItemDef[] = [
   {
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'rifle',
+    size: [4, 2],
     name: 'Rifle',
     type: 'weapon',
     ammo: 'round',
@@ -23,9 +28,11 @@ const defs: ItemDef[] = [
   {
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'pistol',
+    size: [2, 1],
     name: 'Pistol',
     type: 'weapon',
     ammo: 'round',
+    hold: 'pistol',
     fireMode: 'semi',
     rpm: 600,
     magazine: 12,
@@ -41,22 +48,27 @@ const defs: ItemDef[] = [
   {
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'round',
+    size: [1, 1],
     name: 'Round',
     type: 'ammo',
+    stack: 100,
     damage: 40,
     bleedChance: 0,
   },
   {
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'bleeder',
+    size: [1, 1],
     name: 'Bleeding round',
     type: 'ammo',
+    stack: 100,
     damage: 10,
     bleedChance: 1,
   },
   {
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'helmet',
+    size: [2, 2],
     name: 'Helmet',
     type: 'armour',
     slot: 'helmet',
@@ -66,6 +78,7 @@ const defs: ItemDef[] = [
   {
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'vest',
+    size: [3, 3],
     name: 'Vest',
     type: 'armour',
     slot: 'body',
@@ -75,6 +88,7 @@ const defs: ItemDef[] = [
   {
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'scope',
+    size: [2, 1],
     name: 'Scope',
     type: 'attachment',
     slot: 'optic',
@@ -84,6 +98,7 @@ const defs: ItemDef[] = [
   {
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'suppressor',
+    size: [2, 1],
     name: 'Suppressor',
     type: 'attachment',
     slot: 'muzzle',
@@ -92,12 +107,25 @@ const defs: ItemDef[] = [
   {
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'big-mag',
+    size: [1, 2],
     name: 'Big magazine',
     type: 'attachment',
     slot: 'magazine',
     weapons: ['rifle'],
     mods: { magazine: 20, reloadTime: 1.5 },
   },
+  { ...common('bandage', [1, 1]), type: 'med', effect: 'bandage', useTime: 2 },
+  { ...common('splint', [1, 1]), type: 'med', effect: 'splint', useTime: 3, uses: 2 },
+  { ...common('surgery', [2, 1]), type: 'med', effect: 'surgery', useTime: 10 },
+  { ...common('medkit', [1, 2]), type: 'med', effect: 'heal', useTime: 3, hp: 100 },
+  { ...common('rig', [2, 2]), type: 'container', slot: 'rig', grid: [3, 2] },
+  { ...common('backpack', [3, 3]), type: 'container', slot: 'backpack', grid: [4, 4] },
+  { ...common('knife', [1, 2]), type: 'melee' },
+  { ...common('key', [1, 1]), type: 'key' },
+  { ...common('notes', [1, 1]), type: 'quest' },
+  { ...common('cash', [1, 1]), type: 'loot', stack: 1000 },
+  { ...common('watch', [1, 1]), type: 'loot' },
+  { ...common('repair-kit', [2, 1]), type: 'repair', points: 50 },
 ];
 
 export const TEST_ITEMS: ItemDb = new Map(defs.map((d) => [d.id, d]));

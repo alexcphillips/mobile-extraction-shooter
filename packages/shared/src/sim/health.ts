@@ -1,4 +1,5 @@
 import { armourDef, type AmmoDef, type ItemDb } from '../content/items';
+import type { Item } from '../inventory/grid';
 import { chance } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import type { Character, EntityId, SimState } from './state';
@@ -31,23 +32,34 @@ export const HEALTH = {
   /** Landing faster than this hurts the legs, by damagePerSpeed per m/s over it, each. */
   safeLandingSpeed: 12.5,
   fallDamagePerSpeed: 15,
+  /** A broken limb's HP after surgery. */
+  surgeryHp: 1,
 } as const;
 
-/** A character's limbs. Head or chest at 0 HP is death; any other zone at 0 is broken. */
+/**
+ * A character's limbs. Head or chest at 0 HP is death; any other zone at 0 is broken,
+ * unless it's splinted: a splint takes away the effects, but the limb stays at 0 HP and
+ * damage to it still spills over.
+ */
 export interface Health {
   hp: number[];
   bleeding: boolean[];
+  splinted: boolean[];
   dead: boolean;
 }
 
-/** Worn armour: the item and its durability left. */
-export interface ArmourState {
-  item: string;
+/** Armour, worn or not: the item and its durability left. */
+export interface ArmourState extends Item {
   durability: number;
 }
 
 export function createHealth(): Health {
-  return { hp: [...HEALTH.maxHp], bleeding: Array<boolean>(ZONE_COUNT).fill(false), dead: false };
+  return {
+    hp: [...HEALTH.maxHp],
+    bleeding: Array<boolean>(ZONE_COUNT).fill(false),
+    splinted: Array<boolean>(ZONE_COUNT).fill(false),
+    dead: false,
+  };
 }
 
 export const TOTAL_HP = HEALTH.maxHp.reduce((a, b) => a + b, 0);
@@ -58,8 +70,9 @@ export function totalHp(h: Health): number {
   return sum;
 }
 
+/** A limb at 0 HP: it has broken-limb effects unless splinted. */
 export function isBroken(h: Health, zone: Zone): boolean {
-  return zone !== HEAD && zone !== CHEST && h.hp[zone]! <= 0;
+  return zone !== HEAD && zone !== CHEST && h.hp[zone]! <= 0 && !h.splinted[zone];
 }
 
 export function isBleeding(h: Health): boolean {
@@ -116,7 +129,8 @@ export function dealDamage(
   if (h.dead || amount <= 0) return 0;
   let lost = 0;
   let spill = 0;
-  if (isBroken(h, zone)) {
+  if (zone !== HEAD && zone !== CHEST && h.hp[zone]! <= 0) {
+    // Broken, splinted or not.
     spill = amount;
   } else {
     const before = h.hp[zone]!;
@@ -153,7 +167,7 @@ export function shootCharacter(
   if (c.health.dead) return;
   let damage = ammo.damage * HEALTH.multiplier[zone]!;
   let absorbed = 0;
-  const armour = zone === HEAD ? c.helmet : zone === CHEST ? c.bodyArmour : null;
+  const armour = zone === HEAD ? c.gear.helmet : zone === CHEST ? c.gear.bodyArmour : null;
   if (armour && armour.durability > 0) {
     absorbed = damage * armourDef(items, armour.item).absorb;
     armour.durability = Math.max(0, armour.durability - absorbed * (ammo.armourDamage ?? 1));
@@ -202,17 +216,22 @@ export function restoreHealth(c: Character, items: ItemDb): void {
   for (let zone = 0; zone < ZONE_COUNT; zone++) {
     h.hp[zone] = HEALTH.maxHp[zone]!;
     h.bleeding[zone] = false;
+    h.splinted[zone] = false;
   }
   h.dead = false;
-  for (const armour of [c.helmet, c.bodyArmour]) {
+  for (const armour of [c.gear.helmet, c.gear.bodyArmour]) {
     if (armour) armour.durability = armourDef(items, armour.item).durability;
   }
 }
 
-/** Puts on armour at full durability, in the slot its item says. */
+/** New armour, at its durability times condition (0–1). */
+export function createArmour(items: ItemDb, id: string, condition = 1): ArmourState {
+  return { item: id, count: 1, durability: armourDef(items, id).durability * condition };
+}
+
+/** Puts on new armour at full durability, in the slot its item says, replacing what was there. */
 export function wearArmour(c: Character, items: ItemDb, id: string): void {
-  const def = armourDef(items, id);
-  const worn = { item: id, durability: def.durability };
-  if (def.slot === 'helmet') c.helmet = worn;
-  else c.bodyArmour = worn;
+  const a = createArmour(items, id);
+  if (armourDef(items, id).slot === 'helmet') c.gear.helmet = a;
+  else c.gear.bodyArmour = a;
 }

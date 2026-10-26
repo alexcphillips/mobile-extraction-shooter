@@ -1,0 +1,8 @@
+{
+  "formatVersion": 3,
+  "id": "cash",
+  "name": "Cash",
+  "type": "loot",
+  "size": [1, 1],
+  "stack": 10000
+}

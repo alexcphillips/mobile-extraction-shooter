@@ -1,0 +1,10 @@
+{
+  "formatVersion": 3,
+  "id": "medkit",
+  "name": "Medkit",
+  "type": "med",
+  "size": [1, 2],
+  "effect": "heal",
+  "useTime": 4,
+  "hp": 200
+}

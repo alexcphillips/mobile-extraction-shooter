@@ -3,9 +3,8 @@ import { ContentError, type ContentFormat } from './format';
 import { idSchema } from './schema';
 
 /*
- * Item files (content/items/<id>.json). So far only what combat needs: weapons, ammo,
- * armour and attachments. Session 9 adds the other item types, grid sizes and the rest of
- * the item model. Times are seconds, angles degrees, distances metres.
+ * Item files (content/items/<id>.json): every kind of item, its size in the inventory
+ * grid, and what it does. Times are seconds, angles degrees, distances metres.
  */
 
 const finite = z.number().refine(Number.isFinite, 'must be a finite number');
@@ -13,18 +12,29 @@ const positive = finite.refine((n) => n > 0, 'must be greater than 0');
 const nonNegative = finite.refine((n) => n >= 0, 'must be 0 or more');
 const fraction = finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1');
 
-/** 2 (session 6b): weapons gained loudness and slots; attachments were added. */
-export const ITEM_FORMAT_VERSION = 2;
+/**
+ * 2 (session 6b): weapons gained loudness and slots; attachments were added.
+ * 3 (session 9): every item gained a grid size, ammo a stack size; the other types were added.
+ */
+export const ITEM_FORMAT_VERSION = 3;
 
 /** The fixed attachment slots a gun can have. */
 export const ATTACHMENT_SLOTS = ['optic', 'muzzle', 'magazine'] as const;
 export type AttachmentSlot = (typeof ATTACHMENT_SLOTS)[number];
 const slotSchema = z.enum(ATTACHMENT_SLOTS);
 
+const cells = z.int().min(1);
+/** A grid size: [width, height] in cells. */
+const sizeSchema = z.tuple([cells, cells]);
+/** How many fit in one stack (one grid cell's worth of the item). */
+const stackSchema = z.int().min(2);
+
 const common = {
   formatVersion: z.literal(ITEM_FORMAT_VERSION),
   id: idSchema,
   name: z.string().min(1),
+  /** Its size in an inventory grid, [width, height] in cells, unrotated. */
+  size: sizeSchema,
 };
 
 const weaponSchema = z.strictObject({
@@ -71,6 +81,8 @@ const weaponSchema = z.strictObject({
 const ammoSchema = z.strictObject({
   ...common,
   type: z.literal('ammo'),
+  /** Loose rounds stack up to this many in one place. */
+  stack: stackSchema,
   /** Damage to the chest; other zones multiply it, then armour absorbs some. */
   damage: positive,
   /** Armour durability lost per point of damage the armour absorbs. Defaults to 1. */
@@ -151,11 +163,82 @@ const attachmentSchema = z
     path: ['optic'],
   });
 
+/** What a med does. Each use treats one zone, the first in TREATMENT_ORDER that needs it. */
+export const MED_EFFECTS = ['bandage', 'splint', 'surgery', 'heal'] as const;
+export type MedEffect = (typeof MED_EFFECTS)[number];
+
+const medSchema = z
+  .strictObject({
+    ...common,
+    type: z.literal('med'),
+    /**
+     * bandage stops a zone bleeding; splint takes away a broken limb's effects (it stays at
+     * 0 HP and still spills over); surgery brings a broken limb back to 1 HP; heal restores
+     * HP to limbs that aren't broken, from a pool.
+     */
+    effect: z.enum(MED_EFFECTS),
+    /** How long one use takes. */
+    useTime: positive,
+    /** How many times it can be used. Defaults to 1. Not for heal, which has hp. */
+    uses: z.int().min(1).optional(),
+    /** heal only: the HP it holds in all, spent across uses. */
+    hp: positive.optional(),
+  })
+  .refine((m) => (m.effect === 'heal') === (m.hp !== undefined), {
+    message: 'heal needs hp, and only heal may have it',
+    path: ['hp'],
+  })
+  .refine((m) => m.effect !== 'heal' || m.uses === undefined, {
+    message: 'heal uses up its hp, so it has no uses',
+    path: ['uses'],
+  });
+
+/** Rigs and backpacks: worn in their slot, with a grid of their own. */
+const containerSchema = z.strictObject({
+  ...common,
+  type: z.literal('container'),
+  slot: z.enum(['rig', 'backpack']),
+  /** The grid inside, [width, height] in cells. */
+  grid: sizeSchema,
+});
+
+/** The knife. Melee stats come when melee is designed. */
+const meleeSchema = z.strictObject({ ...common, type: z.literal('melee') });
+
+/** Opens the doors that name it. */
+const keySchema = z.strictObject({ ...common, type: z.literal('key') });
+
+/** Picked up for a quest. */
+const questSchema = z.strictObject({ ...common, type: z.literal('quest') });
+
+/** Valuables, junk and cash: things to sell. */
+const lootSchema = z.strictObject({
+  ...common,
+  type: z.literal('loot'),
+  /** Stacks up to this many in one place; left out, it doesn't stack. */
+  stack: stackSchema.optional(),
+});
+
+/** Armour repair kits. */
+const repairSchema = z.strictObject({
+  ...common,
+  type: z.literal('repair'),
+  /** The durability it can restore in all, spent across repairs. */
+  points: positive,
+});
+
 export const itemSchema = z.discriminatedUnion('type', [
   weaponSchema,
   ammoSchema,
   armourSchema,
   attachmentSchema,
+  medSchema,
+  containerSchema,
+  meleeSchema,
+  keySchema,
+  questSchema,
+  lootSchema,
+  repairSchema,
 ]);
 
 export type ItemDef = z.infer<typeof itemSchema>;
@@ -163,6 +246,8 @@ export type WeaponDef = z.infer<typeof weaponSchema>;
 export type AmmoDef = z.infer<typeof ammoSchema>;
 export type ArmourDef = z.infer<typeof armourSchema>;
 export type AttachmentDef = z.infer<typeof attachmentSchema>;
+export type MedDef = z.infer<typeof medSchema>;
+export type ContainerDef = z.infer<typeof containerSchema>;
 export type AttachmentMods = z.infer<typeof modsSchema>;
 export type OpticDef = NonNullable<AttachmentDef['optic']>;
 export type ReticleShape = z.infer<typeof reticleShapeSchema>;
@@ -177,6 +262,19 @@ export const ITEM_FORMAT: ContentFormat<ItemDef> = {
   migrations: {
     // Weapons gained a hearing radius; slots are optional.
     1: (doc) => (doc.type === 'weapon' ? { ...doc, loudness: 150 } : doc),
+    // Grid sizes (and ammo stacks), guessed from the type.
+    2: (doc) => {
+      switch (doc.type) {
+        case 'weapon':
+          return { ...doc, size: doc.hold === 'pistol' ? [2, 1] : [4, 2] };
+        case 'ammo':
+          return { ...doc, size: [1, 1], stack: 60 };
+        case 'armour':
+          return { ...doc, size: doc.slot === 'helmet' ? [2, 2] : [3, 3] };
+        default:
+          return { ...doc, size: [1, 1] };
+      }
+    },
   },
 };
 
@@ -196,6 +294,20 @@ export const ammoDef = (items: ItemDb, id: string): AmmoDef => itemOf(items, id,
 export const armourDef = (items: ItemDb, id: string): ArmourDef => itemOf(items, id, 'armour');
 export const attachmentDef = (items: ItemDb, id: string): AttachmentDef =>
   itemOf(items, id, 'attachment');
+export const medDef = (items: ItemDb, id: string): MedDef => itemOf(items, id, 'med');
+export const containerDef = (items: ItemDb, id: string): ContainerDef =>
+  itemOf(items, id, 'container');
+
+export function itemDef(items: ItemDb, id: string): ItemDef {
+  const item = items.get(id);
+  if (!item) throw new Error(`no item "${id}"`);
+  return item;
+}
+
+/** How many of an item fit in one place: 1 unless it stacks. */
+export function stackSize(def: ItemDef): number {
+  return (def.type === 'ammo' || def.type === 'loot') && def.stack ? def.stack : 1;
+}
 
 /** Whether an attachment can go on a gun: the gun has its slot, and it's on its list if any. */
 export function fits(weapon: WeaponDef, attachment: AttachmentDef): boolean {

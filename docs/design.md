@@ -21,14 +21,14 @@ A simplified mobile extraction shooter: the risk/reward loop of Tarkov without i
 | Healing that takes time, key rooms | Weather, day/night cycle | Grenades for AI (see AI) |
 | Fixed weapon attachment slots | Packing rounds into magazines, multiple mags | Gyro aiming |
 | Map editor, item editor (desktop) | Insurance | Water slowing movement |
-| | Vibration | |
+| | Vibration | Temporary effects, such as painkillers (session 9) |
 
 ## Core loop and progression
 - **Before a raid:** manage your stash, buy and sell with vendors, accept quests, and pick your loadout.
 - **In the raid:** loot, fight AI, do quest objectives, and reach an extraction point.
 - **Death:** you lose everything you brought or found, **except what's in your 2×3 vault** and **your knife**. Cash found in the raid is a physical item: lost on death unless it's in your vault. Your account balance is never at risk.
 - **No insurance.** The safety net is starting equipment, weapons spawning in raids, the free knife, and the "go in with nothing, vault loot, sell it" strategy.
-- **Knife:** always carried and never lost. Running is slightly faster with it out.
+- **Knife:** always carried and never lost. Running is slightly faster with it out. (Session 9 gives it a gear slot. **It has an attack** (the user's call, 2026-10-26): Tarkov-style, with good damage, for raids where you bring nothing at all and for close quarters such as houses. First guesses: about 40 to the chest per hit with the usual zone multipliers (a head hit kills a scav), about 2 swings a second, 1.5 m reach, absorbed by armour like a bullet. It works when you can strike within an enemy's reaction time, by sneaking up crouched (silent) or round a corner.)
 
 ## Raids and maps
 - Small maps, roughly 10–15 minutes to explore thoroughly.
@@ -90,7 +90,9 @@ A simplified mobile extraction shooter: the risk/reward loop of Tarkov without i
   - Medkit: has an HP pool and heals HP.
   - Bandage: single use, stops bleeding.
   - Items target limbs in a **fixed priority order: head, chest, left leg, right leg, left arm, right arm.** There's no body diagram.
-- **Using meds:** there are 2–4 quick-use slots on the HUD. Tap to start; a progress ring shows the timer. You can walk slowly while healing; firing or sprinting cancels it. The use time, HP pool and effects are set per item in the item editor.
+  - Session 9: each use of a bandage, splint or surgery kit treats **one zone**, the first in that order that needs it (a splint can have several uses). A medkit heals down the order from its pool, **skipping broken limbs** (they need surgery first), and keeps what's left of its pool for next time. A splinted limb stays at 0 HP and still spills damage to the chest; surgery clears the splint.
+- **Using meds: one heal button, not quick slots** (decided with the user, 2026-10-26, session 9, after Delta Force; it replaces the 2–4 quick-use slots). The button always shows the one treatment that fits your state, in this order: **bleeding → bandage; broken limb → splint, or surgery if you have no splint; lost HP → medkit.** Bleeding comes first because it's the only problem that gets worse by itself; a splint comes before surgery because surgery is slow and rare. A **long press** opens a small picker with every carried med that would help (for example surgery on purpose while safe), and a tap uses the default. With nothing wrong, the button is greyed out. Meds come from pockets, rig and backpack, **never the vault**. Tap to start; a progress ring shows the timer. You can walk slowly while healing; firing or sprinting cancels it (session 10). The use time, HP pool and effects are set per item in the item editor.
+  - **Painkillers are punted** (the user's call): there's no pain mechanic for them to fix, since the splint already removes broken-limb effects. The user wants **temporary effects** later, and painkillers would come with them.
 - **HUD:** one overall health bar (sum of all limbs) plus status icons for broken limbs and bleeding. Armour icons change colour by durability: **yellow** when damaged, **orange** when low, **red** when broken.
   - Session 6: damaged is below 75% durability, low below 35%. The health bar, armour icons and status chips are at the top centre, the ammo count (with a reload bar) at the top right. The crosshair flashes red on a hit and grows on a kill; the screen edges flash red when you're hurt.
 - **AI uses the same hit zones and limb system**, with only the leg effect (broken legs slow it down).
@@ -135,6 +137,11 @@ A simplified mobile extraction shooter: the risk/reward loop of Tarkov without i
   - Auto-placement puts an item in the first free space. Items can be rotated.
   - **Double-tap** moves an item between your inventory and the open container (or stash), fitting it automatically.
 - Backpacks and rigs have their own grids. **No containers inside containers.**
+- **Gear slots (session 9, decided with the user 2026-10-26):** two primary guns (any gun), a sidearm (pistols only), the knife, helmet, body armour, a rig and a backpack. What's in your hands is one of the two primaries, the sidearm or the knife; switching (a button, and how long drawing takes) is session 10.
+- **Pockets** (decided with the user): a 4×1 grid everyone always has, lost on death like the rest. A player with no rig or backpack can still carry a few rounds and a bandage, and enemies' spare rounds go there, so their bodies have something to loot.
+- **The vault is part of the in-raid inventory** (2×3), kept on death. Players only.
+- **Ammo is loose rounds in stacks** in your grids (60 per cell for the current rounds). Reloading takes the gun's rounds from pockets, then rig, then backpack, **never the vault**, so the vault stays a place to keep things. Rounds that no longer fit when a bigger magazine comes off go back into what you carry (dropped if there's no room).
+- Session 9 details: auto-placement goes row by row from the top left, trying the item unrotated everywhere before rotated. A stack first tops up stacks of the same item, then takes new cells a full stack at a time. Dropping a stack on a stack of the same item merges as much as fits. **No nesting** means a rig or backpack can't go in pockets, the vault, or another rig or backpack, even empty; only the stash and loot containers (desks, crates, a body's gear) take them. A gun's size doesn't change with attachments.
 - **The in-raid screen has tabs:**
   - **Inventory:** includes looting containers and bodies, plus the attachment manager.
   - **Map:** a simple SVG generated from map data, showing building outlines, named zones and **your own position**.
@@ -175,7 +182,7 @@ A sandbox. The client is trusted. The server only applies sanity limits (for exa
 - **The player in first person** sees only arms and the gun. The full body is the same character system, which a co-op partner sees.
 - **Animations** come from the pack: idle, walk, run, aim, shoot, reload, death. No ragdolls.
 - **Session 8b (2026-10-26):** the pack is Quaternius's **Universal Animation Library (Standard)**, CC0 (chosen with the user). It's one mannequin with 45 clips, including pistol idle, aim, shoot and reload, but **no rifle clips**. So a gun is held by IK: the gun sits on a weapon bone in front of the right shoulder, from the low ready (tipped down) to aimed (shouldered) as the character aims, turned with where it looks, and both hands reach for it. While reloading or sprinting, and for distant bodies, the gun is carried in the right hand by the clip instead. A rifle reload uses the pistol reload clip, so the rifle points up for it. Enemy types pick their **outfit colours** (skin, top, bottom, hands, feet) in their files; a body's colours come from which bone moves each face most.
-- Gear is drawn as placeholders until the item editor's models (session 18): a helmet, a plate carrier, and the same placeholder guns as first person. Mount points are bones: helmet on the head, armour on the chest, the backpack's (unused until session 9) on the upper chest, and the gun on its own weapon bone.
+- Gear is drawn as placeholders until the item editor's models (session 18): a helmet, a plate carrier, a backpack (session 9), and the same placeholder guns as first person. Mount points are bones: helmet on the head, armour on the chest, the backpack on the upper chest, and the gun on its own weapon bone. Rigs aren't drawn yet.
 - **First-person arms** are low-poly forearms and hands in the player's outfit, drawn with the gun in its pass. From the hip the gun hides most of them; better framing comes with real gun models (session 18).
 
 ## Editors (admin only, desktop browser)

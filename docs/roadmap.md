@@ -174,16 +174,28 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
     - Bundle: the main chunk is about 869 kB (up 18 kB); the mannequin is fetched separately.
     - Not done yet: no shoot clip is played; a shot kicks the IK'd gun instead. The rifle reload borrows the pistol clip, so the rifle points up while reloading. A sprinting or unarmed body's arms don't match the forward arm capsules. Crouched, the body leans forward a little past its capsules. From the hip, the gun hides most of the first-person arms. No backpack is drawn (there are no backpacks until session 9). Ladders play idle. The player's own body isn't drawn (it will be for co-op).
     - **To check on the iPhone:** frame rate with the bodies in a fight and in `/perf` (each body is now 5.8k triangles, the robot was 3.2k), and how the bodies and first-person arms look.
-- [ ] **9. Item and inventory model (shared).**
+- [x] **9. Item and inventory model (shared).**
   - Item definition schemas for all item types.
   - Grid containers with item sizes and rotation, auto-placement, no nesting.
   - Equipment slots (weapon, helmet, armour, rig, backpack), the vault, quick slots.
   - Unit tests.
-- [ ] **10. Inventory and in-raid UI.**
+  - **Notes (2026-10-26):**
+    - Decided with the user (all in design.md → Inventory and UI, and → Damage): **gear slots are two primaries, a sidearm (pistols only) and the knife**, plus helmet, armour, rig and backpack, with which one is in your hands in the sim; **everyone has 4×1 pockets**; and **quick slots are replaced by one heal button** (Delta Force style) that offers the treatment your state needs (bleeding → bandage, broken → splint or else surgery, lost HP → medkit), with a long press for a picker of the alternatives and greyed out when nothing's wrong. **Painkillers are punted**; the user wants temporary effects later.
+    - Decided along the way (design.md): ammo is loose stacked rounds; reloading and meds draw from pockets, rig and backpack, never the vault; each bandage, splint or surgery use treats one zone in the fixed order, a medkit heals down the order skipping broken limbs and keeps the rest of its pool; a splinted limb stays at 0 HP and still spills over; no nesting means rigs and backpacks go only in gear slots, the stash and loot containers; a gun's size ignores attachments.
+    - Shared: item format **3** (every item has a grid `size`; ammo a `stack`; new types `med`, `container`, `melee`, `key`, `quest`, `loot` and `repair`; migration from 2). `inventory/grid.ts` (items, grids, auto-placement, stacking, drag and drop, rotation, double-tap transfer), `sim/gear.ts` (gear slots, hand, carried ammo, stowing), `sim/meds.ts` (the heal button's choices and one use), `sim/create-item.ts`. `Character.weapon`, `helmet` and `bodyArmour` became `Character.gear`, and the gun in hand is `heldWeapon(c)`. `WeaponState.reserve` is gone: reloading takes from carried rounds. `attach` and `detach` return rounds that no longer fit. `Health` gained `splinted`. Loadouts gained optional `rigs` and `backpacks`, and spare rounds are stowed as stacks. See tech-stack.md → Inventory model. 26 new tests (186 in all), including a JSON round trip of a character's gear and an enemy reloading until its carried rounds run out.
+    - Content: sizes on every item; bandage, splint, surgery kit, medkit (200 HP), chest rig (4×2 inside), small (4×4) and large (5×6) backpacks, knife, shed key (the test map's locked door now names a real key, and the content test checks door keys), cash, gold watch, armour repair kit. Scavs sometimes wear a rig or small backpack; the boss wears both. Numbers are first guesses.
+    - Client: the player starts with the rifle and pistol (`?weapon` picks which is out), armour, knife, rig, small backpack, 120 + 45 rounds and a few meds, all hard-coded in `play/` until loadouts (session 13). The ammo count shows loaded / carried. Backpacks are drawn on bodies (placeholder boxes); rigs aren't drawn.
+    - Checked in headless Chrome at iPhone landscape size: `/bodies` with backpacks; the test map with the rifle (30 / 120) and with the pistol and 24-round mag (24 / 45); a 30 s fight standing at the centre, where all three enemies engage and the player dies between 20 and 30 s as in session 8. 60 fps, tick 0.14–0.37 ms, 24–39 draw calls, no console errors.
+    - Bundle: the main chunk is about 876 kB (up 7 kB).
+    - Not done yet: nothing switches guns in play yet, and nothing uses meds except the debug heal (both session 10b). The HUD still has quick slots 1–4 for the debug keys. The knife has a slot but no attack yet (session 10b). No prices yet (session 13).
+- [ ] **10. Inventory and in-raid UI.** (Split on 2026-10-26: the heal button, switching guns and the knife moved to 10b.)
   - Tabbed raid screen: inventory, map, quests.
-  - Looting containers and bodies, double-tap auto-fit, rotating items, attachment manager.
-  - Using quick slots, the heal progress ring, slow walking while healing and cancelling.
+  - Looting containers and bodies, double-tap auto-fit, rotating items, attachment manager (stowing rounds a smaller magazine hands back).
   - Prototype on the phone early.
+- [ ] **10b. Heal button, switching guns and the knife.**
+  - **The heal button** (replaces the quick slots, decided in session 9): a tap uses `treatments()`'s first choice, a long press opens the picker, greyed out when there's nothing to do. The heal progress ring, slow walking while healing, cancelling on firing or sprinting, and the use time in the sim. Remove the quick-slot buttons (move the debug keys elsewhere).
+  - **Switching guns**: a button (or buttons) for primary 1, primary 2, sidearm and knife, a draw time, the draw animation, and the viewmodel following the gun in hand. Running is slightly faster with the knife out.
+  - **The knife attack** (decided 2026-10-26, see design.md → Core loop → Knife): Tarkov-style, good damage, for close quarters and raids with no gear. A swing in the sim against the hit zones (armour absorbs it), its HUD use of the fire button, first-person and body animations, and AI taking knife hits like shots (flinch, alert). Tune the swing time against the scavs' reaction time on the phone.
 - [ ] **11. Raid lifecycle and loot.**
   - Raid config format, including a timer (15 minutes by default) and a random player spawn (co-op players together).
   - Loot tables rolled at raid start.
@@ -239,3 +251,5 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
 
 ## Open questions
 - Login method (session 12). Sound effect source (session 19).
+- **Melee** (raised in session 9; the user's answer, 2026-10-26): there is a Tarkov-style knife attack with good damage, for raids where you bring nothing at all and for close quarters (design.md → Core loop → Knife). Scheduled for session 10b.
+- **Temporary effects** (the user wants them, 2026-10-26): painkillers and similar. Not scheduled.

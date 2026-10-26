@@ -1,15 +1,10 @@
 import { createRng, type Rng } from '../rng';
 import type { AiState } from './ai';
 import type { CollisionWorld } from '../world/collision-world';
-import {
-  createHealth,
-  type ArmourState,
-  type DamageEvent,
-  type DeathEvent,
-  type Health,
-} from './health';
+import { createGear, type Gear } from './gear';
+import { createHealth, type DamageEvent, type DeathEvent, type Health } from './health';
 import { MOVEMENT } from './movement';
-import type { ShotEvent, WeaponState } from './weapons';
+import type { ShotEvent } from './weapons';
 
 export type EntityId = number;
 
@@ -39,9 +34,8 @@ export interface Character {
   /** How fast it hit the ground if it landed this tick (m/s), otherwise 0. For fall damage. */
   landingSpeed: number;
   health: Health;
-  helmet: ArmourState | null;
-  bodyArmour: ArmourState | null;
-  weapon: WeaponState | null;
+  /** Everything it carries and wears. The gun in its hands is heldWeapon(c). */
+  gear: Gear;
   /** How far into aiming down the sights: 0 at the hip, 1 fully aimed. */
   aim: number;
   /** Recoil's kick to the view in radians, added to yaw and pitch; it settles back to 0. */
@@ -102,7 +96,10 @@ export function createState(seed: number): SimState {
   return { tick: 0, rng: createRng(seed), nextId: 1, entities: [], events: [] };
 }
 
-/** Adds a standing character on the highest surface at (x, z), or below y if given. */
+/**
+ * Adds a standing character on the highest surface at (x, z), or below y if given, with
+ * nothing but pockets (and a vault: players have one, enemies don't).
+ */
 export function spawnCharacter(
   state: SimState,
   world: CollisionWorld,
@@ -110,6 +107,7 @@ export function spawnCharacter(
   z: number,
   yaw = 0,
   y = Infinity,
+  vault = true,
 ): Character {
   const c: Character = {
     id: state.nextId++,
@@ -128,9 +126,7 @@ export function spawnCharacter(
     jumpHeld: false,
     landingSpeed: 0,
     health: createHealth(),
-    helmet: null,
-    bodyArmour: null,
-    weapon: null,
+    gear: createGear(vault),
     aim: 0,
     recoilPitch: 0,
     recoilYaw: 0,

@@ -12,6 +12,9 @@ import {
   type ArmourState,
   type Character,
   type ItemDb,
+  heldWeapon,
+  carriedAmmo,
+  weaponDef,
 } from '@mes/shared';
 import { armourColour } from './armour';
 
@@ -101,13 +104,13 @@ export class Vitals {
       this.chips.innerHTML = chips.join('');
     }
 
-    this.armour(this.helmet, c.helmet, items);
-    this.armour(this.vest, c.bodyArmour, items);
+    this.armour(this.helmet, c.gear.helmet, items);
+    this.armour(this.vest, c.gear.bodyArmour, items);
 
-    const w = c.weapon;
+    const w = heldWeapon(c);
     setHidden(this.ammo, !w);
     if (w) {
-      setText(this.rounds, `${w.mag} / ${w.reserve}`);
+      setText(this.rounds, `${w.mag} / ${carriedAmmo(c, weaponDef(items, w.item).ammo)}`);
       this.rounds.classList.toggle('empty', w.mag === 0);
       setHidden(this.reload, w.reloading === 0);
       if (w.reloading > 0) {

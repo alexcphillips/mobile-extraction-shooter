@@ -13,6 +13,7 @@ import {
   type SimState,
 } from './state';
 import { step } from './step';
+import { stow } from './gear';
 import { giveWeapon } from './weapons';
 import { TEST_ITEMS } from './test-items';
 
@@ -105,15 +106,7 @@ function setup(
 
 /** The player shoots straight up, so nothing is hit: only the sound carries. */
 function shootUp(s: Setup): void {
-  s.player.weapon = {
-    item: 'rifle',
-    mag: 30,
-    reserve: 0,
-    cooldown: 0,
-    reloading: 0,
-    triggerHeld: false,
-    attachments: { optic: null, muzzle: null, magazine: null },
-  };
+  giveWeapon(s.player, TEST_ITEMS, 'rifle');
   s.run(1 / TICK_RATE, input({ pitch: 1.4, fire: true }));
 }
 
@@ -196,15 +189,7 @@ describe('enemy hearing', () => {
 
   it('is alarmed by a near miss however far the shot came from', () => {
     const s = setup(0, 40, { yaw: 0 });
-    s.player.weapon = {
-      item: 'rifle',
-      mag: 30,
-      reserve: 0,
-      cooldown: 0,
-      reloading: 0,
-      triggerHeld: false,
-      attachments: { optic: null, muzzle: null, magazine: null },
-    };
+    giveWeapon(s.player, TEST_ITEMS, 'rifle');
     // Shoots towards the enemy (yaw 0 faces −z), a little to the side.
     s.enemy.x = 1.5;
     s.run(1 / TICK_RATE, input({ yaw: 0, fire: true }));
@@ -372,7 +357,8 @@ describe('enemy behaviour', () => {
 
 /** Gives the enemy the test rifle, and the player so much health that it never dies. */
 function arm(s: Setup, c: Character = s.enemy): void {
-  giveWeapon(c, TEST_ITEMS, 'rifle', 300);
+  giveWeapon(c, TEST_ITEMS, 'rifle');
+  stow(c, TEST_ITEMS, { item: 'round', count: 300 });
   s.player.health.hp.fill(1e6);
 }
 
@@ -404,6 +390,21 @@ describe('enemy combat', () => {
     expect(alertAt).toBeGreaterThanOrEqual(0);
     expect((firstShot - alertAt) / TICK_RATE).toBeGreaterThanOrEqual(DEFAULT_SKILL.reaction - 0.05);
     expect(hits).toBeGreaterThan(3);
+  });
+
+  it('reloads from the rounds it carries, and stops shooting once they run out', () => {
+    const s = setup(0, -15);
+    giveWeapon(s.enemy, TEST_ITEMS, 'rifle');
+    stow(s.enemy, TEST_ITEMS, { item: 'round', count: 40 });
+    s.player.health.hp.fill(1e6);
+    let shots = 0;
+    for (let t = 0; t < 30 * TICK_RATE; t++) {
+      s.run(1 / TICK_RATE);
+      for (const e of s.state.events) if (e.type === 'shot' && e.by === s.enemy.id) shots++;
+    }
+    // 30 loaded and 40 carried.
+    expect(shots).toBe(70);
+    expect(s.enemy.gear.pockets.items).toEqual([]);
   });
 
   it('settles its aim while watching, and less so on a target on the move', () => {
@@ -481,7 +482,8 @@ describe('enemy combat', () => {
     const s = setup(0, -15, { boxes });
     arm(s);
     const other = spawnEnemy(s.state, s.world, 0, 0, 20, 0);
-    giveWeapon(other, TEST_ITEMS, 'rifle', 300);
+    giveWeapon(other, TEST_ITEMS, 'rifle');
+    stow(other, TEST_ITEMS, { item: 'round', count: 300 });
     s.run(4);
     // Within 15% of the rifle's 150 m: alert to the player at once.
     expect(other.ai!.awareness).toBe('alert');
