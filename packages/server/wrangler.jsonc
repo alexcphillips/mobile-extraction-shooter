@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "mobile-extraction-shooter",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  // One Worker serves the built client and the API, so they share an origin
+  // (no CORS, and session cookies just work). Only /api/* reaches the Worker code.
+  "assets": {
+    "directory": "../client/dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"],
+  },
+  "observability": { "enabled": true },
+}

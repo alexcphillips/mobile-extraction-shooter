@@ -12,6 +12,13 @@ Mobile Safari has a JIT and WebAssembly, needs no build step and no Apple develo
 
 ## Repo layout (npm workspaces monorepo)
 npm, not pnpm (the user's choice, 2026-10-26). Each package lists every dependency it imports, since npm won't catch a package using a dependency that only another package declared.
+
+Tooling (session 1):
+- `@mes/shared`, `@mes/client` and `@mes/server` are the package names. `shared` has no build step: it exports its TypeScript source, and Vite and wrangler bundle it.
+- TypeScript is **pinned to 6.0.x**, because typescript-eslint doesn't support TypeScript 7 yet. Move to 7 once it does.
+- `shared`'s tsconfig leaves out the DOM types, and ESLint blocks imports of three.js, React and the other packages from it, so the "no rendering or UI in the simulation" rule is enforced, not just written down.
+- Strict TypeScript, including `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes`.
+- One root ESLint (flat config) + Prettier setup. Vitest runs every package as a project from the root.
 ```
 packages/
   shared/    # game simulation, rules, data schemas. No three.js, React or DOM.
@@ -61,7 +68,8 @@ docs/
 - **Free-plan limits are hard caps:** going over makes requests fail until midnight UTC. Nothing is charged.
 
 ## Hosting and testing
-- The client is hosted on Cloudflare (Pages, or Workers static assets) on the same account as the server.
+- **One Worker serves both the client and the API** (decided 2026-10-26, session 1). The built client is the Worker's static assets (`packages/server/wrangler.jsonc` points at `packages/client/dist`). Only `/api/*` runs Worker code; any other unknown path falls back to `index.html`. Sharing one origin means no CORS, and session cookies work with no extra setup. Pages was the alternative; Cloudflare is moving new projects to Workers static assets anyway.
+- In dev, the client (Vite, port 5180) and the Worker (`wrangler dev`, port 8787) run separately, and Vite proxies `/api` to the Worker.
 - **Phone testing during development:** run `vite --host` and open it on the iPhone over the local network. When HTTPS is needed (installing as a home-screen app, some browser features), use a Cloudflare preview deployment or a `cloudflared` tunnel.
 - Each milestone ends with a performance check on the real iPhone (FPS counter in dev builds).
 

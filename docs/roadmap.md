@@ -18,11 +18,19 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
 - If a session is too big, split it here before starting rather than leaving it half done.
 
 ## Milestone A: foundation and performance gate
-- [ ] **1. Monorepo scaffold.**
+- [x] **1. Monorepo scaffold.**
   - npm workspaces (`shared`, `client`, `server`), TypeScript, ESLint and Prettier, Vitest.
   - A Vite client showing an empty three.js scene, and a "hello" Worker.
   - Deploy both to Cloudflare. Document dev commands and how to test on the phone over the local network.
   - *Done when* the deployed URL opens on the iPhone and the Worker responds.
+  - **Notes (2026-10-26):**
+    - Built: the `@mes/shared`, `@mes/client` and `@mes/server` workspaces. Strict TypeScript, ESLint flat config, Prettier and Vitest projects. `npm run check` runs all of them.
+    - The client is an unlit three.js scene with fog, plus a status line that calls `/api/hello`. The Worker is Hono.
+    - Deployed as **one Worker that also serves the client** at https://mobile-extraction-shooter.alexphillipsdev.workers.dev (see tech-stack.md → Hosting).
+    - Dev port is 5180 (5173 is taken by another project on this Mac). The README covers dev commands and testing on the phone.
+    - TypeScript is pinned to 6.0.x until typescript-eslint supports 7.
+    - Checked with curl over the LAN and on the deployed URL; the user confirmed it opens and runs on the iPhone.
+    - Deferred: three.js makes the bundle a ~600 kB chunk (Vite warns). Fine for now; split it into a vendor chunk or lazy-load it when the menu UI arrives.
 - [ ] **2. Performance test on the phone.**
   - A test scene with about 2,000 boxes merged per chunk, per-face shading, fog, about 10 **animated low-poly characters from a CC0 pack** wandering, raycasts every tick, basic touch move and look, and an FPS counter.
   - *Done when* it holds a steady 60 fps on the user's iPhone (or we know where the limit is and record it here). **This is the go/no-go gate for the whole approach.**
