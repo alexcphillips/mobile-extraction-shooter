@@ -1,0 +1,29 @@
+{
+  "formatVersion": 1,
+  "id": "scav-kit",
+  "weapons": [
+    {
+      "weight": 3,
+      "item": "pistol",
+      "spare": [15, 45],
+      "attachments": [{ "item": "suppressor", "chance": 0.15 }]
+    },
+    {
+      "weight": 2,
+      "item": "assault-rifle",
+      "spare": [30, 90],
+      "attachments": [
+        { "item": "red-dot", "chance": 0.25 },
+        { "item": "muzzle-brake", "chance": 0.2 }
+      ]
+    }
+  ],
+  "helmets": [
+    { "weight": 3, "item": null },
+    { "weight": 1, "item": "steel-helmet", "condition": [0.3, 0.9] }
+  ],
+  "bodyArmour": [
+    { "weight": 4, "item": null },
+    { "weight": 1, "item": "plate-carrier", "condition": [0.3, 0.9] }
+  ]
+}

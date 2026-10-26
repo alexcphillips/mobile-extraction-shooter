@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { NavGrid } from '../nav/nav-grid';
 import { TICK_RATE } from '../tick';
 import { CollisionWorld, type BoxDef, type WorldDef } from '../world/collision-world';
-import { AI, resetEnemy, spawnEnemy, type PatrolDef } from './ai';
+import type { EnemySkill } from '../content/enemies';
+import { AI, DEFAULT_SKILL, resetEnemy, spawnEnemy, type PatrolDef } from './ai';
 import { MOVEMENT } from './movement';
 import {
   createState,
@@ -12,6 +13,7 @@ import {
   type SimState,
 } from './state';
 import { step } from './step';
+import { giveWeapon } from './weapons';
 import { TEST_ITEMS } from './test-items';
 
 /** Flat ground, half metres each way from the origin. */
@@ -78,12 +80,21 @@ interface Setup {
 function setup(
   px: number,
   pz: number,
-  options: { boxes?: BoxDef[]; patrol?: PatrolDef; yaw?: number; half?: number } = {},
+  options: {
+    boxes?: BoxDef[];
+    patrol?: PatrolDef;
+    yaw?: number;
+    half?: number;
+    skill?: Partial<EnemySkill>;
+  } = {},
 ): Setup {
   const world = makeWorld(options.boxes, options.half);
   const nav = new NavGrid(world);
   const state = createState(7);
-  const enemy = spawnEnemy(state, world, 0, 0, 0, options.yaw ?? 0, { patrol: options.patrol });
+  const enemy = spawnEnemy(state, world, 0, 0, 0, options.yaw ?? 0, {
+    patrol: options.patrol,
+    skill: { ...DEFAULT_SKILL, ...options.skill },
+  });
   const player = spawnCharacter(state, world, px, pz);
   const run = (seconds: number, inp = input()): void => {
     for (let i = 0; i < seconds * TICK_RATE; i++)
@@ -105,6 +116,8 @@ function shootUp(s: Setup): void {
   };
   s.run(1 / TICK_RATE, input({ pitch: 1.4, fire: true }));
 }
+
+const DEG = Math.PI / 180;
 
 describe('enemy sight', () => {
   it('notices someone standing in front, faster when closer', () => {
@@ -302,7 +315,8 @@ describe('enemy behaviour', () => {
   });
 
   it('closes in when alert, then searches and gives up after losing you', () => {
-    const s = setup(0, -30, { half: 80 });
+    // Unarmed, and always pushes rather than holding the angle.
+    const s = setup(0, -30, { half: 80, skill: { holdChance: 0 } });
     s.run(4);
     expect(s.enemy.ai!.awareness).toBe('alert');
     expect(s.enemy.z).toBeLessThan(-5);
@@ -346,6 +360,172 @@ describe('enemy behaviour', () => {
     const a = setup(0, 20);
     shootUp(a);
     a.run(2);
+    const b = { ...a, state: JSON.parse(JSON.stringify(a.state)) as SimState };
+    const walk = input({ moveX: 1 });
+    for (let i = 0; i < TICK_RATE * 5; i++) {
+      step(a.state, a.world, TEST_ITEMS, { [a.player.id]: walk }, a.nav);
+      step(b.state, b.world, TEST_ITEMS, { [a.player.id]: walk }, a.nav);
+    }
+    expect(b.state).toEqual(a.state);
+  });
+});
+
+/** Gives the enemy the test rifle, and the player so much health that it never dies. */
+function arm(s: Setup, c: Character = s.enemy): void {
+  giveWeapon(c, TEST_ITEMS, 'rifle', 300);
+  s.player.health.hp.fill(1e6);
+}
+
+/** Whether a line from the player's standing eye to (x, y, z) is blocked. */
+function hiddenFromPlayer(s: Setup, x: number, y: number, z: number): boolean {
+  const oy = s.player.y + MOVEMENT.standHeight - MOVEMENT.eyeBelowTop;
+  const dx = x - s.player.x;
+  const dy = y - oy;
+  const dz = z - s.player.z;
+  const d = Math.hypot(dx, dy, dz);
+  return s.world.raycast(s.player.x, oy, s.player.z, dx / d, dy / d, dz / d, d) < Infinity;
+}
+
+describe('enemy combat', () => {
+  it('reacts before its first shot, then hits you', () => {
+    const s = setup(0, -15);
+    arm(s);
+    let alertAt = -1;
+    let firstShot = -1;
+    let hits = 0;
+    for (let t = 0; t < 6 * TICK_RATE; t++) {
+      s.run(1 / TICK_RATE);
+      if (alertAt < 0 && s.enemy.ai!.awareness === 'alert') alertAt = t;
+      for (const e of s.state.events) {
+        if (e.type === 'shot' && e.by === s.enemy.id && firstShot < 0) firstShot = t;
+        if (e.type === 'damage' && e.target === s.player.id) hits++;
+      }
+    }
+    expect(alertAt).toBeGreaterThanOrEqual(0);
+    expect((firstShot - alertAt) / TICK_RATE).toBeGreaterThanOrEqual(DEFAULT_SKILL.reaction - 0.05);
+    expect(hits).toBeGreaterThan(3);
+  });
+
+  it('settles its aim while watching, and less so on a target on the move', () => {
+    const still = setup(0, -20);
+    arm(still);
+    still.run(5);
+    expect(still.enemy.ai!.aimError).toBeLessThan((DEFAULT_SKILL.aimSettled + 1.2) * DEG);
+    const moving = setup(0, -20);
+    arm(moving);
+    // Sprinting across its view, round and round.
+    moving.run(5, input({ moveY: 1, yaw: Math.PI / 2, sprint: true }));
+    expect(moving.enemy.ai!.aimError).toBeGreaterThan(still.enemy.ai!.aimError);
+  });
+
+  it("doesn't shoot through another enemy", () => {
+    const s = setup(0, -20);
+    arm(s);
+    // An unarmed enemy right in the line of fire, facing away so it stays put.
+    const ally = spawnEnemy(s.state, s.world, 0, 0, -6, Math.PI);
+    let allyHit = false;
+    let fired = false;
+    for (let t = 0; t < 4 * TICK_RATE; t++) {
+      // Hold everyone still, so the ally stays in the way.
+      ally.x = 0;
+      ally.z = -6;
+      s.enemy.x = s.enemy.z = 0;
+      s.run(1 / TICK_RATE);
+      for (const e of s.state.events) {
+        if (e.type === 'damage' && e.target === ally.id) allyHit = true;
+        if (e.type === 'shot' && e.by === s.enemy.id) fired = true;
+      }
+    }
+    expect(s.enemy.ai!.awareness).toBe('alert');
+    expect(allyHit).toBe(false);
+    expect(fired).toBe(false);
+  });
+
+  it('takes cover after a while in the open, then peeks out again', () => {
+    // Crates to hide behind: low enough to shoot over standing.
+    const boxes = [aabb(3, 0, -2.5, 5, 1.2, -1.5), aabb(-5, 0, -2.5, -3, 1.2, -1.5)];
+    const s = setup(0, -20, { boxes });
+    arm(s);
+    let covered = false;
+    let peeked = false;
+    for (let t = 0; t < 20 * TICK_RATE; t++) {
+      s.run(1 / TICK_RATE);
+      const ai = s.enemy.ai!;
+      if (ai.activity === 'cover' && s.enemy.height < MOVEMENT.crouchHeight + 0.05) {
+        covered = true;
+        const eye = s.enemy.y + s.enemy.height - MOVEMENT.eyeBelowTop;
+        expect(hiddenFromPlayer(s, s.enemy.x, eye, s.enemy.z)).toBe(true);
+      }
+      if (covered && ai.activity === 'engage') peeked = true;
+    }
+    expect(covered).toBe(true);
+    expect(peeked).toBe(true);
+  });
+
+  it('ducks into cover when hit', () => {
+    const boxes = [aabb(2, 0, -2.5, 6, 1.2, -1.5)];
+    const s = setup(0, -20, { boxes });
+    arm(s);
+    s.run(1.5);
+    expect(s.enemy.ai!.activity).toBe('engage');
+    // The player shoots it in the arm.
+    s.state.events.length = 0;
+    s.enemy.ai!.hurt = true;
+    s.run(0.2);
+    expect(['takeCover', 'cover']).toContain(s.enemy.ai!.activity);
+  });
+
+  it("joins an ally's fight", () => {
+    // The ally fights the player; the other enemy can't see either, behind a wall.
+    const boxes = [aabb(-30, 0, 9, 30, 3, 9.4)];
+    const s = setup(0, -15, { boxes });
+    arm(s);
+    const other = spawnEnemy(s.state, s.world, 0, 0, 20, 0);
+    giveWeapon(other, TEST_ITEMS, 'rifle', 300);
+    s.run(4);
+    // Within 15% of the rifle's 150 m: alert to the player at once.
+    expect(other.ai!.awareness).toBe('alert');
+    expect(other.ai!.target).toBe(s.player.id);
+  });
+
+  it("holds a way up to a target it can't reach, then gives up", () => {
+    // A tall block with no way up. The player is seen at its edge, then steps back to
+    // the middle, out of sight from below.
+    const boxes = [aabb(-8, 0, -32, 8, 8, -16)];
+    const s = setup(0, -10, { boxes, half: 80 });
+    arm(s);
+    s.player.x = 0;
+    s.player.z = -16.5;
+    s.player.y = 8;
+    s.run(3);
+    expect(s.enemy.ai!.awareness).toBe('alert');
+    expect(s.enemy.ai!.reachable).toBe(false);
+    s.player.z = -24;
+    let held = false;
+    let loitered = false;
+    for (let t = 0; t < 35 * TICK_RATE; t++) {
+      s.run(1 / TICK_RATE);
+      const ai = s.enemy.ai!;
+      if (ai.activity === 'hold' && Math.hypot(s.enemy.x - ai.coverX, s.enemy.z - ai.coverZ) < 1.3)
+        held = true;
+      if (ai.activity === 'loiter') loitered = true;
+    }
+    expect(held).toBe(true);
+    expect(loitered).toBe(true);
+    // The way up it holds is by the block.
+    const ai = s.enemy.ai!;
+    expect(Math.abs(ai.wayX)).toBeLessThan(9.5);
+    expect(ai.wayZ).toBeGreaterThan(-33.5);
+    expect(ai.wayZ).toBeLessThan(-14.5);
+    s.run(AI.giveUp);
+    expect(ai.awareness).toBe('unaware');
+  });
+
+  it('carries on identically after a JSON save and restore mid-fight', () => {
+    const boxes = [aabb(3, 0, -2.5, 5, 1.2, -1.5)];
+    const a = setup(0, -20, { boxes });
+    arm(a);
+    a.run(4);
     const b = { ...a, state: JSON.parse(JSON.stringify(a.state)) as SimState };
     const walk = input({ moveX: 1 });
     for (let i = 0; i < TICK_RATE * 5; i++) {

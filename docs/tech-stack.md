@@ -57,6 +57,9 @@ docs/
   - `step(state, world, items, inputs, nav?)`: after moving, shooting and bleeding, `updateAi` runs, so it perceives this tick's positions and events (shots, hits) and acts next tick. Without a nav grid enemies stand still (tests and the perf scene).
   - Sight and footsteps are checked every 3 ticks, staggered across enemies; shot and hit events every tick. **At most 2 path searches per tick across all enemies**; the rest wait a tick. An enemy plans again when its goal moves more than 1.5 m, or after 1.5 s stuck (and gives up after 3 tries).
   - Bodies push apart after everyone moves (`separateCharacters`, every pair, then out of walls).
+  - **Combat (session 8):** `updateAi(state, world, items, nav)` (it needs the items for gun stats). Fighting is more activities in the same state machine (`engage`, `takeCover`, `cover`, `peek`, `hold`, `loiter`), with the extra state in `AiState` as plain numbers, so a save mid-fight restores exactly (tested). The enemy's skill is copied from its type into `AiState.skill` at spawn, so the state doesn't depend on content files. Its aim error wanders as a smooth function of the tick and a phase per enemy, so it needs no RNG per tick.
+  - **Cover search** samples 12 random nav nodes within 10 m and keeps the nearest one that's hidden from the threat's eye at crouched-eye height, at its centre and 0.4 m either side (up to 4 raycasts per candidate, and a candidate further than the best so far is skipped before any raycast). **At most 1 cover search per tick across all enemies**, like path searches. Before each shot an enemy casts one ray through the characters to check no ally is in the way, and one through the world to choose chest or head.
+  - Reachability is a components lookup (`nav.nearest` for both, then compare), every perception tick while alert. The way up to an unreachable target is the end of a partial path towards it.
 - **Schemas:** zod schemas for all content. Every content file has a `formatVersion`, and old versions are upgraded by migrations when loaded.
 - **Tests:** Vitest unit tests for rules (damage, armour, inventory placement, loot rolls, migrations).
 
@@ -80,6 +83,14 @@ Decided in session 4. The schemas are in `packages/shared/src/content/schema.ts`
 - **Compilation:** `compileMap(map, prefabs)` (in shared, so the server can use it for co-op) flattens everything into a `CompiledMap`: the `WorldDef` for collision, world-space shapes to draw, instanced groups, doors, markers and zones.
 - Deferred: per-cell terrain colours (roads, dirt) and scaled prefab placements. Both can be added later with a migration.
 
+
+## Enemy types and loadouts
+Session 8. The schemas are in `packages/shared/src/content/enemies.ts`, whose comments are the field-by-field reference. Loaded like items (`formatVersion` 1, strict zod objects, the id must match the file name).
+- **`content/enemies/<id>.json`:** `name`, `loadout` (the default loadout id) and `skill` (`reaction` s, `aimError` and `aimSettled` degrees, `aimSettle` s, `holdChance` 0–1).
+- **`content/loadouts/<id>.json`:** `weapons` (at least one: `weight`, `item`, `spare` as `[min, max]` rounds, optional `attachments` as `{ item, chance }` where the first to roll in a slot wins), and optional `helmets` and `bodyArmour` (`weight`, `item` or `null` for none, optional `condition` as a `[min, max]` fraction of full durability). Each part is picked by weight on its own.
+- `checkEnemies` checks the references (loadouts exist, items are the right type and slot, attachments fit their gun); the client checks each map's enemy spawns name a type and loadout that exist. Both run in the client's content test.
+- `equipLoadout(c, items, loadout, rng)` (`sim/loadout.ts`) rolls one onto a character, using the sim's RNG so a raid's rolls come from its seed.
+- Loot weighting on enemy spawns (`lootWeights`) is in the map format but unused until loot tables exist (session 11).
 
 ## Item format
 Started in session 6 with what combat needs; session 6b added attachments (format 2), and session 9 adds the rest of the item model. The schema is `packages/shared/src/content/items.ts`, whose comments are the field-by-field reference.

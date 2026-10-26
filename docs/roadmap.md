@@ -142,10 +142,23 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
     - Bundle: the main chunk is about 837 kB (up 22 kB).
     - Not done yet: enemies don't shoot or take cover (session 8). Doors don't block navigation or sight, because they don't collide yet (session 11 must cut nav links at closed doors). Enemies' shots don't alarm other enemies. A path ends at the nav cell nearest its goal, not exactly on it (within 0.35 m). The `?debug` spawn post you stand on shows as a big blue shape over the view (from session 4, not new).
     - **Tested by the user:** it's good. The sight, hearing and patrol numbers stay as they are for now.
-- [ ] **8. AI part 2: combat.**
+- [x] **8. AI part 2: combat.**
   - Engage, take cover, hold angles, search after losing you.
   - Handle an unreachable player (break line of sight, hold, give up).
-  - Bosses as enemy types. Enemy spawn points with loadout rolls and loot weighting. Bodies can be looted.
+  - Bosses as enemy types. Enemy spawn points with loadout rolls. (Loot weighting and looting bodies moved to session 11.)
+  - **Notes (2026-10-26):**
+    - Decided with the user: **looting bodies and loot weighting move to session 11**, since they need items, inventory and loot tables, and the dead now stay down for it; enemies' aim is a **settling aim error** (a reaction time, then aim that wanders less the longer it watches you, in bursts); **enemies join an ally's fight** when they hear it close by. All in design.md → AI → Session 8.
+    - Decided along the way (in design.md): bosses are better skill and gear, not more HP; re-seeing you where it last saw you is quick, somewhere else takes a fresh reaction (rewards repositioning); it holds an angle only if it can see it; it aims at your head when only that shows over cover; it never fires through an ally.
+    - Shared: `content/enemies.ts` (enemy type and loadout formats, `checkEnemies`), `sim/loadout.ts` (`equipLoadout`), and combat in `sim/ai.ts`: the `engage`, `takeCover`, `cover`, `peek`, `hold` and `loiter` activities, the aim model, bursts, sidestepping, the cover search, reachability and the way up, and allies' shots. `updateAi` and `step` pass the items through. 13 new tests (160 in all): reaction then hits, aim settling and moving targets, no shooting through an ally, cover hidden from the player and peeking out, ducking into cover when hit, joining an ally's fight, holding the way up to an unreachable player and giving up, a JSON save and restore mid-fight, and loadout rolls and reference checks.
+    - Content: `content/enemies/scav.json` and `boss-scav.json`, `content/loadouts/scav-kit.json` and `boss-kit.json`. Numbers are first guesses.
+    - Client: enemies spawn with their type's skill and a rolled loadout, and stay dead; `?respawn` brings them back (with a new roll) and `?peaceful` sends them in unarmed. The content test checks the new files and every enemy spawn's type and loadout.
+    - Checked in headless Chrome at iPhone landscape size, and by running the test map's simulation headless: standing still in the open at the centre, all three enemies engage within about 10 s; scavs at about 30 m land roughly 1 in 6 shots, the boss up close most; they take cover, peek and come back; the player died at about 22 s. 60 fps, the tick 0.1–0.35 ms through the fight, one dropped frame now and then. No console errors.
+    - Bundle: the main chunk is about 851 kB (up 14 kB).
+    - Not done yet: enemies are still capsules with no gun drawn (8b); their shots make tracers but no sound (no sounds yet). They don't use doors (session 11), throw grenades or flank on purpose. Cover is judged from your eye at the moment it looks, so a player who moves can catch it out of cover, which is intended.
+    - Fixed after trying it on the iPhone: **a double tap zoomed Safari in** with no way back (iOS ignores `user-scalable=no`), so `app/no-zoom.ts` now cancels Safari's pinch gestures and quick second taps, except while zoomed in so you can always pinch back out; and **fall damage started too low**, so it now starts at about a 4 m drop (was 2.5 m) and still breaks legs at about 7 m and kills at about 11 m (design.md → Damage).
+    - Added for a suspected aim offset that turned out fine: with `?debug`, a cyan diamond where the sim will fire and magenta diamonds where your last five shots landed, drawn over everything.
+    - Deployed to Workers so it can be tested over cellular (the phone couldn't reach the Mac's dev server).
+    - **To check on the iPhone:** how fights feel, especially the scav and boss skill numbers in `content/enemies/`.
 - [ ] **8b. Character visuals.**
   - Choose the CC0 character pack and confirm its licence; import it, recolour to flat colours, draw it unlit.
   - Named mount points for helmet, armour, backpack and weapon; equipped gear shows on the body.
@@ -164,6 +177,7 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
 - [ ] **11. Raid lifecycle and loot.**
   - Raid config format, including a timer (15 minutes by default) and a random player spawn (co-op players together).
   - Loot tables rolled at raid start.
+  - **Looting bodies** (moved from session 8): a dead enemy's gun, armour and rolled loot, through session 10's inventory screen. **Enemy loot weighting**: an enemy spawn's `lootWeights` multiply its loot table's weights (the yard boss has `military: 2`).
   - Extraction points; doors and keys. Doors are loaded and drawn since session 4 but don't collide: add them as solids that move, in the simulation state.
   - **AI opens doors** (decided 2026-10-26, see design.md → AI → Doors): open or closed in the sim with collision snapping, the swing animated only in the renderer; closed unlocked doors stay nav links that enemies open on arrival; no noise. Enemies never open locked doors, even with the key, but once a player unlocks one it stays unlocked for the raid and enemies can use it. Recompute the nav components after an unlock (about 11 ms on the Mac; see tech-stack.md → Navigation for the cheaper fallback if it hitches on the phone).
   - Results screens for death and extraction (vault and knife kept).

@@ -32,14 +32,17 @@ export {
 export { MOVEMENT, moveCharacter, separateCharacters } from './sim/movement';
 export {
   AI,
+  DEFAULT_SKILL,
   resetEnemy,
   spawnEnemy,
   updateAi,
   type AiActivity,
   type AiState,
   type Awareness,
+  type EnemySpawnOptions,
   type PatrolDef,
 } from './sim/ai';
+export { equipLoadout } from './sim/loadout';
 export { DIR_Q, DIR_R, NAV, NavGrid } from './nav/nav-grid';
 export { MAX_EXPAND, findPath, straight, type PathResult } from './nav/path';
 export {
@@ -124,6 +127,18 @@ export {
   type ItemDef,
   type WeaponDef,
 } from './content/items';
+export {
+  ENEMY_FORMAT,
+  ENEMY_FORMAT_VERSION,
+  LOADOUT_FORMAT,
+  LOADOUT_FORMAT_VERSION,
+  checkEnemies,
+  type ArmourOption,
+  type EnemyDef,
+  type EnemySkill,
+  type LoadoutDef,
+  type WeaponOption,
+} from './content/enemies';
 export {
   compileMap,
   type CompiledDoor,

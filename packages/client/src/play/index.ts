@@ -12,6 +12,7 @@ import {
   createRayHit,
   createRng,
   createState,
+  equipLoadout,
   eyeHeight,
   giveWeapon,
   nextInt,
@@ -34,7 +35,7 @@ import {
 } from '@mes/shared';
 import * as THREE from 'three';
 import { startLoop } from '../app/loop';
-import { loadItems, loadMap } from '../content';
+import { checkEnemySpawns, loadEnemies, loadItems, loadMap } from '../content';
 import { Stats } from '../debug/stats';
 import type { Hud } from '../hud/hud';
 import type { OpticOverlay } from '../hud/optic';
@@ -71,6 +72,10 @@ export interface PlayOptions {
   debug: boolean;
   /** Show the navigation grid. */
   nav: boolean;
+  /** Bring dead enemies back at their spawn, with a new loadout, after a few seconds. */
+  respawn: boolean;
+  /** Enemies come unarmed: they notice you and close in, but can't shoot. */
+  peaceful: boolean;
   pixelRatio: number;
   /** Shown in the stats header, e.g. "standalone". */
   note: string;
@@ -85,20 +90,22 @@ const RETICLE_IN = 0.95;
 const SCOPE_IN = 0.9;
 const DEG = Math.PI / 180;
 const SPARE_ROUNDS = 120;
-/** Dead enemies come back at their spawn after this long, until raids end (session 11). */
+/** With ?respawn, dead enemies come back at their spawn after this long. */
 const ENEMY_RESPAWN_MS = 6000;
 /** How much aim assist slows looking while the crosshair is on an enemy. */
 const ASSIST = { off: 1, low: 0.8, medium: 0.6, high: 0.45 } as const;
 
 /**
  * A map from content/ with the shared simulation: walking, shooting and taking damage.
- * Every enemy spawn has an enemy that guards it or walks its patrol, and notices you, but
- * doesn't shoot yet (session 8); it comes back after dying. A stand-in for the raid until
- * sessions 8–11 add combat, inventory and the raid lifecycle.
+ * Every enemy spawn has an enemy of its type with a rolled loadout, which guards its spawn
+ * or walks its patrol, and fights you once it notices you. The dead stay down. A stand-in
+ * for the raid until sessions 9–11 add the inventory and the raid lifecycle.
  */
 export function startPlay(el: PlayElements, options: PlayOptions): void {
   const map = loadMap(options.map);
   const items = loadItems();
+  const { types, loadouts } = loadEnemies();
+  checkEnemySpawns(map);
   const world = new CollisionWorld(map.world);
   const navStart = performance.now();
   const nav = new NavGrid(world);
@@ -143,20 +150,26 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
   wearArmour(player, items, 'plate-carrier');
   controls.yaw = spawn.yaw;
 
-  // Enemies. Spawns with a loadout (the boss) wear armour, to test it.
+  // Enemies: their type's skill, and its loadout (or the spawn's) rolled.
   const patrols = new Map(map.patrols.map((p) => [p.id, p]));
-  const enemies: { c: Character; body: CapsuleBody; diedAt: number }[] = [];
+  const enemies: { c: Character; body: CapsuleBody; diedAt: number; arm: () => void }[] = [];
   for (const m of map.markers) {
     if (m.type !== 'enemySpawn') continue;
+    const type = types.get(m.enemy)!;
+    const loadout = loadouts.get(m.loadout ?? type.loadout)!;
     const patrol = m.patrol === undefined ? undefined : patrols.get(m.patrol);
-    const c = spawnEnemy(sim, world, m.x, m.y, m.z, m.yaw, { patrol, radius: m.radius });
-    if (m.loadout) {
-      wearArmour(c, items, 'steel-helmet');
-      wearArmour(c, items, 'plate-carrier');
-    }
+    const c = spawnEnemy(sim, world, m.x, m.y, m.z, m.yaw, {
+      patrol,
+      radius: m.radius,
+      skill: type.skill,
+    });
+    const arm = (): void => {
+      if (!options.peaceful) equipLoadout(c, items, loadout, sim.rng);
+    };
+    arm();
     const body = new CapsuleBody();
     scene.add(body.root);
-    enemies.push({ c, body, diedAt: 0 });
+    enemies.push({ c, body, diedAt: 0, arm });
   }
   const enemyChars = enemies.map((e) => e.c);
 
@@ -246,6 +259,30 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
   const debugRng = createRng(1);
   const muzzle = new THREE.Vector3();
 
+  // Debug: where the sim will fire (cyan: its eye, look and recoil, without spread, to the
+  // first surface) and where the player's last shots landed (magenta). Drawn over
+  // everything, so on the phone you can see whether they line up with the crosshair.
+  function debugMarker(colour: number): THREE.Mesh {
+    const m = new THREE.Mesh(
+      new THREE.OctahedronGeometry(1),
+      new THREE.MeshBasicMaterial({ color: colour, depthTest: false, fog: false }),
+    );
+    m.renderOrder = 10;
+    m.visible = false;
+    scene.add(m);
+    return m;
+  }
+  const aimMarker = options.debug ? debugMarker(0x00e5ff) : null;
+  const shotMarkers = options.debug ? Array.from({ length: 5 }, () => debugMarker(0xff00ff)) : [];
+  let nextShotMarker = 0;
+  const markerHit = createRayHit();
+  /** Keeps a marker about the same size on screen at any distance. */
+  function placeMarker(m: THREE.Mesh, x: number, y: number, z: number, size: number): void {
+    m.position.set(x, y, z);
+    m.scale.setScalar(Math.max(0.01, camera.position.distanceTo(m.position) * size));
+    m.visible = true;
+  }
+
   function tick(): void {
     const t0 = performance.now();
     const now = performance.now();
@@ -309,6 +346,10 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
           effects.tracer(now, e.fromX, e.fromY, e.fromZ, e.toX, e.toY, e.toZ);
         }
         if (e.hit !== 'none') effects.impact(now, e.toX, e.toY, e.toZ, e.hit === 'character');
+        if (e.by === player.id && e.hit !== 'none' && shotMarkers.length) {
+          const m = shotMarkers[nextShotMarker++ % shotMarkers.length]!;
+          placeMarker(m, e.toX, e.toY, e.toZ, 0.006);
+        }
       } else if (e.type === 'damage') {
         if (e.by === player.id && e.target !== player.id) el.vitals.hitMarker(now, false);
         if (e.target === player.id && e.amount > 0) el.vitals.hurtFlash();
@@ -320,9 +361,10 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
     for (const e of enemies) {
       if (!e.c.health.dead) e.diedAt = 0;
       else if (!e.diedAt) e.diedAt = now;
-      else if (now - e.diedAt > ENEMY_RESPAWN_MS) {
+      else if (options.respawn && now - e.diedAt > ENEMY_RESPAWN_MS) {
         restoreHealth(e.c, items);
         resetEnemy(e.c, world);
+        e.arm();
       }
     }
     el.vitals.update(player, items, now);
@@ -392,6 +434,17 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
     el.optic.visible = alive && aim >= (zoom > 1 ? SCOPE_IN : RETICLE_IN);
     for (const e of enemies) e.body.update(e.c, items);
     aiDebug?.update(enemyChars);
+    if (aimMarker) {
+      const yaw = player.yaw + player.recoilYaw;
+      const pitch = player.pitch + player.recoilPitch;
+      const cp = Math.cos(pitch);
+      const dx = -Math.sin(yaw) * cp;
+      const dy = Math.sin(pitch);
+      const dz = -Math.cos(yaw) * cp;
+      const ey = eyeHeight(player);
+      const d = Math.min(200, world.raycast(player.x, ey, player.z, dx, dy, dz, 200, markerHit));
+      placeMarker(aimMarker, player.x + dx * d, ey + dy * d, player.z + dz * d, 0.01);
+    }
     viewmodel.visible = alive && !!w && !scoped;
     if (w) viewmodel.setAttachments(w, items);
     viewmodel.update(camera, time, dtMs, aim, 1 + brokenArms(player.health) * 2);

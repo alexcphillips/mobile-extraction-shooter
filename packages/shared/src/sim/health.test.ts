@@ -163,17 +163,17 @@ describe('fall damage', () => {
     for (let i = 0; i < TICK_RATE; i++) step(state, world, items, { [c.id]: jump });
     expect(totalHp(c.health)).toBe(TOTAL_HP);
 
-    // Off the top of an 8 m tower: about 18 m/s, so about 95 damage to each leg.
+    // Off the top of an 8 m tower: about 18 m/s, so about 80 damage to each leg.
     const top = spawnCharacter(state, world, 0, 0);
     expect(top.y).toBe(8);
     top.x = 3;
     for (let i = 0; i < TICK_RATE * 2; i++) step(state, world, items, {});
     expect(top.y).toBe(0);
     expect(top.landingSpeed).toBe(0);
-    // Both legs broken, and about 30 more from each spilled to the chest.
+    // Both legs broken, and about 15 more from each spilled to the chest.
     expect(isBroken(top.health, LEFT_LEG) && isBroken(top.health, RIGHT_LEG)).toBe(true);
     expect(top.health.dead).toBe(false);
-    expect(top.health.hp[CHEST]).toBeGreaterThan(30);
-    expect(top.health.hp[CHEST]).toBeLessThan(55);
+    expect(top.health.hp[CHEST]).toBeGreaterThan(50);
+    expect(top.health.hp[CHEST]).toBeLessThan(75);
   });
 });

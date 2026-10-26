@@ -4,7 +4,7 @@ body {
   height: 100%;
   overflow: hidden;
   background: #9fb3c8;
-  /* Stop Safari's pinch and double-tap zoom, text selection and callouts. */
+  /* Stop Safari's pinch and double-tap zoom (with app/no-zoom.ts), text selection and callouts. */
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;

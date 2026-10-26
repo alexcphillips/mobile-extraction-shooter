@@ -1,6 +1,6 @@
 import { CollisionWorld } from '@mes/shared';
 import { describe, expect, it } from 'vitest';
-import { loadItems, loadMap, mapIds } from './content';
+import { checkEnemySpawns, loadEnemies, loadItems, loadMap, mapIds } from './content';
 
 // Validates every file in content/ the way the game loads it.
 describe('content', () => {
@@ -10,6 +10,11 @@ describe('content', () => {
     expect(map.markers.some((m) => m.type === 'playerSpawn')).toBe(true);
     expect(map.markers.some((m) => m.type === 'extraction')).toBe(true);
     expect(new Set(map.markers.map((m) => m.id)).size).toBe(map.markers.length);
+    expect(() => checkEnemySpawns(map)).not.toThrow();
+  });
+
+  it('enemy types and loadouts load and their references are sound', () => {
+    expect(loadEnemies().types.size).toBeGreaterThan(0);
   });
 
   it('items load and their references are sound', () => {

@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "id": "boss-kit",
+  "weapons": [
+    {
+      "weight": 1,
+      "item": "assault-rifle",
+      "spare": [90, 150],
+      "attachments": [
+        { "item": "scope-4x", "chance": 0.3 },
+        { "item": "red-dot" },
+        { "item": "suppressor", "chance": 0.5 },
+        { "item": "mag-556-45", "chance": 0.5 }
+      ]
+    }
+  ],
+  "helmets": [{ "weight": 1, "item": "steel-helmet" }],
+  "bodyArmour": [{ "weight": 1, "item": "plate-carrier" }]
+}

@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "id": "scav",
+  "name": "Scav",
+  "loadout": "scav-kit",
+  "skill": {
+    "reaction": 0.7,
+    "aimError": 7,
+    "aimSettled": 0.7,
+    "aimSettle": 1.6,
+    "holdChance": 0.4
+  }
+}

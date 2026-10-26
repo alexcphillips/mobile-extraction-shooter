@@ -1,5 +1,6 @@
 import { PROTOCOL_VERSION, type HelloResponse } from '@mes/shared';
 import { unlockAudioOnTap } from './app/audio';
+import { preventZoom } from './app/no-zoom';
 import { watchPauseTriggers } from './app/pause';
 import { Hud } from './hud/hud';
 import { OpticOverlay } from './hud/optic';
@@ -35,6 +36,7 @@ const message = (err: unknown): string => (err instanceof Error ? err.message : 
 
 watchPauseTriggers();
 unlockAudioOnTap();
+preventZoom();
 
 const hud = new Hud(
   byId('controls'),
@@ -79,7 +81,8 @@ if (location.pathname === '/perf') {
   // ?map=<id> picks a map from content/maps, ?spawn=<id> a player spawn in it, ?weapon=<id>
   // the gun, ?attach=<id>,<id> its attachments, ?nav shows the navigation grid, and ?debug
   // shows markers, zones, patrols and what enemies think, and turns the quick slots into
-  // hurt, heal, next optic and next muzzle.
+  // hurt, heal, next optic and next muzzle. ?respawn brings dead enemies back, and
+  // ?peaceful sends them in unarmed.
   const q = new URLSearchParams(location.search);
   byId('try-again').addEventListener('click', () => location.reload());
   try {
@@ -104,6 +107,8 @@ if (location.pathname === '/perf') {
         attachments: q.get('attach')?.split(',').filter(Boolean) ?? [],
         debug: q.has('debug'),
         nav: q.has('nav'),
+        respawn: q.has('respawn'),
+        peaceful: q.has('peaceful'),
         pixelRatio: Math.min(window.devicePixelRatio, 2),
         note: standalone ? 'standalone' : 'browser',
       },

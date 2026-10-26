@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "id": "boss-scav",
+  "name": "Yard boss",
+  "loadout": "boss-kit",
+  "skill": {
+    "reaction": 0.4,
+    "aimError": 4,
+    "aimSettled": 0.35,
+    "aimSettle": 0.9,
+    "holdChance": 0.7
+  }
+}

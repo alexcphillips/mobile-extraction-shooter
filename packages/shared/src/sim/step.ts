@@ -34,6 +34,6 @@ export function step(
     if (!e.health.dead) updateWeapon(state, e, inputs[e.id] ?? e.ai?.input, world, items);
   }
   for (const e of state.entities) bleed(state, e);
-  if (nav) updateAi(state, world, nav);
+  if (nav) updateAi(state, world, items, nav);
   state.tick++;
 }

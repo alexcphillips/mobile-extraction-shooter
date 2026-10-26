@@ -1,14 +1,19 @@
 import {
   ContentError,
+  ENEMY_FORMAT,
   ITEM_FORMAT,
+  LOADOUT_FORMAT,
   MAP_FORMAT,
   PREFAB_FORMAT,
+  checkEnemies,
   checkItems,
   compileMap,
   loadContent,
   type CompiledMap,
   type ContentFormat,
+  type EnemyDef,
   type ItemDb,
+  type LoadoutDef,
   type MapFile,
   type PrefabFile,
 } from '@mes/shared';
@@ -24,6 +29,15 @@ const prefabFiles = import.meta.glob<unknown>('../../../content/prefabs/*.json',
 });
 
 const itemFiles = import.meta.glob<unknown>('../../../content/items/*.json', {
+  eager: true,
+  import: 'default',
+});
+
+const enemyFiles = import.meta.glob<unknown>('../../../content/enemies/*.json', {
+  eager: true,
+  import: 'default',
+});
+const loadoutFiles = import.meta.glob<unknown>('../../../content/loadouts/*.json', {
   eager: true,
   import: 'default',
 });
@@ -47,6 +61,7 @@ function loadAll<T extends { id: string }>(
 let prefabs: Map<string, PrefabFile> | undefined;
 let items: ItemDb | undefined;
 let maps: Map<string, MapFile> | undefined;
+let enemies: Enemies | undefined;
 
 export function mapIds(): string[] {
   maps ??= loadAll(MAP_FORMAT, mapFiles);
@@ -69,4 +84,31 @@ export function loadItems(): ItemDb {
     items = all;
   }
   return items;
+}
+
+export interface Enemies {
+  types: ReadonlyMap<string, EnemyDef>;
+  loadouts: ReadonlyMap<string, LoadoutDef>;
+}
+
+/** Every enemy type and loadout, with their references checked against the items. */
+export function loadEnemies(): Enemies {
+  if (!enemies) {
+    const types = loadAll(ENEMY_FORMAT, enemyFiles);
+    const loadouts = loadAll(LOADOUT_FORMAT, loadoutFiles);
+    checkEnemies(types, loadouts, loadItems());
+    enemies = { types, loadouts };
+  }
+  return enemies;
+}
+
+/** Checks that a map's enemy spawns name enemy types and loadouts that exist. */
+export function checkEnemySpawns(map: CompiledMap): void {
+  const { types, loadouts } = loadEnemies();
+  for (const m of map.markers) {
+    if (m.type !== 'enemySpawn') continue;
+    if (!types.has(m.enemy)) throw new Error(`enemy spawn ${m.id}: no enemy type "${m.enemy}"`);
+    if (m.loadout !== undefined && !loadouts.has(m.loadout))
+      throw new Error(`enemy spawn ${m.id}: no loadout "${m.loadout}"`);
+  }
 }

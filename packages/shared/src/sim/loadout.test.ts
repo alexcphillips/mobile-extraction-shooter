@@ -1,0 +1,145 @@
+import { describe, expect, it } from 'vitest';
+import {
+  ENEMY_FORMAT,
+  LOADOUT_FORMAT,
+  LOADOUT_FORMAT_VERSION,
+  checkEnemies,
+  type EnemyDef,
+  type LoadoutDef,
+} from '../content/enemies';
+import { loadContent } from '../content/format';
+import { createRng } from '../rng';
+import { CollisionWorld } from '../world/collision-world';
+import { equipLoadout } from './loadout';
+import { createState, spawnCharacter, type Character } from './state';
+import { TEST_ITEMS } from './test-items';
+
+function loadout(parts: Partial<LoadoutDef> = {}): LoadoutDef {
+  return {
+    formatVersion: LOADOUT_FORMAT_VERSION,
+    id: 'kit',
+    weapons: [{ weight: 1, item: 'rifle', spare: [10, 20] }],
+    ...parts,
+  };
+}
+
+function character(): Character {
+  const world = new CollisionWorld({
+    terrain: { minX: -4, minZ: -4, cellSize: 4, cols: 2, rows: 2, heights: Array(9).fill(0) },
+    boxes: [],
+    ramps: [],
+    ladders: [],
+  });
+  return spawnCharacter(createState(1), world, 0, 0);
+}
+
+describe('loadouts', () => {
+  it('picks each part by weight', () => {
+    const kit = loadout({
+      weapons: [
+        { weight: 3, item: 'rifle', spare: [0, 0] },
+        { weight: 1, item: 'pistol', spare: [0, 0] },
+      ],
+      helmets: [
+        { weight: 1, item: null },
+        { weight: 1, item: 'helmet' },
+      ],
+    });
+    const rng = createRng(3);
+    const c = character();
+    let rifles = 0;
+    let helmets = 0;
+    for (let i = 0; i < 2000; i++) {
+      equipLoadout(c, TEST_ITEMS, kit, rng);
+      if (c.weapon!.item === 'rifle') rifles++;
+      if (c.helmet) helmets++;
+      expect(c.bodyArmour).toBeNull();
+    }
+    expect(rifles / 2000).toBeCloseTo(0.75, 1);
+    expect(helmets / 2000).toBeCloseTo(0.5, 1);
+  });
+
+  it('rolls spare rounds, attachments by chance, and armour condition', () => {
+    const kit = loadout({
+      weapons: [
+        {
+          weight: 1,
+          item: 'rifle',
+          spare: [10, 20],
+          attachments: [
+            { item: 'big-mag' },
+            { item: 'scope', chance: 0 },
+            { item: 'suppressor', chance: 0.5 },
+          ],
+        },
+      ],
+      bodyArmour: [{ weight: 1, item: 'vest', condition: [0.5, 0.6] }],
+    });
+    const rng = createRng(5);
+    const c = character();
+    let suppressed = 0;
+    for (let i = 0; i < 400; i++) {
+      equipLoadout(c, TEST_ITEMS, kit, rng);
+      const w = c.weapon!;
+      expect(w.reserve).toBeGreaterThanOrEqual(10);
+      expect(w.reserve).toBeLessThanOrEqual(20);
+      expect(w.attachments.magazine).toBe('big-mag');
+      expect(w.attachments.optic).toBeNull();
+      // A full magazine, with the big mag's extra rounds.
+      expect(w.mag).toBeGreaterThan(30);
+      if (w.attachments.muzzle) suppressed++;
+      const full = 50;
+      expect(c.bodyArmour!.durability).toBeGreaterThanOrEqual(full * 0.5 - 1e-9);
+      expect(c.bodyArmour!.durability).toBeLessThanOrEqual(full * 0.6 + 1e-9);
+    }
+    expect(suppressed / 400).toBeCloseTo(0.5, 1);
+  });
+
+  it('checks references between enemies, loadouts and items', () => {
+    const enemy = (kit: string): EnemyDef =>
+      loadContent(
+        ENEMY_FORMAT,
+        {
+          formatVersion: 1,
+          id: 'grunt',
+          name: 'Grunt',
+          loadout: kit,
+          skill: { reaction: 1, aimError: 5, aimSettled: 1, aimSettle: 1, holdChance: 0.5 },
+        },
+        'grunt',
+      );
+    const ok = new Map([['kit', loadout()]]);
+    expect(() => checkEnemies(new Map([['grunt', enemy('kit')]]), ok, TEST_ITEMS)).not.toThrow();
+    expect(() => checkEnemies(new Map([['grunt', enemy('nope')]]), ok, TEST_ITEMS)).toThrow(
+      /no loadout "nope"/,
+    );
+    const bad = (parts: Partial<LoadoutDef>): (() => void) => {
+      return () => checkEnemies(new Map(), new Map([['kit', loadout(parts)]]), TEST_ITEMS);
+    };
+    expect(bad({ weapons: [{ weight: 1, item: 'helmet', spare: [0, 0] }] })).toThrow(/not weapon/);
+    expect(
+      bad({
+        weapons: [{ weight: 1, item: 'pistol', spare: [0, 0], attachments: [{ item: 'big-mag' }] }],
+      }),
+    ).toThrow(/doesn't fit/);
+    expect(bad({ helmets: [{ weight: 1, item: 'vest' }] })).toThrow(/not helmet armour/);
+  });
+
+  it('rejects a backwards range or a condition above 1', () => {
+    const raw = (parts: Record<string, unknown>) => ({ ...loadout(), ...parts });
+    expect(() =>
+      loadContent(
+        LOADOUT_FORMAT,
+        raw({ weapons: [{ weight: 1, item: 'rifle', spare: [20, 10] }] }),
+        'kit',
+      ),
+    ).toThrow(/min must not be above max/);
+    expect(() =>
+      loadContent(
+        LOADOUT_FORMAT,
+        raw({ helmets: [{ weight: 1, item: 'helmet', condition: [0.5, 1.5] }] }),
+        'kit',
+      ),
+    ).toThrow();
+  });
+});

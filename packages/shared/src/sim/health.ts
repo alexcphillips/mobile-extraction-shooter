@@ -29,8 +29,8 @@ export const HEALTH = {
   brokenArmSpread: 1.6,
   brokenArmAimTime: 1.5,
   /** Landing faster than this hurts the legs, by damagePerSpeed per m/s over it, each. */
-  safeLandingSpeed: 10,
-  fallDamagePerSpeed: 12,
+  safeLandingSpeed: 12.5,
+  fallDamagePerSpeed: 15,
 } as const;
 
 /** A character's limbs. Head or chest at 0 HP is death; any other zone at 0 is broken. */
