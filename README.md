@@ -32,16 +32,25 @@ The port is fixed at 5180 with `strictPort`, so if something else is using it, V
 
 **Over HTTPS (Add to Home Screen, and browser features that need a secure context):** use the deployed URL, or tunnel the dev server with `cloudflared tunnel --url http://localhost:5180`.
 
+## Playing a map (session 4)
+The client opens into a map from `content/maps` (`test-map` by default) and lets you walk around it with the shared simulation. There's no HUD, combat or raid yet.
+
+**URL parameters:** `?map=<id>` picks the map, `?spawn=<id>` a player spawn in it (otherwise one is picked at random; the test map has `spawn-centre` and `spawn-north`), and `?debug` shows markers as coloured posts (blue player spawn, red enemy spawn, yellow loot container, orange loot spawn, green extraction with its radius, purple quest marker) and named zones as white outlines. The stats overlay is the same as the perf test's.
+
+**The test map** (`content/maps/test-map.json`, 192 m square): straight ahead of `spawn-centre` is the movement playground from session 3 (a 3 m platform with stairs and a ladder, a 0.4 m step, a 1 m box to mantle, a 1.4 m wall, a beam to crouch under). To the west are two houses and to the east a third, all one prefab in different colours. To the south-east are a shipping container with a ramp, a shed with a locked door, and crates. To the north-east is a pond with a dock. Trees are on the hills around the edge.
+
+**Content files** are JSON, validated on load and in `npm test` (every map is loaded and compiled). The format is described in [docs/tech-stack.md](docs/tech-stack.md#map-and-prefab-format) and in the comments in `packages/shared/src/content/schema.ts`. Saving a file reloads the page in dev.
+
 ## Perf test (session 2)
-The client currently opens straight into the performance test scene: about 2,000 boxes merged per 32 m chunk, fog, 10 animated characters wandering, raycasts every tick, and a stats overlay.
+Open `/perf` (for example `http://192.168.1.74:5180/perf`): about 2,000 boxes merged per 32 m chunk, fog, 10 animated characters wandering, raycasts every tick, and a stats overlay.
 
-**Controls:** drag on the left half for the move stick (push to the rim to sprint), drag on the right half to look, and use the **jump** (hold) and **crouch** (toggle) buttons. On desktop: WASD, Shift to sprint, Space to jump, C to crouch (held), and mouse drag. The dot in the middle turns red when the aim ray hits something.
+**Controls:** drag on the left half for the move stick (push to the rim to sprint), drag on the right half to look, and use the **jump** (hold) and **crouch** (toggle) buttons. On desktop: WASD, Shift to sprint, Space to jump, C to crouch (held), and mouse drag. The dot in the middle turns red when the aim ray hits something. The same controls work on maps.
 
-**Movement playground** (since session 3; the player moves with the shared simulation): straight ahead of the spawn is a 3 m platform with stairs at the front and a ladder on its right side. On the left are a 0.4 m step to walk onto, a 1 m box to jump and mantle onto, and a 1.4 m wall that's too high. On the right is a beam to crouch under. The last stats line shows the movement mode, stance, height and speed.
+The movement playground that was at the perf scene's spawn in session 3 is now in the test map.
 
 **Stats overlay:** fps; average and worst frame time over the last 0.5 s; `janks`, frames over 20 ms (each one missed a 60 Hz vsync), as a total since the first 3 s and as a count for the last full 10 s; CPU time per frame and per simulation tick; draw calls, triangles and the canvas resolution.
 
-**Preset buttons** (top right) reload the page with common stress settings: no characters (to isolate their cost), 30 characters, 6,000 boxes, pixel ratio 3, or all three. They're just shortcuts for these **URL parameters**, which find the limits without rebuilding (for example `/?boxes=4000&chars=30&dpr=3`):
+**Preset buttons** (top right) reload the page with common stress settings: no characters (to isolate their cost), 30 characters, 6,000 boxes, pixel ratio 3, or all three. They're just shortcuts for these **URL parameters**, which find the limits without rebuilding (for example `/perf?boxes=4000&chars=30&dpr=3`):
 | Param | Default | What it changes |
 |---|---|---|
 | `boxes` | 2000 | Boxes in the world. |

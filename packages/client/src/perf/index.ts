@@ -14,10 +14,11 @@ import {
 } from '@mes/shared';
 import * as THREE from 'three';
 import { cloneCharacter, loadCharacter } from './characters';
-import { Controls } from './controls';
+import { Controls } from '../input/controls';
 import type { PerfParams } from './params';
-import { Stats } from './stats';
-import { buildWorld, makeBoxes, makePlayground, makeTerrain } from './world';
+import { Stats } from '../debug/stats';
+import { buildChunks } from '../render/map';
+import { GRASS, boxShapes, makeBoxes, makeTerrain } from './world';
 
 const SKY = 0x9fb3c8;
 const EYE = 1.6;
@@ -51,9 +52,8 @@ interface Wanderer {
 
 /**
  * Session 2's go/no-go scene: merged chunks, fog, animated characters wandering,
- * raycasts every tick, touch move and look, and an FPS counter. Since session 3 the
- * player moves with the shared simulation, and a playground at the spawn tests steps,
- * jumping, crouching, stairs and a ladder.
+ * raycasts every tick, touch move and look, and an FPS counter. The player moves with the
+ * shared simulation; the movement playground from session 3 is now in the test map.
  */
 export async function startPerfTest(el: PerfElements, params: PerfParams): Promise<void> {
   const renderer = new THREE.WebGLRenderer({
@@ -72,15 +72,9 @@ export async function startPerfTest(el: PerfElements, params: PerfParams): Promi
 
   const terrainDef = makeTerrain();
   const boxes = makeBoxes(params.boxes, 1, new HeightGrid(terrainDef));
-  const playground = makePlayground();
-  const world = new CollisionWorld({
-    terrain: terrainDef,
-    boxes: [...boxes, ...playground.boxes],
-    ramps: playground.ramps,
-    ladders: playground.ladders,
-  });
+  const world = new CollisionWorld({ terrain: terrainDef, boxes, ramps: [], ladders: [] });
   const terrain = world.terrain;
-  scene.add(buildWorld(terrain, [...boxes, ...playground.boxes, ...playground.decor], 1));
+  scene.add(buildChunks(terrainDef, GRASS, boxShapes(boxes, 1)));
 
   const r = createRng(2);
   const rng = (): number => nextFloat(r);

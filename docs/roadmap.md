@@ -66,10 +66,20 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
     - **Checked on the iPhone:** the tick stays at 0.4–0.67 ms with terrain raycasts added, and the user is happy with how jumping and ladders feel.
     - Fixed after the phone test: sprinting now turns the crouch toggle off. Before, you went back to crouching when you stopped sprinting. The sim already stood you up to sprint; the toggle lives in the client.
     - Deferred: characters don't collide with each other yet (session 7/8, when AI moves). A spatial hash for moving things, needed for hit-zone capsules, comes in session 6. Ladders are found by a linear scan, which is fine for dozens. Fall damage moved to session 6.
-- [ ] **4. Map format and loader.**
+- [x] **4. Map format and loader.**
   - zod schema with `formatVersion` and migrations: terrain height grid, water level, primitives, prefabs by reference, markers, named zones, doors.
   - Loader: merged chunks, instancing, per-face shading, fog.
   - A hand-written test map in `content/maps/`.
+  - **Notes (2026-10-26):**
+    - Built in `packages/shared/src/content/`: `format.ts` (`loadContent`: version check, migrations, zod validation), `schema.ts` (map and prefab schemas) and `compile.ts` (`compileMap` flattens a map and its prefabs into the `WorldDef`, world-space shapes, instanced groups, doors, markers and zones). The format is written up in tech-stack.md → Map and prefab format. 18 new unit tests.
+    - Client: `render/geometry.ts` (flat-shaded triangles for boxes, cylinders and cones, wedges and terrain), `render/map.ts` (chunks, instancing, doors, water), `render/debug.ts` (markers and zones) and `content.ts`, which bundles `content/` and loads it. `content.test.ts` loads and compiles every map in `npm test`, so a broken content file fails the check.
+    - **The client now opens into the test map** (`play/`) with the shared movement; the perf scene moved to `/perf`. `?map`, `?spawn` and `?debug` are in the README. The perf scene now builds its chunks with the same code, and its movement playground moved into the test map. `Controls` and `Stats` moved to `input/` and `debug/`.
+    - Decided: angles in degrees in files; `pos` is the middle of a shape's base; only boxes and cylinders tilt, about their centre, colliding as their upright bounding box; colour slots for recolouring; path ids for markers and doors; strict objects. **Instancing is opt-in per prefab** rather than automatic, because merging into chunks costs no extra draw calls.
+    - Test content: `content/maps/test-map.json` (192 m, 4 m cells) and four prefabs (`small-house`, `car`, `crate` and `pine-tree`; the last two instanced). The terrain heights and the 70 trees on the hills came from a one-off script, since tree heights have to match the terrain. Everything else is written by hand. Until the editor's snap-down exists (session 15), anything placed on a slope needs its y worked out.
+    - Checked in headless Chrome on the Mac: the test map draws in about 20 draw calls and 6–8k triangles in view; houses, recolours, doors, the pond, the tipped-over log and the debug markers all look right, and walking up the stairs reaches y = 3. **Checked on the iPhone:** a steady 60 fps on the test map, about 0.5 ms CPU per frame, and the tick barely measurable.
+    - A slow first load after adding zod was a stale Vite dependency cache (requests failing with 504 "Outdated Optimize Dep", so the page sat on "starting…"). Reloading fixed it. After adding a dependency, restart `npm run dev` if the page hangs.
+    - **Doors don't collide yet.** They're drawn, and their key and open state are loaded, but you walk through them. Doors that move are simulation state, not part of the static `CollisionWorld`; session 11 adds them.
+    - Deferred: per-cell terrain colours (roads), scaled prefab placements, and checking enemy, loot table and key ids against their own files (once those exist). The bundle grew from about 600 to 780 kB (zod and the content); split it when the menu UI arrives (see session 1). If zod's size matters, `zod/mini` is smaller.
 - [ ] **5. Touch controls and HUD shell.**
   - Virtual stick and look, buttons for fire, aim, reload, interact and quick slots.
   - **Sprint lock:** drag the move stick up past the top of its area to lock sprinting for long runs, so the thumb can relax. Decide what unlocks it (for example, pulling the stick back or tapping it).
@@ -108,7 +118,7 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
 - [ ] **11. Raid lifecycle and loot.**
   - Raid config format, including a timer (15 minutes by default) and a random player spawn (co-op players together).
   - Loot tables rolled at raid start.
-  - Extraction points; doors and keys.
+  - Extraction points; doors and keys. Doors are loaded and drawn since session 4 but don't collide: add them as solids that move, in the simulation state.
   - Results screens for death and extraction (vault and knife kept).
   - SVG map tab with your position and named zones.
   - *Done when* one complete solo raid on the test map works on the phone with nothing but local state.

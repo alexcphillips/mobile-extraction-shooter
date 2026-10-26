@@ -8,6 +8,10 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    // Lets `const { a, ...rest } = obj` drop a field.
+    rules: { '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }] },
+  },
+  {
     files: ['packages/client/**/*.ts'],
     languageOptions: { globals: globals.browser },
   },

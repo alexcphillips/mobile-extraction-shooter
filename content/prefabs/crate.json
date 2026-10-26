@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "id": "crate",
+  "name": "Wooden crate",
+  "instanced": true,
+  "colours": { "wood": "#a0703c", "band": "#6e4b2a" },
+  "nodes": [
+    { "type": "box", "pos": [0, 0, 0], "size": [1, 1, 1], "colour": "wood" },
+    {
+      "type": "box",
+      "pos": [0, 0.45, 0],
+      "size": [1.04, 0.1, 1.04],
+      "colour": "band",
+      "collide": false
+    }
+  ]
+}

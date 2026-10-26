@@ -1,0 +1,209 @@
+import { describe, expect, it } from 'vitest';
+import { spawnCharacter, createState } from '../sim/state';
+import { CollisionWorld } from '../world/collision-world';
+import { compileMap, type PrefabLookup } from './compile';
+import type { MapFile, MapNode, PrefabFile } from './schema';
+
+function map(nodes: MapNode[], colours?: Record<string, string>): MapFile {
+  const row = Array<number>(11).fill(0);
+  return {
+    formatVersion: 1,
+    id: 'test',
+    name: 'Test',
+    environment: { sky: '#9fb3c8', fogNear: 40, fogFar: 120 },
+    terrain: {
+      origin: [-20, -20],
+      cellSize: 4,
+      heights: Array.from({ length: 11 }, () => row),
+      colour: '#6b8f4e',
+    },
+    ...(colours && { colours }),
+    nodes,
+    zones: [],
+  };
+}
+
+function prefabs(...list: PrefabFile[]): PrefabLookup {
+  return new Map(list.map((p) => [p.id, p]));
+}
+
+const crate: PrefabFile = {
+  formatVersion: 1,
+  id: 'crate',
+  colours: { wood: '#8a5a33' },
+  nodes: [{ type: 'box', pos: [1, 0, 0], size: [1, 1, 1], colour: 'wood' }],
+};
+
+describe('compileMap', () => {
+  it('builds the terrain grid and centres boxes above their base', () => {
+    const m = compileMap(
+      map([{ type: 'box', pos: [1, 2, 3], size: [2, 4, 6], yaw: 90, colour: '#ff0000' }]),
+      prefabs(),
+    );
+    expect(m.world.terrain).toMatchObject({ minX: -20, minZ: -20, cols: 10, rows: 10 });
+    expect(m.world.terrain.heights).toHaveLength(121);
+    expect(m.world.boxes).toHaveLength(1);
+    const b = m.world.boxes[0]!;
+    expect([b.x, b.y, b.z, b.hx, b.hy, b.hz]).toEqual([1, 4, 3, 1, 2, 3]);
+    expect(b.yaw).toBeCloseTo(Math.PI / 2);
+    expect(m.shapes[0]).toMatchObject({ kind: 'box', y: 4, colour: 0xff0000 });
+  });
+
+  it('places prefab nodes in the placement frame', () => {
+    const m = compileMap(
+      map([{ type: 'prefab', prefab: 'crate', pos: [10, 1, 0], yaw: 90 }]),
+      prefabs(crate),
+    );
+    const b = m.world.boxes[0]!;
+    // Local +x turns to −z at yaw 90°.
+    expect(b.x).toBeCloseTo(10);
+    expect(b.z).toBeCloseTo(-1);
+    expect(b.y).toBeCloseTo(1.5);
+    expect(b.yaw).toBeCloseTo(Math.PI / 2);
+    expect(m.shapes[0]!.colour).toBe(0x8a5a33);
+  });
+
+  it('resolves colour slots through placements', () => {
+    const m = compileMap(
+      map(
+        [
+          { type: 'prefab', prefab: 'crate', pos: [0, 0, 0], colours: { wood: '#123456' } },
+          { type: 'prefab', prefab: 'crate', pos: [0, 0, 5], colours: { wood: 'team' } },
+        ],
+        { team: '#abcdef' },
+      ),
+      prefabs(crate),
+    );
+    expect(m.shapes.map((s) => s.colour)).toEqual([0x123456, 0xabcdef]);
+  });
+
+  it('reports unknown prefabs, slots and prefabs that contain themselves', () => {
+    const place = (fields: Partial<MapNode>): MapNode =>
+      ({ type: 'prefab', prefab: 'crate', pos: [0, 0, 0], ...fields }) as MapNode;
+    expect(() => compileMap(map([place({ prefab: 'nope' })]), prefabs(crate))).toThrow(
+      /#0: unknown prefab "nope"/,
+    );
+    expect(() =>
+      compileMap(
+        map([place({ colours: { paint: '#000000' } } as Partial<MapNode>)]),
+        prefabs(crate),
+      ),
+    ).toThrow(/no colour slot "paint"/);
+    expect(() =>
+      compileMap(map([place({ colours: { wood: 'team' } } as Partial<MapNode>)]), prefabs(crate)),
+    ).toThrow(/unknown colour slot "team"/);
+    const a: PrefabFile = {
+      formatVersion: 1,
+      id: 'a',
+      nodes: [{ type: 'prefab', prefab: 'b', pos: [0, 0, 0] }],
+    };
+    const b: PrefabFile = {
+      ...a,
+      id: 'b',
+      nodes: [{ type: 'prefab', prefab: 'a', pos: [0, 0, 0] }],
+    };
+    expect(() => compileMap(map([place({ prefab: 'a' })]), prefabs(a, b))).toThrow(
+      /contains itself \(a > b > a\)/,
+    );
+  });
+
+  it('groups instanced prefabs by colours but still collides with every copy', () => {
+    const tree = { ...crate, id: 'tree', instanced: true };
+    const at = (x: number, colours?: Record<string, string>): MapNode => ({
+      type: 'prefab',
+      prefab: 'tree',
+      pos: [x, 0, 0],
+      ...(colours && { colours }),
+    });
+    const m = compileMap(map([at(0), at(5), at(10, { wood: '#000000' })]), prefabs(tree));
+    expect(m.shapes).toHaveLength(0);
+    expect(m.world.boxes).toHaveLength(3);
+    expect(m.instanced).toHaveLength(2);
+    const [plain, dark] = m.instanced;
+    expect(plain!.placements.map((p) => p.x)).toEqual([0, 5]);
+    // Shapes are in the prefab's own frame.
+    expect(plain!.shapes[0]).toMatchObject({ x: 1, y: 0.5, z: 0, colour: 0x8a5a33 });
+    expect(dark!.shapes[0]!.colour).toBe(0);
+  });
+
+  it('gives markers and doors path ids in world space', () => {
+    const house: PrefabFile = {
+      formatVersion: 1,
+      id: 'house',
+      nodes: [
+        {
+          type: 'lootContainer',
+          id: 'desk',
+          pos: [0, 0, 2],
+          container: 'desk',
+          lootTable: 'office',
+        },
+        { type: 'door', pos: [0, 0, 3], size: [1, 2], colour: '#ffffff', key: 'house-key' },
+      ],
+    };
+    const m = compileMap(
+      map([
+        { type: 'playerSpawn', pos: [1, 0, 1] },
+        { type: 'prefab', id: 'farm', prefab: 'house', pos: [10, 0, 0], yaw: 180 },
+      ]),
+      prefabs(house),
+    );
+    expect(m.markers.map((k) => k.id)).toEqual(['#0', 'farm/desk']);
+    const desk = m.markers[1]!;
+    expect(desk.type).toBe('lootContainer');
+    expect(desk.x).toBeCloseTo(10);
+    expect(desk.z).toBeCloseTo(-2);
+    expect(desk.yaw).toBeCloseTo(Math.PI);
+    expect(desk).toMatchObject({ container: 'desk', lootTable: 'office' });
+    expect(desk).not.toHaveProperty('pos');
+    expect(m.doors[0]).toMatchObject({
+      id: 'farm/#1',
+      key: 'house-key',
+      hinge: 'left',
+      open: false,
+    });
+    expect(m.doors[0]!.z).toBeCloseTo(-3);
+  });
+
+  it('collides tilted solids as their upright bounding box', () => {
+    // A 4 m log tipped over onto its side: 4 m along x, 1 m high.
+    const m = compileMap(
+      map([{ type: 'box', pos: [0, 0, 0], size: [1, 4, 1], roll: 90, colour: '#ffffff' }]),
+      prefabs(),
+    );
+    const b = m.world.boxes[0]!;
+    expect(b.hx).toBeCloseTo(2);
+    expect(b.hy).toBeCloseTo(0.5);
+    expect(b.hz).toBeCloseTo(0.5);
+    // It turns about its centre, 2 m above pos.
+    expect(b.x).toBeCloseTo(0);
+    expect(b.y).toBeCloseTo(2);
+  });
+
+  it('turns stairs and ladders into ramps and ladders, and skips decoration', () => {
+    const m = compileMap(
+      map([
+        { type: 'stairs', pos: [0, 0, 0], size: [2, 3, 6], colour: '#ffffff' },
+        { type: 'ladder', pos: [5, 1, 0], height: 3, colour: '#ffffff' },
+        { type: 'box', pos: [9, 0, 0], size: [1, 1, 1], colour: '#ffffff', collide: false },
+      ]),
+      prefabs(),
+    );
+    expect(m.world.ramps).toEqual([
+      { x: 0, z: 0, hx: 1, hz: 3, yaw: 0, bottom: 0, low: 0, high: 3 },
+    ]);
+    expect(m.world.ladders).toEqual([{ x: 5, z: 0, yaw: 0, halfWidth: 0.3, bottom: 1, top: 4 }]);
+    expect(m.world.boxes).toHaveLength(0);
+    // 12 steps, 2 rails and 9 rungs, and the decorative box.
+    expect(m.shapes).toHaveLength(12 + 2 + 9 + 1);
+  });
+
+  it('produces a world the simulation can stand on', () => {
+    const m = compileMap(
+      map([{ type: 'prefab', prefab: 'crate', pos: [-1, 0, 0] }]),
+      prefabs(crate),
+    );
+    const world = new CollisionWorld(m.world);
+    expect(spawnCharacter(createState(1), world, 0, 0).y).toBeCloseTo(1);
+  });
+});

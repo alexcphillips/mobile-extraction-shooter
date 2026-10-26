@@ -48,11 +48,33 @@ docs/
 - **Schemas:** zod schemas for all content. Every content file has a `formatVersion`, and old versions are upgraded by migrations when loaded.
 - **Tests:** Vitest unit tests for rules (damage, armour, inventory placement, loot rolls, migrations).
 
+## Map and prefab format
+Decided in session 4. The schemas are in `packages/shared/src/content/schema.ts`, whose comments are the field-by-field reference.
+- **Files:** `content/maps/<id>.json` and `content/prefabs/<id>.json`. The `id` inside must match the file name.
+- **Loading:** `loadContent(format, json, source)` checks `formatVersion`, runs the migrations from the file's version up to the current one (`migrations[v]` turns v into v + 1), then validates with zod. A file newer than the build is rejected. Objects are **strict**: an unknown field is an error, so typos are caught and a migration must remove fields it renames.
+- **Units and conventions:** metres; **angles in degrees** in files (radians everywhere after loading); y up, yaw 0 faces −z. **`pos` is the middle of a shape's base**, so y is where it stands. Sizes are full sizes, not half-extents. Colours are `#rrggbb`.
+- **A map** has `environment` (sky colour, fog near and far), `terrain` (origin, cell size, `heights` as rows along +z of corners along +x, one ground colour), optional `water` (level, colour, opacity), optional colour slots, `nodes` and `zones`.
+- **Nodes** (in maps and prefabs alike, told apart by `type`):
+  - Shapes: `box`, `cylinder` (a `radiusTop` of 0 makes a cone), `ramp` (a wedge rising towards local +z), `stairs` (drawn as steps, collides as a ramp) and `ladder`. All collide unless `collide: false`.
+  - **Only boxes and cylinders tilt** (`pitch`, `roll`). Tilting turns them about their centre, and they collide as their upright bounding box (solids rotate about Y only, see Collision).
+  - `prefab`: a reference by id, with a position, a yaw (no tilt) and colour overrides. Prefabs can contain prefabs; a prefab that contains itself is an error.
+  - `door`: width, height, hinge side, optional key item, starts open or closed.
+  - Markers: `playerSpawn`, `enemySpawn` (enemy type, loadout, loot weight multipliers), `lootContainer` (container type, loot table), `lootSpawn`, `extraction` (name, radius) and `questMarker` (id required). Enemy types, loadouts, loot tables and keys are plain ids for now; they're checked against their own files once those exist.
+- **Named zones** are polygons in x, z, at map level only.
+- **Colour slots (recolouring):** a prefab declares slots with default colours (`"colours": { "paint": "#c0392b" }`), and its shapes use either a hex colour or a slot name. A placement overrides slots, and an override can name a slot of the enclosing prefab or map. Overriding a slot the prefab doesn't have is an error.
+- **Ids:** any node can have an `id`, unique among its siblings. Markers and doors come out of compilation with **path ids**, the ids from the map down joined by `/` (for example `house-a/desk`); a node without an id is `#` and its index. Anything other content refers to (quest markers, keyed doors) should have an explicit id.
+- **Compilation:** `compileMap(map, prefabs)` (in shared, so the server can use it for co-op) flattens everything into a `CompiledMap`: the `WorldDef` for collision, world-space shapes to draw, instanced groups, doors, markers and zones.
+- Deferred: per-cell terrain colours (roads, dirt) and scaled prefab placements. Both can be added later with a migration.
+
+
 ## Client (`packages/client`)
 - **Build tool:** Vite + TypeScript.
 - **3D rendering:** plain three.js, not React Three Fiber, so the game loop and rendering stay outside React.
-  - Static map geometry is **merged per chunk**. Repeated props use instancing.
-  - Colour is stored per vertex, with each face direction shaded differently; materials are unlit (`MeshBasicMaterial`); distance fog.
+  - Static map geometry is **merged per chunk** (32 m): one mesh per chunk holding its terrain and every shape whose centre is in it.
+  - **Instancing is opt-in per prefab** (`"instanced": true`, session 4), for small props placed many times, like trees and crates. Each instanced prefab and colour set becomes one `InstancedMesh` for the whole map. Merging is the default because it costs no extra draw calls; instancing saves memory and load time but adds one draw call per group, and a group is culled as a whole.
+  - Colour is stored per vertex, with each face direction shaded differently; materials are unlit (`MeshBasicMaterial`); distance fog. Static geometry has the shading baked into its colours. Instanced and moving geometry (doors now, characters later) uses `shadedMaterial()`, which applies the same shading on the GPU from the world-space normal, so it stays right as the object turns.
+  - Each door is its own mesh, pivoted at its hinge, so it can swing open.
+  - Content is bundled into the client with `import.meta.glob`; in dev, saving a content file reloads the page.
   - The camera's far plane follows the fog distance.
 - **UI:** React DOM overlays for menus, inventory, settings and the editors.
   - The HUD doesn't re-render through React every frame. Values that change every frame are written straight to the DOM, or throttled to about 10 Hz.

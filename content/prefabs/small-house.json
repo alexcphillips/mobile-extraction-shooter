@@ -1,0 +1,55 @@
+{
+  "formatVersion": 1,
+  "id": "small-house",
+  "name": "Small house",
+  "colours": {
+    "walls": "#d9d0c1",
+    "roof": "#7f3b2d",
+    "door": "#6b4226",
+    "base": "#b5b0a6",
+    "furniture": "#8a5a33"
+  },
+  "nodes": [
+    { "type": "box", "pos": [0, -1, 0], "size": [8.4, 1.2, 6.4], "colour": "base" },
+
+    { "type": "box", "pos": [0, 0.2, -2.9], "size": [8, 2.8, 0.2], "colour": "walls" },
+    { "type": "box", "pos": [-3.9, 0.2, 0], "size": [0.2, 2.8, 5.6], "colour": "walls" },
+
+    { "type": "box", "pos": [3.9, 0.2, -1.7], "size": [0.2, 2.8, 2.2], "colour": "walls" },
+    { "type": "box", "pos": [3.9, 0.2, 1.7], "size": [0.2, 2.8, 2.2], "colour": "walls" },
+    { "type": "box", "pos": [3.9, 0.2, 0], "size": [0.2, 1, 1.2], "colour": "walls" },
+    { "type": "box", "pos": [3.9, 2.2, 0], "size": [0.2, 0.8, 1.2], "colour": "walls" },
+
+    { "type": "box", "pos": [-1.5, 0.2, 2.9], "size": [5, 2.8, 0.2], "colour": "walls" },
+    { "type": "box", "pos": [3.1, 0.2, 2.9], "size": [1.8, 2.8, 0.2], "colour": "walls" },
+    { "type": "box", "pos": [1.6, 2.3, 2.9], "size": [1.2, 0.7, 0.2], "colour": "walls" },
+    {
+      "type": "door",
+      "id": "front-door",
+      "pos": [1.6, 0.2, 2.9],
+      "size": [1.2, 2.1],
+      "colour": "door"
+    },
+
+    { "type": "box", "pos": [0, 3, 0], "size": [8.6, 0.25, 6.6], "colour": "roof" },
+
+    { "type": "box", "pos": [-2.5, 0.2, -2.2], "size": [1.6, 0.75, 0.8], "colour": "furniture" },
+    {
+      "type": "lootContainer",
+      "id": "desk",
+      "pos": [-2.5, 0.2, -1.6],
+      "container": "desk",
+      "lootTable": "household"
+    },
+    { "type": "box", "pos": [3.4, 0.2, -2.3], "size": [0.8, 1.8, 0.6], "colour": "furniture" },
+    {
+      "type": "lootContainer",
+      "id": "cabinet",
+      "pos": [3.4, 0.2, -1.8],
+      "container": "cabinet",
+      "lootTable": "household"
+    },
+    { "type": "box", "pos": [0, 0.2, 0], "size": [1.2, 0.75, 1.2], "colour": "furniture" },
+    { "type": "lootSpawn", "id": "table", "pos": [0, 0.95, 0], "lootTable": "household" }
+  ]
+}

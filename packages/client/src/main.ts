@@ -2,6 +2,7 @@ import { PROTOCOL_VERSION, type HelloResponse } from '@mes/shared';
 import { startPerfTest } from './perf';
 import { readParams } from './perf/params';
 import { mountPresets } from './perf/presets';
+import { startPlay } from './play';
 
 const byId = (id: string): HTMLElement => {
   const el = document.getElementById(id);
@@ -24,19 +25,47 @@ async function checkServer(el: HTMLElement): Promise<void> {
 }
 
 void checkServer(byId('server'));
-mountPresets(byId('presets'));
-startPerfTest(
-  {
-    canvas: byId('scene') as HTMLCanvasElement,
-    stats: byId('stats'),
-    status,
-    stick: byId('stick'),
-    knob: byId('knob'),
-    jump: byId('jump'),
-    crouch: byId('crouch'),
-    crosshair: byId('crosshair'),
-  },
-  readParams(location.search),
-).catch((err: unknown) => {
-  status.textContent = `perf test failed: ${err instanceof Error ? err.message : String(err)}`;
-});
+const message = (err: unknown): string => (err instanceof Error ? err.message : String(err));
+
+if (location.pathname === '/perf') {
+  mountPresets(byId('presets'));
+  startPerfTest(
+    {
+      canvas: byId('scene') as HTMLCanvasElement,
+      stats: byId('stats'),
+      status,
+      stick: byId('stick'),
+      knob: byId('knob'),
+      jump: byId('jump'),
+      crouch: byId('crouch'),
+      crosshair: byId('crosshair'),
+    },
+    readParams(location.search),
+  ).catch((err: unknown) => {
+    status.textContent = `perf test failed: ${message(err)}`;
+  });
+} else {
+  // ?map=<id> picks a map from content/maps, ?spawn=<id> a player spawn in it, and ?debug
+  // shows markers and zones.
+  const q = new URLSearchParams(location.search);
+  try {
+    startPlay(
+      {
+        canvas: byId('scene') as HTMLCanvasElement,
+        stats: byId('stats'),
+        stick: byId('stick'),
+        knob: byId('knob'),
+        jump: byId('jump'),
+        crouch: byId('crouch'),
+      },
+      {
+        map: q.get('map') ?? 'test-map',
+        spawn: q.get('spawn'),
+        debug: q.has('debug'),
+        pixelRatio: Math.min(window.devicePixelRatio, 2),
+      },
+    );
+  } catch (err) {
+    status.textContent = `map failed: ${message(err)}`;
+  }
+}

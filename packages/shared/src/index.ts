@@ -29,3 +29,26 @@ export {
 } from './sim/state';
 export { MOVEMENT, moveCharacter } from './sim/movement';
 export { step } from './sim/step';
+export { ContentError, loadContent, type ContentFormat, type Migration } from './content/format';
+export {
+  MAP_FORMAT,
+  MAP_FORMAT_VERSION,
+  PREFAB_FORMAT,
+  PREFAB_FORMAT_VERSION,
+  mapSchema,
+  nodeSchema,
+  prefabSchema,
+  type MapFile,
+  type MapNode,
+  type MapZone,
+  type PrefabFile,
+} from './content/schema';
+export {
+  compileMap,
+  type CompiledDoor,
+  type CompiledMap,
+  type CompiledMarker,
+  type InstancedGroup,
+  type PrefabLookup,
+  type Shape,
+} from './content/compile';

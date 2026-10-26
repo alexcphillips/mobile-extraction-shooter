@@ -1,0 +1,37 @@
+{
+  "formatVersion": 1,
+  "id": "pine-tree",
+  "name": "Pine tree",
+  "instanced": true,
+  "colours": { "trunk": "#6b4a2b", "leaves": "#2f5d3a" },
+  "nodes": [
+    {
+      "type": "cylinder",
+      "pos": [0, -0.5, 0],
+      "radius": 0.2,
+      "height": 2.5,
+      "sides": 6,
+      "colour": "trunk"
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 1.2, 0],
+      "radius": 1.6,
+      "radiusTop": 0,
+      "height": 2.6,
+      "sides": 7,
+      "colour": "leaves",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 2.6, 0],
+      "radius": 1.2,
+      "radiusTop": 0,
+      "height": 2.2,
+      "sides": 7,
+      "colour": "leaves",
+      "collide": false
+    }
+  ]
+}
