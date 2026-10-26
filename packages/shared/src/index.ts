@@ -50,6 +50,7 @@ export {
   carriedAmmo,
   carriedGrid,
   createGear,
+  drawTime,
   equip,
   fitsSlot,
   heldWeapon,
@@ -91,11 +92,16 @@ export {
   EFFECT_PRIORITY,
   TREATMENT_ORDER,
   needs,
+  startUse,
   treatments,
+  updateMedUse,
   useMed,
   zoneToTreat,
   type CarriedRef,
+  type MedRef,
+  type MedUse,
 } from './sim/meds';
+export { MELEE, updateMelee, type SwingEvent } from './sim/melee';
 export {
   addItem,
   canHold,
@@ -144,6 +150,7 @@ export {
   type DamageEvent,
   type DeathEvent,
   type Health,
+  type Wound,
   type Zone,
 } from './sim/health';
 export {
@@ -196,6 +203,7 @@ export {
   itemDef,
   itemSchema,
   medDef,
+  meleeDef,
   stackSize,
   weaponDef,
   type AmmoDef,
@@ -206,6 +214,7 @@ export {
   type ContainerDef,
   type MedDef,
   type MedEffect,
+  type MeleeDef,
   type OpticDef,
   type ReticleShape,
   type ItemDb,

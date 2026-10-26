@@ -404,6 +404,122 @@ body {
   color: #000;
 }
 
+/* Hand slots (hud/hands.ts): an icon of what's in each, outlined when it's in hand. */
+.control:is([data-id='primary1'], [data-id='primary2'], [data-id='sidearm'], [data-id='knife']) {
+  display: grid;
+  place-items: center;
+}
+
+.control.in-hand {
+  border-color: #e3a33a;
+  box-shadow: 0 0 0 2px rgb(227 163 58 / 0.35);
+}
+
+.slot-num {
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+/* The heal button: the med a tap uses, and a ring that fills while using one. */
+.control[data-id='heal'] {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 1px;
+  color: #ff8a80;
+}
+
+.heal-name {
+  max-width: 90%;
+  overflow: hidden;
+  color: #fff;
+  font-size: 8px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.control .ring {
+  position: absolute;
+  inset: -4px;
+  width: calc(100% + 8px);
+  height: calc(100% + 8px);
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+
+.control .ring circle {
+  fill: none;
+  stroke: #7ddc7a;
+  stroke-width: 2.5;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+}
+
+.control.using .ring circle {
+  opacity: 1;
+}
+
+.heal-picker[hidden] {
+  display: none;
+}
+
+.heal-picker {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.heal-picker button {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 150px;
+  padding: 8px 10px;
+  border: 1px solid rgb(255 255 255 / 0.4);
+  border-radius: 8px;
+  background: rgb(20 20 20 / 0.85);
+  color: #fff;
+  font:
+    12px/1.2 ui-monospace,
+    monospace;
+  text-align: left;
+  touch-action: none;
+}
+
+.heal-picker button span {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+/* ?debug: hurt, heal, next optic and next muzzle (keys 7–0), down the left edge. */
+.debug-actions {
+  position: fixed;
+  top: 58%;
+  left: calc(env(safe-area-inset-left) + 8px);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.debug-actions button {
+  padding: 4px 6px;
+  border: 1px solid rgb(255 255 255 / 0.4);
+  border-radius: 4px;
+  background: rgb(0 0 0 / 0.5);
+  color: #fff;
+  font:
+    10px ui-monospace,
+    monospace;
+}
+
 #controls.editing .control {
   border-style: dashed;
 }

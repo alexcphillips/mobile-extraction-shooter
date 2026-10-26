@@ -2,7 +2,7 @@ import type { ItemDb, Outfit, Shape, WeaponState } from '@mes/shared';
 import * as THREE from 'three';
 import { DEFAULT_OUTFIT } from './character';
 import { TriangleBuilder } from './geometry';
-import { gunKey, gunModel, type GunModel } from './gun-model';
+import { KNIFE, gunKey, gunModel } from './gun-model';
 import { shadedMaterial } from './material';
 
 /** A box from one point to another (in the gun's frame), as thick as given: a limb. */
@@ -34,18 +34,24 @@ function limb(
 
 const hex = (c: string): number => parseInt(c.slice(1), 16);
 
+type Point = readonly [number, number, number];
+
 /**
  * Low-poly forearms and hands on the gun: the right hand on the grip, the left on the
- * support point, the sleeves running back and down out of view.
+ * support point (if any), the sleeves running back and down out of view.
  */
-function arms(gun: GunModel, outfit: Outfit): Shape[] {
+function arms(grip: Point, support: Point | null, outfit: Outfit): Shape[] {
   const sleeve = hex(outfit.top);
   const glove = hex(outfit.hands);
-  const [gx, gy, gz] = gun.grip;
-  const [sx, sy, sz] = gun.support;
-  return [
+  const [gx, gy, gz] = grip;
+  const right = [
     limb([gx, gy - 0.01, gz - 0.02], [gx + 0.01, gy - 0.02, gz + 0.06], 0.022, 0.032, glove),
     limb([gx + 0.01, gy - 0.03, gz + 0.06], [gx + 0.1, gy - 0.22, gz + 0.36], 0.03, 0.034, sleeve),
+  ];
+  if (!support) return right;
+  const [sx, sy, sz] = support;
+  return [
+    ...right,
     limb([sx, sy - 0.02, sz + 0.035], [sx, sy - 0.02, sz - 0.045], 0.026, 0.03, glove),
     limb(
       [sx - 0.005, sy - 0.04, sz + 0.03],
@@ -63,11 +69,16 @@ const AIMED_Z = -0.3;
 /** A pistol is held further out. */
 const PISTOL_HIP = new THREE.Vector3(0.12, -0.13, -0.38);
 const PISTOL_AIMED_Z = -0.34;
+/** The knife is held low to the right, and never aimed. */
+const KNIFE_HIP = new THREE.Vector3(0.16, -0.12, -0.46);
+/** How long a swing's slash takes on screen, at most (it's shorter if the knife is faster). */
+const SLASH_MS = 320;
 
 /**
- * The first-person gun. It's drawn in its own pass after the world with the depth buffer
- * cleared, so it never pokes into walls. It follows the camera, slides between the hip
- * and the sight as the character aims, kicks back on each shot and shows a muzzle flash.
+ * The first-person gun or knife. It's drawn in its own pass after the world with the depth
+ * buffer cleared, so it never pokes into walls. It follows the camera, slides between the
+ * hip and the sight as the character aims, kicks back on each shot and shows a muzzle
+ * flash; it comes up from below when drawn, dips while using a med, and the knife slashes.
  */
 export class Viewmodel {
   /** Its own scene, drawn after the world. */
@@ -86,6 +97,9 @@ export class Viewmodel {
   private suppressed = false;
   /** How long the current reload takes, from when it started; 0 when not reloading. */
   private reloadTotal = 0;
+  /** When the last knife swing started, and how long its slash lasts (ms). */
+  private slashAt = -Infinity;
+  private slashMs = SLASH_MS;
 
   constructor(private readonly outfit: Outfit = DEFAULT_OUTFIT) {
     this.model = new THREE.Mesh(new THREE.BufferGeometry(), shadedMaterial());
@@ -106,16 +120,29 @@ export class Viewmodel {
     this.built = key;
     const gun = gunModel(w, items);
     this.suppressed = gun.suppressed;
-    const b = new TriangleBuilder(false);
-    for (const s of gun.shapes) b.shape(s);
-    for (const s of arms(gun, this.outfit)) b.shape(s);
-    this.model.geometry.dispose();
-    this.model.geometry = b.build();
+    this.build([...gun.shapes, ...arms(gun.grip, gun.support, this.outfit)]);
     const pistol = gun.hold === 'pistol';
     this.hip.copy(pistol ? PISTOL_HIP : HIP);
     this.aimed.set(0, -gun.sightY, pistol ? PISTOL_AIMED_Z : AIMED_Z);
     this.flash.position.set(0, gun.muzzleY, gun.muzzleZ);
     this.muzzle.position.set(0, gun.muzzleY, gun.muzzleZ);
+  }
+
+  /** Shows the knife in the right hand. */
+  setKnife(): void {
+    if (this.built === 'knife') return;
+    this.built = 'knife';
+    this.suppressed = true;
+    this.build([...KNIFE.shapes, ...arms(KNIFE.grip, null, this.outfit)]);
+    this.hip.copy(KNIFE_HIP);
+    this.aimed.copy(KNIFE_HIP);
+  }
+
+  private build(shapes: readonly Shape[]): void {
+    const b = new TriangleBuilder(false);
+    for (const s of shapes) b.shape(s);
+    this.model.geometry.dispose();
+    this.model.geometry = b.build();
   }
 
   set visible(on: boolean) {
@@ -128,9 +155,16 @@ export class Viewmodel {
     if (!this.suppressed) this.flashUntil = now + 40;
   }
 
+  /** A knife swing: a slash across the view, within the swing time (seconds). */
+  swung(now: number, swingTime: number): void {
+    this.slashAt = now;
+    this.slashMs = Math.min(SLASH_MS, swingTime * 1000 * 0.8);
+  }
+
   /**
    * Follows the camera; aim is 0 at the hip to 1 aimed; sway grows with broken arms; the
-   * gun dips and tilts while reloading (seconds left, or 0).
+   * gun dips and tilts while reloading (seconds left, or 0); drawn goes from 0 (just
+   * switched, out of view below) to 1 (ready); lowered is 1 while using a med.
    */
   update(
     camera: THREE.Camera,
@@ -139,6 +173,8 @@ export class Viewmodel {
     aim: number,
     sway: number,
     reloading: number,
+    drawn: number,
+    lowered: number,
   ): void {
     this.holder.position.copy(camera.position);
     this.holder.quaternion.copy(camera.quaternion);
@@ -149,12 +185,19 @@ export class Viewmodel {
     if (reloading <= 0) this.reloadTotal = 0;
     else if (reloading > this.reloadTotal) this.reloadTotal = reloading;
     const dip = this.reloadTotal ? Math.sin(Math.PI * (1 - reloading / this.reloadTotal)) : 0;
+    // Drawing brings it up from below, pointing down; easing out, so it arrives gently.
+    const down = (1 - drawn) ** 2;
+    const p = (now - this.slashAt) / this.slashMs;
+    // A slash: out to the right, then across and forward to the left.
+    const slash = p >= 0 && p < 1 ? Math.sin(Math.PI * p) : 0;
+    const across = p >= 0 && p < 1 ? (1 - Math.cos(Math.PI * p)) / 2 : 0;
     this.gun.position.lerpVectors(this.hip, this.aimed, aim);
-    this.gun.position.x += swayX;
-    this.gun.position.y += swayY - dip * 0.08;
-    this.gun.position.z += this.kick * 0.03;
-    this.gun.rotation.x = this.kick * 0.04 - dip * 0.35;
-    this.gun.rotation.z = dip * 0.5;
+    this.gun.position.x += swayX - across * 0.26 + slash * 0.04;
+    this.gun.position.y += swayY - dip * 0.08 - down * 0.3 - lowered * 0.14 + slash * 0.05;
+    this.gun.position.z += this.kick * 0.03 - slash * 0.16 + lowered * 0.04;
+    this.gun.rotation.x = this.kick * 0.04 - dip * 0.35 - down * 1.1 - lowered * 0.7;
+    this.gun.rotation.y = slash * 0.9;
+    this.gun.rotation.z = dip * 0.5 - slash * 1.2;
     this.flash.visible = now < this.flashUntil;
   }
 

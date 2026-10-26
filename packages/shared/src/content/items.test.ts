@@ -24,6 +24,7 @@ const gun = {
   magazine: 30,
   reloadTime: 2,
   aimTime: 0.25,
+  drawTime: 0.8,
   range: 150,
   loudness: 150,
   slots: ['optic', 'magazine'],
@@ -83,7 +84,7 @@ describe('items', () => {
   });
 
   it('upgrades format 1 weapons with a default loudness', () => {
-    const { loudness: _, slots: __, size: ___, ...old } = gun;
+    const { loudness: _, slots: __, size: ___, drawTime: ____, ...old } = gun;
     const def = loadContent(ITEM_FORMAT, { ...old, formatVersion: 1 }, 'gun.json');
     expect(def).toMatchObject({ loudness: 150, formatVersion: ITEM_FORMAT_VERSION });
     expect(def.type === 'weapon' && def.slots).toBe(undefined);
@@ -114,6 +115,17 @@ describe('items', () => {
     expect(v2({ ...helmet, slot: 'body' }, []).size).toEqual([3, 3]);
   });
 
+  it('upgrades format 3 weapons with a draw time by hold, and the knife with its stats', () => {
+    const v3 = (raw: object) => {
+      const { drawTime: _, ...old } = raw as { drawTime?: number };
+      return loadContent(ITEM_FORMAT, { ...old, formatVersion: 3 }, 'x.json');
+    };
+    expect(v3(gun)).toMatchObject({ drawTime: 0.8 });
+    expect(v3({ ...gun, hold: 'pistol' })).toMatchObject({ drawTime: 0.4 });
+    const knife = { id: 'k', name: 'K', type: 'melee', size: [1, 2] };
+    expect(v3(knife)).toMatchObject({ damage: 40, reach: 1.5, swingTime: 0.5 });
+  });
+
   it('loads the other types, and checks meds have hp only for heal', () => {
     const base = { formatVersion: ITEM_FORMAT_VERSION, id: 'x', name: 'X', size: [1, 1] };
     const ok = [
@@ -121,7 +133,15 @@ describe('items', () => {
       { ...base, type: 'med', effect: 'splint', useTime: 2, uses: 3 },
       { ...base, type: 'med', effect: 'heal', useTime: 3, hp: 200 },
       { ...base, type: 'container', slot: 'backpack', grid: [4, 5] },
-      { ...base, type: 'melee' },
+      {
+        ...base,
+        type: 'melee',
+        damage: 40,
+        bleedChance: 0.3,
+        swingTime: 0.5,
+        reach: 1.5,
+        drawTime: 0.3,
+      },
       { ...base, type: 'key' },
       { ...base, type: 'quest' },
       { ...base, type: 'loot', stack: 500 },

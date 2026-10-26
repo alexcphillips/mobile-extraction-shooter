@@ -40,6 +40,9 @@ import {
   stow,
   type InventoryAction,
   type Owner,
+  drawTime,
+  meleeDef,
+  type MedRef,
 } from '@mes/shared';
 import * as THREE from 'three';
 import { startLoop } from '../app/loop';
@@ -52,6 +55,7 @@ import {
   loadMap,
 } from '../content';
 import { Stats } from '../debug/stats';
+import { HandsHud } from '../hud/hands';
 import type { Hud } from '../hud/hud';
 import type { OpticOverlay } from '../hud/optic';
 import type { Vitals } from '../hud/vitals';
@@ -89,8 +93,8 @@ export interface PlayOptions {
   /** Attachment item ids to put on it. */
   attachments: string[];
   /**
-   * Show markers, zones, patrols and what enemies are thinking, and turn the quick slots
-   * into hurt me, heal me, next optic and next muzzle.
+   * Show markers, zones, patrols and what enemies are thinking, and buttons (and keys 7–0)
+   * for hurt me, heal me, next optic and next muzzle.
    */
   debug: boolean;
   /** Show the navigation grid. */
@@ -251,8 +255,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     reload: false,
   };
   const inputs: TickInputs = { [player.id]: input };
-  // What the frame draws between ticks: the eye, aim and recoil from the last two ticks.
-  const prev = { x: player.x, y: eyeHeight(player), z: player.z, aim: 0, rp: 0, ry: 0 };
+  // What the frame draws between ticks: the eye, aim, recoil and how far drawn what's in
+  // hand is, from the last two ticks.
+  const prev = { x: player.x, y: eyeHeight(player), z: player.z, aim: 0, rp: 0, ry: 0, drawn: 1 };
   const cur = { ...prev };
 
   const stats = new Stats(
@@ -288,11 +293,20 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // Scratch for the auto-fire and aim-assist check.
   const aimHit = createCharacterHit();
   const aimWorld = createRayHit();
-  /** Whether the crosshair (with recoil) is on a living enemy in range and in sight. */
+  /** The knife, if it's in hand. */
+  const knifeOut = (): boolean => player.gear.hand === 'knife' && !!player.gear.knife;
+
+  /**
+   * Whether the crosshair (with recoil) is on a living enemy in range (the knife's reach
+   * with the knife out) and in sight.
+   */
   function onTarget(): boolean {
     const w = heldWeapon(player);
-    if (!w) return false;
-    const range = weaponDef(items, w.item).range;
+    const knife = player.gear.knife;
+    let range: number;
+    if (w) range = weaponDef(items, w.item).range;
+    else if (knife && knifeOut()) range = meleeDef(items, knife.item).reach;
+    else return false;
     const yaw = controls.yaw + player.recoilYaw;
     const pitch = controls.pitch + player.recoilPitch;
     const cp = Math.cos(pitch);
@@ -347,6 +361,27 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     m.position.set(x, y, z);
     m.scale.setScalar(Math.max(0.01, camera.position.distanceTo(m.position) * size));
     m.visible = true;
+  }
+
+  // The hand-slot and heal buttons. A med picked from the heal button's picker is used
+  // next tick.
+  let picked: MedRef | null = null;
+  const hands = new HandsHud(el.hud, (ref) => (picked = ref));
+
+  // Debug actions: hurt me, heal me, next optic, next muzzle; on screen and keys 7–0.
+  if (options.debug) {
+    const bar = document.createElement('div');
+    bar.className = 'debug-actions';
+    ['hurt', 'heal', 'optic', 'muzzle'].forEach((label, i) => {
+      const b = document.createElement('button');
+      b.textContent = `${(i + 7) % 10} ${label}`;
+      b.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        controls.pressDebug(i);
+      });
+      bar.append(b);
+    });
+    document.body.append(bar);
   }
 
   // The raid screen: inventory and looting, map and quests. The raid keeps running while
@@ -416,9 +451,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     controls.assist = target ? ASSIST[settings.current.aimAssist] : 1;
     let fire = controls.fire;
     const held = heldWeapon(player);
-    if (target && settings.current.fire === 'auto' && held) {
-      // Auto-fire holds the trigger; a semi-automatic gun is pulled every other tick.
-      const semi = weaponDef(items, held.item).fireMode === 'semi';
+    // Auto-fire holds the trigger (or swings the knife), but never stops a med being used.
+    if (target && settings.current.fire === 'auto' && !player.using) {
+      // A semi-automatic gun is pulled every other tick.
+      const semi = !!held && weaponDef(items, held.item).fireMode === 'semi';
       fire ||= !semi || sim.tick % 2 === 0;
     }
     input.moveX = controls.moveX;
@@ -431,6 +467,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.fire = fire;
     input.aim = controls.aim;
     input.reload = controls.reload;
+    input.draw = controls.draw;
+    // A tap on the heal button uses what it shows, or stops a med being used.
+    input.use = controls.heal ? (player.using ? 'cancel' : hands.choice) : picked;
+    picked = null;
+    if (controls.healPick && !dead) hands.showPicker(player, items);
 
     // The use button loots what's in reach; the bag button opens your inventory.
     const lootable = dead || screenOpen ? null : lootableInReach(sim, player, controls.yaw);
@@ -458,16 +499,16 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // Jumping lets go of a ladder, and ends sprint lock with it.
     if (controls.jump && player.mode === 'ladder') controls.unlockSprint();
 
-    if (options.debug && controls.quickSlot === 0) {
-      // Quick slot 1: a 5.56 round to a random zone, armour and bleeding included.
+    if (options.debug && controls.debug === 0) {
+      // A 5.56 round to a random zone, armour and bleeding included.
       const zone = nextInt(debugRng, 6) as Zone;
       shootCharacter(sim, items, player, zone, ammoDef(items, 'ammo-556'), 0);
       el.vitals.hurtFlash();
-    } else if (options.debug && controls.quickSlot === 1) {
+    } else if (options.debug && controls.debug === 1) {
       restoreHealth(player, items);
-    } else if (options.debug && controls.quickSlot === 2) {
+    } else if (options.debug && controls.debug === 2) {
       nextAttachment('optic');
-    } else if (options.debug && controls.quickSlot === 3) {
+    } else if (options.debug && controls.debug === 3) {
       nextAttachment('muzzle');
     }
 
@@ -477,6 +518,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     prev.aim = cur.aim;
     prev.rp = cur.rp;
     prev.ry = cur.ry;
+    prev.drawn = cur.drawn;
     inventoryChanged = false;
     step(sim, world, items, inputs, nav);
     pending.length = 0;
@@ -486,6 +528,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     cur.aim = player.aim;
     cur.rp = player.recoilPitch;
     cur.ry = player.recoilYaw;
+    const total = drawTime(items, player.gear, player.gear.hand);
+    cur.drawn = total > 0 ? 1 - player.draw / total : 1;
 
     for (const e of sim.events) {
       if (e.type === 'shot') {
@@ -502,6 +546,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
           const m = shotMarkers[nextShotMarker++ % shotMarkers.length]!;
           placeMarker(m, e.toX, e.toY, e.toZ, 0.006);
         }
+      } else if (e.type === 'swing') {
+        if (e.by === player.id && player.gear.knife) {
+          viewmodel.swung(now, meleeDef(items, player.gear.knife.item).swingTime);
+        } else bodyOf.get(e.by)?.swung();
+        if (e.hit !== 'none') effects.impact(now, e.x, e.y, e.z, e.hit === 'character');
       } else if (e.type === 'damage') {
         if (e.amount > 0) bodyOf.get(e.target)?.hit();
         if (e.by === player.id && e.target !== player.id) el.vitals.hitMarker(now, false);
@@ -527,6 +576,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // reach and what enemies took from their dead.
     if (screen && (inventoryChanged || sim.tick % 10 === 0)) screen.refresh();
     el.vitals.update(player, items, now);
+    hands.update(player, items);
     stats.tick(performance.now() - t0);
   }
 
@@ -559,6 +609,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   for (const o of culled) o.frustumCulled = true;
 
   const loop = new FixedTimestep();
+  /** How far the gun is lowered for using a med, eased each frame. */
+  let lowered = 0;
   const frustum = new THREE.Frustum();
   const viewProjection = new THREE.Matrix4();
   startLoop(renderer, controls, (time, dtMs) => {
@@ -612,9 +664,21 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       const d = Math.min(200, world.raycast(player.x, ey, player.z, dx, dy, dz, 200, markerHit));
       placeMarker(aimMarker, player.x + dx * d, ey + dy * d, player.z + dz * d, 0.01);
     }
-    viewmodel.visible = alive && !!w && !scoped;
+    const knife = !w && knifeOut();
+    viewmodel.visible = alive && (!!w || knife) && !scoped;
     if (w) viewmodel.setGun(w, items);
-    viewmodel.update(camera, time, dtMs, aim, 1 + brokenArms(player.health) * 2, w?.reloading ?? 0);
+    else if (knife) viewmodel.setKnife();
+    lowered += ((player.using ? 1 : 0) - lowered) * (1 - Math.exp(-dtMs / 90));
+    viewmodel.update(
+      camera,
+      time,
+      dtMs,
+      aim,
+      1 + brokenArms(player.health) * 2,
+      w?.reloading ?? 0,
+      lerp(prev.drawn, cur.drawn),
+      lowered,
+    );
     effects.update(performance.now());
     render();
     stats.frame(time, dtMs, performance.now() - t0);

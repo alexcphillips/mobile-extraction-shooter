@@ -103,7 +103,7 @@ export interface DamageEvent {
   amount: number;
   /** What armour took. */
   absorbed: number;
-  cause: 'shot' | 'fall';
+  cause: 'shot' | 'melee' | 'fall';
 }
 
 export interface DeathEvent {
@@ -152,17 +152,21 @@ export function dealDamage(
   return lost;
 }
 
+/** What a hit does: a round's (AmmoDef) or the knife's (MeleeDef). */
+export type Wound = Pick<AmmoDef, 'damage' | 'armourDamage' | 'bleedChance'>;
+
 /**
- * A bullet hit: the zone's multiplier, then armour on the head or chest absorbs its share
- * and wears down, then the rest may start bleeding.
+ * A bullet or knife hit: the zone's multiplier, then armour on the head or chest absorbs
+ * its share and wears down, then the rest may start bleeding.
  */
 export function shootCharacter(
   state: SimState,
   items: ItemDb,
   c: Character,
   zone: Zone,
-  ammo: AmmoDef,
+  ammo: Wound,
   by: EntityId,
+  cause: 'shot' | 'melee' = 'shot',
 ): void {
   if (c.health.dead) return;
   let damage = ammo.damage * HEALTH.multiplier[zone]!;
@@ -177,7 +181,7 @@ export function shootCharacter(
   if (!c.health.dead && damage > 0 && chance(state.rng, ammo.bleedChance)) {
     c.health.bleeding[zone] = true;
   }
-  state.events.push({ type: 'damage', target: c.id, by, zone, amount, absorbed, cause: 'shot' });
+  state.events.push({ type: 'damage', target: c.id, by, zone, amount, absorbed, cause });
 }
 
 /** Fall damage to both legs from the landing speed movement left in c.landingSpeed. */

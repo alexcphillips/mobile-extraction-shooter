@@ -15,8 +15,9 @@ const fraction = finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1');
 /**
  * 2 (session 6b): weapons gained loudness and slots; attachments were added.
  * 3 (session 9): every item gained a grid size, ammo a stack size; the other types were added.
+ * 4 (session 10b): weapons gained a draw time; the knife gained its stats.
  */
-export const ITEM_FORMAT_VERSION = 3;
+export const ITEM_FORMAT_VERSION = 4;
 
 /** The fixed attachment slots a gun can have. */
 export const ATTACHMENT_SLOTS = ['optic', 'muzzle', 'magazine'] as const;
@@ -56,6 +57,8 @@ const weaponSchema = z.strictObject({
   reloadTime: positive,
   /** From the hip to fully aimed. */
   aimTime: positive,
+  /** Taking it out: from switching to it until it can fire or aim. */
+  drawTime: positive,
   /** Shots stop here. */
   range: positive,
   /** How far away a shot can be heard (by AI, from session 7). Suppressors shrink it. */
@@ -202,8 +205,26 @@ const containerSchema = z.strictObject({
   grid: sizeSchema,
 });
 
-/** The knife. Melee stats come when melee is designed. */
-const meleeSchema = z.strictObject({ ...common, type: z.literal('melee') });
+/**
+ * The knife. A swing hits the first body part in reach under the crosshair (or close to
+ * it), like a shot: zone multipliers, then armour absorbs its share.
+ */
+const meleeSchema = z.strictObject({
+  ...common,
+  type: z.literal('melee'),
+  /** Damage to the chest; other zones multiply it, as for ammo. */
+  damage: positive,
+  /** Armour durability lost per point of damage the armour absorbs. Defaults to 1. */
+  armourDamage: nonNegative.optional(),
+  /** Chance that a hit which gets through starts bleeding. */
+  bleedChance: fraction,
+  /** Seconds from one swing to the next. */
+  swingTime: positive,
+  /** How far it reaches from the eye. */
+  reach: positive,
+  /** Taking it out: from switching to it until it can swing. */
+  drawTime: positive,
+});
 
 /** Opens the doors that name it. */
 const keySchema = z.strictObject({ ...common, type: z.literal('key') });
@@ -247,6 +268,7 @@ export type AmmoDef = z.infer<typeof ammoSchema>;
 export type ArmourDef = z.infer<typeof armourSchema>;
 export type AttachmentDef = z.infer<typeof attachmentSchema>;
 export type MedDef = z.infer<typeof medSchema>;
+export type MeleeDef = z.infer<typeof meleeSchema>;
 export type ContainerDef = z.infer<typeof containerSchema>;
 export type AttachmentMods = z.infer<typeof modsSchema>;
 export type OpticDef = NonNullable<AttachmentDef['optic']>;
@@ -275,6 +297,14 @@ export const ITEM_FORMAT: ContentFormat<ItemDef> = {
           return { ...doc, size: [1, 1] };
       }
     },
+    // Draw times, guessed from the hold, and the knife's stats as first designed.
+    3: (doc) => {
+      if (doc.type === 'weapon') return { ...doc, drawTime: doc.hold === 'pistol' ? 0.4 : 0.8 };
+      if (doc.type === 'melee') {
+        return { ...doc, damage: 40, bleedChance: 0.3, swingTime: 0.5, reach: 1.5, drawTime: 0.3 };
+      }
+      return doc;
+    },
   },
 };
 
@@ -295,6 +325,7 @@ export const armourDef = (items: ItemDb, id: string): ArmourDef => itemOf(items,
 export const attachmentDef = (items: ItemDb, id: string): AttachmentDef =>
   itemOf(items, id, 'attachment');
 export const medDef = (items: ItemDb, id: string): MedDef => itemOf(items, id, 'med');
+export const meleeDef = (items: ItemDb, id: string): MeleeDef => itemOf(items, id, 'melee');
 export const containerDef = (items: ItemDb, id: string): ContainerDef =>
   itemOf(items, id, 'container');
 

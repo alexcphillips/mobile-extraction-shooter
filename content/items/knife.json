@@ -1,7 +1,12 @@
 {
-  "formatVersion": 3,
+  "formatVersion": 4,
   "id": "knife",
   "name": "Knife",
   "type": "melee",
-  "size": [1, 2]
+  "size": [1, 2],
+  "damage": 40,
+  "bleedChance": 0.3,
+  "swingTime": 0.5,
+  "reach": 1.5,
+  "drawTime": 0.3
 }

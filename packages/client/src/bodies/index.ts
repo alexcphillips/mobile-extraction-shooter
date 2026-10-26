@@ -20,11 +20,17 @@ import { CharacterBody, CharacterRig } from '../render/character-body';
 interface Pose {
   name: string;
   set: (c: Character, items: ItemDb) => void;
+  /** Swings its knife over and over. */
+  slash?: boolean;
 }
 
 const rifle = (c: Character, items: ItemDb): void =>
   void giveWeapon(c, items, 'assault-rifle', ['red-dot']);
 const pistol = (c: Character, items: ItemDb): void => void giveWeapon(c, items, 'pistol');
+const knife = (c: Character, items: ItemDb): void => {
+  equip(c, items, 'knife', createItem(items, 'knife'));
+  c.gear.hand = 'knife';
+};
 const moving = (fwd: number, right: number) => (c: Character) => {
   // Facing −z: forward is −z and right is +x.
   c.vx = right;
@@ -53,6 +59,12 @@ const POSES: Pose[] = [
   },
   { name: 'reload', set: (c, i) => (rifle(c, i), (heldWeapon(c)!.reloading = 2.4)) },
   { name: 'dead', set: (c, i) => (rifle(c, i), (c.health.dead = true)) },
+  {
+    name: 'using a med',
+    set: (c, i) => (rifle(c, i), (c.using = { grid: 0, index: 0, item: 'bandage', left: 1 })),
+  },
+  { name: 'knife', set: knife },
+  { name: 'knife slash', set: knife, slash: true },
   { name: 'unarmed', set: () => {} },
 ];
 
@@ -76,6 +88,9 @@ function character(id: number, x: number): Character {
     health: createHealth(),
     gear: createGear(false),
     aim: 0,
+    draw: 0,
+    swing: 0,
+    using: null,
     recoilPitch: 0,
     recoilYaw: 0,
     ai: null,
@@ -167,7 +182,11 @@ export async function startBodies(canvas: HTMLCanvasElement, status: HTMLElement
     for (let s = 0; s < steps; s++) {
       const d = steps > 1 ? 1 / 60 : dt;
       elapsed += d;
-      for (const { c, body, zones } of shown) {
+      for (const { pose, c, body, zones } of shown) {
+        // Slashes go round again, every 0.8 s.
+        if (pose.slash && Math.floor(elapsed / 0.8) !== Math.floor((elapsed - d) / 0.8)) {
+          body.swung();
+        }
         // Reloads go round again.
         const w = heldWeapon(c);
         if (w && w.reloading > 0) {

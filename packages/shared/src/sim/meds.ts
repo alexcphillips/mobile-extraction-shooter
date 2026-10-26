@@ -1,6 +1,7 @@
 import { itemDef, type ItemDb, type MedEffect } from '../content/items';
 import { removeAt } from '../inventory/grid';
-import { CARRIED_GRIDS, carriedGrid } from './gear';
+import { TICK_SECONDS } from '../tick';
+import { CARRIED_GRIDS, carriedGrid, heldWeapon } from './gear';
 import {
   CHEST,
   HEAD,
@@ -12,7 +13,7 @@ import {
   type Health,
   type Zone,
 } from './health';
-import type { Character } from './state';
+import type { Character, PlayerInput } from './state';
 
 /** The fixed order meds treat zones in. There's no body diagram. */
 export const TREATMENT_ORDER: readonly Zone[] = [
@@ -62,12 +63,25 @@ export interface CarriedRef {
 }
 
 /**
+ * A carried med as the heal button saw it: where it is, plus its item id, so a press that
+ * has gone stale (the med moved or was used up) does nothing rather than use another item.
+ */
+export interface MedRef extends CarriedRef {
+  item: string;
+}
+
+/** A med being used: which one, and the seconds left until it takes effect. */
+export interface MedUse extends MedRef {
+  left: number;
+}
+
+/**
  * What the heal button can offer: the first carried med of each kind that would do
  * something now, best first by EFFECT_PRIORITY. A tap uses the first; a long press offers
  * them all. Empty when nothing's wrong or nothing carried helps. Not the vault.
  */
-export function treatments(c: Character, items: ItemDb): CarriedRef[] {
-  const out: CarriedRef[] = [];
+export function treatments(c: Character, items: ItemDb): MedRef[] {
+  const out: MedRef[] = [];
   const seen = new Set<string>();
   for (const effect of EFFECT_PRIORITY) {
     if (zoneToTreat(c.health, effect) < 0) continue;
@@ -78,7 +92,7 @@ export function treatments(c: Character, items: ItemDb): CarriedRef[] {
         const def = itemDef(items, gi.item.item);
         if (def.type !== 'med' || def.effect !== effect || seen.has(def.id)) return;
         seen.add(def.id);
-        out.push({ grid: g, index });
+        out.push({ grid: g, index, item: def.id });
       });
     }
   }
@@ -86,8 +100,61 @@ export function treatments(c: Character, items: ItemDb): CarriedRef[] {
 }
 
 /**
- * Uses a carried med once: the effect of finishing its use (session 10 adds the use time
- * and cancelling). A bandage, splint or surgery kit treats one zone, the first in
+ * Starts using a carried med, if it's still where the ref says and would do something
+ * now. It takes effect after its use time (see updateMedUse). A reload stops. Returns
+ * whether it started.
+ */
+export function startUse(c: Character, items: ItemDb, ref: MedRef): boolean {
+  const it = carriedGrid(c.gear, ref.grid)?.items[ref.index]?.item;
+  if (!it || it.item !== ref.item || c.health.dead) return false;
+  const def = itemDef(items, it.item);
+  if (def.type !== 'med' || zoneToTreat(c.health, def.effect) < 0) return false;
+  const w = heldWeapon(c);
+  if (w) w.reloading = 0;
+  c.using = { grid: ref.grid, index: ref.index, item: ref.item, left: def.useTime };
+  return true;
+}
+
+/**
+ * One tick of using a med: a press starts or stops one; firing, reloading, sprinting or
+ * climbing stops it; when its time is up it takes effect (useMed). If the med moved in
+ * the meantime, the first carried one of the same item is used; if there's none, nothing
+ * happens.
+ */
+export function updateMedUse(c: Character, items: ItemDb, input: PlayerInput | undefined): void {
+  if (c.health.dead) {
+    c.using = null;
+    return;
+  }
+  if (input?.use === 'cancel') c.using = null;
+  else if (input?.use) startUse(c, items, input.use);
+  const u = c.using;
+  if (!u) return;
+  const sprinting = !!input?.sprint && input.moveY > 0 && !input.aim;
+  if (input?.fire || input?.reload || sprinting || c.mode === 'ladder') {
+    c.using = null;
+    return;
+  }
+  u.left -= TICK_SECONDS;
+  if (u.left > 1e-9) return;
+  c.using = null;
+  const still = carriedGrid(c.gear, u.grid)?.items[u.index]?.item.item === u.item;
+  const ref = still ? u : firstCarried(c, u.item);
+  if (ref) useMed(c, items, ref);
+}
+
+/** Where the first carried item with this id is, or null. */
+function firstCarried(c: Character, id: string): CarriedRef | null {
+  for (let g = 0; g < CARRIED_GRIDS; g++) {
+    const index = carriedGrid(c.gear, g)?.items.findIndex((gi) => gi.item.item === id) ?? -1;
+    if (index >= 0) return { grid: g, index };
+  }
+  return null;
+}
+
+/**
+ * Uses a carried med once: the effect of finishing its use (startUse and updateMedUse add
+ * the use time and cancelling). A bandage, splint or surgery kit treats one zone, the first in
  * TREATMENT_ORDER that needs it; a heal restores HP down that order, skipping broken
  * limbs, until its pool or the damage runs out. Used up, it's removed. Returns whether it
  * did anything.

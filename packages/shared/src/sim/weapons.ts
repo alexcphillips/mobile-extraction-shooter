@@ -28,6 +28,8 @@ const DT = TICK_SECONDS;
 const DEG = Math.PI / 180;
 /** Recoil never pushes the view up further than this, in radians. */
 const MAX_RECOIL = 20 * DEG;
+/** How fast recoil settles with no gun in hand (switched to the knife mid-burst), in radians per second. */
+const UNARMED_RECOVERY = 15 * DEG;
 
 /**
  * A gun, in a gear slot or in a grid. Reloading takes rounds from the ammo carried (see
@@ -139,8 +141,9 @@ export function createWeapon(
 }
 
 /**
- * Gives a character a new gun (see createWeapon) and takes it out: a pistol in the
- * sidearm slot, anything else in the first primary. Replaces whatever was there.
+ * Gives a character a new gun (see createWeapon) and takes it out, ready at once: a
+ * pistol in the sidearm slot, anything else in the first primary. Replaces whatever was
+ * there.
  */
 export function giveWeapon(
   c: Character,
@@ -152,6 +155,7 @@ export function giveWeapon(
   const slot = weaponDef(items, id).hold === 'pistol' ? 'sidearm' : 'primary1';
   equip(c, items, slot, w);
   c.gear.hand = slot;
+  c.draw = 0;
   return w;
 }
 
@@ -192,8 +196,8 @@ function armScale(c: Character, perArm: number): number {
 
 /**
  * One tick of a character's gun: aiming in and out, recoil settling, reloading and
- * firing. Firing is blocked on a ladder and while reloading; pulling the trigger on an
- * empty gun starts a reload.
+ * firing. Firing is blocked on a ladder, while drawing and while reloading; pulling the
+ * trigger on an empty gun starts a reload. Using a med keeps the gun lowered.
  */
 export function updateWeapon(
   state: SimState,
@@ -205,14 +209,18 @@ export function updateWeapon(
   const w = heldWeapon(c);
   if (!w) {
     c.aim = 0;
+    c.recoilPitch = towardZero(c.recoilPitch, UNARMED_RECOVERY * DT);
+    c.recoilYaw = towardZero(c.recoilYaw, UNARMED_RECOVERY * DT);
     return;
   }
   const def = weaponDef(items, w.item);
   const s = weaponStats(items, w, stats);
-  const free = c.mode !== 'ladder';
+  // Not on a ladder, and not until it's drawn.
+  const free = c.mode !== 'ladder' && c.draw === 0;
 
   const aimStep = DT / (s.aimTime * armScale(c, HEALTH.brokenArmAimTime));
-  const aiming = !!input?.aim && free;
+  // Using a med lowers the gun.
+  const aiming = !!input?.aim && free && !c.using;
   c.aim = Math.max(0, Math.min(1, c.aim + (aiming ? aimStep : -aimStep)));
 
   const settle = def.recoil.recovery * DEG * DT;
@@ -225,7 +233,7 @@ export function updateWeapon(
       w.reloading = 0;
       w.mag += takeAmmo(c, def.ammo, s.magazine - w.mag);
     }
-  } else if (input?.reload) {
+  } else if (input?.reload && free) {
     startReload(c, def, w, s);
   }
 

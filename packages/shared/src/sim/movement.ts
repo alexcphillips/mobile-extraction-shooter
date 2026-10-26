@@ -16,6 +16,10 @@ export const MOVEMENT = {
   sprintSpeed: 6,
   crouchSpeed: 1.8,
   climbSpeed: 2,
+  /** The most you can walk while using a med. */
+  useSpeed: 1.5,
+  /** Walking and sprinting are this much faster with the knife out. */
+  knifeSpeed: 1.1,
   /** Ledges this high are walked onto (kerbs, single steps); in the air, mantled onto. */
   stepUp: 0.45,
   /** Drops this deep are followed down instead of falling. */
@@ -120,8 +124,12 @@ function walk(
   const M = MOVEMENT;
   const crouched = isCrouched(c);
   if (c.mode === 'ground') {
-    const speed =
-      (crouched ? M.crouchSpeed : sprint ? M.sprintSpeed : M.walkSpeed) * legSpeedScale(c.health);
+    const knife = !crouched && c.gear.hand === 'knife' && c.gear.knife ? M.knifeSpeed : 1;
+    let speed =
+      (crouched ? M.crouchSpeed : sprint ? M.sprintSpeed : M.walkSpeed) *
+      knife *
+      legSpeedScale(c.health);
+    if (c.using) speed = Math.min(speed, M.useSpeed);
     c.vx = wishX * speed;
     c.vz = wishZ * speed;
     limitSlope(c, world);

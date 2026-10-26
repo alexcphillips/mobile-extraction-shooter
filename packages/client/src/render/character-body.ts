@@ -7,7 +7,7 @@ import {
   type CharacterTemplate,
   type Gear,
 } from './character';
-import { gunKey, gunModel, type GunModel } from './gun-model';
+import { KNIFE, gunKey, gunModel, type GunModel } from './gun-model';
 
 /** The clips the body plays, by their names in the Universal Animation Library. */
 const CLIP = {
@@ -44,6 +44,8 @@ const TUNE = {
   /** Crossfade times in seconds. */
   fadeLegs: 0.2,
   fadeUpper: 0.15,
+  /** A knife slash lasts this long (s). */
+  slash: 0.3,
   /** The legs turn towards where it's going by up to this much (radians) when strafing... */
   maxTwist: 1.2,
   /** ...and play backwards when it's going this far from where it faces. */
@@ -295,6 +297,10 @@ export class CharacterBody {
   private readonly clipQ: THREE.Quaternion[];
   private look = '';
   private gun: GunModel | null = null;
+  /** The knife is out (and no gun). */
+  private knife = false;
+  /** A knife swing: 1 as it starts, down to 0 as it ends. */
+  private slash = 0;
   private hold: 'rifle' | 'pistol' = 'rifle';
   /** The reload time left when last animated, to tell when a new one starts, and its pace. */
   private reloadLeft = 0;
@@ -362,6 +368,11 @@ export class CharacterBody {
     this.flinch = 1;
   }
 
+  /** It swung its knife. */
+  swung(): void {
+    this.slash = 1;
+  }
+
   /**
    * Places the body between the last two ticks (alpha 0–1) and animates it, every few
    * frames when far away or off screen.
@@ -402,16 +413,19 @@ export class CharacterBody {
   private setLook(ch: Character, items: ItemDb): void {
     const w = heldWeapon(ch);
     const g = ch.gear;
-    const key = `${!!g.helmet} ${!!g.bodyArmour} ${!!g.backpack} ${w ? gunKey(w) : ''}`;
+    const knife = !w && g.hand === 'knife' && !!g.knife;
+    const held = w ? gunKey(w) : knife ? 'knife' : '';
+    const key = `${!!g.helmet} ${!!g.bodyArmour} ${!!g.backpack} ${held}`;
     if (key === this.look) return;
     this.look = key;
     this.gun = w ? gunModel(w, items) : null;
+    this.knife = knife;
     this.hold = this.gun?.hold ?? 'rifle';
     const gear: Gear = {
       helmet: !!g.helmet,
       vest: !!g.bodyArmour,
       backpack: !!g.backpack,
-      gun: this.gun?.shapes ?? null,
+      gun: this.gun?.shapes ?? (knife ? KNIFE.shapes : null),
     };
     this.mesh.geometry = characterGeometry(this.rig.template, this.outfit, gear);
   }
@@ -450,8 +464,10 @@ export class CharacterBody {
     const w = heldWeapon(ch);
     let mode: Upper;
     if (dead) mode = 'dead';
-    else if (!w || ch.mode !== 'ground' || legs === CLIP.sprint) mode = 'free';
-    else if (w.reloading > 0) mode = 'hand';
+    // Arms down while drawing or using a med, as when sprinting.
+    else if ((!w && !this.knife) || ch.mode !== 'ground' || legs === CLIP.sprint) mode = 'free';
+    else if (ch.draw > 0 || ch.using) mode = 'free';
+    else if (!w || w.reloading > 0) mode = 'hand';
     else mode = ik ? 'ik' : 'hand';
     if (mode === 'dead') {
       this.top.play(CLIP.death, TUNE.fadeLegs, 1, false, true);
@@ -481,7 +497,9 @@ export class CharacterBody {
     }
     this.kick *= Math.exp(-dt / 0.08);
     this.flinch *= Math.exp(-dt / 0.15);
+    this.slash = Math.max(0, this.slash - dt / TUNE.slash);
     if (dead || !w || !this.gun) {
+      if (this.knife && mode === 'hand' && this.slash > 0) this.slashArm();
       this.carry();
       return;
     }
@@ -530,6 +548,24 @@ export class CharacterBody {
     pole.set(-0.25, -1, 0.15).applyQuaternion(rootQ);
     handGoal.copy(gunQ).multiply(hands.leftQ);
     reach(this.bone.upperL, this.bone.lowerL, this.bone.handL, target, pole, handGoal);
+  }
+
+  /**
+   * The right hand slashes: out to the right of the chest, then across and forward to the
+   * left, by IK from the shoulder.
+   */
+  private slashArm(): void {
+    const p = 1 - this.slash;
+    const out = Math.sin(Math.PI * p);
+    const across = (1 - Math.cos(Math.PI * p)) / 2;
+    this.root.getWorldQuaternion(rootQ);
+    this.bone.upperR.getWorldPosition(target);
+    // In the body's frame: it faces −z, so +x is its right.
+    v1.set(0.25 - 0.5 * across, -0.2 + 0.08 * out, -(0.25 + 0.3 * out)).applyQuaternion(rootQ);
+    target.add(v1);
+    pole.set(0.25, -1, 0.15).applyQuaternion(rootQ);
+    this.bone.handR.getWorldQuaternion(handGoal);
+    reach(this.bone.upperR, this.bone.lowerR, this.bone.handR, target, pole, handGoal);
   }
 
   /** The gun follows the right hand, as the clip moves it. */

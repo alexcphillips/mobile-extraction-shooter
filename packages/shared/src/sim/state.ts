@@ -1,9 +1,11 @@
 import { createRng, type Rng } from '../rng';
 import type { AiState } from './ai';
 import type { CollisionWorld } from '../world/collision-world';
-import { createGear, type Gear } from './gear';
+import { createGear, type Gear, type Hand } from './gear';
 import { createHealth, type DamageEvent, type DeathEvent, type Health } from './health';
 import type { InventoryAction, InventoryEvent, LootContainer } from './looting';
+import type { MedRef, MedUse } from './meds';
+import type { SwingEvent } from './melee';
 import { MOVEMENT } from './movement';
 import type { ShotEvent } from './weapons';
 
@@ -39,6 +41,12 @@ export interface Character {
   gear: Gear;
   /** How far into aiming down the sights: 0 at the hip, 1 fully aimed. */
   aim: number;
+  /** Seconds left taking out what's in its hands; it can't fire, swing or aim until 0. */
+  draw: number;
+  /** Seconds until the knife can swing again. */
+  swing: number;
+  /** The med it's using, or null. */
+  using: MedUse | null;
   /** Recoil's kick to the view in radians, added to yaw and pitch; it settles back to 0. */
   recoilPitch: number;
   recoilYaw: number;
@@ -50,7 +58,7 @@ export interface Character {
 export type Entity = Character;
 
 /** Things that happened during the last tick, for effects and the HUD. */
-export type SimEvent = ShotEvent | DamageEvent | DeathEvent | InventoryEvent;
+export type SimEvent = ShotEvent | SwingEvent | DamageEvent | DeathEvent | InventoryEvent;
 
 /**
  * Everything that changes during a raid. Plain JSON-safe data: no classes, maps or typed
@@ -89,6 +97,10 @@ export interface PlayerInput {
   reload: boolean;
   /** Inventory actions to apply at the start of the tick, in order. */
   inventory?: readonly InventoryAction[];
+  /** Take out a gun slot or the knife: a press. */
+  draw?: Hand | null;
+  /** Start using a carried med (a press), or stop using one. */
+  use?: MedRef | 'cancel' | null;
 }
 
 /**
@@ -133,6 +145,9 @@ export function spawnCharacter(
     health: createHealth(),
     gear: createGear(vault),
     aim: 0,
+    draw: 0,
+    swing: 0,
+    using: null,
     recoilPitch: 0,
     recoilYaw: 0,
     ai: null,

@@ -1,3 +1,4 @@
+import type { Hand } from '@mes/shared';
 import type { Hud } from '../hud/hud';
 import type { ControlId } from '../hud/layout';
 import { settings } from '../settings';
@@ -10,7 +11,10 @@ const LOCK_DISTANCE = 110;
 /** A touch shorter and smaller than this is a tap (which unlocks sprinting). */
 const TAP_MS = 250;
 const TAP_SLOP = 12;
-const QUICK_SLOTS: readonly ControlId[] = ['quick1', 'quick2', 'quick3', 'quick4'];
+/** Holding the heal button this long opens the picker instead of using the default. */
+const LONG_PRESS_MS = 400;
+/** The hand slots, in the order of their buttons and of keys 1–4. */
+const HANDS: readonly Hand[] = ['primary1', 'primary2', 'sidearm', 'knife'];
 
 interface MoveTouch {
   id: number;
@@ -30,7 +34,8 @@ interface MoveTouch {
  * the stick back, tapping the left half, aiming, firing or crouching unlocks it.
  *
  * Desktop: WASD, Shift sprint, Space jump, C crouch, F fire, Q aim, R reload, E use, I or
- * Tab the bag, 1–4 quick slots, and mouse drag to look.
+ * Tab the bag, 1–4 take out primary 1, primary 2, sidearm or knife, H heal (Shift+H picks),
+ * 7–0 the debug actions, and mouse drag to look.
  */
 export class Controls {
   /** Move input, -1..1 per axis; y is forward. */
@@ -48,8 +53,14 @@ export class Controls {
   interact = false;
   /** The bag button: opens the inventory. */
   bag = false;
-  /** The quick slot pressed this tick (0–3), or -1. */
-  quickSlot = -1;
+  /** A hand slot's button: take it out. */
+  draw: Hand | null = null;
+  /** The heal button tapped: use what it shows (or stop using a med). */
+  heal = false;
+  /** The heal button held: pick which med. */
+  healPick = false;
+  /** A debug action (0–3), or -1. */
+  debug = -1;
   /** Look speed multiplier from aim assist, set by the game while the crosshair is on an enemy. */
   assist = 1;
   /** Look speed is divided by this, set by the game while looking through a scope. */
@@ -70,7 +81,10 @@ export class Controls {
   private pressedReload = false;
   private pressedInteract = false;
   private pressedBag = false;
-  private pressedQuick = -1;
+  private pressedDraw: Hand | null = null;
+  private pressedHeal = false;
+  private pressedHealPick = false;
+  private pressedDebug = -1;
   private readonly keys = new Set<string>();
 
   constructor(
@@ -98,9 +112,14 @@ export class Controls {
     this.reload = this.pressedReload;
     this.interact = this.pressedInteract;
     this.bag = this.pressedBag;
-    this.quickSlot = this.pressedQuick;
+    this.draw = this.pressedDraw;
+    this.heal = this.pressedHeal;
+    this.healPick = this.pressedHealPick;
+    this.debug = this.pressedDebug;
     this.pressedReload = this.pressedInteract = this.pressedBag = false;
-    this.pressedQuick = -1;
+    this.pressedHeal = this.pressedHealPick = false;
+    this.pressedDraw = null;
+    this.pressedDebug = -1;
 
     const kx = (k.has('KeyD') ? 1 : 0) - (k.has('KeyA') ? 1 : 0);
     const ky = (k.has('KeyW') ? 1 : 0) - (k.has('KeyS') ? 1 : 0);
@@ -141,6 +160,8 @@ export class Controls {
     this.look.clear();
     for (const release of this.releases.values()) release();
     this.releases.clear();
+    // Letting go of the heal button isn't a tap when it's the game letting go.
+    this.pressedHeal = false;
     this.keys.clear();
     this.setSprintLock(false);
   }
@@ -192,8 +213,21 @@ export class Controls {
         this.pressedBag = true;
         held(() => {});
         break;
+      case 'heal': {
+        // A tap uses the default when it lifts; holding opens the picker instead.
+        let picked = false;
+        const timer = setTimeout(() => {
+          picked = true;
+          this.pressedHealPick = true;
+        }, LONG_PRESS_MS);
+        held(() => {
+          clearTimeout(timer);
+          if (!picked) this.pressedHeal = true;
+        });
+        break;
+      }
       default:
-        this.pressedQuick = QUICK_SLOTS.indexOf(id);
+        this.pressedDraw = id;
         held(() => {});
     }
   }
@@ -214,11 +248,20 @@ export class Controls {
     if (e.repeat) return;
     if (e.code === 'KeyR') this.pressedReload = true;
     else if (e.code === 'KeyE') this.pressedInteract = true;
-    else if (e.code === 'KeyI' || e.code === 'Tab') {
+    else if (e.code === 'KeyH') {
+      if (e.shiftKey) this.pressedHealPick = true;
+      else this.pressedHeal = true;
+    } else if (e.code === 'KeyI' || e.code === 'Tab') {
       e.preventDefault();
       this.pressedBag = true;
-    } else if (/^Digit[1-4]$/.test(e.code)) this.pressedQuick = Number(e.code.slice(5)) - 1;
+    } else if (/^Digit[1-4]$/.test(e.code)) this.pressedDraw = HANDS[Number(e.code.slice(5)) - 1]!;
+    else if (/^Digit[7-90]$/.test(e.code)) this.pressedDebug = (Number(e.code.slice(5)) + 3) % 10;
   };
+
+  /** A debug action from an on-screen button, as if its key was pressed. */
+  pressDebug(i: number): void {
+    this.pressedDebug = i;
+  }
 
   private readonly onDown = (e: PointerEvent): void => {
     if (e.clientX < window.innerWidth / 2 && !this.move) {

@@ -100,12 +100,13 @@ export function fitsSlot(items: ItemDb, slot: GearSlot, item: Item): boolean {
 /**
  * Puts an item in a gear slot and returns what was there (or null) for the caller to put
  * somewhere. Throws if it doesn't fit, so check with fitsSlot first. Items made by
- * createItem have the fields their slot needs.
+ * createItem have the fields their slot needs. Into the slot in its hands, it's drawn.
  */
 export function equip(c: Character, items: ItemDb, slot: GearSlot, item: Item): Item | null {
   if (!fitsSlot(items, slot, item)) throw new Error(`"${item.item}" can't go in ${slot}`);
   const old = unequip(c, slot);
   (c.gear as unknown as Record<GearSlot, Item | null>)[slot] = item;
+  if (slot === c.gear.hand) c.draw = drawTime(items, c.gear, slot);
   return old;
 }
 
@@ -119,15 +120,25 @@ export function unequip(c: Character, slot: GearSlot): Item | null {
 }
 
 /**
- * Takes out a gun slot or the knife. The gun put away stops reloading and aiming starts
- * over. Drawing takes no time yet (session 10).
+ * Takes out a gun slot or the knife, which takes its draw time. The gun put away stops
+ * reloading, aiming starts over, and using a med stops. An empty slot is empty hands.
  */
-export function switchHand(c: Character, hand: Hand): void {
+export function switchHand(c: Character, items: ItemDb, hand: Hand): void {
   if (hand === c.gear.hand) return;
   const w = heldWeapon(c);
   if (w) holster(w);
   c.gear.hand = hand;
   c.aim = 0;
+  c.draw = drawTime(items, c.gear, hand);
+  c.using = null;
+}
+
+/** How long taking out what's in a hand slot takes; 0 for an empty one. */
+export function drawTime(items: ItemDb, gear: Gear, hand: Hand): number {
+  const it = gear[hand];
+  if (!it) return 0;
+  const def = itemDef(items, it.item);
+  return def.type === 'weapon' || def.type === 'melee' ? def.drawTime : 0;
 }
 
 function holster(w: WeaponState): void {

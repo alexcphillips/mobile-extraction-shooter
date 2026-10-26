@@ -13,7 +13,9 @@ import {
   type SimState,
 } from './state';
 import { step } from './step';
-import { stow } from './gear';
+import { equip, stow } from './gear';
+import { createItem } from './create-item';
+import { CHEST } from './health';
 import { giveWeapon } from './weapons';
 import { TEST_ITEMS } from './test-items';
 
@@ -390,6 +392,21 @@ describe('enemy combat', () => {
     expect(alertAt).toBeGreaterThanOrEqual(0);
     expect((firstShot - alertAt) / TICK_RATE).toBeGreaterThanOrEqual(DEFAULT_SKILL.reaction - 0.05);
     expect(hits).toBeGreaterThan(3);
+  });
+
+  it('is alarmed and flinches when knifed from behind, as when shot', () => {
+    const s = setup(0, 1);
+    arm(s);
+    equip(s.player, TEST_ITEMS, 'knife', createItem(TEST_ITEMS, 'knife'));
+    s.run(0.5, input({ draw: 'knife' }));
+    expect(s.enemy.ai!.awareness).toBe('unaware');
+    const aimError = s.enemy.ai!.aimError;
+    // Down at its back from 1 m.
+    s.run(1 / TICK_RATE, input({ draw: 'knife', fire: true, pitch: -0.3 }));
+    expect(s.enemy.health.hp[CHEST]).toBeLessThan(85);
+    expect(s.enemy.ai!.awareness).toBe('alert');
+    expect(s.enemy.ai!.target).toBe(s.player.id);
+    expect(s.enemy.ai!.aimError).toBeGreaterThan(aimError);
   });
 
   it('reloads from the rounds it carries, and stops shooting once they run out', () => {

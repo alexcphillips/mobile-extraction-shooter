@@ -97,16 +97,16 @@ describe('gear', () => {
     const pistol = giveWeapon(c, items, 'pistol');
     expect(c.gear.hand).toBe('sidearm');
     expect(heldWeapon(c)).toBe(pistol);
-    switchHand(c, 'primary1');
+    switchHand(c, items, 'primary1');
     expect(heldWeapon(c)).toBe(rifle);
     rifle.reloading = 1;
     c.aim = 1;
-    switchHand(c, 'knife');
+    switchHand(c, items, 'knife');
     expect(heldWeapon(c)).toBeNull();
     expect(rifle.reloading).toBe(0);
     expect(c.aim).toBe(0);
     // An empty gun slot in hand is empty hands.
-    switchHand(c, 'primary2');
+    switchHand(c, items, 'primary2');
     expect(heldWeapon(c)).toBeNull();
   });
 

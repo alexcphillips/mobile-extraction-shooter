@@ -172,6 +172,19 @@ export function gunModel(w: WeaponState, items: ItemDb): GunModel {
   };
 }
 
+/**
+ * The placeholder knife, in the same frame as a gun: the handle in the fist at a pistol's
+ * grip, the blade along −z. Drawn in first person and in a body's right hand.
+ */
+export const KNIFE = {
+  shapes: [
+    box(0, -0.05, 0.0, 0.011, 0.014, 0.045, BLACK),
+    box(0, -0.05, -0.05, 0.006, 0.026, 0.005, DARK),
+    box(0, -0.048, -0.135, 0.003, 0.014, 0.08, 0xb9c0c6),
+  ],
+  grip: [0, -0.055, 0.005] as const,
+};
+
 /** A key that changes whenever the gun's model would. */
 export function gunKey(w: WeaponState): string {
   const { optic, muzzle, magazine } = w.attachments;

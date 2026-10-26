@@ -3,7 +3,11 @@ import type { NavGrid } from '../nav/nav-grid';
 import type { CollisionWorld } from '../world/collision-world';
 import { updateAi } from './ai';
 import { applyFall, bleed } from './health';
+import { TICK_SECONDS } from '../tick';
+import { switchHand } from './gear';
 import { applyInventory } from './looting';
+import { updateMedUse } from './meds';
+import { updateMelee } from './melee';
 import { moveCharacter, separateCharacters } from './movement';
 import type { SimState, TickInputs } from './state';
 import { updateWeapon } from './weapons';
@@ -15,7 +19,7 @@ import { updateWeapon } from './weapons';
  *
  * Enemies think at the end, from this tick's positions and events, and act on it next
  * tick. Without a nav grid they don't think, and stand still. Inventory actions come
- * first, so the rest of the tick sees what they changed.
+ * first, so the rest of the tick sees what they changed; then switching hands and meds.
  */
 export function step(
   state: SimState,
@@ -32,6 +36,13 @@ export function step(
       state.events.push({ type: 'inventory', by: e.id, ok: applyInventory(state, e, items, a) });
     }
   }
+  // Switching hands and using meds before moving, which is slower while using one.
+  for (const e of state.entities) {
+    const input = e.health.dead ? undefined : (inputs[e.id] ?? e.ai?.input);
+    if (e.draw > 0) e.draw = Math.max(0, e.draw - TICK_SECONDS);
+    if (input?.draw) switchHand(e, items, input.draw);
+    updateMedUse(e, items, input);
+  }
   // Everyone moves, then everyone shoots, so shots see this tick's positions.
   for (const e of state.entities) {
     const input = e.health.dead ? undefined : (inputs[e.id] ?? e.ai?.input);
@@ -40,7 +51,10 @@ export function step(
   }
   separateCharacters(state.entities, world);
   for (const e of state.entities) {
-    if (!e.health.dead) updateWeapon(state, e, inputs[e.id] ?? e.ai?.input, world, items);
+    if (e.health.dead) continue;
+    const input = inputs[e.id] ?? e.ai?.input;
+    updateWeapon(state, e, input, world, items);
+    updateMelee(state, e, input, world, items);
   }
   for (const e of state.entities) bleed(state, e);
   if (nav) updateAi(state, world, items, nav);

@@ -1,5 +1,5 @@
 {
-  "formatVersion": 3,
+  "formatVersion": 4,
   "id": "pistol",
   "name": "Pistol",
   "type": "weapon",
@@ -11,6 +11,7 @@
   "magazine": 15,
   "reloadTime": 1.6,
   "aimTime": 0.2,
+  "drawTime": 0.4,
   "range": 100,
   "loudness": 120,
   "slots": ["optic", "muzzle", "magazine"],
