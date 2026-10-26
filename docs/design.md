@@ -113,7 +113,7 @@ A simplified mobile extraction shooter: the risk/reward loop of Tarkov without i
 ## Trust model
 A sandbox. The client is trusted. The server only applies sanity limits (for example, money can't jump from 20 to 9 trillion; item counts and values stay within reasonable bounds). No raid replay or loot validation. Revisit only if ranked challenges or friend trading get abused.
 
-## Characters (proposed 2026-10-26, waiting for the user's confirmation)
+## Characters (confirmed 2026-10-26)
 - **No blocky cube people.** The base body is a rigged, animated **low-poly humanoid from a CC0 asset pack** (for example Quaternius), recoloured to flat colours to match the art style. No 3D modelling is needed from the user.
 - **What you see on an enemy is what they carry:** helmets, armour, backpacks and weapons are the same models built in the item editor, attached to the body. You can read how dangerous an enemy is, and roughly what they'll drop, before you engage.
 - **Factions and bosses** are told apart by uniform colours and gear, and bosses also by size or a distinctive item.

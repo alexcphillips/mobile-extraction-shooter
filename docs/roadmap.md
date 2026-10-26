@@ -121,5 +121,4 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
 - Grenades for AI (with a shared token), gyro aiming, water slowing movement, more attachment slots.
 
 ## Open questions
-- Confirm the character appearance proposal (design.md → Characters).
 - Login method (session 12). Sound effect source (session 19).

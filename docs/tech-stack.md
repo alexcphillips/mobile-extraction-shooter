@@ -64,7 +64,7 @@ docs/
 - **Phone testing during development:** run `vite --host` and open it on the iPhone over the local network. When HTTPS is needed (installing as a home-screen app, some browser features), use a Cloudflare preview deployment or a `cloudflared` tunnel.
 - Each milestone ends with a performance check on the real iPhone (FPS counter in dev builds).
 
-## Characters (proposed, see design.md → Characters)
+## Characters (confirmed, see design.md → Characters)
 - The base body is a rigged, animated low-poly humanoid from a CC0 pack in glTF format (for example Quaternius). **Check the licence in the session that imports it.** Recolour it to flat colours and draw it unlit, so it matches the map.
 - Gear (helmet, armour, backpack, weapon) is built in the item editor and attached to the skeleton at named mount points.
 - Hit zones are simple capsules attached to the skeleton's bones, not tests against the mesh itself.
