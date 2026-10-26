@@ -1,11 +1,15 @@
 import { PROTOCOL_VERSION, type HelloResponse } from '@mes/shared';
-import { createScene } from './scene';
+import { startPerfTest } from './perf';
+import { readParams } from './perf/params';
+import { mountPresets } from './perf/presets';
 
-const canvas = document.querySelector<HTMLCanvasElement>('#scene');
-const status = document.querySelector<HTMLDivElement>('#status');
-if (!canvas || !status) throw new Error('missing #scene or #status');
+const byId = (id: string): HTMLElement => {
+  const el = document.getElementById(id);
+  if (!el) throw new Error(`missing #${id}`);
+  return el;
+};
 
-createScene(canvas);
+const status = byId('status');
 
 async function checkServer(el: HTMLElement): Promise<void> {
   try {
@@ -19,4 +23,18 @@ async function checkServer(el: HTMLElement): Promise<void> {
   }
 }
 
-void checkServer(status);
+void checkServer(byId('server'));
+mountPresets(byId('presets'));
+startPerfTest(
+  {
+    canvas: byId('scene') as HTMLCanvasElement,
+    stats: byId('stats'),
+    status,
+    stick: byId('stick'),
+    knob: byId('knob'),
+    crosshair: byId('crosshair'),
+  },
+  readParams(location.search),
+).catch((err: unknown) => {
+  status.textContent = `perf test failed: ${err instanceof Error ? err.message : String(err)}`;
+});

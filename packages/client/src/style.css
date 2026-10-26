@@ -19,16 +19,99 @@ body {
   height: 100dvh;
 }
 
-#status {
+#hud {
   position: fixed;
   top: max(8px, env(safe-area-inset-top));
   left: max(8px, env(safe-area-inset-left));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  pointer-events: none;
+}
+
+#hud > div {
   padding: 4px 8px;
   border-radius: 4px;
   background: rgb(0 0 0 / 0.5);
   color: #fff;
   font:
-    12px/1.4 ui-monospace,
+    11px/1.4 ui-monospace,
     monospace;
+  white-space: pre;
+}
+
+#hud > div:empty {
+  display: none;
+}
+
+#presets {
+  position: fixed;
+  top: max(8px, env(safe-area-inset-top));
+  right: max(8px, env(safe-area-inset-right));
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+#presets button {
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 4px;
+  background: rgb(0 0 0 / 0.5);
+  color: #fff;
+  font:
+    12px/1 ui-monospace,
+    monospace;
+}
+
+#presets button.active {
+  background: #e3a33a;
+  color: #000;
+}
+
+#crosshair {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.6);
   pointer-events: none;
+}
+
+#crosshair.hit {
+  background: #e33;
+}
+
+/* Floating move stick, placed where the left thumb lands. */
+#stick {
+  position: fixed;
+  top: -60px;
+  left: -60px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.15);
+  border: 2px solid rgb(255 255 255 / 0.4);
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+#stick[hidden] {
+  display: none;
+}
+
+#knob {
+  position: absolute;
+  top: 35px;
+  left: 35px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.5);
 }

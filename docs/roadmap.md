@@ -31,9 +31,26 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
     - TypeScript is pinned to 6.0.x until typescript-eslint supports 7.
     - Checked with curl over the LAN and on the deployed URL; the user confirmed it opens and runs on the iPhone.
     - Deferred: three.js makes the bundle a ~600 kB chunk (Vite warns). Fine for now; split it into a vendor chunk or lazy-load it when the menu UI arrives.
-- [ ] **2. Performance test on the phone.**
+- [x] **2. Performance test on the phone.**
   - A test scene with about 2,000 boxes merged per chunk, per-face shading, fog, about 10 **animated low-poly characters from a CC0 pack** wandering, raycasts every tick, basic touch move and look, and an FPS counter.
   - *Done when* it holds a steady 60 fps on the user's iPhone (or we know where the limit is and record it here). **This is the go/no-go gate for the whole approach.**
+  - **Notes (2026-10-26), built; waiting on the iPhone measurement:**
+    - The client opens straight into the perf scene (`packages/client/src/perf/`). The README covers its controls, stats and URL parameters (`boxes`, `chars`, `rays`, `dpr`, `aa`, `fog`) for probing the limit on the phone.
+    - World: a 256 m map with height-function terrain (2 m cells) and 2,000 boxes rotated about Y, merged into 64 chunk meshes of 32 m. Per-face shading is baked into vertex colours; unlit `MeshBasicMaterial`. On desktop that's about 34 draw calls in view and 40k triangles.
+    - Characters: "RobotExpressive" by Quaternius (CC0, from the three.js repo) as a stand-in until session 8b. As loaded it's 19 draw calls per character (rigid parts parented to bones), so at load time we **bake every part into one skinned mesh with flat per-face vertex colours**: one draw call per character, about 3.2k triangles. Session 8b should do the same with the real pack. Clones use `SkeletonUtils.clone`, each with its own `AnimationMixer`.
+    - Raycasts: a throwaway uniform-grid (8 m cells) ray against Y-rotated boxes in `perf/raycast.ts`, tested against brute force. Each 30 Hz tick casts the aim ray, one line-of-sight ray per character, and 100 extra rays. The real version goes in `shared` in session 3.
+    - Fixed 30 Hz tick with interpolated rendering, as planned for the simulation.
+    - Test device: **iPhone 16 Pro, iOS 26.7.1**. The screen is 120 Hz, but Safari caps pages at 60 fps, so 60 is the target.
+    - First run (dev server, default settings, standing still): a steady 60 fps, 16.7 ms frames, cpu about 2 ms per frame, tick 0.2–0.5 ms, 41 draw calls, 55k triangles. Janks (frames over 20 ms) came only from moving and turning. Since then, everything is drawn once at startup to warm up the GPU, and there are now preset buttons for the stress settings.
+    - **Stress results (dev server, walking and spinning):** every preset held 60 fps.
+      | Preset | fps | cpu ms/frame | Janks per 10 s while moving |
+      |---|---|---|---|
+      | 30 chars | 60 | 3–4.3 (5 peak) | up to 21 |
+      | 6000 boxes | 60 | low | about 10 |
+      | dpr 3 | 60 | 2 | about 10 |
+      | All three | 59–61 (one dip to 56) | 3.5–4.4 | not recorded |
+    - **Verdict: GO.** There's about 3× headroom over the planned scene in characters, boxes and resolution, and CPU is far below the 16.7 ms budget. The limit wasn't reached.
+    - **Janks while moving: not the scene, not noticeable.** Frames over 20 ms happen only while walking or turning, never when still. With `0 chars` it was still about 20 per 10 s, so the cause is Safari's touch-input handling or 60-on-120 Hz frame timing, not our rendering or simulation. The user felt no stutter. Revisit only if stutter becomes visible in play: Safari Web Inspector timeline over USB, and check that the jank counter isn't measuring rAF jitter.
 
 ## Milestone B: a raid you can play offline (no server)
 - [ ] **3. Simulation core.**
