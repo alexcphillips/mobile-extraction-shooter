@@ -35,7 +35,9 @@ The port is fixed at 5180 with `strictPort`, so if something else is using it, V
 ## Perf test (session 2)
 The client currently opens straight into the performance test scene: about 2,000 boxes merged per 32 m chunk, fog, 10 animated characters wandering, raycasts every tick, and a stats overlay.
 
-**Controls:** drag on the left half for the move stick (push to the rim to sprint), drag on the right half to look. On desktop, WASD + Shift and mouse drag. The dot in the middle turns red when the aim ray hits a box.
+**Controls:** drag on the left half for the move stick (push to the rim to sprint), drag on the right half to look, and use the **jump** (hold) and **crouch** (toggle) buttons. On desktop: WASD, Shift to sprint, Space to jump, C to crouch (held), and mouse drag. The dot in the middle turns red when the aim ray hits something.
+
+**Movement playground** (since session 3; the player moves with the shared simulation): straight ahead of the spawn is a 3 m platform with stairs at the front and a ladder on its right side. On the left are a 0.4 m step to walk onto, a 1 m box to jump and mantle onto, and a 1.4 m wall that's too high. On the right is a beam to crouch under. The last stats line shows the movement mode, stance, height and speed.
 
 **Stats overlay:** fps; average and worst frame time over the last 0.5 s; `janks`, frames over 20 ms (each one missed a 60 Hz vsync), as a total since the first 3 s and as a count for the last full 10 s; CPU time per frame and per simulation tick; draw calls, triangles and the canvas resolution.
 

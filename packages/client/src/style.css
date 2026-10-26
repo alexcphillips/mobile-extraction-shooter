@@ -115,3 +115,34 @@ body {
   border-radius: 50%;
   background: rgb(255 255 255 / 0.5);
 }
+
+#buttons {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+#buttons button {
+  width: 64px;
+  height: 64px;
+  border: 2px solid rgb(255 255 255 / 0.4);
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.35);
+  color: #fff;
+  font:
+    11px/1 ui-monospace,
+    monospace;
+}
+
+#buttons #jump {
+  width: 76px;
+  height: 76px;
+}
+
+#buttons button.active {
+  background: #e3a33a;
+  color: #000;
+}

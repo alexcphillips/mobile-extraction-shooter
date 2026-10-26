@@ -53,21 +53,32 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
     - **Janks while moving: not the scene, not noticeable.** Frames over 20 ms happen only while walking or turning, never when still. With `0 chars` it was still about 20 per 10 s, so the cause is Safari's touch-input handling or 60-on-120 Hz frame timing, not our rendering or simulation. The user felt no stutter. Revisit only if stutter becomes visible in play: Safari Web Inspector timeline over USB, and check that the jank counter isn't measuring rAF jitter.
 
 ## Milestone B: a raid you can play offline (no server)
-- [ ] **3. Simulation core.**
+- [x] **3. Simulation core.**
   - Fixed-tick loop, entity model, serialisable inputs and state, seeded RNG.
   - Capsule against rotated-box collision, terrain height grid, stair ramps, ladders, raycasts, spatial hash.
   - Player movement: walk, sprint, crouch if wanted, climbing ladders.
   - Unit tests.
+  - **Notes (2026-10-26):**
+    - Built in `packages/shared/src`: `rng.ts` (mulberry32 with its state as a plain object), `FixedTimestep` in `tick.ts`, `world/` (the height grid, the `StaticGrid` spatial hash and `CellWalk` ray walk, and `CollisionWorld`), and `sim/` (state and entities, the character controller, `step`). 57 unit tests, including raycasts checked against brute force and a JSON save-and-restore that continues identically.
+    - Decided with the user: **solids rotate about Y only** (slopes come from ramps and terrain), and the player gets **crouch and jump**. See design.md → Movement.
+    - `step(state, world, inputs)` **mutates the state in place** rather than returning a copy, so a tick allocates nothing. The static map is a separate `CollisionWorld` built from a plain `WorldDef`, not part of the state. Session 4's loader should produce a `WorldDef`.
+    - The perf scene now moves the player with the shared sim and uses `CollisionWorld.raycast` (terrain included) instead of the throwaway grid. It has a playground at the spawn: a step, a box to mantle, a wall too high to mantle, a beam to crouch under, and a 3 m platform with stairs and a ladder. There are jump and crouch buttons; on desktop, Space and C.
+    - **Checked on the iPhone:** the tick stays at 0.4–0.67 ms with terrain raycasts added, and the user is happy with how jumping and ladders feel.
+    - Fixed after the phone test: sprinting now turns the crouch toggle off. Before, you went back to crouching when you stopped sprinting. The sim already stood you up to sprint; the toggle lives in the client.
+    - Deferred: characters don't collide with each other yet (session 7/8, when AI moves). A spatial hash for moving things, needed for hit-zone capsules, comes in session 6. Ladders are found by a linear scan, which is fine for dozens. Fall damage moved to session 6.
 - [ ] **4. Map format and loader.**
   - zod schema with `formatVersion` and migrations: terrain height grid, water level, primitives, prefabs by reference, markers, named zones, doors.
   - Loader: merged chunks, instancing, per-face shading, fog.
   - A hand-written test map in `content/maps/`.
 - [ ] **5. Touch controls and HUD shell.**
   - Virtual stick and look, buttons for fire, aim, reload, interact and quick slots.
+  - **Sprint lock:** drag the move stick up past the top of its area to lock sprinting for long runs, so the thumb can relax. Decide what unlocks it (for example, pulling the stick back or tapping it).
+  - Sprinting turns crouch off, as in the perf scene since session 3.
   - Settings screen: adjustable and saved layout, radio buttons for aim and fire behaviour, aim assist level.
   - Portrait overlay that pauses, audio unlock, PWA manifest and standalone mode.
 - [ ] **6. Weapons and damage.**
   - Hitscan shooting, hit zones and multipliers, armour % absorption and durability, limb HP, spillover to the chest, broken-limb effects, bleeding, death.
+  - **Fall damage** (agreed 2026-10-26): to the legs from the landing speed, which the sim already knows.
   - Weapon stats and simple recoil; reloading from carried ammo.
   - Attachment slots (optic, muzzle, mag): stat changes, full-screen zoom with scope mask, red-dot reticles, suppressor hearing radius.
   - HUD: health bar, status icons, armour icon colours.

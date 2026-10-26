@@ -4,14 +4,17 @@ const PITCH_LIMIT = 1.4;
 
 /**
  * Basic twin-stick touch input: a floating move stick on the left half of the screen,
- * drag to look on the right half. WASD + Shift and mouse drag also work on desktop.
- * The full controls (layout, buttons, settings) are session 5.
+ * drag to look on the right half, and jump (hold) and crouch (toggle) buttons. WASD,
+ * Shift, Space, C and mouse drag also work on desktop. The full controls (layout,
+ * buttons, settings) are session 5.
  */
 export class Controls {
   /** Move input, -1..1 per axis; y is forward. */
   moveX = 0;
   moveY = 0;
   sprint = false;
+  jump = false;
+  crouch = false;
   yaw = 0;
   pitch = 0;
 
@@ -23,13 +26,24 @@ export class Controls {
   private lastY = 0;
   private stickX = 0;
   private stickY = 0;
+  private touchJump = false;
+  private touchCrouch = false;
   private readonly keys = new Set<string>();
 
   constructor(
     target: HTMLElement,
     private readonly stick: HTMLElement,
     private readonly knob: HTMLElement,
+    jumpButton: HTMLElement,
+    private readonly crouchButton: HTMLElement,
   ) {
+    jumpButton.addEventListener('pointerdown', () => (this.touchJump = true));
+    jumpButton.addEventListener('pointerup', () => (this.touchJump = false));
+    jumpButton.addEventListener('pointercancel', () => (this.touchJump = false));
+    crouchButton.addEventListener('pointerdown', () => {
+      this.touchCrouch = !this.touchCrouch;
+      crouchButton.classList.toggle('active', this.touchCrouch);
+    });
     target.addEventListener('pointerdown', this.onDown);
     target.addEventListener('pointermove', this.onMove);
     target.addEventListener('pointerup', this.onUp);
@@ -39,8 +53,9 @@ export class Controls {
     window.addEventListener('blur', () => this.keys.clear());
   }
 
-  /** Combine stick and keys; call once per tick. */
+  /** Combine stick, buttons and keys; call once per tick. */
   update(): void {
+    this.jump = this.touchJump || this.keys.has('Space');
     const kx = (this.keys.has('KeyD') ? 1 : 0) - (this.keys.has('KeyA') ? 1 : 0);
     const ky = (this.keys.has('KeyW') ? 1 : 0) - (this.keys.has('KeyS') ? 1 : 0);
     if (kx !== 0 || ky !== 0) {
@@ -54,6 +69,12 @@ export class Controls {
       // Pushing the stick to the rim sprints.
       this.sprint = Math.hypot(this.stickX, this.stickY) > 0.95;
     }
+    // Sprinting (which the sim only does forwards) turns the crouch toggle off.
+    if (this.sprint && this.moveY > 0 && this.touchCrouch) {
+      this.touchCrouch = false;
+      this.crouchButton.classList.remove('active');
+    }
+    this.crouch = this.touchCrouch || this.keys.has('KeyC');
   }
 
   private readonly onDown = (e: PointerEvent): void => {

@@ -32,6 +32,8 @@ startPerfTest(
     status,
     stick: byId('stick'),
     knob: byId('knob'),
+    jump: byId('jump'),
+    crouch: byId('crouch'),
     crosshair: byId('crosshair'),
   },
   readParams(location.search),

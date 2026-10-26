@@ -43,9 +43,18 @@ A simplified mobile extraction shooter: the risk/reward loop of Tarkov without i
 - **Loot:** containers (backpacks, desks, cabinets…) and loose item spawn points each reference a loot table ("household", "academic", "medical", "military", …). Everything is rolled once when the raid starts.
 - **Quest items** spawn only for a player who has that quest accepted (in co-op, only for the quest holder).
 
+## Movement (decided 2026-10-26, session 3)
+- **Walk, sprint, crouch, jump and ladders.** Sprinting only works forwards, and it stands you up. You can't jump while crouched.
+- **Crouching** lowers the capsule from 1.8 m to 1.2 m (eye 1.6 → 1.0 m) and slows you down. You can't stand up under something low.
+- **Steps up to 0.45 m** are walked onto (kerbs, single stairs). A jump (0.6 m) plus that step lets you **mantle onto ledges about 1 m high**. Taller walls need stairs or a ladder. The editor's "unreachable spot" overlay must count jump-and-mantle as player movement.
+- **Little air control:** you can speed up along the stick in the air, up to running speed, but never brake, so sprint jumps keep their momentum.
+- **Ladders:** push towards the wall to climb up and away from it to climb down, whichever way you're looking. You grab one by walking into it, or by walking off its top edge. At the top you step over onto the surface behind it. Jump lets go.
+- **Steep terrain** (over 45°) can't be walked up, but you can walk down it.
+- Speeds: walk 3.5, sprint 6, crouch 1.8 and climb 2 m/s. All the tuning is in `MOVEMENT` in `packages/shared/src/sim/movement.ts`.
+
 ## Combat
 - **Hitscan** (bullets travel instantly, as a raycast). No bullet travel time or drop.
-- **Collision** is simple: boxes (which may be rotated), the terrain height grid, and ramps for stairs. No physics engine.
+- **Collision** is simple: boxes (rotated about the vertical axis only), the terrain height grid, and ramps for stairs. No physics engine.
 - **Weapon attachments** use fixed slots, like Battlefield 4 or Black Ops 2: **optic, muzzle, magazine**, with underbarrel or laser possible later. Each gun defines its slots and where they sit on the model; each attachment says which slot type it fits.
 - **Magazines:** one magazine attachment per gun (for example, "extended mag" raises capacity). Reloading takes from the ammo you carry. No individual mags, no loading rounds.
 - **Suppressors** reduce a shot's hearing radius (see AI).

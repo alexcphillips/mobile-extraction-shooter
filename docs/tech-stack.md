@@ -30,13 +30,20 @@ docs/
 
 ## Shared simulation (`packages/shared`)
 - Plain TypeScript.
-- **Fixed 30 Hz tick:** `step(state, inputs) -> state`. The renderer interpolates between ticks.
+- **Fixed 30 Hz tick:** `step(state, world, inputs)` advances the state **in place** (decided in session 3, so a tick allocates nothing). `FixedTimestep` turns frame times into ticks. The renderer interpolates between ticks, copying the few values it draws before each tick. Look direction is applied to the camera every frame, not every tick, so turning never lags.
 - **Serialisable inputs and state.** This is what lets co-op run the same code on the server later. Bit-exact determinism isn't needed (the server is authoritative in co-op).
+  - The state (`SimState`) is plain JSON-safe data: entities, the tick count and the RNG state. A test checks that a JSON round trip continues identically.
+  - The static map is not in the state. It's a `CollisionWorld`, built once from a plain `WorldDef` (terrain grid, boxes, ramps and ladders) that the map loader produces.
+  - Inputs are per entity per tick: the move stick, absolute yaw and pitch, and sprint, crouch and jump. Crouch is the wanted stance, so hold vs. toggle stays a client setting.
 - **Seeded RNG** for loot rolls, enemy loadouts and AI decisions.
 - **Collision:** written in-house, no physics engine:
   - A capsule for the player and AI, against rotated boxes, the terrain height grid and stair ramps.
-  - A spatial hash for broad-phase checks.
-  - Raycasts for hitscan and line of sight.
+  - **Solids rotate about Y only** (session 3). A standing capsule against a solid is then a circle against a rectangle in XZ plus a height overlap: simple and robust. A tilted primitive in the editor is decorative or gets a Y-only collision box.
+  - Ramps are wedges (solid underneath). Stairs are drawn as steps but collide as a ramp.
+  - Terrain cells are two triangles split along the diagonal from (i+1, j) to (i, j+1). The renderer must use the same split, or feet float or sink.
+  - The character controller is kinematic. It pushes out of walls horizontally (ignoring anything at or below step height), then follows the ground up steps and down slopes, or falls. When landing, it looks for surfaces between the old and new feet, so fast falls don't tunnel through thin floors.
+  - A spatial hash (`StaticGrid`, 4 m cells) for the static solids; raycasts walk its cells in order.
+  - Raycasts for hitscan and line of sight, against solids and terrain, with the hit normal. Queries reuse scratch space and allocate nothing.
 - **Navigation:** a navigation grid with multiple layers (floors), generated from the map data. It links stairs and slopes, but not ladders. A* pathfinding.
 - **Schemas:** zod schemas for all content. Every content file has a `formatVersion`, and old versions are upgraded by migrations when loaded.
 - **Tests:** Vitest unit tests for rules (damage, armour, inventory placement, loot rolls, migrations).
