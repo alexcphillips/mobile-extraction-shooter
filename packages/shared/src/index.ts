@@ -52,3 +52,11 @@ export {
   type PrefabLookup,
   type Shape,
 } from './content/compile';
+export {
+  SETTINGS_FORMAT,
+  SETTINGS_FORMAT_VERSION,
+  defaultSettings,
+  loadSettings,
+  type ControlPlacement,
+  type Settings,
+} from './settings';

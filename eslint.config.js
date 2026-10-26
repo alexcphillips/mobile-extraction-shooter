@@ -1,5 +1,6 @@
 import js from '@eslint/js';
 import prettier from 'eslint-config-prettier';
+import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -12,8 +13,12 @@ export default tseslint.config(
     rules: { '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }] },
   },
   {
-    files: ['packages/client/**/*.ts'],
+    files: ['packages/client/**/*.{ts,tsx}'],
     languageOptions: { globals: globals.browser },
+  },
+  {
+    files: ['packages/client/**/*.tsx'],
+    ...reactHooks.configs.flat.recommended,
   },
   {
     files: ['*.{js,ts}', 'packages/*/*.{js,ts}'],

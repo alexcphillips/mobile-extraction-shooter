@@ -86,6 +86,17 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
   - Sprinting turns crouch off, as in the perf scene since session 3.
   - Settings screen: adjustable and saved layout, radio buttons for aim and fire behaviour, aim assist level.
   - Portrait overlay that pauses, audio unlock, PWA manifest and standalone mode.
+  - **Notes (2026-10-26), built; waiting on the iPhone check:**
+    - Decided with the user: **"automatic fire" means auto-fire on target**, and **sprint lock unlocks** when you pull the stick back, tap the left half, aim, crouch or jump off a ladder. Also decided: the fire button doubles as a look surface. All in design.md → Controls.
+    - Built in the client: `hud/` (the buttons and their default layout, plus the layout editor: drag to move, − and + to size, Reset all, Cancel and Done), `input/controls.ts` (rewritten: stick, sprint lock, look from the right half and the fire button, hold and toggle aim, presses for reload, use and quick slots, sensitivity and invert), `app/` (pause, audio unlock, the frame loop helper), `settings.ts` (the store) and `ui/` (the React settings screen, loaded lazily). The settings schema is `packages/shared/src/settings.ts`, with 4 tests.
+    - Settings: aim hold or toggle, firing auto or button only, aim assist off to high, look and aiming sensitivity, invert Y, show stats, edit layout, reset. Opening settings pauses the game.
+    - Placeholders until the systems exist: aim narrows the FOV from 70° to 50°, fire grows the crosshair dot, and reload, use and the quick slots light up and register a press but do nothing. **The auto-fire and aim-assist settings are saved but not applied yet**; session 6 (firing) and sessions 7–8 (enemies) apply them. The use button is always shown; making it contextual comes with looting and doors (sessions 10–11).
+    - PWA: manifest, Apple meta tags, placeholder icons. The stats header shows "standalone" or "browser" so you can tell whether the home-screen launch worked.
+    - Checked in headless Chrome with touch emulation at iPhone landscape size: sprint lock engages, steers, and unlocks by tap and by pulling back; fire held shows the firing state and drags the view; settings save to local storage and survive a reload; the layout editor moves and resizes a button and saves only moved controls; portrait shows the overlay and freezes the game; the perf scene still runs. No console errors.
+    - Bundle: React added no startup weight (the settings chunk is separate); the main chunk is still about 790 kB.
+    - The first time React was imported, Vite re-optimised its dependencies and reloaded the page (the same thing as in session 4). If the settings button seems to do nothing straight after an install, reload.
+    - Deferred: a fixed (non-floating) stick option, a left-side fire button, and a hint to add the game to the home screen.
+    - **Still to check on the iPhone:** button sizes and positions under the thumbs, sprint lock feel, the layout editor by touch, settings scrolling, the portrait overlay, audio unlock (nothing plays yet, so just check for errors), and Add to Home Screen opening standalone with the icon. Add to Home Screen needs HTTPS: deploy or use a tunnel (README).
 - [ ] **6. Weapons and damage.**
   - Hitscan shooting, hit zones and multipliers, armour % absorption and durability, limb HP, spillover to the chest, broken-limb effects, bleeding, death.
   - **Fall damage** (agreed 2026-10-26): to the legs from the landing speed, which the sim already knows.

@@ -7,6 +7,14 @@
       content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
     />
     <meta name="theme-color" content="#9fb3c8" />
+    <!-- Home-screen web app: no browser UI, content under the status bar. -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Extraction" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="/icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <title>Extraction</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
@@ -19,10 +27,26 @@
     </div>
     <div id="presets"></div>
     <div id="crosshair"></div>
-    <div id="stick" hidden><div id="knob"></div></div>
-    <div id="buttons">
-      <button id="crouch">crouch</button>
-      <button id="jump">jump</button>
+    <div id="stick" hidden>
+      <div id="sprint-zone">sprint</div>
+      <div id="knob"></div>
+    </div>
+    <div id="sprint-lock" hidden>sprint locked · tap to stop</div>
+    <div id="controls"></div>
+    <button id="settings-button" aria-label="Settings">
+      <svg viewBox="1 0 24 24" width="22" height="22" aria-hidden="true">
+        <path
+          fill="currentColor"
+          d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"
+        />
+      </svg>
+    </button>
+    <div id="ui" hidden></div>
+    <div id="portrait">
+      <p>
+        Turn your phone sideways to play.<br />If it doesn't turn, switch off Portrait Orientation
+        Lock in Control Centre.
+      </p>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

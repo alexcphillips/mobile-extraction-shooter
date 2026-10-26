@@ -13,6 +13,8 @@ import {
   type TickInputs,
 } from '@mes/shared';
 import * as THREE from 'three';
+import { startLoop } from '../app/loop';
+import type { Hud } from '../hud/hud';
 import { cloneCharacter, loadCharacter } from './characters';
 import { Controls } from '../input/controls';
 import type { PerfParams } from './params';
@@ -30,11 +32,8 @@ export interface PerfElements {
   canvas: HTMLCanvasElement;
   stats: HTMLElement;
   status: HTMLElement;
-  stick: HTMLElement;
-  knob: HTMLElement;
+  hud: Hud;
   crosshair: HTMLElement;
-  jump: HTMLElement;
-  crouch: HTMLElement;
 }
 
 interface Wanderer {
@@ -78,7 +77,7 @@ export async function startPerfTest(el: PerfElements, params: PerfParams): Promi
 
   const r = createRng(2);
   const rng = (): number => nextFloat(r);
-  const controls = new Controls(el.canvas, el.stick, el.knob, el.jump, el.crouch);
+  const controls = new Controls(el.canvas, el.hud);
   const sim = createState(1);
   const player = spawnCharacter(sim, world, 0, 0);
   const input: PlayerInput = {
@@ -272,11 +271,8 @@ export async function startPerfTest(el: PerfElements, params: PerfParams): Promi
   for (const o of culled) o.frustumCulled = true;
 
   const loop = new FixedTimestep();
-  let last = -1;
-  renderer.setAnimationLoop((time) => {
+  startLoop(renderer, controls, (time, dtMs) => {
     const t0 = performance.now();
-    const dtMs = last < 0 ? 16.7 : time - last;
-    last = time;
     const alpha = loop.advance(dtMs / 1000, tick);
     render(alpha, dtMs / 1000);
     stats.frame(time, dtMs, performance.now() - t0);

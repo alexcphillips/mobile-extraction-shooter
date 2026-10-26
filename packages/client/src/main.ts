@@ -1,8 +1,12 @@
 import { PROTOCOL_VERSION, type HelloResponse } from '@mes/shared';
+import { unlockAudioOnTap } from './app/audio';
+import { watchPauseTriggers } from './app/pause';
+import { Hud } from './hud/hud';
 import { startPerfTest } from './perf';
 import { readParams } from './perf/params';
 import { mountPresets } from './perf/presets';
 import { startPlay } from './play';
+import { settings } from './settings';
 
 const byId = (id: string): HTMLElement => {
   const el = document.getElementById(id);
@@ -27,6 +31,34 @@ async function checkServer(el: HTMLElement): Promise<void> {
 void checkServer(byId('server'));
 const message = (err: unknown): string => (err instanceof Error ? err.message : String(err));
 
+watchPauseTriggers();
+unlockAudioOnTap();
+
+const hud = new Hud(
+  byId('controls'),
+  byId('stick'),
+  byId('knob'),
+  byId('sprint-zone'),
+  byId('sprint-lock'),
+);
+byId('settings-button').addEventListener('click', () => {
+  import('./ui/menu')
+    .then((menu) => menu.openSettings(byId('ui'), hud))
+    .catch((err: unknown) => (status.textContent = `settings failed: ${message(err)}`));
+});
+
+const showStats = (on: boolean): void => {
+  byId('stats').hidden = !on;
+  byId('server').hidden = !on;
+};
+showStats(settings.current.showStats);
+settings.subscribe((s) => showStats(s.showStats));
+
+// iOS sets navigator.standalone when opened from the home screen.
+const standalone =
+  matchMedia('(display-mode: standalone)').matches ||
+  (navigator as { standalone?: boolean }).standalone === true;
+
 if (location.pathname === '/perf') {
   mountPresets(byId('presets'));
   startPerfTest(
@@ -34,10 +66,7 @@ if (location.pathname === '/perf') {
       canvas: byId('scene') as HTMLCanvasElement,
       stats: byId('stats'),
       status,
-      stick: byId('stick'),
-      knob: byId('knob'),
-      jump: byId('jump'),
-      crouch: byId('crouch'),
+      hud,
       crosshair: byId('crosshair'),
     },
     readParams(location.search),
@@ -53,16 +82,15 @@ if (location.pathname === '/perf') {
       {
         canvas: byId('scene') as HTMLCanvasElement,
         stats: byId('stats'),
-        stick: byId('stick'),
-        knob: byId('knob'),
-        jump: byId('jump'),
-        crouch: byId('crouch'),
+        hud,
+        crosshair: byId('crosshair'),
       },
       {
         map: q.get('map') ?? 'test-map',
         spawn: q.get('spawn'),
         debug: q.has('debug'),
         pixelRatio: Math.min(window.devicePixelRatio, 2),
+        note: standalone ? 'standalone' : 'browser',
       },
     );
   } catch (err) {

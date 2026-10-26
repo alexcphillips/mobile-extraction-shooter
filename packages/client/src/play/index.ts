@@ -11,8 +11,10 @@ import {
   type TickInputs,
 } from '@mes/shared';
 import * as THREE from 'three';
+import { startLoop } from '../app/loop';
 import { loadMap } from '../content';
 import { Stats } from '../debug/stats';
+import type { Hud } from '../hud/hud';
 import { Controls } from '../input/controls';
 import { buildDebug } from '../render/debug';
 import { buildMap } from '../render/map';
@@ -20,10 +22,8 @@ import { buildMap } from '../render/map';
 export interface PlayElements {
   canvas: HTMLCanvasElement;
   stats: HTMLElement;
-  stick: HTMLElement;
-  knob: HTMLElement;
-  jump: HTMLElement;
-  crouch: HTMLElement;
+  hud: Hud;
+  crosshair: HTMLElement;
 }
 
 export interface PlayOptions {
@@ -33,11 +33,17 @@ export interface PlayOptions {
   /** Show markers and zones. */
   debug: boolean;
   pixelRatio: number;
+  /** Shown in the stats header, e.g. "standalone". */
+  note: string;
 }
+
+const FOV = 70;
+/** Placeholder zoom for the aim button until weapons and optics arrive in session 6. */
+const AIM_FOV = 50;
 
 /**
  * Walks around a map from content/ with the shared simulation. A stand-in for the raid
- * until sessions 5–11 build the HUD, combat and raid lifecycle.
+ * until sessions 6–11 build combat, the full HUD and the raid lifecycle.
  */
 export function startPlay(el: PlayElements, options: PlayOptions): void {
   const map = loadMap(options.map);
@@ -54,13 +60,13 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
   scene.background = new THREE.Color(sky);
   scene.fog = new THREE.Fog(sky, fogNear, fogFar);
   // The far plane follows the fog distance.
-  const camera = new THREE.PerspectiveCamera(70, 1, 0.1, fogFar);
+  const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, fogFar);
   camera.rotation.order = 'YXZ';
 
   scene.add(buildMap(map).root);
   if (options.debug) scene.add(buildDebug(map, world.terrain));
 
-  const controls = new Controls(el.canvas, el.stick, el.knob, el.jump, el.crouch);
+  const controls = new Controls(el.canvas, el.hud);
   const sim = createState(Date.now() >>> 0);
   const spawns = map.markers.filter((m) => m.type === 'playerSpawn');
   const spawn =
@@ -84,11 +90,12 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
   const stats = new Stats(
     el.stats,
     renderer,
-    `${map.name}  spawn ${spawn.id}${options.debug ? '  debug' : ''}`,
+    `${map.name}  spawn ${spawn.id}${options.debug ? '  debug' : ''}  ${options.note}`,
     () =>
       `${player.mode}${player.height < 1.79 ? ' crouched' : ''}  ` +
       `x ${player.x.toFixed(1)} y ${player.y.toFixed(2)} z ${player.z.toFixed(1)}  ` +
-      `speed ${Math.hypot(player.vx, player.vz).toFixed(1)} m/s`,
+      `speed ${Math.hypot(player.vx, player.vz).toFixed(1)} m/s` +
+      `${controls.sprint ? '  sprint' : ''}${controls.aim ? '  aim' : ''}${controls.fire ? '  fire' : ''}`,
   );
 
   function tick(): void {
@@ -101,6 +108,8 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
     input.sprint = controls.sprint;
     input.crouch = controls.crouch;
     input.jump = controls.jump;
+    // Jumping lets go of a ladder, and ends sprint lock with it.
+    if (controls.jump && player.mode === 'ladder') controls.unlockSprint();
     prevEye.copy(eye);
     step(sim, world, inputs);
     eye.set(player.x, eyeHeight(player), player.z);
@@ -127,16 +136,24 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
   renderer.render(scene, camera);
   for (const o of culled) o.frustumCulled = true;
 
+  let firing = false;
   const loop = new FixedTimestep();
-  let last = -1;
-  renderer.setAnimationLoop((time) => {
+  startLoop(renderer, controls, (time, dtMs) => {
     const t0 = performance.now();
-    const dtMs = last < 0 ? 16.7 : time - last;
-    last = time;
     const alpha = loop.advance(dtMs / 1000, tick);
     camera.position.lerpVectors(prevEye, eye, alpha);
     // Look is applied every frame, not every tick, so turning never lags.
     camera.rotation.set(controls.pitch, controls.yaw, 0);
+    const fov = controls.aim ? AIM_FOV : FOV;
+    if (camera.fov !== fov) {
+      const t = 1 - Math.exp(-dtMs / 40);
+      camera.fov = Math.abs(fov - camera.fov) < 0.1 ? fov : camera.fov + (fov - camera.fov) * t;
+      camera.updateProjectionMatrix();
+    }
+    if (controls.fire !== firing) {
+      firing = controls.fire;
+      el.crosshair.classList.toggle('firing', firing);
+    }
     renderer.render(scene, camera);
     stats.frame(time, dtMs, performance.now() - t0);
   });

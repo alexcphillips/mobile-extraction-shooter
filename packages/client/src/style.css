@@ -45,9 +45,10 @@ body {
   display: none;
 }
 
+/* The perf scene's preset buttons, under the settings button. */
 #presets {
   position: fixed;
-  top: max(8px, env(safe-area-inset-top));
+  top: calc(max(8px, env(safe-area-inset-top)) + 48px);
   right: max(8px, env(safe-area-inset-right));
   display: flex;
   flex-direction: column;
@@ -88,6 +89,10 @@ body {
   background: #e33;
 }
 
+#crosshair.firing {
+  transform: scale(1.8);
+}
+
 /* Floating move stick, placed where the left thumb lands. */
 #stick {
   position: fixed;
@@ -106,6 +111,47 @@ body {
   display: none;
 }
 
+/* Where dragging the stick up locks sprinting: LOCK_DISTANCE (110px) above the centre. */
+#sprint-zone {
+  position: absolute;
+  top: -78px;
+  left: 30px;
+  width: 60px;
+  height: 36px;
+  border-radius: 18px;
+  border: 2px dashed rgb(255 255 255 / 0.45);
+  box-sizing: border-box;
+  color: rgb(255 255 255 / 0.8);
+  font:
+    10px/32px ui-monospace,
+    monospace;
+  text-align: center;
+}
+
+#sprint-zone.active {
+  border-style: solid;
+  background: #e3a33a;
+  color: #000;
+}
+
+#sprint-lock {
+  position: fixed;
+  left: max(16px, env(safe-area-inset-left));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  padding: 8px 12px;
+  border-radius: 16px;
+  background: #e3a33a;
+  color: #000;
+  font:
+    11px/1 ui-monospace,
+    monospace;
+  pointer-events: none;
+}
+
+#sprint-lock[hidden] {
+  display: none;
+}
+
 #knob {
   position: absolute;
   top: 35px;
@@ -116,18 +162,17 @@ body {
   background: rgb(255 255 255 / 0.5);
 }
 
-#buttons {
+/* HUD buttons, placed by hud/hud.ts from the saved layout (centre as % of the screen). */
+#controls {
   position: fixed;
-  right: max(16px, env(safe-area-inset-right));
-  bottom: max(16px, env(safe-area-inset-bottom));
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
+  inset: 0;
+  pointer-events: none;
 }
 
-#buttons button {
-  width: 64px;
-  height: 64px;
+.control {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 0;
   border: 2px solid rgb(255 255 255 / 0.4);
   border-radius: 50%;
   background: rgb(0 0 0 / 0.35);
@@ -135,14 +180,230 @@ body {
   font:
     11px/1 ui-monospace,
     monospace;
+  pointer-events: auto;
+  touch-action: none;
 }
 
-#buttons #jump {
-  width: 76px;
-  height: 76px;
+.control[data-id='fire'] {
+  border-color: rgb(255 255 255 / 0.6);
+  background: rgb(150 30 30 / 0.45);
+  font-size: 13px;
 }
 
-#buttons button.active {
+.control.active {
   background: #e3a33a;
   color: #000;
+}
+
+#controls.editing .control {
+  border-style: dashed;
+}
+
+#controls.editing .control.selected {
+  z-index: 1;
+  border: 3px solid #e3a33a;
+}
+
+/* While editing the layout, only the controls and the toolbar show. */
+body:has(#controls.editing) :is(#hud, #presets, #settings-button) {
+  display: none;
+}
+
+#settings-button {
+  position: fixed;
+  top: max(8px, env(safe-area-inset-top));
+  right: max(8px, env(safe-area-inset-right));
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.4);
+  color: #fff;
+}
+
+/* Layout editor toolbar. */
+#layout-bar {
+  position: fixed;
+  top: max(8px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgb(20 24 28 / 0.9);
+  color: #fff;
+  font:
+    12px/1 ui-monospace,
+    monospace;
+  white-space: nowrap;
+}
+
+#layout-bar span {
+  min-width: 190px;
+  padding: 0 4px;
+}
+
+#layout-bar button,
+.panel button {
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: #3a434c;
+  color: #fff;
+  font: inherit;
+}
+
+#layout-bar button:last-child,
+.panel button.primary {
+  background: #e3a33a;
+  color: #000;
+}
+
+/* Settings screen. */
+#ui {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.55);
+}
+
+#ui[hidden] {
+  display: none;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  width: min(640px, 100%);
+  max-height: 100%;
+  box-sizing: border-box;
+  padding: max(8px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(8px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: #1d2328;
+  color: #e8ecef;
+  font:
+    14px/1.4 system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+.panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.panel h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+/* The body blocks all touch scrolling; only this scrolls. */
+.panel-body {
+  overflow-y: auto;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.panel h2 {
+  margin: 16px 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9aa6b0;
+}
+
+.panel fieldset {
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+}
+
+.panel legend {
+  padding: 0 0 6px;
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.choices label {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #2c343b;
+}
+
+.choices label.checked {
+  background: #e3a33a;
+  color: #000;
+}
+
+.choices input {
+  display: none;
+}
+
+.hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #9aa6b0;
+}
+
+.slider {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 12px;
+}
+
+.slider input {
+  width: 100%;
+  accent-color: #e3a33a;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+
+.toggle input {
+  width: 20px;
+  height: 20px;
+  accent-color: #e3a33a;
+}
+
+.row {
+  margin: 4px 0 8px;
+}
+
+/* Landscape only: on a phone held upright, cover everything (the game pauses too). */
+#portrait {
+  display: none;
+}
+
+@media (orientation: portrait) and (pointer: coarse) {
+  #portrait {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    background: #1d2328;
+    color: #e8ecef;
+    font:
+      16px/1.5 system-ui,
+      -apple-system,
+      sans-serif;
+    text-align: center;
+  }
 }

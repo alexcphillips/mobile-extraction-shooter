@@ -110,7 +110,10 @@ A simplified mobile extraction shooter: the risk/reward loop of Tarkov without i
 ## Controls and platform behaviour
 - A standard twin-stick touch layout. **The layout can be adjusted in settings and is saved.**
 - **Aim and fire behaviour** are chosen in settings (hold vs. toggle to aim, fire options). Default: hold, with automatic fire.
+  - **"Automatic fire" means auto-fire on target** (clarified 2026-10-26, session 5): the gun fires by itself while the crosshair is on an enemy, like CoD Mobile's simple mode. The other option is "fire button only". The fire button works in both modes.
 - **Aim assist:** aim slows slightly when passing over an enemy. It's a setting, defaulting to low.
+- **Touch layout (session 5):** the move stick floats where the left thumb lands on the left half; dragging on the right half looks. **The fire button also looks:** dragging the thumb on it turns the view, so you can track a target while shooting. Buttons: fire, aim, reload, use (interact), jump, crouch (toggle) and quick slots 1–4.
+- **Sprint (decided 2026-10-26, session 5):** pushing the stick to its rim (forwards) sprints. Dragging on up into the "sprint" zone above the stick **locks sprinting**, so the thumb can let go; with a thumb on the stick while locked, left and right steer. **It unlocks** when you pull the stick back, tap the left half, aim, crouch, or jump off a ladder. Aiming stops sprinting, and sprinting turns crouch off.
 - **Landscape only:** a "rotate your phone (and turn off rotation lock)" overlay shows whenever the phone is in portrait, and the game pauses.
 - **Safari workarounds:** unlock audio on the first tap, run in standalone mode from the home screen (no browser UI), and disable pinch and double-tap zoom with CSS and the viewport settings.
 

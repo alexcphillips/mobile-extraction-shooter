@@ -77,11 +77,13 @@ Decided in session 4. The schemas are in `packages/shared/src/content/schema.ts`
   - Content is bundled into the client with `import.meta.glob`; in dev, saving a content file reloads the page.
   - The camera's far plane follows the fog distance.
 - **UI:** React DOM overlays for menus, inventory, settings and the editors.
-  - The HUD doesn't re-render through React every frame. Values that change every frame are written straight to the DOM, or throttled to about 10 Hz.
-- **Input:** Pointer Events for the virtual sticks and buttons. The layout is stored in settings.
-- **Settings:** stored locally first; synced to the account once the server exists.
-- **PWA:** web app manifest and standalone display mode, plus the Safari workarounds in design.md.
-- **Audio:** Web Audio API, unlocked on the first tap.
+  - **React is loaded lazily** (session 5): menus are dynamic imports, so React is a separate chunk (about 70 kB gzipped) fetched the first time a menu opens, not part of startup. No `@vitejs/plugin-react`: Vite compiles JSX itself (`"jsx": "react-jsx"`), so there's no fast refresh and a change to a component reloads the page. ESLint runs the React hooks rules on `.tsx`.
+  - The HUD doesn't re-render through React every frame. Values that change every frame are written straight to the DOM, or throttled to about 10 Hz. **The in-game HUD buttons are plain DOM** (`hud/`), as is the layout editor, which moves the real buttons over the paused game.
+- **Input:** Pointer Events for the virtual sticks and buttons (`input/controls.ts`). Moves and lifts are listened for on `window`, so a touch that started on a button keeps working when it slides off. **The layout is stored in settings** as each moved control's centre (a fraction of the screen) and a size multiplier; unmoved controls follow the defaults in `hud/layout.ts`.
+- **Settings:** stored locally first (`localStorage`, key `mes.settings`); synced to the account once the server exists. The schema is in `shared` (`settings.ts`), versioned like content files, and every field falls back to its default on its own, so a bad value never wipes the rest. `settings.ts` in the client is the store: changes save and apply straight away.
+- **Pausing** (`app/pause.ts`): the game pauses for a reason (portrait, a menu, the page hidden). While paused the frame loop stops, every touch is let go, and the time away doesn't count as a frame. Co-op will need a different rule: the raid can't stop.
+- **PWA:** web app manifest (`public/manifest.webmanifest`, landscape, standalone) and Apple meta tags, plus the Safari workarounds in design.md. The icons are placeholders drawn by a one-off script. **No service worker yet:** iOS doesn't need one to add to the home screen, and offline play is part of session 12's offline handling.
+- **Audio:** Web Audio API, unlocked on the first tap (`app/audio.ts`: the first `touchend`, `pointerup` or key creates the context and plays a silent sample; later taps resume it after iOS suspends it).
 
 ## Editors (`/editor` route in the client)
 - Desktop only (mouse and keyboard).

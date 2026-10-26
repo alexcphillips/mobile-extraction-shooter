@@ -33,7 +33,15 @@ The port is fixed at 5180 with `strictPort`, so if something else is using it, V
 **Over HTTPS (Add to Home Screen, and browser features that need a secure context):** use the deployed URL, or tunnel the dev server with `cloudflared tunnel --url http://localhost:5180`.
 
 ## Playing a map (session 4)
-The client opens into a map from `content/maps` (`test-map` by default) and lets you walk around it with the shared simulation. There's no HUD, combat or raid yet.
+The client opens into a map from `content/maps` (`test-map` by default) and lets you walk around it with the shared simulation. There's no combat or raid yet.
+
+**Touch controls (session 5):** drag on the left half for the move stick and on the right half to look. Push the stick to its rim to sprint, and drag it on up into the **sprint** zone to lock sprinting, then let go. To stop, pull the stick back or tap the left half; aiming or crouching stops it too. Dragging on the **fire** button also looks. Aim zooms a little (hold, or toggle in settings); fire, reload, use and the quick slots 1–4 only light up for now.
+
+**Desktop keys:** WASD, Shift sprint, Space jump, C crouch, F fire, Q aim, R reload, E use, 1–4 quick slots, and mouse drag to look.
+
+**Settings** (gear, top right) pause the game: aim and fire behaviour, aim assist, sensitivity, invert, the stats overlay, and **Edit button layout** (drag buttons, size them with − and +, then Done). Settings are saved in the browser's local storage. Holding the phone upright shows a "turn your phone" screen and pauses.
+
+**Home screen:** open the HTTPS URL (deployed or tunnelled, see above) in Safari, then Share → Add to Home Screen. Launched from there, it runs without browser UI and the stats header says `standalone` instead of `browser`.
 
 **URL parameters:** `?map=<id>` picks the map, `?spawn=<id>` a player spawn in it (otherwise one is picked at random; the test map has `spawn-centre` and `spawn-north`), and `?debug` shows markers as coloured posts (blue player spawn, red enemy spawn, yellow loot container, orange loot spawn, green extraction with its radius, purple quest marker) and named zones as white outlines. The stats overlay is the same as the perf test's.
 
@@ -44,7 +52,7 @@ The client opens into a map from `content/maps` (`test-map` by default) and lets
 ## Perf test (session 2)
 Open `/perf` (for example `http://192.168.1.74:5180/perf`): about 2,000 boxes merged per 32 m chunk, fog, 10 animated characters wandering, raycasts every tick, and a stats overlay.
 
-**Controls:** drag on the left half for the move stick (push to the rim to sprint), drag on the right half to look, and use the **jump** (hold) and **crouch** (toggle) buttons. On desktop: WASD, Shift to sprint, Space to jump, C to crouch (held), and mouse drag. The dot in the middle turns red when the aim ray hits something. The same controls work on maps.
+**Controls:** the same as on maps (see above). The dot in the middle turns red when the aim ray hits something.
 
 The movement playground that was at the perf scene's spawn in session 3 is now in the test map.
 
