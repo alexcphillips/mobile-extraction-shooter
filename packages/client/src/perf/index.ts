@@ -9,6 +9,7 @@ import {
   nextFloat,
   spawnCharacter,
   step,
+  type ItemDb,
   type PlayerInput,
   type TickInputs,
 } from '@mes/shared';
@@ -23,6 +24,8 @@ import { buildChunks } from '../render/map';
 import { GRASS, boxShapes, makeBoxes, makeTerrain } from './world';
 
 const SKY = 0x9fb3c8;
+/** The perf scene has no weapons or armour. */
+const NO_ITEMS: ItemDb = new Map();
 const EYE = 1.6;
 const WANDER_RADIUS = 35;
 const AIM_RANGE = 100;
@@ -88,6 +91,9 @@ export async function startPerfTest(el: PerfElements, params: PerfParams): Promi
     sprint: false,
     crouch: false,
     jump: false,
+    fire: false,
+    aim: false,
+    reload: false,
   };
   const inputs: TickInputs = { [player.id]: input };
   // The player's eye at the previous and latest tick, for interpolation.
@@ -158,7 +164,7 @@ export async function startPerfTest(el: PerfElements, params: PerfParams): Promi
     input.crouch = controls.crouch;
     input.jump = controls.jump;
     prevEye.copy(eye);
-    step(sim, world, inputs);
+    step(sim, world, NO_ITEMS, inputs);
     eye.set(player.x, eyeHeight(player), player.z);
 
     for (const w of wanderers) {

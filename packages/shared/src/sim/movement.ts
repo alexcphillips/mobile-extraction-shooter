@@ -1,5 +1,6 @@
 import { TICK_SECONDS } from '../tick';
 import type { CollisionWorld, GroundHit, Ladder } from '../world/collision-world';
+import { legSpeedScale } from './health';
 import type { Character, PlayerInput } from './state';
 
 /** Movement tuning. Distances in metres, speeds in metres per second. */
@@ -58,6 +59,7 @@ export function moveCharacter(
   let sprint = false;
   let crouch = false;
   let jump = false;
+  c.landingSpeed = 0;
   if (input) {
     if (Number.isFinite(input.yaw)) c.yaw = input.yaw;
     if (Number.isFinite(input.pitch)) {
@@ -70,7 +72,8 @@ export function moveCharacter(
       mx /= len;
       my /= len;
     }
-    sprint = input.sprint && my > 0;
+    // Firing or aiming stops a sprint.
+    sprint = input.sprint && !input.fire && !input.aim && my > 0;
     crouch = input.crouch && !sprint;
     jump = input.jump && !c.jumpHeld;
     c.jumpHeld = input.jump;
@@ -117,7 +120,8 @@ function walk(
   const M = MOVEMENT;
   const crouched = isCrouched(c);
   if (c.mode === 'ground') {
-    const speed = crouched ? M.crouchSpeed : sprint ? M.sprintSpeed : M.walkSpeed;
+    const speed =
+      (crouched ? M.crouchSpeed : sprint ? M.sprintSpeed : M.walkSpeed) * legSpeedScale(c.health);
     c.vx = wishX * speed;
     c.vz = wishZ * speed;
     limitSlope(c, world);
@@ -172,6 +176,7 @@ function walk(
     const ground = world.groundAt(c.x, c.z, M.radius, c.y + M.stepUp);
     if (y <= ground) {
       y = ground;
+      c.landingSpeed = -c.vy;
       c.vy = 0;
       c.mode = 'ground';
     }

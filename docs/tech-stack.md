@@ -35,7 +35,11 @@ docs/
   - The state (`SimState`) is plain JSON-safe data: entities, the tick count and the RNG state. A test checks that a JSON round trip continues identically.
   - The static map is not in the state. It's a `CollisionWorld`, built once from a plain `WorldDef` (terrain grid, boxes, ramps and ladders) that the map loader produces.
   - Inputs are per entity per tick: the move stick, absolute yaw and pitch, and sprint, crouch and jump. Crouch is the wanted stance, so hold vs. toggle stays a client setting.
-- **Seeded RNG** for loot rolls, enemy loadouts and AI decisions.
+- **Combat (session 6):** `step(state, world, items, inputs)`. The item database (`ItemDb`, every item by id) is static like the world, so it's passed in rather than kept in the state. Each tick everyone moves (then takes fall damage), then everyone's gun updates (so shots see this tick's positions), then bleeding. Inputs gained `fire`, `aim` (both held) and `reload` (a press).
+  - Character state gained `health` (HP and bleeding per zone, dead), `helmet` and `bodyArmour` (item and durability), `weapon` (item, rounds, spare rounds, cooldown, reload timer), `aim` (0–1) and the recoil offsets. **Spare rounds are a plain count on the weapon until the inventory (session 9).**
+  - `state.events` lists what happened during the last tick (`shot`, `damage`, `death`) for effects, hit markers and the HUD. It's cleared each tick; events are the only allocation, and only when something happens.
+  - **Hit zones** are six capsules in a fixed layout (`HIT_CAPSULES` in `sim/hit-zones.ts`), turned by yaw and squashed by crouch height. `raycastCharacters` checks each living character's bounding sphere, then its capsules. **No spatial hash for moving things:** with tens of characters, a sphere test each is cheaper than keeping a hash up to date. Revisit if a raid gets past about 100 characters.
+- **Seeded RNG** for loot rolls, enemy loadouts, AI decisions, shot spread and bleeding.
 - **Collision:** written in-house, no physics engine:
   - A capsule for the player and AI, against rotated boxes, the terrain height grid and stair ramps.
   - **Solids rotate about Y only** (session 3). A standing capsule against a solid is then a circle against a rectangle in XZ plus a height overlap: simple and robust. A tilted primitive in the editor is decorative or gets a Y-only collision box.
@@ -67,6 +71,14 @@ Decided in session 4. The schemas are in `packages/shared/src/content/schema.ts`
 - Deferred: per-cell terrain colours (roads, dirt) and scaled prefab placements. Both can be added later with a migration.
 
 
+## Item format
+Started in session 6 with what combat needs; session 6b adds attachments and session 9 the rest of the item model. The schema is `packages/shared/src/content/items.ts`, whose comments are the field-by-field reference.
+- **Files:** `content/items/<id>.json`, one item each, loaded like maps (`formatVersion`, migrations, strict zod objects). The `type` field picks the kind: `weapon`, `ammo` or `armour`.
+- **weapon:** ammo item, `fireMode` (`auto` or `semi`), `rpm`, `magazine`, `reloadTime`, `aimTime`, `range`, `hipSpread` and `aimSpread` (degrees), and `recoil` (`up`, `side`, `recovery` in degrees per second).
+- **ammo:** `damage` (to the chest; zones multiply it), `armourDamage` (durability lost per point absorbed, default 1), `bleedChance`.
+- **armour:** `slot` (`helmet` or `body`), `absorb` (0–1), `durability`.
+- `checkItems` checks references between items (a weapon's ammo exists and is ammo); the client's content test runs it.
+
 ## Client (`packages/client`)
 - **Build tool:** Vite + TypeScript.
 - **3D rendering:** plain three.js, not React Three Fiber, so the game loop and rendering stay outside React.
@@ -76,6 +88,9 @@ Decided in session 4. The schemas are in `packages/shared/src/content/schema.ts`
   - Each door is its own mesh, pivoted at its hinge, so it can swing open.
   - Content is bundled into the client with `import.meta.glob`; in dev, saving a content file reloads the page.
   - The camera's far plane follows the fog distance.
+  - **The first-person gun is drawn in a second pass** after the world, with the depth buffer cleared, so it never pokes into walls (`render/viewmodel.ts`). One extra draw call. It's a placeholder built from boxes until the item editor (session 18) and arms (session 8b).
+  - Tracers and impact puffs come from fixed pools (`render/effects.ts`): one line mesh and one instanced mesh, so shooting allocates nothing and costs two draw calls.
+  - Recoil is simulation state, so the camera interpolates it between ticks like the eye position.
 - **UI:** React DOM overlays for menus, inventory, settings and the editors.
   - **React is loaded lazily** (session 5): menus are dynamic imports, so React is a separate chunk (about 70 kB gzipped) fetched the first time a menu opens, not part of startup. No `@vitejs/plugin-react`: Vite compiles JSX itself (`"jsx": "react-jsx"`), so there's no fast refresh and a change to a component reloads the page. ESLint runs the React hooks rules on `.tsx`.
   - The HUD doesn't re-render through React every frame. Values that change every frame are written straight to the DOM, or throttled to about 10 Hz. **The in-game HUD buttons are plain DOM** (`hud/`), as is the layout editor, which moves the real buttons over the paused game.
@@ -107,7 +122,7 @@ Decided in session 4. The schemas are in `packages/shared/src/content/schema.ts`
 ## Characters (confirmed, see design.md → Characters)
 - The base body is a rigged, animated low-poly humanoid from a CC0 pack in glTF format (for example Quaternius). **Check the licence in the session that imports it.** Recolour it to flat colours and draw it unlit, so it matches the map.
 - Gear (helmet, armour, backpack, weapon) is built in the item editor and attached to the skeleton at named mount points.
-- Hit zones are simple capsules attached to the skeleton's bones, not tests against the mesh itself.
+- Hit zones are simple capsules, not tests against the mesh itself. **They're a fixed layout in the simulation, not attached to bones** (changed 2026-10-26, session 6, so a co-op server needs no skeleton); the body is drawn to match.
 - Distant characters update their animation less often to save performance.
 
 ## Still open

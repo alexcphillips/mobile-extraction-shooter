@@ -18,6 +18,7 @@ import {
 import { step } from './step';
 
 const R = MOVEMENT.radius;
+const NO_ITEMS = new Map();
 
 function flatTerrain(h = 0): WorldDef['terrain'] {
   return { minX: -50, minZ: -50, cellSize: 2, cols: 50, rows: 50, heights: Array(51 * 51).fill(h) };
@@ -55,6 +56,9 @@ function input(parts: Partial<PlayerInput> = {}): PlayerInput {
     sprint: false,
     crouch: false,
     jump: false,
+    fire: false,
+    aim: false,
+    reload: false,
     ...parts,
   };
 }
@@ -74,7 +78,7 @@ function setup(world: CollisionWorld, x = 0, z = 0, yaw = 0, y = Infinity): Setu
   const run = (ticks: number, inp = input({ yaw: c.yaw })): number => {
     let top = -Infinity;
     for (let i = 0; i < ticks; i++) {
-      step(state, world, { [c.id]: inp });
+      step(state, world, NO_ITEMS, { [c.id]: inp });
       top = Math.max(top, c.y);
     }
     return top;
@@ -135,7 +139,7 @@ describe('walking', () => {
 
   it('stays put and keeps its look with no input', () => {
     const { state, world, c } = setup(makeWorld(), 0, 0, 1.2);
-    for (let i = 0; i < 10; i++) step(state, world, {});
+    for (let i = 0; i < 10; i++) step(state, world, NO_ITEMS, {});
     expect([c.x, c.y, c.z, c.yaw]).toEqual([0, 0, 0, 1.2]);
   });
 
@@ -401,11 +405,11 @@ describe('state', () => {
       });
     const a = createState(9);
     const id = spawnCharacter(a, world, 0, 0).id;
-    for (let t = 0; t < 50; t++) step(a, world, { [id]: script(t) });
+    for (let t = 0; t < 50; t++) step(a, world, NO_ITEMS, { [id]: script(t) });
     const b = JSON.parse(JSON.stringify(a)) as SimState;
     for (let t = 50; t < 200; t++) {
-      step(a, world, { [id]: script(t) });
-      step(b, world, { [id]: script(t) });
+      step(a, world, NO_ITEMS, { [id]: script(t) });
+      step(b, world, NO_ITEMS, { [id]: script(t) });
     }
     expect(b).toEqual(a);
     expect(a.tick).toBe(200);

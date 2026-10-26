@@ -27,7 +27,7 @@ interface MoveTouch {
  * Twin-stick touch input. A move stick floats where the left thumb lands; dragging on the
  * right half or on the fire button looks. Pushing the stick to its rim sprints, and
  * dragging it on up into the sprint zone locks sprinting, so the thumb can let go. Pulling
- * the stick back, tapping the left half, aiming or crouching unlocks it.
+ * the stick back, tapping the left half, aiming, firing or crouching unlocks it.
  *
  * Desktop: WASD, Shift sprint, Space jump, C crouch, F fire, Q aim, R reload, E use, 1–4
  * quick slots, and mouse drag to look.
@@ -48,6 +48,8 @@ export class Controls {
   interact = false;
   /** The quick slot pressed this tick (0–3), or -1. */
   quickSlot = -1;
+  /** Look speed multiplier from aim assist, set by the game while the crosshair is on an enemy. */
+  assist = 1;
 
   private sprintLocked = false;
   private move: MoveTouch | null = null;
@@ -112,7 +114,9 @@ export class Controls {
       // Pushing the stick to the rim sprints (forwards only, as in the sim).
       this.sprint = this.stickY > 0 && Math.hypot(this.stickX, this.stickY) > 0.95;
     }
-    if (this.aim) this.sprint = false;
+    if (this.aim || this.fire) this.sprint = false;
+    // Firing ends sprint lock, as aiming does.
+    if (this.fire && this.sprintLocked) this.setSprintLock(false);
     // Sprinting turns the crouch toggle off (the sim only sprints forwards).
     if (this.sprint && this.moveY > 0 && this.touchCrouch) this.setCrouch(false);
     this.crouch = this.touchCrouch || k.has('KeyC');
@@ -244,7 +248,7 @@ export class Controls {
     const last = this.look.get(e.pointerId);
     if (!last) return;
     const s = settings.current;
-    const speed = LOOK_SPEED * s.lookSensitivity * (this.aim ? s.aimSensitivity : 1);
+    const speed = LOOK_SPEED * s.lookSensitivity * (this.aim ? s.aimSensitivity : 1) * this.assist;
     this.yaw -= (e.clientX - last.x) * speed;
     this.pitch -= (e.clientY - last.y) * speed * (s.invertY ? -1 : 1);
     this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch));

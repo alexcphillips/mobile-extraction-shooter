@@ -1,0 +1,16 @@
+{
+  "formatVersion": 1,
+  "id": "assault-rifle",
+  "name": "Assault rifle",
+  "type": "weapon",
+  "ammo": "ammo-556",
+  "fireMode": "auto",
+  "rpm": 700,
+  "magazine": 30,
+  "reloadTime": 2.4,
+  "aimTime": 0.3,
+  "range": 200,
+  "hipSpread": 3,
+  "aimSpread": 0.4,
+  "recoil": { "up": 0.9, "side": 0.4, "recovery": 14 }
+}

@@ -1,6 +1,14 @@
 import { createRng, type Rng } from '../rng';
 import type { CollisionWorld } from '../world/collision-world';
+import {
+  createHealth,
+  type ArmourState,
+  type DamageEvent,
+  type DeathEvent,
+  type Health,
+} from './health';
 import { MOVEMENT } from './movement';
+import type { ShotEvent, WeaponState } from './weapons';
 
 export type EntityId = number;
 
@@ -27,10 +35,24 @@ export interface Character {
   ladder: number;
   /** The jump button last tick, so holding it jumps once. */
   jumpHeld: boolean;
+  /** How fast it hit the ground if it landed this tick (m/s), otherwise 0. For fall damage. */
+  landingSpeed: number;
+  health: Health;
+  helmet: ArmourState | null;
+  bodyArmour: ArmourState | null;
+  weapon: WeaponState | null;
+  /** How far into aiming down the sights: 0 at the hip, 1 fully aimed. */
+  aim: number;
+  /** Recoil's kick to the view in radians, added to yaw and pitch; it settles back to 0. */
+  recoilPitch: number;
+  recoilYaw: number;
 }
 
 /** Only characters so far; items, loot and projectiles join this union later. */
 export type Entity = Character;
+
+/** Things that happened during the last tick, for effects and the HUD. */
+export type SimEvent = ShotEvent | DamageEvent | DeathEvent;
 
 /**
  * Everything that changes during a raid. Plain JSON-safe data: no classes, maps or typed
@@ -42,6 +64,8 @@ export interface SimState {
   rng: Rng;
   nextId: EntityId;
   entities: Entity[];
+  /** What happened during the last tick; cleared at the start of each. */
+  events: SimEvent[];
 }
 
 /**
@@ -57,13 +81,19 @@ export interface PlayerInput {
   sprint: boolean;
   crouch: boolean;
   jump: boolean;
+  /** The trigger, held. */
+  fire: boolean;
+  /** Aiming down the sights, held (toggling is the client's setting). */
+  aim: boolean;
+  /** Start a reload: a press, true for one tick. */
+  reload: boolean;
 }
 
 /** Inputs for one tick by entity. Characters with no input stand still. */
 export type TickInputs = Readonly<Partial<Record<EntityId, PlayerInput>>>;
 
 export function createState(seed: number): SimState {
-  return { tick: 0, rng: createRng(seed), nextId: 1, entities: [] };
+  return { tick: 0, rng: createRng(seed), nextId: 1, entities: [], events: [] };
 }
 
 /** Adds a standing character on the highest surface at (x, z), or below y if given. */
@@ -90,9 +120,22 @@ export function spawnCharacter(
     height: MOVEMENT.standHeight,
     ladder: -1,
     jumpHeld: false,
+    landingSpeed: 0,
+    health: createHealth(),
+    helmet: null,
+    bodyArmour: null,
+    weapon: null,
+    aim: 0,
+    recoilPitch: 0,
+    recoilYaw: 0,
   };
   state.entities.push(c);
   return c;
+}
+
+export function entityById(state: SimState, id: EntityId): Entity | undefined {
+  for (const e of state.entities) if (e.id === id) return e;
+  return undefined;
 }
 
 export function eyeHeight(c: Character): number {

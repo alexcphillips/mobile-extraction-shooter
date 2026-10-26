@@ -59,17 +59,24 @@ A simplified mobile extraction shooter: the risk/reward loop of Tarkov without i
 - **Magazines:** one magazine attachment per gun (for example, "extended mag" raises capacity). Reloading takes from the ammo you carry. No individual mags, no loading rounds.
 - **Suppressors** reduce a shot's hearing radius (see AI).
 - **Laser:** a short see-through red line plus stat changes. No collision, and the AI doesn't notice it.
+- **Firing (session 6):** weapons are `auto` (fire while held) or `semi` (once per pull), with a rate in rounds per minute. Shots stray randomly within a cone: wide from the hip, tight when aimed; aiming in takes the gun's aim time. Each shot kicks the view up (and a random bit sideways), and the view settles back by itself; the kick is the simulation's, so co-op sees the same. **Firing or aiming stops a sprint**, and firing ends sprint lock as aiming does. You can't fire on a ladder or while reloading. Pulling the trigger on an empty gun starts a reload. All weapon stats are in the item files (`content/items`).
 - **Aiming:** magnified scopes use full-screen zoom (narrower field of view, a scope mask and a reticle), like other mobile shooters. Red dots (Coyote-style) have no zoom, just a reticle. Reticles and zoom levels are set in the item editor. Each gun model defines a sight line so the reticle lines up with the camera when aiming.
 
 ## Damage, armour and health
-- **Hit zones:** head, chest, left arm, right arm, left leg, right leg. Each has its own HP pool and damage multiplier.
+- **Hit zones:** head, chest, left arm, right arm, left leg, right leg. Each has its own HP pool and damage multiplier. Session 6 values: HP 35, 85, 60, 60, 65, 65 (370 in all); shot multipliers 1.5, 1, 0.7, 0.7, 0.75, 0.75. Damage per shot is the ammo's. All tuning is in `HEALTH` in `packages/shared/src/sim/health.ts`.
+- **Hit zones are a fixed capsule layout** (decided 2026-10-26, session 6), worked out from the character's position, yaw and crouch, not attached to animated bones. That keeps hits in the simulation, the same on a co-op server with no renderer. The drawn body (session 8b) is posed to match.
 - **Armour:** helmets cover the head, chest armour covers the chest. Armour **absorbs a percentage** of damage (set per armour piece) and loses durability as it does; at 0 durability it absorbs nothing. Armour can be repaired with armour repair kits.
+  - Session 6: it absorbs its **full percentage until it breaks** (no falloff as it wears), and loses durability equal to what it absorbed times the ammo's `armourDamage`. Simple and readable: the colour warns you it's close to breaking.
 - **A limb at 0 HP is "broken"** (there's only one state):
   - Legs: slower movement.
   - Arms: more weapon sway and slower aiming.
   - **Damage to a broken limb spills over to the chest** at a reduced amount (about 70%, tunable).
+  - **So does the rest of the hit that breaks it** (session 6): a 40 damage hit on a leg with 10 HP left breaks it and sends 30 × 70% to the chest. Without this, huge hits and falls to the legs could never kill.
+  - Session 6 values: each broken leg multiplies speed by 0.75; each broken arm multiplies spread by 1.6 and aim time by 1.5.
 - **Head or chest at 0 HP = death.**
 - **Bleeding:** heavy hits can cause bleeding, which slowly drains HP until a bandage stops it.
+  - Session 6: each ammo type has a **bleed chance** per hit that gets through armour. A bleeding zone loses 1 HP per second (through the same spillover rules), so bleeding out of a broken limb drains the chest.
+- **Fall damage** (session 6): landing faster than 10 m/s (a drop of about 2.5 m) hurts both legs by 12 per m/s over that, each. About 4 m bruises, about 6 m breaks both legs, and above about 11 m the spillover kills. A jump never hurts.
 - **Treatment items:**
   - Splint: fast and cheap. It removes the broken effect, but the limb stays at 0 HP and spillover still applies.
   - Surgery kit: slow and rare. It brings a broken limb back to 1 HP.
@@ -78,6 +85,7 @@ A simplified mobile extraction shooter: the risk/reward loop of Tarkov without i
   - Items target limbs in a **fixed priority order: head, chest, left leg, right leg, left arm, right arm.** There's no body diagram.
 - **Using meds:** there are 2–4 quick-use slots on the HUD. Tap to start; a progress ring shows the timer. You can walk slowly while healing; firing or sprinting cancels it. The use time, HP pool and effects are set per item in the item editor.
 - **HUD:** one overall health bar (sum of all limbs) plus status icons for broken limbs and bleeding. Armour icons change colour by durability: **yellow** when damaged, **orange** when low, **red** when broken.
+  - Session 6: damaged is below 75% durability, low below 35%. The health bar, armour icons and status chips are at the top centre, the ammo count (with a reload bar) at the top right. The crosshair flashes red on a hit and grows on a kill; the screen edges flash red when you're hurt.
 - **AI uses the same hit zones and limb system**, with only the leg effect (broken legs slow it down).
 
 ## AI
@@ -111,7 +119,8 @@ A simplified mobile extraction shooter: the risk/reward loop of Tarkov without i
 - A standard twin-stick touch layout. **The layout can be adjusted in settings and is saved.**
 - **Aim and fire behaviour** are chosen in settings (hold vs. toggle to aim, fire options). Default: hold, with automatic fire.
   - **"Automatic fire" means auto-fire on target** (clarified 2026-10-26, session 5): the gun fires by itself while the crosshair is on an enemy, like CoD Mobile's simple mode. The other option is "fire button only". The fire button works in both modes.
-- **Aim assist:** aim slows slightly when passing over an enemy. It's a setting, defaulting to low.
+  - Session 6: "on an enemy" means the crosshair ray (with recoil) hits a living character's hit zone within the gun's range, with no wall in the way. With a semi-automatic gun, auto-fire pulls the trigger as fast as the gun allows.
+- **Aim assist:** aim slows slightly when passing over an enemy. It's a setting, defaulting to low. Session 6: look speed × 0.8 (low), 0.6 (medium) or 0.45 (high) while the crosshair is on an enemy.
 - **Touch layout (session 5):** the move stick floats where the left thumb lands on the left half; dragging on the right half looks. **The fire button also looks:** dragging the thumb on it turns the view, so you can track a target while shooting. Buttons: fire, aim, reload, use (interact), jump, crouch (toggle) and quick slots 1–4.
 - **Sprint (decided 2026-10-26, session 5):** pushing the stick to its rim (forwards) sprints. Dragging on up into the "sprint" zone above the stick **locks sprinting**, so the thumb can let go; with a thumb on the stick while locked, left and right steer. **It unlocks** when you pull the stick back, tap the left half, aim, crouch, or jump off a ladder. Aiming stops sprinting, and sprinting turns crouch off.
 - **Landscape only:** a "rotate your phone (and turn off rotation lock)" overlay shows whenever the phone is in portrait, and the game pauses.

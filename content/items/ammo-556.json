@@ -1,0 +1,9 @@
+{
+  "formatVersion": 1,
+  "id": "ammo-556",
+  "name": "5.56 mm rounds",
+  "type": "ammo",
+  "damage": 42,
+  "armourDamage": 1,
+  "bleedChance": 0.25
+}

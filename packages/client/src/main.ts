@@ -2,6 +2,7 @@ import { PROTOCOL_VERSION, type HelloResponse } from '@mes/shared';
 import { unlockAudioOnTap } from './app/audio';
 import { watchPauseTriggers } from './app/pause';
 import { Hud } from './hud/hud';
+import { Vitals } from './hud/vitals';
 import { startPerfTest } from './perf';
 import { readParams } from './perf/params';
 import { mountPresets } from './perf/presets';
@@ -74,20 +75,28 @@ if (location.pathname === '/perf') {
     status.textContent = `perf test failed: ${message(err)}`;
   });
 } else {
-  // ?map=<id> picks a map from content/maps, ?spawn=<id> a player spawn in it, and ?debug
-  // shows markers and zones.
+  // ?map=<id> picks a map from content/maps, ?spawn=<id> a player spawn in it, ?weapon=<id>
+  // the gun, and ?debug shows markers and zones and makes quick slots 1 and 2 hurt and heal.
   const q = new URLSearchParams(location.search);
+  byId('try-again').addEventListener('click', () => location.reload());
   try {
     startPlay(
       {
         canvas: byId('scene') as HTMLCanvasElement,
         stats: byId('stats'),
         hud,
-        crosshair: byId('crosshair'),
+        vitals: new Vitals(
+          byId('vitals'),
+          byId('ammo'),
+          byId('crosshair'),
+          byId('hurt'),
+          byId('death'),
+        ),
       },
       {
         map: q.get('map') ?? 'test-map',
         spawn: q.get('spawn'),
+        weapon: q.get('weapon') ?? 'assault-rifle',
         debug: q.has('debug'),
         pixelRatio: Math.min(window.devicePixelRatio, 2),
         note: standalone ? 'standalone' : 'browser',

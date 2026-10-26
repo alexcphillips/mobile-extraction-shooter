@@ -33,9 +33,11 @@ The port is fixed at 5180 with `strictPort`, so if something else is using it, V
 **Over HTTPS (Add to Home Screen, and browser features that need a secure context):** use the deployed URL, or tunnel the dev server with `cloudflared tunnel --url http://localhost:5180`.
 
 ## Playing a map (session 4)
-The client opens into a map from `content/maps` (`test-map` by default) and lets you walk around it with the shared simulation. There's no combat or raid yet.
+The client opens into a map from `content/maps` (`test-map` by default) and lets you walk around it with the shared simulation. There's no raid yet.
 
-**Touch controls (session 5):** drag on the left half for the move stick and on the right half to look. Push the stick to its rim to sprint, and drag it on up into the **sprint** zone to lock sprinting, then let go. To stop, pull the stick back or tap the left half; aiming or crouching stops it too. Dragging on the **fire** button also looks. Aim zooms a little (hold, or toggle in settings); fire, reload, use and the quick slots 1–4 only light up for now.
+**Shooting (session 6):** you start with an assault rifle, 120 spare rounds, a steel helmet and a plate carrier. Every enemy spawn on the map holds a **target dummy**: its hit-zone capsules, each coloured by its HP (green, yellow, red; black when broken), with boxes for armour coloured by durability. The yard boss wears armour. Dummies stand still, and get up again 6 s after dying. With **automatic fire** on (the default), the gun fires by itself while the crosshair is on a dummy. Health, broken limbs, bleeding and armour are at the top centre; ammo at the top right.
+
+**Touch controls (session 5):** drag on the left half for the move stick and on the right half to look. Push the stick to its rim to sprint, and drag it on up into the **sprint** zone to lock sprinting, then let go. To stop, pull the stick back or tap the left half; aiming or crouching stops it too. Dragging on the **fire** button also looks. Aim zooms a little and slides the gun to the middle (hold, or toggle in settings). Firing stops a sprint and ends sprint lock. Use and the quick slots 1–4 only light up for now.
 
 **Desktop keys:** WASD, Shift sprint, Space jump, C crouch, F fire, Q aim, R reload, E use, 1–4 quick slots, and mouse drag to look.
 
@@ -43,11 +45,11 @@ The client opens into a map from `content/maps` (`test-map` by default) and lets
 
 **Home screen:** open the HTTPS URL (deployed or tunnelled, see above) in Safari, then Share → Add to Home Screen. Launched from there, it runs without browser UI and the stats header says `standalone` instead of `browser`.
 
-**URL parameters:** `?map=<id>` picks the map, `?spawn=<id>` a player spawn in it (otherwise one is picked at random; the test map has `spawn-centre` and `spawn-north`), and `?debug` shows markers as coloured posts (blue player spawn, red enemy spawn, yellow loot container, orange loot spawn, green extraction with its radius, purple quest marker) and named zones as white outlines. The stats overlay is the same as the perf test's.
+**URL parameters:** `?map=<id>` picks the map, `?spawn=<id>` a player spawn in it (otherwise one is picked at random; the test map has `spawn-centre` and `spawn-north`), `?weapon=<id>` the gun (`assault-rifle` or `pistol`), and `?debug` turns quick slot 1 into "shoot me" (a 5.56 round to a random zone, armour and bleeding included) and quick slot 2 into "heal me", and shows markers as coloured posts (blue player spawn, red enemy spawn, yellow loot container, orange loot spawn, green extraction with its radius, purple quest marker) and named zones as white outlines. The stats overlay is the same as the perf test's.
 
 **The test map** (`content/maps/test-map.json`, 192 m square): straight ahead of `spawn-centre` is the movement playground from session 3 (a 3 m platform with stairs and a ladder, a 0.4 m step, a 1 m box to mantle, a 1.4 m wall, a beam to crouch under). To the west are two houses and to the east a third, all one prefab in different colours. To the south-east are a shipping container with a ramp, a shed with a locked door, and crates. To the north-east is a pond with a dock. Trees are on the hills around the edge.
 
-**Content files** are JSON, validated on load and in `npm test` (every map is loaded and compiled). The format is described in [docs/tech-stack.md](docs/tech-stack.md#map-and-prefab-format) and in the comments in `packages/shared/src/content/schema.ts`. Saving a file reloads the page in dev.
+**Content files** are JSON, validated on load and in `npm test` (every map is loaded and compiled, and every item loaded with its references checked). Items (weapons, ammo, armour) are in `content/items`, described in the comments in `packages/shared/src/content/items.ts`. The format is described in [docs/tech-stack.md](docs/tech-stack.md#map-and-prefab-format) and in the comments in `packages/shared/src/content/schema.ts`. Saving a file reloads the page in dev.
 
 ## Perf test (session 2)
 Open `/perf` (for example `http://192.168.1.74:5180/perf`): about 2,000 boxes merged per 32 m chunk, fog, 10 animated characters wandering, raycasts every tick, and a stats overlay.

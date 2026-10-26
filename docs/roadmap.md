@@ -97,12 +97,28 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
     - The first time React was imported, Vite re-optimised its dependencies and reloaded the page (the same thing as in session 4). If the settings button seems to do nothing straight after an install, reload.
     - Deferred: a fixed (non-floating) stick option, a left-side fire button, and a hint to add the game to the home screen.
     - **Checked on the iPhone:** the user tried it and it looks good.
-- [ ] **6. Weapons and damage.**
+- [x] **6. Weapons and damage.** (Split from the original session 6 on 2026-10-26: attachments moved to 6b.)
   - Hitscan shooting, hit zones and multipliers, armour % absorption and durability, limb HP, spillover to the chest, broken-limb effects, bleeding, death.
   - **Fall damage** (agreed 2026-10-26): to the legs from the landing speed, which the sim already knows.
   - Weapon stats and simple recoil; reloading from carried ammo.
-  - Attachment slots (optic, muzzle, mag): stat changes, full-screen zoom with scope mask, red-dot reticles, suppressor hearing radius.
+  - Target dummies to shoot until AI exists; auto-fire on target and aim assist (saved in session 5, applied here).
   - HUD: health bar, status icons, armour icon colours.
+  - **Notes (2026-10-26):**
+    - Decided with the user: **split the session** (attachments are 6b), and **hit zones are a fixed capsule layout in the simulation**, not capsules on animated bones, so a co-op server needs no skeleton (design.md → Damage; tech-stack.md → Characters).
+    - Shared: `content/items.ts` (the item format: weapon, ammo and armour; see tech-stack.md → Item format), `sim/health.ts` (zones, HP, multipliers, armour, spillover, bleeding, falls, death), `sim/hit-zones.ts` (capsule layout, ray against capsule, `raycastCharacters`) and `sim/weapons.ts` (aim, recoil, fire rate, spread, reload, firing). `step` now takes the item database and fills `state.events`. 35 new unit tests (111 in all), including ray-capsule against brute-force sampling.
+    - Content: `content/items/` with an assault rifle (auto, 700 rpm, 30 rounds), a pistol (semi, 15 rounds), their ammo, a steel helmet and a plate carrier. Numbers are first guesses, to tune in play.
+    - Decided along the way (all in design.md): the rest of a hit that breaks a limb also spills to the chest (otherwise big hits and falls on legs could never kill); armour absorbs its full percentage until it breaks; bleeding is a chance per ammo type, 1 HP/s per zone; fall damage from 10 m/s, 12 per m/s over, to each leg; firing stops a sprint and ends sprint lock; armour is "damaged" below 75% and "low" below 35%.
+    - Client: target dummies at every enemy spawn (drawn as their hit-zone capsules coloured by HP, armour as boxes; they get up 6 s after dying; the yard boss wears armour), a placeholder gun drawn in a second pass so it never clips into walls, tracers and impact puffs from fixed pools, the HUD (`hud/vitals.ts`: health bar, broken and bleeding chips, armour icons, ammo and reload bar, hit and kill markers, red flash when hurt, a death screen whose "Try again" reloads the page). Auto-fire and aim assist now work. `?weapon=pistol` swaps the gun; with `?debug`, quick slots 1 and 2 shoot and heal yourself.
+    - The player starts with the rifle, 120 spare rounds and both armour pieces, hard-coded in `play/` until loadouts exist (sessions 11 and 13).
+    - Checked in headless Chrome at iPhone landscape size: auto-fire shoots a dummy once the crosshair is on it, empties the magazine and reloads; aimed manual shots at the legs broke one and spilled into the chest; the debug hurt key bleeds and wears the helmet to orange; the perf scene still runs. No console errors. 60 fps with 44 draw calls (the three dummies are 8 each, a debug stand-in).
+    - **Not done yet:** nothing heals or stops bleeding in play except the debug key (meds are sessions 9–10); dead dummies just lie down (8b animates). Spread doesn't grow while moving; add it if hip-fire on the run feels too accurate.
+    - Bundle: the main chunk is about 808 kB (up 18 kB).
+    - **Checked on the iPhone:** the user tried it and it looks good.
+- [ ] **6b. Weapon attachments.**
+  - Attachment slots (optic, muzzle, mag): attachment items, stat changes.
+  - Optics: full-screen zoom with a scope mask, red-dot reticles, the gun's sight line so the reticle lines up when aiming.
+  - Muzzle: suppressors and the shot's hearing radius (used by AI hearing in session 7).
+  - Extended magazines.
 - [ ] **7. AI part 1: navigation and perception.**
   - Generate the multi-layer navigation grid (stairs, no ladders); A*.
   - Patrol routes. Sight cones with line of sight; hearing (shot radius, suppressors).
@@ -114,7 +130,7 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
 - [ ] **8b. Character visuals.**
   - Choose the CC0 character pack and confirm its licence; import it, recolour to flat colours, draw it unlit.
   - Named mount points for helmet, armour, backpack and weapon; equipped gear shows on the body.
-  - Hit-zone capsules attached to bones. An animation state machine (idle, walk, run, aim, shoot, reload, death).
+  - Pose the body to match the simulation's hit-zone capsules (they're a fixed layout in the sim since session 6, not attached to bones). An animation state machine (idle, walk, run, aim, shoot, reload, death).
   - First-person arms. Distant characters update their animation less often.
 - [ ] **9. Item and inventory model (shared).**
   - Item definition schemas for all item types.

@@ -1,0 +1,73 @@
+import type { ItemDb, ItemDef } from '../content/items';
+
+/** A small item set for tests, independent of content/. */
+const defs: ItemDef[] = [
+  {
+    formatVersion: 1,
+    id: 'rifle',
+    name: 'Rifle',
+    type: 'weapon',
+    ammo: 'round',
+    fireMode: 'auto',
+    rpm: 600,
+    magazine: 30,
+    reloadTime: 2,
+    aimTime: 0.2,
+    range: 200,
+    hipSpread: 0,
+    aimSpread: 0,
+    recoil: { up: 1, side: 0, recovery: 10 },
+  },
+  {
+    formatVersion: 1,
+    id: 'pistol',
+    name: 'Pistol',
+    type: 'weapon',
+    ammo: 'round',
+    fireMode: 'semi',
+    rpm: 600,
+    magazine: 12,
+    reloadTime: 1,
+    aimTime: 0.2,
+    range: 100,
+    hipSpread: 0,
+    aimSpread: 0,
+    recoil: { up: 0, side: 0, recovery: 10 },
+  },
+  {
+    formatVersion: 1,
+    id: 'round',
+    name: 'Round',
+    type: 'ammo',
+    damage: 40,
+    bleedChance: 0,
+  },
+  {
+    formatVersion: 1,
+    id: 'bleeder',
+    name: 'Bleeding round',
+    type: 'ammo',
+    damage: 10,
+    bleedChance: 1,
+  },
+  {
+    formatVersion: 1,
+    id: 'helmet',
+    name: 'Helmet',
+    type: 'armour',
+    slot: 'helmet',
+    absorb: 0.5,
+    durability: 30,
+  },
+  {
+    formatVersion: 1,
+    id: 'vest',
+    name: 'Vest',
+    type: 'armour',
+    slot: 'body',
+    absorb: 0.25,
+    durability: 50,
+  },
+];
+
+export const TEST_ITEMS: ItemDb = new Map(defs.map((d) => [d.id, d]));

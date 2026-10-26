@@ -1,11 +1,14 @@
 import {
   ContentError,
+  ITEM_FORMAT,
   MAP_FORMAT,
   PREFAB_FORMAT,
+  checkItems,
   compileMap,
   loadContent,
   type CompiledMap,
   type ContentFormat,
+  type ItemDb,
   type MapFile,
   type PrefabFile,
 } from '@mes/shared';
@@ -16,6 +19,11 @@ const mapFiles = import.meta.glob<unknown>('../../../content/maps/*.json', {
   import: 'default',
 });
 const prefabFiles = import.meta.glob<unknown>('../../../content/prefabs/*.json', {
+  eager: true,
+  import: 'default',
+});
+
+const itemFiles = import.meta.glob<unknown>('../../../content/items/*.json', {
   eager: true,
   import: 'default',
 });
@@ -37,6 +45,7 @@ function loadAll<T extends { id: string }>(
 }
 
 let prefabs: Map<string, PrefabFile> | undefined;
+let items: ItemDb | undefined;
 let maps: Map<string, MapFile> | undefined;
 
 export function mapIds(): string[] {
@@ -50,4 +59,14 @@ export function loadMap(id: string): CompiledMap {
   const map = maps.get(id);
   if (!map) throw new Error(`no map "${id}" in content/maps`);
   return compileMap(map, prefabs);
+}
+
+/** Every item in content/items, with references between them checked. */
+export function loadItems(): ItemDb {
+  if (!items) {
+    const all = loadAll(ITEM_FORMAT, itemFiles);
+    checkItems(all);
+    items = all;
+  }
+  return items;
 }
