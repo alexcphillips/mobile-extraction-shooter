@@ -63,7 +63,17 @@ export {
   type CharacterHit,
   type HitCapsule,
 } from './sim/hit-zones';
-export { giveWeapon, updateWeapon, type ShotEvent, type WeaponState } from './sim/weapons';
+export {
+  attach,
+  createWeaponStats,
+  detach,
+  giveWeapon,
+  updateWeapon,
+  weaponStats,
+  type ShotEvent,
+  type WeaponState,
+  type WeaponStats,
+} from './sim/weapons';
 export { step } from './sim/step';
 export { ContentError, loadContent, type ContentFormat, type Migration } from './content/format';
 export {
@@ -80,15 +90,24 @@ export {
   type PrefabFile,
 } from './content/schema';
 export {
+  ATTACHMENT_SLOTS,
   ITEM_FORMAT,
   ITEM_FORMAT_VERSION,
+  SCOPE_RADIUS,
   ammoDef,
   armourDef,
+  attachmentDef,
   checkItems,
+  fits,
   itemSchema,
   weaponDef,
   type AmmoDef,
   type ArmourDef,
+  type AttachmentDef,
+  type AttachmentMods,
+  type AttachmentSlot,
+  type OpticDef,
+  type ReticleShape,
   type ItemDb,
   type ItemDef,
   type WeaponDef,

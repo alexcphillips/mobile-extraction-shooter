@@ -98,6 +98,28 @@ body {
   transform: scale(2.6);
 }
 
+/* Behind an optic's reticle the crosshair only shows hit markers. */
+#crosshair.optic:not(.hit, .kill) {
+  opacity: 0;
+}
+
+/* The optic's reticle and the scope mask, full screen (hud/optic.ts). */
+#optic {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+#optic[hidden] {
+  display: none;
+}
+
+#optic svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
 /* Health, status chips and armour, top centre. */
 #vitals {
   position: fixed;

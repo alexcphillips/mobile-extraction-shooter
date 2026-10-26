@@ -1,0 +1,8 @@
+{
+  "formatVersion": 2,
+  "id": "suppressor",
+  "name": "Suppressor",
+  "type": "attachment",
+  "slot": "muzzle",
+  "mods": { "loudness": 0.3, "recoil": 0.9 }
+}

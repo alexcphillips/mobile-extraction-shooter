@@ -1,5 +1,5 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "id": "assault-rifle",
   "name": "Assault rifle",
   "type": "weapon",
@@ -10,6 +10,8 @@
   "reloadTime": 2.4,
   "aimTime": 0.3,
   "range": 200,
+  "loudness": 180,
+  "slots": ["optic", "muzzle", "magazine"],
   "hipSpread": 3,
   "aimSpread": 0.4,
   "recoil": { "up": 0.9, "side": 0.4, "recovery": 14 }

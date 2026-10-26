@@ -7,7 +7,8 @@ import {
   isBleeding,
   isBroken,
   totalHp,
-  weaponDef,
+  createWeaponStats,
+  weaponStats,
   type ArmourState,
   type Character,
   type ItemDb,
@@ -16,6 +17,8 @@ import { armourColour } from './armour';
 
 const HELMET_ICON =
   '<svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M3 15a9 9 0 0 1 18 0v2H3z M2 17h20v2H2z"/></svg>';
+const stats = createWeaponStats();
+
 const VEST_ICON =
   '<svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M7 2h3l2 3 2-3h3l2 4v15H5V6z"/></svg>';
 
@@ -108,7 +111,7 @@ export class Vitals {
       this.rounds.classList.toggle('empty', w.mag === 0);
       setHidden(this.reload, w.reloading === 0);
       if (w.reloading > 0) {
-        const done = 1 - w.reloading / weaponDef(items, w.item).reloadTime;
+        const done = 1 - w.reloading / weaponStats(items, w, stats).reloadTime;
         this.reloadFill.style.transform = `scaleX(${done})`;
       }
     }

@@ -50,6 +50,8 @@ export class Controls {
   quickSlot = -1;
   /** Look speed multiplier from aim assist, set by the game while the crosshair is on an enemy. */
   assist = 1;
+  /** Look speed is divided by this, set by the game while looking through a scope. */
+  zoom = 1;
 
   private sprintLocked = false;
   private move: MoveTouch | null = null;
@@ -248,7 +250,9 @@ export class Controls {
     const last = this.look.get(e.pointerId);
     if (!last) return;
     const s = settings.current;
-    const speed = LOOK_SPEED * s.lookSensitivity * (this.aim ? s.aimSensitivity : 1) * this.assist;
+    const speed =
+      (LOOK_SPEED * s.lookSensitivity * (this.aim ? s.aimSensitivity : 1) * this.assist) /
+      this.zoom;
     this.yaw -= (e.clientX - last.x) * speed;
     this.pitch -= (e.clientY - last.y) * speed * (s.invertY ? -1 : 1);
     this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch));

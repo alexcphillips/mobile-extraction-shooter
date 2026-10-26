@@ -1,0 +1,11 @@
+{
+  "formatVersion": 2,
+  "id": "red-dot",
+  "name": "Red dot sight",
+  "type": "attachment",
+  "slot": "optic",
+  "optic": {
+    "zoom": 1,
+    "reticle": { "colour": "#ff3b30", "shapes": [{ "type": "dot", "x": 0, "y": 0, "r": 0.8 }] }
+  }
+}

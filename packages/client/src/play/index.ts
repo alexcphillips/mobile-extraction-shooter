@@ -2,6 +2,10 @@ import {
   CollisionWorld,
   FixedTimestep,
   ammoDef,
+  attach,
+  attachmentDef,
+  detach,
+  fits,
   brokenArms,
   createCharacterHit,
   createRayHit,
@@ -18,6 +22,8 @@ import {
   step,
   wearArmour,
   weaponDef,
+  type AttachmentDef,
+  type AttachmentSlot,
   type Character,
   type PlayerInput,
   type TickInputs,
@@ -28,6 +34,7 @@ import { startLoop } from '../app/loop';
 import { loadItems, loadMap } from '../content';
 import { Stats } from '../debug/stats';
 import type { Hud } from '../hud/hud';
+import type { OpticOverlay } from '../hud/optic';
 import type { Vitals } from '../hud/vitals';
 import { Controls } from '../input/controls';
 import { buildDebug } from '../render/debug';
@@ -41,6 +48,7 @@ export interface PlayElements {
   canvas: HTMLCanvasElement;
   stats: HTMLElement;
   hud: Hud;
+  optic: OpticOverlay;
   vitals: Vitals;
 }
 
@@ -50,7 +58,12 @@ export interface PlayOptions {
   spawn: string | null;
   /** The player's gun, an item id. */
   weapon: string;
-  /** Show markers and zones, and turn quick slots 1 and 2 into hurt-me and heal-me. */
+  /** Attachment item ids to put on it. */
+  attachments: string[];
+  /**
+   * Show markers and zones, and turn the quick slots into hurt me, heal me, next optic
+   * and next muzzle.
+   */
   debug: boolean;
   pixelRatio: number;
   /** Shown in the stats header, e.g. "standalone". */
@@ -58,8 +71,13 @@ export interface PlayOptions {
 }
 
 const FOV = 70;
-/** Iron sights zoom a little; optics in session 6b set their own zoom. */
+/** Iron sights and red dots zoom a little; scopes set their own zoom. */
 const AIM_FOV = 55;
+/** How far into aiming a red dot's reticle shows, once the sight has come up to the eye. */
+const RETICLE_IN = 0.95;
+/** How far into aiming a scope switches to its full-screen zoom. */
+const SCOPE_IN = 0.9;
+const DEG = Math.PI / 180;
 const SPARE_ROUNDS = 120;
 /** Dead target dummies get up again after this long. */
 const DUMMY_RESPAWN_MS = 6000;
@@ -107,7 +125,7 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
     spawns.find((m) => m.id === options.spawn) ?? pick(createRng(Date.now() >>> 0), spawns);
   // Below the spawn's height plus a little, so a spawn under a roof stays inside.
   const player = spawnCharacter(sim, world, spawn.x, spawn.z, spawn.yaw, spawn.y + 0.5);
-  giveWeapon(player, items, options.weapon, SPARE_ROUNDS);
+  giveWeapon(player, items, options.weapon, SPARE_ROUNDS, options.attachments);
   wearArmour(player, items, 'steel-helmet');
   wearArmour(player, items, 'plate-carrier');
   controls.yaw = spawn.yaw;
@@ -176,6 +194,20 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
     );
   }
 
+  /** Debug: the next attachment that fits in a slot of the player's gun, then none. */
+  function nextAttachment(slot: AttachmentSlot): void {
+    const w = player.weapon;
+    if (!w) return;
+    const gun = weaponDef(items, w.item);
+    const choices = [...items.values()]
+      .filter((i): i is AttachmentDef => i.type === 'attachment' && i.slot === slot)
+      .filter((a) => fits(gun, a))
+      .map((a) => a.id);
+    const next = choices[choices.indexOf(w.attachments[slot] ?? '') + 1];
+    if (next) attach(w, items, next);
+    else detach(w, items, slot);
+  }
+
   const debugRng = createRng(1);
   const muzzle = new THREE.Vector3();
 
@@ -212,6 +244,10 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
       el.vitals.hurtFlash();
     } else if (options.debug && controls.quickSlot === 1) {
       restoreHealth(player, items);
+    } else if (options.debug && controls.quickSlot === 2) {
+      nextAttachment('optic');
+    } else if (options.debug && controls.quickSlot === 3) {
+      nextAttachment('muzzle');
     }
 
     prev.x = cur.x;
@@ -297,13 +333,28 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
       0,
     );
     const aim = lerp(prev.aim, cur.aim);
-    const fov = FOV + (AIM_FOV - FOV) * aim;
+    const w = player.weapon;
+    const optic = w?.attachments.optic
+      ? (attachmentDef(items, w.attachments.optic).optic ?? null)
+      : null;
+    const zoom = optic?.zoom ?? 1;
+    // A scope snaps to its zoom behind the mask once aimed; until then it's like irons.
+    const scoped = zoom > 1 && aim >= SCOPE_IN;
+    const fov = scoped
+      ? (2 * Math.atan(Math.tan((FOV / 2) * DEG) / zoom)) / DEG
+      : FOV + (AIM_FOV - FOV) * aim;
     if (camera.fov !== fov) {
       camera.fov = fov;
       camera.updateProjectionMatrix();
     }
+    // Looking turns the view less when zoomed in, so it moves as fast on the screen.
+    controls.zoom = scoped ? Math.tan((AIM_FOV / 2) * DEG) / Math.tan((fov / 2) * DEG) : 1;
+    const alive = !player.health.dead;
+    el.optic.set(optic);
+    el.optic.visible = alive && aim >= (zoom > 1 ? SCOPE_IN : RETICLE_IN);
     for (const d of dummies) d.body.update(d.c, items);
-    viewmodel.visible = !player.health.dead && !!player.weapon;
+    viewmodel.visible = alive && !!w && !scoped;
+    if (w) viewmodel.setAttachments(w, items);
     viewmodel.update(camera, time, dtMs, aim, 1 + brokenArms(player.health) * 2);
     effects.update(performance.now());
     render();

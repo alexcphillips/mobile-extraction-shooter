@@ -2,6 +2,7 @@ import { PROTOCOL_VERSION, type HelloResponse } from '@mes/shared';
 import { unlockAudioOnTap } from './app/audio';
 import { watchPauseTriggers } from './app/pause';
 import { Hud } from './hud/hud';
+import { OpticOverlay } from './hud/optic';
 import { Vitals } from './hud/vitals';
 import { startPerfTest } from './perf';
 import { readParams } from './perf/params';
@@ -76,7 +77,8 @@ if (location.pathname === '/perf') {
   });
 } else {
   // ?map=<id> picks a map from content/maps, ?spawn=<id> a player spawn in it, ?weapon=<id>
-  // the gun, and ?debug shows markers and zones and makes quick slots 1 and 2 hurt and heal.
+  // the gun, ?attach=<id>,<id> its attachments, and ?debug shows markers and zones and turns
+  // the quick slots into hurt, heal, next optic and next muzzle.
   const q = new URLSearchParams(location.search);
   byId('try-again').addEventListener('click', () => location.reload());
   try {
@@ -85,6 +87,7 @@ if (location.pathname === '/perf') {
         canvas: byId('scene') as HTMLCanvasElement,
         stats: byId('stats'),
         hud,
+        optic: new OpticOverlay(byId('optic'), byId('crosshair')),
         vitals: new Vitals(
           byId('vitals'),
           byId('ammo'),
@@ -97,6 +100,7 @@ if (location.pathname === '/perf') {
         map: q.get('map') ?? 'test-map',
         spawn: q.get('spawn'),
         weapon: q.get('weapon') ?? 'assault-rifle',
+        attachments: q.get('attach')?.split(',').filter(Boolean) ?? [],
         debug: q.has('debug'),
         pixelRatio: Math.min(window.devicePixelRatio, 2),
         note: standalone ? 'standalone' : 'browser',

@@ -21,7 +21,7 @@ import {
 } from './state';
 import { step } from './step';
 import { TEST_ITEMS } from './test-items';
-import { giveWeapon } from './weapons';
+import { attach, createWeaponStats, detach, giveWeapon, weaponStats } from './weapons';
 
 function makeWorld(boxes: ConstructorParameters<typeof CollisionWorld>[0]['boxes'] = []) {
   return new CollisionWorld({
@@ -296,5 +296,64 @@ describe('firing', () => {
     const aim = lookAt(shooter, 0.11, 0.4, 0);
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ ...aim, fire: true }) });
     expect(target.health.hp[LEFT_LEG]).toBeLessThan(65);
+  });
+});
+
+describe('attachments', () => {
+  const world = makeWorld();
+
+  it('changes the stats and the shot loudness', () => {
+    const state = createState(1);
+    const shooter = spawnCharacter(state, world, 0, 0);
+    giveWeapon(shooter, TEST_ITEMS, 'rifle', 0, ['suppressor', 'scope']);
+    const s = weaponStats(TEST_ITEMS, shooter.weapon!, createWeaponStats());
+    expect(s.loudness).toBe(150 * 0.25);
+    expect(s.recoilUp).toBe(0.5);
+    expect(s.aimTime).toBe(0.4);
+    step(state, world, TEST_ITEMS, { [shooter.id]: input({ pitch: 1, fire: true }) });
+    expect(state.events.find((e) => e.type === 'shot')).toMatchObject({ loudness: 37.5 });
+    // Half the rifle's kick of 1°.
+    expect(shooter.recoilPitch).toBeCloseTo(0.5 * (Math.PI / 180));
+  });
+
+  it('fills a bigger magazine, and reloads up to it', () => {
+    const state = createState(1);
+    const shooter = spawnCharacter(state, world, 0, 0);
+    giveWeapon(shooter, TEST_ITEMS, 'rifle', 100, ['big-mag']);
+    const w = shooter.weapon!;
+    expect(w.mag).toBe(50);
+    w.mag = 0;
+    step(state, world, TEST_ITEMS, { [shooter.id]: input({ reload: true }) });
+    // The big magazine's reload is 1.5 times as long.
+    for (let i = 0; i < TICK_RATE * 2.9; i++) step(state, world, TEST_ITEMS, {});
+    expect(w.mag).toBe(0);
+    for (let i = 0; i < 4; i++) step(state, world, TEST_ITEMS, {});
+    expect(w.mag).toBe(50);
+    expect(w.reserve).toBe(50);
+  });
+
+  it('puts rounds that no longer fit back in the reserve when the magazine comes off', () => {
+    const state = createState(1);
+    const shooter = spawnCharacter(state, world, 0, 0);
+    giveWeapon(shooter, TEST_ITEMS, 'rifle', 10, ['big-mag']);
+    const w = shooter.weapon!;
+    w.reloading = 1;
+    expect(detach(w, TEST_ITEMS, 'magazine')).toBe('big-mag');
+    expect(w.mag).toBe(30);
+    expect(w.reserve).toBe(30);
+    expect(w.reloading).toBe(0);
+    expect(detach(w, TEST_ITEMS, 'magazine')).toBe(null);
+  });
+
+  it('only goes on guns it fits', () => {
+    const state = createState(1);
+    const shooter = spawnCharacter(state, world, 0, 0);
+    giveWeapon(shooter, TEST_ITEMS, 'pistol', 0);
+    const w = shooter.weapon!;
+    // The pistol has no optic slot, and the big magazine is for the rifle only.
+    expect(() => attach(w, TEST_ITEMS, 'scope')).toThrow(/doesn't fit/);
+    expect(() => attach(w, TEST_ITEMS, 'big-mag')).toThrow(/doesn't fit/);
+    attach(w, TEST_ITEMS, 'suppressor');
+    expect(w.attachments).toEqual({ optic: null, muzzle: 'suppressor', magazine: null });
   });
 });

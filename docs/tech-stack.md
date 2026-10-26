@@ -37,6 +37,7 @@ docs/
   - Inputs are per entity per tick: the move stick, absolute yaw and pitch, and sprint, crouch and jump. Crouch is the wanted stance, so hold vs. toggle stays a client setting.
 - **Combat (session 6):** `step(state, world, items, inputs)`. The item database (`ItemDb`, every item by id) is static like the world, so it's passed in rather than kept in the state. Each tick everyone moves (then takes fall damage), then everyone's gun updates (so shots see this tick's positions), then bleeding. Inputs gained `fire`, `aim` (both held) and `reload` (a press).
   - Character state gained `health` (HP and bleeding per zone, dead), `helmet` and `bodyArmour` (item and durability), `weapon` (item, rounds, spare rounds, cooldown, reload timer), `aim` (0–1) and the recoil offsets. **Spare rounds are a plain count on the weapon until the inventory (session 9).**
+  - **Attachments (session 6b):** the weapon state has `attachments` (the item id in each slot, or null). `weaponStats(items, weapon, out)` works out the gun's stats with them into a scratch object, so a tick still allocates nothing. `attach` and `detach` change them (an attachment that doesn't fit throws; check with `fits`); for now the client calls them between ticks, like `giveWeapon`. In co-op they'll become inputs. Shot events carry `loudness` for AI hearing.
   - `state.events` lists what happened during the last tick (`shot`, `damage`, `death`) for effects, hit markers and the HUD. It's cleared each tick; events are the only allocation, and only when something happens.
   - **Hit zones** are six capsules in a fixed layout (`HIT_CAPSULES` in `sim/hit-zones.ts`), turned by yaw and squashed by crouch height. `raycastCharacters` checks each living character's bounding sphere, then its capsules. **No spatial hash for moving things:** with tens of characters, a sphere test each is cheaper than keeping a hash up to date. Revisit if a raid gets past about 100 characters.
 - **Seeded RNG** for loot rolls, enemy loadouts, AI decisions, shot spread and bleeding.
@@ -72,12 +73,15 @@ Decided in session 4. The schemas are in `packages/shared/src/content/schema.ts`
 
 
 ## Item format
-Started in session 6 with what combat needs; session 6b adds attachments and session 9 the rest of the item model. The schema is `packages/shared/src/content/items.ts`, whose comments are the field-by-field reference.
-- **Files:** `content/items/<id>.json`, one item each, loaded like maps (`formatVersion`, migrations, strict zod objects). The `type` field picks the kind: `weapon`, `ammo` or `armour`.
-- **weapon:** ammo item, `fireMode` (`auto` or `semi`), `rpm`, `magazine`, `reloadTime`, `aimTime`, `range`, `hipSpread` and `aimSpread` (degrees), and `recoil` (`up`, `side`, `recovery` in degrees per second).
+Started in session 6 with what combat needs; session 6b added attachments (format 2), and session 9 adds the rest of the item model. The schema is `packages/shared/src/content/items.ts`, whose comments are the field-by-field reference.
+- **Files:** `content/items/<id>.json`, one item each, loaded like maps (`formatVersion`, migrations, strict zod objects). The `type` field picks the kind: `weapon`, `ammo`, `armour` or `attachment`.
+- **weapon:** ammo item, `fireMode` (`auto` or `semi`), `rpm`, `magazine`, `reloadTime`, `aimTime`, `range`, `loudness` (hearing radius in metres), `slots` (any of `optic`, `muzzle`, `magazine`), `hipSpread` and `aimSpread` (degrees), and `recoil` (`up`, `side`, `recovery` in degrees per second).
+- **attachment:** `slot`, optional `weapons` (the guns it fits; otherwise every gun with the slot), optional `mods` (multipliers `spread`, `recoil`, `aimTime`, `reloadTime`, `loudness`, and `magazine` as extra rounds), and for optics only `optic`: `zoom` (1 is a red dot, above 1 a scope) and `reticle` (`colour` and `shapes`: `dot`, `line` and `ring`, in % of the screen height from the aim point, y down; the scope mask's radius is `SCOPE_RADIUS`, 46).
+- Format 1 → 2 (session 6b) gave weapons `loudness: 150`; slots are optional.
 - **ammo:** `damage` (to the chest; zones multiply it), `armourDamage` (durability lost per point absorbed, default 1), `bleedChance`.
 - **armour:** `slot` (`helmet` or `body`), `absorb` (0–1), `durability`.
-- `checkItems` checks references between items (a weapon's ammo exists and is ammo); the client's content test runs it.
+- `checkItems` checks references between items (a weapon's ammo exists and is ammo; an attachment's guns exist and have its slot); the client's content test runs it.
+- **Models, mount points and sight lines are not in item files yet** (decided 2026-10-26, session 6b). Until the item editor's model builder (session 18), the gun and its attachments are placeholder boxes in the client's `render/viewmodel.ts`, chosen by kind: scope or red dot by zoom, suppressor or brake by whether it makes the gun quieter, long mag if there's any magazine. Each sight placeholder has its sight height there. Session 18 moves geometry, mounts and sight lines into the item files.
 
 ## Client (`packages/client`)
 - **Build tool:** Vite + TypeScript.
@@ -89,6 +93,7 @@ Started in session 6 with what combat needs; session 6b adds attachments and ses
   - Content is bundled into the client with `import.meta.glob`; in dev, saving a content file reloads the page.
   - The camera's far plane follows the fog distance.
   - **The first-person gun is drawn in a second pass** after the world, with the depth buffer cleared, so it never pokes into walls (`render/viewmodel.ts`). One extra draw call. It's a placeholder built from boxes until the item editor (session 18) and arms (session 8b).
+  - The viewmodel rebuilds its one mesh only when the attachments change. **Optic reticles and the scope mask are one SVG overlay** (`hud/optic.ts`, rebuilt only when the optic changes), not 3D, so they cost no draw calls; while scoped the gun isn't drawn at all.
   - Tracers and impact puffs come from fixed pools (`render/effects.ts`): one line mesh and one instanced mesh, so shooting allocates nothing and costs two draw calls.
   - Recoil is simulation state, so the camera interpolates it between ticks like the eye position.
 - **UI:** React DOM overlays for menus, inventory, settings and the editors.

@@ -1,0 +1,8 @@
+{
+  "formatVersion": 2,
+  "id": "muzzle-brake",
+  "name": "Muzzle brake",
+  "type": "attachment",
+  "slot": "muzzle",
+  "mods": { "recoil": 0.7, "loudness": 1.2 }
+}

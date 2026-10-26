@@ -1,9 +1,9 @@
-import type { ItemDb, ItemDef } from '../content/items';
+import { ITEM_FORMAT_VERSION, type ItemDb, type ItemDef } from '../content/items';
 
 /** A small item set for tests, independent of content/. */
 const defs: ItemDef[] = [
   {
-    formatVersion: 1,
+    formatVersion: ITEM_FORMAT_VERSION,
     id: 'rifle',
     name: 'Rifle',
     type: 'weapon',
@@ -14,12 +14,14 @@ const defs: ItemDef[] = [
     reloadTime: 2,
     aimTime: 0.2,
     range: 200,
+    loudness: 150,
+    slots: ['optic', 'muzzle', 'magazine'],
     hipSpread: 0,
     aimSpread: 0,
     recoil: { up: 1, side: 0, recovery: 10 },
   },
   {
-    formatVersion: 1,
+    formatVersion: ITEM_FORMAT_VERSION,
     id: 'pistol',
     name: 'Pistol',
     type: 'weapon',
@@ -30,12 +32,14 @@ const defs: ItemDef[] = [
     reloadTime: 1,
     aimTime: 0.2,
     range: 100,
+    loudness: 100,
+    slots: ['muzzle'],
     hipSpread: 0,
     aimSpread: 0,
     recoil: { up: 0, side: 0, recovery: 10 },
   },
   {
-    formatVersion: 1,
+    formatVersion: ITEM_FORMAT_VERSION,
     id: 'round',
     name: 'Round',
     type: 'ammo',
@@ -43,7 +47,7 @@ const defs: ItemDef[] = [
     bleedChance: 0,
   },
   {
-    formatVersion: 1,
+    formatVersion: ITEM_FORMAT_VERSION,
     id: 'bleeder',
     name: 'Bleeding round',
     type: 'ammo',
@@ -51,7 +55,7 @@ const defs: ItemDef[] = [
     bleedChance: 1,
   },
   {
-    formatVersion: 1,
+    formatVersion: ITEM_FORMAT_VERSION,
     id: 'helmet',
     name: 'Helmet',
     type: 'armour',
@@ -60,13 +64,39 @@ const defs: ItemDef[] = [
     durability: 30,
   },
   {
-    formatVersion: 1,
+    formatVersion: ITEM_FORMAT_VERSION,
     id: 'vest',
     name: 'Vest',
     type: 'armour',
     slot: 'body',
     absorb: 0.25,
     durability: 50,
+  },
+  {
+    formatVersion: ITEM_FORMAT_VERSION,
+    id: 'scope',
+    name: 'Scope',
+    type: 'attachment',
+    slot: 'optic',
+    mods: { aimTime: 2 },
+    optic: { zoom: 4, reticle: { colour: '#000000', shapes: [{ type: 'dot', x: 0, y: 0, r: 1 }] } },
+  },
+  {
+    formatVersion: ITEM_FORMAT_VERSION,
+    id: 'suppressor',
+    name: 'Suppressor',
+    type: 'attachment',
+    slot: 'muzzle',
+    mods: { loudness: 0.25, recoil: 0.5 },
+  },
+  {
+    formatVersion: ITEM_FORMAT_VERSION,
+    id: 'big-mag',
+    name: 'Big magazine',
+    type: 'attachment',
+    slot: 'magazine',
+    weapons: ['rifle'],
+    mods: { magazine: 20, reloadTime: 1.5 },
   },
 ];
 

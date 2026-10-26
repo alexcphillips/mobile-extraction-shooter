@@ -114,11 +114,21 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
     - **Not done yet:** nothing heals or stops bleeding in play except the debug key (meds are sessions 9–10); dead dummies just lie down (8b animates). Spread doesn't grow while moving; add it if hip-fire on the run feels too accurate.
     - Bundle: the main chunk is about 808 kB (up 18 kB).
     - **Checked on the iPhone:** the user tried it and it looks good.
-- [ ] **6b. Weapon attachments.**
+- [x] **6b. Weapon attachments.**
   - Attachment slots (optic, muzzle, mag): attachment items, stat changes.
   - Optics: full-screen zoom with a scope mask, red-dot reticles, the gun's sight line so the reticle lines up when aiming.
   - Muzzle: suppressors and the shot's hearing radius (used by AI hearing in session 7).
   - Extended magazines.
+  - **Notes (2026-10-26):**
+    - Decided with the user: **an attachment fits every gun with its slot unless it lists the guns it fits** (magazines list theirs), and **models, mount points and sight lines stay client placeholders until session 18** rather than going into item files now. Both in design.md and tech-stack.md.
+    - Shared: the item format is now **version 2**, with its first migration (weapons gained `loudness`; `slots` is optional). New `attachment` item type with stat changes (`mods`) and, for optics, zoom and a reticle made of dots, lines and rings. `WeaponState.attachments`, `weaponStats` (allocation-free), `attach`, `detach` and `fits`; shot events carry `loudness`. 5 new tests (118 in all).
+    - Content: `red-dot`, `scope-4x` (rifle only, aim time ×1.4), `suppressor` (loudness ×0.3, recoil ×0.9), `muzzle-brake` (recoil ×0.7, loudness ×1.2), `mag-556-45` (+15 rounds, reload ×1.15) and `mag-9mm-24` (+9, reload ×1.1). Both guns have all three slots. Numbers are first guesses.
+    - Client: placeholder models for each attachment kind on the viewmodel, which aims down the optic's sight line; no muzzle flash when suppressed. `hud/optic.ts` draws the reticle and scope mask as an SVG overlay. A 4× scope gives a 20° view and slows looking to match. The reload bar uses the reload time with attachments.
+    - Testing: `?attach=<id>,<id>` sets the player's attachments, and with `?debug` quick slots 3 and 4 cycle through the optics and muzzles that fit.
+    - Checked in headless Chrome at iPhone landscape size: the red dot lines up in its frame when aimed; the scope snaps to 4× behind the mask with the HUD on top; the 45-round mag fills to 45 and fires down at the right rate; cycling back to irons still lines up; the pistol takes the red dot and 24-round mag; `?attach=scope-4x` on the pistol stops with "doesn't fit"; the perf scene still runs. No console errors. 60 fps; scoped is 14 draw calls, since the gun isn't drawn.
+    - Bundle: the main chunk is about 815 kB (up 7 kB).
+    - Not done yet: nothing in play gives you attachments except the URL and debug keys (the attachment manager is session 10, stash loadouts session 13). Loudness isn't heard by anything until AI hearing (session 7). No sounds yet, so suppressed shots sound no different.
+    - **Checked on the iPhone:** the user tried it and it looks good.
 - [ ] **7. AI part 1: navigation and perception.**
   - Generate the multi-layer navigation grid (stairs, no ladders); A*.
   - Patrol routes. Sight cones with line of sight; hearing (shot radius, suppressors).

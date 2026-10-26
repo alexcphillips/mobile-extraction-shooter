@@ -1,0 +1,9 @@
+{
+  "formatVersion": 2,
+  "id": "mag-556-45",
+  "name": "45-round 5.56 magazine",
+  "type": "attachment",
+  "slot": "magazine",
+  "weapons": ["assault-rifle"],
+  "mods": { "magazine": 15, "reloadTime": 1.15 }
+}
