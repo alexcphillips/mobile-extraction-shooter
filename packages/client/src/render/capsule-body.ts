@@ -19,7 +19,8 @@ const DEAD = new THREE.Color(0x777777);
 
 /**
  * Draws characters as their hit-zone capsules, each coloured by its HP, plus boxes for
- * worn armour. A debug stand-in for enemies until session 8b draws real bodies.
+ * worn armour. A debug view (?hitzones), drawn see-through over the real bodies to check
+ * they're posed to match.
  */
 export class CapsuleBody {
   readonly root = new THREE.Group();
@@ -27,30 +28,36 @@ export class CapsuleBody {
   private readonly helmet: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>;
   private readonly vest: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>;
 
-  constructor() {
+  constructor(opacity = 1) {
     this.root.rotation.order = 'YXZ';
+    const see = opacity < 1 ? { transparent: true, opacity, depthWrite: false } : {};
+    const a = new THREE.Vector3();
+    const b = new THREE.Vector3();
     for (const cap of HIT_CAPSULES) {
-      const len = Math.hypot(cap.b[0] - cap.a[0], cap.b[1] - cap.a[1], cap.b[2] - cap.a[2]);
-      const material = new THREE.MeshBasicMaterial({ color: FULL });
-      const mesh = new THREE.Mesh(new THREE.CapsuleGeometry(cap.radius, len, 2, 8), material);
-      // Every capsule is upright, so it only needs placing at its middle. In three.js
-      // local +z is backwards, so forward is −z.
-      mesh.position.set(
-        (cap.a[0] + cap.b[0]) / 2,
-        (cap.a[1] + cap.b[1]) / 2,
-        -(cap.a[2] + cap.b[2]) / 2,
+      // In three.js local +z is backwards, so forward is −z.
+      a.set(cap.a[0], cap.a[1], -cap.a[2]);
+      b.set(cap.b[0], cap.b[1], -cap.b[2]);
+      const material = (this.zones[cap.zone] ??= new THREE.MeshBasicMaterial({
+        color: FULL,
+        ...see,
+      }));
+      const mesh = new THREE.Mesh(
+        new THREE.CapsuleGeometry(cap.radius, a.distanceTo(b), 2, 8),
+        material,
       );
-      this.zones[cap.zone] = material;
+      // Capsule geometry runs along y: place it at the middle and turn y onto the axis.
+      mesh.position.addVectors(a, b).multiplyScalar(0.5);
+      mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.sub(a).normalize());
       this.root.add(mesh);
     }
     this.helmet = new THREE.Mesh(
       new THREE.BoxGeometry(0.3, 0.14, 0.32),
-      new THREE.MeshBasicMaterial(),
+      new THREE.MeshBasicMaterial(see),
     );
     this.helmet.position.set(0, 1.7, -0.02);
     this.vest = new THREE.Mesh(
       new THREE.BoxGeometry(0.44, 0.42, 0.42),
-      new THREE.MeshBasicMaterial(),
+      new THREE.MeshBasicMaterial(see),
     );
     this.vest.position.set(0, 1.18, 0);
     this.root.add(this.helmet, this.vest);

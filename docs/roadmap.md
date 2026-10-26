@@ -159,11 +159,21 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
     - Added for a suspected aim offset that turned out fine: with `?debug`, a cyan diamond where the sim will fire and magenta diamonds where your last five shots landed, drawn over everything.
     - Deployed to Workers so it can be tested over cellular (the phone couldn't reach the Mac's dev server).
     - **To check on the iPhone:** how fights feel, especially the scav and boss skill numbers in `content/enemies/`.
-- [ ] **8b. Character visuals.**
+- [x] **8b. Character visuals.**
   - Choose the CC0 character pack and confirm its licence; import it, recolour to flat colours, draw it unlit.
   - Named mount points for helmet, armour, backpack and weapon; equipped gear shows on the body.
   - Pose the body to match the simulation's hit-zone capsules (they're a fixed layout in the sim since session 6, not attached to bones). An animation state machine (idle, walk, run, aim, shoot, reload, death).
   - First-person arms. Distant characters update their animation less often.
+  - **Notes (2026-10-26):**
+    - Decided with the user: the pack is **Quaternius's Universal Animation Library (Standard)**, CC0 per the `License.txt` in the OpenGameArt download. It has one mannequin and 45 clips, pistol clips but no rifle ones, so guns are held by IK. Also decided: **the arm hit capsules moved forward** to the gun-holding pose instead of staying at the sides, where no armed pose could match them. Both in design.md; the details are in tech-stack.md → Characters.
+    - Decided along the way: the chest is now two narrower capsules (wider than deep, like the torso), so it doesn't swallow forearm shots; each arm is an upper-arm and a forearm capsule. Weapons gained an optional `hold` (`rifle` or `pistol`) and enemy types an optional `outfit`; both are optional fields, so no format version change. The scav wears olive and grey, the boss dark green.
+    - Asset: `scripts/build-character.mjs` builds `packages/client/public/characters/mannequin.glb` (5.8k triangles, 15 clips, 556 kB, 279 kB gzipped) from the pack; licence and source in the README beside it. The robot stand-in, its README and `perf/characters.ts` are gone, and the perf scene uses the mannequin.
+    - Client: `render/character.ts` (load, bake by body part, looks with gear on mount bones, one draw call each), `render/character-body.ts` (legs and upper-body layers, strafing twist, look lean, flinch, IK gun hold from low ready to aimed, gun in hand for reloads, sprinting and distance, death, LOD, interpolation), `render/gun-model.ts` (placeholder rifle and pistol with attachments, shared with first person), first-person arms and a reload dip in `render/viewmodel.ts`, the `/bodies` viewer, and `?hitzones`. Enemy shots kick their gun; hits make them flinch.
+    - Shared: the new capsule layout, `createHealth` exported, and two hit-zone tests rewritten for it. One of those had a wrong comment: the old "facing −x" yaw faces +x, which only passed because the old layout was symmetric. 160 tests pass.
+    - Checked in headless Chrome: every pose in `/bodies` from front, side and top (rifle and pistol aimed and low, aiming up and down, walk, jog, sprint, strafe, backwards, crouch aimed, crouch walk, reload, dead); the test map at iPhone landscape size, where enemies walk in as bodies, fight, and the first person shows the arms and the reload dip; and the perf scene (10 mannequins, 49k triangles, 60 fps). No console errors. In play, 60 fps with 25–39 draw calls, CPU 0.5–1.1 ms per frame with three enemies.
+    - Bundle: the main chunk is about 869 kB (up 18 kB); the mannequin is fetched separately.
+    - Not done yet: no shoot clip is played; a shot kicks the IK'd gun instead. The rifle reload borrows the pistol clip, so the rifle points up while reloading. A sprinting or unarmed body's arms don't match the forward arm capsules. Crouched, the body leans forward a little past its capsules. From the hip, the gun hides most of the first-person arms. No backpack is drawn (there are no backpacks until session 9). Ladders play idle. The player's own body isn't drawn (it will be for co-op).
+    - **To check on the iPhone:** frame rate with the bodies in a fight and in `/perf` (each body is now 5.8k triangles, the robot was 3.2k), and how the bodies and first-person arms look.
 - [ ] **9. Item and inventory model (shared).**
   - Item definition schemas for all item types.
   - Grid containers with item sizes and rotation, auto-placement, no nesting.

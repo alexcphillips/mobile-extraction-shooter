@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ContentError, type ContentFormat } from './format';
 import { attachmentDef, fits, weaponDef, type ItemDb } from './items';
-import { idSchema } from './schema';
+import { hexColourSchema, idSchema } from './schema';
 
 /*
  * Enemy types (content/enemies/<id>.json) and loadouts (content/loadouts/<id>.json),
@@ -33,6 +33,17 @@ const skillSchema = z.strictObject({
   holdChance: fraction,
 });
 
+/** The colours of its body, by part. Gear is drawn over it. */
+const outfitSchema = z.strictObject({
+  skin: hexColourSchema,
+  /** Torso and arms. */
+  top: hexColourSchema,
+  /** Hips and legs. */
+  bottom: hexColourSchema,
+  hands: hexColourSchema,
+  feet: hexColourSchema,
+});
+
 export const enemySchema = z.strictObject({
   formatVersion: z.literal(ENEMY_FORMAT_VERSION),
   id: idSchema,
@@ -40,6 +51,8 @@ export const enemySchema = z.strictObject({
   /** The loadout it rolls, unless its spawn names another. */
   loadout: idSchema,
   skill: skillSchema,
+  /** A plain default outfit if left out. */
+  outfit: outfitSchema.optional(),
 });
 
 /** [min, max], inclusive. */
@@ -74,6 +87,7 @@ export const loadoutSchema = z.strictObject({
 
 export type EnemyDef = z.infer<typeof enemySchema>;
 export type EnemySkill = z.infer<typeof skillSchema>;
+export type Outfit = z.infer<typeof outfitSchema>;
 export type LoadoutDef = z.infer<typeof loadoutSchema>;
 export type WeaponOption = z.infer<typeof weaponOptionSchema>;
 export type ArmourOption = z.infer<typeof armourOptionSchema>;

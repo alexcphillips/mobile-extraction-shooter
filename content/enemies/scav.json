@@ -9,5 +9,12 @@
     "aimSettled": 0.7,
     "aimSettle": 1.6,
     "holdChance": 0.4
+  },
+  "outfit": {
+    "skin": "#c99a78",
+    "top": "#6b6a4a",
+    "bottom": "#4a4f5a",
+    "hands": "#3b3530",
+    "feet": "#2e2a26"
   }
 }

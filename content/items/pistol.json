@@ -4,6 +4,7 @@
   "name": "Pistol",
   "type": "weapon",
   "ammo": "ammo-9mm",
+  "hold": "pistol",
   "fireMode": "semi",
   "rpm": 450,
   "magazine": 15,
@@ -14,5 +15,9 @@
   "slots": ["optic", "muzzle", "magazine"],
   "hipSpread": 2,
   "aimSpread": 0.6,
-  "recoil": { "up": 1.6, "side": 0.5, "recovery": 18 }
+  "recoil": {
+    "up": 1.6,
+    "side": 0.5,
+    "recovery": 18
+  }
 }

@@ -1,84 +1,68 @@
-import { attachmentDef, type ItemDb, type Shape, type WeaponState } from '@mes/shared';
+import type { ItemDb, Outfit, Shape, WeaponState } from '@mes/shared';
 import * as THREE from 'three';
+import { DEFAULT_OUTFIT } from './character';
 import { TriangleBuilder } from './geometry';
+import { gunKey, gunModel, type GunModel } from './gun-model';
 import { shadedMaterial } from './material';
 
-/** A box in the gun's frame: centre and half-extents in metres; the barrel points along −z. */
-function box(
-  x: number,
-  y: number,
-  z: number,
-  hx: number,
-  hy: number,
-  hz: number,
+/** A box from one point to another (in the gun's frame), as thick as given: a limb. */
+function limb(
+  from: readonly number[],
+  to: readonly number[],
+  hw: number,
+  hh: number,
   colour: number,
 ): Shape {
-  return { kind: 'box', x, y, z, hx, hy, hz, yaw: 0, pitch: 0, roll: 0, colour };
-}
-
-/** A cylinder lying along z. */
-function tube(y: number, z: number, r: number, hz: number, colour: number): Shape {
+  const dx = to[0]! - from[0]!;
+  const dy = to[1]! - from[1]!;
+  const dz = to[2]! - from[2]!;
+  const len = Math.hypot(dx, dy, dz);
   return {
-    kind: 'cylinder',
-    x: 0,
-    y,
-    z,
-    radius: r,
-    radiusTop: r,
-    hy: hz,
-    sides: 8,
-    yaw: 0,
-    pitch: Math.PI / 2,
+    kind: 'box',
+    x: (from[0]! + to[0]!) / 2,
+    y: (from[1]! + to[1]!) / 2,
+    z: (from[2]! + to[2]!) / 2,
+    hx: hw,
+    hy: hh,
+    hz: len / 2,
+    yaw: Math.atan2(dx, dz),
+    pitch: -Math.asin(dy / len),
     roll: 0,
     colour,
   };
 }
 
-const DARK = 0x2a2d30;
-const BLACK = 0x1d1f21;
+const hex = (c: string): number => parseInt(c.slice(1), 16);
 
-/*
- * A placeholder gun and attachments until the item editor builds real models with mount
- * points and sight lines (session 18), and arms arrive (session 8b). Each part's sight
- * line is the height the camera lines up with when aimed.
+/**
+ * Low-poly forearms and hands on the gun: the right hand on the grip, the left on the
+ * support point, the sleeves running back and down out of view.
  */
-const GUN: Shape[] = [
-  box(0, 0, -0.1, 0.03, 0.045, 0.16, 0x3a3f44),
-  box(0, 0.02, -0.36, 0.013, 0.013, 0.12, DARK),
-  box(0, -0.075, 0.04, 0.022, 0.045, 0.02, 0x4a3a2c),
-  box(0, -0.015, 0.11, 0.026, 0.04, 0.05, 0x4a3a2c),
-];
-const MAG = [box(0, -0.09, -0.06, 0.022, 0.055, 0.03, DARK)];
-const LONG_MAG = [box(0, -0.12, -0.06, 0.022, 0.085, 0.03, DARK)];
-/** Iron sights, folded away under an optic. */
-const IRONS = { shapes: [box(0, 0.055, -0.06, 0.008, 0.01, 0.03, BLACK)], sightY: 0.065 };
-/** An open frame on a low base; the dot is drawn on the screen (hud/optic.ts). */
-const RED_DOT = {
-  shapes: [
-    box(0, 0.052, -0.08, 0.016, 0.007, 0.03, BLACK),
-    box(-0.018, 0.088, -0.09, 0.003, 0.03, 0.006, BLACK),
-    box(0.018, 0.088, -0.09, 0.003, 0.03, 0.006, BLACK),
-    box(0, 0.118, -0.09, 0.021, 0.003, 0.006, BLACK),
-  ],
-  sightY: 0.09,
-};
-const SCOPE = {
-  shapes: [
-    box(0, 0.06, -0.03, 0.008, 0.015, 0.008, BLACK),
-    box(0, 0.06, -0.13, 0.008, 0.015, 0.008, BLACK),
-    tube(0.09, -0.08, 0.016, 0.1, BLACK),
-    tube(0.09, -0.2, 0.022, 0.025, BLACK),
-    tube(0.09, 0.03, 0.02, 0.02, BLACK),
-  ],
-  sightY: 0.09,
-};
-const MUZZLE_Z = -0.49;
-const SUPPRESSOR = { shapes: [tube(0.02, -0.56, 0.02, 0.08, BLACK)], muzzleZ: -0.65 };
-const BRAKE = { shapes: [box(0, 0.02, -0.505, 0.018, 0.018, 0.025, BLACK)], muzzleZ: -0.54 };
+function arms(gun: GunModel, outfit: Outfit): Shape[] {
+  const sleeve = hex(outfit.top);
+  const glove = hex(outfit.hands);
+  const [gx, gy, gz] = gun.grip;
+  const [sx, sy, sz] = gun.support;
+  return [
+    limb([gx, gy - 0.01, gz - 0.02], [gx + 0.01, gy - 0.02, gz + 0.06], 0.022, 0.032, glove),
+    limb([gx + 0.01, gy - 0.03, gz + 0.06], [gx + 0.1, gy - 0.22, gz + 0.36], 0.03, 0.034, sleeve),
+    limb([sx, sy - 0.02, sz + 0.035], [sx, sy - 0.02, sz - 0.045], 0.026, 0.03, glove),
+    limb(
+      [sx - 0.005, sy - 0.04, sz + 0.03],
+      [sx - 0.22, sy - 0.26, sz + 0.26],
+      0.03,
+      0.034,
+      sleeve,
+    ),
+  ];
+}
 
 /** Where the gun sits relative to the camera, from the hip and aimed down the sight. */
 const HIP = new THREE.Vector3(0.13, -0.14, -0.42);
 const AIMED_Z = -0.3;
+/** A pistol is held further out. */
+const PISTOL_HIP = new THREE.Vector3(0.12, -0.13, -0.38);
+const PISTOL_AIMED_Z = -0.34;
 
 /**
  * The first-person gun. It's drawn in its own pass after the world with the depth buffer
@@ -93,14 +77,17 @@ export class Viewmodel {
   private readonly model: THREE.Mesh;
   private readonly flash: THREE.Mesh;
   private readonly muzzle = new THREE.Object3D();
-  private readonly aimed = new THREE.Vector3(0, -IRONS.sightY, AIMED_Z);
+  private readonly aimed = new THREE.Vector3();
+  private readonly hip = new THREE.Vector3();
   private kick = 0;
   private flashUntil = 0;
-  /** The attachments the model was built with, as one string, to rebuild only on change. */
+  /** The gun the model was built for, as one string, to rebuild only on change. */
   private built = '';
   private suppressed = false;
+  /** How long the current reload takes, from when it started; 0 when not reloading. */
+  private reloadTotal = 0;
 
-  constructor() {
+  constructor(private readonly outfit: Outfit = DEFAULT_OUTFIT) {
     this.model = new THREE.Mesh(new THREE.BufferGeometry(), shadedMaterial());
     this.flash = new THREE.Mesh(
       new THREE.BoxGeometry(0.06, 0.06, 0.08),
@@ -110,37 +97,25 @@ export class Viewmodel {
     this.gun.add(this.model, this.flash, this.muzzle);
     this.holder.add(this.gun);
     this.scene.add(this.holder);
-    this.build(null, null);
   }
 
-  /** Shows the gun's attachments, rebuilding the model only when they change. */
-  setAttachments(w: WeaponState, items: ItemDb): void {
-    const { optic, muzzle, magazine } = w.attachments;
-    const key = `${optic} ${muzzle} ${magazine}`;
+  /** Shows the gun and its attachments, rebuilding the model only when they change. */
+  setGun(w: WeaponState, items: ItemDb): void {
+    const key = gunKey(w);
     if (key === this.built) return;
     this.built = key;
-    this.build(w, items);
-  }
-
-  private build(w: WeaponState | null, items: ItemDb | null): void {
-    const a = w && items ? w.attachments : null;
-    const def = (id: string | null | undefined) => (id && items ? attachmentDef(items, id) : null);
-    const optic = def(a?.optic)?.optic;
-    const sight = !optic ? IRONS : optic.zoom > 1 ? SCOPE : RED_DOT;
-    // Placeholders by kind: anything that makes a gun quieter looks like a suppressor.
-    const muzzleDef = def(a?.muzzle);
-    this.suppressed = (muzzleDef?.mods?.loudness ?? 1) < 1;
-    const front = !muzzleDef ? null : this.suppressed ? SUPPRESSOR : BRAKE;
-    const parts = [GUN, a?.magazine ? LONG_MAG : MAG, sight.shapes, front?.shapes ?? []];
-
+    const gun = gunModel(w, items);
+    this.suppressed = gun.suppressed;
     const b = new TriangleBuilder(false);
-    for (const list of parts) for (const s of list) b.shape(s);
+    for (const s of gun.shapes) b.shape(s);
+    for (const s of arms(gun, this.outfit)) b.shape(s);
     this.model.geometry.dispose();
     this.model.geometry = b.build();
-    this.aimed.y = -sight.sightY;
-    const muzzleZ = front?.muzzleZ ?? MUZZLE_Z;
-    this.flash.position.set(0, 0.02, muzzleZ);
-    this.muzzle.position.set(0, 0.02, muzzleZ);
+    const pistol = gun.hold === 'pistol';
+    this.hip.copy(pistol ? PISTOL_HIP : HIP);
+    this.aimed.set(0, -gun.sightY, pistol ? PISTOL_AIMED_Z : AIMED_Z);
+    this.flash.position.set(0, gun.muzzleY, gun.muzzleZ);
+    this.muzzle.position.set(0, gun.muzzleY, gun.muzzleZ);
   }
 
   set visible(on: boolean) {
@@ -153,19 +128,33 @@ export class Viewmodel {
     if (!this.suppressed) this.flashUntil = now + 40;
   }
 
-  /** Follows the camera; aim is 0 at the hip to 1 aimed; sway grows with broken arms. */
-  update(camera: THREE.Camera, now: number, dtMs: number, aim: number, sway: number): void {
+  /**
+   * Follows the camera; aim is 0 at the hip to 1 aimed; sway grows with broken arms; the
+   * gun dips and tilts while reloading (seconds left, or 0).
+   */
+  update(
+    camera: THREE.Camera,
+    now: number,
+    dtMs: number,
+    aim: number,
+    sway: number,
+    reloading: number,
+  ): void {
     this.holder.position.copy(camera.position);
     this.holder.quaternion.copy(camera.quaternion);
     this.kick *= Math.exp(-dtMs / 60);
     const t = now / 1000;
     const swayX = Math.sin(t * 1.3) * 0.004 * sway;
     const swayY = Math.sin(t * 2.1) * 0.003 * sway;
-    this.gun.position.lerpVectors(HIP, this.aimed, aim);
+    if (reloading <= 0) this.reloadTotal = 0;
+    else if (reloading > this.reloadTotal) this.reloadTotal = reloading;
+    const dip = this.reloadTotal ? Math.sin(Math.PI * (1 - reloading / this.reloadTotal)) : 0;
+    this.gun.position.lerpVectors(this.hip, this.aimed, aim);
     this.gun.position.x += swayX;
-    this.gun.position.y += swayY;
+    this.gun.position.y += swayY - dip * 0.08;
     this.gun.position.z += this.kick * 0.03;
-    this.gun.rotation.x = this.kick * 0.04;
+    this.gun.rotation.x = this.kick * 0.04 - dip * 0.35;
+    this.gun.rotation.z = dip * 0.5;
     this.flash.visible = now < this.flashUntil;
   }
 

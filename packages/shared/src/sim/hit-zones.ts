@@ -6,7 +6,7 @@ import type { Character, EntityId, SimState } from './state';
  * Hit zones are capsules in a fixed layout around the character's position, turned by its
  * yaw and squashed by crouching. They live in the simulation, not on the animated
  * skeleton, so a co-op server with no renderer gets the same hits (decided in session 6).
- * The drawn body (session 8b) is posed to match.
+ * The drawn body (session 8b) is posed to match. A zone can have more than one capsule.
  */
 export interface HitCapsule {
   zone: Zone;
@@ -17,11 +17,21 @@ export interface HitCapsule {
   radius: number;
 }
 
+/**
+ * Matched to the drawn body in session 8b. The chest is two capsules side by side, so it's
+ * wider than deep like a torso. Arms are held forward with a gun, as armed characters
+ * nearly always are: upper arms down from the shoulders to the elbows, forearms in to the
+ * hands in front of the chest, so from the front they cover part of it. Measured from the
+ * body holding a rifle and a pistol, aimed and at the low ready.
+ */
 export const HIT_CAPSULES: readonly HitCapsule[] = [
   { zone: HEAD, a: [0, 1.56, 0.02], b: [0, 1.68, 0.02], radius: 0.12 },
-  { zone: CHEST, a: [0, 0.98, 0], b: [0, 1.36, 0], radius: 0.19 },
-  { zone: LEFT_ARM, a: [-0.29, 0.86, 0], b: [-0.29, 1.38, 0], radius: 0.075 },
-  { zone: RIGHT_ARM, a: [0.29, 0.86, 0], b: [0.29, 1.38, 0], radius: 0.075 },
+  { zone: CHEST, a: [-0.06, 0.98, 0], b: [-0.06, 1.36, 0], radius: 0.125 },
+  { zone: CHEST, a: [0.06, 0.98, 0], b: [0.06, 1.36, 0], radius: 0.125 },
+  { zone: LEFT_ARM, a: [-0.16, 1.36, -0.03], b: [-0.14, 1.13, 0.02], radius: 0.065 },
+  { zone: LEFT_ARM, a: [-0.14, 1.13, 0.02], b: [0.05, 1.24, 0.22], radius: 0.055 },
+  { zone: RIGHT_ARM, a: [0.22, 1.35, -0.12], b: [0.27, 1.14, -0.1], radius: 0.065 },
+  { zone: RIGHT_ARM, a: [0.27, 1.14, -0.1], b: [0.13, 1.26, 0.12], radius: 0.055 },
   { zone: LEFT_LEG, a: [-0.11, 0.1, 0], b: [-0.11, 0.86, 0], radius: 0.1 },
   { zone: RIGHT_LEG, a: [0.11, 0.1, 0], b: [0.11, 0.86, 0], radius: 0.1 },
 ];

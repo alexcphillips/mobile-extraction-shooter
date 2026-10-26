@@ -32,6 +32,12 @@ const weaponSchema = z.strictObject({
   type: z.literal('weapon'),
   /** The ammo item it fires. */
   ammo: idSchema,
+  /**
+   * How it's held: a rifle in both hands at the shoulder, a pistol out in front. Picks the
+   * animations and, until the item editor (session 18), the placeholder model. Defaults
+   * to rifle.
+   */
+  hold: z.enum(['rifle', 'pistol']).optional(),
   /** auto keeps firing while the trigger is held; semi fires once per pull. */
   fireMode: z.enum(['auto', 'semi']),
   /** Rounds per minute; for semi, the fastest it can be pulled. */

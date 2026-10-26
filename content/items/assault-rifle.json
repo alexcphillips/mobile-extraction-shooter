@@ -4,6 +4,7 @@
   "name": "Assault rifle",
   "type": "weapon",
   "ammo": "ammo-556",
+  "hold": "rifle",
   "fireMode": "auto",
   "rpm": 700,
   "magazine": 30,
@@ -14,5 +15,9 @@
   "slots": ["optic", "muzzle", "magazine"],
   "hipSpread": 3,
   "aimSpread": 0.4,
-  "recoil": { "up": 0.9, "side": 0.4, "recovery": 14 }
+  "recoil": {
+    "up": 0.9,
+    "side": 0.4,
+    "recovery": 14
+  }
 }

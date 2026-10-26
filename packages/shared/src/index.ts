@@ -60,6 +60,7 @@ export {
   dealDamage,
   isBleeding,
   isBroken,
+  createHealth,
   restoreHealth,
   shootCharacter,
   totalHp,
@@ -136,6 +137,7 @@ export {
   type ArmourOption,
   type EnemyDef,
   type EnemySkill,
+  type Outfit,
   type LoadoutDef,
   type WeaponOption,
 } from './content/enemies';

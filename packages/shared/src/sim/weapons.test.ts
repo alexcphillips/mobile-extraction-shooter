@@ -127,24 +127,26 @@ describe('hit zones', () => {
   }
 
   it('finds each zone on a standing body', () => {
-    // Facing −x, towards the shots, so its right is +z.
-    const { state } = target(-Math.PI / 2);
+    // Facing −x, towards the shots, so its right is −z.
+    const { state } = target(Math.PI / 2);
     expect(zoneAt(state, 1.62, 0)).toBe(HEAD);
-    expect(zoneAt(state, 1.1, 0)).toBe(CHEST);
-    expect(zoneAt(state, 1.1, -0.29)).toBe(LEFT_ARM);
-    expect(zoneAt(state, 1.1, 0.29)).toBe(RIGHT_ARM);
-    expect(zoneAt(state, 0.5, -0.11)).toBe(LEFT_LEG);
-    expect(zoneAt(state, 0.5, 0.11)).toBe(RIGHT_LEG);
+    expect(zoneAt(state, 1.0, 0)).toBe(CHEST);
+    // The forearms, held forward in front of the chest.
+    expect(zoneAt(state, 1.185, 0.045)).toBe(LEFT_ARM);
+    expect(zoneAt(state, 1.2, -0.2)).toBe(RIGHT_ARM);
+    expect(zoneAt(state, 0.5, 0.11)).toBe(LEFT_LEG);
+    expect(zoneAt(state, 0.5, -0.11)).toBe(RIGHT_LEG);
     expect(zoneAt(state, 2.0, 0)).toBe(null);
   });
 
   it('turns with yaw', () => {
-    // Facing −z: right is +x, so a ray along +x meets the left arm first.
+    // Facing −z: right is +x, so a ray along +x meets the left upper arm first. It's just
+    // behind the middle (z +0.02).
     const facingMinusZ = target(0).state;
-    expect(zoneAt(facingMinusZ, 1.1, 0)).toBe(LEFT_ARM);
-    // Facing +z: right is −x, so the right arm comes first.
+    expect(zoneAt(facingMinusZ, 1.25, 0.02)).toBe(LEFT_ARM);
+    // Facing +z: right is −x, so the right upper arm comes first; it's 0.12 m back (−z).
     const facingPlusZ = target(Math.PI).state;
-    expect(zoneAt(facingPlusZ, 1.1, 0)).toBe(RIGHT_ARM);
+    expect(zoneAt(facingPlusZ, 1.25, -0.12)).toBe(RIGHT_ARM);
   });
 
   it('shrinks with crouching', () => {
@@ -186,7 +188,8 @@ describe('firing', () => {
   it('hits what it aims at and leaves an event', () => {
     const { world, state, shooter, target } = range();
     giveWeapon(shooter, TEST_ITEMS, 'rifle', 0);
-    const aim = lookAt(shooter, 0, 1.2, 0);
+    // The chest, below the arms held in front of it.
+    const aim = lookAt(shooter, 0, 1.0, 0);
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ ...aim, fire: true }) });
     expect(target.health.hp[CHEST]).toBe(85 - 40);
     expect(shooter.weapon?.mag).toBe(29);

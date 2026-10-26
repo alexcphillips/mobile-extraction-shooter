@@ -43,6 +43,8 @@ import type { Vitals } from '../hud/vitals';
 import { Controls } from '../input/controls';
 import { buildDebug } from '../render/debug';
 import { CapsuleBody } from '../render/capsule-body';
+import { DEFAULT_OUTFIT, loadCharacter } from '../render/character';
+import { CharacterBody, CharacterRig } from '../render/character-body';
 import { Effects } from '../render/effects';
 import { buildMap } from '../render/map';
 import { AiDebug, buildNavOverlay } from '../render/nav-debug';
@@ -72,6 +74,8 @@ export interface PlayOptions {
   debug: boolean;
   /** Show the navigation grid. */
   nav: boolean;
+  /** Draw the simulation's hit-zone capsules, see-through, over enemies' bodies. */
+  hitZones: boolean;
   /** Bring dead enemies back at their spawn, with a new loadout, after a few seconds. */
   respawn: boolean;
   /** Enemies come unarmed: they notice you and close in, but can't shoot. */
@@ -101,7 +105,7 @@ const ASSIST = { off: 1, low: 0.8, medium: 0.6, high: 0.45 } as const;
  * or walks its patrol, and fights you once it notices you. The dead stay down. A stand-in
  * for the raid until sessions 9–11 add the inventory and the raid lifecycle.
  */
-export function startPlay(el: PlayElements, options: PlayOptions): void {
+export async function startPlay(el: PlayElements, options: PlayOptions): Promise<void> {
   const map = loadMap(options.map);
   const items = loadItems();
   const { types, loadouts } = loadEnemies();
@@ -137,6 +141,7 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
   const effects = new Effects();
   scene.add(effects.root);
   const viewmodel = new Viewmodel();
+  const rig = new CharacterRig(await loadCharacter('/characters/mannequin.glb'));
 
   const controls = new Controls(el.canvas, el.hud);
   const sim = createState(Date.now() >>> 0);
@@ -148,11 +153,18 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
   giveWeapon(player, items, options.weapon, SPARE_ROUNDS, options.attachments);
   wearArmour(player, items, 'steel-helmet');
   wearArmour(player, items, 'plate-carrier');
+  if (player.weapon) viewmodel.setGun(player.weapon, items);
   controls.yaw = spawn.yaw;
 
   // Enemies: their type's skill, and its loadout (or the spawn's) rolled.
   const patrols = new Map(map.patrols.map((p) => [p.id, p]));
-  const enemies: { c: Character; body: CapsuleBody; diedAt: number; arm: () => void }[] = [];
+  const enemies: {
+    c: Character;
+    body: CharacterBody;
+    zones: CapsuleBody | null;
+    diedAt: number;
+    arm: () => void;
+  }[] = [];
   for (const m of map.markers) {
     if (m.type !== 'enemySpawn') continue;
     const type = types.get(m.enemy)!;
@@ -167,11 +179,14 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
       if (!options.peaceful) equipLoadout(c, items, loadout, sim.rng);
     };
     arm();
-    const body = new CapsuleBody();
+    const body = new CharacterBody(rig, type.outfit ?? DEFAULT_OUTFIT, c);
     scene.add(body.root);
-    enemies.push({ c, body, diedAt: 0, arm });
+    const zones = options.hitZones ? new CapsuleBody(0.45) : null;
+    if (zones) scene.add(zones.root);
+    enemies.push({ c, body, zones, diedAt: 0, arm });
   }
   const enemyChars = enemies.map((e) => e.c);
+  const bodyOf = new Map(enemies.map((e) => [e.c.id, e.body]));
 
   const input: PlayerInput = {
     moveX: 0,
@@ -343,6 +358,7 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
           viewmodel.muzzleWorld(muzzle);
           effects.tracer(now, muzzle.x, muzzle.y, muzzle.z, e.toX, e.toY, e.toZ);
         } else {
+          bodyOf.get(e.by)?.fired();
           effects.tracer(now, e.fromX, e.fromY, e.fromZ, e.toX, e.toY, e.toZ);
         }
         if (e.hit !== 'none') effects.impact(now, e.toX, e.toY, e.toZ, e.hit === 'character');
@@ -351,6 +367,7 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
           placeMarker(m, e.toX, e.toY, e.toZ, 0.006);
         }
       } else if (e.type === 'damage') {
+        if (e.amount > 0) bodyOf.get(e.target)?.hit();
         if (e.by === player.id && e.target !== player.id) el.vitals.hitMarker(now, false);
         if (e.target === player.id && e.amount > 0) el.vitals.hurtFlash();
       } else if (e.by === player.id && e.target !== player.id) {
@@ -359,6 +376,7 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
     }
 
     for (const e of enemies) {
+      e.body.tick(e.c);
       if (!e.c.health.dead) e.diedAt = 0;
       else if (!e.diedAt) e.diedAt = now;
       else if (options.respawn && now - e.diedAt > ENEMY_RESPAWN_MS) {
@@ -400,6 +418,8 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
   for (const o of culled) o.frustumCulled = true;
 
   const loop = new FixedTimestep();
+  const frustum = new THREE.Frustum();
+  const viewProjection = new THREE.Matrix4();
   startLoop(renderer, controls, (time, dtMs) => {
     const t0 = performance.now();
     const alpha = loop.advance(dtMs / 1000, tick);
@@ -432,7 +452,13 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
     const alive = !player.health.dead;
     el.optic.set(optic);
     el.optic.visible = alive && aim >= (zoom > 1 ? SCOPE_IN : RETICLE_IN);
-    for (const e of enemies) e.body.update(e.c, items);
+    camera.updateMatrixWorld();
+    viewProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    frustum.setFromProjectionMatrix(viewProjection);
+    for (const e of enemies) {
+      e.body.update(e.c, items, alpha, dtMs / 1000, camera, frustum);
+      e.zones?.update(e.c, items);
+    }
     aiDebug?.update(enemyChars);
     if (aimMarker) {
       const yaw = player.yaw + player.recoilYaw;
@@ -446,8 +472,8 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
       placeMarker(aimMarker, player.x + dx * d, ey + dy * d, player.z + dz * d, 0.01);
     }
     viewmodel.visible = alive && !!w && !scoped;
-    if (w) viewmodel.setAttachments(w, items);
-    viewmodel.update(camera, time, dtMs, aim, 1 + brokenArms(player.health) * 2);
+    if (w) viewmodel.setGun(w, items);
+    viewmodel.update(camera, time, dtMs, aim, 1 + brokenArms(player.health) * 2, w?.reloading ?? 0);
     effects.update(performance.now());
     render();
     stats.frame(time, dtMs, performance.now() - t0);

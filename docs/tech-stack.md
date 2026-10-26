@@ -112,8 +112,8 @@ Started in session 6 with what combat needs; session 6b added attachments (forma
   - Each door is its own mesh, pivoted at its hinge, so it can swing open.
   - Content is bundled into the client with `import.meta.glob`; in dev, saving a content file reloads the page.
   - The camera's far plane follows the fog distance.
-  - **The first-person gun is drawn in a second pass** after the world, with the depth buffer cleared, so it never pokes into walls (`render/viewmodel.ts`). One extra draw call. It's a placeholder built from boxes until the item editor (session 18) and arms (session 8b).
-  - The viewmodel rebuilds its one mesh only when the attachments change. **Optic reticles and the scope mask are one SVG overlay** (`hud/optic.ts`, rebuilt only when the optic changes), not 3D, so they cost no draw calls; while scoped the gun isn't drawn at all.
+  - **The first-person gun is drawn in a second pass** after the world, with the depth buffer cleared, so it never pokes into walls (`render/viewmodel.ts`). One extra draw call. It's a placeholder built from boxes until the item editor (session 18), with the arms (session 8b) in the same mesh. The placeholder guns, rifle and pistol, are shared with the bodies (`render/gun-model.ts`).
+  - The viewmodel rebuilds its one mesh only when the gun or its attachments change. **Optic reticles and the scope mask are one SVG overlay** (`hud/optic.ts`, rebuilt only when the optic changes), not 3D, so they cost no draw calls; while scoped the gun isn't drawn at all.
   - Tracers and impact puffs come from fixed pools (`render/effects.ts`): one line mesh and one instanced mesh, so shooting allocates nothing and costs two draw calls.
   - Recoil is simulation state, so the camera interpolates it between ticks like the eye position.
 - **UI:** React DOM overlays for menus, inventory, settings and the editors.
@@ -145,10 +145,18 @@ Started in session 6 with what combat needs; session 6b added attachments (forma
 - Each milestone ends with a performance check on the real iPhone (FPS counter in dev builds).
 
 ## Characters (confirmed, see design.md → Characters)
-- The base body is a rigged, animated low-poly humanoid from a CC0 pack in glTF format (for example Quaternius). **Check the licence in the session that imports it.** Recolour it to flat colours and draw it unlit, so it matches the map.
+- The base body is a rigged, animated low-poly humanoid from a CC0 pack in glTF format. Recolour it to flat colours and draw it unlit, so it matches the map.
 - Gear (helmet, armour, backpack, weapon) is built in the item editor and attached to the skeleton at named mount points.
 - Hit zones are simple capsules, not tests against the mesh itself. **They're a fixed layout in the simulation, not attached to bones** (changed 2026-10-26, session 6, so a co-op server needs no skeleton); the body is drawn to match.
 - Distant characters update their animation less often to save performance.
+
+Built in session 8b:
+- **The asset:** `packages/client/public/characters/mannequin.glb`, from Quaternius's Universal Animation Library (Standard, CC0; licence and source in the README next to it). `scripts/build-character.mjs` builds it from the pack's GLB with glTF Transform and meshoptimizer: 15 clips kept, UVs dropped, the mesh simplified from 13.7k to 5.8k triangles, only rotation tracks kept (plus the hips' translation). 556 kB, 279 kB gzipped, fetched at startup rather than bundled. Quaternius's site moved new downloads to its own licence (QAL, August 2026), which forbids redistributing the files; this copy is CC0, but check before adding later downloads to the public repo.
+- **One draw call per character, gear included** (`render/character.ts`). At load, the body is baked into flat triangles with face normals; each face takes the outfit part of the bone that weighs on it most (joint bands 20% darker). Each look (outfit, helmet, armour, gun) is one geometry, built once and cached, with gear bound rigidly to its mount bone. Shading happens on the GPU from the skinned normal, with the same formula as the map. Bodies cull by a fixed sphere, since animation moves them far from their rest-pose bounds.
+- **Animation** (`render/character-body.ts`): two layers, legs and upper body, from clips split by bone. The legs pick idle, walk, jog, sprint, crouch, crouch walk, jump or death by speed and stance, paced to the speed. When strafing, the hips turn towards where it's going (up to about 70°) and the chest turns back to face forward; going backwards plays the clip in reverse. The upper body leans with the look pitch and flinches when hit. **Gun hold by IK:** a two-bone IK per arm, with the hand rotations measured once from the pistol aim clip. The gun's position and tilt per hold are in `HOLD` there.
+- **three.js's mixer only writes a bone when its clip value changes**, so posing on top of clips must put each bone back to its clip rotation before every update; otherwise turns pile up frame after frame. `CharacterBody` does this for the bones it poses.
+- **LOD:** a body animates every frame within 20 m, every 2nd frame to 45 m, every 4th beyond, and every 8th off screen. It uses IK within 30 m; beyond that the gun goes in the hand. The dead stop animating 3 s after falling. Positions and yaw are interpolated between ticks.
+- `/bodies` shows every pose with the hit zones over them, and `?hitzones` does the same in play.
 
 ## Still open
 - Login method (username and password vs. invite codes vs. magic links). Decide in the server session.

@@ -16,7 +16,7 @@ import {
 import * as THREE from 'three';
 import { startLoop } from '../app/loop';
 import type { Hud } from '../hud/hud';
-import { cloneCharacter, loadCharacter } from './characters';
+import { cloneCharacter, loadCharacter } from '../render/character';
 import { Controls } from '../input/controls';
 import type { PerfParams } from './params';
 import { Stats } from '../debug/stats';
@@ -104,12 +104,12 @@ export async function startPerfTest(el: PerfElements, params: PerfParams): Promi
   let charTris = 0;
   try {
     el.status.textContent = 'loading character…';
-    const template = await loadCharacter('/perf/robot-expressive.glb');
+    const template = await loadCharacter('/characters/mannequin.glb');
     charTris = template.triangles;
-    const walk = template.clips.get('Walking');
-    const run = template.clips.get('Running');
+    const walk = template.clips.get('Walk_Loop');
+    const run = template.clips.get('Jog_Fwd_Loop');
     for (let i = 0; i < params.chars; i++) {
-      const object = cloneCharacter(template);
+      const object = cloneCharacter(template).root;
       const mixer = new THREE.AnimationMixer(object);
       const running = i % 3 === 0;
       const clip = running ? run : walk;
@@ -185,7 +185,8 @@ export async function startPerfTest(el: PerfElements, params: PerfParams): Promi
       const stepLen = Math.min(d, w.speed * TICK_SECONDS);
       w.x += (dx / d) * stepLen;
       w.z += (dz / d) * stepLen;
-      w.heading = Math.atan2(dx, dz);
+      // Characters face −z.
+      w.heading = Math.atan2(-dx, -dz);
     }
 
     // Raycasts: the aim ray, each character's line of sight to the player, then stress rays.

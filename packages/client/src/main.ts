@@ -5,6 +5,7 @@ import { watchPauseTriggers } from './app/pause';
 import { Hud } from './hud/hud';
 import { OpticOverlay } from './hud/optic';
 import { Vitals } from './hud/vitals';
+import { startBodies } from './bodies';
 import { startPerfTest } from './perf';
 import { readParams } from './perf/params';
 import { mountPresets } from './perf/presets';
@@ -63,7 +64,12 @@ const standalone =
   matchMedia('(display-mode: standalone)').matches ||
   (navigator as { standalone?: boolean }).standalone === true;
 
-if (location.pathname === '/perf') {
+if (location.pathname === '/bodies') {
+  for (const id of ['controls', 'settings-button']) byId(id).hidden = true;
+  startBodies(byId('scene') as HTMLCanvasElement, status).catch((err: unknown) => {
+    status.textContent = `bodies failed: ${message(err)}`;
+  });
+} else if (location.pathname === '/perf') {
   mountPresets(byId('presets'));
   startPerfTest(
     {
@@ -81,39 +87,36 @@ if (location.pathname === '/perf') {
   // ?map=<id> picks a map from content/maps, ?spawn=<id> a player spawn in it, ?weapon=<id>
   // the gun, ?attach=<id>,<id> its attachments, ?nav shows the navigation grid, and ?debug
   // shows markers, zones, patrols and what enemies think, and turns the quick slots into
-  // hurt, heal, next optic and next muzzle. ?respawn brings dead enemies back, and
-  // ?peaceful sends them in unarmed.
+  // hurt, heal, next optic and next muzzle. ?respawn brings dead enemies back,
+  // ?peaceful sends them in unarmed, and ?hitzones draws hit zones over their bodies.
   const q = new URLSearchParams(location.search);
   byId('try-again').addEventListener('click', () => location.reload());
-  try {
-    startPlay(
-      {
-        canvas: byId('scene') as HTMLCanvasElement,
-        stats: byId('stats'),
-        hud,
-        optic: new OpticOverlay(byId('optic'), byId('crosshair')),
-        vitals: new Vitals(
-          byId('vitals'),
-          byId('ammo'),
-          byId('crosshair'),
-          byId('hurt'),
-          byId('death'),
-        ),
-      },
-      {
-        map: q.get('map') ?? 'test-map',
-        spawn: q.get('spawn'),
-        weapon: q.get('weapon') ?? 'assault-rifle',
-        attachments: q.get('attach')?.split(',').filter(Boolean) ?? [],
-        debug: q.has('debug'),
-        nav: q.has('nav'),
-        respawn: q.has('respawn'),
-        peaceful: q.has('peaceful'),
-        pixelRatio: Math.min(window.devicePixelRatio, 2),
-        note: standalone ? 'standalone' : 'browser',
-      },
-    );
-  } catch (err) {
-    status.textContent = `map failed: ${message(err)}`;
-  }
+  startPlay(
+    {
+      canvas: byId('scene') as HTMLCanvasElement,
+      stats: byId('stats'),
+      hud,
+      optic: new OpticOverlay(byId('optic'), byId('crosshair')),
+      vitals: new Vitals(
+        byId('vitals'),
+        byId('ammo'),
+        byId('crosshair'),
+        byId('hurt'),
+        byId('death'),
+      ),
+    },
+    {
+      map: q.get('map') ?? 'test-map',
+      spawn: q.get('spawn'),
+      weapon: q.get('weapon') ?? 'assault-rifle',
+      attachments: q.get('attach')?.split(',').filter(Boolean) ?? [],
+      debug: q.has('debug'),
+      nav: q.has('nav'),
+      respawn: q.has('respawn'),
+      peaceful: q.has('peaceful'),
+      hitZones: q.has('hitzones'),
+      pixelRatio: Math.min(window.devicePixelRatio, 2),
+      note: standalone ? 'standalone' : 'browser',
+    },
+  ).catch((err: unknown) => (status.textContent = `map failed: ${message(err)}`));
 }
