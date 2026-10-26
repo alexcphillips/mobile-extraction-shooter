@@ -77,8 +77,9 @@ if (location.pathname === '/perf') {
   });
 } else {
   // ?map=<id> picks a map from content/maps, ?spawn=<id> a player spawn in it, ?weapon=<id>
-  // the gun, ?attach=<id>,<id> its attachments, and ?debug shows markers and zones and turns
-  // the quick slots into hurt, heal, next optic and next muzzle.
+  // the gun, ?attach=<id>,<id> its attachments, ?nav shows the navigation grid, and ?debug
+  // shows markers, zones, patrols and what enemies think, and turns the quick slots into
+  // hurt, heal, next optic and next muzzle.
   const q = new URLSearchParams(location.search);
   byId('try-again').addEventListener('click', () => location.reload());
   try {
@@ -102,6 +103,7 @@ if (location.pathname === '/perf') {
         weapon: q.get('weapon') ?? 'assault-rifle',
         attachments: q.get('attach')?.split(',').filter(Boolean) ?? [],
         debug: q.has('debug'),
+        nav: q.has('nav'),
         pixelRatio: Math.min(window.devicePixelRatio, 2),
         note: standalone ? 'standalone' : 'browser',
       },

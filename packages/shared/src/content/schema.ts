@@ -121,6 +121,44 @@ const doorSchema = z.strictObject({
 
 const marker = { id: idSchema.optional(), pos: vec3 };
 
+const nonNegative = finite.refine((n) => n >= 0, 'must be 0 or more');
+
+/**
+ * A stop on a patrol: where to stand and look around. With a radius, each visit goes to
+ * a random walkable spot within it, so the route isn't the same every raid.
+ */
+const patrolStopSchema = z.strictObject({
+  pos: vec3,
+  /** Seconds to stand here. Defaults to 3; 0 walks on without stopping. */
+  wait: nonNegative.optional(),
+  /** Metres. Defaults to 0. */
+  radius: nonNegative.optional(),
+});
+
+/**
+ * A route for enemies to walk. Enemy spawns name it with `patrol`. Each point is a stop
+ * (an object) or a plain position to walk through, which is how the route is shaped:
+ * between points enemies take the shortest way, so put points along the way you want
+ * them to go. Points are positions like a marker's.
+ */
+const patrolSchema = z
+  .strictObject({
+    type: z.literal('patrol'),
+    id: idSchema,
+    points: z.array(z.union([vec3, patrolStopSchema])).min(2),
+    /**
+     * The points before this index are the way in from the spawn, walked once; the rest
+     * repeat. Defaults to 0. At least two points must repeat.
+     */
+    repeatFrom: z.int().min(0).optional(),
+    /** Defaults to true: from the last point back to the first that repeats. False walks back and forth. */
+    loop: z.boolean().optional(),
+  })
+  .refine((p) => (p.repeatFrom ?? 0) <= p.points.length - 2, {
+    message: 'repeatFrom must leave at least two points to repeat',
+    path: ['repeatFrom'],
+  });
+
 const playerSpawnSchema = z.strictObject({
   type: z.literal('playerSpawn'),
   ...marker,
@@ -133,6 +171,10 @@ const enemySpawnSchema = z.strictObject({
   yaw: angle,
   enemy: idSchema,
   loadout: idSchema.optional(),
+  /** The id of a patrol beside it (in the same map or prefab) to walk; otherwise it guards its spot. */
+  patrol: idSchema.optional(),
+  /** Spawns at a random spot within this many metres. Defaults to 0. */
+  radius: nonNegative.optional(),
   /** Multipliers on loot table weights for what this enemy drops. */
   lootWeights: z
     .record(
@@ -179,6 +221,7 @@ export const nodeSchema = z.discriminatedUnion('type', [
   doorSchema,
   playerSpawnSchema,
   enemySpawnSchema,
+  patrolSchema,
   lootContainerSchema,
   lootSpawnSchema,
   extractionSchema,
@@ -216,7 +259,7 @@ const terrainSchema = z
     path: ['heights'],
   });
 
-export const MAP_FORMAT_VERSION = 1;
+export const MAP_FORMAT_VERSION = 2;
 
 export const mapSchema = z
   .strictObject({
@@ -253,7 +296,7 @@ export const mapSchema = z
     path: ['environment'],
   });
 
-export const PREFAB_FORMAT_VERSION = 1;
+export const PREFAB_FORMAT_VERSION = 2;
 
 export const prefabSchema = z.strictObject({
   formatVersion: z.literal(PREFAB_FORMAT_VERSION),
@@ -278,12 +321,14 @@ export const MAP_FORMAT: ContentFormat<MapFile> = {
   kind: 'map',
   version: MAP_FORMAT_VERSION,
   schema: mapSchema,
-  migrations: {},
+  // Format 2 (session 7) added patrols; nothing to change.
+  migrations: { 1: (doc) => doc },
 };
 
 export const PREFAB_FORMAT: ContentFormat<PrefabFile> = {
   kind: 'prefab',
   version: PREFAB_FORMAT_VERSION,
   schema: prefabSchema,
-  migrations: {},
+  // Format 2 (session 7) added patrols; nothing to change.
+  migrations: { 1: (doc) => doc },
 };

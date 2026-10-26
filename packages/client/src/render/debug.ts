@@ -12,10 +12,12 @@ const MARKER_COLOURS: Record<CompiledMarker['type'], number> = {
   questMarker: 0x9b59b6,
 };
 const ZONE_COLOUR = 0xffffff;
+const PATROL_COLOUR = 0xff7675;
 
 /**
- * Markers as coloured posts (extractions also get a disc of their radius) and named
- * zones as outlines over the terrain. Turned on with ?debug in the URL.
+ * Markers as coloured posts (extractions also get a disc of their radius), named zones as
+ * outlines over the terrain, and patrols as lines with a ring at each stop. Turned on with
+ * ?debug in the URL.
  */
 export function buildDebug(map: CompiledMap, terrain: HeightGrid): THREE.Group {
   const group = new THREE.Group();
@@ -69,6 +71,28 @@ export function buildDebug(map: CompiledMap, terrain: HeightGrid): THREE.Group {
       }
     }
     group.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(points), line));
+  }
+
+  const patrolLine = new THREE.LineBasicMaterial({ color: PATROL_COLOUR });
+  for (const p of map.patrols) {
+    const points = p.points.map(({ x, y, z }) => new THREE.Vector3(x, y + 0.2, z));
+    // The way in, then the repeating part (closed if it loops).
+    const way = points.slice(0, p.repeatFrom + 1);
+    if (way.length > 1)
+      group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(way), patrolLine));
+    const repeat = new THREE.BufferGeometry().setFromPoints(points.slice(p.repeatFrom));
+    group.add(p.loop ? new THREE.LineLoop(repeat, patrolLine) : new THREE.Line(repeat, patrolLine));
+    // A ring round each stop: its radius, or a small one.
+    for (const q of p.points) {
+      if (q.wait <= 0 && q.radius <= 0) continue;
+      const r = Math.max(q.radius, 0.4);
+      const ring: THREE.Vector3[] = [];
+      for (let k = 0; k < 24; k++) {
+        const a = (k / 24) * Math.PI * 2;
+        ring.push(new THREE.Vector3(q.x + Math.cos(a) * r, q.y + 0.2, q.z + Math.sin(a) * r));
+      }
+      group.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(ring), patrolLine));
+    }
   }
   return group;
 }

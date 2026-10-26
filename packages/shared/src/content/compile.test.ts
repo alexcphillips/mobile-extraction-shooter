@@ -2,12 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { spawnCharacter, createState } from '../sim/state';
 import { CollisionWorld } from '../world/collision-world';
 import { compileMap, type PrefabLookup } from './compile';
-import type { MapFile, MapNode, PrefabFile } from './schema';
+import { loadContent } from './format';
+import { MAP_FORMAT, type MapFile, type MapNode, type PrefabFile } from './schema';
 
 function map(nodes: MapNode[], colours?: Record<string, string>): MapFile {
   const row = Array<number>(11).fill(0);
   return {
-    formatVersion: 1,
+    formatVersion: 2,
     id: 'test',
     name: 'Test',
     environment: { sky: '#9fb3c8', fogNear: 40, fogFar: 120 },
@@ -28,7 +29,7 @@ function prefabs(...list: PrefabFile[]): PrefabLookup {
 }
 
 const crate: PrefabFile = {
-  formatVersion: 1,
+  formatVersion: 2,
   id: 'crate',
   colours: { wood: '#8a5a33' },
   nodes: [{ type: 'box', pos: [1, 0, 0], size: [1, 1, 1], colour: 'wood' }],
@@ -93,7 +94,7 @@ describe('compileMap', () => {
       compileMap(map([place({ colours: { wood: 'team' } } as Partial<MapNode>)]), prefabs(crate)),
     ).toThrow(/unknown colour slot "team"/);
     const a: PrefabFile = {
-      formatVersion: 1,
+      formatVersion: 2,
       id: 'a',
       nodes: [{ type: 'prefab', prefab: 'b', pos: [0, 0, 0] }],
     };
@@ -128,7 +129,7 @@ describe('compileMap', () => {
 
   it('gives markers and doors path ids in world space', () => {
     const house: PrefabFile = {
-      formatVersion: 1,
+      formatVersion: 2,
       id: 'house',
       nodes: [
         {
@@ -205,5 +206,70 @@ describe('compileMap', () => {
     );
     const world = new CollisionWorld(m.world);
     expect(spawnCharacter(createState(1), world, 0, 0).y).toBeCloseTo(1);
+  });
+
+  it('places patrols and points enemy spawns at the one beside them', () => {
+    const camp: PrefabFile = {
+      formatVersion: 2,
+      id: 'camp',
+      nodes: [
+        {
+          type: 'patrol',
+          id: 'round',
+          points: [[1, 0, 0], { pos: [0, 0, 2], radius: 2 }, { pos: [0, 0, 4], wait: 0 }],
+          repeatFrom: 1,
+          loop: false,
+        },
+        { type: 'enemySpawn', id: 'guard', pos: [0, 0, 0], enemy: 'scav', patrol: 'round' },
+      ],
+    };
+    const m = compileMap(
+      map([{ type: 'prefab', id: 'camp-a', prefab: 'camp', pos: [10, 1, 0], yaw: 90 }]),
+      prefabs(camp),
+    );
+    expect(m.patrols).toHaveLength(1);
+    const p = m.patrols[0]!;
+    expect(p).toMatchObject({ id: 'camp-a/round', loop: false, repeatFrom: 1 });
+    // Local +x turns to −z at yaw 90°, and +z to +x.
+    expect(p.points[0]!.x).toBeCloseTo(10);
+    expect(p.points[0]!.y).toBe(1);
+    expect(p.points[0]!.z).toBeCloseTo(-1);
+    expect(p.points[1]!.x).toBeCloseTo(12);
+    // A plain position is walked through; a stop waits 3 s unless it says otherwise.
+    expect(p.points.map((q) => [q.wait, q.radius])).toEqual([
+      [0, 0],
+      [3, 2],
+      [0, 0],
+    ]);
+    expect(m.markers[0]).toMatchObject({
+      type: 'enemySpawn',
+      id: 'camp-a/guard',
+      patrol: 'camp-a/round',
+    });
+  });
+
+  it('needs at least two points to repeat', () => {
+    const patrol = {
+      type: 'patrol',
+      id: 'p',
+      points: [
+        [0, 0, 0],
+        [1, 0, 0],
+        [2, 0, 0],
+      ],
+      repeatFrom: 2,
+    };
+    expect(() => loadContent(MAP_FORMAT, { ...map([]), nodes: [patrol] }, 'test.json')).toThrow(
+      /repeatFrom/,
+    );
+  });
+
+  it("rejects a spawn whose patrol isn't beside it", () => {
+    expect(() =>
+      compileMap(
+        map([{ type: 'enemySpawn', pos: [0, 0, 0], enemy: 'scav', patrol: 'nowhere' }]),
+        prefabs(),
+      ),
+    ).toThrow(/no patrol "nowhere"/);
   });
 });

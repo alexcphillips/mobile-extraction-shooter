@@ -66,13 +66,33 @@ const MARKER_TYPES = new Set<string>([
   'questMarker',
 ]);
 
+/** A point on a patrol in world space. Points to walk through have wait 0 and radius 0. */
+export interface CompiledPatrolPoint {
+  x: number;
+  y: number;
+  z: number;
+  wait: number;
+  radius: number;
+}
+
+/** A patrol route in world space. */
+export interface CompiledPatrol {
+  /** A path id, like a marker's. */
+  id: string;
+  points: CompiledPatrolPoint[];
+  /** The points before this are the way in, walked once. */
+  repeatFrom: number;
+  loop: boolean;
+}
+
 type Placed<T> = T extends unknown
   ? Omit<T, 'id' | 'pos' | 'yaw'> & { id: string; x: number; y: number; z: number; yaw: number }
   : never;
 
 /**
  * A gameplay marker in world space. Its id is the path of ids from the map down, joined
- * by "/"; a node without an id is "#" and its index.
+ * by "/"; a node without an id is "#" and its index. An enemy spawn's patrol is the
+ * patrol's path id too.
  */
 export type CompiledMarker = Placed<MarkerNode>;
 
@@ -88,6 +108,7 @@ export interface CompiledMap {
   instanced: InstancedGroup[];
   doors: CompiledDoor[];
   markers: CompiledMarker[];
+  patrols: CompiledPatrol[];
   zones: MapZone[];
 }
 
@@ -99,6 +120,7 @@ const LADDER_WIDTH = 0.6;
 const RUNG_SPACING = 0.3;
 const DOOR_THICKNESS = 0.05;
 const CYLINDER_SIDES = 8;
+const PATROL_WAIT = 3;
 
 /** Where nodes are being placed: a position and a yaw about y. */
 interface Frame {
@@ -118,6 +140,7 @@ interface Sink {
   ladders: LadderDef[] | null;
   doors: CompiledDoor[] | null;
   markers: CompiledMarker[] | null;
+  patrols: CompiledPatrol[] | null;
   /** Instanced prefabs become groups; null flattens them into shapes like any prefab. */
   groups: Map<string, InstancedGroup> | null;
 }
@@ -137,11 +160,17 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     ladders,
     doors: [],
     markers: [],
+    patrols: [],
     groups: new Map(),
   };
   const scope = slotColours(map.colours ?? {});
   const compiler = new Compiler(source, prefabs);
   compiler.nodes(map.nodes, frame(0, 0, 0, 0), scope, '', [], out);
+  const patrols = new Set(out.patrols!.map((p) => p.id));
+  for (const m of out.markers!) {
+    if (m.type === 'enemySpawn' && m.patrol !== undefined && !patrols.has(m.patrol))
+      throw new ContentError(source, `${m.id}: no patrol "${m.patrol}" beside it`);
+  }
 
   return {
     id: map.id,
@@ -166,6 +195,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     instanced: [...out.groups!.values()],
     doors: out.doors!,
     markers: out.markers!,
+    patrols: out.patrols!,
     zones: map.zones,
   };
 }
@@ -209,6 +239,25 @@ class Compiler {
     stack: readonly string[],
     out: Sink,
   ): void {
+    if (node.type === 'patrol') {
+      out.patrols?.push({
+        id: path,
+        points: node.points.map((p) => {
+          const stop = !Array.isArray(p);
+          const [px, py, pz] = stop ? p.pos : p;
+          return {
+            x: f.x + px * f.cos + pz * f.sin,
+            y: f.y + py,
+            z: f.z - px * f.sin + pz * f.cos,
+            wait: stop ? (p.wait ?? PATROL_WAIT) : 0,
+            radius: stop ? (p.radius ?? 0) : 0,
+          };
+        }),
+        repeatFrom: node.repeatFrom ?? 0,
+        loop: node.loop ?? true,
+      });
+      return;
+    }
     const [lx, ly, lz] = node.pos;
     const x = f.x + lx * f.cos + lz * f.sin;
     const y = f.y + ly;
@@ -337,7 +386,11 @@ class Compiler {
       default:
         if (MARKER_TYPES.has(node.type) && out.markers) {
           const { pos, ...rest } = node;
-          out.markers.push({ ...rest, id: path, x, y, z, yaw } as CompiledMarker);
+          const marker = { ...rest, id: path, x, y, z, yaw } as CompiledMarker;
+          // A patrol is named beside the spawn; it comes out with its full path.
+          if (marker.type === 'enemySpawn' && marker.patrol !== undefined)
+            marker.patrol = path.slice(0, path.lastIndexOf('/') + 1) + marker.patrol;
+          out.markers.push(marker);
         }
     }
   }
@@ -385,6 +438,7 @@ class Compiler {
         ladders: null,
         doors: null,
         markers: null,
+        patrols: null,
         groups: null,
       };
       this.nodes(prefab.nodes, frame(0, 0, 0, 0), scope, path, inner, local);

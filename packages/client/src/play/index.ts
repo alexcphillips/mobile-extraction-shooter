@@ -1,6 +1,7 @@
 import {
   CollisionWorld,
   FixedTimestep,
+  NavGrid,
   ammoDef,
   attach,
   attachmentDef,
@@ -16,9 +17,11 @@ import {
   nextInt,
   pick,
   raycastCharacters,
+  resetEnemy,
   restoreHealth,
   shootCharacter,
   spawnCharacter,
+  spawnEnemy,
   step,
   wearArmour,
   weaponDef,
@@ -38,9 +41,10 @@ import type { OpticOverlay } from '../hud/optic';
 import type { Vitals } from '../hud/vitals';
 import { Controls } from '../input/controls';
 import { buildDebug } from '../render/debug';
-import { CapsuleBody } from '../render/dummies';
+import { CapsuleBody } from '../render/capsule-body';
 import { Effects } from '../render/effects';
 import { buildMap } from '../render/map';
+import { AiDebug, buildNavOverlay } from '../render/nav-debug';
 import { Viewmodel } from '../render/viewmodel';
 import { settings } from '../settings';
 
@@ -61,10 +65,12 @@ export interface PlayOptions {
   /** Attachment item ids to put on it. */
   attachments: string[];
   /**
-   * Show markers and zones, and turn the quick slots into hurt me, heal me, next optic
-   * and next muzzle.
+   * Show markers, zones, patrols and what enemies are thinking, and turn the quick slots
+   * into hurt me, heal me, next optic and next muzzle.
    */
   debug: boolean;
+  /** Show the navigation grid. */
+  nav: boolean;
   pixelRatio: number;
   /** Shown in the stats header, e.g. "standalone". */
   note: string;
@@ -79,20 +85,24 @@ const RETICLE_IN = 0.95;
 const SCOPE_IN = 0.9;
 const DEG = Math.PI / 180;
 const SPARE_ROUNDS = 120;
-/** Dead target dummies get up again after this long. */
-const DUMMY_RESPAWN_MS = 6000;
+/** Dead enemies come back at their spawn after this long, until raids end (session 11). */
+const ENEMY_RESPAWN_MS = 6000;
 /** How much aim assist slows looking while the crosshair is on an enemy. */
 const ASSIST = { off: 1, low: 0.8, medium: 0.6, high: 0.45 } as const;
 
 /**
  * A map from content/ with the shared simulation: walking, shooting and taking damage.
- * Every enemy spawn holds a target dummy that stands still and gets up again after dying.
- * A stand-in for the raid until sessions 7–11 add AI, inventory and the raid lifecycle.
+ * Every enemy spawn has an enemy that guards it or walks its patrol, and notices you, but
+ * doesn't shoot yet (session 8); it comes back after dying. A stand-in for the raid until
+ * sessions 8–11 add combat, inventory and the raid lifecycle.
  */
 export function startPlay(el: PlayElements, options: PlayOptions): void {
   const map = loadMap(options.map);
   const items = loadItems();
   const world = new CollisionWorld(map.world);
+  const navStart = performance.now();
+  const nav = new NavGrid(world);
+  const navMs = performance.now() - navStart;
 
   const renderer = new THREE.WebGLRenderer({
     canvas: el.canvas,
@@ -114,6 +124,9 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
 
   scene.add(buildMap(map).root);
   if (options.debug) scene.add(buildDebug(map, world.terrain));
+  if (options.nav) scene.add(buildNavOverlay(nav));
+  const aiDebug = options.debug ? new AiDebug() : null;
+  if (aiDebug) scene.add(aiDebug.root);
   const effects = new Effects();
   scene.add(effects.root);
   const viewmodel = new Viewmodel();
@@ -130,19 +143,22 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
   wearArmour(player, items, 'plate-carrier');
   controls.yaw = spawn.yaw;
 
-  // Target dummies. Spawns with a loadout (the boss) wear armour, to test it.
-  const dummies: { c: Character; body: CapsuleBody; diedAt: number }[] = [];
+  // Enemies. Spawns with a loadout (the boss) wear armour, to test it.
+  const patrols = new Map(map.patrols.map((p) => [p.id, p]));
+  const enemies: { c: Character; body: CapsuleBody; diedAt: number }[] = [];
   for (const m of map.markers) {
     if (m.type !== 'enemySpawn') continue;
-    const c = spawnCharacter(sim, world, m.x, m.z, m.yaw, m.y + 0.5);
+    const patrol = m.patrol === undefined ? undefined : patrols.get(m.patrol);
+    const c = spawnEnemy(sim, world, m.x, m.y, m.z, m.yaw, { patrol, radius: m.radius });
     if (m.loadout) {
       wearArmour(c, items, 'steel-helmet');
       wearArmour(c, items, 'plate-carrier');
     }
     const body = new CapsuleBody();
     scene.add(body.root);
-    dummies.push({ c, body, diedAt: 0 });
+    enemies.push({ c, body, diedAt: 0 });
   }
+  const enemyChars = enemies.map((e) => e.c);
 
   const input: PlayerInput = {
     moveX: 0,
@@ -164,13 +180,32 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
   const stats = new Stats(
     el.stats,
     renderer,
-    `${map.name}  spawn ${spawn.id}${options.debug ? '  debug' : ''}  ${options.note}`,
+    `${map.name}  spawn ${spawn.id}${options.debug ? '  debug' : ''}  ` +
+      `nav ${nav.nodeCount} nodes ${navMs.toFixed(0)} ms  ${options.note}`,
     () =>
-      `${player.mode}${player.height < 1.79 ? ' crouched' : ''}  ` +
+      `${awarenessSummary()}  ${player.mode}${player.height < 1.79 ? ' crouched' : ''}  ` +
       `x ${player.x.toFixed(1)} y ${player.y.toFixed(2)} z ${player.z.toFixed(1)}  ` +
       `speed ${Math.hypot(player.vx, player.vz).toFixed(1)} m/s` +
       `${controls.sprint ? '  sprint' : ''}${controls.aim ? '  aim' : ''}${input.fire ? '  fire' : ''}`,
   );
+
+  /** How many enemies are on edge, e.g. "1 alert 2 suspicious"; "calm" if none. */
+  function awarenessSummary(): string {
+    let alert = 0;
+    let suspicious = 0;
+    let searching = 0;
+    for (const c of enemyChars) {
+      if (c.health.dead || !c.ai) continue;
+      if (c.ai.awareness === 'alert') alert++;
+      else if (c.ai.awareness === 'suspicious') suspicious++;
+      else if (c.ai.awareness === 'searching') searching++;
+    }
+    const parts = [];
+    if (alert) parts.push(`${alert} alert`);
+    if (suspicious) parts.push(`${suspicious} suspicious`);
+    if (searching) parts.push(`${searching} searching`);
+    return parts.length ? parts.join(' ') : 'calm';
+  }
 
   // Scratch for the auto-fire and aim-assist check.
   const aimHit = createCharacterHit();
@@ -256,7 +291,7 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
     prev.aim = cur.aim;
     prev.rp = cur.rp;
     prev.ry = cur.ry;
-    step(sim, world, items, inputs);
+    step(sim, world, items, inputs, nav);
     cur.x = player.x;
     cur.y = eyeHeight(player);
     cur.z = player.z;
@@ -282,10 +317,13 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
       }
     }
 
-    for (const d of dummies) {
-      if (!d.c.health.dead) d.diedAt = 0;
-      else if (!d.diedAt) d.diedAt = now;
-      else if (now - d.diedAt > DUMMY_RESPAWN_MS) restoreHealth(d.c, items);
+    for (const e of enemies) {
+      if (!e.c.health.dead) e.diedAt = 0;
+      else if (!e.diedAt) e.diedAt = now;
+      else if (now - e.diedAt > ENEMY_RESPAWN_MS) {
+        restoreHealth(e.c, items);
+        resetEnemy(e.c, world);
+      }
     }
     el.vitals.update(player, items, now);
     stats.tick(performance.now() - t0);
@@ -352,7 +390,8 @@ export function startPlay(el: PlayElements, options: PlayOptions): void {
     const alive = !player.health.dead;
     el.optic.set(optic);
     el.optic.visible = alive && aim >= (zoom > 1 ? SCOPE_IN : RETICLE_IN);
-    for (const d of dummies) d.body.update(d.c, items);
+    for (const e of enemies) e.body.update(e.c, items);
+    aiDebug?.update(enemyChars);
     viewmodel.visible = alive && !!w && !scoped;
     if (w) viewmodel.setAttachments(w, items);
     viewmodel.update(camera, time, dtMs, aim, 1 + brokenArms(player.health) * 2);

@@ -1,0 +1,865 @@
+import type { NavGrid } from '../nav/nav-grid';
+import { findPath } from '../nav/path';
+import { nextFloat, nextRange } from '../rng';
+import { TICK_SECONDS } from '../tick';
+import type { CollisionWorld } from '../world/collision-world';
+import { MOVEMENT } from './movement';
+import {
+  entityById,
+  eyeHeight,
+  spawnCharacter,
+  type Character,
+  type EntityId,
+  type PlayerInput,
+  type SimState,
+} from './state';
+
+/*
+ * Enemy AI, part 1 (session 7): getting around, seeing and hearing. Each enemy is an
+ * ordinary character that writes its own PlayerInput every tick, so it moves (and later
+ * shoots) through exactly the same code as a player. All its state is plain data in the
+ * character, so it saves, restores and runs on a co-op server like everything else.
+ *
+ * Awareness: unaware → suspicious (heard or glimpsed something) → alert (knows where you
+ * are) → searching (lost you) → unaware. Combat comes in session 8; until then an alert
+ * enemy faces you and closes in.
+ */
+
+const DEG = Math.PI / 180;
+
+/** AI tuning. Distances in metres, times in seconds, rates per second. */
+export const AI = {
+  /** Sight and hearing are checked every this many ticks, staggered across enemies. */
+  perceiveEvery: 3,
+  sightRange: 70,
+  /** The whole field of view, in degrees. */
+  fov: 120,
+  /** Seconds to notice someone in plain view closer than nearRange. */
+  reaction: 0.5,
+  nearRange: 8,
+  /** Noticing at sightRange happens at this fraction of the rate. */
+  farRate: 0.08,
+  /** Within this angle from straight ahead, full rate; at the edge of view, peripheralRate. */
+  centreAngle: 25,
+  peripheralRate: 0.35,
+  crouchedRate: 0.6,
+  stillRate: 0.7,
+  sprintingRate: 1.3,
+  /** An enemy that's already on edge notices faster. */
+  waryRate: 1.6,
+  /** In view this close is noticed at once. */
+  instantRange: 2.5,
+  /** Noticing fades this fast while nobody is in view. */
+  forget: 0.15,
+  /** Noticing this much (out of 1) is a glimpse: suspicious. 1 is alert. */
+  glimpse: 0.3,
+  /**
+   * Shots are heard within their loudness: suspicious and turns to look. Within this
+   * fraction of it, walks over to investigate; within alertShot, alert.
+   */
+  investigateShot: 0.5,
+  alertShot: 0.15,
+  /** A shot passing or landing this close is being shot at: alert. */
+  nearMiss: 3,
+  /** Footsteps are heard this far away. Crouch-walking and standing still are silent. */
+  sprintSteps: 15,
+  walkSteps: 6,
+  /** Where a noise came from is off by up to this fraction of its distance, at most noiseErrorMax. */
+  noiseError: 0.1,
+  noiseErrorMax: 8,
+  /** After losing sight while alert, it still knows where you went for this long... */
+  intuition: 1,
+  /** ...and starts searching after this long. */
+  loseTrack: 4,
+  /** Stick pushes: patrolling, investigating and alert. */
+  patrolPace: 0.55,
+  investigatePace: 0.8,
+  alertPace: 1,
+  /** Turning speed in radians per second, calm and on edge. */
+  turnRate: 2.5,
+  alertTurnRate: 6,
+  /** Turns to look at something suspicious for this long before going to check it. */
+  lookTime: 1.5,
+  /** Looks around this long where the noise was, or at a noise not worth checking. */
+  scanTime: 5,
+  calmTime: 3,
+  /** Spots to check when searching, each within searchRadius of where you were last seen. */
+  searchSpots: 3,
+  searchRadius: 12,
+  searchScan: 2.5,
+  /** Guarding: looks a new way every guardLook seconds or so, within guardArc of its spawn's. */
+  guardLook: 5,
+  guardArc: 70,
+  /** Until session 8's combat: an alert enemy closes in to this distance and holds. */
+  approachRange: 10,
+  /** Waypoints count as reached this close; the end of a path at `arrive`. */
+  waypoint: 0.5,
+  arrive: 0.7,
+  /** Patrol points walked through (no wait) count as reached this close, so it doesn't slow. */
+  passBy: 1.2,
+  /** Moving slower than this for stuckTime means stuck: plan again, then give up. */
+  stuckSpeed: 0.3,
+  stuckTime: 1.5,
+  /** Path searches across all enemies in one tick; the rest wait a tick. */
+  plansPerTick: 2,
+  /** A goal that moves further than this needs a new path. */
+  replanDistance: 1.5,
+} as const;
+
+export type Awareness = 'unaware' | 'suspicious' | 'alert' | 'searching';
+
+/** What it's doing, within its awareness state. */
+export type AiActivity =
+  | 'patrol' // walking to the next patrol point
+  | 'wait' // standing at a patrol point, looking around
+  | 'guard' // no patrol: standing at its spawn, looking around
+  | 'look' // suspicious: turned to look at what it noticed
+  | 'investigate' // suspicious: walking over to check it
+  | 'scan' // looking around where it was, or at a noise not worth checking
+  | 'track' // alert: facing you, closing in
+  | 'search' // walking to a spot to check
+  | 'searchScan'; // looking around a searched spot
+
+export interface AiState {
+  awareness: Awareness;
+  activity: AiActivity;
+  /** The controls it gives itself, read by movement and weapons like a player's. */
+  input: PlayerInput;
+  homeX: number;
+  homeY: number;
+  homeZ: number;
+  homeYaw: number;
+  /** Patrol points as flat x, y, z; empty to guard its spawn. */
+  patrol: number[];
+  /** Seconds to stand at each point; 0 walks through it. */
+  patrolWaits: number[];
+  /** Each visit to a point goes to a random spot within its radius. */
+  patrolRadii: number[];
+  /** The points before this are the way in, walked once. */
+  patrolRepeatFrom: number;
+  patrolLoop: boolean;
+  patrolIndex: number;
+  /** Where it's going for the current point; legSet false means not picked yet. */
+  legSet: boolean;
+  legX: number;
+  legY: number;
+  legZ: number;
+  /** +1 or −1: which way along a back-and-forth patrol. */
+  patrolStep: number;
+  /** Counts down the current activity. */
+  timer: number;
+  /** How much it has noticed whoever it can see, 0..1. */
+  notice: number;
+  /** Who it's alert to, or 0. */
+  target: EntityId;
+  /** Whether it saw its target at the last look. */
+  seesTarget: boolean;
+  /** Seconds since it last saw its target. */
+  unseen: number;
+  /** Where whatever it's interested in is: what it noticed, heard, or last saw. */
+  focusX: number;
+  focusY: number;
+  focusZ: number;
+  /** Whether what it's suspicious of is worth walking over to. */
+  investigate: boolean;
+  /** Which way it looks around from while standing. */
+  lookYaw: number;
+  /** The current path as flat x, y, z waypoints, and the next one to reach. */
+  path: number[];
+  pathIndex: number;
+  /** Where the path goes; hasGoal false means it needs planning. */
+  hasGoal: boolean;
+  goalX: number;
+  goalY: number;
+  goalZ: number;
+  stuck: number;
+  replans: number;
+  searchLeft: number;
+}
+
+export interface PatrolDef {
+  points: readonly { x: number; y: number; z: number; wait: number; radius: number }[];
+  repeatFrom: number;
+  loop: boolean;
+}
+
+export interface EnemySpawnOptions {
+  patrol?: PatrolDef | undefined;
+  /** Spawns at a random clear spot within this many metres. */
+  radius?: number | undefined;
+}
+
+function createInput(): PlayerInput {
+  return {
+    moveX: 0,
+    moveY: 0,
+    yaw: 0,
+    pitch: 0,
+    sprint: false,
+    crouch: false,
+    jump: false,
+    fire: false,
+    aim: false,
+    reload: false,
+  };
+}
+
+/**
+ * Adds an enemy at a spawn, guarding it or walking a patrol from its first point. With a
+ * radius it stands at a random clear spot within it; that spot is its home.
+ */
+export function spawnEnemy(
+  state: SimState,
+  world: CollisionWorld,
+  x: number,
+  y: number,
+  z: number,
+  yaw: number,
+  options: EnemySpawnOptions = {},
+): Character {
+  const { patrol, radius = 0 } = options;
+  let sx = x;
+  let sz = z;
+  for (let tries = 0; radius > 0 && tries < 10; tries++) {
+    const r = radius * Math.sqrt(nextFloat(state.rng));
+    const a = nextFloat(state.rng) * Math.PI * 2;
+    const tx = x + Math.cos(a) * r;
+    const tz = z + Math.sin(a) * r;
+    const ground = world.groundAt(tx, tz, MOVEMENT.radius, y + 0.5);
+    const low = ground + MOVEMENT.stepUp;
+    if (!world.overlaps(tx, tz, MOVEMENT.radius, low, ground + MOVEMENT.standHeight)) {
+      sx = tx;
+      sz = tz;
+      break;
+    }
+  }
+  // Below the spawn's height plus a little, so a spawn under a roof stays inside.
+  const c = spawnCharacter(state, world, sx, sz, yaw, y + 0.5);
+  c.ai = {
+    awareness: 'unaware',
+    activity: 'guard',
+    input: createInput(),
+    homeX: c.x,
+    homeY: c.y,
+    homeZ: c.z,
+    homeYaw: yaw,
+    patrol: patrol ? patrol.points.flatMap((p) => [p.x, p.y, p.z]) : [],
+    patrolWaits: patrol ? patrol.points.map((p) => p.wait) : [],
+    patrolRadii: patrol ? patrol.points.map((p) => p.radius) : [],
+    patrolRepeatFrom: patrol?.repeatFrom ?? 0,
+    patrolLoop: patrol?.loop ?? true,
+    patrolIndex: 0,
+    legSet: false,
+    legX: 0,
+    legY: 0,
+    legZ: 0,
+    patrolStep: 1,
+    timer: 0,
+    notice: 0,
+    target: 0,
+    seesTarget: false,
+    unseen: 0,
+    focusX: 0,
+    focusY: 0,
+    focusZ: 0,
+    investigate: false,
+    lookYaw: yaw,
+    path: [],
+    pathIndex: 0,
+    hasGoal: false,
+    goalX: 0,
+    goalY: 0,
+    goalZ: 0,
+    stuck: 0,
+    replans: 0,
+    searchLeft: 0,
+  };
+  calmDown(c, c.ai, false);
+  return c;
+}
+
+/** Puts an enemy back at its spawn, unaware, as if it had just spawned. */
+export function resetEnemy(c: Character, world: CollisionWorld): void {
+  const ai = c.ai;
+  if (!ai) return;
+  c.x = ai.homeX;
+  c.z = ai.homeZ;
+  c.y = world.groundAt(c.x, c.z, MOVEMENT.radius, ai.homeY + 0.5);
+  c.vx = c.vy = c.vz = 0;
+  c.yaw = ai.homeYaw;
+  c.pitch = 0;
+  c.mode = 'ground';
+  ai.patrolIndex = 0;
+  ai.patrolStep = 1;
+  calmDown(c, ai, false);
+}
+
+const DT = TICK_SECONDS;
+const PERCEIVE_DT = AI.perceiveEvery * DT;
+const HALF_FOV_COS = Math.cos((AI.fov / 2) * DEG);
+const CENTRE_COS = Math.cos(AI.centreAngle * DEG);
+
+/** How far above a goal's given height its ground may be (patrol points on a slope). */
+const GOAL_RISE = 1.5;
+
+// Path searches left this tick, shared by every enemy.
+let plansLeft = 0;
+
+/**
+ * Every enemy perceives (sight and footsteps every few ticks, shots and hits every tick,
+ * from this tick's events) and decides its input for the next tick. Runs at the end of
+ * the tick, after everything has moved and fired.
+ */
+export function updateAi(state: SimState, world: CollisionWorld, nav: NavGrid): void {
+  plansLeft = AI.plansPerTick;
+  for (const c of state.entities) {
+    const ai = c.ai;
+    if (!ai) continue;
+    const input = ai.input;
+    input.moveX = input.moveY = 0;
+    if (c.health.dead) continue;
+    if ((state.tick + c.id) % AI.perceiveEvery === 0) {
+      look(state, c, ai, world);
+      listenForSteps(state, c, ai);
+    }
+    hearEvents(state, c, ai);
+    behave(state, c, ai, nav);
+  }
+}
+
+// ---------------------------------------------------------------------------- perception
+
+/** Sight: notices whoever it can see best, and keeps track of its target while alert. */
+function look(state: SimState, c: Character, ai: AiState, world: CollisionWorld): void {
+  let best: Character | undefined;
+  let bestRate = 0;
+  ai.seesTarget = false;
+  for (const e of state.entities) {
+    if (e.ai || e.health.dead) continue;
+    const rate = sightRate(c, ai, e, world);
+    if (e.id === ai.target && rate > 0) ai.seesTarget = true;
+    if (rate > bestRate) {
+      bestRate = rate;
+      best = e;
+    }
+  }
+
+  if (ai.awareness === 'alert') {
+    const target = entityById(state, ai.target);
+    if (!target || target.health.dead) {
+      calmDown(c, ai);
+      return;
+    }
+    // Knows roughly where you went for a moment after losing sight of you.
+    if (ai.seesTarget || ai.unseen < AI.intuition) setFocus(ai, target.x, target.y, target.z);
+    ai.unseen = ai.seesTarget ? 0 : ai.unseen + PERCEIVE_DT;
+    if (ai.unseen >= AI.loseTrack) startSearch(ai);
+    if (ai.seesTarget || !best) return;
+  }
+
+  if (!best) {
+    ai.notice = Math.max(0, ai.notice - AI.forget * PERCEIVE_DT);
+    return;
+  }
+  ai.notice = Math.min(1, ai.notice + bestRate * PERCEIVE_DT);
+  if (ai.notice >= 1) alarm(ai, best, best.x, best.y, best.z);
+  else if (ai.notice >= AI.glimpse || ai.awareness !== 'unaware')
+    suspect(c, ai, best.x, best.y, best.z, true);
+}
+
+/** How fast it notices e (per second), or 0 if it can't see e. */
+function sightRate(c: Character, ai: AiState, e: Character, world: CollisionWorld): number {
+  const ox = c.x;
+  const oy = eyeHeight(c);
+  const oz = c.z;
+  const dx = e.x - ox;
+  const dz = e.z - oz;
+  const across = Math.hypot(dx, dz);
+  if (across > AI.sightRange) return 0;
+  const ahead = across > 1e-6 ? (dx * -Math.sin(c.yaw) + dz * -Math.cos(c.yaw)) / across : 1;
+  if (ahead < HALF_FOV_COS) return 0;
+  // In sight if the head or the middle of the body is.
+  const head = e.y + e.height - 0.12;
+  const body = e.y + e.height * 0.6;
+  if (
+    !clearLine(world, ox, oy, oz, e.x, head, e.z) &&
+    !clearLine(world, ox, oy, oz, e.x, body, e.z)
+  )
+    return 0;
+  const d = Math.hypot(across, head - oy);
+  if (d < AI.instantRange) return Infinity;
+
+  let rate = 1 / AI.reaction;
+  if (d > AI.nearRange) {
+    const far = Math.min(1, (d - AI.nearRange) / (AI.sightRange - AI.nearRange));
+    rate *= 1 - (1 - AI.farRate) * Math.sqrt(far);
+  }
+  if (ahead < CENTRE_COS) {
+    const edge = (CENTRE_COS - ahead) / (CENTRE_COS - HALF_FOV_COS);
+    rate *= 1 - (1 - AI.peripheralRate) * edge;
+  }
+  if (e.height < MOVEMENT.standHeight - 0.1) rate *= AI.crouchedRate;
+  const speed = Math.hypot(e.vx, e.vz);
+  if (speed < 0.2) rate *= AI.stillRate;
+  else if (speed > MOVEMENT.walkSpeed + 0.5) rate *= AI.sprintingRate;
+  if (ai.awareness !== 'unaware') rate *= AI.waryRate;
+  return rate;
+}
+
+function clearLine(
+  world: CollisionWorld,
+  ox: number,
+  oy: number,
+  oz: number,
+  tx: number,
+  ty: number,
+  tz: number,
+): boolean {
+  const dx = tx - ox;
+  const dy = ty - oy;
+  const dz = tz - oz;
+  const d = Math.hypot(dx, dy, dz);
+  if (d < 1e-6) return true;
+  return world.raycast(ox, oy, oz, dx / d, dy / d, dz / d, d) === Infinity;
+}
+
+/** Footsteps: sprinting and walking are heard nearby; crouching is silent. */
+function listenForSteps(state: SimState, c: Character, ai: AiState): void {
+  for (const e of state.entities) {
+    if (e.ai || e.health.dead || e.mode !== 'ground') continue;
+    if (e.height < MOVEMENT.standHeight - 0.1) continue;
+    const speed = Math.hypot(e.vx, e.vz);
+    const range = speed > MOVEMENT.walkSpeed + 0.5 ? AI.sprintSteps : speed > 1 ? AI.walkSteps : 0;
+    const d = Math.hypot(e.x - c.x, e.y - c.y, e.z - c.z);
+    if (d > range) continue;
+    if (ai.awareness === 'alert') {
+      if (e.id === ai.target) setFocus(ai, e.x, e.y, e.z);
+    } else {
+      heardAt(state, c, ai, e, d, true);
+    }
+  }
+}
+
+/** Shots and hits from this tick's events. */
+function hearEvents(state: SimState, c: Character, ai: AiState): void {
+  for (const ev of state.events) {
+    if (ev.type === 'damage') {
+      if (ev.target !== c.id || ev.by === 0 || ev.by === c.id) continue;
+      const by = entityById(state, ev.by);
+      if (by && !by.ai) alarm(ai, by, by.x, by.y, by.z);
+      continue;
+    }
+    if (ev.type !== 'shot') continue;
+    const by = entityById(state, ev.by);
+    // Enemies' own shots don't alarm each other until session 8 decides what they mean.
+    if (!by || by.ai || by.health.dead) continue;
+    const cy = c.y + c.height * 0.6;
+    const miss = segmentDistance(
+      c.x,
+      cy,
+      c.z,
+      ev.fromX,
+      ev.fromY,
+      ev.fromZ,
+      ev.toX,
+      ev.toY,
+      ev.toZ,
+    );
+    const d = Math.hypot(ev.fromX - c.x, ev.fromY - eyeHeight(c), ev.fromZ - c.z);
+    if (miss <= AI.nearMiss || d <= ev.loudness * AI.alertShot) {
+      alarm(ai, by, by.x, by.y, by.z);
+    } else if (d <= ev.loudness && ai.awareness !== 'alert') {
+      heardAt(state, c, ai, by, d, d <= ev.loudness * AI.investigateShot);
+    }
+  }
+}
+
+/** Suspicious of a noise from e, d metres away: placed with an error that grows with d. */
+function heardAt(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  e: Character,
+  d: number,
+  investigate: boolean,
+): void {
+  const off = Math.min(AI.noiseErrorMax, d * AI.noiseError) * Math.sqrt(nextFloat(state.rng));
+  const around = nextFloat(state.rng) * Math.PI * 2;
+  suspect(c, ai, e.x + Math.cos(around) * off, e.y, e.z + Math.sin(around) * off, investigate);
+}
+
+function segmentDistance(
+  px: number,
+  py: number,
+  pz: number,
+  ax: number,
+  ay: number,
+  az: number,
+  bx: number,
+  by: number,
+  bz: number,
+): number {
+  const abx = bx - ax;
+  const aby = by - ay;
+  const abz = bz - az;
+  const len2 = abx * abx + aby * aby + abz * abz;
+  const t =
+    len2 > 0
+      ? Math.max(0, Math.min(1, ((px - ax) * abx + (py - ay) * aby + (pz - az) * abz) / len2))
+      : 0;
+  return Math.hypot(ax + abx * t - px, ay + aby * t - py, az + abz * t - pz);
+}
+
+// ----------------------------------------------------------------------- awareness changes
+
+function setFocus(ai: AiState, x: number, y: number, z: number): void {
+  ai.focusX = x;
+  ai.focusY = y;
+  ai.focusZ = z;
+}
+
+/** Something's off at (x, y, z). Never lowers an alert. */
+function suspect(
+  c: Character,
+  ai: AiState,
+  x: number,
+  y: number,
+  z: number,
+  investigate: boolean,
+): void {
+  if (ai.awareness === 'alert') return;
+  const was = ai.awareness;
+  ai.awareness = 'suspicious';
+  setFocus(ai, x, y, z);
+  if (was === 'suspicious' && ai.activity === 'investigate') return;
+  ai.investigate = investigate || (was === 'suspicious' && ai.investigate);
+  ai.activity = 'look';
+  ai.timer = AI.lookTime;
+  ai.hasGoal = false;
+  ai.lookYaw = c.yaw;
+}
+
+/** Knows someone is there: alert. */
+function alarm(ai: AiState, target: Character, x: number, y: number, z: number): void {
+  if (ai.awareness !== 'alert') {
+    ai.hasGoal = false;
+    ai.activity = 'track';
+  }
+  ai.awareness = 'alert';
+  ai.target = target.id;
+  ai.notice = 1;
+  ai.unseen = 0;
+  setFocus(ai, x, y, z);
+}
+
+function startSearch(ai: AiState): void {
+  ai.awareness = 'searching';
+  ai.activity = 'search';
+  ai.searchLeft = AI.searchSpots;
+  ai.notice = AI.glimpse;
+  ai.hasGoal = false;
+}
+
+/**
+ * Back to normal: unaware, and walking its patrol or guarding. Resuming a patrol picks it
+ * up at the nearest point; otherwise it carries on from patrolIndex.
+ */
+function calmDown(c: Character, ai: AiState, resume = true): void {
+  ai.awareness = 'unaware';
+  ai.notice = 0;
+  ai.target = 0;
+  ai.seesTarget = false;
+  ai.hasGoal = false;
+  ai.replans = 0;
+  if (ai.patrol.length > 0) {
+    ai.activity = 'patrol';
+    ai.legSet = false;
+    let best = Infinity;
+    for (let i = 0; resume && i < ai.patrol.length / 3; i++) {
+      const d = Math.hypot(ai.patrol[i * 3]! - c.x, ai.patrol[i * 3 + 2]! - c.z);
+      if (d < best) {
+        best = d;
+        ai.patrolIndex = i;
+      }
+    }
+  } else {
+    ai.activity = 'guard';
+    ai.lookYaw = ai.homeYaw;
+    ai.timer = AI.guardLook;
+  }
+}
+
+// ------------------------------------------------------------------------------ behaviour
+
+function behave(state: SimState, c: Character, ai: AiState, nav: NavGrid): void {
+  ai.timer -= DT;
+  let faceYaw = c.yaw;
+  let facePitch = 0;
+  let turn: number = ai.awareness === 'unaware' ? AI.turnRate : AI.alertTurnRate;
+
+  switch (ai.activity) {
+    case 'patrol': {
+      if (!ai.legSet) pickLeg(state, ai, nav);
+      const wait = ai.patrolWaits[ai.patrolIndex]!;
+      const arrive = wait > 0 ? AI.arrive : AI.passBy;
+      const r = moveTo(state, c, ai, nav, ai.legX, ai.legY, ai.legZ, AI.patrolPace, false, arrive);
+      faceYaw = moveYaw;
+      if (r === 'moving') break;
+      if (wait > 0) {
+        ai.activity = 'wait';
+        ai.timer = wait;
+        ai.lookYaw = c.yaw;
+      } else {
+        nextPatrolPoint(ai);
+      }
+      break;
+    }
+    case 'wait':
+      faceYaw = lookAround(ai);
+      if (ai.timer <= 0) {
+        nextPatrolPoint(ai);
+        ai.activity = 'patrol';
+      }
+      break;
+    case 'guard':
+      if (Math.hypot(ai.homeX - c.x, ai.homeZ - c.z) > 1.5) {
+        moveTo(state, c, ai, nav, ai.homeX, ai.homeY, ai.homeZ, AI.patrolPace);
+        faceYaw = moveYaw;
+        break;
+      }
+      faceYaw = ai.lookYaw;
+      turn = AI.turnRate / 2;
+      if (ai.timer <= 0) {
+        ai.lookYaw = ai.homeYaw + nextRange(state.rng, -AI.guardArc, AI.guardArc) * DEG;
+        ai.timer = AI.guardLook * nextRange(state.rng, 0.6, 1.4);
+      }
+      break;
+    case 'look':
+      faceYaw = yawTo(c, ai.focusX, ai.focusZ);
+      if (ai.timer <= 0) {
+        ai.activity = ai.investigate ? 'investigate' : 'scan';
+        ai.timer = AI.calmTime;
+        ai.lookYaw = faceYaw;
+        ai.hasGoal = false;
+      }
+      break;
+    case 'investigate': {
+      const r = moveTo(state, c, ai, nav, ai.focusX, ai.focusY, ai.focusZ, AI.investigatePace);
+      faceYaw = moveYaw;
+      if (r !== 'moving') {
+        ai.activity = 'scan';
+        ai.timer = AI.scanTime;
+        ai.lookYaw = c.yaw;
+      }
+      break;
+    }
+    case 'scan':
+      faceYaw = lookAround(ai);
+      if (ai.timer <= 0) calmDown(c, ai);
+      break;
+    case 'track': {
+      faceYaw = yawTo(c, ai.focusX, ai.focusZ);
+      const across = Math.hypot(ai.focusX - c.x, ai.focusZ - c.z);
+      facePitch = Math.atan2(ai.focusY + MOVEMENT.standHeight * 0.8 - eyeHeight(c), across);
+      if (!ai.seesTarget || across > AI.approachRange)
+        moveTo(state, c, ai, nav, ai.focusX, ai.focusY, ai.focusZ, AI.alertPace, true);
+      break;
+    }
+    case 'search': {
+      const r = moveTo(state, c, ai, nav, ai.focusX, ai.focusY, ai.focusZ, AI.alertPace);
+      faceYaw = moveYaw;
+      if (r !== 'moving') {
+        ai.activity = 'searchScan';
+        ai.timer = AI.searchScan;
+        ai.lookYaw = c.yaw;
+      }
+      break;
+    }
+    case 'searchScan':
+      faceYaw = lookAround(ai);
+      if (ai.timer > 0) break;
+      if (ai.searchLeft-- <= 0 || !pickSearchSpot(state, c, ai, nav)) {
+        calmDown(c, ai);
+      } else {
+        ai.activity = 'search';
+        ai.hasGoal = false;
+      }
+      break;
+  }
+
+  const input = ai.input;
+  input.yaw = turnToward(c.yaw, faceYaw, turn * DT);
+  input.pitch = c.pitch + Math.max(-turn * DT, Math.min(turn * DT, facePitch - c.pitch));
+  // The stick is relative to where it faces; moveTo left a world direction in wishX, Z.
+  const sy = Math.sin(input.yaw);
+  const cy = Math.cos(input.yaw);
+  input.moveX = cy * wishX - sy * wishZ;
+  input.moveY = -(sy * wishX + cy * wishZ);
+  wishX = wishZ = 0;
+}
+
+/** Sweeps the view either side of lookYaw while standing. */
+function lookAround(ai: AiState): number {
+  return ai.lookYaw + Math.sin(ai.timer * 1.2) * 0.9;
+}
+
+/**
+ * On to the next point: through the way in once, then round the repeating points in a
+ * loop, or back and forth between the first and last of them.
+ */
+function nextPatrolPoint(ai: AiState): void {
+  const first = ai.patrolRepeatFrom;
+  const last = ai.patrol.length / 3 - 1;
+  ai.legSet = false;
+  ai.hasGoal = false;
+  if (ai.patrolIndex < first) {
+    ai.patrolIndex++;
+  } else if (ai.patrolLoop) {
+    ai.patrolIndex = ai.patrolIndex >= last ? first : ai.patrolIndex + 1;
+  } else {
+    const next = ai.patrolIndex + ai.patrolStep;
+    if (next < first || next > last) ai.patrolStep = -ai.patrolStep;
+    ai.patrolIndex += ai.patrolStep;
+  }
+}
+
+/** Where to go for the current patrol point: a random walkable spot within its radius. */
+function pickLeg(state: SimState, ai: AiState, nav: NavGrid): void {
+  const i = ai.patrolIndex;
+  ai.legX = ai.patrol[i * 3]!;
+  ai.legY = ai.patrol[i * 3 + 1]!;
+  ai.legZ = ai.patrol[i * 3 + 2]!;
+  ai.legSet = true;
+  const radius = ai.patrolRadii[i]!;
+  if (radius <= 0) return;
+  const centre = nav.nearest(ai.legX, ai.legY, ai.legZ, GOAL_RISE);
+  for (let tries = 0; tries < 8; tries++) {
+    const r = radius * Math.sqrt(nextFloat(state.rng));
+    const a = nextFloat(state.rng) * Math.PI * 2;
+    const n = nav.nearest(ai.legX + Math.cos(a) * r, ai.legY, ai.legZ + Math.sin(a) * r, GOAL_RISE);
+    if (n >= 0 && (centre < 0 || nav.component[n] === nav.component[centre])) {
+      ai.legX = nav.nodeX(n);
+      ai.legY = nav.nodeY(n);
+      ai.legZ = nav.nodeZ(n);
+      return;
+    }
+  }
+}
+
+/** A random reachable spot near where the target was last seen, as the new focus. */
+function pickSearchSpot(state: SimState, c: Character, ai: AiState, nav: NavGrid): boolean {
+  const here = nav.nearest(c.x, c.y, c.z);
+  if (here < 0) return false;
+  for (let tries = 0; tries < 8; tries++) {
+    const r = AI.searchRadius * Math.sqrt(nextFloat(state.rng));
+    const a = nextFloat(state.rng) * Math.PI * 2;
+    const x = ai.focusX + Math.cos(a) * r;
+    const z = ai.focusZ + Math.sin(a) * r;
+    const n = nav.nearest(x, ai.focusY + 1, z);
+    if (n >= 0 && nav.component[n] === nav.component[here]) {
+      setFocus(ai, nav.nodeX(n), nav.nodeY(n), nav.nodeZ(n));
+      return true;
+    }
+  }
+  return false;
+}
+
+// ---------------------------------------------------------------------------- moving
+
+// What moveTo decided this tick: a world direction scaled by pace, and the way it's going.
+let wishX = 0;
+let wishZ = 0;
+let moveYaw = 0;
+
+/**
+ * Walks along a path to (x, y, z), planning one when the goal changes. Leaves the move in
+ * wishX, wishZ and its heading in moveYaw. 'arrived' at the end of the path (or the
+ * closest it can get), 'failed' if there's no way at all.
+ */
+function moveTo(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  nav: NavGrid,
+  x: number,
+  y: number,
+  z: number,
+  pace: number,
+  strafe = false,
+  arrive: number = AI.arrive,
+): 'moving' | 'arrived' | 'failed' {
+  moveYaw = c.yaw;
+  if (!ai.hasGoal || Math.hypot(ai.goalX - x, ai.goalY - y, ai.goalZ - z) > AI.replanDistance) {
+    if (plansLeft <= 0) return 'moving';
+    plansLeft--;
+    const result = findPath(
+      nav,
+      nav.nearest(c.x, c.y, c.z),
+      nav.nearest(x, y, z, GOAL_RISE),
+      ai.path,
+    );
+    ai.hasGoal = true;
+    ai.goalX = x;
+    ai.goalY = y;
+    ai.goalZ = z;
+    ai.pathIndex = ai.path.length > 3 ? 1 : 0;
+    ai.stuck = 0;
+    if (result === 'none' && Math.hypot(x - c.x, z - c.z) > arrive) return 'failed';
+  }
+
+  const last = ai.path.length / 3 - 1;
+  while (ai.pathIndex <= last) {
+    const i = ai.pathIndex * 3;
+    const reach = ai.pathIndex === last ? arrive : AI.waypoint;
+    if (Math.hypot(ai.path[i]! - c.x, ai.path[i + 2]! - c.z) > reach) break;
+    ai.pathIndex++;
+  }
+  if (ai.pathIndex > last) {
+    ai.hasGoal = false;
+    ai.replans = 0;
+    return 'arrived';
+  }
+
+  // Stuck against something: plan again from here, and give up after a few tries.
+  if (Math.hypot(c.vx, c.vz) < AI.stuckSpeed) ai.stuck += DT;
+  else ai.stuck = 0;
+  if (ai.stuck > AI.stuckTime) {
+    ai.hasGoal = false;
+    ai.stuck = 0;
+    if (++ai.replans > 2) {
+      ai.replans = 0;
+      return 'failed';
+    }
+  }
+
+  const i = ai.pathIndex * 3;
+  const dx = ai.path[i]! - c.x;
+  const dz = ai.path[i + 2]! - c.z;
+  const d = Math.hypot(dx, dz);
+  moveYaw = Math.atan2(-dx, -dz);
+  // Turn before walking off sideways, unless it's meant to (alert, facing its target).
+  const off = Math.abs(angleDiff(c.yaw, moveYaw));
+  const speed = strafe || off < Math.PI / 3 ? pace : pace * 0.3;
+  wishX = (dx / d) * speed;
+  wishZ = (dz / d) * speed;
+  return 'moving';
+}
+
+function yawTo(c: Character, x: number, z: number): number {
+  const dx = x - c.x;
+  const dz = z - c.z;
+  return dx === 0 && dz === 0 ? c.yaw : Math.atan2(-dx, -dz);
+}
+
+/** The signed smallest turn from a to b, in −π..π. */
+function angleDiff(a: number, b: number): number {
+  let d = (b - a) % (2 * Math.PI);
+  if (d > Math.PI) d -= 2 * Math.PI;
+  if (d < -Math.PI) d += 2 * Math.PI;
+  return d;
+}
+
+function turnToward(from: number, to: number, step: number): number {
+  const d = angleDiff(from, to);
+  return from + Math.max(-step, Math.min(step, d));
+}

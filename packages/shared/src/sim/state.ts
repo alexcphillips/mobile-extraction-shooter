@@ -1,4 +1,5 @@
 import { createRng, type Rng } from '../rng';
+import type { AiState } from './ai';
 import type { CollisionWorld } from '../world/collision-world';
 import {
   createHealth,
@@ -14,7 +15,7 @@ export type EntityId = number;
 
 export type MoveMode = 'ground' | 'air' | 'ladder';
 
-/** A player or (later) AI body: a vertical capsule standing at (x, y, z). */
+/** A player or AI body: a vertical capsule standing at (x, y, z). */
 export interface Character {
   id: EntityId;
   kind: 'character';
@@ -46,6 +47,8 @@ export interface Character {
   /** Recoil's kick to the view in radians, added to yaw and pitch; it settles back to 0. */
   recoilPitch: number;
   recoilYaw: number;
+  /** An enemy's mind; null for players. */
+  ai: AiState | null;
 }
 
 /** Only characters so far; items, loot and projectiles join this union later. */
@@ -89,7 +92,10 @@ export interface PlayerInput {
   reload: boolean;
 }
 
-/** Inputs for one tick by entity. Characters with no input stand still. */
+/**
+ * Inputs for one tick by entity. Enemies use their own (AiState.input) unless given one
+ * here; anyone else with no input stands still.
+ */
 export type TickInputs = Readonly<Partial<Record<EntityId, PlayerInput>>>;
 
 export function createState(seed: number): SimState {
@@ -128,6 +134,7 @@ export function spawnCharacter(
     aim: 0,
     recoilPitch: 0,
     recoilYaw: 0,
+    ai: null,
   };
   state.entities.push(c);
   return c;

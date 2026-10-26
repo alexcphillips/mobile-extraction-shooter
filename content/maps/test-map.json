@@ -1,5 +1,5 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "id": "test-map",
   "name": "Test map",
   "environment": {
@@ -577,15 +577,43 @@
     },
     {
       "type": "enemySpawn",
+      "id": "west-scav",
       "pos": [-20, 0, -30],
       "yaw": 45,
-      "enemy": "scav"
+      "radius": 3,
+      "enemy": "scav",
+      "patrol": "west-houses"
+    },
+    {
+      "type": "patrol",
+      "id": "west-houses",
+      "points": [
+        [-20, 0, -14],
+        [-24, 0, -4],
+        { "pos": [-35, 0, -2], "wait": 6, "radius": 3 },
+        [-36, 0, 14],
+        { "pos": [-35, 0, 30], "wait": 4, "radius": 3 }
+      ],
+      "repeatFrom": 2,
+      "loop": false
     },
     {
       "type": "enemySpawn",
+      "id": "yard-scav",
       "pos": [35, 0, 0],
       "yaw": 90,
-      "enemy": "scav"
+      "enemy": "scav",
+      "patrol": "into-shed"
+    },
+    {
+      "type": "patrol",
+      "id": "into-shed",
+      "points": [
+        { "pos": [35, 0, 0], "wait": 3, "radius": 2 },
+        [30, 0, -5],
+        { "pos": [30, 0, -10.2], "wait": 4 }
+      ],
+      "loop": false
     },
     {
       "type": "enemySpawn",

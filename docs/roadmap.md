@@ -129,10 +129,19 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
     - Bundle: the main chunk is about 815 kB (up 7 kB).
     - Not done yet: nothing in play gives you attachments except the URL and debug keys (the attachment manager is session 10, stash loadouts session 13). Loudness isn't heard by anything until AI hearing (session 7). No sounds yet, so suppressed shots sound no different.
     - **Checked on the iPhone:** the user tried it and it looks good.
-- [ ] **7. AI part 1: navigation and perception.**
+- [x] **7. AI part 1: navigation and perception.**
   - Generate the multi-layer navigation grid (stairs, no ladders); A*.
   - Patrol routes. Sight cones with line of sight; hearing (shot radius, suppressors).
   - Awareness states. A debug navigation overlay in the game.
+  - **Notes (2026-10-26):**
+    - Decided with the user: **patrols are named route nodes** that an enemy spawn points to (map and prefab format 2), shaped by walk-through points, with stops that have their own wait and an optional radius (a random spot each visit), spawn radii, and a way in walked once before the rest repeats (`repeatFrom`), **shot hearing is tiered** (heard: look; within half the loudness: investigate; within 15%: alert), and **footsteps are heard** (sprinting 15 m, walking 6 m, crouching silent). All in design.md → AI.
+    - Shared: `nav/nav-grid.ts` (the layered grid: 0.5 m columns, 0.2 m wall clearance, step-height links, no corner cutting, connected components), `nav/path.ts` (A* on preallocated arrays, partial paths to unreachable goals, smoothing), `sim/ai.ts` (perception, the awareness states and behaviour; enemies write their own `PlayerInput`), `separateCharacters` in `sim/movement.ts`, two queries on `CollisionWorld` (`solidsAt`, `overlaps`), and patrols in the map compiler. `step` takes the nav grid as an optional fifth argument. 29 new tests (142 in shared), including a JSON save-and-restore with enemies mid-investigation.
+    - Content: the test map's west scav spawns within 3 m of its spot, walks a set way in to a stop west of the houses, then goes back and forth to a stop beyond them by way of a bend; the yard scav walks back and forth into the shed through its doorway; the boss guards.
+    - Client: target dummies are now enemies (still drawn as hit-zone capsules, `render/capsule-body.ts`), back at their spawn 6 s after dying. `?nav` draws the grid (green: reachable; orange: islands such as roofs and crate tops), and `?debug` adds patrol lines and each enemy's awareness gem, view edges, path and focus. The stats line shows the nav build time and how many enemies are on edge.
+    - Checked in headless Chrome at iPhone landscape size: the nav grid builds in about 80 ms (146k nodes) with no console errors; standing in the open at the centre, the west scav noticed the player and closed to about 10 m, then held; a burst of fire made a third enemy suspicious. 60 fps; tick 0.15–0.3 ms with three enemies. The `?nav` overlay is heavy (about 150k triangles), but it's debug-only.
+    - Bundle: the main chunk is about 837 kB (up 22 kB).
+    - Not done yet: enemies don't shoot or take cover (session 8). Doors don't block navigation or sight, because they don't collide yet (session 11 must cut nav links at closed doors). Enemies' shots don't alarm other enemies. A path ends at the nav cell nearest its goal, not exactly on it (within 0.35 m). The `?debug` spawn post you stand on shows as a big blue shape over the view (from session 4, not new).
+    - **Tested by the user:** it's good. The sight, hearing and patrol numbers stay as they are for now.
 - [ ] **8. AI part 2: combat.**
   - Engage, take cover, hold angles, search after losing you.
   - Handle an unreachable player (break line of sight, hold, give up).
@@ -156,6 +165,7 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
   - Raid config format, including a timer (15 minutes by default) and a random player spawn (co-op players together).
   - Loot tables rolled at raid start.
   - Extraction points; doors and keys. Doors are loaded and drawn since session 4 but don't collide: add them as solids that move, in the simulation state.
+  - **AI opens doors** (decided 2026-10-26, see design.md → AI → Doors): open or closed in the sim with collision snapping, the swing animated only in the renderer; closed unlocked doors stay nav links that enemies open on arrival; no noise. Enemies never open locked doors, even with the key, but once a player unlocks one it stays unlocked for the raid and enemies can use it. Recompute the nav components after an unlock (about 11 ms on the Mac; see tech-stack.md → Navigation for the cheaper fallback if it hitches on the phone).
   - Results screens for death and extraction (vault and knife kept).
   - SVG map tab with your position and named zones.
   - *Done when* one complete solo raid on the test map works on the phone with nothing but local state.

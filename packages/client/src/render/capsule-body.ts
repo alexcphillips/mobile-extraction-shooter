@@ -19,7 +19,7 @@ const DEAD = new THREE.Color(0x777777);
 
 /**
  * Draws characters as their hit-zone capsules, each coloured by its HP, plus boxes for
- * worn armour. A debug stand-in for target dummies until session 8b draws real bodies.
+ * worn armour. A debug stand-in for enemies until session 8b draws real bodies.
  */
 export class CapsuleBody {
   readonly root = new THREE.Group();

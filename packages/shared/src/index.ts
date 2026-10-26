@@ -29,7 +29,19 @@ export {
   type SimState,
   type TickInputs,
 } from './sim/state';
-export { MOVEMENT, moveCharacter } from './sim/movement';
+export { MOVEMENT, moveCharacter, separateCharacters } from './sim/movement';
+export {
+  AI,
+  resetEnemy,
+  spawnEnemy,
+  updateAi,
+  type AiActivity,
+  type AiState,
+  type Awareness,
+  type PatrolDef,
+} from './sim/ai';
+export { DIR_Q, DIR_R, NAV, NavGrid } from './nav/nav-grid';
+export { MAX_EXPAND, findPath, straight, type PathResult } from './nav/path';
 export {
   CHEST,
   HEAD,
@@ -117,6 +129,8 @@ export {
   type CompiledDoor,
   type CompiledMap,
   type CompiledMarker,
+  type CompiledPatrol,
+  type CompiledPatrolPoint,
   type InstancedGroup,
   type PrefabLookup,
   type Shape,

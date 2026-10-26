@@ -177,6 +177,37 @@ export class CollisionWorld {
   }
 
   /**
+   * The solids whose footprint contains the point (x, z): each one's bottom and its top
+   * there, written to bottoms and tops. Returns how many, at most bottoms.length.
+   */
+  solidsAt(x: number, z: number, bottoms: Float64Array, tops: Float64Array): number {
+    const n = this.grid.query(x, z, x, z, this.found);
+    let count = 0;
+    for (let k = 0; k < n && count < bottoms.length; k++) {
+      const i = this.found[k]!;
+      if (!this.circleOverlaps(i, x, z, 1e-6)) continue;
+      bottoms[count] = this.s[i * STRIDE + 6]!;
+      tops[count] = this.topAtClosest(i);
+      count++;
+    }
+    return count;
+  }
+
+  /**
+   * Would pushOut move a standing circle with this height range? The same rules: solids
+   * with their top at or below low, or their bottom at or above high, don't count.
+   */
+  overlaps(x: number, z: number, radius: number, low: number, high: number): boolean {
+    const n = this.grid.query(x - radius, z - radius, x + radius, z + radius, this.found);
+    for (let k = 0; k < n; k++) {
+      const i = this.found[k]!;
+      if (this.s[i * STRIDE + 6]! >= high) continue;
+      if (this.circleOverlaps(i, x, z, radius) && this.topAtClosest(i) > low) return true;
+    }
+    return false;
+  }
+
+  /**
    * Pushes a standing circle out of every solid that overlaps the height range (low, high),
    * moving pos. A solid whose top is at or below low (something to step onto) doesn't
    * block. Returns true if anything pushed.

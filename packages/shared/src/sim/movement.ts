@@ -308,3 +308,42 @@ function leaveLadder(c: Character): void {
   c.ladder = -1;
   c.vy = 0;
 }
+
+/**
+ * Pushes overlapping living bodies apart, half each, then out of any wall that put them
+ * in. Characters are few, so every pair is checked.
+ */
+export function separateCharacters(characters: readonly Character[], world: CollisionWorld): void {
+  const r2 = MOVEMENT.radius * 2;
+  for (let i = 0; i < characters.length; i++) {
+    const a = characters[i]!;
+    if (a.health.dead) continue;
+    for (let j = i + 1; j < characters.length; j++) {
+      const b = characters[j]!;
+      if (b.health.dead || a.y >= b.y + b.height || b.y >= a.y + a.height) continue;
+      let dx = b.x - a.x;
+      let dz = b.z - a.z;
+      const d = Math.hypot(dx, dz);
+      if (d >= r2) continue;
+      if (d < 1e-6) {
+        dx = 1;
+        dz = 0;
+      } else {
+        dx /= d;
+        dz /= d;
+      }
+      const push = (r2 - d) / 2;
+      shove(a, -dx * push, -dz * push, world);
+      shove(b, dx * push, dz * push, world);
+    }
+  }
+}
+
+function shove(c: Character, dx: number, dz: number, world: CollisionWorld): void {
+  pos.x = c.x + dx;
+  pos.z = c.z + dz;
+  world.pushOut(pos, MOVEMENT.radius, c.y + MOVEMENT.stepUp, c.y + c.height);
+  const t = world.terrain;
+  c.x = Math.max(t.minX + MOVEMENT.radius, Math.min(t.maxX - MOVEMENT.radius, pos.x));
+  c.z = Math.max(t.minZ + MOVEMENT.radius, Math.min(t.maxZ - MOVEMENT.radius, pos.z));
+}
