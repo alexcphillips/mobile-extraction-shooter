@@ -29,8 +29,8 @@ interface MoveTouch {
  * dragging it on up into the sprint zone locks sprinting, so the thumb can let go. Pulling
  * the stick back, tapping the left half, aiming, firing or crouching unlocks it.
  *
- * Desktop: WASD, Shift sprint, Space jump, C crouch, F fire, Q aim, R reload, E use, 1–4
- * quick slots, and mouse drag to look.
+ * Desktop: WASD, Shift sprint, Space jump, C crouch, F fire, Q aim, R reload, E use, I or
+ * Tab the bag, 1–4 quick slots, and mouse drag to look.
  */
 export class Controls {
   /** Move input, -1..1 per axis; y is forward. */
@@ -46,6 +46,8 @@ export class Controls {
   /** Presses, each true for the one tick after its button went down. */
   reload = false;
   interact = false;
+  /** The bag button: opens the inventory. */
+  bag = false;
   /** The quick slot pressed this tick (0–3), or -1. */
   quickSlot = -1;
   /** Look speed multiplier from aim assist, set by the game while the crosshair is on an enemy. */
@@ -67,6 +69,7 @@ export class Controls {
   private touchFire = false;
   private pressedReload = false;
   private pressedInteract = false;
+  private pressedBag = false;
   private pressedQuick = -1;
   private readonly keys = new Set<string>();
 
@@ -94,8 +97,9 @@ export class Controls {
     this.fire = this.touchFire || k.has('KeyF');
     this.reload = this.pressedReload;
     this.interact = this.pressedInteract;
+    this.bag = this.pressedBag;
     this.quickSlot = this.pressedQuick;
-    this.pressedReload = this.pressedInteract = false;
+    this.pressedReload = this.pressedInteract = this.pressedBag = false;
     this.pressedQuick = -1;
 
     const kx = (k.has('KeyD') ? 1 : 0) - (k.has('KeyA') ? 1 : 0);
@@ -184,6 +188,10 @@ export class Controls {
         this.pressedInteract = true;
         held(() => {});
         break;
+      case 'bag':
+        this.pressedBag = true;
+        held(() => {});
+        break;
       default:
         this.pressedQuick = QUICK_SLOTS.indexOf(id);
         held(() => {});
@@ -206,7 +214,10 @@ export class Controls {
     if (e.repeat) return;
     if (e.code === 'KeyR') this.pressedReload = true;
     else if (e.code === 'KeyE') this.pressedInteract = true;
-    else if (/^Digit[1-4]$/.test(e.code)) this.pressedQuick = Number(e.code.slice(5)) - 1;
+    else if (e.code === 'KeyI' || e.code === 'Tab') {
+      e.preventDefault();
+      this.pressedBag = true;
+    } else if (/^Digit[1-4]$/.test(e.code)) this.pressedQuick = Number(e.code.slice(5)) - 1;
   };
 
   private readonly onDown = (e: PointerEvent): void => {

@@ -64,6 +64,30 @@ export {
 } from './sim/gear';
 export { createItem } from './sim/create-item';
 export {
+  LOOT_REACH,
+  applyInventory,
+  canReach,
+  gridOf,
+  lootContainerById,
+  placeLootContainers,
+  type GridName,
+  type GridRef,
+  type InGrid,
+  type InSlot,
+  type InventoryAction,
+  type InventoryEvent,
+  type ItemRef,
+  type LootContainer,
+  type Owner,
+  type Target,
+} from './sim/looting';
+export {
+  LOOT_CONTAINER_FORMAT,
+  LOOT_CONTAINER_FORMAT_VERSION,
+  lootContainerSchema,
+  type LootContainerDef,
+} from './content/loot-containers';
+export {
   EFFECT_PRIORITY,
   TREATMENT_ORDER,
   needs,

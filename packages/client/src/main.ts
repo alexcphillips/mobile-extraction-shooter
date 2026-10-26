@@ -84,7 +84,8 @@ if (location.pathname === '/bodies') {
     status.textContent = `perf test failed: ${message(err)}`;
   });
 } else {
-  // ?map=<id> picks a map from content/maps, ?spawn=<id> a player spawn in it, ?weapon=<id>
+  // ?map=<id> picks a map from content/maps, ?spawn=<id> a player spawn in it (?at=<x>,<z>
+  // starts you at a point instead), ?weapon=<id>
   // the gun, ?attach=<id>,<id> its attachments, ?nav shows the navigation grid, and ?debug
   // shows markers, zones, patrols and what enemies think, and turns the quick slots into
   // hurt, heal, next optic and next muzzle. ?respawn brings dead enemies back,
@@ -104,10 +105,12 @@ if (location.pathname === '/bodies') {
         byId('hurt'),
         byId('death'),
       ),
+      raid: byId('raid'),
     },
     {
       map: q.get('map') ?? 'test-map',
       spawn: q.get('spawn'),
+      at: parseAt(q.get('at')),
       weapon: q.get('weapon') ?? 'assault-rifle',
       attachments: q.get('attach')?.split(',').filter(Boolean) ?? [],
       debug: q.has('debug'),
@@ -119,4 +122,12 @@ if (location.pathname === '/bodies') {
       note: standalone ? 'standalone' : 'browser',
     },
   ).catch((err: unknown) => (status.textContent = `map failed: ${message(err)}`));
+}
+
+/** "x,z" as two numbers, or null. */
+function parseAt(s: string | null): [number, number] | null {
+  const [x, z] = (s ?? '').split(',').map(Number);
+  return x !== undefined && z !== undefined && Number.isFinite(x) && Number.isFinite(z)
+    ? [x, z]
+    : null;
 }

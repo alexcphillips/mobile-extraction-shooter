@@ -3,6 +3,7 @@ import type { AiState } from './ai';
 import type { CollisionWorld } from '../world/collision-world';
 import { createGear, type Gear } from './gear';
 import { createHealth, type DamageEvent, type DeathEvent, type Health } from './health';
+import type { InventoryAction, InventoryEvent, LootContainer } from './looting';
 import { MOVEMENT } from './movement';
 import type { ShotEvent } from './weapons';
 
@@ -49,7 +50,7 @@ export interface Character {
 export type Entity = Character;
 
 /** Things that happened during the last tick, for effects and the HUD. */
-export type SimEvent = ShotEvent | DamageEvent | DeathEvent;
+export type SimEvent = ShotEvent | DamageEvent | DeathEvent | InventoryEvent;
 
 /**
  * Everything that changes during a raid. Plain JSON-safe data: no classes, maps or typed
@@ -61,6 +62,8 @@ export interface SimState {
   rng: Rng;
   nextId: EntityId;
   entities: Entity[];
+  /** The raid's desks, cabinets and crates. Dead bodies are looted through their gear. */
+  loot: LootContainer[];
   /** What happened during the last tick; cleared at the start of each. */
   events: SimEvent[];
 }
@@ -84,6 +87,8 @@ export interface PlayerInput {
   aim: boolean;
   /** Start a reload: a press, true for one tick. */
   reload: boolean;
+  /** Inventory actions to apply at the start of the tick, in order. */
+  inventory?: readonly InventoryAction[];
 }
 
 /**
@@ -93,7 +98,7 @@ export interface PlayerInput {
 export type TickInputs = Readonly<Partial<Record<EntityId, PlayerInput>>>;
 
 export function createState(seed: number): SimState {
-  return { tick: 0, rng: createRng(seed), nextId: 1, entities: [], events: [] };
+  return { tick: 0, rng: createRng(seed), nextId: 1, entities: [], loot: [], events: [] };
 }
 
 /**

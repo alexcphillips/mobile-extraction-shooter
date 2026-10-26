@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   checkDoorKeys,
   checkEnemySpawns,
+  checkLootContainers,
   loadEnemies,
   loadItems,
   loadMap,
@@ -19,6 +20,7 @@ describe('content', () => {
     expect(new Set(map.markers.map((m) => m.id)).size).toBe(map.markers.length);
     expect(() => checkEnemySpawns(map)).not.toThrow();
     expect(() => checkDoorKeys(map)).not.toThrow();
+    expect(() => checkLootContainers(map)).not.toThrow();
   });
 
   it('enemy types and loadouts load and their references are sound', () => {

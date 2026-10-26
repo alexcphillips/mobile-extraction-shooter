@@ -220,10 +220,12 @@ export function dropAt(
   return true;
 }
 
-/** Turns an item where it is, if it still fits there. */
+/** Turns an item where it is, if it still fits there. A square item doesn't turn. */
 export function rotateAt(items: ItemDb, grid: Grid, index: number): boolean {
   const g = grid.items[index];
-  return !!g && dropAt(items, grid, index, grid, g.x, g.y, !g.rotated);
+  if (!g) return false;
+  const [w, h] = itemDef(items, g.item.item).size;
+  return w !== h && dropAt(items, grid, index, grid, g.x, g.y, !g.rotated);
 }
 
 /**

@@ -244,6 +244,8 @@ body {
   box-shadow: inset 0 0 80px 20px rgb(200 0 0 / 0.7);
   opacity: 0;
   pointer-events: none;
+  /* Over the raid screen too, so you see you're being shot while looting. */
+  z-index: 2;
 }
 
 #hurt.flash {
@@ -391,6 +393,10 @@ body {
   border-color: rgb(255 255 255 / 0.6);
   background: rgb(150 30 30 / 0.45);
   font-size: 13px;
+}
+
+.control.idle {
+  opacity: 0.5;
 }
 
 .control.active {
@@ -586,6 +592,261 @@ body:has(#controls.editing) :is(#hud, #presets, #settings-button, #vitals, #ammo
 
 .row {
   margin: 4px 0 8px;
+}
+
+/* The raid screen: tabs, then the inventory's three columns (your gear, your grids, what
+   you're looting) over a bar about the selected item. The game keeps running behind it. */
+#raid {
+  position: fixed;
+  inset: 0;
+}
+
+#raid[hidden] {
+  display: none;
+}
+
+/* While it's open, the HUD goes, except the health bar, which sits in the tab bar's gap. */
+body:has(#raid:not([hidden])) :is(#hud, #ammo, #crosshair, #controls, #settings-button) {
+  display: none;
+}
+
+body:has(#raid:not([hidden])) #vitals {
+  z-index: 1;
+}
+
+.raid {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+  padding: max(6px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(6px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  background: rgb(22 27 31 / 0.94);
+  color: #e8ecef;
+  font:
+    13px/1.3 system-ui,
+    -apple-system,
+    sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.raid button {
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: #2c343b;
+  color: inherit;
+  font: inherit;
+}
+
+.raid button.active,
+.raid button.primary {
+  background: #e3a33a;
+  color: #000;
+}
+
+.raid-tabs {
+  display: flex;
+  gap: 6px;
+  padding-bottom: 6px;
+}
+
+.raid-spacer {
+  flex: 1;
+}
+
+.raid-empty {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  color: #9aa6b0;
+}
+
+.raid-note {
+  margin: 4px 0;
+  color: #9aa6b0;
+}
+
+.inv {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.inv-cols {
+  display: flex;
+  flex: 1;
+  gap: 12px;
+  min-height: 0;
+}
+
+/* Each column scrolls on its own; dragging an item doesn't scroll (touch-action below). */
+.inv-col {
+  flex: none;
+  min-height: 0;
+  overflow-y: auto;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.inv-loot {
+  flex: 1;
+  min-width: 0;
+}
+
+.inv h2,
+.inv h3 {
+  margin: 2px 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9aa6b0;
+}
+
+.inv-section {
+  margin-bottom: 8px;
+}
+
+.inv-slots {
+  display: grid;
+  grid-template-columns: repeat(2, calc(var(--cell) * 2.2));
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.inv-slot {
+  position: relative;
+  height: calc(var(--cell) * 1.5);
+  border-radius: 4px;
+  background: #2a3238;
+}
+
+.inv-slot.wide {
+  grid-column: span 2;
+}
+
+.inv-slot-name {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  font-size: 9px;
+  color: #7f8b95;
+}
+
+.inv-slot.drop-ok {
+  outline: 2px solid #6fbf5a;
+}
+
+.inv-slot.drop-bad {
+  outline: 2px solid #c94a3a;
+}
+
+.inv-slot .inv-item {
+  inset: 0;
+}
+
+.inv-grid {
+  position: relative;
+  background-color: #222a30;
+  background-image:
+    linear-gradient(to right, #343e46 1px, transparent 1px),
+    linear-gradient(to bottom, #343e46 1px, transparent 1px);
+  background-size: var(--cell) var(--cell);
+  outline: 1px solid #343e46;
+}
+
+.inv-item {
+  position: absolute;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 3px;
+  touch-action: none;
+}
+
+.inv-item.selected {
+  border: 2px solid #e3a33a;
+}
+
+.inv-item.dragging {
+  opacity: 0.3;
+}
+
+.inv-item-name {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  right: 3px;
+  font-size: 9px;
+  line-height: 1.1;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  max-height: calc(100% - 14px);
+}
+
+.inv-item-badge {
+  position: absolute;
+  right: 3px;
+  bottom: 1px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.inv-drop {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid #6fbf5a;
+  background: rgb(111 191 90 / 0.25);
+  pointer-events: none;
+}
+
+.inv-drop.bad {
+  border-color: #c94a3a;
+  background: rgb(201 74 58 / 0.25);
+}
+
+.inv-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  box-sizing: border-box;
+  padding: 2px 3px;
+  border: 2px solid #e3a33a;
+  border-radius: 3px;
+  opacity: 0.85;
+  color: #e8ecef;
+  font:
+    9px/1.1 system-ui,
+    -apple-system,
+    sans-serif;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.inv-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding-top: 6px;
+  border-top: 1px solid #2c343b;
+}
+
+.inv-bar-name {
+  font-weight: 600;
+}
+
+.inv-bar-info,
+.inv-hint {
+  color: #9aa6b0;
+  font-size: 12px;
 }
 
 /* Landscape only: on a phone held upright, cover everything (the game pauses too). */

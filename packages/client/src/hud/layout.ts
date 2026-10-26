@@ -5,6 +5,7 @@ export type ControlId =
   | 'aim'
   | 'reload'
   | 'interact'
+  | 'bag'
   | 'jump'
   | 'crouch'
   | 'quick1'
@@ -32,6 +33,7 @@ export const CONTROLS: readonly ControlDef[] = [
   { id: 'aim', label: 'aim', size: 62, x: 0.71, y: 0.82 },
   { id: 'reload', label: 'reload', size: 52, x: 0.71, y: 0.52 },
   { id: 'interact', label: 'use', size: 56, x: 0.6, y: 0.66 },
+  { id: 'bag', label: 'bag', size: 50, x: 0.93, y: 0.2 },
   { id: 'jump', label: 'jump', size: 60, x: 0.93, y: 0.46 },
   { id: 'crouch', label: 'crouch', size: 60, x: 0.93, y: 0.82 },
   { id: 'quick1', label: '1', size: 46, x: 0.34, y: 0.9 },

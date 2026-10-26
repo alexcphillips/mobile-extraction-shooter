@@ -3,6 +3,7 @@ import type { NavGrid } from '../nav/nav-grid';
 import type { CollisionWorld } from '../world/collision-world';
 import { updateAi } from './ai';
 import { applyFall, bleed } from './health';
+import { applyInventory } from './looting';
 import { moveCharacter, separateCharacters } from './movement';
 import type { SimState, TickInputs } from './state';
 import { updateWeapon } from './weapons';
@@ -13,7 +14,8 @@ import { updateWeapon } from './weapons';
  * state for interpolation copy the few fields they draw. state.events lists what happened.
  *
  * Enemies think at the end, from this tick's positions and events, and act on it next
- * tick. Without a nav grid they don't think, and stand still.
+ * tick. Without a nav grid they don't think, and stand still. Inventory actions come
+ * first, so the rest of the tick sees what they changed.
  */
 export function step(
   state: SimState,
@@ -23,6 +25,13 @@ export function step(
   nav?: NavGrid,
 ): void {
   state.events.length = 0;
+  for (const e of state.entities) {
+    const actions = inputs[e.id]?.inventory;
+    if (!actions) continue;
+    for (const a of actions) {
+      state.events.push({ type: 'inventory', by: e.id, ok: applyInventory(state, e, items, a) });
+    }
+  }
   // Everyone moves, then everyone shoots, so shots see this tick's positions.
   for (const e of state.entities) {
     const input = e.health.dead ? undefined : (inputs[e.id] ?? e.ai?.input);

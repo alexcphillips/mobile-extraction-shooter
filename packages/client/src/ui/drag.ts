@@ -1,0 +1,227 @@
+import type { GearSlot, Grid, GridRef, ItemRef, Owner, Target } from '@mes/shared';
+
+/**
+ * Something items can be dropped on. Its element has a data-drop attribute describing it,
+ * which the host turns into this.
+ */
+export type DropZone =
+  { kind: 'grid'; ref: GridRef; grid: Grid } | { kind: 'slot'; owner: Owner; slot: GearSlot };
+
+/** The item a pointer went down on. */
+export interface DragSource {
+  ref: ItemRef;
+  /** Its size unrotated, and whether it's turned now. */
+  w: number;
+  h: number;
+  rotated: boolean;
+  /** The cell it was grabbed by, from its top-left as it lies. */
+  grabX: number;
+  grabY: number;
+  colour: string;
+  label: string;
+  el: HTMLElement;
+}
+
+export interface DragHost {
+  /** Cell size in CSS pixels. */
+  readonly cell: number;
+  /** The zone an element with a data-drop attribute is, if it can be reached. */
+  zoneAt: (el: HTMLElement) => DropZone | null;
+  /** Whether the item may drop on a zone there (x, y: the top-left cell for a grid). */
+  canDrop: (src: DragSource, zone: DropZone, x: number, y: number, rotated: boolean) => boolean;
+  drop: (src: DragSource, to: Target) => void;
+  tap: (src: DragSource) => void;
+}
+
+/** How far a pointer moves before a press becomes a drag, in CSS pixels. */
+const SLOP = 8;
+
+/**
+ * Drag and drop for inventory items, in plain DOM so a drag never re-renders React. A
+ * press that moves becomes a drag with a ghost under the finger; one that doesn't is a
+ * tap. While dragging, a second finger (or R) turns the item.
+ */
+export class DragController {
+  private src: DragSource | null = null;
+  private pointer = -1;
+  private startX = 0;
+  private startY = 0;
+  private x = 0;
+  private y = 0;
+  private dragging = false;
+  private rotated = false;
+  private ghost: HTMLElement | null = null;
+  private hover: { zone: DropZone; el: HTMLElement; x: number; y: number; ok: boolean } | null =
+    null;
+  private readonly highlight = document.createElement('div');
+
+  constructor(private readonly host: DragHost) {
+    this.highlight.className = 'inv-drop';
+  }
+
+  /** Call from an item's pointerdown. */
+  down(e: PointerEvent, src: DragSource): void {
+    if (this.src) {
+      // A second finger while dragging turns the item.
+      if (this.dragging) this.rotate();
+      return;
+    }
+    if (e.button > 0) return;
+    e.preventDefault();
+    this.src = src;
+    this.pointer = e.pointerId;
+    this.startX = this.x = e.clientX;
+    this.startY = this.y = e.clientY;
+    this.rotated = src.rotated;
+    window.addEventListener('pointermove', this.onMove);
+    window.addEventListener('pointerup', this.onUp);
+    window.addEventListener('pointercancel', this.onCancel);
+    window.addEventListener('pointerdown', this.onOtherDown, true);
+    window.addEventListener('keydown', this.onKey);
+  }
+
+  /** Stops any drag, without dropping. */
+  cancel(): void {
+    this.end();
+  }
+
+  private readonly onMove = (e: PointerEvent): void => {
+    if (e.pointerId !== this.pointer || !this.src) return;
+    this.x = e.clientX;
+    this.y = e.clientY;
+    if (!this.dragging) {
+      if (Math.hypot(this.x - this.startX, this.y - this.startY) < SLOP) return;
+      this.start();
+    }
+    this.update();
+  };
+
+  private readonly onUp = (e: PointerEvent): void => {
+    if (e.pointerId !== this.pointer || !this.src) return;
+    const src = this.src;
+    const hover = this.hover;
+    const dragging = this.dragging;
+    const rotated = this.rotated;
+    this.end();
+    if (!dragging) {
+      this.host.tap(src);
+    } else if (hover?.ok) {
+      const z = hover.zone;
+      this.host.drop(
+        src,
+        z.kind === 'grid'
+          ? { ...z.ref, x: hover.x, y: hover.y, rotated }
+          : { owner: z.owner, slot: z.slot },
+      );
+    }
+  };
+
+  private readonly onCancel = (e: PointerEvent): void => {
+    if (e.pointerId === this.pointer) this.end();
+  };
+
+  private readonly onOtherDown = (e: PointerEvent): void => {
+    if (e.pointerId === this.pointer || !this.dragging) return;
+    e.preventDefault();
+    e.stopPropagation();
+    this.rotate();
+  };
+
+  private readonly onKey = (e: KeyboardEvent): void => {
+    if (e.code === 'KeyR' && this.dragging && !e.repeat) this.rotate();
+    else if (e.code === 'Escape') this.end();
+  };
+
+  private start(): void {
+    const src = this.src!;
+    this.dragging = true;
+    src.el.classList.add('dragging');
+    const g = document.createElement('div');
+    g.className = 'inv-ghost';
+    g.style.background = src.colour;
+    g.textContent = src.label;
+    document.body.append(g);
+    this.ghost = g;
+    this.sizeGhost();
+  }
+
+  private rotate(): void {
+    const src = this.src!;
+    if (src.w === src.h) return;
+    this.rotated = !this.rotated;
+    // Hold it by its middle once turned.
+    const [w, h] = this.size();
+    src.grabX = Math.floor(w / 2);
+    src.grabY = Math.floor(h / 2);
+    this.sizeGhost();
+    this.update();
+  }
+
+  private size(): [number, number] {
+    const s = this.src!;
+    return this.rotated ? [s.h, s.w] : [s.w, s.h];
+  }
+
+  private sizeGhost(): void {
+    const [w, h] = this.size();
+    const c = this.host.cell;
+    this.ghost!.style.width = `${w * c}px`;
+    this.ghost!.style.height = `${h * c}px`;
+  }
+
+  private update(): void {
+    const src = this.src!;
+    const c = this.host.cell;
+    const left = this.x - (src.grabX + 0.5) * c;
+    const top = this.y - (src.grabY + 0.5) * c;
+    this.ghost!.style.transform = `translate(${left}px, ${top}px)`;
+
+    const el = document.elementFromPoint(this.x, this.y)?.closest<HTMLElement>('[data-drop]');
+    const zone = el ? this.host.zoneAt(el) : null;
+    this.clearHover();
+    if (!el || !zone) return;
+    let x = 0;
+    let y = 0;
+    if (zone.kind === 'grid') {
+      const r = el.getBoundingClientRect();
+      x = Math.round((left - r.left) / c);
+      y = Math.round((top - r.top) / c);
+    }
+    const ok = this.host.canDrop(src, zone, x, y, this.rotated);
+    this.hover = { zone, el, x, y, ok };
+    if (zone.kind === 'grid') {
+      const [w, h] = this.size();
+      const hl = this.highlight;
+      hl.style.left = `${x * c}px`;
+      hl.style.top = `${y * c}px`;
+      hl.style.width = `${w * c}px`;
+      hl.style.height = `${h * c}px`;
+      hl.classList.toggle('bad', !ok);
+      el.append(hl);
+    } else {
+      el.classList.add(ok ? 'drop-ok' : 'drop-bad');
+    }
+  }
+
+  private clearHover(): void {
+    if (!this.hover) return;
+    this.hover.el.classList.remove('drop-ok', 'drop-bad');
+    this.highlight.remove();
+    this.hover = null;
+  }
+
+  private end(): void {
+    this.clearHover();
+    this.ghost?.remove();
+    this.ghost = null;
+    this.src?.el.classList.remove('dragging');
+    this.src = null;
+    this.pointer = -1;
+    this.dragging = false;
+    window.removeEventListener('pointermove', this.onMove);
+    window.removeEventListener('pointerup', this.onUp);
+    window.removeEventListener('pointercancel', this.onCancel);
+    window.removeEventListener('pointerdown', this.onOtherDown, true);
+    window.removeEventListener('keydown', this.onKey);
+  }
+}

@@ -3,6 +3,7 @@ import {
   ENEMY_FORMAT,
   ITEM_FORMAT,
   LOADOUT_FORMAT,
+  LOOT_CONTAINER_FORMAT,
   MAP_FORMAT,
   PREFAB_FORMAT,
   checkEnemies,
@@ -14,6 +15,7 @@ import {
   type EnemyDef,
   type ItemDb,
   type LoadoutDef,
+  type LootContainerDef,
   type MapFile,
   type PrefabFile,
 } from '@mes/shared';
@@ -41,6 +43,10 @@ const loadoutFiles = import.meta.glob<unknown>('../../../content/loadouts/*.json
   eager: true,
   import: 'default',
 });
+const lootContainerFiles = import.meta.glob<unknown>('../../../content/loot-containers/*.json', {
+  eager: true,
+  import: 'default',
+});
 
 /** Loads every file of a kind by id, checking each one's id matches its file name. */
 function loadAll<T extends { id: string }>(
@@ -62,6 +68,7 @@ let prefabs: Map<string, PrefabFile> | undefined;
 let items: ItemDb | undefined;
 let maps: Map<string, MapFile> | undefined;
 let enemies: Enemies | undefined;
+let lootContainers: Map<string, LootContainerDef> | undefined;
 
 export function mapIds(): string[] {
   maps ??= loadAll(MAP_FORMAT, mapFiles);
@@ -119,5 +126,22 @@ export function checkDoorKeys(map: CompiledMap): void {
   for (const d of map.doors) {
     if (d.key !== undefined && items.get(d.key)?.type !== 'key')
       throw new Error(`door ${d.id}: "${d.key}" is not a key item`);
+  }
+}
+
+/** Every kind of loot container in content/loot-containers. */
+export function loadLootContainers(): ReadonlyMap<string, LootContainerDef> {
+  lootContainers ??= loadAll(LOOT_CONTAINER_FORMAT, lootContainerFiles);
+  return lootContainers;
+}
+
+/** Checks that a map's loot containers name kinds that exist. */
+export function checkLootContainers(map: CompiledMap): void {
+  const kinds = loadLootContainers();
+  for (const m of map.markers) {
+    if (m.type === 'lootContainer' && !kinds.has(m.container))
+      throw new Error(
+        `loot container ${m.id}: no kind "${m.container}" in content/loot-containers`,
+      );
   }
 }

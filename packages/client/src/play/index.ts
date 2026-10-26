@@ -35,11 +35,22 @@ import {
   heldWeapon,
   createItem,
   equip,
+  placeLootContainers,
+  lootContainerById,
   stow,
+  type InventoryAction,
+  type Owner,
 } from '@mes/shared';
 import * as THREE from 'three';
 import { startLoop } from '../app/loop';
-import { checkEnemySpawns, loadEnemies, loadItems, loadMap } from '../content';
+import {
+  checkEnemySpawns,
+  checkLootContainers,
+  loadEnemies,
+  loadItems,
+  loadLootContainers,
+  loadMap,
+} from '../content';
 import { Stats } from '../debug/stats';
 import type { Hud } from '../hud/hud';
 import type { OpticOverlay } from '../hud/optic';
@@ -54,6 +65,8 @@ import { buildMap } from '../render/map';
 import { AiDebug, buildNavOverlay } from '../render/nav-debug';
 import { Viewmodel } from '../render/viewmodel';
 import { settings } from '../settings';
+import type { RaidScreenHandle } from '../ui/raid';
+import { fillTestLoot, lootableInReach } from './loot';
 
 export interface PlayElements {
   canvas: HTMLCanvasElement;
@@ -61,12 +74,16 @@ export interface PlayElements {
   hud: Hud;
   optic: OpticOverlay;
   vitals: Vitals;
+  /** Where the raid screen (inventory, map, quests) opens. */
+  raid: HTMLElement;
 }
 
 export interface PlayOptions {
   map: string;
   /** A player spawn's id; otherwise one is picked at random. */
   spawn: string | null;
+  /** Debug: start at this x, z instead of a spawn (facing the spawn's way). */
+  at: [number, number] | null;
   /** The player's gun, an item id. */
   weapon: string;
   /** Attachment item ids to put on it. */
@@ -114,6 +131,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const items = loadItems();
   const { types, loadouts } = loadEnemies();
   checkEnemySpawns(map);
+  checkLootContainers(map);
+  const lootKinds = loadLootContainers();
   const world = new CollisionWorld(map.world);
   const navStart = performance.now();
   const nav = new NavGrid(world);
@@ -153,7 +172,16 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const spawn =
     spawns.find((m) => m.id === options.spawn) ?? pick(createRng(Date.now() >>> 0), spawns);
   // Below the spawn's height plus a little, so a spawn under a roof stays inside.
-  const player = spawnCharacter(sim, world, spawn.x, spawn.z, spawn.yaw, spawn.y + 0.5);
+  const [startX, startZ] = options.at ?? [spawn.x, spawn.z];
+  const player = spawnCharacter(
+    sim,
+    world,
+    startX,
+    startZ,
+    spawn.yaw,
+    // ?at stands you on the floor nearest the ground there, not on a roof.
+    options.at ? world.terrain.heightAt(startX, startZ) + 1 : spawn.y + 0.5,
+  );
   // Until stash loadouts (session 13): both guns (the one asked for in hand), armour, a
   // rig and backpack, spare rounds and a few meds.
   for (const id of ['assault-rifle', 'pistol']) {
@@ -172,10 +200,13 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   }
   const held = heldWeapon(player);
   if (held) viewmodel.setGun(held, items);
+  placeLootContainers(sim, map, lootKinds);
+  fillTestLoot(sim, map, items);
   controls.yaw = spawn.yaw;
 
   // Enemies: their type's skill, and its loadout (or the spawn's) rolled.
   const patrols = new Map(map.patrols.map((p) => [p.id, p]));
+  const names = new Map<number, string>();
   const enemies: {
     c: Character;
     body: CharacterBody;
@@ -202,6 +233,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const zones = options.hitZones ? new CapsuleBody(0.45) : null;
     if (zones) scene.add(zones.root);
     enemies.push({ c, body, zones, diedAt: 0, arm });
+    names.set(c.id, type.name);
   }
   const enemyChars = enemies.map((e) => e.c);
   const bodyOf = new Map(enemies.map((e) => [e.c.id, e.body]));
@@ -317,6 +349,64 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     m.visible = true;
   }
 
+  // The raid screen: inventory and looting, map and quests. The raid keeps running while
+  // it's open; you stand still. Its actions are sent with the next tick's input.
+  let screen: RaidScreenHandle | null = null;
+  let opening = false;
+  let screenOpen = false;
+  const pending: InventoryAction[] = [];
+  input.inventory = pending;
+  let inventoryChanged = false;
+  const useButton = el.hud.button('interact');
+  let useLabel = '';
+  const nameOf = (o: Owner): string => {
+    if (o.kind === 'container') {
+      const l = lootContainerById(sim, o.id);
+      return l ? (lootKinds.get(l.def)?.name ?? l.def) : 'Container';
+    }
+    return o.kind === 'body' ? `${names.get(o.id) ?? 'Body'} (dead)` : 'You';
+  };
+  function openScreen(target: Owner | null): void {
+    controls.reset();
+    screenOpen = true;
+    if (screen) {
+      screen.setTarget(target);
+      el.raid.hidden = false;
+      return;
+    }
+    if (opening) return;
+    opening = true;
+    import('../ui/raid')
+      .then((ui) => {
+        opening = false;
+        if (!screenOpen) return;
+        screen = ui.openRaidScreen(
+          el.raid,
+          {
+            sim,
+            player,
+            items,
+            send: (a) => pending.push(a),
+            nameOf,
+            close: closeScreen,
+          },
+          target,
+        );
+      })
+      .catch((err: unknown) => {
+        opening = false;
+        screenOpen = false;
+        console.error('raid screen failed', err);
+      });
+  }
+  function closeScreen(): void {
+    screenOpen = false;
+    pending.length = 0;
+    screen?.hide();
+    // A fresh handle next time, so it opens on the inventory tab.
+    screen = null;
+  }
+
   function tick(): void {
     const t0 = performance.now();
     const now = performance.now();
@@ -341,6 +431,30 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.fire = fire;
     input.aim = controls.aim;
     input.reload = controls.reload;
+
+    // The use button loots what's in reach; the bag button opens your inventory.
+    const lootable = dead || screenOpen ? null : lootableInReach(sim, player, controls.yaw);
+    const label = lootable ? 'loot' : 'use';
+    if (label !== useLabel) {
+      useLabel = label;
+      useButton.textContent = label;
+      useButton.classList.toggle('idle', !lootable);
+    }
+    if (!dead && controls.interact && lootable) {
+      openScreen(
+        lootable.kind === 'container'
+          ? { kind: 'container', id: lootable.c.id }
+          : { kind: 'body', id: lootable.c.id },
+      );
+    } else if (!dead && controls.bag) {
+      if (screenOpen) closeScreen();
+      else openScreen(null);
+    }
+    if (screenOpen) {
+      if (dead) closeScreen();
+      input.moveX = input.moveY = 0;
+      input.sprint = input.jump = input.fire = input.aim = input.reload = false;
+    }
     // Jumping lets go of a ladder, and ends sprint lock with it.
     if (controls.jump && player.mode === 'ladder') controls.unlockSprint();
 
@@ -363,7 +477,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     prev.aim = cur.aim;
     prev.rp = cur.rp;
     prev.ry = cur.ry;
+    inventoryChanged = false;
     step(sim, world, items, inputs, nav);
+    pending.length = 0;
     cur.x = player.x;
     cur.y = eyeHeight(player);
     cur.z = player.z;
@@ -390,8 +506,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         if (e.amount > 0) bodyOf.get(e.target)?.hit();
         if (e.by === player.id && e.target !== player.id) el.vitals.hitMarker(now, false);
         if (e.target === player.id && e.amount > 0) el.vitals.hurtFlash();
-      } else if (e.by === player.id && e.target !== player.id) {
+      } else if (e.type === 'death' && e.by === player.id && e.target !== player.id) {
         el.vitals.hitMarker(now, true);
+      } else if (e.type === 'inventory' && e.by === player.id) {
+        inventoryChanged = true;
       }
     }
 
@@ -405,6 +523,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         e.arm();
       }
     }
+    // Redraw the raid screen when the inventory changed, and now and then for what's in
+    // reach and what enemies took from their dead.
+    if (screen && (inventoryChanged || sim.tick % 10 === 0)) screen.refresh();
     el.vitals.update(player, items, now);
     stats.tick(performance.now() - t0);
   }
