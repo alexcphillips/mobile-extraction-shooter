@@ -15,7 +15,7 @@
     {
       "binding": "DB",
       "database_name": "mes",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "1e21429f-6035-488c-b29a-1b5ee746c1ff",
       "migrations_dir": "migrations",
     },
   ],

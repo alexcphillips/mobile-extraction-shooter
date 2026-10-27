@@ -82,4 +82,4 @@ Turn off Low Power Mode when measuring: iOS caps Safari at 30 fps in it.
 ## Deploying
 `npm run deploy` (wrangler must be logged in: `npx wrangler login`, check with `npx wrangler whoami`). It's one Worker, `mobile-extraction-shooter`, on workers.dev. Only `/api/*` runs Worker code; every other path is served from the built client, falling back to `index.html`.
 
-**Before the first deploy with the server (session 12):** create the D1 database with `npx wrangler d1 create mes` (in `packages/server`) and put the `database_id` it prints into `wrangler.jsonc` in place of the zeros. Deploying applies the migrations remotely first.
+**The database** is D1 `mes` (its id is in `wrangler.jsonc`, created 2026-10-27). Deploying applies any new migrations in `packages/server/migrations` remotely first.
