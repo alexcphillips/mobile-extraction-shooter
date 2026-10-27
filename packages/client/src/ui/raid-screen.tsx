@@ -528,6 +528,8 @@ function badge(item: Item, def: ItemDef): string {
       return (def.uses ?? 1) > 1 ? `×${item.left ?? 0}` : '';
     case 'repair':
       return `${item.left ?? 0}`;
+    case 'key':
+      return def.uses === undefined ? '' : `×${item.left ?? 0}`;
     case 'container': {
       const n = item.grid?.items.length ?? 0;
       return n ? `${n} in` : '';
@@ -549,6 +551,8 @@ function details(items: ItemDb, item: Item, def: ItemDef): string {
       return def.effect === 'heal' ? `${item.left ?? 0} HP left` : `${item.left ?? 1} use(s) left`;
     case 'container':
       return `${def.grid[0]}×${def.grid[1]} inside`;
+    case 'key':
+      return def.uses === undefined ? 'Never wears out' : `${item.left ?? 0}/${def.uses} uses left`;
     default:
       return stackSize(def) > 1 ? `${item.count} / ${stackSize(def)}` : '';
   }

@@ -132,6 +132,7 @@ const defs: ItemDef[] = [
     drawTime: 0.2,
   },
   { ...common('key', [1, 1]), type: 'key' },
+  { ...common('worn-key', [1, 1]), type: 'key', uses: 2 },
   { ...common('notes', [1, 1]), type: 'quest' },
   { ...common('cash', [1, 1]), type: 'loot', stack: 1000 },
   { ...common('watch', [1, 1]), type: 'loot' },

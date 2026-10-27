@@ -5,8 +5,8 @@ import { createWeapon } from './weapons';
 
 /**
  * A new item with the fields its type needs: a gun with a full magazine and no
- * attachments, armour at full durability, an empty rig or backpack, a med or repair kit
- * unused. count is for items that stack (it isn't checked against the stack size).
+ * attachments, armour at full durability, an empty rig or backpack, a med, repair kit
+ * or key unused. count is for items that stack (it isn't checked against the stack size).
  */
 export function createItem(items: ItemDb, id: string, count = 1): Item {
   const def = itemDef(items, id);
@@ -21,6 +21,8 @@ export function createItem(items: ItemDb, id: string, count = 1): Item {
       return { item: id, count: 1, left: def.hp ?? def.uses ?? 1 };
     case 'repair':
       return { item: id, count: 1, left: def.points };
+    case 'key':
+      return def.uses === undefined ? { item: id, count } : { item: id, count, left: def.uses };
     default:
       return { item: id, count };
   }

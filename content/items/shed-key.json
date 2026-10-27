@@ -3,5 +3,6 @@
   "id": "shed-key",
   "name": "Shed key",
   "type": "key",
-  "size": [1, 1]
+  "size": [1, 1],
+  "uses": 10
 }

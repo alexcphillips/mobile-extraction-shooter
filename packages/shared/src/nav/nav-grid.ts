@@ -40,7 +40,10 @@ const NONE = 0xffffffff;
  * several layers where floors stack. Nodes link to neighbours within a step's height, so
  * stairs and slopes connect floors; ladders don't (AI never climbs them).
  *
- * Built once from the collision world, like it: static, and never part of the sim state.
+ * Built once from the collision world, like it, and never part of the sim state. It's
+ * built with every door open: an open door's slab is kept clear of, and a closed doorway
+ * is walked through (enemies open the door on the way). A locked door cuts the links
+ * through its doorway; setDoorLocked follows the sim's door state (see syncDoors).
  */
 export class NavGrid {
   readonly minX: number;
@@ -57,9 +60,19 @@ export class NavGrid {
   readonly links: Uint8Array;
   /** Nodes that can reach each other share a component. Numbered from 0. */
   readonly component: Uint32Array;
-  readonly componentSizes: readonly number[];
+  componentSizes: readonly number[];
+  /** The links through each door's doorway, as node × 8 + direction. */
+  private readonly doorLinks: Int32Array[];
+  private readonly doorLocked: Uint8Array;
+  private componentsStale = false;
 
   constructor(world: CollisionWorld) {
+    const closed: number[] = [];
+    for (let i = 0; i < world.doors.length; i++) {
+      if (world.isDoorOpen(i)) continue;
+      closed.push(i);
+      world.setDoorOpen(i, true);
+    }
     const t = world.terrain;
     const cs = this.cellSize;
     this.minX = t.minX;
@@ -117,8 +130,36 @@ export class NavGrid {
 
     this.links = new Uint8Array(count);
     for (let k = 0; k < count; k++) this.links[k] = this.findLinks(k);
+    for (const i of closed) world.setDoorOpen(i, false);
+    this.doorLinks = world.doors.map((_, i) => this.linksThrough(world, i));
+    this.doorLocked = new Uint8Array(world.doors.length);
 
-    this.component = new Uint32Array(count).fill(NONE);
+    this.component = new Uint32Array(count);
+    this.componentSizes = this.labelComponents();
+  }
+
+  /**
+   * Cuts or restores the links through a door's doorway. The components are out of date
+   * until updateComponents.
+   */
+  setDoorLocked(door: number, locked: boolean): void {
+    if ((this.doorLocked[door] === 1) === locked) return;
+    this.doorLocked[door] = locked ? 1 : 0;
+    for (const l of this.doorLinks[door]!) {
+      const bit = 1 << (l & 7);
+      if (locked) this.links[l >> 3]! &= ~bit;
+      else this.links[l >> 3]! |= bit;
+    }
+    this.componentsStale = true;
+  }
+
+  /**
+   * Numbers the components again after doors were locked or unlocked: about 11 ms for the
+   * test map on the Mac. Does nothing if nothing changed.
+   */
+  updateComponents(): void {
+    if (!this.componentsStale) return;
+    this.componentsStale = false;
     this.componentSizes = this.labelComponents();
   }
 
@@ -233,8 +274,47 @@ export class NavGrid {
     return bits;
   }
 
+  /** The links that cross a door's closed footprint, from nodes near its sill. */
+  private linksThrough(world: CollisionWorld, door: number): Int32Array {
+    const d = world.doors[door]!;
+    const found: number[] = [];
+    const reach = d.width / 2 + this.cellSize * 2;
+    const q0 = Math.max(0, Math.floor((d.x - reach - this.minX) / this.cellSize));
+    const q1 = Math.min(this.cols - 1, Math.floor((d.x + reach - this.minX) / this.cellSize));
+    const r0 = Math.max(0, Math.floor((d.z - reach - this.minZ) / this.cellSize));
+    const r1 = Math.min(this.rows - 1, Math.floor((d.z + reach - this.minZ) / this.cellSize));
+    const c = Math.cos(d.yaw);
+    const s = Math.sin(d.yaw);
+    // Into the door's frame (the inverse of the rotation in collision-world.ts).
+    const localX = (x: number, z: number): number => c * (x - d.x) - s * (z - d.z);
+    const localZ = (x: number, z: number): number => s * (x - d.x) + c * (z - d.z);
+    for (let r = r0; r <= r1; r++) {
+      for (let q = q0; q <= q1; q++) {
+        const col = r * this.cols + q;
+        for (let n = this.columnStart[col]!; n < this.columnStart[col + 1]!; n++) {
+          if (Math.abs(this.heights[n]! - d.y) > NAV.climb) continue;
+          const ax = localX(this.x(q), this.z(r));
+          const az = localZ(this.x(q), this.z(r));
+          for (let dir = 0; dir < 8; dir++) {
+            if (!(this.links[n]! & (1 << dir))) continue;
+            const bx = this.x(q + DIR_Q[dir]!);
+            const bz = this.z(r + DIR_R[dir]!);
+            const lbx = localX(bx, bz);
+            const lbz = localZ(bx, bz);
+            // Crosses the door's plane within its width.
+            if (az > 0 === lbz > 0) continue;
+            const t = az / (az - lbz);
+            if (Math.abs(ax + (lbx - ax) * t) <= d.width / 2) found.push(n * 8 + dir);
+          }
+        }
+      }
+    }
+    return Int32Array.from(found);
+  }
+
   /** Flood-fills the links, so reachability is a lookup. */
   private labelComponents(): number[] {
+    this.component.fill(NONE);
     const sizes: number[] = [];
     const queue = new Uint32Array(this.nodeCount);
     for (let start = 0; start < this.nodeCount; start++) {

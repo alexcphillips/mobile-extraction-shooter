@@ -2,6 +2,7 @@ import { createRng, type Rng } from '../rng';
 import type { AiState } from './ai';
 import type { CollisionWorld } from '../world/collision-world';
 import { createGear, type Gear, type Hand } from './gear';
+import type { DoorEvent, DoorState } from './doors';
 import type { GroundItem } from './ground';
 import { createHealth, type DamageEvent, type DeathEvent, type Health } from './health';
 import type { InventoryAction, InventoryEvent, LootContainer } from './looting';
@@ -63,7 +64,7 @@ export type Entity = Character;
 
 /** Things that happened during the last tick, for effects and the HUD. */
 export type SimEvent =
-  ShotEvent | SwingEvent | DamageEvent | DeathEvent | InventoryEvent | LeaveEvent;
+  ShotEvent | SwingEvent | DamageEvent | DeathEvent | InventoryEvent | LeaveEvent | DoorEvent;
 
 /**
  * Everything that changes during a raid. Plain JSON-safe data: no classes, maps or typed
@@ -79,6 +80,8 @@ export interface SimState {
   loot: LootContainer[];
   /** Items lying loose: rolled at loot spawns, dropped, or with nowhere else to go. */
   ground: GroundItem[];
+  /** Each of the world's doors, by index; filled in by the first step (see syncDoors). */
+  doors: DoorState[];
   /** The timer and extraction points; null outside a raid (tests, the perf scene). */
   raid: RaidState | null;
   /** Players who have left the raid alive, with what they carried. */
@@ -112,6 +115,8 @@ export interface PlayerInput {
   draw?: Hand | null;
   /** Start using a carried med (a press), or stop using one. */
   use?: MedRef | 'cancel' | null;
+  /** Open, close or unlock a door, by its index in world.doors: a press. */
+  door?: number | null;
 }
 
 /**
@@ -128,6 +133,7 @@ export function createState(seed: number): SimState {
     entities: [],
     loot: [],
     ground: [],
+    doors: [],
     raid: null,
     left: [],
     events: [],

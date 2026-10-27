@@ -12,7 +12,7 @@ export interface Item {
   count: number;
   /** Armour: durability left. */
   durability?: number;
-  /** Meds: uses left, or HP left in a heal's pool. Repair kits: points left. */
+  /** Meds: uses left, or HP left in a heal's pool. Repair kits: points left. Keys: uses left. */
   left?: number;
   /** Guns: rounds loaded. */
   mag?: number;

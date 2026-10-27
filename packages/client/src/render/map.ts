@@ -5,10 +5,22 @@ import { bakedMaterial, shadedMaterial } from './material';
 
 const CHUNK = 32;
 
+/** How long a door's swing takes to draw, in seconds. The sim snaps it at once. */
+const SWING = 0.2;
+
+/** A door's pivot at its hinge, and how far open it's drawn (0 to 1). */
+interface DoorView {
+  pivot: THREE.Object3D;
+  yaw: number;
+  /** +1 or −1: which way opening turns it. */
+  turn: number;
+  shown: number;
+}
+
 export interface MapView {
   root: THREE.Group;
-  /** Each door turns about its hinge; rotate it to open (session 11c). */
-  doors: Map<string, THREE.Object3D>;
+  /** By the sim's door index (the order of map.doors). */
+  doors: DoorView[];
 }
 
 /**
@@ -23,12 +35,12 @@ export function buildMap(map: CompiledMap): MapView {
   const shaded = shadedMaterial();
   for (const group of map.instanced) root.add(buildInstanced(group, shaded));
 
-  const doors = new Map<string, THREE.Object3D>();
-  for (const door of map.doors) {
-    const object = buildDoor(door, shaded);
-    doors.set(door.id, object);
-    root.add(object);
-  }
+  const doors = map.doors.map((door) => {
+    const pivot = buildDoor(door, shaded);
+    root.add(pivot);
+    const turn = door.hinge === 'left' ? -Math.PI / 2 : Math.PI / 2;
+    return { pivot, yaw: door.yaw, turn, shown: door.open ? 1 : 0 };
+  });
 
   if (map.water) {
     const t = map.world.terrain;
@@ -104,6 +116,21 @@ function buildInstanced(group: InstancedGroup, material: THREE.Material): THREE.
   mesh.matrixAutoUpdate = false;
   mesh.name = group.prefab;
   return mesh;
+}
+
+/** Swings each drawn door towards the sim's open or closed, over SWING seconds. */
+export function updateDoors(view: MapView, open: readonly { open: boolean }[], dt: number): void {
+  for (let i = 0; i < view.doors.length; i++) {
+    const d = view.doors[i]!;
+    const target = open[i]?.open ? 1 : 0;
+    if (d.shown === target) continue;
+    const step = dt / SWING;
+    d.shown =
+      target > d.shown ? Math.min(target, d.shown + step) : Math.max(target, d.shown - step);
+    // Eased out, so it slows into the wall.
+    const t = 1 - (1 - d.shown) * (1 - d.shown);
+    d.pivot.rotation.y = d.yaw + d.turn * t;
+  }
 }
 
 /** A pivot at the hinge holding the door panel. Seen from +z, a left hinge is at −x. */

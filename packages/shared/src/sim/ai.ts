@@ -5,6 +5,7 @@ import { findPath } from '../nav/path';
 import { chance, nextFloat, nextRange } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import type { CollisionWorld } from '../world/collision-world';
+import { openDoorAhead } from './doors';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import { MOVEMENT } from './movement';
 import {
@@ -446,8 +447,8 @@ let coversLeft = 0;
 
 /**
  * Every enemy perceives (sight and footsteps every few ticks, shots and hits every tick,
- * from this tick's events) and decides its input for the next tick. Runs at the end of
- * the tick, after everything has moved and fired.
+ * from this tick's events) and decides its input for the next tick, opening a door in its
+ * way straight away. Runs at the end of the tick, after everything has moved and fired.
  */
 export function updateAi(
   state: SimState,
@@ -470,6 +471,10 @@ export function updateAi(
     }
     hearEvents(state, c, ai);
     behave(state, c, ai, world, items, nav);
+    // A closed door on the way to the next waypoint opens as it gets there.
+    const i = ai.pathIndex * 3;
+    if (ai.hasGoal && i < ai.path.length && (input.moveX !== 0 || input.moveY !== 0))
+      openDoorAhead(state, world, items, c, ai.path[i]!, ai.path[i + 2]!);
   }
 }
 

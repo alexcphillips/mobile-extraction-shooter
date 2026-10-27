@@ -2,6 +2,7 @@ import type { ItemDb } from '../content/items';
 import type { NavGrid } from '../nav/nav-grid';
 import type { CollisionWorld } from '../world/collision-world';
 import { updateAi } from './ai';
+import { syncDoors, useDoor } from './doors';
 import { applyFall, bleed } from './health';
 import { TICK_SECONDS } from '../tick';
 import { switchHand } from './gear';
@@ -19,8 +20,9 @@ import { updateWeapon } from './weapons';
  * state for interpolation copy the few fields they draw. state.events lists what happened.
  *
  * Enemies think at the end, from this tick's positions and events, and act on it next
- * tick. Without a nav grid they don't think, and stand still. Inventory actions come
- * first, so the rest of the tick sees what they changed; then switching hands and meds.
+ * tick. Without a nav grid they don't think, and stand still. The world and nav grid
+ * follow the state's doors first. Inventory actions come first, so the rest of the tick
+ * sees what they changed; then doors, switching hands and meds.
  * Last, the raid: extracting, and the timer running out.
  */
 export function step(
@@ -31,6 +33,7 @@ export function step(
   nav?: NavGrid,
 ): void {
   state.events.length = 0;
+  syncDoors(state, world, nav);
   for (const e of state.entities) {
     const actions = inputs[e.id]?.inventory;
     if (!actions) continue;
@@ -41,6 +44,10 @@ export function step(
         ok: applyInventory(state, e, items, a, world),
       });
     }
+  }
+  for (const e of state.entities) {
+    const door = inputs[e.id]?.door;
+    if (door != null) useDoor(state, world, items, e, door);
   }
   // Switching hands and using meds before moving, which is slower while using one.
   for (const e of state.entities) {

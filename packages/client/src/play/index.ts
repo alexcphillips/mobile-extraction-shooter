@@ -48,6 +48,9 @@ import {
   startRaid,
   itemDef,
   type LeaveReason,
+  findKey,
+  keyName,
+  syncDoors,
 } from '@mes/shared';
 import * as THREE from 'three';
 import { startLoop } from '../app/loop';
@@ -76,7 +79,7 @@ import { CharacterBody, CharacterRig } from '../render/character-body';
 import { Effects } from '../render/effects';
 import { buildExtractions } from '../render/extractions';
 import { GroundItems } from '../render/ground-items';
-import { buildMap } from '../render/map';
+import { buildMap, updateDoors } from '../render/map';
 import { AiDebug, buildNavOverlay } from '../render/nav-debug';
 import { Viewmodel } from '../render/viewmodel';
 import { settings } from '../settings';
@@ -185,7 +188,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const camera = new THREE.PerspectiveCamera(FOV, 1, 0.05, fogFar);
   camera.rotation.order = 'YXZ';
 
-  scene.add(buildMap(map).root);
+  const mapView = buildMap(map);
+  scene.add(mapView.root);
   scene.add(buildExtractions(map));
   const groundItems = new GroundItems(items);
   scene.add(groundItems.root);
@@ -236,6 +240,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   fillLootContainers(sim, map, items, lootTables);
   rollLootSpawns(sim, map, items, lootTables);
   startRaid(sim, map, options.duration ?? raid.duration);
+  // Locked doors cut the nav grid now, not in the first frame.
+  syncDoors(sim, world, nav);
   controls.yaw = spawn.yaw;
 
   // Enemies: their type's skill, and its loadout (or the spawn's) rolled.
@@ -525,18 +531,38 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     picked = null;
     if (controls.healPick && !dead) hands.showPicker(player, items);
 
-    // The use button takes the item on the ground near the crosshair, or loots what's in
-    // reach; the bag button opens your inventory.
+    // The use button takes the item on the ground near the crosshair, opens, closes or
+    // unlocks a door, or loots what's in reach; the bag button opens your inventory.
     const lootable =
-      dead || screenOpen ? null : lootableInReach(sim, player, controls.yaw, controls.pitch);
-    const label = lootable ? (lootable.kind === 'ground' ? 'take' : 'loot') : 'use';
+      dead || screenOpen ? null : lootableInReach(sim, world, player, controls.yaw, controls.pitch);
+    // A locked door names its key under the crosshair, and unlocks if you carry it.
+    const doorIndex = lootable?.kind === 'door' ? lootable.index : -1;
+    const door = doorIndex >= 0 ? sim.doors[doorIndex]! : null;
+    const doorKey = door?.locked ? keyName(items, world, doorIndex) : null;
+    const hasKey = !!door?.locked && !!findKey(player.gear, world.doors[doorIndex]!.key!);
+    const label = !lootable
+      ? 'use'
+      : door
+        ? door.locked
+          ? hasKey
+            ? 'unlock'
+            : 'locked'
+          : door.open
+            ? 'close'
+            : 'open'
+        : lootable.kind === 'ground'
+          ? 'take'
+          : 'loot';
     if (label !== useLabel) {
       useLabel = label;
       useButton.textContent = label;
       useButton.classList.toggle('idle', !lootable);
     }
     let taking: string | null = null;
-    if (!dead && controls.interact && lootable?.kind === 'ground') {
+    input.door = null;
+    if (!dead && controls.interact && lootable?.kind === 'door') {
+      input.door = lootable.index;
+    } else if (!dead && controls.interact && lootable?.kind === 'ground') {
       // Picked up next tick: into an empty gear slot it fits, else into what you carry.
       const id = lootable.g.item.item;
       pending.push({
@@ -620,6 +646,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       } else if (e.type === 'leave' && e.by === player.id) {
         const at = sim.raid?.extractions.find((p) => p.id === e.at);
         endRaid(e.how, at ? `at ${at.name}` : 'Time ran out', now);
+      } else if (e.type === 'door' && e.by === player.id && e.result === 'blocked') {
+        el.raidHud.warn('Someone’s in the doorway', now);
       } else if (e.type === 'inventory' && e.by === player.id) {
         inventoryChanged = true;
         if (taking && !e.ok) el.raidHud.warn(`No room for ${taking}`, now);
@@ -649,7 +677,16 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // one up this tick may have moved the rest along the list.
     const onGround = lootable?.kind === 'ground' && sim.ground[lootable.index] === lootable.g;
     groundItems.update(sim.ground, onGround ? lootable.index : -1);
-    el.raidHud.setPrompt(onGround ? groundLabel(lootable.g.item) : '', now);
+    el.raidHud.setPrompt(
+      onGround
+        ? groundLabel(lootable.g.item)
+        : doorKey
+          ? hasKey
+            ? `Unlock with ${doorKey}`
+            : `Locked · needs ${doorKey}`
+          : '',
+      now,
+    );
     hands.update(player, items);
     if (ended && resultsAt && now >= resultsAt) {
       resultsAt = 0;
@@ -737,6 +774,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       e.zones?.update(e.c, items);
     }
     aiDebug?.update(enemyChars);
+    updateDoors(mapView, sim.doors, dtMs / 1000);
     if (aimMarker) {
       const yaw = player.yaw + player.recoilYaw;
       const pitch = player.pitch + player.recoilPitch;

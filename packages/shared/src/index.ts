@@ -17,6 +17,7 @@ export {
   CollisionWorld,
   createRayHit,
   type BoxDef,
+  type DoorDef,
   type GroundHit,
   type Ladder,
   type LadderDef,
@@ -40,6 +41,18 @@ export {
   type TickInputs,
 } from './sim/state';
 export { MOVEMENT, moveCharacter, separateCharacters } from './sim/movement';
+export {
+  DOOR,
+  createDoors,
+  doorInReach,
+  findKey,
+  keyName,
+  syncDoors,
+  useDoor,
+  type DoorEvent,
+  type DoorResult,
+  type DoorState,
+} from './sim/doors';
 export {
   AI,
   DEFAULT_SKILL,

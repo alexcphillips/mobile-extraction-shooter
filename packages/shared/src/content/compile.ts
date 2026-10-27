@@ -1,4 +1,4 @@
-import type { BoxDef, LadderDef, RampDef, WorldDef } from '../world/collision-world';
+import type { BoxDef, DoorDef, LadderDef, RampDef, WorldDef } from '../world/collision-world';
 import { ContentError } from './format';
 import type { MapFile, MapNode, MapZone, PrefabFile } from './schema';
 
@@ -34,19 +34,9 @@ export interface InstancedGroup {
   placements: { x: number; y: number; z: number; yaw: number }[];
 }
 
-export interface CompiledDoor {
+/** A door, in the same order as world.doors (the sim's door indices). */
+export interface CompiledDoor extends DoorDef {
   id: string;
-  /** Bottom middle of the doorway. */
-  x: number;
-  y: number;
-  z: number;
-  yaw: number;
-  width: number;
-  height: number;
-  thickness: number;
-  hinge: 'left' | 'right';
-  key: string | undefined;
-  open: boolean;
   colour: number;
 }
 
@@ -190,6 +180,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
       boxes,
       ramps,
       ladders,
+      doors: out.doors!,
     },
     shapes: out.shapes!,
     instanced: [...out.groups!.values()],

@@ -227,7 +227,12 @@ const meleeSchema = z.strictObject({
 });
 
 /** Opens the doors that name it. */
-const keySchema = z.strictObject({ ...common, type: z.literal('key') });
+const keySchema = z.strictObject({
+  ...common,
+  type: z.literal('key'),
+  /** Unlocks this many times, then it's gone; left out, it never wears out. */
+  uses: z.int().min(1).optional(),
+});
 
 /** Picked up for a quest. */
 const questSchema = z.strictObject({ ...common, type: z.literal('quest') });

@@ -47,12 +47,33 @@ export interface LadderDef {
   top: number;
 }
 
+/**
+ * A door in a doorway. (x, y, z) is the bottom middle of the doorway, in the middle of the
+ * wall; yaw turns local +z to the side it opens towards. Seen from +z, a left hinge is at
+ * local −x. Closed, it fills the doorway; open, it stands at 90° from its hinge into +z.
+ */
+export interface DoorDef {
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  width: number;
+  height: number;
+  thickness: number;
+  hinge: 'left' | 'right';
+  /** The key item that unlocks it; none means it's never locked. */
+  key: string | undefined;
+  /** How it starts. A door with a key starts locked unless it starts open. */
+  open: boolean;
+}
+
 /** Everything the simulation collides with, as plain data. The map loader produces it. */
 export interface WorldDef {
   terrain: HeightGridDef;
   boxes: readonly BoxDef[];
   ramps: readonly RampDef[];
   ladders: readonly LadderDef[];
+  doors?: readonly DoorDef[];
 }
 
 export interface Ladder extends LadderDef {
@@ -65,7 +86,7 @@ export type RayHitKind = 'none' | 'terrain' | 'solid';
 
 export interface RayHit extends SurfaceHit {
   kind: RayHitKind;
-  /** Solid index for solid hits (boxes first, then ramps), otherwise -1. */
+  /** Solid index for solid hits (boxes first, then ramps, then doors), otherwise -1. */
   index: number;
 }
 
@@ -84,14 +105,22 @@ const STRIDE = 9;
 const GRID_CELL = 4;
 
 /**
- * The static collision world, built once from map data. All queries reuse internal
- * scratch space and allocate nothing.
+ * The collision world, built once from map data. All queries reuse internal scratch space
+ * and allocate nothing. Only doors change: each is a solid with two poses, and
+ * setDoorOpen swaps between them (the sim's door state is the truth; syncDoors copies it
+ * here).
  */
 export class CollisionWorld {
   readonly terrain: HeightGrid;
   readonly ladders: readonly Ladder[];
+  readonly doors: readonly DoorDef[];
   readonly solidCount: number;
+  /** Solid index of the first door: doors come after boxes and ramps. */
+  readonly firstDoor: number;
   private readonly s: Float64Array;
+  /** Each door's solid closed, then open, STRIDE values each. */
+  private readonly doorPoses: Float64Array;
+  private readonly doorOpen: Uint8Array;
   private readonly grid: StaticGrid;
   private readonly found: Uint32Array;
   private readonly walk = new CellWalk();
@@ -99,7 +128,9 @@ export class CollisionWorld {
 
   constructor(def: WorldDef) {
     this.terrain = new HeightGrid(def.terrain);
-    this.solidCount = def.boxes.length + def.ramps.length;
+    this.doors = def.doors ?? [];
+    this.firstDoor = def.boxes.length + def.ramps.length;
+    this.solidCount = this.firstDoor + this.doors.length;
     this.s = new Float64Array(this.solidCount * STRIDE);
     let i = 0;
     for (const b of def.boxes) {
@@ -107,25 +138,60 @@ export class CollisionWorld {
     }
     for (const r of def.ramps)
       this.setSolid(i++, r.x, r.z, r.hx, r.hz, r.yaw, r.bottom, r.low, r.high);
+    this.doorPoses = new Float64Array(this.doors.length * 2 * STRIDE);
+    this.doorOpen = new Uint8Array(this.doors.length);
+    this.doors.forEach((d, k) => {
+      for (const open of [false, true]) {
+        this.setSolid(i, ...doorPose(d, open));
+        this.doorPoses.set(this.s.subarray(i * STRIDE, (i + 1) * STRIDE), (k * 2 + +open) * STRIDE);
+      }
+      this.setDoorOpen(k, d.open);
+      i++;
+    });
 
+    // A door's cell rectangle covers both its poses.
     const rects = new Float64Array(this.solidCount * 4);
     for (let k = 0; k < this.solidCount; k++) {
-      const o = k * STRIDE;
-      const c = Math.abs(this.s[o + 4]!);
-      const sn = Math.abs(this.s[o + 5]!);
-      const hx = this.s[o + 2]!;
-      const hz = this.s[o + 3]!;
-      const ex = c * hx + sn * hz;
-      const ez = sn * hx + c * hz;
-      rects.set(
-        [this.s[o]! - ex, this.s[o + 1]! - ez, this.s[o]! + ex, this.s[o + 1]! + ez],
-        k * 4,
-      );
+      const door = k - this.firstDoor;
+      if (door < 0) rects.set(footprint(this.s, k * STRIDE), k * 4);
+      else {
+        const a = footprint(this.doorPoses, door * 2 * STRIDE);
+        const b = footprint(this.doorPoses, (door * 2 + 1) * STRIDE);
+        rects.set(
+          [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[2], b[2]), Math.max(a[3], b[3])],
+          k * 4,
+        );
+      }
     }
     const t = this.terrain;
     this.grid = new StaticGrid(t.minX, t.minZ, t.maxX - t.minX, t.maxZ - t.minZ, GRID_CELL, rects);
     this.found = new Uint32Array(this.solidCount);
     this.ladders = def.ladders.map((l) => ({ ...l, nx: Math.sin(l.yaw), nz: Math.cos(l.yaw) }));
+  }
+
+  isDoorOpen(door: number): boolean {
+    return this.doorOpen[door] === 1;
+  }
+
+  /** Moves a door's solid to its open or closed pose. */
+  setDoorOpen(door: number, open: boolean): void {
+    this.doorOpen[door] = open ? 1 : 0;
+    const from = (door * 2 + (open ? 1 : 0)) * STRIDE;
+    this.s.set(this.doorPoses.subarray(from, from + STRIDE), (this.firstDoor + door) * STRIDE);
+  }
+
+  /** The door a solid index is, or -1 for any other solid. */
+  doorOf(solid: number): number {
+    return solid >= this.firstDoor ? solid - this.firstDoor : -1;
+  }
+
+  /**
+   * How far (x, z) is from a door's footprint in one of its poses, across the ground: 0
+   * inside it.
+   */
+  doorDistance(door: number, open: boolean, x: number, z: number): number {
+    distanceTo(this.doorPoses, (door * 2 + (open ? 1 : 0)) * STRIDE, x, z);
+    return closestDist;
   }
 
   private setSolid(
@@ -325,18 +391,7 @@ export class CollisionWorld {
 
   /** Is a circle overlapping solid i's footprint? Leaves the closest point in the scratch. */
   private circleOverlaps(i: number, x: number, z: number, radius: number): boolean {
-    const o = i * STRIDE;
-    const px = x - this.s[o]!;
-    const pz = z - this.s[o + 1]!;
-    const c = this.s[o + 4]!;
-    const sn = this.s[o + 5]!;
-    const hx = this.s[o + 2]!;
-    const hz = this.s[o + 3]!;
-    localX = c * px - sn * pz;
-    localZ = sn * px + c * pz;
-    closestX = localX < -hx ? -hx : localX > hx ? hx : localX;
-    closestZ = localZ < -hz ? -hz : localZ > hz ? hz : localZ;
-    closestDist = Math.hypot(localX - closestX, localZ - closestZ);
+    distanceTo(this.s, i * STRIDE, x, z);
     return closestDist < radius;
   }
 
@@ -422,6 +477,60 @@ export class CollisionWorld {
     }
     setHit(hit, distance, nx * c + nz * sn, ny, -nx * sn + nz * c);
   }
+}
+
+/** A door's solid in one pose, as setSolid's arguments after the index. */
+function doorPose(
+  d: DoorDef,
+  open: boolean,
+): [number, number, number, number, number, number, number, number] {
+  const side = d.hinge === 'left' ? -1 : 1;
+  const hw = d.width / 2;
+  const top = d.y + d.height;
+  if (!open) return [d.x, d.z, hw, d.thickness / 2, d.yaw, d.y, top, top];
+  // Turned 90° about the hinge, so the free edge swings towards +z.
+  const c = Math.cos(d.yaw);
+  const s = Math.sin(d.yaw);
+  const hx = d.x + side * hw * c;
+  const hz = d.z - side * hw * s;
+  const yaw = d.yaw + (side * Math.PI) / 2;
+  const lx = -side * hw;
+  return [
+    hx + lx * Math.cos(yaw),
+    hz - lx * Math.sin(yaw),
+    hw,
+    d.thickness / 2,
+    yaw,
+    d.y,
+    top,
+    top,
+  ];
+}
+
+/** A solid's bounding rectangle in x, z: min x, min z, max x, max z. */
+function footprint(s: Float64Array, o: number): [number, number, number, number] {
+  const c = Math.abs(s[o + 4]!);
+  const sn = Math.abs(s[o + 5]!);
+  const hx = s[o + 2]!;
+  const hz = s[o + 3]!;
+  const ex = c * hx + sn * hz;
+  const ez = sn * hx + c * hz;
+  return [s[o]! - ex, s[o + 1]! - ez, s[o]! + ex, s[o + 1]! + ez];
+}
+
+/** The closest point of the solid at s[o] to (x, z), into the scratch below. */
+function distanceTo(s: Float64Array, o: number, x: number, z: number): void {
+  const px = x - s[o]!;
+  const pz = z - s[o + 1]!;
+  const c = s[o + 4]!;
+  const sn = s[o + 5]!;
+  const hx = s[o + 2]!;
+  const hz = s[o + 3]!;
+  localX = c * px - sn * pz;
+  localZ = sn * px + c * pz;
+  closestX = localX < -hx ? -hx : localX > hx ? hx : localX;
+  closestZ = localZ < -hz ? -hz : localZ > hz ? hz : localZ;
+  closestDist = Math.hypot(localX - closestX, localZ - closestZ);
 }
 
 // Scratch outputs, kept outside the class so the hot paths allocate nothing.
