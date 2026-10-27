@@ -50,6 +50,12 @@
       "lootTable": "household"
     },
     { "type": "box", "pos": [0, 0.2, 0], "size": [1.2, 0.75, 1.2], "colour": "furniture" },
-    { "type": "lootSpawn", "id": "table", "pos": [0, 0.95, 0], "lootTable": "household" }
+    {
+      "type": "lootSpawn",
+      "id": "table",
+      "pos": [0, 0.95, 0],
+      "lootTable": "household",
+      "chance": 0.7
+    }
   ]
 }

@@ -192,10 +192,13 @@ const lootContainerSchema = z.strictObject({
   lootTable: idSchema,
 });
 
+/** A spot where one loose item may lie, rolled from its loot table at raid start. */
 const lootSpawnSchema = z.strictObject({
   type: z.literal('lootSpawn'),
   ...marker,
   lootTable: idSchema,
+  /** The chance anything is there, 0 to 1 (1 if left out). */
+  chance: finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1').optional(),
 });
 
 const extractionSchema = z.strictObject({

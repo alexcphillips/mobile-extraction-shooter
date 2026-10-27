@@ -394,8 +394,8 @@ describe('looting', () => {
     expect(countOf(c.gear.pockets, 'brake')).toBe(1);
   });
 
-  it('moves a magazine between guns, stowing what the old one held or refusing', () => {
-    const { c, enemy, body, act } = setup();
+  it('moves a magazine between guns, stowing what the old one held or dropping it', () => {
+    const { state, c, enemy, body, act } = setup();
     equip(c, items, 'primary1', createItem(items, 'rifle'));
     const mine = c.gear.primary1 as WeaponState;
     const theirs = enemy.gear.primary1 as WeaponState;
@@ -408,17 +408,21 @@ describe('looting', () => {
       part: 'big-mag',
     } as const;
     const gun = { owner: self, slot: 'primary1', item: 'rifle' } as const;
-    // Their 20 extra rounds have nowhere to go with everything full.
+    // Their 20 extra rounds have nowhere to go with everything full: they're dropped.
     const full = [c.gear.pockets, c.gear.backpack!.grid];
     for (const g of full) while (addItem(items, g, { item: 'watch', count: 1 }) === 0);
-    expect(act({ type: 'attach', gun, from })).toBe(false);
-    expect(theirs.attachments.magazine).toBe('big-mag');
-    expect(theirs.mag).toBe(50);
-    expect(mine.attachments.magazine).toBeNull();
-    c.gear.backpack!.grid.items.length = 0;
     expect(act({ type: 'attach', gun, from })).toBe(true);
     expect([theirs.mag, mine.mag, mine.attachments.magazine]).toEqual([30, 30, 'big-mag']);
+    expect(state.ground).toMatchObject([{ item: { item: 'round', count: 20 } }]);
+    // And back, with room this time.
+    state.ground.length = 0;
+    mine.mag = 50;
+    c.gear.backpack!.grid.items.length = 0;
+    expect(
+      act({ type: 'attach', gun: from.gun, from: { gun, slot: 'magazine', part: 'big-mag' } }),
+    ).toBe(true);
     expect(countOf(c.gear.backpack!.grid, 'round')).toBe(20);
+    expect(state.ground).toEqual([]);
   });
 
   it('refuses attachments that do not fit, and things that are not attachments', () => {
@@ -445,15 +449,15 @@ describe('looting', () => {
     expect(pack.items).toHaveLength(2);
   });
 
-  it('stows the rounds a smaller magazine hands back, or refuses with no room for them', () => {
-    const { c, act } = setup();
+  it('stows the rounds a smaller magazine hands back, or drops them with no room', () => {
+    const { state, c, act } = setup();
     equip(c, items, 'primary1', createItem(items, 'rifle'));
     const rifle = c.gear.primary1 as WeaponState;
     const gun = { owner: self, slot: 'primary1', item: 'rifle' } as const;
     addItem(items, c.gear.pockets, createItem(items, 'big-mag'));
     act({ type: 'attach', gun, from: { owner: self, grid: 'pockets', index: 0, item: 'big-mag' } });
     rifle.mag = 50;
-    // Everything carried is full: the 20 rounds have nowhere to go.
+    // Everything carried is full: the 20 rounds are dropped at your feet.
     const fill = (grid: typeof c.gear.pockets) => {
       while (addItem(items, grid, { item: 'watch', count: 1 }) === 0);
     };
@@ -461,17 +465,112 @@ describe('looting', () => {
     fill(c.gear.backpack!.grid);
     const off = { type: 'detach', gun, slot: 'magazine', part: 'big-mag' } as const;
     const crate = { owner: { kind: 'container', id: 'crate' }, grid: 'loot' } as const;
-    expect(act({ ...off, to: { ...crate, x: 0, y: 0, rotated: false } })).toBe(false);
-    expect(rifle.attachments.magazine).toBe('big-mag');
-    expect(rifle.mag).toBe(50);
-    expect(c.gear.pockets.items.every((g) => g.item.item === 'watch')).toBe(true);
-    // With room, they go in with what you carry.
-    c.gear.backpack!.grid.items.length = 0;
     rifle.reloading = 1;
     expect(act({ ...off, to: { ...crate, x: 0, y: 0, rotated: false } })).toBe(true);
+    expect(rifle.attachments.magazine).toBeNull();
     expect(rifle.mag).toBe(30);
     expect(rifle.reloading).toBe(0);
-    expect(countOf(c.gear.backpack!.grid, 'round')).toBe(20);
+    expect(c.gear.pockets.items.every((g) => g.item.item === 'watch')).toBe(true);
+    expect(state.ground).toHaveLength(1);
+    const [g] = state.ground;
+    expect(g!.item).toEqual({ item: 'round', count: 20 });
+    expect(Math.hypot(g!.x - c.x, g!.z - c.z)).toBeLessThanOrEqual(0.3);
+    // Taken off into what you carry with no room: the part is dropped too.
+    act({
+      type: 'attach',
+      gun,
+      from: { owner: crate.owner, grid: 'loot', index: 0, item: 'big-mag' },
+    });
+    expect(act({ ...off, to: null })).toBe(true);
+    expect(state.ground.map((g) => g.item.item)).toEqual(['round', 'big-mag']);
+  });
+
+  it('drops items at your feet and picks them up again, within reach', () => {
+    const { state, c, crate, act } = setup();
+    addItem(items, c.gear.pockets, createItem(items, 'bandage'));
+    equip(c, items, 'primary1', createItem(items, 'rifle'));
+    const ground = { kind: 'ground' } as const;
+    // Dropped by double-tap and by drag.
+    expect(
+      act({
+        type: 'quick',
+        from: { owner: self, grid: 'pockets', index: 0, item: 'bandage' },
+        to: ground,
+      }),
+    ).toBe(true);
+    expect(
+      act({
+        type: 'move',
+        from: { owner: self, slot: 'primary1', item: 'rifle' },
+        to: { owner: ground },
+      }),
+    ).toBe(true);
+    expect(c.gear.pockets.items).toEqual([]);
+    expect(heldWeapon(c)).toBeNull();
+    expect(state.ground.map((g) => g.item.item)).toEqual(['bandage', 'rifle']);
+    // Not back onto the ground, and not from out of reach.
+    const rifle = { owner: ground, ground: 1, item: 'rifle' } as const;
+    expect(act({ type: 'quick', from: rifle, to: ground })).toBe(false);
+    c.x = 5;
+    expect(act({ type: 'quick', from: rifle, to: self })).toBe(false);
+    c.x = 0;
+    // Picked up: a gun into an empty gun slot, the rest into what you carry.
+    expect(act({ type: 'quick', from: rifle, to: self })).toBe(true);
+    expect(heldWeapon(c)?.item).toBe('rifle');
+    expect(
+      act({
+        type: 'move',
+        from: { owner: ground, ground: 0, item: 'bandage' },
+        to: { owner: { kind: 'container', id: 'crate' }, grid: 'loot', x: 1, y: 1, rotated: false },
+      }),
+    ).toBe(true);
+    expect(crate.grid.items).toMatchObject([{ x: 1, y: 1, item: { item: 'bandage' } }]);
+    expect(state.ground).toEqual([]);
+  });
+
+  it('drops in front, onto the surface below, when the world is given', () => {
+    const { state, c } = setup();
+    addItem(items, c.gear.pockets, createItem(items, 'bandage'));
+    c.y = 3;
+    const from = { owner: self, grid: 'pockets', index: 0, item: 'bandage' } as const;
+    applyInventory(state, c, items, { type: 'quick', from, to: { kind: 'ground' } }, world);
+    const g = state.ground[0]!;
+    expect(g.y).toBe(0);
+    // In front (yaw 0 faces −z), where you can see it.
+    expect(g.z).toBeLessThan(-0.4);
+    expect(Math.abs(g.x)).toBeLessThanOrEqual(0.15);
+  });
+
+  it('swaps a gear slot with an item on the ground, and leaves a partial stack there', () => {
+    const { state, c, act } = setup();
+    const ground = { kind: 'ground' } as const;
+    equip(c, items, 'primary1', createItem(items, 'rifle'));
+    state.ground.push({ item: createItem(items, 'rifle'), x: 0.5, y: 0, z: 0, yaw: 0 });
+    const mine = c.gear.primary1;
+    const theirs = state.ground[0]!.item;
+    expect(
+      act({
+        type: 'move',
+        from: { owner: ground, ground: 0, item: 'rifle' },
+        to: { owner: self, slot: 'primary1' },
+      }),
+    ).toBe(true);
+    expect(c.gear.primary1).toBe(theirs);
+    expect(state.ground[0]).toMatchObject({ x: 0.5, item: mine });
+    // A stack too big for what you carry: the rest stays on the ground.
+    state.ground.length = 0;
+    const fill = (grid: typeof c.gear.pockets) => {
+      while (addItem(items, grid, { item: 'watch', count: 1 }) === 0);
+    };
+    fill(c.gear.pockets);
+    fill(c.gear.backpack!.grid);
+    c.gear.backpack!.grid.items.pop();
+    state.ground.push({ item: createItem(items, 'round', 150), x: 0, y: 0, z: 0, yaw: 0 });
+    expect(
+      act({ type: 'quick', from: { owner: ground, ground: 0, item: 'round' }, to: self }),
+    ).toBe(true);
+    expect(countOf(c.gear.backpack!.grid, 'round')).toBe(100);
+    expect(state.ground[0]!.item.count).toBe(50);
   });
 
   it('places an empty container at every loot container marker', () => {

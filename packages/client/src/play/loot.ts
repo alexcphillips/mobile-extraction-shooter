@@ -1,22 +1,64 @@
-import { LOOT_REACH, type Character, type LootContainer, type SimState } from '@mes/shared';
+import {
+  LOOT_REACH,
+  eyeHeight,
+  groundInReach,
+  type Character,
+  type GroundItem,
+  type LootContainer,
+  type SimState,
+} from '@mes/shared';
 
-/** Something the use button can loot. */
-export type Lootable = { kind: 'container'; c: LootContainer } | { kind: 'body'; c: Character };
+/** Something the use button can loot, or take from the ground (by its index). */
+export type Lootable =
+  | { kind: 'container'; c: LootContainer }
+  | { kind: 'body'; c: Character }
+  | { kind: 'ground'; g: GroundItem; index: number };
+
+/** How close to the crosshair an item on the ground must be to take it: cos of ~20°. */
+const GROUND_CONE = Math.cos((20 * Math.PI) / 180);
 
 const scratch = {
   container: { kind: 'container', c: null as unknown as LootContainer },
   body: { kind: 'body', c: null as unknown as Character },
+  ground: { kind: 'ground', g: null as unknown as GroundItem, index: -1 },
 };
 
 /**
- * The container or dead body in reach that the player is most nearly facing, or null. One
+ * What the use button acts on: an item on the ground in reach near the crosshair, else
+ * the container or dead body in reach that the player is most nearly facing, or null. One
  * right underfoot counts even behind. The result is reused: copy what you keep.
  */
-export function lootableInReach(sim: SimState, player: Character, yaw: number): Lootable | null {
+export function lootableInReach(
+  sim: SimState,
+  player: Character,
+  yaw: number,
+  pitch: number,
+): Lootable | null {
   const fx = -Math.sin(yaw);
   const fz = -Math.cos(yaw);
   let best = -Infinity;
   let found: Lootable | null = null;
+  // Items on the ground: within a cone around the look, from the eye.
+  const cp = Math.cos(pitch);
+  const lx = fx * cp;
+  const ly = Math.sin(pitch);
+  const lz = fz * cp;
+  const ey = eyeHeight(player);
+  for (let i = 0; i < sim.ground.length; i++) {
+    const g = sim.ground[i]!;
+    if (!groundInReach(player, g)) continue;
+    const dx = g.x - player.x;
+    const dy = g.y - ey;
+    const dz = g.z - player.z;
+    const facing = (dx * lx + dy * ly + dz * lz) / Math.hypot(dx, dy, dz);
+    // Above anything a container or body scores, so aiming at an item takes it.
+    if (facing >= GROUND_CONE && facing + 2 > best) {
+      best = facing + 2;
+      scratch.ground.g = g;
+      scratch.ground.index = i;
+      found = scratch.ground as Lootable;
+    }
+  }
   for (const l of sim.loot) {
     const s = score(player, fx, fz, l.x, l.y, l.z);
     if (s > best) {

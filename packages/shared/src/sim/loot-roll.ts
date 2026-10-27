@@ -3,7 +3,7 @@ import type { EnemyLoot } from '../content/enemies';
 import type { ItemDb } from '../content/items';
 import type { LootTableDef } from '../content/loot-tables';
 import { addItem, type Item } from '../inventory/grid';
-import { byWeight, nextIntIn, type Rng } from '../rng';
+import { byWeight, chance, nextFloat, nextIntIn, type Rng } from '../rng';
 import { createItem } from './create-item';
 import { stow } from './gear';
 import type { Character, SimState } from './state';
@@ -80,5 +80,27 @@ export function rollEnemyLoot(
   const n = nextIntIn(rng, loot.rolls[0], loot.rolls[1]);
   for (let i = 0; i < n; i++) {
     stow(c, items, rollItem(items, table(tables, byWeight(rng, options).id), rng));
+  }
+}
+
+/**
+ * Puts a loose item on the ground at every lootSpawn marker that rolls its chance: one
+ * item from its table (a loose spot ignores the table's rolls), lying at a random turn.
+ */
+export function rollLootSpawns(
+  state: SimState,
+  map: CompiledMap,
+  items: ItemDb,
+  tables: LootTables,
+): void {
+  for (const m of map.markers) {
+    if (m.type !== 'lootSpawn' || !chance(state.rng, m.chance ?? 1)) continue;
+    state.ground.push({
+      item: rollItem(items, table(tables, m.lootTable), state.rng),
+      x: m.x,
+      y: m.y,
+      z: m.z,
+      yaw: nextFloat(state.rng) * Math.PI * 2,
+    });
   }
 }

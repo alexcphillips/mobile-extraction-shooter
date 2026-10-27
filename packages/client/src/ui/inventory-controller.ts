@@ -5,6 +5,7 @@ import {
   fits,
   fitsSlot,
   gridOf,
+  groundInReach,
   isFree,
   itemAt,
   itemDef,
@@ -14,9 +15,11 @@ import {
   type Character,
   type GearSlot,
   type GridName,
+  type GroundItem,
   type Item,
   type ItemDef,
   type ItemRef,
+  type OnGround,
   type Owner,
   type PartRef,
   type Target,
@@ -31,11 +34,13 @@ import {
 import type { RaidContext } from './raid';
 
 const SELF: Owner = { kind: 'self' };
+const GROUND: Owner = { kind: 'ground' };
 const DOUBLE_TAP_MS = 350;
 const GRID_NAMES: readonly GridName[] = ['pockets', 'rig', 'backpack', 'vault', 'loot'];
 
 /** Identifies an item's place, to compare refs. */
 export function refKey(r: ItemRef): string {
+  if ('ground' in r) return JSON.stringify([r.owner, r.ground]);
   return JSON.stringify('slot' in r ? [r.owner, r.slot] : [r.owner, r.grid, r.index]);
 }
 
@@ -89,6 +94,23 @@ export class InventoryController implements DragHost {
   quick(ref: ItemRef): void {
     this.select(null);
     this.ctx.send({ type: 'quick', from: ref, to: this.quickTo(ref) });
+  }
+
+  /** Drops an item at your feet. */
+  toGround(ref: ItemRef): void {
+    this.select(null);
+    this.ctx.send({ type: 'quick', from: ref, to: GROUND });
+  }
+
+  /** The items on the ground within reach, for the ground panel. */
+  nearby(): { ref: OnGround; g: GroundItem }[] {
+    const out: { ref: OnGround; g: GroundItem }[] = [];
+    this.ctx.sim.ground.forEach((g, i) => {
+      if (groundInReach(this.ctx.player, g)) {
+        out.push({ ref: { owner: { kind: 'ground' }, ground: i, item: g.item.item }, g });
+      }
+    });
+    return out;
   }
 
   rotate(ref: ItemRef): void {
@@ -190,6 +212,7 @@ export class InventoryController implements DragHost {
       { owner: Owner; grid: GridName } | { owner: Owner; slot: GearSlot } | PartSlot;
     if ('gun' in desc) return { kind: 'part', gun: desc.gun, slot: desc.slot };
     if ('slot' in desc) return { kind: 'slot', owner: desc.owner, slot: desc.slot };
+    if (desc.owner.kind === 'ground') return { kind: 'ground' };
     const grid = gridOf(this.ctx.sim, this.ctx.player, desc);
     return grid ? { kind: 'grid', ref: desc, grid } : null;
   }
@@ -200,6 +223,7 @@ export class InventoryController implements DragHost {
       // An attachment comes off a gun into a grid, or onto another gun (see gunZone).
       if (!this.partOn(src.ref)) return false;
       if (zone.kind === 'part') return refKey(zone.gun) !== refKey(src.ref.gun);
+      // Not straight to the ground: off into a grid first, then drop it from there.
       if (zone.kind !== 'grid') return false;
       const loose = { item: src.ref.part, count: 1 };
       const w = rotated ? src.h : src.w;
@@ -208,6 +232,7 @@ export class InventoryController implements DragHost {
     }
     const found = this.find(src.ref);
     if (!found) return false;
+    if (zone.kind === 'ground') return !('ground' in src.ref);
     if (zone.kind === 'part') {
       const gun = this.find(zone.gun);
       return (
@@ -242,7 +267,7 @@ export class InventoryController implements DragHost {
         this.redraw();
         return;
       }
-      if ('slot' in to) return;
+      if (!('grid' in to)) return;
       this.ctx.send({ type: 'detach', gun: ref.gun, slot: ref.slot, part: ref.part, to });
       this.redraw();
     } else if ('gun' in to) {
@@ -294,7 +319,8 @@ export class InventoryController implements DragHost {
         if (index >= 0) return { owner, grid: name, index, item: item.item };
       }
     }
-    return null;
+    const ground = this.ctx.sim.ground.findIndex((g) => g.item === item);
+    return ground >= 0 ? { owner: { kind: 'ground' }, ground, item: item.item } : null;
   }
 
   private character(owner: Owner): Character | undefined {
@@ -306,7 +332,10 @@ export class InventoryController implements DragHost {
   find(ref: ItemRef): { item: Item; def: ItemDef } | null {
     const { sim, player, items } = this.ctx;
     let item: Item | null | undefined;
-    if ('slot' in ref) {
+    if ('ground' in ref) {
+      const g = sim.ground[ref.ground];
+      item = g && groundInReach(player, g) ? g.item : null;
+    } else if ('slot' in ref) {
       const ch = this.character(ref.owner);
       item = ch && (ch.gear as unknown as Record<GearSlot, Item | null>)[ref.slot];
     } else {

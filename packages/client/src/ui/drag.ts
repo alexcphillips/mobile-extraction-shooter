@@ -22,7 +22,9 @@ export interface PartSlot {
 export type DropZone =
   | { kind: 'grid'; ref: GridRef; grid: Grid }
   | { kind: 'slot'; owner: Owner; slot: GearSlot }
-  | ({ kind: 'part' } & PartSlot);
+  | ({ kind: 'part' } & PartSlot)
+  /** Dropped at your feet. */
+  | { kind: 'ground' };
 
 /** The item a pointer went down on: in a grid or gear slot, or on a gun. */
 export interface DragSource {
@@ -146,7 +148,9 @@ export class DragController {
           ? { ...z.ref, x: hover.x, y: hover.y, rotated }
           : z.kind === 'slot'
             ? { owner: z.owner, slot: z.slot }
-            : { gun: z.gun, slot: z.slot },
+            : z.kind === 'ground'
+              ? { owner: { kind: 'ground' } }
+              : { gun: z.gun, slot: z.slot },
       );
     }
   };

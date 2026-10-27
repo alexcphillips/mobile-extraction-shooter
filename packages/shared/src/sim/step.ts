@@ -35,7 +35,11 @@ export function step(
     const actions = inputs[e.id]?.inventory;
     if (!actions) continue;
     for (const a of actions) {
-      state.events.push({ type: 'inventory', by: e.id, ok: applyInventory(state, e, items, a) });
+      state.events.push({
+        type: 'inventory',
+        by: e.id,
+        ok: applyInventory(state, e, items, a, world),
+      });
     }
   }
   // Switching hands and using meds before moving, which is slower while using one.

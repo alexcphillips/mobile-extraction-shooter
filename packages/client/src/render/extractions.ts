@@ -6,8 +6,9 @@ const HEIGHT = 12;
 const SIDES = 24;
 
 /**
- * Extraction points as faint green columns of their radius, so you can find them until
- * the map tab (session 11b). Open-ended tubes in one mesh: one draw call for them all.
+ * Extraction points as faint green columns of their radius, so you can find them (kept
+ * alongside the map tab, the user's call). Open-ended tubes in one mesh: one draw call
+ * for them all.
  * See-through and unlit, faded by fog like everything else.
  */
 export function buildExtractions(map: CompiledMap): THREE.Mesh {

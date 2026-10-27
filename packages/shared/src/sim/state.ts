@@ -2,6 +2,7 @@ import { createRng, type Rng } from '../rng';
 import type { AiState } from './ai';
 import type { CollisionWorld } from '../world/collision-world';
 import { createGear, type Gear, type Hand } from './gear';
+import type { GroundItem } from './ground';
 import { createHealth, type DamageEvent, type DeathEvent, type Health } from './health';
 import type { InventoryAction, InventoryEvent, LootContainer } from './looting';
 import type { MedRef, MedUse } from './meds';
@@ -57,7 +58,7 @@ export interface Character {
   ai: AiState | null;
 }
 
-/** Only characters so far; items, loot and projectiles join this union later. */
+/** Only characters so far. Loot containers and ground items have their own lists. */
 export type Entity = Character;
 
 /** Things that happened during the last tick, for effects and the HUD. */
@@ -76,6 +77,8 @@ export interface SimState {
   entities: Entity[];
   /** The raid's desks, cabinets and crates. Dead bodies are looted through their gear. */
   loot: LootContainer[];
+  /** Items lying loose: rolled at loot spawns, dropped, or with nowhere else to go. */
+  ground: GroundItem[];
   /** The timer and extraction points; null outside a raid (tests, the perf scene). */
   raid: RaidState | null;
   /** Players who have left the raid alive, with what they carried. */
@@ -124,6 +127,7 @@ export function createState(seed: number): SimState {
     nextId: 1,
     entities: [],
     loot: [],
+    ground: [],
     raid: null,
     left: [],
     events: [],

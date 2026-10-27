@@ -17,6 +17,7 @@ import {
 } from '@mes/shared';
 import { useEffect, useState, type ReactNode } from 'react';
 import type { InventoryController } from './inventory-controller';
+import { MapTab } from './map-tab';
 
 type Tab = 'inventory' | 'map' | 'quests';
 
@@ -52,10 +53,10 @@ export function RaidScreen({ inv, version }: Props): ReactNode {
       </header>
       {tab === 'inventory' ? (
         <Inventory inv={inv} version={version} />
+      ) : tab === 'map' ? (
+        <MapTab map={inv.ctx.map} sim={inv.ctx.sim} player={inv.ctx.player} version={version} />
       ) : (
-        <div className="raid-empty">
-          {tab === 'map' ? 'The map comes with session 11b.' : 'Quests come in session 14.'}
-        </div>
+        <div className="raid-empty">Quests come in session 14.</div>
       )}
     </div>
   );
@@ -123,14 +124,17 @@ function Inventory({ inv, version }: Props): ReactNode {
             {'index' in selected && sel.def.size[0] !== sel.def.size[1] && (
               <button onClick={() => inv.rotate(selected)}>Rotate</button>
             )}
+            {!('ground' in selected) && (
+              <button onClick={() => inv.toGround(selected)}>Drop</button>
+            )}
             <button onClick={() => inv.quick(selected)}>
               {quickLabel(selected, inv.quickTo(selected))}
             </button>
           </>
         ) : (
           <span className="inv-hint">
-            Double-tap to move · drag to place · while dragging, tap with another finger (or press
-            R) to rotate
+            Double-tap to move · drag to place, or onto the ground to drop · while dragging, tap
+            with another finger (or press R) to rotate
           </span>
         )}
       </footer>
@@ -255,13 +259,7 @@ function Picker({
 
 function Loot({ inv }: { inv: InventoryController }): ReactNode {
   const { ctx, target } = inv;
-  if (!target) {
-    return (
-      <p className="raid-note">
-        Nothing open. Walk up to a container or a body and press <b>loot</b>.
-      </p>
-    );
-  }
+  if (!target) return <Ground inv={inv} />;
   const name = ctx.nameOf(target);
   if (!inv.reach) {
     return (
@@ -287,6 +285,61 @@ function Loot({ inv }: { inv: InventoryController }): ReactNode {
       <h2>{name}</h2>
       <Slots inv={inv} owner={target} slots={BODY_SLOTS} ch={body} />
       <CharacterGrids inv={inv} owner={target} ch={body} vault={false} />
+    </>
+  );
+}
+
+const TO_GROUND = JSON.stringify({ owner: { kind: 'ground' } });
+
+/**
+ * With nothing open: the items on the ground within reach. Drag one of yours here to drop
+ * it; drag or double-tap one of these to take it.
+ */
+function Ground({ inv }: { inv: InventoryController }): ReactNode {
+  const { cell, ctx } = inv;
+  const near = inv.nearby();
+  return (
+    <>
+      <h2>On the ground</h2>
+      <div className="inv-ground" data-drop={TO_GROUND}>
+        {near.map(({ ref, g }) => {
+          const def = itemDef(ctx.items, g.item.item);
+          return (
+            <div
+              key={ref.ground}
+              className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}`}
+              data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
+              style={{
+                width: def.size[0] * cell,
+                height: def.size[1] * cell,
+                background: colourOf(def),
+              }}
+              onPointerDown={(e) =>
+                inv.drag.down(e.nativeEvent, {
+                  ref,
+                  w: def.size[0],
+                  h: def.size[1],
+                  rotated: false,
+                  grabX: 0,
+                  grabY: 0,
+                  colour: colourOf(def),
+                  label: def.name,
+                  el: e.currentTarget,
+                })
+              }
+            >
+              <span className="inv-item-name">{def.name}</span>
+              <span className="inv-item-badge">{badge(g.item, def)}</span>
+            </div>
+          );
+        })}
+        {!near.length && (
+          <p className="raid-note">
+            Nothing here. Drag an item here to drop it, or walk up to a container or a body and
+            press <b>loot</b>.
+          </p>
+        )}
+      </div>
     </>
   );
 }

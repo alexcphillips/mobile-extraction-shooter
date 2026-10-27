@@ -1,4 +1,4 @@
-import type { Character, InventoryAction, ItemDb, Owner, SimState } from '@mes/shared';
+import type { Character, CompiledMap, InventoryAction, ItemDb, Owner, SimState } from '@mes/shared';
 import { createRoot, type Root } from 'react-dom/client';
 import { InventoryController } from './inventory-controller';
 import { RaidScreen } from './raid-screen';
@@ -8,9 +8,11 @@ export interface RaidContext {
   sim: SimState;
   player: Character;
   items: ItemDb;
+  /** For the map tab. */
+  map: CompiledMap;
   /** Queues an inventory action for the next tick. */
   send: (action: InventoryAction) => void;
-  /** A body's or container's name. */
+  /** A body's or container's name (or the ground's). */
   nameOf: (owner: Owner) => string;
   close: () => void;
 }

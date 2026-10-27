@@ -34,6 +34,7 @@ import {
   lootContainerById,
   stow,
   type InventoryAction,
+  type Item,
   type Owner,
   drawTime,
   meleeDef,
@@ -43,7 +44,9 @@ import {
   gearItems,
   keptItems,
   rollEnemyLoot,
+  rollLootSpawns,
   startRaid,
+  itemDef,
   type LeaveReason,
 } from '@mes/shared';
 import * as THREE from 'three';
@@ -72,6 +75,7 @@ import { DEFAULT_OUTFIT, loadCharacter } from '../render/character';
 import { CharacterBody, CharacterRig } from '../render/character-body';
 import { Effects } from '../render/effects';
 import { buildExtractions } from '../render/extractions';
+import { GroundItems } from '../render/ground-items';
 import { buildMap } from '../render/map';
 import { AiDebug, buildNavOverlay } from '../render/nav-debug';
 import { Viewmodel } from '../render/viewmodel';
@@ -183,6 +187,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
 
   scene.add(buildMap(map).root);
   scene.add(buildExtractions(map));
+  const groundItems = new GroundItems(items);
+  scene.add(groundItems.root);
   if (options.debug) scene.add(buildDebug(map, world.terrain));
   if (options.nav) scene.add(buildNavOverlay(nav));
   const aiDebug = options.debug ? new AiDebug() : null;
@@ -228,6 +234,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   if (held) viewmodel.setGun(held, items);
   placeLootContainers(sim, map, lootKinds);
   fillLootContainers(sim, map, items, lootTables);
+  rollLootSpawns(sim, map, items, lootTables);
   startRaid(sim, map, options.duration ?? raid.duration);
   controls.yaw = spawn.yaw;
 
@@ -409,6 +416,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       const l = lootContainerById(sim, o.id);
       return l ? (lootKinds.get(l.def)?.name ?? l.def) : 'Container';
     }
+    if (o.kind === 'ground') return 'On the ground';
     return o.kind === 'body' ? `${names.get(o.id) ?? 'Body'} (dead)` : 'You';
   };
   function openScreen(target: Owner | null): void {
@@ -431,6 +439,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
             sim,
             player,
             items,
+            map,
             send: (a) => pending.push(a),
             nameOf,
             close: closeScreen,
@@ -516,20 +525,29 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     picked = null;
     if (controls.healPick && !dead) hands.showPicker(player, items);
 
-    // The use button loots what's in reach; the bag button opens your inventory.
-    const lootable = dead || screenOpen ? null : lootableInReach(sim, player, controls.yaw);
-    const label = lootable ? 'loot' : 'use';
+    // The use button takes the item on the ground near the crosshair, or loots what's in
+    // reach; the bag button opens your inventory.
+    const lootable =
+      dead || screenOpen ? null : lootableInReach(sim, player, controls.yaw, controls.pitch);
+    const label = lootable ? (lootable.kind === 'ground' ? 'take' : 'loot') : 'use';
     if (label !== useLabel) {
       useLabel = label;
       useButton.textContent = label;
       useButton.classList.toggle('idle', !lootable);
     }
-    if (!dead && controls.interact && lootable) {
-      openScreen(
-        lootable.kind === 'container'
-          ? { kind: 'container', id: lootable.c.id }
-          : { kind: 'body', id: lootable.c.id },
-      );
+    let taking: string | null = null;
+    if (!dead && controls.interact && lootable?.kind === 'ground') {
+      // Picked up next tick: into an empty gear slot it fits, else into what you carry.
+      const id = lootable.g.item.item;
+      pending.push({
+        type: 'quick',
+        from: { owner: { kind: 'ground' }, ground: lootable.index, item: id },
+        to: { kind: 'self' },
+      });
+      taking = itemDef(items, id).name;
+    } else if (!dead && controls.interact && lootable) {
+      if (lootable.kind === 'container') openScreen({ kind: 'container', id: lootable.c.id });
+      else if (lootable.kind === 'body') openScreen({ kind: 'body', id: lootable.c.id });
     } else if (!dead && controls.bag) {
       if (screenOpen) closeScreen();
       else openScreen(null);
@@ -604,6 +622,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         endRaid(e.how, at ? `at ${at.name}` : 'Time ran out', now);
       } else if (e.type === 'inventory' && e.by === player.id) {
         inventoryChanged = true;
+        if (taking && !e.ok) el.raidHud.warn(`No room for ${taking}`, now);
       }
     }
 
@@ -626,12 +645,23 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     }
     el.vitals.update(player, items, now);
     el.raidHud.update(sim, player, ended !== null);
+    // The item the use button would take: lit up, and named under the crosshair. Picking
+    // one up this tick may have moved the rest along the list.
+    const onGround = lootable?.kind === 'ground' && sim.ground[lootable.index] === lootable.g;
+    groundItems.update(sim.ground, onGround ? lootable.index : -1);
+    el.raidHud.setPrompt(onGround ? groundLabel(lootable.g.item) : '', now);
     hands.update(player, items);
     if (ended && resultsAt && now >= resultsAt) {
       resultsAt = 0;
       showResults(ended);
     }
     stats.tick(performance.now() - t0);
+  }
+
+  /** An item's name, with its count if it's a stack. */
+  function groundLabel(item: Item): string {
+    const name = itemDef(items, item.item).name;
+    return item.count > 1 ? `${name} ×${item.count}` : name;
   }
 
   function resize(): void {

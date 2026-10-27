@@ -7,7 +7,7 @@ import { CollisionWorld } from '../world/collision-world';
 import { spawnEnemy } from './ai';
 import { createItem } from './create-item';
 import { equip } from './gear';
-import { fillLootContainers, rollEnemyLoot, rollTable } from './loot-roll';
+import { fillLootContainers, rollEnemyLoot, rollLootSpawns, rollTable } from './loot-roll';
 import { createState } from './state';
 import { TEST_ITEMS as items } from './test-items';
 
@@ -121,5 +121,36 @@ describe('loot tables', () => {
     rollEnemyLoot(g, items, tables, undefined, undefined, state.rng);
     rollEnemyLoot(g, items, tables, loot, { meds: 0 }, state.rng);
     expect(g.gear.pockets.items).toEqual([]);
+  });
+
+  it('puts one item on the ground at each loot spawn that rolls its chance', () => {
+    const spot = (id: string, x: number, chance?: number) => ({
+      type: 'lootSpawn',
+      id,
+      lootTable: 'house',
+      x,
+      y: 2,
+      z: 0,
+      yaw: 0,
+      ...(chance === undefined ? {} : { chance }),
+    });
+    const map = {
+      markers: [spot('a', 1), spot('never', 2, 0), spot('b', 3, 1)],
+    } as unknown as CompiledMap;
+    const roll = (seed: number) => {
+      const state = createState(seed);
+      rollLootSpawns(state, map, items, tables);
+      return state.ground;
+    };
+    const ground = roll(5);
+    // One item each, however many the table's rolls say, lying where the marker is.
+    expect(ground.map((g) => [g.x, g.y])).toEqual([
+      [1, 2],
+      [3, 2],
+    ]);
+    for (const g of ground) expect(['cash', 'watch']).toContain(g.item.item);
+    expect(roll(5)).toEqual(roll(5));
+    // Plain data: a JSON round trip changes nothing.
+    expect(JSON.parse(JSON.stringify(ground))).toEqual(ground);
   });
 });

@@ -56,6 +56,7 @@ export { equipLoadout } from './sim/loadout';
 export {
   fillLootContainers,
   rollEnemyLoot,
+  rollLootSpawns,
   rollItem,
   rollTable,
   type LootTables,
@@ -95,11 +96,14 @@ export {
   type Hand,
 } from './sim/gear';
 export { createItem } from './sim/create-item';
+export { GROUND, dropItem, type GroundItem } from './sim/ground';
 export {
+  GROUND_OWNER,
   LOOT_REACH,
   applyInventory,
   canReach,
   gridOf,
+  groundInReach,
   lootContainerById,
   placeLootContainers,
   type GridName,
@@ -111,9 +115,11 @@ export {
   type InventoryEvent,
   type ItemRef,
   type LootContainer,
+  type OnGround,
   type Owner,
   type PartRef,
   type Target,
+  type ToGround,
 } from './sim/looting';
 export {
   LOOT_CONTAINER_FORMAT,
