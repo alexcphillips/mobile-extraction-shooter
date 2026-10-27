@@ -268,10 +268,20 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
     - **To check on the iPhone:** whether the 0.2 s swing reads well; whether outward-opening house doors at 90° get in the way at the doorstep; tapping Use on doors with a thumb; and whether the 13 ms unlock hitch shows.
 
 ## Milestone C: the meta loop and server
-- [ ] **12. Server foundation.**
+- [x] **12. Server foundation.** (Split: the client side is 12b.)
   - Hono with D1; decide the login method.
   - Accounts and sessions; profile, stash and vault persistence; raid start and end endpoints with sanity limits.
-  - Client integration, plus offline handling (what happens if a raid ends while the phone is offline).
+  - **Notes (2026-10-27):**
+    - Decided with the user before starting: **username and password** (design.md → Trust model → Accounts); **the server owns the profile**, a raid needs a connection to start, and a result from a raid that ends offline is queued on the phone (design.md → Raids and maps → Saving raids); and the session was split, the client side going to 12b.
+    - Decided along the way: an unreported raid counts as missing in action when the next one starts (nothing on a timer), and its late result is refused; the gear stays in the profile while a raid is open (locked, not moved out), and the result replaces it; edits between raids can't make items or change money; PBKDF2 at **50k iterations** to stay under the free plan's 10 ms CPU (100k measured 12 ms on the Mac); a 10×30 stash (a first guess for session 13); new accounts get a **starting kit** from content (`content/starting-kits/new-player.json`, the kit `play/` hard-codes) plus the knife, and 0 money.
+    - Shared: `profile.ts` (`Profile`, `PROFILE_FORMAT`, `newProfile`, `checkProfile`, `checkGear`, `parseGear`, `countItems`, `itemGained`, `restGear`), `keptGear` in `sim/raid.ts`, the API types in `protocol.ts`, the `starting kit` content kind, and `loadById` moved from the client into `content/format.ts`. 10 new tests.
+    - Server: `auth.ts`, `profiles.ts`, `raids.ts`, `errors.ts`, `content.ts`, `migrations/0001_init.sql`, the D1 binding in `wrangler.jsonc` (with a placeholder id), `scripts/bundle-content.mjs`. A D1 stand-in over `node:sqlite` for tests. 16 new tests (262 in all): register, a Secure cookie only over HTTPS, taken and bad names, login, logout, lockout, expiry; a raid locking the profile, extracting, dying and going missing, the same result twice, a raid never reported, forged items, oversized stacks, a too-long raid, malformed results, other players' raids; saving a stash edit, stale versions, items from nothing and money changing.
+    - Checked in `wrangler dev` with a local D1: register, read the profile (the full kit), start `test-raid`, end it killed (only the knife left, version 3), a wrong password, logout, then signed out.
+    - **Not done (needs you):** creating the real D1 database (`npx wrangler d1 create mes`, then its id in `wrangler.jsonc`) and deploying; the README says how. Settings aren't synced to the account yet (12b).
+- [ ] **12b. Client integration and offline.** (Split from session 12.)
+  - Sign-up and login screen (inside the home-screen app, which has its own cookies); the raid starts from the server's profile gear instead of the hard-coded kit, and ends by posting the result; the results screen's button.
+  - Offline: queue a result that can't be sent (local storage), send it before the next raid start, and handle `raid-over` and `stale`. A service worker so the game opens offline. Sync settings to the account.
+  - **Done early (2026-10-27, at the user's request): the sign-in and create-account screens**, and no invite code (the user's call). `account.ts` (`fetchProfile`, `signIn`, `signOut`, `AccountError` with messages to show), `ui/account.tsx` (lazily loaded), an Account section in Settings with Sign out. The play page asks the server first: signed out shows the screen, and the game starts once you're in; if the server can't be reached, the game starts as before. Checked in headless Chrome at 844×390 against Vite and `wrangler dev`: signed out showed Sign in; mismatched passwords said so; creating an account started the game; a reload stayed signed in; Settings showed the name, and Sign out went back to the screen; a wrong password said "Wrong username or password."; signing in with the name in capitals worked; in portrait the screen shows instead of "turn your phone". The only console errors are the expected 401s.
 - [ ] **13. Main menu, stash and vendors.**
   - Stash screen (reuses the inventory UI), loadout, buying and selling, vendor stock and prices, starting kit, always-kept knife, armour repair kits.
 - [ ] **14. Quests.**
@@ -311,7 +321,7 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
 - Grenades for AI (with a shared token), gyro aiming, water slowing movement, more attachment slots.
 
 ## Open questions
-- Login method (session 12). Sound effect source (session 19).
+- Sound effect source (session 19). (Login method: username and password, decided in session 12.)
 - **Container search time** (session 10): Tarkov reveals a container's items one by one. Not designed; containers open instantly for now.
 - **Melee** (raised in session 9; the user's answer, 2026-10-26): there is a Tarkov-style knife attack with good damage, for raids where you bring nothing at all and for close quarters (design.md → Core loop → Knife). Built in session 10b.
 - **Temporary effects** (the user wants them, 2026-10-26): painkillers and similar. Not scheduled.

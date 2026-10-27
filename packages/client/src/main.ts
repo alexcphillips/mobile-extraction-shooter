@@ -10,6 +10,7 @@ import { startBodies } from './bodies';
 import { startPerfTest } from './perf';
 import { readParams } from './perf/params';
 import { mountPresets } from './perf/presets';
+import { fetchProfile } from './account';
 import { startPlay } from './play';
 import { settings } from './settings';
 
@@ -92,33 +93,52 @@ if (location.pathname === '/bodies') {
   // brings dead enemies back, ?peaceful sends them in unarmed, and ?hitzones draws hit
   // zones over their bodies.
   const q = new URLSearchParams(location.search);
-  startPlay(
-    {
-      canvas: byId('scene') as HTMLCanvasElement,
-      stats: byId('stats'),
-      hud,
-      optic: new OpticOverlay(byId('optic'), byId('crosshair')),
-      vitals: new Vitals(byId('vitals'), byId('ammo'), byId('crosshair'), byId('hurt')),
-      raidHud: new RaidHud(byId('timer'), byId('extract'), byId('prompt')),
-      raid: byId('raid'),
-      results: byId('results'),
-    },
-    {
-      raid: q.get('raid') ?? 'test-raid',
-      duration: Number(q.get('time')) > 0 ? Number(q.get('time')) : null,
-      spawn: q.get('spawn'),
-      at: parseAt(q.get('at')),
-      weapon: q.get('weapon') ?? 'assault-rifle',
-      attachments: q.get('attach')?.split(',').filter(Boolean) ?? [],
-      debug: q.has('debug'),
-      nav: q.has('nav'),
-      respawn: q.has('respawn'),
-      peaceful: q.has('peaceful'),
-      hitZones: q.has('hitzones'),
-      pixelRatio: Math.min(window.devicePixelRatio, 2),
-      note: standalone ? 'standalone' : 'browser',
-    },
-  ).catch((err: unknown) => (status.textContent = `map failed: ${message(err)}`));
+  signedIn()
+    .then(() =>
+      startPlay(
+        {
+          canvas: byId('scene') as HTMLCanvasElement,
+          stats: byId('stats'),
+          hud,
+          optic: new OpticOverlay(byId('optic'), byId('crosshair')),
+          vitals: new Vitals(byId('vitals'), byId('ammo'), byId('crosshair'), byId('hurt')),
+          raidHud: new RaidHud(byId('timer'), byId('extract'), byId('prompt')),
+          raid: byId('raid'),
+          results: byId('results'),
+        },
+        {
+          raid: q.get('raid') ?? 'test-raid',
+          duration: Number(q.get('time')) > 0 ? Number(q.get('time')) : null,
+          spawn: q.get('spawn'),
+          at: parseAt(q.get('at')),
+          weapon: q.get('weapon') ?? 'assault-rifle',
+          attachments: q.get('attach')?.split(',').filter(Boolean) ?? [],
+          debug: q.has('debug'),
+          nav: q.has('nav'),
+          respawn: q.has('respawn'),
+          peaceful: q.has('peaceful'),
+          hitZones: q.has('hitzones'),
+          pixelRatio: Math.min(window.devicePixelRatio, 2),
+          note: standalone ? 'standalone' : 'browser',
+        },
+      ),
+    )
+    .catch((err: unknown) => (status.textContent = `map failed: ${message(err)}`));
+}
+
+/**
+ * Asks the sign-in screen first if no one is signed in. If the server can't be reached,
+ * the game starts anyway (offline play is session 12b), and the server line says so.
+ */
+async function signedIn(): Promise<void> {
+  try {
+    if (await fetchProfile()) return;
+  } catch (err) {
+    console.warn('not signed in:', message(err));
+    return;
+  }
+  const ui = await import('./ui/account');
+  await ui.showAccount(byId('account'));
 }
 
 /** "x,z" as two numbers, or null. */

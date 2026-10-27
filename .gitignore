@@ -151,3 +151,6 @@ vite.config.ts.timestamp-*
 # Wrangler
 .wrangler/
 .dev.vars
+
+# Bundled content for the server (scripts/bundle-content.mjs)
+packages/server/src/generated/content.js

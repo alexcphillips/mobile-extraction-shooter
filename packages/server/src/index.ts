@@ -1,7 +1,11 @@
 import { Hono } from 'hono';
 import { PROTOCOL_VERSION, TICK_RATE, type HelloResponse } from '@mes/shared';
+import { auth, signedIn, type AppEnv } from './auth';
+import { fail } from './errors';
+import { profiles } from './profiles';
+import { raids } from './raids';
 
-export const app = new Hono().basePath('/api');
+export const app = new Hono<AppEnv>().basePath('/api');
 
 app.get('/hello', (c) =>
   c.json<HelloResponse>({
@@ -10,5 +14,14 @@ app.get('/hello', (c) =>
     tickRate: TICK_RATE,
   }),
 );
+
+app.route('/', auth);
+app.use('/profile', signedIn);
+app.route('/profile', profiles);
+app.use('/raids', signedIn);
+app.use('/raids/*', signedIn);
+app.route('/raids', raids);
+
+app.notFound((c) => fail(c, 'not-found'));
 
 export default app;

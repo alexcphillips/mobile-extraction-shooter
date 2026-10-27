@@ -47,3 +47,22 @@ export function loadContent<T>(format: ContentFormat<T>, raw: unknown, source: s
   if (!result.success) throw new ContentError(source, `\n${z.prettifyError(result.error)}`);
   return result.data;
 }
+
+/**
+ * Loads every file of a kind by id, checking each one's id matches its file name. files
+ * maps a path that contains "content/" (as bundled) to the parsed JSON.
+ */
+export function loadById<T extends { id: string }>(
+  format: ContentFormat<T>,
+  files: Record<string, unknown>,
+): Map<string, T> {
+  const out = new Map<string, T>();
+  for (const [path, raw] of Object.entries(files)) {
+    const source = path.slice(path.indexOf('content/'));
+    const doc = loadContent(format, raw, source);
+    const name = path.slice(path.lastIndexOf('/') + 1, -'.json'.length);
+    if (doc.id !== name) throw new ContentError(source, `id "${doc.id}" must match the file name`);
+    out.set(doc.id, doc);
+  }
+  return out;
+}

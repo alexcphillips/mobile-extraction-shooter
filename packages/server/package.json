@@ -3,9 +3,14 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "content": "node ../../scripts/bundle-content.mjs",
+    "predev": "npm run content",
     "dev": "wrangler dev --ip 0.0.0.0",
+    "predeploy": "npm run content && wrangler d1 migrations apply mes --remote",
     "deploy": "wrangler deploy",
-    "typecheck": "tsc -p ."
+    "pretypecheck": "npm run content",
+    "typecheck": "tsc -p .",
+    "db:migrate": "wrangler d1 migrations apply mes --local"
   },
   "dependencies": {
     "@mes/shared": "*",

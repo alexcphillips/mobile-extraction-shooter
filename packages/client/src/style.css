@@ -737,6 +737,12 @@ body:has(#controls.editing) :is(#hud, #presets, #settings-button, #vitals, #ammo
   margin: 4px 0 8px;
 }
 
+.account-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 /* The raid screen: tabs, then the inventory's three columns (your gear, your grids, what
    you're looting) over a bar about the selected item. The game keeps running behind it. */
 #raid {
@@ -1242,4 +1248,126 @@ body:has(#raid:not([hidden])) #vitals {
   color: #000;
   font: inherit;
   font-weight: bold;
+}
+
+/* Sign in and create an account (ui/account.tsx), over everything, in either orientation. */
+#account {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+}
+
+#account[hidden] {
+  display: none;
+}
+
+body:has(#account:not([hidden])) #portrait {
+  display: none;
+}
+
+.account {
+  display: flex;
+  justify-content: center;
+  align-items: safe center;
+  height: 100%;
+  box-sizing: border-box;
+  padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  overflow-y: auto;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  background: #1d2328;
+  color: #e8ecef;
+  font:
+    15px/1.35 system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+.account-card {
+  display: flex;
+  flex-direction: column;
+  width: min(340px, 100%);
+}
+
+.account h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #e3a33a;
+}
+
+.account h2 {
+  margin: 2px 0 10px;
+  font-size: 16px;
+  font-weight: normal;
+  color: #9aa6b0;
+}
+
+.account label {
+  margin: 8px 0 4px;
+  font-size: 13px;
+  color: #9aa6b0;
+}
+
+/* 16px or more, or iOS zooms in on focus. The page's user-select: none would stop typing. */
+.account input {
+  padding: 9px 10px;
+  border: 1px solid #3a434c;
+  border-radius: 6px;
+  background: #11161a;
+  color: #fff;
+  font:
+    16px system-ui,
+    -apple-system,
+    sans-serif;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.account input:focus {
+  border-color: #e3a33a;
+  outline: none;
+}
+
+.account-hint {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #7d8a95;
+}
+
+.account-error {
+  min-height: 1.35em;
+  margin: 10px 0;
+  color: #ff6b5a;
+}
+
+.account button.primary {
+  padding: 11px;
+  border: 0;
+  border-radius: 8px;
+  background: #e3a33a;
+  color: #000;
+  font: inherit;
+  font-weight: bold;
+}
+
+.account button.primary:disabled {
+  opacity: 0.6;
+}
+
+.account-switch {
+  margin: 12px 0 0;
+  text-align: center;
+  color: #9aa6b0;
+}
+
+.account-switch button {
+  padding: 4px;
+  border: 0;
+  background: none;
+  color: #e3a33a;
+  font: inherit;
+  text-decoration: underline;
 }

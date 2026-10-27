@@ -1,5 +1,18 @@
 export { FixedTimestep, TICK_RATE, TICK_SECONDS } from './tick';
-export { PROTOCOL_VERSION, type HelloResponse } from './protocol';
+export {
+  ACCOUNT,
+  PROTOCOL_VERSION,
+  type ApiError,
+  type ApiErrorCode,
+  type EndRaidRequest,
+  type HelloResponse,
+  type LoginRequest,
+  type OpenRaid,
+  type ProfileResponse,
+  type RaidOutcome,
+  type SaveProfileRequest,
+  type StartRaidRequest,
+} from './protocol';
 export {
   byWeight,
   chance,
@@ -78,6 +91,7 @@ export {
   RAID,
   extractionAt,
   gearItems,
+  keptGear,
   keptItems,
   startRaid,
   timeLeft,
@@ -150,6 +164,12 @@ export {
   type LootTableDef,
 } from './content/loot-tables';
 export { RAID_FORMAT, RAID_FORMAT_VERSION, raidSchema, type RaidDef } from './content/raids';
+export {
+  STARTING_KIT_FORMAT,
+  STARTING_KIT_FORMAT_VERSION,
+  startingKitSchema,
+  type StartingKitDef,
+} from './content/starting-kits';
 export {
   EFFECT_PRIORITY,
   TREATMENT_ORDER,
@@ -236,7 +256,13 @@ export {
   type WeaponStats,
 } from './sim/weapons';
 export { step } from './sim/step';
-export { ContentError, loadContent, type ContentFormat, type Migration } from './content/format';
+export {
+  ContentError,
+  loadById,
+  loadContent,
+  type ContentFormat,
+  type Migration,
+} from './content/format';
 export {
   MAP_FORMAT,
   MAP_FORMAT_VERSION,
@@ -317,3 +343,16 @@ export {
   type ControlPlacement,
   type Settings,
 } from './settings';
+export {
+  PROFILE,
+  PROFILE_FORMAT,
+  PROFILE_FORMAT_VERSION,
+  checkGear,
+  checkProfile,
+  countItems,
+  itemGained,
+  newProfile,
+  parseGear,
+  restGear,
+  type Profile,
+} from './profile';

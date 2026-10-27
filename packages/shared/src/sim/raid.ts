@@ -1,7 +1,7 @@
 import type { CompiledMap } from '../content/compile';
 import type { Item } from '../inventory/grid';
 import { TICK_RATE, TICK_SECONDS } from '../tick';
-import { CARRIED_GRIDS, GEAR_SLOTS, carriedGrid, type Gear } from './gear';
+import { CARRIED_GRIDS, GEAR_SLOTS, carriedGrid, createGear, type Gear } from './gear';
 import type { Character, EntityId, SimState } from './state';
 
 /*
@@ -133,5 +133,19 @@ export function keptItems(gear: Gear, survived: boolean): Item[] {
   const out: Item[] = [];
   if (gear.knife) out.push(gear.knife);
   for (const g of gear.vault?.items ?? []) out.push(g.item);
+  return out;
+}
+
+/**
+ * The gear a player comes out of the raid with: all of it if they extracted; if they
+ * died or went missing, a fresh set with only the knife and the vault. As keptItems, but
+ * keeping where things are. knife stands in if the gear has none.
+ */
+export function keptGear(gear: Gear, survived: boolean, knife: Item | null = null): Gear {
+  if (survived) return gear;
+  const out = createGear(true);
+  out.knife = gear.knife ?? knife;
+  out.vault = gear.vault ?? out.vault;
+  out.hand = 'knife';
   return out;
 }

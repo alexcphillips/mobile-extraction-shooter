@@ -1,5 +1,4 @@
 import {
-  ContentError,
   ENEMY_FORMAT,
   ITEM_FORMAT,
   LOADOUT_FORMAT,
@@ -13,9 +12,8 @@ import {
   checkItems,
   checkLootTables,
   compileMap,
-  loadContent,
+  loadById,
   type CompiledMap,
-  type ContentFormat,
   type EnemyDef,
   type ItemDb,
   type LoadoutDef,
@@ -62,22 +60,6 @@ const raidFiles = import.meta.glob<unknown>('../../../content/raids/*.json', {
   import: 'default',
 });
 
-/** Loads every file of a kind by id, checking each one's id matches its file name. */
-function loadAll<T extends { id: string }>(
-  format: ContentFormat<T>,
-  files: Record<string, unknown>,
-): Map<string, T> {
-  const out = new Map<string, T>();
-  for (const [path, raw] of Object.entries(files)) {
-    const source = path.slice(path.indexOf('content/'));
-    const doc = loadContent(format, raw, source);
-    const name = path.slice(path.lastIndexOf('/') + 1, -'.json'.length);
-    if (doc.id !== name) throw new ContentError(source, `id "${doc.id}" must match the file name`);
-    out.set(doc.id, doc);
-  }
-  return out;
-}
-
 let prefabs: Map<string, PrefabFile> | undefined;
 let items: ItemDb | undefined;
 let maps: Map<string, MapFile> | undefined;
@@ -87,13 +69,13 @@ let lootTables: Map<string, LootTableDef> | undefined;
 let raids: Map<string, RaidDef> | undefined;
 
 export function mapIds(): string[] {
-  maps ??= loadAll(MAP_FORMAT, mapFiles);
+  maps ??= loadById(MAP_FORMAT, mapFiles);
   return [...maps.keys()];
 }
 
 export function loadMap(id: string): CompiledMap {
-  maps ??= loadAll(MAP_FORMAT, mapFiles);
-  prefabs ??= loadAll(PREFAB_FORMAT, prefabFiles);
+  maps ??= loadById(MAP_FORMAT, mapFiles);
+  prefabs ??= loadById(PREFAB_FORMAT, prefabFiles);
   const map = maps.get(id);
   if (!map) throw new Error(`no map "${id}" in content/maps`);
   return compileMap(map, prefabs);
@@ -102,7 +84,7 @@ export function loadMap(id: string): CompiledMap {
 /** Every item in content/items, with references between them checked. */
 export function loadItems(): ItemDb {
   if (!items) {
-    const all = loadAll(ITEM_FORMAT, itemFiles);
+    const all = loadById(ITEM_FORMAT, itemFiles);
     checkItems(all);
     items = all;
   }
@@ -120,8 +102,8 @@ export interface Enemies {
  */
 export function loadEnemies(): Enemies {
   if (!enemies) {
-    const types = loadAll(ENEMY_FORMAT, enemyFiles);
-    const loadouts = loadAll(LOADOUT_FORMAT, loadoutFiles);
+    const types = loadById(ENEMY_FORMAT, enemyFiles);
+    const loadouts = loadById(LOADOUT_FORMAT, loadoutFiles);
     checkEnemies(types, loadouts, loadItems());
     checkEnemyLoot(types, loadLootTables());
     enemies = { types, loadouts };
@@ -154,7 +136,7 @@ export function checkDoorKeys(map: CompiledMap): void {
 
 /** Every kind of loot container in content/loot-containers. */
 export function loadLootContainers(): ReadonlyMap<string, LootContainerDef> {
-  lootContainers ??= loadAll(LOOT_CONTAINER_FORMAT, lootContainerFiles);
+  lootContainers ??= loadById(LOOT_CONTAINER_FORMAT, lootContainerFiles);
   return lootContainers;
 }
 
@@ -175,7 +157,7 @@ export function checkLootContainers(map: CompiledMap): void {
 /** Every loot table in content/loot-tables, with their items checked. */
 export function loadLootTables(): ReadonlyMap<string, LootTableDef> {
   if (!lootTables) {
-    const all = loadAll(LOOT_TABLE_FORMAT, lootTableFiles);
+    const all = loadById(LOOT_TABLE_FORMAT, lootTableFiles);
     checkLootTables(all, loadItems());
     lootTables = all;
   }
@@ -183,13 +165,13 @@ export function loadLootTables(): ReadonlyMap<string, LootTableDef> {
 }
 
 export function raidIds(): string[] {
-  raids ??= loadAll(RAID_FORMAT, raidFiles);
+  raids ??= loadById(RAID_FORMAT, raidFiles);
   return [...raids.keys()];
 }
 
 /** A raid config from content/raids, checked to name a map that exists. */
 export function loadRaid(id: string): RaidDef {
-  raids ??= loadAll(RAID_FORMAT, raidFiles);
+  raids ??= loadById(RAID_FORMAT, raidFiles);
   const raid = raids.get(id);
   if (!raid) throw new Error(`no raid "${id}" in content/raids`);
   if (!mapIds().includes(raid.map))

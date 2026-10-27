@@ -1,0 +1,21 @@
+{
+  "formatVersion": 1,
+  "id": "new-player",
+  "money": 0,
+  "gear": {
+    "primary1": "assault-rifle",
+    "sidearm": "pistol",
+    "helmet": "steel-helmet",
+    "bodyArmour": "plate-carrier",
+    "rig": "chest-rig",
+    "backpack": "small-backpack"
+  },
+  "carried": [
+    { "item": "ammo-556", "count": 120 },
+    { "item": "ammo-9mm", "count": 45 },
+    { "item": "bandage" },
+    { "item": "bandage" },
+    { "item": "splint" },
+    { "item": "medkit" }
+  ]
+}

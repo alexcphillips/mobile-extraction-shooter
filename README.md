@@ -14,6 +14,7 @@ npm 11 only runs install scripts you've approved. They're listed under `allowScr
 |---|---|
 | `npm run dev` | Client (Vite, port 5180) and Worker (`wrangler dev`, port 8787) together. Vite proxies `/api` to the Worker. |
 | `npm run dev:client` / `npm run dev:server` | Just one of them. |
+| `npm run db:migrate -w @mes/server` | Builds or updates the local D1 database (under `packages/server/.wrangler`). Run it once before the first `dev`, and after adding a migration. |
 | `npm test` | Vitest, all packages. `npx vitest` for watch mode. |
 | `npm run check` | Typecheck, lint, Prettier check and tests. Run before committing. |
 | `npm run format` | Prettier, write mode. Markdown is excluded. |
@@ -78,3 +79,5 @@ Turn off Low Power Mode when measuring: iOS caps Safari at 30 fps in it.
 
 ## Deploying
 `npm run deploy` (wrangler must be logged in: `npx wrangler login`, check with `npx wrangler whoami`). It's one Worker, `mobile-extraction-shooter`, on workers.dev. Only `/api/*` runs Worker code; every other path is served from the built client, falling back to `index.html`.
+
+**Before the first deploy with the server (session 12):** create the D1 database with `npx wrangler d1 create mes` (in `packages/server`) and put the `database_id` it prints into `wrangler.jsonc` in place of the zeros. Deploying applies the migrations remotely first.

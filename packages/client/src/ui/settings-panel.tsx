@@ -1,6 +1,14 @@
 import type { Settings } from '@mes/shared';
 import { useId, useSyncExternalStore, type ReactNode } from 'react';
+import { signOut, username } from '../account';
 import { settings } from '../settings';
+
+/** Signing out reloads the page, which then asks to sign in. */
+function signOutAndReload(): void {
+  signOut()
+    .catch((err: unknown) => console.error('sign out failed', err))
+    .finally(() => location.reload());
+}
 
 const subscribe = (onChange: () => void): (() => void) => settings.subscribe(onChange);
 const current = (): Settings => settings.current;
@@ -90,6 +98,19 @@ export function SettingsPanel({ onClose, onEditLayout }: Props): ReactNode {
             value={s.showStats}
             onChange={(v) => set('showStats', v)}
           />
+        </section>
+        <section>
+          <h2>Account</h2>
+          {username ? (
+            <div className="row account-row">
+              <span>
+                Signed in as <strong>{username}</strong>
+              </span>
+              <button onClick={signOutAndReload}>Sign out</button>
+            </div>
+          ) : (
+            <p className="hint">Not signed in: the server can't be reached.</p>
+          )}
         </section>
         <section>
           <div className="row">
