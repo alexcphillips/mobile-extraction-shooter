@@ -35,7 +35,7 @@ interface MoveTouch {
  *
  * Desktop: WASD, Shift sprint, Space jump, C crouch, F fire, Q aim, R reload, E use, I or
  * Tab the bag, 1–4 take out primary 1, primary 2, sidearm or knife, H heal (Shift+H picks),
- * 7–0 the debug actions, and mouse drag to look.
+ * 7 and 8 the debug actions, and mouse drag to look.
  */
 export class Controls {
   /** Move input, -1..1 per axis; y is forward. */
@@ -59,7 +59,7 @@ export class Controls {
   heal = false;
   /** The heal button held: pick which med. */
   healPick = false;
-  /** A debug action (0–3), or -1. */
+  /** A debug action (0 or 1), or -1. */
   debug = -1;
   /** Look speed multiplier from aim assist, set by the game while the crosshair is on an enemy. */
   assist = 1;
@@ -255,7 +255,7 @@ export class Controls {
       e.preventDefault();
       this.pressedBag = true;
     } else if (/^Digit[1-4]$/.test(e.code)) this.pressedDraw = HANDS[Number(e.code.slice(5)) - 1]!;
-    else if (/^Digit[7-90]$/.test(e.code)) this.pressedDebug = (Number(e.code.slice(5)) + 3) % 10;
+    else if (/^Digit[78]$/.test(e.code)) this.pressedDebug = Number(e.code.slice(5)) - 7;
   };
 
   /** A debug action from an on-screen button, as if its key was pressed. */

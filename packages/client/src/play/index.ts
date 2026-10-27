@@ -3,10 +3,7 @@ import {
   FixedTimestep,
   NavGrid,
   ammoDef,
-  attach,
   attachmentDef,
-  detach,
-  fits,
   brokenArms,
   createCharacterHit,
   createRayHit,
@@ -26,8 +23,6 @@ import {
   step,
   wearArmour,
   weaponDef,
-  type AttachmentDef,
-  type AttachmentSlot,
   type Character,
   type PlayerInput,
   type TickInputs,
@@ -93,8 +88,8 @@ export interface PlayOptions {
   /** Attachment item ids to put on it. */
   attachments: string[];
   /**
-   * Show markers, zones, patrols and what enemies are thinking, and buttons (and keys 7–0)
-   * for hurt me, heal me, next optic and next muzzle.
+   * Show markers, zones, patrols and what enemies are thinking, and buttons (and keys 7
+   * and 8) for hurt me and heal me.
    */
   debug: boolean;
   /** Show the navigation grid. */
@@ -322,20 +317,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     );
   }
 
-  /** Debug: the next attachment that fits in a slot of the player's gun, then none. */
-  function nextAttachment(slot: AttachmentSlot): void {
-    const w = heldWeapon(player);
-    if (!w) return;
-    const gun = weaponDef(items, w.item);
-    const choices = [...items.values()]
-      .filter((i): i is AttachmentDef => i.type === 'attachment' && i.slot === slot)
-      .filter((a) => fits(gun, a))
-      .map((a) => a.id);
-    const next = choices[choices.indexOf(w.attachments[slot] ?? '') + 1];
-    const out = next ? attach(w, items, next) : detach(w, items, slot);
-    if (out > 0) stow(player, items, createItem(items, gun.ammo, out));
-  }
-
   const debugRng = createRng(1);
   const muzzle = new THREE.Vector3();
 
@@ -368,13 +349,13 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let picked: MedRef | null = null;
   const hands = new HandsHud(el.hud, (ref) => (picked = ref));
 
-  // Debug actions: hurt me, heal me, next optic, next muzzle; on screen and keys 7–0.
+  // Debug actions: hurt me, heal me; on screen and keys 7 and 8.
   if (options.debug) {
     const bar = document.createElement('div');
     bar.className = 'debug-actions';
-    ['hurt', 'heal', 'optic', 'muzzle'].forEach((label, i) => {
+    ['hurt', 'heal'].forEach((label, i) => {
       const b = document.createElement('button');
-      b.textContent = `${(i + 7) % 10} ${label}`;
+      b.textContent = `${i + 7} ${label}`;
       b.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         controls.pressDebug(i);
@@ -506,10 +487,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       el.vitals.hurtFlash();
     } else if (options.debug && controls.debug === 1) {
       restoreHealth(player, items);
-    } else if (options.debug && controls.debug === 2) {
-      nextAttachment('optic');
-    } else if (options.debug && controls.debug === 3) {
-      nextAttachment('muzzle');
     }
 
     prev.x = cur.x;

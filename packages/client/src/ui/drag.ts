@@ -1,15 +1,32 @@
-import type { GearSlot, Grid, GridRef, ItemRef, Owner, Target } from '@mes/shared';
+import type {
+  AttachmentSlot,
+  GearSlot,
+  Grid,
+  GridRef,
+  ItemRef,
+  Owner,
+  PartRef,
+  Target,
+} from '@mes/shared';
+
+/** A gun's attachment slot, to drop an attachment on. */
+export interface PartSlot {
+  gun: ItemRef;
+  slot: AttachmentSlot;
+}
 
 /**
  * Something items can be dropped on. Its element has a data-drop attribute describing it,
  * which the host turns into this.
  */
 export type DropZone =
-  { kind: 'grid'; ref: GridRef; grid: Grid } | { kind: 'slot'; owner: Owner; slot: GearSlot };
+  | { kind: 'grid'; ref: GridRef; grid: Grid }
+  | { kind: 'slot'; owner: Owner; slot: GearSlot }
+  | ({ kind: 'part' } & PartSlot);
 
-/** The item a pointer went down on. */
+/** The item a pointer went down on: in a grid or gear slot, or on a gun. */
 export interface DragSource {
-  ref: ItemRef;
+  ref: ItemRef | PartRef;
   /** Its size unrotated, and whether it's turned now. */
   w: number;
   h: number;
@@ -27,10 +44,20 @@ export interface DragHost {
   readonly cell: number;
   /** The zone an element with a data-drop attribute is, if it can be reached. */
   zoneAt: (el: HTMLElement) => DropZone | null;
+  /**
+   * The slot of a gun (an element with a data-gun attribute) that the dragged item would
+   * go on, if it's an attachment that fits (loose, or from another gun); otherwise null, and the drag treats the
+   * gun as part of its grid or gear slot.
+   */
+  gunZone: (src: DragSource, gun: ItemRef) => DropZone | null;
   /** Whether the item may drop on a zone there (x, y: the top-left cell for a grid). */
   canDrop: (src: DragSource, zone: DropZone, x: number, y: number, rotated: boolean) => boolean;
-  drop: (src: DragSource, to: Target) => void;
+  drop: (src: DragSource, to: Target | PartSlot) => void;
   tap: (src: DragSource) => void;
+}
+
+function swallowClick(e: Event): void {
+  e.stopPropagation();
 }
 
 /** How far a pointer moves before a press becomes a drag, in CSS pixels. */
@@ -103,6 +130,12 @@ export class DragController {
     const dragging = this.dragging;
     const rotated = this.rotated;
     this.end();
+    // The click a drag ends with (a mouse's, in the same task) isn't a tap on whatever it
+    // was dropped on. A touch drag ends with none, so don't wait for one.
+    if (dragging) {
+      window.addEventListener('click', swallowClick, true);
+      setTimeout(() => window.removeEventListener('click', swallowClick, true));
+    }
     if (!dragging) {
       this.host.tap(src);
     } else if (hover?.ok) {
@@ -111,7 +144,9 @@ export class DragController {
         src,
         z.kind === 'grid'
           ? { ...z.ref, x: hover.x, y: hover.y, rotated }
-          : { owner: z.owner, slot: z.slot },
+          : z.kind === 'slot'
+            ? { owner: z.owner, slot: z.slot }
+            : { gun: z.gun, slot: z.slot },
       );
     }
   };
@@ -176,8 +211,11 @@ export class DragController {
     const top = this.y - (src.grabY + 0.5) * c;
     this.ghost!.style.transform = `translate(${left}px, ${top}px)`;
 
-    const el = document.elementFromPoint(this.x, this.y)?.closest<HTMLElement>('[data-drop]');
-    const zone = el ? this.host.zoneAt(el) : null;
+    const hit = document.elementFromPoint(this.x, this.y);
+    const gunEl = hit?.closest<HTMLElement>('[data-gun]');
+    const onGun = gunEl ? this.host.gunZone(src, JSON.parse(gunEl.dataset.gun!) as ItemRef) : null;
+    const el = onGun ? gunEl! : hit?.closest<HTMLElement>('[data-drop]');
+    const zone = onGun ?? (el ? this.host.zoneAt(el) : null);
     this.clearHover();
     if (!el || !zone) return;
     let x = 0;

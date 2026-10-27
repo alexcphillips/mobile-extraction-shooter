@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import type { CompiledMap } from '../content/compile';
 import { LOOT_CONTAINER_FORMAT_VERSION, type LootContainerDef } from '../content/loot-containers';
 import { addItem, countOf, createGrid, placeAt } from '../inventory/grid';
+import { ITEM_FORMAT_VERSION, type ItemDef } from '../content/items';
 import { CollisionWorld } from '../world/collision-world';
 import { spawnEnemy } from './ai';
 import { createItem } from './create-item';
 import { equip, heldWeapon, type ContainerState } from './gear';
+import type { WeaponState } from './weapons';
 import { dealDamage, HEAD } from './health';
 import {
   applyInventory,
@@ -291,6 +293,185 @@ describe('looting', () => {
     // Containers are plain data and survive a JSON round trip.
     const copy = JSON.parse(JSON.stringify(state)) as typeof state;
     expect(copy.loot).toEqual(state.loot);
+  });
+
+  it('puts attachments on a gun and takes them off, swapping with what was there', () => {
+    const { c, enemy, body, act } = setup();
+    const pack = c.gear.backpack!.grid;
+    const rifle = enemy.gear.primary1 as WeaponState;
+    const gun = { owner: body, slot: 'primary1', item: 'rifle' } as const;
+    placeAt(items, pack, createItem(items, 'scope'), 1, 2, false);
+    // From your backpack onto the body's rifle.
+    expect(
+      act({
+        type: 'attach',
+        gun,
+        from: { owner: self, grid: 'backpack', index: 0, item: 'scope' },
+      }),
+    ).toBe(true);
+    expect(rifle.attachments.optic).toBe('scope');
+    expect(pack.items).toEqual([]);
+    // A second scope swaps with it: the first goes where the second was.
+    placeAt(items, pack, createItem(items, 'scope'), 2, 3, false);
+    expect(
+      act({
+        type: 'attach',
+        gun,
+        from: { owner: self, grid: 'backpack', index: 0, item: 'scope' },
+      }),
+    ).toBe(true);
+    expect(pack.items).toMatchObject([{ x: 2, y: 3, item: { item: 'scope' } }]);
+    // Off to a spot, then into what you carry; a part the gun no longer has is refused.
+    const off = { type: 'detach', gun, slot: 'optic', part: 'scope' } as const;
+    expect(act({ ...off, to: { owner: self, grid: 'backpack', x: 3, y: 3, rotated: false } })).toBe(
+      false,
+    );
+    expect(act({ ...off, to: { owner: self, grid: 'backpack', x: 0, y: 0, rotated: true } })).toBe(
+      true,
+    );
+    expect(pack.items[1]).toMatchObject({ x: 0, y: 0, rotated: true, item: { item: 'scope' } });
+    expect(rifle.attachments.optic).toBeNull();
+    expect(act({ ...off, to: null })).toBe(false);
+    act({ type: 'attach', gun, from: { owner: self, grid: 'backpack', index: 1, item: 'scope' } });
+    expect(act({ ...off, to: null })).toBe(true);
+    expect(countOf(c.gear.pockets, 'scope')).toBe(1);
+  });
+
+  it('moves an attachment from one gun to another, swapping when it can', () => {
+    const { state, c, enemy, body, act } = setup();
+    equip(c, items, 'primary1', createItem(items, 'rifle'));
+    equip(c, items, 'sidearm', createItem(items, 'pistol'));
+    const mine = c.gear.primary1 as WeaponState;
+    const pistol = c.gear.sidearm as WeaponState;
+    const theirs = enemy.gear.primary1 as WeaponState;
+    const myRifle = { owner: self, slot: 'primary1', item: 'rifle' } as const;
+    const theirRifle = { owner: body, slot: 'primary1', item: 'rifle' } as const;
+    theirs.attachments.optic = 'scope';
+    const scope = { gun: theirRifle, slot: 'optic', part: 'scope' } as const;
+    // Onto an empty slot.
+    expect(act({ type: 'attach', gun: myRifle, from: scope })).toBe(true);
+    expect(mine.attachments.optic).toBe('scope');
+    expect(theirs.attachments.optic).toBeNull();
+    // Stale now, and never onto the gun it's on.
+    expect(act({ type: 'attach', gun: myRifle, from: scope })).toBe(false);
+    expect(act({ type: 'attach', gun: myRifle, from: { ...scope, gun: myRifle } })).toBe(false);
+    // A real swap: your brake for their suppressor. Then the pistol's suppressor onto
+    // their rifle: the brake doesn't fit a pistol, so it goes in your pockets.
+    const more = new Map<string, ItemDef>(items);
+    more.set('brake', {
+      formatVersion: ITEM_FORMAT_VERSION,
+      id: 'brake',
+      name: 'Brake',
+      size: [1, 1],
+      type: 'attachment',
+      slot: 'muzzle',
+      weapons: ['rifle'],
+    });
+    const actMore = (a: InventoryAction) => applyInventory(state, c, more, a);
+    mine.attachments.muzzle = 'brake';
+    theirs.attachments.muzzle = 'suppressor';
+    expect(
+      actMore({
+        type: 'attach',
+        gun: theirRifle,
+        from: { gun: myRifle, slot: 'muzzle', part: 'brake' },
+      }),
+    ).toBe(true);
+    expect([mine.attachments.muzzle, theirs.attachments.muzzle]).toEqual(['suppressor', 'brake']);
+    pistol.attachments.muzzle = 'suppressor';
+    expect(
+      actMore({
+        type: 'attach',
+        gun: theirRifle,
+        from: {
+          gun: { owner: self, slot: 'sidearm', item: 'pistol' },
+          slot: 'muzzle',
+          part: 'suppressor',
+        },
+      }),
+    ).toBe(true);
+    expect([pistol.attachments.muzzle, theirs.attachments.muzzle]).toEqual([null, 'suppressor']);
+    expect(countOf(c.gear.pockets, 'brake')).toBe(1);
+  });
+
+  it('moves a magazine between guns, stowing what the old one held or refusing', () => {
+    const { c, enemy, body, act } = setup();
+    equip(c, items, 'primary1', createItem(items, 'rifle'));
+    const mine = c.gear.primary1 as WeaponState;
+    const theirs = enemy.gear.primary1 as WeaponState;
+    theirs.attachments.magazine = 'big-mag';
+    theirs.mag = 50;
+    mine.mag = 30;
+    const from = {
+      gun: { owner: body, slot: 'primary1', item: 'rifle' },
+      slot: 'magazine',
+      part: 'big-mag',
+    } as const;
+    const gun = { owner: self, slot: 'primary1', item: 'rifle' } as const;
+    // Their 20 extra rounds have nowhere to go with everything full.
+    const full = [c.gear.pockets, c.gear.backpack!.grid];
+    for (const g of full) while (addItem(items, g, { item: 'watch', count: 1 }) === 0);
+    expect(act({ type: 'attach', gun, from })).toBe(false);
+    expect(theirs.attachments.magazine).toBe('big-mag');
+    expect(theirs.mag).toBe(50);
+    expect(mine.attachments.magazine).toBeNull();
+    c.gear.backpack!.grid.items.length = 0;
+    expect(act({ type: 'attach', gun, from })).toBe(true);
+    expect([theirs.mag, mine.mag, mine.attachments.magazine]).toEqual([30, 30, 'big-mag']);
+    expect(countOf(c.gear.backpack!.grid, 'round')).toBe(20);
+  });
+
+  it('refuses attachments that do not fit, and things that are not attachments', () => {
+    const { c, act } = setup();
+    equip(c, items, 'sidearm', createItem(items, 'pistol'));
+    const pack = c.gear.backpack!.grid;
+    addItem(items, pack, createItem(items, 'big-mag'));
+    addItem(items, pack, { item: 'watch', count: 1 });
+    const gun = { owner: self, slot: 'sidearm', item: 'pistol' } as const;
+    expect(
+      act({
+        type: 'attach',
+        gun,
+        from: { owner: self, grid: 'backpack', index: 0, item: 'big-mag' },
+      }),
+    ).toBe(false);
+    expect(
+      act({
+        type: 'attach',
+        gun,
+        from: { owner: self, grid: 'backpack', index: 1, item: 'watch' },
+      }),
+    ).toBe(false);
+    expect(pack.items).toHaveLength(2);
+  });
+
+  it('stows the rounds a smaller magazine hands back, or refuses with no room for them', () => {
+    const { c, act } = setup();
+    equip(c, items, 'primary1', createItem(items, 'rifle'));
+    const rifle = c.gear.primary1 as WeaponState;
+    const gun = { owner: self, slot: 'primary1', item: 'rifle' } as const;
+    addItem(items, c.gear.pockets, createItem(items, 'big-mag'));
+    act({ type: 'attach', gun, from: { owner: self, grid: 'pockets', index: 0, item: 'big-mag' } });
+    rifle.mag = 50;
+    // Everything carried is full: the 20 rounds have nowhere to go.
+    const fill = (grid: typeof c.gear.pockets) => {
+      while (addItem(items, grid, { item: 'watch', count: 1 }) === 0);
+    };
+    fill(c.gear.pockets);
+    fill(c.gear.backpack!.grid);
+    const off = { type: 'detach', gun, slot: 'magazine', part: 'big-mag' } as const;
+    const crate = { owner: { kind: 'container', id: 'crate' }, grid: 'loot' } as const;
+    expect(act({ ...off, to: { ...crate, x: 0, y: 0, rotated: false } })).toBe(false);
+    expect(rifle.attachments.magazine).toBe('big-mag');
+    expect(rifle.mag).toBe(50);
+    expect(c.gear.pockets.items.every((g) => g.item.item === 'watch')).toBe(true);
+    // With room, they go in with what you carry.
+    c.gear.backpack!.grid.items.length = 0;
+    rifle.reloading = 1;
+    expect(act({ ...off, to: { ...crate, x: 0, y: 0, rotated: false } })).toBe(true);
+    expect(rifle.mag).toBe(30);
+    expect(rifle.reloading).toBe(0);
+    expect(countOf(c.gear.backpack!.grid, 'round')).toBe(20);
   });
 
   it('places an empty container at every loot container marker', () => {

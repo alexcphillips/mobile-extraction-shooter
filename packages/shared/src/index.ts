@@ -73,6 +73,7 @@ export {
   placeLootContainers,
   type GridName,
   type GridRef,
+  type GridSpot,
   type InGrid,
   type InSlot,
   type InventoryAction,
@@ -80,6 +81,7 @@ export {
   type ItemRef,
   type LootContainer,
   type Owner,
+  type PartRef,
   type Target,
 } from './sim/looting';
 export {

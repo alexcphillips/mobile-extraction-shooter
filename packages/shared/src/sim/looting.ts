@@ -1,6 +1,13 @@
 import type { CompiledMap } from '../content/compile';
 import type { LootContainerDef } from '../content/loot-containers';
-import { itemDef, type ItemDb } from '../content/items';
+import {
+  attachmentDef,
+  fits,
+  itemDef,
+  weaponDef,
+  type AttachmentSlot,
+  type ItemDb,
+} from '../content/items';
 import {
   addItem,
   canHold,
@@ -18,11 +25,14 @@ import {
   carriedGrid,
   equip,
   fitsSlot,
+  stow,
   unequip,
   type Gear,
   type GearSlot,
 } from './gear';
+import { createItem } from './create-item';
 import type { Character, EntityId, SimState } from './state';
+import { attach, createWeaponStats, detach, weaponStats, type WeaponState } from './weapons';
 
 /**
  * How far a body or a loot container can be from your feet to loot it, in metres:
@@ -72,8 +82,18 @@ export interface InSlot {
 
 export type ItemRef = InGrid | InSlot;
 
+/** An attachment on a gun: `part` is the attachment id the sender saw in that slot. */
+export interface PartRef {
+  gun: ItemRef;
+  slot: AttachmentSlot;
+  part: string;
+}
+
+/** A spot in a grid: the top-left cell, and whether the item is turned. */
+export type GridSpot = GridRef & { x: number; y: number; rotated: boolean };
+
 /** Where an item is dropped: a spot in a grid, or a gear slot. */
-export type Target = (GridRef & { x: number; y: number; rotated: boolean }) | Omit<InSlot, 'item'>;
+export type Target = GridSpot | Omit<InSlot, 'item'>;
 
 /**
  * Something done in the inventory, sent in PlayerInput.inventory and applied at the start
@@ -84,11 +104,28 @@ export type Target = (GridRef & { x: number; y: number; rotated: boolean }) | Om
  * - quick: double-tap. To yourself, into an empty gear slot it fits, else into what you
  *   carry; to a body, into its pockets, rig and backpack; to a container, into it. A
  *   stack that only partly fits leaves the rest behind.
+ * - attach: puts an attachment on a gun, wherever each is. A loose one: what was in its
+ *   slot goes where the new one was (or anywhere in that grid, or else in what you
+ *   carry). One from another gun: what was in its slot goes onto that gun if it fits
+ *   there (a swap), else into what you carry.
+ * - detach: takes the attachment (`part`, as the sender saw it) out of a gun's slot, to a
+ *   spot in a grid, or with to null into what you carry.
+ * A magazine change hands back the rounds that no longer fit, into what you carry; if
+ * there's no room for them, or for the part, the action is refused (until there are
+ * items on the ground to drop them as, session 11).
  */
 export type InventoryAction =
   | { type: 'move'; from: ItemRef; to: Target }
   | { type: 'rotate'; at: InGrid }
-  | { type: 'quick'; from: ItemRef; to: Owner };
+  | { type: 'quick'; from: ItemRef; to: Owner }
+  | { type: 'attach'; gun: ItemRef; from: ItemRef | PartRef }
+  | {
+      type: 'detach';
+      gun: ItemRef;
+      slot: AttachmentSlot;
+      part: string;
+      to: GridSpot | null;
+    };
 
 /** An inventory action was applied (ok) or refused. */
 export interface InventoryEvent {
@@ -219,6 +256,12 @@ export function applyInventory(
       const from = find(state, c, action.from);
       return !!from && quickMove(state, c, items, from, action.to);
     }
+    case 'attach':
+      return 'gun' in action.from
+        ? movePart(state, c, items, action.from, action.gun)
+        : attachPart(state, c, items, action.gun, action.from);
+    case 'detach':
+      return detachPart(state, c, items, action.gun, action.slot, action.part, action.to);
   }
 }
 
@@ -301,4 +344,171 @@ function quickMove(state: SimState, c: Character, items: ItemDb, from: Found, to
   }
   if (left === 0) takeOut(from);
   return left < before;
+}
+
+/** A gun c can reach, by ref. */
+function findGun(state: SimState, c: Character, ref: ItemRef): WeaponState | null {
+  const f = find(state, c, ref);
+  return f?.item.attachments ? (f.item as WeaponState) : null;
+}
+
+// Scratch for working out a gun's magazine size.
+const stats = createWeaponStats();
+
+/** The rounds that wouldn't fit a gun with id (or nothing) in a slot, leaving it as it is. */
+function roundsOut(items: ItemDb, w: WeaponState, slot: AttachmentSlot, id: string | null): number {
+  const was = w.attachments[slot];
+  w.attachments[slot] = id;
+  const capacity = weaponStats(items, w, stats).magazine;
+  w.attachments[slot] = was;
+  return Math.max(0, w.mag - capacity);
+}
+
+/**
+ * Whether rounds would all fit in what c carries, tried on copies of the grids. Each
+ * entry is [ammo, count].
+ */
+function roomForRounds(
+  c: Character,
+  items: ItemDb,
+  rounds: readonly (readonly [string, number])[],
+): boolean {
+  const copies: Grid[] = [];
+  for (let i = 0; i < CARRIED_GRIDS; i++) {
+    const grid = carriedGrid(c.gear, i);
+    if (grid) {
+      copies.push({ ...grid, items: grid.items.map((g) => ({ ...g, item: { ...g.item } })) });
+    }
+  }
+  for (const [ammo, n] of rounds) {
+    let left = n;
+    for (const copy of copies)
+      if (left > 0) left = addItem(items, copy, { item: ammo, count: left });
+    if (left > 0) return false;
+  }
+  return true;
+}
+
+/** Puts a loose part in the first of c's carried grids with room. Returns that grid. */
+function stowPart(c: Character, items: ItemDb, part: Item): Grid | null {
+  for (let i = 0; i < CARRIED_GRIDS; i++) {
+    const grid = carriedGrid(c.gear, i);
+    if (grid && addItem(items, grid, part) === 0) return grid;
+  }
+  return null;
+}
+
+/** Takes a part placed by this action back out of a grid. */
+function takeBack(grid: Grid, part: Item): void {
+  removeAt(
+    grid,
+    grid.items.findIndex((g) => g.item === part),
+  );
+}
+
+function attachPart(
+  state: SimState,
+  c: Character,
+  items: ItemDb,
+  gunRef: ItemRef,
+  fromRef: ItemRef,
+): boolean {
+  const gun = findGun(state, c, gunRef);
+  const from = find(state, c, fromRef);
+  if (!gun || from?.at !== 'grid') return false;
+  const def = itemDef(items, from.item.item);
+  if (def.type !== 'attachment' || !fits(weaponDef(items, gun.item), def)) return false;
+  const old = gun.attachments[def.slot];
+  const out = roundsOut(items, gun, def.slot, def.id);
+  const { grid, index, g } = from;
+  removeAt(grid, index);
+  // What was on the gun goes where the new part was, else anywhere in that grid or carried.
+  const oldPart = old === null ? null : createItem(items, old);
+  let oldIn: Grid | null = null;
+  if (oldPart) {
+    oldIn =
+      placeAt(items, grid, oldPart, g.x, g.y, g.rotated) ||
+      placeAt(items, grid, oldPart, g.x, g.y, !g.rotated) ||
+      addItem(items, grid, oldPart) === 0
+        ? grid
+        : stowPart(c, items, oldPart);
+  }
+  const ammo = weaponDef(items, gun.item).ammo;
+  if ((oldPart && !oldIn) || !roomForRounds(c, items, [[ammo, out]])) {
+    if (oldIn) takeBack(oldIn, oldPart!);
+    grid.items.splice(index, 0, g);
+    return false;
+  }
+  stowRounds(c, items, ammo, attach(gun, items, def.id));
+  return true;
+}
+
+function detachPart(
+  state: SimState,
+  c: Character,
+  items: ItemDb,
+  gunRef: ItemRef,
+  slot: AttachmentSlot,
+  part: string,
+  to: GridSpot | null,
+): boolean {
+  const gun = findGun(state, c, gunRef);
+  if (!gun || gun.attachments[slot] !== part) return false;
+  const out = roundsOut(items, gun, slot, null);
+  const loose = createItem(items, part);
+  let into: Grid | null;
+  if (to) {
+    const grid = gridOf(state, c, to);
+    into = grid && placeAt(items, grid, loose, to.x, to.y, to.rotated) ? grid : null;
+  } else {
+    into = stowPart(c, items, loose);
+  }
+  if (!into) return false;
+  const ammo = weaponDef(items, gun.item).ammo;
+  if (!roomForRounds(c, items, [[ammo, out]])) {
+    takeBack(into, loose);
+    return false;
+  }
+  stowRounds(c, items, ammo, detach(gun, items, slot));
+  return true;
+}
+
+/** Moves a part from one gun to another, swapping with what's there if it fits the first. */
+function movePart(
+  state: SimState,
+  c: Character,
+  items: ItemDb,
+  from: PartRef,
+  toRef: ItemRef,
+): boolean {
+  const a = findGun(state, c, from.gun);
+  const b = findGun(state, c, toRef);
+  if (!a || !b || a === b || a.attachments[from.slot] !== from.part) return false;
+  const def = attachmentDef(items, from.part);
+  if (!fits(weaponDef(items, b.item), def)) return false;
+  const slot = def.slot;
+  const old = b.attachments[slot];
+  const swap = old !== null && fits(weaponDef(items, a.item), attachmentDef(items, old));
+  // What's on the second gun goes into what you carry if it can't go on the first.
+  const loose = old !== null && !swap ? createItem(items, old) : null;
+  const looseIn = loose && stowPart(c, items, loose);
+  if (loose && !looseIn) return false;
+  const ammoA = weaponDef(items, a.item).ammo;
+  const ammoB = weaponDef(items, b.item).ammo;
+  const rounds = [
+    [ammoA, roundsOut(items, a, slot, swap ? old : null)],
+    [ammoB, roundsOut(items, b, slot, def.id)],
+  ] as const;
+  if (!roomForRounds(c, items, rounds)) {
+    if (looseIn) takeBack(looseIn, loose!);
+    return false;
+  }
+  const outA = swap ? attach(a, items, old!) : detach(a, items, slot);
+  stowRounds(c, items, ammoA, outA);
+  stowRounds(c, items, ammoB, attach(b, items, def.id));
+  return true;
+}
+
+function stowRounds(c: Character, items: ItemDb, ammo: string, n: number): void {
+  if (n > 0) stow(c, items, createItem(items, ammo, n));
 }

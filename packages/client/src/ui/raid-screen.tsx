@@ -1,4 +1,5 @@
 import {
+  ATTACHMENT_SLOTS,
   itemDef,
   lootContainerById,
   stackSize,
@@ -7,6 +8,7 @@ import {
   type Grid,
   type GridName,
   type GridRef,
+  type AttachmentSlot,
   type Item,
   type ItemDb,
   type ItemDef,
@@ -95,8 +97,9 @@ const SLOT_NAMES: Record<GearSlot, string> = {
 const WIDE: ReadonlySet<GearSlot> = new Set(['primary1', 'primary2']);
 
 function Inventory({ inv, version }: Props): ReactNode {
-  const { ctx, selected } = inv;
   useEffect(() => () => inv.drag.cancel(), [inv]);
+  inv.followSelection();
+  const { ctx, selected } = inv;
   const sel = selected && inv.find(selected);
   return (
     <div className="inv" style={{ ['--cell' as string]: `${inv.cell}px` }} data-version={version}>
@@ -117,6 +120,7 @@ function Inventory({ inv, version }: Props): ReactNode {
           <>
             <span className="inv-bar-name">{sel.def.name}</span>
             <span className="inv-bar-info">{details(ctx.items, sel.item, sel.def)}</span>
+            {sel.def.type === 'weapon' && <Parts inv={inv} gun={selected} item={sel.item} />}
             <span className="raid-spacer" />
             {'index' in selected && sel.def.size[0] !== sel.def.size[1] && (
               <button onClick={() => inv.rotate(selected)}>Rotate</button>
@@ -132,6 +136,121 @@ function Inventory({ inv, version }: Props): ReactNode {
           </span>
         )}
       </footer>
+    </div>
+  );
+}
+
+const PART_NAMES: Record<AttachmentSlot, string> = {
+  optic: 'Optic',
+  muzzle: 'Muzzle',
+  magazine: 'Magazine',
+};
+
+/**
+ * The selected gun's attachment slots. Drop an attachment on one to put it on; drag one
+ * off to a grid; tap one for a picker of those you can reach that fit; double-tap one to
+ * take it off into what you carry.
+ */
+function Parts({
+  inv,
+  gun,
+  item,
+}: {
+  inv: InventoryController;
+  gun: ItemRef;
+  item: Item;
+}): ReactNode {
+  const { items } = inv.ctx;
+  const weapon = itemDef(items, item.item);
+  if (weapon.type !== 'weapon') return null;
+  return (
+    <div className="inv-parts">
+      {ATTACHMENT_SLOTS.filter((s) => weapon.slots?.includes(s)).map((slot) => {
+        const part = item.attachments?.[slot] ?? null;
+        const def = part === null ? null : itemDef(items, part);
+        return (
+          <div
+            key={slot}
+            className={`inv-slot inv-part${inv.picking === slot ? ' open' : ''}`}
+            data-drop={JSON.stringify({ gun, slot })}
+            onClick={() => {
+              if (!part) inv.togglePicker(slot);
+            }}
+          >
+            <span className="inv-slot-name">{PART_NAMES[slot]}</span>
+            {def && part ? (
+              <div
+                className="inv-item"
+                style={{ background: colourOf(def) }}
+                onPointerDown={(e) =>
+                  inv.drag.down(e.nativeEvent, {
+                    ref: { gun, slot, part },
+                    w: def.size[0],
+                    h: def.size[1],
+                    rotated: false,
+                    grabX: 0,
+                    grabY: 0,
+                    colour: colourOf(def),
+                    label: def.name,
+                    el: e.currentTarget,
+                  })
+                }
+              >
+                <span className="inv-item-name">{def.name}</span>
+              </div>
+            ) : (
+              <span className="inv-part-empty">none</span>
+            )}
+          </div>
+        );
+      })}
+      {inv.picking && <Picker inv={inv} gun={item} slot={inv.picking} gunRef={gun} />}
+    </div>
+  );
+}
+
+const GRID_LABELS: Record<GridName, string> = {
+  pockets: 'pockets',
+  rig: 'rig',
+  backpack: 'backpack',
+  vault: 'vault',
+  loot: '',
+};
+
+/** What can go in one of the selected gun's attachment slots, above the bar. */
+function Picker({
+  inv,
+  gun,
+  gunRef,
+  slot,
+}: {
+  inv: InventoryController;
+  gun: Item;
+  gunRef: ItemRef;
+  slot: AttachmentSlot;
+}): ReactNode {
+  const part = gun.attachments?.[slot] ?? null;
+  const choices = inv.partChoices(gun, slot);
+  return (
+    <div className="inv-picker" role="menu">
+      {part && (
+        <button onClick={() => inv.detach({ gun: gunRef, slot, part })}>
+          Take off <span>into your pockets, rig or backpack</span>
+        </button>
+      )}
+      {choices.map((c) => (
+        <button key={c.def.id} onClick={() => inv.attach(c.ref)}>
+          {c.def.name}
+          <span>
+            {c.owner.kind === 'self' ? `your ${GRID_LABELS[c.where]}` : inv.ctx.nameOf(c.owner)}
+          </span>
+        </button>
+      ))}
+      {!choices.length && (
+        <p className="raid-note">
+          {part ? 'Nothing else you can reach fits.' : 'Nothing you can reach fits.'}
+        </p>
+      )}
     </div>
   );
 }
@@ -237,6 +356,7 @@ function Slots({
             {item && def && ref && (
               <div
                 className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}`}
+                data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
                 style={{ background: colourOf(def) }}
                 onPointerDown={(e) =>
                   inv.drag.down(e.nativeEvent, {
@@ -288,6 +408,7 @@ function GridView({
           <div
             key={index}
             className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}`}
+            data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
             style={{
               left: g.x * cell,
               top: g.y * cell,
@@ -369,10 +490,7 @@ function badge(item: Item, def: ItemDef): string {
 function details(items: ItemDb, item: Item, def: ItemDef): string {
   switch (def.type) {
     case 'weapon': {
-      const ammo = itemDef(items, def.ammo).name;
-      const on = Object.values(item.attachments ?? {}).filter((a): a is string => !!a);
-      const names = on.map((a) => itemDef(items, a).name).join(', ');
-      return `${item.mag ?? 0} loaded · ${ammo}${names ? ` · ${names}` : ''}`;
+      return `${item.mag ?? 0} loaded · ${itemDef(items, def.ammo).name}`;
     }
     case 'armour':
       return `Durability ${Math.ceil(item.durability ?? 0)}/${def.durability} · absorbs ${Math.round(def.absorb * 100)}%`;

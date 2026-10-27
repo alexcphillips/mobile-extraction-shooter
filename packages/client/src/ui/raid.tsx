@@ -49,8 +49,7 @@ export function openRaidScreen(
     refresh: render,
     setTarget: (t) => {
       inv.target = t;
-      inv.selected = null;
-      render();
+      inv.select(null);
     },
     hide: () => {
       inv.drag.cancel();

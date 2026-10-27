@@ -890,6 +890,11 @@ body:has(#raid:not([hidden])) #vitals {
   border: 2px solid #e3a33a;
 }
 
+/* A gun an attachment is dragged over that it fits. */
+.inv-item.drop-ok {
+  outline: 2px solid #6fbf5a;
+}
+
 .inv-item.dragging {
   opacity: 0.3;
 }
@@ -963,6 +968,78 @@ body:has(#raid:not([hidden])) #vitals {
 .inv-hint {
   color: #9aa6b0;
   font-size: 12px;
+}
+
+.inv-bar-info {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The selected gun's attachment slots, and the picker that opens above one. */
+.inv-parts {
+  position: relative;
+  display: flex;
+  flex: none;
+  gap: 4px;
+}
+
+.inv-part {
+  width: calc(var(--cell) * 2.4);
+  height: 34px;
+}
+
+.inv-part.open {
+  outline: 2px solid #e3a33a;
+}
+
+.inv-part .inv-item {
+  inset: 13px 0 0;
+}
+
+.inv-part .inv-item-name {
+  top: 3px;
+  max-height: none;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.inv-part-empty {
+  position: absolute;
+  bottom: 3px;
+  left: 4px;
+  font-size: 11px;
+  color: #5d6871;
+}
+
+.inv-picker {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 220px;
+  max-height: 60vh;
+  padding: 6px;
+  overflow-y: auto;
+  border-radius: 6px;
+  background: #1b2126;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.5);
+}
+
+.raid .inv-picker button {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+}
+
+.inv-picker button span {
+  color: #9aa6b0;
+  font-size: 11px;
 }
 
 /* Landscape only: on a phone held upright, cover everything (the game pauses too). */

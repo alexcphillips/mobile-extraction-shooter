@@ -87,9 +87,9 @@ if (location.pathname === '/bodies') {
   // ?map=<id> picks a map from content/maps, ?spawn=<id> a player spawn in it (?at=<x>,<z>
   // starts you at a point instead), ?weapon=<id> the gun in hand, ?attach=<id>,<id> its
   // attachments, ?nav shows the navigation grid, and ?debug shows markers, zones, patrols
-  // and what enemies think, with buttons (and keys 7–0) for hurt, heal, next optic and next
-  // muzzle. ?respawn brings dead enemies back, ?peaceful sends them in unarmed, and
-  // ?hitzones draws hit zones over their bodies.
+  // and what enemies think, with buttons (and keys 7 and 8) for hurt and heal. ?respawn
+  // brings dead enemies back, ?peaceful sends them in unarmed, and ?hitzones draws hit
+  // zones over their bodies.
   const q = new URLSearchParams(location.search);
   byId('try-again').addEventListener('click', () => location.reload());
   startPlay(
