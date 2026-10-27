@@ -1,4 +1,4 @@
-import { PROTOCOL_VERSION, type HelloResponse } from '@mes/shared';
+import { PROTOCOL_VERSION, type HelloResponse, type ProfileResponse } from '@mes/shared';
 import { unlockAudioOnTap } from './app/audio';
 import { preventZoom } from './app/no-zoom';
 import { watchPauseTriggers } from './app/pause';
@@ -10,8 +10,9 @@ import { startBodies } from './bodies';
 import { startPerfTest } from './perf';
 import { readParams } from './perf/params';
 import { mountPresets } from './perf/presets';
-import { fetchProfile } from './account';
+import { AccountError, fetchProfile, syncSettings } from './account';
 import { startPlay } from './play';
+import { sendPending, startServerRaid } from './raids';
 import { settings } from './settings';
 
 const byId = (id: string): HTMLElement => {
@@ -87,14 +88,15 @@ if (location.pathname === '/bodies') {
   });
 } else {
   // ?raid=<id> picks a raid config from content/raids, ?time=<seconds> sets its timer,
-  // ?spawn=<id> a player spawn in its map (?at=<x>,<z> starts you at a point instead), ?weapon=<id> the gun in hand, ?attach=<id>,<id> its
-  // attachments, ?nav shows the navigation grid, and ?debug shows markers, zones, patrols
+  // ?spawn=<id> a player spawn in its map (?at=<x>,<z> starts you at a point instead),
+  // ?nav shows the navigation grid, and ?debug shows markers, zones, patrols
   // and what enemies think, with buttons (and keys 7 and 8) for hurt and heal. ?respawn
   // brings dead enemies back, ?peaceful sends them in unarmed, and ?hitzones draws hit
   // zones over their bodies.
   const q = new URLSearchParams(location.search);
-  signedIn()
-    .then(() =>
+  const raidId = q.get('raid') ?? 'test-raid';
+  prepareRaid(raidId)
+    .then((started) =>
       startPlay(
         {
           canvas: byId('scene') as HTMLCanvasElement,
@@ -107,12 +109,12 @@ if (location.pathname === '/bodies') {
           results: byId('results'),
         },
         {
-          raid: q.get('raid') ?? 'test-raid',
+          raid: raidId,
+          serverRaid: started.raid!.id,
+          gear: started.profile.gear,
           duration: Number(q.get('time')) > 0 ? Number(q.get('time')) : null,
           spawn: q.get('spawn'),
           at: parseAt(q.get('at')),
-          weapon: q.get('weapon') ?? 'assault-rifle',
-          attachments: q.get('attach')?.split(',').filter(Boolean) ?? [],
           debug: q.has('debug'),
           nav: q.has('nav'),
           respawn: q.has('respawn'),
@@ -123,22 +125,54 @@ if (location.pathname === '/bodies') {
         },
       ),
     )
-    .catch((err: unknown) => (status.textContent = `map failed: ${message(err)}`));
+    .catch((err: unknown) => (status.textContent = `raid failed: ${message(err)}`));
 }
 
 /**
- * Asks the sign-in screen first if no one is signed in. If the server can't be reached,
- * the game starts anyway (offline play is session 12b), and the server line says so.
+ * Everything before a raid, on the server: sign in if no one is, send a result left from
+ * an earlier raid, then start this one, whose reply has the gear to wear. Anything
+ * worth knowing about the last raid is shown first. With no connection it says so, with
+ * a button to try again, since a raid can't start without the server.
  */
-async function signedIn(): Promise<void> {
-  try {
-    if (await fetchProfile()) return;
-  } catch (err) {
-    console.warn('not signed in:', message(err));
-    return;
+async function prepareRaid(raid: string): Promise<ProfileResponse> {
+  const ui = (): Promise<typeof import('./ui/account')> => import('./ui/account');
+  for (;;) {
+    try {
+      let me = (await fetchProfile()) ?? (await (await ui()).showAccount(byId('account')));
+      syncSettings(me);
+      const notices: string[] = [];
+      const pending = await sendPending();
+      if (pending.notice) notices.push(pending.notice);
+      if (pending.sent) me = (await fetchProfile()) ?? me;
+      if (me.raid)
+        notices.push(
+          'Your last raid never finished, so it counted as missing in action: you kept only your knife and your vault.',
+        );
+      const started = await startServerRaid(raid);
+      if (notices.length) {
+        await (
+          await ui()
+        ).showMessage(byId('account'), {
+          title: 'Your last raid',
+          text: notices,
+          button: 'Continue',
+        });
+      }
+      return started;
+    } catch (err) {
+      if (!(err instanceof AccountError && err.code === 'offline')) throw err;
+      await (
+        await ui()
+      ).showMessage(byId('account'), {
+        title: 'No connection',
+        text: [
+          "Can't reach the server. Raids need it to start, so they can take your gear in.",
+          'Check your connection and try again.',
+        ],
+        button: 'Try again',
+      });
+    }
   }
-  const ui = await import('./ui/account');
-  await ui.showAccount(byId('account'));
 }
 
 /** "x,z" as two numbers, or null. */

@@ -1,4 +1,5 @@
 import type { Profile } from './profile';
+import type { Settings } from './settings';
 import type { Gear } from './sim/gear';
 import type { LeaveReason } from './sim/raid';
 
@@ -47,6 +48,15 @@ export interface ProfileResponse {
   profile: Profile;
   /** While set, the gear is in the raid and the profile can't be edited. */
   raid: OpenRaid | null;
+  /** The settings last saved from any device, or null if none ever were. */
+  settings: SavedSettings | null;
+}
+
+/** Settings as synced: the newest change wins, wherever it was made. */
+export interface SavedSettings {
+  settings: Settings;
+  /** When they were changed, on the device that changed them (Unix ms). */
+  at: number;
 }
 
 /** PUT /api/profile: moving things around between raids. */
@@ -59,6 +69,9 @@ export interface SaveProfileRequest {
 export interface StartRaidRequest {
   raid: string;
 }
+
+/** PUT /api/settings: saved if newer than what the server has (replies 204 either way). */
+export type SaveSettingsRequest = SavedSettings;
 
 export type RaidOutcome = LeaveReason | 'killed';
 

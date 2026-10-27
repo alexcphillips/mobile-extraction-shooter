@@ -4,6 +4,7 @@ import {
   checkProfile,
   itemGained,
   loadContent,
+  loadSettings,
   restGear,
   type Profile,
   type ProfileResponse,
@@ -22,10 +23,16 @@ export async function profileResponse(db: D1Database, account: string): Promise<
   const [row, raid] = await Promise.all([
     db
       .prepare(
-        'SELECT a.username, p.version, p.data FROM profiles p JOIN accounts a ON a.id = p.account_id WHERE p.account_id = ?',
+        'SELECT a.username, a.settings, a.settings_at, p.version, p.data FROM profiles p JOIN accounts a ON a.id = p.account_id WHERE p.account_id = ?',
       )
       .bind(account)
-      .first<{ username: string; version: number; data: string }>(),
+      .first<{
+        username: string;
+        settings: string | null;
+        settings_at: number;
+        version: number;
+        data: string;
+      }>(),
     db
       .prepare('SELECT id, raid, started_at FROM raids WHERE account_id = ? AND ended_at IS NULL')
       .bind(account)
@@ -37,6 +44,9 @@ export async function profileResponse(db: D1Database, account: string): Promise<
     version: row.version,
     profile: parseProfile(row.data),
     raid: raid ? { id: raid.id, raid: raid.raid, startedAt: raid.started_at } : null,
+    settings: row.settings
+      ? { settings: loadSettings(JSON.parse(row.settings)), at: row.settings_at }
+      : null,
   };
 }
 
@@ -91,4 +101,28 @@ profiles.put('/', async (c) => {
   const res = await writeProfile(db, account, raw.version, next).run();
   if (!res.meta.changes) return fail(c, 'stale');
   return c.json(await profileResponse(db, account));
+});
+
+/** The most a settings document may be, as JSON. */
+const MAX_SETTINGS = 16_000;
+
+export const settingsRoute = new Hono<AppEnv>();
+
+/**
+ * Saves the settings if they're newer than the stored ones (by when they were changed),
+ * so an old device coming online doesn't undo a newer change. Unknown or bad fields fall
+ * back to their defaults, as on the client.
+ */
+settingsRoute.put('/', async (c) => {
+  const raw = await body(c);
+  if (!isObject(raw) || typeof raw.at !== 'number' || !Number.isFinite(raw.at))
+    return fail(c, 'bad-request', 'settings and at are required');
+  const json = JSON.stringify(loadSettings(raw.settings));
+  if (json.length > MAX_SETTINGS) return fail(c, 'invalid', 'settings are too big');
+  await c.env.DB.prepare(
+    'UPDATE accounts SET settings = ?, settings_at = ? WHERE id = ? AND settings_at < ?',
+  )
+    .bind(json, raw.at, c.var.account, raw.at)
+    .run();
+  return c.body(null, 204);
 });

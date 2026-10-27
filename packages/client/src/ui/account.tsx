@@ -136,3 +136,51 @@ export function showAccount(container: HTMLElement): Promise<ProfileResponse> {
     );
   });
 }
+
+export interface Message {
+  title: string;
+  /** One paragraph each. */
+  text: string[];
+  button: string;
+}
+
+/** A screen with a title, a few lines and one button. */
+function MessageScreen({ message, onDone }: { message: Message; onDone: () => void }): ReactNode {
+  return (
+    <div className="account">
+      <div className="account-card" role="alertdialog" aria-label={message.title}>
+        <h1>Extraction</h1>
+        <h2>{message.title}</h2>
+        {message.text.map((t) => (
+          <p key={t} className="account-text">
+            {t}
+          </p>
+        ))}
+        <button type="button" className="primary" onClick={onDone}>
+          {message.button}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Shows a message over everything (no connection, or news about the last raid) and
+ * resolves when its button is pressed. Uses the sign-in screen's place and look.
+ */
+export function showMessage(container: HTMLElement, message: Message): Promise<void> {
+  return new Promise((resolve) => {
+    const root = createRoot(container);
+    container.hidden = false;
+    root.render(
+      <MessageScreen
+        message={message}
+        onDone={() => {
+          root.unmount();
+          container.hidden = true;
+          resolve();
+        }}
+      />,
+    );
+  });
+}

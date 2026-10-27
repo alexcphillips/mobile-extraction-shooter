@@ -1216,6 +1216,25 @@ body:has(#raid:not([hidden])) #vitals {
   color: #9aa6b0;
 }
 
+.results-save {
+  margin: 4px 0 0;
+  max-width: 480px;
+  font-size: 13px;
+  color: #9aa6b0;
+}
+
+.results-save.saved {
+  color: #6cff8a;
+}
+
+.results-save.queued {
+  color: #e3a33a;
+}
+
+.results-save.refused {
+  color: #ff6b5a;
+}
+
 .results-cols {
   display: flex;
   gap: 32px;
@@ -1329,6 +1348,10 @@ body:has(#account:not([hidden])) #portrait {
 .account input:focus {
   border-color: #e3a33a;
   outline: none;
+}
+
+.account-text {
+  margin: 0 0 12px;
 }
 
 .account-hint {

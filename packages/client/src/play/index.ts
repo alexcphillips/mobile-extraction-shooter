@@ -11,7 +11,6 @@ import {
   createState,
   equipLoadout,
   eyeHeight,
-  giveWeapon,
   nextInt,
   pick,
   raycastCharacters,
@@ -21,18 +20,14 @@ import {
   spawnCharacter,
   spawnEnemy,
   step,
-  wearArmour,
   weaponDef,
   type Character,
   type PlayerInput,
   type TickInputs,
   type Zone,
   heldWeapon,
-  createItem,
-  equip,
   placeLootContainers,
   lootContainerById,
-  stow,
   type InventoryAction,
   type Item,
   type Owner,
@@ -48,6 +43,7 @@ import {
   startRaid,
   itemDef,
   type LeaveReason,
+  type Gear,
   findKey,
   keyName,
   syncDoors,
@@ -84,6 +80,7 @@ import { AiDebug, buildNavOverlay } from '../render/nav-debug';
 import { Viewmodel } from '../render/viewmodel';
 import { settings } from '../settings';
 import type { RaidScreenHandle } from '../ui/raid';
+import { saveResult, type SaveStatus } from '../raids';
 import type { RaidResult } from '../ui/results';
 import { lootableInReach } from './loot';
 
@@ -104,16 +101,16 @@ export interface PlayElements {
 export interface PlayOptions {
   /** A raid config's id, in content/raids. */
   raid: string;
+  /** The raid's id on the server, which its result is sent to. */
+  serverRaid: string;
+  /** What the player wears into the raid: the profile's gear, from the server. */
+  gear: Gear;
   /** Debug: the raid timer in seconds, instead of the raid's. */
   duration: number | null;
   /** A player spawn's id; otherwise one is picked at random. */
   spawn: string | null;
   /** Debug: start at this x, z instead of a spawn (facing the spawn's way). */
   at: [number, number] | null;
-  /** The player's gun, an item id. */
-  weapon: string;
-  /** Attachment item ids to put on it. */
-  attachments: string[];
   /**
    * Show markers, zones, patrols and what enemies are thinking, and buttons (and keys 7
    * and 8) for hurt me and heal me.
@@ -140,7 +137,6 @@ const RETICLE_IN = 0.95;
 /** How far into aiming a scope switches to its full-screen zoom. */
 const SCOPE_IN = 0.9;
 const DEG = Math.PI / 180;
-const SPARE_ROUNDS = 120;
 /** With ?respawn, dead enemies come back at their spawn after this long. */
 const ENEMY_RESPAWN_MS = 6000;
 /** How long after you die the results screen comes up. */
@@ -150,7 +146,7 @@ const ASSIST = { off: 1, low: 0.8, medium: 0.6, high: 0.45 } as const;
 
 /**
  * A solo raid from a config in content/raids, on the shared simulation. You start at a
- * random player spawn with a fixed kit (until stash loadouts, session 13). Containers and
+ * random player spawn wearing your profile's gear, from the server. Containers and
  * enemies' pockets are rolled from loot tables, and every enemy spawn has an enemy of its
  * type with a rolled loadout, which guards its spawn or walks its patrol, and fights you
  * once it notices you. The dead stay down. It ends for you when you extract, die or run
@@ -218,22 +214,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // ?at stands you on the floor nearest the ground there, not on a roof.
     options.at ? world.terrain.heightAt(startX, startZ) + 1 : spawn.y + 0.5,
   );
-  // Until stash loadouts (session 13): both guns (the one asked for in hand), armour, a
-  // rig and backpack, spare rounds and a few meds.
-  for (const id of ['assault-rifle', 'pistol']) {
-    if (id !== options.weapon) giveWeapon(player, items, id);
-  }
-  giveWeapon(player, items, options.weapon, options.attachments);
-  wearArmour(player, items, 'steel-helmet');
-  wearArmour(player, items, 'plate-carrier');
-  equip(player, items, 'knife', createItem(items, 'knife'));
-  equip(player, items, 'rig', createItem(items, 'chest-rig'));
-  equip(player, items, 'backpack', createItem(items, 'small-backpack'));
-  stow(player, items, createItem(items, 'ammo-556', SPARE_ROUNDS));
-  stow(player, items, createItem(items, 'ammo-9mm', 45));
-  for (const id of ['bandage', 'bandage', 'splint', 'medkit']) {
-    stow(player, items, createItem(items, id));
-  }
+  player.gear = structuredClone(options.gear);
   const held = heldWeapon(player);
   if (held) viewmodel.setGun(held, items);
   placeLootContainers(sim, map, lootKinds);
@@ -473,26 +454,32 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   /** The enemy type that killed you, if one did. */
   let killedBy: string | null = null;
   let ended: RaidResult | null = null;
+  let saving: Promise<SaveStatus> | null = null;
   let resultsAt = 0;
   function endRaid(how: LeaveReason | 'killed', detail: string, now: number): void {
     if (ended) return;
     const survived = how === 'extracted';
     const kept = keptItems(player.gear, survived);
+    const seconds = sim.tick / TICK_RATE;
     ended = {
       how,
       detail,
-      seconds: sim.tick / TICK_RATE,
+      seconds,
       kills,
       kept,
       lost: gearItems(player.gear).filter((i) => !kept.includes(i)),
     };
+    // Sent now, as it is: the server keeps what the outcome allows.
+    const gear = JSON.parse(JSON.stringify(player.gear)) as Gear;
+    saving = saveResult(options.serverRaid, { how, gear, seconds, kills, detail });
     resultsAt = now + (how === 'killed' ? RESULTS_AFTER_DEATH_MS : 0);
     closeScreen();
   }
   function showResults(result: RaidResult): void {
     import('../ui/results')
       .then((ui) => {
-        ui.showResults(el.results, result, items, () => location.reload());
+        // The next raid starts from the page, which sends anything not yet saved first.
+        ui.showResults(el.results, result, items, saving!, () => location.reload());
         // Nothing more to play: stop drawing.
         pause.set('ended', true);
       })

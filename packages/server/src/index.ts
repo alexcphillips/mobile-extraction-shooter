@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { PROTOCOL_VERSION, TICK_RATE, type HelloResponse } from '@mes/shared';
 import { auth, signedIn, type AppEnv } from './auth';
 import { fail } from './errors';
-import { profiles } from './profiles';
+import { profiles, settingsRoute } from './profiles';
 import { raids } from './raids';
 
 export const app = new Hono<AppEnv>().basePath('/api');
@@ -18,6 +18,8 @@ app.get('/hello', (c) =>
 app.route('/', auth);
 app.use('/profile', signedIn);
 app.route('/profile', profiles);
+app.use('/settings', signedIn);
+app.route('/settings', settingsRoute);
 app.use('/raids', signedIn);
 app.use('/raids/*', signedIn);
 app.route('/raids', raids);

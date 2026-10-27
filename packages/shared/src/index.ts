@@ -11,6 +11,8 @@ export {
   type ProfileResponse,
   type RaidOutcome,
   type SaveProfileRequest,
+  type SaveSettingsRequest,
+  type SavedSettings,
   type StartRaidRequest,
 } from './protocol';
 export {

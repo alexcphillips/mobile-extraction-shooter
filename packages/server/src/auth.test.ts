@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { defaultSettings } from '@mes/shared';
 import { AUTH, hashPassword, verifyPassword } from './auth';
 import { testEnv } from './test/d1';
 import { TestClient } from './test/client';
@@ -106,5 +107,40 @@ describe('login and sessions', () => {
     await client.register();
     await env.DB.prepare('UPDATE sessions SET expires_at = 0').run();
     expect((await client.fails('GET', '/profile')).error).toBe('signed-out');
+  });
+});
+
+describe('settings', () => {
+  it('keeps the newest settings from any device', async () => {
+    const env = testEnv();
+    const phone = new TestClient(env);
+    await phone.register();
+    expect((await phone.ok('GET', '/profile')).settings).toBeNull();
+
+    const s = { ...defaultSettings(), invertY: true };
+    expect((await phone.request('PUT', '/settings', { settings: s, at: 2000 })).status).toBe(204);
+    // An older change, from a device that was offline, doesn't undo it.
+    const old = { ...defaultSettings(), lookSensitivity: 2 };
+    await phone.request('PUT', '/settings', { settings: old, at: 1000 });
+    const saved = (await phone.ok('GET', '/profile')).settings;
+    expect(saved?.at).toBe(2000);
+    expect(saved?.settings.invertY).toBe(true);
+    expect(saved?.settings.lookSensitivity).toBe(1);
+  });
+
+  it('falls back to defaults for bad fields and needs a session', async () => {
+    const env = testEnv();
+    const client = new TestClient(env);
+    expect((await client.fails('PUT', '/settings', { settings: {}, at: 1 })).error).toBe(
+      'signed-out',
+    );
+    await client.register();
+    await client.request('PUT', '/settings', {
+      settings: { formatVersion: 1, aim: 'sideways', invertY: true },
+      at: 5,
+    });
+    const saved = (await client.ok('GET', '/profile')).settings!.settings;
+    expect(saved.aim).toBe('hold');
+    expect(saved.invertY).toBe(true);
   });
 });

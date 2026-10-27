@@ -1,4 +1,11 @@
-import type { ApiError, ApiErrorCode, LoginRequest, ProfileResponse } from '@mes/shared';
+import type {
+  ApiError,
+  ApiErrorCode,
+  LoginRequest,
+  ProfileResponse,
+  SaveSettingsRequest,
+} from '@mes/shared';
+import { settings } from './settings';
 
 /*
  * The account on the server (session 12): who's signed in, signing in and out. The
@@ -28,7 +35,7 @@ const MESSAGES: Partial<Record<ApiErrorCode | 'offline', string>> = {
 /** The username signed in, once known; null if signed out or the server couldn't be reached. */
 export let username: string | null = null;
 
-async function call(method: string, path: string, body?: unknown): Promise<Response> {
+export async function call(method: string, path: string, body?: unknown): Promise<Response> {
   let res: Response;
   try {
     res = await fetch(`/api${path}`, {
@@ -82,4 +89,31 @@ export async function signIn(
 export async function signOut(): Promise<void> {
   await call('POST', '/logout');
   username = null;
+}
+
+/** How long settings wait after a change before they're sent, so a slider drag is one save. */
+const SETTINGS_DELAY_MS = 2000;
+let settingsTimer = 0;
+let syncing = false;
+
+function pushSettings(): void {
+  const body: SaveSettingsRequest = { settings: settings.current, at: settings.changedAt };
+  // A failure (offline) is fine: the next startup sends them, as they're newer.
+  call('PUT', '/settings', body).catch(() => {});
+}
+
+/**
+ * Brings this device's settings and the account's in line, newest wins, then sends every
+ * later change here. Call once, signed in.
+ */
+export function syncSettings(me: ProfileResponse): void {
+  const saved = me.settings;
+  if (saved && saved.at > settings.changedAt) settings.replace(saved.settings, saved.at);
+  else if (settings.changedAt > (saved?.at ?? 0)) pushSettings();
+  if (syncing) return;
+  syncing = true;
+  settings.subscribe(() => {
+    clearTimeout(settingsTimer);
+    settingsTimer = window.setTimeout(pushSettings, SETTINGS_DELAY_MS);
+  });
 }
