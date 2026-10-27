@@ -1,6 +1,7 @@
 import type { Profile } from './profile';
 import type { Settings } from './settings';
 import type { Gear } from './sim/gear';
+import type { ItemRef } from './sim/looting';
 import type { LeaveReason } from './sim/raid';
 
 /** Bumped when the client/server API changes incompatibly. */
@@ -70,6 +71,25 @@ export interface BuyPageRequest {
   version: number;
 }
 
+/**
+ * POST /api/vendors/:id/buy (session 13b): buys one of a vendor's offers, by its index in
+ * the vendor's list, into the stash, page `page` (from 0) first.
+ */
+export interface BuyRequest {
+  version: number;
+  offer: number;
+  page?: number;
+}
+
+/**
+ * POST /api/vendors/sell (session 13b): sells items from the gear or the stash pages, all
+ * or none, by their places as the stash screen sees them (stashOwner for a page).
+ */
+export interface SellRequest {
+  version: number;
+  from: ItemRef[];
+}
+
 /** POST /api/raids. Starting a raid while one is open counts that one as missing in action. */
 export interface StartRaidRequest {
   raid: string;
@@ -80,7 +100,10 @@ export type SaveSettingsRequest = SavedSettings;
 
 export type RaidOutcome = LeaveReason | 'killed';
 
-/** POST /api/raids/:id/end. Sending the same result again is harmless. */
+/**
+ * POST /api/raids/:id/end. Sending the same result again is harmless. Money (cash) in
+ * what's kept goes into the balance (session 13b).
+ */
 export interface EndRaidRequest {
   how: RaidOutcome;
   /** Everything the player had when the raid ended. The server keeps what the outcome allows. */

@@ -5,6 +5,7 @@ import {
   checkProfile,
   itemGained,
   loadContent,
+  overRepaired,
   loadSettings,
   restGear,
   type Profile,
@@ -72,8 +73,9 @@ profiles.get('/', async (c) => c.json(await profileResponse(c.env.DB, c.var.acco
 
 /**
  * Saves a profile edited between raids (session 13's stash). Sanity limits: well-formed,
- * the same money (only vendors change it, on the server), and no item there's more of
- * than before. Refused while the gear is in a raid.
+ * the same money (only vendors change it, on the server), no item there's more of than
+ * before, and no armour mended by more than repair kits spent (13b). Refused while the
+ * gear is in a raid.
  */
 profiles.put('/', async (c) => {
   const raw = await body(c);
@@ -99,6 +101,8 @@ profiles.put('/', async (c) => {
     return fail(c, 'invalid', 'stash pages are only added by buying them');
   const gained = itemGained(current.profile, next);
   if (gained) return fail(c, 'invalid', `more "${gained}" than before`);
+  if (overRepaired(items, current.profile, next))
+    return fail(c, 'invalid', 'armour mended by more than repair kits spent');
 
   restGear(next.gear);
   const res = await writeProfile(db, account, raw.version, next).run();

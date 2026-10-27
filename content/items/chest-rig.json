@@ -1,9 +1,10 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "id": "chest-rig",
   "name": "Chest rig",
   "type": "container",
   "size": [2, 3],
+  "value": 6000,
   "slot": "rig",
   "grid": [4, 2]
 }

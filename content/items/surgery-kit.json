@@ -1,9 +1,10 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "id": "surgery-kit",
   "name": "Surgery kit",
   "type": "med",
   "size": [2, 1],
+  "value": 9000,
   "effect": "surgery",
   "useTime": 12
 }

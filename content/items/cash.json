@@ -1,8 +1,10 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "id": "cash",
   "name": "Cash",
   "type": "loot",
   "size": [1, 1],
-  "stack": 10000
+  "value": 1,
+  "stack": 10000,
+  "money": true
 }

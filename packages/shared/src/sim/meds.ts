@@ -13,6 +13,8 @@ import {
   type Health,
   type Zone,
 } from './health';
+import { ownItem, type ItemRef } from './looting';
+import { kitUsedUp, repairArmour } from './repair';
 import type { Character, PlayerInput } from './state';
 
 /** The fixed order meds treat zones in. There's no body diagram. */
@@ -70,9 +72,14 @@ export interface MedRef extends CarriedRef {
   item: string;
 }
 
-/** A med being used: which one, and the seconds left until it takes effect. */
+/**
+ * A med being used: which one, and the seconds left until it takes effect. Or a repair
+ * kit (session 13b), with the armour it's repairing.
+ */
 export interface MedUse extends MedRef {
   left: number;
+  /** A repair kit's: the armour piece, as the sender saw it. */
+  armour?: ItemRef;
 }
 
 /**
@@ -140,7 +147,23 @@ export function updateMedUse(c: Character, items: ItemDb, input: PlayerInput | u
   c.using = null;
   const still = carriedGrid(c.gear, u.grid)?.items[u.index]?.item.item === u.item;
   const ref = still ? u : firstCarried(c, u.item);
-  if (ref) useMed(c, items, ref);
+  if (!ref) return;
+  if (u.armour) finishRepair(c, items, ref, u.armour);
+  else useMed(c, items, ref);
+}
+
+/** A repair's time is up: the kit's points go into the armour, if it's still there. */
+function finishRepair(c: Character, items: ItemDb, ref: CarriedRef, armourRef: ItemRef): void {
+  const grid = carriedGrid(c.gear, ref.grid)!;
+  const kit = grid.items[ref.index]!.item;
+  const armour = ownItem(c.gear, armourRef);
+  if (armour && repairArmour(items, kit, armour) > 0 && kitUsedUp(kit)) removeAt(grid, ref.index);
+}
+
+/** How long a med or repair kit takes to use. */
+export function timeToUse(items: ItemDb, id: string): number {
+  const def = itemDef(items, id);
+  return def.type === 'med' || def.type === 'repair' ? def.useTime : 0;
 }
 
 /** Where the first carried item with this id is, or null. */

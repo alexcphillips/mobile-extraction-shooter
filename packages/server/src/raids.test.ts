@@ -188,21 +188,12 @@ describe('PUT /profile', () => {
 });
 
 describe('POST /stash/pages', () => {
-  /** Gives the account money, as vendors will (session 13b). */
-  async function setMoney(client: TestClient, money: number) {
-    const db = client.env.DB;
-    const row = await db.prepare('SELECT data FROM profiles').first<{ data: string }>();
-    const p = JSON.parse(row!.data) as { money: number };
-    p.money = money;
-    await db.prepare('UPDATE profiles SET data = ?').bind(JSON.stringify(p)).run();
-  }
-
   it('buys a page with money, once per version, and not in a raid', async () => {
     const client = await signedIn();
     const me = await client.ok('GET', '/profile');
     const broke = await client.fails('POST', '/stash/pages', { version: me.version });
     expect(broke.message).toMatch(/costs 100000/);
-    await setMoney(client, 120_000);
+    await client.setMoney(120_000);
     const bought = await client.ok('POST', '/stash/pages', { version: me.version });
     expect(bought.profile.stash).toHaveLength(2);
     expect(bought.profile.stash[1]!.items).toEqual([]);

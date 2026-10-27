@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const KINDS = ['items', 'raids', 'starting-kits'];
+const KINDS = ['items', 'raids', 'starting-kits', 'vendors'];
 const out = join(root, 'packages/server/src/generated/content.js');
 
 /** Writes the bundle. The default export, so Vitest can run it as a globalSetup. */

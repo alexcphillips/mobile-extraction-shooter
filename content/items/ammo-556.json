@@ -1,9 +1,10 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "id": "ammo-556",
   "name": "5.56 mm rounds",
   "type": "ammo",
   "size": [1, 1],
+  "value": 40,
   "stack": 60,
   "damage": 42,
   "armourDamage": 1,

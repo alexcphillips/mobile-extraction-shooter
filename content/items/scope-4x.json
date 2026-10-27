@@ -1,23 +1,66 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "id": "scope-4x",
   "name": "4× scope",
   "type": "attachment",
   "size": [2, 1],
+  "value": 18000,
   "slot": "optic",
   "weapons": ["assault-rifle"],
-  "mods": { "aimTime": 1.4 },
+  "mods": {
+    "aimTime": 1.4
+  },
   "optic": {
     "zoom": 4,
     "reticle": {
       "colour": "#101010",
       "shapes": [
-        { "type": "line", "x1": -46, "y1": 0, "x2": -9, "y2": 0, "width": 1.4 },
-        { "type": "line", "x1": 9, "y1": 0, "x2": 46, "y2": 0, "width": 1.4 },
-        { "type": "line", "x1": 0, "y1": 9, "x2": 0, "y2": 46, "width": 1.4 },
-        { "type": "line", "x1": -9, "y1": 0, "x2": 9, "y2": 0, "width": 0.25 },
-        { "type": "line", "x1": 0, "y1": -46, "x2": 0, "y2": 9, "width": 0.25 },
-        { "type": "dot", "x": 0, "y": 0, "r": 0.5 }
+        {
+          "type": "line",
+          "x1": -46,
+          "y1": 0,
+          "x2": -9,
+          "y2": 0,
+          "width": 1.4
+        },
+        {
+          "type": "line",
+          "x1": 9,
+          "y1": 0,
+          "x2": 46,
+          "y2": 0,
+          "width": 1.4
+        },
+        {
+          "type": "line",
+          "x1": 0,
+          "y1": 9,
+          "x2": 0,
+          "y2": 46,
+          "width": 1.4
+        },
+        {
+          "type": "line",
+          "x1": -9,
+          "y1": 0,
+          "x2": 9,
+          "y2": 0,
+          "width": 0.25
+        },
+        {
+          "type": "line",
+          "x1": 0,
+          "y1": -46,
+          "x2": 0,
+          "y2": 9,
+          "width": 0.25
+        },
+        {
+          "type": "dot",
+          "x": 0,
+          "y": 0,
+          "r": 0.5
+        }
       ]
     }
   }

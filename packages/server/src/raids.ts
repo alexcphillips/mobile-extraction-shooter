@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import {
   checkGear,
+  depositInto,
   keptGear,
   parseGear,
   restGear,
@@ -48,10 +49,12 @@ function parseEnd(raw: unknown): EndRaidRequest | string {
 
 /**
  * Counts a profile's open raid as missing in action: its gear becomes the knife and the
- * vault as they went in (changed in place, for the caller to write in the same batch).
+ * vault as they went in, and money in the vault goes into the balance (changed in place,
+ * for the caller to write in the same batch).
  */
 function endAsMissing(db: D1Database, account: string, current: ProfileResponse, now: number) {
   current.profile.gear = keptGear(current.profile.gear, false);
+  depositInto(current.profile, loadItems());
   return db
     .prepare(
       `UPDATE raids SET ended_at = ?, outcome = 'mia' WHERE id = ? AND ended_at IS NULL AND ${AT_VERSION}`,
@@ -118,7 +121,8 @@ raids.post('/:id/abandon', async (c) => {
 
 /**
  * Ends a raid: the profile's gear becomes what the player kept (everything if they
- * extracted; otherwise the knife and the vault). Sanity limits: the kept gear is
+ * extracted; otherwise the knife and the vault), and the money (cash) in it goes into
+ * the balance (session 13b). Sanity limits: the kept gear is
  * well-formed and the time and kills are plausible. The same result sent again (a retry
  * whose reply was lost) gets the profile; a different one for an ended raid is raid-over.
  */
@@ -149,9 +153,11 @@ raids.post('/:id/end', async (c) => {
   const { version, profile } = current;
   const gear = keptGear(end.gear, end.how === 'extracted', profile.gear.knife);
   restGear(gear);
-  const bad = checkGear(loadItems(), gear);
+  const items = loadItems();
+  const bad = checkGear(items, gear);
   if (bad) return fail(c, 'invalid', bad);
   profile.gear = gear;
+  depositInto(profile, items);
 
   const results = await db.batch([
     db

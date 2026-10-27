@@ -1,9 +1,10 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "id": "ammo-9mm",
   "name": "9 mm rounds",
   "type": "ammo",
   "size": [1, 1],
+  "value": 20,
   "stack": 60,
   "damage": 32,
   "armourDamage": 0.6,

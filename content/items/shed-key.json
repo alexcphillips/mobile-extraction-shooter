@@ -1,8 +1,9 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "id": "shed-key",
   "name": "Shed key",
   "type": "key",
   "size": [1, 1],
+  "value": 8000,
   "uses": 10
 }

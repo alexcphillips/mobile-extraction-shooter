@@ -1,4 +1,13 @@
-import type { Character, CompiledMap, InventoryAction, ItemDb, Owner, SimState } from '@mes/shared';
+import type {
+  Character,
+  CompiledMap,
+  InventoryAction,
+  ItemDb,
+  ItemRef,
+  MedRef,
+  Owner,
+  SimState,
+} from '@mes/shared';
 import { createRoot, type Root } from 'react-dom/client';
 import { InventoryController } from './inventory-controller';
 import { RaidScreen } from './raid-screen';
@@ -18,6 +27,10 @@ export interface InventoryContext {
   close: () => void;
   /** Between raids: the stash is open, and nothing can be dropped on the ground. */
   stash?: boolean;
+  /** Between raids: sells items to the vendors (session 13b); resolves when done or refused. */
+  sell?: (refs: ItemRef[]) => Promise<void>;
+  /** In a raid: starts using a carried med, or stops the med or repair being used. */
+  use?: (use: MedRef | 'cancel') => void;
 }
 
 /** What the raid screen needs from the game. */

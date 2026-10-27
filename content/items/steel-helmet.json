@@ -1,9 +1,10 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "id": "steel-helmet",
   "name": "Steel helmet",
   "type": "armour",
   "size": [2, 2],
+  "value": 12000,
   "slot": "helmet",
   "absorb": 0.5,
   "durability": 40

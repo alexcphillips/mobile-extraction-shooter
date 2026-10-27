@@ -16,8 +16,9 @@ const fraction = finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1');
  * 2 (session 6b): weapons gained loudness and slots; attachments were added.
  * 3 (session 9): every item gained a grid size, ammo a stack size; the other types were added.
  * 4 (session 10b): weapons gained a draw time; the knife gained its stats.
+ * 5 (session 13b): every item gained a value; repair kits a use time.
  */
-export const ITEM_FORMAT_VERSION = 4;
+export const ITEM_FORMAT_VERSION = 5;
 
 /** The fixed attachment slots a gun can have. */
 export const ATTACHMENT_SLOTS = ['optic', 'muzzle', 'magazine'] as const;
@@ -36,6 +37,12 @@ const common = {
   name: z.string().min(1),
   /** Its size in an inventory grid, [width, height] in cells, unrotated. */
   size: sizeSchema,
+  /**
+   * What one is worth in money, new (session 13b): vendors sell it for this and buy it
+   * for a share of it (VENDOR.sellShare), less for one worn or part-used. 0 for things
+   * that can't be bought or sold.
+   */
+  value: z.int().min(0),
 };
 
 const weaponSchema = z.strictObject({
@@ -243,6 +250,11 @@ const lootSchema = z.strictObject({
   type: z.literal('loot'),
   /** Stacks up to this many in one place; left out, it doesn't stack. */
   stack: stackSchema.optional(),
+  /**
+   * Money you find (session 13b): what comes out of a raid goes into your balance, at its
+   * full value.
+   */
+  money: z.literal(true).optional(),
 });
 
 /** Armour repair kits. */
@@ -251,6 +263,8 @@ const repairSchema = z.strictObject({
   type: z.literal('repair'),
   /** The durability it can restore in all, spent across repairs. */
   points: positive,
+  /** How long a repair takes in a raid (session 13b). Between raids it's at once. */
+  useTime: positive,
 });
 
 export const itemSchema = z.discriminatedUnion('type', [
@@ -275,6 +289,7 @@ export type AttachmentDef = z.infer<typeof attachmentSchema>;
 export type MedDef = z.infer<typeof medSchema>;
 export type MeleeDef = z.infer<typeof meleeSchema>;
 export type ContainerDef = z.infer<typeof containerSchema>;
+export type RepairDef = z.infer<typeof repairSchema>;
 export type AttachmentMods = z.infer<typeof modsSchema>;
 export type OpticDef = NonNullable<AttachmentDef['optic']>;
 export type ReticleShape = z.infer<typeof reticleShapeSchema>;
@@ -310,7 +325,26 @@ export const ITEM_FORMAT: ContentFormat<ItemDef> = {
       }
       return doc;
     },
+    // Values, guessed from the type (the content files set their own), and repair times.
+    4: (doc) => ({
+      ...doc,
+      value: VALUE_GUESSES[doc.type as string] ?? 0,
+      ...(doc.type === 'repair' ? { useTime: 8 } : {}),
+    }),
   },
+};
+
+const VALUE_GUESSES: Record<string, number> = {
+  weapon: 10_000,
+  ammo: 30,
+  armour: 10_000,
+  attachment: 5_000,
+  med: 1_000,
+  container: 5_000,
+  melee: 500,
+  key: 2_000,
+  loot: 1_000,
+  repair: 10_000,
 };
 
 function itemOf<T extends ItemDef['type']>(
@@ -333,6 +367,7 @@ export const medDef = (items: ItemDb, id: string): MedDef => itemOf(items, id, '
 export const meleeDef = (items: ItemDb, id: string): MeleeDef => itemOf(items, id, 'melee');
 export const containerDef = (items: ItemDb, id: string): ContainerDef =>
   itemOf(items, id, 'container');
+export const repairDef = (items: ItemDb, id: string): RepairDef => itemOf(items, id, 'repair');
 
 export function itemDef(items: ItemDb, id: string): ItemDef {
   const item = items.get(id);

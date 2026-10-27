@@ -1578,3 +1578,117 @@ body:has(#layout-bar) #menu {
 .stash .raid-tabs button.stash-page.drop-bad {
   outline: 2px solid #ff6b5a;
 }
+
+/* Selling from the stash: a second tap confirms. */
+.inv-bar button.confirm {
+  background: #6cff8a;
+  color: #000;
+}
+
+/* The vendors page (session 13b): a vendor's offers as rows, bought into the stash. */
+.vendors-money {
+  color: #9aa6b0;
+}
+
+.vendors-money b {
+  color: #e8ecef;
+}
+
+.vendors-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.vendors-blurb {
+  margin: 0 0 8px;
+  color: #9aa6b0;
+}
+
+.vendors-offers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vendors-offers li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 6px 6px 10px;
+  border-radius: 6px;
+  background: #252c32;
+}
+
+.vendors-icon {
+  flex: none;
+  width: 32px;
+  max-height: 32px;
+  border-radius: 3px;
+}
+
+.vendors-name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.vendors-name span {
+  font-weight: normal;
+  color: #9aa6b0;
+}
+
+.vendors-offers button {
+  min-width: 92px;
+}
+
+.vendors-offers button:disabled {
+  opacity: 0.45;
+}
+
+.vendors-offers button.confirm {
+  background: #6cff8a;
+  color: #000;
+}
+
+/* Picked to sell, several at once (session 13b). */
+.inv-item.picked {
+  outline: 2px solid #6cff8a;
+  outline-offset: -2px;
+  box-shadow: inset 0 0 0 100px rgb(108 255 138 / 0.18);
+}
+
+/* The med or repair in use, in the raid screen's top bar: a tap stops it. */
+.raid button.inv-use {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  max-width: 45%;
+  background: #2c343b;
+  outline: 1px solid #6cff8a;
+  outline-offset: -1px;
+}
+
+.inv-use-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: rgb(108 255 138 / 0.28);
+  transition: width 0.1s linear;
+}
+
+.inv-use-text,
+.inv-use-stop {
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inv-use-stop {
+  flex: none;
+  font-weight: 700;
+}

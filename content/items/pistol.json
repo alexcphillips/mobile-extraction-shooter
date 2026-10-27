@@ -1,9 +1,10 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "id": "pistol",
   "name": "Pistol",
   "type": "weapon",
   "size": [2, 1],
+  "value": 6000,
   "ammo": "ammo-9mm",
   "hold": "pistol",
   "fireMode": "semi",

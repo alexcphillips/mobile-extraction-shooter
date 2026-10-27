@@ -1,9 +1,10 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "id": "splint",
   "name": "Splint",
   "type": "med",
   "size": [1, 1],
+  "value": 600,
   "effect": "splint",
   "useTime": 3
 }

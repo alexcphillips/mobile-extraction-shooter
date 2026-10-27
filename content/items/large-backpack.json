@@ -1,9 +1,10 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "id": "large-backpack",
   "name": "Large backpack",
   "type": "container",
   "size": [4, 4],
+  "value": 20000,
   "slot": "backpack",
   "grid": [5, 6]
 }

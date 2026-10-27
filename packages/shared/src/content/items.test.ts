@@ -8,6 +8,7 @@ const ammo = {
   name: 'Round',
   type: 'ammo',
   size: [1, 1],
+  value: 100,
   stack: 60,
   damage: 40,
   bleedChance: 0.2,
@@ -18,6 +19,7 @@ const gun = {
   name: 'Gun',
   type: 'weapon',
   size: [4, 2],
+  value: 100,
   ammo: 'round',
   fireMode: 'auto',
   rpm: 600,
@@ -40,6 +42,7 @@ const scope = {
   name: 'Scope',
   type: 'attachment',
   size: [2, 1],
+  value: 100,
   slot: 'optic',
   optic: { zoom: 4, reticle: { colour: '#000000', shapes: [dot] } },
 };
@@ -49,6 +52,7 @@ const mag = {
   name: 'Mag',
   type: 'attachment',
   size: [1, 2],
+  value: 100,
   slot: 'magazine',
   weapons: ['gun'],
   mods: { magazine: 10 },
@@ -126,8 +130,26 @@ describe('items', () => {
     expect(v3(knife)).toMatchObject({ damage: 40, reach: 1.5, swingTime: 0.5 });
   });
 
+  it('upgrades format 4 items with a value by type, and repair kits with a use time', () => {
+    const v4 = (raw: object) => {
+      const { value: _, ...old } = raw as { value?: number };
+      return loadContent(ITEM_FORMAT, { ...old, formatVersion: 4 }, 'x.json');
+    };
+    expect(v4(gun).value).toBe(10_000);
+    expect(v4(ammo).value).toBe(30);
+    const kit = { id: 'k', name: 'K', type: 'repair', size: [2, 1], points: 50 };
+    expect(v4(kit)).toMatchObject({ value: 10_000, useTime: 8 });
+    expect(v4({ id: 'q', name: 'Q', type: 'quest', size: [1, 1] }).value).toBe(0);
+  });
+
   it('loads the other types, and checks meds have hp only for heal', () => {
-    const base = { formatVersion: ITEM_FORMAT_VERSION, id: 'x', name: 'X', size: [1, 1] };
+    const base = {
+      formatVersion: ITEM_FORMAT_VERSION,
+      id: 'x',
+      name: 'X',
+      size: [1, 1],
+      value: 10,
+    };
     const ok = [
       { ...base, type: 'med', effect: 'bandage', useTime: 2 },
       { ...base, type: 'med', effect: 'splint', useTime: 2, uses: 3 },
@@ -145,7 +167,8 @@ describe('items', () => {
       { ...base, type: 'key' },
       { ...base, type: 'quest' },
       { ...base, type: 'loot', stack: 500 },
-      { ...base, type: 'repair', points: 100 },
+      { ...base, type: 'repair', points: 100, useTime: 5 },
+      { ...base, type: 'loot', stack: 500, money: true },
     ];
     for (const raw of ok) expect(() => loadContent(ITEM_FORMAT, raw, 'x.json')).not.toThrow();
     const bad = [
@@ -155,6 +178,9 @@ describe('items', () => {
       { ...base, type: 'container', slot: 'pocket', grid: [1, 1] },
       { ...base, type: 'loot', stack: 1 },
       { ...base, type: 'key', size: [0, 1] },
+      { ...base, type: 'quest', value: -1 },
+      { ...base, type: 'quest', value: 2.5 },
+      { ...base, type: 'repair', points: 100 },
     ];
     for (const raw of bad)
       expect(() => loadContent(ITEM_FORMAT, raw, 'x.json')).toThrow(ContentError);

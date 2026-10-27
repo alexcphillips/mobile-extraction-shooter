@@ -20,6 +20,11 @@ export interface Into {
   into: Owner;
 }
 
+/** Onto a piece of armour, to mend it with the repair kit dropped (session 13b). */
+export interface RepairOn {
+  repair: ItemRef;
+}
+
 /**
  * Something items can be dropped on. Its element has a data-drop attribute describing it,
  * which the host turns into this.
@@ -31,7 +36,9 @@ export type DropZone =
   /** Dropped at your feet. */
   | { kind: 'ground' }
   /** Put wherever there's room, as a double-tap would. */
-  | { kind: 'into'; owner: Owner };
+  | { kind: 'into'; owner: Owner }
+  /** A repair kit onto armour (an element with a data-armour attribute). */
+  | { kind: 'repair'; armour: ItemRef };
 
 /** The item a pointer went down on: in a grid or gear slot, or on a gun. */
 export interface DragSource {
@@ -59,9 +66,14 @@ export interface DragHost {
    * gun as part of its grid or gear slot.
    */
   gunZone: (src: DragSource, gun: ItemRef) => DropZone | null;
+  /**
+   * A repair zone if the dragged item is a repair kit (an element with a data-armour
+   * attribute is armour); otherwise null, and the armour is part of its grid or slot.
+   */
+  armourZone: (src: DragSource, armour: ItemRef) => DropZone | null;
   /** Whether the item may drop on a zone there (x, y: the top-left cell for a grid). */
   canDrop: (src: DragSource, zone: DropZone, x: number, y: number, rotated: boolean) => boolean;
-  drop: (src: DragSource, to: Target | PartSlot | Into) => void;
+  drop: (src: DragSource, to: Target | PartSlot | Into | RepairOn) => void;
   tap: (src: DragSource) => void;
 }
 
@@ -159,7 +171,9 @@ export class DragController {
               ? { owner: { kind: 'ground' } }
               : z.kind === 'into'
                 ? { into: z.owner }
-                : { gun: z.gun, slot: z.slot },
+                : z.kind === 'repair'
+                  ? { repair: z.armour }
+                  : { gun: z.gun, slot: z.slot },
       );
     }
   };
@@ -227,8 +241,12 @@ export class DragController {
     const hit = document.elementFromPoint(this.x, this.y);
     const gunEl = hit?.closest<HTMLElement>('[data-gun]');
     const onGun = gunEl ? this.host.gunZone(src, JSON.parse(gunEl.dataset.gun!) as ItemRef) : null;
-    const el = onGun ? gunEl! : hit?.closest<HTMLElement>('[data-drop]');
-    const zone = onGun ?? (el ? this.host.zoneAt(el) : null);
+    const armourEl = onGun ? null : hit?.closest<HTMLElement>('[data-armour]');
+    const onArmour = armourEl
+      ? this.host.armourZone(src, JSON.parse(armourEl.dataset.armour!) as ItemRef)
+      : null;
+    const el = onGun ? gunEl! : onArmour ? armourEl! : hit?.closest<HTMLElement>('[data-drop]');
+    const zone = onGun ?? onArmour ?? (el ? this.host.zoneAt(el) : null);
     this.clearHover();
     if (!el || !zone) return;
     let x = 0;

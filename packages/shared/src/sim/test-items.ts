@@ -1,7 +1,13 @@
 import { ITEM_FORMAT_VERSION, type ItemDb, type ItemDef } from '../content/items';
 
 function common(id: string, size: [number, number]) {
-  return { formatVersion: ITEM_FORMAT_VERSION as typeof ITEM_FORMAT_VERSION, id, name: id, size };
+  return {
+    formatVersion: ITEM_FORMAT_VERSION as typeof ITEM_FORMAT_VERSION,
+    id,
+    name: id,
+    size,
+    value: 100,
+  };
 }
 
 /** A small item set for tests, independent of content/. */
@@ -10,6 +16,7 @@ const defs: ItemDef[] = [
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'rifle',
     size: [4, 2],
+    value: 100,
     name: 'Rifle',
     type: 'weapon',
     ammo: 'round',
@@ -30,6 +37,7 @@ const defs: ItemDef[] = [
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'pistol',
     size: [2, 1],
+    value: 100,
     name: 'Pistol',
     type: 'weapon',
     ammo: 'round',
@@ -51,6 +59,7 @@ const defs: ItemDef[] = [
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'round',
     size: [1, 1],
+    value: 100,
     name: 'Round',
     type: 'ammo',
     stack: 100,
@@ -61,6 +70,7 @@ const defs: ItemDef[] = [
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'bleeder',
     size: [1, 1],
+    value: 100,
     name: 'Bleeding round',
     type: 'ammo',
     stack: 100,
@@ -71,6 +81,7 @@ const defs: ItemDef[] = [
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'helmet',
     size: [2, 2],
+    value: 100,
     name: 'Helmet',
     type: 'armour',
     slot: 'helmet',
@@ -81,6 +92,7 @@ const defs: ItemDef[] = [
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'vest',
     size: [3, 3],
+    value: 100,
     name: 'Vest',
     type: 'armour',
     slot: 'body',
@@ -91,6 +103,7 @@ const defs: ItemDef[] = [
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'scope',
     size: [2, 1],
+    value: 100,
     name: 'Scope',
     type: 'attachment',
     slot: 'optic',
@@ -101,6 +114,7 @@ const defs: ItemDef[] = [
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'suppressor',
     size: [2, 1],
+    value: 100,
     name: 'Suppressor',
     type: 'attachment',
     slot: 'muzzle',
@@ -110,6 +124,7 @@ const defs: ItemDef[] = [
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'big-mag',
     size: [1, 2],
+    value: 100,
     name: 'Big magazine',
     type: 'attachment',
     slot: 'magazine',
@@ -134,9 +149,9 @@ const defs: ItemDef[] = [
   { ...common('key', [1, 1]), type: 'key' },
   { ...common('worn-key', [1, 1]), type: 'key', uses: 2 },
   { ...common('notes', [1, 1]), type: 'quest' },
-  { ...common('cash', [1, 1]), type: 'loot', stack: 1000 },
+  { ...common('cash', [1, 1]), value: 1, type: 'loot', stack: 1000, money: true },
   { ...common('watch', [1, 1]), type: 'loot' },
-  { ...common('repair-kit', [2, 1]), type: 'repair', points: 50 },
+  { ...common('repair-kit', [2, 1]), type: 'repair', points: 50, useTime: 5 },
 ];
 
 export const TEST_ITEMS: ItemDb = new Map(defs.map((d) => [d.id, d]));

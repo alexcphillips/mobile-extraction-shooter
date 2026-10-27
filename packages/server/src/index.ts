@@ -4,6 +4,7 @@ import { auth, signedIn, type AppEnv } from './auth';
 import { fail } from './errors';
 import { profiles, settingsRoute, stashRoute } from './profiles';
 import { raids } from './raids';
+import { vendors } from './vendors';
 
 export const app = new Hono<AppEnv>().basePath('/api');
 
@@ -25,6 +26,8 @@ app.route('/settings', settingsRoute);
 app.use('/raids', signedIn);
 app.use('/raids/*', signedIn);
 app.route('/raids', raids);
+app.use('/vendors/*', signedIn);
+app.route('/vendors', vendors);
 
 app.notFound((c) => fail(c, 'not-found'));
 

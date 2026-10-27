@@ -4,6 +4,7 @@ import {
   itemDef,
   medDef,
   treatments,
+  timeToUse,
   type Character,
   type Hand,
   type ItemDb,
@@ -109,7 +110,7 @@ export class HandsHud {
       this.best = c.health.dead ? null : (treatments(c, items)[0] ?? null);
     }
     const name = c.using
-      ? medDef(items, c.using.item).name
+      ? itemDef(items, c.using.item).name
       : this.best
         ? medDef(items, this.best.item).name
         : '';
@@ -122,7 +123,7 @@ export class HandsHud {
       heal.classList.toggle('using', !!c.using);
     }
     if (c.using) {
-      const done = 1 - c.using.left / medDef(items, c.using.item).useTime;
+      const done = 1 - c.using.left / timeToUse(items, c.using.item);
       this.ring.style.strokeDashoffset = String(1 - done);
     }
 

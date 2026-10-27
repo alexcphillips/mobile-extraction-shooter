@@ -2,11 +2,14 @@ import {
   ITEM_FORMAT,
   RAID_FORMAT,
   STARTING_KIT_FORMAT,
+  VENDOR_FORMAT,
   checkItems,
+  checkVendors,
   loadById,
   type ItemDb,
   type RaidDef,
   type StartingKitDef,
+  type VendorDef,
 } from '@mes/shared';
 import files from './generated/content.js';
 
@@ -21,6 +24,7 @@ function ofKind(kind: string): Record<string, unknown> {
 let items: ItemDb | undefined;
 let raids: Map<string, RaidDef> | undefined;
 let kits: Map<string, StartingKitDef> | undefined;
+let vendors: Map<string, VendorDef> | undefined;
 
 export function loadItems(): ItemDb {
   if (!items) {
@@ -42,4 +46,14 @@ export function startingKit(id: string): StartingKitDef {
   const kit = kits.get(id);
   if (!kit) throw new Error(`no starting kit "${id}" in content/starting-kits`);
   return kit;
+}
+
+/** A vendor by id, or undefined. Its offers are checked against the items. */
+export function vendorDef(id: string): VendorDef | undefined {
+  if (!vendors) {
+    const all = loadById(VENDOR_FORMAT, ofKind('vendors'));
+    checkVendors(all, loadItems());
+    vendors = all;
+  }
+  return vendors.get(id);
 }

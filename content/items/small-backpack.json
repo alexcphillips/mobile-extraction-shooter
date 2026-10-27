@@ -1,9 +1,10 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "id": "small-backpack",
   "name": "Small backpack",
   "type": "container",
   "size": [3, 3],
+  "value": 5000,
   "slot": "backpack",
   "grid": [4, 4]
 }

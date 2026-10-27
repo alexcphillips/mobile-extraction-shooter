@@ -25,6 +25,7 @@ import {
   carriedGrid,
   equip,
   fitsSlot,
+  heldWeapon,
   stow,
   unequip,
   type Gear,
@@ -33,6 +34,7 @@ import {
 import type { CollisionWorld } from '../world/collision-world';
 import { createItem } from './create-item';
 import { dropItem, type GroundItem } from './ground';
+import { repairable } from './repair';
 import type { Character, EntityId, SimState } from './state';
 import { attach, detach, type WeaponState } from './weapons';
 
@@ -132,6 +134,9 @@ export type Target = GridSpot | Omit<InSlot, 'item'> | ToGround;
  *   there (a swap), else into what you carry.
  * - detach: takes the attachment (`part`, as the sender saw it) out of a gun's slot, to a
  *   spot in a grid, or with to null into what you carry.
+ * - repair (session 13b): starts repairing one of your armour pieces (worn or in a grid)
+ *   with a repair kit you carry (pockets, rig or backpack), taking the kit's use time like
+ *   a med (see updateMedUse). The stash does it at once, from anywhere (applyStash).
  * A magazine change hands back the rounds that no longer fit, into what you carry. What
  * has no room (those rounds, a part swapped off, a part taken off into what you carry)
  * is dropped at your feet rather than the action refused (session 11b).
@@ -147,7 +152,8 @@ export type InventoryAction =
       slot: AttachmentSlot;
       part: string;
       to: GridSpot | null;
-    };
+    }
+  | { type: 'repair'; kit: ItemRef; armour: ItemRef };
 
 /** An inventory action was applied (ok) or refused. */
 export interface InventoryEvent {
@@ -306,7 +312,42 @@ export function applyInventory(
         : attachPart(ctx, action.gun, action.from);
     case 'detach':
       return detachPart(ctx, action.gun, action.slot, action.part, action.to);
+    case 'repair':
+      return startRepair(c, items, action.kit, action.armour);
   }
+}
+
+/** The carried grids by name, in carriedGrid's order. */
+const CARRIED_NAMES: readonly GridName[] = ['pockets', 'rig', 'backpack'];
+
+/**
+ * One of c's own items, by a ref to its own gear slots or grids (vault included), checked
+ * against what the sender saw; null for anyone else's or the ground's.
+ */
+export function ownItem(gear: Gear, ref: ItemRef): Item | null {
+  if (ref.owner.kind !== 'self' || 'ground' in ref) return null;
+  const item =
+    'slot' in ref ? slotOf(gear, ref.slot) : gearGrid(gear, ref.grid)?.items[ref.index]?.item;
+  return item?.item === ref.item ? item : null;
+}
+
+/**
+ * Starts a repair: the kit must be carried (not in the vault, as for meds) with points
+ * left, and the armour yours and not at full durability. A reload stops. Returns whether
+ * it started.
+ */
+function startRepair(c: Character, items: ItemDb, kitRef: ItemRef, armourRef: ItemRef): boolean {
+  if (!('grid' in kitRef)) return false;
+  const grid = CARRIED_NAMES.indexOf(kitRef.grid);
+  const kit = grid < 0 ? null : ownItem(c.gear, kitRef);
+  const armour = ownItem(c.gear, armourRef);
+  if (!kit || !armour || repairable(items, kit, armour) <= 0) return false;
+  const def = itemDef(items, kit.item);
+  if (def.type !== 'repair') return false;
+  const w = heldWeapon(c);
+  if (w) w.reloading = 0;
+  c.using = { grid, index: kitRef.index, item: kit.item, left: def.useTime, armour: armourRef };
+  return true;
 }
 
 /** Who is acting, and on what. */

@@ -1,9 +1,10 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "id": "bandage",
   "name": "Bandage",
   "type": "med",
   "size": [1, 1],
+  "value": 400,
   "effect": "bandage",
   "useTime": 2
 }

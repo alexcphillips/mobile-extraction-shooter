@@ -1,4 +1,11 @@
-import type { BuyPageRequest, ProfileResponse, SaveProfileRequest } from '@mes/shared';
+import type {
+  BuyPageRequest,
+  BuyRequest,
+  ItemRef,
+  ProfileResponse,
+  SaveProfileRequest,
+  SellRequest,
+} from '@mes/shared';
 import { AccountError, call } from './account';
 
 /*
@@ -61,11 +68,36 @@ export class StashSaver {
    * profile it replies with, which the stash should be reopened on; throws an AccountError
    * to show (offline, not enough money).
    */
-  async buyPage(): Promise<ProfileResponse> {
+  buyPage(): Promise<ProfileResponse> {
+    return this.post('/stash/pages', { version: this.me.version } satisfies BuyPageRequest);
+  }
+
+  /** Buys a vendor's offer into the stash (session 13b), like buyPage. */
+  buy(vendor: string, offer: number, page: number): Promise<ProfileResponse> {
+    return this.post(`/vendors/${encodeURIComponent(vendor)}/buy`, {
+      version: this.me.version,
+      offer,
+      page,
+    } satisfies BuyRequest);
+  }
+
+  /** Sells items from the gear or the stash, all or none (session 13b), like buyPage. */
+  sell(from: ItemRef[]): Promise<ProfileResponse> {
+    return this.post('/vendors/sell', { version: this.me.version, from } satisfies SellRequest);
+  }
+
+  /**
+   * A change only the server makes (it spends or pays money), once everything is saved.
+   * The body is built after the save, so it names the version saved.
+   */
+  private async post<T extends { version: number }>(
+    path: string,
+    body: T,
+  ): Promise<ProfileResponse> {
     const status = await this.flush();
     if (status.kind === 'failed') throw new AccountError(status.code ?? 'offline', status.message);
-    const body: BuyPageRequest = { version: this.me.version };
-    this.me = (await (await call('POST', '/stash/pages', body)).json()) as ProfileResponse;
+    body.version = this.me.version;
+    this.me = (await (await call('POST', path, body)).json()) as ProfileResponse;
     this.onChange();
     return this.me;
   }

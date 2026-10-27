@@ -1,8 +1,10 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "id": "armour-repair-kit",
   "name": "Armour repair kit",
   "type": "repair",
   "size": [2, 1],
-  "points": 60
+  "value": 12000,
+  "points": 60,
+  "useTime": 8
 }

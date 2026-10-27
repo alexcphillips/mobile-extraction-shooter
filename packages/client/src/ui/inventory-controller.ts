@@ -10,12 +10,16 @@ import {
   isFree,
   itemAt,
   itemDef,
+  repairable,
+  sellPrice,
   stackSize,
   weaponDef,
+  zoneToTreat,
   type AttachmentSlot,
   type Character,
   type GearSlot,
   type GridName,
+  type GridRef,
   type GroundItem,
   type Item,
   type ItemDef,
@@ -23,6 +27,7 @@ import {
   type OnGround,
   type Owner,
   type PartRef,
+  type MedRef,
   type Target,
 } from '@mes/shared';
 import {
@@ -32,6 +37,7 @@ import {
   type DropZone,
   type Into,
   type PartSlot,
+  type RepairOn,
 } from './drag';
 import type { InventoryContext } from './raid';
 
@@ -39,6 +45,8 @@ const SELF: Owner = { kind: 'self' };
 const GROUND: Owner = { kind: 'ground' };
 const DOUBLE_TAP_MS = 350;
 const GRID_NAMES: readonly GridName[] = ['pockets', 'rig', 'backpack', 'vault', 'loot'];
+/** The grids you carry, in carriedGrid's order. */
+const CARRIED: readonly GridName[] = ['pockets', 'rig', 'backpack'];
 
 /** Identifies an item's place, to compare refs. */
 export function refKey(r: ItemRef): string {
@@ -68,6 +76,8 @@ export class InventoryController implements DragHost {
   readonly cell = Math.max(28, Math.min(44, Math.floor(window.innerHeight / 10.5)));
   readonly drag = new DragController(this);
   selected: ItemRef | null = null;
+  /** Picking items to sell between raids: the picks, or null when not picking. */
+  selling: ItemRef[] | null = null;
   /** The gun attachment slot whose picker is open. */
   picking: AttachmentSlot | null = null;
   target: Owner | null;
@@ -193,6 +203,118 @@ export class InventoryController implements DragHost {
     return out;
   }
 
+  /**
+   * Where a repair kit can be used from (session 13b): in a raid one you carry (not the
+   * vault, as for meds); in the stash one anywhere.
+   */
+  private kitPlaces(): GridRef[] {
+    const places: GridRef[] = CARRIED.map((grid) => ({ owner: SELF, grid }));
+    if (this.ctx.stash) {
+      places.push({ owner: SELF, grid: 'vault' });
+      for (const l of this.ctx.sim.loot)
+        places.push({ owner: { kind: 'container', id: l.id }, grid: 'loot' });
+    }
+    return places;
+  }
+
+  /** Whether a kit (where it is) can mend a piece of your armour now. */
+  canRepair(kit: ItemRef, armour: ItemRef): boolean {
+    if (!('grid' in kit) || armour.owner.kind !== 'self') return false;
+    const from = JSON.stringify([kit.owner, kit.grid]);
+    if (!this.kitPlaces().some((p) => JSON.stringify([p.owner, p.grid]) === from)) return false;
+    const k = this.find(kit);
+    const a = this.find(armour);
+    return !!k && !!a && repairable(this.ctx.items, k.item, a.item) > 0;
+  }
+
+  /** A repair kit that can mend an armour piece of yours now, or null. */
+  kitFor(armour: ItemRef): ItemRef | null {
+    const { sim, player } = this.ctx;
+    for (const place of this.kitPlaces()) {
+      const grid = gridOf(sim, player, place);
+      if (!grid) continue;
+      for (let index = 0; index < grid.items.length; index++) {
+        const ref = { ...place, index, item: grid.items[index]!.item.item };
+        if (this.canRepair(ref, armour)) return ref;
+      }
+    }
+    return null;
+  }
+
+  /** Mends an armour piece with a kit (kitFor's if not given): at once in the stash, timed in a raid. */
+  repair(armour: ItemRef, kit = this.kitFor(armour)): void {
+    if (kit) this.ctx.send({ type: 'repair', kit, armour });
+    this.redraw();
+  }
+
+  /**
+   * Starts using a med you carry (in a raid), if it would do something now: the same as
+   * picking it from the heal button.
+   */
+  useMed(ref: ItemRef): void {
+    const med = this.medRef(ref);
+    if (med) this.ctx.use?.(med);
+    this.redraw();
+  }
+
+  /** A carried med as the heal button would use it, if it would do something now. */
+  medRef(ref: ItemRef): MedRef | null {
+    if (!this.ctx.use || ref.owner.kind !== 'self' || !('grid' in ref)) return null;
+    const grid = CARRIED.indexOf(ref.grid);
+    const def = this.find(ref)?.def;
+    if (grid < 0 || def?.type !== 'med') return null;
+    if (zoneToTreat(this.ctx.player.health, def.effect) < 0) return null;
+    return { grid, index: ref.index, item: ref.item };
+  }
+
+  /** Stops the med or repair being used. */
+  stopUse(): void {
+    this.ctx.use?.('cancel');
+  }
+
+  // Selling several at once, between raids (session 13b).
+
+  /** Starts picking items to sell, with one already picked; taps pick and unpick instead of selecting. */
+  startSelling(first: ItemRef | null = null): void {
+    this.select(null);
+    this.selling = first && this.canPick(first) ? [first] : [];
+    this.redraw();
+  }
+
+  stopSelling(): void {
+    this.selling = null;
+    this.redraw();
+  }
+
+  isPicked(ref: ItemRef): boolean {
+    const key = refKey(ref);
+    return !!this.selling?.some((r) => refKey(r) === key);
+  }
+
+  /** Whether an item can be picked to sell: yours, not on the ground, not the knife, worth something. */
+  canPick(ref: ItemRef): boolean {
+    if ('ground' in ref || ('slot' in ref && ref.slot === 'knife')) return false;
+    const found = this.find(ref);
+    return !!found && sellPrice(this.ctx.items, found.item) > 0;
+  }
+
+  private togglePick(ref: ItemRef): void {
+    if (!this.selling) return;
+    const key = refKey(ref);
+    const at = this.selling.findIndex((r) => refKey(r) === key);
+    if (at >= 0) this.selling.splice(at, 1);
+    else if (this.canPick(ref)) this.selling.push(ref);
+    this.redraw();
+  }
+
+  /** The items picked to sell, as they are now. */
+  picked(): Item[] {
+    return (this.selling ?? []).flatMap((r) => {
+      const f = this.find(r);
+      return f ? [f.item] : [];
+    });
+  }
+
   isSelected(ref: ItemRef): boolean {
     return !!this.selected && refKey(this.selected) === refKey(ref);
   }
@@ -215,6 +337,11 @@ export class InventoryController implements DragHost {
     return { kind: 'part', gun, slot: part.slot };
   }
 
+  armourZone(src: DragSource, armour: ItemRef): DropZone | null {
+    if (isPart(src.ref) || this.find(src.ref)?.def.type !== 'repair') return null;
+    return { kind: 'repair', armour };
+  }
+
   zoneAt(el: HTMLElement): DropZone | null {
     const desc = JSON.parse(el.dataset.drop!) as
       { owner: Owner; grid: GridName } | { owner: Owner; slot: GearSlot } | PartSlot | Into;
@@ -228,6 +355,9 @@ export class InventoryController implements DragHost {
 
   canDrop(src: DragSource, zone: DropZone, x: number, y: number, rotated: boolean): boolean {
     const { sim, player, items } = this.ctx;
+    // Picking items to sell: nothing moves.
+    if (this.selling) return false;
+    if (zone.kind === 'repair') return !isPart(src.ref) && this.canRepair(src.ref, zone.armour);
     if (isPart(src.ref)) {
       // An attachment comes off a gun into a grid, or onto another gun (see gunZone).
       if (!this.partOn(src.ref)) return false;
@@ -278,8 +408,12 @@ export class InventoryController implements DragHost {
     return isFree(items, grid, x, y, w, h, ignore);
   }
 
-  drop(src: DragSource, to: Target | PartSlot | Into): void {
+  drop(src: DragSource, to: Target | PartSlot | Into | RepairOn): void {
     const ref = src.ref;
+    if ('repair' in to) {
+      if (!isPart(ref)) this.repair(to.repair, ref);
+      return;
+    }
     if ('into' in to) {
       if (isPart(ref)) return;
       this.select(null);
@@ -312,6 +446,10 @@ export class InventoryController implements DragHost {
     const now = performance.now();
     const double = this.lastTap.key === key && now - this.lastTap.at < DOUBLE_TAP_MS;
     this.lastTap = double ? { key: '', at: 0 } : { key, at: now };
+    if (this.selling) {
+      if (!isPart(ref)) this.togglePick(ref);
+      return;
+    }
     if (isPart(ref)) {
       // On a gun: a tap opens its slot's picker, a double-tap takes it off.
       if (double) this.detach(ref);
@@ -319,7 +457,8 @@ export class InventoryController implements DragHost {
     } else if (double) {
       this.quick(ref);
     } else {
-      this.select(ref);
+      // A slower second tap on the selected item lets go of it.
+      this.select(this.isSelected(ref) ? null : ref);
     }
   }
 

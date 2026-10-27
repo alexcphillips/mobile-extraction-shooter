@@ -7,10 +7,12 @@ import {
   MAP_FORMAT,
   PREFAB_FORMAT,
   RAID_FORMAT,
+  VENDOR_FORMAT,
   checkEnemies,
   checkEnemyLoot,
   checkItems,
   checkLootTables,
+  checkVendors,
   compileMap,
   loadById,
   type CompiledMap,
@@ -22,6 +24,7 @@ import {
   type MapFile,
   type PrefabFile,
   type RaidDef,
+  type VendorDef,
 } from '@mes/shared';
 
 // Every content file is bundled, and in dev, Vite reloads the page when one changes.
@@ -60,6 +63,11 @@ const raidFiles = import.meta.glob<unknown>('../../../content/raids/*.json', {
   import: 'default',
 });
 
+const vendorFiles = import.meta.glob<unknown>('../../../content/vendors/*.json', {
+  eager: true,
+  import: 'default',
+});
+
 let prefabs: Map<string, PrefabFile> | undefined;
 let items: ItemDb | undefined;
 let maps: Map<string, MapFile> | undefined;
@@ -67,6 +75,7 @@ let enemies: Enemies | undefined;
 let lootContainers: Map<string, LootContainerDef> | undefined;
 let lootTables: Map<string, LootTableDef> | undefined;
 let raids: Map<string, RaidDef> | undefined;
+let vendors: ReadonlyMap<string, VendorDef> | undefined;
 
 export function mapIds(): string[] {
   maps ??= loadById(MAP_FORMAT, mapFiles);
@@ -177,4 +186,14 @@ export function loadRaid(id: string): RaidDef {
   if (!mapIds().includes(raid.map))
     throw new Error(`content/raids/${id}.json: no map "${raid.map}"`);
   return raid;
+}
+
+/** Every vendor in content/vendors, with their offers checked against the items. */
+export function loadVendors(): ReadonlyMap<string, VendorDef> {
+  if (!vendors) {
+    const all = loadById(VENDOR_FORMAT, vendorFiles);
+    checkVendors(all, loadItems());
+    vendors = all;
+  }
+  return vendors;
 }

@@ -1,4 +1,4 @@
-import { itemDef, type Item, type ItemDb, type LeaveReason } from '@mes/shared';
+import { isMoney, itemDef, sellPrice, type Item, type ItemDb, type LeaveReason } from '@mes/shared';
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { clock } from '../hud/raid-hud';
@@ -90,6 +90,11 @@ function Results({
   onNext: () => void;
 }) {
   const survived = result.how === 'extracted';
+  // Cash you kept goes into your money when the server has the result (session 13b).
+  const cash = result.kept.reduce(
+    (n, i) => n + (isMoney(items, i.item) ? sellPrice(items, i) : 0),
+    0,
+  );
   return (
     <div className={`results ${result.how}`}>
       <header>
@@ -104,6 +109,9 @@ function Results({
         <section>
           <h2>{survived ? 'You brought out' : 'You kept (vault and knife)'}</h2>
           <ItemList items={items} list={result.kept} empty="Nothing" />
+          {cash > 0 && (
+            <p className="results-cash">{cash.toLocaleString()} cash goes into your money.</p>
+          )}
         </section>
         {!survived && (
           <section>

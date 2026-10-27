@@ -397,7 +397,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
 
   // The hand-slot and heal buttons. A med picked from the heal button's picker is used
   // next tick.
-  let picked: MedRef | null = null;
+  let picked: MedRef | 'cancel' | null = null;
   const hands = new HandsHud(el.hud, (ref) => (picked = ref));
 
   // Debug actions: hurt me, heal me; on screen and keys 7 and 8.
@@ -456,6 +456,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
             items,
             map,
             send: (a) => pending.push(a),
+            // Started or stopped from the inventory: sent like the heal button's picker.
+            use: (u) => (picked = u),
             nameOf,
             close: closeScreen,
           },
@@ -700,8 +702,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       }
     }
     // Redraw the raid screen when the inventory changed, and now and then for what's in
-    // reach and what enemies took from their dead.
-    if (screen && (inventoryChanged || sim.tick % 10 === 0)) screen.refresh();
+    // reach and what enemies took from their dead; more often while a med or repair is in
+    // use, for its progress.
+    if (screen && (inventoryChanged || sim.tick % (player.using ? 3 : 10) === 0)) screen.refresh();
     // From the state, not the death event: a debug hurt kills outside the tick.
     if (player.health.dead) {
       endRaid('killed', killedBy ? `by a ${killedBy}` : 'from bleeding or a fall', now);

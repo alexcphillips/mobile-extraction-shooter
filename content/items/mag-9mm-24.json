@@ -1,10 +1,14 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "id": "mag-9mm-24",
   "name": "24-round 9 mm magazine",
   "type": "attachment",
   "size": [1, 1],
+  "value": 2500,
   "slot": "magazine",
   "weapons": ["pistol"],
-  "mods": { "magazine": 9, "reloadTime": 1.1 }
+  "mods": {
+    "magazine": 9,
+    "reloadTime": 1.1
+  }
 }

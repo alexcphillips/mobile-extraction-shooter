@@ -363,6 +363,7 @@ describe('looting', () => {
       id: 'brake',
       name: 'Brake',
       size: [1, 1],
+      value: 100,
       type: 'attachment',
       slot: 'muzzle',
       weapons: ['rifle'],

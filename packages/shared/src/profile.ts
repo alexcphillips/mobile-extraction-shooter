@@ -49,7 +49,8 @@ export const PROFILE = {
   stash: [10, 30],
   /**
    * What each extra stash page costs, in order: everyone starts with one, so the most is
-   * one more than there are prices. First guesses (session 13); retune with vendors (13b).
+   * one more than there are prices. First guesses (session 13), kept against the item
+   * values in 13b.
    */
   pagePrices: [100_000, 250_000, 500_000],
   /** Money above this is refused as a sanity limit. */
@@ -229,6 +230,27 @@ export function itemGained(before: Profile, after: Profile): string | null {
   const had = countItems(before);
   for (const [id, n] of countItems(after)) if (n > (had.get(id) ?? 0)) return id;
   return null;
+}
+
+/** The durability of all the armour, and the points left in all the repair kits. */
+function repairTotals(items: ItemDb, p: Profile): { durability: number; points: number } {
+  const out = { durability: 0, points: 0 };
+  forEachItem(p.gear, p.stash, (item) => {
+    const type = items.get(item.item)?.type;
+    if (type === 'armour') out.durability += item.durability ?? 0;
+    else if (type === 'repair') out.points += item.left ?? 0;
+  });
+  return out;
+}
+
+/**
+ * Whether armour gained more durability between two profiles than repair kits lost
+ * points (session 13b): between raids, only repairs mend armour.
+ */
+export function overRepaired(items: ItemDb, before: Profile, after: Profile): boolean {
+  const a = repairTotals(items, before);
+  const b = repairTotals(items, after);
+  return b.durability - a.durability > a.points - b.points + 1e-6;
 }
 
 /**

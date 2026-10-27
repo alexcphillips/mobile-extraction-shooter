@@ -4,6 +4,7 @@ import { CollisionWorld, type BoxDef } from '../world/collision-world';
 import { createItem } from './create-item';
 import { equip, heldWeapon, stow } from './gear';
 import { CHEST, HEALTH, LEFT_ARM, createArmour } from './health';
+import type { InventoryAction } from './looting';
 import { treatments } from './meds';
 import { MOVEMENT } from './movement';
 import {
@@ -227,5 +228,68 @@ describe('using meds', () => {
       step(b.state, world, items, { [a.player.id]: input() });
     }
     expect(b.state).toEqual(a.state);
+  });
+});
+
+describe('repairing armour in a raid', () => {
+  /** setup() wearing a vest worn down to 10, with a repair kit (50 points) carried. */
+  function worn() {
+    const s = setup(5, 5);
+    const vest = createArmour(items, 'vest');
+    vest.durability = 10;
+    equip(s.player, items, 'bodyArmour', vest);
+    stow(s.player, items, createItem(items, 'repair-kit'));
+    const pockets = s.player.gear.pockets;
+    const repair = (): InventoryAction => ({
+      type: 'repair',
+      kit: {
+        owner: { kind: 'self' },
+        grid: 'pockets',
+        index: pockets.items.findIndex((gi) => gi.item.item === 'repair-kit'),
+        item: 'repair-kit',
+      },
+      armour: { owner: { kind: 'self' }, slot: 'bodyArmour', item: 'vest' },
+    });
+    const kit = () => pockets.items.find((gi) => gi.item.item === 'repair-kit')?.item;
+    return { ...s, vest, repair, kit };
+  }
+
+  it("takes the kit's use time, then mends up to full; a spent kit is gone", () => {
+    const s = worn();
+    s.run(1 / TICK_RATE, input({ inventory: [s.repair()] }));
+    expect(s.player.using).toMatchObject({ item: 'repair-kit' });
+    s.run(4.9);
+    expect(s.vest.durability).toBe(10);
+    s.run(0.2);
+    expect(s.player.using).toBeNull();
+    expect(s.vest.durability).toBe(50);
+    expect(s.kit()?.left).toBe(10);
+    // Worn again: the last 10 points, and the kit is used up.
+    s.vest.durability = 30;
+    s.run(1 / TICK_RATE, input({ inventory: [s.repair()] }));
+    s.run(5.1);
+    expect(s.vest.durability).toBe(40);
+    expect(s.kit()).toBeUndefined();
+  });
+
+  it('stops when firing, and refuses full armour or a kit in the vault', () => {
+    const s = worn();
+    s.run(1 / TICK_RATE, input({ inventory: [s.repair()] }));
+    s.run(1 / TICK_RATE, input({ fire: true, pitch: 1 }));
+    s.run(6);
+    expect(s.player.using).toBeNull();
+    expect(s.vest.durability).toBe(10);
+    // In the vault, it isn't carried.
+    const vault = s.player.gear.vault!;
+    vault.items.push({ x: 0, y: 0, rotated: false, item: createItem(items, 'repair-kit') });
+    const fromVault: InventoryAction = {
+      ...(s.repair() as Extract<InventoryAction, { type: 'repair' }>),
+      kit: { owner: { kind: 'self' }, grid: 'vault', index: 0, item: 'repair-kit' },
+    };
+    s.run(1 / TICK_RATE, input({ inventory: [fromVault] }));
+    expect(s.player.using).toBeNull();
+    s.vest.durability = 50;
+    s.run(1 / TICK_RATE, input({ inventory: [s.repair()] }));
+    expect(s.player.using).toBeNull();
   });
 });

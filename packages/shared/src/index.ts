@@ -5,6 +5,7 @@ export {
   type ApiError,
   type ApiErrorCode,
   type BuyPageRequest,
+  type BuyRequest,
   type EndRaidRequest,
   type HelloResponse,
   type LoginRequest,
@@ -13,6 +14,7 @@ export {
   type RaidOutcome,
   type SaveProfileRequest,
   type SaveSettingsRequest,
+  type SellRequest,
   type SavedSettings,
   type StartRaidRequest,
 } from './protocol';
@@ -135,6 +137,7 @@ export {
   gridOf,
   groundInReach,
   lootContainerById,
+  ownItem,
   placeLootContainers,
   type GridName,
   type GridRef,
@@ -181,6 +184,7 @@ export {
   treatments,
   updateMedUse,
   useMed,
+  timeToUse,
   zoneToTreat,
   type CarriedRef,
   type MedRef,
@@ -295,6 +299,7 @@ export {
   itemSchema,
   medDef,
   meleeDef,
+  repairDef,
   stackSize,
   weaponDef,
   type AmmoDef,
@@ -307,6 +312,7 @@ export {
   type MedEffect,
   type MeleeDef,
   type OpticDef,
+  type RepairDef,
   type ReticleShape,
   type ItemDb,
   type ItemDef,
@@ -357,8 +363,39 @@ export {
   itemGained,
   newProfile,
   nextPagePrice,
+  overRepaired,
   parseGear,
   restGear,
   type Profile,
 } from './profile';
-export { applyStash, openStash, stashOwner, stashPageOf, type StashState } from './stash';
+export {
+  applyStash,
+  openStash,
+  stashGridOf,
+  stashOwner,
+  stashPageOf,
+  type StashState,
+} from './stash';
+export {
+  VENDOR,
+  buyOffer,
+  buyPrice,
+  cantSell,
+  condition,
+  depositInto,
+  depositMoney,
+  isMoney,
+  MAX_SELL,
+  sellItems,
+  sellTotal,
+  sellPrice,
+} from './vendors';
+export {
+  VENDOR_FORMAT,
+  VENDOR_FORMAT_VERSION,
+  checkVendors,
+  vendorSchema,
+  type VendorDef,
+  type VendorOffer,
+} from './content/vendors';
+export { kitUsedUp, repairArmour, repairable } from './sim/repair';

@@ -42,6 +42,15 @@ export class TestClient {
     return { status: res.status, ...(await res.json<ApiError>()) };
   }
 
+  /** Sets the (only) account's money, straight in the database. */
+  async setMoney(money: number) {
+    const db = this.env.DB;
+    const row = await db.prepare('SELECT data FROM profiles').first<{ data: string }>();
+    const p = JSON.parse(row!.data) as { money: number };
+    p.money = money;
+    await db.prepare('UPDATE profiles SET data = ?').bind(JSON.stringify(p)).run();
+  }
+
   register(username = 'ana', password = 'hunter22') {
     return this.ok('POST', '/register', { username, password });
   }

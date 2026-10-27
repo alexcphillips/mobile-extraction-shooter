@@ -1,10 +1,11 @@
 import type { ItemDb } from './content/items';
-import { addItem, type Item } from './inventory/grid';
+import { addItem, removeAt, type Grid, type Item } from './inventory/grid';
 import type { Profile } from './profile';
 import type { GearSlot } from './sim/gear';
 import {
   applyInventory,
   gridOf,
+  type GridRef,
   type InventoryAction,
   type ItemRef,
   type Owner,
@@ -12,6 +13,7 @@ import {
 import { createState, type Character, type SimState } from './sim/state';
 import { createHealth } from './sim/health';
 import { MOVEMENT } from './sim/movement';
+import { kitUsedUp, repairArmour } from './sim/repair';
 
 /*
  * The stash screen between raids (session 13). The profile is wrapped in a tiny raid
@@ -92,8 +94,48 @@ function itemAt(s: StashState, ref: ItemRef): Item | null {
   return gridOf(s.sim, s.player, ref)?.items[ref.index]?.item ?? null;
 }
 
+/**
+ * A grid of the profile's, by a ref as the stash screen sees it: one of the gear's (a
+ * rig's or backpack's inside, the vault) or a stash page. Null if there's no such grid.
+ */
+export function stashGridOf(profile: Profile, ref: GridRef): Grid | null {
+  const page = stashPageOf(ref.owner);
+  if (page >= 0) return ref.grid === 'loot' ? (profile.stash[page] ?? null) : null;
+  if (ref.owner.kind !== 'self') return null;
+  const g = profile.gear;
+  switch (ref.grid) {
+    case 'pockets':
+      return g.pockets;
+    case 'rig':
+      return g.rig?.grid ?? null;
+    case 'backpack':
+      return g.backpack?.grid ?? null;
+    case 'vault':
+      return g.vault;
+    default:
+      return null;
+  }
+}
+
+/**
+ * A repair between raids: at once, with a kit and armour anywhere in the gear or stash.
+ * A kit with no points left is removed.
+ */
+function repairNow(s: StashState, items: ItemDb, kitRef: ItemRef, armourRef: ItemRef): boolean {
+  const kit = itemAt(s, kitRef);
+  const armour = itemAt(s, armourRef);
+  if (!kit || !armour || kit.item !== kitRef.item || armour.item !== armourRef.item) return false;
+  if (repairArmour(items, kit, armour) <= 0) return false;
+  if (kitUsedUp(kit) && 'index' in kitRef) {
+    const grid = stashGridOf(s.profile, kitRef);
+    if (grid?.items[kitRef.index]?.item === kit) removeAt(grid, kitRef.index);
+  }
+  return true;
+}
+
 /** Applies the action; a double-tap into a page without room for all of it tries the others. */
 function apply(s: StashState, items: ItemDb, action: InventoryAction): boolean {
+  if (action.type === 'repair') return repairNow(s, items, action.kit, action.armour);
   const page = action.type === 'quick' ? stashPageOf(action.to) : -1;
   if (action.type !== 'quick' || page < 0) {
     return applyInventory(s.sim, s.player, items, action);
@@ -115,7 +157,8 @@ function apply(s: StashState, items: ItemDb, action: InventoryAction): boolean {
  * room for it) goes into the stash instead, from `page` on; if the stash has no room
  * either, or the knife would leave its slot (it's always carried), nothing changes. If
  * the slot in hand was emptied, the knife is in hand instead; otherwise what's in hand is
- * the player's choice, kept as it is. Returns whether anything changed.
+ * the player's choice, kept as it is. A repair is done at once (in a raid it takes time).
+ * Returns whether anything changed.
  */
 export function applyStash(
   s: StashState,

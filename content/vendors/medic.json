@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "id": "medic",
+  "name": "Medic",
+  "blurb": "Patches you up, and your armour too.",
+  "sells": [
+    { "item": "bandage" },
+    { "item": "splint" },
+    { "item": "medkit" },
+    { "item": "surgery-kit" },
+    { "item": "armour-repair-kit" }
+  ]
+}

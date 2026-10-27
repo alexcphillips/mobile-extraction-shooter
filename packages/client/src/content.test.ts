@@ -1,4 +1,4 @@
-import { CollisionWorld } from '@mes/shared';
+import { CollisionWorld, VENDOR, buyPrice } from '@mes/shared';
 import { describe, expect, it } from 'vitest';
 import {
   checkDoorKeys,
@@ -9,6 +9,7 @@ import {
   loadLootTables,
   loadMap,
   loadRaid,
+  loadVendors,
   mapIds,
   raidIds,
 } from './content';
@@ -36,6 +37,28 @@ describe('content', () => {
 
   it('loot tables load and their items are sound', () => {
     expect(loadLootTables().size).toBeGreaterThan(0);
+  });
+
+  it('vendors load and sell items that exist, for money', () => {
+    const items = loadItems();
+    expect(loadVendors().size).toBeGreaterThan(0);
+    for (const v of loadVendors().values())
+      for (const o of v.sells) expect(buyPrice(items, o)).toBeGreaterThan(0);
+  });
+
+  it("repairing armour never makes money: a kit's points cost more than they add", () => {
+    const defs = [...loadItems().values()];
+    for (const kit of defs) {
+      if (kit.type !== 'repair') continue;
+      for (const a of defs) {
+        if (a.type !== 'armour') continue;
+        // What a point of durability adds to the armour's sell price, against its cost.
+        expect(
+          (a.value * VENDOR.sellShare) / a.durability,
+          `${kit.id} on ${a.id}`,
+        ).toBeLessThanOrEqual(kit.value / kit.points);
+      }
+    }
   });
 
   it.each(raidIds())('raid %s loads and names a map', (id) => {

@@ -1,8 +1,12 @@
 import {
   ATTACHMENT_SLOTS,
+  cantSell,
   itemDef,
   lootContainerById,
+  sellPrice,
+  sellTotal,
   stackSize,
+  timeToUse,
   type Character,
   type CompiledMap,
   type GearSlot,
@@ -17,7 +21,7 @@ import {
   type Owner,
 } from '@mes/shared';
 import { useEffect, useState, type ReactNode } from 'react';
-import type { InventoryController } from './inventory-controller';
+import { refKey, type InventoryController } from './inventory-controller';
 import { MapTab } from './map-tab';
 
 type Tab = 'inventory' | 'map' | 'quests';
@@ -48,6 +52,7 @@ export function RaidScreen({ inv, version, map }: Props & { map: CompiledMap }):
           </button>
         ))}
         <span className="raid-spacer" />
+        <UsePill inv={inv} />
         <button className="primary" onClick={close}>
           Close
         </button>
@@ -117,7 +122,9 @@ export function Inventory({ inv, version }: Props): ReactNode {
         </section>
       </div>
       <footer className="inv-bar">
-        {selected && sel ? (
+        {inv.selling ? (
+          <SellBar inv={inv} />
+        ) : selected && sel ? (
           <>
             <span className="inv-bar-name">{sel.def.name}</span>
             <span className="inv-bar-info">{details(ctx.items, sel.item, sel.def)}</span>
@@ -125,6 +132,18 @@ export function Inventory({ inv, version }: Props): ReactNode {
             <span className="raid-spacer" />
             {'index' in selected && sel.def.size[0] !== sel.def.size[1] && (
               <button onClick={() => inv.rotate(selected)}>Rotate</button>
+            )}
+            {sel.def.type === 'med' && ctx.use && !ctx.player.using && (
+              <button disabled={!inv.medRef(selected)} onClick={() => inv.useMed(selected)}>
+                {inv.medRef(selected) ? 'Use' : 'Nothing to treat'}
+              </button>
+            )}
+            <RepairButton inv={inv} armour={selected} item={sel.item} def={sel.def} />
+            {ctx.sell && !('ground' in selected) && (
+              <SellButton key={refKey(selected)} inv={inv} at={selected} item={sel.item} />
+            )}
+            {ctx.sell && inv.canPick(selected) && (
+              <button onClick={() => inv.startSelling(selected)}>Sell several</button>
             )}
             {!('ground' in selected) && !ctx.stash && (
               <button onClick={() => inv.toGround(selected)}>Drop</button>
@@ -134,14 +153,154 @@ export function Inventory({ inv, version }: Props): ReactNode {
             </button>
           </>
         ) : (
-          <span className="inv-hint">
-            {ctx.stash
-              ? 'Double-tap to move between your gear and the stash · drag to place · while dragging, tap with another finger (or press R) to rotate'
-              : 'Double-tap to move · drag to place, or onto the ground to drop · while dragging, tap with another finger (or press R) to rotate'}
-          </span>
+          <>
+            <span className="inv-hint">
+              {ctx.stash
+                ? 'Double-tap to move between your gear and the stash · drag to place · drag a repair kit onto armour to mend it · while dragging, tap with another finger (or press R) to rotate'
+                : 'Double-tap to move · drag to place, or onto the ground to drop · drag a repair kit onto armour to mend it · while dragging, tap with another finger (or press R) to rotate'}
+            </span>
+            {ctx.sell && <button onClick={() => inv.startSelling()}>Select to sell</button>}
+          </>
         )}
       </footer>
     </div>
+  );
+}
+
+/**
+ * Mends the selected armour with a repair kit you have (session 13b): at once in the
+ * stash, over the kit's use time in a raid. Dragging a kit onto armour does the same.
+ */
+function RepairButton({
+  inv,
+  armour,
+  item,
+  def,
+}: {
+  inv: InventoryController;
+  armour: ItemRef;
+  item: Item;
+  def: ItemDef;
+}): ReactNode {
+  if (def.type !== 'armour' || armour.owner.kind !== 'self') return null;
+  // While anything is being used, the pill at the top shows it (and stops it).
+  if (inv.ctx.player.using) return null;
+  if ((item.durability ?? 0) >= def.durability) return null;
+  const kit = inv.kitFor(armour);
+  return (
+    <button
+      disabled={!kit}
+      title={kit ? undefined : 'You need a repair kit with points left'}
+      onClick={() => inv.repair(armour)}
+    >
+      Repair
+    </button>
+  );
+}
+
+/** A button that asks for a second tap, then runs an action that resolves when done. */
+function ConfirmButton({
+  label,
+  confirm,
+  busyLabel,
+  disabled,
+  onConfirm,
+}: {
+  label: string;
+  confirm: string;
+  busyLabel: string;
+  disabled?: boolean;
+  onConfirm: () => Promise<void>;
+}): ReactNode {
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  return (
+    <button
+      className={confirming ? 'confirm' : ''}
+      disabled={busy || disabled}
+      onBlur={() => setConfirming(false)}
+      onClick={() => {
+        if (!confirming) {
+          setConfirming(true);
+          return;
+        }
+        setConfirming(false);
+        setBusy(true);
+        void onConfirm().finally(() => setBusy(false));
+      }}
+    >
+      {busy ? busyLabel : confirming ? confirm : label}
+    </button>
+  );
+}
+
+/** Sells the selected item between raids, for its price: a second tap confirms. */
+function SellButton({ inv, at, item }: { inv: InventoryController; at: ItemRef; item: Item }) {
+  const { items, sell } = inv.ctx;
+  const why = 'slot' in at && at.slot === 'knife' ? 'Always kept' : cantSell(items, item);
+  if (why) return <span className="inv-bar-info">{why}</span>;
+  const price = sellPrice(items, item).toLocaleString();
+  return (
+    <ConfirmButton
+      label={`Sell · ${price}`}
+      confirm={`Sell for ${price}?`}
+      busyLabel="Selling…"
+      onConfirm={() => sell!([at])}
+    />
+  );
+}
+
+/**
+ * Picking several items to sell at once (session 13b): taps pick and unpick, and Sell
+ * sells them all, or none if one can't be (a backpack must go with everything in it).
+ */
+function SellBar({ inv }: { inv: InventoryController }): ReactNode {
+  const { items, sell } = inv.ctx;
+  const picked = inv.picked();
+  const total = sellTotal(items, picked).toLocaleString();
+  const n = picked.length;
+  return (
+    <>
+      <span className="inv-bar-name">
+        {n ? `${n} item${n === 1 ? '' : 's'} · ${total}` : 'Tap items to sell'}
+      </span>
+      <span className="inv-bar-info">
+        {n ? 'Tap one again to take it off' : 'Not the knife; a backpack goes with what is in it'}
+      </span>
+      <span className="raid-spacer" />
+      <button onClick={() => inv.stopSelling()}>Cancel</button>
+      <ConfirmButton
+        label={n ? `Sell ${n}` : 'Sell'}
+        confirm={`Sell ${n} for ${total}?`}
+        busyLabel="Selling…"
+        disabled={!n}
+        onConfirm={() => sell!([...inv.selling!])}
+      />
+    </>
+  );
+}
+
+/**
+ * The med or repair kit being used in a raid (session 13b): its name, time left and a
+ * bar filling up. A tap stops it, like the heal button.
+ */
+function UsePill({ inv }: { inv: InventoryController }): ReactNode {
+  const { player, items } = inv.ctx;
+  const u = player.using;
+  if (!u) return null;
+  const total = timeToUse(items, u.item);
+  const done = total > 0 ? Math.min(1, 1 - u.left / total) : 1;
+  const label = u.armour
+    ? `Repairing ${itemDef(items, u.armour.item).name.toLowerCase()}`
+    : itemDef(items, u.item).name;
+  return (
+    <button className="inv-use" aria-label={`${label}: tap to stop`} onClick={() => inv.stopUse()}>
+      <span className="inv-use-fill" style={{ width: `${done * 100}%` }} />
+      <span className="inv-use-text">
+        {label} · {Math.ceil(u.left)} s
+      </span>
+      <span className="inv-use-stop">✕</span>
+    </button>
   );
 }
 
@@ -310,7 +469,7 @@ function Ground({ inv }: { inv: InventoryController }): ReactNode {
           return (
             <div
               key={ref.ground}
-              className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}`}
+              className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}`}
               data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
               style={{
                 width: def.size[0] * cell,
@@ -409,8 +568,11 @@ function Slots({
             </span>
             {item && def && ref && (
               <div
-                className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}`}
+                className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}`}
                 data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
+                data-armour={
+                  def.type === 'armour' && owner.kind === 'self' ? JSON.stringify(ref) : undefined
+                }
                 style={{ background: colourOf(def) }}
                 onPointerDown={(e) =>
                   inv.drag.down(e.nativeEvent, {
@@ -461,8 +623,11 @@ function GridView({
         return (
           <div
             key={index}
-            className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}`}
+            className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}`}
             data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
+            data-armour={
+              def.type === 'armour' && gref.owner.kind === 'self' ? JSON.stringify(ref) : undefined
+            }
             style={{
               left: g.x * cell,
               top: g.y * cell,
@@ -515,7 +680,7 @@ const TYPE_COLOURS: Record<ItemDef['type'], string> = {
   repair: '#2f6363',
 };
 
-function colourOf(def: ItemDef): string {
+export function colourOf(def: ItemDef): string {
   return TYPE_COLOURS[def.type];
 }
 
@@ -530,7 +695,7 @@ function badge(item: Item, def: ItemDef): string {
       if (def.effect === 'heal') return `${item.left ?? 0} HP`;
       return (def.uses ?? 1) > 1 ? `×${item.left ?? 0}` : '';
     case 'repair':
-      return `${item.left ?? 0}`;
+      return `${Math.floor(item.left ?? 0)}`;
     case 'key':
       return def.uses === undefined ? '' : `×${item.left ?? 0}`;
     case 'container': {
@@ -556,6 +721,8 @@ function details(items: ItemDb, item: Item, def: ItemDef): string {
       return `${def.grid[0]}×${def.grid[1]} inside`;
     case 'key':
       return def.uses === undefined ? 'Never wears out' : `${item.left ?? 0}/${def.uses} uses left`;
+    case 'repair':
+      return `${Math.floor(item.left ?? 0)}/${def.points} points · select armour and press Repair`;
     default:
       return stackSize(def) > 1 ? `${item.count} / ${stackSize(def)}` : '';
   }

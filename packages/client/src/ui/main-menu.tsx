@@ -9,8 +9,10 @@ import {
   type InventoryAction,
   type Item,
   type ItemDb,
+  type ItemRef,
   type ProfileResponse,
   type StashState,
+  type VendorDef,
 } from '@mes/shared';
 import { useEffect, useMemo, useReducer, useState, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -18,6 +20,7 @@ import { AccountError } from '../account';
 import { StashSaver, type StashSaveStatus } from '../stash';
 import { InventoryController } from './inventory-controller';
 import { Inventory } from './raid-screen';
+import { VendorsPage } from './vendors-page';
 
 /** A raid the menu can start. */
 export interface RaidChoice {
@@ -31,6 +34,7 @@ export interface MenuOptions {
   me: ProfileResponse;
   items: ItemDb;
   raids: RaidChoice[];
+  vendors: VendorDef[];
   /** Opens the settings screen over the menu; done is called when it closes. */
   openSettings: (done: () => void) => void;
 }
@@ -41,7 +45,7 @@ export interface MenuChoice {
   me: ProfileResponse;
 }
 
-type Page = 'menu' | 'stash';
+type Page = 'menu' | 'stash' | 'vendors';
 
 /** What you're taking in, for the menu: guns and armour by name. */
 const SHOWN: readonly GearSlot[] = ['primary1', 'primary2', 'sidearm', 'helmet', 'bodyArmour'];
@@ -91,6 +95,50 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
     });
   };
 
+  /** What the server replied with after buying or selling: the stash shows it afresh. */
+  const reopen = (bought: ProfileResponse, on: number, why: string): void => {
+    setStartPage(on);
+    setStash(openStash(bought.profile));
+    setNotice(why);
+  };
+  const refused = (what: string) => (err: unknown) => {
+    if (!(err instanceof AccountError)) throw err;
+    setNotice(`${what}: ${err.message}`);
+  };
+
+  if (page === 'vendors') {
+    return (
+      <VendorsPage
+        vendors={opts.vendors}
+        items={opts.items}
+        me={me}
+        notice={notice}
+        onBack={() => {
+          setNotice(null);
+          setPage('menu');
+        }}
+        onStash={() => {
+          setNotice(null);
+          setPage('stash');
+        }}
+        onBuy={(vendor, offer) => {
+          const o = vendor.sells[offer]!;
+          const name = itemDef(opts.items, o.item).name;
+          return saver
+            .buy(vendor.id, offer, startPage)
+            .then(
+              (bought) =>
+                reopen(
+                  bought,
+                  startPage,
+                  `Bought ${name}${(o.count ?? 1) > 1 ? ` ×${o.count}` : ''}: it's in your stash.`,
+                ),
+              refused(`${name} wasn't bought`),
+            );
+        }}
+      />
+    );
+  }
   if (page === 'stash') {
     return (
       <StashPage
@@ -106,6 +154,27 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
         }}
         onRaid={start}
         startPage={startPage}
+        onVendors={() => {
+          setNotice(null);
+          void saver.flush();
+          setPage('vendors');
+        }}
+        onSell={(refs, on) => {
+          const name =
+            refs.length === 1 ? itemDef(opts.items, refs[0]!.item).name : `${refs.length} items`;
+          const before = saver.me.profile.money;
+          return saver
+            .sell(refs)
+            .then(
+              (sold) =>
+                reopen(
+                  sold,
+                  on,
+                  `Sold ${name} for ${(sold.profile.money - before).toLocaleString()}.`,
+                ),
+              refused(`${name} wasn't sold`),
+            );
+        }}
         onBuyPage={() =>
           saver.buyPage().then(
             (bought) => {
@@ -149,8 +218,9 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
             Stash and loadout
             <span>{loadoutLine(opts.items, me)}</span>
           </button>
-          <button disabled>
-            Vendors <span>Coming in session 13b</span>
+          <button disabled={!opts.vendors.length} onClick={() => setPage('vendors')}>
+            Vendors
+            <span>{opts.vendors.map((v) => v.name).join(' · ') || 'None yet'}</span>
           </button>
           <button disabled>
             Quests <span>Coming in session 14</span>
@@ -171,6 +241,8 @@ function StashPage({
   onBack,
   onRaid,
   onBuyPage,
+  onSell,
+  onVendors,
   startPage,
 }: {
   stash: StashState;
@@ -182,6 +254,9 @@ function StashPage({
   onRaid: () => void;
   /** Buys the next page; resolves with whether it was bought. */
   onBuyPage: () => Promise<boolean>;
+  /** Sells items, all or none; the page shown is kept. Resolves when sold or refused. */
+  onSell: (refs: ItemRef[], page: number) => Promise<void>;
+  onVendors: () => void;
   /** The page to show when the stash is (re)opened. */
   startPage: number;
 }): ReactNode {
@@ -207,12 +282,13 @@ function StashPage({
         nameOf: () => (stash.profile.stash.length > 1 ? `Stash · page ${pageOf() + 1}` : 'Stash'),
         close: onBack,
         stash: true,
+        sell: (refs) => onSell(refs, pageOf()),
       },
       stashOwner(Math.min(startPage, stash.profile.stash.length - 1)),
       bump,
     );
     return ctrl;
-    // onBack only closes the page; a new one each render needn't make a new controller.
+    // onBack and onSell are new each render, but do the same: no need for a new controller.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stash, items, saver]);
   const shown = stashPageOf(inv.target ?? { kind: 'self' });
@@ -272,6 +348,10 @@ function StashPage({
                 : `+ Page · ${price.toLocaleString()}`}
           </button>
         )}
+        <span className="vendors-money">
+          <b>{stash.profile.money.toLocaleString()}</b> money
+        </span>
+        <button onClick={onVendors}>Vendors</button>
         <button className="primary" disabled={busy} onClick={onRaid}>
           {busy ? 'Starting…' : 'Start raid'}
         </button>

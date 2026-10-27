@@ -1,0 +1,18 @@
+{
+  "formatVersion": 1,
+  "id": "quartermaster",
+  "name": "Quartermaster",
+  "blurb": "Guns, rounds and basic kit. The good stuff you find yourself.",
+  "sells": [
+    { "item": "pistol" },
+    { "item": "assault-rifle" },
+    { "item": "ammo-9mm", "count": 30 },
+    { "item": "ammo-556", "count": 30 },
+    { "item": "mag-9mm-24" },
+    { "item": "red-dot" },
+    { "item": "muzzle-brake" },
+    { "item": "steel-helmet" },
+    { "item": "chest-rig" },
+    { "item": "small-backpack" }
+  ]
+}

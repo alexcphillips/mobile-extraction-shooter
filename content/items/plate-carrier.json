@@ -1,9 +1,10 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "id": "plate-carrier",
   "name": "Plate carrier",
   "type": "armour",
   "size": [3, 3],
+  "value": 30000,
   "slot": "body",
   "absorb": 0.6,
   "durability": 80
