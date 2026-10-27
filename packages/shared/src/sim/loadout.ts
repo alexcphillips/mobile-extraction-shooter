@@ -1,23 +1,11 @@
 import { attachmentDef, weaponDef, type ItemDb } from '../content/items';
 import type { ArmourOption, ContainerOption, LoadoutDef } from '../content/enemies';
-import { nextFloat, nextRange, type Rng } from '../rng';
+import { byWeight, nextFloat, nextRange, type Rng } from '../rng';
 import { createItem } from './create-item';
 import { createGear, equip, stow, type GearSlot } from './gear';
 import { createArmour } from './health';
 import type { Character } from './state';
 import { giveWeapon } from './weapons';
-
-/** Picks one option by weight. */
-function byWeight<T extends { weight: number }>(rng: Rng, options: readonly T[]): T {
-  let total = 0;
-  for (const o of options) total += o.weight;
-  let roll = nextFloat(rng) * total;
-  for (const o of options) {
-    roll -= o.weight;
-    if (roll < 0) return o;
-  }
-  return options[options.length - 1]!;
-}
 
 /**
  * Rolls a loadout and equips a character with it, each part picked by weight on its own:

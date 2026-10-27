@@ -16,5 +16,13 @@
     "bottom": "#2b2f2a",
     "hands": "#1f1f1f",
     "feet": "#1a1a1a"
+  },
+  "loot": {
+    "rolls": [2, 4],
+    "tables": {
+      "military": 2,
+      "medical": 1,
+      "household": 1
+    }
   }
 }

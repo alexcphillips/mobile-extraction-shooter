@@ -228,15 +228,29 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
     - Not done yet: no sounds for swings or meds. Enemies never switch weapons, heal or use knives. The knife and the arms are placeholders (session 18); the body holds the knife in the pistol idle pose. A sprinting body's arms still don't match the capsules (from 8b).
     - **To check on the iPhone:** the knife against scavs' 0.7 s reaction (sneaking up crouched, and round a corner), whether the 10° fan feels fair or too generous, the slot buttons' size and reach for a thumb, the long press (400 ms) on the heal button, and the picker's position.
 
-- [ ] **11. Raid lifecycle and loot.**
+- [x] **11. Raid lifecycle and loot.** (Split three ways with the user on 2026-10-26: items on the ground and the map tab moved to 11b, doors and keys to 11c.)
   - Raid config format, including a timer (15 minutes by default) and a random player spawn (co-op players together).
-  - Loot tables rolled at raid start.
+  - Loot tables rolled at raid start, for containers.
   - **Looting bodies** (moved from session 8): a dead enemy's gun, armour and rolled loot, through session 10's inventory screen. **Enemy loot weighting**: an enemy spawn's `lootWeights` multiply its loot table's weights (the yard boss has `military: 2`).
-  - Extraction points; doors and keys. Doors are loaded and drawn since session 4 but don't collide: add them as solids that move, in the simulation state.
+  - Extraction points: stand in one for 7 s (decided with the user, see design.md → Raids and maps).
+  - Results screens for death, extraction and running out of time (vault and knife kept).
+  - *Done when* one complete solo raid on the test map works on the phone with nothing but local state: spawn, loot, fight, extract or die, see the result.
+  - **Notes (2026-10-26):**
+    - Split with the user before starting (see above), and decided with them: **Tarkov-like extraction**, 7 s standing in the point with a countdown, reset by stepping out but not by being shot; every point always open; **running out of time is "missing in action"** and counts as dying (design.md → Raids and maps → Extraction).
+    - Decided along the way (design.md and tech-stack.md): a container's item count comes from its loot table, not its size; enemy loot is a new optional `loot` on enemy types (tables with weights and a roll range), which spawns' `lootWeights` multiply; a player who leaves is taken out of `state.entities` into `state.left`; extraction points are drawn as faint green columns until the map tab; the results screen pauses the game and its button reloads the page until the menu exists.
+    - Shared: content kinds **`content/loot-tables/`** and **`content/raids/`** (format 1 each); `checkLootTables`, `checkEnemyLoot`; `sim/loot-roll.ts` (`rollItem`, `rollTable`, `fillLootContainers`, `rollEnemyLoot`); `sim/raid.ts` (`RAID`, `startRaid`, `updateRaid` at the end of `step`, `timeLeft`, `extractionAt`, `gearItems`, `keptItems`, the `leave` event); `SimState.raid` and `left`, `Character.extracting`; `byWeight` and `nextIntIn` in `rng.ts`. 11 new tests (221 in all): the timer, extracting while shot, stepping out, the dead and enemies never extracting, missing in action, a JSON round trip mid-extraction, what's kept; rolls by weight with counts, containers filled the same for the same seed, enemy loot weighted by its spawn and left out when it doesn't fit; the client's content test loads the new kinds.
+    - Content: loot tables `household` (cash, gold watch, bandage, splint, 9 mm, repair kit, rarely the shed key), `medical` and `military` (guns, ammo, attachments, armour, rig, large backpack, medkit); scavs carry 1–3 items (household 3, medical 1, military 1), the boss 2–4 (military 2, medical 1, household 1, and the yard boss's spawn doubles military). `test-raid`: the test map, 15 minutes. Numbers are first guesses.
+    - Client: `?raid=<id>` (default `test-raid`) replaces `?map`, and `?time=<seconds>` sets the timer. The test fill in `play/loot.ts` is gone. New `hud/raid-hud.ts`, `render/extractions.ts`, `ui/results.tsx`; the old death overlay and its "Try again" are gone.
+    - Checked in headless Chrome at iPhone landscape size: the timer counts down from 14:59; house C's desk opened with a rolled bandage; standing at Pond dock showed "Extracting at Pond dock · 1.9" and then **Extracted** listing everything carried; `?time=6` ended in **Missing in action** with only the knife kept; debug hurts until death gave **Killed in action** 1.5 s later; standing at the centre, the yard boss killed me at 0:34 and the screen said "by a Yard boss"; with `?peaceful`, auto-fire killed the yard boss and its body held a rolled medkit, red dot and 5.56 rounds. 60 fps, tick 0.2–0.4 ms, 31–32 draw calls (the columns are one). Found and fixed along the way: a death from the debug hurt (outside the tick) never brought up the results, because `step` clears events first. No console errors apart from the usual 502 with no server running.
+    - Bundle: startup is about 903 kB (up 8 kB); the results screen is a 1.5 kB chunk.
+    - Not done yet: loose loot spawns and dropping (11b); doors (11c); nothing is saved (sessions 12–13). Enemy spawns aren't kept away from the chosen player spawn (design.md asks for a minimum distance; the editor's warnings or the raid config can do it). Named zones don't weight loot yet. No sound for extracting.
+    - **To check on the iPhone:** a whole raid end to end; whether the green columns are too faint or too strong in daylight; the timer's place top left; the results screen's lists fitting a smaller phone (they scroll); and 7 s feeling right.
+- [ ] **11b. Items on the ground and the map tab.** (Split from session 11.)
+  - Loose items: `lootSpawn` markers rolled at raid start, picking them up with the use button, dropping items from the inventory, and what has nowhere to go dropped instead of refused (a magazine change's rounds, session 10c).
+  - SVG map tab with your position, named zones and extraction points.
+- [ ] **11c. Doors and keys.** (Split from session 11.)
+  - Doors are loaded and drawn since session 4 but don't collide: add them as solids that move, in the simulation state. Locked doors open with their key.
   - **AI opens doors** (decided 2026-10-26, see design.md → AI → Doors): open or closed in the sim with collision snapping, the swing animated only in the renderer; closed unlocked doors stay nav links that enemies open on arrival; no noise. Enemies never open locked doors, even with the key, but once a player unlocks one it stays unlocked for the raid and enemies can use it. Recompute the nav components after an unlock (about 11 ms on the Mac; see tech-stack.md → Navigation for the cheaper fallback if it hitches on the phone).
-  - Results screens for death and extraction (vault and knife kept).
-  - SVG map tab with your position and named zones.
-  - *Done when* one complete solo raid on the test map works on the phone with nothing but local state.
 
 ## Milestone C: the meta loop and server
 - [ ] **12. Server foundation.**

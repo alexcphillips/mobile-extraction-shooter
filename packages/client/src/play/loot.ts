@@ -1,45 +1,4 @@
-import {
-  LOOT_REACH,
-  addItem,
-  createItem,
-  type Character,
-  type CompiledMap,
-  type ItemDb,
-  type LootContainer,
-  type SimState,
-} from '@mes/shared';
-
-/**
- * What each loot table puts in a container until loot tables are rolled (session 11): a
- * fixed sample, so session 10's looting has something to take. [item, count].
- */
-const TEST_FILL: Readonly<Record<string, readonly (readonly [string, number])[]>> = {
-  household: [
-    ['cash', 1],
-    ['gold-watch', 1],
-    ['bandage', 1],
-    ['ammo-9mm', 30],
-  ],
-  military: [
-    ['pistol', 1],
-    ['mag-9mm-24', 1],
-    ['suppressor', 1],
-    ['ammo-556', 90],
-    ['medkit', 1],
-    ['large-backpack', 1],
-  ],
-};
-
-/** Fills every loot container with its loot table's test sample. */
-export function fillTestLoot(sim: SimState, map: CompiledMap, items: ItemDb): void {
-  const tables = new Map<string, string>();
-  for (const m of map.markers) if (m.type === 'lootContainer') tables.set(m.id, m.lootTable);
-  for (const l of sim.loot) {
-    for (const [id, count] of TEST_FILL[tables.get(l.id) ?? ''] ?? []) {
-      addItem(items, l.grid, createItem(items, id, count));
-    }
-  }
-}
+import { LOOT_REACH, type Character, type LootContainer, type SimState } from '@mes/shared';
 
 /** Something the use button can loot. */
 export type Lootable = { kind: 'container'; c: LootContainer } | { kind: 'body'; c: Character };

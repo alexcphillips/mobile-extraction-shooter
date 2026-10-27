@@ -1,6 +1,16 @@
 export { FixedTimestep, TICK_RATE, TICK_SECONDS } from './tick';
 export { PROTOCOL_VERSION, type HelloResponse } from './protocol';
-export { chance, createRng, nextFloat, nextInt, nextRange, pick, type Rng } from './rng';
+export {
+  byWeight,
+  chance,
+  createRng,
+  nextFloat,
+  nextInt,
+  nextIntIn,
+  nextRange,
+  pick,
+  type Rng,
+} from './rng';
 export { HeightGrid, type HeightGridDef, type SurfaceHit } from './world/terrain';
 export { CellWalk, StaticGrid } from './world/grid';
 export {
@@ -43,6 +53,27 @@ export {
   type PatrolDef,
 } from './sim/ai';
 export { equipLoadout } from './sim/loadout';
+export {
+  fillLootContainers,
+  rollEnemyLoot,
+  rollItem,
+  rollTable,
+  type LootTables,
+} from './sim/loot-roll';
+export {
+  RAID,
+  extractionAt,
+  gearItems,
+  keptItems,
+  startRaid,
+  timeLeft,
+  updateRaid,
+  type ExtractionPoint,
+  type LeaveEvent,
+  type LeaveReason,
+  type LeftRaid,
+  type RaidState,
+} from './sim/raid';
 export {
   CARRIED_GRIDS,
   GEAR,
@@ -90,6 +121,16 @@ export {
   lootContainerSchema,
   type LootContainerDef,
 } from './content/loot-containers';
+export {
+  LOOT_TABLE_FORMAT,
+  LOOT_TABLE_FORMAT_VERSION,
+  checkEnemyLoot,
+  checkLootTables,
+  lootTableSchema,
+  type LootEntry,
+  type LootTableDef,
+} from './content/loot-tables';
+export { RAID_FORMAT, RAID_FORMAT_VERSION, raidSchema, type RaidDef } from './content/raids';
 export {
   EFFECT_PRIORITY,
   TREATMENT_ORDER,
@@ -232,6 +273,7 @@ export {
   type ArmourOption,
   type ContainerOption,
   type EnemyDef,
+  type EnemyLoot,
   type EnemySkill,
   type Outfit,
   type LoadoutDef,

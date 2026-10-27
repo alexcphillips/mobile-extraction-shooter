@@ -54,9 +54,7 @@ export function RaidScreen({ inv, version }: Props): ReactNode {
         <Inventory inv={inv} version={version} />
       ) : (
         <div className="raid-empty">
-          {tab === 'map'
-            ? 'The map comes with the raid lifecycle (session 11).'
-            : 'Quests come in session 14.'}
+          {tab === 'map' ? 'The map comes with session 11b.' : 'Quests come in session 14.'}
         </div>
       )}
     </div>

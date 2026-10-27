@@ -9,6 +9,7 @@ import { applyInventory } from './looting';
 import { updateMedUse } from './meds';
 import { updateMelee } from './melee';
 import { moveCharacter, separateCharacters } from './movement';
+import { updateRaid } from './raid';
 import type { SimState, TickInputs } from './state';
 import { updateWeapon } from './weapons';
 
@@ -20,6 +21,7 @@ import { updateWeapon } from './weapons';
  * Enemies think at the end, from this tick's positions and events, and act on it next
  * tick. Without a nav grid they don't think, and stand still. Inventory actions come
  * first, so the rest of the tick sees what they changed; then switching hands and meds.
+ * Last, the raid: extracting, and the timer running out.
  */
 export function step(
   state: SimState,
@@ -59,4 +61,6 @@ export function step(
   for (const e of state.entities) bleed(state, e);
   if (nav) updateAi(state, world, items, nav);
   state.tick++;
+  // Last, so a player who leaves did everything else this tick.
+  updateRaid(state);
 }

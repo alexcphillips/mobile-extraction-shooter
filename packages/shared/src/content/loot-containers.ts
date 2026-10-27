@@ -6,7 +6,7 @@ import { idSchema } from './schema';
  * Loot containers (content/loot-containers/<id>.json), from session 10: the kinds of desk,
  * cabinet or crate a map's lootContainer markers place. Not items: they stay where they
  * are, and their grid takes rigs and backpacks. What's in them is rolled from the
- * marker's loot table (session 11).
+ * marker's loot table (sim/loot-roll.ts).
  */
 
 export const LOOT_CONTAINER_FORMAT_VERSION = 1;

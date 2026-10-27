@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "id": "military",
+  "name": "Military",
+  "rolls": [2, 4],
+  "items": [
+    { "item": "ammo-556", "weight": 4, "count": [30, 60] },
+    { "item": "ammo-9mm", "weight": 3, "count": [20, 60] },
+    { "item": "pistol", "weight": 2 },
+    { "item": "assault-rifle", "weight": 1 },
+    { "item": "mag-9mm-24", "weight": 1 },
+    { "item": "mag-556-45", "weight": 1 },
+    { "item": "red-dot", "weight": 1 },
+    { "item": "scope-4x", "weight": 0.5 },
+    { "item": "suppressor", "weight": 1 },
+    { "item": "muzzle-brake", "weight": 1 },
+    { "item": "steel-helmet", "weight": 1 },
+    { "item": "plate-carrier", "weight": 0.5 },
+    { "item": "chest-rig", "weight": 1 },
+    { "item": "large-backpack", "weight": 0.5 },
+    { "item": "medkit", "weight": 1 }
+  ]
+}

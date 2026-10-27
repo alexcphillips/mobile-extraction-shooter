@@ -1,0 +1,15 @@
+{
+  "formatVersion": 1,
+  "id": "household",
+  "name": "Household",
+  "rolls": [1, 3],
+  "items": [
+    { "item": "cash", "weight": 5, "count": [20, 300] },
+    { "item": "gold-watch", "weight": 1 },
+    { "item": "bandage", "weight": 3 },
+    { "item": "splint", "weight": 1 },
+    { "item": "ammo-9mm", "weight": 2, "count": [8, 30] },
+    { "item": "armour-repair-kit", "weight": 0.5 },
+    { "item": "shed-key", "weight": 0.3 }
+  ]
+}

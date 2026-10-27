@@ -37,8 +37,8 @@ function setHidden(el: HTMLElement, hidden: boolean): void {
 /**
  * The player's status, written straight to the DOM (never through React): the overall
  * health bar, chips for broken limbs and bleeding, armour icons coloured by durability,
- * and the ammo count with a reload bar. Also the crosshair hit marker, a red flash when
- * hurt, and the death screen.
+ * and the ammo count with a reload bar. Also the crosshair hit marker and a red flash when
+ * hurt.
  */
 export class Vitals {
   private readonly bar: HTMLElement;
@@ -58,7 +58,6 @@ export class Vitals {
     private readonly ammo: HTMLElement,
     private readonly crosshair: HTMLElement,
     private readonly hurt: HTMLElement,
-    private readonly death: HTMLElement,
   ) {
     vitals.innerHTML = `
       <div class="vitals-row">
@@ -123,7 +122,6 @@ export class Vitals {
       this.markerUntil = 0;
       this.crosshair.classList.remove('hit', 'kill');
     }
-    setHidden(this.death, !h.dead);
   }
 
   private armour(el: HTMLElement, a: ArmourState | null, items: ItemDb): void {

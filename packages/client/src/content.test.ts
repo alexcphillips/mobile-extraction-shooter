@@ -6,8 +6,11 @@ import {
   checkLootContainers,
   loadEnemies,
   loadItems,
+  loadLootTables,
   loadMap,
+  loadRaid,
   mapIds,
+  raidIds,
 } from './content';
 
 // Validates every file in content/ the way the game loads it.
@@ -31,7 +34,16 @@ describe('content', () => {
     expect(loadItems().size).toBeGreaterThan(0);
   });
 
-  it('includes the test map', () => {
+  it('loot tables load and their items are sound', () => {
+    expect(loadLootTables().size).toBeGreaterThan(0);
+  });
+
+  it.each(raidIds())('raid %s loads and names a map', (id) => {
+    expect(() => loadRaid(id)).not.toThrow();
+  });
+
+  it('includes the test map and raid', () => {
     expect(mapIds()).toContain('test-map');
+    expect(raidIds()).toContain('test-raid');
   });
 });

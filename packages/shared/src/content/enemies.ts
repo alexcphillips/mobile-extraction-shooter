@@ -53,6 +53,20 @@ export const enemySchema = z.strictObject({
   skill: skillSchema,
   /** A plain default outfit if left out. */
   outfit: outfitSchema.optional(),
+  /**
+   * What it carries besides its loadout (session 11), stowed in its pockets, rig and
+   * backpack when it spawns; what doesn't fit is left out. Each of `rolls` items comes
+   * from one of `tables` (loot table ids), picked by weight; an enemy spawn's lootWeights
+   * multiply these weights. Nothing if left out.
+   */
+  loot: z
+    .strictObject({
+      rolls: z
+        .tuple([z.int().min(0), z.int().min(0)])
+        .refine(([min, max]) => min <= max, 'min must not be above max'),
+      tables: z.record(idSchema, nonNegative),
+    })
+    .optional(),
 });
 
 /** [min, max], inclusive. */
@@ -79,7 +93,7 @@ const armourOptionSchema = z.strictObject({
 
 const containerOptionSchema = z.strictObject({
   weight: positive,
-  /** null: nothing in this slot. Worn empty; loot tables fill them (session 11). */
+  /** null: nothing in this slot. Worn empty; the enemy type's loot goes in them. */
   item: idSchema.nullable(),
 });
 
@@ -97,6 +111,7 @@ export const loadoutSchema = z.strictObject({
 export type EnemyDef = z.infer<typeof enemySchema>;
 export type EnemySkill = z.infer<typeof skillSchema>;
 export type Outfit = z.infer<typeof outfitSchema>;
+export type EnemyLoot = NonNullable<EnemyDef['loot']>;
 export type LoadoutDef = z.infer<typeof loadoutSchema>;
 export type WeaponOption = z.infer<typeof weaponOptionSchema>;
 export type ArmourOption = z.infer<typeof armourOptionSchema>;

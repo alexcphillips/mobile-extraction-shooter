@@ -38,3 +38,21 @@ export function pick<T>(rng: Rng, items: readonly T[]): T {
   if (items.length === 0) throw new Error('pick from an empty list');
   return items[nextInt(rng, items.length)]!;
 }
+
+/** Picks one option by weight. A weight of 0 is never picked unless all are 0. */
+export function byWeight<T extends { weight: number }>(rng: Rng, options: readonly T[]): T {
+  if (options.length === 0) throw new Error('pick from an empty list');
+  let total = 0;
+  for (const o of options) total += o.weight;
+  let roll = nextFloat(rng) * total;
+  for (const o of options) {
+    roll -= o.weight;
+    if (roll < 0) return o;
+  }
+  return options[options.length - 1]!;
+}
+
+/** An integer in [min, max], inclusive. */
+export function nextIntIn(rng: Rng, min: number, max: number): number {
+  return min + nextInt(rng, max - min + 1);
+}

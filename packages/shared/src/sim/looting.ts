@@ -112,7 +112,7 @@ export type Target = GridSpot | Omit<InSlot, 'item'>;
  *   spot in a grid, or with to null into what you carry.
  * A magazine change hands back the rounds that no longer fit, into what you carry; if
  * there's no room for them, or for the part, the action is refused (until there are
- * items on the ground to drop them as, session 11).
+ * items on the ground to drop them as, session 11b).
  */
 export type InventoryAction =
   | { type: 'move'; from: ItemRef; to: Target }

@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "medical",
+  "name": "Medical",
+  "rolls": [1, 2],
+  "items": [
+    { "item": "bandage", "weight": 4 },
+    { "item": "splint", "weight": 3 },
+    { "item": "medkit", "weight": 2 },
+    { "item": "surgery-kit", "weight": 1 }
+  ]
+}

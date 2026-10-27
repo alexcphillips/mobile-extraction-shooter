@@ -38,21 +38,32 @@ import {
   drawTime,
   meleeDef,
   type MedRef,
+  TICK_RATE,
+  fillLootContainers,
+  gearItems,
+  keptItems,
+  rollEnemyLoot,
+  startRaid,
+  type LeaveReason,
 } from '@mes/shared';
 import * as THREE from 'three';
 import { startLoop } from '../app/loop';
+import { pause } from '../app/pause';
 import {
   checkEnemySpawns,
   checkLootContainers,
   loadEnemies,
   loadItems,
   loadLootContainers,
+  loadLootTables,
   loadMap,
+  loadRaid,
 } from '../content';
 import { Stats } from '../debug/stats';
 import { HandsHud } from '../hud/hands';
 import type { Hud } from '../hud/hud';
 import type { OpticOverlay } from '../hud/optic';
+import type { RaidHud } from '../hud/raid-hud';
 import type { Vitals } from '../hud/vitals';
 import { Controls } from '../input/controls';
 import { buildDebug } from '../render/debug';
@@ -60,12 +71,14 @@ import { CapsuleBody } from '../render/capsule-body';
 import { DEFAULT_OUTFIT, loadCharacter } from '../render/character';
 import { CharacterBody, CharacterRig } from '../render/character-body';
 import { Effects } from '../render/effects';
+import { buildExtractions } from '../render/extractions';
 import { buildMap } from '../render/map';
 import { AiDebug, buildNavOverlay } from '../render/nav-debug';
 import { Viewmodel } from '../render/viewmodel';
 import { settings } from '../settings';
 import type { RaidScreenHandle } from '../ui/raid';
-import { fillTestLoot, lootableInReach } from './loot';
+import type { RaidResult } from '../ui/results';
+import { lootableInReach } from './loot';
 
 export interface PlayElements {
   canvas: HTMLCanvasElement;
@@ -73,12 +86,19 @@ export interface PlayElements {
   hud: Hud;
   optic: OpticOverlay;
   vitals: Vitals;
+  /** The raid timer and the extraction countdown. */
+  raidHud: RaidHud;
   /** Where the raid screen (inventory, map, quests) opens. */
   raid: HTMLElement;
+  /** Where the results screen opens when the raid ends for you. */
+  results: HTMLElement;
 }
 
 export interface PlayOptions {
-  map: string;
+  /** A raid config's id, in content/raids. */
+  raid: string;
+  /** Debug: the raid timer in seconds, instead of the raid's. */
+  duration: number | null;
   /** A player spawn's id; otherwise one is picked at random. */
   spawn: string | null;
   /** Debug: start at this x, z instead of a spawn (facing the spawn's way). */
@@ -116,18 +136,24 @@ const DEG = Math.PI / 180;
 const SPARE_ROUNDS = 120;
 /** With ?respawn, dead enemies come back at their spawn after this long. */
 const ENEMY_RESPAWN_MS = 6000;
+/** How long after you die the results screen comes up. */
+const RESULTS_AFTER_DEATH_MS = 1500;
 /** How much aim assist slows looking while the crosshair is on an enemy. */
 const ASSIST = { off: 1, low: 0.8, medium: 0.6, high: 0.45 } as const;
 
 /**
- * A map from content/ with the shared simulation: walking, shooting and taking damage.
- * Every enemy spawn has an enemy of its type with a rolled loadout, which guards its spawn
- * or walks its patrol, and fights you once it notices you. The dead stay down. A stand-in
- * for the raid until sessions 9–11 add the inventory and the raid lifecycle.
+ * A solo raid from a config in content/raids, on the shared simulation. You start at a
+ * random player spawn with a fixed kit (until stash loadouts, session 13). Containers and
+ * enemies' pockets are rolled from loot tables, and every enemy spawn has an enemy of its
+ * type with a rolled loadout, which guards its spawn or walks its patrol, and fights you
+ * once it notices you. The dead stay down. It ends for you when you extract, die or run
+ * out of time, with a results screen.
  */
 export async function startPlay(el: PlayElements, options: PlayOptions): Promise<void> {
-  const map = loadMap(options.map);
+  const raid = loadRaid(options.raid);
+  const map = loadMap(raid.map);
   const items = loadItems();
+  const lootTables = loadLootTables();
   const { types, loadouts } = loadEnemies();
   checkEnemySpawns(map);
   checkLootContainers(map);
@@ -156,6 +182,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   camera.rotation.order = 'YXZ';
 
   scene.add(buildMap(map).root);
+  scene.add(buildExtractions(map));
   if (options.debug) scene.add(buildDebug(map, world.terrain));
   if (options.nav) scene.add(buildNavOverlay(nav));
   const aiDebug = options.debug ? new AiDebug() : null;
@@ -200,7 +227,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const held = heldWeapon(player);
   if (held) viewmodel.setGun(held, items);
   placeLootContainers(sim, map, lootKinds);
-  fillTestLoot(sim, map, items);
+  fillLootContainers(sim, map, items, lootTables);
+  startRaid(sim, map, options.duration ?? raid.duration);
   controls.yaw = spawn.yaw;
 
   // Enemies: their type's skill, and its loadout (or the spawn's) rolled.
@@ -225,6 +253,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     });
     const arm = (): void => {
       if (!options.peaceful) equipLoadout(c, items, loadout, sim.rng);
+      rollEnemyLoot(c, items, lootTables, type.loot, m.lootWeights, sim.rng);
     };
     arm();
     const body = new CharacterBody(rig, type.outfit ?? DEFAULT_OUTFIT, c);
@@ -258,7 +287,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const stats = new Stats(
     el.stats,
     renderer,
-    `${map.name}  spawn ${spawn.id}${options.debug ? '  debug' : ''}  ` +
+    `${raid.name}  ${map.name}  spawn ${spawn.id}${options.debug ? '  debug' : ''}  ` +
       `nav ${nav.nodeCount} nodes ${navMs.toFixed(0)} ms  ${options.note}`,
     () =>
       `${awarenessSummary()}  ${player.mode}${player.height < 1.79 ? ' crouched' : ''}  ` +
@@ -423,11 +452,44 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     screen = null;
   }
 
+  // The raid ends for you when you extract, die or run out of time; the results screen
+  // comes up a moment later after a death, so you see it happen.
+  let kills = 0;
+  /** The enemy type that killed you, if one did. */
+  let killedBy: string | null = null;
+  let ended: RaidResult | null = null;
+  let resultsAt = 0;
+  function endRaid(how: LeaveReason | 'killed', detail: string, now: number): void {
+    if (ended) return;
+    const survived = how === 'extracted';
+    const kept = keptItems(player.gear, survived);
+    ended = {
+      how,
+      detail,
+      seconds: sim.tick / TICK_RATE,
+      kills,
+      kept,
+      lost: gearItems(player.gear).filter((i) => !kept.includes(i)),
+    };
+    resultsAt = now + (how === 'killed' ? RESULTS_AFTER_DEATH_MS : 0);
+    closeScreen();
+  }
+  function showResults(result: RaidResult): void {
+    import('../ui/results')
+      .then((ui) => {
+        ui.showResults(el.results, result, items, () => location.reload());
+        // Nothing more to play: stop drawing.
+        pause.set('ended', true);
+      })
+      .catch((err: unknown) => console.error('results screen failed', err));
+  }
+
   function tick(): void {
     const t0 = performance.now();
     const now = performance.now();
     controls.update();
-    const dead = player.health.dead;
+    // Dead, or out of the raid: no more control.
+    const dead = player.health.dead || ended !== null;
     const target = !dead && onTarget();
     controls.assist = target ? ASSIST[settings.current.aimAssist] : 1;
     let fire = controls.fire;
@@ -534,6 +596,12 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         if (e.target === player.id && e.amount > 0) el.vitals.hurtFlash();
       } else if (e.type === 'death' && e.by === player.id && e.target !== player.id) {
         el.vitals.hitMarker(now, true);
+        kills++;
+      } else if (e.type === 'death' && e.target === player.id) {
+        killedBy = names.get(e.by) ?? null;
+      } else if (e.type === 'leave' && e.by === player.id) {
+        const at = sim.raid?.extractions.find((p) => p.id === e.at);
+        endRaid(e.how, at ? `at ${at.name}` : 'Time ran out', now);
       } else if (e.type === 'inventory' && e.by === player.id) {
         inventoryChanged = true;
       }
@@ -552,8 +620,17 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // Redraw the raid screen when the inventory changed, and now and then for what's in
     // reach and what enemies took from their dead.
     if (screen && (inventoryChanged || sim.tick % 10 === 0)) screen.refresh();
+    // From the state, not the death event: a debug hurt kills outside the tick.
+    if (player.health.dead) {
+      endRaid('killed', killedBy ? `by a ${killedBy}` : 'from bleeding or a fall', now);
+    }
     el.vitals.update(player, items, now);
+    el.raidHud.update(sim, player, ended !== null);
     hands.update(player, items);
+    if (ended && resultsAt && now >= resultsAt) {
+      resultsAt = 0;
+      showResults(ended);
+    }
     stats.tick(performance.now() - t0);
   }
 

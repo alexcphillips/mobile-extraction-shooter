@@ -1,0 +1,7 @@
+{
+  "formatVersion": 1,
+  "id": "test-raid",
+  "name": "Test raid",
+  "map": "test-map",
+  "duration": 900
+}

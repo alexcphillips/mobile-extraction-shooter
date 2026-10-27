@@ -100,7 +100,7 @@ const prefabRefSchema = z.strictObject({
 
 /**
  * A door in a doorway. pos is the bottom middle of the doorway, in the middle of the wall;
- * yaw turns +z to the side it opens towards. Doors don't collide yet (session 11).
+ * yaw turns +z to the side it opens towards. Doors don't collide yet (session 11c).
  */
 const doorSchema = z.strictObject({
   type: z.literal('door'),

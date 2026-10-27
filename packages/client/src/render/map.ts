@@ -7,7 +7,7 @@ const CHUNK = 32;
 
 export interface MapView {
   root: THREE.Group;
-  /** Each door turns about its hinge; rotate it to open (session 11). */
+  /** Each door turns about its hinge; rotate it to open (session 11c). */
   doors: Map<string, THREE.Object3D>;
 }
 

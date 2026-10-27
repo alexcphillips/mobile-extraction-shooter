@@ -1,5 +1,5 @@
 /** Why the game is paused. Solo raids stop the clock; co-op (later) won't be able to. */
-export type PauseReason = 'portrait' | 'menu' | 'hidden';
+export type PauseReason = 'portrait' | 'menu' | 'hidden' | 'ended';
 
 type Listener = (paused: boolean) => void;
 

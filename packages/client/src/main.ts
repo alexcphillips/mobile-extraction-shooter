@@ -4,6 +4,7 @@ import { preventZoom } from './app/no-zoom';
 import { watchPauseTriggers } from './app/pause';
 import { Hud } from './hud/hud';
 import { OpticOverlay } from './hud/optic';
+import { RaidHud } from './hud/raid-hud';
 import { Vitals } from './hud/vitals';
 import { startBodies } from './bodies';
 import { startPerfTest } from './perf';
@@ -84,31 +85,27 @@ if (location.pathname === '/bodies') {
     status.textContent = `perf test failed: ${message(err)}`;
   });
 } else {
-  // ?map=<id> picks a map from content/maps, ?spawn=<id> a player spawn in it (?at=<x>,<z>
-  // starts you at a point instead), ?weapon=<id> the gun in hand, ?attach=<id>,<id> its
+  // ?raid=<id> picks a raid config from content/raids, ?time=<seconds> sets its timer,
+  // ?spawn=<id> a player spawn in its map (?at=<x>,<z> starts you at a point instead), ?weapon=<id> the gun in hand, ?attach=<id>,<id> its
   // attachments, ?nav shows the navigation grid, and ?debug shows markers, zones, patrols
   // and what enemies think, with buttons (and keys 7 and 8) for hurt and heal. ?respawn
   // brings dead enemies back, ?peaceful sends them in unarmed, and ?hitzones draws hit
   // zones over their bodies.
   const q = new URLSearchParams(location.search);
-  byId('try-again').addEventListener('click', () => location.reload());
   startPlay(
     {
       canvas: byId('scene') as HTMLCanvasElement,
       stats: byId('stats'),
       hud,
       optic: new OpticOverlay(byId('optic'), byId('crosshair')),
-      vitals: new Vitals(
-        byId('vitals'),
-        byId('ammo'),
-        byId('crosshair'),
-        byId('hurt'),
-        byId('death'),
-      ),
+      vitals: new Vitals(byId('vitals'), byId('ammo'), byId('crosshair'), byId('hurt')),
+      raidHud: new RaidHud(byId('timer'), byId('extract')),
       raid: byId('raid'),
+      results: byId('results'),
     },
     {
-      map: q.get('map') ?? 'test-map',
+      raid: q.get('raid') ?? 'test-raid',
+      duration: Number(q.get('time')) > 0 ? Number(q.get('time')) : null,
       spawn: q.get('spawn'),
       at: parseAt(q.get('at')),
       weapon: q.get('weapon') ?? 'assault-rifle',

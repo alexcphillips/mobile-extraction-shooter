@@ -91,6 +91,7 @@ function character(id: number, x: number): Character {
     draw: 0,
     swing: 0,
     using: null,
+    extracting: 0,
     recoilPitch: 0,
     recoilYaw: 0,
     ai: null,

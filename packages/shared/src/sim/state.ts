@@ -7,6 +7,7 @@ import type { InventoryAction, InventoryEvent, LootContainer } from './looting';
 import type { MedRef, MedUse } from './meds';
 import type { SwingEvent } from './melee';
 import { MOVEMENT } from './movement';
+import type { LeaveEvent, LeftRaid, RaidState } from './raid';
 import type { ShotEvent } from './weapons';
 
 export type EntityId = number;
@@ -47,6 +48,8 @@ export interface Character {
   swing: number;
   /** The med it's using, or null. */
   using: MedUse | null;
+  /** Seconds it has stood in an extraction point; 0 when not in one. */
+  extracting: number;
   /** Recoil's kick to the view in radians, added to yaw and pitch; it settles back to 0. */
   recoilPitch: number;
   recoilYaw: number;
@@ -58,7 +61,8 @@ export interface Character {
 export type Entity = Character;
 
 /** Things that happened during the last tick, for effects and the HUD. */
-export type SimEvent = ShotEvent | SwingEvent | DamageEvent | DeathEvent | InventoryEvent;
+export type SimEvent =
+  ShotEvent | SwingEvent | DamageEvent | DeathEvent | InventoryEvent | LeaveEvent;
 
 /**
  * Everything that changes during a raid. Plain JSON-safe data: no classes, maps or typed
@@ -72,6 +76,10 @@ export interface SimState {
   entities: Entity[];
   /** The raid's desks, cabinets and crates. Dead bodies are looted through their gear. */
   loot: LootContainer[];
+  /** The timer and extraction points; null outside a raid (tests, the perf scene). */
+  raid: RaidState | null;
+  /** Players who have left the raid alive, with what they carried. */
+  left: LeftRaid[];
   /** What happened during the last tick; cleared at the start of each. */
   events: SimEvent[];
 }
@@ -110,7 +118,16 @@ export interface PlayerInput {
 export type TickInputs = Readonly<Partial<Record<EntityId, PlayerInput>>>;
 
 export function createState(seed: number): SimState {
-  return { tick: 0, rng: createRng(seed), nextId: 1, entities: [], loot: [], events: [] };
+  return {
+    tick: 0,
+    rng: createRng(seed),
+    nextId: 1,
+    entities: [],
+    loot: [],
+    raid: null,
+    left: [],
+    events: [],
+  };
 }
 
 /**
@@ -148,6 +165,7 @@ export function spawnCharacter(
     draw: 0,
     swing: 0,
     using: null,
+    extracting: 0,
     recoilPitch: 0,
     recoilYaw: 0,
     ai: null,
