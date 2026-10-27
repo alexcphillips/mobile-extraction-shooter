@@ -4,6 +4,7 @@ import {
   lootContainerById,
   stackSize,
   type Character,
+  type CompiledMap,
   type GearSlot,
   type Grid,
   type GridName,
@@ -28,7 +29,7 @@ interface Props {
 }
 
 /** The in-raid screen: inventory (with looting), map and quests tabs. */
-export function RaidScreen({ inv, version }: Props): ReactNode {
+export function RaidScreen({ inv, version, map }: Props & { map: CompiledMap }): ReactNode {
   const [tab, setTab] = useState<Tab>('inventory');
   const close = inv.ctx.close;
   useEffect(() => {
@@ -54,7 +55,7 @@ export function RaidScreen({ inv, version }: Props): ReactNode {
       {tab === 'inventory' ? (
         <Inventory inv={inv} version={version} />
       ) : tab === 'map' ? (
-        <MapTab map={inv.ctx.map} sim={inv.ctx.sim} player={inv.ctx.player} version={version} />
+        <MapTab map={map} sim={inv.ctx.sim} player={inv.ctx.player} version={version} />
       ) : (
         <div className="raid-empty">Quests come in session 14.</div>
       )}
@@ -95,7 +96,8 @@ const SLOT_NAMES: Record<GearSlot, string> = {
 /** Gun slots are drawn twice as wide. */
 const WIDE: ReadonlySet<GearSlot> = new Set(['primary1', 'primary2']);
 
-function Inventory({ inv, version }: Props): ReactNode {
+/** Your gear and grids, beside what's open (a body, a container, the ground or the stash). */
+export function Inventory({ inv, version }: Props): ReactNode {
   useEffect(() => () => inv.drag.cancel(), [inv]);
   inv.followSelection();
   const { ctx, selected } = inv;
@@ -124,7 +126,7 @@ function Inventory({ inv, version }: Props): ReactNode {
             {'index' in selected && sel.def.size[0] !== sel.def.size[1] && (
               <button onClick={() => inv.rotate(selected)}>Rotate</button>
             )}
-            {!('ground' in selected) && (
+            {!('ground' in selected) && !ctx.stash && (
               <button onClick={() => inv.toGround(selected)}>Drop</button>
             )}
             <button onClick={() => inv.quick(selected)}>
@@ -133,8 +135,9 @@ function Inventory({ inv, version }: Props): ReactNode {
           </>
         ) : (
           <span className="inv-hint">
-            Double-tap to move · drag to place, or onto the ground to drop · while dragging, tap
-            with another finger (or press R) to rotate
+            {ctx.stash
+              ? 'Double-tap to move between your gear and the stash · drag to place · while dragging, tap with another finger (or press R) to rotate'
+              : 'Double-tap to move · drag to place, or onto the ground to drop · while dragging, tap with another finger (or press R) to rotate'}
           </span>
         )}
       </footer>

@@ -1,5 +1,12 @@
 import { Hono } from 'hono';
-import { checkGear, keptGear, parseGear, restGear, type EndRaidRequest } from '@mes/shared';
+import {
+  checkGear,
+  keptGear,
+  parseGear,
+  restGear,
+  type EndRaidRequest,
+  type ProfileResponse,
+} from '@mes/shared';
 import type { AppEnv } from './auth';
 import { loadItems, raidDef } from './content';
 import { body, fail, isObject } from './errors';
@@ -39,6 +46,19 @@ function parseEnd(raw: unknown): EndRaidRequest | string {
   };
 }
 
+/**
+ * Counts a profile's open raid as missing in action: its gear becomes the knife and the
+ * vault as they went in (changed in place, for the caller to write in the same batch).
+ */
+function endAsMissing(db: D1Database, account: string, current: ProfileResponse, now: number) {
+  current.profile.gear = keptGear(current.profile.gear, false);
+  return db
+    .prepare(
+      `UPDATE raids SET ended_at = ?, outcome = 'mia' WHERE id = ? AND ended_at IS NULL AND ${AT_VERSION}`,
+    )
+    .bind(now, current.raid!.id, account, current.version);
+}
+
 export const raids = new Hono<AppEnv>();
 
 /**
@@ -58,16 +78,7 @@ raids.post('/', async (c) => {
   const now = Date.now();
 
   const stmts: D1PreparedStatement[] = [];
-  if (current.raid) {
-    profile.gear = keptGear(profile.gear, false);
-    stmts.push(
-      db
-        .prepare(
-          `UPDATE raids SET ended_at = ?, outcome = 'mia' WHERE id = ? AND ended_at IS NULL AND ${AT_VERSION}`,
-        )
-        .bind(now, current.raid.id, account, version),
-    );
-  }
+  if (current.raid) stmts.push(endAsMissing(db, account, current, now));
   stmts.push(
     db
       .prepare(
@@ -79,6 +90,30 @@ raids.post('/', async (c) => {
   const results = await db.batch(stmts);
   if (!results.at(-1)?.meta.changes) return fail(c, 'stale');
   return c.json(await profileResponse(db, account), 201);
+});
+
+/**
+ * Counts a raid that never reported as missing in action now, rather than when the next
+ * raid starts, so the stash can be edited (session 13: the game opens on the main menu).
+ * The client asks after telling the player. A raid already ended gets the profile as it is.
+ */
+raids.post('/:id/abandon', async (c) => {
+  const db = c.env.DB;
+  const account = c.var.account;
+  const current = await profileResponse(db, account);
+  if (current.raid?.id !== c.req.param('id')) {
+    const row = await db
+      .prepare('SELECT 1 FROM raids WHERE id = ? AND account_id = ?')
+      .bind(c.req.param('id'), account)
+      .first();
+    return row ? c.json(current) : fail(c, 'not-found');
+  }
+  const results = await db.batch([
+    endAsMissing(db, account, current, Date.now()),
+    writeProfile(db, account, current.version, current.profile),
+  ]);
+  if (!results.at(-1)?.meta.changes) return fail(c, 'stale');
+  return c.json(await profileResponse(db, account));
 });
 
 /**

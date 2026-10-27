@@ -618,6 +618,7 @@ body:has(#controls.editing) :is(#hud, #presets, #settings-button, #vitals, #ammo
 #ui {
   position: fixed;
   inset: 0;
+  z-index: 3;
   display: flex;
   justify-content: center;
   background: rgb(0 0 0 / 0.55);
@@ -1393,4 +1394,187 @@ body:has(#account:not([hidden])) #portrait {
   color: #e3a33a;
   font: inherit;
   text-decoration: underline;
+}
+
+/* The main menu between raids (ui/main-menu.tsx), over the empty scene, and the stash
+   page, which is the raid screen's inventory beside the stash. Settings (#ui) open over
+   it, being later in the page. */
+#menu {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+}
+
+#menu[hidden] {
+  display: none;
+}
+
+body:has(#menu:not([hidden])):not(:has(#layout-bar))
+  :is(#hud, #ammo, #crosshair, #controls, #settings-button, #vitals) {
+  display: none;
+}
+
+/* The layout editor, opened from settings over the menu, shows the controls instead. */
+body:has(#layout-bar) #menu {
+  display: none;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+  padding: max(8px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(8px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: #1d2328;
+  color: #e8ecef;
+  font:
+    15px/1.35 system-ui,
+    -apple-system,
+    sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.menu button {
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: #2c343b;
+  color: inherit;
+  font: inherit;
+}
+
+.menu button:disabled {
+  opacity: 0.45;
+}
+
+.menu-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.menu h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #e3a33a;
+}
+
+.menu-who {
+  color: #9aa6b0;
+}
+
+.menu-who b {
+  color: #e8ecef;
+}
+
+.menu-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  gap: 10px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.menu-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: min(560px, 100%);
+}
+
+.menu-buttons button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  font-size: 17px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.menu-buttons button span {
+  font-size: 13px;
+  font-weight: normal;
+  color: #9aa6b0;
+}
+
+.menu-buttons button.menu-raid {
+  grid-column: 1 / -1;
+  background: #e3a33a;
+  color: #000;
+}
+
+.menu-buttons button.menu-raid span {
+  color: #3d2a08;
+}
+
+.menu-notice {
+  margin: 0 0 6px;
+  max-width: 560px;
+  color: #e3a33a;
+}
+
+.stash {
+  background: #1d2328;
+}
+
+.stash .raid-tabs {
+  align-items: center;
+}
+
+.stash-title {
+  font-weight: 600;
+}
+
+.stash-save {
+  color: #9aa6b0;
+}
+
+.stash-save.saved {
+  color: #6cff8a;
+}
+
+.stash-save.failed {
+  color: #ff6b5a;
+}
+
+/* Stash page tabs and buying the next page. */
+.stash .raid-tabs button.stash-page {
+  min-width: 34px;
+  padding: 7px 0;
+}
+
+.stash .raid-tabs button.stash-page.active {
+  outline: 2px solid #e3a33a;
+  outline-offset: -2px;
+  background: #2c343b;
+  color: #e8ecef;
+}
+
+.stash .raid-tabs button.stash-buy:disabled {
+  opacity: 0.45;
+}
+
+.stash .raid-tabs button.stash-buy.confirm {
+  background: #6cff8a;
+  color: #000;
+}
+
+/* Dragging an item onto a page's tab puts it in that page. */
+.stash .raid-tabs button.stash-page.drop-ok {
+  background: #2f5a3a;
+  outline: 2px solid #6cff8a;
+}
+
+.stash .raid-tabs button.stash-page.drop-bad {
+  outline: 2px solid #ff6b5a;
 }

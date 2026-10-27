@@ -1,4 +1,10 @@
-import type { EndRaidRequest, ProfileResponse, StartRaidRequest } from '@mes/shared';
+import type {
+  EndRaidRequest,
+  EntityId,
+  ProfileResponse,
+  SimState,
+  StartRaidRequest,
+} from '@mes/shared';
 import { AccountError, call } from './account';
 
 /*
@@ -98,5 +104,69 @@ export async function startServerRaid(raid: string): Promise<ProfileResponse> {
     if (err instanceof AccountError && err.code === 'stale')
       return (await (await call('POST', '/raids', body)).json()) as ProfileResponse;
     throw err;
+  }
+}
+
+/** Counts a raid that never reported as missing in action now, so the stash can be edited. */
+export async function abandonRaid(id: string): Promise<ProfileResponse> {
+  return (await (
+    await call('POST', `/raids/${encodeURIComponent(id)}/abandon`)
+  ).json()) as ProfileResponse;
+}
+
+/*
+ * Resuming a raid (session 13, the user's call 2026-10-27). iOS may unload a home-screen
+ * app while it's in the background, say while you read a text; without this, the reload
+ * would count the raid as missing in action. So each time the page is hidden, the whole
+ * raid is written here (the sim state is plain JSON by design), and the next start offers
+ * to carry on from that moment. Swiping the app closed resumes too. Cleared when the raid
+ * ends for you.
+ */
+
+const SNAPSHOT_KEY = 'mes.raidSnapshot';
+
+/** A raid in progress, as saved when the page was last hidden. */
+export interface RaidSnapshot {
+  version: 1;
+  /** The server's raid id: only resumed while that raid is still open. */
+  serverRaid: string;
+  /** The raid config's id. */
+  raid: string;
+  /** The player spawn's id (for the stats line). */
+  spawn: string;
+  player: EntityId;
+  /** Each enemy spawn marker's id, and the entity spawned there. */
+  enemies: Record<string, EntityId>;
+  kills: number;
+  sim: SimState;
+}
+
+export function saveSnapshot(s: RaidSnapshot): void {
+  try {
+    localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(s));
+  } catch (err) {
+    // Full storage or private mode: an unloaded page will count as missing, as before.
+    console.warn('raid not saved for resuming', err);
+  }
+}
+
+/** The saved raid, if it's the open one on the server; anything else is thrown away. */
+export function readSnapshot(serverRaid: string | null): RaidSnapshot | null {
+  try {
+    const text = localStorage.getItem(SNAPSHOT_KEY);
+    const s = text ? (JSON.parse(text) as RaidSnapshot) : null;
+    if (s?.version === 1 && s.serverRaid === serverRaid) return s;
+  } catch {
+    // Unreadable: thrown away below.
+  }
+  clearSnapshot();
+  return null;
+}
+
+export function clearSnapshot(): void {
+  try {
+    localStorage.removeItem(SNAPSHOT_KEY);
+  } catch {
+    // Nothing to clear.
   }
 }

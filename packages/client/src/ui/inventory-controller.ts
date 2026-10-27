@@ -1,6 +1,7 @@
 import {
   GEAR_SLOTS,
   canHold,
+  findSpot,
   canReach,
   fits,
   fitsSlot,
@@ -29,9 +30,10 @@ import {
   type DragHost,
   type DragSource,
   type DropZone,
+  type Into,
   type PartSlot,
 } from './drag';
-import type { RaidContext } from './raid';
+import type { InventoryContext } from './raid';
 
 const SELF: Owner = { kind: 'self' };
 const GROUND: Owner = { kind: 'ground' };
@@ -74,11 +76,17 @@ export class InventoryController implements DragHost {
   private lastTap = { key: '', at: 0 };
 
   constructor(
-    readonly ctx: RaidContext,
+    readonly ctx: InventoryContext,
     target: Owner | null,
     private readonly redraw: () => void,
   ) {
     this.target = target;
+  }
+
+  /** Opens another body or container beside yours (null: just yours), with nothing selected. */
+  setTarget(target: Owner | null): void {
+    this.target = target;
+    this.select(null);
   }
 
   /** Whether the open body or container is in reach. */
@@ -209,7 +217,8 @@ export class InventoryController implements DragHost {
 
   zoneAt(el: HTMLElement): DropZone | null {
     const desc = JSON.parse(el.dataset.drop!) as
-      { owner: Owner; grid: GridName } | { owner: Owner; slot: GearSlot } | PartSlot;
+      { owner: Owner; grid: GridName } | { owner: Owner; slot: GearSlot } | PartSlot | Into;
+    if ('into' in desc) return { kind: 'into', owner: desc.into };
     if ('gun' in desc) return { kind: 'part', gun: desc.gun, slot: desc.slot };
     if ('slot' in desc) return { kind: 'slot', owner: desc.owner, slot: desc.slot };
     if (desc.owner.kind === 'ground') return { kind: 'ground' };
@@ -233,6 +242,17 @@ export class InventoryController implements DragHost {
     const found = this.find(src.ref);
     if (!found) return false;
     if (zone.kind === 'ground') return !('ground' in src.ref);
+    if (zone.kind === 'into') {
+      // Not into where it already is; and only if that grid has room for some of it.
+      if (JSON.stringify(src.ref.owner) === JSON.stringify(zone.owner)) return false;
+      const grid = gridOf(sim, player, { owner: zone.owner, grid: 'loot' });
+      if (!grid || !canHold(items, grid, found.item)) return false;
+      const stack = stackSize(found.def);
+      return (
+        !!findSpot(items, grid, found.item.item) ||
+        grid.items.some((g) => g.item.item === found.item.item && g.item.count < stack)
+      );
+    }
     if (zone.kind === 'part') {
       const gun = this.find(zone.gun);
       return (
@@ -258,8 +278,14 @@ export class InventoryController implements DragHost {
     return isFree(items, grid, x, y, w, h, ignore);
   }
 
-  drop(src: DragSource, to: Target | PartSlot): void {
+  drop(src: DragSource, to: Target | PartSlot | Into): void {
     const ref = src.ref;
+    if ('into' in to) {
+      if (isPart(ref)) return;
+      this.select(null);
+      this.ctx.send({ type: 'quick', from: ref, to: to.into });
+      return;
+    }
     if (isPart(ref)) {
       this.picking = null;
       if ('gun' in to) {

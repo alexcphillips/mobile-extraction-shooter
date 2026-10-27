@@ -98,6 +98,21 @@ describe('raids', () => {
     expect(late.error).toBe('raid-over');
   });
 
+  it('counts a raid that never reported as missing when asked, unlocking the profile', async () => {
+    const client = await signedIn();
+    const { raid } = await client.ok('POST', '/raids', { raid: 'test-raid' });
+    const after = await client.ok('POST', `/raids/${raid!.id}/abandon`);
+    expect(after.raid).toBeNull();
+    expect(after.profile.gear.primary1).toBeNull();
+    expect(after.profile.gear.knife?.item).toBe('knife');
+    // Asking again changes nothing; the stash can be edited; the late result is refused.
+    expect((await client.ok('POST', `/raids/${raid!.id}/abandon`)).version).toBe(after.version);
+    await client.ok('PUT', '/profile', { version: after.version, profile: after.profile });
+    const late = await client.fails('POST', `/raids/${raid!.id}/end`, end(after.profile.gear));
+    expect(late.error).toBe('raid-over');
+    expect((await client.fails('POST', '/raids/nope/abandon')).error).toBe('not-found');
+  });
+
   it('applies sanity limits to results', async () => {
     const client = await signedIn();
     const { raid, profile } = await client.ok('POST', '/raids', { raid: 'test-raid' });
@@ -157,12 +172,48 @@ describe('PUT /profile', () => {
   it('refuses items from nothing and money changing', async () => {
     const client = await signedIn();
     const { version, profile } = await client.ok('GET', '/profile');
-    addItem(items, profile.stash, createItem(items, 'gold-watch'));
+    addItem(items, profile.stash[0]!, createItem(items, 'gold-watch'));
     expect((await client.fails('PUT', '/profile', { version, profile })).message).toMatch(
       /more "gold-watch"/,
     );
-    profile.stash.items = [];
+    profile.stash[0]!.items = [];
     profile.money += 1000;
     expect((await client.fails('PUT', '/profile', { version, profile })).message).toMatch(/money/);
+    profile.money -= 1000;
+    profile.stash.push(structuredClone(profile.stash[0]!));
+    expect((await client.fails('PUT', '/profile', { version, profile })).message).toMatch(
+      /only added by buying/,
+    );
+  });
+});
+
+describe('POST /stash/pages', () => {
+  /** Gives the account money, as vendors will (session 13b). */
+  async function setMoney(client: TestClient, money: number) {
+    const db = client.env.DB;
+    const row = await db.prepare('SELECT data FROM profiles').first<{ data: string }>();
+    const p = JSON.parse(row!.data) as { money: number };
+    p.money = money;
+    await db.prepare('UPDATE profiles SET data = ?').bind(JSON.stringify(p)).run();
+  }
+
+  it('buys a page with money, once per version, and not in a raid', async () => {
+    const client = await signedIn();
+    const me = await client.ok('GET', '/profile');
+    const broke = await client.fails('POST', '/stash/pages', { version: me.version });
+    expect(broke.message).toMatch(/costs 100000/);
+    await setMoney(client, 120_000);
+    const bought = await client.ok('POST', '/stash/pages', { version: me.version });
+    expect(bought.profile.stash).toHaveLength(2);
+    expect(bought.profile.stash[1]!.items).toEqual([]);
+    expect(bought.profile.money).toBe(20_000);
+    // A retry with the old version doesn't buy another.
+    expect((await client.fails('POST', '/stash/pages', { version: me.version })).error).toBe(
+      'stale',
+    );
+    const { raid } = await client.ok('POST', '/raids', { raid: 'test-raid' });
+    const v = (await client.ok('GET', '/profile')).version;
+    expect((await client.fails('POST', '/stash/pages', { version: v })).error).toBe('in-raid');
+    expect(raid).not.toBeNull();
   });
 });

@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import {
   PROFILE_FORMAT,
+  buyStashPage,
   checkProfile,
   itemGained,
   loadContent,
@@ -94,11 +95,36 @@ profiles.put('/', async (c) => {
   if (bad) return fail(c, 'invalid', bad);
   if (next.money !== current.profile.money)
     return fail(c, 'invalid', 'money only changes through vendors');
+  if (next.stash.length !== current.profile.stash.length)
+    return fail(c, 'invalid', 'stash pages are only added by buying them');
   const gained = itemGained(current.profile, next);
   if (gained) return fail(c, 'invalid', `more "${gained}" than before`);
 
   restGear(next.gear);
   const res = await writeProfile(db, account, raw.version, next).run();
+  if (!res.meta.changes) return fail(c, 'stale');
+  return c.json(await profileResponse(db, account));
+});
+
+/**
+ * Buys the next stash page (session 13): a new empty page, paid from the account's money.
+ * Names the profile version the client read, like PUT, so a purchase can't be made
+ * twice by a retry. Refused while the gear is in a raid.
+ */
+export const stashRoute = new Hono<AppEnv>();
+
+stashRoute.post('/pages', async (c) => {
+  const raw = await body(c);
+  if (!isObject(raw) || typeof raw.version !== 'number')
+    return fail(c, 'bad-request', 'version is required');
+  const db = c.env.DB;
+  const account = c.var.account;
+  const current = await profileResponse(db, account);
+  if (current.raid) return fail(c, 'in-raid');
+  if (current.version !== raw.version) return fail(c, 'stale');
+  const bad = buyStashPage(current.profile);
+  if (bad) return fail(c, 'invalid', bad);
+  const res = await writeProfile(db, account, current.version, current.profile).run();
   if (!res.meta.changes) return fail(c, 'stale');
   return c.json(await profileResponse(db, account));
 });

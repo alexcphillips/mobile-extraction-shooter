@@ -8,10 +8,10 @@ let root: Root | null = null;
 
 /**
  * Opens the settings screen over the game, which stays paused until it's closed (the
- * layout editor counts as part of it). This module is loaded on first use, so React
- * isn't in the startup bundle.
+ * layout editor counts as part of it), then calls onClose (opened from the main menu,
+ * not a raid). This module is loaded on first use, so React isn't in the startup bundle.
  */
-export function openSettings(container: HTMLElement, hud: Hud): void {
+export function openSettings(container: HTMLElement, hud: Hud, onClose?: () => void): void {
   root ??= createRoot(container);
   pause.set('menu', true);
   container.hidden = false;
@@ -21,13 +21,15 @@ export function openSettings(container: HTMLElement, hud: Hud): void {
   };
   root.render(
     <SettingsPanel
+      closeLabel={onClose ? 'Done' : 'Resume'}
       onClose={() => {
         close();
         pause.set('menu', false);
+        onClose?.();
       }}
       onEditLayout={() => {
         close();
-        editLayout(hud, () => openSettings(container, hud));
+        editLayout(hud, () => openSettings(container, hud, onClose));
       }}
     />,
   );

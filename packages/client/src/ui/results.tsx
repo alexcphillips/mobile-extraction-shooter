@@ -113,7 +113,7 @@ function Results({
         )}
       </div>
       <button className="primary" onClick={onNext}>
-        New raid
+        Continue
       </button>
     </div>
   );
@@ -122,7 +122,7 @@ function Results({
 /**
  * The results screen over the game when the raid ends for you: how it ended, time and
  * kills, what you keep, and whether the server has it yet. Loaded lazily, like the raid
- * screen. The button starts a new raid (by reloading, until the main menu, session 13).
+ * screen. The button goes back to the main menu (by reloading the page).
  */
 export function showResults(
   container: HTMLElement,

@@ -15,6 +15,11 @@ export interface PartSlot {
   slot: AttachmentSlot;
 }
 
+/** Into someone's or something's items, wherever there's room (a stash page's tab). */
+export interface Into {
+  into: Owner;
+}
+
 /**
  * Something items can be dropped on. Its element has a data-drop attribute describing it,
  * which the host turns into this.
@@ -24,7 +29,9 @@ export type DropZone =
   | { kind: 'slot'; owner: Owner; slot: GearSlot }
   | ({ kind: 'part' } & PartSlot)
   /** Dropped at your feet. */
-  | { kind: 'ground' };
+  | { kind: 'ground' }
+  /** Put wherever there's room, as a double-tap would. */
+  | { kind: 'into'; owner: Owner };
 
 /** The item a pointer went down on: in a grid or gear slot, or on a gun. */
 export interface DragSource {
@@ -54,7 +61,7 @@ export interface DragHost {
   gunZone: (src: DragSource, gun: ItemRef) => DropZone | null;
   /** Whether the item may drop on a zone there (x, y: the top-left cell for a grid). */
   canDrop: (src: DragSource, zone: DropZone, x: number, y: number, rotated: boolean) => boolean;
-  drop: (src: DragSource, to: Target | PartSlot) => void;
+  drop: (src: DragSource, to: Target | PartSlot | Into) => void;
   tap: (src: DragSource) => void;
 }
 
@@ -150,7 +157,9 @@ export class DragController {
             ? { owner: z.owner, slot: z.slot }
             : z.kind === 'ground'
               ? { owner: { kind: 'ground' } }
-              : { gun: z.gun, slot: z.slot },
+              : z.kind === 'into'
+                ? { into: z.owner }
+                : { gun: z.gun, slot: z.slot },
       );
     }
   };

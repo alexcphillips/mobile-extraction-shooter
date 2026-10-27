@@ -34,7 +34,7 @@ import {
 import { createWeaponStats, weaponStats, type WeaponState } from './sim/weapons';
 
 /*
- * A player's profile (session 12): the account balance, the stash, and the gear they'll
+ * A player's profile (session 12): the account balance, the stash's pages, and the gear they'll
  * take into the next raid (the vault and knife included). The server stores it as JSON
  * and is the truth; the client trusts it. The server applies sanity limits to whatever
  * the client sends (design.md → Trust model): checkProfile for well-formed items in
@@ -42,16 +42,25 @@ import { createWeaponStats, weaponStats, type WeaponState } from './sim/weapons'
  */
 
 export const PROFILE = {
-  /** The stash's size, [width, height]. A first guess; session 13 settles it. */
+  /**
+   * A stash page's size, [width, height]. Session 13 kept 10×30: ten columns fit beside
+   * the gear and carried grids on a landscape phone, and the rows scroll.
+   */
   stash: [10, 30],
+  /**
+   * What each extra stash page costs, in order: everyone starts with one, so the most is
+   * one more than there are prices. First guesses (session 13); retune with vendors (13b).
+   */
+  pagePrices: [100_000, 250_000, 500_000],
   /** Money above this is refused as a sanity limit. */
   maxMoney: 1_000_000_000,
 } as const;
 
 export interface Profile {
-  formatVersion: 1;
+  formatVersion: 2;
   money: number;
-  stash: Grid;
+  /** The stash's pages, bought with money (at least one). */
+  stash: Grid[];
   gear: Gear;
 }
 
@@ -100,20 +109,23 @@ export const gearShape = z.strictObject({
 });
 
 const profileShape = z.strictObject({
-  formatVersion: z.literal(1),
+  formatVersion: z.literal(2),
   money: count,
-  stash: gridShape,
+  stash: z.array(gridShape).min(1),
   gear: gearShape,
 });
 
-export const PROFILE_FORMAT_VERSION = 1;
+export const PROFILE_FORMAT_VERSION = 2;
 
 export const PROFILE_FORMAT: ContentFormat<Profile> = {
   kind: 'profile',
   version: PROFILE_FORMAT_VERSION,
   // The shapes are checked loosely typed (items nest through grids); checkProfile does the rest.
   schema: profileShape as unknown as z.ZodType<Profile>,
-  migrations: {},
+  migrations: {
+    // Session 13: the one stash grid became the first of its pages.
+    1: (doc) => ({ ...doc, stash: [doc.stash] }),
+  },
 };
 
 /** Checks the shape of gear sent by a client, before checkGear. Null if it's malformed. */
@@ -147,12 +159,31 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
     if (addItem(items, stash, createItem(items, s.item, s.count ?? 1)) > 0)
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
-  return { formatVersion: 1, money: kit.money, stash, gear };
+  return { formatVersion: 2, money: kit.money, stash: [stash], gear };
+}
+
+/** What the next stash page costs, or null if there are already as many as there can be. */
+export function nextPagePrice(p: Profile): number | null {
+  return PROFILE.pagePrices[p.stash.length - 1] ?? null;
+}
+
+/**
+ * Buys the next stash page, empty, at the end: the money goes down by its price. Returns
+ * why it can't (no more pages, not enough money), or null once bought. The server does
+ * this; the client only shows the price.
+ */
+export function buyStashPage(p: Profile): string | null {
+  const price = nextPagePrice(p);
+  if (price === null) return 'the stash has every page it can';
+  if (p.money < price) return `a page costs ${price}, and you have ${p.money}`;
+  p.money -= price;
+  p.stash.push(createGrid(PROFILE.stash[0], PROFILE.stash[1], true));
+  return null;
 }
 
 /** Puts every gun down: no cooldown, reload or trigger held, as stored between raids. */
 export function restGear(gear: Gear): void {
-  forEachItem(gear, null, (item) => {
+  forEachItem(gear, [], (item) => {
     if (item.mag === undefined) return;
     const w = item as WeaponState;
     w.cooldown = 0;
@@ -162,7 +193,7 @@ export function restGear(gear: Gear): void {
 }
 
 /** Calls fn for every item in the gear and stash, containers' contents included. */
-function forEachItem(gear: Gear, stash: Grid | null, fn: (item: Item) => void): void {
+function forEachItem(gear: Gear, stash: readonly Grid[], fn: (item: Item) => void): void {
   const grid = (g: Grid) => {
     for (const gi of g.items) visit(gi.item);
   };
@@ -176,7 +207,7 @@ function forEachItem(gear: Gear, stash: Grid | null, fn: (item: Item) => void): 
   }
   grid(gear.pockets);
   if (gear.vault) grid(gear.vault);
-  if (stash) grid(stash);
+  for (const page of stash) grid(page);
 }
 
 /** How many of each item a profile has, counting stacks and the attachments on guns. */
@@ -192,7 +223,7 @@ export function countItems(p: Profile): Map<string, number> {
 
 /**
  * The first item there's more of in after than in before, or null. Moving things around
- * between raids (session 13's stash) can't make items: only raids and vendors can.
+ * between raids (the stash, session 13) can't make items: only raids and vendors can.
  */
 export function itemGained(before: Profile, after: Profile): string | null {
   const had = countItems(before);
@@ -201,15 +232,19 @@ export function itemGained(before: Profile, after: Profile): string | null {
 }
 
 /**
- * Checks a profile against the items: see checkGear, plus the stash's size and the
- * money's sanity limit. Returns the first problem, or null.
+ * Checks a profile against the items: see checkGear, plus the stash pages' number and
+ * size and the money's sanity limit. Returns the first problem, or null.
  */
 export function checkProfile(items: ItemDb, p: Profile): string | null {
   if (p.money > PROFILE.maxMoney) return `money ${p.money} is over the limit`;
-  return (
-    checkGrid(items, p.stash, PROFILE.stash[0], PROFILE.stash[1], true, 'stash') ??
-    checkGear(items, p.gear)
-  );
+  if (p.stash.length > PROFILE.pagePrices.length + 1)
+    return `${p.stash.length} stash pages is more than there can be`;
+  for (let i = 0; i < p.stash.length; i++) {
+    const [w, h] = PROFILE.stash;
+    const bad = checkGrid(items, p.stash[i]!, w, h, true, `stash page ${i + 1}`);
+    if (bad) return bad;
+  }
+  return checkGear(items, p.gear);
 }
 
 /**

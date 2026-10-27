@@ -65,6 +65,11 @@ export interface SaveProfileRequest {
   profile: Profile;
 }
 
+/** POST /api/stash/pages: buys the next stash page, if there's money for it. */
+export interface BuyPageRequest {
+  version: number;
+}
+
 /** POST /api/raids. Starting a raid while one is open counts that one as missing in action. */
 export interface StartRaidRequest {
   raid: string;

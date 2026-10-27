@@ -80,7 +80,13 @@ import { AiDebug, buildNavOverlay } from '../render/nav-debug';
 import { Viewmodel } from '../render/viewmodel';
 import { settings } from '../settings';
 import type { RaidScreenHandle } from '../ui/raid';
-import { saveResult, type SaveStatus } from '../raids';
+import {
+  clearSnapshot,
+  saveResult,
+  saveSnapshot,
+  type RaidSnapshot,
+  type SaveStatus,
+} from '../raids';
 import type { RaidResult } from '../ui/results';
 import { lootableInReach } from './loot';
 
@@ -105,6 +111,8 @@ export interface PlayOptions {
   serverRaid: string;
   /** What the player wears into the raid: the profile's gear, from the server. */
   gear: Gear;
+  /** A raid saved when the page was hidden, to carry on instead of starting afresh. */
+  resume: RaidSnapshot | null;
   /** Debug: the raid timer in seconds, instead of the raid's. */
   duration: number | null;
   /** A player spawn's id; otherwise one is picked at random. */
@@ -150,7 +158,8 @@ const ASSIST = { off: 1, low: 0.8, medium: 0.6, high: 0.45 } as const;
  * enemies' pockets are rolled from loot tables, and every enemy spawn has an enemy of its
  * type with a rolled loadout, which guards its spawn or walks its patrol, and fights you
  * once it notices you. The dead stay down. It ends for you when you extract, die or run
- * out of time, with a results screen.
+ * out of time, with a results screen. The raid is saved on the phone whenever the page is
+ * hidden, and options.resume carries one on from there.
  */
 export async function startPlay(el: PlayElements, options: PlayOptions): Promise<void> {
   const raid = loadRaid(options.raid);
@@ -199,35 +208,48 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const rig = new CharacterRig(await loadCharacter('/characters/mannequin.glb'));
 
   const controls = new Controls(el.canvas, el.hud);
-  const sim = createState(Date.now() >>> 0);
+  const resume = options.resume;
+  const sim = resume?.sim ?? createState(Date.now() >>> 0);
   const spawns = map.markers.filter((m) => m.type === 'playerSpawn');
   const spawn =
-    spawns.find((m) => m.id === options.spawn) ?? pick(createRng(Date.now() >>> 0), spawns);
-  // Below the spawn's height plus a little, so a spawn under a roof stays inside.
-  const [startX, startZ] = options.at ?? [spawn.x, spawn.z];
-  const player = spawnCharacter(
-    sim,
-    world,
-    startX,
-    startZ,
-    spawn.yaw,
-    // ?at stands you on the floor nearest the ground there, not on a roof.
-    options.at ? world.terrain.heightAt(startX, startZ) + 1 : spawn.y + 0.5,
-  );
-  player.gear = structuredClone(options.gear);
+    spawns.find((m) => m.id === (resume?.spawn ?? options.spawn)) ??
+    pick(createRng(Date.now() >>> 0), spawns);
+  let player: Character;
+  if (resume) {
+    const found = sim.entities.find((e) => e.id === resume.player);
+    if (!found) throw new Error('the saved raid has no player');
+    player = found;
+    controls.yaw = player.yaw;
+    controls.pitch = player.pitch;
+  } else {
+    // Below the spawn's height plus a little, so a spawn under a roof stays inside.
+    const [startX, startZ] = options.at ?? [spawn.x, spawn.z];
+    player = spawnCharacter(
+      sim,
+      world,
+      startX,
+      startZ,
+      spawn.yaw,
+      // ?at stands you on the floor nearest the ground there, not on a roof.
+      options.at ? world.terrain.heightAt(startX, startZ) + 1 : spawn.y + 0.5,
+    );
+    player.gear = structuredClone(options.gear);
+    placeLootContainers(sim, map, lootKinds);
+    fillLootContainers(sim, map, items, lootTables);
+    rollLootSpawns(sim, map, items, lootTables);
+    startRaid(sim, map, options.duration ?? raid.duration);
+    controls.yaw = spawn.yaw;
+  }
   const held = heldWeapon(player);
   if (held) viewmodel.setGun(held, items);
-  placeLootContainers(sim, map, lootKinds);
-  fillLootContainers(sim, map, items, lootTables);
-  rollLootSpawns(sim, map, items, lootTables);
-  startRaid(sim, map, options.duration ?? raid.duration);
   // Locked doors cut the nav grid now, not in the first frame.
   syncDoors(sim, world, nav);
-  controls.yaw = spawn.yaw;
 
   // Enemies: their type's skill, and its loadout (or the spawn's) rolled.
   const patrols = new Map(map.patrols.map((p) => [p.id, p]));
   const names = new Map<number, string>();
+  /** Each enemy spawn marker's id, and the entity there, for saving the raid. */
+  const spawned: Record<string, number> = {};
   const enemies: {
     c: Character;
     body: CharacterBody;
@@ -240,16 +262,22 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const type = types.get(m.enemy)!;
     const loadout = loadouts.get(m.loadout ?? type.loadout)!;
     const patrol = m.patrol === undefined ? undefined : patrols.get(m.patrol);
-    const c = spawnEnemy(sim, world, m.x, m.y, m.z, m.yaw, {
-      patrol,
-      radius: m.radius,
-      skill: type.skill,
-    });
+    // Resumed, the enemy is already in the state, as it was.
+    const saved = resume ? sim.entities.find((e) => e.id === resume.enemies[m.id]) : undefined;
+    if (resume && !saved) continue;
+    const c =
+      saved ??
+      spawnEnemy(sim, world, m.x, m.y, m.z, m.yaw, {
+        patrol,
+        radius: m.radius,
+        skill: type.skill,
+      });
+    spawned[m.id] = c.id;
     const arm = (): void => {
       if (!options.peaceful) equipLoadout(c, items, loadout, sim.rng);
       rollEnemyLoot(c, items, lootTables, type.loot, m.lootWeights, sim.rng);
     };
-    arm();
+    if (!saved) arm();
     const body = new CharacterBody(rig, type.outfit ?? DEFAULT_OUTFIT, c);
     scene.add(body.root);
     const zones = options.hitZones ? new CapsuleBody(0.45) : null;
@@ -450,7 +478,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
 
   // The raid ends for you when you extract, die or run out of time; the results screen
   // comes up a moment later after a death, so you see it happen.
-  let kills = 0;
+  let kills = resume?.kills ?? 0;
   /** The enemy type that killed you, if one did. */
   let killedBy: string | null = null;
   let ended: RaidResult | null = null;
@@ -472,6 +500,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // Sent now, as it is: the server keeps what the outcome allows.
     const gear = JSON.parse(JSON.stringify(player.gear)) as Gear;
     saving = saveResult(options.serverRaid, { how, gear, seconds, kills, detail });
+    clearSnapshot();
     resultsAt = now + (how === 'killed' ? RESULTS_AFTER_DEATH_MS : 0);
     closeScreen();
   }
@@ -485,6 +514,25 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       })
       .catch((err: unknown) => console.error('results screen failed', err));
   }
+
+  // Saved whenever the page is hidden, in case iOS unloads it while you're away.
+  const snapshot = (): void => {
+    if (ended) return;
+    saveSnapshot({
+      version: 1,
+      serverRaid: options.serverRaid,
+      raid: options.raid,
+      spawn: spawn.id,
+      player: player.id,
+      enemies: spawned,
+      kills,
+      sim,
+    });
+  };
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) snapshot();
+  });
+  window.addEventListener('pagehide', snapshot);
 
   function tick(): void {
     const t0 = performance.now();

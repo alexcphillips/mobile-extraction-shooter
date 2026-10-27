@@ -4,6 +4,7 @@ export {
   PROTOCOL_VERSION,
   type ApiError,
   type ApiErrorCode,
+  type BuyPageRequest,
   type EndRaidRequest,
   type HelloResponse,
   type LoginRequest,
@@ -349,12 +350,15 @@ export {
   PROFILE,
   PROFILE_FORMAT,
   PROFILE_FORMAT_VERSION,
+  buyStashPage,
   checkGear,
   checkProfile,
   countItems,
   itemGained,
   newProfile,
+  nextPagePrice,
   parseGear,
   restGear,
   type Profile,
 } from './profile';
+export { applyStash, openStash, stashOwner, stashPageOf, type StashState } from './stash';

@@ -16,10 +16,12 @@ const current = (): Settings => settings.current;
 interface Props {
   onClose: () => void;
   onEditLayout: () => void;
+  /** The close button's label: Resume over a raid, Done over the menu. */
+  closeLabel: string;
 }
 
 /** The settings screen. Every change saves and applies straight away. */
-export function SettingsPanel({ onClose, onEditLayout }: Props): ReactNode {
+export function SettingsPanel({ onClose, onEditLayout, closeLabel }: Props): ReactNode {
   const s = useSyncExternalStore(subscribe, current);
   const set = <K extends keyof Settings>(key: K, value: Settings[K]): void =>
     settings.update((draft) => {
@@ -31,7 +33,7 @@ export function SettingsPanel({ onClose, onEditLayout }: Props): ReactNode {
       <header>
         <h1>Settings</h1>
         <button className="primary" onClick={onClose}>
-          Resume
+          {closeLabel}
         </button>
       </header>
       <div className="panel-body">

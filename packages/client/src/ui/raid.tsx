@@ -3,18 +3,27 @@ import { createRoot, type Root } from 'react-dom/client';
 import { InventoryController } from './inventory-controller';
 import { RaidScreen } from './raid-screen';
 
-/** What the raid screen needs from the game. It reads the live state and never changes it. */
-export interface RaidContext {
+/**
+ * What the inventory needs: the state to draw (it never changes it) and where to send
+ * actions. The raid's, or the stash's between raids.
+ */
+export interface InventoryContext {
   sim: SimState;
   player: Character;
   items: ItemDb;
-  /** For the map tab. */
-  map: CompiledMap;
-  /** Queues an inventory action for the next tick. */
+  /** Queues an inventory action for the next tick (in the stash, applies it). */
   send: (action: InventoryAction) => void;
   /** A body's or container's name (or the ground's). */
   nameOf: (owner: Owner) => string;
   close: () => void;
+  /** Between raids: the stash is open, and nothing can be dropped on the ground. */
+  stash?: boolean;
+}
+
+/** What the raid screen needs from the game. */
+export interface RaidContext extends InventoryContext {
+  /** For the map tab. */
+  map: CompiledMap;
 }
 
 export interface RaidScreenHandle {
@@ -42,17 +51,14 @@ export function openRaidScreen(
   let version = 0;
   const render = (): void => {
     version++;
-    r.render(<RaidScreen inv={inv} version={version} />);
+    r.render(<RaidScreen inv={inv} version={version} map={ctx.map} />);
   };
   const inv = new InventoryController(ctx, target, render);
   container.hidden = false;
   render();
   return {
     refresh: render,
-    setTarget: (t) => {
-      inv.target = t;
-      inv.select(null);
-    },
+    setTarget: (t) => inv.setTarget(t),
     hide: () => {
       inv.drag.cancel();
       r.render(null);
