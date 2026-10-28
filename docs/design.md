@@ -238,6 +238,7 @@ The editors run on the Mac in a desktop browser and save to JSON files in the re
 - **Placement:** objects **snap down onto the surface** below (a chair onto the floor, a lamp onto a table). Overlapping props get a **red warning** but are allowed; **buildings can't overlap other buildings**.
 - **Prefabs** (cars, trees, trash cans, mailboxes, whole buildings) are placed by reference, so editing a prefab updates every copy. Individual copies can be recoloured.
 - **Editing safety:** a placed prefab or building is selected and deleted as **one object**, and you can enter it to edit its parts. Full **undo/redo**. **The ground layer is locked** against accidental deletion.
+  - **Groups (session 15, the user's call 2026-10-27):** anything can be grouped, and groups nest; a group is moved, turned, copied and deleted as one, and you enter it to edit inside. **Grouping never changes ids**, so quests and patrols that name a marker keep working. The ground layer is the terrain: it can't be selected, so it can't be deleted.
 - **Terrain:** raise and lower brushes, water level, and automatic concrete bases under buildings.
 - **Gameplay markers:** random player spawns, enemy spawns (type, loadout roll, loot weighting), loot containers and spawn points (loot table), extraction points, quest markers, doors and keys, named zones.
 - **Navigation overlay:** shows where AI can walk, and **highlights spots where a player can stand but AI can't reach them or shoot them**, so you can fix them while building.

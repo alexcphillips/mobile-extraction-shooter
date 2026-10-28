@@ -134,7 +134,7 @@ export function updateDoors(view: MapView, open: readonly { open: boolean }[], d
 }
 
 /** A pivot at the hinge holding the door panel. Seen from +z, a left hinge is at −x. */
-function buildDoor(door: CompiledDoor, material: THREE.Material): THREE.Object3D {
+export function buildDoor(door: CompiledDoor, material: THREE.Material): THREE.Object3D {
   const side = door.hinge === 'left' ? -1 : 1;
   const b = new TriangleBuilder(false);
   b.shape({

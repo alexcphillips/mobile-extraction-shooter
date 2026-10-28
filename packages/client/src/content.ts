@@ -99,6 +99,26 @@ export function loadMap(id: string): CompiledMap {
   return compileMap(map, prefabs);
 }
 
+/**
+ * The map files as written, by id, for the map editor, so what it saves keeps their key
+ * order (a parsed file has its schema's order). They're checked first; one in an older
+ * format comes migrated. Prefabs are as loaded. Don't change them.
+ */
+export function mapSources(): {
+  maps: ReadonlyMap<string, MapFile>;
+  prefabs: ReadonlyMap<string, PrefabFile>;
+} {
+  maps ??= loadById(MAP_FORMAT, mapFiles);
+  prefabs ??= loadById(PREFAB_FORMAT, prefabFiles);
+  const raw = new Map<string, MapFile>();
+  for (const file of Object.values(mapFiles)) {
+    const doc = file as MapFile;
+    const loaded = maps.get(doc.id);
+    if (loaded) raw.set(doc.id, doc.formatVersion === loaded.formatVersion ? doc : loaded);
+  }
+  return { maps: raw, prefabs };
+}
+
 /** Every item in content/items, with references between them checked. */
 export function loadItems(): ItemDb {
   if (!items) {

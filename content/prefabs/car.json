@@ -1,5 +1,5 @@
 {
-  "formatVersion": 2,
+  "formatVersion": 3,
   "id": "car",
   "name": "Car",
   "colours": { "paint": "#7f8c8d", "glass": "#2c3e50", "tyre": "#222222" },

@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { spawnCharacter, createState } from '../sim/state';
 import { CollisionWorld } from '../world/collision-world';
-import { compileMap, type PrefabLookup } from './compile';
+import { compileMap, compileNodes, type PrefabLookup } from './compile';
 import { loadContent } from './format';
 import { MAP_FORMAT, type MapFile, type MapNode, type PrefabFile } from './schema';
 
 function map(nodes: MapNode[], colours?: Record<string, string>): MapFile {
   const row = Array<number>(11).fill(0);
   return {
-    formatVersion: 2,
+    formatVersion: 3,
     id: 'test',
     name: 'Test',
     environment: { sky: '#9fb3c8', fogNear: 40, fogFar: 120 },
@@ -29,7 +29,7 @@ function prefabs(...list: PrefabFile[]): PrefabLookup {
 }
 
 const crate: PrefabFile = {
-  formatVersion: 2,
+  formatVersion: 3,
   id: 'crate',
   colours: { wood: '#8a5a33' },
   nodes: [{ type: 'box', pos: [1, 0, 0], size: [1, 1, 1], colour: 'wood' }],
@@ -94,7 +94,7 @@ describe('compileMap', () => {
       compileMap(map([place({ colours: { wood: 'team' } } as Partial<MapNode>)]), prefabs(crate)),
     ).toThrow(/unknown colour slot "team"/);
     const a: PrefabFile = {
-      formatVersion: 2,
+      formatVersion: 3,
       id: 'a',
       nodes: [{ type: 'prefab', prefab: 'b', pos: [0, 0, 0] }],
     };
@@ -129,7 +129,7 @@ describe('compileMap', () => {
 
   it('gives markers and doors path ids in world space', () => {
     const house: PrefabFile = {
-      formatVersion: 2,
+      formatVersion: 3,
       id: 'house',
       nodes: [
         {
@@ -210,7 +210,7 @@ describe('compileMap', () => {
 
   it('places patrols and points enemy spawns at the one beside them', () => {
     const camp: PrefabFile = {
-      formatVersion: 2,
+      formatVersion: 3,
       id: 'camp',
       nodes: [
         {
@@ -271,5 +271,87 @@ describe('compileMap', () => {
         prefabs(),
       ),
     ).toThrow(/no patrol "nowhere"/);
+  });
+
+  it('moves and turns what a group holds, without adding to its ids', () => {
+    const m = compileMap(
+      map([
+        { type: 'playerSpawn', pos: [0, 0, 0] },
+        {
+          type: 'group',
+          name: 'Yard',
+          pos: [10, 1, 0],
+          yaw: 90,
+          nodes: [
+            { type: 'box', pos: [1, 0, 0], size: [1, 1, 1], colour: '#ffffff' },
+            { type: 'questMarker', id: 'radio', pos: [0, 0, 2] },
+            {
+              type: 'group',
+              pos: [0, 0, 0],
+              nodes: [
+                { type: 'playerSpawn', pos: [0, 0, 0] },
+                { type: 'prefab', id: 'shed', prefab: 'crate', pos: [0, 0, 0], yaw: 90 },
+              ],
+            },
+          ],
+        },
+      ]),
+      prefabs({
+        ...crate,
+        nodes: [
+          ...crate.nodes,
+          { type: 'lootSpawn', id: 'top', pos: [0, 1, 0], lootTable: 'household' },
+        ],
+      }),
+    );
+    expect(m.markers.map((k) => k.id)).toEqual(['#0', 'radio', '#1.2.0', 'shed/top']);
+    const radio = m.markers[1]!;
+    // Local +z turns to +x at yaw 90°.
+    expect([radio.x, radio.y, radio.z].map((n) => Math.round(n * 1e6) / 1e6)).toEqual([12, 1, 0]);
+    expect(radio.yaw).toBeCloseTo(Math.PI / 2);
+    const box = m.world.boxes[0]!;
+    expect([box.x, box.z].map((n) => Math.round(n * 1e6) / 1e6)).toEqual([10, -1]);
+    // The prefab turns by both: its +x box ends up at +x.
+    const shed = m.world.boxes[1]!;
+    expect(shed.x).toBeCloseTo(9);
+    expect(shed.yaw).toBeCloseTo(Math.PI);
+  });
+
+  it('keeps ids unique across groups', () => {
+    const nodes: MapNode[] = [
+      { type: 'questMarker', id: 'radio', pos: [0, 0, 0] },
+      {
+        type: 'group',
+        pos: [0, 0, 0],
+        nodes: [{ type: 'questMarker', id: 'radio', pos: [1, 0, 0] }],
+      },
+    ];
+    expect(() => loadContent(MAP_FORMAT, { ...map([]), nodes }, 'test.json')).toThrow(
+      /nodes\.1\.nodes\.0\.id.*duplicate id "radio"|duplicate id "radio"/,
+    );
+  });
+
+  it('loads format 2 maps unchanged', () => {
+    const m = loadContent(MAP_FORMAT, { ...map([]), formatVersion: 2 }, 'test.json');
+    expect(m.formatVersion).toBe(3);
+  });
+});
+
+describe('compileNodes', () => {
+  it("compiles nodes on their own with the scope's colours, instanced prefabs flattened", () => {
+    const out = compileNodes(
+      [
+        { type: 'prefab', prefab: 'tree', pos: [5, 0, 0] },
+        { type: 'box', pos: [0, 0, 0], size: [1, 1, 1], colour: 'concrete' },
+        { type: 'extraction', pos: [0, 0, 0], name: 'Dock', radius: 3 },
+      ],
+      prefabs({ ...crate, id: 'tree', instanced: true }),
+      { concrete: '#b5b0a6' },
+    );
+    expect(out.shapes.map((s) => [s.x, s.colour])).toEqual([
+      [6, 0x8a5a33],
+      [0, 0xb5b0a6],
+    ]);
+    expect(out.markers).toHaveLength(1);
   });
 });

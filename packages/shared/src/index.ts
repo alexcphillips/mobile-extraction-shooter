@@ -346,9 +346,11 @@ export {
 } from './content/enemies';
 export {
   compileMap,
+  compileNodes,
   type CompiledDoor,
   type CompiledMap,
   type CompiledMarker,
+  type CompiledNodes,
   type CompiledPatrol,
   type CompiledPatrolPoint,
   type InstancedGroup,

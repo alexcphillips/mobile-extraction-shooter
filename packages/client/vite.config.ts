@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
+import { editorSave } from './editor-save.mjs';
 
 export default defineConfig({
+  plugins: [editorSave()],
   server: {
     // Listen on the LAN so the iPhone can open the dev server.
     host: true,

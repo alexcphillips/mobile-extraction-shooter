@@ -85,6 +85,10 @@ if (location.pathname === '/bodies') {
   startBodies(byId('scene') as HTMLCanvasElement, status).catch((err: unknown) => {
     status.textContent = `bodies failed: ${message(err)}`;
   });
+} else if (location.pathname === '/editor' && import.meta.env.DEV) {
+  import('./editor')
+    .then((editor) => editor.startEditor(byId('scene') as HTMLCanvasElement, byId('editor')))
+    .catch((err: unknown) => (status.textContent = `editor failed: ${message(err)}`));
 } else if (location.pathname === '/perf') {
   mountPresets(byId('presets'));
   startPerfTest(

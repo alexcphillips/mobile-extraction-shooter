@@ -214,7 +214,41 @@ const questMarkerSchema = z.strictObject({
   pos: vec3,
 });
 
-export const nodeSchema = z.discriminatedUnion('type', [
+/**
+ * Nodes kept together for editing: moved, turned and deleted as one. A group adds nothing
+ * to the ids of what's in it (a marker's path id is the same in a group or out of one),
+ * so grouping never breaks a reference; ids must then be unique across groups too.
+ */
+const groupSchema = z.strictObject({
+  type: z.literal('group'),
+  /** Shown in the editor. */
+  name: z.string().min(1).optional(),
+  pos: vec3,
+  yaw: angle,
+  get nodes(): z.ZodArray<typeof nodeSchema> {
+    return z.array(nodeSchema);
+  },
+});
+
+export const nodeSchema: z.ZodDiscriminatedUnion<
+  [
+    typeof boxSchema,
+    typeof cylinderSchema,
+    typeof rampSchema,
+    typeof stairsSchema,
+    typeof ladderSchema,
+    typeof prefabRefSchema,
+    typeof doorSchema,
+    typeof playerSpawnSchema,
+    typeof enemySpawnSchema,
+    typeof patrolSchema,
+    typeof lootContainerSchema,
+    typeof lootSpawnSchema,
+    typeof extractionSchema,
+    typeof questMarkerSchema,
+    typeof groupSchema,
+  ]
+> = z.discriminatedUnion('type', [
   boxSchema,
   cylinderSchema,
   rampSchema,
@@ -229,16 +263,26 @@ export const nodeSchema = z.discriminatedUnion('type', [
   lootSpawnSchema,
   extractionSchema,
   questMarkerSchema,
+  groupSchema,
 ]);
 
+/** Ids are unique in a map or prefab, groups included. */
 const nodesSchema = z.array(nodeSchema).superRefine((nodes, ctx) => {
   const seen = new Set<string>();
-  nodes.forEach((n, i) => {
-    if (n.id === undefined) return;
-    if (seen.has(n.id))
-      ctx.addIssue({ code: 'custom', message: `duplicate id "${n.id}"`, path: [i, 'id'] });
-    seen.add(n.id);
-  });
+  const check = (list: readonly MapNode[], path: (string | number)[]): void => {
+    list.forEach((n, i) => {
+      if (n.type === 'group') return check(n.nodes, [...path, i, 'nodes']);
+      if (n.id === undefined) return;
+      if (seen.has(n.id))
+        ctx.addIssue({
+          code: 'custom',
+          message: `duplicate id "${n.id}"`,
+          path: [...path, i, 'id'],
+        });
+      seen.add(n.id);
+    });
+  };
+  check(nodes, []);
 });
 
 const zoneSchema = z.strictObject({
@@ -262,7 +306,7 @@ const terrainSchema = z
     path: ['heights'],
   });
 
-export const MAP_FORMAT_VERSION = 2;
+export const MAP_FORMAT_VERSION = 3;
 
 export const mapSchema = z
   .strictObject({
@@ -299,7 +343,7 @@ export const mapSchema = z
     path: ['environment'],
   });
 
-export const PREFAB_FORMAT_VERSION = 2;
+export const PREFAB_FORMAT_VERSION = 3;
 
 export const prefabSchema = z.strictObject({
   formatVersion: z.literal(PREFAB_FORMAT_VERSION),
@@ -324,14 +368,14 @@ export const MAP_FORMAT: ContentFormat<MapFile> = {
   kind: 'map',
   version: MAP_FORMAT_VERSION,
   schema: mapSchema,
-  // Format 2 (session 7) added patrols; nothing to change.
-  migrations: { 1: (doc) => doc },
+  // Format 2 (session 7) added patrols and 3 (session 15) groups; nothing to change.
+  migrations: { 1: (doc) => doc, 2: (doc) => doc },
 };
 
 export const PREFAB_FORMAT: ContentFormat<PrefabFile> = {
   kind: 'prefab',
   version: PREFAB_FORMAT_VERSION,
   schema: prefabSchema,
-  // Format 2 (session 7) added patrols; nothing to change.
-  migrations: { 1: (doc) => doc },
+  // Format 2 (session 7) added patrols and 3 (session 15) groups; nothing to change.
+  migrations: { 1: (doc) => doc, 2: (doc) => doc },
 };

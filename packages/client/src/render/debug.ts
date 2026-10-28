@@ -17,9 +17,12 @@ const PATROL_COLOUR = 0xff7675;
 /**
  * Markers as coloured posts (extractions also get a disc of their radius), named zones as
  * outlines over the terrain, and patrols as lines with a ring at each stop. Turned on with
- * ?debug in the URL.
+ * ?debug in the URL, and drawn in the map editor.
  */
-export function buildDebug(map: CompiledMap, terrain: HeightGrid): THREE.Group {
+export function buildDebug(
+  map: Pick<CompiledMap, 'markers' | 'patrols' | 'zones'>,
+  terrain: HeightGrid,
+): THREE.Group {
   const group = new THREE.Group();
   const b = new TriangleBuilder(true);
   for (const m of map.markers) {

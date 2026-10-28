@@ -191,12 +191,42 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
   };
 }
 
+/** What compileNodes gives: everything in the nodes' own frame, instanced prefabs flattened. */
+export interface CompiledNodes {
+  shapes: Shape[];
+  doors: CompiledDoor[];
+  markers: CompiledMarker[];
+  patrols: CompiledPatrol[];
+}
+
+/**
+ * Compiles some nodes on their own, as the map editor draws them. `colours` are the
+ * slots of the map or prefab they're in.
+ */
+export function compileNodes(
+  nodes: readonly MapNode[],
+  prefabs: PrefabLookup,
+  colours: Readonly<Record<string, string>> = {},
+  source = 'editor',
+): CompiledNodes {
+  const out = { shapes: [], doors: [], markers: [], patrols: [] };
+  new Compiler(source, prefabs).nodes(nodes, frame(0, 0, 0, 0), slotColours(colours), '', [], {
+    ...out,
+    boxes: null,
+    ramps: null,
+    ladders: null,
+    groups: null,
+  });
+  return out;
+}
+
 class Compiler {
   constructor(
     private readonly source: string,
     private readonly prefabs: PrefabLookup,
   ) {}
 
+  /** `unnamed` comes before the index in a node without an id: "3." inside group #3. */
   nodes(
     nodes: readonly MapNode[],
     f: Frame,
@@ -204,9 +234,17 @@ class Compiler {
     path: string,
     stack: readonly string[],
     out: Sink,
+    unnamed = '',
   ): void {
     nodes.forEach((node, i) => {
-      const id = (path ? `${path}/` : '') + (node.id ?? `#${i}`);
+      if (node.type === 'group') {
+        // A group moves its nodes but adds nothing to their ids.
+        const [x, y, z] = place(f, node.pos);
+        const g = frame(x, y, z, f.yaw + (node.yaw ?? 0) * DEG);
+        this.nodes(node.nodes, g, scope, path, stack, out, `${unnamed}${i}.`);
+        return;
+      }
+      const id = (path ? `${path}/` : '') + (node.id ?? `#${unnamed}${i}`);
       this.node(node, f, scope, id, stack, out);
     });
   }
@@ -235,11 +273,11 @@ class Compiler {
         id: path,
         points: node.points.map((p) => {
           const stop = !Array.isArray(p);
-          const [px, py, pz] = stop ? p.pos : p;
+          const [x, y, z] = place(f, stop ? p.pos : p);
           return {
-            x: f.x + px * f.cos + pz * f.sin,
-            y: f.y + py,
-            z: f.z - px * f.sin + pz * f.cos,
+            x,
+            y,
+            z,
             wait: stop ? (p.wait ?? PATROL_WAIT) : 0,
             radius: stop ? (p.radius ?? 0) : 0,
           };
@@ -249,10 +287,7 @@ class Compiler {
       });
       return;
     }
-    const [lx, ly, lz] = node.pos;
-    const x = f.x + lx * f.cos + lz * f.sin;
-    const y = f.y + ly;
-    const z = f.z - lx * f.sin + lz * f.cos;
+    const [x, y, z] = place(f, node.pos);
     const yaw = f.yaw + ('yaw' in node ? (node.yaw ?? 0) * DEG : 0);
 
     switch (node.type) {
@@ -442,6 +477,11 @@ class Compiler {
 
 function frame(x: number, y: number, z: number, yaw: number): Frame {
   return { x, y, z, yaw, cos: Math.cos(yaw), sin: Math.sin(yaw) };
+}
+
+/** A position in a frame, in the frame's parent's space. */
+function place(f: Frame, [lx, ly, lz]: readonly [number, number, number]): Vec3 {
+  return [f.x + lx * f.cos + lz * f.sin, f.y + ly, f.z - lx * f.sin + lz * f.cos];
 }
 
 function hex(colour: string): number {
