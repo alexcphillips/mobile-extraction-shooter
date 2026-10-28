@@ -8,7 +8,7 @@ const HEIGHT = 0.07;
 /** How much lighter the item the use button would take is drawn. */
 const LIT = 1.6;
 
-/** A colour per item type, like the inventory screen's, until items get models (session 18). */
+/** A colour per item type, like the inventory screen's, until items get models (session 18b). */
 const COLOURS: Record<ItemDef['type'], number> = {
   weapon: 0x56653f,
   ammo: 0x9a8238,

@@ -2,6 +2,16 @@ import { SCOPE_RADIUS, type OpticDef, type ReticleShape } from '@mes/shared';
 
 const SVG = 'http://www.w3.org/2000/svg';
 
+/** The camera's vertical field of view in degrees: from the hip, and aimed down irons or a red dot. */
+export const FOV = 70;
+export const AIM_FOV = 55;
+const DEG = Math.PI / 180;
+
+/** The field of view aimed through an optic: a scope's zoom narrows the hip's. */
+export function aimedFov(zoom: number): number {
+  return zoom > 1 ? (2 * Math.atan(Math.tan((FOV / 2) * DEG) / zoom)) / DEG : AIM_FOV;
+}
+
 function shapeSvg(s: ReticleShape): string {
   switch (s.type) {
     case 'dot':
@@ -11,6 +21,25 @@ function shapeSvg(s: ReticleShape): string {
     case 'ring':
       return `<circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="none" stroke-width="${s.width}" />`;
   }
+}
+
+/**
+ * The SVG inside the overlay for an optic (in its viewBox, −50 to 50 around the aim point):
+ * a scope's mask, then the reticle. The item editor draws its preview with this too.
+ */
+export function reticleMarkup(optic: OpticDef): string {
+  const { colour, shapes } = optic.reticle;
+  const r = SCOPE_RADIUS;
+  // A huge square with a round hole; the screen is never wider than 10 times its height.
+  const mask =
+    optic.zoom > 1
+      ? `<path fill="#000" fill-rule="evenodd" d="M-500 -500H500V500H-500Z M${r} 0A${r} ${r} 0 1 0 -${r} 0A${r} ${r} 0 1 0 ${r} 0Z" />` +
+        `<circle r="${r}" fill="none" stroke="#000" stroke-opacity="0.5" stroke-width="2.5" />`
+      : '';
+  return (
+    mask +
+    `<g fill="${colour}" stroke="${colour}" stroke-linecap="butt">${shapes.map(shapeSvg).join('')}</g>`
+  );
 }
 
 /**
@@ -44,17 +73,7 @@ export class OpticOverlay {
       this.svg.innerHTML = '';
       return;
     }
-    const { colour, shapes } = optic.reticle;
-    const r = SCOPE_RADIUS;
-    // A huge square with a round hole; the screen is never wider than 10 times its height.
-    const mask =
-      optic.zoom > 1
-        ? `<path fill="#000" fill-rule="evenodd" d="M-500 -500H500V500H-500Z M${r} 0A${r} ${r} 0 1 0 -${r} 0A${r} ${r} 0 1 0 ${r} 0Z" />` +
-          `<circle r="${r}" fill="none" stroke="#000" stroke-opacity="0.5" stroke-width="2.5" />`
-        : '';
-    this.svg.innerHTML =
-      mask +
-      `<g fill="${colour}" stroke="${colour}" stroke-linecap="butt">${shapes.map(shapeSvg).join('')}</g>`;
+    this.svg.innerHTML = reticleMarkup(optic);
   }
 
   set visible(on: boolean) {

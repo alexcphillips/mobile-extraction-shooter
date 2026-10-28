@@ -75,7 +75,7 @@ import {
 import { Stats } from '../debug/stats';
 import { HandsHud } from '../hud/hands';
 import type { Hud } from '../hud/hud';
-import type { OpticOverlay } from '../hud/optic';
+import { AIM_FOV, FOV, aimedFov, type OpticOverlay } from '../hud/optic';
 import { QuestMarkers } from '../hud/quest-markers';
 import type { RaidHud } from '../hud/raid-hud';
 import type { Vitals } from '../hud/vitals';
@@ -159,9 +159,6 @@ export interface PlayOptions {
   note: string;
 }
 
-const FOV = 70;
-/** Iron sights and red dots zoom a little; scopes set their own zoom. */
-const AIM_FOV = 55;
 /** How far into aiming a red dot's reticle shows, once the sight has come up to the eye. */
 const RETICLE_IN = 0.95;
 /** How far into aiming a scope switches to its full-screen zoom. */
@@ -858,9 +855,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const zoom = optic?.zoom ?? 1;
     // A scope snaps to its zoom behind the mask once aimed; until then it's like irons.
     const scoped = zoom > 1 && aim >= SCOPE_IN;
-    const fov = scoped
-      ? (2 * Math.atan(Math.tan((FOV / 2) * DEG) / zoom)) / DEG
-      : FOV + (AIM_FOV - FOV) * aim;
+    const fov = scoped ? aimedFov(zoom) : FOV + (AIM_FOV - FOV) * aim;
     if (camera.fov !== fov) {
       camera.fov = fov;
       camera.updateProjectionMatrix();

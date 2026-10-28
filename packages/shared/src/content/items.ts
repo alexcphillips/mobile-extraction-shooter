@@ -52,7 +52,7 @@ const weaponSchema = z.strictObject({
   ammo: idSchema,
   /**
    * How it's held: a rifle in both hands at the shoulder, a pistol out in front. Picks the
-   * animations and, until the item editor (session 18), the placeholder model. Defaults
+   * animations and, until the item editor's models (session 18b), the placeholder model. Defaults
    * to rifle.
    */
   hold: z.enum(['rifle', 'pistol']).optional(),

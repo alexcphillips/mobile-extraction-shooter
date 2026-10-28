@@ -1,0 +1,192 @@
+/* The item editor (session 18): a page of its own, using the map editor's panel styles. */
+
+body.item-editor {
+  background: #14171c;
+  overflow: auto;
+}
+
+body.item-editor #scene {
+  display: none;
+}
+
+.ie {
+  position: fixed;
+  inset: 0 0 34px;
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  pointer-events: auto;
+}
+
+.ie-list {
+  width: 230px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: var(--ed-bg);
+  border-radius: 6px;
+}
+
+#editor .ie-filter {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ie-items {
+  flex: 1;
+  overflow: auto;
+}
+
+.ie-items h4 {
+  margin: 6px 0 2px;
+  font-size: 11px;
+  font-weight: normal;
+  color: var(--ed-dim);
+}
+
+.ie-items .ed-list {
+  max-height: none;
+  min-height: 0;
+}
+
+.ie-swatch {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 6px;
+  border-radius: 2px;
+}
+
+.ie-dot {
+  color: #4caf50;
+}
+
+#editor .ie-link {
+  color: var(--ed-dim);
+}
+
+.ie-main {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ie-form {
+  width: 330px;
+  flex: none;
+  padding: 8px;
+  background: var(--ed-bg);
+  border-radius: 6px;
+  border-top: none;
+  overflow: auto;
+}
+
+.ie-form .ed-row {
+  flex-wrap: wrap;
+}
+
+.ie-form .ed-row > span {
+  display: flex;
+  flex: 1;
+  min-width: 80px;
+}
+
+.ie-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  overflow: auto;
+}
+
+.ie-card {
+  padding: 8px;
+  background: var(--ed-bg);
+  border-radius: 6px;
+}
+
+.ie-card h4 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: normal;
+  color: var(--ed-dim);
+}
+
+.ie-card .ed-note + .ed-note {
+  margin-top: 3px;
+}
+
+.ie-sizes {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.ie-cells {
+  display: grid;
+  gap: 1px;
+  padding: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ie-cell {
+  background: #20252c;
+}
+
+.ie-tile {
+  display: flex;
+  align-items: flex-end;
+  padding: 3px;
+  font-size: 10px;
+  overflow: hidden;
+}
+
+.ie-risk {
+  padding: 6px 8px;
+  border: 1px solid #c9a227;
+  border-radius: 4px;
+  color: #f0d68a;
+}
+
+.ie-risk ul {
+  margin: 4px 0;
+  padding-left: 18px;
+}
+
+.ie-reticle svg {
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  border-radius: 4px;
+  touch-action: none;
+  user-select: none;
+}
+
+.ie-hit line,
+.ie-hit circle {
+  stroke: transparent;
+  cursor: move;
+}
+
+.ie-handles circle,
+.ie-handles rect {
+  fill: rgba(255, 140, 0, 0.35);
+  stroke: #ff8c00;
+  stroke-width: 0.3;
+  cursor: grab;
+}
+
+.ie-tools {
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 6px 0;
+}
+
+.ie-shapes {
+  max-height: 140px;
+  margin: 6px 0;
+}

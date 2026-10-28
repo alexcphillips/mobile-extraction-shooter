@@ -16,11 +16,14 @@ import {
   checkLootTables,
   checkQuests,
   checkVendors,
+  checkProfile,
   compileMap,
   loadById,
+  newProfile,
   type CompiledMap,
   type EnemyDef,
   type ItemDb,
+  type ItemDef,
   type LoadoutDef,
   type LootContainerDef,
   type LootTableDef,
@@ -130,6 +133,14 @@ function asWritten<T extends { id: string; formatVersion: number }>(
     if (parsed) raw.set(doc.id, doc.formatVersion === parsed.formatVersion ? doc : parsed);
   }
   return raw;
+}
+
+/**
+ * The item files as written, by id, for the item editor (session 18), so what it saves keeps
+ * their key order. Like mapSources: checked first, migrated if older. Don't change them.
+ */
+export function itemSources(): ReadonlyMap<string, ItemDef> {
+  return asWritten(itemFiles, loadById(ITEM_FORMAT, itemFiles));
 }
 
 /** Every item in content/items, with references between them checked. */
@@ -276,4 +287,99 @@ export function checkQuestMarkers(): void {
       }
     }
   }
+}
+
+// The item editor (session 18) checks everything that names items against the items as
+// edited, so these are loaded without the checks against content/items that the game runs.
+let raw:
+  | {
+      enemies: ReadonlyMap<string, EnemyDef>;
+      loadouts: ReadonlyMap<string, LoadoutDef>;
+      lootTables: ReadonlyMap<string, LootTableDef>;
+      vendors: ReadonlyMap<string, VendorDef>;
+      quests: ReadonlyMap<string, QuestDef>;
+      kits: ReadonlyMap<string, StartingKitDef>;
+      doors: { map: string; id: string; key: string }[];
+    }
+  | undefined;
+
+function rawContent(): NonNullable<typeof raw> {
+  if (!raw) {
+    const doors = mapIds().flatMap((map) =>
+      loadMap(map).doors.flatMap((d) =>
+        d.key === undefined ? [] : [{ map, id: d.id, key: d.key }],
+      ),
+    );
+    raw = {
+      enemies: loadById(ENEMY_FORMAT, enemyFiles),
+      loadouts: loadById(LOADOUT_FORMAT, loadoutFiles),
+      lootTables: loadById(LOOT_TABLE_FORMAT, lootTableFiles),
+      vendors: loadById(VENDOR_FORMAT, vendorFiles),
+      quests: loadById(QUEST_FORMAT, questFiles),
+      kits: loadById(STARTING_KIT_FORMAT, startingKitFiles),
+      doors,
+    };
+  }
+  return raw;
+}
+
+/**
+ * What the rest of content/ would have wrong with these items, as the game and server load
+ * it: references between the items, enemy loadouts, loot tables, vendors, quests, maps'
+ * door keys, and each starting kit making a new player's profile that passes the server's
+ * checks. The first problem, or null.
+ */
+export function itemContentProblem(items: ItemDb): string | null {
+  const c = rawContent();
+  try {
+    checkItems(items);
+    checkEnemies(c.enemies, c.loadouts, items);
+    checkLootTables(c.lootTables, items);
+    checkVendors(c.vendors, items);
+    checkQuests(c.quests, c.vendors, items);
+    for (const d of c.doors) {
+      if (items.get(d.key)?.type !== 'key')
+        return `door ${d.id} on ${d.map}: "${d.key}" is not a key item`;
+    }
+    for (const kit of c.kits.values()) {
+      const bad = checkProfile(items, newProfile(items, kit));
+      if (bad) return `content/starting-kits/${kit.id}.json: ${bad}`;
+    }
+  } catch (err) {
+    return err instanceof Error ? err.message : String(err);
+  }
+  return null;
+}
+
+/**
+ * Where the rest of content/ names an item, for the item editor: one line each, like
+ * "loot table household". Items naming it (a gun's ammo, an attachment's guns) come from
+ * the items given, as edited.
+ */
+export function itemUses(id: string, items: ItemDb): string[] {
+  const c = rawContent();
+  const out: string[] = [];
+  for (const def of items.values()) {
+    if (def.type === 'weapon' && def.ammo === id) out.push(`${def.id} fires it`);
+    if (def.type === 'attachment' && def.weapons?.includes(id)) out.push(`${def.id} fits it`);
+  }
+  const kinds: [string, ReadonlyMap<string, unknown>][] = [
+    ['loadout', c.loadouts],
+    ['loot table', c.lootTables],
+    ['vendor', c.vendors],
+    ['quest', c.quests],
+    ['starting kit', c.kits],
+  ];
+  for (const [kind, docs] of kinds) {
+    for (const [docId, doc] of docs) if (names(doc, id)) out.push(`${kind} ${docId}`);
+  }
+  for (const d of c.doors) if (d.key === id) out.push(`door ${d.id} on ${d.map}`);
+  return out;
+}
+
+/** Whether a content doc names an item: as an `item`, or in a starting kit's gear. */
+function names(value: unknown, id: string, key = ''): boolean {
+  if (Array.isArray(value)) return value.some((v) => names(v, id, key));
+  if (value === null || typeof value !== 'object') return key === 'item' && value === id;
+  return Object.entries(value).some(([k, v]) => (key === 'gear' ? v === id : names(v, id, k)));
 }

@@ -26,6 +26,7 @@ import {
   type MapEditor,
   type MarkerKind,
 } from './editor';
+import { HexColour, Num, Pick, Text, Toggle, UNSET } from './fields';
 import { BRUSH_MODES } from './terrain';
 
 /*
@@ -794,15 +795,6 @@ function NewPrefab(props: { editor: MapEditor; close: () => void }) {
   );
 }
 
-function HexColour(props: { label: string; value: string; onChange: (c: string) => void }) {
-  return (
-    <label className="ed-field">
-      {props.label}
-      <input type="color" value={props.value} onChange={(e) => props.onChange(e.target.value)} />
-    </label>
-  );
-}
-
 /** The form for a new map: its id (the file name), name, size and cell size. */
 function NewMap(props: { editor: MapEditor; maps: readonly string[]; close: () => void }) {
   const [id, setId] = useState('');
@@ -862,14 +854,6 @@ function NewMap(props: { editor: MapEditor; maps: readonly string[]; close: () =
         </div>
       </div>
     </div>
-  );
-}
-
-function Toggle(props: { on: boolean; onClick: () => void; title?: string; children: ReactNode }) {
-  return (
-    <button className={props.on ? 'ed-on' : undefined} onClick={props.onClick} title={props.title}>
-      {props.children}
-    </button>
   );
 }
 
@@ -1053,67 +1037,6 @@ function Inspector(props: {
 }
 
 /** A number typed in, applied on Enter or leaving the field. Empty clears an optional one. */
-function Num(props: {
-  label: string;
-  value: number | undefined;
-  min?: number;
-  onChange: (v: number | undefined) => void;
-}) {
-  const shown = props.value === undefined ? '' : String(round(props.value, 1e-3));
-  // Keyed by the value, so a change from elsewhere (the gizmo, undo) starts it afresh.
-  return <NumInput key={shown} shown={shown} {...props} />;
-}
-
-function NumInput(props: {
-  label: string;
-  shown: string;
-  min?: number;
-  onChange: (v: number | undefined) => void;
-}) {
-  const { shown } = props;
-  const [text, setText] = useState(shown);
-  const commit = (): void => {
-    if (text === shown) return;
-    if (text.trim() === '') return props.onChange(undefined);
-    const v = Number(text);
-    if (!Number.isFinite(v) || (props.min !== undefined && v < props.min)) return setText(shown);
-    props.onChange(v);
-  };
-  return (
-    <label className="ed-num">
-      {props.label}
-      <input
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        onBlur={commit}
-        onKeyDown={(e) => e.key === 'Enter' && commit()}
-      />
-    </label>
-  );
-}
-
-function Text(props: { label: string; value: string; onChange: (v: string) => void }) {
-  return <TextInput key={props.value} {...props} />;
-}
-
-function TextInput(props: { label: string; value: string; onChange: (v: string) => void }) {
-  const [text, setText] = useState(props.value);
-  const commit = (): void => {
-    if (text !== props.value) props.onChange(text.trim());
-  };
-  return (
-    <label className="ed-field">
-      {props.label}
-      <input
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        onBlur={commit}
-        onKeyDown={(e) => e.key === 'Enter' && commit()}
-      />
-    </label>
-  );
-}
-
 /**
  * A #rrggbb colour (with a picker) or one of the colour slots of the file it's in. With
  * `unset`, it can also be left out (and shows that label).
@@ -1153,8 +1076,6 @@ function Colour(props: {
   );
 }
 
-const UNSET = '\u0000unset';
-
 /**
  * A placed prefab's colours: each of its slots left at the prefab's colour, or set for this
  * copy (a colour, or a slot of the file it's placed in).
@@ -1192,36 +1113,6 @@ function PlacementColours(props: {
         />
       ))}
     </>
-  );
-}
-
-/** One of a list of ids, or (with `unset`) none, which leaves the field out. */
-function Pick(props: {
-  label: string;
-  value: string | undefined;
-  options: readonly string[];
-  unset?: string;
-  onChange: (v: string | undefined) => void;
-}) {
-  const { value } = props;
-  // One not in the list (a typo in the file) still shows, so it can be seen and changed.
-  const options =
-    value === undefined || props.options.includes(value)
-      ? props.options
-      : [value, ...props.options];
-  return (
-    <label className="ed-field">
-      {props.label}
-      <select
-        value={value ?? UNSET}
-        onChange={(e) => props.onChange(e.target.value === UNSET ? undefined : e.target.value)}
-      >
-        {props.unset !== undefined && <option value={UNSET}>{props.unset}</option>}
-        {options.map((o) => (
-          <option key={o}>{o}</option>
-        ))}
-      </select>
-    </label>
   );
 }
 

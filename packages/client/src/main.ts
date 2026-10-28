@@ -89,6 +89,10 @@ if (location.pathname === '/bodies') {
   import('./editor')
     .then((editor) => editor.startEditor(byId('scene') as HTMLCanvasElement, byId('editor')))
     .catch((err: unknown) => (status.textContent = `editor failed: ${message(err)}`));
+} else if (location.pathname === '/item-editor' && import.meta.env.DEV) {
+  import('./item-editor')
+    .then((editor) => editor.startItemEditor(byId('editor')))
+    .catch((err: unknown) => (status.textContent = `item editor failed: ${message(err)}`));
 } else if (location.pathname === '/play-test' && import.meta.env.DEV) {
   // Opened by the map editor's Play button, with the map as edited.
   import('./play-test')

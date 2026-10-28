@@ -42,7 +42,7 @@ const WOOD = 0x4a3a2c;
 
 /*
  * Placeholder guns and attachments until the item editor builds real models with mount
- * points and sight lines (session 18). Attachments are drawn for a rifle's mounts and moved
+ * points and sight lines (session 18b). Attachments are drawn for a rifle's mounts and moved
  * onto the gun's. Each sight's sightY is the height the eye lines up with when aimed.
  */
 interface GunBase {
