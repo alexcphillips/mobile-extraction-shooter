@@ -20,7 +20,7 @@ import {
   startServerRaid,
   type RaidSnapshot,
 } from './raids';
-import { loadItems, loadRaid, loadVendors, raidIds } from './content';
+import { loadItems, loadQuests, loadRaid, loadVendors, raidIds } from './content';
 import { settings } from './settings';
 
 const byId = (id: string): HTMLElement => {
@@ -184,6 +184,7 @@ async function runGame(q: URLSearchParams): Promise<void> {
       items,
       raids,
       vendors: [...loadVendors().values()],
+      quests: [...loadQuests().values()],
       openSettings: (done) => {
         import('./ui/menu')
           .then((menu) => menu.openSettings(byId('ui'), hud, done))

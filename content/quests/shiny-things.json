@@ -1,0 +1,10 @@
+{
+  "formatVersion": 1,
+  "id": "shiny-things",
+  "name": "Shiny things",
+  "vendor": "quartermaster",
+  "description": "The scavs have been pocketing watches. Bring me a couple and I'll make it worth your while.",
+  "requires": ["radio-silence"],
+  "objectives": [{ "id": "watches", "type": "handOver", "item": "gold-watch", "count": 2 }],
+  "rewards": { "money": 40000, "items": [{ "item": "red-dot" }] }
+}

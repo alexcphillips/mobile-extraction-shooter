@@ -176,8 +176,15 @@ A simplified mobile extraction shooter: the risk/reward loop of Tarkov without i
 ## Quests and vendors
 - **Quest types:**
   - **Investigate:** a marker visible through walls, with a live distance readout. Go to it and tap "Investigate".
-  - **Extract with an item:** a normal item, or a quest item that spawns only while the quest is accepted.
+  - **Extract with an item:** a quest item that spawns only while the quest is accepted.
+  - **Hand over** (session 14): a normal item is handed over **from the stash** between raids, not by extracting with it (the user's call, 2026-10-27), so a gold watch already in the stash counts.
   - More types can be added as data.
+- **Quests between raids (session 14, decided with the user 2026-10-27):**
+  - Each vendor gives a **chain** of quests: a quest lists the ones that must be done first, and opens when they are. A quest with nothing before it is open from the start.
+  - The **Quests** page (from the menu) has a tab per vendor with quests, as cards: what needs handing in first, then active, new and locked ones (dimmed, with what they come after); done ones in one line at the bottom. A vendor's tab shows a count of quests ready to hand in; the menu's button says how many are ready, active and new.
+  - **Accept** takes one tap. **Hand over** takes as many of the item as the objective still needs from the stash pages and the bags in them, never from what you wear or carry, and only plain items (a bag with nothing in it, a gun with nothing fitted); a second tap confirms, since they're gone. Handing over can be done a bit at a time.
+  - Once every objective is done, **Hand in** gives the rewards: money, and items into the stash (the page last shown first). With no room for them nothing happens and it says so, so a reward is never lost.
+  - **Investigating counts even if you die** later in that raid (the user's call, 2026-10-27); a quest item you carried is lost like anything else. Both happen in raids (session 14b).
 - **Vendors** buy and sell, always stock cheap basic gear, give quests, and sell armour repair kits.
 - **Economy (session 13b, decided with the user 2026-10-27):**
   - **Every item has a value** (in its item file). Vendors sell new items for their value and **buy for 50% of it** (`VENDOR.sellShare`), scaled by condition (armour's durability, a med's uses or HP left, a repair kit's points, a key's uses); a gun sells with its attachments and loaded rounds. So selling always loses money and nothing can be bought and sold back for a profit. Items worth 0 (none yet) can't be sold, nor a rig or backpack with anything in it, nor the knife.

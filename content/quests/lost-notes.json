@@ -1,0 +1,10 @@
+{
+  "formatVersion": 1,
+  "id": "lost-notes",
+  "name": "Lost notes",
+  "vendor": "medic",
+  "description": "My patient notes went missing with the last convoy. They'll be somewhere out there. Get them back to me.",
+  "requires": ["field-dressing"],
+  "objectives": [{ "id": "notes", "type": "extract", "item": "patient-notes" }],
+  "rewards": { "money": 25000, "items": [{ "item": "surgery-kit" }] }
+}

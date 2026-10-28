@@ -1,11 +1,10 @@
-import { itemDef, stackSize, type ItemDb } from './content/items';
+import { itemDef, type ItemDb } from './content/items';
 import type { VendorDef, VendorOffer } from './content/vendors';
-import { addItem, removeAt, type Grid, type Item } from './inventory/grid';
+import { removeAt, type Grid, type Item } from './inventory/grid';
 import { PROFILE, type Profile } from './profile';
-import { createItem } from './sim/create-item';
 import type { Gear, GearSlot } from './sim/gear';
 import type { ItemRef } from './sim/looting';
-import { stashGridOf } from './stash';
+import { addToStash, stashGridOf } from './stash';
 
 /*
  * Buying and selling (session 13b, decided with the user 2026-10-27). Every item has a
@@ -91,15 +90,7 @@ export function buyOffer(
   const price = buyPrice(items, offer);
   if (profile.money < price)
     return `that costs ${price.toLocaleString('en')}, and you have ${profile.money.toLocaleString('en')}`;
-  const count = Math.min(offer.count ?? 1, stackSize(itemDef(items, offer.item)));
-  // Into copies of the pages, kept only if all of it fits: a stack can top up others.
-  const pages = JSON.parse(JSON.stringify(profile.stash)) as Grid[];
-  const item = createItem(items, offer.item, count);
-  let left = count;
-  const n = pages.length;
-  for (let i = 0; i < n && left > 0; i++) left = addItem(items, pages[(page + i) % n]!, item);
-  if (left > 0) return 'there is no room in your stash';
-  profile.stash = pages;
+  if (!addToStash(profile, items, [offer], page)) return 'there is no room in your stash';
   profile.money -= price;
   return null;
 }

@@ -3,6 +3,7 @@ import { PROTOCOL_VERSION, TICK_RATE, type HelloResponse } from '@mes/shared';
 import { auth, signedIn, type AppEnv } from './auth';
 import { fail } from './errors';
 import { profiles, settingsRoute, stashRoute } from './profiles';
+import { quests } from './quests';
 import { raids } from './raids';
 import { vendors } from './vendors';
 
@@ -28,6 +29,8 @@ app.use('/raids/*', signedIn);
 app.route('/raids', raids);
 app.use('/vendors/*', signedIn);
 app.route('/vendors', vendors);
+app.use('/quests/*', signedIn);
+app.route('/quests', quests);
 
 app.notFound((c) => fail(c, 'not-found'));
 

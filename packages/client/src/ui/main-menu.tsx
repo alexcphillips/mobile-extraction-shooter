@@ -11,6 +11,7 @@ import {
   type ItemDb,
   type ItemRef,
   type ProfileResponse,
+  type QuestDef,
   type StashState,
   type VendorDef,
 } from '@mes/shared';
@@ -20,6 +21,7 @@ import { AccountError } from '../account';
 import { StashSaver, type StashSaveStatus } from '../stash';
 import { InventoryController } from './inventory-controller';
 import { Inventory } from './raid-screen';
+import { QuestsPage, questsLine } from './quests-page';
 import { VendorsPage } from './vendors-page';
 
 /** A raid the menu can start. */
@@ -35,6 +37,7 @@ export interface MenuOptions {
   items: ItemDb;
   raids: RaidChoice[];
   vendors: VendorDef[];
+  quests: QuestDef[];
   /** Opens the settings screen over the menu; done is called when it closes. */
   openSettings: (done: () => void) => void;
 }
@@ -45,7 +48,7 @@ export interface MenuChoice {
   me: ProfileResponse;
 }
 
-type Page = 'menu' | 'stash' | 'vendors';
+type Page = 'menu' | 'stash' | 'vendors' | 'quests';
 
 /** What you're taking in, for the menu: guns and armour by name. */
 const SHOWN: readonly GearSlot[] = ['primary1', 'primary2', 'sidearm', 'helmet', 'bodyArmour'];
@@ -106,6 +109,54 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
     setNotice(`${what}: ${err.message}`);
   };
 
+  if (page === 'quests') {
+    const progress = (r: ProfileResponse, q: QuestDef, o: string): number => {
+      const s = r.profile.quests[q.id];
+      return s?.status === 'active' ? (s.progress[o] ?? 0) : 0;
+    };
+    return (
+      <QuestsPage
+        vendors={opts.vendors}
+        quests={opts.quests}
+        items={opts.items}
+        me={me}
+        notice={notice}
+        onBack={() => {
+          setNotice(null);
+          setPage('menu');
+        }}
+        onStash={() => {
+          setNotice(null);
+          setPage('stash');
+        }}
+        onAccept={(q) =>
+          saver
+            .acceptQuest(q.id)
+            .then(
+              (r) => reopen(r, startPage, `Accepted ${q.name}.`),
+              refused(`${q.name} wasn't accepted`),
+            )
+        }
+        onHandOver={(q, o) => {
+          const before = progress(me, q, o);
+          return saver.handOver(q.id, o).then((r) => {
+            const def = q.objectives.find((x) => x.id === o);
+            const name =
+              def && def.type === 'handOver' ? itemDef(opts.items, def.item).name : 'items';
+            reopen(r, startPage, `Handed over ${progress(r, q, o) - before} × ${name}.`);
+          }, refused('Nothing was handed over'));
+        }}
+        onComplete={(q) =>
+          saver
+            .completeQuest(q.id, startPage)
+            .then(
+              (r) => reopen(r, startPage, `${q.name} is done. The rewards are in your stash.`),
+              refused(`${q.name} wasn't handed in`),
+            )
+        }
+      />
+    );
+  }
   if (page === 'vendors') {
     return (
       <VendorsPage
@@ -222,8 +273,9 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
             Vendors
             <span>{opts.vendors.map((v) => v.name).join(' · ') || 'None yet'}</span>
           </button>
-          <button disabled>
-            Quests <span>Coming in session 14</span>
+          <button disabled={!opts.quests.length} onClick={() => setPage('quests')}>
+            Quests
+            <span>{questsLine(opts.quests, me)}</span>
           </button>
         </div>
         {notice && <p className="menu-notice">{notice}</p>}

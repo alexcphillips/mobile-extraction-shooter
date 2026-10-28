@@ -2,12 +2,14 @@ import { CollisionWorld, VENDOR, buyPrice } from '@mes/shared';
 import { describe, expect, it } from 'vitest';
 import {
   checkDoorKeys,
+  checkQuestMarkers,
   checkEnemySpawns,
   checkLootContainers,
   loadEnemies,
   loadItems,
   loadLootTables,
   loadMap,
+  loadQuests,
   loadRaid,
   loadVendors,
   mapIds,
@@ -59,6 +61,11 @@ describe('content', () => {
         ).toBeLessThanOrEqual(kit.value / kit.points);
       }
     }
+  });
+
+  it('quests load, and their vendors, items and markers exist', () => {
+    expect(loadQuests().size).toBeGreaterThan(0);
+    expect(() => checkQuestMarkers()).not.toThrow();
   });
 
   it.each(raidIds())('raid %s loads and names a map', (id) => {

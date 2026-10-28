@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "id": "radio-silence",
+  "name": "Radio silence",
+  "vendor": "quartermaster",
+  "description": "Someone's been talking on our channel from somewhere out west. Find the set and tell me what it's tuned to.",
+  "objectives": [
+    {
+      "id": "find-radio",
+      "type": "investigate",
+      "map": "test-map",
+      "marker": "old-radio",
+      "text": "Find the old radio out west"
+    }
+  ],
+  "rewards": { "money": 15000, "items": [{ "item": "ammo-556", "count": 60 }] }
+}

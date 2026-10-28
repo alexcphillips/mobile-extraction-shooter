@@ -1692,3 +1692,129 @@ body:has(#layout-bar) #menu {
   flex: none;
   font-weight: 700;
 }
+
+/* The quests page (session 14): a vendor's quests as cards, in a chain. */
+.quests-badge {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 8px;
+  background: #6cff8a;
+  color: #000;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.quests-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.quests-quest {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #252c32;
+}
+
+.quests-quest.locked {
+  opacity: 0.55;
+}
+
+.quests-quest.ready {
+  box-shadow: inset 0 0 0 2px #6cff8a;
+}
+
+.quests-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.quests-name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.quests-status {
+  font-size: 12px;
+  color: #9aa6b0;
+}
+
+.quests-status.ready,
+.quests-status.available {
+  color: #6cff8a;
+}
+
+.quests-text {
+  margin: 0;
+  color: #9aa6b0;
+}
+
+.quests-objectives {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.quests-objectives li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.quests-objectives li.done {
+  color: #9aa6b0;
+}
+
+.quests-tick {
+  flex: none;
+  width: 16px;
+  text-align: center;
+}
+
+.quests-objectives li.done .quests-tick {
+  color: #6cff8a;
+}
+
+.quests-objective {
+  flex: 1;
+}
+
+.quests-objective span {
+  color: #9aa6b0;
+}
+
+.quests-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quests-rewards {
+  flex: 1;
+  color: #9aa6b0;
+}
+
+.quests-rewards b {
+  color: #e8ecef;
+  font-weight: 600;
+}
+
+.quests button:disabled {
+  opacity: 0.45;
+}
+
+.quests button.confirm {
+  background: #6cff8a;
+  color: #000;
+}

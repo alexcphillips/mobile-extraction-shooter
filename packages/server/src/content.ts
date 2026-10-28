@@ -1,12 +1,15 @@
 import {
   ITEM_FORMAT,
+  QUEST_FORMAT,
   RAID_FORMAT,
   STARTING_KIT_FORMAT,
   VENDOR_FORMAT,
   checkItems,
+  checkQuests,
   checkVendors,
   loadById,
   type ItemDb,
+  type QuestDef,
   type RaidDef,
   type StartingKitDef,
   type VendorDef,
@@ -25,6 +28,7 @@ let items: ItemDb | undefined;
 let raids: Map<string, RaidDef> | undefined;
 let kits: Map<string, StartingKitDef> | undefined;
 let vendors: Map<string, VendorDef> | undefined;
+let quests: Map<string, QuestDef> | undefined;
 
 export function loadItems(): ItemDb {
   if (!items) {
@@ -48,12 +52,26 @@ export function startingKit(id: string): StartingKitDef {
   return kit;
 }
 
-/** A vendor by id, or undefined. Its offers are checked against the items. */
-export function vendorDef(id: string): VendorDef | undefined {
+function loadVendors(): Map<string, VendorDef> {
   if (!vendors) {
     const all = loadById(VENDOR_FORMAT, ofKind('vendors'));
     checkVendors(all, loadItems());
     vendors = all;
   }
-  return vendors.get(id);
+  return vendors;
+}
+
+/** A vendor by id, or undefined. Its offers are checked against the items. */
+export function vendorDef(id: string): VendorDef | undefined {
+  return loadVendors().get(id);
+}
+
+/** A quest by id, or undefined. Quests are checked against the vendors and items. */
+export function questDef(id: string): QuestDef | undefined {
+  if (!quests) {
+    const all = loadById(QUEST_FORMAT, ofKind('quests'));
+    checkQuests(all, loadVendors(), loadItems());
+    quests = all;
+  }
+  return quests.get(id);
 }

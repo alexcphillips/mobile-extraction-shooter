@@ -90,6 +90,24 @@ export interface SellRequest {
   from: ItemRef[];
 }
 
+/**
+ * Quests (session 14), each naming the profile version read: POST /api/quests/:id/accept,
+ * POST /api/quests/:id/hand-over (QuestHandOverRequest: the objective's items from the
+ * stash) and POST /api/quests/:id/complete (QuestCompleteRequest: the rewards into the
+ * stash, page `page` first).
+ */
+export interface QuestRequest {
+  version: number;
+}
+
+export interface QuestHandOverRequest extends QuestRequest {
+  objective: string;
+}
+
+export interface QuestCompleteRequest extends QuestRequest {
+  page?: number;
+}
+
 /** POST /api/raids. Starting a raid while one is open counts that one as missing in action. */
 export interface StartRaidRequest {
   raid: string;

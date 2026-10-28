@@ -8,6 +8,7 @@ import {
   overRepaired,
   loadSettings,
   restGear,
+  sameQuests,
   type Profile,
   type ProfileResponse,
 } from '@mes/shared';
@@ -74,8 +75,8 @@ profiles.get('/', async (c) => c.json(await profileResponse(c.env.DB, c.var.acco
 /**
  * Saves a profile edited between raids (session 13's stash). Sanity limits: well-formed,
  * the same money (only vendors change it, on the server), no item there's more of than
- * before, and no armour mended by more than repair kits spent (13b). Refused while the
- * gear is in a raid.
+ * before, no armour mended by more than repair kits spent (13b), and the same quests
+ * (14). Refused while the gear is in a raid.
  */
 profiles.put('/', async (c) => {
   const raw = await body(c);
@@ -99,6 +100,8 @@ profiles.put('/', async (c) => {
     return fail(c, 'invalid', 'money only changes through vendors');
   if (next.stash.length !== current.profile.stash.length)
     return fail(c, 'invalid', 'stash pages are only added by buying them');
+  if (!sameQuests(current.profile, next))
+    return fail(c, 'invalid', 'quests only change through the quest routes');
   const gained = itemGained(current.profile, next);
   if (gained) return fail(c, 'invalid', `more "${gained}" than before`);
   if (overRepaired(items, current.profile, next))

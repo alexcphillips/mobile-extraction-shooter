@@ -14,6 +14,9 @@ export {
   type RaidOutcome,
   type SaveProfileRequest,
   type SaveSettingsRequest,
+  type QuestCompleteRequest,
+  type QuestHandOverRequest,
+  type QuestRequest,
   type SellRequest,
   type SavedSettings,
   type StartRaidRequest,
@@ -367,8 +370,10 @@ export {
   parseGear,
   restGear,
   type Profile,
+  type QuestState,
 } from './profile';
 export {
+  addToStash,
   applyStash,
   openStash,
   stashGridOf,
@@ -399,3 +404,23 @@ export {
   type VendorOffer,
 } from './content/vendors';
 export { kitUsedUp, repairArmour, repairable } from './sim/repair';
+export {
+  QUEST_FORMAT,
+  QUEST_FORMAT_VERSION,
+  checkQuests,
+  questSchema,
+  type QuestDef,
+  type QuestObjective,
+} from './content/quests';
+export {
+  acceptQuest,
+  completeQuest,
+  handOver,
+  handOverCount,
+  objectiveGoal,
+  objectiveProgress,
+  objectiveText,
+  questStatus,
+  sameQuests,
+  type QuestStatus,
+} from './quests';

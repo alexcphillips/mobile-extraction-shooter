@@ -57,12 +57,22 @@ export const PROFILE = {
   maxMoney: 1_000_000_000,
 } as const;
 
+/**
+ * Where a quest is (session 14), by its id in the profile: accepted, with how far each
+ * objective has got by its id (items handed over, or 1 once done), or done and rewarded.
+ * A quest not in the profile hasn't been accepted.
+ */
+export type QuestState =
+  { status: 'active'; progress: Record<string, number> } | { status: 'done' };
+
 export interface Profile {
-  formatVersion: 2;
+  formatVersion: 3;
   money: number;
   /** The stash's pages, bought with money (at least one). */
   stash: Grid[];
   gear: Gear;
+  /** Only the server changes these (PUT /api/profile refuses it). */
+  quests: Record<string, QuestState>;
 }
 
 const count = z.int().min(0);
@@ -109,14 +119,20 @@ export const gearShape = z.strictObject({
   vault: gridShape.nullable(),
 });
 
+const questStateShape = z.discriminatedUnion('status', [
+  z.strictObject({ status: z.literal('active'), progress: z.record(idSchema, count) }),
+  z.strictObject({ status: z.literal('done') }),
+]);
+
 const profileShape = z.strictObject({
-  formatVersion: z.literal(2),
+  formatVersion: z.literal(3),
   money: count,
   stash: z.array(gridShape).min(1),
   gear: gearShape,
+  quests: z.record(idSchema, questStateShape),
 });
 
-export const PROFILE_FORMAT_VERSION = 2;
+export const PROFILE_FORMAT_VERSION = 3;
 
 export const PROFILE_FORMAT: ContentFormat<Profile> = {
   kind: 'profile',
@@ -126,6 +142,8 @@ export const PROFILE_FORMAT: ContentFormat<Profile> = {
   migrations: {
     // Session 13: the one stash grid became the first of its pages.
     1: (doc) => ({ ...doc, stash: [doc.stash] }),
+    // Session 14: quests.
+    2: (doc) => ({ ...doc, quests: {} }),
   },
 };
 
@@ -160,7 +178,7 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
     if (addItem(items, stash, createItem(items, s.item, s.count ?? 1)) > 0)
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
-  return { formatVersion: 2, money: kit.money, stash: [stash], gear };
+  return { formatVersion: 3, money: kit.money, stash: [stash], gear, quests: {} };
 }
 
 /** What the next stash page costs, or null if there are already as many as there can be. */

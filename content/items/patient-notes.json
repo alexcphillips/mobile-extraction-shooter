@@ -1,0 +1,8 @@
+{
+  "formatVersion": 5,
+  "id": "patient-notes",
+  "name": "Patient notes",
+  "type": "quest",
+  "size": [1, 1],
+  "value": 0
+}

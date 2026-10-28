@@ -6,12 +6,14 @@ import {
   LOOT_TABLE_FORMAT,
   MAP_FORMAT,
   PREFAB_FORMAT,
+  QUEST_FORMAT,
   RAID_FORMAT,
   VENDOR_FORMAT,
   checkEnemies,
   checkEnemyLoot,
   checkItems,
   checkLootTables,
+  checkQuests,
   checkVendors,
   compileMap,
   loadById,
@@ -23,6 +25,7 @@ import {
   type LootTableDef,
   type MapFile,
   type PrefabFile,
+  type QuestDef,
   type RaidDef,
   type VendorDef,
 } from '@mes/shared';
@@ -68,6 +71,11 @@ const vendorFiles = import.meta.glob<unknown>('../../../content/vendors/*.json',
   import: 'default',
 });
 
+const questFiles = import.meta.glob<unknown>('../../../content/quests/*.json', {
+  eager: true,
+  import: 'default',
+});
+
 let prefabs: Map<string, PrefabFile> | undefined;
 let items: ItemDb | undefined;
 let maps: Map<string, MapFile> | undefined;
@@ -76,6 +84,7 @@ let lootContainers: Map<string, LootContainerDef> | undefined;
 let lootTables: Map<string, LootTableDef> | undefined;
 let raids: Map<string, RaidDef> | undefined;
 let vendors: ReadonlyMap<string, VendorDef> | undefined;
+let quests: ReadonlyMap<string, QuestDef> | undefined;
 
 export function mapIds(): string[] {
   maps ??= loadById(MAP_FORMAT, mapFiles);
@@ -196,4 +205,28 @@ export function loadVendors(): ReadonlyMap<string, VendorDef> {
     vendors = all;
   }
   return vendors;
+}
+
+/** Every quest in content/quests, checked against the vendors and items. */
+export function loadQuests(): ReadonlyMap<string, QuestDef> {
+  if (!quests) {
+    const all = loadById(QUEST_FORMAT, questFiles);
+    checkQuests(all, loadVendors(), loadItems());
+    quests = all;
+  }
+  return quests;
+}
+
+/** Checks that every quest's investigate objectives name a quest marker on a map. */
+export function checkQuestMarkers(): void {
+  for (const q of loadQuests().values()) {
+    for (const o of q.objectives) {
+      if (o.type !== 'investigate') continue;
+      if (!mapIds().includes(o.map)) throw new Error(`quest ${q.id}: no map "${o.map}"`);
+      const found = loadMap(o.map).markers.some(
+        (m) => m.type === 'questMarker' && m.id === o.marker,
+      );
+      if (!found) throw new Error(`quest ${q.id}: no quest marker "${o.marker}" on ${o.map}`);
+    }
+  }
 }

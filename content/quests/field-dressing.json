@@ -1,0 +1,9 @@
+{
+  "formatVersion": 1,
+  "id": "field-dressing",
+  "name": "Field dressing",
+  "vendor": "medic",
+  "description": "I'm short on the basics. Bring me a few bandages and I'll show you I can pay better than I sell.",
+  "objectives": [{ "id": "bandages", "type": "handOver", "item": "bandage", "count": 3 }],
+  "rewards": { "money": 3000, "items": [{ "item": "medkit" }] }
+}

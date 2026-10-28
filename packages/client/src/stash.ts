@@ -3,6 +3,9 @@ import type {
   BuyRequest,
   ItemRef,
   ProfileResponse,
+  QuestCompleteRequest,
+  QuestHandOverRequest,
+  QuestRequest,
   SaveProfileRequest,
   SellRequest,
 } from '@mes/shared';
@@ -84,6 +87,29 @@ export class StashSaver {
   /** Sells items from the gear or the stash, all or none (session 13b), like buyPage. */
   sell(from: ItemRef[]): Promise<ProfileResponse> {
     return this.post('/vendors/sell', { version: this.me.version, from } satisfies SellRequest);
+  }
+
+  /** Accepts a quest (session 14), like buyPage. */
+  acceptQuest(quest: string): Promise<ProfileResponse> {
+    return this.post(`/quests/${encodeURIComponent(quest)}/accept`, {
+      version: this.me.version,
+    } satisfies QuestRequest);
+  }
+
+  /** Hands over an objective's items from the stash, like buyPage. */
+  handOver(quest: string, objective: string): Promise<ProfileResponse> {
+    return this.post(`/quests/${encodeURIComponent(quest)}/hand-over`, {
+      version: this.me.version,
+      objective,
+    } satisfies QuestHandOverRequest);
+  }
+
+  /** Claims a finished quest's rewards into the stash, page `page` first, like buyPage. */
+  completeQuest(quest: string, page: number): Promise<ProfileResponse> {
+    return this.post(`/quests/${encodeURIComponent(quest)}/complete`, {
+      version: this.me.version,
+      page,
+    } satisfies QuestCompleteRequest);
   }
 
   /**

@@ -1,4 +1,4 @@
-import type { ItemDb } from './content/items';
+import { itemDef, stackSize, type ItemDb } from './content/items';
 import { addItem, removeAt, type Grid, type Item } from './inventory/grid';
 import type { Profile } from './profile';
 import type { GearSlot } from './sim/gear';
@@ -10,6 +10,7 @@ import {
   type ItemRef,
   type Owner,
 } from './sim/looting';
+import { createItem } from './sim/create-item';
 import { createState, type Character, type SimState } from './sim/state';
 import { createHealth } from './sim/health';
 import { MOVEMENT } from './sim/movement';
@@ -115,6 +116,34 @@ export function stashGridOf(profile: Profile, ref: GridRef): Grid | null {
     default:
       return null;
   }
+}
+
+/**
+ * Puts new items into the stash, page `page` first, then the others, all or none: a
+ * vendor's offer (13b) or a quest's rewards (14). Each stack is a whole number of items
+ * up to its stack size. Returns whether it all fitted; if not, nothing changes.
+ */
+export function addToStash(
+  profile: Profile,
+  items: ItemDb,
+  stacks: readonly { item: string; count?: number | undefined }[],
+  page = 0,
+): boolean {
+  // Into copies of the pages, kept only if all of it fits: a stack can top up others.
+  const pages = JSON.parse(JSON.stringify(profile.stash)) as Grid[];
+  const n = pages.length;
+  for (const s of stacks) {
+    const item = createItem(
+      items,
+      s.item,
+      Math.min(s.count ?? 1, stackSize(itemDef(items, s.item))),
+    );
+    let left = item.count;
+    for (let i = 0; i < n && left > 0; i++) left = addItem(items, pages[(page + i) % n]!, item);
+    if (left > 0) return false;
+  }
+  profile.stash = pages;
+  return true;
 }
 
 /**

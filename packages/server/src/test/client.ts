@@ -1,4 +1,4 @@
-import type { ApiError, ProfileResponse } from '@mes/shared';
+import type { ApiError, Profile, ProfileResponse } from '@mes/shared';
 import type { Env } from '../env';
 import { app } from '../index';
 
@@ -43,11 +43,16 @@ export class TestClient {
   }
 
   /** Sets the (only) account's money, straight in the database. */
-  async setMoney(money: number) {
+  setMoney(money: number) {
+    return this.editProfile((p) => (p.money = money));
+  }
+
+  /** Changes the (only) account's stored profile, straight in the database. */
+  async editProfile(fn: (p: Profile) => void) {
     const db = this.env.DB;
     const row = await db.prepare('SELECT data FROM profiles').first<{ data: string }>();
-    const p = JSON.parse(row!.data) as { money: number };
-    p.money = money;
+    const p = JSON.parse(row!.data) as Profile;
+    fn(p);
     await db.prepare('UPDATE profiles SET data = ?').bind(JSON.stringify(p)).run();
   }
 
