@@ -356,6 +356,21 @@ export const prefabSchema = z.strictObject({
   instanced: z.boolean().optional(),
   /** Default colours for the slots its nodes use; each placement can override them. */
   colours: slotsSchema.optional(),
+  /**
+   * Makes it a building (session 16): placed on a slope, a concrete base fills the gap
+   * under its footprint down to the ground, and the editor won't let two buildings'
+   * footprints overlap. The floor stands at the prefab's y = 0.
+   */
+  building: z
+    .strictObject({
+      /** Width (x) and depth (z) of the footprint. */
+      size: z.tuple([positive, positive]),
+      /** x, z of the footprint's middle. Defaults to [0, 0]. */
+      centre: vec2.optional(),
+      /** The base's colour, a hex colour or one of the prefab's slots. Defaults to concrete. */
+      colour: colourRefSchema.optional(),
+    })
+    .optional(),
   nodes: nodesSchema,
 });
 

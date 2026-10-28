@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { TriangleBuilder } from './geometry';
 import { bakedMaterial, shadedMaterial } from './material';
 
-const CHUNK = 32;
+export const CHUNK = 32;
 
 /** How long a door's swing takes to draw, in seconds. The sim snaps it at once. */
 const SWING = 0.2;

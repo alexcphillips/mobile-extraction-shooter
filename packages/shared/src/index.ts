@@ -286,6 +286,7 @@ export {
   MAP_FORMAT_VERSION,
   PREFAB_FORMAT,
   PREFAB_FORMAT_VERSION,
+  idSchema,
   mapSchema,
   nodeSchema,
   prefabSchema,
@@ -347,6 +348,9 @@ export {
 export {
   compileMap,
   compileNodes,
+  concreteBase,
+  groundUnder,
+  type CompiledBuilding,
   type CompiledDoor,
   type CompiledMap,
   type CompiledMarker,

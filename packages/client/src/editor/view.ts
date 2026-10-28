@@ -1,9 +1,12 @@
 import {
   HeightGrid,
   compileNodes,
+  concreteBase,
+  type CompiledBuilding,
   type CompiledMap,
   type MapFile,
   type MapNode,
+  type PrefabFile,
   type PrefabLookup,
 } from '@mes/shared';
 import * as THREE from 'three';
@@ -11,15 +14,21 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import { buildDebug } from '../render/debug';
 import { TriangleBuilder } from '../render/geometry';
-import { buildChunks, buildDoor } from '../render/map';
-import { shadedMaterial } from '../render/material';
+import { CHUNK, buildDoor } from '../render/map';
+import { bakedMaterial, shadedMaterial } from '../render/material';
 import { nodePos, nodeYaw, type NodePath, type Vec3 } from './doc';
+import { footprintsOverlap } from './overlap';
+import { applyBrush, terrainGrid, type Brush, type TerrainGrid } from './terrain';
 
 const DEG = Math.PI / 180;
 const SELECTED = 0xffd400;
 const ACTIVE = 0xff8c00;
 const SCOPE = 0x36d1dc;
+/** The outline of a prefab being edited inside: what changes there changes every copy. */
+const PREFAB_SCOPE = 0xc77dff;
 const BROKEN = 0xff00ff;
+const WARNING = 0xff2a2a;
+const BRUSH = 0xffffff;
 /** How far the drop looks up for a surface to land on, so things climb kerbs and slopes. */
 const DROP_REACH = 0.3;
 
@@ -47,11 +56,14 @@ export interface ViewEvents {
   moved(moves: Moved[]): void;
   /** A node failed to build (an unknown colour slot or prefab, say). */
   broken(message: string): void;
+  /** A brush stroke ended, with the terrain's corner heights as they now are. */
+  terrain(heights: Float64Array): void;
 }
 
 /**
  * The map editor's scene. Each node is its own object at its pos and yaw (a group's holds
- * its nodes' objects), so it can be picked and moved; nothing is merged as it is in play.
+ * its nodes' objects, and so does a placed prefab's while it's being edited inside), so it
+ * can be picked and moved; nothing is merged as it is in play.
  */
 export class EditorView {
   readonly renderer: THREE.WebGLRenderer;
@@ -64,7 +76,27 @@ export class EditorView {
   private root = new THREE.Group();
   private readonly helpers = new THREE.Group();
   private readonly material = shadedMaterial();
-  private readonly terrain: HeightGrid;
+  private prefabs: PrefabLookup = new Map();
+  private readonly baked = bakedMaterial();
+  private terrain: HeightGrid;
+  /** The terrain as edited, and its meshes by chunk. */
+  private grid: TerrainGrid | null = null;
+  private terrainColour = 0;
+  private chunks: THREE.Mesh[] = [];
+  private chunkCells = 1;
+  /** What the ground was built from, to rebuild it only when it changes. */
+  private groundKey = '';
+  private readonly bases = new THREE.Group();
+  /** Paths (joined with dots) of what overlaps something. */
+  private warnings: string[] = [];
+  /** The brush while the terrain tool is on, its ring, and the stroke being made. */
+  private brushSettings: Brush | null = null;
+  private readonly ring = new THREE.LineLoop(
+    new THREE.BufferGeometry(),
+    new THREE.LineBasicMaterial({ color: BRUSH, depthTest: false, transparent: true }),
+  );
+  private stroke: { x: number; z: number; level: number; shift: boolean } | null = null;
+  private pointer: { clientX: number; clientY: number } | null = null;
   /** The object of each node, by its path joined with dots. */
   private objects = new Map<string, THREE.Object3D>();
   private scope: NodePath = [];
@@ -75,6 +107,8 @@ export class EditorView {
     start: THREE.Vector3;
     objects: { index: number; object: THREE.Object3D; pos: THREE.Vector3; yaw: number }[];
     exclude: Set<THREE.Object3D>;
+    moving: Set<THREE.Object3D>;
+    still: CompiledBuilding[];
   } | null = null;
   private down: { x: number; y: number } | null = null;
   options: ViewOptions = { gridSnap: 0.5, angleSnap: 15, snapDown: true };
@@ -82,39 +116,14 @@ export class EditorView {
   constructor(
     private readonly canvas: HTMLCanvasElement,
     compiled: CompiledMap,
-    private readonly prefabs: PrefabLookup,
     private readonly events: ViewEvents,
   ) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    this.scene.background = new THREE.Color(compiled.environment.sky);
     this.terrain = new HeightGrid(compiled.world.terrain);
-
-    this.ground.add(buildChunks(compiled.world.terrain, compiled.terrainColour, []));
-    if (compiled.water) {
-      const t = compiled.world.terrain;
-      const water = new THREE.Mesh(
-        new THREE.PlaneGeometry(t.cols * t.cellSize, t.rows * t.cellSize).rotateX(-Math.PI / 2),
-        new THREE.MeshBasicMaterial({
-          color: compiled.water.colour,
-          transparent: true,
-          opacity: compiled.water.opacity,
-          depthWrite: false,
-        }),
-      );
-      water.position.set(
-        t.minX + (t.cols * t.cellSize) / 2,
-        compiled.water.level,
-        t.minZ + (t.rows * t.cellSize) / 2,
-      );
-      // Not a surface to land on.
-      water.raycast = () => {};
-      this.ground.add(water);
-    }
-    const zones = buildDebug({ markers: [], patrols: [], zones: compiled.zones }, this.terrain);
-    zones.traverse((o) => (o.raycast = () => {}));
-    this.ground.add(zones);
-    this.scene.add(this.ground, this.root, this.helpers);
+    this.ring.renderOrder = 10;
+    this.ring.visible = false;
+    this.scene.add(this.ground, this.root, this.bases, this.helpers, this.ring);
 
     const t = compiled.world.terrain;
     const cx = t.minX + (t.cols * t.cellSize) / 2;
@@ -156,11 +165,21 @@ export class EditorView {
     this.scene.add(this.gizmo.getHelper());
 
     canvas.addEventListener('pointerdown', (e) => {
+      if (e.button === 0 && !e.altKey && this.brushSettings) return this.startStroke(e);
       // A press on the gizmo (it lights up an axis on hover) is a drag, not a click.
       // An Option-drag moves the camera.
       if (e.button === 0 && this.gizmo.axis === null && !e.altKey)
         this.down = { x: e.clientX, y: e.clientY };
     });
+    canvas.addEventListener('pointermove', (e) => {
+      this.pointer = { clientX: e.clientX, clientY: e.clientY };
+      if (this.stroke) this.stroke.shift = e.shiftKey;
+      this.moveRing();
+    });
+    canvas.addEventListener('pointerleave', () => {
+      if (!this.stroke) this.ring.visible = false;
+    });
+    window.addEventListener('pointerup', () => this.endStroke());
     canvas.addEventListener('pointerup', (e) => {
       const d = this.down;
       this.down = null;
@@ -181,7 +200,9 @@ export class EditorView {
 
     let last = performance.now();
     const frame = (now: number): void => {
-      this.fly(Math.min(0.1, (now - last) / 1000));
+      const dt = Math.min(0.1, (now - last) / 1000);
+      this.fly(dt);
+      this.brushFrame(dt);
       last = now;
       for (const h of this.helpers.children) (h as THREE.BoxHelper).update?.();
       this.renderer.render(this.scene, this.camera);
@@ -264,35 +285,225 @@ export class EditorView {
     this.orbit.target.add(move);
   }
 
-  /** Builds every node's object again, keeping the camera. */
-  build(map: MapFile, scope: NodePath, selected: readonly number[]): void {
+  /**
+   * Builds every node's object again (and the ground if it changed), keeping the camera. A
+   * placed prefab the scope goes into is built part by part.
+   */
+  build(map: MapFile, prefabs: PrefabLookup, scope: NodePath, selected: readonly number[]): void {
+    this.prefabs = prefabs;
+    const key = JSON.stringify([map.terrain, map.water, map.environment.sky, map.zones]);
+    if (key !== this.groundKey) {
+      this.groundKey = key;
+      this.buildGround(map);
+    }
     this.gizmo.detach();
     this.scene.remove(this.root);
     dispose(this.root, this.material);
     this.root = new THREE.Group();
     this.objects = new Map();
     const problems: string[] = [];
-    const add = (nodes: readonly MapNode[], parent: THREE.Object3D, path: number[]): void => {
+    const add = (
+      nodes: readonly MapNode[],
+      parent: THREE.Object3D,
+      path: number[],
+      colours: Readonly<Record<string, string>>,
+    ): void => {
       nodes.forEach((n, i) => {
         const p = [...path, i];
-        const o = this.nodeObject(n, map.colours ?? {}, problems);
+        const prefab = n.type === 'prefab' ? prefabs.get(n.prefab) : undefined;
+        const open = !!prefab && p.length <= scope.length && p.every((v, k) => scope[k] === v);
+        const o = this.nodeObject(n, colours, problems, open);
         o.userData.path = p;
         parent.add(o);
         this.objects.set(p.join('.'), o);
-        if (n.type === 'group') add(n.nodes, o, p);
+        if (n.type === 'group') add(n.nodes, o, p, colours);
+        else if (open && prefab && n.type === 'prefab') {
+          o.userData.prefab = true;
+          add(prefab.nodes, o, p, placementColours(prefab, n, colours));
+        }
       });
     };
-    add(map.nodes, this.root, []);
+    add(map.nodes, this.root, [], map.colours ?? {});
     this.scene.add(this.root);
     this.root.updateMatrixWorld(true);
+    this.buildBases();
     if (problems.length) this.events.broken(problems[0]!);
     this.setSelection(scope, selected);
   }
 
+  /** The terrain by chunk, water and zones, and the sky. */
+  private buildGround(map: MapFile): void {
+    this.scene.background = new THREE.Color(hex(map.environment.sky));
+    dispose(this.ground, this.material);
+    this.ground.clear();
+    const t = terrainGrid(map);
+    this.grid = t;
+    this.terrain = new HeightGrid(t);
+    this.terrainColour = hex(map.terrain.colour);
+    this.chunkCells = Math.max(1, Math.round(CHUNK / t.cellSize));
+    const nx = Math.ceil(t.cols / this.chunkCells);
+    const nz = Math.ceil(t.rows / this.chunkCells);
+    this.chunks = [];
+    for (let k = 0; k < nx * nz; k++) {
+      const mesh = new THREE.Mesh(new THREE.BufferGeometry(), this.baked);
+      this.chunks.push(mesh);
+      this.ground.add(mesh);
+      this.buildChunk(k);
+    }
+    if (map.water) {
+      const water = new THREE.Mesh(
+        new THREE.PlaneGeometry(t.cols * t.cellSize, t.rows * t.cellSize).rotateX(-Math.PI / 2),
+        new THREE.MeshBasicMaterial({
+          color: hex(map.water.colour),
+          transparent: true,
+          opacity: map.water.opacity,
+          depthWrite: false,
+        }),
+      );
+      water.position.set(
+        t.minX + (t.cols * t.cellSize) / 2,
+        map.water.level,
+        t.minZ + (t.rows * t.cellSize) / 2,
+      );
+      // Not a surface to land on.
+      water.raycast = () => {};
+      this.ground.add(water);
+    }
+    const zones = buildDebug({ markers: [], patrols: [], zones: map.zones }, this.terrain);
+    zones.traverse((o) => (o.raycast = () => {}));
+    this.ground.add(zones);
+  }
+
+  private buildChunk(k: number): void {
+    const t = this.grid!;
+    const n = this.chunkCells;
+    const nx = Math.ceil(t.cols / n);
+    const i0 = (k % nx) * n;
+    const j0 = Math.floor(k / nx) * n;
+    const b = new TriangleBuilder(true);
+    b.terrain(t, i0, Math.min(t.cols, i0 + n), j0, Math.min(t.rows, j0 + n), this.terrainColour);
+    const mesh = this.chunks[k]!;
+    mesh.geometry.dispose();
+    mesh.geometry = b.build();
+  }
+
+  /** The concrete bases under buildings, as the game makes them. */
+  private buildBases(only?: ReadonlySet<THREE.Object3D>): void {
+    for (const m of [...this.bases.children]) {
+      if (only && !only.has(m.userData.owner as THREE.Object3D)) continue;
+      (m as THREE.Mesh).geometry.dispose();
+      this.bases.remove(m);
+    }
+    const objects = only ?? new Set(this.objects.values());
+    for (const o of objects) {
+      for (const b of worldBuildings(o)) {
+        const base = concreteBase(this.terrain, b);
+        if (!base) continue;
+        const tb = new TriangleBuilder(false);
+        tb.shape(base);
+        const mesh = new THREE.Mesh(tb.build(), this.material);
+        mesh.userData.owner = o;
+        this.bases.add(mesh);
+      }
+    }
+  }
+
+  /** Outlines what overlaps something in red. */
+  setWarnings(paths: readonly NodePath[]): void {
+    this.warnings = paths.map((p) => p.join('.'));
+    this.setSelection(this.scope, this.selected);
+  }
+
+  /** The size of what's selected along x, in metres. */
+  selectionWidth(): number {
+    const box = new THREE.Box3();
+    for (const i of this.selected) {
+      const o = this.objectOf(i);
+      if (o) box.expandByObject(o);
+    }
+    return box.isEmpty() ? 0 : box.max.x - box.min.x;
+  }
+
+  // Terrain brushes
+
+  /** Turns the terrain brush on (with these settings) or off. */
+  set brush(brush: Brush | null) {
+    this.brushSettings = brush;
+    if (!brush) this.ring.visible = false;
+    else this.moveRing();
+  }
+
+  private groundUnder(e: { clientX: number; clientY: number }): THREE.Vector3 | null {
+    this.aim(e);
+    return this.raycaster.intersectObjects(this.chunks, false)[0]?.point ?? null;
+  }
+
+  private startStroke(e: PointerEvent): void {
+    const p = this.groundUnder(e);
+    if (!p || !this.grid) return;
+    this.pointer = e;
+    this.stroke = { x: p.x, z: p.z, level: this.terrain.heightAt(p.x, p.z), shift: e.shiftKey };
+  }
+
+  private brushFrame(dt: number): void {
+    const s = this.stroke;
+    const brush = this.brushSettings;
+    if (!s || !brush || !this.grid || !this.pointer) return;
+    const p = this.groundUnder(this.pointer);
+    if (p) [s.x, s.z] = [p.x, p.z];
+    // Shift turns raising into lowering and back.
+    const mode =
+      s.shift && brush.mode === 'raise'
+        ? 'lower'
+        : s.shift && brush.mode === 'lower'
+          ? 'raise'
+          : brush.mode;
+    const changed = applyBrush(this.grid, { ...brush, mode }, s.x, s.z, dt, s.level);
+    if (!changed) return;
+    this.terrain = new HeightGrid(this.grid);
+    const [i0, i1, j0, j1] = changed;
+    const n = this.chunkCells;
+    const nx = Math.ceil(this.grid.cols / n);
+    // Corners on a chunk's edge belong to the chunks either side.
+    const cx0 = Math.max(0, Math.floor((i0 - 1) / n));
+    const cz0 = Math.max(0, Math.floor((j0 - 1) / n));
+    const cx1 = Math.min(nx - 1, Math.floor(i1 / n));
+    const cz1 = Math.min(this.chunks.length / nx - 1, Math.floor(j1 / n));
+    for (let cz = cz0; cz <= cz1; cz++)
+      for (let cx = cx0; cx <= cx1; cx++) this.buildChunk(cz * nx + cx);
+    this.buildBases();
+    this.moveRing();
+  }
+
+  private endStroke(): void {
+    if (!this.stroke || !this.grid) return;
+    this.stroke = null;
+    this.events.terrain(this.grid.heights.slice());
+  }
+
+  /** The brush's ring on the ground under the mouse. */
+  private moveRing(): void {
+    const brush = this.brushSettings;
+    const p = brush && this.pointer && this.groundUnder(this.pointer);
+    this.ring.visible = !!p;
+    if (!p || !brush) return;
+    const points: THREE.Vector3[] = [];
+    for (let k = 0; k < 48; k++) {
+      const a = (k / 48) * Math.PI * 2;
+      const x = p.x + Math.cos(a) * brush.radius;
+      const z = p.z + Math.sin(a) * brush.radius;
+      points.push(new THREE.Vector3(x, this.terrain.heightAt(x, z) + 0.1, z));
+    }
+    this.ring.geometry.dispose();
+    this.ring.geometry = new THREE.BufferGeometry().setFromPoints(points);
+  }
+
+  /** A node's object; for a prefab being edited inside (`open`), only its frame and base. */
   private nodeObject(
     n: MapNode,
     colours: Readonly<Record<string, string>>,
     problems: string[],
+    open = false,
   ): THREE.Object3D {
     const o = new THREE.Group();
     const [x, y, z] = nodePos(n);
@@ -313,6 +524,9 @@ export class EditorView {
     }
     try {
       const out = compileNodes([local], this.prefabs, colours);
+      if (out.buildings.length) o.userData.buildings = out.buildings;
+      // Its parts are built one by one as the nodes they are.
+      if (open) return o;
       if (out.shapes.length) {
         const b = new TriangleBuilder(false);
         for (const s of out.shapes) b.shape(s);
@@ -352,11 +566,21 @@ export class EditorView {
     this.selected = [...selected];
     for (const h of this.helpers.children) (h as THREE.BoxHelper).dispose?.();
     this.helpers.clear();
-    if (scope.length) this.helpers.add(new THREE.BoxHelper(this.scopeObject(), SCOPE));
+    if (scope.length) {
+      const o = this.scopeObject();
+      this.helpers.add(new THREE.BoxHelper(o, o.userData.prefab ? PREFAB_SCOPE : SCOPE));
+    }
+    for (const w of this.warnings) {
+      const o = this.objects.get(w);
+      if (o) this.helpers.add(new THREE.BoxHelper(o, WARNING));
+    }
     selected.forEach((i, k) => {
       const o = this.objectOf(i);
-      if (o)
-        this.helpers.add(new THREE.BoxHelper(o, k === selected.length - 1 ? ACTIVE : SELECTED));
+      if (!o) return;
+      const colour = k === selected.length - 1 ? ACTIVE : SELECTED;
+      const box = new THREE.BoxHelper(o, colour);
+      box.userData.selection = colour;
+      this.helpers.add(box);
     });
     this.attachGizmo();
   }
@@ -398,7 +622,15 @@ export class EditorView {
     });
     const exclude = new Set<THREE.Object3D>();
     for (const { object } of objects) object.traverse((c) => exclude.add(c));
-    this.drag = { start: this.pivot.position.clone(), objects, exclude };
+    // Buildings that move with the drag, and the footprints of those that don't.
+    const moving = new Set<THREE.Object3D>();
+    const still: CompiledBuilding[] = [];
+    for (const o of this.objects.values()) {
+      if (!o.userData.buildings) continue;
+      if (exclude.has(o)) moving.add(o);
+      else still.push(...worldBuildings(o));
+    }
+    this.drag = { start: this.pivot.position.clone(), objects, exclude, moving, still };
   }
 
   /** Snaps the pivot, then moves the selection with it, dropping it onto surfaces. */
@@ -432,6 +664,20 @@ export class EditorView {
       o.object.rotation.y = o.yaw + yaw;
       if (drop) o.object.position.y = this.dropY(scope, o.object.position, d.exclude);
       o.object.updateMatrixWorld();
+    }
+    if (d.moving.size) {
+      this.buildBases(d.moving);
+      // Buildings can't overlap: show it now; the editor refuses the move at the end.
+      const clash = [...d.moving].some((o) =>
+        worldBuildings(o).some((b) => d.still.some((s) => footprintsOverlap(b, s))),
+      );
+      for (const h of this.helpers.children) {
+        const box = h as THREE.BoxHelper;
+        if (box.userData.selection)
+          (box.material as THREE.LineBasicMaterial).color.set(
+            clash ? WARNING : box.userData.selection,
+          );
+      }
     }
   }
 
@@ -540,6 +786,41 @@ const UP = new THREE.Vector3(0, 1, 0);
 const DOWN = new THREE.Vector3(0, -1, 0);
 
 const surface = (o: THREE.Object3D): boolean => o.type === 'Mesh' && !o.userData.marker;
+
+const hex = (colour: string): number => parseInt(colour.slice(1), 16);
+
+/**
+ * The hex colour of each slot of a placed prefab: its overrides (a hex colour, or a slot of
+ * the enclosing file's, `outer`) over the prefab's own.
+ */
+function placementColours(
+  prefab: PrefabFile,
+  n: Extract<MapNode, { type: 'prefab' }>,
+  outer: Readonly<Record<string, string>>,
+): Record<string, string> {
+  const out: Record<string, string> = { ...prefab.colours };
+  for (const [slot, ref] of Object.entries(n.colours ?? {})) {
+    const c = ref.startsWith('#') ? ref : outer[ref];
+    if (c !== undefined) out[slot] = c;
+  }
+  return out;
+}
+
+const AXIS_X = new THREE.Vector3();
+const AT = new THREE.Vector3();
+
+/** An object's buildings (kept in its own frame by nodeObject) in world space. */
+function worldBuildings(o: THREE.Object3D): CompiledBuilding[] {
+  const local = o.userData.buildings as CompiledBuilding[] | undefined;
+  if (!local) return [];
+  // Local +x is (cos yaw, −sin yaw) in the world.
+  AXIS_X.set(1, 0, 0).transformDirection(o.matrixWorld);
+  const turn = Math.atan2(-AXIS_X.z, AXIS_X.x);
+  return local.map((b) => {
+    AT.set(b.x, b.y, b.z).applyMatrix4(o.matrixWorld);
+    return { ...b, x: AT.x, y: AT.y, z: AT.z, yaw: b.yaw + turn };
+  });
+}
 
 const snap = (v: number, step: number): number => Math.round(v / step) * step;
 

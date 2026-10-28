@@ -1,16 +1,20 @@
-import { compileMap, type MapFile, type MapNode } from '@mes/shared';
+import { compileMap, type MapFile, type MapNode, type PrefabFile } from '@mes/shared';
 import { describe, expect, it } from 'vitest';
 import {
   collectIds,
   copyNode,
+  countPlacements,
   groupNodes,
+  makePrefab,
   moveWith,
   nodeAt,
   nodesAt,
   placeNode,
+  scopePrefabs,
   toLocal,
   toParent,
   ungroup,
+  unpackPrefab,
   uniqueId,
 } from './doc';
 
@@ -41,11 +45,12 @@ const box = (x: number, z: number, yaw?: number): MapNode => ({
 });
 
 /** Where everything ends up in the world, which grouping must not change. */
-const world = (m: MapFile) => {
-  const c = compileMap(m, new Map());
+const world = (m: MapFile, prefabs: ReadonlyMap<string, PrefabFile> = new Map()) => {
+  const c = compileMap(m, prefabs);
   const r = (n: number) => Math.round(n * 1000) / 1000;
   return {
     boxes: c.world.boxes.map((b) => [r(b.x), r(b.y), r(b.z), r(b.yaw)]),
+    colours: c.shapes.map((s) => s.colour),
     markers: c.markers.map((k) => [k.id, r(k.x), r(k.z), r(k.yaw)]),
     patrols: c.patrols.map((p) => p.points.map((q) => [r(q.x), r(q.z)])),
   };
@@ -134,5 +139,117 @@ describe('map editing', () => {
     const b = box(2, 0, 10);
     moveWith(b, [0, 0, 0], [0, 1, 0], 90);
     expect(b).toMatchObject({ pos: [0, 1, -2], yaw: 100 });
+  });
+});
+
+describe('prefabs in the editor', () => {
+  const shed: PrefabFile = {
+    formatVersion: 3,
+    id: 'shed',
+    colours: { walls: '#aa0000', roof: '#00aa00' },
+    building: { size: [2, 2] },
+    nodes: [
+      { type: 'box', pos: [0, 0, 0], size: [2, 2, 2], colour: 'walls' },
+      { type: 'box', pos: [0, 2, 0], size: [2, 0.2, 2], colour: 'roof' },
+      { type: 'lootSpawn', id: 'shelf', pos: [0, 1, 0], lootTable: 'household' },
+    ],
+  };
+
+  it('makes a prefab of what is selected, leaving the world as it was', () => {
+    const m = map([
+      box(-5, 0),
+      { type: 'box', pos: [4, 0, 2], yaw: 30, size: [1, 2, 1], colour: 'paint' },
+      { type: 'box', pos: [6, 1, 2], size: [1, 1, 1], colour: '#123456' },
+      { type: 'questMarker', id: 'radio', pos: [5, 1, 3] },
+    ]);
+    m.colours = { paint: '#336699', unused: '#000000' };
+    const before = world(m);
+    const taken = collectIds(m.nodes);
+    const { prefab, index } = makePrefab(m.nodes, [3, 1, 2], 'well', 'Well', m.colours, taken);
+    expect(index).toBe(1);
+    // Only the slots it uses come along, and the placement passes the map's on.
+    expect(prefab).toMatchObject({ id: 'well', name: 'Well', colours: { paint: '#336699' } });
+    expect(prefab.nodes).toHaveLength(3);
+    expect(m.nodes[1]).toEqual({
+      type: 'prefab',
+      id: 'well',
+      prefab: 'well',
+      pos: [5, 0, 2.333],
+      colours: { paint: 'paint' },
+    });
+    const prefabs = new Map([['well', prefab]]);
+    const after = world(m, prefabs);
+    expect(after.boxes).toEqual(before.boxes);
+    expect(after.colours).toEqual(before.colours);
+    // Ids inside a prefab come out under the placement's.
+    expect(after.markers).toEqual([['well/radio', 5, 3, 0]]);
+    expect(before.markers).toEqual([['radio', 5, 3, 0]]);
+  });
+
+  it('gives a placement no id when nothing in it has one', () => {
+    const m = map([box(0, 0), box(2, 0)]);
+    makePrefab(m.nodes, [0, 1], 'pair', '', {}, new Set());
+    expect(m.nodes).toEqual([{ type: 'prefab', prefab: 'pair', pos: [1, 0, 0] }]);
+  });
+
+  it('unpacks a placement into a group, colours and all, with ids made unique', () => {
+    const m = map([
+      { type: 'questMarker', id: 'shelf', pos: [20, 0, 20] },
+      {
+        type: 'prefab',
+        id: 'shed-a',
+        prefab: 'shed',
+        pos: [10, 0, 5],
+        yaw: 90,
+        colours: { walls: '#0000ff' },
+      },
+    ]);
+    const prefabs = new Map([['shed', shed]]);
+    const before = world(m, prefabs);
+    unpackPrefab(m.nodes, 1, shed, collectIds(m.nodes));
+    expect(m.nodes[1]).toMatchObject({ type: 'group', name: 'shed-a', pos: [10, 0, 5], yaw: 90 });
+    const g = m.nodes[1] as Extract<MapNode, { type: 'group' }>;
+    expect(g.nodes).toMatchObject([
+      { colour: '#0000ff' },
+      { colour: '#00aa00' },
+      { id: 'shelf-2' },
+    ]);
+    const after = world(m, new Map());
+    // The same boxes, less the concrete base (a group isn't a building).
+    expect(after.boxes).toEqual(before.boxes.slice(0, 2));
+    expect(after.colours).toEqual(before.colours.slice(0, after.colours.length));
+    // The prefab itself is left as it was.
+    expect(shed.nodes[0]).toMatchObject({ colour: 'walls' });
+  });
+
+  it('finds nodes inside placed prefabs, and counts the copies', () => {
+    const yard: PrefabFile = {
+      formatVersion: 3,
+      id: 'yard',
+      nodes: [box(0, 0), { type: 'prefab', prefab: 'shed', pos: [3, 0, 0] }],
+    };
+    const prefabs = new Map([
+      ['shed', shed],
+      ['yard', yard],
+    ]);
+    const m = map([
+      { type: 'prefab', prefab: 'yard', pos: [0, 0, 0] },
+      {
+        type: 'group',
+        pos: [0, 0, 0],
+        nodes: [{ type: 'prefab', prefab: 'shed', pos: [9, 0, 9] }],
+      },
+    ]);
+    expect(nodesAt(m, [0], prefabs)).toBe(yard.nodes);
+    expect(nodesAt(m, [0, 1], prefabs)).toBe(shed.nodes);
+    expect(nodeAt(m, [0, 1, 2], prefabs)).toMatchObject({ id: 'shelf' });
+    // Without the prefabs, a path only goes through groups.
+    expect(() => nodesAt(m, [0])).toThrow();
+    expect(scopePrefabs(m, [0, 1], prefabs).map((s) => [s.prefab.id, s.path])).toEqual([
+      ['yard', [0]],
+      ['shed', [0, 1]],
+    ]);
+    expect(countPlacements(m.nodes, 'shed', prefabs)).toBe(2);
+    expect(countPlacements(m.nodes, 'yard', prefabs)).toBe(1);
   });
 });

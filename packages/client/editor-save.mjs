@@ -1,7 +1,10 @@
 // The map editor (session 15) saves content files through the dev server, so only `vite`
 // on the Mac can write them; a build has no such endpoint. POST /__editor/save with
-// { file: "maps/<id>.json", doc } writes the doc formatted by Prettier, as `npm run format`
-// would, laid out like the hand-written files (see `layout`). The editor checks the doc first; this only checks it's a map or prefab file.
+// { files: [{ file: "maps/<id>.json", doc }, …] } writes each doc formatted by Prettier, as
+// `npm run format` would, laid out like the hand-written files (see `layout`). With
+// `create: true` a file is new, refused if one is there. All are checked and formatted
+// before any is written, so a map and the prefabs it uses go together (session 16b). The
+// editor checks the docs first; this only checks they're map or prefab files.
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,7 +20,12 @@ export function editorSave() {
   return {
     name: 'mes-editor-save',
     apply: 'serve',
+    // After Vite's own plugins, so the content globs' reload for a new file can be skipped.
+    enforce: 'post',
     configureServer(server) {
+      // content/ is outside the client's root, so Vite doesn't watch it for new files; the
+      // content globs only see a new map or prefab (made here, say) once it's watched.
+      server.watcher.add([resolve(CONTENT, 'maps'), resolve(CONTENT, 'prefabs')]);
       server.middlewares.use('/__editor/save', (req, res) => {
         const reply = (status, body) => {
           res.statusCode = status;
@@ -38,30 +46,40 @@ export function editorSave() {
         req.on('data', (chunk) => (body += chunk));
         req.on('end', async () => {
           try {
-            const { file, doc } = JSON.parse(body);
-            if (typeof file !== 'string' || !FILE.test(file))
-              return reply(400, { error: `not a map or prefab file: ${file}` });
-            const path = resolve(CONTENT, file);
-            const options = (await prettier.resolveConfig(path)) ?? {};
-            const text = await prettier.format(layout(doc), { ...options, filepath: path });
-            const old = await readFile(path, 'utf8').catch(() => null);
-            if (old !== text) {
-              written.set(path, text);
-              await writeFile(path, text);
+            const { files } = JSON.parse(body);
+            if (!Array.isArray(files) || !files.length)
+              return reply(400, { error: 'no files to save' });
+            const out = [];
+            for (const { file, doc, create } of files) {
+              if (typeof file !== 'string' || !FILE.test(file))
+                return reply(400, { error: `not a map or prefab file: ${file}` });
+              const path = resolve(CONTENT, file);
+              const options = (await prettier.resolveConfig(path)) ?? {};
+              const text = await prettier.format(layout(doc), { ...options, filepath: path });
+              const old = await readFile(path, 'utf8').catch(() => null);
+              if (create && old !== null) return reply(409, { error: `content/${file} exists` });
+              out.push({ file, path, text, changed: old !== text });
             }
-            reply(200, { file, changed: old !== text });
+            for (const f of out) {
+              if (!f.changed) continue;
+              written.set(f.path, f.text);
+              await writeFile(f.path, f.text);
+            }
+            reply(200, { changed: out.filter((f) => f.changed).map((f) => f.file) });
           } catch (err) {
             reply(500, { error: err instanceof Error ? err.message : String(err) });
           }
         });
       });
     },
-    async handleHotUpdate(ctx) {
-      const mine = written.get(ctx.file);
+    // hotUpdate (unlike handleHotUpdate) also sees new files, which the content globs pick
+    // up with a full reload; the module graph is still updated for the next one.
+    async hotUpdate({ file, read }) {
+      const mine = written.get(file);
       if (mine === undefined) return;
-      written.delete(ctx.file);
+      if (this.environment.name === 'client') written.delete(file);
       // The editor that saved it already has it; other tabs pick it up when reloaded.
-      if ((await ctx.read()) === mine) return [];
+      if ((await read()) === mine) return [];
     },
   };
 }

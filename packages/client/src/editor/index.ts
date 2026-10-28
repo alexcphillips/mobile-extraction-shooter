@@ -16,7 +16,7 @@ export function startEditor(canvas: HTMLCanvasElement, ui: HTMLElement): void {
   const id = new URLSearchParams(location.search).get('map') ?? ids[0];
   const map = id === undefined ? undefined : maps.get(id);
   if (!map) throw new Error(`no map "${id}" in content/maps`);
-  const editor = new MapEditor(canvas, `maps/${map.id}.json`, map, prefabs);
+  const editor = new MapEditor(canvas, `maps/${map.id}.json`, map, prefabs, maps);
   ui.hidden = false;
   createRoot(ui).render(createElement(EditorPanel, { editor, maps: ids }));
   // For poking at it from the console.

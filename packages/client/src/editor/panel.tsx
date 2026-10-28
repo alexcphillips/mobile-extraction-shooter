@@ -1,20 +1,46 @@
-import { nodeSchema, type MapNode } from '@mes/shared';
+import { idSchema, nodeSchema, type MapFile, type MapNode, type PrefabFile } from '@mes/shared';
 import { useState, useSyncExternalStore, type ReactNode } from 'react';
-import { canTurn, nodeLabel, nodePos, nodeYaw, nodesAt, placeNode, round } from './doc';
-import { ANGLE_SNAPS, GRID_SNAPS, PLACEABLE, type MapEditor } from './editor';
+import {
+  canEnter,
+  canTurn,
+  countPlacements,
+  nodeAt,
+  nodeLabel,
+  nodePos,
+  nodeYaw,
+  nodesAt,
+  placeNode,
+  round,
+} from './doc';
+import { ANGLE_SNAPS, BRUSH_RADII, GRID_SNAPS, PLACEABLE, type MapEditor } from './editor';
+import { BRUSH_MODES } from './terrain';
 
 /*
  * The map editor's panels (session 15): the toolbar along the top, the list of nodes in
- * the group being edited and the selected node's fields on the right, and the status line.
+ * the group or prefab being edited and the selected node's fields on the right (the map's
+ * or prefab's own settings when nothing is selected), overlaps, and the status line.
  */
+
+const STRENGTHS = [0.25, 0.5, 1, 2, 4];
 
 export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonly string[] }) {
   const s = useSyncExternalStore(editor.subscribe, editor.getState);
-  const nodes = nodesAt(s.map, s.scope);
+  const prefabs = editor.prefabs;
+  const nodes = nodesAt(s.map, s.scope, prefabs);
   const active = s.selected.length ? nodes[s.selected[s.selected.length - 1]!] : undefined;
+  const inPrefab = editor.scopePrefab();
+  const atPrefab = nodeAt(s.map, s.scope, prefabs)?.type === 'prefab';
+  const [making, setMaking] = useState(false);
+  const [makingPrefab, setMakingPrefab] = useState(false);
+  const overlaps = [
+    ...s.overlaps.buildings.map((p) => ({ pair: p, building: true })),
+    ...s.overlaps.props.map((p) => ({ pair: p, building: false })),
+  ];
 
   return (
     <>
+      {making && <NewMap editor={editor} maps={maps} close={() => setMaking(false)} />}
+      {makingPrefab && <NewPrefab editor={editor} close={() => setMakingPrefab(false)} />}
       <div className="ed-bar">
         <select
           value={s.map.id}
@@ -28,13 +54,22 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
             <option key={id}>{id}</option>
           ))}
         </select>
+        <button onClick={() => setMaking(true)} title="Make a new map">
+          New…
+        </button>
         <button
           className={s.dirty ? 'ed-save ed-dirty' : 'ed-save'}
           disabled={s.saving}
           onClick={() => void editor.save()}
-          title="⌘S"
+          title={s.unsaved.length ? `⌘S: ${s.unsaved.join(', ')}` : '⌘S'}
         >
-          {s.saving ? 'Saving…' : s.dirty ? 'Save' : 'Saved'}
+          {s.saving
+            ? 'Saving…'
+            : s.unsaved.length > 1
+              ? `Save ${s.unsaved.length} files`
+              : s.dirty
+                ? 'Save'
+                : 'Saved'}
         </button>
         <span className="ed-sep" />
         <button onClick={() => editor.undo()} disabled={!s.canUndo} title="⌘Z">
@@ -52,47 +87,108 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
             {t}
           </Toggle>
         ))}
+        <Toggle
+          on={s.tool === 'prefab'}
+          onClick={() => editor.setTool('prefab')}
+          title={`${PLACEABLE.length + 1}`}
+        >
+          prefab
+        </Toggle>
+        <select
+          value={s.placing}
+          title="The prefab to place"
+          onChange={(e) => editor.setPlacing(e.target.value)}
+        >
+          {[...prefabs.keys()].sort().map((id) => (
+            <option key={id}>{id}</option>
+          ))}
+        </select>
+        <Toggle on={s.tool === 'terrain'} onClick={() => editor.setTool('terrain')} title="G">
+          ground
+        </Toggle>
         <span className="ed-sep" />
-        <Toggle on={s.gizmo === 'translate'} onClick={() => editor.setGizmo('translate')} title="T">
-          Move
-        </Toggle>
-        <Toggle on={s.gizmo === 'rotate'} onClick={() => editor.setGizmo('rotate')} title="R">
-          Turn
-        </Toggle>
-        <label title="Grid snap">
-          Grid
-          <select
-            value={s.gridSnap}
-            onChange={(e) => editor.setOption({ gridSnap: Number(e.target.value) })}
-          >
-            {GRID_SNAPS.map((g) => (
-              <option key={g} value={g}>
-                {g ? `${g} m` : 'off'}
-              </option>
+        {s.tool === 'terrain' ? (
+          <>
+            {BRUSH_MODES.map((m) => (
+              <Toggle key={m} on={s.brush.mode === m} onClick={() => editor.setBrush({ mode: m })}>
+                {m}
+              </Toggle>
             ))}
-          </select>
-        </label>
-        <label title="Angle snap">
-          Angle
-          <select
-            value={s.angleSnap}
-            onChange={(e) => editor.setOption({ angleSnap: Number(e.target.value) })}
-          >
-            {ANGLE_SNAPS.map((a) => (
-              <option key={a} value={a}>
-                {a ? `${a}°` : 'off'}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label title="Drop what's moved or placed onto the surface below">
-          <input
-            type="checkbox"
-            checked={s.snapDown}
-            onChange={(e) => editor.setOption({ snapDown: e.target.checked })}
-          />
-          Snap down
-        </label>
+            <label title="Brush radius ([ and ])">
+              Size
+              <select
+                value={s.brush.radius}
+                onChange={(e) => editor.setBrush({ radius: Number(e.target.value) })}
+              >
+                {BRUSH_RADII.map((r) => (
+                  <option key={r} value={r}>
+                    {r} m
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label title="Raise and lower: metres a second in the middle">
+              Strength
+              <select
+                value={s.brush.strength}
+                onChange={(e) => editor.setBrush({ strength: Number(e.target.value) })}
+              >
+                {STRENGTHS.map((v) => (
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </>
+        ) : (
+          <>
+            <Toggle
+              on={s.gizmo === 'translate'}
+              onClick={() => editor.setGizmo('translate')}
+              title="T"
+            >
+              Move
+            </Toggle>
+            <Toggle on={s.gizmo === 'rotate'} onClick={() => editor.setGizmo('rotate')} title="R">
+              Turn
+            </Toggle>
+            <label title="Grid snap">
+              Grid
+              <select
+                value={s.gridSnap}
+                onChange={(e) => editor.setOption({ gridSnap: Number(e.target.value) })}
+              >
+                {GRID_SNAPS.map((g) => (
+                  <option key={g} value={g}>
+                    {g ? `${g} m` : 'off'}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label title="Angle snap">
+              Angle
+              <select
+                value={s.angleSnap}
+                onChange={(e) => editor.setOption({ angleSnap: Number(e.target.value) })}
+              >
+                {ANGLE_SNAPS.map((a) => (
+                  <option key={a} value={a}>
+                    {a ? `${a}°` : 'off'}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label title="Drop what's moved or placed onto the surface below">
+              <input
+                type="checkbox"
+                checked={s.snapDown}
+                onChange={(e) => editor.setOption({ snapDown: e.target.checked })}
+              />
+              Snap down
+            </label>
+          </>
+        )}
       </div>
 
       <div className="ed-side">
@@ -102,17 +198,27 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
           </button>
           {s.scope.map((_, k) => {
             const path = s.scope.slice(0, k + 1);
-            const g = nodesAt(s.map, path.slice(0, -1))[path[k]!]!;
+            const g = nodeAt(s.map, path, prefabs)!;
             return (
               <span key={k}>
                 {' › '}
-                <button onClick={() => editor.select([], path)} disabled={k === s.scope.length - 1}>
+                <button
+                  className={g.type === 'prefab' ? 'ed-prefab' : undefined}
+                  onClick={() => editor.select([], path)}
+                  disabled={k === s.scope.length - 1}
+                >
                   {nodeLabel(g)}
                 </button>
               </span>
             );
           })}
         </div>
+        {inPrefab && (
+          <p className="ed-note ed-prefab">
+            Editing prefab {inPrefab.id}: every copy changes (
+            {countPlacements(s.map.nodes, inPrefab.id, prefabs)} on this map).
+          </p>
+        )}
         <ul className="ed-list">
           {nodes.map((n, i) => (
             <li
@@ -161,15 +267,54 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
           <button onClick={() => editor.deleteSelected()} disabled={!s.selected.length} title="⌫">
             Delete
           </button>
+          <button
+            onClick={() => setMakingPrefab(true)}
+            disabled={!s.selected.length}
+            title="Make what's selected a prefab, placed where it is"
+          >
+            Make prefab…
+          </button>
+          <button
+            onClick={() => editor.unpackSelected()}
+            disabled={!s.selected.some((i) => nodes[i]?.type === 'prefab')}
+            title="Turn a placed prefab into a group of its parts, to change this copy alone"
+          >
+            Unpack
+          </button>
         </div>
+        {overlaps.length + s.overlaps.buried.length > 0 && (
+          <details className="ed-overlaps" open>
+            <summary>Overlaps ({overlaps.length + s.overlaps.buried.length})</summary>
+            <ul>
+              {overlaps.map(({ pair: [a, b], building }) => (
+                <li key={`${a.join('.')}|${b.join('.')}`} className={building ? 'ed-problem' : ''}>
+                  <button onClick={() => editor.reveal(a)}>{editor.label(a)}</button>
+                  {' and '}
+                  <button onClick={() => editor.reveal(b)}>{editor.label(b)}</button>
+                  {building && ' (buildings)'}
+                </li>
+              ))}
+              {s.overlaps.buried.map((p) => (
+                <li key={p.join('.')}>
+                  <button onClick={() => editor.reveal(p)}>{editor.label(p)}</button>: ground
+                  through the floor
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
         {s.selected.length > 1 && <p className="ed-note">{s.selected.length} selected.</p>}
+        {!s.selected.length && !s.scope.length && <MapSettings editor={editor} map={s.map} />}
+        {!s.selected.length && atPrefab && inPrefab && (
+          <PrefabSettings editor={editor} prefab={inPrefab} />
+        )}
         {active && s.selected.length === 1 && (
           <Inspector
             key={`${s.scope.join('.')}:${s.selected[0]}`}
             editor={editor}
             node={active}
-            slots={Object.keys(s.map.colours ?? {})}
-            prefabs={[...editor.prefabs.keys()]}
+            slots={Object.keys(editor.slots())}
+            prefabs={[...prefabs.keys()].sort()}
           />
         )}
       </div>
@@ -183,7 +328,340 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
 
 const HELP =
   'Two-finger scroll orbit, ⇧ pan · pinch zoom · ⌥-drag orbit, ⌥⇧-drag pan · WASD QE fly · ' +
-  'click select, ⇧ add · double-click enter group · F focus';
+  'click select, ⇧ add · double-click enter group or prefab · F focus · G ground';
+
+/** The map's own settings, shown when nothing is selected. */
+function MapSettings({ editor, map }: { editor: MapEditor; map: MapFile }) {
+  const edit = (change: (m: MapFile) => void) => editor.editMap(change);
+  const water = map.water;
+  return (
+    <div className="ed-inspector">
+      <h3>map</h3>
+      <Text label="name" value={map.name} onChange={(v) => v && edit((m) => (m.name = v))} />
+      <HexColour
+        label="sky"
+        value={map.environment.sky}
+        onChange={(c) => edit((m) => (m.environment.sky = c))}
+      />
+      <HexColour
+        label="ground"
+        value={map.terrain.colour}
+        onChange={(c) => edit((m) => (m.terrain.colour = c))}
+      />
+      <div className="ed-row">
+        <Num
+          label="fog near"
+          value={map.environment.fogNear}
+          min={0.01}
+          onChange={(v) => v !== undefined && edit((m) => (m.environment.fogNear = v))}
+        />
+        <Num
+          label="fog far"
+          value={map.environment.fogFar}
+          min={0.01}
+          onChange={(v) => v !== undefined && edit((m) => (m.environment.fogFar = v))}
+        />
+      </div>
+      <label className="ed-field">
+        <input
+          type="checkbox"
+          checked={!!water}
+          onChange={(e) =>
+            edit((m) => {
+              if (e.target.checked) m.water = { level: 0, colour: '#3d7ea6', opacity: 0.7 };
+              else delete m.water;
+            })
+          }
+        />
+        water
+      </label>
+      {water && (
+        <>
+          <div className="ed-row">
+            <Num
+              label="level"
+              value={water.level}
+              onChange={(v) => v !== undefined && edit((m) => (m.water!.level = v))}
+            />
+            <Num
+              label="opacity"
+              value={water.opacity}
+              min={0.01}
+              onChange={(v) => v !== undefined && v <= 1 && edit((m) => (m.water!.opacity = v))}
+            />
+          </div>
+          <HexColour
+            label="water"
+            value={water.colour}
+            onChange={(c) => edit((m) => (m.water!.colour = c))}
+          />
+        </>
+      )}
+      <p className="ed-note">
+        {map.terrain.heights[0]!.length - 1} × {map.terrain.heights.length - 1} cells of{' '}
+        {map.terrain.cellSize} m. Press G to shape the ground.
+      </p>
+    </div>
+  );
+}
+
+/**
+ * The own settings of the prefab being edited inside, shown when nothing in it is selected:
+ * its name, instancing, colour slots (their defaults) and building footprint.
+ */
+function PrefabSettings({ editor, prefab }: { editor: MapEditor; prefab: PrefabFile }) {
+  const edit = (change: (p: PrefabFile) => void) => editor.editPrefab(change);
+  const [slot, setSlot] = useState('');
+  const slots = Object.entries(prefab.colours ?? {});
+  const b = prefab.building;
+  const slotProblem = !slot
+    ? null
+    : !idSchema.safeParse(slot).success
+      ? 'lower-case letters, digits and dashes'
+      : prefab.colours?.[slot] !== undefined
+        ? 'there is one'
+        : null;
+  const setBuilding = (change: (b: NonNullable<PrefabFile['building']>) => void) =>
+    edit((p) => p.building && change(p.building));
+  return (
+    <div className="ed-inspector">
+      <h3>prefab {prefab.id}</h3>
+      <Text
+        label="name"
+        value={prefab.name ?? ''}
+        onChange={(v) => edit((p) => (v ? (p.name = v) : delete p.name))}
+      />
+      <label className="ed-field" title="One instanced mesh for every copy: for small props">
+        <input
+          type="checkbox"
+          checked={!!prefab.instanced}
+          onChange={(e) =>
+            edit((p) => (e.target.checked ? (p.instanced = true) : delete p.instanced))
+          }
+        />
+        instanced
+      </label>
+      <h4>colour slots</h4>
+      {slots.map(([name, colour]) => (
+        <div key={name} className="ed-row">
+          <HexColour
+            label={name}
+            value={colour}
+            onChange={(c) => edit((p) => (p.colours![name] = c))}
+          />
+          <button
+            title="Remove the slot (what uses it must be changed first)"
+            onClick={() =>
+              edit((p) => {
+                delete p.colours![name];
+                if (!Object.keys(p.colours!).length) delete p.colours;
+              })
+            }
+          >
+            ×
+          </button>
+        </div>
+      ))}
+      <div className="ed-row">
+        <label className="ed-field">
+          new slot
+          <input value={slot} onChange={(e) => setSlot(e.target.value)} />
+        </label>
+        <button
+          disabled={!slot || !!slotProblem}
+          onClick={() => {
+            edit((p) => (p.colours = { ...p.colours, [slot]: '#b5b0a6' }));
+            setSlot('');
+          }}
+        >
+          Add
+        </button>
+      </div>
+      {slotProblem && <p className="ed-problem">{slotProblem}</p>}
+      <h4>building</h4>
+      <label className="ed-field" title="A footprint: a concrete base under it, and no overlaps">
+        <input
+          type="checkbox"
+          checked={!!b}
+          onChange={(e) => {
+            if (e.target.checked) editor.fitFootprint();
+            else edit((p) => delete p.building);
+          }}
+        />
+        building (floor at y = 0)
+      </label>
+      {b && (
+        <>
+          <div className="ed-row">
+            {(['w', 'd'] as const).map((l, k) => (
+              <Num
+                key={l}
+                label={l}
+                value={b.size[k]}
+                min={0.01}
+                onChange={(v) =>
+                  v !== undefined &&
+                  setBuilding((f) => (f.size = k ? [f.size[0], v] : [v, f.size[1]]))
+                }
+              />
+            ))}
+            {(['x', 'z'] as const).map((l, k) => (
+              <Num
+                key={l}
+                label={l}
+                value={b.centre?.[k] ?? 0}
+                onChange={(v) =>
+                  setBuilding((f) => {
+                    const c: [number, number] = [...(f.centre ?? [0, 0])];
+                    c[k] = v ?? 0;
+                    if (c[0] || c[1]) f.centre = c;
+                    else delete f.centre;
+                  })
+                }
+              />
+            ))}
+          </div>
+          <Colour
+            label="base"
+            value={b.colour}
+            unset="concrete"
+            slots={slots.map(([name]) => name)}
+            onChange={(c) =>
+              setBuilding((f) => (c === undefined ? delete f.colour : (f.colour = c)))
+            }
+          />
+          <button onClick={() => editor.fitFootprint()} title="To what stands on the floor">
+            Fit footprint
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** The form for a new prefab made of what's selected: its id (the file name) and name. */
+function NewPrefab(props: { editor: MapEditor; close: () => void }) {
+  const [id, setId] = useState('');
+  const [name, setName] = useState('');
+  const idProblem = !id
+    ? 'needs an id'
+    : !idSchema.safeParse(id).success
+      ? 'ids are lower-case letters, digits and dashes'
+      : props.editor.prefabs.has(id)
+        ? 'that prefab exists'
+        : null;
+  const make = (): void => {
+    if (idProblem) return;
+    props.editor.makePrefab(id, name.trim());
+    props.close();
+  };
+  return (
+    <div className="ed-modal" onKeyDown={(e) => e.key === 'Escape' && props.close()}>
+      <div className="ed-inspector">
+        <h3>new prefab</h3>
+        <p className="ed-note">
+          What's selected becomes content/prefabs/{id || '…'}.json, and one copy of it stays where
+          it was.
+        </p>
+        <label className="ed-field">
+          id
+          <input
+            value={id}
+            autoFocus
+            onChange={(e) => setId(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && make()}
+          />
+        </label>
+        <label className="ed-field">
+          name
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && make()}
+          />
+        </label>
+        {id && idProblem && <p className="ed-problem">{idProblem}</p>}
+        <div className="ed-row">
+          <button onClick={make} disabled={!!idProblem}>
+            Make
+          </button>
+          <button onClick={props.close}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HexColour(props: { label: string; value: string; onChange: (c: string) => void }) {
+  return (
+    <label className="ed-field">
+      {props.label}
+      <input type="color" value={props.value} onChange={(e) => props.onChange(e.target.value)} />
+    </label>
+  );
+}
+
+/** The form for a new map: its id (the file name), name, size and cell size. */
+function NewMap(props: { editor: MapEditor; maps: readonly string[]; close: () => void }) {
+  const [id, setId] = useState('');
+  const [name, setName] = useState('');
+  const [size, setSize] = useState(192);
+  const [cell, setCell] = useState(2);
+  const idProblem = !id
+    ? 'needs an id'
+    : !idSchema.safeParse(id).success
+      ? 'ids are lower-case letters, digits and dashes'
+      : props.maps.includes(id)
+        ? 'that map exists'
+        : null;
+  const make = (): void => {
+    if (idProblem || !name.trim()) return;
+    if (props.editor.getState().dirty && !confirm('Leave without saving?')) return;
+    void props.editor.createMap(id, name.trim(), size, cell);
+  };
+  return (
+    <div className="ed-modal" onKeyDown={(e) => e.key === 'Escape' && props.close()}>
+      <div className="ed-inspector">
+        <h3>new map</h3>
+        <label className="ed-field">
+          id
+          <input value={id} autoFocus onChange={(e) => setId(e.target.value)} />
+        </label>
+        <label className="ed-field">
+          name
+          <input value={name} onChange={(e) => setName(e.target.value)} />
+        </label>
+        <label className="ed-field">
+          size
+          <select value={size} onChange={(e) => setSize(Number(e.target.value))}>
+            {[64, 128, 192, 256, 384].map((v) => (
+              <option key={v} value={v}>
+                {v} m
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="ed-field">
+          cells
+          <select value={cell} onChange={(e) => setCell(Number(e.target.value))}>
+            {[1, 2, 4].map((v) => (
+              <option key={v} value={v}>
+                {v} m
+              </option>
+            ))}
+          </select>
+        </label>
+        {id && idProblem && <p className="ed-problem">{idProblem}</p>}
+        <div className="ed-row">
+          <button onClick={make} disabled={!!idProblem || !name.trim()}>
+            Make
+          </button>
+          <button onClick={props.close}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function Toggle(props: { on: boolean; onClick: () => void; title?: string; children: ReactNode }) {
   return (
@@ -311,23 +789,27 @@ function Inspector(props: {
         </div>
       )}
       {n.type === 'prefab' && (
-        <label className="ed-field">
-          prefab
-          <select
-            value={n.prefab}
-            onChange={(e) => edit((m) => ((m as typeof n).prefab = e.target.value))}
-          >
-            {props.prefabs.map((p) => (
-              <option key={p}>{p}</option>
-            ))}
-          </select>
-        </label>
+        <>
+          <label className="ed-field">
+            prefab
+            <select
+              value={n.prefab}
+              onChange={(e) => edit((m) => ((m as typeof n).prefab = e.target.value))}
+            >
+              {props.prefabs.map((p) => (
+                <option key={p}>{p}</option>
+              ))}
+            </select>
+          </label>
+          <PlacementColours editor={editor} node={n} slots={props.slots} />
+        </>
       )}
       {'colour' in n && (
         <Colour
           value={n.colour}
           slots={props.slots}
           onChange={(c) => {
+            if (c === undefined) return;
             editor.setColour(c);
             edit((m) => ((m as typeof n).colour = c));
           }}
@@ -349,8 +831,13 @@ function Inspector(props: {
           collides
         </label>
       ) : null}
-      {n.type === 'group' && (
-        <button onClick={() => editor.enter(editor.getState().selected[0]!)}>Edit inside</button>
+      {canEnter(n, editor.prefabs) && (
+        <button
+          onClick={() => editor.enter(editor.getState().selected[0]!)}
+          title={n.type === 'prefab' ? 'Changes every copy of it' : undefined}
+        >
+          {n.type === 'prefab' ? 'Edit prefab' : 'Edit inside'}
+        </button>
       )}
       <Json editor={editor} node={n} />
     </div>
@@ -419,25 +906,84 @@ function TextInput(props: { label: string; value: string; onChange: (v: string) 
   );
 }
 
-/** A #rrggbb colour (with a picker) or one of the map's colour slots. */
-function Colour(props: { value: string; slots: string[]; onChange: (c: string) => void }) {
-  const hex = props.value.startsWith('#');
+/**
+ * A #rrggbb colour (with a picker) or one of the colour slots of the file it's in. With
+ * `unset`, it can also be left out (and shows that label).
+ */
+function Colour(props: {
+  label?: string;
+  value: string | undefined;
+  unset?: string;
+  /** The colour shown while it's unset. */
+  shown?: string;
+  slots: string[];
+  onChange: (c: string | undefined) => void;
+}) {
+  const { value } = props;
+  const hex = value?.startsWith('#') ?? false;
   return (
     <label className="ed-field">
-      colour
+      {props.label ?? 'colour'}
       <select
-        value={hex ? '' : props.value}
-        onChange={(e) => props.onChange(e.target.value || '#b5b0a6')}
+        value={value === undefined ? UNSET : hex ? '' : value}
+        onChange={(e) => {
+          const v = e.target.value;
+          props.onChange(v === UNSET ? undefined : v || (props.shown ?? '#b5b0a6'));
+        }}
       >
+        {props.unset !== undefined && <option value={UNSET}>{props.unset}</option>}
         <option value="">custom</option>
         {props.slots.map((slot) => (
           <option key={slot}>{slot}</option>
         ))}
       </select>
-      {hex && (
-        <input type="color" value={props.value} onChange={(e) => props.onChange(e.target.value)} />
+      {hex && <input type="color" value={value} onChange={(e) => props.onChange(e.target.value)} />}
+      {value === undefined && props.shown && (
+        <input type="color" value={props.shown} disabled title={props.unset} />
       )}
     </label>
+  );
+}
+
+const UNSET = '\u0000unset';
+
+/**
+ * A placed prefab's colours: each of its slots left at the prefab's colour, or set for this
+ * copy (a colour, or a slot of the file it's placed in).
+ */
+function PlacementColours(props: {
+  editor: MapEditor;
+  node: Extract<MapNode, { type: 'prefab' }>;
+  slots: string[];
+}) {
+  const { editor, node: n } = props;
+  const prefab = editor.prefabs.get(n.prefab);
+  const slots = Object.entries(prefab?.colours ?? {});
+  if (!slots.length) return null;
+  return (
+    <>
+      <h4>colours</h4>
+      {slots.map(([slot, colour]) => (
+        <Colour
+          key={slot}
+          label={slot}
+          value={n.colours?.[slot]}
+          unset="prefab's"
+          shown={colour}
+          slots={props.slots}
+          onChange={(c) =>
+            editor.editActive((m) => {
+              const p = m as typeof n;
+              if (c !== undefined) p.colours = { ...p.colours, [slot]: c };
+              else if (p.colours) {
+                delete p.colours[slot];
+                if (!Object.keys(p.colours).length) delete p.colours;
+              }
+            })
+          }
+        />
+      ))}
+    </>
   );
 }
 

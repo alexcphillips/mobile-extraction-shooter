@@ -100,9 +100,9 @@ export function loadMap(id: string): CompiledMap {
 }
 
 /**
- * The map files as written, by id, for the map editor, so what it saves keeps their key
- * order (a parsed file has its schema's order). They're checked first; one in an older
- * format comes migrated. Prefabs are as loaded. Don't change them.
+ * The map and prefab files as written, by id, for the map editor, so what it saves keeps
+ * their key order (a parsed file has its schema's order). They're checked first; one in an
+ * older format comes migrated. Don't change them.
  */
 export function mapSources(): {
   maps: ReadonlyMap<string, MapFile>;
@@ -110,13 +110,20 @@ export function mapSources(): {
 } {
   maps ??= loadById(MAP_FORMAT, mapFiles);
   prefabs ??= loadById(PREFAB_FORMAT, prefabFiles);
-  const raw = new Map<string, MapFile>();
-  for (const file of Object.values(mapFiles)) {
-    const doc = file as MapFile;
-    const loaded = maps.get(doc.id);
-    if (loaded) raw.set(doc.id, doc.formatVersion === loaded.formatVersion ? doc : loaded);
+  return { maps: asWritten(mapFiles, maps), prefabs: asWritten(prefabFiles, prefabs) };
+}
+
+function asWritten<T extends { id: string; formatVersion: number }>(
+  files: Record<string, unknown>,
+  loaded: ReadonlyMap<string, T>,
+): Map<string, T> {
+  const raw = new Map<string, T>();
+  for (const file of Object.values(files)) {
+    const doc = file as T;
+    const parsed = loaded.get(doc.id);
+    if (parsed) raw.set(doc.id, doc.formatVersion === parsed.formatVersion ? doc : parsed);
   }
-  return { maps: raw, prefabs };
+  return raw;
 }
 
 /** Every item in content/items, with references between them checked. */

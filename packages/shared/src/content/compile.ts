@@ -1,4 +1,5 @@
 import type { BoxDef, DoorDef, LadderDef, RampDef, WorldDef } from '../world/collision-world';
+import { HeightGrid } from '../world/terrain';
 import { ContentError } from './format';
 import type { MapFile, MapNode, MapZone, PrefabFile } from './schema';
 
@@ -37,6 +38,24 @@ export interface InstancedGroup {
 /** A door, in the same order as world.doors (the sim's door indices). */
 export interface CompiledDoor extends DoorDef {
   id: string;
+  colour: number;
+}
+
+/**
+ * A building's footprint (session 16), from its prefab's `building`: a rectangle centred on
+ * (x, z) and turned by yaw, with its floor at y.
+ */
+export interface CompiledBuilding {
+  /** The placement's path id, like a marker's. */
+  id: string;
+  prefab: string;
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  hx: number;
+  hz: number;
+  /** The colour of its concrete base. */
   colour: number;
 }
 
@@ -99,6 +118,8 @@ export interface CompiledMap {
   doors: CompiledDoor[];
   markers: CompiledMarker[];
   patrols: CompiledPatrol[];
+  /** Buildings' footprints; their concrete bases are in shapes and world.boxes. */
+  buildings: CompiledBuilding[];
   zones: MapZone[];
 }
 
@@ -111,6 +132,10 @@ const RUNG_SPACING = 0.3;
 const DOOR_THICKNESS = 0.05;
 const CYLINDER_SIDES = 8;
 const PATROL_WAIT = 3;
+/** Concrete, for a base without a colour of its own. */
+const BASE_COLOUR = 0x9e9b94;
+/** How far a base goes into the ground below the lowest point under it. */
+const BASE_BURY = 0.3;
 
 /** Where nodes are being placed: a position and a yaw about y. */
 interface Frame {
@@ -131,6 +156,7 @@ interface Sink {
   doors: CompiledDoor[] | null;
   markers: CompiledMarker[] | null;
   patrols: CompiledPatrol[] | null;
+  buildings: CompiledBuilding[] | null;
   /** Instanced prefabs become groups; null flattens them into shapes like any prefab. */
   groups: Map<string, InstancedGroup> | null;
 }
@@ -151,10 +177,19 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     doors: [],
     markers: [],
     patrols: [],
+    buildings: [],
     groups: new Map(),
   };
+  const terrain = {
+    minX: map.terrain.origin[0],
+    minZ: map.terrain.origin[1],
+    cellSize: map.terrain.cellSize,
+    cols: heights[0]!.length - 1,
+    rows: heights.length - 1,
+    heights: heights.flat(),
+  };
   const scope = slotColours(map.colours ?? {});
-  const compiler = new Compiler(source, prefabs);
+  const compiler = new Compiler(source, prefabs, new HeightGrid(terrain));
   compiler.nodes(map.nodes, frame(0, 0, 0, 0), scope, '', [], out);
   const patrols = new Set(out.patrols!.map((p) => p.id));
   for (const m of out.markers!) {
@@ -169,14 +204,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     terrainColour: hex(map.terrain.colour),
     water: map.water && { ...map.water, colour: hex(map.water.colour) },
     world: {
-      terrain: {
-        minX: map.terrain.origin[0],
-        minZ: map.terrain.origin[1],
-        cellSize: map.terrain.cellSize,
-        cols: heights[0]!.length - 1,
-        rows: heights.length - 1,
-        heights: heights.flat(),
-      },
+      terrain,
       boxes,
       ramps,
       ladders,
@@ -187,16 +215,23 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     doors: out.doors!,
     markers: out.markers!,
     patrols: out.patrols!,
+    buildings: out.buildings!,
     zones: map.zones,
   };
 }
 
-/** What compileNodes gives: everything in the nodes' own frame, instanced prefabs flattened. */
+/**
+ * What compileNodes gives: everything in the nodes' own frame, instanced prefabs flattened.
+ * There's no terrain, so no concrete bases (see concreteBase).
+ */
 export interface CompiledNodes {
   shapes: Shape[];
+  boxes: BoxDef[];
+  ramps: RampDef[];
   doors: CompiledDoor[];
   markers: CompiledMarker[];
   patrols: CompiledPatrol[];
+  buildings: CompiledBuilding[];
 }
 
 /**
@@ -209,21 +244,86 @@ export function compileNodes(
   colours: Readonly<Record<string, string>> = {},
   source = 'editor',
 ): CompiledNodes {
-  const out = { shapes: [], doors: [], markers: [], patrols: [] };
-  new Compiler(source, prefabs).nodes(nodes, frame(0, 0, 0, 0), slotColours(colours), '', [], {
-    ...out,
-    boxes: null,
-    ramps: null,
-    ladders: null,
-    groups: null,
-  });
+  const out = {
+    shapes: [],
+    boxes: [],
+    ramps: [],
+    doors: [],
+    markers: [],
+    patrols: [],
+    buildings: [],
+  };
+  new Compiler(source, prefabs, null).nodes(
+    nodes,
+    frame(0, 0, 0, 0),
+    slotColours(colours),
+    '',
+    [],
+    { ...out, ladders: null, groups: null },
+  );
   return out;
+}
+
+/**
+ * The concrete base under a building: a box from its floor down into the ground below
+ * the lowest point of its footprint, or null if the ground is nowhere below the floor.
+ */
+export function concreteBase(
+  terrain: HeightGrid,
+  b: CompiledBuilding,
+): Extract<Shape, { kind: 'box' }> | null {
+  const { low } = groundUnder(terrain, b);
+  if (low >= b.y - 0.005) return null;
+  const bottom = low - BASE_BURY;
+  const hy = (b.y - bottom) / 2;
+  return {
+    kind: 'box',
+    x: b.x,
+    y: bottom + hy,
+    z: b.z,
+    yaw: b.yaw,
+    pitch: 0,
+    roll: 0,
+    colour: b.colour,
+    hx: b.hx,
+    hy,
+    hz: b.hz,
+  };
+}
+
+/**
+ * The lowest and highest ground under a footprint, sampled every half metre or less (and
+ * on its edges), which is close enough with the base buried a little.
+ */
+export function groundUnder(
+  terrain: HeightGrid,
+  b: Pick<CompiledBuilding, 'x' | 'z' | 'yaw' | 'hx' | 'hz'>,
+): { low: number; high: number } {
+  const step = Math.min(0.5, terrain.cellSize / 2);
+  const nx = Math.max(1, Math.ceil((2 * b.hx) / step));
+  const nz = Math.max(1, Math.ceil((2 * b.hz) / step));
+  const c = Math.cos(b.yaw);
+  const s = Math.sin(b.yaw);
+  let low = Infinity;
+  let high = -Infinity;
+  for (let i = 0; i <= nx; i++) {
+    const lx = -b.hx + (2 * b.hx * i) / nx;
+    for (let j = 0; j <= nz; j++) {
+      const lz = -b.hz + (2 * b.hz * j) / nz;
+      const h = terrain.heightAt(b.x + lx * c + lz * s, b.z - lx * s + lz * c);
+      low = Math.min(low, h);
+      high = Math.max(high, h);
+    }
+  }
+  return { low, high };
 }
 
 class Compiler {
   constructor(
     private readonly source: string,
     private readonly prefabs: PrefabLookup,
+    /** For concrete bases; null leaves them out. */
+    private readonly terrain: HeightGrid | null,
   ) {}
 
   /** `unnamed` comes before the index in a node without an id: "3." inside group #3. */
@@ -443,6 +543,32 @@ class Compiler {
     }
     const inner = [...stack, prefab.id];
 
+    if (prefab.building) {
+      const [cx, cz] = prefab.building.centre ?? [0, 0];
+      const [x, y, z] = place(f, [cx, 0, cz]);
+      const b: CompiledBuilding = {
+        id: path,
+        prefab: prefab.id,
+        x,
+        y,
+        z,
+        yaw: f.yaw,
+        hx: prefab.building.size[0] / 2,
+        hz: prefab.building.size[1] / 2,
+        colour:
+          prefab.building.colour === undefined
+            ? BASE_COLOUR
+            : this.colour(prefab.building.colour, scope, path),
+      };
+      out.buildings?.push(b);
+      const base = this.terrain && concreteBase(this.terrain, b);
+      if (base) {
+        out.shapes?.push(base);
+        const { x, y, z, hx, hy, hz, yaw } = base;
+        out.boxes?.push({ x, y, z, hx, hy, hz, yaw });
+      }
+    }
+
     if (!prefab.instanced || !out.groups || !out.shapes) {
       this.nodes(prefab.nodes, f, scope, path, inner, out);
       return;
@@ -465,6 +591,7 @@ class Compiler {
         doors: null,
         markers: null,
         patrols: null,
+        buildings: null,
         groups: null,
       };
       this.nodes(prefab.nodes, frame(0, 0, 0, 0), scope, path, inner, local);

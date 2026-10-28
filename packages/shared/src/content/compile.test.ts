@@ -337,6 +337,62 @@ describe('compileMap', () => {
   });
 });
 
+describe('concrete bases', () => {
+  const shed: PrefabFile = {
+    formatVersion: 3,
+    id: 'shed',
+    colours: { base: '#777777' },
+    building: { size: [4, 2], centre: [1, 0], colour: 'base' },
+    nodes: [{ type: 'box', pos: [1, 0, 0], size: [4, 0.2, 2], colour: '#ffffff' }],
+  };
+  /** Ground falling 1 m every 4 m along +x, through 0 at x = 0. */
+  const slope = (): MapFile => {
+    const m = map([]);
+    m.terrain.heights = m.terrain.heights.map(() =>
+      Array.from({ length: 11 }, (_, i) => -(i * 4 - 20) / 4),
+    );
+    return m;
+  };
+
+  it('fills under a building down into the lowest ground under its footprint', () => {
+    const m = slope();
+    m.nodes = [{ type: 'prefab', id: 'shed', prefab: 'shed', pos: [0, 1, 0] }];
+    const c = compileMap(m, prefabs(shed));
+    expect(c.buildings).toEqual([
+      expect.objectContaining({ id: 'shed', prefab: 'shed', x: 1, y: 1, z: 0, hx: 2, hz: 1 }),
+    ]);
+    // The footprint runs from x = −1 (ground 0.25) to x = 3 (ground −0.75).
+    const base = c.shapes.find((s) => s.colour === 0x777777)!;
+    expect(base).toMatchObject({ kind: 'box', x: 1, z: 0, hx: 2, hz: 1 });
+    if (base.kind !== 'box') throw new Error();
+    expect(base.y + base.hy).toBeCloseTo(1);
+    expect(base.y - base.hy).toBeCloseTo(-0.75 - 0.3);
+    expect(c.world.boxes).toContainEqual(expect.objectContaining({ x: 1, hy: base.hy }));
+  });
+
+  it('turns with the building and leaves none where the ground is all above the floor', () => {
+    const m = slope();
+    m.nodes = [
+      { type: 'prefab', prefab: 'shed', pos: [0, 1, 0], yaw: 90 },
+      { type: 'prefab', prefab: 'shed', pos: [-10, 0, 0] },
+    ];
+    const c = compileMap(m, prefabs(shed));
+    // Turned 90°, the footprint's middle is at z = −1 and it spans x −1 to 1.
+    expect(c.buildings[0]).toMatchObject({ z: -1 });
+    expect(c.buildings[0]!.x).toBeCloseTo(0);
+    const bases = c.shapes.filter((s) => s.colour === 0x777777);
+    expect(bases).toHaveLength(1);
+    if (bases[0]!.kind !== 'box') throw new Error();
+    expect(bases[0]!.y - bases[0]!.hy).toBeCloseTo(-0.25 - 0.3);
+  });
+
+  it('leaves bases out of compileNodes, which has no terrain', () => {
+    const out = compileNodes([{ type: 'prefab', prefab: 'shed', pos: [0, 5, 0] }], prefabs(shed));
+    expect(out.shapes).toHaveLength(1);
+    expect(out.buildings).toHaveLength(1);
+  });
+});
+
 describe('compileNodes', () => {
   it("compiles nodes on their own with the scope's colours, instanced prefabs flattened", () => {
     const out = compileNodes(

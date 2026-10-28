@@ -9,8 +9,12 @@
     "base": "#b5b0a6",
     "furniture": "#8a5a33"
   },
+  "building": {
+    "size": [8.4, 6.4],
+    "colour": "base"
+  },
   "nodes": [
-    { "type": "box", "pos": [0, -1, 0], "size": [8.4, 1.2, 6.4], "colour": "base" },
+    { "type": "box", "pos": [0, 0, 0], "size": [8.4, 0.2, 6.4], "colour": "base" },
 
     { "type": "box", "pos": [0, 0.2, -2.9], "size": [8, 2.8, 0.2], "colour": "walls" },
     { "type": "box", "pos": [-3.9, 0.2, 0], "size": [0.2, 2.8, 5.6], "colour": "walls" },

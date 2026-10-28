@@ -1,8 +1,14 @@
-import type { MapFile, MapNode } from '@mes/shared';
+import {
+  PREFAB_FORMAT_VERSION,
+  type MapFile,
+  type MapNode,
+  type PrefabFile,
+  type PrefabLookup,
+} from '@mes/shared';
 
 /*
  * Editing a map file in place: finding nodes by index path, moving them between frames,
- * grouping, duplicating. The editor keeps the file as plain JSON, so what it saves is
+ * grouping, duplicating, making and unpacking prefabs. The editor keeps the file as plain JSON, so what it saves is
  * exactly what it edited. Positions are rounded to a millimetre and angles to a hundredth
  * of a degree as they're written, to keep the files tidy.
  */
@@ -10,10 +16,14 @@ import type { MapFile, MapNode } from '@mes/shared';
 export type Vec3 = [number, number, number];
 type Group = Extract<MapNode, { type: 'group' }>;
 type Patrol = Extract<MapNode, { type: 'patrol' }>;
+type Placement = Extract<MapNode, { type: 'prefab' }>;
 
 const DEG = Math.PI / 180;
 
-/** Indices from the map's nodes down through groups. */
+/**
+ * Indices from the map's nodes down through groups and placed prefabs: a step into a
+ * prefab goes on into that prefab file's nodes.
+ */
 export type NodePath = readonly number[];
 
 export const round = (n: number, step = 1e-3): number => {
@@ -26,24 +36,49 @@ const roundAngle = (deg: number): number => {
   return a === -180 ? 180 : a;
 };
 
-/** The node list a path's group holds; the map's own list for the empty path. */
-export function nodesAt(map: MapFile, scope: NodePath): MapNode[] {
+/**
+ * The node list a path's group or prefab holds; the map's own list for the empty path.
+ * Without `prefabs`, a path only goes through groups.
+ */
+export function nodesAt(map: MapFile, scope: NodePath, prefabs?: PrefabLookup): MapNode[] {
   let list = map.nodes;
   for (const i of scope) {
     const n = list[i];
-    if (n?.type !== 'group') throw new Error(`no group at ${scope.join('.')}`);
-    list = n.nodes;
+    const prefab = n?.type === 'prefab' ? prefabs?.get(n.prefab) : undefined;
+    if (n?.type === 'group') list = n.nodes;
+    else if (prefab) list = prefab.nodes;
+    else throw new Error(`no group at ${scope.join('.')}`);
   }
   return list;
 }
 
-export function nodeAt(map: MapFile, path: NodePath): MapNode | undefined {
+export function nodeAt(map: MapFile, path: NodePath, prefabs?: PrefabLookup): MapNode | undefined {
   if (path.length === 0) return undefined;
   try {
-    return nodesAt(map, path.slice(0, -1))[path[path.length - 1]!];
+    return nodesAt(map, path.slice(0, -1), prefabs)[path[path.length - 1]!];
   } catch {
     return undefined;
   }
+}
+
+/** Whether a node can be entered to edit inside: a group, or a prefab that exists. */
+export function canEnter(n: MapNode | undefined, prefabs: PrefabLookup): boolean {
+  return n?.type === 'group' || (n?.type === 'prefab' && prefabs.has(n.prefab));
+}
+
+/** The prefabs a scope goes into, outermost first, each with the path that places it. */
+export function scopePrefabs(
+  map: MapFile,
+  scope: NodePath,
+  prefabs: PrefabLookup,
+): { prefab: PrefabFile; path: NodePath }[] {
+  const out: { prefab: PrefabFile; path: NodePath }[] = [];
+  for (let k = 1; k <= scope.length; k++) {
+    const n = nodeAt(map, scope.slice(0, k), prefabs);
+    const prefab = n?.type === 'prefab' ? prefabs.get(n.prefab) : undefined;
+    if (prefab) out.push({ prefab, path: scope.slice(0, k) });
+  }
+  return out;
 }
 
 /** Where a node stands; a patrol stands at its first point. */
@@ -229,4 +264,107 @@ export function nodeLabel(n: MapNode): string {
   if (n.type === 'prefab') return n.id ? `${n.id} (${n.prefab})` : n.prefab;
   if (n.type === 'extraction') return n.id ?? n.name;
   return n.id ?? '';
+}
+
+/** How many times a prefab is placed in these nodes, inside groups and other prefabs too. */
+export function countPlacements(
+  nodes: readonly MapNode[],
+  id: string,
+  prefabs: PrefabLookup,
+  stack: readonly string[] = [],
+): number {
+  let count = 0;
+  for (const n of nodes) {
+    if (n.type === 'group') count += countPlacements(n.nodes, id, prefabs, stack);
+    if (n.type !== 'prefab' || stack.includes(n.prefab)) continue;
+    if (n.prefab === id) count++;
+    const p = prefabs.get(n.prefab);
+    if (p) count += countPlacements(p.nodes, id, prefabs, [...stack, n.prefab]);
+  }
+  return count;
+}
+
+/**
+ * Calls `f` with every colour reference in these nodes, groups included (a shape's colour
+ * and a placement's overrides), and puts back what it returns.
+ */
+export function eachColour(nodes: MapNode[], f: (ref: string) => string): void {
+  for (const n of nodes) {
+    if (n.type === 'group') eachColour(n.nodes, f);
+    else if (n.type === 'prefab') {
+      for (const [slot, ref] of Object.entries(n.colours ?? {})) n.colours![slot] = f(ref);
+    } else if ('colour' in n && typeof n.colour === 'string') n.colour = f(n.colour);
+  }
+}
+
+/** Whether a placement of this prefab should get an id: a building, or one with ids in it. */
+export function placementNeedsId(prefab: PrefabFile): boolean {
+  return !!prefab.building || collectIds(prefab.nodes).size > 0;
+}
+
+/**
+ * Moves the nodes at these indices of a list into a new prefab, and puts one placement of
+ * it in their place (at the first one's index), standing where a group of them would. The
+ * colour slots they use (from `slots`, the file's own) come along as the prefab's, and the
+ * placement passes the file's slots on to them, so nothing changes colour. The placement
+ * gets an id (unique against `taken`) if what's in it has ids.
+ */
+export function makePrefab(
+  list: MapNode[],
+  indices: readonly number[],
+  id: string,
+  name: string,
+  slots: Readonly<Record<string, string>>,
+  taken: Set<string>,
+): { prefab: PrefabFile; index: number } {
+  const index = groupNodes(list, indices);
+  const group = list[index] as Group;
+  const used = new Set<string>();
+  eachColour(group.nodes, (ref) => {
+    if (!ref.startsWith('#') && slots[ref] !== undefined) used.add(ref);
+    return ref;
+  });
+  const colours = Object.fromEntries([...used].map((s) => [s, slots[s]!]));
+  const prefab: PrefabFile = {
+    formatVersion: PREFAB_FORMAT_VERSION,
+    id,
+    ...(name && { name }),
+    ...(used.size > 0 && { colours }),
+    nodes: group.nodes,
+  };
+  const placement: Placement = {
+    type: 'prefab',
+    ...(placementNeedsId(prefab) && { id: uniqueId(id, taken) }),
+    prefab: id,
+    pos: group.pos,
+    ...(used.size > 0 && { colours: Object.fromEntries([...used].map((s) => [s, s])) }),
+  };
+  list[index] = placement;
+  return { prefab, index };
+}
+
+/**
+ * Replaces the prefab placed at an index with a group of copies of its parts, where it
+ * stood. Their colour slots become the placement's colours (hex, or the slot of the
+ * enclosing file it named), and their ids are made unique against `taken`. A building's
+ * footprint doesn't come along: a group has none.
+ */
+export function unpackPrefab(
+  list: MapNode[],
+  index: number,
+  prefab: PrefabFile,
+  taken: Set<string>,
+): void {
+  const n = list[index];
+  if (n?.type !== 'prefab') throw new Error('not a prefab');
+  const resolved: Record<string, string> = { ...prefab.colours, ...n.colours };
+  const group: Group = {
+    type: 'group',
+    name: n.id ?? prefab.id,
+    pos: [...n.pos],
+    ...(n.yaw ? { yaw: n.yaw } : {}),
+    nodes: structuredClone(prefab.nodes),
+  };
+  eachColour(group.nodes, (ref) => resolved[ref] ?? ref);
+  list[index] = copyNode(group, taken);
 }
