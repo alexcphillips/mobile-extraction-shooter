@@ -295,3 +295,33 @@ body.editor #portrait {
   border-radius: 6px;
   background: var(--ed-bg);
 }
+
+/* Session 17: zones, patrol points and the navigation overlay's key. */
+.ed-zones,
+.ed-points {
+  max-height: 160px;
+}
+
+.ed-key {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  vertical-align: -1px;
+}
+
+.ed-key-main {
+  background: #2ecc71;
+}
+
+.ed-key-island {
+  background: #e67e22;
+}
+
+.ed-key-hidden {
+  background: #ff1744;
+}
+
+.ed-nav li {
+  cursor: pointer;
+}

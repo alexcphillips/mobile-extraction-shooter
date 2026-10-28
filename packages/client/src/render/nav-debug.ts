@@ -1,9 +1,11 @@
-import { AI, eyeHeight, type Awareness, type Character, type NavGrid } from '@mes/shared';
+import { AI, SPOT, eyeHeight, type Awareness, type Character, type NavGrid } from '@mes/shared';
 import * as THREE from 'three';
 
 /** Walkable spots in the biggest connected area, and in islands cut off from it. */
 const MAIN = new THREE.Color(0x2ecc71);
 const ISLAND = new THREE.Color(0xe67e22);
+/** With the map editor's exposure: where enemies can't reach a player or see one. */
+const HIDDEN = new THREE.Color(0xff1744);
 /** Columns per overlay chunk, so off-screen parts are culled. */
 const CHUNK = 64;
 const QUAD = 0.4;
@@ -12,9 +14,11 @@ const LIFT = 0.04;
 /**
  * Every navigation node as a small square on its surface: green where AI can reach the
  * main area, orange on islands it can't get to or from (roofs, crate tops, a ladder-only
- * platform). Turned on with ?nav.
+ * platform). Turned on with ?nav. The map editor passes each node's SPOT kind from its
+ * Exposure instead: green reachable, orange cut off (seen, or not checked yet), and red
+ * where enemies can neither reach nor see a player.
  */
-export function buildNavOverlay(nav: NavGrid): THREE.Group {
+export function buildNavOverlay(nav: NavGrid, kinds?: Uint8Array): THREE.Group {
   const group = new THREE.Group();
   let main = 0;
   nav.componentSizes.forEach((size, i) => {
@@ -40,7 +44,15 @@ export function buildNavOverlay(nav: NavGrid): THREE.Group {
             const y = nav.nodeY(n) + LIFT;
             positions.push(x - h, y, z - h, x - h, y, z + h, x + h, y, z + h);
             positions.push(x - h, y, z - h, x + h, y, z + h, x + h, y, z - h);
-            const colour = nav.component[n] === main ? MAIN : ISLAND;
+            const colour = kinds
+              ? kinds[n] === SPOT.reachable
+                ? MAIN
+                : kinds[n] === SPOT.hidden
+                  ? HIDDEN
+                  : ISLAND
+              : nav.component[n] === main
+                ? MAIN
+                : ISLAND;
             for (let k = 0; k < 6; k++) colours.push(colour.r, colour.g, colour.b);
           }
         }

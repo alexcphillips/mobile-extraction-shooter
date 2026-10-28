@@ -368,3 +368,69 @@ export function unpackPrefab(
   eachColour(group.nodes, (ref) => resolved[ref] ?? ref);
   list[index] = copyNode(group, taken);
 }
+
+// Patrols (session 17): their points are edited one by one, as handles in the scene.
+
+export function patrolPoint(p: Patrol, k: number): Vec3 {
+  const q = p.points[k]!;
+  return [...(Array.isArray(q) ? q : q.pos)];
+}
+
+/** Moves one point of a patrol, keeping whether it's a stop. */
+export function movePatrolPoint(p: Patrol, k: number, to: readonly number[]): void {
+  const at: Vec3 = [round(to[0]!), round(to[1]!), round(to[2]!)];
+  const q = p.points[k]!;
+  p.points[k] = Array.isArray(q) ? at : { ...q, pos: at };
+}
+
+/**
+ * Puts a walk-through point in before index k (at the end for the length). One put in
+ * before the repeating part joins the way in, so the same points repeat.
+ */
+export function insertPatrolPoint(p: Patrol, k: number, at: readonly number[]): void {
+  p.points.splice(k, 0, [round(at[0]!), round(at[1]!), round(at[2]!)]);
+  if (k < (p.repeatFrom ?? 0)) p.repeatFrom = p.repeatFrom! + 1;
+}
+
+/** Takes out point k, unless only two are left. Returns whether it did. */
+export function removePatrolPoint(p: Patrol, k: number): boolean {
+  if (p.points.length <= 2) return false;
+  p.points.splice(k, 1);
+  let from = p.repeatFrom ?? 0;
+  if (k < from) from--;
+  // At least two must repeat.
+  from = Math.min(from, p.points.length - 2);
+  if (from > 0) p.repeatFrom = from;
+  else delete p.repeatFrom;
+  return true;
+}
+
+/**
+ * Makes point k a stop (stand and look round for `wait` seconds, anywhere within `radius`)
+ * or, with null, a point walked through. Defaults (3 s, 0 m) are left out of the file.
+ */
+export function setPatrolStop(
+  p: Patrol,
+  k: number,
+  stop: { wait?: number | undefined; radius?: number | undefined } | null,
+): void {
+  const pos = patrolPoint(p, k);
+  if (!stop) {
+    p.points[k] = pos;
+    return;
+  }
+  p.points[k] = {
+    pos,
+    ...(stop.wait !== undefined && stop.wait !== 3 && { wait: stop.wait }),
+    ...(stop.radius !== undefined && stop.radius !== 0 && { radius: stop.radius }),
+  };
+}
+
+/** The ids of the patrols in these nodes and the groups in them: what enemy spawns can name. */
+export function patrolIds(nodes: readonly MapNode[], into: string[] = []): string[] {
+  for (const n of nodes) {
+    if (n.type === 'group') patrolIds(n.nodes, into);
+    else if (n.type === 'patrol') into.push(n.id);
+  }
+  return into;
+}

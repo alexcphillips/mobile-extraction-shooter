@@ -1,30 +1,50 @@
 import {
+  CollisionWorld,
+  Exposure,
   MAP_FORMAT,
+  NavGrid,
   PREFAB_FORMAT,
+  SPOT,
   compileMap,
   compileNodes,
   idSchema,
   loadContent,
+  type CompiledMap,
   type MapFile,
   type MapNode,
   type PrefabFile,
   type PrefabLookup,
 } from '@mes/shared';
 import * as THREE from 'three';
-import { checkDoorKeys, checkEnemySpawns, checkLootContainers, loadQuests } from '../content';
+import {
+  checkDoorKeys,
+  checkEnemySpawns,
+  checkLootContainers,
+  loadEnemies,
+  loadLootContainers,
+  loadLootTables,
+  loadQuests,
+} from '../content';
+import { writePlayTest } from '../play-test-handoff';
+import { buildNavOverlay } from '../render/nav-debug';
 import {
   canEnter,
   collectIds,
   copyNode,
   groupNodes,
+  insertPatrolPoint,
   makePrefab,
+  movePatrolPoint,
   moveWith,
   nodeAt,
   nodePos,
   nodeYaw,
   nodesAt,
+  patrolIds,
+  patrolPoint,
   placeNode,
   placementNeedsId,
+  removePatrolPoint,
   round,
   scopePrefabs,
   uniqueId,
@@ -32,13 +52,62 @@ import {
   unpackPrefab,
   nodeLabel,
   type NodePath,
+  type Vec3,
 } from './doc';
 import { findOverlaps, forgetPrefabSolids, type Overlaps } from './overlap';
 import { newMap, setHeights, type Brush } from './terrain';
-import { EditorView, typing, type Moved } from './view';
+import { EditorView, typing, type Handles, type Moved } from './view';
 
 export type Placeable = 'box' | 'cylinder' | 'ramp' | 'stairs' | 'ladder';
 export const PLACEABLE: readonly Placeable[] = ['box', 'cylinder', 'ramp', 'stairs', 'ladder'];
+
+/** What the marker tool places (session 17): the gameplay nodes. */
+export type MarkerKind =
+  | 'playerSpawn'
+  | 'enemySpawn'
+  | 'patrol'
+  | 'lootContainer'
+  | 'lootSpawn'
+  | 'extraction'
+  | 'questMarker'
+  | 'door';
+export const MARKERS: Readonly<Record<MarkerKind, string>> = {
+  playerSpawn: 'player spawn',
+  enemySpawn: 'enemy spawn',
+  patrol: 'patrol',
+  lootContainer: 'loot container',
+  lootSpawn: 'loose loot',
+  extraction: 'extraction',
+  questMarker: 'quest marker',
+  door: 'door',
+};
+const TOOL_KEYS = { prefab: '6', marker: '7', zone: '8' } as const;
+
+type Patrol = Extract<MapNode, { type: 'patrol' }>;
+
+/**
+ * A patrol or named zone being drawn a click at a time (points in the scope's frame), or
+ * points being added to the end of the patrol at `index`.
+ */
+export interface Drawing {
+  what: 'patrol' | 'zone' | 'extend';
+  index?: number;
+  points: readonly Vec3[];
+}
+
+/** The search for hiding spots on the navigation overlay. */
+export interface Hiding {
+  running: boolean;
+  checked: number;
+  total: number;
+  /** What it found, biggest first: islands' hidden parts, each where its middle is. */
+  spots: readonly { x: number; y: number; z: number; area: number }[];
+  /** The map has changed since: run it again. */
+  stale: boolean;
+}
+
+/** Where a play-test starts: a random player spawn, one by id, or at the camera's target. */
+export const CAMERA_START = '@camera';
 
 export const GRID_SNAPS = [0, 0.05, 0.1, 0.25, 0.5, 1, 2, 4];
 export const BRUSH_RADII = [1, 2, 4, 6, 8, 12, 16, 24, 32];
@@ -52,9 +121,21 @@ export interface EditorState {
   scope: NodePath;
   /** Indices in the scope's nodes; the last is the active one. */
   selected: readonly number[];
-  tool: 'select' | 'terrain' | 'prefab' | Placeable;
+  tool: 'select' | 'terrain' | 'prefab' | 'marker' | 'zone' | Placeable;
   /** The prefab the prefab tool places. */
   placing: string;
+  /** What the marker tool places. */
+  marker: MarkerKind;
+  drawing: Drawing | null;
+  /** The named zone picked in the map's settings, by index. */
+  zone: number | null;
+  /** The picked point of the selected patrol, or of the picked zone. */
+  point: number | null;
+  /** Whether the navigation overlay is shown. */
+  nav: boolean;
+  hiding: Hiding | null;
+  /** The ids of the player spawns, as compiled (path ids), for where play-testing starts. */
+  spawns: readonly string[];
   brush: Brush;
   gizmo: 'translate' | 'rotate';
   gridSnap: number;
@@ -103,6 +184,14 @@ export class MapEditor {
   /** The prefabs as edited, by id. A changed one gets a new object. */
   readonly prefabs: Map<string, PrefabFile>;
   readonly view: EditorView;
+  /** The map as compiled after the last edit, or null if it doesn't compile. */
+  private compiled: CompiledMap | null = null;
+  /** The navigation grid of the overlay, and what enemies can reach and see on it. */
+  private nav: { world: CollisionWorld; grid: NavGrid; exposure: Exposure } | null = null;
+  private navTimer = 0;
+  /** Bumped to stop a search for hiding spots that's under way. */
+  private hidingRun = 0;
+  private handlesKey = '';
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -121,6 +210,13 @@ export class MapEditor {
       selected: [],
       tool: 'select',
       placing: [...prefabs.keys()][0] ?? '',
+      marker: 'enemySpawn',
+      drawing: null,
+      zone: null,
+      point: null,
+      nav: false,
+      hiding: null,
+      spawns: [],
       brush: { mode: 'raise', radius: 6, strength: 1 },
       gizmo: 'translate',
       gridSnap: 0.5,
@@ -148,6 +244,7 @@ export class MapEditor {
       terrain: (heights) => {
         this.edit((_, m) => setHeights(m, heights, this.prefabs));
       },
+      handle: (index, to) => this.handleMoved(index, to),
     });
     this.view.options = this.viewOptions();
     this.view.setGizmoMode('translate');
@@ -167,6 +264,9 @@ export class MapEditor {
 
   private set(patch: Partial<EditorState>): void {
     this.state = { ...this.state, ...patch };
+    const { tool, drawing } = this.state;
+    this.view.placing = !!drawing || (tool !== 'select' && tool !== 'terrain');
+    this.showHandles();
     for (const l of this.listeners) l();
   }
 
@@ -182,8 +282,20 @@ export class MapEditor {
 
   setTool(tool: EditorState['tool']): void {
     if (tool === 'terrain') this.select([]);
+    // Zones belong to the map, outside any group.
+    if (tool === 'zone') this.select([], []);
     this.view.brush = tool === 'terrain' ? this.state.brush : null;
-    this.set({ tool, message: toolHint(tool, this.state.placing) });
+    this.set({
+      tool,
+      drawing: null,
+      message: toolHint(tool, this.state.placing, this.state.marker),
+    });
+  }
+
+  /** Picks what the marker tool places, and the marker tool. */
+  setMarker(marker: MarkerKind): void {
+    this.set({ marker });
+    this.setTool('marker');
   }
 
   /** Picks the prefab to place, and the prefab tool. */
@@ -225,6 +337,11 @@ export class MapEditor {
     return (this.scopePrefab() ?? this.state.map).nodes;
   }
 
+  /** The patrols an enemy spawn in the scope can walk: those in the same file. */
+  patrols(): string[] {
+    return patrolIds(this.fileNodes());
+  }
+
   /** The colour slots of the file the scope is in. */
   slots(): Readonly<Record<string, string>> {
     return (this.scopePrefab() ?? this.state.map).colours ?? {};
@@ -240,14 +357,15 @@ export class MapEditor {
 
   select(selected: readonly number[], scope: NodePath = this.state.scope): void {
     const moved = scope.join('.') !== this.state.scope.join('.');
-    this.set({ selected, scope });
+    const same = !moved && selected.join() === this.state.selected.join();
+    this.set({ selected, scope, ...(!same && { point: null }) });
     // A prefab gone into is built part by part, and one left as a whole again.
     if (moved) this.view.build(this.state.map, this.prefabs, scope, selected);
     else this.view.setSelection(scope, selected);
   }
 
   private clicked(e: MouseEvent, index: number | null, outside: NodePath | null): void {
-    if (this.state.tool !== 'select') return this.placeAt(e);
+    if (this.state.drawing || this.state.tool !== 'select') return this.placeAt(e);
     const add = e.shiftKey || e.metaKey || e.ctrlKey;
     if (outside) return this.select(outside, []);
     if (index === null) return add ? undefined : this.select([]);
@@ -308,7 +426,7 @@ export class MapEditor {
     if (this.undoStack.length > HISTORY) this.undoStack.shift();
     this.redoStack.length = 0;
     // An old message (a refused edit, say) no longer applies.
-    this.set({ message: toolHint(this.state.tool, this.state.placing) });
+    this.set({ message: toolHint(this.state.tool, this.state.placing, this.state.marker) });
     this.changed(selected ?? this.state.selected, this.state.scope, overlaps);
   }
 
@@ -375,11 +493,15 @@ export class MapEditor {
       valid = valid.slice(0, -1);
     const count = nodesAt(map, valid, this.prefabs).length;
     const sel = valid === scope ? selected.filter((i) => i < count) : [];
+    const zone =
+      this.state.zone !== null && this.state.zone < map.zones.length ? this.state.zone : null;
     this.set({
       ...this.unsaved(),
       problem: null,
       scope: valid,
       selected: sel,
+      zone,
+      point: valid === scope && sel.join() === selected.join() ? this.state.point : null,
       canUndo: this.undoStack.length > 0,
       canRedo: this.redoStack.length > 0,
     });
@@ -403,7 +525,14 @@ export class MapEditor {
     const clash = overlaps.buildings[0];
     if (!problem && clash)
       problem = `buildings overlap: ${this.label(clash[0])} and ${this.label(clash[1])}`;
-    this.set({ overlaps, problem });
+    try {
+      this.compiled = compileMap(map, this.prefabs);
+    } catch {
+      this.compiled = null;
+    }
+    const spawns = this.compiled?.markers.filter((m) => m.type === 'playerSpawn').map((m) => m.id);
+    this.set({ overlaps, problem, spawns: spawns ?? [] });
+    this.mapChanged();
   }
 
   /** What's wrong with a changed prefab as a file of its own (its schema: ids, slots). */
@@ -435,8 +564,286 @@ export class MapEditor {
 
   private restore(s: Snapshot): void {
     this.load(s.files);
-    this.set({ message: toolHint(this.state.tool, this.state.placing) });
+    this.set({ message: toolHint(this.state.tool, this.state.placing, this.state.marker) });
     this.changed(s.selected, s.scope);
+  }
+
+  // Patrol points and zone corners, as handles
+
+  /** The handles to show, worked out from the state. */
+  private handles(): Handles | null {
+    const { drawing, scope, selected, zone, point, map } = this.state;
+    if (drawing) {
+      const zoneLine = drawing.what === 'zone';
+      return {
+        points: drawing.points,
+        picked: null,
+        line: zoneLine ? 'closed' : 'open',
+        terrainOnly: zoneLine,
+      };
+    }
+    const a = this.active();
+    if (selected.length === 1 && a?.type === 'patrol')
+      return {
+        points: a.points.map((_, k) => patrolPoint(a, k)),
+        picked: point,
+        line: 'none',
+        terrainOnly: false,
+      };
+    const z = zone === null || scope.length || selected.length ? undefined : map.zones[zone];
+    if (z)
+      return {
+        points: z.points.map(([x, zz]) => [x, this.view.groundAt(x, zz), zz]),
+        picked: point,
+        line: 'closed',
+        terrainOnly: true,
+      };
+    return null;
+  }
+
+  private showHandles(): void {
+    const h = this.handles();
+    const key = JSON.stringify(h);
+    if (key === this.handlesKey) return;
+    this.handlesKey = key;
+    this.view.setHandles(h);
+  }
+
+  /** A handle was dragged (to `to`) or clicked: moves or picks that point, or ends a drawing. */
+  private handleMoved(k: number, to: Vec3 | null): void {
+    const { drawing, zone } = this.state;
+    if (drawing) {
+      if (!to) return this.finishDrawing();
+      const points = [...drawing.points];
+      points[k] = to;
+      return this.set({ drawing: { ...drawing, points } });
+    }
+    const i = this.state.selected[0];
+    if (this.active()?.type === 'patrol' && i !== undefined) {
+      if (to) this.edit((nodes) => void movePatrolPoint(nodes[i] as Patrol, k, to));
+      return this.set({ point: k });
+    }
+    if (zone !== null) {
+      if (to) this.editMap((m) => (m.zones[zone]!.points[k] = [round(to[0]), round(to[2])]));
+      this.set({ point: k });
+    }
+  }
+
+  /** Picks a point of the selected patrol, or of the picked zone, or none. */
+  pickPoint(point: number | null): void {
+    this.set({ point });
+  }
+
+  /** Picks a named zone (selecting nothing, since zones are the map's), or none. */
+  pickZone(zone: number | null): void {
+    if (zone !== null) this.select([], []);
+    this.set({ zone, point: null });
+  }
+
+  /** Takes out the picked point of a patrol (two must stay) or zone (three must). */
+  deletePoint(): void {
+    const { point, zone } = this.state;
+    if (point === null) return;
+    const i = this.state.selected[0];
+    if (this.active()?.type === 'patrol' && i !== undefined) {
+      this.edit((nodes) => void removePatrolPoint(nodes[i] as Patrol, point));
+    } else if (zone !== null) {
+      if (this.state.map.zones[zone]!.points.length <= 3) {
+        this.set({ message: 'A zone needs three corners at least.' });
+        return;
+      }
+      this.editMap((m) => void m.zones[zone]!.points.splice(point, 1));
+    }
+    this.set({ point: null });
+  }
+
+  /** Puts a new corner in the picked zone, halfway along the edge after the picked one. */
+  splitZoneEdge(): void {
+    const { point, zone } = this.state;
+    if (zone === null || point === null) return;
+    this.editMap((m) => {
+      const pts = m.zones[zone]!.points;
+      const [a, b] = [pts[point]!, pts[(point + 1) % pts.length]!];
+      pts.splice(point + 1, 0, [round((a[0] + b[0]) / 2), round((a[1] + b[1]) / 2)]);
+    });
+    this.set({ point: point + 1 });
+  }
+
+  /** Starts adding points to the end of the selected patrol, a click at a time. */
+  extendPatrol(): void {
+    const i = this.state.selected[0];
+    if (i === undefined || this.active()?.type !== 'patrol') return;
+    this.set({
+      drawing: { what: 'extend', index: i, points: [] },
+      message: 'Click to add points to the patrol; Enter or click the last to finish, Esc to stop.',
+    });
+  }
+
+  /** Adds a point to what's being drawn, where clicked. */
+  private addPoint(e: MouseEvent): void {
+    const d = this.state.drawing!;
+    const p = this.view.pointUnder(e);
+    if (!p) return;
+    const grid = this.state.gridSnap;
+    if (grid) {
+      p.x = round(Math.round(p.x / grid) * grid);
+      p.z = round(Math.round(p.z / grid) * grid);
+      p.y = d.what === 'zone' ? this.view.groundAt(p.x, p.z) : this.view.dropPoint(p);
+    }
+    this.set({ drawing: { ...d, points: [...d.points, [round(p.x), round(p.y), round(p.z)]] } });
+  }
+
+  /** Makes what's been drawn: a zone, a patrol, or the patrol's new points. */
+  finishDrawing(): void {
+    const d = this.state.drawing;
+    if (!d) return;
+    const pts = d.points;
+    const need = d.what === 'zone' ? 3 : d.what === 'patrol' ? 2 : 1;
+    if (pts.length < need) {
+      this.set({
+        message: `Click ${need - pts.length} more point${need - pts.length > 1 ? 's' : ''}, or Esc to stop.`,
+      });
+      return;
+    }
+    this.set({ drawing: null });
+    if (d.what === 'zone') {
+      const zone = this.state.map.zones.length;
+      this.editMap((m) =>
+        m.zones.push({
+          id: uniqueId('zone', new Set(m.zones.map((z) => z.id))),
+          name: `Zone ${zone + 1}`,
+          points: pts.map((p) => [p[0], p[2]]),
+        }),
+      );
+      this.setTool('select');
+      this.set({ zone });
+    } else if (d.what === 'patrol') {
+      const id = uniqueIdIn('patrol', this.fileNodes());
+      this.edit((nodes) => {
+        nodes.push({ type: 'patrol', id, points: pts.map((p) => [...p]) });
+        return [nodes.length - 1];
+      });
+      this.setTool('select');
+      this.set({ message: `Made patrol ${id}: an enemy spawn walks it if its patrol is set.` });
+    } else {
+      const i = d.index!;
+      this.edit((nodes) => {
+        const p = nodes[i] as Patrol;
+        for (const q of pts) insertPatrolPoint(p, p.points.length, q);
+      });
+    }
+  }
+
+  // The navigation overlay
+
+  setNav(nav: boolean): void {
+    this.set({ nav });
+    if (nav) this.buildNav();
+    else {
+      this.stopHiding();
+      this.nav = null;
+      this.view.setOverlay(null);
+      this.set({ hiding: null });
+    }
+  }
+
+  /** After an edit: the overlay is built again a moment later, and found hiding spots are out of date. */
+  private mapChanged(): void {
+    this.nav = null;
+    const hiding = this.state.hiding;
+    if (hiding) {
+      this.stopHiding();
+      this.set({ hiding: { ...hiding, running: false, stale: true } });
+    }
+    if (!this.state.nav) return;
+    clearTimeout(this.navTimer);
+    this.navTimer = window.setTimeout(() => this.buildNav(), 300);
+  }
+
+  /** Builds the navigation grid from the map as compiled, and shows it. */
+  private buildNav(): void {
+    const map = this.compiled;
+    if (!map) return;
+    const world = new CollisionWorld(map.world);
+    const grid = new NavGrid(world);
+    const starts = map.markers
+      .filter((m) => m.type === 'enemySpawn')
+      .map((m) => [m.x, m.y, m.z] as const);
+    this.nav = { world, grid, exposure: new Exposure(grid, world, starts) };
+    this.view.setOverlay(buildNavOverlay(grid, this.nav.exposure.kind));
+  }
+
+  /**
+   * Looks for spots where enemies can neither walk to a player nor see one, a slice at a
+   * time so the page keeps going, and shows them red on the overlay.
+   */
+  findHiding(): void {
+    if (!this.state.nav) this.setNav(true);
+    if (!this.nav) this.buildNav();
+    const nav = this.nav;
+    if (!nav) {
+      this.set({ message: "The map doesn't compile: fix it first." });
+      return;
+    }
+    const run = ++this.hidingRun;
+    const { exposure, grid } = nav;
+    const total = exposure.total;
+    this.set({ hiding: { running: true, checked: 0, total, spots: [], stale: false } });
+    const slice = (): void => {
+      if (run !== this.hidingRun) return;
+      const until = performance.now() + 30;
+      let done = false;
+      while (!done && performance.now() < until) done = exposure.step(50);
+      if (!done) {
+        this.set({ hiding: { ...this.state.hiding!, checked: total - exposure.left } });
+        setTimeout(slice, 0);
+        return;
+      }
+      // Each island's hidden part, as one spot.
+      const sums = new Map<number, { x: number; y: number; z: number; n: number }>();
+      for (let node = 0; node < grid.nodeCount; node++) {
+        if (exposure.kind[node] !== SPOT.hidden) continue;
+        const c = grid.component[node]!;
+        const s = sums.get(c) ?? { x: 0, y: 0, z: 0, n: 0 };
+        s.x += grid.nodeX(node);
+        s.y += grid.nodeY(node);
+        s.z += grid.nodeZ(node);
+        s.n++;
+        sums.set(c, s);
+      }
+      const cell = grid.cellSize * grid.cellSize;
+      const spots = [...sums.values()]
+        .map((s) => ({ x: s.x / s.n, y: s.y / s.n, z: s.z / s.n, area: s.n * cell }))
+        .sort((a, b) => b.area - a.area);
+      this.view.setOverlay(buildNavOverlay(grid, exposure.kind));
+      this.set({ hiding: { running: false, checked: total, total, spots, stale: false } });
+    };
+    slice();
+  }
+
+  private stopHiding(): void {
+    this.hidingRun++;
+  }
+
+  // Play-testing
+
+  /**
+   * Opens the map as it is now (unsaved changes and all) in a raid in another tab, with no
+   * server (session 17). `start` is a player spawn's id, CAMERA_START, or '' for a random spawn.
+   */
+  playTest(start: string): void {
+    if (this.state.problem) {
+      this.set({ message: `Can't play-test: ${this.state.problem}` });
+      return;
+    }
+    writePlayTest({ map: this.state.map, prefabs: [...this.prefabs.values()] });
+    const q = new URLSearchParams();
+    if (start === CAMERA_START) {
+      const [x, , z] = this.view.target();
+      q.set('at', `${round(x, 0.1)},${round(z, 0.1)}`);
+    } else if (start) q.set('spawn', start);
+    const tab = window.open(`/play-test${q.size ? `?${q}` : ''}`, 'mes-play-test');
+    tab?.focus();
   }
 
   private moved(moves: Moved[]): void {
@@ -538,6 +945,12 @@ export class MapEditor {
 
   private placeAt(e: MouseEvent): void {
     const tool = this.state.tool;
+    if (this.state.drawing) return this.addPoint(e);
+    if (tool === 'zone' || (tool === 'marker' && this.state.marker === 'patrol')) {
+      const what = tool === 'zone' ? 'zone' : 'patrol';
+      this.set({ drawing: { what, points: [] } });
+      return this.addPoint(e);
+    }
     if (tool === 'select' || tool === 'terrain') return;
     const p = this.view.pointUnder(e);
     if (!p) return;
@@ -563,6 +976,9 @@ export class MapEditor {
         pos: [0, 0, 0],
       };
       placeNode(node, [p.x, p.y, p.z]);
+    } else if (tool === 'marker') {
+      node = newMarker(this.state.marker, [p.x, p.y, p.z], collectIds(this.fileNodes()), colour);
+      placeNode(node, nodePos(node));
     } else {
       node = newShape(tool, [p.x, p.y, p.z], colour);
       placeNode(node, nodePos(node));
@@ -796,18 +1212,24 @@ export class MapEditor {
       if (k === 'a') return run(() => this.select(this.scopeNodes().map((_, i) => i)));
       return;
     }
-    if (e.key === 'Delete' || e.key === 'Backspace') return run(() => this.deleteSelected());
+    if (e.key === 'Delete' || e.key === 'Backspace')
+      return run(() => (this.state.point !== null ? this.deletePoint() : this.deleteSelected()));
     if (e.key === 'Escape')
       return run(() => {
-        if (this.state.tool !== 'select') this.setTool('select');
+        if (this.state.drawing) this.set({ drawing: null, message: null });
+        else if (this.state.point !== null) this.set({ point: null });
+        else if (this.state.tool !== 'select') this.setTool('select');
         else if (this.state.selected.length) this.select([]);
         else this.exit();
       });
+    if (e.key === 'Enter' && this.state.drawing) return run(() => this.finishDrawing());
     if (e.key === 'Enter') {
       const i = this.state.selected[this.state.selected.length - 1];
       if (i !== undefined) return run(() => this.enter(i));
     }
-    if (e.key === String(PLACEABLE.length + 1)) return run(() => this.setTool('prefab'));
+    for (const [tool, key] of Object.entries(TOOL_KEYS))
+      if (e.key === key) return run(() => this.setTool(tool as keyof typeof TOOL_KEYS));
+    if (k === 'n') return run(() => this.setNav(!this.state.nav));
     if (k === 'g')
       return run(() => this.setTool(this.state.tool === 'terrain' ? 'select' : 'terrain'));
     if (this.state.tool === 'terrain') {
@@ -824,11 +1246,14 @@ export class MapEditor {
   }
 }
 
-function toolHint(tool: EditorState['tool'], placing: string): string | null {
+function toolHint(tool: EditorState['tool'], placing: string, marker: MarkerKind): string | null {
   if (tool === 'select') return null;
   if (tool === 'terrain')
     return 'Drag on the ground to shape it; ⇧ to lower (or raise). [ and ] change the size. Esc stops.';
-  return `Click to place a ${tool === 'prefab' ? placing : tool}. Esc stops.`;
+  if (tool === 'zone' || (tool === 'marker' && marker === 'patrol'))
+    return `Click the ${tool === 'zone' ? "zone's corners" : "patrol's points"} in turn; Enter or click a point to finish. Esc stops.`;
+  const what = tool === 'prefab' ? placing : tool === 'marker' ? MARKERS[marker] : tool;
+  return `Click to place a ${what}. Esc stops.`;
 }
 
 async function post(files: { file: string; doc: unknown; create?: boolean }[]): Promise<void> {
@@ -865,6 +1290,53 @@ function newShape(tool: Placeable, pos: [number, number, number], colour: string
       return { type: 'stairs', pos, size: [1.2, 2, 3], colour };
     case 'ladder':
       return { type: 'ladder', pos, height: 3, colour };
+  }
+}
+
+/**
+ * A new marker or door where clicked, naming the first enemy type, container and loot
+ * table there are (the scav and household if they exist). Spawns, extractions and quest
+ * markers get ids, since other things name them.
+ */
+function newMarker(kind: MarkerKind, pos: Vec3, taken: Set<string>, colour: string): MapNode {
+  const first = (ids: Iterable<string>, prefer: string): string => {
+    const all = [...ids].sort();
+    return all.includes(prefer) ? prefer : (all[0] ?? prefer);
+  };
+  const table = (): string => first(loadLootTables().keys(), 'household');
+  switch (kind) {
+    case 'playerSpawn':
+      return { type: 'playerSpawn', id: uniqueId('spawn', taken), pos };
+    case 'enemySpawn':
+      return {
+        type: 'enemySpawn',
+        id: uniqueId('enemy', taken),
+        pos,
+        enemy: first(loadEnemies().types.keys(), 'scav'),
+      };
+    case 'lootContainer':
+      return {
+        type: 'lootContainer',
+        pos,
+        container: first(loadLootContainers().keys(), 'desk'),
+        lootTable: table(),
+      };
+    case 'lootSpawn':
+      return { type: 'lootSpawn', pos, lootTable: table() };
+    case 'extraction':
+      return {
+        type: 'extraction',
+        id: uniqueId('extract', taken),
+        pos,
+        name: 'Extraction',
+        radius: 4,
+      };
+    case 'questMarker':
+      return { type: 'questMarker', id: uniqueId('quest-marker', taken), pos };
+    case 'door':
+      return { type: 'door', pos, size: [1, 2.1], colour };
+    case 'patrol':
+      throw new Error('patrols are drawn a point at a time');
   }
 }
 

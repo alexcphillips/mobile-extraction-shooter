@@ -16,7 +16,7 @@ import { startPerfTest } from './perf';
 import { readParams } from './perf/params';
 import { mountPresets } from './perf/presets';
 import { AccountError, fetchProfile, syncSettings } from './account';
-import { startPlay } from './play';
+import { startPlay, type PlayElements, type PlayOptions } from './play';
 import {
   abandonRaid,
   clearSnapshot,
@@ -89,6 +89,13 @@ if (location.pathname === '/bodies') {
   import('./editor')
     .then((editor) => editor.startEditor(byId('scene') as HTMLCanvasElement, byId('editor')))
     .catch((err: unknown) => (status.textContent = `editor failed: ${message(err)}`));
+} else if (location.pathname === '/play-test' && import.meta.env.DEV) {
+  // Opened by the map editor's Play button, with the map as edited.
+  import('./play-test')
+    .then((test) =>
+      test.startPlayTest(playElements(), debugOptions(new URLSearchParams(location.search))),
+    )
+    .catch((err: unknown) => (status.textContent = `play-test failed: ${message(err)}`));
 } else if (location.pathname === '/perf') {
   mountPresets(byId('presets'));
   startPerfTest(
@@ -114,6 +121,39 @@ if (location.pathname === '/bodies') {
   runGame(q).catch((err: unknown) => (status.textContent = `raid failed: ${message(err)}`));
 }
 
+/** The page's elements a raid draws into. */
+function playElements(): PlayElements {
+  return {
+    canvas: byId('scene') as HTMLCanvasElement,
+    stats: byId('stats'),
+    hud,
+    optic: new OpticOverlay(byId('optic'), byId('crosshair')),
+    vitals: new Vitals(byId('vitals'), byId('ammo'), byId('crosshair'), byId('hurt')),
+    raidHud: new RaidHud(byId('timer'), byId('extract'), byId('prompt')),
+    raid: byId('raid'),
+    results: byId('results'),
+    questMarkers: byId('quest-markers'),
+  };
+}
+
+/** The raid options set from the URL (see above), for testing. */
+function debugOptions(
+  q: URLSearchParams,
+): Omit<PlayOptions, 'raid' | 'test' | 'serverRaid' | 'profile' | 'resume'> {
+  return {
+    duration: Number(q.get('time')) > 0 ? Number(q.get('time')) : null,
+    spawn: q.get('spawn'),
+    at: parseAt(q.get('at')),
+    debug: q.has('debug'),
+    nav: q.has('nav'),
+    respawn: q.has('respawn'),
+    peaceful: q.has('peaceful'),
+    hitZones: q.has('hitzones'),
+    pixelRatio: Math.min(window.devicePixelRatio, 2),
+    note: standalone ? 'standalone' : 'browser',
+  };
+}
+
 /**
  * The game: sign in, the main menu (stash and loadout), then a raid with the gear the
  * server hands back; or straight back into a raid saved when the page was hidden. The
@@ -130,35 +170,14 @@ async function runGame(q: URLSearchParams): Promise<void> {
     .sort((a, b) => Number(b.id === wanted) - Number(a.id === wanted))
     .map((r) => ({ id: r.id, name: r.name, duration: r.duration }));
   const play = (raid: string, serverRaid: string, profile: Profile, resume: RaidSnapshot | null) =>
-    startPlay(
-      {
-        canvas: byId('scene') as HTMLCanvasElement,
-        stats: byId('stats'),
-        hud,
-        optic: new OpticOverlay(byId('optic'), byId('crosshair')),
-        vitals: new Vitals(byId('vitals'), byId('ammo'), byId('crosshair'), byId('hurt')),
-        raidHud: new RaidHud(byId('timer'), byId('extract'), byId('prompt')),
-        raid: byId('raid'),
-        results: byId('results'),
-        questMarkers: byId('quest-markers'),
-      },
-      {
-        raid,
-        serverRaid,
-        profile,
-        resume,
-        duration: Number(q.get('time')) > 0 ? Number(q.get('time')) : null,
-        spawn: q.get('spawn'),
-        at: parseAt(q.get('at')),
-        debug: q.has('debug'),
-        nav: q.has('nav'),
-        respawn: q.has('respawn'),
-        peaceful: q.has('peaceful'),
-        hitZones: q.has('hitzones'),
-        pixelRatio: Math.min(window.devicePixelRatio, 2),
-        note: standalone ? 'standalone' : 'browser',
-      },
-    );
+    startPlay(playElements(), {
+      raid,
+      test: null,
+      serverRaid,
+      profile,
+      resume,
+      ...debugOptions(q),
+    });
 
   const resume = prepared.resume;
   if (resume && me.raid) {

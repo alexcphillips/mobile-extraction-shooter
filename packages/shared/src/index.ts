@@ -224,6 +224,7 @@ export {
   type Spot,
 } from './inventory/grid';
 export { DIR_Q, DIR_R, NAV, NavGrid } from './nav/nav-grid';
+export { EXPOSURE, Exposure, SPOT } from './nav/exposure';
 export { MAX_EXPAND, findPath, straight, type PathResult } from './nav/path';
 export {
   CHEST,

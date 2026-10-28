@@ -22,6 +22,8 @@ import {
   step,
   weaponDef,
   type Character,
+  type CompiledMap,
+  type RaidDef,
   type PlayerInput,
   type TickInputs,
   type Zone,
@@ -119,6 +121,11 @@ export interface PlayElements {
 export interface PlayOptions {
   /** A raid config's id, in content/raids. */
   raid: string;
+  /**
+   * Play-testing from the map editor (dev only): this map as edited and this raid config
+   * instead of `raid`'s. Nothing is saved or sent, and a raid saved on the phone is left alone.
+   */
+  test: { map: CompiledMap; raid: RaidDef } | null;
   /** The raid's id on the server, which its result is sent to. */
   serverRaid: string;
   /**
@@ -179,8 +186,8 @@ const ASSIST = { off: 1, low: 0.8, medium: 0.6, high: 0.45 } as const;
  * their spots (session 14b).
  */
 export async function startPlay(el: PlayElements, options: PlayOptions): Promise<void> {
-  const raid = loadRaid(options.raid);
-  const map = loadMap(raid.map);
+  const raid = options.test?.raid ?? loadRaid(options.raid);
+  const map = options.test?.map ?? loadMap(raid.map);
   const items = loadItems();
   const lootTables = loadLootTables();
   const { types, loadouts } = loadEnemies();
@@ -542,8 +549,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     };
     // Sent now, as it is: the server keeps what the outcome allows.
     const gear = JSON.parse(JSON.stringify(player.gear)) as Gear;
-    saving = saveResult(options.serverRaid, { how, gear, seconds, kills, detail, investigated });
-    clearSnapshot();
+    if (options.test) saving = Promise.resolve({ kind: 'test' });
+    else {
+      saving = saveResult(options.serverRaid, { how, gear, seconds, kills, detail, investigated });
+      clearSnapshot();
+    }
     resultsAt = now + (how === 'killed' ? RESULTS_AFTER_DEATH_MS : 0);
     closeScreen();
   }
@@ -560,7 +570,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
 
   // Saved whenever the page is hidden, in case iOS unloads it while you're away.
   const snapshot = (): void => {
-    if (ended) return;
+    if (ended || options.test) return;
     saveSnapshot({
       version: 1,
       serverRaid: options.serverRaid,

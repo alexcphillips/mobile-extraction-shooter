@@ -29,7 +29,9 @@ export type SaveStatus =
   /** Not sent (no connection, or signed out): kept here and sent before the next raid. */
   | { kind: 'queued' }
   /** The server won't take it; it's been dropped. */
-  | { kind: 'refused'; message: string };
+  | { kind: 'refused'; message: string }
+  /** A play-test from the map editor: nothing to save. */
+  | { kind: 'test' };
 
 function readPending(): Pending | null {
   try {

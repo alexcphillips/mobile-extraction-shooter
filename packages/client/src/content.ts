@@ -8,6 +8,7 @@ import {
   PREFAB_FORMAT,
   QUEST_FORMAT,
   RAID_FORMAT,
+  STARTING_KIT_FORMAT,
   VENDOR_FORMAT,
   checkEnemies,
   checkEnemyLoot,
@@ -27,6 +28,7 @@ import {
   type PrefabFile,
   type QuestDef,
   type RaidDef,
+  type StartingKitDef,
   type VendorDef,
 } from '@mes/shared';
 
@@ -50,6 +52,10 @@ const enemyFiles = import.meta.glob<unknown>('../../../content/enemies/*.json', 
   import: 'default',
 });
 const loadoutFiles = import.meta.glob<unknown>('../../../content/loadouts/*.json', {
+  eager: true,
+  import: 'default',
+});
+const startingKitFiles = import.meta.glob<unknown>('../../../content/starting-kits/*.json', {
   eager: true,
   import: 'default',
 });
@@ -222,6 +228,16 @@ export function loadRaid(id: string): RaidDef {
   if (!mapIds().includes(raid.map))
     throw new Error(`content/raids/${id}.json: no map "${raid.map}"`);
   return raid;
+}
+
+/**
+ * A starting kit from content/starting-kits. The server gives new players theirs; the client
+ * needs one only for play-testing from the map editor.
+ */
+export function loadStartingKit(id: string): StartingKitDef {
+  const kit = loadById(STARTING_KIT_FORMAT, startingKitFiles).get(id);
+  if (!kit) throw new Error(`no starting kit "${id}" in content/starting-kits`);
+  return kit;
 }
 
 /** Every vendor in content/vendors, with their offers checked against the items. */

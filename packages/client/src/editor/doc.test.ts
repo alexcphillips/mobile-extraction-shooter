@@ -5,12 +5,17 @@ import {
   copyNode,
   countPlacements,
   groupNodes,
+  insertPatrolPoint,
   makePrefab,
+  movePatrolPoint,
   moveWith,
   nodeAt,
   nodesAt,
+  patrolIds,
   placeNode,
+  removePatrolPoint,
   scopePrefabs,
+  setPatrolStop,
   toLocal,
   toParent,
   ungroup,
@@ -251,5 +256,58 @@ describe('prefabs in the editor', () => {
     ]);
     expect(countPlacements(m.nodes, 'shed', prefabs)).toBe(2);
     expect(countPlacements(m.nodes, 'yard', prefabs)).toBe(1);
+  });
+});
+
+describe('patrol points', () => {
+  const patrol = (): Extract<MapNode, { type: 'patrol' }> => ({
+    type: 'patrol',
+    id: 'p',
+    points: [[0, 0, 0], { pos: [1, 0, 0], wait: 5 }, [2, 0, 0], [3, 0, 0]],
+    repeatFrom: 1,
+  });
+
+  it('moves a point and keeps it a stop', () => {
+    const p = patrol();
+    movePatrolPoint(p, 1, [4.00001, 1, 2]);
+    expect(p.points[1]).toEqual({ pos: [4, 1, 2], wait: 5 });
+  });
+
+  it('keeps the same points repeating when points go in or come out', () => {
+    const p = patrol();
+    insertPatrolPoint(p, 0, [9, 0, 9]);
+    expect(p.repeatFrom).toBe(2);
+    insertPatrolPoint(p, p.points.length, [8, 0, 8]);
+    expect(p.repeatFrom).toBe(2);
+    expect(removePatrolPoint(p, 0)).toBe(true);
+    expect(p.repeatFrom).toBe(1);
+    expect(p.points[1]).toEqual({ pos: [1, 0, 0], wait: 5 });
+  });
+
+  it('leaves at least two points, two of them repeating', () => {
+    const p = patrol();
+    p.repeatFrom = 2;
+    removePatrolPoint(p, 3);
+    expect(p.repeatFrom).toBe(1);
+    removePatrolPoint(p, 2);
+    expect(p.repeatFrom).toBeUndefined();
+    expect(removePatrolPoint(p, 0)).toBe(false);
+    expect(p.points).toHaveLength(2);
+  });
+
+  it('makes a point a stop or a walk-through, leaving defaults out', () => {
+    const p = patrol();
+    setPatrolStop(p, 0, { wait: 3, radius: 2 });
+    expect(p.points[0]).toEqual({ pos: [0, 0, 0], radius: 2 });
+    setPatrolStop(p, 1, null);
+    expect(p.points[1]).toEqual([1, 0, 0]);
+  });
+
+  it('finds patrols inside groups', () => {
+    const nodes: MapNode[] = [
+      patrol(),
+      { type: 'group', pos: [0, 0, 0], nodes: [{ ...patrol(), id: 'q' }] },
+    ];
+    expect(patrolIds(nodes)).toEqual(['p', 'q']);
   });
 });

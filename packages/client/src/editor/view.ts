@@ -16,7 +16,7 @@ import { buildDebug } from '../render/debug';
 import { TriangleBuilder } from '../render/geometry';
 import { CHUNK, buildDoor } from '../render/map';
 import { bakedMaterial, shadedMaterial } from '../render/material';
-import { nodePos, nodeYaw, type NodePath, type Vec3 } from './doc';
+import { nodePos, nodeYaw, round, type NodePath, type Vec3 } from './doc';
 import { footprintsOverlap } from './overlap';
 import { applyBrush, terrainGrid, type Brush, type TerrainGrid } from './terrain';
 
@@ -29,6 +29,10 @@ const PREFAB_SCOPE = 0xc77dff;
 const BROKEN = 0xff00ff;
 const WARNING = 0xff2a2a;
 const BRUSH = 0xffffff;
+/** Handles on the points of a patrol or zone being edited, and the one picked. */
+const HANDLE = 0xffffff;
+const HANDLE_ON = 0xff8c00;
+const HANDLE_SIZE = 0.25;
 /** How far the drop looks up for a surface to land on, so things climb kerbs and slopes. */
 const DROP_REACH = 0.3;
 
@@ -58,6 +62,20 @@ export interface ViewEvents {
   broken(message: string): void;
   /** A brush stroke ended, with the terrain's corner heights as they now are. */
   terrain(heights: Float64Array): void;
+  /** A handle was dragged to `to` (in the scope's frame), or just clicked (`to` null). */
+  handle(index: number, to: Vec3 | null): void;
+}
+
+/** Points drawn as handles: a patrol's or zone's being edited, or one being drawn. */
+export interface Handles {
+  /** In the scope's frame. */
+  points: readonly Vec3[];
+  /** The picked one, drawn orange. */
+  picked: number | null;
+  /** Joined by a line, closed into a loop or not; patrols draw their own. */
+  line: 'none' | 'open' | 'closed';
+  /** Dragged on the terrain only (zones), or onto any surface (patrol points). */
+  terrainOnly: boolean;
 }
 
 /**
@@ -75,6 +93,11 @@ export class EditorView {
   private readonly ground = new THREE.Group();
   private root = new THREE.Group();
   private readonly helpers = new THREE.Group();
+  private readonly handleGroup = new THREE.Group();
+  private handles: Handles | null = null;
+  private handleDrag: { index: number; moved: boolean } | null = null;
+  private overlay: THREE.Object3D | null = null;
+  private placingNow = false;
   private readonly material = shadedMaterial();
   private prefabs: PrefabLookup = new Map();
   private readonly baked = bakedMaterial();
@@ -123,7 +146,7 @@ export class EditorView {
     this.terrain = new HeightGrid(compiled.world.terrain);
     this.ring.renderOrder = 10;
     this.ring.visible = false;
-    this.scene.add(this.ground, this.root, this.bases, this.helpers, this.ring);
+    this.scene.add(this.ground, this.root, this.bases, this.helpers, this.ring, this.handleGroup);
 
     const t = compiled.world.terrain;
     const cx = t.minX + (t.cols * t.cellSize) / 2;
@@ -166,6 +189,8 @@ export class EditorView {
 
     canvas.addEventListener('pointerdown', (e) => {
       if (e.button === 0 && !e.altKey && this.brushSettings) return this.startStroke(e);
+      if (e.button === 0 && !e.altKey && this.gizmo.axis === null && this.startHandleDrag(e))
+        return;
       // A press on the gizmo (it lights up an axis on hover) is a drag, not a click.
       // An Option-drag moves the camera.
       if (e.button === 0 && this.gizmo.axis === null && !e.altKey)
@@ -173,13 +198,17 @@ export class EditorView {
     });
     canvas.addEventListener('pointermove', (e) => {
       this.pointer = { clientX: e.clientX, clientY: e.clientY };
+      if (this.handleDrag) this.dragHandle(e);
       if (this.stroke) this.stroke.shift = e.shiftKey;
       this.moveRing();
     });
     canvas.addEventListener('pointerleave', () => {
       if (!this.stroke) this.ring.visible = false;
     });
-    window.addEventListener('pointerup', () => this.endStroke());
+    window.addEventListener('pointerup', () => {
+      this.endStroke();
+      this.endHandleDrag();
+    });
     canvas.addEventListener('pointerup', (e) => {
       const d = this.down;
       this.down = null;
@@ -329,6 +358,7 @@ export class EditorView {
     this.buildBases();
     if (problems.length) this.events.broken(problems[0]!);
     this.setSelection(scope, selected);
+    this.drawHandles();
   }
 
   /** The terrain by chunk, water and zones, and the sky. */
@@ -412,6 +442,146 @@ export class EditorView {
   setWarnings(paths: readonly NodePath[]): void {
     this.warnings = paths.map((p) => p.join('.'));
     this.setSelection(this.scope, this.selected);
+  }
+
+  /**
+   * Whether clicks place things (a placing tool, or drawing): the gizmo is hidden then, so
+   * a click beside what was just placed doesn't grab it.
+   */
+  set placing(on: boolean) {
+    if (on === this.placingNow) return;
+    this.placingNow = on;
+    this.attachGizmo();
+  }
+
+  // Handles
+
+  /** Shows these handles (or none), in the frame of the scope as last built. */
+  setHandles(handles: Handles | null): void {
+    this.handles = handles;
+    this.drawHandles();
+  }
+
+  private drawHandles(): void {
+    for (const c of this.handleGroup.children) dispose(c, this.material);
+    this.handleGroup.clear();
+    const h = this.handles;
+    if (!h) return;
+    const frame = this.scopeObject();
+    frame.updateMatrixWorld();
+    const world = h.points.map((p) => frame.localToWorld(new THREE.Vector3(...p)));
+    const ball = new THREE.SphereGeometry(HANDLE_SIZE, 10, 6);
+    world.forEach((p, k) => {
+      const m = new THREE.Mesh(
+        ball,
+        new THREE.MeshBasicMaterial({
+          color: k === h.picked ? HANDLE_ON : HANDLE,
+          depthTest: false,
+          transparent: true,
+        }),
+      );
+      m.position.copy(p);
+      m.renderOrder = 11;
+      m.userData.handle = k;
+      this.handleGroup.add(m);
+    });
+    if (h.line !== 'none' && world.length > 1) {
+      const lifted = world.map((p) => p.clone().setY(p.y + 0.1));
+      const geometry = new THREE.BufferGeometry().setFromPoints(lifted);
+      const line = new THREE.LineBasicMaterial({ color: HANDLE_ON, depthTest: false });
+      const o =
+        h.line === 'closed' ? new THREE.LineLoop(geometry, line) : new THREE.Line(geometry, line);
+      o.renderOrder = 10;
+      o.raycast = () => {};
+      this.handleGroup.add(o);
+    }
+  }
+
+  /** Starts dragging the handle under the mouse, if there is one. */
+  private startHandleDrag(e: PointerEvent): boolean {
+    if (!this.handles) return false;
+    this.aim(e);
+    const hit = this.raycaster.intersectObjects(this.handleGroup.children, false)[0];
+    const index = hit?.object.userData.handle as number | undefined;
+    if (index === undefined) return false;
+    this.handleDrag = { index, moved: false };
+    this.orbit.enabled = false;
+    this.down = null;
+    return true;
+  }
+
+  private dragHandle(e: PointerEvent): void {
+    const d = this.handleDrag!;
+    const h = this.handles!;
+    const p = this.handlePoint(e, h.terrainOnly);
+    if (!p) return;
+    d.moved = true;
+    this.handleGroup.children[d.index]?.position.copy(p);
+  }
+
+  private endHandleDrag(): void {
+    const d = this.handleDrag;
+    if (!d) return;
+    this.handleDrag = null;
+    this.orbit.enabled = true;
+    const o = this.handleGroup.children[d.index];
+    if (!d.moved || !o) return this.events.handle(d.index, null);
+    const local = this.scopeObject().worldToLocal(o.position.clone());
+    this.events.handle(d.index, [round(local.x), round(local.y), round(local.z)]);
+  }
+
+  /** Where a dragged handle goes, in the world: on a surface, snapped to the grid. */
+  private handlePoint(e: PointerEvent, terrainOnly: boolean): THREE.Vector3 | null {
+    this.aim(e);
+    const targets = terrainOnly ? this.chunks : [this.ground, this.root];
+    const hit = this.raycaster.intersectObjects(targets, true).find((h) => surface(h.object));
+    if (!hit) return null;
+    const frame = this.scopeObject();
+    const p = frame.worldToLocal(hit.point.clone());
+    const grid = this.options.gridSnap;
+    if (grid) {
+      p.x = snap(p.x, grid);
+      p.z = snap(p.z, grid);
+    }
+    const world = frame.localToWorld(p);
+    world.y = terrainOnly
+      ? this.terrain.heightAt(world.x, world.z)
+      : this.surfaceBelow(world.setY(hit.point.y));
+    return world;
+  }
+
+  // The navigation overlay
+
+  /** Shows an overlay over the map (the navigation grid), replacing the last; null removes it. */
+  setOverlay(o: THREE.Object3D | null): void {
+    if (this.overlay) {
+      this.scene.remove(this.overlay);
+      dispose(this.overlay, this.material);
+    }
+    this.overlay = o;
+    if (o) {
+      o.traverse((c) => (c.raycast = () => {}));
+      this.scene.add(o);
+    }
+  }
+
+  /** The terrain's height at a world x, z. */
+  groundAt(x: number, z: number): number {
+    return round(this.terrain.heightAt(x, z));
+  }
+
+  /** The point the camera orbits: where play-testing can start. */
+  target(): Vec3 {
+    const t = this.orbit.target;
+    return [t.x, t.y, t.z];
+  }
+
+  /** Points the camera at a world point, from where it looks now, about `distance` away. */
+  lookAt(x: number, y: number, z: number, distance = 20): void {
+    const dir = this.camera.position.clone().sub(this.orbit.target).normalize();
+    this.orbit.target.set(x, y, z);
+    this.camera.position.set(x, y, z).addScaledVector(dir, distance);
+    this.orbit.update();
   }
 
   /** The size of what's selected along x, in metres. */
@@ -598,7 +768,7 @@ export class EditorView {
    */
   private attachGizmo(): void {
     const objects = this.selected.map((i) => this.objectOf(i)).filter((o) => o !== undefined);
-    if (objects.length === 0) {
+    if (objects.length === 0 || this.placingNow) {
       this.gizmo.detach();
       return;
     }

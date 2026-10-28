@@ -56,6 +56,7 @@ const SAVE_TEXT: Record<SaveStatus['kind'] | 'saving', string> = {
   queued:
     "Not saved yet: can't reach the server. It's kept on this phone and sent before your next raid.",
   refused: '',
+  test: 'Play-test: nothing is saved. Continue plays it again.',
 };
 
 /** Whether the server has the result yet. */
