@@ -1,4 +1,9 @@
-import { PROTOCOL_VERSION, type Gear, type HelloResponse, type ProfileResponse } from '@mes/shared';
+import {
+  PROTOCOL_VERSION,
+  type HelloResponse,
+  type Profile,
+  type ProfileResponse,
+} from '@mes/shared';
 import { unlockAudioOnTap } from './app/audio';
 import { preventZoom } from './app/no-zoom';
 import { watchPauseTriggers } from './app/pause';
@@ -120,7 +125,7 @@ async function runGame(q: URLSearchParams): Promise<void> {
     .map((id) => loadRaid(id))
     .sort((a, b) => Number(b.id === wanted) - Number(a.id === wanted))
     .map((r) => ({ id: r.id, name: r.name, duration: r.duration }));
-  const play = (raid: string, serverRaid: string, gear: Gear, resume: RaidSnapshot | null) =>
+  const play = (raid: string, serverRaid: string, profile: Profile, resume: RaidSnapshot | null) =>
     startPlay(
       {
         canvas: byId('scene') as HTMLCanvasElement,
@@ -131,11 +136,12 @@ async function runGame(q: URLSearchParams): Promise<void> {
         raidHud: new RaidHud(byId('timer'), byId('extract'), byId('prompt')),
         raid: byId('raid'),
         results: byId('results'),
+        questMarkers: byId('quest-markers'),
       },
       {
         raid,
         serverRaid,
-        gear,
+        profile,
         resume,
         duration: Number(q.get('time')) > 0 ? Number(q.get('time')) : null,
         spawn: q.get('spawn'),
@@ -153,7 +159,7 @@ async function runGame(q: URLSearchParams): Promise<void> {
   const resume = prepared.resume;
   if (resume && me.raid) {
     try {
-      await play(resume.raid, resume.serverRaid, me.profile.gear, resume);
+      await play(resume.raid, resume.serverRaid, me.profile, resume);
       return;
     } catch (err) {
       // A saved raid that won't load (say, the map changed since): it counts as missing.
@@ -200,7 +206,7 @@ async function runGame(q: URLSearchParams): Promise<void> {
       await noConnection('Try again');
       continue;
     }
-    await play(choice.raid, started.raid!.id, started.profile.gear, null);
+    await play(choice.raid, started.raid!.id, started.profile, null);
     return;
   }
 }

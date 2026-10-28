@@ -131,6 +131,8 @@ export interface EndRaidRequest {
   kills: number;
   /** Where they extracted, or what killed them. */
   detail?: string;
+  /** The quest markers they investigated (session 14b), by path id; counted even if they died. */
+  investigated?: string[];
 }
 
 export type ApiErrorCode =

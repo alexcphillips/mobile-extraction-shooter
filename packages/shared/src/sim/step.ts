@@ -10,7 +10,7 @@ import { applyInventory } from './looting';
 import { updateMedUse } from './meds';
 import { updateMelee } from './melee';
 import { moveCharacter, separateCharacters } from './movement';
-import { updateRaid } from './raid';
+import { investigate, updateRaid } from './raid';
 import type { SimState, TickInputs } from './state';
 import { updateWeapon } from './weapons';
 
@@ -22,7 +22,7 @@ import { updateWeapon } from './weapons';
  * Enemies think at the end, from this tick's positions and events, and act on it next
  * tick. Without a nav grid they don't think, and stand still. The world and nav grid
  * follow the state's doors first. Inventory actions come first, so the rest of the tick
- * sees what they changed; then doors, switching hands and meds.
+ * sees what they changed; then doors and investigating, switching hands and meds.
  * Last, the raid: extracting, and the timer running out.
  */
 export function step(
@@ -48,6 +48,7 @@ export function step(
   for (const e of state.entities) {
     const door = inputs[e.id]?.door;
     if (door != null) useDoor(state, world, items, e, door);
+    if (inputs[e.id]?.investigate) investigate(state, e);
   }
   // Switching hands and using meds before moving, which is slower while using one.
   for (const e of state.entities) {

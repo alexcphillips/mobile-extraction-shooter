@@ -6,6 +6,8 @@ import type {
   ItemRef,
   MedRef,
   Owner,
+  Profile,
+  QuestDef,
   SimState,
 } from '@mes/shared';
 import { createRoot, type Root } from 'react-dom/client';
@@ -37,6 +39,9 @@ export interface InventoryContext {
 export interface RaidContext extends InventoryContext {
   /** For the map tab. */
   map: CompiledMap;
+  /** For the quests tab: the profile as the raid started, and every quest. */
+  profile: Profile;
+  quests: readonly QuestDef[];
 }
 
 export interface RaidScreenHandle {
@@ -64,7 +69,7 @@ export function openRaidScreen(
   let version = 0;
   const render = (): void => {
     version++;
-    r.render(<RaidScreen inv={inv} version={version} map={ctx.map} />);
+    r.render(<RaidScreen inv={inv} version={version} ctx={ctx} />);
   };
   const inv = new InventoryController(ctx, target, render);
   container.hidden = false;

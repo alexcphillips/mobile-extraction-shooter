@@ -4,12 +4,13 @@ import {
   depositInto,
   keptGear,
   parseGear,
+  raidProgress,
   restGear,
   type EndRaidRequest,
   type ProfileResponse,
 } from '@mes/shared';
 import type { AppEnv } from './auth';
-import { loadItems, raidDef } from './content';
+import { loadItems, loadQuests, raidDef } from './content';
 import { body, fail, isObject } from './errors';
 import { AT_VERSION, profileResponse, writeProfile } from './profiles';
 
@@ -25,25 +26,37 @@ export const RAIDS = {
   slackSeconds: 60,
   maxKills: 1000,
   maxDetail: 100,
+  /** Quest markers investigated in one raid. */
+  maxInvestigated: 50,
 };
 
 const OUTCOMES = new Set<string>(['extracted', 'killed', 'mia']);
 
 function parseEnd(raw: unknown): EndRaidRequest | string {
   if (!isObject(raw)) return 'a result is required';
-  const { how, seconds, kills, detail } = raw;
+  const { how, seconds, kills, detail, investigated } = raw;
   if (typeof how !== 'string' || !OUTCOMES.has(how)) return 'how is extracted, killed or mia';
   if (typeof seconds !== 'number' || !(seconds >= 0)) return 'seconds must be 0 or more';
   if (!Number.isInteger(kills) || (kills as number) < 0) return 'kills must be a whole number';
   if (detail !== undefined && typeof detail !== 'string') return 'detail must be a string';
   const gear = parseGear(raw.gear);
   if (!gear) return 'gear is malformed';
+  if (
+    investigated !== undefined &&
+    !(
+      Array.isArray(investigated) &&
+      investigated.length <= RAIDS.maxInvestigated &&
+      investigated.every((m) => typeof m === 'string')
+    )
+  )
+    return 'investigated must be a list of marker ids';
   return {
     how: how as EndRaidRequest['how'],
     gear,
     seconds,
     kills: kills as number,
     ...(detail !== undefined ? { detail } : {}),
+    ...(investigated !== undefined ? { investigated: investigated as string[] } : {}),
   };
 }
 
@@ -122,7 +135,9 @@ raids.post('/:id/abandon', async (c) => {
 /**
  * Ends a raid: the profile's gear becomes what the player kept (everything if they
  * extracted; otherwise the knife and the vault), and the money (cash) in it goes into
- * the balance (session 13b). Sanity limits: the kept gear is
+ * the balance (session 13b). Quests (session 14b): markers investigated on the raid's map
+ * count whatever the outcome, and quest items in the kept gear are taken, counting for an
+ * active quest that wanted them. Sanity limits: the kept gear is
  * well-formed and the time and kills are plausible. The same result sent again (a retry
  * whose reply was lost) gets the profile; a different one for an ended raid is raid-over.
  */
@@ -156,6 +171,8 @@ raids.post('/:id/end', async (c) => {
   const items = loadItems();
   const bad = checkGear(items, gear);
   if (bad) return fail(c, 'invalid', bad);
+  const map = raidDef(row.raid)?.map;
+  if (map) raidProgress(profile, loadQuests().values(), items, map, end.investigated ?? [], gear);
   profile.gear = gear;
   depositInto(profile, items);
 

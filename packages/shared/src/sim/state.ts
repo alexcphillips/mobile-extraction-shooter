@@ -9,7 +9,7 @@ import type { InventoryAction, InventoryEvent, LootContainer } from './looting';
 import type { MedRef, MedUse } from './meds';
 import type { SwingEvent } from './melee';
 import { MOVEMENT } from './movement';
-import type { LeaveEvent, LeftRaid, RaidState } from './raid';
+import type { InvestigateEvent, LeaveEvent, LeftRaid, RaidState } from './raid';
 import type { ShotEvent } from './weapons';
 
 export type EntityId = number;
@@ -64,7 +64,14 @@ export type Entity = Character;
 
 /** Things that happened during the last tick, for effects and the HUD. */
 export type SimEvent =
-  ShotEvent | SwingEvent | DamageEvent | DeathEvent | InventoryEvent | LeaveEvent | DoorEvent;
+  | ShotEvent
+  | SwingEvent
+  | DamageEvent
+  | DeathEvent
+  | InventoryEvent
+  | LeaveEvent
+  | DoorEvent
+  | InvestigateEvent;
 
 /**
  * Everything that changes during a raid. Plain JSON-safe data: no classes, maps or typed
@@ -117,6 +124,8 @@ export interface PlayerInput {
   use?: MedRef | 'cancel' | null;
   /** Open, close or unlock a door, by its index in world.doors: a press. */
   door?: number | null;
+  /** Investigate the quest marker in reach (session 14b): a press. */
+  investigate?: boolean;
 }
 
 /**

@@ -155,7 +155,11 @@ export function readSnapshot(serverRaid: string | null): RaidSnapshot | null {
   try {
     const text = localStorage.getItem(SNAPSHOT_KEY);
     const s = text ? (JSON.parse(text) as RaidSnapshot) : null;
-    if (s?.version === 1 && s.serverRaid === serverRaid) return s;
+    if (s?.version === 1 && s.serverRaid === serverRaid) {
+      // Saved before quests in raids (session 14b): no markers to investigate.
+      if (s.sim.raid) s.sim.raid.investigate = s.sim.raid.investigate ?? [];
+      return s;
+    }
   } catch {
     // Unreadable: thrown away below.
   }

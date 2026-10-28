@@ -2,13 +2,16 @@ import { itemDef, type ItemDb } from './content/items';
 import type { QuestDef, QuestObjective } from './content/quests';
 import { removeAt, type Grid, type Item } from './inventory/grid';
 import { PROFILE, type Profile } from './profile';
+import type { Gear } from './sim/gear';
+import { takeQuestItems, type RaidObjectives } from './sim/raid';
 import { addToStash } from './stash';
 
 /*
  * Quests between raids (session 14): accepting one, handing items over from the stash,
  * and claiming the rewards once every objective is done. The server does all of this;
  * the client shows it. Progress made in raids (investigating, extracting with a quest
- * item) comes with the raid's result (14b).
+ * item) comes with the raid's result (14b): raidObjectives says what a raid sets up, and
+ * raidProgress what its result counts.
  */
 
 /** Where a quest is for a player. "ready" is active with every objective done. */
@@ -134,6 +137,72 @@ export function completeQuest(
   profile.money = Math.min(PROFILE.maxMoney, profile.money + quest.rewards.money);
   profile.quests[quest.id] = { status: 'done' };
   return null;
+}
+
+/** An objective's progress, with the quest active and the objective not yet done. */
+function unfinished(profile: Profile, quest: QuestDef, o: QuestObjective): boolean {
+  return (
+    profile.quests[quest.id]?.status === 'active' &&
+    objectiveProgress(profile, quest, o) < objectiveGoal(o)
+  );
+}
+
+/**
+ * What a player's active quests want in a raid on a map: the markers still to
+ * investigate, and the quest items still to get out with (session 14b). Only for active
+ * quests, so a quest item spawns only for a player who has its quest.
+ */
+export function raidObjectives(
+  profile: Profile,
+  quests: Iterable<QuestDef>,
+  map: string,
+): RaidObjectives {
+  const out: RaidObjectives = { investigate: [], extract: [] };
+  for (const q of quests) {
+    for (const o of q.objectives) {
+      if (o.type === 'handOver' || o.map !== map || !unfinished(profile, q, o)) continue;
+      if (o.type === 'investigate') out.investigate.push(o.marker);
+      else out.extract.push({ item: o.item, spots: o.spots });
+    }
+  }
+  return out;
+}
+
+/** An objective a raid finished. */
+export interface RaidProgress {
+  quest: QuestDef;
+  objective: QuestObjective;
+}
+
+/**
+ * Counts a raid's result towards the player's quests, in place: each marker investigated
+ * on that map (even if they died afterwards), and each quest item in the gear they kept.
+ * Every quest item comes out of the gear, wanted or not, so none reaches the stash.
+ * Quests can't change during a raid (their routes are refused), so the ones active now
+ * were active when it started. Returns the objectives it finished.
+ */
+export function raidProgress(
+  profile: Profile,
+  quests: Iterable<QuestDef>,
+  items: ItemDb,
+  map: string,
+  investigated: readonly string[],
+  kept: Gear,
+): RaidProgress[] {
+  const brought = takeQuestItems(items, kept);
+  const out: RaidProgress[] = [];
+  for (const q of quests) {
+    for (const o of q.objectives) {
+      if (o.type === 'handOver' || o.map !== map || !unfinished(profile, q, o)) continue;
+      const done =
+        o.type === 'investigate' ? investigated.includes(o.marker) : brought.includes(o.item);
+      if (!done) continue;
+      const s = profile.quests[q.id];
+      if (s?.status === 'active') s.progress[o.id] = 1;
+      out.push({ quest: q, objective: o });
+    }
+  }
+  return out;
 }
 
 /** Whether two profiles' quests are the same: only the server's quest routes change them. */

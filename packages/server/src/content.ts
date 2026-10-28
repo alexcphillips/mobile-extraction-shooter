@@ -66,12 +66,17 @@ export function vendorDef(id: string): VendorDef | undefined {
   return loadVendors().get(id);
 }
 
-/** A quest by id, or undefined. Quests are checked against the vendors and items. */
-export function questDef(id: string): QuestDef | undefined {
+/** Every quest, checked against the vendors and items. */
+export function loadQuests(): ReadonlyMap<string, QuestDef> {
   if (!quests) {
     const all = loadById(QUEST_FORMAT, ofKind('quests'));
     checkQuests(all, loadVendors(), loadItems());
     quests = all;
   }
-  return quests.get(id);
+  return quests;
+}
+
+/** A quest by id, or undefined. */
+export function questDef(id: string): QuestDef | undefined {
+  return loadQuests().get(id);
 }

@@ -8,7 +8,6 @@ import {
   stackSize,
   timeToUse,
   type Character,
-  type CompiledMap,
   type GearSlot,
   type Grid,
   type GridName,
@@ -23,6 +22,8 @@ import {
 import { useEffect, useState, type ReactNode } from 'react';
 import { refKey, type InventoryController } from './inventory-controller';
 import { MapTab } from './map-tab';
+import type { RaidContext } from './raid';
+import { RaidQuests } from './raid-quests';
 
 type Tab = 'inventory' | 'map' | 'quests';
 
@@ -33,7 +34,7 @@ interface Props {
 }
 
 /** The in-raid screen: inventory (with looting), map and quests tabs. */
-export function RaidScreen({ inv, version, map }: Props & { map: CompiledMap }): ReactNode {
+export function RaidScreen({ inv, version, ctx }: Props & { ctx: RaidContext }): ReactNode {
   const [tab, setTab] = useState<Tab>('inventory');
   const close = inv.ctx.close;
   useEffect(() => {
@@ -60,9 +61,16 @@ export function RaidScreen({ inv, version, map }: Props & { map: CompiledMap }):
       {tab === 'inventory' ? (
         <Inventory inv={inv} version={version} />
       ) : tab === 'map' ? (
-        <MapTab map={map} sim={inv.ctx.sim} player={inv.ctx.player} version={version} />
+        <MapTab map={ctx.map} sim={ctx.sim} player={ctx.player} version={version} />
       ) : (
-        <div className="raid-empty">Quests come in session 14.</div>
+        <RaidQuests
+          items={ctx.items}
+          profile={ctx.profile}
+          quests={ctx.quests}
+          sim={ctx.sim}
+          player={ctx.player}
+          map={ctx.map.id}
+        />
       )}
     </div>
   );

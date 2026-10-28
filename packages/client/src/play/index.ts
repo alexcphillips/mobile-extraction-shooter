@@ -47,6 +47,14 @@ import {
   findKey,
   keyName,
   syncDoors,
+  investigateInReach,
+  investigatedBy,
+  keptGear,
+  objectiveText,
+  raidObjectives,
+  raidProgress,
+  startQuests,
+  type Profile,
 } from '@mes/shared';
 import * as THREE from 'three';
 import { startLoop } from '../app/loop';
@@ -59,12 +67,14 @@ import {
   loadLootContainers,
   loadLootTables,
   loadMap,
+  loadQuests,
   loadRaid,
 } from '../content';
 import { Stats } from '../debug/stats';
 import { HandsHud } from '../hud/hands';
 import type { Hud } from '../hud/hud';
 import type { OpticOverlay } from '../hud/optic';
+import { QuestMarkers } from '../hud/quest-markers';
 import type { RaidHud } from '../hud/raid-hud';
 import type { Vitals } from '../hud/vitals';
 import { Controls } from '../input/controls';
@@ -102,6 +112,8 @@ export interface PlayElements {
   raid: HTMLElement;
   /** Where the results screen opens when the raid ends for you. */
   results: HTMLElement;
+  /** Where quest markers to investigate are drawn over the world. */
+  questMarkers: HTMLElement;
 }
 
 export interface PlayOptions {
@@ -109,8 +121,11 @@ export interface PlayOptions {
   raid: string;
   /** The raid's id on the server, which its result is sent to. */
   serverRaid: string;
-  /** What the player wears into the raid: the profile's gear, from the server. */
-  gear: Gear;
+  /**
+   * The profile from the server as the raid started: the player wears its gear, and its
+   * active quests set up markers and quest items.
+   */
+  profile: Profile;
   /** A raid saved when the page was hidden, to carry on instead of starting afresh. */
   resume: RaidSnapshot | null;
   /** Debug: the raid timer in seconds, instead of the raid's. */
@@ -159,7 +174,9 @@ const ASSIST = { off: 1, low: 0.8, medium: 0.6, high: 0.45 } as const;
  * type with a rolled loadout, which guards its spawn or walks its patrol, and fights you
  * once it notices you. The dead stay down. It ends for you when you extract, die or run
  * out of time, with a results screen. The raid is saved on the phone whenever the page is
- * hidden, and options.resume carries one on from there.
+ * hidden, and options.resume carries one on from there. Your active quests' markers on
+ * this map show through walls until investigated, and their quest items lie at one of
+ * their spots (session 14b).
  */
 export async function startPlay(el: PlayElements, options: PlayOptions): Promise<void> {
   const raid = loadRaid(options.raid);
@@ -170,6 +187,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   checkEnemySpawns(map);
   checkLootContainers(map);
   const lootKinds = loadLootContainers();
+  const quests = [...loadQuests().values()];
   const world = new CollisionWorld(map.world);
   const navStart = performance.now();
   const nav = new NavGrid(world);
@@ -233,15 +251,24 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       // ?at stands you on the floor nearest the ground there, not on a roof.
       options.at ? world.terrain.heightAt(startX, startZ) + 1 : spawn.y + 0.5,
     );
-    player.gear = structuredClone(options.gear);
+    player.gear = structuredClone(options.profile.gear);
     placeLootContainers(sim, map, lootKinds);
     fillLootContainers(sim, map, items, lootTables);
     rollLootSpawns(sim, map, items, lootTables);
     startRaid(sim, map, options.duration ?? raid.duration);
+    startQuests(sim, map, items, player.id, raidObjectives(options.profile, quests, raid.map));
     controls.yaw = spawn.yaw;
   }
   const held = heldWeapon(player);
   if (held) viewmodel.setGun(held, items);
+  const questMarkers = new QuestMarkers(el.questMarkers, sim.raid?.investigate ?? [], player);
+  /** What each quest marker on this map is for, shown under the crosshair. */
+  const markerText = new Map<string, string>();
+  for (const q of quests) {
+    for (const o of q.objectives) {
+      if (o.type === 'investigate' && o.map === raid.map) markerText.set(o.marker, o.text);
+    }
+  }
   // Locked doors cut the nav grid now, not in the first frame.
   syncDoors(sim, world, nav);
 
@@ -455,6 +482,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
             player,
             items,
             map,
+            profile: options.profile,
+            quests,
             send: (a) => pending.push(a),
             // Started or stopped from the inventory: sent like the heal button's picker.
             use: (u) => (picked = u),
@@ -491,17 +520,29 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const survived = how === 'extracted';
     const kept = keptItems(player.gear, survived);
     const seconds = sim.tick / TICK_RATE;
+    const investigated = investigatedBy(sim, player.id);
+    // What the server will count, worked out the same way on copies: quest items it takes.
+    const done = raidProgress(
+      structuredClone(options.profile),
+      quests,
+      items,
+      raid.map,
+      investigated,
+      keptGear(structuredClone(player.gear), survived),
+    );
+    const isQuestItem = (i: Item): boolean => itemDef(items, i.item).type === 'quest';
     ended = {
       how,
       detail,
       seconds,
       kills,
-      kept,
+      kept: kept.filter((i) => !isQuestItem(i)),
       lost: gearItems(player.gear).filter((i) => !kept.includes(i)),
+      quests: done.map((d) => ({ quest: d.quest.name, text: objectiveText(items, d.objective) })),
     };
     // Sent now, as it is: the server keeps what the outcome allows.
     const gear = JSON.parse(JSON.stringify(player.gear)) as Gear;
-    saving = saveResult(options.serverRaid, { how, gear, seconds, kills, detail });
+    saving = saveResult(options.serverRaid, { how, gear, seconds, kills, detail, investigated });
     clearSnapshot();
     resultsAt = now + (how === 'killed' ? RESULTS_AFTER_DEATH_MS : 0);
     closeScreen();
@@ -577,27 +618,37 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const door = doorIndex >= 0 ? sim.doors[doorIndex]! : null;
     const doorKey = door?.locked ? keyName(items, world, doorIndex) : null;
     const hasKey = !!door?.locked && !!findKey(player.gear, world.doors[doorIndex]!.key!);
-    const label = !lootable
-      ? 'use'
-      : door
-        ? door.locked
-          ? hasKey
-            ? 'unlock'
-            : 'locked'
-          : door.open
-            ? 'close'
-            : 'open'
-        : lootable.kind === 'ground'
-          ? 'take'
-          : 'loot';
+    // A quest marker in reach beats a container or body, but not aiming at an item or door.
+    const spot =
+      dead || screenOpen || lootable?.kind === 'ground' || lootable?.kind === 'door'
+        ? null
+        : investigateInReach(sim, player);
+    const label = spot
+      ? 'investigate'
+      : !lootable
+        ? 'use'
+        : door
+          ? door.locked
+            ? hasKey
+              ? 'unlock'
+              : 'locked'
+            : door.open
+              ? 'close'
+              : 'open'
+          : lootable.kind === 'ground'
+            ? 'take'
+            : 'loot';
     if (label !== useLabel) {
       useLabel = label;
       useButton.textContent = label;
-      useButton.classList.toggle('idle', !lootable);
+      useButton.classList.toggle('idle', !lootable && !spot);
     }
     let taking: string | null = null;
     input.door = null;
-    if (!dead && controls.interact && lootable?.kind === 'door') {
+    input.investigate = false;
+    if (!dead && controls.interact && spot) {
+      input.investigate = true;
+    } else if (!dead && controls.interact && lootable?.kind === 'door') {
       input.door = lootable.index;
     } else if (!dead && controls.interact && lootable?.kind === 'ground') {
       // Picked up next tick: into an empty gear slot it fits, else into what you carry.
@@ -683,6 +734,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       } else if (e.type === 'leave' && e.by === player.id) {
         const at = sim.raid?.extractions.find((p) => p.id === e.at);
         endRaid(e.how, at ? `at ${at.name}` : 'Time ran out', now);
+      } else if (e.type === 'investigate' && e.by === player.id) {
+        el.raidHud.note(`Investigated · ${markerText.get(e.marker) ?? 'quest marker'}`, now);
+        if (screen) screen.refresh();
       } else if (e.type === 'door' && e.by === player.id && e.result === 'blocked') {
         el.raidHud.warn('Someone’s in the doorway', now);
       } else if (e.type === 'inventory' && e.by === player.id) {
@@ -722,7 +776,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
           ? hasKey
             ? `Unlock with ${doorKey}`
             : `Locked · needs ${doorKey}`
-          : '',
+          : spot
+            ? (markerText.get(spot.marker) ?? '')
+            : '',
       now,
     );
     hands.update(player, items);
@@ -812,6 +868,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       e.zones?.update(e.c, items);
     }
     aiDebug?.update(enemyChars);
+    questMarkers.update(camera, alive && !screenOpen && !ended);
     updateDoors(mapView, sim.doors, dtMs / 1000);
     if (aimMarker) {
       const yaw = player.yaw + player.recoilYaw;

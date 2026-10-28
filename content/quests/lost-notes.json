@@ -5,6 +5,15 @@
   "vendor": "medic",
   "description": "My patient notes went missing with the last convoy. They'll be somewhere out there. Get them back to me.",
   "requires": ["field-dressing"],
-  "objectives": [{ "id": "notes", "type": "extract", "item": "patient-notes" }],
+  "objectives": [
+    {
+      "id": "notes",
+      "type": "extract",
+      "item": "patient-notes",
+      "map": "test-map",
+      "spots": ["notes-shed", "notes-car"],
+      "text": "Find the patient notes (by the car, or in the locked shed) and get out with them"
+    }
+  ],
   "rewards": { "money": 25000, "items": [{ "item": "surgery-kit" }] }
 }

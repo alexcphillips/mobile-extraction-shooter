@@ -104,4 +104,71 @@ describe('quests', () => {
     });
     expect(me.profile.quests['radio-silence']?.status).toBe('active');
   });
+
+  it('progress with a raid: markers investigated even after dying, quest items kept', async () => {
+    const client = await signedIn();
+    await client.editProfile((p) => {
+      p.quests['radio-silence'] = { status: 'active', progress: {} };
+      p.quests['lost-notes'] = { status: 'active', progress: {} };
+    });
+    let raid = await client.ok('POST', '/raids', { raid: 'test-raid' });
+    // Died with the notes in the backpack: the radio counts, the notes are lost.
+    let gear = structuredClone(raid.profile.gear);
+    addItem(items, gear.backpack!.grid!, createItem(items, 'patient-notes'));
+    let me = await client.ok('POST', `/raids/${raid.raid!.id}/end`, {
+      how: 'killed',
+      gear,
+      seconds: 60,
+      kills: 0,
+      investigated: ['old-radio', 'not-a-marker'],
+    });
+    expect(me.profile.quests['radio-silence']).toEqual({
+      status: 'active',
+      progress: { 'find-radio': 1 },
+    });
+    expect(me.profile.quests['lost-notes']).toEqual({ status: 'active', progress: {} });
+    // Kept in the vault after dying, they count, and are taken.
+    raid = await client.ok('POST', '/raids', { raid: 'test-raid' });
+    gear = structuredClone(raid.profile.gear);
+    addItem(items, gear.vault!, createItem(items, 'patient-notes'));
+    me = await client.ok('POST', `/raids/${raid.raid!.id}/end`, {
+      how: 'mia',
+      gear,
+      seconds: 60,
+      kills: 0,
+    });
+    expect(me.profile.quests['lost-notes']).toEqual({
+      status: 'active',
+      progress: { notes: 1 },
+    });
+    expect(countOf(me.profile.gear.vault!, 'patient-notes')).toBe(0);
+    // Quest items with no quest wanting them are taken too, and nothing else changes.
+    raid = await client.ok('POST', '/raids', { raid: 'test-raid' });
+    gear = structuredClone(raid.profile.gear);
+    addItem(items, gear.pockets, createItem(items, 'patient-notes'));
+    me = await client.ok('POST', `/raids/${raid.raid!.id}/end`, {
+      how: 'extracted',
+      gear,
+      seconds: 60,
+      kills: 0,
+    });
+    expect(countOf(me.profile.gear.pockets, 'patient-notes')).toBe(0);
+    expect(me.profile.quests['lost-notes']).toEqual({
+      status: 'active',
+      progress: { notes: 1 },
+    });
+  });
+
+  it('refuse malformed investigated lists', async () => {
+    const client = await signedIn();
+    const raid = await client.ok('POST', '/raids', { raid: 'test-raid' });
+    const end = { how: 'extracted', gear: raid.profile.gear, seconds: 60, kills: 0 };
+    for (const investigated of ['old-radio', [1], Array(51).fill('x')]) {
+      const res = await client.fails('POST', `/raids/${raid.raid!.id}/end`, {
+        ...end,
+        investigated,
+      });
+      expect(res.error).toBe('bad-request');
+    }
+  });
 });

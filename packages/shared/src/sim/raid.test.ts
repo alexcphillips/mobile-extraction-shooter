@@ -6,9 +6,20 @@ import { CollisionWorld } from '../world/collision-world';
 import { spawnEnemy } from './ai';
 import { createItem } from './create-item';
 import { equip } from './gear';
-import { CHEST, dealDamage, HEAD } from './health';
-import { RAID, extractionAt, gearItems, keptItems, startRaid, timeLeft } from './raid';
-import { createState, spawnCharacter } from './state';
+import { CHEST, createHealth, dealDamage, HEAD } from './health';
+import {
+  RAID,
+  extractionAt,
+  gearItems,
+  investigateInReach,
+  investigatedBy,
+  keptItems,
+  startQuests,
+  startRaid,
+  takeQuestItems,
+  timeLeft,
+} from './raid';
+import { createState, spawnCharacter, type PlayerInput } from './state';
 import { step } from './step';
 import { TEST_ITEMS as items } from './test-items';
 
@@ -23,6 +34,9 @@ const map = {
   markers: [
     { type: 'extraction', id: 'gate', x: 20, y: 0, z: 0, name: 'Gate', radius: 3 },
     { type: 'playerSpawn', id: 'spawn', x: 0, y: 0, z: 0, yaw: 0 },
+    { type: 'questMarker', id: 'radio', x: -10, y: 0, z: 0 },
+    { type: 'questMarker', id: 'desk', x: 5, y: 0, z: 5 },
+    { type: 'questMarker', id: 'shelf', x: 5, y: 0, z: -5 },
   ],
 } as unknown as CompiledMap;
 
@@ -33,6 +47,19 @@ function setup(x = 0, seconds = 60) {
   const c = spawnCharacter(state, world, x, 0);
   return { state, c };
 }
+
+const still: PlayerInput = {
+  moveX: 0,
+  moveY: 0,
+  yaw: 0,
+  pitch: 0,
+  sprint: false,
+  crouch: false,
+  jump: false,
+  fire: false,
+  aim: false,
+  reload: false,
+};
 
 const run = (state: ReturnType<typeof setup>['state'], seconds: number): void => {
   for (let i = 0; i < Math.round(seconds * TICK_RATE); i++) step(state, world, items, {});
@@ -132,5 +159,53 @@ describe('raid', () => {
     expect(gearItems(c.gear)).toEqual([rifle, knife, backpack, watch, cash]);
     expect(keptItems(c.gear, true)).toEqual([rifle, knife, backpack, watch, cash]);
     expect(keptItems(c.gear, false)).toEqual([knife, cash]);
+  });
+
+  it('sets up quest markers to investigate and quest items at one of their spots', () => {
+    const { state, c } = setup();
+    startQuests(state, map, items, c.id, {
+      investigate: ['radio'],
+      extract: [{ item: 'notes', spots: ['desk', 'shelf'] }],
+    });
+    expect(state.raid!.investigate).toEqual([
+      { holder: c.id, marker: 'radio', x: -10, y: 0, z: 0, done: false },
+    ]);
+    expect(state.ground.map((g) => [g.item.item, g.x, Math.abs(g.z)])).toEqual([['notes', 5, 5]]);
+    expect(() =>
+      startQuests(state, map, items, c.id, { investigate: ['nowhere'], extract: [] }),
+    ).toThrow(/no quest marker/);
+  });
+
+  it('investigates a marker in reach once, for its holder only, and not when dead', () => {
+    const { state, c } = setup();
+    const other = spawnCharacter(state, world, -10, 1);
+    startQuests(state, map, items, c.id, { investigate: ['radio'], extract: [] });
+    const press = (id: number) =>
+      step(state, world, items, { [id]: { ...still, investigate: true } });
+    press(c.id);
+    expect(investigatedBy(state, c.id)).toEqual([]);
+    press(other.id);
+    expect(state.raid!.investigate[0]!.done).toBe(false);
+    c.x = -10 + RAID.investigateReach - 0.1;
+    expect(investigateInReach(state, c)?.marker).toBe('radio');
+    dealDamage(state, c, HEAD, 1000, 0);
+    press(c.id);
+    expect(investigatedBy(state, c.id)).toEqual([]);
+    c.health = createHealth();
+    press(c.id);
+    expect(state.events).toContainEqual({ type: 'investigate', by: c.id, marker: 'radio' });
+    expect(investigatedBy(state, c.id)).toEqual(['radio']);
+    expect(investigateInReach(state, c)).toBeNull();
+  });
+
+  it('takes quest items out of every grid, nested ones too', () => {
+    const { c } = setup();
+    equip(c, items, 'backpack', createItem(items, 'backpack'));
+    addItem(items, c.gear.backpack!.grid, createItem(items, 'notes'));
+    addItem(items, c.gear.backpack!.grid, createItem(items, 'watch'));
+    addItem(items, c.gear.vault!, createItem(items, 'notes'));
+    addItem(items, c.gear.pockets, createItem(items, 'notes'));
+    expect(takeQuestItems(items, c.gear)).toEqual(['notes', 'notes', 'notes']);
+    expect(gearItems(c.gear).map((i) => i.item)).toEqual(['backpack', 'watch']);
   });
 });

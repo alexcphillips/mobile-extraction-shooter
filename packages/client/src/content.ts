@@ -217,16 +217,20 @@ export function loadQuests(): ReadonlyMap<string, QuestDef> {
   return quests;
 }
 
-/** Checks that every quest's investigate objectives name a quest marker on a map. */
+/**
+ * Checks that every quest's investigate objectives, and its quest items' spots (session
+ * 14b), name quest markers on a map.
+ */
 export function checkQuestMarkers(): void {
   for (const q of loadQuests().values()) {
     for (const o of q.objectives) {
-      if (o.type !== 'investigate') continue;
+      if (o.type === 'handOver') continue;
       if (!mapIds().includes(o.map)) throw new Error(`quest ${q.id}: no map "${o.map}"`);
-      const found = loadMap(o.map).markers.some(
-        (m) => m.type === 'questMarker' && m.id === o.marker,
-      );
-      if (!found) throw new Error(`quest ${q.id}: no quest marker "${o.marker}" on ${o.map}`);
+      const markers = loadMap(o.map).markers;
+      for (const id of o.type === 'investigate' ? [o.marker] : o.spots) {
+        const found = markers.some((m) => m.type === 'questMarker' && m.id === id);
+        if (!found) throw new Error(`quest ${q.id}: no quest marker "${id}" on ${o.map}`);
+      }
     }
   }
 }

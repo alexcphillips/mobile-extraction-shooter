@@ -176,7 +176,10 @@ A simplified mobile extraction shooter: the risk/reward loop of Tarkov without i
 ## Quests and vendors
 - **Quest types:**
   - **Investigate:** a marker visible through walls, with a live distance readout. Go to it and tap "Investigate".
+    - Session 14b: a yellow diamond with the distance in metres, for each of your active quests' markers on the map not yet investigated; one off screen sits at the screen's edge in its direction. Within **2.5 m** the use button says **investigate** (beating a container or body, but not an item or door under the crosshair) and the objective's text shows under the crosshair; a tap ticks it ("Investigated · …") and the marker goes.
   - **Extract with an item:** a quest item that spawns only while the quest is accepted.
+    - Session 14b (decided with the user 2026-10-27): the objective lists **its own spots**, quest markers on its map, and the item lies on the ground at **one picked at random each raid**. Spots are **not shown** on screen: the objective's text hints where ("by the car, or in the locked shed"), so finding it is the job. It counts if you **extract with it, or keep it in your vault** after dying (as in Tarkov). **The server takes every quest item** out of the gear you keep when the raid ends, wanted or not, so quest items never reach the stash. Only one quest may want a given quest item.
+  - **In the raid** (14b): the raid screen's **Quests** tab lists your active quests with each objective's standing this raid ("Marked on screen", "Investigated", "Not found yet", "Got it: now get out", "Not on this map", hand-overs "from your stash"). The **results screen** lists the objectives the raid finished, and leaves quest items out of what you brought out.
   - **Hand over** (session 14): a normal item is handed over **from the stash** between raids, not by extracting with it (the user's call, 2026-10-27), so a gold watch already in the stash counts.
   - More types can be added as data.
 - **Quests between raids (session 14, decided with the user 2026-10-27):**

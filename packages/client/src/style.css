@@ -84,6 +84,48 @@ body {
   display: none;
 }
 
+/* Quest markers to investigate (session 14b), over the world and through walls. */
+#quest-markers {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.quest-marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: -9px 0 0 -30px;
+  width: 60px;
+  padding-top: 20px;
+  color: #ffe08a;
+  font:
+    bold 12px/1.2 ui-monospace,
+    monospace;
+  text-align: center;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.8);
+  will-change: transform;
+}
+
+/* The diamond, centred on the spot; the distance under it. */
+.quest-marker::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 24px;
+  width: 11px;
+  height: 11px;
+  border: 2px solid #ffe08a;
+  background: rgb(255 224 138 / 0.25);
+  box-shadow: 0 0 3px rgb(0 0 0 / 0.6);
+  transform: rotate(45deg);
+}
+
+.quest-marker[hidden] {
+  display: none;
+}
+
 /* Under the crosshair: the item on the ground the use button would take, or "No room". */
 #prompt {
   position: fixed;
@@ -1242,6 +1284,11 @@ body:has(#raid:not([hidden])) #vitals {
   min-height: 0;
 }
 
+/* What the raid did for your quests (session 14b): one objective a line. */
+.results-quests ul {
+  columns: 1;
+}
+
 .results h2 {
   margin: 0 0 4px;
   font-size: 14px;
@@ -1691,6 +1738,17 @@ body:has(#layout-bar) #menu {
 .inv-use-stop {
   flex: none;
   font-weight: 700;
+}
+
+/* The raid screen's Quests tab (session 14b): the quest cards, read only. */
+.raid-quests {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px max(10px, env(safe-area-inset-right)) 8px max(10px, env(safe-area-inset-left));
+}
+
+.raid-quests-note {
+  color: #9aa6b0;
 }
 
 /* The quests page (session 14): a vendor's quests as cards, in a chain. */

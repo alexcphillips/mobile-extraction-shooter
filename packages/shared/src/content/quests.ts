@@ -12,7 +12,8 @@ import type { VendorDef } from './vendors';
  *   counts even if you die afterwards.
  * - handOver: give the vendor some of a normal item, from the stash, between raids.
  * - extract: get out of a raid with a quest item (14b), which spawns only while the
- *   quest is active.
+ *   quest is active, at one of its spots on its map, picked at random each raid. Kept in
+ *   the vault after dying counts too; the server takes it either way.
  * Rewards are money and items, claimed into the stash once every objective is done.
  */
 
@@ -47,6 +48,10 @@ const extractSchema = z.strictObject({
   type: z.literal('extract'),
   /** A quest item. */
   item: idSchema,
+  /** The map it spawns on. */
+  map: idSchema,
+  /** questMarker path ids on that map; it lies at one of them, picked at random. */
+  spots: z.array(z.string().min(1)).min(1),
 });
 
 const objectiveSchema = z.discriminatedUnion('type', [
@@ -95,7 +100,8 @@ export const QUEST_FORMAT: ContentFormat<QuestDef> = {
  * Checks quests against the vendors and items: a vendor that exists, unique objective
  * ids, hand-overs of normal items with a value, extracts of quest items, required quests
  * that exist without a loop, and rewards that exist in whole stacks. Quest markers are
- * checked against the maps where maps are compiled (the client's content tests).
+ * checked against the maps where maps are compiled (the client's content tests). Two
+ * active extracts of the same item would both be done by one, so an item has one quest.
  */
 export function checkQuests(
   quests: ReadonlyMap<string, QuestDef>,
@@ -116,6 +122,15 @@ export function checkQuests(
         throw new ContentError(source, `"${o.item}" to extract with must be a quest item`);
       if (o.type === 'handOver' && (def.type === 'quest' || def.type === 'melee'))
         throw new ContentError(source, `"${o.item}" can't be handed over`);
+    }
+    for (const o of q.objectives) {
+      if (o.type !== 'extract') continue;
+      for (const other of quests.values()) {
+        const twice = other.objectives.some(
+          (x) => x !== o && x.type === 'extract' && x.item === o.item,
+        );
+        if (twice) throw new ContentError(source, `another quest extracts "${o.item}" too`);
+      }
     }
     for (const r of q.requires) {
       if (!quests.has(r)) throw new ContentError(source, `requires "${r}", which doesn't exist`);

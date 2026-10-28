@@ -15,7 +15,7 @@ const WARN_MS = 1500;
 /**
  * The raid timer (top left); while you stand in an extraction point, its name and a
  * countdown to leaving; and under the crosshair, the item on the ground the use button
- * would take, or a warning. Written straight to the DOM, and only when the text changes.
+ * would take (or the quest marker it would investigate), or a warning. Written straight to the DOM, and only when the text changes.
  */
 export class RaidHud {
   private timerText = '';
@@ -23,6 +23,8 @@ export class RaidHud {
   private promptText = '';
   private warning = '';
   private warnUntil = 0;
+  /** Whether what's shown over the prompt is a warning, or just news. */
+  private warnClass = true;
 
   constructor(
     private readonly timer: HTMLElement,
@@ -34,6 +36,13 @@ export class RaidHud {
   warn(text: string, now: number): void {
     this.warning = text;
     this.warnUntil = now + WARN_MS;
+    this.warnClass = true;
+  }
+
+  /** As warn, in the prompt's own colour: news, not a problem ("Investigated · …"). */
+  note(text: string, now: number): void {
+    this.warn(text, now);
+    this.warnClass = false;
   }
 
   /** Call once per tick: what the use button would take (empty for nothing). */
@@ -44,7 +53,7 @@ export class RaidHud {
     this.promptText = shown;
     this.prompt.textContent = shown;
     this.prompt.hidden = !shown;
-    this.prompt.classList.toggle('warn', warning);
+    this.prompt.classList.toggle('warn', warning && this.warnClass);
   }
 
   /** Call once per tick. `over`: the raid has ended for you. */

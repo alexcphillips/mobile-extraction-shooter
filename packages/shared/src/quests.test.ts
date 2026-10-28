@@ -11,6 +11,8 @@ import {
   handOver,
   handOverCount,
   questStatus,
+  raidObjectives,
+  raidProgress,
   sameQuests,
 } from './quests';
 import { createItem } from './sim/create-item';
@@ -44,6 +46,64 @@ const watches = quest({
   requires: ['radio'],
   objectives: [{ id: 'give', type: 'handOver', item: 'watch', count: 3 }],
   rewards: { money: 1000, items: [{ item: 'medkit' }, { item: 'cash', count: 50 }] },
+});
+
+const notes = quest({
+  id: 'notes',
+  objectives: [
+    { id: 'grab', type: 'extract', item: 'notes', map: 'm', spots: ['desk', 'shelf'] },
+    { id: 'look', type: 'investigate', map: 'm', marker: 'office', text: 'Look round' },
+    { id: 'other', type: 'investigate', map: 'elsewhere', marker: 'office', text: 'Not here' },
+  ],
+});
+
+describe('quests in raids', () => {
+  it('set up only active, unfinished objectives on the map', () => {
+    const p = profile();
+    expect(raidObjectives(p, [radio, notes], 'm')).toEqual({ investigate: [], extract: [] });
+    p.quests.radio = { status: 'active', progress: { look: 1 } };
+    p.quests.notes = { status: 'active', progress: {} };
+    expect(raidObjectives(p, [radio, notes], 'm')).toEqual({
+      investigate: ['office'],
+      extract: [{ item: 'notes', spots: ['desk', 'shelf'] }],
+    });
+    expect(raidObjectives(p, [radio, notes], 'elsewhere').investigate).toEqual(['office']);
+    p.quests.notes = { status: 'done' };
+    expect(raidObjectives(p, [notes], 'm')).toEqual({ investigate: [], extract: [] });
+  });
+
+  it("count markers on the raid's map and quest items kept, and take every quest item", () => {
+    const p = profile();
+    p.quests.radio = { status: 'active', progress: {} };
+    p.quests.notes = { status: 'active', progress: {} };
+    const gear = JSON.parse(JSON.stringify(p.gear)) as typeof p.gear;
+    addItem(items, gear.vault!, createItem(items, 'notes'));
+    addItem(items, gear.pockets, createItem(items, 'notes'));
+    addItem(items, gear.pockets, createItem(items, 'watch'));
+    const done = raidProgress(p, [radio, notes], items, 'm', ['office', 'old-radio'], gear);
+    expect(done.map((d) => `${d.quest.id}/${d.objective.id}`)).toEqual([
+      'radio/look',
+      'notes/grab',
+      'notes/look',
+    ]);
+    expect(p.quests.notes).toEqual({ status: 'active', progress: { grab: 1, look: 1 } });
+    expect(questStatus(p, radio)).toBe('ready');
+    // Both copies are gone, and only the watch is left.
+    expect(countOf(gear.vault!, 'notes') + countOf(gear.pockets, 'notes')).toBe(0);
+    expect(countOf(gear.pockets, 'watch')).toBe(1);
+    // A marker of the same name on another map doesn't count; nor does a quest not taken.
+    const q = profile();
+    q.quests.notes = { status: 'active', progress: {} };
+    raidProgress(
+      q,
+      [radio, notes],
+      items,
+      'elsewhere',
+      ['office', 'old-radio'],
+      JSON.parse(JSON.stringify(gear)) as typeof gear,
+    );
+    expect(q.quests).toEqual({ notes: { status: 'active', progress: { other: 1 } } });
+  });
 });
 
 describe('quests', () => {
@@ -174,9 +234,16 @@ describe('checkQuests', () => {
     expect(check(give('gold-bar'))).toThrow(/no item/);
     expect(check(give('notes'))).toThrow(/can't be handed over/);
     const out = (item: string) =>
-      quest({ id: 'e', objectives: [{ id: 'a', type: 'extract', item }] });
+      quest({ id: 'e', objectives: [{ id: 'a', type: 'extract', item, map: 'm', spots: ['s'] }] });
     expect(check(out('notes'))).not.toThrow();
     expect(check(out('watch'))).toThrow(/must be a quest item/);
+    expect(check(out('notes'), { ...out('notes'), id: 'e2' })).toThrow(/extracts "notes" too/);
+    expect(() =>
+      quest({
+        id: 'e',
+        objectives: [{ id: 'a', type: 'extract', item: 'notes', map: 'm', spots: [] }],
+      }),
+    ).toThrow();
     expect(check({ ...radio, requires: ['watches'] }, watches)).toThrow(/loop/);
     const twice = { ...radio, objectives: [radio.objectives[0]!, radio.objectives[0]!] };
     expect(check(twice)).toThrow(/two objectives/);

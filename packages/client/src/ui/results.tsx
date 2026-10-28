@@ -12,8 +12,11 @@ export interface RaidResult {
   /** Time in the raid. */
   seconds: number;
   kills: number;
+  /** Without quest items, which the server takes (session 14b). */
   kept: Item[];
   lost: Item[];
+  /** Quest objectives the raid finished, as the server will count them. */
+  quests: { quest: string; text: string }[];
 }
 
 const TITLES: Record<RaidResult['how'], string> = {
@@ -120,6 +123,18 @@ function Results({
           </section>
         )}
       </div>
+      {result.quests.length > 0 && (
+        <section className="results-quests">
+          <h2>Quests</h2>
+          <ul>
+            {result.quests.map((q, i) => (
+              <li key={i}>
+                ✓ {q.text} <span className="results-count">· {q.quest}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <button className="primary" onClick={onNext}>
         Continue
       </button>

@@ -465,6 +465,11 @@
       "colour": "#4a3520"
     },
     {
+      "type": "questMarker",
+      "id": "notes-shed",
+      "pos": [29.4, 0, -9.4]
+    },
+    {
       "type": "lootContainer",
       "id": "shed-crate",
       "pos": [30, 0, -10.8],
@@ -543,6 +548,11 @@
       "prefab": "car",
       "pos": [14, 0, -34],
       "yaw": -30
+    },
+    {
+      "type": "questMarker",
+      "id": "notes-car",
+      "pos": [16.5, 0, -32.5]
     },
     {
       "type": "box",
