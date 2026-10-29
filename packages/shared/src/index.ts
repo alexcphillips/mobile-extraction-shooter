@@ -332,6 +332,19 @@ export {
   type WeaponDef,
 } from './content/items';
 export {
+  addVec,
+  modelShapes,
+  partSchema,
+  type AttachmentModel,
+  type ItemModel,
+  type MeleeModel,
+  type ModelPart,
+  type PlainModel,
+  type Vec3,
+  type WeaponModel,
+} from './content/models';
+export { placeholderModel } from './content/placeholder-models';
+export {
   ENEMY_FORMAT,
   ENEMY_FORMAT_VERSION,
   LOADOUT_FORMAT,

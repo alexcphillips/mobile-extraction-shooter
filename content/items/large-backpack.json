@@ -1,10 +1,32 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "id": "large-backpack",
   "name": "Large backpack",
   "type": "container",
   "size": [4, 4],
   "value": 20000,
   "slot": "backpack",
-  "grid": [5, 6]
+  "grid": [5, 6],
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 1.182, 0.227],
+        "size": [0.296, 0.394, 0.177],
+        "colour": "#4a4f3a"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.379, 0.217],
+        "size": [0.276, 0.059, 0.158],
+        "colour": "#3f4432"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.064, 0.325],
+        "size": [0.217, 0.138, 0.059],
+        "colour": "#3f4432"
+      }
+    ]
+  }
 }

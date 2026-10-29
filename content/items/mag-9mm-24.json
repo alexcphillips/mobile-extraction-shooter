@@ -1,5 +1,5 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "id": "mag-9mm-24",
   "name": "24-round 9 mm magazine",
   "type": "attachment",
@@ -10,5 +10,10 @@
   "mods": {
     "magazine": 9,
     "reloadTime": 1.1
+  },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, -0.015, 0], "size": [0.022, 0.036, 0.04], "colour": "#2a2d30" }
+    ]
   }
 }

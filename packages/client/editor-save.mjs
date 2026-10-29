@@ -90,7 +90,7 @@ export function editorSave() {
  * line if they fit. So objects get the break, one key per line, except items of lists
  * other than nodes and zones (patrol stops, reticle shapes), which go on one line.
  */
-function layout(value, key = '', inList = false) {
+export function layout(value, key = '', inList = false) {
   if (Array.isArray(value)) return `[${value.map((v) => layout(v, key, true)).join(',')}]`;
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
   const body = Object.entries(value)

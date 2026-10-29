@@ -1,5 +1,5 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "id": "muzzle-brake",
   "name": "Muzzle brake",
   "type": "attachment",
@@ -9,5 +9,11 @@
   "mods": {
     "recoil": 0.7,
     "loudness": 1.2
+  },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, -0.015], "size": [0.036, 0.036, 0.05], "colour": "#1d1f21" }
+    ],
+    "muzzle": [0, 0, -0.05]
   }
 }

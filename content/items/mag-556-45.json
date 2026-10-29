@@ -1,5 +1,5 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "id": "mag-556-45",
   "name": "45-round 5.56 magazine",
   "type": "attachment",
@@ -10,5 +10,10 @@
   "mods": {
     "magazine": 15,
     "reloadTime": 1.15
+  },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, -0.075, 0], "size": [0.044, 0.17, 0.06], "colour": "#2a2d30" }
+    ]
   }
 }

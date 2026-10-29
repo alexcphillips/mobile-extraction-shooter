@@ -1,5 +1,5 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "id": "knife",
   "name": "Knife",
   "type": "melee",
@@ -9,5 +9,23 @@
   "bleedChance": 0.3,
   "swingTime": 0.5,
   "reach": 1.5,
-  "drawTime": 0.3
+  "drawTime": 0.3,
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, -0.05, 0], "size": [0.022, 0.028, 0.09], "colour": "#1d1f21" },
+      {
+        "type": "box",
+        "pos": [0, -0.05, -0.05],
+        "size": [0.012, 0.052, 0.01],
+        "colour": "#2a2d30"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.048, -0.135],
+        "size": [0.006, 0.028, 0.16],
+        "colour": "#b9c0c6"
+      }
+    ],
+    "grip": [0, -0.055, 0.005]
+  }
 }

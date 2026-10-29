@@ -7,7 +7,7 @@ import {
   type CharacterTemplate,
   type Gear,
 } from './character';
-import { KNIFE, gunKey, gunModel, type GunModel } from './gun-model';
+import { gunKey, gunModel, knifeModel, type GunModel } from './gun-model';
 
 /** The clips the body plays, by their names in the Universal Animation Library. */
 const CLIP = {
@@ -413,21 +413,23 @@ export class CharacterBody {
   private setLook(ch: Character, items: ItemDb): void {
     const w = heldWeapon(ch);
     const g = ch.gear;
-    const knife = !w && g.hand === 'knife' && !!g.knife;
-    const held = w ? gunKey(w) : knife ? 'knife' : '';
-    const key = `${!!g.helmet} ${!!g.bodyArmour} ${!!g.backpack} ${held}`;
+    const knife = !w && g.hand === 'knife' && g.knife ? g.knife.item : null;
+    const held = w ? gunKey(w) : (knife ?? '');
+    const gear: Gear = {
+      helmet: g.helmet?.item ?? null,
+      armour: g.bodyArmour?.item ?? null,
+      rig: g.rig?.item ?? null,
+      backpack: g.backpack?.item ?? null,
+      gun: null,
+    };
+    const key = `${gear.helmet} ${gear.armour} ${gear.rig} ${gear.backpack} ${held}`;
     if (key === this.look) return;
     this.look = key;
     this.gun = w ? gunModel(w, items) : null;
-    this.knife = knife;
+    this.knife = !!knife;
     this.hold = this.gun?.hold ?? 'rifle';
-    const gear: Gear = {
-      helmet: !!g.helmet,
-      vest: !!g.bodyArmour,
-      backpack: !!g.backpack,
-      gun: this.gun?.shapes ?? (knife ? KNIFE.shapes : null),
-    };
-    this.mesh.geometry = characterGeometry(this.rig.template, this.outfit, gear);
+    gear.gun = this.gun?.shapes ?? (knife ? knifeModel(items, knife).shapes : null);
+    this.mesh.geometry = characterGeometry(this.rig.template, this.outfit, gear, items);
   }
 
   private animate(ch: Character, dt: number, ik: boolean): void {

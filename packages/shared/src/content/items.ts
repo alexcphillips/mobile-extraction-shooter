@@ -1,6 +1,18 @@
 import { z } from 'zod';
 import { ContentError, type ContentFormat } from './format';
+import {
+  ATTACHMENT_SLOTS,
+  attachmentModelSchema,
+  meleeModelSchema,
+  plainModelSchema,
+  slotSchema,
+  weaponModelSchema,
+  type ModelPart,
+} from './models';
+import { placeholderModel } from './placeholder-models';
 import { idSchema } from './schema';
+
+export { ATTACHMENT_SLOTS, type AttachmentSlot } from './models';
 
 /*
  * Item files (content/items/<id>.json): every kind of item, its size in the inventory
@@ -17,13 +29,9 @@ const fraction = finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1');
  * 3 (session 9): every item gained a grid size, ammo a stack size; the other types were added.
  * 4 (session 10b): weapons gained a draw time; the knife gained its stats.
  * 5 (session 13b): every item gained a value; repair kits a use time.
+ * 6 (session 18b): every item gained a model (models.ts).
  */
-export const ITEM_FORMAT_VERSION = 5;
-
-/** The fixed attachment slots a gun can have. */
-export const ATTACHMENT_SLOTS = ['optic', 'muzzle', 'magazine'] as const;
-export type AttachmentSlot = (typeof ATTACHMENT_SLOTS)[number];
-const slotSchema = z.enum(ATTACHMENT_SLOTS);
+export const ITEM_FORMAT_VERSION = 6;
 
 const cells = z.int().min(1);
 /** A grid size: [width, height] in cells. */
@@ -44,49 +52,82 @@ const common = {
    */
   value: z.int().min(0),
 };
+/** How it's drawn (session 18b): see models.ts. Guns, attachments and knives add points. */
+const plainModel = { model: plainModelSchema };
 
-const weaponSchema = z.strictObject({
-  ...common,
-  type: z.literal('weapon'),
-  /** The ammo item it fires. */
-  ammo: idSchema,
-  /**
-   * How it's held: a rifle in both hands at the shoulder, a pistol out in front. Picks the
-   * animations and, until the item editor's models (session 18b), the placeholder model. Defaults
-   * to rifle.
-   */
-  hold: z.enum(['rifle', 'pistol']).optional(),
-  /** auto keeps firing while the trigger is held; semi fires once per pull. */
-  fireMode: z.enum(['auto', 'semi']),
-  /** Rounds per minute; for semi, the fastest it can be pulled. */
-  rpm: positive,
-  magazine: z.int().min(1),
-  reloadTime: positive,
-  /** From the hip to fully aimed. */
-  aimTime: positive,
-  /** Taking it out: from switching to it until it can fire or aim. */
-  drawTime: positive,
-  /** Shots stop here. */
-  range: positive,
-  /** How far away a shot can be heard (by AI, from session 7). Suppressors shrink it. */
-  loudness: positive,
-  /** The attachment slots it has, each at most once. None if left out. */
-  slots: z
-    .array(slotSchema)
-    .refine((a) => new Set(a).size === a.length, 'lists a slot twice')
-    .optional(),
-  /** The most a shot strays from where you aim, in degrees, from the hip and aimed. */
-  hipSpread: nonNegative,
-  aimSpread: nonNegative,
-  recoil: z.strictObject({
-    /** View kick upwards per shot. */
-    up: nonNegative,
-    /** Random kick sideways per shot, up to this much either way. */
-    side: nonNegative,
-    /** How fast the view settles back, in degrees per second. */
-    recovery: positive,
-  }),
-});
+const weaponSchema = z
+  .strictObject({
+    ...common,
+    type: z.literal('weapon'),
+    /** The ammo item it fires. */
+    ammo: idSchema,
+    /**
+     * How it's held: a rifle in both hands at the shoulder, a pistol out in front. Picks the
+     * animations and where the gun sits in first person. Defaults to rifle.
+     */
+    hold: z.enum(['rifle', 'pistol']).optional(),
+    /** auto keeps firing while the trigger is held; semi fires once per pull. */
+    fireMode: z.enum(['auto', 'semi']),
+    /** Rounds per minute; for semi, the fastest it can be pulled. */
+    rpm: positive,
+    magazine: z.int().min(1),
+    reloadTime: positive,
+    /** From the hip to fully aimed. */
+    aimTime: positive,
+    /** Taking it out: from switching to it until it can fire or aim. */
+    drawTime: positive,
+    /** Shots stop here. */
+    range: positive,
+    /** How far away a shot can be heard (by AI, from session 7). Suppressors shrink it. */
+    loudness: positive,
+    /** The attachment slots it has, each at most once. None if left out. */
+    slots: z
+      .array(slotSchema)
+      .refine((a) => new Set(a).size === a.length, 'lists a slot twice')
+      .optional(),
+    /** The most a shot strays from where you aim, in degrees, from the hip and aimed. */
+    hipSpread: nonNegative,
+    aimSpread: nonNegative,
+    recoil: z.strictObject({
+      /** View kick upwards per shot. */
+      up: nonNegative,
+      /** Random kick sideways per shot, up to this much either way. */
+      side: nonNegative,
+      /** How fast the view settles back, in degrees per second. */
+      recovery: positive,
+    }),
+    model: weaponModelSchema,
+  })
+  .superRefine((w, ctx) => {
+    const slots = w.slots ?? [];
+    for (const slot of slots) {
+      if (!w.model.mounts?.[slot]) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `needs a ${slot} mount`,
+          path: ['model', 'mounts'],
+        });
+      }
+    }
+    for (const slot of ATTACHMENT_SLOTS) {
+      if (w.model.mounts?.[slot] && !slots.includes(slot)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `has a ${slot} mount but no ${slot} slot`,
+          path: ['model', 'mounts', slot],
+        });
+      }
+    }
+    w.model.parts.forEach((p, i) => {
+      if (p.hiddenBy && !slots.includes(p.hiddenBy)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `hidden by ${p.hiddenBy}, a slot it doesn't have`,
+          path: ['model', 'parts', i, 'hiddenBy'],
+        });
+      }
+    });
+  });
 
 const ammoSchema = z.strictObject({
   ...common,
@@ -99,6 +140,7 @@ const ammoSchema = z.strictObject({
   armourDamage: nonNegative.optional(),
   /** Chance that a hit which gets through starts bleeding. */
   bleedChance: fraction,
+  ...plainModel,
 });
 
 const armourSchema = z.strictObject({
@@ -109,6 +151,7 @@ const armourSchema = z.strictObject({
   /** The fraction of damage it absorbs while it has durability left. */
   absorb: fraction,
   durability: positive,
+  ...plainModel,
 });
 
 /**
@@ -167,10 +210,19 @@ const attachmentSchema = z
         }),
       })
       .optional(),
+    model: attachmentModelSchema,
   })
   .refine((a) => (a.slot === 'optic') === !!a.optic, {
     message: 'optics need an optic section, and only optics may have one',
     path: ['optic'],
+  })
+  .refine((a) => (a.slot === 'optic') === !!a.model.sight, {
+    message: 'optics need a sight point, and only optics may have one',
+    path: ['model', 'sight'],
+  })
+  .refine((a) => (a.slot === 'muzzle') === !!a.model.muzzle, {
+    message: 'muzzle devices need a muzzle point, and only they may have one',
+    path: ['model', 'muzzle'],
   });
 
 /** What a med does. Each use treats one zone, the first in TREATMENT_ORDER that needs it. */
@@ -193,6 +245,7 @@ const medSchema = z
     uses: z.int().min(1).optional(),
     /** heal only: the HP it holds in all, spent across uses. */
     hp: positive.optional(),
+    ...plainModel,
   })
   .refine((m) => (m.effect === 'heal') === (m.hp !== undefined), {
     message: 'heal needs hp, and only heal may have it',
@@ -210,6 +263,7 @@ const containerSchema = z.strictObject({
   slot: z.enum(['rig', 'backpack']),
   /** The grid inside, [width, height] in cells. */
   grid: sizeSchema,
+  ...plainModel,
 });
 
 /**
@@ -231,6 +285,7 @@ const meleeSchema = z.strictObject({
   reach: positive,
   /** Taking it out: from switching to it until it can swing. */
   drawTime: positive,
+  model: meleeModelSchema,
 });
 
 /** Opens the doors that name it. */
@@ -239,10 +294,11 @@ const keySchema = z.strictObject({
   type: z.literal('key'),
   /** Unlocks this many times, then it's gone; left out, it never wears out. */
   uses: z.int().min(1).optional(),
+  ...plainModel,
 });
 
 /** Picked up for a quest. */
-const questSchema = z.strictObject({ ...common, type: z.literal('quest') });
+const questSchema = z.strictObject({ ...common, type: z.literal('quest'), ...plainModel });
 
 /** Valuables, junk and cash: things to sell. */
 const lootSchema = z.strictObject({
@@ -255,6 +311,7 @@ const lootSchema = z.strictObject({
    * full value.
    */
   money: z.literal(true).optional(),
+  ...plainModel,
 });
 
 /** Armour repair kits. */
@@ -265,6 +322,7 @@ const repairSchema = z.strictObject({
   points: positive,
   /** How long a repair takes in a raid (session 13b). Between raids it's at once. */
   useTime: positive,
+  ...plainModel,
 });
 
 export const itemSchema = z.discriminatedUnion('type', [
@@ -293,6 +351,7 @@ export type RepairDef = z.infer<typeof repairSchema>;
 export type AttachmentMods = z.infer<typeof modsSchema>;
 export type OpticDef = NonNullable<AttachmentDef['optic']>;
 export type ReticleShape = z.infer<typeof reticleShapeSchema>;
+export type { ModelPart };
 
 /** Every item by id. The simulation looks stats up here. */
 export type ItemDb = ReadonlyMap<string, ItemDef>;
@@ -331,6 +390,8 @@ export const ITEM_FORMAT: ContentFormat<ItemDef> = {
       value: VALUE_GUESSES[doc.type as string] ?? 0,
       ...(doc.type === 'repair' ? { useTime: 8 } : {}),
     }),
+    // Models: the placeholders each kind was drawn with.
+    5: (doc) => ({ ...doc, model: placeholderModel(doc) }),
   },
 };
 

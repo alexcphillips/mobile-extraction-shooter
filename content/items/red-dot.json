@@ -1,5 +1,5 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "id": "red-dot",
   "name": "Red dot sight",
   "type": "attachment",
@@ -10,14 +10,36 @@
     "zoom": 1,
     "reticle": {
       "colour": "#ff3b30",
-      "shapes": [
-        {
-          "type": "dot",
-          "x": 0,
-          "y": 0,
-          "r": 0.8
-        }
-      ]
+      "shapes": [{ "type": "dot", "x": 0, "y": 0, "r": 0.8 }]
     }
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0.007, -0.08],
+        "size": [0.032, 0.014, 0.06],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [-0.018, 0.043, -0.09],
+        "size": [0.006, 0.06, 0.012],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0.018, 0.043, -0.09],
+        "size": [0.006, 0.06, 0.012],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.073, -0.09],
+        "size": [0.042, 0.006, 0.012],
+        "colour": "#1d1f21"
+      }
+    ],
+    "sight": [0, 0.045, -0.09]
   }
 }

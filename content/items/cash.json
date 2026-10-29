@@ -1,10 +1,13 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "id": "cash",
   "name": "Cash",
   "type": "loot",
   "size": [1, 1],
   "value": 1,
   "stack": 10000,
-  "money": true
+  "money": true,
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#a08a40" }]
+  }
 }

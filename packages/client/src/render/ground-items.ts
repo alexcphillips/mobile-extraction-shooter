@@ -1,67 +1,46 @@
-import { itemDef, type GroundItem, type Item, type ItemDb, type ItemDef } from '@mes/shared';
+import { itemDef, modelShapes, type GroundItem, type Item, type ItemDb } from '@mes/shared';
 import * as THREE from 'three';
+import { TriangleBuilder } from './geometry';
 import { shadedMaterial } from './material';
 
-/** How big one inventory cell is on the ground, in metres. */
-const CELL = 0.14;
-const HEIGHT = 0.07;
 /** How much lighter the item the use button would take is drawn. */
 const LIT = 1.6;
 
-/** A colour per item type, like the inventory screen's, until items get models (session 18b). */
-const COLOURS: Record<ItemDef['type'], number> = {
-  weapon: 0x56653f,
-  ammo: 0x9a8238,
-  armour: 0x3f5266,
-  attachment: 0x5a4870,
-  med: 0xb04848,
-  container: 0x4c5a36,
-  melee: 0x5e5e5e,
-  key: 0xc29a30,
-  quest: 0x8b4a8b,
-  loot: 0xa08a40,
-  repair: 0x2f7a7a,
-};
-
 /**
- * Items on the ground as flat boxes sized by their inventory grid size and coloured by
- * type: one instanced mesh, one draw call for them all. Rebuilt only when the list
- * changes, which is checked each tick by comparing the items.
+ * Items on the ground, drawn with their models (session 18b) merged into one mesh: one draw
+ * call for them all. Rebuilt only when the list changes, which is checked each tick by
+ * comparing the items. Guns, knives and magazines lie on their side, body armour, rigs and backpacks
+ * on their back; everything else stands as modelled, its lowest point on the ground.
  */
 export class GroundItems {
   readonly root = new THREE.Group();
-  private mesh: THREE.InstancedMesh | null = null;
-  private capacity = 0;
-  private readonly geometry: THREE.BoxGeometry;
-  private readonly material = shadedMaterial();
+  private readonly mesh: THREE.Mesh;
+  /** Each item's model, laid down, by item id. */
+  private readonly laid = new Map<string, THREE.BufferGeometry>();
   private drawn: GroundItem[] = [];
   /** Each drawn one's item, so an item swapped in place on the ground counts as a change. */
   private drawnItems: Item[] = [];
+  /** Where each drawn item's vertices start in the mesh, and one past the last item's. */
+  private starts: number[] = [];
   private lit = -1;
   private readonly m = new THREE.Matrix4();
   private readonly q = new THREE.Quaternion();
   private readonly p = new THREE.Vector3();
-  private readonly s = new THREE.Vector3();
-  private readonly c = new THREE.Color();
+  private readonly v = new THREE.Vector3();
   private readonly up = new THREE.Vector3(0, 1, 0);
 
   constructor(private readonly items: ItemDb) {
-    // Base at y = 0, white vertex colours for the instance colours to tint.
-    this.geometry = new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0);
-    const n = this.geometry.attributes.position!.count;
-    this.geometry.setAttribute(
-      'color',
-      new THREE.Float32BufferAttribute(new Array(n * 3).fill(1), 3),
-    );
+    this.mesh = new THREE.Mesh(new THREE.BufferGeometry(), shadedMaterial());
+    this.mesh.frustumCulled = false;
+    this.root.add(this.mesh);
   }
 
   /** Call once per tick. `lit`: the index of the item the use button would take, or -1. */
   update(ground: readonly GroundItem[], lit: number): void {
     if (this.changed(ground)) this.rebuild(ground);
-    if (lit !== this.lit && this.mesh) {
-      if (this.lit >= 0 && this.lit < this.drawn.length) this.colour(this.lit, 1);
+    if (lit !== this.lit) {
+      if (this.lit >= 0 && this.lit < this.drawn.length) this.colour(this.lit, 1 / LIT);
       if (lit >= 0 && lit < this.drawn.length) this.colour(lit, LIT);
-      this.mesh.instanceColor!.needsUpdate = true;
     }
     this.lit = lit;
   }
@@ -75,39 +54,69 @@ export class GroundItems {
     return false;
   }
 
+  /** An item's model as it lies on the ground: centred on its origin, resting on y = 0. */
+  private laidDown(id: string): THREE.BufferGeometry {
+    let g = this.laid.get(id);
+    if (g) return g;
+    const def = itemDef(this.items, id);
+    const b = new TriangleBuilder(false);
+    for (const s of modelShapes(def.model)) b.shape(s);
+    g = b.build();
+    const long = def.type === 'attachment' && def.slot === 'magazine';
+    if (def.type === 'weapon' || def.type === 'melee' || long) g.rotateZ(Math.PI / 2);
+    else if ((def.type === 'armour' && def.slot === 'body') || def.type === 'container')
+      g.rotateX(Math.PI / 2);
+    g.computeBoundingBox();
+    const box = g.boundingBox!;
+    g.translate(-(box.min.x + box.max.x) / 2, -box.min.y, -(box.min.z + box.max.z) / 2);
+    this.laid.set(id, g);
+    return g;
+  }
+
   private rebuild(ground: readonly GroundItem[]): void {
     this.drawn = ground.slice();
     this.drawnItems = ground.map((g) => g.item);
     this.lit = -1;
-    if (!this.mesh || this.capacity < ground.length) {
-      if (this.mesh) {
-        this.root.remove(this.mesh);
-        this.mesh.dispose();
-      }
-      this.capacity = 64;
-      while (this.capacity < ground.length) this.capacity *= 2;
-      this.mesh = new THREE.InstancedMesh(this.geometry, this.material, this.capacity);
-      this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-      this.root.add(this.mesh);
-    }
-    const mesh = this.mesh;
+    const parts = ground.map((g) => this.laidDown(g.item.item));
+    this.starts = [0];
+    for (const p of parts) this.starts.push(this.starts.at(-1)! + p.getAttribute('position').count);
+    const n = this.starts.at(-1)!;
+    const position = new Float32Array(n * 3);
+    const normal = new Float32Array(n * 3);
+    const colour = new Float32Array(n * 3);
     ground.forEach((g, i) => {
-      const def = itemDef(this.items, g.item.item);
-      this.p.set(g.x, g.y, g.z);
-      this.q.setFromAxisAngle(this.up, g.yaw);
-      this.s.set(def.size[0] * CELL, HEIGHT, def.size[1] * CELL);
-      mesh.setMatrixAt(i, this.m.compose(this.p, this.q, this.s));
-      this.colour(i, 1);
+      const src = parts[i]!;
+      this.m.compose(this.p.set(g.x, g.y, g.z), this.q.setFromAxisAngle(this.up, g.yaw), ONE);
+      const pos = src.getAttribute('position');
+      const nor = src.getAttribute('normal');
+      const start = this.starts[i]!;
+      for (let k = 0; k < pos.count; k++) {
+        this.v
+          .fromBufferAttribute(pos, k)
+          .applyMatrix4(this.m)
+          .toArray(position, (start + k) * 3);
+        this.v
+          .fromBufferAttribute(nor, k)
+          .applyQuaternion(this.q)
+          .toArray(normal, (start + k) * 3);
+      }
+      colour.set(src.getAttribute('color').array, start * 3);
     });
-    mesh.count = ground.length;
-    mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    mesh.computeBoundingSphere();
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(position, 3));
+    geo.setAttribute('normal', new THREE.BufferAttribute(normal, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(colour, 3));
+    this.mesh.geometry.dispose();
+    this.mesh.geometry = geo;
   }
 
+  /** Multiplies one drawn item's colours by k. */
   private colour(i: number, k: number): void {
-    const def = itemDef(this.items, this.drawnItems[i]!.item);
-    this.c.setHex(COLOURS[def.type]).multiplyScalar(k);
-    this.mesh!.setColorAt(i, this.c);
+    const attr = this.mesh.geometry.getAttribute('color') as THREE.BufferAttribute;
+    const a = attr.array as Float32Array;
+    for (let j = this.starts[i]! * 3; j < this.starts[i + 1]! * 3; j++) a[j]! *= k;
+    attr.needsUpdate = true;
   }
 }
+
+const ONE = new THREE.Vector3(1, 1, 1);

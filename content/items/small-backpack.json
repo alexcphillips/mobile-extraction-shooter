@@ -1,10 +1,32 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "id": "small-backpack",
   "name": "Small backpack",
   "type": "container",
   "size": [3, 3],
   "value": 5000,
   "slot": "backpack",
-  "grid": [4, 4]
+  "grid": [4, 4],
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 1.182, 0.227],
+        "size": [0.296, 0.394, 0.177],
+        "colour": "#4a4f3a"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.379, 0.217],
+        "size": [0.276, 0.059, 0.158],
+        "colour": "#3f4432"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.064, 0.325],
+        "size": [0.217, 0.138, 0.059],
+        "colour": "#3f4432"
+      }
+    ]
+  }
 }

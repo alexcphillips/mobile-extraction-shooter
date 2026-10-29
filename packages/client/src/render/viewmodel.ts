@@ -2,7 +2,7 @@ import type { ItemDb, Outfit, Shape, WeaponState } from '@mes/shared';
 import * as THREE from 'three';
 import { DEFAULT_OUTFIT } from './character';
 import { TriangleBuilder } from './geometry';
-import { KNIFE, gunKey, gunModel } from './gun-model';
+import { gunKey, gunModel, knifeModel } from './gun-model';
 import { shadedMaterial } from './material';
 
 /** A box from one point to another (in the gun's frame), as thick as given: a limb. */
@@ -123,17 +123,20 @@ export class Viewmodel {
     this.build([...gun.shapes, ...arms(gun.grip, gun.support, this.outfit)]);
     const pistol = gun.hold === 'pistol';
     this.hip.copy(pistol ? PISTOL_HIP : HIP);
-    this.aimed.set(0, -gun.sightY, pistol ? PISTOL_AIMED_Z : AIMED_Z);
-    this.flash.position.set(0, gun.muzzleY, gun.muzzleZ);
-    this.muzzle.position.set(0, gun.muzzleY, gun.muzzleZ);
+    // Aimed, the sight is on the line straight ahead of the eye.
+    this.aimed.set(-gun.sight[0], -gun.sight[1], pistol ? PISTOL_AIMED_Z : AIMED_Z);
+    this.flash.position.set(...gun.muzzle);
+    this.muzzle.position.set(...gun.muzzle);
   }
 
-  /** Shows the knife in the right hand. */
-  setKnife(): void {
-    if (this.built === 'knife') return;
-    this.built = 'knife';
+  /** Shows a knife in the right hand. */
+  setKnife(id: string, items: ItemDb): void {
+    const key = `knife ${id}`;
+    if (this.built === key) return;
+    this.built = key;
     this.suppressed = true;
-    this.build([...KNIFE.shapes, ...arms(KNIFE.grip, null, this.outfit)]);
+    const knife = knifeModel(items, id);
+    this.build([...knife.shapes, ...arms(knife.grip, null, this.outfit)]);
     this.hip.copy(KNIFE_HIP);
     this.aimed.copy(KNIFE_HIP);
   }

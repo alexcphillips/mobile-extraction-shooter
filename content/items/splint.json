@@ -1,10 +1,13 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "id": "splint",
   "name": "Splint",
   "type": "med",
   "size": [1, 1],
   "value": 600,
   "effect": "splint",
-  "useTime": 3
+  "useTime": 3,
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#b04848" }]
+  }
 }

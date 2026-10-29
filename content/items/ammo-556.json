@@ -1,5 +1,5 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "id": "ammo-556",
   "name": "5.56 mm rounds",
   "type": "ammo",
@@ -8,5 +8,8 @@
   "stack": 60,
   "damage": 42,
   "armourDamage": 1,
-  "bleedChance": 0.25
+  "bleedChance": 0.25,
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#9a8238" }]
+  }
 }

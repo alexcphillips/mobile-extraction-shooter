@@ -190,3 +190,80 @@ body.item-editor #scene {
   max-height: 140px;
   margin: 6px 0;
 }
+
+/* The model tab (session 18b). */
+
+.ie-tabs button {
+  flex: 1;
+}
+
+.ie-parts {
+  max-height: 220px;
+}
+
+.ie-part {
+  margin: 6px 0;
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+}
+
+.ie-point {
+  margin: 4px 0;
+  padding: 3px 4px;
+  border-radius: 4px;
+}
+
+.ie-point.ed-on {
+  background: rgba(255, 224, 130, 0.12);
+}
+
+#editor .ie-point-name {
+  margin-right: 6px;
+}
+
+.ie-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 8px;
+  background: var(--ed-bg);
+  border-radius: 6px;
+}
+
+.ie-viewbar .ed-field {
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+
+.ie-canvas {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.ie-canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+}
+
+.ie-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.ie-fp-note {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  margin: 0;
+  color: #fff;
+}

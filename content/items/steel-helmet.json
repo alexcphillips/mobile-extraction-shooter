@@ -1,5 +1,5 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "id": "steel-helmet",
   "name": "Steel helmet",
   "type": "armour",
@@ -7,5 +7,25 @@
   "value": 12000,
   "slot": "helmet",
   "absorb": 0.5,
-  "durability": 40
+  "durability": 40,
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 1.719, 0],
+        "radius": 0.138,
+        "radiusTop": 0.113,
+        "height": 0.118,
+        "colour": "#56603f"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 1.793, 0],
+        "radius": 0.113,
+        "radiusTop": 0.059,
+        "height": 0.035,
+        "colour": "#56603f"
+      }
+    ]
+  }
 }

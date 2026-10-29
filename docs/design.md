@@ -170,7 +170,7 @@ A simplified mobile extraction shooter: the risk/reward loop of Tarkov without i
   - **The ground panel:** with nothing open, the right column of the inventory is **On the ground**: everything within reach, as tiles. **Drag** one of yours there (or select it and press **Drop**) to drop it; drag a tile into a grid or onto a gear slot, or **double-tap** it, to take it. Dropping a ground item on a gear slot swaps them: what was in the slot goes on the ground in its place. So a full bag is sorted out without closing the screen.
   - **Dropping** puts an item 0.9 m in front of you (where you can see it past the gun), or at your feet if a wall is closer, with a little scatter, on the surface below (so off a ladder it falls to the ground).
   - **What has nowhere to go is dropped, not refused:** the rounds a smaller magazine hands back, an attachment swapped off a gun, and one taken off "into what you carry". Taking one off to a spot that doesn't fit is still refused.
-  - Items on the ground are drawn as flat boxes the size of their inventory grid, coloured by type, until items get models (session 18b).
+  - Items on the ground are drawn with their models (session 18b): guns, knives and magazines lie on their side, worn gear on its back.
 - The inventory UI's usability on a phone is an explicit design goal. Prototype it on a real phone before polishing.
 
 ## Quests and vendors
@@ -227,8 +227,8 @@ A sandbox. The client is trusted. The server only applies sanity limits (for exa
 - **The player in first person** sees only arms and the gun. The full body is the same character system, which a co-op partner sees.
 - **Animations** come from the pack: idle, walk, run, aim, shoot, reload, death. No ragdolls.
 - **Session 8b (2026-10-26):** the pack is Quaternius's **Universal Animation Library (Standard)**, CC0 (chosen with the user). It's one mannequin with 45 clips, including pistol idle, aim, shoot and reload, but **no rifle clips**. So a gun is held by IK: the gun sits on a weapon bone in front of the right shoulder, from the low ready (tipped down) to aimed (shouldered) as the character aims, turned with where it looks, and both hands reach for it. While reloading or sprinting, and for distant bodies, the gun is carried in the right hand by the clip instead. A rifle reload uses the pistol reload clip, so the rifle points up for it. Enemy types pick their **outfit colours** (skin, top, bottom, hands, feet) in their files; a body's colours come from which bone moves each face most.
-- Gear is drawn as placeholders until the item editor's models (session 18b): a helmet, a plate carrier, a backpack (session 9), and the same placeholder guns as first person. Mount points are bones: helmet on the head, armour on the chest, the backpack on the upper chest, and the gun on its own weapon bone. Rigs aren't drawn yet.
-- **First-person arms** are low-poly forearms and hands in the player's outfit, drawn with the gun in its pass. From the hip the gun hides most of them; better framing comes with real gun models (session 18b).
+- Gear is drawn with its item models (session 18b; the placeholders of session 9 became the first models): helmet, body armour, rig, backpack, and the same gun as first person. Mount points are bones: helmet on the head, armour and rig on the chest, the backpack on the upper chest, and the gun on its own weapon bone.
+- **First-person arms** are low-poly forearms and hands in the player's outfit, drawn with the gun in its pass. From the hip the gun hides most of them; better framing waits for real gun models, now made in the item editor (session 18b).
 
 ## Editors (admin only, desktop browser)
 The editors run on the Mac in a desktop browser and save to JSON files in the repo. The game itself is played on iOS.
@@ -253,6 +253,7 @@ The editors run on the Mac in a desktop browser and save to JSON files in the re
 - A model builder that makes items from simple shapes.
 - Grid size in the inventory for every item.
 - **Session 18 (the user's calls, 2026-10-28):** the item editor is its own page (`/item-editor`), separate from the map editor. **Saving is refused if the edit breaks anything in content/** that names items (loot tables, loadouts, vendors, quests, door keys, starting kits), as the map editor refuses a broken map. Items can be **made** (blank or as a copy), **not deleted or renamed**. Models came out of this session into **18b**. A change that can make **players' saved items invalid** (a smaller size, stack, grid, magazine or durability, a slot taken away) **warns** rather than refusing.
+- **Session 18b (the user's calls, 2026-10-28):** **every item has a model**, not only those drawn before (the rest start as a box the size of their grid), so the game and the editor have one path. **Inventory icons from the models are not part of 18b.** Models are made of boxes, cylinders and wedges; a gun's parts can be hidden by what's fitted (iron sights under an optic). Worn gear is modelled on the standing body, shown in the editor. The editor previews a gun in first person, from the hip and aimed, with the game's reticle, to check the sight line.
 
 ## Future (designed for now, built later)
 - **Co-op vs. AI:** a raid runs on the server (Cloudflare Durable Object) using the same simulation code; each phone predicts its own movement. See [tech-stack.md](tech-stack.md).

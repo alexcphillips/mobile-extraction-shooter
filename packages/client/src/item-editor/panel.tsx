@@ -11,9 +11,11 @@ import {
 } from '@mes/shared';
 import { useState, useSyncExternalStore, type ReactNode } from 'react';
 import { itemUses } from '../content';
-import { Num, Pick, Text } from '../editor/fields';
+import { Num, Pick, Text, Toggle } from '../editor/fields';
 import { colourOf } from '../ui/raid-screen';
 import type { Doc, ItemEditor, ItemEditorState } from './editor';
+import { fitPointsToSlot, setSlots } from './model-edit';
+import { ModelTab } from './model-panel';
 import { ReticleDesigner } from './reticle';
 import { BLANK_OPTIC, ITEM_TYPES, type ItemType } from './templates';
 
@@ -55,6 +57,7 @@ function put(doc: Doc, path: Path, value: unknown): void {
 export function ItemEditorPanel({ editor }: { editor: ItemEditor }) {
   const s = useSyncExternalStore(editor.subscribe, editor.getState);
   const [making, setMaking] = useState<'new' | 'copy' | null>(null);
+  const [tab, setTab] = useState<'stats' | 'model'>('stats');
   const def = s.items.get(s.current);
   const status = s.message ?? (s.problem ? `Problem: ${s.problem}` : null);
   return (
@@ -91,12 +94,25 @@ export function ItemEditorPanel({ editor }: { editor: ItemEditor }) {
             Copy…
           </button>
         </div>
+        <div className="ed-row ie-tabs">
+          {(['stats', 'model'] as const).map((t) => (
+            <Toggle key={t} on={tab === t} onClick={() => setTab(t)}>
+              {t}
+            </Toggle>
+          ))}
+        </div>
         <ItemList state={s} editor={editor} />
         <a className="ie-link" href="/editor">
           Map editor
         </a>
       </aside>
-      {def ? <ItemPage key={s.current} editor={editor} state={s} def={def} /> : <main />}
+      {!def ? (
+        <main />
+      ) : tab === 'model' ? (
+        <ModelTab editor={editor} state={s} def={def} />
+      ) : (
+        <ItemPage key={s.current} editor={editor} state={s} def={def} />
+      )}
       <div className={s.problem && !s.message ? 'ed-status ed-problem' : 'ed-status'}>
         {status ?? 'Fields change when you press Enter or leave them. ⌘S saves every changed item.'}
       </div>
@@ -328,10 +344,12 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
                   onChange={(e) =>
                     b.edit((d) => {
                       const was = (d.slots as string[] | undefined) ?? [];
-                      const next = ATTACHMENT_SLOTS.filter((s) =>
-                        s === slot ? e.target.checked : was.includes(s),
+                      setSlots(
+                        d,
+                        ATTACHMENT_SLOTS.filter((s) =>
+                          s === slot ? e.target.checked : was.includes(s),
+                        ),
                       );
-                      put(d, ['slots'], next.length ? next : undefined);
                     })
                   }
                 />
@@ -503,6 +521,7 @@ function AttachmentFields(
           if (v === 'optic' && d.optic === undefined)
             put(d, ['optic'], structuredClone(BLANK_OPTIC));
           if (v !== 'optic') put(d, ['optic'], undefined);
+          fitPointsToSlot(d);
         }}
       />
       <h4>fits</h4>

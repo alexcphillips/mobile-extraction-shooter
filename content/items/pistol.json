@@ -1,5 +1,5 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "id": "pistol",
   "name": "Pistol",
   "type": "weapon",
@@ -22,5 +22,38 @@
     "up": 1.6,
     "side": 0.5,
     "recovery": 18
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0.008, -0.06],
+        "size": [0.028, 0.032, 0.19],
+        "colour": "#3a3f44"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.016, -0.055],
+        "size": [0.024, 0.02, 0.16],
+        "colour": "#2a2d30"
+      },
+      { "type": "box", "pos": [0, -0.06, 0], "size": [0.024, 0.08, 0.044], "colour": "#2a2d30" },
+      {
+        "type": "box",
+        "pos": [0, 0.029, -0.06],
+        "size": [0.01, 0.01, 0.16],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic"
+      }
+    ],
+    "grip": [0, -0.055, 0.005],
+    "support": [-0.012, -0.065, 0],
+    "muzzle": [0, 0.008, -0.155],
+    "sight": [0, 0.033, -0.06],
+    "mounts": {
+      "optic": [0, 0.024, 0.03],
+      "muzzle": [0, 0.008, -0.155],
+      "magazine": [0, -0.1, 0]
+    }
   }
 }

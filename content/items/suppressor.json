@@ -1,5 +1,5 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "id": "suppressor",
   "name": "Suppressor",
   "type": "attachment",
@@ -9,5 +9,18 @@
   "mods": {
     "loudness": 0.3,
     "recoil": 0.9
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.07],
+        "pitch": 90,
+        "radius": 0.02,
+        "height": 0.16,
+        "colour": "#1d1f21"
+      }
+    ],
+    "muzzle": [0, 0, -0.16]
   }
 }

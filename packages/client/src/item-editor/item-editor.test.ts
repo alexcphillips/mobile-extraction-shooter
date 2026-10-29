@@ -1,6 +1,7 @@
 import { ITEM_FORMAT, loadContent, type ItemDef } from '@mes/shared';
 import { describe, expect, it } from 'vitest';
 import { itemContentProblem, itemUses, loadItems } from '../content';
+import { mirrorPart, setSlots } from './model-edit';
 import { storageRisks } from './risk';
 import { ITEM_TYPES, blankItem } from './templates';
 
@@ -26,9 +27,9 @@ describe('item editor', () => {
 
   it('finds what an edit breaks elsewhere in content/', () => {
     // An attachment lists the gun it fits; a loadout puts a suppressor on the pistol.
-    const noMags = edited('assault-rifle', (d) => (d.slots = ['optic', 'muzzle']));
+    const noMags = edited('assault-rifle', (d) => setSlots(d, ['optic', 'muzzle']));
     expect(itemContentProblem(noMags)).toMatch(/mag-556-45.*no magazine slot/);
-    const noMuzzle = edited('pistol', (d) => (d.slots = ['optic', 'magazine']));
+    const noMuzzle = edited('pistol', (d) => setSlots(d, ['optic', 'magazine']));
     expect(itemContentProblem(noMuzzle)).toMatch(/loadouts\/scav-kit.*suppressor/);
     // The test map's shed door needs a key item.
     const notAKey = edited('shed-key', (d) => {
@@ -63,7 +64,7 @@ describe('item editor', () => {
       storageRisks(items.get(id)!, edited(id, change).get(id)!);
     expect(risks('pistol', (d) => (d.size = [2, 2]))).toHaveLength(1);
     expect(risks('pistol', (d) => (d.magazine = 10))).toHaveLength(1);
-    expect(risks('pistol', (d) => (d.slots = ['optic']))).toEqual([
+    expect(risks('pistol', (d) => setSlots(d, ['optic']))).toEqual([
       expect.stringMatching(/muzzle and magazine/),
     ]);
     expect(risks('chest-rig', (d) => (d.grid = [3, 2]))).toHaveLength(1);
@@ -81,5 +82,36 @@ describe('item editor', () => {
     expect(risks('chest-rig', (d) => (d.grid = [5, 3]))).toEqual([]);
     expect(risks('scope-4x', (d) => (d.weapons = ['assault-rifle', 'pistol']))).toEqual([]);
     expect(risks('steel-helmet', (d) => (d.absorb = 0.9))).toEqual([]);
+  });
+
+  it("keeps a gun's mounts and hidden parts in step with its slots", () => {
+    const rifle = structuredClone(loadItems().get('assault-rifle')) as unknown as Record<
+      string,
+      unknown
+    >;
+    setSlots(rifle, ['muzzle']);
+    const model = rifle.model as { mounts: object; parts: { hiddenBy?: string }[] };
+    expect(Object.keys(model.mounts)).toEqual(['muzzle']);
+    expect(model.parts.some((p) => p.hiddenBy)).toBe(false);
+    // A slot coming back gets the placeholder's mount, in the file's order.
+    setSlots(rifle, ['magazine', 'optic', 'muzzle']);
+    expect(model.mounts).toEqual({
+      optic: [0, 0.045, 0],
+      muzzle: [0, 0.02, -0.49],
+      magazine: [0, -0.045, -0.06],
+    });
+    expect(() => loadContent(ITEM_FORMAT, rifle, 'r')).not.toThrow();
+  });
+
+  it('mirrors a part across the middle', () => {
+    const p = {
+      type: 'box' as const,
+      pos: [0.1, 0, -0.2] as [number, number, number],
+      size: [1, 1, 1] as [number, number, number],
+      yaw: 20,
+      pitch: 10,
+      colour: '#000000',
+    };
+    expect(mirrorPart(p)).toMatchObject({ pos: [-0.1, 0, -0.2], yaw: -20, pitch: 10 });
   });
 });

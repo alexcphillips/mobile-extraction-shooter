@@ -1,4 +1,4 @@
-import type { Outfit, Shape } from '@mes/shared';
+import { itemDef, modelShapes, type ItemDb, type Outfit, type Shape } from '@mes/shared';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
@@ -16,9 +16,13 @@ export const WEAPON_BONE = 'weapon';
 export const MOUNTS = {
   helmet: 'DEF-head',
   armour: 'DEF-spine002',
+  rig: 'DEF-spine002',
   backpack: 'DEF-spine003',
   weapon: WEAPON_BONE,
 } as const;
+
+/** The worn gear slots, in the order they're built. */
+const WORN = ['helmet', 'armour', 'rig', 'backpack'] as const;
 
 export const DEFAULT_OUTFIT: Outfit = {
   skin: '#c99a78',
@@ -42,67 +46,13 @@ function partOf(bone: string): Part {
   return 'top';
 }
 
-/** Placeholder gear, in the rest pose: metres, the body facing +z, feet at 0. */
-function gearBox(
-  x: number,
-  y: number,
-  z: number,
-  hx: number,
-  hy: number,
-  hz: number,
-  colour: number,
-): Shape {
-  return { kind: 'box', x, y, z, hx, hy, hz, yaw: 0, pitch: 0, roll: 0, colour };
-}
-const HELMET: Shape[] = [
-  {
-    kind: 'cylinder',
-    x: 0,
-    y: 1.745,
-    z: 0.0,
-    radius: 0.14,
-    radiusTop: 0.115,
-    hy: 0.06,
-    sides: 8,
-    yaw: 0,
-    pitch: 0,
-    roll: 0,
-    colour: 0x56603f,
-  },
-  {
-    kind: 'cylinder',
-    x: 0,
-    y: 1.82,
-    z: 0.0,
-    radius: 0.115,
-    radiusTop: 0.06,
-    hy: 0.018,
-    sides: 8,
-    yaw: 0,
-    pitch: 0,
-    roll: 0,
-    colour: 0x56603f,
-  },
-];
-const VEST: Shape[] = [
-  gearBox(0, 1.24, -0.005, 0.175, 0.16, 0.135, 0x3d4733),
-  gearBox(0, 1.13, 0.135, 0.14, 0.05, 0.03, 0x343d2c),
-  gearBox(-0.11, 1.4, 0, 0.04, 0.02, 0.12, 0x3d4733),
-  gearBox(0.11, 1.4, 0, 0.04, 0.02, 0.12, 0x3d4733),
-];
-
-/** On the back, behind the vest (+z is the front). */
-const BACKPACK: Shape[] = [
-  gearBox(0, 1.2, -0.23, 0.15, 0.2, 0.09, 0x4a4f3a),
-  gearBox(0, 1.4, -0.22, 0.14, 0.03, 0.08, 0x3f4432),
-  gearBox(0, 1.08, -0.33, 0.11, 0.07, 0.03, 0x3f4432),
-];
-
+/** What a character wears (item ids, or null) and holds. */
 export interface Gear {
-  helmet: boolean;
-  vest: boolean;
-  backpack: boolean;
-  /** The gun's shapes, in its own frame; drawn on the weapon bone. */
+  helmet: string | null;
+  armour: string | null;
+  rig: string | null;
+  backpack: string | null;
+  /** The gun's or knife's shapes, in its own frame; drawn on the weapon bone. */
   gun: readonly Shape[] | null;
 }
 
@@ -126,6 +76,11 @@ export interface CharacterTemplate {
   };
   material: THREE.Material;
   looks: Map<string, THREE.BufferGeometry>;
+  /**
+   * How the rest pose was scaled and raised to stand 1.8 m tall on y = 0 (it's also turned
+   * to face −z), to put worn gear, modelled in game metres, into the rig's frame.
+   */
+  rest: { scale: number; y: number };
 }
 
 /**
@@ -213,12 +168,13 @@ export async function loadCharacter(url: string): Promise<CharacterTemplate> {
     body: { position, normal, skinIndex, skinWeight, part },
     material,
     looks: new Map(),
+    rest: { scale: 1, y: 0 },
   };
 
   // Bind in the rest pose with the weapon bone at the origin, so gun shapes are given in
   // the gun's own frame. Then turn and scale the body; the weapon bone stays unscaled.
   const mesh = new THREE.SkinnedMesh(
-    characterGeometry(template, DEFAULT_OUTFIT, NO_GEAR),
+    characterGeometry(template, DEFAULT_OUTFIT, NO_GEAR, new Map()),
     material,
   );
   src.add(mesh, weapon);
@@ -228,29 +184,55 @@ export async function loadCharacter(url: string): Promise<CharacterTemplate> {
   src.scale.setScalar(HEIGHT / (box.max.y - box.min.y));
   src.rotation.y = Math.PI;
   src.position.y = -box.min.y * src.scale.y;
+  template.rest = { scale: src.scale.y, y: src.position.y };
   template.root.add(src, weapon);
   return template;
 }
 
-const NO_GEAR: Gear = { helmet: false, vest: false, backpack: false, gun: null };
+export const NO_GEAR: Gear = { helmet: null, armour: null, rig: null, backpack: null, gun: null };
 
 /**
- * The geometry for one look: the body in an outfit's colours, plus gear. Cached by look,
- * since a raid has only a few.
+ * Worn gear's shapes, modelled on the body in game metres facing −z, moved into the rig's
+ * rest frame: unscaled, unraised and turned back to face +z.
+ */
+function inRestFrame(shapes: Shape[], rest: CharacterTemplate['rest']): Shape[] {
+  const k = 1 / rest.scale;
+  return shapes.map((s) => {
+    const out = { ...s, x: -s.x * k, y: (s.y - rest.y) * k, z: -s.z * k, yaw: s.yaw + Math.PI };
+    if (out.kind === 'cylinder') {
+      out.radius *= k;
+      out.radiusTop *= k;
+      out.hy *= k;
+    } else {
+      out.hx *= k;
+      out.hy *= k;
+      out.hz *= k;
+    }
+    return out;
+  });
+}
+
+/**
+ * The geometry for one look: the body in an outfit's colours, plus gear from its item
+ * models. Cached by look, since a raid has only a few.
  */
 export function characterGeometry(
   t: CharacterTemplate,
   outfit: Outfit,
   gear: Gear,
+  items: ItemDb,
 ): THREE.BufferGeometry {
-  const key = `${PARTS.map((p) => outfit[p]).join()} ${gear.helmet} ${gear.vest} ${gear.backpack} ${JSON.stringify(gear.gun)}`;
+  const key = `${PARTS.map((p) => outfit[p]).join()} ${WORN.map((w) => gear[w]).join()} ${JSON.stringify(gear.gun)}`;
   const cached = t.looks.get(key);
   if (cached) return cached;
 
   const pieces: { shapes: readonly Shape[]; bone: number }[] = [];
-  if (gear.helmet) pieces.push({ shapes: HELMET, bone: t.bones.get(MOUNTS.helmet)! });
-  if (gear.vest) pieces.push({ shapes: VEST, bone: t.bones.get(MOUNTS.armour)! });
-  if (gear.backpack) pieces.push({ shapes: BACKPACK, bone: t.bones.get(MOUNTS.backpack)! });
+  for (const slot of WORN) {
+    const id = gear[slot];
+    if (!id) continue;
+    const shapes = inRestFrame(modelShapes(itemDef(items, id).model), t.rest);
+    pieces.push({ shapes, bone: t.bones.get(MOUNTS[slot])! });
+  }
   if (gear.gun) pieces.push({ shapes: gear.gun, bone: t.bones.get(MOUNTS.weapon)! });
   const built = pieces.map((piece) => {
     const b = new TriangleBuilder(false);

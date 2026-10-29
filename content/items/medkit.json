@@ -1,5 +1,5 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "id": "medkit",
   "name": "Medkit",
   "type": "med",
@@ -7,5 +7,8 @@
   "value": 4000,
   "effect": "heal",
   "useTime": 4,
-  "hp": 200
+  "hp": 200,
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.28], "colour": "#b04848" }]
+  }
 }

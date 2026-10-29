@@ -1,4 +1,5 @@
 import { ITEM_FORMAT_VERSION, type ItemDb, type ItemDef } from '../content/items';
+import { placeholderModel } from '../content/placeholder-models';
 
 function common(id: string, size: [number, number]) {
   return {
@@ -10,8 +11,8 @@ function common(id: string, size: [number, number]) {
   };
 }
 
-/** A small item set for tests, independent of content/. */
-const defs: ItemDef[] = [
+/** A small item set for tests, independent of content/; models are the placeholders. */
+const defs = [
   {
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'rifle',
@@ -154,4 +155,6 @@ const defs: ItemDef[] = [
   { ...common('repair-kit', [2, 1]), type: 'repair', points: 50, useTime: 5 },
 ];
 
-export const TEST_ITEMS: ItemDb = new Map(defs.map((d) => [d.id, d]));
+export const TEST_ITEMS: ItemDb = new Map(
+  defs.map((d) => [d.id, { ...d, model: placeholderModel(d) } as ItemDef]),
+);

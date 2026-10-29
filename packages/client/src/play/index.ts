@@ -889,7 +889,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const knife = !w && knifeOut();
     viewmodel.visible = alive && (!!w || knife) && !scoped;
     if (w) viewmodel.setGun(w, items);
-    else if (knife) viewmodel.setKnife();
+    else if (knife) viewmodel.setKnife(player.gear.knife!.item, items);
     lowered += ((player.using ? 1 : 0) - lowered) * (1 - Math.exp(-dtMs / 90));
     viewmodel.update(
       camera,

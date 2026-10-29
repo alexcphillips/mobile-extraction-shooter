@@ -1,4 +1,4 @@
-import { ITEM_FORMAT_VERSION, type ItemDef } from '@mes/shared';
+import { ITEM_FORMAT_VERSION, placeholderModel, type ItemDef } from '@mes/shared';
 
 export type ItemType = ItemDef['type'];
 
@@ -19,9 +19,15 @@ export const ITEM_TYPES: readonly ItemType[] = [
 
 /**
  * A new item of a type with middling stats to start from (session 18), keys in the order
- * the hand-written files use. A weapon fires `ammo` (the first ammo item, say).
+ * the hand-written files use, and the placeholder model of its kind last. A weapon fires
+ * `ammo` (the first ammo item, say).
  */
 export function blankItem(type: ItemType, id: string, name: string, ammo = ''): ItemDef {
+  const doc = blankStats(type, id, name, ammo);
+  return { ...doc, model: placeholderModel(doc) } as ItemDef;
+}
+
+function blankStats(type: ItemType, id: string, name: string, ammo: string) {
   const common = { formatVersion: ITEM_FORMAT_VERSION as typeof ITEM_FORMAT_VERSION, id, name };
   switch (type) {
     case 'weapon':

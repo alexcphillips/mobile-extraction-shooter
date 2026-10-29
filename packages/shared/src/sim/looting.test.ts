@@ -367,6 +367,7 @@ describe('looting', () => {
       type: 'attachment',
       slot: 'muzzle',
       weapons: ['rifle'],
+      model: { parts: items.get('suppressor')!.model.parts, muzzle: [0, 0, -0.05] },
     });
     const actMore = (a: InventoryAction) => applyInventory(state, c, more, a);
     mine.attachments.muzzle = 'brake';
