@@ -3,6 +3,7 @@ import type { VendorDef, VendorOffer } from './content/vendors';
 import { removeAt, type Grid, type Item } from './inventory/grid';
 import { PROFILE, type Profile } from './profile';
 import type { Gear, GearSlot } from './sim/gear';
+import { loadedAmmo } from './sim/weapons';
 import type { ItemRef } from './sim/looting';
 import { addToStash, stashGridOf } from './stash';
 
@@ -56,7 +57,9 @@ export function sellPrice(items: ItemDb, item: Item): number {
     for (const a of Object.values(item.attachments ?? {})) {
       if (a) price += Math.floor(itemDef(items, a).value * VENDOR.sellShare);
     }
-    price += Math.floor(itemDef(items, def.ammo).value * VENDOR.sellShare) * (item.mag ?? 0);
+    price +=
+      Math.floor(itemDef(items, loadedAmmo(items, item)).value * VENDOR.sellShare) *
+      (item.mag ?? 0);
   }
   return price;
 }

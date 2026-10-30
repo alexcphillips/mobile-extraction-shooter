@@ -1,0 +1,33 @@
+{
+  "formatVersion": 9,
+  "id": "combat-helmet",
+  "name": "Combat helmet",
+  "type": "armour",
+  "size": [2, 2],
+  "value": 18000,
+  "rarity": "epic",
+  "slot": "helmet",
+  "level": 4,
+  "durability": 50,
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 1.719, 0],
+        "radius": 0.138,
+        "radiusTop": 0.113,
+        "height": 0.118,
+        "colour": "#6b6450"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 1.793, 0],
+        "radius": 0.113,
+        "radiusTop": 0.059,
+        "height": 0.035,
+        "colour": "#6b6450"
+      },
+      { "type": "box", "pos": [0, 1.775, -0.1], "size": [0.05, 0.03, 0.03], "colour": "#2b2d2f" }
+    ]
+  }
+}

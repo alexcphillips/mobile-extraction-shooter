@@ -128,6 +128,11 @@ export interface PlayerInput {
   aim: boolean;
   /** Start a reload: a press, true for one tick. */
   reload: boolean;
+  /**
+   * With reload: the round to load, of the gun's calibre (the reload button's picker).
+   * Another than the one loaded swaps them. Left out, see reloadRound.
+   */
+  ammo?: string | null;
   /** Inventory actions to apply at the start of the tick, in order. */
   inventory?: readonly InventoryAction[];
   /** Take out a gun slot or the knife: a press. */

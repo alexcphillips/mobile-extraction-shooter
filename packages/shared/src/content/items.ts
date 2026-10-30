@@ -32,8 +32,17 @@ const fraction = finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1');
  * 6 (session 18b): every item gained a model (models.ts).
  * 7 (session 19): guns, knives, meds and repair kits gained sounds (sounds.ts).
  * 8: every item gained a rarity.
+ * 9: ammo gained a calibre and a level; armour a level in place of absorb; the knife a
+ *    level and armour damage (Delta Force-style tiers, design.md → Damage).
  */
-export const ITEM_FORMAT_VERSION = 8;
+export const ITEM_FORMAT_VERSION = 9;
+
+/**
+ * Ammo and armour levels (Delta Force's tiers), 1 to LEVELS: grey, green, blue, purple,
+ * gold, red. A round against armour compares levels (sim/health.ts).
+ */
+export const LEVELS = 6;
+const levelSchema = z.int().min(1).max(LEVELS);
 
 /**
  * How rare an item is, which colours its tile (design.md → Item tiles), lowest first:
@@ -71,7 +80,10 @@ const weaponSchema = z
   .strictObject({
     ...common,
     type: z.literal('weapon'),
-    /** The ammo item it fires. */
+    /**
+     * The round it comes loaded with. It fires any round of the same calibre (the one
+     * loaded is on the gun, WeaponState.loaded).
+     */
     ammo: idSchema,
     /**
      * How it's held: a rifle in both hands at the shoulder, a pistol out in front. Picks the
@@ -152,10 +164,14 @@ const ammoSchema = z
     type: z.literal('ammo'),
     /** Loose rounds stack up to this many in one place. */
     stack: stackSchema,
-    /** Damage to the chest; other zones multiply it, then armour absorbs some. Per pellet. */
+    /** Which guns fire it: those whose own round has the same calibre. */
+    calibre: z.string().min(1),
+    /** Its penetration level, against an armour's level. */
+    level: levelSchema,
+    /** Damage to the chest; other zones multiply it, then armour may stop some. Per pellet. */
     damage: positive,
-    /** Armour durability lost per point of damage the armour absorbs. Defaults to 1. */
-    armourDamage: nonNegative.optional(),
+    /** Armour durability lost per hit (per pellet), less against armour above its level. */
+    armourDamage: nonNegative,
     /** Chance that a hit which gets through starts bleeding. */
     bleedChance: fraction,
     /** Shotgun shells: one round fires this many pellets, each its own hit. Defaults to 1. */
@@ -174,8 +190,8 @@ const armourSchema = z.strictObject({
   type: z.literal('armour'),
   /** A helmet covers the head, body armour the chest. */
   slot: z.enum(['helmet', 'body']),
-  /** The fraction of damage it absorbs while it has durability left. */
-  absorb: fraction,
+  /** Its protection level, against a round's level. */
+  level: levelSchema,
   durability: positive,
   ...plainModel,
 });
@@ -303,8 +319,10 @@ const meleeSchema = z.strictObject({
   type: z.literal('melee'),
   /** Damage to the chest; other zones multiply it, as for ammo. */
   damage: positive,
-  /** Armour durability lost per point of damage the armour absorbs. Defaults to 1. */
-  armourDamage: nonNegative.optional(),
+  /** Its penetration level, as for ammo. */
+  level: levelSchema,
+  /** Armour durability lost per hit, as for ammo. */
+  armourDamage: nonNegative,
   /** Chance that a hit which gets through starts bleeding. */
   bleedChance: fraction,
   /** Seconds from one swing to the next. */
@@ -430,6 +448,30 @@ export const ITEM_FORMAT: ContentFormat<ItemDef> = {
     },
     // Rarities: all common until the content files pick their own.
     7: (doc) => ({ ...doc, rarity: 'common' }),
+    // Levels. Each round becomes its own calibre so its guns still fire it; armour's level
+    // is guessed from how much it absorbed; old armour damage was per point absorbed.
+    8: (doc) => {
+      switch (doc.type) {
+        case 'ammo':
+          return {
+            ...doc,
+            calibre: doc.id,
+            level: 1,
+            armourDamage: 10 * Number(doc.armourDamage ?? 1),
+          };
+        case 'melee':
+          return { ...doc, level: 1, armourDamage: 5 };
+        case 'armour': {
+          const { absorb, ...rest } = doc;
+          return {
+            ...rest,
+            level: Math.min(LEVELS, Math.max(1, Math.round(Number(absorb) * LEVELS))),
+          };
+        }
+        default:
+          return doc;
+      }
+    },
   },
 };
 
@@ -511,6 +553,17 @@ export function fits(weapon: WeaponDef, attachment: AttachmentDef): boolean {
     !!weapon.slots?.includes(attachment.slot) &&
     (!attachment.weapons || attachment.weapons.includes(weapon.id))
   );
+}
+
+/** The calibre a gun fires: its own round's. */
+export function calibreOf(items: ItemDb, weapon: WeaponDef): string {
+  return ammoDef(items, weapon.ammo).calibre;
+}
+
+/** Whether a gun fires an item: a round of its calibre. */
+export function firesRound(items: ItemDb, weapon: WeaponDef, id: string): boolean {
+  const def = items.get(id);
+  return def?.type === 'ammo' && def.calibre === calibreOf(items, weapon);
 }
 
 /**

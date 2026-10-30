@@ -1,16 +1,21 @@
 {
-  "formatVersion": 8,
+  "formatVersion": 9,
   "id": "ammo-762",
-  "name": "7.62×51 mm rounds",
+  "name": "7.62×51 mm M80",
   "type": "ammo",
   "size": [1, 1],
   "value": 120,
   "rarity": "rare",
   "stack": 40,
+  "calibre": "7.62x51",
+  "level": 4,
   "damage": 95,
-  "armourDamage": 1.5,
+  "armourDamage": 26,
   "bleedChance": 0.4,
   "model": {
-    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#b08d3c" }]
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "colour": "#b08d3c" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "colour": "#8a56b3" }
+    ]
   }
 }

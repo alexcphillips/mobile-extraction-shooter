@@ -9,7 +9,8 @@ import { giveWeapon } from './weapons';
 
 /**
  * Rolls a loadout and equips a character with it, each part picked by weight on its own:
- * a gun with its attachments and a full magazine, taken out; armour, a rig and a backpack
+ * a gun with its attachments and a full magazine of its round (picked by weight, if it
+ * lists rounds), taken out; armour, a rig and a backpack
  * (or none) in each slot; and spare rounds stowed in pockets, rig and backpack (what
  * doesn't fit is left out). Replaces everything it had except the vault.
  */
@@ -28,12 +29,13 @@ export function equipLoadout(c: Character, items: ItemDb, loadout: LoadoutDef, r
     attachments.push(a.item);
   }
   const spare = Math.round(nextRange(rng, w.spare[0], w.spare[1]));
-  giveWeapon(c, items, w.item, attachments);
+  const ammo = w.ammo?.length ? byWeight(rng, w.ammo).item : weaponDef(items, w.item).ammo;
+  giveWeapon(c, items, w.item, attachments, ammo);
   c.gear.helmet = rollArmour(items, loadout.helmets, rng);
   c.gear.bodyArmour = rollArmour(items, loadout.bodyArmour, rng);
   rollContainer(c, items, 'rig', loadout.rigs, rng);
   rollContainer(c, items, 'backpack', loadout.backpacks, rng);
-  if (spare > 0) stow(c, items, { item: weaponDef(items, w.item).ammo, count: spare });
+  if (spare > 0) stow(c, items, { item: ammo, count: spare });
 }
 
 function rollArmour(

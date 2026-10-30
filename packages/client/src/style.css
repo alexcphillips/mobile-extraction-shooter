@@ -327,6 +327,28 @@ body {
   color: #e74c3c;
 }
 
+/* The round loaded, with its level's colour down its left edge. */
+#ammo .round {
+  display: block;
+  margin-top: 2px;
+  padding-left: 5px;
+  border-left: 3px solid;
+  font-size: 10px;
+  opacity: 0.85;
+}
+
+/* An ammo or armour level, in its colour (grey to red). */
+.level-tag {
+  display: inline-block;
+  min-width: 11px;
+  margin-right: 4px;
+  border-radius: 3px;
+  color: #fff;
+  font-style: normal;
+  font-weight: 700;
+  text-align: center;
+}
+
 #ammo .reload {
   height: 3px;
   margin-top: 4px;
@@ -1196,6 +1218,15 @@ body:has(#raid:not([hidden])) #vitals {
   bottom: 1px;
   font-size: 10px;
   font-weight: 600;
+}
+
+/* An ammo or armour tile's level, bottom left. */
+.inv-item-level {
+  position: absolute;
+  left: 3px;
+  bottom: 2px;
+  font-size: 9px;
+  line-height: 12px;
 }
 
 /* A gun's rounds, under its name. */

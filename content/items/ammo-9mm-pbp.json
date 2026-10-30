@@ -1,0 +1,21 @@
+{
+  "formatVersion": 9,
+  "id": "ammo-9mm-pbp",
+  "name": "9 mm PBP",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 110,
+  "rarity": "rare",
+  "stack": 60,
+  "calibre": "9x19",
+  "level": 4,
+  "damage": 28,
+  "armourDamage": 14,
+  "bleedChance": 0.15,
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "colour": "#9a8238" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "colour": "#8a56b3" }
+    ]
+  }
+}

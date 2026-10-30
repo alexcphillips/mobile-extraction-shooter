@@ -1,0 +1,41 @@
+{
+  "formatVersion": 9,
+  "id": "heavy-plate-carrier",
+  "name": "Heavy plate carrier",
+  "type": "armour",
+  "size": [3, 3],
+  "value": 42000,
+  "rarity": "legendary",
+  "slot": "body",
+  "level": 5,
+  "durability": 110,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 1.222, 0.005],
+        "size": [0.359, 0.328, 0.282],
+        "colour": "#2f3a2c"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.113, -0.133],
+        "size": [0.287, 0.103, 0.063],
+        "colour": "#283225"
+      },
+      {
+        "type": "box",
+        "pos": [0.108, 1.379, 0],
+        "size": [0.082, 0.041, 0.25],
+        "colour": "#2f3a2c"
+      },
+      {
+        "type": "box",
+        "pos": [-0.108, 1.379, 0],
+        "size": [0.082, 0.041, 0.25],
+        "colour": "#283225"
+      },
+      { "type": "box", "pos": [0, 1.03, 0.005], "size": [0.33, 0.08, 0.27], "colour": "#283225" }
+    ]
+  }
+}

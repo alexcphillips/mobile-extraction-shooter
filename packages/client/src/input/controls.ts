@@ -39,8 +39,9 @@ interface MoveTouch {
  * the stick back, tapping the left half, aiming, firing or crouching unlocks it.
  *
  * Desktop: the mouse is captured (see CursorLock): moving it looks, the left button fires
- * and the right one aims. WASD, Shift sprint, Space jump, C crouch, R reload, E use, I or
- * Tab the bag, 1–4 take out primary 1, primary 2, sidearm or knife, H heal (Shift+H picks),
+ * and the right one aims. WASD, Shift sprint, Space jump, C crouch, R reload (Shift+R picks
+ * the rounds), E use, I or Tab the bag, 1–4 take out primary 1, primary 2, sidearm or knife,
+ * H heal (Shift+H picks),
  * F and Q fire and aim too, 7 and 8 the debug actions. Mouse pointers never drive the
  * touch stick; CSS hides the touch-only buttons.
  */
@@ -66,6 +67,8 @@ export class Controls {
   heal = false;
   /** The heal button held: pick which med. */
   healPick = false;
+  /** The reload button held (Shift+R): pick which rounds to load. */
+  reloadPick = false;
   /** A debug action (0 or 1), or -1. */
   debug = -1;
   /** Look speed multiplier from aim assist, set by the game while the crosshair is on an enemy. */
@@ -95,6 +98,7 @@ export class Controls {
   private pressedDraw: Hand | null = null;
   private pressedHeal = false;
   private pressedHealPick = false;
+  private pressedReloadPick = false;
   private pressedDebug = -1;
   private readonly keys = new Set<string>();
 
@@ -138,9 +142,10 @@ export class Controls {
     this.draw = this.pressedDraw;
     this.heal = this.pressedHeal;
     this.healPick = this.pressedHealPick;
+    this.reloadPick = this.pressedReloadPick;
     this.debug = this.pressedDebug;
     this.pressedReload = this.pressedInteract = this.pressedBag = false;
-    this.pressedHeal = this.pressedHealPick = false;
+    this.pressedHeal = this.pressedHealPick = this.pressedReloadPick = false;
     this.pressedDraw = null;
     this.pressedDebug = -1;
 
@@ -224,10 +229,19 @@ export class Controls {
         this.setSprintLock(false);
         this.setCrouch(!this.touchCrouch);
         break;
-      case 'reload':
-        this.pressedReload = true;
-        held(() => {});
+      case 'reload': {
+        // As the heal button: a tap reloads when it lifts; holding opens the round picker.
+        let picked = false;
+        const timer = setTimeout(() => {
+          picked = true;
+          this.pressedReloadPick = true;
+        }, LONG_PRESS_MS);
+        held(() => {
+          clearTimeout(timer);
+          if (!picked) this.pressedReload = true;
+        });
         break;
+      }
       case 'interact':
         this.pressedInteract = true;
         held(() => {});
@@ -274,8 +288,10 @@ export class Controls {
   private readonly onKey = (e: KeyboardEvent): void => {
     this.keys.add(e.code);
     if (e.repeat) return;
-    if (e.code === 'KeyR') this.pressedReload = true;
-    else if (e.code === 'KeyQ' && settings.current.aim === 'toggle') this.toggleAim();
+    if (e.code === 'KeyR') {
+      if (e.shiftKey) this.pressedReloadPick = true;
+      else this.pressedReload = true;
+    } else if (e.code === 'KeyQ' && settings.current.aim === 'toggle') this.toggleAim();
     else if (e.code === 'KeyE') this.pressedInteract = true;
     else if (e.code === 'KeyH') {
       if (e.shiftKey) this.pressedHealPick = true;

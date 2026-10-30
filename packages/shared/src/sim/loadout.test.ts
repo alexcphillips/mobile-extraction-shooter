@@ -123,6 +123,13 @@ describe('loadouts', () => {
         weapons: [{ weight: 1, item: 'pistol', spare: [0, 0], attachments: [{ item: 'big-mag' }] }],
       }),
     ).toThrow(/doesn't fit/);
+    expect(
+      bad({
+        weapons: [
+          { weight: 1, item: 'rifle', spare: [0, 0], ammo: [{ weight: 1, item: 'shell' }] },
+        ],
+      }),
+    ).toThrow(/doesn't fire "shell"/);
     expect(bad({ helmets: [{ weight: 1, item: 'vest' }] })).toThrow(/not helmet armour/);
     expect(bad({ rigs: [{ weight: 1, item: 'backpack' }] })).toThrow(/not a rig/);
     expect(bad({ backpacks: [{ weight: 1, item: 'watch' }] })).toThrow(/not a backpack/);
@@ -149,6 +156,32 @@ describe('loadouts', () => {
     equipLoadout(c, TEST_ITEMS, kit, createRng(1));
     expect(carriedAmmo(c, 'round')).toBe(250);
     expect(c.gear.vault!.items).toHaveLength(1);
+  });
+
+  it('loads the gun with a round picked by weight, and carries spares of it', () => {
+    const kit = loadout({
+      weapons: [
+        {
+          weight: 1,
+          item: 'rifle',
+          spare: [10, 10],
+          ammo: [
+            { weight: 1, item: 'round' },
+            { weight: 1, item: 'ap-round' },
+          ],
+        },
+      ],
+    });
+    const rng = createRng(5);
+    const c = character();
+    let ap = 0;
+    for (let i = 0; i < 400; i++) {
+      equipLoadout(c, TEST_ITEMS, kit, rng);
+      const loaded = heldWeapon(c)!.loaded ?? 'round';
+      expect(carriedAmmo(c, loaded)).toBe(10);
+      if (loaded === 'ap-round') ap++;
+    }
+    expect(ap / 400).toBeCloseTo(0.5, 1);
   });
 
   it('rejects a backwards range or a condition above 1', () => {

@@ -1,0 +1,40 @@
+{
+  "formatVersion": 9,
+  "id": "soft-vest",
+  "name": "Soft vest",
+  "type": "armour",
+  "size": [3, 3],
+  "value": 6000,
+  "rarity": "common",
+  "slot": "body",
+  "level": 1,
+  "durability": 40,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 1.222, 0.005],
+        "size": [0.345, 0.315, 0.226],
+        "colour": "#3a3d40"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.113, -0.133],
+        "size": [0.276, 0.099, 0.05],
+        "colour": "#323538"
+      },
+      {
+        "type": "box",
+        "pos": [0.108, 1.379, 0],
+        "size": [0.079, 0.039, 0.201],
+        "colour": "#3a3d40"
+      },
+      {
+        "type": "box",
+        "pos": [-0.108, 1.379, 0],
+        "size": [0.079, 0.039, 0.201],
+        "colour": "#323538"
+      }
+    ]
+  }
+}

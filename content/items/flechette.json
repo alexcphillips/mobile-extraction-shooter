@@ -1,0 +1,23 @@
+{
+  "formatVersion": 9,
+  "id": "flechette",
+  "name": "12-gauge flechette",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 120,
+  "rarity": "common",
+  "stack": 30,
+  "calibre": "12g",
+  "level": 3,
+  "damage": 11,
+  "armourDamage": 3,
+  "bleedChance": 0.3,
+  "pellets": 9,
+  "pelletSpread": 2.4,
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "colour": "#2f5d8a" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "colour": "#4677b3" }
+    ]
+  }
+}

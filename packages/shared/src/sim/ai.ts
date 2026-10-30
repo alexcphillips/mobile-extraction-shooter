@@ -17,8 +17,8 @@ import {
   type PlayerInput,
   type SimState,
 } from './state';
-import { carriedAmmo, heldWeapon } from './gear';
-import { createWeaponStats, weaponStats } from './weapons';
+import { heldWeapon } from './gear';
+import { createWeaponStats, reloadRound, weaponStats } from './weapons';
 
 /*
  * Enemy AI. Session 7: getting around, seeing and hearing. Session 8: fighting. Each
@@ -1390,7 +1390,7 @@ function sidestep(state: SimState, c: Character, ai: AiState, nav: NavGrid): boo
 /** Reloads when the magazine is below this fraction of full (0: only when empty). */
 function reloadIfLow(c: Character, items: ItemDb, fraction: number): void {
   const w = heldWeapon(c);
-  if (!w || w.reloading > 0 || carriedAmmo(c, weaponDef(items, w.item).ammo) === 0) return;
+  if (!w || w.reloading > 0 || reloadRound(c, items, w) === null) return;
   const full = weaponStats(items, w, gunStats).magazine;
   if (w.mag === 0 || w.mag < full * fraction) c.ai!.input.reload = true;
 }

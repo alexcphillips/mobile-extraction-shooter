@@ -6,7 +6,11 @@
       "weight": 3,
       "item": "pistol",
       "spare": [15, 45],
-      "attachments": [{ "item": "suppressor", "chance": 0.15 }]
+      "attachments": [{ "item": "suppressor", "chance": 0.15 }],
+      "ammo": [
+        { "weight": 3, "item": "ammo-9mm-pso" },
+        { "weight": 2, "item": "ammo-9mm" }
+      ]
     },
     {
       "weight": 2,
@@ -15,9 +19,22 @@
       "attachments": [
         { "item": "red-dot", "chance": 0.25 },
         { "item": "muzzle-brake", "chance": 0.2 }
+      ],
+      "ammo": [
+        { "weight": 2, "item": "ammo-762x39-lp" },
+        { "weight": 2, "item": "ammo-762x39-t45m" },
+        { "weight": 1, "item": "ammo-762x39" }
       ]
     },
-    { "weight": 1, "item": "shotgun", "spare": [12, 24] },
+    {
+      "weight": 1,
+      "item": "shotgun",
+      "spare": [12, 24],
+      "ammo": [
+        { "weight": 3, "item": "buckshot" },
+        { "weight": 1, "item": "flechette" }
+      ]
+    },
     {
       "weight": 1,
       "item": "smg",
@@ -25,16 +42,26 @@
       "attachments": [
         { "item": "red-dot", "chance": 0.25 },
         { "item": "suppressor", "chance": 0.15 }
+      ],
+      "ammo": [
+        { "weight": 2, "item": "ammo-9mm-pso" },
+        { "weight": 2, "item": "ammo-9mm" },
+        { "weight": 0.5, "item": "ammo-9mm-ap" }
       ]
     }
   ],
   "helmets": [
     { "weight": 3, "item": null },
-    { "weight": 1, "item": "steel-helmet", "condition": [0.3, 0.9] }
+    { "weight": 2, "item": "bump-helmet", "condition": [0.4, 1] },
+    { "weight": 1, "item": "riot-helmet", "condition": [0.3, 0.9] },
+    { "weight": 0.5, "item": "steel-helmet", "condition": [0.3, 0.9] }
   ],
   "bodyArmour": [
     { "weight": 4, "item": null },
-    { "weight": 1, "item": "plate-carrier", "condition": [0.3, 0.9] }
+    { "weight": 2, "item": "soft-vest", "condition": [0.4, 1] },
+    { "weight": 1, "item": "police-vest", "condition": [0.3, 0.9] },
+    { "weight": 0.4, "item": "tactical-vest", "condition": [0.3, 0.9] },
+    { "weight": 0.2, "item": "plate-carrier", "condition": [0.3, 0.9] }
   ],
   "rigs": [
     { "weight": 2, "item": null },

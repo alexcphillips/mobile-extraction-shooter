@@ -11,11 +11,22 @@
         { "item": "red-dot" },
         { "item": "suppressor", "chance": 0.5 },
         { "item": "mag-762x39-45", "chance": 0.5 }
+      ],
+      "ammo": [
+        { "weight": 1, "item": "ammo-762x39" },
+        { "weight": 2, "item": "ammo-762x39-bp" },
+        { "weight": 0.5, "item": "ammo-762x39-ap" }
       ]
     }
   ],
-  "helmets": [{ "weight": 1, "item": "steel-helmet" }],
-  "bodyArmour": [{ "weight": 1, "item": "plate-carrier" }],
+  "helmets": [
+    { "weight": 2, "item": "combat-helmet" },
+    { "weight": 1, "item": "heavy-helmet" }
+  ],
+  "bodyArmour": [
+    { "weight": 2, "item": "plate-carrier" },
+    { "weight": 1, "item": "heavy-plate-carrier" }
+  ],
   "rigs": [{ "weight": 1, "item": "chest-rig" }],
   "backpacks": [{ "weight": 1, "item": "large-backpack" }]
 }

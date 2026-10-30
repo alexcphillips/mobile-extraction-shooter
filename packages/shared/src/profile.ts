@@ -2,9 +2,9 @@ import { z } from 'zod';
 import type { ContentFormat } from './content/format';
 import {
   ATTACHMENT_SLOTS,
+  firesRound,
   fits,
   stackSize,
-  weaponDef,
   type AttachmentDef,
   type ItemDb,
   type WeaponDef,
@@ -32,7 +32,7 @@ import {
   type Gear,
   type GearSlot,
 } from './sim/gear';
-import { createWeaponStats, weaponStats, type WeaponState } from './sim/weapons';
+import { createWeaponStats, loadedAmmo, weaponStats, type WeaponState } from './sim/weapons';
 
 /*
  * A player's profile (session 12): the account balance, the stash's pages, and the gear they'll
@@ -88,11 +88,13 @@ const itemShape: z.ZodType = z.lazy(() =>
     durability: amount.optional(),
     left: amount.optional(),
     mag: count.optional(),
+    loaded: idSchema.optional(),
     attachments: z.record(z.enum(ATTACHMENT_SLOTS), idSchema.nullable()).optional(),
     grid: gridShape.optional(),
     // A gun's state in the sim; restGear resets it before it's stored.
     cooldown: z.number().optional(),
     reloading: z.number().optional(),
+    reloadWith: idSchema.optional(),
     triggerHeld: z.boolean().optional(),
   }),
 );
@@ -246,6 +248,7 @@ export function restGear(gear: Gear): void {
     w.cooldown = 0;
     w.reloading = 0;
     w.triggerHeld = false;
+    delete w.reloadWith;
   });
 }
 
@@ -277,7 +280,7 @@ export function countItems(items: ItemDb, p: Profile): Map<string, number> {
   forEachItem(p.gear, p.stash, (item) => {
     add(item.item, item.count);
     for (const a of Object.values(item.attachments ?? {})) if (a) add(a, 1);
-    if (item.mag) add(weaponDef(items, item.item).ammo, item.mag);
+    if (item.mag) add(loadedAmmo(items, item), item.mag);
   });
   return out;
 }
@@ -422,5 +425,7 @@ function checkWeapon(items: ItemDb, item: Item, def: WeaponDef, at: string): str
   const w = { cooldown: 0, reloading: 0, triggerHeld: false, ...item } as WeaponState;
   const magazine = weaponStats(items, w, scratchStats).magazine;
   if (item.mag > magazine) return `${at}: ${item.mag} rounds is more than its magazine`;
+  if (item.loaded !== undefined && !firesRound(items, def, item.loaded))
+    return `${at}: it doesn't fire "${item.loaded}"`;
   return null;
 }

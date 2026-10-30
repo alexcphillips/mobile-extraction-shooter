@@ -3,7 +3,7 @@ import { TICK_RATE } from '../tick';
 import { CollisionWorld, type BoxDef } from '../world/collision-world';
 import { createItem } from './create-item';
 import { equip, heldWeapon, stow } from './gear';
-import { CHEST, HEALTH, LEFT_ARM, createArmour } from './health';
+import { ARMOUR, CHEST, HEALTH, LEFT_ARM, createArmour } from './health';
 import type { InventoryAction } from './looting';
 import { treatments } from './meds';
 import { MOVEMENT } from './movement';
@@ -127,8 +127,10 @@ describe('the knife', () => {
     const hits = s.events.filter((e) => e.type === 'damage');
     expect(hits).toHaveLength(2);
     expect(hits[0]).toMatchObject({ zone: CHEST, cause: 'melee', by: s.player.id });
-    // The vest takes a quarter of each 40.
-    expect(s.target.health.hp[CHEST]).toBeCloseTo(HEALTH.maxHp[CHEST]! - 2 * 30);
+    // The level 4 vest stops the level 1 knife outright, and wears a little.
+    expect(s.target.health.hp[CHEST]).toBe(HEALTH.maxHp[CHEST]);
+    expect(s.target.gear.bodyArmour?.durability).toBeCloseTo(50 - 2 * 5 * ARMOUR.wear[3]);
+    expect(hits[0]).toMatchObject({ amount: 0, absorbed: 40 });
   });
 
   it("misses beyond its reach and through walls, but forgives an aim that's a little off", () => {

@@ -453,7 +453,13 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // The hand-slot and heal buttons. A med picked from the heal button's picker is used
   // next tick.
   let picked: MedRef | 'cancel' | null = null;
-  const hands = new HandsHud(el.hud, (ref) => (picked = ref));
+  // Rounds picked from the reload button's picker, loaded with the next tick's reload.
+  let pickedAmmo: string | null = null;
+  const hands = new HandsHud(
+    el.hud,
+    (ref) => (picked = ref),
+    (ammo) => (pickedAmmo = ammo),
+  );
 
   // Debug actions: hurt me, heal me; on screen and keys 7 and 8.
   if (options.debug) {
@@ -660,12 +666,15 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.jump = controls.jump;
     input.fire = fire;
     input.aim = controls.aim;
-    input.reload = controls.reload;
+    input.reload = controls.reload || pickedAmmo !== null;
+    input.ammo = pickedAmmo;
+    pickedAmmo = null;
     input.draw = controls.draw;
     // A tap on the heal button uses what it shows, or stops a med being used.
     input.use = controls.heal ? (player.using ? 'cancel' : hands.choice) : picked;
     picked = null;
     if (controls.healPick && !dead) hands.showPicker(player, items);
+    if (controls.reloadPick && !dead) hands.showAmmoPicker(player, items);
 
     // The use button takes the item on the ground near the crosshair, opens, closes or
     // unlocks a door, or loots what's in reach; the bag button opens your inventory.

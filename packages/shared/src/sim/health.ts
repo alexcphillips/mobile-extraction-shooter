@@ -37,6 +37,33 @@ export const HEALTH = {
 } as const;
 
 /**
+ * Armour against rounds, by level (Delta Force's tiers; design.md → Damage). Armour with
+ * durability left lets through a share of a hit's damage by the round's level against its
+ * own, and wears by the round's armour damage. Broken armour does nothing.
+ */
+export const ARMOUR = {
+  /** Damage let through by a round below the armour's level, level with it, and above it. */
+  through: { below: 0, level: 0.5, above: 1 },
+  /**
+   * Armour damage multiplier by how many levels the armour is above the round: the first
+   * at or below it, the last for that many or more.
+   */
+  wear: [1, 0.8, 0.6, 0.4],
+} as const;
+
+/** The share of a hit's damage armour with durability left lets through. */
+export function throughArmour(roundLevel: number, armourLevel: number): number {
+  const t = ARMOUR.through;
+  return roundLevel < armourLevel ? t.below : roundLevel === armourLevel ? t.level : t.above;
+}
+
+/** The armour damage multiplier for a round against armour, by their levels. */
+export function armourWear(roundLevel: number, armourLevel: number): number {
+  const w = ARMOUR.wear;
+  return w[Math.min(w.length - 1, Math.max(0, armourLevel - roundLevel))]!;
+}
+
+/**
  * A character's limbs. Head or chest at 0 HP is death; any other zone at 0 is broken,
  * unless it's splinted: a splint takes away the effects, but the limb stays at 0 HP and
  * damage to it still spills over.
@@ -101,7 +128,7 @@ export interface DamageEvent {
   zone: Zone;
   /** HP lost, including what spilled over to the chest. */
   amount: number;
-  /** What armour took. */
+  /** What armour stopped. */
   absorbed: number;
   cause: 'shot' | 'melee' | 'fall';
 }
@@ -166,11 +193,12 @@ export function killCharacter(state: SimState, c: Character, by: EntityId): void
 }
 
 /** What a hit does: a round's (AmmoDef) or the knife's (MeleeDef). */
-export type Wound = Pick<AmmoDef, 'damage' | 'armourDamage' | 'bleedChance'>;
+export type Wound = Pick<AmmoDef, 'damage' | 'level' | 'armourDamage' | 'bleedChance'>;
 
 /**
- * A bullet or knife hit: the zone's multiplier, then armour on the head or chest absorbs
- * its share and wears down, then the rest may start bleeding.
+ * A bullet or knife hit: the zone's multiplier, then armour on the head or chest lets
+ * through its share by level (ARMOUR) and wears down, then what got through may start
+ * bleeding.
  */
 export function shootCharacter(
   state: SimState,
@@ -191,8 +219,10 @@ export function shootCharacter(
   let absorbed = 0;
   const armour = zone === HEAD ? c.gear.helmet : zone === CHEST ? c.gear.bodyArmour : null;
   if (armour && armour.durability > 0) {
-    absorbed = damage * armourDef(items, armour.item).absorb;
-    armour.durability = Math.max(0, armour.durability - absorbed * (ammo.armourDamage ?? 1));
+    const level = armourDef(items, armour.item).level;
+    absorbed = damage * (1 - throughArmour(ammo.level, level));
+    const wear = ammo.armourDamage * armourWear(ammo.level, level);
+    armour.durability = Math.max(0, armour.durability - wear);
     damage -= absorbed;
   }
   const amount = dealDamage(state, c, zone, damage, by);

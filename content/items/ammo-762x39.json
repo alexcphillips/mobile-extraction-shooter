@@ -1,16 +1,21 @@
 {
-  "formatVersion": 8,
+  "formatVersion": 9,
   "id": "ammo-762x39",
-  "name": "7.62×39 mm rounds",
+  "name": "7.62×39 mm PS",
   "type": "ammo",
   "size": [1, 1],
   "value": 50,
   "rarity": "common",
   "stack": 60,
+  "calibre": "7.62x39",
+  "level": 3,
   "damage": 52,
-  "armourDamage": 1.2,
+  "armourDamage": 16,
   "bleedChance": 0.3,
   "model": {
-    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#6e6a48" }]
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "colour": "#6e6a48" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "colour": "#4677b3" }
+    ]
   }
 }
