@@ -1,5 +1,5 @@
 {
-  "formatVersion": 8,
+  "formatVersion": 9,
   "id": "plate-carrier",
   "name": "Plate carrier",
   "type": "armour",
@@ -7,7 +7,7 @@
   "value": 30000,
   "rarity": "epic",
   "slot": "body",
-  "absorb": 0.6,
+  "level": 4,
   "durability": 80,
   "model": {
     "parts": [

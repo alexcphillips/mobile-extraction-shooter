@@ -1,0 +1,34 @@
+{
+  "formatVersion": 9,
+  "id": "assault-helmet",
+  "name": "Assault helmet",
+  "type": "armour",
+  "size": [2, 2],
+  "value": 27000,
+  "rarity": "legendary",
+  "slot": "helmet",
+  "level": 6,
+  "durability": 70,
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 1.719, 0],
+        "radius": 0.138,
+        "radiusTop": 0.113,
+        "height": 0.118,
+        "colour": "#4a5340"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 1.793, 0],
+        "radius": 0.113,
+        "radiusTop": 0.059,
+        "height": 0.035,
+        "colour": "#4a5340"
+      },
+      { "type": "box", "pos": [0, 1.66, -0.135], "size": [0.2, 0.1, 0.02], "colour": "#3a3f44" },
+      { "type": "box", "pos": [0, 1.66, -0.147], "size": [0.12, 0.025, 0.006], "colour": "#7fa0b0" }
+    ]
+  }
+}

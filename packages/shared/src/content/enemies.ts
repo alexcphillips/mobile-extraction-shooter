@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ContentError, type ContentFormat } from './format';
-import { attachmentDef, fits, weaponDef, type ItemDb } from './items';
+import { attachmentDef, firesRound, fits, weaponDef, type ItemDb } from './items';
 import { hexColourSchema, idSchema } from './schema';
 
 /*
@@ -79,6 +79,14 @@ const weaponOptionSchema = z.strictObject({
   item: idSchema,
   /** Spare rounds for it, rolled between these. */
   spare: range,
+  /**
+   * The round it's loaded with and carries spares of, picked by weight from rounds of its
+   * calibre. Left out, its own (WeaponDef.ammo).
+   */
+  ammo: z
+    .array(z.strictObject({ weight: positive, item: idSchema }))
+    .min(1)
+    .optional(),
   /** Each attachment goes on with its chance (1 if left out); the first to roll in a slot wins. */
   attachments: z.array(z.strictObject({ item: idSchema, chance: fraction.optional() })).optional(),
 });
@@ -160,6 +168,10 @@ export function checkEnemies(
         for (const a of w.attachments ?? []) {
           if (!fits(gun, attachmentDef(items, a.item)))
             throw new Error(`"${a.item}" doesn't fit "${w.item}"`);
+        }
+        for (const a of w.ammo ?? []) {
+          if (!firesRound(items, gun, a.item))
+            throw new Error(`"${w.item}" doesn't fire "${a.item}"`);
         }
       });
     }

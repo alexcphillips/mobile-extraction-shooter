@@ -1,0 +1,40 @@
+{
+  "formatVersion": 9,
+  "id": "tactical-vest",
+  "name": "Tactical vest",
+  "type": "armour",
+  "size": [3, 3],
+  "value": 20000,
+  "rarity": "rare",
+  "slot": "body",
+  "level": 3,
+  "durability": 65,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 1.222, 0.005],
+        "size": [0.345, 0.315, 0.266],
+        "colour": "#6b6450"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.113, -0.133],
+        "size": [0.276, 0.099, 0.059],
+        "colour": "#5c5644"
+      },
+      {
+        "type": "box",
+        "pos": [0.108, 1.379, 0],
+        "size": [0.079, 0.039, 0.236],
+        "colour": "#6b6450"
+      },
+      {
+        "type": "box",
+        "pos": [-0.108, 1.379, 0],
+        "size": [0.079, 0.039, 0.236],
+        "colour": "#5c5644"
+      }
+    ]
+  }
+}

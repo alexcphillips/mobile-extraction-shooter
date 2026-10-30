@@ -1,0 +1,43 @@
+{
+  "formatVersion": 9,
+  "id": "assault-armour",
+  "name": "Assault armour",
+  "type": "armour",
+  "size": [3, 3],
+  "value": 50000,
+  "rarity": "legendary",
+  "slot": "body",
+  "level": 6,
+  "durability": 130,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 1.222, 0.005],
+        "size": [0.366, 0.334, 0.293],
+        "colour": "#3a3f44"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.113, -0.133],
+        "size": [0.293, 0.105, 0.065],
+        "colour": "#30353a"
+      },
+      {
+        "type": "box",
+        "pos": [0.108, 1.379, 0],
+        "size": [0.084, 0.041, 0.26],
+        "colour": "#3a3f44"
+      },
+      {
+        "type": "box",
+        "pos": [-0.108, 1.379, 0],
+        "size": [0.084, 0.041, 0.26],
+        "colour": "#30353a"
+      },
+      { "type": "box", "pos": [0, 1.03, 0.005], "size": [0.34, 0.08, 0.28], "colour": "#30353a" },
+      { "type": "box", "pos": [0.19, 1.33, 0], "size": [0.06, 0.1, 0.18], "colour": "#30353a" },
+      { "type": "box", "pos": [-0.19, 1.33, 0], "size": [0.06, 0.1, 0.18], "colour": "#30353a" }
+    ]
+  }
+}

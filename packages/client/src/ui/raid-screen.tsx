@@ -1,8 +1,10 @@
 import {
   ATTACHMENT_SLOTS,
+  ammoDef,
   cantSell,
   createWeaponStats,
   itemDef,
+  loadedAmmo,
   lootContainerById,
   sellPrice,
   sellTotal,
@@ -27,6 +29,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { refKey, type InventoryController } from './inventory-controller';
 import { MapTab } from './map-tab';
 import type { RaidContext } from './raid';
+import { levelColour, levelOf } from './levels';
 import { RaidQuests } from './raid-quests';
 
 type Tab = 'inventory' | 'map' | 'quests';
@@ -711,7 +714,7 @@ function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemD
       <>
         <span className="inv-item-name">
           {def.name}
-          <span className="inv-item-ammo">{itemDef(items, def.ammo).name}</span>
+          <span className="inv-item-ammo">{itemDef(items, loadedAmmo(items, item)).name}</span>
         </span>
         <span className="inv-item-badge">
           <span className="inv-item-loaded">{item.mag ?? 0}</span>/{capacity}
@@ -719,9 +722,15 @@ function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemD
       </>
     );
   }
+  const level = levelOf(def);
   return (
     <>
       <span className="inv-item-name">{def.name}</span>
+      {level !== null && (
+        <i className="level-tag inv-item-level" style={{ background: levelColour(level) }}>
+          {level}
+        </i>
+      )}
       <span className="inv-item-badge">{badge(item, def)}</span>
     </>
   );
@@ -750,10 +759,13 @@ function badge(item: Item, def: ItemDef): string {
 function details(items: ItemDb, item: Item, def: ItemDef): string {
   switch (def.type) {
     case 'weapon': {
-      return `${item.mag ?? 0} loaded · ${itemDef(items, def.ammo).name}`;
+      const round = ammoDef(items, loadedAmmo(items, item));
+      return `${item.mag ?? 0} loaded · ${round.name} · fires ${round.calibre}`;
     }
     case 'armour':
-      return `Durability ${Math.ceil(item.durability ?? 0)}/${def.durability} · absorbs ${Math.round(def.absorb * 100)}%`;
+      return `Level ${def.level} · durability ${Math.ceil(item.durability ?? 0)}/${def.durability}`;
+    case 'ammo':
+      return `Level ${def.level} · ${def.damage} damage${def.pellets ? ` × ${def.pellets}` : ''} · ${def.armourDamage} to armour · ${item.count} / ${def.stack}`;
     case 'med':
       return def.effect === 'heal' ? `${item.left ?? 0} HP left` : `${item.left ?? 1} use(s) left`;
     case 'container':

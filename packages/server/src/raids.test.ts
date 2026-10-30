@@ -132,7 +132,9 @@ describe('raids', () => {
 
     const forged = looted(profile.gear);
     forged.vault!.items[0]!.item.item = 'no-such-item';
-    expect((await client.fails('POST', path, end(forged))).message).toMatch(/no item "no-such-item"/);
+    expect((await client.fails('POST', path, end(forged))).message).toMatch(
+      /no item "no-such-item"/,
+    );
 
     const stacked = looted(profile.gear);
     stacked.pockets.items[0]!.item.count = 1e9;

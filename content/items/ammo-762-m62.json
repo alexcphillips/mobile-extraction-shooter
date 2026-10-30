@@ -1,0 +1,21 @@
+{
+  "formatVersion": 9,
+  "id": "ammo-762-m62",
+  "name": "7.62×51 mm M62",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 380,
+  "rarity": "epic",
+  "stack": 40,
+  "calibre": "7.62x51",
+  "level": 5,
+  "damage": 90,
+  "armourDamage": 31,
+  "bleedChance": 0.37,
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "colour": "#b08d3c" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "colour": "#c99a2e" }
+    ]
+  }
+}

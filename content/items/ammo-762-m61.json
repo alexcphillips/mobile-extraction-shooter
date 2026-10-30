@@ -1,0 +1,21 @@
+{
+  "formatVersion": 9,
+  "id": "ammo-762-m61",
+  "name": "7.62×51 mm M61",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 1000,
+  "rarity": "legendary",
+  "stack": 40,
+  "calibre": "7.62x51",
+  "level": 6,
+  "damage": 85,
+  "armourDamage": 36,
+  "bleedChance": 0.34,
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "colour": "#b08d3c" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "colour": "#b8423a" }
+    ]
+  }
+}

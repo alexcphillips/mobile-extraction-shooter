@@ -3,6 +3,7 @@ import {
   MED_EFFECTS,
   RARITIES,
   VENDOR,
+  firesRound,
   fits,
   idSchema,
   type AttachmentDef,
@@ -277,14 +278,28 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
         <>
           <h4>rounds</h4>
           <N {...b} path={['stack']} label="stack (most in one cell)" min={2} />
+          <Row>
+            <Text
+              label="calibre"
+              value={def.calibre}
+              onChange={(v) => b.edit((d) => put(d, ['calibre'], v))}
+            />
+            <N
+              {...b}
+              path={['level']}
+              label="level (1–6)"
+              min={1}
+              hint="Against armour's level: below it does nothing until it breaks, level half, above all"
+            />
+          </Row>
           <N {...b} path={['damage']} label="damage (to the chest)" min={0} />
           <Row>
             <N
               {...b}
               path={['armourDamage']}
-              label="armour damage (1)"
+              label="armour damage"
               min={0}
-              hint="Durability lost per point the armour absorbs; blank is 1"
+              hint="Durability lost per hit, less against armour above its level"
             />
             <N {...b} path={['bleedChance']} label="bleed chance (0–1)" min={0} />
           </Row>
@@ -312,7 +327,7 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
           <h4>armour</h4>
           <P {...b} path={['slot']} label="worn as" options={['helmet', 'body']} />
           <Row>
-            <N {...b} path={['absorb']} label="absorbs (0–1)" min={0} />
+            <N {...b} path={['level']} label="level (1–6)" min={1} />
             <N {...b} path={['durability']} label="durability" min={0} />
           </Row>
         </>
@@ -363,7 +378,10 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
           <h4>knife</h4>
           <Row>
             <N {...b} path={['damage']} label="damage" min={0} />
-            <N {...b} path={['armourDamage']} label="armour damage (1)" min={0} />
+            <N {...b} path={['level']} label="level (1–6)" min={1} />
+          </Row>
+          <Row>
+            <N {...b} path={['armourDamage']} label="armour damage" min={0} />
             <N {...b} path={['bleedChance']} label="bleed chance" min={0} />
           </Row>
           <Row>
@@ -615,9 +633,14 @@ function Facts({ def, db }: { def: ItemDef; db: ItemDb }) {
       lines.push(`Holds ${inside} cells for the ${outside} it takes up: ${inside - outside} more.`);
       break;
     }
-    case 'ammo':
+    case 'ammo': {
       lines.push(`A full stack of ${def.stack} is worth ${def.stack * def.value}.`);
+      const guns = [...db.values()].filter((g) => g.type === 'weapon' && firesRound(db, g, def.id));
+      lines.push(
+        guns.length ? `Fired by ${guns.map((g) => g.name).join(', ')}.` : 'No gun fires it.',
+      );
       break;
+    }
     case 'med':
       if (def.effect === 'heal') lines.push(`${fmt(def.hp! / def.useTime, 1)} HP a second of use.`);
       break;

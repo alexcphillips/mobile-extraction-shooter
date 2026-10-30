@@ -8,7 +8,8 @@
     { "item": "gold-watch", "weight": 1 },
     { "item": "bandage", "weight": 3 },
     { "item": "splint", "weight": 1 },
-    { "item": "ammo-9mm", "weight": 2, "count": [8, 30] },
+    { "item": "ammo-9mm-pso", "weight": 1.5, "count": [8, 30] },
+    { "item": "ammo-9mm", "weight": 0.5, "count": [8, 30] },
     { "item": "armour-repair-kit", "weight": 0.5 },
     { "item": "shed-key", "weight": 0.3 }
   ]

@@ -3,6 +3,7 @@ import { ammoDef, armourDef } from '../content/items';
 import { TICK_RATE } from '../tick';
 import { CollisionWorld } from '../world/collision-world';
 import {
+  ARMOUR,
   CHEST,
   HEAD,
   HEALTH,
@@ -16,8 +17,10 @@ import {
   isBroken,
   killCharacter,
   legSpeedScale,
+  armourWear,
   restoreHealth,
   shootCharacter,
+  throughArmour,
   totalHp,
   wearArmour,
 } from './health';
@@ -107,16 +110,43 @@ describe('damage', () => {
 });
 
 describe('armour', () => {
-  it('absorbs its share on its zone and loses durability', () => {
+  it('lets half through from a round of its level, and wears by its armour damage', () => {
     const { state, c } = setup();
     wearArmour(c, TEST_ITEMS, 'helmet');
     shootCharacter(state, TEST_ITEMS, c, HEAD, ammoDef(TEST_ITEMS, 'bleeder'), 0);
-    // 10 × 1.5 = 15; the helmet takes half.
+    // 10 × 1.5 = 15; a level 3 round against a level 3 helmet: half gets through.
     expect(c.health.hp[HEAD]).toBeCloseTo(35 - 7.5);
-    expect(c.gear.helmet?.durability).toBeCloseTo(30 - 7.5);
+    expect(c.gear.helmet?.durability).toBeCloseTo(30 - 10);
+    expect(state.events).toContainEqual(expect.objectContaining({ absorbed: 7.5 }));
   });
 
-  it('absorbs nothing when broken, and does not cover other zones', () => {
+  it('stops a round below its level, wearing less the further below', () => {
+    const { state, c } = setup();
+    wearArmour(c, TEST_ITEMS, 'vest');
+    // A level 3 round against a level 4 vest.
+    shootCharacter(state, TEST_ITEMS, c, CHEST, round, 0);
+    expect(c.health.hp[CHEST]).toBe(85);
+    expect(c.gear.bodyArmour?.durability).toBeCloseTo(50 - 10 * ARMOUR.wear[1]);
+    expect(c.health.bleeding[CHEST]).toBe(false);
+  });
+
+  it('lets all of a round above its level through, and still wears', () => {
+    const { state, c } = setup();
+    wearArmour(c, TEST_ITEMS, 'vest');
+    shootCharacter(state, TEST_ITEMS, c, CHEST, ammoDef(TEST_ITEMS, 'ap-round'), 0);
+    expect(c.health.hp[CHEST]).toBe(85 - 30);
+    expect(c.gear.bodyArmour?.durability).toBe(50 - 15);
+  });
+
+  it('compares levels as Delta Force does', () => {
+    expect(throughArmour(1, 2)).toBe(0);
+    expect(throughArmour(4, 4)).toBe(0.5);
+    expect(throughArmour(5, 4)).toBe(1);
+    expect(armourWear(6, 1)).toBe(1);
+    expect(armourWear(1, 6)).toBe(ARMOUR.wear[ARMOUR.wear.length - 1]);
+  });
+
+  it('stops nothing when broken, and does not cover other zones', () => {
     const { state, c } = setup();
     wearArmour(c, TEST_ITEMS, 'vest');
     c.gear.bodyArmour!.durability = 0;
@@ -149,7 +179,7 @@ describe('bleeding', () => {
   it('does not start when armour took the whole hit', () => {
     const { state, c } = setup();
     const items = new Map(TEST_ITEMS);
-    items.set('helmet', { ...armourDef(TEST_ITEMS, 'helmet'), absorb: 1 });
+    items.set('helmet', { ...armourDef(TEST_ITEMS, 'helmet'), level: 6 });
     wearArmour(c, items, 'helmet');
     shootCharacter(state, items, c, HEAD, ammoDef(items, 'bleeder'), 0);
     expect(c.health.bleeding[HEAD]).toBe(false);

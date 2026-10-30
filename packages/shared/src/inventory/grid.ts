@@ -16,6 +16,8 @@ export interface Item {
   left?: number;
   /** Guns: rounds loaded. */
   mag?: number;
+  /** Guns: the round loaded, a round of its calibre; left out, its own (WeaponDef.ammo). */
+  loaded?: string;
   /** Guns: the attachment in each slot, or null. */
   attachments?: Record<AttachmentSlot, string | null>;
   /** Rigs and backpacks: what's in them. */

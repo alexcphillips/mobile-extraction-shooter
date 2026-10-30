@@ -36,7 +36,7 @@ import { createItem } from './create-item';
 import { dropItem, type GroundItem } from './ground';
 import { repairable } from './repair';
 import type { Character, EntityId, SimState } from './state';
-import { attach, detach, type WeaponState } from './weapons';
+import { attach, detach, loadedAmmo, type WeaponState } from './weapons';
 
 /**
  * How far a body or a loot container can be from your feet to loot it, in metres:
@@ -493,7 +493,7 @@ function attachPart(ctx: Ctx, gunRef: ItemRef, fromRef: ItemRef): boolean {
       addItem(items, grid, oldPart) === 0;
     if (!placed) stowOrDrop(ctx, oldPart);
   }
-  stowRounds(ctx, weaponDef(items, gun.item).ammo, attach(gun, items, def.id));
+  stowRounds(ctx, loadedAmmo(items, gun), attach(gun, items, def.id));
   return true;
 }
 
@@ -515,7 +515,7 @@ function detachPart(
   } else {
     stowOrDrop(ctx, loose);
   }
-  stowRounds(ctx, weaponDef(items, gun.item).ammo, detach(gun, items, slot));
+  stowRounds(ctx, loadedAmmo(items, gun), detach(gun, items, slot));
   return true;
 }
 
@@ -534,8 +534,8 @@ function movePart(ctx: Ctx, from: PartRef, toRef: ItemRef): boolean {
   const outB = attach(b, items, def.id);
   // What was on the second gun goes into what you carry if it can't go on the first.
   if (old !== null && !swap) stowOrDrop(ctx, createItem(items, old));
-  stowRounds(ctx, weaponDef(items, a.item).ammo, outA);
-  stowRounds(ctx, weaponDef(items, b.item).ammo, outB);
+  stowRounds(ctx, loadedAmmo(items, a), outA);
+  stowRounds(ctx, loadedAmmo(items, b), outB);
   return true;
 }
 
@@ -546,7 +546,7 @@ function unload(ctx: Ctx, gunRef: ItemRef): boolean {
   const n = gun.mag;
   gun.mag = 0;
   gun.reloading = 0;
-  stowRounds(ctx, weaponDef(ctx.items, gun.item).ammo, n);
+  stowRounds(ctx, loadedAmmo(ctx.items, gun), n);
   return true;
 }
 

@@ -30,7 +30,10 @@ const ammo = m({
   size: [1, 1],
   value: 100,
   stack: 60,
+  calibre: 'round',
+  level: 3,
   damage: 40,
+  armourDamage: 10,
   bleedChance: 0.2,
 });
 const gun = m({
@@ -162,6 +165,32 @@ describe('items', () => {
     expect(v4({ id: 'q', name: 'Q', type: 'quest', size: [1, 1] }).value).toBe(0);
   });
 
+  it('upgrades format 8 rounds, armour and knives with levels', () => {
+    const v8 = (raw: object, drop: string[]) =>
+      loadContent(
+        ITEM_FORMAT,
+        Object.fromEntries(
+          Object.entries({ ...raw, formatVersion: 8 }).filter(([k]) => !drop.includes(k)),
+        ),
+        'x.json',
+      );
+    expect(v8({ ...ammo, armourDamage: 1.5 }, ['calibre', 'level'])).toMatchObject({
+      calibre: 'round',
+      level: 1,
+      armourDamage: 15,
+    });
+    const helmet = { id: 'h', name: 'H', type: 'armour', size: [2, 2], value: 1, rarity: 'common' };
+    const old = { ...helmet, slot: 'helmet', absorb: 0.6, durability: 9, model: { parts: [] } };
+    const up = v8({ ...old, model: placeholderModel(old) }, []);
+    expect(up).toMatchObject({ level: 4 });
+    expect(up).not.toHaveProperty('absorb');
+  });
+
+  it('refuses levels outside 1 to 6', () => {
+    expect(() => loadContent(ITEM_FORMAT, { ...ammo, level: 7 }, 'a.json')).toThrow(ContentError);
+    expect(() => loadContent(ITEM_FORMAT, { ...ammo, level: 0 }, 'a.json')).toThrow(ContentError);
+  });
+
   it('loads the other types, and checks meds have hp only for heal', () => {
     const base = {
       formatVersion: ITEM_FORMAT_VERSION,
@@ -179,6 +208,8 @@ describe('items', () => {
         ...base,
         type: 'melee',
         damage: 40,
+        level: 1,
+        armourDamage: 5,
         bleedChance: 0.3,
         swingTime: 0.5,
         reach: 1.5,

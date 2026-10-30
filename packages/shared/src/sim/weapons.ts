@@ -2,6 +2,7 @@ import {
   ATTACHMENT_SLOTS,
   ammoDef,
   attachmentDef,
+  calibreOf,
   fits,
   weaponDef,
   type AmmoDef,
@@ -14,7 +15,8 @@ import { nextFloat } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import { createRayHit, type CollisionWorld } from '../world/collision-world';
 import { HEALTH, brokenArms, shootCharacter } from './health';
-import { carriedAmmo, equip, heldWeapon, takeAmmo } from './gear';
+import { CARRIED_GRIDS, carriedAmmo, carriedGrid, equip, heldWeapon, stow, takeAmmo } from './gear';
+import { dropItem } from './ground';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import {
   entityById,
@@ -34,11 +36,14 @@ const UNARMED_RECOVERY = 15 * DEG;
 
 /**
  * A gun, in a gear slot or in a grid. Reloading takes rounds from the ammo carried (see
- * gear.ts). The timers only matter while it's in someone's hands.
+ * gear.ts), of the round loaded (Item.loaded) or another of its calibre. The timers only
+ * matter while it's in someone's hands.
  */
 export interface WeaponState extends Item {
   /** Rounds in the gun. */
   mag: number;
+  /** The round the reload in progress loads; another than the one loaded swaps them. */
+  reloadWith?: string;
   /** Seconds until it can fire again; dips below 0 while the trigger is held, to keep the rate exact. */
   cooldown: number;
   /** Seconds left of a reload, or 0. */
@@ -126,11 +131,12 @@ export interface ShotEvent {
 // Scratch for working out stats, so a tick allocates nothing.
 const stats = createWeaponStats();
 
-/** A new gun with its attachments and a full magazine. */
+/** A new gun with its attachments and a full magazine of ammo (its own round if not given). */
 export function createWeapon(
   items: ItemDb,
   id: string,
   attachments: readonly string[] = [],
+  ammo?: string,
 ): WeaponState {
   const w: WeaponState = {
     item: id,
@@ -141,9 +147,51 @@ export function createWeapon(
     triggerHeld: false,
     attachments: { optic: null, muzzle: null, magazine: null },
   };
+  if (ammo !== undefined && ammo !== weaponDef(items, id).ammo) w.loaded = ammo;
   for (const a of attachments) attach(w, items, a);
   w.mag = weaponStats(items, w, stats).magazine;
   return w;
+}
+
+/** The round in a gun (or that its next reload keeps to): Item.loaded, else its own. */
+export function loadedAmmo(items: ItemDb, gun: Item): string {
+  return gun.loaded ?? weaponDef(items, gun.item).ammo;
+}
+
+/**
+ * What a reload of w would load, or null with nothing to load: the round asked for, if
+ * carried and of its calibre; else the one loaded, if any is carried; else the highest
+ * level of its calibre carried. Infinite ammo loads what's asked for or what's loaded.
+ */
+export function reloadRound(
+  c: Character,
+  items: ItemDb,
+  w: WeaponState,
+  want?: string | null,
+): string | null {
+  const def = weaponDef(items, w.item);
+  const calibre = calibreOf(items, def);
+  const loaded = loadedAmmo(items, w);
+  if (want) {
+    const a = items.get(want);
+    const ok = a?.type === 'ammo' && a.calibre === calibre;
+    if (ok && (c.admin?.infiniteAmmo || carriedAmmo(c, want) > 0)) return want;
+  }
+  if (c.admin?.infiniteAmmo || carriedAmmo(c, loaded) > 0) return loaded;
+  let best: string | null = null;
+  let bestLevel = 0;
+  for (let i = 0; i < CARRIED_GRIDS; i++) {
+    const grid = carriedGrid(c.gear, i);
+    if (!grid) continue;
+    for (const g of grid.items) {
+      const a = items.get(g.item.item);
+      if (a?.type === 'ammo' && a.calibre === calibre && a.level > bestLevel) {
+        best = a.id;
+        bestLevel = a.level;
+      }
+    }
+  }
+  return best;
 }
 
 /**
@@ -156,8 +204,9 @@ export function giveWeapon(
   items: ItemDb,
   id: string,
   attachments: readonly string[] = [],
+  ammo?: string,
 ): WeaponState {
-  const w = createWeapon(items, id, attachments);
+  const w = createWeapon(items, id, attachments, ammo);
   const slot = weaponDef(items, id).hold === 'pistol' ? 'sidearm' : 'primary1';
   equip(c, items, slot, w);
   c.gear.hand = slot;
@@ -235,14 +284,9 @@ export function updateWeapon(
 
   if (w.reloading > 0) {
     w.reloading -= DT;
-    if (w.reloading <= 0) {
-      w.reloading = 0;
-      w.mag += c.admin?.infiniteAmmo
-        ? s.magazine - w.mag
-        : takeAmmo(c, def.ammo, s.magazine - w.mag);
-    }
+    if (w.reloading <= 0) finishReload(state, c, w, s, world, items);
   } else if (input?.reload && free) {
-    startReload(c, def, w, s);
+    startReload(c, items, w, s, input.ammo);
   }
 
   const trigger = !!input?.fire && free;
@@ -250,7 +294,7 @@ export function updateWeapon(
   w.triggerHeld = trigger;
   if (trigger && w.reloading === 0) {
     if (w.mag === 0) {
-      startReload(c, def, w, s);
+      startReload(c, items, w, s);
     } else if (def.fireMode === 'auto' || pulled) {
       // The epsilon stops rounding from delaying a shot by a tick.
       while (w.cooldown <= 1e-9 && w.mag > 0) {
@@ -264,9 +308,54 @@ export function updateWeapon(
   w.cooldown = Math.max(w.cooldown - DT, trigger ? -DT : 0);
 }
 
-function startReload(c: Character, def: WeaponDef, w: WeaponState, s: WeaponStats): void {
-  const ammo = c.admin?.infiniteAmmo || carriedAmmo(c, def.ammo) > 0;
-  if (w.mag < s.magazine && ammo) w.reloading = s.reloadTime;
+/** Starts a reload, unless there's nothing to load or it's full of the same round. */
+function startReload(
+  c: Character,
+  items: ItemDb,
+  w: WeaponState,
+  s: WeaponStats,
+  want?: string | null,
+): void {
+  const round = reloadRound(c, items, w, want);
+  if (round === null) return;
+  const swap = round !== loadedAmmo(items, w) && w.mag > 0;
+  if (w.mag < s.magazine || swap) {
+    w.reloading = s.reloadTime;
+    w.reloadWith = round;
+  }
+}
+
+/**
+ * Loads the reload's round. Another round than the one loaded swaps them: the new rounds
+ * are taken first, then the old ones go into what's carried, or at its feet with no room.
+ */
+function finishReload(
+  state: SimState,
+  c: Character,
+  w: WeaponState,
+  s: WeaponStats,
+  world: CollisionWorld,
+  items: ItemDb,
+): void {
+  w.reloading = 0;
+  const round = w.reloadWith ?? loadedAmmo(items, w);
+  delete w.reloadWith;
+  const infinite = !!c.admin?.infiniteAmmo;
+  if (round === loadedAmmo(items, w)) {
+    w.mag += infinite ? s.magazine - w.mag : takeAmmo(c, round, s.magazine - w.mag);
+    return;
+  }
+  const taken = infinite ? s.magazine : takeAmmo(c, round, s.magazine);
+  if (taken === 0) return;
+  const old = loadedAmmo(items, w);
+  const out = w.mag;
+  w.mag = taken;
+  if (round === weaponDef(items, w.item).ammo) delete w.loaded;
+  else w.loaded = round;
+  if (out > 0 && !infinite) {
+    const rounds = { item: old, count: out };
+    if (stow(c, items, rounds) > 0) dropItem(state, c, rounds, world);
+  }
 }
 
 function towardZero(v: number, step: number): number {
@@ -294,7 +383,7 @@ function fire(
   const around = nextFloat(state.rng) * Math.PI * 2;
   const yaw = c.yaw + c.recoilYaw + off * Math.cos(around);
   const pitch = c.pitch + c.recoilPitch + off * Math.sin(around);
-  const ammo = ammoDef(items, def.ammo);
+  const ammo = ammoDef(items, loadedAmmo(items, w));
   if (!ammo.pellets) {
     castShot(state, c, yaw, pitch, def, s, ammo, world, items, 0);
   } else {

@@ -61,7 +61,18 @@ function blankStats(type: ItemType, id: string, name: string, ammo: string) {
         recoil: { up: 1, side: 0.4, recovery: 14 },
       };
     case 'ammo':
-      return { ...common, type, size: [1, 1], value: 30, stack: 60, damage: 35, bleedChance: 0.2 };
+      return {
+        ...common,
+        type,
+        size: [1, 1],
+        value: 30,
+        stack: 60,
+        calibre: 'new',
+        level: 1,
+        damage: 35,
+        armourDamage: 10,
+        bleedChance: 0.2,
+      };
     case 'attachment':
       return { ...common, type, size: [1, 1], value: 5_000, slot: 'muzzle', mods: { recoil: 0.9 } };
     case 'armour':
@@ -71,7 +82,7 @@ function blankStats(type: ItemType, id: string, name: string, ammo: string) {
         size: [3, 3],
         value: 10_000,
         slot: 'body',
-        absorb: 0.5,
+        level: 1,
         durability: 60,
       };
     case 'container':
@@ -85,6 +96,8 @@ function blankStats(type: ItemType, id: string, name: string, ammo: string) {
         size: [1, 2],
         value: 500,
         damage: 40,
+        level: 1,
+        armourDamage: 5,
         bleedChance: 0.3,
         swingTime: 0.5,
         reach: 1.5,

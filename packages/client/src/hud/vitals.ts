@@ -14,8 +14,10 @@ import {
   type ItemDb,
   heldWeapon,
   carriedAmmo,
-  weaponDef,
+  ammoDef,
+  loadedAmmo,
 } from '@mes/shared';
+import { levelColour } from '../ui/levels';
 import { armourColour } from './armour';
 
 const HELMET_ICON =
@@ -37,7 +39,7 @@ function setHidden(el: HTMLElement, hidden: boolean): void {
 /**
  * The player's status, written straight to the DOM (never through React): the overall
  * health bar, chips for broken limbs and bleeding, armour icons coloured by durability,
- * and the ammo count with a reload bar. Also the crosshair hit marker and a red flash when
+ * and the ammo count with the round loaded (coloured by level) and a reload bar. Also the crosshair hit marker and a red flash when
  * hurt.
  */
 export class Vitals {
@@ -47,6 +49,8 @@ export class Vitals {
   private readonly helmet: HTMLElement;
   private readonly vest: HTMLElement;
   private readonly rounds: HTMLElement;
+  private readonly round: HTMLElement;
+  private roundId = '';
   private readonly reload: HTMLElement;
   private readonly reloadFill: HTMLElement;
   private chipKey = '';
@@ -72,8 +76,10 @@ export class Vitals {
     this.chips = q('.chips');
     this.helmet = q('.helmet');
     this.vest = q('.vest');
-    ammo.innerHTML = '<span class="rounds"></span><div class="reload"><div></div></div>';
+    ammo.innerHTML =
+      '<span class="rounds"></span><span class="round"></span><div class="reload"><div></div></div>';
     this.rounds = ammo.querySelector<HTMLElement>('.rounds')!;
+    this.round = ammo.querySelector<HTMLElement>('.round')!;
     this.reload = ammo.querySelector<HTMLElement>('.reload')!;
     this.reloadFill = this.reload.firstElementChild as HTMLElement;
   }
@@ -110,7 +116,14 @@ export class Vitals {
     const w = heldWeapon(c);
     setHidden(this.ammo, !w);
     if (w) {
-      setText(this.rounds, `${w.mag} / ${carriedAmmo(c, weaponDef(items, w.item).ammo)}`);
+      const id = loadedAmmo(items, w);
+      setText(this.rounds, `${w.mag} / ${carriedAmmo(c, id)}`);
+      if (id !== this.roundId) {
+        this.roundId = id;
+        const def = ammoDef(items, id);
+        this.round.textContent = def.name;
+        this.round.style.borderColor = levelColour(def.level);
+      }
       this.rounds.classList.toggle('empty', w.mag === 0);
       setHidden(this.reload, w.reloading === 0);
       if (w.reloading > 0) {

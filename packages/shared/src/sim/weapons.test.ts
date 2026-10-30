@@ -23,7 +23,15 @@ import {
 import { step } from './step';
 import { TEST_ITEMS } from './test-items';
 import { carriedAmmo, heldWeapon, stow } from './gear';
-import { attach, createWeaponStats, detach, giveWeapon, weaponStats } from './weapons';
+import {
+  attach,
+  createWeaponStats,
+  detach,
+  giveWeapon,
+  loadedAmmo,
+  reloadRound,
+  weaponStats,
+} from './weapons';
 
 /** Gives a character a gun and some spare rounds in its pockets. */
 function arm(c: Character, id: string, spare: number, attachments: string[] = []): void {
@@ -279,6 +287,61 @@ describe('firing', () => {
     // Nothing left to reload with.
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ reload: true }) });
     expect(w.reloading).toBe(0);
+  });
+
+  it('swaps to the rounds picked, putting the loaded ones back with what you carry', () => {
+    const { world, state, shooter } = range();
+    arm(shooter, 'pistol', 20);
+    stow(shooter, TEST_ITEMS, { item: 'ap-round', count: 20 });
+    const w = heldWeapon(shooter)!;
+    w.mag = 7;
+    step(state, world, TEST_ITEMS, { [shooter.id]: input({ reload: true, ammo: 'ap-round' }) });
+    for (let i = 0; i < TICK_RATE * 1.2; i++) step(state, world, TEST_ITEMS, {});
+    expect(loadedAmmo(TEST_ITEMS, w)).toBe('ap-round');
+    expect(w.mag).toBe(12);
+    expect(carriedAmmo(shooter, 'ap-round')).toBe(8);
+    expect(carriedAmmo(shooter, 'round')).toBe(27);
+    // A plain reload keeps to what's loaded; back to its own round, loaded is cleared.
+    w.mag = 5;
+    step(state, world, TEST_ITEMS, { [shooter.id]: input({ reload: true }) });
+    for (let i = 0; i < TICK_RATE * 1.2; i++) step(state, world, TEST_ITEMS, {});
+    expect(w.mag).toBe(12);
+    expect(carriedAmmo(shooter, 'ap-round')).toBe(1);
+    step(state, world, TEST_ITEMS, { [shooter.id]: input({ reload: true, ammo: 'round' }) });
+    for (let i = 0; i < TICK_RATE * 1.2; i++) step(state, world, TEST_ITEMS, {});
+    expect(w.loaded).toBeUndefined();
+    expect(carriedAmmo(shooter, 'ap-round')).toBe(13);
+  });
+
+  it('reloads the best round carried when the loaded one runs out, never another calibre', () => {
+    const { world, state, shooter } = range();
+    giveWeapon(shooter, TEST_ITEMS, 'rifle');
+    stow(shooter, TEST_ITEMS, { item: 'shell', count: 10 });
+    stow(shooter, TEST_ITEMS, { item: 'bleeder', count: 10 });
+    stow(shooter, TEST_ITEMS, { item: 'ap-round', count: 10 });
+    const w = heldWeapon(shooter)!;
+    expect(reloadRound(shooter, TEST_ITEMS, w)).toBe('ap-round');
+    expect(reloadRound(shooter, TEST_ITEMS, w, 'shell')).toBe('ap-round');
+    expect(reloadRound(shooter, TEST_ITEMS, w, 'bleeder')).toBe('bleeder');
+    w.mag = 0;
+    step(state, world, TEST_ITEMS, { [shooter.id]: input({ reload: true, ammo: 'shell' }) });
+    for (let i = 0; i < TICK_RATE * 2.2; i++) step(state, world, TEST_ITEMS, {});
+    expect(loadedAmmo(TEST_ITEMS, w)).toBe('ap-round');
+    expect(w.mag).toBe(10);
+    expect(carriedAmmo(shooter, 'shell')).toBe(10);
+  });
+
+  it('drops the rounds it swaps out when there is no room for them', () => {
+    const { world, state, shooter } = range();
+    giveWeapon(shooter, TEST_ITEMS, 'pistol');
+    // Pockets full: 3 cells of watches, 1 of AP rounds.
+    for (let i = 0; i < 3; i++) stow(shooter, TEST_ITEMS, { item: 'watch', count: 1 });
+    stow(shooter, TEST_ITEMS, { item: 'ap-round', count: 100 });
+    step(state, world, TEST_ITEMS, { [shooter.id]: input({ reload: true, ammo: 'ap-round' }) });
+    for (let i = 0; i < TICK_RATE * 1.2; i++) step(state, world, TEST_ITEMS, {});
+    expect(heldWeapon(shooter)?.mag).toBe(12);
+    expect(carriedAmmo(shooter, 'round')).toBe(0);
+    expect(state.ground.map((g) => g.item)).toEqual([{ item: 'round', count: 12 }]);
   });
 
   it('cannot fire while reloading', () => {

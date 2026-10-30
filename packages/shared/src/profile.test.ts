@@ -117,6 +117,12 @@ describe('checkProfile', () => {
     expect(checkProfile(items, p)).toMatch(/doesn't fit/);
 
     p = profile();
+    (p.gear.primary1 as WeaponState).loaded = 'ap-round';
+    expect(checkProfile(items, p)).toBeNull();
+    (p.gear.primary1 as WeaponState).loaded = 'shell';
+    expect(checkProfile(items, p)).toMatch(/doesn't fire "shell"/);
+
+    p = profile();
     p.gear.helmet!.durability = 1e6;
     expect(checkProfile(items, p)).toMatch(/durability/);
 

@@ -83,7 +83,7 @@ describe('item editor', () => {
     expect(risks('scope-4x', (d) => (d.weapons = [...(d.weapons as string[]), 'pistol']))).toEqual(
       [],
     );
-    expect(risks('steel-helmet', (d) => (d.absorb = 0.9))).toEqual([]);
+    expect(risks('steel-helmet', (d) => (d.level = 5))).toEqual([]);
   });
 
   it("keeps a gun's mounts and hidden parts in step with its slots", () => {
