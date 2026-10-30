@@ -1,0 +1,42 @@
+{
+  "formatVersion": 1,
+  "id": "body-fall",
+  "name": "A body falling",
+  "gain": 0.9,
+  "range": 25,
+  "pitchJitter": 0.08,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.25,
+      "curve": 2,
+      "gain": 1,
+      "filter": { "type": "lowpass", "freq": [350, 90], "q": 0.7 }
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0.12,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.15,
+      "curve": 2,
+      "gain": 0.6,
+      "filter": { "type": "lowpass", "freq": [250, 250], "q": 0.7 }
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.2,
+      "gain": 0.2,
+      "filter": { "type": "bandpass", "freq": [800, 800], "q": 1 }
+    }
+  ]
+}

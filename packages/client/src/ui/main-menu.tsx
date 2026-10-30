@@ -19,6 +19,7 @@ import { useEffect, useMemo, useReducer, useState, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client';
 import { AccountError } from '../account';
 import { StashSaver, type StashSaveStatus } from '../stash';
+import { AdminPage } from './admin-page';
 import { InventoryController } from './inventory-controller';
 import { Inventory } from './raid-screen';
 import { QuestsPage, questsLine } from './quests-page';
@@ -48,7 +49,7 @@ export interface MenuChoice {
   me: ProfileResponse;
 }
 
-type Page = 'menu' | 'stash' | 'vendors' | 'quests';
+type Page = 'menu' | 'stash' | 'vendors' | 'quests' | 'admin';
 
 /** What you're taking in, for the menu: guns and armour by name. */
 const SHOWN: readonly GearSlot[] = ['primary1', 'primary2', 'sidearm', 'helmet', 'bodyArmour'];
@@ -190,6 +191,31 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
       />
     );
   }
+  if (page === 'admin') {
+    return (
+      <AdminPage
+        items={opts.items}
+        notice={notice}
+        onBack={() => {
+          setNotice(null);
+          setPage('menu');
+        }}
+        onStash={() => {
+          setNotice(null);
+          setPage('stash');
+        }}
+        onGive={(def, count) =>
+          saver
+            .give(def.id, count, startPage)
+            .then(
+              (given) =>
+                reopen(given, startPage, `Gave ${def.name}${count > 1 ? ` ×${count}` : ''}.`),
+              refused(`${def.name} wasn't given`),
+            )
+        }
+      />
+    );
+  }
   if (page === 'stash') {
     return (
       <StashPage
@@ -277,6 +303,12 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
             Quests
             <span>{questsLine(opts.quests, me)}</span>
           </button>
+          {import.meta.env.DEV && (
+            <button onClick={() => setPage('admin')}>
+              Admin
+              <span>Give yourself items, turn on cheats (dev server only)</span>
+            </button>
+          )}
         </div>
         {notice && <p className="menu-notice">{notice}</p>}
       </div>

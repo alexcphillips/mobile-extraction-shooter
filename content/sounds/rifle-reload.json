@@ -1,0 +1,84 @@
+{
+  "formatVersion": 1,
+  "id": "rifle-reload",
+  "name": "Rifle reload",
+  "gain": 0.8,
+  "range": 20,
+  "pitchJitter": 0.03,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0.15,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "curve": 2,
+      "gain": 0.6,
+      "filter": { "type": "highpass", "freq": [2500, 2500], "q": 0.7 }
+    },
+    {
+      "source": "tone",
+      "wave": "square",
+      "freq": [900, 600],
+      "at": 0.15,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.02,
+      "gain": 0.08
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0.25,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.1,
+      "gain": 0.2,
+      "filter": { "type": "bandpass", "freq": [2000, 2000], "q": 1 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 1.3,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.05,
+      "curve": 2,
+      "gain": 0.7,
+      "filter": { "type": "bandpass", "freq": [1500, 1500], "q": 1 }
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [180, 120],
+      "at": 1.3,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.06,
+      "gain": 0.4
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 1.8,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "curve": 2,
+      "gain": 0.5,
+      "filter": { "type": "highpass", "freq": [3000, 3000], "q": 0.7 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 1.95,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.05,
+      "curve": 2,
+      "gain": 0.7,
+      "filter": { "type": "bandpass", "freq": [2500, 2500], "q": 1 }
+    }
+  ]
+}

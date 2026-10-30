@@ -4,6 +4,7 @@ import {
   ATTACHMENT_SLOTS,
   fits,
   stackSize,
+  weaponDef,
   type AttachmentDef,
   type ItemDb,
   type WeaponDef,
@@ -200,6 +201,22 @@ export function buyStashPage(p: Profile): string | null {
   return null;
 }
 
+/**
+ * Moves a pistol out of a primary slot, where it could go before 2026-10-30: into the
+ * sidearm if that's empty, else onto the first stash page with room (none: it stays, and
+ * checkGear refuses it). Run on stored profiles and raid results before they're checked.
+ */
+export function settleGuns(items: ItemDb, gear: Gear, stash: readonly Grid[]): void {
+  for (const slot of ['primary1', 'primary2'] as const) {
+    const item = gear[slot];
+    if (!item || fitsSlot(items, slot, item)) continue;
+    if (!gear.sidearm && fitsSlot(items, 'sidearm', item)) gear.sidearm = item;
+    else if (!stash.some((page) => addItem(items, page, item) === 0)) continue;
+    gear[slot] = null;
+    if (gear.hand === slot) gear.hand = gear.sidearm === item ? 'sidearm' : 'knife';
+  }
+}
+
 /** Puts every gun down: no cooldown, reload or trigger held, as stored between raids. */
 export function restGear(gear: Gear): void {
   forEachItem(gear, [], (item) => {
@@ -229,13 +246,17 @@ function forEachItem(gear: Gear, stash: readonly Grid[], fn: (item: Item) => voi
   for (const page of stash) grid(page);
 }
 
-/** How many of each item a profile has, counting stacks and the attachments on guns. */
-export function countItems(p: Profile): Map<string, number> {
+/**
+ * How many of each item a profile has, counting stacks, the attachments on guns and the
+ * rounds loaded in them (as their ammo item, so unloading a gun makes nothing).
+ */
+export function countItems(items: ItemDb, p: Profile): Map<string, number> {
   const out = new Map<string, number>();
   const add = (id: string, n: number) => out.set(id, (out.get(id) ?? 0) + n);
   forEachItem(p.gear, p.stash, (item) => {
     add(item.item, item.count);
     for (const a of Object.values(item.attachments ?? {})) if (a) add(a, 1);
+    if (item.mag) add(weaponDef(items, item.item).ammo, item.mag);
   });
   return out;
 }
@@ -244,9 +265,9 @@ export function countItems(p: Profile): Map<string, number> {
  * The first item there's more of in after than in before, or null. Moving things around
  * between raids (the stash, session 13) can't make items: only raids and vendors can.
  */
-export function itemGained(before: Profile, after: Profile): string | null {
-  const had = countItems(before);
-  for (const [id, n] of countItems(after)) if (n > (had.get(id) ?? 0)) return id;
+export function itemGained(items: ItemDb, before: Profile, after: Profile): string | null {
+  const had = countItems(items, before);
+  for (const [id, n] of countItems(items, after)) if (n > (had.get(id) ?? 0)) return id;
   return null;
 }
 

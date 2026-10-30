@@ -10,6 +10,7 @@ import {
   newProfile,
   parseGear,
   restGear,
+  settleGuns,
   type Profile,
 } from './profile';
 import { createItem } from './sim/create-item';
@@ -43,8 +44,9 @@ describe('newProfile', () => {
     expect(p.gear.primary1?.item).toBe('rifle');
     expect(p.gear.hand).toBe('primary1');
     expect(p.gear.vault?.items).toEqual([]);
-    const counts = countItems(p);
-    expect(counts.get('round')).toBe(90);
+    const counts = countItems(items, p);
+    // 90 carried, 30 in the rifle and 12 in the pistol in the stash.
+    expect(counts.get('round')).toBe(132);
     expect(counts.get('cash')).toBe(300);
     expect(counts.get('backpack')).toBe(1);
     expect(checkProfile(items, p)).toBeNull();
@@ -126,18 +128,23 @@ describe('itemGained', () => {
   it('lets items move and be used up, but not appear', () => {
     const before = profile();
     const after = profile();
-    // Rounds into the gun: still the same rounds or fewer in grids, and the mag isn't counted.
-    after.gear.pockets.items[0]!.item.count -= 30;
-    expect(itemGained(before, after)).toBeNull();
+    // Rounds out of the gun into the pockets: the same rounds, loaded rounds counted.
+    const rifle = after.gear.primary1 as WeaponState;
+    after.gear.pockets.items[0]!.item.count += rifle.mag;
+    rifle.mag = 0;
+    expect(itemGained(items, before, after)).toBeNull();
+    after.gear.pockets.items[0]!.item.count += 1;
+    expect(itemGained(items, before, after)).toBe('round');
+    after.gear.pockets.items[0]!.item.count -= 1;
     after.gear.vault!.items.push({ x: 0, y: 0, rotated: false, item: createItem(items, 'watch') });
-    expect(itemGained(before, after)).toBe('watch');
+    expect(itemGained(items, before, after)).toBe('watch');
   });
 
   it('counts attachments on guns', () => {
     const before = profile();
     const after = profile();
     (after.gear.primary1 as WeaponState).attachments.optic = 'scope';
-    expect(itemGained(before, after)).toBe('scope');
+    expect(itemGained(items, before, after)).toBe('scope');
   });
 });
 
@@ -161,5 +168,29 @@ describe('restGear and keptGear', () => {
     expect(kept.vault?.items.map((g) => g.item.item)).toEqual(['watch']);
     expect(kept.hand).toBe('knife');
     expect(checkProfile(items, { ...p, gear: kept })).toBeNull();
+  });
+});
+
+describe('settleGuns', () => {
+  it('moves a pistol out of a primary slot: to an empty sidearm, else the stash', () => {
+    const p = profile();
+    // As saved before pistols left the primaries.
+    p.gear.primary2 = p.gear.sidearm;
+    p.gear.sidearm = null;
+    p.gear.hand = 'primary2';
+    expect(checkProfile(items, p)).toMatch(/primary2/);
+    settleGuns(items, p.gear, p.stash);
+    expect(p.gear.primary2).toBeNull();
+    expect((p.gear.sidearm as WeaponState | null)?.item).toBe('pistol');
+    expect(p.gear.hand).toBe('sidearm');
+    expect(checkProfile(items, p)).toBeNull();
+
+    p.gear.primary2 = createItem(items, 'pistol') as WeaponState;
+    p.gear.hand = 'primary2';
+    settleGuns(items, p.gear, p.stash);
+    expect(p.gear.primary2).toBeNull();
+    expect(p.gear.hand).toBe('knife');
+    expect(p.stash[0]!.items.some((gi) => gi.item.item === 'pistol')).toBe(true);
+    expect(checkProfile(items, p)).toBeNull();
   });
 });

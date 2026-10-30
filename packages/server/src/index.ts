@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { PROTOCOL_VERSION, TICK_RATE, type HelloResponse } from '@mes/shared';
+import { admin, adminOnly } from './admin';
 import { auth, signedIn, type AppEnv } from './auth';
 import { fail } from './errors';
 import { profiles, settingsRoute, stashRoute } from './profiles';
@@ -31,6 +32,8 @@ app.use('/vendors/*', signedIn);
 app.route('/vendors', vendors);
 app.use('/quests/*', signedIn);
 app.route('/quests', quests);
+app.use('/admin/*', adminOnly, signedIn);
+app.route('/admin', admin);
 
 app.notFound((c) => fail(c, 'not-found'));
 

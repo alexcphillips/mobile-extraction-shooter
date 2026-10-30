@@ -178,6 +178,12 @@ export class InventoryController implements DragHost {
     this.redraw();
   }
 
+  /** Takes the rounds out of a gun into what you carry. */
+  unload(gun: ItemRef): void {
+    this.ctx.send({ type: 'unload', gun });
+    this.redraw();
+  }
+
   /**
    * The loose attachments you can reach that fit a slot of a gun: yours first, then the
    * open body's or container's. One of each kind.

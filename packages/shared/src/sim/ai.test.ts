@@ -3,7 +3,7 @@ import { NavGrid } from '../nav/nav-grid';
 import { TICK_RATE } from '../tick';
 import { CollisionWorld, type BoxDef, type WorldDef } from '../world/collision-world';
 import type { EnemySkill } from '../content/enemies';
-import { AI, DEFAULT_SKILL, resetEnemy, spawnEnemy, type PatrolDef } from './ai';
+import { AI, DEFAULT_SKILL, exposedSpawns, resetEnemy, spawnEnemy, type PatrolDef } from './ai';
 import { MOVEMENT } from './movement';
 import {
   createState,
@@ -130,6 +130,17 @@ describe('enemy sight', () => {
     expect(far.enemy.ai!.awareness).toBe('alert');
   });
 
+  it('never notices a peaceful player (an admin cheat), even one shooting it', () => {
+    const s = setup(0, -3);
+    s.player.admin = { infiniteHealth: false, infiniteAmmo: false, peaceful: true };
+    giveWeapon(s.player, TEST_ITEMS, 'rifle');
+    s.run(2, input({ yaw: Math.PI, pitch: -0.1, fire: true }));
+    // It was hit, and still didn't notice.
+    expect(s.enemy.health.hp[CHEST]).toBeLessThan(85);
+    expect(s.enemy.ai!.awareness).toBe('unaware');
+    expect(s.enemy.ai!.target).toBe(0);
+  });
+
   it("doesn't see behind itself, past its range, or through walls", () => {
     expect(runFor(setup(0, 10), 5)).toBe('unaware');
     expect(runFor(setup(0, -(AI.sightRange + 5), { half: 80 }), 5)).toBe('unaware');
@@ -187,6 +198,14 @@ describe('enemy hearing', () => {
       expect(s.enemy.ai!.awareness, `${d} m`).toBe(awareness);
       if (awareness === 'suspicious') expect(s.enemy.ai!.investigate, `${d} m`).toBe(investigate);
     }
+  });
+
+  it('hears a shot behind a wall as half as loud', () => {
+    // 20 m: alert in the open, but only investigates through a wall.
+    const s = setup(0, 20, { boxes: [aabb(-10, 0, 10, 10, 4, 10.4)] });
+    shootUp(s);
+    expect(s.enemy.ai!.awareness).toBe('suspicious');
+    expect(s.enemy.ai!.investigate).toBe(true);
   });
 
   it('is alarmed by a near miss however far the shot came from', () => {
@@ -493,18 +512,29 @@ describe('enemy combat', () => {
     expect(['takeCover', 'cover']).toContain(s.enemy.ai!.activity);
   });
 
-  it("joins an ally's fight", () => {
-    // The ally fights the player; the other enemy can't see either, behind a wall.
-    const boxes = [aabb(-30, 0, 9, 30, 3, 9.4)];
-    const s = setup(0, -15, { boxes });
+  it("joins an ally's fight: alert close by, else walks to the shots", () => {
+    // The ally fights the player. Close by, in the open: alert to the player at once.
+    const close = setup(0, -15);
+    arm(close);
+    const near = spawnEnemy(close.state, close.world, 0, 0, 8, Math.PI);
+    close.run(4);
+    expect(near.ai!.awareness).toBe('alert');
+    expect(near.ai!.target).toBe(close.player.id);
+
+    // Further, behind a wall: the shots are muffled, so it walks over to where they came
+    // from, not to the player.
+    const s = setup(0, -15, { boxes: [aabb(-30, 0, 9, 30, 3, 9.4)] });
     arm(s);
     const other = spawnEnemy(s.state, s.world, 0, 0, 20, 0);
-    giveWeapon(other, TEST_ITEMS, 'rifle');
-    stow(other, TEST_ITEMS, { item: 'round', count: 300 });
-    s.run(4);
-    // Within 15% of the rifle's 150 m: alert to the player at once.
-    expect(other.ai!.awareness).toBe('alert');
-    expect(other.ai!.target).toBe(s.player.id);
+    let focus = Infinity;
+    for (let t = 0; t < 4 * TICK_RATE && focus === Infinity; t++) {
+      s.run(1 / TICK_RATE);
+      const ai = other.ai!;
+      if (ai.awareness === 'suspicious')
+        focus = Math.hypot(ai.focusX - s.enemy.x, ai.focusZ - s.enemy.z);
+    }
+    expect(other.ai!.investigate).toBe(true);
+    expect(focus).toBeLessThan(3);
   });
 
   it("holds a way up to a target it can't reach, then gives up", () => {
@@ -552,5 +582,27 @@ describe('enemy combat', () => {
       step(b.state, b.world, TEST_ITEMS, { [a.player.id]: walk }, a.nav);
     }
     expect(b.state).toEqual(a.state);
+  });
+});
+
+describe('spawn clearance', () => {
+  it('flags enemy spawns near a player spawn, or in sight of one', () => {
+    // A wall hides the one at 65 m; the one at 68 m in the open is seen; 100 m is fine.
+    const world = makeWorld([aabb(-5, 0, 30, 5, 4, 31)], 120);
+    const at = (type: string, id: string, x: number, z: number) => ({ type, id, x, y: 0, z });
+    const flagged = exposedSpawns(
+      [
+        at('playerSpawn', 'p', 0, 0),
+        at('enemySpawn', 'close', 30, 0),
+        at('enemySpawn', 'walled', 0, 65),
+        at('enemySpawn', 'open', -68, 0),
+        at('enemySpawn', 'far', 0, -100),
+      ],
+      world,
+    );
+    expect(flagged.map((f) => [f.enemy, f.seen])).toEqual([
+      ['close', true],
+      ['open', true],
+    ]);
   });
 });

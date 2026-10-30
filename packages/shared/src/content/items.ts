@@ -30,8 +30,17 @@ const fraction = finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1');
  * 4 (session 10b): weapons gained a draw time; the knife gained its stats.
  * 5 (session 13b): every item gained a value; repair kits a use time.
  * 6 (session 18b): every item gained a model (models.ts).
+ * 7 (session 19): guns, knives, meds and repair kits gained sounds (sounds.ts).
+ * 8: every item gained a rarity.
  */
-export const ITEM_FORMAT_VERSION = 6;
+export const ITEM_FORMAT_VERSION = 8;
+
+/**
+ * How rare an item is, which colours its tile (design.md → Item tiles), lowest first:
+ * gray, blue, purple, gold.
+ */
+export const RARITIES = ['common', 'rare', 'epic', 'legendary'] as const;
+export type Rarity = (typeof RARITIES)[number];
 
 const cells = z.int().min(1);
 /** A grid size: [width, height] in cells. */
@@ -51,9 +60,12 @@ const common = {
    * that can't be bought or sold.
    */
   value: z.int().min(0),
+  rarity: z.enum(RARITIES),
 };
 /** How it's drawn (session 18b): see models.ts. Guns, attachments and knives add points. */
 const plainModel = { model: plainModelSchema };
+/** A sound file's id (content/sounds). */
+const soundId = idSchema;
 
 const weaponSchema = z
   .strictObject({
@@ -96,6 +108,11 @@ const weaponSchema = z
       /** How fast the view settles back, in degrees per second. */
       recovery: positive,
     }),
+    /**
+     * What it sounds like: firing, firing with a muzzle device that quietens it (a
+     * suppressor), and reloading.
+     */
+    sounds: z.strictObject({ shot: soundId, suppressed: soundId, reload: soundId }),
     model: weaponModelSchema,
   })
   .superRefine((w, ctx) => {
@@ -129,19 +146,28 @@ const weaponSchema = z
     });
   });
 
-const ammoSchema = z.strictObject({
-  ...common,
-  type: z.literal('ammo'),
-  /** Loose rounds stack up to this many in one place. */
-  stack: stackSchema,
-  /** Damage to the chest; other zones multiply it, then armour absorbs some. */
-  damage: positive,
-  /** Armour durability lost per point of damage the armour absorbs. Defaults to 1. */
-  armourDamage: nonNegative.optional(),
-  /** Chance that a hit which gets through starts bleeding. */
-  bleedChance: fraction,
-  ...plainModel,
-});
+const ammoSchema = z
+  .strictObject({
+    ...common,
+    type: z.literal('ammo'),
+    /** Loose rounds stack up to this many in one place. */
+    stack: stackSchema,
+    /** Damage to the chest; other zones multiply it, then armour absorbs some. Per pellet. */
+    damage: positive,
+    /** Armour durability lost per point of damage the armour absorbs. Defaults to 1. */
+    armourDamage: nonNegative.optional(),
+    /** Chance that a hit which gets through starts bleeding. */
+    bleedChance: fraction,
+    /** Shotgun shells: one round fires this many pellets, each its own hit. Defaults to 1. */
+    pellets: z.int().min(2).optional(),
+    /** With pellets: the most each pellet strays from the shot's line, in degrees. */
+    pelletSpread: nonNegative.optional(),
+    ...plainModel,
+  })
+  .refine((a) => (a.pellets === undefined) === (a.pelletSpread === undefined), {
+    message: 'pellets and pelletSpread go together',
+    path: ['pelletSpread'],
+  });
 
 const armourSchema = z.strictObject({
   ...common,
@@ -245,6 +271,8 @@ const medSchema = z
     uses: z.int().min(1).optional(),
     /** heal only: the HP it holds in all, spent across uses. */
     hp: positive.optional(),
+    /** Played as a use starts. */
+    sounds: z.strictObject({ use: soundId }),
     ...plainModel,
   })
   .refine((m) => (m.effect === 'heal') === (m.hp !== undefined), {
@@ -285,6 +313,7 @@ const meleeSchema = z.strictObject({
   reach: positive,
   /** Taking it out: from switching to it until it can swing. */
   drawTime: positive,
+  sounds: z.strictObject({ swing: soundId }),
   model: meleeModelSchema,
 });
 
@@ -322,6 +351,8 @@ const repairSchema = z.strictObject({
   points: positive,
   /** How long a repair takes in a raid (session 13b). Between raids it's at once. */
   useTime: positive,
+  /** Played as a repair in a raid starts. */
+  sounds: z.strictObject({ use: soundId }),
   ...plainModel,
 });
 
@@ -392,8 +423,41 @@ export const ITEM_FORMAT: ContentFormat<ItemDef> = {
     }),
     // Models: the placeholders each kind was drawn with.
     5: (doc) => ({ ...doc, model: placeholderModel(doc) }),
+    // Sounds: the first ones made, by kind (the content files pick their own).
+    6: (doc) => {
+      const sounds = defaultSounds(doc);
+      return sounds ? { ...doc, sounds } : doc;
+    },
+    // Rarities: all common until the content files pick their own.
+    7: (doc) => ({ ...doc, rarity: 'common' }),
   },
 };
+
+/**
+ * The sounds an item of its kind starts with (session 19): the first ones made, by hold or
+ * effect; null for kinds that make none. For the migration, blank items and test items.
+ */
+export function defaultSounds(doc: {
+  type?: unknown;
+  hold?: unknown;
+  effect?: unknown;
+}): Record<string, string> | null {
+  const gun = doc.hold === 'pistol' ? 'pistol' : 'rifle';
+  switch (doc.type) {
+    case 'weapon':
+      return { shot: `${gun}-shot`, suppressed: `${gun}-shot-suppressed`, reload: `${gun}-reload` };
+    case 'melee':
+      return { swing: 'knife-swing' };
+    case 'med':
+      return {
+        use: doc.effect === 'bandage' || doc.effect === 'splint' ? 'bandage-use' : 'med-use',
+      };
+    case 'repair':
+      return { use: 'repair-use' };
+    default:
+      return null;
+  }
+}
 
 const VALUE_GUESSES: Record<string, number> = {
   weapon: 10_000,

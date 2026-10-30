@@ -5,7 +5,7 @@
   "scripts": {
     "content": "node ../../scripts/bundle-content.mjs",
     "predev": "npm run content",
-    "dev": "wrangler dev --ip 0.0.0.0",
+    "dev": "wrangler dev --ip 0.0.0.0 --var ADMIN:1",
     "predeploy": "npm run content && wrangler d1 migrations apply mes --remote",
     "deploy": "wrangler deploy",
     "pretypecheck": "npm run content",

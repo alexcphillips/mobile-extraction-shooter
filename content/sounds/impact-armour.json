@@ -1,0 +1,43 @@
+{
+  "formatVersion": 1,
+  "id": "impact-armour",
+  "name": "Hitting armour",
+  "gain": 0.8,
+  "range": 30,
+  "pitchJitter": 0.08,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [1800, 1700],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.3,
+      "curve": 3,
+      "gain": 0.3
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [2650, 2650],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.25,
+      "curve": 3,
+      "gain": 0.2
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "curve": 2,
+      "gain": 0.5,
+      "filter": { "type": "highpass", "freq": [3000, 3000], "q": 0.7 }
+    }
+  ]
+}

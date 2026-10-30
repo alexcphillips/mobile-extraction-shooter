@@ -137,6 +137,8 @@ export type Target = GridSpot | Omit<InSlot, 'item'> | ToGround;
  * - repair (session 13b): starts repairing one of your armour pieces (worn or in a grid)
  *   with a repair kit you carry (pockets, rig or backpack), taking the kit's use time like
  *   a med (see updateMedUse). The stash does it at once, from anywhere (applyStash).
+ * - unload: takes the rounds out of a gun, wherever it is, into what you carry. A
+ *   reload in progress stops.
  * A magazine change hands back the rounds that no longer fit, into what you carry. What
  * has no room (those rounds, a part swapped off, a part taken off into what you carry)
  * is dropped at your feet rather than the action refused (session 11b).
@@ -153,7 +155,8 @@ export type InventoryAction =
       part: string;
       to: GridSpot | null;
     }
-  | { type: 'repair'; kit: ItemRef; armour: ItemRef };
+  | { type: 'repair'; kit: ItemRef; armour: ItemRef }
+  | { type: 'unload'; gun: ItemRef };
 
 /** An inventory action was applied (ok) or refused. */
 export interface InventoryEvent {
@@ -314,6 +317,8 @@ export function applyInventory(
       return detachPart(ctx, action.gun, action.slot, action.part, action.to);
     case 'repair':
       return startRepair(c, items, action.kit, action.armour);
+    case 'unload':
+      return unload(ctx, action.gun);
   }
 }
 
@@ -426,8 +431,8 @@ function toSlot(items: ItemDb, from: Found, ch: Character, slot: GearSlot): bool
   return true;
 }
 
-/** Gun slots in the order a double-tapped gun fills them: a pistol prefers the sidearm. */
-const PISTOL_SLOTS: readonly GearSlot[] = ['sidearm', 'primary1', 'primary2'];
+/** Gun slots in the order a double-tapped gun fills them: a pistol has only the sidearm. */
+const PISTOL_SLOTS: readonly GearSlot[] = ['sidearm'];
 const GUN_SLOTS: readonly GearSlot[] = ['primary1', 'primary2'];
 const OTHER_SLOTS: readonly GearSlot[] = ['knife', 'helmet', 'bodyArmour', 'rig', 'backpack'];
 
@@ -531,6 +536,17 @@ function movePart(ctx: Ctx, from: PartRef, toRef: ItemRef): boolean {
   if (old !== null && !swap) stowOrDrop(ctx, createItem(items, old));
   stowRounds(ctx, weaponDef(items, a.item).ammo, outA);
   stowRounds(ctx, weaponDef(items, b.item).ammo, outB);
+  return true;
+}
+
+/** Empties a gun's rounds into what c carries; refused if it's empty. */
+function unload(ctx: Ctx, gunRef: ItemRef): boolean {
+  const gun = findGun(ctx, gunRef);
+  if (!gun || gun.mag <= 0) return false;
+  const n = gun.mag;
+  gun.mag = 0;
+  gun.reloading = 0;
+  stowRounds(ctx, weaponDef(ctx.items, gun.item).ammo, n);
   return true;
 }
 

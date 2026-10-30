@@ -1,0 +1,74 @@
+{
+  "formatVersion": 1,
+  "id": "pistol-reload",
+  "name": "Pistol reload",
+  "gain": 0.8,
+  "range": 18,
+  "pitchJitter": 0.03,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0.1,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "curve": 2,
+      "gain": 0.5,
+      "filter": { "type": "highpass", "freq": [2800, 2800], "q": 0.7 }
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0.18,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.08,
+      "gain": 0.15,
+      "filter": { "type": "bandpass", "freq": [2200, 2200], "q": 1 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0.9,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.04,
+      "curve": 2,
+      "gain": 0.6,
+      "filter": { "type": "bandpass", "freq": [1800, 1800], "q": 1 }
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [220, 150],
+      "at": 0.9,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.05,
+      "gain": 0.3
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 1.3,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.025,
+      "curve": 2,
+      "gain": 0.45,
+      "filter": { "type": "highpass", "freq": [3200, 3200], "q": 0.7 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 1.4,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.04,
+      "curve": 2,
+      "gain": 0.6,
+      "filter": { "type": "bandpass", "freq": [2800, 2800], "q": 1 }
+    }
+  ]
+}

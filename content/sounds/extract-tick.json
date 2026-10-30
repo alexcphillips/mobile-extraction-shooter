@@ -1,0 +1,20 @@
+{
+  "formatVersion": 1,
+  "id": "extract-tick",
+  "name": "Extraction countdown",
+  "gain": 1,
+  "range": 5,
+  "pitchJitter": 0,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [880, 880],
+      "at": 0,
+      "attack": 0.005,
+      "hold": 0.06,
+      "decay": 0.05,
+      "gain": 0.3
+    }
+  ]
+}

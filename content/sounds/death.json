@@ -1,0 +1,43 @@
+{
+  "formatVersion": 1,
+  "id": "death",
+  "name": "Killed",
+  "gain": 0.9,
+  "range": 10,
+  "pitchJitter": 0,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [90, 40],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.8,
+      "curve": 2,
+      "gain": 0.7
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 1,
+      "curve": 2,
+      "gain": 0.6,
+      "filter": { "type": "lowpass", "freq": [300, 60], "q": 0.7 }
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0.1,
+      "attack": 0.05,
+      "hold": 0,
+      "decay": 1.2,
+      "curve": 2,
+      "gain": 0.15,
+      "filter": { "type": "lowpass", "freq": [800, 800], "q": 0.7 }
+    }
+  ]
+}

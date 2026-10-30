@@ -7,9 +7,11 @@ import {
   SPOT,
   compileMap,
   compileNodes,
+  exposedSpawns,
   idSchema,
   loadContent,
   type CompiledMap,
+  type ExposedSpawn,
   type MapFile,
   type MapNode,
   type PrefabFile,
@@ -152,6 +154,8 @@ export interface EditorState {
   problem: string | null;
   /** What overlaps (warnings, except buildings overlapping, which is a problem). */
   overlaps: Overlaps;
+  /** Enemy spawns too near a player spawn, or in sight of one (warnings). */
+  exposed: readonly ExposedSpawn[];
   message: string | null;
   canUndo: boolean;
   canRedo: boolean;
@@ -228,6 +232,7 @@ export class MapEditor {
       saving: false,
       problem: null,
       overlaps: { props: [], buildings: [], buried: [] },
+      exposed: [],
       message: null,
       canUndo: false,
       canRedo: false,
@@ -531,7 +536,10 @@ export class MapEditor {
       this.compiled = null;
     }
     const spawns = this.compiled?.markers.filter((m) => m.type === 'playerSpawn').map((m) => m.id);
-    this.set({ overlaps, problem, spawns: spawns ?? [] });
+    const exposed = this.compiled
+      ? exposedSpawns(this.compiled.markers, new CollisionWorld(this.compiled.world))
+      : [];
+    this.set({ overlaps, problem, spawns: spawns ?? [], exposed });
     this.mapChanged();
   }
 

@@ -73,7 +73,26 @@ describe('the stash', () => {
     expect(p.gear.primary1?.attachments?.optic).toBe('scope');
     // Still a valid profile, with nothing made from nothing: the server takes it.
     expect(checkProfile(items, p)).toBeNull();
-    expect(itemGained(before, p)).toBeNull();
+    expect(itemGained(items, before, p)).toBeNull();
+  });
+
+  it('unloads a gun in the stash without making rounds', () => {
+    const p = profile();
+    const before = JSON.parse(JSON.stringify(p)) as Profile;
+    const s = openStash(p);
+    const pistol = p.stash[0]!.items.findIndex((g) => g.item.item === 'pistol');
+    const loaded = p.stash[0]!.items[pistol]!.item.mag!;
+    expect(
+      applyStash(s, items, {
+        type: 'unload',
+        gun: { ...stash, index: pistol, item: 'pistol' },
+      }),
+    ).toBe(true);
+    expect(p.stash[0]!.items[pistol]!.item.mag).toBe(0);
+    expect(countOf(p.gear.pockets, 'round') + countOf(p.gear.backpack!.grid!, 'round')).toBe(
+      60 + loaded,
+    );
+    expect(itemGained(items, before, p)).toBeNull();
   });
 
   it('never drops on the ground, and keeps the knife', () => {

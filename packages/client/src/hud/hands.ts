@@ -77,6 +77,14 @@ export class HandsHud {
       },
       true,
     );
+    // On desktop the cursor is free while it's open; Esc closes it too.
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Escape') this.hidePicker();
+    });
+  }
+
+  get pickerOpen(): boolean {
+    return !this.picker.hidden;
   }
 
   /** The med a tap on the heal button uses, or null when nothing would help. */

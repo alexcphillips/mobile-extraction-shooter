@@ -1,0 +1,18 @@
+{
+  "formatVersion": 8,
+  "id": "buckshot",
+  "name": "12-gauge buckshot",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 60,
+  "rarity": "common",
+  "stack": 30,
+  "damage": 14,
+  "armourDamage": 0.4,
+  "bleedChance": 0.15,
+  "pellets": 9,
+  "pelletSpread": 3,
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#a8342c" }]
+  }
+}

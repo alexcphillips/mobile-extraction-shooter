@@ -1,0 +1,20 @@
+{
+  "formatVersion": 1,
+  "id": "bullet-whizz",
+  "name": "Bullet passing close",
+  "gain": 1.6,
+  "range": 4,
+  "pitchJitter": 0.15,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0,
+      "attack": 0.03,
+      "hold": 0,
+      "decay": 0.12,
+      "gain": 0.6,
+      "filter": { "type": "bandpass", "freq": [3000, 1200], "q": 3 }
+    }
+  ]
+}

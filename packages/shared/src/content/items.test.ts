@@ -1,14 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { ContentError, loadContent } from './format';
-import { ITEM_FORMAT, ITEM_FORMAT_VERSION, checkItems, weaponDef, type ItemDef } from './items';
+import {
+  ITEM_FORMAT,
+  ITEM_FORMAT_VERSION,
+  checkItems,
+  defaultSounds,
+  weaponDef,
+  type ItemDef,
+} from './items';
 import { modelShapes, type WeaponModel } from './models';
 import { placeholderModel } from './placeholder-models';
 
-/** An item with the placeholder model for its kind. */
-const m = <T extends object>(raw: T) => ({
-  ...raw,
-  model: placeholderModel(raw as Record<string, unknown>),
-});
+/** An item with the default sounds and placeholder model for its kind. */
+const m = <T extends object>(raw: T) => {
+  const sounds = defaultSounds(raw);
+  return {
+    ...raw,
+    rarity: 'common',
+    ...(sounds && { sounds }),
+    model: placeholderModel(raw as Record<string, unknown>),
+  };
+};
 
 const ammo = m({
   formatVersion: ITEM_FORMAT_VERSION,
@@ -236,6 +248,42 @@ describe('items', () => {
     expect(v5({ ...ammo, size: [2, 1] }).model.parts).toEqual([
       { type: 'box', pos: [0, 0, 0], size: [0.28, 0.07, 0.14], colour: '#9a8238' },
     ]);
+  });
+
+  it('upgrades format 6 items with the sounds of their kind', () => {
+    const v6 = (raw: object) => {
+      const { sounds: _, ...old } = raw as { sounds?: unknown };
+      return loadContent(ITEM_FORMAT, { ...old, formatVersion: 6 }, 'x.json');
+    };
+    expect(v6(gun)).toMatchObject({
+      sounds: { shot: 'rifle-shot', suppressed: 'rifle-shot-suppressed', reload: 'rifle-reload' },
+    });
+    expect(v6({ ...gun, hold: 'pistol' })).toMatchObject({ sounds: { shot: 'pistol-shot' } });
+    const base = {
+      formatVersion: ITEM_FORMAT_VERSION,
+      id: 'x',
+      name: 'X',
+      size: [1, 1],
+      value: 10,
+    };
+    const splint = m({ ...base, type: 'med', effect: 'splint', useTime: 2 });
+    expect(v6(splint)).toMatchObject({ sounds: { use: 'bandage-use' } });
+    const medkit = m({ ...base, type: 'med', effect: 'heal', useTime: 2, hp: 50 });
+    expect(v6(medkit)).toMatchObject({ sounds: { use: 'med-use' } });
+    expect('sounds' in v6(ammo)).toBe(false);
+    // Format 7 needs them.
+    const { sounds: _, ...silent } = gun;
+    expect(() => loadContent(ITEM_FORMAT, silent, 'g.json')).toThrow(/sounds/);
+  });
+
+  it('upgrades format 7 items to common, and checks rarities', () => {
+    const { rarity: _, ...old } = gun;
+    expect(loadContent(ITEM_FORMAT, { ...old, formatVersion: 7 }, 'g.json')).toMatchObject({
+      rarity: 'common',
+    });
+    expect(loadContent(ITEM_FORMAT, { ...gun, rarity: 'epic' }, 'g.json').rarity).toBe('epic');
+    expect(() => loadContent(ITEM_FORMAT, old, 'g.json')).toThrow(/rarity/);
+    expect(() => loadContent(ITEM_FORMAT, { ...gun, rarity: 'shiny' }, 'g.json')).toThrow(/rarity/);
   });
 
   it('checks models have the points their kind needs', () => {

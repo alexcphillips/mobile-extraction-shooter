@@ -71,8 +71,15 @@ export const AI = {
    */
   investigateShot: 0.5,
   alertShot: 0.15,
+  /** A shot with walls or ground between it and the listener is heard as this much as loud. */
+  muffled: 0.5,
   /** A shot passing or landing this close is being shot at: alert. */
   nearMiss: 3,
+  /**
+   * An enemy spawn this close to a player spawn, or in sight of it, is flagged: a raid
+   * should start out of the enemies' sight (see exposedSpawns).
+   */
+  spawnClearance: 60,
   /** Footsteps are heard this far away. Crouch-walking and standing still are silent. */
   sprintSteps: 15,
   walkSteps: 6,
@@ -469,7 +476,7 @@ export function updateAi(
       look(state, c, ai, world, nav);
       listenForSteps(state, c, ai);
     }
-    hearEvents(state, c, ai);
+    hearEvents(state, c, ai, world);
     behave(state, c, ai, world, items, nav);
     // A closed door on the way to the next waypoint opens as it gets there.
     const i = ai.pathIndex * 3;
@@ -493,7 +500,7 @@ function look(
   const saw = ai.seesTarget;
   ai.seesTarget = false;
   for (const e of state.entities) {
-    if (e.ai || e.health.dead) continue;
+    if (e.ai || e.health.dead || e.admin?.peaceful) continue;
     const rate = sightRate(c, ai, e, world);
     if (e.id === ai.target && rate > 0) ai.seesTarget = true;
     if (rate > bestRate) {
@@ -615,10 +622,46 @@ function clearLine(
   return world.raycast(ox, oy, oz, dx / d, dy / d, dz / d, d) === Infinity;
 }
 
+/** An enemy spawn too near a player spawn. Ids are the markers' path ids. */
+export interface ExposedSpawn {
+  enemy: string;
+  player: string;
+  distance: number;
+  /** Whether they can see each other, standing. */
+  seen: boolean;
+}
+
+/**
+ * Enemy spawns too near a player spawn: within AI.spawnClearance, or within sight range
+ * with nothing between their standing eyes.
+ */
+export function exposedSpawns(
+  markers: readonly { type: string; id: string; x: number; y: number; z: number }[],
+  world: CollisionWorld,
+): ExposedSpawn[] {
+  const eye = MOVEMENT.standHeight - MOVEMENT.eyeBelowTop;
+  const ground = (m: { x: number; y: number; z: number }): number =>
+    world.groundAt(m.x, m.z, MOVEMENT.radius, m.y + 0.5) + eye;
+  const out: ExposedSpawn[] = [];
+  for (const p of markers) {
+    if (p.type !== 'playerSpawn') continue;
+    const py = ground(p);
+    for (const e of markers) {
+      if (e.type !== 'enemySpawn') continue;
+      const distance = Math.hypot(e.x - p.x, e.z - p.z);
+      if (distance > Math.max(AI.spawnClearance, AI.sightRange)) continue;
+      const seen = distance <= AI.sightRange && clearLine(world, p.x, py, p.z, e.x, ground(e), e.z);
+      if (seen || distance < AI.spawnClearance)
+        out.push({ enemy: e.id, player: p.id, distance, seen });
+    }
+  }
+  return out;
+}
+
 /** Footsteps: sprinting and walking are heard nearby; crouching is silent. */
 function listenForSteps(state: SimState, c: Character, ai: AiState): void {
   for (const e of state.entities) {
-    if (e.ai || e.health.dead || e.mode !== 'ground') continue;
+    if (e.ai || e.health.dead || e.admin?.peaceful || e.mode !== 'ground') continue;
     if (e.height < MOVEMENT.standHeight - 0.1) continue;
     const speed = Math.hypot(e.vx, e.vz);
     const range = speed > MOVEMENT.walkSpeed + 0.5 ? AI.sprintSteps : speed > 1 ? AI.walkSteps : 0;
@@ -633,12 +676,12 @@ function listenForSteps(state: SimState, c: Character, ai: AiState): void {
 }
 
 /** Shots and hits from this tick's events. */
-function hearEvents(state: SimState, c: Character, ai: AiState): void {
+function hearEvents(state: SimState, c: Character, ai: AiState, world: CollisionWorld): void {
   for (const ev of state.events) {
     if (ev.type === 'damage') {
       if (ev.target !== c.id || ev.by === 0 || ev.by === c.id) continue;
       const by = entityById(state, ev.by);
-      if (by && !by.ai) {
+      if (by && !by.ai && !by.admin?.peaceful) {
         alarm(ai, by, by.x, by.y, by.z);
         ai.hurt = true;
         ai.aimError += AI.hitFlinch * DEG;
@@ -649,7 +692,7 @@ function hearEvents(state: SimState, c: Character, ai: AiState): void {
     const by = entityById(state, ev.by);
     if (!by || by.health.dead) continue;
     if (by.ai) {
-      allyShot(state, c, ai, by.ai, ev.fromX, ev.fromY, ev.fromZ, ev.loudness);
+      allyShot(state, c, ai, world, by, ev.fromX, ev.fromY, ev.fromZ, ev.loudness);
       continue;
     }
     const cy = c.y + c.height * 0.6;
@@ -665,38 +708,60 @@ function hearEvents(state: SimState, c: Character, ai: AiState): void {
       ev.toZ,
     );
     const d = Math.hypot(ev.fromX - c.x, ev.fromY - eyeHeight(c), ev.fromZ - c.z);
-    if (miss <= AI.nearMiss || d <= ev.loudness * AI.alertShot) {
+    if (miss <= AI.nearMiss) {
       alarm(ai, by, by.x, by.y, by.z);
-    } else if (d <= ev.loudness && ai.awareness !== 'alert') {
-      heardAt(state, c, ai, by, d, d <= ev.loudness * AI.investigateShot);
+      continue;
+    }
+    if (d > ev.loudness) continue;
+    const loud = heardLoudness(world, c, ev.fromX, ev.fromY, ev.fromZ, ev.loudness);
+    if (d <= loud * AI.alertShot) {
+      alarm(ai, by, by.x, by.y, by.z);
+    } else if (d <= loud && ai.awareness !== 'alert') {
+      heardAt(state, c, ai, by, d, d <= loud * AI.investigateShot);
     }
   }
 }
 
 /**
- * Another enemy firing joins it in the fight: alert to its target close by, and walks
- * over to investigate within half the shot's loudness. Further away it's ignored.
+ * Another enemy firing joins it in the fight: alert to its target close by (they call
+ * out where it is), and walks over to where the shots came from within half the shot's
+ * loudness. Further away it's ignored.
  */
 function allyShot(
   state: SimState,
   c: Character,
   ai: AiState,
-  ally: AiState,
+  world: CollisionWorld,
+  ally: Character,
   x: number,
   y: number,
   z: number,
   loudness: number,
 ): void {
-  if (ai.awareness === 'alert' || ally.target === 0) return;
+  if (ai.awareness === 'alert' || !ally.ai || ally.ai.target === 0) return;
   const d = Math.hypot(x - c.x, y - eyeHeight(c), z - c.z);
   if (d > loudness * AI.investigateShot) return;
-  const target = entityById(state, ally.target);
-  if (!target || target.health.dead) return;
-  if (d <= loudness * AI.alertShot) alarm(ai, target, target.x, target.y, target.z);
-  else heardAt(state, c, ai, target, Math.hypot(target.x - c.x, target.z - c.z), true);
+  const target = entityById(state, ally.ai.target);
+  if (!target || target.health.dead || target.admin?.peaceful) return;
+  const loud = heardLoudness(world, c, x, y, z, loudness);
+  if (d <= loud * AI.alertShot) alarm(ai, target, target.x, target.y, target.z);
+  else if (d <= loud * AI.investigateShot)
+    heardNoise(state, c, ai, ally.x, ally.y, ally.z, d, true);
 }
 
-/** Suspicious of a noise from e, d metres away: placed with an error that grows with d. */
+/** A shot's loudness as heard by c: muffled with walls or ground in the way. */
+function heardLoudness(
+  world: CollisionWorld,
+  c: Character,
+  x: number,
+  y: number,
+  z: number,
+  loudness: number,
+): number {
+  return clearLine(world, x, y, z, c.x, eyeHeight(c), c.z) ? loudness : loudness * AI.muffled;
+}
+
+/** Suspicious of a noise from e, d metres away. */
 function heardAt(
   state: SimState,
   c: Character,
@@ -705,9 +770,24 @@ function heardAt(
   d: number,
   investigate: boolean,
 ): void {
+  if (e.admin?.peaceful) return;
+  heardNoise(state, c, ai, e.x, e.y, e.z, d, investigate);
+}
+
+/** Suspicious of a noise at (x, y, z), d metres away: placed with an error that grows with d. */
+function heardNoise(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  x: number,
+  y: number,
+  z: number,
+  d: number,
+  investigate: boolean,
+): void {
   const off = Math.min(AI.noiseErrorMax, d * AI.noiseError) * Math.sqrt(nextFloat(state.rng));
   const around = nextFloat(state.rng) * Math.PI * 2;
-  suspect(c, ai, e.x + Math.cos(around) * off, e.y, e.z + Math.sin(around) * off, investigate);
+  suspect(c, ai, x + Math.cos(around) * off, y, z + Math.sin(around) * off, investigate);
 }
 
 function segmentDistance(
@@ -763,6 +843,8 @@ function suspect(
 
 /** Knows someone is there: alert. */
 function alarm(ai: AiState, target: Character, x: number, y: number, z: number): void {
+  // Peaceful (an admin cheat): never noticed, even when it shoots.
+  if (target.admin?.peaceful) return;
   if (ai.awareness !== 'alert') {
     ai.hasGoal = false;
     ai.activity = 'engage';

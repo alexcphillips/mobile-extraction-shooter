@@ -6,6 +6,7 @@ import type {
   StartRaidRequest,
 } from '@mes/shared';
 import { AccountError, call } from './account';
+import type { DamageLog } from './play/damage-log';
 
 /*
  * Raids on the server (session 12b). A raid starts on the server, which hands back the
@@ -140,6 +141,8 @@ export interface RaidSnapshot {
   /** Each enemy spawn marker's id, and the entity spawned there. */
   enemies: Record<string, EntityId>;
   kills: number;
+  /** What hurt you so far; missing from raids saved before it was kept. */
+  taken?: DamageLog;
   sim: SimState;
 }
 

@@ -1,0 +1,63 @@
+{
+  "formatVersion": 8,
+  "id": "crossbow",
+  "name": "Crossbow",
+  "type": "weapon",
+  "size": [3, 2],
+  "value": 16000,
+  "rarity": "rare",
+  "ammo": "crossbow-bolt",
+  "hold": "rifle",
+  "fireMode": "semi",
+  "rpm": 60,
+  "magazine": 1,
+  "reloadTime": 2.8,
+  "aimTime": 0.35,
+  "drawTime": 0.8,
+  "range": 80,
+  "loudness": 8,
+  "slots": ["optic"],
+  "hipSpread": 1.5,
+  "aimSpread": 0.2,
+  "recoil": { "up": 0.6, "side": 0.2, "recovery": 10 },
+  "sounds": { "shot": "crossbow-shot", "suppressed": "crossbow-shot", "reload": "crossbow-reload" },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, -0.01, -0.05], "size": [0.045, 0.05, 0.5], "colour": "#5a4030" },
+      {
+        "type": "box",
+        "pos": [-0.15, 0.005, -0.26],
+        "size": [0.3, 0.018, 0.025],
+        "colour": "#2a2d30",
+        "yaw": 12
+      },
+      {
+        "type": "box",
+        "pos": [0.15, 0.005, -0.26],
+        "size": [0.3, 0.018, 0.025],
+        "colour": "#2a2d30",
+        "yaw": -12
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.012, -0.23],
+        "size": [0.58, 0.004, 0.004],
+        "colour": "#d8d0b8"
+      },
+      { "type": "box", "pos": [0, 0.025, -0.2], "size": [0.008, 0.008, 0.36], "colour": "#8a6d3b" },
+      { "type": "box", "pos": [0, -0.07, 0.05], "size": [0.04, 0.08, 0.04], "colour": "#5a4030" },
+      {
+        "type": "box",
+        "pos": [0, 0.03, 0],
+        "size": [0.014, 0.02, 0.03],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic"
+      }
+    ],
+    "grip": [0, -0.065, 0.05],
+    "support": [0, -0.02, -0.18],
+    "muzzle": [0, 0.025, -0.38],
+    "sight": [0, 0.055, 0],
+    "mounts": { "optic": [0, 0.015, 0.02] }
+  }
+}

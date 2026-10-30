@@ -6,7 +6,7 @@ import { ITEM_FORMAT_VERSION, type ItemDef } from '../content/items';
 import { CollisionWorld } from '../world/collision-world';
 import { spawnEnemy } from './ai';
 import { createItem } from './create-item';
-import { equip, heldWeapon, type ContainerState } from './gear';
+import { equip, heldWeapon, unequip, type ContainerState } from './gear';
 import type { WeaponState } from './weapons';
 import { dealDamage, HEAD } from './health';
 import {
@@ -70,6 +70,13 @@ describe('looting', () => {
     }
     expect(c.gear.primary2?.item).toBe('rifle');
     expect(countOf(c.gear.backpack!.grid, 'rifle')).toBe(1);
+    // A second pistol never goes in a primary slot, even an empty one: it's carried.
+    unequip(c, 'primary2');
+    equip(enemy, items, 'sidearm', createItem(items, 'pistol'));
+    act({ type: 'quick', from: { owner: body, slot: 'sidearm', item: 'pistol' }, to: self });
+    expect(enemy.gear.sidearm).toBeNull();
+    expect(c.gear.primary2).toBeNull();
+    expect(countOf(c.gear.pockets, 'pistol')).toBe(1);
   });
 
   it('only reaches dead bodies and containers within reach', () => {
@@ -364,6 +371,7 @@ describe('looting', () => {
       name: 'Brake',
       size: [1, 1],
       value: 100,
+      rarity: 'common',
       type: 'attachment',
       slot: 'muzzle',
       weapons: ['rifle'],
@@ -485,6 +493,27 @@ describe('looting', () => {
     });
     expect(act({ ...off, to: null })).toBe(true);
     expect(state.ground.map((g) => g.item.item)).toEqual(['round', 'big-mag']);
+  });
+
+  it("unloads a gun's rounds into what you carry, and a body's gun into yours", () => {
+    const { state, c, enemy, body, act } = setup();
+    equip(c, items, 'primary1', createItem(items, 'rifle'));
+    const rifle = c.gear.primary1 as WeaponState;
+    rifle.reloading = 1;
+    const gun = { owner: self, slot: 'primary1', item: 'rifle' } as const;
+    expect(act({ type: 'unload', gun })).toBe(true);
+    expect(rifle.mag).toBe(0);
+    expect(rifle.reloading).toBe(0);
+    expect(countOf(c.gear.pockets, 'round')).toBe(30);
+    // Empty: nothing to do.
+    expect(act({ type: 'unload', gun })).toBe(false);
+    // A dead body's gun, in reach: its rounds come to you.
+    expect(act({ type: 'unload', gun: { owner: body, slot: 'primary1', item: 'rifle' } })).toBe(
+      true,
+    );
+    expect((enemy.gear.primary1 as WeaponState).mag).toBe(0);
+    expect(countOf(c.gear.pockets, 'round') + countOf(c.gear.backpack!.grid, 'round')).toBe(60);
+    expect(state.ground).toEqual([]);
   });
 
   it('drops items at your feet and picks them up again, within reach', () => {

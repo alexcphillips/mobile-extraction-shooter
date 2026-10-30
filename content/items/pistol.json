@@ -1,10 +1,11 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 8,
   "id": "pistol",
   "name": "Pistol",
   "type": "weapon",
   "size": [2, 1],
   "value": 6000,
+  "rarity": "common",
   "ammo": "ammo-9mm",
   "hold": "pistol",
   "fireMode": "semi",
@@ -22,6 +23,11 @@
     "up": 1.6,
     "side": 0.5,
     "recovery": 18
+  },
+  "sounds": {
+    "shot": "pistol-shot",
+    "suppressed": "pistol-shot-suppressed",
+    "reload": "pistol-reload"
   },
   "model": {
     "parts": [

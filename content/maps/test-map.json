@@ -292,13 +292,15 @@
   "nodes": [
     {
       "type": "playerSpawn",
-      "id": "spawn-centre",
-      "pos": [0, 0, 0]
+      "id": "spawn-south",
+      "pos": [8, 0, 84],
+      "yaw": 0
     },
     {
       "type": "playerSpawn",
-      "id": "spawn-north",
-      "pos": [-10, 0, 45]
+      "id": "spawn-west",
+      "pos": [-80, 0, -76],
+      "yaw": -135
     },
     {
       "type": "box",

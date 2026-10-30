@@ -1,0 +1,43 @@
+{
+  "formatVersion": 1,
+  "id": "pistol-shot-suppressed",
+  "name": "Pistol shot, suppressed",
+  "gain": 0.7,
+  "range": 40,
+  "pitchJitter": 0.05,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.06,
+      "curve": 2,
+      "gain": 0.7,
+      "filter": { "type": "bandpass", "freq": [1500, 600], "q": 1.2 }
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [160, 70],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.05,
+      "curve": 2,
+      "gain": 0.3
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0.025,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.02,
+      "curve": 2,
+      "gain": 0.35,
+      "filter": { "type": "highpass", "freq": [3500, 3500], "q": 0.7 }
+    }
+  ]
+}

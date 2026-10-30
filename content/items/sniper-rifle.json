@@ -1,0 +1,63 @@
+{
+  "formatVersion": 8,
+  "id": "sniper-rifle",
+  "name": "Sniper rifle",
+  "type": "weapon",
+  "size": [5, 2],
+  "value": 48000,
+  "rarity": "epic",
+  "ammo": "ammo-762",
+  "hold": "rifle",
+  "fireMode": "semi",
+  "rpm": 40,
+  "magazine": 5,
+  "reloadTime": 3,
+  "aimTime": 0.45,
+  "drawTime": 1,
+  "range": 400,
+  "loudness": 260,
+  "slots": ["optic", "muzzle"],
+  "hipSpread": 6,
+  "aimSpread": 0.05,
+  "recoil": { "up": 3.5, "side": 0.6, "recovery": 10 },
+  "sounds": {
+    "shot": "sniper-shot",
+    "suppressed": "rifle-shot-suppressed",
+    "reload": "rifle-reload"
+  },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, -0.05], "size": [0.05, 0.06, 0.3], "colour": "#3d4a3a" },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.01, -0.5],
+        "pitch": 90,
+        "radius": 0.011,
+        "height": 0.6,
+        "colour": "#2a2d30"
+      },
+      { "type": "box", "pos": [0, -0.01, -0.3], "size": [0.054, 0.05, 0.2], "colour": "#3d4a3a" },
+      { "type": "box", "pos": [0, -0.075, 0.06], "size": [0.04, 0.09, 0.04], "colour": "#3d4a3a" },
+      { "type": "box", "pos": [0, -0.025, 0.2], "size": [0.05, 0.09, 0.24], "colour": "#3d4a3a" },
+      {
+        "type": "box",
+        "pos": [0.035, 0.01, 0.03],
+        "size": [0.04, 0.012, 0.012],
+        "colour": "#1d1f21"
+      },
+      { "type": "box", "pos": [0, -0.05, -0.05], "size": [0.03, 0.05, 0.07], "colour": "#2a2d30" },
+      {
+        "type": "box",
+        "pos": [0, 0.04, -0.05],
+        "size": [0.014, 0.02, 0.04],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic"
+      }
+    ],
+    "grip": [0, -0.07, 0.06],
+    "support": [0, -0.035, -0.3],
+    "muzzle": [0, 0.01, -0.8],
+    "sight": [0, 0.065, -0.05],
+    "mounts": { "optic": [0, 0.03, -0.02], "muzzle": [0, 0.01, -0.8] }
+  }
+}

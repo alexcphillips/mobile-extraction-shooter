@@ -1,12 +1,16 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 8,
   "id": "surgery-kit",
   "name": "Surgery kit",
   "type": "med",
   "size": [2, 1],
   "value": 9000,
+  "rarity": "epic",
   "effect": "surgery",
   "useTime": 12,
+  "sounds": {
+    "use": "med-use"
+  },
   "model": {
     "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.28, 0.07, 0.14], "colour": "#b04848" }]
   }

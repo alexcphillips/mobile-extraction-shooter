@@ -1,0 +1,98 @@
+{
+  "formatVersion": 1,
+  "id": "shotgun-reload",
+  "name": "Shotgun reload",
+  "gain": 0.8,
+  "range": 20,
+  "pitchJitter": 0.03,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0.3,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "curve": 2,
+      "gain": 0.5,
+      "filter": { "type": "bandpass", "freq": [1800, 1800], "q": 1 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0.75,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "curve": 2,
+      "gain": 0.5,
+      "filter": { "type": "bandpass", "freq": [1800, 1800], "q": 1 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 1.2,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "curve": 2,
+      "gain": 0.5,
+      "filter": { "type": "bandpass", "freq": [1800, 1800], "q": 1 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 1.6500000000000001,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "curve": 2,
+      "gain": 0.5,
+      "filter": { "type": "bandpass", "freq": [1800, 1800], "q": 1 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 2.1,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "curve": 2,
+      "gain": 0.5,
+      "filter": { "type": "bandpass", "freq": [1800, 1800], "q": 1 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 2.55,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "curve": 2,
+      "gain": 0.5,
+      "filter": { "type": "bandpass", "freq": [1800, 1800], "q": 1 }
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 2.9,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.08,
+      "curve": 2,
+      "gain": 0.7,
+      "filter": { "type": "bandpass", "freq": [1200, 1200], "q": 1 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 3.05,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "curve": 2,
+      "gain": 0.8,
+      "filter": { "type": "bandpass", "freq": [2200, 2200], "q": 1 }
+    }
+  ]
+}

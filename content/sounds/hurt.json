@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "id": "hurt",
+  "name": "Hurt",
+  "gain": 0.9,
+  "range": 10,
+  "pitchJitter": 0.1,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [110, 60],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.15,
+      "curve": 2,
+      "gain": 0.7
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.12,
+      "curve": 2,
+      "gain": 0.6,
+      "filter": { "type": "lowpass", "freq": [400, 400], "q": 0.7 }
+    }
+  ]
+}

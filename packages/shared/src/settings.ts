@@ -30,9 +30,13 @@ const settingsSchema = z.object({
   aimAssist: z.enum(['off', 'low', 'medium', 'high']).catch('low'),
   /** Look speed multiplier. */
   lookSensitivity: range(0.2, 3, 1),
+  /** Look speed with a captured mouse or trackpad (desktop), apart from touch's. */
+  mouseSensitivity: range(0.2, 3, 1),
   /** Look speed while aiming, as a fraction of the normal speed. */
   aimSensitivity: range(0.2, 1.5, 0.6),
   invertY: z.boolean().catch(false),
+  /** Every sound's loudness (session 19): 0 is silent. */
+  volume: range(0, 1, 0.8),
   /** The fps and timings overlay. */
   showStats: z.boolean().catch(true),
   /** Moved controls by id. Controls not listed are in their default place; unknown ids are ignored. */

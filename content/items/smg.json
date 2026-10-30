@@ -1,0 +1,57 @@
+{
+  "formatVersion": 8,
+  "id": "smg",
+  "name": "Submachine gun",
+  "type": "weapon",
+  "size": [3, 2],
+  "value": 20000,
+  "rarity": "rare",
+  "ammo": "ammo-9mm",
+  "hold": "rifle",
+  "fireMode": "auto",
+  "rpm": 1200,
+  "magazine": 25,
+  "reloadTime": 2,
+  "aimTime": 0.22,
+  "drawTime": 0.6,
+  "range": 90,
+  "loudness": 110,
+  "slots": ["optic", "muzzle"],
+  "hipSpread": 2.2,
+  "aimSpread": 0.7,
+  "recoil": { "up": 0.45, "side": 0.45, "recovery": 16 },
+  "sounds": {
+    "shot": "pistol-shot",
+    "suppressed": "pistol-shot-suppressed",
+    "reload": "rifle-reload"
+  },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, -0.06], "size": [0.05, 0.075, 0.26], "colour": "#2b2e31" },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.015, -0.23],
+        "pitch": 90,
+        "radius": 0.01,
+        "height": 0.1,
+        "colour": "#1d1f21"
+      },
+      { "type": "box", "pos": [0, -0.07, 0], "size": [0.036, 0.08, 0.04], "colour": "#2b2e31" },
+      { "type": "box", "pos": [0, -0.085, -0.1], "size": [0.03, 0.12, 0.04], "colour": "#1d1f21" },
+      { "type": "box", "pos": [0, 0, 0.16], "size": [0.03, 0.05, 0.18], "colour": "#1d1f21" },
+      { "type": "box", "pos": [0, -0.06, -0.16], "size": [0.03, 0.06, 0.03], "colour": "#2b2e31" },
+      {
+        "type": "box",
+        "pos": [0, 0.045, -0.02],
+        "size": [0.016, 0.015, 0.04],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic"
+      }
+    ],
+    "grip": [0, -0.065, 0],
+    "support": [0, -0.06, -0.16],
+    "muzzle": [0, 0.015, -0.28],
+    "sight": [0, 0.06, -0.02],
+    "mounts": { "optic": [0, 0.0375, -0.04], "muzzle": [0, 0.015, -0.28] }
+  }
+}

@@ -57,10 +57,14 @@ import {
   raidProgress,
   startQuests,
   type Profile,
+  totalHp,
+  isBleeding,
 } from '@mes/shared';
 import * as THREE from 'three';
 import { startLoop } from '../app/loop';
 import { pause } from '../app/pause';
+import { SoundCues } from '../audio/cues';
+import { sounds } from '../audio/sounds';
 import {
   checkEnemySpawns,
   checkLootContainers,
@@ -80,7 +84,10 @@ import { QuestMarkers } from '../hud/quest-markers';
 import type { RaidHud } from '../hud/raid-hud';
 import type { Vitals } from '../hud/vitals';
 import { Controls } from '../input/controls';
+import { inputMode } from '../input/mode';
+import { anyCheat, readCheats } from '../admin-cheats';
 import { buildDebug } from '../render/debug';
+import { logBleed, logHit, logKiller, type DamageLog } from './damage-log';
 import { CapsuleBody } from '../render/capsule-body';
 import { DEFAULT_OUTFIT, loadCharacter } from '../render/character';
 import { CharacterBody, CharacterRig } from '../render/character-body';
@@ -152,7 +159,7 @@ export interface PlayOptions {
   hitZones: boolean;
   /** Bring dead enemies back at their spawn, with a new loadout, after a few seconds. */
   respawn: boolean;
-  /** Enemies come unarmed: they notice you and close in, but can't shoot. */
+  /** Enemies never notice you: the admin cheat, from ?peaceful. */
   peaceful: boolean;
   pixelRatio: number;
   /** Shown in the stats header, e.g. "standalone". */
@@ -227,6 +234,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const effects = new Effects();
   scene.add(effects.root);
   const viewmodel = new Viewmodel();
+  const cues = new SoundCues(sounds(), world, items);
+  // Rendered now rather than as each is first heard (if audio is unlocked yet).
+  sounds().prepare();
   const rig = new CharacterRig(await loadCharacter('/characters/mannequin.glb'));
 
   const controls = new Controls(el.canvas, el.hud);
@@ -263,6 +273,18 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     startQuests(sim, map, items, player.id, raidObjectives(options.profile, quests, raid.map));
     controls.yaw = spawn.yaw;
   }
+  // Admin cheats (dev builds only); ?peaceful turns that one on too. Set again when
+  // resuming, so a change on the admin page applies.
+  const cheats = readCheats();
+  cheats.peaceful ||= options.peaceful;
+  if (cheats.infiniteHealth || cheats.infiniteAmmo || cheats.peaceful) {
+    player.admin = {
+      infiniteHealth: cheats.infiniteHealth,
+      infiniteAmmo: cheats.infiniteAmmo,
+      peaceful: cheats.peaceful,
+    };
+  } else delete player.admin;
+  if (anyCheat(cheats)) el.raidHud.note('Admin cheats on', performance.now());
   const held = heldWeapon(player);
   if (held) viewmodel.setGun(held, items);
   const questMarkers = new QuestMarkers(el.questMarkers, sim.raid?.investigate ?? [], player);
@@ -305,7 +327,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       });
     spawned[m.id] = c.id;
     const arm = (): void => {
-      if (!options.peaceful) equipLoadout(c, items, loadout, sim.rng);
+      equipLoadout(c, items, loadout, sim.rng);
       rollEnemyLoot(c, items, lootTables, type.loot, m.lootWeights, sim.rng);
     };
     if (!saved) arm();
@@ -468,6 +490,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   function openScreen(target: Owner | null): void {
     controls.reset();
     screenOpen = true;
+    controls.cursor.want(false);
     if (screen) {
       screen.setTarget(target);
       el.raid.hidden = false;
@@ -505,6 +528,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   }
   function closeScreen(): void {
     screenOpen = false;
+    // From the key or click that closed it, if it was one: browsers only lock on a gesture.
+    if (!ended) controls.cursor.want(true);
     pending.length = 0;
     screen?.hide();
     // A fresh handle next time, so it opens on the inventory tab.
@@ -516,13 +541,16 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let kills = resume?.kills ?? 0;
   /** The enemy type that killed you, if one did. */
   let killedBy: string | null = null;
+  /** What hurt you, for the results screen after a death. */
+  const taken: DamageLog = resume?.taken ?? [];
   let ended: RaidResult | null = null;
   let saving: Promise<SaveStatus> | null = null;
   let resultsAt = 0;
   function endRaid(how: LeaveReason | 'killed', detail: string, now: number): void {
     if (ended) return;
     const survived = how === 'extracted';
-    const kept = keptItems(player.gear, survived);
+    const keepAll = survived || cheats.keepGear;
+    const kept = keptItems(player.gear, keepAll);
     const seconds = sim.tick / TICK_RATE;
     const investigated = investigatedBy(sim, player.id);
     // What the server will count, worked out the same way on copies: quest items it takes.
@@ -532,7 +560,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       items,
       raid.map,
       investigated,
-      keptGear(structuredClone(player.gear), survived),
+      keptGear(structuredClone(player.gear), keepAll),
     );
     const isQuestItem = (i: Item): boolean => itemDef(items, i.item).type === 'quest';
     ended = {
@@ -543,12 +571,22 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       kept: kept.filter((i) => !isQuestItem(i)),
       lost: gearItems(player.gear).filter((i) => !kept.includes(i)),
       quests: done.map((d) => ({ quest: d.quest.name, text: objectiveText(items, d.objective) })),
+      taken,
+      keptAll: keepAll,
     };
     // Sent now, as it is: the server keeps what the outcome allows.
     const gear = JSON.parse(JSON.stringify(player.gear)) as Gear;
     if (options.test) saving = Promise.resolve({ kind: 'test' });
     else {
-      saving = saveResult(options.serverRaid, { how, gear, seconds, kills, detail, investigated });
+      saving = saveResult(options.serverRaid, {
+        how,
+        gear,
+        seconds,
+        kills,
+        detail,
+        investigated,
+        ...(cheats.keepGear ? { keepGear: true } : {}),
+      });
       clearSnapshot();
     }
     resultsAt = now + (how === 'killed' ? RESULTS_AFTER_DEATH_MS : 0);
@@ -576,6 +614,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       player: player.id,
       enemies: spawned,
       kills,
+      taken,
       sim,
     });
   };
@@ -698,6 +737,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     prev.ry = cur.ry;
     prev.drawn = cur.drawn;
     inventoryChanged = false;
+    // HP lost this tick that no hit explains is bleeding (healing the same tick hides some).
+    const hpBefore = isBleeding(player.health) ? totalHp(player.health) : -1;
     step(sim, world, items, inputs, nav);
     pending.length = 0;
     cur.x = player.x;
@@ -709,14 +750,18 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const total = drawTime(items, player.gear, player.gear.hand);
     cur.drawn = total > 0 ? 1 - player.draw / total : 1;
 
+    cues.tick(sim, player, controls.yaw);
+    let hitLost = 0;
+    let lastHit = 'bleeding';
+    let died = false;
     for (const e of sim.events) {
       if (e.type === 'shot') {
         if (e.by === player.id) {
-          viewmodel.fired(now);
+          if (e.pellet === 0) viewmodel.fired(now);
           viewmodel.muzzleWorld(muzzle);
           effects.tracer(now, muzzle.x, muzzle.y, muzzle.z, e.toX, e.toY, e.toZ);
         } else {
-          bodyOf.get(e.by)?.fired();
+          if (e.pellet === 0) bodyOf.get(e.by)?.fired();
           effects.tracer(now, e.fromX, e.fromY, e.fromZ, e.toX, e.toY, e.toZ);
         }
         if (e.hit !== 'none') effects.impact(now, e.toX, e.toY, e.toZ, e.hit === 'character');
@@ -733,11 +778,16 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         if (e.amount > 0) bodyOf.get(e.target)?.hit();
         if (e.by === player.id && e.target !== player.id) el.vitals.hitMarker(now, false);
         if (e.target === player.id && e.amount > 0) el.vitals.hurtFlash();
+        if (e.target === player.id) {
+          hitLost += e.amount;
+          lastHit = logHit(taken, e, names.get(e.by) ?? 'Someone');
+        }
       } else if (e.type === 'death' && e.by === player.id && e.target !== player.id) {
         el.vitals.hitMarker(now, true);
         kills++;
       } else if (e.type === 'death' && e.target === player.id) {
         killedBy = names.get(e.by) ?? null;
+        died = true;
       } else if (e.type === 'leave' && e.by === player.id) {
         const at = sim.raid?.extractions.find((p) => p.id === e.at);
         endRaid(e.how, at ? `at ${at.name}` : 'Time ran out', now);
@@ -751,6 +801,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         if (taking && !e.ok) el.raidHud.warn(`No room for ${taking}`, now);
       }
     }
+
+    if (hpBefore >= 0) logBleed(taken, hpBefore - totalHp(player.health) - hitLost);
+    // The death event comes before the hit that caused it, so this waits for the loop.
+    if (died) logKiller(taken, lastHit);
 
     for (const e of enemies) {
       e.body.tick(e.c);
@@ -768,7 +822,14 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     if (screen && (inventoryChanged || sim.tick % (player.using ? 3 : 10) === 0)) screen.refresh();
     // From the state, not the death event: a debug hurt kills outside the tick.
     if (player.health.dead) {
-      endRaid('killed', killedBy ? `by a ${killedBy}` : 'from bleeding or a fall', now);
+      const killer = taken.find((s) => s.killed)?.key;
+      const how =
+        killer === 'bleeding'
+          ? 'Bled out'
+          : killer === 'fall'
+            ? 'From a fall'
+            : 'From bleeding or a fall';
+      endRaid('killed', killedBy ? `by a ${killedBy}` : how, now);
     }
     el.vitals.update(player, items, now);
     el.raidHud.update(sim, player, ended !== null);
@@ -776,19 +837,33 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // one up this tick may have moved the rest along the list.
     const onGround = lootable?.kind === 'ground' && sim.ground[lootable.index] === lootable.g;
     groundItems.update(sim.ground, onGround ? lootable.index : -1);
-    el.raidHud.setPrompt(
-      onGround
-        ? groundLabel(lootable.g.item)
-        : doorKey
-          ? hasKey
-            ? `Unlock with ${doorKey}`
-            : `Locked · needs ${doorKey}`
-          : spot
-            ? (markerText.get(spot.marker) ?? '')
-            : '',
-      now,
-    );
+    const prompt = onGround
+      ? groundLabel(lootable.g.item)
+      : doorKey
+        ? hasKey
+          ? `Unlock with ${doorKey}`
+          : `Locked · needs ${doorKey}`
+        : spot
+          ? (markerText.get(spot.marker) ?? '')
+          : '';
+    // Desktop has no use button to say what E does, so the prompt says it.
+    if (inputMode.desktop && useLabel !== 'use' && useLabel !== 'locked') {
+      const verb = useLabel[0]!.toUpperCase() + useLabel.slice(1);
+      el.raidHud.setPrompt(
+        onGround
+          ? `Take ${prompt}`
+          : lootable?.kind === 'container'
+            ? `Loot ${nameOf({ kind: 'container', id: lootable.c.id })}`
+            : lootable?.kind === 'body'
+              ? `Loot ${nameOf({ kind: 'body', id: lootable.c.id })}`
+              : prompt || `${verb}${door ? ' door' : ''}`,
+        now,
+        'E',
+      );
+    } else el.raidHud.setPrompt(prompt, now);
     hands.update(player, items);
+    // The mouse is captured unless a screen needs the cursor.
+    controls.cursor.want(!screenOpen && !ended && !hands.pickerOpen);
     if (ended && resultsAt && now >= resultsAt) {
       resultsAt = 0;
       showResults(ended);

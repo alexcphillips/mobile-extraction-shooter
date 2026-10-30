@@ -7,6 +7,7 @@ import {
   groupNodes,
   insertPatrolPoint,
   makePrefab,
+  markerPath,
   movePatrolPoint,
   moveWith,
   nodeAt,
@@ -256,6 +257,25 @@ describe('prefabs in the editor', () => {
     ]);
     expect(countPlacements(m.nodes, 'shed', prefabs)).toBe(2);
     expect(countPlacements(m.nodes, 'yard', prefabs)).toBe(1);
+  });
+});
+
+describe('markerPath', () => {
+  it("finds the node a compiled marker's id names, through groups", () => {
+    const m = map([
+      { type: 'box', pos: [0, 0, 0], size: [1, 1, 1], colour: '#ffffff' },
+      {
+        type: 'group',
+        pos: [5, 0, 0],
+        nodes: [
+          { type: 'playerSpawn', id: 'spawn', pos: [0, 0, 0] },
+          { type: 'enemySpawn', pos: [1, 0, 0], enemy: 'scav' },
+        ],
+      },
+    ]);
+    for (const marker of compileMap(m, new Map()).markers)
+      expect(nodeAt(m, markerPath(m, marker.id)!)).toMatchObject({ type: marker.type });
+    expect(markerPath(m, 'missing')).toBeNull();
   });
 });
 

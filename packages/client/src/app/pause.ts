@@ -1,5 +1,8 @@
-/** Why the game is paused. Solo raids stop the clock; co-op (later) won't be able to. */
-export type PauseReason = 'portrait' | 'menu' | 'hidden' | 'ended';
+/**
+ * Why the game is paused. Solo raids stop the clock; co-op (later) won't be able to.
+ * 'cursor': on desktop, the mouse isn't captured (before the first click, or after Esc).
+ */
+export type PauseReason = 'portrait' | 'menu' | 'hidden' | 'ended' | 'cursor';
 
 type Listener = (paused: boolean) => void;
 

@@ -5,6 +5,8 @@ import {
   type ProfileResponse,
 } from '@mes/shared';
 import { unlockAudioOnTap } from './app/audio';
+import { GAME_SOUNDS } from './audio/sound-ids';
+import { sounds } from './audio/sounds';
 import { preventZoom } from './app/no-zoom';
 import { watchPauseTriggers } from './app/pause';
 import { Hud } from './hud/hud';
@@ -54,6 +56,10 @@ const message = (err: unknown): string => (err instanceof Error ? err.message : 
 watchPauseTriggers();
 unlockAudioOnTap();
 preventZoom();
+// Menu buttons tick (session 19); the raid's controls and inventory have their own sounds.
+byId('ui').addEventListener('click', (e) => {
+  if (e.target instanceof Element && e.target.closest('button')) sounds().play(GAME_SOUNDS.tap);
+});
 
 const hud = new Hud(
   byId('controls'),
@@ -61,6 +67,7 @@ const hud = new Hud(
   byId('knob'),
   byId('sprint-zone'),
   byId('sprint-lock'),
+  byId('cursor-lock'),
 );
 byId('settings-button').addEventListener('click', () => {
   import('./ui/menu')
@@ -93,6 +100,10 @@ if (location.pathname === '/bodies') {
   import('./item-editor')
     .then((editor) => editor.startItemEditor(byId('editor')))
     .catch((err: unknown) => (status.textContent = `item editor failed: ${message(err)}`));
+} else if (location.pathname === '/sounds' && import.meta.env.DEV) {
+  import('./sound-editor')
+    .then((editor) => editor.startSoundEditor(byId('editor')))
+    .catch((err: unknown) => (status.textContent = `sound editor failed: ${message(err)}`));
 } else if (location.pathname === '/play-test' && import.meta.env.DEV) {
   // Opened by the map editor's Play button, with the map as edited.
   import('./play-test')
@@ -119,7 +130,7 @@ if (location.pathname === '/bodies') {
   // ?spawn=<id> a player spawn in its map (?at=<x>,<z> starts you at a point instead),
   // ?nav shows the navigation grid, and ?debug shows markers, zones, patrols
   // and what enemies think, with buttons (and keys 7 and 8) for hurt and heal. ?respawn
-  // brings dead enemies back, ?peaceful sends them in unarmed, and ?hitzones draws hit
+  // brings dead enemies back, ?peaceful makes them ignore you (the admin cheat), and ?hitzones draws hit
   // zones over their bodies.
   const q = new URLSearchParams(location.search);
   runGame(q).catch((err: unknown) => (status.textContent = `raid failed: ${message(err)}`));

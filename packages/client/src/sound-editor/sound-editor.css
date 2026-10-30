@@ -1,0 +1,35 @@
+/* The sound editor (session 19): the item editor's page, with layer cards and sliders. */
+
+.ie-form.se-form {
+  width: 440px;
+}
+
+.se-layer {
+  margin: 8px 0;
+  padding: 6px 8px;
+  border: 1px solid #2a3038;
+  border-radius: 6px;
+}
+
+.ie-form .ed-row > .se-knob {
+  flex-direction: column;
+  min-width: 90px;
+}
+
+.se-knob input[type='range'],
+.se-range input[type='range'] {
+  width: 100%;
+  min-width: 0;
+  margin: 2px 0 0;
+}
+
+.se-range {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.se-wave {
+  width: 100%;
+  background: #101318;
+  border-radius: 4px;
+}

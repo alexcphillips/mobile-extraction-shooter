@@ -70,7 +70,9 @@ describe('gear', () => {
     const rifle = createItem(items, 'rifle');
     const pistol = createItem(items, 'pistol');
     expect(fitsSlot(items, 'primary1', rifle)).toBe(true);
-    expect(fitsSlot(items, 'primary2', pistol)).toBe(true);
+    // Pistols only go in the sidearm.
+    expect(fitsSlot(items, 'primary1', pistol)).toBe(false);
+    expect(fitsSlot(items, 'primary2', pistol)).toBe(false);
     expect(fitsSlot(items, 'sidearm', pistol)).toBe(true);
     expect(fitsSlot(items, 'sidearm', rifle)).toBe(false);
     expect(fitsSlot(items, 'knife', one('knife'))).toBe(true);

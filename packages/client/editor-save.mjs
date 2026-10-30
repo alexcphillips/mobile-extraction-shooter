@@ -1,17 +1,18 @@
-// The map editor (session 15) and item editor (session 18) save content files through the dev server, so only `vite`
-// on the Mac can write them; a build has no such endpoint. POST /__editor/save with
+// The map editor (session 15), item editor (session 18) and sound editor (session 19) save
+// content files through the dev server, so only `vite` on the Mac can write them; a build
+// has no such endpoint. POST /__editor/save with
 // { files: [{ file: "maps/<id>.json", doc }, …] } writes each doc formatted by Prettier, as
 // `npm run format` would, laid out like the hand-written files (see `layout`). With
 // `create: true` a file is new, refused if one is there. All are checked and formatted
 // before any is written, so a map and the prefabs it uses go together (session 16b). The
-// editors check the docs first; this only checks they're map, prefab or item files.
+// editors check the docs first; this only checks they're map, prefab, item or sound files.
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as prettier from 'prettier';
 
 const CONTENT = resolve(dirname(fileURLToPath(import.meta.url)), '../../content');
-const FILE = /^(maps|prefabs|items)\/[a-z0-9][a-z0-9-]*\.json$/;
+const FILE = /^(maps|prefabs|items|sounds)\/[a-z0-9][a-z0-9-]*\.json$/;
 
 /** @returns {import('vite').Plugin} */
 export function editorSave() {
@@ -24,8 +25,8 @@ export function editorSave() {
     enforce: 'post',
     configureServer(server) {
       // content/ is outside the client's root, so Vite doesn't watch it for new files; the
-      // content globs only see a new map, prefab or item (made here, say) once it's watched.
-      server.watcher.add(['maps', 'prefabs', 'items'].map((d) => resolve(CONTENT, d)));
+      // content globs only see a new map, prefab, item or sound (made here, say) once it's watched.
+      server.watcher.add(['maps', 'prefabs', 'items', 'sounds'].map((d) => resolve(CONTENT, d)));
       server.middlewares.use('/__editor/save', (req, res) => {
         const reply = (status, body) => {
           res.statusCode = status;
@@ -52,7 +53,7 @@ export function editorSave() {
             const out = [];
             for (const { file, doc, create } of files) {
               if (typeof file !== 'string' || !FILE.test(file))
-                return reply(400, { error: `not a map, prefab or item file: ${file}` });
+                return reply(400, { error: `not a map, prefab, item or sound file: ${file}` });
               const path = resolve(CONTENT, file);
               const options = (await prettier.resolveConfig(path)) ?? {};
               const text = await prettier.format(layout(doc), { ...options, filepath: path });
@@ -88,14 +89,15 @@ export function editorSave() {
  * JSON for Prettier to format. Prettier keeps an object expanded if there's a line break
  * after its "{", and puts it on one line if it fits otherwise; arrays always go on one
  * line if they fit. So objects get the break, one key per line, except items of lists
- * other than nodes and zones (patrol stops, reticle shapes), which go on one line.
+ * other than nodes and zones (patrol stops, reticle shapes, sound layers), which go on one
+ * line if they fit, with whatever objects they hold (a layer's filter).
  */
 export function layout(value, key = '', inList = false) {
   if (Array.isArray(value)) return `[${value.map((v) => layout(v, key, true)).join(',')}]`;
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  const body = Object.entries(value)
-    .map(([k, v]) => `${JSON.stringify(k)}:${layout(v, k)}`)
-    .join(',');
   const oneLine = inList && key !== 'nodes' && key !== 'zones';
+  const body = Object.entries(value)
+    .map(([k, v]) => `${JSON.stringify(k)}:${layout(v, k, oneLine && !Array.isArray(v))}`)
+    .join(',');
   return oneLine ? `{${body}}` : `{\n${body}}`;
 }

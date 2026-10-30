@@ -1,4 +1,4 @@
-import { CollisionWorld, VENDOR, buyPrice } from '@mes/shared';
+import { CollisionWorld, VENDOR, buyPrice, exposedSpawns } from '@mes/shared';
 import { describe, expect, it } from 'vitest';
 import {
   checkDoorKeys,
@@ -27,6 +27,8 @@ describe('content', () => {
     expect(() => checkEnemySpawns(map)).not.toThrow();
     expect(() => checkDoorKeys(map)).not.toThrow();
     expect(() => checkLootContainers(map)).not.toThrow();
+    // Raids start out of the enemies' sight (the map editor warns about these too).
+    expect(exposedSpawns(map.markers, new CollisionWorld(map.world))).toEqual([]);
   });
 
   it('enemy types and loadouts load and their references are sound', () => {

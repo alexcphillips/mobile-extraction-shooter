@@ -1,12 +1,14 @@
 import {
   ATTACHMENT_SLOTS,
   cantSell,
+  createWeaponStats,
   itemDef,
   lootContainerById,
   sellPrice,
   sellTotal,
   stackSize,
   timeToUse,
+  weaponStats,
   type Character,
   type GearSlot,
   type Grid,
@@ -18,6 +20,8 @@ import {
   type ItemDef,
   type ItemRef,
   type Owner,
+  type Rarity,
+  type WeaponState,
 } from '@mes/shared';
 import { useEffect, useState, type ReactNode } from 'react';
 import { refKey, type InventoryController } from './inventory-controller';
@@ -77,25 +81,16 @@ export function RaidScreen({ inv, version, ctx }: Props & { ctx: RaidContext }):
 }
 
 const SELF: Owner = { kind: 'self' };
+// In body order, as Tarkov's: head, chest, the guns, then the sidearm and knife side by side.
 const MY_SLOTS: readonly GearSlot[] = [
+  'helmet',
+  'bodyArmour',
   'primary1',
   'primary2',
   'sidearm',
   'knife',
-  'helmet',
-  'bodyArmour',
-  'rig',
-  'backpack',
 ];
-const BODY_SLOTS: readonly GearSlot[] = [
-  'primary1',
-  'primary2',
-  'sidearm',
-  'helmet',
-  'bodyArmour',
-  'rig',
-  'backpack',
-];
+const BODY_SLOTS: readonly GearSlot[] = ['helmet', 'bodyArmour', 'primary1', 'primary2', 'sidearm'];
 const SLOT_NAMES: Record<GearSlot, string> = {
   primary1: 'Primary 1',
   primary2: 'Primary 2',
@@ -106,8 +101,9 @@ const SLOT_NAMES: Record<GearSlot, string> = {
   rig: 'Rig',
   backpack: 'Backpack',
 };
-/** Gun slots are drawn twice as wide. */
+/** Gun slots are drawn twice as wide; the helmet and armour have a row each, centred. */
 const WIDE: ReadonlySet<GearSlot> = new Set(['primary1', 'primary2']);
+const CENTRE: ReadonlySet<GearSlot> = new Set(['helmet', 'bodyArmour']);
 
 /** Your gear and grids, beside what's open (a body, a container, the ground or the stash). */
 export function Inventory({ inv, version }: Props): ReactNode {
@@ -140,6 +136,9 @@ export function Inventory({ inv, version }: Props): ReactNode {
             <span className="raid-spacer" />
             {'index' in selected && sel.def.size[0] !== sel.def.size[1] && (
               <button onClick={() => inv.rotate(selected)}>Rotate</button>
+            )}
+            {sel.def.type === 'weapon' && (sel.item.mag ?? 0) > 0 && (
+              <button onClick={() => inv.unload(selected)}>Unload</button>
             )}
             {sel.def.type === 'med' && ctx.use && !ctx.player.using && (
               <button disabled={!inv.medRef(selected)} onClick={() => inv.useMed(selected)}>
@@ -353,7 +352,7 @@ function Parts({
             {def && part ? (
               <div
                 className="inv-item"
-                style={{ background: colourOf(def) }}
+                style={{ background: tintOf(def), borderColor: colourOf(def) }}
                 onPointerDown={(e) =>
                   inv.drag.down(e.nativeEvent, {
                     ref: { gun, slot, part },
@@ -482,7 +481,8 @@ function Ground({ inv }: { inv: InventoryController }): ReactNode {
               style={{
                 width: def.size[0] * cell,
                 height: def.size[1] * cell,
-                background: colourOf(def),
+                background: tintOf(def),
+                borderColor: colourOf(def),
               }}
               onPointerDown={(e) =>
                 inv.drag.down(e.nativeEvent, {
@@ -498,8 +498,7 @@ function Ground({ inv }: { inv: InventoryController }): ReactNode {
                 })
               }
             >
-              <span className="inv-item-name">{def.name}</span>
-              <span className="inv-item-badge">{badge(g.item, def)}</span>
+              <ItemLabel items={ctx.items} item={g.item} def={def} />
             </div>
           );
         })}
@@ -526,16 +525,23 @@ function CharacterGrids({
   vault: boolean;
 }): ReactNode {
   const g = ch.gear;
-  const grids: [string, GridName, Grid | null][] = [
-    ['Pockets', 'pockets', g.pockets],
-    ['Rig', 'rig', g.rig?.grid ?? null],
-    ['Backpack', 'backpack', g.backpack?.grid ?? null],
+  // As in Tarkov, the rig and backpack slots sit beside what's in them, not with the
+  // rest of the gear: rig, pockets, backpack, then the vault.
+  const grids: [string, GridName, Grid | null, GearSlot | null][] = [
+    ['Rig', 'rig', g.rig?.grid ?? null, 'rig'],
+    ['Pockets', 'pockets', g.pockets, null],
+    ['Backpack', 'backpack', g.backpack?.grid ?? null, 'backpack'],
   ];
-  if (vault) grids.push(['Vault · kept if you die', 'vault', g.vault]);
+  if (vault) grids.push(['Vault · kept if you die', 'vault', g.vault, null]);
   return (
     <>
-      {grids.map(([label, name, grid]) =>
-        grid ? (
+      {grids.map(([label, name, grid, slot]) =>
+        slot ? (
+          <div key={name} className="inv-section inv-holder">
+            <Slots inv={inv} owner={owner} slots={[slot]} ch={ch} />
+            {grid && <GridView inv={inv} gref={{ owner, grid: name }} grid={grid} />}
+          </div>
+        ) : grid ? (
           <div key={name} className="inv-section">
             <h3>{label}</h3>
             <GridView inv={inv} gref={{ owner, grid: name }} grid={grid} />
@@ -567,21 +573,20 @@ function Slots({
         return (
           <div
             key={slot}
-            className={`inv-slot${WIDE.has(slot) ? ' wide' : ''}`}
+            className={`inv-slot${WIDE.has(slot) ? ' wide' : CENTRE.has(slot) ? ' centre' : ''}`}
             data-drop={JSON.stringify({ owner, slot })}
           >
-            <span className="inv-slot-name">
-              {SLOT_NAMES[slot]}
-              {inHand ? ' · in hand' : ''}
-            </span>
+            {/* Named only while empty: the item's own name would show through it. */}
+            {!item && <span className="inv-slot-name">{SLOT_NAMES[slot]}</span>}
             {item && def && ref && (
               <div
-                className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}`}
+                className={`inv-item${inHand ? ' in-hand' : ''}${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}`}
+                title={inHand ? 'In hand' : undefined}
                 data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
                 data-armour={
                   def.type === 'armour' && owner.kind === 'self' ? JSON.stringify(ref) : undefined
                 }
-                style={{ background: colourOf(def) }}
+                style={{ background: tintOf(def), borderColor: colourOf(def) }}
                 onPointerDown={(e) =>
                   inv.drag.down(e.nativeEvent, {
                     ref,
@@ -596,8 +601,7 @@ function Slots({
                   })
                 }
               >
-                <span className="inv-item-name">{def.name}</span>
-                <span className="inv-item-badge">{badge(item, def)}</span>
+                <ItemLabel items={inv.ctx.items} item={item} def={def} />
               </div>
             )}
           </div>
@@ -641,7 +645,8 @@ function GridView({
               top: g.y * cell,
               width: w * cell,
               height: h * cell,
-              background: colourOf(def),
+              background: tintOf(def),
+              borderColor: colourOf(def),
             }}
             onPointerDown={(e) => {
               const r = e.currentTarget.getBoundingClientRect();
@@ -658,8 +663,7 @@ function GridView({
               });
             }}
           >
-            <span className="inv-item-name">{def.name}</span>
-            <span className="inv-item-badge">{badge(g.item, def)}</span>
+            <ItemLabel items={inv.ctx.items} item={g.item} def={def} />
           </div>
         );
       })}
@@ -674,29 +678,58 @@ function quickLabel(ref: ItemRef, to: Owner): string {
 }
 
 /** A colour per item type, until the item editor gives items their own icons. */
-const TYPE_COLOURS: Record<ItemDef['type'], string> = {
-  weapon: '#56653f',
-  ammo: '#7d6a2e',
-  armour: '#3f5266',
-  attachment: '#5a4870',
-  med: '#7a3434',
-  container: '#4c5a36',
-  melee: '#4e4e4e',
-  key: '#8a6a22',
-  quest: '#6b3a6b',
-  loot: '#6e5f30',
-  repair: '#2f6363',
+/** Gray, blue, purple and gold (design.md → Item tiles). */
+const RARITY_COLOURS: Record<Rarity, string> = {
+  common: '#6f767d',
+  rare: '#3d6fb0',
+  epic: '#7d4fb3',
+  legendary: '#c0962e',
 };
 
+/** An item's colour, by its rarity. */
 export function colourOf(def: ItemDef): string {
-  return TYPE_COLOURS[def.type];
+  return RARITY_COLOURS[def.rarity];
+}
+
+/** An item tile's background: its colour, see-through. */
+function tintOf(def: ItemDef): string {
+  return `${RARITY_COLOURS[def.rarity]}66`;
+}
+
+// Scratch for a gun's magazine size with its attachments.
+const gunStats = createWeaponStats();
+
+/**
+ * What a tile shows: its name, and in the corner a badge (a stack's count, durability…).
+ * A gun shows its rounds under its name and loaded/capacity in the corner, the rounds
+ * loaded larger; rigs and backpacks show only their name.
+ */
+function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemDef }): ReactNode {
+  if (def.type === 'weapon') {
+    const capacity = weaponStats(items, item as WeaponState, gunStats).magazine;
+    return (
+      <>
+        <span className="inv-item-name">
+          {def.name}
+          <span className="inv-item-ammo">{itemDef(items, def.ammo).name}</span>
+        </span>
+        <span className="inv-item-badge">
+          <span className="inv-item-loaded">{item.mag ?? 0}</span>/{capacity}
+        </span>
+      </>
+    );
+  }
+  return (
+    <>
+      <span className="inv-item-name">{def.name}</span>
+      <span className="inv-item-badge">{badge(item, def)}</span>
+    </>
+  );
 }
 
 /** The small text in an item's corner: a stack's count, rounds loaded, durability… */
 function badge(item: Item, def: ItemDef): string {
   switch (def.type) {
-    case 'weapon':
-      return `${item.mag ?? 0}`;
     case 'armour':
       return `${Math.ceil(item.durability ?? 0)}/${def.durability}`;
     case 'med':
@@ -706,10 +739,8 @@ function badge(item: Item, def: ItemDef): string {
       return `${Math.floor(item.left ?? 0)}`;
     case 'key':
       return def.uses === undefined ? '' : `×${item.left ?? 0}`;
-    case 'container': {
-      const n = item.grid?.items.length ?? 0;
-      return n ? `${n} in` : '';
-    }
+    case 'container':
+      return '';
     default:
       return stackSize(def) > 1 || item.count > 1 ? `${item.count}` : '';
   }

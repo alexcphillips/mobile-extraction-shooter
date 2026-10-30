@@ -1,0 +1,56 @@
+{
+  "formatVersion": 1,
+  "id": "pistol-shot",
+  "name": "Pistol shot",
+  "gain": 0.36,
+  "range": 120,
+  "pitchJitter": 0.05,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0.003,
+      "decay": 0.08,
+      "curve": 3,
+      "gain": 0.9,
+      "drive": 0.5,
+      "filter": { "type": "highpass", "freq": [2500, 900], "q": 0.7 }
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0,
+      "attack": 0.002,
+      "hold": 0.012,
+      "decay": 0.22,
+      "curve": 2.5,
+      "gain": 1,
+      "drive": 0.4,
+      "filter": { "type": "lowpass", "freq": [2500, 300], "q": 0.9 }
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [200, 70],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.12,
+      "curve": 2,
+      "gain": 0.6
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0.03,
+      "attack": 0.04,
+      "hold": 0,
+      "decay": 0.35,
+      "curve": 2,
+      "gain": 0.18,
+      "filter": { "type": "lowpass", "freq": [1000, 350], "q": 0.7 }
+    }
+  ]
+}

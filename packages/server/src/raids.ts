@@ -6,6 +6,7 @@ import {
   parseGear,
   raidProgress,
   restGear,
+  settleGuns,
   type EndRaidRequest,
   type ProfileResponse,
 } from '@mes/shared';
@@ -57,6 +58,7 @@ function parseEnd(raw: unknown): EndRaidRequest | string {
     kills: kills as number,
     ...(detail !== undefined ? { detail } : {}),
     ...(investigated !== undefined ? { investigated: investigated as string[] } : {}),
+    ...(raw.keepGear === true ? { keepGear: true } : {}),
   };
 }
 
@@ -166,9 +168,13 @@ raids.post('/:id/end', async (c) => {
 
   const current = await profileResponse(db, account);
   const { version, profile } = current;
-  const gear = keptGear(end.gear, end.how === 'extracted', profile.gear.knife);
+  // Keeping your gear after a death is an admin cheat: only on the dev server (see admin.ts).
+  const keepAll = end.how === 'extracted' || (end.keepGear === true && c.env.ADMIN === '1');
+  const gear = keptGear(end.gear, keepAll, profile.gear.knife);
   restGear(gear);
   const items = loadItems();
+  // A raid started before pistols left the primary slots.
+  settleGuns(items, gear, profile.stash);
   const bad = checkGear(items, gear);
   if (bad) return fail(c, 'invalid', bad);
   const map = raidDef(row.raid)?.map;

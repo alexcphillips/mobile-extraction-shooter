@@ -8,6 +8,7 @@ import {
   PREFAB_FORMAT,
   QUEST_FORMAT,
   RAID_FORMAT,
+  SOUND_FORMAT,
   STARTING_KIT_FORMAT,
   VENDOR_FORMAT,
   checkEnemies,
@@ -17,6 +18,8 @@ import {
   checkQuests,
   checkVendors,
   checkProfile,
+  checkSounds,
+  itemSounds,
   compileMap,
   loadById,
   newProfile,
@@ -31,9 +34,12 @@ import {
   type PrefabFile,
   type QuestDef,
   type RaidDef,
+  type SoundDb,
+  type SoundDef,
   type StartingKitDef,
   type VendorDef,
 } from '@mes/shared';
+import { GAME_SOUNDS } from './audio/sound-ids';
 
 // Every content file is bundled, and in dev, Vite reloads the page when one changes.
 const mapFiles = import.meta.glob<unknown>('../../../content/maps/*.json', {
@@ -85,6 +91,11 @@ const questFiles = import.meta.glob<unknown>('../../../content/quests/*.json', {
   import: 'default',
 });
 
+const soundFiles = import.meta.glob<unknown>('../../../content/sounds/*.json', {
+  eager: true,
+  import: 'default',
+});
+
 let prefabs: Map<string, PrefabFile> | undefined;
 let items: ItemDb | undefined;
 let maps: Map<string, MapFile> | undefined;
@@ -94,6 +105,7 @@ let lootTables: Map<string, LootTableDef> | undefined;
 let raids: Map<string, RaidDef> | undefined;
 let vendors: ReadonlyMap<string, VendorDef> | undefined;
 let quests: ReadonlyMap<string, QuestDef> | undefined;
+let sounds: SoundDb | undefined;
 
 export function mapIds(): string[] {
   maps ??= loadById(MAP_FORMAT, mapFiles);
@@ -151,6 +163,47 @@ export function loadItems(): ItemDb {
     items = all;
   }
   return items;
+}
+
+/**
+ * Every sound in content/sounds, checked against the items (each sound an item names is
+ * there) and the game (each sound it plays itself is there).
+ */
+export function loadSounds(): SoundDb {
+  if (!sounds) {
+    const all = loadById(SOUND_FORMAT, soundFiles);
+    checkSounds(all, loadItems(), Object.values(GAME_SOUNDS));
+    sounds = all;
+  }
+  return sounds;
+}
+
+/** The sound files as written, for the sound editor (see itemSources). */
+export function soundSources(): ReadonlyMap<string, SoundDef> {
+  return asWritten(soundFiles, loadById(SOUND_FORMAT, soundFiles));
+}
+
+/** What the items and the game would find missing with these sounds, or null. */
+export function soundContentProblem(all: SoundDb): string | null {
+  try {
+    checkSounds(all, loadItems(), Object.values(GAME_SOUNDS));
+  } catch (err) {
+    return err instanceof Error ? err.message : String(err);
+  }
+  return null;
+}
+
+/** Where items name a sound, for the sound editor: "pistol shot", say. */
+export function soundUses(id: string): string[] {
+  const out: string[] = [];
+  for (const item of loadItems().values()) {
+    for (const [use, sound] of Object.entries(itemSounds(item))) {
+      if (sound === id) out.push(`${item.id} ${use}`);
+    }
+  }
+  for (const [cue, sound] of Object.entries(GAME_SOUNDS))
+    if (sound === id) out.push(`game: ${cue}`);
+  return out;
 }
 
 export interface Enemies {
@@ -337,6 +390,7 @@ export function itemContentProblem(items: ItemDb): string | null {
     checkLootTables(c.lootTables, items);
     checkVendors(c.vendors, items);
     checkQuests(c.quests, c.vendors, items);
+    checkSounds(loadById(SOUND_FORMAT, soundFiles), items, []);
     for (const d of c.doors) {
       if (items.get(d.key)?.type !== 'key')
         return `door ${d.id} on ${d.map}: "${d.key}" is not a key item`;

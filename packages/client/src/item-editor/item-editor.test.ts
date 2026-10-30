@@ -80,7 +80,9 @@ describe('item editor', () => {
     expect(risks('pistol', (d) => (d.magazine = 20))).toEqual([]);
     expect(risks('pistol', (d) => (d.rpm = 300))).toEqual([]);
     expect(risks('chest-rig', (d) => (d.grid = [5, 3]))).toEqual([]);
-    expect(risks('scope-4x', (d) => (d.weapons = ['assault-rifle', 'pistol']))).toEqual([]);
+    expect(risks('scope-4x', (d) => (d.weapons = [...(d.weapons as string[]), 'pistol']))).toEqual(
+      [],
+    );
     expect(risks('steel-helmet', (d) => (d.absorb = 0.9))).toEqual([]);
   });
 

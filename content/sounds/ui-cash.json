@@ -1,0 +1,73 @@
+{
+  "formatVersion": 1,
+  "id": "ui-cash",
+  "name": "Money",
+  "gain": 0.6,
+  "range": 5,
+  "pitchJitter": 0.03,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [2800, 2800],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.15,
+      "curve": 3,
+      "gain": 0.15
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [3500, 3500],
+      "at": 0.05,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.15,
+      "curve": 3,
+      "gain": 0.15
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [2400, 2400],
+      "at": 0.1,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.15,
+      "curve": 3,
+      "gain": 0.15
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "gain": 0.2,
+      "filter": { "type": "highpass", "freq": [6000, 6000], "q": 0.7 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0.05,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "gain": 0.2,
+      "filter": { "type": "highpass", "freq": [6000, 6000], "q": 0.7 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0.1,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "gain": 0.2,
+      "filter": { "type": "highpass", "freq": [6000, 6000], "q": 0.7 }
+    }
+  ]
+}

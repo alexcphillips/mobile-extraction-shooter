@@ -16,6 +16,16 @@
         { "item": "red-dot", "chance": 0.25 },
         { "item": "muzzle-brake", "chance": 0.2 }
       ]
+    },
+    { "weight": 1, "item": "shotgun", "spare": [12, 24] },
+    {
+      "weight": 1,
+      "item": "smg",
+      "spare": [25, 75],
+      "attachments": [
+        { "item": "red-dot", "chance": 0.25 },
+        { "item": "suppressor", "chance": 0.15 }
+      ]
     }
   ],
   "helmets": [

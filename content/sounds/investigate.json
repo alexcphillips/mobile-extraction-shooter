@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "id": "investigate",
+  "name": "Investigated",
+  "gain": 1,
+  "range": 5,
+  "pitchJitter": 0,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "triangle",
+      "freq": [1046, 1046],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.5,
+      "curve": 2,
+      "gain": 0.25
+    },
+    {
+      "source": "tone",
+      "wave": "triangle",
+      "freq": [1568, 1568],
+      "at": 0.08,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.5,
+      "curve": 2,
+      "gain": 0.18
+    }
+  ]
+}

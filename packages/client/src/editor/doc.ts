@@ -216,6 +216,28 @@ export function collectIds(nodes: readonly MapNode[], into = new Set<string>()):
   return into;
 }
 
+/**
+ * The path of the node a compiled marker's id names (ids as compileMap makes them), or of
+ * the placed prefab it's inside; null if there's none.
+ */
+export function markerPath(map: MapFile, id: string): NodePath | null {
+  const first = id.split('/')[0]!;
+  const find = (nodes: readonly MapNode[], unnamed: string, at: number[]): number[] | null => {
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i]!;
+      const found =
+        n.type === 'group'
+          ? find(n.nodes, `${unnamed}${i}.`, [...at, i])
+          : (n.id ?? `#${unnamed}${i}`) === first
+            ? [...at, i]
+            : null;
+      if (found) return found;
+    }
+    return null;
+  };
+  return find(map.nodes, '', []);
+}
+
 /** `base`, or base-2, base-3… (without base's own number) if it's taken. Adds it to taken. */
 export function uniqueId(base: string, taken: Set<string>): string {
   let id = base;

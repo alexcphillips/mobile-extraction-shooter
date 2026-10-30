@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "id": "ui-refuse",
+  "name": "Refused",
+  "gain": 1.2,
+  "range": 5,
+  "pitchJitter": 0,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "square",
+      "freq": [220, 180],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0.08,
+      "decay": 0.05,
+      "gain": 0.15,
+      "filter": { "type": "lowpass", "freq": [1500, 1500], "q": 0.7 }
+    },
+    {
+      "source": "tone",
+      "wave": "square",
+      "freq": [220, 180],
+      "at": 0.12,
+      "attack": 0.001,
+      "hold": 0.08,
+      "decay": 0.05,
+      "gain": 0.15,
+      "filter": { "type": "lowpass", "freq": [1500, 1500], "q": 0.7 }
+    }
+  ]
+}

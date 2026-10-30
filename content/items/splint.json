@@ -1,12 +1,16 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 8,
   "id": "splint",
   "name": "Splint",
   "type": "med",
   "size": [1, 1],
   "value": 600,
+  "rarity": "common",
   "effect": "splint",
   "useTime": 3,
+  "sounds": {
+    "use": "bandage-use"
+  },
   "model": {
     "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#b04848" }]
   }

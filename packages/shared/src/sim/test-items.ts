@@ -1,4 +1,4 @@
-import { ITEM_FORMAT_VERSION, type ItemDb, type ItemDef } from '../content/items';
+import { defaultSounds, ITEM_FORMAT_VERSION, type ItemDb, type ItemDef } from '../content/items';
 import { placeholderModel } from '../content/placeholder-models';
 
 function common(id: string, size: [number, number]) {
@@ -11,7 +11,10 @@ function common(id: string, size: [number, number]) {
   };
 }
 
-/** A small item set for tests, independent of content/; models are the placeholders. */
+/**
+ * A small item set for tests, independent of content/; models are the placeholders and
+ * sounds the defaults.
+ */
 const defs = [
   {
     formatVersion: ITEM_FORMAT_VERSION,
@@ -55,6 +58,39 @@ const defs = [
     hipSpread: 0,
     aimSpread: 0,
     recoil: { up: 0, side: 0, recovery: 10 },
+  },
+  {
+    formatVersion: ITEM_FORMAT_VERSION,
+    id: 'shotgun',
+    size: [4, 1],
+    value: 100,
+    name: 'Shotgun',
+    type: 'weapon',
+    ammo: 'shell',
+    fireMode: 'semi',
+    rpm: 60,
+    magazine: 4,
+    reloadTime: 2,
+    aimTime: 0.2,
+    drawTime: 0.5,
+    range: 50,
+    loudness: 150,
+    hipSpread: 0,
+    aimSpread: 0,
+    recoil: { up: 2, side: 0, recovery: 10 },
+  },
+  {
+    formatVersion: ITEM_FORMAT_VERSION,
+    id: 'shell',
+    size: [1, 1],
+    value: 100,
+    name: 'Shell',
+    type: 'ammo',
+    stack: 20,
+    damage: 5,
+    bleedChance: 0,
+    pellets: 6,
+    pelletSpread: 0,
   },
   {
     formatVersion: ITEM_FORMAT_VERSION,
@@ -156,5 +192,11 @@ const defs = [
 ];
 
 export const TEST_ITEMS: ItemDb = new Map(
-  defs.map((d) => [d.id, { ...d, model: placeholderModel(d) } as ItemDef]),
+  defs.map((d) => {
+    const sounds = defaultSounds(d);
+    return [
+      d.id,
+      { ...d, rarity: 'common', ...(sounds && { sounds }), model: placeholderModel(d) } as ItemDef,
+    ];
+  }),
 );

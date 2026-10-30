@@ -1,12 +1,13 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 8,
   "id": "scope-4x",
   "name": "4× scope",
   "type": "attachment",
   "size": [2, 1],
   "value": 18000,
+  "rarity": "epic",
   "slot": "optic",
-  "weapons": ["assault-rifle"],
+  "weapons": ["assault-rifle", "sniper-rifle", "crossbow"],
   "mods": {
     "aimTime": 1.4
   },

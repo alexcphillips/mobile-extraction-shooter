@@ -4,6 +4,7 @@ import {
   attachmentDef,
   fits,
   weaponDef,
+  type AmmoDef,
   type AttachmentSlot,
   type ItemDb,
   type WeaponDef,
@@ -115,6 +116,11 @@ export interface ShotEvent {
   target: EntityId;
   /** How far away it can be heard, in metres (suppressors shrink it). */
   loudness: number;
+  /**
+   * Which pellet of the round (shotgun shells fire several, one event each); 0 for the
+   * first and for ordinary rounds. Sounds and muzzle flashes go with pellet 0 only.
+   */
+  pellet: number;
 }
 
 // Scratch for working out stats, so a tick allocates nothing.
@@ -231,7 +237,9 @@ export function updateWeapon(
     w.reloading -= DT;
     if (w.reloading <= 0) {
       w.reloading = 0;
-      w.mag += takeAmmo(c, def.ammo, s.magazine - w.mag);
+      w.mag += c.admin?.infiniteAmmo
+        ? s.magazine - w.mag
+        : takeAmmo(c, def.ammo, s.magazine - w.mag);
     }
   } else if (input?.reload && free) {
     startReload(c, def, w, s);
@@ -257,7 +265,8 @@ export function updateWeapon(
 }
 
 function startReload(c: Character, def: WeaponDef, w: WeaponState, s: WeaponStats): void {
-  if (w.mag < s.magazine && carriedAmmo(c, def.ammo) > 0) w.reloading = s.reloadTime;
+  const ammo = c.admin?.infiniteAmmo || carriedAmmo(c, def.ammo) > 0;
+  if (w.mag < s.magazine && ammo) w.reloading = s.reloadTime;
 }
 
 function towardZero(v: number, step: number): number {
@@ -277,7 +286,7 @@ function fire(
   world: CollisionWorld,
   items: ItemDb,
 ): void {
-  w.mag--;
+  if (!c.admin?.infiniteAmmo) w.mag--;
   // A random point in a cone around where the view (with recoil) points.
   const spread =
     (s.hipSpread + (s.aimSpread - s.hipSpread) * c.aim) * DEG * armScale(c, HEALTH.brokenArmSpread);
@@ -285,6 +294,37 @@ function fire(
   const around = nextFloat(state.rng) * Math.PI * 2;
   const yaw = c.yaw + c.recoilYaw + off * Math.cos(around);
   const pitch = c.pitch + c.recoilPitch + off * Math.sin(around);
+  const ammo = ammoDef(items, def.ammo);
+  if (!ammo.pellets) {
+    castShot(state, c, yaw, pitch, def, s, ammo, world, items, 0);
+  } else {
+    const pelletSpread = (ammo.pelletSpread ?? 0) * DEG;
+    for (let i = 0; i < ammo.pellets; i++) {
+      // Each pellet strays from the shot's line in a cone of its own.
+      const stray = pelletSpread * Math.sqrt(nextFloat(state.rng));
+      const dir = nextFloat(state.rng) * Math.PI * 2;
+      const py = yaw + stray * Math.cos(dir);
+      castShot(state, c, py, pitch + stray * Math.sin(dir), def, s, ammo, world, items, i);
+    }
+  }
+
+  c.recoilPitch = Math.min(MAX_RECOIL, c.recoilPitch + s.recoilUp * DEG);
+  c.recoilYaw += s.recoilSide * DEG * (nextFloat(state.rng) * 2 - 1);
+}
+
+/** One bullet or pellet from the shooter's eye along yaw and pitch: hits and its event. */
+function castShot(
+  state: SimState,
+  c: Character,
+  yaw: number,
+  pitch: number,
+  def: WeaponDef,
+  s: WeaponStats,
+  ammo: AmmoDef,
+  world: CollisionWorld,
+  items: ItemDb,
+  pellet: number,
+): void {
   const cp = Math.cos(pitch);
   const dx = -Math.sin(yaw) * cp;
   const dy = Math.sin(pitch);
@@ -311,7 +351,7 @@ function fire(
   if (cd < Infinity) {
     hit = 'character';
     const target = entityById(state, charHit.id);
-    if (target) shootCharacter(state, items, target, charHit.zone, ammoDef(items, def.ammo), c.id);
+    if (target) shootCharacter(state, items, target, charHit.zone, ammo, c.id);
   } else if (wd < Infinity) {
     hit = 'world';
   }
@@ -327,8 +367,6 @@ function fire(
     hit,
     target: hit === 'character' ? charHit.id : 0,
     loudness: s.loudness,
+    pellet,
   });
-
-  c.recoilPitch = Math.min(MAX_RECOIL, c.recoilPitch + s.recoilUp * DEG);
-  c.recoilYaw += s.recoilSide * DEG * (nextFloat(state.rng) * 2 - 1);
 }

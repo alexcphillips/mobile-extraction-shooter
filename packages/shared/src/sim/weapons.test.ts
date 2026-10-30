@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { AmmoDef } from '../content/items';
 import { createRng, nextFloat } from '../rng';
 import { TICK_RATE } from '../tick';
 import { CollisionWorld } from '../world/collision-world';
@@ -228,6 +229,30 @@ describe('firing', () => {
       step(state, world, TEST_ITEMS, { [shooter.id]: input({ pitch: 1, fire: true }) });
     }
     expect(heldWeapon(shooter)?.mag).toBe(11);
+  });
+
+  it('fires every pellet of a shell as its own hit, with one round and one kick', () => {
+    const { world, state, shooter, target } = range();
+    giveWeapon(shooter, TEST_ITEMS, 'shotgun');
+    const aim = lookAt(shooter, 0, 1.0, 0);
+    step(state, world, TEST_ITEMS, { [shooter.id]: input({ ...aim, fire: true }) });
+    const shots = state.events.filter((e) => e.type === 'shot');
+    expect(shots.map((e) => e.pellet)).toEqual([0, 1, 2, 3, 4, 5]);
+    expect(shots.every((e) => e.hit === 'character')).toBe(true);
+    // No spread: all six land in the chest.
+    expect(target.health.hp[CHEST]).toBe(85 - 6 * 5);
+    expect(heldWeapon(shooter)?.mag).toBe(3);
+    expect(shooter.recoilPitch).toBeCloseTo((2 * Math.PI) / 180);
+  });
+
+  it('spreads pellets apart', () => {
+    const { world, state, shooter } = range();
+    const items = new Map(TEST_ITEMS);
+    items.set('shell', { ...(TEST_ITEMS.get('shell') as AmmoDef), pelletSpread: 10 });
+    giveWeapon(shooter, items, 'shotgun');
+    step(state, world, items, { [shooter.id]: input({ pitch: 0.3, fire: true }) });
+    const ends = state.events.flatMap((e) => (e.type === 'shot' ? [`${e.toX},${e.toY}`] : []));
+    expect(new Set(ends).size).toBe(6);
   });
 
   it('is stopped by walls', () => {

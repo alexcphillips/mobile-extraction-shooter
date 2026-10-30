@@ -2,6 +2,7 @@ export { FixedTimestep, TICK_RATE, TICK_SECONDS } from './tick';
 export {
   ACCOUNT,
   PROTOCOL_VERSION,
+  type AdminGiveRequest,
   type ApiError,
   type ApiErrorCode,
   type BuyPageRequest,
@@ -52,6 +53,7 @@ export {
   entityById,
   eyeHeight,
   spawnCharacter,
+  type AdminCheats,
   type Character,
   type Entity,
   type EntityId,
@@ -77,6 +79,7 @@ export {
 export {
   AI,
   DEFAULT_SKILL,
+  exposedSpawns,
   resetEnemy,
   spawnEnemy,
   updateAi,
@@ -84,6 +87,7 @@ export {
   type AiState,
   type Awareness,
   type EnemySpawnOptions,
+  type ExposedSpawn,
   type PatrolDef,
 } from './sim/ai';
 export { equipLoadout } from './sim/loadout';
@@ -301,12 +305,14 @@ export {
   ITEM_FORMAT,
   ITEM_FORMAT_VERSION,
   MED_EFFECTS,
+  RARITIES,
   SCOPE_RADIUS,
   ammoDef,
   armourDef,
   attachmentDef,
   checkItems,
   containerDef,
+  defaultSounds,
   fits,
   itemDef,
   itemSchema,
@@ -323,6 +329,7 @@ export {
   type ContainerDef,
   type MedDef,
   type MedEffect,
+  type Rarity,
   type MeleeDef,
   type OpticDef,
   type RepairDef,
@@ -331,6 +338,20 @@ export {
   type ItemDef,
   type WeaponDef,
 } from './content/items';
+export {
+  FILTERS,
+  NOISE_COLOURS,
+  SOUND_FORMAT,
+  SOUND_FORMAT_VERSION,
+  WAVES,
+  checkSounds,
+  itemSounds,
+  soundLength,
+  soundSchema,
+  type SoundDb,
+  type SoundDef,
+  type SoundLayer,
+} from './content/sounds';
 export {
   addVec,
   modelShapes,
@@ -397,6 +418,7 @@ export {
   overRepaired,
   parseGear,
   restGear,
+  settleGuns,
   type Profile,
   type QuestState,
 } from './profile';

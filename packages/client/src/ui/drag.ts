@@ -84,10 +84,23 @@ function swallowClick(e: Event): void {
 /** How far a pointer moves before a press becomes a drag, in CSS pixels. */
 const SLOP = 8;
 
+/** The fastest a drag held at a scrolling area's edge scrolls it, in cells a second. */
+const SCROLL_SPEED = 12;
+
+/** The nearest element at or above `el` that scrolls up and down and has more to show. */
+function scrollerOf(el: Element | null): HTMLElement | null {
+  for (let n = el; n instanceof HTMLElement; n = n.parentElement) {
+    const o = getComputedStyle(n).overflowY;
+    if ((o === 'auto' || o === 'scroll') && n.scrollHeight > n.clientHeight) return n;
+  }
+  return null;
+}
+
 /**
  * Drag and drop for inventory items, in plain DOM so a drag never re-renders React. A
  * press that moves becomes a drag with a ghost under the finger; one that doesn't is a
- * tap. While dragging, a second finger (or R) turns the item.
+ * tap. While dragging, a second finger (or R) turns the item, and holding it within a cell
+ * of a scrolling area's top or bottom edge (or past it) scrolls that area.
  */
 export class DragController {
   private src: DragSource | null = null;
@@ -102,6 +115,10 @@ export class DragController {
   private hover: { zone: DropZone; el: HTMLElement; x: number; y: number; ok: boolean } | null =
     null;
   private readonly highlight = document.createElement('div');
+  /** The area the drag was last over that scrolls, and the frame that scrolls it. */
+  private scroller: HTMLElement | null = null;
+  private scrollFrame = 0;
+  private scrollTime = 0;
 
   constructor(private readonly host: DragHost) {
     this.highlight.className = 'inv-drop';
@@ -239,6 +256,12 @@ export class DragController {
     this.ghost!.style.transform = `translate(${left}px, ${top}px)`;
 
     const hit = document.elementFromPoint(this.x, this.y);
+    // Kept while over something that doesn't scroll (the header above), to scroll on.
+    this.scroller = scrollerOf(hit) ?? this.scroller;
+    if (this.scroller && !this.scrollFrame && this.scrollStep() !== 0) {
+      this.scrollTime = performance.now();
+      this.scrollFrame = requestAnimationFrame(this.onScrollFrame);
+    }
     const gunEl = hit?.closest<HTMLElement>('[data-gun]');
     const onGun = gunEl ? this.host.gunZone(src, JSON.parse(gunEl.dataset.gun!) as ItemRef) : null;
     const armourEl = onGun ? null : hit?.closest<HTMLElement>('[data-armour]');
@@ -272,6 +295,28 @@ export class DragController {
     }
   }
 
+  /** How fast to scroll, -1 to 1 (up to down), by how far into the edge the pointer is. */
+  private scrollStep(): number {
+    const r = this.scroller!.getBoundingClientRect();
+    const edge = this.host.cell;
+    if (this.y < r.top + edge) return -Math.min(1, (r.top + edge - this.y) / edge);
+    if (this.y > r.bottom - edge) return Math.min(1, (this.y - (r.bottom - edge)) / edge);
+    return 0;
+  }
+
+  private readonly onScrollFrame = (now: number): void => {
+    this.scrollFrame = 0;
+    if (!this.dragging || !this.scroller) return;
+    const dt = Math.min(0.05, (now - this.scrollTime) / 1000);
+    this.scrollTime = now;
+    const step = this.scrollStep();
+    if (step === 0) return;
+    this.scroller.scrollTop += step * SCROLL_SPEED * this.host.cell * dt;
+    this.scrollFrame = requestAnimationFrame(this.onScrollFrame);
+    // What's under the pointer moved: find the drop zone again.
+    this.update();
+  };
+
   private clearHover(): void {
     if (!this.hover) return;
     this.hover.el.classList.remove('drop-ok', 'drop-bad');
@@ -283,6 +328,9 @@ export class DragController {
     this.clearHover();
     this.ghost?.remove();
     this.ghost = null;
+    cancelAnimationFrame(this.scrollFrame);
+    this.scrollFrame = 0;
+    this.scroller = null;
     this.src?.el.classList.remove('dragging');
     this.src = null;
     this.pointer = -1;

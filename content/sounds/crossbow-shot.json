@@ -1,0 +1,43 @@
+{
+  "formatVersion": 1,
+  "id": "crossbow-shot",
+  "name": "Crossbow shot",
+  "gain": 0.6,
+  "range": 15,
+  "pitchJitter": 0.05,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "triangle",
+      "freq": [240, 140],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.18,
+      "curve": 2.5,
+      "gain": 0.5
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.05,
+      "curve": 2,
+      "gain": 0.6,
+      "filter": { "type": "bandpass", "freq": [900, 500], "q": 1.5 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0.01,
+      "attack": 0.02,
+      "hold": 0,
+      "decay": 0.12,
+      "curve": 1.5,
+      "gain": 0.15,
+      "filter": { "type": "highpass", "freq": [4000, 2000], "q": 0.7 }
+    }
+  ]
+}

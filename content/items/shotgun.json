@@ -1,0 +1,75 @@
+{
+  "formatVersion": 8,
+  "id": "shotgun",
+  "name": "Pump shotgun",
+  "type": "weapon",
+  "size": [4, 1],
+  "value": 14000,
+  "rarity": "common",
+  "ammo": "buckshot",
+  "hold": "rifle",
+  "fireMode": "semi",
+  "rpm": 70,
+  "magazine": 6,
+  "reloadTime": 3.2,
+  "aimTime": 0.3,
+  "drawTime": 0.8,
+  "range": 60,
+  "loudness": 200,
+  "slots": ["optic"],
+  "hipSpread": 1.5,
+  "aimSpread": 0.4,
+  "recoil": { "up": 4.5, "side": 1.2, "recovery": 12 },
+  "sounds": {
+    "shot": "shotgun-shot",
+    "suppressed": "rifle-shot-suppressed",
+    "reload": "shotgun-reload"
+  },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, -0.05], "size": [0.05, 0.065, 0.24], "colour": "#34383c" },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, -0.42],
+        "pitch": 90,
+        "radius": 0.012,
+        "height": 0.5,
+        "colour": "#2a2d30"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.02, -0.35],
+        "pitch": 90,
+        "radius": 0.011,
+        "height": 0.36,
+        "colour": "#2a2d30"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.022, -0.32],
+        "size": [0.048, 0.04, 0.15],
+        "colour": "#6b4a2e"
+      },
+      { "type": "box", "pos": [0, -0.07, 0.08], "size": [0.04, 0.08, 0.04], "colour": "#6b4a2e" },
+      { "type": "box", "pos": [0, -0.02, 0.2], "size": [0.045, 0.075, 0.22], "colour": "#6b4a2e" },
+      {
+        "type": "box",
+        "pos": [0, 0.029, -0.66],
+        "size": [0.006, 0.01, 0.006],
+        "colour": "#c9c2a8"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.04, -0.06],
+        "size": [0.016, 0.015, 0.04],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic"
+      }
+    ],
+    "grip": [0, -0.065, 0.08],
+    "support": [0, -0.022, -0.32],
+    "muzzle": [0, 0.012, -0.67],
+    "sight": [0, 0.055, -0.06],
+    "mounts": { "optic": [0, 0.0325, -0.02] }
+  }
+}

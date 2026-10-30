@@ -108,6 +108,17 @@ export interface QuestCompleteRequest extends QuestRequest {
   page?: number;
 }
 
+/**
+ * POST /api/admin/give: puts `count` new items into the stash, page `page` first, free.
+ * Only on the dev server (`wrangler dev` sets ADMIN); elsewhere the route isn't there.
+ */
+export interface AdminGiveRequest {
+  version: number;
+  item: string;
+  count: number;
+  page?: number;
+}
+
 /** POST /api/raids. Starting a raid while one is open counts that one as missing in action. */
 export interface StartRaidRequest {
   raid: string;
@@ -133,6 +144,8 @@ export interface EndRaidRequest {
   detail?: string;
   /** The quest markers they investigated (session 14b), by path id; counted even if they died. */
   investigated?: string[];
+  /** Admin cheat: keep everything whatever the outcome. Ignored except on the dev server. */
+  keepGear?: boolean;
 }
 
 export type ApiErrorCode =

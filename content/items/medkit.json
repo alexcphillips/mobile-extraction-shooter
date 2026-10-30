@@ -1,13 +1,17 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 8,
   "id": "medkit",
   "name": "Medkit",
   "type": "med",
   "size": [1, 2],
   "value": 4000,
+  "rarity": "rare",
   "effect": "heal",
   "useTime": 4,
   "hp": 200,
+  "sounds": {
+    "use": "med-use"
+  },
   "model": {
     "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.28], "colour": "#b04848" }]
   }

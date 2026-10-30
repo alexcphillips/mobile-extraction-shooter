@@ -1,10 +1,11 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 8,
   "id": "large-backpack",
   "name": "Large backpack",
   "type": "container",
   "size": [4, 4],
   "value": 20000,
+  "rarity": "rare",
   "slot": "backpack",
   "grid": [5, 6],
   "model": {

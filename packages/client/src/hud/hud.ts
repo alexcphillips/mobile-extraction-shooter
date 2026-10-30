@@ -15,6 +15,8 @@ export class Hud {
     readonly knob: HTMLElement,
     readonly sprintZone: HTMLElement,
     readonly sprintLock: HTMLElement,
+    /** Desktop's "click to play", shown while the mouse isn't captured. */
+    readonly cursorOverlay: HTMLElement,
   ) {
     for (const def of CONTROLS) {
       const b = document.createElement('button');

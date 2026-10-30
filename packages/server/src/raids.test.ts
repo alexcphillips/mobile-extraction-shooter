@@ -6,8 +6,8 @@ import { TestClient } from './test/client';
 
 const items = loadItems();
 
-async function signedIn() {
-  const env = testEnv();
+async function signedIn(admin = false) {
+  const env = { ...testEnv(), ...(admin ? { ADMIN: '1' } : {}) };
   const client = new TestClient(env);
   await client.register();
   return client;
@@ -65,6 +65,18 @@ describe('raids', () => {
       expect(gear.pockets.items).toEqual([]);
       expect(gear.knife?.item).toBe('knife');
       expect(gear.vault?.items.map((g) => g.item.item)).toEqual(['gold-watch']);
+    }
+  });
+
+  it('keeps everything after a death with the keep-gear cheat, on the dev server only', async () => {
+    for (const admin of [true, false]) {
+      const client = await signedIn(admin);
+      const { raid, profile } = await client.ok('POST', '/raids', { raid: 'test-raid' });
+      const after = await client.ok('POST', `/raids/${raid!.id}/end`, {
+        ...end(looted(profile.gear), 'killed'),
+        keepGear: true,
+      });
+      expect(after.profile.gear.primary1 === null).toBe(!admin);
     }
   });
 

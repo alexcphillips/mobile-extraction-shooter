@@ -1,4 +1,5 @@
 import type {
+  AdminGiveRequest,
   BuyPageRequest,
   BuyRequest,
   ItemRef,
@@ -10,6 +11,8 @@ import type {
   SellRequest,
 } from '@mes/shared';
 import { AccountError, call } from './account';
+import { GAME_SOUNDS } from './audio/sound-ids';
+import { sounds } from './audio/sounds';
 
 /*
  * Saving the stash (session 13). Every change is applied here at once and saved a moment
@@ -89,6 +92,16 @@ export class StashSaver {
     return this.post('/vendors/sell', { version: this.me.version, from } satisfies SellRequest);
   }
 
+  /** Gives new items into the stash, free (dev server only), like buyPage. */
+  give(item: string, count: number, page: number): Promise<ProfileResponse> {
+    return this.post('/admin/give', {
+      version: this.me.version,
+      item,
+      count,
+      page,
+    } satisfies AdminGiveRequest);
+  }
+
   /** Accepts a quest (session 14), like buyPage. */
   acceptQuest(quest: string): Promise<ProfileResponse> {
     return this.post(`/quests/${encodeURIComponent(quest)}/accept`, {
@@ -114,16 +127,24 @@ export class StashSaver {
 
   /**
    * A change only the server makes (it spends or pays money), once everything is saved.
-   * The body is built after the save, so it names the version saved.
+   * The body is built after the save, so it names the version saved. Sounds like money
+   * changing hands, or a refusal.
    */
   private async post<T extends { version: number }>(
     path: string,
     body: T,
   ): Promise<ProfileResponse> {
-    const status = await this.flush();
-    if (status.kind === 'failed') throw new AccountError(status.code ?? 'offline', status.message);
-    body.version = this.me.version;
-    this.me = (await (await call('POST', path, body)).json()) as ProfileResponse;
+    try {
+      const status = await this.flush();
+      if (status.kind === 'failed')
+        throw new AccountError(status.code ?? 'offline', status.message);
+      body.version = this.me.version;
+      this.me = (await (await call('POST', path, body)).json()) as ProfileResponse;
+    } catch (err) {
+      sounds().play(GAME_SOUNDS.refuse);
+      throw err;
+    }
+    sounds().play(GAME_SOUNDS.cash);
     this.onChange();
     return this.me;
   }

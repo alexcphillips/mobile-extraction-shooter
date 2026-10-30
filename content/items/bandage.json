@@ -1,12 +1,16 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 8,
   "id": "bandage",
   "name": "Bandage",
   "type": "med",
   "size": [1, 1],
   "value": 400,
+  "rarity": "common",
   "effect": "bandage",
   "useTime": 2,
+  "sounds": {
+    "use": "bandage-use"
+  },
   "model": {
     "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#b04848" }]
   }

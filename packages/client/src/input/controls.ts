@@ -2,9 +2,14 @@ import type { Hand } from '@mes/shared';
 import type { Hud } from '../hud/hud';
 import type { ControlId } from '../hud/layout';
 import { settings } from '../settings';
+import { CursorLock } from './cursor-lock';
 
 const STICK_RADIUS = 60;
 const LOOK_SPEED = 0.006; // radians per CSS pixel at sensitivity 1
+/** Radians per pixel of captured mouse (or trackpad) movement, at mouse sensitivity 1. */
+const MOUSE_LOOK_SPEED = 0.0025;
+/** A captured mouse move bigger than this is a browser glitch (they happen on locking), not a flick. */
+const MOUSE_JUMP = 400;
 const PITCH_LIMIT = 1.4;
 /** Dragging this far straight up from where the thumb landed locks sprinting. #sprint-zone in style.css marks the spot. */
 const LOCK_DISTANCE = 110;
@@ -33,9 +38,11 @@ interface MoveTouch {
  * dragging it on up into the sprint zone locks sprinting, so the thumb can let go. Pulling
  * the stick back, tapping the left half, aiming, firing or crouching unlocks it.
  *
- * Desktop: WASD, Shift sprint, Space jump, C crouch, F fire, Q aim, R reload, E use, I or
+ * Desktop: the mouse is captured (see CursorLock): moving it looks, the left button fires
+ * and the right one aims. WASD, Shift sprint, Space jump, C crouch, R reload, E use, I or
  * Tab the bag, 1–4 take out primary 1, primary 2, sidearm or knife, H heal (Shift+H picks),
- * 7 and 8 the debug actions, and mouse drag to look.
+ * F and Q fire and aim too, 7 and 8 the debug actions. Mouse pointers never drive the
+ * touch stick; CSS hides the touch-only buttons.
  */
 export class Controls {
   /** Move input, -1..1 per axis; y is forward. */
@@ -65,6 +72,8 @@ export class Controls {
   assist = 1;
   /** Look speed is divided by this, set by the game while looking through a scope. */
   zoom = 1;
+  /** Desktop mouse capture; the game frees the cursor while a screen needs it. */
+  readonly cursor: CursorLock;
 
   private sprintLocked = false;
   private move: MoveTouch | null = null;
@@ -78,6 +87,8 @@ export class Controls {
   private touchCrouch = false;
   private touchAim = false;
   private touchFire = false;
+  private mouseFire = false;
+  private mouseAim = false;
   private pressedReload = false;
   private pressedInteract = false;
   private pressedBag = false;
@@ -101,14 +112,26 @@ export class Controls {
     window.addEventListener('keydown', this.onKey);
     window.addEventListener('keyup', (e) => this.keys.delete(e.code));
     window.addEventListener('blur', () => this.keys.clear());
+    window.addEventListener('mousedown', this.onMouseDown);
+    window.addEventListener('mouseup', this.onMouseUp);
+    window.addEventListener('mousemove', this.onMouseMove);
+    target.addEventListener('contextmenu', (e) => e.preventDefault());
+    this.cursor = new CursorLock(target, hud.cursorOverlay, (locked) => {
+      if (!locked) this.mouseFire = this.mouseAim = false;
+    });
+    // Toggled aim would stay on with no way to turn it off once switched to hold.
+    settings.subscribe((s) => {
+      if (s.aim === 'hold' && this.touchAim) this.toggleAim();
+    });
   }
 
   /** Combine the stick, buttons and keys; call once per tick. */
   update(): void {
     const k = this.keys;
     this.jump = this.touchJump || k.has('Space');
-    this.aim = this.touchAim || k.has('KeyQ');
-    this.fire = this.touchFire || k.has('KeyF');
+    const holdQ = settings.current.aim === 'hold' && k.has('KeyQ');
+    this.aim = this.touchAim || this.mouseAim || holdQ;
+    this.fire = this.touchFire || this.mouseFire || k.has('KeyF');
     this.reload = this.pressedReload;
     this.interact = this.pressedInteract;
     this.bag = this.pressedBag;
@@ -163,6 +186,7 @@ export class Controls {
     // Letting go of the heal button isn't a tap when it's the game letting go.
     this.pressedHeal = false;
     this.keys.clear();
+    this.mouseFire = this.mouseAim = false;
     this.setSprintLock(false);
   }
 
@@ -186,8 +210,7 @@ export class Controls {
       case 'aim':
         this.setSprintLock(false);
         if (settings.current.aim === 'toggle') {
-          this.touchAim = !this.touchAim;
-          button.classList.toggle('active', this.touchAim);
+          this.toggleAim();
         } else {
           this.touchAim = true;
           held(() => (this.touchAim = false));
@@ -232,6 +255,11 @@ export class Controls {
     }
   }
 
+  private toggleAim(): void {
+    this.touchAim = !this.touchAim;
+    this.hud.button('aim').classList.toggle('active', this.touchAim);
+  }
+
   private setCrouch(on: boolean): void {
     this.touchCrouch = on;
     this.hud.button('crouch').classList.toggle('active', on);
@@ -247,6 +275,7 @@ export class Controls {
     this.keys.add(e.code);
     if (e.repeat) return;
     if (e.code === 'KeyR') this.pressedReload = true;
+    else if (e.code === 'KeyQ' && settings.current.aim === 'toggle') this.toggleAim();
     else if (e.code === 'KeyE') this.pressedInteract = true;
     else if (e.code === 'KeyH') {
       if (e.shiftKey) this.pressedHealPick = true;
@@ -264,6 +293,8 @@ export class Controls {
   }
 
   private readonly onDown = (e: PointerEvent): void => {
+    // The mouse looks and shoots through the captured cursor instead.
+    if (e.pointerType === 'mouse') return;
     if (e.clientX < window.innerWidth / 2 && !this.move) {
       this.move = {
         id: e.pointerId,
@@ -303,15 +334,43 @@ export class Controls {
     }
     const last = this.look.get(e.pointerId);
     if (!last) return;
-    const s = settings.current;
-    const speed =
-      (LOOK_SPEED * s.lookSensitivity * (this.aim ? s.aimSensitivity : 1) * this.assist) /
-      this.zoom;
-    this.yaw -= (e.clientX - last.x) * speed;
-    this.pitch -= (e.clientY - last.y) * speed * (s.invertY ? -1 : 1);
-    this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch));
+    this.turn(
+      e.clientX - last.x,
+      e.clientY - last.y,
+      LOOK_SPEED * settings.current.lookSensitivity,
+    );
     last.x = e.clientX;
     last.y = e.clientY;
+  };
+
+  /** Turns the view by a pointer's movement in CSS pixels, at `base` radians per pixel. */
+  private turn(dx: number, dy: number, base: number): void {
+    const s = settings.current;
+    const speed = (base * (this.aim ? s.aimSensitivity : 1) * this.assist) / this.zoom;
+    this.yaw -= dx * speed;
+    this.pitch -= dy * speed * (s.invertY ? -1 : 1);
+    this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch));
+  }
+
+  private readonly onMouseDown = (e: MouseEvent): void => {
+    if (!this.cursor.locked) return;
+    e.preventDefault();
+    if (e.button === 0) this.mouseFire = true;
+    else if (e.button === 2) {
+      if (settings.current.aim === 'toggle') this.toggleAim();
+      else this.mouseAim = true;
+    }
+  };
+
+  private readonly onMouseUp = (e: MouseEvent): void => {
+    if (e.button === 0) this.mouseFire = false;
+    else if (e.button === 2) this.mouseAim = false;
+  };
+
+  private readonly onMouseMove = (e: MouseEvent): void => {
+    if (!this.cursor.locked) return;
+    if (Math.abs(e.movementX) > MOUSE_JUMP || Math.abs(e.movementY) > MOUSE_JUMP) return;
+    this.turn(e.movementX, e.movementY, MOUSE_LOOK_SPEED * settings.current.mouseSensitivity);
   };
 
   private readonly onUp = (e: PointerEvent): void => {

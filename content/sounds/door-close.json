@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "id": "door-close",
+  "name": "Door closing",
+  "gain": 0.9,
+  "range": 25,
+  "pitchJitter": 0.06,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.2,
+      "curve": 2,
+      "gain": 1,
+      "filter": { "type": "lowpass", "freq": [250, 80], "q": 0.7 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0.02,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.02,
+      "curve": 2,
+      "gain": 0.5,
+      "filter": { "type": "highpass", "freq": [3000, 3000], "q": 0.7 }
+    }
+  ]
+}

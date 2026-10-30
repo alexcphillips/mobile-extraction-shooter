@@ -82,7 +82,8 @@ export function fitsSlot(items: ItemDb, slot: GearSlot, item: Item): boolean {
   switch (slot) {
     case 'primary1':
     case 'primary2':
-      return def.type === 'weapon';
+      // Pistols only go in the sidearm (the user's call, 2026-10-30).
+      return def.type === 'weapon' && def.hold !== 'pistol';
     case 'sidearm':
       return def.type === 'weapon' && def.hold === 'pistol';
     case 'knife':

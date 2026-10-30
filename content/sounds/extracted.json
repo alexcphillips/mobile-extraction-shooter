@@ -1,0 +1,40 @@
+{
+  "formatVersion": 1,
+  "id": "extracted",
+  "name": "Extracted",
+  "gain": 0.6,
+  "range": 5,
+  "pitchJitter": 0,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [660, 660],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0.15,
+      "decay": 0.2,
+      "gain": 0.25
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [880, 880],
+      "at": 0.12,
+      "attack": 0.001,
+      "hold": 0.15,
+      "decay": 0.2,
+      "gain": 0.25
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [1320, 1320],
+      "at": 0.24,
+      "attack": 0.001,
+      "hold": 0.25,
+      "decay": 0.4,
+      "gain": 0.25
+    }
+  ]
+}

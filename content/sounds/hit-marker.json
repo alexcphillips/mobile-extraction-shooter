@@ -1,0 +1,30 @@
+{
+  "formatVersion": 1,
+  "id": "hit-marker",
+  "name": "Hit marker",
+  "gain": 0.6,
+  "range": 5,
+  "pitchJitter": 0.03,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.015,
+      "gain": 0.5,
+      "filter": { "type": "highpass", "freq": [4000, 4000], "q": 0.7 }
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [2200, 2200],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "gain": 0.15
+    }
+  ]
+}

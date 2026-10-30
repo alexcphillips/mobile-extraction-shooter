@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "id": "door-open",
+  "name": "Door opening",
+  "gain": 0.8,
+  "range": 25,
+  "pitchJitter": 0.08,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.02,
+      "curve": 2,
+      "gain": 0.5,
+      "filter": { "type": "highpass", "freq": [3000, 3000], "q": 0.7 }
+    },
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [180, 260],
+      "at": 0.03,
+      "attack": 0.05,
+      "hold": 0.25,
+      "decay": 0.2,
+      "gain": 0.25,
+      "filter": { "type": "bandpass", "freq": [900, 1400], "q": 4 }
+    }
+  ]
+}

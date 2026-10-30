@@ -1,0 +1,20 @@
+{
+  "formatVersion": 1,
+  "id": "item-move",
+  "name": "Moving an item",
+  "gain": 1.5,
+  "range": 5,
+  "pitchJitter": 0.1,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0,
+      "attack": 0.005,
+      "hold": 0,
+      "decay": 0.05,
+      "gain": 0.3,
+      "filter": { "type": "bandpass", "freq": [1800, 1200], "q": 1 }
+    }
+  ]
+}

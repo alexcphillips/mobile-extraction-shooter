@@ -9,6 +9,7 @@ import {
   loadSettings,
   restGear,
   sameQuests,
+  settleGuns,
   type Profile,
   type ProfileResponse,
 } from '@mes/shared';
@@ -16,9 +17,14 @@ import type { AppEnv } from './auth';
 import { loadItems } from './content';
 import { body, fail, isObject } from './errors';
 
-/** A stored profile, loaded through its format's migrations. */
+/**
+ * A stored profile, loaded through its format's migrations, with any pistol moved out of
+ * a primary slot (needs the items, so it isn't a format migration).
+ */
 export function parseProfile(data: string): Profile {
-  return loadContent(PROFILE_FORMAT, JSON.parse(data), 'profile');
+  const p = loadContent(PROFILE_FORMAT, JSON.parse(data), 'profile');
+  settleGuns(loadItems(), p.gear, p.stash);
+  return p;
 }
 
 /** An account's profile, its version and its open raid, as the API sends them. */
@@ -102,7 +108,7 @@ profiles.put('/', async (c) => {
     return fail(c, 'invalid', 'stash pages are only added by buying them');
   if (!sameQuests(current.profile, next))
     return fail(c, 'invalid', 'quests only change through the quest routes');
-  const gained = itemGained(current.profile, next);
+  const gained = itemGained(items, current.profile, next);
   if (gained) return fail(c, 'invalid', `more "${gained}" than before`);
   if (overRepaired(items, current.profile, next))
     return fail(c, 'invalid', 'armour mended by more than repair kits spent');

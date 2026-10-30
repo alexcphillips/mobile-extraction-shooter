@@ -1,0 +1,31 @@
+{
+  "formatVersion": 1,
+  "id": "impact-world",
+  "name": "Bullet hitting the map",
+  "gain": 0.8,
+  "range": 30,
+  "pitchJitter": 0.15,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.06,
+      "curve": 2.5,
+      "gain": 0.7,
+      "filter": { "type": "bandpass", "freq": [2500, 1200], "q": 1 }
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.08,
+      "gain": 0.4,
+      "filter": { "type": "lowpass", "freq": [600, 600], "q": 0.7 }
+    }
+  ]
+}

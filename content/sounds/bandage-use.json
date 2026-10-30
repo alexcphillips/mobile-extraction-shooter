@@ -1,0 +1,60 @@
+{
+  "formatVersion": 1,
+  "id": "bandage-use",
+  "name": "Bandage or splint",
+  "gain": 0.8,
+  "range": 12,
+  "pitchJitter": 0.05,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0,
+      "attack": 0.02,
+      "hold": 0,
+      "decay": 0.15,
+      "gain": 0.3,
+      "filter": { "type": "bandpass", "freq": [3000, 2000], "q": 0.8 }
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0.25,
+      "attack": 0.02,
+      "hold": 0,
+      "decay": 0.15,
+      "gain": 0.3,
+      "filter": { "type": "bandpass", "freq": [3000, 2000], "q": 0.8 }
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0.5,
+      "attack": 0.02,
+      "hold": 0,
+      "decay": 0.15,
+      "gain": 0.3,
+      "filter": { "type": "bandpass", "freq": [3000, 2000], "q": 0.8 }
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0.8,
+      "attack": 0.02,
+      "hold": 0,
+      "decay": 0.15,
+      "gain": 0.3,
+      "filter": { "type": "bandpass", "freq": [3000, 2000], "q": 0.8 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 1,
+      "attack": 0.01,
+      "hold": 0.2,
+      "decay": 0.1,
+      "gain": 0.2,
+      "filter": { "type": "highpass", "freq": [3500, 3500], "q": 0.7 }
+    }
+  ]
+}

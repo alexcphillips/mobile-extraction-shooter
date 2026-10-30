@@ -1,6 +1,7 @@
 import {
   ATTACHMENT_SLOTS,
   MED_EFFECTS,
+  RARITIES,
   VENDOR,
   fits,
   idSchema,
@@ -9,9 +10,11 @@ import {
   type ItemDef,
   type WeaponDef,
 } from '@mes/shared';
-import { useState, useSyncExternalStore, type ReactNode } from 'react';
-import { itemUses } from '../content';
-import { Num, Pick, Text, Toggle } from '../editor/fields';
+import { useState, useSyncExternalStore } from 'react';
+import { sounds } from '../audio/sounds';
+import { itemUses, soundSources } from '../content';
+import { Check, N, P, Row, put, type Bound } from '../editor/bound-fields';
+import { Text, Toggle } from '../editor/fields';
 import { colourOf } from '../ui/raid-screen';
 import type { Doc, ItemEditor, ItemEditorState } from './editor';
 import { fitPointsToSlot, setSlots } from './model-edit';
@@ -24,35 +27,6 @@ import { BLANK_OPTIC, ITEM_TYPES, type ItemType } from './templates';
  * fields, and beside them what it looks like in a grid, what it works out to, what names
  * it, and for optics the reticle designer.
  */
-
-type Path = readonly (string | number)[];
-
-function get(doc: Doc, path: Path): unknown {
-  let v: unknown = doc;
-  for (const k of path) v = v && typeof v === 'object' ? (v as Doc)[String(k)] : undefined;
-  return v;
-}
-
-/** Sets a field, or leaves it out for undefined (and an object it leaves empty too). */
-function put(doc: Doc, path: Path, value: unknown): void {
-  const parents: Doc[] = [doc];
-  let o = doc;
-  for (const k of path.slice(0, -1).map(String)) {
-    if (!o[k] || typeof o[k] !== 'object') o[k] = {};
-    o = o[k] as Doc;
-    parents.push(o);
-  }
-  const last = String(path[path.length - 1]);
-  if (value !== undefined) {
-    o[last] = value;
-    return;
-  }
-  delete o[last];
-  for (let i = parents.length - 1; i > 0; i--) {
-    if (Object.keys(parents[i]!).length) break;
-    delete parents[i - 1]![String(path[i - 1])];
-  }
-}
 
 export function ItemEditorPanel({ editor }: { editor: ItemEditor }) {
   const s = useSyncExternalStore(editor.subscribe, editor.getState);
@@ -164,69 +138,6 @@ function ItemList({ state: s, editor }: { state: ItemEditorState; editor: ItemEd
   );
 }
 
-/** Fields bound to the open item: a number, a choice, a tick box. */
-interface Bound {
-  doc: Doc;
-  edit: (change: (doc: Doc) => void) => void;
-}
-
-function N(props: Bound & { path: Path; label: string; min?: number; hint?: string }) {
-  const v = get(props.doc, props.path);
-  return (
-    <span title={props.hint}>
-      <Num
-        label={props.label}
-        value={typeof v === 'number' ? v : undefined}
-        {...(props.min !== undefined && { min: props.min })}
-        onChange={(n) => props.edit((d) => put(d, props.path, n))}
-      />
-    </span>
-  );
-}
-
-function P(
-  props: Bound & {
-    path: Path;
-    label: string;
-    options: readonly string[];
-    unset?: string;
-    then?: (doc: Doc, v: string | undefined) => void;
-  },
-) {
-  const v = get(props.doc, props.path);
-  return (
-    <Pick
-      label={props.label}
-      value={typeof v === 'string' ? v : undefined}
-      options={props.options}
-      {...(props.unset !== undefined && { unset: props.unset })}
-      onChange={(o) =>
-        props.edit((d) => {
-          put(d, props.path, o);
-          props.then?.(d, o);
-        })
-      }
-    />
-  );
-}
-
-function Check(props: Bound & { path: Path; label: string }) {
-  return (
-    <label className="ed-field">
-      <input
-        type="checkbox"
-        checked={get(props.doc, props.path) === true}
-        onChange={(e) => props.edit((d) => put(d, props.path, e.target.checked || undefined))}
-      />
-      {props.label}
-    </label>
-  );
-}
-
-function Row({ children }: { children: ReactNode }) {
-  return <div className="ed-row">{children}</div>;
-}
-
 function ItemPage(props: { editor: ItemEditor; state: ItemEditorState; def: ItemDef }) {
   const { editor, state: s, def } = props;
   const doc = def as unknown as Doc;
@@ -254,7 +165,9 @@ function ItemPage(props: { editor: ItemEditor; state: ItemEditorState; def: Item
           min={0}
           hint="What vendors sell it for; they buy it for a share of this"
         />
+        <P {...b} path={['rarity']} label="rarity (its tile's colour)" options={RARITIES} />
         <TypeFields {...b} def={def} items={s.items} />
+        <SoundFields {...b} def={def} />
         {problem && <p className="ed-problem">{problem}</p>}
         {risks && (
           <div className="ie-risk">
@@ -375,6 +288,22 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
             />
             <N {...b} path={['bleedChance']} label="bleed chance (0–1)" min={0} />
           </Row>
+          <Row>
+            <N
+              {...b}
+              path={['pellets']}
+              label="pellets (1)"
+              min={2}
+              hint="Shotgun shells: pellets a round fires, each doing the damage; blank is 1"
+            />
+            <N
+              {...b}
+              path={['pelletSpread']}
+              label="pellet spread (°)"
+              min={0}
+              hint="With pellets: the most each strays from the shot's line"
+            />
+          </Row>
         </>
       );
     case 'armour':
@@ -483,6 +412,37 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
         <p className="ed-note">A quest item has nothing more: its quest says where it lies.</p>
       );
   }
+}
+
+const SOUND_USES: Record<string, string> = {
+  shot: 'shot',
+  suppressed: 'shot, suppressed',
+  reload: 'reload',
+  swing: 'swing',
+  use: 'using it',
+};
+
+/** The sound files it plays (session 19), each with a button to hear it and a link to tune it. */
+function SoundFields(props: Bound & { def: ItemDef }) {
+  const { def, ...b } = props;
+  if (!('sounds' in def)) return null;
+  const ids = [...soundSources().keys()];
+  return (
+    <>
+      <h4>sounds</h4>
+      {Object.entries(def.sounds).map(([use, id]) => (
+        <Row key={use}>
+          <P {...b} path={['sounds', use]} label={SOUND_USES[use] ?? use} options={ids} />
+          <button onClick={() => sounds().play(id)} title="Play it">
+            ▶
+          </button>
+          <a className="ie-link" href={`/sounds?sound=${id}`} target="sounds">
+            tune
+          </a>
+        </Row>
+      ))}
+    </>
+  );
 }
 
 const MED_NOTES: Record<(typeof MED_EFFECTS)[number], string> = {
@@ -633,10 +593,13 @@ function Facts({ def, db }: { def: ItemDef; db: ItemDb }) {
       lines.push(
         `A shot every ${fmt(gap, 3)} s; a full magazine lasts ${fmt(def.magazine * gap)} s.`,
       );
-      if (ammo?.type === 'ammo')
+      if (ammo?.type === 'ammo') {
+        // Every pellet landing.
+        const round = ammo.damage * (ammo.pellets ?? 1);
         lines.push(
-          `With ${ammo.name}: ${fmt(ammo.damage * (def.rpm / 60), 0)} damage a second to an unarmoured chest, ${fmt(ammo.damage * def.magazine, 0)} a magazine.`,
+          `With ${ammo.name}: ${fmt(round * (def.rpm / 60), 0)} damage a second to an unarmoured chest, ${fmt(round * def.magazine, 0)} a magazine.`,
         );
+      }
       break;
     }
     case 'attachment':

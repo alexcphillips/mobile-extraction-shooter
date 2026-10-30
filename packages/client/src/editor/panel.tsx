@@ -5,6 +5,7 @@ import {
   canEnter,
   canTurn,
   countPlacements,
+  markerPath,
   nodeAt,
   nodeLabel,
   nodePos,
@@ -355,6 +356,21 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
                 <li key={p.join('.')}>
                   <button onClick={() => editor.reveal(p)}>{editor.label(p)}</button>: ground
                   through the floor
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
+        {s.exposed.length > 0 && (
+          <details className="ed-overlaps" open>
+            <summary>Enemies near a player spawn ({s.exposed.length})</summary>
+            <ul>
+              {s.exposed.map((x) => (
+                <li key={`${x.enemy}|${x.player}`}>
+                  <MarkerLink editor={editor} map={s.map} id={x.enemy} />
+                  {x.seen ? ' sees ' : ' is near '}
+                  <MarkerLink editor={editor} map={s.map} id={x.player} />
+                  {` (${Math.round(x.distance)} m)`}
                 </li>
               ))}
             </ul>
@@ -1444,4 +1460,10 @@ function JsonInput({ editor, json }: { editor: MapEditor; json: string }) {
       </button>
     </>
   );
+}
+
+/** A compiled marker's id, as a link that selects it (or the prefab it's in). */
+function MarkerLink({ editor, map, id }: { editor: MapEditor; map: MapFile; id: string }) {
+  const path = markerPath(map, id);
+  return path ? <button onClick={() => editor.reveal(path)}>{id}</button> : <>{id}</>;
 }

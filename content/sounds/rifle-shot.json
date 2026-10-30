@@ -1,0 +1,56 @@
+{
+  "formatVersion": 1,
+  "id": "rifle-shot",
+  "name": "Rifle shot",
+  "gain": 0.36,
+  "range": 150,
+  "pitchJitter": 0.05,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0.004,
+      "decay": 0.12,
+      "curve": 3,
+      "gain": 1,
+      "drive": 0.6,
+      "filter": { "type": "highpass", "freq": [2000, 700], "q": 0.7 }
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0,
+      "attack": 0.002,
+      "hold": 0.02,
+      "decay": 0.35,
+      "curve": 2.5,
+      "gain": 1.2,
+      "drive": 0.4,
+      "filter": { "type": "lowpass", "freq": [1800, 200], "q": 0.9 }
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [140, 45],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.18,
+      "curve": 2,
+      "gain": 0.8
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0.04,
+      "attack": 0.05,
+      "hold": 0,
+      "decay": 0.6,
+      "curve": 2,
+      "gain": 0.25,
+      "filter": { "type": "lowpass", "freq": [900, 300], "q": 0.7 }
+    }
+  ]
+}

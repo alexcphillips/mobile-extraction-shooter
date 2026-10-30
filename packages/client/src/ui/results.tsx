@@ -2,6 +2,7 @@ import { isMoney, itemDef, sellPrice, type Item, type ItemDb, type LeaveReason }
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { clock } from '../hud/raid-hud';
+import { describeSource, type DamageLog } from '../play/damage-log';
 import type { SaveStatus } from '../raids';
 
 /** How the raid ended for you, and what you came out with. */
@@ -17,6 +18,10 @@ export interface RaidResult {
   lost: Item[];
   /** Quest objectives the raid finished, as the server will count them. */
   quests: { quest: string; text: string }[];
+  /** What hurt you during the raid, shown after a death. */
+  taken: DamageLog;
+  /** Everything kept: extracted, or the keep-gear admin cheat. */
+  keptAll: boolean;
 }
 
 const TITLES: Record<RaidResult['how'], string> = {
@@ -111,19 +116,38 @@ function Results({
       </header>
       <div className="results-cols">
         <section>
-          <h2>{survived ? 'You brought out' : 'You kept (vault and knife)'}</h2>
+          <h2>
+            {survived
+              ? 'You brought out'
+              : result.keptAll
+                ? 'You kept everything (admin cheat)'
+                : 'You kept (vault and knife)'}
+          </h2>
           <ItemList items={items} list={result.kept} empty="Nothing" />
           {cash > 0 && (
             <p className="results-cash">{cash.toLocaleString()} cash goes into your money.</p>
           )}
         </section>
-        {!survived && (
+        {!result.keptAll && (
           <section>
             <h2>You lost</h2>
             <ItemList items={items} list={result.lost} empty="Nothing" />
           </section>
         )}
       </div>
+      {result.how === 'killed' && result.taken.length > 0 && (
+        <section className="results-damage">
+          <h2>What hit you</h2>
+          <ul>
+            {result.taken.map((s) => (
+              <li key={s.key} className={s.killed ? 'killer' : undefined}>
+                {describeSource(s)}
+                {s.killed && <span className="results-count"> · killing blow</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {result.quests.length > 0 && (
         <section className="results-quests">
           <h2>Quests</h2>

@@ -81,7 +81,8 @@ export class Vitals {
   /** Call once per tick. */
   update(c: Character, items: ItemDb, now: number): void {
     const h = c.health;
-    const total = totalHp(h);
+    // Dead at 0 head or chest HP, with HP left in the limbs: the bar shows 0, not what's left.
+    const total = h.dead ? 0 : totalHp(h);
     if (total !== this.shownTotal) {
       this.shownTotal = total;
       this.bar.style.transform = `scaleX(${total / TOTAL_HP})`;

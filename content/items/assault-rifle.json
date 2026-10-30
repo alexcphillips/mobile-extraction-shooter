@@ -1,10 +1,11 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 8,
   "id": "assault-rifle",
   "name": "Assault rifle",
   "type": "weapon",
   "size": [4, 2],
   "value": 24000,
+  "rarity": "common",
   "ammo": "ammo-556",
   "hold": "rifle",
   "fireMode": "auto",
@@ -23,22 +24,32 @@
     "side": 0.4,
     "recovery": 14
   },
+  "sounds": {
+    "shot": "rifle-shot",
+    "suppressed": "rifle-shot-suppressed",
+    "reload": "rifle-reload"
+  },
   "model": {
     "parts": [
-      { "type": "box", "pos": [0, 0, -0.1], "size": [0.06, 0.09, 0.32], "colour": "#3a3f44" },
-      { "type": "box", "pos": [0, 0.02, -0.36], "size": [0.026, 0.026, 0.24], "colour": "#2a2d30" },
+      { "type": "box", "pos": [0, 0, -0.1], "size": [0.06, 0.06, 0.32], "colour": "#3a3f44" },
+      {
+        "type": "box",
+        "pos": [0, 0.015, -0.36],
+        "size": [0.026, 0.026, 0.24],
+        "colour": "#2a2d30"
+      },
       { "type": "box", "pos": [0, -0.075, 0.04], "size": [0.044, 0.09, 0.04], "colour": "#4a3a2c" },
       { "type": "box", "pos": [0, -0.015, 0.11], "size": [0.052, 0.08, 0.1], "colour": "#4a3a2c" },
       {
         "type": "box",
-        "pos": [0, -0.09, -0.06],
+        "pos": [0, -0.085, -0.06],
         "size": [0.044, 0.11, 0.06],
         "colour": "#2a2d30",
         "hiddenBy": "magazine"
       },
       {
         "type": "box",
-        "pos": [0, 0.055, -0.06],
+        "pos": [0, 0.04, -0.06],
         "size": [0.016, 0.02, 0.06],
         "colour": "#1d1f21",
         "hiddenBy": "optic"

@@ -1,6 +1,7 @@
 import type { Settings } from '@mes/shared';
 import { useId, useSyncExternalStore, type ReactNode } from 'react';
 import { signOut, username } from '../account';
+import { inputMode } from '../input/mode';
 import { settings } from '../settings';
 
 /** Signing out reloads the page, which then asks to sign in. */
@@ -40,12 +41,17 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel }: Props): Rea
         <section>
           <h2>Controls</h2>
           <Choice
-            label="Aim button"
+            label="Aim"
             value={s.aim}
             options={[
               ['hold', 'Hold to aim'],
-              ['toggle', 'Tap to toggle'],
+              ['toggle', 'Toggle'],
             ]}
+            hint={
+              inputMode.desktop
+                ? 'Toggle: right click (or Q) aims, and you stay aimed until you press it again.'
+                : 'Toggle: tap aim to aim, and you stay aimed until you tap it again.'
+            }
             onChange={(v) => set('aim', v)}
           />
           <Choice
@@ -70,13 +76,24 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel }: Props): Rea
             hint="Slows your aim slightly as it passes over an enemy."
             onChange={(v) => set('aimAssist', v)}
           />
-          <Slider
-            label="Look sensitivity"
-            value={s.lookSensitivity}
-            min={0.2}
-            max={3}
-            onChange={(v) => set('lookSensitivity', v)}
-          />
+          {/* Each way of playing has its own look speed; only the one in use shows. */}
+          {inputMode.desktop ? (
+            <Slider
+              label="Mouse sensitivity"
+              value={s.mouseSensitivity}
+              min={0.2}
+              max={3}
+              onChange={(v) => set('mouseSensitivity', v)}
+            />
+          ) : (
+            <Slider
+              label="Look sensitivity"
+              value={s.lookSensitivity}
+              min={0.2}
+              max={3}
+              onChange={(v) => set('lookSensitivity', v)}
+            />
+          )}
           <Slider
             label="Sensitivity while aiming"
             value={s.aimSensitivity}
@@ -89,9 +106,21 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel }: Props): Rea
             value={s.invertY}
             onChange={(v) => set('invertY', v)}
           />
-          <div className="row">
-            <button onClick={onEditLayout}>Edit button layout</button>
-          </div>
+          {!inputMode.desktop && (
+            <div className="row">
+              <button onClick={onEditLayout}>Edit button layout</button>
+            </div>
+          )}
+        </section>
+        <section>
+          <h2>Sound</h2>
+          <Slider
+            label="Volume"
+            value={s.volume}
+            min={0}
+            max={1}
+            onChange={(v) => set('volume', v)}
+          />
         </section>
         <section>
           <h2>Display</h2>

@@ -1,0 +1,31 @@
+{
+  "formatVersion": 1,
+  "id": "ladder-step",
+  "name": "Ladder step",
+  "gain": 0.7,
+  "range": 15,
+  "pitchJitter": 0.1,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [520, 500],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.12,
+      "curve": 3,
+      "gain": 0.3
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.05,
+      "gain": 0.5,
+      "filter": { "type": "lowpass", "freq": [300, 300], "q": 0.7 }
+    }
+  ]
+}

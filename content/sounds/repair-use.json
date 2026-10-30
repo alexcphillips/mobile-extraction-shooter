@@ -1,0 +1,64 @@
+{
+  "formatVersion": 1,
+  "id": "repair-use",
+  "name": "Armour repair",
+  "gain": 0.8,
+  "range": 15,
+  "pitchJitter": 0.05,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [2200, 2200],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.25,
+      "curve": 3,
+      "gain": 0.15
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [2650, 2650],
+      "at": 0.4,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.25,
+      "curve": 3,
+      "gain": 0.15
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [2400, 2400],
+      "at": 0.9,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.25,
+      "curve": 3,
+      "gain": 0.15
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0.1,
+      "attack": 0.05,
+      "hold": 0.5,
+      "decay": 0.1,
+      "gain": 0.15,
+      "filter": { "type": "bandpass", "freq": [1500, 1500], "q": 1 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 1.2,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.02,
+      "curve": 2,
+      "gain": 0.4,
+      "filter": { "type": "highpass", "freq": [2500, 2500], "q": 0.7 }
+    }
+  ]
+}

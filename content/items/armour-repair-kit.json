@@ -1,12 +1,16 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 8,
   "id": "armour-repair-kit",
   "name": "Armour repair kit",
   "type": "repair",
   "size": [2, 1],
   "value": 12000,
+  "rarity": "rare",
   "points": 60,
   "useTime": 8,
+  "sounds": {
+    "use": "repair-use"
+  },
   "model": {
     "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.28, 0.07, 0.14], "colour": "#2f7a7a" }]
   }

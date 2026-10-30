@@ -1,0 +1,16 @@
+{
+  "formatVersion": 8,
+  "id": "crossbow-bolt",
+  "name": "Crossbow bolts",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 150,
+  "rarity": "rare",
+  "stack": 20,
+  "damage": 80,
+  "armourDamage": 0.4,
+  "bleedChance": 0.75,
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.03, 0.03, 0.3], "colour": "#8a6d3b" }]
+  }
+}

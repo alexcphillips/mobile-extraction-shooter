@@ -1,0 +1,30 @@
+{
+  "formatVersion": 1,
+  "id": "ui-tap",
+  "name": "Menu tap",
+  "gain": 0.5,
+  "range": 5,
+  "pitchJitter": 0.05,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [1500, 1200],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "gain": 0.15
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.008,
+      "gain": 0.15,
+      "filter": { "type": "highpass", "freq": [5000, 5000], "q": 0.7 }
+    }
+  ]
+}

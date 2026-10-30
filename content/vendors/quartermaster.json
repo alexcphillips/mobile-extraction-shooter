@@ -6,8 +6,13 @@
   "sells": [
     { "item": "pistol" },
     { "item": "assault-rifle" },
+    { "item": "shotgun" },
+    { "item": "crossbow" },
     { "item": "ammo-9mm", "count": 30 },
     { "item": "ammo-556", "count": 30 },
+    { "item": "buckshot", "count": 20 },
+    { "item": "ammo-762", "count": 20 },
+    { "item": "crossbow-bolt", "count": 10 },
     { "item": "mag-9mm-24" },
     { "item": "red-dot" },
     { "item": "muzzle-brake" },

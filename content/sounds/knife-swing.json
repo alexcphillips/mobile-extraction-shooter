@@ -1,0 +1,21 @@
+{
+  "formatVersion": 1,
+  "id": "knife-swing",
+  "name": "Knife swing",
+  "gain": 1.4,
+  "range": 10,
+  "pitchJitter": 0.1,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0,
+      "attack": 0.06,
+      "hold": 0,
+      "decay": 0.15,
+      "curve": 1.5,
+      "gain": 0.5,
+      "filter": { "type": "bandpass", "freq": [600, 2400], "q": 1.5 }
+    }
+  ]
+}

@@ -57,6 +57,18 @@ export interface Character {
   recoilYaw: number;
   /** An enemy's mind; null for players. */
   ai: AiState | null;
+  /** Admin cheats for testing (dev server only); missing for everyone else. */
+  admin?: AdminCheats;
+}
+
+/** Testing aids an admin can turn on for their player (2026-10-30, the user's call). */
+export interface AdminCheats {
+  /** Takes no damage, never bleeds and can't die. */
+  infiniteHealth: boolean;
+  /** Firing uses no rounds, and a reload fills the gun without taking any. */
+  infiniteAmmo: boolean;
+  /** Enemies never notice it: not by sight, sound or being shot. */
+  peaceful: boolean;
 }
 
 /** Only characters so far. Loot containers and ground items have their own lists. */

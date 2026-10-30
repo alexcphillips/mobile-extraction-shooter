@@ -126,7 +126,7 @@ export function dealDamage(
   by: EntityId,
 ): number {
   const h = c.health;
-  if (h.dead || amount <= 0) return 0;
+  if (h.dead || amount <= 0 || c.admin?.infiniteHealth) return 0;
   let lost = 0;
   let spill = 0;
   if (zone !== HEAD && zone !== CHEST && h.hp[zone]! <= 0) {
@@ -169,6 +169,11 @@ export function shootCharacter(
   cause: 'shot' | 'melee' = 'shot',
 ): void {
   if (c.health.dead) return;
+  if (c.admin?.infiniteHealth) {
+    // Still a hit, for markers and the HUD, but nothing lost.
+    state.events.push({ type: 'damage', target: c.id, by, zone, amount: 0, absorbed: 0, cause });
+    return;
+  }
   let damage = ammo.damage * HEALTH.multiplier[zone]!;
   let absorbed = 0;
   const armour = zone === HEAD ? c.gear.helmet : zone === CHEST ? c.gear.bodyArmour : null;

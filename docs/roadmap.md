@@ -409,9 +409,35 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
     - **Not done:** no inventory icons; parts can't be grouped or reordered, and there's no multi-select; the editor's first person needs every item to pass its checks; no warning when a mount or point sits far outside the model.
 
 ## Milestone E: content and release
-- [ ] **19. The first real map and content set.**
-  - Build the map in the editor. Items, prefabs, loot tables, enemies and a boss, quests, vendors.
-  - Sound effects (decide where they come from).
+- [x] **19. Sound.** (Split from the old session 19 with the user, 2026-10-30: sound, then the map (19b), then the content set (19c).)
+  - Sounds generated with Web Audio (the user's call, 2026-10-30), not recorded samples: almost nothing to download, in keeping with the flat art.
+  - Positional sound in the raid: shots (heard as far as their loudness, so a suppressor is quieter for players too), impacts, the knife, reloads, footsteps, landing, ladders, doors, meds and repairs, looting, hurt and dying. The HUD's: hit and kill markers, the extraction countdown, investigating, the timer running low. The menus' taps, buying and selling.
+  - A volume setting; a cap on how many sounds play at once for the phone.
+  - **Recipes are content** (the user's call, 2026-10-30): `content/sounds/<id>.json`, checked by a schema; guns, the knife, meds and repair kits name their sounds (item format 7, with a migration), so a new gun gets its own sound without code. A dev-only **`/sounds`** page plays each one (near, far, behind a wall) and tunes it with the same undo and saving as the item editor.
+  - **Notes (2026-10-30):**
+    - **Settled with the user first:** the old session 19 was **split** into sound (19), the map (19b) and the content set (19c); for the map, Claude drafts and the user reshapes it in the editor. Sounds are **generated**, not recorded, and their recipes are **content files with an audition page**. See design.md → Sound and Editors, tech-stack.md → Client → Audio.
+    - Shared: sound files (`content/sounds.ts`, format 1: layers of noise or tones with envelopes, filters, glides and drive) and **item format 7** (guns, knives, meds and repair kits name their sounds; `defaultSounds` for the migration, blank and test items). `checkSounds`. The settings gained `volume` (falls back on its own; no format change). **The simulation didn't change.**
+    - Client: `audio/` (`synth.ts` renders a recipe in TypeScript; `sounds.ts` the player with 16 voices; `spatial.ts` distance, pan and muffling; `cues.ts` events and state changes into sounds; `sound-ids.ts` the 25 the game plays itself). 35 first sounds in `content/sounds/`. The raid creates `SoundCues` and renders every sound at the start; menus tick, and `Stash.post` plays money or a refusal. Settings → Sound → Volume. The item editor has a **sounds** section (pick, ▶, tune). `/sounds` (`sound-editor/`). `editor/bound-fields.tsx` shared by both editors. The save plugin takes `sounds/`.
+    - 12 new tests (377 in all): format 6 → 7 sounds by kind; the sound schema's layer rules, its length and `checkSounds`; the synth (timing, the same noise from the same seed, envelopes, glides, a lowpass, limiting) and every content sound rendering under 1.5; placement (distance, pan turning with the listener, behind, through a wall); cues (footsteps in time with walking and none standing, a shot placed and suppressed by its loudness with a whizz, a reload once and muffled behind a wall).
+    - Checked in headless Chrome at 1440×900 against Vite, counting every buffer started: on `/sounds`, Space played the rifle shot (0.69 s, peak 0.96 after lowering its gain), an edit played it and marked it unsaved, undo cleared it, a layer lasting no time was refused, a new sound saved to `content/sounds/probe-sound.json` in the editors' layout (then deleted); the item editor shows the pistol's three sounds; a peaceful play-test at spawn-north was silent standing, played 5 footsteps walking 2 s, 12 shots firing 1 s and one reload, at 60 fps with no console errors. **Nobody has listened yet:** the recipes are first guesses, made without hearing them.
+    - **Not done:** not heard on the iPhone (iOS may silence Web Audio when the ring/silent switch is on; check, and decide whether the game should follow the switch). Enemies don't hear footsteps (only shots, as before), so players hear more than AI does. No ambient sound (wind, birds) and no echo indoors. Moving items on the stash page between raids is silent (only the raid's inventory makes sounds). Bodies don't grunt or call out. `SoundEditor` repeats the item editor's undo and save logic rather than sharing it; worth a common base if a third editor comes.
+- [x] **19x. PC controls.** (Not in the plan: the user's request, 2026-10-30.)
+  - Pointer lock with a "click to play" overlay, mouse look, left click fire, right click aim, E use; the touch buttons hidden on desktop, the prompt saying what E does, a mouse sensitivity setting. See design.md → Controls (Proper PC controls) and tech-stack.md → Input.
+  - Checked in headless Chrome against Vite on `/perf`: at 1280×720 desktop shows the overlay and only the hand slots and heal; with pointer lock faked (headless won't grant a real one), the overlay and settings button hide, the game unpauses, mouse moves turn the view, and losing the lock brings the overlay back; at 874×402 with touch, every touch control shows and no overlay. No console errors. 377 tests pass.
+  - **To check on the Mac:** a real pointer lock in Chrome and Safari with the trackpad (the speed of mouse sensitivity 1, right click as a two-finger click while moving, whether Safari re-locks after Tab closes the bag or needs a click); a raid end to end (loot with E, the heal picker with Shift+H, the results screen with a free cursor).
+  - **Also (the user's call, same day): pistols only go in the sidearm**, not the primary slots. Old saves with one there are fixed by the server on load (`settleGuns`). 1 new test (378).
+  - **Not done:** no mouse-wheel weapon switching (a trackpad's two-finger scroll would set it off); crouch is held, not toggled; F and Q stay as extra fire and aim keys; `/perf` also waits for a click on desktop.
+
+- [x] **19y. Enemies noticing you from across the map.** (Not in the plan: the user's report, 2026-10-30: the first enemy sees you as you spawn, and its shot brings in every enemy on the map.)
+  - Causes: an ally's shot sent every enemy within 90 m (half a rifle's loudness) straight to the player; hearing ignored walls; the test map's three enemies were 33–36 m from `spawn-centre` in the open, and nothing checked spawn distances.
+  - Fixed: allies' shots draw enemies to the shooter, not to its target (the close 15% tier still alerts them to it); walls muffle shots to half as loud (`AI.muffled`); `exposedSpawns` flags enemy spawns within 60 m of a player spawn or in its sight, shown in the map editor as "Enemies near a player spawn" and tested on every map. The test map's player spawns moved to the edges: `spawn-south` (8, 84) and `spawn-west` (−80, −76), replacing `spawn-centre` and `spawn-north` (`?at=0,0` still starts you by the playground). See design.md → AI and → Player spawns. 4 new tests.
+  - **To check on the phone:** a raid from each spawn: you should get to the middle before anyone notices you, and a fight at the yard shouldn't pull in the west scav unless it's close.
+
+- [ ] **19b. The first real map.**
+  - Claude drafts a one-page brief (points of interest, extractions, routes, key rooms) and a rough first version as data; the user reshapes it in the map editor, and Claude fixes the editor where it gets in the way (the user's call, 2026-10-30).
+  - What the map needs that isn't built: loot weighted by zone, enemy spawns kept away from the player's spawn, doors fitted into a wall's gap, **vaulting through standard-height windows** (design.md → Movement; the user's request, 2026-10-30: a simple scripted move, no complicated animation).
+- [ ] **19c. The first content set.**
+  - Items, prefabs, loot tables, enemies and a boss, quests and vendors, fitted to the map.
 - [ ] **20. Polish and v1 release.**
   - Performance pass on the phone, balance pass, bug fixes.
   - Deploy, install from the home screen, play-test with a friend.
@@ -424,7 +450,6 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
 - Inventory icons drawn from item models (left out of session 18b).
 
 ## Open questions
-- Sound effect source (session 19). (Login method: username and password, decided in session 12.)
 - **Container search time** (session 10): Tarkov reveals a container's items one by one. Not designed; containers open instantly for now.
 - **Melee** (raised in session 9; the user's answer, 2026-10-26): there is a Tarkov-style knife attack with good damage, for raids where you bring nothing at all and for close quarters (design.md → Core loop → Knife). Built in session 10b.
 - **Temporary effects** (the user wants them, 2026-10-26): painkillers and similar. Not scheduled.

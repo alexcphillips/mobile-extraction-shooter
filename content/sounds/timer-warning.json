@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "id": "timer-warning",
+  "name": "Two minutes left",
+  "gain": 1.5,
+  "range": 5,
+  "pitchJitter": 0,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "square",
+      "freq": [440, 440],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0.12,
+      "decay": 0.03,
+      "gain": 0.15,
+      "filter": { "type": "lowpass", "freq": [2000, 2000], "q": 0.7 }
+    },
+    {
+      "source": "tone",
+      "wave": "square",
+      "freq": [440, 440],
+      "at": 0.25,
+      "attack": 0.001,
+      "hold": 0.12,
+      "decay": 0.03,
+      "gain": 0.15,
+      "filter": { "type": "lowpass", "freq": [2000, 2000], "q": 0.7 }
+    }
+  ]
+}

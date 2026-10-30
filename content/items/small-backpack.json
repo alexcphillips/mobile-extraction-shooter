@@ -1,10 +1,11 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 8,
   "id": "small-backpack",
   "name": "Small backpack",
   "type": "container",
   "size": [3, 3],
   "value": 5000,
+  "rarity": "common",
   "slot": "backpack",
   "grid": [4, 4],
   "model": {

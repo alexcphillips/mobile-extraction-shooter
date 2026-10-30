@@ -21,6 +21,7 @@ export class RaidHud {
   private timerText = '';
   private extractText = '';
   private promptText = '';
+  private promptKey = '';
   private warning = '';
   private warnUntil = 0;
   /** Whether what's shown over the prompt is a warning, or just news. */
@@ -45,13 +46,22 @@ export class RaidHud {
     this.warnClass = false;
   }
 
-  /** Call once per tick: what the use button would take (empty for nothing). */
-  setPrompt(text: string, now: number): void {
+  /**
+   * Call once per tick: what the use button would take (empty for nothing). `key`: the
+   * key that does it, shown before the text on desktop.
+   */
+  setPrompt(text: string, now: number, key = ''): void {
     const warning = now < this.warnUntil;
     const shown = warning ? this.warning : text;
-    if (shown === this.promptText) return;
+    const shownKey = warning ? '' : key;
+    if (shown === this.promptText && shownKey === this.promptKey) return;
     this.promptText = shown;
-    this.prompt.textContent = shown;
+    this.promptKey = shownKey;
+    if (shownKey) {
+      const kbd = document.createElement('kbd');
+      kbd.textContent = shownKey;
+      this.prompt.replaceChildren(kbd, ` ${shown}`);
+    } else this.prompt.textContent = shown;
     this.prompt.hidden = !shown;
     this.prompt.classList.toggle('warn', warning && this.warnClass);
   }
