@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "content": "node ../../scripts/bundle-content.mjs",
-    "predev": "npm run content",
+    "predev": "npm run content && node -e \"require('fs').mkdirSync('../client/dist', { recursive: true })\"",
     "dev": "wrangler dev --ip 0.0.0.0 --var ADMIN:1",
     "predeploy": "npm run content && wrangler d1 migrations apply mes --remote",
     "deploy": "wrangler deploy",

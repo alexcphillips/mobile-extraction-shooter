@@ -6,6 +6,8 @@ A small Tarkov-style PvE extraction shooter for the iPhone, played as a mobile w
 Node 22+ and npm 11+.
 ```sh
 npm install
+npm run db:migrate -w @mes/server   # creates the local D1 database
+npm run dev
 ```
 npm 11 only runs install scripts you've approved. They're listed under `allowScripts` in `package.json` (esbuild, workerd). If an upgrade changes their versions, `npm install` warns; review with `npm install-scripts ls` and re-approve with `npm install-scripts approve <pkg>`.
 

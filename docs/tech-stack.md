@@ -277,7 +277,7 @@ Session 10. `sim/looting.ts` in `shared`.
 
 ## Hosting and testing
 - **One Worker serves both the client and the API** (decided 2026-10-26, session 1). The built client is the Worker's static assets (`packages/server/wrangler.jsonc` points at `packages/client/dist`). Only `/api/*` runs Worker code; any other unknown path falls back to `index.html`. Sharing one origin means no CORS, and session cookies work with no extra setup. Pages was the alternative; Cloudflare is moving new projects to Workers static assets anyway.
-- In dev, the client (Vite, port 5180) and the Worker (`wrangler dev`, port 8787) run separately, and Vite proxies `/api` to the Worker.
+- In dev, the client (Vite, port 5180) and the Worker (`wrangler dev`, port 8787) run separately, and Vite proxies `/api` to the Worker. `wrangler dev` refuses to start if the assets folder is missing, and `dist` is gitignored, so the server's `predev` creates an empty `packages/client/dist` (decided 2026-10-30). A fresh clone runs `npm run dev` without building first.
 - **Phone testing during development:** run `vite --host` and open it on the iPhone over the local network. When HTTPS is needed (installing as a home-screen app, some browser features), use a Cloudflare preview deployment or a `cloudflared` tunnel.
 - Each milestone ends with a performance check on the real iPhone (FPS counter in dev builds).
 
