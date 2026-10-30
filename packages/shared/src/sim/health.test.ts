@@ -14,6 +14,7 @@ import {
   brokenArms,
   dealDamage,
   isBroken,
+  killCharacter,
   legSpeedScale,
   restoreHealth,
   shootCharacter,
@@ -79,6 +80,18 @@ describe('damage', () => {
     expect(dealDamage(state, c, CHEST, 10, 7)).toBe(0);
     expect(state.events.filter((e) => e.type === 'death')).toEqual([
       { type: 'death', target: c.id, by: 7 },
+    ]);
+  });
+
+  it('kills outright past armour and infinite health, once', () => {
+    const { state, c } = setup();
+    wearArmour(c, TEST_ITEMS, 'helmet');
+    c.admin = { infiniteHealth: true, infiniteAmmo: false, peaceful: false };
+    killCharacter(state, c, 0);
+    killCharacter(state, c, 0);
+    expect(c.health.dead).toBe(true);
+    expect(state.events.filter((e) => e.type === 'death')).toEqual([
+      { type: 'death', target: c.id, by: 0 },
     ]);
   });
 
