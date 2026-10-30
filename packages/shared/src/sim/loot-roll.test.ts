@@ -153,4 +153,31 @@ describe('loot tables', () => {
     // Plain data: a JSON round trip changes nothing.
     expect(JSON.parse(JSON.stringify(ground))).toEqual(ground);
   });
+
+  it('uses only one of the loot spawns sharing a oneOf name, picked at random', () => {
+    const spot = (id: string, x: number, oneOf?: string) => ({
+      type: 'lootSpawn',
+      id,
+      lootTable: 'meds',
+      x,
+      y: 0,
+      z: 0,
+      yaw: 0,
+      ...(oneOf === undefined ? {} : { oneOf }),
+    });
+    const map = {
+      markers: [spot('a', 1, 'key'), spot('b', 2, 'key'), spot('c', 3, 'key'), spot('d', 4)],
+    } as unknown as CompiledMap;
+    const used = new Set<number>();
+    for (let seed = 1; seed <= 60; seed++) {
+      const state = createState(seed);
+      rollLootSpawns(state, map, items, tables);
+      const xs = state.ground.map((g) => g.x);
+      // One of the group, and the spot outside it as usual.
+      expect(xs).toHaveLength(2);
+      expect(xs).toContain(4);
+      used.add(xs.find((x) => x !== 4)!);
+    }
+    expect([...used].sort()).toEqual([1, 2, 3]);
+  });
 });

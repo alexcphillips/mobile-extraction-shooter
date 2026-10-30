@@ -1,0 +1,19 @@
+{
+  "formatVersion": 8,
+  "id": "gold-bar",
+  "name": "Gold bar",
+  "type": "loot",
+  "size": [2, 1],
+  "value": 80000,
+  "rarity": "legendary",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.25, 0.06, 0.1],
+        "colour": "#d4a62a"
+      }
+    ]
+  }
+}

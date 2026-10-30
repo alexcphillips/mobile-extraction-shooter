@@ -86,6 +86,7 @@ export function rollEnemyLoot(
 /**
  * Puts a loose item on the ground at every lootSpawn marker that rolls its chance: one
  * item from its table (a loose spot ignores the table's rolls), lying at a random turn.
+ * Of the spots sharing a `oneOf` name, only one picked at random is used.
  */
 export function rollLootSpawns(
   state: SimState,
@@ -93,8 +94,19 @@ export function rollLootSpawns(
   items: ItemDb,
   tables: LootTables,
 ): void {
+  const groups = new Map<string, string[]>();
   for (const m of map.markers) {
-    if (m.type !== 'lootSpawn' || !chance(state.rng, m.chance ?? 1)) continue;
+    if (m.type !== 'lootSpawn' || m.oneOf === undefined) continue;
+    const ids = groups.get(m.oneOf);
+    if (ids) ids.push(m.id);
+    else groups.set(m.oneOf, [m.id]);
+  }
+  const picked = new Set<string>();
+  for (const ids of groups.values()) picked.add(ids[nextIntIn(state.rng, 0, ids.length - 1)]!);
+  for (const m of map.markers) {
+    if (m.type !== 'lootSpawn') continue;
+    if (m.oneOf !== undefined && !picked.has(m.id)) continue;
+    if (!chance(state.rng, m.chance ?? 1)) continue;
     state.ground.push({
       item: rollItem(items, table(tables, m.lootTable), state.rng),
       x: m.x,

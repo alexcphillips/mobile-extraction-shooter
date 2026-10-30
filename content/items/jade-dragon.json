@@ -1,0 +1,19 @@
+{
+  "formatVersion": 8,
+  "id": "jade-dragon",
+  "name": "Jade dragon",
+  "type": "loot",
+  "size": [1, 2],
+  "value": 45000,
+  "rarity": "legendary",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.1, 0.18, 0.1],
+        "colour": "#3f9a6a"
+      }
+    ]
+  }
+}

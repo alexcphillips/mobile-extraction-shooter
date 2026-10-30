@@ -1,0 +1,21 @@
+{
+  "formatVersion": 1,
+  "id": "boutique",
+  "name": "Boutique",
+  "rolls": [1, 2],
+  "items": [
+    {
+      "item": "gold-watch",
+      "weight": 3
+    },
+    {
+      "item": "ruby-ring",
+      "weight": 1
+    },
+    {
+      "item": "cash",
+      "weight": 4,
+      "count": [50, 400]
+    }
+  ]
+}

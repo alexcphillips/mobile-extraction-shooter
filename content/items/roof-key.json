@@ -1,0 +1,20 @@
+{
+  "formatVersion": 8,
+  "id": "roof-key",
+  "name": "Roof access key",
+  "type": "key",
+  "size": [1, 1],
+  "value": 18000,
+  "rarity": "rare",
+  "uses": 5,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.14, 0.07, 0.14],
+        "colour": "#b03a2e"
+      }
+    ]
+  }
+}

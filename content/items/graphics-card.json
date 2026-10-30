@@ -1,0 +1,19 @@
+{
+  "formatVersion": 8,
+  "id": "graphics-card",
+  "name": "Graphics card",
+  "type": "loot",
+  "size": [2, 1],
+  "value": 25000,
+  "rarity": "epic",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.27, 0.05, 0.12],
+        "colour": "#2b2e31"
+      }
+    ]
+  }
+}

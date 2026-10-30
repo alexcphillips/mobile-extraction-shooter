@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "roof-key",
+  "name": "Roof key",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "roof-key",
+      "weight": 1
+    }
+  ]
+}

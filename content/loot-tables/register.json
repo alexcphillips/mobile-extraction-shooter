@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "id": "register",
+  "name": "Cash register",
+  "rolls": [1, 2],
+  "items": [
+    {
+      "item": "cash",
+      "weight": 10,
+      "count": [40, 800]
+    },
+    {
+      "item": "gold-watch",
+      "weight": 0.2
+    }
+  ]
+}

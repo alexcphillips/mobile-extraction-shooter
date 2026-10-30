@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "id": "electronics",
+  "name": "Electronics",
+  "rolls": [1, 2],
+  "items": [
+    {
+      "item": "smartphone",
+      "weight": 5
+    },
+    {
+      "item": "laptop",
+      "weight": 2
+    },
+    {
+      "item": "graphics-card",
+      "weight": 0.7
+    },
+    {
+      "item": "cash",
+      "weight": 2,
+      "count": [20, 200]
+    }
+  ]
+}

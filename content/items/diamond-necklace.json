@@ -1,0 +1,19 @@
+{
+  "formatVersion": 8,
+  "id": "diamond-necklace",
+  "name": "Diamond necklace",
+  "type": "loot",
+  "size": [1, 1],
+  "value": 60000,
+  "rarity": "legendary",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.14, 0.03, 0.14],
+        "colour": "#d8eef5"
+      }
+    ]
+  }
+}

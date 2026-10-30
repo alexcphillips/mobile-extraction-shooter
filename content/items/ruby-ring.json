@@ -1,0 +1,19 @@
+{
+  "formatVersion": 8,
+  "id": "ruby-ring",
+  "name": "Ruby ring",
+  "type": "loot",
+  "size": [1, 1],
+  "value": 28000,
+  "rarity": "epic",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.06, 0.04, 0.06],
+        "colour": "#b0203a"
+      }
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "formatVersion": 8,
+  "id": "vault-key",
+  "name": "Bear vault key",
+  "type": "key",
+  "size": [1, 1],
+  "value": 30000,
+  "rarity": "epic",
+  "uses": 3,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.14, 0.07, 0.14],
+        "colour": "#3d4247"
+      }
+    ]
+  }
+}

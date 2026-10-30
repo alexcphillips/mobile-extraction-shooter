@@ -1,0 +1,19 @@
+{
+  "formatVersion": 8,
+  "id": "laptop",
+  "name": "Laptop",
+  "type": "loot",
+  "size": [2, 2],
+  "value": 18000,
+  "rarity": "rare",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.33, 0.03, 0.23],
+        "colour": "#9aa0a6"
+      }
+    ]
+  }
+}

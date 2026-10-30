@@ -2039,3 +2039,24 @@ body:has(#layout-bar) #menu {
   background: #6cff8a;
   color: #000;
 }
+
+/* Picking the map to raid, when there's more than one. */
+.menu-maps {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 6px;
+}
+
+.menu-buttons .menu-maps button {
+  flex: 1;
+  align-items: center;
+  padding: 9px 10px;
+  font-size: 15px;
+}
+
+.menu-buttons .menu-maps button.active {
+  outline: 2px solid #e3a33a;
+  outline-offset: -2px;
+  background: #2c343b;
+  color: #e8ecef;
+}

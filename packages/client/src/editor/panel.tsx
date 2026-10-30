@@ -1229,6 +1229,13 @@ function MarkerFields(props: { editor: MapEditor; node: MapNode; num: NumField; 
           <div className="ed-row" title="The chance anything is there, 0 to 1">
             {num('chance', 'chance', 1)}
           </div>
+          <div title="Spots sharing this name: only one, picked at random, is used each raid">
+            <Text
+              label="one of"
+              value={n.oneOf ?? ''}
+              onChange={(v) => set('oneOf', v || undefined)}
+            />
+          </div>
         </>
       );
     case 'extraction':

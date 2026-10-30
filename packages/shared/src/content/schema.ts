@@ -199,6 +199,12 @@ const lootSpawnSchema = z.strictObject({
   lootTable: idSchema,
   /** The chance anything is there, 0 to 1 (1 if left out). */
   chance: finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1').optional(),
+  /**
+   * A name shared by spots of which only one is used each raid, picked at random (then
+   * rolling its chance as usual): for something that's in one of several places, like a
+   * key. Names are map-wide, not scoped by prefab.
+   */
+  oneOf: idSchema.optional(),
 });
 
 const extractionSchema = z.strictObject({

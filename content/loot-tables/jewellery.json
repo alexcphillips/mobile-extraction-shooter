@@ -1,0 +1,28 @@
+{
+  "formatVersion": 1,
+  "id": "jewellery",
+  "name": "Jewellery",
+  "rolls": [2, 4],
+  "items": [
+    {
+      "item": "ruby-ring",
+      "weight": 4
+    },
+    {
+      "item": "gold-watch",
+      "weight": 4
+    },
+    {
+      "item": "diamond-necklace",
+      "weight": 2
+    },
+    {
+      "item": "jade-dragon",
+      "weight": 1.5
+    },
+    {
+      "item": "gold-bar",
+      "weight": 1
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "formatVersion": 1,
+  "id": "pc-parts",
+  "name": "PC parts",
+  "rolls": [1, 2],
+  "items": [
+    {
+      "item": "graphics-card",
+      "weight": 2
+    },
+    {
+      "item": "laptop",
+      "weight": 1.5
+    },
+    {
+      "item": "smartphone",
+      "weight": 1
+    }
+  ]
+}

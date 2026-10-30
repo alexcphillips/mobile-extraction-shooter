@@ -1,0 +1,19 @@
+{
+  "formatVersion": 8,
+  "id": "smartphone",
+  "name": "Smartphone",
+  "type": "loot",
+  "size": [1, 1],
+  "value": 6000,
+  "rarity": "rare",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.08, 0.01, 0.15],
+        "colour": "#1d1f21"
+      }
+    ]
+  }
+}

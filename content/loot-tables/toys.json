@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "id": "toys",
+  "name": "Toys",
+  "rolls": [1, 2],
+  "items": [
+    {
+      "item": "brick-set",
+      "weight": 4
+    },
+    {
+      "item": "cash",
+      "weight": 1,
+      "count": [10, 100]
+    }
+  ]
+}

@@ -29,6 +29,7 @@ import {
 } from './raids';
 import { loadItems, loadQuests, loadRaid, loadVendors, raidIds } from './content';
 import { settings } from './settings';
+import { lastRaid } from './ui/last-raid';
 
 const byId = (id: string): HTMLElement => {
   const el = document.getElementById(id);
@@ -179,7 +180,7 @@ async function runGame(q: URLSearchParams): Promise<void> {
   const prepared = await prepareMenu();
   let me = prepared.me;
   const items = loadItems();
-  const wanted = q.get('raid');
+  const wanted = q.get('raid') ?? lastRaid();
   const raids = raidIds()
     .map((id) => loadRaid(id))
     .sort((a, b) => Number(b.id === wanted) - Number(a.id === wanted))

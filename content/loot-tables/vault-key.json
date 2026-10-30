@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "vault-key",
+  "name": "Vault key",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "vault-key",
+      "weight": 1
+    }
+  ]
+}

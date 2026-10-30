@@ -1,0 +1,19 @@
+{
+  "formatVersion": 8,
+  "id": "brick-set",
+  "name": "Collector brick set",
+  "type": "loot",
+  "size": [2, 2],
+  "value": 12000,
+  "rarity": "rare",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.3, 0.2, 0.08],
+        "colour": "#e3312d"
+      }
+    ]
+  }
+}

@@ -20,6 +20,7 @@ import { createRoot } from 'react-dom/client';
 import { AccountError } from '../account';
 import { StashSaver, type StashSaveStatus } from '../stash';
 import { AdminPage } from './admin-page';
+import { rememberRaid } from './last-raid';
 import { InventoryController } from './inventory-controller';
 import { Inventory } from './raid-screen';
 import { QuestsPage, questsLine } from './quests-page';
@@ -84,7 +85,8 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
   const [busy, setBusy] = useState(false);
   const [startPage, setStartPage] = useState(0);
   const me = saver.me;
-  const raid = opts.raids[0];
+  const [raidId, setRaidId] = useState(opts.raids[0]?.id);
+  const raid = opts.raids.find((r) => r.id === raidId) ?? opts.raids[0];
 
   const start = (): void => {
     if (!raid || busy) return;
@@ -283,6 +285,25 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
       </header>
       <div className="menu-body">
         <div className="menu-buttons">
+          {opts.raids.length > 1 && (
+            <div className="menu-maps" role="radiogroup" aria-label="Map">
+              {opts.raids.map((r) => (
+                <button
+                  key={r.id}
+                  role="radio"
+                  aria-checked={r.id === raid?.id}
+                  className={r.id === raid?.id ? 'active' : undefined}
+                  disabled={busy}
+                  onClick={() => {
+                    setRaidId(r.id);
+                    rememberRaid(r.id);
+                  }}
+                >
+                  {r.name}
+                </button>
+              ))}
+            </div>
+          )}
           <button className="primary menu-raid" disabled={!raid || busy} onClick={start}>
             {busy ? 'Starting…' : 'Start raid'}
             {raid && (
