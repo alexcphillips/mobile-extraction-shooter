@@ -721,9 +721,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     if (controls.jump && player.mode === 'ladder') controls.unlockSprint();
 
     if (options.debug && controls.debug === 0) {
-      // A 5.56 round to a random zone, armour and bleeding included.
+      // An AKM round to a random zone, armour and bleeding included.
       const zone = nextInt(debugRng, 6) as Zone;
-      shootCharacter(sim, items, player, zone, ammoDef(items, 'ammo-556'), 0);
+      shootCharacter(sim, items, player, zone, ammoDef(items, 'ammo-762x39'), 0);
       el.vitals.hurtFlash();
     } else if (options.debug && controls.debug === 1) {
       restoreHealth(player, items);

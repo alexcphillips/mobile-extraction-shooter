@@ -10,7 +10,7 @@
         { "item": "scope-4x", "chance": 0.3 },
         { "item": "red-dot" },
         { "item": "suppressor", "chance": 0.5 },
-        { "item": "mag-556-45", "chance": 0.5 }
+        { "item": "mag-762x39-45", "chance": 0.5 }
       ]
     }
   ],

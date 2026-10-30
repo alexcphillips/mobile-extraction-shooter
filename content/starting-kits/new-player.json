@@ -11,7 +11,7 @@
     "backpack": "small-backpack"
   },
   "carried": [
-    { "item": "ammo-556", "count": 120 },
+    { "item": "ammo-762x39", "count": 120 },
     { "item": "ammo-9mm", "count": 45 },
     { "item": "bandage" },
     { "item": "bandage" },

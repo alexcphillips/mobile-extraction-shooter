@@ -4,7 +4,7 @@
   "name": "Military",
   "rolls": [2, 4],
   "items": [
-    { "item": "ammo-556", "weight": 4, "count": [30, 60] },
+    { "item": "ammo-762x39", "weight": 4, "count": [30, 60] },
     { "item": "ammo-9mm", "weight": 3, "count": [20, 60] },
     { "item": "buckshot", "weight": 2, "count": [10, 30] },
     { "item": "ammo-762", "weight": 1, "count": [10, 25] },
@@ -16,7 +16,7 @@
     { "item": "crossbow", "weight": 0.5 },
     { "item": "sniper-rifle", "weight": 0.3 },
     { "item": "mag-9mm-24", "weight": 1 },
-    { "item": "mag-556-45", "weight": 1 },
+    { "item": "mag-762x39-45", "weight": 1 },
     { "item": "red-dot", "weight": 1 },
     { "item": "scope-4x", "weight": 0.5 },
     { "item": "suppressor", "weight": 1 },

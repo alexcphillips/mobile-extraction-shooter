@@ -57,6 +57,23 @@ describe('newProfile', () => {
   });
 });
 
+describe('PROFILE_FORMAT', () => {
+  it('turns 5.56 rounds and mags into 7.62×39 ones (format 3 → 4)', () => {
+    const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
+    old.formatVersion = 3;
+    old.gear.pockets.items[0].item.item = 'ammo-556';
+    old.gear.primary1.attachments = { optic: null, muzzle: null, magazine: 'mag-556-45' };
+    old.stash[0].items[0].item.item = 'mag-556-45';
+    const p = loadContent(PROFILE_FORMAT, old, 'p');
+    expect(p.formatVersion).toBe(4);
+    expect(p.gear.pockets.items[0]!.item.item).toBe('ammo-762x39');
+    expect(p.gear.primary1!.attachments!.magazine).toBe('mag-762x39-45');
+    expect(p.gear.primary1!.attachments!.optic).toBeNull();
+    expect(p.stash[0]!.items[0]!.item.item).toBe('mag-762x39-45');
+    expect(p.gear.primary1!.item).toBe('rifle');
+  });
+});
+
 describe('checkProfile', () => {
   it('refuses unknown items, oversized stacks and overlaps', () => {
     let p = profile();

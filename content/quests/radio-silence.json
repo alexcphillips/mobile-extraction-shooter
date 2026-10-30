@@ -13,5 +13,5 @@
       "text": "Find the old radio out west"
     }
   ],
-  "rewards": { "money": 15000, "items": [{ "item": "ammo-556", "count": 60 }] }
+  "rewards": { "money": 15000, "items": [{ "item": "ammo-762x39", "count": 60 }] }
 }

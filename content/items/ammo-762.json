@@ -1,7 +1,7 @@
 {
   "formatVersion": 8,
   "id": "ammo-762",
-  "name": "7.62 mm rounds",
+  "name": "7.62×51 mm rounds",
   "type": "ammo",
   "size": [1, 1],
   "value": 120,

@@ -17,24 +17,25 @@ const rifle = (attachments: Partial<Record<'optic' | 'muzzle' | 'magazine', stri
 describe('gun models', () => {
   it('draws a bare gun with its irons and standard magazine', () => {
     const g = gunModel(rifle({}), items);
-    expect(g.shapes).toHaveLength(6);
-    expect(g.sight).toEqual([0, 0.065, -0.06]);
-    expect(g.muzzle).toEqual([0, 0.02, -0.49]);
+    expect(g.shapes).toHaveLength(19);
+    expect(g.sight).toEqual([0, 0.06, -0.19]);
+    expect(g.muzzle).toEqual([0, 0.005, -0.57]);
     expect(g.suppressed).toBe(false);
   });
 
   it('puts attachments on their mounts, hiding what they replace', () => {
     const g = gunModel(
-      rifle({ optic: 'red-dot', muzzle: 'suppressor', magazine: 'mag-556-45' }),
+      rifle({ optic: 'red-dot', muzzle: 'suppressor', magazine: 'mag-762x39-45' }),
       items,
     );
-    // Irons and the standard magazine go; the red dot (4), suppressor (1) and mag (1) come.
-    expect(g.shapes).toHaveLength(4 + 4 + 1 + 1);
-    // The optic mount (0, 0.045, 0) plus the red dot's sight point.
-    expect(g.sight[1]).toBeCloseTo(0.09);
-    expect(g.sight[2]).toBeCloseTo(-0.09);
+    // The rear sight, slant brake and standard magazine (2) go; the red dot (4), suppressor
+    // (1) and mag (2) come.
+    expect(g.shapes).toHaveLength(19 - 4 + 4 + 1 + 2);
+    // The optic mount (0, 0.041, -0.04) plus the red dot's sight point.
+    expect(g.sight[1]).toBeCloseTo(0.086);
+    expect(g.sight[2]).toBeCloseTo(-0.13);
     // The muzzle mount plus the suppressor's own muzzle point.
-    expect(g.muzzle[2]).toBeCloseTo(-0.65);
+    expect(g.muzzle[2]).toBeCloseTo(-0.7);
     expect(g.suppressed).toBe(true);
   });
 

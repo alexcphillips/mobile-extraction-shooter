@@ -28,7 +28,7 @@ describe('item editor', () => {
   it('finds what an edit breaks elsewhere in content/', () => {
     // An attachment lists the gun it fits; a loadout puts a suppressor on the pistol.
     const noMags = edited('assault-rifle', (d) => setSlots(d, ['optic', 'muzzle']));
-    expect(itemContentProblem(noMags)).toMatch(/mag-556-45.*no magazine slot/);
+    expect(itemContentProblem(noMags)).toMatch(/mag-762x39-45.*no magazine slot/);
     const noMuzzle = edited('pistol', (d) => setSlots(d, ['optic', 'magazine']));
     expect(itemContentProblem(noMuzzle)).toMatch(/loadouts\/scav-kit.*suppressor/);
     // The test map's shed door needs a key item.
@@ -94,12 +94,13 @@ describe('item editor', () => {
     setSlots(rifle, ['muzzle']);
     const model = rifle.model as { mounts: object; parts: { hiddenBy?: string }[] };
     expect(Object.keys(model.mounts)).toEqual(['muzzle']);
-    expect(model.parts.some((p) => p.hiddenBy)).toBe(false);
+    // Only the muzzle brake, hidden by the slot that's kept, is still hidden by anything.
+    expect(model.parts.every((p) => !p.hiddenBy || p.hiddenBy === 'muzzle')).toBe(true);
     // A slot coming back gets the placeholder's mount, in the file's order.
     setSlots(rifle, ['magazine', 'optic', 'muzzle']);
     expect(model.mounts).toEqual({
       optic: [0, 0.045, 0],
-      muzzle: [0, 0.02, -0.49],
+      muzzle: [0, 0.005, -0.54],
       magazine: [0, -0.045, -0.06],
     });
     expect(() => loadContent(ITEM_FORMAT, rifle, 'r')).not.toThrow();

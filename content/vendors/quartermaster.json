@@ -9,7 +9,7 @@
     { "item": "shotgun" },
     { "item": "crossbow" },
     { "item": "ammo-9mm", "count": 30 },
-    { "item": "ammo-556", "count": 30 },
+    { "item": "ammo-762x39", "count": 30 },
     { "item": "buckshot", "count": 20 },
     { "item": "ammo-762", "count": 20 },
     { "item": "crossbow-bolt", "count": 10 },

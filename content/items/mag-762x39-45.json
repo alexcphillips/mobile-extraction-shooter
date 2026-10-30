@@ -1,0 +1,33 @@
+{
+  "formatVersion": 8,
+  "id": "mag-762x39-45",
+  "name": "45-round 7.62×39 magazine",
+  "type": "attachment",
+  "size": [1, 2],
+  "value": 6000,
+  "rarity": "rare",
+  "slot": "magazine",
+  "weapons": ["assault-rifle"],
+  "mods": {
+    "magazine": 15,
+    "reloadTime": 1.15
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.04, -0.005],
+        "size": [0.03, 0.09, 0.07],
+        "colour": "#2a2d30",
+        "pitch": 10
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.125, -0.04],
+        "size": [0.03, 0.09, 0.065],
+        "colour": "#2a2d30",
+        "pitch": 28
+      }
+    ]
+  }
+}

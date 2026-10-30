@@ -67,7 +67,7 @@ export type QuestState =
   { status: 'active'; progress: Record<string, number> } | { status: 'done' };
 
 export interface Profile {
-  formatVersion: 3;
+  formatVersion: 4;
   money: number;
   /** The stash's pages, bought with money (at least one). */
   stash: Grid[];
@@ -126,14 +126,14 @@ const questStateShape = z.discriminatedUnion('status', [
 ]);
 
 const profileShape = z.strictObject({
-  formatVersion: z.literal(3),
+  formatVersion: z.literal(4),
   money: count,
   stash: z.array(gridShape).min(1),
   gear: gearShape,
   quests: z.record(idSchema, questStateShape),
 });
 
-export const PROFILE_FORMAT_VERSION = 3;
+export const PROFILE_FORMAT_VERSION = 4;
 
 export const PROFILE_FORMAT: ContentFormat<Profile> = {
   kind: 'profile',
@@ -145,8 +145,29 @@ export const PROFILE_FORMAT: ContentFormat<Profile> = {
     1: (doc) => ({ ...doc, stash: [doc.stash] }),
     // Session 14: quests.
     2: (doc) => ({ ...doc, quests: {} }),
+    // Session 19za: the assault rifle became the AKM, so 5.56 rounds and mags became 7.62×39.
+    3: (doc) => renameItems(doc, RENAMED_IN_4),
   },
 };
+
+const RENAMED_IN_4: Readonly<Record<string, string>> = {
+  'ammo-556': 'ammo-762x39',
+  'mag-556-45': 'mag-762x39-45',
+};
+
+/** A copy of a stored profile with item ids (items and fitted attachments) renamed. */
+function renameItems(doc: Record<string, unknown>, ids: Readonly<Record<string, string>>) {
+  const walk = (v: unknown, key?: string): unknown => {
+    if (Array.isArray(v)) return v.map((x) => walk(x));
+    if (typeof v === 'string') return key === 'item' || key === 'attachment' ? (ids[v] ?? v) : v;
+    if (typeof v !== 'object' || v === null) return v;
+    const out: Record<string, unknown> = {};
+    for (const [k, x] of Object.entries(v))
+      out[k] = walk(x, key === 'attachments' ? 'attachment' : k);
+    return out;
+  };
+  return walk(doc) as Record<string, unknown>;
+}
 
 /** Checks the shape of gear sent by a client, before checkGear. Null if it's malformed. */
 export function parseGear(raw: unknown): Gear | null {
@@ -179,7 +200,7 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
     if (addItem(items, stash, createItem(items, s.item, s.count ?? 1)) > 0)
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
-  return { formatVersion: 3, money: kit.money, stash: [stash], gear, quests: {} };
+  return { formatVersion: 4, money: kit.money, stash: [stash], gear, quests: {} };
 }
 
 /** What the next stash page costs, or null if there are already as many as there can be. */

@@ -443,6 +443,12 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
   - **To check on the phone:** frame rate inside the mall (about 2,500 shapes, mostly merged by chunk); the nav build time on load; whether 11 enemies is too many; whether the map tab is useful indoors (it draws the roof over everything).
   - **Not done:** the map tab has no per-floor view; there's no helicopter; the editor lists about 300 overlap warnings (walls set into floor slabs), which are harmless.
 
+- [x] **19za. The AKM.** (Not in the plan: the user's request, 2026-10-30.)
+  - `assault-rifle` is now named **AKM**: 7.62×39 mm, 600 rpm (was 700), recoil up 1.2 / side 0.5 / recovery 13, aim spread 0.5, loudness 190. A new model of 19 parts: stamped receiver and dust cover, wooden stock, handguards and grip, gas block, front sight near the muzzle, slant brake (hidden by a muzzle attachment), a curved two-part bakelite magazine and the rear sight on the receiver's front (hidden by an optic). Mounts and the sight, muzzle, grip and support points moved to match.
+  - `ammo-556` became `ammo-762x39` (52 damage, armour damage 1.2, bleed 0.3, value 50) and `mag-556-45` became `mag-762x39-45` (same +15 and reload ×1.15, a two-part curved model). `ammo-762` is now named "7.62×51 mm rounds". Every reference (vendor, kit, loot table, boss kit, quest reward) follows.
+  - Profile format 4: a migration renames those ids in stored profiles (items and fitted attachments), with a test. A raid that's open while this deploys and ends with 5.56 in the kept gear would fail the server's check, since raid results aren't migrated; acceptable before release.
+  - Checked: typecheck, lint and all 397 tests pass; a side-view render of the model looked right. **Not checked** in the game or on the phone (first-person view, hand placement, iron sight alignment).
+
 - [ ] **19b. The first real map.**
   - Claude drafts a one-page brief (points of interest, extractions, routes, key rooms) and a rough first version as data; the user reshapes it in the map editor, and Claude fixes the editor where it gets in the way (the user's call, 2026-10-30).
   - What the map needs that isn't built: loot weighted by zone, enemy spawns kept away from the player's spawn, doors fitted into a wall's gap, **vaulting through standard-height windows** (design.md → Movement; the user's request, 2026-10-30: a simple scripted move, no complicated animation).
