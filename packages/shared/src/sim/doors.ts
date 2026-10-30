@@ -1,7 +1,7 @@
 import { itemDef, type ItemDb } from '../content/items';
 import { removeAt, type Grid } from '../inventory/grid';
 import type { NavGrid } from '../nav/nav-grid';
-import type { CollisionWorld } from '../world/collision-world';
+import type { CollisionWorld, DoorDef } from '../world/collision-world';
 import { CARRIED_GRIDS, carriedGrid, type Gear } from './gear';
 import { MOVEMENT } from './movement';
 import type { Character, EntityId, SimState } from './state';
@@ -9,6 +9,7 @@ import type { Character, EntityId, SimState } from './state';
 /*
  * Doors (design.md → AI → Doors). A door is open or closed with nothing in between, and
  * solid either way: closed it fills the doorway, open it stands at 90° from its hinge.
+ * It swings away from whoever opens it: inwards from outside, outwards from inside.
  * Its collision snaps at once; the renderer animates the swing. A door with a key starts
  * locked, and unlocking it (which uses up one of the key's uses) is for the rest of the
  * raid. Enemies open closed, unlocked doors in their way, and never close or unlock one.
@@ -25,6 +26,11 @@ export const DOOR = {
 /** One door's state. world.doors[i] is its static data. */
 export interface DoorState {
   open: boolean;
+  /**
+   * Opens (or last opened) into the door's −z, away from someone who opened it from +z.
+   * Missing in states saved before doors swung both ways.
+   */
+  flipped?: boolean;
   /** Has a key and hasn't been unlocked yet. Never true while open. */
   locked: boolean;
 }
@@ -44,7 +50,11 @@ export interface DoorEvent {
 
 /** The doors as a map starts: a door with a key is locked unless it starts open. */
 export function createDoors(world: CollisionWorld): DoorState[] {
-  return world.doors.map((d) => ({ open: d.open, locked: d.key !== undefined && !d.open }));
+  return world.doors.map((d) => ({
+    open: d.open,
+    flipped: false,
+    locked: d.key !== undefined && !d.open,
+  }));
 }
 
 /**
@@ -57,7 +67,9 @@ export function syncDoors(state: SimState, world: CollisionWorld, nav?: NavGrid)
   if (state.doors.length !== world.doors.length) state.doors = createDoors(world);
   for (let i = 0; i < state.doors.length; i++) {
     const d = state.doors[i]!;
-    if (world.isDoorOpen(i) !== d.open) world.setDoorOpen(i, d.open);
+    const flipped = !!d.flipped;
+    if (world.isDoorOpen(i) !== d.open || world.isDoorFlipped(i) !== flipped)
+      world.setDoorOpen(i, d.open, flipped);
     nav?.setDoorLocked(i, d.locked);
   }
   nav?.updateComponents();
@@ -124,10 +136,17 @@ export function useDoor(
     if (c.ai) return;
     result = inDoorway(state, world, i) ? 'blocked' : 'closed';
   } else result = 'opened';
-  if (result === 'opened' || result === 'unlocked') d.open = true;
-  else if (result === 'closed') d.open = false;
-  world.setDoorOpen(i, d.open);
+  if (result === 'opened' || result === 'unlocked') {
+    d.open = true;
+    d.flipped = onPlusSide(world.doors[i]!, c);
+  } else if (result === 'closed') d.open = false;
+  world.setDoorOpen(i, d.open, !!d.flipped);
   state.events.push({ type: 'door', by: c.id, door: i, result });
+}
+
+/** Is c on the door's +z side? It then opens into −z, away from them. */
+function onPlusSide(d: DoorDef, c: Character): boolean {
+  return Math.sin(d.yaw) * (c.x - d.x) + Math.cos(d.yaw) * (c.z - d.z) > 0;
 }
 
 /** Is anyone (alive) standing where door i would be closed? */

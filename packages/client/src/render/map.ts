@@ -8,12 +8,13 @@ export const CHUNK = 32;
 /** How long a door's swing takes to draw, in seconds. The sim snaps it at once. */
 const SWING = 0.2;
 
-/** A door's pivot at its hinge, and how far open it's drawn (0 to 1). */
+/** A door's pivot at its hinge, and how far open it's drawn. */
 interface DoorView {
   pivot: THREE.Object3D;
   yaw: number;
-  /** +1 or −1: which way opening turns it. */
+  /** +1 or −1: which way opening into +z turns it. Opening into −z turns it the other way. */
   turn: number;
+  /** How far open it's drawn, −1 (into −z) to 1 (into +z). */
   shown: number;
 }
 
@@ -118,17 +119,26 @@ function buildInstanced(group: InstancedGroup, material: THREE.Material): THREE.
   return mesh;
 }
 
-/** Swings each drawn door towards the sim's open or closed, over SWING seconds. */
-export function updateDoors(view: MapView, open: readonly { open: boolean }[], dt: number): void {
+/**
+ * Swings each drawn door towards the sim's open (on the side it opened to) or closed, over
+ * SWING seconds.
+ */
+export function updateDoors(
+  view: MapView,
+  doors: readonly { open: boolean; flipped?: boolean }[],
+  dt: number,
+): void {
   for (let i = 0; i < view.doors.length; i++) {
     const d = view.doors[i]!;
-    const target = open[i]?.open ? 1 : 0;
+    const s = doors[i];
+    const target = s?.open ? (s.flipped ? -1 : 1) : 0;
     if (d.shown === target) continue;
     const step = dt / SWING;
     d.shown =
       target > d.shown ? Math.min(target, d.shown + step) : Math.max(target, d.shown - step);
     // Eased out, so it slows into the wall.
-    const t = 1 - (1 - d.shown) * (1 - d.shown);
+    const a = Math.abs(d.shown);
+    const t = Math.sign(d.shown) * (1 - (1 - a) * (1 - a));
     d.pivot.rotation.y = d.yaw + d.turn * t;
   }
 }

@@ -49,8 +49,9 @@ export interface LadderDef {
 
 /**
  * A door in a doorway. (x, y, z) is the bottom middle of the doorway, in the middle of the
- * wall; yaw turns local +z to the side it opens towards. Seen from +z, a left hinge is at
- * local −x. Closed, it fills the doorway; open, it stands at 90° from its hinge into +z.
+ * wall; yaw turns local +z to the side it opens towards by default (a door starting open).
+ * Seen from +z, a left hinge is at local −x. Closed, it fills the doorway; open, it stands
+ * at 90° from its hinge, into +z or, flipped, into −z.
  */
 export interface DoorDef {
   x: number;
@@ -106,8 +107,8 @@ const GRID_CELL = 4;
 
 /**
  * The collision world, built once from map data. All queries reuse internal scratch space
- * and allocate nothing. Only doors change: each is a solid with two poses, and
- * setDoorOpen swaps between them (the sim's door state is the truth; syncDoors copies it
+ * and allocate nothing. Only doors change: each is a solid with three poses (closed, open
+ * into +z, open into −z), and setDoorOpen swaps between them (the sim's door state is the truth; syncDoors copies it
  * here).
  */
 export class CollisionWorld {
@@ -118,9 +119,11 @@ export class CollisionWorld {
   /** Solid index of the first door: doors come after boxes and ramps. */
   readonly firstDoor: number;
   private readonly s: Float64Array;
-  /** Each door's solid closed, then open, STRIDE values each. */
+  /** Each door's solid closed, open into +z, then open into −z, STRIDE values each. */
   private readonly doorPoses: Float64Array;
   private readonly doorOpen: Uint8Array;
+  /** Opens (or last opened) into −z. */
+  private readonly doorFlipped: Uint8Array;
   private readonly grid: StaticGrid;
   private readonly found: Uint32Array;
   private readonly walk = new CellWalk();
@@ -138,29 +141,33 @@ export class CollisionWorld {
     }
     for (const r of def.ramps)
       this.setSolid(i++, r.x, r.z, r.hx, r.hz, r.yaw, r.bottom, r.low, r.high);
-    this.doorPoses = new Float64Array(this.doors.length * 2 * STRIDE);
+    this.doorPoses = new Float64Array(this.doors.length * 3 * STRIDE);
     this.doorOpen = new Uint8Array(this.doors.length);
+    this.doorFlipped = new Uint8Array(this.doors.length);
     this.doors.forEach((d, k) => {
-      for (const open of [false, true]) {
-        this.setSolid(i, ...doorPose(d, open));
-        this.doorPoses.set(this.s.subarray(i * STRIDE, (i + 1) * STRIDE), (k * 2 + +open) * STRIDE);
+      for (let pose = 0; pose < 3; pose++) {
+        this.setSolid(i, ...doorPose(d, pose));
+        this.doorPoses.set(this.s.subarray(i * STRIDE, (i + 1) * STRIDE), (k * 3 + pose) * STRIDE);
       }
       this.setDoorOpen(k, d.open);
       i++;
     });
 
-    // A door's cell rectangle covers both its poses.
+    // A door's cell rectangle covers all its poses.
     const rects = new Float64Array(this.solidCount * 4);
     for (let k = 0; k < this.solidCount; k++) {
       const door = k - this.firstDoor;
       if (door < 0) rects.set(footprint(this.s, k * STRIDE), k * 4);
       else {
-        const a = footprint(this.doorPoses, door * 2 * STRIDE);
-        const b = footprint(this.doorPoses, (door * 2 + 1) * STRIDE);
-        rects.set(
-          [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[2], b[2]), Math.max(a[3], b[3])],
-          k * 4,
-        );
+        const r = footprint(this.doorPoses, door * 3 * STRIDE);
+        for (let pose = 1; pose < 3; pose++) {
+          const b = footprint(this.doorPoses, (door * 3 + pose) * STRIDE);
+          r[0] = Math.min(r[0], b[0]);
+          r[1] = Math.min(r[1], b[1]);
+          r[2] = Math.max(r[2], b[2]);
+          r[3] = Math.max(r[3], b[3]);
+        }
+        rects.set(r, k * 4);
       }
     }
     const t = this.terrain;
@@ -173,10 +180,16 @@ export class CollisionWorld {
     return this.doorOpen[door] === 1;
   }
 
-  /** Moves a door's solid to its open or closed pose. */
-  setDoorOpen(door: number, open: boolean): void {
+  /** Does the door open (or did it last open) into −z? */
+  isDoorFlipped(door: number): boolean {
+    return this.doorFlipped[door] === 1;
+  }
+
+  /** Moves a door's solid to its closed pose, or open into +z (or −z, flipped). */
+  setDoorOpen(door: number, open: boolean, flipped = false): void {
     this.doorOpen[door] = open ? 1 : 0;
-    const from = (door * 2 + (open ? 1 : 0)) * STRIDE;
+    this.doorFlipped[door] = flipped ? 1 : 0;
+    const from = (door * 3 + (open ? (flipped ? 2 : 1) : 0)) * STRIDE;
     this.s.set(this.doorPoses.subarray(from, from + STRIDE), (this.firstDoor + door) * STRIDE);
   }
 
@@ -186,11 +199,12 @@ export class CollisionWorld {
   }
 
   /**
-   * How far (x, z) is from a door's footprint in one of its poses, across the ground: 0
-   * inside it.
+   * How far (x, z) is from a door's footprint closed, or open on the side it's open to
+   * (or last was), across the ground: 0 inside it.
    */
   doorDistance(door: number, open: boolean, x: number, z: number): number {
-    distanceTo(this.doorPoses, (door * 2 + (open ? 1 : 0)) * STRIDE, x, z);
+    const pose = open ? 1 + this.doorFlipped[door]! : 0;
+    distanceTo(this.doorPoses, (door * 3 + pose) * STRIDE, x, z);
     return closestDist;
   }
 
@@ -479,21 +493,24 @@ export class CollisionWorld {
   }
 }
 
-/** A door's solid in one pose, as setSolid's arguments after the index. */
+/**
+ * A door's solid in one pose (0 closed, 1 open into +z, 2 open into −z), as setSolid's
+ * arguments after the index.
+ */
 function doorPose(
   d: DoorDef,
-  open: boolean,
+  pose: number,
 ): [number, number, number, number, number, number, number, number] {
   const side = d.hinge === 'left' ? -1 : 1;
   const hw = d.width / 2;
   const top = d.y + d.height;
-  if (!open) return [d.x, d.z, hw, d.thickness / 2, d.yaw, d.y, top, top];
-  // Turned 90° about the hinge, so the free edge swings towards +z.
+  if (pose === 0) return [d.x, d.z, hw, d.thickness / 2, d.yaw, d.y, top, top];
+  // Turned 90° about the hinge, so the free edge swings towards +z (pose 1) or −z (pose 2).
   const c = Math.cos(d.yaw);
   const s = Math.sin(d.yaw);
   const hx = d.x + side * hw * c;
   const hz = d.z - side * hw * s;
-  const yaw = d.yaw + (side * Math.PI) / 2;
+  const yaw = d.yaw + ((pose === 1 ? side : -side) * Math.PI) / 2;
   const lx = -side * hw;
   return [
     hx + lx * Math.cos(yaw),

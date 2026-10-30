@@ -11,8 +11,8 @@ import { step } from './step';
 import { TEST_ITEMS as items } from './test-items';
 
 /*
- * A wall across the map at z = 5 with a 1.2 m doorway in the middle, and a door in it that
- * opens towards +z, hinged on the left (−x).
+ * A wall across the map at z = 5 with a 1.2 m doorway in the middle, and a door in it hinged
+ * on the left (−x), whose +z is the side it opens to when it starts open.
  */
 function aabb(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): BoxDef {
   const c = (a: number, b: number) => (a + b) / 2;
@@ -141,19 +141,19 @@ describe('doors', () => {
 
   it('unlocks with a carried key, using it up, for the rest of the raid', () => {
     const { world, state, c } = setup({ key: 'worn-key' });
-    expect(state.doors[0]).toEqual({ open: false, locked: true });
+    expect(state.doors[0]).toEqual({ open: false, flipped: false, locked: true });
     useDoor(state, world, items, c, 0);
     expect(results(state)).toEqual(['locked']);
     const key = createItem(items, 'worn-key');
     expect(key.left).toBe(2);
     addItem(items, c.gear.pockets, key);
     useDoor(state, world, items, c, 0);
-    expect(state.doors[0]).toEqual({ open: true, locked: false });
+    expect(state.doors[0]).toEqual({ open: true, flipped: false, locked: false });
     expect(c.gear.pockets.items[0]!.item.left).toBe(1);
     // Closed again, it opens without the key.
     useDoor(state, world, items, c, 0);
     useDoor(state, world, items, c, 0);
-    expect(state.doors[0]).toEqual({ open: true, locked: false });
+    expect(state.doors[0]).toEqual({ open: true, flipped: false, locked: false });
     expect(c.gear.pockets.items[0]!.item.left).toBe(1);
     expect(results(state)).toEqual(['locked', 'unlocked', 'closed', 'opened']);
   });
@@ -180,12 +180,40 @@ describe('doors', () => {
     const { world, state, c } = setup();
     useDoor(state, world, items, c, 0);
     const copy = JSON.parse(JSON.stringify(state)) as SimState;
-    expect(copy.doors).toEqual([{ open: true, locked: false }]);
+    expect(copy.doors).toEqual([{ open: true, flipped: false, locked: false }]);
     const fresh = makeWorld();
     expect(rayAt(fresh, 0)).toBeLessThan(Infinity);
     step(copy, fresh, items, {});
     expect(rayAt(fresh, 0)).toBe(Infinity);
-    expect(createDoors(fresh)).toEqual([{ open: false, locked: false }]);
+    expect(createDoors(fresh)).toEqual([{ open: false, flipped: false, locked: false }]);
+  });
+
+  it('opens away from whoever opens it, and closes from the side it opened to', () => {
+    // From −z it opens into +z: its slab is in the way along the wall at z = 5.6.
+    const { world, state, c } = setup({}, 4);
+    useDoor(state, world, items, c, 0);
+    expect(state.doors[0]!.flipped).toBe(false);
+    expect(world.raycast(-3, 1, 5.6, 1, 0, 0, 10)).toBeCloseTo(3 - 0.6 - 0.025);
+    expect(world.raycast(-3, 1, 4.4, 1, 0, 0, 10)).toBe(Infinity);
+    useDoor(state, world, items, c, 0);
+    // From +z it opens into −z.
+    c.z = 6;
+    useDoor(state, world, items, c, 0);
+    expect(state.doors[0]!.flipped).toBe(true);
+    expect(world.raycast(-3, 1, 4.4, 1, 0, 0, 10)).toBeCloseTo(3 - 0.6 - 0.025);
+    expect(world.raycast(-3, 1, 5.6, 1, 0, 0, 10)).toBe(Infinity);
+    // Closing keeps the side, so it's drawn swinging back from there.
+    useDoor(state, world, items, c, 0);
+    expect(state.doors[0]).toEqual({ open: false, flipped: true, locked: false });
+    expect(results(state)).toEqual(['opened', 'closed', 'opened', 'closed']);
+  });
+
+  it('follows a saved state from before doors swung both ways', () => {
+    const { world, state } = setup();
+    state.doors = [{ open: true, locked: false }];
+    syncDoors(state, world);
+    expect(world.isDoorOpen(0)).toBe(true);
+    expect(world.isDoorFlipped(0)).toBe(false);
   });
 });
 
@@ -224,7 +252,7 @@ describe('doors and navigation', () => {
 
   it('has enemies open a closed door on their way, and leave it open', () => {
     const { state, enemy } = patrolThrough({});
-    expect(state.doors[0]!.open).toBe(true);
+    expect(state.doors[0]).toEqual({ open: true, flipped: false, locked: false });
     expect(enemy.z).toBeGreaterThan(10);
   });
 
@@ -235,7 +263,7 @@ describe('doors and navigation', () => {
     const enemy = spawnEnemy(state, world, 0, 0, -2, 0, { patrol: beyond });
     addItem(items, enemy.gear.pockets, createItem(items, 'key'));
     for (let i = 0; i < 10 * TICK_RATE; i++) step(state, world, items, {}, nav);
-    expect(state.doors[0]).toEqual({ open: false, locked: true });
+    expect(state.doors[0]).toEqual({ open: false, flipped: false, locked: true });
     expect(enemy.z).toBeLessThan(5);
     // Unlocked by a player, it's an ordinary door.
     state.doors[0]!.locked = false;

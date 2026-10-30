@@ -41,8 +41,9 @@ const NONE = 0xffffffff;
  * stairs and slopes connect floors; ladders don't (AI never climbs them).
  *
  * Built once from the collision world, like it, and never part of the sim state. It's
- * built with every door open: an open door's slab is kept clear of, and a closed doorway
- * is walked through (enemies open the door on the way). A locked door cuts the links
+ * built with every door open, both ways in turn: an open door's slab is kept clear of on
+ * either side (doors swing away from whoever opens them), and a closed doorway is walked
+ * through (enemies open the door on the way). A locked door cuts the links
  * through its doorway; setDoorLocked follows the sim's door state (see syncDoors).
  */
 export class NavGrid {
@@ -67,12 +68,8 @@ export class NavGrid {
   private componentsStale = false;
 
   constructor(world: CollisionWorld) {
-    const closed: number[] = [];
-    for (let i = 0; i < world.doors.length; i++) {
-      if (world.isDoorOpen(i)) continue;
-      closed.push(i);
-      world.setDoorOpen(i, true);
-    }
+    const doorWas = world.doors.map((_, i) => [world.isDoorOpen(i), world.isDoorFlipped(i)]);
+    for (let i = 0; i < world.doors.length; i++) world.setDoorOpen(i, true);
     const t = world.terrain;
     const cs = this.cellSize;
     this.minX = t.minX;
@@ -122,6 +119,24 @@ export class NavGrid {
       }
     }
     this.columnStart[columns] = heights.length;
+    // Again with the doors open the other way: only spots clear of both are kept.
+    if (world.doors.length) {
+      for (let i = 0; i < world.doors.length; i++) world.setDoorOpen(i, true, true);
+      let kept = 0;
+      for (let c = 0; c < columns; c++) {
+        const start = this.columnStart[c]!;
+        const end = this.columnStart[c + 1]!;
+        this.columnStart[c] = kept;
+        const x = this.x(c % this.cols);
+        const z = this.z(Math.floor(c / this.cols));
+        for (let k = start; k < end; k++) {
+          const h = heights[k]!;
+          if (!world.overlaps(x, z, NAV.radius, h + NAV.climb, h + NAV.height)) heights[kept++] = h;
+        }
+      }
+      this.columnStart[columns] = kept;
+      heights.length = kept;
+    }
     const count = heights.length;
     this.heights = Float32Array.from(heights);
     this.nodeColumn = new Uint32Array(count);
@@ -130,7 +145,7 @@ export class NavGrid {
 
     this.links = new Uint8Array(count);
     for (let k = 0; k < count; k++) this.links[k] = this.findLinks(k);
-    for (const i of closed) world.setDoorOpen(i, false);
+    doorWas.forEach(([open, flipped], i) => world.setDoorOpen(i, open!, flipped));
     this.doorLinks = world.doors.map((_, i) => this.linksThrough(world, i));
     this.doorLocked = new Uint8Array(world.doors.length);
 
