@@ -247,6 +247,7 @@ export {
   isBleeding,
   isBroken,
   createHealth,
+  killCharacter,
   restoreHealth,
   shootCharacter,
   totalHp,

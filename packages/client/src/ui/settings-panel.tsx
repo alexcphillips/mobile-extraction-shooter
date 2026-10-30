@@ -1,5 +1,5 @@
 import type { Settings } from '@mes/shared';
-import { useId, useSyncExternalStore, type ReactNode } from 'react';
+import { useId, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { signOut, username } from '../account';
 import { inputMode } from '../input/mode';
 import { settings } from '../settings';
@@ -19,11 +19,15 @@ interface Props {
   onEditLayout: () => void;
   /** The close button's label: Resume over a raid, Done over the menu. */
   closeLabel: string;
+  /** Dies on the spot; only during a raid. */
+  onGiveUp?: (() => void) | null;
 }
 
 /** The settings screen. Every change saves and applies straight away. */
-export function SettingsPanel({ onClose, onEditLayout, closeLabel }: Props): ReactNode {
+export function SettingsPanel({ onClose, onEditLayout, closeLabel, onGiveUp }: Props): ReactNode {
   const s = useSyncExternalStore(subscribe, current);
+  // Giving up asks again first: it loses everything you carry.
+  const [confirming, setConfirming] = useState(false);
   const set = <K extends keyof Settings>(key: K, value: Settings[K]): void =>
     settings.update((draft) => {
       draft[key] = value;
@@ -38,6 +42,24 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel }: Props): Rea
         </button>
       </header>
       <div className="panel-body">
+        {onGiveUp && (
+          <section>
+            <h2>Raid</h2>
+            {confirming ? (
+              <div className="row give-up-row">
+                <span>Die here and lose what you carry?</span>
+                <button className="danger" onClick={onGiveUp}>
+                  Give up
+                </button>
+                <button onClick={() => setConfirming(false)}>Cancel</button>
+              </div>
+            ) : (
+              <div className="row">
+                <button onClick={() => setConfirming(true)}>Give up</button>
+              </div>
+            )}
+          </section>
+        )}
         <section>
           <h2>Controls</h2>
           <Choice

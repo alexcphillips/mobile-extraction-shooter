@@ -152,6 +152,19 @@ export function dealDamage(
   return lost;
 }
 
+/**
+ * Kills outright, past armour, HP and the infinite health cheat: giving up a raid.
+ * Does nothing to the dead.
+ */
+export function killCharacter(state: SimState, c: Character, by: EntityId): void {
+  const h = c.health;
+  if (h.dead) return;
+  h.hp[HEAD] = 0;
+  h.dead = true;
+  h.bleeding.fill(false);
+  state.events.push({ type: 'death', target: c.id, by });
+}
+
 /** What a hit does: a round's (AmmoDef) or the knife's (MeleeDef). */
 export type Wound = Pick<AmmoDef, 'damage' | 'armourDamage' | 'bleedChance'>;
 

@@ -872,10 +872,19 @@ body:has(#cursor-lock:not([hidden])) #settings-button {
   margin: 4px 0 8px;
 }
 
-.account-row {
+.account-row,
+.give-up-row {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.give-up-row {
+  flex-wrap: wrap;
+}
+
+.panel button.danger {
+  background: #c0392b;
 }
 
 /* The raid screen: tabs, then the inventory's three columns (your gear, your grids, what

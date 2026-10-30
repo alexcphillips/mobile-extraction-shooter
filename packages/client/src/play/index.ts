@@ -15,6 +15,7 @@ import {
   pick,
   raycastCharacters,
   resetEnemy,
+  killCharacter,
   restoreHealth,
   shootCharacter,
   spawnCharacter,
@@ -107,6 +108,7 @@ import {
   type SaveStatus,
 } from '../raids';
 import type { RaidResult } from '../ui/results';
+import { giveUp } from './give-up';
 import { lootableInReach } from './loot';
 
 export interface PlayElements {
@@ -546,8 +548,18 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let ended: RaidResult | null = null;
   let saving: Promise<SaveStatus> | null = null;
   let resultsAt = 0;
+  // Giving up from the settings screen kills you on the next tick.
+  let givingUp = false;
+  let gaveUp = false;
+  giveUp.set(() => {
+    givingUp = true;
+    // Not wanting the mouse back unpauses a desktop raid, so the next tick comes now
+    // rather than after a click; the results screen wants it free anyway.
+    controls.cursor.want(false);
+  });
   function endRaid(how: LeaveReason | 'killed', detail: string, now: number): void {
     if (ended) return;
+    giveUp.set(null);
     const survived = how === 'extracted';
     const keepAll = survived || cheats.keepGear;
     const kept = keptItems(player.gear, keepAll);
@@ -728,6 +740,13 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     } else if (options.debug && controls.debug === 1) {
       restoreHealth(player, items);
     }
+    if (givingUp) {
+      givingUp = false;
+      if (!dead) {
+        killCharacter(sim, player, 0);
+        gaveUp = true;
+      }
+    }
 
     prev.x = cur.x;
     prev.y = cur.y;
@@ -820,11 +839,12 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // reach and what enemies took from their dead; more often while a med or repair is in
     // use, for its progress.
     if (screen && (inventoryChanged || sim.tick % (player.using ? 3 : 10) === 0)) screen.refresh();
-    // From the state, not the death event: a debug hurt kills outside the tick.
+    // From the state, not the death event: a debug hurt or giving up kills outside the tick.
     if (player.health.dead) {
       const killer = taken.find((s) => s.killed)?.key;
-      const how =
-        killer === 'bleeding'
+      const how = gaveUp
+        ? 'Gave up'
+        : killer === 'bleeding'
           ? 'Bled out'
           : killer === 'fall'
             ? 'From a fall'
