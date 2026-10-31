@@ -580,6 +580,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
             sim,
             player,
             items,
+            world,
             map,
             profile: options.profile,
             quests,

@@ -11,6 +11,7 @@ import type { WeaponState } from './weapons';
 import { dealDamage, HEAD } from './health';
 import {
   applyInventory,
+  lootInSight,
   placeLootContainers,
   type InventoryAction,
   type LootContainer,
@@ -130,6 +131,24 @@ describe('looting', () => {
     c.health.dead = true;
     expect(act(take)).toBe(false);
     expect(state.loot[0]!.grid.items).toHaveLength(0);
+  });
+
+  it('sees loot over a counter but not through a wall', () => {
+    const { c } = setup();
+    const walled = new CollisionWorld({
+      terrain: { minX: -8, minZ: -8, cellSize: 4, cols: 4, rows: 4, heights: Array(25).fill(0) },
+      boxes: [
+        // A wall 1 m to the right, and a waist-high counter 1 m ahead.
+        { x: 1, y: 1.3, z: 0, hx: 0.05, hy: 1.3, hz: 3, yaw: 0 },
+        { x: 0, y: 0.45, z: -1.2, hx: 1, hy: 0.45, hz: 0.3, yaw: 0 },
+      ],
+      ramps: [],
+      ladders: [],
+    });
+    expect(lootInSight(walled, c, 1.5, 0.5, 0)).toBe(false);
+    expect(lootInSight(walled, c, 0.5, 0.5, 0)).toBe(true);
+    // On the counter's top: the hit just short of it is what it rests on.
+    expect(lootInSight(walled, c, 0, 0.9, -1.2)).toBe(true);
   });
 
   it('refuses an action whose item has moved since it was sent', () => {

@@ -154,6 +154,7 @@ export {
   canReach,
   gridOf,
   groundInReach,
+  lootInSight,
   lootContainerById,
   ownItem,
   placeLootContainers,

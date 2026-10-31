@@ -131,7 +131,7 @@ export class InventoryController implements DragHost {
   nearby(): { ref: OnGround; g: GroundItem }[] {
     const out: { ref: OnGround; g: GroundItem }[] = [];
     this.ctx.sim.ground.forEach((g, i) => {
-      if (groundInReach(this.ctx.player, g)) {
+      if (groundInReach(this.ctx.player, g, this.ctx.world)) {
         out.push({ ref: { owner: { kind: 'ground' }, ground: i, item: g.item.item }, g });
       }
     });
@@ -548,11 +548,11 @@ export class InventoryController implements DragHost {
 
   /** The item a ref points at, if it's still there. */
   find(ref: ItemRef): { item: Item; def: ItemDef } | null {
-    const { sim, player, items } = this.ctx;
+    const { sim, player, items, world } = this.ctx;
     let item: Item | null | undefined;
     if ('ground' in ref) {
       const g = sim.ground[ref.ground];
-      item = g && groundInReach(player, g) ? g.item : null;
+      item = g && groundInReach(player, g, world) ? g.item : null;
     } else if ('slot' in ref) {
       const ch = this.character(ref.owner);
       item = ch && (ch.gear as unknown as Record<GearSlot, Item | null>)[ref.slot];

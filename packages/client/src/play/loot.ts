@@ -5,6 +5,7 @@ import {
   doorInReach,
   eyeHeight,
   groundInReach,
+  lootInSight,
   type Character,
   type CollisionWorld,
   type GroundItem,
@@ -36,8 +37,8 @@ const hit = createRayHit();
 /**
  * What the use button acts on: an item on the ground in reach near the crosshair, else a
  * door in reach under the crosshair, else the container or dead body in reach that the
- * player is most nearly facing, or null. One right underfoot counts even behind. The
- * result is reused: copy what you keep.
+ * player is most nearly facing, or null. One right underfoot counts even behind. Nothing
+ * behind a wall counts. The result is reused: copy what you keep.
  */
 export function lootableInReach(
   sim: SimState,
@@ -58,7 +59,7 @@ export function lootableInReach(
   const ey = eyeHeight(player);
   for (let i = 0; i < sim.ground.length; i++) {
     const g = sim.ground[i]!;
-    if (!groundInReach(player, g)) continue;
+    if (!groundInReach(player, g, world)) continue;
     const dx = g.x - player.x;
     const dy = g.y - ey;
     const dz = g.z - player.z;
@@ -90,7 +91,7 @@ export function lootableInReach(
   }
   for (const l of sim.loot) {
     const s = score(player, fx, fz, l.x, l.y, l.z);
-    if (s > best) {
+    if (s > best && inSight(world, player, l.x, l.y, l.z)) {
       best = s;
       scratch.container.c = l;
       found = scratch.container as Lootable;
@@ -99,7 +100,7 @@ export function lootableInReach(
   for (const e of sim.entities) {
     if (e === player || !e.health.dead) continue;
     const s = score(player, fx, fz, e.x, e.y, e.z);
-    if (s > best) {
+    if (s > best && inSight(world, player, e.x, e.y, e.z)) {
       best = s;
       scratch.body.c = e;
       found = scratch.body as Lootable;
@@ -141,6 +142,11 @@ function doorwayAt(
     if (Math.abs(x) <= d.width / 2 && y >= d.y && y <= d.y + d.height) return i;
   }
   return -1;
+}
+
+/** Whether a container or body, by where it stands, can be seen: a little above its feet. */
+function inSight(world: CollisionWorld, p: Character, x: number, y: number, z: number): boolean {
+  return lootInSight(world, p, x, y + 0.5, z);
 }
 
 /** How squarely the player faces a spot in reach (higher is better), or -Infinity. */
