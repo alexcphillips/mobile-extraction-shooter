@@ -22,6 +22,11 @@ import { terrainDef } from './terrain';
 const DEG = Math.PI / 180;
 /** How far solids must cut into each other to count, so touching faces don't. */
 const PROP_TOLERANCE = 0.05;
+/**
+ * A cut this thin on two of its three axes is a joint, not a mistake: walls meeting at a
+ * corner, a wall through a floor slab, a leg through a shelf. Those don't warn.
+ */
+const JOINT = 0.45;
 const BUILDING_TOLERANCE = 0.01;
 /** Ground this far above a building's floor shows through it. */
 const FLOOR_TOLERANCE = 0.05;
@@ -79,7 +84,7 @@ export function findOverlaps(map: MapFile, prefabs: PrefabLookup): Overlaps {
       if (a.buildings.length && b.buildings.length && buildingsOverlap(a, b))
         out.buildings.push([a.path, b.path]);
       if (a.maxX < b.minX || b.maxX < a.minX || a.maxZ < b.minZ || b.maxZ < a.minZ) continue;
-      if (a.solids.some((s) => b.solids.some((t) => solidsOverlap(s, t, PROP_TOLERANCE))))
+      if (a.solids.some((s) => b.solids.some((t) => solidsOverlap(s, t, PROP_TOLERANCE, JOINT))))
         out.props.push([a.path, b.path]);
     }
   }
@@ -103,14 +108,18 @@ function buildingsOverlap(a: Placed, b: Placed): boolean {
 
 /**
  * Whether two solids cut into each other by more than `tolerance` on every axis: their
- * heights, and both rectangles' sides (the separating axis test).
+ * heights, and both rectangles' sides (the separating axis test). With `joint`, a cut no
+ * deeper than that on two of its three axes (in either rectangle's frame) doesn't count.
  */
-export function solidsOverlap(a: Solid, b: Solid, tolerance: number): boolean {
-  if (Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0) <= tolerance) return false;
+export function solidsOverlap(a: Solid, b: Solid, tolerance: number, joint = 0): boolean {
+  const height = Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0);
+  if (height <= tolerance) return false;
+  let isJoint = false;
   for (const yaw of [a.yaw, b.yaw]) {
     // The rectangle's local x and z axes in the world (yaw 0 faces −z, as in compile).
     const c = Math.cos(yaw);
     const s = Math.sin(yaw);
+    let thin = height <= joint ? 1 : 0;
     for (const [ax, az] of [
       [c, -s],
       [s, c],
@@ -118,10 +127,14 @@ export function solidsOverlap(a: Solid, b: Solid, tolerance: number): boolean {
       const ra = extent(a, ax, az);
       const rb = extent(b, ax, az);
       const d = Math.abs((b.x - a.x) * ax + (b.z - a.z) * az);
-      if (ra + rb - d <= tolerance) return false;
+      const cut = ra + rb - d;
+      if (cut <= tolerance) return false;
+      // How deep the shared part is: no more than either solid is thick.
+      if (Math.min(cut, 2 * ra, 2 * rb) <= joint) thin++;
     }
+    if (thin >= 2) isJoint = true;
   }
-  return true;
+  return !isJoint;
 }
 
 /** Half the length of a rectangle's shadow on a unit axis. */

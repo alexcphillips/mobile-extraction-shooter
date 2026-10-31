@@ -29,6 +29,8 @@ import {
 } from './editor';
 import { HexColour, Num, Pick, Text, Toggle, UNSET } from './fields';
 import { BRUSH_MODES } from './terrain';
+import { PrefabBrowser } from './prefab-browser';
+import { WALL_MODES } from './walls';
 
 /*
  * The map editor's panels (session 15): the toolbar along the top, the list of nodes in
@@ -57,6 +59,9 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
     <>
       {making && <NewMap editor={editor} maps={maps} close={() => setMaking(false)} />}
       {makingPrefab && <NewPrefab editor={editor} close={() => setMakingPrefab(false)} />}
+      {s.browsing && (
+        <PrefabBrowser editor={editor} state={s} close={() => editor.setBrowsing(false)} />
+      )}
       <div className="ed-bar">
         <select
           value={s.map.id}
@@ -110,15 +115,9 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
         >
           prefab
         </Toggle>
-        <select
-          value={s.placing}
-          title="The prefab to place"
-          onChange={(e) => editor.setPlacing(e.target.value)}
-        >
-          {[...prefabs.keys()].sort().map((id) => (
-            <option key={id}>{id}</option>
-          ))}
-        </select>
+        <button onClick={() => editor.setBrowsing(true)} title="P: pick the prefab to place">
+          {s.placing || 'none'} ▾
+        </button>
         <Toggle on={s.tool === 'marker'} onClick={() => editor.setTool('marker')} title="7">
           marker
         </Toggle>
@@ -140,6 +139,13 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
         >
           zone
         </Toggle>
+        <Toggle
+          on={s.tool === 'wall'}
+          onClick={() => editor.setTool('wall')}
+          title="9: draw walls a corner at a time, or cut doors and windows into them"
+        >
+          wall
+        </Toggle>
         <Toggle on={s.tool === 'terrain'} onClick={() => editor.setTool('terrain')} title="G">
           ground
         </Toggle>
@@ -147,6 +153,26 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
         <Toggle on={s.nav} onClick={() => editor.setNav(!s.nav)} title="N: where enemies can walk">
           nav
         </Toggle>
+        <Toggle
+          on={s.cut !== null}
+          onClick={() => editor.toggleCut()}
+          title="C: hide everything above a height, to see inside; ↑ and ↓ a floor at a time"
+        >
+          cut
+        </Toggle>
+        {s.cut !== null && (
+          <>
+            <button onClick={() => editor.stepCut(-1)} title="↓: a floor down">
+              ▼
+            </button>
+            <span className="ed-short" title="The cut's height, in metres">
+              <Num label="" value={s.cut} onChange={(v) => v !== undefined && editor.setCut(v)} />
+            </span>
+            <button onClick={() => editor.stepCut(1)} title="↑: a floor up">
+              ▲
+            </button>
+          </>
+        )}
         <select
           value={start}
           title="Where the play-test starts"
@@ -201,6 +227,56 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
           </>
         ) : (
           <>
+            {s.tool === 'wall' && (
+              <>
+                {WALL_MODES.map((m) => (
+                  <Toggle
+                    key={m}
+                    on={s.wall.mode === m}
+                    onClick={() => editor.setWall({ mode: m })}
+                  >
+                    {m}
+                  </Toggle>
+                ))}
+                {s.wall.mode === 'draw' ? (
+                  <>
+                    <span className="ed-short" title="Wall height, in metres">
+                      <Num
+                        label="height"
+                        value={s.wall.height}
+                        min={0.1}
+                        onChange={(v) => v && editor.setWall({ height: v })}
+                      />
+                    </span>
+                    <span className="ed-short" title="Wall thickness, in metres">
+                      <Num
+                        label="thick"
+                        value={s.wall.thickness}
+                        min={0.05}
+                        onChange={(v) => v && editor.setWall({ thickness: v })}
+                      />
+                    </span>
+                  </>
+                ) : (
+                  <span
+                    className="ed-short"
+                    title={
+                      s.wall.mode === 'window'
+                        ? 'Window width, in metres: 0.7 or more to vault through. Its sill is 0.9 m up and it is 1.1 m tall.'
+                        : 'Door width, in metres. Doorways are 2.1 m tall.'
+                    }
+                  >
+                    <Num
+                      label="width"
+                      value={s.wall.width}
+                      min={0.1}
+                      onChange={(v) => v && editor.setWall({ width: v })}
+                    />
+                  </span>
+                )}
+                <span className="ed-sep" />
+              </>
+            )}
             <Toggle
               on={s.gizmo === 'translate'}
               onClick={() => editor.setGizmo('translate')}
@@ -244,6 +320,14 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
                 onChange={(e) => editor.setOption({ snapDown: e.target.checked })}
               />
               Snap down
+            </label>
+            <label title="Snap what's dragged flush with, or in line with, things beside it">
+              <input
+                type="checkbox"
+                checked={s.objectSnap}
+                onChange={(e) => editor.setOption({ objectSnap: e.target.checked })}
+              />
+              Snap to things
             </label>
           </>
         )}
@@ -361,6 +445,7 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
             </ul>
           </details>
         )}
+        <Notes editor={editor} state={s} />
         {s.exposed.length > 0 && (
           <details className="ed-overlaps" open>
             <summary>Enemies near a player spawn ({s.exposed.length})</summary>
@@ -408,7 +493,7 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
 const HELP =
   'Two-finger scroll orbit, ⇧ pan · pinch zoom · ⌥-drag orbit, ⌥⇧-drag pan · WASD QE fly · ' +
   'click select, ⇧ add · double-click enter group or prefab · F focus · G ground · 7 marker · ' +
-  '8 zone · N nav';
+  '8 zone · 9 wall · P prefabs · N nav · C cut, ↑ ↓ floors';
 
 /** The map's own settings, shown when nothing is selected, and its named zones. */
 function MapSettings(props: {
@@ -548,6 +633,41 @@ function Zones({ editor, map, zone, point }: Parameters<typeof MapSettings>[0]) 
 }
 
 /** What's being drawn a click at a time, with buttons to finish or stop. */
+/** The map's notes from play-tests and other developers (content/notes). */
+function Notes({ editor, state }: { editor: MapEditor; state: EditorState }) {
+  return (
+    <details className="ed-overlaps" open={state.notes.length > 0}>
+      <summary>Notes ({state.notes.length})</summary>
+      <ul>
+        {state.notes.map((n) => (
+          <li key={n.id} className={n.id === state.note ? 'ed-on' : undefined}>
+            <button onClick={() => editor.pickNote(n.id)} title="Go to it">
+              {n.text}
+            </button>{' '}
+            <span className="ed-type">
+              {n.author}, {n.date}
+            </span>{' '}
+            <button
+              onClick={() =>
+                confirm(`Remove "${n.text}" for everyone?`) && editor.resolveNote(n.id)
+              }
+              title="Dealt with: take it out of content/notes"
+            >
+              Resolve
+            </button>
+          </li>
+        ))}
+      </ul>
+      <button
+        onClick={() => editor.noteHere()}
+        title="Drop a note at the camera's target. In a play-test, N drops one where you stand."
+      >
+        Note here…
+      </button>
+    </details>
+  );
+}
+
 function DrawingNote({
   editor,
   drawing,
@@ -556,7 +676,13 @@ function DrawingNote({
   drawing: NonNullable<EditorState['drawing']>;
 }) {
   const what =
-    drawing.what === 'zone' ? 'a zone' : drawing.what === 'patrol' ? 'a patrol' : 'patrol points';
+    drawing.what === 'zone'
+      ? 'a zone'
+      : drawing.what === 'patrol'
+        ? 'a patrol'
+        : drawing.what === 'walls'
+          ? 'walls'
+          : 'patrol points';
   return (
     <div className="ed-inspector">
       <p className="ed-note">
@@ -567,6 +693,15 @@ function DrawingNote({
         <button onClick={() => editor.finishDrawing()} title="Enter">
           Finish
         </button>
+        {drawing.what === 'walls' && (
+          <button
+            onClick={() => editor.finishDrawing(true)}
+            disabled={drawing.points.length < 3}
+            title="Or click the first corner"
+          >
+            Close room
+          </button>
+        )}
         <button onClick={() => editor.setTool('select')} title="Esc">
           Cancel
         </button>

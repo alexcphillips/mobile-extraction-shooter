@@ -102,6 +102,24 @@ describe('overlaps', () => {
     expect(solidsOverlap(a, { ...a, x: 2.5, yaw: Math.PI / 4 }, 0.05)).toBe(false);
   });
 
+  it("don't count joints: cuts thin on two axes", () => {
+    const wall = { x: 0, z: 0, yaw: 0, hx: 2, hz: 0.1, y0: 0, y1: 3 };
+    // Another wall meeting it at a corner: 0.2 by 0.2 across, 3 m tall.
+    const corner = { x: 1.9, z: 1.9, yaw: 0, hx: 0.1, hz: 2, y0: 0, y1: 3 };
+    expect(solidsOverlap(wall, corner, 0.05, 0.45)).toBe(false);
+    expect(solidsOverlap(wall, corner, 0.05)).toBe(true);
+    // Turned a quarter, the same corner in the other wall's frame.
+    expect(solidsOverlap(wall, { ...corner, hx: 2, hz: 0.1, yaw: Math.PI / 2 }, 0.05, 0.45)).toBe(
+      false,
+    );
+    // A floor slab the wall stands through: thin in y and z.
+    const slab = { x: 0, z: 0, yaw: 0, hx: 5, hz: 5, y0: 1, y1: 1.3 };
+    expect(solidsOverlap(wall, slab, 0.05, 0.45)).toBe(false);
+    // A crate cut half into another is deep on every axis.
+    const crate = { x: 0, z: 0, yaw: 0, hx: 0.5, hz: 0.5, y0: 0, y1: 1 };
+    expect(solidsOverlap(crate, { ...crate, x: 0.5 }, 0.05, 0.45)).toBe(true);
+  });
+
   it('find props cutting into each other and buildings whose footprints overlap', () => {
     const o = findOverlaps(
       map([

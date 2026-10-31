@@ -17,6 +17,7 @@ import { TriangleBuilder } from '../render/geometry';
 import { CHUNK, buildDoor } from '../render/map';
 import { bakedMaterial, shadedMaterial } from '../render/material';
 import { nodePos, nodeYaw, round, type NodePath, type Vec3 } from './doc';
+import { disposeLabels } from '../notes';
 import { footprintsOverlap } from './overlap';
 import { applyBrush, terrainGrid, type Brush, type TerrainGrid } from './terrain';
 
@@ -35,6 +36,13 @@ const HANDLE_ON = 0xff8c00;
 const HANDLE_SIZE = 0.25;
 /** How far the drop looks up for a surface to land on, so things climb kerbs and slopes. */
 const DROP_REACH = 0.3;
+/** How near a face must come to another thing's to snap to it, and how near that thing must be. */
+const OBJECT_SNAP = 0.25;
+const OBJECT_SNAP_NEAR = 1;
+/** The outline of the thing a drag has snapped to. */
+const SNAP_GUIDE = 0x4dd2ff;
+/** Where the cutaway cuts through solids. */
+const CAP = 0x2b2f36;
 
 /** What a drag of the gizmo did: each selected index moved from `from` to `to`, turned `yaw`°. */
 export interface Moved {
@@ -48,6 +56,8 @@ export interface ViewOptions {
   gridSnap: number;
   angleSnap: number;
   snapDown: boolean;
+  /** Snap what's dragged flush with, or in line with, the faces of things beside it. */
+  objectSnap: boolean;
 }
 
 export interface ViewEvents {
@@ -64,6 +74,8 @@ export interface ViewEvents {
   terrain(heights: Float64Array): void;
   /** A handle was dragged to `to` (in the scope's frame), or just clicked (`to` null). */
   handle(index: number, to: Vec3 | null): void;
+  /** The mouse moved over the scene (not dragging anything). */
+  hover(e: PointerEvent): void;
 }
 
 /** Points drawn as handles: a patrol's or zone's being edited, or one being drawn. */
@@ -132,20 +144,80 @@ export class EditorView {
     exclude: Set<THREE.Object3D>;
     moving: Set<THREE.Object3D>;
     still: CompiledBuilding[];
+    /**
+     * Around what's dragged, in `snapFrame` (the scope's frame turned to its yaw, so a turned
+     * wall snaps to walls turned the same way); null if its parts aren't square to each other.
+     */
+    box: THREE.Box3 | null;
+    /** What it can snap to: everything else that's square to that frame. */
+    targets: THREE.Box3[];
   } | null = null;
+  private readonly snapGuide = new THREE.Box3Helper(new THREE.Box3(), SNAP_GUIDE);
+  private readonly snapFrame = new THREE.Object3D();
+  private labels: THREE.Object3D | null = null;
+  /** What's being drawn (walls), shown see-through in the scope's frame. */
+  private preview: THREE.Object3D | null = null;
+  private readonly previewMaterial = Object.assign(shadedMaterial(), {
+    transparent: true,
+    opacity: 0.55,
+    depthWrite: false,
+  });
   private down: { x: number; y: number } | null = null;
-  options: ViewOptions = { gridSnap: 0.5, angleSnap: 15, snapDown: true };
+  /** The cutaway's height in the world (everything above is hidden), or null. */
+  private cutY: number | null = null;
+  /** Every material in the scene clips by these: the cutaway's plane, or none. */
+  private readonly clipPlanes: THREE.Plane[] = [];
+  /**
+   * The cutaway's caps (the stencil technique): solids' back faces count up and front faces
+   * down, so what's left non-zero is inside a cut solid, where the cap is drawn.
+   */
+  private readonly capCount = [THREE.BackSide, THREE.FrontSide].map(
+    (side) =>
+      new THREE.MeshBasicMaterial({
+        side,
+        colorWrite: false,
+        depthWrite: false,
+        depthTest: false,
+        stencilWrite: true,
+        stencilFunc: THREE.AlwaysStencilFunc,
+        ...stencilOp(
+          side === THREE.BackSide ? THREE.IncrementWrapStencilOp : THREE.DecrementWrapStencilOp,
+        ),
+        clippingPlanes: this.clipPlanes,
+      }),
+  );
+  private readonly capScene = new THREE.Scene();
+  private readonly cap = new THREE.Mesh(
+    new THREE.PlaneGeometry(4000, 4000).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({
+      color: CAP,
+      stencilWrite: true,
+      stencilRef: 0,
+      stencilFunc: THREE.NotEqualStencilFunc,
+      ...stencilOp(THREE.ReplaceStencilOp),
+    }),
+  );
+  options: ViewOptions = { gridSnap: 0.5, angleSnap: 15, snapDown: true, objectSnap: true };
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
     compiled: CompiledMap,
     private readonly events: ViewEvents,
   ) {
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, stencil: true });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    this.renderer.localClippingEnabled = true;
+    darkenBackFaces(this.material);
+    this.material.clippingPlanes = this.clipPlanes;
+    this.baked.clippingPlanes = this.clipPlanes;
     this.terrain = new HeightGrid(compiled.world.terrain);
     this.ring.renderOrder = 10;
     this.ring.visible = false;
+    this.snapGuide.visible = false;
+    this.snapGuide.raycast = () => {};
+    this.snapFrame.add(this.snapGuide);
+    this.cap.raycast = () => {};
+    this.capScene.add(this.cap);
     this.scene.add(this.ground, this.root, this.bases, this.helpers, this.ring, this.handleGroup);
 
     const t = compiled.world.terrain;
@@ -201,6 +273,7 @@ export class EditorView {
       if (this.handleDrag) this.dragHandle(e);
       if (this.stroke) this.stroke.shift = e.shiftKey;
       this.moveRing();
+      if (!this.handleDrag && !this.stroke && !this.gizmo.dragging) this.events.hover(e);
     });
     canvas.addEventListener('pointerleave', () => {
       if (!this.stroke) this.ring.visible = false;
@@ -234,10 +307,49 @@ export class EditorView {
       this.brushFrame(dt);
       last = now;
       for (const h of this.helpers.children) (h as THREE.BoxHelper).update?.();
-      this.renderer.render(this.scene, this.camera);
+      this.render();
       requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);
+  }
+
+  /**
+   * Draws the scene. With the cutaway on: everything but what's drawn over it, then the
+   * caps over cut solids, then the outlines, handles and gizmo on top.
+   */
+  private render(): void {
+    const r = this.renderer;
+    if (this.cutY === null) return r.render(this.scene, this.camera);
+    const kids = this.scene.children;
+    const shown = kids.map((k) => k.visible);
+    const only = (keep: readonly THREE.Object3D[]): void =>
+      kids.forEach((k, i) => (k.visible = shown[i]! && keep.includes(k)));
+    const over: THREE.Object3D[] = [
+      this.helpers,
+      this.ring,
+      this.handleGroup,
+      this.gizmo.getHelper(),
+      ...(this.labels ? [this.labels] : []),
+    ];
+    only(kids.filter((k) => !over.includes(k)));
+    r.render(this.scene, this.camera);
+    // The later passes add to it: no clearing, and no sky drawn over it.
+    r.autoClear = false;
+    const sky = this.scene.background;
+    this.scene.background = null;
+    only([this.root, this.bases]);
+    for (const m of this.capCount) {
+      this.scene.overrideMaterial = m;
+      r.render(this.scene, this.camera);
+    }
+    this.scene.overrideMaterial = null;
+    this.cap.position.set(this.camera.position.x, this.cutY, this.camera.position.z);
+    r.render(this.capScene, this.camera);
+    only(over);
+    r.render(this.scene, this.camera);
+    kids.forEach((k, i) => (k.visible = shown[i]!));
+    this.scene.background = sky;
+    r.autoClear = true;
   }
 
   private resize(): void {
@@ -264,7 +376,7 @@ export class EditorView {
     if (e.ctrlKey || e.metaKey) {
       // Towards what's under the cursor, or the point at the target's distance.
       this.aim(e);
-      const hit = this.raycaster.intersectObjects([this.ground, this.root], true)[0];
+      const hit = this.raycaster.intersectObjects([this.ground, this.root], true).find(this.seen);
       const at = hit?.point ?? this.raycaster.ray.at(cam.distanceTo(target), new THREE.Vector3());
       const f = Math.exp(Math.max(-0.5, Math.min(0.5, dy * 0.01)));
       if (f < 1 && cam.distanceTo(at) * f < 0.5) return;
@@ -353,6 +465,7 @@ export class EditorView {
       });
     };
     add(map.nodes, this.root, [], map.colours ?? {});
+    this.clip(this.root);
     this.scene.add(this.root);
     this.root.updateMatrixWorld(true);
     this.buildBases();
@@ -402,6 +515,7 @@ export class EditorView {
     const zones = buildDebug({ markers: [], patrols: [], zones: map.zones }, this.terrain);
     zones.traverse((o) => (o.raycast = () => {}));
     this.ground.add(zones);
+    this.clip(this.ground);
   }
 
   private buildChunk(k: number): void {
@@ -534,7 +648,9 @@ export class EditorView {
   private handlePoint(e: PointerEvent, terrainOnly: boolean): THREE.Vector3 | null {
     this.aim(e);
     const targets = terrainOnly ? this.chunks : [this.ground, this.root];
-    const hit = this.raycaster.intersectObjects(targets, true).find((h) => surface(h.object));
+    const hit = this.raycaster
+      .intersectObjects(targets, true)
+      .find((h) => surface(h.object) && this.seen(h));
     if (!hit) return null;
     const frame = this.scopeObject();
     const p = frame.worldToLocal(hit.point.clone());
@@ -550,6 +666,46 @@ export class EditorView {
     return world;
   }
 
+  // Previews
+
+  /** Shows nodes see-through in the scope's frame (walls being drawn), or none. */
+  setPreview(nodes: readonly MapNode[] | null): void {
+    if (this.preview) {
+      this.preview.removeFromParent();
+      dispose(this.preview, this.previewMaterial);
+      this.preview = null;
+    }
+    if (!nodes?.length) return;
+    const b = new TriangleBuilder(false);
+    try {
+      for (const s of compileNodes(nodes, this.prefabs).shapes) b.shape(s);
+    } catch {
+      return;
+    }
+    const mesh = new THREE.Mesh(b.build(), this.previewMaterial);
+    mesh.raycast = () => {};
+    mesh.renderOrder = 5;
+    this.previewMaterial.clippingPlanes = this.clipPlanes;
+    this.preview = mesh;
+    this.scopeObject().add(mesh);
+  }
+
+  /** Shows these labels (map notes) over everything, in the world, replacing the last. */
+  setLabels(labels: THREE.Object3D | null): void {
+    if (this.labels) {
+      this.scene.remove(this.labels);
+      disposeLabels(this.labels);
+    }
+    this.labels = labels;
+    if (labels) this.scene.add(labels);
+  }
+
+  /** A world point in the scope's frame. */
+  toScope(p: readonly number[]): Vec3 {
+    const v = this.scopeObject().worldToLocal(new THREE.Vector3(p[0], p[1], p[2]));
+    return [v.x, v.y, v.z];
+  }
+
   // The navigation overlay
 
   /** Shows an overlay over the map (the navigation grid), replacing the last; null removes it. */
@@ -561,9 +717,37 @@ export class EditorView {
     this.overlay = o;
     if (o) {
       o.traverse((c) => (c.raycast = () => {}));
+      this.clip(o);
       this.scene.add(o);
     }
   }
+
+  // The cutaway
+
+  /** Hides everything above a world height (null shows it all), to see inside a floor. */
+  set cut(y: number | null) {
+    this.cutY = y;
+    this.clipPlanes.length = 0;
+    if (y !== null) this.clipPlanes.push(new THREE.Plane(DOWN, y));
+    // Cut solids are open: their insides show, darker, so walls read as a plan.
+    const side = y === null ? THREE.FrontSide : THREE.DoubleSide;
+    if (this.material.side !== side) {
+      this.material.side = side;
+      this.material.needsUpdate = true;
+    }
+  }
+
+  /** Gives everything under `root` the cutaway's planes (the shared materials have them). */
+  private clip(root: THREE.Object3D): void {
+    root.traverse((o) => {
+      const m = (o as THREE.Mesh).material;
+      for (const mat of Array.isArray(m) ? m : m ? [m] : []) mat.clippingPlanes = this.clipPlanes;
+    });
+  }
+
+  /** Whether a ray's hit is below the cutaway, so can be seen (and picked). */
+  private readonly seen = (h: THREE.Intersection): boolean =>
+    this.cutY === null || h.point.y <= this.cutY + 0.01;
 
   /** The terrain's height at a world x, z. */
   groundAt(x: number, z: number): number {
@@ -605,7 +789,7 @@ export class EditorView {
 
   private groundUnder(e: { clientX: number; clientY: number }): THREE.Vector3 | null {
     this.aim(e);
-    return this.raycaster.intersectObjects(this.chunks, false)[0]?.point ?? null;
+    return this.raycaster.intersectObjects(this.chunks, false).find(this.seen)?.point ?? null;
   }
 
   private startStroke(e: PointerEvent): void {
@@ -744,6 +928,7 @@ export class EditorView {
       const o = this.objects.get(w);
       if (o) this.helpers.add(new THREE.BoxHelper(o, WARNING));
     }
+    this.clip(this.helpers);
     selected.forEach((i, k) => {
       const o = this.objectOf(i);
       if (!o) return;
@@ -800,7 +985,34 @@ export class EditorView {
       if (exclude.has(o)) moving.add(o);
       else still.push(...worldBuildings(o));
     }
-    this.drag = { start: this.pivot.position.clone(), objects, exclude, moving, still };
+    // The snapping frame: the scope's, turned to the yaw of the first thing dragged.
+    const scope = this.scopeObject();
+    const first = [...exclude].find(surface);
+    const frame = this.snapFrame;
+    scope.add(frame);
+    frame.position.set(0, 0, 0);
+    frame.rotation.set(0, first ? quarterYaw(first, scope) : 0, 0);
+    frame.updateMatrixWorld();
+    const box = new THREE.Box3();
+    const targets: THREE.Box3[] = [];
+    let square = true;
+    this.root.traverse((o) => {
+      if (!surface(o)) return;
+      const b = frameBox(o as THREE.Mesh, frame);
+      if (exclude.has(o)) {
+        if (b) box.union(b);
+        else square = false;
+      } else if (b) targets.push(b);
+    });
+    this.drag = {
+      start: this.pivot.position.clone(),
+      objects,
+      exclude,
+      moving,
+      still,
+      box: square && !box.isEmpty() ? box : null,
+      targets,
+    };
   }
 
   /** Snaps the pivot, then moves the selection with it, dropping it onto surfaces. */
@@ -811,12 +1023,18 @@ export class EditorView {
     const single = d.objects.length === 1 ? d.objects[0]! : null;
     const axis = this.gizmo.axis ?? '';
     let yaw = 0;
+    let guide: THREE.Box3 | null = null;
     if (this.gizmo.mode === 'translate') {
       const p = this.pivot.position;
       for (const k of ['x', 'y', 'z'] as const) {
-        if (!gridSnap || !axis.includes(k.toUpperCase())) continue;
-        // One thing snaps to the grid; several keep their spacing and move by whole steps.
-        p[k] = single ? snap(p[k], gridSnap) : d.start[k] + snap(p[k] - d.start[k], gridSnap);
+        if (!axis.includes(k.toUpperCase())) continue;
+        const near = this.options.objectSnap ? this.objectSnap(d, k, p.clone().sub(d.start)) : null;
+        if (near) {
+          p[k] = d.start[k] + near.move;
+          guide = near.target;
+        } else if (gridSnap)
+          // One thing snaps to the grid; several keep their spacing and move by whole steps.
+          p[k] = single ? snap(p[k], gridSnap) : d.start[k] + snap(p[k] - d.start[k], gridSnap);
       }
     } else {
       yaw = this.pivot.rotation.y;
@@ -826,6 +1044,7 @@ export class EditorView {
       }
       this.pivot.rotation.set(0, yaw, 0);
     }
+    this.showSnapGuide(guide);
     const drop = snapDown && this.gizmo.mode === 'translate' && !axis.includes('Y');
     const scope = this.scopeObject();
     for (const o of d.objects) {
@@ -851,7 +1070,51 @@ export class EditorView {
     }
   }
 
+  /**
+   * How far along axis `k` a drag (by `offset` so far) goes so a face of what's dragged meets,
+   * or lines up with, a face of something near it (the nearest within OBJECT_SNAP), if any.
+   */
+  private objectSnap(
+    d: NonNullable<EditorView['drag']>,
+    k: 'x' | 'y' | 'z',
+    offset: THREE.Vector3,
+  ): { move: number; target: THREE.Box3 } | null {
+    if (!d.box) return null;
+    // The drag and its axis in the snapping frame, which may be turned.
+    const turn = -this.snapFrame.rotation.y;
+    const moved = d.box.clone().translate(offset.clone().applyAxisAngle(UP, turn));
+    const dir = new THREE.Vector3().setComponent(AXIS_INDEX[k], 1).applyAxisAngle(UP, turn);
+    const reach = moved.clone().expandByScalar(OBJECT_SNAP_NEAR);
+    let best: { move: number; target: THREE.Box3 } | null = null;
+    let bestMove = OBJECT_SNAP;
+    for (const t of d.targets) {
+      if (!t.intersectsBox(reach)) continue;
+      for (const u of ['x', 'y', 'z'] as const) {
+        // How fast the drag closes gaps along this side; too slant a way isn't a snap.
+        const rate = dir[u];
+        if (Math.abs(rate) < 0.25) continue;
+        const [a0, a1, b0, b1] = [moved.min[u], moved.max[u], t.min[u], t.max[u]];
+        // Flush either side, or the same side in line.
+        for (const gap of [b1 - a0, b0 - a1, b0 - a0, b1 - a1]) {
+          const shift = gap / rate;
+          if (Math.abs(shift) < bestMove) {
+            bestMove = Math.abs(shift);
+            best = { move: offset[k] + shift, target: t };
+          }
+        }
+      }
+    }
+    return best;
+  }
+
+  /** Outlines what a drag has snapped to (in the snapping frame), or nothing. */
+  private showSnapGuide(box: THREE.Box3 | null): void {
+    this.snapGuide.visible = !!box;
+    if (box) this.snapGuide.box.copy(box);
+  }
+
   private endDrag(): void {
+    this.showSnapGuide(null);
     const d = this.drag;
     this.drag = null;
     if (!d) return;
@@ -886,7 +1149,7 @@ export class EditorView {
     this.raycaster.set(new THREE.Vector3(world.x, world.y + DROP_REACH, world.z), DOWN);
     this.raycaster.far = Infinity;
     const hits = this.raycaster.intersectObjects([this.ground, this.root], true);
-    const hit = hits.find((h) => !exclude.has(h.object) && surface(h.object));
+    const hit = hits.find((h) => !exclude.has(h.object) && surface(h.object) && this.seen(h));
     return hit ? hit.point.y : this.terrain.heightAt(world.x, world.z);
   }
 
@@ -895,7 +1158,7 @@ export class EditorView {
     this.aim(e);
     const hit = this.raycaster
       .intersectObjects([this.ground, this.root], true)
-      .find((h) => surface(h.object));
+      .find((h) => surface(h.object) && this.seen(h));
     return hit ? this.scopeObject().worldToLocal(hit.point.clone()) : null;
   }
 
@@ -923,6 +1186,7 @@ export class EditorView {
   private pick(e: MouseEvent): { index: number | null; outside: NodePath | null } {
     this.aim(e);
     for (const h of this.raycaster.intersectObjects([this.root], true)) {
+      if (!this.seen(h)) continue;
       let o: THREE.Object3D | null = h.object;
       while (o && o.userData.path === undefined) o = o.parent;
       if (!o) continue;
@@ -933,6 +1197,26 @@ export class EditorView {
       return { index: null, outside: [path[0]!] };
     }
     return { index: null, outside: null };
+  }
+
+  /**
+   * The node under the mouse however deep in the groups in scope (a placed prefab not gone
+   * into is one node), and the point hit, in the frame it's placed in.
+   */
+  pickLeaf(e: { clientX: number; clientY: number }): { path: NodePath; at: Vec3 } | null {
+    this.aim(e);
+    for (const h of this.raycaster.intersectObjects([this.root], true)) {
+      if (!this.seen(h) || !surface(h.object)) continue;
+      let o: THREE.Object3D | null = h.object;
+      while (o && o.userData.path === undefined) o = o.parent;
+      if (!o?.parent) continue;
+      const path = o.userData.path as number[];
+      const inScope = this.scope.every((v, k) => path[k] === v) && path.length > this.scope.length;
+      if (!inScope) return null;
+      const at = o.parent.worldToLocal(h.point.clone());
+      return { path, at: [at.x, at.y, at.z] };
+    }
+    return null;
   }
 
   /** Points the camera at the selection, or the whole group being edited. */
@@ -953,9 +1237,54 @@ export class EditorView {
 }
 
 const UP = new THREE.Vector3(0, 1, 0);
+
+const AXIS_INDEX = { x: 0, y: 1, z: 2 } as const;
+const TO_FRAME = new THREE.Matrix4();
+const AXIS = new THREE.Vector3();
+
+/** An object's yaw in a frame, as an angle from 0 up to a quarter turn (radians). */
+function quarterYaw(o: THREE.Object3D, frame: THREE.Object3D): number {
+  TO_FRAME.copy(frame.matrixWorld).invert().multiply(o.matrixWorld);
+  AXIS.set(1, 0, 0).transformDirection(TO_FRAME);
+  const quarter = Math.PI / 2;
+  const yaw = ((Math.atan2(-AXIS.z, AXIS.x) % quarter) + quarter) % quarter;
+  // A hair under a quarter turn is square too.
+  return quarter - yaw < 1e-6 ? 0 : yaw;
+}
+
+/**
+ * A mesh's bounds in `frame`, or null if it's turned off the frame's axes (its box there
+ * would be loose, so not a face to snap to).
+ */
+function frameBox(mesh: THREE.Mesh, frame: THREE.Object3D): THREE.Box3 | null {
+  const g = mesh.geometry;
+  if (!g.boundingBox) g.computeBoundingBox();
+  TO_FRAME.copy(frame.matrixWorld).invert().multiply(mesh.matrixWorld);
+  AXIS.set(1, 0, 0).transformDirection(TO_FRAME);
+  if (Math.abs(AXIS.x) < 0.9999 && Math.abs(AXIS.z) < 0.9999) return null;
+  return g.boundingBox!.clone().applyMatrix4(TO_FRAME);
+}
 const DOWN = new THREE.Vector3(0, -1, 0);
 
 const surface = (o: THREE.Object3D): boolean => o.type === 'Mesh' && !o.userData.marker;
+
+/** A stencil op for fail, depth-fail and pass alike. */
+function stencilOp(op: THREE.StencilOp) {
+  return { stencilFail: op, stencilZFail: op, stencilZPass: op };
+}
+
+/** Draws a material's back faces (the insides of solids the cutaway opens) darker. */
+function darkenBackFaces(m: THREE.Material): void {
+  const before = m.onBeforeCompile.bind(m);
+  m.onBeforeCompile = (shader, renderer) => {
+    before(shader, renderer);
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <dithering_fragment>',
+      `#include <dithering_fragment>
+      if ( !gl_FrontFacing ) gl_FragColor.rgb *= 0.45;`,
+    );
+  };
+}
 
 const hex = (colour: string): number => parseInt(colour.slice(1), 16);
 

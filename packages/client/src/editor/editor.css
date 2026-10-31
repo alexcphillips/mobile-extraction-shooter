@@ -85,6 +85,10 @@ body.editor #portrait {
   margin-left: 4px;
 }
 
+.ed-short .ed-num {
+  width: 52px;
+}
+
 .ed-sep {
   width: 1px;
   align-self: stretch;
@@ -324,4 +328,61 @@ body.editor #portrait {
 
 .ed-nav li {
   cursor: pointer;
+}
+
+/* The prefab browser (2026-10-30). */
+.ed-browser {
+  width: min(760px, 90vw);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--ed-line);
+  border-radius: 6px;
+  background: var(--ed-bg);
+}
+
+.ed-browser .ed-row input {
+  flex: 1;
+}
+
+.ed-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.ed-cards li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid var(--ed-line);
+  border-radius: 6px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ed-cards li:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ed-cards img,
+.ed-cards .ed-noimg {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ed-cards .ed-noimg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ed-dim);
 }
