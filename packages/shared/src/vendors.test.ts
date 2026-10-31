@@ -7,7 +7,16 @@ import { PROFILE, PROFILE_FORMAT, newProfile, overRepaired, type Profile } from 
 import { createItem } from './sim/create-item';
 import { applyStash, openStash, stashOwner } from './stash';
 import { TEST_ITEMS as items } from './sim/test-items';
-import { VENDOR, buyOffer, buyPrice, cantSell, depositInto, sellItems, sellPrice } from './vendors';
+import {
+  VENDOR,
+  buyOffer,
+  buyPrice,
+  cantSell,
+  depositInto,
+  sellItems,
+  sellParts,
+  sellPrice,
+} from './vendors';
 
 const kit = loadContent(
   STARTING_KIT_FORMAT,
@@ -47,6 +56,12 @@ describe('vendors', () => {
     const rifle = createItem(items, 'rifle');
     rifle.attachments!.optic = 'scope';
     expect(sellPrice(items, rifle)).toBe((100 + 100 + 30 * 100) * share);
+    // Part by part, for the item details: the gun, the scope, then the rounds.
+    expect(sellParts(items, rifle)).toEqual([
+      { id: 'rifle', count: 1, price: 100 * share },
+      { id: 'scope', count: 1, price: 100 * share },
+      { id: rifle.loaded ?? 'round', count: 30, price: 30 * 100 * share },
+    ]);
     // Money is worth its full value.
     expect(sellPrice(items, createItem(items, 'cash', 250))).toBe(250);
     // A backpack with something in it isn't bought.

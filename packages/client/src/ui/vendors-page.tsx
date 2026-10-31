@@ -1,12 +1,15 @@
 import {
   VENDOR,
   buyPrice,
+  createItem,
   itemDef,
   type ItemDb,
   type ProfileResponse,
+  type QuestDef,
   type VendorDef,
 } from '@mes/shared';
 import { useEffect, useState, type ReactNode } from 'react';
+import { ItemDetails } from './item-details';
 import { colourOf } from './raid-screen';
 
 /*
@@ -18,6 +21,7 @@ import { colourOf } from './raid-screen';
 export function VendorsPage({
   vendors,
   items,
+  quests,
   me,
   notice,
   onBack,
@@ -26,6 +30,7 @@ export function VendorsPage({
 }: {
   vendors: readonly VendorDef[];
   items: ItemDb;
+  quests: readonly QuestDef[];
   me: ProfileResponse;
   notice: string | null;
   onBack: () => void;
@@ -37,6 +42,8 @@ export function VendorsPage({
   // Buying asks for a second tap on the same offer.
   const [confirming, setConfirming] = useState<number | null>(null);
   const [buying, setBuying] = useState<number | null>(null);
+  // The offer whose details are open (a tap on its picture or name).
+  const [inspecting, setInspecting] = useState<number | null>(null);
   const vendor = vendors[shown];
   const money = me.profile.money;
   useEffect(() => {
@@ -48,6 +55,7 @@ export function VendorsPage({
   }, [onBack]);
   const show = (i: number): void => {
     setConfirming(null);
+    setInspecting(null);
     setShown(i);
   };
   const buy = (i: number): void => {
@@ -86,17 +94,23 @@ export function VendorsPage({
               const n = o.count ?? 1;
               return (
                 <li key={i}>
-                  <span
-                    className="vendors-icon"
-                    style={{
-                      background: colourOf(def),
-                      aspectRatio: `${def.size[0]} / ${def.size[1]}`,
-                    }}
-                  />
-                  <span className="vendors-name">
-                    {def.name}
-                    {n > 1 && <span> ×{n}</span>}
-                  </span>
+                  <button
+                    className="vendors-item"
+                    aria-label={`${def.name}: details`}
+                    onClick={() => setInspecting(i)}
+                  >
+                    <span
+                      className="vendors-icon"
+                      style={{
+                        background: colourOf(def),
+                        aspectRatio: `${def.size[0]} / ${def.size[1]}`,
+                      }}
+                    />
+                    <span className="vendors-name">
+                      {def.name}
+                      {n > 1 && <span> ×{n}</span>}
+                    </span>
+                  </button>
                   <button
                     className={confirming === i ? 'confirm' : ''}
                     disabled={buying !== null || money < price}
@@ -120,6 +134,38 @@ export function VendorsPage({
           </p>
         </div>
       )}
+      {vendor && inspecting !== null && vendor.sells[inspecting] && (
+        <OfferDetails
+          items={items}
+          quests={quests}
+          offer={vendor.sells[inspecting]}
+          onClose={() => setInspecting(null)}
+        />
+      )}
     </div>
+  );
+}
+
+/** An offer's item details, as a new one of it, with what the offer costs. */
+function OfferDetails({
+  items,
+  quests,
+  offer,
+  onClose,
+}: {
+  items: ItemDb;
+  quests: readonly QuestDef[];
+  offer: VendorDef['sells'][number];
+  onClose: () => void;
+}): ReactNode {
+  const [item] = useState(() => createItem(items, offer.item, offer.count ?? 1));
+  return (
+    <ItemDetails
+      items={items}
+      item={item}
+      quests={quests}
+      buyFor={buyPrice(items, offer)}
+      onClose={onClose}
+    />
   );
 }

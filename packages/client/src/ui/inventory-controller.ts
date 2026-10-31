@@ -71,8 +71,9 @@ export interface PartChoice {
 }
 
 /**
- * What the inventory tab does, outside React: the selected item, taps and double-taps,
- * and dragging. One per opening of the raid screen; it asks for a redraw on a change.
+ * What the inventory tab does, outside React: the selected item (whose details are open),
+ * taps and double-taps, and dragging. One per opening of the raid screen; it asks for a
+ * redraw on a change.
  */
 export class InventoryController implements DragHost {
   /** Cell size in CSS pixels: about ten rows fit the screen's height. */
@@ -87,6 +88,8 @@ export class InventoryController implements DragHost {
   /** The selected item itself, to follow it when its index changes. */
   private selectedItem: Item | null = null;
   private lastTap = { key: '', at: 0 };
+  /** A tap's details waiting to open (see tap), or 0. */
+  private pendingOpen = 0;
 
   constructor(
     readonly ctx: InventoryContext,
@@ -426,6 +429,7 @@ export class InventoryController implements DragHost {
   }
 
   drop(src: DragSource, to: Target | PartSlot | Into | RepairOn | LoadOn): void {
+    this.cancelOpen();
     const ref = src.ref;
     if ('load' in to) {
       if (!isPart(ref)) this.ctx.send({ type: 'load', gun: to.load, from: ref });
@@ -477,11 +481,31 @@ export class InventoryController implements DragHost {
       if (double) this.detach(ref);
       else this.togglePicker(ref.slot);
     } else if (double) {
+      this.cancelOpen();
       this.quick(ref);
     } else {
-      // A slower second tap on the selected item lets go of it.
-      this.select(this.isSelected(ref) ? null : ref);
+      // Its details open once it's clear this isn't the first of a double-tap, unless
+      // it's being dragged by then, or has gone.
+      this.cancelOpen();
+      this.pendingOpen = window.setTimeout(() => {
+        this.pendingOpen = 0;
+        if (!this.drag.busy && this.find(ref)) this.select(ref);
+      }, DOUBLE_TAP_MS);
     }
+  }
+
+  /** Opens an item's details at once (a right-click). */
+  inspect(ref: ItemRef): void {
+    if (this.selling) return;
+    this.cancelOpen();
+    this.drag.cancel();
+    this.select(ref);
+  }
+
+  /** Stops a tap's details from opening. */
+  cancelOpen(): void {
+    clearTimeout(this.pendingOpen);
+    this.pendingOpen = 0;
   }
 
   /** Whether a gun still has the part a ref saw on it. */

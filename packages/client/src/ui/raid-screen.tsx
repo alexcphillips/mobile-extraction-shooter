@@ -1,6 +1,5 @@
 import {
   ATTACHMENT_SLOTS,
-  ammoDef,
   cantSell,
   createWeaponStats,
   itemDef,
@@ -27,6 +26,7 @@ import {
 } from '@mes/shared';
 import { useEffect, useState, type ReactNode } from 'react';
 import { refKey, type InventoryController } from './inventory-controller';
+import { ItemDetails } from './item-details';
 import { MapTab } from './map-tab';
 import type { RaidContext } from './raid';
 import { levelColour, levelOf } from './levels';
@@ -110,7 +110,13 @@ const CENTRE: ReadonlySet<GearSlot> = new Set(['helmet', 'bodyArmour']);
 
 /** Your gear and grids, beside what's open (a body, a container, the ground or the stash). */
 export function Inventory({ inv, version }: Props): ReactNode {
-  useEffect(() => () => inv.drag.cancel(), [inv]);
+  useEffect(
+    () => () => {
+      inv.drag.cancel();
+      inv.cancelOpen();
+    },
+    [inv],
+  );
   inv.followSelection();
   const { ctx, selected } = inv;
   const sel = selected && inv.find(selected);
@@ -131,48 +137,54 @@ export function Inventory({ inv, version }: Props): ReactNode {
       <footer className="inv-bar">
         {inv.selling ? (
           <SellBar inv={inv} />
-        ) : selected && sel ? (
-          <>
-            <span className="inv-bar-name">{sel.def.name}</span>
-            <span className="inv-bar-info">{details(ctx.items, sel.item, sel.def)}</span>
-            {sel.def.type === 'weapon' && <Parts inv={inv} gun={selected} item={sel.item} />}
-            <span className="raid-spacer" />
-            {'index' in selected && sel.def.size[0] !== sel.def.size[1] && (
-              <button onClick={() => inv.rotate(selected)}>Rotate</button>
-            )}
-            {sel.def.type === 'weapon' && (sel.item.mag ?? 0) > 0 && (
-              <button onClick={() => inv.unload(selected)}>Unload</button>
-            )}
-            {sel.def.type === 'med' && ctx.use && !ctx.player.using && (
-              <button disabled={!inv.medRef(selected)} onClick={() => inv.useMed(selected)}>
-                {inv.medRef(selected) ? 'Use' : 'Nothing to treat'}
-              </button>
-            )}
-            <RepairButton inv={inv} armour={selected} item={sel.item} def={sel.def} />
-            {ctx.sell && !('ground' in selected) && (
-              <SellButton key={refKey(selected)} inv={inv} at={selected} item={sel.item} />
-            )}
-            {ctx.sell && inv.canPick(selected) && (
-              <button onClick={() => inv.startSelling(selected)}>Sell several</button>
-            )}
-            {!('ground' in selected) && !ctx.stash && (
-              <button onClick={() => inv.toGround(selected)}>Drop</button>
-            )}
-            <button onClick={() => inv.quick(selected)}>
-              {quickLabel(selected, inv.quickTo(selected))}
-            </button>
-          </>
         ) : (
           <>
             <span className="inv-hint">
               {ctx.stash
-                ? 'Double-tap to move between your gear and the stash · drag to place · drag a repair kit onto armour to mend it · while dragging, tap with another finger (or press R) to rotate'
-                : 'Double-tap to move · drag to place, or onto the ground to drop · drag a repair kit onto armour to mend it · while dragging, tap with another finger (or press R) to rotate'}
+                ? 'Tap for details · double-tap to move between your gear and the stash · drag to place · drag a repair kit onto armour to mend it · while dragging, tap with another finger (or press R) to rotate'
+                : 'Tap for details · double-tap to move · drag to place, or onto the ground to drop · drag a repair kit onto armour to mend it · while dragging, tap with another finger (or press R) to rotate'}
             </span>
             {ctx.sell && <button onClick={() => inv.startSelling()}>Select to sell</button>}
           </>
         )}
       </footer>
+      {!inv.selling && selected && sel && (
+        <ItemDetails
+          items={ctx.items}
+          item={sel.item}
+          quests={ctx.quests}
+          onClose={() => inv.select(null)}
+          extra={sel.def.type === 'weapon' && <Parts inv={inv} gun={selected} item={sel.item} />}
+          actions={
+            <>
+              {'index' in selected && sel.def.size[0] !== sel.def.size[1] && (
+                <button onClick={() => inv.rotate(selected)}>Rotate</button>
+              )}
+              {sel.def.type === 'weapon' && (sel.item.mag ?? 0) > 0 && (
+                <button onClick={() => inv.unload(selected)}>Unload</button>
+              )}
+              {sel.def.type === 'med' && ctx.use && !ctx.player.using && (
+                <button disabled={!inv.medRef(selected)} onClick={() => inv.useMed(selected)}>
+                  {inv.medRef(selected) ? 'Use' : 'Nothing to treat'}
+                </button>
+              )}
+              <RepairButton inv={inv} armour={selected} item={sel.item} def={sel.def} />
+              {ctx.sell && !('ground' in selected) && (
+                <SellButton key={refKey(selected)} inv={inv} at={selected} item={sel.item} />
+              )}
+              {ctx.sell && inv.canPick(selected) && (
+                <button onClick={() => inv.startSelling(selected)}>Sell several</button>
+              )}
+              {!('ground' in selected) && !ctx.stash && (
+                <button onClick={() => inv.toGround(selected)}>Drop</button>
+              )}
+              <button className="primary" onClick={() => inv.quick(selected)}>
+                {quickLabel(selected, inv.quickTo(selected))}
+              </button>
+            </>
+          }
+        />
+      )}
     </div>
   );
 }
@@ -321,9 +333,9 @@ const PART_NAMES: Record<AttachmentSlot, string> = {
 };
 
 /**
- * The selected gun's attachment slots. Drop an attachment on one to put it on; drag one
- * off to a grid; tap one for a picker of those you can reach that fit; double-tap one to
- * take it off into what you carry.
+ * The open gun's attachment slots, in its details: tap one for a picker of those you can
+ * reach that fit, and to take its attachment off. Dragging an attachment onto the gun's
+ * tile puts it on, too.
  */
 function Parts({
   inv,
@@ -336,48 +348,28 @@ function Parts({
 }): ReactNode {
   const { items } = inv.ctx;
   const weapon = itemDef(items, item.item);
-  if (weapon.type !== 'weapon') return null;
+  if (weapon.type !== 'weapon' || !weapon.slots?.length) return null;
   return (
     <div className="inv-parts">
-      {ATTACHMENT_SLOTS.filter((s) => weapon.slots?.includes(s)).map((slot) => {
-        const part = item.attachments?.[slot] ?? null;
-        const def = part === null ? null : itemDef(items, part);
-        return (
-          <div
-            key={slot}
-            className={`inv-slot inv-part${inv.picking === slot ? ' open' : ''}`}
-            data-drop={JSON.stringify({ gun, slot })}
-            onClick={() => {
-              if (!part) inv.togglePicker(slot);
-            }}
-          >
-            <span className="inv-slot-name">{PART_NAMES[slot]}</span>
-            {def && part ? (
-              <div
-                className="inv-item"
-                style={{ background: tintOf(def), borderColor: colourOf(def) }}
-                onPointerDown={(e) =>
-                  inv.drag.down(e.nativeEvent, {
-                    ref: { gun, slot, part },
-                    w: def.size[0],
-                    h: def.size[1],
-                    rotated: false,
-                    grabX: 0,
-                    grabY: 0,
-                    colour: colourOf(def),
-                    label: def.name,
-                    el: e.currentTarget,
-                  })
-                }
-              >
-                <span className="inv-item-name">{def.name}</span>
-              </div>
-            ) : (
-              <span className="inv-part-empty">none</span>
-            )}
-          </div>
-        );
-      })}
+      <div className="inv-parts-slots">
+        {ATTACHMENT_SLOTS.filter((s) => weapon.slots?.includes(s)).map((slot) => {
+          const part = item.attachments?.[slot] ?? null;
+          const def = part === null ? null : itemDef(items, part);
+          return (
+            <button
+              key={slot}
+              className={`inv-part${inv.picking === slot ? ' open' : ''}`}
+              style={def ? { background: tintOf(def), borderColor: colourOf(def) } : undefined}
+              onClick={() => inv.togglePicker(slot)}
+            >
+              <span className="inv-part-slot">{PART_NAMES[slot]}</span>
+              <span className={def ? 'inv-part-name' : 'inv-part-empty'}>
+                {def ? def.name : 'none'}
+              </span>
+            </button>
+          );
+        })}
+      </div>
       {inv.picking && <Picker inv={inv} gun={item} slot={inv.picking} gunRef={gun} />}
     </div>
   );
@@ -487,6 +479,10 @@ function Ground({ inv }: { inv: InventoryController }): ReactNode {
                 background: tintOf(def),
                 borderColor: colourOf(def),
               }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                inv.inspect(ref);
+              }}
               onPointerDown={(e) =>
                 inv.drag.down(e.nativeEvent, {
                   ref,
@@ -590,6 +586,10 @@ function Slots({
                   def.type === 'armour' && owner.kind === 'self' ? JSON.stringify(ref) : undefined
                 }
                 style={{ background: tintOf(def), borderColor: colourOf(def) }}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  inv.inspect(ref);
+                }}
                 onPointerDown={(e) =>
                   inv.drag.down(e.nativeEvent, {
                     ref,
@@ -650,6 +650,10 @@ function GridView({
               height: h * cell,
               background: tintOf(def),
               borderColor: colourOf(def),
+            }}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              inv.inspect(ref);
             }}
             onPointerDown={(e) => {
               const r = e.currentTarget.getBoundingClientRect();
@@ -752,29 +756,5 @@ function badge(item: Item, def: ItemDef): string {
       return '';
     default:
       return stackSize(def) > 1 || item.count > 1 ? `${item.count}` : '';
-  }
-}
-
-/** A line about the selected item. */
-function details(items: ItemDb, item: Item, def: ItemDef): string {
-  switch (def.type) {
-    case 'weapon': {
-      const round = ammoDef(items, loadedAmmo(items, item));
-      return `${item.mag ?? 0} loaded · ${round.name} · fires ${round.calibre}`;
-    }
-    case 'armour':
-      return `Level ${def.level} · durability ${Math.ceil(item.durability ?? 0)}/${def.durability}`;
-    case 'ammo':
-      return `Level ${def.level} · ${def.damage} damage${def.pellets ? ` × ${def.pellets}` : ''} · ${def.armourDamage} to armour · ${item.count} / ${def.stack}`;
-    case 'med':
-      return def.effect === 'heal' ? `${item.left ?? 0} HP left` : `${item.left ?? 1} use(s) left`;
-    case 'container':
-      return `${def.grid[0]}×${def.grid[1]} inside`;
-    case 'key':
-      return def.uses === undefined ? 'Never wears out' : `${item.left ?? 0}/${def.uses} uses left`;
-    case 'repair':
-      return `${Math.floor(item.left ?? 0)}/${def.points} points · select armour and press Repair`;
-    default:
-      return stackSize(def) > 1 ? `${item.count} / ${stackSize(def)}` : '';
   }
 }

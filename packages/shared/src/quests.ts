@@ -56,6 +56,21 @@ export function objectiveText(items: ItemDb, o: QuestObjective): string {
   }
 }
 
+/** The quests that ask for an item (to hand over, or to get out with), with the objective. */
+export function questsFor(
+  quests: readonly QuestDef[],
+  item: string,
+): { quest: QuestDef; objective: QuestObjective }[] {
+  const out: { quest: QuestDef; objective: QuestObjective }[] = [];
+  for (const quest of quests) {
+    for (const objective of quest.objectives) {
+      if (objective.type !== 'investigate' && objective.item === item)
+        out.push({ quest, objective });
+    }
+  }
+  return out;
+}
+
 /** Accepts a quest that's open to the player. Returns why it can't be, or null. */
 export function acceptQuest(profile: Profile, quest: QuestDef): string | null {
   const status = questStatus(profile, quest);

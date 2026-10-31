@@ -165,6 +165,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
       <VendorsPage
         vendors={opts.vendors}
         items={opts.items}
+        quests={opts.quests}
         me={me}
         notice={notice}
         onBack={() => {
@@ -223,6 +224,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
       <StashPage
         stash={stash}
         items={opts.items}
+        quests={opts.quests}
         saver={saver}
         notice={notice}
         busy={busy}
@@ -340,6 +342,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
 function StashPage({
   stash,
   items,
+  quests,
   saver,
   notice,
   busy,
@@ -352,6 +355,7 @@ function StashPage({
 }: {
   stash: StashState;
   items: ItemDb;
+  quests: readonly QuestDef[];
   saver: StashSaver;
   notice: string | null;
   busy: boolean;
@@ -388,6 +392,7 @@ function StashPage({
         close: onBack,
         stash: true,
         sell: (refs) => onSell(refs, pageOf()),
+        quests,
       },
       stashOwner(Math.min(startPage, stash.profile.stash.length - 1)),
       bump,
