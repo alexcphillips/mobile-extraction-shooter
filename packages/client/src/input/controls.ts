@@ -41,7 +41,7 @@ interface MoveTouch {
  * Desktop: the mouse is captured (see CursorLock): moving it looks, the left button fires
  * and the right one aims. WASD, Shift sprint, Space jump (or vault), C crouch, X prone
  * (a toggle; C, Space or sprinting gets up), R reload, E use, I or Tab the bag, 1–4 take out primary 1, primary 2, sidearm or knife,
- * H heal (held, picks),
+ * H heal (held, picks), G throw a grenade,
  * F and Q fire and aim too, 7 and 8 the debug actions. Mouse pointers never drive the
  * touch stick; CSS hides the touch-only buttons.
  */
@@ -68,6 +68,8 @@ export class Controls {
   heal = false;
   /** The heal button held: pick which med. */
   healPick = false;
+  /** The grenade button: throw one. */
+  throw = false;
   /** A debug action (0 or 1), or -1. */
   debug = -1;
   /** Look speed multiplier from aim assist, set by the game while the crosshair is on an enemy. */
@@ -99,6 +101,7 @@ export class Controls {
   private pressedDraw: Hand | null = null;
   private pressedHeal = false;
   private pressedHealPick = false;
+  private pressedThrow = false;
   private pressedDebug = -1;
   private readonly keys = new Set<string>();
   /** H while held: called with whether the release is a tap. */
@@ -154,9 +157,11 @@ export class Controls {
     this.draw = this.pressedDraw;
     this.heal = this.pressedHeal;
     this.healPick = this.pressedHealPick;
+    this.throw = this.pressedThrow;
     this.debug = this.pressedDebug;
     this.pressedReload = this.pressedInteract = this.pressedBag = false;
     this.pressedHeal = this.pressedHealPick = false;
+    this.pressedThrow = false;
     this.pressedDraw = null;
     this.pressedDebug = -1;
 
@@ -273,6 +278,10 @@ export class Controls {
         this.pressedBag = true;
         held(() => {});
         break;
+      case 'grenade':
+        this.pressedThrow = true;
+        held(() => {});
+        break;
       case 'heal': {
         // A tap uses the default when it lifts; holding opens the picker instead.
         let picked = false;
@@ -333,6 +342,7 @@ export class Controls {
     else if (e.code === 'KeyE') this.pressedInteract = true;
     else if (e.code === 'KeyX') this.setProne(!this.proneOn);
     else if ((e.code === 'KeyC' || e.code === 'Space') && this.proneOn) this.setProne(false);
+    else if (e.code === 'KeyG') this.pressedThrow = true;
     else if (e.code === 'KeyI' || e.code === 'Tab') {
       e.preventDefault();
       this.pressedBag = true;

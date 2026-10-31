@@ -11,6 +11,7 @@ export const ITEM_TYPES: readonly ItemType[] = [
   'container',
   'med',
   'melee',
+  'grenade',
   'key',
   'quest',
   'loot',
@@ -102,6 +103,21 @@ function blankStats(type: ItemType, id: string, name: string, ammo: string) {
         swingTime: 0.5,
         reach: 1.5,
         drawTime: 0.3,
+      };
+    case 'grenade':
+      return {
+        ...common,
+        type,
+        size: [1, 1],
+        value: 3_000,
+        fuse: 3,
+        throwSpeed: 15,
+        radius: 7,
+        damage: 100,
+        level: 3,
+        armourDamage: 15,
+        bleedChance: 0.4,
+        loudness: 1000,
       };
     case 'key':
       return { ...common, type, size: [1, 1], value: 2_000 };

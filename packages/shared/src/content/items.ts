@@ -33,7 +33,8 @@ const fraction = finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1');
  * 7 (session 19): guns, knives, meds and repair kits gained sounds (sounds.ts).
  * 8: every item gained a rarity.
  * 9: ammo gained a calibre and a level; armour a level in place of absorb; the knife a
- *    level and armour damage (Delta Force-style tiers, design.md → Damage).
+ *    level and armour damage (Delta Force-style tiers, design.md → Damage). Grenades came
+ *    in at 9 too: a new type changes no existing file, so it needed no new version.
  */
 export const ITEM_FORMAT_VERSION = 9;
 
@@ -341,6 +342,38 @@ const meleeSchema = z.strictObject({
   model: meleeModelSchema,
 });
 
+/**
+ * Thrown grenades (2026-10-30): one press throws the first one carried. It bounces off
+ * the map and goes off its fuse after the throw, hurting everyone in its radius that it
+ * can see, less further out (sim/grenades.ts).
+ */
+const grenadeSchema = z.strictObject({
+  ...common,
+  type: z.literal('grenade'),
+  /** Seconds from the throw until it goes off. */
+  fuse: positive,
+  /** How fast it leaves the hand, in m/s. */
+  throwSpeed: positive,
+  /** It hurts out to here, in metres. */
+  radius: positive,
+  /**
+   * Damage to the chest at the centre; the other zones take their share (GRENADE.zones),
+   * and it falls off further out. Then armour stops some, as for ammo.
+   */
+  damage: positive,
+  /** Its fragments' penetration level, as for ammo. */
+  level: levelSchema,
+  /** Armour durability lost per zone hit, as for ammo. */
+  armourDamage: nonNegative,
+  /** Chance that each zone hit which gets through starts bleeding. */
+  bleedChance: fraction,
+  /** How far away it can be heard going off (by AI), as for a gun. */
+  loudness: positive,
+  /** Leaving the hand, hitting something, and going off. */
+  sounds: z.strictObject({ throw: soundId, bounce: soundId, explode: soundId }),
+  ...plainModel,
+});
+
 /** Opens the doors that name it. */
 const keySchema = z.strictObject({
   ...common,
@@ -388,6 +421,7 @@ export const itemSchema = z.discriminatedUnion('type', [
   medSchema,
   containerSchema,
   meleeSchema,
+  grenadeSchema,
   keySchema,
   questSchema,
   lootSchema,
@@ -401,6 +435,7 @@ export type ArmourDef = z.infer<typeof armourSchema>;
 export type AttachmentDef = z.infer<typeof attachmentSchema>;
 export type MedDef = z.infer<typeof medSchema>;
 export type MeleeDef = z.infer<typeof meleeSchema>;
+export type GrenadeDef = z.infer<typeof grenadeSchema>;
 export type ContainerDef = z.infer<typeof containerSchema>;
 export type RepairDef = z.infer<typeof repairSchema>;
 export type AttachmentMods = z.infer<typeof modsSchema>;
@@ -502,6 +537,8 @@ export function defaultSounds(doc: {
       };
     case 'repair':
       return { use: 'repair-use' };
+    case 'grenade':
+      return { throw: 'grenade-throw', bounce: 'grenade-bounce', explode: 'explosion' };
     default:
       return null;
   }
@@ -515,6 +552,7 @@ const VALUE_GUESSES: Record<string, number> = {
   med: 1_000,
   container: 5_000,
   melee: 500,
+  grenade: 3_000,
   key: 2_000,
   loot: 1_000,
   repair: 10_000,
@@ -538,6 +576,7 @@ export const attachmentDef = (items: ItemDb, id: string): AttachmentDef =>
   itemOf(items, id, 'attachment');
 export const medDef = (items: ItemDb, id: string): MedDef => itemOf(items, id, 'med');
 export const meleeDef = (items: ItemDb, id: string): MeleeDef => itemOf(items, id, 'melee');
+export const grenadeDef = (items: ItemDb, id: string): GrenadeDef => itemOf(items, id, 'grenade');
 export const containerDef = (items: ItemDb, id: string): ContainerDef =>
   itemOf(items, id, 'container');
 export const repairDef = (items: ItemDb, id: string): RepairDef => itemOf(items, id, 'repair');

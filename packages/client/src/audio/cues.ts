@@ -3,6 +3,7 @@ import {
   TICK_SECONDS,
   entityById,
   eyeHeight,
+  grenadeDef,
   heldWeapon,
   itemDef,
   itemSounds,
@@ -122,6 +123,22 @@ export class SoundCues {
           this.at(S.impactFlesh, e.x, e.y, e.z);
         return;
       }
+      case 'throw': {
+        const id = grenadeDef(this.items, e.item).sounds.throw;
+        const thrower = entityById(sim, e.by);
+        if (own) this.sound.play(id);
+        else if (thrower) this.at(id, thrower.x, thrower.y + CHEST, thrower.z);
+        return;
+      }
+      case 'bounce': {
+        // Louder the harder it hits, up to a hard throw's.
+        const gain = Math.min(1, 0.3 + e.speed / 12);
+        this.at(grenadeDef(this.items, e.item).sounds.bounce, e.x, e.y, e.z, undefined, gain);
+        return;
+      }
+      case 'explosion':
+        this.at(grenadeDef(this.items, e.item).sounds.explode, e.x, e.y, e.z, e.loudness);
+        return;
       case 'damage': {
         if (e.cause === 'fall') return;
         const target = entityById(sim, e.target);
@@ -129,7 +146,7 @@ export class SoundCues {
           if (e.target === player.id) this.sound.play(S.impactArmour);
           else this.at(S.impactArmour, target.x, target.y + CHEST, target.z);
         }
-        // Several hits in one burst make one grunt.
+        // Several hits in one burst (or one blast's zones) make one grunt.
         if (
           e.target === player.id &&
           e.amount > 0 &&

@@ -1,11 +1,12 @@
 import type { EnemySkill } from '../content/enemies';
-import { weaponDef, type ItemDb } from '../content/items';
+import { grenadeDef, weaponDef, type ItemDb } from '../content/items';
 import type { NavGrid } from '../nav/nav-grid';
 import { findPath } from '../nav/path';
 import { chance, nextFloat, nextRange } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import type { CollisionWorld } from '../world/collision-world';
 import { openDoorAhead } from './doors';
+import type { Grenade } from './grenades';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import { MOVEMENT } from './movement';
 import {
@@ -177,6 +178,12 @@ export const AI = {
   plansPerTick: 2,
   /** A goal that moves further than this needs a new path. */
   replanDistance: 1.5,
+  /**
+   * A grenade it can see within its radius plus this is run from, to a spot this far
+   * outside the radius, the nearest of fleeDirections around the grenade.
+   */
+  fleeMargin: 2,
+  fleeDirections: 12,
 } as const;
 
 export type Awareness = 'unaware' | 'suspicious' | 'alert' | 'searching';
@@ -288,6 +295,11 @@ export interface AiState {
   wayX: number;
   wayY: number;
   wayZ: number;
+  /**
+   * Running from a grenade: its id and where it runs to; null or missing (older saves)
+   * when not. Whatever it was doing waits until the grenade has gone off.
+   */
+  flee?: { grenade: number; x: number; y: number; z: number } | null;
 }
 
 export interface PatrolDef {
@@ -472,7 +484,7 @@ export function updateAi(
     if (!ai) continue;
     const input = ai.input;
     input.moveX = input.moveY = 0;
-    input.fire = input.aim = input.reload = input.crouch = false;
+    input.fire = input.aim = input.reload = input.crouch = input.sprint = false;
     if (c.health.dead) continue;
     if ((state.tick + c.id) % AI.perceiveEvery === 0) {
       look(state, c, ai, world, nav);
@@ -691,6 +703,10 @@ function hearEvents(state: SimState, c: Character, ai: AiState, world: Collision
       }
       continue;
     }
+    if (ev.type === 'explosion') {
+      heardExplosion(state, c, ai, world, ev.x, ev.y, ev.z, ev.loudness, ev.by);
+      continue;
+    }
     if (ev.type !== 'shot' || ev.by === c.id) continue;
     const by = entityById(state, ev.by);
     if (!by || by.health.dead) continue;
@@ -750,6 +766,30 @@ function allyShot(
   if (d <= loud * AI.alertShot) alarm(ai, target, target.x, target.y, target.z);
   else if (d <= loud * AI.investigateShot)
     heardNoise(state, c, ai, ally.x, ally.y, ally.z, d, true);
+}
+
+/**
+ * A grenade going off: suspicious of where it went off, not of who threw it (that may be
+ * far away), and goes to look anywhere it's heard (the user's call, 2026-10-30: they're
+ * loud enough to bring in enemies from across the map). Those it hurt are alarmed by the
+ * damage instead. A peaceful admin's grenades go unheard.
+ */
+function heardExplosion(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  world: CollisionWorld,
+  x: number,
+  y: number,
+  z: number,
+  loudness: number,
+  by: EntityId,
+): void {
+  if (ai.awareness === 'alert' || entityById(state, by)?.admin?.peaceful) return;
+  const d = Math.hypot(x - c.x, y - eyeHeight(c), z - c.z);
+  if (d > loudness) return;
+  const loud = heardLoudness(world, c, x, y, z, loudness);
+  if (d <= loud) heardNoise(state, c, ai, x, y, z, d, true);
 }
 
 /** A shot's loudness as heard by c: muffled with walls or ground in the way. */
@@ -920,224 +960,251 @@ function behave(
   let facePitch = 0;
   let turn: number = ai.awareness === 'unaware' ? AI.turnRate : AI.alertTurnRate;
 
-  switch (ai.activity) {
-    case 'patrol': {
-      if (!ai.legSet) pickLeg(state, ai, nav);
-      const wait = ai.patrolWaits[ai.patrolIndex]!;
-      const arrive = wait > 0 ? AI.arrive : AI.passBy;
-      const r = moveTo(state, c, ai, nav, ai.legX, ai.legY, ai.legZ, AI.patrolPace, false, arrive);
-      faceYaw = moveYaw;
-      if (r === 'moving') break;
-      if (wait > 0) {
-        ai.activity = 'wait';
-        ai.timer = wait;
-        ai.lookYaw = c.yaw;
-      } else {
-        nextPatrolPoint(ai);
-      }
-      break;
-    }
-    case 'wait':
-      faceYaw = lookAround(ai);
-      if (ai.timer <= 0) {
-        nextPatrolPoint(ai);
-        ai.activity = 'patrol';
-      }
-      break;
-    case 'guard':
-      if (Math.hypot(ai.homeX - c.x, ai.homeZ - c.z) > 1.5) {
-        moveTo(state, c, ai, nav, ai.homeX, ai.homeY, ai.homeZ, AI.patrolPace);
+  if (fleeGrenade(state, c, ai, world, items, nav)) {
+    faceYaw = fleeYaw;
+    turn = AI.alertTurnRate;
+    ai.input.sprint = true;
+  } else
+    switch (ai.activity) {
+      case 'patrol': {
+        if (!ai.legSet) pickLeg(state, ai, nav);
+        const wait = ai.patrolWaits[ai.patrolIndex]!;
+        const arrive = wait > 0 ? AI.arrive : AI.passBy;
+        const r = moveTo(
+          state,
+          c,
+          ai,
+          nav,
+          ai.legX,
+          ai.legY,
+          ai.legZ,
+          AI.patrolPace,
+          false,
+          arrive,
+        );
         faceYaw = moveYaw;
-        break;
-      }
-      faceYaw = ai.lookYaw;
-      turn = AI.turnRate / 2;
-      if (ai.timer <= 0) {
-        ai.lookYaw = ai.homeYaw + nextRange(state.rng, -AI.guardArc, AI.guardArc) * DEG;
-        ai.timer = AI.guardLook * nextRange(state.rng, 0.6, 1.4);
-      }
-      break;
-    case 'look':
-      faceYaw = yawTo(c, ai.focusX, ai.focusZ);
-      if (ai.timer <= 0) {
-        ai.activity = ai.investigate ? 'investigate' : 'scan';
-        ai.timer = AI.calmTime;
-        ai.lookYaw = faceYaw;
-        ai.hasGoal = false;
-      }
-      break;
-    case 'investigate': {
-      const r = moveTo(state, c, ai, nav, ai.focusX, ai.focusY, ai.focusZ, AI.investigatePace);
-      faceYaw = moveYaw;
-      if (r !== 'moving') {
-        ai.activity = 'scan';
-        ai.timer = AI.scanTime;
-        ai.lookYaw = c.yaw;
-      }
-      break;
-    }
-    case 'scan':
-      faceYaw = lookAround(ai);
-      if (ai.timer <= 0) calmDown(c, ai);
-      break;
-    case 'engage': {
-      const target = entityById(state, ai.target);
-      if (!target || target.health.dead) {
-        calmDown(c, ai);
-        break;
-      }
-      if (!ai.seesTarget) {
-        if (!ai.reachable) {
-          if (ai.unseen >= AI.intuition && startHold(state, c, ai, world, nav, target)) break;
-        } else if (ai.unseen >= (ai.push ? AI.loseTrack : AI.holdAngle)) {
-          startSearch(ai);
-          break;
+        if (r === 'moving') break;
+        if (wait > 0) {
+          ai.activity = 'wait';
+          ai.timer = wait;
+          ai.lookYaw = c.yaw;
+        } else {
+          nextPatrolPoint(ai);
         }
-      }
-      const w = heldWeapon(c);
-      if (!w) {
-        // Unarmed: faces you and closes in.
-        faceYaw = yawTo(c, ai.focusX, ai.focusZ);
-        const across = Math.hypot(ai.focusX - c.x, ai.focusZ - c.z);
-        facePitch = Math.atan2(ai.focusY + MOVEMENT.standHeight * 0.8 - eyeHeight(c), across);
-        if (!ai.seesTarget || across > AI.approachRange)
-          moveTo(state, c, ai, nav, ai.focusX, ai.focusY, ai.focusZ, AI.alertPace, true);
         break;
       }
-      fight(state, c, ai, world, items, nav, target);
-      faceYaw = aimYaw;
-      facePitch = aimPitch;
-      if (!ai.seesTarget) break;
-      ai.exposed += DT;
-      const wantCover =
-        ai.hurt || ai.exposed >= ai.exposeLimit || (w.mag === 0 && ai.exposed > 0.5);
-      if (!wantCover || coversLeft <= 0) break;
-      coversLeft--;
-      ai.hurt = false;
-      if (
-        findCover(state, c, ai, world, nav, c.x, c.y, c.z, target.x, eyeHeight(target), target.z)
-      ) {
-        ai.activity = 'takeCover';
-        ai.hasGoal = false;
-        ai.peekX = c.x;
-        ai.peekY = c.y;
-        ai.peekZ = c.z;
-      } else {
-        ai.exposed = 0;
-      }
-      break;
-    }
-    case 'takeCover': {
-      faceYaw = yawTo(c, ai.focusX, ai.focusZ);
-      reloadIfLow(c, items, 1);
-      // Right onto the spot: a little off it may not be hidden.
-      const r = moveTo(state, c, ai, nav, ai.coverX, ai.coverY, ai.coverZ, AI.alertPace, true, 0.3);
-      if (r === 'failed') {
-        backToFight(state, ai);
-      } else if (r === 'arrived') {
-        ai.activity = 'cover';
-        ai.timer = nextRange(state.rng, AI.coverTime[0], AI.coverTime[1]);
-        ai.exposed = 0;
-      }
-      break;
-    }
-    case 'cover':
-      faceYaw = yawTo(c, ai.focusX, ai.focusZ);
-      ai.input.crouch = ai.coverLow;
-      reloadIfLow(c, items, 1);
-      // Time in cover. Once it has crouched and looked again, still seeing its target
-      // means it's seen from somewhere else: this cover is no good.
-      ai.exposed += DT;
-      if (ai.seesTarget && ai.exposed > AI.settleInCover) backToFight(state, ai);
-      else if (ai.timer <= 0 && !heldWeapon(c)?.reloading) {
-        ai.activity = 'peek';
-        ai.hasGoal = false;
-        ai.timer =
-          AI.peekTime + Math.hypot(ai.peekX - c.x, ai.peekZ - c.z) / (MOVEMENT.walkSpeed * 0.8);
-      }
-      break;
-    case 'peek': {
-      faceYaw = yawTo(c, ai.focusX, ai.focusZ);
-      // Stands up over low cover, or steps back out to where it was fighting from.
-      const out =
-        ai.coverLow ||
-        near(c, ai.peekX, ai.peekY, ai.peekZ) ||
-        moveTo(state, c, ai, nav, ai.peekX, ai.peekY, ai.peekZ, AI.alertPace, true) !== 'moving';
-      if (ai.seesTarget || (out && ai.timer <= 0)) backToFight(state, ai);
-      break;
-    }
-    case 'hold': {
-      if (ai.seesTarget || ai.reachable) {
-        backToFight(state, ai);
+      case 'wait':
+        faceYaw = lookAround(ai);
+        if (ai.timer <= 0) {
+          nextPatrolPoint(ai);
+          ai.activity = 'patrol';
+        }
         break;
-      }
-      if (!near(c, ai.coverX, ai.coverY, ai.coverZ)) {
-        const r = moveTo(state, c, ai, nav, ai.coverX, ai.coverY, ai.coverZ, AI.alertPace);
-        ai.timer = AI.holdTime;
-        if (r === 'moving') {
+      case 'guard':
+        if (Math.hypot(ai.homeX - c.x, ai.homeZ - c.z) > 1.5) {
+          moveTo(state, c, ai, nav, ai.homeX, ai.homeY, ai.homeZ, AI.patrolPace);
           faceYaw = moveYaw;
           break;
         }
-        // There, or as close as it gets: hold here.
-        ai.coverX = c.x;
-        ai.coverY = c.y;
-        ai.coverZ = c.z;
-      }
-      // Watching the way up, ready.
-      faceYaw = yawTo(c, ai.wayX, ai.wayZ);
-      const across = Math.hypot(ai.wayX - c.x, ai.wayZ - c.z);
-      facePitch = Math.atan2(ai.wayY + 1 - eyeHeight(c), across);
-      ai.input.aim = true;
-      reloadIfLow(c, items, 1);
-      if (
-        ai.timer <= 0 &&
-        randomSpotNear(state, c, nav, ai.wayX, ai.wayY, ai.wayZ, AI.loiterRadius)
-      ) {
-        ai.activity = 'loiter';
-        ai.hasGoal = false;
-        ai.coverX = spotX;
-        ai.coverY = spotY;
-        ai.coverZ = spotZ;
-      }
-      break;
-    }
-    case 'loiter': {
-      if (ai.seesTarget || ai.reachable) {
-        backToFight(state, ai);
+        faceYaw = ai.lookYaw;
+        turn = AI.turnRate / 2;
+        if (ai.timer <= 0) {
+          ai.lookYaw = ai.homeYaw + nextRange(state.rng, -AI.guardArc, AI.guardArc) * DEG;
+          ai.timer = AI.guardLook * nextRange(state.rng, 0.6, 1.4);
+        }
+        break;
+      case 'look':
+        faceYaw = yawTo(c, ai.focusX, ai.focusZ);
+        if (ai.timer <= 0) {
+          ai.activity = ai.investigate ? 'investigate' : 'scan';
+          ai.timer = AI.calmTime;
+          ai.lookYaw = faceYaw;
+          ai.hasGoal = false;
+        }
+        break;
+      case 'investigate': {
+        const r = moveTo(state, c, ai, nav, ai.focusX, ai.focusY, ai.focusZ, AI.investigatePace);
+        faceYaw = moveYaw;
+        if (r !== 'moving') {
+          ai.activity = 'scan';
+          ai.timer = AI.scanTime;
+          ai.lookYaw = c.yaw;
+        }
         break;
       }
-      const r = moveTo(state, c, ai, nav, ai.coverX, ai.coverY, ai.coverZ, AI.investigatePace);
-      faceYaw = moveYaw;
-      if (r !== 'moving') {
-        ai.activity = 'hold';
-        ai.coverX = c.x;
-        ai.coverY = c.y;
-        ai.coverZ = c.z;
-        ai.hasGoal = false;
+      case 'scan':
+        faceYaw = lookAround(ai);
+        if (ai.timer <= 0) calmDown(c, ai);
+        break;
+      case 'engage': {
+        const target = entityById(state, ai.target);
+        if (!target || target.health.dead) {
+          calmDown(c, ai);
+          break;
+        }
+        if (!ai.seesTarget) {
+          if (!ai.reachable) {
+            if (ai.unseen >= AI.intuition && startHold(state, c, ai, world, nav, target)) break;
+          } else if (ai.unseen >= (ai.push ? AI.loseTrack : AI.holdAngle)) {
+            startSearch(ai);
+            break;
+          }
+        }
+        const w = heldWeapon(c);
+        if (!w) {
+          // Unarmed: faces you and closes in.
+          faceYaw = yawTo(c, ai.focusX, ai.focusZ);
+          const across = Math.hypot(ai.focusX - c.x, ai.focusZ - c.z);
+          facePitch = Math.atan2(ai.focusY + MOVEMENT.standHeight * 0.8 - eyeHeight(c), across);
+          if (!ai.seesTarget || across > AI.approachRange)
+            moveTo(state, c, ai, nav, ai.focusX, ai.focusY, ai.focusZ, AI.alertPace, true);
+          break;
+        }
+        fight(state, c, ai, world, items, nav, target);
+        faceYaw = aimYaw;
+        facePitch = aimPitch;
+        if (!ai.seesTarget) break;
+        ai.exposed += DT;
+        const wantCover =
+          ai.hurt || ai.exposed >= ai.exposeLimit || (w.mag === 0 && ai.exposed > 0.5);
+        if (!wantCover || coversLeft <= 0) break;
+        coversLeft--;
+        ai.hurt = false;
+        if (
+          findCover(state, c, ai, world, nav, c.x, c.y, c.z, target.x, eyeHeight(target), target.z)
+        ) {
+          ai.activity = 'takeCover';
+          ai.hasGoal = false;
+          ai.peekX = c.x;
+          ai.peekY = c.y;
+          ai.peekZ = c.z;
+        } else {
+          ai.exposed = 0;
+        }
+        break;
       }
-      break;
+      case 'takeCover': {
+        faceYaw = yawTo(c, ai.focusX, ai.focusZ);
+        reloadIfLow(c, items, 1);
+        // Right onto the spot: a little off it may not be hidden.
+        const r = moveTo(
+          state,
+          c,
+          ai,
+          nav,
+          ai.coverX,
+          ai.coverY,
+          ai.coverZ,
+          AI.alertPace,
+          true,
+          0.3,
+        );
+        if (r === 'failed') {
+          backToFight(state, ai);
+        } else if (r === 'arrived') {
+          ai.activity = 'cover';
+          ai.timer = nextRange(state.rng, AI.coverTime[0], AI.coverTime[1]);
+          ai.exposed = 0;
+        }
+        break;
+      }
+      case 'cover':
+        faceYaw = yawTo(c, ai.focusX, ai.focusZ);
+        ai.input.crouch = ai.coverLow;
+        reloadIfLow(c, items, 1);
+        // Time in cover. Once it has crouched and looked again, still seeing its target
+        // means it's seen from somewhere else: this cover is no good.
+        ai.exposed += DT;
+        if (ai.seesTarget && ai.exposed > AI.settleInCover) backToFight(state, ai);
+        else if (ai.timer <= 0 && !heldWeapon(c)?.reloading) {
+          ai.activity = 'peek';
+          ai.hasGoal = false;
+          ai.timer =
+            AI.peekTime + Math.hypot(ai.peekX - c.x, ai.peekZ - c.z) / (MOVEMENT.walkSpeed * 0.8);
+        }
+        break;
+      case 'peek': {
+        faceYaw = yawTo(c, ai.focusX, ai.focusZ);
+        // Stands up over low cover, or steps back out to where it was fighting from.
+        const out =
+          ai.coverLow ||
+          near(c, ai.peekX, ai.peekY, ai.peekZ) ||
+          moveTo(state, c, ai, nav, ai.peekX, ai.peekY, ai.peekZ, AI.alertPace, true) !== 'moving';
+        if (ai.seesTarget || (out && ai.timer <= 0)) backToFight(state, ai);
+        break;
+      }
+      case 'hold': {
+        if (ai.seesTarget || ai.reachable) {
+          backToFight(state, ai);
+          break;
+        }
+        if (!near(c, ai.coverX, ai.coverY, ai.coverZ)) {
+          const r = moveTo(state, c, ai, nav, ai.coverX, ai.coverY, ai.coverZ, AI.alertPace);
+          ai.timer = AI.holdTime;
+          if (r === 'moving') {
+            faceYaw = moveYaw;
+            break;
+          }
+          // There, or as close as it gets: hold here.
+          ai.coverX = c.x;
+          ai.coverY = c.y;
+          ai.coverZ = c.z;
+        }
+        // Watching the way up, ready.
+        faceYaw = yawTo(c, ai.wayX, ai.wayZ);
+        const across = Math.hypot(ai.wayX - c.x, ai.wayZ - c.z);
+        facePitch = Math.atan2(ai.wayY + 1 - eyeHeight(c), across);
+        ai.input.aim = true;
+        reloadIfLow(c, items, 1);
+        if (
+          ai.timer <= 0 &&
+          randomSpotNear(state, c, nav, ai.wayX, ai.wayY, ai.wayZ, AI.loiterRadius)
+        ) {
+          ai.activity = 'loiter';
+          ai.hasGoal = false;
+          ai.coverX = spotX;
+          ai.coverY = spotY;
+          ai.coverZ = spotZ;
+        }
+        break;
+      }
+      case 'loiter': {
+        if (ai.seesTarget || ai.reachable) {
+          backToFight(state, ai);
+          break;
+        }
+        const r = moveTo(state, c, ai, nav, ai.coverX, ai.coverY, ai.coverZ, AI.investigatePace);
+        faceYaw = moveYaw;
+        if (r !== 'moving') {
+          ai.activity = 'hold';
+          ai.coverX = c.x;
+          ai.coverY = c.y;
+          ai.coverZ = c.z;
+          ai.hasGoal = false;
+        }
+        break;
+      }
+      case 'search': {
+        const r = moveTo(state, c, ai, nav, ai.focusX, ai.focusY, ai.focusZ, AI.alertPace);
+        faceYaw = moveYaw;
+        if (r !== 'moving') {
+          ai.activity = 'searchScan';
+          ai.timer = AI.searchScan;
+          ai.lookYaw = c.yaw;
+        }
+        break;
+      }
+      case 'searchScan':
+        faceYaw = lookAround(ai);
+        if (ai.timer > 0) break;
+        if (ai.searchLeft-- <= 0 || !pickSearchSpot(state, c, ai, nav)) {
+          calmDown(c, ai);
+        } else {
+          ai.activity = 'search';
+          ai.hasGoal = false;
+        }
+        break;
     }
-    case 'search': {
-      const r = moveTo(state, c, ai, nav, ai.focusX, ai.focusY, ai.focusZ, AI.alertPace);
-      faceYaw = moveYaw;
-      if (r !== 'moving') {
-        ai.activity = 'searchScan';
-        ai.timer = AI.searchScan;
-        ai.lookYaw = c.yaw;
-      }
-      break;
-    }
-    case 'searchScan':
-      faceYaw = lookAround(ai);
-      if (ai.timer > 0) break;
-      if (ai.searchLeft-- <= 0 || !pickSearchSpot(state, c, ai, nav)) {
-        calmDown(c, ai);
-      } else {
-        ai.activity = 'search';
-        ai.hasGoal = false;
-      }
-      break;
-  }
 
   const input = ai.input;
   input.yaw = turnToward(c.yaw, faceYaw, turn * DT);
@@ -1148,6 +1215,84 @@ function behave(
   input.moveX = cy * wishX - sy * wishZ;
   input.moveY = -(sy * wishX + cy * wishZ);
   wishX = wishZ = 0;
+}
+
+// Where fleeGrenade wants it to face.
+let fleeYaw = 0;
+
+/**
+ * A grenade close enough to hurt it, with nothing between it and its eye (it saw it, or
+ * heard it land): it sprints for a walkable spot outside the blast that it can reach, the
+ * nearest to it, and turns to face the grenade once there. Whatever it was doing waits,
+ * planning afresh once the grenade has gone off. Returns whether it's running (or waiting
+ * out the blast); false too when there's nowhere to run.
+ */
+function fleeGrenade(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  world: CollisionWorld,
+  items: ItemDb,
+  nav: NavGrid,
+): boolean {
+  const eye = eyeHeight(c);
+  let found: Grenade | null = null;
+  let radius = 0;
+  for (const g of state.grenades) {
+    const r = grenadeDef(items, g.item).radius;
+    if (Math.hypot(g.x - c.x, g.y - c.y, g.z - c.z) > r + AI.fleeMargin) continue;
+    if (ai.flee?.grenade !== g.id && !clearLine(world, c.x, eye, c.z, g.x, g.y + 0.1, g.z))
+      continue;
+    found = g;
+    radius = r;
+    break;
+  }
+  if (!found) {
+    if (ai.flee) {
+      ai.flee = null;
+      ai.hasGoal = false;
+    }
+    return false;
+  }
+  if (ai.flee?.grenade !== found.id) {
+    if (!pickFleeSpot(c, ai, nav, found, radius)) return false;
+    ai.hasGoal = false;
+  }
+  const f = ai.flee!;
+  const r = moveTo(state, c, ai, nav, f.x, f.y, f.z, AI.alertPace);
+  fleeYaw = r === 'moving' ? moveYaw : yawTo(c, found.x, found.z);
+  return true;
+}
+
+/** The walkable spot outside a grenade's blast nearest c that c can walk to, into ai.flee. */
+function pickFleeSpot(
+  c: Character,
+  ai: AiState,
+  nav: NavGrid,
+  g: Grenade,
+  radius: number,
+): boolean {
+  const from = nav.nearest(c.x, c.y, c.z);
+  if (from < 0) return false;
+  const dist = radius + AI.fleeMargin;
+  let best = -1;
+  let bestD = Infinity;
+  for (let k = 0; k < AI.fleeDirections; k++) {
+    const a = (k / AI.fleeDirections) * Math.PI * 2;
+    const node = nav.nearest(g.x + Math.cos(a) * dist, c.y, g.z + Math.sin(a) * dist, 3);
+    if (node < 0 || nav.component[node] !== nav.component[from]) continue;
+    const x = nav.nodeX(node);
+    const z = nav.nodeZ(node);
+    if (Math.hypot(x - g.x, z - g.z) < radius + 0.5) continue;
+    const d = Math.hypot(x - c.x, z - c.z);
+    if (d < bestD) {
+      bestD = d;
+      best = node;
+    }
+  }
+  if (best < 0) return false;
+  ai.flee = { grenade: g.id, x: nav.nodeX(best), y: nav.nodeY(best), z: nav.nodeZ(best) };
+  return true;
 }
 
 /** Sweeps the view either side of lookYaw while standing. */

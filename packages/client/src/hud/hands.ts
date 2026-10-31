@@ -1,4 +1,5 @@
 import {
+  carriedGrenades,
   carriedGrid,
   heldWeapon,
   itemDef,
@@ -17,6 +18,7 @@ const svg = (path: string): string =>
 const RIFLE = svg('M1 9h14V8h3v1h5v2h-5l-1 1H9l-1 4H5l1-4H4l-2 2H1z');
 const PISTOL = svg('M4 8h16v3h-8l-1 5H7l1-5H4z');
 const KNIFE = svg('M2 14l2-2h7l11-3-2 3-7 2H4z');
+const GRENADE = svg('M10 2h5v2h-1v2.1a7 7 0 1 1-4 0V4h-1zm6 1l4 3-1 1-4-3z');
 
 const HANDS: readonly Hand[] = ['primary1', 'primary2', 'sidearm', 'knife'];
 
@@ -43,7 +45,7 @@ function does(items: ItemDb, c: Character, ref: MedRef): string {
  * heal button shows the med a tap would use (greyed out when nothing helps), and a ring
  * fills while one is being used. A long press opens a picker of every carried med that
  * would help. The fire button says "knife" with the knife out; aim and reload dim without
- * a gun.
+ * a gun. The grenade button shows how many are carried, dimmed with none.
  */
 export class HandsHud {
   private readonly slotKeys = HANDS.map(() => '');
@@ -53,6 +55,8 @@ export class HandsHud {
   private best: MedRef | null = null;
   private healKey = '';
   private fireKey = '';
+  private grenades = -1;
+  private readonly grenadeCount: HTMLElement;
   private ticks = 0;
 
   constructor(
@@ -65,6 +69,9 @@ export class HandsHud {
       `${svg('M9 3h6v6h6v6h-6v6H9v-6H3V9h6z')}<span class="heal-name"></span>`;
     this.ring = heal.querySelector('circle')!;
     this.healName = heal.querySelector('.heal-name')!;
+    const grenade = hud.button('grenade');
+    grenade.innerHTML = `<span class="slot-num"></span>${GRENADE}`;
+    this.grenadeCount = grenade.querySelector('.slot-num')!;
     this.picker = document.createElement('div');
     this.picker.className = 'heal-picker';
     this.picker.hidden = true;
@@ -112,6 +119,15 @@ export class HandsHud {
 
     if (this.ticks++ % 3 === 0 || c.using) {
       this.best = c.health.dead ? null : (treatments(c, items)[0] ?? null);
+    }
+    // How many grenades are carried, dimmed with none.
+    if (this.ticks % 3 === 1) {
+      const n = carriedGrenades(c, items);
+      if (n !== this.grenades) {
+        this.grenades = n;
+        this.grenadeCount.textContent = n ? String(n) : '';
+        this.hud.button('grenade').classList.toggle('idle', n === 0);
+      }
     }
     const name = c.using
       ? itemDef(items, c.using.item).name

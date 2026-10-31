@@ -12,7 +12,8 @@ export type ControlId =
   | 'primary2'
   | 'sidearm'
   | 'knife'
-  | 'heal';
+  | 'heal'
+  | 'grenade';
 
 export interface ControlDef {
   id: ControlId;
@@ -42,6 +43,7 @@ export const CONTROLS: readonly ControlDef[] = [
   { id: 'sidearm', label: '3', size: 46, x: 0.45, y: 0.9 },
   { id: 'knife', label: '4', size: 46, x: 0.52, y: 0.9 },
   { id: 'heal', label: 'heal', size: 54, x: 0.6, y: 0.88 },
+  { id: 'grenade', label: 'nade', size: 48, x: 0.6, y: 0.45 },
 ];
 
 export function placementOf(

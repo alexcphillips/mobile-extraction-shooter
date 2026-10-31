@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "id": "grenade-bounce",
+  "name": "Grenade bounce",
+  "gain": 0.6,
+  "range": 25,
+  "pitchJitter": 0.12,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "triangle",
+      "freq": [1500, 1100],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.08,
+      "curve": 3,
+      "gain": 0.6
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.06,
+      "curve": 2,
+      "gain": 0.8,
+      "filter": { "type": "lowpass", "freq": [900, 300], "q": 0.8 }
+    }
+  ]
+}

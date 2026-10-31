@@ -1,0 +1,56 @@
+{
+  "formatVersion": 1,
+  "id": "explosion",
+  "name": "Explosion",
+  "gain": 0.45,
+  "range": 1000,
+  "pitchJitter": 0.06,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0.01,
+      "decay": 0.25,
+      "curve": 3,
+      "gain": 0.9,
+      "drive": 0.8,
+      "filter": { "type": "lowpass", "freq": [6000, 600], "q": 0.7 }
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0,
+      "attack": 0.003,
+      "hold": 0.08,
+      "decay": 1.4,
+      "curve": 2.5,
+      "gain": 1.4,
+      "drive": 0.6,
+      "filter": { "type": "lowpass", "freq": [1200, 90], "q": 0.9 }
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [90, 28],
+      "at": 0,
+      "attack": 0.002,
+      "hold": 0.05,
+      "decay": 0.8,
+      "curve": 2,
+      "gain": 1
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0.15,
+      "attack": 0.2,
+      "hold": 0,
+      "decay": 1.6,
+      "curve": 2,
+      "gain": 0.3,
+      "filter": { "type": "lowpass", "freq": [700, 200], "q": 0.7 }
+    }
+  ]
+}

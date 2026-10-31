@@ -1,0 +1,41 @@
+{
+  "formatVersion": 9,
+  "id": "frag-grenade",
+  "name": "Frag grenade",
+  "type": "grenade",
+  "size": [1, 1],
+  "value": 3500,
+  "rarity": "rare",
+  "fuse": 3,
+  "throwSpeed": 15,
+  "radius": 7,
+  "damage": 110,
+  "level": 3,
+  "armourDamage": 15,
+  "bleedChance": 0.4,
+  "loudness": 1000,
+  "sounds": {
+    "throw": "grenade-throw",
+    "bounce": "grenade-bounce",
+    "explode": "explosion"
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, 0],
+        "radius": 0.035,
+        "height": 0.08,
+        "colour": "#4a5a32"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.08, 0],
+        "radius": 0.012,
+        "height": 0.02,
+        "colour": "#8a8a7a"
+      },
+      { "type": "box", "pos": [0.018, 0.065, 0], "size": [0.012, 0.05, 0.016], "colour": "#8a8a7a" }
+    ]
+  }
+}

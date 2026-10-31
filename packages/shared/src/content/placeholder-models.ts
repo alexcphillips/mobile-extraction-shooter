@@ -164,6 +164,7 @@ const COLOURS: Record<string, string> = {
   med: '#b04848',
   container: '#4c5a36',
   melee: '#5e5e5e',
+  grenade: '#4a5a32',
   key: '#c29a30',
   quest: '#8b4a8b',
   loot: '#a08a40',

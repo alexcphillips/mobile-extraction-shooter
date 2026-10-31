@@ -6,6 +6,7 @@ import { syncDoors, useDoor } from './doors';
 import { applyFall, bleed } from './health';
 import { TICK_SECONDS } from '../tick';
 import { switchHand } from './gear';
+import { updateGrenades, updateThrow } from './grenades';
 import { applyInventory } from './looting';
 import { updateMedUse } from './meds';
 import { updateMelee } from './melee';
@@ -69,7 +70,10 @@ export function step(
     const input = inputs[e.id] ?? e.ai?.input;
     updateWeapon(state, e, input, world, items);
     updateMelee(state, e, input, world, items);
+    updateThrow(state, e, input, world, items);
   }
+  // Thrown this tick or before: they fly, and those whose fuse is up go off.
+  updateGrenades(state, world, items);
   for (const e of state.entities) bleed(state, e);
   if (nav) updateAi(state, world, items, nav);
   state.tick++;
