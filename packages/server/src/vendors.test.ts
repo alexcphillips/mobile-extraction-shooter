@@ -116,6 +116,13 @@ describe('vendors', () => {
     mended.gear.helmet!.durability = 40;
     const res = await client.fails('PUT', '/profile', { version: me.version, profile: mended });
     expect(res.message).toMatch(/repair/);
+    // The infinite consumables cheat's free repairs count only on the dev server.
+    const cheat = { version: me.version, profile: mended, freeRepairs: true };
+    expect((await client.fails('PUT', '/profile', cheat)).message).toMatch(/repair/);
+    const dev = new TestClient({ ...client.env, ADMIN: '1' });
+    dev.cookie = client.cookie;
+    const saved = await dev.ok('PUT', '/profile', cheat);
+    expect(saved.profile.gear.helmet!.durability).toBe(40);
   });
 });
 

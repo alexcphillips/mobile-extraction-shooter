@@ -64,6 +64,11 @@ export interface SavedSettings {
 export interface SaveProfileRequest {
   version: number;
   profile: Profile;
+  /**
+   * Admin cheat (infinite consumables): repairs needn't spend kit points. Ignored except
+   * on the dev server.
+   */
+  freeRepairs?: boolean;
 }
 
 /** POST /api/stash/pages: buys the next stash page, if there's money for it. */

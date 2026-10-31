@@ -18,6 +18,7 @@ import {
 import { useEffect, useMemo, useReducer, useState, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AccountError } from '../account';
+import { readCheats, simCheats } from '../admin-cheats';
 import { StashSaver, type StashSaveStatus } from '../stash';
 import { AdminPage } from './admin-page';
 import { rememberRaid } from './last-raid';
@@ -385,6 +386,10 @@ function StashPage({
         player: stash.player,
         items,
         send: (action: InventoryAction) => {
+          // Read each time: the admin page, a tap away, can change them.
+          const cheat = simCheats(readCheats());
+          if (cheat) stash.player.admin = cheat;
+          else delete stash.player.admin;
           if (applyStash(stash, items, action, pageOf())) saver.changed();
           bump();
         },

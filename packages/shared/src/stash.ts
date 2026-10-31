@@ -150,14 +150,17 @@ export function addToStash(
 
 /**
  * A repair between raids: at once, with a kit and armour anywhere in the gear or stash.
- * A kit with no points left is removed.
+ * A kit with no points left is removed. The infinite consumables cheat (on s.player)
+ * gives the points back.
  */
 function repairNow(s: StashState, items: ItemDb, kitRef: ItemRef, armourRef: ItemRef): boolean {
   const kit = itemAt(s, kitRef);
   const armour = itemAt(s, armourRef);
   if (!kit || !armour || kit.item !== kitRef.item || armour.item !== armourRef.item) return false;
+  const points = kit.left ?? 0;
   if (repairArmour(items, kit, armour) <= 0) return false;
-  if (kitUsedUp(kit) && 'index' in kitRef) {
+  if (s.player.admin?.infiniteConsumables) kit.left = points;
+  else if (kitUsedUp(kit) && 'index' in kitRef) {
     const grid = stashGridOf(s.profile, kitRef);
     if (grid?.items[kitRef.index]?.item === kit) removeAt(grid, kitRef.index);
   }

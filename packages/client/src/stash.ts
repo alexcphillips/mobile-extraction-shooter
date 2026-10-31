@@ -11,6 +11,7 @@ import type {
   SellRequest,
 } from '@mes/shared';
 import { AccountError, call } from './account';
+import { readCheats } from './admin-cheats';
 import { GAME_SOUNDS } from './audio/sound-ids';
 import { sounds } from './audio/sounds';
 
@@ -152,7 +153,11 @@ export class StashSaver {
   private async save(): Promise<void> {
     this.dirty = false;
     this.set({ kind: 'saving' });
-    const body: SaveProfileRequest = { version: this.me.version, profile: this.me.profile };
+    const body: SaveProfileRequest = {
+      version: this.me.version,
+      profile: this.me.profile,
+      ...(readCheats().infiniteConsumables ? { freeRepairs: true } : {}),
+    };
     try {
       const res = await call('PUT', '/profile', body);
       const saved = (await res.json()) as ProfileResponse;

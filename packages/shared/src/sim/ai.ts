@@ -1219,6 +1219,8 @@ function behave(
 
 // Where fleeGrenade wants it to face.
 let fleeYaw = 0;
+// A flee spot at least this far outside the blast radius counts as safe.
+const FLEE_SAFE = 0.5;
 
 /**
  * A grenade close enough to hurt it, with nothing between it and its eye (it saw it, or
@@ -1254,8 +1256,13 @@ function fleeGrenade(
     }
     return false;
   }
-  if (ai.flee?.grenade !== found.id) {
-    if (!pickFleeSpot(c, ai, nav, found, radius)) return false;
+  // A new grenade, or this one has bounced or rolled up to where it was running: run anew.
+  const f0 = ai.flee;
+  if (
+    f0?.grenade !== found.id ||
+    Math.hypot(f0.x - found.x, f0.z - found.z) < radius + FLEE_SAFE
+  ) {
+    if (!pickFleeSpot(c, ai, nav, found, radius) && f0?.grenade !== found.id) return false;
     ai.hasGoal = false;
   }
   const f = ai.flee!;
@@ -1283,7 +1290,7 @@ function pickFleeSpot(
     if (node < 0 || nav.component[node] !== nav.component[from]) continue;
     const x = nav.nodeX(node);
     const z = nav.nodeZ(node);
-    if (Math.hypot(x - g.x, z - g.z) < radius + 0.5) continue;
+    if (Math.hypot(x - g.x, z - g.z) < radius + FLEE_SAFE) continue;
     const d = Math.hypot(x - c.x, z - c.z);
     if (d < bestD) {
       bestD = d;
