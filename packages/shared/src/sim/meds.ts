@@ -157,7 +157,11 @@ function finishRepair(c: Character, items: ItemDb, ref: CarriedRef, armourRef: I
   const grid = carriedGrid(c.gear, ref.grid)!;
   const kit = grid.items[ref.index]!.item;
   const armour = ownItem(c.gear, armourRef);
-  if (armour && repairArmour(items, kit, armour) > 0 && kitUsedUp(kit)) removeAt(grid, ref.index);
+  const points = kit.left ?? 0;
+  if (!armour || repairArmour(items, kit, armour) <= 0) return;
+  // The infinite consumables cheat gives the points back.
+  if (c.admin?.infiniteConsumables) kit.left = points;
+  else if (kitUsedUp(kit)) removeAt(grid, ref.index);
 }
 
 /** How long a med or repair kit takes to use. */
@@ -179,8 +183,8 @@ function firstCarried(c: Character, id: string): CarriedRef | null {
  * Uses a carried med once: the effect of finishing its use (startUse and updateMedUse add
  * the use time and cancelling). A bandage, splint or surgery kit treats one zone, the first in
  * TREATMENT_ORDER that needs it; a heal restores HP down that order, skipping broken
- * limbs, until its pool or the damage runs out. Used up, it's removed. Returns whether it
- * did anything.
+ * limbs, until its pool or the damage runs out. Used up, it's removed (never, with the
+ * infinite consumables cheat). Returns whether it did anything.
  */
 export function useMed(c: Character, items: ItemDb, ref: CarriedRef): boolean {
   const grid = carriedGrid(c.gear, ref.grid);
@@ -217,6 +221,8 @@ export function useMed(c: Character, items: ItemDb, ref: CarriedRef): boolean {
       }
       break;
   }
+  // The infinite consumables cheat leaves it as it was.
+  if (c.admin?.infiniteConsumables) return true;
   if (left <= 1e-9) removeAt(grid, ref.index);
   else it.left = left;
   return true;

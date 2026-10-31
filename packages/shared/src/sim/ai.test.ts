@@ -132,7 +132,12 @@ describe('enemy sight', () => {
 
   it('never notices a peaceful player (an admin cheat), even one shooting it', () => {
     const s = setup(0, -3);
-    s.player.admin = { infiniteHealth: false, infiniteAmmo: false, peaceful: true };
+    s.player.admin = {
+      infiniteHealth: false,
+      infiniteAmmo: false,
+      peaceful: true,
+      infiniteConsumables: false,
+    };
     giveWeapon(s.player, TEST_ITEMS, 'rifle');
     s.run(2, input({ yaw: Math.PI, pitch: -0.1, fire: true }));
     // It was hit, and still didn't notice.

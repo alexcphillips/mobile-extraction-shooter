@@ -69,6 +69,8 @@ export interface AdminCheats {
   infiniteAmmo: boolean;
   /** Enemies never notice it: not by sight, sound or being shot. */
   peaceful: boolean;
+  /** Meds and repair kits work but are never used up. */
+  infiniteConsumables: boolean;
 }
 
 /** Only characters so far. Loot containers and ground items have their own lists. */
@@ -83,7 +85,22 @@ export type SimEvent =
   | InventoryEvent
   | LeaveEvent
   | DoorEvent
-  | InvestigateEvent;
+  | InvestigateEvent
+  | SpawnRequestEvent;
+
+/**
+ * An admin gun's shot (WeaponDef.spawns) asking for an enemy of that type here, facing
+ * the shooter. The sim has no enemy types or loadouts, so whoever runs the raid spawns it.
+ */
+export interface SpawnRequestEvent {
+  type: 'spawnRequest';
+  by: EntityId;
+  enemy: string;
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+}
 
 /**
  * Everything that changes during a raid. Plain JSON-safe data: no classes, maps or typed

@@ -153,6 +153,12 @@ export function checkEnemies(
       throw new ContentError(`content/enemies/${e.id}.json`, `no loadout "${e.loadout}"`);
     }
   }
+  // Admin spawner guns name the enemy they spawn.
+  for (const d of items.values()) {
+    if (d.type === 'weapon' && d.spawns !== undefined && !enemies.has(d.spawns)) {
+      throw new ContentError(`content/items/${d.id}.json`, `no enemy type "${d.spawns}"`);
+    }
+  }
   for (const l of loadouts.values()) {
     const source = `content/loadouts/${l.id}.json`;
     const check = (fn: () => void): void => {

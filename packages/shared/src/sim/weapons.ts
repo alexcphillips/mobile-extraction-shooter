@@ -175,9 +175,9 @@ export function reloadRound(
   if (want) {
     const a = items.get(want);
     const ok = a?.type === 'ammo' && a.calibre === calibre;
-    if (ok && (c.admin?.infiniteAmmo || carriedAmmo(c, want) > 0)) return want;
+    if (ok && (freeAmmo(c, def) || carriedAmmo(c, want) > 0)) return want;
   }
-  if (c.admin?.infiniteAmmo || carriedAmmo(c, loaded) > 0) return loaded;
+  if (freeAmmo(c, def) || carriedAmmo(c, loaded) > 0) return loaded;
   let best: string | null = null;
   let bestLevel = 0;
   for (let i = 0; i < CARRIED_GRIDS; i++) {
@@ -308,6 +308,10 @@ export function updateWeapon(
   w.cooldown = Math.max(w.cooldown - DT, trigger ? -DT : 0);
 }
 
+/** Firing and reloading take no rounds: the infinite ammo cheat, or an admin spawner gun. */
+const freeAmmo = (c: Character, def: WeaponDef): boolean =>
+  !!c.admin?.infiniteAmmo || def.spawns !== undefined;
+
 /** Starts a reload, unless there's nothing to load or it's full of the same round. */
 function startReload(
   c: Character,
@@ -340,7 +344,7 @@ function finishReload(
   w.reloading = 0;
   const round = w.reloadWith ?? loadedAmmo(items, w);
   delete w.reloadWith;
-  const infinite = !!c.admin?.infiniteAmmo;
+  const infinite = freeAmmo(c, weaponDef(items, w.item));
   if (round === loadedAmmo(items, w)) {
     w.mag += infinite ? s.magazine - w.mag : takeAmmo(c, round, s.magazine - w.mag);
     return;
@@ -362,6 +366,9 @@ function towardZero(v: number, step: number): number {
   return v > 0 ? Math.max(0, v - step) : Math.min(0, v + step);
 }
 
+/** How far short of where an admin spawner's shot stopped its enemy spawns, in metres. */
+const SPAWN_BACK_OFF = 0.6;
+
 // Scratch, so firing allocates nothing but its event.
 const worldHit = createRayHit();
 const charHit = createCharacterHit();
@@ -375,7 +382,7 @@ function fire(
   world: CollisionWorld,
   items: ItemDb,
 ): void {
-  if (!c.admin?.infiniteAmmo) w.mag--;
+  if (!freeAmmo(c, def)) w.mag--;
   // A random point in a cone around where the view (with recoil) points.
   const spread =
     (s.hipSpread + (s.aimSpread - s.hipSpread) * c.aim) * DEG * armScale(c, HEALTH.brokenArmSpread);
@@ -440,9 +447,23 @@ function castShot(
   if (cd < Infinity) {
     hit = 'character';
     const target = entityById(state, charHit.id);
-    if (target) shootCharacter(state, items, target, charHit.zone, ammo, c.id);
+    // An admin spawner's shots do no harm.
+    if (target && !def.spawns) shootCharacter(state, items, target, charHit.zone, ammo, c.id);
   } else if (wd < Infinity) {
     hit = 'world';
+  }
+  if (def.spawns && hit !== 'none' && pellet === 0) {
+    // Back from the wall or body it hit, so the new enemy stands clear of it, facing back.
+    const back = Math.max(0, d - SPAWN_BACK_OFF);
+    state.events.push({
+      type: 'spawnRequest',
+      by: c.id,
+      enemy: def.spawns,
+      x: ox + dx * back,
+      y: oy + dy * back,
+      z: oz + dz * back,
+      yaw: Math.atan2(dx, dz),
+    });
   }
   state.events.push({
     type: 'shot',

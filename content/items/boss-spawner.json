@@ -1,0 +1,39 @@
+{
+  "formatVersion": 8,
+  "id": "boss-spawner",
+  "name": "Boss spawner (admin)",
+  "type": "weapon",
+  "size": [2, 1],
+  "value": 0,
+  "rarity": "legendary",
+  "ammo": "ammo-9mm",
+  "hold": "pistol",
+  "fireMode": "semi",
+  "rpm": 240,
+  "magazine": 1,
+  "reloadTime": 0.5,
+  "aimTime": 0.2,
+  "drawTime": 0.3,
+  "range": 100,
+  "loudness": 5,
+  "hipSpread": 0,
+  "aimSpread": 0,
+  "recoil": { "up": 0.3, "side": 0, "recovery": 18 },
+  "sounds": {
+    "shot": "crossbow-shot",
+    "suppressed": "crossbow-shot",
+    "reload": "pistol-reload"
+  },
+  "spawns": "boss-scav",
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0.008, -0.06], "size": [0.03, 0.034, 0.19], "colour": "#d63a2b" },
+      { "type": "box", "pos": [0, -0.06, 0], "size": [0.024, 0.08, 0.044], "colour": "#2a2d30" },
+      { "type": "box", "pos": [0, 0.008, -0.16], "size": [0.04, 0.04, 0.02], "colour": "#f2e84b" }
+    ],
+    "grip": [0, -0.055, 0.005],
+    "support": [-0.012, -0.065, 0],
+    "muzzle": [0, 0.008, -0.17],
+    "sight": [0, 0.03, -0.06]
+  }
+}
