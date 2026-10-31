@@ -850,13 +850,14 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     let died = false;
     for (const e of sim.events) {
       if (e.type === 'shot') {
+        // A launched grenade has no tracer: it's drawn flying (grenades).
         if (e.by === player.id) {
           if (e.pellet === 0) viewmodel.fired(now);
           viewmodel.muzzleWorld(muzzle);
-          effects.tracer(now, muzzle.x, muzzle.y, muzzle.z, e.toX, e.toY, e.toZ);
+          if (!e.grenade) effects.tracer(now, muzzle.x, muzzle.y, muzzle.z, e.toX, e.toY, e.toZ);
         } else {
           if (e.pellet === 0) bodyOf.get(e.by)?.fired();
-          effects.tracer(now, e.fromX, e.fromY, e.fromZ, e.toX, e.toY, e.toZ);
+          if (!e.grenade) effects.tracer(now, e.fromX, e.fromY, e.fromZ, e.toX, e.toY, e.toZ);
         }
         if (e.hit !== 'none') effects.impact(now, e.toX, e.toY, e.toZ, e.hit === 'character');
         if (e.by === player.id && e.hit !== 'none' && shotMarkers.length) {

@@ -1,9 +1,10 @@
 import {
   ATTACHMENT_SLOTS,
-  ammoDef,
   attachmentDef,
   calibreOf,
   fits,
+  roundCalibre,
+  roundOf,
   weaponDef,
   type AmmoDef,
   type AttachmentSlot,
@@ -17,6 +18,7 @@ import { createRayHit, type CollisionWorld } from '../world/collision-world';
 import { HEALTH, brokenArms, shootCharacter } from './health';
 import { CARRIED_GRIDS, carriedAmmo, carriedGrid, equip, heldWeapon, stow, takeAmmo } from './gear';
 import { dropItem } from './ground';
+import { launchGrenade } from './grenades';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import {
   entityById,
@@ -126,6 +128,11 @@ export interface ShotEvent {
    * first and for ordinary rounds. Sounds and muzzle flashes go with pellet 0 only.
    */
   pellet: number;
+  /**
+   * A grenade launcher's shot: the grenade's id (it flies as state.grenades), and the
+   * shot goes nowhere (to is from, hit none). 0 for bullets.
+   */
+  grenade: number;
 }
 
 // Scratch for working out stats, so a tick allocates nothing.
@@ -173,8 +180,8 @@ export function reloadRound(
   const calibre = calibreOf(items, def);
   const loaded = loadedAmmo(items, w);
   if (want) {
-    const a = items.get(want);
-    const ok = a?.type === 'ammo' && a.calibre === calibre;
+    const a = roundOf(items, want);
+    const ok = !!a && roundCalibre(a) === calibre;
     if (ok && (freeAmmo(c, def) || carriedAmmo(c, want) > 0)) return want;
   }
   if (freeAmmo(c, def) || carriedAmmo(c, loaded) > 0) return loaded;
@@ -184,8 +191,8 @@ export function reloadRound(
     const grid = carriedGrid(c.gear, i);
     if (!grid) continue;
     for (const g of grid.items) {
-      const a = items.get(g.item.item);
-      if (a?.type === 'ammo' && a.calibre === calibre && a.level > bestLevel) {
+      const a = roundOf(items, g.item.item);
+      if (a && roundCalibre(a) === calibre && a.level > bestLevel) {
         best = a.id;
         bestLevel = a.level;
       }
@@ -390,8 +397,28 @@ function fire(
   const around = nextFloat(state.rng) * Math.PI * 2;
   const yaw = c.yaw + c.recoilYaw + off * Math.cos(around);
   const pitch = c.pitch + c.recoilPitch + off * Math.sin(around);
-  const ammo = ammoDef(items, loadedAmmo(items, w));
-  if (!ammo.pellets) {
+  const ammo = roundOf(items, loadedAmmo(items, w))!;
+  if (ammo.type === 'grenade') {
+    // A launcher: the grenade flies from here as a thrown one does, only faster, and with
+    // an impact fuse if the launcher arms it.
+    const speed = def.launchSpeed ?? ammo.throwSpeed;
+    const g = launchGrenade(state, c, world, ammo, yaw, pitch, speed, def.armDistance);
+    state.events.push({
+      type: 'shot',
+      by: c.id,
+      fromX: g.x,
+      fromY: g.y,
+      fromZ: g.z,
+      toX: g.x,
+      toY: g.y,
+      toZ: g.z,
+      hit: 'none',
+      target: 0,
+      loudness: s.loudness,
+      pellet: 0,
+      grenade: g.id,
+    });
+  } else if (!ammo.pellets) {
     castShot(state, c, yaw, pitch, def, s, ammo, world, items, 0);
   } else {
     const pelletSpread = (ammo.pelletSpread ?? 0) * DEG;
@@ -478,5 +505,6 @@ function castShot(
     target: hit === 'character' ? charHit.id : 0,
     loudness: s.loudness,
     pellet,
+    grenade: 0,
   });
 }

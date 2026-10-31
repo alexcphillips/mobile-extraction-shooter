@@ -83,9 +83,21 @@ const weaponSchema = z
     type: z.literal('weapon'),
     /**
      * The round it comes loaded with. It fires any round of the same calibre (the one
-     * loaded is on the gun, WeaponState.loaded).
+     * loaded is on the gun, WeaponState.loaded). A grenade makes it a grenade launcher,
+     * firing any grenade (see launchSpeed).
      */
     ammo: idSchema,
+    /**
+     * Grenade launchers only (2026-10-30): how fast a grenade leaves the barrel, in m/s.
+     * It flies, bounces and goes off as a thrown one does (sim/grenades.ts).
+     */
+    launchSpeed: positive.optional(),
+    /**
+     * Grenade launchers only: its grenades go off when they hit something (the map or
+     * someone) once they've flown this far, in metres. One that hits the map sooner never
+     * arms: it bounces and goes off on its fuse, as a thrown one does.
+     */
+    armDistance: nonNegative.optional(),
     /**
      * How it's held: a rifle in both hands at the shoulder, a pistol out in front. Picks the
      * animations and where the gun sits in first person. Defaults to rifle.
@@ -600,28 +612,49 @@ export function fits(weapon: WeaponDef, attachment: AttachmentDef): boolean {
   );
 }
 
+/** What a gun can be loaded with: ammo, or grenades for a grenade launcher. */
+export type RoundDef = AmmoDef | GrenadeDef;
+
+/** An item as something a gun can load, or null if it isn't ammo or a grenade. */
+export function roundOf(items: ItemDb, id: string): RoundDef | null {
+  const def = items.get(id);
+  return def?.type === 'ammo' || def?.type === 'grenade' ? def : null;
+}
+
+/** A round's calibre: ammo's own; every grenade is 'grenade', fired by every launcher. */
+export const roundCalibre = (round: RoundDef): string =>
+  round.type === 'ammo' ? round.calibre : 'grenade';
+
 /** The calibre a gun fires: its own round's. */
 export function calibreOf(items: ItemDb, weapon: WeaponDef): string {
-  return ammoDef(items, weapon.ammo).calibre;
+  const round = roundOf(items, weapon.ammo);
+  if (!round) throw new Error(`item "${weapon.ammo}" is not a round`);
+  return roundCalibre(round);
 }
 
 /** Whether a gun fires an item: a round of its calibre. */
 export function firesRound(items: ItemDb, weapon: WeaponDef, id: string): boolean {
-  const def = items.get(id);
-  return def?.type === 'ammo' && def.calibre === calibreOf(items, weapon);
+  const round = roundOf(items, id);
+  return !!round && roundCalibre(round) === calibreOf(items, weapon);
 }
 
 /**
- * Checks references between items: a weapon's ammo exists and is ammo, and an
- * attachment's guns exist and have its slot.
+ * Checks references between items: a weapon's ammo exists and is ammo (or a grenade, with
+ * a launch speed), and an attachment's guns exist and have its slot.
  */
 export function checkItems(items: ItemDb): void {
   for (const item of items.values()) {
     const source = `content/items/${item.id}.json`;
     if (item.type === 'weapon') {
       const ammo = items.get(item.ammo);
-      if (ammo?.type !== 'ammo') {
-        throw new ContentError(source, `ammo "${item.ammo}" is not an ammo item`);
+      if (ammo?.type !== 'ammo' && ammo?.type !== 'grenade') {
+        throw new ContentError(source, `ammo "${item.ammo}" is not an ammo or grenade item`);
+      }
+      if ((ammo.type === 'grenade') !== (item.launchSpeed !== undefined)) {
+        throw new ContentError(source, 'a gun firing grenades needs launchSpeed, and only it');
+      }
+      if (item.armDistance !== undefined && ammo.type !== 'grenade') {
+        throw new ContentError(source, 'only a gun firing grenades has armDistance');
       }
     } else if (item.type === 'attachment') {
       for (const id of item.weapons ?? []) {

@@ -25,6 +25,7 @@
     { "item": "smg", "weight": 0.7 },
     { "item": "crossbow", "weight": 0.5 },
     { "item": "sniper-rifle", "weight": 0.3 },
+    { "item": "grenade-launcher", "weight": 0.15 },
     { "item": "mag-9mm-24", "weight": 1 },
     { "item": "mag-762x39-45", "weight": 1 },
     { "item": "red-dot", "weight": 1 },

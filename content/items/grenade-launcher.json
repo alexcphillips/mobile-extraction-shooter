@@ -1,0 +1,226 @@
+{
+  "formatVersion": 9,
+  "id": "grenade-launcher",
+  "name": "RG-6 grenade launcher",
+  "type": "weapon",
+  "size": [3, 2],
+  "value": 40000,
+  "rarity": "epic",
+  "ammo": "frag-grenade",
+  "launchSpeed": 40,
+  "armDistance": 10,
+  "hold": "rifle",
+  "fireMode": "semi",
+  "rpm": 60,
+  "magazine": 6,
+  "reloadTime": 5,
+  "aimTime": 0.4,
+  "drawTime": 1,
+  "range": 150,
+  "loudness": 120,
+  "hipSpread": 2,
+  "aimSpread": 0.5,
+  "recoil": {
+    "up": 6,
+    "side": 1.5,
+    "recovery": 10
+  },
+  "sounds": {
+    "shot": "launcher-shot",
+    "suppressed": "launcher-shot",
+    "reload": "launcher-reload"
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.4],
+        "pitch": 90,
+        "radius": 0.03,
+        "height": 0.2,
+        "sides": 12,
+        "colour": "#2a2d30"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.5],
+        "pitch": 90,
+        "radius": 0.034,
+        "height": 0.02,
+        "sides": 12,
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.511],
+        "pitch": 90,
+        "radius": 0.021,
+        "height": 0.002,
+        "sides": 12,
+        "colour": "#0b0c0d"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.045, -0.2],
+        "pitch": 90,
+        "radius": 0.078,
+        "height": 0.2,
+        "sides": 12,
+        "colour": "#3a3e43"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0, 0.003, -0.301],
+        "pitch": 90,
+        "radius": 0.019,
+        "height": 0.003,
+        "sides": 8,
+        "colour": "#141516"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0416, -0.021, -0.301],
+        "pitch": 90,
+        "radius": 0.019,
+        "height": 0.003,
+        "sides": 8,
+        "colour": "#141516"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0416, -0.069, -0.301],
+        "pitch": 90,
+        "radius": 0.019,
+        "height": 0.003,
+        "sides": 8,
+        "colour": "#141516"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0, -0.093, -0.301],
+        "pitch": 90,
+        "radius": 0.019,
+        "height": 0.003,
+        "sides": 8,
+        "colour": "#141516"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.0416, -0.069, -0.301],
+        "pitch": 90,
+        "radius": 0.019,
+        "height": 0.003,
+        "sides": 8,
+        "colour": "#141516"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.0416, -0.021, -0.301],
+        "pitch": 90,
+        "radius": 0.019,
+        "height": 0.003,
+        "sides": 8,
+        "colour": "#141516"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.022, -0.31],
+        "size": [0.05, 0.08, 0.02],
+        "colour": "#2a2d30"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.045, -0.37],
+        "pitch": 90,
+        "radius": 0.014,
+        "height": 0.14,
+        "colour": "#2a2d30"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.105, -0.38],
+        "size": [0.032, 0.09, 0.035],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.04, -0.2],
+        "size": [0.03, 0.012, 0.22],
+        "colour": "#2a2d30"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.025, -0.04],
+        "size": [0.06, 0.1, 0.12],
+        "colour": "#2a2d30"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.092, -0.02],
+        "size": [0.012, 0.008, 0.07],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.083, -0.03],
+        "size": [0.006, 0.02, 0.006],
+        "colour": "#8a8a7a"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.12, 0.035],
+        "size": [0.035, 0.1, 0.045],
+        "pitch": -15,
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.01, 0.15],
+        "pitch": 90,
+        "radius": 0.012,
+        "height": 0.26,
+        "colour": "#3a3e43"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.035, 0.29],
+        "size": [0.04, 0.13, 0.025],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.035, -0.04],
+        "size": [0.03, 0.02, 0.02],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [-0.011, 0.058, -0.04],
+        "size": [0.006, 0.026, 0.012],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0.011, 0.058, -0.04],
+        "size": [0.006, 0.026, 0.012],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.034, -0.47],
+        "size": [0.016, 0.012, 0.012],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.054, -0.47],
+        "size": [0.004, 0.032, 0.006],
+        "colour": "#1d1f21"
+      }
+    ],
+    "grip": [0, -0.075, 0.035],
+    "support": [0, -0.075, -0.38],
+    "muzzle": [0, 0, -0.51],
+    "sight": [0, 0.07, -0.04]
+  }
+}
