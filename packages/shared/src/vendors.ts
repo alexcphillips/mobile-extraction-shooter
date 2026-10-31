@@ -2,10 +2,10 @@ import { itemDef, type ItemDb } from './content/items';
 import type { VendorDef, VendorOffer } from './content/vendors';
 import { removeAt, type Grid, type Item } from './inventory/grid';
 import { PROFILE, type Profile } from './profile';
-import type { Gear, GearSlot } from './sim/gear';
+import { GEAR_SLOTS, type Gear, type GearSlot } from './sim/gear';
 import { loadedAmmo } from './sim/weapons';
-import type { ItemRef } from './sim/looting';
-import { addToStash, stashGridOf } from './stash';
+import type { GridName, ItemRef } from './sim/looting';
+import { addToStash, stashGridOf, stashOwner } from './stash';
 
 /*
  * Buying and selling (session 13b, decided with the user 2026-10-27). Every item has a
@@ -188,6 +188,51 @@ export function sellItems(
   profile.money += price;
   if (!profile.gear[profile.gear.hand]) profile.gear.hand = 'knife';
   return null;
+}
+
+/** The grids you carry, as sellAll names them. */
+const CARRIED: readonly GridName[] = ['pockets', 'rig', 'backpack', 'vault'];
+
+/**
+ * Everything you have that can be sold, as refs for sellItems (2026-10-31, the stash's
+ * "Sell everything"): what's in the grids you carry (vault too) and on every stash page,
+ * then your gear slots. Left out: the knife, whatever no vendor wants (admin items, keys
+ * worth nothing), a stored rig or backpack with anything in it (its contents can't be
+ * named), and a worn one holding anything that won't sell. Worn ones come after their
+ * contents, so selling them in order, at most MAX_SELL at a time, never meets one that
+ * isn't empty yet. Refs are by index, so sell a batch and ask again for the rest.
+ */
+export function sellAll(profile: Profile, items: ItemDb): ItemRef[] {
+  const out: ItemRef[] = [];
+  const sellable = (it: Item): boolean => !it.grid?.items.length && sellPrice(items, it) > 0;
+  const grids: [ItemRef['owner'], GridName][] = [
+    ...CARRIED.map((g): [ItemRef['owner'], GridName] => [{ kind: 'self' }, g]),
+    ...profile.stash.map((_, p): [ItemRef['owner'], GridName] => [stashOwner(p), 'loot']),
+  ];
+  for (const [owner, grid] of grids) {
+    const list = stashGridOf(profile, { owner, grid })?.items ?? [];
+    list.forEach((g, index) => {
+      if (sellable(g.item)) out.push({ owner, grid, index, item: g.item.item });
+    });
+  }
+  const gear = profile.gear as unknown as Record<GearSlot, Item | null>;
+  for (const slot of GEAR_SLOTS) {
+    const it = gear[slot];
+    if (!it || slot === 'knife' || sellPrice(items, it) <= 0) continue;
+    if (it.grid?.items.some((g) => !sellable(g.item))) continue;
+    out.push({ owner: { kind: 'self' }, slot, item: it.item });
+  }
+  return out;
+}
+
+/** What selling everything (sellAll) would bring in. */
+export function sellAllPrice(profile: Profile, items: ItemDb): number {
+  let n = 0;
+  for (const ref of sellAll(profile, items)) {
+    const f = findToSell(profile, ref);
+    if (typeof f !== 'string') n += sellPrice(items, f.item);
+  }
+  return n;
 }
 
 /** What a list of items sells for, in all. */

@@ -3,6 +3,7 @@ import type { AiState } from './ai';
 import type { CollisionWorld } from '../world/collision-world';
 import { createGear, type Gear, type Hand } from './gear';
 import type { DoorEvent, DoorState } from './doors';
+import type { Burn, FirePatch, Flame, IgniteEvent } from './fire';
 import type { BounceEvent, ExplosionEvent, Grenade, Smoke, ThrowEvent } from './grenades';
 import type { GroundItem } from './ground';
 import { createHealth, type DamageEvent, type DeathEvent, type Health } from './health';
@@ -78,6 +79,16 @@ export interface Character {
    * screen is white. Missing (as in older saves) is 0.
    */
   blind?: number;
+  /**
+   * On fire (2026-10-31): seconds left, who lit it and with what. Null or missing (as in
+   * older saves) when not.
+   */
+  burn?: Burn | null;
+  /**
+   * Seconds left putting itself out (2026-10-31); it can't fire, aim, reload, throw, swing,
+   * switch hands or use a med meanwhile, and walks slowly. Missing (older saves) is 0.
+   */
+  extinguish?: number;
   /** The med it's using, or null. */
   using: MedUse | null;
   /** Seconds it has stood in an extraction point; 0 when not in one. */
@@ -113,6 +124,7 @@ export type SimEvent =
   | ThrowEvent
   | BounceEvent
   | ExplosionEvent
+  | IgniteEvent
   | DamageEvent
   | DeathEvent
   | InventoryEvent
@@ -153,6 +165,10 @@ export interface SimState {
   grenades: Grenade[];
   /** Smoke grenades' clouds, until they clear (2026-10-31). */
   smokes: Smoke[];
+  /** Flamethrower blobs in flight (2026-10-31). */
+  flames: Flame[];
+  /** Fire burning where flames landed on the map, until it burns out (2026-10-31). */
+  fires: FirePatch[];
   /** Each of the world's doors, by index; filled in by the first step (see syncDoors). */
   doors: DoorState[];
   /** The timer and extraction points; null outside a raid (tests, the perf scene). */
@@ -203,6 +219,8 @@ export interface PlayerInput {
   grenade?: string | null;
   /** Set off every C4 it has placed: a press. */
   detonate?: boolean;
+  /** Start putting itself out while on fire: a press (2026-10-31). */
+  extinguish?: boolean;
   /** Start using a carried med (a press), or stop using one. */
   use?: MedRef | 'cancel' | null;
   /** Open, close or unlock a door, by its index in world.doors: a press. */
@@ -227,6 +245,8 @@ export function createState(seed: number): SimState {
     ground: [],
     grenades: [],
     smokes: [],
+    flames: [],
+    fires: [],
     doors: [],
     raid: null,
     left: [],

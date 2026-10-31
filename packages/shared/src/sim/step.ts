@@ -5,6 +5,7 @@ import { updateAi } from './ai';
 import { syncDoors, useDoor } from './doors';
 import { applyFall, bleed } from './health';
 import { TICK_SECONDS } from '../tick';
+import { updateExtinguish, updateFire } from './fire';
 import { switchHand } from './gear';
 import { updateGrenades, updateThrow } from './grenades';
 import { applyInventory } from './looting';
@@ -23,7 +24,8 @@ import { updateWeapon } from './weapons';
  * Enemies think at the end, from this tick's positions and events, and act on it next
  * tick. Without a nav grid they don't think, and stand still. The world and nav grid
  * follow the state's doors first. Inventory actions come first, so the rest of the tick
- * sees what they changed; then doors and investigating, switching hands and meds.
+ * sees what they changed; then doors and investigating, switching hands, meds and putting
+ * yourself out (which blocks switching hands).
  * Last, the raid: extracting, and the timer running out.
  */
 export function step(
@@ -56,7 +58,8 @@ export function step(
     const input = e.health.dead ? undefined : (inputs[e.id] ?? e.ai?.input);
     if (e.draw > 0) e.draw = Math.max(0, e.draw - TICK_SECONDS);
     if (e.blind) e.blind = Math.max(0, e.blind - TICK_SECONDS);
-    if (input?.draw) switchHand(e, items, input.draw);
+    updateExtinguish(e, input);
+    if (input?.draw && !e.extinguish) switchHand(e, items, input.draw);
     updateMedUse(e, items, input);
   }
   // Everyone moves, then everyone shoots, so shots see this tick's positions.
@@ -75,6 +78,8 @@ export function step(
   }
   // Thrown this tick or before: they fly, and those whose fuse is up go off. Smoke clears.
   updateGrenades(state, world, items);
+  // Flames fly and land, fire on the map burns down, and those alight burn.
+  updateFire(state, world, items);
   for (const e of state.entities) bleed(state, e);
   if (nav) updateAi(state, world, items, nav);
   state.tick++;

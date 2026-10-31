@@ -11,6 +11,7 @@
     { "item": "ammo-9mm-pso", "weight": 1.5, "count": [8, 30] },
     { "item": "ammo-9mm", "weight": 0.5, "count": [8, 30] },
     { "item": "armour-repair-kit", "weight": 0.5 },
+    { "item": "molotov", "weight": 0.4 },
     { "item": "shed-key", "weight": 0.3 }
   ]
 }

@@ -1,6 +1,9 @@
 import {
+  MAX_SELL,
   applyStash,
   itemDef,
+  sellAll,
+  sellAllPrice,
   nextPagePrice,
   openStash,
   stashOwner,
@@ -241,6 +244,33 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
           void saver.flush();
           setPage('vendors');
         }}
+        onSellAll={async (on) => {
+          // Batches of at most MAX_SELL, each listed afresh from what the server has: refs
+          // are by index, so the last batch's selling moved the rest.
+          const before = saver.me.profile.money;
+          let sold = 0;
+          let last: ProfileResponse | null = null;
+          try {
+            await saver.flush();
+            for (;;) {
+              const refs = sellAll(saver.me.profile, opts.items).slice(0, MAX_SELL);
+              if (!refs.length) break;
+              last = await saver.sell(refs);
+              sold += refs.length;
+            }
+          } catch (err) {
+            refused(sold ? `Sold ${sold} items, then the rest weren't` : `Nothing was sold`)(err);
+            if (last) reopen(last, on, `Sold ${sold} items, then stopped.`);
+            return;
+          }
+          if (last)
+            reopen(
+              last,
+              on,
+              `Sold everything (${sold} items) for ${(last.profile.money - before).toLocaleString()}.`,
+            );
+          else setNotice('Nothing to sell.');
+        }}
         onSell={(refs, on) => {
           const name =
             refs.length === 1 ? itemDef(opts.items, refs[0]!.item).name : `${refs.length} items`;
@@ -351,6 +381,7 @@ function StashPage({
   onRaid,
   onBuyPage,
   onSell,
+  onSellAll,
   onVendors,
   startPage,
 }: {
@@ -366,15 +397,19 @@ function StashPage({
   onBuyPage: () => Promise<boolean>;
   /** Sells items, all or none; the page shown is kept. Resolves when sold or refused. */
   onSell: (refs: ItemRef[], page: number) => Promise<void>;
+  /** Sells everything that can be sold, gear and stash (sellAll); resolves when done. */
+  onSellAll: (page: number) => Promise<void>;
   onVendors: () => void;
   /** The page to show when the stash is (re)opened. */
   startPage: number;
 }): ReactNode {
   const [version, bump] = useReducer((n: number) => n + 1, 0);
   const pages = stash.profile.stash.length;
-  // Buying asks for a second tap.
+  // Buying asks for a second tap, and so does selling everything (showing what it brings).
   const [confirming, setConfirming] = useState(false);
   const [buying, setBuying] = useState(false);
+  const [sellAllFor, setSellAllFor] = useState<number | null>(null);
+  const [sellingAll, setSellingAll] = useState(false);
   const price = nextPagePrice(stash.profile);
   // The controller's open "container" is the page shown: a double-tap into the stash
   // tries it first. A new stash (a page bought, or reloaded) opens on startPage.
@@ -417,6 +452,16 @@ function StashPage({
   const show = (p: number): void => {
     setConfirming(false);
     inv.setTarget(stashOwner(p));
+  };
+  const sellEverything = (): void => {
+    if (sellingAll) return;
+    if (sellAllFor === null) {
+      setSellAllFor(sellAllPrice(stash.profile, items));
+      return;
+    }
+    setSellAllFor(null);
+    setSellingAll(true);
+    void onSellAll(Math.max(0, shown)).finally(() => setSellingAll(false));
   };
   const buy = (): void => {
     if (!confirming) {
@@ -466,6 +511,18 @@ function StashPage({
         <span className="vendors-money">
           <b>{stash.profile.money.toLocaleString()}</b> money
         </span>
+        <button
+          className={`stash-buy${sellAllFor !== null ? ' confirm' : ''}`}
+          disabled={sellingAll || busy}
+          onClick={sellEverything}
+          onBlur={() => setSellAllFor(null)}
+        >
+          {sellingAll
+            ? 'Selling…'
+            : sellAllFor !== null
+              ? `Sell all for ${sellAllFor.toLocaleString()}?`
+              : 'Sell everything'}
+        </button>
         <button onClick={onVendors}>Vendors</button>
         <button className="primary" disabled={busy} onClick={onRaid}>
           {busy ? 'Starting…' : 'Start raid'}

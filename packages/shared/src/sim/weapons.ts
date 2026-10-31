@@ -12,12 +12,13 @@ import {
   type WeaponDef,
 } from '../content/items';
 import type { Item } from '../inventory/grid';
-import { nextFloat } from '../rng';
+import { chance, nextFloat } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import { createRayHit, type CollisionWorld } from '../world/collision-world';
 import { HEALTH, brokenArms, shootCharacter } from './health';
 import { CARRIED_GRIDS, carriedAmmo, carriedGrid, equip, heldWeapon, stow, takeAmmo } from './gear';
 import { dropItem } from './ground';
+import { ignite, launchFlame } from './fire';
 import { launchGrenade } from './grenades';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import {
@@ -133,6 +134,11 @@ export interface ShotEvent {
    * shot goes nowhere (to is from, hit none). 0 for bullets.
    */
   grenade: number;
+  /**
+   * A flamethrower's shot (2026-10-31): the flame's id (it flies as state.flames), and the
+   * shot goes nowhere, as a launcher's does. 0 for everything else.
+   */
+  flame: number;
 }
 
 // Scratch for working out stats, so a tick allocates nothing.
@@ -258,8 +264,9 @@ function armScale(c: Character, perArm: number): number {
 
 /**
  * One tick of a character's gun: aiming in and out, recoil settling, reloading and
- * firing. Firing is blocked on a ladder, while drawing and while reloading; pulling the
- * trigger on an empty gun starts a reload. Using a med keeps the gun lowered.
+ * firing. Firing is blocked on a ladder, while drawing, reloading and putting yourself out
+ * (which blocks aiming and reloading too); pulling the trigger on an empty gun starts a
+ * reload. Using a med keeps the gun lowered.
  */
 export function updateWeapon(
   state: SimState,
@@ -277,8 +284,8 @@ export function updateWeapon(
   }
   const def = weaponDef(items, w.item);
   const s = weaponStats(items, w, stats);
-  // Not on a ladder or vaulting, and not until it's drawn.
-  const free = c.mode !== 'ladder' && c.mode !== 'vault' && c.draw === 0;
+  // Not on a ladder or vaulting, not until it's drawn, nor while putting yourself out.
+  const free = c.mode !== 'ladder' && c.mode !== 'vault' && c.draw === 0 && !c.extinguish;
 
   const aimStep = DT / (s.aimTime * armScale(c, HEALTH.brokenArmAimTime));
   // Using a med lowers the gun.
@@ -417,6 +424,26 @@ function fire(
       loudness: s.loudness,
       pellet: 0,
       grenade: g.id,
+      flame: 0,
+    });
+  } else if (ammo.flame) {
+    // A flamethrower: a blob of flame flies out to its range, setting alight what it hits.
+    const f = launchFlame(state, c, world, ammo, yaw, pitch, def.range);
+    state.events.push({
+      type: 'shot',
+      by: c.id,
+      fromX: f.x,
+      fromY: f.y,
+      fromZ: f.z,
+      toX: f.x,
+      toY: f.y,
+      toZ: f.z,
+      hit: 'none',
+      target: 0,
+      loudness: s.loudness,
+      pellet: 0,
+      grenade: 0,
+      flame: f.id,
     });
   } else if (!ammo.pellets) {
     castShot(state, c, yaw, pitch, def, s, ammo, world, items, 0);
@@ -475,7 +502,12 @@ function castShot(
     hit = 'character';
     const target = entityById(state, charHit.id);
     // An admin spawner's shots do no harm.
-    if (target && !def.spawns) shootCharacter(state, items, target, charHit.zone, ammo, c.id);
+    if (target && !def.spawns) {
+      shootCharacter(state, items, target, charHit.zone, ammo, c.id);
+      // An incendiary round may set them alight as well (2026-10-31).
+      if (ammo.incendiary && chance(state.rng, ammo.incendiary.chance))
+        ignite(state, target, items, ammo.id, c.id);
+    }
   } else if (wd < Infinity) {
     hit = 'world';
   }
@@ -506,5 +538,6 @@ function castShot(
     loudness: s.loudness,
     pellet,
     grenade: 0,
+    flame: 0,
   });
 }

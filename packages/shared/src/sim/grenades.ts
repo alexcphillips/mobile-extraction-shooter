@@ -2,6 +2,7 @@ import { grenadeDef, grenadeEffect, type GrenadeDef, type ItemDb } from '../cont
 import { removeAt } from '../inventory/grid';
 import { TICK_SECONDS } from '../tick';
 import { createRayHit, type CollisionWorld } from '../world/collision-world';
+import { spillFire } from './fire';
 import { CARRIED_GRIDS, carriedGrid, heldWeapon } from './gear';
 import { ZONE_COUNT, woundZone, type Zone } from './health';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
@@ -175,8 +176,8 @@ export function carriedGrenades(c: Character, items: ItemDb, id?: string | null)
 /**
  * One tick of throwing: a press throws the grenade picked (input.grenade), or the first
  * carried, along the look (with recoil, lofted a little), adding the thrower's own speed.
- * Not on a ladder or vaulting, while taking something out, or straight after the last
- * throw. It stops a reload or a med. The infinite consumables cheat keeps the grenade.
+ * Not on a ladder or vaulting, while taking something out or putting yourself out, or
+ * straight after the last throw. It stops a reload or a med. The infinite consumables cheat keeps the grenade.
  * The detonator works whatever else it's doing.
  */
 export function updateThrow(
@@ -192,6 +193,7 @@ export function updateThrow(
     !input?.throw ||
     c.health.dead ||
     c.draw > 0 ||
+    c.extinguish ||
     (c.throwCooldown ?? 0) > 0 ||
     c.mode === 'ladder' ||
     c.mode === 'vault'
@@ -208,6 +210,7 @@ export function updateThrow(
   const w = heldWeapon(c);
   if (w) w.reloading = 0;
 
+  // A molotov breaks on the first thing it hits: an impact fuse armed from the hand.
   const g = launchGrenade(
     state,
     c,
@@ -216,6 +219,7 @@ export function updateThrow(
     c.yaw + c.recoilYaw,
     c.pitch + c.recoilPitch,
     def.throwSpeed,
+    grenadeEffect(def) === 'molotov' ? 0 : undefined,
   );
   state.events.push({ type: 'throw', by: c.id, grenade: g.id, item: id });
 }
@@ -389,8 +393,9 @@ function moveGrenade(state: SimState, g: Grenade, world: CollisionWorld): boolea
 }
 
 /**
- * Goes off: its event, then by its effect: a flash blinds, a smoke leaves its cloud, and
- * otherwise every living character in reach takes its share of the damage.
+ * Goes off: its event, then by its effect: a flash blinds, a smoke leaves its cloud, a
+ * molotov spills fire, and otherwise every living character in reach takes its share of
+ * the damage.
  */
 function explode(state: SimState, world: CollisionWorld, items: ItemDb, g: Grenade): void {
   const def = grenadeDef(items, g.item);
@@ -410,6 +415,10 @@ function explode(state: SimState, world: CollisionWorld, items: ItemDb, g: Grena
   });
   if (effect === 'flash') {
     flash(state, world, def, x, y, z);
+    return;
+  }
+  if (effect === 'molotov') {
+    spillFire(state, world, items, g.item, g.by, x, g.y, z, def.radius);
     return;
   }
   if (effect === 'smoke') {

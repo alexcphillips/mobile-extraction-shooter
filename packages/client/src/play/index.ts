@@ -8,6 +8,7 @@ import {
   smokeRadius,
   NavGrid,
   ammoDef,
+  burnOf,
   attachmentDef,
   brokenArms,
   createCharacterHit,
@@ -36,6 +37,8 @@ import {
   type TickInputs,
   type Zone,
   heldWeapon,
+  entityById,
+  loadedAmmo,
   placeLootContainers,
   lootContainerById,
   type InventoryAction,
@@ -68,6 +71,8 @@ import {
   type SimState,
   totalHp,
   isBleeding,
+  HEALTH,
+  ZONE_COUNT,
 } from '@mes/shared';
 import * as THREE from 'three';
 import { startLoop } from '../app/loop';
@@ -97,12 +102,14 @@ import { Controls } from '../input/controls';
 import { inputMode } from '../input/mode';
 import { anyCheat, readCheats, simCheats } from '../admin-cheats';
 import { buildDebug } from '../render/debug';
-import { logBleed, logHit, logKiller, type DamageLog } from './damage-log';
+import { fireKey, logBleed, logBurn, logHit, logKiller, type DamageLog } from './damage-log';
 import { CapsuleBody } from '../render/capsule-body';
 import { DEFAULT_OUTFIT, loadCharacter } from '../render/character';
 import { CharacterBody, CharacterRig } from '../render/character-body';
 import { Effects } from '../render/effects';
 import { buildExtractions } from '../render/extractions';
+import { FIRE_SVG, FireViews } from '../render/fire';
+import { INCENDIARY_TRACER, TRACER_COLOUR } from '../render/effects';
 import { GrenadeViews } from '../render/grenades';
 import { GroundItems } from '../render/ground-items';
 import { buildMap, updateDoors } from '../render/map';
@@ -260,6 +267,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   scene.add(effects.root);
   const grenades = new GrenadeViews(items, world);
   scene.add(grenades.root);
+  const fires = new FireViews();
+  scene.add(fires.root);
   const viewmodel = new Viewmodel();
   const cues = new SoundCues(sounds(), world, items);
   // Rendered now rather than as each is first heard (if audio is unlocked yet).
@@ -269,9 +278,12 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const controls = new Controls(el.canvas, el.hud);
   const resume = options.resume;
   const sim = resume?.sim ?? createState(Date.now() >>> 0);
-  // A raid saved before grenades (2026-10-30) has none in flight, nor smoke (2026-10-31).
+  // A raid saved before grenades (2026-10-30) has none in flight, nor smoke or fire
+  // (2026-10-31).
   (sim as Partial<SimState>).grenades ??= [];
   (sim as Partial<SimState>).smokes ??= [];
+  (sim as Partial<SimState>).flames ??= [];
+  (sim as Partial<SimState>).fires ??= [];
   const spawns = map.markers.filter((m) => m.type === 'playerSpawn');
   const spawn =
     spawns.find((m) => m.id === (resume?.spawn ?? options.spawn)) ??
@@ -344,6 +356,16 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // Enemies: their type's skill, and its loadout (or the spawn's) rolled.
   const patrols = new Map(map.patrols.map((p) => [p.id, p]));
   const names = new Map<number, string>();
+  /** Whether someone's gun is loaded with incendiary rounds (for their shots' look). */
+  const incendiary = (id: number): boolean => {
+    const c = entityById(sim, id);
+    const w = c && heldWeapon(c);
+    const round = w ? items.get(loadedAmmo(items, w)) : undefined;
+    return round?.type === 'ammo' && !!round.incendiary;
+  };
+  /** Whoever set you alight, for the damage log. */
+  const burnerName = (by: number): string =>
+    by === player.id ? 'Your own flamethrower' : (names.get(by) ?? 'Someone');
   /**
    * Each enemy spawn marker's id, and the entity there, for saving the raid. Enemies from
    * an admin spawner gun go in as "spawner:<type>:<entity>", so a resumed raid knows them.
@@ -539,15 +561,33 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // next tick.
   let picked: MedRef | 'cancel' | null = null;
   // Rounds picked from the reload button's picker, loaded with the next tick's reload.
-  // The grenade picked is named on screen, for a desktop with no grenade button to show it.
+  // The grenade picked is named on screen too (on a desktop, the button is only a read-out).
   const hands = new HandsHud(
     el.hud,
     (ref) => (picked = ref),
     (name) => el.raidHud.note(`Grenade · ${name}`, performance.now()),
   );
-  // A flash's white screen, and the grey of standing in smoke.
+  // A flash's white screen, the grey of standing in smoke, and flames while you burn.
   const blindEl = document.getElementById('blind')!;
   const smokeVeil = document.getElementById('smoke-veil')!;
+  const burnEl = document.getElementById('burn')!;
+  // The flame drawn once now into a bitmap at the size it's shown (style.css: 70 × 140), not
+  // left an SVG: the browser drew the SVG afresh for each of the row's flames the first time
+  // you caught fire, which stalled the game for most of a second (2026-10-31).
+  const glowEdge =
+    'radial-gradient(ellipse at center, transparent 55%, rgb(255 110 30 / 0.45) 100%)';
+  const flameImage = new Image();
+  flameImage.onload = () => {
+    const scale = Math.min(2, window.devicePixelRatio || 1);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(70 * scale);
+    canvas.height = Math.round(140 * scale);
+    canvas.getContext('2d')?.drawImage(flameImage, 0, 0, canvas.width, canvas.height);
+    burnEl.style.backgroundImage = `url("${canvas.toDataURL()}"), ${glowEdge}`;
+  };
+  flameImage.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(FIRE_SVG)}`;
+  burnEl.style.backgroundImage = glowEdge;
+  let burnShown = false;
   let blindShown = -1;
   let veilShown = -1;
 
@@ -743,7 +783,13 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // Auto-fire holds the trigger (or swings the knife), but never stops a med being used,
     // and never fires an admin spawner gun: its new enemy is under the crosshair.
     const spawner = !!held && weaponDef(items, held.item).spawns !== undefined;
-    if (target && settings.current.fire === 'auto' && !player.using && !spawner) {
+    if (
+      target &&
+      settings.current.fire === 'auto' &&
+      !player.using &&
+      !player.extinguish &&
+      !spawner
+    ) {
       // A semi-automatic gun is pulled every other tick.
       const semi = !!held && weaponDef(items, held.item).fireMode === 'semi';
       fire ||= !semi || sim.tick % 2 === 0;
@@ -763,6 +809,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.throw = controls.throw;
     input.grenade = hands.grenadeChoice;
     input.detonate = controls.detonate;
+    input.extinguish = controls.extinguish;
     if (controls.throwPick && !dead) hands.showGrenadePicker(player, items);
     // A tap on the heal button uses what it shows, or stops a med being used.
     input.use = controls.heal ? (player.using ? 'cancel' : hands.choice) : picked;
@@ -859,8 +906,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     prev.ry = cur.ry;
     prev.drawn = cur.drawn;
     inventoryChanged = false;
-    // HP lost this tick that no hit explains is bleeding (healing the same tick hides some).
-    const hpBefore = isBleeding(player.health) ? totalHp(player.health) : -1;
+    // HP lost this tick that no hit explains is bleeding or burning (healing the same tick
+    // hides some). A death with no hit is the fire's, if you're alight.
+    const bleeding = isBleeding(player.health);
+    const burn = player.burn ? { ...player.burn } : null;
+    const hpBefore = bleeding || burn ? totalHp(player.health) : -1;
     step(sim, world, items, inputs, nav);
     pending.length = 0;
     cur.x = player.x;
@@ -876,20 +926,27 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     grenades.tick(sim.grenades);
     grenades.tickSmokes(sim.smokes);
     let hitLost = 0;
-    let lastHit = 'bleeding';
+    let lastHit = burn ? fireKey(burn.by) : 'bleeding';
+    let lit = false;
     let died = false;
     for (const e of sim.events) {
       if (e.type === 'shot') {
-        // A launched grenade has no tracer: it's drawn flying (grenades).
+        // A launched grenade or a flame has no tracer: it's drawn flying (grenades, fires).
+        const tracer = !e.grenade && !e.flame;
+        // An incendiary round: an orange tracer, and a burst of fire where it lands.
+        const fiery = tracer && incendiary(e.by);
+        const colour = fiery ? INCENDIARY_TRACER : TRACER_COLOUR;
         if (e.by === player.id) {
           if (e.pellet === 0) viewmodel.fired(now);
           viewmodel.muzzleWorld(muzzle);
-          if (!e.grenade) effects.tracer(now, muzzle.x, muzzle.y, muzzle.z, e.toX, e.toY, e.toZ);
+          if (tracer)
+            effects.tracer(now, muzzle.x, muzzle.y, muzzle.z, e.toX, e.toY, e.toZ, colour);
         } else {
           if (e.pellet === 0) bodyOf.get(e.by)?.fired();
-          if (!e.grenade) effects.tracer(now, e.fromX, e.fromY, e.fromZ, e.toX, e.toY, e.toZ);
+          if (tracer) effects.tracer(now, e.fromX, e.fromY, e.fromZ, e.toX, e.toY, e.toZ, colour);
         }
         if (e.hit !== 'none') effects.impact(now, e.toX, e.toY, e.toZ, e.hit === 'character');
+        if (fiery && e.hit !== 'none') fires.burst(now, e.toX, e.toY, e.toZ);
         if (e.by === player.id && e.hit !== 'none' && shotMarkers.length) {
           const m = shotMarkers[nextShotMarker++ % shotMarkers.length]!;
           placeMarker(m, e.toX, e.toY, e.toZ, 0.006);
@@ -901,6 +958,12 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         if (e.hit !== 'none') effects.impact(now, e.x, e.y, e.z, e.hit === 'character');
       } else if (e.type === 'explosion') {
         grenades.explode(now, e.x, e.y, e.z, e.radius, grenadeEffect(grenadeDef(items, e.item)));
+      } else if (e.type === 'ignite' && e.target === player.id) {
+        lit = true;
+        el.raidHud.warn(
+          inputMode.desktop ? 'You’re on fire · V to put it out' : 'You’re on fire · put it out',
+          now,
+        );
       } else if (e.type === 'damage') {
         if (e.amount > 0) bodyOf.get(e.target)?.hit();
         if (e.by === player.id && e.target !== player.id) el.vitals.hitMarker(now, false);
@@ -932,7 +995,20 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       }
     }
 
-    if (hpBefore >= 0) logBleed(taken, hpBefore - totalHp(player.health) - hitLost);
+    if (hpBefore >= 0) {
+      const lost = hpBefore - totalHp(player.health) - hitLost;
+      // Both at once: shared by how fast each takes HP.
+      const bleedRate = bleeding
+        ? player.health.bleeding.filter(Boolean).length * HEALTH.bleedRate
+        : 0;
+      // Whatever lit it: fuel, an incendiary round or a molotov (not only ammo).
+      const burnRate = burn ? ZONE_COUNT * (burnOf(items, burn.item)?.burnDamage ?? 0) : 0;
+      const toFire = burnRate > 0 ? lost * (burnRate / (burnRate + bleedRate)) : 0;
+      if (burn) logBurn(taken, burn.by, burnerName(burn.by), toFire);
+      if (bleeding) logBleed(taken, lost - toFire);
+    }
+    // Lit this tick: one more time set alight, by whoever it was.
+    if (lit && player.burn) logBurn(taken, player.burn.by, burnerName(player.burn.by), 0, true);
     // The death event comes before the hit that caused it, so this waits for the loop.
     if (died) logKiller(taken, lastHit);
 
@@ -957,11 +1033,13 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         ? 'Gave up'
         : killer === `${player.id}:explosion`
           ? 'By your own grenade'
-          : killer === 'bleeding'
-            ? 'Bled out'
-            : killer === 'fall'
-              ? 'From a fall'
-              : 'From bleeding or a fall';
+          : killer === fireKey(player.id)
+            ? 'In your own fire'
+            : killer === 'bleeding'
+              ? 'Bled out'
+              : killer === 'fall'
+                ? 'From a fall'
+                : 'From bleeding or a fall';
       endRaid('killed', killedBy ? `by a ${killedBy}` : how, now);
     }
     el.vitals.update(player, items, now);
@@ -1038,8 +1116,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     }
   });
   grenades.warm(true);
+  fires.warm(true);
   render();
   grenades.warm(false);
+  fires.warm(false);
   for (const o of culled) o.frustumCulled = true;
 
   const loop = new FixedTimestep();
@@ -1104,7 +1184,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     viewmodel.visible = alive && (!!w || knife) && !scoped;
     if (w) viewmodel.setGun(w, items);
     else if (knife) viewmodel.setKnife(player.gear.knife!.item, items);
-    lowered += ((player.using ? 1 : 0) - lowered) * (1 - Math.exp(-dtMs / 90));
+    // Lowered for a med, and while putting yourself out.
+    const down = player.using || player.extinguish ? 1 : 0;
+    lowered += (down - lowered) * (1 - Math.exp(-dtMs / 90));
     viewmodel.update(
       camera,
       time,
@@ -1117,6 +1199,13 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     );
     effects.update(performance.now());
     grenades.update(performance.now(), alpha);
+    fires.update(performance.now(), alpha, sim, camera, player.id);
+    // On fire: flames along the bottom of the screen, flickering.
+    const burning = alive && !!player.burn;
+    if (burning !== burnShown) {
+      burnShown = burning;
+      burnEl.classList.toggle('on', burning);
+    }
     // Blinded by a flash: all white, fading out over its last moments.
     const blind = alive ? Math.min(1, (player.blind ?? 0) / GRENADE.blindFade) : 0;
     const blindStep = Math.round(blind * 50) / 50;

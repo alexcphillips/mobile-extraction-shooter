@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "id": "ignite",
+  "name": "Catching fire",
+  "gain": 0.5,
+  "range": 30,
+  "pitchJitter": 0.08,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0,
+      "attack": 0.03,
+      "hold": 0.05,
+      "decay": 0.35,
+      "curve": 2,
+      "gain": 1,
+      "filter": { "type": "lowpass", "freq": [250, 900], "q": 0.9 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0.05,
+      "attack": 0.01,
+      "hold": 0.1,
+      "decay": 0.5,
+      "curve": 2.5,
+      "gain": 0.25,
+      "filter": { "type": "highpass", "freq": [3000, 2000], "q": 0.7 }
+    }
+  ]
+}

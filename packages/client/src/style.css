@@ -443,6 +443,37 @@ body {
   z-index: 2;
 }
 
+/*
+ * On fire (2026-10-31): flames along the bottom of the screen (play/index.ts sets them
+ * from the fire's SVG) and a hot glow at the edges, under the HUD, flickering.
+ */
+#burn {
+  position: fixed;
+  inset: 0;
+  background-repeat: repeat-x, no-repeat;
+  background-position:
+    0 calc(100% + 45px),
+    center;
+  background-size:
+    70px 140px,
+    100% 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#burn.on {
+  animation: burn-flicker 0.35s ease-in-out infinite alternate;
+}
+
+@keyframes burn-flicker {
+  from {
+    opacity: 0.75;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* Standing in smoke: grey over the world, under the HUD. */
 #smoke-veil {
   position: fixed;
@@ -523,7 +554,8 @@ body {
 
 /*
  * Desktop (input/mode.ts sets body[data-input]): mouse and keys replace the touch controls.
- * The hand slots and heal button stay as a read-out (1–4, H), but can't be clicked.
+ * The hand slots, heal and grenade buttons stay as a read-out (1–4, H, G), but can't be
+ * clicked.
  */
 body[data-input='desktop']
   :is(
@@ -536,8 +568,7 @@ body[data-input='desktop']
       [data-id='interact'],
       [data-id='bag'],
       [data-id='jump'],
-      [data-id='crouch'],
-      [data-id='grenade']
+      [data-id='crouch']
     )
   ) {
   display: none;
@@ -549,6 +580,26 @@ body[data-input='desktop'] .control {
 
 body[data-input='desktop'] .control[data-id='detonate']::after {
   content: 'B';
+  position: absolute;
+  top: 3px;
+  font-size: 9px;
+  color: #fff;
+  opacity: 0.7;
+}
+
+/* The grenade button stays as a read-out on a desktop: the kind G throws (2026-10-31). */
+body[data-input='desktop'] .control[data-id='grenade']::after {
+  content: 'G';
+  position: absolute;
+  top: 3px;
+  right: 7px;
+  font-size: 9px;
+  color: #fff;
+  opacity: 0.7;
+}
+
+body[data-input='desktop'] .control[data-id='extinguish']::after {
+  content: 'V';
   position: absolute;
   top: 3px;
   font-size: 9px;
@@ -639,6 +690,27 @@ kbd {
 /* Only while you have C4 placed (hud/hands.ts); the layout editor shows it anyway. */
 .control[data-id='detonate'].unarmed {
   display: none;
+}
+
+/* Only while you're on fire (hud/hands.ts), its ring filling as you put yourself out. */
+.control[data-id='extinguish'].unlit {
+  display: none;
+}
+
+.control[data-id='extinguish'] {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 1px;
+  border-color: rgb(255 150 60 / 0.9);
+  color: #ffb36b;
+  font:
+    10px ui-monospace,
+    monospace;
+}
+
+.control[data-id='extinguish'] .ring circle {
+  stroke: #ffd36b;
 }
 
 .control[data-id='detonate'] {
@@ -753,6 +825,10 @@ kbd {
 
 #controls.editing .control[data-id='detonate'].unarmed {
   display: block;
+}
+
+#controls.editing .control[data-id='extinguish'].unlit {
+  display: grid;
 }
 
 #controls.editing .control.selected {

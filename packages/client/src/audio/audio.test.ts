@@ -188,6 +188,7 @@ describe('sound cues', () => {
       loudness,
       pellet: 0,
       grenade: 0,
+      flame: 0,
     });
     sim.events = [shot(def.loudness), shot(def.loudness * 0.3)];
     cues.tick(sim, player, 0);

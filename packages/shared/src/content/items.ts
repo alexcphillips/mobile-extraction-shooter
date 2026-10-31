@@ -25,6 +25,15 @@ const nonNegative = finite.refine((n) => n >= 0, 'must be 0 or more');
 const fraction = finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1');
 
 /**
+ * What setting someone alight does (2026-10-31, sim/fire.ts): how long they burn if they
+ * don't put it out, and HP a second it takes from every zone, past armour.
+ */
+const burning = {
+  burnTime: positive,
+  burnDamage: positive,
+};
+
+/**
  * 2 (session 6b): weapons gained loudness and slots; attachments were added.
  * 3 (session 9): every item gained a grid size, ammo a stack size; the other types were added.
  * 4 (session 10b): weapons gained a draw time; the knife gained its stats.
@@ -187,8 +196,11 @@ const ammoSchema = z
     calibre: z.string().min(1),
     /** Its penetration level, against an armour's level. */
     level: levelSchema,
-    /** Damage to the chest; other zones multiply it, then armour may stop some. Per pellet. */
-    damage: positive,
+    /**
+     * Damage to the chest; other zones multiply it, then armour may stop some. Per pellet.
+     * 0 only for flamethrower fuel, whose harm is the burning (flame).
+     */
+    damage: nonNegative,
     /** Armour durability lost per hit (per pellet), less against armour above its level. */
     armourDamage: nonNegative,
     /** Chance that a hit which gets through starts bleeding. */
@@ -197,11 +209,42 @@ const ammoSchema = z
     pellets: z.int().min(2).optional(),
     /** With pellets: the most each pellet strays from the shot's line, in degrees. */
     pelletSpread: nonNegative.optional(),
+    /**
+     * Flamethrower fuel (2026-10-31): a shot is a blob of flame flying out to the gun's
+     * range (sim/fire.ts), not a bullet. It sets alight whoever it hits, and burns where it
+     * lands on the map; anyone touching that is set alight too.
+     */
+    flame: z
+      .strictObject({
+        /** How fast a blob leaves the nozzle, in m/s. */
+        speed: positive,
+        ...burning,
+        /** How long it burns where it lands on the map. */
+        fireTime: positive,
+      })
+      .optional(),
+    /**
+     * Incendiary rounds (2026-10-31): a hit (each pellet's, for shells) has this chance of
+     * setting whoever it hits alight, on top of its damage. No fire on the map.
+     */
+    incendiary: z.strictObject({ chance: fraction, ...burning }).optional(),
     ...plainModel,
   })
   .refine((a) => (a.pellets === undefined) === (a.pelletSpread === undefined), {
     message: 'pellets and pelletSpread go together',
     path: ['pelletSpread'],
+  })
+  .refine((a) => a.damage > 0 !== !!a.flame, {
+    message: 'damage must be above 0, and only flamethrower fuel (flame) does none',
+    path: ['damage'],
+  })
+  .refine((a) => !a.flame || a.pellets === undefined, {
+    message: 'fuel has no pellets',
+    path: ['pellets'],
+  })
+  .refine((a) => !a.flame || !a.incendiary, {
+    message: 'fuel burns already: it has no incendiary',
+    path: ['incendiary'],
   });
 
 const armourSchema = z.strictObject({
@@ -326,6 +369,11 @@ const containerSchema = z.strictObject({
   slot: z.enum(['rig', 'backpack']),
   /** The grid inside, [width, height] in cells. */
   grid: sizeSchema,
+  /**
+   * For testing only (2026-10-31): given from the admin page's Admin tab, so keep it out of
+   * loot tables, loadouts and vendors (as an admin spawner gun).
+   */
+  admin: z.literal(true).optional(),
   ...plainModel,
 });
 
@@ -358,9 +406,10 @@ const meleeSchema = z.strictObject({
  * What a grenade does when it goes off (2026-10-31): frag hurts everyone in its radius;
  * flash blinds whoever is looking at it within its radius; smoke leaves a cloud enemies
  * can't see through; c4 sticks where it lands and waits for its thrower's detonator, then
- * goes off as a frag does.
+ * goes off as a frag does; molotov (2026-10-31) breaks on the first thing it hits and
+ * spills fire across its radius (sim/fire.ts), setting alight whoever stands in it.
  */
-export const GRENADE_EFFECTS = ['frag', 'flash', 'smoke', 'c4'] as const;
+export const GRENADE_EFFECTS = ['frag', 'flash', 'smoke', 'c4', 'molotov'] as const;
 export type GrenadeEffect = (typeof GRENADE_EFFECTS)[number];
 
 /**
@@ -403,6 +452,11 @@ const grenadeSchema = z.strictObject({
   blindTime: positive.optional(),
   /** Smoke only: how long its cloud lasts, in seconds. */
   smokeTime: positive.optional(),
+  /**
+   * Molotov only: its fire, as for flamethrower fuel: how long whoever it sets alight burns,
+   * how hard, and how long the fire it spills burns on the map.
+   */
+  fire: z.strictObject({ ...burning, fireTime: positive }).optional(),
   /** Leaving the hand, hitting something, and going off. */
   sounds: z.strictObject({ throw: soundId, bounce: soundId, explode: soundId }),
   ...plainModel,
@@ -613,6 +667,31 @@ export const meleeDef = (items: ItemDb, id: string): MeleeDef => itemOf(items, i
 export const grenadeDef = (items: ItemDb, id: string): GrenadeDef => itemOf(items, id, 'grenade');
 /** What a grenade does: its effect, a frag if it doesn't say. */
 export const grenadeEffect = (def: GrenadeDef): GrenadeEffect => def.effect ?? 'frag';
+
+/** How an item sets someone alight: how long they burn and how hard (sim/fire.ts). */
+export interface BurnStats {
+  readonly burnTime: number;
+  readonly burnDamage: number;
+}
+
+/**
+ * How an item sets someone alight, or null if it doesn't: flamethrower fuel, incendiary
+ * rounds, a molotov. Allocates nothing.
+ */
+export function burnOf(items: ItemDb, id: string): BurnStats | null {
+  const def = items.get(id);
+  if (def?.type === 'ammo') return def.flame ?? def.incendiary ?? null;
+  if (def?.type === 'grenade') return def.fire ?? null;
+  return null;
+}
+
+/** How long fire an item leaves on the map burns, or 0: fuel's flames and a molotov's. */
+export function fireTimeOf(items: ItemDb, id: string): number {
+  const def = items.get(id);
+  if (def?.type === 'ammo') return def.flame?.fireTime ?? 0;
+  if (def?.type === 'grenade') return def.fire?.fireTime ?? 0;
+  return 0;
+}
 export const containerDef = (items: ItemDb, id: string): ContainerDef =>
   itemOf(items, id, 'container');
 export const repairDef = (items: ItemDb, id: string): RepairDef => itemOf(items, id, 'repair');
@@ -645,7 +724,8 @@ export type RoundDef = AmmoDef | GrenadeDef;
  */
 export function roundOf(items: ItemDb, id: string): RoundDef | null {
   const def = items.get(id);
-  if (def?.type === 'grenade') return def.effect === 'c4' ? null : def;
+  // Neither C4 nor a molotov can be fired from a launcher.
+  if (def?.type === 'grenade') return def.effect === 'c4' || def.effect === 'molotov' ? null : def;
   return def?.type === 'ammo' ? def : null;
 }
 
@@ -692,6 +772,9 @@ export function checkItems(items: ItemDb): void {
       }
       if ((effect === 'smoke') !== (item.smokeTime !== undefined)) {
         throw new ContentError(source, 'a smoke grenade needs smokeTime, and only it');
+      }
+      if ((effect === 'molotov') !== (item.fire !== undefined)) {
+        throw new ContentError(source, 'a molotov needs fire, and only it');
       }
     } else if (item.type === 'attachment') {
       for (const id of item.weapons ?? []) {

@@ -103,8 +103,9 @@ export class SoundCues {
           if (own) this.sound.play(id);
           else this.at(id, e.fromX, e.fromY, e.fromZ, e.loudness);
         }
-        // A launched grenade doesn't whizz; it's heard when it bounces and goes off.
-        if (!own && e.target !== player.id && e.pellet === 0 && !e.grenade)
+        // A launched grenade doesn't whizz; it's heard when it bounces and goes off. Nor
+        // does a flame: it's heard as it's fired, and when it sets someone alight.
+        if (!own && e.target !== player.id && e.pellet === 0 && !e.grenade && !e.flame)
           this.whizz(e.fromX, e.fromY, e.fromZ, e.toX, e.toY, e.toZ);
         if (e.hit === 'world') this.at(S.impactWorld, e.toX, e.toY, e.toZ);
         else if (e.hit === 'character' && e.target !== player.id)
@@ -139,6 +140,10 @@ export class SoundCues {
       }
       case 'explosion':
         this.at(grenadeDef(this.items, e.item).sounds.explode, e.x, e.y, e.z, e.loudness);
+        return;
+      case 'ignite':
+        if (e.target === player.id) this.sound.play(S.ignite);
+        else this.at(S.ignite, e.x, e.y + CHEST, e.z);
         return;
       case 'damage': {
         if (e.cause === 'fall') return;

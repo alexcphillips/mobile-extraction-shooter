@@ -250,7 +250,8 @@ export class GrenadeViews {
 
   /**
    * A grenade going off at (x, y, z) with this radius: a fireball and shockwave, a flash's
-   * burst, or for smoke nothing (its cloud comes from the sim's smokes).
+   * burst, a molotov's fireball alone (its fire is drawn by FireViews), or for smoke nothing
+   * (its cloud comes from the sim's smokes).
    */
   explode(
     now: number,
@@ -268,7 +269,8 @@ export class GrenadeViews {
     this.nextFire = (this.nextFire + 1) % FIREBALLS;
     f.position.set(x, y + (flash ? 0.1 : 0.3), z);
     f.visible = true;
-    if (flash) return;
+    // A flash has no shockwave, nor a molotov: its spilled fire shows how far it reached.
+    if (flash || effect === 'molotov') return;
 
     const w = this.waves[this.nextWave]!;
     this.waveEnds[this.nextWave] = now + WAVE_MS;

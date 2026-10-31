@@ -210,6 +210,19 @@ export {
 } from './sim/meds';
 export { MELEE, updateMelee, type SwingEvent } from './sim/melee';
 export {
+  FIRE,
+  ignite,
+  inFire,
+  launchFlame,
+  spillFire,
+  updateExtinguish,
+  updateFire,
+  type Burn,
+  type FirePatch,
+  type Flame,
+  type IgniteEvent,
+} from './sim/fire';
+export {
   GRENADE,
   blastShare,
   carriedGrenade,
@@ -249,7 +262,7 @@ export {
 } from './inventory/grid';
 export { DIR_Q, DIR_R, NAV, NavGrid } from './nav/nav-grid';
 export { EXPOSURE, Exposure, SPOT } from './nav/exposure';
-export { MAX_EXPAND, findPath, straight, type PathResult } from './nav/path';
+export { MAX_EXPAND, findPath, straight, type Avoid, type PathResult } from './nav/path';
 export {
   CHEST,
   ARMOUR,
@@ -351,6 +364,9 @@ export {
   meleeDef,
   grenadeDef,
   grenadeEffect,
+  burnOf,
+  fireTimeOf,
+  type BurnStats,
   GRENADE_EFFECTS,
   repairDef,
   roundCalibre,
@@ -480,6 +496,8 @@ export {
   depositMoney,
   isMoney,
   MAX_SELL,
+  sellAll,
+  sellAllPrice,
   sellItems,
   sellParts,
   sellTotal,

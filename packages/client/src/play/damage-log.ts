@@ -2,15 +2,15 @@ import { ZONE_NAMES, type DamageEvent } from '@mes/shared';
 
 /**
  * What hurt you in a raid, for the results screen after a death: one row per enemy and
- * weapon (shot or knife), plus falls and bleeding. Plain JSON, so it's saved with the
- * raid for resuming.
+ * weapon (shot or knife), plus falls, bleeding and burning (one row per whoever lit you).
+ * Plain JSON, so it's saved with the raid for resuming.
  */
 export interface DamageSource {
-  /** `${entity}:shot`, `${entity}:melee`, 'fall' or 'bleeding'. */
+  /** `${entity}:shot`, `${entity}:melee`, `${entity}:fire`, 'fall' or 'bleeding'. */
   key: string;
   /** What to call it: the enemy type ("Yard boss"), "Fall" or "Bleeding". */
   name: string;
-  cause: DamageEvent['cause'] | 'bleed';
+  cause: DamageEvent['cause'] | 'bleed' | 'fire';
   hits: number;
   /** HP lost, spillover to the chest included. */
   damage: number;
@@ -51,6 +51,19 @@ export function logBleed(log: DamageLog, amount: number): void {
   if (amount > 0) sourceFor(log, 'bleeding', 'Bleeding', 'bleed').damage += amount;
 }
 
+/** The key of burning lit by someone (fire has no damage events: it's HP lost a tick). */
+export const fireKey = (by: number): string => `${by}:fire`;
+
+/**
+ * Adds HP lost to burning lit by someone (name: "Scav", or the player's own), and with
+ * lit, being set alight once more.
+ */
+export function logBurn(log: DamageLog, by: number, name: string, amount: number, lit = false) {
+  const s = sourceFor(log, fireKey(by), name, 'fire');
+  if (lit) s.hits++;
+  if (amount > 0) s.damage += amount;
+}
+
 /** Marks what killed you. */
 export function logKiller(log: DamageLog, key: string): void {
   for (const s of log) s.killed = s.key === key;
@@ -61,6 +74,7 @@ export function describeSource(s: DamageSource): string {
   const hp = Math.round(s.damage);
   if (s.cause === 'bleed') return `Bleeding took ${hp}`;
   const times = s.hits === 1 ? 'once' : `${s.hits} times`;
+  if (s.cause === 'fire') return `${s.name} set you alight ${times} · burning took ${hp}`;
   const verb =
     s.cause === 'melee'
       ? 'stabbed you'

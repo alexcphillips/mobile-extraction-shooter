@@ -1,0 +1,36 @@
+{
+  "formatVersion": 9,
+  "id": "crossbow-bolt-inc",
+  "name": "Incendiary bolt",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 260,
+  "rarity": "rare",
+  "stack": 20,
+  "calibre": "bolt",
+  "level": 1,
+  "damage": 70,
+  "armourDamage": 5,
+  "bleedChance": 0.6,
+  "incendiary": {
+    "chance": 0.6,
+    "burnTime": 5,
+    "burnDamage": 1.5
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.03, 0.03, 0.3],
+        "colour": "#8a6d3b"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0, -0.16],
+        "size": [0.04, 0.04, 0.04],
+        "colour": "#d8461c"
+      }
+    ]
+  }
+}
