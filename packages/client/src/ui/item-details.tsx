@@ -67,7 +67,7 @@ export function ItemDetails({
 }): ReactNode {
   const def = itemDef(items, item.item);
   useEffect(() => {
-    // Before the screen's own Escape (which would close the inventory or go back).
+    // Before a page's own Escape (which would go back, on the main menu's pages).
     const onKey = (e: KeyboardEvent): void => {
       if (e.code !== 'Escape') return;
       e.stopPropagation();

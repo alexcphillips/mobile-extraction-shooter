@@ -1,6 +1,7 @@
 import {
   GEAR_SLOTS,
   canHold,
+  canSwap,
   findSpot,
   canReach,
   firesRound,
@@ -425,7 +426,13 @@ export class InventoryController implements DragHost {
     const ignore = fromGrid === grid && 'index' in src.ref ? src.ref.index : -1;
     const w = rotated ? src.h : src.w;
     const h = rotated ? src.w : src.h;
-    return isFree(items, grid, x, y, w, h, ignore);
+    if (isFree(items, grid, x, y, w, h, ignore)) return true;
+    // On other items: a swap, if they fit where it came from.
+    return (
+      !!fromGrid &&
+      'index' in src.ref &&
+      canSwap(items, fromGrid, src.ref.index, grid, x, y, rotated)
+    );
   }
 
   drop(src: DragSource, to: Target | PartSlot | Into | RepairOn | LoadOn): void {

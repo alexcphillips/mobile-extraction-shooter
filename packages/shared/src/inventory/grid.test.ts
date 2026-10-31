@@ -3,6 +3,7 @@ import { TEST_ITEMS as items } from '../sim/test-items';
 import {
   addItem,
   canHold,
+  canSwap,
   countOf,
   createGrid,
   dropAt,
@@ -89,10 +90,66 @@ describe('grids', () => {
     // Moving onto its own old cells is fine.
     expect(dropAt(items, g, 0, g, 1, 0, false)).toBe(true);
     expect(g.items[0]).toMatchObject({ x: 1, y: 0, rotated: false });
-    // Turned upright at (1, 0) it's clear; at (2, 0) the round is in the way.
+    // Turned upright at (1, 0) it's clear.
     expect(rotateAt(items, g, 0)).toBe(true);
-    expect(dropAt(items, g, 0, g, 2, 0, true)).toBe(false);
     expect(g.items[0]).toMatchObject({ x: 1, y: 0, rotated: true });
+    // Turning back flat with the round at (2, 0) in the way doesn't (it can't swap with it).
+    g.items[1]!.y = 0;
+    expect(rotateAt(items, g, 0)).toBe(false);
+    expect(g.items[0]).toMatchObject({ x: 1, y: 0, rotated: true });
+  });
+
+  it('swaps a dropped item with the items under it if they fit where it was', () => {
+    // A 1×2 medkit at (0, 0) dropped on two 1×1s at (2, 0) and (2, 1).
+    const g = createGrid(3, 2);
+    placeAt(items, g, one('medkit'), 0, 0, false);
+    placeAt(items, g, one('watch'), 2, 0, false);
+    placeAt(items, g, one('bandage'), 2, 1, false);
+    expect(canSwap(items, g, 0, g, 2, 0, false)).toBe(true);
+    expect(dropAt(items, g, 0, g, 2, 0, false)).toBe(true);
+    const at = (id: string) => g.items.find((o) => o.item.item === id);
+    expect(at('medkit')).toMatchObject({ x: 2, y: 0 });
+    expect(at('watch')).toMatchObject({ x: 0, y: 0 });
+    expect(at('bandage')).toMatchObject({ x: 0, y: 1 });
+    // Between grids too.
+    const pockets = createGrid(1, 2);
+    placeAt(items, pockets, one('round', 5), 0, 0, false);
+    expect(dropAt(items, pockets, 0, g, 0, 1, false)).toBe(true);
+    expect(pockets.items[0]).toMatchObject({ x: 0, y: 0, item: { item: 'bandage' } });
+    expect(at('round')).toMatchObject({ x: 0, y: 1 });
+  });
+
+  it('turns a swapped item to fit the cells the dropped one left', () => {
+    // A flat 2×1 pistol at (0, 0), with (0, 1) and (1, 1) taken, dropped at (2, 0) on an
+    // upright medkit at (3, 0): upright it can't go back, so it lies flat at (0, 0).
+    const g = createGrid(4, 2);
+    placeAt(items, g, one('pistol'), 0, 0, false);
+    placeAt(items, g, one('watch'), 0, 1, false);
+    placeAt(items, g, one('watch'), 1, 1, false);
+    placeAt(items, g, one('medkit'), 3, 0, false);
+    expect(canSwap(items, g, 0, g, 2, 0, false)).toBe(true);
+    expect(dropAt(items, g, 0, g, 2, 0, false)).toBe(true);
+    const at = (id: string) => g.items.find((o) => o.item.item === id);
+    expect(at('pistol')).toMatchObject({ x: 2, y: 0, rotated: false });
+    expect(at('medkit')).toMatchObject({ x: 0, y: 0, rotated: true });
+  });
+
+  it("doesn't swap when what's under it has no room where it was", () => {
+    // A 1×1 at (2, 0) dropped on the 1×2 medkit: the bandage below it leaves the medkit no room.
+    const g = createGrid(3, 2);
+    placeAt(items, g, one('medkit'), 0, 0, false);
+    placeAt(items, g, one('watch'), 2, 0, false);
+    placeAt(items, g, one('bandage'), 2, 1, false);
+    expect(canSwap(items, g, 1, g, 0, 0, false)).toBe(false);
+    expect(dropAt(items, g, 1, g, 0, 0, false)).toBe(false);
+    expect(g.items[1]).toMatchObject({ x: 2, y: 0 });
+    // Nor a backpack into pockets.
+    const stash = createGrid(4, 4, true);
+    const pockets = createGrid(4, 4);
+    placeAt(items, stash, one('backpack'), 0, 0, false);
+    placeAt(items, pockets, one('watch'), 0, 0, false);
+    expect(dropAt(items, pockets, 0, stash, 0, 0, false)).toBe(false);
+    expect(stash.items[0]!.item.item).toBe('backpack');
   });
 
   it('merges a dropped stack into a stack of the same item, leaving what does not fit', () => {
@@ -104,9 +161,11 @@ describe('grids', () => {
     expect(b.items[0]!.item.count).toBe(100);
     expect(a.items[0]!.item.count).toBe(30);
     expect(dropAt(items, a, 0, b, 1, 0, false)).toBe(false);
-    // Different items don't merge.
+    // Different items don't merge: they swap.
     placeAt(items, a, one('watch'), 1, 0, false);
-    expect(dropAt(items, a, 1, b, 1, 0, false)).toBe(false);
+    expect(dropAt(items, a, 1, b, 1, 0, false)).toBe(true);
+    expect(b.items[0]!.item.item).toBe('watch');
+    expect(a.items[1]).toMatchObject({ x: 1, y: 0, item: { item: 'round', count: 100 } });
   });
 
   it('double-tap transfers what fits and leaves the rest', () => {

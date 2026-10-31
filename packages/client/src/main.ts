@@ -68,7 +68,7 @@ const hud = new Hud(
   byId('knob'),
   byId('sprint-zone'),
   byId('sprint-lock'),
-  byId('cursor-lock'),
+  byId('settings-button'),
 );
 byId('settings-button').addEventListener('click', () => {
   import('./ui/menu')

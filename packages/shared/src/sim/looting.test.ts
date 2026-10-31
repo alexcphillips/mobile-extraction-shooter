@@ -80,6 +80,22 @@ describe('looting', () => {
     expect(countOf(c.gear.pockets, 'pistol')).toBe(1);
   });
 
+  it('double-tapping loot into full pockets, rig and backpack puts it in the vault', () => {
+    const { c, crate, box, act } = setup();
+    unequip(c, 'backpack');
+    c.gear.pockets = createGrid(1, 1);
+    addItem(items, c.gear.pockets, { item: 'watch', count: 1 });
+    addItem(items, crate.grid, { item: 'watch', count: 1 });
+    const take: InventoryAction = {
+      type: 'quick',
+      from: { owner: box, grid: 'loot', index: 0, item: 'watch' },
+      to: self,
+    };
+    expect(act(take)).toBe(true);
+    expect(countOf(c.gear.vault!, 'watch')).toBe(1);
+    expect(crate.grid.items).toHaveLength(0);
+  });
+
   it('only reaches dead bodies and containers within reach', () => {
     const { state, c, enemy, crate, body, box, act } = setup();
     const take: InventoryAction = {
@@ -133,6 +149,8 @@ describe('looting', () => {
 
   it('double-tapping a stack into what you carry leaves what does not fit', () => {
     const { c, crate, box, act } = setup();
+    // No vault, which would take what's left (tested above).
+    c.gear.vault = null;
     // Pockets (4×1) and a 4×4 backpack hold 8 stacks of 100 with nothing else in them.
     for (let i = 0; i < 4; i++) addItem(items, c.gear.backpack!.grid, createItem(items, 'helmet'));
     // The backpack is full of helmets, so only the pockets are left: 4 stacks of 100.
@@ -643,8 +661,9 @@ describe('looting', () => {
     ).toBe(true);
     expect(c.gear.primary1).toBe(theirs);
     expect(state.ground[0]).toMatchObject({ x: 0.5, item: mine });
-    // A stack too big for what you carry: the rest stays on the ground.
+    // A stack too big for what you carry (and no vault): the rest stays on the ground.
     state.ground.length = 0;
+    c.gear.vault = null;
     const fill = (grid: typeof c.gear.pockets) => {
       while (addItem(items, grid, { item: 'watch', count: 1 }) === 0);
     };

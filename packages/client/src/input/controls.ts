@@ -40,9 +40,8 @@ interface MoveTouch {
  *
  * Desktop: the mouse is captured (see CursorLock): moving it looks, the left button fires
  * and the right one aims. WASD, Shift sprint, Space jump (or vault), C crouch, X prone
- * (a toggle; C, Space or sprinting gets up), R reload (Shift+R picks
- * the rounds), E use, I or Tab the bag, 1–4 take out primary 1, primary 2, sidearm or knife,
- * H heal (Shift+H picks),
+ * (a toggle; C, Space or sprinting gets up), R reload, E use, I or Tab the bag, 1–4 take out primary 1, primary 2, sidearm or knife,
+ * H heal (held, picks),
  * F and Q fire and aim too, 7 and 8 the debug actions. Mouse pointers never drive the
  * touch stick; CSS hides the touch-only buttons.
  */
@@ -69,8 +68,6 @@ export class Controls {
   heal = false;
   /** The heal button held: pick which med. */
   healPick = false;
-  /** The reload button held (Shift+R): pick which rounds to load. */
-  reloadPick = false;
   /** A debug action (0 or 1), or -1. */
   debug = -1;
   /** Look speed multiplier from aim assist, set by the game while the crosshair is on an enemy. */
@@ -102,12 +99,13 @@ export class Controls {
   private pressedDraw: Hand | null = null;
   private pressedHeal = false;
   private pressedHealPick = false;
-  private pressedReloadPick = false;
   private pressedDebug = -1;
   private readonly keys = new Set<string>();
+  /** H while held: called with whether the release is a tap. */
+  private readonly keyHolds = new Map<string, (tap?: boolean) => void>();
 
   constructor(
-    target: HTMLElement,
+    private readonly target: HTMLElement,
     private readonly hud: Hud,
   ) {
     for (const [id, button] of hud.buttons) {
@@ -118,13 +116,23 @@ export class Controls {
     window.addEventListener('pointerup', this.onUp);
     window.addEventListener('pointercancel', this.onUp);
     window.addEventListener('keydown', this.onKey);
-    window.addEventListener('keyup', (e) => this.keys.delete(e.code));
-    window.addEventListener('blur', () => this.keys.clear());
+    window.addEventListener('keyup', (e) => {
+      this.keys.delete(e.code);
+      this.keyHolds.get(e.code)?.();
+    });
+    window.addEventListener('blur', () => {
+      this.keys.clear();
+      // Let go without a tap: a key released while away never sends its keyup.
+      for (const [code, release] of this.keyHolds) {
+        this.keyHolds.delete(code);
+        release(false);
+      }
+    });
     window.addEventListener('mousedown', this.onMouseDown);
     window.addEventListener('mouseup', this.onMouseUp);
     window.addEventListener('mousemove', this.onMouseMove);
     target.addEventListener('contextmenu', (e) => e.preventDefault());
-    this.cursor = new CursorLock(target, hud.cursorOverlay, (locked) => {
+    this.cursor = new CursorLock(target, hud.settingsButton, (locked) => {
       if (!locked) this.mouseFire = this.mouseAim = false;
     });
     // Toggled aim would stay on with no way to turn it off once switched to hold.
@@ -146,10 +154,9 @@ export class Controls {
     this.draw = this.pressedDraw;
     this.heal = this.pressedHeal;
     this.healPick = this.pressedHealPick;
-    this.reloadPick = this.pressedReloadPick;
     this.debug = this.pressedDebug;
     this.pressedReload = this.pressedInteract = this.pressedBag = false;
-    this.pressedHeal = this.pressedHealPick = this.pressedReloadPick = false;
+    this.pressedHeal = this.pressedHealPick = false;
     this.pressedDraw = null;
     this.pressedDebug = -1;
 
@@ -254,19 +261,10 @@ export class Controls {
         });
         break;
       }
-      case 'reload': {
-        // As the heal button: a tap reloads when it lifts; holding opens the round picker.
-        let picked = false;
-        const timer = setTimeout(() => {
-          picked = true;
-          this.pressedReloadPick = true;
-        }, LONG_PRESS_MS);
-        held(() => {
-          clearTimeout(timer);
-          if (!picked) this.pressedReload = true;
-        });
+      case 'reload':
+        this.pressedReload = true;
+        held(() => {});
         break;
-      }
       case 'interact':
         this.pressedInteract = true;
         held(() => {});
@@ -322,22 +320,38 @@ export class Controls {
   private readonly onKey = (e: KeyboardEvent): void => {
     this.keys.add(e.code);
     if (e.repeat) return;
-    if (e.code === 'KeyR') {
-      if (e.shiftKey) this.pressedReloadPick = true;
-      else this.pressedReload = true;
-    } else if (e.code === 'KeyQ' && settings.current.aim === 'toggle') this.toggleAim();
+    // H as its touch button: a tap heals when it lifts, holding opens the picker.
+    // Not Shift+H (2026-10-30): Shift is sprint, so healing on the run picked.
+    if (e.code === 'KeyR') this.pressedReload = true;
+    else if (e.code === 'KeyH')
+      this.holdKey(
+        e.code,
+        () => (this.pressedHeal = true),
+        () => (this.pressedHealPick = true),
+      );
+    else if (e.code === 'KeyQ' && settings.current.aim === 'toggle') this.toggleAim();
     else if (e.code === 'KeyE') this.pressedInteract = true;
     else if (e.code === 'KeyX') this.setProne(!this.proneOn);
     else if ((e.code === 'KeyC' || e.code === 'Space') && this.proneOn) this.setProne(false);
-    else if (e.code === 'KeyH') {
-      if (e.shiftKey) this.pressedHealPick = true;
-      else this.pressedHeal = true;
-    } else if (e.code === 'KeyI' || e.code === 'Tab') {
+    else if (e.code === 'KeyI' || e.code === 'Tab') {
       e.preventDefault();
       this.pressedBag = true;
     } else if (/^Digit[1-4]$/.test(e.code)) this.pressedDraw = HANDS[Number(e.code.slice(5)) - 1]!;
     else if (/^Digit[78]$/.test(e.code)) this.pressedDebug = Number(e.code.slice(5)) - 7;
   };
+
+  private holdKey(code: string, tap: () => void, hold: () => void): void {
+    let held = false;
+    const timer = setTimeout(() => {
+      held = true;
+      hold();
+    }, LONG_PRESS_MS);
+    this.keyHolds.set(code, (isTap = true) => {
+      this.keyHolds.delete(code);
+      clearTimeout(timer);
+      if (!held && isTap) tap();
+    });
+  }
 
   /** A debug action from an on-screen button, as if its key was pressed. */
   pressDebug(i: number): void {
@@ -405,7 +419,8 @@ export class Controls {
   }
 
   private readonly onMouseDown = (e: MouseEvent): void => {
-    if (!this.cursor.locked) return;
+    // The click that takes the mouse back after a screen closed fires or aims too.
+    if (!this.cursor.locked && !(this.cursor.resuming && e.target === this.target)) return;
     e.preventDefault();
     if (e.button === 0) this.mouseFire = true;
     else if (e.button === 2) {

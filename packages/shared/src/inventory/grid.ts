@@ -180,11 +180,119 @@ export function removeAt(grid: Grid, index: number): Item {
   return g.item;
 }
 
+/** Where an item under a dropped one goes in a swap: its index in the grid dropped on. */
+interface SwapSpot {
+  index: number;
+  x: number;
+  y: number;
+  rotated: boolean;
+}
+
+/**
+ * Dropping the item at fromIndex in from onto other items at (x, y) in to swaps them (the
+ * user's call, 2026-10-30): every item under it goes back where the dropped one came from,
+ * keeping its place relative to the drop, so two 1×1s under a 1×2 fill the cells the 1×2
+ * left. One that doesn't fit there is turned there, or else put anywhere inside the cells
+ * the dropped one left, either way round (2026-10-30: an upright 1×2 under a flat 2×1
+ * turns into its place); bigger ones are fitted first. All of them must fit (and be
+ * allowed in that grid), or it's null. Also null with nothing under it, or off the grid.
+ */
+function swapSpots(
+  items: ItemDb,
+  from: Grid,
+  fromIndex: number,
+  to: Grid,
+  x: number,
+  y: number,
+  rotated: boolean,
+): SwapSpot[] | null {
+  const g = from.items[fromIndex];
+  if (!g) return null;
+  const w = itemWidth(items, g.item.item, rotated);
+  const h = itemHeight(items, g.item.item, rotated);
+  if (x < 0 || y < 0 || x + w > to.w || y + h > to.h) return null;
+  const under: number[] = [];
+  for (let i = 0; i < to.items.length; i++) {
+    const o = to.items[i]!;
+    if (o === g) continue;
+    const ow = itemWidth(items, o.item.item, o.rotated);
+    const oh = itemHeight(items, o.item.item, o.rotated);
+    if (x < o.x + ow && o.x < x + w && y < o.y + oh && o.y < y + h) under.push(i);
+  }
+  if (!under.length) return null;
+  // The grid they go back to, as it would be: without the dropped item and those moving,
+  // and with the dropped item in its new place if that's the same grid.
+  const moving = new Set(under.map((i) => to.items[i]!));
+  const after: Grid = {
+    ...from,
+    items: from.items.filter((o) => o !== g && !(from === to && moving.has(o))),
+  };
+  if (from === to) after.items.push({ x, y, rotated, item: g.item });
+  const spots: SwapSpot[] = [];
+  const tryAt = (i: number, sx: number, sy: number, turned: boolean): boolean => {
+    const o = to.items[i]!;
+    const [iw, ih] = itemDef(items, o.item.item).size;
+    const ow = turned ? ih : iw;
+    const oh = turned ? iw : ih;
+    if (!isFree(items, after, sx, sy, ow, oh)) return false;
+    after.items.push({ ...o, x: sx, y: sy, rotated: turned });
+    spots.push({ index: i, x: sx, y: sy, rotated: turned });
+    return true;
+  };
+  // First each where it lands keeping its place, as it is.
+  const left: number[] = [];
+  for (const i of under) {
+    const o = to.items[i]!;
+    if (!canHold(items, from, o.item)) return null;
+    if (!tryAt(i, g.x + o.x - x, g.y + o.y - y, o.rotated)) left.push(i);
+  }
+  // Then the rest, biggest first: turned there, else anywhere in the cells left.
+  const area = (i: number): number => {
+    const [iw, ih] = itemDef(items, to.items[i]!.item.item).size;
+    return iw * ih;
+  };
+  left.sort((a, b) => area(b) - area(a));
+  const gw = itemWidth(items, g.item.item, g.rotated);
+  const gh = itemHeight(items, g.item.item, g.rotated);
+  for (const i of left) {
+    const o = to.items[i]!;
+    const [iw, ih] = itemDef(items, o.item.item).size;
+    const turns = iw === ih ? [o.rotated] : [o.rotated, !o.rotated];
+    let placed = iw !== ih && tryAt(i, g.x + o.x - x, g.y + o.y - y, !o.rotated);
+    for (const turned of turns) {
+      const ow = turned ? ih : iw;
+      const oh = turned ? iw : ih;
+      for (let sy = g.y; !placed && sy + oh <= g.y + gh; sy++) {
+        for (let sx = g.x; !placed && sx + ow <= g.x + gw; sx++) placed = tryAt(i, sx, sy, turned);
+      }
+    }
+    if (!placed) return null;
+  }
+  return spots;
+}
+
+/** Whether dropping the item at fromIndex in from at (x, y) in to would swap (see dropAt). */
+export function canSwap(
+  items: ItemDb,
+  from: Grid,
+  fromIndex: number,
+  to: Grid,
+  x: number,
+  y: number,
+  rotated: boolean,
+): boolean {
+  const g = from.items[fromIndex];
+  return (
+    !!g && canHold(items, to, g.item) && !!swapSpots(items, from, fromIndex, to, x, y, rotated)
+  );
+}
+
 /**
  * Drag and drop: moves the item at fromIndex in from to (x, y) in to, which may be the
  * same grid (to move or rotate it there). Dropped on a stack of the same item, it tops
- * that stack up instead, and whatever doesn't fit stays where it was. Returns whether
- * anything moved.
+ * that stack up instead, and whatever doesn't fit stays where it was. Dropped on other
+ * items, it swaps with them if they fit where it was (see swapSpots), unless swap is
+ * false. Returns whether anything moved.
  */
 export function dropAt(
   items: ItemDb,
@@ -194,6 +302,7 @@ export function dropAt(
   x: number,
   y: number,
   rotated: boolean,
+  swap = true,
 ): boolean {
   const g = from.items[fromIndex];
   if (!g || !canHold(items, to, g.item)) return false;
@@ -210,7 +319,20 @@ export function dropAt(
   }
   const w = itemWidth(items, g.item.item, rotated);
   const h = itemHeight(items, g.item.item, rotated);
-  if (!isFree(items, to, x, y, w, h, from === to ? fromIndex : -1)) return false;
+  if (!isFree(items, to, x, y, w, h, from === to ? fromIndex : -1)) {
+    const spots = swap ? swapSpots(items, from, fromIndex, to, x, y, rotated) : null;
+    if (!spots) return false;
+    const moved = spots.map((s) => ({ ...to.items[s.index]!, x: s.x, y: s.y, rotated: s.rotated }));
+    const gone = new Set([g, ...spots.map((s) => to.items[s.index]!)]);
+    for (const grid of [from, to]) {
+      const keep = grid.items.filter((o) => !gone.has(o));
+      grid.items.length = 0;
+      grid.items.push(...keep);
+    }
+    to.items.push({ x, y, rotated, item: g.item });
+    from.items.push(...moved);
+    return true;
+  }
   if (from === to) {
     g.x = x;
     g.y = y;
@@ -222,12 +344,12 @@ export function dropAt(
   return true;
 }
 
-/** Turns an item where it is, if it still fits there. A square item doesn't turn. */
+/** Turns an item where it is, if it still fits there (never pushing others aside). A square item doesn't turn. */
 export function rotateAt(items: ItemDb, grid: Grid, index: number): boolean {
   const g = grid.items[index];
   if (!g) return false;
   const [w, h] = itemDef(items, g.item.item).size;
-  return w !== h && dropAt(items, grid, index, grid, g.x, g.y, !g.rotated);
+  return w !== h && dropAt(items, grid, index, grid, g.x, g.y, !g.rotated, false);
 }
 
 /**
