@@ -19,6 +19,7 @@ import {
 import { createState, spawnCharacter, type PlayerInput } from './state';
 import { step } from './step';
 import { TEST_ITEMS as items } from './test-items';
+import { TICK_RATE } from '../tick';
 
 const world = new CollisionWorld({
   terrain: { minX: -8, minZ: -8, cellSize: 4, cols: 4, rows: 4, heights: Array(25).fill(0) },
@@ -514,6 +515,60 @@ describe('looting', () => {
     expect((enemy.gear.primary1 as WeaponState).mag).toBe(0);
     expect(countOf(c.gear.pockets, 'round') + countOf(c.gear.backpack!.grid, 'round')).toBe(60);
     expect(state.ground).toEqual([]);
+  });
+
+  it('loads a gun from rounds dropped on it: tops it up, or swaps the rounds out', () => {
+    const { state, c, enemy, body, act } = setup();
+    equip(c, items, 'primary2', createItem(items, 'rifle'));
+    const rifle = c.gear.primary2 as WeaponState;
+    rifle.mag = 10;
+    addItem(items, c.gear.pockets, createItem(items, 'round', 5));
+    addItem(items, c.gear.pockets, createItem(items, 'ap-round', 40));
+    addItem(items, c.gear.pockets, createItem(items, 'shell', 10));
+    const gun = { owner: self, slot: 'primary2', item: 'rifle' } as const;
+    const at = (index: number, item: string) =>
+      ({ owner: self, grid: 'pockets', index, item }) as const;
+    // Not a round it fires.
+    expect(act({ type: 'load', gun, from: at(2, 'shell') })).toBe(false);
+    // More of the same tops it up, using up the stack.
+    expect(act({ type: 'load', gun, from: at(0, 'round') })).toBe(true);
+    expect(rifle.mag).toBe(15);
+    expect(countOf(c.gear.pockets, 'round')).toBe(0);
+    // Another round swaps: the 15 old ones go into what's carried. Not the gun in hand,
+    // so it's at once.
+    expect(act({ type: 'load', gun, from: at(0, 'ap-round') })).toBe(true);
+    expect(rifle).toMatchObject({ mag: 30, loaded: 'ap-round', reloading: 0 });
+    expect(countOf(c.gear.pockets, 'ap-round')).toBe(10);
+    expect(countOf(c.gear.pockets, 'round')).toBe(15);
+    // Full of it already: nothing to do.
+    const ap = c.gear.pockets.items.findIndex((g) => g.item.item === 'ap-round');
+    expect(act({ type: 'load', gun, from: at(ap, 'ap-round') })).toBe(false);
+    // A body's gun, from your rounds.
+    (enemy.gear.primary1 as WeaponState).mag = 0;
+    const theirs = { owner: body, slot: 'primary1', item: 'rifle' } as const;
+    expect(act({ type: 'load', gun: theirs, from: at(ap, 'ap-round') })).toBe(true);
+    expect(enemy.gear.primary1).toMatchObject({ mag: 10, loaded: 'ap-round' });
+    expect(state.ground).toEqual([]);
+  });
+
+  it('reloads the gun in hand with rounds dropped on it, taking the reload time', () => {
+    const { state, c, box, crate, act } = setup();
+    equip(c, items, 'primary1', createItem(items, 'rifle'));
+    c.draw = 0;
+    const rifle = c.gear.primary1 as WeaponState;
+    addItem(items, crate.grid, createItem(items, 'ap-round', 40));
+    const gun = { owner: self, slot: 'primary1', item: 'rifle' } as const;
+    // Rounds it doesn't carry can't go in the gun in hand: a reload takes what's carried.
+    const fromCrate = { owner: box, grid: 'loot', index: 0, item: 'ap-round' } as const;
+    expect(act({ type: 'load', gun, from: fromCrate })).toBe(false);
+    addItem(items, c.gear.pockets, createItem(items, 'ap-round', 40));
+    const from = { owner: self, grid: 'pockets', index: 0, item: 'ap-round' } as const;
+    expect(act({ type: 'load', gun, from })).toBe(true);
+    expect(rifle).toMatchObject({ mag: 30, reloading: 2, reloadWith: 'ap-round' });
+    expect(act({ type: 'load', gun, from })).toBe(false);
+    for (let i = 0; i < 2.1 * TICK_RATE; i++) step(state, world, items, {});
+    expect(rifle).toMatchObject({ mag: 30, loaded: 'ap-round', reloading: 0 });
+    expect(countOf(c.gear.pockets, 'ap-round')).toBe(10);
   });
 
   it('drops items at your feet and picks them up again, within reach', () => {

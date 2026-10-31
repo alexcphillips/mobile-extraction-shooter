@@ -25,6 +25,11 @@ export interface RepairOn {
   repair: ItemRef;
 }
 
+/** Onto a gun, to load it with the rounds dropped (2026-10-30). */
+export interface LoadOn {
+  load: ItemRef;
+}
+
 /**
  * Something items can be dropped on. Its element has a data-drop attribute describing it,
  * which the host turns into this.
@@ -38,7 +43,9 @@ export type DropZone =
   /** Put wherever there's room, as a double-tap would. */
   | { kind: 'into'; owner: Owner }
   /** A repair kit onto armour (an element with a data-armour attribute). */
-  | { kind: 'repair'; armour: ItemRef };
+  | { kind: 'repair'; armour: ItemRef }
+  /** Rounds onto a gun that fires them (an element with a data-gun attribute). */
+  | { kind: 'load'; gun: ItemRef };
 
 /** The item a pointer went down on: in a grid or gear slot, or on a gun. */
 export interface DragSource {
@@ -62,8 +69,9 @@ export interface DragHost {
   zoneAt: (el: HTMLElement) => DropZone | null;
   /**
    * The slot of a gun (an element with a data-gun attribute) that the dragged item would
-   * go on, if it's an attachment that fits (loose, or from another gun); otherwise null, and the drag treats the
-   * gun as part of its grid or gear slot.
+   * go on, if it's an attachment that fits (loose, or from another gun), or loading it if
+   * it's rounds the gun fires; otherwise null, and the drag treats the gun as part of its
+   * grid or gear slot.
    */
   gunZone: (src: DragSource, gun: ItemRef) => DropZone | null;
   /**
@@ -73,7 +81,7 @@ export interface DragHost {
   armourZone: (src: DragSource, armour: ItemRef) => DropZone | null;
   /** Whether the item may drop on a zone there (x, y: the top-left cell for a grid). */
   canDrop: (src: DragSource, zone: DropZone, x: number, y: number, rotated: boolean) => boolean;
-  drop: (src: DragSource, to: Target | PartSlot | Into | RepairOn) => void;
+  drop: (src: DragSource, to: Target | PartSlot | Into | RepairOn | LoadOn) => void;
   tap: (src: DragSource) => void;
 }
 
@@ -190,7 +198,9 @@ export class DragController {
                 ? { into: z.owner }
                 : z.kind === 'repair'
                   ? { repair: z.armour }
-                  : { gun: z.gun, slot: z.slot },
+                  : z.kind === 'load'
+                    ? { load: z.gun }
+                    : { gun: z.gun, slot: z.slot },
       );
     }
   };
