@@ -305,6 +305,134 @@ describe('crouching', () => {
   });
 });
 
+describe('prone', () => {
+  it('lies down, crawls slowly and gets back up', () => {
+    const { c, run } = setup(makeWorld());
+    run(TICK_RATE, input({ prone: true }));
+    expect(c.height).toBe(MOVEMENT.proneHeight);
+    run(TICK_RATE, input({ prone: true, moveY: 1 }));
+    expect(Math.hypot(c.vx, c.vz)).toBeCloseTo(MOVEMENT.proneSpeed);
+    run(TICK_RATE);
+    expect(c.height).toBe(MOVEMENT.standHeight);
+  });
+
+  it('wins over crouch, and gets up to sprint', () => {
+    const { c, run } = setup(makeWorld());
+    run(TICK_RATE, input({ prone: true, crouch: true }));
+    expect(c.height).toBe(MOVEMENT.proneHeight);
+    run(TICK_RATE, input({ prone: true, sprint: true, moveY: 1 }));
+    expect(c.height).toBe(MOVEMENT.standHeight);
+  });
+
+  it('crawls under a gap too low to crouch under', () => {
+    const world = makeWorld({ boxes: [aabb(-5, 0.8, -5, 5, 1, -3)] });
+    const { c, run } = setup(world);
+    run(TICK_RATE, input({ prone: true }));
+    run(TICK_RATE * 8, input({ prone: true, moveY: 1 }));
+    expect(c.z).toBeLessThan(-5 - R);
+    // Can't get up under it.
+    const under = setup(world, 0, -4, 0, 0.5);
+    under.c.height = MOVEMENT.proneHeight;
+    under.run(TICK_RATE, input({ crouch: true }));
+    expect(under.c.height).toBeLessThanOrEqual(0.8);
+  });
+
+  it("can't jump or vault", () => {
+    const { c, run } = setup(makeWorld({ boxes: [aabb(-5, 0, -3.3, 5, 0.9, -3)] }), 0, -2.5);
+    run(TICK_RATE, input({ prone: true }));
+    expect(run(TICK_RATE, input({ prone: true, jump: true }))).toBe(0);
+    expect(c.z).toBeGreaterThan(-3);
+  });
+});
+
+describe('vaulting', () => {
+  /**
+   * A 3 m wall across z = −3 to −3 − thick, with a window from x = −w/2 to w/2 between
+   * the sill and 2 m up.
+   */
+  function window(sill = 0.9, w = 1, thick = 0.3, extra: BoxDef[] = []): CollisionWorld {
+    const z0 = -3 - thick;
+    return makeWorld({
+      boxes: [
+        aabb(-5, 0, z0, 5, sill, -3),
+        aabb(-5, sill, z0, -w / 2, 3, -3),
+        aabb(w / 2, sill, z0, 5, 3, -3),
+        aabb(-w / 2, 2, z0, w / 2, 3, -3),
+        ...extra,
+      ],
+    });
+  }
+  const JUMP = input({ jump: true });
+
+  it('vaults through a window to the floor beyond', () => {
+    const { c, run } = setup(window(), 0.2, -2.5);
+    run(1, JUMP);
+    expect(c.mode).toBe('vault');
+    const top = run(TICK_RATE, JUMP);
+    expect(top).toBeCloseTo(0.9);
+    expect(c.mode).toBe('ground');
+    expect(c.y).toBe(0);
+    expect(c.z).toBeLessThan(-3.3 - R + 1e-6);
+    // Slid sideways to fit the opening.
+    expect(Math.abs(c.x)).toBeLessThanOrEqual(0.5 - R);
+    expect(c.height).toBe(MOVEMENT.standHeight);
+  });
+
+  it('ducks halfway, so the eye stays under the window top', () => {
+    const { c, run } = setup(window(), 0, -2.5);
+    let eye = 0;
+    for (let i = 0; i < TICK_RATE; i++) {
+      run(1, JUMP);
+      eye = Math.max(eye, c.y + c.height - MOVEMENT.eyeBelowTop);
+    }
+    expect(eye).toBeLessThan(2);
+  });
+
+  it('vaults from a crouch, and over a low wall', () => {
+    const crouched = setup(window(), 0, -2.5);
+    crouched.run(TICK_RATE, input({ crouch: true }));
+    crouched.run(TICK_RATE, input({ crouch: true, jump: true }));
+    expect(crouched.c.z).toBeLessThan(-3.3);
+    expect(crouched.c.height).toBe(MOVEMENT.crouchHeight);
+
+    const wall = setup(makeWorld({ boxes: [aabb(-5, 0, -3.3, 5, 0.7, -3)] }), 0, -2.5);
+    wall.run(TICK_RATE, JUMP);
+    expect(wall.c.z).toBeLessThan(-3.3);
+    expect(wall.c.y).toBe(0);
+  });
+
+  it('lands crouched where there is no room to stand', () => {
+    const { c, run } = setup(window(0.9, 1, 0.3, [aabb(-5, 1.75, -6, 5, 1.9, -3.3)]), 0, -2.5);
+    run(TICK_RATE, JUMP);
+    expect(c.z).toBeLessThan(-3.3);
+    expect(c.height).toBeLessThanOrEqual(1.75);
+  });
+
+  it('jumps instead when it can’t vault', () => {
+    const cases: [string, CollisionWorld, number][] = [
+      ['a solid wall', makeWorld({ boxes: [aabb(-5, 0, -3.3, 5, 3, -3)] }), -2.5],
+      ['a window too narrow', window(0.9, 0.5), -2.5],
+      ['a sill too high', window(1.3), -2.5],
+      ['a wall too thick', window(0.9, 1, 1.2), -2.5],
+      ['no room beyond', window(0.9, 1, 0.3, [aabb(-5, 0, -4, 5, 3, -3.3)]), -2.5],
+      ['too far away', window(), -1.5],
+    ];
+    for (const [what, world, z] of cases) {
+      const { c, run } = setup(world, 0, z);
+      run(1, JUMP);
+      expect(c.mode, what).toBe('air');
+      run(TICK_RATE, JUMP);
+      expect(c.z, what).toBeGreaterThan(-3);
+    }
+  });
+
+  it('only vaults what it faces', () => {
+    const { c, run } = setup(window(), 0, -2.5, Math.PI);
+    run(1, input({ jump: true, yaw: Math.PI }));
+    expect(c.mode).toBe('air');
+  });
+});
+
 describe('ladders', () => {
   // A 4 m block from z = −15 to −5, with a ladder on its +z face.
   const ladder: LadderDef = { x: 0, z: -5, yaw: 0, halfWidth: 0.3, bottom: 0, top: 4 };

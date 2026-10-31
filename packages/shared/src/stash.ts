@@ -59,6 +59,7 @@ export function openStash(profile: Profile): StashState {
     mode: 'ground',
     height: MOVEMENT.standHeight,
     ladder: -1,
+    vaulting: null,
     jumpHeld: false,
     landingSpeed: 0,
     health: createHealth(),

@@ -270,8 +270,8 @@ export function updateWeapon(
   }
   const def = weaponDef(items, w.item);
   const s = weaponStats(items, w, stats);
-  // Not on a ladder, and not until it's drawn.
-  const free = c.mode !== 'ladder' && c.draw === 0;
+  // Not on a ladder or vaulting, and not until it's drawn.
+  const free = c.mode !== 'ladder' && c.mode !== 'vault' && c.draw === 0;
 
   const aimStep = DT / (s.aimTime * armScale(c, HEALTH.brokenArmAimTime));
   // Using a med lowers the gun.

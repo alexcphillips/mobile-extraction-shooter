@@ -452,7 +452,8 @@ export class CharacterBody {
     heading = Math.max(-TUNE.maxTwist, Math.min(TUNE.maxTwist, heading));
     let legs: ClipName;
     if (dead) legs = CLIP.death;
-    else if (ch.mode === 'air') legs = CLIP.air;
+    // A vault is the jump clip too; prone has no clips yet, so it's drawn crouched.
+    else if (ch.mode === 'air' || ch.mode === 'vault') legs = CLIP.air;
     else if (speed <= TUNE.still) legs = crouched ? CLIP.crouchIdle : CLIP.idle;
     else if (crouched) legs = CLIP.crouchWalk;
     else if (speed <= TUNE.walkUpTo) legs = CLIP.walk;

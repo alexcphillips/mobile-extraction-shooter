@@ -83,6 +83,7 @@ function character(id: number, x: number): Character {
     mode: 'ground',
     height: MOVEMENT.standHeight,
     ladder: -1,
+    vaulting: null,
     jumpHeld: false,
     landingSpeed: 0,
     health: createHealth(),

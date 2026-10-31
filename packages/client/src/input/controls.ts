@@ -39,7 +39,8 @@ interface MoveTouch {
  * the stick back, tapping the left half, aiming, firing or crouching unlocks it.
  *
  * Desktop: the mouse is captured (see CursorLock): moving it looks, the left button fires
- * and the right one aims. WASD, Shift sprint, Space jump, C crouch, R reload (Shift+R picks
+ * and the right one aims. WASD, Shift sprint, Space jump (or vault), C crouch, X prone
+ * (a toggle; C, Space or sprinting gets up), R reload (Shift+R picks
  * the rounds), E use, I or Tab the bag, 1–4 take out primary 1, primary 2, sidearm or knife,
  * H heal (Shift+H picks),
  * F and Q fire and aim too, 7 and 8 the debug actions. Mouse pointers never drive the
@@ -52,6 +53,7 @@ export class Controls {
   sprint = false;
   jump = false;
   crouch = false;
+  prone = false;
   aim = false;
   fire = false;
   yaw = 0;
@@ -88,6 +90,8 @@ export class Controls {
   private stickY = 0;
   private touchJump = false;
   private touchCrouch = false;
+  /** Prone is a toggle on both: X, or holding the crouch button. */
+  private proneOn = false;
   private touchAim = false;
   private touchFire = false;
   private mouseFire = false;
@@ -171,8 +175,12 @@ export class Controls {
     // Firing ends sprint lock, as aiming does.
     if (this.fire && this.sprintLocked) this.setSprintLock(false);
     // Sprinting turns the crouch toggle off (the sim only sprints forwards).
-    if (this.sprint && this.moveY > 0 && this.touchCrouch) this.setCrouch(false);
+    if (this.sprint && this.moveY > 0) {
+      if (this.touchCrouch) this.setCrouch(false);
+      if (this.proneOn) this.setProne(false);
+    }
     this.crouch = this.touchCrouch || k.has('KeyC');
+    this.prone = this.proneOn;
   }
 
   /** Ends sprint lock, for things outside the controls (letting go of a ladder). */
@@ -180,7 +188,7 @@ export class Controls {
     this.setSprintLock(false);
   }
 
-  /** Lets go of every touch and key, for pausing. Toggles (crouch, toggled aim) stay. */
+  /** Lets go of every touch and key, for pausing. Toggles (crouch, prone, toggled aim) stay. */
   reset(): void {
     this.move = null;
     this.stickX = this.stickY = 0;
@@ -222,13 +230,30 @@ export class Controls {
         }
         break;
       case 'jump':
-        this.touchJump = true;
+        // Jumping from prone gets up instead.
+        if (this.proneOn) this.setProne(false);
+        else this.touchJump = true;
         held(() => (this.touchJump = false));
         break;
-      case 'crouch':
+      case 'crouch': {
+        // A tap crouches (or stands, or gets up from prone to a crouch) when it lifts;
+        // holding it goes prone, or gets up from prone.
         this.setSprintLock(false);
-        this.setCrouch(!this.touchCrouch);
+        let long = false;
+        const timer = setTimeout(() => {
+          long = true;
+          this.setProne(!this.proneOn);
+        }, LONG_PRESS_MS);
+        held(() => {
+          clearTimeout(timer);
+          if (long) return;
+          if (this.proneOn) {
+            this.setProne(false);
+            this.setCrouch(true);
+          } else this.setCrouch(!this.touchCrouch);
+        });
         break;
+      }
       case 'reload': {
         // As the heal button: a tap reloads when it lifts; holding opens the round picker.
         let picked = false;
@@ -279,6 +304,15 @@ export class Controls {
     this.hud.button('crouch').classList.toggle('active', on);
   }
 
+  /** Prone on turns the crouch toggle off, so getting up stands. */
+  private setProne(on: boolean): void {
+    this.proneOn = on;
+    if (on) this.setCrouch(false);
+    const button = this.hud.button('crouch');
+    button.textContent = on ? 'prone' : 'crouch';
+    button.classList.toggle('active', on || this.touchCrouch);
+  }
+
   private setSprintLock(on: boolean): void {
     this.sprintLocked = on;
     this.hud.sprintZone.classList.toggle('active', on);
@@ -293,6 +327,8 @@ export class Controls {
       else this.pressedReload = true;
     } else if (e.code === 'KeyQ' && settings.current.aim === 'toggle') this.toggleAim();
     else if (e.code === 'KeyE') this.pressedInteract = true;
+    else if (e.code === 'KeyX') this.setProne(!this.proneOn);
+    else if ((e.code === 'KeyC' || e.code === 'Space') && this.proneOn) this.setProne(false);
     else if (e.code === 'KeyH') {
       if (e.shiftKey) this.pressedHealPick = true;
       else this.pressedHeal = true;
