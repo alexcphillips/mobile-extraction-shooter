@@ -344,8 +344,12 @@ export class InventoryController implements DragHost {
         : null
       : this.find(ref)?.def;
     const target = this.find(gun)?.def;
-    // Rounds the gun fires load it.
-    if (!isPart(ref) && part?.type === 'ammo' && target?.type === 'weapon') {
+    // Rounds the gun fires load it (grenades, for a launcher).
+    if (
+      !isPart(ref) &&
+      (part?.type === 'ammo' || part?.type === 'grenade') &&
+      target?.type === 'weapon'
+    ) {
       return firesRound(this.ctx.items, target, part.id) ? { kind: 'load', gun } : null;
     }
     if (part?.type !== 'attachment' || target?.type !== 'weapon' || !fits(target, part)) {

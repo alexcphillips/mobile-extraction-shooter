@@ -14,7 +14,7 @@ import {
   type ItemDb,
   heldWeapon,
   carriedAmmo,
-  ammoDef,
+  roundOf,
   loadedAmmo,
 } from '@mes/shared';
 import { levelColour } from '../ui/levels';
@@ -120,7 +120,7 @@ export class Vitals {
       setText(this.rounds, `${w.mag} / ${carriedAmmo(c, id)}`);
       if (id !== this.roundId) {
         this.roundId = id;
-        const def = ammoDef(items, id);
+        const def = roundOf(items, id)!;
         this.round.textContent = def.name;
         this.round.style.borderColor = levelColour(def.level);
       }

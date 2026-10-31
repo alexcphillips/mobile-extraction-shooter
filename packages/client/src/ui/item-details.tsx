@@ -1,5 +1,4 @@
 import {
-  ammoDef,
   calibreOf,
   condition,
   createWeaponStats,
@@ -9,6 +8,7 @@ import {
   loadedAmmo,
   objectiveText,
   questsFor,
+  roundOf,
   sellParts,
   weaponStats,
   type AttachmentMods,
@@ -251,29 +251,50 @@ function modRows(mods: AttachmentMods): Row[] {
   return out;
 }
 
+/** A launcher's impact fuse, for after its launch speed. */
+const impact = (arm: number | undefined): string =>
+  arm === undefined ? '' : ` · goes off on impact past ${arm} m`;
+
+/** A grenade's launchers, if any gun fires it. */
+function launchers(items: ItemDb, id: string): Row[] {
+  const guns = [...items.values()].filter(
+    (g) => g.type === 'weapon' && !g.spawns && firesRound(items, g, id),
+  );
+  return guns.length ? [['Fired by', guns.map((g) => g.name).join(', ')]] : [];
+}
+
 /** The stats that matter for each kind of item. */
 function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
   switch (def.type) {
     case 'weapon': {
       const s = weaponStats(items, item as WeaponState, stats);
-      const round = ammoDef(items, loadedAmmo(items, item));
+      const round = roundOf(items, loadedAmmo(items, item))!;
       return [
         ['Fire rate', `${def.rpm} rpm · ${def.fireMode === 'auto' ? 'auto' : 'semi'}`],
         ['Calibre', calibreOf(items, def)],
         ['Loaded', `${item.mag ?? 0}/${s.magazine} · ${round.name}`],
         [
           'Damage',
-          <>
-            <Level level={round.level} />
-            {round.damage}
-            {round.pellets ? ` × ${round.pellets}` : ''} · {round.armourDamage} to armour
-          </>,
+          round.type === 'grenade' ? (
+            <>
+              <Level level={round.level} />
+              {round.damage} at the centre · {round.radius} m radius
+            </>
+          ) : (
+            <>
+              <Level level={round.level} />
+              {round.damage}
+              {round.pellets ? ` × ${round.pellets}` : ''} · {round.armourDamage} to armour
+            </>
+          ),
         ],
         ['Reload', seconds(s.reloadTime)],
         ['Aim time', seconds(s.aimTime)],
         ['Recoil', `${+s.recoilUp.toFixed(2)}° up · ${+s.recoilSide.toFixed(2)}° side`],
         ['Spread', `${+s.hipSpread.toFixed(2)}° hip · ${+s.aimSpread.toFixed(2)}° aimed`],
-        ['Range', `${def.range} m`],
+        def.launchSpeed
+          ? ['Launch speed', `${def.launchSpeed} m/s${impact(def.armDistance)}`]
+          : ['Range', `${def.range} m`],
         ['Heard from', `${Math.round(s.loudness)} m`],
       ];
     }
@@ -339,6 +360,7 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
         ['Fuse', seconds(def.fuse)],
         ['Bleed chance', percent(def.bleedChance)],
         ['Heard from', `${def.loudness} m`],
+        ...launchers(items, def.id),
       ];
     case 'key':
       return [

@@ -1,0 +1,160 @@
+{
+  "formatVersion": 1,
+  "id": "launcher-reload",
+  "name": "Grenade launcher reload",
+  "gain": 0.8,
+  "range": 20,
+  "pitchJitter": 0.03,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0.25,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.08,
+      "curve": 2,
+      "gain": 0.7,
+      "filter": {
+        "type": "bandpass",
+        "freq": [1200, 1200],
+        "q": 1
+      }
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0.8,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.06,
+      "curve": 2,
+      "gain": 0.6,
+      "filter": {
+        "type": "bandpass",
+        "freq": [600, 600],
+        "q": 1
+      }
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 1.35,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.06,
+      "curve": 2,
+      "gain": 0.6,
+      "filter": {
+        "type": "bandpass",
+        "freq": [600, 600],
+        "q": 1
+      }
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 1.9,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.06,
+      "curve": 2,
+      "gain": 0.6,
+      "filter": {
+        "type": "bandpass",
+        "freq": [600, 600],
+        "q": 1
+      }
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 2.45,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.06,
+      "curve": 2,
+      "gain": 0.6,
+      "filter": {
+        "type": "bandpass",
+        "freq": [600, 600],
+        "q": 1
+      }
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 3.0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.06,
+      "curve": 2,
+      "gain": 0.6,
+      "filter": {
+        "type": "bandpass",
+        "freq": [600, 600],
+        "q": 1
+      }
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 3.55,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.06,
+      "curve": 2,
+      "gain": 0.6,
+      "filter": {
+        "type": "bandpass",
+        "freq": [600, 600],
+        "q": 1
+      }
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 4.3,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.08,
+      "curve": 2,
+      "gain": 0.8,
+      "filter": {
+        "type": "bandpass",
+        "freq": [1400, 1400],
+        "q": 1
+      }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 4.6,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "curve": 2,
+      "gain": 0.6,
+      "filter": {
+        "type": "bandpass",
+        "freq": [2400, 2400],
+        "q": 1
+      }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 4.7,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "curve": 2,
+      "gain": 0.6,
+      "filter": {
+        "type": "bandpass",
+        "freq": [2400, 2400],
+        "q": 1
+      }
+    }
+  ]
+}

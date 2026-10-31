@@ -210,7 +210,30 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
       return (
         <>
           <h4>gun</h4>
-          <P {...b} path={['ammo']} label="ammo" options={ofType('ammo')} />
+          <P
+            {...b}
+            path={['ammo']}
+            label="ammo"
+            options={[...ofType('ammo'), ...ofType('grenade')]}
+          />
+          {items.get(def.ammo)?.type === 'grenade' && (
+            <Row>
+              <N
+                {...b}
+                path={['launchSpeed']}
+                label="launch speed (m/s)"
+                min={0}
+                hint="Grenade launchers: how fast a grenade leaves the barrel"
+              />
+              <N
+                {...b}
+                path={['armDistance']}
+                label="arms after (m)"
+                min={0}
+                hint="Goes off on impact once it's flown this far; blank keeps only the fuse"
+              />
+            </Row>
+          )}
           <P
             {...b}
             path={['hold']}

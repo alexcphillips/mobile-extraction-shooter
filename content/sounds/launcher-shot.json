@@ -1,0 +1,53 @@
+{
+  "formatVersion": 1,
+  "id": "launcher-shot",
+  "name": "Grenade launcher shot",
+  "gain": 0.5,
+  "range": 120,
+  "pitchJitter": 0.05,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [180, 55],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0.015,
+      "decay": 0.22,
+      "curve": 2,
+      "gain": 1.2,
+      "drive": 0.4
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0,
+      "attack": 0.002,
+      "hold": 0.02,
+      "decay": 0.3,
+      "curve": 2.5,
+      "gain": 1.2,
+      "drive": 0.5,
+      "filter": {
+        "type": "lowpass",
+        "freq": [900, 120],
+        "q": 0.9
+      }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0.003,
+      "decay": 0.05,
+      "curve": 3,
+      "gain": 0.3,
+      "filter": {
+        "type": "bandpass",
+        "freq": [2500, 900],
+        "q": 0.8
+      }
+    }
+  ]
+}

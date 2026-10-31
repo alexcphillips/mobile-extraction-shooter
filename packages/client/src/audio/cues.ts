@@ -103,7 +103,8 @@ export class SoundCues {
           if (own) this.sound.play(id);
           else this.at(id, e.fromX, e.fromY, e.fromZ, e.loudness);
         }
-        if (!own && e.target !== player.id && e.pellet === 0)
+        // A launched grenade doesn't whizz; it's heard when it bounces and goes off.
+        if (!own && e.target !== player.id && e.pellet === 0 && !e.grenade)
           this.whizz(e.fromX, e.fromY, e.fromZ, e.toX, e.toY, e.toZ);
         if (e.hit === 'world') this.at(S.impactWorld, e.toX, e.toY, e.toZ);
         else if (e.hit === 'character' && e.target !== player.id)

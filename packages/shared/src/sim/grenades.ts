@@ -4,6 +4,7 @@ import { TICK_SECONDS } from '../tick';
 import { createRayHit, type CollisionWorld } from '../world/collision-world';
 import { CARRIED_GRIDS, carriedGrid, heldWeapon } from './gear';
 import { ZONE_COUNT, woundZone, type Zone } from './health';
+import { createCharacterHit, raycastCharacters } from './hit-zones';
 import type { CarriedRef } from './meds';
 import { eyeHeight, type Character, type EntityId, type PlayerInput, type SimState } from './state';
 
@@ -24,7 +25,7 @@ export const GRENADE = {
   floor: 0.7,
   /** Hitting something faster than this (m/s) makes a sound. */
   bounceSound: 2,
-  /** A throw goes this far above the crosshair, so a level throw carries. */
+  /** A throw (or launch) goes this far above the crosshair, so a level one carries. */
   loft: 8 * DEG,
   /** It leaves the hand this far in front of the eye (or short of a wall). */
   hand: 0.4,
@@ -55,6 +56,12 @@ export interface Grenade {
   fuse: number;
   /** Lying still on a floor. */
   resting: boolean;
+  /**
+   * Launched with an impact fuse: metres left to fly before it's armed, then it goes off
+   * on the first thing it hits, the map or someone. Missing for a thrown one, and once it
+   * has hit the map before arming (then only its fuse sets it off).
+   */
+  armIn?: number;
 }
 
 /** A grenade leaving someone's hand this tick. */
@@ -93,6 +100,7 @@ export interface ExplosionEvent {
 
 // Scratch, so moving grenades allocates nothing.
 const hit = createRayHit();
+const charHit = createCharacterHit();
 
 /** The first grenade carried (pockets, rig, then backpack), or null. */
 export function carriedGrenade(c: Character, items: ItemDb): CarriedRef | null {
@@ -151,11 +159,38 @@ export function updateThrow(
   const w = heldWeapon(c);
   if (w) w.reloading = 0;
 
-  const yaw = c.yaw + c.recoilYaw;
-  const pitch = Math.min(Math.PI / 2, c.pitch + c.recoilPitch + GRENADE.loft);
-  const cp = Math.cos(pitch);
+  const g = launchGrenade(
+    state,
+    c,
+    world,
+    def,
+    c.yaw + c.recoilYaw,
+    c.pitch + c.recoilPitch,
+    def.throwSpeed,
+  );
+  state.events.push({ type: 'throw', by: c.id, grenade: g.id, item: id });
+}
+
+/**
+ * Sets a grenade off from c's eye along yaw and pitch, lofted GRENADE.loft, at speed plus
+ * c's own: a throw, or a launcher's shot (sim/weapons.ts). It starts a hand's length out,
+ * or short of a wall. With armIn, it has an impact fuse armed after that many metres.
+ * Returns it, already in state.grenades.
+ */
+export function launchGrenade(
+  state: SimState,
+  c: Character,
+  world: CollisionWorld,
+  def: GrenadeDef,
+  yaw: number,
+  pitch: number,
+  speed: number,
+  armIn?: number,
+): Grenade {
+  const p = Math.min(Math.PI / 2, pitch + GRENADE.loft);
+  const cp = Math.cos(p);
   const dx = -Math.sin(yaw) * cp;
-  const dy = Math.sin(pitch);
+  const dy = Math.sin(p);
   const dz = -Math.cos(yaw) * cp;
   const ox = c.x;
   const oy = eyeHeight(c);
@@ -164,33 +199,35 @@ export function updateThrow(
   const out = Math.max(0, Math.min(GRENADE.hand, wall - GRENADE.size));
   const g: Grenade = {
     id: state.nextId++,
-    item: id,
+    item: def.id,
     by: c.id,
     x: ox + dx * out,
     y: oy + dy * out,
     z: oz + dz * out,
-    vx: dx * def.throwSpeed + c.vx,
-    vy: dy * def.throwSpeed + Math.max(0, c.vy),
-    vz: dz * def.throwSpeed + c.vz,
+    vx: dx * speed + c.vx,
+    vy: dy * speed + Math.max(0, c.vy),
+    vz: dz * speed + c.vz,
     fuse: def.fuse,
     resting: false,
   };
+  if (armIn !== undefined) g.armIn = armIn;
   state.grenades.push(g);
-  state.events.push({ type: 'throw', by: c.id, grenade: g.id, item: id });
+  return g;
 }
 
 /**
  * One tick of every grenade: each flies and bounces, and goes off when its fuse runs out
- * (explode). Those gone off are removed, keeping the rest in order.
+ * or, armed, when it hits something (explode). Those gone off are removed, keeping the
+ * rest in order.
  */
 export function updateGrenades(state: SimState, world: CollisionWorld, items: ItemDb): void {
   const list = state.grenades;
   let kept = 0;
   for (let i = 0; i < list.length; i++) {
     const g = list[i]!;
-    moveGrenade(state, g, world);
+    const struck = moveGrenade(state, g, world);
     g.fuse -= TICK_SECONDS;
-    if (g.fuse <= 1e-9) explode(state, world, items, g);
+    if (struck || g.fuse <= 1e-9) explode(state, world, items, g);
     else list[kept++] = g;
   }
   list.length = kept;
@@ -199,12 +236,13 @@ export function updateGrenades(state: SimState, world: CollisionWorld, items: It
 /**
  * Gravity, then the tick's flight as up to three straight legs: each ends where it hits
  * the map, bouncing off (restitution into the surface, friction along it). Slow on a
- * floor, it stops there, until the floor goes (a door swinging away).
+ * floor, it stops there, until the floor goes (a door swinging away). An armed impact fuse
+ * stops it on the map or on someone (not who fired it) instead: returns true, there.
  */
-function moveGrenade(state: SimState, g: Grenade, world: CollisionWorld): void {
+function moveGrenade(state: SimState, g: Grenade, world: CollisionWorld): boolean {
   const r = GRENADE.size;
   if (g.resting) {
-    if (world.raycast(g.x, g.y, g.z, 0, -1, 0, r + 0.05) < Infinity) return;
+    if (world.raycast(g.x, g.y, g.z, 0, -1, 0, r + 0.05) < Infinity) return false;
     g.resting = false;
   }
   g.vy -= GRENADE.gravity * TICK_SECONDS;
@@ -217,10 +255,23 @@ function moveGrenade(state: SimState, g: Grenade, world: CollisionWorld): void {
     const dz = g.vz / speed;
     const travel = speed * left;
     const d = world.raycast(g.x, g.y, g.z, dx, dy, dz, travel + r, hit);
+    if (g.armIn !== undefined) {
+      // Someone in the way once it's armed: it goes off on them. Before that it passes
+      // through, as a thrown one does.
+      const reach = Math.min(d, travel);
+      const cd = raycastCharacters(state, g.x, g.y, g.z, dx, dy, dz, reach, g.by, charHit);
+      if (cd < Infinity && g.armIn <= cd) {
+        g.x += dx * cd;
+        g.y += dy * cd;
+        g.z += dz * cd;
+        return true;
+      }
+    }
     if (d === Infinity) {
       g.x += dx * travel;
       g.y += dy * travel;
       g.z += dz * travel;
+      if (g.armIn !== undefined) g.armIn = Math.max(0, g.armIn - travel);
       break;
     }
     // Where it touches: its size out from the surface, not back along its path, which on
@@ -229,6 +280,12 @@ function moveGrenade(state: SimState, g: Grenade, world: CollisionWorld): void {
     g.y += dy * d + hit.ny * r;
     g.z += dz * d + hit.nz * r;
     left -= Math.max(0, d - r) / speed;
+    if (g.armIn !== undefined) {
+      // Armed, it goes off here; hitting something first, it never arms, so a shot off a
+      // close wall bounces back as a thrown one would rather than going off at your feet.
+      if (g.armIn <= d) return true;
+      delete g.armIn;
+    }
     const into = g.vx * hit.nx + g.vy * hit.ny + g.vz * hit.nz;
     if (into >= 0) break;
     // Split into along the surface and into it; keep some of one, bounce some of the other.
@@ -256,6 +313,7 @@ function moveGrenade(state: SimState, g: Grenade, world: CollisionWorld): void {
       break;
     }
   }
+  return false;
 }
 
 /** Goes off: its event, then every living character in reach takes its share. */
