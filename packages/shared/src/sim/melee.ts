@@ -52,7 +52,8 @@ const charHit = createCharacterHit();
 /**
  * One tick of the knife: with it in hand and drawn, the trigger swings, as often as its
  * swing time allows. A swing lands at once on the first body part within reach along the
- * look (with recoil), or near it (MELEE.fan), and hurts like a shot. Not on a ladder.
+ * look (with recoil), or near it (MELEE.fan), and hurts like a shot. Not on a ladder, nor
+ * while putting yourself out.
  */
 export function updateMelee(
   state: SimState,
@@ -68,6 +69,7 @@ export function updateMelee(
     !input?.fire ||
     c.draw > 0 ||
     c.swing > 0 ||
+    c.extinguish ||
     c.mode === 'ladder' ||
     c.mode === 'vault'
   )

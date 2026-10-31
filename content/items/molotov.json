@@ -1,0 +1,76 @@
+{
+  "formatVersion": 9,
+  "id": "molotov",
+  "name": "Molotov cocktail",
+  "type": "grenade",
+  "size": [1, 2],
+  "value": 1800,
+  "rarity": "common",
+  "effect": "molotov",
+  "fuse": 5,
+  "throwSpeed": 13,
+  "radius": 2.5,
+  "damage": 0,
+  "level": 1,
+  "armourDamage": 0,
+  "bleedChance": 0,
+  "loudness": 80,
+  "fire": {
+    "burnTime": 8,
+    "burnDamage": 1.5,
+    "fireTime": 7
+  },
+  "sounds": {
+    "throw": "grenade-throw",
+    "bounce": "grenade-bounce",
+    "explode": "molotov-smash"
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, 0],
+        "radius": 0.04,
+        "height": 0.14,
+        "sides": 10,
+        "colour": "#5e7a3a"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.085, 0],
+        "radius": 0.03,
+        "height": 0.03,
+        "sides": 10,
+        "colour": "#5e7a3a"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.125, 0],
+        "radius": 0.013,
+        "height": 0.06,
+        "sides": 8,
+        "colour": "#6f8c46"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.02, 0],
+        "radius": 0.041,
+        "height": 0.08,
+        "sides": 10,
+        "colour": "#b8892e"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.17, 0],
+        "size": [0.03, 0.04, 0.02],
+        "colour": "#e8dfc8"
+      },
+      {
+        "type": "box",
+        "pos": [0.012, 0.195, 0],
+        "size": [0.02, 0.02, 0.015],
+        "colour": "#d8a04a"
+      }
+    ]
+  }
+}

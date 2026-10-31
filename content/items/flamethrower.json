@@ -1,0 +1,208 @@
+{
+  "formatVersion": 9,
+  "id": "flamethrower",
+  "name": "Flamethrower",
+  "type": "weapon",
+  "size": [4, 2],
+  "value": 45000,
+  "rarity": "epic",
+  "ammo": "flamethrower-fuel",
+  "hold": "rifle",
+  "fireMode": "auto",
+  "rpm": 600,
+  "magazine": 100,
+  "reloadTime": 4.5,
+  "aimTime": 0.35,
+  "drawTime": 1,
+  "range": 15,
+  "loudness": 60,
+  "hipSpread": 3,
+  "aimSpread": 1.5,
+  "recoil": {
+    "up": 0.1,
+    "side": 0.15,
+    "recovery": 20
+  },
+  "sounds": {
+    "shot": "flamethrower-shot",
+    "suppressed": "flamethrower-shot",
+    "reload": "rifle-reload"
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.33],
+        "pitch": 90,
+        "radius": 0.02,
+        "height": 0.56,
+        "sides": 12,
+        "colour": "#2a2d30"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.42],
+        "pitch": 90,
+        "radius": 0.034,
+        "height": 0.3,
+        "sides": 12,
+        "colour": "#4a4f55"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.3],
+        "pitch": 90,
+        "radius": 0.037,
+        "height": 0.012,
+        "sides": 12,
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.54],
+        "pitch": 90,
+        "radius": 0.037,
+        "height": 0.012,
+        "sides": 12,
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.635],
+        "pitch": 90,
+        "radius": 0.027,
+        "height": 0.06,
+        "sides": 12,
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.666],
+        "pitch": 90,
+        "radius": 0.017,
+        "height": 0.004,
+        "sides": 12,
+        "colour": "#0b0c0d"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03, -0.64],
+        "size": [0.014, 0.014, 0.014],
+        "colour": "#ff8a1f"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.088, -0.17],
+        "pitch": 90,
+        "radius": 0.058,
+        "height": 0.32,
+        "sides": 12,
+        "colour": "#b5352a"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.088, -0.335],
+        "pitch": 90,
+        "radius": 0.05,
+        "height": 0.02,
+        "sides": 12,
+        "colour": "#8a2a22"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.088, -0.005],
+        "pitch": 90,
+        "radius": 0.05,
+        "height": 0.02,
+        "sides": 12,
+        "colour": "#8a2a22"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.025, -0.06],
+        "size": [0.02, 0.03, 0.02],
+        "colour": "#a8893a"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0, 0.0],
+        "size": [0.06, 0.08, 0.16],
+        "colour": "#2a2d30"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.095, 0.065],
+        "size": [0.035, 0.1, 0.045],
+        "colour": "#1d1f21",
+        "pitch": -15
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.052, 0.025],
+        "size": [0.006, 0.02, 0.006],
+        "colour": "#8a8a7a"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.05, 0.04],
+        "size": [0.012, 0.008, 0.05],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.08, -0.45],
+        "size": [0.03, 0.09, 0.032],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.01, 0.2],
+        "pitch": 90,
+        "radius": 0.012,
+        "height": 0.24,
+        "sides": 12,
+        "colour": "#4a4f55"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.035, 0.33],
+        "size": [0.04, 0.12, 0.025],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.05, 0.0],
+        "size": [0.03, 0.02, 0.02],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [-0.011, 0.063, 0.0],
+        "size": [0.006, 0.026, 0.012],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0.011, 0.063, 0.0],
+        "size": [0.006, 0.026, 0.012],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.04, -0.52],
+        "size": [0.016, 0.012, 0.012],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.06, -0.52],
+        "size": [0.004, 0.032, 0.006],
+        "colour": "#1d1f21"
+      }
+    ],
+    "grip": [0, -0.095, 0.065],
+    "support": [0, -0.08, -0.45],
+    "muzzle": [0, 0, -0.67],
+    "sight": [0, 0.076, 0.0]
+  }
+}

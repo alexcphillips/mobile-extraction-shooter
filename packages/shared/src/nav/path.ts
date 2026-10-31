@@ -51,6 +51,22 @@ function scratchFor(nav: NavGrid): Scratch {
   return s;
 }
 
+/**
+ * Spots a path keeps away from (fire, 2026-10-31): a node within radius of one, with it at
+ * the height of a body standing there, costs this much more to step onto, and smoothing
+ * won't cut a corner through one. A way through still beats no way at all.
+ */
+export interface Avoid {
+  spots: readonly { readonly x: number; readonly y: number; readonly z: number }[];
+  radius: number;
+  /** Extra cost per node in one, in metres. */
+  cost: number;
+}
+
+/** A spot this far below a node's floor, or this far above it, is out of a body's reach. */
+const AVOID_BELOW = 0.5;
+const AVOID_ABOVE = 2.2;
+
 // The goal of the search in progress, for the estimate.
 let goalX = 0;
 let goalY = 0;
@@ -68,9 +84,16 @@ function estimate(nav: NavGrid, n: number): number {
  * start, smoothed so it only turns where it has to. Allocates nothing but out's growth.
  *
  * Nodes in different components can't reach each other, so then it heads greedily for
- * the closest spot it can find within a smaller budget.
+ * the closest spot it can find within a smaller budget. With avoid, it goes round those
+ * spots where it can.
  */
-export function findPath(nav: NavGrid, from: number, to: number, out: number[]): PathResult {
+export function findPath(
+  nav: NavGrid,
+  from: number,
+  to: number,
+  out: number[],
+  avoid?: Avoid,
+): PathResult {
   out.length = 0;
   if (from < 0 || to < 0) return 'none';
   const s = scratchFor(nav);
@@ -84,6 +107,7 @@ export function findPath(nav: NavGrid, from: number, to: number, out: number[]):
   const reachable = nav.component[from] === nav.component[to];
   const limit = reachable ? MAX_EXPAND : MAX_EXPAND / 5;
   const weight = reachable ? 1 : 2;
+  const shun = avoid && avoid.spots.length > 0 ? avoid : undefined;
 
   s.g[from] = 0;
   s.parent[from] = -1;
@@ -111,7 +135,8 @@ export function findPath(nav: NavGrid, from: number, to: number, out: number[]):
     for (let d = 0; d < 8; d++) {
       const m = nav.neighbour(n, d);
       if (m < 0 || s.closed[m] === s.search) continue;
-      const g = s.g[n]! + (d < 4 ? cs : diagonal) + Math.abs(nav.nodeY(m) - hn);
+      let g = s.g[n]! + (d < 4 ? cs : diagonal) + Math.abs(nav.nodeY(m) - hn);
+      if (shun && near(shun, nav.nodeX(m), nav.nodeY(m), nav.nodeZ(m))) g += shun.cost;
       if (s.seen[m] === s.search && g >= s.g[m]!) continue;
       if (s.size >= s.heap.length) break search;
       s.seen[m] = s.search;
@@ -125,7 +150,7 @@ export function findPath(nav: NavGrid, from: number, to: number, out: number[]):
   let len = 0;
   for (let n = end; n >= 0 && len < s.chain.length; n = s.parent[n]!) s.chain[len++] = n;
   s.chain.subarray(0, len).reverse();
-  smooth(nav, s, len, out);
+  smooth(nav, s, len, out, shun);
   if (reached) return 'found';
   return end === from ? 'none' : 'partial';
 }
@@ -162,7 +187,41 @@ function pop(s: Scratch): number {
   return top;
 }
 
-function smooth(nav: NavGrid, s: Scratch, len: number, out: number[]): void {
+/** Whether a spot to avoid is within reach of a body standing at (x, y, z). */
+function near(avoid: Avoid, x: number, y: number, z: number): boolean {
+  const r2 = avoid.radius * avoid.radius;
+  for (const p of avoid.spots) {
+    const up = p.y - y;
+    if (up < -AVOID_BELOW || up > AVOID_ABOVE) continue;
+    const dx = p.x - x;
+    const dz = p.z - z;
+    if (dx * dx + dz * dz < r2) return true;
+  }
+  return false;
+}
+
+/** Whether walking straight from node a to b passes within reach of a spot to avoid. */
+function crosses(nav: NavGrid, avoid: Avoid, a: number, b: number): boolean {
+  const ax = nav.nodeX(a);
+  const az = nav.nodeZ(a);
+  const dx = nav.nodeX(b) - ax;
+  const dz = nav.nodeZ(b) - az;
+  const len2 = dx * dx + dz * dz;
+  const y = Math.min(nav.nodeY(a), nav.nodeY(b));
+  const top = Math.max(nav.nodeY(a), nav.nodeY(b));
+  const r2 = avoid.radius * avoid.radius;
+  for (const p of avoid.spots) {
+    if (p.y < y - AVOID_BELOW || p.y > top + AVOID_ABOVE) continue;
+    const t =
+      len2 > 1e-12 ? Math.min(1, Math.max(0, ((p.x - ax) * dx + (p.z - az) * dz) / len2)) : 0;
+    const ex = ax + dx * t - p.x;
+    const ez = az + dz * t - p.z;
+    if (ex * ex + ez * ez < r2) return true;
+  }
+  return false;
+}
+
+function smooth(nav: NavGrid, s: Scratch, len: number, out: number[], avoid?: Avoid): void {
   let n = s.chain[0]!;
   out.push(nav.nodeX(n), nav.nodeY(n), nav.nodeZ(n));
   let i = 0;
@@ -171,7 +230,8 @@ function smooth(nav: NavGrid, s: Scratch, len: number, out: number[]): void {
     while (
       j + 1 < len &&
       j + 1 - i <= MAX_SKIP &&
-      straight(nav, s.walk, s.chain[i]!, s.chain[j + 1]!)
+      straight(nav, s.walk, s.chain[i]!, s.chain[j + 1]!) &&
+      !(avoid && crosses(nav, avoid, s.chain[i]!, s.chain[j + 1]!))
     )
       j++;
     n = s.chain[j]!;

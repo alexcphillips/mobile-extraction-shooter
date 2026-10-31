@@ -1,0 +1,38 @@
+{
+  "formatVersion": 9,
+  "id": "buckshot-inc",
+  "name": "12-gauge dragon's breath",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 120,
+  "rarity": "rare",
+  "stack": 30,
+  "calibre": "12g",
+  "level": 1,
+  "damage": 10,
+  "armourDamage": 1,
+  "bleedChance": 0.1,
+  "pellets": 9,
+  "pelletSpread": 3,
+  "incendiary": {
+    "chance": 0.06,
+    "burnTime": 4,
+    "burnDamage": 1.5
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0.015],
+        "size": [0.14, 0.07, 0.11],
+        "colour": "#a8342c"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0, -0.055],
+        "size": [0.14, 0.07, 0.03],
+        "colour": "#d8461c"
+      }
+    ]
+  }
+}

@@ -13,6 +13,8 @@ import {
   buyPrice,
   cantSell,
   depositInto,
+  sellAll,
+  sellAllPrice,
   sellItems,
   sellParts,
   sellPrice,
@@ -152,6 +154,37 @@ describe('vendors', () => {
     expect(p.gear.backpack).toBeNull();
     expect(p.money).toBe(10_000 + 2 * 50 + 50);
     expect(sellItems(p, items, [])).toMatch(/nothing/);
+  });
+
+  it('sells everything: gear, carried and stashed, but not the knife or what no one wants', () => {
+    const p = profile();
+    addItem(items, p.gear.backpack!.grid!, createItem(items, 'watch'));
+    addItem(items, p.gear.vault!, createItem(items, 'watch'));
+    // A worthless key (value 0) stays, and so does the stash backpack holding it.
+    const key = { ...createItem(items, 'key') };
+    const stored = createItem(items, 'backpack');
+    addItem(items, stored.grid!, key);
+    addItem(items, p.stash[0]!, stored);
+    const keyDef = items.get('key')!;
+    const db = new Map(items).set('key', { ...keyDef, value: 0 });
+    const refs = sellAll(p, db);
+    const price = sellAllPrice(p, db);
+    const money = p.money;
+    // The worn backpack comes after its contents, and the knife isn't there.
+    const slots = refs.flatMap((r) => ('slot' in r ? [r.slot] : []));
+    expect(slots).toEqual(['primary1', 'bodyArmour', 'backpack']);
+    expect(refs.findIndex((r) => 'grid' in r && r.grid === 'backpack')).toBeLessThan(
+      refs.findIndex((r) => 'slot' in r && r.slot === 'backpack'),
+    );
+    expect(sellItems(p, db, refs)).toBeNull();
+    expect(p.money - money).toBe(price);
+    expect(price).toBeGreaterThan(0);
+    expect(p.gear.primary1 ?? p.gear.bodyArmour ?? p.gear.backpack).toBeNull();
+    expect(p.gear.knife).not.toBeNull();
+    expect(p.gear.pockets.items).toHaveLength(0);
+    expect(p.gear.vault!.items).toHaveLength(0);
+    expect(p.stash[0]!.items.map((g) => g.item.item)).toEqual(['backpack']);
+    expect(sellAll(p, db)).toEqual([]);
   });
 
   it('deposits the money a raid brings out, from every grid, and leaves the rest', () => {

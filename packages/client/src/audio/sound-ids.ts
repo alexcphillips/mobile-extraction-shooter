@@ -35,6 +35,8 @@ export const GAME_SOUNDS = {
   extractTick: 'extract-tick',
   extracted: 'extracted',
   investigate: 'investigate',
+  /** Someone catching fire (2026-10-31). */
+  ignite: 'ignite',
   /** The raid timer going under two minutes. */
   timerWarning: 'timer-warning',
   /** Moving an item in the inventory, and an action that can't be done. */

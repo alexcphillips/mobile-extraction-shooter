@@ -1,5 +1,6 @@
 import {
   ATTACHMENT_SLOTS,
+  FIRE,
   GRENADE_EFFECTS,
   MED_EFFECTS,
   RARITIES,
@@ -321,7 +322,98 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
               hint="Against armour's level: below it does nothing until it breaks, level half, above all"
             />
           </Row>
-          <N {...b} path={['damage']} label="damage (to the chest)" min={0} />
+          <label
+            className="ed-field"
+            title="A flamethrower's fuel: flames that set alight, no bullet"
+          >
+            <input
+              type="checkbox"
+              checked={!!def.flame}
+              onChange={(e) =>
+                b.edit((d) => {
+                  // Fuel does no damage itself: the burning does it.
+                  if (e.target.checked) {
+                    d.flame = { speed: 18, burnTime: 8, burnDamage: 1.5, fireTime: 7 };
+                    d.damage = 0;
+                    delete d.pellets;
+                    delete d.pelletSpread;
+                  } else {
+                    delete d.flame;
+                    d.damage = 10;
+                  }
+                })
+              }
+            />
+            flamethrower fuel
+          </label>
+          {def.flame && (
+            <>
+              <Row>
+                <N {...b} path={['flame', 'speed']} label="flame speed (m/s)" min={0} />
+                <N
+                  {...b}
+                  path={['flame', 'fireTime']}
+                  label="burns on the map (s)"
+                  min={0}
+                  hint="Where it lands; anyone touching it is set alight"
+                />
+              </Row>
+              <Row>
+                <N
+                  {...b}
+                  path={['flame', 'burnDamage']}
+                  label="burn damage (/s a zone)"
+                  min={0}
+                  hint="To every zone, past armour, while alight"
+                />
+                <N
+                  {...b}
+                  path={['flame', 'burnTime']}
+                  label="burns someone for (s)"
+                  min={0}
+                  hint={`If they don't put it out, which takes ${FIRE.extinguishTime} s`}
+                />
+              </Row>
+            </>
+          )}
+          {!def.flame && <N {...b} path={['damage']} label="damage (to the chest)" min={0} />}
+          {!def.flame && (
+            <label
+              className="ed-field"
+              title="May set alight whoever it hits, on top of its damage"
+            >
+              <input
+                type="checkbox"
+                checked={!!def.incendiary}
+                onChange={(e) =>
+                  b.edit((d) => {
+                    if (e.target.checked)
+                      d.incendiary = { chance: 0.25, burnTime: 4, burnDamage: 1.5 };
+                    else delete d.incendiary;
+                  })
+                }
+              />
+              incendiary
+            </label>
+          )}
+          {def.incendiary && (
+            <Row>
+              <N
+                {...b}
+                path={['incendiary', 'chance']}
+                label="sets alight (0–1 a hit)"
+                min={0}
+                hint="Each pellet's own chance, for shells"
+              />
+              <N {...b} path={['incendiary', 'burnTime']} label="burns for (s)" min={0} />
+              <N
+                {...b}
+                path={['incendiary', 'burnDamage']}
+                label="burn damage (/s a zone)"
+                min={0}
+              />
+            </Row>
+          )}
           <Row>
             <N
               {...b}
@@ -439,6 +531,8 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
               else delete d.blindTime;
               if (v === 'smoke') d.smokeTime ??= 25;
               else delete d.smokeTime;
+              if (v === 'molotov') d.fire ??= { burnTime: 8, burnDamage: 1.5, fireTime: 7 };
+              else delete d.fire;
             }}
           />
           {def.effect === 'flash' && (
@@ -452,6 +546,19 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
           )}
           {def.effect === 'smoke' && (
             <N {...b} path={['smokeTime']} label="cloud lasts (s)" min={0} />
+          )}
+          {def.effect === 'molotov' && (
+            <Row>
+              <N
+                {...b}
+                path={['fire', 'fireTime']}
+                label="fire burns (s)"
+                min={0}
+                hint="Spilled across its radius where it breaks"
+              />
+              <N {...b} path={['fire', 'burnTime']} label="burns someone for (s)" min={0} />
+              <N {...b} path={['fire', 'burnDamage']} label="burn damage (/s a zone)" min={0} />
+            </Row>
           )}
           <Row>
             <N {...b} path={['damage']} label="damage at the centre" min={0} />
@@ -697,7 +804,12 @@ function Facts({ def, db }: { def: ItemDef; db: ItemDb }) {
       lines.push(
         `A shot every ${fmt(gap, 3)} s; a full magazine lasts ${fmt(def.magazine * gap)} s.`,
       );
-      if (ammo?.type === 'ammo') {
+      if (ammo?.type === 'ammo' && ammo.flame) {
+        const f = ammo.flame;
+        lines.push(
+          `With ${ammo.name}: a flame every ${fmt(gap, 3)} s, landing ${fmt(def.range / f.speed, 2)} s out at its range. Someone set alight loses ${fmt(f.burnDamage * 6 * f.burnTime, 0)} HP if they let it burn out, ${fmt(f.burnDamage * 6 * FIRE.extinguishTime, 0)} if they put it out at once.`,
+        );
+      } else if (ammo?.type === 'ammo') {
         // Every pellet landing.
         const round = ammo.damage * (ammo.pellets ?? 1);
         lines.push(

@@ -1,0 +1,36 @@
+{
+  "formatVersion": 9,
+  "id": "ammo-762-inc",
+  "name": "7.62\u00d751 Incendiary",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 320,
+  "rarity": "epic",
+  "stack": 40,
+  "calibre": "7.62x51",
+  "level": 4,
+  "damage": 88,
+  "armourDamage": 24,
+  "bleedChance": 0.35,
+  "incendiary": {
+    "chance": 0.4,
+    "burnTime": 5,
+    "burnDamage": 1.5
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0.015],
+        "size": [0.14, 0.07, 0.11],
+        "colour": "#b08d3c"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0, -0.055],
+        "size": [0.14, 0.07, 0.03],
+        "colour": "#d8461c"
+      }
+    ]
+  }
+}

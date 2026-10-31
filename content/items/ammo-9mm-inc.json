@@ -1,0 +1,36 @@
+{
+  "formatVersion": 9,
+  "id": "ammo-9mm-inc",
+  "name": "9 mm Incendiary",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 60,
+  "rarity": "rare",
+  "stack": 60,
+  "calibre": "9x19",
+  "level": 2,
+  "damage": 28,
+  "armourDamage": 7,
+  "bleedChance": 0.15,
+  "incendiary": {
+    "chance": 0.2,
+    "burnTime": 4,
+    "burnDamage": 1.5
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0.015],
+        "size": [0.14, 0.07, 0.11],
+        "colour": "#9a8238"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0, -0.055],
+        "size": [0.14, 0.07, 0.03],
+        "colour": "#d8461c"
+      }
+    ]
+  }
+}

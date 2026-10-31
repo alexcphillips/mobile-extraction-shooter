@@ -74,6 +74,8 @@ export class Controls {
   throwPick = false;
   /** The detonate button: set off placed C4. */
   detonate = false;
+  /** The put out button: put yourself out while on fire. */
+  extinguish = false;
   /** A debug action (0 or 1), or -1. */
   debug = -1;
   /** Look speed multiplier from aim assist, set by the game while the crosshair is on an enemy. */
@@ -108,6 +110,7 @@ export class Controls {
   private pressedThrow = false;
   private pressedThrowPick = false;
   private pressedDetonate = false;
+  private pressedExtinguish = false;
   private pressedDebug = -1;
   private readonly keys = new Set<string>();
   /** H or G while held: called with whether the release is a tap. */
@@ -166,10 +169,12 @@ export class Controls {
     this.throw = this.pressedThrow;
     this.throwPick = this.pressedThrowPick;
     this.detonate = this.pressedDetonate;
+    this.extinguish = this.pressedExtinguish;
     this.debug = this.pressedDebug;
     this.pressedReload = this.pressedInteract = this.pressedBag = false;
     this.pressedHeal = this.pressedHealPick = false;
     this.pressedThrow = this.pressedThrowPick = this.pressedDetonate = false;
+    this.pressedExtinguish = false;
     this.pressedDraw = null;
     this.pressedDebug = -1;
 
@@ -290,6 +295,10 @@ export class Controls {
         this.pressedDetonate = true;
         held(() => {});
         break;
+      case 'extinguish':
+        this.pressedExtinguish = true;
+        held(() => {});
+        break;
       case 'grenade':
       case 'heal': {
         // A tap uses (or throws) the default when it lifts; holding opens the picker instead.
@@ -363,6 +372,7 @@ export class Controls {
         () => (this.pressedThrowPick = true),
       );
     else if (e.code === 'KeyB') this.pressedDetonate = true;
+    else if (e.code === 'KeyV') this.pressedExtinguish = true;
     else if (e.code === 'KeyI' || e.code === 'Tab') {
       e.preventDefault();
       this.pressedBag = true;

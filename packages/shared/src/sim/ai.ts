@@ -1,11 +1,12 @@
 import type { EnemySkill } from '../content/enemies';
 import { grenadeDef, weaponDef, type ItemDb } from '../content/items';
 import type { NavGrid } from '../nav/nav-grid';
-import { findPath } from '../nav/path';
+import { findPath, type Avoid } from '../nav/path';
 import { chance, nextFloat, nextRange } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import type { CollisionWorld } from '../world/collision-world';
 import { openDoorAhead } from './doors';
+import { FIRE, inFire } from './fire';
 import { smokeBlocks, type Grenade } from './grenades';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import { MOVEMENT } from './movement';
@@ -300,6 +301,12 @@ export interface AiState {
    * when not. Whatever it was doing waits until the grenade has gone off.
    */
   flee?: { grenade: number; x: number; y: number; z: number } | null;
+  /**
+   * The newest fire on the map (by id) its path was planned or checked knowing of
+   * (2026-10-31): newer fire across the rest of the path plans it again, round it.
+   * Missing (older saves) is 0.
+   */
+  fires?: number;
 }
 
 export interface PatrolDef {
@@ -485,6 +492,7 @@ export function updateAi(
     const input = ai.input;
     input.moveX = input.moveY = 0;
     input.fire = input.aim = input.reload = input.crouch = input.sprint = false;
+    input.extinguish = false;
     if (c.health.dead) continue;
     if ((state.tick + c.id) % AI.perceiveEvery === 0) {
       look(state, c, ai, world, nav);
@@ -720,6 +728,16 @@ function hearEvents(state: SimState, c: Character, ai: AiState, world: Collision
     }
     if (ev.type === 'explosion') {
       heardExplosion(state, c, ai, world, ev.x, ev.y, ev.z, ev.loudness, ev.by);
+      continue;
+    }
+    if (ev.type === 'ignite') {
+      // Set alight: as good as shot, by whoever lit it.
+      if (ev.target !== c.id || ev.by === 0 || ev.by === c.id) continue;
+      const by = entityById(state, ev.by);
+      if (by && !by.ai && !by.admin?.peaceful) {
+        alarm(ai, by, by.x, by.y, by.z);
+        ai.hurt = true;
+      }
       continue;
     }
     if (ev.type !== 'shot' || ev.by === c.id) continue;
@@ -1221,7 +1239,20 @@ function behave(
         break;
     }
 
+  // On fire: it puts itself out, which stops it fighting meanwhile (sim/fire.ts), and it
+  // steps out of any fire it's standing in, straight away from it.
   const input = ai.input;
+  input.extinguish = !!c.burn && !c.extinguish;
+  const fire = inFire(state, c);
+  if (fire) {
+    const dx = c.x - fire.x;
+    const dz = c.z - fire.z;
+    const d = Math.hypot(dx, dz);
+    const a = d > 1e-3 ? 0 : nextFloat(state.rng) * Math.PI * 2;
+    wishX = d > 1e-3 ? (dx / d) * AI.alertPace : Math.cos(a) * AI.alertPace;
+    wishZ = d > 1e-3 ? (dz / d) * AI.alertPace : Math.sin(a) * AI.alertPace;
+    ai.hasGoal = false;
+  }
   input.yaw = turnToward(c.yaw, faceYaw, turn * DT);
   input.pitch = c.pitch + Math.max(-turn * DT, Math.min(turn * DT, facePitch - c.pitch));
   // The stick is relative to where it faces; moveTo left a world direction in wishX, Z.
@@ -1711,12 +1742,15 @@ function moveTo(
   if (!ai.hasGoal || Math.hypot(ai.goalX - x, ai.goalY - y, ai.goalZ - z) > AI.replanDistance) {
     if (plansLeft <= 0) return 'moving';
     plansLeft--;
+    avoidFire.spots = state.fires;
     const result = findPath(
       nav,
       nav.nearest(c.x, c.y, c.z),
       nav.nearest(x, y, z, GOAL_RISE),
       ai.path,
+      avoidFire,
     );
+    ai.fires = newestFire(state);
     ai.hasGoal = true;
     ai.goalX = x;
     ai.goalY = y;
@@ -1738,6 +1772,8 @@ function moveTo(
     ai.replans = 0;
     return 'arrived';
   }
+  // Fire newer than the plan across the rest of the way: plan again, round it.
+  if (fireAcross(state, c, ai)) ai.hasGoal = false;
 
   // Stuck against something: plan again from here, and give up after a few tries.
   if (Math.hypot(c.vx, c.vz) < AI.stuckSpeed) ai.stuck += DT;
@@ -1762,6 +1798,52 @@ function moveTo(
   wishX = (dx / d) * speed;
   wishZ = (dz / d) * speed;
   return 'moving';
+}
+
+/** Paths keep out of reach of fire on the map (sim/fire.ts); spots set before each plan. */
+const avoidFire: Avoid = {
+  spots: [],
+  radius: FIRE.patchRadius + MOVEMENT.radius + 0.3,
+  cost: FIRE.avoidCost,
+};
+
+/** The newest fire on the map's id, or 0. */
+function newestFire(state: SimState): number {
+  let id = 0;
+  for (const p of state.fires) if (p.id > id) id = p.id;
+  return id;
+}
+
+/**
+ * Whether fire lit since ai's path was planned or last checked lies across the rest of
+ * it, from where c is. Marks it all checked either way, so each is looked at once.
+ */
+function fireAcross(state: SimState, c: Character, ai: AiState): boolean {
+  const known = ai.fires ?? 0;
+  const newest = newestFire(state);
+  if (newest <= known) return false;
+  ai.fires = newest;
+  const r2 = avoidFire.radius * avoidFire.radius;
+  for (const p of state.fires) {
+    if (p.id <= known || p.y < c.y - 0.5 || p.y > c.y + 2.2) continue;
+    let ax = c.x;
+    let az = c.z;
+    for (let i = ai.pathIndex * 3; i < ai.path.length; i += 3) {
+      const bx = ai.path[i]!;
+      const bz = ai.path[i + 2]!;
+      const dx = bx - ax;
+      const dz = bz - az;
+      const len2 = dx * dx + dz * dz;
+      const t =
+        len2 > 1e-12 ? Math.min(1, Math.max(0, ((p.x - ax) * dx + (p.z - az) * dz) / len2)) : 0;
+      const ex = ax + dx * t - p.x;
+      const ez = az + dz * t - p.z;
+      if (ex * ex + ez * ez < r2) return true;
+      ax = bx;
+      az = bz;
+    }
+  }
+  return false;
 }
 
 function yawTo(c: Character, x: number, z: number): number {

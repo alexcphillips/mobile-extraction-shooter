@@ -12,6 +12,7 @@ import {
   roundOf,
   sellParts,
   weaponStats,
+  type BurnStats,
   type AttachmentMods,
   type Item,
   type ItemDb,
@@ -252,6 +253,10 @@ function modRows(mods: AttachmentMods): Row[] {
   return out;
 }
 
+/** What flamethrower fuel's burning does to whoever it sets alight. */
+const burns = (f: BurnStats): string =>
+  `sets alight · ${f.burnDamage} a second to every limb, past armour, for ${seconds(f.burnTime)}`;
+
 /** A launcher's impact fuse, for after its launch speed. */
 const impact = (arm: number | undefined): string =>
   arm === undefined ? '' : ` · goes off on impact past ${arm} m`;
@@ -285,11 +290,14 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
             ) : (
               `none · ${grenadeEffect(round)}, ${round.radius} m radius`
             )
+          ) : round.flame ? (
+            burns(round.flame)
           ) : (
             <>
               <Level level={round.level} />
               {round.damage}
               {round.pellets ? ` × ${round.pellets}` : ''} · {round.armourDamage} to armour
+              {round.incendiary ? ` · ${percent(round.incendiary.chance)} to set alight` : ''}
             </>
           ),
         ],
@@ -299,7 +307,9 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
         ['Spread', `${+s.hipSpread.toFixed(2)}° hip · ${+s.aimSpread.toFixed(2)}° aimed`],
         def.launchSpeed
           ? ['Launch speed', `${def.launchSpeed} m/s${impact(def.armDistance)}`]
-          : ['Range', `${def.range} m`],
+          : round.type === 'ammo' && round.flame
+            ? ['Range', `${def.range} m · flames fly at ${round.flame.speed} m/s`]
+            : ['Range', `${def.range} m`],
         ['Heard from', `${Math.round(s.loudness)} m`],
       ];
     }
@@ -307,12 +317,32 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
       const guns = [...items.values()].filter(
         (g) => g.type === 'weapon' && !g.spawns && firesRound(items, g, def.id),
       );
+      if (def.flame) {
+        return [
+          ['Calibre', def.calibre],
+          ['Damage', burns(def.flame)],
+          [
+            'Fire',
+            `burns ${seconds(def.flame.fireTime)} where it lands, lighting whoever touches it`,
+          ],
+          ['Stack', `${item.count} / ${def.stack}`],
+          ['Fired by', guns.length ? guns.map((g) => g.name).join(', ') : 'no gun yet'],
+        ];
+      }
       return [
         ['Calibre', def.calibre],
         ['Penetration', <Level key="l" level={def.level} />],
         ['Damage', `${def.damage}${def.pellets ? ` × ${def.pellets} pellets` : ''}`],
         ['Armour damage', `${def.armourDamage}`],
         ['Bleed chance', percent(def.bleedChance)],
+        ...(def.incendiary
+          ? [
+              [
+                'Incendiary',
+                `${percent(def.incendiary.chance)} a hit · ${burns(def.incendiary)}`,
+              ] as Row,
+            ]
+          : []),
         ['Stack', `${item.count} / ${def.stack}`],
         ['Fired by', guns.length ? guns.map((g) => g.name).join(', ') : 'no gun yet'],
       ];
@@ -371,6 +401,13 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
           ['Effect', 'A cloud enemies can’t see through'],
           ['Cloud', `${def.radius} m · ${seconds(def.smokeTime ?? 0)}`],
           ...end,
+        ];
+      if (effect === 'molotov' && def.fire)
+        return [
+          ['Effect', 'Breaks where it lands and spills fire; can’t be fired from a launcher'],
+          ['Fire', `${def.radius} m across · burns ${seconds(def.fire.fireTime)}`],
+          ['Damage', burns(def.fire)],
+          ['Heard from', `${def.loudness} m`],
         ];
       return [
         ...(effect === 'c4'

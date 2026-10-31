@@ -6,12 +6,16 @@ import { colourOf } from './raid-screen';
 /*
  * The admin page between raids (dev builds only, 2026-10-30): every item, given into the
  * stash free, for testing. The server only allows it under `wrangler dev`. The Admin tab
- * has the admin-only items (spawner guns); the Cheats tab turns on testing aids for your
+ * has the admin-only items (spawner guns, the admin backpack); the Cheats tab turns on testing aids for your
  * next raids (see admin-cheats.ts).
  */
 
-/** An admin item: a spawner gun (WeaponDef.spawns). These get their own tab. */
-const isAdminItem = (d: ItemDef): boolean => d.type === 'weapon' && d.spawns !== undefined;
+/**
+ * An admin item: a spawner gun (WeaponDef.spawns), or a container for testing (admin).
+ * These get their own tab.
+ */
+const isAdminItem = (d: ItemDef): boolean =>
+  (d.type === 'weapon' && d.spawns !== undefined) || (d.type === 'container' && !!d.admin);
 
 const TABS: readonly { label: string; shows: (d: ItemDef) => boolean }[] = [
   {
@@ -22,7 +26,10 @@ const TABS: readonly { label: string; shows: (d: ItemDef) => boolean }[] = [
   { label: 'Ammo', shows: (d) => d.type === 'ammo' },
   { label: 'Attachments', shows: (d) => d.type === 'attachment' },
   { label: 'Meds', shows: (d) => d.type === 'med' || d.type === 'repair' },
-  { label: 'Gear', shows: (d) => d.type === 'armour' || d.type === 'container' },
+  {
+    label: 'Gear',
+    shows: (d) => (d.type === 'armour' || d.type === 'container') && !isAdminItem(d),
+  },
   { label: 'Other', shows: (d) => d.type === 'key' || d.type === 'quest' || d.type === 'loot' },
   { label: 'Admin', shows: isAdminItem },
 ];

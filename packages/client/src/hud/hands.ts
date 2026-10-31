@@ -1,5 +1,6 @@
 import {
   CARRIED_GRIDS,
+  FIRE,
   carriedGrenade,
   carriedGrenades,
   carriedGrid,
@@ -24,6 +25,7 @@ const RIFLE = svg('M1 9h14V8h3v1h5v2h-5l-1 1H9l-1 4H5l1-4H4l-2 2H1z');
 const PISTOL = svg('M4 8h16v3h-8l-1 5H7l1-5H4z');
 const KNIFE = svg('M2 14l2-2h7l11-3-2 3-7 2H4z');
 const GRENADE = svg('M10 2h5v2h-1v2.1a7 7 0 1 1-4 0V4h-1zm6 1l4 3-1 1-4-3z');
+const FLAME = svg('M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 2 1 3 2 3 0-3 0-5 1-8z');
 
 const HANDS: readonly Hand[] = ['primary1', 'primary2', 'sidearm', 'knife'];
 
@@ -59,6 +61,8 @@ function grenadeDoes(items: ItemDb, id: string): string {
       return `smoke for ${def.smokeTime ?? 0} s`;
     case 'c4':
       return 'place it, then detonate';
+    case 'molotov':
+      return `spills fire, ${def.radius} m`;
   }
 }
 
@@ -70,11 +74,15 @@ function grenadeDoes(items: ItemDb, id: string): string {
  * would help. The fire button says "knife" with the knife out; aim and reload dim without
  * a gun. The grenade button shows the kind a tap throws and how many of it are carried,
  * dimmed with none; a long press picks the kind (2026-10-31). The detonate button shows
- * only while you have C4 placed.
+ * only while you have C4 placed, and the put out button only while you're on fire, its
+ * ring filling as you put yourself out.
  */
 export class HandsHud {
   private readonly slotKeys = HANDS.map(() => '');
   private readonly ring: SVGCircleElement;
+  private readonly outRing: SVGCircleElement;
+  private burning = false;
+  private patting = false;
   private readonly healName: HTMLElement;
   private readonly picker: HTMLElement;
   private best: MedRef | null = null;
@@ -93,7 +101,7 @@ export class HandsHud {
   constructor(
     private readonly hud: Hud,
     private readonly onPick: (ref: MedRef) => void,
-    /** Told the name of a grenade picked, as a desktop has no grenade button to show it. */
+    /** Told the name of a grenade picked, to say so on screen as well. */
     private readonly onGrenadePick: (name: string) => void,
   ) {
     const heal = hud.button('heal');
@@ -107,6 +115,12 @@ export class HandsHud {
     this.grenadeCount = grenade.querySelector('.slot-num')!;
     this.grenadeName = grenade.querySelector('.heal-name')!;
     hud.button('detonate').classList.add('unarmed');
+    const out = hud.button('extinguish');
+    out.innerHTML =
+      '<svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="16.5" pathLength="1"/></svg>' +
+      `${FLAME}<span class="heal-name">put out</span>`;
+    out.classList.add('unlit');
+    this.outRing = out.querySelector('circle')!;
     this.picker = document.createElement('div');
     this.picker.className = 'heal-picker';
     this.picker.hidden = true;
@@ -186,6 +200,19 @@ export class HandsHud {
       this.armed = armed;
       this.hud.button('detonate').classList.toggle('unarmed', !armed);
     }
+    const burning = !!c.burn && !c.health.dead;
+    const patting = burning && !!c.extinguish;
+    if (burning !== this.burning || patting !== this.patting) {
+      this.burning = burning;
+      this.patting = patting;
+      const out = this.hud.button('extinguish');
+      out.classList.toggle('unlit', !burning);
+      out.classList.toggle('using', patting);
+    }
+    if (patting) {
+      const done = 1 - (c.extinguish ?? 0) / FIRE.extinguishTime;
+      this.outRing.style.strokeDashoffset = String(1 - done);
+    }
     const name = c.using
       ? itemDef(items, c.using.item).name
       : this.best
@@ -256,7 +283,7 @@ export class HandsHud {
 
   /**
    * Opens the picker over a button with these entries; none closes it. Over the middle of
-   * the screen when the button is hidden (the grenade button on a desktop).
+   * the screen when the button is hidden.
    */
   private openPicker(anchor: ControlId, entries: PickerEntry[]): void {
     this.picker.replaceChildren();

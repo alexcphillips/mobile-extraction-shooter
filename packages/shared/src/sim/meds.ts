@@ -123,13 +123,18 @@ export function startUse(c: Character, items: ItemDb, ref: MedRef): boolean {
 }
 
 /**
- * One tick of using a med: a press starts or stops one; firing, reloading, sprinting or
- * climbing stops it; when its time is up it takes effect (useMed). If the med moved in
+ * One tick of using a med: a press starts or stops one; firing, reloading, sprinting,
+ * climbing or putting yourself out stops it; when its time is up it takes effect (useMed). If the med moved in
  * the meantime, the first carried one of the same item is used; if there's none, nothing
  * happens.
  */
 export function updateMedUse(c: Character, items: ItemDb, input: PlayerInput | undefined): void {
   if (c.health.dead) {
+    c.using = null;
+    return;
+  }
+  // Not while putting yourself out (2026-10-31).
+  if (c.extinguish) {
     c.using = null;
     return;
   }
