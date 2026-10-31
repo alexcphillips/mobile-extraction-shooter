@@ -281,6 +281,22 @@ describe('grenades', () => {
     expect(s.enemy.ai!.flee).toBeFalsy();
   });
 
+  it('runs again when the grenade rolls up to where it was running', () => {
+    const s = setup(0, 100, { half: 120 });
+    drop(s, 0, -2, 4);
+    s.run(1);
+    const f = s.enemy.ai!.flee!;
+    expect(f).toBeTruthy();
+    // It bounced on to where it was headed.
+    const g = s.state.grenades[0]!;
+    g.x = f.x;
+    g.z = f.z;
+    s.run(3.2);
+    expect(s.state.grenades).toHaveLength(0);
+    expect(Math.hypot(s.enemy.x - g.x, s.enemy.z - g.z)).toBeGreaterThan(7);
+    expect(s.enemy.health.dead).toBe(false);
+  });
+
   it("doesn't run from one behind a wall", () => {
     const s = setup(0, 100, { half: 120, boxes: [aabb(-5, 0, -2, 5, 3, -1.6)] });
     drop(s, 0, -4, 3);

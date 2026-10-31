@@ -199,6 +199,32 @@ describe('the stash', () => {
     expect(countOf(p.gear.pockets, 'round') + countOf(p.gear.backpack!.grid!, 'round')).toBe(90);
   });
 
+  it('repairs at once, spending the kit unless the infinite consumables cheat is on', () => {
+    const p = profile();
+    const s = openStash(p);
+    addItem(items, p.stash[0]!, createItem(items, 'repair-kit'));
+    const index = p.stash[0]!.items.findIndex((g) => g.item.item === 'repair-kit');
+    const action: InventoryAction = {
+      type: 'repair',
+      kit: { ...stash, index, item: 'repair-kit' },
+      armour: { owner: self, slot: 'helmet', item: 'helmet' },
+    };
+    p.gear.helmet!.durability = 10;
+    s.player.admin = {
+      infiniteHealth: false,
+      infiniteAmmo: false,
+      peaceful: false,
+      infiniteConsumables: true,
+    };
+    expect(applyStash(s, items, action)).toBe(true);
+    expect(p.gear.helmet!.durability).toBe(30);
+    expect(p.stash[0]!.items[index]!.item.left).toBe(50);
+    p.gear.helmet!.durability = 10;
+    delete s.player.admin;
+    expect(applyStash(s, items, action)).toBe(true);
+    expect(p.stash[0]!.items[index]!.item.left).toBe(30);
+  });
+
   it('sends a double-tap to the page shown, then the others', () => {
     const p = profile();
     p.money = PROFILE.pagePrices[0];
