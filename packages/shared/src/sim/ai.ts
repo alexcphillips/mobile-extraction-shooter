@@ -55,6 +55,8 @@ export const AI = {
   centreAngle: 25,
   peripheralRate: 0.35,
   crouchedRate: 0.6,
+  /** Prone on top of crouched. */
+  proneRate: 0.6,
   stillRate: 0.7,
   sprintingRate: 1.3,
   /** An enemy that's already on edge notices faster. */
@@ -598,6 +600,7 @@ function sightRate(c: Character, ai: AiState, e: Character, world: CollisionWorl
     rate *= 1 - (1 - AI.peripheralRate) * edge;
   }
   if (e.height < MOVEMENT.standHeight - 0.1) rate *= AI.crouchedRate;
+  if (e.height < MOVEMENT.crouchHeight - 0.1) rate *= AI.proneRate;
   const speed = Math.hypot(e.vx, e.vz);
   if (speed < 0.2) rate *= AI.stillRate;
   else if (speed > MOVEMENT.walkSpeed + 0.5) rate *= AI.sprintingRate;

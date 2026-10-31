@@ -14,7 +14,27 @@ import type { ShotEvent } from './weapons';
 
 export type EntityId = number;
 
-export type MoveMode = 'ground' | 'air' | 'ladder';
+export type MoveMode = 'ground' | 'air' | 'ladder' | 'vault';
+
+/**
+ * A vault in progress: a scripted move from the feet's start, over `top`, to the far side.
+ * The capsule isn't checked against the world on the way.
+ */
+export interface Vaulting {
+  fromX: number;
+  fromY: number;
+  fromZ: number;
+  toX: number;
+  toY: number;
+  toZ: number;
+  /** The feet clear this height halfway through. */
+  top: number;
+  /** Capsule height before and after: after is crouched if the far side has no room to stand. */
+  fromHeight: number;
+  toHeight: number;
+  /** Seconds into the move. */
+  t: number;
+}
 
 /** A player or AI body: a vertical capsule standing at (x, y, z). */
 export interface Character {
@@ -31,10 +51,12 @@ export interface Character {
   yaw: number;
   pitch: number;
   mode: MoveMode;
-  /** Capsule height; eases between crouching and standing over a few ticks. */
+  /** Capsule height; eases between standing, crouching and prone over a few ticks. */
   height: number;
   /** Index into the world's ladders while climbing, otherwise -1. */
   ladder: number;
+  /** The vault in progress while mode is 'vault', otherwise null. */
+  vaulting: Vaulting | null;
   /** The jump button last tick, so holding it jumps once. */
   jumpHeld: boolean;
   /** How fast it hit the ground if it landed this tick (m/s), otherwise 0. For fall damage. */
@@ -128,7 +150,7 @@ export interface SimState {
 
 /**
  * One player's controls for one tick. Look is absolute (the client owns the camera), and
- * crouch is the wanted stance: hold vs. toggle is the client's setting, not the sim's.
+ * crouch and prone are the wanted stance: hold vs. toggle is the client's setting, not the sim's.
  */
 export interface PlayerInput {
   /** Move stick, −1..1 each; moveY is forward. Longer than 1 is clamped. */
@@ -138,6 +160,9 @@ export interface PlayerInput {
   pitch: number;
   sprint: boolean;
   crouch: boolean;
+  /** Lying down, the wanted stance; it wins over crouch. Left out, not prone. */
+  prone?: boolean;
+  /** Also vaults, when facing something low and close enough (see findVault). */
   jump: boolean;
   /** The trigger, held. */
   fire: boolean;
@@ -210,6 +235,7 @@ export function spawnCharacter(
     mode: 'ground',
     height: MOVEMENT.standHeight,
     ladder: -1,
+    vaulting: null,
     jumpHeld: false,
     landingSpeed: 0,
     health: createHealth(),

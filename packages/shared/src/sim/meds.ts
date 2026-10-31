@@ -138,7 +138,7 @@ export function updateMedUse(c: Character, items: ItemDb, input: PlayerInput | u
   const u = c.using;
   if (!u) return;
   const sprinting = !!input?.sprint && input.moveY > 0 && !input.aim;
-  if (input?.fire || input?.reload || sprinting || c.mode === 'ladder') {
+  if (input?.fire || input?.reload || sprinting || c.mode === 'ladder' || c.mode === 'vault') {
     c.using = null;
     return;
   }

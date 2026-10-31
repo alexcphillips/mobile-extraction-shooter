@@ -63,7 +63,15 @@ export function updateMelee(
 ): void {
   if (c.swing > 0) c.swing = Math.max(0, c.swing - TICK_SECONDS);
   const knife = c.gear.hand === 'knife' ? c.gear.knife : null;
-  if (!knife || !input?.fire || c.draw > 0 || c.swing > 0 || c.mode === 'ladder') return;
+  if (
+    !knife ||
+    !input?.fire ||
+    c.draw > 0 ||
+    c.swing > 0 ||
+    c.mode === 'ladder' ||
+    c.mode === 'vault'
+  )
+    return;
   const def = meleeDef(items, knife.item);
   c.swing = def.swingTime;
 

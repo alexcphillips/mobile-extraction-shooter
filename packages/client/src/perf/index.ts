@@ -162,6 +162,7 @@ export async function startPerfTest(el: PerfElements, params: PerfParams): Promi
     input.pitch = controls.pitch;
     input.sprint = controls.sprint;
     input.crouch = controls.crouch;
+    input.prone = controls.prone;
     input.jump = controls.jump;
     prevEye.copy(eye);
     step(sim, world, NO_ITEMS, inputs);

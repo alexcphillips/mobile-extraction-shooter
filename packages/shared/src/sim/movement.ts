@@ -1,5 +1,10 @@
 import { TICK_SECONDS } from '../tick';
-import type { CollisionWorld, GroundHit, Ladder } from '../world/collision-world';
+import {
+  createRayHit,
+  type CollisionWorld,
+  type GroundHit,
+  type Ladder,
+} from '../world/collision-world';
 import { legSpeedScale } from './health';
 import type { Character, PlayerInput } from './state';
 
@@ -8,13 +13,16 @@ export const MOVEMENT = {
   radius: 0.35,
   standHeight: 1.8,
   crouchHeight: 1.2,
+  /** Prone is still an upright capsule, just a short one. */
+  proneHeight: 0.6,
   /** The eye is this far below the top of the capsule. */
   eyeBelowTop: 0.2,
-  /** How fast the capsule grows or shrinks when standing up or crouching. */
+  /** How fast the capsule grows or shrinks when changing stance. */
   stanceRate: 6,
   walkSpeed: 3.5,
   sprintSpeed: 6,
   crouchSpeed: 1.8,
+  proneSpeed: 0.8,
   climbSpeed: 2,
   /** The most you can walk while using a med. */
   useSpeed: 1.5,
@@ -35,6 +43,20 @@ export const MOVEMENT = {
   pitchLimit: 1.4,
   /** How far in front of a ladder (beyond the capsule) you can grab it. */
   ladderReach: 0.4,
+  /**
+   * Vaulting: jumping while facing something from stepUp to vaultMax high, at most
+   * vaultReach in front of the capsule and vaultDepth deep, goes over it, if there's a gap
+   * vaultGap tall and the capsule's width above it and room to stand or crouch beyond.
+   */
+  vaultMax: 1.1,
+  vaultReach: 0.5,
+  vaultDepth: 1,
+  vaultGap: 0.8,
+  /** How long the move takes, and how short the capsule gets halfway (the camera dips). */
+  vaultTime: 0.5,
+  vaultDuck: 0.8,
+  /** The far side's floor may be this far below the feet. */
+  vaultDrop: 1,
 } as const;
 
 const DT = TICK_SECONDS;
@@ -48,6 +70,7 @@ const ON_LADDER = MOVEMENT.radius + 0.05;
 const pos = { x: 0, z: 0 };
 const grad = { x: 0, z: 0 };
 const groundHit: GroundHit = { solid: -1 };
+const rayHit = createRayHit();
 
 /**
  * Advances one character by one tick. Without input it stands still, keeps its look
@@ -62,6 +85,7 @@ export function moveCharacter(
   let my = 0;
   let sprint = false;
   let crouch = false;
+  let prone = false;
   let jump = false;
   c.landingSpeed = 0;
   if (input) {
@@ -79,6 +103,7 @@ export function moveCharacter(
     // Firing or aiming stops a sprint.
     sprint = input.sprint && !input.fire && !input.aim && my > 0;
     crouch = input.crouch && !sprint;
+    prone = !!input.prone && !sprint;
     jump = input.jump && !c.jumpHeld;
     c.jumpHeld = input.jump;
   } else {
@@ -91,18 +116,33 @@ export function moveCharacter(
   const wishX = -sy * my + cy * mx;
   const wishZ = -cy * my - sy * mx;
 
-  updateStance(c, crouch && c.mode !== 'ladder', world);
+  if (c.mode === 'vault') {
+    moveVault(c);
+    return;
+  }
+  // Vaulting works crouched, unlike jumping, but not prone.
+  if (jump && c.mode === 'ground' && !isProne(c) && startVault(c, world)) return;
+
+  const M = MOVEMENT;
+  let stance: number = M.standHeight;
+  if (c.mode === 'ground' && prone) stance = M.proneHeight;
+  else if (c.mode !== 'ladder' && (crouch || prone)) stance = M.crouchHeight;
+  updateStance(c, stance, world);
   if (c.mode === 'ladder') climb(c, wishX, wishZ, jump, world);
   else if (!grabLadder(c, wishX, wishZ, world)) walk(c, wishX, wishZ, sprint, jump, world);
 }
 
+/** Crouched or prone: lower than standing. */
 function isCrouched(c: Character): boolean {
   return c.height < MOVEMENT.standHeight - 1e-6;
 }
 
-/** Eases the capsule height towards crouching or standing; standing needs headroom. */
-function updateStance(c: Character, wantCrouch: boolean, world: CollisionWorld): void {
-  const target = wantCrouch ? MOVEMENT.crouchHeight : MOVEMENT.standHeight;
+function isProne(c: Character): boolean {
+  return c.height < MOVEMENT.crouchHeight - 1e-6;
+}
+
+/** Eases the capsule height towards the target stance; getting up needs headroom. */
+function updateStance(c: Character, target: number, world: CollisionWorld): void {
   const change = MOVEMENT.stanceRate * DT;
   if (c.height > target) {
     c.height = Math.max(target, c.height - change);
@@ -125,8 +165,9 @@ function walk(
   const crouched = isCrouched(c);
   if (c.mode === 'ground') {
     const knife = !crouched && c.gear.hand === 'knife' && c.gear.knife ? M.knifeSpeed : 1;
+    const crouchSpeed = isProne(c) ? M.proneSpeed : M.crouchSpeed;
     let speed =
-      (crouched ? M.crouchSpeed : sprint ? M.sprintSpeed : M.walkSpeed) *
+      (crouched ? crouchSpeed : sprint ? M.sprintSpeed : M.walkSpeed) *
       knife *
       legSpeedScale(c.health);
     if (c.using) speed = Math.min(speed, M.useSpeed);
@@ -220,6 +261,130 @@ function limitSlope(c: Character, world: CollisionWorld): void {
   if (up <= 0) return;
   c.vx -= up * grad.x;
   c.vz -= up * grad.z;
+}
+
+/**
+ * Starts a vault if the character faces something low and close enough to vault (see
+ * MOVEMENT.vaultMax): a window's sill, a low wall, a crate. Found from the collision
+ * geometry alone, so any gap that size is vaultable. Allocates only when it starts one.
+ */
+function startVault(c: Character, world: CollisionWorld): boolean {
+  const M = MOVEMENT;
+  const fx = -Math.sin(c.yaw);
+  const fz = -Math.cos(c.yaw);
+  // Something solid in front at knee height, close enough.
+  const face = world.raycast(
+    c.x,
+    c.y + M.stepUp + 0.05,
+    c.z,
+    fx,
+    0,
+    fz,
+    M.radius + M.vaultReach,
+    rayHit,
+  );
+  if (face === Infinity || rayHit.kind !== 'solid') return false;
+
+  // Walk across its top in 10 cm steps until the floor beyond. Anything taller than
+  // vaultMax doesn't count as a top here; the gap check below catches it.
+  const low = c.y + M.stepUp;
+  let top = -Infinity;
+  let depth = -1;
+  for (let s = 0.05; s <= M.vaultDepth + 0.1; s += 0.1) {
+    const h = world.groundAt(c.x + fx * (face + s), c.z + fz * (face + s), 0.01, c.y + M.vaultMax);
+    if (h <= low) {
+      depth = s;
+      break;
+    }
+    top = Math.max(top, h);
+  }
+  if (depth < 0 || top === -Infinity) return false;
+
+  // A gap over the top, vaultGap tall and the capsule's width (a window's opening), with
+  // the capsule slid sideways (along the face) up to 0.3 m to find it.
+  const r = M.radius - 0.01;
+  const rx = -fz;
+  const rz = fx;
+  const mid = face + depth / 2;
+  let side = NaN;
+  for (let i = 0; i <= 24; i++) {
+    const off = (i & 1 ? 1 : -1) * Math.ceil(i / 2) * 0.025;
+    const x = c.x + fx * mid + rx * off;
+    const z = c.z + fz * mid + rz * off;
+    if (!world.overlaps(x, z, r, top + 0.01, top + M.vaultGap)) {
+      side = off;
+      break;
+    }
+  }
+  if (Number.isNaN(side)) return false;
+  const sx = c.x + rx * side;
+  const sz = c.z + rz * side;
+  for (let s = 0.05; s < depth; s += 0.1) {
+    if (
+      world.overlaps(sx + fx * (face + s), sz + fz * (face + s), r, top + 0.01, top + M.vaultGap)
+    ) {
+      return false;
+    }
+  }
+
+  // Floor beyond, with room to stand (or else crouch).
+  const land = face + depth + M.radius;
+  const toX = sx + fx * land;
+  const toZ = sz + fz * land;
+  const t = world.terrain;
+  if (toX < t.minX + M.radius || toX > t.maxX - M.radius) return false;
+  if (toZ < t.minZ + M.radius || toZ > t.maxZ - M.radius) return false;
+  const floor = world.groundAt(toX, toZ, M.radius, low);
+  if (floor < c.y - M.vaultDrop) return false;
+  let toHeight = c.height;
+  if (world.overlaps(toX, toZ, M.radius, floor + M.stepUp, floor + M.standHeight)) {
+    if (world.overlaps(toX, toZ, M.radius, floor + M.stepUp, floor + M.crouchHeight)) return false;
+    toHeight = Math.min(toHeight, M.crouchHeight);
+  }
+
+  c.mode = 'vault';
+  c.vaulting = {
+    fromX: c.x,
+    fromY: c.y,
+    fromZ: c.z,
+    toX,
+    toY: floor,
+    toZ,
+    top,
+    fromHeight: c.height,
+    toHeight,
+    t: 0,
+  };
+  moveVault(c);
+  return true;
+}
+
+/** One tick of a vault: an arc over the top, ducking halfway. Nothing collides on the way. */
+function moveVault(c: Character): void {
+  const M = MOVEMENT;
+  const v = c.vaulting;
+  if (!v) {
+    c.mode = 'air';
+    return;
+  }
+  v.t += DT;
+  const k = Math.min(1, v.t / M.vaultTime);
+  const arc = Math.sin(Math.PI * k);
+  const x = v.fromX + (v.toX - v.fromX) * k;
+  const z = v.fromZ + (v.toZ - v.fromZ) * k;
+  const y = v.fromY + (v.toY - v.fromY) * k + (v.top - (v.fromY + v.toY) / 2) * Math.max(0, arc);
+  c.vx = (x - c.x) / DT;
+  c.vy = (y - c.y) / DT;
+  c.vz = (z - c.z) / DT;
+  c.x = x;
+  c.y = y;
+  c.z = z;
+  const h = v.fromHeight + (v.toHeight - v.fromHeight) * k;
+  c.height = h + (Math.min(h, M.vaultDuck) - h) * arc;
+  if (k < 1) return;
+  c.mode = 'ground';
+  c.vaulting = null;
+  c.vx = c.vy = c.vz = 0;
 }
 
 /** Starts climbing if pushing into a ladder from the front, or off its top from behind. */
@@ -325,10 +490,11 @@ export function separateCharacters(characters: readonly Character[], world: Coll
   const r2 = MOVEMENT.radius * 2;
   for (let i = 0; i < characters.length; i++) {
     const a = characters[i]!;
-    if (a.health.dead) continue;
+    if (a.health.dead || a.mode === 'vault') continue;
     for (let j = i + 1; j < characters.length; j++) {
       const b = characters[j]!;
-      if (b.health.dead || a.y >= b.y + b.height || b.y >= a.y + a.height) continue;
+      if (b.health.dead || b.mode === 'vault' || a.y >= b.y + b.height || b.y >= a.y + a.height)
+        continue;
       let dx = b.x - a.x;
       let dz = b.z - a.z;
       const d = Math.hypot(dx, dz);

@@ -402,7 +402,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     `${raid.name}  ${map.name}  spawn ${spawn.id}${options.debug ? '  debug' : ''}  ` +
       `nav ${nav.nodeCount} nodes ${navMs.toFixed(0)} ms  ${options.note}`,
     () =>
-      `${awarenessSummary()}  ${player.mode}${player.height < 1.79 ? ' crouched' : ''}  ` +
+      `${awarenessSummary()}  ${player.mode}${player.height < 1.19 ? ' prone' : player.height < 1.79 ? ' crouched' : ''}  ` +
       `x ${player.x.toFixed(1)} y ${player.y.toFixed(2)} z ${player.z.toFixed(1)}  ` +
       `speed ${Math.hypot(player.vx, player.vz).toFixed(1)} m/s` +
       `${controls.sprint ? '  sprint' : ''}${controls.aim ? '  aim' : ''}${input.fire ? '  fire' : ''}`,
@@ -700,6 +700,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.pitch = controls.pitch;
     input.sprint = controls.sprint;
     input.crouch = controls.crouch;
+    input.prone = controls.prone;
     input.jump = controls.jump;
     input.fire = fire;
     input.aim = controls.aim;
