@@ -6,13 +6,23 @@
 // `create: true` a file is new, refused if one is there. All are checked and formatted
 // before any is written, so a map and the prefabs it uses go together (session 16b). The
 // editors check the docs first; this only checks they're map, prefab, item or sound files.
-import { readFile, writeFile } from 'node:fs/promises';
+//
+// Notes (2026-10-30): GET /__editor/notes?map=<id> reads content/notes/<id>.json, and POST
+// /__editor/note with { map, add: { pos, text } } or { map, remove: id } changes it, stamped
+// with `git config user.name` and the date, so notes from play-tests and the map editor
+// reach other developers through git. Open pages hear of a change as `mes:notes`.
+import { execFile } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { userInfo } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as prettier from 'prettier';
 
 const CONTENT = resolve(dirname(fileURLToPath(import.meta.url)), '../../content');
 const FILE = /^(maps|prefabs|items|sounds)\/[a-z0-9][a-z0-9-]*\.json$/;
+const ID = /^[a-z0-9][a-z0-9-]*$/;
+const NOTES_FORMAT = 1;
 
 /** @returns {import('vite').Plugin} */
 export function editorSave() {
@@ -27,25 +37,66 @@ export function editorSave() {
       // content/ is outside the client's root, so Vite doesn't watch it for new files; the
       // content globs only see a new map, prefab, item or sound (made here, say) once it's watched.
       server.watcher.add(['maps', 'prefabs', 'items', 'sounds'].map((d) => resolve(CONTENT, d)));
+      server.middlewares.use('/__editor/notes', (req, res) => {
+        const map = new URL(req.url ?? '', 'http://x').searchParams.get('map') ?? '';
+        if (!ID.test(map)) return reply(res, 400, { error: 'no map' });
+        readNotes(map).then(
+          (doc) => reply(res, 200, doc),
+          (err) => reply(res, 500, { error: String(err) }),
+        );
+      });
+      // One change at a time, so two notes written together both stay.
+      let queue = Promise.resolve();
+      server.middlewares.use('/__editor/note', (req, res) => {
+        const refused = refuse(req);
+        if (refused) return reply(res, ...refused);
+        readBody(req, (body) => {
+          queue = queue.then(async () => {
+            try {
+              const { map, add, remove } = JSON.parse(body);
+              if (typeof map !== 'string' || !ID.test(map))
+                return reply(res, 400, { error: 'no map' });
+              const doc = await readNotes(map);
+              if (add) {
+                const { pos, text } = add;
+                const point = Array.isArray(pos) && pos.length === 3 && pos.every(Number.isFinite);
+                if (!point || typeof text !== 'string' || !text.trim())
+                  return reply(res, 400, { error: 'a note needs a pos and some text' });
+                doc.notes.push({
+                  id: `note-${randomBytes(4).toString('hex')}`,
+                  pos: pos.map((v) => Math.round(v * 100) / 100),
+                  text: text.trim(),
+                  author: await author(),
+                  // The local day (en-CA writes YYYY-MM-DD).
+                  date: new Date().toLocaleDateString('en-CA'),
+                });
+              } else if (typeof remove === 'string') {
+                doc.notes = doc.notes.filter((n) => n.id !== remove);
+              } else return reply(res, 400, { error: 'add or remove a note' });
+              const path = notesPath(map);
+              await mkdir(dirname(path), { recursive: true });
+              const options = (await prettier.resolveConfig(path)) ?? {};
+              await writeFile(
+                path,
+                await prettier.format(layout(doc), { ...options, filepath: path }),
+              );
+              server.ws.send({ type: 'custom', event: 'mes:notes', data: { map } });
+              reply(res, 200, doc);
+            } catch (err) {
+              reply(res, 500, { error: err instanceof Error ? err.message : String(err) });
+            }
+          });
+        });
+      });
       server.middlewares.use('/__editor/save', (req, res) => {
         const reply = (status, body) => {
           res.statusCode = status;
           res.setHeader('content-type', 'application/json');
           res.end(JSON.stringify(body));
         };
-        if (req.method !== 'POST') return reply(405, { error: 'POST only' });
-        // The dev server listens on the LAN for the phone, but only the Mac may save, and
-        // only from the editor's own page (JSON can't be sent cross-site without CORS).
-        const local = ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress);
-        const origin = req.headers.origin;
-        const sameOrigin = origin === undefined || new URL(origin).host === req.headers.host;
-        if (!local || !sameOrigin) return reply(403, { error: 'saves only from this Mac' });
-        if (req.headers['content-type'] !== 'application/json')
-          return reply(415, { error: 'JSON only' });
-        let body = '';
-        req.setEncoding('utf8');
-        req.on('data', (chunk) => (body += chunk));
-        req.on('end', async () => {
+        const refused = refuse(req);
+        if (refused) return reply(...refused);
+        readBody(req, async (body) => {
           try {
             const { files } = JSON.parse(body);
             if (!Array.isArray(files) || !files.length)
@@ -83,6 +134,54 @@ export function editorSave() {
       if ((await read()) === mine) return [];
     },
   };
+}
+
+function reply(res, status, body) {
+  res.statusCode = status;
+  res.setHeader('content-type', 'application/json');
+  res.end(JSON.stringify(body));
+}
+
+/**
+ * Why a write is refused, as [status, body], or null. The dev server listens on the LAN for
+ * the phone, but only the Mac may write, and only from its own pages (JSON can't be sent
+ * cross-site without CORS).
+ */
+function refuse(req) {
+  if (req.method !== 'POST') return [405, { error: 'POST only' }];
+  const local = ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress);
+  const origin = req.headers.origin;
+  const sameOrigin = origin === undefined || new URL(origin).host === req.headers.host;
+  if (!local || !sameOrigin) return [403, { error: 'saves only from this Mac' }];
+  if (req.headers['content-type'] !== 'application/json') return [415, { error: 'JSON only' }];
+  return null;
+}
+
+function readBody(req, then) {
+  let body = '';
+  req.setEncoding('utf8');
+  req.on('data', (chunk) => (body += chunk));
+  req.on('end', () => then(body));
+}
+
+const notesPath = (map) => resolve(CONTENT, 'notes', `${map}.json`);
+
+/** A map's notes file, or an empty one. */
+async function readNotes(map) {
+  const text = await readFile(notesPath(map), 'utf8').catch(() => null);
+  if (text === null) return { formatVersion: NOTES_FORMAT, map, notes: [] };
+  return JSON.parse(text);
+}
+
+let gitName;
+/** Who's writing: git's user.name, or the login name. */
+function author() {
+  gitName ??= new Promise((done) =>
+    execFile('git', ['config', 'user.name'], (err, out) =>
+      done((!err && out.trim()) || userInfo().username),
+    ),
+  );
+  return gitName;
 }
 
 /**

@@ -134,6 +134,17 @@ export interface PlayElements {
   enemyBars: HTMLElement;
 }
 
+/** What dev-only extras in a raid get (the map notes, dev-notes.ts, 2026-10-30). */
+export interface DevHooks {
+  scene: THREE.Scene;
+  player: Character;
+  /**
+   * Opens or closes a dev screen: while open, you stand still and have the cursor, as with
+   * the inventory. Call it from the key or click that opens or closes it.
+   */
+  screen(open: boolean): void;
+}
+
 export interface PlayOptions {
   /** A raid config's id, in content/raids. */
   raid: string;
@@ -297,6 +308,23 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const held = heldWeapon(player);
   if (held) viewmodel.setGun(held, items);
   const questMarkers = new QuestMarkers(el.questMarkers, sim.raid?.investigate ?? [], player);
+  /** A dev screen (a note being written) is open. */
+  let devScreen = false;
+  // Map notes in every raid on the dev server; a build leaves them out.
+  if (import.meta.env.DEV) {
+    const dev: DevHooks = {
+      scene,
+      player,
+      screen: (open) => {
+        devScreen = open;
+        controls.reset();
+        controls.cursor.want(!open);
+      },
+    };
+    import('../dev-notes')
+      .then((m) => m.showNotes(raid.map, dev))
+      .catch((err: unknown) => console.error('map notes failed', err));
+  }
   /** What each quest marker on this map is for, shown under the crosshair. */
   const markerText = new Map<string, string>();
   for (const q of quests) {
@@ -937,7 +965,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     } else el.raidHud.setPrompt(prompt, now);
     hands.update(player, items);
     // The mouse is captured unless a screen needs the cursor.
-    controls.cursor.want(!screenOpen && !ended && !hands.pickerOpen);
+    controls.cursor.want(!screenOpen && !ended && !hands.pickerOpen && !devScreen);
     if (ended && resultsAt && now >= resultsAt) {
       resultsAt = 0;
       showResults(ended);

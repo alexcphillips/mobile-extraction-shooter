@@ -27,6 +27,7 @@ import {
   loadLootTables,
   loadQuests,
 } from '../content';
+import { NOTES_EVENT, addNote, fetchNotes, noteLabels, removeNote, type MapNote } from '../notes';
 import { writePlayTest } from '../play-test-handoff';
 import { buildNavOverlay } from '../render/nav-debug';
 import {
@@ -56,9 +57,28 @@ import {
   type NodePath,
   type Vec3,
 } from './doc';
+import { floorLevels, startCut, stepCut } from './cut';
 import { findOverlaps, forgetPrefabSolids, type Overlaps } from './overlap';
 import { newMap, setHeights, type Brush } from './terrain';
 import { EditorView, typing, type Handles, type Moved } from './view';
+import {
+  DOOR_HEIGHT,
+  VAULT_THICKNESS,
+  WALL_DEFAULTS,
+  WINDOW_HEIGHT,
+  WINDOW_MIN_WIDTH,
+  WINDOW_SILL,
+  alongWall,
+  cutWall,
+  doorIn,
+  nearestEnd,
+  snapCorner,
+  wallAxis,
+  wallBoxes,
+  wallEnds,
+  type Opening,
+  type WallSettings,
+} from './walls';
 
 export type Placeable = 'box' | 'cylinder' | 'ramp' | 'stairs' | 'ladder';
 export const PLACEABLE: readonly Placeable[] = ['box', 'cylinder', 'ramp', 'stairs', 'ladder'];
@@ -83,16 +103,16 @@ export const MARKERS: Readonly<Record<MarkerKind, string>> = {
   questMarker: 'quest marker',
   door: 'door',
 };
-const TOOL_KEYS = { prefab: '6', marker: '7', zone: '8' } as const;
+const TOOL_KEYS = { prefab: '6', marker: '7', zone: '8', wall: '9' } as const;
 
 type Patrol = Extract<MapNode, { type: 'patrol' }>;
 
 /**
- * A patrol or named zone being drawn a click at a time (points in the scope's frame), or
- * points being added to the end of the patrol at `index`.
+ * A patrol, named zone or run of walls being drawn a click at a time (points in the scope's
+ * frame), or points being added to the end of the patrol at `index`.
  */
 export interface Drawing {
-  what: 'patrol' | 'zone' | 'extend';
+  what: 'patrol' | 'zone' | 'walls' | 'extend';
   index?: number;
   points: readonly Vec3[];
 }
@@ -123,11 +143,18 @@ export interface EditorState {
   scope: NodePath;
   /** Indices in the scope's nodes; the last is the active one. */
   selected: readonly number[];
-  tool: 'select' | 'terrain' | 'prefab' | 'marker' | 'zone' | Placeable;
+  tool: 'select' | 'terrain' | 'prefab' | 'marker' | 'zone' | 'wall' | Placeable;
   /** The prefab the prefab tool places. */
   placing: string;
   /** What the marker tool places. */
   marker: MarkerKind;
+  /** Whether the prefab browser is open. */
+  browsing: boolean;
+  /** The map's notes (content/notes), and the one picked. */
+  notes: readonly MapNote[];
+  note: string | null;
+  /** What the wall tool does (draw walls, or cut a door or window), and its sizes. */
+  wall: WallSettings;
   drawing: Drawing | null;
   /** The named zone picked in the map's settings, by index. */
   zone: number | null;
@@ -135,6 +162,8 @@ export interface EditorState {
   point: number | null;
   /** Whether the navigation overlay is shown. */
   nav: boolean;
+  /** The cutaway's height in the world: everything above it is hidden. Null when off. */
+  cut: number | null;
   hiding: Hiding | null;
   /** The ids of the player spawns, as compiled (path ids), for where play-testing starts. */
   spawns: readonly string[];
@@ -143,6 +172,7 @@ export interface EditorState {
   gridSnap: number;
   angleSnap: number;
   snapDown: boolean;
+  objectSnap: boolean;
   /** The colour new shapes get: the last one set. */
   colour: string;
   /** Whether any file (the map or a prefab) differs from what's saved. */
@@ -196,6 +226,8 @@ export class MapEditor {
   /** Bumped to stop a search for hiding spots that's under way. */
   private hidingRun = 0;
   private handlesKey = '';
+  /** The ends of the map's walls in the scope's frame, for corners to snap to; worked out when needed. */
+  private ends: Vec3[] | null = null;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -215,10 +247,15 @@ export class MapEditor {
       tool: 'select',
       placing: [...prefabs.keys()][0] ?? '',
       marker: 'enemySpawn',
+      browsing: false,
+      notes: [],
+      note: null,
+      wall: WALL_DEFAULTS,
       drawing: null,
       zone: null,
       point: null,
       nav: false,
+      cut: null,
       hiding: null,
       spawns: [],
       brush: { mode: 'raise', radius: 6, strength: 1 },
@@ -226,6 +263,7 @@ export class MapEditor {
       gridSnap: 0.5,
       angleSnap: 15,
       snapDown: true,
+      objectSnap: true,
       colour: '#b5b0a6',
       dirty: false,
       unsaved: [],
@@ -250,11 +288,17 @@ export class MapEditor {
         this.edit((_, m) => setHeights(m, heights, this.prefabs));
       },
       handle: (index, to) => this.handleMoved(index, to),
+      hover: (e) => this.hovered(e),
     });
     this.view.options = this.viewOptions();
     this.view.setGizmoMode('translate');
     this.rebuild();
     window.addEventListener('keydown', (e) => this.key(e));
+    this.refreshNotes();
+    // Notes dropped in a play-test (or by another editor) arrive as they're written.
+    import.meta.hot?.on(NOTES_EVENT, (data: { map: string }) => {
+      if (data.map === this.state.map.id) this.refreshNotes();
+    });
     window.addEventListener('beforeunload', (e) => {
       if (this.state.dirty) e.preventDefault();
     });
@@ -271,16 +315,19 @@ export class MapEditor {
     this.state = { ...this.state, ...patch };
     const { tool, drawing } = this.state;
     this.view.placing = !!drawing || (tool !== 'select' && tool !== 'terrain');
+    if (drawing?.what !== 'walls') this.view.setPreview(null);
     this.showHandles();
     for (const l of this.listeners) l();
   }
 
   private viewOptions() {
-    const { gridSnap, angleSnap, snapDown } = this.state;
-    return { gridSnap, angleSnap, snapDown };
+    const { gridSnap, angleSnap, snapDown, objectSnap } = this.state;
+    return { gridSnap, angleSnap, snapDown, objectSnap };
   }
 
-  setOption(patch: Partial<Pick<EditorState, 'gridSnap' | 'angleSnap' | 'snapDown'>>): void {
+  setOption(
+    patch: Partial<Pick<EditorState, 'gridSnap' | 'angleSnap' | 'snapDown' | 'objectSnap'>>,
+  ): void {
     this.set(patch);
     this.view.options = this.viewOptions();
   }
@@ -293,14 +340,25 @@ export class MapEditor {
     this.set({
       tool,
       drawing: null,
-      message: toolHint(tool, this.state.placing, this.state.marker),
+      message: toolHint(tool, this.state.placing, this.state.marker, this.state.wall),
     });
+  }
+
+  /** Changes the wall tool's settings, and picks the wall tool. */
+  setWall(patch: Partial<WallSettings>): void {
+    this.set({ wall: { ...this.state.wall, ...patch } });
+    this.setTool('wall');
   }
 
   /** Picks what the marker tool places, and the marker tool. */
   setMarker(marker: MarkerKind): void {
     this.set({ marker });
     this.setTool('marker');
+  }
+
+  /** Opens or closes the prefab browser. */
+  setBrowsing(browsing: boolean): void {
+    this.set({ browsing });
   }
 
   /** Picks the prefab to place, and the prefab tool. */
@@ -365,8 +423,10 @@ export class MapEditor {
     const same = !moved && selected.join() === this.state.selected.join();
     this.set({ selected, scope, ...(!same && { point: null }) });
     // A prefab gone into is built part by part, and one left as a whole again.
-    if (moved) this.view.build(this.state.map, this.prefabs, scope, selected);
-    else this.view.setSelection(scope, selected);
+    if (moved) {
+      this.ends = null;
+      this.view.build(this.state.map, this.prefabs, scope, selected);
+    } else this.view.setSelection(scope, selected);
   }
 
   private clicked(e: MouseEvent, index: number | null, outside: NodePath | null): void {
@@ -431,7 +491,9 @@ export class MapEditor {
     if (this.undoStack.length > HISTORY) this.undoStack.shift();
     this.redoStack.length = 0;
     // An old message (a refused edit, say) no longer applies.
-    this.set({ message: toolHint(this.state.tool, this.state.placing, this.state.marker) });
+    this.set({
+      message: toolHint(this.state.tool, this.state.placing, this.state.marker, this.state.wall),
+    });
     this.changed(selected ?? this.state.selected, this.state.scope, overlaps);
   }
 
@@ -539,6 +601,7 @@ export class MapEditor {
     const exposed = this.compiled
       ? exposedSpawns(this.compiled.markers, new CollisionWorld(this.compiled.world))
       : [];
+    this.ends = null;
     this.set({ overlaps, problem, spawns: spawns ?? [], exposed });
     this.mapChanged();
   }
@@ -572,7 +635,9 @@ export class MapEditor {
 
   private restore(s: Snapshot): void {
     this.load(s.files);
-    this.set({ message: toolHint(this.state.tool, this.state.placing, this.state.marker) });
+    this.set({
+      message: toolHint(this.state.tool, this.state.placing, this.state.marker, this.state.wall),
+    });
     this.changed(s.selected, s.scope);
   }
 
@@ -621,6 +686,9 @@ export class MapEditor {
   private handleMoved(k: number, to: Vec3 | null): void {
     const { drawing, zone } = this.state;
     if (drawing) {
+      // Clicking the first corner of walls closes them into a room.
+      if (!to && drawing.what === 'walls' && k === 0 && drawing.points.length > 2)
+        return this.finishDrawing(true);
       if (!to) return this.finishDrawing();
       const points = [...drawing.points];
       points[k] = to;
@@ -692,6 +760,10 @@ export class MapEditor {
     const d = this.state.drawing!;
     const p = this.view.pointUnder(e);
     if (!p) return;
+    if (d.what === 'walls') {
+      const corner = this.wallCorner(d.points, [p.x, p.y, p.z]);
+      return this.set({ drawing: { ...d, points: [...d.points, corner] } });
+    }
     const grid = this.state.gridSnap;
     if (grid) {
       p.x = round(Math.round(p.x / grid) * grid);
@@ -701,12 +773,42 @@ export class MapEditor {
     this.set({ drawing: { ...d, points: [...d.points, [round(p.x), round(p.y), round(p.z)]] } });
   }
 
-  /** Makes what's been drawn: a zone, a patrol, or the patrol's new points. */
-  finishDrawing(): void {
+  /**
+   * Where a wall's next corner goes for a point clicked: on the end of a wall near it if
+   * there is one, or else on the grid, at the angle and length the snaps allow from the last.
+   * Every corner is at the first one's floor.
+   */
+  private wallCorner(corners: readonly Vec3[], p: Vec3): Vec3 {
+    const first = corners[0];
+    const last = corners.at(-1);
+    this.ends ??= this.compiled
+      ? wallEnds(this.compiled.world.boxes).map((e) => this.view.toScope(e))
+      : [];
+    const end = nearestEnd(this.ends, p);
+    if (end) return [round(end[0]), round(first?.[1] ?? end[1]), round(end[2])];
+    const grid = this.state.gridSnap;
+    const [x, z] = grid ? [p[0], p[2]].map((v) => Math.round(v / grid) * grid) : [p[0], p[2]];
+    if (!last) return [round(x!), round(p[1]), round(z!)];
+    return snapCorner(last, [x!, last[1], z!], this.state.angleSnap, grid);
+  }
+
+  /** Shows the walls being drawn, up to where the mouse is. */
+  private hovered(e: PointerEvent): void {
+    const d = this.state.drawing;
+    if (d?.what !== 'walls' || !d.points.length) return;
+    const p = this.view.pointUnder(e);
+    if (!p) return;
+    const corner = this.wallCorner(d.points, [p.x, p.y, p.z]);
+    const { height, thickness } = this.state.wall;
+    this.view.setPreview(wallBoxes([...d.points, corner], height, thickness, this.state.colour));
+  }
+
+  /** Makes what's been drawn: a zone, a patrol, the patrol's new points, or walls (`close`d into a room). */
+  finishDrawing(close = false): void {
     const d = this.state.drawing;
     if (!d) return;
     const pts = d.points;
-    const need = d.what === 'zone' ? 3 : d.what === 'patrol' ? 2 : 1;
+    const need = d.what === 'zone' ? 3 : d.what === 'patrol' || d.what === 'walls' ? 2 : 1;
     if (pts.length < need) {
       this.set({
         message: `Click ${need - pts.length} more point${need - pts.length > 1 ? 's' : ''}, or Esc to stop.`,
@@ -725,6 +827,25 @@ export class MapEditor {
       );
       this.setTool('select');
       this.set({ zone });
+    } else if (d.what === 'walls') {
+      const { height, thickness } = this.state.wall;
+      const corners = close ? [...pts, pts[0]!] : pts;
+      const walls = wallBoxes(corners, height, thickness, this.state.colour);
+      this.edit((nodes) => {
+        const at = nodes.length;
+        nodes.push(...walls);
+        if (walls.length === 1) return [at];
+        return [
+          groupNodes(
+            nodes,
+            walls.map((_, k) => at + k),
+            close ? 'Room' : 'Walls',
+          ),
+        ];
+      });
+      this.set({
+        message: `Made ${walls.length === 1 ? 'a wall' : `${walls.length} walls, grouped`}. Pick door or window to cut openings.`,
+      });
     } else if (d.what === 'patrol') {
       const id = uniqueIdIn('patrol', this.fileNodes());
       this.edit((nodes) => {
@@ -740,6 +861,70 @@ export class MapEditor {
         for (const q of pts) insertPatrolPoint(p, p.points.length, q);
       });
     }
+  }
+
+  // Notes
+
+  private refreshNotes(): void {
+    fetchNotes(this.state.map.id).then(
+      (notes) => this.showNotes(notes),
+      () => {},
+    );
+  }
+
+  private showNotes(notes: readonly MapNote[], note = this.state.note): void {
+    const picked = notes.some((n) => n.id === note) ? note : null;
+    this.set({ notes, note: picked });
+    this.view.setLabels(noteLabels(notes, picked));
+  }
+
+  /** Picks a note (or none) and points the camera at it. */
+  pickNote(id: string | null): void {
+    const n = this.state.notes.find((m) => m.id === id);
+    if (n) this.view.lookAt(n.pos[0], n.pos[1], n.pos[2], 15);
+    this.showNotes(this.state.notes, n ? n.id : null);
+  }
+
+  /** Asks for a note and puts it at the camera's target, written to content/notes at once. */
+  noteHere(): void {
+    const text = prompt('Note for the camera target (saved to content/notes for everyone):');
+    if (!text?.trim()) return;
+    addNote(this.state.map.id, this.view.target(), text).then(
+      (notes) => this.showNotes(notes),
+      (err: unknown) =>
+        this.set({ message: `Note not saved: ${err instanceof Error ? err.message : err}` }),
+    );
+  }
+
+  /** Takes a note out of content/notes: it's been dealt with. */
+  resolveNote(id: string): void {
+    removeNote(this.state.map.id, id).then(
+      (notes) => this.showNotes(notes),
+      (err: unknown) =>
+        this.set({ message: `Note not removed: ${err instanceof Error ? err.message : err}` }),
+    );
+  }
+
+  // The cutaway
+
+  /** Turns the cutaway on (over the floor at the camera's target) or off. */
+  toggleCut(): void {
+    this.setCut(this.state.cut === null ? startCut(this.floors(), this.view.target()[1]) : null);
+  }
+
+  setCut(cut: number | null): void {
+    this.view.cut = cut;
+    this.set({ cut });
+  }
+
+  /** Moves the cutaway up or down a floor. */
+  stepCut(dir: 1 | -1): void {
+    const cut = this.state.cut;
+    if (cut !== null) this.setCut(stepCut(this.floors(), cut, dir));
+  }
+
+  private floors(): number[] {
+    return this.compiled ? floorLevels(this.compiled.world) : [];
   }
 
   // The navigation overlay
@@ -959,6 +1144,11 @@ export class MapEditor {
       this.set({ drawing: { what, points: [] } });
       return this.addPoint(e);
     }
+    if (tool === 'wall') {
+      if (this.state.wall.mode !== 'draw') return this.cutOpening(e);
+      this.set({ drawing: { what: 'walls', points: [] } });
+      return this.addPoint(e);
+    }
     if (tool === 'select' || tool === 'terrain') return;
     const p = this.view.pointUnder(e);
     if (!p) return;
@@ -995,6 +1185,65 @@ export class MapEditor {
       nodes.push(node);
       return [nodes.length - 1];
     });
+  }
+
+  /**
+   * Cuts a door or window (the wall tool's mode) into the wall clicked, where clicked: its
+   * box is split around the gap, and a door is put in a doorway. The wall can be inside a
+   * group in scope; a placed prefab has to be gone into first.
+   */
+  private cutOpening(e: MouseEvent): void {
+    const hit = this.view.pickLeaf(e);
+    if (!hit) return;
+    const { mode, width } = this.state.wall;
+    const wall = nodeAt(this.state.map, hit.path, this.prefabs);
+    if (wall?.type !== 'box') {
+      const inPrefab = wall?.type === 'prefab' ? ': go into the prefab first (double-click)' : '';
+      this.set({ message: `Doors and windows are cut into walls (boxes)${inPrefab}.` });
+      return;
+    }
+    const grid = this.state.gridSnap || 0.05;
+    const opening: Opening =
+      mode === 'door'
+        ? { along: 0, width, bottom: 0, top: DOOR_HEIGHT }
+        : { along: 0, width, bottom: WINDOW_SILL, top: WINDOW_SILL + WINDOW_HEIGHT };
+    opening.along = round(Math.round(alongWall(wall, hit.at) / grid) * grid);
+    let pieces: MapNode[];
+    try {
+      const boxes = cutWall(wall, opening);
+      // Only the first piece keeps the wall's id, if it had one.
+      for (const b of boxes.slice(1)) delete b.id;
+      pieces = boxes;
+    } catch (err) {
+      this.set({ message: `Not cut: ${err instanceof Error ? err.message : err}.` });
+      return;
+    }
+    if (mode === 'door') {
+      const { pos, yaw } = doorIn(wall, opening);
+      const door: MapNode = {
+        type: 'door',
+        pos,
+        size: [width, DOOR_HEIGHT],
+        colour: this.state.colour,
+      };
+      placeNode(door, pos, yaw);
+      pieces.push(door);
+    }
+    const parent = hit.path.slice(0, -1);
+    const index = hit.path[hit.path.length - 1]!;
+    const here = parent.join('.') === this.state.scope.join('.');
+    this.edit((_, map) => {
+      nodesAt(map, parent, this.prefabs).splice(index, 1, ...pieces);
+      return here && mode === 'door' ? [index + pieces.length - 1] : [];
+    });
+    const thick = wall.size[2 - wallAxis(wall).axis]!;
+    const notes =
+      mode === 'window' && thick > VAULT_THICKNESS
+        ? ` It can't be vaulted through: the wall is over ${VAULT_THICKNESS} m thick.`
+        : mode === 'window' && width < WINDOW_MIN_WIDTH
+          ? ` It can't be vaulted through: under ${WINDOW_MIN_WIDTH} m wide.`
+          : '';
+    this.set({ message: `Cut a ${mode} ${width} m wide.${notes}` });
   }
 
   setColour(colour: string): void {
@@ -1238,6 +1487,10 @@ export class MapEditor {
     for (const [tool, key] of Object.entries(TOOL_KEYS))
       if (e.key === key) return run(() => this.setTool(tool as keyof typeof TOOL_KEYS));
     if (k === 'n') return run(() => this.setNav(!this.state.nav));
+    if (k === 'c') return run(() => this.toggleCut());
+    if (k === 'p') return run(() => this.setBrowsing(true));
+    if (this.state.cut !== null && (e.key === 'ArrowUp' || e.key === 'ArrowDown'))
+      return run(() => this.stepCut(e.key === 'ArrowUp' ? 1 : -1));
     if (k === 'g')
       return run(() => this.setTool(this.state.tool === 'terrain' ? 'select' : 'terrain'));
     if (this.state.tool === 'terrain') {
@@ -1254,8 +1507,17 @@ export class MapEditor {
   }
 }
 
-function toolHint(tool: EditorState['tool'], placing: string, marker: MarkerKind): string | null {
+function toolHint(
+  tool: EditorState['tool'],
+  placing: string,
+  marker: MarkerKind,
+  wall: WallSettings,
+): string | null {
   if (tool === 'select') return null;
+  if (tool === 'wall')
+    return wall.mode === 'draw'
+      ? 'Click corners in turn: Enter or click the last to finish, the first to close a room. Esc stops.'
+      : `Click a wall to cut a ${wall.mode} there. Esc stops.`;
   if (tool === 'terrain')
     return 'Drag on the ground to shape it; ⇧ to lower (or raise). [ and ] change the size. Esc stops.';
   if (tool === 'zone' || (tool === 'marker' && marker === 'patrol'))
