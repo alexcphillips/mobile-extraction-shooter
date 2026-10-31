@@ -210,6 +210,18 @@ export {
 } from './sim/meds';
 export { MELEE, updateMelee, type SwingEvent } from './sim/melee';
 export {
+  GRENADE,
+  blastShare,
+  carriedGrenade,
+  carriedGrenades,
+  updateGrenades,
+  updateThrow,
+  type BounceEvent,
+  type ExplosionEvent,
+  type Grenade,
+  type ThrowEvent,
+} from './sim/grenades';
+export {
   addItem,
   canHold,
   canSwap,
@@ -256,11 +268,13 @@ export {
   restoreHealth,
   armourWear,
   shootCharacter,
+  woundZone,
   throughArmour,
   totalHp,
   wearArmour,
   type ArmourState,
   type DamageEvent,
+  type DamageCause,
   type DeathEvent,
   type Health,
   type Wound,
@@ -331,6 +345,7 @@ export {
   itemSchema,
   medDef,
   meleeDef,
+  grenadeDef,
   repairDef,
   stackSize,
   weaponDef,
@@ -344,6 +359,7 @@ export {
   type MedEffect,
   type Rarity,
   type MeleeDef,
+  type GrenadeDef,
   type OpticDef,
   type RepairDef,
   type ReticleShape,

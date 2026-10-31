@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "id": "grenade-throw",
+  "name": "Grenade throw",
+  "gain": 0.5,
+  "range": 15,
+  "pitchJitter": 0.08,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0,
+      "attack": 0.06,
+      "hold": 0,
+      "decay": 0.16,
+      "curve": 1.5,
+      "gain": 1,
+      "filter": { "type": "bandpass", "freq": [500, 1800], "q": 1.2 }
+    },
+    {
+      "source": "tone",
+      "wave": "triangle",
+      "freq": [2600, 2400],
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.05,
+      "curve": 3,
+      "gain": 0.25
+    }
+  ]
+}

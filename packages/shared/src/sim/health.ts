@@ -130,8 +130,10 @@ export interface DamageEvent {
   amount: number;
   /** What armour stopped. */
   absorbed: number;
-  cause: 'shot' | 'melee' | 'fall';
+  cause: DamageCause;
 }
+
+export type DamageCause = 'shot' | 'melee' | 'fall' | 'explosion';
 
 export interface DeathEvent {
   type: 'death';
@@ -209,24 +211,41 @@ export function shootCharacter(
   by: EntityId,
   cause: 'shot' | 'melee' = 'shot',
 ): void {
+  woundZone(state, items, c, zone, ammo.damage * HEALTH.multiplier[zone]!, ammo, by, cause);
+}
+
+/**
+ * A hit of this much damage to one zone, after any multiplier: armour on the head or
+ * chest lets through its share by the wound's level and wears down, then what got
+ * through may start bleeding. Shots, swings and blasts (sim/grenades.ts) all end here.
+ */
+export function woundZone(
+  state: SimState,
+  items: ItemDb,
+  c: Character,
+  zone: Zone,
+  damage: number,
+  wound: Wound,
+  by: EntityId,
+  cause: DamageCause,
+): void {
   if (c.health.dead) return;
   if (c.admin?.infiniteHealth) {
     // Still a hit, for markers and the HUD, but nothing lost.
     state.events.push({ type: 'damage', target: c.id, by, zone, amount: 0, absorbed: 0, cause });
     return;
   }
-  let damage = ammo.damage * HEALTH.multiplier[zone]!;
   let absorbed = 0;
   const armour = zone === HEAD ? c.gear.helmet : zone === CHEST ? c.gear.bodyArmour : null;
   if (armour && armour.durability > 0) {
     const level = armourDef(items, armour.item).level;
-    absorbed = damage * (1 - throughArmour(ammo.level, level));
-    const wear = ammo.armourDamage * armourWear(ammo.level, level);
+    absorbed = damage * (1 - throughArmour(wound.level, level));
+    const wear = wound.armourDamage * armourWear(wound.level, level);
     armour.durability = Math.max(0, armour.durability - wear);
     damage -= absorbed;
   }
   const amount = dealDamage(state, c, zone, damage, by);
-  if (!c.health.dead && damage > 0 && chance(state.rng, ammo.bleedChance)) {
+  if (!c.health.dead && damage > 0 && chance(state.rng, wound.bleedChance)) {
     c.health.bleeding[zone] = true;
   }
   state.events.push({ type: 'damage', target: c.id, by, zone, amount, absorbed, cause });

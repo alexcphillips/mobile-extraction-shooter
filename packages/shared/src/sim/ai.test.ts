@@ -250,6 +250,53 @@ describe('enemy hearing', () => {
   });
 });
 
+describe('grenades', () => {
+  /** A grenade lying at (x, z) thrown by the player, going off in `fuse` seconds. */
+  function drop(s: Setup, x: number, z: number, fuse: number): void {
+    s.state.grenades.push({
+      id: s.state.nextId++,
+      item: 'grenade',
+      by: s.player.id,
+      x,
+      y: 0.06,
+      z,
+      vx: 0,
+      vy: 0,
+      vz: 0,
+      fuse,
+      resting: true,
+    });
+  }
+
+  it('runs out of the blast of a grenade it can see, and lives', () => {
+    const s = setup(0, 100, { half: 120 });
+    drop(s, 0, -2, 3);
+    s.run(1);
+    expect(s.enemy.ai!.flee).toBeTruthy();
+    s.run(2.2);
+    // Outside the test grenade's 7 m radius before it went off, and unhurt.
+    expect(s.state.grenades).toHaveLength(0);
+    expect(Math.hypot(s.enemy.x, s.enemy.z + 2)).toBeGreaterThan(7);
+    expect(s.enemy.health.dead).toBe(false);
+    expect(s.enemy.ai!.flee).toBeFalsy();
+  });
+
+  it("doesn't run from one behind a wall", () => {
+    const s = setup(0, 100, { half: 120, boxes: [aabb(-5, 0, -2, 5, 3, -1.6)] });
+    drop(s, 0, -4, 3);
+    s.run(1);
+    expect(s.enemy.ai!.flee).toBeFalsy();
+  });
+
+  it('goes to look at one going off from across the map', () => {
+    const s = setup(0, 200, { half: 220 });
+    drop(s, 0, 150, 0.01);
+    s.run(1 / TICK_RATE);
+    expect(s.enemy.ai!.awareness).toBe('suspicious');
+    expect(s.enemy.ai!.investigate).toBe(true);
+  });
+});
+
 describe('enemy behaviour', () => {
   it('walks its patrol, standing at stops and walking through the rest', () => {
     // In along x = 0, then back and forth between two stops by way of (15, 15). The

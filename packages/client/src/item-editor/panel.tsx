@@ -394,6 +394,28 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
           )}
         </>
       );
+    case 'grenade':
+      return (
+        <>
+          <h4>grenade</h4>
+          <Row>
+            <N {...b} path={['damage']} label="damage at the centre" min={0} />
+            <N {...b} path={['level']} label="level (1–6)" min={1} />
+          </Row>
+          <Row>
+            <N {...b} path={['armourDamage']} label="armour damage" min={0} />
+            <N {...b} path={['bleedChance']} label="bleed chance" min={0} />
+          </Row>
+          <Row>
+            <N {...b} path={['radius']} label="radius (m)" min={0} />
+            <N {...b} path={['fuse']} label="fuse (s)" min={0} />
+          </Row>
+          <Row>
+            <N {...b} path={['throwSpeed']} label="throw speed (m/s)" min={0} />
+            <N {...b} path={['loudness']} label="heard from (m)" min={0} />
+          </Row>
+        </>
+      );
     case 'key':
       return (
         <>
@@ -438,6 +460,9 @@ const SOUND_USES: Record<string, string> = {
   reload: 'reload',
   swing: 'swing',
   use: 'using it',
+  throw: 'throw',
+  bounce: 'bounce',
+  explode: 'going off',
 };
 
 /** The sound files it plays (session 19), each with a button to hear it and a link to tune it. */

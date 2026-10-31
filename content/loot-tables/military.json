@@ -18,6 +18,7 @@
     { "item": "ammo-762-m62", "weight": 0.4, "count": [8, 20] },
     { "item": "ammo-762-m61", "weight": 0.1, "count": [5, 15] },
     { "item": "crossbow-bolt", "weight": 1, "count": [5, 15] },
+    { "item": "frag-grenade", "weight": 1.5 },
     { "item": "pistol", "weight": 2 },
     { "item": "assault-rifle", "weight": 1 },
     { "item": "shotgun", "weight": 1 },

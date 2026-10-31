@@ -14,7 +14,11 @@ import { colourOf } from './raid-screen';
 const isAdminItem = (d: ItemDef): boolean => d.type === 'weapon' && d.spawns !== undefined;
 
 const TABS: readonly { label: string; shows: (d: ItemDef) => boolean }[] = [
-  { label: 'Guns', shows: (d) => (d.type === 'weapon' || d.type === 'melee') && !isAdminItem(d) },
+  {
+    label: 'Weapons',
+    shows: (d) =>
+      (d.type === 'weapon' || d.type === 'melee' || d.type === 'grenade') && !isAdminItem(d),
+  },
   { label: 'Ammo', shows: (d) => d.type === 'ammo' },
   { label: 'Attachments', shows: (d) => d.type === 'attachment' },
   { label: 'Meds', shows: (d) => d.type === 'med' || d.type === 'repair' },

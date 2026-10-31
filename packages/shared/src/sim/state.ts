@@ -3,6 +3,7 @@ import type { AiState } from './ai';
 import type { CollisionWorld } from '../world/collision-world';
 import { createGear, type Gear, type Hand } from './gear';
 import type { DoorEvent, DoorState } from './doors';
+import type { BounceEvent, ExplosionEvent, Grenade, ThrowEvent } from './grenades';
 import type { GroundItem } from './ground';
 import { createHealth, type DamageEvent, type DeathEvent, type Health } from './health';
 import type { InventoryAction, InventoryEvent, LootContainer } from './looting';
@@ -70,6 +71,8 @@ export interface Character {
   draw: number;
   /** Seconds until the knife can swing again. */
   swing: number;
+  /** Seconds until it can throw another grenade; missing (as in older saves) is 0. */
+  throwCooldown?: number;
   /** The med it's using, or null. */
   using: MedUse | null;
   /** Seconds it has stood in an extraction point; 0 when not in one. */
@@ -102,6 +105,9 @@ export type Entity = Character;
 export type SimEvent =
   | ShotEvent
   | SwingEvent
+  | ThrowEvent
+  | BounceEvent
+  | ExplosionEvent
   | DamageEvent
   | DeathEvent
   | InventoryEvent
@@ -138,6 +144,8 @@ export interface SimState {
   loot: LootContainer[];
   /** Items lying loose: rolled at loot spawns, dropped, or with nowhere else to go. */
   ground: GroundItem[];
+  /** Grenades thrown and not yet gone off. */
+  grenades: Grenade[];
   /** Each of the world's doors, by index; filled in by the first step (see syncDoors). */
   doors: DoorState[];
   /** The timer and extraction points; null outside a raid (tests, the perf scene). */
@@ -179,6 +187,8 @@ export interface PlayerInput {
   inventory?: readonly InventoryAction[];
   /** Take out a gun slot or the knife: a press. */
   draw?: Hand | null;
+  /** Throw the first grenade carried: a press. */
+  throw?: boolean;
   /** Start using a carried med (a press), or stop using one. */
   use?: MedRef | 'cancel' | null;
   /** Open, close or unlock a door, by its index in world.doors: a press. */
@@ -201,6 +211,7 @@ export function createState(seed: number): SimState {
     entities: [],
     loot: [],
     ground: [],
+    grenades: [],
     doors: [],
     raid: null,
     left: [],

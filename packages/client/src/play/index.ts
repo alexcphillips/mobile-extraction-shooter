@@ -60,6 +60,7 @@ import {
   raidProgress,
   startQuests,
   type Profile,
+  type SimState,
   totalHp,
   isBleeding,
 } from '@mes/shared';
@@ -97,6 +98,7 @@ import { DEFAULT_OUTFIT, loadCharacter } from '../render/character';
 import { CharacterBody, CharacterRig } from '../render/character-body';
 import { Effects } from '../render/effects';
 import { buildExtractions } from '../render/extractions';
+import { GrenadeViews } from '../render/grenades';
 import { GroundItems } from '../render/ground-items';
 import { buildMap, updateDoors } from '../render/map';
 import { AiDebug, buildNavOverlay } from '../render/nav-debug';
@@ -240,6 +242,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   if (aiDebug) scene.add(aiDebug.root);
   const effects = new Effects();
   scene.add(effects.root);
+  const grenades = new GrenadeViews(items, world);
+  scene.add(grenades.root);
   const viewmodel = new Viewmodel();
   const cues = new SoundCues(sounds(), world, items);
   // Rendered now rather than as each is first heard (if audio is unlocked yet).
@@ -249,6 +253,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const controls = new Controls(el.canvas, el.hud);
   const resume = options.resume;
   const sim = resume?.sim ?? createState(Date.now() >>> 0);
+  // A raid saved before grenades (2026-10-30) has none in flight.
+  (sim as Partial<SimState>).grenades ??= [];
   const spawns = map.markers.filter((m) => m.type === 'playerSpawn');
   const spawn =
     spawns.find((m) => m.id === (resume?.spawn ?? options.spawn)) ??
@@ -700,6 +706,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.aim = controls.aim;
     input.reload = controls.reload;
     input.draw = controls.draw;
+    input.throw = controls.throw;
     // A tap on the heal button uses what it shows, or stops a med being used.
     input.use = controls.heal ? (player.using ? 'cancel' : hands.choice) : picked;
     picked = null;
@@ -766,6 +773,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       if (dead) closeScreen();
       input.moveX = input.moveY = 0;
       input.sprint = input.jump = input.fire = input.aim = input.reload = false;
+      input.throw = false;
     }
     // Jumping lets go of a ladder, and ends sprint lock with it.
     if (controls.jump && player.mode === 'ladder') controls.unlockSprint();
@@ -808,6 +816,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     cur.drawn = total > 0 ? 1 - player.draw / total : 1;
 
     cues.tick(sim, player, controls.yaw);
+    grenades.tick(sim.grenades);
     let hitLost = 0;
     let lastHit = 'bleeding';
     let died = false;
@@ -831,13 +840,16 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
           viewmodel.swung(now, meleeDef(items, player.gear.knife.item).swingTime);
         } else bodyOf.get(e.by)?.swung();
         if (e.hit !== 'none') effects.impact(now, e.x, e.y, e.z, e.hit === 'character');
+      } else if (e.type === 'explosion') {
+        grenades.explode(now, e.x, e.y, e.z, e.radius);
       } else if (e.type === 'damage') {
         if (e.amount > 0) bodyOf.get(e.target)?.hit();
         if (e.by === player.id && e.target !== player.id) el.vitals.hitMarker(now, false);
         if (e.target === player.id && e.amount > 0) el.vitals.hurtFlash();
         if (e.target === player.id) {
           hitLost += e.amount;
-          lastHit = logHit(taken, e, names.get(e.by) ?? 'Someone');
+          const by = e.by === player.id ? 'Your own grenade' : names.get(e.by);
+          lastHit = logHit(taken, e, by ?? 'Someone');
         }
       } else if (e.type === 'death' && e.by === player.id && e.target !== player.id) {
         el.vitals.hitMarker(now, true);
@@ -884,11 +896,13 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       const killer = taken.find((s) => s.killed)?.key;
       const how = gaveUp
         ? 'Gave up'
-        : killer === 'bleeding'
-          ? 'Bled out'
-          : killer === 'fall'
-            ? 'From a fall'
-            : 'From bleeding or a fall';
+        : killer === `${player.id}:explosion`
+          ? 'By your own grenade'
+          : killer === 'bleeding'
+            ? 'Bled out'
+            : killer === 'fall'
+              ? 'From a fall'
+              : 'From bleeding or a fall';
       endRaid('killed', killedBy ? `by a ${killedBy}` : how, now);
     }
     el.vitals.update(player, items, now);
@@ -962,7 +976,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       culled.push(o);
     }
   });
+  grenades.warm(true);
   render();
+  grenades.warm(false);
   for (const o of culled) o.frustumCulled = true;
 
   const loop = new FixedTimestep();
@@ -1038,6 +1054,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       lowered,
     );
     effects.update(performance.now());
+    grenades.update(performance.now(), alpha);
     render();
     stats.frame(time, dtMs, performance.now() - t0);
   });

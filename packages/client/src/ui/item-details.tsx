@@ -210,6 +210,8 @@ function kindOf(def: ItemDef): string {
       return def.slot === 'rig' ? 'Rig' : 'Backpack';
     case 'melee':
       return 'Melee';
+    case 'grenade':
+      return 'Grenade';
     case 'key':
       return 'Key';
     case 'quest':
@@ -323,6 +325,20 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
         ['Bleed chance', percent(def.bleedChance)],
         ['Swing time', seconds(def.swingTime)],
         ['Reach', `${def.reach} m`],
+      ];
+    case 'grenade':
+      return [
+        [
+          'Damage',
+          <>
+            <Level level={def.level} />
+            {def.damage} at the centre · {def.armourDamage} to armour
+          </>,
+        ],
+        ['Radius', `${def.radius} m`],
+        ['Fuse', seconds(def.fuse)],
+        ['Bleed chance', percent(def.bleedChance)],
+        ['Heard from', `${def.loudness} m`],
       ];
     case 'key':
       return [

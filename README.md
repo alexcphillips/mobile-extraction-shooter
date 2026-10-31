@@ -44,7 +44,7 @@ The client opens into a map from `content/maps` (`test-map` by default) and lets
 
 **Weapons and meds (session 10b):** the four buttons along the bottom take out primary 1, primary 2, the sidearm or the knife (dimmed when empty, outlined when in hand); drawing takes a moment. With the knife out, **fire** says "knife" and swings it (and, with automatic fire on, it swings by itself when an enemy is in reach under the crosshair). The **heal** button shows the med a tap would use (bandage for bleeding, then splint or surgery for a broken limb, then medkit) and is greyed out when nothing helps; a ring fills while it works. Tap it again to stop; firing, sprinting, reloading or switching also stops it. Hold it for a picker of every carried med that would help.
 
-**Desktop keys:** WASD, Shift sprint, Space jump, C crouch, F fire, Q aim, E use or loot, I or Tab the bag, 1–4 primary 1, primary 2, sidearm, knife, R reload, H heal (hold for the picker), and mouse drag to look.
+**Desktop keys:** WASD, Shift sprint, Space jump, C crouch, F fire, Q aim, E use or loot, I or Tab the bag, 1–4 primary 1, primary 2, sidearm, knife, R reload, H heal (hold for the picker), G throw a grenade, and mouse drag to look.
 
 **Settings** (gear, top right) pause the game: aim and fire behaviour, aim assist, sensitivity, invert, the stats overlay, and **Edit button layout** (drag buttons, size them with − and +, then Done). Settings are saved in the browser's local storage. Holding the phone upright shows a "turn your phone" screen and pauses.
 

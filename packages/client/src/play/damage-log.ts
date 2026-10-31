@@ -37,7 +37,8 @@ function sourceFor(log: DamageLog, key: string, name: string, cause: DamageSourc
 export function logHit(log: DamageLog, e: DamageEvent, name: string): string {
   const key = e.cause === 'fall' ? 'fall' : `${e.by}:${e.cause}`;
   const s = sourceFor(log, key, e.cause === 'fall' ? 'Fall' : name, e.cause);
-  s.hits++;
+  // A blast hurts every zone at once, head first: one hit, not six.
+  if (e.cause !== 'explosion' || e.zone === 0) s.hits++;
   s.damage += e.amount;
   s.absorbed += e.absorbed;
   const zone = ZONE_NAMES[e.zone]!;
@@ -60,7 +61,14 @@ export function describeSource(s: DamageSource): string {
   const hp = Math.round(s.damage);
   if (s.cause === 'bleed') return `Bleeding took ${hp}`;
   const times = s.hits === 1 ? 'once' : `${s.hits} times`;
-  const verb = s.cause === 'melee' ? 'stabbed you' : s.cause === 'fall' ? 'hurt you' : 'shot you';
+  const verb =
+    s.cause === 'melee'
+      ? 'stabbed you'
+      : s.cause === 'fall'
+        ? 'hurt you'
+        : s.cause === 'explosion'
+          ? 'blew you up'
+          : 'shot you';
   const what = s.cause === 'fall' ? `A fall ${verb}` : `${s.name} ${verb}`;
   const armour = s.absorbed >= 1 ? ` · armour took ${Math.round(s.absorbed)}` : '';
   return `${what} ${times} for ${hp} (${s.zones.join(', ')})${armour}`;
