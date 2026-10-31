@@ -182,6 +182,23 @@ describe('the stash', () => {
     expect(p.gear.hand).toBe('knife');
   });
 
+  it('loads even the gun in hand at once, from rounds anywhere in the stash', () => {
+    const p = profile();
+    const s = openStash(p);
+    addItem(items, p.stash[0]!, createItem(items, 'ap-round', 50));
+    const index = p.stash[0]!.items.findIndex((g) => g.item.item === 'ap-round');
+    const action: InventoryAction = {
+      type: 'load',
+      gun: { owner: self, slot: 'primary1', item: 'rifle' },
+      from: { ...stash, index, item: 'ap-round' },
+    };
+    expect(applyStash(s, items, action)).toBe(true);
+    expect(p.gear.primary1).toMatchObject({ mag: 30, loaded: 'ap-round', reloading: 0 });
+    expect(countOf(p.stash[0]!, 'ap-round')).toBe(20);
+    // The 30 rounds it had went into what's carried.
+    expect(countOf(p.gear.pockets, 'round') + countOf(p.gear.backpack!.grid!, 'round')).toBe(90);
+  });
+
   it('sends a double-tap to the page shown, then the others', () => {
     const p = profile();
     p.money = PROFILE.pagePrices[0];

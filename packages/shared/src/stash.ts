@@ -4,6 +4,7 @@ import type { Profile } from './profile';
 import type { GearSlot } from './sim/gear';
 import {
   applyInventory,
+  loadGun,
   gridOf,
   type GridRef,
   type InventoryAction,
@@ -165,6 +166,7 @@ function repairNow(s: StashState, items: ItemDb, kitRef: ItemRef, armourRef: Ite
 /** Applies the action; a double-tap into a page without room for all of it tries the others. */
 function apply(s: StashState, items: ItemDb, action: InventoryAction): boolean {
   if (action.type === 'repair') return repairNow(s, items, action.kit, action.armour);
+  if (action.type === 'load') return loadGun(s.sim, s.player, items, action.gun, action.from, true);
   const page = action.type === 'quick' ? stashPageOf(action.to) : -1;
   if (action.type !== 'quick' || page < 0) {
     return applyInventory(s.sim, s.player, items, action);
@@ -186,7 +188,8 @@ function apply(s: StashState, items: ItemDb, action: InventoryAction): boolean {
  * room for it) goes into the stash instead, from `page` on; if the stash has no room
  * either, or the knife would leave its slot (it's always carried), nothing changes. If
  * the slot in hand was emptied, the knife is in hand instead; otherwise what's in hand is
- * the player's choice, kept as it is. A repair is done at once (in a raid it takes time).
+ * the player's choice, kept as it is. A repair, and loading the gun in hand, are done at
+ * once (in a raid they take time).
  * Returns whether anything changed.
  */
 export function applyStash(

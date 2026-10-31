@@ -148,6 +148,8 @@ export {
   GROUND_OWNER,
   LOOT_REACH,
   applyInventory,
+  loadGun,
+  loadKind,
   canReach,
   gridOf,
   groundInReach,

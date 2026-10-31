@@ -2,6 +2,7 @@ import type { CompiledMap } from '../content/compile';
 import type { LootContainerDef } from '../content/loot-containers';
 import {
   attachmentDef,
+  firesRound,
   fits,
   itemDef,
   weaponDef,
@@ -36,7 +37,14 @@ import { createItem } from './create-item';
 import { dropItem, type GroundItem } from './ground';
 import { repairable } from './repair';
 import type { Character, EntityId, SimState } from './state';
-import { attach, detach, loadedAmmo, type WeaponState } from './weapons';
+import {
+  attach,
+  createWeaponStats,
+  detach,
+  loadedAmmo,
+  weaponStats,
+  type WeaponState,
+} from './weapons';
 
 /**
  * How far a body or a loot container can be from your feet to loot it, in metres:
@@ -139,6 +147,7 @@ export type Target = GridSpot | Omit<InSlot, 'item'> | ToGround;
  *   a med (see updateMedUse). The stash does it at once, from anywhere (applyStash).
  * - unload: takes the rounds out of a gun, wherever it is, into what you carry. A
  *   reload in progress stops.
+ * - load (2026-10-30): a stack of rounds dropped on a gun that fires them (loadGun).
  * A magazine change hands back the rounds that no longer fit, into what you carry. What
  * has no room (those rounds, a part swapped off, a part taken off into what you carry)
  * is dropped at your feet rather than the action refused (session 11b).
@@ -156,7 +165,8 @@ export type InventoryAction =
       to: GridSpot | null;
     }
   | { type: 'repair'; kit: ItemRef; armour: ItemRef }
-  | { type: 'unload'; gun: ItemRef };
+  | { type: 'unload'; gun: ItemRef }
+  | { type: 'load'; gun: ItemRef; from: ItemRef };
 
 /** An inventory action was applied (ok) or refused. */
 export interface InventoryEvent {
@@ -319,7 +329,80 @@ export function applyInventory(
       return startRepair(c, items, action.kit, action.armour);
     case 'unload':
       return unload(ctx, action.gun);
+    case 'load':
+      return loadGun(state, c, items, action.gun, action.from, false, world);
   }
+}
+
+// Scratch for a gun's magazine size.
+const loadStats = createWeaponStats();
+
+/**
+ * What dropping a stack of rounds on a gun would do (2026-10-30), or null if nothing: it
+ * must be a round the gun fires, and not more of what's in it when it's full. Onto the
+ * gun in c's hands in a raid ('reload'), it starts a reload with that round, so it takes
+ * the reload time as a reload does; the stack must be carried (a reload takes from
+ * pockets, rig and backpack), and the gun drawn, off a ladder and not reloading already.
+ * Onto any other gun, or with instant (between raids), it's at once ('load').
+ */
+export function loadKind(
+  state: SimState,
+  c: Character,
+  items: ItemDb,
+  gunRef: ItemRef,
+  fromRef: ItemRef,
+  instant: boolean,
+): 'reload' | 'load' | null {
+  const f = find(state, c, gunRef);
+  const gun = f?.item.attachments ? (f.item as WeaponState) : null;
+  const from = find(state, c, fromRef);
+  if (!gun || !from || !firesRound(items, weaponDef(items, gun.item), from.item.item)) return null;
+  const full = gun.mag >= weaponStats(items, gun, loadStats).magazine;
+  if (full && from.item.item === loadedAmmo(items, gun)) return null;
+  if (instant || gun !== heldWeapon(c)) return 'load';
+  if (c.draw > 0 || c.mode === 'ladder' || gun.reloading > 0 || from.at !== 'grid') return null;
+  for (let i = 0; i < CARRIED_GRIDS; i++) if (carriedGrid(c.gear, i) === from.grid) return 'reload';
+  return null;
+}
+
+/**
+ * Loads a gun from a stack of rounds (see loadKind). At once: more of the round loaded
+ * tops it up from the stack; another round takes the old rounds out (into what c carries,
+ * or at its feet) and fills it from the stack. A reload in progress stops. Returns
+ * whether it did anything.
+ */
+export function loadGun(
+  state: SimState,
+  c: Character,
+  items: ItemDb,
+  gunRef: ItemRef,
+  fromRef: ItemRef,
+  instant: boolean,
+  world?: CollisionWorld,
+): boolean {
+  const kind = loadKind(state, c, items, gunRef, fromRef, instant);
+  if (!kind) return false;
+  const gun = find(state, c, gunRef)!.item as WeaponState;
+  const from = find(state, c, fromRef)!;
+  const round = from.item.item;
+  if (kind === 'reload') {
+    gun.reloading = weaponStats(items, gun, loadStats).reloadTime;
+    gun.reloadWith = round;
+    return true;
+  }
+  const old = loadedAmmo(items, gun);
+  const out = round === old ? 0 : gun.mag;
+  if (out > 0) gun.mag = 0;
+  const n = Math.min(weaponStats(items, gun, loadStats).magazine - gun.mag, from.item.count);
+  from.item.count -= n;
+  if (from.item.count === 0) takeOut(from);
+  gun.mag += n;
+  gun.reloading = 0;
+  delete gun.reloadWith;
+  if (round === weaponDef(items, gun.item).ammo) delete gun.loaded;
+  else gun.loaded = round;
+  stowRounds({ state, c, items, world }, old, out);
+  return true;
 }
 
 /** The carried grids by name, in carriedGrid's order. */

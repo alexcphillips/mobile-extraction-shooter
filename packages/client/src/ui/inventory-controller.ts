@@ -3,6 +3,7 @@ import {
   canHold,
   findSpot,
   canReach,
+  firesRound,
   fits,
   fitsSlot,
   gridOf,
@@ -10,6 +11,7 @@ import {
   isFree,
   itemAt,
   itemDef,
+  loadKind,
   repairable,
   sellPrice,
   stackSize,
@@ -36,6 +38,7 @@ import {
   type DragSource,
   type DropZone,
   type Into,
+  type LoadOn,
   type PartSlot,
   type RepairOn,
 } from './drag';
@@ -337,6 +340,10 @@ export class InventoryController implements DragHost {
         : null
       : this.find(ref)?.def;
     const target = this.find(gun)?.def;
+    // Rounds the gun fires load it.
+    if (!isPart(ref) && part?.type === 'ammo' && target?.type === 'weapon') {
+      return firesRound(this.ctx.items, target, part.id) ? { kind: 'load', gun } : null;
+    }
     if (part?.type !== 'attachment' || target?.type !== 'weapon' || !fits(target, part)) {
       return null;
     }
@@ -364,6 +371,10 @@ export class InventoryController implements DragHost {
     // Picking items to sell: nothing moves.
     if (this.selling) return false;
     if (zone.kind === 'repair') return !isPart(src.ref) && this.canRepair(src.ref, zone.armour);
+    if (zone.kind === 'load') {
+      if (isPart(src.ref)) return false;
+      return !!loadKind(sim, player, items, zone.gun, src.ref, !!this.ctx.stash);
+    }
     if (isPart(src.ref)) {
       // An attachment comes off a gun into a grid, or onto another gun (see gunZone).
       if (!this.partOn(src.ref)) return false;
@@ -414,8 +425,13 @@ export class InventoryController implements DragHost {
     return isFree(items, grid, x, y, w, h, ignore);
   }
 
-  drop(src: DragSource, to: Target | PartSlot | Into | RepairOn): void {
+  drop(src: DragSource, to: Target | PartSlot | Into | RepairOn | LoadOn): void {
     const ref = src.ref;
+    if ('load' in to) {
+      if (!isPart(ref)) this.ctx.send({ type: 'load', gun: to.load, from: ref });
+      this.redraw();
+      return;
+    }
     if ('repair' in to) {
       if (!isPart(ref)) this.repair(to.repair, ref);
       return;
