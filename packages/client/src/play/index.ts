@@ -1,6 +1,11 @@
 import {
   CollisionWorld,
   FixedTimestep,
+  GRENADE,
+  grenadeDef,
+  grenadeEffect,
+  smokeBlocks,
+  smokeRadius,
   NavGrid,
   ammoDef,
   attachmentDef,
@@ -264,8 +269,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const controls = new Controls(el.canvas, el.hud);
   const resume = options.resume;
   const sim = resume?.sim ?? createState(Date.now() >>> 0);
-  // A raid saved before grenades (2026-10-30) has none in flight.
+  // A raid saved before grenades (2026-10-30) has none in flight, nor smoke (2026-10-31).
   (sim as Partial<SimState>).grenades ??= [];
+  (sim as Partial<SimState>).smokes ??= [];
   const spawns = map.markers.filter((m) => m.type === 'playerSpawn');
   const spawn =
     spawns.find((m) => m.id === (resume?.spawn ?? options.spawn)) ??
@@ -486,9 +492,19 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const ey = eyeHeight(player);
     const wall = world.raycast(player.x, ey, player.z, dx, dy, dz, range, aimWorld);
     const reach = Math.min(wall, range);
+    const d = raycastCharacters(sim, player.x, ey, player.z, dx, dy, dz, reach, player.id, aimHit);
+    // No help aiming at someone hidden in smoke.
     return (
-      raycastCharacters(sim, player.x, ey, player.z, dx, dy, dz, reach, player.id, aimHit) <
-      Infinity
+      d < Infinity &&
+      !smokeBlocks(
+        sim.smokes,
+        player.x,
+        ey,
+        player.z,
+        player.x + dx * d,
+        ey + dy * d,
+        player.z + dz * d,
+      )
     );
   }
 
@@ -523,7 +539,17 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // next tick.
   let picked: MedRef | 'cancel' | null = null;
   // Rounds picked from the reload button's picker, loaded with the next tick's reload.
-  const hands = new HandsHud(el.hud, (ref) => (picked = ref));
+  // The grenade picked is named on screen, for a desktop with no grenade button to show it.
+  const hands = new HandsHud(
+    el.hud,
+    (ref) => (picked = ref),
+    (name) => el.raidHud.note(`Grenade · ${name}`, performance.now()),
+  );
+  // A flash's white screen, and the grey of standing in smoke.
+  const blindEl = document.getElementById('blind')!;
+  const smokeVeil = document.getElementById('smoke-veil')!;
+  let blindShown = -1;
+  let veilShown = -1;
 
   // Debug actions: hurt me, heal me; on screen and keys 7 and 8.
   if (options.debug) {
@@ -735,6 +761,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.reload = controls.reload;
     input.draw = controls.draw;
     input.throw = controls.throw;
+    input.grenade = hands.grenadeChoice;
+    input.detonate = controls.detonate;
+    if (controls.throwPick && !dead) hands.showGrenadePicker(player, items);
     // A tap on the heal button uses what it shows, or stops a med being used.
     input.use = controls.heal ? (player.using ? 'cancel' : hands.choice) : picked;
     picked = null;
@@ -801,7 +830,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       if (dead) closeScreen();
       input.moveX = input.moveY = 0;
       input.sprint = input.jump = input.fire = input.aim = input.reload = false;
-      input.throw = false;
+      input.throw = input.detonate = false;
     }
     // Jumping lets go of a ladder, and ends sprint lock with it.
     if (controls.jump && player.mode === 'ladder') controls.unlockSprint();
@@ -845,6 +874,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
 
     cues.tick(sim, player, controls.yaw);
     grenades.tick(sim.grenades);
+    grenades.tickSmokes(sim.smokes);
     let hitLost = 0;
     let lastHit = 'bleeding';
     let died = false;
@@ -870,7 +900,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         } else bodyOf.get(e.by)?.swung();
         if (e.hit !== 'none') effects.impact(now, e.x, e.y, e.z, e.hit === 'character');
       } else if (e.type === 'explosion') {
-        grenades.explode(now, e.x, e.y, e.z, e.radius);
+        grenades.explode(now, e.x, e.y, e.z, e.radius, grenadeEffect(grenadeDef(items, e.item)));
       } else if (e.type === 'damage') {
         if (e.amount > 0) bodyOf.get(e.target)?.hit();
         if (e.by === player.id && e.target !== player.id) el.vitals.hitMarker(now, false);
@@ -964,7 +994,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         'E',
       );
     } else el.raidHud.setPrompt(prompt, now);
-    hands.update(player, items);
+    let armed = false;
+    for (const g of sim.grenades) if (g.remote && g.by === player.id) armed = true;
+    hands.update(player, items, armed && !dead);
     // The mouse is captured unless a screen needs the cursor.
     controls.cursor.want(!screenOpen && !ended && !hands.pickerOpen && !devScreen);
     if (ended && resultsAt && now >= resultsAt) {
@@ -1014,6 +1046,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   /** How far the gun is lowered for using a med, eased each frame. */
   let lowered = 0;
   const frustum = new THREE.Frustum();
+  const tmpSmoke = new THREE.Vector3();
   const viewProjection = new THREE.Matrix4();
   startLoop(renderer, controls, (time, dtMs) => {
     const t0 = performance.now();
@@ -1084,6 +1117,26 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     );
     effects.update(performance.now());
     grenades.update(performance.now(), alpha);
+    // Blinded by a flash: all white, fading out over its last moments.
+    const blind = alive ? Math.min(1, (player.blind ?? 0) / GRENADE.blindFade) : 0;
+    const blindStep = Math.round(blind * 50) / 50;
+    if (blindStep !== blindShown) {
+      blindShown = blindStep;
+      blindEl.style.opacity = String(blindStep);
+    }
+    // In a smoke cloud: greyer the deeper in, so being inside one hides the world too.
+    let veil = 0;
+    for (const s of sim.smokes) {
+      const r = smokeRadius(s);
+      if (r <= 0) continue;
+      const d = camera.position.distanceTo(tmpSmoke.set(s.x, s.y, s.z)) / r;
+      veil = Math.max(veil, Math.min(0.95, (1 - d) * 2.5));
+    }
+    const veilStep = Math.round(veil * 50) / 50;
+    if (veilStep !== veilShown) {
+      veilShown = veilStep;
+      smokeVeil.style.opacity = String(veilStep);
+    }
     render();
     stats.frame(time, dtMs, performance.now() - t0);
   });

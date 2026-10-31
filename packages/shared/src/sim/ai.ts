@@ -6,7 +6,7 @@ import { chance, nextFloat, nextRange } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import type { CollisionWorld } from '../world/collision-world';
 import { openDoorAhead } from './doors';
-import type { Grenade } from './grenades';
+import { smokeBlocks, type Grenade } from './grenades';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import { MOVEMENT } from './movement';
 import {
@@ -515,7 +515,7 @@ function look(
   ai.seesTarget = false;
   for (const e of state.entities) {
     if (e.ai || e.health.dead || e.admin?.peaceful) continue;
-    const rate = sightRate(c, ai, e, world);
+    const rate = sightRate(state, c, ai, e, world);
     if (e.id === ai.target && rate > 0) ai.seesTarget = true;
     if (rate > bestRate) {
       bestRate = rate;
@@ -580,8 +580,18 @@ function checkReachable(ai: AiState, c: Character, target: Character, nav: NavGr
   if (there >= 0 && here >= 0) ai.reachable = nav.component[there] === nav.component[here];
 }
 
-/** How fast it notices e (per second), or 0 if it can't see e. */
-function sightRate(c: Character, ai: AiState, e: Character, world: CollisionWorld): number {
+/**
+ * How fast it notices e (per second), or 0 if it can't see e: not while blinded by a
+ * flash, nor through smoke (2026-10-31).
+ */
+function sightRate(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  e: Character,
+  world: CollisionWorld,
+): number {
+  if (c.blind) return 0;
   const ox = c.x;
   const oy = eyeHeight(c);
   const oz = c.z;
@@ -597,6 +607,11 @@ function sightRate(c: Character, ai: AiState, e: Character, world: CollisionWorl
   if (
     !clearLine(world, ox, oy, oz, e.x, head, e.z) &&
     !clearLine(world, ox, oy, oz, e.x, body, e.z)
+  )
+    return 0;
+  if (
+    smokeBlocks(state.smokes, ox, oy, oz, e.x, head, e.z) &&
+    smokeBlocks(state.smokes, ox, oy, oz, e.x, body, e.z)
   )
     return 0;
   const d = Math.hypot(across, head - oy);
@@ -1223,11 +1238,12 @@ let fleeYaw = 0;
 const FLEE_SAFE = 0.5;
 
 /**
- * A grenade close enough to hurt it, with nothing between it and its eye (it saw it, or
- * heard it land): it sprints for a walkable spot outside the blast that it can reach, the
- * nearest to it, and turns to face the grenade once there. Whatever it was doing waits,
- * planning afresh once the grenade has gone off. Returns whether it's running (or waiting
- * out the blast); false too when there's nowhere to run.
+ * A grenade close enough to hurt it (not a flash or smoke, nor placed C4), with nothing
+ * between it and its eye (it saw it, or heard it land): it sprints for a walkable spot
+ * outside the blast that it can reach, the nearest to it, and turns to face the grenade
+ * once there. Whatever it was doing waits, planning afresh once the grenade has gone off.
+ * Returns whether it's running (or waiting out the blast); false too when there's nowhere
+ * to run.
  */
 function fleeGrenade(
   state: SimState,
@@ -1241,7 +1257,10 @@ function fleeGrenade(
   let found: Grenade | null = null;
   let radius = 0;
   for (const g of state.grenades) {
-    const r = grenadeDef(items, g.item).radius;
+    // Only what would hurt it: not a flash or smoke, nor C4 it doesn't know is a bomb.
+    const def = grenadeDef(items, g.item);
+    if (def.damage <= 0 || g.remote) continue;
+    const r = def.radius;
     if (Math.hypot(g.x - c.x, g.y - c.y, g.z - c.z) > r + AI.fleeMargin) continue;
     if (ai.flee?.grenade !== g.id && !clearLine(world, c.x, eye, c.z, g.x, g.y + 0.1, g.z))
       continue;
@@ -1258,10 +1277,7 @@ function fleeGrenade(
   }
   // A new grenade, or this one has bounced or rolled up to where it was running: run anew.
   const f0 = ai.flee;
-  if (
-    f0?.grenade !== found.id ||
-    Math.hypot(f0.x - found.x, f0.z - found.z) < radius + FLEE_SAFE
-  ) {
+  if (f0?.grenade !== found.id || Math.hypot(f0.x - found.x, f0.z - found.z) < radius + FLEE_SAFE) {
     if (!pickFleeSpot(c, ai, nav, found, radius) && f0?.grenade !== found.id) return false;
     ai.hasGoal = false;
   }

@@ -3,6 +3,7 @@ import {
   condition,
   createWeaponStats,
   firesRound,
+  grenadeEffect,
   isMoney,
   itemDef,
   loadedAmmo,
@@ -276,10 +277,14 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
         [
           'Damage',
           round.type === 'grenade' ? (
-            <>
-              <Level level={round.level} />
-              {round.damage} at the centre · {round.radius} m radius
-            </>
+            round.damage > 0 ? (
+              <>
+                <Level level={round.level} />
+                {round.damage} at the centre · {round.radius} m radius
+              </>
+            ) : (
+              `none · ${grenadeEffect(round)}, ${round.radius} m radius`
+            )
           ) : (
             <>
               <Level level={round.level} />
@@ -347,8 +352,30 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
         ['Swing time', seconds(def.swingTime)],
         ['Reach', `${def.reach} m`],
       ];
-    case 'grenade':
+    case 'grenade': {
+      const effect = grenadeEffect(def);
+      const end: Row[] = [
+        ['Fuse', effect === 'c4' ? `${seconds(def.fuse)} after the detonator` : seconds(def.fuse)],
+        ['Heard from', `${def.loudness} m`],
+        ...launchers(items, def.id),
+      ];
+      if (effect === 'flash')
+        return [
+          ['Effect', 'Blinds whoever is looking at it'],
+          ['Radius', `${def.radius} m`],
+          ['Blinds for', `up to ${seconds(def.blindTime ?? 0)}`],
+          ...end,
+        ];
+      if (effect === 'smoke')
+        return [
+          ['Effect', 'A cloud enemies can’t see through'],
+          ['Cloud', `${def.radius} m · ${seconds(def.smokeTime ?? 0)}`],
+          ...end,
+        ];
       return [
+        ...(effect === 'c4'
+          ? [['Effect', 'Sticks where it lands; set it off with the detonator'] as Row]
+          : []),
         [
           'Damage',
           <>
@@ -357,11 +384,10 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
           </>,
         ],
         ['Radius', `${def.radius} m`],
-        ['Fuse', seconds(def.fuse)],
         ['Bleed chance', percent(def.bleedChance)],
-        ['Heard from', `${def.loudness} m`],
-        ...launchers(items, def.id),
+        ...end,
       ];
+    }
     case 'key':
       return [
         [

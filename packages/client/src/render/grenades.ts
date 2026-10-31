@@ -1,4 +1,14 @@
-import { itemDef, modelShapes, type CollisionWorld, type Grenade, type ItemDb } from '@mes/shared';
+import {
+  GRENADE,
+  itemDef,
+  modelShapes,
+  smokeRadius,
+  type CollisionWorld,
+  type GrenadeEffect,
+  type Grenade,
+  type ItemDb,
+  type Smoke,
+} from '@mes/shared';
 import * as THREE from 'three';
 import { TriangleBuilder } from './geometry';
 import { shadedMaterial } from './material';
@@ -14,6 +24,11 @@ const FIREBALL_MS = 380;
 const FIREBALL_SIZE = 2.2;
 const FIRE_HOT = new THREE.Color(0xfff0b0);
 const FIRE_COOL = new THREE.Color(0x8a3a12);
+/** A flash's burst: white, smaller and quicker than a fireball. */
+const FLASH_MS = 160;
+const FLASH_SIZE = 1.4;
+const FLASH_HOT = new THREE.Color(0xffffff);
+const FLASH_COOL = new THREE.Color(0xdde8ff);
 
 const WAVES = 4;
 /** The shockwave reaches the radius by then, and is gone by WAVE_MS. */
@@ -43,12 +58,48 @@ const SHOCKWAVE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-128 -12
   <circle r="124.5" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.9"/>
 </svg>`;
 
+/** Smoke clouds drawn at once; more are skipped. */
+const SMOKES = 4;
+/**
+ * Each cloud's puffs, as [x, y, z, size] in shares of its radius: one in the middle and a
+ * ring around it, a little lower, so it reads as a heap rather than a ball.
+ */
+const PUFFS: readonly (readonly [number, number, number, number])[] = [
+  [0, 0.15, 0, 1.3],
+  [0.55, -0.2, 0, 1],
+  [-0.3, -0.15, 0.5, 1.05],
+  [-0.35, -0.2, -0.45, 0.95],
+  [0.25, 0.35, -0.3, 0.9],
+  [-0.1, 0.4, 0.3, 0.85],
+];
+/** Most a cloud's puffs are opaque; they thin as it clears. */
+const SMOKE_OPACITY = 0.92;
+
+/**
+ * One smoke puff as an SVG, drawn on a sprite that always faces the camera: a soft grey
+ * blob, a few overlapping circles fading out at the edge, so puffs blend into a cloud.
+ */
+const SMOKE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-64 -64 128 128" width="128" height="128">
+  <defs>
+    <radialGradient id="p">
+      <stop offset="0" stop-color="#d8d8d4" stop-opacity="1"/>
+      <stop offset="0.55" stop-color="#c6c6c2" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#b8b8b4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle r="62" fill="url(#p)"/>
+  <circle cx="-18" cy="-14" r="34" fill="url(#p)"/>
+  <circle cx="20" cy="10" r="30" fill="url(#p)"/>
+</svg>`;
+
 /**
  * Thrown grenades and their explosions (2026-10-30). Grenades are drawn with their item's
  * model from a fixed pool, between the last two ticks' positions, tumbling in flight. An
  * explosion is a fireball and a shockwave ring on the ground (an SVG texture) that grows
- * to the blast's radius and fades, so you can see how far it reached. All pooled, so
- * nothing is allocated as they come and go.
+ * to the blast's radius and fades, so you can see how far it reached. A flash is a quick
+ * white burst, and a smoke grenade's cloud (2026-10-31) a few camera-facing sprites of an
+ * SVG puff, growing and thinning with the sim's cloud. All pooled, so nothing is allocated
+ * as they come and go.
  */
 export class GrenadeViews {
   readonly root = new THREE.Group();
@@ -62,11 +113,15 @@ export class GrenadeViews {
 
   private readonly fireballs: THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>[] = [];
   private readonly fireEnds = new Float64Array(FIREBALLS);
+  /** Whether each fireball is a flash's burst. */
+  private readonly fireFlash = new Uint8Array(FIREBALLS);
   private nextFire = 0;
   private readonly waves: THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>[] = [];
   private readonly waveEnds = new Float64Array(WAVES);
   private readonly waveRadius = new Float64Array(WAVES);
   private nextWave = 0;
+  /** Each cloud's puff sprites, sharing one material so they fade together. */
+  private readonly smokes: THREE.Sprite[][] = [];
 
   constructor(
     private readonly items: ItemDb,
@@ -114,11 +169,32 @@ export class GrenadeViews {
       this.waves.push(m);
       this.root.add(m);
     }
+
+    const puff = new THREE.TextureLoader().load(
+      `data:image/svg+xml;charset=utf-8,${encodeURIComponent(SMOKE_SVG)}`,
+    );
+    puff.colorSpace = THREE.SRGBColorSpace;
+    for (let i = 0; i < SMOKES; i++) {
+      const material = new THREE.SpriteMaterial({
+        map: puff,
+        transparent: true,
+        depthWrite: false,
+      });
+      const cloud: THREE.Sprite[] = [];
+      for (let k = 0; k < PUFFS.length; k++) {
+        const sprite = new THREE.Sprite(material);
+        sprite.visible = false;
+        cloud.push(sprite);
+        this.root.add(sprite);
+      }
+      this.smokes.push(cloud);
+    }
   }
 
   /** Shows everything for the start-up draw, so shaders compile then, not mid-raid. */
   warm(on: boolean): void {
     for (const m of [...this.fireballs, ...this.waves]) m.visible = on;
+    this.smokes[0]![0]!.visible = on;
   }
 
   /** Call after each tick, with the sim's grenades. */
@@ -150,13 +226,49 @@ export class GrenadeViews {
     }
   }
 
-  /** A grenade going off at (x, y, z) with this radius. */
-  explode(now: number, x: number, y: number, z: number, radius: number): void {
+  /** Call after each tick, with the sim's smoke clouds: they change slowly, so per tick. */
+  tickSmokes(smokes: readonly Smoke[]): void {
+    for (let i = 0; i < SMOKES; i++) {
+      const cloud = this.smokes[i]!;
+      const s = smokes[i];
+      if (!s) {
+        if (cloud[0]!.visible) for (const p of cloud) p.visible = false;
+        continue;
+      }
+      const r = smokeRadius(s);
+      const fade = Math.min(1, Math.max(0, s.time - s.age) / GRENADE.smokeFade);
+      cloud[0]!.material.opacity = SMOKE_OPACITY * fade;
+      for (let k = 0; k < PUFFS.length; k++) {
+        const [px, py, pz, size] = PUFFS[k]!;
+        const p = cloud[k]!;
+        p.position.set(s.x + px * r, s.y + py * r, s.z + pz * r);
+        p.scale.setScalar(2 * r * size);
+        p.visible = true;
+      }
+    }
+  }
+
+  /**
+   * A grenade going off at (x, y, z) with this radius: a fireball and shockwave, a flash's
+   * burst, or for smoke nothing (its cloud comes from the sim's smokes).
+   */
+  explode(
+    now: number,
+    x: number,
+    y: number,
+    z: number,
+    radius: number,
+    effect: GrenadeEffect,
+  ): void {
+    if (effect === 'smoke') return;
     const f = this.fireballs[this.nextFire]!;
-    this.fireEnds[this.nextFire] = now + FIREBALL_MS;
+    const flash = effect === 'flash';
+    this.fireEnds[this.nextFire] = now + (flash ? FLASH_MS : FIREBALL_MS);
+    this.fireFlash[this.nextFire] = flash ? 1 : 0;
     this.nextFire = (this.nextFire + 1) % FIREBALLS;
-    f.position.set(x, y + 0.3, z);
+    f.position.set(x, y + (flash ? 0.1 : 0.3), z);
     f.visible = true;
+    if (flash) return;
 
     const w = this.waves[this.nextWave]!;
     this.waveEnds[this.nextWave] = now + WAVE_MS;
@@ -188,15 +300,17 @@ export class GrenadeViews {
       const end = this.fireEnds[i]!;
       if (end === 0) continue;
       const f = this.fireballs[i]!;
-      const t = 1 - Math.max(0, (end - now) / FIREBALL_MS);
+      const flash = this.fireFlash[i] === 1;
+      const t = 1 - Math.max(0, (end - now) / (flash ? FLASH_MS : FIREBALL_MS));
       if (t >= 1) {
         this.fireEnds[i] = 0;
         f.visible = false;
         continue;
       }
       // Fast out, then holding while it cools and fades.
-      f.scale.setScalar(FIREBALL_SIZE * (0.25 + 0.75 * (1 - (1 - t) ** 3)));
-      f.material.color.lerpColors(FIRE_HOT, FIRE_COOL, t);
+      const size = flash ? FLASH_SIZE : FIREBALL_SIZE;
+      f.scale.setScalar(size * (0.25 + 0.75 * (1 - (1 - t) ** 3)));
+      f.material.color.lerpColors(flash ? FLASH_HOT : FIRE_HOT, flash ? FLASH_COOL : FIRE_COOL, t);
       f.material.opacity = 1 - t * t;
     }
 

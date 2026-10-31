@@ -1,10 +1,12 @@
 import {
   ATTACHMENT_SLOTS,
+  GRENADE_EFFECTS,
   MED_EFFECTS,
   RARITIES,
   VENDOR,
   firesRound,
   fits,
+  roundOf,
   idSchema,
   type AttachmentDef,
   type ItemDb,
@@ -214,7 +216,11 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
             {...b}
             path={['ammo']}
             label="ammo"
-            options={[...ofType('ammo'), ...ofType('grenade')]}
+            options={[
+              ...ofType('ammo'),
+              // Not C4: it's placed by hand, never launched.
+              ...ofType('grenade').filter((id) => roundOf(items, id)),
+            ]}
           />
           {items.get(def.ammo)?.type === 'grenade' && (
             <Row>
@@ -421,6 +427,32 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
       return (
         <>
           <h4>grenade</h4>
+          <P
+            {...b}
+            path={['effect']}
+            label="effect"
+            options={[...GRENADE_EFFECTS]}
+            unset="frag (default)"
+            then={(d, v) => {
+              // Each effect's own field, there only for it.
+              if (v === 'flash') d.blindTime ??= 5;
+              else delete d.blindTime;
+              if (v === 'smoke') d.smokeTime ??= 25;
+              else delete d.smokeTime;
+            }}
+          />
+          {def.effect === 'flash' && (
+            <N
+              {...b}
+              path={['blindTime']}
+              label="blinds for (s)"
+              min={0}
+              hint="Looking at it, close; less further out"
+            />
+          )}
+          {def.effect === 'smoke' && (
+            <N {...b} path={['smokeTime']} label="cloud lasts (s)" min={0} />
+          )}
           <Row>
             <N {...b} path={['damage']} label="damage at the centre" min={0} />
             <N {...b} path={['level']} label="level (1–6)" min={1} />
@@ -431,7 +463,13 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
           </Row>
           <Row>
             <N {...b} path={['radius']} label="radius (m)" min={0} />
-            <N {...b} path={['fuse']} label="fuse (s)" min={0} />
+            <N
+              {...b}
+              path={['fuse']}
+              label="fuse (s)"
+              min={0}
+              hint="From the throw; for C4, from the detonator"
+            />
           </Row>
           <Row>
             <N {...b} path={['throwSpeed']} label="throw speed (m/s)" min={0} />
