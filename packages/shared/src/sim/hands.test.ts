@@ -179,6 +179,19 @@ describe('using meds', () => {
     expect(bandages(s.player)).toBe(0);
   });
 
+  it('with the infinite consumables cheat, works but is never used up', () => {
+    const s = bleeding();
+    s.player.admin = {
+      infiniteHealth: false,
+      infiniteAmmo: false,
+      peaceful: false,
+      infiniteConsumables: true,
+    };
+    s.run(2.1, input({ use: treatments(s.player, items)[0]! }));
+    expect(s.player.health.bleeding[LEFT_ARM]).toBe(false);
+    expect(bandages(s.player)).toBe(1);
+  });
+
   it('stops when firing, sprinting, reloading or switching, and nothing is used', () => {
     const stops: Partial<PlayerInput>[] = [
       { fire: true, pitch: 1 },
@@ -272,6 +285,20 @@ describe('repairing armour in a raid', () => {
     s.run(5.1);
     expect(s.vest.durability).toBe(40);
     expect(s.kit()).toBeUndefined();
+  });
+
+  it('with the infinite consumables cheat, mends but keeps all its points', () => {
+    const s = worn();
+    s.player.admin = {
+      infiniteHealth: false,
+      infiniteAmmo: false,
+      peaceful: false,
+      infiniteConsumables: true,
+    };
+    s.run(1 / TICK_RATE, input({ inventory: [s.repair()] }));
+    s.run(5.1);
+    expect(s.vest.durability).toBe(50);
+    expect(s.kit()?.left).toBe(50);
   });
 
   it('stops when firing, and refuses full armour or a kit in the vault', () => {

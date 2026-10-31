@@ -89,7 +89,12 @@ describe('damage', () => {
   it('kills outright past armour and infinite health, once', () => {
     const { state, c } = setup();
     wearArmour(c, TEST_ITEMS, 'helmet');
-    c.admin = { infiniteHealth: true, infiniteAmmo: false, peaceful: false };
+    c.admin = {
+      infiniteHealth: true,
+      infiniteAmmo: false,
+      peaceful: false,
+      infiniteConsumables: false,
+    };
     killCharacter(state, c, 0);
     killCharacter(state, c, 0);
     expect(c.health.dead).toBe(true);

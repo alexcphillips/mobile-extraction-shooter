@@ -126,6 +126,50 @@ body {
   display: none;
 }
 
+/* The enemy health bars admin cheat: one over each living enemy (hud/enemy-bars.ts). */
+#enemy-bars {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.enemy-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: -7px 0 0 -32px;
+  width: 64px;
+  height: 14px;
+  border: 1px solid rgb(0 0 0 / 0.7);
+  background: rgb(0 0 0 / 0.45);
+}
+
+/* The HP as a number, over the fill. */
+.enemy-bar > span {
+  position: absolute;
+  inset: 0;
+  color: #fff;
+  font:
+    bold 10px/12px ui-monospace,
+    monospace;
+  text-align: center;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.9);
+}
+
+.enemy-bar > div {
+  height: 100%;
+  background: #6fd05a;
+}
+
+.enemy-bar.low > div {
+  background: #e0503c;
+}
+
+.enemy-bar[hidden] {
+  display: none;
+}
+
 /* Under the crosshair: the item on the ground the use button would take, or "No room". */
 #prompt {
   position: fixed;

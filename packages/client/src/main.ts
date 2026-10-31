@@ -149,6 +149,7 @@ function playElements(): PlayElements {
     raid: byId('raid'),
     results: byId('results'),
     questMarkers: byId('quest-markers'),
+    enemyBars: byId('enemy-bars'),
   };
 }
 

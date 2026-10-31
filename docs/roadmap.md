@@ -459,6 +459,11 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
   - Then (the user's call): the new-player kit wears level 3 armour (steel helmet, tactical vest) instead of the steel helmet and plate carrier (level 2 was tried first).
   - **Open:** high-level armour is priced low because of the repair-kit rule (design.md); the wear falloff is a guess; there's no "stopped" hit marker yet (armour hits already play their own sound).
 
+- [x] **19zc. More admin tools.** (Not in the plan: the user's request, 2026-10-30.)
+  - Cheats: **infinite consumables** and **enemy health bars**. Admin items: **Scav spawner** and **Boss spawner** (`content/items/*-spawner.json`), on a new Admin tab. See design.md → Admin page and tech-stack.md → Cheats / Spawner guns.
+  - Checked: typecheck and lint pass; shared and client tests pass (4 new: meds and kits not used up, a spawner's request, no harm, no rounds). Server tests didn't run here: Node 22.12 has no `node:sqlite` without a flag (the same on a clean tree). In headless Chrome emulating an iPhone in landscape, a peaceful play-test with the spawner in the sidearm slot showed bars over the test map's 3 enemies; three taps spawned three armed scavs where the crosshair was, facing the player, with the ammo counter unchanged. Found and fixed along the way: auto-fire kept pulling the spawner's trigger at the enemy it had just made, spawning 11 in a chain that pushed the player back.
+  - **Not checked** on the phone. Infinite consumables wasn't tried in the browser (only in tests).
+
 - [ ] **19b. The first real map.**
   - Claude drafts a one-page brief (points of interest, extractions, routes, key rooms) and a rough first version as data; the user reshapes it in the map editor, and Claude fixes the editor where it gets in the way (the user's call, 2026-10-30).
   - What the map needs that isn't built: loot weighted by zone, enemy spawns kept away from the player's spawn, doors fitted into a wall's gap, **vaulting through standard-height windows** (design.md → Movement; the user's request, 2026-10-30: a simple scripted move, no complicated animation).

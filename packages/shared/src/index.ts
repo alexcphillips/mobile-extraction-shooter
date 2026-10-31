@@ -54,6 +54,7 @@ export {
   eyeHeight,
   spawnCharacter,
   type AdminCheats,
+  type SpawnRequestEvent,
   type Character,
   type Entity,
   type EntityId,

@@ -23,6 +23,8 @@ import {
   step,
   weaponDef,
   type Character,
+  type EnemyDef,
+  type SpawnRequestEvent,
   type CompiledMap,
   type RaidDef,
   type PlayerInput,
@@ -81,12 +83,13 @@ import { Stats } from '../debug/stats';
 import { HandsHud } from '../hud/hands';
 import type { Hud } from '../hud/hud';
 import { AIM_FOV, FOV, aimedFov, type OpticOverlay } from '../hud/optic';
+import { EnemyBars } from '../hud/enemy-bars';
 import { QuestMarkers } from '../hud/quest-markers';
 import type { RaidHud } from '../hud/raid-hud';
 import type { Vitals } from '../hud/vitals';
 import { Controls } from '../input/controls';
 import { inputMode } from '../input/mode';
-import { anyCheat, readCheats } from '../admin-cheats';
+import { anyCheat, readCheats, simCheats } from '../admin-cheats';
 import { buildDebug } from '../render/debug';
 import { logBleed, logHit, logKiller, type DamageLog } from './damage-log';
 import { CapsuleBody } from '../render/capsule-body';
@@ -125,6 +128,8 @@ export interface PlayElements {
   results: HTMLElement;
   /** Where quest markers to investigate are drawn over the world. */
   questMarkers: HTMLElement;
+  /** For the enemy health bars admin cheat. */
+  enemyBars: HTMLElement;
 }
 
 export interface PlayOptions {
@@ -279,13 +284,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // resuming, so a change on the admin page applies.
   const cheats = readCheats();
   cheats.peaceful ||= options.peaceful;
-  if (cheats.infiniteHealth || cheats.infiniteAmmo || cheats.peaceful) {
-    player.admin = {
-      infiniteHealth: cheats.infiniteHealth,
-      infiniteAmmo: cheats.infiniteAmmo,
-      peaceful: cheats.peaceful,
-    };
-  } else delete player.admin;
+  const simCheat = simCheats(cheats);
+  if (simCheat) player.admin = simCheat;
+  else delete player.admin;
   if (anyCheat(cheats)) el.raidHud.note('Admin cheats on', performance.now());
   const held = heldWeapon(player);
   if (held) viewmodel.setGun(held, items);
@@ -303,7 +304,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // Enemies: their type's skill, and its loadout (or the spawn's) rolled.
   const patrols = new Map(map.patrols.map((p) => [p.id, p]));
   const names = new Map<number, string>();
-  /** Each enemy spawn marker's id, and the entity there, for saving the raid. */
+  /**
+   * Each enemy spawn marker's id, and the entity there, for saving the raid. Enemies from
+   * an admin spawner gun go in as "spawner:<type>:<entity>", so a resumed raid knows them.
+   */
   const spawned: Record<string, number> = {};
   const enemies: {
     c: Character;
@@ -312,6 +316,22 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     diedAt: number;
     arm: () => void;
   }[] = [];
+  const enemyChars: Character[] = [];
+  const bodyOf = new Map<number, CharacterBody>();
+  const enemyBars = cheats.enemyHealth ? new EnemyBars(el.enemyBars) : null;
+  el.enemyBars.hidden = !enemyBars;
+  /** Draws an enemy of a type that's in the state, armed by `arm` (if it isn't yet). */
+  function addEnemy(c: Character, type: EnemyDef, arm: () => void): void {
+    const body = new CharacterBody(rig, type.outfit ?? DEFAULT_OUTFIT, c);
+    scene.add(body.root);
+    const zones = options.hitZones ? new CapsuleBody(0.45) : null;
+    if (zones) scene.add(zones.root);
+    enemies.push({ c, body, zones, diedAt: 0, arm });
+    enemyChars.push(c);
+    bodyOf.set(c.id, body);
+    names.set(c.id, type.name);
+    enemyBars?.add(c);
+  }
   for (const m of map.markers) {
     if (m.type !== 'enemySpawn') continue;
     const type = types.get(m.enemy)!;
@@ -333,15 +353,30 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       rollEnemyLoot(c, items, lootTables, type.loot, m.lootWeights, sim.rng);
     };
     if (!saved) arm();
-    const body = new CharacterBody(rig, type.outfit ?? DEFAULT_OUTFIT, c);
-    scene.add(body.root);
-    const zones = options.hitZones ? new CapsuleBody(0.45) : null;
-    if (zones) scene.add(zones.root);
-    enemies.push({ c, body, zones, diedAt: 0, arm });
-    names.set(c.id, type.name);
+    addEnemy(c, type, arm);
   }
-  const enemyChars = enemies.map((e) => e.c);
-  const bodyOf = new Map(enemies.map((e) => [e.c.id, e.body]));
+  /** The arming for an enemy from a spawner gun: its type's loadout and loot. */
+  const armSpawned = (c: Character, type: EnemyDef) => (): void => {
+    equipLoadout(c, items, loadouts.get(type.loadout)!, sim.rng);
+    rollEnemyLoot(c, items, lootTables, type.loot, undefined, sim.rng);
+  };
+  for (const [key, id] of Object.entries(resume?.enemies ?? {})) {
+    const type = types.get(key.split(':')[1] ?? '');
+    const saved = sim.entities.find((e) => e.id === id);
+    if (!key.startsWith('spawner:') || !type || !saved) continue;
+    spawned[key] = id;
+    addEnemy(saved, type, armSpawned(saved, type));
+  }
+  /** An admin spawner gun's shot landed: an enemy of its type there, armed, facing back. */
+  function spawnRequested(e: SpawnRequestEvent): void {
+    const type = types.get(e.enemy);
+    if (!type) return;
+    const c = spawnEnemy(sim, world, e.x, e.y, e.z, e.yaw, { skill: type.skill });
+    const arm = armSpawned(c, type);
+    arm();
+    spawned[`spawner:${type.id}:${c.id}`] = c.id;
+    addEnemy(c, type, arm);
+  }
 
   const input: PlayerInput = {
     moveX: 0,
@@ -651,8 +686,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     controls.assist = target ? ASSIST[settings.current.aimAssist] : 1;
     let fire = controls.fire;
     const held = heldWeapon(player);
-    // Auto-fire holds the trigger (or swings the knife), but never stops a med being used.
-    if (target && settings.current.fire === 'auto' && !player.using) {
+    // Auto-fire holds the trigger (or swings the knife), but never stops a med being used,
+    // and never fires an admin spawner gun: its new enemy is under the crosshair.
+    const spawner = !!held && weaponDef(items, held.item).spawns !== undefined;
+    if (target && settings.current.fire === 'auto' && !player.using && !spawner) {
       // A semi-automatic gun is pulled every other tick.
       const semi = !!held && weaponDef(items, held.item).fireMode === 'semi';
       fire ||= !semi || sim.tick % 2 === 0;
@@ -824,6 +861,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         if (screen) screen.refresh();
       } else if (e.type === 'door' && e.by === player.id && e.result === 'blocked') {
         el.raidHud.warn('Someone’s in the doorway', now);
+      } else if (e.type === 'spawnRequest') {
+        spawnRequested(e);
       } else if (e.type === 'inventory' && e.by === player.id) {
         inventoryChanged = true;
         if (taking && !e.ok) el.raidHud.warn(`No room for ${taking}`, now);
@@ -978,6 +1017,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     }
     aiDebug?.update(enemyChars);
     questMarkers.update(camera, alive && !screenOpen && !ended);
+    enemyBars?.update(camera, alive && !screenOpen && !ended);
     updateDoors(mapView, sim.doors, dtMs / 1000);
     if (aimMarker) {
       const yaw = player.yaw + player.recoilYaw;

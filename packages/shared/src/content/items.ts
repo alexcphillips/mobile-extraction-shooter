@@ -126,6 +126,12 @@ const weaponSchema = z
      */
     sounds: z.strictObject({ shot: soundId, suppressed: soundId, reload: soundId }),
     model: weaponModelSchema,
+    /**
+     * Admin guns only (2026-10-30): an enemy type (content/enemies). Where a shot stops,
+     * an enemy of it spawns; its shots do no harm and use no rounds. Given only from the
+     * admin page, so keep these out of loot tables, loadouts and vendors.
+     */
+    spawns: idSchema.optional(),
   })
   .superRefine((w, ctx) => {
     const slots = w.slots ?? [];

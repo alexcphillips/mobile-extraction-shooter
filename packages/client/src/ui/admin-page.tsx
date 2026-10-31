@@ -5,17 +5,22 @@ import { colourOf } from './raid-screen';
 
 /*
  * The admin page between raids (dev builds only, 2026-10-30): every item, given into the
- * stash free, for testing. The server only allows it under `wrangler dev`. The Cheats tab
- * turns on testing aids for your next raids (see admin-cheats.ts).
+ * stash free, for testing. The server only allows it under `wrangler dev`. The Admin tab
+ * has the admin-only items (spawner guns); the Cheats tab turns on testing aids for your
+ * next raids (see admin-cheats.ts).
  */
 
-const TABS: readonly { label: string; types: readonly ItemDef['type'][] }[] = [
-  { label: 'Guns', types: ['weapon', 'melee'] },
-  { label: 'Ammo', types: ['ammo'] },
-  { label: 'Attachments', types: ['attachment'] },
-  { label: 'Meds', types: ['med', 'repair'] },
-  { label: 'Gear', types: ['armour', 'container'] },
-  { label: 'Other', types: ['key', 'quest', 'loot'] },
+/** An admin item: a spawner gun (WeaponDef.spawns). These get their own tab. */
+const isAdminItem = (d: ItemDef): boolean => d.type === 'weapon' && d.spawns !== undefined;
+
+const TABS: readonly { label: string; shows: (d: ItemDef) => boolean }[] = [
+  { label: 'Guns', shows: (d) => (d.type === 'weapon' || d.type === 'melee') && !isAdminItem(d) },
+  { label: 'Ammo', shows: (d) => d.type === 'ammo' },
+  { label: 'Attachments', shows: (d) => d.type === 'attachment' },
+  { label: 'Meds', shows: (d) => d.type === 'med' || d.type === 'repair' },
+  { label: 'Gear', shows: (d) => d.type === 'armour' || d.type === 'container' },
+  { label: 'Other', shows: (d) => d.type === 'key' || d.type === 'quest' || d.type === 'loot' },
+  { label: 'Admin', shows: isAdminItem },
 ];
 
 const CHEATS: readonly { key: keyof Cheats; label: string; hint: string }[] = [
@@ -30,6 +35,11 @@ const CHEATS: readonly { key: keyof Cheats; label: string; hint: string }[] = [
     hint: 'Firing uses no rounds; an empty gun reloads without spare ammo.',
   },
   {
+    key: 'infiniteConsumables',
+    label: 'Infinite consumables',
+    hint: 'Meds and repair kits work but are never used up.',
+  },
+  {
     key: 'keepGear',
     label: 'Keep inventory on death',
     hint: 'Dying or going missing keeps everything, as if you extracted.',
@@ -38,6 +48,11 @@ const CHEATS: readonly { key: keyof Cheats; label: string; hint: string }[] = [
     key: 'peaceful',
     label: 'Peaceful',
     hint: 'Enemies never notice you, even when you shoot them. Same as ?peaceful.',
+  },
+  {
+    key: 'enemyHealth',
+    label: 'Enemy health bars',
+    hint: 'A health bar over every living enemy, seen through walls.',
   },
 ];
 
@@ -97,7 +112,7 @@ export function AdminPage({
   }, [onBack]);
   const tab = TABS[shown];
   const list = [...items.values()]
-    .filter((d) => tab?.types.includes(d.type))
+    .filter((d) => tab?.shows(d))
     .sort((a, b) => a.name.localeCompare(b.name));
   const give = (def: ItemDef, count: number): void => {
     if (giving) return;
@@ -154,7 +169,11 @@ export function AdminPage({
               );
             })}
           </ul>
-          <p className="raid-note">Dev server only. Items go into your stash, free.</p>
+          <p className="raid-note">
+            Dev server only. Items go into your stash, free.
+            {tab.label === 'Admin' &&
+              ' Spawner guns put an enemy wherever a shot lands; they harm no one and need no ammo.'}
+          </p>
         </div>
       )}
     </div>
