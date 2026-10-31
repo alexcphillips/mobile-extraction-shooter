@@ -355,6 +355,15 @@ const meleeSchema = z.strictObject({
 });
 
 /**
+ * What a grenade does when it goes off (2026-10-31): frag hurts everyone in its radius;
+ * flash blinds whoever is looking at it within its radius; smoke leaves a cloud enemies
+ * can't see through; c4 sticks where it lands and waits for its thrower's detonator, then
+ * goes off as a frag does.
+ */
+export const GRENADE_EFFECTS = ['frag', 'flash', 'smoke', 'c4'] as const;
+export type GrenadeEffect = (typeof GRENADE_EFFECTS)[number];
+
+/**
  * Thrown grenades (2026-10-30): one press throws the first one carried. It bounces off
  * the map and goes off its fuse after the throw, hurting everyone in its radius that it
  * can see, less further out (sim/grenades.ts).
@@ -362,17 +371,23 @@ const meleeSchema = z.strictObject({
 const grenadeSchema = z.strictObject({
   ...common,
   type: z.literal('grenade'),
-  /** Seconds from the throw until it goes off. */
+  /** What it does; left out, a frag. */
+  effect: z.enum(GRENADE_EFFECTS).optional(),
+  /** Seconds from the throw until it goes off; for c4, from the detonator. */
   fuse: positive,
   /** How fast it leaves the hand, in m/s. */
   throwSpeed: positive,
-  /** It hurts out to here, in metres. */
+  /**
+   * It hurts out to here, in metres. A flash blinds out to here, and a smoke's cloud is
+   * this big.
+   */
   radius: positive,
   /**
    * Damage to the chest at the centre; the other zones take their share (GRENADE.zones),
-   * and it falls off further out. Then armour stops some, as for ammo.
+   * and it falls off further out. Then armour stops some, as for ammo. 0 hurts no one
+   * (flash and smoke).
    */
-  damage: positive,
+  damage: nonNegative,
   /** Its fragments' penetration level, as for ammo. */
   level: levelSchema,
   /** Armour durability lost per zone hit, as for ammo. */
@@ -381,6 +396,13 @@ const grenadeSchema = z.strictObject({
   bleedChance: fraction,
   /** How far away it can be heard going off (by AI), as for a gun. */
   loudness: positive,
+  /**
+   * Flash only: the longest it blinds someone, in seconds: looking at it, close; less
+   * further out.
+   */
+  blindTime: positive.optional(),
+  /** Smoke only: how long its cloud lasts, in seconds. */
+  smokeTime: positive.optional(),
   /** Leaving the hand, hitting something, and going off. */
   sounds: z.strictObject({ throw: soundId, bounce: soundId, explode: soundId }),
   ...plainModel,
@@ -589,6 +611,8 @@ export const attachmentDef = (items: ItemDb, id: string): AttachmentDef =>
 export const medDef = (items: ItemDb, id: string): MedDef => itemOf(items, id, 'med');
 export const meleeDef = (items: ItemDb, id: string): MeleeDef => itemOf(items, id, 'melee');
 export const grenadeDef = (items: ItemDb, id: string): GrenadeDef => itemOf(items, id, 'grenade');
+/** What a grenade does: its effect, a frag if it doesn't say. */
+export const grenadeEffect = (def: GrenadeDef): GrenadeEffect => def.effect ?? 'frag';
 export const containerDef = (items: ItemDb, id: string): ContainerDef =>
   itemOf(items, id, 'container');
 export const repairDef = (items: ItemDb, id: string): RepairDef => itemOf(items, id, 'repair');
@@ -615,10 +639,14 @@ export function fits(weapon: WeaponDef, attachment: AttachmentDef): boolean {
 /** What a gun can be loaded with: ammo, or grenades for a grenade launcher. */
 export type RoundDef = AmmoDef | GrenadeDef;
 
-/** An item as something a gun can load, or null if it isn't ammo or a grenade. */
+/**
+ * An item as something a gun can load, or null if it isn't ammo or a grenade. C4 isn't a
+ * round: it's placed by hand, never launched (2026-10-31).
+ */
 export function roundOf(items: ItemDb, id: string): RoundDef | null {
   const def = items.get(id);
-  return def?.type === 'ammo' || def?.type === 'grenade' ? def : null;
+  if (def?.type === 'grenade') return def.effect === 'c4' ? null : def;
+  return def?.type === 'ammo' ? def : null;
 }
 
 /** A round's calibre: ammo's own; every grenade is 'grenade', fired by every launcher. */
@@ -639,15 +667,16 @@ export function firesRound(items: ItemDb, weapon: WeaponDef, id: string): boolea
 }
 
 /**
- * Checks references between items: a weapon's ammo exists and is ammo (or a grenade, with
- * a launch speed), and an attachment's guns exist and have its slot.
+ * Checks references between items: a weapon's ammo exists and is ammo (or a grenade other
+ * than c4, with a launch speed), a grenade has the fields its effect needs, and an
+ * attachment's guns exist and have its slot.
  */
 export function checkItems(items: ItemDb): void {
   for (const item of items.values()) {
     const source = `content/items/${item.id}.json`;
     if (item.type === 'weapon') {
-      const ammo = items.get(item.ammo);
-      if (ammo?.type !== 'ammo' && ammo?.type !== 'grenade') {
+      const ammo = roundOf(items, item.ammo);
+      if (!ammo) {
         throw new ContentError(source, `ammo "${item.ammo}" is not an ammo or grenade item`);
       }
       if ((ammo.type === 'grenade') !== (item.launchSpeed !== undefined)) {
@@ -655,6 +684,14 @@ export function checkItems(items: ItemDb): void {
       }
       if (item.armDistance !== undefined && ammo.type !== 'grenade') {
         throw new ContentError(source, 'only a gun firing grenades has armDistance');
+      }
+    } else if (item.type === 'grenade') {
+      const effect = grenadeEffect(item);
+      if ((effect === 'flash') !== (item.blindTime !== undefined)) {
+        throw new ContentError(source, 'a flash grenade needs blindTime, and only it');
+      }
+      if ((effect === 'smoke') !== (item.smokeTime !== undefined)) {
+        throw new ContentError(source, 'a smoke grenade needs smokeTime, and only it');
       }
     } else if (item.type === 'attachment') {
       for (const id of item.weapons ?? []) {

@@ -1,0 +1,45 @@
+{
+  "formatVersion": 1,
+  "id": "flash-bang",
+  "name": "Flash bang",
+  "gain": 0.5,
+  "range": 400,
+  "pitchJitter": 0.05,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0.02,
+      "decay": 0.35,
+      "curve": 3,
+      "gain": 1.1,
+      "drive": 0.9,
+      "filter": { "type": "highpass", "freq": [400, 1200], "q": 0.7 }
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0,
+      "attack": 0.002,
+      "hold": 0.03,
+      "decay": 0.5,
+      "curve": 2.5,
+      "gain": 0.8,
+      "drive": 0.5,
+      "filter": { "type": "lowpass", "freq": [2000, 150], "q": 0.8 }
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [3400, 3300],
+      "at": 0.05,
+      "attack": 0.05,
+      "hold": 0.4,
+      "decay": 1.8,
+      "curve": 1.5,
+      "gain": 0.12
+    }
+  ]
+}

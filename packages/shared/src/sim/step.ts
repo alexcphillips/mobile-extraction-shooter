@@ -55,6 +55,7 @@ export function step(
   for (const e of state.entities) {
     const input = e.health.dead ? undefined : (inputs[e.id] ?? e.ai?.input);
     if (e.draw > 0) e.draw = Math.max(0, e.draw - TICK_SECONDS);
+    if (e.blind) e.blind = Math.max(0, e.blind - TICK_SECONDS);
     if (input?.draw) switchHand(e, items, input.draw);
     updateMedUse(e, items, input);
   }
@@ -72,7 +73,7 @@ export function step(
     updateMelee(state, e, input, world, items);
     updateThrow(state, e, input, world, items);
   }
-  // Thrown this tick or before: they fly, and those whose fuse is up go off.
+  // Thrown this tick or before: they fly, and those whose fuse is up go off. Smoke clears.
   updateGrenades(state, world, items);
   for (const e of state.entities) bleed(state, e);
   if (nav) updateAi(state, world, items, nav);

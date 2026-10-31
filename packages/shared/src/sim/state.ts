@@ -3,7 +3,7 @@ import type { AiState } from './ai';
 import type { CollisionWorld } from '../world/collision-world';
 import { createGear, type Gear, type Hand } from './gear';
 import type { DoorEvent, DoorState } from './doors';
-import type { BounceEvent, ExplosionEvent, Grenade, ThrowEvent } from './grenades';
+import type { BounceEvent, ExplosionEvent, Grenade, Smoke, ThrowEvent } from './grenades';
 import type { GroundItem } from './ground';
 import { createHealth, type DamageEvent, type DeathEvent, type Health } from './health';
 import type { InventoryAction, InventoryEvent, LootContainer } from './looting';
@@ -73,6 +73,11 @@ export interface Character {
   swing: number;
   /** Seconds until it can throw another grenade; missing (as in older saves) is 0. */
   throwCooldown?: number;
+  /**
+   * Seconds left blinded by a flash grenade (2026-10-31): an enemy sees nothing, a player's
+   * screen is white. Missing (as in older saves) is 0.
+   */
+  blind?: number;
   /** The med it's using, or null. */
   using: MedUse | null;
   /** Seconds it has stood in an extraction point; 0 when not in one. */
@@ -144,8 +149,10 @@ export interface SimState {
   loot: LootContainer[];
   /** Items lying loose: rolled at loot spawns, dropped, or with nowhere else to go. */
   ground: GroundItem[];
-  /** Grenades thrown and not yet gone off. */
+  /** Grenades thrown and not yet gone off, and C4 waiting for its detonator. */
   grenades: Grenade[];
+  /** Smoke grenades' clouds, until they clear (2026-10-31). */
+  smokes: Smoke[];
   /** Each of the world's doors, by index; filled in by the first step (see syncDoors). */
   doors: DoorState[];
   /** The timer and extraction points; null outside a raid (tests, the perf scene). */
@@ -187,8 +194,15 @@ export interface PlayerInput {
   inventory?: readonly InventoryAction[];
   /** Take out a gun slot or the knife: a press. */
   draw?: Hand | null;
-  /** Throw the first grenade carried: a press. */
+  /** Throw a grenade: a press. */
   throw?: boolean;
+  /**
+   * With throw: which grenade, by item id (the grenade button's picker). Left out, or
+   * none of it carried, the first grenade carried.
+   */
+  grenade?: string | null;
+  /** Set off every C4 it has placed: a press. */
+  detonate?: boolean;
   /** Start using a carried med (a press), or stop using one. */
   use?: MedRef | 'cancel' | null;
   /** Open, close or unlock a door, by its index in world.doors: a press. */
@@ -212,6 +226,7 @@ export function createState(seed: number): SimState {
     loot: [],
     ground: [],
     grenades: [],
+    smokes: [],
     doors: [],
     raid: null,
     left: [],

@@ -41,7 +41,7 @@ interface MoveTouch {
  * Desktop: the mouse is captured (see CursorLock): moving it looks, the left button fires
  * and the right one aims. WASD, Shift sprint, Space jump (or vault), C crouch, X prone
  * (a toggle; C, Space or sprinting gets up), R reload, E use, I or Tab the bag, 1–4 take out primary 1, primary 2, sidearm or knife,
- * H heal (held, picks), G throw a grenade,
+ * H heal (held, picks), G throw a grenade (held, picks which), B set off placed C4,
  * F and Q fire and aim too, 7 and 8 the debug actions. Mouse pointers never drive the
  * touch stick; CSS hides the touch-only buttons.
  */
@@ -68,8 +68,12 @@ export class Controls {
   heal = false;
   /** The heal button held: pick which med. */
   healPick = false;
-  /** The grenade button: throw one. */
+  /** The grenade button tapped: throw the one it shows. */
   throw = false;
+  /** The grenade button held: pick which grenade. */
+  throwPick = false;
+  /** The detonate button: set off placed C4. */
+  detonate = false;
   /** A debug action (0 or 1), or -1. */
   debug = -1;
   /** Look speed multiplier from aim assist, set by the game while the crosshair is on an enemy. */
@@ -102,9 +106,11 @@ export class Controls {
   private pressedHeal = false;
   private pressedHealPick = false;
   private pressedThrow = false;
+  private pressedThrowPick = false;
+  private pressedDetonate = false;
   private pressedDebug = -1;
   private readonly keys = new Set<string>();
-  /** H while held: called with whether the release is a tap. */
+  /** H or G while held: called with whether the release is a tap. */
   private readonly keyHolds = new Map<string, (tap?: boolean) => void>();
 
   constructor(
@@ -158,10 +164,12 @@ export class Controls {
     this.heal = this.pressedHeal;
     this.healPick = this.pressedHealPick;
     this.throw = this.pressedThrow;
+    this.throwPick = this.pressedThrowPick;
+    this.detonate = this.pressedDetonate;
     this.debug = this.pressedDebug;
     this.pressedReload = this.pressedInteract = this.pressedBag = false;
     this.pressedHeal = this.pressedHealPick = false;
-    this.pressedThrow = false;
+    this.pressedThrow = this.pressedThrowPick = this.pressedDetonate = false;
     this.pressedDraw = null;
     this.pressedDebug = -1;
 
@@ -208,8 +216,8 @@ export class Controls {
     this.look.clear();
     for (const release of this.releases.values()) release();
     this.releases.clear();
-    // Letting go of the heal button isn't a tap when it's the game letting go.
-    this.pressedHeal = false;
+    // Letting go of the heal or grenade button isn't a tap when it's the game letting go.
+    this.pressedHeal = this.pressedThrow = false;
     this.keys.clear();
     this.mouseFire = this.mouseAim = false;
     this.setSprintLock(false);
@@ -278,20 +286,25 @@ export class Controls {
         this.pressedBag = true;
         held(() => {});
         break;
-      case 'grenade':
-        this.pressedThrow = true;
+      case 'detonate':
+        this.pressedDetonate = true;
         held(() => {});
         break;
+      case 'grenade':
       case 'heal': {
-        // A tap uses the default when it lifts; holding opens the picker instead.
+        // A tap uses (or throws) the default when it lifts; holding opens the picker instead.
+        const grenade = id === 'grenade';
         let picked = false;
         const timer = setTimeout(() => {
           picked = true;
-          this.pressedHealPick = true;
+          if (grenade) this.pressedThrowPick = true;
+          else this.pressedHealPick = true;
         }, LONG_PRESS_MS);
         held(() => {
           clearTimeout(timer);
-          if (!picked) this.pressedHeal = true;
+          if (picked) return;
+          if (grenade) this.pressedThrow = true;
+          else this.pressedHeal = true;
         });
         break;
       }
@@ -342,7 +355,14 @@ export class Controls {
     else if (e.code === 'KeyE') this.pressedInteract = true;
     else if (e.code === 'KeyX') this.setProne(!this.proneOn);
     else if ((e.code === 'KeyC' || e.code === 'Space') && this.proneOn) this.setProne(false);
-    else if (e.code === 'KeyG') this.pressedThrow = true;
+    // G as its touch button too: a tap throws when it lifts, holding opens the picker.
+    else if (e.code === 'KeyG')
+      this.holdKey(
+        e.code,
+        () => (this.pressedThrow = true),
+        () => (this.pressedThrowPick = true),
+      );
+    else if (e.code === 'KeyB') this.pressedDetonate = true;
     else if (e.code === 'KeyI' || e.code === 'Tab') {
       e.preventDefault();
       this.pressedBag = true;

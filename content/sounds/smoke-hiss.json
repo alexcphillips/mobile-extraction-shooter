@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "id": "smoke-hiss",
+  "name": "Smoke hiss",
+  "gain": 0.4,
+  "range": 40,
+  "pitchJitter": 0.08,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0,
+      "attack": 0.002,
+      "hold": 0,
+      "decay": 0.12,
+      "curve": 2,
+      "gain": 0.7,
+      "filter": { "type": "lowpass", "freq": [800, 200], "q": 0.8 }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0.03,
+      "attack": 0.15,
+      "hold": 1.2,
+      "decay": 1.5,
+      "curve": 1.5,
+      "gain": 0.5,
+      "filter": { "type": "bandpass", "freq": [2600, 1800], "q": 0.9 }
+    }
+  ]
+}

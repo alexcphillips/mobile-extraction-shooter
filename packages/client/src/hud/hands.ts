@@ -1,6 +1,10 @@
 import {
+  CARRIED_GRIDS,
+  carriedGrenade,
   carriedGrenades,
   carriedGrid,
+  grenadeDef,
+  grenadeEffect,
   heldWeapon,
   itemDef,
   medDef,
@@ -12,6 +16,7 @@ import {
   type MedRef,
 } from '@mes/shared';
 import type { Hud } from './hud';
+import type { ControlId } from './layout';
 
 const svg = (path: string): string =>
   `<svg viewBox="0 0 24 24" width="26" height="26"><path fill="currentColor" d="${path}"/></svg>`;
@@ -39,13 +44,33 @@ function does(items: ItemDb, c: Character, ref: MedRef): string {
   }
 }
 
+/** A picker entry: its name, a line under it, and what picking it does. */
+type PickerEntry = [name: string, detail: string, pick: () => void];
+
+/** What a grenade does, for the picker. */
+function grenadeDoes(items: ItemDb, id: string): string {
+  const def = grenadeDef(items, id);
+  switch (grenadeEffect(def)) {
+    case 'frag':
+      return `blast, ${def.radius} m`;
+    case 'flash':
+      return `blinds, ${def.radius} m`;
+    case 'smoke':
+      return `smoke for ${def.smokeTime ?? 0} s`;
+    case 'c4':
+      return 'place it, then detonate';
+  }
+}
+
 /**
  * The hand-slot buttons and the heal button, written straight to the DOM like the rest of
  * the HUD. Each slot shows what's in it, dimmed when empty and outlined when in hand. The
  * heal button shows the med a tap would use (greyed out when nothing helps), and a ring
  * fills while one is being used. A long press opens a picker of every carried med that
  * would help. The fire button says "knife" with the knife out; aim and reload dim without
- * a gun. The grenade button shows how many are carried, dimmed with none.
+ * a gun. The grenade button shows the kind a tap throws and how many of it are carried,
+ * dimmed with none; a long press picks the kind (2026-10-31). The detonate button shows
+ * only while you have C4 placed.
  */
 export class HandsHud {
   private readonly slotKeys = HANDS.map(() => '');
@@ -55,13 +80,21 @@ export class HandsHud {
   private best: MedRef | null = null;
   private healKey = '';
   private fireKey = '';
-  private grenades = -1;
+  private grenadeKey = '';
   private readonly grenadeCount: HTMLElement;
+  private readonly grenadeName: HTMLElement;
+  /** The kind of grenade picked, by item id; null throws the first carried. */
+  private grenadePick: string | null = null;
+  /** The kind a tap throws: the one picked while any are carried, else the first. */
+  private grenadeNext: string | null = null;
+  private armed = false;
   private ticks = 0;
 
   constructor(
     private readonly hud: Hud,
     private readonly onPick: (ref: MedRef) => void,
+    /** Told the name of a grenade picked, as a desktop has no grenade button to show it. */
+    private readonly onGrenadePick: (name: string) => void,
   ) {
     const heal = hud.button('heal');
     heal.innerHTML =
@@ -70,8 +103,10 @@ export class HandsHud {
     this.ring = heal.querySelector('circle')!;
     this.healName = heal.querySelector('.heal-name')!;
     const grenade = hud.button('grenade');
-    grenade.innerHTML = `<span class="slot-num"></span>${GRENADE}`;
+    grenade.innerHTML = `<span class="slot-num"></span>${GRENADE}<span class="heal-name"></span>`;
     this.grenadeCount = grenade.querySelector('.slot-num')!;
+    this.grenadeName = grenade.querySelector('.heal-name')!;
+    hud.button('detonate').classList.add('unarmed');
     this.picker = document.createElement('div');
     this.picker.className = 'heal-picker';
     this.picker.hidden = true;
@@ -95,8 +130,16 @@ export class HandsHud {
     return this.best;
   }
 
-  /** Call once per tick. Works out the heal button's choice about 10 times a second. */
-  update(c: Character, items: ItemDb): void {
+  /** The grenade a tap on the grenade button throws, by item id, or null for any. */
+  get grenadeChoice(): string | null {
+    return this.grenadeNext;
+  }
+
+  /**
+   * Call once per tick, with whether you have C4 placed. Works out the heal and grenade
+   * buttons' choices about 10 times a second.
+   */
+  update(c: Character, items: ItemDb, armed: boolean): void {
     const g = c.gear;
     HANDS.forEach((hand, i) => {
       const it = g[hand];
@@ -120,14 +163,28 @@ export class HandsHud {
     if (this.ticks++ % 3 === 0 || c.using) {
       this.best = c.health.dead ? null : (treatments(c, items)[0] ?? null);
     }
-    // How many grenades are carried, dimmed with none.
+    // The kind of grenade a tap throws and how many of it are carried, dimmed with none.
     if (this.ticks % 3 === 1) {
-      const n = carriedGrenades(c, items);
-      if (n !== this.grenades) {
-        this.grenades = n;
+      const picked = this.grenadePick && carriedGrenades(c, items, this.grenadePick) > 0;
+      const ref = picked ? null : carriedGrenade(c, items);
+      this.grenadeNext = picked
+        ? this.grenadePick
+        : ref
+          ? carriedGrid(c.gear, ref.grid)!.items[ref.index]!.item.item
+          : null;
+      const n = this.grenadeNext ? carriedGrenades(c, items, this.grenadeNext) : 0;
+      const name = this.grenadeNext ? grenadeEffect(grenadeDef(items, this.grenadeNext)) : '';
+      const key = `${name} ${n}`;
+      if (key !== this.grenadeKey) {
+        this.grenadeKey = key;
         this.grenadeCount.textContent = n ? String(n) : '';
+        this.grenadeName.textContent = name;
         this.hud.button('grenade').classList.toggle('idle', n === 0);
       }
+    }
+    if (armed !== this.armed) {
+      this.armed = armed;
+      this.hud.button('detonate').classList.toggle('unarmed', !armed);
     }
     const name = c.using
       ? itemDef(items, c.using.item).name
@@ -160,28 +217,72 @@ export class HandsHud {
 
   /** Opens the picker over the heal button: every carried med that would help now. */
   showPicker(c: Character, items: ItemDb): void {
-    const options = treatments(c, items);
+    this.openPicker(
+      'heal',
+      treatments(c, items).map((ref): PickerEntry => {
+        const def = medDef(items, ref.item);
+        return [def.name, `${does(items, c, ref)} · ${def.useTime} s`, () => this.onPick(ref)];
+      }),
+    );
+  }
+
+  /** Opens the picker over the grenade button: each kind of grenade carried, and how many. */
+  showGrenadePicker(c: Character, items: ItemDb): void {
+    const counts = new Map<string, number>();
+    for (let g = 0; g < CARRIED_GRIDS; g++) {
+      for (const gi of carriedGrid(c.gear, g)?.items ?? []) {
+        const id = gi.item.item;
+        if (items.get(id)?.type === 'grenade') counts.set(id, (counts.get(id) ?? 0) + 1);
+      }
+    }
+    this.openPicker(
+      'grenade',
+      [...counts].map(([id, n]): PickerEntry => {
+        const name = grenadeDef(items, id).name;
+        return [
+          name,
+          `${grenadeDoes(items, id)} · ${n} carried`,
+          () => {
+            this.grenadePick = id;
+            // Shown straight away, not at the next refresh.
+            this.grenadeNext = id;
+            this.grenadeKey = '';
+            this.onGrenadePick(name);
+          },
+        ];
+      }),
+    );
+  }
+
+  /**
+   * Opens the picker over a button with these entries; none closes it. Over the middle of
+   * the screen when the button is hidden (the grenade button on a desktop).
+   */
+  private openPicker(anchor: ControlId, entries: PickerEntry[]): void {
     this.picker.replaceChildren();
-    if (!options.length) {
+    if (!entries.length) {
       this.hidePicker();
       return;
     }
-    for (const ref of options) {
+    for (const [name, detail, pick] of entries) {
       const b = document.createElement('button');
-      const def = medDef(items, ref.item);
-      b.innerHTML = `<b>${def.name}</b><span>${does(items, c, ref)} · ${def.useTime} s</span>`;
+      b.innerHTML = `<b>${name}</b><span>${detail}</span>`;
       b.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         e.stopPropagation();
         this.hidePicker();
-        this.onPick(ref);
+        pick();
       });
       this.picker.append(b);
     }
-    const heal = this.hud.button('heal').getBoundingClientRect();
-    this.picker.style.left = `${heal.left + heal.width / 2}px`;
-    this.picker.style.bottom = `${window.innerHeight - heal.top + 8}px`;
+    const at = this.hud.button(anchor).getBoundingClientRect();
+    const shown = at.width > 0;
+    this.picker.style.left = `${shown ? at.left + at.width / 2 : window.innerWidth / 2}px`;
+    this.picker.style.bottom = `${window.innerHeight - (shown ? at.top : window.innerHeight / 2) + 8}px`;
     this.picker.hidden = false;
+    // Kept on screen: a long list over a button high up would run off the top.
+    const top = this.picker.getBoundingClientRect().top;
+    if (top < 8) this.picker.style.bottom = `${parseFloat(this.picker.style.bottom) + top - 8}px`;
   }
 
   hidePicker(): void {

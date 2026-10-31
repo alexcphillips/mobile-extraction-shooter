@@ -13,7 +13,8 @@ export type ControlId =
   | 'sidearm'
   | 'knife'
   | 'heal'
-  | 'grenade';
+  | 'grenade'
+  | 'detonate';
 
 export interface ControlDef {
   id: ControlId;
@@ -44,6 +45,8 @@ export const CONTROLS: readonly ControlDef[] = [
   { id: 'knife', label: '4', size: 46, x: 0.52, y: 0.9 },
   { id: 'heal', label: 'heal', size: 54, x: 0.6, y: 0.88 },
   { id: 'grenade', label: 'nade', size: 48, x: 0.6, y: 0.45 },
+  // Only shown while you have C4 placed (2026-10-31).
+  { id: 'detonate', label: 'detonate', size: 48, x: 0.6, y: 0.27 },
 ];
 
 export function placementOf(
