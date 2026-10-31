@@ -540,45 +540,6 @@ body.cursor-locked #settings-button {
   display: none;
 }
 
-/* Desktop's "click to play" (input/cursor-lock.ts), with the keys. The game is paused. */
-#cursor-lock {
-  position: fixed;
-  inset: 0;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 24px;
-  background: rgb(0 0 0 / 0.55);
-  color: #f2efe6;
-  font:
-    13px/1.4 system-ui,
-    sans-serif;
-  cursor: pointer;
-}
-
-#cursor-lock[hidden] {
-  display: none;
-}
-
-.cursor-lock-title {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-}
-
-.cursor-lock-keys {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px 16px;
-  max-width: 640px;
-  margin: 0;
-  opacity: 0.85;
-}
-
 kbd {
   padding: 1px 5px;
   border: 1px solid rgb(255 255 255 / 0.4);
@@ -767,11 +728,6 @@ body:has(#controls.editing) :is(#hud, #presets, #settings-button, #vitals, #ammo
   border-radius: 50%;
   background: rgb(0 0 0 / 0.4);
   color: #fff;
-}
-
-/* Over desktop's "click to play", so settings can be reached while the cursor is free. */
-body:has(#cursor-lock:not([hidden])) #settings-button {
-  z-index: 3;
 }
 
 /* Layout editor toolbar. */

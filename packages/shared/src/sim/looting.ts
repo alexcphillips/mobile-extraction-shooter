@@ -546,6 +546,8 @@ function quickMove(ctx: Ctx, from: Found, to: Owner): boolean {
   } else {
     const ch = ownerCharacter(state, c, to);
     for (let i = 0; ch && i < CARRIED_GRIDS; i++) into(carriedGrid(ch.gear, i));
+    // Your vault last, once pockets, rig and backpack are full (the user's call, 2026-10-30).
+    if (to.kind === 'self') into(c.gear.vault);
   }
   if (left === 0) takeOut(from);
   return left < before;

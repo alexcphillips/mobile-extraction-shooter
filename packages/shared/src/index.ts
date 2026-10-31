@@ -212,6 +212,7 @@ export { MELEE, updateMelee, type SwingEvent } from './sim/melee';
 export {
   addItem,
   canHold,
+  canSwap,
   countOf,
   createGrid,
   dropAt,

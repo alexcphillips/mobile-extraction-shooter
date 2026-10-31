@@ -43,14 +43,8 @@ interface Props {
 /** The in-raid screen: inventory (with looting), map and quests tabs. */
 export function RaidScreen({ inv, version, ctx }: Props & { ctx: RaidContext }): ReactNode {
   const [tab, setTab] = useState<Tab>('inventory');
+  // Not Esc (2026-10-30): browsers won't capture the mouse again from it. Tab or Close.
   const close = inv.ctx.close;
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent): void => {
-      if (e.code === 'Escape') close();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [close]);
   return (
     <div className="raid" role="dialog" aria-label="Raid">
       <header className="raid-tabs">
