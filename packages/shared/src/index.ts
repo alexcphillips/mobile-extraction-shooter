@@ -454,8 +454,10 @@ export {
   isMoney,
   MAX_SELL,
   sellItems,
+  sellParts,
   sellTotal,
   sellPrice,
+  type SellPart,
 } from './vendors';
 export {
   VENDOR_FORMAT,
@@ -483,6 +485,7 @@ export {
   objectiveProgress,
   objectiveText,
   questStatus,
+  questsFor,
   raidObjectives,
   raidProgress,
   sameQuests,

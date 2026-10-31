@@ -45,23 +45,46 @@ export function isMoney(items: ItemDb, id: string): boolean {
   return def.type === 'loot' && !!def.money;
 }
 
+/** One line of what a vendor pays for an item: the item itself, an attachment, or rounds. */
+export interface SellPart {
+  id: string;
+  count: number;
+  price: number;
+}
+
+/**
+ * What a vendor pays for an item (or stack), part by part: the item first, then a gun's
+ * attachments and loaded rounds. For the item details; sellPrice is their sum.
+ */
+export function sellParts(items: ItemDb, item: Item): SellPart[] {
+  const def = itemDef(items, item.item);
+  const share = (id: string): number => Math.floor(itemDef(items, id).value * VENDOR.sellShare);
+  if (isMoney(items, def.id))
+    return [{ id: def.id, count: item.count, price: def.value * item.count }];
+  const parts: SellPart[] = [
+    {
+      id: def.id,
+      count: item.count,
+      price: Math.floor(def.value * VENDOR.sellShare * condition(items, item)) * item.count,
+    },
+  ];
+  if (def.type === 'weapon') {
+    for (const a of Object.values(item.attachments ?? {})) {
+      if (a) parts.push({ id: a, count: 1, price: share(a) });
+    }
+    const mag = item.mag ?? 0;
+    const round = loadedAmmo(items, item);
+    if (mag > 0) parts.push({ id: round, count: mag, price: share(round) * mag });
+  }
+  return parts;
+}
+
 /**
  * What a vendor pays for an item (or stack): its share of the value by condition, whole
  * money per item; money at its full value. A gun's attachments and loaded rounds count.
  */
 export function sellPrice(items: ItemDb, item: Item): number {
-  const def = itemDef(items, item.item);
-  if (isMoney(items, def.id)) return def.value * item.count;
-  let price = Math.floor(def.value * VENDOR.sellShare * condition(items, item)) * item.count;
-  if (def.type === 'weapon') {
-    for (const a of Object.values(item.attachments ?? {})) {
-      if (a) price += Math.floor(itemDef(items, a).value * VENDOR.sellShare);
-    }
-    price +=
-      Math.floor(itemDef(items, loadedAmmo(items, item)).value * VENDOR.sellShare) *
-      (item.mag ?? 0);
-  }
-  return price;
+  return sellParts(items, item).reduce((n, p) => n + p.price, 0);
 }
 
 /** Why an item can't be sold, or null if it can. */

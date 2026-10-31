@@ -153,6 +153,11 @@ export class DragController {
     window.addEventListener('keydown', this.onKey);
   }
 
+  /** Whether an item is pressed or being dragged. */
+  get busy(): boolean {
+    return this.src !== null;
+  }
+
   /** Stops any drag, without dropping. */
   cancel(): void {
     this.end();

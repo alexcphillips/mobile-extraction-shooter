@@ -11,6 +11,7 @@ import {
   handOver,
   handOverCount,
   questStatus,
+  questsFor,
   raidObjectives,
   raidProgress,
   sameQuests,
@@ -55,6 +56,19 @@ const notes = quest({
     { id: 'look', type: 'investigate', map: 'm', marker: 'office', text: 'Look round' },
     { id: 'other', type: 'investigate', map: 'elsewhere', marker: 'office', text: 'Not here' },
   ],
+});
+
+describe('quests for an item', () => {
+  it('lists the quests that ask for it to be handed over or got out with', () => {
+    const all = [radio, watches, notes];
+    expect(questsFor(all, 'watch').map((q) => [q.quest.id, q.objective.id])).toEqual([
+      ['watches', 'give'],
+    ]);
+    expect(questsFor(all, 'notes').map((q) => [q.quest.id, q.objective.id])).toEqual([
+      ['notes', 'grab'],
+    ]);
+    expect(questsFor(all, 'bandage')).toEqual([]);
+  });
 });
 
 describe('quests in raids', () => {

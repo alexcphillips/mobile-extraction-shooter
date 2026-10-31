@@ -33,6 +33,8 @@ export interface InventoryContext {
   sell?: (refs: ItemRef[]) => Promise<void>;
   /** In a raid: starts using a carried med, or stops the med or repair being used. */
   use?: (use: MedRef | 'cancel') => void;
+  /** Every quest, for the item details to name the quests that want an item. */
+  quests?: readonly QuestDef[];
 }
 
 /** What the raid screen needs from the game. */
@@ -79,6 +81,7 @@ export function openRaidScreen(
     setTarget: (t) => inv.setTarget(t),
     hide: () => {
       inv.drag.cancel();
+      inv.cancelOpen();
       r.render(null);
       container.hidden = true;
     },
