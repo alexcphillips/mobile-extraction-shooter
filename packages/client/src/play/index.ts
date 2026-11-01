@@ -97,6 +97,7 @@ import { AIM_FOV, FOV, aimedFov, type OpticOverlay } from '../hud/optic';
 import { EnemyBars } from '../hud/enemy-bars';
 import { QuestMarkers } from '../hud/quest-markers';
 import type { RaidHud } from '../hud/raid-hud';
+import { SpectateBar } from '../hud/spectate';
 import type { Vitals } from '../hud/vitals';
 import { Controls } from '../input/controls';
 import { inputMode } from '../input/mode';
@@ -525,7 +526,19 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const inputs: Record<EntityId, PlayerInput> = { [player.id]: input };
   // What the frame draws between ticks: the eye, aim, recoil and how far drawn what's in
   // hand is, from the last two ticks.
-  const prev = { x: player.x, y: eyeHeight(player), z: player.z, aim: 0, rp: 0, ry: 0, drawn: 1 };
+  // The view between ticks. Look (yaw, pitch) is only used spectating: your own is the
+  // controls', every frame.
+  const prev = {
+    x: player.x,
+    y: eyeHeight(player),
+    z: player.z,
+    aim: 0,
+    rp: 0,
+    ry: 0,
+    drawn: 1,
+    yaw: 0,
+    pitch: 0,
+  };
   const cur = { ...prev };
 
   const stats = new Stats(
@@ -811,7 +824,12 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     resultsAt = now + (how === 'killed' ? RESULTS_AFTER_DEATH_MS : 0);
     closeScreen();
   }
+  let resultsShown = false;
   function showResults(result: RaidResult): void {
+    if (resultsShown) return;
+    resultsShown = true;
+    // A guest is done with the host's raid: let it stop sending.
+    guest?.close();
     import('../ui/results')
       .then((ui) => {
         // The next raid starts from the page, which sends anything not yet saved first.
@@ -820,6 +838,55 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         if (!host?.playing(sim)) pause.set('ended', true);
       })
       .catch((err: unknown) => console.error('results screen failed', err));
+  }
+
+  // Spectating (docs/coop.md, C8): killed in a party raid, you watch through the eyes of a
+  // teammate still in it, until they're out too or you go to the results. Only what they
+  // see, never a free camera, so it tells you no more than they could.
+  let watching: Character | null = null;
+  const spectateBar = coop
+    ? new SpectateBar(
+        () => watch(-1),
+        () => watch(1),
+        () => stopWatching(),
+      )
+    : null;
+  const stillIn = (c: Character): boolean => !c.health.dead && sim.entities.includes(c);
+  /** Watches the next teammate still in the raid (or the one before), or goes to the results. */
+  function watch(step: 1 | -1): void {
+    const live = others.filter((o) => stillIn(o.c));
+    if (!live.length) return stopWatching();
+    const i = live.findIndex((o) => o.c === watching);
+    watching = live[i < 0 ? 0 : (i + step + live.length) % live.length]!.c;
+    showOthers();
+    // Straight there, not swept across the map from the last view.
+    follow();
+    Object.assign(prev, cur);
+    spectateBar?.show(names.get(watching.id) ?? 'Teammate');
+  }
+  function stopWatching(): void {
+    watching = null;
+    spectateBar?.hide();
+    showOthers();
+    showResults(ended!);
+  }
+  /** The other players still in the raid are drawn, but not the one you see through. */
+  function showOthers(): void {
+    for (const o of others) o.body.root.visible = o.c !== watching && sim.entities.includes(o.c);
+  }
+  /** Where the view is after a tick: through your eyes, or the teammate's you're watching. */
+  function follow(): void {
+    const v = watching ?? player;
+    cur.x = v.x;
+    cur.y = eyeHeight(v);
+    cur.z = v.z;
+    cur.aim = v.aim;
+    cur.rp = v.recoilPitch;
+    cur.ry = v.recoilYaw;
+    const total = drawTime(items, v.gear, v.gear.hand);
+    cur.drawn = total > 0 ? 1 - v.draw / total : 1;
+    cur.yaw = v.yaw;
+    cur.pitch = v.pitch;
   }
 
   // Saved whenever the page is hidden, in case iOS unloads it while you're away.
@@ -982,6 +1049,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     prev.rp = cur.rp;
     prev.ry = cur.ry;
     prev.drawn = cur.drawn;
+    prev.yaw = cur.yaw;
+    prev.pitch = cur.pitch;
     inventoryChanged = false;
     // HP lost this tick that no hit explains is bleeding or burning (healing the same tick
     // hides some). A death with no hit is the fire's, if you're alight.
@@ -999,16 +1068,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       host?.afterTick(sim);
     }
     pending.length = 0;
-    cur.x = player.x;
-    cur.y = eyeHeight(player);
-    cur.z = player.z;
-    cur.aim = player.aim;
-    cur.rp = player.recoilPitch;
-    cur.ry = player.recoilYaw;
-    const total = drawTime(items, player.gear, player.gear.hand);
-    cur.drawn = total > 0 ? 1 - player.draw / total : 1;
+    follow();
+    // Whose eyes and ears the screen and sound are: yours, or the teammate's you watch.
+    const viewer = watching ?? player;
 
-    cues.tick(sim, player, controls.yaw);
+    cues.tick(sim, viewer, watching ? watching.yaw : controls.yaw);
     grenades.tick(sim.grenades);
     grenades.tickSmokes(sim.smokes);
     let hitLost = 0;
@@ -1022,7 +1086,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         // An incendiary round: an orange tracer, and a burst of fire where it lands.
         const fiery = tracer && incendiary(e.by);
         const colour = fiery ? INCENDIARY_TRACER : TRACER_COLOUR;
-        if (e.by === player.id) {
+        if (e.by === viewer.id) {
           if (e.pellet === 0) viewmodel.fired(now);
           viewmodel.muzzleWorld(muzzle);
           if (tracer)
@@ -1038,8 +1102,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
           placeMarker(m, e.toX, e.toY, e.toZ, 0.006);
         }
       } else if (e.type === 'swing') {
-        if (e.by === player.id && player.gear.knife) {
-          viewmodel.swung(now, meleeDef(items, player.gear.knife.item).swingTime);
+        if (e.by === viewer.id && viewer.gear.knife) {
+          viewmodel.swung(now, meleeDef(items, viewer.gear.knife.item).swingTime);
         } else bodyOf.get(e.by)?.swung();
         if (e.hit !== 'none') effects.impact(now, e.x, e.y, e.z, e.hit === 'character');
       } else if (e.type === 'explosion') {
@@ -1108,14 +1172,17 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         e.arm();
       }
     }
-    for (const o of others) {
-      o.body.tick(o.c);
-      // Gone from the raid (extracted, or out of time): no longer drawn.
-      o.body.root.visible = sim.entities.includes(o.c);
+    // The teammate you watch died or left: on to the next, or the results if none is left.
+    if (watching && (!stillIn(watching) || guest?.lost)) {
+      if (guest?.lost) stopWatching();
+      else watch(1);
     }
+    // Gone from the raid (extracted, or out of time): no longer drawn.
+    for (const o of others) o.body.tick(o.c);
+    showOthers();
     if (guest?.lost && !ended) endRaid('mia', 'Lost the connection to the host', now);
     // A host that's out keeps the raid going until its guests are too.
-    if (host && ended && !resultsAt && !host.playing(sim)) pause.set('ended', true);
+    if (host && resultsShown && !host.playing(sim)) pause.set('ended', true);
     // Redraw the raid screen when the inventory changed, and now and then for what's in
     // reach and what enemies took from their dead; more often while a med or repair is in
     // use, for its progress.
@@ -1173,7 +1240,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     controls.cursor.want(!screenOpen && !ended && !hands.pickerOpen && !devScreen);
     if (ended && resultsAt && now >= resultsAt) {
       resultsAt = 0;
-      showResults(ended);
+      // Killed in a party raid: watch a teammate first, if one's still in it.
+      if (ended.how === 'killed' && coop) watch(1);
+      else showResults(ended);
     }
     stats.tick(performance.now() - t0);
   }
@@ -1228,14 +1297,19 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const lerp = (a: number, b: number): number => a + (b - a) * alpha;
     camera.position.set(lerp(prev.x, cur.x), lerp(prev.y, cur.y), lerp(prev.z, cur.z));
     // Look is applied every frame, not every tick, so turning never lags. Recoil is the
-    // sim's, so it's interpolated between ticks.
-    camera.rotation.set(
-      controls.pitch + lerp(prev.rp, cur.rp),
-      controls.yaw + lerp(prev.ry, cur.ry),
-      0,
-    );
+    // sim's, so it's interpolated between ticks. A teammate's look only comes with ticks.
+    const v = watching ?? player;
+    let yaw = controls.yaw;
+    let pitch = controls.pitch;
+    if (watching) {
+      let turn = cur.yaw - prev.yaw;
+      turn -= Math.round(turn / (2 * Math.PI)) * 2 * Math.PI;
+      yaw = prev.yaw + turn * alpha;
+      pitch = lerp(prev.pitch, cur.pitch);
+    }
+    camera.rotation.set(pitch + lerp(prev.rp, cur.rp), yaw + lerp(prev.ry, cur.ry), 0);
     const aim = lerp(prev.aim, cur.aim);
-    const w = heldWeapon(player);
+    const w = heldWeapon(v);
     const optic = w?.attachments.optic
       ? (attachmentDef(items, w.attachments.optic).optic ?? null)
       : null;
@@ -1249,7 +1323,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     }
     // Looking turns the view less when zoomed in, so it moves as fast on the screen.
     controls.zoom = scoped ? Math.tan((AIM_FOV / 2) * DEG) / Math.tan((fov / 2) * DEG) : 1;
-    const alive = !player.health.dead;
+    const alive = !v.health.dead;
     el.optic.set(optic);
     el.optic.visible = alive && aim >= (zoom > 1 ? SCOPE_IN : RETICLE_IN);
     camera.updateMatrixWorld();
@@ -1275,34 +1349,34 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       const d = Math.min(200, world.raycast(player.x, ey, player.z, dx, dy, dz, 200, markerHit));
       placeMarker(aimMarker, player.x + dx * d, ey + dy * d, player.z + dz * d, 0.01);
     }
-    const knife = !w && knifeOut();
+    const knife = !w && v.gear.hand === 'knife' && !!v.gear.knife;
     viewmodel.visible = alive && (!!w || knife) && !scoped;
     if (w) viewmodel.setGun(w, items);
-    else if (knife) viewmodel.setKnife(player.gear.knife!.item, items);
+    else if (knife) viewmodel.setKnife(v.gear.knife!.item, items);
     // Lowered for a med, and while putting yourself out.
-    const down = player.using || player.extinguish ? 1 : 0;
+    const down = v.using || v.extinguish ? 1 : 0;
     lowered += (down - lowered) * (1 - Math.exp(-dtMs / 90));
     viewmodel.update(
       camera,
       time,
       dtMs,
       aim,
-      1 + brokenArms(player.health) * 2,
+      1 + brokenArms(v.health) * 2,
       w?.reloading ?? 0,
       lerp(prev.drawn, cur.drawn),
       lowered,
     );
     effects.update(performance.now());
     grenades.update(performance.now(), alpha);
-    fires.update(performance.now(), alpha, sim, camera, player.id);
+    fires.update(performance.now(), alpha, sim, camera, v.id);
     // On fire: flames along the bottom of the screen, flickering.
-    const burning = alive && !!player.burn;
+    const burning = alive && !!v.burn;
     if (burning !== burnShown) {
       burnShown = burning;
       burnEl.classList.toggle('on', burning);
     }
     // Blinded by a flash: all white, fading out over its last moments.
-    const blind = alive ? Math.min(1, (player.blind ?? 0) / GRENADE.blindFade) : 0;
+    const blind = alive ? Math.min(1, (v.blind ?? 0) / GRENADE.blindFade) : 0;
     const blindStep = Math.round(blind * 50) / 50;
     if (blindStep !== blindShown) {
       blindShown = blindStep;

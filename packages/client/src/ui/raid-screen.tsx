@@ -432,18 +432,55 @@ function Loot({ inv }: { inv: InventoryController }): ReactNode {
     return (
       <>
         <h2>{name}</h2>
-        <GridView inv={inv} gref={{ owner: target, grid: 'loot' }} grid={l.grid} />
+        <div className="inv-open">
+          <Bag inv={inv} />
+          <GridView inv={inv} gref={{ owner: target, grid: 'loot' }} grid={l.grid} />
+        </div>
       </>
     );
   }
   const id = target.kind === 'body' ? target.id : -1;
   const body = ctx.sim.entities.find((e) => e.id === id)!;
+  // Its gear and grids flow side by side where there's room (a PC), so its pockets and
+  // backpack aren't missed below the fold; on a phone they stack.
   return (
     <>
       <h2>{name}</h2>
-      <Slots inv={inv} owner={target} slots={BODY_SLOTS} ch={body} />
-      <CharacterGrids inv={inv} owner={target} ch={body} vault={false} />
+      <div className="inv-body">
+        <Slots inv={inv} owner={target} slots={BODY_SLOTS} ch={body} />
+        <CharacterGrids inv={inv} owner={target} ch={body} vault={false} />
+      </div>
     </>
+  );
+}
+
+/**
+ * The rig or backpack opened with a tap from the open container or stash page (the
+ * user's call, 2026-11-01): what's in it, to drag in and out of, with its details a
+ * button away. Beside the container where there's room, else above it; it stays in view
+ * while the container scrolls.
+ */
+function Bag({ inv }: { inv: InventoryController }): ReactNode {
+  const open = inv.openBag();
+  if (!open) return null;
+  const { at, grid } = open;
+  const def = itemDef(inv.ctx.items, at.item);
+  return (
+    <div className="inv-bag" style={{ borderColor: colourOf(def) }}>
+      <header className="inv-bag-head">
+        <h3>{def.name}</h3>
+        <span className="raid-spacer" />
+        <button onClick={() => inv.select(at)}>Details</button>
+        <button aria-label="Close" onClick={() => inv.closeBag()}>
+          ✕
+        </button>
+      </header>
+      <GridView
+        inv={inv}
+        gref={{ owner: at.owner, grid: at.grid, inside: { index: at.index, item: at.item } }}
+        grid={grid}
+      />
+    </div>
   );
 }
 
@@ -632,7 +669,7 @@ function GridView({
         return (
           <div
             key={index}
-            className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}`}
+            className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${inv.isOpenBag(ref) ? ' open' : ''}`}
             data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
             data-armour={
               def.type === 'armour' && gref.owner.kind === 'self' ? JSON.stringify(ref) : undefined

@@ -14,7 +14,7 @@ import {
 } from './profile';
 import { createItem } from './sim/create-item';
 import type { InventoryAction, Owner } from './sim/looting';
-import { applyStash, openStash, stashOwner } from './stash';
+import { applyStash, openStash, stashGridOf, stashOwner } from './stash';
 import { TEST_ITEMS as items } from './sim/test-items';
 
 const kit = loadContent(
@@ -266,6 +266,72 @@ describe('the stash', () => {
         to: { ...stash, x: 9, y: 0, rotated: false },
       }),
     ).toBe(true);
+    expect(checkProfile(items, p)).toBeNull();
+  });
+
+  it('moves items in and out of a backpack stored in the stash', () => {
+    const p = profile();
+    const before = JSON.parse(JSON.stringify(p)) as Profile;
+    const s = openStash(p);
+    expect(
+      applyStash(s, items, {
+        type: 'quick',
+        from: { owner: self, slot: 'backpack', item: 'backpack' },
+        to: stashOwner(0),
+      }),
+    ).toBe(true);
+    const at = p.stash[0]!.items.findIndex((g) => g.item.item === 'backpack');
+    const inBag = { ...stash, inside: { index: at, item: 'backpack' } };
+    expect(stashGridOf(p, inBag)).toBe(p.stash[0]!.items[at]!.item.grid);
+    // Not if what's there isn't what the sender saw.
+    expect(stashGridOf(p, { ...stash, inside: { index: at, item: 'rig' } })).toBeNull();
+    const watch = p.stash[0]!.items.findIndex((g) => g.item.item === 'watch');
+    expect(
+      applyStash(s, items, {
+        type: 'move',
+        from: { ...stash, index: watch, item: 'watch' },
+        to: { ...inBag, x: 0, y: 0, rotated: false },
+      }),
+    ).toBe(true);
+    // Moving the watch out shifted the backpack down one.
+    const at2 = p.stash[0]!.items.findIndex((g) => g.item.item === 'backpack');
+    const bag = p.stash[0]!.items[at2]!.item.grid!;
+    expect(countOf(bag, 'watch')).toBe(1);
+    // A double-tap from the backpack goes into what you carry.
+    expect(
+      applyStash(s, items, {
+        type: 'quick',
+        from: { ...stash, inside: { index: at2, item: 'backpack' }, index: 0, item: 'watch' },
+        to: self,
+      }),
+    ).toBe(true);
+    expect(countOf(bag, 'watch')).toBe(0);
+    expect(countOf(p.gear.pockets, 'watch')).toBe(1);
+    // And a double-tap of yours into the open backpack goes into it, not the page.
+    const w = p.gear.pockets.items.findIndex((g) => g.item.item === 'watch');
+    expect(
+      applyStash(s, items, {
+        type: 'quick',
+        from: { owner: self, grid: 'pockets', index: w, item: 'watch' },
+        to: stashOwner(0),
+        inside: { index: at2, item: 'backpack' },
+      }),
+    ).toBe(true);
+    expect(countOf(bag, 'watch')).toBe(1);
+    expect(itemGained(items, before, p)).toBeNull();
+    // A full backpack refuses it rather than the page taking it.
+    while (addItem(items, bag, createItem(items, 'round', 60)) === 0);
+    const r = p.gear.pockets.items.findIndex((g) => g.item.item === 'round');
+    const n = countOf(p.stash[0]!, 'round');
+    expect(
+      applyStash(s, items, {
+        type: 'quick',
+        from: { owner: self, grid: 'pockets', index: r, item: 'round' },
+        to: stashOwner(0),
+        inside: { index: at2, item: 'backpack' },
+      }),
+    ).toBe(false);
+    expect(countOf(p.stash[0]!, 'round')).toBe(n);
     expect(checkProfile(items, p)).toBeNull();
   });
 });

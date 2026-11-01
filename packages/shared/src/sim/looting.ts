@@ -77,9 +77,23 @@ export const GROUND_OWNER: Owner = { kind: 'ground' };
 /** A character's grids by name, or a loot container's one grid ("loot"). */
 export type GridName = 'pockets' | 'rig' | 'backpack' | 'vault' | 'loot';
 
+/**
+ * A rig or backpack lying in a grid that takes them (a loot container, a stash page), by
+ * index; `item` is the definition id the sender saw there, as in InGrid.
+ */
+export interface BagRef {
+  index: number;
+  item: string;
+}
+
+/**
+ * A grid by owner and name; with `inside`, the grid inside the rig or backpack lying in
+ * that grid (2026-11-01: a tap opens one). No deeper: containers don't nest.
+ */
 export interface GridRef {
   owner: Owner;
   grid: GridName;
+  inside?: BagRef;
 }
 
 /**
@@ -134,7 +148,8 @@ export type Target = GridSpot | Omit<InSlot, 'item'> | ToGround;
  * - rotate: turns an item where it is.
  * - quick: double-tap. To yourself, into an empty gear slot it fits, else into what you
  *   carry; to a body, into its pockets, rig and backpack; to a container, into it; to the
- *   ground, dropped at your feet. A stack that only partly fits leaves the rest behind.
+ *   ground, dropped at your feet. With `inside`, to a container's stored rig or backpack
+ *   instead (2026-11-01: the one open). A stack that only partly fits leaves the rest behind.
  *   Picking up with the use button is a quick move from the ground to yourself.
  * - attach: puts an attachment on a gun, wherever each is. A loose one: what was in its
  *   slot goes where the new one was (or anywhere in that grid, or else in what you
@@ -155,7 +170,7 @@ export type Target = GridSpot | Omit<InSlot, 'item'> | ToGround;
 export type InventoryAction =
   | { type: 'move'; from: ItemRef; to: Target }
   | { type: 'rotate'; at: InGrid }
-  | { type: 'quick'; from: ItemRef; to: Owner }
+  | { type: 'quick'; from: ItemRef; to: Owner; inside?: BagRef }
   | { type: 'attach'; gun: ItemRef; from: ItemRef | PartRef }
   | {
       type: 'detach';
@@ -243,12 +258,26 @@ function gearGrid(gear: Gear, name: GridName): Grid | null {
 
 /** A grid c can reach, or null. */
 export function gridOf(state: SimState, c: Character, ref: GridRef): Grid | null {
+  let grid: Grid | null = null;
   if (ref.owner.kind === 'container') {
-    if (ref.grid !== 'loot' || !canReach(state, c, ref.owner)) return null;
-    return lootContainerById(state, ref.owner.id)?.grid ?? null;
+    if (ref.grid === 'loot' && canReach(state, c, ref.owner)) {
+      grid = lootContainerById(state, ref.owner.id)?.grid ?? null;
+    }
+  } else {
+    const ch = ownerCharacter(state, c, ref.owner);
+    grid = ch ? gearGrid(ch.gear, ref.grid) : null;
   }
-  const ch = ownerCharacter(state, c, ref.owner);
-  return ch ? gearGrid(ch.gear, ref.grid) : null;
+  return bagGrid(grid, ref.inside);
+}
+
+/**
+ * The grid inside a rig or backpack lying in a grid, checked against what the sender saw;
+ * with no bag, the grid itself.
+ */
+export function bagGrid(grid: Grid | null, inside: BagRef | undefined): Grid | null {
+  if (!grid || !inside) return grid;
+  const bag = grid.items[inside.index]?.item;
+  return (bag?.item === inside.item && bag.grid) || null;
 }
 
 /**
@@ -343,7 +372,7 @@ export function applyInventory(
     }
     case 'quick': {
       const from = find(state, c, action.from);
-      return !!from && quickMove(ctx, from, action.to);
+      return !!from && quickMove(ctx, from, action.to, action.inside);
     }
     case 'attach':
       return 'gun' in action.from
@@ -545,7 +574,7 @@ const PISTOL_SLOTS: readonly GearSlot[] = ['sidearm'];
 const GUN_SLOTS: readonly GearSlot[] = ['primary1', 'primary2'];
 const OTHER_SLOTS: readonly GearSlot[] = ['knife', 'helmet', 'bodyArmour', 'rig', 'backpack'];
 
-function quickMove(ctx: Ctx, from: Found, to: Owner): boolean {
+function quickMove(ctx: Ctx, from: Found, to: Owner, inside?: BagRef): boolean {
   const { state, c, items } = ctx;
   if (to.kind === 'ground') return toGround(ctx, from);
   if (!canReach(state, c, to)) return false;
@@ -568,7 +597,7 @@ function quickMove(ctx: Ctx, from: Found, to: Owner): boolean {
     }
   };
   if (to.kind === 'container') {
-    into(lootContainerById(state, to.id)?.grid ?? null);
+    into(bagGrid(lootContainerById(state, to.id)?.grid ?? null, inside));
   } else {
     const ch = ownerCharacter(state, c, to);
     for (let i = 0; ch && i < CARRIED_GRIDS; i++) into(carriedGrid(ch.gear, i));
