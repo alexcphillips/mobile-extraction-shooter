@@ -1,5 +1,6 @@
 import type {
   Character,
+  CollisionWorld,
   CompiledMap,
   InventoryAction,
   ItemDb,
@@ -22,6 +23,8 @@ export interface InventoryContext {
   sim: SimState;
   player: Character;
   items: ItemDb;
+  /** In a raid: so items on the ground behind a wall aren't in reach. */
+  world?: CollisionWorld;
   /** Queues an inventory action for the next tick (in the stash, applies it). */
   send: (action: InventoryAction) => void;
   /** A body's or container's name (or the ground's). */

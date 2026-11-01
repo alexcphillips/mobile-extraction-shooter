@@ -36,7 +36,7 @@ import type { CollisionWorld } from '../world/collision-world';
 import { createItem } from './create-item';
 import { dropItem, type GroundItem } from './ground';
 import { repairable } from './repair';
-import type { Character, EntityId, SimState } from './state';
+import { eyeHeight, type Character, type EntityId, type SimState } from './state';
 import {
   attach,
   createWeaponStats,
@@ -251,9 +251,35 @@ export function gridOf(state: SimState, c: Character, ref: GridRef): Grid | null
   return ch ? gearGrid(ch.gear, ref.grid) : null;
 }
 
-/** Whether c can reach an item on the ground. */
-export function groundInReach(c: Character, g: GroundItem): boolean {
-  return near(c, g.x, g.y, g.z);
+/**
+ * Whether nothing solid is between c's eye and a point, so it isn't looted through a wall.
+ * A hit within LOOT_SIGHT_SLACK of the point doesn't count: it's what the point rests on.
+ */
+export function lootInSight(
+  world: CollisionWorld,
+  c: Character,
+  x: number,
+  y: number,
+  z: number,
+): boolean {
+  const ey = eyeHeight(c);
+  const dx = x - c.x;
+  const dy = y - ey;
+  const dz = z - c.z;
+  const d = Math.hypot(dx, dy, dz);
+  if (d <= LOOT_SIGHT_SLACK) return true;
+  return world.raycast(c.x, ey, c.z, dx / d, dy / d, dz / d, d) >= d - LOOT_SIGHT_SLACK;
+}
+
+/** How far short of a point lootInSight's ray may hit something, in metres. */
+const LOOT_SIGHT_SLACK = 0.15;
+
+/**
+ * Whether c can reach an item on the ground. With the world, it must be in sight too
+ * (lootInSight).
+ */
+export function groundInReach(c: Character, g: GroundItem, world?: CollisionWorld): boolean {
+  return near(c, g.x, g.y, g.z) && (!world || lootInSight(world, c, g.x, g.y + 0.1, g.z));
 }
 
 function slotOf(gear: Gear, slot: GearSlot): Item | null {
