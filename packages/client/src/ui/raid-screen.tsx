@@ -782,7 +782,7 @@ function badge(item: Item, def: ItemDef): string {
     case 'repair':
       return `${Math.floor(item.left ?? 0)}`;
     case 'key':
-      return def.uses === undefined ? '' : `×${item.left ?? 0}`;
+      return def.uses === undefined ? '' : `${item.left ?? 0}/${def.uses}`;
     case 'container':
       return '';
     default:
