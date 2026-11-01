@@ -18,6 +18,8 @@ import { startPerfTest } from './perf';
 import { readParams } from './perf/params';
 import { mountPresets } from './perf/presets';
 import { AccountError, fetchProfile, syncSettings } from './account';
+import type { CoopOptions } from './play/coop';
+import { joinCodeIn } from './social';
 import { startPlay, type PlayElements, type PlayOptions } from './play';
 import {
   abandonRaid,
@@ -134,7 +136,13 @@ if (location.pathname === '/bodies') {
   // brings dead enemies back, ?peaceful makes them ignore you (the admin cheat), and ?hitzones draws hit
   // zones over their bodies.
   const q = new URLSearchParams(location.search);
-  runGame(q).catch((err: unknown) => (status.textContent = `raid failed: ${message(err)}`));
+  // A party invite link (/join/<code>): joined once signed in, on the menu. The address
+  // goes back to / so a reload doesn't join again.
+  const joinCode = joinCodeIn(location.pathname);
+  if (joinCode) history.replaceState(null, '', `/${location.search}`);
+  runGame(q, joinCode).catch(
+    (err: unknown) => (status.textContent = `raid failed: ${message(err)}`),
+  );
 }
 
 /** The page's elements a raid draws into. */
@@ -177,7 +185,7 @@ function debugOptions(
  * results screen's button reloads the page, which comes back here. With no connection when
  * starting, it says so and goes back to the menu.
  */
-async function runGame(q: URLSearchParams): Promise<void> {
+async function runGame(q: URLSearchParams, joinCode: string | null): Promise<void> {
   const prepared = await prepareMenu();
   let me = prepared.me;
   const items = loadItems();
@@ -186,7 +194,13 @@ async function runGame(q: URLSearchParams): Promise<void> {
     .map((id) => loadRaid(id))
     .sort((a, b) => Number(b.id === wanted) - Number(a.id === wanted))
     .map((r) => ({ id: r.id, name: r.name, duration: r.duration }));
-  const play = (raid: string, serverRaid: string, profile: Profile, resume: RaidSnapshot | null) =>
+  const play = (
+    raid: string,
+    serverRaid: string,
+    profile: Profile,
+    resume: RaidSnapshot | null,
+    coop: CoopOptions | null = null,
+  ) =>
     startPlay(playElements(), {
       raid,
       test: null,
@@ -194,6 +208,8 @@ async function runGame(q: URLSearchParams): Promise<void> {
       profile,
       resume,
       ...debugOptions(q),
+      coop,
+      status: (text) => (status.textContent = text),
     });
 
   const resume = prepared.resume;
@@ -231,6 +247,7 @@ async function runGame(q: URLSearchParams): Promise<void> {
       raids,
       vendors: [...loadVendors().values()],
       quests: [...loadQuests().values()],
+      joinCode,
       openSettings: (done) => {
         import('./ui/menu')
           .then((menu) => menu.openSettings(byId('ui'), hud, done))
@@ -246,7 +263,7 @@ async function runGame(q: URLSearchParams): Promise<void> {
       await noConnection('Try again');
       continue;
     }
-    await play(choice.raid, started.raid!.id, started.profile, null);
+    await play(choice.raid, started.raid!.id, started.profile, null, choice.coop ?? null);
     return;
   }
 }

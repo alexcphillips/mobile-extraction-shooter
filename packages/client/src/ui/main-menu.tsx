@@ -2,6 +2,7 @@ import {
   MAX_SELL,
   applyStash,
   itemDef,
+  pickHost,
   sellAll,
   sellAllPrice,
   nextPagePrice,
@@ -13,19 +14,35 @@ import {
   type Item,
   type ItemDb,
   type ItemRef,
+  type PartyResponse,
   type ProfileResponse,
+  type SignalsResponse,
   type QuestDef,
   type StashState,
   type VendorDef,
 } from '@mes/shared';
-import { useEffect, useMemo, useReducer, useState, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { createRoot } from 'react-dom/client';
-import { AccountError } from '../account';
+import { AccountError, call } from '../account';
+import { ConnTest, type TestReport } from '../net/conn-test';
 import { readCheats, simCheats } from '../admin-cheats';
+import type { CoopOptions } from '../play/coop';
+import { PartyWatch, joinParty, pickPartyRaid, startPartyRaid } from '../social';
 import { StashSaver, type StashSaveStatus } from '../stash';
 import { AdminPage } from './admin-page';
+import { ConnTestPanel } from './conn-test-panel';
+import { FriendsPage } from './friends-page';
 import { rememberRaid } from './last-raid';
 import { InventoryController } from './inventory-controller';
+import { PartyStrip } from './party-strip';
 import { Inventory } from './raid-screen';
 import { QuestsPage, questsLine } from './quests-page';
 import { VendorsPage } from './vendors-page';
@@ -46,15 +63,22 @@ export interface MenuOptions {
   quests: QuestDef[];
   /** Opens the settings screen over the menu; done is called when it closes. */
   openSettings: (done: () => void) => void;
+  /** The code of a party invite link the game was opened from, to join on arrival. */
+  joinCode?: string | null;
 }
 
 /** What the player chose: a raid to start, with the profile as saved. */
 export interface MenuChoice {
   raid: string;
   me: ProfileResponse;
+  /** A party raid: whether this device hosts it or joins it, and who's in it. */
+  coop?: CoopOptions;
 }
 
-type Page = 'menu' | 'stash' | 'vendors' | 'quests' | 'admin';
+/** Party raids already joined from this tab, so coming back to the menu doesn't rejoin one. */
+const joined = new Set<string>();
+
+type Page = 'menu' | 'stash' | 'vendors' | 'quests' | 'admin' | 'friends';
 
 /** What you're taking in, for the menu: guns and armour by name. */
 const SHOWN: readonly GearSlot[] = ['primary1', 'primary2', 'sidearm', 'helmet', 'bodyArmour'];
@@ -90,10 +114,96 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
   const [startPage, setStartPage] = useState(0);
   const me = saver.me;
   const [raidId, setRaidId] = useState(opts.raids[0]?.id);
-  const raid = opts.raids.find((r) => r.id === raidId) ?? opts.raids[0];
+  // The party and invites, kept fresh by the heartbeat while the menu shows (co-op C3).
+  const [partyRes, setPartyRes] = useState<PartyResponse | null>(null);
+  // Set further down, once what it needs is defined.
+  const onStart = useRef<(p: PartyResponse) => void>(() => {});
+  /** The party as the server has it now; going in if its raid has started. */
+  const receive = useCallback((p: PartyResponse): void => {
+    setPartyRes(p);
+    onStart.current(p);
+  }, []);
+  useEffect(() => {
+    const watch = new PartyWatch(receive);
+    return () => watch.stop();
+  }, [receive]);
+  // Opened from an invite link: join that party.
+  useEffect(() => {
+    const code = opts.joinCode;
+    if (!code) return;
+    joinParty(code).then(
+      (p) => {
+        setPartyRes(p);
+        const leader = p.party?.members.find((m) => m.id === p.party?.leader);
+        setNotice(leader ? `You're in ${leader.username}'s party.` : null);
+      },
+      (err: unknown) => {
+        if (!(err instanceof AccountError)) throw err;
+        setNotice(`The invite link didn't work: ${err.message}`);
+      },
+    );
+  }, [opts.joinCode]);
+  const party = partyRes?.party ?? null;
+  const mine = party?.members.find((m) => m.username === me.username);
+  const leading = !!party && !!mine && party.leader === mine.id;
+  // In someone else's party, the raid is the leader's pick.
+  const partyRaid = party && !leading ? party.raid : null;
+  const raid = opts.raids.find((r) => r.id === (partyRaid ?? raidId)) ?? opts.raids[0];
+  const together = !!party && party.members.length > 1;
 
-  const start = (): void => {
-    if (!raid || busy) return;
+  // The connection test (co-op C4): started here, or by a call from another member.
+  const test = useRef<ConnTest | null>(null);
+  const [testReport, setTestReport] = useState<TestReport | null>(null);
+  const nameOf = (id: string): string =>
+    party?.members.find((m) => m.id === id)?.username ?? 'someone';
+  // The test outlives renders: it reads the names as they are now.
+  const names = useRef(nameOf);
+  useEffect(() => {
+    names.current = nameOf;
+  });
+  const openTest = (): ConnTest => {
+    test.current ??= new ConnTest((id) => names.current(id), setTestReport);
+    return test.current;
+  };
+  const closeTest = (): void => {
+    test.current?.stop();
+    test.current = null;
+    setTestReport(null);
+  };
+  useEffect(() => () => test.current?.stop(), []);
+  // Someone's calling: pick the signals up and answer. Not once a party raid has started:
+  // its calls are for the raid, which picks them up itself.
+  const signals = partyRes?.signals ?? 0;
+  const starting = !!party?.start && !joined.has(party.start.session);
+  useEffect(() => {
+    if (!signals || starting) return;
+    call('GET', '/party/signals')
+      .then((r) => r.json() as Promise<SignalsResponse>)
+      .then((r) => (r.signals.length ? openTest().handle(r.signals) : undefined))
+      .catch((err: unknown) => {
+        if (!(err instanceof AccountError)) throw err;
+      });
+  }, [signals, starting, partyRes]);
+  const startTest = (): void => {
+    if (!party) return;
+    closeTest();
+    void openTest()
+      .callAll(party.members.filter((m) => m.username !== me.username && m.online).map((m) => m.id))
+      .catch((err: unknown) => {
+        if (!(err instanceof AccountError)) throw err;
+        setNotice(`The test couldn't start: ${err.message}`);
+      });
+  };
+  // Leading, the party follows your pick.
+  useEffect(() => {
+    if (!leading || !raid || party?.raid === raid.id) return;
+    pickPartyRaid(raid.id).then(setPartyRes, (err: unknown) => {
+      if (!(err instanceof AccountError)) throw err;
+    });
+  }, [leading, raid, party?.raid]);
+
+  /** Saves the stash, then goes into the raid. */
+  const go = (raidId: string, coop?: CoopOptions): void => {
     setBusy(true);
     void saver.flush().then((status) => {
       if (status.kind === 'failed') {
@@ -101,9 +211,64 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
         setNotice(`Your stash isn't saved, so the raid can't start yet: ${status.message}`);
         return;
       }
-      onRaid({ raid: raid.id, me: saver.me });
+      onRaid({ raid: raidId, me: saver.me, ...(coop ? { coop } : {}) });
     });
   };
+  const start = (): void => {
+    if (!raid || busy) return;
+    if (!together) {
+      go(raid.id);
+      return;
+    }
+    // The leader starts the party's raid; everyone's menu sees it and goes in (below).
+    setBusy(true);
+    startPartyRaid().then(
+      (p) => {
+        setBusy(false);
+        receive(p);
+      },
+      (err: unknown) => {
+        setBusy(false);
+        if (!(err instanceof AccountError)) throw err;
+        setNotice(`The party raid didn't start: ${err.message}`);
+      },
+    );
+  };
+  // The party's raid has started (seen in a heartbeat, or the reply to starting it): in we
+  // go, hosting it or joining the host. Read through a ref, as the heartbeat outlives renders.
+  useEffect(() => {
+    onStart.current = (p) => {
+      const s = p.party?.start;
+      const self = p.party?.members.find((m) => m.username === me.username);
+      if (!s || !p.party || !self || joined.has(s.session)) return;
+      joined.add(s.session);
+      test.current?.stop();
+      const hostName = p.party.members.find((m) => m.id === s.host)?.username ?? 'the host';
+      const coop: CoopOptions =
+        s.host === self.id
+          ? {
+              role: 'host',
+              session: s.session,
+              name: self.username,
+              guests: p.party.members
+                .filter((m) => m.id !== self.id)
+                .map((m) => ({ id: m.id, name: m.username })),
+            }
+          : {
+              role: 'guest',
+              session: s.session,
+              name: self.username,
+              host: { id: s.host, name: hostName },
+            };
+      setNotice(
+        s.host === self.id ? 'Starting the party raid: you host.' : `Joining ${hostName}'s raid…`,
+      );
+      go(s.raid, coop);
+    };
+  });
+  const waiting = together
+    ? party!.members.filter((m) => m.id !== mine?.id && (!m.ready || !m.online))
+    : [];
 
   /** What the server replied with after buying or selling: the stash shows it afresh. */
   const reopen = (bought: ProfileResponse, on: number, why: string): void => {
@@ -197,6 +362,9 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
         }}
       />
     );
+  }
+  if (page === 'friends') {
+    return <FriendsPage party={party} onBack={() => setPage('menu')} onParty={setPartyRes} />;
   }
   if (page === 'admin') {
     return (
@@ -317,6 +485,21 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
         <button onClick={() => opts.openSettings(redraw)}>Settings</button>
       </header>
       <div className="menu-body">
+        <PartyStrip
+          party={partyRes}
+          me={me.username}
+          onParty={setPartyRes}
+          onNotice={setNotice}
+          onTest={startTest}
+        />
+        {testReport && (
+          <ConnTestPanel
+            report={testReport}
+            host={party ? nameOf(pickHost(party) ?? '') : null}
+            text={() => test.current?.text() ?? ''}
+            onClose={closeTest}
+          />
+        )}
         <div className="menu-buttons">
           {opts.raids.length > 1 && (
             <div className="menu-maps" role="radiogroup" aria-label="Map">
@@ -326,7 +509,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
                   role="radio"
                   aria-checked={r.id === raid?.id}
                   className={r.id === raid?.id ? 'active' : undefined}
-                  disabled={busy}
+                  disabled={busy || (!!party && !leading)}
                   onClick={() => {
                     setRaidId(r.id);
                     rememberRaid(r.id);
@@ -337,11 +520,21 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
               ))}
             </div>
           )}
-          <button className="primary menu-raid" disabled={!raid || busy} onClick={start}>
-            {busy ? 'Starting…' : 'Start raid'}
+          <button
+            className="primary menu-raid"
+            disabled={!raid || busy || (together && (!leading || waiting.length > 0))}
+            onClick={start}
+          >
+            {busy ? 'Starting…' : together ? 'Start party raid' : 'Start raid'}
             {raid && (
               <span>
                 {raid.name} · {Math.round(raid.duration / 60)} min
+                {together &&
+                  (!leading
+                    ? ` · ${party!.members.find((m) => m.id === party!.leader)?.username ?? 'the leader'} starts it`
+                    : waiting.length
+                      ? ` · waiting for ${waiting.map((m) => m.username).join(', ')} to be ready`
+                      : ' · everyone is ready')}
               </span>
             )}
           </button>
@@ -356,6 +549,10 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
           <button disabled={!opts.quests.length} onClick={() => setPage('quests')}>
             Quests
             <span>{questsLine(opts.quests, me)}</span>
+          </button>
+          <button onClick={() => setPage('friends')}>
+            Friends
+            <span>Add friends and invite them to your party</span>
           </button>
           {import.meta.env.DEV && (
             <button onClick={() => setPage('admin')}>

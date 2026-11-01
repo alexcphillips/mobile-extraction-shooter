@@ -518,7 +518,7 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
   - Deploy, install from the home screen, play-test with a friend.
 
 ## After v1 (not scheduled)
-- Co-op vs. AI (Durable Object raid server, client movement prediction, shared loot rolls, quest items only for the holder).
+- Co-op vs. AI, phones and PCs together (a player's device hosts, others connect over WebRTC; client movement prediction, shared loot rolls, quest items only for the holder). The plan, session by session, is [coop.md](coop.md).
 - Weekly admin challenges (raid configs, publishing from the server without a redeploy).
 - NPC flea market (explain it and decide first). Trading with friends.
 - Grenades for AI (with a shared token), gyro aiming, water slowing movement, more attachment slots.

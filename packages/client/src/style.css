@@ -2412,3 +2412,146 @@ body:has(#layout-bar) #menu {
 .item-details-actions .inv-bar-info {
   align-self: center;
 }
+
+/* The party on the main menu (co-op C3): invites, members with ready ticks, the link. */
+.party {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(560px, 100%);
+}
+
+.party-invite,
+.party-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.party-invite {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #3d2a08;
+}
+
+.party-invite span {
+  flex: 1;
+  min-width: 12em;
+}
+
+.menu .party button.primary {
+  background: #e3a33a;
+  color: #000;
+}
+
+.party-members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.party-members li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 4px 4px 10px;
+  border-radius: 6px;
+  background: #252c32;
+}
+
+.party-members li.offline {
+  opacity: 0.55;
+}
+
+.party-name {
+  font-weight: 600;
+}
+
+.party-state,
+.party-alone {
+  font-size: 13px;
+  color: #9aa6b0;
+}
+
+.menu .party button.party-kick {
+  padding: 2px 8px;
+  background: none;
+  color: #9aa6b0;
+}
+
+/* The friends page (co-op C1–C2). */
+.friends-add {
+  display: flex;
+  gap: 6px;
+  max-width: 420px;
+  margin-bottom: 10px;
+}
+
+.friends-add input {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid #3a444c;
+  border-radius: 6px;
+  background: #161b1f;
+  color: inherit;
+  /* 16px stops iOS zooming in on focus. */
+  font:
+    16px system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+.friends-head {
+  margin: 12px 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9aa6b0;
+}
+
+.friends-line {
+  display: block;
+  font-size: 12px;
+}
+
+.friends-offline .vendors-name {
+  opacity: 0.6;
+}
+
+/* The connection test (co-op C4): results under the party strip. */
+.conn-test {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(560px, 100%);
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #252c32;
+}
+
+.conn-peers {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.conn-peers li .party-state {
+  display: block;
+}
+
+.conn-log {
+  max-height: 10em;
+  margin: 0;
+  overflow: auto;
+  font-size: 11px;
+  color: #9aa6b0;
+  white-space: pre-wrap;
+  user-select: text;
+  -webkit-user-select: text;
+}

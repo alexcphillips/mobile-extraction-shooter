@@ -6,6 +6,7 @@ import { fail } from './errors';
 import { profiles, settingsRoute, stashRoute } from './profiles';
 import { quests } from './quests';
 import { raids } from './raids';
+import { friends, party, presence } from './social';
 import { vendors } from './vendors';
 
 export const app = new Hono<AppEnv>().basePath('/api');
@@ -32,6 +33,14 @@ app.use('/vendors/*', signedIn);
 app.route('/vendors', vendors);
 app.use('/quests/*', signedIn);
 app.route('/quests', quests);
+app.use('/friends', signedIn);
+app.use('/friends/*', signedIn);
+app.route('/friends', friends);
+app.use('/party', signedIn);
+app.use('/party/*', signedIn);
+app.route('/party', party);
+app.use('/presence', signedIn);
+app.route('/presence', presence);
 app.use('/admin/*', adminOnly, signedIn);
 app.route('/admin', admin);
 
