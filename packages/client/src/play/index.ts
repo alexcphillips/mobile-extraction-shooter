@@ -29,12 +29,12 @@ import {
   step,
   weaponDef,
   type Character,
+  type EntityId,
   type EnemyDef,
   type SpawnRequestEvent,
   type CompiledMap,
   type RaidDef,
   type PlayerInput,
-  type TickInputs,
   type Zone,
   heldWeapon,
   entityById,
@@ -125,6 +125,7 @@ import {
   type SaveStatus,
 } from '../raids';
 import type { RaidResult } from '../ui/results';
+import { CoopGuest, CoopHost, type CoopOptions, type Welcome } from './coop';
 import { giveUp } from './give-up';
 import { lootableInReach } from './loot';
 
@@ -196,6 +197,10 @@ export interface PlayOptions {
   pixelRatio: number;
   /** Shown in the stats header, e.g. "standalone". */
   note: string;
+  /** A party raid (docs/coop.md, C5): this device hosts it, or joins the host's. */
+  coop?: CoopOptions | null;
+  /** Says what a party raid is waiting for while it connects. */
+  status?: (text: string) => void;
 }
 
 /** How far into aiming a red dot's reticle shows, once the sight has come up to the eye. */
@@ -222,6 +227,15 @@ const ASSIST = { off: 1, low: 0.8, medium: 0.6, high: 0.45 } as const;
  * their spots (session 14b).
  */
 export async function startPlay(el: PlayElements, options: PlayOptions): Promise<void> {
+  const coop = options.coop ?? null;
+  const status = options.status ?? (() => {});
+  // A guest connects first: the host's raid is where it starts from, like a saved raid.
+  let guest: CoopGuest | null = null;
+  let welcome: Welcome | null = null;
+  if (coop?.role === 'guest') {
+    ({ guest, welcome } = await CoopGuest.connect(coop, coop.name, options.profile.gear, status));
+    status('');
+  }
   const raid = options.test?.raid ?? loadRaid(options.raid);
   const map = options.test?.map ?? loadMap(raid.map);
   const items = loadItems();
@@ -276,7 +290,19 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const rig = new CharacterRig(await loadCharacter('/characters/mannequin.glb'));
 
   const controls = new Controls(el.canvas, el.hud);
-  const resume = options.resume;
+  const resume: RaidSnapshot | null =
+    options.resume ??
+    (welcome && {
+      version: 1,
+      serverRaid: options.serverRaid,
+      raid: options.raid,
+      spawn: welcome.spawn,
+      player: welcome.you,
+      enemies: welcome.spawned,
+      kills: 0,
+      taken: [],
+      sim: welcome.state,
+    });
   const sim = resume?.sim ?? createState(Date.now() >>> 0);
   // A raid saved before grenades (2026-10-30) has none in flight, nor smoke or fire
   // (2026-10-31).
@@ -429,6 +455,50 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     spawned[key] = id;
     addEnemy(saved, type, armSpawned(saved, type));
   }
+  // The other players in a party raid, drawn like enemies but never armed or brought back.
+  const others: { c: Character; body: CharacterBody }[] = [];
+  function addOther(c: Character, name: string): void {
+    const body = new CharacterBody(rig, DEFAULT_OUTFIT, c);
+    scene.add(body.root);
+    others.push({ c, body });
+    bodyOf.set(c.id, body);
+    names.set(c.id, name);
+  }
+  let host: CoopHost | null = null;
+  if (coop?.role === 'host') {
+    host = await CoopHost.connect(coop, status);
+    status(host.size ? 'Letting everyone in…' : '');
+    // Guests start beside the host, either side of it in turn.
+    const rx = Math.cos(spawn.yaw);
+    const rz = -Math.sin(spawn.yaw);
+    const admitted = await host.admit(
+      (_name, gear, i) => {
+        const side = (i % 2 ? -1 : 1) * (Math.floor(i / 2) + 1) * 0.9;
+        const c = spawnCharacter(
+          sim,
+          world,
+          player.x + rx * side,
+          player.z + rz * side,
+          spawn.yaw,
+          spawn.y + 0.5,
+        );
+        c.gear = structuredClone(gear);
+        return c;
+      },
+      { spawn: spawn.id, spawned, host: player, name: coop.name },
+      sim,
+    );
+    for (const a of admitted) addOther(a.character, a.name);
+    status('');
+  }
+  if (guest && welcome) {
+    for (const [id, name] of Object.entries(welcome.players)) {
+      const c = sim.entities.find((e) => e.id === Number(id));
+      if (c && c !== player) addOther(c, name);
+    }
+    guest.start();
+  }
+
   /** An admin spawner gun's shot landed: an enemy of its type there, armed, facing back. */
   function spawnRequested(e: SpawnRequestEvent): void {
     const type = types.get(e.enemy);
@@ -452,7 +522,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     aim: false,
     reload: false,
   };
-  const inputs: TickInputs = { [player.id]: input };
+  const inputs: Record<EntityId, PlayerInput> = { [player.id]: input };
   // What the frame draws between ticks: the eye, aim, recoil and how far drawn what's in
   // hand is, from the last two ticks.
   const prev = { x: player.x, y: eyeHeight(player), z: player.z, aim: 0, rp: 0, ry: 0, drawn: 1 };
@@ -496,7 +566,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
 
   /**
    * Whether the crosshair (with recoil) is on a living enemy in range (the knife's reach
-   * with the knife out) and in sight.
+   * with the knife out) and in sight; not on another player.
    */
   function onTarget(): boolean {
     const w = heldWeapon(player);
@@ -515,9 +585,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const wall = world.raycast(player.x, ey, player.z, dx, dy, dz, range, aimWorld);
     const reach = Math.min(wall, range);
     const d = raycastCharacters(sim, player.x, ey, player.z, dx, dy, dz, reach, player.id, aimHit);
-    // No help aiming at someone hidden in smoke.
+    // No help aiming at someone hidden in smoke, or at another player in a party raid.
     return (
       d < Infinity &&
+      !others.some((o) => o.c.id === aimHit.id) &&
       !smokeBlocks(
         sim.smokes,
         player.x,
@@ -744,15 +815,16 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       .then((ui) => {
         // The next raid starts from the page, which sends anything not yet saved first.
         ui.showResults(el.results, result, items, saving!, () => location.reload());
-        // Nothing more to play: stop drawing.
-        pause.set('ended', true);
+        // Nothing more to play: stop drawing. A host keeps the raid going for its guests.
+        if (!host?.playing(sim)) pause.set('ended', true);
       })
       .catch((err: unknown) => console.error('results screen failed', err));
   }
 
   // Saved whenever the page is hidden, in case iOS unloads it while you're away.
   const snapshot = (): void => {
-    if (ended || options.test) return;
+    // A party raid can't be picked up again from one device (C7).
+    if (ended || options.test || coop) return;
     saveSnapshot({
       version: 1,
       serverRaid: options.serverRaid,
@@ -882,7 +954,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // Jumping lets go of a ladder, and ends sprint lock with it.
     if (controls.jump && player.mode === 'ladder') controls.unlockSprint();
 
-    if (options.debug && controls.debug === 0) {
+    if (guest) {
+      // A guest's hurt and heal would be undone by the host's next tick.
+    } else if (options.debug && controls.debug === 0) {
       // An AKM round to a random zone, armour and bleeding included.
       const zone = nextInt(debugRng, 6) as Zone;
       shootCharacter(sim, items, player, zone, ammoDef(items, 'ammo-762x39'), 0);
@@ -893,7 +967,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     if (givingUp) {
       givingUp = false;
       if (!dead) {
-        killCharacter(sim, player, 0);
+        // A guest's character is the host's to kill.
+        if (guest) guest.giveUp();
+        else killCharacter(sim, player, 0);
         gaveUp = true;
       }
     }
@@ -911,7 +987,16 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const bleeding = isBleeding(player.health);
     const burn = player.burn ? { ...player.burn } : null;
     const hpBefore = bleeding || burn ? totalHp(player.health) : -1;
-    step(sim, world, items, inputs, nav);
+    if (guest) {
+      // A guest's raid runs on the host: send this tick's input, and take what came back.
+      guest.sendInput(input);
+      guest.catchUp(sim);
+      syncDoors(sim, world, nav);
+    } else {
+      host?.fillInputs(inputs, (c) => killCharacter(sim, c, 0));
+      step(sim, world, items, inputs, nav);
+      host?.afterTick(sim);
+    }
     pending.length = 0;
     cur.x = player.x;
     cur.y = eyeHeight(player);
@@ -987,7 +1072,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         if (screen) screen.refresh();
       } else if (e.type === 'door' && e.by === player.id && e.result === 'blocked') {
         el.raidHud.warn('Someone’s in the doorway', now);
-      } else if (e.type === 'spawnRequest') {
+      } else if (e.type === 'spawnRequest' && !guest) {
         spawnRequested(e);
       } else if (e.type === 'inventory' && e.by === player.id) {
         inventoryChanged = true;
@@ -1016,12 +1101,20 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       e.body.tick(e.c);
       if (!e.c.health.dead) e.diedAt = 0;
       else if (!e.diedAt) e.diedAt = now;
-      else if (options.respawn && now - e.diedAt > ENEMY_RESPAWN_MS) {
+      else if (options.respawn && !guest && now - e.diedAt > ENEMY_RESPAWN_MS) {
         restoreHealth(e.c, items);
         resetEnemy(e.c, world);
         e.arm();
       }
     }
+    for (const o of others) {
+      o.body.tick(o.c);
+      // Gone from the raid (extracted, or out of time): no longer drawn.
+      o.body.root.visible = sim.entities.includes(o.c);
+    }
+    if (guest?.lost && !ended) endRaid('mia', 'Lost the connection to the host', now);
+    // A host that's out keeps the raid going until its guests are too.
+    if (host && ended && !resultsAt && !host.playing(sim)) pause.set('ended', true);
     // Redraw the raid screen when the inventory changed, and now and then for what's in
     // reach and what enemies took from their dead; more often while a med or repair is in
     // use, for its progress.
@@ -1165,6 +1258,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       e.body.update(e.c, items, alpha, dtMs / 1000, camera, frustum);
       e.zones?.update(e.c, items);
     }
+    for (const o of others) o.body.update(o.c, items, alpha, dtMs / 1000, camera, frustum);
     aiDebug?.update(enemyChars);
     questMarkers.update(camera, alive && !screenOpen && !ended);
     enemyBars?.update(camera, alive && !screenOpen && !ended);

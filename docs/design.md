@@ -343,6 +343,7 @@ The editors run on the Mac in a desktop browser and save to JSON files in the re
 - **Admin backpack (2026-10-31, the user's request: "basically just the backpack item but really big", for testing):** `admin-backpack`, on the admin page's **Admin** tab: the large backpack (4×4, worn in the backpack slot) holding an **8 × 15 grid** (120 cells; the large one holds 30), drawn bigger and red so it's never mistaken for a real one. Kept 8 wide so the inventory screen's gear column still fits beside the loot on a phone; it scrolls. Value 0, so it can't be sold; in no loot table, loadout or vendor.
 
 ## Future (designed for now, built later)
-- **Co-op vs. AI:** a raid runs on the server (Cloudflare Durable Object) using the same simulation code; each phone predicts its own movement. See [tech-stack.md](tech-stack.md).
+- **Co-op is hard, like Tarkov (the user's call, 2026-11-01):** friendly fire is on, and there are no name tags, teammate health bars or map markers for teammates. Auto-fire and aim assist never target a teammate.
+- **Co-op vs. AI:** one player's device hosts the raid, running the same simulation code, and the others connect to it directly (WebRTC); guests predict their own movement. Phones and PCs can play together. **Changed 2026-10-31 (the user's call):** this replaces a raid server on Cloudflare (a Durable Object), whose free plan allows only a few raids a day. The plan is [coop.md](coop.md).
 - **Weekly admin challenges:** a raid config that limits play to part of an existing map, sets an objective, and starts you with no items.
 - **NPC flea market:** simulated listings with prices that move with supply and demand. Still to be explained and decided.
