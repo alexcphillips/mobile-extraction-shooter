@@ -1225,6 +1225,63 @@ body:has(#raid:not([hidden])) #vitals {
   margin-bottom: 0;
 }
 
+/* The open container or stash page, and a rig or backpack opened from it beside it. */
+.inv-open {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.inv-open > * {
+  flex: none;
+}
+
+/* Stays in view while the stash scrolls under it. */
+.inv-bag {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 6px;
+  border: 1px solid;
+  border-radius: 4px;
+  background: #1b2227;
+}
+
+.inv-bag-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.inv-bag-head h3 {
+  margin: 0;
+}
+
+.inv-bag-head button {
+  min-height: 32px;
+  padding: 0 10px;
+}
+
+/* The rig or backpack whose contents are open. */
+.inv-item.open {
+  outline: 2px solid #e8ecef;
+  outline-offset: -2px;
+}
+
+/* A body's gear and grids: side by side where the column is wide enough, else stacked. */
+.inv-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  column-gap: 16px;
+}
+
+.inv-body > * {
+  flex: none;
+}
+
 .inv-slot {
   position: relative;
   height: calc(var(--cell) * 2);
@@ -2554,4 +2611,62 @@ body:has(#layout-bar) #menu {
   white-space: pre-wrap;
   user-select: text;
   -webkit-user-select: text;
+}
+
+/* Spectating a teammate after dying in a party raid: their view, without your HUD. */
+.spectate {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100vw - 32px);
+}
+
+.spectate[hidden] {
+  display: none;
+}
+
+.spectate-who {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: rgb(0 0 0 / 0.55);
+  color: #fff;
+  font:
+    14px/1.2 system-ui,
+    sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spectate button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid rgb(255 255 255 / 0.4);
+  border-radius: 6px;
+  background: rgb(0 0 0 / 0.55);
+  color: #fff;
+  font:
+    14px system-ui,
+    sans-serif;
+}
+
+body.spectating
+  :is(
+    #crosshair,
+    #vitals,
+    #ammo,
+    #controls,
+    #stick,
+    #sprint-lock,
+    #prompt,
+    #extract,
+    #hurt,
+    .heal-picker
+  ) {
+  display: none;
 }

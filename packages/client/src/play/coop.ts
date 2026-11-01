@@ -209,10 +209,14 @@ export class CoopHost {
     for (const g of this.guests) if (g.character && g.link.open) g.link.send(msg);
   }
 
-  /** Whether a guest is still playing: connected, with a character in the raid. */
+  /** Whether a guest is still playing: connected, with a live character in the raid. */
   playing(sim: SimState): boolean {
     return this.guests.some(
-      (g) => g.link.open && g.character && sim.entities.includes(g.character),
+      (g) =>
+        g.link.open &&
+        g.character &&
+        !g.character.health.dead &&
+        sim.entities.includes(g.character),
     );
   }
 

@@ -121,6 +121,10 @@ Social pieces first, so two accounts can find each other and agree to play toget
   - Item instance ids if co-op looting needs them (tech-stack.md → Inventory).
   - Admin cheats and spawner guns: honoured only for the host in dev builds, or off in co-op.
   - **No party HUD** (the user's call, 2026-11-01): no name tags over teammates, no teammate health on the HUD, no markers for them on the map tab. Like Tarkov, you tell friend from enemy by looking, and talking.
+  - [x] **Spectating after death** (2026-11-01, the user's ask). Killed in a party raid, after the usual 1.5 s you watch through a teammate's eyes who's still in it, with their gun, recoil, flashes and fire, and their hearing. ◀ ▶ switch between teammates; Results stops. When the last one dies or leaves, the results come up by themselves. It works the same for the host and a guest: a dead host's device keeps running the raid. Your result is saved at death, as before, so spectating changes nothing on the server. In `play/index.ts` (`watch`, `follow`) and `hud/spectate.ts`.
+    - Only first-person, never a free camera, so a dead player sees no more than the living one already can (less "ghosting" over a voice call). The spectate bar names who you're watching; that's for the dead player, not a tag in the world.
+    - Fixed alongside: `CoopHost.playing` counted a dead guest as still playing (bodies stay in `sim.entities`), so a host could keep running the raid for nobody. A guest now closes its link when its results come up.
+    - Checked in two headless Chrome players, host dying first and guest dying first. Not yet on devices.
 - [ ] **C9. Play-test and costs.**
   - A full raid with a friend, phone and PC, then two phones with one on 4G. Afterwards check the Worker's requests and the TURN usage in the Cloudflare dashboard.
 

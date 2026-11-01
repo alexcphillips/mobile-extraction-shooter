@@ -22,8 +22,10 @@ import {
   type Character,
   type GearSlot,
   type GridName,
+  type Grid,
   type GridRef,
   type GroundItem,
+  type InGrid,
   type Item,
   type ItemDef,
   type ItemRef,
@@ -55,7 +57,8 @@ const CARRIED: readonly GridName[] = ['pockets', 'rig', 'backpack'];
 /** Identifies an item's place, to compare refs. */
 export function refKey(r: ItemRef): string {
   if ('ground' in r) return JSON.stringify([r.owner, r.ground]);
-  return JSON.stringify('slot' in r ? [r.owner, r.slot] : [r.owner, r.grid, r.index]);
+  if ('slot' in r) return JSON.stringify([r.owner, r.slot]);
+  return JSON.stringify([r.owner, r.grid, r.index, r.inside?.index ?? -1]);
 }
 
 function isPart(r: ItemRef | PartRef): r is PartRef {
@@ -86,6 +89,11 @@ export class InventoryController implements DragHost {
   /** The gun attachment slot whose picker is open. */
   picking: AttachmentSlot | null = null;
   target: Owner | null;
+  /**
+   * The rig or backpack whose contents are open (2026-11-01): one lying in the open
+   * container or stash page. The item itself, to follow it when its index changes.
+   */
+  private bag: Item | null = null;
   /** The selected item itself, to follow it when its index changes. */
   private selectedItem: Item | null = null;
   private lastTap = { key: '', at: 0 };
@@ -103,7 +111,46 @@ export class InventoryController implements DragHost {
   /** Opens another body or container beside yours (null: just yours), with nothing selected. */
   setTarget(target: Owner | null): void {
     this.target = target;
+    this.bag = null;
     this.select(null);
+  }
+
+  /**
+   * The open rig or backpack: where it lies and the grid inside it. Null (and closed) if
+   * none is open, or it has left the open container or stash page, or gone out of reach.
+   */
+  openBag(): { at: InGrid; grid: Grid } | null {
+    const bag = this.bag;
+    if (!bag) return null;
+    const at = this.target && this.reach ? this.locate(bag) : null;
+    if (
+      !at ||
+      !('index' in at) ||
+      at.inside ||
+      JSON.stringify(at.owner) !== JSON.stringify(this.target) ||
+      !bag.grid
+    ) {
+      this.bag = null;
+      return null;
+    }
+    return { at, grid: bag.grid };
+  }
+
+  /** Opens a rig or backpack lying in a grid to show what's in it, or closes it if open. */
+  toggleBag(ref: ItemRef): void {
+    const found = this.find(ref);
+    if (!found || found.def.type !== 'container' || !('index' in ref) || ref.inside) return;
+    this.bag = this.bag === found.item ? null : found.item;
+    this.select(null);
+  }
+
+  closeBag(): void {
+    this.bag = null;
+    this.redraw();
+  }
+
+  isOpenBag(ref: ItemRef): boolean {
+    return !!this.bag && this.find(ref)?.item === this.bag;
   }
 
   /** Whether the open body or container is in reach. */
@@ -116,9 +163,25 @@ export class InventoryController implements DragHost {
     return ref.owner.kind === 'self' && this.target && this.reach ? this.target : SELF;
   }
 
+  /**
+   * The open rig or backpack a double-tap of yours goes into (the user's call,
+   * 2026-11-01), if one is open and the item can go in it (not another rig or backpack).
+   */
+  quickBag(ref: ItemRef): InGrid | null {
+    if (ref.owner.kind !== 'self') return null;
+    const open = this.openBag();
+    const found = this.find(ref);
+    return open && found && canHold(this.ctx.items, open.grid, found.item) ? open.at : null;
+  }
+
   quick(ref: ItemRef): void {
+    const bag = this.quickBag(ref);
     this.select(null);
-    this.ctx.send({ type: 'quick', from: ref, to: this.quickTo(ref) });
+    this.ctx.send(
+      bag
+        ? { type: 'quick', from: ref, to: bag.owner, inside: { index: bag.index, item: bag.item } }
+        : { type: 'quick', from: ref, to: this.quickTo(ref) },
+    );
   }
 
   /** Drops an item at your feet. */
@@ -496,11 +559,16 @@ export class InventoryController implements DragHost {
       this.quick(ref);
     } else {
       // Its details open once it's clear this isn't the first of a double-tap, unless
-      // it's being dragged by then, or has gone.
+      // it's being dragged by then, or has gone. A rig or backpack lying in a grid opens
+      // its contents instead; its details are a button there (or a right-click).
       this.cancelOpen();
       this.pendingOpen = window.setTimeout(() => {
         this.pendingOpen = 0;
-        if (!this.drag.busy && this.find(ref)) this.select(ref);
+        if (this.drag.busy) return;
+        const found = this.find(ref);
+        if (!found) return;
+        if (found.def.type === 'container' && 'index' in ref && !ref.inside) this.toggleBag(ref);
+        else this.select(ref);
       }, DOUBLE_TAP_MS);
     }
   }
@@ -524,7 +592,7 @@ export class InventoryController implements DragHost {
     return this.find(p.gun)?.item.attachments?.[p.slot] === p.part;
   }
 
-  /** Where an item is now, among yours and what's open, or null. */
+  /** Where an item is now, among yours and what's open (and the open bag), or null. */
   private locate(item: Item): ItemRef | null {
     const owners = this.target && this.reach ? [SELF, this.target] : [SELF];
     for (const owner of owners) {
@@ -540,6 +608,13 @@ export class InventoryController implements DragHost {
         const index = grid?.items.findIndex((g) => g.item === item) ?? -1;
         if (index >= 0) return { owner, grid: name, index, item: item.item };
       }
+    }
+    // In the open bag: found by where the bag is now.
+    const bag = this.bag && item !== this.bag ? this.locate(this.bag) : null;
+    if (bag && 'index' in bag && !bag.inside) {
+      const index = this.bag!.grid?.items.findIndex((g) => g.item === item) ?? -1;
+      const inside = { index: bag.index, item: bag.item };
+      if (index >= 0) return { owner: bag.owner, grid: bag.grid, inside, index, item: item.item };
     }
     const ground = this.ctx.sim.ground.findIndex((g) => g.item === item);
     return ground >= 0 ? { owner: { kind: 'ground' }, ground, item: item.item } : null;

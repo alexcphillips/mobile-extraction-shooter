@@ -5,6 +5,7 @@ import type { GearSlot } from './sim/gear';
 import {
   applyInventory,
   loadGun,
+  bagGrid,
   gridOf,
   type GridRef,
   type InventoryAction,
@@ -99,11 +100,15 @@ function itemAt(s: StashState, ref: ItemRef): Item | null {
 
 /**
  * A grid of the profile's, by a ref as the stash screen sees it: one of the gear's (a
- * rig's or backpack's inside, the vault) or a stash page. Null if there's no such grid.
+ * rig's or backpack's inside, the vault), a stash page, or inside a rig or backpack
+ * stored on a page. Null if there's no such grid.
  */
 export function stashGridOf(profile: Profile, ref: GridRef): Grid | null {
   const page = stashPageOf(ref.owner);
-  if (page >= 0) return ref.grid === 'loot' ? (profile.stash[page] ?? null) : null;
+  if (page >= 0) {
+    return ref.grid === 'loot' ? bagGrid(profile.stash[page] ?? null, ref.inside) : null;
+  }
+  if (ref.inside) return null;
   if (ref.owner.kind !== 'self') return null;
   const g = profile.gear;
   switch (ref.grid) {
@@ -171,7 +176,8 @@ function repairNow(s: StashState, items: ItemDb, kitRef: ItemRef, armourRef: Ite
 function apply(s: StashState, items: ItemDb, action: InventoryAction): boolean {
   if (action.type === 'repair') return repairNow(s, items, action.kit, action.armour);
   if (action.type === 'load') return loadGun(s.sim, s.player, items, action.gun, action.from, true);
-  const page = action.type === 'quick' ? stashPageOf(action.to) : -1;
+  // Into a stored bag: that one only.
+  const page = action.type === 'quick' && !action.inside ? stashPageOf(action.to) : -1;
   if (action.type !== 'quick' || page < 0) {
     return applyInventory(s.sim, s.player, items, action);
   }
