@@ -95,6 +95,7 @@ const itemShape: z.ZodType = z.lazy(() =>
     cooldown: z.number().optional(),
     reloading: z.number().optional(),
     reloadWith: idSchema.optional(),
+    reloadByHand: z.literal(true).optional(),
     triggerHeld: z.boolean().optional(),
   }),
 );
@@ -249,6 +250,7 @@ export function restGear(gear: Gear): void {
     w.reloading = 0;
     w.triggerHeld = false;
     delete w.reloadWith;
+    delete w.reloadByHand;
   });
 }
 

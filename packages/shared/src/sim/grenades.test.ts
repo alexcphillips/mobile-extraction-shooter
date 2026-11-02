@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { addItem } from '../inventory/grid';
 import { checkItems, firesRound, grenadeDef, weaponDef, type ItemDef } from '../content/items';
 import { TICK_RATE } from '../tick';
 import { CollisionWorld, type BoxDef } from '../world/collision-world';
-import { carriedAmmo, stow } from './gear';
+import { createItem } from './create-item';
+import { carriedAmmo, equip, stow } from './gear';
 import { GRENADE, blastShare, carriedGrenades, smokeBlocks, smokeRadius } from './grenades';
 import { CHEST, HEAD, TOTAL_HP, totalHp } from './health';
 import {
@@ -84,6 +86,24 @@ describe('throwing', () => {
     const { world, state, c } = setup(0);
     step(state, world, TEST_ITEMS, { [c.id]: input({ throw: true }) });
     expect(state.grenades).toHaveLength(0);
+  });
+
+  it('throws from pockets and rig, never the backpack or the vault', () => {
+    const { world, state, c } = setup(0);
+    equip(c, TEST_ITEMS, 'rig', createItem(TEST_ITEMS, 'rig'));
+    equip(c, TEST_ITEMS, 'backpack', createItem(TEST_ITEMS, 'backpack'));
+    addItem(TEST_ITEMS, c.gear.backpack!.grid, { item: 'grenade', count: 1 });
+    addItem(TEST_ITEMS, c.gear.vault!, { item: 'grenade', count: 1 });
+    expect(carriedGrenades(c, TEST_ITEMS)).toBe(0);
+    step(state, world, TEST_ITEMS, { [c.id]: input({ throw: true }) });
+    expect(state.grenades).toHaveLength(0);
+    // One in the rig is in reach.
+    addItem(TEST_ITEMS, c.gear.rig!.grid, { item: 'grenade', count: 1 });
+    expect(carriedGrenades(c, TEST_ITEMS)).toBe(1);
+    step(state, world, TEST_ITEMS, { [c.id]: input({ throw: true }) });
+    expect(state.grenades).toHaveLength(1);
+    expect(c.gear.rig!.grid.items).toHaveLength(0);
+    expect(c.gear.backpack!.grid.items).toHaveLength(1);
   });
 
   it('keeps the grenade with the infinite consumables cheat', () => {
@@ -306,6 +326,18 @@ describe('grenade launcher', () => {
     expect(w.mag).toBe(3);
     expect(carriedAmmo(c, 'grenade')).toBe(0);
     expect(carriedGrenades(c, TEST_ITEMS)).toBe(0);
+  });
+
+  it("doesn't reload from grenades in the backpack", () => {
+    const { world, state, c, w } = armed(0);
+    w.mag = 0;
+    equip(c, TEST_ITEMS, 'backpack', createItem(TEST_ITEMS, 'backpack'));
+    addItem(TEST_ITEMS, c.gear.backpack!.grid, { item: 'grenade', count: 1 });
+    step(state, world, TEST_ITEMS, { [c.id]: input({ reload: true }) });
+    expect(w.reloading).toBe(0);
+    run(state, world, 5 * TICK_RATE + 1);
+    expect(w.mag).toBe(0);
+    expect(c.gear.backpack!.grid.items).toHaveLength(1);
   });
 
   it('survives a JSON save and restore with a grenade in flight', () => {

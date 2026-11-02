@@ -163,20 +163,30 @@ export function carriedGrid(gear: Gear, i: number): Grid | null {
 }
 export const CARRIED_GRIDS = 3;
 
-/** Rounds of an ammo item carried (not counting the vault or what's loaded). */
+/**
+ * The first of carriedGrid's that quick actions reach: pockets and rig, as in Tarkov, not
+ * the backpack (the user's call, 2026-11-01). A reload, the heal button and a throw take
+ * from these; the inventory reaches the backpack by hand.
+ */
+export const QUICK_GRIDS = 2;
+
+/** Rounds of an ammo item in reach for a reload: pockets and rig (not what's loaded). */
 export function carriedAmmo(c: Character, ammo: string): number {
   let n = 0;
-  for (let i = 0; i < CARRIED_GRIDS; i++) {
+  for (let i = 0; i < QUICK_GRIDS; i++) {
     const grid = carriedGrid(c.gear, i);
     if (grid) n += countOf(grid, ammo);
   }
   return n;
 }
 
-/** Takes up to n rounds from what's carried, pockets first. Returns how many. */
-export function takeAmmo(c: Character, ammo: string, n: number): number {
+/**
+ * Takes up to n rounds from pockets, then rig (then backpack, with grids CARRIED_GRIDS).
+ * Returns how many.
+ */
+export function takeAmmo(c: Character, ammo: string, n: number, grids = QUICK_GRIDS): number {
   let taken = 0;
-  for (let i = 0; i < CARRIED_GRIDS && taken < n; i++) {
+  for (let i = 0; i < grids && taken < n; i++) {
     const grid = carriedGrid(c.gear, i);
     if (grid) taken += takeFrom(grid, ammo, n - taken);
   }

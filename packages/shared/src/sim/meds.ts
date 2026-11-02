@@ -1,7 +1,7 @@
 import { itemDef, type ItemDb, type MedEffect } from '../content/items';
 import { removeAt } from '../inventory/grid';
 import { TICK_SECONDS } from '../tick';
-import { CARRIED_GRIDS, carriedGrid, heldWeapon } from './gear';
+import { CARRIED_GRIDS, QUICK_GRIDS, carriedGrid, heldWeapon } from './gear';
 import {
   CHEST,
   HEAD,
@@ -83,16 +83,18 @@ export interface MedUse extends MedRef {
 }
 
 /**
- * What the heal button can offer: the first carried med of each kind that would do
- * something now, best first by EFFECT_PRIORITY. A tap uses the first; a long press offers
- * them all. Empty when nothing's wrong or nothing carried helps. Not the vault.
+ * What the heal button can offer: the first med in reach (pockets, then rig: QUICK_GRIDS)
+ * of each kind that would do something now, best first by EFFECT_PRIORITY. A tap uses the
+ * first; a long press offers them all. Empty when nothing's wrong or nothing in reach
+ * helps. A med in the backpack is used from the inventory instead (startUse takes any
+ * carried grid).
  */
 export function treatments(c: Character, items: ItemDb): MedRef[] {
   const out: MedRef[] = [];
   const seen = new Set<string>();
   for (const effect of EFFECT_PRIORITY) {
     if (zoneToTreat(c.health, effect) < 0) continue;
-    for (let g = 0; g < CARRIED_GRIDS; g++) {
+    for (let g = 0; g < QUICK_GRIDS; g++) {
       const grid = carriedGrid(c.gear, g);
       if (!grid) continue;
       grid.items.forEach((gi, index) => {

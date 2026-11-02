@@ -1,5 +1,5 @@
 import {
-  CARRIED_GRIDS,
+  QUICK_GRIDS,
   FIRE,
   carriedGrenade,
   carriedGrenades,
@@ -253,10 +253,10 @@ export class HandsHud {
     );
   }
 
-  /** Opens the picker over the grenade button: each kind of grenade carried, and how many. */
+  /** Opens the picker over the grenade button: each kind of grenade in reach, and how many. */
   showGrenadePicker(c: Character, items: ItemDb): void {
     const counts = new Map<string, number>();
-    for (let g = 0; g < CARRIED_GRIDS; g++) {
+    for (let g = 0; g < QUICK_GRIDS; g++) {
       for (const gi of carriedGrid(c.gear, g)?.items ?? []) {
         const id = gi.item.item;
         if (items.get(id)?.type === 'grenade') counts.set(id, (counts.get(id) ?? 0) + 1);

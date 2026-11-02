@@ -633,6 +633,24 @@ describe('looting', () => {
     expect(countOf(c.gear.pockets, 'ap-round')).toBe(10);
   });
 
+  it('reloads the gun in hand from the backpack by hand, which R does not reach', () => {
+    const { state, c, act } = setup();
+    equip(c, items, 'primary1', createItem(items, 'rifle'));
+    equip(c, items, 'backpack', createItem(items, 'backpack'));
+    c.draw = 0;
+    const rifle = c.gear.primary1 as WeaponState;
+    rifle.mag = 0;
+    addItem(items, c.gear.backpack!.grid, createItem(items, 'round', 40));
+    const gun = { owner: self, slot: 'primary1', item: 'rifle' } as const;
+    const from = { owner: self, grid: 'backpack', index: 0, item: 'round' } as const;
+    expect(act({ type: 'load', gun, from })).toBe(true);
+    expect(rifle).toMatchObject({ reloading: 2, reloadWith: 'round', reloadByHand: true });
+    for (let i = 0; i < 2.1 * TICK_RATE; i++) step(state, world, items, {});
+    expect(rifle.mag).toBe(30);
+    expect(rifle.reloadByHand).toBeUndefined();
+    expect(countOf(c.gear.backpack!.grid, 'round')).toBe(10);
+  });
+
   it('drops items at your feet and picks them up again, within reach', () => {
     const { state, c, crate, act } = setup();
     addItem(items, c.gear.pockets, createItem(items, 'bandage'));

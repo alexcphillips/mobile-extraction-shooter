@@ -3,7 +3,7 @@ import { removeAt } from '../inventory/grid';
 import { TICK_SECONDS } from '../tick';
 import { createRayHit, type CollisionWorld } from '../world/collision-world';
 import { spillFire } from './fire';
-import { CARRIED_GRIDS, carriedGrid, heldWeapon } from './gear';
+import { QUICK_GRIDS, carriedGrid, heldWeapon } from './gear';
 import { ZONE_COUNT, woundZone, type Zone } from './health';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import type { CarriedRef } from './meds';
@@ -152,12 +152,12 @@ const hit = createRayHit();
 const charHit = createCharacterHit();
 
 /**
- * The first grenade carried (pockets, rig, then backpack), or null. With an item id, the
+ * The first grenade in reach (pockets, then rig), or null. With an item id, the
  * first of those, or the first of any if none of it is carried.
  */
 export function carriedGrenade(c: Character, items: ItemDb, id?: string | null): CarriedRef | null {
   let any: CarriedRef | null = null;
-  for (let g = 0; g < CARRIED_GRIDS; g++) {
+  for (let g = 0; g < QUICK_GRIDS; g++) {
     const list = carriedGrid(c.gear, g)?.items;
     if (!list) continue;
     for (let index = 0; index < list.length; index++) {
@@ -170,10 +170,10 @@ export function carriedGrenade(c: Character, items: ItemDb, id?: string | null):
   return any;
 }
 
-/** How many grenades are carried, for the HUD; with an item id, how many of those. */
+/** How many grenades are in reach, for the HUD; with an item id, how many of those. */
 export function carriedGrenades(c: Character, items: ItemDb, id?: string | null): number {
   let n = 0;
-  for (let g = 0; g < CARRIED_GRIDS; g++) {
+  for (let g = 0; g < QUICK_GRIDS; g++) {
     for (const gi of carriedGrid(c.gear, g)?.items ?? []) {
       if (id ? gi.item.item === id : items.get(gi.item.item)?.type === 'grenade') n++;
     }

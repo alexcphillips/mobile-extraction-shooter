@@ -152,6 +152,7 @@ export {
 } from './sim/raid';
 export {
   CARRIED_GRIDS,
+  QUICK_GRIDS,
   GEAR,
   GEAR_SLOTS,
   carriedAmmo,

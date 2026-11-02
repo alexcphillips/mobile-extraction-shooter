@@ -16,7 +16,16 @@ import { chance, nextFloat } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import { createRayHit, type CollisionWorld } from '../world/collision-world';
 import { HEALTH, brokenArms, shootCharacter } from './health';
-import { CARRIED_GRIDS, carriedAmmo, carriedGrid, equip, heldWeapon, stow, takeAmmo } from './gear';
+import {
+  CARRIED_GRIDS,
+  QUICK_GRIDS,
+  carriedAmmo,
+  carriedGrid,
+  equip,
+  heldWeapon,
+  stow,
+  takeAmmo,
+} from './gear';
 import { dropItem } from './ground';
 import { ignite, launchFlame } from './fire';
 import { launchGrenade } from './grenades';
@@ -49,6 +58,11 @@ export interface WeaponState extends Item {
   mag: number;
   /** The round the reload in progress loads; another than the one loaded swaps them. */
   reloadWith?: string;
+  /**
+   * The reload in progress was started by hand from the inventory (looting.ts's loadGun),
+   * so it takes from the backpack too, not only pockets and rig (QUICK_GRIDS).
+   */
+  reloadByHand?: true;
   /** Seconds until it can fire again; dips below 0 while the trigger is held, to keep the rate exact. */
   cooldown: number;
   /** Seconds left of a reload, or 0. */
@@ -175,8 +189,8 @@ export function loadedAmmo(items: ItemDb, gun: Item): string {
 
 /**
  * What a reload of w would load, or null with nothing to load: the round asked for, if
- * carried and of its calibre; else the one loaded, if any is carried; else the highest
- * level of its calibre carried. Infinite ammo loads what's asked for or what's loaded.
+ * in reach (pockets and rig: QUICK_GRIDS) and of its calibre; else the one loaded, if any
+ * is in reach; else the highest level of its calibre in reach. Infinite ammo loads what's asked for or what's loaded.
  */
 export function reloadRound(
   c: Character,
@@ -195,7 +209,7 @@ export function reloadRound(
   if (freeAmmo(c, def) || carriedAmmo(c, loaded) > 0) return loaded;
   let best: string | null = null;
   let bestLevel = 0;
-  for (let i = 0; i < CARRIED_GRIDS; i++) {
+  for (let i = 0; i < QUICK_GRIDS; i++) {
     const grid = carriedGrid(c.gear, i);
     if (!grid) continue;
     for (const g of grid.items) {
@@ -342,6 +356,7 @@ function startReload(
   if (w.mag < s.magazine || swap) {
     w.reloading = s.reloadTime;
     w.reloadWith = round;
+    delete w.reloadByHand;
   }
 }
 
@@ -359,13 +374,15 @@ function finishReload(
 ): void {
   w.reloading = 0;
   const round = w.reloadWith ?? loadedAmmo(items, w);
+  const grids = w.reloadByHand ? CARRIED_GRIDS : QUICK_GRIDS;
   delete w.reloadWith;
+  delete w.reloadByHand;
   const infinite = freeAmmo(c, weaponDef(items, w.item));
   if (round === loadedAmmo(items, w)) {
-    w.mag += infinite ? s.magazine - w.mag : takeAmmo(c, round, s.magazine - w.mag);
+    w.mag += infinite ? s.magazine - w.mag : takeAmmo(c, round, s.magazine - w.mag, grids);
     return;
   }
-  const taken = infinite ? s.magazine : takeAmmo(c, round, s.magazine);
+  const taken = infinite ? s.magazine : takeAmmo(c, round, s.magazine, grids);
   if (taken === 0) return;
   const old = loadedAmmo(items, w);
   const out = w.mag;

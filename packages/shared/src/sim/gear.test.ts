@@ -24,7 +24,7 @@ import {
   legSpeedScale,
   dealDamage,
 } from './health';
-import { treatments, useMed } from './meds';
+import { startUse, treatments, useMed } from './meds';
 import { createState, spawnCharacter, type Character, type PlayerInput } from './state';
 import { step } from './step';
 import { TEST_ITEMS as items } from './test-items';
@@ -147,6 +147,18 @@ describe('gear', () => {
     expect(w.reloading).toBe(0);
   });
 
+  it("doesn't reload from the backpack", () => {
+    const { state, c } = setup();
+    const w = giveWeapon(c, items, 'rifle');
+    w.mag = 0;
+    equip(c, items, 'backpack', createItem(items, 'backpack'));
+    addItem(items, c.gear.backpack!.grid, one('round', 50));
+    expect(carriedAmmo(c, 'round')).toBe(0);
+    step(state, world, items, { [c.id]: reload });
+    expect(w.reloading).toBe(0);
+    expect(w.mag).toBe(0);
+  });
+
   it('survives a JSON round trip mid-raid', () => {
     const { state, c } = setup();
     giveWeapon(c, items, 'rifle', ['big-mag']);
@@ -161,13 +173,13 @@ describe('gear', () => {
 describe('meds', () => {
   function patient(...meds: string[]): Character {
     const { c } = setup();
-    equip(c, items, 'backpack', createItem(items, 'backpack'));
+    equip(c, items, 'rig', createItem(items, 'rig'));
     for (const m of meds) stow(c, items, createItem(items, m));
     return c;
   }
   const chosen = (c: Character): string[] =>
     treatments(c, items).map((r) => {
-      const grid = r.grid === 0 ? c.gear.pockets : c.gear.backpack!.grid;
+      const grid = r.grid === 0 ? c.gear.pockets : c.gear.rig!.grid;
       return grid.items[r.index]!.item.item;
     });
 
@@ -190,6 +202,18 @@ describe('meds', () => {
     c.health.bleeding[HEAD] = true;
     addItem(items, c.gear.vault!, createItem(items, 'bandage'));
     expect(treatments(c, items)).toEqual([]);
+  });
+
+  it('offers meds in pockets and rig, not the backpack, which the inventory uses by hand', () => {
+    const { c } = setup();
+    c.health.bleeding[HEAD] = true;
+    equip(c, items, 'backpack', createItem(items, 'backpack'));
+    addItem(items, c.gear.backpack!.grid, createItem(items, 'bandage'));
+    expect(treatments(c, items)).toEqual([]);
+    expect(startUse(c, items, { grid: 2, index: 0, item: 'bandage' })).toBe(true);
+    equip(c, items, 'rig', createItem(items, 'rig'));
+    addItem(items, c.gear.rig!.grid, createItem(items, 'bandage'));
+    expect(treatments(c, items)).toEqual([{ grid: 1, index: 0, item: 'bandage' }]);
   });
 
   it('bandages one zone per use, in the fixed order, and is used up', () => {

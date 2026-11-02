@@ -566,8 +566,8 @@ body {
 
 /*
  * Desktop (input/mode.ts sets body[data-input]): mouse and keys replace the touch controls.
- * The hand slots, heal and grenade buttons stay as a read-out (1–4, H, G), but can't be
- * clicked.
+ * The hand slots and heal button stay as a read-out (1–4, H), but can't be clicked. The
+ * grenade button is hidden (G only, the user's call, 2026-11-01).
  */
 body[data-input='desktop']
   :is(
@@ -581,6 +581,7 @@ body[data-input='desktop']
       [data-id='bag'],
       [data-id='jump'],
       [data-id='crouch'],
+      [data-id='grenade'],
       [data-id='leanLeft'],
       [data-id='leanRight']
     )
@@ -596,17 +597,6 @@ body[data-input='desktop'] .control[data-id='detonate']::after {
   content: 'B';
   position: absolute;
   top: 3px;
-  font-size: 9px;
-  color: #fff;
-  opacity: 0.7;
-}
-
-/* The grenade button stays as a read-out on a desktop: the kind G throws (2026-10-31). */
-body[data-input='desktop'] .control[data-id='grenade']::after {
-  content: 'G';
-  position: absolute;
-  top: 3px;
-  right: 7px;
   font-size: 9px;
   color: #fff;
   opacity: 0.7;

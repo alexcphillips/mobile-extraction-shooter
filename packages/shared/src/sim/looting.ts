@@ -411,8 +411,8 @@ const loadStats = createWeaponStats();
  * What dropping a stack of rounds on a gun would do (2026-10-30), or null if nothing: it
  * must be a round the gun fires, and not more of what's in it when it's full. Onto the
  * gun in c's hands in a raid ('reload'), it starts a reload with that round, so it takes
- * the reload time as a reload does; the stack must be carried (a reload takes from
- * pockets, rig and backpack), and the gun drawn, off a ladder and not reloading already.
+ * the reload time as a reload does; the stack must be carried (pockets, rig or backpack:
+ * by hand the backpack is in reach, where R reaches only pockets and rig), and the gun drawn, off a ladder and not reloading already.
  * Onto any other gun, or with instant (between raids), it's at once ('load').
  */
 export function loadKind(
@@ -458,6 +458,7 @@ export function loadGun(
   if (kind === 'reload') {
     gun.reloading = weaponStats(items, gun, loadStats).reloadTime;
     gun.reloadWith = round;
+    gun.reloadByHand = true;
     return true;
   }
   const old = loadedAmmo(items, gun);
@@ -469,6 +470,7 @@ export function loadGun(
   gun.mag += n;
   gun.reloading = 0;
   delete gun.reloadWith;
+  delete gun.reloadByHand;
   if (round === weaponDef(items, gun.item).ammo) delete gun.loaded;
   else gun.loaded = round;
   stowRounds({ state, c, items, world }, old, out);
