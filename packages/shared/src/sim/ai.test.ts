@@ -15,7 +15,7 @@ import {
 import { step } from './step';
 import { equip, stow } from './gear';
 import { createItem } from './create-item';
-import { CHEST } from './health';
+import { CHEST, HEAD, LEFT_LEG, RIGHT_LEG } from './health';
 import { giveWeapon } from './weapons';
 import { TEST_ITEMS } from './test-items';
 
@@ -170,6 +170,36 @@ describe('enemy sight', () => {
     const boxes = [aabb(-5, 0, -9.2, 5, 1.2, -9)];
     expect(runFor(setup(0, -10, { boxes }), 3)).toBe('alert');
     expect(runFor(setup(0, -10, { boxes }), 3, input({ crouch: true }))).toBe('unaware');
+  });
+
+  it('takes a while to notice you far off in the open', () => {
+    // It used to be suspicious of someone 60 m away within about 2 s, and alert in 3.
+    const far = setup(0, -60, { half: 80 });
+    expect(runFor(far, 4)).toBe('unaware');
+    const walking = setup(0, -60, { half: 80 });
+    // Strafing across its view, so you stay about 60 m off.
+    expect(runFor(walking, 3, input({ moveX: 1 }))).toBe('unaware');
+  });
+
+  it('notices you a little more slowly while you lean', () => {
+    const notice = (lean: number): number => {
+      const s = setup(0, -20);
+      s.run(0.5, input({ lean }));
+      return s.enemy.ai!.notice;
+    };
+    const upright = notice(0);
+    expect(upright).toBeGreaterThan(0);
+    expect(notice(-1) / upright).toBeCloseTo(AI.leaningRate, 1);
+  });
+
+  it('sees round a corner only once you lean out', () => {
+    // A wall just in front of the player, its edge 0.25 m left of the player's middle:
+    // upright you're hidden, leaning left your head shows past its edge.
+    const boxes = [aabb(0.55, 0, -9.6, 5, 3, -9.4)];
+    expect(runFor(setup(0.8, -10, { boxes }), 3)).toBe('unaware');
+    expect(runFor(setup(0.8, -10, { boxes }), 3, input({ lean: -1 }))).toBe('alert');
+    // Leaning the other way, into the wall, shows nothing.
+    expect(runFor(setup(0.8, -10, { boxes }), 3, input({ lean: 1 }))).toBe('unaware');
   });
 
   it('notices at once up close, and turns to face what it noticed', () => {
@@ -414,7 +444,7 @@ describe('enemy behaviour', () => {
   it('closes in when alert, then searches and gives up after losing you', () => {
     // Unarmed, and always pushes rather than holding the angle.
     const s = setup(0, -30, { half: 80, skill: { holdChance: 0 } });
-    s.run(4);
+    s.run(7);
     expect(s.enemy.ai!.awareness).toBe('alert');
     expect(s.enemy.z).toBeLessThan(-5);
     // Vanish behind it: for a moment it still knows where you went...
@@ -491,7 +521,7 @@ describe('enemy combat', () => {
     let alertAt = -1;
     let firstShot = -1;
     let hits = 0;
-    for (let t = 0; t < 6 * TICK_RATE; t++) {
+    for (let t = 0; t < 20 * TICK_RATE; t++) {
       s.run(1 / TICK_RATE);
       if (alertAt < 0 && s.enemy.ai!.awareness === 'alert') alertAt = t;
       for (const e of s.state.events) {
@@ -501,7 +531,27 @@ describe('enemy combat', () => {
     }
     expect(alertAt).toBeGreaterThanOrEqual(0);
     expect((firstShot - alertAt) / TICK_RATE).toBeGreaterThanOrEqual(DEFAULT_SKILL.reaction - 0.05);
-    expect(hits).toBeGreaterThan(3);
+    // Its aim wanders smoothly, so hits come in runs: judged over a while, not the first bursts.
+    expect(hits).toBeGreaterThan(10);
+  });
+
+  it('shoots at what shows of you round a corner, not through the wall', () => {
+    const boxes = [aabb(0.55, 0, -9.6, 5, 3, -9.4)];
+    const s = setup(0.8, -10, { boxes });
+    arm(s);
+    const zones: number[] = [];
+    for (let t = 0; t < 8 * TICK_RATE; t++) {
+      s.run(1 / TICK_RATE, input({ lean: -1 }));
+      for (const e of s.state.events)
+        if (e.type === 'damage' && e.target === s.player.id) zones.push(e.zone);
+    }
+    // The head, the shoulder (top of the chest) and the arm on that side stick out; the
+    // legs stay behind the wall.
+    expect(zones).toContain(HEAD);
+    expect(
+      zones.every((z) => z !== LEFT_LEG && z !== RIGHT_LEG),
+      zones.join(),
+    ).toBe(true);
   });
 
   it('is alarmed and flinches when knifed from behind, as when shot', () => {
@@ -537,12 +587,12 @@ describe('enemy combat', () => {
   it('settles its aim while watching, and less so on a target on the move', () => {
     const still = setup(0, -20);
     arm(still);
-    still.run(5);
+    still.run(7);
     expect(still.enemy.ai!.aimError).toBeLessThan((DEFAULT_SKILL.aimSettled + 1.2) * DEG);
     const moving = setup(0, -20);
     arm(moving);
     // Sprinting across its view, round and round.
-    moving.run(5, input({ moveY: 1, yaw: Math.PI / 2, sprint: true }));
+    moving.run(7, input({ moveY: 1, yaw: Math.PI / 2, sprint: true }));
     expect(moving.enemy.ai!.aimError).toBeGreaterThan(still.enemy.ai!.aimError);
   });
 
@@ -594,7 +644,7 @@ describe('enemy combat', () => {
     const boxes = [aabb(2, 0, -2.5, 6, 1.2, -1.5)];
     const s = setup(0, -20, { boxes });
     arm(s);
-    s.run(1.5);
+    s.run(3);
     expect(s.enemy.ai!.activity).toBe('engage');
     // The player shoots it in the arm.
     s.state.events.length = 0;

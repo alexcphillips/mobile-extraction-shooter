@@ -4,6 +4,8 @@ import {
   createRayHit,
   doorInReach,
   eyeHeight,
+  eyeX,
+  eyeZ,
   groundInReach,
   lootInSight,
   type Character,
@@ -56,13 +58,16 @@ export function lootableInReach(
   const lx = fx * cp;
   const ly = Math.sin(pitch);
   const lz = fz * cp;
+  // From the eye, leaned or not, as the sim's lootInSight checks.
+  const ex = eyeX(player);
   const ey = eyeHeight(player);
+  const ez = eyeZ(player);
   for (let i = 0; i < sim.ground.length; i++) {
     const g = sim.ground[i]!;
     if (!groundInReach(player, g, world)) continue;
-    const dx = g.x - player.x;
+    const dx = g.x - ex;
     const dy = g.y - ey;
-    const dz = g.z - player.z;
+    const dz = g.z - ez;
     const facing = (dx * lx + dy * ly + dz * lz) / Math.hypot(dx, dy, dz);
     // Above anything a container or body scores, so aiming at an item takes it.
     if (facing >= GROUND_CONE && facing + 2 > best) {
@@ -77,11 +82,11 @@ export function lootableInReach(
   // slab off to the side, but below anything else in reach.
   if (!found && world.doors.length) {
     const reach = DOOR.reach + 1;
-    const d = Math.min(reach, world.raycast(player.x, ey, player.z, lx, ly, lz, reach, hit));
+    const d = Math.min(reach, world.raycast(ex, ey, ez, lx, ly, lz, reach, hit));
     let door = hit.kind === 'solid' ? world.doorOf(hit.index) : -1;
     if (door >= 0) best = 1.5;
     else {
-      door = doorwayAt(sim, world, player.x, ey, player.z, lx, ly, lz, d);
+      door = doorwayAt(sim, world, ex, ey, ez, lx, ly, lz, d);
       best = DOORWAY_SCORE;
     }
     if (door >= 0 && doorInReach(world, player, door)) {

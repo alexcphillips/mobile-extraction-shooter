@@ -16,7 +16,10 @@ import {
   createRng,
   createState,
   equipLoadout,
+  MOVEMENT,
   eyeHeight,
+  eyeX,
+  eyeZ,
   nextInt,
   pick,
   raycastCharacters,
@@ -209,6 +212,8 @@ const RETICLE_IN = 0.95;
 /** How far into aiming a scope switches to its full-screen zoom. */
 const SCOPE_IN = 0.9;
 const DEG = Math.PI / 180;
+/** The view tilts this much of the body's lean angle. */
+const LEAN_ROLL = 0.35;
 /** With ?respawn, dead enemies come back at their spawn after this long. */
 const ENEMY_RESPAWN_MS = 6000;
 /** How long after you die the results screen comes up. */
@@ -529,9 +534,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // The view between ticks. Look (yaw, pitch) is only used spectating: your own is the
   // controls', every frame.
   const prev = {
-    x: player.x,
+    x: eyeX(player),
     y: eyeHeight(player),
-    z: player.z,
+    z: eyeZ(player),
+    lean: 0,
     aim: 0,
     rp: 0,
     ry: 0,
@@ -594,23 +600,17 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const dx = -Math.sin(yaw) * cp;
     const dy = Math.sin(pitch);
     const dz = -Math.cos(yaw) * cp;
+    const ex = eyeX(player);
     const ey = eyeHeight(player);
-    const wall = world.raycast(player.x, ey, player.z, dx, dy, dz, range, aimWorld);
+    const ez = eyeZ(player);
+    const wall = world.raycast(ex, ey, ez, dx, dy, dz, range, aimWorld);
     const reach = Math.min(wall, range);
-    const d = raycastCharacters(sim, player.x, ey, player.z, dx, dy, dz, reach, player.id, aimHit);
+    const d = raycastCharacters(sim, ex, ey, ez, dx, dy, dz, reach, player.id, aimHit);
     // No help aiming at someone hidden in smoke, or at another player in a party raid.
     return (
       d < Infinity &&
       !others.some((o) => o.c.id === aimHit.id) &&
-      !smokeBlocks(
-        sim.smokes,
-        player.x,
-        ey,
-        player.z,
-        player.x + dx * d,
-        ey + dy * d,
-        player.z + dz * d,
-      )
+      !smokeBlocks(sim.smokes, ex, ey, ez, ex + dx * d, ey + dy * d, ez + dz * d)
     );
   }
 
@@ -877,9 +877,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   /** Where the view is after a tick: through your eyes, or the teammate's you're watching. */
   function follow(): void {
     const v = watching ?? player;
-    cur.x = v.x;
+    cur.x = eyeX(v);
     cur.y = eyeHeight(v);
-    cur.z = v.z;
+    cur.z = eyeZ(v);
+    cur.lean = v.lean ?? 0;
     cur.aim = v.aim;
     cur.rp = v.recoilPitch;
     cur.ry = v.recoilYaw;
@@ -941,6 +942,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.sprint = controls.sprint;
     input.crouch = controls.crouch;
     input.prone = controls.prone;
+    input.lean = controls.lean;
     input.jump = controls.jump;
     input.fire = fire;
     input.aim = controls.aim;
@@ -1218,7 +1220,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         : spot
           ? (markerText.get(spot.marker) ?? '')
           : '';
-    // Desktop has no use button to say what E does, so the prompt says it.
+    // Desktop has no use button to say what F does, so the prompt says it.
     if (inputMode.desktop && useLabel !== 'use' && useLabel !== 'locked') {
       const verb = useLabel[0]!.toUpperCase() + useLabel.slice(1);
       el.raidHud.setPrompt(
@@ -1230,7 +1232,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
               ? `Loot ${nameOf({ kind: 'body', id: lootable.c.id })}`
               : prompt || `${verb}${door ? ' door' : ''}`,
         now,
-        'E',
+        'F',
       );
     } else el.raidHud.setPrompt(prompt, now);
     let armed = false;
@@ -1307,7 +1309,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       yaw = prev.yaw + turn * alpha;
       pitch = lerp(prev.pitch, cur.pitch);
     }
-    camera.rotation.set(pitch + lerp(prev.rp, cur.rp), yaw + lerp(prev.ry, cur.ry), 0);
+    // Leaning tilts the view a third as far as the body (about 10°), towards the lean.
+    const roll = -lerp(prev.lean, cur.lean) * MOVEMENT.leanAngle * LEAN_ROLL;
+    camera.rotation.set(pitch + lerp(prev.rp, cur.rp), yaw + lerp(prev.ry, cur.ry), roll);
     const aim = lerp(prev.aim, cur.aim);
     const w = heldWeapon(v);
     const optic = w?.attachments.optic
@@ -1345,9 +1349,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       const dx = -Math.sin(yaw) * cp;
       const dy = Math.sin(pitch);
       const dz = -Math.cos(yaw) * cp;
+      const ex = eyeX(player);
       const ey = eyeHeight(player);
-      const d = Math.min(200, world.raycast(player.x, ey, player.z, dx, dy, dz, 200, markerHit));
-      placeMarker(aimMarker, player.x + dx * d, ey + dy * d, player.z + dz * d, 0.01);
+      const ez = eyeZ(player);
+      const d = Math.min(200, world.raycast(ex, ey, ez, dx, dy, dz, 200, markerHit));
+      placeMarker(aimMarker, ex + dx * d, ey + dy * d, ez + dz * d, 0.01);
     }
     const knife = !w && v.gear.hand === 'knife' && !!v.gear.knife;
     viewmodel.visible = alive && (!!w || knife) && !scoped;

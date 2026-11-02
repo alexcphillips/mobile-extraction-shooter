@@ -24,12 +24,21 @@ const DEAD = new THREE.Color(0x777777);
  */
 export class CapsuleBody {
   readonly root = new THREE.Group();
+  /** The legs, squashed by crouching. */
+  private readonly legs = new THREE.Group();
+  /** Everything above the hips turns about them with the lean (the pivot), squashed
+   * inside it (upper), as capsuleEnds does: squash, then tip. */
+  private readonly pivot = new THREE.Group();
+  private readonly upper = new THREE.Group();
   private readonly zones: THREE.MeshBasicMaterial[] = [];
   private readonly helmet: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>;
   private readonly vest: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>;
 
   constructor(opacity = 1) {
     this.root.rotation.order = 'YXZ';
+    this.pivot.add(this.upper);
+    this.root.add(this.legs, this.pivot);
+    const hips = MOVEMENT.standHeight * MOVEMENT.leanPivot;
     const see = opacity < 1 ? { transparent: true, opacity, depthWrite: false } : {};
     const a = new THREE.Vector3();
     const b = new THREE.Vector3();
@@ -48,7 +57,7 @@ export class CapsuleBody {
       // Capsule geometry runs along y: place it at the middle and turn y onto the axis.
       mesh.position.addVectors(a, b).multiplyScalar(0.5);
       mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.sub(a).normalize());
-      this.root.add(mesh);
+      (Math.max(cap.a[1], cap.b[1]) > hips ? this.upper : this.legs).add(mesh);
     }
     this.helmet = new THREE.Mesh(
       new THREE.BoxGeometry(0.3, 0.14, 0.32),
@@ -60,7 +69,7 @@ export class CapsuleBody {
       new THREE.MeshBasicMaterial(see),
     );
     this.vest.position.set(0, 1.18, 0);
-    this.root.add(this.helmet, this.vest);
+    this.upper.add(this.helmet, this.vest);
   }
 
   update(c: Character, items: ItemDb): void {
@@ -69,7 +78,14 @@ export class CapsuleBody {
     this.root.rotation.y = c.yaw;
     const h = c.health;
     this.root.rotation.x = h.dead ? Math.PI / 2 : 0;
-    this.root.scale.y = c.height / MOVEMENT.standHeight;
+    const squash = c.height / MOVEMENT.standHeight;
+    const hips = c.height * MOVEMENT.leanPivot;
+    this.legs.scale.y = squash;
+    this.upper.scale.y = squash;
+    this.upper.position.y = -hips;
+    this.pivot.position.y = hips;
+    // Leaning right tips the top towards +x: a turn about +z the other way.
+    this.pivot.rotation.z = -(c.lean ?? 0) * MOVEMENT.leanAngle;
     for (let zone = 0; zone < ZONE_COUNT; zone++) {
       const colour = this.zones[zone]!.color;
       const left = h.hp[zone]! / HEALTH.maxHp[zone]!;

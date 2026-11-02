@@ -71,10 +71,24 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel, onGiveUp }: P
             ]}
             hint={
               inputMode.desktop
-                ? 'Toggle: right click (or Q) aims, and you stay aimed until you press it again.'
+                ? 'Toggle: right click (or Z) aims, and you stay aimed until you press it again.'
                 : 'Toggle: tap aim to aim, and you stay aimed until you tap it again.'
             }
             onChange={(v) => set('aim', v)}
+          />
+          <Choice
+            label="Lean"
+            value={s.lean}
+            options={[
+              ['toggle', 'Toggle'],
+              ['hold', 'Hold to lean'],
+            ]}
+            hint={
+              inputMode.desktop
+                ? 'Toggle: Q or E leans until you press it again (or the other one, or sprint).'
+                : "Toggle: tap a lean button to lean until you tap it again (or sprint). Holding one means you can't fire with that thumb."
+            }
+            onChange={(v) => set('lean', v)}
           />
           <Choice
             label="Firing"

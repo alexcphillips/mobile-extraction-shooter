@@ -8,6 +8,8 @@ import { MOVEMENT } from './movement';
 import {
   entityById,
   eyeHeight,
+  eyeX,
+  eyeZ,
   type Character,
   type EntityId,
   type PlayerInput,
@@ -124,9 +126,9 @@ export function launchFlame(
   const dx = -Math.sin(yaw) * cp;
   const dy = Math.sin(pitch);
   const dz = -Math.cos(yaw) * cp;
-  const ox = c.x;
+  const ox = eyeX(c);
   const oy = eyeHeight(c);
-  const oz = c.z;
+  const oz = eyeZ(c);
   const wall = world.raycast(ox, oy, oz, dx, dy, dz, FIRE.nozzle + FIRE.surface);
   const out = Math.max(0, Math.min(FIRE.nozzle, wall - FIRE.surface));
   const speed = def.flame?.speed ?? 1;

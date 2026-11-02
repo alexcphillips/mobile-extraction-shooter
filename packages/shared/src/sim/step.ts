@@ -11,7 +11,7 @@ import { updateGrenades, updateThrow } from './grenades';
 import { applyInventory } from './looting';
 import { updateMedUse } from './meds';
 import { updateMelee } from './melee';
-import { moveCharacter, separateCharacters } from './movement';
+import { fitLean, moveCharacter, separateCharacters } from './movement';
 import { investigate, updateRaid } from './raid';
 import type { SimState, TickInputs } from './state';
 import { updateWeapon } from './weapons';
@@ -69,6 +69,7 @@ export function step(
     applyFall(state, e);
   }
   separateCharacters(state.entities, world);
+  for (const e of state.entities) fitLean(e, world);
   for (const e of state.entities) {
     if (e.health.dead) continue;
     const input = inputs[e.id] ?? e.ai?.input;

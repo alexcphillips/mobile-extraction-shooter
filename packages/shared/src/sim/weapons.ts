@@ -24,6 +24,8 @@ import { createCharacterHit, raycastCharacters } from './hit-zones';
 import {
   entityById,
   eyeHeight,
+  eyeX,
+  eyeZ,
   type Character,
   type EntityId,
   type PlayerInput,
@@ -479,9 +481,9 @@ function castShot(
   const dx = -Math.sin(yaw) * cp;
   const dy = Math.sin(pitch);
   const dz = -Math.cos(yaw) * cp;
-  const ox = c.x;
+  const ox = eyeX(c);
   const oy = eyeHeight(c);
-  const oz = c.z;
+  const oz = eyeZ(c);
 
   const wd = world.raycast(ox, oy, oz, dx, dy, dz, def.range, worldHit);
   const cd = raycastCharacters(

@@ -11,6 +11,7 @@ import { smokeBlocks, type Grenade } from './grenades';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import { MOVEMENT } from './movement';
 import {
+  bodyPoint,
   entityById,
   eyeHeight,
   spawnCharacter,
@@ -51,8 +52,13 @@ export const AI = {
   /** Seconds to notice someone in plain view closer than nearRange. */
   reaction: 0.5,
   nearRange: 8,
-  /** Noticing at sightRange happens at this fraction of the rate. */
-  farRate: 0.08,
+  /**
+   * Beyond nearRange the rate falls as (nearRange / distance) to this power: in plain view
+   * straight ahead, walking, about 3 s at 25 m, 9 s at 50 m and 16 s at 70 m to notice
+   * fully (2026-11-01; it was a square root down to 8% at 70 m, which noticed you about
+   * 60 m away in 3 s, crouched or not).
+   */
+  farFalloff: 1.6,
   /** Within this angle from straight ahead, full rate; at the edge of view, peripheralRate. */
   centreAngle: 25,
   peripheralRate: 0.35,
@@ -61,6 +67,8 @@ export const AI = {
   proneRate: 0.6,
   stillRate: 0.7,
   sprintingRate: 1.3,
+  /** Leaning all the way (2026-11-01), less for a part lean: a peek is harder to notice. */
+  leaningRate: 0.75,
   /** An enemy that's already on edge notices faster. */
   waryRate: 1.6,
   /** In view this close is noticed at once. */
@@ -588,6 +596,10 @@ function checkReachable(ai: AiState, c: Character, target: Character, nav: NavGr
   if (there >= 0 && here >= 0) ai.reachable = nav.component[there] === nav.component[here];
 }
 
+// Scratch for where a target's head and chest are, leaned.
+const headPoint = { x: 0, y: 0, z: 0 };
+const chestPoint = { x: 0, y: 0, z: 0 };
+
 /**
  * How fast it notices e (per second), or 0 if it can't see e: not while blinded by a
  * flash, nor through smoke (2026-10-31).
@@ -609,33 +621,30 @@ function sightRate(
   if (across > AI.sightRange) return 0;
   const ahead = across > 1e-6 ? (dx * -Math.sin(c.yaw) + dz * -Math.cos(c.yaw)) / across : 1;
   if (ahead < HALF_FOV_COS) return 0;
-  // In sight if the head or the middle of the body is.
-  const head = e.y + e.height - 0.12;
-  const body = e.y + e.height * 0.6;
-  if (
-    !clearLine(world, ox, oy, oz, e.x, head, e.z) &&
-    !clearLine(world, ox, oy, oz, e.x, body, e.z)
-  )
+  // In sight if the head or the middle of the body is, leaned out from cover or not.
+  const h = headPoint;
+  const b = chestPoint;
+  bodyPoint(e, e.height - 0.12, h);
+  bodyPoint(e, e.height * 0.6, b);
+  if (!clearLine(world, ox, oy, oz, h.x, h.y, h.z) && !clearLine(world, ox, oy, oz, b.x, b.y, b.z))
     return 0;
   if (
-    smokeBlocks(state.smokes, ox, oy, oz, e.x, head, e.z) &&
-    smokeBlocks(state.smokes, ox, oy, oz, e.x, body, e.z)
+    smokeBlocks(state.smokes, ox, oy, oz, h.x, h.y, h.z) &&
+    smokeBlocks(state.smokes, ox, oy, oz, b.x, b.y, b.z)
   )
     return 0;
-  const d = Math.hypot(across, head - oy);
+  const d = Math.hypot(across, h.y - oy);
   if (d < AI.instantRange) return Infinity;
 
   let rate = 1 / AI.reaction;
-  if (d > AI.nearRange) {
-    const far = Math.min(1, (d - AI.nearRange) / (AI.sightRange - AI.nearRange));
-    rate *= 1 - (1 - AI.farRate) * Math.sqrt(far);
-  }
+  if (d > AI.nearRange) rate *= (AI.nearRange / d) ** AI.farFalloff;
   if (ahead < CENTRE_COS) {
     const edge = (CENTRE_COS - ahead) / (CENTRE_COS - HALF_FOV_COS);
     rate *= 1 - (1 - AI.peripheralRate) * edge;
   }
   if (e.height < MOVEMENT.standHeight - 0.1) rate *= AI.crouchedRate;
   if (e.height < MOVEMENT.crouchHeight - 0.1) rate *= AI.proneRate;
+  if (e.lean) rate *= 1 - (1 - AI.leaningRate) * Math.abs(e.lean);
   const speed = Math.hypot(e.vx, e.vz);
   if (speed < 0.2) rate *= AI.stillRate;
   else if (speed > MOVEMENT.walkSpeed + 0.5) rate *= AI.sprintingRate;
@@ -1469,13 +1478,20 @@ function fight(
   const def = weaponDef(items, w.item);
   const input = ai.input;
   const sees = ai.seesTarget;
-  // The middle of the body, or the head if that's all it can see over cover: of the
-  // target itself while seen, else where it was.
-  const tx = sees ? target.x : ai.focusX;
-  const tz = sees ? target.z : ai.focusZ;
-  let ty = sees ? target.y + target.height * 0.6 : ai.focusY + MOVEMENT.standHeight * 0.6;
-  if (sees && !clearLine(world, c.x, eyeHeight(c), c.z, tx, ty, tz))
-    ty = target.y + target.height - 0.15;
+  // The middle of the body, or the head if that's all it can see over cover or round a
+  // corner (leaning): of the target itself while seen, else where it was.
+  let tx = ai.focusX;
+  let ty = ai.focusY + MOVEMENT.standHeight * 0.6;
+  let tz = ai.focusZ;
+  if (sees) {
+    const p = chestPoint;
+    bodyPoint(target, target.height * 0.6, p);
+    if (!clearLine(world, c.x, eyeHeight(c), c.z, p.x, p.y, p.z))
+      bodyPoint(target, target.height - 0.15, p);
+    tx = p.x;
+    ty = p.y;
+    tz = p.z;
+  }
   const across = Math.hypot(tx - c.x, tz - c.z);
 
   let moving = false;

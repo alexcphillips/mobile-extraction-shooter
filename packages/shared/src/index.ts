@@ -73,9 +73,12 @@ export {
   type WorldDef,
 } from './world/collision-world';
 export {
+  bodyPoint,
   createState,
   entityById,
   eyeHeight,
+  eyeX,
+  eyeZ,
   spawnCharacter,
   type AdminCheats,
   type SpawnRequestEvent,
@@ -88,7 +91,7 @@ export {
   type SimState,
   type TickInputs,
 } from './sim/state';
-export { MOVEMENT, moveCharacter, separateCharacters } from './sim/movement';
+export { MOVEMENT, fitLean, moveCharacter, separateCharacters } from './sim/movement';
 export {
   DOOR,
   createDoors,

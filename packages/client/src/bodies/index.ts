@@ -57,6 +57,12 @@ const POSES: Pose[] = [
     name: 'crouch walk',
     set: (c, i) => (rifle(c, i), (c.height = MOVEMENT.crouchHeight), moving(1.5, 0)(c)),
   },
+  { name: 'lean left aimed', set: (c, i) => (rifle(c, i), (c.aim = 1), (c.lean = -1)) },
+  { name: 'lean right aimed', set: (c, i) => (rifle(c, i), (c.aim = 1), (c.lean = 1)) },
+  {
+    name: 'crouch lean right',
+    set: (c, i) => (rifle(c, i), (c.aim = 1), (c.height = MOVEMENT.crouchHeight), (c.lean = 1)),
+  },
   { name: 'reload', set: (c, i) => (rifle(c, i), (heldWeapon(c)!.reloading = 2.4)) },
   { name: 'dead', set: (c, i) => (rifle(c, i), (c.health.dead = true)) },
   {

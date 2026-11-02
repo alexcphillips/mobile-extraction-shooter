@@ -5,6 +5,7 @@ describe('settings', () => {
   it('has the design defaults', () => {
     const s = defaultSettings();
     expect(s.aim).toBe('hold');
+    expect(s.lean).toBe('toggle');
     expect(s.fire).toBe('auto');
     expect(s.aimAssist).toBe('low');
     expect(s.layout).toEqual({});
@@ -22,11 +23,13 @@ describe('settings', () => {
     const s = loadSettings({
       formatVersion: 1,
       aim: 'sideways',
+      lean: 'wobbly',
       lookSensitivity: 99,
       invertY: true,
       layout: { fire: { x: 0.5, y: 0.5, scale: 1 }, aim: { x: 7 } },
     });
     expect(s.aim).toBe('hold');
+    expect(s.lean).toBe('toggle');
     expect(s.lookSensitivity).toBe(1);
     expect(s.invertY).toBe(true);
     expect(s.layout).toEqual({ fire: { x: 0.5, y: 0.5, scale: 1 } });

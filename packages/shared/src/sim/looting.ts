@@ -36,7 +36,7 @@ import type { CollisionWorld } from '../world/collision-world';
 import { createItem } from './create-item';
 import { dropItem, type GroundItem } from './ground';
 import { repairable } from './repair';
-import { eyeHeight, type Character, type EntityId, type SimState } from './state';
+import { eyeHeight, eyeX, eyeZ, type Character, type EntityId, type SimState } from './state';
 import {
   attach,
   createWeaponStats,
@@ -291,13 +291,15 @@ export function lootInSight(
   y: number,
   z: number,
 ): boolean {
+  const ex = eyeX(c);
   const ey = eyeHeight(c);
-  const dx = x - c.x;
+  const ez = eyeZ(c);
+  const dx = x - ex;
   const dy = y - ey;
-  const dz = z - c.z;
+  const dz = z - ez;
   const d = Math.hypot(dx, dy, dz);
   if (d <= LOOT_SIGHT_SLACK) return true;
-  return world.raycast(c.x, ey, c.z, dx / d, dy / d, dz / d, d) >= d - LOOT_SIGHT_SLACK;
+  return world.raycast(ex, ey, ez, dx / d, dy / d, dz / d, d) >= d - LOOT_SIGHT_SLACK;
 }
 
 /** How far short of a point lootInSight's ray may hit something, in metres. */

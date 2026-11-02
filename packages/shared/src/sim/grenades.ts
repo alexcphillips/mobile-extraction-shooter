@@ -7,7 +7,15 @@ import { CARRIED_GRIDS, carriedGrid, heldWeapon } from './gear';
 import { ZONE_COUNT, woundZone, type Zone } from './health';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import type { CarriedRef } from './meds';
-import { eyeHeight, type Character, type EntityId, type PlayerInput, type SimState } from './state';
+import {
+  eyeHeight,
+  eyeX,
+  eyeZ,
+  type Character,
+  type EntityId,
+  type PlayerInput,
+  type SimState,
+} from './state';
 
 const DEG = Math.PI / 180;
 
@@ -250,9 +258,9 @@ export function launchGrenade(
   const dx = -Math.sin(yaw) * cp;
   const dy = Math.sin(p);
   const dz = -Math.cos(yaw) * cp;
-  const ox = c.x;
+  const ox = eyeX(c);
   const oy = eyeHeight(c);
-  const oz = c.z;
+  const oz = eyeZ(c);
   const wall = world.raycast(ox, oy, oz, dx, dy, dz, GRENADE.hand + GRENADE.size);
   const out = Math.max(0, Math.min(GRENADE.hand, wall - GRENADE.size));
   const g: Grenade = {
@@ -465,9 +473,9 @@ function flash(
   for (const c of state.entities) {
     if (c.health.dead) continue;
     const ey = eyeHeight(c);
-    const dx = x - c.x;
+    const dx = x - eyeX(c);
     const dy = y - ey;
-    const dz = z - c.z;
+    const dz = z - eyeZ(c);
     const d = Math.hypot(dx, dy, dz);
     if (d >= def.radius) continue;
     if (d > 1e-6) {

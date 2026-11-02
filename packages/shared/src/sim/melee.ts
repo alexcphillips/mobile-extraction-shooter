@@ -6,6 +6,8 @@ import { createCharacterHit, raycastCharacters } from './hit-zones';
 import {
   entityById,
   eyeHeight,
+  eyeX,
+  eyeZ,
   type Character,
   type EntityId,
   type PlayerInput,
@@ -77,9 +79,9 @@ export function updateMelee(
   const def = meleeDef(items, knife.item);
   c.swing = def.swingTime;
 
-  const ox = c.x;
+  const ox = eyeX(c);
   const oy = eyeHeight(c);
-  const oz = c.z;
+  const oz = eyeZ(c);
   const yaw0 = c.yaw + c.recoilYaw;
   const pitch0 = c.pitch + c.recoilPitch;
   let hit: SwingEvent['hit'] = 'none';

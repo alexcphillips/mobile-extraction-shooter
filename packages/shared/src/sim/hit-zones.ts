@@ -54,18 +54,41 @@ export function createCharacterHit(): CharacterHit {
 const A = [0, 0, 0];
 const B = [0, 0, 0];
 
-/** World-space ends of a capsule on a character, written into a and b. */
+/**
+ * World-space ends of a capsule on a character, written into a and b. Ends above the hips
+ * tip sideways with the lean, as the eye does (bodyPoint), so the legs stay behind cover.
+ */
 export function capsuleEnds(c: Character, cap: HitCapsule, a: number[], b: number[]): void {
   const squash = c.height / MOVEMENT.standHeight;
+  const tilt = (c.lean ?? 0) * MOVEMENT.leanAngle;
+  const pivot = c.height * MOVEMENT.leanPivot;
+  placeEnd(c, cap.a, squash, pivot, Math.sin(tilt), Math.cos(tilt), a);
+  placeEnd(c, cap.b, squash, pivot, Math.sin(tilt), Math.cos(tilt), b);
+}
+
+function placeEnd(
+  c: Character,
+  p: readonly [number, number, number],
+  squash: number,
+  pivot: number,
+  sinTilt: number,
+  cosTilt: number,
+  out: number[],
+): void {
+  let side = p[0];
+  let h = p[1] * squash;
+  if (sinTilt !== 0 && h > pivot) {
+    // Turned about the forward axis through the pivot: up tips towards the lean's side.
+    const up = h - pivot;
+    side = p[0] * cosTilt + up * sinTilt;
+    h = pivot - p[0] * sinTilt + up * cosTilt;
+  }
   // Right is (cos yaw, −sin yaw) and forward is (−sin yaw, −cos yaw).
   const cy = Math.cos(c.yaw);
   const sy = Math.sin(c.yaw);
-  a[0] = c.x + cap.a[0] * cy - cap.a[2] * sy;
-  a[1] = c.y + cap.a[1] * squash;
-  a[2] = c.z - cap.a[0] * sy - cap.a[2] * cy;
-  b[0] = c.x + cap.b[0] * cy - cap.b[2] * sy;
-  b[1] = c.y + cap.b[1] * squash;
-  b[2] = c.z - cap.b[0] * sy - cap.b[2] * cy;
+  out[0] = c.x + side * cy - p[2] * sy;
+  out[1] = c.y + h;
+  out[2] = c.z - side * sy - p[2] * cy;
 }
 
 /**

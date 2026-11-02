@@ -568,7 +568,9 @@ body[data-input='desktop']
       [data-id='interact'],
       [data-id='bag'],
       [data-id='jump'],
-      [data-id='crouch']
+      [data-id='crouch'],
+      [data-id='leanLeft'],
+      [data-id='leanRight']
     )
   ) {
   display: none;

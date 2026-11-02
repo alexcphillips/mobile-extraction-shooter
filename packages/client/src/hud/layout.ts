@@ -15,7 +15,9 @@ export type ControlId =
   | 'heal'
   | 'grenade'
   | 'detonate'
-  | 'extinguish';
+  | 'extinguish'
+  | 'leanLeft'
+  | 'leanRight';
 
 export interface ControlDef {
   id: ControlId;
@@ -50,6 +52,9 @@ export const CONTROLS: readonly ControlDef[] = [
   { id: 'detonate', label: 'detonate', size: 48, x: 0.6, y: 0.27 },
   // Only shown while you're on fire (2026-10-31): big, and in reach of the right thumb.
   { id: 'extinguish', label: 'put out', size: 64, x: 0.48, y: 0.62 },
+  // Lean toggles (2026-11-01): a pair above fire, in reach of the right thumb between shots.
+  { id: 'leanLeft', label: '◀ lean', size: 46, x: 0.76, y: 0.3 },
+  { id: 'leanRight', label: 'lean ▶', size: 46, x: 0.86, y: 0.3 },
 ];
 
 export function placementOf(

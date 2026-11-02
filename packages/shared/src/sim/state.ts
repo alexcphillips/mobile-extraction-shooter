@@ -52,6 +52,12 @@ export interface Character {
   /** Look direction. yaw 0 faces −z; pitch is positive looking up. */
   yaw: number;
   pitch: number;
+  /**
+   * How far it leans (2026-11-01): −1 fully left, 1 fully right, eased towards the input
+   * and cut short by walls. It moves the eye and the hit zones above the hips (see
+   * bodyPoint). Missing (older saves) is 0.
+   */
+  lean?: number;
   mode: MoveMode;
   /** Capsule height; eases between standing, crouching and prone over a few ticks. */
   height: number;
@@ -193,6 +199,11 @@ export interface PlayerInput {
   crouch: boolean;
   /** Lying down, the wanted stance; it wins over crouch. Left out, not prone. */
   prone?: boolean;
+  /**
+   * The wanted lean, −1 (left) to 1 (right); hold vs. toggle is the client's. Ignored
+   * while sprinting, prone, off the ground or vaulting. Left out, upright.
+   */
+  lean?: number;
   /** Also vaults, when facing something low and close enough (see findVault). */
   jump: boolean;
   /** The trigger, held. */
@@ -304,6 +315,41 @@ export function entityById(state: SimState, id: EntityId): Entity | undefined {
   return undefined;
 }
 
+/**
+ * Where the eye is: shots, throws, the knife, looting and the camera start there. Leaning
+ * moves it sideways and a little down (eyeX, eyeZ), so use all three together.
+ */
 export function eyeHeight(c: Character): number {
-  return c.y + c.height - MOVEMENT.eyeBelowTop;
+  return c.y + leanedHeight(c, c.height - MOVEMENT.eyeBelowTop);
+}
+
+export function eyeX(c: Character): number {
+  return c.x + leanedSide(c, c.height - MOVEMENT.eyeBelowTop) * Math.cos(c.yaw);
+}
+
+export function eyeZ(c: Character): number {
+  return c.z - leanedSide(c, c.height - MOVEMENT.eyeBelowTop) * Math.sin(c.yaw);
+}
+
+/**
+ * A point on the body's centre line, h metres above the feet, written into out: where it
+ * is with the lean, which tips everything above the hips sideways.
+ */
+export function bodyPoint(c: Character, h: number, out: { x: number; y: number; z: number }): void {
+  const side = leanedSide(c, h);
+  out.x = c.x + side * Math.cos(c.yaw);
+  out.y = c.y + leanedHeight(c, h);
+  out.z = c.z - side * Math.sin(c.yaw);
+}
+
+/** How far a point h above the feet on the centre line is moved to the right by the lean. */
+function leanedSide(c: Character, h: number): number {
+  const up = h - c.height * MOVEMENT.leanPivot;
+  return c.lean && up > 0 ? up * Math.sin(c.lean * MOVEMENT.leanAngle) : 0;
+}
+
+/** Height above the feet of a point h up the centre line, once leaned. */
+function leanedHeight(c: Character, h: number): number {
+  const pivot = c.height * MOVEMENT.leanPivot;
+  return c.lean && h > pivot ? pivot + (h - pivot) * Math.cos(c.lean * MOVEMENT.leanAngle) : h;
 }

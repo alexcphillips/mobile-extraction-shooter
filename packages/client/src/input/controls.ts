@@ -36,14 +36,19 @@ interface MoveTouch {
  * Twin-stick touch input. A move stick floats where the left thumb lands; dragging on the
  * right half or on the fire button looks. Pushing the stick to its rim sprints, and
  * dragging it on up into the sprint zone locks sprinting, so the thumb can let go. Pulling
- * the stick back, tapping the left half, aiming, firing or crouching unlocks it.
+ * the stick back, tapping the left half, aiming, firing or crouching unlocks it. The lean
+ * buttons, and Q and E, follow the lean setting: toggled (the default; a held button
+ * needs a third thumb), a press leans that way, one on the same side straightens up, and
+ * sprinting straightens up too; held, you lean while it's down.
  *
  * Desktop: the mouse is captured (see CursorLock): moving it looks, the left button fires
  * and the right one aims. WASD, Shift sprint, Space jump (or vault), C crouch, X prone
- * (a toggle; C, Space or sprinting gets up), R reload, E use, I or Tab the bag, 1–4 take out primary 1, primary 2, sidearm or knife,
+ * (a toggle; C, Space or sprinting gets up), Q and E lean left and right, R reload,
+ * F use, I or Tab the bag, 1–4 take out primary 1, primary 2, sidearm or knife,
  * H heal (held, picks), G throw a grenade (held, picks which), B set off placed C4,
- * F and Q fire and aim too, 7 and 8 the debug actions. Mouse pointers never drive the
- * touch stick; CSS hides the touch-only buttons.
+ * Z aims too (for a trackpad), 7 and 8 the debug actions. Mouse pointers never drive the
+ * touch stick; CSS hides the touch-only buttons. (Before 2026-11-01, Q aimed, E was use
+ * and F fired; leaning took Q and E.)
  */
 export class Controls {
   /** Move input, -1..1 per axis; y is forward. */
@@ -55,6 +60,8 @@ export class Controls {
   prone = false;
   aim = false;
   fire = false;
+  /** −1 leaning left, 1 right, 0 upright. */
+  lean = 0;
   yaw = 0;
   pitch = 0;
   /** Presses, each true for the one tick after its button went down. */
@@ -98,6 +105,8 @@ export class Controls {
   /** Prone is a toggle on both: X, or holding the crouch button. */
   private proneOn = false;
   private touchAim = false;
+  /** The lean from the buttons, or toggled with Q and E: −1, 0 or 1. */
+  private leanOn = 0;
   private touchFire = false;
   private mouseFire = false;
   private mouseAim = false;
@@ -150,6 +159,7 @@ export class Controls {
     // Toggled aim would stay on with no way to turn it off once switched to hold.
     settings.subscribe((s) => {
       if (s.aim === 'hold' && this.touchAim) this.toggleAim();
+      if (s.lean === 'hold' && this.leanOn) this.setLean(0);
     });
   }
 
@@ -157,9 +167,9 @@ export class Controls {
   update(): void {
     const k = this.keys;
     this.jump = this.touchJump || k.has('Space');
-    const holdQ = settings.current.aim === 'hold' && k.has('KeyQ');
-    this.aim = this.touchAim || this.mouseAim || holdQ;
-    this.fire = this.touchFire || this.mouseFire || k.has('KeyF');
+    const holdZ = settings.current.aim === 'hold' && k.has('KeyZ');
+    this.aim = this.touchAim || this.mouseAim || holdZ;
+    this.fire = this.touchFire || this.mouseFire;
     this.reload = this.pressedReload;
     this.interact = this.pressedInteract;
     this.bag = this.pressedBag;
@@ -199,13 +209,17 @@ export class Controls {
     if (this.aim || this.fire) this.sprint = false;
     // Firing ends sprint lock, as aiming does.
     if (this.fire && this.sprintLocked) this.setSprintLock(false);
-    // Sprinting turns the crouch toggle off (the sim only sprints forwards).
+    // Sprinting turns the crouch and lean toggles off (the sim only sprints forwards).
     if (this.sprint && this.moveY > 0) {
       if (this.touchCrouch) this.setCrouch(false);
       if (this.proneOn) this.setProne(false);
+      if (this.leanOn) this.setLean(0);
     }
     this.crouch = this.touchCrouch || k.has('KeyC');
     this.prone = this.proneOn;
+    // Held: Q and E while down, else a button held. Toggled: what was last pressed.
+    const keyLean = (k.has('KeyE') ? 1 : 0) - (k.has('KeyQ') ? 1 : 0);
+    this.lean = settings.current.lean === 'hold' ? keyLean || this.leanOn : this.leanOn;
   }
 
   /** Ends sprint lock, for things outside the controls (letting go of a ladder). */
@@ -279,6 +293,20 @@ export class Controls {
         });
         break;
       }
+      case 'leanLeft':
+      case 'leanRight': {
+        // On the press, not the lift, so a peek is quick.
+        const side = id === 'leanLeft' ? -1 : 1;
+        if (settings.current.lean === 'toggle') {
+          this.setLean(this.leanOn === side ? 0 : side);
+          held(() => this.setLean(this.leanOn));
+        } else {
+          this.setLean(side);
+          // Unless the other button took over meanwhile.
+          held(() => this.setLean(this.leanOn === side ? 0 : this.leanOn));
+        }
+        break;
+      }
       case 'reload':
         this.pressedReload = true;
         held(() => {});
@@ -342,6 +370,13 @@ export class Controls {
     button.classList.toggle('active', on || this.touchCrouch);
   }
 
+  /** Leans from a button or toggle; its button stays lit while it's on. */
+  private setLean(side: number): void {
+    this.leanOn = side;
+    this.hud.button('leanLeft').classList.toggle('active', side < 0);
+    this.hud.button('leanRight').classList.toggle('active', side > 0);
+  }
+
   private setSprintLock(on: boolean): void {
     this.sprintLocked = on;
     this.hud.sprintZone.classList.toggle('active', on);
@@ -360,9 +395,12 @@ export class Controls {
         () => (this.pressedHeal = true),
         () => (this.pressedHealPick = true),
       );
-    else if (e.code === 'KeyQ' && settings.current.aim === 'toggle') this.toggleAim();
-    else if (e.code === 'KeyE') this.pressedInteract = true;
-    else if (e.code === 'KeyX') this.setProne(!this.proneOn);
+    else if (e.code === 'KeyZ' && settings.current.aim === 'toggle') this.toggleAim();
+    else if (e.code === 'KeyF') this.pressedInteract = true;
+    else if ((e.code === 'KeyQ' || e.code === 'KeyE') && settings.current.lean === 'toggle') {
+      const side = e.code === 'KeyQ' ? -1 : 1;
+      this.setLean(this.leanOn === side ? 0 : side);
+    } else if (e.code === 'KeyX') this.setProne(!this.proneOn);
     else if ((e.code === 'KeyC' || e.code === 'Space') && this.proneOn) this.setProne(false);
     // G as its touch button too: a tap throws when it lifts, holding opens the picker.
     else if (e.code === 'KeyG')

@@ -6,7 +6,7 @@ import {
   type Ladder,
 } from '../world/collision-world';
 import { legSpeedScale } from './health';
-import type { Character, PlayerInput } from './state';
+import { eyeHeight, eyeX, eyeZ, type Character, type PlayerInput } from './state';
 
 /** Movement tuning. Distances in metres, speeds in metres per second. */
 export const MOVEMENT = {
@@ -59,6 +59,16 @@ export const MOVEMENT = {
   vaultDuck: 0.8,
   /** The far side's floor may be this far below the feet. */
   vaultDrop: 1,
+  /**
+   * Leaning (2026-11-01): the body above the hips tips sideways about a point this far up
+   * the capsule, by up to leanAngle (about 29°), which moves a standing eye about 0.34 m
+   * and drops it 9 cm. A full lean takes leanTime.
+   */
+  leanPivot: 0.5,
+  leanAngle: 0.5,
+  leanTime: 0.15,
+  /** A lean stops this far short of a wall, so the head (and eye) stays out of it. */
+  leanHeadRoom: 0.15,
 } as const;
 
 const DT = TICK_SECONDS;
@@ -110,6 +120,14 @@ export function moveCharacter(
     c.jumpHeld = input.jump;
   } else {
     c.jumpHeld = false;
+  }
+  let lean = input?.lean !== undefined && Number.isFinite(input.lean) ? input.lean : 0;
+  if (sprint || prone || isProne(c) || c.mode !== 'ground') lean = 0;
+  if (c.lean || lean) {
+    const change = DT / MOVEMENT.leanTime;
+    const now = c.lean ?? 0;
+    const want = Math.max(-1, Math.min(1, lean));
+    c.lean = want > now ? Math.min(want, now + change) : Math.max(want, now - change);
   }
 
   // The move stick turned into a world direction (length ≤ 1). Forward is −z turned by yaw.
@@ -483,6 +501,28 @@ function leaveLadder(c: Character): void {
   c.mode = 'ground';
   c.ladder = -1;
   c.vy = 0;
+}
+
+/**
+ * Cuts a lean short where the head would go into a wall (with leanHeadRoom to spare),
+ * checked along a ray from the upright eye to the leaned one. Call once everyone has
+ * moved. Scaling the lean by the distance left is close enough: the eye's path is nearly
+ * straight.
+ */
+export function fitLean(c: Character, world: CollisionWorld): void {
+  if (!c.lean) return;
+  const M = MOVEMENT;
+  const ox = c.x;
+  const oy = c.y + c.height - M.eyeBelowTop;
+  const oz = c.z;
+  const dx = eyeX(c) - ox;
+  const dy = eyeHeight(c) - oy;
+  const dz = eyeZ(c) - oz;
+  const d = Math.hypot(dx, dy, dz);
+  if (d < 1e-6) return;
+  const hit = world.raycast(ox, oy, oz, dx / d, dy / d, dz / d, d + M.leanHeadRoom);
+  if (hit === Infinity) return;
+  c.lean *= Math.max(0, hit - M.leanHeadRoom) / d;
 }
 
 /**

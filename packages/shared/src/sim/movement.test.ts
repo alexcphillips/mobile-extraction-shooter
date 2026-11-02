@@ -7,9 +7,14 @@ import {
   type RampDef,
   type WorldDef,
 } from '../world/collision-world';
+import { HEAD, LEFT_LEG } from './health';
+import { createCharacterHit, raycastCharacters } from './hit-zones';
 import { MOVEMENT } from './movement';
 import {
   createState,
+  eyeHeight,
+  eyeX,
+  eyeZ,
   spawnCharacter,
   type Character,
   type PlayerInput,
@@ -541,5 +546,108 @@ describe('state', () => {
     }
     expect(b).toEqual(a);
     expect(a.tick).toBe(200);
+  });
+});
+
+describe('leaning', () => {
+  const LEFT = input({ lean: -1 });
+  const RIGHT = input({ lean: 1 });
+
+  it('tips the eye about 0.34 m to the side and a little down, over leanTime', () => {
+    const { c, run } = setup(makeWorld());
+    const upright = eyeHeight(c);
+    run(1, RIGHT);
+    expect(c.lean).toBeGreaterThan(0);
+    expect(c.lean).toBeLessThan(1);
+    run(Math.ceil(MOVEMENT.leanTime * TICK_RATE), RIGHT);
+    expect(c.lean).toBe(1);
+    // yaw 0 faces −z, so right is +x.
+    expect(eyeX(c) - c.x).toBeCloseTo(0.34, 2);
+    expect(eyeZ(c)).toBeCloseTo(c.z);
+    expect(upright - eyeHeight(c)).toBeGreaterThan(0.05);
+    expect(upright - eyeHeight(c)).toBeLessThan(0.12);
+    run(TICK_RATE, LEFT);
+    expect(c.lean).toBe(-1);
+    expect(eyeX(c) - c.x).toBeCloseTo(-0.34, 2);
+    run(TICK_RATE);
+    expect(c.lean).toBe(0);
+    expect(eyeHeight(c)).toBeCloseTo(upright);
+  });
+
+  it('straightens up to sprint, prone, on a ladder and in the air', () => {
+    // A ladder up a block's face, in reach of the spawn.
+    const ladder: LadderDef = { x: 0, z: -0.7, yaw: 0, halfWidth: 0.3, bottom: 0, top: 4 };
+    const ladderWorld = makeWorld({ boxes: [aabb(-5, 0, -10, 5, 4, -0.7)], ladders: [ladder] });
+    for (const [inp, world] of [
+      [input({ lean: 1, moveY: 1, sprint: true }), makeWorld()],
+      [input({ lean: 1, prone: true }), makeWorld()],
+      [input({ lean: 1, jump: true }), makeWorld()],
+      [input({ lean: 1, moveY: 1 }), ladderWorld],
+    ] as const) {
+      const { c, run } = setup(world);
+      run(TICK_RATE / 2, RIGHT);
+      expect(c.lean).toBe(1);
+      // A quarter of a second: the jump hasn't landed yet.
+      run(Math.round(TICK_RATE / 4), inp);
+      expect(c.lean, JSON.stringify(inp)).toBe(0);
+    }
+  });
+
+  it('walks while leaning, and aiming keeps the lean', () => {
+    const { c, run } = setup(makeWorld());
+    run(TICK_RATE, input({ lean: -1, moveY: 1, aim: true }));
+    expect(c.lean).toBe(-1);
+    expect(c.z).toBeLessThan(-2);
+  });
+
+  it("stops short of a wall, so the head doesn't go into it", () => {
+    // A wall 5 cm to the right of the capsule: closer than a full lean's 0.34 m.
+    const gap = R + 0.05;
+    const wall = aabb(gap, 0, -5, gap + 1, 3, 5);
+    const { c, run } = setup(makeWorld({ boxes: [wall] }));
+    run(TICK_RATE, RIGHT);
+    expect(c.lean).toBeGreaterThan(0);
+    expect(c.lean).toBeLessThan(1);
+    // About leanHeadRoom short of it (fitLean's scaling is a little over, by under 1 cm).
+    expect(eyeX(c)).toBeCloseTo(gap - MOVEMENT.leanHeadRoom, 1);
+    expect(eyeX(c)).toBeLessThan(gap - MOVEMENT.leanHeadRoom + 0.02);
+    // Away from the wall it leans all the way.
+    run(TICK_RATE, LEFT);
+    expect(c.lean).toBe(-1);
+  });
+
+  it('moves the hit zones above the hips with it, but not the legs', () => {
+    const { state, c, run } = setup(makeWorld());
+    const hit = createCharacterHit();
+    // A shot across, from the left, 0.3 m right of the head and at a leaned head's height,
+    // and one at the shins.
+    const across = (y: number, x: number): number =>
+      raycastCharacters(state, -5, y, x, 1, 0, 0, 10, 0, hit);
+    const headY = eyeHeight(c);
+    run(TICK_RATE, RIGHT);
+    const leanedHeadY = eyeHeight(c);
+    expect(across(leanedHeadY, c.z)).toBeLessThan(Infinity);
+    // Seen from the front: a shot down at x = 0.3 hits the leaned head and missed it upright.
+    const down = (): number => raycastCharacters(state, 0.3, 5, c.z, 0, -1, 0, 10, 0, hit);
+    expect(down()).toBeLessThan(Infinity);
+    expect(hit.zone).toBe(HEAD);
+    run(TICK_RATE);
+    expect(eyeHeight(c)).toBeCloseTo(headY);
+    expect(down()).toBe(Infinity);
+    // The legs stay where they were.
+    run(TICK_RATE, RIGHT);
+    const shin = (): number => raycastCharacters(state, -5, 0.4, c.z, 1, 0, 0, 10, 0, hit);
+    expect(shin()).toBeCloseTo(5 - 0.11 - 0.1, 5);
+    expect(hit.zone).toBe(LEFT_LEG);
+  });
+
+  it('carries on identically after a JSON save and restore mid-lean', () => {
+    const world = makeWorld();
+    const a = setup(world);
+    a.run(1, RIGHT);
+    const state = JSON.parse(JSON.stringify(a.state)) as SimState;
+    a.run(10, RIGHT);
+    for (let i = 0; i < 10; i++) step(state, world, NO_ITEMS, { [a.c.id]: RIGHT });
+    expect(state).toEqual(a.state);
   });
 });

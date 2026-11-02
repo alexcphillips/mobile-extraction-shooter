@@ -55,6 +55,10 @@ const TUNE = {
   /** How much of looking up or down bends the spine, and the head on top of that. */
   spineLean: 0.35,
   headLean: 0.35,
+  /** Leaning (2026-11-01): how quickly the drawn lean follows the sim's (per second), and
+   * how much of it the lower spine takes; the upper spine takes the rest. */
+  leanRate: 20,
+  leanLow: 0.6,
   /** The arms hold the gun by IK within this distance (m) of the camera... */
   ikRange: 30,
   /** ...and the animation updates every frame within the first distance, every 2nd within
@@ -214,6 +218,7 @@ const m1 = new THREE.Matrix4();
 const m2 = new THREE.Matrix4();
 const unitScale = new THREE.Vector3();
 const pitchAxis = new THREE.Vector3(1, 0, 0);
+const leanAxis = new THREE.Vector3(0, 0, -1);
 const sphere = new THREE.Sphere();
 
 /** Turns a bone by an angle about an axis in world space, keeping its parent as it is. */
@@ -306,6 +311,8 @@ export class CharacterBody {
   private reloadLeft = 0;
   private reloadPace = 1;
   private twist = 0;
+  /** The lean as drawn, smoothed from the sim's. */
+  private lean = 0;
   private kick = 0;
   private flinch = 0;
   private deadFor = 0;
@@ -498,6 +505,16 @@ export class CharacterBody {
       turnWorld(this.bone.hips, UP, this.twist);
       turnWorld(this.bone.spine1, UP, -this.twist);
     }
+    // Leaning: the spine tips sideways from the hips, as the sim's hit zones do. The gun
+    // is placed from the shoulder below, so the arms come with it. No clip needed.
+    this.lean += ((dead ? 0 : (ch.lean ?? 0)) - this.lean) * (1 - Math.exp(-dt * TUNE.leanRate));
+    const tilt = this.lean * MOVEMENT.leanAngle;
+    if (Math.abs(tilt) > 1e-3) {
+      this.root.getWorldQuaternion(rootQ);
+      leanAxis.set(0, 0, -1).applyQuaternion(rootQ);
+      turnWorld(this.bone.spine1, leanAxis, tilt * TUNE.leanLow);
+      turnWorld(this.bone.spine3, leanAxis, tilt * (1 - TUNE.leanLow));
+    }
     this.kick *= Math.exp(-dt / 0.08);
     this.flinch *= Math.exp(-dt / 0.15);
     this.slash = Math.max(0, this.slash - dt / TUNE.slash);
@@ -524,6 +541,8 @@ export class CharacterBody {
     m1.copy(this.root.matrixWorld).invert();
     this.bone.upperR.getWorldPosition(gunPos).applyMatrix4(m1);
     gunQ.setFromAxisAngle(pitchAxis.set(1, 0, 0), follow);
+    // Canted with the lean.
+    gunQ.premultiply(q1.setFromAxisAngle(leanAxis.set(0, 0, -1), tilt));
     v1.lerpVectors(hold.low, hold.aimed, ch.aim);
     v1.z += this.kick * 0.03;
     gunPos.add(v1.applyQuaternion(gunQ));
