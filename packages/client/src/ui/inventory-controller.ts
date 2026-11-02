@@ -174,14 +174,35 @@ export class InventoryController implements DragHost {
     return open && found && canHold(this.ctx.items, open.grid, found.item) ? open.at : null;
   }
 
-  quick(ref: ItemRef): void {
+  /** A double-tap's move: of the whole item, or with count of only that many of a stack. */
+  quick(ref: ItemRef, count?: number): void {
     const bag = this.quickBag(ref);
+    const n = count === undefined ? {} : { count };
     this.select(null);
     this.ctx.send(
       bag
-        ? { type: 'quick', from: ref, to: bag.owner, inside: { index: bag.index, item: bag.item } }
-        : { type: 'quick', from: ref, to: this.quickTo(ref) },
+        ? {
+            type: 'quick',
+            from: ref,
+            to: bag.owner,
+            inside: { index: bag.index, item: bag.item },
+            ...n,
+          }
+        : { type: 'quick', from: ref, to: this.quickTo(ref), ...n },
     );
+  }
+
+  /** Whether a stack in a grid can be split there: it's more than one, and there's room. */
+  canSplit(ref: InGrid): boolean {
+    const found = this.find(ref);
+    const grid = gridOf(this.ctx.sim, this.ctx.player, ref);
+    return !!found && !!grid && found.item.count > 1 && !!findSpot(this.ctx.items, grid, ref.item);
+  }
+
+  /** Takes count off a stack into a new stack in the same grid (2026-11-01). */
+  split(ref: InGrid, count: number): void {
+    this.select(null);
+    this.ctx.send({ type: 'split', at: ref, count });
   }
 
   /** Drops an item at your feet. */

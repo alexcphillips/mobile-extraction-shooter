@@ -182,12 +182,17 @@ function apply(s: StashState, items: ItemDb, action: InventoryAction): boolean {
     return applyInventory(s.sim, s.player, items, action);
   }
   let changed = false;
+  // Part of a stack: what's still to go.
+  let count = action.count;
   for (const p of pageOrder(s, page)) {
     const item = itemAt(s, action.from);
     if (!item) break;
-    if (applyInventory(s.sim, s.player, items, { ...action, to: stashOwner(p) })) changed = true;
+    const had = item.count;
+    const next = { ...action, to: stashOwner(p), ...(count !== undefined && { count }) };
+    if (applyInventory(s.sim, s.player, items, next)) changed = true;
     // Gone from where it was: all of it went in.
     if (itemAt(s, action.from) !== item) break;
+    if (count !== undefined && (count -= had - item.count) <= 0) break;
   }
   return changed;
 }

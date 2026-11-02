@@ -15,6 +15,7 @@ import {
   type Grid,
   type GridName,
   type GridRef,
+  type InGrid,
   type AttachmentSlot,
   type Item,
   type ItemDb,
@@ -172,6 +173,9 @@ export function Inventory({ inv, version }: Props): ReactNode {
               {!('ground' in selected) && !ctx.stash && (
                 <button onClick={() => inv.toGround(selected)}>Drop</button>
               )}
+              {'index' in selected && sel.item.count > 1 && (
+                <Split key={refKey(selected)} inv={inv} at={selected} item={sel.item} />
+              )}
               <button className="primary" onClick={() => inv.quick(selected)}>
                 {quickLabel(selected, inv.quickTo(selected))}
               </button>
@@ -179,6 +183,54 @@ export function Inventory({ inv, version }: Props): ReactNode {
           }
         />
       )}
+    </div>
+  );
+}
+
+/** The parts of a stack the split's quick buttons take. */
+const SPLIT_PARTS: readonly [label: string, part: number][] = [
+  ['¼', 1 / 4],
+  ['½', 1 / 2],
+  ['¾', 3 / 4],
+];
+
+/**
+ * Splitting a stack (2026-11-01): pick how many (a quarter, half, three quarters, or any
+ * number on the slider), then split them off into a new stack in the same grid, or send
+ * just that many where a double-tap would (out of a full vault, say).
+ */
+function Split({ inv, at, item }: { inv: InventoryController; at: InGrid; item: Item }): ReactNode {
+  const [open, setOpen] = useState(false);
+  const [n, setN] = useState(() => Math.floor(item.count / 2));
+  if (!open) return <button onClick={() => setOpen(true)}>Split</button>;
+  const most = item.count - 1;
+  const count = Math.min(n, most);
+  return (
+    <div className="item-split">
+      {SPLIT_PARTS.map(([label, part]) => (
+        <button key={label} onClick={() => setN(Math.max(1, Math.round(item.count * part)))}>
+          {label}
+        </button>
+      ))}
+      <input
+        type="range"
+        min={1}
+        max={most}
+        value={count}
+        aria-label="How many"
+        onChange={(e) => setN(Number(e.target.value))}
+      />
+      <span className="item-split-count">
+        {count} / {item.count}
+      </span>
+      <button onClick={() => setOpen(false)}>Cancel</button>
+      <button disabled={!inv.canSplit(at)} onClick={() => inv.split(at, count)}>
+        {inv.canSplit(at) ? 'Split here' : 'No room here'}
+      </button>
+      <button className="primary" onClick={() => inv.quick(at, count)}>
+        {/* A part of a stack is never equipped: from your own grid it moves to another. */}
+        {quickLabel(at, inv.quickTo(at)).replace('Equip', 'Move')} {count}
+      </button>
     </div>
   );
 }
