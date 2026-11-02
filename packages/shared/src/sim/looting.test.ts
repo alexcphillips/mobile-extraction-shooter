@@ -11,6 +11,7 @@ import type { WeaponState } from './weapons';
 import { dealDamage, HEAD } from './health';
 import {
   applyInventory,
+  canReach,
   lootInSight,
   placeLootContainers,
   type InventoryAction,
@@ -780,5 +781,47 @@ describe('looting', () => {
       },
     ]);
     expect(() => placeLootContainers(state, map, new Map())).toThrow(/no kind "desk"/);
+  });
+
+  it('reaches a container made of geometry from its footprint, not its middle', () => {
+    const state = createState(1);
+    const p = spawnCharacter(state, world, 0, 0);
+    const map = {
+      markers: [
+        {
+          type: 'lootContainer',
+          id: 'counter',
+          x: 0,
+          y: 0,
+          z: 0,
+          // Turned 90°: 6 m long along z, 1 m across x.
+          yaw: Math.PI / 2,
+          container: 'desk',
+          lootTable: 'household',
+          solids: [0],
+          hx: 3,
+          hz: 0.5,
+        },
+      ],
+    } as unknown as CompiledMap;
+    const desk: LootContainerDef = {
+      formatVersion: LOOT_CONTAINER_FORMAT_VERSION,
+      id: 'desk',
+      name: 'Desk',
+      grid: [4, 3],
+    };
+    placeLootContainers(state, map, new Map([['desk', desk]]));
+    expect(state.loot[0]!.shape).toEqual({ solids: [0], hx: 3, hz: 0.5, yaw: Math.PI / 2 });
+    const owner: Owner = { kind: 'container', id: 'counter' };
+    const at = (x: number, z: number): boolean => {
+      p.x = x;
+      p.z = z;
+      return canReach(state, p, owner);
+    };
+    // By its end, 4 m from its middle; and 2 m off its side.
+    expect(at(0, 4.5)).toBe(true);
+    expect(at(2.5, 0)).toBe(true);
+    expect(at(2.6, 0)).toBe(false);
+    expect(at(0, 5.1)).toBe(false);
   });
 });

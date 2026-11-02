@@ -101,9 +101,16 @@ type Placed<T> = T extends unknown
 /**
  * A gameplay marker in world space. Its id is the path of ids from the map down, joined
  * by "/"; a node without an id is "#" and its index. An enemy spawn's patrol is the
- * patrol's path id too.
+ * patrol's path id too. A loot container made of geometry (a node's `loot`) comes out as a
+ * lootContainer marker too, at the middle of the base of its solids, with its footprint.
  */
-export type CompiledMarker = Placed<MarkerNode>;
+export type CompiledMarker = Placed<MarkerNode> & {
+  /** A container made of geometry: its solids, as indices into world.boxes. */
+  solids?: number[];
+  /** A container made of geometry: its footprint's half-width and half-depth, in its yaw. */
+  hx?: number;
+  hz?: number;
+};
 
 export interface CompiledMap {
   id: string;
@@ -337,15 +344,81 @@ class Compiler {
     unnamed = '',
   ): void {
     nodes.forEach((node, i) => {
+      const boxes = out.boxes?.length ?? 0;
+      const markers = out.markers?.length ?? 0;
+      // A group has no id, so as a container it's "#" and its index.
+      const id =
+        (path ? `${path}/` : '') + (node.type !== 'group' && node.id ? node.id : `#${unnamed}${i}`);
       if (node.type === 'group') {
         // A group moves its nodes but adds nothing to their ids.
         const [x, y, z] = place(f, node.pos);
         const g = frame(x, y, z, f.yaw + (node.yaw ?? 0) * DEG);
         this.nodes(node.nodes, g, scope, path, stack, out, `${unnamed}${i}.`);
-        return;
+      } else this.node(node, f, scope, id, stack, out);
+      if ('loot' in node && node.loot) {
+        const yaw = f.yaw + (node.yaw ?? 0) * DEG;
+        this.container(node.loot, id, yaw, boxes, markers, out);
       }
-      const id = (path ? `${path}/` : '') + (node.id ?? `#${unnamed}${i}`);
-      this.node(node, f, scope, id, stack, out);
+    });
+  }
+
+  /**
+   * Makes the solids a node just added (out.boxes from `first`) a loot container: a
+   * lootContainer marker at the middle of the base of their bounds, in the node's yaw.
+   */
+  private container(
+    loot: { container: string; lootTable: string },
+    path: string,
+    yaw: number,
+    first: number,
+    firstMarker: number,
+    out: Sink,
+  ): void {
+    if (!out.markers || !out.boxes) return;
+    for (let k = firstMarker; k < out.markers.length; k++) {
+      if (out.markers[k]!.type === 'lootContainer')
+        this.fail(path, `a loot container can't hold another (${out.markers[k]!.id})`);
+    }
+    if (out.boxes.length === first)
+      this.fail(path, 'a loot container needs something that collides, to aim at');
+    // The bounds of its solids in its own yaw frame (turned back by yaw).
+    const c = Math.cos(yaw);
+    const s = Math.sin(yaw);
+    let x0 = Infinity;
+    let x1 = -Infinity;
+    let z0 = Infinity;
+    let z1 = -Infinity;
+    let bottom = Infinity;
+    const solids: number[] = [];
+    for (let k = first; k < out.boxes.length; k++) {
+      const b = out.boxes[k]!;
+      const lx = b.x * c - b.z * s;
+      const lz = b.x * s + b.z * c;
+      const bc = Math.abs(Math.cos(b.yaw - yaw));
+      const bs = Math.abs(Math.sin(b.yaw - yaw));
+      const ex = b.hx * bc + b.hz * bs;
+      const ez = b.hx * bs + b.hz * bc;
+      x0 = Math.min(x0, lx - ex);
+      x1 = Math.max(x1, lx + ex);
+      z0 = Math.min(z0, lz - ez);
+      z1 = Math.max(z1, lz + ez);
+      bottom = Math.min(bottom, b.y - b.hy);
+      solids.push(k);
+    }
+    const mx = (x0 + x1) / 2;
+    const mz = (z0 + z1) / 2;
+    out.markers.push({
+      type: 'lootContainer',
+      id: path,
+      x: mx * c + mz * s,
+      y: bottom,
+      z: -mx * s + mz * c,
+      yaw,
+      container: loot.container,
+      lootTable: loot.lootTable,
+      solids,
+      hx: (x1 - x0) / 2,
+      hz: (z1 - z0) / 2,
     });
   }
 

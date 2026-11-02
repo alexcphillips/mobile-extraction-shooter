@@ -64,6 +64,12 @@ export interface LootContainer {
   z: number;
   /** Takes rigs and backpacks. */
   grid: Grid;
+  /**
+   * Made of geometry (a map node's `loot`): the solids aimed at to loot it, and its
+   * footprint about (x, z), turned by yaw, that reach is measured from. Absent for a
+   * lootContainer marker, which is reached and aimed at as a point.
+   */
+  shape?: { solids: readonly number[]; hx: number; hz: number; yaw: number };
 }
 
 /** Whose items: your own, a dead body's, a loot container's, or the ground's. */
@@ -206,14 +212,16 @@ export function placeLootContainers(
     if (m.type !== 'lootContainer') continue;
     const def = defs.get(m.container);
     if (!def) throw new Error(`loot container ${m.id}: no kind "${m.container}"`);
-    state.loot.push({
+    const l: LootContainer = {
       id: m.id,
       def: def.id,
       x: m.x,
       y: m.y,
       z: m.z,
       grid: createGrid(def.grid[0], def.grid[1], true),
-    });
+    };
+    if (m.solids) l.shape = { solids: m.solids, hx: m.hx!, hz: m.hz!, yaw: m.yaw };
+    state.loot.push(l);
   }
 }
 
@@ -244,7 +252,22 @@ export function canReach(state: SimState, c: Character, owner: Owner): boolean {
   if (owner.kind === 'ground') return true;
   if (owner.kind !== 'container') return !!ownerCharacter(state, c, owner);
   const l = lootContainerById(state, owner.id);
-  return !!l && near(c, l.x, l.y, l.z);
+  return !!l && containerInReach(c, l);
+}
+
+/** Whether c's feet are within LOOT_REACH of a container: its footprint, or its point. */
+export function containerInReach(c: Character, l: LootContainer): boolean {
+  if (!l.shape) return near(c, l.x, l.y, l.z);
+  if (Math.abs(l.y - c.y) > LOOT_REACH) return false;
+  // Into its frame, then the distance to its footprint.
+  const { hx, hz, yaw } = l.shape;
+  const dx = c.x - l.x;
+  const dz = c.z - l.z;
+  const cs = Math.cos(yaw);
+  const sn = Math.sin(yaw);
+  const ox = Math.max(0, Math.abs(dx * cs - dz * sn) - hx);
+  const oz = Math.max(0, Math.abs(dx * sn + dz * cs) - hz);
+  return Math.hypot(ox, oz) <= LOOT_REACH;
 }
 
 function gearGrid(gear: Gear, name: GridName): Grid | null {

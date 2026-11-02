@@ -331,6 +331,58 @@ describe('compileMap', () => {
     );
   });
 
+  it('makes a group a loot container of its solids, measured in its own yaw', () => {
+    const m = compileMap(
+      map([
+        { type: 'box', pos: [0, 0, 0], size: [1, 1, 1], colour: '#ffffff' },
+        {
+          type: 'group',
+          pos: [10, 0, 0],
+          yaw: 90,
+          loot: { container: 'desk', lootTable: 'household' },
+          nodes: [
+            // A desk 2 m wide (x) and 1 m deep: a top and a leg, off the group's middle.
+            { type: 'box', pos: [1, 0.7, 0], size: [2, 0.1, 1], colour: '#ffffff' },
+            { type: 'box', pos: [0.1, 0, 0], size: [0.2, 0.7, 0.2], colour: '#ffffff' },
+            { type: 'box', pos: [5, 0, 0], size: [1, 1, 1], colour: '#ffffff', collide: false },
+          ],
+        },
+      ]),
+      prefabs(),
+    );
+    const desk = m.markers.find((k) => k.type === 'lootContainer')!;
+    expect(desk).toMatchObject({ id: '#1', container: 'desk', lootTable: 'household', y: 0 });
+    expect(desk.solids).toEqual([1, 2]);
+    expect(desk.hx).toBeCloseTo(1);
+    expect(desk.hz).toBeCloseTo(0.5);
+    expect(desk.yaw).toBeCloseTo(Math.PI / 2);
+    // Its middle is local (1, 0), which turns to −z at yaw 90°.
+    expect(desk.x).toBeCloseTo(10);
+    expect(desk.z).toBeCloseTo(-1);
+  });
+
+  it('rejects a loot container with nothing to aim at, or one inside another', () => {
+    const loot = { container: 'desk', lootTable: 'household' };
+    const ghost: MapNode = {
+      type: 'box',
+      pos: [0, 0, 0],
+      size: [1, 1, 1],
+      colour: '#ffffff',
+      collide: false,
+      loot,
+    };
+    expect(() => compileMap(map([ghost]), prefabs())).toThrow(/needs something that collides/);
+    const nested: MapNode = {
+      type: 'group',
+      pos: [0, 0, 0],
+      loot,
+      nodes: [
+        { type: 'box', id: 'drawer', pos: [0, 0, 0], size: [1, 1, 1], colour: '#fff000', loot },
+      ],
+    };
+    expect(() => compileMap(map([nested]), prefabs())).toThrow(/can't hold another \(drawer\)/);
+  });
+
   it('loads format 2 maps unchanged', () => {
     const m = loadContent(MAP_FORMAT, { ...map([]), formatVersion: 2 }, 'test.json');
     expect(m.formatVersion).toBe(3);

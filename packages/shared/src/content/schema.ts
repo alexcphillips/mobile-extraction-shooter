@@ -29,6 +29,19 @@ export const colourRefSchema = z
   .regex(/^(#[0-9a-fA-F]{6}|[a-z][a-z0-9-]*)$/, 'a colour is #rrggbb or a colour slot name');
 const slotsSchema = z.record(idSchema, hexColourSchema);
 
+/**
+ * Makes a box, cylinder, group or placed prefab a loot container (2026-11-01), instead of a
+ * lootContainer marker beside it: what's solid in it is what you aim at to loot it, and you
+ * reach it from anywhere within LOOT_REACH of its footprint. Containers don't nest.
+ */
+const lootSchema = z
+  .strictObject({
+    /** Its kind, in content/loot-containers. */
+    container: idSchema,
+    lootTable: idSchema,
+  })
+  .optional();
+
 const solid = {
   id: idSchema.optional(),
   pos: vec3,
@@ -45,6 +58,7 @@ const boxSchema = z.strictObject({
   size: size3,
   pitch: angle,
   roll: angle,
+  loot: lootSchema,
 });
 
 const cylinderSchema = z.strictObject({
@@ -58,6 +72,7 @@ const cylinderSchema = z.strictObject({
   sides: z.int().min(3).max(32).optional(),
   pitch: angle,
   roll: angle,
+  loot: lootSchema,
 });
 
 /** A solid wedge rising from pos.y at local −z to pos.y + height at local +z. */
@@ -96,6 +111,7 @@ const prefabRefSchema = z.strictObject({
   yaw: angle,
   /** Overrides the prefab's colour slots. Values can name slots of the enclosing scope. */
   colours: z.record(idSchema, colourRefSchema).optional(),
+  loot: lootSchema,
 });
 
 /**
@@ -240,6 +256,7 @@ const groupSchema = z.strictObject({
   name: z.string().min(1).optional(),
   pos: vec3,
   yaw: angle,
+  loot: lootSchema,
   get nodes(): z.ZodArray<typeof nodeSchema> {
     return z.array(nodeSchema);
   },
@@ -398,7 +415,8 @@ export const MAP_FORMAT: ContentFormat<MapFile> = {
   kind: 'map',
   version: MAP_FORMAT_VERSION,
   schema: mapSchema,
-  // Format 2 (session 7) added patrols and 3 (session 15) groups; nothing to change.
+  // Format 2 (session 7) added patrols and 3 (session 15) groups; nothing to change. Loot
+  // containers made of geometry (2026-11-01) are an optional field, so still format 3.
   migrations: { 1: (doc) => doc, 2: (doc) => doc },
 };
 
@@ -406,6 +424,7 @@ export const PREFAB_FORMAT: ContentFormat<PrefabFile> = {
   kind: 'prefab',
   version: PREFAB_FORMAT_VERSION,
   schema: prefabSchema,
-  // Format 2 (session 7) added patrols and 3 (session 15) groups; nothing to change.
+  // Format 2 (session 7) added patrols and 3 (session 15) groups; nothing to change. Loot
+  // containers made of geometry (2026-11-01) are an optional field, so still format 3.
   migrations: { 1: (doc) => doc, 2: (doc) => doc },
 };

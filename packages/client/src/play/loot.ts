@@ -1,6 +1,7 @@
 import {
   DOOR,
   LOOT_REACH,
+  containerInReach,
   createRayHit,
   doorInReach,
   eyeHeight,
@@ -38,9 +39,10 @@ const hit = createRayHit();
 
 /**
  * What the use button acts on: an item on the ground in reach near the crosshair, else a
- * door in reach under the crosshair, else the container or dead body in reach that the
- * player is most nearly facing, or null. One right underfoot counts even behind. Nothing
- * behind a wall counts. The result is reused: copy what you keep.
+ * container made of geometry or a door in reach under the crosshair, else the container
+ * marker or dead body in reach that the crosshair is nearest, or null. Each has to be
+ * looked at, so one at your feet doesn't take the use button from a door. Nothing behind a
+ * wall counts. The result is reused: copy what you keep.
  */
 export function lootableInReach(
   sim: SimState,
@@ -77,25 +79,37 @@ export function lootableInReach(
       found = scratch.ground as Lootable;
     }
   }
-  // A door: the first thing the crosshair meets, and in reach. Above containers and bodies.
-  // Looking through an open door's doorway counts too, so it can be closed again with its
-  // slab off to the side, but below anything else in reach.
-  if (!found && world.doors.length) {
-    const reach = DOOR.reach + 1;
-    const d = Math.min(reach, world.raycast(ex, ey, ez, lx, ly, lz, reach, hit));
-    let door = hit.kind === 'solid' ? world.doorOf(hit.index) : -1;
-    if (door >= 0) best = 1.5;
-    else {
-      door = doorwayAt(sim, world, ex, ey, ez, lx, ly, lz, d);
-      best = DOORWAY_SCORE;
+  // The first solid the crosshair meets: part of a container made of geometry, or a door,
+  // in reach. Above container markers and bodies. Looking through an open door's doorway
+  // counts too, so it can be closed again with its slab off to the side, but below anything
+  // else in reach.
+  if (!found) {
+    const d = world.raycast(ex, ey, ez, lx, ly, lz, AIM_REACH, hit);
+    const solid = hit.kind === 'solid' ? hit.index : -1;
+    const shaped = solid >= 0 ? containerOf(sim, solid) : null;
+    if (shaped) {
+      if (containerInReach(player, shaped)) {
+        best = 1.5;
+        scratch.container.c = shaped;
+        found = scratch.container as Lootable;
+      }
+    } else if (world.doors.length) {
+      const reach = DOOR.reach + 1;
+      let door = solid >= 0 && d <= reach ? world.doorOf(solid) : -1;
+      if (door >= 0) best = 1.5;
+      else {
+        door = doorwayAt(sim, world, ex, ey, ez, lx, ly, lz, Math.min(reach, d));
+        best = DOORWAY_SCORE;
+      }
+      if (door >= 0 && doorInReach(world, player, door)) {
+        scratch.door.index = door;
+        found = scratch.door as Lootable;
+      } else best = -Infinity;
     }
-    if (door >= 0 && doorInReach(world, player, door)) {
-      scratch.door.index = door;
-      found = scratch.door as Lootable;
-    } else best = -Infinity;
   }
   for (const l of sim.loot) {
-    const s = score(player, fx, fz, l.x, l.y, l.z);
+    if (l.shape) continue;
+    const s = containerScore(player, ex, ey, ez, lx, ly, lz, l);
     if (s > best && inSight(world, player, l.x, l.y, l.z)) {
       best = s;
       scratch.container.c = l;
@@ -104,7 +118,7 @@ export function lootableInReach(
   }
   for (const e of sim.entities) {
     if (e === player || !e.health.dead) continue;
-    const s = score(player, fx, fz, e.x, e.y, e.z);
+    const s = bodyScore(player, ex, ey, ez, lx, ly, lz, e);
     if (s > best && inSight(world, player, e.x, e.y, e.z)) {
       best = s;
       scratch.body.c = e;
@@ -114,8 +128,30 @@ export function lootableInReach(
   return found;
 }
 
-/** Just over the least a container or body in reach can score. */
+/** Under the least a container marker or body in reach can score. */
 const DOORWAY_SCORE = 0.31;
+
+/**
+ * How far along the crosshair a door or container made of geometry is looked for: far
+ * enough for one LOOT_REACH from your feet, seen from the eye.
+ */
+const AIM_REACH = Math.max(DOOR.reach + 1, LOOT_REACH + 1.5);
+
+/** Which container made of geometry each solid is part of, for the sim.loot it was built from. */
+let owners: (LootContainer | undefined)[] = [];
+let ownersOf: readonly LootContainer[] | null = null;
+let ownersCount = -1;
+
+/** The container made of geometry a solid is part of, or null. */
+function containerOf(sim: SimState, solid: number): LootContainer | null {
+  if (ownersOf !== sim.loot || ownersCount !== sim.loot.length) {
+    owners = [];
+    for (const l of sim.loot) for (const k of l.shape?.solids ?? []) owners[k] = l;
+    ownersOf = sim.loot;
+    ownersCount = sim.loot.length;
+  }
+  return owners[solid] ?? null;
+}
 
 /** The open door whose doorway a ray passes through within maxDist, or -1. */
 function doorwayAt(
@@ -149,18 +185,63 @@ function doorwayAt(
   return -1;
 }
 
+/**
+ * How near a body lying around its feet the crosshair falls on the floor (higher is better,
+ * 0.5 to 1, so above a doorway), or -Infinity. Not knowing which way it fell, anywhere within
+ * BODY_RADIUS of its feet counts.
+ */
+function bodyScore(
+  p: Character,
+  ex: number,
+  ey: number,
+  ez: number,
+  lx: number,
+  ly: number,
+  lz: number,
+  b: Character,
+): number {
+  if (Math.hypot(b.x - p.x, b.z - p.z) > LOOT_REACH + BODY_RADIUS) return -Infinity;
+  // Where the look meets the floor it lies on, a little above its feet.
+  const drop = b.y + 0.2 - ey;
+  if (ly >= 0 || drop >= 0) return -Infinity;
+  const t = drop / ly;
+  const r = Math.hypot(ex + lx * t - b.x, ez + lz * t - b.z);
+  return r <= BODY_RADIUS ? 1 - (0.5 * r) / BODY_RADIUS : -Infinity;
+}
+
+/** How far from its feet a body lying in any direction is covered: most of its length. */
+const BODY_RADIUS = 1.2;
+
 /** Whether a container or body, by where it stands, can be seen: a little above its feet. */
 function inSight(world: CollisionWorld, p: Character, x: number, y: number, z: number): boolean {
   return lootInSight(world, p, x, y + 0.5, z);
 }
 
-/** How squarely the player faces a spot in reach (higher is better), or -Infinity. */
-function score(p: Character, fx: number, fz: number, x: number, y: number, z: number): number {
-  const dx = x - p.x;
-  const dz = z - p.z;
-  const d = Math.hypot(dx, dz);
-  if (d > LOOT_REACH || Math.abs(y - p.y) > LOOT_REACH) return -Infinity;
-  if (d < 0.6) return 1;
-  const facing = (dx * fx + dz * fz) / d;
-  return facing > 0.3 ? facing : -Infinity;
+/**
+ * How near the crosshair passes a container marker's middle, half a metre above its marker (higher
+ * is better, 0.5 to 1, so above a doorway), or -Infinity. Within CONTAINER_RADIUS counts.
+ */
+function containerScore(
+  p: Character,
+  ex: number,
+  ey: number,
+  ez: number,
+  lx: number,
+  ly: number,
+  lz: number,
+  c: LootContainer,
+): number {
+  if (Math.hypot(c.x - p.x, c.z - p.z) > LOOT_REACH || Math.abs(c.y - p.y) > LOOT_REACH) {
+    return -Infinity;
+  }
+  const dx = c.x - ex;
+  const dy = c.y + 0.5 - ey;
+  const dz = c.z - ez;
+  const t = dx * lx + dy * ly + dz * lz;
+  if (t <= 0) return -Infinity;
+  const r = Math.sqrt(Math.max(0, dx * dx + dy * dy + dz * dz - t * t));
+  return r <= CONTAINER_RADIUS ? 1 - (0.5 * r) / CONTAINER_RADIUS : -Infinity;
 }
+
+/** How far from a container's middle the crosshair may pass: about a desk's half-size. */
+const CONTAINER_RADIUS = 0.6;

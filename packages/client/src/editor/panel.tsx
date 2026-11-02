@@ -1174,6 +1174,9 @@ function Inspector(props: {
           collides
         </label>
       ) : null}
+      {(n.type === 'box' || n.type === 'cylinder' || n.type === 'group' || n.type === 'prefab') && (
+        <LootFields edit={edit} node={n} />
+      )}
       {canEnter(n, editor.prefabs) && (
         <button
           onClick={() => editor.enter(editor.getState().selected[0]!)}
@@ -1453,6 +1456,60 @@ function DoorFields(props: {
         />
         starts open
       </label>
+    </>
+  );
+}
+
+/**
+ * Makes a box, cylinder, group or placed prefab a loot container: you loot it by aiming at
+ * what collides in it.
+ */
+function LootFields(props: {
+  edit: Edit;
+  node: Extract<MapNode, { type: 'box' | 'cylinder' | 'group' | 'prefab' }>;
+}) {
+  const { edit, node: n } = props;
+  const kinds = [...loadLootContainers().keys()].sort();
+  const tables = [...loadLootTables().keys()].sort();
+  type Loot = NonNullable<typeof n.loot>;
+  const set = (loot: Loot | undefined) =>
+    edit((m) => {
+      const r = m as { loot?: Loot };
+      if (loot) r.loot = loot;
+      else delete r.loot;
+    });
+  return (
+    <>
+      <label className="ed-field" title="Looted by aiming at what collides in it">
+        <input
+          type="checkbox"
+          checked={!!n.loot}
+          onChange={(e) =>
+            set(
+              e.target.checked
+                ? { container: kinds[0] ?? 'desk', lootTable: tables[0] ?? 'household' }
+                : undefined,
+            )
+          }
+        />
+        loot container
+      </label>
+      {n.loot && (
+        <>
+          <Pick
+            label="container"
+            value={n.loot.container}
+            options={kinds}
+            onChange={(v) => v && set({ ...n.loot!, container: v })}
+          />
+          <Pick
+            label="loot"
+            value={n.loot.lootTable}
+            options={tables}
+            onChange={(v) => v && set({ ...n.loot!, lootTable: v })}
+          />
+        </>
+      )}
     </>
   );
 }

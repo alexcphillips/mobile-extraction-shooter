@@ -181,6 +181,7 @@ export {
   loadGun,
   loadKind,
   canReach,
+  containerInReach,
   bagGrid,
   gridOf,
   groundInReach,
