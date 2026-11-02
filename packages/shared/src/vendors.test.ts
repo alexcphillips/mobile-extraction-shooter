@@ -106,6 +106,17 @@ describe('vendors', () => {
     expect(p).toEqual(before);
   });
 
+  it('sells a gun empty, with no rounds or attachments, so it sells back for the gun alone', () => {
+    const p = profile();
+    expect(buyOffer(p, items, shop([{ item: 'rifle' }]), 0)).toBeNull();
+    const rifle = p.stash[0]!.items.find((g) => g.item.item === 'rifle')!.item;
+    expect(rifle.mag).toBe(0);
+    expect(Object.values(rifle.attachments!).every((a) => a === null)).toBe(true);
+    expect(sellPrice(items, rifle)).toBe(
+      Math.floor(buyPrice(items, { item: 'rifle' }) * VENDOR.sellShare),
+    );
+  });
+
   it('sells from a gear slot, a carried grid or the stash; not the knife or a full backpack', () => {
     const p = profile();
     const watch = p.stash[0]!.items.findIndex((g) => g.item.item === 'watch');

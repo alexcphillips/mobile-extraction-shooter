@@ -1,8 +1,8 @@
 import {
   VENDOR,
   buyPrice,
-  createItem,
   itemDef,
+  newStashItem,
   type ItemDb,
   type ProfileResponse,
   type QuestDef,
@@ -158,7 +158,7 @@ function OfferDetails({
   offer: VendorDef['sells'][number];
   onClose: () => void;
 }): ReactNode {
-  const [item] = useState(() => createItem(items, offer.item, offer.count ?? 1));
+  const [item] = useState(() => newStashItem(items, offer));
   return (
     <ItemDetails
       items={items}

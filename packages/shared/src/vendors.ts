@@ -5,7 +5,7 @@ import { PROFILE, type Profile } from './profile';
 import { GEAR_SLOTS, type Gear, type GearSlot } from './sim/gear';
 import { loadedAmmo } from './sim/weapons';
 import type { GridName, ItemRef } from './sim/looting';
-import { addToStash, stashGridOf, stashOwner } from './stash';
+import { addToStash, newStashItem, stashGridOf, stashOwner } from './stash';
 
 /*
  * Buying and selling (session 13b, decided with the user 2026-10-27). Every item has a
@@ -116,7 +116,8 @@ export function buyOffer(
   const price = buyPrice(items, offer);
   if (profile.money < price)
     return `that costs ${price.toLocaleString('en')}, and you have ${profile.money.toLocaleString('en')}`;
-  if (!addToStash(profile, items, [offer], page)) return 'there is no room in your stash';
+  if (!addToStash(profile, items, [offer], page, newStashItem))
+    return 'there is no room in your stash';
   profile.money -= price;
   return null;
 }

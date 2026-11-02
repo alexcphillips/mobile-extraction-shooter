@@ -4,7 +4,7 @@ import { removeAt, type Grid, type Item } from './inventory/grid';
 import { PROFILE, type Profile } from './profile';
 import type { Gear } from './sim/gear';
 import { takeQuestItems, type RaidObjectives } from './sim/raid';
-import { addToStash } from './stash';
+import { addToStash, newStashItem } from './stash';
 
 /*
  * Quests between raids (session 14): accepting one, handing items over from the stash,
@@ -147,7 +147,7 @@ export function completeQuest(
   const status = questStatus(profile, quest);
   if (status === 'done') return 'that quest is done already';
   if (status !== 'ready') return "that quest isn't finished yet";
-  if (!addToStash(profile, items, quest.rewards.items, page))
+  if (!addToStash(profile, items, quest.rewards.items, page, newStashItem))
     return 'there is no room in your stash for the rewards';
   profile.money = Math.min(PROFILE.maxMoney, profile.money + quest.rewards.money);
   profile.quests[quest.id] = { status: 'done' };

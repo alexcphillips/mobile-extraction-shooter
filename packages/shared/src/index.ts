@@ -127,6 +127,7 @@ export {
   rollTable,
   type LootTables,
 } from './sim/loot-roll';
+export { oneOfPicks, rollEnemySpawns } from './sim/spawn-roll';
 export {
   RAID,
   extractionAt,
@@ -510,6 +511,7 @@ export {
 } from './profile';
 export {
   addToStash,
+  newStashItem,
   applyStash,
   openStash,
   stashGridOf,

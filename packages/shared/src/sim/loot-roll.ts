@@ -6,6 +6,7 @@ import { addItem, type Item } from '../inventory/grid';
 import { byWeight, chance, nextFloat, nextIntIn, type Rng } from '../rng';
 import { createItem } from './create-item';
 import { stow } from './gear';
+import { oneOfPicks } from './spawn-roll';
 import type { Character, SimState } from './state';
 
 /*
@@ -94,15 +95,7 @@ export function rollLootSpawns(
   items: ItemDb,
   tables: LootTables,
 ): void {
-  const groups = new Map<string, string[]>();
-  for (const m of map.markers) {
-    if (m.type !== 'lootSpawn' || m.oneOf === undefined) continue;
-    const ids = groups.get(m.oneOf);
-    if (ids) ids.push(m.id);
-    else groups.set(m.oneOf, [m.id]);
-  }
-  const picked = new Set<string>();
-  for (const ids of groups.values()) picked.add(ids[nextIntIn(state.rng, 0, ids.length - 1)]!);
+  const picked = oneOfPicks(state.rng, map.markers, 'lootSpawn');
   for (const m of map.markers) {
     if (m.type !== 'lootSpawn') continue;
     if (m.oneOf !== undefined && !picked.has(m.id)) continue;

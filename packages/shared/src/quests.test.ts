@@ -211,6 +211,15 @@ describe('quests', () => {
     expect(p.quests.watches).toEqual({ status: 'done' });
   });
 
+  it('give a gun empty', () => {
+    const p = profile();
+    const gun = quest({ ...watches, id: 'gun', rewards: { money: 0, items: [{ item: 'rifle' }] } });
+    p.quests.radio = { status: 'done' };
+    p.quests.gun = { status: 'active', progress: { give: 3 } };
+    expect(completeQuest(p, items, gun)).toBeNull();
+    expect(p.stash[0]!.items.find((g) => g.item.item === 'rifle')!.item.mag).toBe(0);
+  });
+
   it('are compared by content, not key order', () => {
     const a = profile();
     const b = profile();

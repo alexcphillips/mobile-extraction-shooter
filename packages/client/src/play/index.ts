@@ -55,6 +55,7 @@ import {
   gearItems,
   keptItems,
   rollEnemyLoot,
+  rollEnemySpawns,
   rollLootSpawns,
   startRaid,
   itemDef,
@@ -424,7 +425,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     names.set(c.id, type.name);
     enemyBars?.add(c);
   }
-  for (const m of map.markers) {
+  // A new raid rolls which spawns are used (oneOf, chance); resumed, those in the state are.
+  const enemySpawns = resume
+    ? map.markers.filter((m) => m.type === 'enemySpawn')
+    : rollEnemySpawns(sim.rng, map);
+  for (const m of enemySpawns) {
     if (m.type !== 'enemySpawn') continue;
     const type = types.get(m.enemy)!;
     const loadout = loadouts.get(m.loadout ?? type.loadout)!;

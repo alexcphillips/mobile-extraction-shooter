@@ -1309,6 +1309,16 @@ function MarkerFields(props: { editor: MapEditor; node: MapNode; num: NumField; 
             onChange={(v) => set('patrol', v)}
           />
           <div className="ed-row">{num('radius', 'spawn radius', 0)}</div>
+          <div className="ed-row" title="The chance it spawns at all, 0 to 1">
+            {num('chance', 'chance', 1)}
+          </div>
+          <div title="Enemy spawns sharing this name: only one, picked at random, is used each raid">
+            <Text
+              label="one of"
+              value={n.oneOf ?? ''}
+              onChange={(v) => set('oneOf', v || undefined)}
+            />
+          </div>
           <h4 title="Multiplies how likely it drops from each table (1 if blank, 0 for never)">
             loot weights
           </h4>

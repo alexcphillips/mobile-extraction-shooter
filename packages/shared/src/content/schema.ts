@@ -176,6 +176,14 @@ const enemySpawnSchema = z.strictObject({
   patrol: idSchema.optional(),
   /** Spawns at a random spot within this many metres. Defaults to 0. */
   radius: nonNegative.optional(),
+  /** The chance it spawns at all, 0 to 1 (1 if left out). */
+  chance: finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1').optional(),
+  /**
+   * A name shared by enemy spawns of which only one is used each raid, picked at random
+   * (then rolling its chance as usual), so where they stand changes but not how many.
+   * Names are map-wide, not scoped by prefab, and apart from loot spawns' names.
+   */
+  oneOf: idSchema.optional(),
   /** Multipliers on loot table weights for what this enemy drops. */
   lootWeights: z
     .record(

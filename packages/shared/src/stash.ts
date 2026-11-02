@@ -125,26 +125,45 @@ export function stashGridOf(profile: Profile, ref: GridRef): Grid | null {
   }
 }
 
+/** A stack for addToStash: an item and how many. */
+export interface NewStack {
+  item: string;
+  count?: number | undefined;
+}
+
+/**
+ * A new item for the stash, from a vendor (13b) or a quest's rewards (14): a gun comes
+ * empty (the user's call, 2026-11-01), with its own magazine but no rounds and no
+ * attachments. Rounds are always got separately, so buying a gun and selling it back
+ * can't pay out for rounds it never cost.
+ */
+export function newStashItem(items: ItemDb, s: NewStack): Item {
+  const item = createItem(items, s.item, s.count ?? 1);
+  if (itemDef(items, s.item).type === 'weapon') item.mag = 0;
+  return item;
+}
+
 /**
  * Puts new items into the stash, page `page` first, then the others, all or none: a
  * vendor's offer (13b) or a quest's rewards (14). Each stack is a whole number of items
- * up to its stack size. Returns whether it all fitted; if not, nothing changes.
+ * up to its stack size, made by `make` (createItem unless given). Returns whether it all
+ * fitted; if not, nothing changes.
  */
 export function addToStash(
   profile: Profile,
   items: ItemDb,
-  stacks: readonly { item: string; count?: number | undefined }[],
+  stacks: readonly NewStack[],
   page = 0,
+  make: (items: ItemDb, s: NewStack) => Item = (items, s) => createItem(items, s.item, s.count),
 ): boolean {
   // Into copies of the pages, kept only if all of it fits: a stack can top up others.
   const pages = JSON.parse(JSON.stringify(profile.stash)) as Grid[];
   const n = pages.length;
   for (const s of stacks) {
-    const item = createItem(
-      items,
-      s.item,
-      Math.min(s.count ?? 1, stackSize(itemDef(items, s.item))),
-    );
+    const item = make(items, {
+      item: s.item,
+      count: Math.min(s.count ?? 1, stackSize(itemDef(items, s.item))),
+    });
     let left = item.count;
     for (let i = 0; i < n && left > 0; i++) left = addItem(items, pages[(page + i) % n]!, item);
     if (left > 0) return false;
