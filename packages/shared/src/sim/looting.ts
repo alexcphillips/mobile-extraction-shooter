@@ -14,6 +14,7 @@ import {
   canHold,
   createGrid,
   dropAt,
+  findSpot,
   placeAt,
   removeAt,
   rotateAt,
@@ -150,7 +151,11 @@ export type Target = GridSpot | Omit<InSlot, 'item'> | ToGround;
  *   carry; to a body, into its pockets, rig and backpack; to a container, into it; to the
  *   ground, dropped at your feet. With `inside`, to a container's stored rig or backpack
  *   instead (2026-11-01: the one open). A stack that only partly fits leaves the rest behind.
+ *   With `count` (2026-11-01), only that many of a stack go; the rest stay where they were.
  *   Picking up with the use button is a quick move from the ground to yourself.
+ * - split (2026-11-01): takes `count` off a stack in a grid into a new stack, in the
+ *   first free spot of the same grid; refused with no room there, or if it isn't fewer
+ *   than the stack.
  * - attach: puts an attachment on a gun, wherever each is. A loose one: what was in its
  *   slot goes where the new one was (or anywhere in that grid, or else in what you
  *   carry). One from another gun: what was in its slot goes onto that gun if it fits
@@ -170,7 +175,8 @@ export type Target = GridSpot | Omit<InSlot, 'item'> | ToGround;
 export type InventoryAction =
   | { type: 'move'; from: ItemRef; to: Target }
   | { type: 'rotate'; at: InGrid }
-  | { type: 'quick'; from: ItemRef; to: Owner; inside?: BagRef }
+  | { type: 'quick'; from: ItemRef; to: Owner; inside?: BagRef; count?: number }
+  | { type: 'split'; at: InGrid; count: number }
   | { type: 'attach'; gun: ItemRef; from: ItemRef | PartRef }
   | {
       type: 'detach';
@@ -374,8 +380,15 @@ export function applyInventory(
     }
     case 'quick': {
       const from = find(state, c, action.from);
-      return !!from && quickMove(ctx, from, action.to, action.inside);
+      const count = action.count ?? from?.item.count ?? 0;
+      return (
+        !!from &&
+        validCount(count, from.item.count) &&
+        quickMove(ctx, from, action.to, action.inside, count)
+      );
     }
+    case 'split':
+      return splitStack(ctx, action.at, action.count);
     case 'attach':
       return 'gun' in action.from
         ? movePart(ctx, action.from, action.gun)
@@ -576,11 +589,44 @@ const PISTOL_SLOTS: readonly GearSlot[] = ['sidearm'];
 const GUN_SLOTS: readonly GearSlot[] = ['primary1', 'primary2'];
 const OTHER_SLOTS: readonly GearSlot[] = ['knife', 'helmet', 'bodyArmour', 'rig', 'backpack'];
 
-function quickMove(ctx: Ctx, from: Found, to: Owner, inside?: BagRef): boolean {
+/** Whether n of a stack of `of` is a whole number from 1 to all of it. */
+function validCount(n: number, of: number): boolean {
+  return Number.isInteger(n) && n >= 1 && n <= of;
+}
+
+/** Takes n off a stack in a grid into a new stack in the same grid's first free spot. */
+function splitStack(ctx: Ctx, at: InGrid, n: number): boolean {
   const { state, c, items } = ctx;
-  if (to.kind === 'ground') return toGround(ctx, from);
+  const grid = gridOf(state, c, at);
+  const g = grid?.items[at.index];
+  if (!grid || g?.item.item !== at.item || !validCount(n, g.item.count - 1)) return false;
+  const spot = findSpot(items, grid, at.item);
+  if (!spot) return false;
+  g.item.count -= n;
+  grid.items.push({ ...spot, item: createItem(items, at.item, n) });
+  return true;
+}
+
+/** A double-tap move of n of the found item (see InventoryAction's quick). */
+function quickMove(
+  ctx: Ctx,
+  from: Found,
+  to: Owner,
+  inside: BagRef | undefined,
+  n: number,
+): boolean {
+  const { state, c, items } = ctx;
+  // Part of a stack moves as a new item; the rest stays.
+  const whole = n === from.item.count;
+  if (to.kind === 'ground') {
+    if (whole) return toGround(ctx, from);
+    if (from.at === 'ground') return false;
+    from.item.count -= n;
+    dropItem(state, c, createItem(items, from.item.item, n), ctx.world);
+    return true;
+  }
   if (!canReach(state, c, to)) return false;
-  if (to.kind === 'self' && !(from.at === 'slot' && from.ch === c)) {
+  if (whole && to.kind === 'self' && !(from.at === 'slot' && from.ch === c)) {
     const def = itemDef(items, from.item.item);
     const slots =
       def.type !== 'weapon' ? OTHER_SLOTS : def.hold === 'pistol' ? PISTOL_SLOTS : GUN_SLOTS;
@@ -591,11 +637,12 @@ function quickMove(ctx: Ctx, from: Found, to: Owner, inside?: BagRef): boolean {
       return true;
     }
   }
-  const before = from.item.count;
+  const moving = whole ? from.item : createItem(items, from.item.item, n);
+  const before = moving.count;
   let left = before;
   const into = (grid: Grid | null): void => {
     if (grid && left > 0 && !(from.at === 'grid' && grid === from.grid)) {
-      left = addItem(items, grid, from.item);
+      left = addItem(items, grid, moving);
     }
   };
   if (to.kind === 'container') {
@@ -606,7 +653,8 @@ function quickMove(ctx: Ctx, from: Found, to: Owner, inside?: BagRef): boolean {
     // Your vault last, once pockets, rig and backpack are full (the user's call, 2026-10-30).
     if (to.kind === 'self') into(c.gear.vault);
   }
-  if (left === 0) takeOut(from);
+  if (!whole) from.item.count -= before - left;
+  else if (left === 0) takeOut(from);
   return left < before;
 }
 

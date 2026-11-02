@@ -207,6 +207,31 @@ describe('looting', () => {
     expect(countOf(crate.grid, 'round')).toBe(170);
   });
 
+  it('splits a stack in place, and moves part of one by double-tap', () => {
+    const { state, c, crate, box, act } = setup();
+    const vault = c.gear.vault!;
+    addItem(items, vault, { item: 'round', count: 100 });
+    const at = { owner: self, grid: 'vault', index: 0, item: 'round' } as const;
+    // Not none, all, a fraction, or more than there are.
+    for (const count of [0, 100, 2.5, 101]) expect(act({ type: 'split', at, count })).toBe(false);
+    expect(act({ type: 'split', at, count: 25 })).toBe(true);
+    expect(vault.items.map((g) => g.item.count)).toEqual([75, 25]);
+    // A full grid has no room for the new stack.
+    while (addItem(items, vault, createItem(items, 'helmet')) === 0);
+    expect(act({ type: 'split', at, count: 5 })).toBe(false);
+    // Half of what's left in the vault into what you carry: the rest stays.
+    expect(act({ type: 'quick', from: at, to: self, count: 37 })).toBe(true);
+    expect(vault.items[0]!.item.count).toBe(38);
+    expect(countOf(c.gear.pockets, 'round')).toBe(37);
+    // Into a container, and onto the ground.
+    expect(act({ type: 'quick', from: at, to: box, count: 8 })).toBe(true);
+    expect(countOf(crate.grid, 'round')).toBe(8);
+    expect(act({ type: 'quick', from: at, to: { kind: 'ground' }, count: 10 })).toBe(true);
+    expect(state.ground.map((g) => g.item.count)).toEqual([10]);
+    expect(vault.items[0]!.item.count).toBe(20);
+    expect(act({ type: 'quick', from: at, to: self, count: 21 })).toBe(false);
+  });
+
   it('drags between grids and gear slots, swapping with what is there', () => {
     const { c, crate, box, body, enemy, act } = setup();
     equip(c, items, 'helmet', createItem(items, 'helmet'));

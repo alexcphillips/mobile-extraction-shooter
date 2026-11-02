@@ -2484,6 +2484,27 @@ body:has(#layout-bar) #menu {
   align-self: center;
 }
 
+/* Splitting a stack: a row of its own across the bottom. */
+.item-split {
+  display: flex;
+  flex: 1 0 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.item-split input[type='range'] {
+  flex: 1 1 120px;
+  min-width: 0;
+}
+
+.item-split-count {
+  min-width: 5em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 /* The party on the main menu (co-op C3): invites, members with ready ticks, the link. */
 .party {
   display: flex;

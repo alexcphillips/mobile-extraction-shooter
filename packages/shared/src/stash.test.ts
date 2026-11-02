@@ -269,6 +269,29 @@ describe('the stash', () => {
     expect(checkProfile(items, p)).toBeNull();
   });
 
+  it('moves part of a stack by double-tap, on to the next page when one is full', () => {
+    const p = profile();
+    p.money = PROFILE.pagePrices[0];
+    expect(buyStashPage(p)).toBeNull();
+    const s = openStash(p);
+    // Page 2 full, with room for 10 more rounds on its last stack.
+    while (addItem(items, p.stash[1]!, createItem(items, 'watch')) === 0);
+    p.stash[1]!.items.splice(-1, 1);
+    p.stash[1]!.items.push({ x: 9, y: 29, rotated: false, item: createItem(items, 'round', 90) });
+    const rounds = p.gear.pockets.items.findIndex((g) => g.item.item === 'round');
+    const from = { owner: self, grid: 'pockets', index: rounds, item: 'round' } as const;
+    expect(applyStash(s, items, { type: 'quick', from, to: stashOwner(1), count: 30 }, 1)).toBe(
+      true,
+    );
+    expect(countOf(p.gear.pockets, 'round')).toBe(30);
+    expect(countOf(p.stash[1]!, 'round')).toBe(100);
+    expect(countOf(p.stash[0]!, 'round')).toBe(20);
+    expect(applyStash(s, items, { type: 'split', at: from, count: 10 })).toBe(true);
+    expect(countOf(p.gear.pockets, 'round')).toBe(30);
+    expect(p.gear.pockets.items.filter((g) => g.item.item === 'round')).toHaveLength(2);
+    expect(checkProfile(items, p)).toBeNull();
+  });
+
   it('moves items in and out of a backpack stored in the stash', () => {
     const p = profile();
     const before = JSON.parse(JSON.stringify(p)) as Profile;
