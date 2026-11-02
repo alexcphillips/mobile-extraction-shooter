@@ -300,37 +300,49 @@ body {
   display: flex;
 }
 
+/* Each zone coloured by HP with its HP beside it; a bleeding one pulses a white outline, seen on any colour. */
+.body {
+  display: flex;
+}
+
+.body [data-zone] {
+  stroke: rgb(0 0 0 / 0.6);
+  stroke-width: 0.6;
+}
+
+.body text {
+  fill: #fff;
+  font:
+    bold 7.5px ui-monospace,
+    monospace;
+  stroke: rgb(0 0 0 / 0.8);
+  stroke-width: 1.6px;
+  paint-order: stroke;
+}
+
+.armour-icons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.body [data-zone].bleed {
+  stroke: #fff;
+  stroke-width: 1.4;
+  animation: bleed-pulse 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes bleed-pulse {
+  from {
+    stroke-opacity: 1;
+  }
+  to {
+    stroke-opacity: 0.25;
+  }
+}
+
 .armour[hidden] {
   display: none;
-}
-
-.health {
-  position: relative;
-  width: 160px;
-  height: 14px;
-  margin-left: 4px;
-  border-radius: 3px;
-  background: rgb(255 255 255 / 0.15);
-  overflow: hidden;
-}
-
-.health-fill {
-  position: absolute;
-  inset: 0;
-  background: #5cb85c;
-  transform-origin: left;
-}
-
-.health-fill.low {
-  background: #e74c3c;
-}
-
-.health-text {
-  position: absolute;
-  inset: 0;
-  text-align: center;
-  line-height: 14px;
-  text-shadow: 0 0 2px #000;
 }
 
 .chips {
