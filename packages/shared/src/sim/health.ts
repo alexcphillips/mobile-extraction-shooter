@@ -20,10 +20,16 @@ export const HEALTH = {
   maxHp: [35, 85, 60, 60, 65, 65],
   /** Shot damage multipliers. Falls and bleeding ignore them. */
   multiplier: [1.5, 1, 0.7, 0.7, 0.75, 0.75],
-  /** Damage to a broken limb, or beyond what breaks it, reaches the chest at this rate. */
+  /**
+   * Damage to a broken limb, or beyond what breaks it, is spread evenly over every zone
+   * with HP left (head included, as in Tarkov) at this rate.
+   */
   spillover: 0.7,
-  /** HP per second lost from each bleeding zone. */
-  bleedRate: 1,
+  /**
+   * HP per second lost to bleeding in all, however many zones bleed: it's split evenly
+   * between them, so more wounds don't bleed faster (design.md → Damage).
+   */
+  bleedRate: 0.6,
   /** Speed multiplier per broken leg. */
   brokenLegSpeed: 0.75,
   /** Spread and aim time multipliers per broken arm. */
@@ -143,9 +149,9 @@ export interface DeathEvent {
 }
 
 /**
- * Takes HP from a zone with no multiplier or armour. A broken limb passes the damage to
- * the chest at the spillover rate, and so does whatever a hit has left after breaking a
- * limb. Head or chest at 0 kills. Returns the HP actually lost.
+ * Takes HP from a zone with no multiplier or armour. A broken limb spreads the damage
+ * over the zones with HP left at the spillover rate, and so does whatever a hit has left
+ * after breaking a limb. Head or chest at 0 kills. Returns the HP actually lost.
  */
 export function dealDamage(
   state: SimState,
@@ -168,15 +174,30 @@ export function dealDamage(
     lost = before - after;
     if (zone !== HEAD && zone !== CHEST) spill = amount - lost;
   }
-  if (spill > 0) {
-    const before = h.hp[CHEST]!;
-    h.hp[CHEST] = Math.max(0, before - spill * HEALTH.spillover);
-    lost += before - h.hp[CHEST]!;
-  }
+  if (spill > 0) lost += spread(h, spill * HEALTH.spillover);
   if (h.hp[HEAD]! <= 0 || h.hp[CHEST]! <= 0) {
     h.dead = true;
     h.bleeding.fill(false);
     state.events.push({ type: 'death', target: c.id, by });
+  }
+  return lost;
+}
+
+/**
+ * Splits damage evenly over the zones with HP left; a share bigger than a zone has is
+ * lost, not passed on. Returns the HP actually lost.
+ */
+function spread(h: Health, amount: number): number {
+  let zones = 0;
+  for (const hp of h.hp) if (hp > 0) zones++;
+  if (zones === 0) return 0;
+  const each = amount / zones;
+  let lost = 0;
+  for (let zone = 0; zone < ZONE_COUNT; zone++) {
+    const before = h.hp[zone]!;
+    if (before <= 0) continue;
+    h.hp[zone] = Math.max(0, before - each);
+    lost += before - h.hp[zone]!;
   }
   return lost;
 }
@@ -273,11 +294,15 @@ function fallOn(state: SimState, c: Character, zone: Zone, damage: number): void
   });
 }
 
-/** One tick of bleeding from every bleeding zone. */
+/** One tick of bleeding, the rate shared between the bleeding zones. */
 export function bleed(state: SimState, c: Character): void {
   const h = c.health;
+  let zones = 0;
+  for (const b of h.bleeding) if (b) zones++;
+  if (zones === 0) return;
+  const each = (HEALTH.bleedRate * TICK_SECONDS) / zones;
   for (let zone = 0; zone < ZONE_COUNT; zone++) {
-    if (h.bleeding[zone]) dealDamage(state, c, zone as Zone, HEALTH.bleedRate * TICK_SECONDS, 0);
+    if (h.bleeding[zone]) dealDamage(state, c, zone as Zone, each, 0);
   }
 }
 

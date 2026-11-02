@@ -9,6 +9,7 @@ import {
   HEALTH,
   LEFT_ARM,
   LEFT_LEG,
+  RIGHT_ARM,
   RIGHT_LEG,
   TOTAL_HP,
   bleed,
@@ -59,21 +60,37 @@ describe('damage', () => {
     );
   });
 
-  it('breaks a limb at 0 HP and spills further damage to the chest', () => {
+  it('breaks a limb at 0 HP and spreads further damage over the zones with HP left', () => {
     const { state, c } = setup();
     dealDamage(state, c, LEFT_LEG, 65, 0);
     expect(isBroken(c.health, LEFT_LEG)).toBe(true);
     expect(c.health.hp[CHEST]).toBe(85);
     dealDamage(state, c, LEFT_LEG, 10, 0);
-    expect(c.health.hp[CHEST]).toBeCloseTo(85 - 10 * HEALTH.spillover);
+    // Five zones left: head, chest, both arms and the other leg.
+    const each = (10 * HEALTH.spillover) / 5;
+    expect(c.health.hp[HEAD]).toBeCloseTo(35 - each);
+    expect(c.health.hp[CHEST]).toBeCloseTo(85 - each);
+    expect(c.health.hp[RIGHT_LEG]).toBeCloseTo(65 - each);
+    expect(c.health.hp[LEFT_LEG]).toBe(0);
   });
 
-  it('spills what is left after breaking a limb', () => {
+  it('spreads what is left after breaking a limb', () => {
     const { state, c } = setup();
     const lost = dealDamage(state, c, LEFT_LEG, 75, 0);
     expect(c.health.hp[LEFT_LEG]).toBe(0);
-    expect(c.health.hp[CHEST]).toBeCloseTo(85 - 10 * HEALTH.spillover);
+    expect(c.health.hp[CHEST]).toBeCloseTo(85 - (10 * HEALTH.spillover) / 5);
     expect(lost).toBeCloseTo(65 + 10 * HEALTH.spillover);
+  });
+
+  it('can kill through the head from a broken limb, and a share bigger than a zone has is lost', () => {
+    const { state, c } = setup();
+    c.health.hp[HEAD] = 1;
+    dealDamage(state, c, LEFT_LEG, 65, 0);
+    const lost = dealDamage(state, c, LEFT_LEG, 50, 0);
+    expect(c.health.dead).toBe(true);
+    expect(c.health.hp[HEAD]).toBe(0);
+    // 35 spread over five zones is 7 each, but the head only had 1.
+    expect(lost).toBeCloseTo(1 + 4 * 7);
   });
 
   it('kills at 0 head or chest HP, once', () => {
@@ -181,6 +198,15 @@ describe('bleeding', () => {
     expect(c.health.hp[LEFT_ARM]).toBeCloseTo(before - 2 * HEALTH.bleedRate);
   });
 
+  it('shares one rate between bleeding zones rather than stacking', () => {
+    const { state, c } = setup();
+    c.health.bleeding[LEFT_ARM] = true;
+    c.health.bleeding[RIGHT_ARM] = true;
+    for (let i = 0; i < TICK_RATE * 2; i++) bleed(state, c);
+    expect(TOTAL_HP - totalHp(c.health)).toBeCloseTo(2 * HEALTH.bleedRate);
+    expect(c.health.hp[LEFT_ARM]).toBeCloseTo(c.health.hp[RIGHT_ARM]!);
+  });
+
   it('does not start when armour took the whole hit', () => {
     const { state, c } = setup();
     const items = new Map(TEST_ITEMS);
@@ -218,10 +244,11 @@ describe('fall damage', () => {
     for (let i = 0; i < TICK_RATE * 2; i++) step(state, world, items, {});
     expect(top.y).toBe(0);
     expect(top.landingSpeed).toBe(0);
-    // Both legs broken, and about 15 more from each spilled to the chest.
+    // Both legs broken, and about 15 more from each spread over the rest.
     expect(isBroken(top.health, LEFT_LEG) && isBroken(top.health, RIGHT_LEG)).toBe(true);
     expect(top.health.dead).toBe(false);
-    expect(top.health.hp[CHEST]).toBeGreaterThan(50);
-    expect(top.health.hp[CHEST]).toBeLessThan(75);
+    expect(top.health.hp[CHEST]).toBeGreaterThan(75);
+    expect(top.health.hp[CHEST]).toBeLessThan(83);
+    expect(top.health.hp[HEAD]).toBeLessThan(33);
   });
 });

@@ -1,12 +1,12 @@
 import {
+  HEALTH,
+  ZONE_COUNT,
   LEFT_ARM,
   LEFT_LEG,
   RIGHT_ARM,
   RIGHT_LEG,
-  TOTAL_HP,
   isBleeding,
   isBroken,
-  totalHp,
   createWeaponStats,
   weaponStats,
   type ArmourState,
@@ -24,6 +24,35 @@ const HELMET_ICON =
   '<svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M3 15a9 9 0 0 1 18 0v2H3z M2 17h20v2H2z"/></svg>';
 const stats = createWeaponStats();
 
+/**
+ * A front-on body, one shape per zone in Health's order (head, chest, left arm, right arm,
+ * left leg, right leg), facing you, so its left side is on your right. Each zone's HP is
+ * written beside it (the chest's on it), as Tarkov's health widget does.
+ */
+const BODY_ICON = `<svg viewBox="0 0 64 60" width="80" height="75">
+  <circle data-zone="0" cx="32" cy="6" r="5"/>
+  <rect data-zone="1" x="26" y="13" width="12" height="19" rx="1.5"/>
+  <rect data-zone="2" x="39.5" y="13" width="4.5" height="19" rx="1.5"/>
+  <rect data-zone="3" x="20" y="13" width="4.5" height="19" rx="1.5"/>
+  <rect data-zone="4" x="32.5" y="33.5" width="5.5" height="26" rx="1.5"/>
+  <rect data-zone="5" x="26" y="33.5" width="5.5" height="26" rx="1.5"/>
+  <text data-hp="0" x="39" y="9"/>
+  <text data-hp="1" x="32" y="25" text-anchor="middle"/>
+  <text data-hp="2" x="46" y="25"/>
+  <text data-hp="3" x="18" y="25" text-anchor="end"/>
+  <text data-hp="4" x="40" y="50"/>
+  <text data-hp="5" x="24" y="50" text-anchor="end"/>
+</svg>`;
+
+/** Zone colours by HP left: full, hurt, badly hurt, nearly gone, and 0 (broken, or dead). */
+const ZONE_COLOURS = ['#5cb85c', '#c9d23f', '#f0a030', '#e74c3c', '#222'];
+
+function zoneColour(hp: number, max: number): number {
+  if (hp <= 0) return 4;
+  const f = hp / max;
+  return f > 0.75 ? 0 : f > 0.5 ? 1 : f > 0.25 ? 2 : 3;
+}
+
 const VEST_ICON =
   '<svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M7 2h3l2 3 2-3h3l2 4v15H5V6z"/></svg>';
 
@@ -37,14 +66,19 @@ function setHidden(el: HTMLElement, hidden: boolean): void {
 }
 
 /**
- * The player's status, written straight to the DOM (never through React): the overall
- * health bar, chips for broken limbs and bleeding, armour icons coloured by durability,
- * and the ammo count with the round loaded (coloured by level) and a reload bar. Also the crosshair hit marker and a red flash when
- * hurt.
+ * The player's status, written straight to the DOM (never through React): a body with
+ * each zone coloured by its HP and its HP beside it, bleeding zones pulsing (as Tarkov
+ * does: there's no total, since the head or chest decides death), chips for broken limbs
+ * and bleeding, armour icons coloured by durability, and the ammo count with the round
+ * loaded (coloured by level) and a reload bar. Also the crosshair hit marker and a red
+ * flash when hurt.
  */
 export class Vitals {
-  private readonly bar: HTMLElement;
-  private readonly hp: HTMLElement;
+  private readonly zones: SVGElement[];
+  /** What each zone shows: its colour index, plus 8 when bleeding. */
+  private readonly zoneShown = Array<number>(ZONE_COUNT).fill(-1);
+  private readonly hpTexts: SVGTextElement[];
+  private readonly hpShown = Array<number>(ZONE_COUNT).fill(-1);
   private readonly chips: HTMLElement;
   private readonly helmet: HTMLElement;
   private readonly vest: HTMLElement;
@@ -54,7 +88,6 @@ export class Vitals {
   private readonly reload: HTMLElement;
   private readonly reloadFill: HTMLElement;
   private chipKey = '';
-  private shownTotal = -1;
   private markerUntil = 0;
 
   constructor(
@@ -65,14 +98,16 @@ export class Vitals {
   ) {
     vitals.innerHTML = `
       <div class="vitals-row">
-        <span class="armour helmet">${HELMET_ICON}</span>
-        <span class="armour vest">${VEST_ICON}</span>
-        <div class="health"><div class="health-fill"></div><span class="health-text"></span></div>
+        <span class="body">${BODY_ICON}</span>
+        <div class="armour-icons">
+          <span class="armour helmet">${HELMET_ICON}</span>
+          <span class="armour vest">${VEST_ICON}</span>
+        </div>
       </div>
       <div class="chips"></div>`;
     const q = (sel: string): HTMLElement => vitals.querySelector<HTMLElement>(sel)!;
-    this.bar = q('.health-fill');
-    this.hp = q('.health-text');
+    this.zones = [...vitals.querySelectorAll<SVGElement>('[data-zone]')];
+    this.hpTexts = [...vitals.querySelectorAll<SVGTextElement>('[data-hp]')];
     this.chips = q('.chips');
     this.helmet = q('.helmet');
     this.vest = q('.vest');
@@ -87,13 +122,19 @@ export class Vitals {
   /** Call once per tick. */
   update(c: Character, items: ItemDb, now: number): void {
     const h = c.health;
-    // Dead at 0 head or chest HP, with HP left in the limbs: the bar shows 0, not what's left.
-    const total = h.dead ? 0 : totalHp(h);
-    if (total !== this.shownTotal) {
-      this.shownTotal = total;
-      this.bar.style.transform = `scaleX(${total / TOTAL_HP})`;
-      this.bar.classList.toggle('low', total < TOTAL_HP * 0.35);
-      setText(this.hp, String(Math.ceil(total)));
+    for (let zone = 0; zone < ZONE_COUNT; zone++) {
+      const hp = Math.ceil(h.hp[zone]!);
+      if (hp !== this.hpShown[zone]) {
+        this.hpShown[zone] = hp;
+        this.hpTexts[zone]!.textContent = String(hp);
+      }
+      const colour = zoneColour(h.hp[zone]!, HEALTH.maxHp[zone]!);
+      const shown = colour + (h.bleeding[zone] ? 8 : 0);
+      if (shown === this.zoneShown[zone]) continue;
+      this.zoneShown[zone] = shown;
+      const el = this.zones[zone]!;
+      el.style.fill = ZONE_COLOURS[colour]!;
+      el.classList.toggle('bleed', h.bleeding[zone]!);
     }
 
     // Chips change rarely, so rebuild them only when the set changes.
