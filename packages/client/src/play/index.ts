@@ -643,7 +643,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // next tick.
   let picked: MedRef | 'cancel' | null = null;
   // Rounds picked from the reload button's picker, loaded with the next tick's reload.
-  // The grenade picked is named on screen too (on a desktop, the button is only a read-out).
+  // The grenade picked is named on screen too (on a desktop, where the button is hidden).
   const hands = new HandsHud(
     el.hud,
     (ref) => (picked = ref),
