@@ -1,0 +1,13 @@
+{
+  "formatVersion": 3,
+  "id": "basic-road",
+  "name": "road 1",
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [5, 0.2, 5],
+      "colour": "#404040"
+    }
+  ]
+}

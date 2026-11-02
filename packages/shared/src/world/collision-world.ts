@@ -68,6 +68,20 @@ export interface DoorDef {
   open: boolean;
 }
 
+/**
+ * A pane of glass filling a window: (x, y, z) is its bottom middle, yaw turns local +z out
+ * of its face. Solid until it breaks, then gone for the rest of the raid. Seen through.
+ */
+export interface GlassDef {
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  width: number;
+  height: number;
+  thickness: number;
+}
+
 /** Everything the simulation collides with, as plain data. The map loader produces it. */
 export interface WorldDef {
   terrain: HeightGridDef;
@@ -75,6 +89,7 @@ export interface WorldDef {
   ramps: readonly RampDef[];
   ladders: readonly LadderDef[];
   doors?: readonly DoorDef[];
+  glass?: readonly GlassDef[];
 }
 
 export interface Ladder extends LadderDef {
@@ -87,7 +102,7 @@ export type RayHitKind = 'none' | 'terrain' | 'solid';
 
 export interface RayHit extends SurfaceHit {
   kind: RayHitKind;
-  /** Solid index for solid hits (boxes first, then ramps, then doors), otherwise -1. */
+  /** Solid index for solid hits (boxes, ramps, doors, then glass), otherwise -1. */
   index: number;
 }
 
@@ -104,12 +119,19 @@ export interface GroundHit {
 // −z and at +z (equal for boxes).
 const STRIDE = 9;
 const GRID_CELL = 4;
+/**
+ * How far under the lowest terrain falling through a hole lands: deep enough that the
+ * fall kills (design.md → Fall damage), so a hole with nothing under it is a pit.
+ */
+export const PIT_DEPTH = 60;
+/** Where a broken pane's solid goes: far enough out that nothing reaches it. */
+const GONE = 1e9;
 
 /**
  * The collision world, built once from map data. All queries reuse internal scratch space
  * and allocate nothing. Only doors change: each is a solid with three poses (closed, open
  * into +z, open into −z), and setDoorOpen swaps between them (the sim's door state is the truth; syncDoors copies it
- * here).
+ * here), and glass, which setGlassBroken moves far out of the world once broken (syncGlass).
  */
 export class CollisionWorld {
   readonly terrain: HeightGrid;
@@ -118,12 +140,16 @@ export class CollisionWorld {
   readonly solidCount: number;
   /** Solid index of the first door: doors come after boxes and ramps. */
   readonly firstDoor: number;
+  readonly glass: readonly GlassDef[];
+  /** Solid index of the first pane of glass: glass comes last. */
+  readonly firstGlass: number;
   private readonly s: Float64Array;
   /** Each door's solid closed, open into +z, then open into −z, STRIDE values each. */
   private readonly doorPoses: Float64Array;
   private readonly doorOpen: Uint8Array;
   /** Opens (or last opened) into −z. */
   private readonly doorFlipped: Uint8Array;
+  private readonly glassBroken: Uint8Array;
   private readonly grid: StaticGrid;
   private readonly found: Uint32Array;
   private readonly walk = new CellWalk();
@@ -132,8 +158,10 @@ export class CollisionWorld {
   constructor(def: WorldDef) {
     this.terrain = new HeightGrid(def.terrain);
     this.doors = def.doors ?? [];
+    this.glass = def.glass ?? [];
     this.firstDoor = def.boxes.length + def.ramps.length;
-    this.solidCount = this.firstDoor + this.doors.length;
+    this.firstGlass = this.firstDoor + this.doors.length;
+    this.solidCount = this.firstGlass + this.glass.length;
     this.s = new Float64Array(this.solidCount * STRIDE);
     let i = 0;
     for (const b of def.boxes) {
@@ -152,12 +180,17 @@ export class CollisionWorld {
       this.setDoorOpen(k, d.open);
       i++;
     });
+    for (const g of this.glass) {
+      const top = g.y + g.height;
+      this.setSolid(i++, g.x, g.z, g.width / 2, g.thickness / 2, g.yaw, g.y, top, top);
+    }
+    this.glassBroken = new Uint8Array(this.glass.length);
 
     // A door's cell rectangle covers all its poses.
     const rects = new Float64Array(this.solidCount * 4);
     for (let k = 0; k < this.solidCount; k++) {
       const door = k - this.firstDoor;
-      if (door < 0) rects.set(footprint(this.s, k * STRIDE), k * 4);
+      if (door < 0 || k >= this.firstGlass) rects.set(footprint(this.s, k * STRIDE), k * 4);
       else {
         const r = footprint(this.doorPoses, door * 3 * STRIDE);
         for (let pose = 1; pose < 3; pose++) {
@@ -195,7 +228,29 @@ export class CollisionWorld {
 
   /** The door a solid index is, or -1 for any other solid. */
   doorOf(solid: number): number {
-    return solid >= this.firstDoor ? solid - this.firstDoor : -1;
+    return solid >= this.firstDoor && solid < this.firstGlass ? solid - this.firstDoor : -1;
+  }
+
+  isGlassBroken(pane: number): boolean {
+    return this.glassBroken[pane] === 1;
+  }
+
+  /**
+   * Breaks a pane (or mends it, for a state loaded over this world): broken, its solid is
+   * moved far away, so every query misses it with no check of its own.
+   */
+  setGlassBroken(pane: number, broken: boolean): void {
+    if (this.isGlassBroken(pane) === broken) return;
+    this.glassBroken[pane] = broken ? 1 : 0;
+    const g = this.glass[pane]!;
+    const o = (this.firstGlass + pane) * STRIDE;
+    this.s[o] = broken ? GONE : g.x;
+    this.s[o + 1] = broken ? GONE : g.z;
+  }
+
+  /** The pane of glass a solid index is, or -1 for any other solid. */
+  glassOf(solid: number): number {
+    return solid >= this.firstGlass ? solid - this.firstGlass : -1;
   }
 
   /**
@@ -225,9 +280,11 @@ export class CollisionWorld {
   /**
    * Height of the highest surface under a standing circle whose top is at most maxTop:
    * the terrain under its centre, or any solid it overlaps. Writes what was found to out.
+   * Over a hole with nothing in it, that's a floor PIT_DEPTH under the lowest terrain.
    */
   groundAt(x: number, z: number, radius: number, maxTop: number, out?: GroundHit): number {
-    let best = this.terrain.heightAt(x, z);
+    const t = this.terrain;
+    let best = t.holeAt(x, z) ? t.minHeight - PIT_DEPTH : t.heightAt(x, z);
     let solid = -1;
     const n = this.grid.query(x - radius, z - radius, x + radius, z + radius, this.found);
     for (let k = 0; k < n; k++) {
@@ -338,6 +395,7 @@ export class CollisionWorld {
   /**
    * Distance to the first solid or terrain along a unit direction, or Infinity within
    * maxDist. 0 if the origin is inside something. Writes details to hit if given.
+   * seeThrough passes through glass: for lines of sight, not for what's solid.
    */
   raycast(
     ox: number,
@@ -348,7 +406,9 @@ export class CollisionWorld {
     dz: number,
     maxDist: number,
     hit?: RayHit,
+    seeThrough = false,
   ): number {
+    const solids = seeThrough ? this.firstGlass : this.solidCount;
     let best = maxDist;
     let bestSolid = -1;
     let bestFace = -1;
@@ -364,7 +424,7 @@ export class CollisionWorld {
         const end = this.grid.cellStart[cell + 1]!;
         for (let k = start; k < end; k++) {
           const i = this.grid.cellItems[k]!;
-          if (!this.grid.firstVisit(i)) continue;
+          if (i >= solids || !this.grid.firstVisit(i)) continue;
           const d = this.raySolid(i, ox, oy, oz, dx, dy, dz, best);
           if (d < best) {
             best = d;

@@ -190,6 +190,9 @@ export class SoundCues {
         this.at(id, d.x, d.y + d.height / 2, d.z);
         return;
       }
+      case 'glass':
+        this.at(S.glassBreak, e.x, e.y, e.z);
+        return;
       case 'inventory':
         if (own) this.sound.play(e.ok ? S.itemMove : S.refuse);
         return;

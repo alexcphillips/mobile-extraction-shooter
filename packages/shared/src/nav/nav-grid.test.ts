@@ -117,6 +117,36 @@ describe('NavGrid', () => {
     expect(up.pts.at(-1)![1]).toBeCloseTo(3);
   });
 
+  it('reaches a floor under a terrain hole down a ramp, and not one under the ground', () => {
+    // Cells over x 0..8, z −12..0 are a hole; a floor 3 m down under it, and a ramp down
+    // into it from z = 0. The same floor beyond the hole, to z = −20, is underground.
+    const holes = new Uint8Array(100);
+    for (let j = 2; j < 5; j++) for (let i = 5; i < 7; i++) holes[j * 10 + i] = 1;
+    const terrain = {
+      minX: -20,
+      minZ: -20,
+      cellSize: 4,
+      cols: 10,
+      rows: 10,
+      heights: Array(121).fill(0),
+      holes,
+    };
+    const floor = aabb(0, -3.2, -20, 8, -3, 0);
+    const ramp = { x: 4, z: -4, hx: 2, hz: 4, yaw: 0, bottom: -3.2, low: -3, high: 0 };
+    const nav = new NavGrid(makeWorld({ terrain, boxes: [floor], ramps: [ramp] }));
+    const ground = nav.nearest(4, 0, 6);
+    const basement = nav.nearest(4, -3, -10);
+    expect(nav.nodeY(basement)).toBeCloseTo(-3);
+    expect(nav.component[basement]).toBe(nav.component[ground]);
+    expect(layersAt(nav, 4.25, -16.25)).toBe(1);
+    expect(nav.nodeY(nav.nearest(4, 0, -16))).toBeCloseTo(0);
+
+    const shut = new NavGrid(makeWorld({ terrain, boxes: [floor] }));
+    expect(shut.component[shut.nearest(4, -3, -10)]).not.toBe(
+      shut.component[shut.nearest(4, 0, 6)],
+    );
+  });
+
   it('has a column under a roof as well as the roof', () => {
     // A shelter: four posts and a roof at 2.4 m.
     const posts = [-2, 2].flatMap((x) =>

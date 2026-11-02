@@ -5,6 +5,8 @@ const TRACER_MS = 60;
 const IMPACTS = 32;
 const IMPACT_MS = 400;
 const IMPACT_SIZE = 0.08;
+/** Puffs a pane of glass breaks into. */
+const SHARDS = 10;
 const WORLD_DUST = new THREE.Color(0x6b5f50);
 const BLOOD = new THREE.Color(0xb03028);
 /** A tracer's colour: an ordinary round's, and an incendiary round's (2026-10-31). */
@@ -86,6 +88,34 @@ export class Effects {
     this.puffAt[i * 3 + 2] = z;
     this.puffEnds[i] = now + IMPACT_MS;
     this.puffs.setColorAt(i, blood ? BLOOD : WORLD_DUST);
+    this.puffs.instanceColor!.needsUpdate = true;
+  }
+
+  /**
+   * A pane breaking: puffs of its tint scattered over it, from (x0, z0) to (x1, z1) along
+   * its width and y0 to y1 up it.
+   */
+  shatter(
+    now: number,
+    x0: number,
+    z0: number,
+    x1: number,
+    z1: number,
+    y0: number,
+    y1: number,
+    colour: number,
+  ): void {
+    this.c.setHex(colour);
+    for (let k = 0; k < SHARDS; k++) {
+      const i = this.nextPuff;
+      this.nextPuff = (i + 1) % IMPACTS;
+      const a = Math.random();
+      this.puffAt[i * 3] = x0 + (x1 - x0) * a;
+      this.puffAt[i * 3 + 1] = y0 + (y1 - y0) * Math.random();
+      this.puffAt[i * 3 + 2] = z0 + (z1 - z0) * a;
+      this.puffEnds[i] = now + IMPACT_MS * 2;
+      this.puffs.setColorAt(i, this.c);
+    }
     this.puffs.instanceColor!.needsUpdate = true;
   }
 

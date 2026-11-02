@@ -173,5 +173,6 @@ function clearLine(
   const dz = tz - oz;
   const d = Math.hypot(dx, dy, dz);
   if (d < 1e-6) return true;
-  return world.raycast(ox, oy, oz, dx / d, dy / d, dz / d, d) === Infinity;
+  // Glass is seen and heard through.
+  return world.raycast(ox, oy, oz, dx / d, dy / d, dz / d, d, undefined, true) === Infinity;
 }

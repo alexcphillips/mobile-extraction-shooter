@@ -2,6 +2,7 @@ import { meleeDef, type ItemDb } from '../content/items';
 import { TICK_SECONDS } from '../tick';
 import { createRayHit, type CollisionWorld } from '../world/collision-world';
 import { shootCharacter } from './health';
+import { breakGlass, glassHit } from './glass';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import {
   entityById,
@@ -89,6 +90,7 @@ export function updateMelee(
   let dx = 0;
   let dy = 0;
   let dz = 0;
+  let pane = -1;
   for (let i = 0; i < FAN.length; i++) {
     const yaw = yaw0 + FAN[i]![0] * MELEE.fan;
     const pitch = pitch0 + FAN[i]![1] * MELEE.fan;
@@ -105,13 +107,14 @@ export function updateMelee(
       dz = rz;
       d = Math.min(body, reach);
       hit = body < Infinity ? 'character' : wall < Infinity ? 'world' : 'none';
+      pane = glassHit(world, worldHit);
     }
     if (body < Infinity) break;
   }
   if (hit === 'character') {
     const target = entityById(state, charHit.id);
     if (target) shootCharacter(state, items, target, charHit.zone, def, c.id, 'melee');
-  }
+  } else if (hit === 'world') breakGlass(state, world, pane, c.id);
   state.events.push({
     type: 'swing',
     by: c.id,

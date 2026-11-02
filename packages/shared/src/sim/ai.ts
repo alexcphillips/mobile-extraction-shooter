@@ -692,7 +692,8 @@ function clearLine(
   const dz = tz - oz;
   const d = Math.hypot(dx, dy, dz);
   if (d < 1e-6) return true;
-  return world.raycast(ox, oy, oz, dx / d, dy / d, dz / d, d) === Infinity;
+  // Glass is seen and heard through.
+  return world.raycast(ox, oy, oz, dx / d, dy / d, dz / d, d, undefined, true) === Infinity;
 }
 
 /** An enemy spawn too near a player spawn. Ids are the markers' path ids. */
@@ -763,6 +764,12 @@ function hearEvents(state: SimState, c: Character, ai: AiState, world: Collision
     }
     if (ev.type === 'explosion') {
       heardExplosion(state, c, ai, world, ev.x, ev.y, ev.z, ev.loudness, ev.by);
+      continue;
+    }
+    if (ev.type === 'glass') {
+      // Glass breaking: go and look, as for a blast. An enemy's own isn't worth it.
+      if (!entityById(state, ev.by)?.ai)
+        heardExplosion(state, c, ai, world, ev.x, ev.y, ev.z, ev.loudness, ev.by);
       continue;
     }
     if (ev.type === 'ignite') {

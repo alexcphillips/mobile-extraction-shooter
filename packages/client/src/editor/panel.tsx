@@ -1,4 +1,6 @@
 import { idSchema, nodeSchema, type MapFile, type MapNode, type PrefabFile } from '@mes/shared';
+
+type WallGap = Extract<MapNode, { type: 'wall' }>['openings'][number];
 import { useState, useSyncExternalStore, type ReactNode } from 'react';
 import { loadEnemies, loadItems, loadLootContainers, loadLootTables, loadQuests } from '../content';
 import {
@@ -23,13 +25,15 @@ import {
   GRID_SNAPS,
   MARKERS,
   PLACEABLE,
+  QUICK,
   type EditorState,
   type MapEditor,
   type MarkerKind,
 } from './editor';
 import { HexColour, Num, Pick, Text, Toggle, UNSET } from './fields';
-import { BRUSH_MODES } from './terrain';
+import { BRUSH_MODES, SIDES, isAreaMode } from './terrain';
 import { PrefabBrowser } from './prefab-browser';
+import { CURVE_MODES, CURVE_NAMES, type CurveSettings } from './curves';
 import { WALL_MODES } from './walls';
 
 /*
@@ -39,6 +43,7 @@ import { WALL_MODES } from './walls';
  */
 
 const STRENGTHS = [0.25, 0.5, 1, 2, 4];
+const EXTEND_METRES = [8, 16, 32, 64, 128];
 
 export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonly string[] }) {
   const s = useSyncExternalStore(editor.subscribe, editor.getState);
@@ -108,6 +113,20 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
             {t}
           </Toggle>
         ))}
+        {QUICK.map((t) => (
+          <Toggle
+            key={t}
+            on={s.tool === t}
+            onClick={() => editor.setTool(t)}
+            title={
+              t === 'floor'
+                ? 'A thin floor: click two opposite corners'
+                : 'A thin 4 m straight wall where clicked (R to turn it)'
+            }
+          >
+            {t === 'floor' ? 'floor' : 'wall ▭'}
+          </Toggle>
+        ))}
         <Toggle
           on={s.tool === 'prefab'}
           onClick={() => editor.setTool('prefab')}
@@ -142,14 +161,48 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
         <Toggle
           on={s.tool === 'wall'}
           onClick={() => editor.setTool('wall')}
-          title="9: draw walls a corner at a time, or cut doors and windows into them"
+          title="9: draw walls a corner at a time, cut doors and windows into them, glaze windows, or put railings on edges"
         >
           wall
         </Toggle>
+        <Toggle
+          on={s.tool === 'curve'}
+          onClick={() => editor.setTool('curve')}
+          title="0: curved walls, round floors with a hole, and curved stairs"
+        >
+          curve
+        </Toggle>
+        <span title="What new shapes, walls, floors and curves are coloured: a colour, or a slot of the map's (or the prefab's you're in)">
+          <Colour
+            label="paint"
+            value={s.colour}
+            slots={Object.keys(editor.slots())}
+            onChange={(c) => c !== undefined && editor.setColour(c)}
+          />
+        </span>
         <Toggle on={s.tool === 'terrain'} onClick={() => editor.setTool('terrain')} title="G">
           ground
         </Toggle>
         <span className="ed-sep" />
+        <Toggle
+          on={s.grid}
+          onClick={() => editor.setGrid(!s.grid)}
+          title="H: show the snapping grid's lines"
+        >
+          grid
+        </Toggle>
+        {s.grid && (
+          <span
+            className="ed-short"
+            title="The grid's height, in metres; blank follows the cutaway or the camera"
+          >
+            <Num
+              label="y"
+              value={s.gridY ?? undefined}
+              onChange={(v) => editor.setGridY(v ?? null)}
+            />
+          </span>
+        )}
         <Toggle on={s.nav} onClick={() => editor.setNav(!s.nav)} title="N: where enemies can walk">
           nav
         </Toggle>
@@ -198,32 +251,45 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
                 {m}
               </Toggle>
             ))}
-            <label title="Brush radius ([ and ])">
-              Size
-              <select
-                value={s.brush.radius}
-                onChange={(e) => editor.setBrush({ radius: Number(e.target.value) })}
-              >
-                {BRUSH_RADII.map((r) => (
-                  <option key={r} value={r}>
-                    {r} m
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label title="Raise and lower: metres a second in the middle">
-              Strength
-              <select
-                value={s.brush.strength}
-                onChange={(e) => editor.setBrush({ strength: Number(e.target.value) })}
-              >
-                {STRENGTHS.map((v) => (
-                  <option key={v} value={v}>
-                    {v}
-                  </option>
-                ))}
-              </select>
-            </label>
+            {s.brush.mode === 'level' && (
+              <span title="Metres; empty levels to the ground where the drag starts">
+                <Num
+                  label="Height"
+                  value={s.brush.height ?? undefined}
+                  onChange={(v) => editor.setBrush({ height: v ?? null })}
+                />
+              </span>
+            )}
+            {!isAreaMode(s.brush.mode) && (
+              <>
+                <label title="Brush radius ([ and ])">
+                  Size
+                  <select
+                    value={s.brush.radius}
+                    onChange={(e) => editor.setBrush({ radius: Number(e.target.value) })}
+                  >
+                    {BRUSH_RADII.map((r) => (
+                      <option key={r} value={r}>
+                        {r} m
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label title="Raise and lower: metres a second in the middle">
+                  Strength
+                  <select
+                    value={s.brush.strength}
+                    onChange={(e) => editor.setBrush({ strength: Number(e.target.value) })}
+                  >
+                    {STRENGTHS.map((v) => (
+                      <option key={v} value={v}>
+                        {v}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </>
+            )}
           </>
         ) : (
           <>
@@ -238,7 +304,28 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
                     {m}
                   </Toggle>
                 ))}
-                {s.wall.mode === 'draw' ? (
+                {s.wall.mode === 'railing' ? (
+                  <>
+                    <span className="ed-short" title="Railing height, in metres">
+                      <Num
+                        label="height"
+                        value={s.wall.railingHeight}
+                        min={0.1}
+                        onChange={(v) => v && editor.setWall({ railingHeight: v })}
+                      />
+                    </span>
+                    <span className="ed-short" title="How wide a gap clicking a railing cuts">
+                      <Num
+                        label="gap"
+                        value={s.wall.width}
+                        min={0.1}
+                        onChange={(v) => v && editor.setWall({ width: v })}
+                      />
+                    </span>
+                  </>
+                ) : s.wall.mode === 'glass' ? (
+                  <GlassTint editor={editor} colour={s.wall.glassColour} />
+                ) : s.wall.mode === 'draw' ? (
                   <>
                     <span className="ed-short" title="Wall height, in metres">
                       <Num
@@ -272,11 +359,48 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
                       min={0.1}
                       onChange={(v) => v && editor.setWall({ width: v })}
                     />
+                    <span
+                      className="ed-short"
+                      title="How many one click cuts: over 1, spaced evenly along the whole wall"
+                    >
+                      <Num
+                        label="count"
+                        value={s.wall.count}
+                        min={1}
+                        onChange={(v) => v && editor.setWall({ count: Math.max(1, Math.round(v)) })}
+                      />
+                    </span>
+                    {s.wall.count > 1 && (
+                      <span
+                        className="ed-short"
+                        title="The gap between them, in metres, the row centred on the wall; blank or 0 spaces them evenly along the whole wall"
+                      >
+                        <Num
+                          label="gap"
+                          value={s.wall.gap || undefined}
+                          min={0}
+                          onChange={(v) => editor.setWall({ gap: v ?? 0 })}
+                        />
+                      </span>
+                    )}
+                    {s.wall.mode === 'window' && (
+                      <>
+                        <Toggle
+                          on={s.wall.glass}
+                          onClick={() => editor.setWall({ glass: !s.wall.glass })}
+                          title="Put glass in the windows cut"
+                        >
+                          glazed
+                        </Toggle>
+                        {s.wall.glass && <GlassTint editor={editor} colour={s.wall.glassColour} />}
+                      </>
+                    )}
                   </span>
                 )}
                 <span className="ed-sep" />
               </>
             )}
+            {s.tool === 'curve' && <CurveBar editor={editor} curve={s.curve} />}
             <Toggle
               on={s.gizmo === 'translate'}
               onClick={() => editor.setGizmo('translate')}
@@ -462,10 +586,11 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
           </details>
         )}
         {s.drawing && <DrawingNote editor={editor} drawing={s.drawing} />}
+        {s.hole && <HoleNote editor={editor} hole={s.hole} label={editor.label(s.hole.path)} />}
         {s.nav && <NavPanel editor={editor} hiding={s.hiding} />}
         {s.selected.length > 1 && <p className="ed-note">{s.selected.length} selected.</p>}
         {!s.selected.length && !s.scope.length && (
-          <MapSettings editor={editor} map={s.map} zone={s.zone} point={s.point} />
+          <MapSettings editor={editor} map={s.map} zone={s.zone} point={s.point} paint={s.colour} />
         )}
         {!s.selected.length && atPrefab && inPrefab && (
           <PrefabSettings editor={editor} prefab={inPrefab} />
@@ -479,6 +604,8 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
             prefabs={[...prefabs.keys()].sort()}
             mapId={s.map.id}
             point={s.point}
+            tint={s.wall.glassColour}
+            gap={s.wall.gap}
           />
         )}
       </div>
@@ -490,10 +617,83 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
   );
 }
 
+/** What the curve tool makes and its sizes, in the toolbar. */
+function CurveBar({ editor, curve }: { editor: MapEditor; curve: CurveSettings }) {
+  const field = (key: keyof CurveSettings, label: string, title: string, min = 0.05) => (
+    <span className="ed-short" title={title}>
+      <Num
+        label={label}
+        value={curve[key] as number}
+        min={min}
+        onChange={(v) => v !== undefined && editor.setCurve({ [key]: v })}
+      />
+    </span>
+  );
+  return (
+    <>
+      {CURVE_MODES.map((m) => (
+        <Toggle key={m} on={curve.mode === m} onClick={() => editor.setCurve({ mode: m })}>
+          {CURVE_NAMES[m].toLowerCase()}
+        </Toggle>
+      ))}
+      {curve.mode === 'wall' && (
+        <>
+          {field('wallHeight', 'height', 'Wall height, in metres: about 1 for a railing')}
+          {field('wallThickness', 'thick', 'Wall thickness, in metres')}
+        </>
+      )}
+      {curve.mode === 'floor' && (
+        <>
+          {field(
+            'floorWidth',
+            'width',
+            'How wide the ring of floor is, out from the hole, in metres',
+          )}
+          {field('floorThickness', 'thick', 'Floor thickness, in metres')}
+        </>
+      )}
+      {curve.mode === 'stairs' && (
+        <>
+          {field('stairsWidth', 'width', 'Stairs width, in metres')}
+          {field('stairsRise', 'rise', 'How high the stairs climb, in metres: one floor up')}
+        </>
+      )}
+      {curve.mode === 'hole' ? (
+        <>
+          {field('holeRadius', 'radius', "The hole's radius, in metres (half across)", 0.25)}
+          <label title="A railing round the hole's edge">
+            <input
+              type="checkbox"
+              checked={curve.railing}
+              onChange={(e) => editor.setCurve({ railing: e.target.checked })}
+            />
+            railing
+          </label>
+          {curve.railing &&
+            field(
+              'railingHeight',
+              'height',
+              'Railing height, in metres: 1.1 or less can be vaulted',
+              0.1,
+            )}
+        </>
+      ) : (
+        field(
+          'raise',
+          'raise',
+          'How high above the centre you click it is built, in metres: a wall or the stairs stand there, a floor is walked on there. For an upper floor, its height.',
+          -100,
+        )
+      )}
+      <span className="ed-sep" />
+    </>
+  );
+}
+
 const HELP =
   'Two-finger scroll orbit, ⇧ pan · pinch zoom · ⌥-drag orbit, ⌥⇧-drag pan · WASD QE fly · ' +
   'click select, ⇧ add · double-click enter group or prefab · F focus · G ground · 7 marker · ' +
-  '8 zone · 9 wall · P prefabs · N nav · C cut, ↑ ↓ floors';
+  '8 zone · 9 wall · 0 curve · P prefabs · N nav · H grid · C cut, ↑ ↓ floors';
 
 /** The map's own settings, shown when nothing is selected, and its named zones. */
 function MapSettings(props: {
@@ -501,6 +701,8 @@ function MapSettings(props: {
   map: MapFile;
   zone: number | null;
   point: number | null;
+  /** The colour new shapes get, for a new slot to start at. */
+  paint: string;
 }) {
   const { editor, map } = props;
   const edit = (change: (m: MapFile) => void) => editor.editMap(change);
@@ -518,6 +720,14 @@ function MapSettings(props: {
         label="ground"
         value={map.terrain.colour}
         onChange={(c) => edit((m) => (m.terrain.colour = c))}
+      />
+      <h4 title="Named colours the map's shapes can use: change one and all of them change">
+        colour slots
+      </h4>
+      <ColourSlots
+        colours={map.colours}
+        edit={edit}
+        fresh={props.paint.startsWith('#') ? props.paint : '#b5b0a6'}
       />
       <div className="ed-row">
         <Num
@@ -572,7 +782,33 @@ function MapSettings(props: {
         {map.terrain.heights[0]!.length - 1} × {map.terrain.heights.length - 1} cells of{' '}
         {map.terrain.cellSize} m. Press G to shape the ground.
       </p>
+      <Extend editor={editor} cellSize={map.terrain.cellSize} />
       <Zones {...props} />
+    </div>
+  );
+}
+
+/** Adds ground on a side of the map: how far, then which side. North is −z. */
+function Extend({ editor, cellSize }: { editor: MapEditor; cellSize: number }) {
+  const [metres, setMetres] = useState(32);
+  const cells = Math.max(1, Math.round(metres / cellSize));
+  return (
+    <div className="ed-row" title="Adds ground on that side; nothing on the map moves">
+      <label>
+        Extend
+        <select value={metres} onChange={(e) => setMetres(Number(e.target.value))}>
+          {EXTEND_METRES.map((m) => (
+            <option key={m} value={m}>
+              {m} m
+            </option>
+          ))}
+        </select>
+      </label>
+      {SIDES.map((side) => (
+        <button key={side} onClick={() => editor.extendMap(side, cells)}>
+          {side}
+        </button>
+      ))}
     </div>
   );
 }
@@ -668,6 +904,48 @@ function Notes({ editor, state }: { editor: MapEditor; state: EditorState }) {
   );
 }
 
+/** The round hole being placed: exactly where, and cutting it. */
+function HoleNote({
+  editor,
+  hole,
+  label,
+}: {
+  editor: MapEditor;
+  hole: NonNullable<EditorState['hole']>;
+  label: string;
+}) {
+  return (
+    <div className="ed-inspector">
+      <h3>round hole in {label}</h3>
+      <p className="ed-note">
+        From the floor&apos;s middle, along its own sides: 0, 0 is the middle. Click the floor to
+        move it.
+      </p>
+      <div className="ed-row">
+        <Num
+          label="x"
+          value={hole.x}
+          onChange={(v) => v !== undefined && editor.moveHole({ x: v })}
+        />
+        <Num
+          label="z"
+          value={hole.z}
+          onChange={(v) => v !== undefined && editor.moveHole({ z: v })}
+        />
+      </div>
+      <div className="ed-row">
+        <button onClick={() => editor.moveHole({ x: 0, z: 0 })}>Middle</button>
+        <button onClick={() => editor.cutPendingHole()} title="Enter">
+          Cut hole
+        </button>
+        <button onClick={() => editor.cancelHole()} title="Esc">
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function DrawingNote({
   editor,
   drawing,
@@ -682,7 +960,33 @@ function DrawingNote({
         ? 'a patrol'
         : drawing.what === 'walls'
           ? 'walls'
-          : 'patrol points';
+          : drawing.what === 'curve'
+            ? 'a curve'
+            : drawing.what === 'floor'
+              ? 'a floor'
+              : 'patrol points';
+  if (drawing.what === 'curve') {
+    const started = drawing.points.length > 1;
+    return (
+      <div className="ed-inspector">
+        <p className="ed-note">
+          {started
+            ? 'Drawing a curve. Click where it ends: it follows the mouse either way round.'
+            : 'Drawing a curve. Click where it starts: how far from the middle sets the size.'}
+        </p>
+        <div className="ed-row">
+          {started && (
+            <button onClick={() => editor.finishDrawing()} title="Enter, or click the start">
+              Full circle
+            </button>
+          )}
+          <button onClick={() => editor.setTool('select')} title="Esc">
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="ed-inspector">
       <p className="ed-note">
@@ -760,21 +1064,72 @@ function NavPanel({ editor, hiding }: { editor: MapEditor; hiding: EditorState['
 }
 
 /**
+ * Named colours of a map or prefab (wall, road…): what's in it can use one by name, so
+ * changing the slot recolours all of it. A new one starts at `fresh`.
+ */
+function ColourSlots(props: {
+  colours: Readonly<Record<string, string>> | undefined;
+  edit: (change: (file: { colours?: Record<string, string> | undefined }) => void) => void;
+  fresh: string;
+}) {
+  const { colours, edit } = props;
+  const [slot, setSlot] = useState('');
+  const problem = !slot
+    ? null
+    : !idSchema.safeParse(slot).success
+      ? 'lower-case letters, digits and dashes'
+      : colours?.[slot] !== undefined
+        ? 'there is one'
+        : null;
+  return (
+    <>
+      {Object.entries(colours ?? {}).map(([name, colour]) => (
+        <div key={name} className="ed-row">
+          <HexColour
+            label={name}
+            value={colour}
+            onChange={(c) => edit((f) => (f.colours![name] = c))}
+          />
+          <button
+            title="Remove the slot (what uses it must be changed first)"
+            onClick={() =>
+              edit((f) => {
+                delete f.colours![name];
+                if (!Object.keys(f.colours!).length) delete f.colours;
+              })
+            }
+          >
+            ×
+          </button>
+        </div>
+      ))}
+      <div className="ed-row">
+        <label className="ed-field">
+          new slot
+          <input value={slot} onChange={(e) => setSlot(e.target.value)} placeholder="wall" />
+        </label>
+        <button
+          disabled={!slot || !!problem}
+          onClick={() => {
+            edit((f) => (f.colours = { ...f.colours, [slot]: props.fresh }));
+            setSlot('');
+          }}
+        >
+          Add
+        </button>
+      </div>
+      {problem && <p className="ed-problem">{problem}</p>}
+    </>
+  );
+}
+
+/**
  * The own settings of the prefab being edited inside, shown when nothing in it is selected:
  * its name, instancing, colour slots (their defaults) and building footprint.
  */
 function PrefabSettings({ editor, prefab }: { editor: MapEditor; prefab: PrefabFile }) {
   const edit = (change: (p: PrefabFile) => void) => editor.editPrefab(change);
-  const [slot, setSlot] = useState('');
-  const slots = Object.entries(prefab.colours ?? {});
   const b = prefab.building;
-  const slotProblem = !slot
-    ? null
-    : !idSchema.safeParse(slot).success
-      ? 'lower-case letters, digits and dashes'
-      : prefab.colours?.[slot] !== undefined
-        ? 'there is one'
-        : null;
   const setBuilding = (change: (b: NonNullable<PrefabFile['building']>) => void) =>
     edit((p) => p.building && change(p.building));
   return (
@@ -796,42 +1151,7 @@ function PrefabSettings({ editor, prefab }: { editor: MapEditor; prefab: PrefabF
         instanced
       </label>
       <h4>colour slots</h4>
-      {slots.map(([name, colour]) => (
-        <div key={name} className="ed-row">
-          <HexColour
-            label={name}
-            value={colour}
-            onChange={(c) => edit((p) => (p.colours![name] = c))}
-          />
-          <button
-            title="Remove the slot (what uses it must be changed first)"
-            onClick={() =>
-              edit((p) => {
-                delete p.colours![name];
-                if (!Object.keys(p.colours!).length) delete p.colours;
-              })
-            }
-          >
-            ×
-          </button>
-        </div>
-      ))}
-      <div className="ed-row">
-        <label className="ed-field">
-          new slot
-          <input value={slot} onChange={(e) => setSlot(e.target.value)} />
-        </label>
-        <button
-          disabled={!slot || !!slotProblem}
-          onClick={() => {
-            edit((p) => (p.colours = { ...p.colours, [slot]: '#b5b0a6' }));
-            setSlot('');
-          }}
-        >
-          Add
-        </button>
-      </div>
-      {slotProblem && <p className="ed-problem">{slotProblem}</p>}
+      <ColourSlots colours={prefab.colours} edit={edit} fresh="#b5b0a6" />
       <h4>building</h4>
       <label className="ed-field" title="A footprint: a concrete base under it, and no overlaps">
         <input
@@ -879,7 +1199,7 @@ function PrefabSettings({ editor, prefab }: { editor: MapEditor; prefab: PrefabF
             label="base"
             value={b.colour}
             unset="concrete"
-            slots={slots.map(([name]) => name)}
+            slots={Object.keys(prefab.colours ?? {})}
             onChange={(c) =>
               setBuilding((f) => (c === undefined ? delete f.colour : (f.colour = c)))
             }
@@ -1017,6 +1337,10 @@ function Inspector(props: {
   prefabs: string[];
   mapId: string;
   point: number | null;
+  /** The tint glass is put in with. */
+  tint: string;
+  /** The wall tool's gap between windows; 0 is even. */
+  gap: number;
 }) {
   const { editor, node: n } = props;
   const edit: Edit = (change) => editor.editActive(change);
@@ -1112,6 +1436,19 @@ function Inspector(props: {
       {(n.type === 'box' || n.type === 'ramp' || n.type === 'stairs') && (
         <div className="ed-row">{vec('size', ['w', 'h', 'd'])}</div>
       )}
+      {n.type === 'wall' && (
+        <>
+          <div className="ed-row">{vec('size', ['long', 'h', 'thick'])}</div>
+          <WallFields
+            editor={editor}
+            edit={edit}
+            node={n}
+            point={props.point}
+            tint={props.tint}
+            gap={props.gap}
+          />
+        </>
+      )}
       {n.type === 'cylinder' && (
         <div className="ed-row">
           {num('radius')}
@@ -1130,6 +1467,12 @@ function Inspector(props: {
       <MarkerFields editor={editor} node={n} num={num} mapId={props.mapId} />
       {n.type === 'door' && <div className="ed-row">{vec('size', ['w', 'h'])}</div>}
       {n.type === 'door' && <DoorFields edit={edit} node={n} num={num} />}
+      {n.type === 'glass' && (
+        <div className="ed-row">
+          {vec('size', ['w', 'h'])}
+          {num('thickness', 'thick', 0.02)}
+        </div>
+      )}
       {n.type === 'patrol' && <PatrolFields editor={editor} node={n} point={props.point} />}
       {n.type === 'prefab' && (
         <>
@@ -1153,7 +1496,10 @@ function Inspector(props: {
           slots={props.slots}
           onChange={(c) => {
             if (c === undefined) return;
-            editor.setColour(c);
+            // Glass keeps a tint of its own, so a wall drawn next isn't glass-coloured.
+            if (n.type === 'glass') {
+              if (c.startsWith('#')) editor.setWall({ glassColour: c });
+            } else editor.setColour(c);
             edit((m) => ((m as typeof n).colour = c));
           }}
         />
@@ -1413,6 +1759,108 @@ function MarkerFields(props: { editor: MapEditor; node: MapNode; num: NumField; 
     default:
       return null;
   }
+}
+
+/**
+ * A wall node's windows (2026-11-02): each one's place along the wall, width, bottom and
+ * top and glass, the picked one (its handle) marked; and spacing them evenly.
+ */
+function WallFields(props: {
+  editor: MapEditor;
+  edit: Edit;
+  node: Extract<MapNode, { type: 'wall' }>;
+  point: number | null;
+  tint: string;
+  /** The wall tool's gap between windows; 0 is even. */
+  gap: number;
+}) {
+  const { editor, edit, node: n } = props;
+  const change = (k: number, f: (o: WallGap) => void) =>
+    edit((m) => f((m as typeof n).openings[k]!));
+  const field = (k: number, key: 'along' | 'width' | 'bottom' | 'top') => (
+    <Num
+      label={key === 'along' ? 'at' : key === 'width' ? 'w' : key}
+      value={n.openings[k]![key]}
+      {...(key === 'along' ? {} : { min: key === 'bottom' ? 0 : 0.05 })}
+      onChange={(v) => v !== undefined && change(k, (o) => (o[key] = v))}
+    />
+  );
+  return (
+    <div className="ed-wall">
+      {n.openings.map((o, k) => (
+        <div
+          key={k}
+          className={`ed-row${k === props.point ? ' ed-picked' : ''}`}
+          onClick={() => editor.pickPoint(k)}
+        >
+          {field(k, 'along')}
+          {field(k, 'width')}
+          {field(k, 'bottom')}
+          {field(k, 'top')}
+          <label title="Glass in it, of this tint">
+            <input
+              type="checkbox"
+              checked={o.glass !== undefined}
+              onChange={(e) =>
+                change(k, (g) => {
+                  if (e.target.checked) g.glass = props.tint;
+                  else delete g.glass;
+                })
+              }
+            />
+            glass
+          </label>
+          {o.glass?.startsWith('#') && (
+            <input
+              type="color"
+              value={o.glass}
+              onChange={(e) => change(k, (g) => (g.glass = e.target.value))}
+            />
+          )}
+          <button
+            title="Fill this window in"
+            onClick={() => edit((m) => void (m as typeof n).openings.splice(k, 1))}
+          >
+            ×
+          </button>
+        </div>
+      ))}
+      <div className="ed-actions">
+        <button
+          disabled={!n.openings.length}
+          onClick={() => editor.spaceWindows()}
+          title="The same gap between the windows and at both ends, keeping their widths"
+        >
+          Space evenly
+        </button>
+        <span
+          className="ed-short"
+          title="Blank or 0: even along the whole wall. Else this far apart, centred"
+        >
+          <Num
+            label="gap"
+            value={props.gap || undefined}
+            min={0}
+            onChange={(v) => editor.setWall({ gap: v ?? 0 })}
+          />
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/** The tint of glass the wall tool puts in. */
+function GlassTint(props: { editor: MapEditor; colour: string }) {
+  return (
+    <label title="The tint of glass put in; it's drawn see-through">
+      tint
+      <input
+        type="color"
+        value={props.colour}
+        onChange={(e) => props.editor.setWall({ glassColour: e.target.value })}
+      />
+    </label>
+  );
 }
 
 /** A door's thickness, hinge, key and whether it starts open. */

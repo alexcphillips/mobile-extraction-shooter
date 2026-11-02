@@ -5,6 +5,7 @@ import {
   type BoxDef,
   type LadderDef,
   type RampDef,
+  PIT_DEPTH,
   type WorldDef,
 } from '../world/collision-world';
 import { HEAD, LEFT_LEG } from './health';
@@ -272,6 +273,45 @@ describe('stairs', () => {
     const { c, run } = setup(world, -4, -9, -Math.PI / 2);
     run(TICK_RATE * 2, input({ moveY: 1, yaw: -Math.PI / 2 }));
     expect(c.x).toBeCloseTo(-1 - R);
+  });
+});
+
+describe('terrain holes', () => {
+  /** Flat ground with the cells over x −2..2, z −20..−4 a hole. */
+  function holed(parts: Partial<WorldDef> = {}): CollisionWorld {
+    const holes = new Uint8Array(50 * 50);
+    for (let j = 15; j < 23; j++) for (let i = 24; i < 26; i++) holes[j * 50 + i] = 1;
+    return makeWorld({ terrain: { ...flatTerrain(), holes }, ...parts });
+  }
+
+  it('walks down a ramp through a hole onto a floor under the ground', () => {
+    // Down from z = −4 at the ground to z = −12, 3 m under it, then a floor to z = −20.
+    const ramp: RampDef = { x: 0, z: -8, hx: 2, hz: 4, yaw: 0, bottom: -3.2, low: -3, high: 0 };
+    const world = holed({ boxes: [aabb(-2, -3.2, -20, 2, -3, -12)], ramps: [ramp] });
+    const { c, run } = setup(world);
+    expect(c.y).toBe(0);
+    run(TICK_RATE * 4, FORWARD);
+    expect(c.y).toBe(-3);
+    expect(c.z).toBeLessThan(-12);
+    expect(c.mode).toBe('ground');
+    expect(c.health.dead).toBe(false);
+  });
+
+  it('falls to its death through a hole with nothing under it', () => {
+    const world = holed();
+    const { c, run } = setup(world);
+    run(TICK_RATE * 6, FORWARD);
+    expect(c.y).toBe(-PIT_DEPTH);
+    expect(c.health.dead).toBe(true);
+  });
+
+  it('still keeps you out of the ground beside a hole', () => {
+    const world = holed();
+    expect(world.groundAt(0, -10, R, -5)).toBe(-PIT_DEPTH);
+    expect(world.groundAt(4, -10, R, -5)).toBe(0);
+    // Shots pass down through the hole, not beside it.
+    expect(world.raycast(0, 2, -10, 0, -1, 0, 10)).toBe(Infinity);
+    expect(world.raycast(4, 2, -10, 0, -1, 0, 10)).toBeCloseTo(2);
   });
 });
 

@@ -28,6 +28,10 @@ const PROP_TOLERANCE = 0.05;
  */
 const JOINT = 0.45;
 const BUILDING_TOLERANCE = 0.01;
+/** Slabs this thin (floors) at the same level may overlap: it's floor laid over floor. */
+const SLAB = 0.6;
+/** A sloped railing's pieces no thicker than this may overlap their neighbours. */
+const RUN_THICKNESS = 0.3;
 /** Ground this far above a building's floor shows through it. */
 const FLOOR_TOLERANCE = 0.05;
 
@@ -84,7 +88,13 @@ export function findOverlaps(map: MapFile, prefabs: PrefabLookup): Overlaps {
       if (a.buildings.length && b.buildings.length && buildingsOverlap(a, b))
         out.buildings.push([a.path, b.path]);
       if (a.maxX < b.minX || b.maxX < a.minX || a.maxZ < b.minZ || b.maxZ < a.minZ) continue;
-      if (a.solids.some((s) => b.solids.some((t) => solidsOverlap(s, t, PROP_TOLERANCE, JOINT))))
+      if (
+        a.solids.some((s) =>
+          b.solids.some(
+            (t) => !sameSlab(s, t) && !sameRun(s, t) && solidsOverlap(s, t, PROP_TOLERANCE, JOINT),
+          ),
+        )
+      )
         out.props.push([a.path, b.path]);
     }
   }
@@ -94,6 +104,30 @@ export function findOverlaps(map: MapFile, prefabs: PrefabLookup): Overlaps {
       out.buried.push(p.path);
   }
   return out;
+}
+
+/**
+ * Whether two solids are floor slabs at the same level (same top and bottom, both thin),
+ * which may overlap: a round hole's pieces tuck under the floor beside them, say.
+ */
+export function sameSlab(a: Solid, b: Solid): boolean {
+  return Math.abs(a.y1 - b.y1) < 0.01 && Math.abs(a.y0 - b.y0) < 0.01 && a.y1 - a.y0 <= SLAB;
+}
+
+/**
+ * Whether two solids are pieces of one sloped railing (roadmap 19zo): the same thin
+ * rectangle turned the same way, in line across it, at different heights. Tilted pieces
+ * collide as their bounding boxes, which overlap their neighbours'.
+ */
+export function sameRun(a: Solid, b: Solid): boolean {
+  if (Math.abs(a.yaw - b.yaw) > 1e-6 || Math.abs(a.y0 - b.y0) < 0.01) return false;
+  if (Math.abs(a.hx - b.hx) > 1e-3 || Math.abs(a.hz - b.hz) > 1e-3) return false;
+  if (2 * Math.min(a.hx, a.hz) > RUN_THICKNESS) return false;
+  // Across the thin side: local x is (cos, −sin) in the world, local z (sin, cos).
+  const c = Math.cos(a.yaw);
+  const s = Math.sin(a.yaw);
+  const [ax, az] = a.hx <= a.hz ? [c, -s] : [s, c];
+  return Math.abs((b.x - a.x) * ax + (b.z - a.z) * az) < 0.01;
 }
 
 /** Whether two buildings' footprints (any height) overlap. */

@@ -4,6 +4,7 @@ import {
   concreteBase,
   type CompiledBuilding,
   type CompiledMap,
+  type HeightGridDef,
   type MapFile,
   type MapNode,
   type PrefabFile,
@@ -14,12 +15,22 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import { buildDebug } from '../render/debug';
 import { TriangleBuilder } from '../render/geometry';
-import { CHUNK, buildDoor } from '../render/map';
+import { CHUNK, buildDoor, buildGlassPane } from '../render/map';
 import { bakedMaterial, shadedMaterial } from '../render/material';
 import { nodePos, nodeYaw, round, type NodePath, type Vec3 } from './doc';
 import { disposeLabels } from '../notes';
 import { footprintsOverlap } from './overlap';
-import { applyBrush, terrainGrid, type Brush, type TerrainGrid } from './terrain';
+import {
+  applyBrush,
+  cellRect,
+  holeCells,
+  isAreaMode,
+  levelCells,
+  terrainGrid,
+  type Brush,
+  type CellRect,
+  type TerrainGrid,
+} from './terrain';
 
 const DEG = Math.PI / 180;
 const SELECTED = 0xffd400;
@@ -70,8 +81,8 @@ export interface ViewEvents {
   moved(moves: Moved[]): void;
   /** A node failed to build (an unknown colour slot or prefab, say). */
   broken(message: string): void;
-  /** A brush stroke ended, with the terrain's corner heights as they now are. */
-  terrain(heights: Float64Array): void;
+  /** A brush stroke ended, with the terrain's corner heights and holes as they now are. */
+  terrain(heights: Float64Array, holes: Uint8Array): void;
   /** A handle was dragged to `to` (in the scope's frame), or just clicked (`to` null). */
   handle(index: number, to: Vec3 | null): void;
   /** The mouse moved over the scene (not dragging anything). */
@@ -88,6 +99,12 @@ export interface Handles {
   line: 'none' | 'open' | 'closed';
   /** Dragged on the terrain only (zones), or onto any surface (patrol points). */
   terrainOnly: boolean;
+  /**
+   * Slid along a line instead (a wall's windows): through `from` along the unit horizontal
+   * `dir`, both in the scope's frame, at the handle's own height, snapped to the grid from
+   * `from`.
+   */
+  slide?: { from: Vec3; dir: Vec3 };
 }
 
 /**
@@ -114,6 +131,8 @@ export class EditorView {
   private prefabs: PrefabLookup = new Map();
   private readonly baked = bakedMaterial();
   private terrain: HeightGrid;
+  /** The terrain without its holes, to find where the ground would be over one. */
+  private surface: HeightGrid;
   /** The terrain as edited, and its meshes by chunk. */
   private grid: TerrainGrid | null = null;
   private terrainColour = 0;
@@ -130,7 +149,15 @@ export class EditorView {
     new THREE.BufferGeometry(),
     new THREE.LineBasicMaterial({ color: BRUSH, depthTest: false, transparent: true }),
   );
-  private stroke: { x: number; z: number; level: number; shift: boolean } | null = null;
+  /** For level and hole, (x0, z0) is where the drag started. */
+  private stroke: {
+    x0: number;
+    z0: number;
+    x: number;
+    z: number;
+    level: number;
+    shift: boolean;
+  } | null = null;
   private pointer: { clientX: number; clientY: number } | null = null;
   /** The object of each node, by its path joined with dots. */
   private objects = new Map<string, THREE.Object3D>();
@@ -198,6 +225,8 @@ export class EditorView {
     }),
   );
   options: ViewOptions = { gridSnap: 0.5, angleSnap: 15, snapDown: true, objectSnap: true };
+  /** The snapping grid's lines, drawn over everything round the camera's target. */
+  private readonly gridLines = gridLines();
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -211,6 +240,7 @@ export class EditorView {
     this.material.clippingPlanes = this.clipPlanes;
     this.baked.clippingPlanes = this.clipPlanes;
     this.terrain = new HeightGrid(compiled.world.terrain);
+    this.surface = new HeightGrid({ ...compiled.world.terrain, holes: undefined });
     this.ring.renderOrder = 10;
     this.ring.visible = false;
     this.snapGuide.visible = false;
@@ -219,6 +249,7 @@ export class EditorView {
     this.cap.raycast = () => {};
     this.capScene.add(this.cap);
     this.scene.add(this.ground, this.root, this.bases, this.helpers, this.ring, this.handleGroup);
+    this.scene.add(this.gridLines);
 
     const t = compiled.world.terrain;
     const cx = t.minX + (t.cols * t.cellSize) / 2;
@@ -307,6 +338,7 @@ export class EditorView {
       this.brushFrame(dt);
       last = now;
       for (const h of this.helpers.children) (h as THREE.BoxHelper).update?.();
+      this.placeGrid();
       this.render();
       requestAnimationFrame(frame);
     };
@@ -481,7 +513,7 @@ export class EditorView {
     this.ground.clear();
     const t = terrainGrid(map);
     this.grid = t;
-    this.terrain = new HeightGrid(t);
+    this.setTerrain(t);
     this.terrainColour = hex(map.terrain.colour);
     this.chunkCells = Math.max(1, Math.round(CHUNK / t.cellSize));
     const nx = Math.ceil(t.cols / this.chunkCells);
@@ -627,7 +659,9 @@ export class EditorView {
   private dragHandle(e: PointerEvent): void {
     const d = this.handleDrag!;
     const h = this.handles!;
-    const p = this.handlePoint(e, h.terrainOnly);
+    const p = h.slide
+      ? this.slidePoint(e, h.slide, h.points[d.index]![1])
+      : this.handlePoint(e, h.terrainOnly);
     if (!p) return;
     d.moved = true;
     this.handleGroup.children[d.index]?.position.copy(p);
@@ -642,6 +676,27 @@ export class EditorView {
     if (!d.moved || !o) return this.events.handle(d.index, null);
     const local = this.scopeObject().worldToLocal(o.position.clone());
     this.events.handle(d.index, [round(local.x), round(local.y), round(local.z)]);
+  }
+
+  /** Where a handle slid along a line goes, in the world: nearest the mouse's ray. */
+  private slidePoint(
+    e: PointerEvent,
+    slide: NonNullable<Handles['slide']>,
+    y: number,
+  ): THREE.Vector3 {
+    this.aim(e);
+    const frame = this.scopeObject();
+    const p = frame.localToWorld(new THREE.Vector3(slide.from[0], y, slide.from[2]));
+    const d = new THREE.Vector3(...slide.dir).transformDirection(frame.matrixWorld);
+    const { origin: o, direction: r } = this.raycaster.ray;
+    // The closest points of two lines: p + d t and o + r s.
+    const w = p.clone().sub(o);
+    const b = d.dot(r);
+    const denom = 1 - b * b;
+    let t = denom < 1e-6 ? 0 : (b * r.dot(w) - d.dot(w)) / denom;
+    const grid = this.options.gridSnap;
+    if (grid) t = snap(t, grid);
+    return p.addScaledVector(d, t);
   }
 
   /** Where a dragged handle goes, in the world: on a surface, snapped to the grid. */
@@ -669,7 +724,11 @@ export class EditorView {
   // Previews
 
   /** Shows nodes see-through in the scope's frame (walls being drawn), or none. */
-  setPreview(nodes: readonly MapNode[] | null): void {
+  setPreview(
+    nodes: readonly MapNode[] | null,
+    /** The colour slots in scope, for nodes coloured by name. */
+    colours: Readonly<Record<string, string>> = {},
+  ): void {
     if (this.preview) {
       this.preview.removeFromParent();
       dispose(this.preview, this.previewMaterial);
@@ -678,7 +737,7 @@ export class EditorView {
     if (!nodes?.length) return;
     const b = new TriangleBuilder(false);
     try {
-      for (const s of compileNodes(nodes, this.prefabs).shapes) b.shape(s);
+      for (const s of compileNodes(nodes, this.prefabs, colours).shapes) b.shape(s);
     } catch {
       return;
     }
@@ -754,6 +813,33 @@ export class EditorView {
     return round(this.terrain.heightAt(x, z));
   }
 
+  /** The height the grid is drawn at; null follows the cutaway, else the camera's target. */
+  gridY: number | null = null;
+
+  /** Whether the grid is shown. */
+  set showGrid(on: boolean) {
+    this.gridLines.visible = on;
+  }
+
+  /**
+   * Keeps the grid under the camera's target, on its lines, at the snap's spacing (1 m with
+   * snapping off): at its set height, else the cutaway's when that's on, else the target's.
+   */
+  private placeGrid(): void {
+    const g = this.gridLines;
+    if (!g.visible) return;
+    const step = this.options.gridSnap || 1;
+    const t = this.orbit.target;
+    // Every tenth line is brighter, so they line up with the tenths.
+    const major = step * 10;
+    g.scale.setScalar(step);
+    g.position.set(
+      Math.round(t.x / major) * major,
+      this.gridY ?? this.cutY ?? t.y,
+      Math.round(t.z / major) * major,
+    );
+  }
+
   /** The point the camera orbits: where play-testing can start. */
   target(): Vec3 {
     const t = this.orbit.target;
@@ -787,22 +873,50 @@ export class EditorView {
     else this.moveRing();
   }
 
+  /** The ground under the mouse; over a hole, where the ground would be. */
   private groundUnder(e: { clientX: number; clientY: number }): THREE.Vector3 | null {
     this.aim(e);
-    return this.raycaster.intersectObjects(this.chunks, false).find(this.seen)?.point ?? null;
+    const hit = this.raycaster.intersectObjects(this.chunks, false).find(this.seen)?.point;
+    if (hit || !this.grid) return hit ?? null;
+    const r = this.raycaster.ray;
+    const d = this.surface.raycast(
+      r.origin.x,
+      r.origin.y,
+      r.origin.z,
+      r.direction.x,
+      r.direction.y,
+      r.direction.z,
+      2000,
+    );
+    return Number.isFinite(d) ? r.at(d, new THREE.Vector3()) : null;
   }
 
   private startStroke(e: PointerEvent): void {
     const p = this.groundUnder(e);
     if (!p || !this.grid) return;
     this.pointer = e;
-    this.stroke = { x: p.x, z: p.z, level: this.terrain.heightAt(p.x, p.z), shift: e.shiftKey };
+    const level = this.brushSettings?.height ?? round(this.terrain.heightAt(p.x, p.z), 0.01);
+    this.stroke = { x0: p.x, z0: p.z, x: p.x, z: p.z, level, shift: e.shiftKey };
+  }
+
+  /** The cells a level or hole drag covers (or would, from the mouse), or null. */
+  private areaCells(): CellRect | null {
+    const s = this.stroke;
+    if (s) return cellRect(this.grid!, s.x0, s.z0, s.x, s.z);
+    const p = this.pointer && this.groundUnder(this.pointer);
+    return p && cellRect(this.grid!, p.x, p.z, p.x, p.z);
   }
 
   private brushFrame(dt: number): void {
     const s = this.stroke;
     const brush = this.brushSettings;
     if (!s || !brush || !this.grid || !this.pointer) return;
+    if (isAreaMode(brush.mode)) {
+      const p = this.groundUnder(this.pointer);
+      if (p) [s.x, s.z] = [p.x, p.z];
+      this.moveRing();
+      return;
+    }
     const p = this.groundUnder(this.pointer);
     if (p) [s.x, s.z] = [p.x, p.z];
     // Shift turns raising into lowering and back.
@@ -813,11 +927,14 @@ export class EditorView {
           ? 'raise'
           : brush.mode;
     const changed = applyBrush(this.grid, { ...brush, mode }, s.x, s.z, dt, s.level);
-    if (!changed) return;
-    this.terrain = new HeightGrid(this.grid);
-    const [i0, i1, j0, j1] = changed;
+    if (changed) this.terrainChanged(changed);
+  }
+
+  /** Rebuilds what shows the terrain after its corners [i0, i1] × [j0, j1] changed. */
+  private terrainChanged([i0, i1, j0, j1]: readonly [number, number, number, number]): void {
+    this.setTerrain(this.grid!);
     const n = this.chunkCells;
-    const nx = Math.ceil(this.grid.cols / n);
+    const nx = Math.ceil(this.grid!.cols / n);
     // Corners on a chunk's edge belong to the chunks either side.
     const cx0 = Math.max(0, Math.floor((i0 - 1) / n));
     const cz0 = Math.max(0, Math.floor((j0 - 1) / n));
@@ -830,14 +947,29 @@ export class EditorView {
   }
 
   private endStroke(): void {
-    if (!this.stroke || !this.grid) return;
+    const s = this.stroke;
+    const brush = this.brushSettings;
+    if (!s || !this.grid) return;
+    if (brush && isAreaMode(brush.mode)) {
+      const cells = this.areaCells();
+      if (cells && brush.mode === 'level') levelCells(this.grid, cells, s.level);
+      if (cells && brush.mode === 'hole') holeCells(this.grid, cells, !s.shift);
+      if (cells) this.terrainChanged(cells);
+    }
     this.stroke = null;
-    this.events.terrain(this.grid.heights.slice());
+    this.events.terrain(this.grid.heights.slice(), this.grid.holes.slice());
   }
 
-  /** The brush's ring on the ground under the mouse. */
+  /** The terrain to collide with and pick, and the same without holes. */
+  private setTerrain(def: HeightGridDef): void {
+    this.terrain = new HeightGrid(def);
+    this.surface = new HeightGrid({ ...def, holes: undefined });
+  }
+
+  /** The brush's ring on the ground under the mouse, or the cells a level or hole drag covers. */
   private moveRing(): void {
     const brush = this.brushSettings;
+    if (brush && this.grid && isAreaMode(brush.mode)) return this.outlineCells(this.areaCells());
     const p = brush && this.pointer && this.groundUnder(this.pointer);
     this.ring.visible = !!p;
     if (!p || !brush) return;
@@ -848,6 +980,26 @@ export class EditorView {
       const z = p.z + Math.sin(a) * brush.radius;
       points.push(new THREE.Vector3(x, this.terrain.heightAt(x, z) + 0.1, z));
     }
+    this.ring.geometry.dispose();
+    this.ring.geometry = new THREE.BufferGeometry().setFromPoints(points);
+  }
+
+  /** Outlines cells [i0, i1) × [j0, j1) on the ground, as the ring. */
+  private outlineCells(cells: CellRect | null): void {
+    this.ring.visible = !!cells;
+    if (!cells) return;
+    const [i0, i1, j0, j1] = cells;
+    const t = this.grid!;
+    const points: THREE.Vector3[] = [];
+    const corner = (i: number, j: number): void => {
+      const x = t.minX + i * t.cellSize;
+      const z = t.minZ + j * t.cellSize;
+      points.push(new THREE.Vector3(x, this.surface.heightAt(x, z) + 0.1, z));
+    };
+    for (let i = i0; i < i1; i++) corner(i, j0);
+    for (let j = j0; j < j1; j++) corner(i1, j);
+    for (let i = i1; i > i0; i--) corner(i, j1);
+    for (let j = j1; j > j0; j--) corner(i0, j);
     this.ring.geometry.dispose();
     this.ring.geometry = new THREE.BufferGeometry().setFromPoints(points);
   }
@@ -887,6 +1039,7 @@ export class EditorView {
         o.add(new THREE.Mesh(b.build(), this.material));
       }
       for (const d of out.doors) o.add(buildDoor(d, this.material));
+      for (const g of out.glass) o.add(buildGlassPane(g));
       if (out.markers.length || out.patrols.length) {
         const posts = buildDebug(
           { markers: out.markers, patrols: out.patrols, zones: [] },
@@ -1335,4 +1488,34 @@ function dispose(root: THREE.Object3D, keep: THREE.Material): void {
     const mats = Array.isArray(m.material) ? m.material : m.material ? [m.material] : [];
     for (const mat of mats) if (mat !== keep) mat.dispose();
   });
+}
+
+/** How many grid cells out from the middle the grid goes, each way. */
+const GRID_CELLS = 50;
+
+/** A flat grid of unit cells, every tenth line brighter, drawn over everything, hidden at first. */
+function gridLines(): THREE.LineSegments {
+  const pos: number[] = [];
+  const col: number[] = [];
+  for (let i = -GRID_CELLS; i <= GRID_CELLS; i++) {
+    const c = i % 10 === 0 ? 0.9 : 0.45;
+    pos.push(i, 0, -GRID_CELLS, i, 0, GRID_CELLS, -GRID_CELLS, 0, i, GRID_CELLS, 0, i);
+    for (let k = 0; k < 4; k++) col.push(c, c, c);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  const mat = new THREE.LineBasicMaterial({
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.35,
+    depthTest: false,
+    depthWrite: false,
+  });
+  const lines = new THREE.LineSegments(geo, mat);
+  lines.renderOrder = 20;
+  lines.raycast = () => {};
+  lines.frustumCulled = false;
+  lines.visible = false;
+  return lines;
 }

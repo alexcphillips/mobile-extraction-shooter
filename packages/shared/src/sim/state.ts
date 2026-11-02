@@ -3,6 +3,7 @@ import type { AiState } from './ai';
 import type { CollisionWorld } from '../world/collision-world';
 import { createGear, type Gear, type Hand } from './gear';
 import type { DoorEvent, DoorState } from './doors';
+import type { GlassEvent } from './glass';
 import type { Burn, FirePatch, Flame, IgniteEvent } from './fire';
 import type { BounceEvent, ExplosionEvent, Grenade, Smoke, ThrowEvent } from './grenades';
 import type { GroundItem } from './ground';
@@ -136,6 +137,7 @@ export type SimEvent =
   | InventoryEvent
   | LeaveEvent
   | DoorEvent
+  | GlassEvent
   | InvestigateEvent
   | SpawnRequestEvent;
 
@@ -177,6 +179,11 @@ export interface SimState {
   fires: FirePatch[];
   /** Each of the world's doors, by index; filled in by the first step (see syncDoors). */
   doors: DoorState[];
+  /**
+   * Each of the world's panes of glass, by index: true once broken. Filled in by the first
+   * step (see syncGlass); missing in states saved before glass.
+   */
+  glass: boolean[];
   /** The timer and extraction points; null outside a raid (tests, the perf scene). */
   raid: RaidState | null;
   /** Players who have left the raid alive, with what they carried. */
@@ -259,6 +266,7 @@ export function createState(seed: number): SimState {
     flames: [],
     fires: [],
     doors: [],
+    glass: [],
     raid: null,
     left: [],
     events: [],

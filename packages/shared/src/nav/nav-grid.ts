@@ -101,10 +101,12 @@ export class NavGrid {
           return false;
         };
         let n = 0;
-        const ground = t.heightAt(x, z);
+        // Over a hole there's no ground, and solids under it aren't underground.
+        const hole = t.holeAt(x, z);
+        const ground = hole ? -Infinity : t.heightAt(x, z);
         t.gradientAt(x, z, grad);
         const steep = grad.x * grad.x + grad.z * grad.z > NAV.maxSlope * NAV.maxSlope;
-        if (!steep && !inside(ground)) found[n++] = ground;
+        if (!hole && !steep && !inside(ground)) found[n++] = ground;
         for (let k = 0; k < solids; k++) {
           const h = tops[k]!;
           if (h > ground - EPS && !inside(h)) found[n++] = h;

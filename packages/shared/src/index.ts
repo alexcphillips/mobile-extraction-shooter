@@ -57,13 +57,14 @@ export {
   pick,
   type Rng,
 } from './rng';
-export { HeightGrid, type HeightGridDef, type SurfaceHit } from './world/terrain';
+export { HeightGrid, holeFlags, type HeightGridDef, type SurfaceHit } from './world/terrain';
 export { CellWalk, StaticGrid } from './world/grid';
 export {
   CollisionWorld,
   createRayHit,
   type BoxDef,
   type DoorDef,
+  type GlassDef,
   type GroundHit,
   type Ladder,
   type LadderDef,
@@ -91,6 +92,14 @@ export {
   type SimState,
   type TickInputs,
 } from './sim/state';
+export {
+  GLASS,
+  breakGlass,
+  breakGlassNear,
+  glassHit,
+  syncGlass,
+  type GlassEvent,
+} from './sim/glass';
 export { MOVEMENT, fitLean, moveCharacter, separateCharacters } from './sim/movement';
 export {
   DOOR,
@@ -475,6 +484,7 @@ export {
   groundUnder,
   type CompiledBuilding,
   type CompiledDoor,
+  type CompiledGlass,
   type CompiledMap,
   type CompiledMarker,
   type CompiledNodes,
@@ -484,6 +494,7 @@ export {
   type PrefabLookup,
   type Shape,
 } from './content/compile';
+export { wallPieces, type WallOpening, type WallPiece } from './content/walls';
 export {
   SETTINGS_FORMAT,
   SETTINGS_FORMAT_VERSION,

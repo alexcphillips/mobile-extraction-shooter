@@ -34,6 +34,7 @@ export async function startPlayTest(
   checkDoorKeys(map);
   const items = loadItems();
   document.title = `Play-test: ${map.name}`;
+  backToEditor(files.map.id);
   await startPlay(el, {
     ...options,
     raid: '',
@@ -51,4 +52,39 @@ export async function startPlayTest(
     profile: newProfile(items, loadStartingKit(KIT)),
     resume: null,
   });
+}
+
+/**
+ * A button back to the map editor: to the tab that opened this one if it's still there (its
+ * changes are in memory), or else a fresh editor on the map, which restores them from the draft.
+ */
+function backToEditor(map: string): void {
+  const button = document.createElement('button');
+  button.textContent = '← Editor';
+  button.title = 'Back to the map editor';
+  Object.assign(button.style, {
+    position: 'fixed',
+    top: '8px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    zIndex: '1000',
+    padding: '4px 10px',
+    font: '13px system-ui, sans-serif',
+    color: '#fff',
+    background: 'rgba(0, 0, 0, 0.55)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    borderRadius: '4px',
+    cursor: 'pointer',
+  });
+  // Not a click into the game (shooting, or locking the pointer).
+  button.addEventListener('pointerdown', (e) => e.stopPropagation());
+  button.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const editor = window.opener as Window | null;
+    if (editor && !editor.closed) {
+      editor.focus();
+      window.close();
+    } else location.href = `/editor?map=${encodeURIComponent(map)}`;
+  });
+  document.body.append(button);
 }

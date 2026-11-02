@@ -29,6 +29,7 @@ import {
 import { dropItem } from './ground';
 import { ignite, launchFlame } from './fire';
 import { launchGrenade } from './grenades';
+import { GLASS, breakGlass, glassHit } from './glass';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import {
   entityById,
@@ -502,7 +503,15 @@ function castShot(
   const oy = eyeHeight(c);
   const oz = eyeZ(c);
 
-  const wd = world.raycast(ox, oy, oz, dx, dy, dz, def.range, worldHit);
+  let wd = world.raycast(ox, oy, oz, dx, dy, dz, def.range, worldHit);
+  // Glass in the way breaks and the shot goes on, unless it hits someone before it.
+  for (let n = 0; n < GLASS.maxPerShot; n++) {
+    const pane = glassHit(world, worldHit);
+    if (pane < 0) break;
+    if (raycastCharacters(state, ox, oy, oz, dx, dy, dz, wd, c.id, charHit) < Infinity) break;
+    breakGlass(state, world, pane, c.id);
+    wd = world.raycast(ox, oy, oz, dx, dy, dz, def.range, worldHit);
+  }
   const cd = raycastCharacters(
     state,
     ox,

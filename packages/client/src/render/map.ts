@@ -1,4 +1,11 @@
-import type { CompiledDoor, CompiledMap, HeightGridDef, InstancedGroup, Shape } from '@mes/shared';
+import type {
+  CompiledDoor,
+  CompiledGlass,
+  CompiledMap,
+  HeightGridDef,
+  InstancedGroup,
+  Shape,
+} from '@mes/shared';
 import * as THREE from 'three';
 import { TriangleBuilder } from './geometry';
 import { bakedMaterial, shadedMaterial } from './material';
@@ -7,6 +14,9 @@ export const CHUNK = 32;
 
 /** How long a door's swing takes to draw, in seconds. The sim snaps it at once. */
 const SWING = 0.2;
+
+/** How much glass shows of what's behind it: drawn this opaque. */
+export const GLASS_OPACITY = 0.3;
 
 /** A door's pivot at its hinge, and how far open it's drawn. */
 interface DoorView {
@@ -22,12 +32,16 @@ export interface MapView {
   root: THREE.Group;
   /** By the sim's door index (the order of map.doors). */
   doors: DoorView[];
+  /** Every pane of glass, one instance each by the sim's glass index; null with none. */
+  glass: THREE.InstancedMesh | null;
+  /** Which panes are drawn broken (gone). */
+  glassBroken: boolean[];
 }
 
 /**
  * Builds a compiled map's scene: the terrain and static shapes merged into one mesh per
  * 32 m chunk, one instanced mesh per instanced prefab and colour set, a mesh per door,
- * and the water surface.
+ * one instanced see-through mesh for all the glass, and the water surface.
  */
 export function buildMap(map: CompiledMap): MapView {
   const root = new THREE.Group();
@@ -42,6 +56,9 @@ export function buildMap(map: CompiledMap): MapView {
     const turn = door.hinge === 'left' ? -Math.PI / 2 : Math.PI / 2;
     return { pivot, yaw: door.yaw, turn, shown: door.open ? 1 : 0 };
   });
+
+  const glass = map.glass.length ? buildGlass(map.glass) : null;
+  if (glass) root.add(glass);
 
   if (map.water) {
     const t = map.world.terrain;
@@ -61,7 +78,7 @@ export function buildMap(map: CompiledMap): MapView {
     water.matrixAutoUpdate = false;
     root.add(water);
   }
-  return { root, doors };
+  return { root, doors, glass, glassBroken: map.glass.map(() => false) };
 }
 
 /** One mesh per chunk: its terrain cells and every shape whose centre is in it. */
@@ -142,6 +159,71 @@ export function updateDoors(
     d.pivot.rotation.y = d.yaw + d.turn * t;
   }
 }
+
+/** See-through and flat, drawn after what's solid and leaving the depth buffer alone. */
+export function glassMaterial(): THREE.MeshBasicMaterial {
+  return new THREE.MeshBasicMaterial({
+    transparent: true,
+    opacity: GLASS_OPACITY,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  });
+}
+
+/** A pane's place and size, for a unit cube with its bottom at 0. */
+function glassMatrix(g: CompiledGlass, m: THREE.Matrix4): THREE.Matrix4 {
+  return m
+    .makeRotationY(g.yaw)
+    .scale(new THREE.Vector3(g.width, g.height, g.thickness))
+    .setPosition(g.x, g.y, g.z);
+}
+
+const UNIT_PANE = new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0);
+
+/** All the panes as one instanced mesh, each its own tint: one draw call. */
+function buildGlass(glass: readonly CompiledGlass[]): THREE.InstancedMesh {
+  const mesh = new THREE.InstancedMesh(UNIT_PANE, glassMaterial(), glass.length);
+  const m = new THREE.Matrix4();
+  const c = new THREE.Color();
+  glass.forEach((g, i) => {
+    mesh.setMatrixAt(i, glassMatrix(g, m));
+    mesh.setColorAt(i, c.setHex(g.colour));
+  });
+  mesh.computeBoundingSphere();
+  mesh.matrixAutoUpdate = false;
+  mesh.renderOrder = 1;
+  mesh.name = 'glass';
+  return mesh;
+}
+
+/**
+ * One pane on its own, with a material of its own tint, as the editor draws it. Its own
+ * geometry too, as the editor disposes what it drew.
+ */
+export function buildGlassPane(g: CompiledGlass): THREE.Mesh {
+  const material = glassMaterial();
+  material.color.setHex(g.colour);
+  const mesh = new THREE.Mesh(UNIT_PANE.clone(), material);
+  glassMatrix(g, mesh.matrix).decompose(mesh.position, mesh.quaternion, mesh.scale);
+  mesh.renderOrder = 1;
+  mesh.name = g.id;
+  return mesh;
+}
+
+/** Stops drawing panes the sim has broken. Cheap when nothing changed. */
+export function updateGlass(view: MapView, broken: readonly boolean[]): void {
+  if (!view.glass) return;
+  let changed = false;
+  for (let i = 0; i < view.glassBroken.length; i++) {
+    if (!broken[i] || view.glassBroken[i]) continue;
+    view.glassBroken[i] = true;
+    view.glass.setMatrixAt(i, ZERO_MATRIX);
+    changed = true;
+  }
+  if (changed) view.glass.instanceMatrix.needsUpdate = true;
+}
+
+const ZERO_MATRIX = new THREE.Matrix4().makeScale(0, 0, 0);
 
 /** A pivot at the hinge holding the door panel. Seen from +z, a left hinge is at −x. */
 export function buildDoor(door: CompiledDoor, material: THREE.Material): THREE.Object3D {

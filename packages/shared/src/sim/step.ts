@@ -3,6 +3,7 @@ import type { NavGrid } from '../nav/nav-grid';
 import type { CollisionWorld } from '../world/collision-world';
 import { updateAi } from './ai';
 import { syncDoors, useDoor } from './doors';
+import { syncGlass } from './glass';
 import { applyFall, bleed } from './health';
 import { TICK_SECONDS } from '../tick';
 import { updateExtinguish, updateFire } from './fire';
@@ -37,6 +38,7 @@ export function step(
 ): void {
   state.events.length = 0;
   syncDoors(state, world, nav);
+  syncGlass(state, world);
   for (const e of state.entities) {
     const actions = inputs[e.id]?.inventory;
     if (!actions) continue;

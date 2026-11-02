@@ -1,0 +1,18 @@
+{
+  "formatVersion": 3,
+  "id": "truck-openable",
+  "name": "truck-openable",
+  "colours": {
+    "tires": "#303030"
+  },
+  "nodes": [
+    {
+      "type": "prefab",
+      "prefab": "truck-tire-1",
+      "pos": [0, 0, 0.4],
+      "colours": {
+        "tires": "tires"
+      }
+    }
+  ]
+}

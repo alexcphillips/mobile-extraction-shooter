@@ -64,6 +64,7 @@ import {
   findKey,
   keyName,
   syncDoors,
+  syncGlass,
   investigateInReach,
   investigatedBy,
   keptGear,
@@ -117,7 +118,7 @@ import { FIRE_SVG, FireViews } from '../render/fire';
 import { INCENDIARY_TRACER, TRACER_COLOUR } from '../render/effects';
 import { GrenadeViews } from '../render/grenades';
 import { GroundItems } from '../render/ground-items';
-import { buildMap, updateDoors } from '../render/map';
+import { buildMap, updateDoors, updateGlass } from '../render/map';
 import { AiDebug, buildNavOverlay } from '../render/nav-debug';
 import { Viewmodel } from '../render/viewmodel';
 import { settings } from '../settings';
@@ -184,8 +185,11 @@ export interface PlayOptions {
   duration: number | null;
   /** A player spawn's id; otherwise one is picked at random. */
   spawn: string | null;
-  /** Debug: start at this x, z instead of a spawn (facing the spawn's way). */
-  at: [number, number] | null;
+  /**
+   * Debug: start at this x, z instead of a spawn (facing the spawn's way): on the highest
+   * floor at or below y if given, else on the floor nearest the ground.
+   */
+  at: [number, number] | [number, number, number] | null;
   /**
    * Show markers, zones, patrols and what enemies are thinking, and buttons (and keys 7
    * and 8) for hurt me and heal me.
@@ -330,15 +334,15 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     controls.pitch = player.pitch;
   } else {
     // Below the spawn's height plus a little, so a spawn under a roof stays inside.
-    const [startX, startZ] = options.at ?? [spawn.x, spawn.z];
+    const [startX, startZ, startY] = options.at ?? [spawn.x, spawn.z];
     player = spawnCharacter(
       sim,
       world,
       startX,
       startZ,
       spawn.yaw,
-      // ?at stands you on the floor nearest the ground there, not on a roof.
-      options.at ? world.terrain.heightAt(startX, startZ) + 1 : spawn.y + 0.5,
+      // ?at without a height stands you on the floor nearest the ground there, not on a roof.
+      startY ?? (options.at ? world.terrain.heightAt(startX, startZ) + 1 : spawn.y + 0.5),
     );
     player.gear = structuredClone(options.profile.gear);
     placeLootContainers(sim, map, lootKinds);
@@ -383,6 +387,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   }
   // Locked doors cut the nav grid now, not in the first frame.
   syncDoors(sim, world, nav);
+  syncGlass(sim, world);
+  updateGlass(mapView, sim.glass);
 
   // Enemies: their type's skill, and its loadout (or the spawn's) rolled.
   const patrols = new Map(map.patrols.map((p) => [p.id, p]));
@@ -1050,6 +1056,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     prev.x = cur.x;
     prev.y = cur.y;
     prev.z = cur.z;
+    prev.lean = cur.lean;
     prev.aim = cur.aim;
     prev.rp = cur.rp;
     prev.ry = cur.ry;
@@ -1067,6 +1074,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       guest.sendInput(input);
       guest.catchUp(sim);
       syncDoors(sim, world, nav);
+      syncGlass(sim, world);
     } else {
       host?.fillInputs(inputs, (c) => killCharacter(sim, c, 0));
       step(sim, world, items, inputs, nav);
@@ -1111,6 +1119,22 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
           viewmodel.swung(now, meleeDef(items, viewer.gear.knife.item).swingTime);
         } else bodyOf.get(e.by)?.swung();
         if (e.hit !== 'none') effects.impact(now, e.x, e.y, e.z, e.hit === 'character');
+      } else if (e.type === 'glass') {
+        const g = map.glass[e.glass];
+        if (g) {
+          const ex = (Math.cos(g.yaw) * g.width) / 2;
+          const ez = (-Math.sin(g.yaw) * g.width) / 2;
+          effects.shatter(
+            now,
+            g.x - ex,
+            g.z - ez,
+            g.x + ex,
+            g.z + ez,
+            g.y,
+            g.y + g.height,
+            g.colour,
+          );
+        }
       } else if (e.type === 'explosion') {
         grenades.explode(now, e.x, e.y, e.z, e.radius, grenadeEffect(grenadeDef(items, e.item)));
       } else if (e.type === 'ignite' && e.target === player.id) {
@@ -1345,6 +1369,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     questMarkers.update(camera, alive && !screenOpen && !ended);
     enemyBars?.update(camera, alive && !screenOpen && !ended);
     updateDoors(mapView, sim.doors, dtMs / 1000);
+    updateGlass(mapView, sim.glass);
     if (aimMarker) {
       const yaw = player.yaw + player.recoilYaw;
       const pitch = player.pitch + player.recoilPitch;

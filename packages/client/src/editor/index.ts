@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { mapSources } from '../content';
 import { MapEditor } from './editor';
 import { EditorPanel } from './panel';
+import { PanelCrash } from './crash';
 import './editor.css';
 
 /**
@@ -18,7 +19,12 @@ export function startEditor(canvas: HTMLCanvasElement, ui: HTMLElement): void {
   if (!map) throw new Error(`no map "${id}" in content/maps`);
   const editor = new MapEditor(canvas, `maps/${map.id}.json`, map, prefabs, maps);
   ui.hidden = false;
-  createRoot(ui).render(createElement(EditorPanel, { editor, maps: ids }));
+  createRoot(ui).render(
+    createElement(PanelCrash, {
+      undo: () => editor.undo(),
+      children: createElement(EditorPanel, { editor, maps: ids }),
+    }),
+  );
   // For poking at it from the console.
   (window as { editor?: MapEditor }).editor = editor;
 }

@@ -1,6 +1,14 @@
-import type { BoxDef, DoorDef, LadderDef, RampDef, WorldDef } from '../world/collision-world';
-import { HeightGrid } from '../world/terrain';
+import type {
+  BoxDef,
+  DoorDef,
+  GlassDef,
+  LadderDef,
+  RampDef,
+  WorldDef,
+} from '../world/collision-world';
+import { HeightGrid, holeFlags } from '../world/terrain';
 import { ContentError } from './format';
+import { wallPieces } from './walls';
 import type { MapFile, MapNode, MapZone, PrefabFile } from './schema';
 
 /*
@@ -37,6 +45,12 @@ export interface InstancedGroup {
 
 /** A door, in the same order as world.doors (the sim's door indices). */
 export interface CompiledDoor extends DoorDef {
+  id: string;
+  colour: number;
+}
+
+/** A pane of glass, in the same order as world.glass (the sim's glass indices). */
+export interface CompiledGlass extends GlassDef {
   id: string;
   colour: number;
 }
@@ -123,6 +137,7 @@ export interface CompiledMap {
   shapes: Shape[];
   instanced: InstancedGroup[];
   doors: CompiledDoor[];
+  glass: CompiledGlass[];
   markers: CompiledMarker[];
   patrols: CompiledPatrol[];
   /** Buildings' footprints; their concrete bases are in shapes and world.boxes. */
@@ -137,6 +152,7 @@ const STEP_HEIGHT = 0.25;
 const LADDER_WIDTH = 0.6;
 const RUNG_SPACING = 0.3;
 const DOOR_THICKNESS = 0.05;
+const GLASS_THICKNESS = 0.02;
 const CYLINDER_SIDES = 8;
 const PATROL_WAIT = 3;
 /** Concrete, for a base without a colour of its own. */
@@ -161,6 +177,7 @@ interface Sink {
   ramps: RampDef[] | null;
   ladders: LadderDef[] | null;
   doors: CompiledDoor[] | null;
+  glass: CompiledGlass[] | null;
   markers: CompiledMarker[] | null;
   patrols: CompiledPatrol[] | null;
   buildings: CompiledBuilding[] | null;
@@ -182,6 +199,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     ramps,
     ladders,
     doors: [],
+    glass: [],
     markers: [],
     patrols: [],
     buildings: [],
@@ -194,6 +212,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     cols: heights[0]!.length - 1,
     rows: heights.length - 1,
     heights: heights.flat(),
+    holes: holeFlags(heights[0]!.length - 1, heights.length - 1, map.terrain.holes),
   };
   const scope = slotColours(map.colours ?? {});
   const compiler = new Compiler(source, prefabs, new HeightGrid(terrain));
@@ -216,10 +235,12 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
       ramps,
       ladders,
       doors: out.doors!,
+      glass: out.glass!,
     },
     shapes: out.shapes!,
     instanced: [...out.groups!.values()],
     doors: out.doors!,
+    glass: out.glass!,
     markers: out.markers!,
     patrols: out.patrols!,
     buildings: out.buildings!,
@@ -236,6 +257,7 @@ export interface CompiledNodes {
   boxes: BoxDef[];
   ramps: RampDef[];
   doors: CompiledDoor[];
+  glass: CompiledGlass[];
   markers: CompiledMarker[];
   patrols: CompiledPatrol[];
   buildings: CompiledBuilding[];
@@ -256,6 +278,7 @@ export function compileNodes(
     boxes: [],
     ramps: [],
     doors: [],
+    glass: [],
     markers: [],
     patrols: [],
     buildings: [],
@@ -509,6 +532,49 @@ class Compiler {
         return;
       }
 
+      case 'wall': {
+        const [length, height, thick] = node.size;
+        const pieces = wallPieces(length, height, node.openings);
+        if (typeof pieces === 'string') this.fail(path, pieces);
+        const colour = this.colour(node.colour, scope, path);
+        const c = Math.cos(yaw);
+        const s = Math.sin(yaw);
+        for (const p of pieces) {
+          const mid = (p.from + p.to) / 2;
+          const [hx, hy, hz] = [(p.to - p.from) / 2, (p.top - p.bottom) / 2, thick / 2];
+          const [px, py, pz] = [x + mid * c, y + p.bottom + hy, z - mid * s];
+          out.shapes?.push({
+            kind: 'box',
+            x: px,
+            y: py,
+            z: pz,
+            yaw,
+            pitch: 0,
+            roll: 0,
+            colour,
+            hx,
+            hy,
+            hz,
+          });
+          if (node.collide !== false) out.boxes?.push({ x: px, y: py, z: pz, hx, hy, hz, yaw });
+        }
+        node.openings.forEach((o, k) => {
+          if (o.glass === undefined) return;
+          out.glass?.push({
+            id: `${path}/glass${k}`,
+            x: x + o.along * c,
+            y: y + o.bottom,
+            z: z - o.along * s,
+            yaw,
+            width: o.width,
+            height: o.top - o.bottom,
+            thickness: GLASS_THICKNESS,
+            colour: this.colour(o.glass, scope, path),
+          });
+        });
+        return;
+      }
+
       case 'ramp':
       case 'stairs': {
         const [w, h, d] = node.size;
@@ -574,6 +640,20 @@ class Compiler {
           hinge: node.hinge ?? 'left',
           key: node.key,
           open: node.open ?? false,
+          colour: this.colour(node.colour, scope, path),
+        });
+        return;
+
+      case 'glass':
+        out.glass?.push({
+          id: path,
+          x,
+          y,
+          z,
+          yaw,
+          width: node.size[0],
+          height: node.size[1],
+          thickness: node.thickness ?? GLASS_THICKNESS,
           colour: this.colour(node.colour, scope, path),
         });
         return;
@@ -662,6 +742,7 @@ class Compiler {
         ramps: null,
         ladders: null,
         doors: null,
+        glass: null,
         markers: null,
         patrols: null,
         buildings: null,

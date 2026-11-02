@@ -279,6 +279,91 @@ export function loadLootTables(): ReadonlyMap<string, LootTableDef> {
   return lootTables;
 }
 
+/** The loot table files as written, for the loot editor (see itemSources). */
+export function lootTableSources(): ReadonlyMap<string, LootTableDef> {
+  return asWritten(lootTableFiles, loadById(LOOT_TABLE_FORMAT, lootTableFiles));
+}
+
+/** What the items and enemy types would find wrong with these loot tables, or null. */
+export function lootTableContentProblem(tables: ReadonlyMap<string, LootTableDef>): string | null {
+  try {
+    checkLootTables(tables, loadItems());
+    checkEnemyLoot(rawContent().enemies, tables);
+  } catch (err) {
+    return err instanceof Error ? err.message : String(err);
+  }
+  return null;
+}
+
+let lootUses: Map<string, string[]> | undefined;
+
+/**
+ * Where a loot table is rolled, for the loot editor: one line each, like "map mall: 12
+ * containers". Worked out for every table at once, as it compiles every map.
+ */
+export function lootTableUses(id: string): readonly string[] {
+  if (!lootUses) {
+    const uses = new Map<string, string[]>();
+    const add = (table: string, line: string): void => {
+      const lines = uses.get(table);
+      if (lines) lines.push(line);
+      else uses.set(table, [line]);
+    };
+    for (const map of mapIds()) {
+      const counts = new Map<string, { containers: number; spots: number; odds: number }>();
+      const count = (table: string) => {
+        let c = counts.get(table);
+        if (!c) counts.set(table, (c = { containers: 0, spots: 0, odds: 0 }));
+        return c;
+      };
+      for (const m of loadMap(map).markers) {
+        if (m.type === 'lootContainer') count(m.lootTable).containers++;
+        if (m.type === 'lootSpawn') {
+          const c = count(m.lootTable);
+          c.spots++;
+          c.odds += m.chance ?? 1;
+        }
+        if (m.type === 'enemySpawn') {
+          for (const [table, w] of Object.entries(m.lootWeights ?? {}))
+            add(table, `enemy spawn ${m.id} on ${map}: weight ×${w}`);
+        }
+      }
+      for (const [table, c] of counts) {
+        const parts = [
+          c.containers && `${c.containers} container${c.containers === 1 ? '' : 's'}`,
+          c.spots &&
+            `${c.spots} loose spot${c.spots === 1 ? '' : 's'} (${Math.round((c.odds / c.spots) * 100)}% chance each, on average)`,
+        ].filter(Boolean);
+        add(table, `map ${map}: ${parts.join(', ')}`);
+      }
+    }
+    prefabs ??= loadById(PREFAB_FORMAT, prefabFiles);
+    const tables = loadById(LOOT_TABLE_FORMAT, lootTableFiles);
+    for (const [prefab, doc] of prefabs) {
+      for (const table of tables.keys()) {
+        const n = countLootTable(doc, table);
+        if (n) add(table, `prefab ${prefab}: ${n} (counted in the maps above)`);
+      }
+    }
+    for (const e of rawContent().enemies.values()) {
+      for (const [table, w] of Object.entries(e.loot?.tables ?? {}))
+        add(table, `enemy ${e.id}: weight ${w}`);
+    }
+    lootUses = uses;
+  }
+  return lootUses.get(id) ?? [];
+}
+
+/** How many times a doc names a loot table. */
+function countLootTable(value: unknown, id: string): number {
+  if (Array.isArray(value)) return value.reduce((n: number, v) => n + countLootTable(v, id), 0);
+  if (value === null || typeof value !== 'object') return 0;
+  return Object.entries(value).reduce(
+    (n, [k, v]) => n + (k === 'lootTable' && v === id ? 1 : countLootTable(v, id)),
+    0,
+  );
+}
+
 export function raidIds(): string[] {
   raids ??= loadById(RAID_FORMAT, raidFiles);
   return [...raids.keys()];

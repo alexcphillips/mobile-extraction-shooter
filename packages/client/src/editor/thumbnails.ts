@@ -1,7 +1,7 @@
 import { compileNodes, type PrefabLookup } from '@mes/shared';
 import * as THREE from 'three';
 import { TriangleBuilder } from '../render/geometry';
-import { buildDoor } from '../render/map';
+import { buildDoor, buildGlassPane } from '../render/map';
 import { shadedMaterial } from '../render/material';
 
 /*
@@ -27,7 +27,7 @@ export class Thumbnails {
     } catch {
       return null;
     }
-    const key = JSON.stringify([out.shapes, out.doors]);
+    const key = JSON.stringify([out.shapes, out.doors, out.glass]);
     const cached = this.cache.get(key);
     if (cached) return cached;
     const scene = new THREE.Group();
@@ -37,6 +37,7 @@ export class Thumbnails {
       scene.add(new THREE.Mesh(b.build(), this.material));
     }
     for (const d of out.doors) scene.add(buildDoor(d, this.material));
+    for (const g of out.glass) scene.add(buildGlassPane(g));
     const url = this.draw(scene);
     scene.traverse((o) => (o as THREE.Mesh).geometry?.dispose());
     this.cache.set(key, url);

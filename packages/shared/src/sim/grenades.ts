@@ -5,6 +5,7 @@ import { createRayHit, type CollisionWorld } from '../world/collision-world';
 import { spillFire } from './fire';
 import { QUICK_GRIDS, carriedGrid, heldWeapon } from './gear';
 import { ZONE_COUNT, woundZone, type Zone } from './health';
+import { breakGlass, breakGlassNear, glassHit } from './glass';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import type { CarriedRef } from './meds';
 import {
@@ -362,7 +363,11 @@ function moveGrenade(state: SimState, g: Grenade, world: CollisionWorld): boolea
     if (g.armIn !== undefined) {
       // Armed, it goes off here; hitting something first, it never arms, so a shot off a
       // close wall bounces back as a thrown one would rather than going off at your feet.
-      if (g.armIn <= d) return true;
+      // A pane it hits breaks (a molotov smashes on it).
+      if (g.armIn <= d) {
+        breakGlass(state, world, glassHit(world, hit), g.by);
+        return true;
+      }
       delete g.armIn;
     }
     if (g.remote) {
@@ -421,6 +426,9 @@ function explode(state: SimState, world: CollisionWorld, items: ItemDb, g: Grena
     radius: def.radius,
     loudness: def.loudness,
   });
+  // A blast breaks the glass around it; a flash or smoke doesn't.
+  if (effect !== 'flash' && effect !== 'smoke')
+    breakGlassNear(state, world, x, y, z, def.radius, g.by);
   if (effect === 'flash') {
     flash(state, world, def, x, y, z);
     return;

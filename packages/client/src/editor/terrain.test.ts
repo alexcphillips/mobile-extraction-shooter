@@ -1,7 +1,17 @@
-import { mapSchema, type MapNode, type PrefabFile } from '@mes/shared';
+import { HeightGrid, mapSchema, type MapNode, type PrefabFile } from '@mes/shared';
 import { describe, expect, it } from 'vitest';
 import { findOverlaps, solidsOverlap } from './overlap';
-import { applyBrush, newMap, setHeights, terrainGrid } from './terrain';
+import {
+  applyBrush,
+  cellRect,
+  extendMap,
+  holeCells,
+  levelCells,
+  newMap,
+  setHeights,
+  terrainDef,
+  terrainGrid,
+} from './terrain';
 
 const house: PrefabFile = {
   formatVersion: 3,
@@ -22,10 +32,95 @@ const prefabs = new Map([
 /** A flat 40 m map of 4 m cells, centred on the origin. */
 const map = (nodes: MapNode[]) => ({ ...newMap('test', 'Test', 40, 4), nodes });
 
+describe('level and hole', () => {
+  it('cover every cell a drag touches, at least one', () => {
+    const t = terrainGrid(map([]));
+    // Corners at −20, −16 … 20; cell 5 is x 0..4.
+    expect(cellRect(t, 1, 1, 1, 1)).toEqual([5, 6, 5, 6]);
+    expect(cellRect(t, 1, 1, -3, 9)).toEqual([4, 6, 5, 8]);
+    expect(cellRect(t, 1, 1, 100, 100)).toEqual([5, 10, 5, 10]);
+    expect(cellRect(t, 100, 1, 1, 1)).toBeNull();
+  });
+
+  it('level the corners of the cells, moving what stood on them', () => {
+    const m = map([{ type: 'prefab', prefab: 'crate', pos: [2, 0, 2] }]);
+    const t = terrainGrid(m);
+    levelCells(t, [5, 6, 5, 6], 2.5);
+    setHeights(m, t.heights, t.holes, prefabs);
+    expect(m.terrain.heights[5]![5]).toBe(2.5);
+    expect(m.terrain.heights[6]![6]).toBe(2.5);
+    expect(m.terrain.heights[7]![7]).toBe(0);
+    expect(m.nodes[0]!.type === 'prefab' && m.nodes[0]!.pos).toEqual([2, 2.5, 2]);
+  });
+
+  it('write holes to the map as cells, and drop the field when none are left', () => {
+    const m = map([]);
+    const t = terrainGrid(m);
+    holeCells(t, [5, 7, 2, 3], true);
+    setHeights(m, t.heights, t.holes, prefabs);
+    expect(m.terrain.holes).toEqual([
+      [5, 2],
+      [6, 2],
+    ]);
+    expect(mapSchema.safeParse(m).success).toBe(true);
+    expect(terrainGrid(m).holes[2 * 10 + 6]).toBe(1);
+    holeCells(t, [0, 10, 0, 10], false);
+    setHeights(m, t.heights, t.holes, prefabs);
+    expect('holes' in m.terrain).toBe(false);
+  });
+
+  it('are checked against the terrain', () => {
+    const m = map([]);
+    m.terrain.holes = [[10, 0]];
+    expect(mapSchema.safeParse(m).success).toBe(false);
+  });
+});
+
+describe('extending the map', () => {
+  it('adds ground on a side at the edge height, keeping the world and holes in place', () => {
+    const m = map([{ type: 'prefab', prefab: 'crate', pos: [2, 0, 2] }]);
+    // A slope along x, and one hole at cell (5, 5): x 0..4, z 0..4.
+    m.terrain.heights = m.terrain.heights.map((row) => row.map((_, i) => i));
+    m.terrain.holes = [[5, 5]];
+    const before = new HeightGrid(terrainDef(m));
+    extendMap(m, 'west', 2);
+    extendMap(m, 'north', 3);
+    extendMap(m, 'east', 1);
+    extendMap(m, 'south', 1);
+    expect(m.terrain.origin).toEqual([-28, -32]);
+    expect(m.terrain.heights[0]!.length).toBe(11 + 3);
+    expect(m.terrain.heights.length).toBe(11 + 4);
+    expect(m.terrain.holes).toEqual([[7, 8]]);
+    expect(mapSchema.safeParse(m).success).toBe(true);
+    const after = new HeightGrid(terrainDef(m));
+    for (const [x, z] of [
+      [-20, -20],
+      [1.5, 3],
+      [20, 20],
+      [-7, 11],
+    ] as const)
+      expect(after.heightAt(x, z)).toBeCloseTo(before.heightAt(x, z));
+    expect(after.holeAt(2, 2)).toBe(true);
+    expect(after.holeAt(6, 2)).toBe(false);
+    // The new ground carries on the edges: 0 to the west, 10 to the east.
+    expect(after.heightAt(-26, 0)).toBe(0);
+    expect(after.heightAt(23, 0)).toBe(10);
+    expect(after.heightAt(0, -30)).toBe(5);
+    expect(m.nodes[0]!.type === 'prefab' && m.nodes[0]!.pos).toEqual([2, 0, 2]);
+  });
+});
+
 describe('brushes', () => {
   it('raise most in the middle, nothing outside the radius', () => {
     const t = terrainGrid(map([]));
-    const changed = applyBrush(t, { mode: 'raise', radius: 6, strength: 2 }, 0, 0, 0.5, 0);
+    const changed = applyBrush(
+      t,
+      { mode: 'raise', radius: 6, strength: 2, height: null },
+      0,
+      0,
+      0.5,
+      0,
+    );
     expect(changed).toEqual([4, 6, 4, 6]);
     const at = (i: number, j: number) => t.heights[j * 11 + i]!;
     expect(at(5, 5)).toBeCloseTo(1);
@@ -37,16 +132,18 @@ describe('brushes', () => {
   it('flatten towards the level and smooth towards the neighbours', () => {
     const t = terrainGrid(map([]));
     t.heights[5 * 11 + 5] = 4;
-    applyBrush(t, { mode: 'smooth', radius: 2, strength: 1 }, 0, 0, 1, 0);
+    applyBrush(t, { mode: 'smooth', radius: 2, strength: 1, height: null }, 0, 0, 1, 0);
     expect(t.heights[5 * 11 + 5]).toBeCloseTo(0);
     t.heights[5 * 11 + 5] = 4;
-    applyBrush(t, { mode: 'flatten', radius: 2, strength: 1 }, 0, 0, 0.1, 1);
+    applyBrush(t, { mode: 'flatten', radius: 2, strength: 1, height: null }, 0, 0, 0.1, 1);
     expect(t.heights[5 * 11 + 5]).toBeCloseTo(4 - 3 * 0.4);
   });
 
   it('do nothing off the terrain', () => {
     const t = terrainGrid(map([]));
-    expect(applyBrush(t, { mode: 'raise', radius: 2, strength: 1 }, 100, 0, 1, 0)).toBeNull();
+    expect(
+      applyBrush(t, { mode: 'raise', radius: 2, strength: 1, height: null }, 100, 0, 1, 0),
+    ).toBeNull();
   });
 });
 
@@ -68,7 +165,7 @@ describe('setHeights', () => {
     // Corner (5, 5) is at the origin and (7, 5) at x = 8, the group's spawn in the world.
     t.heights[5 * 11 + 5] = 1.234;
     t.heights[5 * 11 + 7] = 0.5;
-    setHeights(m, t.heights, prefabs);
+    setHeights(m, t.heights, t.holes, prefabs);
     expect(m.terrain.heights[5]![5]).toBe(1.23);
     const [c1, c2, h, g, p] = m.nodes as [MapNode, MapNode, MapNode, MapNode, MapNode];
     expect(c1.type === 'prefab' && c1.pos).toEqual([0, 1.23, 0]);
@@ -145,7 +242,7 @@ describe('overlaps', () => {
     const m = map([{ type: 'prefab', prefab: 'house', pos: [0, 0, 0] }]);
     const t = terrainGrid(m);
     t.heights[5 * 11 + 5] = 0.5;
-    setHeights(m, t.heights, prefabs);
+    setHeights(m, t.heights, t.holes, prefabs);
     expect(findOverlaps(m, prefabs).buried).toEqual([[0]]);
   });
 });

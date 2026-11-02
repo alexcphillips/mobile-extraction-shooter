@@ -109,12 +109,13 @@ export class TriangleBuilder {
     }
   }
 
-  /** Terrain cells [i0, i1) × [j0, j1), split the way HeightGrid splits them. */
+  /** Terrain cells [i0, i1) × [j0, j1) but holes, split the way HeightGrid splits them. */
   terrain(t: HeightGridDef, i0: number, i1: number, j0: number, j1: number, colour: number) {
     const corner = (i: number, j: number, out: THREE.Vector3): THREE.Vector3 =>
       out.set(t.minX + i * t.cellSize, t.heights[j * (t.cols + 1) + i]!, t.minZ + j * t.cellSize);
     for (let j = j0; j < j1; j++) {
       for (let i = i0; i < i1; i++) {
+        if (t.holes?.[j * t.cols + i]) continue;
         corner(i, j, c00);
         corner(i + 1, j, c10);
         corner(i, j + 1, c01);

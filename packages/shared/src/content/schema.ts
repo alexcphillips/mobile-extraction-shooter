@@ -75,6 +75,27 @@ const cylinderSchema = z.strictObject({
   loot: lootSchema,
 });
 
+/**
+ * A straight wall with openings (2026-11-02): pos is the middle of its base, its length
+ * runs along local x. Each opening is a gap from `bottom` to `top`, `width` wide, centred
+ * `along` metres from the wall's middle, optionally glazed with glass of that tint.
+ */
+const wallSchema = z.strictObject({
+  type: z.literal('wall'),
+  ...solid,
+  /** Length (x), height (y) and thickness (z). */
+  size: size3,
+  openings: z.array(
+    z.strictObject({
+      along: finite,
+      width: positive,
+      bottom: finite.refine((n) => n >= 0, 'must be 0 or more'),
+      top: positive,
+      glass: colourRefSchema.optional(),
+    }),
+  ),
+});
+
 /** A solid wedge rising from pos.y at local −z to pos.y + height at local +z. */
 const rampSchema = z.strictObject({
   type: z.literal('ramp'),
@@ -262,15 +283,34 @@ const groupSchema = z.strictObject({
   },
 });
 
+/**
+ * A pane of glass filling a window (design.md → Glass): pos is its bottom middle, in the
+ * middle of the wall; width runs along local x. Solid and seen through until it breaks.
+ */
+const glassSchema = z.strictObject({
+  type: z.literal('glass'),
+  id: idSchema.optional(),
+  pos: vec3,
+  yaw: angle,
+  /** Width and height. */
+  size: z.tuple([positive, positive]),
+  /** Defaults to 0.02: thinner than any wall. */
+  thickness: positive.optional(),
+  /** Its tint; drawn see-through. */
+  colour: colourRefSchema,
+});
+
 export const nodeSchema: z.ZodDiscriminatedUnion<
   [
     typeof boxSchema,
     typeof cylinderSchema,
+    typeof wallSchema,
     typeof rampSchema,
     typeof stairsSchema,
     typeof ladderSchema,
     typeof prefabRefSchema,
     typeof doorSchema,
+    typeof glassSchema,
     typeof playerSpawnSchema,
     typeof enemySpawnSchema,
     typeof patrolSchema,
@@ -283,11 +323,13 @@ export const nodeSchema: z.ZodDiscriminatedUnion<
 > = z.discriminatedUnion('type', [
   boxSchema,
   cylinderSchema,
+  wallSchema,
   rampSchema,
   stairsSchema,
   ladderSchema,
   prefabRefSchema,
   doorSchema,
+  glassSchema,
   playerSpawnSchema,
   enemySpawnSchema,
   patrolSchema,
@@ -331,12 +373,24 @@ const terrainSchema = z
     cellSize: positive,
     /** Corner heights: rows along +z, each row along +x. */
     heights: z.array(z.array(finite).min(2)).min(2),
+    /**
+     * Cells with no ground, [i, j] each (i along +x, j along +z), so what's built under
+     * them can be reached (roadmap 19zm). Sorted by j, then i.
+     */
+    holes: z.array(z.tuple([z.number().int(), z.number().int()])).optional(),
     colour: hexColourSchema,
   })
   .refine((t) => t.heights.every((row) => row.length === t.heights[0]!.length), {
     message: 'every row of heights must be the same length',
     path: ['heights'],
-  });
+  })
+  .refine(
+    (t) =>
+      (t.holes ?? []).every(
+        ([i, j]) => i >= 0 && j >= 0 && i < t.heights[0]!.length - 1 && j < t.heights.length - 1,
+      ),
+    { message: 'every hole must be a cell of the terrain', path: ['holes'] },
+  );
 
 export const MAP_FORMAT_VERSION = 3;
 
@@ -416,7 +470,8 @@ export const MAP_FORMAT: ContentFormat<MapFile> = {
   version: MAP_FORMAT_VERSION,
   schema: mapSchema,
   // Format 2 (session 7) added patrols and 3 (session 15) groups; nothing to change. Loot
-  // containers made of geometry (2026-11-01) are an optional field, so still format 3.
+  // containers made of geometry (2026-11-01) and terrain holes (19zm) are optional fields,
+  // so still format 3.
   migrations: { 1: (doc) => doc, 2: (doc) => doc },
 };
 

@@ -130,7 +130,8 @@ if (location.pathname === '/bodies') {
   });
 } else {
   // ?raid=<id> picks a raid config from content/raids, ?time=<seconds> sets its timer,
-  // ?spawn=<id> a player spawn in its map (?at=<x>,<z> starts you at a point instead),
+  // ?spawn=<id> a player spawn in its map (?at=<x>,<z> starts you at a point instead, on the
+  // floor nearest the ground; ?at=<x>,<z>,<y> on the highest floor at or below y),
   // ?nav shows the navigation grid, and ?debug shows markers, zones, patrols
   // and what enemies think, with buttons (and keys 7 and 8) for hurt and heal. ?respawn
   // brings dead enemies back, ?peaceful makes them ignore you (the admin cheat), and ?hitzones draws hit
@@ -338,9 +339,8 @@ async function prepareMenu(): Promise<{ me: ProfileResponse; resume: RaidSnapsho
 }
 
 /** "x,z" as two numbers, or null. */
-function parseAt(s: string | null): [number, number] | null {
-  const [x, z] = (s ?? '').split(',').map(Number);
-  return x !== undefined && z !== undefined && Number.isFinite(x) && Number.isFinite(z)
-    ? [x, z]
-    : null;
+function parseAt(s: string | null): PlayOptions['at'] {
+  const [x, z, y] = (s ?? '').split(',').map(Number);
+  if (x === undefined || z === undefined || !Number.isFinite(x) || !Number.isFinite(z)) return null;
+  return y !== undefined && Number.isFinite(y) ? [x, z, y] : [x, z];
 }

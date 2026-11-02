@@ -462,4 +462,39 @@ describe('compileNodes', () => {
     ]);
     expect(out.markers).toHaveLength(1);
   });
+
+  it('builds a wall node from its openings: the wall between, sills, lintels and glass', () => {
+    const wall: MapNode = {
+      type: 'wall',
+      pos: [2, 0, 3],
+      yaw: 90,
+      size: [6, 2.5, 0.2],
+      colour: '#ffffff',
+      openings: [
+        { along: 1.5, width: 1, bottom: 0.9, top: 2, glass: '#a8d4e0' },
+        { along: -1.5, width: 1, bottom: 0, top: 2.5 },
+      ],
+    };
+    const out = compileNodes([wall], new Map());
+    // Left end, nothing under or over the full-height gap, the middle, sill, lintel, right end.
+    expect(out.boxes).toHaveLength(5);
+    // Its length runs along local x, turned 90° to world −z.
+    const sill = out.boxes.find((b) => b.hy === 0.45)!;
+    expect(sill.x).toBeCloseTo(2);
+    expect(sill.z).toBeCloseTo(1.5);
+    expect(sill).toMatchObject({ hx: 0.5, hz: 0.1 });
+    expect(out.glass).toHaveLength(1);
+    expect(out.glass[0]!.y).toBeCloseTo(0.9);
+    expect(out.glass[0]!.z).toBeCloseTo(1.5);
+    expect(out.glass[0]).toMatchObject({ width: 1, thickness: 0.02, colour: 0xa8d4e0 });
+    expect(out.glass[0]!.height).toBeCloseTo(1.1);
+
+    const overlapping = {
+      ...wall,
+      openings: [...wall.openings, { along: 1, width: 1, bottom: 0.9, top: 2 }],
+    };
+    expect(() => compileNodes([overlapping], new Map())).toThrow('overlap');
+    const past = { ...wall, openings: [{ along: 2.8, width: 1, bottom: 0.9, top: 2 }] };
+    expect(() => compileNodes([past], new Map())).toThrow('past the end');
+  });
 });

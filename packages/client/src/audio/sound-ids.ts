@@ -21,6 +21,8 @@ export const GAME_SOUNDS = {
   /** Trying a locked door. */
   doorLocked: 'door-locked',
   doorUnlock: 'door-unlock',
+  /** A pane of glass breaking (2026-11-02): softened, not a shriek. */
+  glassBreak: 'glass-break',
   /** An enemy falling dead. */
   bodyFall: 'body-fall',
   /** The player hurt, and killed. */

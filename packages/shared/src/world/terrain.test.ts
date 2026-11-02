@@ -38,6 +38,38 @@ describe('HeightGrid', () => {
     expect(grad).toEqual({ x: 1.5, z: 2 });
   });
 
+  it('lets rays through holes, and nothing under one is underground', () => {
+    // 4 × 1 cells of 1 m at height 1; cell 1 is a hole.
+    const g = new HeightGrid({
+      minX: 0,
+      minZ: 0,
+      cellSize: 1,
+      cols: 4,
+      rows: 1,
+      heights: Array(10).fill(1),
+      holes: [0, 1, 0, 0],
+    });
+    expect(g.holeAt(1.5, 0.5)).toBe(true);
+    expect(g.holeAt(2.5, 0.5)).toBe(false);
+    expect(g.isHole(1, 0)).toBe(true);
+    // heightAt ignores holes.
+    expect(g.heightAt(1.5, 0.5)).toBe(1);
+    expect(g.raycast(1.5, 3, 0.5, 0, -1, 0, 10)).toBe(Infinity);
+    expect(g.raycast(2.5, 3, 0.5, 0, -1, 0, 10)).toBeCloseTo(2);
+    // From under the hole, sideways: the side of the ground next to it.
+    expect(g.raycast(1.5, 0, 0.5, 1, 0, 0, 10)).toBeCloseTo(0.5);
+    expect(g.raycast(2.5, 0, 0.5, 0, 1, 0, 10)).toBe(0);
+    // Up out of the hole, and a slanted ray down through it to the ground beyond.
+    expect(g.raycast(1.5, 0, 0.5, 0, 1, 0, 10)).toBe(Infinity);
+    const d = Math.SQRT1_2;
+    expect(g.raycast(1.2, 2, 0.5, d, -d, 0, 10)).toBeCloseTo(1 / d);
+    // One that's under the ground when it leaves the hole hits the hole's side.
+    const side: SurfaceHit = { distance: 0, nx: 0, ny: 0, nz: 0 };
+    expect(g.raycast(1.2, 1.5, 0.5, d, -d, 0, 10, side)).toBeCloseTo(0.8 / d);
+    expect(side.nx).toBeCloseTo(-1);
+    expect(side.ny).toBeCloseTo(0);
+  });
+
   it('clamps outside the grid to its edge', () => {
     const g = HeightGrid.fromFunction(0, 0, 1, 4, 4, (x) => x);
     expect(g.heightAt(-5, 2)).toBeCloseTo(0);

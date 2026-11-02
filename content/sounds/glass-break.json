@@ -1,0 +1,87 @@
+{
+  "formatVersion": 1,
+  "id": "glass-break",
+  "name": "Glass breaking",
+  "gain": 0.55,
+  "range": 35,
+  "pitchJitter": 0.1,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0.005,
+      "decay": 0.09,
+      "curve": 3,
+      "gain": 0.55,
+      "filter": { "type": "bandpass", "freq": [2600, 1600], "q": 0.9 }
+    },
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0,
+      "attack": 0.002,
+      "hold": 0.02,
+      "decay": 0.22,
+      "curve": 2,
+      "gain": 0.5,
+      "filter": { "type": "lowpass", "freq": [700, 300], "q": 0.7 }
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0.04,
+      "attack": 0.02,
+      "hold": 0.05,
+      "decay": 0.4,
+      "curve": 2.5,
+      "gain": 0.22,
+      "filter": { "type": "bandpass", "freq": [3200, 2400], "q": 1.4 }
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [3100, 3000],
+      "at": 0.06,
+      "attack": 0.002,
+      "hold": 0,
+      "decay": 0.12,
+      "curve": 3,
+      "gain": 0.09
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [2450, 2400],
+      "at": 0.13,
+      "attack": 0.002,
+      "hold": 0,
+      "decay": 0.14,
+      "curve": 3,
+      "gain": 0.08
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [3600, 3550],
+      "at": 0.21,
+      "attack": 0.002,
+      "hold": 0,
+      "decay": 0.1,
+      "curve": 3,
+      "gain": 0.06
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [2800, 2750],
+      "at": 0.3,
+      "attack": 0.002,
+      "hold": 0,
+      "decay": 0.12,
+      "curve": 3,
+      "gain": 0.05
+    }
+  ]
+}

@@ -274,7 +274,7 @@ function steerInAir(c: Character, wishX: number, wishZ: number, speed: number): 
 function limitSlope(c: Character, world: CollisionWorld): void {
   if (c.vx === 0 && c.vz === 0) return;
   world.groundAt(c.x, c.z, MOVEMENT.radius, c.y + 1e-3, groundHit);
-  if (groundHit.solid >= 0) return;
+  if (groundHit.solid >= 0 || world.terrain.holeAt(c.x, c.z)) return;
   world.terrain.gradientAt(c.x, c.z, grad);
   const g2 = grad.x * grad.x + grad.z * grad.z;
   if (g2 <= MOVEMENT.maxSlope * MOVEMENT.maxSlope) return;

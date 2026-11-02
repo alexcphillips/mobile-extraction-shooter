@@ -9,6 +9,20 @@ export interface HeightGridDef {
   rows: number;
   /** (cols + 1) × (rows + 1) corner heights, row by row along +z, each row along +x. */
   heights: ArrayLike<number>;
+  /** cols × rows flags, row by row like the heights: 1 where the cell is a hole. */
+  holes?: ArrayLike<number> | undefined;
+}
+
+/** A map file's hole cells, [i, j] each, as HeightGridDef's flags (none if there are none). */
+export function holeFlags(
+  cols: number,
+  rows: number,
+  holes: readonly (readonly [number, number])[] | undefined,
+): Uint8Array | undefined {
+  if (!holes?.length) return undefined;
+  const flags = new Uint8Array(cols * rows);
+  for (const [i, j] of holes) flags[j * cols + i] = 1;
+  return flags;
 }
 
 /** Unit normal and distance of a raycast hit. */
@@ -23,6 +37,10 @@ export interface SurfaceHit {
  * Terrain heights on a regular grid. Each cell is two flat triangles split along the
  * diagonal from (i + 1, j) to (i, j + 1), so collision matches what the renderer draws:
  * triangle A is (i, j), (i, j + 1), (i + 1, j); triangle B is the other half.
+ *
+ * A cell can be a hole (roadmap 19zm): rays pass through it and nothing stands on it, so
+ * what's built under it (a basement, a car park) is reached from above. Heights still
+ * describe the surface around it, and heightAt ignores holes.
  */
 export class HeightGrid {
   readonly minX: number;
@@ -33,7 +51,9 @@ export class HeightGrid {
   readonly cols: number;
   readonly rows: number;
   readonly maxHeight: number;
+  readonly minHeight: number;
   private readonly h: Float64Array;
+  private readonly holes: Uint8Array | null;
   private readonly walk = new CellWalk();
 
   constructor(def: HeightGridDef) {
@@ -51,6 +71,14 @@ export class HeightGrid {
     this.maxZ = def.minZ + def.rows * def.cellSize;
     this.h = Float64Array.from(def.heights);
     this.maxHeight = this.h.reduce((a, b) => Math.max(a, b), -Infinity);
+    this.minHeight = this.h.reduce((a, b) => Math.min(a, b), Infinity);
+    if (def.holes && def.holes.length !== def.cols * def.rows) {
+      throw new Error(`terrain needs ${def.cols * def.rows} hole flags, got ${def.holes.length}`);
+    }
+    this.holes =
+      def.holes && Array.prototype.some.call(def.holes, Boolean)
+        ? Uint8Array.from(def.holes)
+        : null;
   }
 
   /** Samples a height function at every grid corner. */
@@ -74,7 +102,19 @@ export class HeightGrid {
     return this.h[j * (this.cols + 1) + i]!;
   }
 
-  /** Ground height at (x, z); positions outside the grid use its edge. */
+  /** Whether the cell (i, j) is a hole. */
+  isHole(i: number, j: number): boolean {
+    return this.holes !== null && this.holes[j * this.cols + i] === 1;
+  }
+
+  /** Whether (x, z) is over a hole; positions outside the grid use its edge. */
+  holeAt(x: number, z: number): boolean {
+    if (!this.holes) return false;
+    this.locate(x, z);
+    return this.holes[cellJ * this.cols + cellI] === 1;
+  }
+
+  /** Ground height at (x, z), holes or not; positions outside the grid use its edge. */
   heightAt(x: number, z: number): number {
     this.locate(x, z);
     return this.triHeight(cellI, cellJ, cellU, cellV);
@@ -99,8 +139,8 @@ export class HeightGrid {
   }
 
   /**
-   * Distance to the terrain along a unit direction, or Infinity within maxDist.
-   * 0 if the origin is under the ground. Writes the normal to hit if given.
+   * Distance to the terrain along a unit direction, or Infinity within maxDist. Passes
+   * through holes. 0 if the origin is under the ground. Writes the normal to hit if given.
    */
   raycast(
     ox: number,
@@ -113,7 +153,7 @@ export class HeightGrid {
     hit?: SurfaceHit,
   ): number {
     if (oy >= this.maxHeight && dy >= 0) return Infinity;
-    if (oy < this.heightAt(ox, oz)) {
+    if (oy < this.heightAt(ox, oz) && !this.holeAt(ox, oz)) {
       if (hit) setHit(hit, 0, -dx, -dy, -dz);
       return 0;
     }
@@ -135,9 +175,26 @@ export class HeightGrid {
       return Infinity;
     const cs = this.cellSize;
     const c = this.cols + 1;
+    let inHole = false;
     do {
       const i = walk.q;
       const j = walk.r;
+      if (this.holes && this.holes[j * this.cols + i]) {
+        inHole = true;
+        continue;
+      }
+      // Out of a hole under the ground beside it: the hole's side, facing back along the ray.
+      if (inHole) {
+        inHole = false;
+        const t = Math.max(0, walk.tEnter);
+        if (t <= maxDist && oy + dy * t < this.heightAt(ox + dx * t, oz + dz * t)) {
+          if (hit) {
+            const len = Math.hypot(dx, dz) || 1;
+            setHit(hit, t, -dx / len, 0, -dz / len);
+          }
+          return t;
+        }
+      }
       const k = j * c + i;
       const h00 = this.h[k]!;
       const h10 = this.h[k + 1]!;

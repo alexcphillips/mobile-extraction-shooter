@@ -1,5 +1,6 @@
 import {
   HeightGrid,
+  holeFlags,
   type HeightGridDef,
   type MapFile,
   type MapNode,
@@ -12,6 +13,9 @@ import { nodePos, nodeYaw, round } from './doc';
  * mouse is down, and the stroke is written to the map as one edit when it's let go. Things
  * standing on the ground then move with it, except buildings, whose concrete bases fill
  * the gap instead.
+ *
+ * Level and hole (roadmap 19zm) are area tools instead: a drag marks every cell the
+ * rectangle touches, and letting go levels their corners or makes them holes (⇧ fills them).
  */
 
 const DEG = Math.PI / 180;
@@ -20,8 +24,18 @@ const HEIGHT_STEP = 0.01;
 /** Something whose base is this close to the ground is standing on it. */
 const ON_GROUND = 0.02;
 
-export type BrushMode = 'raise' | 'lower' | 'flatten' | 'smooth';
-export const BRUSH_MODES: readonly BrushMode[] = ['raise', 'lower', 'flatten', 'smooth'];
+export type BrushMode = 'raise' | 'lower' | 'flatten' | 'smooth' | 'level' | 'hole';
+export const BRUSH_MODES: readonly BrushMode[] = [
+  'raise',
+  'lower',
+  'flatten',
+  'smooth',
+  'level',
+  'hole',
+];
+
+/** Whether a mode is dragged as a rectangle of cells rather than painted. */
+export const isAreaMode = (mode: BrushMode): boolean => mode === 'level' || mode === 'hole';
 
 export interface Brush {
   mode: BrushMode;
@@ -29,6 +43,8 @@ export interface Brush {
   radius: number;
   /** Raise and lower: metres a second at the middle. Flatten and smooth: how fast, 1 is usual. */
   strength: number;
+  /** Level: the height to level to, or null for the ground where the drag starts. */
+  height: number | null;
 }
 
 /** The terrain as the sim takes it, with its heights as one array. */
@@ -39,18 +55,59 @@ export interface TerrainGrid {
   cols: number;
   rows: number;
   heights: Float64Array;
+  /** cols × rows flags: 1 where the cell is a hole. */
+  holes: Uint8Array;
 }
 
 export function terrainGrid(map: MapFile): TerrainGrid {
   const h = map.terrain.heights;
+  const cols = h[0]!.length - 1;
+  const rows = h.length - 1;
   return {
     minX: map.terrain.origin[0],
     minZ: map.terrain.origin[1],
     cellSize: map.terrain.cellSize,
-    cols: h[0]!.length - 1,
-    rows: h.length - 1,
+    cols,
+    rows,
     heights: Float64Array.from(h.flat()),
+    holes: holeFlags(cols, rows, map.terrain.holes) ?? new Uint8Array(cols * rows),
   };
+}
+
+/** Cells [i0, i1) × [j0, j1). */
+export type CellRect = [number, number, number, number];
+
+/**
+ * The cells a rectangle with corners (x0, z0) and (x1, z1) touches, at least the one under
+ * the first corner, or null if it's off the terrain.
+ */
+export function cellRect(
+  t: TerrainGrid,
+  x0: number,
+  z0: number,
+  x1: number,
+  z1: number,
+): CellRect | null {
+  const [ax, bx] = [(x0 - t.minX) / t.cellSize, (x1 - t.minX) / t.cellSize];
+  const [az, bz] = [(z0 - t.minZ) / t.cellSize, (z1 - t.minZ) / t.cellSize];
+  if (ax < 0 || az < 0 || ax >= t.cols || az >= t.rows) return null;
+  const i0 = Math.max(0, Math.floor(Math.min(ax, bx)));
+  const j0 = Math.max(0, Math.floor(Math.min(az, bz)));
+  const i1 = Math.min(t.cols, Math.max(i0 + 1, Math.ceil(Math.max(ax, bx))));
+  const j1 = Math.min(t.rows, Math.max(j0 + 1, Math.ceil(Math.max(az, bz))));
+  return [i0, i1, j0, j1];
+}
+
+/** Sets every corner of the cells to a height. */
+export function levelCells(t: TerrainGrid, [i0, i1, j0, j1]: CellRect, level: number): void {
+  for (let j = j0; j <= j1; j++)
+    for (let i = i0; i <= i1; i++) t.heights[j * (t.cols + 1) + i] = level;
+}
+
+/** Makes the cells holes, or fills them back in. */
+export function holeCells(t: TerrainGrid, [i0, i1, j0, j1]: CellRect, hole: boolean): void {
+  for (let j = j0; j < j1; j++)
+    for (let i = i0; i < i1; i++) t.holes[j * t.cols + i] = hole ? 1 : 0;
 }
 
 /** 1 in the middle, falling smoothly to 0 at the edge. */
@@ -123,16 +180,26 @@ const NEIGHBOURS = [
 ] as const;
 
 /**
- * Writes new corner heights into the map, to a centimetre, and moves what stood on the old
- * ground onto the new: shapes, markers and prefabs (not buildings), and each point of a
- * patrol on its own. Groups aren't moved themselves, only what's in them.
+ * Writes new corner heights and holes into the map, heights to a centimetre, and moves
+ * what stood on the old ground onto the new: shapes, markers and prefabs (not buildings),
+ * and each point of a patrol on its own. Groups aren't moved themselves, only what's in them.
  */
-export function setHeights(map: MapFile, heights: ArrayLike<number>, prefabs: PrefabLookup): void {
+export function setHeights(
+  map: MapFile,
+  heights: ArrayLike<number>,
+  holes: ArrayLike<number>,
+  prefabs: PrefabLookup,
+): void {
   const cols = map.terrain.heights[0]!.length;
   const old = new HeightGrid(terrainDef(map));
   map.terrain.heights = map.terrain.heights.map((row, j) =>
     row.map((_, i) => round(heights[j * cols + i]!, HEIGHT_STEP)),
   );
+  const cells: [number, number][] = [];
+  for (let k = 0; k < holes.length; k++)
+    if (holes[k]) cells.push([k % (cols - 1), Math.floor(k / (cols - 1))]);
+  if (cells.length) map.terrain.holes = cells;
+  else delete map.terrain.holes;
   const now = new HeightGrid(terrainDef(map));
   /** How much a point (local y, world x, z) should rise, or 0 if it wasn't on the ground. */
   const rise = (wy: number, x: number, z: number): number => {
@@ -174,14 +241,47 @@ export function setHeights(map: MapFile, heights: ArrayLike<number>, prefabs: Pr
 /** The map's terrain as HeightGrid takes it. */
 export function terrainDef(map: MapFile): HeightGridDef {
   const h = map.terrain.heights;
+  const cols = h[0]!.length - 1;
+  const rows = h.length - 1;
   return {
     minX: map.terrain.origin[0],
     minZ: map.terrain.origin[1],
     cellSize: map.terrain.cellSize,
-    cols: h[0]!.length - 1,
-    rows: h.length - 1,
+    cols,
+    rows,
     heights: h.flat(),
+    holes: holeFlags(cols, rows, map.terrain.holes),
   };
+}
+
+/** A side of the map: north is −z, as the map tab draws it, and east +x. */
+export type Side = 'north' | 'south' | 'east' | 'west';
+export const SIDES: readonly Side[] = ['north', 'south', 'east', 'west'];
+
+/**
+ * Adds `cells` rows or columns of terrain on one side. The new ground carries on at the
+ * edge's height, and nothing moves in the world: adding on the north or west moves the
+ * origin out instead, and the holes' cells with it.
+ */
+export function extendMap(map: MapFile, side: Side, cells: number): void {
+  const t = map.terrain;
+  const cs = t.cellSize;
+  if (side === 'north' || side === 'south') {
+    const edge = side === 'north' ? t.heights[0]! : t.heights.at(-1)!;
+    const rows = Array.from({ length: cells }, () => [...edge]);
+    t.heights = side === 'north' ? [...rows, ...t.heights] : [...t.heights, ...rows];
+  } else {
+    t.heights = t.heights.map((row) => {
+      const edge = Array<number>(cells).fill(side === 'west' ? row[0]! : row.at(-1)!);
+      return side === 'west' ? [...edge, ...row] : [...row, ...edge];
+    });
+  }
+  if (side === 'west') t.origin = [round(t.origin[0] - cells * cs), t.origin[1]];
+  if (side === 'north') t.origin = [t.origin[0], round(t.origin[1] - cells * cs)];
+  if (t.holes && (side === 'west' || side === 'north')) {
+    const [di, dj] = side === 'west' ? [cells, 0] : [0, cells];
+    t.holes = t.holes.map(([i, j]) => [i + di, j + dj]);
+  }
 }
 
 /** A new map: flat ground at 0 centred on the origin, with a player spawn in the middle. */

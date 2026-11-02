@@ -28,7 +28,7 @@ import {
   loadQuests,
 } from '../content';
 import { NOTES_EVENT, addNote, fetchNotes, noteLabels, removeNote, type MapNote } from '../notes';
-import { writePlayTest } from '../play-test-handoff';
+import { readDraft, writeDraft, writePlayTest, type Draft } from '../play-test-handoff';
 import { buildNavOverlay } from '../render/nav-debug';
 import {
   canEnter,
@@ -57,9 +57,27 @@ import {
   type NodePath,
   type Vec3,
 } from './doc';
-import { floorLevels, startCut, stepCut } from './cut';
+import {
+  CURVE_DEFAULTS,
+  CURVE_NAMES,
+  STEEP,
+  angleFrom,
+  curveBoxes,
+  cutHole,
+  holeAt,
+  followSweep,
+  onCircle,
+  pieceCount,
+  snapArc,
+  stairsSlope,
+  stepCount,
+  type Arc,
+  type CurveSettings,
+  type Hole,
+} from './curves';
+import { CUT_ABOVE, floorLevels, startCut, stepCut } from './cut';
 import { findOverlaps, forgetPrefabSolids, type Overlaps } from './overlap';
-import { newMap, setHeights, type Brush } from './terrain';
+import { extendMap, newMap, setHeights, type Brush, type Side } from './terrain';
 import { EditorView, typing, type Handles, type Moved } from './view';
 import {
   DOOR_HEIGHT,
@@ -70,18 +88,32 @@ import {
   WINDOW_SILL,
   alongWall,
   cutWall,
+  checkOpenings,
+  edgeRailing,
+  evenOpenings,
+  openingAt,
+  spaceEvenly,
+  splitWall,
+  toWall,
+  wallAlong,
+  wallPoint,
+  isRailing,
   doorIn,
   nearestEnd,
   snapCorner,
   wallAxis,
   wallBoxes,
   wallEnds,
+  windowAt,
   type Opening,
   type WallSettings,
 } from './walls';
 
-export type Placeable = 'box' | 'cylinder' | 'ramp' | 'stairs' | 'ladder';
+export type Placeable = 'box' | 'cylinder' | 'ramp' | 'stairs' | 'ladder' | 'floor' | 'slab';
+/** The shapes on number keys. */
 export const PLACEABLE: readonly Placeable[] = ['box', 'cylinder', 'ramp', 'stairs', 'ladder'];
+/** Thin boxes, a click each, for blocking out rooms fast: a floor and a straight wall. */
+export const QUICK: readonly Placeable[] = ['floor', 'slab'];
 
 /** What the marker tool places (session 17): the gameplay nodes. */
 export type MarkerKind =
@@ -103,16 +135,19 @@ export const MARKERS: Readonly<Record<MarkerKind, string>> = {
   questMarker: 'quest marker',
   door: 'door',
 };
-const TOOL_KEYS = { prefab: '6', marker: '7', zone: '8', wall: '9' } as const;
+const TOOL_KEYS = { prefab: '6', marker: '7', zone: '8', wall: '9', curve: '0' } as const;
+/** How near the last curve's centre a click must be to go on it. */
+const CENTRE_SNAP = 0.5;
 
 type Patrol = Extract<MapNode, { type: 'patrol' }>;
 
 /**
  * A patrol, named zone or run of walls being drawn a click at a time (points in the scope's
- * frame), or points being added to the end of the patrol at `index`.
+ * frame), points being added to the end of the patrol at `index`, or a curve (its centre,
+ * then where it starts).
  */
 export interface Drawing {
-  what: 'patrol' | 'zone' | 'walls' | 'extend';
+  what: 'patrol' | 'zone' | 'walls' | 'extend' | 'curve' | 'floor';
   index?: number;
   points: readonly Vec3[];
 }
@@ -143,7 +178,7 @@ export interface EditorState {
   scope: NodePath;
   /** Indices in the scope's nodes; the last is the active one. */
   selected: readonly number[];
-  tool: 'select' | 'terrain' | 'prefab' | 'marker' | 'zone' | 'wall' | Placeable;
+  tool: 'select' | 'terrain' | 'prefab' | 'marker' | 'zone' | 'wall' | 'curve' | Placeable;
   /** The prefab the prefab tool places. */
   placing: string;
   /** What the marker tool places. */
@@ -155,6 +190,13 @@ export interface EditorState {
   note: string | null;
   /** What the wall tool does (draw walls, or cut a door or window), and its sizes. */
   wall: WallSettings;
+  /** What the curve tool makes (a wall, floor or stairs), and its sizes. */
+  curve: CurveSettings;
+  /**
+   * The floor a round hole is being placed in (its path) and where, from the floor's middle
+   * in its own frame, before it's cut; null when none is.
+   */
+  hole: { path: NodePath; x: number; z: number } | null;
   drawing: Drawing | null;
   /** The named zone picked in the map's settings, by index. */
   zone: number | null;
@@ -162,6 +204,10 @@ export interface EditorState {
   point: number | null;
   /** Whether the navigation overlay is shown. */
   nav: boolean;
+  /** Whether the snapping grid's lines are shown. */
+  grid: boolean;
+  /** The height the grid is drawn at; null follows the cutaway, else the camera's target. */
+  gridY: number | null;
   /** The cutaway's height in the world: everything above it is hidden. Null when off. */
   cut: number | null;
   hiding: Hiding | null;
@@ -228,6 +274,11 @@ export class MapEditor {
   private handlesKey = '';
   /** The ends of the map's walls in the scope's frame, for corners to snap to; worked out when needed. */
   private ends: Vec3[] | null = null;
+  /** The last curve's centre and the scope it was in, for the next to line up with. */
+  private lastCentre: { scope: string; at: Vec3 } | null = null;
+  /** How far round the curve being drawn goes, followed as the mouse moves. */
+  private sweep = 0;
+  private draftTimer = 0;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -251,14 +302,18 @@ export class MapEditor {
       notes: [],
       note: null,
       wall: WALL_DEFAULTS,
+      curve: CURVE_DEFAULTS,
+      hole: null,
       drawing: null,
       zone: null,
       point: null,
       nav: false,
+      grid: false,
+      gridY: null,
       cut: null,
       hiding: null,
       spawns: [],
-      brush: { mode: 'raise', radius: 6, strength: 1 },
+      brush: { mode: 'raise', radius: 6, strength: 1, height: null },
       gizmo: 'translate',
       gridSnap: 0.5,
       angleSnap: 15,
@@ -277,15 +332,16 @@ export class MapEditor {
     };
     this.files = this.serialise();
     this.saved = new Map(this.files);
-    this.view = new EditorView(canvas, compileMap(doc, this.prefabs), {
+    const restored = this.restoreDraft();
+    this.view = new EditorView(canvas, compileMap(this.state.map, this.prefabs), {
       click: (e, index, outside) => this.clicked(e, index, outside),
       doubleClick: (index) => {
         if (index !== null) this.enter(index);
       },
       moved: (moves) => this.moved(moves),
       broken: (message) => this.set({ problem: message }),
-      terrain: (heights) => {
-        this.edit((_, m) => setHeights(m, heights, this.prefabs));
+      terrain: (heights, holes) => {
+        this.edit((_, m) => setHeights(m, heights, holes, this.prefabs));
       },
       handle: (index, to) => this.handleMoved(index, to),
       hover: (e) => this.hovered(e),
@@ -302,6 +358,45 @@ export class MapEditor {
     window.addEventListener('beforeunload', (e) => {
       if (this.state.dirty) e.preventDefault();
     });
+    if (restored) {
+      this.changed([], []);
+      this.set({
+        message: `Restored unsaved changes to ${restored}. Undo can't go back past them.`,
+      });
+    }
+  }
+
+  /** Puts back the unsaved changes kept from last time, where the file on disk hasn't changed since. */
+  private restoreDraft(): string | null {
+    const draft = readDraft(this.state.file);
+    if (!draft) return null;
+    const files = new Map(this.files);
+    const restored: string[] = [];
+    for (const [file, { base, json }] of Object.entries(draft)) {
+      // A new prefab has no file on disk to have changed.
+      if ((this.saved.get(file) ?? '') !== base) continue;
+      files.set(file, json);
+      restored.push(file);
+    }
+    if (!restored.length) return null;
+    this.load(files);
+    return restored.map((f) => `content/${f}`).join(', ');
+  }
+
+  /** Keeps the unsaved changes in localStorage, a moment after the last edit. */
+  private keepDraft(): void {
+    clearTimeout(this.draftTimer);
+    this.draftTimer = window.setTimeout(() => this.writeDraftNow(), 500);
+  }
+
+  private writeDraftNow(): void {
+    clearTimeout(this.draftTimer);
+    const draft: Draft = {};
+    for (const [file, json] of this.files) {
+      const base = this.saved.get(file) ?? '';
+      if (json !== base) draft[file] = { base, json };
+    }
+    writeDraft(this.state.file, draft);
   }
 
   readonly subscribe = (listener: () => void): (() => void) => {
@@ -313,9 +408,15 @@ export class MapEditor {
 
   private set(patch: Partial<EditorState>): void {
     this.state = { ...this.state, ...patch };
-    const { tool, drawing } = this.state;
+    const { tool, drawing, hole } = this.state;
     this.view.placing = !!drawing || (tool !== 'select' && tool !== 'terrain');
-    if (drawing?.what !== 'walls') this.view.setPreview(null);
+    if (
+      drawing?.what !== 'walls' &&
+      drawing?.what !== 'curve' &&
+      drawing?.what !== 'floor' &&
+      !hole
+    )
+      this.view.setPreview(null);
     this.showHandles();
     for (const l of this.listeners) l();
   }
@@ -340,7 +441,15 @@ export class MapEditor {
     this.set({
       tool,
       drawing: null,
-      message: toolHint(tool, this.state.placing, this.state.marker, this.state.wall),
+      hole: null,
+      message: toolHint(
+        tool,
+        this.state.placing,
+        this.state.marker,
+        this.state.wall,
+        this.state.curve,
+        this.state.brush,
+      ),
     });
   }
 
@@ -348,6 +457,15 @@ export class MapEditor {
   setWall(patch: Partial<WallSettings>): void {
     this.set({ wall: { ...this.state.wall, ...patch } });
     this.setTool('wall');
+  }
+
+  /** Changes the curve tool's settings, and picks the curve tool (keeping a curve being drawn). */
+  setCurve(patch: Partial<CurveSettings>): void {
+    const curve = { ...this.state.curve, ...patch };
+    const modeChanged = curve.mode !== this.state.curve.mode;
+    this.set({ curve });
+    if (this.state.tool !== 'curve' || modeChanged) this.setTool('curve');
+    else if (this.state.hole) this.showHole();
   }
 
   /** Picks what the marker tool places, and the marker tool. */
@@ -368,8 +486,15 @@ export class MapEditor {
   }
 
   setBrush(patch: Partial<Brush>): void {
-    const brush = { ...this.state.brush, ...patch };
-    this.set({ brush });
+    const s = this.state;
+    const brush = { ...s.brush, ...patch };
+    this.set({
+      brush,
+      message:
+        s.tool === 'terrain'
+          ? toolHint(s.tool, s.placing, s.marker, s.wall, s.curve, brush)
+          : s.message,
+    });
     if (this.state.tool === 'terrain') this.view.brush = brush;
   }
 
@@ -492,7 +617,14 @@ export class MapEditor {
     this.redoStack.length = 0;
     // An old message (a refused edit, say) no longer applies.
     this.set({
-      message: toolHint(this.state.tool, this.state.placing, this.state.marker, this.state.wall),
+      message: toolHint(
+        this.state.tool,
+        this.state.placing,
+        this.state.marker,
+        this.state.wall,
+        this.state.curve,
+        this.state.brush,
+      ),
     });
     this.changed(selected ?? this.state.selected, this.state.scope, overlaps);
   }
@@ -522,6 +654,7 @@ export class MapEditor {
     }
     forgetPrefabSolids();
     this.files = files;
+    if (this.saved) this.keepDraft();
   }
 
   /** A node's name for messages: its id or name, or its type and path. */
@@ -569,6 +702,8 @@ export class MapEditor {
       selected: sel,
       zone,
       point: valid === scope && sel.join() === selected.join() ? this.state.point : null,
+      // What it was placed in may be gone, or moved.
+      hole: null,
       canUndo: this.undoStack.length > 0,
       canRedo: this.redoStack.length > 0,
     });
@@ -636,7 +771,14 @@ export class MapEditor {
   private restore(s: Snapshot): void {
     this.load(s.files);
     this.set({
-      message: toolHint(this.state.tool, this.state.placing, this.state.marker, this.state.wall),
+      message: toolHint(
+        this.state.tool,
+        this.state.placing,
+        this.state.marker,
+        this.state.wall,
+        this.state.curve,
+        this.state.brush,
+      ),
     });
     this.changed(s.selected, s.scope);
   }
@@ -656,6 +798,17 @@ export class MapEditor {
       };
     }
     const a = this.active();
+    if (selected.length === 1 && a?.type === 'wall' && a.openings.length) {
+      // A wall's windows, slid along it.
+      const yaw = ((a.yaw ?? 0) * Math.PI) / 180;
+      return {
+        points: a.openings.map((o) => wallPoint(a, o.along, (o.bottom + o.top) / 2)),
+        picked: point,
+        line: 'none',
+        terrainOnly: false,
+        slide: { from: [...a.pos], dir: [Math.cos(yaw), 0, -Math.sin(yaw)] },
+      };
+    }
     if (selected.length === 1 && a?.type === 'patrol')
       return {
         points: a.points.map((_, k) => patrolPoint(a, k)),
@@ -674,10 +827,11 @@ export class MapEditor {
     return null;
   }
 
-  private showHandles(): void {
+  /** Shows the handles if they changed, or anyway (`force`, to put back a refused drag). */
+  private showHandles(force = false): void {
     const h = this.handles();
     const key = JSON.stringify(h);
-    if (key === this.handlesKey) return;
+    if (key === this.handlesKey && !force) return;
     this.handlesKey = key;
     this.view.setHandles(h);
   }
@@ -695,7 +849,28 @@ export class MapEditor {
       return this.set({ drawing: { ...drawing, points } });
     }
     const i = this.state.selected[0];
-    if (this.active()?.type === 'patrol' && i !== undefined) {
+    const a = this.active();
+    if (a?.type === 'wall' && i !== undefined) {
+      if (to) {
+        // Slid along the wall, kept inside it; not onto another window.
+        const moved = structuredClone(a);
+        const o = moved.openings[k]!;
+        const half = moved.size[0] / 2 - o.width / 2;
+        o.along = round(Math.max(-half, Math.min(half, wallAlong(a, to))));
+        moved.openings.sort((p, q) => p.along - q.along);
+        try {
+          checkOpenings(moved);
+        } catch (err) {
+          this.set({ message: `Not moved: ${err instanceof Error ? err.message : err}.` });
+          this.showHandles(true);
+          return;
+        }
+        this.edit((nodes) => void (nodes[i] = moved));
+        return this.set({ point: moved.openings.indexOf(o) });
+      }
+      return this.set({ point: k });
+    }
+    if (a?.type === 'patrol' && i !== undefined) {
       if (to) this.edit((nodes) => void movePatrolPoint(nodes[i] as Patrol, k, to));
       return this.set({ point: k });
     }
@@ -716,12 +891,20 @@ export class MapEditor {
     this.set({ zone, point: null });
   }
 
-  /** Takes out the picked point of a patrol (two must stay) or zone (three must). */
+  /**
+   * Takes out the picked point of a patrol (two must stay) or zone (three must), or the
+   * picked window of a wall.
+   */
   deletePoint(): void {
     const { point, zone } = this.state;
     if (point === null) return;
     const i = this.state.selected[0];
-    if (this.active()?.type === 'patrol' && i !== undefined) {
+    if (this.active()?.type === 'wall' && i !== undefined) {
+      // A wall's window: the gap is filled in.
+      this.edit(
+        (nodes) => void (nodes[i] as Extract<MapNode, { type: 'wall' }>).openings.splice(point, 1),
+      );
+    } else if (this.active()?.type === 'patrol' && i !== undefined) {
       this.edit((nodes) => void removePatrolPoint(nodes[i] as Patrol, point));
     } else if (zone !== null) {
       if (this.state.map.zones[zone]!.points.length <= 3) {
@@ -764,6 +947,14 @@ export class MapEditor {
       const corner = this.wallCorner(d.points, [p.x, p.y, p.z]);
       return this.set({ drawing: { ...d, points: [...d.points, corner] } });
     }
+    if (d.what === 'curve') return this.addCurvePoint(d, [p.x, p.y, p.z]);
+    if (d.what === 'floor') {
+      // On wall ends or the grid, like a wall's corners; the second click makes it.
+      const corner = this.wallCorner([], [p.x, d.points[0]?.[1] ?? p.y, p.z]);
+      this.set({ drawing: { ...d, points: [...d.points, corner] } });
+      if (d.points.length) this.finishDrawing();
+      return;
+    }
     const grid = this.state.gridSnap;
     if (grid) {
       p.x = round(Math.round(p.x / grid) * grid);
@@ -792,15 +983,32 @@ export class MapEditor {
     return snapCorner(last, [x!, last[1], z!], this.state.angleSnap, grid);
   }
 
-  /** Shows the walls being drawn, up to where the mouse is. */
+  /** Shows the walls or curve being drawn, up to where the mouse is. */
   private hovered(e: PointerEvent): void {
     const d = this.state.drawing;
-    if (d?.what !== 'walls' || !d.points.length) return;
+    if ((d?.what !== 'walls' && d?.what !== 'curve' && d?.what !== 'floor') || !d.points.length)
+      return;
     const p = this.view.pointUnder(e);
     if (!p) return;
+    if (d.what === 'curve') {
+      const arc = this.curveArc(d.points, [p.x, p.y, p.z]);
+      this.view.setPreview(curveBoxes(arc, this.state.curve, this.state.colour), this.slots());
+      const message = curveReadout(arc, this.state.curve, d.points.length);
+      if (message !== this.state.message) this.set({ message });
+      return;
+    }
+    if (d.what === 'floor') {
+      const corner = this.wallCorner([], [p.x, d.points[0]![1], p.z]);
+      const floor = floorBox(d.points[0]!, corner, this.state.colour);
+      this.view.setPreview(floor && [floor], this.slots());
+      return;
+    }
     const corner = this.wallCorner(d.points, [p.x, p.y, p.z]);
     const { height, thickness } = this.state.wall;
-    this.view.setPreview(wallBoxes([...d.points, corner], height, thickness, this.state.colour));
+    this.view.setPreview(
+      wallBoxes([...d.points, corner], height, thickness, this.state.colour),
+      this.slots(),
+    );
   }
 
   /** Makes what's been drawn: a zone, a patrol, the patrol's new points, or walls (`close`d into a room). */
@@ -808,7 +1016,12 @@ export class MapEditor {
     const d = this.state.drawing;
     if (!d) return;
     const pts = d.points;
-    const need = d.what === 'zone' ? 3 : d.what === 'patrol' || d.what === 'walls' ? 2 : 1;
+    const need =
+      d.what === 'zone'
+        ? 3
+        : d.what === 'patrol' || d.what === 'walls' || d.what === 'curve' || d.what === 'floor'
+          ? 2
+          : 1;
     if (pts.length < need) {
       this.set({
         message: `Click ${need - pts.length} more point${need - pts.length > 1 ? 's' : ''}, or Esc to stop.`,
@@ -816,7 +1029,23 @@ export class MapEditor {
       return;
     }
     this.set({ drawing: null });
-    if (d.what === 'zone') {
+    if (d.what === 'curve') {
+      // Finished at its start: all the way round.
+      const arc = this.curveArc(pts, pts[1]!);
+      return this.makeCurve({ ...arc, sweep: 360 });
+    } else if (d.what === 'floor') {
+      const floor = floorBox(pts[0]!, pts[1]!, this.state.colour);
+      if (!floor) {
+        this.set({ message: 'Those corners are in line: click two opposite corners.' });
+        return;
+      }
+      this.edit((nodes) => {
+        nodes.push(floor);
+        return [nodes.length - 1];
+      });
+      const [w, , d] = floor.size;
+      this.set({ message: `Made a ${w} × ${d} m floor. Click its next first corner, or Esc.` });
+    } else if (d.what === 'zone') {
       const zone = this.state.map.zones.length;
       this.editMap((m) =>
         m.zones.push({
@@ -861,6 +1090,216 @@ export class MapEditor {
         for (const q of pts) insertPatrolPoint(p, p.points.length, q);
       });
     }
+  }
+
+  // Curves
+
+  /**
+   * A click while drawing a curve: the centre (on the last curve's, if near it, else on the
+   * grid), then where it starts (which sets its size), then where it ends, which makes it.
+   */
+  private addCurvePoint(d: Drawing, p: Vec3): void {
+    if (!d.points.length) {
+      const last = this.lastCentre;
+      const onLast =
+        last?.scope === this.state.scope.join('.') &&
+        Math.hypot(last.at[0] - p[0], last.at[2] - p[2]) < CENTRE_SNAP;
+      const grid = this.state.gridSnap;
+      const [x, z] = grid ? [p[0], p[2]].map((v) => Math.round(v / grid) * grid) : [p[0], p[2]];
+      const centre: Vec3 = onLast ? last.at : [round(x!), round(p[1]), round(z!)];
+      return this.set({
+        drawing: { ...d, points: [centre] },
+        message:
+          (onLast ? "On the last curve's centre. " : '') +
+          'Now click where it starts: that sets how big the circle is.',
+      });
+    }
+    const arc = this.curveArc(d.points, p);
+    if (d.points.length === 1) {
+      this.sweep = 0;
+      return this.set({
+        drawing: { ...d, points: [arc.centre, onCircle(arc.centre, arc.radius, arc.start)] },
+        message:
+          'Now click where it ends (it follows the mouse either way round), or click the start again for a full circle.',
+      });
+    }
+    this.set({ drawing: null });
+    this.makeCurve(arc);
+  }
+
+  /**
+   * The arc of the curve being drawn with the mouse at `p`, snapped: before the start is
+   * clicked, a full circle out to the mouse; after, from the start round to the mouse.
+   */
+  private curveArc(points: readonly Vec3[], p: Vec3): Arc {
+    const centre = points[0]!;
+    const edge = points[1] ?? p;
+    const start = angleFrom(centre, edge);
+    const radius = Math.hypot(edge[0] - centre[0], edge[2] - centre[2]);
+    if (points.length < 2) this.sweep = 360;
+    else this.sweep = followSweep(start, this.sweep, angleFrom(centre, p));
+    const { gridSnap, angleSnap } = this.state;
+    return snapArc({ centre, radius, start, sweep: this.sweep }, gridSnap, angleSnap);
+  }
+
+  /** Makes a curve's boxes, grouped, and remembers its centre for the next to line up with. */
+  private makeCurve(arc: Arc): void {
+    const s = this.state.curve;
+    const boxes = curveBoxes(arc, s, this.state.colour);
+    this.lastCentre = { scope: this.state.scope.join('.'), at: arc.centre };
+    const name = CURVE_NAMES[s.mode];
+    this.edit((nodes) => {
+      const at = nodes.length;
+      nodes.push(...boxes);
+      if (boxes.length === 1) return [at];
+      return [
+        groupNodes(
+          nodes,
+          boxes.map((_, k) => at + k),
+          name,
+        ),
+      ];
+    });
+    const slope = s.mode === 'stairs' ? stairsSlope(arc, s) : 0;
+    const steep =
+      slope > STEEP
+        ? ` They're steep (${Math.round(slope)}°): go further round or lower the rise.`
+        : '';
+    this.set({
+      message:
+        `Made ${name.toLowerCase()}: ${boxes.length} pieces, grouped.${steep} ` +
+        'To line something else up with it, click the same centre (it snaps).',
+    });
+  }
+
+  // Round holes
+
+  /**
+   * Puts a round hole (not cut yet) in the floor clicked, where clicked: on the floor's
+   * middle if within a metre of it, else on the grid. The floor can be inside a group in
+   * scope; a placed prefab has to be gone into first.
+   */
+  private placeHole(e: MouseEvent): void {
+    const hit = this.view.pickLeaf(e);
+    if (!hit) return;
+    const floor = nodeAt(this.state.map, hit.path, this.prefabs);
+    if (floor?.type !== 'box') {
+      const inPrefab = floor?.type === 'prefab' ? ': go into the prefab first (double-click)' : '';
+      this.set({ message: `Holes are cut into floors (boxes)${inPrefab}.` });
+      return;
+    }
+    // Into the floor's own frame.
+    const yaw = nodeYaw(floor) * (Math.PI / 180);
+    const [dx, dz] = [hit.at[0] - floor.pos[0], hit.at[2] - floor.pos[2]];
+    const [c, s] = [Math.cos(yaw), Math.sin(yaw)];
+    const at = holeAt(dx * c - dz * s, dx * s + dz * c, this.state.gridSnap);
+    this.set({ hole: { path: hit.path, ...at } });
+    this.showHole();
+  }
+
+  /** Moves the hole being placed (from its floor's middle, in the floor's frame). */
+  moveHole(patch: { x?: number; z?: number }): void {
+    if (!this.state.hole) return;
+    this.set({ hole: { ...this.state.hole, ...patch } });
+    this.showHole();
+  }
+
+  /** The hole being placed, worked out: its floor, and the pieces it cuts or why it can't. */
+  private holeCut(): {
+    floor: Extract<MapNode, { type: 'box' }>;
+    hole: Hole;
+    cut: ReturnType<typeof cutHole> | null;
+    problem: string | null;
+  } | null {
+    const h = this.state.hole;
+    const floor = h && nodeAt(this.state.map, h.path, this.prefabs);
+    if (floor?.type !== 'box') return null;
+    const { holeRadius, railing, railingHeight } = this.state.curve;
+    const hole: Hole = { x: h!.x, z: h!.z, radius: holeRadius };
+    try {
+      const cut = cutHole(floor, hole, railing ? railingHeight : null, this.state.colour);
+      return { floor, hole, cut, problem: null };
+    } catch (err) {
+      return { floor, hole, cut: null, problem: err instanceof Error ? err.message : String(err) };
+    }
+  }
+
+  /** Shows the hole being placed: a see-through plug where it goes, and its railing. */
+  private showHole(): void {
+    const h = this.state.hole;
+    const c = this.holeCut();
+    if (!h || !c) return this.view.setPreview(null);
+    const { floor, hole, cut, problem } = c;
+    const plug: MapNode = {
+      type: 'cylinder',
+      pos: [0, 0, 0],
+      radius: hole.radius,
+      height: round(floor.size[1] + 0.4),
+      sides: 32,
+      colour: '#ff8800',
+      collide: false,
+    };
+    // The plug's middle in the floor's parent frame.
+    const yaw = nodeYaw(floor) * (Math.PI / 180);
+    const [cs, sn] = [Math.cos(yaw), Math.sin(yaw)];
+    placeNode(plug, [
+      floor.pos[0] + hole.x * cs + hole.z * sn,
+      floor.pos[1] - 0.2,
+      floor.pos[2] - hole.x * sn + hole.z * cs,
+    ]);
+    const nodes: MapNode[] = [plug, ...(cut?.railing ?? [])];
+    // Wrapped in the groups between the scope and the floor, to show in the scope's frame.
+    let shown = nodes;
+    const parent = h.path.slice(0, -1);
+    for (let k = parent.length; k > this.state.scope.length; k--) {
+      const g = nodeAt(this.state.map, parent.slice(0, k), this.prefabs);
+      if (!g) break;
+      shown = [{ type: 'group', pos: nodePos(g), yaw: nodeYaw(g), nodes: shown }];
+    }
+    this.view.setPreview(shown, this.slots());
+    const where =
+      h.x === 0 && h.z === 0 ? "on the floor's middle" : `${h.x}, ${h.z} m from the floor's middle`;
+    this.set({
+      message: problem
+        ? `The hole doesn't fit: ${problem}. Make it smaller or move it in.`
+        : `Round hole, radius ${hole.radius} m, ${where}. Click to move it or type where on the right; Enter cuts it.`,
+    });
+  }
+
+  /** Cuts the hole being placed: the floor becomes a group of pieces round it (and a railing). */
+  cutPendingHole(): void {
+    const h = this.state.hole;
+    const c = this.holeCut();
+    if (!h || !c) return;
+    if (!c.cut) {
+      this.set({ message: `The hole doesn't fit: ${c.problem}. Make it smaller or move it in.` });
+      return;
+    }
+    const pieces: MapNode[] = [...c.cut.floor, ...c.cut.railing];
+    const parent = h.path.slice(0, -1);
+    const index = h.path[h.path.length - 1]!;
+    const here = parent.join('.') === this.state.scope.join('.');
+    this.edit((_, map) => {
+      const list = nodesAt(map, parent, this.prefabs);
+      list.splice(index, 1, ...pieces);
+      const g = groupNodes(
+        list,
+        pieces.map((_, k) => index + k),
+        'Floor with hole',
+      );
+      return here ? [g] : [];
+    });
+    this.set({
+      hole: null,
+      message:
+        `Cut a round hole ${c.hole.radius} m in radius${c.cut.railing.length ? ', with a railing' : ''}. ` +
+        'The floor is a group now ("Floor with hole"): move it as one, or undo to cut it again.',
+    });
+  }
+
+  /** Stops placing a hole. */
+  cancelHole(): void {
+    this.set({ hole: null, message: null });
   }
 
   // Notes
@@ -928,6 +1367,16 @@ export class MapEditor {
   }
 
   // The navigation overlay
+
+  setGrid(grid: boolean): void {
+    this.set({ grid });
+    this.view.showGrid = grid;
+  }
+
+  setGridY(gridY: number | null): void {
+    this.set({ gridY });
+    this.view.gridY = gridY;
+  }
 
   setNav(nav: boolean): void {
     this.set({ nav });
@@ -1030,10 +1479,13 @@ export class MapEditor {
       return;
     }
     writePlayTest({ map: this.state.map, prefabs: [...this.prefabs.values()] });
+    this.writeDraftNow();
     const q = new URLSearchParams();
     if (start === CAMERA_START) {
-      const [x, , z] = this.view.target();
-      q.set('at', `${round(x, 0.1)},${round(z, 0.1)}`);
+      // On the floor under the cutaway, or else the one under the camera's target.
+      const [x, y, z] = this.view.target();
+      const top = this.state.cut ?? y + CUT_ABOVE;
+      q.set('at', `${round(x, 0.1)},${round(z, 0.1)},${round(top, 0.1)}`);
     } else if (start) q.set('spawn', start);
     const tab = window.open(`/play-test${q.size ? `?${q}` : ''}`, 'mes-play-test');
     tab?.focus();
@@ -1043,6 +1495,25 @@ export class MapEditor {
     this.edit((nodes) => {
       for (const m of moves) moveWith(nodes[m.index]!, m.from, m.to, m.yaw);
     });
+  }
+
+  /**
+   * Spaces the selected wall's windows evenly along it, keeping their widths, or the bar's
+   * gap apart, centred.
+   */
+  spaceWindows(): void {
+    const a = this.active();
+    const i = this.state.selected[0];
+    if (a?.type !== 'wall' || i === undefined) return;
+    const w = structuredClone(a);
+    try {
+      spaceEvenly(w, this.state.wall.gap);
+    } catch (err) {
+      this.set({ message: `Not spaced: ${err instanceof Error ? err.message : err}.` });
+      return;
+    }
+    this.edit((nodes) => void (nodes[i] = w));
+    this.set({ message: `Spaced ${w.openings.length} windows evenly.` });
   }
 
   deleteSelected(): void {
@@ -1145,8 +1616,19 @@ export class MapEditor {
       return this.addPoint(e);
     }
     if (tool === 'wall') {
+      if (this.state.wall.mode === 'railing') return this.placeRailing(e);
+      if (this.state.wall.mode === 'glass') return this.glazeWindow(e);
       if (this.state.wall.mode !== 'draw') return this.cutOpening(e);
       this.set({ drawing: { what: 'walls', points: [] } });
+      return this.addPoint(e);
+    }
+    if (tool === 'floor') {
+      this.set({ drawing: { what: 'floor', points: [] } });
+      return this.addPoint(e);
+    }
+    if (tool === 'curve' && this.state.curve.mode === 'hole') return this.placeHole(e);
+    if (tool === 'curve') {
+      this.set({ drawing: { what: 'curve', points: [] } });
       return this.addPoint(e);
     }
     if (tool === 'select' || tool === 'terrain') return;
@@ -1188,18 +1670,20 @@ export class MapEditor {
   }
 
   /**
-   * Cuts a door or window (the wall tool's mode) into the wall clicked, where clicked: its
-   * box is split around the gap, and a door is put in a doorway. The wall can be inside a
-   * group in scope; a placed prefab has to be gone into first.
+   * Cuts a door or window (the wall tool's mode) into the wall clicked, where clicked, or
+   * with a count over 1, that many spaced evenly along the whole wall. Windows make the
+   * wall a wall node (if it's a box) with them as openings, so they can be slid and resized
+   * later; a doorway splits the wall (box or wall node) around it, with a door in it. The
+   * wall can be inside a group in scope; a placed prefab has to be gone into first.
    */
   private cutOpening(e: MouseEvent): void {
     const hit = this.view.pickLeaf(e);
     if (!hit) return;
-    const { mode, width } = this.state.wall;
-    const wall = nodeAt(this.state.map, hit.path, this.prefabs);
-    if (wall?.type !== 'box') {
-      const inPrefab = wall?.type === 'prefab' ? ': go into the prefab first (double-click)' : '';
-      this.set({ message: `Doors and windows are cut into walls (boxes)${inPrefab}.` });
+    const { mode, width, count } = this.state.wall;
+    const node = nodeAt(this.state.map, hit.path, this.prefabs);
+    if (node?.type !== 'box' && node?.type !== 'wall') {
+      const inPrefab = node?.type === 'prefab' ? ': go into the prefab first (double-click)' : '';
+      this.set({ message: `Doors and windows are cut into walls${inPrefab}.` });
       return;
     }
     const grid = this.state.gridSnap || 0.05;
@@ -1207,43 +1691,196 @@ export class MapEditor {
       mode === 'door'
         ? { along: 0, width, bottom: 0, top: DOOR_HEIGHT }
         : { along: 0, width, bottom: WINDOW_SILL, top: WINDOW_SILL + WINDOW_HEIGHT };
-    opening.along = round(Math.round(alongWall(wall, hit.at) / grid) * grid);
+    const at = node.type === 'wall' ? wallAlong(node, hit.at) : alongWall(node, hit.at);
+    opening.along = round(Math.round(at / grid) * grid);
+    const length = node.type === 'wall' ? node.size[0] : wallAxis(node).length;
+    const glazed = mode === 'window' && this.state.wall.glass;
     let pieces: MapNode[];
+    let doors = 0;
     try {
-      const boxes = cutWall(wall, opening);
-      // Only the first piece keeps the wall's id, if it had one.
-      for (const b of boxes.slice(1)) delete b.id;
-      pieces = boxes;
+      const openings =
+        count > 1 ? evenOpenings(length, opening, count, this.state.wall.gap) : [opening];
+      if (mode === 'window') {
+        const wall = node.type === 'wall' ? structuredClone(node) : toWall(node);
+        for (const o of openings) {
+          const half = length / 2 - o.width / 2;
+          wall.openings.push({
+            ...o,
+            along: Math.max(-half, Math.min(half, o.along)),
+            ...(glazed ? { glass: this.state.wall.glassColour } : {}),
+          });
+        }
+        wall.openings.sort((a, b) => a.along - b.along);
+        checkOpenings(wall);
+        pieces = [wall];
+      } else if (node.type === 'wall') {
+        // Each doorway (from the right end) splits what's left of the wall left of it.
+        let rest: Extract<MapNode, { type: 'wall' }> | null = node;
+        const right: MapNode[] = [];
+        const doorNodes: MapNode[] = [];
+        for (const o of [...openings].sort((a, b) => b.along - a.along)) {
+          if (!rest) throw new Error('the doorways run into the end of the wall');
+          const split = splitWall(rest, { ...o, along: o.along - wallAlong(node, rest.pos) });
+          const door: MapNode = {
+            type: 'door',
+            pos: split.door,
+            size: [width, DOOR_HEIGHT],
+            colour: this.state.colour,
+          };
+          placeNode(door, split.door, split.yaw);
+          doorNodes.push(door);
+          right.unshift(...[split.lintel, split.right].filter((p) => p !== null));
+          rest = split.left;
+        }
+        pieces = [...(rest ? [rest] : []), ...right, ...doorNodes];
+        doors = doorNodes.length;
+      } else {
+        const boxes = cutWall(node, openings);
+        // Only the first piece keeps the wall's id, if it had one.
+        for (const b of boxes.slice(1)) delete b.id;
+        pieces = boxes;
+        for (const o of openings) {
+          const { pos, yaw } = doorIn(node, o);
+          const door: MapNode = {
+            type: 'door',
+            pos,
+            size: [width, DOOR_HEIGHT],
+            colour: this.state.colour,
+          };
+          placeNode(door, pos, yaw);
+          pieces.push(door);
+        }
+        doors = openings.length;
+      }
     } catch (err) {
       this.set({ message: `Not cut: ${err instanceof Error ? err.message : err}.` });
       return;
-    }
-    if (mode === 'door') {
-      const { pos, yaw } = doorIn(wall, opening);
-      const door: MapNode = {
-        type: 'door',
-        pos,
-        size: [width, DOOR_HEIGHT],
-        colour: this.state.colour,
-      };
-      placeNode(door, pos, yaw);
-      pieces.push(door);
     }
     const parent = hit.path.slice(0, -1);
     const index = hit.path[hit.path.length - 1]!;
     const here = parent.join('.') === this.state.scope.join('.');
     this.edit((_, map) => {
       nodesAt(map, parent, this.prefabs).splice(index, 1, ...pieces);
-      return here && mode === 'door' ? [index + pieces.length - 1] : [];
+      if (!here) return [];
+      // The wall with its windows, or the doors (last), are selected.
+      if (!doors) return [index];
+      const first = index + pieces.length - doors;
+      return Array.from({ length: doors }, (_, k) => first + k);
     });
-    const thick = wall.size[2 - wallAxis(wall).axis]!;
+    const thick = node.type === 'wall' ? node.size[2] : node.size[2 - wallAxis(node).axis]!;
     const notes =
       mode === 'window' && thick > VAULT_THICKNESS
         ? ` It can't be vaulted through: the wall is over ${VAULT_THICKNESS} m thick.`
         : mode === 'window' && width < WINDOW_MIN_WIDTH
           ? ` It can't be vaulted through: under ${WINDOW_MIN_WIDTH} m wide.`
           : '';
-    this.set({ message: `Cut a ${mode} ${width} m wide.${notes}` });
+    const n = count > 1 ? count : 1;
+    const what =
+      n === 1
+        ? `a ${glazed ? 'glazed ' : ''}${mode}`
+        : `${n} ${glazed ? 'glazed ' : ''}${mode}s, evenly spaced,`;
+    const after =
+      mode === 'window'
+        ? " Drag the handles to slide them; the wall's fields set their sizes."
+        : '';
+    this.set({ message: `Cut ${what} ${width} m wide.${notes}${after}` });
+  }
+
+  /**
+   * Fills the window whose sill or lintel was clicked with glass (wall tool, glass mode).
+   * Inside groups in scope, like cutting.
+   */
+  private glazeWindow(e: MouseEvent): void {
+    const hit = this.view.pickLeaf(e);
+    if (!hit) return;
+    const piece = nodeAt(this.state.map, hit.path, this.prefabs);
+    const parent = hit.path.slice(0, -1);
+    const index = hit.path[hit.path.length - 1]!;
+    if (piece?.type === 'wall') {
+      // A wall node's window: the opening clicked in (or beside), glazed with the tint.
+      const k = openingAt(piece, wallAlong(piece, hit.at));
+      if (k < 0) {
+        this.set({ message: 'Click the wall right under or over a window to glaze it.' });
+        return;
+      }
+      const tint = this.state.wall.glassColour;
+      this.edit((_, map) => {
+        const w = nodesAt(map, parent, this.prefabs)[index] as typeof piece;
+        w.openings[k]!.glass = tint;
+        return parent.join('.') === this.state.scope.join('.') ? [index] : [];
+      });
+      this.set({ message: `Glazed a window ${piece.openings[k]!.width} m wide.` });
+      return;
+    }
+    const glass =
+      piece?.type === 'box'
+        ? windowAt(
+            piece,
+            nodesAt(this.state.map, parent, this.prefabs),
+            this.state.wall.glassColour,
+          )
+        : null;
+    if (!glass) {
+      this.set({
+        message: "Click a window's sill or lintel to glaze it (one without glass already).",
+      });
+      return;
+    }
+    const here = parent.join('.') === this.state.scope.join('.');
+    this.edit((_, map) => {
+      nodesAt(map, parent, this.prefabs).splice(index + 1, 0, glass);
+      return here ? [index + 1] : [];
+    });
+    this.set({ message: `Glazed a window ${glass.size[0]} m wide.` });
+  }
+
+  /**
+   * Puts a railing along the edge of the floor, ramp or stairs clicked, nearest the click, or
+   * cuts a gap (the bar's width) in a railing clicked. Like cutting, inside groups in scope.
+   */
+  private placeRailing(e: MouseEvent): void {
+    const hit = this.view.pickLeaf(e);
+    if (!hit) return;
+    const { width, railingHeight } = this.state.wall;
+    const n = nodeAt(this.state.map, hit.path, this.prefabs);
+    const parent = hit.path.slice(0, -1);
+    const index = hit.path[hit.path.length - 1]!;
+    if (n?.type === 'box' && isRailing(n)) {
+      const grid = this.state.gridSnap || 0.05;
+      const along = round(Math.round(alongWall(n, hit.at) / grid) * grid);
+      try {
+        const pieces = cutWall(n, { along, width, bottom: 0, top: n.size[1] });
+        for (const b of pieces.slice(1)) delete b.id;
+        this.edit((_, map) => {
+          nodesAt(map, parent, this.prefabs).splice(index, 1, ...pieces);
+          return [];
+        });
+        this.set({ message: `Cut a gap ${width} m wide in the railing.` });
+      } catch (err) {
+        this.set({ message: `Not cut: ${err instanceof Error ? err.message : err}.` });
+      }
+      return;
+    }
+    if (n?.type !== 'box' && n?.type !== 'ramp' && n?.type !== 'stairs') {
+      const inPrefab = n?.type === 'prefab' ? ': go into the prefab first (double-click)' : '';
+      this.set({ message: `Railings go on floors (boxes), ramps and stairs${inPrefab}.` });
+      return;
+    }
+    let pieces: MapNode[];
+    try {
+      pieces = edgeRailing(n, hit.at, railingHeight, this.state.colour);
+    } catch (err) {
+      this.set({ message: `No railing: ${err instanceof Error ? err.message : err}.` });
+      return;
+    }
+    const here = parent.join('.') === this.state.scope.join('.');
+    this.edit((_, map) => {
+      nodesAt(map, parent, this.prefabs).splice(index + 1, 0, ...pieces);
+      return here ? pieces.map((_, k) => index + 1 + k) : [];
+    });
+    this.set({
+      message: `Put a railing ${railingHeight} m tall along the edge${pieces.length > 1 ? `, in ${pieces.length} pieces up the slope` : ''}. Click it to cut a gap.`,
+    });
   }
 
   setColour(colour: string): void {
@@ -1253,6 +1890,16 @@ export class MapEditor {
   /** Changes the map's own settings (environment, ground colour, water). */
   editMap(change: (map: MapFile) => void): void {
     this.edit((_, map) => void change(map));
+  }
+
+  /** Adds `cells` of ground on a side of the map. */
+  extendMap(side: Side, cells: number): void {
+    this.editMap((m) => extendMap(m, side, cells));
+    const t = this.state.map.terrain;
+    const size = (n: number) => round(n * t.cellSize);
+    this.set({
+      message: `Added ${size(cells)} m on the ${side}: the map is now ${size(t.heights[0]!.length - 1)} × ${size(t.heights.length - 1)} m.`,
+    });
   }
 
   /** Changes the own settings (name, slots, building) of the prefab being edited inside. */
@@ -1420,6 +2067,7 @@ export class MapEditor {
         })),
       );
       for (const [file, json] of changed) this.saved.set(file, json);
+      this.writeDraftNow();
       this.set({
         saving: false,
         ...this.unsaved(),
@@ -1474,12 +2122,14 @@ export class MapEditor {
     if (e.key === 'Escape')
       return run(() => {
         if (this.state.drawing) this.set({ drawing: null, message: null });
+        else if (this.state.hole) this.cancelHole();
         else if (this.state.point !== null) this.set({ point: null });
         else if (this.state.tool !== 'select') this.setTool('select');
         else if (this.state.selected.length) this.select([]);
         else this.exit();
       });
     if (e.key === 'Enter' && this.state.drawing) return run(() => this.finishDrawing());
+    if (e.key === 'Enter' && this.state.hole) return run(() => this.cutPendingHole());
     if (e.key === 'Enter') {
       const i = this.state.selected[this.state.selected.length - 1];
       if (i !== undefined) return run(() => this.enter(i));
@@ -1487,6 +2137,7 @@ export class MapEditor {
     for (const [tool, key] of Object.entries(TOOL_KEYS))
       if (e.key === key) return run(() => this.setTool(tool as keyof typeof TOOL_KEYS));
     if (k === 'n') return run(() => this.setNav(!this.state.nav));
+    if (k === 'h') return run(() => this.setGrid(!this.state.grid));
     if (k === 'c') return run(() => this.toggleCut());
     if (k === 'p') return run(() => this.setBrowsing(true));
     if (this.state.cut !== null && (e.key === 'ArrowUp' || e.key === 'ArrowDown'))
@@ -1507,21 +2158,57 @@ export class MapEditor {
   }
 }
 
+/** What the curve tool says as the mouse moves: the size, how far round, and for stairs how steep. */
+function curveReadout(arc: Arc, s: CurveSettings, clicks: number): string {
+  const parts = [`radius ${arc.radius} m`, `built at height ${round(arc.centre[1] + s.raise)} m`];
+  if (clicks > 1) parts.push(`${Math.abs(Math.round(arc.sweep))}° round`);
+  if (s.mode === 'stairs') {
+    const slope = Math.round(stairsSlope(arc, s));
+    parts.push(
+      `${stepCount(arc, s)} steps`,
+      `${slope}° steep${slope > STEEP ? ' (too steep?)' : ''}`,
+    );
+  } else {
+    parts.push(`${pieceCount(arc, s.mode === 'wall' ? s.wallThickness : s.floorWidth)} pieces`);
+  }
+  const next =
+    clicks === 1
+      ? 'Click where it starts.'
+      : 'Click where it ends, or the start for a full circle.';
+  return `${parts.join(' · ')}. ${next}`;
+}
+
 function toolHint(
   tool: EditorState['tool'],
   placing: string,
   marker: MarkerKind,
   wall: WallSettings,
+  curve: CurveSettings,
+  brush: Brush,
 ): string | null {
   if (tool === 'select') return null;
   if (tool === 'wall')
     return wall.mode === 'draw'
       ? 'Click corners in turn: Enter or click the last to finish, the first to close a room. Esc stops.'
-      : `Click a wall to cut a ${wall.mode} there. Esc stops.`;
+      : wall.mode === 'railing'
+        ? 'Click near the edge of a floor, ramp or stairs for a railing along it; click a railing to cut a gap in it. Esc stops.'
+        : `Click a wall to cut a ${wall.mode} there. Esc stops.`;
+  if (tool === 'curve' && curve.mode === 'hole')
+    return 'Click a floor (a box) where the hole goes: it snaps to the middle, or in line with it, within a metre. Esc stops.';
+  if (tool === 'curve')
+    return 'Click the middle of the circle. Everything is built outwards from the circle you click. Esc stops.';
+  if (tool === 'terrain' && brush.mode === 'level')
+    return 'Drag a rectangle: every cell it touches is levelled to the height where you start (or the one set). Esc stops.';
+  if (tool === 'terrain' && brush.mode === 'hole')
+    return 'Drag a rectangle: every cell it touches becomes a hole, for building under the ground; ⇧ fills them. Esc stops.';
   if (tool === 'terrain')
     return 'Drag on the ground to shape it; ⇧ to lower (or raise). [ and ] change the size. Esc stops.';
   if (tool === 'zone' || (tool === 'marker' && marker === 'patrol'))
     return `Click the ${tool === 'zone' ? "zone's corners" : "patrol's points"} in turn; Enter or click a point to finish. Esc stops.`;
+  if (tool === 'floor')
+    return 'Click one corner of the floor, then the opposite one (they snap to wall ends). Esc stops.';
+  if (tool === 'slab')
+    return 'Click to place a thin wall (a box: resize it in the panel, R to turn it). Esc stops.';
   const what = tool === 'prefab' ? placing : tool === 'marker' ? MARKERS[marker] : tool;
   return `Click to place a ${what}. Esc stops.`;
 }
@@ -1548,6 +2235,18 @@ const samePair = (
   [c, d]: readonly [NodePath, NodePath],
 ): boolean => a.join('.') === c.join('.') && b.join('.') === d.join('.');
 
+/** How thick a quick floor is. */
+const FLOOR_THICKNESS = 0.2;
+
+/** A thin floor filling the rectangle between two opposite corners, standing at the first's height. Null if they're in line. */
+function floorBox(a: Vec3, b: Vec3, colour: string): Extract<MapNode, { type: 'box' }> | null {
+  const w = round(Math.abs(b[0] - a[0]));
+  const d = round(Math.abs(b[2] - a[2]));
+  if (!w || !d) return null;
+  const pos: Vec3 = [round((a[0] + b[0]) / 2), a[1], round((a[2] + b[2]) / 2)];
+  return { type: 'box', pos: [...pos], size: [w, FLOOR_THICKNESS, d], colour };
+}
+
 function newShape(tool: Placeable, pos: [number, number, number], colour: string): MapNode {
   switch (tool) {
     case 'box':
@@ -1560,6 +2259,15 @@ function newShape(tool: Placeable, pos: [number, number, number], colour: string
       return { type: 'stairs', pos, size: [1.2, 2, 3], colour };
     case 'ladder':
       return { type: 'ladder', pos, height: 3, colour };
+    case 'floor':
+      return { type: 'box', pos, size: [4, FLOOR_THICKNESS, 4], colour };
+    case 'slab':
+      return {
+        type: 'box',
+        pos,
+        size: [4, WALL_DEFAULTS.height, WALL_DEFAULTS.thickness],
+        colour,
+      };
   }
 }
 
