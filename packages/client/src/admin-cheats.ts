@@ -35,6 +35,13 @@ export function simCheats(c: Cheats): AdminCheats | null {
   return Object.values(sim).some(Boolean) ? sim : null;
 }
 
+/** Sets the player's simulation cheats from these, or clears them if none is on. */
+export function applySimCheats(player: { admin?: AdminCheats }, c: Cheats): void {
+  const sim = simCheats(c);
+  if (sim) player.admin = sim;
+  else delete player.admin;
+}
+
 /** The cheats on now; all off outside dev builds. */
 export function readCheats(): Cheats {
   if (!import.meta.env.DEV) return { ...OFF };

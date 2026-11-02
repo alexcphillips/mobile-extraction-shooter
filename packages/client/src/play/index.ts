@@ -104,7 +104,7 @@ import { SpectateBar } from '../hud/spectate';
 import type { Vitals } from '../hud/vitals';
 import { Controls } from '../input/controls';
 import { inputMode } from '../input/mode';
-import { anyCheat, readCheats, simCheats } from '../admin-cheats';
+import { anyCheat, applySimCheats, readCheats } from '../admin-cheats';
 import { buildDebug } from '../render/debug';
 import { fireKey, logBleed, logBurn, logHit, logKiller, type DamageLog } from './damage-log';
 import { CapsuleBody } from '../render/capsule-body';
@@ -351,9 +351,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // resuming, so a change on the admin page applies.
   const cheats = readCheats();
   cheats.peaceful ||= options.peaceful;
-  const simCheat = simCheats(cheats);
-  if (simCheat) player.admin = simCheat;
-  else delete player.admin;
+  applySimCheats(player, cheats);
   if (anyCheat(cheats)) el.raidHud.note('Admin cheats on', performance.now());
   const held = heldWeapon(player);
   if (held) viewmodel.setGun(held, items);

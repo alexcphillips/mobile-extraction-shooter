@@ -9,12 +9,11 @@ import {
   kickMember,
   leaveParty,
   makeParty,
-  setReady,
 } from '../social';
 
 /*
  * The party on the main menu (docs/coop.md, C3): invites to you, the members with their
- * ready ticks, the invite link, ready, leave, and the leader's remove. Each action's reply
+ * ready ticks, the invite link, leave, and the leader's remove (ready is the raid button). Each action's reply
  * is the party as it is now, shown at once.
  */
 
@@ -148,15 +147,6 @@ export function PartyStrip({
           </span>
         )}
         <span className="raid-spacer" />
-        {party && party.members.length > 1 && mine && (
-          <button
-            className={mine.ready ? 'primary' : ''}
-            disabled={busy}
-            onClick={() => act(() => setReady(!mine.ready))}
-          >
-            {mine.ready ? 'Ready ✓' : 'Ready?'}
-          </button>
-        )}
         {party && party.members.length > 1 && (
           <button disabled={busy} onClick={onTest}>
             Test connection

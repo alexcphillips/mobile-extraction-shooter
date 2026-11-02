@@ -33,9 +33,9 @@ import {
 import { createRoot } from 'react-dom/client';
 import { AccountError, call } from '../account';
 import { ConnTest, type TestReport } from '../net/conn-test';
-import { readCheats, simCheats } from '../admin-cheats';
+import { applySimCheats, readCheats } from '../admin-cheats';
 import type { CoopOptions } from '../play/coop';
-import { PartyWatch, joinParty, pickPartyRaid, startPartyRaid } from '../social';
+import { PartyWatch, joinParty, pickPartyRaid, setReady, startPartyRaid } from '../social';
 import { StashSaver, type StashSaveStatus } from '../stash';
 import { AdminPage } from './admin-page';
 import { ConnTestPanel } from './conn-test-panel';
@@ -73,6 +73,17 @@ export interface MenuChoice {
   me: ProfileResponse;
   /** A party raid: whether this device hosts it or joins it, and who's in it. */
   coop?: CoopOptions;
+}
+
+/**
+ * The button that starts the raid: alone or leading, it starts it; in someone else's party
+ * it toggles ready instead.
+ */
+interface RaidButton {
+  label: string;
+  primary: boolean;
+  disabled: boolean;
+  onClick: () => void;
 }
 
 /** Party raids already joined from this tab, so coming back to the menu doesn't rejoin one. */
@@ -269,6 +280,33 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
   const waiting = together
     ? party!.members.filter((m) => m.id !== mine?.id && (!m.ready || !m.online))
     : [];
+  // In someone else's party the leader starts the raid: you say whether you're ready for it.
+  const following = together && !leading;
+  const ready = !!mine?.ready;
+  const toggleReady = (): void => {
+    if (busy) return;
+    setBusy(true);
+    setReady(!ready).then(
+      (p) => {
+        setBusy(false);
+        receive(p);
+      },
+      (err: unknown) => {
+        setBusy(false);
+        if (!(err instanceof AccountError)) throw err;
+        setNotice(err.message);
+      },
+    );
+  };
+  /** The raid button, the same on the menu and in the stash. */
+  const raidButton: RaidButton = following
+    ? { label: ready ? 'Ready ✓' : 'Ready?', primary: ready, disabled: busy, onClick: toggleReady }
+    : {
+        label: busy ? 'Starting…' : together ? 'Start party raid' : 'Start raid',
+        primary: true,
+        disabled: !raid || busy || waiting.length > 0,
+        onClick: start,
+      };
 
   /** What the server replied with after buying or selling: the stash shows it afresh. */
   const reopen = (bought: ProfileResponse, on: number, why: string): void => {
@@ -405,7 +443,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
           void saver.flush();
           setPage('menu');
         }}
-        onRaid={start}
+        raidButton={raidButton}
         startPage={startPage}
         onVendors={() => {
           setNotice(null);
@@ -521,16 +559,16 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
             </div>
           )}
           <button
-            className="primary menu-raid"
-            disabled={!raid || busy || (together && (!leading || waiting.length > 0))}
-            onClick={start}
+            className={`menu-raid${raidButton.primary ? ' primary' : ''}`}
+            disabled={raidButton.disabled}
+            onClick={raidButton.onClick}
           >
-            {busy ? 'Starting…' : together ? 'Start party raid' : 'Start raid'}
+            {raidButton.label}
             {raid && (
               <span>
                 {raid.name} · {Math.round(raid.duration / 60)} min
                 {together &&
-                  (!leading
+                  (following
                     ? ` · ${party!.members.find((m) => m.id === party!.leader)?.username ?? 'the leader'} starts it`
                     : waiting.length
                       ? ` · waiting for ${waiting.map((m) => m.username).join(', ')} to be ready`
@@ -575,7 +613,7 @@ function StashPage({
   notice,
   busy,
   onBack,
-  onRaid,
+  raidButton,
   onBuyPage,
   onSell,
   onSellAll,
@@ -589,7 +627,7 @@ function StashPage({
   notice: string | null;
   busy: boolean;
   onBack: () => void;
-  onRaid: () => void;
+  raidButton: RaidButton;
   /** Buys the next page; resolves with whether it was bought. */
   onBuyPage: () => Promise<boolean>;
   /** Sells items, all or none; the page shown is kept. Resolves when sold or refused. */
@@ -619,9 +657,7 @@ function StashPage({
         items,
         send: (action: InventoryAction) => {
           // Read each time: the admin page, a tap away, can change them.
-          const cheat = simCheats(readCheats());
-          if (cheat) stash.player.admin = cheat;
-          else delete stash.player.admin;
+          applySimCheats(stash.player, readCheats());
           if (applyStash(stash, items, action, pageOf())) saver.changed();
           bump();
         },
@@ -721,8 +757,12 @@ function StashPage({
               : 'Sell everything'}
         </button>
         <button onClick={onVendors}>Vendors</button>
-        <button className="primary" disabled={busy} onClick={onRaid}>
-          {busy ? 'Starting…' : 'Start raid'}
+        <button
+          className={raidButton.primary ? 'primary' : undefined}
+          disabled={raidButton.disabled}
+          onClick={raidButton.onClick}
+        >
+          {raidButton.label}
         </button>
       </header>
       {notice && <p className="menu-notice">{notice}</p>}
