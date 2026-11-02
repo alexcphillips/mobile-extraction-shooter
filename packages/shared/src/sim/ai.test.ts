@@ -285,10 +285,46 @@ describe('enemy hearing', () => {
     s.player.z = 0;
     s.run(AI.lookTime + 1);
     expect(s.enemy.ai!.activity).toBe('investigate');
-    s.run(30);
+    // Stops short to watch (a shot), creeps in, looks around: longer than footsteps take.
+    s.run(40);
     // Got near where the shot came from, looked around, and went back to guarding.
     expect(s.enemy.ai!.awareness).toBe('unaware');
     expect(s.enemy.ai!.activity).toBe('guard');
+  });
+
+  it('sends only the nearest two to check a shot; the rest look and stay', () => {
+    const s = setup(0, 40, { half: 80 });
+    // Spawned furthest first, so the nearer ones take the furthest one's place.
+    const far = spawnEnemy(s.state, s.world, 8, 0, -24, 0);
+    const mid = spawnEnemy(s.state, s.world, -5, 0, -16, 0);
+    const near = spawnEnemy(s.state, s.world, 5, 0, -8, 0);
+    shootUp(s);
+    for (const e of [s.enemy, near, mid, far]) expect(e.ai!.awareness).toBe('suspicious');
+    expect(s.enemy.ai!.investigate).toBe(true);
+    expect(near.ai!.investigate).toBe(true);
+    expect(mid.ai!.investigate).toBe(false);
+    expect(far.ai!.investigate).toBe(false);
+  });
+
+  it('stops short of a shot to watch where it came from, then creeps in', () => {
+    // A wall at z = 18 with a 3 m doorway facing the enemy; the shot comes from beyond it.
+    const boxes = [aabb(-30, 0, 18, -1.5, 3, 18.4), aabb(1.5, 0, 18, 30, 3, 18.4)];
+    const s = setup(0, 25, { boxes });
+    shootUp(s);
+    expect(s.enemy.ai!.investigate).toBe(true);
+    // The shooter moves off out of sight, behind the wall.
+    s.player.x = 20;
+    s.player.z = 30;
+    for (let t = 0; t < 15 * TICK_RATE && s.enemy.ai!.activity !== 'watch'; t++)
+      s.run(1 / TICK_RATE);
+    expect(s.enemy.ai!.activity).toBe('watch');
+    // Short of the doorway, looking through it, aimed.
+    expect(s.enemy.z).toBeLessThan(18);
+    expect(s.enemy.ai!.input.aim).toBe(true);
+    s.run(AI.watchTime + 0.5);
+    expect(s.enemy.ai!.activity).toBe('creep');
+    s.run(20);
+    expect(s.enemy.z).toBeGreaterThan(18);
   });
 });
 
@@ -363,6 +399,15 @@ describe('grenades', () => {
     s.run(1 / TICK_RATE);
     expect(s.enemy.ai!.awareness).toBe('suspicious');
     expect(s.enemy.ai!.investigate).toBe(true);
+  });
+
+  it('sends only the nearest two to look at one going off', () => {
+    const s = setup(0, 200, { half: 220 });
+    const others = [20, 40, 60].map((x) => spawnEnemy(s.state, s.world, x, 0, 0, 0));
+    drop(s, 0, 150, 0.01);
+    s.run(1 / TICK_RATE);
+    const going = [s.enemy, ...others].map((e) => e.ai!.investigate);
+    expect(going).toEqual([true, true, false, false]);
   });
 });
 

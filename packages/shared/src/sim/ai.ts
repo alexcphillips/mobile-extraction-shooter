@@ -98,6 +98,24 @@ export const AI = {
   /** Where a noise came from is off by up to this fraction of its distance, at most noiseErrorMax. */
   noiseError: 0.1,
   noiseErrorMax: 8,
+  /**
+   * Gunfire and blasts (2026-11-01, the user's report: one shot pulled every enemy on the
+   * map to it, single file through a held door): at most this many go to check the same
+   * one, anything placed within responderRadius of a spot already being checked, the
+   * nearest first. The rest turn to look and stay where they are. The radius is over twice
+   * noiseErrorMax, so the same noise placed by two listeners always counts as one.
+   */
+  responders: 2,
+  responderRadius: 20,
+  /**
+   * Going to check gunfire or a blast, it stops at the first spot within watchRange that
+   * can see where it came from (watchHeight above it), watches it aimed for watchTime, then
+   * creeps in at creepPace, still aimed. Footsteps and glimpses are walked straight up to.
+   */
+  watchRange: 12,
+  watchHeight: 1,
+  watchTime: 6,
+  creepPace: 0.45,
   /** After losing sight while alert, it still knows where you went for this long... */
   intuition: 1,
   /** ...and starts searching after this long. */
@@ -204,6 +222,8 @@ export type AiActivity =
   | 'guard' // no patrol: standing at its spawn, looking around
   | 'look' // suspicious: turned to look at what it noticed
   | 'investigate' // suspicious: walking over to check it
+  | 'watch' // suspicious: stopped short of gunfire or a blast, watching where it was, aimed
+  | 'creep' // suspicious: done watching, creeping in to check it, aimed
   | 'scan' // looking around where it was, or at a noise not worth checking
   | 'engage' // alert: fighting you, or pushing to (or holding) where it last saw you
   | 'takeCover' // alert: moving to cover
@@ -258,6 +278,11 @@ export interface AiState {
   focusZ: number;
   /** Whether what it's suspicious of is worth walking over to. */
   investigate: boolean;
+  /**
+   * Whether it's gunfire or a blast, approached with care: it stops short to watch
+   * before creeping in (2026-11-01). Missing (older saves) is false.
+   */
+  cautious?: boolean;
   /** Which way it looks around from while standing. */
   lookYaw: number;
   /** The current path as flat x, y, z waypoints, and the next one to reach. */
@@ -415,6 +440,7 @@ export function spawnEnemy(
     focusY: 0,
     focusZ: 0,
     investigate: false,
+    cautious: false,
     lookYaw: yaw,
     path: [],
     pathIndex: 0,
@@ -778,7 +804,7 @@ function hearEvents(state: SimState, c: Character, ai: AiState, world: Collision
     if (d <= loud * AI.alertShot) {
       alarm(ai, by, by.x, by.y, by.z);
     } else if (d <= loud && ai.awareness !== 'alert') {
-      heardAt(state, c, ai, by, d, d <= loud * AI.investigateShot);
+      heardAt(state, c, ai, by, d, d <= loud * AI.investigateShot, true);
     }
   }
 }
@@ -807,7 +833,7 @@ function allyShot(
   const loud = heardLoudness(world, c, x, y, z, loudness);
   if (d <= loud * AI.alertShot) alarm(ai, target, target.x, target.y, target.z);
   else if (d <= loud * AI.investigateShot)
-    heardNoise(state, c, ai, ally.x, ally.y, ally.z, d, true);
+    heardNoise(state, c, ai, ally.x, ally.y, ally.z, d, true, true);
 }
 
 /**
@@ -831,7 +857,7 @@ function heardExplosion(
   const d = Math.hypot(x - c.x, y - eyeHeight(c), z - c.z);
   if (d > loudness) return;
   const loud = heardLoudness(world, c, x, y, z, loudness);
-  if (d <= loud) heardNoise(state, c, ai, x, y, z, d, true);
+  if (d <= loud) heardNoise(state, c, ai, x, y, z, d, true, true);
 }
 
 /** A shot's loudness as heard by c: muffled with walls or ground in the way. */
@@ -854,12 +880,16 @@ function heardAt(
   e: Character,
   d: number,
   investigate: boolean,
+  loud = false,
 ): void {
   if (e.admin?.peaceful) return;
-  heardNoise(state, c, ai, e.x, e.y, e.z, d, investigate);
+  heardNoise(state, c, ai, e.x, e.y, e.z, d, investigate, loud);
 }
 
-/** Suspicious of a noise at (x, y, z), d metres away: placed with an error that grows with d. */
+/**
+ * Suspicious of a noise at (x, y, z), d metres away: placed with an error that grows with
+ * d. A loud one (gunfire or a blast) is checked by only a few, with care.
+ */
 function heardNoise(
   state: SimState,
   c: Character,
@@ -869,10 +899,71 @@ function heardNoise(
   z: number,
   d: number,
   investigate: boolean,
+  loud = false,
 ): void {
   const off = Math.min(AI.noiseErrorMax, d * AI.noiseError) * Math.sqrt(nextFloat(state.rng));
   const around = nextFloat(state.rng) * Math.PI * 2;
-  suspect(c, ai, x + Math.cos(around) * off, y, z + Math.sin(around) * off, investigate);
+  const nx = x + Math.cos(around) * off;
+  const nz = z + Math.sin(around) * off;
+  const capped =
+    loud && investigate && ai.awareness !== 'alert' && !joinResponders(state, c, nx, nz);
+  suspect(c, ai, nx, y, nz, investigate && !capped, loud);
+  // Enough are going already: it looks, and stops checking anything else.
+  if (capped) ai.investigate = false;
+}
+
+/**
+ * Whether it's close enough to the loud noise it's going to check, and can see where it
+ * was, to stop and watch. Checked on its perception ticks only.
+ */
+function canWatch(state: SimState, c: Character, ai: AiState, world: CollisionWorld): boolean {
+  if ((state.tick + c.id) % AI.perceiveEvery !== 0) return false;
+  if (Math.hypot(ai.focusX - c.x, ai.focusY - c.y, ai.focusZ - c.z) > AI.watchRange) return false;
+  return clearLine(world, c.x, eyeHeight(c), c.z, ai.focusX, ai.focusY + AI.watchHeight, ai.focusZ);
+}
+
+/** Whether it's suspicious of something and going to check it, or about to. */
+function responding(ai: AiState): boolean {
+  return (
+    ai.awareness === 'suspicious' &&
+    ai.investigate &&
+    (ai.activity === 'look' ||
+      ai.activity === 'investigate' ||
+      ai.activity === 'watch' ||
+      ai.activity === 'creep')
+  );
+}
+
+/**
+ * Whether c may go to check a loud noise at (x, z): at most AI.responders go to the same
+ * one, the nearest first. A nearer enemy takes the place of the furthest one going, which
+ * stays where it is and looks around.
+ */
+function joinResponders(state: SimState, c: Character, x: number, z: number): boolean {
+  let count = 0;
+  let furthest: Character | null = null;
+  let furthestD = -1;
+  for (const e of state.entities) {
+    if (e === c || !e.ai || e.health.dead || !responding(e.ai)) continue;
+    if (Math.hypot(e.ai.focusX - x, e.ai.focusZ - z) > AI.responderRadius) continue;
+    count++;
+    const d = Math.hypot(e.x - x, e.z - z);
+    if (d > furthestD) {
+      furthestD = d;
+      furthest = e;
+    }
+  }
+  if (count < AI.responders) return true;
+  if (!furthest || Math.hypot(c.x - x, c.z - z) >= furthestD) return false;
+  const ai = furthest.ai!;
+  ai.investigate = false;
+  if (ai.activity !== 'look') {
+    ai.activity = 'scan';
+    ai.timer = AI.scanTime;
+    ai.lookYaw = furthest.yaw;
+    ai.hasGoal = false;
+  }
+  return true;
 }
 
 function segmentDistance(
@@ -905,7 +996,10 @@ function setFocus(ai: AiState, x: number, y: number, z: number): void {
   ai.focusZ = z;
 }
 
-/** Something's off at (x, y, z). Never lowers an alert. */
+/**
+ * Something's off at (x, y, z); cautious for gunfire or a blast. Never lowers an alert.
+ * Already on its way to check something, it just goes to the new spot instead.
+ */
 function suspect(
   c: Character,
   ai: AiState,
@@ -913,13 +1007,22 @@ function suspect(
   y: number,
   z: number,
   investigate: boolean,
+  cautious = false,
 ): void {
   if (ai.awareness === 'alert') return;
   const was = ai.awareness;
   ai.awareness = 'suspicious';
   setFocus(ai, x, y, z);
-  if (was === 'suspicious' && ai.activity === 'investigate') return;
+  if (
+    investigate &&
+    was === 'suspicious' &&
+    (ai.activity === 'investigate' || ai.activity === 'watch' || ai.activity === 'creep')
+  ) {
+    if (cautious && ai.activity === 'investigate') ai.cautious = true;
+    return;
+  }
   ai.investigate = investigate || (was === 'suspicious' && ai.investigate);
+  ai.cautious = investigate ? cautious : ai.investigate && !!ai.cautious;
   ai.activity = 'look';
   ai.timer = AI.lookTime;
   ai.hasGoal = false;
@@ -1065,8 +1168,39 @@ function behave(
         }
         break;
       case 'investigate': {
+        if (ai.cautious && canWatch(state, c, ai, world)) {
+          ai.activity = 'watch';
+          ai.timer = AI.watchTime;
+          ai.hasGoal = false;
+          faceYaw = yawTo(c, ai.focusX, ai.focusZ);
+          ai.input.aim = true;
+          break;
+        }
         const r = moveTo(state, c, ai, nav, ai.focusX, ai.focusY, ai.focusZ, AI.investigatePace);
         faceYaw = moveYaw;
+        if (r !== 'moving') {
+          ai.activity = 'scan';
+          ai.timer = AI.scanTime;
+          ai.lookYaw = c.yaw;
+        }
+        break;
+      }
+      case 'watch': {
+        faceYaw = yawTo(c, ai.focusX, ai.focusZ);
+        const across = Math.hypot(ai.focusX - c.x, ai.focusZ - c.z);
+        facePitch = Math.atan2(ai.focusY + AI.watchHeight - eyeHeight(c), across);
+        ai.input.aim = true;
+        reloadIfLow(c, items, 1);
+        if (ai.timer <= 0) {
+          ai.activity = 'creep';
+          ai.hasGoal = false;
+        }
+        break;
+      }
+      case 'creep': {
+        const r = moveTo(state, c, ai, nav, ai.focusX, ai.focusY, ai.focusZ, AI.creepPace);
+        faceYaw = moveYaw;
+        ai.input.aim = true;
         if (r !== 'moving') {
           ai.activity = 'scan';
           ai.timer = AI.scanTime;
