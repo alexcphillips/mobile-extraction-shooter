@@ -2,34 +2,342 @@
   "formatVersion": 3,
   "id": "shipping-container-open-no-doors",
   "colours": {
-    "shipping-container-red-dark": "#853232"
+    "shipping-container-red-dark": "#853232",
+    "shipping-container-red-shade": "#632525",
+    "container-steel": "#8c8f94"
   },
   "nodes": [
     {
       "type": "box",
       "pos": [0, 0, 0],
-      "size": [2.9, 0.2, 8],
-      "colour": "shipping-container-red-dark"
+      "size": [2.96, 0.2, 7.96],
+      "colour": "shipping-container-red-shade"
     },
     {
       "type": "box",
       "pos": [0, 2.6, 0],
-      "size": [3, 0.2, 8],
+      "size": [2.96, 0.2, 7.96],
       "colour": "shipping-container-red-dark"
     },
     {
       "type": "box",
-      "pos": [-1.4, 0, 0],
-      "size": [8, 2.6, 0.2],
-      "colour": "shipping-container-red-dark",
-      "yaw": 90
+      "pos": [0, 2.8005, -3.0],
+      "size": [2.84, 0.001, 0.3],
+      "colour": "shipping-container-red-shade",
+      "collide": false
     },
     {
       "type": "box",
-      "pos": [1.4, 0, 0],
-      "size": [8, 2.6, 0.2],
+      "pos": [0, 2.8005, -1.8],
+      "size": [2.84, 0.001, 0.3],
+      "colour": "shipping-container-red-shade",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.8005, -0.6],
+      "size": [2.84, 0.001, 0.3],
+      "colour": "shipping-container-red-shade",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.8005, 0.6],
+      "size": [2.84, 0.001, 0.3],
+      "colour": "shipping-container-red-shade",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.8005, 1.8],
+      "size": [2.84, 0.001, 0.3],
+      "colour": "shipping-container-red-shade",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.8005, 3.0],
+      "size": [2.84, 0.001, 0.3],
+      "colour": "shipping-container-red-shade",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.38, 0.2, 0],
+      "size": [0.2, 2.4, 7.96],
+      "colour": "shipping-container-red-shade"
+    },
+    {
+      "type": "box",
+      "pos": [1.49, 0.14, -3.2],
+      "size": [0.02, 2.52, 0.55],
       "colour": "shipping-container-red-dark",
-      "yaw": 90
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.49, 0.14, -2.4],
+      "size": [0.02, 2.52, 0.55],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.49, 0.14, -1.6],
+      "size": [0.02, 2.52, 0.55],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.49, 0.14, -0.8],
+      "size": [0.02, 2.52, 0.55],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.49, 0.14, 0.0],
+      "size": [0.02, 2.52, 0.55],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.49, 0.14, 0.8],
+      "size": [0.02, 2.52, 0.55],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.49, 0.14, 1.6],
+      "size": [0.02, 2.52, 0.55],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.49, 0.14, 2.4],
+      "size": [0.02, 2.52, 0.55],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.49, 0.14, 3.2],
+      "size": [0.02, 2.52, 0.55],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.46, 0, 0],
+      "size": [0.08, 0.14, 8],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.46, 2.66, 0],
+      "size": [0.08, 0.142, 8],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.38, 0.2, 0],
+      "size": [0.2, 2.4, 7.96],
+      "colour": "shipping-container-red-shade"
+    },
+    {
+      "type": "box",
+      "pos": [-1.49, 0.14, -3.2],
+      "size": [0.02, 2.52, 0.55],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.49, 0.14, -2.4],
+      "size": [0.02, 2.52, 0.55],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.49, 0.14, -1.6],
+      "size": [0.02, 2.52, 0.55],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.49, 0.14, -0.8],
+      "size": [0.02, 2.52, 0.55],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.49, 0.14, 0.0],
+      "size": [0.02, 2.52, 0.55],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.49, 0.14, 0.8],
+      "size": [0.02, 2.52, 0.55],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.49, 0.14, 1.6],
+      "size": [0.02, 2.52, 0.55],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.49, 0.14, 2.4],
+      "size": [0.02, 2.52, 0.55],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.49, 0.14, 3.2],
+      "size": [0.02, 2.52, 0.55],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.46, 0, 0],
+      "size": [0.08, 0.14, 8],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.46, 2.66, 0],
+      "size": [0.08, 0.142, 8],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, 3.96],
+      "size": [2.84, 0.14, 0.08],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.66, 3.96],
+      "size": [2.84, 0.142, 0.08],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.42, 0.14, 3.92],
+      "size": [0.16, 2.52, 0.16],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.4, 0, 3.9],
+      "size": [0.204, 0.14, 0.204],
+      "colour": "container-steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.4, 2.66, 3.9],
+      "size": [0.204, 0.146, 0.204],
+      "colour": "container-steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.42, 0.14, 3.92],
+      "size": [0.16, 2.52, 0.16],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.4, 0, 3.9],
+      "size": [0.204, 0.14, 0.204],
+      "colour": "container-steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.4, 2.66, 3.9],
+      "size": [0.204, 0.146, 0.204],
+      "colour": "container-steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, -3.96],
+      "size": [2.84, 0.14, 0.08],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.66, -3.96],
+      "size": [2.84, 0.142, 0.08],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.42, 0.14, -3.92],
+      "size": [0.16, 2.52, 0.16],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.4, 0, -3.9],
+      "size": [0.204, 0.14, 0.204],
+      "colour": "container-steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.4, 2.66, -3.9],
+      "size": [0.204, 0.146, 0.204],
+      "colour": "container-steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.42, 0.14, -3.92],
+      "size": [0.16, 2.52, 0.16],
+      "colour": "shipping-container-red-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.4, 0, -3.9],
+      "size": [0.204, 0.14, 0.204],
+      "colour": "container-steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.4, 2.66, -3.9],
+      "size": [0.204, 0.146, 0.204],
+      "colour": "container-steel",
+      "collide": false
     }
   ]
 }

@@ -145,6 +145,8 @@ export {
   RAID,
   extractionAt,
   gearItems,
+  markBrought,
+  settleFound,
   investigate,
   investigateInReach,
   investigatedBy,
@@ -195,6 +197,7 @@ export {
   loadKind,
   canReach,
   containerInReach,
+  searchContainer,
   bagGrid,
   gridOf,
   groundInReach,
@@ -210,6 +213,7 @@ export {
   type InSlot,
   type InventoryAction,
   type InventoryEvent,
+  type SearchEvent,
   type ItemRef,
   type LootContainer,
   type OnGround,
@@ -300,6 +304,7 @@ export {
   removeAt,
   rotateAt,
   takeFrom,
+  sameStack,
   transfer,
   type Grid,
   type GridItem,
@@ -499,6 +504,7 @@ export {
   type CompiledPatrol,
   type CompiledPatrolPoint,
   type InstancedGroup,
+  type SearchedLook,
   type PrefabLookup,
   type Shape,
 } from './content/compile';
@@ -556,6 +562,8 @@ export {
   sellTotal,
   sellPrice,
   type SellPart,
+  raidGains,
+  type RaidGain,
 } from './vendors';
 export {
   VENDOR_FORMAT,
@@ -573,6 +581,7 @@ export {
   questSchema,
   type QuestDef,
   type QuestObjective,
+  type HandOverObjective,
 } from './content/quests';
 export {
   acceptQuest,

@@ -78,6 +78,81 @@ describe('compileMap', () => {
     expect(m.shapes.map((s) => s.colour)).toEqual([0x123456, 0xabcdef]);
   });
 
+  describe('searched looks', () => {
+    const box = (colour: string, z = 0): MapNode => ({
+      type: 'box',
+      pos: [0, 0.5, z],
+      size: [1, 1, 1],
+      colour,
+    });
+    const drawer: MapNode = {
+      type: 'group',
+      pos: [0, 0, 0],
+      loot: { container: 'drawer', searched: 'open' },
+      nodes: [box('#111111')],
+    };
+    const file = (id: string, nodes: MapNode[], more: Partial<PrefabFile> = {}): PrefabFile => ({
+      formatVersion: 3,
+      id,
+      name: id,
+      nodes,
+      ...more,
+    });
+    const open = file('open', [{ ...box('slot', 1), collide: false } as MapNode], {
+      colours: { slot: '#222222' },
+    });
+    const place: MapNode = { type: 'prefab', id: 'c', prefab: 'cab', pos: [5, 0, 0], yaw: 90 };
+
+    it('keeps the closed look in shapes and adds no collision', () => {
+      const m = compileMap(map([place]), prefabs(file('cab', [drawer]), open));
+      expect(m.shapes).toHaveLength(1);
+      expect(m.world.boxes).toHaveLength(1);
+      expect(m.searchedLooks).toHaveLength(1);
+      const look = m.searchedLooks[0]!;
+      expect(look.id).toBe(m.markers[0]!.id);
+      expect(look.closed).toEqual(m.shapes);
+      // The look stands in the placement's frame: 1 m along z, turned 90°, is +x.
+      expect(look.searched[0]!.x).toBeCloseTo(6);
+      expect(look.searched[0]!.colour).toBe(0x222222);
+    });
+
+    it('flattens an instanced prefab holding one', () => {
+      const m = compileMap(
+        map([place, { ...place, id: 'd', pos: [0, 0, 5] } as MapNode]),
+        prefabs(file('cab', [drawer], { instanced: true }), open),
+      );
+      expect(m.instanced).toHaveLength(0);
+      expect(m.searchedLooks.map((l) => l.id)).toHaveLength(2);
+      expect(new Set(m.searchedLooks.map((l) => l.id)).size).toBe(2);
+    });
+
+    it('flattens an instanced prefab that is the container itself', () => {
+      const node: MapNode = {
+        type: 'prefab',
+        prefab: 'cab',
+        pos: [0, 0, 0],
+        loot: { container: 'drawer', searched: 'open' },
+      };
+      const m = compileMap(
+        map([node]),
+        prefabs(file('cab', [box('#111111')], { instanced: true }), open),
+      );
+      expect(m.instanced).toHaveLength(0);
+      expect(m.searchedLooks[0]!.closed).toHaveLength(1);
+    });
+
+    it('reports a searched look that does not exist', () => {
+      expect(() => compileMap(map([place]), prefabs(file('cab', [drawer])))).toThrow(
+        /no prefab "open" for its searched look/,
+      );
+    });
+
+    it('leaves the editor closed look alone', () => {
+      const out = compileNodes([place], prefabs(file('cab', [drawer]), open));
+      expect(out.shapes).toHaveLength(1);
+    });
+  });
+
   it('reports unknown prefabs, slots and prefabs that contain themselves', () => {
     const place = (fields: Partial<MapNode>): MapNode =>
       ({ type: 'prefab', prefab: 'crate', pos: [0, 0, 0], ...fields }) as MapNode;

@@ -7,10 +7,10 @@
   "nodes": [
     {
       "type": "prefab",
-      "prefab": "empty-pallet",
+      "prefab": "wood-pallet-large",
       "pos": [0.027, 0, 0.498],
       "colours": {
-        "wood-pallet": "wood-pallet"
+        "wood": "wood-pallet"
       }
     },
     {

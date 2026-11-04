@@ -13,6 +13,7 @@ import {
   buyPrice,
   cantSell,
   depositInto,
+  raidGains,
   sellAll,
   sellAllPrice,
   sellItems,
@@ -45,6 +46,22 @@ const vendor = shop([{ item: 'bandage' }, { item: 'round', count: 30 }, { item: 
 const self = { kind: 'self' } as const;
 const page0 = { owner: stashOwner(0), grid: 'loot' } as const;
 const clone = (p: Profile): Profile => JSON.parse(JSON.stringify(p)) as Profile;
+
+describe('raidGains', () => {
+  const stack = (id: string, count: number) => ({ ...createItem(items, id), count });
+
+  it('prices what was found, not what you brought', () => {
+    const kept = [stack('round', 15), { ...stack('round', 30), brought: true as const }];
+    expect(raidGains(items, kept)).toEqual([
+      { id: 'round', count: 15, price: sellPrice(items, stack('round', 15)) },
+    ]);
+  });
+
+  it('is empty when nothing found was kept', () => {
+    expect(raidGains(items, [])).toEqual([]);
+    expect(raidGains(items, [{ ...createItem(items, 'watch'), brought: true }])).toEqual([]);
+  });
+});
 
 describe('vendors', () => {
   it("sell for an item's value and buy for a share of it, less when worn, more with parts", () => {

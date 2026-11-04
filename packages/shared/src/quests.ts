@@ -1,5 +1,5 @@
 import { itemDef, type ItemDb } from './content/items';
-import type { QuestDef, QuestObjective } from './content/quests';
+import type { QuestDef, QuestObjective, HandOverObjective } from './content/quests';
 import { removeAt, type Grid, type Item } from './inventory/grid';
 import { PROFILE, type Profile } from './profile';
 import type { Gear } from './sim/gear';
@@ -48,7 +48,10 @@ export function objectiveText(items: ItemDb, o: QuestObjective): string {
   const name = o.type === 'investigate' ? '' : itemDef(items, o.item).name;
   switch (o.type) {
     case 'handOver':
-      return o.count > 1 ? `Hand over ${o.count} × ${name}` : `Hand over the ${name.toLowerCase()}`;
+      return (
+        (o.count > 1 ? `Hand over ${o.count} × ${name}` : `Hand over the ${name.toLowerCase()}`) +
+        (o.foundInRaid ? ' (found in raid)' : '')
+      );
     case 'extract':
       return `Get out of a raid with the ${name.toLowerCase()}`;
     case 'investigate':
@@ -96,18 +99,23 @@ function stashGrids(profile: Profile): Grid[] {
   return out;
 }
 
-/** How many of an item the stash has that could be handed over. */
-export function handOverCount(profile: Profile, id: string): number {
+/** Whether a stored item is one a hand-over takes. */
+function handsOver(o: HandOverObjective, item: Item): boolean {
+  return item.item === o.item && plain(item) && (!o.foundInRaid || !!item.found);
+}
+
+/** How many of an objective's items the stash has that could be handed over. */
+export function handOverCount(profile: Profile, o: HandOverObjective): number {
   let n = 0;
   for (const grid of stashGrids(profile))
-    for (const g of grid.items) if (g.item.item === id && plain(g.item)) n += g.item.count;
+    for (const g of grid.items) if (handsOver(o, g.item)) n += g.item.count;
   return n;
 }
 
 /**
  * Hands over as many of an objective's items from the stash as it still needs (or as
  * there are): they're gone, and its progress goes up. Only plain items count: an empty
- * backpack, a gun with nothing fitted. Returns why it can't be, or null.
+ * backpack, a gun with nothing fitted; found ones, if it wants those. Returns why it can't be, or null.
  */
 export function handOver(profile: Profile, quest: QuestDef, objective: string): string | null {
   const o = quest.objectives.find((x) => x.id === objective);
@@ -120,7 +128,7 @@ export function handOver(profile: Profile, quest: QuestDef, objective: string): 
   for (const grid of stashGrids(profile)) {
     for (let i = grid.items.length - 1; i >= 0 && need > 0; i--) {
       const item = grid.items[i]!.item;
-      if (item.item !== o.item || !plain(item)) continue;
+      if (!handsOver(o, item)) continue;
       const n = Math.min(need, item.count);
       item.count -= n;
       if (item.count === 0) removeAt(grid, i);

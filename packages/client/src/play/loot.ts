@@ -13,6 +13,8 @@ import {
   type CollisionWorld,
   type GroundItem,
   type LootContainer,
+  type SearchedLook,
+  type Shape,
   type SimState,
 } from '@mes/shared';
 
@@ -42,11 +44,13 @@ const hit = createRayHit();
  * container made of geometry or a door in reach under the crosshair, else the container
  * marker or dead body in reach that the crosshair is nearest, or null. Each has to be
  * looked at, so one at your feet doesn't take the use button from a door. Nothing behind a
- * wall counts. The result is reused: copy what you keep.
+ * wall counts. A searched container is also aimed at by its searched look, which has no
+ * solids. The result is reused: copy what you keep.
  */
 export function lootableInReach(
   sim: SimState,
   world: CollisionWorld,
+  looks: readonly SearchedLook[],
   player: Character,
   yaw: number,
   pitch: number,
@@ -86,7 +90,9 @@ export function lootableInReach(
   if (!found) {
     const d = world.raycast(ex, ey, ez, lx, ly, lz, AIM_REACH, hit);
     const solid = hit.kind === 'solid' ? hit.index : -1;
-    const shaped = solid >= 0 ? containerOf(sim, solid) : null;
+    const shaped =
+      searchedAimedAt(sim, looks, ex, ey, ez, lx, ly, lz, d) ??
+      (solid >= 0 ? containerOf(sim, solid) : null);
     if (shaped) {
       if (containerInReach(player, shaped)) {
         best = 1.5;
@@ -151,6 +157,136 @@ function containerOf(sim: SimState, solid: number): LootContainer | null {
     ownersCount = sim.loot.length;
   }
   return owners[solid] ?? null;
+}
+
+/** The bounds of a searched look, in its container's frame about (x, z). */
+interface AimBox {
+  c: LootContainer;
+  x: number;
+  z: number;
+  cos: number;
+  sin: number;
+  x0: number;
+  x1: number;
+  y0: number;
+  y1: number;
+  z0: number;
+  z1: number;
+}
+
+let aimBoxes: AimBox[] = [];
+let aimBoxesOf: readonly LootContainer[] | null = null;
+let aimBoxesLooks: readonly SearchedLook[] | null = null;
+let aimBoxesCount = -1;
+
+function aimBox(c: LootContainer, shapes: readonly Shape[]): AimBox {
+  const yaw = c.shape?.yaw ?? 0;
+  const cos = Math.cos(yaw);
+  const sin = Math.sin(yaw);
+  const out: AimBox = {
+    c,
+    x: c.x,
+    z: c.z,
+    cos,
+    sin,
+    x0: Infinity,
+    x1: -Infinity,
+    y0: Infinity,
+    y1: -Infinity,
+    z0: Infinity,
+    z1: -Infinity,
+  };
+  for (const s of shapes) {
+    const px = s.x - c.x;
+    const pz = s.z - c.z;
+    const lx = cos * px - sin * pz;
+    const lz = sin * px + cos * pz;
+    const hx = s.kind === 'cylinder' ? Math.max(s.radius, s.radiusTop) : s.hx;
+    const hz = s.kind === 'cylinder' ? hx : s.hz;
+    const turn = s.yaw - yaw;
+    const ex = Math.abs(Math.cos(turn)) * hx + Math.abs(Math.sin(turn)) * hz;
+    const ez = Math.abs(Math.sin(turn)) * hx + Math.abs(Math.cos(turn)) * hz;
+    out.x0 = Math.min(out.x0, lx - ex);
+    out.x1 = Math.max(out.x1, lx + ex);
+    out.z0 = Math.min(out.z0, lz - ez);
+    out.z1 = Math.max(out.z1, lz + ez);
+    out.y0 = Math.min(out.y0, s.y - s.hy);
+    out.y1 = Math.max(out.y1, s.y + s.hy);
+  }
+  return out;
+}
+
+/** How far along a ray it enters a box, 0 if it starts inside, or Infinity. */
+function rayIntoBox(
+  b: AimBox,
+  ox: number,
+  oy: number,
+  oz: number,
+  dx: number,
+  dy: number,
+  dz: number,
+) {
+  const px = ox - b.x;
+  const pz = oz - b.z;
+  const lox = b.cos * px - b.sin * pz;
+  const loz = b.sin * px + b.cos * pz;
+  const ldx = b.cos * dx - b.sin * dz;
+  const ldz = b.sin * dx + b.cos * dz;
+  rayNear = 0;
+  rayFar = Infinity;
+  if (!raySlab(lox, ldx, b.x0, b.x1)) return Infinity;
+  if (!raySlab(oy, dy, b.y0, b.y1)) return Infinity;
+  if (!raySlab(loz, ldz, b.z0, b.z1)) return Infinity;
+  return rayNear;
+}
+
+let rayNear = 0;
+let rayFar = Infinity;
+
+/** Narrows the ray to where it's between lo and hi on one axis; false if it never is. */
+function raySlab(o: number, d: number, lo: number, hi: number): boolean {
+  if (Math.abs(d) < 1e-9) return o >= lo && o <= hi;
+  const t0 = (lo - o) / d;
+  const t1 = (hi - o) / d;
+  rayNear = Math.max(rayNear, Math.min(t0, t1));
+  rayFar = Math.min(rayFar, Math.max(t0, t1));
+  return rayNear <= rayFar;
+}
+
+/** The nearest searched container whose searched look a ray enters within maxDist, or null. */
+function searchedAimedAt(
+  sim: SimState,
+  looks: readonly SearchedLook[],
+  ox: number,
+  oy: number,
+  oz: number,
+  dx: number,
+  dy: number,
+  dz: number,
+  maxDist: number,
+): LootContainer | null {
+  if (aimBoxesOf !== sim.loot || aimBoxesLooks !== looks || aimBoxesCount !== sim.loot.length) {
+    const byId = new Map(sim.loot.map((l) => [l.id, l]));
+    aimBoxes = [];
+    for (const look of looks) {
+      const c = byId.get(look.id);
+      if (c) aimBoxes.push(aimBox(c, look.searched));
+    }
+    aimBoxesOf = sim.loot;
+    aimBoxesLooks = looks;
+    aimBoxesCount = sim.loot.length;
+  }
+  let nearest: LootContainer | null = null;
+  let best = maxDist;
+  for (const b of aimBoxes) {
+    if (!b.c.searched) continue;
+    const t = rayIntoBox(b, ox, oy, oz, dx, dy, dz);
+    if (t < best) {
+      best = t;
+      nearest = b.c;
+    }
+  }
+  return nearest;
 }
 
 /** The open door whose doorway a ray passes through within maxDist, or -1. */

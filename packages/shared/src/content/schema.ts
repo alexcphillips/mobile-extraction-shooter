@@ -63,7 +63,16 @@ const containerLoot = {
  * lootContainer marker beside it: what's solid in it is what you aim at to loot it, and you
  * reach it from anywhere within LOOT_REACH of its footprint. Containers don't nest.
  */
-const lootSchema = z.strictObject(containerLoot).optional();
+const lootSchema = z
+  .strictObject({
+    ...containerLoot,
+    /**
+     * The prefab drawn in place of this node's own shapes once it's searched (2026-11-03), in
+     * the node's frame. Drawn only: collision and aiming stay the closed look's.
+     */
+    searched: idSchema.optional(),
+  })
+  .optional();
 
 const solid = {
   id: idSchema.optional(),
@@ -89,6 +98,13 @@ const boxSchema = z.strictObject({
    * Drawn only: it collides as the plain box. Left out, every face is flat.
    */
   bulge: z.tuple([bulgeBy, bulgeBy, bulgeBy, bulgeBy, bulgeBy, bulgeBy]).optional(),
+  /**
+   * The top face's width (x) and depth (z) when it isn't the bottom's (2026-11-03, for a
+   * jacket pinched at its hook): 0 brings it to a point or an edge. Drawn only, like bulge.
+   */
+  top: z.tuple([bulgeBy, bulgeBy]).optional(),
+  /** How far the top face's middle is moved along x and z from over the bottom's, so it leans. */
+  lean: z.tuple([finite, finite]).optional(),
   loot: lootSchema,
 });
 
@@ -141,6 +157,12 @@ const stairsSchema = z.strictObject({
   size: size3,
   /** Defaults to one step per 0.25 m of height. */
   steps: z.int().min(1).optional(),
+  /**
+   * Solid side walls (2026-11-03, for outside stairs): one each side, 0.1 m thick inside
+   * the width, whose top runs straight from the bottom step to the top one this many
+   * metres above the steps. Drawn only. Left out, there are none.
+   */
+  sides: positive.optional(),
 });
 
 /** pos is the middle of the ladder's foot on the wall face; yaw turns +z out of the wall. */

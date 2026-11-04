@@ -18,6 +18,7 @@ import {
   placeAt,
   removeAt,
   rotateAt,
+  stackOf,
   type Grid,
   type GridItem,
   type Item,
@@ -36,6 +37,7 @@ import {
 import type { CollisionWorld } from '../world/collision-world';
 import { createItem } from './create-item';
 import { dropItem, type GroundItem } from './ground';
+import { cameOffGun } from './raid';
 import { repairable } from './repair';
 import { eyeHeight, eyeX, eyeZ, type Character, type EntityId, type SimState } from './state';
 import {
@@ -70,6 +72,19 @@ export interface LootContainer {
    * lootContainer marker, which is reached and aimed at as a point.
    */
   shape?: { solids: readonly number[]; hx: number; hz: number; yaw: number };
+  /**
+   * Someone has searched it (2026-11-03), which lasts the rest of the raid and shows its
+   * searched look if it has one. Each container's own: a cabinet's drawers are two
+   * containers. Missing (not searched yet, and in older saves) is false.
+   */
+  searched?: boolean;
+}
+
+/** A container was searched for the first time. */
+export interface SearchEvent {
+  type: 'search';
+  by: EntityId;
+  container: string;
 }
 
 /** Whose items: your own, a dead body's, a loot container's, or the ground's. */
@@ -268,6 +283,14 @@ export function containerInReach(c: Character, l: LootContainer): boolean {
   const ox = Math.max(0, Math.abs(dx * cs - dz * sn) - hx);
   const oz = Math.max(0, Math.abs(dx * sn + dz * cs) - hz);
   return Math.hypot(ox, oz) <= LOOT_REACH;
+}
+
+/** Marks a container searched by c, if it's in reach and wasn't already. */
+export function searchContainer(state: SimState, c: Character, id: string): void {
+  const l = lootContainerById(state, id);
+  if (!l || l.searched || c.health.dead || !containerInReach(c, l)) return;
+  l.searched = true;
+  state.events.push({ type: 'search', by: c.id, container: id });
 }
 
 function gearGrid(gear: Gear, name: GridName): Grid | null {
@@ -628,7 +651,7 @@ function splitStack(ctx: Ctx, at: InGrid, n: number): boolean {
   const spot = findSpot(items, grid, at.item);
   if (!spot) return false;
   g.item.count -= n;
-  grid.items.push({ ...spot, item: createItem(items, at.item, n) });
+  grid.items.push({ ...spot, item: stackOf(g.item, n) });
   return true;
 }
 
@@ -647,7 +670,7 @@ function quickMove(
     if (whole) return toGround(ctx, from);
     if (from.at === 'ground') return false;
     from.item.count -= n;
-    dropItem(state, c, createItem(items, from.item.item, n), ctx.world);
+    dropItem(state, c, stackOf(from.item, n), ctx.world);
     return true;
   }
   if (!canReach(state, c, to)) return false;
@@ -662,7 +685,7 @@ function quickMove(
       return true;
     }
   }
-  const moving = whole ? from.item : createItem(items, from.item.item, n);
+  const moving = whole ? from.item : stackOf(from.item, n);
   const before = moving.count;
   let left = before;
   const into = (grid: Grid | null): void => {
@@ -722,7 +745,7 @@ function detachPart(
   const { state, c, items } = ctx;
   const gun = findGun(ctx, gunRef);
   if (!gun || gun.attachments[slot] !== part) return false;
-  const loose = createItem(items, part);
+  const loose = cameOffGun(c, createItem(items, part));
   if (to) {
     // To a spot: refused if it doesn't fit there.
     const grid = gridOf(state, c, to);
@@ -748,7 +771,7 @@ function movePart(ctx: Ctx, from: PartRef, toRef: ItemRef): boolean {
   const outA = swap ? attach(a, items, old) : detach(a, items, slot);
   const outB = attach(b, items, def.id);
   // What was on the second gun goes into what you carry if it can't go on the first.
-  if (old !== null && !swap) stowOrDrop(ctx, createItem(items, old));
+  if (old !== null && !swap) stowOrDrop(ctx, cameOffGun(ctx.c, createItem(items, old)));
   stowRounds(ctx, loadedAmmo(items, a), outA);
   stowRounds(ctx, loadedAmmo(items, b), outB);
   return true;
@@ -767,5 +790,5 @@ function unload(ctx: Ctx, gunRef: ItemRef): boolean {
 
 /** Rounds a gun handed back, into what c carries or else at its feet. */
 function stowRounds(ctx: Ctx, ammo: string, n: number): void {
-  if (n > 0) stowOrDrop(ctx, createItem(ctx.items, ammo, n));
+  if (n > 0) stowOrDrop(ctx, cameOffGun(ctx.c, createItem(ctx.items, ammo, n)));
 }

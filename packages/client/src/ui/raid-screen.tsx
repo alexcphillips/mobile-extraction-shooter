@@ -583,6 +583,7 @@ function Ground({ inv }: { inv: InventoryController }): ReactNode {
             >
               <ItemArt items={ctx.items} item={g.item} def={def} cell={cell} />
               <ItemLabel items={ctx.items} item={g.item} def={def} />
+              {g.item.found && <span className="inv-item-found">✓</span>}
             </div>
           );
         })}
@@ -691,6 +692,7 @@ function Slots({
               >
                 <ItemArt items={inv.ctx.items} item={item} def={def} />
                 <ItemLabel items={inv.ctx.items} item={item} def={def} />
+                {item.found && <span className="inv-item-found">✓</span>}
               </div>
             )}
           </div>
@@ -764,6 +766,7 @@ function GridView({
               rotated={g.rotated}
             />
             <ItemLabel items={inv.ctx.items} item={g.item} def={def} />
+            {g.item.found && <span className="inv-item-found">✓</span>}
           </div>
         );
       })}

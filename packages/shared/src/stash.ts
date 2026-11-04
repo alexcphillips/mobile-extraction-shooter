@@ -66,6 +66,7 @@ export function openStash(profile: Profile): StashState {
     landingSpeed: 0,
     health: createHealth(),
     gear: profile.gear,
+    marked: false,
     aim: 0,
     draw: 0,
     swing: 0,

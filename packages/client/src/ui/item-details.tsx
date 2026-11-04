@@ -119,6 +119,12 @@ export function ItemDetails({
           <div className="item-details-info">
             <p className="item-details-desc">{DESCRIPTION}</p>
             <dl className="item-details-stats">
+              {item.found && (
+                <div>
+                  <dt>Found in raid</dt>
+                  <dd>Yes</dd>
+                </div>
+              )}
               {rows(items, item, def).map(([label, value]) => (
                 <div key={label}>
                   <dt>{label}</dt>

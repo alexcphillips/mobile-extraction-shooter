@@ -227,6 +227,37 @@ export function gearItems(gear: Gear): Item[] {
 }
 
 /**
+ * Marks what a player takes into a raid, before it starts. In the raid `brought` tells
+ * their own items from the raid's, which need no marking however they arrive: unmarked
+ * means found, so a found item taken back in loses `found` here and earns it again.
+ */
+export function markBrought(c: Character): void {
+  c.marked = true;
+  for (const item of gearItems(c.gear)) {
+    if (item.found) delete item.found;
+    else item.brought = true;
+  }
+}
+
+/**
+ * What comes off a gun, an attachment or rounds, counts as brought for a marked player: a
+ * gun doesn't record what was fitted or loaded, and found mustn't be had by passing a
+ * bought item through a found gun. Between raids it's plain, for the same reason.
+ */
+export function cameOffGun(c: Character, item: Item): Item {
+  if (c.marked) item.brought = true;
+  return item;
+}
+
+/** Turns a raid's marks into stored ones as the gear leaves it: see markBrought. */
+export function settleFound(gear: Gear): void {
+  for (const item of gearItems(gear)) {
+    if (item.brought) delete item.brought;
+    else item.found = true;
+  }
+}
+
+/**
  * What a player keeps from the raid: everything if they extracted; if they died or went
  * missing, only the knife and what's in the vault.
  */

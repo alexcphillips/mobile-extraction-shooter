@@ -41,6 +41,8 @@ const handOverSchema = z.strictObject({
   type: z.literal('handOver'),
   item: idSchema,
   count: z.int().min(1).default(1),
+  /** Only items found in a raid count, not bought ones or rewards. */
+  foundInRaid: z.literal(true).optional(),
 });
 
 const extractSchema = z.strictObject({
@@ -88,6 +90,7 @@ export const questSchema = z.strictObject({
 
 export type QuestDef = z.infer<typeof questSchema>;
 export type QuestObjective = z.infer<typeof objectiveSchema>;
+export type HandOverObjective = z.infer<typeof handOverSchema>;
 
 export const QUEST_FORMAT: ContentFormat<QuestDef> = {
   kind: 'quest',

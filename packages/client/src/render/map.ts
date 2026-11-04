@@ -36,16 +36,38 @@ export interface MapView {
   glass: THREE.InstancedMesh | null;
   /** Which panes are drawn broken (gone). */
   glassBroken: boolean[];
+  /** Containers with a searched look, by container id. */
+  looks: Map<string, LookView>;
+}
+
+/** A container's two looks, one mesh each, and whether the searched one is showing. */
+interface LookView {
+  closed: THREE.Mesh;
+  searched: THREE.Mesh;
+  shown: boolean;
 }
 
 /**
  * Builds a compiled map's scene: the terrain and static shapes merged into one mesh per
  * 32 m chunk, one instanced mesh per instanced prefab and colour set, a mesh per door,
- * one instanced see-through mesh for all the glass, and the water surface.
+ * one instanced see-through mesh for all the glass, the two looks of each container with a
+ * searched look, and the water surface.
  */
 export function buildMap(map: CompiledMap): MapView {
   const root = new THREE.Group();
-  root.add(buildChunks(map.world.terrain, map.terrainColour, map.shapes));
+  const apart = new Set(map.searchedLooks.flatMap((l) => l.closed));
+  const merged = apart.size ? map.shapes.filter((s) => !apart.has(s)) : map.shapes;
+  root.add(buildChunks(map.world.terrain, map.terrainColour, merged));
+
+  const baked = bakedMaterial();
+  const looks = new Map<string, LookView>();
+  for (const l of map.searchedLooks) {
+    const closed = buildLook(l.closed, baked);
+    const searched = buildLook(l.searched, baked);
+    searched.visible = false;
+    root.add(closed, searched);
+    looks.set(l.id, { closed, searched, shown: false });
+  }
 
   const shaded = shadedMaterial();
   for (const group of map.instanced) root.add(buildInstanced(group, shaded));
@@ -78,7 +100,32 @@ export function buildMap(map: CompiledMap): MapView {
     water.matrixAutoUpdate = false;
     root.add(water);
   }
-  return { root, doors, glass, glassBroken: map.glass.map(() => false) };
+  return { root, doors, glass, glassBroken: map.glass.map(() => false), looks };
+}
+
+/** Baked like the chunks, so a drawer matches the merged cabinet around it. */
+function buildLook(shapes: readonly Shape[], material: THREE.Material): THREE.Mesh {
+  const b = new TriangleBuilder(true);
+  for (const s of shapes) b.shape(s);
+  const mesh = new THREE.Mesh(b.build(), material);
+  mesh.matrixAutoUpdate = false;
+  return mesh;
+}
+
+/** Shows each container's look for the sim's searched flag, each by itself. */
+export function updateSearchedLooks(
+  view: MapView,
+  containers: readonly { id: string; searched?: boolean }[],
+): void {
+  if (!view.looks.size) return;
+  for (const c of containers) {
+    const look = view.looks.get(c.id);
+    const searched = !!c.searched;
+    if (!look || look.shown === searched) continue;
+    look.shown = searched;
+    look.closed.visible = !searched;
+    look.searched.visible = searched;
+  }
 }
 
 /** One mesh per chunk: its terrain cells and every shape whose centre is in it. */

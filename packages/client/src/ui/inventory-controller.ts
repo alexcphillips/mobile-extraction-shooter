@@ -14,6 +14,7 @@ import {
   itemDef,
   loadKind,
   repairable,
+  sameStack,
   sellPrice,
   stackSize,
   weaponDef,
@@ -489,7 +490,7 @@ export class InventoryController implements DragHost {
       const stack = stackSize(found.def);
       return (
         !!findSpot(items, grid, found.item.item) ||
-        grid.items.some((g) => g.item.item === found.item.item && g.item.count < stack)
+        grid.items.some((g) => sameStack(g.item, found.item) && g.item.count < stack)
       );
     }
     if (zone.kind === 'part') {
@@ -507,7 +508,7 @@ export class InventoryController implements DragHost {
     if (!canHold(items, grid, found.item)) return false;
     // On a stack of the same item, it tops it up.
     const under = grid.items[itemAt(items, grid, x, y)];
-    if (under && under.item !== found.item && under.item.item === found.item.item) {
+    if (under && under.item !== found.item && sameStack(under.item, found.item)) {
       return under.item.count < stackSize(found.def);
     }
     const fromGrid = 'index' in src.ref ? gridOf(sim, player, src.ref) : null;

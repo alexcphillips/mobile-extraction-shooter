@@ -18,7 +18,7 @@
         },
         {
           "type": "prefab",
-          "prefab": "empty-pallet",
+          "prefab": "wood-pallet-large",
           "pos": [-0.112, 0, 0.085]
         }
       ],

@@ -22,6 +22,28 @@ export interface Item {
   attachments?: Record<AttachmentSlot, string | null>;
   /** Rigs and backpacks: what's in them. */
   grid?: Grid;
+  /** Found in a raid and brought out: what some quests want. Only ever on stored items. */
+  found?: true;
+  /** In a raid: you took it in without found (markBrought). Unmarked, it's from the raid. */
+  brought?: true;
+}
+
+/**
+ * Whether two items can share a stack: the same item, both found or both not. Stored items
+ * differ by found, and a raid's by brought: neither mark outlives where it applies.
+ */
+export function sameStack(a: Item, b: Item): boolean {
+  return a.item === b.item && !a.found === !b.found && !a.brought === !b.brought;
+}
+
+/** Part of a stack, as a new stack: count n, with the found marks of the one it's from. */
+export function stackOf(item: Item, n: number): Item {
+  return {
+    item: item.item,
+    count: n,
+    ...(item.found && { found: true }),
+    ...(item.brought && { brought: true }),
+  };
 }
 
 /** An item in a grid, at its top-left cell. Rotated swaps its width and height. */
@@ -153,7 +175,7 @@ export function addItem(items: ItemDb, grid: Grid, item: Item): number {
   const max = stackSize(itemDef(items, item.item));
   if (max > 1) {
     for (const g of grid.items) {
-      if (g.item.item !== item.item || g.item.count >= max) continue;
+      if (!sameStack(g.item, item) || g.item.count >= max) continue;
       const n = Math.min(max - g.item.count, item.count);
       g.item.count += n;
       item.count -= n;
@@ -167,7 +189,7 @@ export function addItem(items: ItemDb, grid: Grid, item: Item): number {
       grid.items.push({ ...spot, item });
       return 0;
     }
-    grid.items.push({ ...spot, item: { item: item.item, count: max } });
+    grid.items.push({ ...spot, item: stackOf(item, max) });
     item.count -= max;
   }
   return item.count;
@@ -308,7 +330,7 @@ export function dropAt(
   if (!g || !canHold(items, to, g.item)) return false;
   const under = itemAt(items, to, x, y);
   const target = to.items[under];
-  if (target && target !== g && target.item.item === g.item.item) {
+  if (target && target !== g && sameStack(target.item, g.item)) {
     const max = stackSize(itemDef(items, g.item.item));
     const n = Math.min(max - target.item.count, g.item.count);
     if (n <= 0) return false;

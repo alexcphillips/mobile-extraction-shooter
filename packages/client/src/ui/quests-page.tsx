@@ -158,7 +158,7 @@ export function QuestsPage({
                         const goal = objectiveGoal(o);
                         const got = objectiveProgress(p, q, o);
                         const key = `${q.id}/${o.id}`;
-                        const have = o.type === 'handOver' ? handOverCount(p, o.item) : 0;
+                        const have = o.type === 'handOver' ? handOverCount(p, o) : 0;
                         const give = Math.min(have, goal - got);
                         return (
                           <li key={o.id} className={got >= goal ? 'done' : ''}>

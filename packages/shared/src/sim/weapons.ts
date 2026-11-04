@@ -27,6 +27,7 @@ import {
   takeAmmo,
 } from './gear';
 import { dropItem } from './ground';
+import { cameOffGun } from './raid';
 import { ignite, launchFlame } from './fire';
 import { launchGrenade } from './grenades';
 import { GLASS, breakGlass, glassHit } from './glass';
@@ -391,7 +392,7 @@ function finishReload(
   if (round === weaponDef(items, w.item).ammo) delete w.loaded;
   else w.loaded = round;
   if (out > 0 && !infinite) {
-    const rounds = { item: old, count: out };
+    const rounds = cameOffGun(c, { item: old, count: out });
     if (stow(c, items, rounds) > 0) dropItem(state, c, rounds, world);
   }
 }

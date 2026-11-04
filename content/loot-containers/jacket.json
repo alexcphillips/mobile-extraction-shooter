@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "jacket",
+  "name": "Jacket",
+  "grid": [2, 2],
+  "loot": {
+    "tables": {
+      "household": 1
+    },
+    "empty": 1
+  }
+}

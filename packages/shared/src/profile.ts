@@ -91,6 +91,7 @@ const itemShape: z.ZodType = z.lazy(() =>
     loaded: idSchema.optional(),
     attachments: z.record(z.enum(ATTACHMENT_SLOTS), idSchema.nullable()).optional(),
     grid: gridShape.optional(),
+    found: z.literal(true).optional(),
     // A gun's state in the sim; restGear resets it before it's stored.
     cooldown: z.number().optional(),
     reloading: z.number().optional(),

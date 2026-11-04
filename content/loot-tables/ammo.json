@@ -1,0 +1,20 @@
+{
+  "formatVersion": 1,
+  "id": "ammo",
+  "name": "Ammo",
+  "rolls": [1, 3],
+  "items": [
+    { "item": "buckshot", "weight": 1 },
+    { "item": "flechette", "weight": 1, "count": [1, 10] },
+    { "item": "slug", "weight": 1, "count": [1, 10] },
+    { "item": "ammo-762x39-lp", "weight": 1, "count": [1, 10] },
+    { "item": "ammo-762x39-bp", "weight": 1, "count": [1, 10] },
+    { "item": "ammo-762x39", "weight": 1, "count": [1, 10] },
+    { "item": "ammo-762x39-t45m", "weight": 1, "count": [1, 10] },
+    { "item": "ammo-9mm-ap", "weight": 1, "count": [1, 10] },
+    { "item": "ammo-9mm-pbp", "weight": 1, "count": [1, 10] },
+    { "item": "ammo-9mm-pso", "weight": 1, "count": [1, 10] },
+    { "item": "ammo-9mm", "weight": 1, "count": [1, 10] },
+    { "item": "crossbow-bolt", "weight": 1, "count": [1, 10] }
+  ]
+}

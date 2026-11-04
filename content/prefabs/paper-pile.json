@@ -1,0 +1,153 @@
+{
+  "formatVersion": 3,
+  "id": "paper-pile",
+  "name": "Paper pile",
+  "colours": {
+    "paper": "#efede7",
+    "paper-old": "#dcd6c4",
+    "folder": "#c9a86a",
+    "ink": "#55585e"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0.03, 0, 0.02],
+      "size": [0.24, 0.004, 0.31],
+      "colour": "folder",
+      "collide": false,
+      "yaw": -8
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.004, 0],
+      "size": [0.21, 0.03, 0.297],
+      "colour": "paper",
+      "collide": false,
+      "yaw": 4,
+      "top": [0.205, 0.29],
+      "lean": [0.012, -0.008]
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.0045, 0],
+      "size": [0.214, 0.026, 0.3],
+      "colour": "paper-old",
+      "collide": false,
+      "yaw": -3
+    },
+    {
+      "type": "box",
+      "pos": [0.02, 0.034, 0.01],
+      "size": [0.21, 0.002, 0.297],
+      "colour": "paper-old",
+      "collide": false,
+      "yaw": 14
+    },
+    {
+      "type": "box",
+      "pos": [-0.015, 0.036, 0.02],
+      "size": [0.21, 0.002, 0.297],
+      "colour": "paper",
+      "collide": false,
+      "yaw": -9
+    },
+    {
+      "type": "box",
+      "pos": [0.01, 0.038, -0.015],
+      "size": [0.21, 0.002, 0.297],
+      "colour": "paper",
+      "collide": false,
+      "yaw": 23
+    },
+    {
+      "type": "box",
+      "pos": [-0.01, 0.04, 0.005],
+      "size": [0.21, 0.002, 0.297],
+      "colour": "paper-old",
+      "collide": false,
+      "yaw": -2
+    },
+    {
+      "type": "box",
+      "pos": [-0.2, 0, 0.12],
+      "size": [0.21, 0.002, 0.297],
+      "colour": "paper",
+      "collide": false,
+      "yaw": 38
+    },
+    {
+      "type": "box",
+      "pos": [0.21, 0, -0.1],
+      "size": [0.21, 0.002, 0.297],
+      "colour": "paper-old",
+      "collide": false,
+      "yaw": -61
+    },
+    {
+      "type": "box",
+      "pos": [0.12, 0.02, 0.16],
+      "size": [0.21, 0.002, 0.297],
+      "colour": "paper",
+      "collide": false,
+      "yaw": 12,
+      "pitch": 9
+    },
+    {
+      "type": "group",
+      "name": "Top sheet",
+      "pos": [0.005, 0.044, -0.01],
+      "yaw": 7,
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [0, 0, 0],
+          "size": [0.21, 0.002, 0.297],
+          "colour": "paper",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.03, 0.002, -0.11],
+          "size": [0.1, 0.001, 0.005],
+          "colour": "ink",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.0, 0.002, -0.082],
+          "size": [0.16, 0.001, 0.005],
+          "colour": "ink",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.005, 0.002, -0.054],
+          "size": [0.15, 0.001, 0.005],
+          "colour": "ink",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.0, 0.002, -0.026],
+          "size": [0.16, 0.001, 0.005],
+          "colour": "ink",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.04, 0.002, 0.002],
+          "size": [0.08, 0.001, 0.005],
+          "colour": "ink",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.015, 0.002, 0.03],
+          "size": [0.13, 0.001, 0.005],
+          "colour": "ink",
+          "collide": false
+        }
+      ]
+    }
+  ]
+}

@@ -120,6 +120,25 @@ describe('quests in raids', () => {
   });
 });
 
+describe('found in raid hand-overs', () => {
+  it('survive being stored: the profile keeps the mark', () => {
+    const shape = PROFILE_FORMAT.schema;
+    const p = JSON.parse(JSON.stringify(newProfile(items, kit))) as Profile;
+    addItem(items, p.stash[0]!, { item: 'watch', count: 1, found: true });
+    const stored = shape.parse(JSON.parse(JSON.stringify(p))) as Profile;
+    expect(stored.stash[0]!.items.some((g) => g.item.found)).toBe(true);
+  });
+
+  it('take only found items when the objective wants them', () => {
+    const p = { stash: [createGrid(4, 4, true)] } as unknown as Profile;
+    addItem(items, p.stash[0]!, { item: 'watch', count: 1 });
+    addItem(items, p.stash[0]!, { item: 'watch', count: 1, found: true });
+    const o = { type: 'handOver', id: 'x', item: 'watch', count: 2 } as const;
+    expect(handOverCount(p, o)).toBe(2);
+    expect(handOverCount(p, { ...o, foundInRaid: true })).toBe(1);
+  });
+});
+
 describe('quests', () => {
   it('open in a chain, and only once', () => {
     const p = profile();
@@ -150,7 +169,7 @@ describe('quests', () => {
     const bag = p.stash[0]!.items.find((g) => g.item.item === 'backpack')!.item;
     addItem(items, bag.grid!, createItem(items, 'watch'));
     addItem(items, p.gear.pockets, createItem(items, 'watch'));
-    expect(handOverCount(p, 'watch')).toBe(2);
+    expect(handOverCount(p, { type: 'handOver', id: 'x', item: 'watch', count: 1 })).toBe(2);
     expect(handOver(p, watches, 'give')).toBeNull();
     expect(p.quests.watches).toEqual({ status: 'active', progress: { give: 2 } });
     expect(countOf(p.stash[0]!, 'watch')).toBe(0);
@@ -162,7 +181,7 @@ describe('quests', () => {
     addItem(items, p.stash[1]!, createItem(items, 'watch'));
     addItem(items, p.stash[1]!, createItem(items, 'watch'));
     expect(handOver(p, watches, 'give')).toBeNull();
-    expect(handOverCount(p, 'watch')).toBe(1);
+    expect(handOverCount(p, { type: 'handOver', id: 'x', item: 'watch', count: 1 })).toBe(1);
     expect(questStatus(p, watches)).toBe('ready');
     expect(handOver(p, watches, 'give')).toMatch(/already/);
   });
@@ -182,7 +201,7 @@ describe('quests', () => {
     const rifle = createItem(items, 'rifle');
     rifle.attachments!.optic = 'scope';
     addItem(items, p.stash[0]!, rifle);
-    expect(handOverCount(p, 'backpack')).toBe(0);
+    expect(handOverCount(p, { type: 'handOver', id: 'x', item: 'backpack', count: 1 })).toBe(0);
     expect(handOver(p, give, 'bag')).toMatch(/none/);
     expect(handOver(p, give, 'gun')).toMatch(/none/);
     bag.grid!.items = [];

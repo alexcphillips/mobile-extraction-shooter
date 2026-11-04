@@ -53,6 +53,8 @@ import {
   TICK_RATE,
   fillLootContainers,
   gearItems,
+  markBrought,
+  settleFound,
   keptItems,
   rollEnemyLoot,
   rollEnemySpawns,
@@ -118,7 +120,7 @@ import { FIRE_SVG, FireViews } from '../render/fire';
 import { INCENDIARY_TRACER, TRACER_COLOUR } from '../render/effects';
 import { GrenadeViews } from '../render/grenades';
 import { GroundItems } from '../render/ground-items';
-import { buildMap, updateDoors, updateGlass } from '../render/map';
+import { buildMap, updateDoors, updateGlass, updateSearchedLooks } from '../render/map';
 import { AiDebug, buildNavOverlay } from '../render/nav-debug';
 import { Viewmodel } from '../render/viewmodel';
 import { settings } from '../settings';
@@ -330,6 +332,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const found = sim.entities.find((e) => e.id === resume.player);
     if (!found) throw new Error('the saved raid has no player');
     player = found;
+    // A raid saved before found-in-raid marks: nothing in it counts as found.
+    if (!player.marked) markBrought(player);
     controls.yaw = player.yaw;
     controls.pitch = player.pitch;
   } else {
@@ -345,6 +349,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       startY ?? (options.at ? world.terrain.heightAt(startX, startZ) + 1 : spawn.y + 0.5),
     );
     player.gear = structuredClone(options.profile.gear);
+    markBrought(player);
     placeLootContainers(sim, map, lootKinds);
     fillLootContainers(sim, map, items, lootTables, lootKinds);
     rollLootSpawns(sim, map, items, lootTables);
@@ -389,6 +394,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   syncDoors(sim, world, nav);
   syncGlass(sim, world);
   updateGlass(mapView, sim.glass);
+  updateSearchedLooks(mapView, sim.loot);
 
   // Enemies: their type's skill, and its loadout (or the spawn's) rolled.
   const patrols = new Map(map.patrols.map((p) => [p.id, p]));
@@ -498,6 +504,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
           spawn.y + 0.5,
         );
         c.gear = structuredClone(gear);
+        markBrought(c);
         return c;
       },
       { spawn: spawn.id, spawned, host: player, name: coop.name },
@@ -817,6 +824,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     };
     // Sent now, as it is: the server keeps what the outcome allows.
     const gear = JSON.parse(JSON.stringify(player.gear)) as Gear;
+    settleFound(gear);
     if (options.test) saving = Promise.resolve({ kind: 'test' });
     else {
       saving = saveResult(options.serverRaid, {
@@ -968,9 +976,12 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     if (controls.healPick && !dead) hands.showPicker(player, items);
 
     // The use button takes the item on the ground near the crosshair, opens, closes or
-    // unlocks a door, or loots what's in reach; the bag button opens your inventory.
+    // unlocks a door, or loots what's in reach, and shuts the raid screen when it's
+    // open; the bag button opens your inventory.
     const lootable =
-      dead || screenOpen ? null : lootableInReach(sim, world, player, controls.yaw, controls.pitch);
+      dead || screenOpen
+        ? null
+        : lootableInReach(sim, world, map.searchedLooks, player, controls.yaw, controls.pitch);
     // A locked door names its key under the crosshair, and unlocks if you carry it.
     const doorIndex = lootable?.kind === 'door' ? lootable.index : -1;
     const door = doorIndex >= 0 ? sim.doors[doorIndex]! : null;
@@ -1003,8 +1014,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     }
     let taking: string | null = null;
     input.door = null;
+    input.search = null;
     input.investigate = false;
-    if (!dead && controls.interact && spot) {
+    if (!dead && controls.interact && screenOpen) {
+      closeScreen();
+    } else if (!dead && controls.interact && spot) {
       input.investigate = true;
     } else if (!dead && controls.interact && lootable?.kind === 'door') {
       input.door = lootable.index;
@@ -1018,8 +1032,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       });
       taking = itemDef(items, id).name;
     } else if (!dead && controls.interact && lootable) {
-      if (lootable.kind === 'container') openScreen({ kind: 'container', id: lootable.c.id });
-      else if (lootable.kind === 'body') openScreen({ kind: 'body', id: lootable.c.id });
+      if (lootable.kind === 'container') {
+        // The only place a search completes: a timed search would send this when it ends.
+        input.search = lootable.c.id;
+        openScreen({ kind: 'container', id: lootable.c.id });
+      } else if (lootable.kind === 'body') openScreen({ kind: 'body', id: lootable.c.id });
     } else if (!dead && controls.bag) {
       if (screenOpen) closeScreen();
       else openScreen(null);
@@ -1369,6 +1386,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     questMarkers.update(camera, alive && !screenOpen && !ended);
     enemyBars?.update(camera, alive && !screenOpen && !ended);
     updateDoors(mapView, sim.doors, dtMs / 1000);
+    updateSearchedLooks(mapView, sim.loot);
     updateGlass(mapView, sim.glass);
     if (aimMarker) {
       const yaw = player.yaw + player.recoilYaw;

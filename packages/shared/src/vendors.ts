@@ -87,6 +87,33 @@ export function sellPrice(items: ItemDb, item: Item): number {
   return sellParts(items, item).reduce((n, p) => n + p.price, 0);
 }
 
+/** What a raid gained you of one item: how many, and what a vendor pays for them. */
+export interface RaidGain {
+  id: string;
+  count: number;
+  price: number;
+}
+
+/**
+ * What's found in raid among the items kept from a raid, not yet settled (settleFound), by
+ * what a vendor pays, cash at its full value: each found item with what's on it. What no
+ * vendor wants is left out.
+ */
+export function raidGains(items: ItemDb, kept: readonly Item[]): RaidGain[] {
+  const gains = new Map<string, RaidGain>();
+  for (const item of kept) {
+    if (item.brought) continue;
+    for (const p of sellParts(items, item)) {
+      if (p.price <= 0) continue;
+      const gain = gains.get(p.id) ?? { id: p.id, count: 0, price: 0 };
+      gain.count += p.count;
+      gain.price += p.price;
+      gains.set(p.id, gain);
+    }
+  }
+  return [...gains.values()];
+}
+
 /** Why an item can't be sold, or null if it can. */
 export function cantSell(items: ItemDb, item: Item): string | null {
   if (item.grid?.items.length) return 'Empty it first';

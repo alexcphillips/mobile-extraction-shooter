@@ -127,11 +127,11 @@ export const PIT_DEPTH = 60;
 /** Where a broken pane's solid goes: far enough out that nothing reaches it. */
 const GONE = 1e9;
 /**
- * A ceiling must reach this far over the circle, not just touch it: pushOut leaves a
- * circle against a wall at the radius, give or take rounding, and a roof flush with that
- * wall would otherwise stop every jump there (2026-11-03).
+ * A floor or ceiling must reach this far over the circle, not just touch it: pushOut leaves
+ * a circle against a wall at the radius, give or take rounding, and a roof or floor flush
+ * with that wall would otherwise stop every jump there or lift you onto it (2026-11-03).
  */
-const CEILING_CONTACT = 1e-3;
+const SOLID_CONTACT = 1e-3;
 
 /**
  * The collision world, built once from map data. All queries reuse internal scratch space
@@ -289,6 +289,8 @@ export class CollisionWorld {
    * Over a hole with nothing in it, that's a floor PIT_DEPTH under the lowest terrain.
    */
   groundAt(x: number, z: number, radius: number, maxTop: number, out?: GroundHit): number {
+    // Touching isn't standing on: a floor flush with the wall you're against isn't underfoot.
+    radius = Math.max(radius - SOLID_CONTACT, 0);
     const t = this.terrain;
     let best = t.holeAt(x, z) ? t.minHeight - PIT_DEPTH : t.heightAt(x, z);
     let solid = -1;
@@ -308,10 +310,10 @@ export class CollisionWorld {
 
   /**
    * The lowest solid underside above minBottom over a circle, or Infinity. Solids only
-   * touching its edge (see CEILING_CONTACT) don't count.
+   * touching its edge (see SOLID_CONTACT) don't count.
    */
   ceilingAt(x: number, z: number, radius: number, minBottom: number): number {
-    radius -= CEILING_CONTACT;
+    radius -= SOLID_CONTACT;
     let best = Infinity;
     const n = this.grid.query(x - radius, z - radius, x + radius, z + radius, this.found);
     for (let k = 0; k < n; k++) {

@@ -259,6 +259,27 @@ describe('jumping', () => {
     );
   });
 
+  it.each([0, 30, 90, 135, 217])(
+    'stays down walking into a wall with a floor flush with it, turned %d°',
+    (deg) => {
+      // A shipping container: its floor slab's edge flush with the wall's outer face.
+      const yaw = (deg * Math.PI) / 180;
+      const wall = { ...aabb(-4, 0, -0.1, 4, 2.6, 0.1), yaw };
+      // Boxes turn about their own middles: the floor's is 1.4 m in from the wall's.
+      const across = { x: Math.sin(yaw) * 1.4, z: Math.cos(yaw) * 1.4 };
+      const floor = { ...aabb(-4, 0, -1.5, 4, 0.2, 1.5), ...across, yaw };
+      const world = makeWorld({ boxes: [wall, floor] });
+      // Starting a metre out from the wall's −z face, walking at it and a little along it.
+      const nx = -Math.sin(yaw);
+      const nz = -Math.cos(yaw);
+      const { c, run } = setup(world, nx * 1.1, nz * 1.1, yaw + Math.PI + 0.3, 0);
+      for (let i = 0; i < TICK_RATE * 2; i++) {
+        run(1, input({ yaw: c.yaw, moveY: 1 }));
+        expect(c.y).toBe(0);
+      }
+    },
+  );
+
   it("can't jump while crouched", () => {
     const { run } = setup(makeWorld());
     run(TICK_RATE, input({ crouch: true }));

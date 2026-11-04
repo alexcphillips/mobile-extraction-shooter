@@ -1458,6 +1458,35 @@ function Inspector(props: {
               />
             ))}
           </div>
+          <p className="ed-note">Top face: its size, and how far it leans (drawn only).</p>
+          <div className="ed-row">
+            {(['top', 'lean'] as const).flatMap((key) =>
+              (['x', 'z'] as const).map((axis, k) => (
+                <Num
+                  key={key + axis}
+                  label={key === 'top' ? `top ${axis === 'x' ? 'w' : 'd'}` : `lean ${axis}`}
+                  value={n[key]?.[k] ?? (key === 'top' ? n.size[k * 2] : 0)}
+                  {...(key === 'top' && { min: 0 })}
+                  onChange={(v) =>
+                    edit((m) => {
+                      if (m.type !== 'box') return;
+                      if (key === 'top') {
+                        const t = m.top ?? [m.size[0], m.size[2]];
+                        t[k] = Math.max(0, v ?? m.size[k * 2]!);
+                        if (t[0] === m.size[0] && t[1] === m.size[2]) delete m.top;
+                        else m.top = t;
+                      } else {
+                        const l = m.lean ?? [0, 0];
+                        l[k] = v ?? 0;
+                        if (l[0] || l[1]) m.lean = l;
+                        else delete m.lean;
+                      }
+                    })
+                  }
+                />
+              )),
+            )}
+          </div>
         </>
       )}
       {n.type === 'wall' && (
@@ -1481,7 +1510,12 @@ function Inspector(props: {
           {num('sides', 'sides', 8)}
         </div>
       )}
-      {n.type === 'stairs' && <div className="ed-row">{num('steps')}</div>}
+      {n.type === 'stairs' && (
+        <div className="ed-row" title="Side walls: how far their sloped top stands above the steps">
+          {num('steps')}
+          {num('sides', 'side walls')}
+        </div>
+      )}
       {n.type === 'ladder' && (
         <div className="ed-row">
           {num('height')}
@@ -1976,6 +2010,7 @@ function LootFields(props: {
               container: v.container,
               ...(v.lootTable !== undefined && { lootTable: v.lootTable }),
               ...(v.mix && { mix: v.mix }),
+              ...(n.loot?.searched !== undefined && { searched: n.loot.searched }),
             })
           }
         />

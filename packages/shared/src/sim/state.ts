@@ -8,7 +8,7 @@ import type { Burn, FirePatch, Flame, IgniteEvent } from './fire';
 import type { BounceEvent, ExplosionEvent, Grenade, Smoke, ThrowEvent } from './grenades';
 import type { GroundItem } from './ground';
 import { createHealth, type DamageEvent, type DeathEvent, type Health } from './health';
-import type { InventoryAction, InventoryEvent, LootContainer } from './looting';
+import type { InventoryAction, InventoryEvent, LootContainer, SearchEvent } from './looting';
 import type { MedRef, MedUse } from './meds';
 import type { SwingEvent } from './melee';
 import { MOVEMENT } from './movement';
@@ -73,6 +73,8 @@ export interface Character {
   health: Health;
   /** Everything it carries and wears. The gun in its hands is heldWeapon(c). */
   gear: Gear;
+  /** A player's in a raid: see markBrought. */
+  marked: boolean;
   /** How far into aiming down the sights: 0 at the hip, 1 fully aimed. */
   aim: number;
   /** Seconds left taking out what's in its hands; it can't fire, swing or aim until 0. */
@@ -135,6 +137,7 @@ export type SimEvent =
   | DamageEvent
   | DeathEvent
   | InventoryEvent
+  | SearchEvent
   | LeaveEvent
   | DoorEvent
   | GlassEvent
@@ -243,6 +246,8 @@ export interface PlayerInput {
   use?: MedRef | 'cancel' | null;
   /** Open, close or unlock a door, by its index in world.doors: a press. */
   door?: number | null;
+  /** Finish searching a loot container, by its id: a press. Opening its screen sends it today. */
+  search?: string | null;
   /** Investigate the quest marker in reach (session 14b): a press. */
   investigate?: boolean;
 }
@@ -305,6 +310,7 @@ export function spawnCharacter(
     landingSpeed: 0,
     health: createHealth(),
     gear: createGear(vault),
+    marked: false,
     aim: 0,
     draw: 0,
     swing: 0,

@@ -1,0 +1,77 @@
+{
+  "formatVersion": 3,
+  "id": "desk",
+  "name": "Desk",
+  "colours": {
+    "wood": "#a98a63",
+    "wood-dark": "#7d6346",
+    "frame": "#5b5f66",
+    "metal": "#3a3d42",
+    "grommet": "#1d1e21"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0.73, 0],
+      "size": [1.6, 0.03, 0.75],
+      "colour": "wood"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.734, 0.375],
+      "size": [1.6, 0.022, 0.003],
+      "colour": "wood-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.75, 0.03, 0],
+      "size": [0.03, 0.7, 0.7],
+      "colour": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [-0.75, 0, 0],
+      "size": [0.07, 0.03, 0.72],
+      "colour": "metal",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.6, 0.761, -0.29],
+      "radius": 0.035,
+      "height": 0.002,
+      "colour": "grommet",
+      "sides": 10,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.75, 0.03, 0],
+      "size": [0.03, 0.7, 0.7],
+      "colour": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [0.75, 0, 0],
+      "size": [0.07, 0.03, 0.72],
+      "colour": "metal",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.6, 0.761, -0.29],
+      "radius": 0.035,
+      "height": 0.002,
+      "colour": "grommet",
+      "sides": 10,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.33, -0.33],
+      "size": [1.4700000000000002, 0.4, 0.018],
+      "colour": "frame"
+    }
+  ]
+}

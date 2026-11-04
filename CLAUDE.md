@@ -6,6 +6,7 @@ A small Tarkov-style PvE extraction shooter that runs as a mobile web game (Add 
 - [docs/design.md](docs/design.md): game design decisions. These are settled, so don't re-argue them without a new reason.
 - [docs/tech-stack.md](docs/tech-stack.md): architecture and technology choices.
 - [docs/roadmap.md](docs/roadmap.md): v1 scope and the plan, session by session. Find your session, do it, then tick it off and record anything you decided.
+- [docs/props.md](docs/props.md): how to build props and prefabs in the house style (shapes, colours, collision, frame rules).
 - [docs/coop.md](docs/coop.md): the co-op to-do (friends, party, raid server), in the same session format.
 
 ## Standing rules

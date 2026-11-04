@@ -17,7 +17,9 @@ import {
   type InventoryAction,
   type LootContainer,
   type Owner,
+  LOOT_REACH,
 } from './looting';
+import { gearItems, markBrought, settleFound } from './raid';
 import { createState, spawnCharacter, type PlayerInput } from './state';
 import { step } from './step';
 import { TEST_ITEMS as items } from './test-items';
@@ -31,6 +33,19 @@ const world = new CollisionWorld({
 });
 
 const self: Owner = { kind: 'self' };
+
+const stand: PlayerInput = {
+  moveX: 0,
+  moveY: 0,
+  yaw: 0,
+  pitch: 0,
+  sprint: false,
+  crouch: false,
+  jump: false,
+  fire: false,
+  aim: false,
+  reload: false,
+};
 
 /** A player with a backpack, a dead enemy 1 m away carrying a rifle, and a crate. */
 function setup() {
@@ -54,6 +69,100 @@ function setup() {
   const act = (a: InventoryAction): boolean => applyInventory(state, c, items, a);
   return { state, c, enemy, crate, body, box, act };
 }
+
+describe('searching a container', () => {
+  const press = (search: string): PlayerInput => ({ ...stand, search });
+
+  it('marks it searched, once, by the input, and lasts through a save', () => {
+    const { state, c, crate } = setup();
+    expect(crate.searched).toBeUndefined();
+    step(state, world, items, { [c.id]: press('crate') });
+    expect(crate.searched).toBe(true);
+    expect(state.events).toContainEqual({ type: 'search', by: c.id, container: 'crate' });
+    step(state, world, items, { [c.id]: press('crate') });
+    expect(state.events.some((e) => e.type === 'search')).toBe(false);
+    const copy = JSON.parse(JSON.stringify(state)) as typeof state;
+    expect(copy.loot[0]!.searched).toBe(true);
+  });
+
+  it('ignores a press out of reach, on an unknown id, or from the dead', () => {
+    const { state, c, crate } = setup();
+    crate.z = LOOT_REACH + 2;
+    step(state, world, items, { [c.id]: press('crate') });
+    step(state, world, items, { [c.id]: press('nope') });
+    expect(crate.searched).toBeUndefined();
+    expect(state.events.some((e) => e.type === 'search')).toBe(false);
+    crate.z = 1;
+    c.health.dead = true;
+    step(state, world, items, { [c.id]: press('crate') });
+    expect(crate.searched).toBeUndefined();
+  });
+});
+
+describe('found in raid', () => {
+  const rifle = { owner: { kind: 'self' }, slot: 'primary1', item: 'rifle' } as const;
+  const loot = (item: string) =>
+    ({ owner: { kind: 'container', id: 'crate' }, grid: 'loot', index: 0, item }) as const;
+
+  it('settles what came from the raid as found, and what you brought as not', () => {
+    const { c, crate, act } = setup();
+    c.gear.backpack!.grid!.items.length = 0;
+    addItem(items, c.gear.backpack!.grid!, { item: 'watch', count: 1 });
+    markBrought(c);
+    addItem(items, crate.grid, createItem(items, 'bandage'));
+    act({ type: 'quick', from: loot('bandage'), to: self });
+    const gear = JSON.parse(JSON.stringify(c.gear)) as typeof c.gear;
+    settleFound(gear);
+    const kept = gearItems(gear);
+    expect(kept.find((i) => i.item === 'bandage')?.found).toBe(true);
+    expect(kept.find((i) => i.item === 'watch')?.found).toBeUndefined();
+    expect(kept.every((i) => !i.brought)).toBe(true);
+  });
+
+  it('stays brought through a drop and pick up', () => {
+    const { c, box, act } = setup();
+    equip(c, items, 'primary1', createItem(items, 'rifle'));
+    markBrought(c);
+    act({ type: 'quick', from: rifle, to: box });
+    act({ type: 'quick', from: loot('rifle'), to: self });
+    expect(c.gear.primary1?.brought).toBe(true);
+  });
+
+  it('never stacks found with brought, but a split keeps its mark', () => {
+    const { c, crate, act } = setup();
+    const bag = c.gear.backpack!.grid!;
+    addItem(items, bag, { item: 'round', count: 10 });
+    markBrought(c);
+    addItem(items, crate.grid, { item: 'round', count: 30 });
+    act({ type: 'quick', from: loot('round'), to: self, count: 10 });
+    const rounds = gearItems(c.gear).filter((i) => i.item === 'round');
+    expect(rounds.map((i) => [i.count, !!i.brought]).sort()).toEqual([
+      [10, false],
+      [10, true],
+    ]);
+    expect(crate.grid.items[0]?.item.count).toBe(20);
+    expect(crate.grid.items[0]?.item.brought).toBeUndefined();
+  });
+
+  it('a found item taken back in is found again, even if lost and refound', () => {
+    const { c } = setup();
+    addItem(items, c.gear.backpack!.grid!, { item: 'watch', count: 1, found: true });
+    markBrought(c);
+    const gear = JSON.parse(JSON.stringify(c.gear)) as typeof c.gear;
+    settleFound(gear);
+    expect(gearItems(gear).find((i) => i.item === 'watch')?.found).toBe(true);
+  });
+
+  it('rounds and parts off a gun are not found, in a raid', () => {
+    const { c, enemy, body, act } = setup();
+    markBrought(c);
+    const mag = enemy.gear.primary1!.mag!;
+    act({ type: 'unload', gun: { owner: body, slot: 'primary1', item: 'rifle' } });
+    const rounds = gearItems(c.gear).find((i) => i.item === 'round')!;
+    expect(rounds.count).toBe(mag);
+    expect(rounds.brought).toBe(true);
+  });
+});
 
 describe('looting', () => {
   it('double-tapping a gun on a body puts it in an empty gun slot, then in the backpack', () => {

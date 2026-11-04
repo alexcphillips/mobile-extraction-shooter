@@ -38,8 +38,17 @@ export class TriangleBuilder {
 
   /** A convex polygon in shape-local space, wound so its front faces away from inside. */
   poly(points: readonly THREE.Vector3[], inside: THREE.Vector3, m: THREE.Matrix4, colour: number) {
-    const [p0, p1, p2] = points as [THREE.Vector3, THREE.Vector3, THREE.Vector3];
-    e1.subVectors(p1, p0).cross(e2.subVectors(p2, p0));
+    // Its normal from every corner (Newell's), so corners that meet (a box tapered to an
+    // edge) don't spoil it.
+    e1.set(0, 0, 0);
+    for (let i = 0; i < points.length; i++) {
+      const a = points[i]!;
+      const b = points[(i + 1) % points.length]!;
+      e1.x += (a.y - b.y) * (a.z + b.z);
+      e1.y += (a.z - b.z) * (a.x + b.x);
+      e1.z += (a.x - b.x) * (a.y + b.y);
+    }
+    const p0 = points[0]!;
     const flip = e1.dot(e2.subVectors(p0, inside)) < 0;
     w0.copy(p0).applyMatrix4(m);
     for (let i = 1; i + 1 < points.length; i++) {
@@ -57,8 +66,12 @@ export class TriangleBuilder {
     switch (s.kind) {
       case 'box': {
         const { hx, hy, hz } = s;
+        const [tx, tz] = s.top ?? [hx, hz];
+        const [lx, lz] = s.lean ?? [0, 0];
         const c = [-1, 1].flatMap((i) =>
-          [-1, 1].flatMap((j) => [-1, 1].map((k) => v(i * hx, j * hy, k * hz))),
+          [-1, 1].flatMap((j) =>
+            [-1, 1].map((k) => (j < 0 ? v(i * hx, -hy, k * hz) : v(lx + i * tx, hy, lz + k * tz))),
+          ),
         );
         // Corner index bits: x is 4, y is 2, z is 1.
         BOX_FACES.forEach((f, k) => {

@@ -9,7 +9,7 @@ import { TICK_SECONDS } from '../tick';
 import { updateExtinguish, updateFire } from './fire';
 import { switchHand } from './gear';
 import { updateGrenades, updateThrow } from './grenades';
-import { applyInventory } from './looting';
+import { applyInventory, searchContainer } from './looting';
 import { updateMedUse } from './meds';
 import { updateMelee } from './melee';
 import { fitLean, moveCharacter, separateCharacters } from './movement';
@@ -53,6 +53,8 @@ export function step(
   for (const e of state.entities) {
     const door = inputs[e.id]?.door;
     if (door != null) useDoor(state, world, items, e, door);
+    const search = inputs[e.id]?.search;
+    if (search != null) searchContainer(state, e, search);
     if (inputs[e.id]?.investigate) investigate(state, e);
   }
   // Switching hands and using meds before moving, which is slower while using one.

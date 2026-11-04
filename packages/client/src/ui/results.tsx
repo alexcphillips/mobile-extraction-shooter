@@ -1,4 +1,12 @@
-import { isMoney, itemDef, sellPrice, type Item, type ItemDb, type LeaveReason } from '@mes/shared';
+import {
+  isMoney,
+  itemDef,
+  raidGains,
+  sellPrice,
+  type Item,
+  type ItemDb,
+  type LeaveReason,
+} from '@mes/shared';
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { clock } from '../hud/raid-hud';
@@ -52,6 +60,34 @@ function ItemList({ items, list, empty }: { items: ItemDb; list: Item[]; empty: 
         </li>
       ))}
     </ul>
+  );
+}
+
+/** The items you found and kept, at vendor prices, line by line, and their sum: 0 if nothing's new. */
+function Gain({ items, result }: { items: ItemDb; result: RaidResult }) {
+  const gains = raidGains(items, result.kept);
+  const total = gains.reduce((n, g) => n + g.price, 0);
+  return (
+    <section className="results-gain">
+      <h2>Raid gain</h2>
+      {gains.length > 0 && (
+        <ul>
+          {gains.map((g) => (
+            <li key={g.id}>
+              <span>
+                {itemDef(items, g.id).name}
+                {g.count > 1 && <span className="results-count"> ×{g.count}</span>}
+              </span>
+              <span>{g.price.toLocaleString()}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="results-gain-total">
+        <span>Total at vendor prices</span>
+        <span>{total.toLocaleString()}</span>
+      </p>
+    </section>
   );
 }
 
@@ -135,6 +171,7 @@ function Results({
           </section>
         )}
       </div>
+      <Gain items={items} result={result} />
       {result.how === 'killed' && result.taken.length > 0 && (
         <section className="results-damage">
           <h2>What hit you</h2>

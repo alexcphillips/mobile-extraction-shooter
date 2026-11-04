@@ -1,0 +1,248 @@
+{
+  "formatVersion": 3,
+  "id": "briefcase-open",
+  "name": "Briefcase (searched look)",
+  "colours": {
+    "shell": "#34566b",
+    "shell-dark": "#294556",
+    "trim": "#1e2124",
+    "accent": "#e0a526",
+    "lining": "#3b3f46",
+    "lining-dark": "#2c2f35",
+    "paper": "#e8e4d8",
+    "ink": "#3a3d42",
+    "ink-light": "#9a9a94",
+    "folder": "#c8a86a",
+    "stamp": "#b23a30"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [0.6, 0.075, 0.4],
+      "colour": "shell",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.074, 0],
+      "size": [0.6086, 0.002, 0.4086],
+      "colour": "trim",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.076, 0],
+      "size": [0.55, 0.002, 0.35],
+      "colour": "lining",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.2, 0.051, 0.203],
+      "size": [0.05, 0.048, 0.006],
+      "colour": "accent",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.2, 0.067, 0.207],
+      "size": [0.022, 0.016, 0.003],
+      "colour": "trim",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.075, 0.063, 0.215],
+      "size": [0.02, 0.024, 0.03],
+      "colour": "trim",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.2, 0.051, 0.203],
+      "size": [0.05, 0.048, 0.006],
+      "colour": "accent",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.2, 0.067, 0.207],
+      "size": [0.022, 0.016, 0.003],
+      "colour": "trim",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.075, 0.063, 0.215],
+      "size": [0.02, 0.024, 0.03],
+      "colour": "trim",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.062, 0.236],
+      "size": [0.17, 0.026, 0.024],
+      "colour": "trim",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.16, 0.059, -0.203],
+      "size": [0.06, 0.032, 0.005],
+      "colour": "trim",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.16, 0.059, -0.203],
+      "size": [0.06, 0.032, 0.005],
+      "colour": "trim",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.13, 0.078, 0.0],
+      "size": [0.21, 0.012, 0.28],
+      "colour": "paper",
+      "collide": false,
+      "yaw": -4
+    },
+    {
+      "type": "box",
+      "pos": [-0.13, 0.0905, 0.05],
+      "size": [0.13, 0.002, 0.012],
+      "colour": "ink",
+      "collide": false,
+      "yaw": -4
+    },
+    {
+      "type": "box",
+      "pos": [-0.13, 0.0905, 0.0],
+      "size": [0.15, 0.0015, 0.006],
+      "colour": "ink-light",
+      "collide": false,
+      "yaw": -4
+    },
+    {
+      "type": "box",
+      "pos": [-0.13, 0.0905, -0.03],
+      "size": [0.15, 0.0015, 0.006],
+      "colour": "ink-light",
+      "collide": false,
+      "yaw": -4
+    },
+    {
+      "type": "box",
+      "pos": [-0.13, 0.0905, -0.06],
+      "size": [0.15, 0.0015, 0.006],
+      "colour": "ink-light",
+      "collide": false,
+      "yaw": -4
+    },
+    {
+      "type": "box",
+      "pos": [0.14, 0.078, 0.01],
+      "size": [0.22, 0.02, 0.29],
+      "colour": "folder",
+      "collide": false,
+      "yaw": 5
+    },
+    {
+      "type": "box",
+      "pos": [0.14, 0.0985, 0.06],
+      "size": [0.1, 0.002, 0.04],
+      "colour": "paper",
+      "collide": false,
+      "yaw": 5
+    },
+    {
+      "type": "box",
+      "pos": [0.17, 0.0985, -0.06],
+      "size": [0.08, 0.002, 0.03],
+      "colour": "stamp",
+      "collide": false,
+      "yaw": -10
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.2253, -0.2783],
+      "size": [0.6, 0.075, 0.4],
+      "colour": "shell",
+      "collide": false,
+      "pitch": -102
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.27, -0.2408],
+      "size": [0.55, 0.0015, 0.35],
+      "colour": "lining",
+      "collide": false,
+      "pitch": -102
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.2115, -0.2267],
+      "size": [0.48, 0.002, 0.13],
+      "colour": "lining-dark",
+      "collide": false,
+      "pitch": -102
+    },
+    {
+      "type": "box",
+      "pos": [-0.17, 0.253, -0.3174],
+      "size": [0.04, 0.003, 0.3],
+      "colour": "shell-dark",
+      "collide": false,
+      "pitch": -102
+    },
+    {
+      "type": "box",
+      "pos": [-0.06, 0.253, -0.3174],
+      "size": [0.04, 0.003, 0.3],
+      "colour": "shell-dark",
+      "collide": false,
+      "pitch": -102
+    },
+    {
+      "type": "box",
+      "pos": [0.06, 0.253, -0.3174],
+      "size": [0.04, 0.003, 0.3],
+      "colour": "shell-dark",
+      "collide": false,
+      "pitch": -102
+    },
+    {
+      "type": "box",
+      "pos": [-0.2, 0.4539, -0.2799],
+      "size": [0.03, 0.0015, 0.016],
+      "colour": "trim",
+      "collide": false,
+      "pitch": -102
+    },
+    {
+      "type": "box",
+      "pos": [-0.16, 0.0678, -0.2059],
+      "size": [0.06, 0.012, 0.006],
+      "colour": "trim",
+      "collide": false,
+      "pitch": -102
+    },
+    {
+      "type": "box",
+      "pos": [0.2, 0.4539, -0.2799],
+      "size": [0.03, 0.0015, 0.016],
+      "colour": "trim",
+      "collide": false,
+      "pitch": -102
+    },
+    {
+      "type": "box",
+      "pos": [0.16, 0.0678, -0.2059],
+      "size": [0.06, 0.012, 0.006],
+      "colour": "trim",
+      "collide": false,
+      "pitch": -102
+    }
+  ]
+}

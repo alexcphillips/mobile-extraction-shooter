@@ -94,6 +94,7 @@ function character(id: number, x: number): Character {
     landingSpeed: 0,
     health: createHealth(),
     gear: createGear(false),
+    marked: false,
     aim: 0,
     draw: 0,
     swing: 0,

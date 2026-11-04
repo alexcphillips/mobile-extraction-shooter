@@ -29,13 +29,20 @@ interface ShapeBase {
 }
 
 export type Shape =
-  /** bulge (map boxes): how far each face's middle is pushed out, −x +x −y +y −z +z. */
+  /**
+   * Map boxes may have a bulge (how far each face's middle is pushed out, −x +x −y +y −z +z)
+   * and a top face of another size (top) moved over (lean).
+   */
   | (ShapeBase & {
       kind: 'box';
       hx: number;
       hy: number;
       hz: number;
       bulge?: readonly [number, number, number, number, number, number];
+      /** Half the top face's width and depth, when not hx and hz. */
+      top?: readonly [number, number];
+      /** The top face's middle moved along x and z. */
+      lean?: readonly [number, number];
     })
   | (ShapeBase & { kind: 'cylinder'; radius: number; radiusTop: number; hy: number; sides: number })
   /** Rises from y − hy at local −z to y + hy at local +z. */
@@ -143,6 +150,17 @@ export type CompiledMarker = Placed<MarkerNode> & {
   hz?: number;
 };
 
+/**
+ * A container with a searched look, by its container id: which of its two looks shows is
+ * drawn by itself, not merged. `closed` are the same objects as in CompiledMap.shapes, which
+ * keeps them so that everything else reading it (the map tab, the editor) gets the closed look.
+ */
+export interface SearchedLook {
+  id: string;
+  closed: Shape[];
+  searched: Shape[];
+}
+
 export interface CompiledMap {
   id: string;
   name: string;
@@ -153,6 +171,7 @@ export interface CompiledMap {
   /** Everything static that isn't instanced, merged by chunk when drawn. */
   shapes: Shape[];
   instanced: InstancedGroup[];
+  searchedLooks: SearchedLook[];
   doors: CompiledDoor[];
   glass: CompiledGlass[];
   markers: CompiledMarker[];
@@ -166,6 +185,8 @@ export type PrefabLookup = ReadonlyMap<string, PrefabFile>;
 
 const DEG = Math.PI / 180;
 const STEP_HEIGHT = 0.25;
+/** How thick a stairs' side walls are. */
+const STAIR_SIDE = 0.1;
 const LADDER_WIDTH = 0.6;
 const RUNG_SPACING = 0.3;
 const DOOR_THICKNESS = 0.05;
@@ -200,7 +221,26 @@ interface Sink {
   buildings: CompiledBuilding[] | null;
   /** Instanced prefabs become groups; null flattens them into shapes like any prefab. */
   groups: Map<string, InstancedGroup> | null;
+  /** Null leaves containers in their closed look, as the editor draws them. */
+  looks: SearchedLook[] | null;
 }
+
+/** Collects nothing; given shapes, it collects only those, with instanced prefabs flattened. */
+const DRAW_ONLY: Sink = {
+  shapes: null,
+  boxes: null,
+  ramps: null,
+  ladders: null,
+  doors: null,
+  glass: null,
+  markers: null,
+  patrols: null,
+  buildings: null,
+  groups: null,
+  looks: null,
+};
+
+type PrefabNode = Extract<MapNode, { type: 'prefab' }>;
 
 type Scope = Readonly<Record<string, number>>;
 
@@ -221,6 +261,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     patrols: [],
     buildings: [],
     groups: new Map(),
+    looks: [],
   };
   const terrain = {
     minX: map.terrain.origin[0],
@@ -256,6 +297,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     },
     shapes: out.shapes!,
     instanced: [...out.groups!.values()],
+    searchedLooks: out.looks!,
     doors: out.doors!,
     glass: out.glass!,
     markers: out.markers!,
@@ -306,7 +348,7 @@ export function compileNodes(
     slotColours(colours),
     '',
     [],
-    { ...out, ladders: null, groups: null },
+    { ...out, ladders: null, groups: null, looks: null },
   );
   return out;
 }
@@ -386,6 +428,10 @@ class Compiler {
     nodes.forEach((node, i) => {
       const boxes = out.boxes?.length ?? 0;
       const markers = out.markers?.length ?? 0;
+      const shapes = out.shapes?.length ?? 0;
+      const look = 'loot' in node ? node.loot?.searched : undefined;
+      // Its copies can't be instanced, as each has a look of its own.
+      const sink = look ? { ...out, groups: null } : out;
       // A group has no id, so as a container it's "#" and its index.
       const id =
         (path ? `${path}/` : '') + (node.type !== 'group' && node.id ? node.id : `#${unnamed}${i}`);
@@ -393,11 +439,15 @@ class Compiler {
         // A group moves its nodes but adds nothing to their ids.
         const [x, y, z] = place(f, node.pos);
         const g = frame(x, y, z, f.yaw + (node.yaw ?? 0) * DEG);
-        this.nodes(node.nodes, g, scope, path, stack, out, `${unnamed}${i}.`);
-      } else this.node(node, f, scope, id, stack, out);
+        this.nodes(node.nodes, g, scope, path, stack, sink, `${unnamed}${i}.`);
+      } else this.node(node, f, scope, id, stack, sink);
       if ('loot' in node && node.loot) {
         const yaw = f.yaw + (node.yaw ?? 0) * DEG;
         this.container(node.loot, id, yaw, boxes, markers, out);
+        if (look) {
+          const [x, y, z] = place(f, node.pos);
+          this.searchedLook(look, frame(x, y, z, yaw), scope, id, stack, shapes, out);
+        }
       }
     });
   }
@@ -463,6 +513,33 @@ class Compiler {
     });
   }
 
+  /**
+   * Records the two looks of the container just made from out.shapes from `first`. The
+   * searched one is the named prefab, drawn only, with the colours of any slots it shares.
+   */
+  private searchedLook(
+    name: string,
+    f: Frame,
+    scope: Scope,
+    id: string,
+    stack: readonly string[],
+    first: number,
+    out: Sink,
+  ): void {
+    const prefab = this.prefabs.get(name);
+    if (!prefab) this.fail(id, `no prefab "${name}" for its searched look`);
+    if (!out.looks || !out.shapes) return;
+    const colours: Record<string, string> = {};
+    for (const slot of Object.keys(prefab.colours ?? {})) if (slot in scope) colours[slot] = slot;
+    const searched: Shape[] = [];
+    const node = { type: 'prefab', prefab: name, pos: [0, 0, 0], colours } as const;
+    this.prefab(node as unknown as PrefabNode, f, scope, `${id}/searched`, stack, {
+      ...DRAW_ONLY,
+      shapes: searched,
+    });
+    out.looks.push({ id, closed: out.shapes.slice(first), searched });
+  }
+
   private fail(path: string, message: string): never {
     throw new ContentError(this.source, `${path}: ${message}`);
   }
@@ -518,6 +595,8 @@ class Compiler {
           [hx, hy, hz] = [node.size[0] / 2, node.size[1] / 2, node.size[2] / 2];
           shape = { kind: 'box', x, y, z, yaw, pitch, roll, colour, hx, hy, hz };
           if (node.bulge?.some((b) => b > 0)) shape.bulge = node.bulge;
+          if (node.top) shape.top = [node.top[0] / 2, node.top[1] / 2];
+          if (node.lean?.some((d) => d !== 0)) shape.lean = node.lean;
         } else {
           const radiusTop = node.radiusTop ?? node.radius;
           hx = hz = Math.max(node.radius, radiusTop);
@@ -628,6 +707,7 @@ class Compiler {
         } else {
           const steps = node.steps ?? Math.max(1, Math.round(h / STEP_HEIGHT));
           out.shapes.push(...stairSteps(ramp, steps, colour));
+          if (node.sides) out.shapes.push(...stairSides(ramp, node.sides, colour));
         }
         return;
       }
@@ -694,7 +774,7 @@ class Compiler {
   }
 
   private prefab(
-    node: Extract<MapNode, { type: 'prefab' }>,
+    node: PrefabNode,
     f: Frame,
     parentScope: Scope,
     path: string,
@@ -741,7 +821,12 @@ class Compiler {
       }
     }
 
-    if (!prefab.instanced || !out.groups || !out.shapes) {
+    if (
+      !prefab.instanced ||
+      !out.groups ||
+      !out.shapes ||
+      holdsSearchedLook(prefab.nodes, this.prefabs)
+    ) {
       this.nodes(prefab.nodes, f, scope, path, inner, out);
       return;
     }
@@ -755,24 +840,28 @@ class Compiler {
     let group = out.groups.get(key);
     if (!group) {
       const shapes: Shape[] = [];
-      const local: Sink = {
-        shapes,
-        boxes: null,
-        ramps: null,
-        ladders: null,
-        doors: null,
-        glass: null,
-        markers: null,
-        patrols: null,
-        buildings: null,
-        groups: null,
-      };
+      const local: Sink = { ...DRAW_ONLY, shapes };
       this.nodes(prefab.nodes, frame(0, 0, 0, 0), scope, path, inner, local);
       group = { prefab: prefab.id, shapes, placements: [] };
       out.groups.set(key, group);
     }
     group.placements.push({ x: f.x, y: f.y, z: f.z, yaw: f.yaw });
   }
+}
+
+/** Whether any of these nodes, or the prefabs they place, is a container with a searched look. */
+function holdsSearchedLook(
+  nodes: readonly MapNode[],
+  prefabs: PrefabLookup,
+  seen = new Set<string>(),
+): boolean {
+  return nodes.some((n) => {
+    if ('loot' in n && n.loot?.searched) return true;
+    if (n.type === 'group') return holdsSearchedLook(n.nodes, prefabs, seen);
+    if (n.type !== 'prefab' || seen.has(n.prefab)) return false;
+    seen.add(n.prefab);
+    return holdsSearchedLook(prefabs.get(n.prefab)?.nodes ?? [], prefabs, seen);
+  });
 }
 
 function frame(x: number, y: number, z: number, yaw: number): Frame {
@@ -837,6 +926,25 @@ function stairSteps(ramp: RampDef, n: number, colour: number): Shape[] {
       hy: (top - ramp.bottom) / 2,
       hz: depth / 2,
     };
+  });
+}
+
+/**
+ * A stairs' side walls: each a box `height` tall from the bottom with a wedge on top rising
+ * as the steps do, so its top is one straight slope `height` above them.
+ */
+function stairSides(ramp: RampDef, height: number, colour: number): Shape[] {
+  const c = Math.cos(ramp.yaw);
+  const s = Math.sin(ramp.yaw);
+  const rise = (ramp.high - ramp.low) / 2;
+  return [-1, 1].flatMap((side): Shape[] => {
+    const lx = side * (ramp.hx - STAIR_SIDE / 2);
+    const at = { x: ramp.x + lx * c, z: ramp.z - lx * s, yaw: ramp.yaw, pitch: 0, roll: 0 };
+    const size = { colour, hx: STAIR_SIDE / 2, hz: ramp.hz };
+    return [
+      { kind: 'box', ...at, ...size, y: ramp.low + height / 2, hy: height / 2 },
+      { kind: 'wedge', ...at, ...size, y: ramp.low + height + rise, hy: rise },
+    ];
   });
 }
 

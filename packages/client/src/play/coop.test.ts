@@ -33,9 +33,14 @@ describe('mergeInputs', () => {
     expect(merged.inventory).toHaveLength(2);
   });
 
+  it('keeps a search pressed in any input of a batch', () => {
+    const merged = mergeInputs([input({ search: 'desk' }), input()], null)!;
+    expect(merged.search).toBe('desk');
+  });
+
   it('repeats the last input without its presses when nothing new came', () => {
-    const last = input({ moveY: 1, fire: true, jump: true, door: 3 });
-    expect(mergeInputs([], last)).toMatchObject({ moveY: 1, fire: true, jump: false, door: null });
+    const last = input({ moveY: 1, fire: true, jump: true, door: 3, search: 'desk' });
+    expect(mergeInputs([], last)).toMatchObject({ moveY: 1, fire: true, jump: false, door: null, search: null });
     expect(mergeInputs([], null)).toBeNull();
   });
 });

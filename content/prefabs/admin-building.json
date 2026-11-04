@@ -1,0 +1,358 @@
+{
+  "formatVersion": 3,
+  "id": "admin-building",
+  "name": "Admin building",
+  "colours": {
+    "walls": "#c9c4b8",
+    "partition": "#e3dfd6",
+    "floor": "#8e8a82",
+    "roof": "#5e5c58",
+    "trim": "#7d7a74",
+    "door": "#5b6670",
+    "glass": "#a9c4cf",
+    "stairs": "#9a968e",
+    "metal": "#4d5257"
+  },
+  "building": {
+    "size": [15, 11.4],
+    "centre": [0, -0.7],
+    "colour": "floor"
+  },
+  "nodes": [
+    {
+      "type": "group",
+      "name": "Ground floor",
+      "pos": [0, 0, 0],
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [0, 0, 0],
+          "size": [15, 0.2, 10],
+          "colour": "floor"
+        },
+        {
+          "type": "wall",
+          "pos": [-5.25, 0.2, 4.9],
+          "size": [4.3, 3, 0.2],
+          "colour": "walls",
+          "openings": [
+            { "along": -0.25, "width": 2.6, "bottom": 0.9, "top": 2.4, "glass": "glass" }
+          ],
+          "id": "front"
+        },
+        {
+          "type": "box",
+          "pos": [-2.5, 2.3, 4.9],
+          "size": [1.2, 0.9, 0.2],
+          "colour": "walls"
+        },
+        {
+          "type": "wall",
+          "pos": [2.75, 0.2, 4.9],
+          "size": [9.3, 3, 0.2],
+          "colour": "walls",
+          "openings": [
+            { "along": -1.25, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" },
+            { "along": 2.75, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" }
+          ]
+        },
+        {
+          "type": "door",
+          "pos": [-2.5, 0.2, 4.9],
+          "size": [1.2, 2.1],
+          "colour": "door"
+        },
+        {
+          "type": "wall",
+          "pos": [-1.5, 0.2, -4.9],
+          "size": [11.8, 3, 0.2],
+          "colour": "walls",
+          "openings": [{ "along": 4, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "#a8d4e0" }],
+          "id": "back"
+        },
+        {
+          "type": "box",
+          "pos": [5, 2.3, -4.9],
+          "size": [1.2, 0.9, 0.2],
+          "colour": "walls"
+        },
+        {
+          "type": "wall",
+          "pos": [6.5, 0.2, -4.9],
+          "size": [1.8, 3, 0.2],
+          "colour": "walls",
+          "openings": []
+        },
+        {
+          "type": "door",
+          "pos": [5, 0.2, -4.9],
+          "size": [1.2, 2.1],
+          "colour": "door"
+        },
+        {
+          "type": "wall",
+          "id": "west",
+          "pos": [-7.4, 0.2, 0],
+          "size": [9.6, 3, 0.2],
+          "colour": "walls",
+          "openings": [
+            { "along": -2.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" },
+            { "along": 2.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" }
+          ],
+          "yaw": 90
+        },
+        {
+          "type": "wall",
+          "id": "east",
+          "pos": [7.4, 0.2, 0],
+          "size": [9.6, 3, 0.2],
+          "colour": "walls",
+          "openings": [
+            { "along": -2.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "#a8d4e0" },
+            { "along": 2.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "#a8d4e0" }
+          ],
+          "yaw": 90
+        },
+        {
+          "type": "wall",
+          "id": "west-hall",
+          "pos": [-1.35, 0.2, 0],
+          "size": [9.6, 3, 0.15],
+          "colour": "partition",
+          "openings": [{ "along": -3.5, "width": 2.6, "bottom": 0, "top": 2.4 }],
+          "yaw": 90
+        },
+        {
+          "type": "stairs",
+          "id": "inside-stairs",
+          "pos": [-0.675, 0.2, -0.5],
+          "yaw": 180,
+          "size": [1.2, 3.1999999999999997, 4.6],
+          "colour": "stairs"
+        },
+        {
+          "type": "box",
+          "pos": [7.2, 0.2, 2.3],
+          "size": [0.2, 1, 5],
+          "colour": "metal"
+        },
+        {
+          "type": "box",
+          "pos": [5.6, 0.2, 4.7],
+          "size": [0.2, 1, 3],
+          "colour": "metal",
+          "yaw": -90
+        },
+        {
+          "type": "box",
+          "pos": [6.7, 0.9, 2.3],
+          "size": [0.8, 0.2, 5],
+          "colour": "metal"
+        },
+        {
+          "type": "box",
+          "pos": [5.2, 0.9, 4.2],
+          "size": [2.2, 0.2, 0.8],
+          "colour": "metal"
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "name": "Upper floor",
+      "pos": [0, 0, 0],
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [-4.412, 3.2, 0],
+          "size": [6.175, 0.2, 10],
+          "colour": "floor"
+        },
+        {
+          "type": "box",
+          "pos": [3.712, 3.2, 0],
+          "size": [7.575, 0.2, 10],
+          "colour": "floor"
+        },
+        {
+          "type": "box",
+          "pos": [-0.7, 3.2, -3.9],
+          "size": [1.25, 0.2, 2.2],
+          "colour": "floor"
+        },
+        {
+          "type": "box",
+          "pos": [-0.7, 3.2, 4],
+          "size": [1.25, 0.2, 2],
+          "colour": "floor"
+        },
+        {
+          "type": "box",
+          "pos": [-1.355, 3.4, 0.7],
+          "size": [0.06, 1, 4.6],
+          "colour": "trim"
+        },
+        {
+          "type": "box",
+          "pos": [-0.7, 3.4, 3.03],
+          "size": [1.25, 1, 0.06],
+          "colour": "trim"
+        },
+        {
+          "type": "wall",
+          "id": "front-1",
+          "pos": [0, 3.4, 4.9],
+          "size": [14.8, 2.8, 0.2],
+          "colour": "walls",
+          "openings": [
+            { "along": -5.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" },
+            { "along": 1.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" },
+            { "along": 5.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" }
+          ]
+        },
+        {
+          "type": "wall",
+          "id": "back-1",
+          "pos": [0, 3.4, -4.9],
+          "size": [14.8, 2.8, 0.2],
+          "colour": "walls",
+          "openings": [
+            { "along": -4.7, "width": 1.2, "bottom": 0, "top": 2.1 },
+            { "along": 2.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" }
+          ]
+        },
+        {
+          "type": "door",
+          "id": "back-1-door-1",
+          "pos": [-4.7, 3.4, -4.9],
+          "yaw": 0,
+          "size": [1.2, 2.1],
+          "colour": "door"
+        },
+        {
+          "type": "wall",
+          "id": "west-1",
+          "pos": [-7.4, 3.4, 0],
+          "size": [9.6, 2.8, 0.2],
+          "colour": "walls",
+          "openings": [
+            { "along": -2.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" },
+            { "along": 2.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" }
+          ],
+          "yaw": 90
+        },
+        {
+          "type": "wall",
+          "id": "east-1",
+          "pos": [7.4, 3.4, 0],
+          "size": [9.6, 2.8, 0.2],
+          "colour": "walls",
+          "openings": [
+            { "along": -2.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" },
+            { "along": 2.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" }
+          ],
+          "yaw": 90
+        },
+        {
+          "type": "wall",
+          "id": "hall-east-1",
+          "pos": [0, 3.4, 0],
+          "size": [9.6, 2.8, 0.15],
+          "colour": "partition",
+          "openings": [
+            { "along": -4, "width": 1.2, "bottom": 0, "top": 2.1 },
+            { "along": 3.5, "width": 1.2, "bottom": 0, "top": 2.1 }
+          ],
+          "yaw": 90
+        },
+        {
+          "type": "door",
+          "id": "hall-east-1-door-1",
+          "pos": [0, 3.4, 4],
+          "yaw": 90,
+          "size": [1.2, 2.1],
+          "colour": "door"
+        },
+        {
+          "type": "door",
+          "id": "hall-east-1-door-2",
+          "pos": [0, 3.4, -3.5],
+          "yaw": 90,
+          "size": [1.2, 2.1],
+          "colour": "door"
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "name": "Roof",
+      "pos": [0, 0, 0],
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [0, 6.2, 0],
+          "size": [15.2, 0.25, 10.2],
+          "colour": "roof"
+        },
+        {
+          "type": "box",
+          "pos": [0, 6.45, 5],
+          "size": [15.2, 0.4, 0.2],
+          "colour": "trim"
+        },
+        {
+          "type": "box",
+          "pos": [0, 6.45, -5],
+          "size": [15.2, 0.4, 0.2],
+          "colour": "trim"
+        },
+        {
+          "type": "box",
+          "pos": [7.5, 6.45, 0],
+          "size": [0.2, 0.4, 9.8],
+          "colour": "trim"
+        },
+        {
+          "type": "box",
+          "pos": [-7.5, 6.45, 0],
+          "size": [0.2, 0.4, 9.8],
+          "colour": "trim"
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "name": "Fire escape",
+      "pos": [0, 0, 0],
+      "nodes": [
+        {
+          "type": "stairs",
+          "id": "fire-escape",
+          "pos": [-1.7, 0, -5.65],
+          "yaw": -90,
+          "size": [1.1, 3.4, 4.6],
+          "colour": "metal",
+          "sides": 1
+        },
+        {
+          "type": "box",
+          "pos": [-4.7, 0, -5.65],
+          "size": [1.4, 3.4, 1.1],
+          "colour": "metal"
+        },
+        {
+          "type": "box",
+          "pos": [-4.7, 3.4, -6.15],
+          "size": [1.4, 1, 0.1],
+          "colour": "metal"
+        },
+        {
+          "type": "box",
+          "pos": [-5.35, 3.4, -5.6],
+          "size": [0.1, 1, 1],
+          "colour": "metal"
+        }
+      ]
+    }
+  ]
+}

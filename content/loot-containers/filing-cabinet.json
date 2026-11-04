@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "filing-cabinet",
+  "name": "Filing cabinet",
+  "grid": [3, 2],
+  "loot": {
+    "tables": {
+      "documents": 1
+    },
+    "empty": 0.5
+  }
+}
