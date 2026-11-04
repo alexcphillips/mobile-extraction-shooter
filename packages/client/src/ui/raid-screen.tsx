@@ -26,6 +26,7 @@ import {
   type WeaponState,
 } from '@mes/shared';
 import { useEffect, useState, type ReactNode } from 'react';
+import { itemPortrait } from '../render/item-portrait';
 import { refKey, type InventoryController } from './inventory-controller';
 import { ItemDetails } from './item-details';
 import { MapTab } from './map-tab';
@@ -580,6 +581,7 @@ function Ground({ inv }: { inv: InventoryController }): ReactNode {
                 })
               }
             >
+              <ItemArt items={ctx.items} item={g.item} def={def} cell={cell} />
               <ItemLabel items={ctx.items} item={g.item} def={def} />
             </div>
           );
@@ -687,6 +689,7 @@ function Slots({
                   })
                 }
               >
+                <ItemArt items={inv.ctx.items} item={item} def={def} />
                 <ItemLabel items={inv.ctx.items} item={item} def={def} />
               </div>
             )}
@@ -753,11 +756,50 @@ function GridView({
               });
             }}
           >
+            <ItemArt
+              items={inv.ctx.items}
+              item={g.item}
+              def={def}
+              cell={cell}
+              rotated={g.rotated}
+            />
             <ItemLabel items={inv.ctx.items} item={g.item} def={def} />
           </div>
         );
       })}
     </div>
+  );
+}
+
+/**
+ * An item's picture on its tile (2026-11-02), drawn at its unrotated shape and turned with
+ * the tile; in a slot (no cell), fitted to the slot. Nothing where WebGL can't draw it.
+ */
+function ItemArt(props: {
+  items: ItemDb;
+  item: Item;
+  def: ItemDef;
+  cell?: number;
+  rotated?: boolean;
+}): ReactNode {
+  const { def, cell } = props;
+  const url = itemPortrait(props.items, props.item, def.size);
+  if (!url) return null;
+  if (cell === undefined)
+    return <img className="inv-art inv-art-fit" src={url} alt="" draggable={false} />;
+  const [w, h] = def.size;
+  return (
+    <img
+      className="inv-art"
+      src={url}
+      alt=""
+      draggable={false}
+      style={{
+        width: w * cell,
+        height: h * cell,
+        transform: `translate(-50%, -50%)${props.rotated ? ' rotate(90deg)' : ''}`,
+      }}
+    />
   );
 }
 

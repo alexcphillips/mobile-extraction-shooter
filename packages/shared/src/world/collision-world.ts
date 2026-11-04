@@ -126,6 +126,12 @@ const GRID_CELL = 4;
 export const PIT_DEPTH = 60;
 /** Where a broken pane's solid goes: far enough out that nothing reaches it. */
 const GONE = 1e9;
+/**
+ * A ceiling must reach this far over the circle, not just touch it: pushOut leaves a
+ * circle against a wall at the radius, give or take rounding, and a roof flush with that
+ * wall would otherwise stop every jump there (2026-11-03).
+ */
+const CEILING_CONTACT = 1e-3;
 
 /**
  * The collision world, built once from map data. All queries reuse internal scratch space
@@ -300,8 +306,12 @@ export class CollisionWorld {
     return best;
   }
 
-  /** The lowest solid underside above minBottom over a circle, or Infinity. */
+  /**
+   * The lowest solid underside above minBottom over a circle, or Infinity. Solids only
+   * touching its edge (see CEILING_CONTACT) don't count.
+   */
   ceilingAt(x: number, z: number, radius: number, minBottom: number): number {
+    radius -= CEILING_CONTACT;
     let best = Infinity;
     const n = this.grid.query(x - radius, z - radius, x + radius, z + radius, this.found);
     for (let k = 0; k < n; k++) {

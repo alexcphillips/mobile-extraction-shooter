@@ -6,5 +6,7 @@ export default defineProject({
     environment: 'node',
     // Bundles content/ for the server first (src/generated/content.js).
     globalSetup: ['../../scripts/bundle-content.mjs'],
+    // Off, as in the client's config: cached modules went stale.
+    fsModuleCache: false,
   },
 });

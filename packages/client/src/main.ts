@@ -103,6 +103,10 @@ if (location.pathname === '/bodies') {
   import('./item-editor')
     .then((editor) => editor.startItemEditor(byId('editor')))
     .catch((err: unknown) => (status.textContent = `item editor failed: ${message(err)}`));
+} else if (location.pathname === '/loot-editor' && import.meta.env.DEV) {
+  import('./loot-editor')
+    .then((editor) => editor.startLootEditor(byId('editor')))
+    .catch((err: unknown) => (status.textContent = `loot editor failed: ${message(err)}`));
 } else if (location.pathname === '/sounds' && import.meta.env.DEV) {
   import('./sound-editor')
     .then((editor) => editor.startSoundEditor(byId('editor')))

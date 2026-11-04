@@ -1,0 +1,15 @@
+{
+  "formatVersion": 3,
+  "id": "empty-pallet",
+  "colours": {
+    "wood-pallet": "#a88048"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [2, 0.2, 2],
+      "colour": "wood-pallet"
+    }
+  ]
+}

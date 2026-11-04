@@ -129,11 +129,15 @@ export {
 } from './sim/ai';
 export { equipLoadout } from './sim/loadout';
 export {
+  containerMix,
   fillLootContainers,
   rollEnemyLoot,
+  rollMix,
   rollLootSpawns,
   rollItem,
   rollTable,
+  type ContainerLoot,
+  type LootKinds,
   type LootTables,
 } from './sim/loot-roll';
 export { oneOfPicks, rollEnemySpawns } from './sim/spawn-roll';
@@ -375,9 +379,11 @@ export {
   PREFAB_FORMAT,
   PREFAB_FORMAT_VERSION,
   idSchema,
+  lootMixSchema,
   mapSchema,
   nodeSchema,
   prefabSchema,
+  type LootMix,
   type MapFile,
   type MapNode,
   type MapZone,
@@ -389,6 +395,7 @@ export {
   ITEM_FORMAT_VERSION,
   LEVELS,
   MED_EFFECTS,
+  ITEM_VIEWS,
   RARITIES,
   SCOPE_RADIUS,
   ammoDef,
@@ -423,6 +430,7 @@ export {
   type ContainerDef,
   type MedDef,
   type MedEffect,
+  type ItemView,
   type Rarity,
   type MeleeDef,
   type GrenadeDef,

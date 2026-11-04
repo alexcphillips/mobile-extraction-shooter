@@ -1,0 +1,7 @@
+{
+  "formatVersion": 1,
+  "id": "computer-parts-basic",
+  "name": "Computer parts basic",
+  "rolls": [1, 2],
+  "items": [{ "item": "a5-kuroge-prime-ribeye", "weight": 1 }]
+}

@@ -56,6 +56,14 @@ export function newPart(type: ModelPart['type'], at: Vec3): ModelPart {
   const pos: [number, number, number] = [at[0], at[1], at[2]];
   if (type === 'cylinder')
     return { type, pos, pitch: 90, radius: 0.02, height: 0.1, colour: '#3a3f44' };
+  if (type === 'slab')
+    return {
+      type,
+      pos,
+      size: [0.1, 0.03, 0.08],
+      corners: [0.02, 0.02, 0.02, 0.02],
+      colour: '#3a3f44',
+    };
   return { type, pos, size: [0.05, 0.05, 0.1], colour: '#3a3f44' };
 }
 
@@ -64,5 +72,10 @@ export function mirrorPart(p: ModelPart): ModelPart {
   const out: ModelPart = { ...p, pos: [-p.pos[0], p.pos[1], p.pos[2]] };
   if (p.yaw) out.yaw = -p.yaw;
   if (p.roll) out.roll = -p.roll;
+  // Left for right: back left swaps with back right, front right with front left.
+  if (out.type === 'slab') {
+    const [bl, br, fr, fl] = out.corners;
+    out.corners = [br, bl, fl, fr];
+  }
   return out;
 }

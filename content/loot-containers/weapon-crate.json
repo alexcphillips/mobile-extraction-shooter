@@ -2,5 +2,12 @@
   "formatVersion": 1,
   "id": "weapon-crate",
   "name": "Weapon crate",
-  "grid": [6, 3]
+  "grid": [6, 3],
+  "loot": {
+    "tables": {
+      "attachments": 1,
+      "weapons": 0.53
+    },
+    "each": true
+  }
 }

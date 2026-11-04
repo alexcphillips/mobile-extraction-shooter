@@ -21,6 +21,7 @@ const positive = finite.refine((n) => n > 0, 'must be greater than 0');
 export const vec3Schema = z.tuple([finite, finite, finite]);
 const size3 = z.tuple([positive, positive, positive]);
 const angle = finite.optional();
+const radius = finite.refine((n) => n >= 0, 'must be 0 or more');
 const colour = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'colours are #rrggbb');
 
 /** The fixed attachment slots a gun can have. */
@@ -64,6 +65,20 @@ export const partSchema = z.discriminatedUnion('type', [
     ...placed,
     /** Rises from the bottom at local −z to the full height at local +z. */
     size: size3,
+  }),
+  /**
+   * A box with its upright edges rounded (2026-11-02, for a steak, a phone, a wallet):
+   * seen from above, each corner has its own radius, in order back left (−x −z), back
+   * right, front right, front left. A radius is cut down to fit half the width and depth.
+   */
+  z.strictObject({
+    type: z.literal('slab'),
+    ...placed,
+    /** Full width (x), height (y) and depth (z), as a box's. */
+    size: size3,
+    corners: z.tuple([radius, radius, radius, radius]),
+    /** Steps in each rounded corner; defaults to 4. */
+    segments: z.int().min(1).max(12).optional(),
   }),
 ]);
 export type ModelPart = z.infer<typeof partSchema>;
@@ -138,6 +153,17 @@ export function modelShapes(
         radiusTop: p.radiusTop ?? p.radius,
         hy: p.height / 2,
         sides: p.sides ?? 8,
+      });
+    } else if (p.type === 'slab') {
+      const [w, h, d] = p.size;
+      out.push({
+        ...base,
+        kind: 'slab',
+        hx: w / 2,
+        hy: h / 2,
+        hz: d / 2,
+        corners: p.corners,
+        segments: p.segments ?? 4,
       });
     } else {
       const [w, h, d] = p.size;

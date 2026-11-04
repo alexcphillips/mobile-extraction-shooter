@@ -398,3 +398,96 @@ body.editor #portrait {
   justify-content: center;
   color: var(--ed-dim);
 }
+
+/* A loot mix's rows (2026-11-02), in the map editor and the loot editor. */
+.ed-mix {
+  margin: 4px 0;
+}
+
+/* A loot mix's share bar, dots and weight sliders (2026-11-02). */
+.ed-share {
+  display: flex;
+  height: 16px;
+  margin: 4px 0 8px;
+  border-radius: 3px;
+  overflow: hidden;
+  gap: 1px;
+}
+
+.ed-share > span {
+  min-width: 2px;
+  font-size: 10px;
+  line-height: 16px;
+  padding: 0 4px;
+  color: #101318;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ed-dot {
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.ed-mix-row {
+  align-items: center;
+}
+
+.ed-mix-label {
+  min-width: 80px;
+}
+
+.ed-pct {
+  min-width: 36px;
+  text-align: right;
+}
+
+.ed-weight {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ed-weight input[type='range'] {
+  width: 90px;
+  margin: 0;
+}
+
+.ed-weight .ed-num {
+  flex: none !important;
+  min-width: 0 !important;
+}
+
+.ed-weight .ed-num input {
+  width: 44px;
+}
+
+/* The map editor's inspector is narrow: a shorter slider, a select that gives way. */
+.ed-mix .ed-weight input[type='range'] {
+  width: 64px;
+}
+
+.ed-mix-row {
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+
+.ed-mix-row select {
+  min-width: 0;
+  max-width: 110px;
+}
+
+.ed-mix-row a,
+.ed-row > a {
+  color: var(--ed-dim);
+  text-decoration: none;
+}
+
+.ed-mix-row a:hover,
+.ed-row > a:hover {
+  color: inherit;
+}

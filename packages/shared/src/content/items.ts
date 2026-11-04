@@ -61,6 +61,15 @@ const levelSchema = z.int().min(1).max(LEVELS);
 export const RARITIES = ['common', 'rare', 'epic', 'legendary'] as const;
 export type Rarity = (typeof RARITIES)[number];
 
+/**
+ * Where an item's picture (its inventory tile and its details) is taken from (2026-11-02):
+ * straight down with the back (−z) at the top, from the front (+z), from its right side
+ * (+x, a gun's barrel to the left, a little from above), or angled (from above at a
+ * three-quarter turn). Left out: side for guns, knives and magazines, else angled.
+ */
+export const ITEM_VIEWS = ['top', 'front', 'side', 'angled'] as const;
+export type ItemView = (typeof ITEM_VIEWS)[number];
+
 const cells = z.int().min(1);
 /** A grid size: [width, height] in cells. */
 const sizeSchema = z.tuple([cells, cells]);
@@ -80,6 +89,7 @@ const common = {
    */
   value: z.int().min(0),
   rarity: z.enum(RARITIES),
+  view: z.enum(ITEM_VIEWS).optional(),
 };
 /** How it's drawn (session 18b): see models.ts. Guns, attachments and knives add points. */
 const plainModel = { model: plainModelSchema };

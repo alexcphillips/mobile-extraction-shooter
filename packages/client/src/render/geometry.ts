@@ -61,13 +61,18 @@ export class TriangleBuilder {
           [-1, 1].flatMap((j) => [-1, 1].map((k) => v(i * hx, j * hy, k * hz))),
         );
         // Corner index bits: x is 4, y is 2, z is 1.
-        for (const f of BOX_FACES)
-          this.poly(
-            f.map((i) => c[i]!),
-            origin,
-            matrix,
-            s.colour,
-          );
+        BOX_FACES.forEach((f, k) => {
+          const ring = f.map((i) => c[i]!);
+          const out = s.bulge?.[k] ?? 0;
+          if (out <= 0) return this.poly(ring, origin, matrix, s.colour);
+          // Bulged: four triangles up to the face's middle, pushed out along its normal.
+          const [ax, sign] = BOX_FACE_NORMALS[k]!;
+          const tip = v(0, 0, 0);
+          for (const p of ring) tip.add(p);
+          tip.multiplyScalar(1 / 4).setComponent(ax, tip.getComponent(ax) + sign * out);
+          for (let i = 0; i < 4; i++)
+            this.poly([ring[i]!, ring[(i + 1) % 4]!, tip], origin, matrix, s.colour);
+        });
         return;
       }
       case 'cylinder': {
@@ -106,6 +111,32 @@ export class TriangleBuilder {
         for (const f of faces) this.poly(f, inside, matrix, s.colour);
         return;
       }
+      case 'slab': {
+        const { hx, hy, hz, segments } = s;
+        // Round the outline from above, corner by corner: each arc's centre is its radius
+        // in from both sides, and turns a quarter from one side to the next.
+        const fit = Math.min(hx, hz);
+        const ring: [number, number][] = [];
+        SLAB_CORNERS.forEach(([sx, sz, from], i) => {
+          const r = Math.min(fit, s.corners[i]!);
+          const cx = sx * (hx - r);
+          const cz = sz * (hz - r);
+          if (r <= 0) return void ring.push([cx, cz]);
+          for (let k = 0; k <= segments; k++) {
+            const a = from + (k / segments) * (Math.PI / 2);
+            ring.push([cx + Math.cos(a) * r, cz + Math.sin(a) * r]);
+          }
+        });
+        const bottom = ring.map(([x, z]) => v(x, -hy, z));
+        const top = ring.map(([x, z]) => v(x, hy, z));
+        for (let i = 0; i < ring.length; i++) {
+          const j = (i + 1) % ring.length;
+          this.poly([bottom[i]!, bottom[j]!, top[j]!, top[i]!], origin, matrix, s.colour);
+        }
+        this.poly(bottom, origin, matrix, s.colour);
+        this.poly(top, origin, matrix, s.colour);
+        return;
+      }
     }
   }
 
@@ -136,6 +167,17 @@ export class TriangleBuilder {
   }
 }
 
+/**
+ * A slab's corners in its outline's order, as the side of x and of z each is on and the
+ * angle its arc starts from: back left, back right, front right, front left.
+ */
+const SLAB_CORNERS: readonly [number, number, number][] = [
+  [-1, -1, Math.PI],
+  [1, -1, Math.PI * 1.5],
+  [1, 1, 0],
+  [-1, 1, Math.PI / 2],
+];
+
 /** Box faces as corner indices (bit 4 is +x, 2 is +y, 1 is +z). */
 const BOX_FACES = [
   [0, 1, 3, 2],
@@ -144,6 +186,16 @@ const BOX_FACES = [
   [2, 3, 7, 6],
   [0, 2, 6, 4],
   [1, 3, 7, 5],
+];
+
+/** Each of BOX_FACES's outward normal, as an axis (0 x, 1 y, 2 z) and its sign. */
+const BOX_FACE_NORMALS: readonly [number, number][] = [
+  [0, -1],
+  [0, 1],
+  [1, -1],
+  [1, 1],
+  [2, -1],
+  [2, 1],
 ];
 
 const origin = new THREE.Vector3();

@@ -3,6 +3,7 @@ import { idSchema, nodeSchema, type MapFile, type MapNode, type PrefabFile } fro
 type WallGap = Extract<MapNode, { type: 'wall' }>['openings'][number];
 import { useState, useSyncExternalStore, type ReactNode } from 'react';
 import { loadEnemies, loadItems, loadLootContainers, loadLootTables, loadQuests } from '../content';
+import { ContainerLootFields } from './loot-mix';
 import {
   canEnter,
   canTurn,
@@ -1436,6 +1437,29 @@ function Inspector(props: {
       {(n.type === 'box' || n.type === 'ramp' || n.type === 'stairs') && (
         <div className="ed-row">{vec('size', ['w', 'h', 'd'])}</div>
       )}
+      {n.type === 'box' && (
+        <>
+          <p className="ed-note">Bulge: how far each face's middle is pushed out (drawn only).</p>
+          <div className="ed-row">
+            {BULGE_FACES.map((label, k) => (
+              <Num
+                key={label}
+                label={label}
+                value={n.bulge?.[k] ?? 0}
+                onChange={(v) =>
+                  edit((m) => {
+                    if (m.type !== 'box') return;
+                    const b = m.bulge ?? [0, 0, 0, 0, 0, 0];
+                    b[k] = Math.max(0, v ?? 0);
+                    if (b.some((x) => x > 0)) m.bulge = b;
+                    else delete m.bulge;
+                  })
+                }
+              />
+            ))}
+          </div>
+        </>
+      )}
       {n.type === 'wall' && (
         <>
           <div className="ed-row">{vec('size', ['long', 'h', 'thick'])}</div>
@@ -1696,20 +1720,19 @@ function MarkerFields(props: { editor: MapEditor; node: MapNode; num: NumField; 
     }
     case 'lootContainer':
       return (
-        <>
-          <Pick
-            label="container"
-            value={n.container}
-            options={[...loadLootContainers().keys()].sort()}
-            onChange={(v) => set('container', v)}
-          />
-          <Pick
-            label="loot"
-            value={n.lootTable}
-            options={tables}
-            onChange={(v) => set('lootTable', v)}
-          />
-        </>
+        <ContainerLootFields
+          value={n}
+          onChange={(v) =>
+            editor.editActive((m) => {
+              const r = m as Record<string, unknown>;
+              r.container = v.container;
+              for (const key of ['lootTable', 'mix'] as const) {
+                if (v[key] === undefined) delete r[key];
+                else r[key] = v[key];
+              }
+            })
+          }
+        />
       );
     case 'lootSpawn':
       return (
@@ -1919,6 +1942,9 @@ function LootFields(props: {
   const { edit, node: n } = props;
   const kinds = [...loadLootContainers().keys()].sort();
   const tables = [...loadLootTables().keys()].sort();
+  // Starts as the first kind with loot of its own, so it needs no table of its own.
+  const kind = kinds.find((k) => loadLootContainers().get(k)?.loot) ?? kinds[0] ?? 'desk';
+  const kindLoot = loadLootContainers().get(kind)?.loot;
   type Loot = NonNullable<typeof n.loot>;
   const set = (loot: Loot | undefined) =>
     edit((m) => {
@@ -1935,7 +1961,7 @@ function LootFields(props: {
           onChange={(e) =>
             set(
               e.target.checked
-                ? { container: kinds[0] ?? 'desk', lootTable: tables[0] ?? 'household' }
+                ? { container: kind, ...(!kindLoot && { lootTable: tables[0] ?? 'household' }) }
                 : undefined,
             )
           }
@@ -1943,20 +1969,16 @@ function LootFields(props: {
         loot container
       </label>
       {n.loot && (
-        <>
-          <Pick
-            label="container"
-            value={n.loot.container}
-            options={kinds}
-            onChange={(v) => v && set({ ...n.loot!, container: v })}
-          />
-          <Pick
-            label="loot"
-            value={n.loot.lootTable}
-            options={tables}
-            onChange={(v) => v && set({ ...n.loot!, lootTable: v })}
-          />
-        </>
+        <ContainerLootFields
+          value={n.loot}
+          onChange={(v) =>
+            set({
+              container: v.container,
+              ...(v.lootTable !== undefined && { lootTable: v.lootTable }),
+              ...(v.mix && { mix: v.mix }),
+            })
+          }
+        />
       )}
     </>
   );
@@ -2124,3 +2146,6 @@ function MarkerLink({ editor, map, id }: { editor: MapEditor; map: MapFile; id: 
   const path = markerPath(map, id);
   return path ? <button onClick={() => editor.reveal(path)}>{id}</button> : <>{id}</>;
 }
+
+/** A box's faces in its bulge's order. */
+const BULGE_FACES = ['−x', '+x', 'bottom', 'top', '−z', '+z'] as const;

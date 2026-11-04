@@ -1,0 +1,14 @@
+{
+  "formatVersion": 1,
+  "id": "attachments",
+  "name": "Attachments",
+  "rolls": [1, 1],
+  "items": [
+    { "item": "scope-4x", "weight": 0.3 },
+    { "item": "muzzle-brake", "weight": 0.6 },
+    { "item": "red-dot", "weight": 0.6 },
+    { "item": "suppressor", "weight": 0.4 },
+    { "item": "mag-762x39-45", "weight": 0.5 },
+    { "item": "mag-9mm-24", "weight": 0.6 }
+  ]
+}

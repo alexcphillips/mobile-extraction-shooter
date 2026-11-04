@@ -3,6 +3,8 @@ import {
   FIRE,
   GRENADE_EFFECTS,
   MED_EFFECTS,
+  ITEM_VIEWS,
+  type ItemView,
   RARITIES,
   VENDOR,
   firesRound,
@@ -14,11 +16,12 @@ import {
   type ItemDef,
   type WeaponDef,
 } from '@mes/shared';
-import { useState, useSyncExternalStore } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import { sounds } from '../audio/sounds';
 import { itemUses, soundSources } from '../content';
 import { Check, N, P, Row, put, type Bound } from '../editor/bound-fields';
 import { Text, Toggle } from '../editor/fields';
+import { previewPortrait, viewOf } from '../render/item-portrait';
 import { colourOf } from '../ui/raid-screen';
 import type { Doc, ItemEditor, ItemEditorState } from './editor';
 import { fitPointsToSlot, setSlots } from './model-edit';
@@ -170,6 +173,7 @@ function ItemPage(props: { editor: ItemEditor; state: ItemEditorState; def: Item
           hint="What vendors sell it for; they buy it for a share of this"
         />
         <P {...b} path={['rarity']} label="rarity (its tile's colour)" options={RARITIES} />
+        <ViewPicker {...b} def={def} />
         <TypeFields {...b} def={def} items={s.items} />
         <SoundFields {...b} def={def} />
         {problem && <p className="ed-problem">{problem}</p>}
@@ -747,8 +751,66 @@ function AttachmentFields(
 }
 
 /** The item at its grid size, and a rig's or backpack's grid inside. */
+const VIEW_NOTES: Record<ItemView, string> = {
+  top: 'straight down, the back (−z) at the top',
+  front: 'from the front (+z)',
+  side: "from the right (+x), a gun's barrel to the left",
+  angled: 'from above at a three-quarter turn',
+};
+
+/**
+ * Where the item's picture is taken from (2026-11-02): each view drawn as its tile would
+ * be, to click; the one by its kind is marked, and picking it leaves the field out.
+ */
+function ViewPicker(props: Bound & { def: ItemDef }) {
+  const { def } = props;
+  const byKind = viewOf({ ...def, view: undefined } as ItemDef);
+  const current = viewOf(def);
+  const key = JSON.stringify([def.model, def.size]);
+  const arts = useMemo(
+    () => ITEM_VIEWS.map((v) => previewPortrait({ ...def, view: v } as ItemDef, def.size)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [key],
+  );
+  const [w, h] = def.size;
+  const scale = 52 / Math.max(w, h);
+  return (
+    <>
+      <h4>its picture, taken from</h4>
+      <div className="ie-views">
+        {ITEM_VIEWS.map((v, i) => (
+          <button
+            key={v}
+            className={v === current ? 'ie-view ed-on' : 'ie-view'}
+            title={VIEW_NOTES[v]}
+            onClick={() => props.edit((d) => put(d, ['view'], v === byKind ? undefined : v))}
+          >
+            <span
+              className="ie-view-tile"
+              style={{
+                width: w * scale,
+                height: h * scale,
+                background: `${colourOf(def)}66`,
+                borderColor: colourOf(def),
+              }}
+            >
+              {arts[i] && <img src={arts[i]!} alt="" />}
+            </span>
+            {v}
+            {v === byKind && <span className="ed-note"> (its kind&apos;s)</span>}
+          </button>
+        ))}
+      </div>
+    </>
+  );
+}
+
 function SizePreview({ def }: { def: ItemDef }) {
   const [w, h] = def.size;
+  // Redrawn when the model, view or size changes, not on every other edit.
+  const key = JSON.stringify([def.model, def.view, def.size]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const art = useMemo(() => previewPortrait(def, def.size), [key]);
   return (
     <div className="ie-card">
       <h4>
@@ -756,27 +818,38 @@ function SizePreview({ def }: { def: ItemDef }) {
         {def.type === 'container' && ` · ${def.grid[0]}×${def.grid[1]} inside`}
       </h4>
       <div className="ie-sizes">
-        <Cells w={w} h={h} colour={colourOf(def)} label={def.name} />
+        <Cells w={w} h={h} colour={colourOf(def)} label={def.name} art={art} />
         {def.type === 'container' && <Cells w={def.grid[0]} h={def.grid[1]} colour="" label="" />}
       </div>
     </div>
   );
 }
 
-function Cells(props: { w: number; h: number; colour: string; label: string }) {
+function Cells(props: {
+  w: number;
+  h: number;
+  colour: string;
+  label: string;
+  art?: string | null;
+}) {
   const { w, h } = props;
   if (!(w >= 1 && h >= 1 && w <= 20 && h <= 20)) return null;
   return (
     <div
       className="ie-cells"
-      style={{ gridTemplateColumns: `repeat(${w}, 26px)`, gridTemplateRows: `repeat(${h}, 26px)` }}
+      style={{ gridTemplateColumns: `repeat(${w}, 44px)`, gridTemplateRows: `repeat(${h}, 44px)` }}
     >
       {props.colour ? (
         <div
           className="ie-tile"
-          style={{ background: props.colour, gridArea: `1 / 1 / ${h + 1} / ${w + 1}` }}
+          style={{
+            background: props.art ? `${props.colour}66` : props.colour,
+            borderColor: props.colour,
+            gridArea: `1 / 1 / ${h + 1} / ${w + 1}`,
+          }}
         >
-          {props.label}
+          {props.art && <img className="ie-tile-art" src={props.art} alt="" />}
+          <span className="ie-tile-name">{props.label}</span>
         </div>
       ) : (
         Array.from({ length: w * h }, (_, i) => <div key={i} className="ie-cell" />)

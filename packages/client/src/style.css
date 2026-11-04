@@ -1385,8 +1385,25 @@ body:has(#raid:not([hidden])) #vitals {
   opacity: 0.3;
 }
 
+/* An item's picture (2026-11-02), behind its name and badges. */
+.inv-art {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  pointer-events: none;
+}
+
+.inv-art-fit {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: none;
+}
+
 .inv-item-name {
   position: absolute;
+  text-shadow: 0 0 3px rgb(0 0 0 / 0.9);
   top: 2px;
   left: 3px;
   right: 3px;

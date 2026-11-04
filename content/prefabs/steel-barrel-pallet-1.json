@@ -1,0 +1,34 @@
+{
+  "formatVersion": 3,
+  "id": "steel-barrel-pallet-1",
+  "colours": {
+    "wood-pallet": "#a88048"
+  },
+  "nodes": [
+    {
+      "type": "prefab",
+      "prefab": "empty-pallet",
+      "pos": [0.027, 0, 0.498],
+      "colours": {
+        "wood-pallet": "wood-pallet"
+      }
+    },
+    {
+      "type": "prefab",
+      "prefab": "steel-barrel",
+      "pos": [0.507, 0.14, 0.005]
+    },
+    {
+      "type": "group",
+      "name": "steel-barrel",
+      "pos": [-0.533, 0.2, -0.502],
+      "nodes": [
+        {
+          "type": "prefab",
+          "prefab": "sideways-steel-barrel",
+          "pos": [0.007, -0.262, 0.998]
+        }
+      ]
+    }
+  ]
+}

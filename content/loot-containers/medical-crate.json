@@ -1,0 +1,11 @@
+{
+  "formatVersion": 1,
+  "id": "medical-crate",
+  "name": "Medical crate",
+  "grid": [4, 3],
+  "loot": {
+    "tables": {
+      "medical": 1
+    }
+  }
+}

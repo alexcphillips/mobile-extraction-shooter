@@ -2292,13 +2292,16 @@ function newMarker(kind: MarkerKind, pos: Vec3, taken: Set<string>, colour: stri
         pos,
         enemy: first(loadEnemies().types.keys(), 'scav'),
       };
-    case 'lootContainer':
+    case 'lootContainer': {
+      // Its kind's loot if it has some, else the first table.
+      const container = first(loadLootContainers().keys(), 'desk');
       return {
         type: 'lootContainer',
         pos,
-        container: first(loadLootContainers().keys(), 'desk'),
-        lootTable: table(),
+        container,
+        ...(!loadLootContainers().get(container)?.loot && { lootTable: table() }),
       };
+    }
     case 'lootSpawn':
       return { type: 'lootSpawn', pos, lootTable: table() };
     case 'extraction':

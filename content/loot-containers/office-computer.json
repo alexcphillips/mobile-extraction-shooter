@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "office-computer",
+  "name": "Office computer",
+  "grid": [3, 4],
+  "loot": {
+    "tables": {
+      "computer-parts-basic": 0.8
+    },
+    "empty": 0.2
+  }
+}

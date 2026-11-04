@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "weapons",
+  "name": "Weapons",
+  "rolls": [1, 1],
+  "items": [
+    { "item": "assault-rifle", "weight": 0.5 },
+    { "item": "shotgun", "weight": 0.6 },
+    { "item": "pistol", "weight": 1 },
+    { "item": "crossbow", "weight": 0.2 }
+  ]
+}

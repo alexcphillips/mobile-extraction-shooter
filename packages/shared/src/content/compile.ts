@@ -9,7 +9,7 @@ import type {
 import { HeightGrid, holeFlags } from '../world/terrain';
 import { ContentError } from './format';
 import { wallPieces } from './walls';
-import type { MapFile, MapNode, MapZone, PrefabFile } from './schema';
+import type { LootMix, MapFile, MapNode, MapZone, PrefabFile } from './schema';
 
 /*
  * Flattens a map and the prefabs it places into plain data: the collision WorldDef for
@@ -29,10 +29,27 @@ interface ShapeBase {
 }
 
 export type Shape =
-  | (ShapeBase & { kind: 'box'; hx: number; hy: number; hz: number })
+  /** bulge (map boxes): how far each face's middle is pushed out, −x +x −y +y −z +z. */
+  | (ShapeBase & {
+      kind: 'box';
+      hx: number;
+      hy: number;
+      hz: number;
+      bulge?: readonly [number, number, number, number, number, number];
+    })
   | (ShapeBase & { kind: 'cylinder'; radius: number; radiusTop: number; hy: number; sides: number })
   /** Rises from y − hy at local −z to y + hy at local +z. */
-  | (ShapeBase & { kind: 'wedge'; hx: number; hy: number; hz: number });
+  | (ShapeBase & { kind: 'wedge'; hx: number; hy: number; hz: number })
+  /** Item models only: a box with rounded upright edges (see models.ts → slab). */
+  | (ShapeBase & {
+      kind: 'slab';
+      hx: number;
+      hy: number;
+      hz: number;
+      /** Back left, back right, front right, front left (−z is the back). */
+      corners: readonly [number, number, number, number];
+      segments: number;
+    });
 
 /** Copies of one instanced prefab with one set of colours, drawn as one instanced mesh. */
 export interface InstancedGroup {
@@ -390,7 +407,7 @@ class Compiler {
    * lootContainer marker at the middle of the base of their bounds, in the node's yaw.
    */
   private container(
-    loot: { container: string; lootTable: string },
+    loot: { container: string; lootTable?: string | undefined; mix?: LootMix | undefined },
     path: string,
     yaw: number,
     first: number,
@@ -438,7 +455,8 @@ class Compiler {
       z: -mx * s + mz * c,
       yaw,
       container: loot.container,
-      lootTable: loot.lootTable,
+      ...(loot.lootTable !== undefined && { lootTable: loot.lootTable }),
+      ...(loot.mix && { mix: loot.mix }),
       solids,
       hx: (x1 - x0) / 2,
       hz: (z1 - z0) / 2,
@@ -499,6 +517,7 @@ class Compiler {
         if (node.type === 'box') {
           [hx, hy, hz] = [node.size[0] / 2, node.size[1] / 2, node.size[2] / 2];
           shape = { kind: 'box', x, y, z, yaw, pitch, roll, colour, hx, hy, hz };
+          if (node.bulge?.some((b) => b > 0)) shape.bulge = node.bulge;
         } else {
           const radiusTop = node.radiusTop ?? node.radius;
           hx = hz = Math.max(node.radius, radiusTop);

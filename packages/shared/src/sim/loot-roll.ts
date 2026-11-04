@@ -1,7 +1,9 @@
 import type { CompiledMap } from '../content/compile';
 import type { EnemyLoot } from '../content/enemies';
 import type { ItemDb } from '../content/items';
+import type { LootContainerDef } from '../content/loot-containers';
 import type { LootTableDef } from '../content/loot-tables';
+import type { LootMix } from '../content/schema';
 import { addItem, type Item } from '../inventory/grid';
 import { byWeight, chance, nextFloat, nextIntIn, type Rng } from '../rng';
 import { createItem } from './create-item';
@@ -15,6 +17,7 @@ import type { Character, SimState } from './state';
  */
 
 export type LootTables = ReadonlyMap<string, LootTableDef>;
+export type LootKinds = ReadonlyMap<string, LootContainerDef>;
 
 function table(tables: LootTables, id: string): LootTableDef {
   const t = tables.get(id);
@@ -37,24 +40,70 @@ export function rollTable(items: ItemDb, t: LootTableDef, rng: Rng): Item[] {
   return out;
 }
 
+/** Where a container's loot comes from (2026-11-02). */
+export interface ContainerLoot {
+  container: string;
+  lootTable?: string | undefined;
+  mix?: LootMix | undefined;
+}
+
+/** A container's mix: its own, its one table, else its kind's; undefined if none. */
+export function containerMix(c: ContainerLoot, kinds: LootKinds): LootMix | undefined {
+  if (c.mix) return c.mix;
+  if (c.lootTable !== undefined) return { tables: { [c.lootTable]: 1 } };
+  return kinds.get(c.container)?.loot;
+}
+
+/** The empty pick in a mix's options: no table has an empty id. */
+const NOTHING = '';
+
+/**
+ * A container's items from a mix. Without `each`, one pick (a table or nothing) for the
+ * whole container, then that table's rolls; with it, the rolls of a table picked by
+ * weight, then a pick for every item, so the empty weight leaves single items out. A
+ * mix of one table rolls the same as that table did before mixes.
+ */
+export function rollMix(items: ItemDb, tables: LootTables, mix: LootMix, rng: Rng): Item[] {
+  const options = Object.entries(mix.tables).map(([id, weight]) => ({ id, weight }));
+  const all = mix.empty ? [...options, { id: NOTHING, weight: mix.empty }] : options;
+  const pick = (): string => (all.length === 1 ? all[0]!.id : byWeight(rng, all).id);
+  if (!mix.each) {
+    const id = pick();
+    return id === NOTHING ? [] : rollTable(items, table(tables, id), rng);
+  }
+  if (!options.length) return [];
+  const t = table(tables, options.length === 1 ? options[0]!.id : byWeight(rng, options).id);
+  const out: Item[] = [];
+  const n = nextIntIn(rng, t.rolls[0], t.rolls[1]);
+  for (let i = 0; i < n; i++) {
+    const id = pick();
+    if (id !== NOTHING) out.push(rollItem(items, table(tables, id), rng));
+  }
+  return out;
+}
+
 /**
  * Fills every loot container placed from the map (placeLootContainers) from its marker's
- * loot table. What doesn't fit is left out.
+ * loot (containerMix). What doesn't fit is left out.
  */
 export function fillLootContainers(
   state: SimState,
   map: CompiledMap,
   items: ItemDb,
   tables: LootTables,
+  kinds: LootKinds,
 ): void {
-  const tableOf = new Map<string, string>();
-  for (const m of map.markers) if (m.type === 'lootContainer') tableOf.set(m.id, m.lootTable);
+  const mixOf = new Map<string, LootMix>();
+  for (const m of map.markers) {
+    if (m.type !== 'lootContainer') continue;
+    const mix = containerMix(m, kinds);
+    if (!mix) throw new Error(`loot container ${m.id}: no loot, and its kind has none`);
+    mixOf.set(m.id, mix);
+  }
   for (const l of state.loot) {
-    const id = tableOf.get(l.id);
-    if (id === undefined) continue;
-    for (const item of rollTable(items, table(tables, id), state.rng)) {
-      addItem(items, l.grid, item);
-    }
+    const mix = mixOf.get(l.id);
+    if (mix === undefined) continue;
+    for (const item of rollMix(items, tables, mix, state.rng)) addItem(items, l.grid, item);
   }
 }
 

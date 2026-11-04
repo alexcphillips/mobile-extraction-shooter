@@ -1,0 +1,22 @@
+{
+  "formatVersion": 3,
+  "id": "refrigerator",
+  "name": "Refrigerator",
+  "nodes": [
+    {
+      "type": "prefab",
+      "prefab": "fridge-v2",
+      "pos": [0, 0, 0],
+      "loot": {
+        "container": "fridge",
+        "mix": {
+          "tables": {
+            "fridge-food": 0.66
+          },
+          "empty": 0.5,
+          "each": true
+        }
+      }
+    }
+  ]
+}

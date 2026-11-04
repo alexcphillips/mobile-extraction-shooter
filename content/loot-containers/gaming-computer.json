@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "id": "gaming-computer",
+  "name": "Gaming computer",
+  "grid": [4, 5],
+  "loot": {
+    "tables": {
+      "computer-parts-basic": 0.3,
+      "computer-parts-highend": 0.7
+    },
+    "each": true
+  }
+}

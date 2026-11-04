@@ -1,0 +1,54 @@
+{
+  "formatVersion": 3,
+  "id": "rocket-thruster",
+  "nodes": [
+    {
+      "type": "cylinder",
+      "pos": [0.005, 0, -0.541],
+      "radius": 0.4,
+      "height": 1.5,
+      "colour": "#616161",
+      "sides": 10,
+      "pitch": 90
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.005, 0.262, -0.37],
+      "radius": 0.45,
+      "height": 1,
+      "colour": "#595959",
+      "sides": 10,
+      "pitch": 90
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.002, 0.644, 0.265],
+      "radius": 0.1,
+      "height": 0.25,
+      "colour": "#262626",
+      "pitch": 90,
+      "sides": 14,
+      "radiusTop": 0.3
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.005, 0.666, 0.309],
+      "radius": 0.1,
+      "height": 0.2,
+      "colour": "#944300",
+      "pitch": 90,
+      "sides": 14,
+      "radiusTop": 0.25
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.005, 0.679, 0.337],
+      "radius": 0.1,
+      "height": 0.15,
+      "colour": "#e0a500",
+      "pitch": 90,
+      "sides": 14,
+      "radiusTop": 0.2
+    }
+  ]
+}

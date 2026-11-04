@@ -1,0 +1,78 @@
+{
+  "formatVersion": 3,
+  "id": "pallet-variation-1",
+  "nodes": [
+    {
+      "type": "group",
+      "pos": [0, 0, 0],
+      "nodes": [
+        {
+          "type": "prefab",
+          "prefab": "empty-pallet",
+          "pos": [-0.077, 0, -0.431]
+        },
+        {
+          "type": "prefab",
+          "prefab": "concrete-bag",
+          "pos": [-0.077, 0.2, 0.119]
+        },
+        {
+          "type": "prefab",
+          "prefab": "concrete-bag",
+          "pos": [0.573, 0.2, 0.119]
+        },
+        {
+          "type": "prefab",
+          "prefab": "concrete-bag",
+          "pos": [0.573, 0.4, 0.119]
+        },
+        {
+          "type": "prefab",
+          "prefab": "concrete-bag",
+          "pos": [-0.077, 0.4, 0.119]
+        },
+        {
+          "type": "prefab",
+          "prefab": "concrete-bag",
+          "pos": [-0.727, 0.4, 0.119]
+        },
+        {
+          "type": "prefab",
+          "prefab": "concrete-bag",
+          "pos": [-0.727, 0.6, 0.119]
+        },
+        {
+          "type": "prefab",
+          "prefab": "concrete-bag",
+          "pos": [-0.077, 0.6, 0.119]
+        },
+        {
+          "type": "prefab",
+          "prefab": "concrete-bag",
+          "pos": [0.573, 0.6, 0.119]
+        },
+        {
+          "type": "prefab",
+          "prefab": "concrete-bag",
+          "pos": [-0.077, 0.8, 0.119]
+        },
+        {
+          "type": "prefab",
+          "prefab": "concrete-bag",
+          "pos": [0.573, 0.8, 0.119]
+        },
+        {
+          "type": "prefab",
+          "prefab": "concrete-bag",
+          "pos": [-0.727, 0.2, 0.119]
+        },
+        {
+          "type": "prefab",
+          "prefab": "crate",
+          "pos": [0.273, 0.2, -0.881]
+        }
+      ],
+      "name": "pallet-variation-1"
+    }
+  ]
+}

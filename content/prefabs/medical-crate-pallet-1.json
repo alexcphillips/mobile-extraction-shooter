@@ -1,0 +1,28 @@
+{
+  "formatVersion": 3,
+  "id": "medical-crate-pallet-1",
+  "nodes": [
+    {
+      "type": "group",
+      "pos": [0, 0, 0],
+      "nodes": [
+        {
+          "type": "prefab",
+          "prefab": "medical-crate",
+          "pos": [-0.257, 0.14, -0.669]
+        },
+        {
+          "type": "prefab",
+          "prefab": "steel-barrel",
+          "pos": [0.368, 0.14, 0.585]
+        },
+        {
+          "type": "prefab",
+          "prefab": "empty-pallet",
+          "pos": [-0.112, 0, 0.085]
+        }
+      ],
+      "name": "medical-crate-pallet-1"
+    }
+  ]
+}

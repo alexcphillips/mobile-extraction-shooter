@@ -1,0 +1,30 @@
+{
+  "formatVersion": 3,
+  "id": "steel-barrel",
+  "nodes": [
+    {
+      "type": "cylinder",
+      "pos": [0, 0, 0],
+      "radius": 0.5,
+      "height": 1.5,
+      "colour": "#5a5a5a",
+      "sides": 14
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.5, 0],
+      "radius": 0.52,
+      "height": 0.1,
+      "colour": "#5c5c5c",
+      "sides": 14
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 1.1, 0],
+      "radius": 0.52,
+      "height": 0.1,
+      "colour": "#5c5c5c",
+      "sides": 14
+    }
+  ]
+}

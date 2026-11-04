@@ -5,7 +5,8 @@
 // `npm run format` would, laid out like the hand-written files (see `layout`). With
 // `create: true` a file is new, refused if one is there. All are checked and formatted
 // before any is written, so a map and the prefabs it uses go together (session 16b). The
-// editors check the docs first; this only checks they're map, prefab, item or sound files.
+// editors check the docs first; this only checks they're map, prefab, item, sound, loot
+// table or loot container files (the loot editor, 2026-11-02).
 //
 // Notes (2026-10-30): GET /__editor/notes?map=<id> reads content/notes/<id>.json, and POST
 // /__editor/note with { map, add: { pos, text } } or { map, remove: id } changes it, stamped
@@ -20,7 +21,8 @@ import { fileURLToPath } from 'node:url';
 import * as prettier from 'prettier';
 
 const CONTENT = resolve(dirname(fileURLToPath(import.meta.url)), '../../content');
-const FILE = /^(maps|prefabs|items|sounds)\/[a-z0-9][a-z0-9-]*\.json$/;
+const DIRS = ['maps', 'prefabs', 'items', 'sounds', 'loot-tables', 'loot-containers'];
+const FILE = new RegExp(`^(${DIRS.join('|')})\\/[a-z0-9][a-z0-9-]*\\.json$`);
 const ID = /^[a-z0-9][a-z0-9-]*$/;
 const NOTES_FORMAT = 1;
 
@@ -35,8 +37,8 @@ export function editorSave() {
     enforce: 'post',
     configureServer(server) {
       // content/ is outside the client's root, so Vite doesn't watch it for new files; the
-      // content globs only see a new map, prefab, item or sound (made here, say) once it's watched.
-      server.watcher.add(['maps', 'prefabs', 'items', 'sounds'].map((d) => resolve(CONTENT, d)));
+      // content globs only see a new file (made here, say) once it's watched.
+      server.watcher.add(DIRS.map((d) => resolve(CONTENT, d)));
       server.middlewares.use('/__editor/notes', (req, res) => {
         const map = new URL(req.url ?? '', 'http://x').searchParams.get('map') ?? '';
         if (!ID.test(map)) return reply(res, 400, { error: 'no map' });
@@ -104,7 +106,7 @@ export function editorSave() {
             const out = [];
             for (const { file, doc, create } of files) {
               if (typeof file !== 'string' || !FILE.test(file))
-                return reply(400, { error: `not a map, prefab, item or sound file: ${file}` });
+                return reply(400, { error: `not an editable content file: ${file}` });
               const path = resolve(CONTENT, file);
               const options = (await prettier.resolveConfig(path)) ?? {};
               const text = await prettier.format(layout(doc), { ...options, filepath: path });
@@ -126,10 +128,15 @@ export function editorSave() {
     },
     // hotUpdate (unlike handleHotUpdate) also sees new files, which the content globs pick
     // up with a full reload; the module graph is still updated for the next one.
-    async hotUpdate({ file, read }) {
+    async hotUpdate({ type, file, read }) {
       const mine = written.get(file);
       if (mine === undefined) return;
       if (this.environment.name === 'client') written.delete(file);
+      // A new file changes what the content globs list, and skipping the reload below
+      // skipped that too (2026-11-02: a new item missing from the loot editor until the
+      // server restarted). So everything is compiled afresh on its next load, globs
+      // included; the open tabs still aren't reloaded.
+      if (type === 'create') this.environment.moduleGraph.invalidateAll();
       // The editor that saved it already has it; other tabs pick it up when reloaded.
       if ((await read()) === mine) return [];
     },

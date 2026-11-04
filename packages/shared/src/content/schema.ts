@@ -30,17 +30,40 @@ export const colourRefSchema = z
 const slotsSchema = z.record(idSchema, hexColourSchema);
 
 /**
+ * What a loot container is filled from (2026-11-02): loot tables by weight, and a weight
+ * for nothing at all. Picked once for the whole container (so a fridge is all food or all
+ * parts), or with `each`, once for every item (a mix in one fridge); the number of items is
+ * the rolls of a table picked by weight. The weights needn't add up to anything.
+ */
+export const lootMixSchema = z
+  .strictObject({
+    tables: z.record(idSchema, positive),
+    empty: positive.optional(),
+    each: z.literal(true).optional(),
+  })
+  .refine(
+    (m) => Object.keys(m.tables).length > 0 || m.empty !== undefined,
+    'a loot mix needs a table or an empty weight',
+  );
+export type LootMix = z.infer<typeof lootMixSchema>;
+
+/**
+ * Where a container's loot comes from: its own mix, else its one table (as maps had before
+ * mixes), else its kind's default mix (content/loot-containers).
+ */
+const containerLoot = {
+  /** Its kind, in content/loot-containers. */
+  container: idSchema,
+  lootTable: idSchema.optional(),
+  mix: lootMixSchema.optional(),
+};
+
+/**
  * Makes a box, cylinder, group or placed prefab a loot container (2026-11-01), instead of a
  * lootContainer marker beside it: what's solid in it is what you aim at to loot it, and you
  * reach it from anywhere within LOOT_REACH of its footprint. Containers don't nest.
  */
-const lootSchema = z
-  .strictObject({
-    /** Its kind, in content/loot-containers. */
-    container: idSchema,
-    lootTable: idSchema,
-  })
-  .optional();
+const lootSchema = z.strictObject(containerLoot).optional();
 
 const solid = {
   id: idSchema.optional(),
@@ -51,6 +74,8 @@ const solid = {
   collide: z.boolean().optional(),
 };
 
+const bulgeBy = finite.refine((n) => n >= 0, 'must be 0 or more');
+
 const boxSchema = z.strictObject({
   type: z.literal('box'),
   ...solid,
@@ -58,6 +83,12 @@ const boxSchema = z.strictObject({
   size: size3,
   pitch: angle,
   roll: angle,
+  /**
+   * How far out each face's middle is pushed, in metres (2026-11-03, for bags of concrete),
+   * making that face a low pyramid: −x, +x, −y (bottom), +y (top), −z, +z, before turning.
+   * Drawn only: it collides as the plain box. Left out, every face is flat.
+   */
+  bulge: z.tuple([bulgeBy, bulgeBy, bulgeBy, bulgeBy, bulgeBy, bulgeBy]).optional(),
   loot: lootSchema,
 });
 
@@ -234,8 +265,7 @@ const lootContainerSchema = z.strictObject({
   type: z.literal('lootContainer'),
   ...marker,
   yaw: angle,
-  container: idSchema,
-  lootTable: idSchema,
+  ...containerLoot,
 });
 
 /** A spot where one loose item may lie, rolled from its loot table at raid start. */

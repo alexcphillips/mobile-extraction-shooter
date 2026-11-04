@@ -207,6 +207,11 @@ function inRestFrame(shapes: Shape[], rest: CharacterTemplate['rest']): Shape[] 
       out.hx *= k;
       out.hy *= k;
       out.hz *= k;
+      // Turned to face +z, its back is now its front: the corners go round by two.
+      if (out.kind === 'slab') {
+        const [bl, br, fr, fl] = out.corners;
+        out.corners = [fr * k, fl * k, bl * k, br * k];
+      }
     }
     return out;
   });

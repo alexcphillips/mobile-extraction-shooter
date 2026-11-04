@@ -346,7 +346,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     );
     player.gear = structuredClone(options.profile.gear);
     placeLootContainers(sim, map, lootKinds);
-    fillLootContainers(sim, map, items, lootTables);
+    fillLootContainers(sim, map, items, lootTables, lootKinds);
     rollLootSpawns(sim, map, items, lootTables);
     startRaid(sim, map, options.duration ?? raid.duration);
     startQuests(sim, map, items, player.id, raidObjectives(options.profile, quests, raid.map));

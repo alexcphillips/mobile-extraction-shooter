@@ -7,7 +7,14 @@ import { CollisionWorld } from '../world/collision-world';
 import { spawnEnemy } from './ai';
 import { createItem } from './create-item';
 import { equip } from './gear';
-import { fillLootContainers, rollEnemyLoot, rollLootSpawns, rollTable } from './loot-roll';
+import {
+  fillLootContainers,
+  rollEnemyLoot,
+  rollLootSpawns,
+  rollMix,
+  rollTable,
+  type LootKinds,
+} from './loot-roll';
 import { createState } from './state';
 import { TEST_ITEMS as items } from './test-items';
 
@@ -37,6 +44,20 @@ const tables = new Map([
   ),
   table('meds', [1, 1], [{ item: 'bandage', weight: 1 }]),
   table('guns', [1, 1], [{ item: 'rifle', weight: 1 }]),
+]);
+
+const kinds: LootKinds = new Map([
+  ['desk', { formatVersion: 1, id: 'desk', name: 'Desk', grid: [4, 3] }],
+  [
+    'fridge',
+    {
+      formatVersion: 1,
+      id: 'fridge',
+      name: 'Fridge',
+      grid: [4, 3],
+      loot: { tables: { meds: 1 } },
+    },
+  ],
 ]);
 
 describe('loot tables', () => {
@@ -76,7 +97,7 @@ describe('loot tables', () => {
       for (const id of ['a', 'b']) {
         state.loot.push({ id, def: 'desk', x: 0, y: 0, z: 0, grid: createGrid(4, 3, true) });
       }
-      fillLootContainers(state, map, items, tables);
+      fillLootContainers(state, map, items, tables, kinds);
       return state.loot;
     };
     const [a, b] = fill(3);
@@ -88,8 +109,62 @@ describe('loot tables', () => {
     const state = createState(1);
     state.loot.push({ id: 'a', def: 'desk', x: 0, y: 0, z: 0, grid: createGrid(4, 3, true) });
     expect(() =>
-      fillLootContainers(state, missing as unknown as CompiledMap, items, tables),
+      fillLootContainers(state, missing as unknown as CompiledMap, items, tables, kinds),
     ).toThrow(/no loot table "nope"/);
+  });
+
+  it('fills a container from one table of its mix, its own or its kind’s', () => {
+    const mix = { tables: { meds: 4, guns: 1 }, empty: 5 };
+    const rng = createRng(5);
+    const seen = { meds: 0, guns: 0, empty: 0 };
+    for (let i = 0; i < 1000; i++) {
+      const out = rollMix(items, tables, mix, rng);
+      if (!out.length) seen.empty++;
+      else if (out[0]!.item === 'bandage') seen.meds++;
+      else seen.guns++;
+    }
+    // 40%, 10% and 50%.
+    expect(seen.meds / 1000).toBeGreaterThan(0.34);
+    expect(seen.meds / 1000).toBeLessThan(0.46);
+    expect(seen.guns / 1000).toBeGreaterThan(0.06);
+    expect(seen.guns / 1000).toBeLessThan(0.14);
+
+    const map = {
+      markers: [
+        { type: 'lootContainer', id: 'a', container: 'fridge' },
+        { type: 'lootContainer', id: 'b', container: 'fridge', mix: { tables: { guns: 1 } } },
+      ],
+    } as unknown as CompiledMap;
+    const state = createState(2);
+    for (const id of ['a', 'b'])
+      state.loot.push({ id, def: 'fridge', x: 0, y: 0, z: 0, grid: createGrid(4, 3, true) });
+    fillLootContainers(state, map, items, tables, kinds);
+    expect(state.loot.map((l) => l.grid.items.map((g) => g.item.item))).toEqual([
+      ['bandage'],
+      ['rifle'],
+    ]);
+
+    const none = { markers: [{ type: 'lootContainer', id: 'a', container: 'desk' }] };
+    expect(() =>
+      fillLootContainers(state, none as unknown as CompiledMap, items, tables, kinds),
+    ).toThrow(/no loot/);
+  });
+
+  it('with each, picks every item’s table from the mix', () => {
+    const rng = createRng(9);
+    let mixed = 0;
+    let fewer = 0;
+    for (let i = 0; i < 200; i++) {
+      // house's 2 to 4 rolls or meds' 1, each a bandage, a house item or nothing.
+      const mix = { tables: { house: 1, meds: 1 }, empty: 1, each: true as const };
+      const out = rollMix(items, tables, mix, rng);
+      expect(out.length).toBeLessThanOrEqual(4);
+      const kinds = new Set(out.map((it) => (it.item === 'bandage' ? 'meds' : 'house')));
+      if (kinds.size === 2) mixed++;
+      if (out.length < 2) fewer++;
+    }
+    expect(mixed).toBeGreaterThan(20);
+    expect(fewer).toBeGreaterThan(0);
   });
 
   it('stows enemy loot from its tables, weighted by the spawn, leaving out what doesn’t fit', () => {

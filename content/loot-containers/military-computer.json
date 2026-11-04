@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "id": "military-computer",
+  "name": "Military computer",
+  "grid": [3, 4],
+  "loot": {
+    "tables": {
+      "computer-parts-basic": 0.6,
+      "military-tech": 0.4
+    },
+    "each": true
+  }
+}

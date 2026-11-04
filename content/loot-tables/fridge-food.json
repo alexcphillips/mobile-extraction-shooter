@@ -1,0 +1,10 @@
+{
+  "formatVersion": 1,
+  "id": "fridge-food",
+  "name": "Fridge food",
+  "rolls": [1, 2],
+  "items": [
+    { "item": "bottle-of-water", "weight": 4.8 },
+    { "item": "a5-kuroge-prime-ribeye", "weight": 0.05 }
+  ]
+}

@@ -244,6 +244,21 @@ describe('jumping', () => {
     expect(run(TICK_RATE, input({ jump: true }))).toBeCloseTo(2 - MOVEMENT.standHeight);
   });
 
+  it('jumps against a wall under a roof flush with it', () => {
+    // A shipping container turned 90° (the rounding matters), its roof flush with the
+    // wall's outer face, and something to stand on pushed into the wall.
+    const wall = { ...aabb(-4, 0, -0.1, 4, 2.6, 0.1), x: 0.1, yaw: Math.PI / 2 };
+    const roof = { ...aabb(-4, 2.6, -1.5, 4, 2.8, 1.5), x: 1.5, yaw: Math.PI / 2 };
+    const world = makeWorld({ boxes: [wall, roof, aabb(-1, 0, -0.4, 0.3, 0.75, 0.4)] });
+    const { c, run } = setup(world, -0.3, 0, Math.PI / 2, 1);
+    run(1, input({ yaw: c.yaw }));
+    expect(c.y).toBe(0.75);
+    expect(c.x).toBeCloseTo(-R);
+    expect(run(TICK_RATE, input({ yaw: c.yaw, jump: true }))).toBeCloseTo(
+      0.75 + MOVEMENT.jumpHeight,
+    );
+  });
+
   it("can't jump while crouched", () => {
     const { run } = setup(makeWorld());
     run(TICK_RATE, input({ crouch: true }));

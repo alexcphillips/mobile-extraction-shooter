@@ -1,0 +1,35 @@
+{
+  "formatVersion": 3,
+  "id": "shipping-container-open-no-doors",
+  "colours": {
+    "shipping-container-red-dark": "#853232"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [2.9, 0.2, 8],
+      "colour": "shipping-container-red-dark"
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.6, 0],
+      "size": [3, 0.2, 8],
+      "colour": "shipping-container-red-dark"
+    },
+    {
+      "type": "box",
+      "pos": [-1.4, 0, 0],
+      "size": [8, 2.6, 0.2],
+      "colour": "shipping-container-red-dark",
+      "yaw": 90
+    },
+    {
+      "type": "box",
+      "pos": [1.4, 0, 0],
+      "size": [8, 2.6, 0.2],
+      "colour": "shipping-container-red-dark",
+      "yaw": 90
+    }
+  ]
+}

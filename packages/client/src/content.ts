@@ -1,4 +1,5 @@
 import {
+  containerMix,
   ENEMY_FORMAT,
   ITEM_FORMAT,
   LOADOUT_FORMAT,
@@ -251,7 +252,11 @@ export function checkDoorKeys(map: CompiledMap): void {
 
 /** Every kind of loot container in content/loot-containers. */
 export function loadLootContainers(): ReadonlyMap<string, LootContainerDef> {
-  lootContainers ??= loadById(LOOT_CONTAINER_FORMAT, lootContainerFiles);
+  if (!lootContainers) {
+    const all = loadById(LOOT_CONTAINER_FORMAT, lootContainerFiles);
+    checkLootKinds(all, loadLootTables());
+    lootContainers = all;
+  }
   return lootContainers;
 }
 
@@ -264,8 +269,27 @@ export function checkLootContainers(map: CompiledMap): void {
       throw new Error(
         `loot container ${m.id}: no kind "${m.container}" in content/loot-containers`,
       );
-    if ((m.type === 'lootContainer' || m.type === 'lootSpawn') && !tables.has(m.lootTable))
+    if (m.type === 'lootSpawn' && !tables.has(m.lootTable))
       throw new Error(`${m.type} ${m.id}: no loot table "${m.lootTable}"`);
+    if (m.type === 'lootContainer') {
+      const mix = containerMix(m, kinds);
+      if (!mix)
+        throw new Error(`loot container ${m.id}: no loot, and kind "${m.container}" has none`);
+      for (const t of Object.keys(mix.tables))
+        if (!tables.has(t)) throw new Error(`loot container ${m.id}: no loot table "${t}"`);
+    }
+  }
+}
+
+/** Checks that container kinds' loot names tables that exist. */
+export function checkLootKinds(
+  kinds: ReadonlyMap<string, LootContainerDef>,
+  tables: ReadonlyMap<string, LootTableDef>,
+): void {
+  for (const k of kinds.values()) {
+    for (const t of Object.keys(k.loot?.tables ?? {}))
+      if (!tables.has(t))
+        throw new Error(`content/loot-containers/${k.id}.json: no loot table "${t}"`);
   }
 }
 
@@ -277,6 +301,31 @@ export function loadLootTables(): ReadonlyMap<string, LootTableDef> {
     lootTables = all;
   }
   return lootTables;
+}
+
+/** The loot container files as written, for the loot editor (see itemSources). */
+export function lootContainerSources(): ReadonlyMap<string, LootContainerDef> {
+  return asWritten(lootContainerFiles, loadById(LOOT_CONTAINER_FORMAT, lootContainerFiles));
+}
+
+/**
+ * Where a container kind is placed, for the loot editor: one line a map, like "map mall: 12
+ * (3 with their own loot)".
+ */
+export function lootContainerUses(id: string): readonly Use[] {
+  const lines: Use[] = [];
+  for (const map of mapIds()) {
+    let n = 0;
+    let own = 0;
+    for (const m of loadMap(map).markers) {
+      if (m.type !== 'lootContainer' || m.container !== id) continue;
+      n++;
+      if (m.mix || m.lootTable !== undefined) own++;
+    }
+    if (n)
+      lines.push({ text: `map ${map}: ${n}${own ? ` (${own} with their own loot)` : ''}`, map });
+  }
+  return lines;
 }
 
 /** The loot table files as written, for the loot editor (see itemSources). */
@@ -295,16 +344,27 @@ export function lootTableContentProblem(tables: ReadonlyMap<string, LootTableDef
   return null;
 }
 
-let lootUses: Map<string, string[]> | undefined;
+/**
+ * A line saying where something is used, for the loot editor: with `map`, a link to that
+ * map in the map editor; with `open`, a loot editor file key to open.
+ */
+export interface Use {
+  text: string;
+  map?: string;
+  open?: string;
+}
+
+let lootUses: Map<string, Use[]> | undefined;
 
 /**
  * Where a loot table is rolled, for the loot editor: one line each, like "map mall: 12
  * containers". Worked out for every table at once, as it compiles every map.
  */
-export function lootTableUses(id: string): readonly string[] {
+export function lootTableUses(id: string): readonly Use[] {
   if (!lootUses) {
-    const uses = new Map<string, string[]>();
-    const add = (table: string, line: string): void => {
+    const uses = new Map<string, Use[]>();
+    const add = (table: string, text: string, link: Omit<Use, 'text'> = {}): void => {
+      const line = { text, ...link };
       const lines = uses.get(table);
       if (lines) lines.push(line);
       else uses.set(table, [line]);
@@ -317,7 +377,10 @@ export function lootTableUses(id: string): readonly string[] {
         return c;
       };
       for (const m of loadMap(map).markers) {
-        if (m.type === 'lootContainer') count(m.lootTable).containers++;
+        if (m.type === 'lootContainer') {
+          for (const t of Object.keys(containerMix(m, loadLootContainers())?.tables ?? {}))
+            count(t).containers++;
+        }
         if (m.type === 'lootSpawn') {
           const c = count(m.lootTable);
           c.spots++;
@@ -325,7 +388,7 @@ export function lootTableUses(id: string): readonly string[] {
         }
         if (m.type === 'enemySpawn') {
           for (const [table, w] of Object.entries(m.lootWeights ?? {}))
-            add(table, `enemy spawn ${m.id} on ${map}: weight ×${w}`);
+            add(table, `enemy spawn ${m.id} on ${map}: weight ×${w}`, { map });
         }
       }
       for (const [table, c] of counts) {
@@ -334,7 +397,7 @@ export function lootTableUses(id: string): readonly string[] {
           c.spots &&
             `${c.spots} loose spot${c.spots === 1 ? '' : 's'} (${Math.round((c.odds / c.spots) * 100)}% chance each, on average)`,
         ].filter(Boolean);
-        add(table, `map ${map}: ${parts.join(', ')}`);
+        add(table, `map ${map}: ${parts.join(', ')}`, { map });
       }
     }
     prefabs ??= loadById(PREFAB_FORMAT, prefabFiles);
@@ -345,6 +408,12 @@ export function lootTableUses(id: string): readonly string[] {
         if (n) add(table, `prefab ${prefab}: ${n} (counted in the maps above)`);
       }
     }
+    for (const k of loadLootContainers().values()) {
+      for (const [table, w] of Object.entries(k.loot?.tables ?? {}))
+        add(table, `container kind ${k.name}: weight ${w} (its containers counted above)`, {
+          open: `loot-containers/${k.id}`,
+        });
+    }
     for (const e of rawContent().enemies.values()) {
       for (const [table, w] of Object.entries(e.loot?.tables ?? {}))
         add(table, `enemy ${e.id}: weight ${w}`);
@@ -354,12 +423,20 @@ export function lootTableUses(id: string): readonly string[] {
   return lootUses.get(id) ?? [];
 }
 
+/** Whether a loot mix (as written) has a weight for a table. */
+const namesTable = (mix: unknown, id: string): boolean =>
+  !!mix && typeof mix === 'object' && id in ((mix as { tables?: object }).tables ?? {});
+
 /** How many times a doc names a loot table. */
 function countLootTable(value: unknown, id: string): number {
   if (Array.isArray(value)) return value.reduce((n: number, v) => n + countLootTable(v, id), 0);
   if (value === null || typeof value !== 'object') return 0;
   return Object.entries(value).reduce(
-    (n, [k, v]) => n + (k === 'lootTable' && v === id ? 1 : countLootTable(v, id)),
+    (n, [k, v]) =>
+      n +
+      ((k === 'lootTable' && v === id) || (k === 'mix' && namesTable(v, id))
+        ? 1
+        : countLootTable(v, id)),
     0,
   );
 }

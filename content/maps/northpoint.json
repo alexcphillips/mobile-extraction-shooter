@@ -2428,7 +2428,7 @@
     {
       "type": "playerSpawn",
       "id": "spawn",
-      "pos": [56, 0.01, 212]
+      "pos": [8.65, 0.01, 183.35]
     },
     {
       "type": "prefab",
@@ -2619,10 +2619,12 @@
       ]
     },
     {
-      "type": "box",
-      "pos": [85.194, -0.19, 148.132],
-      "size": [113.113, 0.2, 25.736],
-      "colour": "road"
+      "type": "prefab",
+      "prefab": "fridge",
+      "pos": [41.928, -0.19, 146.733],
+      "colours": {
+        "road": "road"
+      }
     },
     {
       "type": "box",
@@ -2633,20 +2635,14 @@
     },
     {
       "type": "box",
-      "pos": [7.194, -0.19, 207.757],
-      "size": [43.113, 0.2, 93.986],
-      "colour": "road"
-    },
-    {
-      "type": "box",
-      "pos": [-22, -0.19, 185],
+      "pos": [8.082, -0.19, 185],
       "size": [16, 0.2, 10],
       "colour": "road"
     },
     {
       "type": "prefab",
       "prefab": "barrier-arm",
-      "pos": [-14.856, 0.01, 187.15]
+      "pos": [16, 0.01, 187.15]
     },
     {
       "type": "prefab",
@@ -2656,7 +2652,7 @@
     },
     {
       "type": "group",
-      "pos": [-15.964, 0.01, 191.59],
+      "pos": [16, 0.01, 191.59],
       "nodes": [
         {
           "type": "box",
@@ -2960,7 +2956,7 @@
     {
       "type": "group",
       "name": "Walls",
-      "pos": [-14.444, 0.01, 174.566],
+      "pos": [16, 0.01, 174.566],
       "nodes": [
         {
           "type": "box",
@@ -2973,13 +2969,7 @@
     },
     {
       "type": "box",
-      "pos": [-14.5, 0.01, 179.5],
-      "size": [1, 0.5, 1],
-      "colour": "barrier"
-    },
-    {
-      "type": "box",
-      "pos": [-14.375, 0, 224.564],
+      "pos": [16, 0, 224.564],
       "size": [61.101, 2, 0.2],
       "colour": "barrier",
       "yaw": -90.2
@@ -3093,7 +3083,7 @@
     {
       "type": "prefab",
       "prefab": "car",
-      "pos": [-18.5, 0.01, 186],
+      "pos": [12, 0.01, 186],
       "yaw": 90
     },
     {
@@ -3147,7 +3137,7 @@
     },
     {
       "type": "group",
-      "pos": [108, 0.01, 220],
+      "pos": [107.5, 0.01, 214.7],
       "nodes": [
         {
           "type": "box",
@@ -3194,7 +3184,7 @@
     },
     {
       "type": "group",
-      "pos": [16, 0.01, 224],
+      "pos": [50.05, 0.01, 224.4],
       "nodes": [
         {
           "type": "box",
@@ -3256,6 +3246,764 @@
         }
       ],
       "name": "admin-building-base"
+    },
+    {
+      "type": "box",
+      "pos": [31.887, 0, 142.638],
+      "size": [0.4, 0.3, 1],
+      "colour": "#a33333"
+    },
+    {
+      "type": "box",
+      "pos": [32.387, 0, 142.638],
+      "size": [0.4, 0.3, 1],
+      "colour": "#a33333",
+      "yaw": 180
+    },
+    {
+      "type": "box",
+      "pos": [32.5, 0.6, 141.7],
+      "size": [0.4, 0.1, 1],
+      "colour": "#a33333",
+      "yaw": 90
+    },
+    {
+      "type": "box",
+      "pos": [32.65, 0.15, 144.8],
+      "size": [0.4, 0.3, 0.5],
+      "colour": "#8f8f8f",
+      "yaw": 90
+    },
+    {
+      "type": "box",
+      "pos": [32.587, 0, 141.638],
+      "size": [0.4, 0.3, 0.5],
+      "colour": "#8f8f8f",
+      "yaw": 90
+    },
+    {
+      "type": "box",
+      "pos": [32.387, 0, 141.638],
+      "size": [1.5, 0.6, 0.7],
+      "colour": "#525252"
+    },
+    {
+      "type": "box",
+      "pos": [33.087, 0, 142.6],
+      "size": [0.7, 0.8, 0.7],
+      "colour": "#525252"
+    },
+    {
+      "type": "box",
+      "pos": [31.7, 0, 146],
+      "size": [0.7, 0.8, 0.7],
+      "colour": "#525252"
+    },
+    {
+      "type": "group",
+      "pos": [84.6, 0.01, 176.4],
+      "nodes": [
+        {
+          "type": "prefab",
+          "prefab": "medical-crate-pallet-1",
+          "pos": [9.68, 0, 1.567]
+        },
+        {
+          "type": "group",
+          "pos": [12.068, 0, -0.598],
+          "nodes": [
+            {
+              "type": "box",
+              "pos": [0, 0, 0],
+              "size": [3, 0.2, 8],
+              "colour": "shipping-container-red-dark"
+            },
+            {
+              "type": "box",
+              "pos": [0, 2.6, 0],
+              "size": [3, 0.2, 8],
+              "colour": "shipping-container-red-dark"
+            },
+            {
+              "type": "box",
+              "pos": [-1.4, 0, 0],
+              "size": [8, 2.6, 0.2],
+              "colour": "shipping-container-red-dark",
+              "yaw": 90
+            },
+            {
+              "type": "box",
+              "pos": [1.4, 0, 0],
+              "size": [8, 2.6, 0.2],
+              "colour": "shipping-container-red-dark",
+              "yaw": 90
+            }
+          ],
+          "name": "shipping-container-no-doors"
+        },
+        {
+          "type": "group",
+          "pos": [-6.5, 2.8, -3.048],
+          "nodes": [
+            {
+              "type": "box",
+              "pos": [0, 0, 0],
+              "size": [3, 0.2, 8],
+              "colour": "shipping-container-red-dark"
+            },
+            {
+              "type": "box",
+              "pos": [0, 2.6, 0],
+              "size": [3, 0.2, 8],
+              "colour": "shipping-container-red-dark"
+            },
+            {
+              "type": "box",
+              "pos": [-1.4, 0, 0],
+              "size": [8, 2.6, 0.2],
+              "colour": "shipping-container-red-dark",
+              "yaw": 90
+            },
+            {
+              "type": "box",
+              "pos": [1.4, 0, 0],
+              "size": [8, 2.6, 0.2],
+              "colour": "shipping-container-red-dark",
+              "yaw": 90
+            }
+          ],
+          "name": "shipping-container-no-doors"
+        },
+        {
+          "type": "group",
+          "pos": [1.648, 0, 7.152],
+          "nodes": [
+            {
+              "type": "box",
+              "pos": [0, 0, 0],
+              "size": [3, 0.2, 8],
+              "colour": "shipping-container-blue-dark"
+            },
+            {
+              "type": "box",
+              "pos": [0, 2.6, 0],
+              "size": [3, 0.2, 8],
+              "colour": "shipping-container-blue-dark"
+            },
+            {
+              "type": "box",
+              "pos": [-1.4, 0, 0],
+              "size": [8, 2.6, 0.2],
+              "colour": "shipping-container-blue-dark",
+              "yaw": 90
+            },
+            {
+              "type": "box",
+              "pos": [1.4, 0, 0],
+              "size": [8, 2.6, 0.2],
+              "colour": "shipping-container-blue-dark",
+              "yaw": 90
+            }
+          ],
+          "name": "shipping-container-no-doors",
+          "yaw": -90
+        },
+        {
+          "type": "group",
+          "pos": [2.648, 0, -8.598],
+          "nodes": [
+            {
+              "type": "box",
+              "pos": [0, 0, 0],
+              "size": [3, 0.2, 8],
+              "colour": "shipping-container-blue-dark"
+            },
+            {
+              "type": "box",
+              "pos": [0, 2.6, 0],
+              "size": [3, 0.2, 8],
+              "colour": "shipping-container-blue-dark"
+            },
+            {
+              "type": "box",
+              "pos": [-1.4, 0, 0],
+              "size": [8, 2.6, 0.2],
+              "colour": "shipping-container-blue-dark",
+              "yaw": 90
+            },
+            {
+              "type": "box",
+              "pos": [1.4, 0, 0],
+              "size": [8, 2.6, 0.2],
+              "colour": "shipping-container-blue-dark",
+              "yaw": 90
+            }
+          ],
+          "name": "shipping-container-no-doors",
+          "yaw": 180
+        },
+        {
+          "type": "group",
+          "pos": [7.348, 0, 4.152],
+          "nodes": [
+            {
+              "type": "prefab",
+              "prefab": "shipping-container-closed-end",
+              "pos": [0, 0, 0],
+              "colours": {
+                "shipping-container-orange-dark": "shipping-container-orange-dark"
+              }
+            }
+          ],
+          "name": "shipping-container-closed-end"
+        },
+        {
+          "type": "group",
+          "pos": [4.598, 2.8, 2.432],
+          "nodes": [
+            {
+              "type": "prefab",
+              "prefab": "shipping-container-closed-end",
+              "pos": [0, 0, 0],
+              "colours": {
+                "shipping-container-orange-dark": "shipping-container-orange-dark"
+              }
+            }
+          ],
+          "name": "shipping-container-closed-end",
+          "yaw": -90
+        },
+        {
+          "type": "group",
+          "pos": [3.148, 0, -0.848],
+          "nodes": [
+            {
+              "type": "box",
+              "pos": [-0.975, 0, 0],
+              "size": [3, 0.2, 8],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 90
+            },
+            {
+              "type": "box",
+              "pos": [-0.975, 2.6, 0],
+              "size": [3, 0.2, 8],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 90
+            },
+            {
+              "type": "box",
+              "pos": [-0.975, 0, 1.4],
+              "size": [8, 2.6, 0.2],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 180
+            },
+            {
+              "type": "box",
+              "pos": [-0.975, 0, -1.4],
+              "size": [8, 2.6, 0.2],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 180
+            },
+            {
+              "type": "box",
+              "pos": [-4.875, 0, 0],
+              "size": [3, 2.6, 0.2],
+              "colour": "shipping-container-orange-dark",
+              "yaw": -90
+            },
+            {
+              "type": "box",
+              "pos": [2.925, 2.1, 0],
+              "size": [3, 0.5, 0.2],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 90
+            },
+            {
+              "type": "door",
+              "pos": [2.925, 0, -0.625],
+              "size": [1.35, 2.1],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 90,
+              "hinge": "right"
+            },
+            {
+              "type": "door",
+              "pos": [2.925, 0, 0.625],
+              "size": [1.35, 2.1],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 90
+            }
+          ],
+          "name": "shipping-container-closed-end-and-doors"
+        },
+        {
+          "type": "group",
+          "pos": [-6.877, 0, 0.902],
+          "nodes": [
+            {
+              "type": "box",
+              "pos": [-0.975, 0, 0],
+              "size": [3, 0.2, 8],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 90
+            },
+            {
+              "type": "box",
+              "pos": [-0.975, 2.6, 0],
+              "size": [3, 0.2, 8],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 90
+            },
+            {
+              "type": "box",
+              "pos": [-0.975, 0, 1.4],
+              "size": [8, 2.6, 0.2],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 180
+            },
+            {
+              "type": "box",
+              "pos": [-0.975, 0, -1.4],
+              "size": [8, 2.6, 0.2],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 180
+            },
+            {
+              "type": "box",
+              "pos": [-4.875, 0, 0],
+              "size": [3, 2.6, 0.2],
+              "colour": "shipping-container-orange-dark",
+              "yaw": -90
+            },
+            {
+              "type": "box",
+              "pos": [2.925, 2.1, 0],
+              "size": [3, 0.5, 0.2],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 90
+            },
+            {
+              "type": "door",
+              "pos": [2.925, 0, -0.625],
+              "size": [1.35, 2.1],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 90,
+              "hinge": "right"
+            },
+            {
+              "type": "door",
+              "pos": [2.925, 0, 0.625],
+              "size": [1.35, 2.1],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 90
+            }
+          ],
+          "name": "shipping-container-closed-end-and-doors"
+        },
+        {
+          "type": "group",
+          "pos": [-10.7, 2.8, -2.073],
+          "nodes": [
+            {
+              "type": "box",
+              "pos": [-0.975, 0, 0],
+              "size": [3, 0.2, 8],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 90
+            },
+            {
+              "type": "box",
+              "pos": [-0.975, 2.6, 0],
+              "size": [3, 0.2, 8],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 90
+            },
+            {
+              "type": "box",
+              "pos": [-0.975, 0, 1.4],
+              "size": [8, 2.6, 0.2],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 180
+            },
+            {
+              "type": "box",
+              "pos": [-0.975, 0, -1.4],
+              "size": [8, 2.6, 0.2],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 180
+            },
+            {
+              "type": "box",
+              "pos": [-4.875, 0, 0],
+              "size": [3, 2.6, 0.2],
+              "colour": "shipping-container-orange-dark",
+              "yaw": -90
+            },
+            {
+              "type": "box",
+              "pos": [2.925, 2.1, 0],
+              "size": [3, 0.5, 0.2],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 90
+            },
+            {
+              "type": "door",
+              "pos": [2.925, 0, -0.625],
+              "size": [1.35, 2.1],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 90,
+              "hinge": "right"
+            },
+            {
+              "type": "door",
+              "pos": [2.925, 0, 0.625],
+              "size": [1.35, 2.1],
+              "colour": "shipping-container-orange-dark",
+              "yaw": 90
+            }
+          ],
+          "name": "shipping-container-closed-end-and-doors",
+          "yaw": -90
+        },
+        {
+          "type": "group",
+          "pos": [-13.352, 0, -3.098],
+          "nodes": [
+            {
+              "type": "box",
+              "pos": [0, 0, 0],
+              "size": [3, 2.8, 8],
+              "colour": "shipping-container-red-dark"
+            }
+          ],
+          "name": "shipping-container-closed-no-doors"
+        },
+        {
+          "type": "group",
+          "pos": [-9.852, 0, -7.098],
+          "nodes": [
+            {
+              "type": "box",
+              "pos": [0, 0, -2],
+              "size": [3, 2.8, 8],
+              "colour": "shipping-container-blue-dark"
+            }
+          ],
+          "name": "shipping-container-closed-no-doors",
+          "yaw": -90
+        },
+        {
+          "type": "prefab",
+          "prefab": "medical-crate",
+          "pos": [2.748, 0.2, 6.502],
+          "yaw": 180
+        },
+        {
+          "type": "prefab",
+          "prefab": "gaming-pc",
+          "pos": [3.898, 2.99, 2.652]
+        }
+      ],
+      "name": "cans-v1"
+    },
+    {
+      "type": "group",
+      "pos": [32.05, 0, 145.55],
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [0.087, 0, -0.062],
+          "size": [2, 0.15, 2],
+          "colour": "#a88048"
+        },
+        {
+          "type": "box",
+          "pos": [0.5, 0, -3.3],
+          "size": [2, 0.15, 2],
+          "colour": "#a88048"
+        }
+      ],
+      "name": "pallet-1"
+    },
+    {
+      "type": "prefab",
+      "prefab": "refrigerator",
+      "pos": [32.4, 0.15, 145.75]
+    },
+    {
+      "type": "box",
+      "pos": [22.416, -0.19, 207.757],
+      "size": [12.669, 0.2, 93.786],
+      "colour": "road"
+    },
+    {
+      "type": "group",
+      "name": "shipping-container-open-end",
+      "pos": [72.45, 0.01, 183.25],
+      "yaw": -90,
+      "nodes": []
+    },
+    {
+      "type": "group",
+      "pos": [81, 0.5, 177.75],
+      "nodes": [
+        {
+          "type": "group",
+          "pos": [-2, 1.5, -2],
+          "nodes": [],
+          "yaw": 15
+        }
+      ],
+      "name": "shipping-container-no-doors"
+    },
+    {
+      "type": "group",
+      "pos": [30.25, 0.01, 163.4],
+      "nodes": [
+        {
+          "type": "prefab",
+          "prefab": "shipping-container-closed-end",
+          "pos": [0, 0, 0],
+          "colours": {
+            "shipping-container-orange-dark": "shipping-container-orange-dark"
+          }
+        }
+      ],
+      "name": "shipping-container-closed-end",
+      "yaw": -90
+    },
+    {
+      "type": "group",
+      "pos": [21.15, 0.01, 172],
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [-0.975, 0, 0],
+          "size": [3, 0.2, 8],
+          "colour": "shipping-container-orange-dark",
+          "yaw": 90
+        },
+        {
+          "type": "box",
+          "pos": [-0.975, 2.6, 0],
+          "size": [3, 0.2, 8],
+          "colour": "shipping-container-orange-dark",
+          "yaw": 90
+        },
+        {
+          "type": "box",
+          "pos": [-0.975, 0, 1.4],
+          "size": [8, 2.6, 0.2],
+          "colour": "shipping-container-orange-dark",
+          "yaw": 180
+        },
+        {
+          "type": "box",
+          "pos": [-0.975, 0, -1.4],
+          "size": [8, 2.6, 0.2],
+          "colour": "shipping-container-orange-dark",
+          "yaw": 180
+        },
+        {
+          "type": "box",
+          "pos": [-4.875, 0, 0],
+          "size": [3, 2.6, 0.2],
+          "colour": "shipping-container-orange-dark",
+          "yaw": -90
+        },
+        {
+          "type": "box",
+          "pos": [2.925, 2.1, 0],
+          "size": [3, 0.5, 0.2],
+          "colour": "shipping-container-orange-dark",
+          "yaw": 90
+        },
+        {
+          "type": "door",
+          "pos": [2.925, 0, -0.625],
+          "size": [1.35, 2.1],
+          "colour": "shipping-container-orange-dark",
+          "yaw": 90,
+          "hinge": "right"
+        },
+        {
+          "type": "door",
+          "pos": [2.925, 0, 0.625],
+          "size": [1.35, 2.1],
+          "colour": "shipping-container-orange-dark",
+          "yaw": 90
+        }
+      ],
+      "name": "shipping-container-closed-end-and-doors",
+      "yaw": 90
+    },
+    {
+      "type": "group",
+      "pos": [79, 0.01, 184],
+      "nodes": [],
+      "name": "shipping-container-closed-no-doors"
+    },
+    {
+      "type": "group",
+      "pos": [27.611, 0.01, 161.502],
+      "nodes": [
+        {
+          "type": "prefab",
+          "prefab": "steel-barrel-pallet-1",
+          "pos": [0, 0, 0],
+          "colours": {
+            "wood-pallet": "wood-pallet"
+          }
+        }
+      ],
+      "name": "steel-barrel-pallet-1"
+    },
+    {
+      "type": "group",
+      "pos": [26.2, 0, 192.4],
+      "nodes": [
+        {
+          "type": "prefab",
+          "prefab": "car",
+          "pos": [-1.5, 0.01, 0.5],
+          "colours": {
+            "paint": "#60a4a9"
+          },
+          "yaw": 15
+        },
+        {
+          "type": "prefab",
+          "prefab": "car",
+          "pos": [1.5, 0, -0.5],
+          "yaw": -60,
+          "colours": {
+            "paint": "#aab865"
+          }
+        }
+      ],
+      "name": "crash-1",
+      "yaw": -45
+    },
+    {
+      "type": "prefab",
+      "prefab": "crate",
+      "pos": [34.07, 0.05, 144.58]
+    },
+    {
+      "type": "prefab",
+      "prefab": "steel-barrel",
+      "pos": [31.87, 0.01, 147.25]
+    },
+    {
+      "type": "prefab",
+      "prefab": "pine-tree",
+      "pos": [13, 0, 178]
+    },
+    {
+      "type": "prefab",
+      "prefab": "pine-tree",
+      "pos": [11, 0, 194]
+    },
+    {
+      "type": "prefab",
+      "prefab": "crate",
+      "pos": [26.038, 0.01, 161.5]
+    },
+    {
+      "type": "prefab",
+      "prefab": "concrete-bag-pallet-1",
+      "pos": [23.622, 0.01, 170.5],
+      "yaw": -90
+    },
+    {
+      "type": "extraction",
+      "id": "extract",
+      "pos": [83.5, 0.01, 246],
+      "name": "Extraction",
+      "radius": 4
+    },
+    {
+      "type": "prefab",
+      "prefab": "concrete-bag-pallet-1",
+      "pos": [79.05, 0.01, 174.83],
+      "yaw": 90
+    },
+    {
+      "type": "prefab",
+      "prefab": "pallet-variation-1",
+      "pos": [68.825, 0.01, 172]
+    },
+    {
+      "type": "group",
+      "pos": [67.5, 0.01, 159.33],
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [0, 0, 0.17],
+          "size": [2.6, 0.3, 0.8],
+          "colour": "#363636"
+        },
+        {
+          "type": "box",
+          "pos": [0.2, 0.09, -0.38],
+          "size": [0.1, 0.04, 0.3],
+          "colour": "#424242"
+        },
+        {
+          "type": "box",
+          "pos": [-0.2, 0.09, -0.38],
+          "size": [0.1, 0.04, 0.3],
+          "colour": "#424242"
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.09, -0.48],
+          "size": [0.1, 0.04, 0.3],
+          "colour": "#424242",
+          "yaw": -90
+        },
+        {
+          "type": "box",
+          "pos": [-1, 0, 0.178],
+          "size": [0.1, 0.34, 0.864],
+          "colour": "#424242"
+        },
+        {
+          "type": "box",
+          "pos": [-0.6, 0, 0.178],
+          "size": [0.1, 0.34, 0.864],
+          "colour": "#424242"
+        },
+        {
+          "type": "box",
+          "pos": [-0.2, 0, 0.178],
+          "size": [0.1, 0.34, 0.864],
+          "colour": "#424242"
+        },
+        {
+          "type": "box",
+          "pos": [0.2, 0, 0.178],
+          "size": [0.1, 0.34, 0.864],
+          "colour": "#424242"
+        },
+        {
+          "type": "box",
+          "pos": [0.6, 0, 0.178],
+          "size": [0.1, 0.34, 0.864],
+          "colour": "#424242"
+        },
+        {
+          "type": "box",
+          "pos": [1, 0, 0.178],
+          "size": [0.1, 0.34, 0.864],
+          "colour": "#424242"
+        }
+      ],
+      "name": "weapon crate",
+      "loot": {
+        "container": "weapon-crate"
+      }
     }
   ],
   "zones": [],
@@ -3266,6 +4014,10 @@
     "tires": "#303030",
     "truck-red": "#6d3737",
     "white-1": "#dbdbdb",
-    "door-grey": "#9e9e9e"
+    "door-grey": "#9e9e9e",
+    "wood-pallet": "#a88048",
+    "shipping-container-red-dark": "#853232",
+    "shipping-container-blue-dark": "#465386",
+    "shipping-container-orange-dark": "#8f5238"
   }
 }

@@ -281,6 +281,12 @@ export function ModelTab(props: { editor: ItemEditor; state: ItemEditorState; de
           <button onClick={() => addPart('box')}>+ box</button>
           <button onClick={() => addPart('cylinder')}>+ cylinder</button>
           <button onClick={() => addPart('wedge')}>+ wedge</button>
+          <button
+            onClick={() => addPart('slab')}
+            title="A box with rounded corners, seen from above"
+          >
+            + slab
+          </button>
         </div>
         {part && picked?.kind === 'part' && (
           <PartFields
@@ -487,6 +493,9 @@ function buildScene(
   return scene;
 }
 
+/** A slab's corners, in its corners' order. */
+const SLAB_CORNER_NAMES = ['back left', 'back right', 'front right', 'front left'] as const;
+
 function PartFields(props: {
   part: ModelPart;
   gun: WeaponDef | null;
@@ -544,6 +553,29 @@ function PartFields(props: {
             num(label, p.size[j], (q, v) => q.type !== 'cylinder' && (q.size[j] = v), 0.0001),
           )}
         </div>
+      )}
+      {p.type === 'slab' && (
+        <>
+          <p className="ed-note">Corner radii, seen from above (−z is the back):</p>
+          <div className="ed-row">
+            {SLAB_CORNER_NAMES.map((label, j) =>
+              num(label, p.corners[j], (q, v) => q.type === 'slab' && (q.corners[j] = v), 0),
+            )}
+          </div>
+          <div className="ed-row">
+            {num(
+              'steps per corner',
+              p.segments ?? 4,
+              (q, v) => {
+                if (q.type !== 'slab') return;
+                const n = Math.max(1, Math.min(12, Math.round(v)));
+                if (n === 4) delete q.segments;
+                else q.segments = n;
+              },
+              1,
+            )}
+          </div>
+        </>
       )}
       <div className="ed-row">
         {angle('yaw')}

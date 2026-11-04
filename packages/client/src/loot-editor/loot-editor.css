@@ -1,0 +1,322 @@
+/* The loot editor (2026-11-02): the item editor's page, with item rows, sliders and samples. */
+
+.ie-form.le-form {
+  width: auto;
+  flex: 1 1 700px;
+  max-width: 780px;
+}
+
+.le-side {
+  flex: 1 1 360px;
+  min-width: 0;
+}
+
+.le-form h4,
+.le-side h4 {
+  margin: 14px 0 6px;
+  font-size: 12px;
+  font-weight: normal;
+  color: var(--ed-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.le-side .ie-card h4:first-child {
+  margin-top: 0;
+}
+
+.le-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.le-group button {
+  font-size: 11px;
+  padding: 0 6px;
+}
+
+.le-nav {
+  display: flex;
+  gap: 12px;
+}
+
+.le-big {
+  font-size: 22px;
+  margin: 2px 0;
+}
+
+.le-rolls .ed-num input,
+.le-count .ed-num input {
+  width: 52px;
+}
+
+.ie-form .ed-row.le-rolls > span,
+.ie-form .ed-row.ed-mix-row > span {
+  flex: none;
+  min-width: 0;
+}
+
+.le-size .ed-num input {
+  width: 52px;
+}
+
+/* The item rows: a grid, so the columns line up. */
+.le-rows {
+  display: grid;
+  grid-template-columns: 30px minmax(130px, 1fr) 150px 124px 96px 50px 56px 26px;
+  column-gap: 6px;
+  row-gap: 3px;
+  align-items: center;
+}
+
+.le-row {
+  display: contents;
+}
+
+.le-row > * {
+  min-width: 0;
+}
+
+.le-head > span {
+  font-size: 11px;
+  color: var(--ed-dim);
+  padding-bottom: 2px;
+}
+
+.le-dragging > * {
+  opacity: 0.4;
+}
+
+.le-handle {
+  cursor: grab;
+  color: var(--ed-dim);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+}
+
+.le-count {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.le-odds {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.le-bar {
+  flex: 1;
+  height: 6px;
+  background: #2a3038;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.le-bar > span {
+  display: block;
+  height: 100%;
+}
+
+.le-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* An item: its tile and name. */
+.le-chip-wrap {
+  position: relative;
+}
+
+.le-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+}
+
+.le-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.le-swatch {
+  display: inline-block;
+  flex: none;
+  border: 1px solid;
+  border-radius: 2px;
+  box-sizing: border-box;
+}
+
+.le-missing {
+  width: 14px;
+  height: 14px;
+  border-color: #c0583f;
+  background: repeating-linear-gradient(45deg, #c0583f55 0 3px, transparent 3px 6px);
+}
+
+/* The item picker, over the page. */
+.le-add {
+  position: relative;
+}
+
+.le-picker {
+  position: absolute;
+  z-index: 20;
+  top: 100%;
+  left: 0;
+  width: 380px;
+  padding: 8px;
+  background: var(--ed-bg);
+  border: 1px solid var(--ed-line);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.le-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin: 6px 0;
+}
+
+.le-types button {
+  font-size: 11px;
+  padding: 0 5px;
+}
+
+.le-pick-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 340px;
+  overflow: auto;
+}
+
+.le-pick-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.le-pick-list li:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.le-pick-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Sample containers. */
+.le-reroll {
+  float: right;
+  font-size: 11px;
+}
+
+.le-samples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 14px;
+}
+
+.le-sample {
+  margin: 0;
+}
+
+.le-sample-grid {
+  position: relative;
+  background-color: #101318;
+  background-image:
+    linear-gradient(#2a3038 1px, transparent 1px),
+    linear-gradient(90deg, #2a3038 1px, transparent 1px);
+  background-size: 30px 30px;
+  border: 1px solid #2a3038;
+}
+
+.le-tile {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px solid;
+  font-size: 9px;
+  line-height: 1.1;
+  padding: 2px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  color: #e8e8e8;
+}
+
+.le-count-badge {
+  position: absolute;
+  right: 2px;
+  bottom: 1px;
+  font-size: 9px;
+  font-weight: bold;
+}
+
+/* A grid's size, picked by pointing. */
+.le-sizer-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.le-sizer {
+  display: grid;
+  gap: 2px;
+}
+
+.le-sizer span {
+  width: 18px;
+  height: 18px;
+  background: #22272e;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.le-sizer span.le-on {
+  background: #4a5361;
+}
+
+.le-sizer span.le-hover {
+  background: #d08a2e;
+}
+
+.le-use a,
+.le-link {
+  color: inherit;
+}
+
+.le-link {
+  background: none;
+  border: none;
+  padding: 0;
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+}
+
+.ie-form .le-size .ed-num {
+  flex: none;
+}
+
+.le-form .ed-mix .ed-weight input[type='range'] {
+  width: 120px;
+}
+
+.le-form .ed-mix-row select {
+  max-width: 180px;
+}
