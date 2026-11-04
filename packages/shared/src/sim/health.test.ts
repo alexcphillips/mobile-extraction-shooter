@@ -152,10 +152,19 @@ describe('armour', () => {
     expect(c.health.bleeding[CHEST]).toBe(false);
   });
 
-  it('lets all of a round above its level through, and still wears', () => {
+  it('lets 75% of a round one level above through, and still wears', () => {
     const { state, c } = setup();
     wearArmour(c, TEST_ITEMS, 'vest');
     shootCharacter(state, TEST_ITEMS, c, CHEST, ammoDef(TEST_ITEMS, 'ap-round'), 0);
+    expect(c.health.hp[CHEST]).toBe(85 - 30 * 0.75);
+    expect(c.gear.bodyArmour?.durability).toBe(50 - 15);
+  });
+
+  it('lets all of a round two levels above through, and still wears', () => {
+    const { state, c } = setup();
+    wearArmour(c, TEST_ITEMS, 'vest');
+    const round = ammoDef(TEST_ITEMS, 'ap-round');
+    shootCharacter(state, TEST_ITEMS, c, CHEST, { ...round, level: round.level + 1 }, 0);
     expect(c.health.hp[CHEST]).toBe(85 - 30);
     expect(c.gear.bodyArmour?.durability).toBe(50 - 15);
   });
@@ -163,7 +172,8 @@ describe('armour', () => {
   it('compares levels as Delta Force does', () => {
     expect(throughArmour(1, 2)).toBe(0);
     expect(throughArmour(4, 4)).toBe(0.5);
-    expect(throughArmour(5, 4)).toBe(1);
+    expect(throughArmour(5, 4)).toBe(0.75);
+    expect(throughArmour(6, 4)).toBe(1);
     expect(armourWear(6, 1)).toBe(1);
     expect(armourWear(1, 6)).toBe(ARMOUR.wear[ARMOUR.wear.length - 1]);
   });

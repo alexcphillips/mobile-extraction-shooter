@@ -5,7 +5,7 @@
   "type": "ammo",
   "size": [1, 1],
   "value": 400,
-  "rarity": "epic",
+  "rarity": "legendary",
   "stack": 60,
   "calibre": "7.62x39",
   "level": 5,

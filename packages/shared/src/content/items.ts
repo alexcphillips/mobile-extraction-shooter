@@ -43,7 +43,8 @@ const burning = {
  * 8: every item gained a rarity.
  * 9: ammo gained a calibre and a level; armour a level in place of absorb; the knife a
  *    level and armour damage (Delta Force-style tiers, design.md → Damage). Grenades came
- *    in at 9 too: a new type changes no existing file, so it needed no new version.
+ *    in at 9 too: a new type changes no existing file, so it needed no new version. The
+ *    uncommon and mythic rarities came in at 9 for the same reason.
  */
 export const ITEM_FORMAT_VERSION = 9;
 
@@ -56,9 +57,9 @@ const levelSchema = z.int().min(1).max(LEVELS);
 
 /**
  * How rare an item is, which colours its tile (design.md → Item tiles), lowest first:
- * gray, blue, purple, gold.
+ * gray, green, blue, purple, gold, red.
  */
-export const RARITIES = ['common', 'rare', 'epic', 'legendary'] as const;
+export const RARITIES = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'] as const;
 export type Rarity = (typeof RARITIES)[number];
 
 /**

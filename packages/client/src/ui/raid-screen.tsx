@@ -813,12 +813,14 @@ function quickLabel(ref: ItemRef, to: Owner): string {
 }
 
 /** A colour per item type, until the item editor gives items their own icons. */
-/** Gray, blue, purple and gold (design.md → Item tiles). */
+/** Gray, green, blue, purple, gold and red (design.md → Item tiles). */
 const RARITY_COLOURS: Record<Rarity, string> = {
   common: '#6f767d',
+  uncommon: '#5c9a4a',
   rare: '#3d6fb0',
   epic: '#7d4fb3',
   legendary: '#c0962e',
+  mythic: '#b8423a',
 };
 
 /** An item's colour, by its rarity. */

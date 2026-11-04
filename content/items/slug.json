@@ -5,7 +5,7 @@
   "type": "ammo",
   "size": [1, 1],
   "value": 200,
-  "rarity": "rare",
+  "rarity": "epic",
   "stack": 30,
   "calibre": "12g",
   "level": 4,

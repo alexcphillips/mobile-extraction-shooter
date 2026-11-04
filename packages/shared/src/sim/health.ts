@@ -48,8 +48,8 @@ export const HEALTH = {
  * own, and wears by the round's armour damage. Broken armour does nothing.
  */
 export const ARMOUR = {
-  /** Damage let through by a round below the armour's level, level with it, and above it. */
-  through: { below: 0, level: 0.5, above: 1 },
+  /** Damage let through by a round below the armour's level, level with it, one above, and more. */
+  through: { below: 0, level: 0.5, oneAbove: 0.75, above: 1 },
   /**
    * Armour damage multiplier by how many levels the armour is above the round: the first
    * at or below it, the last for that many or more.
@@ -60,7 +60,8 @@ export const ARMOUR = {
 /** The share of a hit's damage armour with durability left lets through. */
 export function throughArmour(roundLevel: number, armourLevel: number): number {
   const t = ARMOUR.through;
-  return roundLevel < armourLevel ? t.below : roundLevel === armourLevel ? t.level : t.above;
+  const over = roundLevel - armourLevel;
+  return over < 0 ? t.below : over === 0 ? t.level : over === 1 ? t.oneAbove : t.above;
 }
 
 /** The armour damage multiplier for a round against armour, by their levels. */

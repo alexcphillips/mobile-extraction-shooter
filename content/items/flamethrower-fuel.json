@@ -5,7 +5,7 @@
   "type": "ammo",
   "size": [1, 1],
   "value": 15,
-  "rarity": "rare",
+  "rarity": "common",
   "stack": 100,
   "calibre": "fuel",
   "level": 1,
