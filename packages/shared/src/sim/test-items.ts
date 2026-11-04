@@ -35,7 +35,7 @@ const defs = [
     slots: ['optic', 'muzzle', 'magazine'],
     hipSpread: 0,
     aimSpread: 0,
-    recoil: { up: 1, side: 0, recovery: 10 },
+    recoil: { up: 1, side: 0, snap: 40, recovery: 10 },
   },
   {
     formatVersion: ITEM_FORMAT_VERSION,
@@ -57,7 +57,7 @@ const defs = [
     slots: ['muzzle'],
     hipSpread: 0,
     aimSpread: 0,
-    recoil: { up: 0, side: 0, recovery: 10 },
+    recoil: { up: 0, side: 0, snap: 40, recovery: 10 },
   },
   {
     formatVersion: ITEM_FORMAT_VERSION,
@@ -77,7 +77,7 @@ const defs = [
     loudness: 150,
     hipSpread: 0,
     aimSpread: 0,
-    recoil: { up: 2, side: 0, recovery: 10 },
+    recoil: { up: 2, side: 0, snap: 40, recovery: 10 },
   },
   {
     formatVersion: ITEM_FORMAT_VERSION,
@@ -277,7 +277,7 @@ const defs = [
     loudness: 120,
     hipSpread: 0,
     aimSpread: 0,
-    recoil: { up: 6, side: 0, recovery: 10 },
+    recoil: { up: 6, side: 0, snap: 40, recovery: 10 },
   },
   {
     ...common('inc-round', [1, 1]),
@@ -329,7 +329,7 @@ const defs = [
     loudness: 60,
     hipSpread: 0,
     aimSpread: 0,
-    recoil: { up: 0, side: 0, recovery: 10 },
+    recoil: { up: 0, side: 0, snap: 40, recovery: 10 },
   },
   { ...common('key', [1, 1]), type: 'key' },
   { ...common('worn-key', [1, 1]), type: 'key', uses: 2 },

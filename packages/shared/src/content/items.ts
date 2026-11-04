@@ -45,8 +45,10 @@ const burning = {
  *    level and armour damage (Delta Force-style tiers, design.md → Damage). Grenades came
  *    in at 9 too: a new type changes no existing file, so it needed no new version. The
  *    uncommon and mythic rarities came in at 9 for the same reason.
+ * 10 (2026-11-04): gun recoil gained a snap, and its recovery became a rate (per second)
+ *    rather than degrees per second (sim/recoil.ts).
  */
-export const ITEM_FORMAT_VERSION = 9;
+export const ITEM_FORMAT_VERSION = 10;
 
 /**
  * Ammo and armour levels (Delta Force's tiers), 1 to LEVELS: grey, green, blue, purple,
@@ -146,11 +148,16 @@ const weaponSchema = z
     hipSpread: nonNegative,
     aimSpread: nonNegative,
     recoil: z.strictObject({
-      /** View kick upwards per shot. */
+      /** Kick upwards per round. */
       up: nonNegative,
-      /** Random kick sideways per shot, up to this much either way. */
+      /** Random kick sideways per round, up to this much either way. */
       side: nonNegative,
-      /** How fast the view settles back, in degrees per second. */
+      /**
+       * How fast the gun reaches each kick: its spring's frequency, per second. Higher is
+       * snappier; around 40 lands a kick in about a tenth of a second.
+       */
+      snap: positive,
+      /** How fast the kick wears off, per second: after 1/recovery s, about a third is left. */
       recovery: positive,
     }),
     /**
@@ -299,6 +306,11 @@ const modsSchema = z.strictObject({
   spread: positive.optional(),
   /** Kick up and sideways. */
   recoil: positive.optional(),
+  /** Kick up only, and sideways only, on top of recoil. */
+  recoilUp: positive.optional(),
+  recoilSide: positive.optional(),
+  /** Handling: multiplies how fast recoil wears off (above 1 recovers faster). */
+  ergonomics: positive.optional(),
   aimTime: positive.optional(),
   reloadTime: positive.optional(),
   loudness: positive.optional(),
@@ -611,6 +623,15 @@ export const ITEM_FORMAT: ContentFormat<ItemDef> = {
         default:
           return doc;
       }
+    },
+    // Recoil springs: a middling snap, and recovery from degrees a second to a rate, guessed.
+    9: (doc) => {
+      if (doc.type !== 'weapon') return doc;
+      const recoil = doc.recoil as { recovery: number };
+      return {
+        ...doc,
+        recoil: { ...recoil, snap: 40, recovery: Math.max(1, recoil.recovery / 3) },
+      };
     },
   },
 };

@@ -1,5 +1,5 @@
 {
-  "formatVersion": 9,
+  "formatVersion": 10,
   "id": "assault-rifle",
   "name": "AKM",
   "type": "weapon",
@@ -22,7 +22,8 @@
   "recoil": {
     "up": 1.8,
     "side": 0.7,
-    "recovery": 11
+    "snap": 40,
+    "recovery": 3
   },
   "sounds": {
     "shot": "rifle-shot",

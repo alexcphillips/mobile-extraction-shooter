@@ -55,7 +55,7 @@ const gun = m({
   slots: ['optic', 'magazine'],
   hipSpread: 3,
   aimSpread: 0.5,
-  recoil: { up: 0.8, side: 0.3, recovery: 12 },
+  recoil: { up: 0.8, side: 0.3, snap: 40, recovery: 12 },
 });
 
 const dot = { type: 'dot', x: 0, y: 0, r: 1 };

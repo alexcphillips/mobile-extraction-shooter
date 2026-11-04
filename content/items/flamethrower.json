@@ -1,5 +1,5 @@
 {
-  "formatVersion": 9,
+  "formatVersion": 10,
   "id": "flamethrower",
   "name": "Flamethrower",
   "type": "weapon",
@@ -21,7 +21,8 @@
   "recoil": {
     "up": 0.3,
     "side": 0.4,
-    "recovery": 2.5
+    "snap": 20,
+    "recovery": 2
   },
   "sounds": {
     "shot": "flamethrower-shot",

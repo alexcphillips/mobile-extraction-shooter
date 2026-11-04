@@ -280,7 +280,22 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
           <Row>
             <N {...b} path={['recoil', 'up']} label="kick up" min={0} />
             <N {...b} path={['recoil', 'side']} label="kick sideways" min={0} />
-            <N {...b} path={['recoil', 'recovery']} label="settles (°/s)" min={0} />
+          </Row>
+          <Row>
+            <N
+              {...b}
+              path={['recoil', 'snap']}
+              label="snap (/s)"
+              min={0}
+              hint="How fast each kick lands: higher is snappier (about 40)"
+            />
+            <N
+              {...b}
+              path={['recoil', 'recovery']}
+              label="recovers (/s)"
+              min={0}
+              hint="How fast the kick wears off: higher settles sooner (about 3)"
+            />
           </Row>
           <h4>attachment slots</h4>
           <Row>
@@ -667,9 +682,14 @@ const MED_NOTES: Record<(typeof MED_EFFECTS)[number], string> = {
   heal: "Restores HP to limbs that aren't broken, from its pool.",
 };
 
+// The first RECOIL_MODS share a row.
+const RECOIL_MODS = 4;
 const MODS: [key: string, label: string, hint: string][] = [
-  ['spread', 'spread ×', 'Hip and aimed spread'],
   ['recoil', 'recoil ×', 'Kick up and sideways'],
+  ['recoilUp', 'kick up ×', 'On top of recoil ×'],
+  ['recoilSide', 'kick sideways ×', 'On top of recoil ×'],
+  ['ergonomics', 'ergonomics ×', 'Above 1 recovers from recoil faster'],
+  ['spread', 'spread ×', 'Hip and aimed spread'],
   ['aimTime', 'aim time ×', ''],
   ['reloadTime', 'reload ×', ''],
   ['loudness', 'loudness ×', 'Below 1 is quieter'],
@@ -724,12 +744,12 @@ function AttachmentFields(
       </Row>
       <h4>changes to the gun (blank: none)</h4>
       <Row>
-        {MODS.slice(0, 3).map(([k, label, hint]) => (
+        {MODS.slice(0, RECOIL_MODS).map(([k, label, hint]) => (
           <N key={k} {...b} path={['mods', k]} label={label} min={0} hint={hint} />
         ))}
       </Row>
       <Row>
-        {MODS.slice(3).map(([k, label, hint]) => (
+        {MODS.slice(RECOIL_MODS).map(([k, label, hint]) => (
           <N key={k} {...b} path={['mods', k]} label={label} min={0} hint={hint} />
         ))}
         <N {...b} path={['mods', 'magazine']} label="extra rounds" min={1} />
@@ -940,7 +960,9 @@ function gunChanges(g: WeaponDef, a: AttachmentDef): string[] {
   };
   if (m.magazine) out.push(`magazine ${g.magazine} → ${g.magazine + m.magazine}`);
   show('aimed spread', g.aimSpread, m.spread, '°');
-  show('kick', g.recoil.up, m.recoil, '°');
+  show('kick up', g.recoil.up, (m.recoil ?? 1) * (m.recoilUp ?? 1), '°');
+  show('kick sideways', g.recoil.side, (m.recoil ?? 1) * (m.recoilSide ?? 1), '°');
+  show('recovery', g.recoil.recovery, m.ergonomics, '/s');
   show('aim', g.aimTime, m.aimTime, ' s');
   show('reload', g.reloadTime, m.reloadTime, ' s');
   show('heard to', g.loudness, m.loudness, ' m');

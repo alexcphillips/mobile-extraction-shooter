@@ -1,5 +1,5 @@
 {
-  "formatVersion": 9,
+  "formatVersion": 10,
   "id": "crossbow",
   "name": "Crossbow",
   "type": "weapon",
@@ -19,7 +19,7 @@
   "slots": ["optic"],
   "hipSpread": 1.5,
   "aimSpread": 0.2,
-  "recoil": { "up": 0.9, "side": 0.3, "recovery": 8 },
+  "recoil": { "up": 0.9, "side": 0.3, "snap": 30, "recovery": 4 },
   "sounds": { "shot": "crossbow-shot", "suppressed": "crossbow-shot", "reload": "crossbow-reload" },
   "model": {
     "parts": [

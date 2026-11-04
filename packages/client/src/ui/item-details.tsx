@@ -253,6 +253,9 @@ function modRows(mods: AttachmentMods): Row[] {
   if (mods.magazine) out.push(['Magazine', `+${mods.magazine} rounds`]);
   if (mods.spread) out.push(['Spread', change(mods.spread)]);
   if (mods.recoil) out.push(['Recoil', change(mods.recoil)]);
+  if (mods.recoilUp) out.push(['Vertical recoil', change(mods.recoilUp)]);
+  if (mods.recoilSide) out.push(['Horizontal recoil', change(mods.recoilSide)]);
+  if (mods.ergonomics) out.push(['Ergonomics', change(mods.ergonomics)]);
   if (mods.aimTime) out.push(['Aim time', change(mods.aimTime)]);
   if (mods.reloadTime) out.push(['Reload time', change(mods.reloadTime)]);
   if (mods.loudness) out.push(['Loudness', change(mods.loudness)]);
@@ -309,7 +312,10 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
         ],
         ['Reload', seconds(s.reloadTime)],
         ['Aim time', seconds(s.aimTime)],
-        ['Recoil', `${+s.recoilUp.toFixed(2)}° up · ${+s.recoilSide.toFixed(2)}° side`],
+        [
+          'Recoil',
+          `${+s.recoilUp.toFixed(2)}° up · ${+s.recoilSide.toFixed(2)}° side · recovers ${+s.recoilRecovery.toFixed(2)}/s`,
+        ],
         ['Spread', `${+s.hipSpread.toFixed(2)}° hip · ${+s.aimSpread.toFixed(2)}° aimed`],
         def.launchSpeed
           ? ['Launch speed', `${def.launchSpeed} m/s${impact(def.armDistance)}`]

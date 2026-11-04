@@ -1,5 +1,5 @@
 {
-  "formatVersion": 9,
+  "formatVersion": 10,
   "id": "suppressor",
   "name": "Suppressor",
   "type": "attachment",
@@ -9,7 +9,8 @@
   "slot": "muzzle",
   "mods": {
     "loudness": 0.3,
-    "recoil": 0.9
+    "recoil": 0.9,
+    "ergonomics": 0.9
   },
   "model": {
     "parts": [

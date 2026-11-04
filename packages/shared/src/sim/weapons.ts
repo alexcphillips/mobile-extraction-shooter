@@ -32,6 +32,7 @@ import { ignite, launchFlame } from './fire';
 import { launchGrenade } from './grenades';
 import { GLASS, breakGlass, glassHit } from './glass';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
+import { RECOIL, kickRecoil, settleRecoil } from './recoil';
 import {
   entityById,
   eyeHeight,
@@ -45,12 +46,8 @@ import {
 
 const DT = TICK_SECONDS;
 const DEG = Math.PI / 180;
-/** Recoil never pushes the view up further than this, in radians. */
-const MAX_RECOIL = 20 * DEG;
-/** How fast recoil settles with no gun in hand (switched to the knife mid-burst), in radians per second. */
-const UNARMED_RECOVERY = 15 * DEG;
-/** How much of recoil moves the sights rather than the view, fully aimed. */
-export const AIMED_GUN_RECOIL = 0.4;
+/** How much of recoil moves the sights rather than the view, fully aimed (2026-11-04: 70%). */
+export const AIMED_GUN_RECOIL = 0.7;
 /** How far a gun sways standing still, aimed, in radians. */
 const SWAY_YAW = 0.35 * DEG;
 const SWAY_PITCH = 0.25 * DEG;
@@ -101,6 +98,9 @@ export interface WeaponStats {
   aimSpread: number;
   recoilUp: number;
   recoilSide: number;
+  recoilSnap: number;
+  /** The gun's recoil recovery with attachments' ergonomics. */
+  recoilRecovery: number;
   loudness: number;
 }
 
@@ -113,6 +113,8 @@ export function createWeaponStats(): WeaponStats {
     aimSpread: 0,
     recoilUp: 0,
     recoilSide: 0,
+    recoilSnap: 0,
+    recoilRecovery: 0,
     loudness: 0,
   };
 }
@@ -127,6 +129,8 @@ export function weaponStats(items: ItemDb, w: WeaponState, out: WeaponStats): We
   out.aimSpread = def.aimSpread;
   out.recoilUp = def.recoil.up;
   out.recoilSide = def.recoil.side;
+  out.recoilSnap = def.recoil.snap;
+  out.recoilRecovery = def.recoil.recovery;
   out.loudness = def.loudness;
   for (const slot of ATTACHMENT_SLOTS) {
     const id = w.attachments[slot];
@@ -137,8 +141,9 @@ export function weaponStats(items: ItemDb, w: WeaponState, out: WeaponStats): We
     out.aimTime *= m.aimTime ?? 1;
     out.hipSpread *= m.spread ?? 1;
     out.aimSpread *= m.spread ?? 1;
-    out.recoilUp *= m.recoil ?? 1;
-    out.recoilSide *= m.recoil ?? 1;
+    out.recoilUp *= (m.recoil ?? 1) * (m.recoilUp ?? 1);
+    out.recoilSide *= (m.recoil ?? 1) * (m.recoilSide ?? 1);
+    out.recoilRecovery *= m.ergonomics ?? 1;
     out.loudness *= m.loudness ?? 1;
   }
   return out;
@@ -322,8 +327,8 @@ function updateSway(state: SimState, c: Character, aimTime: number): void {
 }
 
 /**
- * One tick of a character's gun: aiming in and out, recoil settling, reloading and
- * firing. Firing is blocked on a ladder, while drawing, reloading and putting yourself out
+ * One tick of a character's gun: aiming in and out, reloading, firing and recoil settling
+ * (after firing, so an enemy's pull against its recoil, set last tick, is exact). Firing is blocked on a ladder, while drawing, reloading and putting yourself out
  * (which blocks aiming and reloading too); pulling the trigger on an empty gun starts a
  * reload. Using a med keeps the gun lowered.
  */
@@ -338,8 +343,7 @@ export function updateWeapon(
   if (!w) {
     c.aim = 0;
     updateSway(state, c, UNARMED_AIM_TIME);
-    c.recoilPitch = towardZero(c.recoilPitch, UNARMED_RECOVERY * DT);
-    c.recoilYaw = towardZero(c.recoilYaw, UNARMED_RECOVERY * DT);
+    settleRecoil(c, RECOIL.unarmedSnap, RECOIL.unarmedRecovery, false);
     return;
   }
   const def = weaponDef(items, w.item);
@@ -352,10 +356,6 @@ export function updateWeapon(
   const aiming = !!input?.aim && free && !c.using;
   c.aim = Math.max(0, Math.min(1, c.aim + (aiming ? aimStep : -aimStep)));
   updateSway(state, c, s.aimTime);
-
-  const settle = def.recoil.recovery * DEG * DT;
-  c.recoilPitch = towardZero(c.recoilPitch, settle);
-  c.recoilYaw = towardZero(c.recoilYaw, settle);
 
   if (w.reloading > 0) {
     w.reloading -= DT;
@@ -381,6 +381,7 @@ export function updateWeapon(
   }
   // While the trigger is held a little overshoot carries over, so the rate stays exact.
   w.cooldown = Math.max(w.cooldown - DT, trigger ? -DT : 0);
+  settleRecoil(c, s.recoilSnap, s.recoilRecovery, trigger);
 }
 
 /** Firing and reloading take no rounds: the infinite ammo cheat, or an admin spawner gun. */
@@ -438,10 +439,6 @@ function finishReload(
     const rounds = cameOffGun(c, { item: old, count: out });
     if (stow(c, items, rounds) > 0) dropItem(state, c, rounds, world);
   }
-}
-
-function towardZero(v: number, step: number): number {
-  return v > 0 ? Math.max(0, v - step) : Math.min(0, v + step);
 }
 
 /** How far short of where an admin spawner's shot stopped its enemy spawns, in metres. */
@@ -522,8 +519,7 @@ function fire(
     }
   }
 
-  c.recoilPitch = Math.min(MAX_RECOIL, c.recoilPitch + s.recoilUp * DEG);
-  c.recoilYaw += s.recoilSide * DEG * (nextFloat(state.rng) * 2 - 1);
+  kickRecoil(state, c, s.recoilUp, s.recoilSide);
 }
 
 /** One bullet or pellet from the shooter's eye along yaw and pitch: hits and its event. */

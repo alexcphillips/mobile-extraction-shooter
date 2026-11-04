@@ -1366,6 +1366,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const roll = -lerp(prev.lean, cur.lean) * MOVEMENT.leanAngle * LEAN_ROLL;
     const aim = lerp(prev.aim, cur.aim);
     // Aimed, part of recoil climbs the sights instead of the view; sway is all the gun's.
+    // The view's share is eased between ticks, so it stays smooth; the sights' isn't (below).
     const rp = lerp(prev.rp, cur.rp);
     const ry = lerp(prev.ry, cur.ry);
     const onView = 1 - AIMED_GUN_RECOIL * aim;
@@ -1388,8 +1389,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     el.optic.set(optic);
     el.optic.visible = alive && aim >= (zoom > 1 ? SCOPE_IN : RETICLE_IN);
     // Where the gun points, from the camera: the sim's aim, so the reticle is where shots go.
-    const aimYaw = yaw + ry + lerp(prev.sy, cur.sy);
-    const aimPitch = pitch + rp + lerp(prev.sp, cur.sp);
+    // Recoil here is the last tick's, not eased between ticks: the next round fires with it,
+    // and in a burst it moves too far in a tick for the eased value to stay true (2026-11-04).
+    const aimYaw = yaw + cur.ry + lerp(prev.sy, cur.sy);
+    const aimPitch = pitch + cur.rp + lerp(prev.sp, cur.sp);
     const aimCos = Math.cos(aimPitch);
     gunPoint
       .set(-Math.sin(aimYaw) * aimCos, Math.sin(aimPitch), -Math.cos(aimYaw) * aimCos)

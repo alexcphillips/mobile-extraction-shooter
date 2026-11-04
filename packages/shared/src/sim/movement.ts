@@ -153,11 +153,11 @@ export function moveCharacter(
 }
 
 /** Crouched or prone: lower than standing. */
-function isCrouched(c: Character): boolean {
+export function isCrouched(c: Character): boolean {
   return c.height < MOVEMENT.standHeight - 1e-6;
 }
 
-function isProne(c: Character): boolean {
+export function isProne(c: Character): boolean {
   return c.height < MOVEMENT.crouchHeight - 1e-6;
 }
 

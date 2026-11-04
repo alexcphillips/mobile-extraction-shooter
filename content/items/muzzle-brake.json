@@ -1,5 +1,5 @@
 {
-  "formatVersion": 9,
+  "formatVersion": 10,
   "id": "muzzle-brake",
   "name": "Muzzle brake",
   "type": "attachment",
@@ -8,7 +8,8 @@
   "rarity": "rare",
   "slot": "muzzle",
   "mods": {
-    "recoil": 0.7,
+    "recoilUp": 0.7,
+    "recoilSide": 0.8,
     "loudness": 1.2
   },
   "model": {

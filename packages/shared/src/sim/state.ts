@@ -13,6 +13,7 @@ import type { MedRef, MedUse } from './meds';
 import type { SwingEvent } from './melee';
 import { MOVEMENT } from './movement';
 import type { InvestigateEvent, LeaveEvent, LeftRaid, RaidState } from './raid';
+import type { RecoilState } from './recoil';
 import type { ShotEvent } from './weapons';
 
 export type EntityId = number;
@@ -102,9 +103,14 @@ export interface Character {
   using: MedUse | null;
   /** Seconds it has stood in an extraction point; 0 when not in one. */
   extracting: number;
-  /** Recoil's kick to the view in radians, added to yaw and pitch; it settles back to 0. */
+  /**
+   * Recoil's push on where the gun points, in radians, added to yaw and pitch; it settles
+   * back to 0. The frame draws part of it on the view and the rest on the gun.
+   */
   recoilPitch: number;
   recoilYaw: number;
+  /** The spring behind recoilPitch and recoilYaw (recoil.ts). Missing until its first shot. */
+  recoil?: RecoilState;
   /**
    * Where a player's gun points off the view, in radians, added to yaw and pitch with recoil
    * (2026-11-04): idle sway plus lag behind turning, and only as far as it's aimed, so the

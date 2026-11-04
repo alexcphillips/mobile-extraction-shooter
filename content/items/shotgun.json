@@ -1,5 +1,5 @@
 {
-  "formatVersion": 9,
+  "formatVersion": 10,
   "id": "shotgun",
   "name": "Pump shotgun",
   "type": "weapon",
@@ -19,7 +19,7 @@
   "slots": ["optic"],
   "hipSpread": 1.5,
   "aimSpread": 0.4,
-  "recoil": { "up": 6, "side": 1.8, "recovery": 9 },
+  "recoil": { "up": 6, "side": 1.8, "snap": 35, "recovery": 4 },
   "sounds": {
     "shot": "shotgun-shot",
     "suppressed": "rifle-shot-suppressed",

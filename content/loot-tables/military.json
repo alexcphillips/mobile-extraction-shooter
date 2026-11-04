@@ -43,6 +43,7 @@
     { "item": "scope-4x", "weight": 0.5 },
     { "item": "suppressor", "weight": 1 },
     { "item": "muzzle-brake", "weight": 1 },
+    { "item": "compensator", "weight": 1 },
     { "item": "riot-helmet", "weight": 1 },
     { "item": "steel-helmet", "weight": 1 },
     { "item": "combat-helmet", "weight": 0.4 },

@@ -6,6 +6,7 @@
   "items": [
     { "item": "scope-4x", "weight": 0.3 },
     { "item": "muzzle-brake", "weight": 0.6 },
+    { "item": "compensator", "weight": 0.6 },
     { "item": "red-dot", "weight": 0.6 },
     { "item": "suppressor", "weight": 0.4 },
     { "item": "mag-762x39-45", "weight": 0.5 },

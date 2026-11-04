@@ -1,5 +1,5 @@
 {
-  "formatVersion": 9,
+  "formatVersion": 10,
   "id": "sniper-rifle",
   "name": "Sniper rifle",
   "type": "weapon",
@@ -19,7 +19,7 @@
   "slots": ["optic", "muzzle"],
   "hipSpread": 6,
   "aimSpread": 0.05,
-  "recoil": { "up": 5, "side": 1, "recovery": 8 },
+  "recoil": { "up": 5, "side": 1, "snap": 30, "recovery": 3 },
   "sounds": {
     "shot": "sniper-shot",
     "suppressed": "rifle-shot-suppressed",

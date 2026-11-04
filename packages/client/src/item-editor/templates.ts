@@ -59,7 +59,7 @@ function blankStats(type: ItemType, id: string, name: string, ammo: string) {
         slots: ['optic', 'muzzle', 'magazine'],
         hipSpread: 3,
         aimSpread: 0.5,
-        recoil: { up: 1, side: 0.4, recovery: 14 },
+        recoil: { up: 1, side: 0.4, snap: 40, recovery: 4 },
       };
     case 'ammo':
       return {

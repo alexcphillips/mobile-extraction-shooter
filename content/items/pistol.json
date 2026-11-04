@@ -1,5 +1,5 @@
 {
-  "formatVersion": 9,
+  "formatVersion": 10,
   "id": "pistol",
   "name": "Pistol",
   "type": "weapon",
@@ -22,7 +22,8 @@
   "recoil": {
     "up": 2.4,
     "side": 0.9,
-    "recovery": 10
+    "snap": 45,
+    "recovery": 6
   },
   "sounds": {
     "shot": "pistol-shot",

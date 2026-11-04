@@ -1,5 +1,5 @@
 {
-  "formatVersion": 9,
+  "formatVersion": 10,
   "id": "grenade-launcher",
   "name": "RG-6 grenade launcher",
   "type": "weapon",
@@ -23,7 +23,8 @@
   "recoil": {
     "up": 8,
     "side": 2,
-    "recovery": 8
+    "snap": 25,
+    "recovery": 3
   },
   "sounds": {
     "shot": "launcher-shot",
