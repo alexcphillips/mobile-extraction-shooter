@@ -19,9 +19,9 @@
   "hipSpread": 3,
   "aimSpread": 1.5,
   "recoil": {
-    "up": 0.1,
-    "side": 0.15,
-    "recovery": 20
+    "up": 0.3,
+    "side": 0.4,
+    "recovery": 2.5
   },
   "sounds": {
     "shot": "flamethrower-shot",

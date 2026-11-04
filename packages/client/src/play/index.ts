@@ -17,6 +17,7 @@ import {
   createState,
   equipLoadout,
   MOVEMENT,
+  AIMED_GUN_RECOIL,
   eyeHeight,
   eyeX,
   eyeZ,
@@ -557,6 +558,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     aim: 0,
     rp: 0,
     ry: 0,
+    sp: 0,
+    sy: 0,
     drawn: 1,
     yaw: 0,
     pitch: 0,
@@ -610,8 +613,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     if (w) range = weaponDef(items, w.item).range;
     else if (knife && knifeOut()) range = meleeDef(items, knife.item).reach;
     else return false;
-    const yaw = controls.yaw + player.recoilYaw;
-    const pitch = controls.pitch + player.recoilPitch;
+    const yaw = controls.yaw + player.recoilYaw + (player.swayYaw ?? 0);
+    const pitch = controls.pitch + player.recoilPitch + (player.swayPitch ?? 0);
     const cp = Math.cos(pitch);
     const dx = -Math.sin(yaw) * cp;
     const dy = Math.sin(pitch);
@@ -632,6 +635,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
 
   const debugRng = createRng(1);
   const muzzle = new THREE.Vector3();
+  const gunPoint = new THREE.Vector3();
+  const viewInverse = new THREE.Quaternion();
 
   // Debug: where the sim will fire (cyan: its eye, look and recoil, without spread, to the
   // first surface) and where the player's last shots landed (magenta). Drawn over
@@ -901,6 +906,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     cur.aim = v.aim;
     cur.rp = v.recoilPitch;
     cur.ry = v.recoilYaw;
+    cur.sp = v.swayPitch ?? 0;
+    cur.sy = v.swayYaw ?? 0;
     const total = drawTime(items, v.gear, v.gear.hand);
     cur.drawn = total > 0 ? 1 - v.draw / total : 1;
     cur.yaw = v.yaw;
@@ -1077,6 +1084,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     prev.aim = cur.aim;
     prev.rp = cur.rp;
     prev.ry = cur.ry;
+    prev.sp = cur.sp;
+    prev.sy = cur.sy;
     prev.drawn = cur.drawn;
     prev.yaw = cur.yaw;
     prev.pitch = cur.pitch;
@@ -1355,8 +1364,12 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     }
     // Leaning tilts the view a third as far as the body (about 10°), towards the lean.
     const roll = -lerp(prev.lean, cur.lean) * MOVEMENT.leanAngle * LEAN_ROLL;
-    camera.rotation.set(pitch + lerp(prev.rp, cur.rp), yaw + lerp(prev.ry, cur.ry), roll);
     const aim = lerp(prev.aim, cur.aim);
+    // Aimed, part of recoil climbs the sights instead of the view; sway is all the gun's.
+    const rp = lerp(prev.rp, cur.rp);
+    const ry = lerp(prev.ry, cur.ry);
+    const onView = 1 - AIMED_GUN_RECOIL * aim;
+    camera.rotation.set(pitch + rp * onView, yaw + ry * onView, roll);
     const w = heldWeapon(v);
     const optic = w?.attachments.optic
       ? (attachmentDef(items, w.attachments.optic).optic ?? null)
@@ -1374,6 +1387,17 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const alive = !v.health.dead;
     el.optic.set(optic);
     el.optic.visible = alive && aim >= (zoom > 1 ? SCOPE_IN : RETICLE_IN);
+    // Where the gun points, from the camera: the sim's aim, so the reticle is where shots go.
+    const aimYaw = yaw + ry + lerp(prev.sy, cur.sy);
+    const aimPitch = pitch + rp + lerp(prev.sp, cur.sp);
+    const aimCos = Math.cos(aimPitch);
+    gunPoint
+      .set(-Math.sin(aimYaw) * aimCos, Math.sin(aimPitch), -Math.cos(aimYaw) * aimCos)
+      .applyQuaternion(viewInverse.copy(camera.quaternion).invert());
+    const pointYaw = Math.atan2(-gunPoint.x, -gunPoint.z);
+    const pointPitch = Math.asin(gunPoint.y);
+    const perHalfHeight = 50 / (-gunPoint.z * Math.tan((fov / 2) * DEG));
+    el.optic.aimAt(gunPoint.x * perHalfHeight, -gunPoint.y * perHalfHeight);
     camera.updateMatrixWorld();
     viewProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     frustum.setFromProjectionMatrix(viewProjection);
@@ -1389,8 +1413,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     updateSearchedLooks(mapView, sim.loot);
     updateGlass(mapView, sim.glass);
     if (aimMarker) {
-      const yaw = player.yaw + player.recoilYaw;
-      const pitch = player.pitch + player.recoilPitch;
+      const yaw = player.yaw + player.recoilYaw + (player.swayYaw ?? 0);
+      const pitch = player.pitch + player.recoilPitch + (player.swayPitch ?? 0);
       const cp = Math.cos(pitch);
       const dx = -Math.sin(yaw) * cp;
       const dy = Math.sin(pitch);
@@ -1417,6 +1441,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       w?.reloading ?? 0,
       lerp(prev.drawn, cur.drawn),
       lowered,
+      pointYaw,
+      pointPitch,
     );
     effects.update(performance.now());
     grenades.update(performance.now(), alpha);

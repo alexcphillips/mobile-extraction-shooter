@@ -4,43 +4,44 @@
   "name": "Red dot sight",
   "type": "attachment",
   "size": [1, 1],
-  "value": 5000,
-  "rarity": "rare",
+  "value": 4000,
+  "rarity": "common",
   "slot": "optic",
   "optic": {
     "zoom": 1,
     "reticle": {
       "colour": "#ff3b30",
-      "shapes": [{ "type": "dot", "x": 0, "y": 0, "r": 0.8 }]
+      "shapes": [{ "type": "dot", "x": 0, "y": 0, "r": 0.4 }]
     }
   },
   "model": {
     "parts": [
+      { "type": "box", "pos": [0, 0.005, -0.085], "size": [0.05, 0.02, 0.04], "colour": "#222425" },
       {
         "type": "box",
-        "pos": [0, 0.007, -0.08],
-        "size": [0.032, 0.014, 0.06],
+        "pos": [0, 0.015, -0.085],
+        "size": [0.055, 0.006, 0.03],
         "colour": "#1d1f21"
       },
+      { "type": "box", "pos": [0, 0.05, -0.09], "size": [0.05, 0.0045, 0.03], "colour": "#1d1f21" },
       {
-        "type": "box",
-        "pos": [-0.018, 0.043, -0.09],
-        "size": [0.006, 0.06, 0.012],
-        "colour": "#1d1f21"
+        "type": "slab",
+        "pos": [0.025, 0.035, -0.09],
+        "size": [0.005, 0.03, 0.04],
+        "corners": [0, 2, 0, 0],
+        "colour": "#1d1f21",
+        "pitch": 90
       },
       {
-        "type": "box",
-        "pos": [0.018, 0.043, -0.09],
-        "size": [0.006, 0.06, 0.012],
-        "colour": "#1d1f21"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.073, -0.09],
-        "size": [0.042, 0.006, 0.012],
-        "colour": "#1d1f21"
+        "type": "slab",
+        "pos": [-0.025, 0.035, -0.09],
+        "size": [0.005, 0.03, 0.04],
+        "corners": [2, 0, 0, 0],
+        "colour": "#1d1f21",
+        "pitch": 90
       }
     ],
-    "sight": [0, 0.045, -0.09]
-  }
+    "sight": [0, 0.035, -0.09]
+  },
+  "weapons": ["assault-rifle", "crossbow", "shotgun", "smg"]
 }

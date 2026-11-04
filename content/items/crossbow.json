@@ -19,7 +19,7 @@
   "slots": ["optic"],
   "hipSpread": 1.5,
   "aimSpread": 0.2,
-  "recoil": { "up": 0.6, "side": 0.2, "recovery": 10 },
+  "recoil": { "up": 0.9, "side": 0.3, "recovery": 8 },
   "sounds": { "shot": "crossbow-shot", "suppressed": "crossbow-shot", "reload": "crossbow-reload" },
   "model": {
     "parts": [

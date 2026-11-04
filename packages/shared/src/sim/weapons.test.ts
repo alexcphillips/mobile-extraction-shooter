@@ -230,6 +230,51 @@ describe('firing', () => {
     expect(shooter.recoilPitch).toBe(0);
   });
 
+  it('sways and lags only while aimed', () => {
+    const { world, state, shooter } = range();
+    giveWeapon(shooter, TEST_ITEMS, 'rifle');
+    const hold = input({ pitch: 1, aim: true });
+    step(state, world, TEST_ITEMS, { [shooter.id]: input({ pitch: 1 }) });
+    expect(shooter.swayYaw).toBe(0);
+    for (let i = 0; i < TICK_RATE; i++) step(state, world, TEST_ITEMS, { [shooter.id]: hold });
+    expect(shooter.aim).toBe(1);
+    expect(shooter.swayYaw).not.toBe(0);
+    expect(Math.abs(shooter.swayYaw!)).toBeLessThan(0.01);
+    // Turning left leaves the gun behind, to the right.
+    step(state, world, TEST_ITEMS, { [shooter.id]: { ...hold, yaw: 0.5 } });
+    expect(shooter.lagYaw).toBeLessThan(-0.02);
+    expect(shooter.lagYaw).toBeCloseTo((-1.5 * Math.PI) / 180);
+    for (let i = 0; i < TICK_RATE; i++)
+      step(state, world, TEST_ITEMS, { [shooter.id]: { ...hold, yaw: 0.5 } });
+    expect(Math.abs(shooter.lagYaw!)).toBeLessThan(1e-3);
+  });
+
+  it('shoots where the gun points, not the view', () => {
+    const { world, state, shooter } = range();
+    giveWeapon(shooter, TEST_ITEMS, 'rifle');
+    shooter.aim = 1;
+    shooter.lagYaw = 0.02;
+    shooter.lookYaw = 0;
+    shooter.lookPitch = 0.5;
+    step(state, world, TEST_ITEMS, { [shooter.id]: input({ pitch: 0.5, aim: true, fire: true }) });
+    const shot = state.events.find((e) => e.type === 'shot');
+    if (shot?.type !== 'shot') throw new Error('no shot');
+    // The rifle has no spread when aimed, so all of this is the gun's lag, to the right of −z.
+    const yaw = Math.atan2(-(shot.toX - shot.fromX), -(shot.toZ - shot.fromZ));
+    expect(yaw).toBeCloseTo(shooter.swayYaw!, 5);
+    expect(yaw).toBeLessThan(0.02);
+    expect(yaw).toBeGreaterThan(0.01);
+  });
+
+  it('gives enemies no sway', () => {
+    const { world, state, shooter } = range();
+    giveWeapon(shooter, TEST_ITEMS, 'rifle');
+    shooter.ai = {} as NonNullable<Character['ai']>;
+    shooter.aim = 1;
+    step(state, world, TEST_ITEMS, {});
+    expect(shooter.swayYaw).toBeUndefined();
+  });
+
   it('fires semi-automatic guns once per pull', () => {
     const { world, state, shooter } = range();
     giveWeapon(shooter, TEST_ITEMS, 'pistol');

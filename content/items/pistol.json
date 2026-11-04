@@ -20,9 +20,9 @@
   "hipSpread": 2,
   "aimSpread": 0.6,
   "recoil": {
-    "up": 1.6,
-    "side": 0.5,
-    "recovery": 18
+    "up": 2.4,
+    "side": 0.9,
+    "recovery": 10
   },
   "sounds": {
     "shot": "pistol-shot",

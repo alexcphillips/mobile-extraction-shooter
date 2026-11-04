@@ -21,9 +21,9 @@
   "hipSpread": 2,
   "aimSpread": 0.5,
   "recoil": {
-    "up": 6,
-    "side": 1.5,
-    "recovery": 10
+    "up": 8,
+    "side": 2,
+    "recovery": 8
   },
   "sounds": {
     "shot": "launcher-shot",

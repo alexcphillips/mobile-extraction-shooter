@@ -3450,6 +3450,13 @@
       "radius": 4
     },
     {
+      "type": "extraction",
+      "id": "extract-2",
+      "pos": [2.5, 0, 172],
+      "name": "Extraction",
+      "radius": 4
+    },
+    {
       "type": "prefab",
       "prefab": "forklift",
       "pos": [77.6, 0.2, 127.7],

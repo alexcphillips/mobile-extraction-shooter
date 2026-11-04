@@ -1,7 +1,8 @@
 // Bundles the content files the server needs into one module it imports, since
 // wrangler can't glob a directory the way Vite does. Keys are paths from the repo root
 // ("content/items/knife.json"), as the client's loader sees them. Run before the server's
-// dev, deploy, typecheck and tests; the output is gitignored.
+// dev, deploy, typecheck and tests, and on every content change in dev (dev-server.mjs);
+// the output is gitignored.
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';

@@ -84,6 +84,8 @@ export class Viewmodel {
   /** Its own scene, drawn after the world. */
   readonly scene = new THREE.Scene();
   private readonly holder = new THREE.Group();
+  /** Turns the gun about the eye to where it points, so aimed sights stay on that line. */
+  private readonly pointing = new THREE.Group();
   private readonly gun = new THREE.Group();
   private readonly model: THREE.Mesh;
   private readonly flash: THREE.Mesh;
@@ -109,7 +111,9 @@ export class Viewmodel {
     );
     // Visible until the first update, so the warm-up draw compiles its shader.
     this.gun.add(this.model, this.flash, this.muzzle);
-    this.holder.add(this.gun);
+    this.pointing.rotation.order = 'YXZ';
+    this.pointing.add(this.gun);
+    this.holder.add(this.pointing);
     this.scene.add(this.holder);
   }
 
@@ -167,7 +171,9 @@ export class Viewmodel {
   /**
    * Follows the camera; aim is 0 at the hip to 1 aimed; sway grows with broken arms; the
    * gun dips and tilts while reloading (seconds left, or 0); drawn goes from 0 (just
-   * switched, out of view below) to 1 (ready); lowered is 1 while using a med.
+   * switched, out of view below) to 1 (ready); lowered is 1 while using a med; pointYaw and
+   * pointPitch turn it off the view (radians), to where shots go. Aimed, those are the
+   * only sway and tilt, so the sight stays on the reticle.
    */
   update(
     camera: THREE.Camera,
@@ -178,13 +184,16 @@ export class Viewmodel {
     reloading: number,
     drawn: number,
     lowered: number,
+    pointYaw = 0,
+    pointPitch = 0,
   ): void {
     this.holder.position.copy(camera.position);
     this.holder.quaternion.copy(camera.quaternion);
+    this.pointing.rotation.set(pointPitch, pointYaw, 0);
     this.kick *= Math.exp(-dtMs / 60);
     const t = now / 1000;
-    const swayX = Math.sin(t * 1.3) * 0.004 * sway;
-    const swayY = Math.sin(t * 2.1) * 0.003 * sway;
+    const swayX = Math.sin(t * 1.3) * 0.004 * sway * (1 - aim);
+    const swayY = Math.sin(t * 2.1) * 0.003 * sway * (1 - aim);
     if (reloading <= 0) this.reloadTotal = 0;
     else if (reloading > this.reloadTotal) this.reloadTotal = reloading;
     const dip = this.reloadTotal ? Math.sin(Math.PI * (1 - reloading / this.reloadTotal)) : 0;
@@ -198,7 +207,7 @@ export class Viewmodel {
     this.gun.position.x += swayX - across * 0.26 + slash * 0.04;
     this.gun.position.y += swayY - dip * 0.08 - down * 0.3 - lowered * 0.14 + slash * 0.05;
     this.gun.position.z += this.kick * 0.03 - slash * 0.16 + lowered * 0.04;
-    this.gun.rotation.x = this.kick * 0.04 - dip * 0.35 - down * 1.1 - lowered * 0.7;
+    this.gun.rotation.x = this.kick * 0.04 * (1 - aim) - dip * 0.35 - down * 1.1 - lowered * 0.7;
     this.gun.rotation.y = slash * 0.9;
     this.gun.rotation.z = dip * 0.5 - slash * 1.2;
     this.flash.visible = now < this.flashUntil;

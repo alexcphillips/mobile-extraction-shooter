@@ -9,6 +9,7 @@
     { "item": "red-dot", "weight": 0.6 },
     { "item": "suppressor", "weight": 0.4 },
     { "item": "mag-762x39-45", "weight": 0.5 },
-    { "item": "mag-9mm-24", "weight": 0.6 }
+    { "item": "mag-9mm-24", "weight": 0.6 },
+    { "item": "holographic-sight", "weight": 0.6 }
   ]
 }

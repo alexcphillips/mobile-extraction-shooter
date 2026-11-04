@@ -105,6 +105,20 @@ export interface Character {
   /** Recoil's kick to the view in radians, added to yaw and pitch; it settles back to 0. */
   recoilPitch: number;
   recoilYaw: number;
+  /**
+   * Where a player's gun points off the view, in radians, added to yaw and pitch with recoil
+   * (2026-11-04): idle sway plus lag behind turning, and only as far as it's aimed, so the
+   * hip crosshair stays true. Shots go there and the sights are drawn there. Missing (older
+   * saves, enemies) is 0.
+   */
+  swayYaw?: number;
+  swayPitch?: number;
+  /** The turning lag in swayYaw and swayPitch, before aim scales it. Missing is 0. */
+  lagYaw?: number;
+  lagPitch?: number;
+  /** The look last tick, to measure turning. Missing is this tick's. */
+  lookYaw?: number;
+  lookPitch?: number;
   /** An enemy's mind; null for players. */
   ai: AiState | null;
   /** Admin cheats for testing (dev server only); missing for everyone else. */

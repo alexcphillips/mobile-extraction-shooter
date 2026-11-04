@@ -49,6 +49,23 @@ const DEG = Math.PI / 180;
 const MAX_RECOIL = 20 * DEG;
 /** How fast recoil settles with no gun in hand (switched to the knife mid-burst), in radians per second. */
 const UNARMED_RECOVERY = 15 * DEG;
+/** How much of recoil moves the sights rather than the view, fully aimed. */
+export const AIMED_GUN_RECOIL = 0.4;
+/** How far a gun sways standing still, aimed, in radians. */
+const SWAY_YAW = 0.35 * DEG;
+const SWAY_PITCH = 0.25 * DEG;
+/** Sway at walking speed and up, as a multiple of standing still. */
+const SWAY_MOVING = 2;
+const SWAY_WALK_SPEED = 3;
+/** Sway per broken arm, added to 1. */
+const SWAY_BROKEN_ARM = 2;
+/** The furthest a gun lags behind turning, in radians. */
+const MAX_LAG_YAW = 1.5 * DEG;
+const MAX_LAG_PITCH = 1 * DEG;
+/** How long the lag takes to settle, as a share of the gun's aim time: heavy guns lag longer. */
+const LAG_PER_AIM_TIME = 0.4;
+/** The aim time used with nothing in hand. */
+const UNARMED_AIM_TIME = 0.3;
 
 /**
  * A gun, in a gear slot or in a grid. Reloading takes rounds from the ammo carried (see
@@ -281,6 +298,30 @@ function armScale(c: Character, perArm: number): number {
 }
 
 /**
+ * A player's gun off the view this tick: the sim's, so shots and co-op hosts agree. Sway
+ * comes from the tick rather than the random numbers, and enemies have none.
+ */
+function updateSway(state: SimState, c: Character, aimTime: number): void {
+  if (c.ai) return;
+  const lookYaw = c.lookYaw ?? c.yaw;
+  let turn = c.yaw - lookYaw;
+  turn -= Math.round(turn / (2 * Math.PI)) * 2 * Math.PI;
+  const tilt = c.pitch - (c.lookPitch ?? c.pitch);
+  c.lookYaw = c.yaw;
+  c.lookPitch = c.pitch;
+  const keep = Math.exp(-DT / (aimTime * LAG_PER_AIM_TIME));
+  const lagYaw = ((c.lagYaw ?? 0) - turn) * keep;
+  const lagPitch = ((c.lagPitch ?? 0) - tilt) * keep;
+  c.lagYaw = Math.max(-MAX_LAG_YAW, Math.min(MAX_LAG_YAW, lagYaw));
+  c.lagPitch = Math.max(-MAX_LAG_PITCH, Math.min(MAX_LAG_PITCH, lagPitch));
+  const t = state.tick * DT;
+  const moving = Math.min(1, Math.hypot(c.vx, c.vz) / SWAY_WALK_SPEED);
+  const shake = (1 + brokenArms(c.health) * SWAY_BROKEN_ARM) * (1 + (SWAY_MOVING - 1) * moving);
+  c.swayYaw = c.aim * (c.lagYaw + Math.sin(t * 1.3) * SWAY_YAW * shake);
+  c.swayPitch = c.aim * (c.lagPitch + Math.sin(t * 2.1) * SWAY_PITCH * shake);
+}
+
+/**
  * One tick of a character's gun: aiming in and out, recoil settling, reloading and
  * firing. Firing is blocked on a ladder, while drawing, reloading and putting yourself out
  * (which blocks aiming and reloading too); pulling the trigger on an empty gun starts a
@@ -296,6 +337,7 @@ export function updateWeapon(
   const w = heldWeapon(c);
   if (!w) {
     c.aim = 0;
+    updateSway(state, c, UNARMED_AIM_TIME);
     c.recoilPitch = towardZero(c.recoilPitch, UNARMED_RECOVERY * DT);
     c.recoilYaw = towardZero(c.recoilYaw, UNARMED_RECOVERY * DT);
     return;
@@ -309,6 +351,7 @@ export function updateWeapon(
   // Using a med lowers the gun.
   const aiming = !!input?.aim && free && !c.using;
   c.aim = Math.max(0, Math.min(1, c.aim + (aiming ? aimStep : -aimStep)));
+  updateSway(state, c, s.aimTime);
 
   const settle = def.recoil.recovery * DEG * DT;
   c.recoilPitch = towardZero(c.recoilPitch, settle);
@@ -418,13 +461,13 @@ function fire(
   items: ItemDb,
 ): void {
   if (!freeAmmo(c, def)) w.mag--;
-  // A random point in a cone around where the view (with recoil) points.
+  // A random point in a cone around where the gun (view, recoil and sway) points.
   const spread =
     (s.hipSpread + (s.aimSpread - s.hipSpread) * c.aim) * DEG * armScale(c, HEALTH.brokenArmSpread);
   const off = spread * Math.sqrt(nextFloat(state.rng));
   const around = nextFloat(state.rng) * Math.PI * 2;
-  const yaw = c.yaw + c.recoilYaw + off * Math.cos(around);
-  const pitch = c.pitch + c.recoilPitch + off * Math.sin(around);
+  const yaw = c.yaw + c.recoilYaw + (c.swayYaw ?? 0) + off * Math.cos(around);
+  const pitch = c.pitch + c.recoilPitch + (c.swayPitch ?? 0) + off * Math.sin(around);
   const ammo = roundOf(items, loadedAmmo(items, w))!;
   if (ammo.type === 'grenade') {
     // A launcher: the grenade flies from here as a thrown one does, only faster, and with

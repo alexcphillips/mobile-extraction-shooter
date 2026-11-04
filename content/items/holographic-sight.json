@@ -1,0 +1,88 @@
+{
+  "formatVersion": 9,
+  "id": "holographic-sight",
+  "name": "Holographic sight",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 4000,
+  "rarity": "common",
+  "slot": "optic",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0.0051, 0.018],
+        "size": [0.046, 0.02, 0.06],
+        "colour": "#1d1f21"
+      },
+      { "type": "box", "pos": [0, 0, 0.0549], "size": [0.046, 0.01, 0.014], "colour": "#1d1f21" },
+      {
+        "type": "box",
+        "pos": [0, 0.047, 0.013],
+        "size": [0.034, 0.006, 0.05],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "slab",
+        "pos": [0, 0.005, 0.06],
+        "size": [0.055, 0.041, 0.015],
+        "corners": [0, 0, 0, 0.01],
+        "colour": "#222425",
+        "pitch": -90,
+        "yaw": 90,
+        "segments": 3
+      },
+      {
+        "type": "slab",
+        "pos": [-0.02, 0.03, 0.013],
+        "size": [0.006, 0.05, 0.04],
+        "corners": [2, 0, 0, 0],
+        "colour": "#1d1f21",
+        "pitch": 90
+      },
+      {
+        "type": "slab",
+        "pos": [0.02, 0.03, 0.013],
+        "size": [0.006, 0.05, 0.04],
+        "corners": [0, 2, 0, 0],
+        "colour": "#1d1f21",
+        "pitch": 90
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.006, 0.08],
+        "radius": 0.005,
+        "height": 0.046,
+        "colour": "#1d1f21",
+        "roll": 90,
+        "sides": 12
+      },
+      {
+        "type": "wedge",
+        "pos": [0.0217, 0.01, 0.055],
+        "size": [0.0025, 0.0101, 0.014],
+        "colour": "#1d1f21",
+        "yaw": 180
+      },
+      {
+        "type": "wedge",
+        "pos": [-0.0217, 0.01, 0.055],
+        "size": [0.0025, 0.0101, 0.014],
+        "colour": "#1d1f21",
+        "yaw": -180
+      }
+    ],
+    "sight": [0, 0.03, 0]
+  },
+  "optic": {
+    "zoom": 1,
+    "reticle": {
+      "colour": "#ff3b30",
+      "shapes": [
+        { "type": "dot", "x": 0, "y": 0, "r": 0.3 },
+        { "type": "ring", "x": 0, "y": 0, "r": 3.5, "width": 0.3 }
+      ]
+    }
+  },
+  "weapons": ["assault-rifle", "crossbow", "shotgun", "smg"]
+}

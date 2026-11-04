@@ -46,10 +46,13 @@ export function reticleMarkup(optic: OpticDef): string {
  * The optic's reticle over the screen while aiming, and for scopes the black mask around
  * the sight picture. One SVG whose viewBox is the screen height from −50 to 50 around the
  * centre, so reticle units are % of the screen height, as in the item files. It's rebuilt
- * only when the optic changes and shown or hidden per frame.
+ * only when the optic changes and shown or hidden per frame. It's moved per frame to where
+ * the gun points, by one SVG transform, so no strings are built.
  */
 export class OpticOverlay {
   private readonly svg: SVGSVGElement;
+  private readonly picture: SVGGElement;
+  private readonly offset: SVGTransform;
   private optic: OpticDef | null = null;
   private shown = false;
 
@@ -61,6 +64,10 @@ export class OpticOverlay {
     this.svg = document.createElementNS(SVG, 'svg');
     this.svg.setAttribute('viewBox', '-50 -50 100 100');
     this.svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    this.picture = document.createElementNS(SVG, 'g');
+    this.offset = this.svg.createSVGTransform();
+    this.picture.transform.baseVal.appendItem(this.offset);
+    this.svg.append(this.picture);
     el.append(this.svg);
     el.hidden = true;
   }
@@ -70,10 +77,15 @@ export class OpticOverlay {
     if (optic === this.optic) return;
     this.optic = optic;
     if (!optic) {
-      this.svg.innerHTML = '';
+      this.picture.innerHTML = '';
       return;
     }
-    this.svg.innerHTML = reticleMarkup(optic);
+    this.picture.innerHTML = reticleMarkup(optic);
+  }
+
+  /** Where the gun points, in % of the screen height from the centre, y down. */
+  aimAt(x: number, y: number): void {
+    if (this.shown) this.offset.setTranslate(x, y);
   }
 
   set visible(on: boolean) {

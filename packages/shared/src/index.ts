@@ -366,6 +366,7 @@ export {
   reloadRound,
   updateWeapon,
   weaponStats,
+  AIMED_GUN_RECOIL,
   type ShotEvent,
   type WeaponState,
   type WeaponStats,

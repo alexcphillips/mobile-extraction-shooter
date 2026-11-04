@@ -155,8 +155,8 @@ export const AI = {
   selfMoveError: 0.5,
   /** ...and in one go when it's hit. */
   hitFlinch: 3,
-  /** How much of its own recoil it pulls down against. */
-  recoilControl: 0.5,
+  /** How much of its own recoil it pulls against, up and sideways. */
+  recoilControl: 1,
   /** Only fires while facing within this many degrees of where it's aiming. */
   fireCone: 8,
   /** Rounds per burst from an automatic, within closeRange and beyond it. */
@@ -1688,7 +1688,7 @@ function fight(
 function aimAt(state: SimState, c: Character, ai: AiState, x: number, y: number, z: number): void {
   const t = state.tick * DT;
   const e = ai.aimError;
-  aimYaw = yawTo(c, x, z) + e * Math.sin(t * 2.3 + ai.aimPhase);
+  aimYaw = yawTo(c, x, z) + e * Math.sin(t * 2.3 + ai.aimPhase) - c.recoilYaw * AI.recoilControl;
   aimPitch =
     Math.atan2(y - eyeHeight(c), Math.hypot(x - c.x, z - c.z)) +
     e * 0.7 * Math.sin(t * 3.1 + ai.aimPhase * 1.7) -
