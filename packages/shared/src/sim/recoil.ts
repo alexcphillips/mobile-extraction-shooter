@@ -5,8 +5,9 @@ import type { Character, SimState } from './state';
 
 /*
  * Recoil (2026-11-04, the user's spec, after Delta Force and Tarkov): each shot kicks a
- * target up and randomly sideways, the first of a burst harder; the target wears off at the
- * gun's recovery rate, and the gun (Character.recoilPitch/recoilYaw) chases it on a damped
+ * target up and randomly sideways, the first of a burst harder and those past
+ * RECOIL.steadyAfter softer; the target wears off at the gun's recovery rate (its climb
+ * barely, during a burst: 2026-11-05, so it keeps climbing as in Tarkov), and the gun (Character.recoilPitch/recoilYaw) chases it on a damped
  * spring at the gun's snap. So snap is how fast a kick lands and recovery how fast it
  * settles, separately. Stance and movement scale every kick. All of it runs at the fixed
  * tick, so co-op hosts agree; the frame splits the result between the view and the gun.
@@ -21,12 +22,24 @@ export const RECOIL = {
   firstShot: 1.4,
   /** Seconds off the trigger before the burst is over: the next round is a first round again. */
   resetTime: 0.25,
+  /**
+   * Rounds from this one on (counting from 0) kick steadyKick as hard: the hard early kick
+   * gives way to a steady climb, as in Tarkov (the user's call, 2026-11-05).
+   */
+  steadyAfter: 5,
+  steadyKick: 0.5,
+  /**
+   * During a burst the climb wears off at only this share of the gun's recovery, so it keeps
+   * climbing until the player pulls it down (2026-11-05; at full recovery it levelled off by
+   * round 10). Sideways recovers in full, so the shake doesn't wander.
+   */
+  inBurst: 0.1,
   /** Once the burst is over, recovery is this much faster, so the gun comes back down. */
   afterBurst: 4,
   /** The spring's damping ratio, below 1: the gun overshoots each kick a little. */
   damping: 0.6,
-  /** The kick never climbs higher than this, in degrees. */
-  maxUp: 20,
+  /** The kick never climbs higher than this, in degrees: a safety, not reached by a magazine. */
+  maxUp: 35,
   /** Kick multipliers by stance; standing is 1. */
   crouched: 0.75,
   prone: 0.5,
@@ -70,7 +83,7 @@ export function recoilScale(c: Character): number {
 }
 
 /**
- * One round's kick, scaled by stance and the burst: up degrees along angle (degrees off
+ * One round's kick, scaled by stance and the burst (harder first, softer once steady): up degrees along angle (degrees off
  * straight up, + right), and up to side either way at random. Past round stableAfter (0:
  * never) the kick along angle only tops the gun back up to where that round left it.
  */
@@ -83,7 +96,9 @@ export function kickRecoil(
   stableAfter = 0,
 ): void {
   const r = (c.recoil ??= createRecoil());
-  const scale = (r.shots === 0 ? RECOIL.firstShot : 1) * recoilScale(c) * DEG;
+  const burst =
+    r.shots === 0 ? RECOIL.firstShot : r.shots >= RECOIL.steadyAfter ? RECOIL.steadyKick : 1;
+  const scale = burst * recoilScale(c) * DEG;
   r.shots++;
   const rise = up * scale * Math.cos(angle * DEG);
   let along = 1;
@@ -119,8 +134,9 @@ function springStep(x: number, v: number, to: number, w: number): void {
 
 /**
  * One tick of recoil settling, after the tick's shots: the kick wears off at recovery (per
- * second; RECOIL.afterBurst times that once the burst is over) and the gun springs after it
- * at snap. trigger is whether it's held this tick.
+ * second; its climb at RECOIL.inBurst times that during a burst, and all of it at
+ * RECOIL.afterBurst times that once the burst is over) and the gun springs after it at snap.
+ * trigger is whether it's held this tick.
  */
 export function settleRecoil(c: Character, snap: number, recovery: number, trigger: boolean): void {
   let r = c.recoil;
@@ -132,9 +148,8 @@ export function settleRecoil(c: Character, snap: number, recovery: number, trigg
   r.idle = trigger ? 0 : r.idle + DT;
   const over = r.idle >= RECOIL.resetTime;
   if (over) r.shots = 0;
-  const keep = Math.exp(-recovery * (over ? RECOIL.afterBurst : 1) * DT);
-  r.kickPitch *= keep;
-  r.kickYaw *= keep;
+  r.kickPitch *= Math.exp(-recovery * (over ? RECOIL.afterBurst : RECOIL.inBurst) * DT);
+  r.kickYaw *= Math.exp(-recovery * (over ? RECOIL.afterBurst : 1) * DT);
   springStep(c.recoilPitch, r.speedPitch, r.kickPitch, snap);
   c.recoilPitch = springX;
   r.speedPitch = springV;

@@ -174,19 +174,28 @@ describe('recoil', () => {
     expect(free.recoilPitch).toBeGreaterThan(c.recoilPitch * 1.15);
   });
 
-  it('plateaus under sustained fire rather than climbing forever', () => {
+  it('keeps climbing through a magazine, hardest at first, as in Tarkov', () => {
     const state = createState(1);
     const c = body();
     const pitches: number[] = [];
-    // 600 rpm at a 30 Hz tick: a round every 3 ticks.
-    for (let round = 0; round < 60; round++) {
+    // The AKM: 600 rpm at a 30 Hz tick, a round every 3 ticks.
+    for (let round = 0; round < 30; round++) {
       kickRecoil(state, c, 1.8, 0);
       settle(c, 3, true);
       pitches.push(c.recoilPitch);
     }
-    const [fifth, thirtieth, sixtieth] = [pitches[4]!, pitches[29]!, pitches[59]!];
-    expect(thirtieth).toBeGreaterThan(fifth);
-    expect(Math.abs(sixtieth - thirtieth)).toBeLessThan(0.05 * DEG);
+    const [fifth, tenth, twentieth, thirtieth] = [
+      pitches[4]!,
+      pitches[9]!,
+      pitches[19]!,
+      pitches[29]!,
+    ];
+    // No levelling off: each ten rounds still climb a few degrees.
+    expect(twentieth - tenth).toBeGreaterThan(3 * DEG);
+    expect(thirtieth - twentieth).toBeGreaterThan(2 * DEG);
+    // The early rounds kick hardest: the first five climb more than the next five.
+    expect(fifth).toBeGreaterThan(tenth - fifth);
+    expect(thirtieth).toBeLessThan(RECOIL.maxUp * DEG);
   });
 });
 

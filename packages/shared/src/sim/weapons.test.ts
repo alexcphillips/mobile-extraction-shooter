@@ -335,8 +335,9 @@ describe('firing', () => {
     // No spread: all six land in the chest.
     expect(target.health.hp[CHEST]).toBe(85 - 6 * 5);
     expect(heldWeapon(shooter)?.mag).toBe(3);
-    // One first-round kick of 2°, worn off for a tick.
-    const kick = 2 * RECOIL.firstShot * (Math.PI / 180) * Math.exp(-10 / TICK_RATE);
+    // One first-round kick of 2°, worn off for a tick at the in-burst rate.
+    const kick =
+      2 * RECOIL.firstShot * (Math.PI / 180) * Math.exp((-10 * RECOIL.inBurst) / TICK_RATE);
     expect(shooter.recoil?.kickPitch).toBeCloseTo(kick, 6);
   });
 
@@ -499,7 +500,8 @@ describe('attachments', () => {
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ pitch: 1, fire: true }) });
     expect(state.events.find((e) => e.type === 'shot')).toMatchObject({ loudness: 37.5 });
     // Half the rifle's kick of 1°.
-    const kick = 0.5 * RECOIL.firstShot * (Math.PI / 180) * Math.exp(-10 / TICK_RATE);
+    const kick =
+      0.5 * RECOIL.firstShot * (Math.PI / 180) * Math.exp((-10 * RECOIL.inBurst) / TICK_RATE);
     expect(shooter.recoil?.kickPitch).toBeCloseTo(kick, 6);
   });
 
