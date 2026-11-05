@@ -35,6 +35,7 @@ import {
   startZombies,
   updateZombies,
   windowInReach,
+  ZOMBIES,
 } from './zombies';
 
 /*
@@ -357,12 +358,39 @@ describe('buying', () => {
     expect(pointsOf(g.state, g.player.id)).toBe(600);
   });
 
-  it('the mystery box gives one of its guns', () => {
+  it('the mystery box shows one of its guns, to be taken by using it again', () => {
     const g = game([-11, 0]);
     g.state.zombies!.points[g.player.id] = 2000;
-    g.run(1, input({ buy: buyInReach(g.state, g.player) }));
+    const spot = buyInReach(g.state, g.player);
+    g.run(1, input({ buy: spot }));
+    expect(g.state.events).toContainEqual(
+      expect.objectContaining({ type: 'buy', result: 'rolled' }),
+    );
+    expect(g.player.gear.primary1).toBeNull();
+    expect(pointsOf(g.state, g.player.id)).toBe(1050);
+    expect(g.state.zombies!.buys[spot]!.offer).toMatchObject({ item: 'shotgun', by: g.player.id });
+    expect(spotPrice(g.state, g.player, spot)).toEqual({ cost: 0, ammo: false });
+    g.run(seconds(3));
+    g.run(1, input({ buy: spot }));
+    expect(g.state.events).toContainEqual(
+      expect.objectContaining({ type: 'buy', result: 'taken' }),
+    );
     expect(g.player.gear.primary1?.item).toBe('shotgun');
     expect(pointsOf(g.state, g.player.id)).toBe(1050);
+    expect(g.state.zombies!.buys[spot]!.offer).toBeUndefined();
+  });
+
+  it("the mystery box's gun goes if it isn't taken in time", () => {
+    const g = game([-11, 0]);
+    g.state.zombies!.points[g.player.id] = 2000;
+    const spot = buyInReach(g.state, g.player);
+    g.run(1, input({ buy: spot }));
+    g.run(seconds(ZOMBIES.boxOffer));
+    expect(g.state.zombies!.buys[spot]!.offer).toBeUndefined();
+    expect(g.player.gear.primary1).toBeNull();
+    // Using it again rolls again, and pays again.
+    g.run(1, input({ buy: spot }));
+    expect(pointsOf(g.state, g.player.id)).toBe(100);
   });
 });
 
@@ -499,6 +527,24 @@ describe('power-ups', () => {
     expect(drops).toHaveLength(0);
   });
 
+  it('the always-drop cheat drops one for every kill, past the cap', () => {
+    const g = game();
+    const rules = g.state.zombies!.rules.powerups;
+    rules.chance = 0;
+    rules.perRound = 1;
+    g.player.admin = {
+      infiniteHealth: false,
+      infiniteAmmo: false,
+      peaceful: false,
+      infiniteConsumables: false,
+      alwaysDrop: true,
+    };
+    g.run(seconds(3.1));
+    killOne(g);
+    killOne(g);
+    expect(g.state.zombies!.drops).toHaveLength(2);
+  });
+
   it('insta-kill: any hit kills a zombie, until it runs out', () => {
     const g = game();
     const zs = g.state.zombies!;
@@ -566,6 +612,9 @@ describe('power-ups', () => {
     zs.points[g.player.id] = 5000;
     g.run(1, input({ buy: buyInReach(g.state, g.player) }));
     expect(g.state.events).toContainEqual(expect.objectContaining({ type: 'buy', result: 'busy' }));
+    // Nor switching to anything else until it ends.
+    g.run(1, input({ draw: 'knife' }));
+    expect(g.player.gear.hand).toBe('primary1');
     g.run(seconds(4.1));
     expect(g.player.gear.primary1).toBe(rifle);
     expect(g.player.gear.hand).toBe('knife');

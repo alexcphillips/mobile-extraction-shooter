@@ -148,7 +148,9 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
   const [raidId, setRaidId] = useState(opts.raids[0]?.id);
   const zombiesModes = opts.zombies ?? [];
   // The game mode whose menu shows; extraction if there's no zombies mode to pick.
-  const [mode, setMode] = useState<GameMode>(() => (zombiesModes.length ? lastMode() : 'extraction'));
+  const [mode, setMode] = useState<GameMode>(() =>
+    zombiesModes.length ? lastMode() : 'extraction',
+  );
   const [zombiesId, setZombiesId] = useState(zombiesModes[0]?.id);
   const zombiesMode = zombiesModes.find((z) => z.id === zombiesId) ?? zombiesModes[0];
   // The party and invites, kept fresh by the heartbeat while the menu shows (co-op C3).
@@ -438,6 +440,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
   if (page === 'admin') {
     return (
       <AdminPage
+        mode={mode}
         items={opts.items}
         notice={notice}
         onBack={() => {
@@ -571,6 +574,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
           key={m.id}
           role="tab"
           aria-selected={m.id === mode}
+          data-mode={m.id}
           className={m.id === mode ? 'active' : undefined}
           disabled={busy}
           onClick={() => pickMode(m.id)}
@@ -585,7 +589,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
       Admin
       <span>
         {mode === 'zombies'
-          ? 'Infinite points, guns to start with (dev server only)'
+          ? 'Infinite points, guns to start with, cheats (dev server only)'
           : 'Give yourself items, turn on cheats (dev server only)'}
       </span>
     </button>
@@ -642,9 +646,9 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
             <div className="menu-card wide">
               <h2>How it works</h2>
               <p>
-                Zombies climb in through the windows, more and tougher each round. Shoot and
-                rebuild barricades for points, then spend them on wall guns, doors and the box.
-                Play until you go down.
+                Zombies climb in through the windows, more and tougher each round. Shoot and rebuild
+                barricades for points, then spend them on wall guns, doors and the box. Play until
+                you go down.
               </p>
               <p className="menu-card-note">
                 Nothing from your stash goes in, and nothing comes out.

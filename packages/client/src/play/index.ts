@@ -85,6 +85,7 @@ import {
   adminGiveGun,
   adminPowerup,
   buyInReach,
+  holdsDeathMachine,
   windowInReach,
   pointsOf,
   spotPrice,
@@ -140,6 +141,7 @@ import { GrenadeViews } from '../render/grenades';
 import { GroundItems } from '../render/ground-items';
 import { buildMap, updateDoors, updateGlass, updateSearchedLooks } from '../render/map';
 import { buildWallBuys } from '../render/wall-buys';
+import { BoxOffers } from '../render/box-offers';
 import { Barricades } from '../render/barricades';
 import { Powerups } from '../render/powerups';
 import { AiDebug, buildNavOverlay } from '../render/nav-debug';
@@ -421,7 +423,12 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     if (!resume)
       for (const id of zombieCheats.guns) if (items.has(id)) adminGiveGun(sim, items, player, id);
   }
-  if (anyCheat(cheats) || zombieCheats?.infinitePoints || zombieCheats?.guns.length)
+  if (
+    anyCheat(cheats) ||
+    zombieCheats?.infinitePoints ||
+    zombieCheats?.alwaysDrop ||
+    zombieCheats?.guns.length
+  )
     el.raidHud.note('Admin cheats on', performance.now());
   const held = heldWeapon(player);
   if (held) viewmodel.setGun(held, items);
@@ -468,6 +475,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   if (barricades) scene.add(barricades.root);
   const powerupViews = sim.zombies ? new Powerups() : null;
   if (powerupViews) scene.add(powerupViews.root);
+  // The mystery box's gun, hovering over it.
+  const boxOffers = sim.zombies ? new BoxOffers(sim.zombies.buys, items, world) : null;
+  if (boxOffers) scene.add(boxOffers.root);
   // Locked doors cut the nav grid now, not in the first frame.
   syncDoors(sim, world, nav);
   syncGlass(sim, world);
@@ -1077,6 +1087,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.aim = controls.aim;
     input.reload = controls.reload;
     input.draw = controls.draw;
+    if (controls.draw && controls.draw !== player.gear.hand && holdsDeathMachine(sim, player))
+      el.raidHud.warn('Not while you hold the minigun', performance.now());
     input.throw = controls.throw;
     input.grenade = hands.grenadeChoice;
     input.detonate = controls.detonate;
@@ -1120,7 +1132,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const label = spot
       ? 'investigate'
       : buySpot >= 0
-        ? 'buy'
+        ? sim.zombies!.buys[buySpot]!.offer?.by === player.id
+          ? 'take'
+          : 'buy'
         : barricade >= 0
           ? 'rebuild'
           : !lootable
@@ -1355,6 +1369,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         else if (e.result === 'busy') el.raidHud.warn('Not while you hold the minigun', now);
         else if (e.result === 'ammo')
           el.raidHud.note(name ? `${name} ammo filled` : 'Ammo filled', now);
+        else if (e.result === 'theirs') el.raidHud.warn('That gun is someone else’s', now);
+        else if (e.result === 'rolled') el.raidHud.note(`Mystery box · ${name}`, now);
+        else if (e.result === 'taken') el.raidHud.note(`Took ${name}`, now);
         else el.raidHud.note(`Bought ${name}`, now);
         inventoryChanged = true;
       } else if (e.type === 'plank' && e.by === player.id && e.points > 0) {
@@ -1502,6 +1519,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const b = sim.zombies!.buys[i]!;
     const { cost, ammo } = spotPrice(sim, player, i);
     const price = `${cost.toLocaleString()} points`;
+    if (b.offer)
+      return b.offer.by === player.id
+        ? `Take ${itemDef(items, b.offer.item).name}`
+        : 'Mystery box · in use';
     if (b.kind === 'mysteryBox') return `Mystery box · ${price}`;
     const name = itemDef(items, b.item!).name;
     return ammo ? `${name} ammo · ${price}` : `Buy ${name} · ${price}`;
@@ -1620,6 +1641,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     updateDoors(mapView, sim.doors, dtMs / 1000);
     if (barricades && sim.zombies) barricades.update(sim.zombies.windows);
     if (powerupViews && sim.zombies) powerupViews.update(sim.zombies.drops, time / 1000);
+    if (boxOffers && sim.zombies) boxOffers.update(sim.zombies.buys, time / 1000);
     updateSearchedLooks(mapView, sim.loot);
     updateGlass(mapView, sim.glass);
     if (aimMarker) {

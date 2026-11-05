@@ -42,7 +42,7 @@
     "tearTime": 1.5
   },
   "powerups": {
-    "chance": 0.03,
+    "chance": 0.06,
     "perRound": 4,
     "lifetime": 25,
     "duration": 30,
@@ -53,7 +53,7 @@
       "maxAmmo": 1,
       "doublePoints": 1,
       "carpenter": 1,
-      "deathMachine": 0.6
+      "deathMachine": 1
     }
   },
   "spareMags": 4,

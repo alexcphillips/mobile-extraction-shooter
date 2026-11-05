@@ -144,6 +144,8 @@ export interface AdminCheats {
   infiniteConsumables: boolean;
   /** Zombies mode: buying costs no points (2026-11-04). Missing is off. */
   infinitePoints?: boolean;
+  /** Zombies mode: every zombie it kills drops a power-up, past the round's cap. Missing is off. */
+  alwaysDrop?: boolean;
 }
 
 /** Only characters so far. Loot containers and ground items have their own lists. */
