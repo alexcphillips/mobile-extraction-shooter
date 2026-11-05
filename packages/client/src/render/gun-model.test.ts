@@ -28,11 +28,11 @@ describe('gun models', () => {
       rifle({ optic: 'red-dot', muzzle: 'suppressor', magazine: 'mag-762x39-45' }),
       items,
     );
-    // The rear sight, slant brake and standard magazine (2) go; the red dot (4), suppressor
+    // The rear sight, slant brake and standard magazine (2) go; the red dot (5), suppressor
     // (1) and mag (2) come.
-    expect(g.shapes).toHaveLength(19 - 4 + 4 + 1 + 2);
+    expect(g.shapes).toHaveLength(19 - 4 + 5 + 1 + 2);
     // The optic mount (0, 0.041, -0.04) plus the red dot's sight point.
-    expect(g.sight[1]).toBeCloseTo(0.086);
+    expect(g.sight[1]).toBeCloseTo(0.076);
     expect(g.sight[2]).toBeCloseTo(-0.13);
     // The muzzle mount plus the suppressor's own muzzle point.
     expect(g.muzzle[2]).toBeCloseTo(-0.7);

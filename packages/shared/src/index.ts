@@ -190,6 +190,7 @@ export {
   pointsOf,
   rebuild,
   roundSize,
+  barricadeWindows,
   startZombies,
   updateZombies,
   windowInReach,
