@@ -25,6 +25,7 @@ import {
   CAMERA_START,
   GRID_SNAPS,
   MARKERS,
+  markersFor,
   PLACEABLE,
   QUICK,
   type EditorState,
@@ -146,12 +147,23 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
           title="What the marker tool places"
           onChange={(e) => editor.setMarker(e.target.value as MarkerKind)}
         >
-          {Object.entries(MARKERS).map(([kind, name]) => (
+          {markersFor(s.zombies).map((kind) => (
             <option key={kind} value={kind}>
-              {name}
+              {MARKERS[kind]}
             </option>
           ))}
         </select>
+        <label
+          className="ed-field"
+          title="A zombies map: the marker tool offers zombie spawns, barricades, wall guns and the mystery box instead of enemy spawns, loot, extractions and quest markers"
+        >
+          <input
+            type="checkbox"
+            checked={s.zombies}
+            onChange={(e) => editor.setZombies(e.target.checked)}
+          />
+          zombies
+        </label>
         <Toggle
           on={s.tool === 'zone'}
           onClick={() => editor.setTool('zone')}
@@ -607,6 +619,7 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
             point={s.point}
             tint={s.wall.glassColour}
             gap={s.wall.gap}
+            zombies={s.zombies}
           />
         )}
       </div>
@@ -1342,6 +1355,8 @@ function Inspector(props: {
   tint: string;
   /** The wall tool's gap between windows; 0 is even. */
   gap: number;
+  /** Whether it's a zombies map, for which of a door's fields show. */
+  zombies: boolean;
 }) {
   const { editor, node: n } = props;
   const edit: Edit = (change) => editor.editActive(change);
@@ -1527,7 +1542,13 @@ function Inspector(props: {
         <div className="ed-row">{vec('size', ['w', 'h'])}</div>
       )}
       {n.type === 'door' && (
-        <DoorFields edit={edit} node={n} num={num} prefabs={[...editor.prefabs.keys()].sort()} />
+        <DoorFields
+          edit={edit}
+          node={n}
+          num={num}
+          prefabs={[...editor.prefabs.keys()].sort()}
+          zombies={props.zombies}
+        />
       )}
       {n.type === 'glass' && (
         <div className="ed-row">
@@ -1839,8 +1860,9 @@ function MarkerFields(props: { editor: MapEditor; node: MapNode; num: NumField; 
             {num('planks', 'planks', 6)}
           </div>
           <p className="ed-note">
-            Put it on the middle of the sill, in the middle of the wall, with the flag pointing
-            inside, and give the wall an opening to match. Zombie spawns name it to break in here.
+            Click a wall to put it there, facing you (in a window, it fills it). Its arrow points
+            inside: turn it if that's the wrong way. Give the wall a window to match (the wall
+            tool), or the wall hides its planks. Zombie spawns name it to break in here.
           </p>
         </>
       );
@@ -1983,6 +2005,8 @@ function DoorFields(props: {
   num: NumField;
   /** Prefab ids, for a look (zombies mode's couches). */
   prefabs: string[];
+  /** A zombies map's doors are bought with points; an extraction map's are locked with keys. */
+  zombies: boolean;
 }) {
   const { edit, node: n } = props;
   const keys = [...loadItems().values()]
@@ -2004,16 +2028,20 @@ function DoorFields(props: {
         options={['left', 'right']}
         onChange={(v) => set('hinge', v === 'left' ? undefined : v)}
       />
-      <Pick
-        label="key"
-        value={n.key}
-        options={keys}
-        unset="none: never locked"
-        onChange={(v) => set('key', v)}
-      />
-      <div className="ed-row" title="Zombies mode: points to buy it open, instead of a key">
-        {props.num('cost', 'zombies cost')}
-      </div>
+      {(!props.zombies || n.key !== undefined) && (
+        <Pick
+          label="key"
+          value={n.key}
+          options={keys}
+          unset="none: never locked"
+          onChange={(v) => set('key', v)}
+        />
+      )}
+      {(props.zombies || n.cost !== undefined) && (
+        <div className="ed-row" title="Zombies mode: points to buy it open, instead of a key">
+          {props.num('cost', 'zombies cost')}
+        </div>
+      )}
       <Pick
         label="look"
         value={n.look}

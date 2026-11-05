@@ -1,0 +1,30 @@
+{
+  "formatVersion": 3,
+  "id": "mystery-box",
+  "name": "Mystery box",
+  "colours": {
+    "wood-dark": "#5a5148",
+    "paint": "#3b2a55",
+    "glow": "#d9b84a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [1.8, 0.5, 0.8],
+      "colour": "wood-dark"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.5, 0],
+      "size": [1.6, 0.5, 0.7],
+      "colour": "paint"
+    },
+    {
+      "type": "box",
+      "pos": [0, 1, 0],
+      "size": [1.65, 0.08, 0.75],
+      "colour": "glow"
+    }
+  ]
+}
