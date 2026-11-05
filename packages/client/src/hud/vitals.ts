@@ -71,8 +71,8 @@ function setHidden(el: HTMLElement, hidden: boolean): void {
  * each zone coloured by its HP and its HP beside it, bleeding zones pulsing (as Tarkov
  * does: there's no total, since the head or chest decides death), chips for broken limbs
  * and bleeding, armour icons coloured by durability, and the ammo count with the round
- * loaded (coloured by level) and a reload bar. Also the crosshair hit marker and a red
- * flash when hurt. With one health bar (zombies mode, Health.pool) it's just that bar.
+ * loaded (coloured by level) and a reload bar. Also a red flash when hurt. There's no
+ * crosshair or hit marker (the user's call, 2026-11-05, as in Tarkov). With one health bar (zombies mode, Health.pool) it's just that bar.
  */
 export class Vitals {
   private readonly zones: SVGElement[];
@@ -89,7 +89,6 @@ export class Vitals {
   private readonly reload: HTMLElement;
   private readonly reloadFill: HTMLElement;
   private chipKey = '';
-  private markerUntil = 0;
   private readonly vitals: HTMLElement;
   private readonly bar: HTMLElement;
   private readonly barFill: HTMLElement;
@@ -99,7 +98,6 @@ export class Vitals {
   constructor(
     vitals: HTMLElement,
     private readonly ammo: HTMLElement,
-    private readonly crosshair: HTMLElement,
     private readonly hurt: HTMLElement,
   ) {
     vitals.innerHTML = `
@@ -131,7 +129,7 @@ export class Vitals {
   }
 
   /** Call once per tick. */
-  update(c: Character, items: ItemDb, now: number): void {
+  update(c: Character, items: ItemDb): void {
     const h = c.health;
     const pool = h.pool;
     this.vitals.classList.toggle('pooled', pool !== undefined);
@@ -196,11 +194,6 @@ export class Vitals {
         this.reloadFill.style.transform = `scaleX(${done})`;
       }
     }
-
-    if (this.markerUntil && now > this.markerUntil) {
-      this.markerUntil = 0;
-      this.crosshair.classList.remove('hit', 'kill');
-    }
   }
 
   private armour(el: HTMLElement, a: ArmourState | null, items: ItemDb): void {
@@ -212,12 +205,6 @@ export class Vitals {
         el.style.color = colour;
       }
     }
-  }
-
-  /** The crosshair flashes when your shot lands, and more on a kill. */
-  hitMarker(now: number, kill: boolean): void {
-    this.crosshair.classList.add(kill ? 'kill' : 'hit');
-    this.markerUntil = now + (kill ? 400 : 120);
   }
 
   /** A red flash at the screen edges when you're hurt. */

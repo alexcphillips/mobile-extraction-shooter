@@ -30,9 +30,6 @@ export const GAME_SOUNDS = {
   death: 'death',
   /** Taking out what's in your hands. */
   draw: 'draw',
-  /** Your hit landed, and killed. */
-  hitMarker: 'hit-marker',
-  killMarker: 'kill-marker',
   /** Each second of the extraction countdown, and getting out. */
   extractTick: 'extract-tick',
   extracted: 'extracted',

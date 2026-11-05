@@ -36,7 +36,6 @@ export interface PerfElements {
   stats: HTMLElement;
   status: HTMLElement;
   hud: Hud;
-  crosshair: HTMLElement;
 }
 
 interface Wanderer {
@@ -235,7 +234,6 @@ export async function startPerfTest(el: PerfElements, params: PerfParams): Promi
     stats.tick(performance.now() - t0);
   }
 
-  let crosshairHit = false;
   function render(alpha: number, dt: number): void {
     camera.position.lerpVectors(prevEye, eye, alpha);
     // Look is applied every frame, not every tick, so turning never lags.
@@ -249,11 +247,6 @@ export async function startPerfTest(el: PerfElements, params: PerfParams): Promi
       w.mixer.update(dt);
     }
 
-    const hit = aimDist !== Infinity;
-    if (hit !== crosshairHit) {
-      crosshairHit = hit;
-      el.crosshair.classList.toggle('hit', hit);
-    }
     renderer.render(scene, camera);
   }
 

@@ -11,7 +11,6 @@ body.editor {
 
 /* The game's HUD stays hidden. */
 body.editor #hud,
-body.editor #crosshair,
 body.editor #vitals,
 body.editor #controls,
 body.editor #settings-button,

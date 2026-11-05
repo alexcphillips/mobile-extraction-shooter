@@ -222,19 +222,6 @@ body {
   color: #000;
 }
 
-#crosshair {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 6px;
-  height: 6px;
-  margin: -3px 0 0 -3px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.6);
-  pointer-events: none;
-}
-
 /* Fills while the use button is held on a switch with a use time (hud/raid-hud.ts). */
 #use-ring {
   position: fixed;
@@ -252,24 +239,6 @@ body {
 
 #use-ring[hidden] {
   display: none;
-}
-
-#crosshair.hit {
-  background: #e33;
-}
-
-#crosshair.firing {
-  transform: scale(1.8);
-}
-
-#crosshair.kill {
-  background: #e33;
-  transform: scale(2.6);
-}
-
-/* Behind an optic's reticle the crosshair only shows hit markers. */
-#crosshair.optic:not(.hit, .kill) {
-  opacity: 0;
 }
 
 /* The optic's reticle and the scope mask, full screen (hud/optic.ts). */
@@ -1068,7 +1037,7 @@ body:has(#controls.editing) :is(#hud, #presets, #settings-button, #vitals, #ammo
 }
 
 /* While it's open, the HUD goes, except the health bar, which sits in the tab bar's gap. */
-body:has(#raid:not([hidden])) :is(#hud, #ammo, #crosshair, #controls, #settings-button) {
+body:has(#raid:not([hidden])) :is(#hud, #ammo, #controls, #settings-button) {
   display: none;
 }
 
@@ -1945,7 +1914,7 @@ body:has(#account:not([hidden])) #portrait {
 }
 
 body:has(#menu:not([hidden])):not(:has(#layout-bar))
-  :is(#hud, #ammo, #crosshair, #controls, #settings-button, #vitals) {
+  :is(#hud, #ammo, #controls, #settings-button, #vitals) {
   display: none;
 }
 
@@ -2946,18 +2915,7 @@ body:has(#layout-bar) #menu {
 }
 
 body.spectating
-  :is(
-    #crosshair,
-    #vitals,
-    #ammo,
-    #controls,
-    #stick,
-    #sprint-lock,
-    #prompt,
-    #extract,
-    #hurt,
-    .heal-picker
-  ) {
+  :is(#vitals, #ammo, #controls, #stick, #sprint-lock, #prompt, #extract, #hurt, .heal-picker) {
   display: none;
 }
 

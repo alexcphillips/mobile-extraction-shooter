@@ -70,8 +70,6 @@ export class SoundCues {
   private extractSecond = 0;
   private warned = false;
   private hurtTick = -Infinity;
-  /** The last tick a hit marker played: a shotgun's pellets landing together make one. */
-  private markerTick = -1;
   private readonly options: PlaceOptions = {};
   /** When each noise (by its id) next starts again. */
   private readonly noiseAt = new Map<number, number>();
@@ -181,17 +179,12 @@ export class SoundCues {
           this.hurtTick = sim.tick;
           this.sound.play(S.hurt);
         }
-        if (own && e.target !== player.id && sim.tick !== this.markerTick) {
-          this.markerTick = sim.tick;
-          this.sound.play(S.hitMarker);
-        }
         return;
       }
       case 'death': {
         if (e.target === player.id) return this.sound.play(S.death);
         const body = entityById(sim, e.target);
         if (body) this.at(S.bodyFall, body.x, body.y + 0.3, body.z);
-        if (e.by === player.id) this.sound.play(S.killMarker);
         return;
       }
       case 'door': {

@@ -136,7 +136,6 @@ if (location.pathname === '/bodies') {
       stats: byId('stats'),
       status,
       hud,
-      crosshair: byId('crosshair'),
     },
     readParams(location.search),
   ).catch((err: unknown) => {
@@ -188,8 +187,8 @@ function playElements(): PlayElements {
     canvas: byId('scene') as HTMLCanvasElement,
     stats: byId('stats'),
     hud,
-    optic: new OpticOverlay(byId('optic'), byId('crosshair')),
-    vitals: new Vitals(byId('vitals'), byId('ammo'), byId('crosshair'), byId('hurt')),
+    optic: new OpticOverlay(byId('optic')),
+    vitals: new Vitals(byId('vitals'), byId('ammo'), byId('hurt')),
     raidHud: new RaidHud(byId('timer'), byId('extract'), byId('prompt'), byId('use-ring')),
     raid: byId('raid'),
     results: byId('results'),

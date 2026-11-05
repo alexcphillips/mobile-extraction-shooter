@@ -1354,7 +1354,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         );
       } else if (e.type === 'damage') {
         if (e.amount > 0) bodyOf.get(e.target)?.hit();
-        if (e.by === player.id && e.target !== player.id) el.vitals.hitMarker(now, false);
         if (e.target === player.id && e.amount > 0) el.vitals.hurtFlash();
         if (e.target === player.id) {
           hitLost += e.amount;
@@ -1362,7 +1361,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
           lastHit = logHit(taken, e, by ?? 'Someone');
         }
       } else if (e.type === 'death' && e.by === player.id && e.target !== player.id) {
-        el.vitals.hitMarker(now, true);
         kills++;
       } else if (e.type === 'death' && e.target === player.id) {
         killedBy = names.get(e.by) ?? null;
@@ -1484,7 +1482,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
                 : 'From bleeding or a fall';
       endRaid('killed', killedBy ? `by a ${killedBy}` : how, now);
     }
-    el.vitals.update(player, items, now);
+    el.vitals.update(player, items);
     el.raidHud.update(sim, player, ended !== null);
     const flipping = player.switching;
     el.raidHud.setUse(flipping ? flipping.held / world.switches[flipping.index]!.useTime : null);

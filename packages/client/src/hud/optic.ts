@@ -56,11 +56,7 @@ export class OpticOverlay {
   private optic: OpticDef | null = null;
   private shown = false;
 
-  /** The crosshair is hidden behind the reticle, except for hit markers. */
-  constructor(
-    private readonly el: HTMLElement,
-    private readonly crosshair: HTMLElement,
-  ) {
+  constructor(private readonly el: HTMLElement) {
     this.svg = document.createElementNS(SVG, 'svg');
     this.svg.setAttribute('viewBox', '-50 -50 100 100');
     this.svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
@@ -93,6 +89,5 @@ export class OpticOverlay {
     if (show === this.shown) return;
     this.shown = show;
     this.el.hidden = !show;
-    this.crosshair.classList.toggle('optic', show);
   }
 }
