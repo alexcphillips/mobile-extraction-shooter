@@ -171,7 +171,8 @@ describe('hit zones', () => {
     expect(zoneAt(state, 1.62, 0)).toBe(HEAD);
     t.height = MOVEMENT.crouchHeight;
     expect(zoneAt(state, 1.62, 0)).toBe(null);
-    expect(zoneAt(state, 1.08, 0)).toBe(HEAD);
+    // Crouched still, the drawn head sits about 13 cm to the left.
+    expect(zoneAt(state, 1.08, 0.13)).toBe(HEAD);
   });
 
   it('skips the dead and the shooter', () => {
@@ -190,6 +191,44 @@ describe('hit zones', () => {
       expect(Math.min(a[1]!, b[1]!) - cap.radius).toBeGreaterThanOrEqual(0);
       expect(Math.max(a[1]!, b[1]!) + cap.radius).toBeLessThanOrEqual(MOVEMENT.standHeight + 1e-9);
     }
+  });
+
+  // A character at the origin faces −z, so forward is −z.
+  function headEnd(set: (t: Character) => void): number[] {
+    const { t } = target();
+    t.x = 0;
+    t.z = 0;
+    t.yaw = 0;
+    set(t);
+    const a = [0, 0, 0];
+    const b = [0, 0, 0];
+    capsuleEnds(
+      t,
+      HIT_CAPSULES.find((cap) => cap.zone === HEAD)!,
+      a,
+      b,
+    );
+    return a;
+  }
+
+  it('goes forward when sprinting, as the drawn body does', () => {
+    const still = headEnd(() => {});
+    const running = headEnd((t) => (t.vz = -6));
+    expect(still[2]! - running[2]!).toBeCloseTo(0.35);
+    expect(running[1]!).toBeCloseTo(still[1]! - 0.145);
+  });
+
+  it('goes the way it strafes, and forward backing up', () => {
+    const still = headEnd(() => {});
+    expect(headEnd((t) => (t.vx = 3.2))[0]! - still[0]!).toBeCloseTo(0.17);
+    expect(still[2]! - headEnd((t) => (t.vz = 3.2))[2]!).toBeCloseTo(0.17);
+  });
+
+  it('goes forward and down looking down', () => {
+    const still = headEnd(() => {});
+    const down = headEnd((t) => (t.pitch = -0.5));
+    expect(down[2]!).toBeLessThan(still[2]!);
+    expect(down[1]!).toBeLessThan(still[1]!);
   });
 });
 

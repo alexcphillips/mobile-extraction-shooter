@@ -229,11 +229,12 @@ describe('jumping', () => {
     expect(-c.vz).toBeCloseTo(MOVEMENT.sprintSpeed);
   });
 
-  it("can't mantle a 1.3 m wall", () => {
+  it("can't mantle a 1.3 m wall with a tap of jump", () => {
     const world = makeWorld({ boxes: [aabb(-2, 0, -6, 2, 1.3, -3)] });
     const { c, run } = setup(world);
     run(TICK_RATE / 2, FORWARD);
-    run(TICK_RATE * 2, input({ moveY: 1, jump: true }));
+    run(1, input({ moveY: 1, jump: true }));
+    run(TICK_RATE * 2, FORWARD);
     expect(c.y).toBe(0);
     expect(c.z).toBeCloseTo(-3 + R);
   });
@@ -494,7 +495,6 @@ describe('vaulting', () => {
       ['a solid wall', makeWorld({ boxes: [aabb(-5, 0, -3.3, 5, 3, -3)] }), -2.5],
       ['a window too narrow', window(0.9, 0.5), -2.5],
       ['a sill too high', window(1.3), -2.5],
-      ['a wall too thick', window(0.9, 1, 1.2), -2.5],
       ['no room beyond', window(0.9, 1, 0.3, [aabb(-5, 0, -4, 5, 3, -3.3)]), -2.5],
       ['too far away', window(), -1.5],
     ];
@@ -502,9 +502,57 @@ describe('vaulting', () => {
       const { c, run } = setup(world, 0, z);
       run(1, JUMP);
       expect(c.mode, what).toBe('air');
-      run(TICK_RATE, JUMP);
+      run(TICK_RATE, input());
       expect(c.z, what).toBeGreaterThan(-3);
     }
+  });
+
+  it('vaults onto something too deep to go over, from the ground', () => {
+    const { c, run } = setup(makeWorld({ boxes: [aabb(-5, 0, -8, 5, 1, -3)] }), 0, -2.5);
+    run(1, JUMP);
+    expect(c.mode).toBe('vault');
+    run(TICK_RATE, input());
+    expect(c.y).toBe(1);
+    expect(c.z).toBeLessThan(-3);
+    expect(c.mode).toBe('ground');
+  });
+
+  it('jumps, then vaults onto a ledge too high to reach from the ground', () => {
+    const { c, run } = setup(makeWorld({ boxes: [aabb(-5, 0, -8, 5, 1.6, -3)] }), 0, -2.5);
+    run(1, JUMP);
+    expect(c.mode).toBe('air');
+    run(TICK_RATE, JUMP);
+    run(TICK_RATE, input());
+    expect(c.y).toBeCloseTo(1.6);
+    expect(c.mode).toBe('ground');
+  });
+
+  it('lands on top of a small crate from the air, but goes over it from the ground', () => {
+    const crate = () => makeWorld({ boxes: [aabb(-1, 0, -3.9, 1, 1.3, -3)] });
+    const air = setup(crate(), 0, -2.5);
+    air.run(TICK_RATE, JUMP);
+    air.run(TICK_RATE, input());
+    expect(air.c.y).toBeCloseTo(1.3);
+    const low = () => makeWorld({ boxes: [aabb(-1, 0, -3.9, 1, 1, -3)] });
+    const ground = setup(low(), 0, -2.5);
+    ground.run(TICK_RATE, JUMP);
+    expect(ground.c.y).toBe(0);
+    expect(ground.c.z).toBeLessThan(-3.9);
+  });
+
+  it("jumps but can't reach a ledge above vaultMax + jumpHeight", () => {
+    const { c, run } = setup(makeWorld({ boxes: [aabb(-5, 0, -8, 5, 1.8, -3)] }), 0, -2.5);
+    run(TICK_RATE * 2, JUMP);
+    expect(c.y).toBe(0);
+  });
+
+  it("doesn't vault onto stairs", () => {
+    const steps = [0, 1, 2, 3].map((i) =>
+      aabb(-2, 0, -3.3 - i * 0.3, 2, 0.6 + i * 0.2, -3 - i * 0.3),
+    );
+    const { c, run } = setup(makeWorld({ boxes: steps }), 0, -2.5);
+    run(1, JUMP);
+    expect(c.mode).toBe('air');
   });
 
   it('only vaults what it faces', () => {

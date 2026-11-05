@@ -2432,6 +2432,12 @@
     },
     {
       "type": "prefab",
+      "prefab": "table-and-chairs",
+      "pos": [-7, 0, 180],
+      "yaw": 20
+    },
+    {
+      "type": "prefab",
       "prefab": "car",
       "pos": [-79, 0, 64]
     },
@@ -3362,7 +3368,7 @@
     {
       "type": "prefab",
       "prefab": "shipping-container-closed-doors",
-      "pos": [21.15, 0.01, 172.975]
+      "pos": [21.148, 0.01, 172.975]
     },
     {
       "type": "group",
@@ -3756,6 +3762,42 @@
       "id": "enemy-12",
       "pos": [17.5, 0.01, 184],
       "enemy": "scav"
+    },
+    {
+      "type": "prefab",
+      "prefab": "desk",
+      "pos": [14.189, 0.21, 192],
+      "yaw": 90
+    },
+    {
+      "type": "prefab",
+      "prefab": "office-chair",
+      "pos": [15, 0.21, 192.25],
+      "yaw": -120
+    },
+    {
+      "type": "prefab",
+      "prefab": "clipboard",
+      "pos": [14.25, 0.97, 191.5],
+      "yaw": 75
+    },
+    {
+      "type": "prefab",
+      "prefab": "filing-cabinet",
+      "pos": [14.124, 0.21, 193.1],
+      "yaw": 90
+    },
+    {
+      "type": "prefab",
+      "prefab": "wall-hook",
+      "pos": [15.5, 1.5, 193.9],
+      "yaw": 180
+    },
+    {
+      "type": "prefab",
+      "prefab": "hanging-jacket",
+      "pos": [15.5, 1.486, 193.816],
+      "yaw": 180
     }
   ],
   "zones": [],

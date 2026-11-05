@@ -350,6 +350,7 @@ export {
 } from './sim/health';
 export {
   HIT_CAPSULES,
+  headOffset,
   capsuleEnds,
   createCharacterHit,
   raycastCharacters,

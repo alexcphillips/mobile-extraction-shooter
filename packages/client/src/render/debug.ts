@@ -13,9 +13,12 @@ const MARKER_COLOURS: Record<CompiledMarker['type'], number> = {
 };
 const ZONE_COLOUR = 0xffffff;
 const PATROL_COLOUR = 0xff7675;
+/** Half the size of the block loot markers get: small enough to see what's at the spot. */
+const LOOT_MARKER = 0.08;
 
 /**
- * Markers as coloured posts (extractions also get a disc of their radius), named zones as
+ * Markers as coloured posts (extractions also get a disc of their radius; loot markers are
+ * just a small block on the spot, so they don't hide what's there), named zones as
  * outlines over the terrain, and patrols as lines with a ring at each stop. Turned on with
  * ?debug in the URL, and drawn in the map editor.
  */
@@ -28,6 +31,11 @@ export function buildDebug(
   for (const m of map.markers) {
     const colour = MARKER_COLOURS[m.type];
     const post = { yaw: m.yaw, pitch: 0, roll: 0, colour };
+    if (m.type === 'lootContainer' || m.type === 'lootSpawn') {
+      const r = LOOT_MARKER;
+      b.shape({ kind: 'box', x: m.x, y: m.y + r, z: m.z, hx: r, hy: r, hz: r, ...post });
+      continue;
+    }
     b.shape({ kind: 'box', x: m.x, y: m.y + 1, z: m.z, hx: 0.1, hy: 1, hz: 0.1, ...post });
     // A flag pointing the marker's way.
     const fx = -Math.sin(m.yaw) * 0.3;

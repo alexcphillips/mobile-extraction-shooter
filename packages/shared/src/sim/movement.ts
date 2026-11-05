@@ -49,6 +49,9 @@ export const MOVEMENT = {
    * Vaulting: jumping while facing something from stepUp to vaultMax high, at most
    * vaultReach in front of the capsule and vaultDepth deep, goes over it, if there's a gap
    * vaultGap tall and the capsule's width above it and room to stand or crouch beyond.
+   * Too deep to go over and flat on top, it lands on top instead. Pressing or holding jump
+   * in the air does the same, measured from the feet there, so a jump reaches vaultMax +
+   * jumpHeight (1.7 m), and it lands on top of anything with room for the capsule.
    */
   vaultMax: 1.1,
   vaultReach: 0.5,
@@ -140,8 +143,9 @@ export function moveCharacter(
     moveVault(c);
     return;
   }
-  // Vaulting works crouched, unlike jumping, but not prone.
-  if (jump && c.mode === 'ground' && !isProne(c) && startVault(c, world)) return;
+  // Vaulting works crouched, unlike jumping, but not prone. In the air, holding jump counts.
+  const vault = c.mode === 'ground' ? jump : c.mode === 'air' && c.jumpHeld;
+  if (vault && !isProne(c) && startVault(c, world)) return;
 
   const M = MOVEMENT;
   let stance: number = M.standHeight;
@@ -310,6 +314,7 @@ function startVault(c: Character, world: CollisionWorld): boolean {
   // vaultMax doesn't count as a top here; the gap check below catches it.
   const low = c.y + M.stepUp;
   let top = -Infinity;
+  let bottom = Infinity;
   let depth = -1;
   for (let s = 0.05; s <= M.vaultDepth + 0.1; s += 0.1) {
     const h = world.groundAt(c.x + fx * (face + s), c.z + fz * (face + s), 0.01, c.y + M.vaultMax);
@@ -318,15 +323,21 @@ function startVault(c: Character, world: CollisionWorld): boolean {
       break;
     }
     top = Math.max(top, h);
+    bottom = Math.min(bottom, h);
   }
-  if (depth < 0 || top === -Infinity) return false;
+  if (top === -Infinity) return false;
+  // Landing on top rather than going over. It has to be flat, so stairs don't count.
+  const fits = depth < 0 || (c.mode === 'air' && depth >= 2 * M.radius + 0.1);
+  const onto = fits && top - bottom < 0.1;
+  if (depth < 0 && !onto) return false;
+  const span = onto ? 2 * M.radius + 0.1 : depth;
 
   // A gap over the top, vaultGap tall and the capsule's width (a window's opening), with
   // the capsule slid sideways (along the face) up to 0.3 m to find it.
   const r = M.radius - 0.01;
   const rx = -fz;
   const rz = fx;
-  const mid = face + depth / 2;
+  const mid = face + span / 2;
   let side = NaN;
   for (let i = 0; i <= 24; i++) {
     const off = (i & 1 ? 1 : -1) * Math.ceil(i / 2) * 0.025;
@@ -340,7 +351,7 @@ function startVault(c: Character, world: CollisionWorld): boolean {
   if (Number.isNaN(side)) return false;
   const sx = c.x + rx * side;
   const sz = c.z + rz * side;
-  for (let s = 0.05; s < depth; s += 0.1) {
+  for (let s = 0.05; s < span; s += 0.1) {
     if (
       world.overlaps(sx + fx * (face + s), sz + fz * (face + s), r, top + 0.01, top + M.vaultGap)
     ) {
@@ -348,14 +359,14 @@ function startVault(c: Character, world: CollisionWorld): boolean {
     }
   }
 
-  // Floor beyond, with room to stand (or else crouch).
-  const land = face + depth + M.radius;
+  // Floor beyond (or the top), with room to stand (or else crouch).
+  const land = onto ? face + M.radius + 0.05 : face + depth + M.radius;
   const toX = sx + fx * land;
   const toZ = sz + fz * land;
   const t = world.terrain;
   if (toX < t.minX + M.radius || toX > t.maxX - M.radius) return false;
   if (toZ < t.minZ + M.radius || toZ > t.maxZ - M.radius) return false;
-  const floor = world.groundAt(toX, toZ, M.radius, low);
+  const floor = onto ? top : world.groundAt(toX, toZ, M.radius, low);
   if (floor < c.y - M.vaultDrop) return false;
   let toHeight = c.height;
   if (world.overlaps(toX, toZ, M.radius, floor + M.stepUp, floor + M.standHeight)) {

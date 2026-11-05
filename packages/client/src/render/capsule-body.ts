@@ -1,8 +1,10 @@
 import {
+  HEAD,
   HEALTH,
   HIT_CAPSULES,
   MOVEMENT,
   ZONE_COUNT,
+  headOffset,
   isBroken,
   type Character,
   type ItemDb,
@@ -12,6 +14,7 @@ import * as THREE from 'three';
 import { armourColour } from '../hud/armour';
 
 const FULL = new THREE.Color(0x4caf50);
+const offset = [0, 0, 0];
 const HALF = new THREE.Color(0xf1c40f);
 const LOW = new THREE.Color(0xe74c3c);
 const BROKEN = new THREE.Color(0x2b2b2b);
@@ -31,6 +34,9 @@ export class CapsuleBody {
   private readonly pivot = new THREE.Group();
   private readonly upper = new THREE.Group();
   private readonly zones: THREE.MeshBasicMaterial[] = [];
+  /** The head's capsule, and where it sits before headOffset. */
+  private head: THREE.Mesh | null = null;
+  private readonly headAt = new THREE.Vector3();
   private readonly helmet: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>;
   private readonly vest: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>;
 
@@ -57,6 +63,10 @@ export class CapsuleBody {
       // Capsule geometry runs along y: place it at the middle and turn y onto the axis.
       mesh.position.addVectors(a, b).multiplyScalar(0.5);
       mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.sub(a).normalize());
+      if (cap.zone === HEAD) {
+        this.head = mesh;
+        this.headAt.copy(mesh.position);
+      }
       (Math.max(cap.a[1], cap.b[1]) > hips ? this.upper : this.legs).add(mesh);
     }
     this.helmet = new THREE.Mesh(
@@ -86,6 +96,12 @@ export class CapsuleBody {
     this.pivot.position.y = hips;
     // Leaning right tips the top towards +x: a turn about +z the other way.
     this.pivot.rotation.z = -(c.lean ?? 0) * MOVEMENT.leanAngle;
+    headOffset(c, offset);
+    this.head?.position.set(
+      this.headAt.x + offset[0]!,
+      this.headAt.y + offset[1]!,
+      this.headAt.z - offset[2]!,
+    );
     for (let zone = 0; zone < ZONE_COUNT; zone++) {
       const colour = this.zones[zone]!.color;
       const left = h.hp[zone]! / HEALTH.maxHp[zone]!;
