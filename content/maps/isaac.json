@@ -33,9 +33,103 @@
   },
   "nodes": [
     {
+      "type": "box",
+      "pos": [-18.5, 0, 11.75],
+      "size": [9, 0.2, 6.5],
+      "colour": "#b5b0a6"
+    },
+    {
+      "type": "box",
+      "pos": [-18.3, 2.6, 11.75],
+      "size": [9, 0.2, 6.5],
+      "colour": "#b5b0a6"
+    },
+    {
+      "type": "box",
+      "pos": [-21.75, 0, 15.1],
+      "size": [2.5, 2.6, 0.2],
+      "colour": "#b5b0a6"
+    },
+    {
+      "type": "box",
+      "pos": [-20, 2.1, 15.1],
+      "size": [1, 0.5, 0.2],
+      "colour": "#b5b0a6"
+    },
+    {
+      "type": "box",
+      "pos": [-16.75, 0, 15.1],
+      "size": [5.5, 2.6, 0.2],
+      "colour": "#b5b0a6"
+    },
+    {
+      "type": "door",
+      "pos": [-20, 0, 15.1],
+      "size": [1, 2.1],
+      "colour": "#b5b0a6",
+      "cost": 500
+    },
+    {
+      "type": "box",
+      "pos": [-18.5, 0, 8.4],
+      "size": [9, 2.6, 0.2],
+      "colour": "#b5b0a6"
+    },
+    {
+      "type": "wall",
+      "pos": [-14.1, 0.2, 11.75],
+      "size": [6.5, 2.6, 0.2],
+      "colour": "#b5b0a6",
+      "openings": [{ "along": -0.5, "width": 1, "bottom": 0.9, "top": 2 }],
+      "yaw": 90
+    },
+    {
+      "type": "box",
+      "pos": [-22.9, 0.2, 11.75],
+      "size": [6.5, 2.6, 0.2],
+      "colour": "#b5b0a6",
+      "yaw": 90
+    },
+    {
+      "type": "box",
+      "pos": [-3.5, 0, 4.5],
+      "size": [4, 2.6, 0.2],
+      "colour": "#b5b0a6"
+    },
+    {
+      "type": "wallBuy",
+      "pos": [-22.5, 0.2, 11.5],
+      "item": "smg",
+      "cost": 1000,
+      "yaw": 90
+    },
+    {
+      "type": "barricade",
+      "id": "window",
+      "pos": [-14.04, 1, 12],
+      "yaw": -90,
+      "size": [1.4, 1.1]
+    },
+    {
       "type": "playerSpawn",
       "id": "spawn",
-      "pos": [0, 0, 0]
+      "pos": [-16, 0.2, 11]
+    },
+    {
+      "type": "zombieSpawn",
+      "pos": [-5.5, 0, 12.5],
+      "window": "window",
+      "radius": 5
+    },
+    {
+      "type": "mysteryBox",
+      "pos": [-19.5, 0.2, 10],
+      "cost": 950
+    },
+    {
+      "type": "prefab",
+      "prefab": "mystery-box",
+      "pos": [-19.5, 0.2, 9]
     }
   ],
   "zones": []
