@@ -75,13 +75,16 @@ export function anyCheat(c: Cheats): boolean {
 
 /*
  * Zombies cheats (2026-11-04, the user's call), on the admin page's Zombies tab and kept on
- * this device like the others: infinite points, and guns to start every zombies game with.
+ * this device like the others: infinite points, every kill dropping a power-up, and guns to
+ * start every zombies game with.
  * The in-game admin panel (play/zombies-admin.ts) does the rest mid-game.
  */
 
 export interface ZombieCheats {
   /** Buying costs no points. */
   infinitePoints: boolean;
+  /** Every zombie you kill drops a power-up, past the round's cap. */
+  alwaysDrop: boolean;
   /** Weapon item ids put in your hands when a zombies game starts, in this order. */
   guns: string[];
 }
@@ -90,15 +93,16 @@ const ZOMBIES_KEY = 'mes.zombiesCheats';
 
 /** The zombies cheats on now; all off outside dev builds. */
 export function readZombieCheats(): ZombieCheats {
-  if (!import.meta.env.DEV) return { infinitePoints: false, guns: [] };
+  if (!import.meta.env.DEV) return { infinitePoints: false, alwaysDrop: false, guns: [] };
   try {
     const saved = JSON.parse(localStorage.getItem(ZOMBIES_KEY) ?? '{}') as Partial<ZombieCheats>;
     return {
       infinitePoints: saved.infinitePoints === true,
+      alwaysDrop: saved.alwaysDrop === true,
       guns: Array.isArray(saved.guns) ? saved.guns.filter((g) => typeof g === 'string') : [],
     };
   } catch {
-    return { infinitePoints: false, guns: [] };
+    return { infinitePoints: false, alwaysDrop: false, guns: [] };
   }
 }
 
@@ -110,15 +114,17 @@ export function saveZombieCheats(c: ZombieCheats): void {
   }
 }
 
-/** Sets the player's infinite points from these, beside whatever else is on. */
+/** Sets the player's infinite points and always-drop from these, beside whatever else is on. */
 export function applyZombieCheats(player: { admin?: AdminCheats }, c: ZombieCheats): void {
-  if (c.infinitePoints) {
-    player.admin ??= {
-      infiniteHealth: false,
-      infiniteAmmo: false,
-      peaceful: false,
-      infiniteConsumables: false,
-    };
-    player.admin.infinitePoints = true;
-  } else if (player.admin) delete player.admin.infinitePoints;
+  for (const key of ['infinitePoints', 'alwaysDrop'] as const) {
+    if (c[key]) {
+      player.admin ??= {
+        infiniteHealth: false,
+        infiniteAmmo: false,
+        peaceful: false,
+        infiniteConsumables: false,
+      };
+      player.admin[key] = true;
+    } else if (player.admin) delete player.admin[key];
+  }
 }

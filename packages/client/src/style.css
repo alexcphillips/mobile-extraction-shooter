@@ -2407,6 +2407,21 @@ body:has(#layout-bar) #menu {
   color: #e3a33a;
 }
 
+/*
+ * The mode you're not on lights up in its own colour under the pointer (not on touch,
+ * where hover sticks after a tap).
+ */
+@media (hover: hover) {
+  .menu .menu-modes button:not(.active):not(:disabled):hover {
+    background: #222930;
+    color: #e3a33a;
+  }
+
+  .menu .menu-modes button[data-mode='zombies']:not(.active):not(:disabled):hover {
+    color: #8fc25a;
+  }
+}
+
 /* Zombies' menu: the same layout, in green. */
 .menu.zombies h1,
 .menu.zombies .menu-modes button.active,

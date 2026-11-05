@@ -203,8 +203,13 @@ export class SoundCues {
         if (own) this.sound.play(S.investigate);
         return;
       case 'buy':
-        // Zombies mode: paid (the till), or refused.
-        if (own) this.sound.play(e.result === 'bought' || e.result === 'ammo' ? S.cash : S.refuse);
+        // Zombies mode: paid (the till), the box's gun taken, or refused.
+        if (!own) return;
+        if (e.result === 'taken') this.sound.play(S.itemMove);
+        else {
+          const paid = e.result === 'bought' || e.result === 'ammo' || e.result === 'rolled';
+          this.sound.play(paid ? S.cash : S.refuse);
+        }
         return;
       case 'plank': {
         // Nailed up, or torn off, at the window.

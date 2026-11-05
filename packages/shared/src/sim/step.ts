@@ -16,7 +16,7 @@ import { fitLean, moveCharacter, separateCharacters } from './movement';
 import { investigate, updateRaid } from './raid';
 import type { SimState, TickInputs } from './state';
 import { updateWeapon } from './weapons';
-import { buy, rebuild, updateZombies } from './zombies';
+import { buy, holdsDeathMachine, rebuild, updateZombies } from './zombies';
 
 /**
  * Advances the simulation by one fixed tick (TICK_SECONDS), in place. Mutating rather
@@ -27,7 +27,7 @@ import { buy, rebuild, updateZombies } from './zombies';
  * tick. Without a nav grid they don't think, and stand still. The world and nav grid
  * follow the state's doors first. Inventory actions come first, so the rest of the tick
  * sees what they changed; then doors and investigating, switching hands, meds and putting
- * yourself out (which blocks switching hands), and buying and rebuilding in zombies mode.
+ * yourself out (which blocks switching hands, as a death machine does), and buying and rebuilding in zombies mode.
  * Last, the raid: extracting, and the timer running out.
  */
 export function step(
@@ -67,7 +67,9 @@ export function step(
     if (e.draw > 0) e.draw = Math.max(0, e.draw - TICK_SECONDS);
     if (e.blind) e.blind = Math.max(0, e.blind - TICK_SECONDS);
     updateExtinguish(e, input);
-    if (input?.draw && !e.extinguish) switchHand(e, items, input.draw);
+    // A death machine stays in the hands until it ends.
+    if (input?.draw && !e.extinguish && !holdsDeathMachine(state, e))
+      switchHand(e, items, input.draw);
     updateMedUse(e, items, input);
   }
   // Everyone moves, then everyone shoots, so shots see this tick's positions.

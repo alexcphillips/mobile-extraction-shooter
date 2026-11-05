@@ -48,6 +48,8 @@ export const ZOMBIES = {
   /** How near a power-up a player picks it up, across and up or down. */
   pickupReach: 1.3,
   pickupHeight: 1.5,
+  /** How long the mystery box's gun hovers over it, to be taken, before it goes. */
+  boxOffer: 7,
 } as const;
 
 /** The rules a game runs by, copied from its ZombiesDef, so the state is all a host needs. */
@@ -118,6 +120,16 @@ export interface BuySpot {
   /** A wall gun: which gun, and what buying it again for its ammo costs. */
   item?: string;
   ammoCost?: number;
+  /** The mystery box: the gun it gave, hovering over it until taken or gone. */
+  offer?: BoxOffer;
+}
+
+/** A gun the mystery box gave, for the player who paid to take while it lasts. */
+export interface BoxOffer {
+  item: string;
+  by: EntityId;
+  /** Seconds before it goes. */
+  left: number;
 }
 
 export interface ZombiesState {
@@ -196,9 +208,11 @@ export interface RoundEvent {
 /**
  * What a buy did. bought: a gun, now in hand; ammo: a gun's ammo filled; poor: not enough
  * points; full: nothing to fill, so nothing paid; busy: no new gun while holding a death
- * machine.
+ * machine. The mystery box: rolled: paid, and its gun hovers over it; taken: that gun, now
+ * in hand; theirs: its gun is someone else's to take.
  */
-export type BuyResult = 'bought' | 'ammo' | 'poor' | 'full' | 'busy';
+export type BuyResult =
+  'bought' | 'ammo' | 'poor' | 'full' | 'busy' | 'rolled' | 'taken' | 'theirs';
 
 export interface BuyEvent {
   type: 'buy';
@@ -346,6 +360,11 @@ function pointsScale(z: ZombiesState): number {
   return z.doublePoints > 0 ? 2 : 1;
 }
 
+/** Whether a player has a death machine in their hands, so can't switch to anything else. */
+export function holdsDeathMachine(state: SimState, c: Character): boolean {
+  return !!state.zombies?.machines[c.id];
+}
+
 /** Whether a character is one of zombies mode's zombies. */
 export function isZombie(c: Character): boolean {
   return !!c.ai?.zombie;
@@ -374,6 +393,8 @@ export function updateZombies(
   score(state, z);
   players(state, z);
   powerups(state, items, z);
+  // The box's gun goes if it isn't taken in time.
+  for (const b of z.buys) if (b.offer && (b.offer.left -= TICK_SECONDS) <= 1e-9) delete b.offer;
 
   let alive = 0;
   for (let i = state.entities.length - 1; i >= 0; i--) {
@@ -435,7 +456,7 @@ function score(state: SimState, z: ZombiesState): void {
       const kill = melee ? z.rules.points.meleeKill : z.rules.points.kill;
       z.points[e.by] = pointsOf(state, e.by) + kill * pointsScale(z);
       z.kills[e.by] = (z.kills[e.by] ?? 0) + 1;
-      dropPowerup(state, z, target);
+      dropPowerup(state, z, target, !!by.admin?.alwaysDrop);
       continue;
     }
     if (e.amount <= 0 || target.health.dead) continue;
@@ -468,10 +489,13 @@ function players(state: SimState, z: ZombiesState): void {
   }
 }
 
-/** Maybe a power-up where a zombie a player killed fell, while the round has some left. */
-function dropPowerup(state: SimState, z: ZombiesState, at: Character): void {
+/**
+ * Maybe a power-up where a zombie a player killed fell, while the round has some left; for
+ * sure, cap or not, when `always` (the admin cheat).
+ */
+function dropPowerup(state: SimState, z: ZombiesState, at: Character, always: boolean): void {
   const rules = z.rules.powerups;
-  if (z.dropped >= rules.perRound || !chance(state.rng, rules.chance)) return;
+  if (!always && (z.dropped >= rules.perRound || !chance(state.rng, rules.chance))) return;
   const kinds = Object.entries(rules.weights).map(([kind, weight]) => ({ kind, weight }));
   if (!kinds.length) return;
   const kind = byWeight(state.rng, kinds).kind as Powerup;
@@ -702,7 +726,7 @@ export function buyInReach(state: SimState, c: Character): number {
 
 /**
  * What using a buy spot costs a player now, and what it would do: a wall gun they carry is
- * its ammo, at the ammo cost.
+ * its ammo, at the ammo cost; the box's gun hovering for them is free to take.
  */
 export function spotPrice(
   state: SimState,
@@ -712,6 +736,7 @@ export function spotPrice(
   const b = state.zombies?.buys[spot];
   if (!b) return { cost: 0, ammo: false };
   if (b.kind === 'wallBuy' && carriedGun(c, b.item!)) return { cost: b.ammoCost!, ammo: true };
+  if (b.offer?.by === c.id) return { cost: 0, ammo: false };
   return { cost: b.cost, ammo: false };
 }
 
@@ -721,8 +746,10 @@ const stats = createWeaponStats();
 /**
  * Uses buy spot `spot`, in reach, for player c, and says what happened in an event. A wall
  * gun is put in hand (see giveGun), or, already carried, has its ammo filled; the mystery
- * box gives a random gun from the rules' list, one not carried if it can. Nothing to fill
- * costs nothing, and no new gun while holding a death machine.
+ * box rolls a random gun from the rules' list, one not carried if it can, which hovers
+ * over it for ZOMBIES.boxOffer seconds: using the box again then takes it (only the player
+ * who paid), and the box can't be rolled until it's taken or gone. Nothing to fill costs
+ * nothing, and no new gun while holding a death machine.
  */
 export function buy(state: SimState, items: ItemDb, c: Character, spot: number): void {
   const z = state.zombies;
@@ -747,11 +774,21 @@ export function buy(state: SimState, items: ItemDb, c: Character, spot: number):
     pay();
     return push('ammo', item, cost);
   }
-  if (z.machines[c.id]) return push('busy', item, 0);
+  const offer = b.offer;
+  if (offer && offer.by !== c.id) return push('theirs', offer.item, 0);
+  if (z.machines[c.id]) return push('busy', offer?.item ?? item, 0);
+  if (offer) {
+    delete b.offer;
+    giveGun(c, items, z, offer.item);
+    return push('taken', offer.item, 0);
+  }
   if (have < cost) return push('poor', item, 0);
   if (b.kind === 'mysteryBox') {
     const fresh = z.rules.box.filter((o) => !carriedGun(c, o.item));
     item = byWeight(state.rng, fresh.length ? fresh : z.rules.box).item;
+    pay();
+    b.offer = { item, by: c.id, left: ZOMBIES.boxOffer };
+    return push('rolled', item, cost);
   }
   pay();
   giveGun(c, items, z, item);
