@@ -4,7 +4,7 @@ import {
   VENDOR,
   buyPrice,
   createState,
-  exposedSpawns,
+  // exposedSpawns, (with its check, off for now)
   createItem,
   spawnCharacter,
   spawnEnemy,
@@ -37,16 +37,20 @@ describe('content', () => {
     const map = loadMap(id);
     expect(() => new CollisionWorld(map.world)).not.toThrow();
     expect(map.markers.some((m) => m.type === 'playerSpawn')).toBe(true);
-    // A zombies map (2026-11-04) has zombie spawns and nowhere to extract.
-    const zombies = map.markers.some((m) => m.type === 'zombieSpawn');
-    expect(map.markers.some((m) => m.type === 'extraction')).toBe(!zombies);
+    // A zombies map (2026-11-04) has zombie spawns and nowhere to extract. Off for now
+    // (2026-11-05, the user's call): zombies maps being built (isaac, isaacs-map) have
+    // neither zombie spawns nor an extraction yet.
+    // const zombies = map.markers.some((m) => m.type === 'zombieSpawn');
+    // expect(map.markers.some((m) => m.type === 'extraction')).toBe(!zombies);
     expect(() => checkZombieMarkers(map)).not.toThrow();
     expect(new Set(map.markers.map((m) => m.id)).size).toBe(map.markers.length);
     expect(() => checkEnemySpawns(map)).not.toThrow();
     expect(() => checkDoorKeys(map)).not.toThrow();
     expect(() => checkLootContainers(map)).not.toThrow();
-    // Raids start out of the enemies' sight (the map editor warns about these too).
-    expect(exposedSpawns(map.markers, new CollisionWorld(map.world))).toEqual([]);
+    // Raids start out of the enemies' sight (the map editor warns about these too). Off for
+    // now (2026-11-05, the user's call): northpoint has enemy spawns within 60 m of its
+    // player spawn, none in sight of it, to be settled later.
+    // expect(exposedSpawns(map.markers, new CollisionWorld(map.world))).toEqual([]);
   });
 
   it('enemy types and loadouts load and their references are sound', () => {
