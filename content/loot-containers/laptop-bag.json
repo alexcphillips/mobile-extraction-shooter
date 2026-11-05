@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "laptop-bag",
+  "name": "Laptop bag",
+  "grid": [3, 2],
+  "loot": {
+    "tables": {
+      "computer-parts-basic": 1,
+      "computer-parts-highend": 0.05
+    }
+  }
+}

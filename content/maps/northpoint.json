@@ -2432,12 +2432,6 @@
     },
     {
       "type": "prefab",
-      "prefab": "table-and-chairs",
-      "pos": [-7, 0, 180],
-      "yaw": 20
-    },
-    {
-      "type": "prefab",
       "prefab": "car",
       "pos": [-79, 0, 64]
     },
@@ -2978,7 +2972,7 @@
     {
       "type": "prefab",
       "prefab": "openable-truck",
-      "pos": [120, 0.01, 184],
+      "pos": [120, 0.3, 184],
       "yaw": 180
     },
     {
@@ -3059,7 +3053,7 @@
     {
       "type": "prefab",
       "prefab": "openable-truck",
-      "pos": [107, 0.3, 149],
+      "pos": [107, 0.3, 143],
       "colours": {
         "tires": "tires",
         "truck-red": "truck-red"
@@ -3069,7 +3063,7 @@
     {
       "type": "prefab",
       "prefab": "openable-truck",
-      "pos": [112, 0.01, 184],
+      "pos": [112, 0.3, 184],
       "colours": {
         "tires": "tires",
         "truck-red": "truck-red"
@@ -3080,6 +3074,11 @@
       "type": "prefab",
       "prefab": "car",
       "pos": [136, 0.01, 144]
+    },
+    {
+      "type": "prefab",
+      "prefab": "car",
+      "pos": [131.4, 0.01, 144]
     },
     {
       "type": "prefab",
@@ -3183,27 +3182,27 @@
     },
     {
       "type": "group",
-      "pos": [84, 0.01, 168],
+      "pos": [82.81, 0.01, 167.04],
       "nodes": [
         {
           "type": "prefab",
           "prefab": "medical-crate-pallet-1",
-          "pos": [12.386, 0, 2.303]
+          "pos": [13.576, 0, 1.513]
         },
         {
           "type": "prefab",
           "prefab": "shipping-container-open-no-doors",
-          "pos": [14.774, 0, 0.138]
+          "pos": [15.964, 0, -0.652]
         },
         {
           "type": "prefab",
           "prefab": "shipping-container-open-no-doors",
-          "pos": [-3.794, 2.8, -2.312]
+          "pos": [-2.604, 2.8, -3.102]
         },
         {
           "type": "prefab",
           "prefab": "shipping-container-open-no-doors",
-          "pos": [4.354, 0, 7.888],
+          "pos": [5.544, 0, 7.098],
           "yaw": -90,
           "colours": {
             "shipping-container-red-dark": "shipping-container-blue-dark",
@@ -3213,7 +3212,7 @@
         {
           "type": "prefab",
           "prefab": "shipping-container-open-no-doors",
-          "pos": [5.354, 0, -7.862],
+          "pos": [6.544, 0, -8.652],
           "yaw": 180,
           "colours": {
             "shipping-container-red-dark": "shipping-container-blue-dark",
@@ -3222,7 +3221,7 @@
         },
         {
           "type": "group",
-          "pos": [10.054, 0, 4.888],
+          "pos": [11.244, 0, 4.098],
           "nodes": [
             {
               "type": "prefab",
@@ -3238,7 +3237,7 @@
         },
         {
           "type": "group",
-          "pos": [7.304, 2.8, 3.168],
+          "pos": [8.494, 2.8, 2.378],
           "nodes": [
             {
               "type": "prefab",
@@ -3256,30 +3255,30 @@
         {
           "type": "prefab",
           "prefab": "shipping-container-closed-doors",
-          "pos": [4.879, 0, -0.112],
+          "pos": [6.069, 0, -0.902],
           "yaw": -90
         },
         {
           "type": "prefab",
           "prefab": "shipping-container-closed-doors",
-          "pos": [-5.146, 0, 1.638],
+          "pos": [-3.956, 0, 0.848],
           "yaw": -90
         },
         {
           "type": "prefab",
           "prefab": "shipping-container-closed-doors",
-          "pos": [-7.994, 2.8, -2.312],
+          "pos": [-6.804, 2.8, -3.102],
           "yaw": 180
         },
         {
           "type": "prefab",
           "prefab": "shipping-container-sealed",
-          "pos": [-10.646, 0, -2.362]
+          "pos": [-9.456, 0, -3.152]
         },
         {
           "type": "prefab",
           "prefab": "shipping-container-sealed",
-          "pos": [-5.146, 0, -6.362],
+          "pos": [-3.956, 0, -7.152],
           "yaw": -90,
           "colours": {
             "shipping-container-red-dark": "shipping-container-blue-dark",
@@ -3289,50 +3288,66 @@
         {
           "type": "prefab",
           "prefab": "medical-crate",
-          "pos": [5.454, 0.2, 7.238],
+          "pos": [6.644, 0.2, 6.448],
           "yaw": 180
         },
         {
           "type": "prefab",
           "prefab": "gaming-pc",
-          "pos": [6.604, 2.99, 3.388]
+          "pos": [7.794, 2.99, 2.598]
         },
         {
           "type": "prefab",
           "prefab": "concrete-bag-pallet-1",
-          "pos": [-2.844, 0, -0.834],
+          "pos": [-1.654, 0, -1.624],
           "yaw": 90
         },
         {
           "type": "prefab",
           "prefab": "weapon-crate",
-          "pos": [-8.536, 3, -2.664]
+          "pos": [-7.346, 3, -3.454]
         },
         {
           "type": "prefab",
           "prefab": "weapon-crate",
-          "pos": [-8.536, 0, -2.664]
+          "pos": [-7.346, 0, -3.454]
         },
         {
           "type": "prefab",
           "prefab": "ammo-crate",
-          "pos": [-5.394, 0, -0.469]
+          "pos": [-4.204, 0, -1.259]
         },
         {
           "type": "prefab",
           "prefab": "ammo-crate",
-          "pos": [-3.5, 0.2, 0.823],
+          "pos": [-2.31, 0.2, 0.033],
           "yaw": 180
         },
         {
           "type": "prefab",
           "prefab": "pallet-variation-1",
-          "pos": [-13.069, 0, -3.664]
+          "pos": [-11.879, 0, -4.454]
         },
         {
           "type": "prefab",
           "prefab": "wood-pallet-large",
-          "pos": [2.5, 0.2, 0]
+          "pos": [3.69, 0.2, -0.79]
+        },
+        {
+          "type": "prefab",
+          "prefab": "forklift",
+          "pos": [-14.738, 0, 6.36],
+          "yaw": 120
+        },
+        {
+          "type": "prefab",
+          "prefab": "wood-pallet-boxes",
+          "pos": [7.09, 0.19, 9.31]
+        },
+        {
+          "type": "prefab",
+          "prefab": "shipping-container-closed-end",
+          "pos": [-16.41, 0, 1.06]
         }
       ],
       "name": "cans"
@@ -3393,7 +3408,7 @@
     },
     {
       "type": "group",
-      "pos": [41, 0.01, 173.5],
+      "pos": [39.1, 0.01, 176.7],
       "nodes": [
         {
           "type": "prefab",
@@ -3499,6 +3514,16 @@
     },
     {
       "type": "prefab",
+      "prefab": "wood-pallet-boxes",
+      "pos": [33.9, 0.2, 145.7]
+    },
+    {
+      "type": "prefab",
+      "prefab": "wood-pallet-boxes",
+      "pos": [20.3, 0.2, 177.6]
+    },
+    {
+      "type": "prefab",
       "prefab": "wood-pallet-large",
       "pos": [32.1, 0.01, 146]
     },
@@ -3513,32 +3538,10 @@
       "pos": [32.1, 0.01, 146]
     },
     {
-      "type": "box",
-      "pos": [67.6, 0.2, 120.6],
-      "size": [4, 2.6, 0.2],
-      "colour": "#b5b0a6"
-    },
-    {
-      "type": "prefab",
-      "prefab": "wall-hook",
-      "pos": [67.6, 1.95, 120.7]
-    },
-    {
-      "type": "prefab",
-      "prefab": "hanging-jacket",
-      "pos": [67.6, 1.94, 120.7]
-    },
-    {
       "type": "prefab",
       "prefab": "admin-building",
       "pos": [38.7, 0.02, 191],
       "yaw": 90
-    },
-    {
-      "type": "prefab",
-      "prefab": "office-chair",
-      "pos": [65.5, 0.2, 124.5],
-      "yaw": 30
     },
     {
       "type": "prefab",
@@ -3555,20 +3558,14 @@
     {
       "type": "prefab",
       "prefab": "clipboard",
-      "pos": [62.1, 1.25, 131.2],
-      "yaw": 15
-    },
-    {
-      "type": "prefab",
-      "prefab": "clipboard",
       "pos": [39.7, 1.12, 184.3],
       "yaw": 15
     },
     {
       "type": "prefab",
       "prefab": "clipboard",
-      "pos": [41.9, 1.12, 184.4],
-      "yaw": -15
+      "pos": [41.8, 1.12, 184.4],
+      "yaw": 15
     },
     {
       "type": "prefab",
@@ -3579,69 +3576,23 @@
     {
       "type": "prefab",
       "prefab": "paper-stacks",
-      "pos": [61.8, 1.25, 131.3],
-      "yaw": 90
-    },
-    {
-      "type": "prefab",
-      "prefab": "paper-stacks",
       "pos": [43.1, 1.12, 185.6],
       "yaw": -90
     },
     {
       "type": "prefab",
-      "prefab": "filing-cabinet",
-      "pos": [60.6, 0.2, 131],
-      "yaw": 90
-    },
-    {
-      "type": "prefab",
-      "prefab": "desk",
-      "pos": [57, 0.2, 130]
-    },
-    {
-      "type": "prefab",
-      "prefab": "gaming-pc",
-      "pos": [57.54, 0.2, 130.02],
-      "yaw": 150
-    },
-    {
-      "type": "prefab",
-      "prefab": "office-chair",
-      "pos": [57, 0.2, 130.55],
-      "yaw": 180
-    },
-    {
-      "type": "prefab",
-      "prefab": "duffle-bag",
-      "pos": [74, 0.21, 176.5],
-      "yaw": 30
-    },
-    {
-      "type": "prefab",
-      "prefab": "suitcase",
-      "pos": [73.8, 0.01, 180.2]
-    },
-    {
-      "type": "prefab",
-      "prefab": "briefcase",
-      "pos": [76, 0.01, 180],
-      "yaw": 20
-    },
-    {
-      "type": "prefab",
       "prefab": "gantry-crane",
-      "pos": [70, 0.01, 188.5]
+      "pos": [93.5, 0.01, 188.5]
     },
     {
       "type": "prefab",
       "prefab": "container-truck",
-      "pos": [98.5, 0.01, 188]
+      "pos": [76.2, 0.01, 188]
     },
     {
       "type": "group",
       "name": "container truck loaded",
-      "pos": [92, 0.01, 188],
+      "pos": [69, 0.01, 188],
       "nodes": [
         {
           "type": "prefab",
@@ -3658,7 +3609,7 @@
     {
       "type": "group",
       "name": "container truck open",
-      "pos": [86, 0.01, 188],
+      "pos": [62.8, 0.01, 188],
       "nodes": [
         {
           "type": "prefab",
@@ -3675,20 +3626,14 @@
     {
       "type": "enemySpawn",
       "id": "enemy",
-      "pos": [39, 0.22, 188],
+      "pos": [40, 0.22, 186.5],
       "enemy": "scav",
       "radius": 3
     },
     {
       "type": "enemySpawn",
       "id": "enemy-2",
-      "pos": [39, 3.42, 186],
-      "enemy": "scav"
-    },
-    {
-      "type": "enemySpawn",
-      "id": "enemy-3",
-      "pos": [35, 0.01, 143.5],
+      "pos": [41.7, 3.42, 185.15],
       "enemy": "scav"
     },
     {
@@ -3706,7 +3651,7 @@
     {
       "type": "enemySpawn",
       "id": "enemy-6",
-      "pos": [102, 0.01, 186],
+      "pos": [104.8, 0.01, 184.3],
       "enemy": "scav"
     },
     {
@@ -3736,7 +3681,7 @@
     {
       "type": "enemySpawn",
       "id": "enemy-13",
-      "pos": [81.5, 0.01, 173.5],
+      "pos": [81.5, 0.01, 173.6],
       "enemy": "scav"
     },
     {
@@ -3747,20 +3692,14 @@
     },
     {
       "type": "enemySpawn",
-      "id": "enemy-15",
-      "pos": [60.5, 0.01, 183],
-      "enemy": "scav"
-    },
-    {
-      "type": "enemySpawn",
       "id": "enemy-11",
-      "pos": [47, 0.01, 196.5],
+      "pos": [45.5, 0.01, 192.1],
       "enemy": "scav"
     },
     {
       "type": "enemySpawn",
       "id": "enemy-12",
-      "pos": [17.5, 0.01, 184],
+      "pos": [25.5, 0.01, 179.5],
       "enemy": "scav"
     },
     {
@@ -3789,15 +3728,120 @@
     },
     {
       "type": "prefab",
+      "prefab": "filing-cabinet",
+      "pos": [38.1, 0.22, 184.1]
+    },
+    {
+      "type": "prefab",
       "prefab": "wall-hook",
       "pos": [15.5, 1.5, 193.9],
       "yaw": 180
     },
     {
       "type": "prefab",
-      "prefab": "hanging-jacket",
-      "pos": [15.5, 1.486, 193.816],
+      "prefab": "wall-hook",
+      "pos": [16.5, 1.5, 193.9],
       "yaw": 180
+    },
+    {
+      "type": "prefab",
+      "prefab": "hanging-jacket",
+      "pos": [16.5, 1.486, 193.904],
+      "yaw": 180
+    },
+    {
+      "type": "prefab",
+      "prefab": "duffle-bag",
+      "pos": [14.149, 0.21, 191]
+    },
+    {
+      "type": "prefab",
+      "prefab": "crate",
+      "pos": [39.9, 3.42, 197.6]
+    },
+    {
+      "type": "prefab",
+      "prefab": "crate",
+      "pos": [38.1, 3.42, 193]
+    },
+    {
+      "type": "prefab",
+      "prefab": "desk",
+      "pos": [39.25, 3.42, 185.2]
+    },
+    {
+      "type": "prefab",
+      "prefab": "filing-cabinet",
+      "pos": [37.2, 3.42, 184.15]
+    },
+    {
+      "type": "prefab",
+      "prefab": "crate",
+      "pos": [34.55, 3.42, 185.7]
+    },
+    {
+      "type": "prefab",
+      "prefab": "briefcase",
+      "pos": [38.85, 4.18, 185.25],
+      "yaw": 15
+    },
+    {
+      "type": "prefab",
+      "prefab": "ammo-crate",
+      "pos": [42.9, 3.42, 186.4],
+      "yaw": 90
+    },
+    {
+      "type": "prefab",
+      "prefab": "office-chair",
+      "pos": [38.85, 3.42, 186],
+      "yaw": 165
+    },
+    {
+      "type": "prefab",
+      "prefab": "paper-stacks",
+      "pos": [39.65, 4.18, 185]
+    },
+    {
+      "type": "prefab",
+      "prefab": "clipboard",
+      "pos": [39.65, 4.18, 185.35],
+      "yaw": -30
+    },
+    {
+      "type": "prefab",
+      "prefab": "office-chair",
+      "pos": [36.7, 3.42, 197.1],
+      "yaw": 15
+    },
+    {
+      "type": "prefab",
+      "prefab": "clipboard",
+      "pos": [40, 4.42, 197.4],
+      "yaw": 165
+    },
+    {
+      "type": "prefab",
+      "prefab": "clipboard",
+      "pos": [36.2, 4.18, 197.9],
+      "yaw": 165
+    },
+    {
+      "type": "prefab",
+      "prefab": "medical-crate",
+      "pos": [38.6, 3.42, 197.5]
+    },
+    {
+      "type": "prefab",
+      "prefab": "duffle-bag",
+      "pos": [69.9, 1.51, 186.4],
+      "yaw": 75
+    },
+    {
+      "type": "prefab",
+      "prefab": "concrete-bag-pallet-1",
+      "pos": [44.7, 0.01, 188.6],
+      "yaw": 90
     }
   ],
   "zones": [],

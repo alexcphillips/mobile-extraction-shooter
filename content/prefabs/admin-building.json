@@ -51,10 +51,7 @@
           "pos": [2.75, 0.2, 4.9],
           "size": [9.3, 3, 0.2],
           "colour": "walls",
-          "openings": [
-            { "along": -1.25, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" },
-            { "along": 2.75, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" }
-          ]
+          "openings": [{ "along": 2.75, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" }]
         },
         {
           "type": "door",
@@ -154,6 +151,81 @@
           "pos": [5.2, 0.9, 4.2],
           "size": [2.2, 0.2, 0.8],
           "colour": "metal"
+        },
+        {
+          "type": "prefab",
+          "prefab": "wall-hook",
+          "pos": [1.5, 1.5, 4.8],
+          "yaw": 180
+        },
+        {
+          "type": "prefab",
+          "prefab": "wall-hook",
+          "pos": [2.25, 1.5, 4.8],
+          "yaw": 180
+        },
+        {
+          "type": "prefab",
+          "prefab": "wall-hook",
+          "pos": [3, 1.5, 4.8],
+          "yaw": 180
+        },
+        {
+          "type": "prefab",
+          "prefab": "hanging-jacket",
+          "pos": [2.2, 1.5, 4.795],
+          "yaw": 180
+        },
+        {
+          "type": "prefab",
+          "prefab": "hanging-jacket",
+          "pos": [1.5, 1.5, 4.795],
+          "yaw": 180
+        },
+        {
+          "type": "prefab",
+          "prefab": "table-and-chairs",
+          "pos": [-5.8, 0.2, 0.018]
+        },
+        {
+          "type": "prefab",
+          "prefab": "crate",
+          "pos": [-6.65, 0.2, 4.15]
+        },
+        {
+          "type": "prefab",
+          "prefab": "duffle-bag",
+          "pos": [-4.8, 0.2, 0],
+          "yaw": 90
+        },
+        {
+          "type": "prefab",
+          "prefab": "desk",
+          "pos": [-5.4, 3.4, 4.425],
+          "yaw": 180
+        },
+        {
+          "type": "prefab",
+          "prefab": "desk",
+          "pos": [-6.925, 3.4, -2],
+          "yaw": 90
+        },
+        {
+          "type": "prefab",
+          "prefab": "office-chair",
+          "pos": [-5.8, 3.4, 3.65],
+          "yaw": 15
+        },
+        {
+          "type": "prefab",
+          "prefab": "wood-pallet-large",
+          "pos": [-2.55, 0.2, -3.6]
+        },
+        {
+          "type": "prefab",
+          "prefab": "laptop-bag",
+          "pos": [-4.45, 3.4, 4.3],
+          "yaw": 105
         }
       ]
     },
