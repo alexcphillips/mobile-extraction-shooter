@@ -9,6 +9,7 @@ import {
   eyeZ,
   groundInReach,
   lootInSight,
+  switchInReach,
   type Character,
   type CollisionWorld,
   type GroundItem,
@@ -26,7 +27,8 @@ export type Lootable =
   | { kind: 'container'; c: LootContainer }
   | { kind: 'body'; c: Character }
   | { kind: 'ground'; g: GroundItem; index: number }
-  | { kind: 'door'; index: number };
+  | { kind: 'door'; index: number }
+  | { kind: 'switch'; index: number };
 
 /** How close to the crosshair an item on the ground must be to take it: cos of ~20°. */
 const GROUND_CONE = Math.cos((20 * Math.PI) / 180);
@@ -36,6 +38,7 @@ const scratch = {
   body: { kind: 'body', c: null as unknown as Character },
   ground: { kind: 'ground', g: null as unknown as GroundItem, index: -1 },
   door: { kind: 'door', index: -1 },
+  switch: { kind: 'switch', index: -1 },
 };
 const hit = createRayHit();
 
@@ -99,6 +102,10 @@ export function lootableInReach(
         scratch.container.c = shaped;
         found = scratch.container as Lootable;
       }
+    } else if (usableSwitch(sim, world, solid, player) >= 0) {
+      best = 1.5;
+      scratch.switch.index = usableSwitch(sim, world, solid, player);
+      found = scratch.switch as Lootable;
     } else if (world.doors.length) {
       const reach = DOOR.reach + 1;
       let door = solid >= 0 && d <= reach ? world.doorOf(solid) : -1;
@@ -133,6 +140,17 @@ export function lootableInReach(
     }
   }
   return found;
+}
+
+/** The unused switch in reach a solid is part of, or -1. */
+function usableSwitch(
+  sim: SimState,
+  world: CollisionWorld,
+  solid: number,
+  player: Character,
+): number {
+  const i = solid >= 0 ? world.switchOf(solid) : -1;
+  return i >= 0 && !sim.switches[i] && switchInReach(world, player, i) ? i : -1;
 }
 
 /** Under the least a container marker or body in reach can score. */

@@ -6,6 +6,7 @@ import type {
   InstancedGroup,
   Shape,
 } from '@mes/shared';
+import { openingProgress } from '@mes/shared';
 import * as THREE from 'three';
 import { TriangleBuilder } from './geometry';
 import { bakedMaterial, shadedMaterial } from './material';
@@ -18,6 +19,18 @@ const SWING = 0.2;
 /** How much glass shows of what's behind it: drawn this opaque. */
 export const GLASS_OPACITY = 0.3;
 
+/** How long a shutter takes to roll up, in seconds. */
+const ROLL = 2.5;
+/** How much of a shutter's height is left when it's rolled up, before it's hidden. */
+const ROLLED = 0.04;
+/** A door's lamp: until its switch is used, its timer's flash and dark, and open. */
+const LAMP_IDLE = 0x8a2b25;
+const LAMP_FLASH = 0xffd23c;
+const LAMP_DARK = 0x4a3c10;
+const LAMP_OPEN = 0x35e06a;
+/** Flashes per second. */
+const LAMP_RATE = 2;
+
 /** A door's pivot at its hinge, and how far open it's drawn. */
 interface DoorView {
   pivot: THREE.Object3D;
@@ -26,12 +39,29 @@ interface DoorView {
   turn: number;
   /** How far open it's drawn, −1 (into −z) to 1 (into +z). */
   shown: number;
+  /** Its lamp's colour, if it has one. */
+  lamp: THREE.MeshBasicMaterial | null;
+  /** A shutter: where its bottom starts, its height and how far it has rolled up, 0 to 1. */
+  roll: { y: number; height: number; shown: number } | null;
+}
+
+/** A prefab moved over a door's timer. (x, y, z) is where it starts. */
+interface MoverView {
+  mesh: THREE.Mesh;
+  x: number;
+  y: number;
+  z: number;
+  travel: readonly [number, number, number];
+  door: number;
 }
 
 export interface MapView {
   root: THREE.Group;
   /** By the sim's door index (the order of map.doors). */
   doors: DoorView[];
+  movers: MoverView[];
+  /** Seconds since it was built, for what flashes. */
+  clock: number;
   /** Every pane of glass, one instance each by the sim's glass index; null with none. */
   glass: THREE.InstancedMesh | null;
   /** Which panes are drawn broken (gone). */
@@ -77,7 +107,20 @@ export function buildMap(map: CompiledMap): MapView {
     root.add(pivot);
     // A couch (a door with a look) never swings.
     const turn = door.look ? 0 : door.hinge === 'left' ? -Math.PI / 2 : Math.PI / 2;
-    return { pivot, yaw: door.yaw, turn, shown: door.open ? 1 : 0 };
+    const lamp = door.lamp ? buildLamp(door, root) : null;
+    const roll = door.rollUp ? { y: door.y, height: door.height, shown: 0 } : null;
+    return { pivot, yaw: door.yaw, turn, shown: door.open ? 1 : 0, lamp, roll };
+  });
+
+  const movers = map.movers.map((m) => {
+    const b = new TriangleBuilder(false);
+    for (const s of m.shapes) b.shape(s);
+    const mesh = new THREE.Mesh(b.build(), shaded);
+    mesh.position.set(m.x, m.y, m.z);
+    mesh.rotation.y = m.yaw;
+    mesh.name = m.id;
+    root.add(mesh);
+    return { mesh, x: m.x, y: m.y, z: m.z, travel: m.travel, door: m.door };
   });
 
   const glass = map.glass.length ? buildGlass(map.glass) : null;
@@ -101,7 +144,7 @@ export function buildMap(map: CompiledMap): MapView {
     water.matrixAutoUpdate = false;
     root.add(water);
   }
-  return { root, doors, glass, glassBroken: map.glass.map(() => false), looks };
+  return { root, doors, movers, clock: 0, glass, glassBroken: map.glass.map(() => false), looks };
 }
 
 /** Baked like the chunks, so a drawer matches the merged cabinet around it. */
@@ -190,12 +233,36 @@ function buildInstanced(group: InstancedGroup, material: THREE.Material): THREE.
  */
 export function updateDoors(
   view: MapView,
-  doors: readonly { open: boolean; flipped?: boolean; gone?: boolean }[],
+  doors: readonly {
+    open: boolean;
+    flipped?: boolean;
+    gone?: boolean;
+    opening?: number;
+    openingFor?: number;
+  }[],
   dt: number,
 ): void {
+  view.clock += dt;
+  for (const m of view.movers) {
+    const s = doors[m.door];
+    const t = s ? openingProgress(s) : 0;
+    // Hidden on arrival: the map's own copy of what it became is the solid one.
+    m.mesh.visible = t < 1;
+    m.mesh.position.set(m.x + m.travel[0] * t, m.y + m.travel[1] * t, m.z + m.travel[2] * t);
+  }
   for (let i = 0; i < view.doors.length; i++) {
     const d = view.doors[i]!;
     const s = doors[i];
+    if (d.lamp) d.lamp.color.setHex(lampColour(s, view.clock));
+    if (d.roll) {
+      const r = d.roll;
+      if (s?.gone && r.shown < 1) r.shown = Math.min(1, r.shown + dt / ROLL);
+      const left = 1 - r.shown * (1 - ROLLED);
+      d.pivot.scale.y = left;
+      d.pivot.position.y = r.y + r.height * (1 - left);
+      d.pivot.visible = r.shown < 1;
+      continue;
+    }
     // A bought door (zombies mode) is gone from its doorway.
     d.pivot.visible = !s?.gone;
     const target = s?.open ? (s.flipped ? -1 : 1) : 0;
@@ -208,6 +275,26 @@ export function updateDoors(
     const t = Math.sign(d.shown) * (1 - (1 - a) * (1 - a));
     d.pivot.rotation.y = d.yaw + d.turn * t;
   }
+}
+
+function lampColour(s: { open: boolean; opening?: number } | undefined, clock: number): number {
+  if (s?.open) return LAMP_OPEN;
+  if (s?.opening === undefined) return LAMP_IDLE;
+  return (clock * LAMP_RATE) % 1 < 0.5 ? LAMP_FLASH : LAMP_DARK;
+}
+
+/** A door's lamp: lit, so it reads at a distance, and with a colour of its own to change. */
+function buildLamp(door: CompiledDoor, root: THREE.Object3D): THREE.MeshBasicMaterial {
+  const { pos, size } = door.lamp!;
+  const material = new THREE.MeshBasicMaterial({ color: LAMP_IDLE });
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(size[0], size[1], size[2]), material);
+  const at = new THREE.Group();
+  at.position.set(door.x, door.y, door.z);
+  at.rotation.y = door.yaw;
+  mesh.position.set(pos[0], pos[1] + size[1] / 2, pos[2]);
+  at.add(mesh);
+  root.add(at);
+  return material;
 }
 
 /** See-through and flat, drawn after what's solid and leaving the depth buffer alone. */

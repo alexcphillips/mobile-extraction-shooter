@@ -1016,7 +1016,13 @@ export class EditorView {
     const o = new THREE.Group();
     const [x, y, z] = nodePos(n);
     o.position.set(x, y, z);
+    o.rotation.order = 'YXZ';
     o.rotation.y = nodeYaw(n) * DEG;
+    // These tilt about their pos, so the object does it; a shape tilts about its centre.
+    if (n.type === 'group' || n.type === 'prefab') {
+      o.rotation.x = (n.pitch ?? 0) * DEG;
+      o.rotation.z = (n.roll ?? 0) * DEG;
+    }
     if (n.type === 'group') return o;
     // Built at the origin, so the object carries the position and the gizmo sits on it.
     const local = structuredClone(n);
@@ -1029,6 +1035,10 @@ export class EditorView {
     } else {
       local.pos = [0, 0, 0];
       if ('yaw' in local) delete local.yaw;
+      if (local.type === 'prefab') {
+        delete local.pitch;
+        delete local.roll;
+      }
     }
     try {
       const out = compileNodes([local], this.prefabs, colours);
@@ -1120,7 +1130,7 @@ export class EditorView {
 
   setGizmoMode(mode: 'translate' | 'rotate'): void {
     this.gizmo.setMode(mode);
-    // Only yaw: pitch and roll are typed in, and only boxes and cylinders have them.
+    // Only yaw: pitch and roll are typed in.
     this.gizmo.showX = mode === 'translate';
     this.gizmo.showZ = mode === 'translate';
   }

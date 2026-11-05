@@ -1,0 +1,92 @@
+{
+  "formatVersion": 3,
+  "id": "hazard-barrel",
+  "name": "Hazard barrel (yellow)",
+  "instanced": true,
+  "colours": {
+    "paint": "#dcae1e",
+    "paint-dark": "#a37f14",
+    "metal": "#8f9398",
+    "label": "#ece9e0",
+    "ink": "#1e1e20"
+  },
+  "nodes": [
+    {
+      "type": "cylinder",
+      "pos": [0, 0.005, 0],
+      "radius": 0.285,
+      "height": 0.87,
+      "colour": "paint",
+      "sides": 12,
+      "yaw": 15
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0, 0],
+      "radius": 0.297,
+      "height": 0.03,
+      "colour": "paint-dark",
+      "sides": 12,
+      "yaw": 15,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.85, 0],
+      "radius": 0.297,
+      "height": 0.03,
+      "colour": "paint-dark",
+      "sides": 12,
+      "yaw": 15,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.29, 0],
+      "radius": 0.294,
+      "height": 0.022,
+      "colour": "paint-dark",
+      "sides": 12,
+      "yaw": 15,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.57, 0],
+      "radius": 0.294,
+      "height": 0.022,
+      "colour": "paint-dark",
+      "sides": 12,
+      "yaw": 15,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.881, 0],
+      "radius": 0.25,
+      "height": 0.002,
+      "colour": "paint",
+      "sides": 12,
+      "yaw": 15,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.15, 0.882, 0.08],
+      "radius": 0.04,
+      "height": 0.016,
+      "colour": "metal",
+      "sides": 6,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.15, 0.882, -0.08],
+      "radius": 0.025,
+      "height": 0.016,
+      "colour": "metal",
+      "sides": 6,
+      "collide": false
+    }
+  ]
+}

@@ -8,6 +8,7 @@ import {
   sellPrice,
   sellTotal,
   stackSize,
+  stashPageOf,
   timeToUse,
   weaponStats,
   type Character,
@@ -25,7 +26,7 @@ import {
   type Rarity,
   type WeaponState,
 } from '@mes/shared';
-import { useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { itemPortrait } from '../render/item-portrait';
 import { refKey, type InventoryController } from './inventory-controller';
 import { ItemDetails } from './item-details';
@@ -35,6 +36,18 @@ import { levelColour, levelOf } from './levels';
 import { RaidQuests } from './raid-quests';
 
 type Tab = 'inventory' | 'map' | 'quests';
+
+/** Searching the stash, for the page shown (ui/stash-search.ts). Null anywhere else. */
+export interface StashSearch {
+  query: string;
+  setQuery: (query: string) => void;
+  /** Is this item one being looked for? Null with nothing typed. */
+  hit: ((item: Item) => boolean) | null;
+  /** How many items are found on every page. */
+  found: number;
+}
+
+export const StashSearchContext = createContext<StashSearch | null>(null);
 
 interface Props {
   inv: InventoryController;
@@ -485,6 +498,7 @@ function Loot({ inv }: { inv: InventoryController }): ReactNode {
     return (
       <>
         <h2>{name}</h2>
+        <SearchBox />
         <div className="inv-open">
           <Bag inv={inv} />
           <GridView inv={inv} gref={{ owner: target, grid: 'loot' }} grid={l.grid} />
@@ -504,6 +518,48 @@ function Loot({ inv }: { inv: InventoryController }): ReactNode {
         <CharacterGrids inv={inv} owner={target} ch={body} vault={false} />
       </div>
     </>
+  );
+}
+
+/**
+ * The stash's search box (2026-11-05). In the stash's column, not on the top bar, which
+ * has no room left on a phone; it stays in view while the stash scrolls under it.
+ */
+function SearchBox(): ReactNode {
+  const search = useContext(StashSearchContext);
+  if (!search) return null;
+  const { query, setQuery, hit, found } = search;
+  return (
+    <div className="stash-search">
+      <input
+        type="search"
+        enterKeyHint="search"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
+        placeholder="Search"
+        aria-label="Search the stash"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={(e) => {
+          // Esc clears the search first, rather than leaving the stash.
+          if (e.key === 'Escape' && query) {
+            e.stopPropagation();
+            setQuery('');
+          }
+          if (e.key === 'Enter') e.currentTarget.blur();
+        }}
+      />
+      {hit && (
+        <>
+          <span className="stash-search-found">{found ? `${found} found` : 'None found'}</span>
+          <button aria-label="Clear the search" onClick={() => setQuery('')}>
+            ✕
+          </button>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -712,6 +768,9 @@ function GridView({
   grid: Grid;
 }): ReactNode {
   const { cell } = inv;
+  const search = useContext(StashSearchContext);
+  // Your own grids aren't searched, only the stash and what's in it.
+  const hit = stashPageOf(gref.owner) >= 0 ? search?.hit : null;
   return (
     <div
       className="inv-grid"
@@ -726,7 +785,7 @@ function GridView({
         return (
           <div
             key={index}
-            className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${inv.isOpenBag(ref) ? ' open' : ''}`}
+            className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${inv.isOpenBag(ref) ? ' open' : ''}${hit && !hit(g.item) ? ' dimmed' : ''}`}
             data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
             data-armour={
               def.type === 'armour' && gref.owner.kind === 'self' ? JSON.stringify(ref) : undefined

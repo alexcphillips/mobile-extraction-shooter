@@ -1,0 +1,48 @@
+{
+  "formatVersion": 3,
+  "id": "car-crash-through-barrier",
+  "colours": {
+    "barrier": "#554f4f"
+  },
+  "nodes": [
+    {
+      "type": "group",
+      "pos": [0, 0, 0],
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [2.312, 0, -3.719],
+          "size": [2.25, 1.8, 0.2],
+          "colour": "barrier",
+          "yaw": -90,
+          "pitch": 10
+        },
+        {
+          "type": "box",
+          "pos": [0.562, 0, 1.656],
+          "size": [2.25, 0.2, 2.5],
+          "colour": "barrier",
+          "yaw": 20
+        },
+        {
+          "type": "box",
+          "pos": [0.562, 0, -1.594],
+          "size": [2.25, 0.2, 2.5],
+          "colour": "barrier",
+          "yaw": -15
+        },
+        {
+          "type": "prefab",
+          "prefab": "car",
+          "pos": [-3.438, 0, 3.656],
+          "yaw": -30,
+          "colours": {
+            "paint": "#6d2626",
+            "glass": "#1e2b39"
+          }
+        }
+      ],
+      "name": "car-crash-through-walls"
+    }
+  ]
+}

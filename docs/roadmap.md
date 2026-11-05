@@ -563,6 +563,17 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
   - Checked: 9 new tests (587 in all; northpoint's content test fails as it has no extraction yet): even spacing and refusing what doesn't fit; cutting several gaps; a wall node compiling to its pieces and glass, and refusing overlaps; a box made a wall node compiling to the same boxes as cutting it; splitting at a doorway; spacing evenly; **vaulting through a wall node's window by the real movement code**. **Not yet tried in the browser** (handles, inspector, bar).
   - **Not done:** existing cut walls aren't converted (their pieces stay boxes); doors can't slide; wall nodes aren't drawn by the wall tool's draw mode (it still makes boxes until a window is cut).
 
+- [x] **19zr. Stash search.** (Not in the plan: the user's request, 2026-11-05.)
+  - design.md → Inventory and UI → Searching the stash. Client only: `ui/stash-search.ts` matches, a context gives the box and the grids the search, `StashPage` keeps what's typed and counts each page for its tab. Matches stay lit and the rest dim rather than hide, so a page keeps its layout.
+  - Checked: 5 new tests. In headless Chrome at 844×390 against the dev servers, on a throwaway account with two pages: "7.62x39" found the × rounds, "bandage" counted one on each page's tab, no matches faded both tabs, your gear stayed lit, Esc cleared without leaving, the box is 16 px. **Not checked** on the iPhone (the keyboard, and the sticky box above it), or with a bag opened under the box.
+  - **Not done:** it doesn't scroll to or jump to the first match; a tab's count shows where to look. No searching by kind ("ammo", "meds"), only by name.
+
+- [x] **19zs. Pitch and roll on prefabs and groups.** (Not in the plan: the user's request, 2026-11-05, to lay a shipping container diagonally as a ramp.)
+  - tech-stack.md → Collision and Map format. The user chose sloped slabs over solid wedges, visual-only tilt or full oriented boxes, reversing "solids rotate about Y only" for heights while footprints still turn about y. Existing tilted boxes collide as slabs now too.
+  - Shared: `pitch` and `roll` on `prefab` and `group` nodes, additive, so no format bump; `Frame.tilt` in the compiler; `BoxSlope` and six more numbers per solid in `CollisionWorld`. Client: the two fields in the editor panel for prefabs and groups, and objects turned 'YXZ'.
+  - Checked: 15 new tests, including walking up a tilted container's roof, up the inside of a hollow one, and into a sloped underside. All four real shipping container prefabs tilted at −20° compile and can be walked up. Northpoint's spawn test fails the same with and without this. **Not checked in a browser or on the iPhone**, including `pitch`/`roll` typed into the panel.
+  - **Not done:** no pitch or roll on the gizmo, only typed in. Tilted group can't be ungrouped until it's straightened. A door in a tilted group doesn't open.
+
 - [ ] **19b. The first real map.**
   - Claude drafts a one-page brief (points of interest, extractions, routes, key rooms) and a rough first version as data; the user reshapes it in the map editor, and Claude fixes the editor where it gets in the way (the user's call, 2026-10-30).
   - What the map needs that isn't built: loot weighted by zone, enemy spawns kept away from the player's spawn, doors fitted into a wall's gap, **vaulting through standard-height windows** (design.md → Movement; the user's request, 2026-10-30: a simple scripted move, no complicated animation).
@@ -571,6 +582,10 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
 - [ ] **20. Polish and v1 release.**
   - Performance pass on the phone, balance pass, bug fixes.
   - Deploy, install from the home screen, play-test with a friend.
+
+- [x] **Switches and the freight elevator** (2026-11-05, the user's design; design.md → Raids and maps, tech-stack.md → Map and prefab format).
+  - Built: tagging a node as a switch, with rows in the map editor; timers, map-wide noises and door-opening sounds; rolling shutters; door lamps; drawn-only movers; `door-buzzer`, `alarm-klaxon` and `alarm-siren`; `elevator-power-switch`.
+  - Checked: 15 new tests. In headless Chrome: a full 45 s run (prompt, lamp red, flashing yellow and dark by its pixels, the cab halfway down, solid green, shutter gone, loot on the deck), and adding a row in the editor's inspector, unsaved. **Not checked:** the sounds by ear, anything on an iPhone, co-op, or a real elevator at a yaw other than 0 in play.
 
 ## After v1 (not scheduled)
 - Co-op vs. AI, phones and PCs together (a player's device hosts, others connect over WebRTC; client movement prediction, shared loot rolls, quest items only for the holder). The plan, session by session, is [coop.md](coop.md).

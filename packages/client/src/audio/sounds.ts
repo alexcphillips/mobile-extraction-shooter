@@ -88,6 +88,14 @@ export class SoundPlayer {
     this.start(id);
   }
 
+  /** How long a sound lasts, in seconds, from its recipe. */
+  duration(id: string): number {
+    let end = 0;
+    for (const l of this.defs.get(id)?.layers ?? [])
+      end = Math.max(end, l.at + l.attack + l.hold + l.decay);
+    return end;
+  }
+
   private start(id: string): void {
     const ctx = audio();
     const def = this.defs.get(id);

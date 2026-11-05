@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "suitcase",
   "name": "Suitcase",
-  "grid": [3, 4],
+  "grid": [3, 3],
   "loot": {
     "tables": {
       "documents": 1

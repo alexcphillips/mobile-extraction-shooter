@@ -4,11 +4,29 @@ import { HeightGrid, setHit, type HeightGridDef, type SurfaceHit } from './terra
 /*
  * Rotation convention (matches three.js rotation.y): a local point (lx, lz) on something
  * with yaw θ is at world (x + lx cos θ + lz sin θ, z − lx sin θ + lz cos θ).
- * Solids only rotate about Y, so a standing capsule against a solid is a circle against
- * a rectangle in XZ plus a height overlap.
+ * A solid's footprint only rotates about Y, so a standing capsule against a solid is a
+ * circle against a rectangle in XZ plus a height overlap. Tilted things (2026-11-05) keep
+ * that: their top and underside are sloped planes over the rectangle (see BoxSlope).
  */
 
-/** A solid box: centre, half-extents and yaw. */
+/**
+ * The sloped top and underside of a tilted box (2026-11-05): a slab, whose ends are upright.
+ * Each plane is its height over the footprint's middle and its rise per metre along local
+ * x and z.
+ */
+export interface BoxSlope {
+  top: number;
+  topX: number;
+  topZ: number;
+  under: number;
+  underX: number;
+  underZ: number;
+}
+
+/**
+ * A solid box: centre, half-extents and yaw. With a slope, those are its bounds, and the
+ * planes cut the solid inside them.
+ */
 export interface BoxDef {
   x: number;
   y: number;
@@ -17,6 +35,7 @@ export interface BoxDef {
   hy: number;
   hz: number;
   yaw: number;
+  slope?: BoxSlope;
 }
 
 /**
@@ -68,6 +87,38 @@ export interface DoorDef {
   cost?: number | undefined;
   /** How it starts. A door with a key or a cost starts locked unless it starts open. */
   open: boolean;
+  /** A switch opens it (2026-11-05): locked until then, whether or not it has a key. */
+  switched?: boolean;
+  /** Has a look: it can't swing, so opened by a switch it's gone from its doorway. */
+  vanishes?: boolean;
+}
+
+/** One row of a switch: a door by its index, and what plays. */
+export interface SwitchRowDef {
+  door: number;
+  /** Seconds until it opens; 0 at once. */
+  timer: number;
+  noise: string | undefined;
+  /** Seconds the noise repeats for. */
+  lasts: number;
+  openNoise: string | undefined;
+}
+
+/**
+ * Something tagged as a switch: (x, y, z) is the middle of the base of its solids, `solids`
+ * their indices (aiming at one is aiming at it), `reach` how near your feet must be.
+ */
+export interface SwitchDef {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  z: number;
+  reach: number;
+  /** Seconds the use button must be held; 0 for one press. */
+  useTime: number;
+  solids: readonly number[];
+  rows: readonly SwitchRowDef[];
 }
 
 /**
@@ -91,6 +142,7 @@ export interface WorldDef {
   ramps: readonly RampDef[];
   ladders: readonly LadderDef[];
   doors?: readonly DoorDef[];
+  switches?: readonly SwitchDef[];
   glass?: readonly GlassDef[];
   /**
    * Solid to move into but not to rays (2026-11-04): a zombies barricade's window, which
@@ -122,9 +174,11 @@ export interface GroundHit {
   solid: number;
 }
 
-// Solid layout: centre x, z; half-extents x, z; cos and sin of yaw; bottom; top at local
-// −z and at +z (equal for boxes).
-const STRIDE = 9;
+// Solid layout: centre x, z; half-extents x, z; cos and sin of yaw; lowest point; top at
+// local −z and at +z (equal for boxes); the top's rise per metre along x; the underside at
+// the middle and its rise per metre along x and z; highest point. All but tilted boxes have
+// flat undersides, and their rises are 0.
+const STRIDE = 14;
 const GRID_CELL = 4;
 /**
  * How far under the lowest terrain falling through a hole lands: deep enough that the
@@ -150,6 +204,9 @@ export class CollisionWorld {
   readonly terrain: HeightGrid;
   readonly ladders: readonly Ladder[];
   readonly doors: readonly DoorDef[];
+  readonly switches: readonly SwitchDef[];
+  /** Which switch each solid is part of, for those that are. */
+  private readonly switchSolids = new Map<number, number>();
   readonly solidCount: number;
   /** Solid index of the first door: doors come after boxes and ramps. */
   readonly firstDoor: number;
@@ -175,6 +232,10 @@ export class CollisionWorld {
   constructor(def: WorldDef) {
     this.terrain = new HeightGrid(def.terrain);
     this.doors = def.doors ?? [];
+    this.switches = def.switches ?? [];
+    this.switches.forEach((s, k) => {
+      for (const solid of s.solids) this.switchSolids.set(solid, k);
+    });
     this.glass = def.glass ?? [];
     this.firstDoor = def.boxes.length + def.ramps.length;
     this.firstGlass = this.firstDoor + this.doors.length;
@@ -184,7 +245,9 @@ export class CollisionWorld {
     this.s = new Float64Array(this.solidCount * STRIDE);
     let i = 0;
     for (const b of def.boxes) {
-      this.setSolid(i++, b.x, b.z, b.hx, b.hz, b.yaw, b.y - b.hy, b.y + b.hy, b.y + b.hy);
+      this.setSolid(i, b.x, b.z, b.hx, b.hz, b.yaw, b.y - b.hy, b.y + b.hy, b.y + b.hy);
+      if (b.slope) this.setSlope(i, b, b.slope);
+      i++;
     }
     for (const r of def.ramps)
       this.setSolid(i++, r.x, r.z, r.hx, r.hz, r.yaw, r.bottom, r.low, r.high);
@@ -264,6 +327,11 @@ export class CollisionWorld {
     this.setDoorOpen(door, this.isDoorOpen(door), this.isDoorFlipped(door));
   }
 
+  /** The switch a solid is part of, or -1. */
+  switchOf(solid: number): number {
+    return this.switchSolids.get(solid) ?? -1;
+  }
+
   /** The door a solid index is, or -1 for any other solid. */
   doorOf(solid: number): number {
     return solid >= this.firstDoor && solid < this.firstGlass ? solid - this.firstDoor : -1;
@@ -312,7 +380,21 @@ export class CollisionWorld {
     top0: number,
     top1: number,
   ): void {
-    this.s.set([x, z, hx, hz, Math.cos(yaw), Math.sin(yaw), bottom, top0, top1], i * STRIDE);
+    const top = Math.max(top0, top1);
+    const c = Math.cos(yaw);
+    const sn = Math.sin(yaw);
+    this.s.set([x, z, hx, hz, c, sn, bottom, top0, top1, 0, bottom, 0, 0, top], i * STRIDE);
+  }
+
+  /** Gives solid i, just set from box b, its sloped top and underside. */
+  private setSlope(i: number, b: BoxDef, slope: BoxSlope): void {
+    const o = i * STRIDE;
+    this.s[o + 7] = slope.top - slope.topZ * b.hz;
+    this.s[o + 8] = slope.top + slope.topZ * b.hz;
+    this.s[o + 9] = slope.topX;
+    this.s[o + 10] = slope.under;
+    this.s[o + 11] = slope.underX;
+    this.s[o + 12] = slope.underZ;
   }
 
   /**
@@ -350,9 +432,9 @@ export class CollisionWorld {
     const n = this.grid.query(x - radius, z - radius, x + radius, z + radius, this.found);
     for (let k = 0; k < n; k++) {
       const i = this.found[k]!;
-      const bottom = this.s[i * STRIDE + 6]!;
-      if (bottom >= minBottom && bottom < best && this.circleOverlaps(i, x, z, radius))
-        best = bottom;
+      if (this.s[i * STRIDE + 6]! >= best || !this.circleOverlaps(i, x, z, radius)) continue;
+      const bottom = this.underAtClosest(i);
+      if (bottom >= minBottom && bottom < best) best = bottom;
     }
     return best;
   }
@@ -367,7 +449,7 @@ export class CollisionWorld {
     for (let k = 0; k < n && count < bottoms.length; k++) {
       const i = this.found[k]!;
       if (!this.circleOverlaps(i, x, z, 1e-6)) continue;
-      bottoms[count] = this.s[i * STRIDE + 6]!;
+      bottoms[count] = this.underAtClosest(i);
       tops[count] = this.topAtClosest(i);
       count++;
     }
@@ -383,7 +465,8 @@ export class CollisionWorld {
     for (let k = 0; k < n; k++) {
       const i = this.found[k]!;
       if (this.s[i * STRIDE + 6]! >= high) continue;
-      if (this.circleOverlaps(i, x, z, radius) && this.topAtClosest(i) > low) return true;
+      if (!this.circleOverlaps(i, x, z, radius)) continue;
+      if (this.underAtClosest(i) < high && this.topAtClosest(i) > low) return true;
     }
     return false;
   }
@@ -409,7 +492,8 @@ export class CollisionWorld {
         const o = i * STRIDE;
         if (this.s[o + 6]! >= high) continue;
         if (!this.circleOverlaps(i, pos.x, pos.z, radius)) continue;
-        if (this.topAtClosest(i) <= low) continue;
+        const under = this.underAtClosest(i);
+        if (under >= high || this.topAtClosest(i) <= low) continue;
         // Push direction in the solid's local frame, then rotated back to world.
         let px: number;
         let pz: number;
@@ -417,6 +501,14 @@ export class CollisionWorld {
           const f = (radius - closestDist) / closestDist;
           px = (localX - closestX) * f;
           pz = (localZ - closestZ) * f;
+        } else if (under >= low && (this.s[o + 11] !== 0 || this.s[o + 12] !== 0)) {
+          // Walked in under a sloped underside: back the way it rises until the head fits,
+          // not out through a side metres away.
+          const ux = this.s[o + 11]!;
+          const uz = this.s[o + 12]!;
+          const f = (high - under) / (ux * ux + uz * uz);
+          px = ux * f;
+          pz = uz * f;
         } else {
           // Centre inside the rectangle: out through the nearest side.
           const penX = this.s[o + 2]! - Math.abs(localX);
@@ -519,14 +611,26 @@ export class CollisionWorld {
     const o = i * STRIDE;
     const top0 = this.s[o + 7]!;
     const top1 = this.s[o + 8]!;
-    if (top0 === top1) return top0;
+    const topX = this.s[o + 9]!;
+    if (top0 === top1 && topX === 0) return top0;
     const hz = this.s[o + 3]!;
-    return top0 + ((top1 - top0) * (closestZ + hz)) / (2 * hz);
+    const top = top0 + ((top1 - top0) * (closestZ + hz)) / (2 * hz) + topX * closestX;
+    return Math.min(top, this.s[o + 13]!);
+  }
+
+  /** Underside of solid i at the closest point; call right after circleOverlaps(i). */
+  private underAtClosest(i: number): number {
+    const o = i * STRIDE;
+    const ux = this.s[o + 11]!;
+    const uz = this.s[o + 12]!;
+    if (ux === 0 && uz === 0) return this.s[o + 6]!;
+    return Math.max(this.s[o + 10]! + ux * closestX + uz * closestZ, this.s[o + 6]!);
   }
 
   /**
    * Ray against solid i: the intersection of the x and z slabs (local frame), y ≥ bottom,
-   * and y below the (maybe sloped) top. Leaves the entering face in rayFace.
+   * y below the (maybe sloped) top, and for a tilted box y above its underside and below
+   * its highest point. Leaves the entering face in rayFace.
    */
   private raySolid(
     i: number,
@@ -559,8 +663,18 @@ export class CollisionWorld {
     if (!slab(loz, ldz, hz, FACE_Z)) return Infinity;
     // y ≥ bottom, as bottom − y ≤ 0.
     if (!halfSpace(bottom - oy, -dy, FACE_BOTTOM)) return Infinity;
-    // y ≤ top0 + k (lz + hz), as y − k lz − (top0 + k hz) ≤ 0.
-    if (!halfSpace(oy - k * loz - (top0 + k * hz), dy - k * ldz, FACE_TOP)) return Infinity;
+    // y ≤ top0 + k (lz + hz) + topX lx, as y − topX lx − k lz − (top0 + k hz) ≤ 0.
+    const topX = this.s[o + 9]!;
+    const a0 = oy - topX * lox - k * loz - (top0 + k * hz);
+    if (!halfSpace(a0, dy - topX * ldx - k * ldz, FACE_TOP)) return Infinity;
+    const ux = this.s[o + 11]!;
+    const uz = this.s[o + 12]!;
+    if (ux !== 0 || uz !== 0) {
+      // y ≥ under + ux lx + uz lz, then y ≤ the highest point.
+      const under = this.s[o + 10]! + ux * lox + uz * loz - oy;
+      if (!halfSpace(under, ux * ldx + uz * ldz - dy, FACE_UNDER)) return Infinity;
+    }
+    if (!halfSpace(oy - this.s[o + 13]!, dy, FACE_CAP)) return Infinity;
     return rayT0;
   }
 
@@ -584,11 +698,21 @@ export class CollisionWorld {
     if (face === FACE_X) nx = ldx > 0 ? -1 : 1;
     else if (face === FACE_Z) nz = ldz > 0 ? -1 : 1;
     else if (face === FACE_BOTTOM) ny = -1;
+    else if (face === FACE_CAP) ny = 1;
     else if (face === FACE_TOP) {
       const k = (this.s[o + 8]! - this.s[o + 7]!) / (2 * this.s[o + 3]!);
-      const len = Math.hypot(1, k);
+      const topX = this.s[o + 9]!;
+      const len = Math.hypot(1, topX, k);
+      nx = -topX / len;
       ny = 1 / len;
       nz = -k / len;
+    } else if (face === FACE_UNDER) {
+      const ux = this.s[o + 11]!;
+      const uz = this.s[o + 12]!;
+      const len = Math.hypot(1, ux, uz);
+      nx = ux / len;
+      ny = -1 / len;
+      nz = uz / len;
     } else {
       // The ray started inside.
       setHit(hit, distance, -dx, -dy, -dz);
@@ -669,6 +793,8 @@ const FACE_X = 0;
 const FACE_Z = 1;
 const FACE_BOTTOM = 2;
 const FACE_TOP = 3;
+const FACE_UNDER = 4;
+const FACE_CAP = 5;
 
 function slab(lo: number, ld: number, h: number, face: number): boolean {
   if (Math.abs(ld) < 1e-12) return lo >= -h && lo <= h;

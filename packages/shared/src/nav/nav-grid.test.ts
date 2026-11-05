@@ -45,6 +45,14 @@ function route(nav: NavGrid, a: number[], b: number[]): { result: string; pts: n
   return { result, pts: points(out) };
 }
 
+/** A row of 4 cm bars right across the test map at this z, 0.18 m apart. */
+function fenceAt(z: number): BoxDef[] {
+  const bars: BoxDef[] = [];
+  for (let x = -20; x < 20; x += 0.18)
+    bars.push(aabb(x - 0.02, 0, z - 0.02, x + 0.02, 2.4, z + 0.02));
+  return bars;
+}
+
 /** How many nodes the column at (x, z) has. */
 function layersAt(nav: NavGrid, x: number, z: number): number {
   const c =
@@ -169,6 +177,15 @@ describe('NavGrid', () => {
       expect(result, `offset ${offset}`).toBe('found');
       // Through the gap, not round the end of the wall.
       expect(length(pts)).toBeLessThan(30);
+    }
+  });
+
+  it('never walks through a fence of thin bars, however the grid lines up', () => {
+    for (let i = 0; i < 25; i++) {
+      const nav = new NavGrid(makeWorld({ boxes: fenceAt(i * 0.02) }));
+      const a = nav.nearest(0, 0, -5);
+      const b = nav.nearest(0, 0, 5);
+      expect(nav.component[a]).not.toBe(nav.component[b]);
     }
   });
 

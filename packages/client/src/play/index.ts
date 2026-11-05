@@ -1110,6 +1110,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const doorIndex = lootable?.kind === 'door' ? lootable.index : -1;
     const door = doorIndex >= 0 ? sim.doors[doorIndex]! : null;
     const doorKey = door?.locked ? keyName(items, world, doorIndex) : null;
+    const switchIndex = lootable?.kind === 'switch' ? lootable.index : -1;
+    const switchUseTime = switchIndex >= 0 ? world.switches[switchIndex]!.useTime : 0;
     const key = doorIndex >= 0 ? world.doors[doorIndex]!.key : undefined;
     const hasKey = !!door?.locked && key !== undefined && !!findKey(player.gear, key);
     // Zombies mode: a door bought with points, and a buy spot in reach (an item or a door
@@ -1131,27 +1133,29 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         : investigateInReach(sim, player);
     const label = spot
       ? 'investigate'
-      : buySpot >= 0
-        ? sim.zombies!.buys[buySpot]!.offer?.by === player.id
-          ? 'take'
-          : 'buy'
-        : barricade >= 0
-          ? 'rebuild'
-          : !lootable
-            ? 'use'
-            : door
-              ? door.locked
-                ? doorCost !== undefined
-                  ? 'buy'
-                  : hasKey
-                    ? 'unlock'
-                    : 'locked'
-                : door.open
-                  ? 'close'
-                  : 'open'
-              : lootable.kind === 'ground'
-                ? 'take'
-                : 'loot';
+      : switchIndex >= 0
+        ? 'activate'
+        : buySpot >= 0
+          ? sim.zombies!.buys[buySpot]!.offer?.by === player.id
+            ? 'take'
+            : 'buy'
+          : barricade >= 0
+            ? 'rebuild'
+            : !lootable
+              ? 'use'
+              : door
+                ? door.locked
+                  ? doorCost !== undefined
+                    ? 'buy'
+                    : hasKey
+                      ? 'unlock'
+                      : 'locked'
+                  : door.open
+                    ? 'close'
+                    : 'open'
+                : lootable.kind === 'ground'
+                  ? 'take'
+                  : 'loot';
     if (label !== useLabel) {
       useLabel = label;
       useButton.textContent = label;
@@ -1163,6 +1167,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.investigate = false;
     input.buy = null;
     input.rebuild = !dead && barricade >= 0 && controls.interactHeld;
+    input.switch =
+      !dead && !spot && switchIndex >= 0 && (controls.interact || controls.interactHeld)
+        ? switchIndex
+        : null;
     if (!dead && controls.interact && screenOpen) {
       closeScreen();
     } else if (!dead && controls.interact && spot) {
@@ -1355,6 +1363,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       } else if (e.type === 'investigate' && e.by === player.id) {
         el.raidHud.note(`Investigated · ${markerText.get(e.marker) ?? 'quest marker'}`, now);
         if (screen) screen.refresh();
+      } else if (e.type === 'switch' && e.by === player.id) {
+        el.raidHud.note(`${world.switches[e.index]?.name ?? 'Switch'} on`, now);
       } else if (e.type === 'door' && e.by === player.id && e.result === 'blocked') {
         el.raidHud.warn('Someone’s in the doorway', now);
       } else if (e.type === 'door' && e.by === player.id && e.result === 'poor') {
@@ -1466,27 +1476,34 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     }
     el.vitals.update(player, items, now);
     el.raidHud.update(sim, player, ended !== null);
+    const flipping = player.switching;
+    el.raidHud.setUse(flipping ? flipping.held / world.switches[flipping.index]!.useTime : null);
     // The item the use button would take: lit up, and named under the crosshair. Picking
     // one up this tick may have moved the rest along the list.
     const onGround = lootable?.kind === 'ground' && sim.ground[lootable.index] === lootable.g;
     groundItems.update(sim.ground, onGround ? lootable.index : -1);
     const prompt = onGround
       ? groundLabel(lootable.g.item)
-      : doorCost !== undefined
-        ? `${map.doors[doorIndex]?.name ? `Clear the ${map.doors[doorIndex]!.name!.toLowerCase()}` : 'Open door'} · ${doorCost.toLocaleString()} points`
-        : buySpot >= 0
-          ? buyLabel(buySpot)
-          : barricade >= 0
-            ? 'Hold to rebuild the barricade'
-            : doorKey
-              ? hasKey
-                ? `Unlock with ${doorKey}`
-                : `Locked · needs ${doorKey}`
-              : spot
-                ? (markerText.get(spot.marker) ?? '')
-                : '';
+      : switchIndex >= 0
+        ? `${switchUseTime > 0 ? 'Hold to activate ' : ''}${world.switches[switchIndex]!.name}`
+        : door?.opening !== undefined
+          ? `Opening in ${Math.ceil(door.opening)} s`
+          : doorCost !== undefined
+            ? `${map.doors[doorIndex]?.name ? `Clear the ${map.doors[doorIndex]!.name!.toLowerCase()}` : 'Open door'} · ${doorCost.toLocaleString()} points`
+            : buySpot >= 0
+              ? buyLabel(buySpot)
+              : barricade >= 0
+                ? 'Hold to rebuild the barricade'
+                : doorKey
+                  ? hasKey
+                    ? `Unlock with ${doorKey}`
+                    : `Locked · needs ${doorKey}`
+                  : spot
+                    ? (markerText.get(spot.marker) ?? '')
+                    : '';
     // Desktop has no use button to say what F does, so the prompt says it.
     if (inputMode.desktop && useLabel !== 'use' && useLabel !== 'locked') {
+      // A door a switch is opening says so rather than offering to open it.
       const verb = useLabel[0]!.toUpperCase() + useLabel.slice(1);
       el.raidHud.setPrompt(
         onGround
@@ -1495,7 +1512,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
             ? `Loot ${nameOf({ kind: 'container', id: lootable.c.id })}`
             : lootable?.kind === 'body'
               ? `Loot ${nameOf({ kind: 'body', id: lootable.c.id })}`
-              : prompt || `${verb}${door ? ' door' : ''}`,
+              : switchIndex >= 0
+                ? switchUseTime > 0
+                  ? prompt
+                  : `${verb} ${prompt}`
+                : prompt || `${verb}${door ? ' door' : ''}`,
         now,
         'F',
       );

@@ -43,7 +43,8 @@ import { FriendsPage } from './friends-page';
 import { lastMode, rememberMode, rememberRaid, type GameMode } from './last-raid';
 import { InventoryController } from './inventory-controller';
 import { PartyStrip } from './party-strip';
-import { Inventory } from './raid-screen';
+import { Inventory, StashSearchContext, type StashSearch } from './raid-screen';
+import { countHits, searcher } from './stash-search';
 import { QuestsPage, questsLine } from './quests-page';
 import { VendorsPage } from './vendors-page';
 
@@ -783,6 +784,15 @@ function StashPage({
   const [buying, setBuying] = useState(false);
   const [sellAllFor, setSellAllFor] = useState<number | null>(null);
   const [sellingAll, setSellingAll] = useState(false);
+  const [query, setQuery] = useState('');
+  const hit = searcher(items, query);
+  const hits = stash.profile.stash.map((page) => (hit ? countHits(page, hit) : 0));
+  const search: StashSearch = {
+    query,
+    setQuery,
+    hit,
+    found: hits.reduce((sum, n) => sum + n, 0),
+  };
   const price = nextPagePrice(stash.profile);
   // The controller's open "container" is the page shown: a double-tap into the stash
   // tries it first. A new stash (a page bought, or reloaded) opens on startPage.
@@ -857,12 +867,13 @@ function StashPage({
           stash.profile.stash.map((_, p) => (
             <button
               key={p}
-              className={`stash-page${p === shown ? ' active' : ''}`}
-              aria-label={`Stash page ${p + 1}`}
+              className={`stash-page${p === shown ? ' active' : ''}${hit && !hits[p] ? ' no-hits' : ''}`}
+              aria-label={`Stash page ${p + 1}${hit ? `, ${hits[p]} found` : ''}`}
               data-drop={JSON.stringify({ into: stashOwner(p) })}
               onClick={() => show(p)}
             >
               {p + 1}
+              {hit && hits[p]! > 0 && <span className="stash-page-hits">{hits[p]}</span>}
             </button>
           ))}
         {price !== null && (
@@ -904,7 +915,9 @@ function StashPage({
         </button>
       </header>
       {notice && <p className="menu-notice">{notice}</p>}
-      <Inventory inv={inv} version={version} />
+      <StashSearchContext.Provider value={search}>
+        <Inventory inv={inv} version={version} />
+      </StashSearchContext.Provider>
     </div>
   );
 }

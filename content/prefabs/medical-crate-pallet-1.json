@@ -14,7 +14,12 @@
         {
           "type": "prefab",
           "prefab": "steel-barrel",
-          "pos": [0.368, 0.14, 0.585]
+          "pos": [0.368, 0.2, 0.585]
+        },
+        {
+          "type": "prefab",
+          "prefab": "steel-barrel",
+          "pos": [-0.3, 0.2, 0.585]
         },
         {
           "type": "prefab",

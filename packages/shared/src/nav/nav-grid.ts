@@ -73,7 +73,9 @@ export class NavGrid {
     for (let i = 0; i < world.doors.length; i++) world.setDoorOpen(i, true);
     // A door bought with points (zombies mode) never swings open: it goes, leaving its
     // doorway (or the stairs a couch blocked) clear, so it's built as gone.
-    world.doors.forEach((d, i) => d.cost !== undefined && world.setDoorGone(i, true));
+    world.doors.forEach((d, i) => {
+      if (d.cost !== undefined || d.vanishes) world.setDoorGone(i, true);
+    });
     const t = world.terrain;
     const cs = this.cellSize;
     this.minX = t.minX;
@@ -150,7 +152,7 @@ export class NavGrid {
       for (let k = this.columnStart[c]!; k < this.columnStart[c + 1]!; k++) this.nodeColumn[k] = c;
 
     this.links = new Uint8Array(count);
-    for (let k = 0; k < count; k++) this.links[k] = this.findLinks(k);
+    for (let k = 0; k < count; k++) this.links[k] = this.findLinks(k, world);
     doorWas.forEach(([open, flipped], i) => world.setDoorOpen(i, open!, flipped));
     goneWas.forEach((gone, i) => world.setDoorGone(i, gone));
     this.doorLinks = world.doors.map((_, i) => this.linksThrough(world, i));
@@ -268,7 +270,19 @@ export class NavGrid {
     return best;
   }
 
-  private findLinks(node: number): number {
+  /**
+   * Is the halfway point between two neighbours as clear as a node has to be? Two nodes can
+   * sit either side of something thinner than a cell's spare room, such as a fence: 0.5 m
+   * apart, with a 4 cm bar blocking only 0.44 m of that (2026-11-05).
+   */
+  private canCross(world: CollisionWorld, a: number, b: number): boolean {
+    const low = Math.min(this.heights[a]!, this.heights[b]!);
+    const x = (this.nodeX(a) + this.nodeX(b)) / 2;
+    const z = (this.nodeZ(a) + this.nodeZ(b)) / 2;
+    return !world.overlaps(x, z, NAV.radius, low + NAV.climb, low + NAV.height);
+  }
+
+  private findLinks(node: number, world: CollisionWorld): number {
     const c = this.nodeColumn[node]!;
     const q = c % this.cols;
     const r = Math.floor(c / this.cols);
@@ -276,7 +290,8 @@ export class NavGrid {
     let bits = 0;
     const side: number[] = [];
     for (let d = 0; d < 4; d++) {
-      side[d] = this.nodeNear(q + DIR_Q[d]!, r + DIR_R[d]!, h);
+      const n = this.nodeNear(q + DIR_Q[d]!, r + DIR_R[d]!, h);
+      side[d] = n >= 0 && this.canCross(world, node, n) ? n : -1;
       if (side[d]! >= 0) bits |= 1 << d;
     }
     for (let d = 4; d < 8; d++) {

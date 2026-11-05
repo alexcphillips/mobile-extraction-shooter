@@ -1,0 +1,193 @@
+{
+  "formatVersion": 3,
+  "id": "site-fence",
+  "name": "Site fence panel",
+  "colours": {
+    "frame": "#a9afb0",
+    "mesh": "#8d9496",
+    "clamp": "#5c6265",
+    "foot": "#b5b0a6",
+    "foot-dark": "#3a3835"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [-1.75, 0, 0],
+      "size": [0.24, 0.13, 0.62],
+      "colour": "foot",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.75, 0.13, 0],
+      "size": [0.13, 0.003, 0.5],
+      "colour": "foot-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.75, 0, 0],
+      "size": [0.24, 0.13, 0.62],
+      "colour": "foot",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.75, 0.13, 0],
+      "size": [0.13, 0.003, 0.5],
+      "colour": "foot-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.73, 0.02, 0],
+      "size": [0.04, 1.98, 0.04],
+      "colour": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [1.73, 0.02, 0],
+      "size": [0.04, 1.98, 0.04],
+      "colour": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.1, 0],
+      "size": [3.5, 0.04, 0.04],
+      "colour": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.96, 0],
+      "size": [3.5, 0.04, 0.04],
+      "colour": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [-1.4657, 0.14, 0],
+      "size": [0.014, 1.82, 0.014],
+      "colour": "mesh"
+    },
+    {
+      "type": "box",
+      "pos": [-1.2214, 0.14, 0],
+      "size": [0.014, 1.82, 0.014],
+      "colour": "mesh"
+    },
+    {
+      "type": "box",
+      "pos": [-0.9771, 0.14, 0],
+      "size": [0.014, 1.82, 0.014],
+      "colour": "mesh"
+    },
+    {
+      "type": "box",
+      "pos": [-0.7329, 0.14, 0],
+      "size": [0.014, 1.82, 0.014],
+      "colour": "mesh"
+    },
+    {
+      "type": "box",
+      "pos": [-0.4886, 0.14, 0],
+      "size": [0.014, 1.82, 0.014],
+      "colour": "mesh"
+    },
+    {
+      "type": "box",
+      "pos": [-0.2443, 0.14, 0],
+      "size": [0.014, 1.82, 0.014],
+      "colour": "mesh"
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.14, 0],
+      "size": [0.014, 1.82, 0.014],
+      "colour": "mesh"
+    },
+    {
+      "type": "box",
+      "pos": [0.2443, 0.14, 0],
+      "size": [0.014, 1.82, 0.014],
+      "colour": "mesh"
+    },
+    {
+      "type": "box",
+      "pos": [0.4886, 0.14, 0],
+      "size": [0.014, 1.82, 0.014],
+      "colour": "mesh"
+    },
+    {
+      "type": "box",
+      "pos": [0.7329, 0.14, 0],
+      "size": [0.014, 1.82, 0.014],
+      "colour": "mesh"
+    },
+    {
+      "type": "box",
+      "pos": [0.9771, 0.14, 0],
+      "size": [0.014, 1.82, 0.014],
+      "colour": "mesh"
+    },
+    {
+      "type": "box",
+      "pos": [1.2214, 0.14, 0],
+      "size": [0.014, 1.82, 0.014],
+      "colour": "mesh"
+    },
+    {
+      "type": "box",
+      "pos": [1.4657, 0.14, 0],
+      "size": [0.014, 1.82, 0.014],
+      "colour": "mesh"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.393, 0],
+      "size": [3.42, 0.014, 0.014],
+      "colour": "mesh",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.653, 0],
+      "size": [3.42, 0.014, 0.014],
+      "colour": "mesh",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.913, 0],
+      "size": [3.42, 0.014, 0.014],
+      "colour": "mesh",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.173, 0],
+      "size": [3.42, 0.014, 0.014],
+      "colour": "mesh",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.433, 0],
+      "size": [3.42, 0.014, 0.014],
+      "colour": "mesh",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.693, 0],
+      "size": [3.42, 0.014, 0.014],
+      "colour": "mesh",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.75, 1.66, 0],
+      "size": [0.16, 0.05, 0.07],
+      "colour": "clamp",
+      "collide": false
+    }
+  ]
+}

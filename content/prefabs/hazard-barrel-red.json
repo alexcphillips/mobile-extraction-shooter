@@ -1,0 +1,13 @@
+{
+  "formatVersion": 3,
+  "id": "hazard-barrel-red",
+  "name": "Hazard barrel (red)",
+  "nodes": [
+    {
+      "type": "prefab",
+      "prefab": "hazard-barrel",
+      "pos": [0, 0, 0],
+      "colours": { "paint": "#b5322a", "paint-dark": "#84231e" }
+    }
+  ]
+}

@@ -95,6 +95,7 @@ export function mergeInputs(queue: PlayerInput[], last: PlayerInput | null): Pla
     if (i.draw) merged.draw = i.draw;
     if (i.use) merged.use = i.use;
     if (i.door !== null && i.door !== undefined) merged.door = i.door;
+    if (i.switch !== null && i.switch !== undefined) merged.switch = i.switch;
     if (i.search) merged.search = i.search;
     if (i.ammo) merged.ammo = i.ammo;
     if (i.inventory) inventory.push(...i.inventory);

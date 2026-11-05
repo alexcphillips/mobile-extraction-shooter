@@ -105,8 +105,7 @@
           "size": [9.6, 3, 0.2],
           "colour": "walls",
           "openings": [
-            { "along": -2.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "#a8d4e0" },
-            { "along": 2.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "#a8d4e0" }
+            { "along": -1.85, "width": 5, "bottom": 0.9, "top": 2.4, "glass": "#a8d4e0" }
           ],
           "yaw": 90
         },
@@ -278,8 +277,7 @@
           "colour": "walls",
           "openings": [
             { "along": -5.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" },
-            { "along": 1.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" },
-            { "along": 5.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" }
+            { "along": 3.65, "width": 5, "bottom": 0.9, "top": 2.4, "glass": "glass" }
           ]
         },
         {
@@ -290,7 +288,7 @@
           "colour": "walls",
           "openings": [
             { "along": -4.7, "width": 1.2, "bottom": 0, "top": 2.1 },
-            { "along": 2.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" }
+            { "along": 3.65, "width": 5, "bottom": 0.9, "top": 2.4, "glass": "glass" }
           ]
         },
         {
@@ -319,10 +317,7 @@
           "pos": [7.4, 3.4, 0],
           "size": [9.6, 2.8, 0.2],
           "colour": "walls",
-          "openings": [
-            { "along": -2.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" },
-            { "along": 2.5, "width": 2.8, "bottom": 0.9, "top": 2.4, "glass": "glass" }
-          ],
+          "openings": [{ "along": 0, "width": 6, "bottom": 0.9, "top": 2.4, "glass": "glass" }],
           "yaw": 90
         },
         {

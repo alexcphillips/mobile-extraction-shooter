@@ -133,6 +133,70 @@ describe('CollisionWorld.raycast', () => {
   });
 });
 
+describe('CollisionWorld tilted boxes', () => {
+  // A 0.4 m thick slab over 8 × 3 m, rising 0.5 m per metre towards +z, its middle 2 m up.
+  const slab: BoxDef = {
+    x: 0,
+    y: 2,
+    z: 0,
+    hx: 1.5,
+    hy: 2.2,
+    hz: 4,
+    yaw: 0,
+    slope: { top: 2.2, topX: 0, topZ: 0.5, under: 1.8, underX: 0, underZ: 0.5 },
+  };
+
+  it('stands on the sloped top and under the sloped underside', () => {
+    const w = world({ boxes: [slab] });
+    expect(w.groundAt(0, 2, 0.3, 100)).toBeCloseTo(3.2);
+    expect(w.groundAt(0, -2, 0.3, 100)).toBeCloseTo(1.2);
+    expect(w.ceilingAt(0, 2, 0.3, -10)).toBeCloseTo(2.8);
+    expect(w.ceilingAt(0, -2, 0.3, -10)).toBeCloseTo(0.8);
+  });
+
+  it('slopes across x as well', () => {
+    const slope = { top: 2, topX: 0.25, topZ: 0, under: 1, underX: 0.25, underZ: 0 };
+    const w = world({ boxes: [{ ...slab, slope }] });
+    expect(w.groundAt(1, 0, 0.3, 100)).toBeCloseTo(2.25);
+  });
+
+  it('stays inside its bounds', () => {
+    const w = world({ boxes: [{ ...slab, hy: 1.2 }] });
+    expect(w.groundAt(0, 3.9, 0.3, 100)).toBeCloseTo(3.2);
+  });
+
+  it('counts the height at the point for pushing and overlaps', () => {
+    const w = world({ boxes: [slab] });
+    // Head under the raised end: clear. The same head at the low end isn't.
+    expect(w.overlaps(0, 3, 0.3, 0, 1.8)).toBe(false);
+    expect(w.overlaps(0, -3, 0.3, 0, 1.8)).toBe(true);
+  });
+
+  it('pushes a head out up the underside, not out of a side', () => {
+    const w = world({ boxes: [slab] });
+    // The underside is at 1.8 m at the middle, so a 2.0 m head fits 0.4 m uphill of it.
+    const pos = { x: 0.1, z: 0 };
+    expect(w.pushOut(pos, 0.3, 0.4, 2)).toBe(true);
+    expect(pos.x).toBeCloseTo(0.1);
+    expect(pos.z).toBeCloseTo(0.4);
+  });
+
+  it('lets rays through under it and hits the sloped faces', () => {
+    const w = world({ boxes: [slab] });
+    const hit = createRayHit();
+    // Level along −z at y = 0.5, from under the raised end: the underside comes down to it.
+    expect(w.raycast(0, 0.5, 3, 0, 0, -1, 20, hit)).toBeCloseTo(5.6, 5);
+    expect(hit.ny).toBeLessThan(0);
+    expect(hit.ny).toBeCloseTo(-1 / Math.hypot(1, 0.5));
+    expect(hit.nz).toBeCloseTo(0.5 / Math.hypot(1, 0.5));
+    // Straight down onto the top.
+    expect(w.raycast(0, 10, 2, 0, -1, 0, 20, hit)).toBeCloseTo(6.8);
+    expect(hit.ny).toBeCloseTo(1 / Math.hypot(1, 0.5));
+    // Straight up from under it.
+    expect(w.raycast(0, 0, 2, 0, 1, 0, 20, hit)).toBeCloseTo(2.8);
+  });
+});
+
 describe('CollisionWorld standing queries', () => {
   const ramp: RampDef = { x: 0, z: 0, hx: 1, hz: 2, yaw: 0, bottom: 0, low: 0, high: 2 };
 

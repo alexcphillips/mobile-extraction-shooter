@@ -190,7 +190,7 @@ function playElements(): PlayElements {
     hud,
     optic: new OpticOverlay(byId('optic'), byId('crosshair')),
     vitals: new Vitals(byId('vitals'), byId('ammo'), byId('crosshair'), byId('hurt')),
-    raidHud: new RaidHud(byId('timer'), byId('extract'), byId('prompt')),
+    raidHud: new RaidHud(byId('timer'), byId('extract'), byId('prompt'), byId('use-ring')),
     raid: byId('raid'),
     results: byId('results'),
     questMarkers: byId('quest-markers'),

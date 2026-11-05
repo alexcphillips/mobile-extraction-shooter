@@ -1,0 +1,25 @@
+{
+  "formatVersion": 3,
+  "id": "medical-crate-pallet",
+  "nodes": [
+    {
+      "type": "group",
+      "pos": [0, 0, 0],
+      "nodes": [
+        {
+          "type": "prefab",
+          "prefab": "medical-crate",
+          "pos": [-0.108, 0.14, 0.114],
+          "yaw": -90
+        },
+        {
+          "type": "prefab",
+          "prefab": "wood-pallet-large",
+          "pos": [0.107, 0, -0.114],
+          "yaw": -90
+        }
+      ],
+      "name": "medical-crate-pallet"
+    }
+  ]
+}

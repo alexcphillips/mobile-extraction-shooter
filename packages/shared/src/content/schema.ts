@@ -6,10 +6,12 @@ import type { ContentFormat } from './format';
  * degrees, so files are easy to read and write by hand. y is up, and yaw 0 faces −z.
  * Every shape's pos is the centre of its base, so y is where it stands.
  *
- * Rotation is yaw, then pitch, then roll (three.js Euler order 'YXZ'). Only box and
- * cylinder may tilt (pitch and roll), which turns them about their centre (pos raised by
- * half the height). Solids collide as boxes rotated about y only, so a tilted one collides
- * as its upright bounding box, or not at all with collide: false.
+ * Rotation is yaw, then pitch, then roll (three.js Euler order 'YXZ'). Box and cylinder
+ * may tilt (pitch and roll), which turns them about their centre (pos raised by half the
+ * height). Prefabs and groups may too (2026-11-05), about their pos, taking all they hold
+ * with them. Doors in them become panels fixed shut; ladders, glass, barricades and
+ * buildings can't be in them. A tilted solid collides as a slab, with a sloped top and
+ * underside over an upright footprint, or not at all with collide: false.
  */
 
 const finite = z.number().refine(Number.isFinite, 'must be a finite number');
@@ -28,6 +30,11 @@ export const colourRefSchema = z
   .string()
   .regex(/^(#[0-9a-fA-F]{6}|[a-z][a-z0-9-]*)$/, 'a colour is #rrggbb or a colour slot name');
 const slotsSchema = z.record(idSchema, hexColourSchema);
+/** A node's path id, its ids joined by "/": "lift/gate". */
+const idPathSchema = z
+  .string()
+  .regex(/^[a-z0-9#][a-z0-9#.-]*(\/[a-z0-9#][a-z0-9#.-]*)*$/, 'a path of ids joined by /');
+const nonNegativeNumber = finite.refine((n) => n >= 0, 'must be 0 or more');
 
 /**
  * What a loot container is filled from (2026-11-02): loot tables by weight, and a weight
@@ -74,6 +81,33 @@ const lootSchema = z
   })
   .optional();
 
+/**
+ * Makes a box, cylinder, group or placed prefab a switch (2026-11-05): aim at what's solid
+ * in it and use it, once a raid. Each row opens a door, and a door named here is locked until
+ * then. `opens` is a door's id beside the switch, else its path id in the map ("lift/gate").
+ */
+const switchSchema = z
+  .strictObject({
+    /** What the prompt calls it. Defaults to "switch". */
+    name: z.string().min(1).optional(),
+    /** Seconds the use button must be held to use it. Left out, one press does. */
+    useTime: nonNegativeNumber.optional(),
+    rows: z.array(
+      z.strictObject({
+        opens: idPathSchema,
+        /** Seconds until it opens. Left out, it opens at once. */
+        timer: nonNegativeNumber.optional(),
+        /** A sound file's id, heard all over the map while it plays. */
+        noise: idSchema.optional(),
+        /** Seconds the noise repeats for. Defaults to the timer. */
+        lasts: nonNegativeNumber.optional(),
+        /** A sound file's id, played at the door as it opens. */
+        openNoise: idSchema.optional(),
+      }),
+    ),
+  })
+  .optional();
+
 const solid = {
   id: idSchema.optional(),
   pos: vec3,
@@ -106,6 +140,7 @@ const boxSchema = z.strictObject({
   /** How far the top face's middle is moved along x and z from over the bottom's, so it leans. */
   lean: z.tuple([finite, finite]).optional(),
   loot: lootSchema,
+  switch: switchSchema,
 });
 
 const cylinderSchema = z.strictObject({
@@ -120,6 +155,7 @@ const cylinderSchema = z.strictObject({
   pitch: angle,
   roll: angle,
   loot: lootSchema,
+  switch: switchSchema,
 });
 
 /**
@@ -183,9 +219,12 @@ const prefabRefSchema = z.strictObject({
   prefab: idSchema,
   pos: vec3,
   yaw: angle,
+  pitch: angle,
+  roll: angle,
   /** Overrides the prefab's colour slots. Values can name slots of the enclosing scope. */
   colours: z.record(idSchema, colourRefSchema).optional(),
   loot: lootSchema,
+  switch: switchSchema,
 });
 
 /**
@@ -220,6 +259,16 @@ const doorSchema = z
     look: idSchema.optional(),
     /** What the use button calls it ("Couch"); left out, a door. */
     name: z.string().min(1).optional(),
+    /**
+     * With a look, opened by a switch: drawn rolling up, as a shutter does, rather than
+     * just vanishing (2026-11-05).
+     */
+    rollUp: z.literal(true).optional(),
+    /**
+     * A light in the door's frame showing where a switch has got to (2026-11-05): dull red
+     * until it's used, flashing yellow while the timer runs, green once open.
+     */
+    lamp: z.strictObject({ pos: vec3, size: size3 }).optional(),
     open: z.boolean().optional(),
     colour: colourRefSchema,
   })
@@ -227,6 +276,21 @@ const doorSchema = z
     message: 'a door has a key or a cost, not both',
     path: ['cost'],
   });
+
+/**
+ * A prefab drawn apart from the map, moved by `travel` (metres, in its own frame) over the
+ * timer of the door beside it that `door` names, then hidden as the door opens (2026-11-05).
+ * Drawn only: it doesn't collide, so whatever it arrives as is solid in the map already.
+ */
+const moverSchema = z.strictObject({
+  type: z.literal('mover'),
+  id: idSchema.optional(),
+  pos: vec3,
+  yaw: angle,
+  prefab: idSchema,
+  travel: vec3,
+  door: idPathSchema,
+});
 
 const marker = { id: idSchema.optional(), pos: vec3 };
 
@@ -403,7 +467,10 @@ const groupSchema = z.strictObject({
   name: z.string().min(1).optional(),
   pos: vec3,
   yaw: angle,
+  pitch: angle,
+  roll: angle,
   loot: lootSchema,
+  switch: switchSchema,
   get nodes(): z.ZodArray<typeof nodeSchema> {
     return z.array(nodeSchema);
   },
@@ -436,6 +503,7 @@ export const nodeSchema: z.ZodDiscriminatedUnion<
     typeof ladderSchema,
     typeof prefabRefSchema,
     typeof doorSchema,
+    typeof moverSchema,
     typeof glassSchema,
     typeof playerSpawnSchema,
     typeof enemySpawnSchema,
@@ -459,6 +527,7 @@ export const nodeSchema: z.ZodDiscriminatedUnion<
   ladderSchema,
   prefabRefSchema,
   doorSchema,
+  moverSchema,
   glassSchema,
   playerSpawnSchema,
   enemySpawnSchema,

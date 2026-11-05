@@ -199,6 +199,11 @@ export function groupNodes(list: MapNode[], indices: readonly number[], name?: s
   return sorted[0]!;
 }
 
+/** Whether a prefab or group has pitch or roll, which turn all it holds. */
+export function isTilted(n: MapNode | undefined): boolean {
+  return (n?.type === 'group' || n?.type === 'prefab') && !!(n.pitch || n.roll);
+}
+
 /** Replaces the group at an index with what it holds. Returns the indices they now have. */
 export function ungroup(list: MapNode[], index: number): number[] {
   const g = list[index];
@@ -237,6 +242,72 @@ export function markerPath(map: MapFile, id: string): NodePath | null {
     return null;
   };
   return find(map.nodes, '', []);
+}
+
+/** A door a switch in these nodes could open: its path id, and how to reach what names it. */
+export interface DoorTarget {
+  /** As a switch's row names it, once `owner` (if any) has that id. */
+  id: string;
+  /** Indices from the top-level nodes to a node with no id of its own yet, through groups. */
+  owner: readonly number[] | null;
+}
+
+/**
+ * Every door in these nodes, in placed prefabs too. A node with no id is named only by its
+ * place in the list, which moves when anything before it is added or removed, so a target
+ * under one proposes an id for it, to be given by giveId when it's linked.
+ */
+export function doorTargets(
+  nodes: readonly MapNode[],
+  prefabs: ReadonlyMap<string, PrefabFile>,
+): DoorTarget[] {
+  const out: DoorTarget[] = [];
+  const taken = new Set<string>();
+  const seen = (list: readonly MapNode[]): void => {
+    for (const n of list) {
+      if (n.type === 'group') seen(n.nodes);
+      else if ('id' in n && n.id) taken.add(n.id);
+    }
+  };
+  seen(nodes);
+  const inside = (list: readonly MapNode[], prefix: string, stack: readonly string[]): void =>
+    list.forEach((n, i) => {
+      if (n.type === 'group') return inside(n.nodes, prefix, stack);
+      if (n.type === 'door') out.push({ id: `${prefix}${n.id ?? `#${i}`}`, owner: null });
+      else if (n.type === 'prefab' && !stack.includes(n.prefab))
+        inside(prefabs.get(n.prefab)?.nodes ?? [], `${prefix}${n.id ?? `#${i}`}/`, [
+          ...stack,
+          n.prefab,
+        ]);
+    });
+  const top = (list: readonly MapNode[], at: readonly number[]): void =>
+    list.forEach((n, i) => {
+      const here = [...at, i];
+      if (n.type === 'group') return top(n.nodes, here);
+      if (n.type === 'door') {
+        if (n.id) out.push({ id: n.id, owner: null });
+        else out.push({ id: uniqueId('door', taken), owner: here });
+      } else if (n.type === 'prefab') {
+        const before = out.length;
+        const id = n.id ?? uniqueId(n.prefab, taken);
+        inside(prefabs.get(n.prefab)?.nodes ?? [], `${id}/`, [n.prefab]);
+        if (!n.id) for (let k = before; k < out.length; k++) out[k] = { ...out[k]!, owner: here };
+      }
+    });
+  top(nodes, []);
+  return out;
+}
+
+/** Gives the node at `owner` the id a door target proposed: the path's first part. */
+export function giveId(nodes: MapNode[], target: DoorTarget): void {
+  if (!target.owner) return;
+  let list = nodes;
+  let node: MapNode | undefined;
+  for (const i of target.owner) {
+    node = list[i];
+    if (node?.type === 'group') list = node.nodes;
+  }
+  if (node && (node.type === 'prefab' || node.type === 'door')) node.id = target.id.split('/')[0]!;
 }
 
 /** `base`, or base-2, base-3… (without base's own number) if it's taken. Adds it to taken. */
@@ -386,6 +457,8 @@ export function unpackPrefab(
     name: n.id ?? prefab.id,
     pos: [...n.pos],
     ...(n.yaw ? { yaw: n.yaw } : {}),
+    ...(n.pitch ? { pitch: n.pitch } : {}),
+    ...(n.roll ? { roll: n.roll } : {}),
     nodes: structuredClone(prefab.nodes),
   };
   eachColour(group.nodes, (ref) => resolved[ref] ?? ref);

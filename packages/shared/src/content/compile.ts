@@ -5,6 +5,7 @@ import type {
   LadderDef,
   RampDef,
   WorldDef,
+  SwitchDef,
 } from '../world/collision-world';
 import { HeightGrid, holeFlags } from '../world/terrain';
 import { ContentError } from './format';
@@ -75,6 +76,26 @@ export interface CompiledDoor extends DoorDef {
   name?: string;
   /** Drawn as these shapes, in the door's frame, instead of a door (a couch). */
   look?: Shape[];
+  /** A look that's drawn rolling up as a switch opens it. */
+  rollUp?: boolean;
+  /** A light showing a switch's progress, in the door's frame: pos is the middle of its base. */
+  lamp?: { pos: readonly [number, number, number]; size: readonly [number, number, number] };
+}
+
+/**
+ * A prefab drawn on its own and moved over a door's timer (a lift's cab): at (x, y, z), turned
+ * by yaw, it ends up `travel` away, in world axes. Drawn only.
+ */
+export interface CompiledMover {
+  id: string;
+  /** The door's index in world.doors. */
+  door: number;
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  travel: readonly [number, number, number];
+  shapes: Shape[];
 }
 
 /**
@@ -203,6 +224,7 @@ export interface CompiledMap {
   instanced: InstancedGroup[];
   searchedLooks: SearchedLook[];
   doors: CompiledDoor[];
+  movers: CompiledMover[];
   glass: CompiledGlass[];
   markers: CompiledMarker[];
   patrols: CompiledPatrol[];
@@ -222,6 +244,8 @@ const STAIR_SIDE = 0.1;
 const LADDER_WIDTH = 0.6;
 const RUNG_SPACING = 0.3;
 const DOOR_THICKNESS = 0.05;
+/** How far from a switch's edge your feet can be to use it. */
+const SWITCH_REACH = 2;
 const GLASS_THICKNESS = 0.02;
 /** A barricade's blocker: half its depth through the wall. */
 const BLOCKER_DEPTH = 0.3;
@@ -231,6 +255,10 @@ const PATROL_WAIT = 3;
 const BASE_COLOUR = 0x9e9b94;
 /** How far a base goes into the ground below the lowest point under it. */
 const BASE_BURY = 0.3;
+/** Rise per metre below which a plane counts as level. */
+const FLAT = 1e-6;
+/** How much of a tilted wedge's up, or its slope's normal, must still point up. */
+const MIN_UP = 0.3;
 
 /** Where nodes are being placed: a position and a yaw about y. */
 interface Frame {
@@ -240,6 +268,22 @@ interface Frame {
   yaw: number;
   cos: number;
   sin: number;
+  /** Inside a tilted prefab or group: the whole turn, yaw included. Otherwise null. */
+  tilt: Mat3 | null;
+}
+
+/** A mover before doors are numbered. */
+type PendingMover = Omit<CompiledMover, 'door'> & { doorName: string };
+
+/** A switch before its rows' doors are numbered. */
+interface PendingSwitch extends Omit<SwitchDef, 'rows'> {
+  rows: readonly {
+    opens: string;
+    timer?: number | undefined;
+    noise?: string | undefined;
+    lasts?: number | undefined;
+    openNoise?: string | undefined;
+  }[];
 }
 
 /** What a pass collects. A null list is skipped. */
@@ -249,6 +293,9 @@ interface Sink {
   ramps: RampDef[] | null;
   ladders: LadderDef[] | null;
   doors: CompiledDoor[] | null;
+  /** Null draws a mover where it starts, as part of the map (as the editor shows it). */
+  movers: PendingMover[] | null;
+  switches: PendingSwitch[] | null;
   glass: CompiledGlass[] | null;
   markers: CompiledMarker[] | null;
   patrols: CompiledPatrol[] | null;
@@ -269,6 +316,8 @@ const DRAW_ONLY: Sink = {
   ramps: null,
   ladders: null,
   doors: null,
+  movers: null,
+  switches: null,
   glass: null,
   markers: null,
   patrols: null,
@@ -295,6 +344,8 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     ramps,
     ladders,
     doors: [],
+    movers: [],
+    switches: [],
     glass: [],
     markers: [],
     patrols: [],
@@ -326,6 +377,26 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     if (m.type === 'zombieSpawn' && m.window !== undefined && !windows.has(m.window))
       throw new ContentError(source, `${m.id}: no barricade "${m.window}" beside it`);
   }
+  const doorIndex = doorFinder(source, out.doors!);
+  const switches = out.switches!.map((s) => ({
+    ...s,
+    rows: s.rows.map((r) => {
+      const door = doorIndex(s.id, r.opens);
+      out.doors![door]!.switched = true;
+      const timer = r.timer ?? 0;
+      return {
+        door,
+        timer,
+        noise: r.noise,
+        lasts: r.lasts ?? timer,
+        openNoise: r.openNoise,
+      };
+    }),
+  }));
+  const movers = out.movers!.map(({ doorName, ...m }) => ({
+    ...m,
+    door: doorIndex(m.id, doorName),
+  }));
 
   return {
     id: map.id,
@@ -341,11 +412,13 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
       doors: out.doors!,
       glass: out.glass!,
       blockers: out.blockers!,
+      switches,
     },
     shapes: out.shapes!,
     instanced: [...out.groups!.values()],
     searchedLooks: out.looks!,
     doors: out.doors!,
+    movers,
     glass: out.glass!,
     markers: out.markers!,
     patrols: out.patrols!,
@@ -398,7 +471,15 @@ export function compileNodes(
     slotColours(colours),
     '',
     [],
-    { ...out, ladders: null, groups: null, looks: null, blockers: null },
+    {
+      ...out,
+      ladders: null,
+      groups: null,
+      looks: null,
+      blockers: null,
+      movers: null,
+      switches: null,
+    },
   );
   return out;
 }
@@ -488,17 +569,57 @@ class Compiler {
       if (node.type === 'group') {
         // A group moves its nodes but adds nothing to their ids.
         const [x, y, z] = place(f, node.pos);
-        const g = frame(x, y, z, f.yaw + (node.yaw ?? 0) * DEG);
+        const g = inner(f, x, y, z, node);
         this.nodes(node.nodes, g, scope, path, stack, sink, `${unnamed}${i}.`);
       } else this.node(node, f, scope, id, stack, sink);
       if ('loot' in node && node.loot) {
-        const yaw = f.yaw + (node.yaw ?? 0) * DEG;
-        this.container(node.loot, id, yaw, boxes, markers, out);
-        if (look) {
-          const [x, y, z] = place(f, node.pos);
-          this.searchedLook(look, frame(x, y, z, yaw), scope, id, stack, shapes, out);
-        }
+        const [x, y, z] = place(f, node.pos);
+        // A box or cylinder tilts on its own, about its centre: its look stays upright.
+        const shape = node.type === 'box' || node.type === 'cylinder';
+        const g = inner(f, x, y, z, shape ? { yaw: node.yaw } : node);
+        this.container(node.loot, id, g.yaw, boxes, markers, out);
+        if (look) this.searchedLook(look, g, scope, id, stack, shapes, out);
       }
+      if ('switch' in node && node.switch) this.switchFrom(node.switch, id, boxes, out);
+    });
+  }
+
+  /** Makes the solids a node just added (out.boxes from `first`) a switch. */
+  private switchFrom(
+    tag: NonNullable<Extract<MapNode, { type: 'box' }>['switch']>,
+    path: string,
+    first: number,
+    out: Sink,
+  ): void {
+    if (!out.switches || !out.boxes) return;
+    if (out.boxes.length === first)
+      this.fail(path, 'a switch needs something that collides, to aim at');
+    let x0 = Infinity;
+    let x1 = -Infinity;
+    let z0 = Infinity;
+    let z1 = -Infinity;
+    let bottom = Infinity;
+    const solids: number[] = [];
+    for (let k = first; k < out.boxes.length; k++) {
+      const b = out.boxes[k]!;
+      const r = Math.hypot(b.hx, b.hz);
+      x0 = Math.min(x0, b.x - r);
+      x1 = Math.max(x1, b.x + r);
+      z0 = Math.min(z0, b.z - r);
+      z1 = Math.max(z1, b.z + r);
+      bottom = Math.min(bottom, b.y - b.hy);
+      solids.push(k);
+    }
+    out.switches.push({
+      id: path,
+      name: tag.name ?? 'switch',
+      x: (x0 + x1) / 2,
+      y: bottom,
+      z: (z0 + z1) / 2,
+      reach: SWITCH_REACH + Math.max(x1 - x0, z1 - z0) / 2,
+      useTime: tag.useTime ?? 0,
+      solids,
+      rows: tag.rows,
     });
   }
 
@@ -636,6 +757,11 @@ class Compiler {
       case 'cylinder': {
         const pitch = (node.pitch ?? 0) * DEG;
         const roll = (node.roll ?? 0) * DEG;
+        const turn = f.tilt
+          ? multiply(f.tilt, euler((node.yaw ?? 0) * DEG, pitch, roll))
+          : pitch || roll
+            ? euler(yaw, pitch, roll)
+            : null;
         const colour = this.colour(node.colour, scope, path);
         let hx: number;
         let hy: number;
@@ -669,13 +795,14 @@ class Compiler {
           };
         }
         // pos is the middle of the base before tilting; tilting turns it about its centre.
-        shape.y += hy;
+        [shape.x, shape.y, shape.z] = place(f, [node.pos[0], node.pos[1] + hy, node.pos[2]]);
+        if (f.tilt) [shape.yaw, shape.pitch, shape.roll] = eulerOf(turn!);
         out.shapes?.push(shape);
         if (node.collide !== false && out.boxes) {
-          // A tilted solid collides as its bounding box in its yaw frame.
-          const [ex, ey, ez]: Vec3 =
-            pitch || roll ? tiltExtents(hx, hy, hz, pitch, roll) : [hx, hy, hz];
-          out.boxes.push({ x: shape.x, y: shape.y, z: shape.z, hx: ex, hy: ey, hz: ez, yaw });
+          const at: Vec3 = [shape.x, shape.y, shape.z];
+          out.boxes.push(
+            turn ? tiltedBox(at, turn, shape.yaw, hx, hy, hz) : plainBox(at, hx, hy, hz, yaw),
+          );
         }
         return;
       }
@@ -684,27 +811,17 @@ class Compiler {
         const [length, height, thick] = node.size;
         const pieces = wallPieces(length, height, node.openings);
         if (typeof pieces === 'string') this.fail(path, pieces);
+        if (f.tilt && node.openings.some((o) => o.glass !== undefined))
+          this.cantTilt(path, 'glass');
         const colour = this.colour(node.colour, scope, path);
         const c = Math.cos(yaw);
         const s = Math.sin(yaw);
+        const g = inner(f, x, y, z, node);
         for (const p of pieces) {
           const mid = (p.from + p.to) / 2;
           const [hx, hy, hz] = [(p.to - p.from) / 2, (p.top - p.bottom) / 2, thick / 2];
-          const [px, py, pz] = [x + mid * c, y + p.bottom + hy, z - mid * s];
-          out.shapes?.push({
-            kind: 'box',
-            x: px,
-            y: py,
-            z: pz,
-            yaw,
-            pitch: 0,
-            roll: 0,
-            colour,
-            hx,
-            hy,
-            hz,
-          });
-          if (node.collide !== false) out.boxes?.push({ x: px, y: py, z: pz, hx, hy, hz, yaw });
+          const at = place(g, [mid, p.bottom + hy, 0]);
+          this.box(at, g, hx, hy, hz, colour, node.collide !== false, out);
         }
         node.openings.forEach((o, k) => {
           if (o.glass === undefined) return;
@@ -727,6 +844,34 @@ class Compiler {
       case 'stairs': {
         const [w, h, d] = node.size;
         const colour = this.colour(node.colour, scope, path);
+        if (f.tilt) {
+          const g = inner(f, x, y, z, node);
+          const flat: RampDef = {
+            x: 0,
+            z: 0,
+            hx: w / 2,
+            hz: d / 2,
+            yaw: 0,
+            bottom: 0,
+            low: 0,
+            high: h,
+          };
+          if (node.collide !== false) {
+            const at = place(g, [0, h / 2, 0]);
+            out.boxes?.push(tiltedWedge(at, g.tilt!, g.yaw, w / 2, h / 2, d / 2));
+          }
+          if (out.shapes) {
+            const shapes =
+              node.type === 'ramp'
+                ? [wedgeOf(flat, colour)]
+                : [
+                    ...stairSteps(flat, node.steps ?? stepsOf(h), colour),
+                    ...(node.sides ? stairSides(flat, node.sides, colour) : []),
+                  ];
+            out.shapes.push(...shapes.map((s) => moved(g, s)));
+          }
+          return;
+        }
         const ramp: RampDef = {
           x,
           z,
@@ -739,30 +884,16 @@ class Compiler {
         };
         if (node.collide !== false) out.ramps?.push(ramp);
         if (!out.shapes) return;
-        if (node.type === 'ramp') {
-          const [hx, hy, hz] = [w / 2, h / 2, d / 2];
-          out.shapes.push({
-            kind: 'wedge',
-            x,
-            y: y + hy,
-            z,
-            yaw,
-            pitch: 0,
-            roll: 0,
-            colour,
-            hx,
-            hy,
-            hz,
-          });
-        } else {
-          const steps = node.steps ?? Math.max(1, Math.round(h / STEP_HEIGHT));
-          out.shapes.push(...stairSteps(ramp, steps, colour));
+        if (node.type === 'ramp') out.shapes.push(wedgeOf(ramp, colour));
+        else {
+          out.shapes.push(...stairSteps(ramp, node.steps ?? stepsOf(h), colour));
           if (node.sides) out.shapes.push(...stairSides(ramp, node.sides, colour));
         }
         return;
       }
 
       case 'ladder': {
+        if (f.tilt) this.cantTilt(path, 'ladders');
         const ladder: LadderDef = {
           x,
           z,
@@ -777,6 +908,10 @@ class Compiler {
       }
 
       case 'door':
+        if (f.tilt) {
+          this.shutDoor(node, inner(f, x, y, z, node), scope, path, stack, out);
+          return;
+        }
         out.doors?.push({
           id: path,
           x,
@@ -792,11 +927,43 @@ class Compiler {
           open: node.open ?? false,
           colour: this.colour(node.colour, scope, path),
           ...(node.name !== undefined && { name: node.name }),
-          ...(node.look !== undefined && { look: this.look(node.look, scope, path, stack) }),
+          ...(node.look !== undefined && {
+            look: this.look(node.look, scope, path, stack),
+            vanishes: true,
+          }),
+          ...(node.rollUp && { rollUp: true }),
+          ...(node.lamp && { lamp: node.lamp }),
         });
         return;
 
+      case 'mover': {
+        if (f.tilt) this.cantTilt(path, 'movers');
+        if (!out.movers) {
+          // Where it starts, as part of what's drawn: the editor shows it there.
+          const ref: PrefabNode = { type: 'prefab', prefab: node.prefab, pos: [0, 0, 0] };
+          const sink = { ...DRAW_ONLY, shapes: out.shapes };
+          this.prefab(ref, inner(f, x, y, z, node), scope, `${path}/look`, stack, sink);
+          return;
+        }
+        const shapes = this.look(node.prefab, scope, path, stack);
+        const [dx, dy, dz] = node.travel;
+        const c = Math.cos(yaw);
+        const s = Math.sin(yaw);
+        out.movers.push({
+          id: path,
+          doorName: node.door,
+          x,
+          y,
+          z,
+          yaw,
+          travel: [dx * c + dz * s, dy, -dx * s + dz * c],
+          shapes,
+        });
+        return;
+      }
+
       case 'glass':
+        if (f.tilt) this.cantTilt(path, 'glass');
         out.glass?.push({
           id: path,
           x,
@@ -811,6 +978,7 @@ class Compiler {
         return;
 
       case 'barricade': {
+        if (f.tilt) this.cantTilt(path, 'barricades');
         const [width, height] = node.size;
         out.barricades?.push({ id: path, x, y, z, yaw, width, height, planks: node.planks ?? 6 });
         // Fills the opening, and a little beyond, so nothing squeezes past.
@@ -827,7 +995,7 @@ class Compiler {
       }
 
       case 'prefab':
-        this.prefab(node, frame(x, y, z, yaw), scope, path, stack, out);
+        this.prefab(node, inner(f, x, y, z, node), scope, path, stack, out);
         return;
 
       default:
@@ -843,6 +1011,52 @@ class Compiler {
           out.markers.push(marker);
         }
     }
+  }
+
+  /** A box drawn and maybe solid, centred at `at` and turned as frame g is. */
+  private box(
+    at: Vec3,
+    g: Frame,
+    hx: number,
+    hy: number,
+    hz: number,
+    colour: number,
+    collide: boolean,
+    out: Sink,
+  ): void {
+    const [x, y, z] = at;
+    const [yaw, pitch, roll] = g.tilt ? eulerOf(g.tilt) : [g.yaw, 0, 0];
+    out.shapes?.push({ kind: 'box', x, y, z, yaw, pitch, roll, colour, hx, hy, hz });
+    if (!collide) return;
+    out.boxes?.push(
+      g.tilt ? tiltedBox(at, g.tilt, yaw, hx, hy, hz) : plainBox(at, hx, hy, hz, yaw),
+    );
+  }
+
+  /** A door in something tilted: a door swings about y, so it's a panel fixed shut. */
+  private shutDoor(
+    node: Extract<MapNode, { type: 'door' }>,
+    g: Frame,
+    scope: Scope,
+    path: string,
+    stack: readonly string[],
+    out: Sink,
+  ): void {
+    const [width, height] = node.size;
+    const thick = (node.thickness ?? DOOR_THICKNESS) / 2;
+    const colour = this.colour(node.colour, scope, path);
+    const at = place(g, [0, height / 2, 0]);
+    if (node.look === undefined) {
+      this.box(at, g, width / 2, height / 2, thick, colour, true, out);
+      return;
+    }
+    out.boxes?.push(tiltedBox(at, g.tilt!, g.yaw, width / 2, height / 2, thick));
+    const look = this.look(node.look, scope, path, stack);
+    out.shapes?.push(...look.map((s) => moved(g, s)));
+  }
+
+  private cantTilt(path: string, what: string): never {
+    this.fail(path, `${what} can't be in a prefab or group with pitch or roll`);
   }
 
   /** A prefab's shapes in its own frame, flattened: a door's look. */
@@ -876,6 +1090,7 @@ class Compiler {
     const inner = [...stack, prefab.id];
 
     if (prefab.building) {
+      if (f.tilt) this.cantTilt(path, 'buildings');
       const [cx, cz] = prefab.building.centre ?? [0, 0];
       const [x, y, z] = place(f, [cx, 0, cz]);
       const b: CompiledBuilding = {
@@ -903,6 +1118,7 @@ class Compiler {
 
     if (
       !prefab.instanced ||
+      f.tilt ||
       !out.groups ||
       !out.shapes ||
       holdsSearchedLook(prefab.nodes, this.prefabs)
@@ -929,6 +1145,20 @@ class Compiler {
   }
 }
 
+/** Finds a door by its id beside `from` (a node's path id), else by its path id in the map. */
+function doorFinder(
+  source: string,
+  doors: readonly CompiledDoor[],
+): (from: string, name: string) => number {
+  const index = new Map(doors.map((d, i) => [d.id, i]));
+  return (from, name) => {
+    const dir = from.slice(0, from.lastIndexOf('/') + 1);
+    const i = index.get(dir + name) ?? index.get(name);
+    if (i === undefined) throw new ContentError(source, `${from}: no door "${name}"`);
+    return i;
+  };
+}
+
 /** Whether any of these nodes, or the prefabs they place, is a container with a searched look. */
 function holdsSearchedLook(
   nodes: readonly MapNode[],
@@ -945,12 +1175,39 @@ function holdsSearchedLook(
 }
 
 function frame(x: number, y: number, z: number, yaw: number): Frame {
-  return { x, y, z, yaw, cos: Math.cos(yaw), sin: Math.sin(yaw) };
+  return { x, y, z, yaw, cos: Math.cos(yaw), sin: Math.sin(yaw), tilt: null };
+}
+
+/** The frame of a node at (x, y, z) in f, turned by its yaw, pitch and roll in degrees. */
+function inner(
+  f: Frame,
+  x: number,
+  y: number,
+  z: number,
+  node: { yaw?: number | undefined; pitch?: number | undefined; roll?: number | undefined },
+): Frame {
+  const yaw = (node.yaw ?? 0) * DEG;
+  const pitch = (node.pitch ?? 0) * DEG;
+  const roll = (node.roll ?? 0) * DEG;
+  if (!f.tilt && !pitch && !roll) return frame(x, y, z, f.yaw + yaw);
+  const tilt = f.tilt ? multiply(f.tilt, euler(yaw, pitch, roll)) : euler(f.yaw + yaw, pitch, roll);
+  return { ...frame(x, y, z, eulerOf(tilt)[0]), tilt };
 }
 
 /** A position in a frame, in the frame's parent's space. */
 function place(f: Frame, [lx, ly, lz]: readonly [number, number, number]): Vec3 {
+  if (f.tilt) {
+    const [wx, wy, wz] = turned(f.tilt, [lx, ly, lz]);
+    return [f.x + wx, f.y + wy, f.z + wz];
+  }
   return [f.x + lx * f.cos + lz * f.sin, f.y + ly, f.z - lx * f.sin + lz * f.cos];
+}
+
+/** A shape in frame g, in g's parent's space. */
+function moved(g: Frame, s: Shape): Shape {
+  const [x, y, z] = place(g, [s.x, s.y, s.z]);
+  const [yaw, pitch, roll] = eulerOf(multiply(g.tilt!, euler(s.yaw, s.pitch, s.roll)));
+  return { ...s, x, y, z, yaw, pitch, roll };
 }
 
 function hex(colour: string): number {
@@ -963,26 +1220,139 @@ function slotColours(slots: Readonly<Record<string, string>>): Record<string, nu
   return out;
 }
 
-/** Rotates a vector by roll (about z) then pitch (about x), as three.js 'YXZ' does. */
 type Vec3 = [number, number, number];
+/** A rotation, by rows. */
+type Mat3 = readonly [number, number, number, number, number, number, number, number, number];
 
-function tilt(x: number, y: number, z: number, pitch: number, roll: number): Vec3 {
-  const cr = Math.cos(roll);
-  const sr = Math.sin(roll);
+/** Yaw, then pitch, then roll, as three.js 'YXZ' turns things. */
+function euler(yaw: number, pitch: number, roll: number): Mat3 {
+  const cy = Math.cos(yaw);
+  const sy = Math.sin(yaw);
   const cp = Math.cos(pitch);
   const sp = Math.sin(pitch);
-  const x1 = x * cr - y * sr;
-  const y1 = x * sr + y * cr;
-  return [x1, y1 * cp - z * sp, y1 * sp + z * cp];
+  const cr = Math.cos(roll);
+  const sr = Math.sin(roll);
+  return [
+    cy * cr + sy * sp * sr,
+    sy * sp * cr - cy * sr,
+    sy * cp,
+    cp * sr,
+    cp * cr,
+    -sp,
+    cy * sp * sr - sy * cr,
+    sy * sr + cy * sp * cr,
+    cy * cp,
+  ];
 }
 
-/** Half-extents of the bounding box of a tilted box, in its yaw frame. */
-function tiltExtents(hx: number, hy: number, hz: number, pitch: number, roll: number): Vec3 {
-  const ax = tilt(hx, 0, 0, pitch, roll);
-  const ay = tilt(0, hy, 0, pitch, roll);
-  const az = tilt(0, 0, hz, pitch, roll);
-  const e = (k: 0 | 1 | 2): number => Math.abs(ax[k]) + Math.abs(ay[k]) + Math.abs(az[k]);
-  return [e(0), e(1), e(2)];
+/** The yaw, pitch and roll of a rotation, the inverse of euler. */
+function eulerOf(m: Mat3): Vec3 {
+  const pitch = Math.asin(Math.min(1, Math.max(-1, -m[5])));
+  if (Math.abs(m[5]) < 0.9999999) return [Math.atan2(m[2], m[8]), pitch, Math.atan2(m[3], m[4])];
+  return [Math.atan2(-m[6], m[0]), pitch, 0];
+}
+
+function multiply(a: Mat3, b: Mat3): Mat3 {
+  const at = (r: number, c: number): number =>
+    a[r * 3]! * b[c]! + a[r * 3 + 1]! * b[c + 3]! + a[r * 3 + 2]! * b[c + 6]!;
+  return [at(0, 0), at(0, 1), at(0, 2), at(1, 0), at(1, 1), at(1, 2), at(2, 0), at(2, 1), at(2, 2)];
+}
+
+function turned(m: Mat3, [x, y, z]: readonly [number, number, number]): Vec3 {
+  return [
+    m[0] * x + m[1] * y + m[2] * z,
+    m[3] * x + m[4] * y + m[5] * z,
+    m[6] * x + m[7] * y + m[8] * z,
+  ];
+}
+
+function dot(a: readonly number[], b: readonly number[]): number {
+  return a[0]! * b[0]! + a[1]! * b[1]! + a[2]! * b[2]!;
+}
+
+function plainBox(at: Vec3, hx: number, hy: number, hz: number, yaw: number): BoxDef {
+  return { x: at[0], y: at[1], z: at[2], hx, hy, hz, yaw };
+}
+
+/** A footprint's local x and z directions in the world. */
+function footprintAxes(yaw: number): [Vec3, Vec3] {
+  const c = Math.cos(yaw);
+  const s = Math.sin(yaw);
+  return [
+    [c, 0, -s],
+    [s, 0, c],
+  ];
+}
+
+/** A plane's rise per metre along directions e and g, from its normal. */
+function rise(n: Vec3, e: Vec3, g: Vec3): [number, number] {
+  return [-dot(n, e) / n[1], -dot(n, g) / n[1]];
+}
+
+/**
+ * The solid of a box turned by r, centred at `at`: a slab (BoxSlope) over a rectangle at
+ * `yaw`. Its top and underside are the pair of faces with the most floor under them, so a
+ * thin board is its broad faces however steep it stands. Upright ends rather than leaning
+ * ones are the only difference from the real box, and the slab is cut to the box's bounds.
+ */
+function tiltedBox(at: Vec3, r: Mat3, yaw: number, hx: number, hy: number, hz: number): BoxDef {
+  const half = [hx, hy, hz];
+  const [e, g] = footprintAxes(yaw);
+  let [ex, ey, ez] = [0, 0, 0];
+  let n: Vec3 = [0, 1, 0];
+  let thick = hy;
+  let most = -1;
+  for (let k = 0; k < 3; k++) {
+    const axis: Vec3 = [r[k]!, r[k + 3]!, r[k + 6]!];
+    const h = half[k]!;
+    ex += Math.abs(dot(axis, e)) * h;
+    ey += Math.abs(axis[1]) * h;
+    ez += Math.abs(dot(axis, g)) * h;
+    const floor = Math.abs(axis[1]) / h;
+    if (floor > most) {
+      most = floor;
+      n = axis[1] < 0 ? [-axis[0], -axis[1], -axis[2]] : axis;
+      thick = h / Math.abs(axis[1]);
+    }
+  }
+  const [slopeX, slopeZ] = rise(n, e, g);
+  const box = plainBox(at, ex, ey, ez, yaw);
+  // Turned a whole number of quarter turns: a plain box.
+  if (Math.abs(slopeX) < FLAT && Math.abs(slopeZ) < FLAT) return box;
+  const [topX, topZ] = [slopeX, slopeZ];
+  const y = at[1];
+  box.slope = { top: y + thick, topX, topZ, under: y - thick, underX: topX, underZ: topZ };
+  return box;
+}
+
+/**
+ * The solid of a wedge turned by r, centred at `at`, sloped on top as a ramp is. Stood too
+ * steeply for its faces to be a top and underside, it's the solid of its box.
+ */
+function tiltedWedge(at: Vec3, r: Mat3, yaw: number, hx: number, hy: number, hz: number): BoxDef {
+  const box = tiltedBox(at, r, yaw, hx, hy, hz);
+  const up: Vec3 = [r[1], r[4], r[7]];
+  const top = turned(r, [0, hz, -hy]);
+  if (up[1] < MIN_UP || top[1] < MIN_UP * Math.hypot(hy, hz)) return box;
+  const [e, g] = footprintAxes(yaw);
+  const [topX, topZ] = rise(top, e, g);
+  const [underX, underZ] = rise(up, e, g);
+  // The base's plane goes through its middle, hy down the wedge's own up from the centre.
+  const base: Vec3 = [-up[0] * hy, -up[1] * hy, -up[2] * hy];
+  const under = at[1] + base[1] - underX * dot(base, e) - underZ * dot(base, g);
+  box.slope = { top: at[1], topX, topZ, under, underX, underZ };
+  return box;
+}
+
+function stepsOf(height: number): number {
+  return Math.max(1, Math.round(height / STEP_HEIGHT));
+}
+
+/** A ramp drawn as a wedge. */
+function wedgeOf(ramp: RampDef, colour: number): Shape {
+  const hy = (ramp.high - ramp.bottom) / 2;
+  const { x, z, yaw, hx, hz } = ramp;
+  return { kind: 'wedge', x, y: ramp.bottom + hy, z, yaw, pitch: 0, roll: 0, colour, hx, hy, hz };
 }
 
 /** Steps drawn over a ramp: each step's top is at the ramp's height halfway along it. */

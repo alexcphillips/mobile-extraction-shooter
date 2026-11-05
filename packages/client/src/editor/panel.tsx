@@ -2,7 +2,14 @@ import { idSchema, nodeSchema, type MapFile, type MapNode, type PrefabFile } fro
 
 type WallGap = Extract<MapNode, { type: 'wall' }>['openings'][number];
 import { useState, useSyncExternalStore, type ReactNode } from 'react';
-import { loadEnemies, loadItems, loadLootContainers, loadLootTables, loadQuests } from '../content';
+import {
+  loadEnemies,
+  loadItems,
+  loadLootContainers,
+  loadLootTables,
+  loadQuests,
+  loadSounds,
+} from '../content';
 import { ContainerLootFields } from './loot-mix';
 import {
   canEnter,
@@ -1427,7 +1434,10 @@ function Inspector(props: {
             onChange={(v) => edit((m) => placeNode(m, nodePos(m), v ?? 0))}
           />
         )}
-        {(n.type === 'box' || n.type === 'cylinder') && (
+        {(n.type === 'box' ||
+          n.type === 'cylinder' ||
+          n.type === 'prefab' ||
+          n.type === 'group') && (
           <>
             {num('pitch')}
             {num('roll')}
@@ -1583,7 +1593,10 @@ function Inspector(props: {
         </label>
       ) : null}
       {(n.type === 'box' || n.type === 'cylinder' || n.type === 'group' || n.type === 'prefab') && (
-        <LootFields edit={edit} node={n} />
+        <>
+          <LootFields edit={edit} node={n} />
+          <SwitchFields editor={editor} edit={edit} node={n} />
+        </>
       )}
       {canEnter(n, editor.prefabs) && (
         <button
@@ -2083,6 +2096,130 @@ function LootFields(props: {
             })
           }
         />
+      )}
+    </>
+  );
+}
+
+/**
+ * Makes a box, cylinder, group or placed prefab a switch: each row opens a door, at once or
+ * after a timer, and can set off a noise the whole map hears for as long as it lasts.
+ */
+function SwitchFields(props: {
+  editor: MapEditor;
+  edit: Edit;
+  node: Extract<MapNode, { type: 'box' | 'cylinder' | 'group' | 'prefab' }>;
+}) {
+  const { editor, edit, node: n } = props;
+  type Tag = NonNullable<typeof n.switch>;
+  type Row = Tag['rows'][number];
+  const tag = n.switch;
+  const targets = editor.switchTargets();
+  const sounds = [...loadSounds().keys()].sort();
+  const change = (update: (t: Tag) => void) =>
+    edit((m) => {
+      const t = (m as { switch?: Tag }).switch;
+      if (t) update(t);
+    });
+  const field = <K extends keyof Row>(row: number, key: K, v: Row[K] | undefined) =>
+    change((t) => {
+      const r = t.rows[row]!;
+      if (v === undefined) delete r[key];
+      else r[key] = v;
+    });
+  return (
+    <>
+      <label className="ed-field" title="Used once a raid, by aiming at what collides in it">
+        <input
+          type="checkbox"
+          checked={!!tag}
+          onChange={(e) =>
+            edit((m) => {
+              const r = m as { switch?: Tag };
+              if (e.target.checked) r.switch = { rows: [] };
+              else delete r.switch;
+            })
+          }
+        />
+        switch
+      </label>
+      {tag && (
+        <>
+          <Text
+            label="switch name"
+            value={tag.name ?? ''}
+            onChange={(v) =>
+              change((t) => {
+                if (v) t.name = v;
+                else delete t.name;
+              })
+            }
+          />
+          <div className="ed-row" title="Seconds to hold the use button. Empty: one press">
+            <Num
+              label="use time (s)"
+              value={tag.useTime}
+              min={0}
+              onChange={(v) =>
+                change((t) => {
+                  if (v) t.useTime = v;
+                  else delete t.useTime;
+                })
+              }
+            />
+          </div>
+          {tag.rows.map((row, i) => (
+            <div key={i} className="ed-sub">
+              <Pick
+                label="opens"
+                value={row.opens || undefined}
+                options={targets}
+                unset="pick a door"
+                onChange={(v) => v && editor.linkSwitch(i, v)}
+              />
+              <div className="ed-row" title="Seconds until it opens. Empty: at once">
+                <Num
+                  label="timer (s)"
+                  value={row.timer}
+                  min={0}
+                  onChange={(v) => field(i, 'timer', v)}
+                />
+                <Num
+                  label="noise lasts (s)"
+                  value={row.lasts}
+                  min={0}
+                  onChange={(v) => field(i, 'lasts', v)}
+                />
+              </div>
+              <Pick
+                label="noise"
+                value={row.noise}
+                options={sounds}
+                unset="none"
+                onChange={(v) => field(i, 'noise', v)}
+              />
+              <Pick
+                label="noise as it opens"
+                value={row.openNoise}
+                options={sounds}
+                unset="none"
+                onChange={(v) => field(i, 'openNoise', v)}
+              />
+              <button onClick={() => change((t) => void t.rows.splice(i, 1))}>Remove row</button>
+            </div>
+          ))}
+          <button
+            disabled={!targets.length}
+            title={targets.length ? undefined : 'No doors in this file yet'}
+            onClick={() => {
+              const row = tag.rows.length;
+              change((t) => void t.rows.push({ opens: '' }));
+              if (targets[0]) editor.linkSwitch(row, targets[0]);
+            }}
+          >
+            Add row
+          </button>
+        </>
       )}
     </>
   );

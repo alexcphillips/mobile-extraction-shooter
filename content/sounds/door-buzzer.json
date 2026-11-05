@@ -1,0 +1,40 @@
+{
+  "formatVersion": 1,
+  "id": "door-buzzer",
+  "name": "Door buzzer",
+  "gain": 1.0,
+  "range": 70,
+  "pitchJitter": 0,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "square",
+      "freq": [98, 98],
+      "at": 0,
+      "attack": 0.005,
+      "hold": 1.1,
+      "decay": 0.05,
+      "gain": 0.3,
+      "filter": {
+        "type": "lowpass",
+        "freq": [1400, 1400],
+        "q": 0.7
+      }
+    },
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [147, 147],
+      "at": 0,
+      "attack": 0.005,
+      "hold": 1.1,
+      "decay": 0.05,
+      "gain": 0.2,
+      "filter": {
+        "type": "lowpass",
+        "freq": [2200, 2200],
+        "q": 0.7
+      }
+    }
+  ]
+}

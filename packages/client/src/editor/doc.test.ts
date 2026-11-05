@@ -1,6 +1,8 @@
 import { compileMap, type MapFile, type MapNode, type PrefabFile } from '@mes/shared';
 import { describe, expect, it } from 'vitest';
 import {
+  doorTargets,
+  giveId,
   collectIds,
   copyNode,
   countPlacements,
@@ -329,5 +331,51 @@ describe('patrol points', () => {
       { type: 'group', pos: [0, 0, 0], nodes: [{ ...patrol(), id: 'q' }] },
     ];
     expect(patrolIds(nodes)).toEqual(['p', 'q']);
+  });
+});
+
+describe('door targets', () => {
+  const lift: PrefabFile = {
+    formatVersion: 3,
+    id: 'lift',
+    nodes: [{ type: 'door', id: 'gate', pos: [0, 0, 0], size: [2, 3], colour: '#ffffff' }],
+  };
+  const prefabs = new Map([['lift', lift]]);
+
+  it('lists doors in placed prefabs and groups, by the ids they will have', () => {
+    const nodes: MapNode[] = [
+      { type: 'prefab', id: 'west', prefab: 'lift', pos: [0, 0, 0] },
+      {
+        type: 'group',
+        pos: [0, 0, 0],
+        nodes: [{ type: 'prefab', prefab: 'lift', pos: [0, 0, 0] }],
+      },
+      { type: 'door', id: 'shed', pos: [0, 0, 0], size: [1, 2], colour: '#ffffff' },
+    ];
+    const targets = doorTargets(nodes, prefabs);
+    expect(targets.map((t) => t.id)).toEqual(['west/gate', 'lift/gate', 'shed']);
+    expect(targets[0]!.owner).toBeNull();
+    expect(targets[1]!.owner).toEqual([1, 0]);
+  });
+
+  it('gives a placement with no id one, so a link outlives the list changing', () => {
+    const nodes: MapNode[] = [
+      {
+        type: 'group',
+        pos: [0, 0, 0],
+        nodes: [{ type: 'prefab', prefab: 'lift', pos: [0, 0, 0] }],
+      },
+    ];
+    giveId(nodes, doorTargets(nodes, prefabs)[0]!);
+    expect((nodes[0] as { nodes: { id?: string }[] }).nodes[0]!.id).toBe('lift');
+    expect(doorTargets(nodes, prefabs)[0]).toEqual({ id: 'lift/gate', owner: null });
+  });
+
+  it('keeps two copies of a prefab apart', () => {
+    const nodes: MapNode[] = [
+      { type: 'prefab', prefab: 'lift', pos: [0, 0, 0] },
+      { type: 'prefab', prefab: 'lift', pos: [9, 0, 0] },
+    ];
+    expect(doorTargets(nodes, prefabs).map((t) => t.id)).toEqual(['lift/gate', 'lift-2/gate']);
   });
 });

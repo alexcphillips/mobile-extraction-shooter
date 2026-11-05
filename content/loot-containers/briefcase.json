@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "briefcase",
   "name": "Briefcase",
-  "grid": [4, 2],
+  "grid": [3, 2],
   "loot": {
     "tables": {
       "documents": 1

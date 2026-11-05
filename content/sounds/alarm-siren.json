@@ -1,0 +1,40 @@
+{
+  "formatVersion": 1,
+  "id": "alarm-siren",
+  "name": "Rising siren",
+  "gain": 0.8,
+  "range": 800,
+  "pitchJitter": 0,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [340, 780],
+      "at": 0,
+      "attack": 0.05,
+      "hold": 1.5,
+      "decay": 0.05,
+      "gain": 0.22,
+      "filter": {
+        "type": "lowpass",
+        "freq": [2200, 2200],
+        "q": 0.7
+      }
+    },
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [780, 340],
+      "at": 1.5,
+      "attack": 0.02,
+      "hold": 1.45,
+      "decay": 0.05,
+      "gain": 0.22,
+      "filter": {
+        "type": "lowpass",
+        "freq": [2200, 2200],
+        "q": 0.7
+      }
+    }
+  ]
+}

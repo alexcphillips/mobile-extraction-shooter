@@ -64,6 +64,8 @@ export {
   createRayHit,
   type BoxDef,
   type DoorDef,
+  type SwitchDef,
+  type SwitchRowDef,
   type GlassDef,
   type GroundHit,
   type Ladder,
@@ -113,6 +115,16 @@ export {
   type DoorResult,
   type DoorState,
 } from './sim/doors';
+export {
+  holdSwitch,
+  openingProgress,
+  switchInReach,
+  tickSwitches,
+  useSwitch,
+  type DoorSwitchedEvent,
+  type SwitchEvent,
+  type SwitchNoise,
+} from './sim/switches';
 export {
   AI,
   DEFAULT_SKILL,
@@ -539,6 +551,7 @@ export {
   groundUnder,
   type CompiledBuilding,
   type CompiledDoor,
+  type CompiledMover,
   type CompiledGlass,
   type CompiledBarricade,
   type CompiledMap,

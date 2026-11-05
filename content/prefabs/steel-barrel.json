@@ -1,30 +1,88 @@
 {
   "formatVersion": 3,
   "id": "steel-barrel",
+  "name": "Steel barrel",
+  "instanced": true,
+  "colours": { "steel": "#6c7075", "steel-dark": "#4a4d51", "metal": "#9a9ea3" },
   "nodes": [
     {
       "type": "cylinder",
+      "pos": [0, 0.005, 0],
+      "radius": 0.285,
+      "height": 0.87,
+      "colour": "steel",
+      "sides": 12
+    },
+    {
+      "type": "cylinder",
       "pos": [0, 0, 0],
-      "radius": 0.5,
-      "height": 1.5,
-      "colour": "#5a5a5a",
-      "sides": 14
+      "radius": 0.297,
+      "height": 0.03,
+      "colour": "steel-dark",
+      "sides": 12,
+      "collide": false
     },
     {
       "type": "cylinder",
-      "pos": [0, 0.5, 0],
-      "radius": 0.52,
-      "height": 0.1,
-      "colour": "#5c5c5c",
-      "sides": 14
+      "pos": [0, 0.85, 0],
+      "radius": 0.297,
+      "height": 0.03,
+      "colour": "steel-dark",
+      "sides": 12,
+      "collide": false
     },
     {
       "type": "cylinder",
-      "pos": [0, 1.1, 0],
-      "radius": 0.52,
-      "height": 0.1,
-      "colour": "#5c5c5c",
-      "sides": 14
+      "pos": [0, 0.29, 0],
+      "radius": 0.294,
+      "height": 0.022,
+      "colour": "steel-dark",
+      "sides": 12,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.57, 0],
+      "radius": 0.294,
+      "height": 0.022,
+      "colour": "steel-dark",
+      "sides": 12,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.881, 0],
+      "radius": 0.25,
+      "height": 0.002,
+      "colour": "steel",
+      "sides": 12,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.15, 0.882, 0.08],
+      "radius": 0.04,
+      "height": 0.016,
+      "colour": "metal",
+      "sides": 6,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.15, 0.882, -0.08],
+      "radius": 0.025,
+      "height": 0.016,
+      "colour": "metal",
+      "sides": 6,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0715, 0.03, 0.2669],
+      "size": [0.014, 0.82, 0.004],
+      "colour": "steel-dark",
+      "yaw": 15,
+      "collide": false
     }
   ]
 }

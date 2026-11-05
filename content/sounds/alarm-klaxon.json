@@ -1,0 +1,80 @@
+{
+  "formatVersion": 1,
+  "id": "alarm-klaxon",
+  "name": "Warehouse klaxon",
+  "gain": 0.9,
+  "range": 800,
+  "pitchJitter": 0,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [330, 330],
+      "at": 0,
+      "attack": 0.01,
+      "hold": 0.5,
+      "decay": 0.04,
+      "gain": 0.3,
+      "filter": {
+        "type": "lowpass",
+        "freq": [1800, 1800],
+        "q": 0.7
+      }
+    },
+    {
+      "source": "tone",
+      "wave": "square",
+      "freq": [415, 415],
+      "at": 0,
+      "attack": 0.01,
+      "hold": 0.5,
+      "decay": 0.04,
+      "gain": 0.16,
+      "filter": {
+        "type": "lowpass",
+        "freq": [1800, 1800],
+        "q": 0.7
+      }
+    },
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [330, 330],
+      "at": 0.8,
+      "attack": 0.01,
+      "hold": 0.5,
+      "decay": 0.04,
+      "gain": 0.3,
+      "filter": {
+        "type": "lowpass",
+        "freq": [1800, 1800],
+        "q": 0.7
+      }
+    },
+    {
+      "source": "tone",
+      "wave": "square",
+      "freq": [415, 415],
+      "at": 0.8,
+      "attack": 0.01,
+      "hold": 0.5,
+      "decay": 0.04,
+      "gain": 0.16,
+      "filter": {
+        "type": "lowpass",
+        "freq": [1800, 1800],
+        "q": 0.7
+      }
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [20.0, 20],
+      "at": 1.59,
+      "attack": 0.01,
+      "hold": 0,
+      "decay": 0.04,
+      "gain": 0.0
+    }
+  ]
+}

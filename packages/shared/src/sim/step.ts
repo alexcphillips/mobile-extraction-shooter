@@ -3,6 +3,7 @@ import type { NavGrid } from '../nav/nav-grid';
 import type { CollisionWorld } from '../world/collision-world';
 import { updateAi } from './ai';
 import { syncDoors, useDoor } from './doors';
+import { holdSwitch, tickSwitches } from './switches';
 import { syncGlass } from './glass';
 import { applyFall, bleed } from './health';
 import { TICK_SECONDS } from '../tick';
@@ -39,6 +40,7 @@ export function step(
 ): void {
   state.events.length = 0;
   syncDoors(state, world, nav);
+  tickSwitches(state, world);
   syncGlass(state, world);
   for (const e of state.entities) {
     const actions = inputs[e.id]?.inventory;
@@ -54,6 +56,8 @@ export function step(
   for (const e of state.entities) {
     const door = inputs[e.id]?.door;
     if (door != null) useDoor(state, world, items, e, door);
+    const used = inputs[e.id]?.switch;
+    if (used != null || e.switching) holdSwitch(state, world, e, used ?? null);
     const search = inputs[e.id]?.search;
     if (search != null) searchContainer(state, e, search);
     if (inputs[e.id]?.investigate) investigate(state, e);

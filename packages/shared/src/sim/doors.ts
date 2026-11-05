@@ -35,6 +35,12 @@ export interface DoorState {
   flipped?: boolean;
   /** Has a key and hasn't been unlocked yet. Never true while open. */
   locked: boolean;
+  /** Seconds until a switch opens it, while its timer runs (2026-11-05). */
+  opening?: number;
+  /** The whole of that timer, so what's drawn can show how far along it is. */
+  openingFor?: number;
+  /** The sound file to play as that timer ends. */
+  openSound?: string | undefined;
   /**
    * Bought (zombies mode): taken out of its doorway for good, leaving the opening. It's
    * then open too. Missing (older saves) is false.
@@ -62,7 +68,7 @@ export function createDoors(world: CollisionWorld): DoorState[] {
   return world.doors.map((d) => ({
     open: d.open,
     flipped: false,
-    locked: (d.key !== undefined || d.cost !== undefined) && !d.open,
+    locked: (d.key !== undefined || d.cost !== undefined || !!d.switched) && !d.open,
   }));
 }
 
@@ -147,6 +153,9 @@ export function useDoor(
       d.gone = true;
       result = 'bought';
     }
+  } else if (d.locked && world.doors[i]!.key === undefined) {
+    // Only its switch opens it.
+    result = 'locked';
   } else if (d.locked) {
     const key = c.ai ? null : findKey(c.gear, world.doors[i]!.key!);
     if (!key) result = 'locked';

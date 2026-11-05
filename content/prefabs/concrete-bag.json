@@ -1,13 +1,5 @@
 {
   "formatVersion": 3,
   "id": "concrete-bag",
-  "nodes": [
-    {
-      "type": "box",
-      "pos": [0, 0, 0],
-      "size": [0.55, 0.2, 0.8],
-      "colour": "#b5b0a6",
-      "bulge": [0.04, 0.04, 0, 0, 0.04, 0.04]
-    }
-  ]
+  "nodes": []
 }

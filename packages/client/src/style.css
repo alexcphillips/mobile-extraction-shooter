@@ -235,6 +235,25 @@ body {
   pointer-events: none;
 }
 
+/* Fills while the use button is held on a switch with a use time (hud/raid-hud.ts). */
+#use-ring {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  border-radius: 50%;
+  background: conic-gradient(#fff var(--done, 0%), rgb(0 0 0 / 0.35) 0);
+  mask: radial-gradient(closest-side, transparent 72%, #000 75%);
+  -webkit-mask: radial-gradient(closest-side, transparent 72%, #000 75%);
+  pointer-events: none;
+}
+
+#use-ring[hidden] {
+  display: none;
+}
+
 #crosshair.hit {
   background: #e33;
 }
@@ -2095,6 +2114,78 @@ body:has(#layout-bar) #menu {
   outline: 2px solid #ff6b5a;
 }
 
+/* Searching: how many are found on each page, on its tab. */
+.stash .raid-tabs button.stash-page.no-hits {
+  opacity: 0.45;
+}
+
+.stash-page-hits {
+  margin-left: 4px;
+  color: #6cff8a;
+  font-size: 11px;
+}
+
+/* Above the page, and stays in view while the stash scrolls under it. */
+.stash-search {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 340px;
+  margin-bottom: 6px;
+  background: #1d2328;
+}
+
+/* 16px or more, or iOS zooms in on focus. The page's user-select: none would stop typing. */
+.stash-search input {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #39434b;
+  border-radius: 6px;
+  outline: none;
+  appearance: none;
+  background: #14191d;
+  color: #e8ecef;
+  font: inherit;
+  font-size: 16px;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.stash-search input:focus {
+  border-color: #e3a33a;
+}
+
+/* The box has its own clear button. */
+.stash-search input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.stash-search-found {
+  flex: none;
+  color: #9aa6b0;
+}
+
+.raid .stash-search button {
+  flex: none;
+  min-height: 34px;
+  padding: 0 10px;
+}
+
+.inv-item.dimmed {
+  opacity: 0.22;
+}
+
+/* A bag opened from the page sits below the search box, not behind it. */
+.stash .inv-bag {
+  top: 40px;
+}
+
 /* Selling from the stash: a second tap confirms. */
 .inv-bar button.confirm {
   background: #6cff8a;
@@ -2926,4 +3017,13 @@ body.spectating
 .zombies-admin .zombies-admin-close {
   display: block;
   margin-top: 8px;
+}
+
+/* A switch's row in the map editor's inspector (2026-11-05). */
+.ed-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 0 6px 8px;
+  border-left: 2px solid rgb(255 255 255 / 15%);
 }

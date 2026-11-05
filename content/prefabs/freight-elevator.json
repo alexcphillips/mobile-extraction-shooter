@@ -1,0 +1,74 @@
+{
+  "formatVersion": 3,
+  "id": "freight-elevator",
+  "name": "Freight elevator",
+  "nodes": [
+    {
+      "type": "prefab",
+      "prefab": "freight-elevator-shaft",
+      "pos": [0, 0, 0]
+    },
+    {
+      "type": "prefab",
+      "prefab": "freight-elevator-cab",
+      "pos": [0, 0, 0]
+    },
+    {
+      "type": "door",
+      "id": "gate",
+      "name": "Freight elevator",
+      "pos": [0, 0, 3.275],
+      "size": [5.0, 3.8],
+      "thickness": 0.1,
+      "look": "freight-elevator-gate",
+      "rollUp": true,
+      "colour": "#9aa0a4",
+      "lamp": {
+        "pos": [0, 3.9, 0.12],
+        "size": [0.7, 0.22, 0.1]
+      }
+    },
+    {
+      "type": "mover",
+      "prefab": "freight-elevator-cab",
+      "pos": [0, 4.4, 0],
+      "travel": [0, -4.4, 0],
+      "door": "gate"
+    },
+    {
+      "type": "lootSpawn",
+      "id": "deck-1",
+      "pos": [-1.6, 0.15, -1.8],
+      "lootTable": "military",
+      "chance": 0.7
+    },
+    {
+      "type": "lootSpawn",
+      "id": "deck-2",
+      "pos": [1.6, 0.15, -1.8],
+      "lootTable": "military-tech",
+      "chance": 0.7
+    },
+    {
+      "type": "lootSpawn",
+      "id": "deck-3",
+      "pos": [-1.6, 0.15, 0.6],
+      "lootTable": "ammo",
+      "chance": 0.7
+    },
+    {
+      "type": "lootSpawn",
+      "id": "deck-4",
+      "pos": [1.6, 0.15, 0.6],
+      "lootTable": "weapons",
+      "chance": 0.7
+    },
+    {
+      "type": "lootSpawn",
+      "id": "deck-5",
+      "pos": [0, 0.15, -0.6],
+      "lootTable": "military",
+      "chance": 0.7
+    }
+  ]
+}

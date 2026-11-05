@@ -1,0 +1,54 @@
+{
+  "formatVersion": 3,
+  "id": "stock-wrapped",
+  "name": "Pallet of wrapped goods",
+  "colours": {
+    "wood": "#b08a52",
+    "wood-dark": "#6f5230",
+    "wrap": "#c6d0d6",
+    "wrap-dark": "#a3afb7",
+    "strap": "#2c4668"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [1.16, 0.1, 0.96],
+      "colour": "wood-dark"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.1, 0],
+      "size": [1.2, 0.044, 1],
+      "colour": "wood",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.144, 0],
+      "size": [1.16, 1.1, 0.96],
+      "colour": "wrap"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.144, 0],
+      "size": [1.17, 0.22, 0.97],
+      "colour": "wrap-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.36, 0.144, 0],
+      "size": [0.03, 1.108, 0.98],
+      "colour": "strap",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.36, 0.144, 0],
+      "size": [0.03, 1.108, 0.98],
+      "colour": "strap",
+      "collide": false
+    }
+  ]
+}

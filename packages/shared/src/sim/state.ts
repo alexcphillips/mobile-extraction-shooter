@@ -3,6 +3,7 @@ import type { AiState } from './ai';
 import type { CollisionWorld } from '../world/collision-world';
 import { createGear, type Gear, type Hand } from './gear';
 import type { DoorEvent, DoorState } from './doors';
+import type { DoorSwitchedEvent, SwitchEvent, SwitchNoise } from './switches';
 import type { GlassEvent } from './glass';
 import type { Burn, FirePatch, Flame, IgniteEvent } from './fire';
 import type { BounceEvent, ExplosionEvent, Grenade, Smoke, ThrowEvent } from './grenades';
@@ -102,6 +103,8 @@ export interface Character {
   extinguish?: number;
   /** The med it's using, or null. */
   using: MedUse | null;
+  /** The switch it's holding the use button on, and for how many seconds so far. */
+  switching?: { index: number; held: number };
   /** Seconds it has stood in an extraction point; 0 when not in one. */
   extracting: number;
   /**
@@ -165,6 +168,8 @@ export type SimEvent =
   | SearchEvent
   | LeaveEvent
   | DoorEvent
+  | SwitchEvent
+  | DoorSwitchedEvent
   | GlassEvent
   | InvestigateEvent
   | SpawnRequestEvent
@@ -211,6 +216,10 @@ export interface SimState {
   fires: FirePatch[];
   /** Each of the world's doors, by index; filled in by the first step (see syncDoors). */
   doors: DoorState[];
+  /** Each of the world's switches, by index: true once used (see tickSwitches). */
+  switches: boolean[];
+  /** Noises switches set off, while they last. */
+  noises: SwitchNoise[];
   /**
    * Each of the world's panes of glass, by index: true once broken. Filled in by the first
    * step (see syncGlass); missing in states saved before glass.
@@ -279,6 +288,8 @@ export interface PlayerInput {
   use?: MedRef | 'cancel' | null;
   /** Open, close or unlock a door, by its index in world.doors: a press. */
   door?: number | null;
+  /** Use a switch, by its index in world.switches: sent for as long as the button is held. */
+  switch?: number | null;
   /** Finish searching a loot container, by its id: a press. Opening its screen sends it today. */
   search?: string | null;
   /** Investigate the quest marker in reach (session 14b): a press. */
@@ -308,6 +319,8 @@ export function createState(seed: number): SimState {
     flames: [],
     fires: [],
     doors: [],
+    switches: [],
+    noises: [],
     glass: [],
     raid: null,
     left: [],

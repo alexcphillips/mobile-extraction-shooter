@@ -10,7 +10,7 @@ A small Tarkov-style PvE extraction shooter that runs as a mobile web game (Add 
 - [docs/coop.md](docs/coop.md): the co-op to-do (friends, party, raid server), in the same session format.
 
 ## Standing rules
-- **PvE only, never PvP.** Co-op against AI with a friend is the most multiplayer there will be. Don't build anti-cheat, matchmaking or competitive netcode.
+- **PvE for now; a separate PvP mode may come later.** The user plans PvE and PvP modes one day, not soon (2026-11-05). Until then, co-op against AI with a friend is the most multiplayer there is: don't build PvP, anti-cheat, matchmaking or competitive netcode.
 - **The game simulation in `packages/shared` must not depend on rendering or UI.** No three.js, React or DOM in it. It takes inputs and returns state at a fixed tick, so it can run on the co-op host (or a server) without changes.
 - **Game content is data.** Maps, items, prefabs, loot tables, quests and vendors are JSON in `content/`, validated by schemas, with a format version number and migrations.
 - **Phone performance is a requirement.** Keep draw calls low (merge static geometry by chunk), don't allocate per frame in hot loops, and test on a real iPhone.

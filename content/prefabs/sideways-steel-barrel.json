@@ -1,40 +1,6 @@
 {
   "formatVersion": 3,
   "id": "sideways-steel-barrel",
-  "nodes": [
-    {
-      "type": "group",
-      "pos": [0, 0, 0],
-      "nodes": [
-        {
-          "type": "cylinder",
-          "pos": [0.013, 0, 0.002],
-          "radius": 0.5,
-          "height": 1.5,
-          "colour": "#5a5a5a",
-          "sides": 14,
-          "pitch": 90
-        },
-        {
-          "type": "cylinder",
-          "pos": [-0.007, 0.719, -0.305],
-          "radius": 0.52,
-          "height": 0.1,
-          "colour": "#5c5c5c",
-          "sides": 14,
-          "pitch": 90
-        },
-        {
-          "type": "cylinder",
-          "pos": [-0.007, 0.719, 0.302],
-          "radius": 0.52,
-          "height": 0.1,
-          "colour": "#5c5c5c",
-          "sides": 14,
-          "pitch": 90
-        }
-      ],
-      "name": "sideways-steel-barrel"
-    }
-  ]
+  "name": "Steel barrel (on its side)",
+  "nodes": [{ "type": "prefab", "prefab": "steel-barrel", "pos": [0, 0.297, -0.44], "pitch": 90 }]
 }

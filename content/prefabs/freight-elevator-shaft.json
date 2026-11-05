@@ -1,0 +1,230 @@
+{
+  "formatVersion": 3,
+  "id": "freight-elevator-shaft",
+  "name": "Freight elevator shaft",
+  "colours": {
+    "steel": "#70777d",
+    "steel-dark": "#474d53",
+    "panel": "#8d9296",
+    "rope": "#26282b",
+    "winch": "#3f6496"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [-2.775, 0, 0],
+      "size": [0.15, 4.2, 6.7],
+      "colour": "panel"
+    },
+    {
+      "type": "box",
+      "pos": [2.775, 0, 0],
+      "size": [0.15, 4.2, 6.7],
+      "colour": "panel"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, -3.275],
+      "size": [5.4, 4.2, 0.15],
+      "colour": "panel"
+    },
+    {
+      "type": "box",
+      "pos": [-2.675, 0, 3.275],
+      "size": [0.35, 4.2, 0.15],
+      "colour": "steel"
+    },
+    {
+      "type": "box",
+      "pos": [2.675, 0, 3.275],
+      "size": [0.35, 4.2, 0.15],
+      "colour": "steel"
+    },
+    {
+      "type": "box",
+      "pos": [0, 3.8, 3.275],
+      "size": [5.0, 0.4, 0.15],
+      "colour": "steel"
+    },
+    {
+      "type": "box",
+      "pos": [-2.95, 0, -3.45],
+      "size": [0.3, 10.0, 0.3],
+      "colour": "steel-dark"
+    },
+    {
+      "type": "box",
+      "pos": [-2.95, 0, 3.45],
+      "size": [0.3, 10.0, 0.3],
+      "colour": "steel-dark"
+    },
+    {
+      "type": "box",
+      "pos": [2.95, 0, -3.45],
+      "size": [0.3, 10.0, 0.3],
+      "colour": "steel-dark"
+    },
+    {
+      "type": "box",
+      "pos": [2.95, 0, 3.45],
+      "size": [0.3, 10.0, 0.3],
+      "colour": "steel-dark"
+    },
+    {
+      "type": "box",
+      "pos": [-2.86, 0, -1.6],
+      "size": [0.03, 4.2, 0.14],
+      "colour": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-2.86, 0, 1.6],
+      "size": [0.03, 4.2, 0.14],
+      "colour": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [2.86, 0, -1.6],
+      "size": [0.03, 4.2, 0.14],
+      "colour": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [2.86, 0, 1.6],
+      "size": [0.03, 4.2, 0.14],
+      "colour": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-2.95, 9.55, 0],
+      "size": [0.2, 0.25, 6.6],
+      "colour": "steel-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [2.95, 9.55, 0],
+      "size": [0.2, 0.25, 6.6],
+      "colour": "steel-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 9.55, -3.45],
+      "size": [5.6, 0.25, 0.2],
+      "colour": "steel-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 9.55, 3.45],
+      "size": [5.6, 0.25, 0.2],
+      "colour": "steel-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-2.95, 2.627, 0],
+      "size": [0.08, 8.496, 0.08],
+      "colour": "steel",
+      "collide": false,
+      "pitch": 50.9716
+    },
+    {
+      "type": "box",
+      "pos": [-2.95, 2.627, 0],
+      "size": [0.08, 8.496, 0.08],
+      "colour": "steel",
+      "collide": false,
+      "pitch": -50.9716
+    },
+    {
+      "type": "box",
+      "pos": [2.95, 2.627, 0],
+      "size": [0.08, 8.496, 0.08],
+      "colour": "steel",
+      "collide": false,
+      "pitch": 50.9716
+    },
+    {
+      "type": "box",
+      "pos": [2.95, 2.627, 0],
+      "size": [0.08, 8.496, 0.08],
+      "colour": "steel",
+      "collide": false,
+      "pitch": -50.9716
+    },
+    {
+      "type": "box",
+      "pos": [0, 3.0026, -3.45],
+      "size": [0.08, 7.7448, 0.08],
+      "colour": "steel",
+      "collide": false,
+      "roll": 46.3079
+    },
+    {
+      "type": "box",
+      "pos": [0, 3.0026, -3.45],
+      "size": [0.08, 7.7448, 0.08],
+      "colour": "steel",
+      "collide": false,
+      "roll": -46.3079
+    },
+    {
+      "type": "box",
+      "pos": [-0.5, 4.2, -3.15],
+      "size": [0.03, 5.8, 0.03],
+      "colour": "rope",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.5, 4.2, -3.15],
+      "size": [0.03, 5.8, 0.03],
+      "colour": "rope",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 9.8, -3.0],
+      "size": [6.2, 0.2, 0.2],
+      "colour": "steel-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 9.8, -1.8],
+      "size": [6.2, 0.2, 0.2],
+      "colour": "steel-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 10.0, -2.4],
+      "size": [2.4, 0.1, 1.6],
+      "colour": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.75, 10.1, -2.4],
+      "size": [0.9, 0.7, 0.9],
+      "colour": "winch",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.45, 9.7, -2.4],
+      "radius": 0.4,
+      "height": 1.5,
+      "sides": 10,
+      "colour": "steel-dark",
+      "roll": 90,
+      "collide": false
+    }
+  ]
+}

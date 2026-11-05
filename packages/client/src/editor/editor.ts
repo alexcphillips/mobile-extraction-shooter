@@ -49,10 +49,14 @@ import {
   patrolPoint,
   placeNode,
   placementNeedsId,
+  doorTargets,
+  giveId,
+  type DoorTarget,
   removePatrolPoint,
   round,
   scopePrefabs,
   uniqueId,
+  isTilted,
   ungroup,
   unpackPrefab,
   nodeLabel,
@@ -539,6 +543,30 @@ export class MapEditor {
   /** The patrols an enemy spawn in the scope can walk: those in the same file. */
   patrols(): string[] {
     return patrolIds(this.fileNodes());
+  }
+
+  /** The ids a switch in the scope can open: doors in the same file, in placed prefabs too. */
+  switchTargets(): string[] {
+    // Doors someone named first: an unnamed door in a shipping container is rarely the one.
+    const rank = (t: DoorTarget): number => (t.id.includes('#') ? 2 : t.owner ? 1 : 0);
+    return doorTargets(this.fileNodes(), this.prefabs)
+      .sort((a, b) => rank(a) - rank(b))
+      .map((t) => t.id);
+  }
+
+  /**
+   * Points a row of the active switch at a door, in one undo step, giving whatever holds the
+   * door an id if it has none: a place in the list wouldn't last.
+   */
+  linkSwitch(row: number, id: string): void {
+    const target = doorTargets(this.fileNodes(), this.prefabs).find((t) => t.id === id);
+    const i = this.state.selected[this.state.selected.length - 1];
+    if (!target || i === undefined) return;
+    this.edit((nodes) => {
+      giveId(this.fileNodes(), target);
+      const tag = (nodes[i] as { switch?: { rows: { opens: string }[] } }).switch;
+      if (tag?.rows[row]) tag.rows[row].opens = id;
+    });
   }
 
   /** The barricades' ids in the file the scope is in, for zombie spawns to name. */
@@ -1559,6 +1587,13 @@ export class MapEditor {
   ungroupSelected(): void {
     const groups = this.state.selected.filter((i) => this.scopeNodes()[i]?.type === 'group');
     if (!groups.length) return;
+    // Not everything in a group can take on its tilt: ramps, stairs and walls have none.
+    if (groups.some((g) => isTilted(this.scopeNodes()[g]))) {
+      this.set({
+        message: "A tilted group can't be ungrouped: set its pitch and roll to 0 first.",
+      });
+      return;
+    }
     this.edit((nodes) => {
       let picked: number[] = [];
       // From the end, so earlier indices stay put; then shift for what came before.

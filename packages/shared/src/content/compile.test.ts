@@ -256,6 +256,92 @@ describe('compileMap', () => {
     expect(b.y).toBeCloseTo(2);
   });
 
+  it('collides a tilted box as a slab with a sloped top and underside', () => {
+    const m = compileMap(
+      map([{ type: 'box', pos: [0, 0, 0], size: [2, 0.2, 8], pitch: -30, colour: '#ffffff' }]),
+      prefabs(),
+    );
+    const b = m.world.boxes[0]!;
+    expect(b.slope!.topX).toBeCloseTo(0);
+    // Positive pitch tips the top towards +z, so −30° rises towards +z.
+    expect(b.slope!.topZ).toBeCloseTo(Math.tan((30 * Math.PI) / 180));
+    expect(b.slope!.underZ).toBeCloseTo(b.slope!.topZ);
+    expect(b.slope!.top - b.slope!.under).toBeCloseTo(0.2 / Math.cos((30 * Math.PI) / 180));
+    expect(b.hz).toBeCloseTo(
+      4 * Math.cos((30 * Math.PI) / 180) + 0.1 * Math.sin((30 * Math.PI) / 180),
+    );
+  });
+
+  it('takes what a tilted prefab or group holds with it, about its pos', () => {
+    const plank: MapNode = { type: 'box', pos: [0, 0, 2], size: [1, 0.2, 2], colour: '#ffffff' };
+    const lib = prefabs({ formatVersion: 3, id: 'plank', nodes: [plank] });
+    const placed: MapNode[] = [
+      { type: 'group', pos: [5, 1, 0], pitch: -90, nodes: [plank] },
+      { type: 'prefab', prefab: 'plank', pos: [5, 1, 0], pitch: -90 },
+    ];
+    for (const tilted of placed) {
+      const m = compileMap(map([tilted]), lib);
+      const s = m.shapes[0]!;
+      // 2 m along +z and 0.1 m up becomes 2 m up and 0.1 m back along −z.
+      expect(s.x).toBeCloseTo(5);
+      expect(s.y).toBeCloseTo(3);
+      expect(s.z).toBeCloseTo(-0.1);
+      expect(s.pitch).toBeCloseTo((-90 * Math.PI) / 180);
+    }
+  });
+
+  it('composes yaw and a tilted group with a tilted child', () => {
+    const m = compileMap(
+      map([
+        {
+          type: 'group',
+          pos: [0, 0, 0],
+          yaw: 90,
+          pitch: -20,
+          nodes: [{ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], pitch: -10, colour: '#ffffff' }],
+        },
+      ]),
+      prefabs(),
+    );
+    const s = m.shapes[0]!;
+    expect(s.yaw).toBeCloseTo(Math.PI / 2);
+    expect(s.pitch).toBeCloseTo((-30 * Math.PI) / 180);
+    expect(s.roll).toBeCloseTo(0);
+  });
+
+  it('fixes doors shut in something tilted and refuses ladders', () => {
+    const door: MapNode = { type: 'door', pos: [0, 0, 0], size: [1, 2], colour: '#ffffff' };
+    const m = compileMap(
+      map([{ type: 'group', pos: [0, 0, 0], pitch: 20, nodes: [door] }]),
+      prefabs(),
+    );
+    expect(m.doors).toEqual([]);
+    expect(m.world.boxes).toHaveLength(1);
+    const ladder: MapNode = { type: 'ladder', pos: [0, 0, 0], height: 2, colour: '#ffffff' };
+    expect(() =>
+      compileMap(map([{ type: 'group', pos: [0, 0, 0], roll: 5, nodes: [ladder] }]), prefabs()),
+    ).toThrow(/ladders can't be/);
+  });
+
+  it('tilts a ramp in a group as a sloped solid, not a yaw-only ramp', () => {
+    const m = compileMap(
+      map([
+        {
+          type: 'group',
+          pos: [0, 0, 0],
+          pitch: -10,
+          nodes: [{ type: 'ramp', pos: [0, 0, 0], size: [2, 1, 4], colour: '#ffffff' }],
+        },
+      ]),
+      prefabs(),
+    );
+    expect(m.world.ramps).toEqual([]);
+    const { slope } = m.world.boxes[0]!;
+    // 1 in 4 plus 10°.
+    expect(slope!.topZ).toBeCloseTo(Math.tan(Math.atan(0.25) + (10 * Math.PI) / 180));
+    expect(slope!.underZ).toBeCloseTo(Math.tan((10 * Math.PI) / 180));
+  });
+
   it('turns stairs and ladders into ramps and ladders, and skips decoration', () => {
     const m = compileMap(
       map([

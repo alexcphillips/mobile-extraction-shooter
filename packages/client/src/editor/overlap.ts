@@ -9,7 +9,7 @@ import {
   type PrefabFile,
   type PrefabLookup,
 } from '@mes/shared';
-import { nodePos, nodeYaw, type NodePath } from './doc';
+import { isTilted, nodePos, nodeYaw, type NodePath } from './doc';
 import { terrainDef } from './terrain';
 
 /*
@@ -186,7 +186,8 @@ function placedNodes(map: MapFile, prefabs: PrefabLookup): Placed[] {
       const p = [...path, i];
       const [x, y, z] = place(f, nodePos(n));
       const g: Frame = { x, y, z, yaw: f.yaw + nodeYaw(n) * DEG };
-      if (n.type === 'group') return walk(n.nodes, g, p);
+      // A tilted group's nodes don't fit a yaw-only frame: its bounds stand for them.
+      if (n.type === 'group' && !isTilted(n)) return walk(n.nodes, g, p);
       const local = solidsOf(n, prefabs, map.colours ?? {});
       if (!local) return;
       const solids = [
@@ -220,6 +221,7 @@ function solidsOf(
   prefabs: PrefabLookup,
   colours: Readonly<Record<string, string>>,
 ): CompiledNodes | null {
+  if (isTilted(n)) return tryCompile({ ...n, pos: [0, 0, 0], yaw: 0 } as MapNode, prefabs, colours);
   if (n.type === 'prefab') {
     const prefab = prefabs.get(n.prefab);
     if (!prefab) return null;

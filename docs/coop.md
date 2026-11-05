@@ -1,6 +1,6 @@
 # Co-op to-do
 
-Co-op against AI with a friend: two (later up to four) players in one raid. No PvP, no matchmaking with strangers, no anti-cheat (CLAUDE.md).
+Co-op against AI with a friend: two (later up to four) players in one raid. No PvP, matchmaking with strangers or anti-cheat for now (CLAUDE.md).
 
 **Phones and PCs alike** (the user's requirement, 2026-10-31): the game is the same web page on both, so a party can be any mix of iPhones and PC browsers (Chrome, Edge, Firefox, Safari). Everything below must work on both; where they differ, it says so.
 

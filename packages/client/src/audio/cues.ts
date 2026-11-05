@@ -21,6 +21,9 @@ import type { PlaceOptions, SoundPlayer } from './sounds';
 
 /** A shot this much quieter than its gun's own loudness (or more) sounds suppressed. */
 const SUPPRESSED = 0.75;
+/** A switch's noise is at its quietest this loud, this far from it (metres) or further. */
+const NOISE_FLOOR = 0.5;
+const NOISE_FAR = 80;
 /** An enemy's bullet passing within this of the player's head whizzes. */
 const WHIZZ = 2;
 
@@ -70,6 +73,8 @@ export class SoundCues {
   /** The last tick a hit marker played: a shotgun's pellets landing together make one. */
   private markerTick = -1;
   private readonly options: PlaceOptions = {};
+  /** When each noise (by its id) next starts again. */
+  private readonly noiseAt = new Map<number, number>();
 
   constructor(
     private readonly sound: SoundPlayer,
@@ -85,8 +90,23 @@ export class SoundCues {
     l.z = player.z;
     l.yaw = yaw;
     for (const e of sim.events) this.event(sim, player, e);
+    this.noises(sim, player);
     for (const c of sim.entities) if (!c.health.dead) this.watch(c, c === player);
     this.raid(sim, player);
+  }
+
+  /**
+   * A switch's noises, repeated end to end while they last. Heard all over the map, so not
+   * placed: louder near it, but never so quiet you'd miss it.
+   */
+  private noises(sim: SimState, player: Character): void {
+    const now = sim.tick * TICK_SECONDS;
+    for (const n of sim.noises) {
+      if (now < (this.noiseAt.get(n.id) ?? 0)) continue;
+      const near = 1 - Math.min(1, Math.hypot(n.x - player.x, n.z - player.z) / NOISE_FAR);
+      this.sound.play(n.sound, NOISE_FLOOR + (1 - NOISE_FLOOR) * near);
+      this.noiseAt.set(n.id, now + this.sound.duration(n.sound));
+    }
   }
 
   private event(sim: SimState, player: Character, e: SimEvent): void {
@@ -191,6 +211,16 @@ export class SoundCues {
           poor: S.doorLocked,
         }[e.result];
         this.at(id, d.x, d.y + d.height / 2, d.z);
+        return;
+      }
+      case 'switch': {
+        const s = this.world.switches[e.index];
+        if (s) this.at(S.doorUnlock, s.x, s.y + 1, s.z);
+        return;
+      }
+      case 'doorSwitched': {
+        const d = this.world.doors[e.door];
+        if (d && e.sound) this.at(e.sound, d.x, d.y + d.height / 2, d.z);
         return;
       }
       case 'glass':

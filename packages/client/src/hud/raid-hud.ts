@@ -45,12 +45,24 @@ export class RaidHud {
   private warnUntil = 0;
   /** Whether what's shown over the prompt is a warning, or just news. */
   private warnClass = true;
+  /** The use ring's percentage, or −1 hidden. */
+  private useShown = -1;
 
   constructor(
     private readonly timer: HTMLElement,
     private readonly extract: HTMLElement,
     private readonly prompt: HTMLElement,
+    private readonly useRing: HTMLElement,
   ) {}
+
+  /** The ring round the crosshair while holding the use button: how far along, 0 to 1. */
+  setUse(fraction: number | null): void {
+    const shown = fraction === null ? -1 : Math.min(100, Math.round(fraction * 100));
+    if (shown === this.useShown) return;
+    this.useShown = shown;
+    this.useRing.hidden = shown < 0;
+    if (shown >= 0) this.useRing.style.setProperty('--done', `${shown}%`);
+  }
 
   /** Shows a warning under the crosshair for a moment, over the prompt. */
   warn(text: string, now: number): void {
