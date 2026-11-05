@@ -89,6 +89,7 @@ import {
   windowInReach,
   pointsOf,
   spotPrice,
+  barricadeWindows,
   startZombies,
   type Powerup,
   type ZombiesDef,
@@ -471,8 +472,17 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     }
   }
   // Zombies mode's windows' planks.
-  const barricades = sim.zombies ? new Barricades(sim.zombies.windows) : null;
-  if (barricades) scene.add(barricades.root);
+  // Outside a zombies game (a map's play-test without zombie spawns), a barricade still
+  // blocks, so it's drawn boarded up full.
+  const barricades = sim.zombies
+    ? new Barricades(sim.zombies.windows)
+    : map.barricades.length
+      ? new Barricades(barricadeWindows(map))
+      : null;
+  if (barricades) {
+    if (!sim.zombies) barricades.update(barricadeWindows(map));
+    scene.add(barricades.root);
+  }
   const powerupViews = sim.zombies ? new Powerups() : null;
   if (powerupViews) scene.add(powerupViews.root);
   // The mystery box's gun, hovering over it.

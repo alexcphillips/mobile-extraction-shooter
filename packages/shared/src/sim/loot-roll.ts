@@ -66,6 +66,8 @@ const NOTHING = '';
 export function rollMix(items: ItemDb, tables: LootTables, mix: LootMix, rng: Rng): Item[] {
   const options = Object.entries(mix.tables).map(([id, weight]) => ({ id, weight }));
   const all = mix.empty ? [...options, { id: NOTHING, weight: mix.empty }] : options;
+  // A mix with every table taken out and no empty weight holds nothing.
+  if (!all.length) return [];
   const pick = (): string => (all.length === 1 ? all[0]!.id : byWeight(rng, all).id);
   if (!mix.each) {
     const id = pick();

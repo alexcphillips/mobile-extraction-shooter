@@ -2,6 +2,7 @@ import {
   HeightGrid,
   compileNodes,
   concreteBase,
+  type CompiledBarricade,
   type CompiledBuilding,
   type CompiledMap,
   type HeightGridDef,
@@ -41,6 +42,10 @@ const PREFAB_SCOPE = 0xc77dff;
 const BROKEN = 0xff00ff;
 /** A zombies barricade's planks. */
 const PLANK = 0x8a6239;
+/** A barricade's outline and arrow, seen through walls; how deep the outline is, and the arrow long. */
+const BARRICADE_LINE = 0xffb347;
+const BARRICADE_DEPTH = 0.4;
+const BARRICADE_ARROW = 0.5;
 const WARNING = 0xff2a2a;
 const BRUSH = 0xffffff;
 /** Handles on the points of a patrol or zone being edited, and the one picked. */
@@ -1063,6 +1068,7 @@ export class EditorView {
           }
         }
         o.add(new THREE.Mesh(b.build(), this.material));
+        for (const w of out.barricades) o.add(barricadeOutline(w));
       }
       for (const g of out.glass) o.add(buildGlassPane(g));
       if (out.markers.length || out.patrols.length) {
@@ -1513,6 +1519,37 @@ function dispose(root: THREE.Object3D, keep: THREE.Material): void {
     const mats = Array.isArray(m.material) ? m.material : m.material ? [m.material] : [];
     for (const mat of mats) if (mat !== keep) mat.dispose();
   });
+}
+
+/**
+ * A barricade's opening outlined, with an arrow pointing inside, drawn through walls
+ * (2026-11-05): until the wall has an opening to match, the wall hides its planks.
+ */
+function barricadeOutline(w: CompiledBarricade): THREE.LineSegments {
+  const hx = w.width / 2;
+  const hz = BARRICADE_DEPTH / 2;
+  const mid = w.height / 2;
+  const box = new THREE.EdgesGeometry(new THREE.BoxGeometry(w.width, w.height, hz * 2));
+  box.translate(0, mid, 0);
+  const pos = [...(box.getAttribute('position').array as Float32Array)];
+  box.dispose();
+  // The arrow, from the middle of the opening to inside.
+  const tip = hz + BARRICADE_ARROW;
+  const head = Math.min(0.15, hx);
+  pos.push(0, mid, 0, 0, mid, tip);
+  pos.push(-head, mid, tip - head, 0, mid, tip, head, mid, tip - head, 0, mid, tip);
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  const lines = new THREE.LineSegments(
+    geometry,
+    new THREE.LineBasicMaterial({ color: BARRICADE_LINE, depthTest: false, transparent: true }),
+  );
+  lines.position.set(w.x, w.y, w.z);
+  lines.rotation.y = w.yaw;
+  lines.renderOrder = 1;
+  // Drawn only: clicks go to the planks, or the wall.
+  lines.raycast = () => {};
+  return lines;
 }
 
 /** How many grid cells out from the middle the grid goes, each way. */

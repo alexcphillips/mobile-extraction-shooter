@@ -225,14 +225,9 @@ export interface BuyEvent {
   cost: number;
 }
 
-/**
- * Starts a zombies game: its rules, the map's zombie spawns and buy spots, and round 1
- * after the break time. Every player in the state starts with the rules' points.
- */
-export function startZombies(state: SimState, map: CompiledMap, def: ZombiesDef): void {
-  const spawns: ZombieSpawn[] = [];
-  const buys: BuySpot[] = [];
-  const windows: WindowState[] = map.barricades.map((b) => ({
+/** A map's barricades as windows boarded up full, as a zombies game starts them. */
+export function barricadeWindows(map: Pick<CompiledMap, 'barricades'>): WindowState[] {
+  return map.barricades.map((b) => ({
     id: b.id,
     x: b.x,
     y: b.y,
@@ -245,6 +240,16 @@ export function startZombies(state: SimState, map: CompiledMap, def: ZombiesDef)
     rebuild: 0,
     tear: 0,
   }));
+}
+
+/**
+ * Starts a zombies game: its rules, the map's zombie spawns and buy spots, and round 1
+ * after the break time. Every player in the state starts with the rules' points.
+ */
+export function startZombies(state: SimState, map: CompiledMap, def: ZombiesDef): void {
+  const spawns: ZombieSpawn[] = [];
+  const buys: BuySpot[] = [];
+  const windows = barricadeWindows(map);
   for (const m of map.markers) {
     if (m.type === 'zombieSpawn') {
       const window = m.window === undefined ? -1 : windows.findIndex((w) => w.id === m.window);
