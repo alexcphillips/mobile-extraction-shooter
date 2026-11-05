@@ -12,6 +12,7 @@ import {
   SOUND_FORMAT,
   STARTING_KIT_FORMAT,
   VENDOR_FORMAT,
+  ZOMBIES_FORMAT,
   checkEnemies,
   checkEnemyLoot,
   checkItems,
@@ -39,6 +40,7 @@ import {
   type SoundDef,
   type StartingKitDef,
   type VendorDef,
+  type ZombiesDef,
 } from '@mes/shared';
 import { GAME_SOUNDS } from './audio/sound-ids';
 
@@ -93,6 +95,11 @@ const questFiles = import.meta.glob<unknown>('../../../content/quests/*.json', {
 });
 
 const soundFiles = import.meta.glob<unknown>('../../../content/sounds/*.json', {
+  eager: true,
+  import: 'default',
+});
+
+const zombiesFiles = import.meta.glob<unknown>('../../../content/zombies/*.json', {
   eager: true,
   import: 'default',
 });
@@ -456,9 +463,52 @@ export function loadRaid(id: string): RaidDef {
   return raid;
 }
 
+let zombies: Map<string, ZombiesDef> | undefined;
+
+export function zombiesIds(): string[] {
+  zombies ??= loadById(ZOMBIES_FORMAT, zombiesFiles);
+  return [...zombies.keys()];
+}
+
+/**
+ * A zombies mode from content/zombies (2026-11-04), checked against the rest of content: its
+ * map (with zombie spawns, see checkZombieMarkers), its kit, its claws and the box's guns.
+ */
+export function loadZombies(id: string): ZombiesDef {
+  zombies ??= loadById(ZOMBIES_FORMAT, zombiesFiles);
+  const def = zombies.get(id);
+  const file = `content/zombies/${id}.json`;
+  if (!def) throw new Error(`no zombies mode "${id}" in content/zombies`);
+  if (!mapIds().includes(def.map)) throw new Error(`${file}: no map "${def.map}"`);
+  const map = loadMap(def.map);
+  checkZombieMarkers(map);
+  if (!map.markers.some((m) => m.type === 'zombieSpawn'))
+    throw new Error(`${file}: map ${def.map} has no zombie spawns`);
+  loadStartingKit(def.kit);
+  const items = loadItems();
+  if (items.get(def.zombie.claws)?.type !== 'melee')
+    throw new Error(`${file}: "${def.zombie.claws}" is not a melee item`);
+  for (const o of def.box)
+    if (items.get(o.item)?.type !== 'weapon')
+      throw new Error(`${file}: box gun "${o.item}" is not a weapon`);
+  const minigun = items.get(def.powerups.minigun);
+  if (minigun?.type !== 'weapon' || !minigun.infiniteAmmo)
+    throw new Error(`${file}: the death machine "${def.powerups.minigun}" needs infiniteAmmo`);
+  return def;
+}
+
+/** Checks that a map's wall guns name weapons (zombies mode). */
+export function checkZombieMarkers(map: CompiledMap): void {
+  const items = loadItems();
+  for (const m of map.markers) {
+    if (m.type === 'wallBuy' && items.get(m.item)?.type !== 'weapon')
+      throw new Error(`map ${map.id}: wall gun ${m.id}: "${m.item}" is not a weapon`);
+  }
+}
+
 /**
  * A starting kit from content/starting-kits. The server gives new players theirs; the client
- * needs one only for play-testing from the map editor.
+ * needs one only for play-testing from the map editor, and for zombies mode's loadout.
  */
 export function loadStartingKit(id: string): StartingKitDef {
   const kit = loadById(STARTING_KIT_FORMAT, startingKitFiles).get(id);

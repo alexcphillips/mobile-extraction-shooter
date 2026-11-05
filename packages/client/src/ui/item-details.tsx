@@ -314,7 +314,11 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
         ['Aim time', seconds(s.aimTime)],
         [
           'Recoil',
-          `${+s.recoilUp.toFixed(2)}° up · ${+s.recoilSide.toFixed(2)}° side · recovers ${+s.recoilRecovery.toFixed(2)}/s`,
+          `${+s.recoilUp.toFixed(2)}° up · ${+s.recoilSide.toFixed(2)}° side · recovers ${+s.recoilRecovery.toFixed(2)}/s` +
+            (s.recoilAngle
+              ? ` · drifts ${Math.abs(s.recoilAngle)}° ${s.recoilAngle > 0 ? 'right' : 'left'}`
+              : '') +
+            (s.recoilStableAfter ? ` · steadies after ${s.recoilStableAfter} rounds` : ''),
         ],
         ['Spread', `${+s.hipSpread.toFixed(2)}° hip · ${+s.aimSpread.toFixed(2)}° aimed`],
         def.launchSpeed

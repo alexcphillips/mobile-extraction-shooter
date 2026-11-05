@@ -67,6 +67,9 @@ export class Controls {
   /** Presses, each true for the one tick after its button went down. */
   reload = false;
   interact = false;
+  /** The use button held down (zombies mode rebuilds a barricade while it's held). */
+  interactHeld = false;
+  private touchInteract = false;
   /** The bag button: opens the inventory. */
   bag = false;
   /** A hand slot's button: take it out. */
@@ -172,6 +175,7 @@ export class Controls {
     this.fire = this.touchFire || this.mouseFire;
     this.reload = this.pressedReload;
     this.interact = this.pressedInteract;
+    this.interactHeld = this.touchInteract || k.has('KeyF');
     this.bag = this.pressedBag;
     this.draw = this.pressedDraw;
     this.heal = this.pressedHeal;
@@ -313,7 +317,8 @@ export class Controls {
         break;
       case 'interact':
         this.pressedInteract = true;
-        held(() => {});
+        this.touchInteract = true;
+        held(() => (this.touchInteract = false));
         break;
       case 'bag':
         this.pressedBag = true;

@@ -5,6 +5,7 @@ import {
   LEFT_LEG,
   RIGHT_ARM,
   RIGHT_LEG,
+  CHEST,
   isBleeding,
   isBroken,
   createWeaponStats,
@@ -71,7 +72,7 @@ function setHidden(el: HTMLElement, hidden: boolean): void {
  * does: there's no total, since the head or chest decides death), chips for broken limbs
  * and bleeding, armour icons coloured by durability, and the ammo count with the round
  * loaded (coloured by level) and a reload bar. Also the crosshair hit marker and a red
- * flash when hurt.
+ * flash when hurt. With one health bar (zombies mode, Health.pool) it's just that bar.
  */
 export class Vitals {
   private readonly zones: SVGElement[];
@@ -89,6 +90,11 @@ export class Vitals {
   private readonly reloadFill: HTMLElement;
   private chipKey = '';
   private markerUntil = 0;
+  private readonly vitals: HTMLElement;
+  private readonly bar: HTMLElement;
+  private readonly barFill: HTMLElement;
+  private readonly barText: HTMLElement;
+  private barShown = -1;
 
   constructor(
     vitals: HTMLElement,
@@ -104,8 +110,13 @@ export class Vitals {
           <span class="armour vest">${VEST_ICON}</span>
         </div>
       </div>
-      <div class="chips"></div>`;
+      <div class="chips"></div>
+      <div class="health-bar" hidden><div></div><span></span></div>`;
     const q = (sel: string): HTMLElement => vitals.querySelector<HTMLElement>(sel)!;
+    this.vitals = vitals;
+    this.bar = q('.health-bar');
+    this.barFill = this.bar.firstElementChild as HTMLElement;
+    this.barText = q('.health-bar span');
     this.zones = [...vitals.querySelectorAll<SVGElement>('[data-zone]')];
     this.hpTexts = [...vitals.querySelectorAll<SVGTextElement>('[data-hp]')];
     this.chips = q('.chips');
@@ -122,7 +133,20 @@ export class Vitals {
   /** Call once per tick. */
   update(c: Character, items: ItemDb, now: number): void {
     const h = c.health;
-    for (let zone = 0; zone < ZONE_COUNT; zone++) {
+    const pool = h.pool;
+    this.vitals.classList.toggle('pooled', pool !== undefined);
+    setHidden(this.bar, pool === undefined);
+    if (pool !== undefined) {
+      const hp = h.dead ? 0 : Math.ceil(h.hp[CHEST]!);
+      if (hp !== this.barShown) {
+        this.barShown = hp;
+        const f = Math.max(0, Math.min(1, hp / pool));
+        this.barFill.style.transform = `scaleX(${f})`;
+        this.barFill.style.background = ZONE_COLOURS[zoneColour(hp, pool)]!;
+        this.barText.textContent = String(hp);
+      }
+    }
+    for (let zone = 0; pool === undefined && zone < ZONE_COUNT; zone++) {
       const hp = Math.ceil(h.hp[zone]!);
       if (hp !== this.hpShown[zone]) {
         this.hpShown[zone] = hp;

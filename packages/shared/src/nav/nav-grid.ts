@@ -69,7 +69,11 @@ export class NavGrid {
 
   constructor(world: CollisionWorld) {
     const doorWas = world.doors.map((_, i) => [world.isDoorOpen(i), world.isDoorFlipped(i)]);
+    const goneWas = world.doors.map((_, i) => world.isDoorGone(i));
     for (let i = 0; i < world.doors.length; i++) world.setDoorOpen(i, true);
+    // A door bought with points (zombies mode) never swings open: it goes, leaving its
+    // doorway (or the stairs a couch blocked) clear, so it's built as gone.
+    world.doors.forEach((d, i) => d.cost !== undefined && world.setDoorGone(i, true));
     const t = world.terrain;
     const cs = this.cellSize;
     this.minX = t.minX;
@@ -148,6 +152,7 @@ export class NavGrid {
     this.links = new Uint8Array(count);
     for (let k = 0; k < count; k++) this.links[k] = this.findLinks(k);
     doorWas.forEach(([open, flipped], i) => world.setDoorOpen(i, open!, flipped));
+    goneWas.forEach((gone, i) => world.setDoorGone(i, gone));
     this.doorLinks = world.doors.map((_, i) => this.linksThrough(world, i));
     this.doorLocked = new Uint8Array(world.doors.length);
 

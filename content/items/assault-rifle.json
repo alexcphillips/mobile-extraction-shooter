@@ -23,7 +23,8 @@
     "up": 1.8,
     "side": 0.7,
     "snap": 40,
-    "recovery": 3
+    "recovery": 3,
+    "angle": 8
   },
   "sounds": {
     "shot": "rifle-shot",

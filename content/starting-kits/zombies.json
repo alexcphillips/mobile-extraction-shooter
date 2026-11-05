@@ -1,0 +1,10 @@
+{
+  "formatVersion": 1,
+  "id": "zombies",
+  "money": 0,
+  "gear": {
+    "sidearm": "pistol",
+    "rig": "chest-rig"
+  },
+  "carried": [{ "item": "ammo-9mm", "count": 48 }]
+}

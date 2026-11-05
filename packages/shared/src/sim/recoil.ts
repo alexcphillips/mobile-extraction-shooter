@@ -50,6 +50,11 @@ export interface RecoilState {
   speedYaw: number;
   /** Rounds fired since the trigger was last let go for RECOIL.resetTime. */
   shots: number;
+  /**
+   * kickPitch just after the gun's stableAfter round, the most the rest of the burst climbs
+   * to. Missing (older saves) holds wherever the burst is.
+   */
+  hold?: number;
   /** Seconds since the trigger was let go. */
   idle: number;
 }
@@ -64,13 +69,31 @@ export function recoilScale(c: Character): number {
   return Math.hypot(c.vx, c.vz) > RECOIL.movingSpeed ? stance * RECOIL.moving : stance;
 }
 
-/** One round's kick, in degrees up and up to side either way, scaled by stance and the burst. */
-export function kickRecoil(state: SimState, c: Character, up: number, side: number): void {
+/**
+ * One round's kick, scaled by stance and the burst: up degrees along angle (degrees off
+ * straight up, + right), and up to side either way at random. Past round stableAfter (0:
+ * never) the kick along angle only tops the gun back up to where that round left it.
+ */
+export function kickRecoil(
+  state: SimState,
+  c: Character,
+  up: number,
+  side: number,
+  angle = 0,
+  stableAfter = 0,
+): void {
   const r = (c.recoil ??= createRecoil());
   const scale = (r.shots === 0 ? RECOIL.firstShot : 1) * recoilScale(c) * DEG;
   r.shots++;
-  r.kickPitch = Math.min(RECOIL.maxUp * DEG, r.kickPitch + up * scale);
-  r.kickYaw += side * scale * (nextFloat(state.rng) * 2 - 1);
+  const rise = up * scale * Math.cos(angle * DEG);
+  let along = 1;
+  if (stableAfter > 0 && r.shots > stableAfter && rise > 0) {
+    along = Math.max(0, Math.min(1, ((r.hold ?? r.kickPitch) - r.kickPitch) / rise));
+  }
+  r.kickPitch = Math.min(RECOIL.maxUp * DEG, r.kickPitch + rise * along);
+  r.kickYaw +=
+    up * scale * Math.sin(angle * DEG) * along + side * scale * (nextFloat(state.rng) * 2 - 1);
+  if (r.shots === stableAfter) r.hold = r.kickPitch;
 }
 
 // springStep's result, so settling allocates nothing.

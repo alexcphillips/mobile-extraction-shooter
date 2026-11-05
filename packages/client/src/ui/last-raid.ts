@@ -1,5 +1,5 @@
 /*
- * The raid last picked in the main menu, remembered on this phone. Kept apart from the
+ * The raid and game mode last picked in the main menu, remembered on this phone. Kept apart from the
  * menu so main.ts can read it without loading the menu's code.
  */
 
@@ -18,5 +18,26 @@ export function rememberRaid(id: string): void {
     localStorage.setItem(RAID_KEY, id);
   } catch {
     // Private mode or full storage: the menu starts on the first raid next time.
+  }
+}
+
+const MODE_KEY = 'mes.mode';
+
+/** The main menu's game modes (2026-11-04). */
+export type GameMode = 'extraction' | 'zombies';
+
+export function lastMode(): GameMode {
+  try {
+    return localStorage.getItem(MODE_KEY) === 'zombies' ? 'zombies' : 'extraction';
+  } catch {
+    return 'extraction';
+  }
+}
+
+export function rememberMode(mode: GameMode): void {
+  try {
+    localStorage.setItem(MODE_KEY, mode);
+  } catch {
+    // As above: the menu opens on extraction next time.
   }
 }

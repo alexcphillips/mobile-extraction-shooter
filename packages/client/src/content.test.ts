@@ -1,10 +1,23 @@
-import { CollisionWorld, VENDOR, buyPrice, exposedSpawns } from '@mes/shared';
+import {
+  CollisionWorld,
+  NavGrid,
+  VENDOR,
+  buyPrice,
+  createState,
+  exposedSpawns,
+  createItem,
+  spawnCharacter,
+  spawnEnemy,
+  step,
+  syncDoors,
+} from '@mes/shared';
 import { describe, expect, it } from 'vitest';
 import {
   checkDoorKeys,
   checkQuestMarkers,
   checkEnemySpawns,
   checkLootContainers,
+  checkZombieMarkers,
   loadEnemies,
   loadItems,
   loadLootTables,
@@ -12,8 +25,10 @@ import {
   loadQuests,
   loadRaid,
   loadVendors,
+  loadZombies,
   mapIds,
   raidIds,
+  zombiesIds,
 } from './content';
 
 // Validates every file in content/ the way the game loads it.
@@ -22,7 +37,10 @@ describe('content', () => {
     const map = loadMap(id);
     expect(() => new CollisionWorld(map.world)).not.toThrow();
     expect(map.markers.some((m) => m.type === 'playerSpawn')).toBe(true);
-    expect(map.markers.some((m) => m.type === 'extraction')).toBe(true);
+    // A zombies map (2026-11-04) has zombie spawns and nowhere to extract.
+    const zombies = map.markers.some((m) => m.type === 'zombieSpawn');
+    expect(map.markers.some((m) => m.type === 'extraction')).toBe(!zombies);
+    expect(() => checkZombieMarkers(map)).not.toThrow();
     expect(new Set(map.markers.map((m) => m.id)).size).toBe(map.markers.length);
     expect(() => checkEnemySpawns(map)).not.toThrow();
     expect(() => checkDoorKeys(map)).not.toThrow();
@@ -73,6 +91,70 @@ describe('content', () => {
   it.each(raidIds())('raid %s loads and names a map', (id) => {
     expect(() => loadRaid(id)).not.toThrow();
   });
+
+  it.each(zombiesIds())('zombies mode %s loads, and its map, kit and guns exist', (id) => {
+    expect(() => loadZombies(id)).not.toThrow();
+  });
+
+  it('zombies: the couches open the upper floor, and the yard stays outside', () => {
+    const map = loadMap('zombies-two-rooms');
+    const world = new CollisionWorld(map.world);
+    const nav = new NavGrid(world);
+    const state = createState(1);
+    syncDoors(state, world, nav);
+    const at = (x: number, y: number, z: number): number => {
+      const n = nav.nearest(x, y, z);
+      expect(n).toBeGreaterThanOrEqual(0);
+      return nav.component[n]!;
+    };
+    const start = (): number => at(-5, 0, -1);
+    const back = (): number => at(7, 0, 3);
+    const upper = (): number => at(6, 3.2, 0);
+    const yard = (): number => at(-20, 0, 0);
+    expect(new Set([start(), back(), upper(), yard()]).size).toBe(4);
+    const buy = (id: string): void => {
+      const d = state.doors[map.doors.findIndex((x) => x.id === id)]!;
+      d.locked = false;
+      d.gone = true;
+      d.open = true;
+      syncDoors(state, world, nav);
+    };
+    buy('couch-spiral');
+    expect(upper()).toBe(start());
+    expect(back()).not.toBe(start());
+    buy('couch-stairs');
+    expect(back()).toBe(start());
+    expect(yard()).not.toBe(start());
+  });
+
+  it.each(['couch-spiral', 'couch-stairs'])(
+    'zombies: with %s bought, a zombie upstairs walks down to the player',
+    (couch) => {
+      const map = loadMap('zombies-two-rooms');
+      const world = new CollisionWorld(map.world);
+      const nav = new NavGrid(world);
+      const items = loadItems();
+      const state = createState(1);
+      // The player in the room the couch is in (the middle door stays shut).
+      const [px, pz] = couch === 'couch-spiral' ? [-5, -1] : [7, 3];
+      const player = spawnCharacter(state, world, px, pz, 0, 1);
+      const d = map.doors.findIndex((x) => x.id === couch);
+      syncDoors(state, world, nav);
+      Object.assign(state.doors[d]!, { locked: false, gone: true, open: true });
+      const z = spawnEnemy(state, world, 6, 3.2, 0, 0);
+      z.ai!.zombie = { dead: 0, window: -1 };
+      z.gear.knife = createItem(items, 'zombie-claws');
+      z.gear.hand = 'knife';
+      expect(z.y).toBeGreaterThan(3);
+      let reached = false;
+      for (let i = 0; i < 60 * 50 && !reached; i++) {
+        step(state, world, items, {}, nav);
+        reached =
+          Math.hypot(z.x - player.x, z.z - player.z) < 1.5 && Math.abs(z.y - player.y) < 0.5;
+      }
+      expect(reached).toBe(true);
+    },
+  );
 
   it('includes the test map and raid', () => {
     expect(mapIds()).toContain('test-map');

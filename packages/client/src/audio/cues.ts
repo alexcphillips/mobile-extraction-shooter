@@ -186,6 +186,9 @@ export class SoundCues {
           closed: S.doorClose,
           locked: S.doorLocked,
           unlocked: S.doorUnlock,
+          // Zombies mode: bought with points, or not enough of them.
+          bought: S.doorUnlock,
+          poor: S.doorLocked,
         }[e.result];
         this.at(id, d.x, d.y + d.height / 2, d.z);
         return;
@@ -198,6 +201,24 @@ export class SoundCues {
         return;
       case 'investigate':
         if (own) this.sound.play(S.investigate);
+        return;
+      case 'buy':
+        // Zombies mode: paid (the till), or refused.
+        if (own) this.sound.play(e.result === 'bought' || e.result === 'ammo' ? S.cash : S.refuse);
+        return;
+      case 'plank': {
+        // Nailed up, or torn off, at the window.
+        const w = sim.zombies?.windows[e.window];
+        if (w) this.at(e.added ? S.doorClose : S.doorLocked, w.x, w.y + w.height / 2, w.z);
+        return;
+      }
+      case 'powerup':
+        // Zombies mode: one turning up where a zombie fell, and one picked up.
+        if (e.what === 'dropped') this.at(S.investigate, e.x, e.y + 1, e.z);
+        else if (e.what === 'picked') this.sound.play(S.extracted);
+        return;
+      case 'round':
+        this.sound.play(e.started ? S.timerWarning : S.extracted);
         return;
       case 'leave':
         if (own && e.how === 'extracted') this.sound.play(S.extracted);

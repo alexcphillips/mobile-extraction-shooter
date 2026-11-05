@@ -15,6 +15,7 @@ import { MOVEMENT } from './movement';
 import type { InvestigateEvent, LeaveEvent, LeftRaid, RaidState } from './raid';
 import type { RecoilState } from './recoil';
 import type { ShotEvent } from './weapons';
+import type { BuyEvent, PlankEvent, PowerupEvent, RoundEvent, ZombiesState } from './zombies';
 
 export type EntityId = number;
 
@@ -141,6 +142,8 @@ export interface AdminCheats {
   peaceful: boolean;
   /** Meds and repair kits work but are never used up. */
   infiniteConsumables: boolean;
+  /** Zombies mode: buying costs no points (2026-11-04). Missing is off. */
+  infinitePoints?: boolean;
 }
 
 /** Only characters so far. Loot containers and ground items have their own lists. */
@@ -162,7 +165,11 @@ export type SimEvent =
   | DoorEvent
   | GlassEvent
   | InvestigateEvent
-  | SpawnRequestEvent;
+  | SpawnRequestEvent
+  | RoundEvent
+  | BuyEvent
+  | PlankEvent
+  | PowerupEvent;
 
 /**
  * An admin gun's shot (WeaponDef.spawns) asking for an enemy of that type here, facing
@@ -211,6 +218,10 @@ export interface SimState {
   raid: RaidState | null;
   /** Players who have left the raid alive, with what they carried. */
   left: LeftRaid[];
+  /**
+   * A zombies game's rounds, points and buy spots (2026-11-04); null or missing in a raid.
+   */
+  zombies?: ZombiesState | null;
   /** What happened during the last tick; cleared at the start of each. */
   events: SimEvent[];
 }
@@ -270,6 +281,10 @@ export interface PlayerInput {
   search?: string | null;
   /** Investigate the quest marker in reach (session 14b): a press. */
   investigate?: boolean;
+  /** Zombies mode: use a buy spot in reach, by its index in state.zombies.buys: a press. */
+  buy?: number | null;
+  /** Zombies mode: nail planks up on the window in reach, held. */
+  rebuild?: boolean;
 }
 
 /**

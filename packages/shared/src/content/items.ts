@@ -159,6 +159,16 @@ const weaponSchema = z
       snap: positive,
       /** How fast the kick wears off, per second: after 1/recovery s, about a third is left. */
       recovery: positive,
+      /**
+       * Which way up kicks, in degrees off straight up: + is right, − left (2026-11-04). The
+       * gun drifts that way every burst, on top of side's noise. Left out, straight up.
+       */
+      angle: finite.refine((n) => Math.abs(n) <= 45, 'must be from −45 to 45').optional(),
+      /**
+       * Past this round of a burst the gun stops climbing (and drifting along angle); it
+       * still bounces and shakes. Left out, it climbs until kick and recovery balance.
+       */
+      stableAfter: z.int().min(1).optional(),
     }),
     /**
      * What it sounds like: firing, firing with a muzzle device that quietens it (a
@@ -172,6 +182,17 @@ const weaponSchema = z
      * admin page, so keep these out of loot tables, loadouts and vendors.
      */
     spawns: idSchema.optional(),
+    /**
+     * A blast gun (zombies mode's Gale Cannon, 2026-11-04): each shot, instead of a bullet,
+     * kills every enemy within `range` metres and `angle` degrees either side of where it
+     * points that nothing solid hides, and flings them away at `push` m/s. Never players.
+     */
+    blast: z.strictObject({ range: positive, angle: positive, push: nonNegative }).optional(),
+    /**
+     * Firing and reloading use no rounds (zombies mode's death machine, 2026-11-04). Given
+     * only by the game, so keep these out of loot tables, loadouts and vendors.
+     */
+    infiniteAmmo: z.literal(true).optional(),
   })
   .superRefine((w, ctx) => {
     const slots = w.slots ?? [];
@@ -445,6 +466,13 @@ const grenadeSchema = z.strictObject({
   type: z.literal('grenade'),
   /** What it does; left out, a frag. */
   effect: z.enum(GRENADE_EFFECTS).optional(),
+  /**
+   * Only launchers of this calibre fire it (2026-11-04, zombies mode's ray gun bolts); left
+   * out, `grenade`, which every grenade launcher fires.
+   */
+  calibre: z.string().min(1).optional(),
+  /** A launcher's own round stacks up to this many in one place, as ammo does. */
+  stack: stackSchema.optional(),
   /** Seconds from the throw until it goes off; for c4, from the detonator. */
   fuse: positive,
   /** How fast it leaves the hand, in m/s. */
@@ -736,7 +764,9 @@ export function itemDef(items: ItemDb, id: string): ItemDef {
 
 /** How many of an item fit in one place: 1 unless it stacks. */
 export function stackSize(def: ItemDef): number {
-  return (def.type === 'ammo' || def.type === 'loot') && def.stack ? def.stack : 1;
+  return (def.type === 'ammo' || def.type === 'loot' || def.type === 'grenade') && def.stack
+    ? def.stack
+    : 1;
 }
 
 /** Whether an attachment can go on a gun: the gun has its slot, and it's on its list if any. */
@@ -763,7 +793,7 @@ export function roundOf(items: ItemDb, id: string): RoundDef | null {
 
 /** A round's calibre: ammo's own; every grenade is 'grenade', fired by every launcher. */
 export const roundCalibre = (round: RoundDef): string =>
-  round.type === 'ammo' ? round.calibre : 'grenade';
+  round.type === 'ammo' ? round.calibre : (round.calibre ?? 'grenade');
 
 /** The calibre a gun fires: its own round's. */
 export function calibreOf(items: ItemDb, weapon: WeaponDef): string {
@@ -798,6 +828,9 @@ export function checkItems(items: ItemDb): void {
         throw new ContentError(source, 'only a gun firing grenades has armDistance');
       }
     } else if (item.type === 'grenade') {
+      if (item.stack !== undefined && item.calibre === undefined) {
+        throw new ContentError(source, "only a launcher's own round (with a calibre) stacks");
+      }
       const effect = grenadeEffect(item);
       if ((effect === 'flash') !== (item.blindTime !== undefined)) {
         throw new ContentError(source, 'a flash grenade needs blindTime, and only it');

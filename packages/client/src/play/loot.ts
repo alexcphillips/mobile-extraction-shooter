@@ -123,7 +123,8 @@ export function lootableInReach(
     }
   }
   for (const e of sim.entities) {
-    if (e === player || !e.health.dead) continue;
+    // A zombie has nothing on it (zombies mode).
+    if (e === player || !e.health.dead || e.ai?.zombie) continue;
     const s = bodyScore(player, ex, ey, ez, lx, ly, lz, e);
     if (s > best && inSight(world, player, e.x, e.y, e.z)) {
       best = s;
@@ -302,7 +303,8 @@ function doorwayAt(
   maxDist: number,
 ): number {
   for (let i = 0; i < world.doors.length; i++) {
-    if (!sim.doors[i]?.open) continue;
+    // A bought door (zombies mode) is gone: nothing to use there.
+    if (!sim.doors[i]?.open || sim.doors[i]!.gone) continue;
     const d = world.doors[i]!;
     // Into the door's frame; its doorway is local z = 0.
     const c = Math.cos(d.yaw);

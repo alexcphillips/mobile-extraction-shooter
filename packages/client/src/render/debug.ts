@@ -10,6 +10,9 @@ const MARKER_COLOURS: Record<CompiledMarker['type'], number> = {
   lootSpawn: 0xf39c12,
   extraction: 0x2ecc71,
   questMarker: 0x9b59b6,
+  zombieSpawn: 0x6ab04c,
+  wallBuy: 0xe1b12c,
+  mysteryBox: 0x8e44ad,
 };
 const ZONE_COLOUR = 0xffffff;
 const PATROL_COLOUR = 0xff7675;

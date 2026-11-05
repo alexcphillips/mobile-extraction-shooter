@@ -1,4 +1,4 @@
-import { RAID, extractionAt, timeLeft, type Character, type SimState } from '@mes/shared';
+import { RAID, extractionAt, pointsOf, timeLeft, type Character, type SimState } from '@mes/shared';
 
 /** Under this many seconds left, the timer turns red. */
 const LOW_TIME = 120;
@@ -13,7 +13,26 @@ export function clock(seconds: number): string {
 const WARN_MS = 1500;
 
 /**
- * The raid timer (top left); while you stand in an extraction point, its name and a
+ * Zombies mode's line where the timer goes: the round (or the wait for the next), your
+ * points, and the seconds left of any power-up running.
+ */
+function zombiesLine(sim: SimState, c: Character): string {
+  const z = sim.zombies!;
+  const points = c.admin?.infinitePoints
+    ? '∞ points'
+    : `${pointsOf(sim, c.id).toLocaleString()} points`;
+  let line = z.between
+    ? `Round ${z.round + 1} in ${Math.max(0, Math.ceil(z.timer))} · ${points}`
+    : `Round ${z.round} · ${points}`;
+  if (z.instaKill > 0) line += ` · Insta-kill ${Math.ceil(z.instaKill)}`;
+  if (z.doublePoints > 0) line += ` · Double points ${Math.ceil(z.doublePoints)}`;
+  const machine = z.machines[c.id];
+  if (machine) line += ` · Minigun ${Math.ceil(machine.left)}`;
+  return line;
+}
+
+/**
+ * The raid timer (top left), or in zombies mode the round and your points; while you stand in an extraction point, its name and a
  * countdown to leaving; and under the crosshair, the item on the ground the use button
  * would take (or the quest marker it would investigate), or a warning. Written straight to the DOM, and only when the text changes.
  */
@@ -69,12 +88,18 @@ export class RaidHud {
   /** Call once per tick. `over`: the raid has ended for you. */
   update(sim: SimState, c: Character, over: boolean): void {
     const left = timeLeft(sim);
-    const timer = over || left === Infinity ? '' : clock(left);
+    const timer = over
+      ? ''
+      : sim.zombies
+        ? zombiesLine(sim, c)
+        : left === Infinity
+          ? ''
+          : clock(left);
     if (timer !== this.timerText) {
       this.timerText = timer;
       this.timer.textContent = timer;
       this.timer.hidden = !timer;
-      this.timer.classList.toggle('low', left < LOW_TIME);
+      this.timer.classList.toggle('low', !sim.zombies && left < LOW_TIME);
     }
 
     const p = over || c.health.dead ? null : extractionAt(sim, c);

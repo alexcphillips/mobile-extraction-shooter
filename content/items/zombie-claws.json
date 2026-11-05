@@ -1,0 +1,30 @@
+{
+  "formatVersion": 10,
+  "id": "zombie-claws",
+  "name": "Zombie claws",
+  "type": "melee",
+  "size": [1, 1],
+  "value": 0,
+  "rarity": "common",
+  "damage": 50,
+  "level": 1,
+  "armourDamage": 2,
+  "bleedChance": 0,
+  "swingTime": 0.9,
+  "reach": 1.4,
+  "drawTime": 0.1,
+  "sounds": {
+    "swing": "knife-swing"
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.05, -0.04],
+        "size": [0.05, 0.03, 0.08],
+        "colour": "#7d8f6a"
+      }
+    ],
+    "grip": [0, -0.05, 0]
+  }
+}

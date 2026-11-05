@@ -1,5 +1,6 @@
 import {
   PROTOCOL_VERSION,
+  newProfile,
   type HelloResponse,
   type Profile,
   type ProfileResponse,
@@ -29,7 +30,16 @@ import {
   startServerRaid,
   type RaidSnapshot,
 } from './raids';
-import { loadItems, loadQuests, loadRaid, loadVendors, raidIds } from './content';
+import {
+  loadItems,
+  loadQuests,
+  loadRaid,
+  loadStartingKit,
+  loadVendors,
+  loadZombies,
+  raidIds,
+  zombiesIds,
+} from './content';
 import { settings } from './settings';
 import { lastRaid } from './ui/last-raid';
 
@@ -133,7 +143,8 @@ if (location.pathname === '/bodies') {
     status.textContent = `perf test failed: ${message(err)}`;
   });
 } else {
-  // ?raid=<id> picks a raid config from content/raids, ?time=<seconds> sets its timer,
+  // ?zombies=<id> goes straight into a zombies game from content/zombies (just ?zombies, the
+  // first), with no sign-in. ?raid=<id> picks a raid config from content/raids, ?time=<seconds> sets its timer,
   // ?spawn=<id> a player spawn in its map (?at=<x>,<z> starts you at a point instead, on the
   // floor nearest the ground; ?at=<x>,<z>,<y> on the highest floor at or below y),
   // ?nav shows the navigation grid, and ?debug shows markers, zones, patrols
@@ -145,9 +156,30 @@ if (location.pathname === '/bodies') {
   // goes back to / so a reload doesn't join again.
   const joinCode = joinCodeIn(location.pathname);
   if (joinCode) history.replaceState(null, '', `/${location.search}`);
-  runGame(q, joinCode).catch(
+  const zombies = q.get('zombies');
+  (zombies !== null ? playZombies(zombies || zombiesIds()[0]!, q) : runGame(q, joinCode)).catch(
     (err: unknown) => (status.textContent = `raid failed: ${message(err)}`),
   );
+}
+
+/**
+ * A zombies game (2026-11-04): no server, since nothing from the stash goes in and nothing
+ * comes out. Everyone wears the mode's starting kit. The results screen's button reloads
+ * the page, back to the menu (or, from ?zombies, another game).
+ */
+async function playZombies(id: string, q: URLSearchParams): Promise<void> {
+  const def = loadZombies(id);
+  document.title = def.name;
+  await startPlay(playElements(), {
+    ...debugOptions(q),
+    raid: '',
+    test: null,
+    serverRaid: '',
+    profile: newProfile(loadItems(), loadStartingKit(def.kit)),
+    resume: null,
+    zombies: def,
+    status: (text) => (status.textContent = text),
+  });
 }
 
 /** The page's elements a raid draws into. */
@@ -251,6 +283,17 @@ async function runGame(q: URLSearchParams, joinCode: string | null): Promise<voi
       items,
       raids,
       vendors: [...loadVendors().values()],
+      zombies: zombiesIds().map((id) => {
+        const def = loadZombies(id);
+        const gear = loadStartingKit(def.kit).gear;
+        return {
+          id,
+          name: def.name,
+          points: def.points.start,
+          kit: Object.values(gear).filter((g) => g !== undefined),
+          box: def.box.map((o) => o.item),
+        };
+      }),
       quests: [...loadQuests().values()],
       joinCode,
       openSettings: (done) => {
@@ -260,6 +303,10 @@ async function runGame(q: URLSearchParams, joinCode: string | null): Promise<voi
       },
     });
     me = choice.me;
+    if (choice.zombies) {
+      await playZombies(choice.zombies, q);
+      return;
+    }
     let started: ProfileResponse;
     try {
       started = await startServerRaid(choice.raid);

@@ -64,7 +64,9 @@ export interface DoorDef {
   hinge: 'left' | 'right';
   /** The key item that unlocks it; none means it's never locked. */
   key: string | undefined;
-  /** How it starts. A door with a key starts locked unless it starts open. */
+  /** Zombies mode: points to buy it open instead of a key (2026-11-04). */
+  cost?: number | undefined;
+  /** How it starts. A door with a key or a cost starts locked unless it starts open. */
   open: boolean;
 }
 
@@ -90,6 +92,11 @@ export interface WorldDef {
   ladders: readonly LadderDef[];
   doors?: readonly DoorDef[];
   glass?: readonly GlassDef[];
+  /**
+   * Solid to move into but not to rays (2026-11-04): a zombies barricade's window, which
+   * shots, claws and sight pass through. Last of the solids.
+   */
+  blockers?: readonly BoxDef[];
 }
 
 export interface Ladder extends LadderDef {
@@ -147,14 +154,18 @@ export class CollisionWorld {
   /** Solid index of the first door: doors come after boxes and ramps. */
   readonly firstDoor: number;
   readonly glass: readonly GlassDef[];
-  /** Solid index of the first pane of glass: glass comes last. */
+  /** Solid index of the first pane of glass: glass comes after doors. */
   readonly firstGlass: number;
+  /** Solid index of the first blocker, which rays pass through: blockers come last. */
+  readonly firstBlocker: number;
   private readonly s: Float64Array;
   /** Each door's solid closed, open into +z, then open into −z, STRIDE values each. */
   private readonly doorPoses: Float64Array;
   private readonly doorOpen: Uint8Array;
   /** Opens (or last opened) into −z. */
   private readonly doorFlipped: Uint8Array;
+  /** Taken out for good (a zombies door bought): its solid is moved far away. */
+  private readonly doorGone: Uint8Array;
   private readonly glassBroken: Uint8Array;
   private readonly grid: StaticGrid;
   private readonly found: Uint32Array;
@@ -167,7 +178,9 @@ export class CollisionWorld {
     this.glass = def.glass ?? [];
     this.firstDoor = def.boxes.length + def.ramps.length;
     this.firstGlass = this.firstDoor + this.doors.length;
-    this.solidCount = this.firstGlass + this.glass.length;
+    this.firstBlocker = this.firstGlass + this.glass.length;
+    const blockers = def.blockers ?? [];
+    this.solidCount = this.firstBlocker + blockers.length;
     this.s = new Float64Array(this.solidCount * STRIDE);
     let i = 0;
     for (const b of def.boxes) {
@@ -178,6 +191,7 @@ export class CollisionWorld {
     this.doorPoses = new Float64Array(this.doors.length * 3 * STRIDE);
     this.doorOpen = new Uint8Array(this.doors.length);
     this.doorFlipped = new Uint8Array(this.doors.length);
+    this.doorGone = new Uint8Array(this.doors.length);
     this.doors.forEach((d, k) => {
       for (let pose = 0; pose < 3; pose++) {
         this.setSolid(i, ...doorPose(d, pose));
@@ -189,6 +203,9 @@ export class CollisionWorld {
     for (const g of this.glass) {
       const top = g.y + g.height;
       this.setSolid(i++, g.x, g.z, g.width / 2, g.thickness / 2, g.yaw, g.y, top, top);
+    }
+    for (const b of blockers) {
+      this.setSolid(i++, b.x, b.z, b.hx, b.hz, b.yaw, b.y - b.hy, b.y + b.hy, b.y + b.hy);
     }
     this.glassBroken = new Uint8Array(this.glass.length);
 
@@ -229,7 +246,22 @@ export class CollisionWorld {
     this.doorOpen[door] = open ? 1 : 0;
     this.doorFlipped[door] = flipped ? 1 : 0;
     const from = (door * 3 + (open ? (flipped ? 2 : 1) : 0)) * STRIDE;
-    this.s.set(this.doorPoses.subarray(from, from + STRIDE), (this.firstDoor + door) * STRIDE);
+    const o = (this.firstDoor + door) * STRIDE;
+    this.s.set(this.doorPoses.subarray(from, from + STRIDE), o);
+    if (this.doorGone[door]) this.s[o] = this.s[o + 1] = GONE;
+  }
+
+  isDoorGone(door: number): boolean {
+    return this.doorGone[door] === 1;
+  }
+
+  /**
+   * Takes a door out of its doorway for good (or puts it back, for a state loaded over this
+   * world), leaving the opening: its solid moves far away, like broken glass.
+   */
+  setDoorGone(door: number, gone: boolean): void {
+    this.doorGone[door] = gone ? 1 : 0;
+    this.setDoorOpen(door, this.isDoorOpen(door), this.isDoorFlipped(door));
   }
 
   /** The door a solid index is, or -1 for any other solid. */
@@ -256,7 +288,7 @@ export class CollisionWorld {
 
   /** The pane of glass a solid index is, or -1 for any other solid. */
   glassOf(solid: number): number {
-    return solid >= this.firstGlass ? solid - this.firstGlass : -1;
+    return solid >= this.firstGlass && solid < this.firstBlocker ? solid - this.firstGlass : -1;
   }
 
   /**
@@ -407,7 +439,8 @@ export class CollisionWorld {
   /**
    * Distance to the first solid or terrain along a unit direction, or Infinity within
    * maxDist. 0 if the origin is inside something. Writes details to hit if given.
-   * seeThrough passes through glass: for lines of sight, not for what's solid.
+   * seeThrough passes through glass: for lines of sight, not for what's solid. Blockers
+   * are always passed through.
    */
   raycast(
     ox: number,
@@ -420,7 +453,7 @@ export class CollisionWorld {
     hit?: RayHit,
     seeThrough = false,
   ): number {
-    const solids = seeThrough ? this.firstGlass : this.solidCount;
+    const solids = seeThrough ? this.firstGlass : this.firstBlocker;
     let best = maxDist;
     let bestSolid = -1;
     let bestFace = -1;

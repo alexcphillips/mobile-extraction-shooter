@@ -152,6 +152,12 @@ export interface ExplosionEvent {
 const hit = createRayHit();
 const charHit = createCharacterHit();
 
+/** Whether an item is a grenade to throw: not a launcher's own round (a ray gun's bolt). */
+export function throwable(items: ItemDb, id: string): boolean {
+  const def = items.get(id);
+  return def?.type === 'grenade' && def.calibre === undefined;
+}
+
 /**
  * The first grenade in reach (pockets, then rig), or null. With an item id, the
  * first of those, or the first of any if none of it is carried.
@@ -163,7 +169,7 @@ export function carriedGrenade(c: Character, items: ItemDb, id?: string | null):
     if (!list) continue;
     for (let index = 0; index < list.length; index++) {
       const item = list[index]!.item.item;
-      if (items.get(item)?.type !== 'grenade') continue;
+      if (!throwable(items, item)) continue;
       if (!id || item === id) return { grid: g, index };
       any ??= { grid: g, index };
     }
@@ -176,7 +182,7 @@ export function carriedGrenades(c: Character, items: ItemDb, id?: string | null)
   let n = 0;
   for (let g = 0; g < QUICK_GRIDS; g++) {
     for (const gi of carriedGrid(c.gear, g)?.items ?? []) {
-      if (id ? gi.item.item === id : items.get(gi.item.item)?.type === 'grenade') n++;
+      if (id ? gi.item.item === id : throwable(items, gi.item.item)) n++;
     }
   }
   return n;

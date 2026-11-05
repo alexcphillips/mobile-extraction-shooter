@@ -1,0 +1,130 @@
+{
+  "formatVersion": 10,
+  "id": "death-machine",
+  "name": "Minigun",
+  "type": "weapon",
+  "size": [5, 2],
+  "value": 0,
+  "rarity": "legendary",
+  "ammo": "ammo-762x39",
+  "hold": "rifle",
+  "fireMode": "auto",
+  "rpm": 1500,
+  "magazine": 100,
+  "reloadTime": 1,
+  "aimTime": 0.5,
+  "drawTime": 0.6,
+  "range": 150,
+  "loudness": 400,
+  "hipSpread": 2.5,
+  "aimSpread": 1.5,
+  "recoil": {
+    "up": 0.35,
+    "side": 0.4,
+    "snap": 40,
+    "recovery": 10
+  },
+  "sounds": {
+    "shot": "rifle-shot",
+    "suppressed": "rifle-shot-suppressed",
+    "reload": "rifle-reload"
+  },
+  "infiniteAmmo": true,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0.05],
+        "size": [0.1, 0.12, 0.3],
+        "colour": "#3a3f45"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.1, 0.08],
+        "size": [0.04, 0.1, 0.05],
+        "pitch": -10,
+        "colour": "#2a2d30"
+      },
+      {
+        "type": "box",
+        "pos": [0.08, -0.02, 0.05],
+        "size": [0.06, 0.09, 0.12],
+        "colour": "#5a6670"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.09, -0.02],
+        "size": [0.03, 0.06, 0.16],
+        "colour": "#2a2d30"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.13],
+        "pitch": 90,
+        "radius": 0.045,
+        "height": 0.04,
+        "colour": "#5a6670"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.5],
+        "pitch": 90,
+        "radius": 0.045,
+        "height": 0.03,
+        "colour": "#5a6670"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.028, 0.0, -0.33],
+        "pitch": 90,
+        "radius": 0.009,
+        "height": 0.42,
+        "colour": "#2a2d30"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.014, 0.0242, -0.33],
+        "pitch": 90,
+        "radius": 0.009,
+        "height": 0.42,
+        "colour": "#2a2d30"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.014, 0.0242, -0.33],
+        "pitch": 90,
+        "radius": 0.009,
+        "height": 0.42,
+        "colour": "#2a2d30"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.028, 0.0, -0.33],
+        "pitch": 90,
+        "radius": 0.009,
+        "height": 0.42,
+        "colour": "#2a2d30"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.014, -0.0242, -0.33],
+        "pitch": 90,
+        "radius": 0.009,
+        "height": 0.42,
+        "colour": "#2a2d30"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.014, -0.0242, -0.33],
+        "pitch": 90,
+        "radius": 0.009,
+        "height": 0.42,
+        "colour": "#2a2d30"
+      }
+    ],
+    "grip": [0, -0.1, 0.08],
+    "support": [0, 0.12, -0.02],
+    "muzzle": [0, 0, -0.54],
+    "sight": [0, 0.13, -0.02]
+  }
+}

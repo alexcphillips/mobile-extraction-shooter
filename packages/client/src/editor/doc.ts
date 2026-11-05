@@ -100,7 +100,8 @@ export function canTurn(n: MapNode): boolean {
     n.type !== 'patrol' &&
     n.type !== 'lootSpawn' &&
     n.type !== 'questMarker' &&
-    n.type !== 'extraction'
+    n.type !== 'extraction' &&
+    n.type !== 'zombieSpawn'
   );
 }
 

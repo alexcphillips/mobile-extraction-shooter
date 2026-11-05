@@ -39,6 +39,8 @@ const SCOPE = 0x36d1dc;
 /** The outline of a prefab being edited inside: what changes there changes every copy. */
 const PREFAB_SCOPE = 0xc77dff;
 const BROKEN = 0xff00ff;
+/** A zombies barricade's planks. */
+const PLANK = 0x8a6239;
 const WARNING = 0xff2a2a;
 const BRUSH = 0xffffff;
 /** Handles on the points of a patrol or zone being edited, and the one picked. */
@@ -1039,6 +1041,29 @@ export class EditorView {
         o.add(new THREE.Mesh(b.build(), this.material));
       }
       for (const d of out.doors) o.add(buildDoor(d, this.material));
+      if (out.barricades.length) {
+        // Zombies mode's windows, drawn boarded up full, as they start.
+        const b = new TriangleBuilder(false);
+        for (const w of out.barricades) {
+          for (let i = 0; i < w.planks; i++) {
+            const up = (i + 0.5) / w.planks;
+            b.shape({
+              kind: 'box',
+              x: w.x + Math.sin(w.yaw) * 0.18,
+              y: w.y + 0.08 + up * (w.height - 0.16),
+              z: w.z + Math.cos(w.yaw) * 0.18,
+              hx: w.width / 2 + 0.15,
+              hy: 0.07,
+              hz: 0.02,
+              yaw: w.yaw,
+              pitch: 0,
+              roll: (i % 2 ? 1 : -1) * 0.2,
+              colour: PLANK,
+            });
+          }
+        }
+        o.add(new THREE.Mesh(b.build(), this.material));
+      }
       for (const g of out.glass) o.add(buildGlassPane(g));
       if (out.markers.length || out.patrols.length) {
         const posts = buildDebug(

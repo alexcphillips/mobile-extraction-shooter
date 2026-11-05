@@ -138,6 +138,42 @@ describe('recoil', () => {
     expect(c.recoilPitch).toBeLessThan(peak * 0.1);
   });
 
+  it('climbs along its angle', () => {
+    const state = createState(1);
+    const right = body();
+    const left = body();
+    for (let i = 0; i < 5; i++) {
+      kickRecoil(state, right, 1, 0, 30);
+      kickRecoil(state, left, 1, 0, -30);
+    }
+    expect(right.recoil!.kickYaw / right.recoil!.kickPitch).toBeCloseTo(Math.tan(30 * DEG));
+    expect(left.recoil!.kickYaw).toBeCloseTo(-right.recoil!.kickYaw);
+    // Up is the kick along the angle, so tilting it takes a little off the climb.
+    expect(right.recoil!.kickPitch).toBeCloseTo((RECOIL.firstShot + 4) * Math.cos(30 * DEG) * DEG);
+  });
+
+  it('stops climbing and drifting past its stable round, but still bounces', () => {
+    const state = createState(1);
+    const c = body();
+    const held: number[] = [];
+    for (let round = 0; round < 30; round++) {
+      kickRecoil(state, c, 1.8, 0, 20, 5);
+      if (round >= 4) held.push(c.recoil!.kickPitch);
+      settle(c, 3, true);
+    }
+    const hold = held[0]!;
+    // Every round after the fifth tops the kick back up to where the fifth left it.
+    for (const k of held) expect(k).toBeCloseTo(hold, 9);
+    expect(c.recoil!.kickYaw / c.recoil!.kickPitch).toBeLessThan(Math.tan(20 * DEG) + 1e-9);
+    // Without it, the same burst climbs higher.
+    const free = body();
+    for (let round = 0; round < 30; round++) {
+      kickRecoil(state, free, 1.8, 0, 20);
+      settle(free, 3, true);
+    }
+    expect(free.recoilPitch).toBeGreaterThan(c.recoilPitch * 1.15);
+  });
+
   it('plateaus under sustained fire rather than climbing forever', () => {
     const state = createState(1);
     const c = body();

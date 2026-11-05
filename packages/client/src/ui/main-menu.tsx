@@ -40,7 +40,7 @@ import { StashSaver, type StashSaveStatus } from '../stash';
 import { AdminPage } from './admin-page';
 import { ConnTestPanel } from './conn-test-panel';
 import { FriendsPage } from './friends-page';
-import { rememberRaid } from './last-raid';
+import { lastMode, rememberMode, rememberRaid, type GameMode } from './last-raid';
 import { InventoryController } from './inventory-controller';
 import { PartyStrip } from './party-strip';
 import { Inventory } from './raid-screen';
@@ -65,12 +65,28 @@ export interface MenuOptions {
   openSettings: (done: () => void) => void;
   /** The code of a party invite link the game was opened from, to join on arrival. */
   joinCode?: string | null;
+  /** Zombies modes (content/zombies), to play instead of a raid. */
+  zombies?: ZombiesChoice[];
 }
 
-/** What the player chose: a raid to start, with the profile as saved. */
+/** A zombies mode the menu can start, with what its page shows about it. */
+export interface ZombiesChoice {
+  id: string;
+  name: string;
+  /** The points each player starts with. */
+  points: number;
+  /** Item ids of the gear everyone starts in (the knife besides). */
+  kit: string[];
+  /** Item ids of the mystery box's guns. */
+  box: string[];
+}
+
+/** What the player chose: a raid to start (or a zombies game), with the profile as saved. */
 export interface MenuChoice {
   raid: string;
   me: ProfileResponse;
+  /** A zombies mode's id to play instead of the raid (2026-11-04). */
+  zombies?: string;
   /** A party raid: whether this device hosts it or joins it, and who's in it. */
   coop?: CoopOptions;
 }
@@ -100,6 +116,11 @@ function loadoutLine(items: ItemDb, me: ProfileResponse): string {
   return names.length ? names.join(' · ') : 'Only your knife';
 }
 
+const MODES: readonly { id: GameMode; label: string }[] = [
+  { id: 'extraction', label: 'Extraction' },
+  { id: 'zombies', label: 'Zombies' },
+];
+
 const SAVE_TEXT: Record<StashSaveStatus['kind'], string> = {
   saved: 'Saved',
   unsaved: 'Saving…',
@@ -125,6 +146,11 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
   const [startPage, setStartPage] = useState(0);
   const me = saver.me;
   const [raidId, setRaidId] = useState(opts.raids[0]?.id);
+  const zombiesModes = opts.zombies ?? [];
+  // The game mode whose menu shows; extraction if there's no zombies mode to pick.
+  const [mode, setMode] = useState<GameMode>(() => (zombiesModes.length ? lastMode() : 'extraction'));
+  const [zombiesId, setZombiesId] = useState(zombiesModes[0]?.id);
+  const zombiesMode = zombiesModes.find((z) => z.id === zombiesId) ?? zombiesModes[0];
   // The party and invites, kept fresh by the heartbeat while the menu shows (co-op C3).
   const [partyRes, setPartyRes] = useState<PartyResponse | null>(null);
   // Set further down, once what it needs is defined.
@@ -213,8 +239,8 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
     });
   }, [leading, raid, party?.raid]);
 
-  /** Saves the stash, then goes into the raid. */
-  const go = (raidId: string, coop?: CoopOptions): void => {
+  /** Saves the stash, then goes into the raid (or a zombies game, with zombies). */
+  const go = (raidId: string, coop?: CoopOptions, zombies?: string): void => {
     setBusy(true);
     void saver.flush().then((status) => {
       if (status.kind === 'failed') {
@@ -222,7 +248,12 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
         setNotice(`Your stash isn't saved, so the raid can't start yet: ${status.message}`);
         return;
       }
-      onRaid({ raid: raidId, me: saver.me, ...(coop ? { coop } : {}) });
+      onRaid({
+        raid: raidId,
+        me: saver.me,
+        ...(coop ? { coop } : {}),
+        ...(zombies ? { zombies } : {}),
+      });
     });
   };
   const start = (): void => {
@@ -512,17 +543,125 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
       />
     );
   }
+  const pickMode = (m: GameMode): void => {
+    setMode(m);
+    rememberMode(m);
+    setNotice(null);
+  };
+  const header = (
+    <header className="menu-top">
+      <h1>{mode === 'zombies' ? 'Zombies' : 'Extraction'}</h1>
+      <span className="raid-spacer" />
+      <span className="menu-who">
+        {me.username}
+        {mode === 'extraction' && (
+          <>
+            {' '}
+            · <b>{me.profile.money.toLocaleString()}</b> money
+          </>
+        )}
+      </span>
+      <button onClick={() => opts.openSettings(redraw)}>Settings</button>
+    </header>
+  );
+  const modeTabs = zombiesModes.length > 0 && (
+    <div className="menu-modes" role="tablist" aria-label="Game mode">
+      {MODES.map((m) => (
+        <button
+          key={m.id}
+          role="tab"
+          aria-selected={m.id === mode}
+          className={m.id === mode ? 'active' : undefined}
+          disabled={busy}
+          onClick={() => pickMode(m.id)}
+        >
+          {m.label}
+        </button>
+      ))}
+    </div>
+  );
+  const adminButton = import.meta.env.DEV && (
+    <button onClick={() => setPage('admin')}>
+      Admin
+      <span>
+        {mode === 'zombies'
+          ? 'Infinite points, guns to start with (dev server only)'
+          : 'Give yourself items, turn on cheats (dev server only)'}
+      </span>
+    </button>
+  );
+
+  if (mode === 'zombies' && zombiesMode) {
+    const names = (ids: readonly string[]): string =>
+      ids.map((id) => itemDef(opts.items, id).name).join(' · ');
+    return (
+      <div className="menu zombies">
+        {header}
+        <div className="menu-body">
+          {modeTabs}
+          <div className="menu-buttons">
+            {zombiesModes.length > 1 && (
+              <div className="menu-maps" role="radiogroup" aria-label="Map">
+                {zombiesModes.map((z) => (
+                  <button
+                    key={z.id}
+                    role="radio"
+                    aria-checked={z.id === zombiesMode.id}
+                    className={z.id === zombiesMode.id ? 'active' : undefined}
+                    disabled={busy}
+                    onClick={() => setZombiesId(z.id)}
+                  >
+                    {z.name}
+                  </button>
+                ))}
+              </div>
+            )}
+            <button
+              className="menu-raid primary"
+              disabled={busy || !!party}
+              onClick={() => go('', undefined, zombiesMode.id)}
+            >
+              {busy ? 'Starting…' : 'Start game'}
+              <span>
+                {party
+                  ? 'Solo only for now: leave the party to play'
+                  : `${zombiesMode.name} · solo · endless rounds`}
+              </span>
+            </button>
+            <div className="menu-card">
+              <h2>You start with</h2>
+              <p>{names(zombiesMode.kit)} · Knife</p>
+              <p>
+                <b>{zombiesMode.points.toLocaleString()}</b> points
+              </p>
+            </div>
+            <div className="menu-card">
+              <h2>Mystery box</h2>
+              <p>{names(zombiesMode.box)}</p>
+            </div>
+            <div className="menu-card wide">
+              <h2>How it works</h2>
+              <p>
+                Zombies climb in through the windows, more and tougher each round. Shoot and
+                rebuild barricades for points, then spend them on wall guns, doors and the box.
+                Play until you go down.
+              </p>
+              <p className="menu-card-note">
+                Nothing from your stash goes in, and nothing comes out.
+              </p>
+            </div>
+            {adminButton}
+          </div>
+          {notice && <p className="menu-notice">{notice}</p>}
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="menu">
-      <header className="menu-top">
-        <h1>Extraction</h1>
-        <span className="raid-spacer" />
-        <span className="menu-who">
-          {me.username} · <b>{me.profile.money.toLocaleString()}</b> money
-        </span>
-        <button onClick={() => opts.openSettings(redraw)}>Settings</button>
-      </header>
+      {header}
       <div className="menu-body">
+        {modeTabs}
         <PartyStrip
           party={partyRes}
           me={me.username}
@@ -592,12 +731,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
             Friends
             <span>Add friends and invite them to your party</span>
           </button>
-          {import.meta.env.DEV && (
-            <button onClick={() => setPage('admin')}>
-              Admin
-              <span>Give yourself items, turn on cheats (dev server only)</span>
-            </button>
-          )}
+          {adminButton}
         </div>
         {notice && <p className="menu-notice">{notice}</p>}
       </div>

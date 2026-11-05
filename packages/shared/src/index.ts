@@ -167,6 +167,35 @@ export {
   type RaidState,
 } from './sim/raid';
 export {
+  ZOMBIES,
+  adminGiveGun,
+  adminPowerup,
+  buy,
+  buyInReach,
+  spotPrice,
+  isZombie,
+  pointsOf,
+  rebuild,
+  roundSize,
+  startZombies,
+  updateZombies,
+  windowInReach,
+  windowSpot,
+  type DeathMachine,
+  type PlankEvent,
+  type PowerupDrop,
+  type PowerupEvent,
+  type WindowState,
+  type BuyEvent,
+  type BuyResult,
+  type BuySpot,
+  type RoundEvent,
+  type ZombieMind,
+  type ZombieSpawn,
+  type ZombiesRules,
+  type ZombiesState,
+} from './sim/zombies';
+export {
   CARRIED_GRIDS,
   QUICK_GRIDS,
   GEAR,
@@ -239,6 +268,14 @@ export {
 } from './content/loot-tables';
 export { RAID_FORMAT, RAID_FORMAT_VERSION, raidSchema, type RaidDef } from './content/raids';
 export {
+  POWERUPS,
+  ZOMBIES_FORMAT,
+  ZOMBIES_FORMAT_VERSION,
+  zombiesSchema,
+  type Powerup,
+  type ZombiesDef,
+} from './content/zombies';
+export {
   STARTING_KIT_FORMAT,
   STARTING_KIT_FORMAT_VERSION,
   startingKitSchema,
@@ -277,6 +314,7 @@ export {
   blastShare,
   carriedGrenade,
   carriedGrenades,
+  throwable,
   launchGrenade,
   smokeBlocks,
   smokeRadius,
@@ -500,6 +538,7 @@ export {
   type CompiledBuilding,
   type CompiledDoor,
   type CompiledGlass,
+  type CompiledBarricade,
   type CompiledMap,
   type CompiledMarker,
   type CompiledNodes,

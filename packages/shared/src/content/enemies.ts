@@ -34,7 +34,7 @@ const skillSchema = z.strictObject({
 });
 
 /** The colours of its body, by part. Gear is drawn over it. */
-const outfitSchema = z.strictObject({
+export const outfitSchema = z.strictObject({
   skin: hexColourSchema,
   /** Torso and arms. */
   top: hexColourSchema,

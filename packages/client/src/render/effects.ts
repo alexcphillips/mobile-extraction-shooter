@@ -2,13 +2,17 @@ import * as THREE from 'three';
 
 const TRACERS = 24;
 const TRACER_MS = 60;
-const IMPACTS = 32;
+const IMPACTS = 64;
 const IMPACT_MS = 400;
 const IMPACT_SIZE = 0.08;
 /** Puffs a pane of glass breaks into. */
 const SHARDS = 10;
 const WORLD_DUST = new THREE.Color(0x6b5f50);
 const BLOOD = new THREE.Color(0xb03028);
+/** A blast gun's gust (the Gale Cannon, 2026-11-04): its puffs and streaks. */
+const GUST = new THREE.Color(0x9fe8e2);
+const GUST_PUFFS = 28;
+const GUST_STREAKS = 10;
 /** A tracer's colour: an ordinary round's, and an incendiary round's (2026-10-31). */
 export const TRACER_COLOUR = 0xffe9a0;
 export const INCENDIARY_TRACER = 0xff6a1a;
@@ -117,6 +121,48 @@ export class Effects {
       this.puffs.setColorAt(i, this.c);
     }
     this.puffs.instanceColor!.needsUpdate = true;
+  }
+
+  /**
+   * A blast gun's gust from (x, y, z) along the unit (dx, dy, dz), out to range and spreading
+   * to `angle` radians either side: pale puffs scattered through the cone and streaks fanning
+   * out, from the same pools as everything else.
+   */
+  gust(
+    now: number,
+    x: number,
+    y: number,
+    z: number,
+    dx: number,
+    dy: number,
+    dz: number,
+    range: number,
+    angle: number,
+  ): void {
+    const yaw = Math.atan2(-dx, -dz);
+    const pitch = Math.asin(Math.max(-1, Math.min(1, dy)));
+    const at = (d: number, a: number, b: number, out: number[]): void => {
+      const cp = Math.cos(pitch + b);
+      out[0] = x - Math.sin(yaw + a) * cp * d;
+      out[1] = y + Math.sin(pitch + b) * d;
+      out[2] = z - Math.cos(yaw + a) * cp * d;
+    };
+    const p = [0, 0, 0];
+    for (let k = 0; k < GUST_PUFFS; k++) {
+      const i = this.nextPuff;
+      this.nextPuff = (i + 1) % IMPACTS;
+      const d = range * (0.15 + 0.85 * Math.random());
+      at(d, (Math.random() * 2 - 1) * angle, (Math.random() * 2 - 1) * angle * 0.4, p);
+      this.puffAt.set(p, i * 3);
+      this.puffEnds[i] = now + IMPACT_MS * (1 + Math.random());
+      this.puffs.setColorAt(i, GUST);
+    }
+    this.puffs.instanceColor!.needsUpdate = true;
+    for (let k = 0; k < GUST_STREAKS; k++) {
+      const a = ((k / (GUST_STREAKS - 1)) * 2 - 1) * angle;
+      at(range * (0.5 + 0.5 * Math.random()), a, (Math.random() * 2 - 1) * angle * 0.3, p);
+      this.tracer(now, x, y, z, p[0]!, p[1]!, p[2]!, GUST.getHex());
+    }
   }
 
   /** Fades out old tracers and shrinks puffs; call every frame. */

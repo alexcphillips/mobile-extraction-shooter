@@ -22,6 +22,7 @@ import {
 } from './state';
 import { heldWeapon } from './gear';
 import { createWeaponStats, reloadRound, weaponStats } from './weapons';
+import { ZOMBIES, type WindowState, type ZombieMind } from './zombies';
 
 /*
  * Enemy AI. Session 7: getting around, seeing and hearing. Session 8: fighting. Each
@@ -340,6 +341,8 @@ export interface AiState {
    * Missing (older saves) is 0.
    */
   fires?: number;
+  /** A zombie's (zombies mode, sim/zombies.ts): it hunts instead (see hunt). Missing for others. */
+  zombie?: ZombieMind | null;
 }
 
 export interface PatrolDef {
@@ -528,12 +531,15 @@ export function updateAi(
     input.fire = input.aim = input.reload = input.crouch = input.sprint = false;
     input.extinguish = false;
     if (c.health.dead) continue;
-    if ((state.tick + c.id) % AI.perceiveEvery === 0) {
-      look(state, c, ai, world, nav);
-      listenForSteps(state, c, ai);
+    if (ai.zombie) hunt(state, c, ai, items, nav);
+    else {
+      if ((state.tick + c.id) % AI.perceiveEvery === 0) {
+        look(state, c, ai, world, nav);
+        listenForSteps(state, c, ai);
+      }
+      hearEvents(state, c, ai, world);
+      behave(state, c, ai, world, items, nav);
     }
-    hearEvents(state, c, ai, world);
-    behave(state, c, ai, world, items, nav);
     // A closed door on the way to the next waypoint opens as it gets there.
     const i = ai.pathIndex * 3;
     if (ai.hasGoal && i < ai.path.length && (input.moveX !== 0 || input.moveY !== 0))
@@ -1411,6 +1417,203 @@ function behave(
   input.moveX = cy * wishX - sy * wishZ;
   input.moveY = -(sy * wishX + cy * wishZ);
   wishX = wishZ = 0;
+}
+
+// ---------------------------------------------------------------------------- zombies
+
+/** Zombie tuning (zombies mode). Distances in metres, times in seconds. */
+const HUNT = {
+  /** It picks its prey again this often. */
+  repick: 1,
+  /** It stops walking this close to its prey (centre to centre), and claws from... */
+  stop: 0.8,
+  /** ...this far beyond the prey's capsule, a little short of its claws' reach... */
+  clawSlack: 0.25,
+  /** ...when facing it within this many degrees, and this near its height. */
+  clawCone: 35,
+  clawHeight: 1.2,
+  /** It turns to face its prey, not where its path goes, from this close. */
+  faceFrom: 3,
+  /** It's at its window this close to the outside spot. */
+  atWindow: 0.5,
+};
+
+/**
+ * A zombie's tick (sim/zombies.ts): no perceiving, hiding or shooting. Outside, it first
+ * breaks in through its window (see breakIn). Then it always knows where the players are
+ * and goes for the nearest it can walk to (else the nearest at all), picked again every so
+ * often, by the shortest way, at a walk (zombies never get faster), and swings its claws
+ * once it's close and facing them. Opens doors on the way like any enemy; a locked one (not
+ * yet bought) cuts it off.
+ */
+function hunt(state: SimState, c: Character, ai: AiState, items: ItemDb, nav: NavGrid): void {
+  const input = ai.input;
+  const mind = ai.zombie!;
+  const w = state.zombies?.windows[mind.window];
+  if (w) {
+    breakIn(state, c, ai, mind, w, items, nav);
+    return;
+  }
+  // Climbing in: a path from where it started would lead back outside.
+  if (c.mode === 'vault') {
+    ai.hasGoal = false;
+    return;
+  }
+  ai.timer -= DT;
+  let prey = entityById(state, ai.target);
+  if (ai.timer <= 0 || !prey || prey.health.dead || prey.ai) {
+    ai.timer = HUNT.repick;
+    prey = pickPrey(state, c, nav);
+    ai.target = prey?.id ?? 0;
+  }
+  if (!prey) return;
+  const dx = prey.x - c.x;
+  const dz = prey.z - c.z;
+  const d = Math.hypot(dx, dz);
+  let faceYaw = yawTo(c, prey.x, prey.z);
+  if (d > HUNT.stop) {
+    const r = moveTo(state, c, ai, nav, prey.x, prey.y, prey.z, 1, false, HUNT.stop);
+    if (r === 'failed' || r === 'arrived') {
+      // No way there (or at the path's end): straight at it.
+      wishX = dx / d;
+      wishZ = dz / d;
+      ai.hasGoal = false;
+    } else if (d > HUNT.faceFrom) faceYaw = moveYaw;
+  }
+  const chest = eyeHeight(c) - (prey.y + prey.height * 0.6);
+  const facePitch = -Math.atan2(chest, Math.max(d, 0.1));
+  const claws = c.gear.knife ? items.get(c.gear.knife.item) : undefined;
+  const reach = claws?.type === 'melee' ? claws.reach : 1.5;
+  input.fire =
+    d - MOVEMENT.radius < reach - HUNT.clawSlack &&
+    Math.abs(prey.y - c.y) < HUNT.clawHeight &&
+    Math.abs(angleDiff(c.yaw, faceYaw)) < HUNT.clawCone * DEG;
+
+  const turn = AI.alertTurnRate * DT;
+  input.yaw = turnToward(c.yaw, faceYaw, turn);
+  input.pitch = c.pitch + Math.max(-turn, Math.min(turn, facePitch - c.pitch));
+  const sy = Math.sin(input.yaw);
+  const cy = Math.cos(input.yaw);
+  input.moveX = cy * wishX - sy * wishZ;
+  input.moveY = -(sy * wishX + cy * wishZ);
+  wishX = wishZ = 0;
+}
+
+/**
+ * A zombie outside: it walks to its window's outside spot, then, facing in, tears off a
+ * plank every tearTime, clawing instead whenever a player is in reach on the other side
+ * (claws and shots pass a window). With no planks left it climbs through to the inside spot
+ * and hunts from there.
+ */
+function breakIn(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  mind: ZombieMind,
+  w: WindowState,
+  items: ItemDb,
+  nav: NavGrid,
+): void {
+  if (c.mode === 'vault') return;
+  const input = ai.input;
+  const out = side(w, -1);
+  const d = Math.hypot(out.x - c.x, out.z - c.z);
+  let faceYaw = w.yaw + Math.PI;
+  let facePitch = 0;
+  if (d > HUNT.atWindow) {
+    const r = moveTo(state, c, ai, nav, out.x, c.y, out.z, 1, false, HUNT.atWindow * 0.8);
+    if (r === 'failed') {
+      wishX = (out.x - c.x) / d;
+      wishZ = (out.z - c.z) / d;
+      ai.hasGoal = false;
+    }
+    faceYaw = d > HUNT.faceFrom ? moveYaw : yawTo(c, out.x, out.z);
+  } else {
+    // At the window. A player in reach inside gets clawed through it.
+    const claws = c.gear.knife ? items.get(c.gear.knife.item) : undefined;
+    const reach = claws?.type === 'melee' ? claws.reach : 1.5;
+    let prey: Character | undefined;
+    let preyD = reach - HUNT.clawSlack + MOVEMENT.radius;
+    for (const e of state.entities) {
+      if (e.ai || e.health.dead || e.admin?.peaceful) continue;
+      const pd = Math.hypot(e.x - c.x, e.z - c.z);
+      if (pd < preyD && Math.abs(e.y - c.y) < HUNT.clawHeight) {
+        preyD = pd;
+        prey = e;
+      }
+    }
+    const zombies = state.zombies!;
+    if (prey) {
+      faceYaw = yawTo(c, prey.x, prey.z);
+      facePitch = -Math.atan2(eyeHeight(c) - (prey.y + prey.height * 0.6), Math.max(preyD, 0.1));
+      input.fire = Math.abs(angleDiff(c.yaw, faceYaw)) < HUNT.clawCone * DEG;
+    } else if (w.planks > 0) {
+      w.tear += DT;
+      if (w.tear >= zombies.rules.barricades.tearTime) {
+        w.tear = 0;
+        w.planks--;
+        state.events.push({
+          type: 'plank',
+          by: c.id,
+          window: zombies.windows.indexOf(w),
+          added: false,
+          points: 0,
+        });
+      }
+    } else {
+      // Over the sill and in.
+      const into = side(w, 1);
+      c.mode = 'vault';
+      c.vaulting = {
+        fromX: c.x,
+        fromY: c.y,
+        fromZ: c.z,
+        toX: into.x,
+        toY: c.y,
+        toZ: into.z,
+        top: w.y + 0.15,
+        fromHeight: c.height,
+        toHeight: c.height,
+        t: 0,
+      };
+      mind.window = -1;
+      ai.hasGoal = false;
+      ai.timer = 0;
+    }
+  }
+  const turn = AI.alertTurnRate * DT;
+  input.yaw = turnToward(c.yaw, faceYaw, turn);
+  input.pitch = c.pitch + Math.max(-turn, Math.min(turn, facePitch - c.pitch));
+  const sy = Math.sin(input.yaw);
+  const cy = Math.cos(input.yaw);
+  input.moveX = cy * wishX - sy * wishZ;
+  input.moveY = -(sy * wishX + cy * wishZ);
+  wishX = wishZ = 0;
+}
+
+/** A window's inside (1) or outside (−1) standing spot. */
+function side(w: WindowState, k: 1 | -1): { x: number; z: number } {
+  const d = k * ZOMBIES.windowStand;
+  return { x: w.x + Math.sin(w.yaw) * d, z: w.z + Math.cos(w.yaw) * d };
+}
+
+/** The nearest living player a zombie can walk to, else the nearest at all, or undefined. */
+function pickPrey(state: SimState, c: Character, nav: NavGrid): Character | undefined {
+  const here = nav.nearest(c.x, c.y, c.z);
+  let best: Character | undefined;
+  let bestD = Infinity;
+  for (const e of state.entities) {
+    if (e.ai || e.health.dead || e.admin?.peaceful) continue;
+    const there = nav.nearest(e.x, e.y, e.z);
+    const reachable = here >= 0 && there >= 0 && nav.component[here] === nav.component[there];
+    // One it can't walk to counts as much further away.
+    const d = Math.hypot(e.x - c.x, e.z - c.z) + (reachable ? 0 : 1e6);
+    if (d < bestD) {
+      bestD = d;
+      best = e;
+    }
+  }
+  return best;
 }
 
 // Where fleeGrenade wants it to face.

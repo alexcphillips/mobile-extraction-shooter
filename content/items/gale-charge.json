@@ -1,0 +1,35 @@
+{
+  "formatVersion": 10,
+  "id": "gale-charge",
+  "name": "Gale charge",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 0,
+  "rarity": "legendary",
+  "stack": 20,
+  "calibre": "gale",
+  "level": 6,
+  "damage": 1000,
+  "armourDamage": 0,
+  "bleedChance": 0,
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, 0],
+        "pitch": 90,
+        "radius": 0.03,
+        "height": 0.1,
+        "colour": "#3fd0c9"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, 0.055],
+        "pitch": 90,
+        "radius": 0.034,
+        "height": 0.015,
+        "colour": "#b87333"
+      }
+    ]
+  }
+}

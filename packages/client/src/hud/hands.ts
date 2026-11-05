@@ -1,4 +1,5 @@
 import {
+  throwable,
   QUICK_GRIDS,
   FIRE,
   carriedGrenade,
@@ -259,7 +260,7 @@ export class HandsHud {
     for (let g = 0; g < QUICK_GRIDS; g++) {
       for (const gi of carriedGrid(c.gear, g)?.items ?? []) {
         const id = gi.item.item;
-        if (items.get(id)?.type === 'grenade') counts.set(id, (counts.get(id) ?? 0) + 1);
+        if (throwable(items, id)) counts.set(id, (counts.get(id) ?? 0) + 1);
       }
     }
     this.openPicker(

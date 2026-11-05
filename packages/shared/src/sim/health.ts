@@ -80,6 +80,12 @@ export interface Health {
   bleeding: boolean[];
   splinted: boolean[];
   dead: boolean;
+  /**
+   * One health bar instead of limbs (zombies mode's players, 2026-11-04): its most HP. All
+   * damage goes to the chest's HP, unmultiplied, and nothing bleeds or breaks. Missing for
+   * everyone else.
+   */
+  pool?: number;
 }
 
 /** Armour, worn or not: the item and its durability left. */
@@ -152,7 +158,8 @@ export interface DeathEvent {
 /**
  * Takes HP from a zone with no multiplier or armour. A broken limb spreads the damage
  * over the zones with HP left at the spillover rate, and so does whatever a hit has left
- * after breaking a limb. Head or chest at 0 kills. Returns the HP actually lost.
+ * after breaking a limb. Head or chest at 0 kills. With one health bar (Health.pool) it all
+ * comes off the chest. Returns the HP actually lost.
  */
 export function dealDamage(
   state: SimState,
@@ -163,6 +170,8 @@ export function dealDamage(
 ): number {
   const h = c.health;
   if (h.dead || amount <= 0 || c.admin?.infiniteHealth) return 0;
+  // One health bar: it's all the chest's.
+  if (h.pool !== undefined) zone = CHEST;
   let lost = 0;
   let spill = 0;
   if (zone !== HEAD && zone !== CHEST && h.hp[zone]! <= 0) {
@@ -233,13 +242,16 @@ export function shootCharacter(
   by: EntityId,
   cause: 'shot' | 'melee' = 'shot',
 ): void {
-  woundZone(state, items, c, zone, ammo.damage * HEALTH.multiplier[zone]!, ammo, by, cause);
+  const k = c.health.pool === undefined ? HEALTH.multiplier[zone]! : 1;
+  woundZone(state, items, c, zone, ammo.damage * k, ammo, by, cause);
 }
 
 /**
  * A hit of this much damage to one zone, after any multiplier: armour on the head or
  * chest lets through its share by the wound's level and wears down, then what got
  * through may start bleeding. Shots, swings and blasts (sim/grenades.ts) all end here.
+ * In zombies mode a player's blasts never hurt players (the ray gun's bolts burst close
+ * by), and under insta-kill any hit on a zombie kills it.
  */
 export function woundZone(
   state: SimState,
@@ -252,6 +264,9 @@ export function woundZone(
   cause: DamageCause,
 ): void {
   if (c.health.dead) return;
+  const zombies = state.zombies;
+  if (zombies && !c.ai && cause === 'explosion' && by !== 0 && isPlayer(state, by)) return;
+  if (zombies && zombies.instaKill > 0 && c.ai?.zombie && by !== 0) damage = INSTA_KILL;
   if (c.admin?.infiniteHealth) {
     // Still a hit, for markers and the HUD, but nothing lost.
     state.events.push({ type: 'damage', target: c.id, by, zone, amount: 0, absorbed: 0, cause });
@@ -267,10 +282,20 @@ export function woundZone(
     damage -= absorbed;
   }
   const amount = dealDamage(state, c, zone, damage, by);
-  if (!c.health.dead && damage > 0 && chance(state.rng, wound.bleedChance)) {
+  const bleeds = c.health.pool === undefined;
+  if (bleeds && !c.health.dead && damage > 0 && chance(state.rng, wound.bleedChance)) {
     c.health.bleeding[zone] = true;
   }
   state.events.push({ type: 'damage', target: c.id, by, zone, amount, absorbed, cause });
+}
+
+/** More than anything has: an insta-kill hit. */
+const INSTA_KILL = 1e6;
+
+/** Whether an entity is a player (there and not an enemy). */
+function isPlayer(state: SimState, id: EntityId): boolean {
+  for (const e of state.entities) if (e.id === id) return !e.ai;
+  return false;
 }
 
 /** Fall damage to both legs from the landing speed movement left in c.landingSpeed. */

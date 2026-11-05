@@ -22,7 +22,9 @@ import {
   checkDoorKeys,
   checkEnemySpawns,
   checkLootContainers,
+  checkZombieMarkers,
   loadEnemies,
+  loadItems,
   loadLootContainers,
   loadLootTables,
   loadQuests,
@@ -124,7 +126,11 @@ export type MarkerKind =
   | 'lootSpawn'
   | 'extraction'
   | 'questMarker'
-  | 'door';
+  | 'door'
+  | 'zombieSpawn'
+  | 'wallBuy'
+  | 'mysteryBox'
+  | 'barricade';
 export const MARKERS: Readonly<Record<MarkerKind, string>> = {
   playerSpawn: 'player spawn',
   enemySpawn: 'enemy spawn',
@@ -134,6 +140,11 @@ export const MARKERS: Readonly<Record<MarkerKind, string>> = {
   extraction: 'extraction',
   questMarker: 'quest marker',
   door: 'door',
+  // Zombies mode (2026-11-04).
+  zombieSpawn: 'zombie spawn',
+  wallBuy: 'wall gun',
+  mysteryBox: 'mystery box',
+  barricade: 'barricade',
 };
 const TOOL_KEYS = { prefab: '6', marker: '7', zone: '8', wall: '9', curve: '0' } as const;
 /** How near the last curve's centre a click must be to go on it. */
@@ -528,6 +539,19 @@ export class MapEditor {
   /** The patrols an enemy spawn in the scope can walk: those in the same file. */
   patrols(): string[] {
     return patrolIds(this.fileNodes());
+  }
+
+  /** The barricades' ids in the file the scope is in, for zombie spawns to name. */
+  barricades(): string[] {
+    const ids: string[] = [];
+    const walk = (nodes: readonly MapNode[]): void => {
+      for (const n of nodes) {
+        if (n.type === 'group') walk(n.nodes);
+        else if (n.type === 'barricade') ids.push(n.id);
+      }
+    };
+    walk(this.fileNodes());
+    return ids;
   }
 
   /** The colour slots of the file the scope is in. */
@@ -2316,6 +2340,16 @@ function newMarker(kind: MarkerKind, pos: Vec3, taken: Set<string>, colour: stri
       return { type: 'questMarker', id: uniqueId('quest-marker', taken), pos };
     case 'door':
       return { type: 'door', pos, size: [1, 2.1], colour };
+    case 'zombieSpawn':
+      return { type: 'zombieSpawn', pos };
+    case 'wallBuy': {
+      const guns = [...loadItems().values()].filter((i) => i.type === 'weapon').map((i) => i.id);
+      return { type: 'wallBuy', pos, item: first(guns, 'smg'), cost: 1000 };
+    }
+    case 'mysteryBox':
+      return { type: 'mysteryBox', pos, cost: 950 };
+    case 'barricade':
+      return { type: 'barricade', id: uniqueId('window', taken), pos, size: [1.4, 1.2] };
     case 'patrol':
       throw new Error('patrols are drawn a point at a time');
   }
@@ -2332,6 +2366,7 @@ export function check(map: MapFile, prefabs: PrefabLookup, file: string): string
     checkEnemySpawns(compiled);
     checkDoorKeys(compiled);
     checkLootContainers(compiled);
+    checkZombieMarkers(compiled);
     for (const q of loadQuests().values()) {
       for (const o of q.objectives) {
         if (o.type === 'handOver' || o.map !== map.id) continue;

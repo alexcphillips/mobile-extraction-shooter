@@ -81,6 +81,16 @@ import {
   isBleeding,
   HEALTH,
   ZONE_COUNT,
+  RAID_FORMAT_VERSION,
+  adminGiveGun,
+  adminPowerup,
+  buyInReach,
+  windowInReach,
+  pointsOf,
+  spotPrice,
+  startZombies,
+  type Powerup,
+  type ZombiesDef,
 } from '@mes/shared';
 import * as THREE from 'three';
 import { startLoop } from '../app/loop';
@@ -109,7 +119,14 @@ import { SpectateBar } from '../hud/spectate';
 import type { Vitals } from '../hud/vitals';
 import { Controls } from '../input/controls';
 import { inputMode } from '../input/mode';
-import { anyCheat, applySimCheats, readCheats } from '../admin-cheats';
+import {
+  anyCheat,
+  applySimCheats,
+  applyZombieCheats,
+  readCheats,
+  readZombieCheats,
+} from '../admin-cheats';
+import { ZombiesAdmin } from './zombies-admin';
 import { buildDebug } from '../render/debug';
 import { fireKey, logBleed, logBurn, logHit, logKiller, type DamageLog } from './damage-log';
 import { CapsuleBody } from '../render/capsule-body';
@@ -122,6 +139,9 @@ import { INCENDIARY_TRACER, TRACER_COLOUR } from '../render/effects';
 import { GrenadeViews } from '../render/grenades';
 import { GroundItems } from '../render/ground-items';
 import { buildMap, updateDoors, updateGlass, updateSearchedLooks } from '../render/map';
+import { buildWallBuys } from '../render/wall-buys';
+import { Barricades } from '../render/barricades';
+import { Powerups } from '../render/powerups';
 import { AiDebug, buildNavOverlay } from '../render/nav-debug';
 import { Viewmodel } from '../render/viewmodel';
 import { settings } from '../settings';
@@ -213,6 +233,11 @@ export interface PlayOptions {
   coop?: CoopOptions | null;
   /** Says what a party raid is waiting for while it connects. */
   status?: (text: string) => void;
+  /**
+   * A zombies game (2026-11-04) instead of a raid: this mode's map and rules, and you wear
+   * the profile's gear (its kit, not your stash). Nothing is saved or sent.
+   */
+  zombies?: ZombiesDef | null;
 }
 
 /** How far into aiming a red dot's reticle shows, once the sight has come up to the eye. */
@@ -228,6 +253,26 @@ const ENEMY_RESPAWN_MS = 6000;
 const RESULTS_AFTER_DEATH_MS = 1500;
 /** How much aim assist slows looking while the crosshair is on an enemy. */
 const ASSIST = { off: 1, low: 0.8, medium: 0.6, high: 0.45 } as const;
+
+/** What the HUD calls each power-up. */
+const POWERUP_NAMES: Record<Powerup, string> = {
+  instaKill: 'Insta-kill',
+  maxAmmo: 'Max ammo',
+  doublePoints: 'Double points',
+  carpenter: 'Carpenter',
+  deathMachine: 'Death machine',
+};
+
+/** A zombies game as a raid config, for what reads one: its map, and no timer to speak of. */
+function zombiesRaid(def: ZombiesDef): RaidDef {
+  return {
+    formatVersion: RAID_FORMAT_VERSION,
+    id: `zombies-${def.id}`,
+    name: def.name,
+    map: def.map,
+    duration: 1,
+  };
+}
 
 /**
  * A solo raid from a config in content/raids, on the shared simulation. You start at a
@@ -250,7 +295,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     ({ guest, welcome } = await CoopGuest.connect(coop, coop.name, options.profile.gear, status));
     status('');
   }
-  const raid = options.test?.raid ?? loadRaid(options.raid);
+  const zombiesMode = options.zombies ?? null;
+  const raid =
+    options.test?.raid ?? (zombiesMode ? zombiesRaid(zombiesMode) : loadRaid(options.raid));
   const map = options.test?.map ?? loadMap(raid.map);
   const items = loadItems();
   const lootTables = loadLootTables();
@@ -285,6 +332,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const mapView = buildMap(map);
   scene.add(mapView.root);
   scene.add(buildExtractions(map));
+  if (zombiesMode) scene.add(buildWallBuys(map, items, world));
   const groundItems = new GroundItems(items);
   scene.add(groundItems.root);
   if (options.debug) scene.add(buildDebug(map, world.terrain));
@@ -351,11 +399,14 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     );
     player.gear = structuredClone(options.profile.gear);
     markBrought(player);
-    placeLootContainers(sim, map, lootKinds);
-    fillLootContainers(sim, map, items, lootTables, lootKinds);
-    rollLootSpawns(sim, map, items, lootTables);
-    startRaid(sim, map, options.duration ?? raid.duration);
-    startQuests(sim, map, items, player.id, raidObjectives(options.profile, quests, raid.map));
+    if (zombiesMode) startZombies(sim, map, zombiesMode);
+    else {
+      placeLootContainers(sim, map, lootKinds);
+      fillLootContainers(sim, map, items, lootTables, lootKinds);
+      rollLootSpawns(sim, map, items, lootTables);
+      startRaid(sim, map, options.duration ?? raid.duration);
+      startQuests(sim, map, items, player.id, raidObjectives(options.profile, quests, raid.map));
+    }
     controls.yaw = spawn.yaw;
   }
   // Admin cheats (dev builds only); ?peaceful turns that one on too. Set again when
@@ -363,12 +414,33 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const cheats = readCheats();
   cheats.peaceful ||= options.peaceful;
   applySimCheats(player, cheats);
-  if (anyCheat(cheats)) el.raidHud.note('Admin cheats on', performance.now());
+  // Zombies cheats (dev builds only): infinite points, and guns to start a new game with.
+  const zombieCheats = zombiesMode ? readZombieCheats() : null;
+  if (zombieCheats) {
+    applyZombieCheats(player, zombieCheats);
+    if (!resume)
+      for (const id of zombieCheats.guns) if (items.has(id)) adminGiveGun(sim, items, player, id);
+  }
+  if (anyCheat(cheats) || zombieCheats?.infinitePoints || zombieCheats?.guns.length)
+    el.raidHud.note('Admin cheats on', performance.now());
   const held = heldWeapon(player);
   if (held) viewmodel.setGun(held, items);
   const questMarkers = new QuestMarkers(el.questMarkers, sim.raid?.investigate ?? [], player);
-  /** A dev screen (a note being written) is open. */
+  /** A dev screen (a note being written, or the zombies admin panel) is open. */
   let devScreen = false;
+  // Zombies mode's in-game admin panel, on the dev server.
+  const zombiesAdmin =
+    import.meta.env.DEV && zombiesMode
+      ? new ZombiesAdmin(
+          items,
+          [...new Set([...zombiesMode.box.map((o) => o.item), zombiesMode.powerups.minigun])],
+          (open) => {
+            devScreen = open;
+            controls.reset();
+            controls.cursor.want(!open);
+          },
+        )
+      : null;
   // Map notes in every raid on the dev server; a build leaves them out.
   if (import.meta.env.DEV) {
     const dev: DevHooks = {
@@ -391,6 +463,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       if (o.type === 'investigate' && o.map === raid.map) markerText.set(o.marker, o.text);
     }
   }
+  // Zombies mode's windows' planks.
+  const barricades = sim.zombies ? new Barricades(sim.zombies.windows) : null;
+  if (barricades) scene.add(barricades.root);
+  const powerupViews = sim.zombies ? new Powerups() : null;
+  if (powerupViews) scene.add(powerupViews.root);
   // Locked doors cut the nav grid now, not in the first frame.
   syncDoors(sim, world, nav);
   syncGlass(sim, world);
@@ -426,8 +503,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const bodyOf = new Map<number, CharacterBody>();
   const enemyBars = cheats.enemyHealth ? new EnemyBars(el.enemyBars) : null;
   el.enemyBars.hidden = !enemyBars;
-  /** Draws an enemy of a type that's in the state, armed by `arm` (if it isn't yet). */
-  function addEnemy(c: Character, type: EnemyDef, arm: () => void): void {
+  /**
+   * Draws an enemy of a type (or a zombie, in zombies mode) that's in the state, armed by
+   * `arm` (if it isn't yet).
+   */
+  function addEnemy(c: Character, type: Pick<EnemyDef, 'name' | 'outfit'>, arm: () => void): void {
     const body = new CharacterBody(rig, type.outfit ?? DEFAULT_OUTFIT, c);
     scene.add(body.root);
     const zones = options.hitZones ? new CapsuleBody(0.45) : null;
@@ -722,6 +802,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let inventoryChanged = false;
   const useButton = el.hud.button('interact');
   let useLabel = '';
+  // Zombies mode has no inventory: nothing to open it with.
+  if (zombiesMode) el.hud.button('bag').hidden = true;
   const nameOf = (o: Owner): string => {
     if (o.kind === 'container') {
       const l = lootContainerById(sim, o.id);
@@ -801,6 +883,29 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   function endRaid(how: LeaveReason | 'killed', detail: string, now: number): void {
     if (ended) return;
     giveUp.set(null);
+    if (zombiesMode) {
+      // Nothing to keep, lose or save: how far you got.
+      ended = {
+        how,
+        detail,
+        seconds: sim.tick / TICK_RATE,
+        kills,
+        kept: [],
+        lost: [],
+        quests: [],
+        taken,
+        keptAll: false,
+        zombies: {
+          mode: zombiesMode.name,
+          round: sim.zombies?.round ?? 0,
+          points: pointsOf(sim, player.id),
+        },
+      };
+      saving = Promise.resolve({ kind: 'test' });
+      resultsAt = now + (how === 'killed' ? RESULTS_AFTER_DEATH_MS : 0);
+      closeScreen();
+      return;
+    }
     const survived = how === 'extracted';
     const keepAll = survived || cheats.keepGear;
     const kept = keptItems(player.gear, keepAll);
@@ -917,7 +1022,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // Saved whenever the page is hidden, in case iOS unloads it while you're away.
   const snapshot = (): void => {
     // A party raid can't be picked up again from one device (C7).
-    if (ended || options.test || coop) return;
+    if (ended || options.test || coop || zombiesMode) return;
     saveSnapshot({
       version: 1,
       serverRaid: options.serverRaid,
@@ -993,7 +1098,20 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const doorIndex = lootable?.kind === 'door' ? lootable.index : -1;
     const door = doorIndex >= 0 ? sim.doors[doorIndex]! : null;
     const doorKey = door?.locked ? keyName(items, world, doorIndex) : null;
-    const hasKey = !!door?.locked && !!findKey(player.gear, world.doors[doorIndex]!.key!);
+    const key = doorIndex >= 0 ? world.doors[doorIndex]!.key : undefined;
+    const hasKey = !!door?.locked && key !== undefined && !!findKey(player.gear, key);
+    // Zombies mode: a door bought with points, and a buy spot in reach (an item or a door
+    // aimed at comes first).
+    const doorCost = door?.locked ? world.doors[doorIndex]!.cost : undefined;
+    const buySpot =
+      !zombiesMode || dead || screenOpen || lootable?.kind === 'ground' || lootable?.kind === 'door'
+        ? -1
+        : buyInReach(sim, player);
+    // A barricade in reach to nail planks up on, held, when nothing else is.
+    const barricade =
+      !zombiesMode || dead || screenOpen || buySpot >= 0 || lootable?.kind === 'door'
+        ? -1
+        : windowInReach(sim, player);
     // A quest marker in reach beats a container or body, but not aiming at an item or door.
     const spot =
       dead || screenOpen || lootable?.kind === 'ground' || lootable?.kind === 'door'
@@ -1001,32 +1119,42 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         : investigateInReach(sim, player);
     const label = spot
       ? 'investigate'
-      : !lootable
-        ? 'use'
-        : door
-          ? door.locked
-            ? hasKey
-              ? 'unlock'
-              : 'locked'
-            : door.open
-              ? 'close'
-              : 'open'
-          : lootable.kind === 'ground'
-            ? 'take'
-            : 'loot';
+      : buySpot >= 0
+        ? 'buy'
+        : barricade >= 0
+          ? 'rebuild'
+          : !lootable
+            ? 'use'
+            : door
+              ? door.locked
+                ? doorCost !== undefined
+                  ? 'buy'
+                  : hasKey
+                    ? 'unlock'
+                    : 'locked'
+                : door.open
+                  ? 'close'
+                  : 'open'
+              : lootable.kind === 'ground'
+                ? 'take'
+                : 'loot';
     if (label !== useLabel) {
       useLabel = label;
       useButton.textContent = label;
-      useButton.classList.toggle('idle', !lootable && !spot);
+      useButton.classList.toggle('idle', !lootable && !spot && buySpot < 0 && barricade < 0);
     }
     let taking: string | null = null;
     input.door = null;
     input.search = null;
     input.investigate = false;
+    input.buy = null;
+    input.rebuild = !dead && barricade >= 0 && controls.interactHeld;
     if (!dead && controls.interact && screenOpen) {
       closeScreen();
     } else if (!dead && controls.interact && spot) {
       input.investigate = true;
+    } else if (!dead && controls.interact && buySpot >= 0) {
+      input.buy = buySpot;
     } else if (!dead && controls.interact && lootable?.kind === 'door') {
       input.door = lootable.index;
     } else if (!dead && controls.interact && lootable?.kind === 'ground') {
@@ -1044,7 +1172,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         input.search = lootable.c.id;
         openScreen({ kind: 'container', id: lootable.c.id });
       } else if (lootable.kind === 'body') openScreen({ kind: 'body', id: lootable.c.id });
-    } else if (!dead && controls.bag) {
+    } else if (!dead && controls.bag && !zombiesMode) {
       if (screenOpen) closeScreen();
       else openScreen(null);
     }
@@ -1105,6 +1233,18 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       host?.fillInputs(inputs, (c) => killCharacter(sim, c, 0));
       step(sim, world, items, inputs, nav);
       host?.afterTick(sim);
+      // The zombies admin panel's asks, after the tick so their events are seen below.
+      if (zombiesAdmin && sim.zombies) {
+        for (const a of zombiesAdmin.actions.splice(0)) {
+          if (a.kind === 'powerup') adminPowerup(sim, items, player, a.powerup);
+          else if (a.kind === 'gun') adminGiveGun(sim, items, player, a.item);
+          else if (a.kind === 'points')
+            sim.zombies.points[player.id] = pointsOf(sim, player.id) + a.amount;
+          else
+            for (const c of sim.entities)
+              if (c.ai?.zombie && !c.health.dead) killCharacter(sim, c, player.id);
+        }
+      }
     }
     pending.length = 0;
     follow();
@@ -1119,7 +1259,18 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     let lit = false;
     let died = false;
     for (const e of sim.events) {
-      if (e.type === 'shot') {
+      if (e.type === 'shot' && e.blast) {
+        // A blast gun's gust (zombies mode's Gale Cannon): no tracer, a cone of wind.
+        if (e.by === viewer.id) viewmodel.fired(now);
+        else bodyOf.get(e.by)?.fired();
+        const shooter = entityById(sim, e.by);
+        const gun = shooter && heldWeapon(shooter);
+        const angle = (gun ? (weaponDef(items, gun.item).blast?.angle ?? 30) : 30) * DEG;
+        const dx = (e.toX - e.fromX) / e.blast;
+        const dy = (e.toY - e.fromY) / e.blast;
+        const dz = (e.toZ - e.fromZ) / e.blast;
+        effects.gust(now, e.fromX, e.fromY - 0.15, e.fromZ, dx, dy, dz, e.blast, angle);
+      } else if (e.type === 'shot') {
         // A launched grenade or a flame has no tracer: it's drawn flying (grenades, fires).
         const tracer = !e.grenade && !e.flame;
         // An incendiary round: an orange tracer, and a burst of fire where it lands.
@@ -1192,6 +1343,30 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         if (screen) screen.refresh();
       } else if (e.type === 'door' && e.by === player.id && e.result === 'blocked') {
         el.raidHud.warn('Someone’s in the doorway', now);
+      } else if (e.type === 'door' && e.by === player.id && e.result === 'poor') {
+        el.raidHud.warn('Not enough points', now);
+      } else if (e.type === 'door' && e.by === player.id && e.result === 'bought') {
+        const name = map.doors[e.door]?.name;
+        el.raidHud.note(name ? `${name} cleared` : 'Door bought', now);
+      } else if (e.type === 'buy' && e.by === player.id) {
+        const name = e.item ? itemDef(items, e.item).name : '';
+        if (e.result === 'poor') el.raidHud.warn('Not enough points', now);
+        else if (e.result === 'full') el.raidHud.warn('Your ammo is full', now);
+        else if (e.result === 'busy') el.raidHud.warn('Not while you hold the minigun', now);
+        else if (e.result === 'ammo')
+          el.raidHud.note(name ? `${name} ammo filled` : 'Ammo filled', now);
+        else el.raidHud.note(`Bought ${name}`, now);
+        inventoryChanged = true;
+      } else if (e.type === 'plank' && e.by === player.id && e.points > 0) {
+        el.raidHud.note(`Barricade · +${e.points}`, now);
+      } else if (e.type === 'powerup' && (e.what === 'picked' || e.what === 'ended')) {
+        const name = POWERUP_NAMES[e.kind];
+        if (e.what === 'picked') el.raidHud.note(`${name}!`, now);
+        else if (e.by === 0 || e.by === player.id) el.raidHud.note(`${name} over`, now);
+        inventoryChanged = true;
+      } else if (e.type === 'round') {
+        if (e.started) el.raidHud.note(`Round ${e.round}`, now);
+        else el.raidHud.note(`Round ${e.round} survived`, now);
       } else if (e.type === 'spawnRequest' && !guest) {
         spawnRequested(e);
       } else if (e.type === 'inventory' && e.by === player.id) {
@@ -1217,6 +1392,20 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // The death event comes before the hit that caused it, so this waits for the loop.
     if (died) logKiller(taken, lastHit);
 
+    if (zombiesMode) {
+      // Zombies climb in during the round and their bodies go a few seconds after dying.
+      for (let i = enemies.length - 1; i >= 0; i--) {
+        const e = enemies[i]!;
+        if (sim.entities.includes(e.c)) continue;
+        scene.remove(e.body.root);
+        if (e.zones) scene.remove(e.zones.root);
+        enemies.splice(i, 1);
+        enemyChars.splice(enemyChars.indexOf(e.c), 1);
+        bodyOf.delete(e.c.id);
+      }
+      for (const c of sim.entities)
+        if (c.ai?.zombie && !bodyOf.has(c.id)) addEnemy(c, zombiesMode.zombie, () => {});
+    }
     for (const e of enemies) {
       e.body.tick(e.c);
       if (!e.c.health.dead) e.diedAt = 0;
@@ -1266,13 +1455,19 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     groundItems.update(sim.ground, onGround ? lootable.index : -1);
     const prompt = onGround
       ? groundLabel(lootable.g.item)
-      : doorKey
-        ? hasKey
-          ? `Unlock with ${doorKey}`
-          : `Locked · needs ${doorKey}`
-        : spot
-          ? (markerText.get(spot.marker) ?? '')
-          : '';
+      : doorCost !== undefined
+        ? `${map.doors[doorIndex]?.name ? `Clear the ${map.doors[doorIndex]!.name!.toLowerCase()}` : 'Open door'} · ${doorCost.toLocaleString()} points`
+        : buySpot >= 0
+          ? buyLabel(buySpot)
+          : barricade >= 0
+            ? 'Hold to rebuild the barricade'
+            : doorKey
+              ? hasKey
+                ? `Unlock with ${doorKey}`
+                : `Locked · needs ${doorKey}`
+              : spot
+                ? (markerText.get(spot.marker) ?? '')
+                : '';
     // Desktop has no use button to say what F does, so the prompt says it.
     if (inputMode.desktop && useLabel !== 'use' && useLabel !== 'locked') {
       const verb = useLabel[0]!.toUpperCase() + useLabel.slice(1);
@@ -1300,6 +1495,16 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       else showResults(ended);
     }
     stats.tick(performance.now() - t0);
+  }
+
+  /** What a zombies buy spot sells you now, and for how much. */
+  function buyLabel(i: number): string {
+    const b = sim.zombies!.buys[i]!;
+    const { cost, ammo } = spotPrice(sim, player, i);
+    const price = `${cost.toLocaleString()} points`;
+    if (b.kind === 'mysteryBox') return `Mystery box · ${price}`;
+    const name = itemDef(items, b.item!).name;
+    return ammo ? `${name} ammo · ${price}` : `Buy ${name} · ${price}`;
   }
 
   /** An item's name, with its count if it's a stack. */
@@ -1413,6 +1618,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     questMarkers.update(camera, alive && !screenOpen && !ended);
     enemyBars?.update(camera, alive && !screenOpen && !ended);
     updateDoors(mapView, sim.doors, dtMs / 1000);
+    if (barricades && sim.zombies) barricades.update(sim.zombies.windows);
+    if (powerupViews && sim.zombies) powerupViews.update(sim.zombies.drops, time / 1000);
     updateSearchedLooks(mapView, sim.loot);
     updateGlass(mapView, sim.glass);
     if (aimMarker) {

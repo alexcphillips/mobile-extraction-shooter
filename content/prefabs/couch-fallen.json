@@ -1,0 +1,83 @@
+{
+  "formatVersion": 3,
+  "id": "couch-fallen",
+  "name": "Fallen couch",
+  "colours": {
+    "fabric": "#6b3a3a",
+    "leg": "#3a2a1e"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [-0.0308, 0.2953, -0.1942],
+      "yaw": 9.0,
+      "pitch": 80.0,
+      "size": [1.5, 0.32, 0.8],
+      "colour": "fabric"
+    },
+    {
+      "type": "box",
+      "pos": [0.0036, 0.4646, 0.0227],
+      "yaw": 9.0,
+      "pitch": 80.0,
+      "size": [1.3, 0.14, 0.68],
+      "colour": "fabric"
+    },
+    {
+      "type": "box",
+      "pos": [0.0452, -0.0692, 0.2856],
+      "yaw": 9.0,
+      "pitch": 80.0,
+      "size": [1.5, 0.55, 0.18],
+      "colour": "fabric"
+    },
+    {
+      "type": "box",
+      "pos": [-0.6567, 0.3871, 0.2006],
+      "yaw": 9.0,
+      "pitch": 80.0,
+      "size": [0.16, 0.28, 0.76],
+      "colour": "fabric"
+    },
+    {
+      "type": "box",
+      "pos": [0.6866, 0.3871, -0.0122],
+      "yaw": 9.0,
+      "pitch": 80.0,
+      "size": [0.16, 0.28, 0.76],
+      "colour": "fabric"
+    },
+    {
+      "type": "box",
+      "pos": [-0.7123, 0.6957, -0.3419],
+      "yaw": 9.0,
+      "pitch": 80.0,
+      "size": [0.08, 0.08, 0.08],
+      "colour": "leg"
+    },
+    {
+      "type": "box",
+      "pos": [0.5717, 0.6957, -0.5453],
+      "yaw": 9.0,
+      "pitch": 80.0,
+      "size": [0.08, 0.08, 0.08],
+      "colour": "leg"
+    },
+    {
+      "type": "box",
+      "pos": [-0.6949, 0.0654, -0.2321],
+      "yaw": 9.0,
+      "pitch": 80.0,
+      "size": [0.08, 0.08, 0.08],
+      "colour": "leg"
+    },
+    {
+      "type": "box",
+      "pos": [0.5891, 0.0654, -0.4355],
+      "yaw": 9.0,
+      "pitch": 80.0,
+      "size": [0.08, 0.08, 0.08],
+      "colour": "leg"
+    }
+  ]
+}

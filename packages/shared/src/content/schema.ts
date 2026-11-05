@@ -193,22 +193,40 @@ const prefabRefSchema = z.strictObject({
  * yaw turns +z to the side it stands on if it starts open; opened in play, it swings away
  * from whoever opens it.
  */
-const doorSchema = z.strictObject({
-  type: z.literal('door'),
-  id: idSchema.optional(),
-  pos: vec3,
-  yaw: angle,
-  /** Width and height. */
-  size: z.tuple([positive, positive]),
-  /** Defaults to 0.05. */
-  thickness: positive.optional(),
-  /** Seen from +z. Defaults to left. */
-  hinge: z.enum(['left', 'right']).optional(),
-  /** The key item that unlocks it; no key means it's never locked. */
-  key: idSchema.optional(),
-  open: z.boolean().optional(),
-  colour: colourRefSchema,
-});
+const doorSchema = z
+  .strictObject({
+    type: z.literal('door'),
+    id: idSchema.optional(),
+    pos: vec3,
+    yaw: angle,
+    /** Width and height. */
+    size: z.tuple([positive, positive]),
+    /** Defaults to 0.05. */
+    thickness: positive.optional(),
+    /** Seen from +z. Defaults to left. */
+    hinge: z.enum(['left', 'right']).optional(),
+    /** The key item that unlocks it; no key means it's never locked. */
+    key: idSchema.optional(),
+    /**
+     * Zombies mode (2026-11-04): points to buy it open, instead of a key. It starts locked,
+     * and once bought stays open for the rest of the game. Outside zombies it stays locked.
+     */
+    cost: z.int().min(1).optional(),
+    /**
+     * Drawn as this prefab instead of a door (zombies mode, 2026-11-04): a couch that blocks
+     * a stairway until it's bought. It never swings; bought, it's gone. Its size and
+     * thickness still make what's solid, so make it tall enough not to be climbed over.
+     */
+    look: idSchema.optional(),
+    /** What the use button calls it ("Couch"); left out, a door. */
+    name: z.string().min(1).optional(),
+    open: z.boolean().optional(),
+    colour: colourRefSchema,
+  })
+  .refine((d) => d.key === undefined || d.cost === undefined, {
+    message: 'a door has a key or a cost, not both',
+    path: ['cost'],
+  });
 
 const marker = { id: idSchema.optional(), pos: vec3 };
 
@@ -318,6 +336,62 @@ const questMarkerSchema = z.strictObject({
   pos: vec3,
 });
 
+/*
+ * Zombies mode's markers (2026-11-04, docs/design.md → Zombies). Ignored by extraction raids.
+ */
+
+/**
+ * Where zombies appear, used while a player can walk to it (or to its window's inside),
+ * so a bought door opens more. Usually outside, naming the barricaded window they head for.
+ */
+const zombieSpawnSchema = z.strictObject({
+  type: z.literal('zombieSpawn'),
+  ...marker,
+  /** Spawns at a random spot within this many metres. Defaults to 0. */
+  radius: nonNegative.optional(),
+  /** The id of a barricade beside it (in the same map or prefab) to break in through. */
+  window: idSchema.optional(),
+});
+
+/**
+ * A barricaded window (2026-11-04): planks players nail up one at a time and zombies tear
+ * off before they climb through. pos is the middle of the window's sill, in the middle of
+ * the wall; yaw turns +z to the inside. Players can never climb through it; shots, claws and
+ * sight pass it. Make the wall's opening to match.
+ */
+const barricadeSchema = z.strictObject({
+  type: z.literal('barricade'),
+  id: idSchema,
+  pos: vec3,
+  yaw: angle,
+  /** The opening's width and height above the sill. */
+  size: z.tuple([positive, positive]),
+  /** The most planks it takes, and how many it starts with. Defaults to 6. */
+  planks: z.int().min(1).max(12).optional(),
+});
+
+const points = z.int().min(0);
+
+/** A gun on the wall: buy it, or buy it again for its ammo. yaw turns +z out of the wall. */
+const wallBuySchema = z.strictObject({
+  type: z.literal('wallBuy'),
+  ...marker,
+  yaw: angle,
+  /** A weapon item id. */
+  item: idSchema,
+  cost: points,
+  /** Buying it again while carrying it refills its ammo for this. Defaults to half its cost. */
+  ammoCost: points.optional(),
+});
+
+/** Pay for a random gun from the mode's mystery box list. */
+const mysteryBoxSchema = z.strictObject({
+  type: z.literal('mysteryBox'),
+  ...marker,
+  yaw: angle,
+  cost: points,
+});
+
 /**
  * Nodes kept together for editing: moved, turned and deleted as one. A group adds nothing
  * to the ids of what's in it (a marker's path id is the same in a group or out of one),
@@ -370,6 +444,10 @@ export const nodeSchema: z.ZodDiscriminatedUnion<
     typeof lootSpawnSchema,
     typeof extractionSchema,
     typeof questMarkerSchema,
+    typeof zombieSpawnSchema,
+    typeof wallBuySchema,
+    typeof mysteryBoxSchema,
+    typeof barricadeSchema,
     typeof groupSchema,
   ]
 > = z.discriminatedUnion('type', [
@@ -389,6 +467,10 @@ export const nodeSchema: z.ZodDiscriminatedUnion<
   lootSpawnSchema,
   extractionSchema,
   questMarkerSchema,
+  zombieSpawnSchema,
+  wallBuySchema,
+  mysteryBoxSchema,
+  barricadeSchema,
   groupSchema,
 ]);
 

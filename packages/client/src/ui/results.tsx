@@ -30,6 +30,8 @@ export interface RaidResult {
   taken: DamageLog;
   /** Everything kept: extracted, or the keep-gear admin cheat. */
   keptAll: boolean;
+  /** A zombies game (2026-11-04): how far you got. Nothing is kept or lost in one. */
+  zombies?: { mode: string; round: number; points: number };
 }
 
 const TITLES: Record<RaidResult['how'], string> = {
@@ -123,6 +125,49 @@ function SaveLine({ saving }: { saving: Promise<SaveStatus> }) {
   );
 }
 
+/** A zombies game's end: the round reached, kills and points, and what got you. */
+function ZombiesResults({
+  result,
+  zombies,
+  onNext,
+}: {
+  result: RaidResult;
+  zombies: NonNullable<RaidResult['zombies']>;
+  onNext: () => void;
+}) {
+  return (
+    <div className="results killed">
+      <header>
+        <h1>Game over</h1>
+        <p>
+          {zombies.mode} · round {zombies.round}
+        </p>
+        <p className="results-stats">
+          {clock(result.seconds)} survived · {result.kills} {result.kills === 1 ? 'kill' : 'kills'}{' '}
+          · {zombies.points.toLocaleString()} points left
+        </p>
+        <p className="results-save test">Zombies: nothing from your stash goes in or comes out.</p>
+      </header>
+      {result.taken.length > 0 && (
+        <section className="results-damage">
+          <h2>What hit you</h2>
+          <ul>
+            {result.taken.map((s) => (
+              <li key={s.key} className={s.killed ? 'killer' : undefined}>
+                {describeSource(s)}
+                {s.killed && <span className="results-count"> · killing blow</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      <button className="primary" onClick={onNext}>
+        Continue
+      </button>
+    </div>
+  );
+}
+
 function Results({
   result,
   items,
@@ -134,6 +179,8 @@ function Results({
   saving: Promise<SaveStatus>;
   onNext: () => void;
 }) {
+  if (result.zombies)
+    return <ZombiesResults result={result} zombies={result.zombies} onNext={onNext} />;
   const survived = result.how === 'extracted';
   // Cash you kept goes into your money when the server has the result (session 13b).
   const cash = result.kept.reduce(

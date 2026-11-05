@@ -75,7 +75,8 @@ export function buildMap(map: CompiledMap): MapView {
   const doors = map.doors.map((door) => {
     const pivot = buildDoor(door, shaded);
     root.add(pivot);
-    const turn = door.hinge === 'left' ? -Math.PI / 2 : Math.PI / 2;
+    // A couch (a door with a look) never swings.
+    const turn = door.look ? 0 : door.hinge === 'left' ? -Math.PI / 2 : Math.PI / 2;
     return { pivot, yaw: door.yaw, turn, shown: door.open ? 1 : 0 };
   });
 
@@ -189,12 +190,14 @@ function buildInstanced(group: InstancedGroup, material: THREE.Material): THREE.
  */
 export function updateDoors(
   view: MapView,
-  doors: readonly { open: boolean; flipped?: boolean }[],
+  doors: readonly { open: boolean; flipped?: boolean; gone?: boolean }[],
   dt: number,
 ): void {
   for (let i = 0; i < view.doors.length; i++) {
     const d = view.doors[i]!;
     const s = doors[i];
+    // A bought door (zombies mode) is gone from its doorway.
+    d.pivot.visible = !s?.gone;
     const target = s?.open ? (s.flipped ? -1 : 1) : 0;
     if (d.shown === target) continue;
     const step = dt / SWING;
@@ -274,6 +277,18 @@ const ZERO_MATRIX = new THREE.Matrix4().makeScale(0, 0, 0);
 
 /** A pivot at the hinge holding the door panel. Seen from +z, a left hinge is at −x. */
 export function buildDoor(door: CompiledDoor, material: THREE.Material): THREE.Object3D {
+  if (door.look) {
+    // A couch blocking the stairs (zombies mode): its prefab where the door is. It never
+    // swings, so it hangs from its own middle, which updateDoors leaves be.
+    const look = new TriangleBuilder(false);
+    for (const s of door.look) look.shape(s);
+    const at = new THREE.Group();
+    at.position.set(door.x, door.y, door.z);
+    at.rotation.y = door.yaw;
+    at.add(new THREE.Mesh(look.build(), material));
+    at.name = door.id;
+    return at;
+  }
   const side = door.hinge === 'left' ? -1 : 1;
   const b = new TriangleBuilder(false);
   b.shape({

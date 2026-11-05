@@ -297,6 +297,21 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
               hint="How fast the kick wears off: higher settles sooner (about 3)"
             />
           </Row>
+          <Row>
+            <N
+              {...b}
+              path={['recoil', 'angle']}
+              label="kick angle (°)"
+              hint="Which way it climbs, off straight up: + right, − left, up to 45. Blank: straight up"
+            />
+            <N
+              {...b}
+              path={['recoil', 'stableAfter']}
+              label="steadies after (rounds)"
+              min={1}
+              hint="Past this round of a burst it stops climbing. Blank: climbs until recovery catches up"
+            />
+          </Row>
           <h4>attachment slots</h4>
           <Row>
             {ATTACHMENT_SLOTS.map((slot) => (

@@ -15,7 +15,7 @@ import type { Item } from '../inventory/grid';
 import { chance, nextFloat } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import { createRayHit, type CollisionWorld } from '../world/collision-world';
-import { HEALTH, brokenArms, shootCharacter } from './health';
+import { CHEST, HEALTH, brokenArms, shootCharacter, woundZone } from './health';
 import {
   CARRIED_GRIDS,
   QUICK_GRIDS,
@@ -34,6 +34,7 @@ import { GLASS, breakGlass, glassHit } from './glass';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import { RECOIL, kickRecoil, settleRecoil } from './recoil';
 import {
+  bodyPoint,
   entityById,
   eyeHeight,
   eyeX,
@@ -99,6 +100,10 @@ export interface WeaponStats {
   recoilUp: number;
   recoilSide: number;
   recoilSnap: number;
+  /** Which way up kicks, in degrees off straight up (+ right). */
+  recoilAngle: number;
+  /** The round past which a burst stops climbing; 0 never. */
+  recoilStableAfter: number;
   /** The gun's recoil recovery with attachments' ergonomics. */
   recoilRecovery: number;
   loudness: number;
@@ -114,6 +119,8 @@ export function createWeaponStats(): WeaponStats {
     recoilUp: 0,
     recoilSide: 0,
     recoilSnap: 0,
+    recoilAngle: 0,
+    recoilStableAfter: 0,
     recoilRecovery: 0,
     loudness: 0,
   };
@@ -130,6 +137,8 @@ export function weaponStats(items: ItemDb, w: WeaponState, out: WeaponStats): We
   out.recoilUp = def.recoil.up;
   out.recoilSide = def.recoil.side;
   out.recoilSnap = def.recoil.snap;
+  out.recoilAngle = def.recoil.angle ?? 0;
+  out.recoilStableAfter = def.recoil.stableAfter ?? 0;
   out.recoilRecovery = def.recoil.recovery;
   out.loudness = def.loudness;
   for (const slot of ATTACHMENT_SLOTS) {
@@ -179,6 +188,11 @@ export interface ShotEvent {
    * shot goes nowhere, as a launcher's does. 0 for everything else.
    */
   flame: number;
+  /**
+   * A blast gun's shot (2026-11-04, WeaponDef.blast): how far its blast reaches; to is
+   * where it points at that range. Missing for everything else.
+   */
+  blast?: number;
 }
 
 // Scratch for working out stats, so a tick allocates nothing.
@@ -384,9 +398,12 @@ export function updateWeapon(
   settleRecoil(c, s.recoilSnap, s.recoilRecovery, trigger);
 }
 
-/** Firing and reloading take no rounds: the infinite ammo cheat, or an admin spawner gun. */
+/**
+ * Firing and reloading take no rounds: the infinite ammo cheat, an admin spawner gun, or a
+ * gun that never runs out (zombies mode's death machine).
+ */
 const freeAmmo = (c: Character, def: WeaponDef): boolean =>
-  !!c.admin?.infiniteAmmo || def.spawns !== undefined;
+  !!c.admin?.infiniteAmmo || def.spawns !== undefined || !!def.infiniteAmmo;
 
 /** Starts a reload, unless there's nothing to load or it's full of the same round. */
 function startReload(
@@ -466,7 +483,9 @@ function fire(
   const yaw = c.yaw + c.recoilYaw + (c.swayYaw ?? 0) + off * Math.cos(around);
   const pitch = c.pitch + c.recoilPitch + (c.swayPitch ?? 0) + off * Math.sin(around);
   const ammo = roundOf(items, loadedAmmo(items, w))!;
-  if (ammo.type === 'grenade') {
+  if (def.blast && ammo.type === 'ammo') {
+    blastShot(state, c, def.blast, yaw, pitch, s, ammo, world, items);
+  } else if (ammo.type === 'grenade') {
     // A launcher: the grenade flies from here as a thrown one does, only faster, and with
     // an impact fuse if the launcher arms it.
     const speed = def.launchSpeed ?? ammo.throwSpeed;
@@ -519,8 +538,76 @@ function fire(
     }
   }
 
-  kickRecoil(state, c, s.recoilUp, s.recoilSide);
+  kickRecoil(state, c, s.recoilUp, s.recoilSide, s.recoilAngle, s.recoilStableAfter);
 }
+
+// Scratch for where a blast's target's chest is.
+const blastPoint = { x: 0, y: 0, z: 0 };
+
+/**
+ * A blast gun's shot (WeaponDef.blast): every living enemy within its range and cone that
+ * nothing solid hides from the shooter's eye takes a killing hit, and is flung away.
+ */
+function blastShot(
+  state: SimState,
+  c: Character,
+  blast: NonNullable<WeaponDef['blast']>,
+  yaw: number,
+  pitch: number,
+  s: WeaponStats,
+  ammo: AmmoDef,
+  world: CollisionWorld,
+  items: ItemDb,
+): void {
+  const cp = Math.cos(pitch);
+  const dx = -Math.sin(yaw) * cp;
+  const dy = Math.sin(pitch);
+  const dz = -Math.cos(yaw) * cp;
+  const ox = eyeX(c);
+  const oy = eyeHeight(c);
+  const oz = eyeZ(c);
+  const cone = Math.cos(blast.angle * DEG);
+  for (const e of state.entities) {
+    if (!e.ai || e.health.dead) continue;
+    const p = blastPoint;
+    bodyPoint(e, e.height * 0.6, p);
+    const tx = p.x - ox;
+    const ty = p.y - oy;
+    const tz = p.z - oz;
+    const d = Math.hypot(tx, ty, tz);
+    if (d > blast.range || d < 1e-6) continue;
+    // Within the cone, measured across the ground (it's wide, not a pencil).
+    const across = Math.hypot(tx, tz);
+    const ahead = across > 1e-6 ? (tx * dx + tz * dz) / (across * Math.hypot(dx, dz)) : 1;
+    if (ahead < cone && d > 1) continue;
+    if (world.raycast(ox, oy, oz, tx / d, ty / d, tz / d, d) < d) continue;
+    woundZone(state, items, e, CHEST, BLAST_DAMAGE, ammo, c.id, 'shot');
+    const k = blast.push / Math.max(across, 1e-6);
+    e.vx += tx * k;
+    e.vz += tz * k;
+    e.vy += blast.push * 0.35;
+  }
+  state.events.push({
+    type: 'shot',
+    by: c.id,
+    fromX: ox,
+    fromY: oy,
+    fromZ: oz,
+    toX: ox + dx * blast.range,
+    toY: oy + dy * blast.range,
+    toZ: oz + dz * blast.range,
+    hit: 'none',
+    target: 0,
+    loudness: s.loudness,
+    pellet: 0,
+    grenade: 0,
+    flame: 0,
+    blast: blast.range,
+  });
+}
+
+/** More than anything has: a blast kills. */
+const BLAST_DAMAGE = 1e6;
 
 /** One bullet or pellet from the shooter's eye along yaw and pitch: hits and its event. */
 function castShot(

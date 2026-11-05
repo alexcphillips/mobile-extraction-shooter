@@ -1,13 +1,21 @@
 import { stackSize, type ItemDb, type ItemDef } from '@mes/shared';
 import { useEffect, useState, type ReactNode } from 'react';
-import { readCheats, saveCheats, type Cheats } from '../admin-cheats';
+import {
+  readCheats,
+  readZombieCheats,
+  saveCheats,
+  saveZombieCheats,
+  type Cheats,
+  type ZombieCheats,
+} from '../admin-cheats';
+import { loadZombies, zombiesIds } from '../content';
 import { colourOf } from './raid-screen';
 
 /*
  * The admin page between raids (dev builds only, 2026-10-30): every item, given into the
  * stash free, for testing. The server only allows it under `wrangler dev`. The Admin tab
  * has the admin-only items (spawner guns, the admin backpack); the Cheats tab turns on testing aids for your
- * next raids (see admin-cheats.ts).
+ * next raids (see admin-cheats.ts), and the Zombies tab zombies mode's (2026-11-04).
  */
 
 /**
@@ -95,8 +103,68 @@ function CheatsTab(): ReactNode {
   );
 }
 
-/** The Cheats tab comes after the item tabs. */
+/**
+ * Zombies mode's cheats: infinite points, and guns to start each game with: every gun any
+ * mode's mystery box or death machine gives, those found only in zombies first.
+ */
+function ZombiesTab({ items }: { items: ItemDb }): ReactNode {
+  const [cheats, setCheats] = useState(readZombieCheats);
+  const save = (next: ZombieCheats): void => {
+    saveZombieCheats(next);
+    setCheats(next);
+  };
+  const guns = new Set<string>();
+  for (const id of zombiesIds()) {
+    const def = loadZombies(id);
+    guns.add(def.powerups.minigun);
+    for (const o of def.box) guns.add(o.item);
+  }
+  // Zombies-only guns are worth nothing to sell.
+  const list = [...guns]
+    .map((id) => items.get(id))
+    .filter((d): d is ItemDef => d?.type === 'weapon')
+    .sort((a, b) => Number(a.value > 0) - Number(b.value > 0) || a.name.localeCompare(b.name));
+  const toggle = (id: string, on: boolean): void =>
+    save({ ...cheats, guns: on ? [...cheats.guns, id] : cheats.guns.filter((g) => g !== id) });
+  return (
+    <div className="admin-cheats">
+      <label className="toggle">
+        <input
+          type="checkbox"
+          checked={cheats.infinitePoints}
+          onChange={(e) => save({ ...cheats, infinitePoints: e.target.checked })}
+        />
+        <span>
+          Infinite points
+          <span className="raid-note"> · Doors, couches, wall guns and the box cost nothing.</span>
+        </span>
+      </label>
+      <h3>Start with</h3>
+      {list.map((d) => (
+        <label key={d.id} className="toggle">
+          <input
+            type="checkbox"
+            checked={cheats.guns.includes(d.id)}
+            onChange={(e) => toggle(d.id, e.target.checked)}
+          />
+          <span>
+            {d.name}
+            {d.value === 0 && <span className="raid-note"> · zombies only</span>}
+          </span>
+        </label>
+      ))}
+      <p className="raid-note">
+        Kept on this device; they apply from your next zombies game. Guns go in as bought ones do (a
+        pistol in the sidearm slot, others in the two primaries), so a third rifle replaces one. In
+        a game, the Admin button (or K) gives power-ups, points and guns.
+      </p>
+    </div>
+  );
+}
+
+/** The Cheats and Zombies tabs come after the item tabs. */
 const CHEATS_TAB = TABS.length;
+const ZOMBIES_TAB = TABS.length + 1;
 
 export function AdminPage({
   items,
@@ -145,13 +213,19 @@ export function AdminPage({
         >
           Cheats
         </button>
+        <button
+          className={shown === ZOMBIES_TAB ? 'active' : ''}
+          onClick={() => setShown(ZOMBIES_TAB)}
+        >
+          Zombies
+        </button>
         <span className="raid-spacer" />
         <button onClick={onStash}>Stash</button>
       </header>
       {notice && <p className="menu-notice">{notice}</p>}
       {!tab ? (
         <div className="vendors-body">
-          <CheatsTab />
+          {shown === ZOMBIES_TAB ? <ZombiesTab items={items} /> : <CheatsTab />}
         </div>
       ) : (
         <div className="vendors-body">

@@ -1523,8 +1523,12 @@ function Inspector(props: {
         </div>
       )}
       <MarkerFields editor={editor} node={n} num={num} mapId={props.mapId} />
-      {n.type === 'door' && <div className="ed-row">{vec('size', ['w', 'h'])}</div>}
-      {n.type === 'door' && <DoorFields edit={edit} node={n} num={num} />}
+      {(n.type === 'door' || n.type === 'barricade') && (
+        <div className="ed-row">{vec('size', ['w', 'h'])}</div>
+      )}
+      {n.type === 'door' && (
+        <DoorFields edit={edit} node={n} num={num} prefabs={[...editor.prefabs.keys()].sort()} />
+      )}
       {n.type === 'glass' && (
         <div className="ed-row">
           {vec('size', ['w', 'h'])}
@@ -1813,6 +1817,58 @@ function MarkerFields(props: { editor: MapEditor; node: MapNode; num: NumField; 
         </p>
       );
     }
+    case 'zombieSpawn':
+      return (
+        <>
+          <div className="ed-row" title="Zombies appear at a random spot within this">
+            {num('radius', 'spawn radius', 0)}
+          </div>
+          <Pick
+            label="window"
+            value={n.window}
+            options={editor.barricades()}
+            unset="none: hunts from here"
+            onChange={(v) => set('window', v)}
+          />
+        </>
+      );
+    case 'barricade':
+      return (
+        <>
+          <div className="ed-row" title="The most planks it takes, and starts with">
+            {num('planks', 'planks', 6)}
+          </div>
+          <p className="ed-note">
+            Put it on the middle of the sill, in the middle of the wall, with the flag pointing
+            inside, and give the wall an opening to match. Zombie spawns name it to break in here.
+          </p>
+        </>
+      );
+    case 'wallBuy': {
+      const guns = [...loadItems().values()]
+        .filter((i) => i.type === 'weapon')
+        .map((i) => i.id)
+        .sort();
+      return (
+        <>
+          <Pick label="gun" value={n.item} options={guns} onChange={(v) => v && set('item', v)} />
+          <div className="ed-row" title="Points to buy it, and to buy its ammo once carried">
+            {num('cost', 'cost')}
+            {num('ammoCost', 'ammo cost', Math.round(n.cost / 2))}
+          </div>
+          <p className="ed-note">Hangs on the wall behind it: turn it so its flag points out.</p>
+        </>
+      );
+    }
+    case 'mysteryBox':
+      return (
+        <>
+          <div className="ed-row">{num('cost', 'cost')}</div>
+          <p className="ed-note">
+            Gives a random gun from the zombies mode's box list. Build the box itself beside it.
+          </p>
+        </>
+      );
     default:
       return null;
   }
@@ -1925,6 +1981,8 @@ function DoorFields(props: {
   edit: Edit;
   node: Extract<MapNode, { type: 'door' }>;
   num: NumField;
+  /** Prefab ids, for a look (zombies mode's couches). */
+  prefabs: string[];
 }) {
   const { edit, node: n } = props;
   const keys = [...loadItems().values()]
@@ -1953,6 +2011,17 @@ function DoorFields(props: {
         unset="none: never locked"
         onChange={(v) => set('key', v)}
       />
+      <div className="ed-row" title="Zombies mode: points to buy it open, instead of a key">
+        {props.num('cost', 'zombies cost')}
+      </div>
+      <Pick
+        label="look"
+        value={n.look}
+        options={props.prefabs}
+        unset="a door"
+        onChange={(v) => set('look', v)}
+      />
+      <Text label="name" value={n.name ?? ''} onChange={(v) => set('name', v || undefined)} />
       <label className="ed-field">
         <input
           type="checkbox"
