@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ContentError, type ContentFormat } from './format';
-import { stackSize, type ItemDb } from './items';
+import { fits, stackSize, type ItemDb } from './items';
 import { idSchema } from './schema';
 
 /*
@@ -16,6 +16,8 @@ const offerSchema = z.strictObject({
   item: idSchema,
   /** How many come in one purchase, for items that stack (rounds). Defaults to 1. */
   count: z.int().min(1).optional(),
+  /** Attachments a gun comes fitted with (the AUG A3's 1.5× optic), priced in. */
+  attachments: z.array(idSchema).min(1).optional(),
 });
 
 export const vendorSchema = z.strictObject({
@@ -40,7 +42,7 @@ export const VENDOR_FORMAT: ContentFormat<VendorDef> = {
 
 /**
  * Checks that every offer names an item with a value, in a count that fits one stack, and
- * that no vendor sells money.
+ * that no vendor sells money; and that a gun's attachments fit it, one to a slot.
  */
 export function checkVendors(vendors: ReadonlyMap<string, VendorDef>, items: ItemDb): void {
   for (const v of vendors.values()) {
@@ -52,6 +54,13 @@ export function checkVendors(vendors: ReadonlyMap<string, VendorDef>, items: Ite
       if (def.type === 'loot' && def.money) throw new ContentError(source, 'sells money');
       if ((o.count ?? 1) > stackSize(def))
         throw new ContentError(source, `${o.count} "${o.item}" is more than a stack`);
+      const slots = new Set<string>();
+      for (const id of o.attachments ?? []) {
+        const a = items.get(id);
+        if (def.type !== 'weapon' || a?.type !== 'attachment' || !fits(def, a) || slots.has(a.slot))
+          throw new ContentError(source, `"${id}" doesn't fit "${o.item}"`);
+        slots.add(a.slot);
+      }
     }
   }
 }

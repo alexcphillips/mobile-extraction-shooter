@@ -6,6 +6,7 @@
   "sells": [
     { "item": "pistol" },
     { "item": "assault-rifle" },
+    { "item": "aug-a3", "attachments": ["aug-optic"] },
     { "item": "shotgun" },
     { "item": "crossbow" },
     { "item": "ammo-9mm-pso", "count": 30 },
@@ -14,6 +15,7 @@
     { "item": "ammo-762x39-lp", "count": 30 },
     { "item": "ammo-762x39-t45m", "count": 30 },
     { "item": "ammo-762x39", "count": 30 },
+    { "item": "ammo-556x45", "count": 30 },
     { "item": "buckshot", "count": 20 },
     { "item": "flechette", "count": 20 },
     { "item": "ammo-762", "count": 20 },

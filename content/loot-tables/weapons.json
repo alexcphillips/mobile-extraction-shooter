@@ -5,6 +5,7 @@
   "rolls": [1, 1],
   "items": [
     { "item": "assault-rifle", "weight": 0.5 },
+    { "item": "aug-a3", "weight": 0.3 },
     { "item": "shotgun", "weight": 0.6 },
     { "item": "pistol", "weight": 1 },
     { "item": "crossbow", "weight": 0.2 }

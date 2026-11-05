@@ -43,5 +43,5 @@
     ],
     "sight": [0, 0.035, -0.09]
   },
-  "weapons": ["assault-rifle", "crossbow", "shotgun", "smg"]
+  "weapons": ["assault-rifle", "aug-a3", "crossbow", "shotgun", "smg"]
 }

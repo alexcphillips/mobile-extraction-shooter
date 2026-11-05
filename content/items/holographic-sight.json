@@ -84,5 +84,5 @@
       ]
     }
   },
-  "weapons": ["assault-rifle", "crossbow", "shotgun", "smg"]
+  "weapons": ["assault-rifle", "aug-a3", "crossbow", "shotgun", "smg"]
 }

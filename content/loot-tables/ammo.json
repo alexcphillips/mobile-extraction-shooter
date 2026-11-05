@@ -10,6 +10,7 @@
     { "item": "ammo-762x39-lp", "weight": 1, "count": [1, 10] },
     { "item": "ammo-762x39-bp", "weight": 1, "count": [1, 10] },
     { "item": "ammo-762x39", "weight": 1, "count": [1, 10] },
+    { "item": "ammo-556x45", "weight": 1, "count": [1, 10] },
     { "item": "ammo-762x39-t45m", "weight": 1, "count": [1, 10] },
     { "item": "ammo-9mm-ap", "weight": 1, "count": [1, 10] },
     { "item": "ammo-9mm-pbp", "weight": 1, "count": [1, 10] },

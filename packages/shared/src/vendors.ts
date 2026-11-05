@@ -121,9 +121,10 @@ export function cantSell(items: ItemDb, item: Item): string | null {
   return null;
 }
 
-/** What an offer costs. */
+/** What an offer costs: the item, and any attachments it comes with. */
 export function buyPrice(items: ItemDb, offer: VendorOffer): number {
-  return itemDef(items, offer.item).value * (offer.count ?? 1);
+  const parts = (offer.attachments ?? []).reduce((n, a) => n + itemDef(items, a).value, 0);
+  return itemDef(items, offer.item).value * (offer.count ?? 1) + parts;
 }
 
 /**

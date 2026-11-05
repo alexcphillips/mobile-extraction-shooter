@@ -13,6 +13,7 @@ import {
   type Owner,
 } from './sim/looting';
 import { createItem } from './sim/create-item';
+import { createWeapon } from './sim/weapons';
 import { createState, type Character, type SimState } from './sim/state';
 import { createHealth } from './sim/health';
 import { MOVEMENT } from './sim/movement';
@@ -130,18 +131,21 @@ export function stashGridOf(profile: Profile, ref: GridRef): Grid | null {
 export interface NewStack {
   item: string;
   count?: number | undefined;
+  /** For a gun: the attachments it comes fitted with. */
+  attachments?: readonly string[] | undefined;
 }
 
 /**
  * A new item for the stash, from a vendor (13b) or a quest's rewards (14): a gun comes
- * empty (the user's call, 2026-11-01), with its own magazine but no rounds and no
- * attachments. Rounds are always got separately, so buying a gun and selling it back
+ * empty (the user's call, 2026-11-01), with its own magazine but no rounds, and only the
+ * attachments the offer fits (the AUG A3's optic, 2026-11-05). Rounds are always got separately, so buying a gun and selling it back
  * can't pay out for rounds it never cost.
  */
 export function newStashItem(items: ItemDb, s: NewStack): Item {
-  const item = createItem(items, s.item, s.count ?? 1);
-  if (itemDef(items, s.item).type === 'weapon') item.mag = 0;
-  return item;
+  if (itemDef(items, s.item).type !== 'weapon') return createItem(items, s.item, s.count ?? 1);
+  const gun = createWeapon(items, s.item, s.attachments);
+  gun.mag = 0;
+  return gun;
 }
 
 /**
@@ -164,6 +168,7 @@ export function addToStash(
     const item = make(items, {
       item: s.item,
       count: Math.min(s.count ?? 1, stackSize(itemDef(items, s.item))),
+      attachments: s.attachments,
     });
     let left = item.count;
     for (let i = 0; i < n && left > 0; i++) left = addItem(items, pages[(page + i) % n]!, item);

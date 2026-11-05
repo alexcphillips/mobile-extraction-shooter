@@ -134,6 +134,21 @@ describe('vendors', () => {
     );
   });
 
+  it('sells a gun with the attachments its offer fits, priced in', () => {
+    const p = profile();
+    const offer = { item: 'rifle', attachments: ['scope'] };
+    expect(buyPrice(items, offer)).toBe(100 + 100);
+    expect(buyOffer(p, items, shop([offer]), 0)).toBeNull();
+    const rifle = p.stash[0]!.items.find((g) => g.item.item === 'rifle')!.item;
+    expect(rifle.attachments!.optic).toBe('scope');
+    expect(rifle.mag).toBe(0);
+    // An attachment that isn't for the gun, or a second one for a slot, is a content error.
+    for (const attachments of [['scope', 'scope'], ['round']])
+      expect(() =>
+        checkVendors(new Map([['shop', shop([{ item: 'rifle', attachments }])]]), items),
+      ).toThrow(/doesn't fit/);
+  });
+
   it('sells from a gear slot, a carried grid or the stash; not the knife or a full backpack', () => {
     const p = profile();
     const watch = p.stash[0]!.items.findIndex((g) => g.item.item === 'watch');
