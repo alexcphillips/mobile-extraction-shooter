@@ -4,12 +4,20 @@
   "name": "Weapons",
   "rolls": [1, 1],
   "items": [
-    { "item": "assault-rifle", "weight": 0.5 },
+    { "item": "assault-rifle", "weight": 0.4 },
+    { "item": "aks-74u", "weight": 0.6 },
     { "item": "aug-a3", "weight": 0.3 },
-    { "item": "mp5", "weight": 0.5 },
+    { "item": "mp5", "weight": 0.7 },
+    { "item": "mp7", "weight": 0.2 },
+    { "item": "mpx", "weight": 0.3 },
+    { "item": "ump45", "weight": 0.7 },
     { "item": "m416", "weight": 0.2 },
-    { "item": "shotgun", "weight": 0.6 },
-    { "item": "pistol", "weight": 1 },
+    { "item": "g3", "weight": 0.15 },
+    { "item": "shotgun", "weight": 0.8 },
+    { "item": "saiga-12", "weight": 0.25 },
+    { "item": "m9a3", "weight": 1.6 },
+    { "item": "p226", "weight": 0.8 },
+    { "item": "g18c", "weight": 0.25 },
     { "item": "crossbow", "weight": 0.2 }
   ]
 }

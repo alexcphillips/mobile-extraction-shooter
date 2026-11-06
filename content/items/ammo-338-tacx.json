@@ -1,0 +1,21 @@
+{
+  "formatVersion": 10,
+  "id": "ammo-338-tacx",
+  "name": ".338 Lapua Magnum TAC-X",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 200,
+  "rarity": "common",
+  "stack": 20,
+  "calibre": ".338LM",
+  "level": 1,
+  "damage": 167,
+  "armourDamage": 9,
+  "bleedChance": 0.5,
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "colour": "#b39448" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "colour": "#8d8f91" }
+    ]
+  }
+}

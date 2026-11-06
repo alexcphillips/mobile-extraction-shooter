@@ -1,0 +1,168 @@
+{
+  "formatVersion": 10,
+  "id": "g18c",
+  "name": "Glock 18C",
+  "type": "weapon",
+  "size": [2, 1],
+  "value": 22000,
+  "rarity": "rare",
+  "ammo": "ammo-9mm",
+  "hold": "pistol",
+  "fireMode": "auto",
+  "rpm": 1200,
+  "magazine": 17,
+  "reloadTime": 1.6,
+  "aimTime": 0.16,
+  "drawTime": 0.35,
+  "range": 100,
+  "loudness": 120,
+  "slots": ["muzzle", "magazine"],
+  "hipSpread": 2.2,
+  "aimSpread": 0.6,
+  "recoil": {
+    "up": 2.28,
+    "side": 0.67,
+    "snap": 45,
+    "recovery": 4,
+    "angle": -6
+  },
+  "sounds": {
+    "shot": "pistol-shot",
+    "suppressed": "pistol-shot-suppressed",
+    "reload": "pistol-reload"
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0.012, -0.06],
+        "size": [0.024, 0.028, 0.19],
+        "colour": "#232425"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0265, -0.13],
+        "size": [0.008, 0.002, 0.006],
+        "colour": "#141516"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0265, -0.142],
+        "size": [0.008, 0.002, 0.006],
+        "colour": "#141516"
+      },
+      {
+        "type": "box",
+        "pos": [0.0125, 0.012, 0.02],
+        "size": [0.002, 0.02, 0.025],
+        "colour": "#141516"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0125, 0.012, 0.02],
+        "size": [0.002, 0.02, 0.025],
+        "colour": "#141516"
+      },
+      {
+        "type": "box",
+        "pos": [0.0125, 0.018, -0.05],
+        "size": [0.002, 0.012, 0.035],
+        "colour": "#141516"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, -0.158],
+        "radius": 0.006,
+        "height": 0.01,
+        "colour": "#141516",
+        "pitch": 90,
+        "hiddenBy": "muzzle"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.014, -0.065],
+        "size": [0.022, 0.018, 0.15],
+        "colour": "#1b1c1d"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.024, -0.11],
+        "size": [0.016, 0.004, 0.05],
+        "colour": "#141516"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.038, -0.058],
+        "size": [0.01, 0.008, 0.05],
+        "colour": "#1b1c1d"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.028, -0.083],
+        "size": [0.01, 0.022, 0.008],
+        "colour": "#1b1c1d"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03, -0.045],
+        "size": [0.004, 0.014, 0.004],
+        "colour": "#141516"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.062, 0.006],
+        "size": [0.026, 0.085, 0.044],
+        "colour": "#1b1c1d",
+        "pitch": -16
+      },
+      {
+        "type": "box",
+        "pos": [0.0135, -0.062, 0.006],
+        "size": [0.002, 0.055, 0.034],
+        "colour": "#141516",
+        "pitch": -16
+      },
+      {
+        "type": "box",
+        "pos": [-0.0135, -0.062, 0.006],
+        "size": [0.002, 0.055, 0.034],
+        "colour": "#141516",
+        "pitch": -16
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.108, 0.02],
+        "size": [0.024, 0.008, 0.04],
+        "colour": "#141516",
+        "pitch": -16,
+        "hiddenBy": "magazine"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0125, 0.016, 0.02],
+        "size": [0.003, 0.008, 0.012],
+        "colour": "#141516"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.029, 0.015],
+        "size": [0.016, 0.007, 0.007],
+        "colour": "#141516"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.029, -0.148],
+        "size": [0.004, 0.007, 0.005],
+        "colour": "#141516"
+      }
+    ],
+    "grip": [0, -0.055, 0.006],
+    "support": [-0.012, -0.065, 0],
+    "muzzle": [0, 0.012, -0.165],
+    "sight": [0, 0.034, 0.015],
+    "mounts": {
+      "muzzle": [0, 0.012, -0.155],
+      "magazine": [0, -0.106, 0.02]
+    }
+  }
+}

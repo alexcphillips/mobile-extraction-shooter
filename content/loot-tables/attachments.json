@@ -12,6 +12,13 @@
     { "item": "suppressor", "weight": 0.4 },
     { "item": "mag-762x39-45", "weight": 0.5 },
     { "item": "mag-9mm-24", "weight": 0.6 },
+    { "item": "mag-p226-20", "weight": 0.6 },
+    { "item": "mag-mp133-8", "weight": 0.6 },
+    { "item": "mag-aa12-20", "weight": 0.1 },
+    { "item": "mag-saiga12-10", "weight": 0.4 },
+    { "item": "mag-mp7-40", "weight": 0.3 },
+    { "item": "mag-mpx-41", "weight": 0.3 },
+    { "item": "mag-glock-33", "weight": 0.3 },
     { "item": "mag-45acp-30", "weight": 0.2 },
     { "item": "holographic-sight", "weight": 0.6 }
   ]

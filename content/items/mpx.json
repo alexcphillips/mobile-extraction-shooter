@@ -1,0 +1,179 @@
+{
+  "formatVersion": 10,
+  "id": "mpx",
+  "name": "MPX",
+  "type": "weapon",
+  "size": [3, 2],
+  "value": 26000,
+  "rarity": "rare",
+  "ammo": "ammo-9mm",
+  "hold": "rifle",
+  "fireMode": "auto",
+  "rpm": 850,
+  "magazine": 30,
+  "reloadTime": 2.1,
+  "aimTime": 0.26,
+  "drawTime": 0.6,
+  "range": 100,
+  "loudness": 115,
+  "slots": ["optic", "muzzle", "magazine"],
+  "hipSpread": 2.1,
+  "aimSpread": 0.6,
+  "recoil": {
+    "up": 0.76,
+    "side": 0.63,
+    "snap": 45,
+    "recovery": 3,
+    "angle": -5
+  },
+  "sounds": {
+    "shot": "pistol-shot",
+    "suppressed": "pistol-shot-suppressed",
+    "reload": "rifle-reload"
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0.02, 0.02],
+        "size": [0.04, 0.042, 0.15],
+        "colour": "#232527"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.012, -0.14],
+        "size": [0.046, 0.056, 0.17],
+        "colour": "#2b2e31"
+      },
+      {
+        "type": "box",
+        "pos": [0.0235, 0.012, -0.14],
+        "size": [0.002, 0.01, 0.14],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0235, 0.012, -0.14],
+        "size": [0.002, 0.01, 0.14],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.047, -0.06],
+        "size": [0.022, 0.01, 0.31],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, -0.24],
+        "radius": 0.009,
+        "height": 0.03,
+        "colour": "#1d1f21",
+        "pitch": 90
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, -0.27],
+        "radius": 0.012,
+        "height": 0.03,
+        "colour": "#232527",
+        "pitch": 90,
+        "hiddenBy": "muzzle"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.022, 0.03],
+        "size": [0.038, 0.04, 0.17],
+        "colour": "#232527"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.055, -0.02],
+        "size": [0.032, 0.03, 0.045],
+        "colour": "#232527"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.105, -0.025],
+        "size": [0.024, 0.075, 0.04],
+        "colour": "#1d1f21",
+        "pitch": 8,
+        "hiddenBy": "magazine"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.16, -0.035],
+        "size": [0.024, 0.045, 0.038],
+        "colour": "#1d1f21",
+        "pitch": 16,
+        "hiddenBy": "magazine"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.06, 0.03],
+        "size": [0.012, 0.006, 0.05],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.05, 0.025],
+        "size": [0.006, 0.018, 0.006],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.08, 0.08],
+        "size": [0.032, 0.08, 0.035],
+        "colour": "#2b2e31",
+        "pitch": -18
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.03, 0.105],
+        "size": [0.03, 0.01, 0.018],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.01, 0.12],
+        "size": [0.032, 0.04, 0.02],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0, 0.2],
+        "size": [0.02, 0.03, 0.14],
+        "colour": "#2b2e31"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.015, 0.275],
+        "size": [0.036, 0.09, 0.012],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.062, 0.08],
+        "size": [0.016, 0.02, 0.01],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.062, -0.21],
+        "size": [0.012, 0.02, 0.01],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic"
+      }
+    ],
+    "grip": [0, -0.075, 0.08],
+    "support": [0, -0.02, -0.14],
+    "muzzle": [0, 0.012, -0.29],
+    "sight": [0, 0.071, 0.08],
+    "mounts": {
+      "optic": [0, 0.052, 0.02],
+      "muzzle": [0, 0.012, -0.255],
+      "magazine": [0, -0.07, -0.022]
+    }
+  }
+}

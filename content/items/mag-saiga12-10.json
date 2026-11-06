@@ -1,0 +1,26 @@
+{
+  "formatVersion": 10,
+  "id": "mag-saiga12-10",
+  "name": "Saiga-12 10-round magazine",
+  "type": "attachment",
+  "size": [1, 2],
+  "value": 4000,
+  "rarity": "rare",
+  "slot": "magazine",
+  "weapons": ["saiga-12"],
+  "mods": {
+    "magazine": 5,
+    "reloadTime": 1.05
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.08, 0],
+        "size": [0.044, 0.16, 0.08],
+        "colour": "#1d1f21",
+        "pitch": 8
+      }
+    ]
+  }
+}

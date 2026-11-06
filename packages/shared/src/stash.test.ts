@@ -382,6 +382,7 @@ describe('stash pages', () => {
     old.stash = (old.stash as unknown[])[0];
     const p = loadContent(PROFILE_FORMAT, old, 'old');
     expect(p.stash).toHaveLength(1);
-    expect(p.stash[0]!.items.map((g) => g.item.item)).toEqual(['pistol', 'scope', 'watch']);
+    // Every later migration runs too: format 6 turned the pistol into an M9A3.
+    expect(p.stash[0]!.items.map((g) => g.item.item)).toEqual(['m9a3', 'scope', 'watch']);
   });
 });

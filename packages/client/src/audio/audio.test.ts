@@ -172,8 +172,8 @@ describe('sound cues', () => {
 
   it("plays a shot from where it was, suppressed when it's quieter than the gun", () => {
     const { sim, player, enemy, played, cues } = setup();
-    giveWeapon(enemy, items, 'pistol', []);
-    const def = weaponDef(items, 'pistol');
+    giveWeapon(enemy, items, 'm9a3', []);
+    const def = weaponDef(items, 'm9a3');
     const shot = (loudness: number): SimEvent => ({
       type: 'shot',
       by: enemy.id,
@@ -207,11 +207,11 @@ describe('sound cues', () => {
   it('plays a reload as it starts, once, muffled behind a wall', () => {
     const wall = { x: 0, y: 2, z: -10.5, hx: 5, hy: 2, hz: 0.5, yaw: 0 };
     const { sim, player, enemy, played, cues } = setup([wall]);
-    giveWeapon(enemy, items, 'pistol', []);
+    giveWeapon(enemy, items, 'm9a3', []);
     heldWeapon(enemy)!.reloading = 1;
     for (let i = 0; i < 5; i++) cues.tick(sim, player, 0);
     expect(played).toEqual([
-      { id: weaponDef(items, 'pistol').sounds.reload, at: true, options: { occluded: true } },
+      { id: weaponDef(items, 'm9a3').sounds.reload, at: true, options: { occluded: true } },
     ]);
   });
 });

@@ -4,7 +4,7 @@
   "weapons": [
     {
       "weight": 3,
-      "item": "pistol",
+      "item": "m9a3",
       "spare": [15, 45],
       "attachments": [{ "item": "suppressor", "chance": 0.15 }],
       "ammo": [
@@ -13,7 +13,7 @@
       ]
     },
     {
-      "weight": 2,
+      "weight": 0.6,
       "item": "assault-rifle",
       "spare": [30, 90],
       "attachments": [
@@ -27,7 +27,7 @@
       ]
     },
     {
-      "weight": 1,
+      "weight": 2,
       "item": "shotgun",
       "spare": [12, 24],
       "ammo": [
@@ -36,7 +36,18 @@
       ]
     },
     {
-      "weight": 1,
+      "weight": 1.2,
+      "item": "aks-74u",
+      "spare": [30, 90],
+      "attachments": [{ "item": "muzzle-brake", "chance": 0.15 }],
+      "ammo": [
+        { "weight": 2, "item": "ammo-545x39-hp" },
+        { "weight": 3, "item": "ammo-545x39" },
+        { "weight": 0.5, "item": "ammo-545x39-pp" }
+      ]
+    },
+    {
+      "weight": 2,
       "item": "mp5",
       "spare": [30, 90],
       "attachments": [
@@ -50,17 +61,13 @@
       ]
     },
     {
-      "weight": 0.15,
-      "item": "smg",
-      "spare": [25, 50],
-      "attachments": [
-        { "item": "red-dot", "chance": 0.25 },
-        { "item": "suppressor", "chance": 0.15 }
-      ],
+      "weight": 1.6,
+      "item": "ump45",
+      "spare": [25, 75],
+      "attachments": [{ "item": "red-dot", "chance": 0.2 }],
       "ammo": [
-        { "weight": 2, "item": "ammo-45acp-jhp" },
-        { "weight": 2, "item": "ammo-45acp" },
-        { "weight": 0.5, "item": "ammo-45acp-ap" }
+        { "weight": 3, "item": "ammo-45acp-jhp" },
+        { "weight": 2, "item": "ammo-45acp" }
       ]
     }
   ],

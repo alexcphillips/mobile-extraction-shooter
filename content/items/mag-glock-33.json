@@ -1,0 +1,33 @@
+{
+  "formatVersion": 10,
+  "id": "mag-glock-33",
+  "name": "Glock 33-round magazine",
+  "type": "attachment",
+  "size": [1, 2],
+  "value": 4000,
+  "rarity": "rare",
+  "slot": "magazine",
+  "weapons": ["g18c"],
+  "mods": {
+    "magazine": 16,
+    "reloadTime": 1.15
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.05, 0.014],
+        "size": [0.024, 0.1, 0.038],
+        "colour": "#1d1f21",
+        "pitch": -16
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.1, 0.028],
+        "size": [0.026, 0.008, 0.042],
+        "colour": "#141516",
+        "pitch": -16
+      }
+    ]
+  }
+}

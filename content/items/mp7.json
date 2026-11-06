@@ -1,0 +1,172 @@
+{
+  "formatVersion": 10,
+  "id": "mp7",
+  "name": "MP7",
+  "type": "weapon",
+  "size": [3, 2],
+  "value": 32000,
+  "rarity": "rare",
+  "ammo": "ammo-46x30",
+  "hold": "rifle",
+  "fireMode": "auto",
+  "rpm": 950,
+  "magazine": 30,
+  "reloadTime": 2.1,
+  "aimTime": 0.21,
+  "drawTime": 0.55,
+  "range": 100,
+  "loudness": 120,
+  "slots": ["optic", "muzzle", "magazine"],
+  "hipSpread": 2,
+  "aimSpread": 0.55,
+  "recoil": {
+    "up": 0.74,
+    "side": 0.42,
+    "snap": 45,
+    "recovery": 3,
+    "angle": -6
+  },
+  "sounds": {
+    "shot": "pistol-shot",
+    "suppressed": "pistol-shot-suppressed",
+    "reload": "rifle-reload"
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0.01, -0.04],
+        "size": [0.045, 0.05, 0.22],
+        "colour": "#262828"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.04, -0.04],
+        "size": [0.022, 0.01, 0.22],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0.024, 0.0, -0.11],
+        "size": [0.004, 0.012, 0.07],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [-0.024, 0.0, -0.11],
+        "size": [0.004, 0.012, 0.07],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.025, -0.04],
+        "size": [0.04, 0.025, 0.2],
+        "colour": "#2e2e2e"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.17],
+        "radius": 0.008,
+        "height": 0.04,
+        "colour": "#1d1f21",
+        "pitch": 90
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.2],
+        "radius": 0.011,
+        "height": 0.025,
+        "colour": "#262828",
+        "pitch": 90,
+        "hiddenBy": "muzzle"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.07, -0.12],
+        "size": [0.026, 0.07, 0.028],
+        "colour": "#2e2e2e",
+        "pitch": -8
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.08, 0.02],
+        "size": [0.032, 0.1, 0.04],
+        "colour": "#2e2e2e",
+        "pitch": -8
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.145, 0.03],
+        "size": [0.026, 0.04, 0.036],
+        "colour": "#1d1f21",
+        "pitch": -8,
+        "hiddenBy": "magazine"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.05, -0.025],
+        "size": [0.012, 0.006, 0.05],
+        "colour": "#2e2e2e"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.045, -0.05],
+        "size": [0.012, 0.015, 0.006],
+        "colour": "#2e2e2e"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.042, -0.02],
+        "size": [0.006, 0.016, 0.006],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0, 0.075],
+        "size": [0.04, 0.045, 0.012],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0.016, -0.01, 0.15],
+        "size": [0.006, 0.008, 0.16],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [-0.016, -0.01, 0.15],
+        "size": [0.006, 0.008, 0.16],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.025, 0.235],
+        "size": [0.045, 0.07, 0.012],
+        "colour": "#2e2e2e"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.054, 0.05],
+        "size": [0.016, 0.016, 0.01],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.054, -0.14],
+        "size": [0.012, 0.016, 0.01],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic"
+      }
+    ],
+    "grip": [0, -0.07, 0.02],
+    "support": [0, -0.07, -0.12],
+    "muzzle": [0, 0, -0.215],
+    "sight": [0, 0.062, 0.05],
+    "mounts": {
+      "optic": [0, 0.045, -0.02],
+      "muzzle": [0, 0, -0.19],
+      "magazine": [0, -0.13, 0.028]
+    }
+  }
+}

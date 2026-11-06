@@ -85,6 +85,27 @@ describe('PROFILE_FORMAT', () => {
     expect(p.stash[0]!.items[0]!.item.item).toBe('ammo-762x54r-hpbt');
     expect(p.gear.primary1!.loaded).toBe('ammo-45acp');
   });
+
+  it('turns pistols into M9A3s, without the optic it takes no longer (format 5 → 6)', () => {
+    const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
+    old.formatVersion = 5;
+    const attachments = { optic: 'red-dot', muzzle: 'suppressor', magazine: 'mag-9mm-24' };
+    old.gear.primary1 = { ...old.gear.primary1, item: 'pistol', attachments };
+    old.stash[0].items[0].item.item = 'pistol';
+    const p = loadContent(PROFILE_FORMAT, old, 'p');
+    expect(p.gear.primary1!.item).toBe('m9a3');
+    expect(p.gear.primary1!.attachments).toEqual({ ...attachments, optic: null });
+    expect(p.stash[0]!.items[0]!.item.item).toBe('m9a3');
+  });
+
+  it('turns sniper rifles into SV-98s on their own round (format 6 → 7)', () => {
+    const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
+    old.formatVersion = 6;
+    old.gear.primary1 = { ...old.gear.primary1, item: 'sniper-rifle', loaded: 'ammo-762-m61' };
+    const p = loadContent(PROFILE_FORMAT, old, 'p');
+    expect(p.gear.primary1!.item).toBe('sv-98');
+    expect(p.gear.primary1!.loaded).toBeUndefined();
+  });
 });
 
 describe('checkProfile', () => {
