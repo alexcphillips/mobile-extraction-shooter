@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { AttachmentDef } from '../content/items';
 import { TICK_RATE } from '../tick';
 import { MOVEMENT } from './movement';
-import { RECOIL, kickRecoil, recoilScale, settleRecoil } from './recoil';
+import { RECOIL, gunRecoil, kickRecoil, recoilScale, settleRecoil } from './recoil';
 import { createState, type Character } from './state';
 import { TEST_ITEMS } from './test-items';
 import { createWeapon, createWeaponStats, weaponStats } from './weapons';
@@ -38,7 +38,7 @@ describe('recoil', () => {
     kickRecoil(state, c, 1, 0);
     expect(c.recoil!.kickPitch).toBeCloseTo(RECOIL.firstShot * DEG);
     kickRecoil(state, c, 1, 0);
-    expect(c.recoil!.kickPitch).toBeCloseTo((RECOIL.firstShot + 1) * DEG);
+    expect(c.recoil!.kickPitch).toBeCloseTo((RECOIL.firstShot + RECOIL.earlyKick) * DEG);
     expect(c.recoil!.shots).toBe(2);
   });
 
@@ -149,7 +149,9 @@ describe('recoil', () => {
     expect(right.recoil!.kickYaw / right.recoil!.kickPitch).toBeCloseTo(Math.tan(30 * DEG));
     expect(left.recoil!.kickYaw).toBeCloseTo(-right.recoil!.kickYaw);
     // Up is the kick along the angle, so tilting it takes a little off the climb.
-    expect(right.recoil!.kickPitch).toBeCloseTo((RECOIL.firstShot + 4) * Math.cos(30 * DEG) * DEG);
+    expect(right.recoil!.kickPitch).toBeCloseTo(
+      (RECOIL.firstShot + 4 * RECOIL.earlyKick) * Math.cos(30 * DEG) * DEG,
+    );
   });
 
   it('stops climbing and drifting past its stable round, but still bounces', () => {
@@ -213,5 +215,53 @@ describe('recoil attachment mods', () => {
     expect(s.recoilSide).toBeCloseTo(bare.recoilSide * 0.8);
     expect(s.recoilRecovery).toBeCloseTo(bare.recoilRecovery * 1.5);
     expect(s.recoilSnap).toBe(bare.recoilSnap);
+  });
+});
+
+describe('gunRecoil', () => {
+  const start = RECOIL.aimedShare + RECOIL.aimedTail;
+
+  it('leaves all of it on the view from the hip', () => {
+    expect(gunRecoil(20 * DEG, 0)).toBe(0);
+  });
+
+  it('takes most of a small kick', () => {
+    const r = 0.1 * DEG;
+    expect(gunRecoil(r, 1)).toBeCloseTo(r * start, 4);
+  });
+
+  it('keeps the gun near the centre, with more for a harder climb', () => {
+    const akm = gunRecoil(21 * DEG, 1);
+    const scar = gunRecoil(28 * DEG, 1);
+    expect(akm).toBeLessThan(6 * DEG);
+    expect(scar).toBeLessThan(7 * DEG);
+    expect(scar).toBeGreaterThan(akm);
+  });
+
+  it('keeps moving the sights with every round, however far it has climbed', () => {
+    const more = gunRecoil(21 * DEG + 0.001, 1) - gunRecoil(21 * DEG, 1);
+    expect(more).toBeCloseTo(0.001 * RECOIL.aimedTail, 4);
+  });
+
+  it('never lets the view fall as recoil climbs', () => {
+    let last = 0;
+    for (let d = 0.5; d <= 35; d += 0.5) {
+      const view = d * DEG - gunRecoil(d * DEG, 1);
+      expect(view).toBeGreaterThan(last);
+      last = view;
+    }
+  });
+
+  it('works the same both ways, for sideways recoil', () => {
+    expect(gunRecoil(-3 * DEG, 1)).toBeCloseTo(-gunRecoil(3 * DEG, 1));
+    expect(gunRecoil(0, 1)).toBeCloseTo(0);
+  });
+
+  it('scales with how far aimed in', () => {
+    expect(gunRecoil(10 * DEG, 0.5)).toBeCloseTo(gunRecoil(10 * DEG, 1) / 2);
+  });
+
+  it('holds the same place on the screen through a scope', () => {
+    expect(gunRecoil(21 * DEG, 1, 3)).toBeCloseTo(gunRecoil(21 * DEG, 1) / 3);
   });
 });

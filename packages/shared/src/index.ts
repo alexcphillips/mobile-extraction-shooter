@@ -420,7 +420,6 @@ export {
   reloadRound,
   updateWeapon,
   weaponStats,
-  AIMED_GUN_RECOIL,
   type ShotEvent,
   type WeaponState,
   type WeaponStats,
@@ -658,3 +657,4 @@ export {
 } from './quests';
 export { pickHost } from './coop/host';
 export { apply, diff, strip, type Patch } from './net/sync';
+export { gunRecoil } from './sim/recoil';

@@ -47,8 +47,6 @@ import {
 
 const DT = TICK_SECONDS;
 const DEG = Math.PI / 180;
-/** How much of recoil moves the sights rather than the view, fully aimed (2026-11-04: 70%). */
-export const AIMED_GUN_RECOIL = 0.7;
 /** How far a gun sways standing still, aimed, in radians. */
 const SWAY_YAW = 0.35 * DEG;
 const SWAY_PITCH = 0.25 * DEG;

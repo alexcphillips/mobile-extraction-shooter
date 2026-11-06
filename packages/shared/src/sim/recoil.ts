@@ -5,8 +5,7 @@ import type { Character, SimState } from './state';
 
 /*
  * Recoil (2026-11-04, the user's spec, after Delta Force and Tarkov): each shot kicks a
- * target up and randomly sideways, the first of a burst harder and those past
- * RECOIL.steadyAfter softer; the target wears off at the gun's recovery rate (its climb
+ * target up and randomly sideways, softer as the burst goes on; the target wears off at the gun's recovery rate (its climb
  * barely, during a burst: 2026-11-05, so it keeps climbing as in Tarkov), and the gun (Character.recoilPitch/recoilYaw) chases it on a damped
  * spring at the gun's snap. So snap is how fast a kick lands and recovery how fast it
  * settles, separately. Stance and movement scale every kick. All of it runs at the fixed
@@ -18,28 +17,38 @@ const DEG = Math.PI / 180;
 
 /** Recoil tuning. Guns set their own kick, snap and recovery (content/items). */
 export const RECOIL = {
-  /** The first round of a burst kicks this much harder, so a tap needs control too. */
-  firstShot: 1.4,
+  /**
+   * The burst's kick: its first round at firstShot, the next ones at earlyKick, then from
+   * steadyAfter on at steadyKick (the user's calls: softer early kicks, 2026-11-05).
+   */
+  firstShot: 1,
+  earlyKick: 0.75,
   /** Seconds off the trigger before the burst is over: the next round is a first round again. */
   resetTime: 0.25,
-  /**
-   * Rounds from this one on (counting from 0) kick steadyKick as hard: the hard early kick
-   * gives way to a steady climb, as in Tarkov (the user's call, 2026-11-05).
-   */
+  /** Rounds from this one on (counting from 0) kick steadyKick: a steady climb, as in Tarkov. */
   steadyAfter: 5,
   steadyKick: 0.5,
   /**
    * During a burst the climb wears off at only this share of the gun's recovery, so it keeps
    * climbing until the player pulls it down (2026-11-05; at full recovery it levelled off by
-   * round 10). Sideways recovers in full, so the shake doesn't wander.
+   * round 10, and at 0.1 it still ate nearly half an SMG's late kicks). Sideways recovers in
+   * full, so the shake doesn't wander.
    */
-  inBurst: 0.1,
+  inBurst: 0.05,
   /** Once the burst is over, recovery is this much faster, so the gun comes back down. */
   afterBurst: 4,
   /** The spring's damping ratio, below 1: the gun overshoots each kick a little. */
   damping: 0.6,
   /** The kick never climbs higher than this, in degrees: a safety, not reached by a magazine. */
   maxUp: 35,
+  /**
+   * Aimed, recoil moves the sights as well as the view. aimedShare of it eases off at
+   * aimedMax degrees (at no zoom), and aimedTail of it always goes to the sights, so they
+   * keep creeping and bouncing with every round. See gunRecoil.
+   */
+  aimedShare: 0.6,
+  aimedMax: 3.5,
+  aimedTail: 0.1,
   /** Kick multipliers by stance; standing is 1. */
   crouched: 0.75,
   prone: 0.5,
@@ -83,7 +92,7 @@ export function recoilScale(c: Character): number {
 }
 
 /**
- * One round's kick, scaled by stance and the burst (harder first, softer once steady): up degrees along angle (degrees off
+ * One round's kick, scaled by stance and how far into the burst it is: up degrees along angle (degrees off
  * straight up, + right), and up to side either way at random. Past round stableAfter (0:
  * never) the kick along angle only tops the gun back up to where that round left it.
  */
@@ -97,7 +106,11 @@ export function kickRecoil(
 ): void {
   const r = (c.recoil ??= createRecoil());
   const burst =
-    r.shots === 0 ? RECOIL.firstShot : r.shots >= RECOIL.steadyAfter ? RECOIL.steadyKick : 1;
+    r.shots === 0
+      ? RECOIL.firstShot
+      : r.shots >= RECOIL.steadyAfter
+        ? RECOIL.steadyKick
+        : RECOIL.earlyKick;
   const scale = burst * recoilScale(c) * DEG;
   r.shots++;
   const rise = up * scale * Math.cos(angle * DEG);
@@ -109,6 +122,23 @@ export function kickRecoil(
   r.kickYaw +=
     up * scale * Math.sin(angle * DEG) * along + side * scale * (nextFloat(state.rng) * 2 - 1);
   if (r.shots === stableAfter) r.hold = r.kickPitch;
+}
+
+/**
+ * How much of a recoil angle moves the gun away from the centre of the view; the view takes
+ * the rest, so the two always add up to where shots go. From the hip it's all on the view.
+ * Aimed, the gun takes most of the first few degrees, then only RECOIL.aimedTail of the
+ * climb (2026-11-05, for Tarkov's feel: a sharp kick near the centre, then the view climbs,
+ * rather than the sights walking up the screen). The tail matters: with a hard limit the
+ * sights stopped moving at all, and the recoil seemed to stop with them. zoom is how many
+ * times larger things are than at no zoom: dividing by it keeps the sights as far from the
+ * centre on the screen through a scope. Display only: the sim's aim doesn't change.
+ */
+export function gunRecoil(recoil: number, aim: number, zoom = 1): number {
+  const r = Math.abs(recoil);
+  const max = RECOIL.aimedMax * DEG;
+  const eased = max * (1 - Math.exp((-RECOIL.aimedShare * r) / max));
+  return (aim * Math.sign(recoil) * (eased + RECOIL.aimedTail * r)) / zoom;
 }
 
 // springStep's result, so settling allocates nothing.

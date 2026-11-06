@@ -16,8 +16,8 @@ import {
   createRng,
   createState,
   equipLoadout,
+  gunRecoil,
   MOVEMENT,
-  AIMED_GUN_RECOIL,
   eyeHeight,
   eyeX,
   eyeZ,
@@ -1620,12 +1620,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // Leaning tilts the view a third as far as the body (about 10°), towards the lean.
     const roll = -lerp(prev.lean, cur.lean) * MOVEMENT.leanAngle * LEAN_ROLL;
     const aim = lerp(prev.aim, cur.aim);
-    // Aimed, part of recoil climbs the sights instead of the view; sway is all the gun's.
-    // The view's share is eased between ticks, so it stays smooth; the sights' isn't (below).
-    const rp = lerp(prev.rp, cur.rp);
-    const ry = lerp(prev.ry, cur.ry);
-    const onView = 1 - AIMED_GUN_RECOIL * aim;
-    camera.rotation.set(pitch + rp * onView, yaw + ry * onView, roll);
     const w = heldWeapon(v);
     const optic = w?.attachments.optic
       ? (attachmentDef(items, w.attachments.optic).optic ?? null)
@@ -1640,6 +1634,16 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     }
     // Looking turns the view less when zoomed in, so it moves as fast on the screen.
     controls.zoom = scoped ? Math.tan((AIM_FOV / 2) * DEG) / Math.tan((fov / 2) * DEG) : 1;
+    // Aimed, recoil's first few degrees climb the sights and the rest the view (gunRecoil);
+    // sway is all the gun's. The view's share is eased between ticks, so it stays smooth;
+    // the sights' isn't (below).
+    const rp = lerp(prev.rp, cur.rp);
+    const ry = lerp(prev.ry, cur.ry);
+    camera.rotation.set(
+      pitch + rp - gunRecoil(rp, aim, controls.zoom),
+      yaw + ry - gunRecoil(ry, aim, controls.zoom),
+      roll,
+    );
     const alive = !v.health.dead;
     el.optic.set(optic);
     el.optic.visible = alive && aim >= (zoom > 1 ? SCOPE_IN : RETICLE_IN);

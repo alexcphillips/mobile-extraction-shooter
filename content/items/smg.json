@@ -20,8 +20,8 @@
   "hipSpread": 2,
   "aimSpread": 0.6,
   "recoil": {
-    "up": 0.75,
-    "side": 0.7,
+    "up": 1,
+    "side": 0.8,
     "snap": 45,
     "recovery": 3,
     "angle": -8
