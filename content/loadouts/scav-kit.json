@@ -36,17 +36,17 @@
       ]
     },
     {
-      "weight": 1,
+      "weight": 0.15,
       "item": "smg",
-      "spare": [25, 75],
+      "spare": [25, 50],
       "attachments": [
         { "item": "red-dot", "chance": 0.25 },
         { "item": "suppressor", "chance": 0.15 }
       ],
       "ammo": [
-        { "weight": 2, "item": "ammo-9mm-pso" },
-        { "weight": 2, "item": "ammo-9mm" },
-        { "weight": 0.5, "item": "ammo-9mm-ap" }
+        { "weight": 2, "item": "ammo-45acp-jhp" },
+        { "weight": 2, "item": "ammo-45acp" },
+        { "weight": 0.5, "item": "ammo-45acp-match" }
       ]
     }
   ],

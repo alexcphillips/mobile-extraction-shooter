@@ -1,0 +1,33 @@
+{
+  "formatVersion": 10,
+  "id": "mag-45acp-30",
+  "name": "30-round .45 ACP magazine",
+  "type": "attachment",
+  "size": [1, 2],
+  "value": 6000,
+  "rarity": "epic",
+  "slot": "magazine",
+  "weapons": ["smg"],
+  "mods": {
+    "magazine": 5,
+    "reloadTime": 1.05
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.075, 0],
+        "size": [0.028, 0.15, 0.034],
+        "colour": "#1d1f21",
+        "pitch": 4
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.148, 0.005],
+        "size": [0.032, 0.012, 0.038],
+        "colour": "#2a2d30",
+        "pitch": 4
+      }
+    ]
+  }
+}

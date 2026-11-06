@@ -1,0 +1,31 @@
+{
+  "formatVersion": 10,
+  "id": "ammo-45acp-ap",
+  "name": ".45 ACP AP",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 220,
+  "rarity": "epic",
+  "stack": 50,
+  "calibre": ".45acp",
+  "level": 4,
+  "damage": 40,
+  "armourDamage": 16,
+  "bleedChance": 0.2,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0.015],
+        "size": [0.14, 0.07, 0.11],
+        "colour": "#8a7432"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0, -0.055],
+        "size": [0.14, 0.07, 0.03],
+        "colour": "#8a56b3"
+      }
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "formatVersion": 10,
+  "id": "ammo-45acp-match",
+  "name": ".45 ACP Match",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 80,
+  "rarity": "rare",
+  "stack": 50,
+  "calibre": ".45acp",
+  "level": 3,
+  "damage": 42,
+  "armourDamage": 12,
+  "bleedChance": 0.22,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0.015],
+        "size": [0.14, 0.07, 0.11],
+        "colour": "#8a7432"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0, -0.055],
+        "size": [0.14, 0.07, 0.03],
+        "colour": "#4677b3"
+      }
+    ]
+  }
+}
