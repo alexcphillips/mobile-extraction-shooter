@@ -10,6 +10,8 @@
     { "item": "ammo-762x39-lp", "weight": 1, "count": [1, 10] },
     { "item": "ammo-762x39-bp", "weight": 1, "count": [1, 10] },
     { "item": "ammo-762x39", "weight": 1, "count": [1, 10] },
+    { "item": "ammo-556x45-hp", "weight": 0.5, "count": [1, 10] },
+    { "item": "ammo-556x45-fmj", "weight": 1, "count": [1, 10] },
     { "item": "ammo-556x45", "weight": 1, "count": [1, 10] },
     { "item": "ammo-762x39-t45m", "weight": 1, "count": [1, 10] },
     { "item": "ammo-9mm-ap", "weight": 1, "count": [1, 10] },
@@ -19,8 +21,13 @@
     { "item": "ammo-45acp-jhp", "weight": 0.5, "count": [1, 10] },
     { "item": "ammo-45acp", "weight": 0.5, "count": [1, 10] },
     { "item": "ammo-762x54r-hpbt", "weight": 0.5, "count": [1, 10] },
+    { "item": "ammo-338-tacx", "weight": 0.2, "count": [1, 5] },
     { "item": "ammo-762-nosler", "weight": 0.5, "count": [1, 10] },
     { "item": "ammo-9x39", "weight": 0.5, "count": [1, 10] },
+    { "item": "ammo-46x30-action", "weight": 0.5, "count": [1, 10] },
+    { "item": "ammo-46x30-subsonic", "weight": 0.5, "count": [1, 10] },
+    { "item": "ammo-545x39-hp", "weight": 1, "count": [1, 10] },
+    { "item": "ammo-545x39", "weight": 1, "count": [1, 10] },
     { "item": "ammo-762-tcw", "weight": 0.5, "count": [1, 10] },
     { "item": "crossbow-bolt", "weight": 1, "count": [1, 10] }
   ]

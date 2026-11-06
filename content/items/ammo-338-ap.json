@@ -1,0 +1,21 @@
+{
+  "formatVersion": 10,
+  "id": "ammo-338-ap",
+  "name": ".338 Lapua Magnum AP",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 3000,
+  "rarity": "mythic",
+  "stack": 20,
+  "calibre": ".338LM",
+  "level": 6,
+  "damage": 98,
+  "armourDamage": 63,
+  "bleedChance": 0.38,
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "colour": "#b39448" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "colour": "#b8423a" }
+    ]
+  }
+}

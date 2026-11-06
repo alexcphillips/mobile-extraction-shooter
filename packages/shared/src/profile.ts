@@ -67,7 +67,7 @@ export type QuestState =
   { status: 'active'; progress: Record<string, number> } | { status: 'done' };
 
 export interface Profile {
-  formatVersion: 5;
+  formatVersion: 7;
   money: number;
   /** The stash's pages, bought with money (at least one). */
   stash: Grid[];
@@ -130,14 +130,14 @@ const questStateShape = z.discriminatedUnion('status', [
 ]);
 
 const profileShape = z.strictObject({
-  formatVersion: z.literal(5),
+  formatVersion: z.literal(7),
   money: count,
   stash: z.array(gridShape).min(1),
   gear: gearShape,
   quests: z.record(idSchema, questStateShape),
 });
 
-export const PROFILE_FORMAT_VERSION = 5;
+export const PROFILE_FORMAT_VERSION = 7;
 
 export const PROFILE_FORMAT: ContentFormat<Profile> = {
   kind: 'profile',
@@ -153,6 +153,11 @@ export const PROFILE_FORMAT: ContentFormat<Profile> = {
     3: (doc) => renameItems(doc, RENAMED_IN_4),
     // 2026-11-05: the .45 ACP and 7.62×54R sets were reshaped from Tarkov's rounds.
     4: (doc) => renameItems(doc, RENAMED_IN_5),
+    // 2026-11-05: the generic pistol was deleted; pistols become M9A3s, which take no optic.
+    5: (doc) => dropOptics(renameItems(doc, { pistol: 'm9a3' }), 'm9a3'),
+    // 2026-11-05: the generic sniper rifle was deleted; it becomes an SV-98, which fires
+    // 7.62×54R, so any 7.62×51 round it was loaded with is forgotten (it keeps its count).
+    6: (doc) => unload(renameItems(doc, { 'sniper-rifle': 'sv-98' }), 'sv-98'),
   },
 };
 
@@ -165,6 +170,33 @@ const RENAMED_IN_5: Readonly<Record<string, string>> = {
   'ammo-45acp-match': 'ammo-45acp',
   'ammo-762x54r-t46m': 'ammo-762x54r-hpbt',
 };
+
+/** A stored profile with guns of this item back on their own round (Item.loaded removed). */
+function unload(doc: Record<string, unknown>, gun: string): Record<string, unknown> {
+  const walk = (v: unknown): void => {
+    if (Array.isArray(v)) return v.forEach(walk);
+    if (typeof v !== 'object' || v === null) return;
+    const o = v as Record<string, unknown>;
+    if (o.item === gun) delete o.loaded;
+    Object.values(o).forEach(walk);
+  };
+  walk(doc);
+  return doc;
+}
+
+/** A stored profile with any optic taken off guns of this item (the optic is lost). */
+function dropOptics(doc: Record<string, unknown>, gun: string): Record<string, unknown> {
+  const walk = (v: unknown): void => {
+    if (Array.isArray(v)) return v.forEach(walk);
+    if (typeof v !== 'object' || v === null) return;
+    const o = v as Record<string, unknown>;
+    const a = o.attachments as Record<string, unknown> | undefined;
+    if (o.item === gun && a?.optic) a.optic = null;
+    Object.values(o).forEach(walk);
+  };
+  walk(doc);
+  return doc;
+}
 
 /**
  * A copy of a stored profile with item ids (items, fitted attachments and the round a gun
@@ -216,7 +248,7 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
     if (addItem(items, stash, createItem(items, s.item, s.count ?? 1)) > 0)
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
-  return { formatVersion: 5, money: kit.money, stash: [stash], gear, quests: {} };
+  return { formatVersion: 7, money: kit.money, stash: [stash], gear, quests: {} };
 }
 
 /** What the next stash page costs, or null if there are already as many as there can be. */

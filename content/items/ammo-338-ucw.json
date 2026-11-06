@@ -1,0 +1,21 @@
+{
+  "formatVersion": 10,
+  "id": "ammo-338-ucw",
+  "name": ".338 Lapua Magnum UCW",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 400,
+  "rarity": "rare",
+  "stack": 20,
+  "calibre": ".338LM",
+  "level": 3,
+  "damage": 121,
+  "armourDamage": 20,
+  "bleedChance": 0.45,
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "colour": "#b39448" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "colour": "#4677b3" }
+    ]
+  }
+}

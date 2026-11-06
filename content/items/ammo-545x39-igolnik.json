@@ -1,0 +1,21 @@
+{
+  "formatVersion": 10,
+  "id": "ammo-545x39-igolnik",
+  "name": "5.45×39 mm Igolnik",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 1000,
+  "rarity": "mythic",
+  "stack": 60,
+  "calibre": "5.45x39",
+  "level": 6,
+  "damage": 31,
+  "armourDamage": 33,
+  "bleedChance": 0.22,
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "colour": "#6b6a4c" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "colour": "#b8423a" }
+    ]
+  }
+}

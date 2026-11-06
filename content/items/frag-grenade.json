@@ -1,14 +1,14 @@
 {
   "formatVersion": 10,
   "id": "frag-grenade",
-  "name": "Frag grenade",
+  "name": "M67 grenade",
   "type": "grenade",
   "size": [1, 1],
   "value": 3500,
   "rarity": "rare",
-  "fuse": 3,
+  "fuse": 5,
   "throwSpeed": 15,
-  "radius": 7,
+  "radius": 8,
   "damage": 110,
   "level": 3,
   "armourDamage": 15,
@@ -24,18 +24,47 @@
       {
         "type": "cylinder",
         "pos": [0, 0, 0],
-        "radius": 0.035,
-        "height": 0.08,
-        "colour": "#4a5a32"
+        "radius": 0.032,
+        "height": 0.04,
+        "colour": "#5a6332"
       },
       {
         "type": "cylinder",
-        "pos": [0, 0.08, 0],
-        "radius": 0.012,
-        "height": 0.02,
-        "colour": "#8a8a7a"
+        "pos": [0, 0.0275, 0],
+        "radius": 0.032,
+        "radiusTop": 0.02,
+        "height": 0.015,
+        "colour": "#5a6332"
       },
-      { "type": "box", "pos": [0.018, 0.065, 0], "size": [0.012, 0.05, 0.016], "colour": "#8a8a7a" }
+      {
+        "type": "cylinder",
+        "pos": [0, -0.0275, 0],
+        "radius": 0.02,
+        "radiusTop": 0.032,
+        "height": 0.015,
+        "colour": "#5a6332"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.042, 0],
+        "radius": 0.01,
+        "height": 0.015,
+        "colour": "#7d7b6a"
+      },
+      {
+        "type": "box",
+        "pos": [0.02, 0.025, 0],
+        "size": [0.008, 0.045, 0.014],
+        "colour": "#7d7b6a"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.014, 0.045, 0],
+        "radius": 0.008,
+        "height": 0.003,
+        "colour": "#7d7b6a",
+        "roll": 90
+      }
     ]
   }
 }

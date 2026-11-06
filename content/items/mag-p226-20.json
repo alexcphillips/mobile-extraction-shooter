@@ -1,0 +1,33 @@
+{
+  "formatVersion": 10,
+  "id": "mag-p226-20",
+  "name": "P226 20-round magazine",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 3000,
+  "rarity": "uncommon",
+  "slot": "magazine",
+  "weapons": ["p226"],
+  "mods": {
+    "magazine": 5,
+    "reloadTime": 1.05
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.016, 0],
+        "size": [0.024, 0.034, 0.042],
+        "colour": "#1d1f21",
+        "pitch": -12
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.034, 0.004],
+        "size": [0.026, 0.008, 0.044],
+        "colour": "#2a2d30",
+        "pitch": -12
+      }
+    ]
+  }
+}

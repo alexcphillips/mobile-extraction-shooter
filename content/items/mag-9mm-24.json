@@ -7,9 +7,9 @@
   "value": 2500,
   "rarity": "rare",
   "slot": "magazine",
-  "weapons": ["pistol"],
+  "weapons": ["m9a3"],
   "mods": {
-    "magazine": 9,
+    "magazine": 7,
     "reloadTime": 1.1
   },
   "model": {

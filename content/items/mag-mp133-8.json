@@ -1,0 +1,35 @@
+{
+  "formatVersion": 10,
+  "id": "mag-mp133-8",
+  "name": "MP-133 8-shell magazine",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 3000,
+  "rarity": "uncommon",
+  "slot": "magazine",
+  "weapons": ["shotgun"],
+  "mods": {
+    "magazine": 2,
+    "reloadTime": 1.33
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.045],
+        "radius": 0.011,
+        "height": 0.09,
+        "colour": "#1d1f21",
+        "pitch": 90
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.095],
+        "radius": 0.012,
+        "height": 0.012,
+        "colour": "#2a2c2e",
+        "pitch": 90
+      }
+    ]
+  }
+}

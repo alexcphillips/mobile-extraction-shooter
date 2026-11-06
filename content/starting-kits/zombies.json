@@ -3,7 +3,7 @@
   "id": "zombies",
   "money": 0,
   "gear": {
-    "sidearm": "pistol",
+    "sidearm": "m9a3",
     "rig": "chest-rig"
   },
   "carried": [{ "item": "ammo-9mm", "count": 48 }]

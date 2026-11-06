@@ -42,7 +42,7 @@ describe('admin', () => {
     expect(
       (await client.fails('POST', '/admin/give', { version: v, item: 'nope', count: 1 })).error,
     ).toBe('not-found');
-    const many = { version: v, item: 'pistol', count: MAX_GIVE_STACKS + 1 };
+    const many = { version: v, item: 'm9a3', count: MAX_GIVE_STACKS + 1 };
     expect((await client.fails('POST', '/admin/give', many)).error).toBe('invalid');
     await client.ok('POST', '/raids', { raid: 'test-raid' });
     const inRaid = {

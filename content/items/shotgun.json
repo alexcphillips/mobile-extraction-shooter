@@ -1,7 +1,7 @@
 {
   "formatVersion": 10,
   "id": "shotgun",
-  "name": "Pump shotgun",
+  "name": "MP-133",
   "type": "weapon",
   "size": [4, 1],
   "value": 14000,
@@ -16,10 +16,15 @@
   "drawTime": 0.8,
   "range": 60,
   "loudness": 200,
-  "slots": ["optic"],
+  "slots": ["optic", "magazine"],
   "hipSpread": 1.5,
   "aimSpread": 0.4,
-  "recoil": { "up": 6, "side": 1.8, "snap": 35, "recovery": 4 },
+  "recoil": {
+    "up": 5.9,
+    "side": 1.23,
+    "snap": 35,
+    "recovery": 4
+  },
   "sounds": {
     "shot": "shotgun-shot",
     "suppressed": "rifle-shot-suppressed",
@@ -27,49 +32,114 @@
   },
   "model": {
     "parts": [
-      { "type": "box", "pos": [0, 0, -0.05], "size": [0.05, 0.065, 0.24], "colour": "#34383c" },
+      {
+        "type": "box",
+        "pos": [0, 0, -0.05],
+        "size": [0.05, 0.065, 0.24],
+        "colour": "#2a2c2e"
+      },
+      {
+        "type": "box",
+        "pos": [0.0255, 0.012, -0.06],
+        "size": [0.002, 0.018, 0.06],
+        "colour": "#161718"
+      },
       {
         "type": "cylinder",
         "pos": [0, 0.012, -0.42],
-        "pitch": 90,
         "radius": 0.012,
         "height": 0.5,
-        "colour": "#2a2d30"
+        "colour": "#1d1f21",
+        "pitch": 90
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.026, -0.42],
+        "size": [0.006, 0.004, 0.48],
+        "colour": "#2a2c2e"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.031, -0.66],
+        "size": [0.006, 0.006, 0.006],
+        "colour": "#c9c2a8"
       },
       {
         "type": "cylinder",
         "pos": [0, -0.02, -0.35],
-        "pitch": 90,
         "radius": 0.011,
         "height": 0.36,
-        "colour": "#2a2d30"
+        "colour": "#1d1f21",
+        "pitch": 90
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.02, -0.535],
+        "radius": 0.012,
+        "height": 0.012,
+        "colour": "#2a2c2e",
+        "pitch": 90,
+        "hiddenBy": "magazine"
       },
       {
         "type": "box",
         "pos": [0, -0.022, -0.32],
         "size": [0.048, 0.04, 0.15],
-        "colour": "#6b4a2e"
-      },
-      { "type": "box", "pos": [0, -0.07, 0.08], "size": [0.04, 0.08, 0.04], "colour": "#6b4a2e" },
-      { "type": "box", "pos": [0, -0.02, 0.2], "size": [0.045, 0.075, 0.22], "colour": "#6b4a2e" },
-      {
-        "type": "box",
-        "pos": [0, 0.029, -0.66],
-        "size": [0.006, 0.01, 0.006],
-        "colour": "#c9c2a8"
+        "colour": "#262626"
       },
       {
         "type": "box",
-        "pos": [0, 0.04, -0.06],
-        "size": [0.016, 0.015, 0.04],
-        "colour": "#1d1f21",
-        "hiddenBy": "optic"
+        "pos": [0.0245, -0.022, -0.32],
+        "size": [0.002, 0.006, 0.13],
+        "colour": "#161718"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0245, -0.022, -0.32],
+        "size": [0.002, 0.006, 0.13],
+        "colour": "#161718"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.045, 0.045],
+        "size": [0.012, 0.008, 0.07],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.038, 0.035],
+        "size": [0.006, 0.02, 0.006],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.045, 0.12],
+        "size": [0.04, 0.05, 0.1],
+        "colour": "#262626",
+        "pitch": -15
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.035, 0.255],
+        "size": [0.045, 0.07, 0.2],
+        "colour": "#262626",
+        "pitch": 6
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.052, 0.355],
+        "size": [0.047, 0.11, 0.014],
+        "colour": "#161718",
+        "pitch": 6
       }
     ],
-    "grip": [0, -0.065, 0.08],
+    "grip": [0, -0.05, 0.1],
     "support": [0, -0.022, -0.32],
     "muzzle": [0, 0.012, -0.67],
-    "sight": [0, 0.055, -0.06],
-    "mounts": { "optic": [0, 0.0325, -0.02] }
+    "sight": [0, 0.04, -0.06],
+    "mounts": {
+      "optic": [0, 0.0325, -0.02],
+      "magazine": [0, -0.02, -0.53]
+    }
   }
 }

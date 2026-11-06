@@ -729,7 +729,7 @@
       "id": "buy-sniper",
       "pos": [-4, 3.2, -7.4],
       "yaw": 0,
-      "item": "sniper-rifle",
+      "item": "sv-98",
       "cost": 2000,
       "ammoCost": 1000
     },

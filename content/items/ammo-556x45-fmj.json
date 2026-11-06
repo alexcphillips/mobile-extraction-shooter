@@ -1,0 +1,21 @@
+{
+  "formatVersion": 10,
+  "id": "ammo-556x45-fmj",
+  "name": "5.56×45 mm FMJ",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 40,
+  "rarity": "uncommon",
+  "stack": 60,
+  "calibre": "5.56x45",
+  "level": 2,
+  "damage": 48,
+  "armourDamage": 7,
+  "bleedChance": 0.3,
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "colour": "#6f6a3e" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "colour": "#5c9a4a" }
+    ]
+  }
+}
