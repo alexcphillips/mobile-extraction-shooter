@@ -17,5 +17,6 @@
     { "item": "bandage" },
     { "item": "splint" },
     { "item": "medkit" }
-  ]
+  ],
+  "stash": []
 }

@@ -22,6 +22,7 @@ npm 11 only runs install scripts you've approved. They're listed under `allowScr
 | `npm run format` | Prettier, write mode. Markdown is excluded. |
 | `npm run build` | Builds the client into `packages/client/dist`. |
 | `npm run deploy` | Builds the client, then deploys the Worker (which serves the client as static assets). |
+| `npm run wipe -- --user <name>` / `--all` | Shows who a production wipe would hit; add `--apply` to do it, `--local` for the dev database. See Deploying. |
 
 ## Testing on the iPhone
 **Over the local network (everyday):**
@@ -87,3 +88,5 @@ Turn off Low Power Mode when measuring: iOS caps Safari at 30 fps in it.
 `npm run deploy` (wrangler must be logged in: `npx wrangler login`, check with `npx wrangler whoami`). It's one Worker, `mobile-extraction-shooter`, on workers.dev. Only `/api/*` runs Worker code; every other path is served from the built client, falling back to `index.html`.
 
 **The database** is D1 `mes` (its id is in `wrangler.jsonc`, created 2026-10-27). Deploying applies any new migrations in `packages/server/migrations` remotely first.
+
+**Wiping accounts:** `npm run wipe -- --user <name>` (repeatable) or `--all` shows who'd be wiped; `--apply` does it, after typing a confirmation. It puts the stash, gear, money and quests back to a new player's and closes open raids. Logins, friends, parties and settings stay. Run it from the commit that's deployed, since it writes that checkout's starting kit (it refuses uncommitted game changes). It prints a Time Travel command to undo, which rolls back the whole database.
