@@ -26,6 +26,8 @@ describe('quests', () => {
     });
     expect(retry.error).toBe('stale');
 
+    const kitBandages = countOf(me.profile.stash[0]!, 'bandage');
+    const kitMedkits = countOf(me.profile.stash[0]!, 'medkit');
     await client.editProfile((p) => {
       for (let i = 0; i < 4; i++) addItem(items, p.stash[0]!, createItem(items, 'bandage'));
     });
@@ -36,7 +38,7 @@ describe('quests', () => {
     expect(notYet.message).toMatch(/isn't finished/);
     const give = { version: me.version, objective: 'bandages' };
     me = await client.ok('POST', '/quests/field-dressing/hand-over', give);
-    expect(countOf(me.profile.stash[0]!, 'bandage')).toBe(1);
+    expect(countOf(me.profile.stash[0]!, 'bandage')).toBe(kitBandages + 1);
     expect((await client.fails('POST', '/quests/field-dressing/hand-over', give)).error).toBe(
       'stale',
     );
@@ -44,7 +46,7 @@ describe('quests', () => {
     me = await client.ok('POST', '/quests/field-dressing/complete', { version: me.version });
     expect(me.profile.quests['field-dressing']).toEqual({ status: 'done' });
     expect(me.profile.money).toBe(money + questDef('field-dressing')!.rewards.money);
-    expect(countOf(me.profile.stash[0]!, 'medkit')).toBe(1);
+    expect(countOf(me.profile.stash[0]!, 'medkit')).toBe(kitMedkits + 1);
     // The next in the chain opens.
     me = await client.ok('POST', '/quests/lost-notes/accept', { version: me.version });
     expect(me.profile.quests['lost-notes']?.status).toBe('active');

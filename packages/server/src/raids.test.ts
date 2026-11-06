@@ -43,7 +43,7 @@ describe('raids', () => {
     const { raid, profile } = await client.ok('POST', '/raids', { raid: 'test-raid' });
     const after = await client.ok('POST', `/raids/${raid!.id}/end`, end(looted(profile.gear)));
     expect(after.raid).toBeNull();
-    expect(after.profile.gear.primary1?.item).toBe('assault-rifle');
+    expect(after.profile.gear.primary1?.item).toBe('m416');
     expect(after.profile.gear.backpack?.grid?.items.some((g) => g.item.item === 'gold-watch')).toBe(
       true,
     );

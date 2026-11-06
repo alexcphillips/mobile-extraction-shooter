@@ -6,5 +6,6 @@
     "sidearm": "m9a3",
     "rig": "chest-rig"
   },
-  "carried": [{ "item": "ammo-9mm", "count": 48 }]
+  "carried": [{ "item": "ammo-9mm", "count": 48 }],
+  "loaded": { "m9a3": "ammo-9mm" }
 }

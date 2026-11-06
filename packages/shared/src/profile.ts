@@ -4,7 +4,9 @@ import {
   ATTACHMENT_SLOTS,
   firesRound,
   fits,
+  itemDef,
   stackSize,
+  weaponDef,
   type AttachmentDef,
   type ItemDb,
   type WeaponDef,
@@ -32,7 +34,13 @@ import {
   type Gear,
   type GearSlot,
 } from './sim/gear';
-import { createWeaponStats, loadedAmmo, weaponStats, type WeaponState } from './sim/weapons';
+import {
+  createWeapon,
+  createWeaponStats,
+  loadedAmmo,
+  weaponStats,
+  type WeaponState,
+} from './sim/weapons';
 
 /*
  * A player's profile (session 12): the account balance, the stash's pages, and the gear they'll
@@ -223,20 +231,35 @@ export function parseGear(raw: unknown): Gear | null {
   return parsed.success ? (parsed.data as unknown as Gear) : null;
 }
 
-/** A new profile from a starting kit, with the knife. Throws if the kit doesn't fit. */
+/** A kit's item: a gun has a full magazine of the round kit.loaded names for it, or none. */
+function kitItem(items: ItemDb, kit: StartingKitDef, id: string, count = 1): Item {
+  if (itemDef(items, id).type !== 'weapon') return createItem(items, id, count);
+  const gun = createWeapon(items, id, [], kit.loaded[id]);
+  if (kit.loaded[id] === undefined) gun.mag = 0;
+  return gun;
+}
+
+/**
+ * A new profile from a starting kit, with the knife. Throws if the kit doesn't fit, or
+ * loads a gun with a round it can't fire.
+ */
 export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
+  for (const [gun, round] of Object.entries(kit.loaded)) {
+    if (!firesRound(items, weaponDef(items, gun), round))
+      throw new Error(`kit ${kit.id}: ${gun} can't be loaded with "${round}"`);
+  }
   const gear = createGear(true);
   gear.knife = createItem(items, 'knife');
   const slots = gear as unknown as Record<GearSlot, Item | null>;
   for (const [slot, id] of Object.entries(kit.gear) as [GearSlot, string][]) {
-    const item = createItem(items, id);
+    const item = kitItem(items, kit, id);
     if (!fitsSlot(items, slot, item)) throw new Error(`kit ${kit.id}: "${id}" can't go in ${slot}`);
     slots[slot] = item;
   }
   gear.hand = gear.primary1 ? 'primary1' : gear.sidearm ? 'sidearm' : 'knife';
   for (const s of kit.carried) {
     let left = s.count ?? 1;
-    const item = createItem(items, s.item, left);
+    const item = kitItem(items, kit, s.item, left);
     for (let i = 0; i < CARRIED_GRIDS && left > 0; i++) {
       const grid = carriedGrid(gear, i);
       if (grid) left = addItem(items, grid, item);
@@ -245,7 +268,7 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
   }
   const stash = createGrid(PROFILE.stash[0], PROFILE.stash[1], true);
   for (const s of kit.stash) {
-    if (addItem(items, stash, createItem(items, s.item, s.count ?? 1)) > 0)
+    if (addItem(items, stash, kitItem(items, kit, s.item, s.count ?? 1)) > 0)
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
   return { formatVersion: 7, money: kit.money, stash: [stash], gear, quests: {} };

@@ -26,6 +26,7 @@ const kit = loadContent(
     gear: { primary1: 'rifle', helmet: 'helmet', backpack: 'backpack' },
     carried: [{ item: 'round', count: 60 }],
     stash: [{ item: 'pistol' }, { item: 'scope' }, { item: 'watch' }],
+    loaded: { rifle: 'round', pistol: 'round' },
   },
   'test.json',
 );

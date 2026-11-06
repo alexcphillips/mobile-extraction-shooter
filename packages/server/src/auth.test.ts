@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { defaultSettings } from '@mes/shared';
+import { countItems, defaultSettings } from '@mes/shared';
 import { AUTH, hashPassword, verifyPassword } from './auth';
+import { loadItems } from './content';
 import { testEnv } from './test/d1';
 import { TestClient } from './test/client';
 
@@ -33,7 +34,33 @@ describe('register', () => {
     expect(me.version).toBe(1);
     expect(me.raid).toBeNull();
     expect(me.profile.gear.knife?.item).toBe('knife');
-    expect(me.profile.gear.primary1?.item).toBe('assault-rifle');
+    expect(me.profile.gear.primary1?.item).toBe('m416');
+  });
+
+  it('starts a new player with four full kits, one of them on', async () => {
+    const client = new TestClient(testEnv());
+    const { profile } = await client.register();
+    const counts = countItems(loadItems(), profile);
+    for (const id of [
+      'm416',
+      'm9a3',
+      'tactical-vest',
+      'steel-helmet',
+      'chest-rig',
+      'small-backpack',
+      'medkit',
+      'splint',
+      'surgery-kit',
+    ]) {
+      expect(counts.get(id), id).toBe(4);
+    }
+    expect(counts.get('bandage')).toBe(8);
+    // Three stacks a kit, plus the 30 in each rifle; 45 a kit, plus the 17 in each pistol.
+    expect(counts.get('ammo-556x45')).toBe(4 * (3 * 60 + 30));
+    expect(counts.get('ammo-9mm')).toBe(4 * (45 + 17));
+    expect(profile.gear.primary1?.mag).toBe(30);
+    expect(profile.gear.primary1?.loaded).toBeUndefined(); // its own round, the blue M855
+    expect(profile.gear.sidearm?.mag).toBe(17);
   });
 
   it('sets a Secure cookie over HTTPS', async () => {

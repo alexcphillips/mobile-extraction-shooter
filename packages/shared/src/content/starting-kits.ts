@@ -37,6 +37,11 @@ export const startingKitSchema = z.strictObject({
   carried: z.array(stackOf).default([]),
   /** Put in the stash, in this order. */
   stash: z.array(stackOf).default([]),
+  /**
+   * What a gun in this kit is loaded with, by the gun's id: a full magazine of that round
+   * (the user's call, 2026-11-05). A gun not named here starts empty, as a vendor's does.
+   */
+  loaded: z.record(idSchema, idSchema).default({}),
 });
 
 export type StartingKitDef = z.infer<typeof startingKitSchema>;

@@ -49,7 +49,10 @@ describe('item editor', () => {
       expect.arrayContaining(['m9a3 fires it', 'vendor quartermaster', 'starting kit new-player']),
     );
     expect(itemUses('assault-rifle', items)).toEqual(
-      expect.arrayContaining(['scope-4x fits it', 'loadout scav-kit', 'starting kit new-player']),
+      expect.arrayContaining(['scope-4x fits it', 'loadout scav-kit']),
+    );
+    expect(itemUses('m416', items)).toEqual(
+      expect.arrayContaining(['scope-4x fits it', 'starting kit new-player']),
     );
     expect(itemUses('patient-notes', items)).toEqual(['quest lost-notes']);
   });

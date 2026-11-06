@@ -38,7 +38,9 @@ describe('vendors', () => {
       version: me.version,
       offer: bandage,
     });
-    expect(countOf(bought.profile.stash[0]!, 'bandage')).toBe(1);
+    expect(countOf(bought.profile.stash[0]!, 'bandage')).toBe(
+      countOf(me.profile.stash[0]!, 'bandage') + 1,
+    );
     expect(bought.profile.money).toBe(1000 - items.get('bandage')!.value);
     // A retry with the old version doesn't buy another.
     const again = { version: me.version, offer: bandage };

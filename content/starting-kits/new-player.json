@@ -3,7 +3,7 @@
   "id": "new-player",
   "money": 0,
   "gear": {
-    "primary1": "assault-rifle",
+    "primary1": "m416",
     "sidearm": "m9a3",
     "helmet": "steel-helmet",
     "bodyArmour": "tactical-vest",
@@ -11,12 +11,50 @@
     "backpack": "small-backpack"
   },
   "carried": [
-    { "item": "ammo-762x39", "count": 120 },
+    { "item": "ammo-556x45", "count": 180 },
     { "item": "ammo-9mm", "count": 45 },
     { "item": "bandage" },
     { "item": "bandage" },
     { "item": "splint" },
-    { "item": "medkit" }
+    { "item": "medkit" },
+    { "item": "surgery-kit" }
   ],
-  "stash": []
+  "stash": [
+    { "item": "m416" },
+    { "item": "m416" },
+    { "item": "m416" },
+    { "item": "m9a3" },
+    { "item": "m9a3" },
+    { "item": "m9a3" },
+    { "item": "tactical-vest" },
+    { "item": "tactical-vest" },
+    { "item": "tactical-vest" },
+    { "item": "steel-helmet" },
+    { "item": "steel-helmet" },
+    { "item": "steel-helmet" },
+    { "item": "small-backpack" },
+    { "item": "small-backpack" },
+    { "item": "small-backpack" },
+    { "item": "chest-rig" },
+    { "item": "chest-rig" },
+    { "item": "chest-rig" },
+    { "item": "ammo-556x45", "count": 540 },
+    { "item": "ammo-9mm", "count": 135 },
+    { "item": "surgery-kit" },
+    { "item": "surgery-kit" },
+    { "item": "surgery-kit" },
+    { "item": "medkit" },
+    { "item": "medkit" },
+    { "item": "medkit" },
+    { "item": "splint" },
+    { "item": "splint" },
+    { "item": "splint" },
+    { "item": "bandage" },
+    { "item": "bandage" },
+    { "item": "bandage" },
+    { "item": "bandage" },
+    { "item": "bandage" },
+    { "item": "bandage" }
+  ],
+  "loaded": { "m416": "ammo-556x45", "m9a3": "ammo-9mm" }
 }

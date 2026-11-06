@@ -934,3 +934,54 @@ describe('looting', () => {
     expect(at(0, 5.1)).toBe(false);
   });
 });
+
+describe("a dead enemy's gun", () => {
+  /** A setup with the body's rifle at these rounds, and its quick-take action. */
+  function looted(mag: number, parts: Partial<WeaponState> = {}) {
+    const s = setup();
+    Object.assign(s.enemy.gear.primary1 as WeaponState, { mag, ...parts });
+    const action: InventoryAction = {
+      type: 'quick',
+      from: { owner: s.body, slot: 'primary1', item: 'rifle' },
+      to: self,
+    };
+    return { ...s, action, tick: () => step(s.state, world, items, {}) };
+  }
+
+  /** The rifle wherever the quick move put it. */
+  function rifleOf(c: ReturnType<typeof setup>['c']): WeaponState {
+    return gearItems(c.gear).find((i) => i.item === 'rifle') as WeaponState;
+  }
+
+  it('keeps the rounds it had when it died, on the body and once looted', () => {
+    const { c, enemy, act, action, tick } = looted(5);
+    for (let i = 0; i < TICK_RATE * 3; i++) tick();
+    expect((enemy.gear.primary1 as WeaponState).mag).toBe(5);
+    expect(act(action)).toBe(true);
+    expect(rifleOf(c).mag).toBe(5);
+  });
+
+  it('keeps an empty magazine empty, and the kind of round in it', () => {
+    expect(rifleOfLooted(0).mag).toBe(0);
+    const ap = rifleOfLooted(5, { loaded: 'ap-round' });
+    expect([ap.mag, ap.loaded]).toEqual([5, 'ap-round']);
+  });
+
+  function rifleOfLooted(mag: number, parts: Partial<WeaponState> = {}) {
+    const { c, act, action } = looted(mag, parts);
+    act(action);
+    return rifleOf(c);
+  }
+
+  it('never finishes a reload it died during, on the body or in your hands', () => {
+    const { c, enemy, act, action, tick } = looted(5, { reloading: 0.5 });
+    addItem(items, enemy.gear.pockets, createItem(items, 'round', 30));
+    addItem(items, c.gear.pockets, createItem(items, 'round', 30));
+    for (let i = 0; i < TICK_RATE * 3; i++) tick();
+    expect((enemy.gear.primary1 as WeaponState).mag).toBe(5);
+    act(action);
+    for (let i = 0; i < TICK_RATE * 3; i++) tick();
+    expect(rifleOf(c).mag).toBe(5);
+    expect(rifleOf(c).reloading).toBe(0);
+  });
+});

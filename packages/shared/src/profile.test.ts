@@ -28,6 +28,7 @@ const kit = loadContent(
     gear: { primary1: 'rifle', sidearm: 'pistol', helmet: 'helmet', rig: 'rig' },
     carried: [{ item: 'round', count: 90 }, { item: 'bandage' }],
     stash: [{ item: 'backpack' }, { item: 'cash', count: 300 }],
+    loaded: { rifle: 'round', pistol: 'round' },
   },
   'test.json',
 );
@@ -38,6 +39,27 @@ function profile(): Profile {
 }
 
 describe('newProfile', () => {
+  it("leaves a kit's guns empty unless it names a round for them", () => {
+    const { gear, stash } = newProfile(items, {
+      ...kit,
+      gear: { primary1: 'rifle', sidearm: 'pistol' },
+      carried: [],
+      stash: [{ item: 'rifle' }, { item: 'pistol' }],
+      loaded: { rifle: 'round' },
+    });
+    expect(gear.primary1?.mag).toBeGreaterThan(0);
+    expect(gear.sidearm?.mag).toBe(0);
+    const inStash = stash[0]!.items.map((g) => [g.item.item, g.item.mag! > 0]);
+    expect(inStash).toEqual([
+      ['rifle', true],
+      ['pistol', false],
+    ]);
+  });
+
+  it('refuses a kit loading a gun with a round it cannot fire', () => {
+    expect(() => newProfile(items, { ...kit, loaded: { rifle: 'bandage' } })).toThrow(/rifle/);
+  });
+
   it('wears the kit, carries its items, fills the stash and adds the knife', () => {
     const p = profile();
     expect(p.money).toBe(500);
