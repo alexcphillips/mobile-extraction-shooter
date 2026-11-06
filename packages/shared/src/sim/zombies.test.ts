@@ -166,13 +166,13 @@ interface Game {
   zombies(): Character[];
 }
 
-function game(at: [number, number] = [-5, 0]): Game {
+function game(at: [number, number] = [-5, 0], mode: ZombiesDef = MODE): Game {
   const map = rooms();
   const world = new CollisionWorld(map.world);
   const nav = new NavGrid(world);
   const state = createState(7);
   const player = spawnCharacter(state, world, at[0], at[1]);
-  startZombies(state, map, MODE);
+  startZombies(state, map, mode);
   return {
     state,
     world,
@@ -356,6 +356,16 @@ describe('buying', () => {
     expect(g.player.gear.primary1!.mag).toBe(30);
     expect(carriedAmmo(g.player, 'round')).toBe(60);
     expect(pointsOf(g.state, g.player.id)).toBe(600);
+  });
+
+  it("loads a gun with the mode's round for it, if it names one", () => {
+    const g = game([-5, -7], { ...MODE, ammo: { rifle: 'ap-round' } });
+    g.state.zombies!.points[g.player.id] = 2000;
+    g.player.gear.rig = createItem(items, 'rig') as never;
+    g.run(1, input({ buy: buyInReach(g.state, g.player) }));
+    expect(g.player.gear.primary1?.loaded).toBe('ap-round');
+    expect(carriedAmmo(g.player, 'ap-round')).toBe(60);
+    expect(carriedAmmo(g.player, 'round')).toBe(0);
   });
 
   it('the mystery box shows one of its guns, to be taken by using it again', () => {

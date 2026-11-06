@@ -9,10 +9,10 @@
   "stack": 30,
   "calibre": "12g",
   "level": 3,
-  "damage": 11,
+  "damage": 21,
   "armourDamage": 3,
   "bleedChance": 0.3,
-  "pellets": 9,
+  "pellets": 8,
   "pelletSpread": 2.4,
   "model": {
     "parts": [

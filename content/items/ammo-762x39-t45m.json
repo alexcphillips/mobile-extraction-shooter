@@ -1,7 +1,7 @@
 {
   "formatVersion": 10,
   "id": "ammo-762x39-t45m",
-  "name": "7.62×39 mm T-45M",
+  "name": "7.62×39 mm T-45M1",
   "type": "ammo",
   "size": [1, 1],
   "value": 40,
@@ -10,7 +10,7 @@
   "calibre": "7.62x39",
   "level": 2,
   "damage": 55,
-  "armourDamage": 13,
+  "armourDamage": 12,
   "bleedChance": 0.32,
   "model": {
     "parts": [

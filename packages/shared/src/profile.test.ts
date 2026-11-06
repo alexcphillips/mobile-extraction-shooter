@@ -4,6 +4,7 @@ import { STARTING_KIT_FORMAT } from './content/starting-kits';
 import { addItem, placeAt } from './inventory/grid';
 import {
   PROFILE_FORMAT,
+  PROFILE_FORMAT_VERSION,
   checkProfile,
   countItems,
   itemGained,
@@ -65,12 +66,24 @@ describe('PROFILE_FORMAT', () => {
     old.gear.primary1.attachments = { optic: null, muzzle: null, magazine: 'mag-556-45' };
     old.stash[0].items[0].item.item = 'mag-556-45';
     const p = loadContent(PROFILE_FORMAT, old, 'p');
-    expect(p.formatVersion).toBe(4);
+    expect(p.formatVersion).toBe(PROFILE_FORMAT_VERSION);
     expect(p.gear.pockets.items[0]!.item.item).toBe('ammo-762x39');
     expect(p.gear.primary1!.attachments!.magazine).toBe('mag-762x39-45');
     expect(p.gear.primary1!.attachments!.optic).toBeNull();
     expect(p.stash[0]!.items[0]!.item.item).toBe('mag-762x39-45');
     expect(p.gear.primary1!.item).toBe('rifle');
+  });
+
+  it('renames reshaped rounds, loaded ones too (format 4 → 5)', () => {
+    const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
+    old.formatVersion = 4;
+    old.gear.pockets.items[0].item.item = 'ammo-45acp-match';
+    old.stash[0].items[0].item.item = 'ammo-762x54r-t46m';
+    old.gear.primary1.loaded = 'ammo-45acp-match';
+    const p = loadContent(PROFILE_FORMAT, old, 'p');
+    expect(p.gear.pockets.items[0]!.item.item).toBe('ammo-45acp');
+    expect(p.stash[0]!.items[0]!.item.item).toBe('ammo-762x54r-hpbt');
+    expect(p.gear.primary1!.loaded).toBe('ammo-45acp');
   });
 });
 

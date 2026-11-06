@@ -9,7 +9,7 @@
   "stack": 40,
   "calibre": "7.62x51",
   "level": 4,
-  "damage": 88,
+  "damage": 63,
   "armourDamage": 24,
   "bleedChance": 0.35,
   "incendiary": {

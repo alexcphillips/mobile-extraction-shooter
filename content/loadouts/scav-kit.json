@@ -60,7 +60,7 @@
       "ammo": [
         { "weight": 2, "item": "ammo-45acp-jhp" },
         { "weight": 2, "item": "ammo-45acp" },
-        { "weight": 0.5, "item": "ammo-45acp-match" }
+        { "weight": 0.5, "item": "ammo-45acp-ap" }
       ]
     }
   ],

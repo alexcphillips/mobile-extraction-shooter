@@ -55,7 +55,15 @@ export const ZOMBIES = {
 /** The rules a game runs by, copied from its ZombiesDef, so the state is all a host needs. */
 export type ZombiesRules = Pick<
   ZombiesDef,
-  'zombie' | 'rounds' | 'points' | 'player' | 'barricades' | 'powerups' | 'spareMags' | 'box'
+  | 'zombie'
+  | 'rounds'
+  | 'points'
+  | 'player'
+  | 'barricades'
+  | 'powerups'
+  | 'spareMags'
+  | 'box'
+  | 'ammo'
 >;
 
 /** A power-up lying where a zombie died. */
@@ -269,8 +277,8 @@ export function startZombies(state: SimState, map: CompiledMap, def: ZombiesDef)
     else if (m.type === 'mysteryBox')
       buys.push({ id: m.id, kind: m.type, x: m.x, y: m.y, z: m.z, yaw: m.yaw, cost: m.cost });
   }
-  const { zombie, rounds, points, player, barricades, powerups, spareMags, box } = def;
-  const rules = { zombie, rounds, points, player, barricades, powerups, spareMags, box };
+  const { zombie, rounds, points, player, barricades, powerups, spareMags, box, ammo } = def;
+  const rules = { zombie, rounds, points, player, barricades, powerups, spareMags, box, ammo };
   state.zombies = {
     // A copy, so the state is plain data of its own.
     rules: JSON.parse(JSON.stringify(rules)) as ZombiesRules,
@@ -867,7 +875,7 @@ function giveGun(c: Character, items: ItemDb, z: ZombiesState, item: string): vo
           : g.hand === 'primary2'
             ? 'primary2'
             : 'primary1';
-  const w = createWeapon(items, item);
+  const w = createWeapon(items, item, [], z.rules.ammo?.[item]);
   equip(c, items, slot, w);
   g.hand = slot;
   c.aim = 0;

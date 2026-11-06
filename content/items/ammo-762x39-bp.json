@@ -10,7 +10,7 @@
   "calibre": "7.62x39",
   "level": 4,
   "damage": 49,
-  "armourDamage": 20,
+  "armourDamage": 27,
   "bleedChance": 0.27,
   "model": {
     "parts": [

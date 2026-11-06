@@ -39,6 +39,10 @@ describe('gun models', () => {
     expect(g.suppressed).toBe(true);
   });
 
+  it('counts a built-in suppressor, with nothing fitted', () => {
+    expect(gunModel({ ...rifle({}), item: 'as-val' }, items).suppressed).toBe(true);
+  });
+
   it('draws the knife from its item', () => {
     const k = knifeModel(items, 'knife');
     expect(k.shapes).toHaveLength(3);

@@ -1,6 +1,6 @@
 import type { ItemDef } from '@mes/shared';
 
-/** Ammo and armour levels 1–6 (Delta Force's tiers): grey, green, blue, purple, gold, red. */
+/** Ammo and armour levels 1–6 (design.md → Damage): grey, green, blue, purple, gold, red. */
 export const LEVEL_COLOURS = ['#8d8f91', '#5c9a4a', '#4677b3', '#8a56b3', '#c99a2e', '#b8423a'];
 
 /** An item's ammo or armour level, or null for items without one. */

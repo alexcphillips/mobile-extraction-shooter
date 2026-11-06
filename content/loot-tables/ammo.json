@@ -18,6 +18,10 @@
     { "item": "ammo-9mm", "weight": 1, "count": [1, 10] },
     { "item": "ammo-45acp-jhp", "weight": 0.5, "count": [1, 10] },
     { "item": "ammo-45acp", "weight": 0.5, "count": [1, 10] },
+    { "item": "ammo-762x54r-hpbt", "weight": 0.5, "count": [1, 10] },
+    { "item": "ammo-762-nosler", "weight": 0.5, "count": [1, 10] },
+    { "item": "ammo-9x39", "weight": 0.5, "count": [1, 10] },
+    { "item": "ammo-762-tcw", "weight": 0.5, "count": [1, 10] },
     { "item": "crossbow-bolt", "weight": 1, "count": [1, 10] }
   ]
 }

@@ -1,0 +1,21 @@
+{
+  "formatVersion": 10,
+  "id": "ammo-9x39-pab9",
+  "name": "9×39 mm PAB-9",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 120,
+  "rarity": "epic",
+  "stack": 50,
+  "calibre": "9x39",
+  "level": 4,
+  "damage": 53,
+  "armourDamage": 22,
+  "bleedChance": 0.3,
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "colour": "#7a7650" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "colour": "#8a56b3" }
+    ]
+  }
+}

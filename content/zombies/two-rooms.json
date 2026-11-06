@@ -57,6 +57,7 @@
     }
   },
   "spareMags": 4,
+  "ammo": { "shotgun": "buckshot-inc" },
   "box": [
     {
       "weight": 3,

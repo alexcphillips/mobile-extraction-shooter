@@ -36,7 +36,7 @@ export function gunModel(w: WeaponState, items: ItemDb): GunModel {
   const shapes = modelShapes(m, [], [0, 0, 0], fitted);
   let sight: Vec3 = m.sight;
   let muzzle: Vec3 = m.muzzle;
-  let suppressed = false;
+  let suppressed = gun.suppressed ?? false;
   for (const slot of ['optic', 'muzzle', 'magazine'] as const) {
     const id = a[slot];
     const mount = m.mounts?.[slot];

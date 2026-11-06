@@ -9,8 +9,8 @@
   "stack": 60,
   "calibre": "9x19",
   "level": 2,
-  "damage": 32,
-  "armourDamage": 8,
+  "damage": 46,
+  "armourDamage": 6,
   "bleedChance": 0.2,
   "model": {
     "parts": [

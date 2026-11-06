@@ -43,5 +43,15 @@
     ],
     "sight": [0, 0.035, -0.09]
   },
-  "weapons": ["assault-rifle", "aug-a3", "crossbow", "shotgun", "smg", "mp5", "m416"]
+  "weapons": [
+    "assault-rifle",
+    "aug-a3",
+    "crossbow",
+    "shotgun",
+    "smg",
+    "mp5",
+    "m416",
+    "scar-h",
+    "as-val"
+  ]
 }

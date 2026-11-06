@@ -51,7 +51,7 @@ const burning = {
 export const ITEM_FORMAT_VERSION = 10;
 
 /**
- * Ammo and armour levels (Delta Force's tiers), 1 to LEVELS: grey, green, blue, purple,
+ * Ammo and armour levels (a round's from its Tarkov penetration), 1 to LEVELS: grey, green, blue, purple,
  * gold, red. A round against armour compares levels (sim/health.ts).
  */
 export const LEVELS = 6;
@@ -139,6 +139,11 @@ const weaponSchema = z
     range: positive,
     /** How far away a shot can be heard (by AI, from session 7). Suppressors shrink it. */
     loudness: positive,
+    /**
+     * A built-in suppressor that can't come off (the AS VAL, 2026-11-05): no muzzle flash.
+     * Its loudness and shot sound are already the suppressed ones, and it has no muzzle slot.
+     */
+    suppressed: z.literal(true).optional(),
     /** The attachment slots it has, each at most once. None if left out. */
     slots: z
       .array(slotSchema)

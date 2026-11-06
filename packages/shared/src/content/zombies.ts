@@ -108,6 +108,11 @@ export const zombiesSchema = z.strictObject({
   }),
   /** Buying a gun or its ammo fills its magazine and this many magazines spare. */
   spareMags: z.int().min(0),
+  /**
+   * Rounds a gun loads in this mode in place of its own, by gun (2026-11-05: the shotgun's
+   * dragon's breath, a zombies-only round).
+   */
+  ammo: z.record(idSchema, idSchema).optional(),
   /** The mystery box's guns, by weight. */
   box: z.array(z.strictObject({ weight: positive, item: idSchema })).min(1),
 });

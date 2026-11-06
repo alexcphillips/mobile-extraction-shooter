@@ -1,0 +1,21 @@
+{
+  "formatVersion": 10,
+  "id": "ammo-762x54r-bs",
+  "name": "7.62×54R BS",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 1100,
+  "rarity": "mythic",
+  "stack": 40,
+  "calibre": "7.62x54R",
+  "level": 6,
+  "damage": 61,
+  "armourDamage": 55,
+  "bleedChance": 0.34,
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "colour": "#7f7a4e" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "colour": "#b8423a" }
+    ]
+  }
+}

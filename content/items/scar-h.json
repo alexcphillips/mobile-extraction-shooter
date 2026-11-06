@@ -1,0 +1,188 @@
+{
+  "formatVersion": 10,
+  "id": "scar-h",
+  "name": "SCAR-H",
+  "type": "weapon",
+  "size": [5, 2],
+  "value": 45000,
+  "rarity": "epic",
+  "ammo": "ammo-762",
+  "hold": "rifle",
+  "fireMode": "auto",
+  "rpm": 600,
+  "magazine": 20,
+  "reloadTime": 2.5,
+  "aimTime": 0.28,
+  "drawTime": 0.9,
+  "range": 250,
+  "loudness": 220,
+  "slots": ["optic", "muzzle"],
+  "hipSpread": 3.5,
+  "aimSpread": 0.35,
+  "recoil": {
+    "up": 2.98,
+    "side": 1.19,
+    "snap": 38,
+    "recovery": 3,
+    "angle": 6
+  },
+  "sounds": {
+    "shot": "rifle-shot",
+    "suppressed": "rifle-shot-suppressed",
+    "reload": "rifle-reload"
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0.02, -0.12],
+        "size": [0.048, 0.05, 0.44],
+        "colour": "#a08c64"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.051, -0.12],
+        "size": [0.022, 0.012, 0.44],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0.026, 0.015, -0.27],
+        "size": [0.004, 0.012, 0.13],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [-0.026, 0.015, -0.27],
+        "size": [0.004, 0.012, 0.13],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.008, -0.27],
+        "size": [0.014, 0.006, 0.13],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0.0245, 0.008, -0.06],
+        "size": [0.002, 0.014, 0.2],
+        "colour": "#7f6f4f"
+      },
+      {
+        "type": "box",
+        "pos": [-0.03, 0.022, -0.06],
+        "size": [0.025, 0.012, 0.012],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, -0.39],
+        "radius": 0.011,
+        "height": 0.1,
+        "colour": "#1d1f21",
+        "pitch": 90
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, -0.462],
+        "radius": 0.014,
+        "height": 0.045,
+        "colour": "#1d1f21",
+        "pitch": 90,
+        "hiddenBy": "muzzle"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.068, -0.32],
+        "size": [0.012, 0.022, 0.012],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.068, 0.08],
+        "size": [0.018, 0.022, 0.012],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.025, 0.03],
+        "size": [0.042, 0.04, 0.17],
+        "colour": "#a08c64"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.06, -0.015],
+        "size": [0.036, 0.035, 0.06],
+        "colour": "#7f6f4f"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.115, -0.02],
+        "size": [0.028, 0.09, 0.065],
+        "colour": "#1d1f21",
+        "pitch": 3
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.065, 0.06],
+        "size": [0.012, 0.008, 0.06],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.053, 0.05],
+        "size": [0.006, 0.02, 0.006],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.085, 0.1],
+        "size": [0.032, 0.08, 0.036],
+        "colour": "#1d1f21",
+        "pitch": -18
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.01, 0.125],
+        "size": [0.04, 0.05, 0.03],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.02, 0.23],
+        "size": [0.04, 0.04, 0.18],
+        "colour": "#a08c64"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03, 0.235],
+        "size": [0.03, 0.025, 0.19],
+        "colour": "#a08c64",
+        "pitch": 14
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.045, 0.25],
+        "size": [0.036, 0.015, 0.1],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.015, 0.325],
+        "size": [0.044, 0.11, 0.012],
+        "colour": "#1d1f21"
+      }
+    ],
+    "grip": [0, -0.08, 0.1],
+    "support": [0, -0.01, -0.24],
+    "muzzle": [0, 0.012, -0.485],
+    "sight": [0, 0.079, 0.08],
+    "mounts": {
+      "optic": [0, 0.057, 0.04],
+      "muzzle": [0, 0.012, -0.44]
+    }
+  }
+}

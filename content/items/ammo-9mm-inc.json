@@ -9,8 +9,8 @@
   "stack": 60,
   "calibre": "9x19",
   "level": 2,
-  "damage": 28,
-  "armourDamage": 7,
+  "damage": 40,
+  "armourDamage": 6,
   "bleedChance": 0.15,
   "incendiary": {
     "chance": 0.2,

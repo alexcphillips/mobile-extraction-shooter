@@ -7,7 +7,16 @@
   "value": 18000,
   "rarity": "epic",
   "slot": "optic",
-  "weapons": ["assault-rifle", "aug-a3", "m416", "sniper-rifle", "crossbow"],
+  "weapons": [
+    "assault-rifle",
+    "aug-a3",
+    "m416",
+    "scar-h",
+    "as-val",
+    "sniper-rifle",
+    "sv-98",
+    "crossbow"
+  ],
   "mods": {
     "aimTime": 1.4
   },

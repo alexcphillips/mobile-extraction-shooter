@@ -67,7 +67,7 @@ export type QuestState =
   { status: 'active'; progress: Record<string, number> } | { status: 'done' };
 
 export interface Profile {
-  formatVersion: 4;
+  formatVersion: 5;
   money: number;
   /** The stash's pages, bought with money (at least one). */
   stash: Grid[];
@@ -130,14 +130,14 @@ const questStateShape = z.discriminatedUnion('status', [
 ]);
 
 const profileShape = z.strictObject({
-  formatVersion: z.literal(4),
+  formatVersion: z.literal(5),
   money: count,
   stash: z.array(gridShape).min(1),
   gear: gearShape,
   quests: z.record(idSchema, questStateShape),
 });
 
-export const PROFILE_FORMAT_VERSION = 4;
+export const PROFILE_FORMAT_VERSION = 5;
 
 export const PROFILE_FORMAT: ContentFormat<Profile> = {
   kind: 'profile',
@@ -151,6 +151,8 @@ export const PROFILE_FORMAT: ContentFormat<Profile> = {
     2: (doc) => ({ ...doc, quests: {} }),
     // Session 19za: the assault rifle became the AKM, so 5.56 rounds and mags became 7.62×39.
     3: (doc) => renameItems(doc, RENAMED_IN_4),
+    // 2026-11-05: the .45 ACP and 7.62×54R sets were reshaped from Tarkov's rounds.
+    4: (doc) => renameItems(doc, RENAMED_IN_5),
   },
 };
 
@@ -159,11 +161,21 @@ const RENAMED_IN_4: Readonly<Record<string, string>> = {
   'mag-556-45': 'mag-762x39-45',
 };
 
-/** A copy of a stored profile with item ids (items and fitted attachments) renamed. */
+const RENAMED_IN_5: Readonly<Record<string, string>> = {
+  'ammo-45acp-match': 'ammo-45acp',
+  'ammo-762x54r-t46m': 'ammo-762x54r-hpbt',
+};
+
+/**
+ * A copy of a stored profile with item ids (items, fitted attachments and the round a gun
+ * is loaded with) renamed.
+ */
 function renameItems(doc: Record<string, unknown>, ids: Readonly<Record<string, string>>) {
+  const renamed = (key?: string): boolean =>
+    key === 'item' || key === 'attachment' || key === 'loaded';
   const walk = (v: unknown, key?: string): unknown => {
     if (Array.isArray(v)) return v.map((x) => walk(x));
-    if (typeof v === 'string') return key === 'item' || key === 'attachment' ? (ids[v] ?? v) : v;
+    if (typeof v === 'string') return renamed(key) ? (ids[v] ?? v) : v;
     if (typeof v !== 'object' || v === null) return v;
     const out: Record<string, unknown> = {};
     for (const [k, x] of Object.entries(v))
@@ -204,7 +216,7 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
     if (addItem(items, stash, createItem(items, s.item, s.count ?? 1)) > 0)
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
-  return { formatVersion: 4, money: kit.money, stash: [stash], gear, quests: {} };
+  return { formatVersion: 5, money: kit.money, stash: [stash], gear, quests: {} };
 }
 
 /** What the next stash page costs, or null if there are already as many as there can be. */

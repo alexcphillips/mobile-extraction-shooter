@@ -84,5 +84,15 @@
       ]
     }
   },
-  "weapons": ["assault-rifle", "aug-a3", "crossbow", "shotgun", "smg", "mp5", "m416"]
+  "weapons": [
+    "assault-rifle",
+    "aug-a3",
+    "crossbow",
+    "shotgun",
+    "smg",
+    "mp5",
+    "m416",
+    "scar-h",
+    "as-val"
+  ]
 }

@@ -9,8 +9,8 @@
   "stack": 40,
   "calibre": "7.62x51",
   "level": 6,
-  "damage": 85,
-  "armourDamage": 36,
+  "damage": 62,
+  "armourDamage": 42,
   "bleedChance": 0.34,
   "model": {
     "parts": [

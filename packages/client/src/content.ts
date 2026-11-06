@@ -20,6 +20,9 @@ import {
   checkQuests,
   checkVendors,
   checkProfile,
+  calibreOf,
+  roundCalibre,
+  roundOf,
   checkSounds,
   itemSounds,
   compileMap,
@@ -491,6 +494,12 @@ export function loadZombies(id: string): ZombiesDef {
   for (const o of def.box)
     if (items.get(o.item)?.type !== 'weapon')
       throw new Error(`${file}: box gun "${o.item}" is not a weapon`);
+  for (const [gun, round] of Object.entries(def.ammo ?? {})) {
+    const g = items.get(gun);
+    const r = roundOf(items, round);
+    if (g?.type !== 'weapon' || !r || roundCalibre(r) !== calibreOf(items, g))
+      throw new Error(`${file}: "${round}" is not a round "${gun}" fires`);
+  }
   const minigun = items.get(def.powerups.minigun);
   if (minigun?.type !== 'weapon' || !minigun.infiniteAmmo)
     throw new Error(`${file}: the death machine "${def.powerups.minigun}" needs infiniteAmmo`);
