@@ -3686,15 +3686,21 @@
     },
     {
       "type": "box",
-      "pos": [28.637, 0, 122.764],
+      "pos": [28.637, 0.2, 122.764],
       "size": [25.2, 2.6, 0.2],
       "colour": "#b5b0a6",
       "yaw": 90
     },
     {
       "type": "box",
-      "pos": [64, 0, 115.264],
+      "pos": [64, 0, 67.264],
       "size": [70, 0.2, 40],
+      "colour": "#2c2d4e"
+    },
+    {
+      "type": "box",
+      "pos": [63.787, 0, 115.264],
+      "size": [70.5, 0.2, 40],
       "colour": "#331f1f"
     },
     {
@@ -4586,35 +4592,7 @@
     {
       "type": "playerSpawn",
       "id": "spawn",
-      "pos": [34, 0.2, 102]
-    },
-    {
-      "type": "group",
-      "name": "Walls",
-      "pos": [84.5, 0.2, 125],
-      "nodes": [
-        {
-          "type": "box",
-          "pos": [6.5, 0, 2.5],
-          "size": [15.2, 2.6, 0.2],
-          "colour": "#949087",
-          "yaw": 90
-        },
-        {
-          "type": "box",
-          "pos": [0, 0, -5],
-          "size": [13.2, 2.6, 0.2],
-          "colour": "#a49f96",
-          "yaw": 180
-        },
-        {
-          "type": "box",
-          "pos": [-6.5, 0, 2.5],
-          "size": [15.2, 2.6, 0.2],
-          "colour": "#a49f96",
-          "yaw": -90
-        }
-      ]
+      "pos": [73, 0.2, 91]
     },
     {
       "type": "prefab",
@@ -4630,8 +4608,8 @@
       "nodes": [
         {
           "type": "box",
-          "pos": [-2.667, 0, 8.208],
-          "size": [10.7, 2.6, 0.2],
+          "pos": [-2.667, 0, 7.533],
+          "size": [9.35, 2.6, 0.2],
           "colour": "#b5b0a6",
           "yaw": 90
         },
@@ -4673,6 +4651,18 @@
     },
     {
       "type": "prefab",
+      "id": "warehouse-hall-doors",
+      "prefab": "double-door",
+      "pos": [73.038, 0.2, 95.344]
+    },
+    {
+      "type": "prefab",
+      "id": "warehouse-hall-doors-2",
+      "prefab": "double-door",
+      "pos": [73.03, 0.2, 87.344]
+    },
+    {
+      "type": "prefab",
       "prefab": "elevator-power-switch",
       "pos": [35.29, 3.5, 183.72],
       "switch": {
@@ -4682,6 +4672,290 @@
         "name": "freight-elevator-switch",
         "useTime": 3
       }
+    },
+    {
+      "type": "group",
+      "name": "Walls",
+      "pos": [79.875, 0.2, 122.775],
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [-0.625, 0, -4.125],
+          "size": [2.7, 2.6, 0.2],
+          "colour": "#b5b0a6"
+        },
+        {
+          "type": "box",
+          "pos": [5, 0, 4.125],
+          "size": [16.7, 2.6, 0.2],
+          "colour": "#b5b0a6",
+          "yaw": -90
+        },
+        {
+          "type": "box",
+          "pos": [2.813, 0, -4.125],
+          "size": [4.575, 2.6, 0.2],
+          "colour": "#b5b0a6"
+        },
+        {
+          "type": "box",
+          "pos": [-20, 0, -25.775],
+          "size": [3.2, 2.6, 0.2],
+          "colour": "#b5b0a6",
+          "yaw": 90
+        },
+        {
+          "type": "box",
+          "pos": [-32.5, 0, -25.775],
+          "size": [3.2, 2.6, 0.2],
+          "colour": "#b5b0a6",
+          "yaw": 90
+        },
+        {
+          "type": "group",
+          "name": "Walls",
+          "pos": [-29.375, 0, -25.386],
+          "nodes": [
+            {
+              "type": "box",
+              "pos": [-2.062, 0, 1.111],
+              "size": [2.325, 2.6, 0.2],
+              "colour": "#b5b0a6",
+              "yaw": 180
+            },
+            {
+              "type": "box",
+              "pos": [7.188, 0, 1.111],
+              "size": [4.575, 2.6, 0.2],
+              "colour": "#b5b0a6",
+              "yaw": 180
+            },
+            {
+              "type": "box",
+              "pos": [-2.362, 0, -2.025],
+              "size": [1.725, 2.6, 0.2],
+              "colour": "#b5b0a6",
+              "yaw": 180
+            },
+            {
+              "type": "box",
+              "pos": [7.472, 0, -2.025],
+              "size": [4.007, 2.6, 0.2],
+              "colour": "#b5b0a6",
+              "yaw": 180
+            }
+          ]
+        },
+        {
+          "type": "box",
+          "pos": [-3.375, 0, -27.411],
+          "size": [3.2, 2.6, 0.2],
+          "colour": "#b5b0a6",
+          "yaw": 180
+        },
+        {
+          "type": "box",
+          "pos": [-10.3, 0, -27.411],
+          "size": [3.2, 2.6, 0.2],
+          "colour": "#b5b0a6",
+          "yaw": 180
+        },
+        {
+          "type": "box",
+          "pos": [-15.9, 0, -27.411],
+          "size": [8.4, 2.6, 0.2],
+          "colour": "wall",
+          "yaw": 180
+        }
+      ]
+    },
+    {
+      "type": "box",
+      "pos": [75.008, 0.2, 93.9],
+      "size": [3, 2.6, 0.2],
+      "colour": "#b5b0a6",
+      "yaw": 90
+    },
+    {
+      "type": "box",
+      "pos": [71.068, 0.2, 93.9],
+      "size": [3, 2.6, 0.2],
+      "colour": "#b5b0a6",
+      "yaw": 90
+    },
+    {
+      "type": "box",
+      "pos": [40.175, 0.2, 95.364],
+      "size": [14.2, 2.6, 0.2],
+      "colour": "wall",
+      "yaw": 180
+    },
+    {
+      "type": "box",
+      "pos": [59.609, 0, 91.264],
+      "size": [50, 0.2, 8],
+      "colour": "wall"
+    },
+    {
+      "type": "box",
+      "pos": [44, 0.2, 87.364],
+      "size": [11.2, 2.6, 0.2],
+      "colour": "wall",
+      "yaw": 180
+    },
+    {
+      "type": "box",
+      "pos": [63.26, 0.2, 87.364],
+      "size": [15.8, 2.6, 0.2],
+      "colour": "wall",
+      "yaw": 180
+    },
+    {
+      "type": "box",
+      "pos": [30.875, 0.2, 95.364],
+      "size": [4.4, 2.6, 0.2],
+      "colour": "wall",
+      "yaw": 180
+    },
+    {
+      "type": "box",
+      "pos": [28.637, 0.2, 102.764],
+      "size": [15, 2.6, 0.2],
+      "colour": "wall",
+      "yaw": 90
+    },
+    {
+      "type": "box",
+      "pos": [63.568, 0.2, 92.5],
+      "size": [15.2, 2.6, 0.2],
+      "colour": "wall",
+      "yaw": 180
+    },
+    {
+      "type": "box",
+      "pos": [45, 0.2, 92.5],
+      "size": [8, 2.6, 0.2],
+      "colour": "wall",
+      "yaw": 180
+    },
+    {
+      "type": "box",
+      "pos": [79.258, 0.2, 92.5],
+      "size": [8.7, 2.6, 0.2],
+      "colour": "wall"
+    },
+    {
+      "type": "box",
+      "pos": [81.25, 0.2, 95.364],
+      "size": [6.7, 2.6, 0.2],
+      "colour": "wall"
+    },
+    {
+      "type": "box",
+      "pos": [84.008, 0.2, 92.5],
+      "size": [1.2, 2.6, 0.2],
+      "colour": "wall"
+    },
+    {
+      "type": "box",
+      "pos": [84.504, 0.2, 93.932],
+      "size": [3, 2.6, 0.2],
+      "colour": "wall",
+      "yaw": -90.2
+    },
+    {
+      "type": "box",
+      "pos": [48.9, 0.2, 95.4],
+      "size": [6, 2.6, 0.2],
+      "colour": "wall",
+      "yaw": -90
+    },
+    {
+      "type": "box",
+      "pos": [55.869, 0.2, 95.4],
+      "size": [6, 2.6, 0.2],
+      "colour": "wall",
+      "yaw": -90
+    },
+    {
+      "type": "box",
+      "pos": [41.1, 0.2, 93.964],
+      "size": [3, 2.6, 0.2],
+      "colour": "wall",
+      "yaw": -90
+    },
+    {
+      "type": "prefab",
+      "id": "goods-shutter-warehouse",
+      "prefab": "goods-shutter",
+      "pos": [52.5, 0.2, 98.5]
+    },
+    {
+      "type": "prefab",
+      "id": "goods-shutter-ikea",
+      "prefab": "goods-shutter",
+      "pos": [52.5, 0.2, 87.364],
+      "yaw": 180
+    },
+    {
+      "type": "prefab",
+      "prefab": "elevator-power-switch",
+      "pos": [56.6, 0.2, 98.71],
+      "switch": {
+        "name": "goods shutter switch",
+        "useTime": 3,
+        "rows": [
+          { "opens": "goods-shutter-warehouse/gate", "timer": 4, "openNoise": "door-buzzer" },
+          {
+            "opens": "goods-shutter-ikea/gate",
+            "timer": 7,
+            "noise": "alarm-klaxon",
+            "lasts": 7,
+            "openNoise": "door-buzzer"
+          }
+        ]
+      }
+    },
+    {
+      "type": "prefab",
+      "prefab": "elevator-power-switch",
+      "pos": [48.4, 0.2, 87.154],
+      "yaw": 180,
+      "switch": {
+        "name": "goods shutter switch",
+        "useTime": 3,
+        "rows": [
+          { "opens": "goods-shutter-ikea/gate", "timer": 4, "openNoise": "door-buzzer" },
+          {
+            "opens": "goods-shutter-warehouse/gate",
+            "timer": 7,
+            "noise": "alarm-klaxon",
+            "lasts": 7,
+            "openNoise": "door-buzzer"
+          }
+        ]
+      }
+    },
+    {
+      "type": "group",
+      "name": "goods-crossing-lines",
+      "pos": [0, 0, 0],
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [49.9, 0.201, 92.93],
+          "size": [0.15, 0.006, 10.9],
+          "colour": "#d8b52e",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [55.1, 0.201, 92.93],
+          "size": [0.15, 0.006, 10.9],
+          "colour": "#d8b52e",
+          "collide": false
+        }
+      ]
     }
   ],
   "zones": [],
