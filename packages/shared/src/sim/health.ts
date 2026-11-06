@@ -262,7 +262,8 @@ export function shootCharacter(
  * chest lets through its share by the wound's level and wears down, then what got
  * through may start bleeding. Shots, swings and blasts (sim/grenades.ts) all end here.
  * In zombies mode a player's blasts never hurt players (the ray gun's bolts burst close
- * by), and under insta-kill any hit on a zombie kills it.
+ * by), and under insta-kill any hit on a zombie kills it. Enemies never hurt each other
+ * (byEnemyOnEnemy).
  */
 export function woundZone(
   state: SimState,
@@ -274,7 +275,7 @@ export function woundZone(
   by: EntityId,
   cause: DamageCause,
 ): void {
-  if (c.health.dead) return;
+  if (c.health.dead || byEnemyOnEnemy(state, c, by)) return;
   const zombies = state.zombies;
   if (zombies && !c.ai && cause === 'explosion' && by !== 0 && isPlayer(state, by)) return;
   if (zombies && zombies.instaKill > 0 && c.ai?.zombie && by !== 0) damage = INSTA_KILL;
@@ -305,6 +306,17 @@ export function woundZone(
 
 /** More than anything has: an insta-kill hit. */
 const INSTA_KILL = 1e6;
+
+/**
+ * Whether a hit on c by `by` is one enemy's on another (the user's call, 2026-11-06):
+ * those do nothing, shot, swung, blown up or set alight, so a stray round, a pellet or a
+ * fire never thins out a group. The round still stops on the body it hits.
+ */
+export function byEnemyOnEnemy(state: SimState, c: Character, by: EntityId): boolean {
+  if (!c.ai || by === 0) return false;
+  for (const e of state.entities) if (e.id === by) return !!e.ai;
+  return false;
+}
 
 /** Whether an entity is a player (there and not an enemy). */
 function isPlayer(state: SimState, id: EntityId): boolean {

@@ -2,7 +2,7 @@ import { burnOf, fireTimeOf, type AmmoDef, type ItemDb } from '../content/items'
 import { TICK_SECONDS } from '../tick';
 import { createRayHit, type CollisionWorld } from '../world/collision-world';
 import { heldWeapon } from './gear';
-import { ZONE_COUNT, dealDamage, type Zone } from './health';
+import { ZONE_COUNT, byEnemyOnEnemy, dealDamage, type Zone } from './health';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import { MOVEMENT } from './movement';
 import {
@@ -150,7 +150,8 @@ export function launchFlame(
 
 /**
  * Sets c alight with an item that burns (burnOf), as by: burning for its burnTime from
- * now, or on for longer if already burning. Only a new fire is an event. Not the dead.
+ * now, or on for longer if already burning. Only a new fire is an event. Not the dead,
+ * nor an enemy by another enemy's fire (byEnemyOnEnemy).
  */
 export function ignite(
   state: SimState,
@@ -159,7 +160,7 @@ export function ignite(
   id: string,
   by: EntityId,
 ): void {
-  if (c.health.dead) return;
+  if (c.health.dead || byEnemyOnEnemy(state, c, by)) return;
   const time = burnOf(items, id)?.burnTime ?? 0;
   if (c.burn) {
     c.burn.left = Math.max(c.burn.left, time);

@@ -132,7 +132,7 @@ Social pieces first, so two accounts can find each other and agree to play toget
   - A full raid with a friend, phone and PC, then two phones with one on 4G. Afterwards check the Worker's requests and the TURN usage in the Cloudflare dashboard.
 
 ## Decided
-- **Friendly fire is on** (the user's call, 2026-11-01): players' shots, knives and grenades hurt each other, as in Tarkov. Auto-fire and aim assist still never target a teammate.
+- **Friendly fire is on** (the user's call, 2026-11-01): players' shots, knives and grenades hurt each other, as in Tarkov. Auto-fire and aim assist still never target a teammate. **Enemies never hurt each other** (the user's call, 2026-11-06): see design.md.
 - **No name tags or teammate markers** (the user's call, 2026-11-01): nothing on screen says who's a friend. See C8.
 
 ## Open questions
