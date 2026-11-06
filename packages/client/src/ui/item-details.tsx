@@ -384,7 +384,12 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
       return out;
     }
     case 'container':
-      return [['Inside', `${def.grid[0]} × ${def.grid[1]} cells`]];
+      return [
+        [
+          'Inside',
+          `${def.grid[0]} × ${def.grid[1]} cells${def.sections ? ` in ${def.sections.length} sections` : ''}`,
+        ],
+      ];
     case 'melee':
       return [
         [

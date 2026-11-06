@@ -64,11 +64,57 @@ export interface Grid {
   h: number;
   /** Whether rigs and backpacks can go in it. */
   containers: boolean;
+  /**
+   * Its sections (2026-11-06), from a rig's or backpack's def: every item lies wholly in
+   * one. Left out, the whole grid is one.
+   */
+  sections?: Section[];
   items: GridItem[];
 }
 
-export function createGrid(w: number, h: number, containers = false): Grid {
-  return { w, h, containers, items: [] };
+/** A part of a grid that no item reaches out of: a rig's pouch, a backpack's pocket. */
+export interface Section {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export function createGrid(
+  w: number,
+  h: number,
+  containers = false,
+  sections?: readonly Section[],
+): Grid {
+  const grid: Grid = { w, h, containers, items: [] };
+  if (sections) grid.sections = sections.map((s) => ({ ...s }));
+  return grid;
+}
+
+/** Whether a w × h area at (x, y) is inside the grid and, if it has sections, one of them. */
+export function inGrid(grid: Grid, x: number, y: number, w: number, h: number): boolean {
+  if (x < 0 || y < 0 || x + w > grid.w || y + h > grid.h) return false;
+  const sections = grid.sections;
+  if (!sections) return true;
+  for (const s of sections) {
+    if (x >= s.x && y >= s.y && x + w <= s.x + s.w && y + h <= s.y + s.h) return true;
+  }
+  return false;
+}
+
+/** Whether two grids are the same shape: size and sections. */
+export function sameShape(
+  grid: Grid,
+  w: number,
+  h: number,
+  sections: readonly Section[] | undefined,
+): boolean {
+  const a = grid.sections;
+  if (grid.w !== w || grid.h !== h || (a?.length ?? 0) !== (sections?.length ?? 0)) return false;
+  return (sections ?? []).every((s, i) => {
+    const o = a![i]!;
+    return o.x === s.x && o.y === s.y && o.w === s.w && o.h === s.h;
+  });
 }
 
 /** An item's width in a grid, rotated or not. */
@@ -84,12 +130,15 @@ export function itemHeight(items: ItemDb, id: string, rotated: boolean): number 
 
 /** Whether a grid may hold an item at all, wherever it goes: no containers in containers. */
 export function canHold(items: ItemDb, grid: Grid, item: Item): boolean {
-  return grid.containers || itemDef(items, item.item).type !== 'container';
+  const def = itemDef(items, item.item);
+  // The vault is never an item anywhere (see VAULT_ITEM), even if content gives one out.
+  if (def.type === 'container' && def.slot === 'vault') return false;
+  return grid.containers || def.type !== 'container';
 }
 
 /**
- * Whether a w × h area at (x, y) is inside the grid and clear of every item but the one
- * at index ignore.
+ * Whether a w × h area at (x, y) is inside the grid (and one of its sections) and clear of
+ * every item but the one at index ignore.
  */
 export function isFree(
   items: ItemDb,
@@ -100,7 +149,7 @@ export function isFree(
   h: number,
   ignore = -1,
 ): boolean {
-  if (x < 0 || y < 0 || x + w > grid.w || y + h > grid.h) return false;
+  if (!inGrid(grid, x, y, w, h)) return false;
   for (let i = 0; i < grid.items.length; i++) {
     if (i === ignore) continue;
     const o = grid.items[i]!;
@@ -232,7 +281,7 @@ function swapSpots(
   if (!g) return null;
   const w = itemWidth(items, g.item.item, rotated);
   const h = itemHeight(items, g.item.item, rotated);
-  if (x < 0 || y < 0 || x + w > to.w || y + h > to.h) return null;
+  if (!inGrid(to, x, y, w, h)) return null;
   const under: number[] = [];
   for (let i = 0; i < to.items.length; i++) {
     const o = to.items[i]!;

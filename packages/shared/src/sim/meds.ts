@@ -13,9 +13,9 @@ import {
   type Health,
   type Zone,
 } from './health';
-import { ownItem, type ItemRef } from './looting';
+import { reachableItem, type ItemRef } from './looting';
 import { kitUsedUp, repairArmour } from './repair';
-import type { Character, PlayerInput } from './state';
+import type { Character, PlayerInput, SimState } from './state';
 
 /** The fixed order meds treat zones in. There's no body diagram. */
 export const TREATMENT_ORDER: readonly Zone[] = [
@@ -130,7 +130,12 @@ export function startUse(c: Character, items: ItemDb, ref: MedRef): boolean {
  * the meantime, the first carried one of the same item is used; if there's none, nothing
  * happens.
  */
-export function updateMedUse(c: Character, items: ItemDb, input: PlayerInput | undefined): void {
+export function updateMedUse(
+  state: SimState,
+  c: Character,
+  items: ItemDb,
+  input: PlayerInput | undefined,
+): void {
   if (c.health.dead) {
     c.using = null;
     return;
@@ -155,15 +160,24 @@ export function updateMedUse(c: Character, items: ItemDb, input: PlayerInput | u
   const still = carriedGrid(c.gear, u.grid)?.items[u.index]?.item.item === u.item;
   const ref = still ? u : firstCarried(c, u.item);
   if (!ref) return;
-  if (u.armour) finishRepair(c, items, ref, u.armour);
+  if (u.armour) finishRepair(state, c, items, ref, u.armour);
   else useMed(c, items, ref);
 }
 
-/** A repair's time is up: the kit's points go into the armour, if it's still there. */
-function finishRepair(c: Character, items: ItemDb, ref: CarriedRef, armourRef: ItemRef): void {
+/**
+ * A repair's time is up: the kit's points go into the armour, if it's still there and in
+ * reach (a body's or a crate's: walked away, nothing happens).
+ */
+function finishRepair(
+  state: SimState,
+  c: Character,
+  items: ItemDb,
+  ref: CarriedRef,
+  armourRef: ItemRef,
+): void {
   const grid = carriedGrid(c.gear, ref.grid)!;
   const kit = grid.items[ref.index]!.item;
-  const armour = ownItem(c.gear, armourRef);
+  const armour = reachableItem(state, c, armourRef);
   const points = kit.left ?? 0;
   if (!armour || repairArmour(items, kit, armour) <= 0) return;
   // The infinite consumables cheat gives the points back.

@@ -6,6 +6,8 @@ import {
   parseGear,
   raidProgress,
   restGear,
+  settleBags,
+  settleFits,
   settleGuns,
   settleVault,
   type EndRaidRequest,
@@ -174,9 +176,13 @@ raids.post('/:id/end', async (c) => {
   const gear = keptGear(end.gear, keepAll, profile.gear.knife);
   restGear(gear);
   const items = loadItems();
-  // A raid started before pistols left the primary slots, or before the vault was 2×2.
+  // A raid started before pistols left the primary slots, the vault was 2×2 or bags had
+  // sections.
   settleGuns(items, gear, profile.stash);
   settleVault(items, gear, profile.stash);
+  settleBags(items, gear, profile.stash);
+  // Items that grew since; only when everything's kept anyway (see settleFits).
+  if (keepAll) settleFits(items, gear, profile.stash);
   const bad = checkGear(items, gear);
   if (bad) return fail(c, 'invalid', bad);
   const map = raidDef(row.raid)?.map;

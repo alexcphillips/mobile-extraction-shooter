@@ -11,6 +11,8 @@ import {
   newProfile,
   parseGear,
   restGear,
+  settleBags,
+  settleFits,
   settleGuns,
   settleVault,
   type Profile,
@@ -305,5 +307,57 @@ describe('settleVault', () => {
     settleVault(items, p.gear, p.stash);
     expect(p.gear.vault!.w).toBe(6);
     expect(checkProfile(items, p)).toMatch(/vault: must be 2×2/);
+  });
+});
+
+describe('settleBags', () => {
+  it("gives a bag saved before its sections its def's shape, moving what crosses them", () => {
+    const p = profile();
+    const rig = createItem(items, 'pouch-rig');
+    expect(rig.grid!.sections).toHaveLength(3);
+    // As saved before it had sections: a pistol lying across two pouches.
+    delete rig.grid!.sections;
+    placeAt(items, rig.grid!, createItem(items, 'pistol'), 0, 0, false);
+    placeAt(items, rig.grid!, createItem(items, 'bandage'), 2, 1, false);
+    p.gear.rig = rig as typeof p.gear.rig;
+    // And one on a stash page, with a medkit that still fits.
+    const stored = createItem(items, 'pouch-rig');
+    delete stored.grid!.sections;
+    placeAt(items, stored.grid!, createItem(items, 'medkit'), 1, 0, false);
+    addItem(items, p.stash[0]!, stored);
+    expect(checkProfile(items, p)).toMatch(/must be 3×2 in 3 sections/);
+    settleBags(items, p.gear, p.stash);
+    expect(rig.grid!.sections).toHaveLength(3);
+    // The pistol turned upright in the first free pouch; the bandage stayed.
+    expect(rig.grid!.items).toMatchObject([
+      { x: 2, y: 1, item: { item: 'bandage' } },
+      { x: 0, y: 0, rotated: true, item: { item: 'pistol' } },
+    ]);
+    expect(stored.grid!.items).toMatchObject([{ x: 1, y: 0, item: { item: 'medkit' } }]);
+    expect(checkProfile(items, p)).toBeNull();
+  });
+});
+
+describe('settleFits', () => {
+  it('moves items that grew out of their spots: in the grid, else to the stash', () => {
+    const p = profile();
+    const bag = createItem(items, 'backpack');
+    p.gear.backpack = bag as typeof p.gear.backpack;
+    const grid = bag.grid!;
+    // As saved when a rifle was 4×1: one on row 0 with a watch under it (now overlapped).
+    grid.items.push({ x: 0, y: 1, rotated: false, item: createItem(items, 'watch') });
+    grid.items.push({ x: 0, y: 0, rotated: false, item: createItem(items, 'rifle') });
+    // And one in the pockets, which are 1 tall: no room there, so it goes to the stash.
+    p.gear.pockets.items.push({ x: 0, y: 0, rotated: false, item: createItem(items, 'rifle') });
+    expect(checkProfile(items, p)).toMatch(/outside the grid or overlaps/);
+    settleFits(items, p.gear, p.stash);
+    expect(grid.items).toMatchObject([
+      { x: 0, y: 1, item: { item: 'watch' } },
+      { x: 0, y: 2, item: { item: 'rifle' } },
+    ]);
+    // The kit's rounds and bandage were there first: the rifle moves.
+    expect(p.gear.pockets.items.some((g) => g.item.item === 'rifle')).toBe(false);
+    expect(p.stash[0]!.items.filter((g) => g.item.item === 'rifle')).toHaveLength(1);
+    expect(checkProfile(items, p)).toBeNull();
   });
 });

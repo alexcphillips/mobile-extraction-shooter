@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { TICK_RATE } from '../tick';
 import { CollisionWorld, type BoxDef } from '../world/collision-world';
+import { createGrid, placeAt } from '../inventory/grid';
 import { createItem } from './create-item';
 import { equip, heldWeapon, stow } from './gear';
-import { ARMOUR, CHEST, HEALTH, LEFT_ARM, createArmour } from './health';
+import { ARMOUR, CHEST, HEAD, HEALTH, LEFT_ARM, createArmour, dealDamage } from './health';
 import type { InventoryAction } from './looting';
 import { treatments } from './meds';
 import { MOVEMENT } from './movement';
@@ -300,6 +301,67 @@ describe('repairing armour in a raid', () => {
     s.run(5.1);
     expect(s.vest.durability).toBe(50);
     expect(s.kit()?.left).toBe(50);
+  });
+
+  it("mends a body's armour, worn or in its bags, and a crate's, in the kit's time", () => {
+    const s = worn();
+    // A dead scav beside you: a worn helmet on its head and a worn vest in its backpack.
+    s.target.x = 0;
+    s.target.z = -1;
+    const helmet = createArmour(items, 'helmet');
+    helmet.durability = 10;
+    equip(s.target, items, 'helmet', helmet);
+    equip(s.target, items, 'backpack', createItem(items, 'backpack'));
+    const vest = createArmour(items, 'vest');
+    vest.durability = 40;
+    placeAt(items, s.target.gear.backpack!.grid, vest, 0, 0, false);
+    dealDamage(s.state, s.target, HEAD, 1000, 0);
+    const body = { kind: 'body', id: s.target.id } as const;
+    const on = (armour: Extract<InventoryAction, { type: 'repair' }>['armour']) => ({
+      ...(s.repair() as Extract<InventoryAction, { type: 'repair' }>),
+      armour,
+    });
+    s.run(
+      1 / TICK_RATE,
+      input({ inventory: [on({ owner: body, slot: 'helmet', item: 'helmet' })] }),
+    );
+    s.run(4.9);
+    expect(helmet.durability).toBe(10);
+    s.run(0.2);
+    expect(helmet.durability).toBe(30);
+    expect(s.kit()?.left).toBe(30);
+    const inBag = { owner: body, grid: 'backpack', index: 0, item: 'vest' } as const;
+    s.run(1 / TICK_RATE, input({ inventory: [on(inBag)] }));
+    s.run(5.1);
+    expect(vest.durability).toBe(50);
+    expect(s.kit()?.left).toBe(20);
+
+    // A crate's, likewise.
+    const crate = { id: 'crate', def: 'crate', x: 0, y: 0, z: 1, grid: createGrid(4, 4, true) };
+    s.state.loot.push(crate);
+    const stored = createArmour(items, 'vest');
+    stored.durability = 45;
+    placeAt(items, crate.grid, stored, 0, 0, false);
+    const box = { kind: 'container', id: 'crate' } as const;
+    s.run(
+      1 / TICK_RATE,
+      input({ inventory: [on({ owner: box, grid: 'loot', index: 0, item: 'vest' })] }),
+    );
+    s.run(5.1);
+    expect(stored.durability).toBe(50);
+    expect(s.kit()?.left).toBe(15);
+
+    // Walked out of reach before it's done: nothing is spent.
+    helmet.durability = 10;
+    s.run(
+      1 / TICK_RATE,
+      input({ inventory: [on({ owner: body, slot: 'helmet', item: 'helmet' })] }),
+    );
+    expect(s.player.using).not.toBeNull();
+    s.player.x = 10;
+    s.run(5.1);
+    expect(helmet.durability).toBe(10);
+    expect(s.kit()?.left).toBe(15);
   });
 
   it('stops when firing, and refuses full armour or a kit in the vault', () => {

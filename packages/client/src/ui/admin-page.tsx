@@ -58,7 +58,9 @@ const TABS: readonly { label: string; shows: (d: ItemDef) => boolean }[] = [
   { label: 'Meds', shows: (d) => d.type === 'med' || d.type === 'repair' },
   {
     label: 'Gear',
-    shows: (d) => (d.type === 'armour' || d.type === 'container') && !isAdminItem(d),
+    // Not the vault, which is never an item to give (VAULT_ITEM).
+    shows: (d) =>
+      (d.type === 'armour' || (d.type === 'container' && d.slot !== 'vault')) && !isAdminItem(d),
   },
   { label: 'Other', shows: (d) => d.type === 'key' || d.type === 'quest' || d.type === 'loot' },
   { label: 'Admin', shows: isAdminItem },

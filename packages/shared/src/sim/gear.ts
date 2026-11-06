@@ -8,9 +8,16 @@ import type { WeaponState } from './weapons';
 export const GEAR = {
   /** Pockets, [width, height]: always there, lost on death like the rest. */
   pockets: [4, 1],
-  /** The vault: kept on death. Players only. */
+  /** The vault: kept on death. Players only. VAULT_ITEM's grid is this size. */
   vault: [2, 2],
 } as const;
+
+/**
+ * The item every player's vault is shown as, equipped beside its grid (the user's call,
+ * 2026-11-06). Only shown: the vault is still Gear.vault, a grid, so there's nothing to
+ * move, drop or sell.
+ */
+export const VAULT_ITEM = 'small-vault';
 
 /** A rig or backpack being worn. */
 export interface ContainerState extends Item {

@@ -342,6 +342,126 @@ describe('looting', () => {
     expect(act({ type: 'quick', from: at, to: self, count: 21 })).toBe(false);
   });
 
+  it('swaps a gun onto your gun, yours into your backpack, each with its own rounds', () => {
+    const { c, crate, box, act } = setup();
+    equip(c, items, 'primary1', createItem(items, 'rifle'));
+    const mine = c.gear.primary1!;
+    mine.mag = 10;
+    const theirs = createItem(items, 'rifle') as WeaponState;
+    theirs.mag = 30;
+    placeAt(items, crate.grid, theirs, 0, 0, false);
+    const onto = { owner: self, slot: 'primary1' } as const;
+    expect(
+      act({ type: 'move', from: { owner: box, grid: 'loot', index: 0, item: 'rifle' }, to: onto }),
+    ).toBe(true);
+    expect(c.gear.primary1).toBe(theirs);
+    expect(theirs.mag).toBe(30);
+    expect(c.gear.backpack!.grid.items.map((g) => g.item)).toEqual([mine]);
+    expect(mine.mag).toBe(10);
+    expect(crate.grid.items).toEqual([]);
+
+    // From the backpack: the room it leaves takes the other.
+    expect(
+      act({
+        type: 'move',
+        from: { owner: self, grid: 'backpack', index: 0, item: 'rifle' },
+        to: onto,
+      }),
+    ).toBe(true);
+    expect(c.gear.primary1).toBe(mine);
+    expect(c.gear.backpack!.grid.items.map((g) => g.item)).toEqual([theirs]);
+
+    // No room in what you carry: it goes where the new one was, as before.
+    unequip(c, 'backpack');
+    placeAt(items, crate.grid, theirs, 0, 0, false);
+    c.gear.backpack = null;
+    expect(
+      act({ type: 'move', from: { owner: box, grid: 'loot', index: 0, item: 'rifle' }, to: onto }),
+    ).toBe(true);
+    expect(c.gear.primary1).toBe(theirs);
+    expect(crate.grid.items.map((g) => g.item)).toEqual([mine]);
+  });
+
+  it('swaps an empty bag onto a full one, moving what was in it', () => {
+    const { c, crate, box, act } = setup();
+    const worn = c.gear.backpack!;
+    placeAt(items, worn.grid, createItem(items, 'watch'), 3, 3, false);
+    placeAt(items, worn.grid, createItem(items, 'cash', 40), 0, 0, false);
+    const fresh = createItem(items, 'backpack');
+    placeAt(items, crate.grid, fresh, 0, 0, false);
+    const onto = { owner: self, slot: 'backpack' } as const;
+    const from = { owner: box, grid: 'loot', index: 0, item: 'backpack' } as const;
+    expect(act({ type: 'move', from, to: onto })).toBe(true);
+    expect(c.gear.backpack).toBe(fresh);
+    // Where they were.
+    expect(fresh.grid!.items).toMatchObject([
+      { x: 3, y: 3, item: { item: 'watch' } },
+      { x: 0, y: 0, item: { item: 'cash', count: 40 } },
+    ]);
+    expect(crate.grid.items[0]!.item).toBe(worn);
+    expect(worn.grid.items).toEqual([]);
+
+    // A smaller bag takes what fits, auto-placed; the rest stays in the old one.
+    const small = createItem(items, 'backpack');
+    small.grid = createGrid(1, 1);
+    crate.grid.items.length = 0;
+    placeAt(items, crate.grid, small, 0, 0, false);
+    expect(act({ type: 'move', from, to: onto })).toBe(true);
+    expect(small.grid.items).toMatchObject([{ x: 0, y: 0, item: { item: 'cash' } }]);
+    expect(fresh.grid!.items).toMatchObject([{ x: 3, y: 3, item: { item: 'watch' } }]);
+
+    // A bag with things in it swaps on its own.
+    expect(act({ type: 'move', from, to: onto })).toBe(true);
+    expect(c.gear.backpack).toBe(fresh);
+    expect(fresh.grid!.items.map((g) => g.item.item)).toEqual(['watch']);
+    expect(small.grid.items.map((g) => g.item.item)).toEqual(['cash']);
+  });
+
+  it('puts things back on a body: a double-tap into an empty slot, drags swapping', () => {
+    const { c, enemy, body, act } = setup();
+    // Its rifle taken into your hands, then double-tapped back: onto its empty slot, not
+    // its pockets, which have no room for a rifle.
+    const theirs = enemy.gear.primary1!;
+    const onMe = { owner: self, slot: 'primary1', item: 'rifle' } as const;
+    expect(
+      act({ type: 'quick', from: { owner: body, slot: 'primary1', item: 'rifle' }, to: self }),
+    ).toBe(true);
+    expect(c.gear.primary1).toBe(theirs);
+    expect(act({ type: 'quick', from: onMe, to: body })).toBe(true);
+    expect(enemy.gear.primary1).toBe(theirs);
+    expect(c.gear.primary1).toBeNull();
+    // A helmet from your backpack goes on its head.
+    addItem(items, c.gear.backpack!.grid, createItem(items, 'helmet'));
+    expect(
+      act({
+        type: 'quick',
+        from: { owner: self, grid: 'backpack', index: 0, item: 'helmet' },
+        to: body,
+      }),
+    ).toBe(true);
+    expect(enemy.gear.helmet?.item).toBe('helmet');
+
+    // Your rifle dragged onto its rifle, from your hands: they swap slots.
+    equip(c, items, 'primary1', createItem(items, 'rifle'));
+    const mine = c.gear.primary1!;
+    const onIt = { owner: body, slot: 'primary1' } as const;
+    expect(act({ type: 'move', from: onMe, to: onIt })).toBe(true);
+    expect(enemy.gear.primary1).toBe(mine);
+    expect(c.gear.primary1).toBe(theirs);
+    // From your backpack: its rifle goes where yours was.
+    unequip(c, 'primary1');
+    placeAt(items, c.gear.backpack!.grid, theirs, 0, 1, false);
+    expect(
+      act({
+        type: 'move',
+        from: { owner: self, grid: 'backpack', index: 0, item: 'rifle' },
+        to: onIt,
+      }),
+    ).toBe(true);
+    expect(enemy.gear.primary1).toBe(theirs);
+    expect(c.gear.backpack!.grid.items.map((g) => g.item)).toEqual([mine]);
+  });
+
   it('drags between grids and gear slots, swapping with what is there', () => {
     const { c, crate, box, body, enemy, act } = setup();
     equip(c, items, 'helmet', createItem(items, 'helmet'));

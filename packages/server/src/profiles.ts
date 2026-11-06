@@ -9,6 +9,8 @@ import {
   loadSettings,
   restGear,
   sameQuests,
+  settleBags,
+  settleFits,
   settleGuns,
   settleVault,
   type Profile,
@@ -20,14 +22,16 @@ import { body, fail, isObject } from './errors';
 
 /**
  * A stored profile, loaded through its format's migrations, with any pistol moved out of
- * a primary slot and an old 2×3 vault shrunk (both need the items, so they aren't format
- * migrations).
+ * a primary slot, an old 2×3 vault shrunk, bags given their defs' shapes and items that
+ * grew re-fitted (all need the items, so they aren't format migrations).
  */
 export function parseProfile(data: string): Profile {
   const p = loadContent(PROFILE_FORMAT, JSON.parse(data), 'profile');
   const items = loadItems();
   settleGuns(items, p.gear, p.stash);
   settleVault(items, p.gear, p.stash);
+  settleBags(items, p.gear, p.stash);
+  settleFits(items, p.gear, p.stash);
   return p;
 }
 

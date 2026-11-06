@@ -74,7 +74,7 @@ export function step(
     // A death machine stays in the hands until it ends.
     if (input?.draw && !e.extinguish && !holdsDeathMachine(state, e))
       switchHand(e, items, input.draw);
-    updateMedUse(e, items, input);
+    updateMedUse(state, e, items, input);
   }
   // Everyone moves, then everyone shoots, so shots see this tick's positions.
   for (const e of state.entities) {

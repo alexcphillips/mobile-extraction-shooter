@@ -520,7 +520,7 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
       return (
         <>
           <h4>rig or backpack</h4>
-          <P {...b} path={['slot']} label="worn as" options={['rig', 'backpack']} />
+          <P {...b} path={['slot']} label="worn as" options={['rig', 'backpack', 'vault']} />
           <Row>
             <N {...b} path={['grid', 0]} label="inside width" min={1} />
             <N {...b} path={['grid', 1]} label="inside height" min={1} />
@@ -850,7 +850,8 @@ function SizePreview({ def }: { def: ItemDef }) {
     <div className="ie-card">
       <h4>
         {w}×{h} in the inventory
-        {def.type === 'container' && ` · ${def.grid[0]}×${def.grid[1]} inside`}
+        {def.type === 'container' &&
+          ` · ${def.grid[0]}×${def.grid[1]} inside${def.sections ? `, ${def.sections.length} sections` : ''}`}
       </h4>
       <div className="ie-sizes">
         <Cells w={w} h={h} colour={colourOf(def)} label={def.name} art={art} />

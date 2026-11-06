@@ -1,4 +1,4 @@
-import { itemDef, type ItemDb } from '../content/items';
+import { itemDef, sectionsOf, type ItemDb } from '../content/items';
 import { createGrid, type Item } from '../inventory/grid';
 import { createArmour } from './health';
 import { createWeapon } from './weapons';
@@ -16,7 +16,11 @@ export function createItem(items: ItemDb, id: string, count = 1): Item {
     case 'armour':
       return createArmour(items, id);
     case 'container':
-      return { item: id, count: 1, grid: createGrid(def.grid[0], def.grid[1]) };
+      return {
+        item: id,
+        count: 1,
+        grid: createGrid(def.grid[0], def.grid[1], false, sectionsOf(def)),
+      };
     case 'med':
       return { item: id, count: 1, left: def.hp ?? def.uses ?? 1 };
     case 'repair':

@@ -14,6 +14,7 @@ import {
   type Character,
   type GearSlot,
   type Grid,
+  type Section,
   type GridName,
   type GridRef,
   type InGrid,
@@ -25,6 +26,7 @@ import {
   type Owner,
   type Rarity,
   type WeaponState,
+  VAULT_ITEM,
 } from '@mes/shared';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { itemPortrait } from '../render/item-portrait';
@@ -264,7 +266,7 @@ function RepairButton({
   item: Item;
   def: ItemDef;
 }): ReactNode {
-  if (def.type !== 'armour' || armour.owner.kind !== 'self') return null;
+  if (def.type !== 'armour') return null;
   // While anything is being used, the pill at the top shows it (and stops it).
   if (inv.ctx.player.using) return null;
   if ((item.durability ?? 0) >= def.durability) return null;
@@ -613,6 +615,7 @@ function Ground({ inv }: { inv: InventoryController }): ReactNode {
               key={ref.ground}
               className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}`}
               data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
+              data-armour={def.type === 'armour' ? JSON.stringify(ref) : undefined}
               style={{
                 width: def.size[0] * cell,
                 height: def.size[1] * cell,
@@ -673,7 +676,6 @@ function CharacterGrids({
     ['Pockets', 'pockets', g.pockets, null],
     ['Backpack', 'backpack', g.backpack?.grid ?? null, 'backpack'],
   ];
-  if (vault) grids.push(['Vault · kept if you die', 'vault', g.vault, null]);
   return (
     <>
       {grids.map(([label, name, grid, slot]) =>
@@ -689,7 +691,39 @@ function CharacterGrids({
           </div>
         ) : null,
       )}
+      {vault && g.vault && (
+        <div className="inv-section">
+          <h3>Kept if you die</h3>
+          <div className="inv-holder">
+            <VaultSlot items={inv.ctx.items} />
+            <GridView inv={inv} gref={{ owner, grid: 'vault' }} grid={g.vault} />
+          </div>
+        </div>
+      )}
     </>
+  );
+}
+
+/**
+ * The vault, shown as VAULT_ITEM equipped beside its grid (the user's call, 2026-11-06).
+ * Only shown: it has no ref, so it can't be dragged, selected, sold or taken off.
+ */
+function VaultSlot({ items }: { items: ItemDb }): ReactNode {
+  const item: Item = { item: VAULT_ITEM, count: 1 };
+  const def = itemDef(items, VAULT_ITEM);
+  return (
+    <div className="inv-slots">
+      <div className="inv-slot">
+        <div
+          className="inv-item"
+          title="Your vault: always equipped"
+          style={{ background: tintOf(def), borderColor: colourOf(def) }}
+        >
+          <ItemArt items={items} item={item} def={def} />
+          <ItemLabel items={items} item={item} def={def} />
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -724,9 +758,7 @@ function Slots({
                 className={`inv-item${inHand ? ' in-hand' : ''}${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}`}
                 title={inHand ? 'In hand' : undefined}
                 data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
-                data-armour={
-                  def.type === 'armour' && owner.kind === 'self' ? JSON.stringify(ref) : undefined
-                }
+                data-armour={def.type === 'armour' ? JSON.stringify(ref) : undefined}
                 style={{ background: tintOf(def), borderColor: colourOf(def) }}
                 onContextMenu={(e) => {
                   e.preventDefault();
@@ -771,66 +803,106 @@ function GridView({
   const search = useContext(StashSearchContext);
   // Your own grids aren't searched, only the stash and what's in it.
   const hit = stashPageOf(gref.owner) >= 0 ? search?.hit : null;
+  const tile = (g: Grid['items'][number], index: number, ox: number, oy: number) => {
+    const def = itemDef(inv.ctx.items, g.item.item);
+    const w = g.rotated ? def.size[1] : def.size[0];
+    const h = g.rotated ? def.size[0] : def.size[1];
+    const ref: ItemRef = { ...gref, index, item: g.item.item };
+    return (
+      <div
+        key={index}
+        className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${inv.isOpenBag(ref) ? ' open' : ''}${hit && !hit(g.item) ? ' dimmed' : ''}`}
+        data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
+        data-armour={def.type === 'armour' ? JSON.stringify(ref) : undefined}
+        style={{
+          left: (g.x - ox) * cell,
+          top: (g.y - oy) * cell,
+          width: w * cell,
+          height: h * cell,
+          background: tintOf(def),
+          borderColor: colourOf(def),
+        }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          inv.inspect(ref);
+        }}
+        onPointerDown={(e) => {
+          const r = e.currentTarget.getBoundingClientRect();
+          inv.drag.down(e.nativeEvent, {
+            ref,
+            w: def.size[0],
+            h: def.size[1],
+            rotated: g.rotated,
+            grabX: Math.min(w - 1, Math.floor((e.clientX - r.left) / cell)),
+            grabY: Math.min(h - 1, Math.floor((e.clientY - r.top) / cell)),
+            colour: colourOf(def),
+            label: def.name,
+            el: e.currentTarget,
+          });
+        }}
+      >
+        <ItemArt items={inv.ctx.items} item={g.item} def={def} cell={cell} rotated={g.rotated} />
+        <ItemLabel items={inv.ctx.items} item={g.item} def={def} />
+        {g.item.found && <span className="inv-item-found">✓</span>}
+      </div>
+    );
+  };
+  if (!grid.sections) {
+    return (
+      <div
+        className="inv-grid"
+        data-drop={JSON.stringify(gref)}
+        style={{ width: grid.w * cell, height: grid.h * cell }}
+      >
+        {grid.items.map((g, index) => tile(g, index, 0, 0))}
+      </div>
+    );
+  }
+  // A rig's or backpack's sections (2026-11-06): each its own box, SECTION_GAP apart. Each
+  // is a drop target of its own, and data-at says where its top-left cell is in the grid.
+  const boxes = sectionBoxes(grid.sections, cell);
   return (
     <div
-      className="inv-grid"
-      data-drop={JSON.stringify(gref)}
-      style={{ width: grid.w * cell, height: grid.h * cell }}
+      className="inv-sections"
+      style={{
+        width: Math.max(...boxes.map((b) => b.left + b.s.w * cell)),
+        height: Math.max(...boxes.map((b) => b.top + b.s.h * cell)),
+      }}
     >
-      {grid.items.map((g, index) => {
-        const def = itemDef(inv.ctx.items, g.item.item);
-        const w = g.rotated ? def.size[1] : def.size[0];
-        const h = g.rotated ? def.size[0] : def.size[1];
-        const ref: ItemRef = { ...gref, index, item: g.item.item };
-        return (
-          <div
-            key={index}
-            className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${inv.isOpenBag(ref) ? ' open' : ''}${hit && !hit(g.item) ? ' dimmed' : ''}`}
-            data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
-            data-armour={
-              def.type === 'armour' && gref.owner.kind === 'self' ? JSON.stringify(ref) : undefined
-            }
-            style={{
-              left: g.x * cell,
-              top: g.y * cell,
-              width: w * cell,
-              height: h * cell,
-              background: tintOf(def),
-              borderColor: colourOf(def),
-            }}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              inv.inspect(ref);
-            }}
-            onPointerDown={(e) => {
-              const r = e.currentTarget.getBoundingClientRect();
-              inv.drag.down(e.nativeEvent, {
-                ref,
-                w: def.size[0],
-                h: def.size[1],
-                rotated: g.rotated,
-                grabX: Math.min(w - 1, Math.floor((e.clientX - r.left) / cell)),
-                grabY: Math.min(h - 1, Math.floor((e.clientY - r.top) / cell)),
-                colour: colourOf(def),
-                label: def.name,
-                el: e.currentTarget,
-              });
-            }}
-          >
-            <ItemArt
-              items={inv.ctx.items}
-              item={g.item}
-              def={def}
-              cell={cell}
-              rotated={g.rotated}
-            />
-            <ItemLabel items={inv.ctx.items} item={g.item} def={def} />
-            {g.item.found && <span className="inv-item-found">✓</span>}
-          </div>
-        );
-      })}
+      {boxes.map(({ s, left, top }, i) => (
+        <div
+          key={i}
+          className="inv-grid"
+          data-drop={JSON.stringify(gref)}
+          data-at={`${s.x},${s.y}`}
+          style={{ left, top, width: s.w * cell, height: s.h * cell }}
+        >
+          {grid.items.map((g, index) =>
+            g.x >= s.x && g.y >= s.y && g.x < s.x + s.w && g.y < s.y + s.h
+              ? tile(g, index, s.x, s.y)
+              : null,
+          )}
+        </div>
+      ))}
     </div>
   );
+}
+
+/** Pixels between a grid's sections. */
+const SECTION_GAP = 6;
+
+/**
+ * Where each section is drawn: at its cell position, pushed right by a gap for each
+ * column a section starts in to its left, and down likewise for rows.
+ */
+function sectionBoxes(sections: readonly Section[], cell: number) {
+  const xs = [...new Set(sections.map((s) => s.x))].sort((a, b) => a - b);
+  const ys = [...new Set(sections.map((s) => s.y))].sort((a, b) => a - b);
+  return sections.map((s) => ({
+    s,
+    left: s.x * cell + xs.indexOf(s.x) * SECTION_GAP,
+    top: s.y * cell + ys.indexOf(s.y) * SECTION_GAP,
+  }));
 }
 
 /**

@@ -289,18 +289,24 @@ export class DragController {
     if (!el || !zone) return;
     let x = 0;
     let y = 0;
+    // Cells from the drop element's corner; a grid's section (data-at) starts further in.
+    let lx = 0;
+    let ly = 0;
     if (zone.kind === 'grid') {
       const r = el.getBoundingClientRect();
-      x = Math.round((left - r.left) / c);
-      y = Math.round((top - r.top) / c);
+      lx = Math.round((left - r.left) / c);
+      ly = Math.round((top - r.top) / c);
+      const [ax, ay] = (el.dataset.at ?? '0,0').split(',').map(Number);
+      x = lx + ax!;
+      y = ly + ay!;
     }
     const ok = this.host.canDrop(src, zone, x, y, this.rotated);
     this.hover = { zone, el, x, y, ok };
     if (zone.kind === 'grid') {
       const [w, h] = this.size();
       const hl = this.highlight;
-      hl.style.left = `${x * c}px`;
-      hl.style.top = `${y * c}px`;
+      hl.style.left = `${lx * c}px`;
+      hl.style.top = `${ly * c}px`;
       hl.style.width = `${w * c}px`;
       hl.style.height = `${h * c}px`;
       hl.classList.toggle('bad', !ok);

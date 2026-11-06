@@ -13,7 +13,10 @@ import { stackSize, type ItemDef } from '@mes/shared';
 export function storageRisks(before: ItemDef, after: ItemDef): string[] {
   const out: string[] = [];
   if (before.size[0] !== after.size[0] || before.size[1] !== after.size[1])
-    out.push('its size changed, so saved ones may overlap or stick out of their grids');
+    // The server re-fits saved ones (settleFits), so nothing's refused, but things move.
+    out.push(
+      'its size changed: saved ones that no longer fit where they are move elsewhere in their grid or to the stash when loaded',
+    );
   if (stackSize(after) < stackSize(before))
     out.push('its stack is smaller than saved stacks may be');
   if (before.type !== after.type) return out;
@@ -42,8 +45,15 @@ export function storageRisks(before: ItemDef, after: ItemDef): string[] {
     case 'container': {
       const b = before as typeof after;
       if (after.slot !== b.slot) out.push('saved ones are worn in the old slot');
-      if (after.grid[0] < b.grid[0] || after.grid[1] < b.grid[1])
-        out.push('its grid is smaller, so saved ones may hold things outside it');
+      // The server reshapes saved ones (settleBags), so nothing's refused, but things move.
+      if (
+        after.grid[0] < b.grid[0] ||
+        after.grid[1] < b.grid[1] ||
+        JSON.stringify(after.sections) !== JSON.stringify(b.sections)
+      )
+        out.push(
+          'its grid is smaller or its sections changed: saved ones are reshaped when loaded, and what no longer fits moves elsewhere in it or to the stash',
+        );
       break;
     }
     case 'attachment': {

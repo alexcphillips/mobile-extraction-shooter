@@ -1382,6 +1382,15 @@ body:has(#raid:not([hidden])) #vitals {
   outline: 1px solid #343e46;
 }
 
+/* A rig's or backpack's sections: each its own .inv-grid, a gap apart. */
+.inv-sections {
+  position: relative;
+}
+
+.inv-sections > .inv-grid {
+  position: absolute;
+}
+
 .inv-item {
   position: absolute;
   box-sizing: border-box;

@@ -1,0 +1,33 @@
+{
+  "formatVersion": 10,
+  "id": "small-vault",
+  "name": "Small vault",
+  "type": "container",
+  "size": [2, 2],
+  "value": 0,
+  "rarity": "legendary",
+  "view": "angled",
+  "slot": "vault",
+  "grid": [2, 2],
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0.11, 0], "size": [0.3, 0.22, 0.22], "colour": "#4a5157" },
+      { "type": "box", "pos": [0, 0.11, 0.112], "size": [0.24, 0.16, 0.01], "colour": "#3a4045" },
+      {
+        "type": "cylinder",
+        "pos": [0.05, 0.11, 0.12],
+        "pitch": 90,
+        "radius": 0.03,
+        "height": 0.012,
+        "sides": 12,
+        "colour": "#c8a24a"
+      },
+      {
+        "type": "box",
+        "pos": [-0.07, 0.11, 0.12],
+        "size": [0.03, 0.06, 0.012],
+        "colour": "#c8a24a"
+      }
+    ]
+  }
+}

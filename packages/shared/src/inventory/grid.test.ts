@@ -8,6 +8,7 @@ import {
   createGrid,
   dropAt,
   findSpot,
+  inGrid,
   isFree,
   itemAt,
   placeAt,
@@ -182,5 +183,38 @@ describe('grids', () => {
     expect(transfer(items, from, 1, big)).toBe(true);
     expect(from.items).toHaveLength(1);
     expect(big.items[0]!.item.item).toBe('watch');
+  });
+
+  it('keeps every item inside one section', () => {
+    // A rig of four 1×2 pouches.
+    const pouches = [0, 1, 2, 3].map((x) => ({ x, y: 0, w: 1, h: 2 }));
+    const g = createGrid(4, 2, false, pouches);
+    expect(inGrid(g, 0, 0, 1, 2)).toBe(true);
+    expect(inGrid(g, 0, 0, 2, 1)).toBe(false);
+    // Nothing wider than a pouch: a 2×1 pistol only fits turned upright.
+    expect(findSpot(items, g, 'pistol')).toEqual({ x: 0, y: 0, rotated: true });
+    expect(placeAt(items, g, one('pistol'), 1, 0, false)).toBe(false);
+    expect(addItem(items, g, one('rifle'))).toBe(1);
+    // A backpack's two 2×2 pockets under a 4×1 top, and a cell in neither.
+    const bag = createGrid(4, 3, false, [
+      { x: 0, y: 0, w: 4, h: 1 },
+      { x: 0, y: 1, w: 2, h: 2 },
+      { x: 3, y: 1, w: 1, h: 1 },
+    ]);
+    expect(isFree(items, bag, 0, 1, 2, 2)).toBe(true);
+    expect(isFree(items, bag, 1, 1, 2, 2)).toBe(false);
+    expect(isFree(items, bag, 3, 2, 1, 1)).toBe(false);
+    // Dragged across a pocket's edge, it's refused, swap or no swap.
+    placeAt(items, bag, one('medkit'), 0, 1, false);
+    placeAt(items, bag, one('watch'), 3, 1, false);
+    expect(dropAt(items, bag, 0, bag, 2, 1, false)).toBe(false);
+    expect(dropAt(items, bag, 0, bag, 1, 1, false)).toBe(true);
+  });
+
+  it('never holds the vault item, even a grid that takes containers', () => {
+    const stash = createGrid(10, 10, true);
+    expect(canHold(items, stash, one('vault'))).toBe(false);
+    expect(addItem(items, stash, one('vault'))).toBe(1);
+    expect(placeAt(items, stash, one('vault'), 0, 0, false)).toBe(false);
   });
 });

@@ -278,4 +278,44 @@ describe('repairs in the stash', () => {
     forged.gear.bodyArmour!.durability = 50;
     expect(overRepaired(items, before, forged)).toBe(true);
   });
+  it("mends armour that isn't worn: on a stash page, or in a bag stored there", () => {
+    const p = profile();
+    const vest = createItem(items, 'vest');
+    vest.durability = 20;
+    addItem(items, p.stash[0]!, vest);
+    const bag = createItem(items, 'backpack');
+    const helmet = createItem(items, 'helmet');
+    helmet.durability = 10;
+    addItem(items, bag.grid!, helmet);
+    addItem(items, p.stash[0]!, bag);
+    const before = clone(p);
+    const s = openStash(p);
+    const at = (item: string) => p.stash[0]!.items.findIndex((g) => g.item.item === item);
+    const kit = { ...page0, index: at('repair-kit'), item: 'repair-kit' } as const;
+    // The vest on the page takes 30 of the kit's 50 points, at once.
+    expect(
+      applyStash(s, items, {
+        type: 'repair',
+        kit,
+        armour: { ...page0, index: at('vest'), item: 'vest' },
+      }),
+    ).toBe(true);
+    expect(vest.durability).toBe(50);
+    // The helmet in the stored backpack takes the other 20.
+    expect(
+      applyStash(s, items, {
+        type: 'repair',
+        kit,
+        armour: {
+          ...page0,
+          inside: { index: at('backpack'), item: 'backpack' },
+          index: 0,
+          item: 'helmet',
+        },
+      }),
+    ).toBe(true);
+    expect(helmet.durability).toBe(30);
+    expect(countOf(p.stash[0]!, 'repair-kit')).toBe(0);
+    expect(overRepaired(items, before, p)).toBe(false);
+  });
 });

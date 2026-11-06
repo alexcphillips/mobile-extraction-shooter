@@ -1,6 +1,8 @@
 import {
   CollisionWorld,
+  GEAR,
   NavGrid,
+  VAULT_ITEM,
   VENDOR,
   buyPrice,
   createState,
@@ -59,6 +61,11 @@ describe('content', () => {
 
   it('items load and their references are sound', () => {
     expect(loadItems().size).toBeGreaterThan(0);
+  });
+
+  it("the vault's item is a vault the size of the vault's grid", () => {
+    const def = loadItems().get(VAULT_ITEM);
+    expect(def).toMatchObject({ type: 'container', slot: 'vault', grid: [...GEAR.vault] });
   });
 
   it('loot tables load and their items are sound', () => {

@@ -8,6 +8,12 @@
   "rarity": "common",
   "slot": "rig",
   "grid": [4, 2],
+  "sections": [
+    { "at": [0, 0], "size": [1, 2] },
+    { "at": [1, 0], "size": [1, 2] },
+    { "at": [2, 0], "size": [1, 2] },
+    { "at": [3, 0], "size": [1, 2] }
+  ],
   "model": {
     "parts": [
       { "type": "box", "pos": [0, 1.08, -0.16], "size": [0.3, 0.12, 0.05], "colour": "#4c5a36" },

@@ -8,6 +8,11 @@
   "rarity": "common",
   "slot": "backpack",
   "grid": [4, 4],
+  "sections": [
+    { "at": [0, 0], "size": [4, 2] },
+    { "at": [0, 2], "size": [2, 2] },
+    { "at": [2, 2], "size": [2, 2] }
+  ],
   "model": {
     "parts": [
       {

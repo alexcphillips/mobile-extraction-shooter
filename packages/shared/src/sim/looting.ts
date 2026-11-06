@@ -403,7 +403,9 @@ function takeOut(f: Found): void {
 
 /**
  * Applies one inventory action for c. Returns whether it did anything. With the world,
- * what's dropped lands on the surface under c's feet.
+ * what's dropped lands on the surface under c's feet. stash is set by the stash screen
+ * (between raids), where a gun swapped off a gun slot goes where the new one was rather
+ * than into the backpack, which would take it into the next raid.
  */
 export function applyInventory(
   state: SimState,
@@ -411,8 +413,9 @@ export function applyInventory(
   items: ItemDb,
   action: InventoryAction,
   world?: CollisionWorld,
+  stash = false,
 ): boolean {
-  const ctx: Ctx = { state, c, items, world };
+  const ctx: Ctx = { state, c, items, world, stash };
   if (c.health.dead) return false;
   switch (action.type) {
     case 'rotate': {
@@ -442,7 +445,7 @@ export function applyInventory(
     case 'detach':
       return detachPart(ctx, action.gun, action.slot, action.part, action.to);
     case 'repair':
-      return startRepair(c, items, action.kit, action.armour);
+      return startRepair(state, c, items, action.kit, action.armour);
     case 'unload':
       return unload(ctx, action.gun);
     case 'load':
@@ -519,7 +522,7 @@ export function loadGun(
   delete gun.reloadByHand;
   if (round === weaponDef(items, gun.item).ammo) delete gun.loaded;
   else gun.loaded = round;
-  stowRounds({ state, c, items, world }, old, out);
+  stowRounds({ state, c, items, world, stash: instant }, old, out);
   return true;
 }
 
@@ -538,15 +541,30 @@ export function ownItem(gear: Gear, ref: ItemRef): Item | null {
 }
 
 /**
- * Starts a repair: the kit must be carried (not in the vault, as for meds) with points
- * left, and the armour yours and not at full durability. A reload stops. Returns whether
- * it started.
+ * An item c can reach now, by ref, checked against what the sender saw: c's own, a dead
+ * body's, a container's in reach, or one on the ground in reach. Null if not.
  */
-function startRepair(c: Character, items: ItemDb, kitRef: ItemRef, armourRef: ItemRef): boolean {
+export function reachableItem(state: SimState, c: Character, ref: ItemRef): Item | null {
+  return find(state, c, ref)?.item ?? null;
+}
+
+/**
+ * Starts a repair: the kit must be carried (not in the vault, as for meds) with points
+ * left, and the armour not at full durability and in reach: yours, or a body's, a
+ * container's or on the ground (the user's call, 2026-11-06). A reload stops. Returns
+ * whether it started.
+ */
+function startRepair(
+  state: SimState,
+  c: Character,
+  items: ItemDb,
+  kitRef: ItemRef,
+  armourRef: ItemRef,
+): boolean {
   if (!('grid' in kitRef)) return false;
   const grid = CARRIED_NAMES.indexOf(kitRef.grid);
   const kit = grid < 0 ? null : ownItem(c.gear, kitRef);
-  const armour = ownItem(c.gear, armourRef);
+  const armour = reachableItem(state, c, armourRef);
   if (!kit || !armour || repairable(items, kit, armour) <= 0) return false;
   const def = itemDef(items, kit.item);
   if (def.type !== 'repair') return false;
@@ -562,13 +580,14 @@ interface Ctx {
   c: Character;
   items: ItemDb;
   world: CollisionWorld | undefined;
+  stash: boolean;
 }
 
 function moveTo(ctx: Ctx, from: Found, to: Target): boolean {
   const { state, c, items } = ctx;
   if ('slot' in to) {
     const ch = ownerCharacter(state, c, to.owner);
-    return !!ch && toSlot(items, from, ch, to.slot);
+    return !!ch && toSlot(ctx, from, ch, to.slot);
   }
   if (!('grid' in to)) return toGround(ctx, from);
   const grid = gridOf(state, c, to);
@@ -592,8 +611,56 @@ function stowOrDrop(ctx: Ctx, item: Item): void {
   if (stow(ctx.c, ctx.items, item) > 0) dropItem(ctx.state, ctx.c, item, ctx.world);
 }
 
-/** Drops an item on a gear slot, swapping with what's there if that fits where it came from. */
-function toSlot(items: ItemDb, from: Found, ch: Character, slot: GearSlot): boolean {
+/**
+ * Drops an item on a gear slot, swapping with what's there if that fits where it came from.
+ * An empty rig or backpack dropped on a slot whose bag has things in it takes them along
+ * (the user's call, 2026-11-06): see moveContents.
+ */
+function toSlot(ctx: Ctx, from: Found, ch: Character, slot: GearSlot): boolean {
+  const { items } = ctx;
+  if (gunToBag(ctx, from, ch, slot)) return true;
+  const oldBag = slotOf(ch.gear, slot)?.grid;
+  const newBag = from.item.grid;
+  const refill = !!oldBag?.items.length && newBag?.items.length === 0;
+  if (!swapSlot(items, from, ch, slot)) return false;
+  if (refill) moveContents(items, oldBag!, newBag!);
+  return true;
+}
+
+/**
+ * A gun dropped from a grid on a gun of yours in a gun slot (the user's call, 2026-11-06):
+ * yours goes into your backpack, else rig, else pockets, and the new one is equipped. Each
+ * keeps its own magazine and rounds. False, with nothing changed, if it's not that or
+ * there's no room: then it's the usual swap (swapSlot). Not from the ground, which swaps
+ * in place, nor in the stash (see applyInventory).
+ */
+function gunToBag(ctx: Ctx, from: Found, ch: Character, slot: GearSlot): boolean {
+  const { c, items } = ctx;
+  const old = slotOf(ch.gear, slot);
+  if (ctx.stash || ch !== c || from.at !== 'grid' || slot === 'knife' || !old) return false;
+  if (itemDef(items, old.item).type !== 'weapon') return false;
+  if (!fitsSlot(items, slot, from.item)) return false;
+  // Out first, so a gun from the backpack leaves its room for yours.
+  takeOut(from);
+  const bags = [c.gear.backpack?.grid, c.gear.rig?.grid, c.gear.pockets];
+  if (!bags.some((grid) => grid && addItem(items, grid, old) === 0)) {
+    from.grid.items.splice(from.index, 0, from.g);
+    return false;
+  }
+  equip(c, items, slot, from.item);
+  return true;
+}
+
+/**
+ * Moves what's in one bag into another: each item at the same spot if it's free, then the
+ * rest auto-placed. What doesn't fit stays in the old bag.
+ */
+function moveContents(items: ItemDb, from: Grid, to: Grid): void {
+  const left = from.items.filter((g) => !placeAt(items, to, g.item, g.x, g.y, g.rotated));
+  from.items = left.filter((g) => addItem(items, to, g.item) > 0);
+}
+
+function swapSlot(items: ItemDb, from: Found, ch: Character, slot: GearSlot): boolean {
   if (from.at === 'slot' && from.ch === ch && from.slot === slot) return false;
   if (!fitsSlot(items, slot, from.item)) return false;
   const old = slotOf(ch.gear, slot);
@@ -674,14 +741,17 @@ function quickMove(
     return true;
   }
   if (!canReach(state, c, to)) return false;
-  if (whole && to.kind === 'self' && !(from.at === 'slot' && from.ch === c)) {
+  // You or a body: an empty gear slot it fits first (a body's too, so a gun taken off a
+  // scav goes back on it: the user's call, 2026-11-06), then the grids.
+  const ch = to.kind === 'container' ? null : ownerCharacter(state, c, to);
+  if (whole && ch && !(from.at === 'slot' && from.ch === ch)) {
     const def = itemDef(items, from.item.item);
     const slots =
       def.type !== 'weapon' ? OTHER_SLOTS : def.hold === 'pistol' ? PISTOL_SLOTS : GUN_SLOTS;
     for (const slot of slots) {
-      if (slotOf(c.gear, slot) || !fitsSlot(items, slot, from.item)) continue;
+      if (slotOf(ch.gear, slot) || !fitsSlot(items, slot, from.item)) continue;
       takeOut(from);
-      equip(c, items, slot, from.item);
+      equip(ch, items, slot, from.item);
       return true;
     }
   }
@@ -696,7 +766,6 @@ function quickMove(
   if (to.kind === 'container') {
     into(bagGrid(lootContainerById(state, to.id)?.grid ?? null, inside));
   } else {
-    const ch = ownerCharacter(state, c, to);
     for (let i = 0; ch && i < CARRIED_GRIDS; i++) into(carriedGrid(ch.gear, i));
     // Your vault last, once pockets, rig and backpack are full (the user's call, 2026-10-30).
     if (to.kind === 'self') into(c.gear.vault);

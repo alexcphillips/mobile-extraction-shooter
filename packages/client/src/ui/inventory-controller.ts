@@ -315,9 +315,12 @@ export class InventoryController implements DragHost {
     return places;
   }
 
-  /** Whether a kit (where it is) can mend a piece of your armour now. */
+  /**
+   * Whether a kit (where it is) can mend an armour piece now: any you can reach, yours, a
+   * body's, a container's or the stash's (the user's call, 2026-11-06).
+   */
   canRepair(kit: ItemRef, armour: ItemRef): boolean {
-    if (!('grid' in kit) || armour.owner.kind !== 'self') return false;
+    if (!('grid' in kit)) return false;
     const from = JSON.stringify([kit.owner, kit.grid]);
     if (!this.kitPlaces().some((p) => JSON.stringify([p.owner, p.grid]) === from)) return false;
     const k = this.find(kit);
@@ -325,7 +328,7 @@ export class InventoryController implements DragHost {
     return !!k && !!a && repairable(this.ctx.items, k.item, a.item) > 0;
   }
 
-  /** A repair kit that can mend an armour piece of yours now, or null. */
+  /** A repair kit that can mend an armour piece now, or null. */
   kitFor(armour: ItemRef): ItemRef | null {
     const { sim, player } = this.ctx;
     for (const place of this.kitPlaces()) {

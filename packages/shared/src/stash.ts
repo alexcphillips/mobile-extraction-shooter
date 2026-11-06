@@ -204,7 +204,7 @@ function apply(s: StashState, items: ItemDb, action: InventoryAction): boolean {
   // Into a stored bag: that one only.
   const page = action.type === 'quick' && !action.inside ? stashPageOf(action.to) : -1;
   if (action.type !== 'quick' || page < 0) {
-    return applyInventory(s.sim, s.player, items, action);
+    return applyInventory(s.sim, s.player, items, action, undefined, true);
   }
   let changed = false;
   // Part of a stack: what's still to go.
@@ -214,7 +214,7 @@ function apply(s: StashState, items: ItemDb, action: InventoryAction): boolean {
     if (!item) break;
     const had = item.count;
     const next = { ...action, to: stashOwner(p), ...(count !== undefined && { count }) };
-    if (applyInventory(s.sim, s.player, items, next)) changed = true;
+    if (applyInventory(s.sim, s.player, items, next, undefined, true)) changed = true;
     // Gone from where it was: all of it went in.
     if (itemAt(s, action.from) !== item) break;
     if (count !== undefined && (count -= had - item.count) <= 0) break;

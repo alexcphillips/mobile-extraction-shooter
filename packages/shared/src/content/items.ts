@@ -46,7 +46,8 @@ const burning = {
  *    in at 9 too: a new type changes no existing file, so it needed no new version. The
  *    uncommon and mythic rarities came in at 9 for the same reason.
  * 10 (2026-11-04): gun recoil gained a snap, and its recovery became a rate (per second)
- *    rather than degrees per second (sim/recoil.ts).
+ *    rather than degrees per second (sim/recoil.ts). Containers' optional sections came
+ *    in at 10 too (2026-11-06): an optional field changes no existing file.
  */
 export const ITEM_FORMAT_VERSION = 10;
 
@@ -411,20 +412,73 @@ const medSchema = z
     path: ['uses'],
   });
 
-/** Rigs and backpacks: worn in their slot, with a grid of their own. */
-const containerSchema = z.strictObject({
-  ...common,
-  type: z.literal('container'),
-  slot: z.enum(['rig', 'backpack']),
-  /** The grid inside, [width, height] in cells. */
-  grid: sizeSchema,
-  /**
-   * For testing only (2026-10-31): given from the admin page's Admin tab, so keep it out of
-   * loot tables, loadouts and vendors (as an admin spawner gun).
-   */
-  admin: z.literal(true).optional(),
-  ...plainModel,
+/**
+ * A section of a rig's or backpack's grid (2026-11-06): its top-left cell and size. An
+ * item lies wholly in one section, so a rig of 1×2 pouches holds nothing wider than 1.
+ */
+const sectionSchema = z.strictObject({
+  at: z.tuple([z.int().min(0), z.int().min(0)]),
+  size: sizeSchema,
 });
+
+/**
+ * Rigs and backpacks: worn in their slot, with a grid of their own. And the vault
+ * (slot "vault", 2026-11-06): only ever shown equipped beside the player's vault grid
+ * (VAULT_ITEM), never an item in the gear, a grid or anywhere else, so it can't be
+ * moved, dropped or sold. Its grid is the vault's size (GEAR.vault).
+ */
+const containerSchema = z
+  .strictObject({
+    ...common,
+    type: z.literal('container'),
+    slot: z.enum(['rig', 'backpack', 'vault']),
+    /** The grid inside, [width, height] in cells: with sections, the box around them. */
+    grid: sizeSchema,
+    /**
+     * The grid's sections, drawn apart with a gap (2026-11-06). Left out, the grid is one
+     * section. Cells in no section hold nothing.
+     */
+    sections: z.array(sectionSchema).min(1).optional(),
+    /**
+     * For testing only (2026-10-31): given from the admin page's Admin tab, so keep it out of
+     * loot tables, loadouts and vendors (as an admin spawner gun).
+     */
+    admin: z.literal(true).optional(),
+    ...plainModel,
+  })
+  .refine((c) => !c.sections || sectionsProblem(c.grid, c.sections) === null, {
+    message: 'sections must be inside the grid and not overlap',
+    path: ['sections'],
+  });
+
+type SectionDef = z.infer<typeof sectionSchema>;
+
+/** Why sections don't fit a grid of this size (outside it, or overlapping), or null. */
+function sectionsProblem(grid: readonly [number, number], sections: readonly SectionDef[]) {
+  for (let i = 0; i < sections.length; i++) {
+    const {
+      at: [x, y],
+      size: [w, h],
+    } = sections[i]!;
+    if (x + w > grid[0] || y + h > grid[1]) return `section ${i + 1} is outside the grid`;
+    for (let j = 0; j < i; j++) {
+      const {
+        at: [ox, oy],
+        size: [ow, oh],
+      } = sections[j]!;
+      if (x < ox + ow && ox < x + w && y < oy + oh && oy < y + h)
+        return `sections ${j + 1} and ${i + 1} overlap`;
+    }
+  }
+  return null;
+}
+
+/** A rig's or backpack's sections as a grid has them, or undefined for one section. */
+export function sectionsOf(
+  def: ContainerDef,
+): { x: number; y: number; w: number; h: number }[] | undefined {
+  return def.sections?.map(({ at: [x, y], size: [w, h] }) => ({ x, y, w, h }));
+}
 
 /**
  * The knife. A swing hits the first body part in reach under the crosshair (or close to

@@ -5,6 +5,7 @@ import {
   firesRound,
   fits,
   itemDef,
+  sectionsOf,
   stackSize,
   weaponDef,
   type AttachmentDef,
@@ -20,8 +21,11 @@ import {
   isFree,
   itemHeight,
   itemWidth,
+  sameShape,
   type Grid,
+  type GridItem,
   type Item,
+  type Section,
 } from './inventory/grid';
 import { createItem } from './sim/create-item';
 import {
@@ -113,6 +117,7 @@ const gridShape = z.strictObject({
   w: count,
   h: count,
   containers: z.boolean(),
+  sections: z.array(z.strictObject({ x: count, y: count, w: count, h: count })).optional(),
   items: z.array(z.strictObject({ x: count, y: count, rotated: z.boolean(), item: itemShape })),
 });
 
@@ -310,27 +315,94 @@ export function settleGuns(items: ItemDb, gear: Gear, stash: readonly Grid[]): v
 }
 
 /**
- * Shrinks a vault saved at its old size (2×3 until 2026-11-06) to GEAR.vault: anything now
- * past its edge moves to a free spot in it, else onto the first stash page with room (none:
- * it stays, and checkGear refuses it). Only the old size is settled, so a client can't grow
- * its vault and have the extra moved into the stash. Run where settleGuns is.
+ * Shrinks a vault saved at its old size (2×3 until 2026-11-06) to GEAR.vault (see
+ * reshape). Only the old size is settled, so a client can't grow its vault and have the
+ * extra moved into the stash. Run where settleGuns is.
  */
 export function settleVault(items: ItemDb, gear: Gear, stash: readonly Grid[]): void {
   const vault = gear.vault;
-  const [w, h] = GEAR.vault;
   if (!vault || vault.w !== 2 || vault.h !== 3) return;
-  vault.w = w;
-  vault.h = h;
-  const off = vault.items.filter(
-    (g) =>
-      g.x + itemWidth(items, g.item.item, g.rotated) > w ||
-      g.y + itemHeight(items, g.item.item, g.rotated) > h,
-  );
-  vault.items = vault.items.filter((g) => !off.includes(g));
+  reshape(items, vault, GEAR.vault[0], GEAR.vault[1], undefined, stash);
+}
+
+/**
+ * Gives every rig and backpack (worn, or stored on a stash page) its def's grid shape, when
+ * the def changed after it was saved: sections came in on 2026-11-06 (see reshape). The
+ * shape is the def's, whatever was sent, and a bag's contents stay the owner's either way
+ * (kept with it, or moved to the stash), so nothing is gained by sending another. Run
+ * where settleGuns is.
+ */
+export function settleBags(items: ItemDb, gear: Gear, stash: readonly Grid[]): void {
+  const settle = (bag: Item | null) => {
+    if (!bag?.grid) return;
+    const def = itemDef(items, bag.item);
+    if (def.type !== 'container') return;
+    const sections = sectionsOf(def);
+    if (sameShape(bag.grid, def.grid[0], def.grid[1], sections)) return;
+    reshape(items, bag.grid, def.grid[0], def.grid[1], sections, stash);
+  };
+  settle(gear.rig);
+  settle(gear.backpack);
+  for (const page of stash) for (const g of page.items) settle(g.item);
+}
+
+/**
+ * Re-fits every grid of a stored profile's (2026-11-06): an item that no longer fits where
+ * it was saved, because its size changed in content (the MP-133 grew to 4×2), moves as
+ * reshape moves it. Stash pages first, so what the gear sheds lands on them as they'll
+ * be. Only for stored profiles and extracted raid results: after a death it would move a
+ * vault's overstuffing into the stash.
+ */
+export function settleFits(items: ItemDb, gear: Gear, stash: readonly Grid[]): void {
+  const grids: Grid[] = [];
+  for (const page of stash) {
+    grids.push(page);
+    for (const g of page.items) if (g.item.grid) grids.push(g.item.grid);
+  }
+  for (const bag of [gear.rig, gear.backpack]) if (bag?.grid) grids.push(bag.grid);
+  grids.push(gear.pockets);
+  if (gear.vault) grids.push(gear.vault);
+  for (const grid of grids) {
+    // Not one with an item that doesn't exist (a forged result): checkGear refuses it.
+    if (grid.items.every((g) => items.has(g.item.item))) refit(items, grid, stash);
+  }
+}
+
+/** Gives a grid a new shape, then re-fits what's in it (see refit). */
+function reshape(
+  items: ItemDb,
+  grid: Grid,
+  w: number,
+  h: number,
+  sections: Section[] | undefined,
+  stash: readonly Grid[],
+): void {
+  grid.w = w;
+  grid.h = h;
+  if (sections) grid.sections = sections;
+  else delete grid.sections;
+  refit(items, grid, stash);
+}
+
+/**
+ * Moves anything in a grid that doesn't fit where it is (past its edge, across its
+ * sections, or over an item before it) to a free spot in it, else onto the first stash
+ * page with room (none: it stays, and checkGear refuses it).
+ */
+function refit(items: ItemDb, grid: Grid, stash: readonly Grid[]): void {
+  const all = grid.items;
+  const off: GridItem[] = [];
+  grid.items = [];
+  for (const g of all) {
+    const w = itemWidth(items, g.item.item, g.rotated);
+    const h = itemHeight(items, g.item.item, g.rotated);
+    if (isFree(items, grid, g.x, g.y, w, h)) grid.items.push(g);
+    else off.push(g);
+  }
   for (const g of off) {
-    if (addItem(items, vault, g.item) === 0) continue;
-    if (stash.some((page) => addItem(items, page, g.item) === 0)) continue;
-    vault.items.push(g);
+    if (addItem(items, grid, g.item) === 0) continue;
+    if (stash.some((page) => page !== grid && addItem(items, page, g.item) === 0)) continue;
+    grid.items.push(g);
   }
 }
 
@@ -455,9 +527,10 @@ function checkGrid(
   h: number,
   containers: boolean,
   where: string,
+  sections?: readonly Section[],
 ): string | null {
-  if (grid.w !== w || grid.h !== h || grid.containers !== containers)
-    return `${where}: must be ${w}×${h}${containers ? ' and hold containers' : ''}`;
+  if (!sameShape(grid, w, h, sections) || grid.containers !== containers)
+    return `${where}: must be ${w}×${h}${sections ? ` in ${sections.length} sections` : ''}${containers ? ' and hold containers' : ''}`;
   for (let i = 0; i < grid.items.length; i++) {
     const gi = grid.items[i]!;
     const at = `${where}[${gi.x},${gi.y}]`;
@@ -490,7 +563,7 @@ function checkItem(items: ItemDb, item: Item, where: string): string | null {
       return null;
     case 'container':
       if (!item.grid) return `${at}: no grid`;
-      return checkGrid(items, item.grid, def.grid[0], def.grid[1], false, def.id);
+      return checkGrid(items, item.grid, def.grid[0], def.grid[1], false, def.id, sectionsOf(def));
     case 'med':
       return checkLeft(item, def.hp ?? def.uses ?? 1, at);
     case 'repair':

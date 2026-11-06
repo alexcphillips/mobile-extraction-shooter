@@ -197,6 +197,14 @@ const defs = [
   { ...common('medkit', [1, 2]), type: 'med', effect: 'heal', useTime: 3, hp: 100 },
   { ...common('rig', [2, 2]), type: 'container', slot: 'rig', grid: [3, 2] },
   { ...common('backpack', [3, 3]), type: 'container', slot: 'backpack', grid: [4, 4] },
+  { ...common('vault', [2, 2]), type: 'container', slot: 'vault', grid: [2, 2] },
+  {
+    ...common('pouch-rig', [2, 2]),
+    type: 'container',
+    slot: 'rig',
+    grid: [3, 2],
+    sections: [0, 1, 2].map((x) => ({ at: [x, 0], size: [1, 2] })),
+  },
   {
     ...common('knife', [1, 2]),
     type: 'melee',

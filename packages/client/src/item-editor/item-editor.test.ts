@@ -66,7 +66,15 @@ describe('item editor', () => {
     expect(risks('m9a3', (d) => setSlots(d, ['optic']))).toEqual([
       expect.stringMatching(/muzzle and magazine/),
     ]);
-    expect(risks('chest-rig', (d) => (d.grid = [3, 2]))).toHaveLength(1);
+    expect(
+      risks('chest-rig', (d) => {
+        d.grid = [3, 2];
+        delete d.sections;
+      }),
+    ).toHaveLength(1);
+    expect(risks('chest-rig', (d) => (d.sections = [{ at: [0, 0], size: [4, 2] }]))).toHaveLength(
+      1,
+    );
     expect(risks('steel-helmet', (d) => (d.durability = 30))).toHaveLength(1);
     expect(risks('cash', (d) => (d.stack = 100))).toHaveLength(1);
     expect(risks('medkit', (d) => (d.hp = 150))).toHaveLength(1);
