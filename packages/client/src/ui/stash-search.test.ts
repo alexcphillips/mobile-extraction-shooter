@@ -2,13 +2,13 @@ import type { Item, ItemDb } from '@mes/shared';
 import { describe, expect, it } from 'vitest';
 import { countHits, searcher } from './stash-search';
 
-const def = (id: string, name: string) => ({ id, name, type: 'misc', size: [1, 1] });
+const def = (id: string, name: string, type: string) => ({ id, name, type, size: [1, 1] });
 const items = new Map(
   [
-    def('akm', 'AKM'),
-    def('dot', 'Red dot'),
-    def('round', '7.62×39 mm AP'),
-    def('pack', 'Small backpack'),
+    def('akm', 'AKM', 'weapon'),
+    def('dot', 'Red dot', 'attachment'),
+    def('round', '7.62×39 mm AP', 'ammo'),
+    def('pack', 'Small backpack', 'container'),
   ].map((d) => [d.id, d]),
 ) as unknown as ItemDb;
 
@@ -55,5 +55,15 @@ describe('stash search', () => {
     };
     grid.items.push({ item: plain('dot'), x: 1, y: 0, rotated: false });
     expect(countHits(grid, hit)).toBe(1);
+  });
+
+  it('filters by category, with or without words typed', () => {
+    expect(searcher(items, '', 'all')).toBeNull();
+    const guns = searcher(items, '', 'guns')!;
+    expect(guns(akm)).toBe(true);
+    expect(guns(plain('dot'))).toBe(true);
+    expect(guns(plain('round'))).toBe(false);
+    expect(searcher(items, 'ap', 'ammo')!(plain('round'))).toBe(true);
+    expect(searcher(items, 'ap', 'gear')!(plain('round'))).toBe(false);
   });
 });

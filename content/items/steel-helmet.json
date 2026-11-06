@@ -9,6 +9,7 @@
   "slot": "helmet",
   "level": 3,
   "durability": 40,
+  "repairLoss": 0.12,
   "model": {
     "parts": [
       {

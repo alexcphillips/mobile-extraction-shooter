@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultSettings, loadSettings } from './settings';
+import { FAVOURITES_MAX, defaultSettings, loadSettings } from './settings';
 
 describe('settings', () => {
   it('has the design defaults', () => {
@@ -39,5 +39,19 @@ describe('settings', () => {
     expect(loadSettings(null)).toEqual(defaultSettings());
     expect(loadSettings('nope')).toEqual(defaultSettings());
     expect(loadSettings({ formatVersion: 99 })).toEqual(defaultSettings());
+  });
+
+  it('keeps favourites once each, up to the most there can be', () => {
+    expect(defaultSettings().favourites).toEqual([]);
+    const s = loadSettings({ formatVersion: 1, favourites: ['gpu', 'gpu', 'ring'] });
+    expect(s.favourites).toEqual(['gpu', 'ring']);
+    const many = Array.from({ length: FAVOURITES_MAX + 5 }, (_, i) => `item-${i}`);
+    expect(loadSettings({ formatVersion: 1, favourites: many }).favourites).toHaveLength(
+      FAVOURITES_MAX,
+    );
+    // Not a list: none, and the rest of the settings kept.
+    const bad = loadSettings({ formatVersion: 1, favourites: 'gpu', volume: 0.3 });
+    expect(bad.favourites).toEqual([]);
+    expect(bad.volume).toBe(0.3);
   });
 });

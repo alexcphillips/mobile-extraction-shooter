@@ -484,6 +484,13 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
           <Row>
             <N {...b} path={['level']} label="level (1–6)" min={1} />
             <N {...b} path={['durability']} label="durability" min={0} />
+            <N
+              {...b}
+              path={['repairLoss']}
+              label="repair loss (0–1)"
+              min={0}
+              hint="The share of what a repair mends that comes off its max. Blank is 0.1"
+            />
           </Row>
         </>
       );

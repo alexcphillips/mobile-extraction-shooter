@@ -1,3 +1,4 @@
+import { inventoryLayout, type InventoryLayout } from './inventory-layout';
 import {
   GEAR_SLOTS,
   canHold,
@@ -81,8 +82,9 @@ export interface PartChoice {
  * redraw on a change.
  */
 export class InventoryController implements DragHost {
-  /** Cell size in CSS pixels: about ten rows fit the screen's height. */
-  readonly cell = Math.max(28, Math.min(44, Math.floor(window.innerHeight / 10.5)));
+  /** The columns' widths and the cell size in CSS pixels (inventory-layout.ts). */
+  readonly layout: InventoryLayout;
+  readonly cell: number;
   readonly drag = new DragController(this);
   selected: ItemRef | null = null;
   /** Picking items to sell between raids: the picks, or null when not picking. */
@@ -107,6 +109,8 @@ export class InventoryController implements DragHost {
     private readonly redraw: () => void,
   ) {
     this.target = target;
+    this.layout = inventoryLayout(ctx.items, window.innerWidth, window.innerHeight);
+    this.cell = this.layout.cell;
   }
 
   /** Opens another body or container beside yours (null: just yours), with nothing selected. */

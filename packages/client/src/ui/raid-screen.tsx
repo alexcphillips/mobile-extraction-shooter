@@ -14,7 +14,6 @@ import {
   type Character,
   type GearSlot,
   type Grid,
-  type Section,
   type GridName,
   type GridRef,
   type InGrid,
@@ -27,8 +26,17 @@ import {
   type Rarity,
   type WeaponState,
   VAULT_ITEM,
+  maxDurability,
 } from '@mes/shared';
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from 'react';
 import { itemPortrait } from '../render/item-portrait';
 import { refKey, type InventoryController } from './inventory-controller';
 import { ItemDetails } from './item-details';
@@ -36,6 +44,10 @@ import { MapTab } from './map-tab';
 import type { RaidContext } from './raid';
 import { levelColour, levelOf } from './levels';
 import { RaidQuests } from './raid-quests';
+import { CATEGORIES, type Category } from './stash-search';
+import { favourites, holdsFavourite, toggleFavourite } from './favourites';
+import { settings } from '../settings';
+import { sectionBoxes } from './inventory-layout';
 
 type Tab = 'inventory' | 'map' | 'quests';
 
@@ -43,10 +55,15 @@ type Tab = 'inventory' | 'map' | 'quests';
 export interface StashSearch {
   query: string;
   setQuery: (query: string) => void;
-  /** Is this item one being looked for? Null with nothing typed. */
+  category: Category;
+  setCategory: (category: Category) => void;
+  /** Is this item one being looked for? Null with nothing typed and no category. */
   hit: ((item: Item) => boolean) | null;
   /** How many items are found on every page. */
   found: number;
+  /** The stash panel's title and the rest of its header: page tabs, sort, worth. */
+  title: ReactNode;
+  head: ReactNode;
 }
 
 export const StashSearchContext = createContext<StashSearch | null>(null);
@@ -95,6 +112,7 @@ export function RaidScreen({ inv, version, ctx }: Props & { ctx: RaidContext }):
 }
 
 const SELF: Owner = { kind: 'self' };
+const subscribeSettings = (onChange: () => void): (() => void) => settings.subscribe(onChange);
 // In body order, as Tarkov's: head, chest, the guns, then the sidearm and knife side by side.
 const MY_SLOTS: readonly GearSlot[] = [
   'helmet',
@@ -129,36 +147,67 @@ export function Inventory({ inv, version }: Props): ReactNode {
     [inv],
   );
   inv.followSelection();
-  const { ctx, selected } = inv;
+  const { ctx, selected, layout } = inv;
   const sel = selected && inv.find(selected);
+  const [help, setHelp] = useState(false);
+  // Favouriting changes the settings: redraw for it.
+  useSyncExternalStore(subscribeSettings, () => settings.current);
+  const favs = favourites();
+  const [hover, setHover] = useState<Hover | null>(null);
+  // The hover card is for a mouse: on a phone a tap opens the details.
+  const onPointerMove = (e: ReactPointerEvent): void => {
+    if (e.pointerType !== 'mouse' || inv.drag.busy) return setHover(null);
+    const el = (e.target as HTMLElement).closest<HTMLElement>('[data-ref]');
+    setHover(el ? { ref: el.dataset.ref!, x: e.clientX, y: e.clientY } : null);
+  };
   return (
-    <div className="inv" style={{ ['--cell' as string]: `${inv.cell}px` }} data-version={version}>
+    <div
+      className="inv"
+      style={{ ['--cell' as string]: `${inv.cell}px` }}
+      data-version={version}
+      onPointerMove={onPointerMove}
+      onPointerLeave={() => setHover(null)}
+      onPointerDown={() => setHover(null)}
+    >
       <div className="inv-cols">
-        <section className="inv-col inv-gear">
-          <h2>Gear</h2>
+        <Panel
+          className="inv-gear"
+          width={layout.gear}
+          title="Loadout"
+          head={
+            <>
+              <Worth n={gearWorth(ctx.items, ctx.player)} />
+              <button
+                className={`inv-help-button${help ? ' active' : ''}`}
+                aria-label="How the inventory works"
+                onClick={() => setHelp(!help)}
+              >
+                ?
+              </button>
+            </>
+          }
+        >
           <Slots inv={inv} owner={SELF} slots={MY_SLOTS} ch={ctx.player} />
-        </section>
-        <section className="inv-col">
+        </Panel>
+        <Panel className="inv-carried" width={layout.carried} title="Carried">
           <CharacterGrids inv={inv} owner={SELF} ch={ctx.player} vault />
-        </section>
-        <section className="inv-col inv-loot">
-          <Loot inv={inv} />
-        </section>
+        </Panel>
+        <div className="inv-spacer" />
+        <Loot inv={inv} />
       </div>
-      <footer className="inv-bar">
-        {inv.selling ? (
+      {help && (
+        <div className="inv-help" role="note" onClick={() => setHelp(false)}>
+          {ctx.stash
+            ? 'Tap for details · double-tap to move between your gear and the stash · drag to place · drag a repair kit onto armour to mend it · while dragging, tap with another finger (or press R) to rotate'
+            : 'Tap for details · double-tap to move · drag to place, or onto the ground to drop · drag a repair kit onto armour to mend it · while dragging, tap with another finger (or press R) to rotate'}
+        </div>
+      )}
+      {inv.selling && (
+        <footer className="inv-bar">
           <SellBar inv={inv} />
-        ) : (
-          <>
-            <span className="inv-hint">
-              {ctx.stash
-                ? 'Tap for details · double-tap to move between your gear and the stash · drag to place · drag a repair kit onto armour to mend it · while dragging, tap with another finger (or press R) to rotate'
-                : 'Tap for details · double-tap to move · drag to place, or onto the ground to drop · drag a repair kit onto armour to mend it · while dragging, tap with another finger (or press R) to rotate'}
-            </span>
-            {ctx.sell && <button onClick={() => inv.startSelling()}>Select to sell</button>}
-          </>
-        )}
-      </footer>
+        </footer>
+      )}
+      {hover && !sel && <HoverCard inv={inv} hover={hover} />}
       {!inv.selling && selected && sel && (
         <ItemDetails
           items={ctx.items}
@@ -180,6 +229,14 @@ export function Inventory({ inv, version }: Props): ReactNode {
                 </button>
               )}
               <RepairButton inv={inv} armour={selected} item={sel.item} def={sel.def} />
+              <button
+                className={favs.has(sel.def.id) ? 'favourited' : undefined}
+                aria-pressed={favs.has(sel.def.id)}
+                title="Favourites are starred, and light up where they turn up in a body, a container or on the ground"
+                onClick={() => toggleFavourite(sel.def.id)}
+              >
+                {favs.has(sel.def.id) ? '★ Favourite' : '☆ Favourite'}
+              </button>
               {ctx.sell && !('ground' in selected) && (
                 <SellButton key={refKey(selected)} inv={inv} at={selected} item={sel.item} />
               )}
@@ -202,6 +259,128 @@ export function Inventory({ inv, version }: Props): ReactNode {
     </div>
   );
 }
+
+/** What's under the mouse: an item's ref (refKey's JSON) and where the pointer is. */
+interface Hover {
+  ref: string;
+  x: number;
+  y: number;
+}
+
+/**
+ * A framed column with a title bar (2026-11-06, the Delta Force look): its content is
+ * `width` wide however full it is, so the columns beside it never move; it scrolls down.
+ */
+function Panel({
+  className,
+  width,
+  title,
+  head,
+  children,
+}: {
+  className: string;
+  width: number;
+  title: ReactNode;
+  head?: ReactNode;
+  children: ReactNode;
+}): ReactNode {
+  return (
+    <section className={`inv-panel ${className}`}>
+      <header className="inv-panel-head">
+        <h2>{title}</h2>
+        {head}
+      </header>
+      <div className="inv-panel-body" style={{ width }}>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+/** Money as a vendor would pay it, short (12.3k), with the whole sum on hover. */
+export function Worth({ n, label = 'Worth' }: { n: number; label?: string }): ReactNode {
+  return (
+    <span className="inv-worth" title={`${label} ${n.toLocaleString()}`}>
+      {label} <b>{COMPACT.format(n)}</b>
+    </span>
+  );
+}
+
+const COMPACT = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 });
+
+/** What a vendor would pay for everything a character has on them, vault included. */
+function gearWorth(items: ItemDb, c: Character): number {
+  const g = c.gear;
+  const list: Item[] = [];
+  for (const it of [g.primary1, g.primary2, g.sidearm, g.helmet, g.bodyArmour, g.rig, g.backpack])
+    if (it) list.push(it);
+  for (const grid of [g.pockets, g.rig?.grid, g.backpack?.grid, g.vault])
+    for (const gi of grid?.items ?? []) list.push(gi.item);
+  return worth(items, list);
+}
+
+/** What a vendor would pay for these items (and what's in them), leaving out what none buys. */
+export function worth(items: ItemDb, list: readonly Item[]): number {
+  let n = 0;
+  for (const item of list) {
+    n += sellPrice(items, item);
+    for (const gi of item.grid?.items ?? []) n += worth(items, [gi.item]);
+  }
+  return n;
+}
+
+/** The small card beside the mouse over an item (2026-11-06): name, kind, condition, price. */
+function HoverCard({ inv, hover }: { inv: InventoryController; hover: Hover }): ReactNode {
+  const ref = JSON.parse(hover.ref) as ItemRef;
+  const found = inv.find(ref);
+  if (!found) return null;
+  const { item, def } = found;
+  const items = inv.ctx.items;
+  const no = cantSell(items, item);
+  const state = badge(item, def);
+  const left = hover.x + 240 > window.innerWidth ? hover.x - 236 : hover.x + 16;
+  const top = Math.min(hover.y + 16, window.innerHeight - 110);
+  return (
+    <div className="inv-hover" style={{ left, top, borderColor: colourOf(def) }}>
+      <b style={{ color: colourOf(def) }}>{def.name}</b>
+      <span className="inv-hover-kind">
+        {RARITY_NAMES[def.rarity]} {KIND_NAMES[def.type]}
+        {item.found ? ' · found in raid' : ''}
+        {favourites().has(item.item) ? ' · ★ favourite' : ''}
+      </span>
+      {state && <span>{def.type === 'armour' ? `Durability ${state}` : state}</span>}
+      <span>
+        {no && item.grid?.items.length
+          ? `Sells for ${sellPrice(items, item).toLocaleString()} once empty`
+          : (no ?? `Sells for ${sellPrice(items, item).toLocaleString()}`)}
+      </span>
+    </div>
+  );
+}
+
+const RARITY_NAMES: Record<Rarity, string> = {
+  common: 'Common',
+  uncommon: 'Uncommon',
+  rare: 'Rare',
+  epic: 'Epic',
+  legendary: 'Legendary',
+  mythic: 'Mythic',
+};
+
+const KIND_NAMES: Record<ItemDef['type'], string> = {
+  weapon: 'gun',
+  melee: 'knife',
+  attachment: 'attachment',
+  ammo: 'ammo',
+  grenade: 'grenade',
+  armour: 'armour',
+  container: 'gear',
+  med: 'med',
+  repair: 'repair kit',
+  key: 'key',
+  quest: 'quest item',
+  loot: 'loot',
+};
 
 /** The parts of a stack the split's quick buttons take. */
 const SPLIT_PARTS: readonly [label: string, part: number][] = [
@@ -269,7 +448,7 @@ function RepairButton({
   if (def.type !== 'armour') return null;
   // While anything is being used, the pill at the top shows it (and stops it).
   if (inv.ctx.player.using) return null;
-  if ((item.durability ?? 0) >= def.durability) return null;
+  if ((item.durability ?? 0) >= maxDurability(inv.ctx.items, item) - 1e-6) return null;
   const kit = inv.kitFor(armour);
   return (
     <button
@@ -484,42 +663,46 @@ function Picker({
 }
 
 function Loot({ inv }: { inv: InventoryController }): ReactNode {
-  const { ctx, target } = inv;
-  if (!target) return <Ground inv={inv} />;
+  const { ctx, target, layout } = inv;
+  const search = useContext(StashSearchContext);
+  const panel = (title: ReactNode, body: ReactNode, head?: ReactNode): ReactNode => (
+    <Panel
+      className={`inv-loot${target && stashPageOf(target) >= 0 ? ' is-stash' : ''}`}
+      width={layout.loot}
+      title={title}
+      head={head}
+    >
+      {body}
+    </Panel>
+  );
+  if (!target) return panel('On the ground', <Ground inv={inv} />);
   const name = ctx.nameOf(target);
-  if (!inv.reach) {
-    return (
-      <>
-        <h2>{name}</h2>
-        <p className="raid-note">Out of reach.</p>
-      </>
-    );
-  }
+  if (!inv.reach) return panel(name, <p className="raid-note">Out of reach.</p>);
   if (target.kind === 'container') {
     const l = lootContainerById(ctx.sim, target.id)!;
-    return (
+    // The stash page's header (its tabs, sort and worth) comes from the stash screen.
+    return panel(
+      search?.title ?? name,
       <>
-        <h2>{name}</h2>
         <SearchBox />
         <div className="inv-open">
           <Bag inv={inv} />
           <GridView inv={inv} gref={{ owner: target, grid: 'loot' }} grid={l.grid} />
         </div>
-      </>
+      </>,
+      search?.head,
     );
   }
   const id = target.kind === 'body' ? target.id : -1;
   const body = ctx.sim.entities.find((e) => e.id === id)!;
-  // Its gear and grids flow side by side where there's room (a PC), so its pockets and
-  // backpack aren't missed below the fold; on a phone they stack.
-  return (
-    <>
-      <h2>{name}</h2>
-      <div className="inv-body">
-        <Slots inv={inv} owner={target} slots={BODY_SLOTS} ch={body} />
-        <CharacterGrids inv={inv} owner={target} ch={body} vault={false} />
-      </div>
-    </>
+  // Its gear, then its grids under it: the column is a stash page wide.
+  return panel(
+    name,
+    <div className="inv-body">
+      <Slots inv={inv} owner={target} slots={BODY_SLOTS} ch={body} />
+      <CharacterGrids inv={inv} owner={target} ch={body} vault={false} />
+    </div>,
+    <Worth n={gearWorth(ctx.items, body)} />,
   );
 }
 
@@ -530,37 +713,60 @@ function Loot({ inv }: { inv: InventoryController }): ReactNode {
 function SearchBox(): ReactNode {
   const search = useContext(StashSearchContext);
   if (!search) return null;
-  const { query, setQuery, hit, found } = search;
+  const { query, setQuery, category, setCategory, hit, found } = search;
   return (
     <div className="stash-search">
-      <input
-        type="search"
-        enterKeyHint="search"
-        autoComplete="off"
-        autoCorrect="off"
-        autoCapitalize="off"
-        spellCheck={false}
-        placeholder="Search"
-        aria-label="Search the stash"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={(e) => {
-          // Esc clears the search first, rather than leaving the stash.
-          if (e.key === 'Escape' && query) {
-            e.stopPropagation();
-            setQuery('');
-          }
-          if (e.key === 'Enter') e.currentTarget.blur();
-        }}
-      />
-      {hit && (
-        <>
-          <span className="stash-search-found">{found ? `${found} found` : 'None found'}</span>
-          <button aria-label="Clear the search" onClick={() => setQuery('')}>
-            ✕
+      <div className="stash-search-row">
+        <input
+          type="search"
+          enterKeyHint="search"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          placeholder="Search"
+          aria-label="Search the stash"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            // Esc clears the search first, rather than leaving the stash.
+            if (e.key === 'Escape' && query) {
+              e.stopPropagation();
+              setQuery('');
+            }
+            if (e.key === 'Enter') e.currentTarget.blur();
+          }}
+        />
+        {hit && (
+          <>
+            {/* How many are found shows on the page tabs; here, on the clear button. */}
+            <button
+              title={found ? `${found} found` : 'None found'}
+              aria-label="Clear the search"
+              onClick={() => {
+                setQuery('');
+                setCategory('all');
+              }}
+            >
+              ✕
+            </button>
+          </>
+        )}
+      </div>
+      {/* Kinds of item (2026-11-06): the rest are dimmed, as for the search. */}
+      <div className="stash-chips" role="radiogroup" aria-label="Show">
+        {CATEGORIES.map((c) => (
+          <button
+            key={c.id}
+            role="radio"
+            aria-checked={c.id === category}
+            className={c.id === category ? 'active' : undefined}
+            onClick={() => setCategory(c.id)}
+          >
+            {c.label}
           </button>
-        </>
-      )}
+        ))}
+      </div>
     </div>
   );
 }
@@ -602,18 +808,19 @@ const TO_GROUND = JSON.stringify({ owner: { kind: 'ground' } });
  * it; drag or double-tap one of these to take it.
  */
 function Ground({ inv }: { inv: InventoryController }): ReactNode {
+  const favs = favourites();
   const { cell, ctx } = inv;
   const near = inv.nearby();
   return (
     <>
-      <h2>On the ground</h2>
       <div className="inv-ground" data-drop={TO_GROUND}>
         {near.map(({ ref, g }) => {
           const def = itemDef(ctx.items, g.item.item);
           return (
             <div
               key={ref.ground}
-              className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}`}
+              className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${holdsFavourite(g.item, favs) ? ' favourite' : ''}`}
+              data-ref={JSON.stringify(ref)}
               data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
               data-armour={def.type === 'armour' ? JSON.stringify(ref) : undefined}
               style={{
@@ -643,6 +850,7 @@ function Ground({ inv }: { inv: InventoryController }): ReactNode {
               <ItemArt items={ctx.items} item={g.item} def={def} cell={cell} />
               <ItemLabel items={ctx.items} item={g.item} def={def} />
               {g.item.found && <span className="inv-item-found">✓</span>}
+              {holdsFavourite(g.item, favs) && <span className="inv-item-star">★</span>}
             </div>
           );
         })}
@@ -738,6 +946,7 @@ function Slots({
   slots: readonly GearSlot[];
   ch: Character;
 }): ReactNode {
+  const favs = favourites();
   return (
     <div className="inv-slots">
       {slots.map((slot) => {
@@ -755,7 +964,8 @@ function Slots({
             {!item && <span className="inv-slot-name">{SLOT_NAMES[slot]}</span>}
             {item && def && ref && (
               <div
-                className={`inv-item${inHand ? ' in-hand' : ''}${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}`}
+                className={`inv-item${inHand ? ' in-hand' : ''}${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${holdsFavourite(item, favs) ? ' favourite' : ''}`}
+                data-ref={JSON.stringify(ref)}
                 title={inHand ? 'In hand' : undefined}
                 data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
                 data-armour={def.type === 'armour' ? JSON.stringify(ref) : undefined}
@@ -781,6 +991,7 @@ function Slots({
                 <ItemArt items={inv.ctx.items} item={item} def={def} />
                 <ItemLabel items={inv.ctx.items} item={item} def={def} />
                 {item.found && <span className="inv-item-found">✓</span>}
+                {holdsFavourite(item, favs) && <span className="inv-item-star">★</span>}
               </div>
             )}
           </div>
@@ -799,6 +1010,7 @@ function GridView({
   gref: GridRef;
   grid: Grid;
 }): ReactNode {
+  const favs = favourites();
   const { cell } = inv;
   const search = useContext(StashSearchContext);
   // Your own grids aren't searched, only the stash and what's in it.
@@ -811,7 +1023,8 @@ function GridView({
     return (
       <div
         key={index}
-        className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${inv.isOpenBag(ref) ? ' open' : ''}${hit && !hit(g.item) ? ' dimmed' : ''}`}
+        className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${inv.isOpenBag(ref) ? ' open' : ''}${hit && !hit(g.item) ? ' dimmed' : ''}${holdsFavourite(g.item, favs) ? ' favourite' : ''}`}
+        data-ref={JSON.stringify(ref)}
         data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
         data-armour={def.type === 'armour' ? JSON.stringify(ref) : undefined}
         style={{
@@ -844,6 +1057,7 @@ function GridView({
         <ItemArt items={inv.ctx.items} item={g.item} def={def} cell={cell} rotated={g.rotated} />
         <ItemLabel items={inv.ctx.items} item={g.item} def={def} />
         {g.item.found && <span className="inv-item-found">✓</span>}
+        {holdsFavourite(g.item, favs) && <span className="inv-item-star">★</span>}
       </div>
     );
   };
@@ -886,23 +1100,6 @@ function GridView({
       ))}
     </div>
   );
-}
-
-/** Pixels between a grid's sections. */
-const SECTION_GAP = 6;
-
-/**
- * Where each section is drawn: at its cell position, pushed right by a gap for each
- * column a section starts in to its left, and down likewise for rows.
- */
-function sectionBoxes(sections: readonly Section[], cell: number) {
-  const xs = [...new Set(sections.map((s) => s.x))].sort((a, b) => a - b);
-  const ys = [...new Set(sections.map((s) => s.y))].sort((a, b) => a - b);
-  return sections.map((s) => ({
-    s,
-    left: s.x * cell + xs.indexOf(s.x) * SECTION_GAP,
-    top: s.y * cell + ys.indexOf(s.y) * SECTION_GAP,
-  }));
 }
 
 /**
@@ -959,9 +1156,13 @@ export function colourOf(def: ItemDef): string {
   return RARITY_COLOURS[def.rarity];
 }
 
-/** An item tile's background: its colour, see-through. */
+/**
+ * An item tile's background: its rarity's colour rising from the bottom edge over the dark
+ * cell (2026-11-06, the Delta Force look).
+ */
 function tintOf(def: ItemDef): string {
-  return `${RARITY_COLOURS[def.rarity]}66`;
+  const c = RARITY_COLOURS[def.rarity];
+  return `linear-gradient(to top, ${c}b0, ${c}40 55%, ${c}26), #161d22`;
 }
 
 // Scratch for a gun's magazine size with its attachments.
@@ -1001,11 +1202,17 @@ function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemD
   );
 }
 
+/** A durability to one decimal place, without a trailing ".0". */
+export function tenths(n: number): string {
+  return String(Math.round(n * 10) / 10);
+}
+
 /** The small text in an item's corner: a stack's count, rounds loaded, durability… */
 function badge(item: Item, def: ItemDef): string {
   switch (def.type) {
     case 'armour':
-      return `${Math.ceil(item.durability ?? 0)}/${def.durability}`;
+      // Out of its max now, which repairs wear down (sim/repair.ts).
+      return `${tenths(item.durability ?? 0)}/${tenths(item.max ?? def.durability)}`;
     case 'med':
       if (def.effect === 'heal') return `${item.left ?? 0} HP`;
       return (def.uses ?? 1) > 1 ? `×${item.left ?? 0}` : '';

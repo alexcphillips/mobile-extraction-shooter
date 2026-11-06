@@ -368,6 +368,7 @@ export {
   type Section,
   type Spot,
 } from './inventory/grid';
+export { sortGrid, type SortKey } from './inventory/sort';
 export { DIR_Q, DIR_R, NAV, NavGrid } from './nav/nav-grid';
 export { EXPOSURE, Exposure, SPOT } from './nav/exposure';
 export { MAX_EXPAND, findPath, straight, type Avoid, type PathResult } from './nav/path';
@@ -573,6 +574,7 @@ export { wallPieces, type WallOpening, type WallPiece } from './content/walls';
 export {
   SETTINGS_FORMAT,
   SETTINGS_FORMAT_VERSION,
+  FAVOURITES_MAX,
   defaultSettings,
   loadSettings,
   type ControlPlacement,
@@ -637,7 +639,14 @@ export {
   type VendorDef,
   type VendorOffer,
 } from './content/vendors';
-export { kitUsedUp, repairArmour, repairable } from './sim/repair';
+export {
+  REPAIR,
+  kitUsedUp,
+  maxDurability,
+  repairArmour,
+  repairLossOf,
+  repairable,
+} from './sim/repair';
 export {
   QUEST_FORMAT,
   QUEST_FORMAT_VERSION,

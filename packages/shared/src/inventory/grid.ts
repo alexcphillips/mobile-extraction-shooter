@@ -12,6 +12,8 @@ export interface Item {
   count: number;
   /** Armour: durability left. */
   durability?: number;
+  /** Armour: the most durability it can have, once repairs have worn it (sim/repair.ts). */
+  max?: number;
   /** Meds: uses left, or HP left in a heal's pool. Repair kits: points left. Keys: uses left. */
   left?: number;
   /** Guns: rounds loaded. */

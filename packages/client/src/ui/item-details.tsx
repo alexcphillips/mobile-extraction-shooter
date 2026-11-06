@@ -19,11 +19,12 @@ import {
   type ItemDef,
   type QuestDef,
   type WeaponState,
+  repairLossOf,
 } from '@mes/shared';
 import { useEffect, useMemo, type ReactNode } from 'react';
 import { itemPortrait } from '../render/item-portrait';
 import { levelColour } from './levels';
-import { colourOf } from './raid-screen';
+import { colourOf, tenths } from './raid-screen';
 
 /*
  * The item details (2026-10-30, after Delta Force): a tap on any item, in a raid or
@@ -366,7 +367,12 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
     case 'armour':
       return [
         ['Protection', <Level key="l" level={def.level} />],
-        ['Durability', `${Math.ceil(item.durability ?? 0)} / ${def.durability}`],
+        ['Durability', `${tenths(item.durability ?? 0)} / ${tenths(item.max ?? def.durability)}`],
+        // Repairs wear the max down (sim/repair.ts).
+        ...(item.max !== undefined
+          ? [['Max durability', `${tenths(item.max)} of ${def.durability}`] as Row]
+          : []),
+        ['Repair loss', `${Math.round(repairLossOf(def) * 100)}% of what's mended`],
       ];
     case 'attachment': {
       const fits = def.weapons

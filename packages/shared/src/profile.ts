@@ -98,6 +98,7 @@ const itemShape: z.ZodType = z.lazy(() =>
     item: idSchema,
     count: z.int().min(1),
     durability: amount.optional(),
+    max: amount.optional(),
     left: amount.optional(),
     mag: count.optional(),
     loaded: idSchema.optional(),
@@ -462,25 +463,31 @@ export function itemGained(items: ItemDb, before: Profile, after: Profile): stri
   return null;
 }
 
-/** The durability of all the armour, and the points left in all the repair kits. */
-function repairTotals(items: ItemDb, p: Profile): { durability: number; points: number } {
-  const out = { durability: 0, points: 0 };
+/**
+ * The durability of all the armour, its max durability (sim/repair.ts), and the points
+ * left in all the repair kits.
+ */
+function repairTotals(items: ItemDb, p: Profile) {
+  const out = { durability: 0, max: 0, points: 0 };
   forEachItem(p.gear, p.stash, (item) => {
-    const type = items.get(item.item)?.type;
-    if (type === 'armour') out.durability += item.durability ?? 0;
-    else if (type === 'repair') out.points += item.left ?? 0;
+    const def = items.get(item.item);
+    if (def?.type === 'armour') {
+      out.durability += item.durability ?? 0;
+      out.max += item.max ?? def.durability;
+    } else if (def?.type === 'repair') out.points += item.left ?? 0;
   });
   return out;
 }
 
 /**
  * Whether armour gained more durability between two profiles than repair kits lost
- * points (session 13b): between raids, only repairs mend armour.
+ * points (session 13b): between raids, only repairs mend armour. Or gained max durability,
+ * which nothing gives back (2026-11-06).
  */
 export function overRepaired(items: ItemDb, before: Profile, after: Profile): boolean {
   const a = repairTotals(items, before);
   const b = repairTotals(items, after);
-  return b.durability - a.durability > a.points - b.points + 1e-6;
+  return b.durability - a.durability > a.points - b.points + 1e-6 || b.max > a.max + 1e-6;
 }
 
 /**
@@ -558,8 +565,10 @@ function checkItem(items: ItemDb, item: Item, where: string): string | null {
     case 'weapon':
       return checkWeapon(items, item, def, at);
     case 'armour':
-      if (item.durability === undefined || item.durability > def.durability)
-        return `${at}: durability must be 0 to ${def.durability}`;
+      if (item.max !== undefined && item.max > def.durability)
+        return `${at}: max durability must be 0 to ${def.durability}`;
+      if (item.durability === undefined || item.durability > (item.max ?? def.durability) + 1e-6)
+        return `${at}: durability must be 0 to ${item.max ?? def.durability}`;
       return null;
     case 'container':
       if (!item.grid) return `${at}: no grid`;

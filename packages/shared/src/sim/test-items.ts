@@ -147,6 +147,8 @@ const defs = [
     slot: 'helmet',
     level: 3,
     durability: 30,
+    // No repair wear, so tests of kits' points and timing stay simple; 'plate' wears.
+    repairLoss: 0,
   },
   {
     formatVersion: ITEM_FORMAT_VERSION,
@@ -158,6 +160,19 @@ const defs = [
     slot: 'body',
     level: 4,
     durability: 50,
+    repairLoss: 0,
+  },
+  {
+    formatVersion: ITEM_FORMAT_VERSION,
+    id: 'plate',
+    size: [3, 3],
+    value: 100,
+    name: 'Plate',
+    type: 'armour',
+    slot: 'body',
+    level: 4,
+    durability: 100,
+    repairLoss: 0.1,
   },
   {
     formatVersion: ITEM_FORMAT_VERSION,

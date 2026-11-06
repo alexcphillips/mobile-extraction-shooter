@@ -20,6 +20,9 @@ const placementSchema = z.object({
 
 export type ControlPlacement = z.infer<typeof placementSchema>;
 
+/** The most favourites a player can have. */
+export const FAVOURITES_MAX = 200;
+
 const settingsSchema = z.object({
   formatVersion: z.literal(1),
   /** Hold the aim button to aim, or tap to toggle. */
@@ -44,6 +47,15 @@ const settingsSchema = z.object({
   volume: range(0, 1, 0.8),
   /** The fps and timings overlay. */
   showStats: z.boolean().catch(true),
+  /**
+   * Item ids the player has favourited (2026-11-06): marked with a star, and lit up where
+   * they turn up in a body, a container or on the ground. Ids no longer in content are
+   * harmless. At most FAVOURITES_MAX, to keep the settings small.
+   */
+  favourites: z
+    .array(z.string().max(64))
+    .catch([])
+    .transform((ids) => [...new Set(ids)].slice(0, FAVOURITES_MAX)),
   /** Moved controls by id. Controls not listed are in their default place; unknown ids are ignored. */
   layout: z
     .record(z.string(), z.unknown())

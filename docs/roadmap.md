@@ -587,6 +587,10 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
   - Built: tagging a node as a switch, with rows in the map editor; timers, map-wide noises and door-opening sounds; rolling shutters; door lamps; drawn-only movers; `door-buzzer`, `alarm-klaxon` and `alarm-siren`; `elevator-power-switch`.
   - Checked: 15 new tests. In headless Chrome: a full 45 s run (prompt, lamp red, flashing yellow and dark by its pixels, the cab halfway down, solid green, shutter gone, loot on the deck), and adding a row in the editor's inspector, unsaved. **Not checked:** the sounds by ear, anything on an iPhone, co-op, or a real elevator at a yaw other than 0 in play.
 
+- [x] **The stash and inventory rework** (2026-11-06, the user's call; design.md → The stash and inventory rework).
+  - Built: `ui/inventory-layout.ts` (fixed column widths and the cell size from the item data and the screen), the `Panel` columns, `HoverCard`, `Worth` and `worth` in `ui/raid-screen.tsx`; the stash panel's header from `StashPage` through `StashSearch.title`/`head`; `CATEGORIES` and the category argument of `searcher` (`ui/stash-search.ts`); `sortGrid` (`shared/inventory/sort.ts`); the palette as CSS variables on `.raid`, and the menu restyled.
+  - Checked: 6 new tests (sorting by type and value, refusing a sort that wouldn't fit; the category filter). In headless Chrome at 1440×900 and 844×390: the three panels side by side at both sizes, the stash anchored right; Sort by rarity repacked and saved; the Meds and Guns chips dimmed the rest; the hover card over a vest; the raid screen with the ground panel; the main menu. **Not yet on the iPhone**, and not with a body or crate open (same panel, a stash page wide).
+
 ## After v1 (not scheduled)
 - Co-op vs. AI, phones and PCs together (a player's device hosts, others connect over WebRTC; client movement prediction, shared loot rolls, quest items only for the holder). The plan, session by session, is [coop.md](coop.md).
 - Weekly admin challenges (raid configs, publishing from the server without a redeploy).

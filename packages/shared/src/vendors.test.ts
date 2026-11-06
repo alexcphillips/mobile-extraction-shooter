@@ -277,6 +277,12 @@ describe('repairs in the stash', () => {
     const forged = clone(before);
     forged.gear.bodyArmour!.durability = 50;
     expect(overRepaired(items, before, forged)).toBe(true);
+    // And so is one that gives worn armour its max back.
+    const worn = clone(before);
+    worn.gear.bodyArmour!.max = 40;
+    const unworn = clone(worn);
+    delete unworn.gear.bodyArmour!.max;
+    expect(overRepaired(items, worn, unworn)).toBe(true);
   });
   it("mends armour that isn't worn: on a stash page, or in a bag stored there", () => {
     const p = profile();

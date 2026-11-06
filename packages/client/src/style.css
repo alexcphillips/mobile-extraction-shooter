@@ -1076,14 +1076,22 @@ body:has(#raid:not([hidden])) #vitals {
   z-index: 1;
 }
 
+/* The inventory screens' palette (2026-11-06, the Delta Force look). */
 .raid {
+  --ui-panel: #141a1f;
+  --ui-line: #2b353d;
+  --ui-muted: #8d99a3;
+  --ui-accent: #e3a33a;
+  --ui-cell: #10151a;
+  --ui-cell-line: #212a31;
   display: flex;
   flex-direction: column;
   height: 100%;
   box-sizing: border-box;
   padding: max(6px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
     max(6px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
-  background: rgb(22 27 31 / 0.94);
+  background:
+    radial-gradient(ellipse at 70% 0%, rgb(60 80 95 / 0.25), transparent 60%), rgb(12 16 19 / 0.95);
   color: #e8ecef;
   font:
     13px/1.3 system-ui,
@@ -1096,23 +1104,33 @@ body:has(#raid:not([hidden])) #vitals {
 
 .raid button {
   padding: 7px 12px;
-  border: 0;
-  border-radius: 6px;
-  background: #2c343b;
+  border: 1px solid #36424b;
+  border-radius: 4px;
+  background: linear-gradient(to bottom, #2a333a, #222a30);
   color: inherit;
   font: inherit;
 }
 
+@media (hover: hover) {
+  .raid button:not(:disabled):hover {
+    border-color: #55636e;
+    background: linear-gradient(to bottom, #333d45, #29323a);
+  }
+}
+
 .raid button.active,
 .raid button.primary {
-  background: #e3a33a;
+  border-color: #f0b850;
+  background: linear-gradient(to bottom, #f0b24a, #d8952c);
   color: #000;
 }
 
 .raid-tabs {
   display: flex;
   gap: 6px;
+  margin-bottom: 8px;
   padding-bottom: 6px;
+  border-bottom: 1px solid var(--ui-line);
 }
 
 .raid-spacer {
@@ -1165,28 +1183,142 @@ body:has(#raid:not([hidden])) #vitals {
   min-height: 0;
 }
 
+/*
+ * The columns (2026-11-06, the user's call, after Delta Force's warehouse): framed panels
+ * side by side on a phone too, each as wide as its content can ever be (inventory-
+ * layout.ts), so nothing moves when a bag goes on or off. The open stash, body or
+ * container is anchored to the right, past a spacer.
+ */
 .inv-cols {
   display: flex;
   flex: 1;
-  gap: 12px;
+  gap: 8px;
   min-height: 0;
+  padding-right: max(0px, min(24px, calc(100vw - 1200px)));
 }
 
-/* Each column scrolls on its own; dragging an item doesn't scroll (touch-action below). */
-.inv-col {
+.inv-spacer {
+  flex: 1;
+  min-width: 0;
+}
+
+.inv-panel {
+  display: flex;
   flex: none;
+  flex-direction: column;
   min-height: 0;
-  /* Room for the grids' outlines, which the scrolling would clip. */
-  padding: 1px;
+  border: 1px solid var(--ui-line);
+  border-radius: 4px;
+  background: var(--ui-panel);
+  box-shadow: 0 4px 18px rgb(0 0 0 / 0.35);
+}
+
+.inv-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 3px 8px;
+  border-bottom: 1px solid var(--ui-line);
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(to bottom, #222b32, #1a2228);
+  box-shadow: inset 3px 0 0 var(--ui-accent);
+}
+
+.inv .inv-panel-head h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex: 1;
+  margin: 0;
+  color: #dfe5ea;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+/* Each panel scrolls on its own; dragging an item doesn't scroll (touch-action below). */
+.inv-panel-body {
+  box-sizing: content-box;
+  flex: 1;
+  min-height: 0;
+  padding: 8px 8px 8px;
+  /* Room for a scrollbar, so the content keeps its width when one shows. */
+  padding-right: 14px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #3a4650 transparent;
   touch-action: pan-y;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
 
-.inv-loot {
-  flex: 1;
-  min-width: 0;
+.inv-worth {
+  color: var(--ui-muted);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.inv-worth b {
+  color: #f0c060;
+  font-weight: 600;
+}
+
+.raid .inv-help-button {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* How the inventory works, from the ? in the Loadout panel. A tap closes it. */
+.inv-help {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  z-index: 6;
+  padding: 10px 12px;
+  border: 1px solid var(--ui-line);
+  border-radius: 6px;
+  background: #11171b;
+  color: #c8d1d8;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.5);
+}
+
+/* The card beside the mouse over an item (PC only). */
+.inv-hover {
+  position: fixed;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 220px;
+  box-sizing: border-box;
+  padding: 7px 10px;
+  border: 1px solid;
+  border-left-width: 3px;
+  border-radius: 4px;
+  background: rgb(14 19 23 / 0.96);
+  color: #c8d1d8;
+  font-size: 12px;
+  pointer-events: none;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.5);
+}
+
+.inv-hover b {
+  font-size: 13px;
+}
+
+.inv-hover-kind {
+  color: var(--ui-muted);
+  font-size: 11px;
 }
 
 .inv h2,
@@ -1208,29 +1340,6 @@ body:has(#raid:not([hidden])) #vitals {
   grid-template-columns: repeat(2, calc(var(--cell) * 2));
   gap: 4px;
   margin-bottom: 8px;
-}
-
-/*
- * On a narrow screen (a phone), the stash goes in a row below your gear and grids, at its
- * full width, and the whole lot scrolls as one; a drag held at the edge scrolls it.
- */
-@media (max-width: 1000px) {
-  .stash .inv-cols {
-    flex-wrap: wrap;
-    align-content: flex-start;
-    overflow-y: auto;
-    touch-action: pan-y;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .stash .inv-col {
-    overflow-y: visible;
-  }
-
-  .stash .inv-loot {
-    flex-basis: 100%;
-  }
 }
 
 .inv-holder {
@@ -1308,8 +1417,10 @@ body:has(#raid:not([hidden])) #vitals {
 .inv-slot {
   position: relative;
   height: calc(var(--cell) * 2);
+  box-sizing: border-box;
+  border: 1px dashed #2f3a42;
   border-radius: 4px;
-  background: #2a3238;
+  background: var(--ui-cell);
 }
 
 .inv-slot.wide {
@@ -1374,12 +1485,12 @@ body:has(#raid:not([hidden])) #vitals {
 
 .inv-grid {
   position: relative;
-  background-color: #222a30;
+  background-color: var(--ui-cell);
   background-image:
-    linear-gradient(to right, #343e46 1px, transparent 1px),
-    linear-gradient(to bottom, #343e46 1px, transparent 1px);
+    linear-gradient(to right, var(--ui-cell-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--ui-cell-line) 1px, transparent 1px);
   background-size: var(--cell) var(--cell);
-  outline: 1px solid #343e46;
+  outline: 1px solid #2f3a42;
 }
 
 /* A rig's or backpack's sections: each its own .inv-grid, a gap apart. */
@@ -1398,6 +1509,14 @@ body:has(#raid:not([hidden])) #vitals {
   border: 1px solid rgb(255 255 255 / 0.18);
   border-radius: 3px;
   touch-action: none;
+}
+
+/* A soft glow in its rarity's colour when the mouse is on it. */
+@media (hover: hover) {
+  .inv-item:hover {
+    filter: brightness(1.18);
+    box-shadow: 0 0 10px -2px currentColor;
+  }
 }
 
 .inv-item.selected {
@@ -1442,11 +1561,12 @@ body:has(#raid:not([hidden])) #vitals {
   max-height: calc(100% - 14px);
 }
 
+/* Badges shrink with the cells, so a level tag and a count still fit side by side. */
 .inv-item-badge {
   position: absolute;
-  right: 3px;
+  right: 2px;
   bottom: 1px;
-  font-size: 10px;
+  font-size: min(10px, calc(var(--cell) * 0.27));
   font-weight: 600;
 }
 
@@ -1459,13 +1579,64 @@ body:has(#raid:not([hidden])) #vitals {
   color: #7fd08a;
 }
 
+/* A favourite (2026-11-06): a gold star top right, the found tick beside it. */
+.inv-item-star {
+  position: absolute;
+  top: 0;
+  right: 2px;
+  color: #ffd25a;
+  font-size: 11px;
+  line-height: 1.1;
+  text-shadow: 0 0 3px rgb(0 0 0 / 0.9);
+}
+
+.inv-item.favourite .inv-item-found {
+  right: 14px;
+}
+
+/*
+ * Where a favourite turns up in a body, a container or on the ground (not your own gear
+ * or the stash): a gold outline that glows, so it's seen at a glance.
+ */
+.inv-loot:not(.is-stash) .inv-item.favourite {
+  border-color: #ffd25a;
+  box-shadow:
+    0 0 0 1px #ffd25a,
+    0 0 12px 1px rgb(255 210 90 / 0.65);
+  animation: favourite-glow 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes favourite-glow {
+  from {
+    box-shadow:
+      0 0 0 1px #ffd25a,
+      0 0 6px 0 rgb(255 210 90 / 0.4);
+  }
+  to {
+    box-shadow:
+      0 0 0 1px #ffd25a,
+      0 0 14px 2px rgb(255 210 90 / 0.75);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inv-loot:not(.is-stash) .inv-item.favourite {
+    animation: none;
+  }
+}
+
+.raid button.favourited {
+  border-color: #ffd25a;
+  color: #ffd25a;
+}
+
 /* An ammo or armour tile's level, bottom left. */
 .inv-item-level {
   position: absolute;
-  left: 3px;
+  left: 2px;
   bottom: 2px;
-  font-size: 9px;
-  line-height: 12px;
+  font-size: min(9px, calc(var(--cell) * 0.25));
+  line-height: min(12px, calc(var(--cell) * 0.34));
 }
 
 /* A gun's rounds, under its name. */
@@ -1939,7 +2110,7 @@ body:has(#layout-bar) #menu {
   box-sizing: border-box;
   padding: max(8px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
     max(8px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
-  background: #1d2328;
+  background: radial-gradient(ellipse at 70% 0%, rgb(60 80 95 / 0.3), transparent 60%), #0e1215;
   color: #e8ecef;
   font:
     15px/1.35 system-ui,
@@ -1951,11 +2122,17 @@ body:has(#layout-bar) #menu {
 
 .menu button {
   padding: 8px 14px;
-  border: 0;
-  border-radius: 6px;
-  background: #2c343b;
+  border: 1px solid #36424b;
+  border-radius: 4px;
+  background: linear-gradient(to bottom, #2a333a, #222a30);
   color: inherit;
   font: inherit;
+}
+
+@media (hover: hover) {
+  .menu button:not(:disabled):hover {
+    border-color: #55636e;
+  }
 }
 
 .menu button:disabled {
@@ -1966,6 +2143,8 @@ body:has(#layout-bar) #menu {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #2b353d;
 }
 
 .menu h1 {
@@ -2002,28 +2181,48 @@ body:has(#layout-bar) #menu {
   width: min(560px, 100%);
 }
 
+/* The menu's cards: framed, with an amber edge (the Delta Force look, 2026-11-06). */
 .menu-buttons button {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
   padding: 14px 16px;
-  border-radius: 8px;
-  font-size: 17px;
-  font-weight: 600;
+  border-radius: 4px;
+  background: linear-gradient(to bottom right, #1d252b, #151b20);
+  box-shadow:
+    inset 3px 0 0 #3a4650,
+    0 4px 14px rgb(0 0 0 / 0.3);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-align: left;
+  text-transform: uppercase;
+}
+
+@media (hover: hover) {
+  .menu-buttons button:not(:disabled):hover {
+    box-shadow:
+      inset 3px 0 0 #e3a33a,
+      0 4px 14px rgb(0 0 0 / 0.3);
+  }
 }
 
 .menu-buttons button span {
   font-size: 13px;
   font-weight: normal;
+  letter-spacing: 0;
+  text-transform: none;
   color: #9aa6b0;
 }
 
 .menu-buttons button.menu-raid {
   grid-column: 1 / -1;
-  background: #e3a33a;
+  border-color: #f0b850;
+  background: linear-gradient(to bottom, #f0b24a, #d8952c);
+  box-shadow: 0 4px 18px rgb(227 163 58 / 0.25);
   color: #000;
+  font-size: 18px;
 }
 
 .menu-buttons button.menu-raid span {
@@ -2037,7 +2236,7 @@ body:has(#layout-bar) #menu {
 }
 
 .stash {
-  background: #1d2328;
+  background: radial-gradient(ellipse at 70% 0%, rgb(60 80 95 / 0.3), transparent 60%), #0e1215;
 }
 
 .stash .raid-tabs {
@@ -2060,60 +2259,136 @@ body:has(#layout-bar) #menu {
   color: #ff6b5a;
 }
 
-/* Stash page tabs and buying the next page. */
-.stash .raid-tabs button.stash-page {
-  min-width: 34px;
-  padding: 7px 0;
+/* Stash page tabs and buying the next page, in the stash panel's header. */
+.stash-pages {
+  display: flex;
+  gap: 3px;
 }
 
-.stash .raid-tabs button.stash-page.active {
-  outline: 2px solid #e3a33a;
-  outline-offset: -2px;
+.raid .stash-pages button {
+  min-width: 26px;
+  height: 24px;
+  padding: 0 6px;
+  font-size: 12px;
+}
+
+.raid .stash-pages button.stash-page.active {
+  border-color: var(--ui-accent);
   background: #2c343b;
-  color: #e8ecef;
+  color: #ffd27a;
 }
 
-.stash .raid-tabs button.stash-buy:disabled {
+.raid .stash-pages button.stash-buy:disabled {
   opacity: 0.45;
 }
 
-.stash .raid-tabs button.stash-buy.confirm {
+.raid .stash-pages button.stash-buy.confirm {
+  border-color: #6cff8a;
   background: #6cff8a;
   color: #000;
 }
 
 /* Dragging an item onto a page's tab puts it in that page. */
-.stash .raid-tabs button.stash-page.drop-ok {
+.raid .stash-pages button.stash-page.drop-ok {
   background: #2f5a3a;
   outline: 2px solid #6cff8a;
 }
 
-.stash .raid-tabs button.stash-page.drop-bad {
+.raid .stash-pages button.stash-page.drop-bad {
   outline: 2px solid #ff6b5a;
 }
 
 /* Searching: how many are found on each page, on its tab. */
-.stash .raid-tabs button.stash-page.no-hits {
+.raid .stash-pages button.stash-page.no-hits {
   opacity: 0.45;
 }
 
 .stash-page-hits {
-  margin-left: 4px;
+  margin-left: 3px;
   color: #6cff8a;
+  font-size: 10px;
+}
+
+.stash-used {
+  color: var(--ui-muted);
   font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stash-sort {
+  position: relative;
+}
+
+.raid .stash-sort > button {
+  height: 24px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.stash-sort-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  min-width: 110px;
+  padding: 4px;
+  border: 1px solid var(--ui-line);
+  border-radius: 4px;
+  background: #11171b;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.5);
+}
+
+.raid .stash-sort-menu button {
+  border: 0;
+  background: none;
+  text-align: left;
+}
+
+@media (hover: hover) {
+  .raid .stash-sort-menu button:hover {
+    background: #26303a;
+  }
 }
 
 /* Above the page, and stays in view while the stash scrolls under it. */
 .stash-search {
   position: sticky;
-  top: 0;
+  top: -8px;
   z-index: 3;
   display: flex;
   align-items: center;
   gap: 6px;
-  max-width: 340px;
-  margin-bottom: 6px;
-  background: #1d2328;
+  margin: -8px 0 6px;
+  padding: 8px 0 4px;
+  background: var(--ui-panel);
+}
+
+.stash-search-row {
+  display: flex;
+  flex: 0 1 130px;
+  align-items: center;
+  gap: 4px;
+  min-width: 90px;
+}
+
+/* The kinds of item to show; scrolls sideways if the column is narrow. */
+.stash-chips {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.raid .stash-chips button {
+  flex: none;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 12px;
+  font-size: 11px;
 }
 
 /* 16px or more, or iOS zooms in on focus. The page's user-select: none would stop typing. */
@@ -2121,7 +2396,7 @@ body:has(#layout-bar) #menu {
   flex: 1;
   min-width: 0;
   box-sizing: border-box;
-  height: 34px;
+  height: 30px;
   padding: 0 10px;
   border: 1px solid #39434b;
   border-radius: 6px;
@@ -2144,14 +2419,9 @@ body:has(#layout-bar) #menu {
   display: none;
 }
 
-.stash-search-found {
+.raid .stash-search-row button {
   flex: none;
-  color: #9aa6b0;
-}
-
-.raid .stash-search button {
-  flex: none;
-  min-height: 34px;
+  min-height: 30px;
   padding: 0 10px;
 }
 
@@ -2161,7 +2431,7 @@ body:has(#layout-bar) #menu {
 
 /* A bag opened from the page sits below the search box, not behind it. */
 .stash .inv-bag {
-  top: 40px;
+  top: 70px;
 }
 
 /* Selling from the stash: a second tap confirms. */
@@ -2455,8 +2725,9 @@ body:has(#layout-bar) #menu {
   width: min(560px, 100%);
   padding: 4px;
   box-sizing: border-box;
-  border-radius: 10px;
-  background: #151a1e;
+  border: 1px solid #2b353d;
+  border-radius: 4px;
+  background: #11161a;
 }
 
 .menu .menu-modes button {

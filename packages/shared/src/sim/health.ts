@@ -2,6 +2,7 @@ import { armourDef, type AmmoDef, type ItemDb } from '../content/items';
 import type { Item } from '../inventory/grid';
 import { chance } from '../rng';
 import { TICK_SECONDS } from '../tick';
+import { maxDurability } from './repair';
 import type { Character, EntityId, SimState } from './state';
 
 /** Hit zones, as indices into Health's arrays. */
@@ -368,7 +369,7 @@ export function restoreHealth(c: Character, items: ItemDb): void {
   }
   h.dead = false;
   for (const armour of [c.gear.helmet, c.gear.bodyArmour]) {
-    if (armour) armour.durability = armourDef(items, armour.item).durability;
+    if (armour) armour.durability = maxDurability(items, armour);
   }
 }
 

@@ -5,6 +5,7 @@ import {
   pickHost,
   sellAll,
   sellAllPrice,
+  sortGrid,
   nextPagePrice,
   openStash,
   stashOwner,
@@ -18,6 +19,7 @@ import {
   type ProfileResponse,
   type SignalsResponse,
   type QuestDef,
+  type SortKey,
   type StashState,
   type VendorDef,
 } from '@mes/shared';
@@ -43,8 +45,8 @@ import { FriendsPage } from './friends-page';
 import { lastMode, rememberMode, rememberRaid, type GameMode } from './last-raid';
 import { InventoryController } from './inventory-controller';
 import { PartyStrip } from './party-strip';
-import { Inventory, StashSearchContext, type StashSearch } from './raid-screen';
-import { countHits, searcher } from './stash-search';
+import { Inventory, StashSearchContext, Worth, worth, type StashSearch } from './raid-screen';
+import { countHits, searcher, type Category } from './stash-search';
 import { QuestsPage, questsLine } from './quests-page';
 import { VendorsPage } from './vendors-page';
 
@@ -744,6 +746,13 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
   );
 }
 
+/** The stash's sorts, in the Sort menu. */
+const SORTS: readonly [SortKey, string][] = [
+  ['type', 'By type'],
+  ['rarity', 'By rarity'],
+  ['value', 'By value'],
+];
+
 function StashPage({
   stash,
   items,
@@ -778,21 +787,17 @@ function StashPage({
   startPage: number;
 }): ReactNode {
   const [version, bump] = useReducer((n: number) => n + 1, 0);
-  const pages = stash.profile.stash.length;
   // Buying asks for a second tap, and so does selling everything (showing what it brings).
   const [confirming, setConfirming] = useState(false);
   const [buying, setBuying] = useState(false);
   const [sellAllFor, setSellAllFor] = useState<number | null>(null);
   const [sellingAll, setSellingAll] = useState(false);
   const [query, setQuery] = useState('');
-  const hit = searcher(items, query);
+  const [category, setCategory] = useState<Category>('all');
+  const [sortOpen, setSortOpen] = useState(false);
+  const [sortNote, setSortNote] = useState<string | null>(null);
+  const hit = searcher(items, query, category);
   const hits = stash.profile.stash.map((page) => (hit ? countHits(page, hit) : 0));
-  const search: StashSearch = {
-    query,
-    setQuery,
-    hit,
-    found: hits.reduce((sum, n) => sum + n, 0),
-  };
   const price = nextPagePrice(stash.profile);
   // The controller's open "container" is the page shown: a double-tap into the stash
   // tries it first. A new stash (a page bought, or reloaded) opens on startPage.
@@ -853,6 +858,93 @@ function StashPage({
     setBuying(true);
     void onBuyPage().then(() => setBuying(false));
   };
+  /** Sorts the page shown (2026-11-06); refused, it says so and nothing moves. */
+  const sort = (by: SortKey): void => {
+    setSortOpen(false);
+    const page = stash.profile.stash[Math.max(0, shown)]!;
+    inv.select(null);
+    if (sortGrid(items, page, by)) {
+      saver.changed();
+      setSortNote(null);
+    } else setSortNote("It wouldn't all fit sorted: make some room first.");
+    bump();
+  };
+  const page = stash.profile.stash[Math.max(0, shown)]!;
+  const used = page.items.reduce(
+    (n, g) => n + itemDef(items, g.item.item).size[0] * itemDef(items, g.item.item).size[1],
+    0,
+  );
+  const stashWorth = worth(
+    items,
+    stash.profile.stash.flatMap((p) => p.items.map((g) => g.item)),
+  );
+  const head = (
+    <>
+      <div className="stash-pages" role="tablist" aria-label="Stash pages">
+        {stash.profile.stash.map((_, p) => (
+          <button
+            key={p}
+            role="tab"
+            aria-selected={p === shown}
+            className={`stash-page${p === shown ? ' active' : ''}${hit && !hits[p] ? ' no-hits' : ''}`}
+            aria-label={`Stash page ${p + 1}${hit ? `, ${hits[p]} found` : ''}`}
+            data-drop={JSON.stringify({ into: stashOwner(p) })}
+            onClick={() => show(p)}
+          >
+            {p + 1}
+            {hit && hits[p]! > 0 && <span className="stash-page-hits">{hits[p]}</span>}
+          </button>
+        ))}
+        {price !== null && (
+          <button
+            className={`stash-buy${confirming ? ' confirm' : ''}`}
+            title={`Buy another page for ${price.toLocaleString()}`}
+            disabled={buying || stash.profile.money < price}
+            onClick={buy}
+            onBlur={() => setConfirming(false)}
+          >
+            {buying ? '…' : confirming ? `Buy · ${price.toLocaleString()}?` : '+'}
+          </button>
+        )}
+      </div>
+      <span className="raid-spacer" />
+      <span className="stash-used" title="Cells used on this page">
+        {used}/{page.w * page.h}
+      </span>
+      <span className="stash-sort">
+        <button
+          className={sortOpen ? 'active' : undefined}
+          aria-expanded={sortOpen}
+          onClick={() => setSortOpen(!sortOpen)}
+        >
+          Sort
+        </button>
+        {sortOpen && (
+          <span className="stash-sort-menu" role="menu">
+            {SORTS.map(([by, label]) => (
+              <button key={by} role="menuitem" onClick={() => sort(by)}>
+                {label}
+              </button>
+            ))}
+          </span>
+        )}
+      </span>
+    </>
+  );
+  const search: StashSearch = {
+    query,
+    setQuery,
+    category,
+    setCategory,
+    hit,
+    found: hits.reduce((sum, n) => sum + n, 0),
+    title: (
+      <>
+        Stash <Worth n={stashWorth} />
+      </>
+    ),
+    head,
+  };
   const status = saver.status;
   return (
     <div className="raid stash" role="dialog" aria-label="Stash">
@@ -863,33 +955,6 @@ function StashPage({
           {status.kind === 'failed' ? `Not saved: ${status.message}` : SAVE_TEXT[status.kind]}
         </span>
         <span className="raid-spacer" />
-        {pages > 1 &&
-          stash.profile.stash.map((_, p) => (
-            <button
-              key={p}
-              className={`stash-page${p === shown ? ' active' : ''}${hit && !hits[p] ? ' no-hits' : ''}`}
-              aria-label={`Stash page ${p + 1}${hit ? `, ${hits[p]} found` : ''}`}
-              data-drop={JSON.stringify({ into: stashOwner(p) })}
-              onClick={() => show(p)}
-            >
-              {p + 1}
-              {hit && hits[p]! > 0 && <span className="stash-page-hits">{hits[p]}</span>}
-            </button>
-          ))}
-        {price !== null && (
-          <button
-            className={`stash-buy${confirming ? ' confirm' : ''}`}
-            disabled={buying || stash.profile.money < price}
-            onClick={buy}
-            onBlur={() => setConfirming(false)}
-          >
-            {buying
-              ? 'Buying…'
-              : confirming
-                ? `Buy for ${price.toLocaleString()}?`
-                : `+ Page · ${price.toLocaleString()}`}
-          </button>
-        )}
         <span className="vendors-money">
           <b>{stash.profile.money.toLocaleString()}</b> money
         </span>
@@ -905,6 +970,7 @@ function StashPage({
               ? `Sell all for ${sellAllFor.toLocaleString()}?`
               : 'Sell everything'}
         </button>
+        {!inv.selling && <button onClick={() => inv.startSelling()}>Select to sell</button>}
         <button onClick={onVendors}>Vendors</button>
         <button
           className={raidButton.primary ? 'primary' : undefined}
@@ -914,7 +980,7 @@ function StashPage({
           {raidButton.label}
         </button>
       </header>
-      {notice && <p className="menu-notice">{notice}</p>}
+      {(sortNote ?? notice) && <p className="menu-notice">{sortNote ?? notice}</p>}
       <StashSearchContext.Provider value={search}>
         <Inventory inv={inv} version={version} />
       </StashSearchContext.Provider>

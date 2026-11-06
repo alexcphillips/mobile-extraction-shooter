@@ -9,6 +9,7 @@
   "slot": "body",
   "level": 2,
   "durability": 55,
+  "repairLoss": 0.14,
   "model": {
     "parts": [
       {
