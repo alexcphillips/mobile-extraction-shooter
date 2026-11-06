@@ -7,6 +7,7 @@ import {
   raidProgress,
   restGear,
   settleGuns,
+  settleVault,
   type EndRaidRequest,
   type ProfileResponse,
 } from '@mes/shared';
@@ -173,8 +174,9 @@ raids.post('/:id/end', async (c) => {
   const gear = keptGear(end.gear, keepAll, profile.gear.knife);
   restGear(gear);
   const items = loadItems();
-  // A raid started before pistols left the primary slots.
+  // A raid started before pistols left the primary slots, or before the vault was 2×2.
   settleGuns(items, gear, profile.stash);
+  settleVault(items, gear, profile.stash);
   const bad = checkGear(items, gear);
   if (bad) return fail(c, 'invalid', bad);
   const map = raidDef(row.raid)?.map;

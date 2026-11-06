@@ -309,6 +309,31 @@ export function settleGuns(items: ItemDb, gear: Gear, stash: readonly Grid[]): v
   }
 }
 
+/**
+ * Shrinks a vault saved at its old size (2×3 until 2026-11-06) to GEAR.vault: anything now
+ * past its edge moves to a free spot in it, else onto the first stash page with room (none:
+ * it stays, and checkGear refuses it). Only the old size is settled, so a client can't grow
+ * its vault and have the extra moved into the stash. Run where settleGuns is.
+ */
+export function settleVault(items: ItemDb, gear: Gear, stash: readonly Grid[]): void {
+  const vault = gear.vault;
+  const [w, h] = GEAR.vault;
+  if (!vault || vault.w !== 2 || vault.h !== 3) return;
+  vault.w = w;
+  vault.h = h;
+  const off = vault.items.filter(
+    (g) =>
+      g.x + itemWidth(items, g.item.item, g.rotated) > w ||
+      g.y + itemHeight(items, g.item.item, g.rotated) > h,
+  );
+  vault.items = vault.items.filter((g) => !off.includes(g));
+  for (const g of off) {
+    if (addItem(items, vault, g.item) === 0) continue;
+    if (stash.some((page) => addItem(items, page, g.item) === 0)) continue;
+    vault.items.push(g);
+  }
+}
+
 /** Puts every gun down: no cooldown, reload or trigger held, as stored between raids. */
 export function restGear(gear: Gear): void {
   forEachItem(gear, [], (item) => {

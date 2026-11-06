@@ -10,6 +10,7 @@ import {
   restGear,
   sameQuests,
   settleGuns,
+  settleVault,
   type Profile,
   type ProfileResponse,
 } from '@mes/shared';
@@ -19,11 +20,14 @@ import { body, fail, isObject } from './errors';
 
 /**
  * A stored profile, loaded through its format's migrations, with any pistol moved out of
- * a primary slot (needs the items, so it isn't a format migration).
+ * a primary slot and an old 2×3 vault shrunk (both need the items, so they aren't format
+ * migrations).
  */
 export function parseProfile(data: string): Profile {
   const p = loadContent(PROFILE_FORMAT, JSON.parse(data), 'profile');
-  settleGuns(loadItems(), p.gear, p.stash);
+  const items = loadItems();
+  settleGuns(items, p.gear, p.stash);
+  settleVault(items, p.gear, p.stash);
   return p;
 }
 

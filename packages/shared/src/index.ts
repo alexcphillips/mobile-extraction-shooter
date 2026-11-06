@@ -588,6 +588,7 @@ export {
   parseGear,
   restGear,
   settleGuns,
+  settleVault,
   type Profile,
   type QuestState,
 } from './profile';

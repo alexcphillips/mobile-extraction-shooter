@@ -12,6 +12,7 @@ import {
   parseGear,
   restGear,
   settleGuns,
+  settleVault,
   type Profile,
 } from './profile';
 import { createItem } from './sim/create-item';
@@ -156,7 +157,7 @@ describe('checkProfile', () => {
 
     p = profile();
     p.gear.vault!.w = 6;
-    expect(checkProfile(items, p)).toMatch(/vault: must be 2×3/);
+    expect(checkProfile(items, p)).toMatch(/vault: must be 2×2/);
 
     p = profile();
     p.gear.sidearm = p.gear.primary1;
@@ -271,5 +272,38 @@ describe('settleGuns', () => {
     expect(p.gear.hand).toBe('knife');
     expect(p.stash[0]!.items.some((gi) => gi.item.item === 'pistol')).toBe(true);
     expect(checkProfile(items, p)).toBeNull();
+  });
+});
+
+describe('settleVault', () => {
+  it('shrinks an old 2×3 vault, moving what hangs off into the vault, else the stash', () => {
+    const p = profile();
+    // As saved when the vault was 2×3.
+    const vault = p.gear.vault!;
+    vault.h = 3;
+    placeAt(items, vault, createItem(items, 'bandage'), 0, 0, false);
+    placeAt(items, vault, createItem(items, 'watch'), 0, 2, false);
+    placeAt(items, vault, createItem(items, 'cash', 50), 1, 2, false);
+    placeAt(items, vault, createItem(items, 'bandage'), 1, 0, false);
+    placeAt(items, vault, createItem(items, 'bandage'), 1, 1, false);
+    expect(checkProfile(items, p)).toMatch(/vault: must be 2×2/);
+    settleVault(items, p.gear, p.stash);
+    expect([vault.w, vault.h]).toEqual([2, 2]);
+    expect(vault.items.map((g) => g.item.item).sort()).toEqual([
+      'bandage',
+      'bandage',
+      'bandage',
+      'watch',
+    ]);
+    expect(p.stash[0]!.items.some((gi) => gi.item.item === 'cash')).toBe(true);
+    expect(checkProfile(items, p)).toBeNull();
+  });
+
+  it('leaves any other size alone', () => {
+    const p = profile();
+    p.gear.vault!.w = 6;
+    settleVault(items, p.gear, p.stash);
+    expect(p.gear.vault!.w).toBe(6);
+    expect(checkProfile(items, p)).toMatch(/vault: must be 2×2/);
   });
 });

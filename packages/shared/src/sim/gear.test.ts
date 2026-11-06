@@ -61,7 +61,7 @@ describe('gear', () => {
   it('gives players pockets and a vault, and enemies only pockets', () => {
     const { state, c } = setup();
     expect(c.gear.pockets).toMatchObject({ w: 4, h: 1, containers: false });
-    expect(c.gear.vault).toMatchObject({ w: 2, h: 3 });
+    expect(c.gear.vault).toMatchObject({ w: 2, h: 2 });
     const enemy = spawnEnemy(state, world, 5, 0, 5, 0);
     expect(enemy.gear.vault).toBeNull();
   });

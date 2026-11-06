@@ -9,7 +9,7 @@ export const GEAR = {
   /** Pockets, [width, height]: always there, lost on death like the rest. */
   pockets: [4, 1],
   /** The vault: kept on death. Players only. */
-  vault: [2, 3],
+  vault: [2, 2],
 } as const;
 
 /** A rig or backpack being worn. */

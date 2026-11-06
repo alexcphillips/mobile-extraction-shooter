@@ -327,7 +327,7 @@ describe('looting', () => {
     expect(act({ type: 'split', at, count: 25 })).toBe(true);
     expect(vault.items.map((g) => g.item.count)).toEqual([75, 25]);
     // A full grid has no room for the new stack.
-    while (addItem(items, vault, createItem(items, 'helmet')) === 0);
+    while (addItem(items, vault, createItem(items, 'watch')) === 0);
     expect(act({ type: 'split', at, count: 5 })).toBe(false);
     // Half of what's left in the vault into what you carry: the rest stays.
     expect(act({ type: 'quick', from: at, to: self, count: 37 })).toBe(true);
