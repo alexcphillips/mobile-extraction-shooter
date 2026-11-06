@@ -1354,7 +1354,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         );
       } else if (e.type === 'damage') {
         if (e.amount > 0) bodyOf.get(e.target)?.hit();
-        if (e.target === player.id && e.amount > 0) el.vitals.hurtFlash();
+        if (e.target === (watching ?? player).id && e.amount > 0) el.vitals.hurtFlash();
         if (e.target === player.id) {
           hitLost += e.amount;
           const by = e.by === player.id ? 'Your own grenade' : names.get(e.by);
@@ -1482,7 +1482,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
                 : 'From bleeding or a fall';
       endRaid('killed', killedBy ? `by a ${killedBy}` : how, now);
     }
-    el.vitals.update(player, items);
+    // Spectating, the HUD shows the teammate you watch: their limbs, gun and rounds (the
+    // user's call, 2026-11-06).
+    el.vitals.update(watching ?? player, items);
     el.raidHud.update(sim, player, ended !== null);
     const flipping = player.switching;
     el.raidHud.setUse(flipping ? flipping.held / world.switches[flipping.index]!.useTime : null);
@@ -1529,9 +1531,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         'F',
       );
     } else el.raidHud.setPrompt(prompt, now);
+    const shown = watching ?? player;
     let armed = false;
-    for (const g of sim.grenades) if (g.remote && g.by === player.id) armed = true;
-    hands.update(player, items, armed && !dead);
+    for (const g of sim.grenades) if (g.remote && g.by === shown.id) armed = true;
+    hands.update(shown, items, armed && !shown.health.dead);
     // The mouse is captured unless a screen needs the cursor.
     controls.cursor.want(!screenOpen && !ended && !hands.pickerOpen && !devScreen);
     if (ended && resultsAt && now >= resultsAt) {

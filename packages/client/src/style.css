@@ -2923,9 +2923,35 @@ body:has(#layout-bar) #menu {
     sans-serif;
 }
 
-body.spectating
-  :is(#vitals, #ammo, #controls, #stick, #sprint-lock, #prompt, #extract, #hurt, .heal-picker) {
+/*
+ * Spectating, the HUD is the teammate's (the user's call, 2026-11-06): their limbs and
+ * armour (#vitals), rounds (#ammo), the red flash when they're hit (#hurt), and their hand
+ * slots, shown but not pressable. Every other control is hidden.
+ */
+body.spectating :is(#stick, #sprint-lock, #prompt, #extract, .heal-picker) {
   display: none;
+}
+
+body.spectating
+  #controls
+  > .control:not(
+    [data-id='primary1'],
+    [data-id='primary2'],
+    [data-id='sidearm'],
+    [data-id='knife']
+  ) {
+  display: none;
+}
+
+body.spectating #controls > .control {
+  pointer-events: none;
+}
+
+/* Out of the way of the hand slots along the bottom. */
+body.spectating .spectate {
+  left: auto;
+  right: max(16px, env(safe-area-inset-right));
+  transform: none;
 }
 
 /* Zombies mode's in-game admin panel (dev builds only). */
