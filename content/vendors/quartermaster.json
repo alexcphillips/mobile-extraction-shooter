@@ -7,6 +7,7 @@
     { "item": "pistol" },
     { "item": "assault-rifle" },
     { "item": "aug-a3", "attachments": ["aug-optic"] },
+    { "item": "mp5" },
     { "item": "shotgun" },
     { "item": "crossbow" },
     { "item": "ammo-9mm-pso", "count": 30 },

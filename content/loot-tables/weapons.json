@@ -6,6 +6,8 @@
   "items": [
     { "item": "assault-rifle", "weight": 0.5 },
     { "item": "aug-a3", "weight": 0.3 },
+    { "item": "mp5", "weight": 0.5 },
+    { "item": "m416", "weight": 0.2 },
     { "item": "shotgun", "weight": 0.6 },
     { "item": "pistol", "weight": 1 },
     { "item": "crossbow", "weight": 0.2 }

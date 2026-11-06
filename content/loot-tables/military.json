@@ -36,6 +36,8 @@
     { "item": "assault-rifle", "weight": 1 },
     { "item": "shotgun", "weight": 1 },
     { "item": "smg", "weight": 0.25 },
+    { "item": "mp5", "weight": 0.7 },
+    { "item": "m416", "weight": 0.35 },
     { "item": "crossbow", "weight": 0.5 },
     { "item": "sniper-rifle", "weight": 0.3 },
     { "item": "grenade-launcher", "weight": 0.15 },
