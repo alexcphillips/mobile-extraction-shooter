@@ -128,7 +128,6 @@ export type MarkerKind =
   | 'patrol'
   | 'lootContainer'
   | 'lootSpawn'
-  | 'extraction'
   | 'questMarker'
   | 'door'
   | 'zombieSpawn'
@@ -141,7 +140,6 @@ export const MARKERS: Readonly<Record<MarkerKind, string>> = {
   patrol: 'patrol',
   lootContainer: 'loot container',
   lootSpawn: 'loose loot',
-  extraction: 'extraction',
   questMarker: 'quest marker',
   door: 'door',
   // Zombies mode (2026-11-04).
@@ -168,7 +166,6 @@ const EXTRACTION_MARKERS: readonly MarkerKind[] = [
   'patrol',
   'lootContainer',
   'lootSpawn',
-  'extraction',
   'questMarker',
   'door',
 ];
@@ -992,6 +989,25 @@ export class MapEditor {
   pickZone(zone: number | null): void {
     if (zone !== null) this.select([], []);
     this.set({ zone, point: null });
+  }
+
+  /**
+   * The height of the floor under a zone (2026-11-07, for making it an extraction point):
+   * the highest surface under its corners and middle, looking down from the floor being
+   * shown (the cut) or, with none, from high above: so a roof's helipad finds the roof.
+   */
+  floorUnder(zone: number): number {
+    const z = this.state.map.zones[zone]!;
+    const from = this.state.cut ?? 1000;
+    const n = z.points.length;
+    const spots = [
+      ...z.points,
+      [z.points.reduce((s, p) => s + p[0], 0) / n, z.points.reduce((s, p) => s + p[1], 0) / n],
+    ];
+    let y = -Infinity;
+    for (const [x, zz] of spots)
+      y = Math.max(y, this.view.surfaceBelow(new THREE.Vector3(x, from, zz)));
+    return round(y);
   }
 
   /**
@@ -2504,14 +2520,6 @@ function newMarker(kind: MarkerKind, pos: Vec3, taken: Set<string>, colour: stri
     }
     case 'lootSpawn':
       return { type: 'lootSpawn', pos, lootTable: table() };
-    case 'extraction':
-      return {
-        type: 'extraction',
-        id: uniqueId('extract', taken),
-        pos,
-        name: 'Extraction',
-        radius: 4,
-      };
     case 'questMarker':
       return { type: 'questMarker', id: uniqueId('quest-marker', taken), pos };
     case 'door':

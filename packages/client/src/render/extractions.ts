@@ -1,29 +1,28 @@
-import type { CompiledMap } from '@mes/shared';
+import type { ExtractionPoint } from '@mes/shared';
 import * as THREE from 'three';
 
-const COLOUR = 0x6cff8a;
-const HEIGHT = 12;
-const SIDES = 24;
+/** Light green, and a short band: it marks where the zone is without hiding the ground. */
+const COLOUR = 0x9dffb0;
+/** How tall the band is, from just over the floor. */
+const BAND = 0.25;
+const LIFT = 0.03;
 
 /**
- * Extraction points as faint green columns of their radius, so you can find them (kept
- * alongside the map tab, the user's call). Open-ended tubes in one mesh: one draw call
- * for them all.
+ * The raid's open extraction points (a rotating one only when this raid opened it) as a
+ * thin light-green band round their outline, on their floor (the user's call, 2026-11-07:
+ * a border, no fill, and short whatever the zone's height), so you can find them; kept
+ * alongside the map tab. Open-ended, in one mesh: one draw call for them all.
  * See-through and unlit, faded by fog like everything else.
  */
-export function buildExtractions(map: CompiledMap): THREE.Mesh {
+export function buildExtractions(open: readonly ExtractionPoint[]): THREE.Mesh {
   const positions: number[] = [];
-  for (const m of map.markers) {
-    if (m.type !== 'extraction') continue;
-    for (let i = 0; i < SIDES; i++) {
-      const a0 = (i / SIDES) * Math.PI * 2;
-      const a1 = ((i + 1) / SIDES) * Math.PI * 2;
-      const x0 = m.x + Math.cos(a0) * m.radius;
-      const z0 = m.z + Math.sin(a0) * m.radius;
-      const x1 = m.x + Math.cos(a1) * m.radius;
-      const z1 = m.z + Math.sin(a1) * m.radius;
-      const y0 = m.y - 1;
-      const y1 = m.y + HEIGHT;
+  for (const p of open) {
+    const y0 = p.y + LIFT;
+    const y1 = y0 + BAND;
+    const n = p.points.length;
+    for (let i = 0; i < n; i++) {
+      const [x0, z0] = p.points[i]!;
+      const [x1, z1] = p.points[(i + 1) % n]!;
       positions.push(x0, y0, z0, x1, y0, z1, x1, y1, z1, x0, y0, z0, x1, y1, z1, x0, y1, z0);
     }
   }
@@ -35,7 +34,7 @@ export function buildExtractions(map: CompiledMap): THREE.Mesh {
     new THREE.MeshBasicMaterial({
       color: COLOUR,
       transparent: true,
-      opacity: 0.18,
+      opacity: 0.55,
       side: THREE.DoubleSide,
       depthWrite: false,
     }),

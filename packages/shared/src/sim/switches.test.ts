@@ -52,7 +52,7 @@ const CAB: PrefabFile = {
 function compile(nodes: MapNode[]) {
   const row = Array<number>(11).fill(0);
   const map: MapFile = {
-    formatVersion: 3,
+    formatVersion: 4,
     id: 'test',
     name: 'Test',
     environment: { sky: '#9fb3c8', fogNear: 40, fogFar: 120 },

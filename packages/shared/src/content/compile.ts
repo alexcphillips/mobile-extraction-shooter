@@ -145,7 +145,6 @@ type MarkerNode = Extract<
       | 'enemySpawn'
       | 'lootContainer'
       | 'lootSpawn'
-      | 'extraction'
       | 'questMarker'
       | 'zombieSpawn'
       | 'wallBuy'
@@ -157,7 +156,6 @@ const MARKER_TYPES = new Set<string>([
   'enemySpawn',
   'lootContainer',
   'lootSpawn',
-  'extraction',
   'questMarker',
   'zombieSpawn',
   'wallBuy',
@@ -233,6 +231,8 @@ export interface CompiledMap {
   /** Buildings' footprints; their concrete bases are in shapes and world.boxes. */
   buildings: CompiledBuilding[];
   zones: MapZone[];
+  /** How many rotating extraction zones a raid opens (MapFile.rotatingExtractions). */
+  rotatingExtractions?: number | undefined;
 }
 
 export type PrefabLookup = ReadonlyMap<string, PrefabFile>;
@@ -425,6 +425,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     barricades: out.barricades!,
     buildings: out.buildings!,
     zones: map.zones,
+    rotatingExtractions: map.rotatingExtractions,
   };
 }
 

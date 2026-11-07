@@ -1,5 +1,5 @@
 {
-  "formatVersion": 3,
+  "formatVersion": 4,
   "id": "northpoint",
   "name": "Northpoint",
   "environment": {
@@ -3182,10 +3182,56 @@
               "top": 5
             },
             {
+<<<<<<< Updated upstream
               "along": 12,
               "width": 5,
               "bottom": 0,
               "top": 5
+=======
+              "type": "box",
+              "pos": [13.375, 0, 18.292],
+              "size": [43.2, 8, 0.2],
+              "colour": "wall"
+            },
+            {
+              "type": "box",
+              "pos": [34.875, 0, 5.542],
+              "size": [25.7, 8, 0.2],
+              "colour": "#b5b0a6",
+              "yaw": 90
+            },
+            {
+              "type": "wall",
+              "pos": [60.875, 0, -7.208],
+              "size": [52.2, 8, 0.2],
+              "colour": "wall",
+              "openings": [
+                {
+                  "along": -12,
+                  "width": 5,
+                  "bottom": 0,
+                  "top": 5
+                },
+                {
+                  "along": -4,
+                  "width": 5,
+                  "bottom": 0,
+                  "top": 5
+                },
+                {
+                  "along": 4,
+                  "width": 5,
+                  "bottom": 0,
+                  "top": 5
+                },
+                {
+                  "along": 12,
+                  "width": 5,
+                  "bottom": 0,
+                  "top": 5
+                }
+              ]
+>>>>>>> Stashed changes
             }
           ]
         }
@@ -3776,20 +3822,6 @@
       "type": "prefab",
       "prefab": "crate",
       "pos": [26.038, 0.01, 161.5]
-    },
-    {
-      "type": "extraction",
-      "id": "extract",
-      "pos": [163, 0.01, 185],
-      "name": "Extraction",
-      "radius": 4
-    },
-    {
-      "type": "extraction",
-      "id": "extract-2",
-      "pos": [7.5, 0, 168.5],
-      "name": "Extraction",
-      "radius": 4
     },
     {
       "type": "group",
@@ -14539,7 +14571,42 @@
       ]
     }
   ],
-  "zones": [],
+  "zones": [
+    {
+      "id": "extract",
+      "name": "Extraction",
+      "points": [
+        [167.0, 185.0],
+        [165.83, 187.83],
+        [163.0, 189.0],
+        [160.17, 187.83],
+        [159.0, 185.0],
+        [160.17, 182.17],
+        [163.0, 181.0],
+        [165.83, 182.17]
+      ],
+      "extraction": {
+        "y": 0.01
+      }
+    },
+    {
+      "id": "extract-2",
+      "name": "Extraction",
+      "points": [
+        [11.5, 168.5],
+        [10.33, 171.33],
+        [7.5, 172.5],
+        [4.67, 171.33],
+        [3.5, 168.5],
+        [4.67, 165.67],
+        [7.5, 164.5],
+        [10.33, 165.67]
+      ],
+      "extraction": {
+        "y": 0
+      }
+    }
+  ],
   "colours": {
     "wall": "#b5b0a6",
     "road": "#595959",

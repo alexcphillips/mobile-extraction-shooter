@@ -1,4 +1,11 @@
-import { idSchema, nodeSchema, type MapFile, type MapNode, type PrefabFile } from '@mes/shared';
+import {
+  RAID,
+  idSchema,
+  nodeSchema,
+  type MapFile,
+  type MapNode,
+  type PrefabFile,
+} from '@mes/shared';
 
 type WallGap = Extract<MapNode, { type: 'wall' }>['openings'][number];
 import { useState, useSyncExternalStore, type ReactNode } from 'react';
@@ -853,16 +860,92 @@ function Zones({ editor, map, zone, point }: Parameters<typeof MapSettings>[0]) 
             onClick={() => editor.pickZone(i === zone ? null : i)}
           >
             {zz.name} <span className="ed-type">{zz.id}</span>
+            {zz.extraction && (
+              <span className="ed-extract">
+                {' '}
+                · {zz.extraction.rotating ? 'rotating extraction' : 'extraction'}
+              </span>
+            )}
           </li>
         ))}
       </ul>
       <button onClick={() => editor.setTool('zone')} title="8">
         Draw a zone
       </button>
+      <RotatingCount editor={editor} map={map} />
       {z && (
         <>
           <Text label="name" value={z.name} onChange={(v) => v && edit((zz) => (zz.name = v))} />
           <Text label="id" value={z.id} onChange={(v) => v && edit((zz) => (zz.id = v))} />
+          {/* Extraction points are zones (2026-11-07): players leave by standing in one. */}
+          <label className="ed-check">
+            <input
+              type="checkbox"
+              checked={!!z.extraction}
+              onChange={(e) => {
+                const on = e.target.checked;
+                const y = on ? editor.floorUnder(zone!) : 0;
+                edit((zz) => {
+                  if (on) zz.extraction = { y };
+                  else delete zz.extraction;
+                });
+              }}
+            />
+            Extraction point
+          </label>
+          {z.extraction && (
+            <>
+              <label className="ed-check">
+                <input
+                  type="checkbox"
+                  checked={!!z.extraction.rotating}
+                  onChange={(e) => {
+                    const on = e.target.checked;
+                    edit((zz) => {
+                      const { rotating: _, ...rest } = zz.extraction!;
+                      zz.extraction = on ? { ...rest, rotating: true } : rest;
+                    });
+                  }}
+                />
+                Open in only some raids (rotating)
+              </label>
+              <div className="ed-row">
+                <Num
+                  label="floor height"
+                  value={z.extraction.y}
+                  onChange={(v) =>
+                    v !== undefined && edit((zz) => (zz.extraction = { ...zz.extraction, y: v }))
+                  }
+                />
+                <Num
+                  label="counts up to (m)"
+                  value={z.extraction.height ?? RAID.extractHeight}
+                  min={0.1}
+                  onChange={(v) =>
+                    edit((zz) => {
+                      const { y } = zz.extraction!;
+                      zz.extraction = v === undefined || v <= 0 ? { y } : { y, height: v };
+                    })
+                  }
+                />
+                <button
+                  title="The floor under it, looking down from the floor shown (C), or from the top"
+                  onClick={() => {
+                    const y = editor.floorUnder(zone!);
+                    edit((zz) => (zz.extraction = { ...zz.extraction, y }));
+                  }}
+                >
+                  From the floor
+                </button>
+              </div>
+              <p className="ed-note">
+                Players leave by standing inside it for {RAID.extractTime} s, from{' '}
+                {RAID.extractBelow} m under its floor up to the height above it (2 m if blank):
+                enough for a shipping container's roof, not the floor above. It shows as a short
+                light-green border in the raid and on the map tab; here, its top too.
+              </p>
+            </>
+          )}
           <p className="ed-note">
             Drag its corners in the scene.{' '}
             {point === null ? 'Click one to pick it.' : `Corner ${point + 1} picked: ⌫ deletes it.`}
@@ -885,6 +968,38 @@ function Zones({ editor, map, zone, point }: Parameters<typeof MapSettings>[0]) 
           </div>
         </>
       )}
+    </>
+  );
+}
+
+/**
+ * How many of the map's rotating extraction zones each raid opens (2026-11-07): shown once
+ * there are any. Blank opens them all.
+ */
+function RotatingCount({ editor, map }: { editor: MapEditor; map: MapFile }) {
+  const rotating = map.zones.filter((z) => z.extraction?.rotating).length;
+  if (!rotating) return null;
+  const always = map.zones.filter((z) => z.extraction && !z.extraction.rotating).length;
+  return (
+    <>
+      <div className="ed-row">
+        <Num
+          label={`rotating extractions open each raid (of ${rotating})`}
+          value={map.rotatingExtractions}
+          min={0}
+          onChange={(v) =>
+            editor.editMap((m) => {
+              if (v === undefined) delete m.rotatingExtractions;
+              else m.rotatingExtractions = Math.min(rotating, Math.round(v));
+            })
+          }
+        />
+      </div>
+      <p className="ed-note">
+        Each raid opens {always} always-open extraction{always === 1 ? '' : 's'} and{' '}
+        {Math.min(map.rotatingExtractions ?? rotating, rotating)} of the {rotating} rotating ones,
+        picked at random{map.rotatingExtractions === undefined ? ' (blank: all of them)' : ''}.
+      </p>
     </>
   );
 }
@@ -1825,13 +1940,6 @@ function MarkerFields(props: { editor: MapEditor; node: MapNode; num: NumField; 
               onChange={(v) => set('oneOf', v || undefined)}
             />
           </div>
-        </>
-      );
-    case 'extraction':
-      return (
-        <>
-          <Text label="name" value={n.name} onChange={(v) => v && set('name', v)} />
-          <div className="ed-row">{num('radius')}</div>
         </>
       );
     case 'questMarker': {

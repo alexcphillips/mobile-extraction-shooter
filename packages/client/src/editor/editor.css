@@ -490,3 +490,16 @@ body.editor #portrait {
 .ed-row > a:hover {
   color: inherit;
 }
+
+/* A labelled checkbox on its own line (a zone's "Extraction point", 2026-11-07). */
+.ed-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0;
+}
+
+.ed-extract {
+  color: #9dffb0;
+  font-size: 11px;
+}

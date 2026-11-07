@@ -387,13 +387,6 @@ const lootSpawnSchema = z.strictObject({
   oneOf: idSchema.optional(),
 });
 
-const extractionSchema = z.strictObject({
-  type: z.literal('extraction'),
-  ...marker,
-  name: z.string().min(1),
-  radius: positive,
-});
-
 const questMarkerSchema = z.strictObject({
   type: z.literal('questMarker'),
   id: idSchema,
@@ -510,7 +503,6 @@ export const nodeSchema: z.ZodDiscriminatedUnion<
     typeof patrolSchema,
     typeof lootContainerSchema,
     typeof lootSpawnSchema,
-    typeof extractionSchema,
     typeof questMarkerSchema,
     typeof zombieSpawnSchema,
     typeof wallBuySchema,
@@ -534,7 +526,6 @@ export const nodeSchema: z.ZodDiscriminatedUnion<
   patrolSchema,
   lootContainerSchema,
   lootSpawnSchema,
-  extractionSchema,
   questMarkerSchema,
   zombieSpawnSchema,
   wallBuySchema,
@@ -567,6 +558,25 @@ const zoneSchema = z.strictObject({
   name: z.string().min(1),
   /** The outline in x, z. */
   points: z.array(vec2).min(3),
+  /**
+   * Makes it an extraction point (map format 4, 2026-11-07, the user's call): players leave
+   * the raid by standing inside its outline long enough, from just under `y` (the floor
+   * it's on, RAID.extractBelow) up to `height` above it (RAID.extractHeight if left out).
+   * So a zone round a shipping container can take in its roof but not the floor above it
+   * in the building it stands in. Before format 4 an extraction point was a circle marker.
+   */
+  extraction: z
+    .strictObject({
+      y: finite,
+      height: positive.optional(),
+      /**
+       * Open in only some raids (2026-11-07, the user's call, as Tarkov's random extracts):
+       * each raid opens the map's rotatingExtractions of these, picked at random. Left
+       * out, it's always open.
+       */
+      rotating: z.literal(true).optional(),
+    })
+    .optional(),
 });
 
 const terrainSchema = z
@@ -595,7 +605,7 @@ const terrainSchema = z
     { message: 'every hole must be a cell of the terrain', path: ['holes'] },
   );
 
-export const MAP_FORMAT_VERSION = 3;
+export const MAP_FORMAT_VERSION = 4;
 
 export const mapSchema = z
   .strictObject({
@@ -618,6 +628,11 @@ export const mapSchema = z
     /** Colour slots that the map's own nodes can use by name. */
     colours: slotsSchema.optional(),
     nodes: nodesSchema,
+    /**
+     * How many of the rotating extraction zones are open each raid (2026-11-07), picked at
+     * random at the raid's start; all of them if left out or more than there are.
+     */
+    rotatingExtractions: z.int().min(0).optional(),
     zones: z.array(zoneSchema).superRefine((zones, ctx) => {
       const seen = new Set<string>();
       zones.forEach((zone, i) => {
@@ -674,9 +689,52 @@ export const MAP_FORMAT: ContentFormat<MapFile> = {
   schema: mapSchema,
   // Format 2 (session 7) added patrols and 3 (session 15) groups; nothing to change. Loot
   // containers made of geometry (2026-11-01) and terrain holes (19zm) are optional fields,
-  // so still format 3.
-  migrations: { 1: (doc) => doc, 2: (doc) => doc },
+  // so still format 3. Format 4 (2026-11-07) made extraction points zones.
+  migrations: { 1: (doc) => doc, 2: (doc) => doc, 3: extractionsToZones },
 };
+
+/** Sides of the polygon an old circle extraction point becomes. */
+const CIRCLE_SIDES = 8;
+
+/**
+ * Format 3 to 4: each extraction marker, anywhere in the nodes (groups turned by their yaw;
+ * pitch and roll are ignored), becomes an extraction zone: an octagon of its radius around
+ * where it stood, at its height, with its id (made unique among the zones) and name.
+ */
+function extractionsToZones(doc: Record<string, unknown>): Record<string, unknown> {
+  const zones = [...((doc.zones as Record<string, unknown>[] | undefined) ?? [])];
+  const ids = new Set(zones.map((z) => z.id as string));
+  type Raw = Record<string, unknown>;
+  const walk = (nodes: Raw[], fx: number, fy: number, fz: number, yaw: number): Raw[] =>
+    nodes.flatMap((n) => {
+      const [lx, ly, lz] = (n.pos as [number, number, number] | undefined) ?? [0, 0, 0];
+      const c = Math.cos(yaw);
+      const s = Math.sin(yaw);
+      const x = fx + lx * c + lz * s;
+      const y = fy + ly;
+      const z = fz - lx * s + lz * c;
+      if (n.type === 'extraction') {
+        let id = (n.id as string | undefined) ?? 'extraction';
+        while (ids.has(id)) id = `${id}-x`;
+        ids.add(id);
+        const r = n.radius as number;
+        const round = (v: number) => Math.round(v * 100) / 100;
+        const points = Array.from({ length: CIRCLE_SIDES }, (_, i) => {
+          const a = (i / CIRCLE_SIDES) * Math.PI * 2;
+          return [round(x + Math.cos(a) * r), round(z + Math.sin(a) * r)];
+        });
+        zones.push({ id, name: n.name, points, extraction: { y: round(y) } });
+        return [];
+      }
+      if (Array.isArray(n.nodes)) {
+        const turn = yaw + (((n.yaw as number | undefined) ?? 0) * Math.PI) / 180;
+        return [{ ...n, nodes: walk(n.nodes as Raw[], x, y, z, turn) }];
+      }
+      return [n];
+    });
+  const nodes = walk((doc.nodes as Raw[] | undefined) ?? [], 0, 0, 0, 0);
+  return { ...doc, nodes, zones };
+}
 
 export const PREFAB_FORMAT: ContentFormat<PrefabFile> = {
   kind: 'prefab',

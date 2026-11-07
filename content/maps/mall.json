@@ -1,5 +1,5 @@
 {
-  "formatVersion": 3,
+  "formatVersion": 4,
   "id": "mall",
   "name": "Mall",
   "environment": {
@@ -10299,13 +10299,6 @@
           "collide": false
         },
         {
-          "type": "extraction",
-          "id": "helipad",
-          "pos": [30, 10, 0],
-          "name": "Rooftop helipad",
-          "radius": 4
-        },
-        {
           "type": "box",
           "pos": [-30, 10, -12],
           "size": [4, 1.8, 2.5],
@@ -12989,20 +12982,6 @@
           "pos": [-40, 0.1, 91.2],
           "size": [3, 0.45, 0.5],
           "colour": "#a7774a"
-        },
-        {
-          "type": "extraction",
-          "id": "bus-stop",
-          "pos": [-40, 0, 89.5],
-          "name": "Bus stop",
-          "radius": 3.5
-        },
-        {
-          "type": "extraction",
-          "id": "service-road",
-          "pos": [60, 0, -90],
-          "name": "Service road",
-          "radius": 4
         }
       ]
     },
@@ -13611,6 +13590,57 @@
         [50, -24],
         [-20, -24]
       ]
+    },
+    {
+      "id": "helipad",
+      "name": "Rooftop helipad",
+      "points": [
+        [34.0, 0.0],
+        [32.83, 2.83],
+        [30.0, 4.0],
+        [27.17, 2.83],
+        [26.0, 0.0],
+        [27.17, -2.83],
+        [30.0, -4.0],
+        [32.83, -2.83]
+      ],
+      "extraction": {
+        "y": 10
+      }
+    },
+    {
+      "id": "bus-stop",
+      "name": "Bus stop",
+      "points": [
+        [-36.5, 89.5],
+        [-37.53, 91.97],
+        [-40.0, 93.0],
+        [-42.47, 91.97],
+        [-43.5, 89.5],
+        [-42.47, 87.03],
+        [-40.0, 86.0],
+        [-37.53, 87.03]
+      ],
+      "extraction": {
+        "y": 0
+      }
+    },
+    {
+      "id": "service-road",
+      "name": "Service road",
+      "points": [
+        [64.0, -90.0],
+        [62.83, -87.17],
+        [60.0, -86.0],
+        [57.17, -87.17],
+        [56.0, -90.0],
+        [57.17, -92.83],
+        [60.0, -94.0],
+        [62.83, -92.83]
+      ],
+      "extraction": {
+        "y": 0
+      }
     }
   ]
 }

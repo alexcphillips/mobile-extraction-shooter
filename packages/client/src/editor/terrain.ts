@@ -1,4 +1,5 @@
 import {
+  MAP_FORMAT_VERSION,
   HeightGrid,
   holeFlags,
   type HeightGridDef,
@@ -289,7 +290,7 @@ export function newMap(id: string, name: string, size: number, cellSize: number)
   const cells = Math.max(2, Math.round(size / cellSize));
   const half = round((cells * cellSize) / 2);
   return {
-    formatVersion: 3,
+    formatVersion: MAP_FORMAT_VERSION,
     id,
     name,
     environment: { sky: '#9fb3c8', fogNear: 48, fogFar: 120 },

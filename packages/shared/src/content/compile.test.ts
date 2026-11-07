@@ -3,12 +3,18 @@ import { spawnCharacter, createState } from '../sim/state';
 import { CollisionWorld } from '../world/collision-world';
 import { compileMap, compileNodes, type PrefabLookup } from './compile';
 import { loadContent } from './format';
-import { MAP_FORMAT, type MapFile, type MapNode, type PrefabFile } from './schema';
+import {
+  MAP_FORMAT,
+  MAP_FORMAT_VERSION,
+  type MapFile,
+  type MapNode,
+  type PrefabFile,
+} from './schema';
 
 function map(nodes: MapNode[], colours?: Record<string, string>): MapFile {
   const row = Array<number>(11).fill(0);
   return {
-    formatVersion: 3,
+    formatVersion: 4,
     id: 'test',
     name: 'Test',
     environment: { sky: '#9fb3c8', fogNear: 40, fogFar: 120 },
@@ -546,7 +552,42 @@ describe('compileMap', () => {
 
   it('loads format 2 maps unchanged', () => {
     const m = loadContent(MAP_FORMAT, { ...map([]), formatVersion: 2 }, 'test.json');
-    expect(m.formatVersion).toBe(3);
+    expect(m.formatVersion).toBe(MAP_FORMAT_VERSION);
+  });
+
+  it('turns format 3’s circle extraction markers into extraction zones, groups and all', () => {
+    const old = {
+      ...map([
+        {
+          type: 'extraction',
+          id: 'dock',
+          pos: [10, 0, 0],
+          name: 'Dock',
+          radius: 2,
+        } as unknown as MapNode,
+        {
+          type: 'group',
+          pos: [0, 5, 0],
+          yaw: 90,
+          nodes: [
+            { type: 'extraction', id: 'roof', pos: [4, 0, 0], name: 'Roof', radius: 1 },
+          ] as unknown as MapNode[],
+        },
+      ]),
+      formatVersion: 3,
+    };
+    const m = loadContent(MAP_FORMAT, old, 'test.json');
+    expect(m.formatVersion).toBe(MAP_FORMAT_VERSION);
+    // The markers are gone; the group stays, empty.
+    expect(m.nodes).toEqual([{ type: 'group', pos: [0, 5, 0], yaw: 90, nodes: [] }]);
+    const [dock, roof] = m.zones;
+    expect(dock).toMatchObject({ id: 'dock', name: 'Dock', extraction: { y: 0 } });
+    expect(dock!.points).toHaveLength(8);
+    expect(dock!.points[0]).toEqual([12, 0]);
+    // In the group turned 90°: (4, 0) lands at (0, -4), on the group's floor 5 m up.
+    expect(roof).toMatchObject({ id: 'roof', extraction: { y: 5 } });
+    expect(roof!.points[0]![0]).toBeCloseTo(1);
+    expect(roof!.points[0]![1]).toBeCloseTo(-4);
   });
 });
 
@@ -612,7 +653,7 @@ describe('compileNodes', () => {
       [
         { type: 'prefab', prefab: 'tree', pos: [5, 0, 0] },
         { type: 'box', pos: [0, 0, 0], size: [1, 1, 1], colour: 'concrete' },
-        { type: 'extraction', pos: [0, 0, 0], name: 'Dock', radius: 3 },
+        { type: 'questMarker', id: 'dock', pos: [0, 0, 0] },
       ],
       prefabs({ ...crate, id: 'tree', instanced: true }),
       { concrete: '#b5b0a6' },

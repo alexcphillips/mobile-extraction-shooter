@@ -100,7 +100,6 @@ export function canTurn(n: MapNode): boolean {
     n.type !== 'patrol' &&
     n.type !== 'lootSpawn' &&
     n.type !== 'questMarker' &&
-    n.type !== 'extraction' &&
     n.type !== 'zombieSpawn'
   );
 }
@@ -356,7 +355,6 @@ export function copyNode(n: MapNode, taken: Set<string>): MapNode {
 export function nodeLabel(n: MapNode): string {
   if (n.type === 'group') return n.name ?? `group of ${n.nodes.length}`;
   if (n.type === 'prefab') return n.id ? `${n.id} (${n.prefab})` : n.prefab;
-  if (n.type === 'extraction') return n.id ?? n.name;
   return n.id ?? '';
 }
 

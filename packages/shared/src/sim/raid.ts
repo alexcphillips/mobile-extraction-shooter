@@ -17,21 +17,30 @@ import type { Character, EntityId, SimState } from './state';
 export const RAID = {
   /** Seconds standing in an extraction point to leave by it. */
   extractTime: 7,
-  /** How far above or below an extraction point's centre still counts, in metres. */
+  /** How far above its floor an extraction zone counts when it doesn't say, in metres. */
   extractHeight: 2,
+  /** How far under its floor still counts (a slope, a step), in metres. */
+  extractBelow: 0.5,
   /** How close to a quest marker a player must be to investigate it, in metres (14b). */
   investigateReach: 2.5,
 };
 
-/** Where players can leave the raid: a circle on the ground. */
+/**
+ * Where players can leave the raid: an area on a floor, from an extraction zone (map
+ * format 4, 2026-11-07). x and z are its middle, for its label and the HUD.
+ */
 export interface ExtractionPoint {
-  /** Its marker's path id. */
+  /** Its zone's id. */
   id: string;
   name: string;
-  x: number;
+  /** Its outline in x, z. */
+  points: [number, number][];
+  /** The height of the floor it's on. */
   y: number;
+  /** How far above the floor counts. */
+  height: number;
+  x: number;
   z: number;
-  radius: number;
 }
 
 /**
@@ -97,12 +106,31 @@ export interface LeaveEvent {
   at: string | null;
 }
 
-/** Starts the raid's timer, running from now, and opens the map's extraction points. */
+/**
+ * Starts the raid's timer, running from now, and opens the map's extraction points: every
+ * one that's always open, and map.rotatingExtractions of the rotating ones (all of them if
+ * it doesn't say), picked with the raid's RNG so everyone in it has the same.
+ */
 export function startRaid(state: SimState, map: CompiledMap, seconds: number): void {
   const extractions: ExtractionPoint[] = [];
-  for (const m of map.markers) {
-    if (m.type !== 'extraction') continue;
-    extractions.push({ id: m.id, name: m.name, x: m.x, y: m.y, z: m.z, radius: m.radius });
+  const rotating = map.zones.filter((z) => z.extraction?.rotating);
+  for (let i = rotating.length - 1; i > 0; i--) {
+    const j = nextInt(state.rng, i + 1);
+    [rotating[i], rotating[j]] = [rotating[j]!, rotating[i]!];
+  }
+  const open = new Set(rotating.slice(0, map.rotatingExtractions ?? rotating.length));
+  for (const zone of map.zones) {
+    if (!zone.extraction || (zone.extraction.rotating && !open.has(zone))) continue;
+    const n = zone.points.length;
+    extractions.push({
+      id: zone.id,
+      name: zone.name,
+      points: zone.points.map(([x, z]) => [x, z]),
+      y: zone.extraction.y,
+      height: zone.extraction.height ?? RAID.extractHeight,
+      x: zone.points.reduce((s, p) => s + p[0], 0) / n,
+      z: zone.points.reduce((s, p) => s + p[1], 0) / n,
+    });
   }
   state.raid = {
     endTick: state.tick + Math.round(seconds * TICK_RATE),
@@ -179,14 +207,31 @@ export function timeLeft(state: SimState): number {
   return Math.max(0, state.raid.endTick - state.tick) * TICK_SECONDS;
 }
 
-/** The extraction point a character is standing in, or null. */
+/**
+ * The extraction point a character is standing in (inside its outline, from just under its
+ * floor up to its height), or null.
+ */
 export function extractionAt(state: SimState, c: Character): ExtractionPoint | null {
   for (const p of state.raid?.extractions ?? []) {
-    if (Math.hypot(c.x - p.x, c.z - p.z) <= p.radius && Math.abs(c.y - p.y) <= RAID.extractHeight) {
-      return p;
-    }
+    if (c.y < p.y - RAID.extractBelow || c.y > p.y + p.height) continue;
+    if (insidePolygon(p.points, c.x, c.z)) return p;
   }
   return null;
+}
+
+/** Whether (x, z) is inside a polygon of [x, z] points (even-odd rule). */
+export function insidePolygon(
+  points: readonly (readonly [number, number])[],
+  x: number,
+  z: number,
+): boolean {
+  let inside = false;
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    const [xi, zi] = points[i]!;
+    const [xj, zj] = points[j]!;
+    if (zi > z !== zj > z && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) inside = !inside;
+  }
+  return inside;
 }
 
 /**

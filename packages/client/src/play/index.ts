@@ -335,7 +335,24 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
 
   const mapView = buildMap(map);
   scene.add(mapView.root);
-  scene.add(buildExtractions(map));
+  // The raid's open extraction points, drawn once it has them: built again when they
+  // change (the raid starting, or a co-op guest getting the host's pick).
+  let extractView: THREE.Mesh | null = null;
+  let extractShown: readonly unknown[] | null = null;
+  let extractCount = -1;
+  const showExtractions = (): void => {
+    const open = sim.raid?.extractions ?? null;
+    if (open === extractShown && (open?.length ?? -1) === extractCount) return;
+    extractShown = open;
+    extractCount = open?.length ?? -1;
+    if (extractView) {
+      scene.remove(extractView);
+      extractView.geometry.dispose();
+      (extractView.material as THREE.Material).dispose();
+    }
+    extractView = open ? buildExtractions(open) : null;
+    if (extractView) scene.add(extractView);
+  };
   if (zombiesMode) scene.add(buildWallBuys(map, items, world));
   const groundItems = new GroundItems(items);
   scene.add(groundItems.root);
@@ -1475,6 +1492,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // More often while using something or searching, so it shows as it goes.
     const often = player.using || input.looting;
     if (screen && (inventoryChanged || sim.tick % (often ? 3 : 10) === 0)) screen.refresh();
+    showExtractions();
     // From the state, not the death event: a debug hurt or giving up kills outside the tick.
     if (player.health.dead) {
       const killer = taken.find((s) => s.killed)?.key;

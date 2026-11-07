@@ -134,7 +134,7 @@ function zoneLabels(map: CompiledMap, font: number): [number, number, MapZone][]
     const zs = zone.points.map((p) => p[1]);
     return (Math.max(...xs) - Math.min(...xs)) * (Math.max(...zs) - Math.min(...zs));
   };
-  for (const zone of [...map.zones].sort((a, b) => area(b) - area(a))) {
+  for (const zone of map.zones.filter((z) => !z.extraction).sort((a, b) => area(b) - area(a))) {
     const n = zone.points.length;
     const x = zone.points.reduce((a, p) => a + p[0], 0) / n;
     const z = zone.points.reduce((a, p) => a + p[1], 0) / n;
@@ -242,31 +242,31 @@ export function MapTab({ map, sim, player }: Props): ReactNode {
         preserveAspectRatio="xMidYMid meet"
       >
         {ground}
-        {map.zones.map((zone) => (
-          <polygon
-            key={zone.id}
-            points={zone.points.map(([x, z]) => `${x},${z}`).join(' ')}
-            fill="rgb(255 255 255 / 0.07)"
-            stroke="rgb(255 255 255 / 0.55)"
-            strokeWidth={1.5 * k}
-            strokeDasharray={`${5 * k} ${4 * k}`}
-          />
-        ))}
+        {map.zones
+          .filter((zone) => !zone.extraction)
+          .map((zone) => (
+            <polygon
+              key={zone.id}
+              points={zone.points.map(([x, z]) => `${x},${z}`).join(' ')}
+              fill="rgb(255 255 255 / 0.07)"
+              stroke="rgb(255 255 255 / 0.55)"
+              strokeWidth={1.5 * k}
+              strokeDasharray={`${5 * k} ${4 * k}`}
+            />
+          ))}
         {zoneLabels(map, font).map(([x, z, zone]) =>
           label(x, z, zone.name, '#f2efe6', `z-${zone.id}`),
         )}
         {extractions.map((p) => (
-          <circle
+          <polygon
             key={p.id}
-            cx={p.x}
-            cy={p.z}
-            r={p.radius}
-            fill="rgb(108 255 138 / 0.3)"
-            stroke="#6cff8a"
+            points={p.points.map(([x, z]) => `${x},${z}`).join(' ')}
+            fill="none"
+            stroke="#9dffb0"
             strokeWidth={2 * k}
           />
         ))}
-        {extractions.map((p) => label(p.x, p.z - p.radius - font, p.name, '#b9ffca', `e-${p.id}`))}
+        {extractions.map((p) => label(p.x, northOf(p) - font, p.name, '#b9ffca', `e-${p.id}`))}
         <g
           transform={`translate(${player.x} ${player.z}) rotate(${(-player.yaw * 180) / Math.PI})`}
         >
@@ -283,4 +283,11 @@ export function MapTab({ map, sim, player }: Props): ReactNode {
       </div>
     </div>
   );
+}
+
+/** The northern edge (least z) of an extraction's outline, to put its name above it. */
+function northOf(p: { points: readonly (readonly [number, number])[] }): number {
+  let z = Infinity;
+  for (const pt of p.points) z = Math.min(z, pt[1]);
+  return z;
 }

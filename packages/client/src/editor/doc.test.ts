@@ -29,7 +29,7 @@ import {
 function map(nodes: MapNode[]): MapFile {
   const row = Array<number>(11).fill(0);
   return {
-    formatVersion: 3,
+    formatVersion: 4,
     id: 'test',
     name: 'Test',
     environment: { sky: '#9fb3c8', fogNear: 40, fogFar: 120 },

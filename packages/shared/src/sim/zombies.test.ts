@@ -81,7 +81,7 @@ function rooms(): CompiledMap {
   ];
   return compileMap(
     {
-      formatVersion: 3,
+      formatVersion: 4,
       id: 'rooms',
       name: 'Rooms',
       environment: { sky: '#000000', fogNear: 10, fogFar: 50 },

@@ -1,4 +1,4 @@
-import type { CompiledMap, CompiledMarker, HeightGrid } from '@mes/shared';
+import { RAID, type CompiledMap, type CompiledMarker, type HeightGrid } from '@mes/shared';
 import * as THREE from 'three';
 import { TriangleBuilder } from './geometry';
 import { bakedMaterial } from './material';
@@ -8,21 +8,22 @@ const MARKER_COLOURS: Record<CompiledMarker['type'], number> = {
   enemySpawn: 0xe74c3c,
   lootContainer: 0xf1c40f,
   lootSpawn: 0xf39c12,
-  extraction: 0x2ecc71,
   questMarker: 0x9b59b6,
   zombieSpawn: 0x6ab04c,
   wallBuy: 0xe1b12c,
   mysteryBox: 0x8e44ad,
 };
 const ZONE_COLOUR = 0xffffff;
+/** Extraction zones: light green, flat at their floor's height, with their top. */
+const EXTRACTION_COLOUR = 0x9dffb0;
 const PATROL_COLOUR = 0xff7675;
 /** Half the size of the block loot markers get: small enough to see what's at the spot. */
 const LOOT_MARKER = 0.08;
 
 /**
- * Markers as coloured posts (extractions also get a disc of their radius; loot markers are
- * just a small block on the spot, so they don't hide what's there), named zones as
- * outlines over the terrain, and patrols as lines with a ring at each stop. Turned on with
+ * Markers as coloured posts (loot markers are just a small block on the spot, so they
+ * don't hide what's there), named zones as outlines over the terrain (extraction zones in
+ * green, on their floor), and patrols as lines with a ring at each stop. Turned on with
  * ?debug in the URL, and drawn in the map editor.
  */
 export function buildDebug(
@@ -53,38 +54,41 @@ export function buildDebug(
       hz: 0.3,
       ...post,
     });
-    if (m.type === 'extraction') {
-      b.shape({
-        kind: 'cylinder',
-        x: m.x,
-        y: m.y + 0.05,
-        z: m.z,
-        radius: m.radius,
-        radiusTop: m.radius,
-        hy: 0.05,
-        sides: 24,
-        ...post,
-      });
-    }
   }
   if (b.triangles > 0) group.add(new THREE.Mesh(b.build(), bakedMaterial()));
 
   const line = new THREE.LineBasicMaterial({ color: ZONE_COLOUR });
+  const extractLine = new THREE.LineBasicMaterial({ color: EXTRACTION_COLOUR });
   for (const zone of map.zones) {
     const points: THREE.Vector3[] = [];
     const n = zone.points.length;
+    const floor = zone.extraction?.y;
     for (let i = 0; i < n; i++) {
       const [x0, z0] = zone.points[i]!;
       const [x1, z1] = zone.points[(i + 1) % n]!;
-      // Every 2 m, so the outline follows the hills.
+      // Every 2 m, so the outline follows the hills; an extraction's lies on its floor.
       const steps = Math.max(1, Math.ceil(Math.hypot(x1 - x0, z1 - z0) / 2));
       for (let k = 0; k < steps; k++) {
         const x = x0 + ((x1 - x0) * k) / steps;
         const z = z0 + ((z1 - z0) * k) / steps;
-        points.push(new THREE.Vector3(x, terrain.heightAt(x, z) + 0.3, z));
+        points.push(new THREE.Vector3(x, (floor ?? terrain.heightAt(x, z)) + 0.3, z));
       }
     }
-    group.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(points), line));
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    group.add(new THREE.LineLoop(geometry, floor === undefined ? line : extractLine));
+    // An extraction's top too, and its corners joined: the room it counts in.
+    if (floor !== undefined && zone.extraction) {
+      const top = floor + (zone.extraction.height ?? RAID.extractHeight);
+      const ring = zone.points.map(([x, z]) => new THREE.Vector3(x, top, z));
+      group.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(ring), extractLine));
+      const posts = zone.points.flatMap(([x, z]) => [
+        new THREE.Vector3(x, floor + 0.3, z),
+        new THREE.Vector3(x, top, z),
+      ]);
+      group.add(
+        new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(posts), extractLine),
+      );
+    }
   }
 
   const patrolLine = new THREE.LineBasicMaterial({ color: PATROL_COLOUR });

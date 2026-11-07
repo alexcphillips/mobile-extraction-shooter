@@ -10,6 +10,7 @@ import { CHEST, createHealth, dealDamage, HEAD } from './health';
 import {
   RAID,
   extractionAt,
+  insidePolygon,
   gearItems,
   investigateInReach,
   investigatedBy,
@@ -31,8 +32,30 @@ const world = new CollisionWorld({
 });
 
 const map = {
+  // The gate: a 6 m square round (20, 0), on the ground.
+  zones: [
+    {
+      id: 'gate',
+      name: 'Gate',
+      points: [
+        [17, -3],
+        [23, -3],
+        [23, 3],
+        [17, 3],
+      ],
+      extraction: { y: 0 },
+    },
+    {
+      id: 'woods',
+      name: 'Woods',
+      points: [
+        [-30, -30],
+        [-20, -30],
+        [-20, -20],
+      ],
+    },
+  ],
   markers: [
-    { type: 'extraction', id: 'gate', x: 20, y: 0, z: 0, name: 'Gate', radius: 3 },
     { type: 'playerSpawn', id: 'spawn', x: 0, y: 0, z: 0, yaw: 0 },
     { type: 'questMarker', id: 'radio', x: -10, y: 0, z: 0 },
     { type: 'questMarker', id: 'desk', x: 5, y: 0, z: 5 },
@@ -68,8 +91,22 @@ const run = (state: ReturnType<typeof setup>['state'], seconds: number): void =>
 describe('raid', () => {
   it('opens the map’s extraction points and counts the timer down', () => {
     const { state, c } = setup(0, 60);
+    // Only the zone that's an extraction point, with its middle for its label.
     expect(state.raid!.extractions).toEqual([
-      { id: 'gate', name: 'Gate', x: 20, y: 0, z: 0, radius: 3 },
+      {
+        id: 'gate',
+        name: 'Gate',
+        points: [
+          [17, -3],
+          [23, -3],
+          [23, 3],
+          [17, 3],
+        ],
+        y: 0,
+        height: RAID.extractHeight,
+        x: 20,
+        z: 0,
+      },
     ]);
     expect(timeLeft(state)).toBeCloseTo(60);
     run(state, 10);
@@ -207,5 +244,107 @@ describe('raid', () => {
     addItem(items, c.gear.pockets, createItem(items, 'notes'));
     expect(takeQuestItems(items, c.gear)).toEqual(['notes', 'notes', 'notes']);
     expect(gearItems(c.gear).map((i) => i.item)).toEqual(['backpack', 'watch']);
+  });
+
+  it('counts standing inside an extraction zone’s outline, near its floor, as in it', () => {
+    const { state, c } = setup(20);
+    expect(extractionAt(state, c)?.id).toBe('gate');
+    // Just outside the square, and on the right x but 3 m up (a floor above).
+    c.x = 23.5;
+    expect(extractionAt(state, c)).toBeNull();
+    c.x = 20;
+    c.y = 3;
+    expect(extractionAt(state, c)).toBeNull();
+    // An L shape: in its arms, not in the corner it leaves out.
+    const l = [
+      [0, 0],
+      [4, 0],
+      [4, 1],
+      [1, 1],
+      [1, 4],
+      [0, 4],
+    ] as [number, number][];
+    expect(insidePolygon(l, 0.5, 3)).toBe(true);
+    expect(insidePolygon(l, 3, 0.5)).toBe(true);
+    expect(insidePolygon(l, 3, 3)).toBe(false);
+  });
+
+  it('counts from just under a zone’s floor up to its own height: a container’s roof, not the floor above', () => {
+    // A zone round a shipping container (2.6 m tall) inside a building whose upper floor
+    // is at 4.5 m: counting up to 3.5 m takes in the roof, not the floor above.
+    const yard = {
+      zones: [
+        {
+          id: 'yard',
+          name: 'Container yard',
+          points: [
+            [-4, -4],
+            [4, -4],
+            [4, 4],
+            [-4, 4],
+          ],
+          extraction: { y: 0, height: 3.5 },
+        },
+      ],
+      markers: [],
+    } as unknown as CompiledMap;
+    const state = createState(1);
+    startRaid(state, yard, 60);
+    const c = spawnCharacter(state, world, 0, 0);
+    expect(extractionAt(state, c)?.id).toBe('yard');
+    c.y = 2.6;
+    expect(extractionAt(state, c)?.id).toBe('yard');
+    c.y = 4.5;
+    expect(extractionAt(state, c)).toBeNull();
+    // A step down off the floor still counts; a basement doesn't.
+    c.y = -0.4;
+    expect(extractionAt(state, c)?.id).toBe('yard');
+    c.y = -3;
+    expect(extractionAt(state, c)).toBeNull();
+  });
+
+  it('opens every always-open extraction and so many of the rotating ones, picked by the raid', () => {
+    const square = (id: string, x: number, rotating: boolean) => ({
+      id,
+      name: id,
+      points: [
+        [x, 0],
+        [x + 2, 0],
+        [x + 2, 2],
+        [x, 2],
+      ],
+      extraction: rotating ? { y: 0, rotating: true } : { y: 0 },
+    });
+    const rotatingMap = (n?: number) =>
+      ({
+        zones: [
+          square('road', 0, false),
+          square('a', 10, true),
+          square('b', 20, true),
+          square('c', 30, true),
+          square('d', 40, true),
+          square('e', 50, true),
+        ],
+        rotatingExtractions: n,
+        markers: [],
+      }) as unknown as CompiledMap;
+    const open = (seed: number, n?: number) => {
+      const state = createState(seed);
+      startRaid(state, rotatingMap(n), 60);
+      return state.raid!.extractions.map((p) => p.id);
+    };
+    // 3 of the 5: the always-open one, and three others, the same for the same raid.
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const ids = open(seed, 3);
+      expect(ids).toHaveLength(4);
+      expect(ids[0]).toBe('road');
+      expect(open(seed, 3)).toEqual(ids);
+    }
+    // Different raids pick differently.
+    const picks = new Set([1, 2, 3, 4, 5, 6, 7, 8].map((seed) => open(seed, 3).join()));
+    expect(picks.size).toBeGreaterThan(1);
+    // Left out: all of them. 0: only the always-open ones.
+    expect(open(1)).toHaveLength(6);
+    expect(open(1, 0)).toEqual(['road']);
   });
 });
