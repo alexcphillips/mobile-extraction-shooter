@@ -77,11 +77,15 @@ function setup() {
 function showing(sim: SimState) {
   const view = buildMap(map);
   updateSearchedLooks(view, sim.loot);
-  return map.searchedLooks.map(({ id }) => {
-    const look = view.looks.get(id)!;
-    expect(look.closed.visible).toBe(!look.searched.visible);
-    return look.searched.visible;
-  });
+  const shown = map.searchedLooks.map(({ id }) => view.looks.get(id)!.shown);
+  // Both drawers are in one chunk, merged: what it draws is the looks shown, no more.
+  const looks = [...view.looks.values()];
+  const drawn = looks.reduce(
+    (n, l) => n + (l.shown ? l.searched : l.closed).getAttribute('position').count,
+    0,
+  );
+  expect(looks[0]!.chunk.mesh.geometry.getAttribute('position').count).toBe(drawn);
+  return shown;
 }
 
 const searched = (sim: SimState) => sim.loot.map((l) => !!l.searched);

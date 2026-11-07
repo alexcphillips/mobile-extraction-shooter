@@ -580,9 +580,11 @@ export {
   SETTINGS_FORMAT,
   SETTINGS_FORMAT_VERSION,
   FAVOURITES_MAX,
+  GRAPHICS_QUALITY,
   defaultSettings,
   loadSettings,
   type ControlPlacement,
+  type GraphicsQuality,
   type Settings,
 } from './settings';
 export {

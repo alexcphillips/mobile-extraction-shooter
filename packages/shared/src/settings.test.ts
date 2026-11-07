@@ -9,7 +9,14 @@ describe('settings', () => {
     expect(s.leanAim).toBe(false);
     expect(s.fire).toBe('auto');
     expect(s.aimAssist).toBe('low');
+    expect(s.graphics).toBe('high');
     expect(s.layout).toEqual({});
+  });
+
+  it('keeps a graphics setting, and settings saved before it get high (2026-11-07)', () => {
+    expect(loadSettings({ formatVersion: 1, graphics: 'low' }).graphics).toBe('low');
+    expect(loadSettings({ formatVersion: 1 }).graphics).toBe('high');
+    expect(loadSettings({ formatVersion: 1, graphics: 'ultra' }).graphics).toBe('high');
   });
 
   it('round-trips through JSON', () => {

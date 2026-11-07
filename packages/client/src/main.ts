@@ -210,7 +210,6 @@ function debugOptions(
     respawn: q.has('respawn'),
     peaceful: q.has('peaceful'),
     hitZones: q.has('hitzones'),
-    pixelRatio: Math.min(window.devicePixelRatio, 2),
     note: standalone ? 'standalone' : 'browser',
   };
 }

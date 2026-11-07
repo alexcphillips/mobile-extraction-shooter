@@ -1,5 +1,6 @@
 import type { HeightGridDef, Shape } from '@mes/shared';
 import * as THREE from 'three';
+import type { FaceCull } from './face-cull';
 import { shade } from './shade';
 
 /**
@@ -14,7 +15,11 @@ export class TriangleBuilder {
   private readonly nor: number[] = [];
   private readonly colour = new THREE.Color();
 
-  constructor(private readonly baked: boolean) {}
+  /** With cull, faces it finds hidden are left out (static map geometry only). */
+  constructor(
+    private readonly baked: boolean,
+    private readonly cull?: FaceCull,
+  ) {}
 
   get triangles(): number {
     return this.pos.length / 9;
@@ -50,12 +55,26 @@ export class TriangleBuilder {
     }
     const p0 = points[0]!;
     const flip = e1.dot(e2.subVectors(p0, inside)) < 0;
-    w0.copy(p0).applyMatrix4(m);
-    for (let i = 1; i + 1 < points.length; i++) {
-      w1.copy(points[i]!).applyMatrix4(m);
-      w2.copy(points[i + 1]!).applyMatrix4(m);
-      if (flip) this.tri(w0, w2, w1, colour);
-      else this.tri(w0, w1, w2, colour);
+    const n = points.length;
+    while (world.length < n) world.push(new THREE.Vector3());
+    for (let i = 0; i < n; i++) world[i]!.copy(points[i]!).applyMatrix4(m);
+    if (this.cull) {
+      // Outward in world space: the turn keeps the winding, so flip still says which way.
+      e1.set(0, 0, 0);
+      for (let i = 0; i < n; i++) {
+        const a = world[i]!;
+        const b = world[(i + 1) % n]!;
+        e1.x += (a.y - b.y) * (a.z + b.z);
+        e1.y += (a.z - b.z) * (a.x + b.x);
+        e1.z += (a.x - b.x) * (a.y + b.y);
+      }
+      e1.normalize();
+      if (flip) e1.negate();
+      if (this.cull.hidden(world, n, e1.x, e1.y, e1.z)) return;
+    }
+    for (let i = 1; i + 1 < n; i++) {
+      if (flip) this.tri(world[0]!, world[i + 1]!, world[i]!, colour);
+      else this.tri(world[0]!, world[i]!, world[i + 1]!, colour);
     }
   }
 
@@ -153,10 +172,16 @@ export class TriangleBuilder {
     }
   }
 
-  /** Terrain cells [i0, i1) × [j0, j1) but holes, split the way HeightGrid splits them. */
+  /**
+   * Terrain cells [i0, i1) × [j0, j1) but holes, split the way HeightGrid splits them.
+   * Flat cells drawn whole are merged into rectangles (2026-11-07), each a fan through
+   * every cell corner round its edge, so what meets it shares its corners (no cracks).
+   */
   terrain(t: HeightGridDef, i0: number, i1: number, j0: number, j1: number, colour: number) {
     const corner = (i: number, j: number, out: THREE.Vector3): THREE.Vector3 =>
       out.set(t.minX + i * t.cellSize, t.heights[j * (t.cols + 1) + i]!, t.minZ + j * t.cellSize);
+    const w = i1 - i0;
+    const flat = new Uint8Array(w * (j1 - j0));
     for (let j = j0; j < j1; j++) {
       for (let i = i0; i < i1; i++) {
         if (t.holes?.[j * t.cols + i]) continue;
@@ -164,10 +189,69 @@ export class TriangleBuilder {
         corner(i + 1, j, c10);
         corner(i, j + 1, c01);
         corner(i + 1, j + 1, c11);
-        this.tri(c00, c01, c10, colour);
-        this.tri(c10, c01, c11, colour);
+        const level = c00.y === c10.y && c00.y === c01.y && c00.y === c11.y;
+        const a = !this.groundHidden(c00, c01, c10);
+        const b = !this.groundHidden(c10, c01, c11);
+        if (level && a && b) {
+          flat[(j - j0) * w + (i - i0)] = 1;
+          continue;
+        }
+        if (a) this.tri(c00, c01, c10, colour);
+        if (b) this.tri(c10, c01, c11, colour);
       }
     }
+    // Greedy: as wide as it goes along x, then as deep along z as every row is that wide.
+    for (let r = 0; r < j1 - j0; r++) {
+      for (let q = 0; q < w; q++) {
+        if (!flat[r * w + q]) continue;
+        let q1 = q + 1;
+        while (q1 < w && flat[r * w + q1]) q1++;
+        let r1 = r + 1;
+        while (r1 < j1 - j0 && flat.subarray(r1 * w + q, r1 * w + q1).every(Boolean)) r1++;
+        for (let k = r; k < r1; k++) flat.fill(0, k * w + q, k * w + q1);
+        this.flatRect(t, i0 + q, i0 + q1, j0 + r, j0 + r1, colour);
+      }
+    }
+  }
+
+  /**
+   * Flat cells [i0, i1) × [j0, j1) as a fan from the middle to every cell corner round the
+   * edge. From a corner instead, the edges either side of it would be one long triangle
+   * edge each, passing corners the cells beside it have (cracks).
+   */
+  private flatRect(
+    t: HeightGridDef,
+    i0: number,
+    i1: number,
+    j0: number,
+    j1: number,
+    colour: number,
+  ): void {
+    const y = t.heights[j0 * (t.cols + 1) + i0]!;
+    const cs = t.cellSize;
+    // Round the edge from (i0, j0): along +z, along +x, back along −z, back along −x,
+    // wound as the cells' own triangles are (facing up).
+    let n = 0;
+    const add = (i: number, j: number): void => {
+      while (world.length <= n) world.push(new THREE.Vector3());
+      world[n++]!.set(t.minX + i * cs, y, t.minZ + j * cs);
+    };
+    for (let j = j0; j < j1; j++) add(i0, j);
+    for (let i = i0; i < i1; i++) add(i, j1);
+    for (let j = j1; j > j0; j--) add(i1, j);
+    for (let i = i1; i > i0; i--) add(i, j0);
+    middle.set(t.minX + ((i0 + i1) / 2) * cs, y, t.minZ + ((j0 + j1) / 2) * cs);
+    for (let k = 0; k < n; k++) this.tri(middle, world[k]!, world[(k + 1) % n]!, colour);
+  }
+
+  /** Whether a ground triangle is under a box (a floor laid on the ground). */
+  private groundHidden(a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3): boolean {
+    if (!this.cull) return false;
+    e1.subVectors(b, a).cross(e2.subVectors(c, a)).normalize();
+    corners[0] = a;
+    corners[1] = b;
+    corners[2] = c;
+    return this.cull.hidden(corners, 3, e1.x, e1.y, e1.z, false);
   }
 
   build(): THREE.BufferGeometry {
@@ -214,9 +298,12 @@ const BOX_FACE_NORMALS: readonly [number, number][] = [
 const origin = new THREE.Vector3();
 const e1 = new THREE.Vector3();
 const e2 = new THREE.Vector3();
-const w0 = new THREE.Vector3();
-const w1 = new THREE.Vector3();
-const w2 = new THREE.Vector3();
+/** A polygon's corners in world space, reused. */
+const world: THREE.Vector3[] = [];
+/** A flat patch's middle. */
+const middle = new THREE.Vector3();
+/** A ground triangle's corners, for the cull. */
+const corners: THREE.Vector3[] = [];
 const c00 = new THREE.Vector3();
 const c10 = new THREE.Vector3();
 const c01 = new THREE.Vector3();

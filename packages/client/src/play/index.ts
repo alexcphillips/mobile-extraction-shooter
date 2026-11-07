@@ -1,6 +1,7 @@
 import {
   CollisionWorld,
   FixedTimestep,
+  GRAPHICS_QUALITY,
   GRENADE,
   grenadeDef,
   grenadeEffect,
@@ -67,6 +68,7 @@ import {
   itemDef,
   type LeaveReason,
   type Gear,
+  type GraphicsQuality,
   findKey,
   keyName,
   syncDoors,
@@ -232,7 +234,6 @@ export interface PlayOptions {
   respawn: boolean;
   /** Enemies never notice you: the admin cheat, from ?peaceful. */
   peaceful: boolean;
-  pixelRatio: number;
   /** Shown in the stats header, e.g. "standalone". */
   note: string;
   /** A party raid (docs/coop.md, C5): this device hosts it, or joins the host's. */
@@ -317,12 +318,17 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const nav = new NavGrid(world);
   const navMs = performance.now() - navStart;
 
+  // The graphics setting: antialiasing is fixed with the context, so a change to it waits
+  // for the next raid; the pixel ratio follows a change at once (below, with resize).
+  const graphics = (): (typeof GRAPHICS_QUALITY)[GraphicsQuality] =>
+    GRAPHICS_QUALITY[settings.current.graphics];
   const renderer = new THREE.WebGLRenderer({
     canvas: el.canvas,
-    antialias: true,
+    antialias: graphics().antialias,
     powerPreference: 'high-performance',
   });
-  renderer.setPixelRatio(options.pixelRatio);
+  const pixelRatio = (): number => Math.min(window.devicePixelRatio, graphics().pixelRatio);
+  renderer.setPixelRatio(pixelRatio());
   // The world, then the gun over it with depth cleared, so it never pokes into walls.
   renderer.autoClear = false;
   // Count both passes in the stats.
@@ -1609,6 +1615,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   }
   window.addEventListener('resize', resize);
   resize();
+  settings.subscribe(() => {
+    if (renderer.getPixelRatio() === pixelRatio()) return;
+    renderer.setPixelRatio(pixelRatio());
+    resize();
+  });
 
   function render(): void {
     renderer.info.reset();

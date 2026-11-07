@@ -161,6 +161,17 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel, onGiveUp }: P
         </section>
         <section>
           <h2>Display</h2>
+          <Choice
+            label="Graphics"
+            value={s.graphics}
+            options={[
+              ['high', 'High'],
+              ['balanced', 'Balanced'],
+              ['low', 'Low'],
+            ]}
+            hint="Lower draws the 3D view at a lower resolution, which runs smoother and saves battery. Low also turns off edge smoothing, from the next raid."
+            onChange={(v) => set('graphics', v)}
+          />
           <Toggle
             label="Show performance stats"
             value={s.showStats}

@@ -8,6 +8,7 @@ import type {
 } from '@mes/shared';
 import { openingProgress } from '@mes/shared';
 import * as THREE from 'three';
+import { FaceCull } from './face-cull';
 import { TriangleBuilder } from './geometry';
 import { bakedMaterial, shadedMaterial } from './material';
 
@@ -43,6 +44,8 @@ interface DoorView {
   lamp: THREE.MeshBasicMaterial | null;
   /** A shutter: where its bottom starts, its height and how far it has rolled up, 0 to 1. */
   roll: { y: number; height: number; shown: number } | null;
+  /** Its own mesh, drawn only while it moves; at rest it's in MapView.doorBatch. */
+  mesh: THREE.Mesh;
 }
 
 /** A prefab moved over a door's timer. (x, y, z) is where it starts. */
@@ -68,20 +71,33 @@ export interface MapView {
   glassBroken: boolean[];
   /** Containers with a searched look, by container id. */
   looks: Map<string, LookView>;
+  /** Every door at rest, merged: one draw call. Rebuilt as doors start and stop moving. */
+  doorBatch: THREE.Mesh;
+  /** Which doors are in doorBatch, by door index. */
+  batched: boolean[];
 }
 
-/** A container's two looks, one mesh each, and whether the searched one is showing. */
+/** A container's two looks, and whether the searched one is showing in its chunk's mesh. */
 interface LookView {
-  closed: THREE.Mesh;
-  searched: THREE.Mesh;
+  closed: THREE.BufferGeometry;
+  searched: THREE.BufferGeometry;
   shown: boolean;
+  chunk: LookChunk;
+}
+
+/** The looks of the containers in one chunk, merged: one draw call, rebuilt as one changes. */
+interface LookChunk {
+  mesh: THREE.Mesh;
+  looks: LookView[];
+  stale: boolean;
 }
 
 /**
  * Builds a compiled map's scene: the terrain and static shapes merged into one mesh per
- * 32 m chunk, one instanced mesh per instanced prefab and colour set, a mesh per door,
- * one instanced see-through mesh for all the glass, the two looks of each container with a
- * searched look, and the water surface.
+ * 32 m chunk, one instanced mesh per instanced prefab and colour set, the doors at rest as
+ * one mesh (and a mesh per door, drawn while it moves), one instanced see-through mesh for
+ * all the glass, the looks of the containers with a searched look as one mesh per chunk,
+ * and the water surface.
  */
 export function buildMap(map: CompiledMap): MapView {
   const root = new THREE.Group();
@@ -91,13 +107,28 @@ export function buildMap(map: CompiledMap): MapView {
 
   const baked = bakedMaterial();
   const looks = new Map<string, LookView>();
+  const lookChunks = new Map<string, LookChunk>();
   for (const l of map.searchedLooks) {
-    const closed = buildLook(l.closed, baked);
-    const searched = buildLook(l.searched, baked);
-    searched.visible = false;
-    root.add(closed, searched);
-    looks.set(l.id, { closed, searched, shown: false });
+    const first = l.closed[0] ?? l.searched[0];
+    const key = first ? `${Math.floor(first.x / CHUNK)},${Math.floor(first.z / CHUNK)}` : '';
+    let chunk = lookChunks.get(key);
+    if (!chunk) {
+      const mesh = new THREE.Mesh(new THREE.BufferGeometry(), baked);
+      mesh.matrixAutoUpdate = false;
+      root.add(mesh);
+      chunk = { mesh, looks: [], stale: true };
+      lookChunks.set(key, chunk);
+    }
+    const look = {
+      closed: buildLook(l.closed),
+      searched: buildLook(l.searched),
+      shown: false,
+      chunk,
+    };
+    chunk.looks.push(look);
+    looks.set(l.id, look);
   }
+  for (const chunk of lookChunks.values()) mergeLooks(chunk);
 
   const shaded = shadedMaterial();
   for (const group of map.instanced) root.add(buildInstanced(group, shaded));
@@ -109,8 +140,13 @@ export function buildMap(map: CompiledMap): MapView {
     const turn = door.look ? 0 : door.hinge === 'left' ? -Math.PI / 2 : Math.PI / 2;
     const lamp = door.lamp ? buildLamp(door, root) : null;
     const roll = door.rollUp ? { y: door.y, height: door.height, shown: 0 } : null;
-    return { pivot, yaw: door.yaw, turn, shown: door.open ? 1 : 0, lamp, roll };
+    const mesh = pivot.children[0] as THREE.Mesh;
+    return { pivot, yaw: door.yaw, turn, shown: door.open ? 1 : 0, lamp, roll, mesh };
   });
+  const doorBatch = new THREE.Mesh(new THREE.BufferGeometry(), shaded);
+  doorBatch.matrixAutoUpdate = false;
+  doorBatch.name = 'doors';
+  root.add(doorBatch);
 
   const movers = map.movers.map((m) => {
     const b = new TriangleBuilder(false);
@@ -144,19 +180,29 @@ export function buildMap(map: CompiledMap): MapView {
     water.matrixAutoUpdate = false;
     root.add(water);
   }
-  return { root, doors, movers, clock: 0, glass, glassBroken: map.glass.map(() => false), looks };
+  const view: MapView = {
+    root,
+    doors,
+    movers,
+    clock: 0,
+    glass,
+    glassBroken: map.glass.map(() => false),
+    looks,
+    doorBatch,
+    batched: doors.map(() => false),
+  };
+  batchDoors(view);
+  return view;
 }
 
 /** Baked like the chunks, so a drawer matches the merged cabinet around it. */
-function buildLook(shapes: readonly Shape[], material: THREE.Material): THREE.Mesh {
+function buildLook(shapes: readonly Shape[]): THREE.BufferGeometry {
   const b = new TriangleBuilder(true);
   for (const s of shapes) b.shape(s);
-  const mesh = new THREE.Mesh(b.build(), material);
-  mesh.matrixAutoUpdate = false;
-  return mesh;
+  return b.build();
 }
 
-/** Shows each container's look for the sim's searched flag, each by itself. */
+/** Shows each container's look for the sim's searched flag, merging its chunk's again. */
 export function updateSearchedLooks(
   view: MapView,
   containers: readonly { id: string; searched?: boolean }[],
@@ -167,9 +213,80 @@ export function updateSearchedLooks(
     const searched = !!c.searched;
     if (!look || look.shown === searched) continue;
     look.shown = searched;
-    look.closed.visible = !searched;
-    look.searched.visible = searched;
+    look.chunk.stale = true;
   }
+  for (const look of view.looks.values()) if (look.chunk.stale) mergeLooks(look.chunk);
+}
+
+function mergeLooks(chunk: LookChunk): void {
+  chunk.stale = false;
+  chunk.mesh.geometry.dispose();
+  chunk.mesh.geometry = mergeGeometry(chunk.looks.map((l) => (l.shown ? l.searched : l.closed)));
+}
+
+/**
+ * Puts every door at rest (not swinging or rolling up, and not gone) in the batch, and
+ * draws the others by themselves. Rebuilds the batch only when that changes.
+ */
+function batchDoors(view: MapView, moving?: readonly boolean[]): void {
+  let changed = false;
+  for (let i = 0; i < view.doors.length; i++) {
+    const d = view.doors[i]!;
+    const rest = d.pivot.visible && !moving?.[i];
+    d.mesh.visible = !rest;
+    if (view.batched[i] === rest) continue;
+    view.batched[i] = rest;
+    changed = true;
+  }
+  if (!changed) return;
+  view.root.updateMatrixWorld();
+  rootInverse.copy(view.root.matrixWorld).invert();
+  const parts: THREE.BufferGeometry[] = [];
+  const matrices: THREE.Matrix4[] = [];
+  view.doors.forEach((d, i) => {
+    if (!view.batched[i]) return;
+    parts.push(d.mesh.geometry);
+    matrices.push(new THREE.Matrix4().multiplyMatrices(rootInverse, d.mesh.matrixWorld));
+  });
+  view.doorBatch.geometry.dispose();
+  view.doorBatch.geometry = mergeGeometry(parts, matrices);
+  view.doorBatch.visible = parts.length > 0;
+}
+
+const rootInverse = new THREE.Matrix4();
+
+/**
+ * Non-indexed geometries end to end, each moved by its matrix if given. Normals are
+ * turned by the matrix's 3 × 3 part, as the shaded material turns them, unnormalised.
+ */
+function mergeGeometry(
+  parts: readonly THREE.BufferGeometry[],
+  matrices?: readonly THREE.Matrix4[],
+): THREE.BufferGeometry {
+  const out = new THREE.BufferGeometry();
+  const count = parts.reduce((n, g) => n + g.getAttribute('position').count, 0);
+  const names = parts[0] ? Object.keys(parts[0].attributes) : [];
+  const v = new THREE.Vector3();
+  const turn = new THREE.Matrix3();
+  for (const name of names) {
+    const size = parts[0]!.getAttribute(name).itemSize;
+    const data = new Float32Array(count * size);
+    let at = 0;
+    parts.forEach((g, k) => {
+      const a = g.getAttribute(name);
+      const m = matrices?.[k];
+      if (m) turn.setFromMatrix4(m);
+      for (let i = 0; i < a.count; i++, at += size) {
+        if (m && name === 'position') v.fromBufferAttribute(a, i).applyMatrix4(m).toArray(data, at);
+        else if (m && name === 'normal')
+          v.fromBufferAttribute(a, i).applyMatrix3(turn).toArray(data, at);
+        else for (let c = 0; c < size; c++) data[at + c] = a.array[i * size + c]!;
+      }
+    });
+    out.setAttribute(name, new THREE.BufferAttribute(data, size));
+  }
+  out.computeBoundingSphere();
+  return out;
 }
 
 /** One mesh per chunk: its terrain cells and every shape whose centre is in it. */
@@ -191,9 +308,11 @@ export function buildChunks(
 
   const group = new THREE.Group();
   const material = bakedMaterial();
+  // Faces against a box or under the ground are left out: they can't be seen.
+  const cull = new FaceCull(shapes, terrain);
   for (let cz = 0; cz < nz; cz++) {
     for (let cx = 0; cx < nx; cx++) {
-      const b = new TriangleBuilder(true);
+      const b = new TriangleBuilder(true, cull);
       const i0 = cx * cells;
       const j0 = cz * cells;
       b.terrain(
@@ -253,10 +372,12 @@ export function updateDoors(
   for (let i = 0; i < view.doors.length; i++) {
     const d = view.doors[i]!;
     const s = doors[i];
+    moving[i] = false;
     if (d.lamp) d.lamp.color.setHex(lampColour(s, view.clock));
     if (d.roll) {
       const r = d.roll;
-      if (s?.gone && r.shown < 1) r.shown = Math.min(1, r.shown + dt / ROLL);
+      moving[i] = !!s?.gone && r.shown < 1;
+      if (moving[i]) r.shown = Math.min(1, r.shown + dt / ROLL);
       const left = 1 - r.shown * (1 - ROLLED);
       d.pivot.scale.y = left;
       d.pivot.position.y = r.y + r.height * (1 - left);
@@ -267,6 +388,7 @@ export function updateDoors(
     d.pivot.visible = !s?.gone;
     const target = s?.open ? (s.flipped ? -1 : 1) : 0;
     if (d.shown === target) continue;
+    moving[i] = true;
     const step = dt / SWING;
     d.shown =
       target > d.shown ? Math.min(target, d.shown + step) : Math.max(target, d.shown - step);
@@ -275,7 +397,11 @@ export function updateDoors(
     const t = Math.sign(d.shown) * (1 - (1 - a) * (1 - a));
     d.pivot.rotation.y = d.yaw + d.turn * t;
   }
+  batchDoors(view, moving);
 }
+
+/** Which doors updateDoors moved this frame, by door index. */
+const moving: boolean[] = [];
 
 function lampColour(s: { open: boolean; opening?: number } | undefined, clock: number): number {
   if (s?.open) return LAMP_OPEN;

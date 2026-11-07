@@ -50,6 +50,12 @@ const settingsSchema = z.object({
   /** The fps and timings overlay. */
   showStats: z.boolean().catch(true),
   /**
+   * How sharp the 3D view is drawn (2026-11-07, for the phone): high is up to 2 pixels per
+   * CSS pixel with antialiasing, balanced up to 1.5 with it, low 1 without. See
+   * GRAPHICS_QUALITY.
+   */
+  graphics: z.enum(['high', 'balanced', 'low']).catch('high'),
+  /**
    * Item ids the player has favourited (2026-11-06): marked with a star, and lit up where
    * they turn up in a body, a container or on the ground. Ids no longer in content are
    * harmless. At most FAVOURITES_MAX, to keep the settings small.
@@ -73,6 +79,17 @@ const settingsSchema = z.object({
 });
 
 export type Settings = z.infer<typeof settingsSchema>;
+
+export type GraphicsQuality = Settings['graphics'];
+
+/** Each graphics setting's most pixels per CSS pixel, and whether edges are antialiased. */
+export const GRAPHICS_QUALITY: Readonly<
+  Record<GraphicsQuality, { readonly pixelRatio: number; readonly antialias: boolean }>
+> = {
+  high: { pixelRatio: 2, antialias: true },
+  balanced: { pixelRatio: 1.5, antialias: true },
+  low: { pixelRatio: 1, antialias: false },
+};
 
 export const SETTINGS_FORMAT_VERSION = 1;
 
