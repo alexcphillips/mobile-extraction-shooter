@@ -7,6 +7,7 @@ A small Tarkov-style PvE extraction shooter that runs as a mobile web game (Add 
 - [docs/tech-stack.md](docs/tech-stack.md): architecture and technology choices.
 - [docs/roadmap.md](docs/roadmap.md): v1 scope and the plan, session by session. Find your session, do it, then tick it off and record anything you decided.
 - [docs/props.md](docs/props.md): how to build props and prefabs in the house style (shapes, colours, collision, frame rules).
+- [docs/level-design.md](docs/level-design.md): what we look for in tactical layouts (exposure, lanes, sightlines, what the AI can reach), a review checklist, and how to check movement in the sim. Read it before laying out or reviewing an area. It applies to extraction maps only, not zombies or other modes.
 - [docs/coop.md](docs/coop.md): the co-op to-do (friends, party, raid server), in the same session format.
 
 ## Standing rules
