@@ -3150,30 +3150,10 @@
           "size": [52.2, 8, 0.2],
           "colour": "wall",
           "openings": [
-            {
-              "along": -12,
-              "width": 5,
-              "bottom": 0,
-              "top": 3.9
-            },
-            {
-              "along": -4,
-              "width": 5,
-              "bottom": 0,
-              "top": 3.9
-            },
-            {
-              "along": 4,
-              "width": 5,
-              "bottom": 0,
-              "top": 3.9
-            },
-            {
-              "along": 12,
-              "width": 5,
-              "bottom": 0,
-              "top": 3.9
-            }
+            { "along": -12, "width": 5, "bottom": 0, "top": 3.9 },
+            { "along": -4, "width": 5, "bottom": 0, "top": 3.9 },
+            { "along": 4, "width": 5, "bottom": 0, "top": 3.9 },
+            { "along": 12, "width": 5, "bottom": 0, "top": 3.9 }
           ]
         }
       ]
@@ -4660,14 +4640,7 @@
       "size": [9, 2.6, 0.2],
       "colour": "wall",
       "id": "wall-hall-to-service",
-      "openings": [
-        {
-          "along": -2.737,
-          "width": 1.2,
-          "bottom": 0,
-          "top": 2.1
-        }
-      ]
+      "openings": [{ "along": -2.737, "width": 1.2, "bottom": 0, "top": 2.1 }]
     },
     {
       "type": "door",
@@ -4744,11 +4717,7 @@
         "name": "goods shutter switch",
         "useTime": 3,
         "rows": [
-          {
-            "opens": "goods-shutter-warehouse/gate",
-            "timer": 4,
-            "openNoise": "door-buzzer"
-          },
+          { "opens": "goods-shutter-warehouse/gate", "timer": 4, "openNoise": "door-buzzer" },
           {
             "opens": "goods-shutter-ikea/gate",
             "timer": 7,
@@ -4768,11 +4737,7 @@
         "name": "goods shutter switch",
         "useTime": 3,
         "rows": [
-          {
-            "opens": "goods-shutter-ikea/gate",
-            "timer": 4,
-            "openNoise": "door-buzzer"
-          },
+          { "opens": "goods-shutter-ikea/gate", "timer": 4, "openNoise": "door-buzzer" },
           {
             "opens": "goods-shutter-warehouse/gate",
             "timer": 7,
@@ -4825,14 +4790,7 @@
               "pos": [-0.875, 0, -1.25],
               "size": [5.2, 2.6, 0.2],
               "colour": "#b5b0a6",
-              "openings": [
-                {
-                  "along": 0,
-                  "width": 1,
-                  "bottom": 0.9,
-                  "top": 2
-                }
-              ],
+              "openings": [{ "along": 0, "width": 1, "bottom": 0.9, "top": 2 }],
               "yaw": -90
             },
             {
@@ -4931,14 +4889,7 @@
           "pos": [-11.5, 0, -20.5],
           "size": [8.2, 2.6, 0.2],
           "colour": "#b5b0a6",
-          "openings": [
-            {
-              "along": -0.5,
-              "width": 1,
-              "bottom": 0.9,
-              "top": 2
-            }
-          ]
+          "openings": [{ "along": -0.5, "width": 1, "bottom": 0.9, "top": 2 }]
         },
         {
           "type": "box",
@@ -5109,14 +5060,7 @@
       "pos": [56.967, 0.2, 62.5],
       "size": [2.3, 2.6, 0.2],
       "colour": "#b5b0a6",
-      "openings": [
-        {
-          "along": -0.5,
-          "width": 1,
-          "bottom": 0.9,
-          "top": 2
-        }
-      ],
+      "openings": [{ "along": -0.5, "width": 1, "bottom": 0.9, "top": 2 }],
       "yaw": 180
     },
     {
@@ -5888,40 +5832,11 @@
                   "colour": "#2b2d33",
                   "id": "tech-north-low",
                   "openings": [
-                    {
-                      "width": 3.4,
-                      "bottom": 0.1,
-                      "top": 5.2,
-                      "glass": "#9fd0d8",
-                      "along": -7.75
-                    },
-                    {
-                      "width": 3.4,
-                      "bottom": 0.1,
-                      "top": 5.2,
-                      "glass": "#9fd0d8",
-                      "along": -3.95
-                    },
-                    {
-                      "width": 5.4,
-                      "bottom": 0,
-                      "top": 3.2,
-                      "along": 0.85
-                    },
-                    {
-                      "width": 3.4,
-                      "bottom": 0.1,
-                      "top": 5.2,
-                      "glass": "#9fd0d8",
-                      "along": 5.85
-                    },
-                    {
-                      "width": 1,
-                      "bottom": 0.1,
-                      "top": 5.2,
-                      "glass": "#9fd0d8",
-                      "along": 8.35
-                    }
+                    { "width": 3.4, "bottom": 0.1, "top": 5.2, "glass": "#9fd0d8", "along": -7.75 },
+                    { "width": 3.4, "bottom": 0.1, "top": 5.2, "glass": "#9fd0d8", "along": -3.95 },
+                    { "width": 5.4, "bottom": 0, "top": 3.2, "along": 0.85 },
+                    { "width": 3.4, "bottom": 0.1, "top": 5.2, "glass": "#9fd0d8", "along": 5.85 },
+                    { "width": 1, "bottom": 0.1, "top": 5.2, "glass": "#9fd0d8", "along": 8.35 }
                   ]
                 },
                 {
@@ -5932,33 +5847,10 @@
                   "colour": "#2b2d33",
                   "id": "tech-east-low",
                   "openings": [
-                    {
-                      "width": 2.6,
-                      "bottom": 0,
-                      "top": 3.2,
-                      "along": -5.6
-                    },
-                    {
-                      "width": 3.4,
-                      "bottom": 0.1,
-                      "top": 5.2,
-                      "glass": "#9fd0d8",
-                      "along": -2.2
-                    },
-                    {
-                      "width": 3.4,
-                      "bottom": 0.1,
-                      "top": 5.2,
-                      "glass": "#9fd0d8",
-                      "along": 1.6
-                    },
-                    {
-                      "width": 3.4,
-                      "bottom": 0.1,
-                      "top": 5.2,
-                      "glass": "#9fd0d8",
-                      "along": 5.4
-                    }
+                    { "width": 2.6, "bottom": 0, "top": 3.2, "along": -5.6 },
+                    { "width": 3.4, "bottom": 0.1, "top": 5.2, "glass": "#9fd0d8", "along": -2.2 },
+                    { "width": 3.4, "bottom": 0.1, "top": 5.2, "glass": "#9fd0d8", "along": 1.6 },
+                    { "width": 3.4, "bottom": 0.1, "top": 5.2, "glass": "#9fd0d8", "along": 5.4 }
                   ]
                 },
                 {
@@ -5969,20 +5861,8 @@
                   "colour": "#8a8c8a",
                   "id": "tech-west-low",
                   "openings": [
-                    {
-                      "width": 2.6,
-                      "bottom": 0.1,
-                      "top": 5.2,
-                      "glass": "#9fd0d8",
-                      "along": 2.8
-                    },
-                    {
-                      "width": 2.6,
-                      "bottom": 0.1,
-                      "top": 5.2,
-                      "glass": "#9fd0d8",
-                      "along": 5.9
-                    }
+                    { "width": 2.6, "bottom": 0.1, "top": 5.2, "glass": "#9fd0d8", "along": 2.8 },
+                    { "width": 2.6, "bottom": 0.1, "top": 5.2, "glass": "#9fd0d8", "along": 5.9 }
                   ]
                 },
                 {
@@ -5991,14 +5871,7 @@
                   "size": [19.9, 5.6, 0.2],
                   "colour": "#8a8c8a",
                   "id": "tech-south-low",
-                  "openings": [
-                    {
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.1,
-                      "along": -4.55
-                    }
-                  ]
+                  "openings": [{ "width": 1.4, "bottom": 0, "top": 2.1, "along": -4.55 }]
                 },
                 {
                   "type": "door",
@@ -6013,14 +5886,7 @@
                   "size": [11.4, 5.6, 0.2],
                   "colour": "#8a8c8a",
                   "id": "tech-stock-wall",
-                  "openings": [
-                    {
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2,
-                      "along": 2.7
-                    }
-                  ]
+                  "openings": [{ "width": 1.4, "bottom": 0, "top": 2.2, "along": 2.7 }]
                 },
                 {
                   "type": "wall",
@@ -6263,46 +6129,12 @@
                   "colour": "#2b2d33",
                   "id": "tech-north-high",
                   "openings": [
-                    {
-                      "width": 3.8,
-                      "bottom": 0.3,
-                      "top": 3.2,
-                      "glass": "#9fd0d8",
-                      "along": -7.15
-                    },
-                    {
-                      "width": 3,
-                      "bottom": 0.3,
-                      "top": 3.2,
-                      "glass": "#9fd0d8",
-                      "along": -3.35
-                    },
-                    {
-                      "width": 3,
-                      "bottom": 0,
-                      "top": 2.8,
-                      "along": -0.02
-                    },
-                    {
-                      "width": 3.2,
-                      "bottom": 0.3,
-                      "top": 3.2,
-                      "glass": "#9fd0d8",
-                      "along": 3.65
-                    },
-                    {
-                      "width": 2.2,
-                      "bottom": 0.3,
-                      "top": 3.2,
-                      "glass": "#9fd0d8",
-                      "along": 6.85
-                    },
-                    {
-                      "width": 1.1,
-                      "bottom": 0.5,
-                      "top": 3.2,
-                      "along": 8.85
-                    }
+                    { "width": 3.8, "bottom": 0.3, "top": 3.2, "glass": "#9fd0d8", "along": -7.15 },
+                    { "width": 3, "bottom": 0.3, "top": 3.2, "glass": "#9fd0d8", "along": -3.35 },
+                    { "width": 3, "bottom": 0, "top": 2.8, "along": -0.02 },
+                    { "width": 3.2, "bottom": 0.3, "top": 3.2, "glass": "#9fd0d8", "along": 3.65 },
+                    { "width": 2.2, "bottom": 0.3, "top": 3.2, "glass": "#9fd0d8", "along": 6.85 },
+                    { "width": 1.1, "bottom": 0.5, "top": 3.2, "along": 8.85 }
                   ]
                 },
                 {
@@ -6313,33 +6145,10 @@
                   "colour": "#2b2d33",
                   "id": "tech-east-high",
                   "openings": [
-                    {
-                      "width": 4.6,
-                      "bottom": 0.3,
-                      "top": 3.2,
-                      "glass": "#9fd0d8",
-                      "along": -5
-                    },
-                    {
-                      "width": 2.8,
-                      "bottom": 0.3,
-                      "top": 3.2,
-                      "glass": "#9fd0d8",
-                      "along": -0.4
-                    },
-                    {
-                      "width": 2.2,
-                      "bottom": 0.5,
-                      "top": 3.2,
-                      "along": 2.4
-                    },
-                    {
-                      "width": 3.2,
-                      "bottom": 0.3,
-                      "top": 3.2,
-                      "glass": "#9fd0d8",
-                      "along": 5.6
-                    }
+                    { "width": 4.6, "bottom": 0.3, "top": 3.2, "glass": "#9fd0d8", "along": -5 },
+                    { "width": 2.8, "bottom": 0.3, "top": 3.2, "glass": "#9fd0d8", "along": -0.4 },
+                    { "width": 2.2, "bottom": 0.5, "top": 3.2, "along": 2.4 },
+                    { "width": 3.2, "bottom": 0.3, "top": 3.2, "glass": "#9fd0d8", "along": 5.6 }
                   ]
                 },
                 {
@@ -6350,20 +6159,8 @@
                   "colour": "#2b2d33",
                   "id": "tech-west-high",
                   "openings": [
-                    {
-                      "width": 6,
-                      "bottom": 0.3,
-                      "top": 3.2,
-                      "glass": "#9fd0d8",
-                      "along": -4
-                    },
-                    {
-                      "width": 3.6,
-                      "bottom": 0.3,
-                      "top": 3.2,
-                      "glass": "#9fd0d8",
-                      "along": 5
-                    }
+                    { "width": 6, "bottom": 0.3, "top": 3.2, "glass": "#9fd0d8", "along": -4 },
+                    { "width": 3.6, "bottom": 0.3, "top": 3.2, "glass": "#9fd0d8", "along": 5 }
                   ]
                 },
                 {
@@ -6373,33 +6170,10 @@
                   "colour": "#8a8c8a",
                   "id": "tech-south-high",
                   "openings": [
-                    {
-                      "width": 4.6,
-                      "bottom": 0.3,
-                      "top": 3.2,
-                      "glass": "#9fd0d8",
-                      "along": -5.95
-                    },
-                    {
-                      "width": 4.6,
-                      "bottom": 0.3,
-                      "top": 3.2,
-                      "glass": "#9fd0d8",
-                      "along": -0.15
-                    },
-                    {
-                      "width": 1.2,
-                      "bottom": 0.5,
-                      "top": 3.2,
-                      "along": 3.25
-                    },
-                    {
-                      "width": 4.6,
-                      "bottom": 0.3,
-                      "top": 3.2,
-                      "glass": "#9fd0d8",
-                      "along": 6.85
-                    }
+                    { "width": 4.6, "bottom": 0.3, "top": 3.2, "glass": "#9fd0d8", "along": -5.95 },
+                    { "width": 4.6, "bottom": 0.3, "top": 3.2, "glass": "#9fd0d8", "along": -0.15 },
+                    { "width": 1.2, "bottom": 0.5, "top": 3.2, "along": 3.25 },
+                    { "width": 4.6, "bottom": 0.3, "top": 3.2, "glass": "#9fd0d8", "along": 6.85 }
                   ]
                 },
                 {
@@ -6440,26 +6214,9 @@
                   "colour": "#2b2d33",
                   "id": "tech-office-north",
                   "openings": [
-                    {
-                      "width": 1.6,
-                      "bottom": 0.9,
-                      "top": 2.9,
-                      "glass": "#9fd0d8",
-                      "along": -1.85
-                    },
-                    {
-                      "width": 1.2,
-                      "bottom": 0,
-                      "top": 2.1,
-                      "along": -0.05
-                    },
-                    {
-                      "width": 1.8,
-                      "bottom": 0.9,
-                      "top": 2.9,
-                      "glass": "#9fd0d8",
-                      "along": 1.65
-                    }
+                    { "width": 1.6, "bottom": 0.9, "top": 2.9, "glass": "#9fd0d8", "along": -1.85 },
+                    { "width": 1.2, "bottom": 0, "top": 2.1, "along": -0.05 },
+                    { "width": 1.8, "bottom": 0.9, "top": 2.9, "glass": "#9fd0d8", "along": 1.65 }
                   ]
                 },
                 {
@@ -6470,20 +6227,8 @@
                   "colour": "#2b2d33",
                   "id": "tech-office-west",
                   "openings": [
-                    {
-                      "width": 2,
-                      "bottom": 0.9,
-                      "top": 2.9,
-                      "glass": "#9fd0d8",
-                      "along": -1.25
-                    },
-                    {
-                      "width": 2,
-                      "bottom": 0.9,
-                      "top": 2.9,
-                      "glass": "#9fd0d8",
-                      "along": 1.25
-                    }
+                    { "width": 2, "bottom": 0.9, "top": 2.9, "glass": "#9fd0d8", "along": -1.25 },
+                    { "width": 2, "bottom": 0.9, "top": 2.9, "glass": "#9fd0d8", "along": 1.25 }
                   ]
                 },
                 {
@@ -8884,14 +8629,7 @@
               "size": [12.85, 5.8, 0.2],
               "colour": "#e6e0d3",
               "id": "wall-bookstore-arcade",
-              "openings": [
-                {
-                  "width": 1.6,
-                  "bottom": 0,
-                  "top": 2.3,
-                  "along": -1.925
-                }
-              ]
+              "openings": [{ "width": 1.6, "bottom": 0, "top": 2.3, "along": -1.925 }]
             },
             {
               "type": "wall",
@@ -8959,14 +8697,7 @@
               "size": [12.7, 5.8, 0.2],
               "colour": "#e6e0d3",
               "id": "wall-shoes-back",
-              "openings": [
-                {
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1,
-                  "along": 3.15
-                }
-              ]
+              "openings": [{ "width": 1.2, "bottom": 0, "top": 2.1, "along": 3.15 }]
             },
             {
               "type": "door",
@@ -9001,42 +8732,12 @@
               "colour": "#e6e0d3",
               "id": "wall-service-north",
               "openings": [
-                {
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1,
-                  "along": -32.3
-                },
-                {
-                  "along": -15.8,
-                  "width": 2,
-                  "bottom": 0,
-                  "top": 2.3
-                },
-                {
-                  "along": 4.7,
-                  "width": 2,
-                  "bottom": 0,
-                  "top": 2.3
-                },
-                {
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1,
-                  "along": 17
-                },
-                {
-                  "width": 1.6,
-                  "bottom": 0,
-                  "top": 2.3,
-                  "along": 34.2
-                },
-                {
-                  "along": -5.3,
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1
-                }
+                { "width": 1.2, "bottom": 0, "top": 2.1, "along": -32.3 },
+                { "along": -15.8, "width": 2, "bottom": 0, "top": 2.3 },
+                { "along": 4.7, "width": 2, "bottom": 0, "top": 2.3 },
+                { "width": 1.2, "bottom": 0, "top": 2.1, "along": 17 },
+                { "width": 1.6, "bottom": 0, "top": 2.3, "along": 34.2 },
+                { "along": -5.3, "width": 1.2, "bottom": 0, "top": 2.1 }
               ]
             },
             {
@@ -9084,14 +8785,7 @@
               "size": [4.1, 5.8, 0.2],
               "colour": "wall",
               "id": "wall-service-west",
-              "openings": [
-                {
-                  "along": 0,
-                  "width": 1.4,
-                  "bottom": 0,
-                  "top": 2.1
-                }
-              ]
+              "openings": [{ "along": 0, "width": 1.4, "bottom": 0, "top": 2.1 }]
             },
             {
               "type": "wall",
@@ -9100,14 +8794,7 @@
               "size": [21.9, 5.8, 0.2],
               "colour": "wall",
               "id": "wall-service-east",
-              "openings": [
-                {
-                  "along": 7.15,
-                  "width": 1.4,
-                  "bottom": 0,
-                  "top": 2.2
-                }
-              ]
+              "openings": [{ "along": 7.15, "width": 1.4, "bottom": 0, "top": 2.2 }]
             }
           ]
         },
@@ -9130,26 +8817,9 @@
               "colour": "#e6e0d3",
               "id": "front-clothing",
               "openings": [
-                {
-                  "width": 5.6,
-                  "bottom": 0.5,
-                  "top": 3,
-                  "glass": "#9fd0d8",
-                  "along": -6.6
-                },
-                {
-                  "width": 5,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": 1.5
-                },
-                {
-                  "width": 3.4,
-                  "bottom": 0.5,
-                  "top": 3,
-                  "glass": "#9fd0d8",
-                  "along": 7.2
-                }
+                { "width": 5.6, "bottom": 0.5, "top": 3, "glass": "#9fd0d8", "along": -6.6 },
+                { "width": 5, "bottom": 0, "top": 3, "along": 1.5 },
+                { "width": 3.4, "bottom": 0.5, "top": 3, "glass": "#9fd0d8", "along": 7.2 }
               ]
             },
             {
@@ -9271,14 +8941,7 @@
               "size": [20, 3.2, 0.2],
               "colour": "#e6e0d3",
               "id": "wall-fitting-back",
-              "openings": [
-                {
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1,
-                  "along": 3.6
-                }
-              ]
+              "openings": [{ "width": 1.2, "bottom": 0, "top": 2.1, "along": 3.6 }]
             },
             {
               "type": "prefab",
@@ -9317,19 +8980,8 @@
               "colour": "#e6e0d3",
               "id": "front-bookstore",
               "openings": [
-                {
-                  "width": 2.6,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": -3.6
-                },
-                {
-                  "width": 5.6,
-                  "bottom": 0.5,
-                  "top": 3,
-                  "glass": "#9fd0d8",
-                  "along": 3
-                }
+                { "width": 2.6, "bottom": 0, "top": 3, "along": -3.6 },
+                { "width": 5.6, "bottom": 0.5, "top": 3, "glass": "#9fd0d8", "along": 3 }
               ]
             },
             {
@@ -9406,14 +9058,7 @@
               "size": [10, 5.6, 0.2],
               "colour": "#e6e0d3",
               "id": "front-arcade",
-              "openings": [
-                {
-                  "width": 6.6,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": 0.4
-                }
-              ]
+              "openings": [{ "width": 6.6, "bottom": 0, "top": 3, "along": 0.4 }]
             },
             {
               "type": "prefab",
@@ -9562,19 +9207,8 @@
               "colour": "#e6e0d3",
               "id": "front-pharmacy",
               "openings": [
-                {
-                  "width": 3.6,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": -5.6
-                },
-                {
-                  "width": 9,
-                  "bottom": 0.5,
-                  "top": 3,
-                  "glass": "#9fd0d8",
-                  "along": 3.2
-                }
+                { "width": 3.6, "bottom": 0, "top": 3, "along": -5.6 },
+                { "width": 9, "bottom": 0.5, "top": 3, "glass": "#9fd0d8", "along": 3.2 }
               ]
             },
             {
@@ -9676,14 +9310,7 @@
               "size": [18, 3.2, 0.2],
               "colour": "#e6e0d3",
               "id": "wall-pharmacy-back-room",
-              "openings": [
-                {
-                  "width": 1.4,
-                  "bottom": 0,
-                  "top": 2.2,
-                  "along": 1.3
-                }
-              ]
+              "openings": [{ "width": 1.4, "bottom": 0, "top": 2.2, "along": 1.3 }]
             },
             {
               "type": "prefab",
@@ -9726,19 +9353,8 @@
               "colour": "#e6e0d3",
               "id": "front-shoes",
               "openings": [
-                {
-                  "width": 3,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": -3.35
-                },
-                {
-                  "width": 5,
-                  "bottom": 0.5,
-                  "top": 3,
-                  "glass": "#9fd0d8",
-                  "along": 2.65
-                }
+                { "width": 3, "bottom": 0, "top": 3, "along": -3.35 },
+                { "width": 5, "bottom": 0.5, "top": 3, "glass": "#9fd0d8", "along": 2.65 }
               ]
             },
             {
@@ -9784,14 +9400,7 @@
               "size": [12.7, 3.2, 0.2],
               "colour": "#e6e0d3",
               "id": "wall-shoes-stockroom",
-              "openings": [
-                {
-                  "width": 1.4,
-                  "bottom": 0,
-                  "top": 2.2,
-                  "along": -2.95
-                }
-              ]
+              "openings": [{ "width": 1.4, "bottom": 0, "top": 2.2, "along": -2.95 }]
             },
             {
               "type": "prefab",
@@ -9870,14 +9479,7 @@
               "size": [3.95, 2.6, 0.2],
               "colour": "wall",
               "id": "wall-corridor-block-west",
-              "openings": [
-                {
-                  "along": 0,
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1
-                }
-              ]
+              "openings": [{ "along": 0, "width": 1.2, "bottom": 0, "top": 2.1 }]
             },
             {
               "type": "prefab",
@@ -9909,14 +9511,7 @@
               "size": [3.95, 2.6, 0.2],
               "colour": "wall",
               "id": "wall-corridor-fire-door",
-              "openings": [
-                {
-                  "width": 1.4,
-                  "bottom": 0,
-                  "top": 2.1,
-                  "along": 0.025
-                }
-              ]
+              "openings": [{ "width": 1.4, "bottom": 0, "top": 2.1, "along": 0.025 }]
             },
             {
               "type": "door",
@@ -10020,24 +9615,9 @@
               "colour": "#e6e0d3",
               "id": "front-east",
               "openings": [
-                {
-                  "width": 3.6,
-                  "bottom": 0,
-                  "top": 2.8,
-                  "along": -12.35
-                },
-                {
-                  "width": 1.8,
-                  "bottom": 0,
-                  "top": 2.3,
-                  "along": -5.35
-                },
-                {
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1,
-                  "along": 6.15
-                }
+                { "width": 3.6, "bottom": 0, "top": 2.8, "along": -12.35 },
+                { "width": 1.8, "bottom": 0, "top": 2.3, "along": -5.35 },
+                { "width": 1.2, "bottom": 0, "top": 2.1, "along": 6.15 }
               ]
             },
             {
@@ -10096,18 +9676,8 @@
               "colour": "#3d4148",
               "id": "lobby-outer-wall",
               "openings": [
-                {
-                  "width": 3.72,
-                  "bottom": 0,
-                  "top": 2.6,
-                  "along": -2.4
-                },
-                {
-                  "width": 3.72,
-                  "bottom": 0,
-                  "top": 2.6,
-                  "along": 2.4
-                }
+                { "width": 3.72, "bottom": 0, "top": 2.6, "along": -2.4 },
+                { "width": 3.72, "bottom": 0, "top": 2.6, "along": 2.4 }
               ]
             },
             {
@@ -10148,32 +9718,10 @@
               "colour": "#e6e0d3",
               "id": "front-toy-store",
               "openings": [
-                {
-                  "width": 1.8,
-                  "bottom": 0,
-                  "top": 2.6,
-                  "along": -11.4
-                },
-                {
-                  "width": 9,
-                  "bottom": 0.5,
-                  "top": 2.9,
-                  "glass": "#9fd0d8",
-                  "along": -3.4
-                },
-                {
-                  "width": 4,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": 7
-                },
-                {
-                  "width": 3.2,
-                  "bottom": 0.5,
-                  "top": 2.9,
-                  "glass": "#9fd0d8",
-                  "along": 12.4
-                }
+                { "width": 1.8, "bottom": 0, "top": 2.6, "along": -11.4 },
+                { "width": 9, "bottom": 0.5, "top": 2.9, "glass": "#9fd0d8", "along": -3.4 },
+                { "width": 4, "bottom": 0, "top": 3, "along": 7 },
+                { "width": 3.2, "bottom": 0.5, "top": 2.9, "glass": "#9fd0d8", "along": 12.4 }
               ]
             },
             {
@@ -10391,18 +9939,8 @@
               "colour": "#e6e0d3",
               "id": "wall-restroom-hall",
               "openings": [
-                {
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.2,
-                  "along": -3.7
-                },
-                {
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.2,
-                  "along": 3.9
-                }
+                { "width": 1.2, "bottom": 0, "top": 2.2, "along": -3.7 },
+                { "width": 1.2, "bottom": 0, "top": 2.2, "along": 3.9 }
               ]
             },
             {
@@ -10658,14 +10196,7 @@
               "size": [19.4, 9.8, 0.2],
               "colour": "wall",
               "id": "wall-service-stair-east",
-              "openings": [
-                {
-                  "along": 8.6,
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1
-                }
-              ]
+              "openings": [{ "along": 8.6, "width": 1.2, "bottom": 0, "top": 2.1 }]
             },
             {
               "type": "wall",
@@ -10706,19 +10237,8 @@
               "colour": "#e6e0d3",
               "id": "upper-front-s1",
               "openings": [
-                {
-                  "width": 3.4,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": -0.45
-                },
-                {
-                  "width": 2.2,
-                  "bottom": 0.5,
-                  "top": 2.9,
-                  "glass": "#9fd0d8",
-                  "along": 2.75
-                }
+                { "width": 3.4, "bottom": 0, "top": 3, "along": -0.45 },
+                { "width": 2.2, "bottom": 0.5, "top": 2.9, "glass": "#9fd0d8", "along": 2.75 }
               ]
             },
             {
@@ -10728,26 +10248,9 @@
               "colour": "#e6e0d3",
               "id": "upper-front-s2",
               "openings": [
-                {
-                  "width": 5.4,
-                  "bottom": 0.5,
-                  "top": 2.9,
-                  "glass": "#9fd0d8",
-                  "along": -6
-                },
-                {
-                  "width": 6.5,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": 0
-                },
-                {
-                  "width": 4,
-                  "bottom": 0.5,
-                  "top": 2.9,
-                  "glass": "#9fd0d8",
-                  "along": 6.4
-                }
+                { "width": 5.4, "bottom": 0.5, "top": 2.9, "glass": "#9fd0d8", "along": -6 },
+                { "width": 6.5, "bottom": 0, "top": 3, "along": 0 },
+                { "width": 4, "bottom": 0.5, "top": 2.9, "glass": "#9fd0d8", "along": 6.4 }
               ]
             },
             {
@@ -10764,14 +10267,7 @@
               "size": [13, 3.8, 0.2],
               "colour": "#e6e0d3",
               "id": "upper-front-s3",
-              "openings": [
-                {
-                  "width": 5,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": 2.5
-                }
-              ]
+              "openings": [{ "width": 5, "bottom": 0, "top": 3, "along": 2.5 }]
             },
             {
               "type": "wall",
@@ -10779,14 +10275,7 @@
               "size": [13, 3.8, 0.2],
               "colour": "#e6e0d3",
               "id": "upper-front-s3-2",
-              "openings": [
-                {
-                  "width": 5,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": 2.5
-                }
-              ]
+              "openings": [{ "width": 5, "bottom": 0, "top": 3, "along": 2.5 }]
             },
             {
               "type": "wall",
@@ -10794,14 +10283,7 @@
               "size": [7, 3.8, 0.2],
               "colour": "#e6e0d3",
               "id": "upper-front-s3-3",
-              "openings": [
-                {
-                  "width": 5,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": 0
-                }
-              ],
+              "openings": [{ "width": 5, "bottom": 0, "top": 3, "along": 0 }],
               "yaw": -90
             },
             {
@@ -10811,19 +10293,8 @@
               "colour": "#e6e0d3",
               "id": "upper-front-s4",
               "openings": [
-                {
-                  "width": 2.6,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": -3.1
-                },
-                {
-                  "width": 4,
-                  "bottom": 0.5,
-                  "top": 2.9,
-                  "glass": "#9fd0d8",
-                  "along": 1.9
-                }
+                { "width": 2.6, "bottom": 0, "top": 3, "along": -3.1 },
+                { "width": 4, "bottom": 0.5, "top": 2.9, "glass": "#9fd0d8", "along": 1.9 }
               ]
             },
             {
@@ -10841,26 +10312,9 @@
               "colour": "#e6e0d3",
               "id": "upper-front-s5",
               "openings": [
-                {
-                  "width": 6,
-                  "bottom": 0.5,
-                  "top": 2.9,
-                  "glass": "#9fd0d8",
-                  "along": -6.45
-                },
-                {
-                  "width": 3.6,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": 0.15
-                },
-                {
-                  "width": 6.6,
-                  "bottom": 0.5,
-                  "top": 2.9,
-                  "glass": "#9fd0d8",
-                  "along": 6.15
-                }
+                { "width": 6, "bottom": 0.5, "top": 2.9, "glass": "#9fd0d8", "along": -6.45 },
+                { "width": 3.6, "bottom": 0, "top": 3, "along": 0.15 },
+                { "width": 6.6, "bottom": 0.5, "top": 2.9, "glass": "#9fd0d8", "along": 6.15 }
               ]
             },
             {
@@ -10924,36 +10378,11 @@
               "colour": "#e6e0d3",
               "id": "upper-hall-north",
               "openings": [
-                {
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1,
-                  "along": -32.3
-                },
-                {
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1,
-                  "along": -1.3
-                },
-                {
-                  "width": 2,
-                  "bottom": 0,
-                  "top": 2.3,
-                  "along": 6.7
-                },
-                {
-                  "width": 2,
-                  "bottom": 0,
-                  "top": 2.3,
-                  "along": 13.7
-                },
-                {
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1,
-                  "along": 30.7
-                }
+                { "width": 1.2, "bottom": 0, "top": 2.1, "along": -32.3 },
+                { "width": 1.2, "bottom": 0, "top": 2.1, "along": -1.3 },
+                { "width": 2, "bottom": 0, "top": 2.3, "along": 6.7 },
+                { "width": 2, "bottom": 0, "top": 2.3, "along": 13.7 },
+                { "width": 1.2, "bottom": 0, "top": 2.1, "along": 30.7 }
               ]
             },
             {
@@ -10993,14 +10422,7 @@
               "size": [79, 3.8, 0.2],
               "colour": "wall",
               "id": "upper-hall-south",
-              "openings": [
-                {
-                  "along": 12.6,
-                  "width": 1.4,
-                  "bottom": 0,
-                  "top": 2.2
-                }
-              ]
+              "openings": [{ "along": 12.6, "width": 1.4, "bottom": 0, "top": 2.2 }]
             },
             {
               "type": "wall",
@@ -11009,14 +10431,7 @@
               "size": [4.15, 3.8, 0.2],
               "colour": "wall",
               "id": "upper-hall-west",
-              "openings": [
-                {
-                  "along": 0,
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1
-                }
-              ]
+              "openings": [{ "along": 0, "width": 1.2, "bottom": 0, "top": 2.1 }]
             },
             {
               "type": "wall",
@@ -11025,14 +10440,7 @@
               "size": [4.15, 3.8, 0.2],
               "colour": "wall",
               "id": "upper-hall-east",
-              "openings": [
-                {
-                  "width": 1.4,
-                  "bottom": 0,
-                  "top": 2.2,
-                  "along": 0.025
-                }
-              ]
+              "openings": [{ "width": 1.4, "bottom": 0, "top": 2.2, "along": 0.025 }]
             },
             {
               "type": "wall",
@@ -11058,14 +10466,7 @@
               "size": [3.95, 3.8, 0.2],
               "colour": "wall",
               "id": "upper-hall-partition-east",
-              "openings": [
-                {
-                  "width": 1.4,
-                  "bottom": 0,
-                  "top": 2.1,
-                  "along": 0.025
-                }
-              ]
+              "openings": [{ "width": 1.4, "bottom": 0, "top": 2.1, "along": 0.025 }]
             },
             {
               "type": "door",
@@ -11082,14 +10483,7 @@
               "size": [3.95, 3.8, 0.2],
               "colour": "wall",
               "id": "upper-hall-partition-west",
-              "openings": [
-                {
-                  "width": 1.4,
-                  "bottom": 0,
-                  "top": 2.1,
-                  "along": 0.025
-                }
-              ]
+              "openings": [{ "width": 1.4, "bottom": 0, "top": 2.1, "along": 0.025 }]
             },
             {
               "type": "door",
@@ -11113,19 +10507,8 @@
               "colour": "#e6e0d3",
               "id": "upper-front-n1",
               "openings": [
-                {
-                  "width": 4,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": -1.45
-                },
-                {
-                  "width": 3.6,
-                  "bottom": 0.5,
-                  "top": 2.9,
-                  "glass": "#9fd0d8",
-                  "along": 4.55
-                }
+                { "width": 4, "bottom": 0, "top": 3, "along": -1.45 },
+                { "width": 3.6, "bottom": 0.5, "top": 2.9, "glass": "#9fd0d8", "along": 4.55 }
               ]
             },
             {
@@ -11135,19 +10518,8 @@
               "colour": "#e6e0d3",
               "id": "upper-front-n1-2",
               "openings": [
-                {
-                  "width": 4,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": -2.5
-                },
-                {
-                  "width": 3.6,
-                  "bottom": 0.5,
-                  "top": 2.9,
-                  "glass": "#9fd0d8",
-                  "along": 4
-                }
+                { "width": 4, "bottom": 0, "top": 3, "along": -2.5 },
+                { "width": 3.6, "bottom": 0.5, "top": 2.9, "glass": "#9fd0d8", "along": 4 }
               ],
               "yaw": -90
             },
@@ -11158,19 +10530,8 @@
               "colour": "#e6e0d3",
               "id": "upper-front-n2",
               "openings": [
-                {
-                  "width": 4.4,
-                  "bottom": 0.5,
-                  "top": 2.9,
-                  "glass": "#9fd0d8",
-                  "along": -5.1
-                },
-                {
-                  "width": 5,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": 2.5
-                }
+                { "width": 4.4, "bottom": 0.5, "top": 2.9, "glass": "#9fd0d8", "along": -5.1 },
+                { "width": 5, "bottom": 0, "top": 3, "along": 2.5 }
               ]
             },
             {
@@ -11180,19 +10541,8 @@
               "colour": "#e6e0d3",
               "id": "upper-front-n3",
               "openings": [
-                {
-                  "width": 6,
-                  "bottom": 0.5,
-                  "top": 2.9,
-                  "glass": "#9fd0d8",
-                  "along": -2.5
-                },
-                {
-                  "width": 3.2,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": 3.9
-                }
+                { "width": 6, "bottom": 0.5, "top": 2.9, "glass": "#9fd0d8", "along": -2.5 },
+                { "width": 3.2, "bottom": 0, "top": 3, "along": 3.9 }
               ]
             },
             {
@@ -11202,26 +10552,9 @@
               "colour": "#e6e0d3",
               "id": "upper-front-n4",
               "openings": [
-                {
-                  "width": 2.8,
-                  "bottom": 0,
-                  "top": 3,
-                  "along": -7.15
-                },
-                {
-                  "width": 7,
-                  "bottom": 0.5,
-                  "top": 2.9,
-                  "glass": "#9fd0d8",
-                  "along": -0.55
-                },
-                {
-                  "width": 4.2,
-                  "bottom": 0.5,
-                  "top": 2.9,
-                  "glass": "#9fd0d8",
-                  "along": 7.05
-                }
+                { "width": 2.8, "bottom": 0, "top": 3, "along": -7.15 },
+                { "width": 7, "bottom": 0.5, "top": 2.9, "glass": "#9fd0d8", "along": -0.55 },
+                { "width": 4.2, "bottom": 0.5, "top": 2.9, "glass": "#9fd0d8", "along": 7.05 }
               ]
             },
             {
@@ -11264,14 +10597,7 @@
               "size": [13, 3.8, 0.2],
               "colour": "#e6e0d3",
               "id": "upper-north-wall-9",
-              "openings": [
-                {
-                  "along": 0.3,
-                  "width": 3,
-                  "bottom": 0,
-                  "top": 3
-                }
-              ],
+              "openings": [{ "along": 0.3, "width": 3, "bottom": 0, "top": 3 }],
               "yaw": -90
             },
             {
@@ -11281,13 +10607,7 @@
               "colour": "#e6e0d3",
               "id": "upper-north-wall-7",
               "openings": [
-                {
-                  "along": 0,
-                  "width": 3.8,
-                  "bottom": 0.8,
-                  "top": 2.5,
-                  "glass": "#a8d4e0"
-                }
+                { "along": 0, "width": 3.8, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
               ],
               "yaw": -90
             },
@@ -11325,20 +10645,8 @@
               "colour": "#e6e0d3",
               "id": "upper-north-back",
               "openings": [
-                {
-                  "width": 3,
-                  "bottom": 0.5,
-                  "top": 2.9,
-                  "glass": "#9fd0d8",
-                  "along": 2.6
-                },
-                {
-                  "width": 3,
-                  "bottom": 0.5,
-                  "top": 2.9,
-                  "glass": "#9fd0d8",
-                  "along": 7.4
-                }
+                { "width": 3, "bottom": 0.5, "top": 2.9, "glass": "#9fd0d8", "along": 2.6 },
+                { "width": 3, "bottom": 0.5, "top": 2.9, "glass": "#9fd0d8", "along": 7.4 }
               ]
             },
             {
@@ -11357,26 +10665,9 @@
               "colour": "#e6e0d3",
               "id": "store1-west-wall",
               "openings": [
-                {
-                  "along": -4.32,
-                  "width": 2.2,
-                  "bottom": 0.8,
-                  "top": 2.5,
-                  "glass": "#a8d4e0"
-                },
-                {
-                  "along": -0.72,
-                  "width": 4.4,
-                  "bottom": 0,
-                  "top": 3
-                },
-                {
-                  "along": 3.28,
-                  "width": 3.4,
-                  "bottom": 0.8,
-                  "top": 2.5,
-                  "glass": "#a8d4e0"
-                }
+                { "along": -4.32, "width": 2.2, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" },
+                { "along": -0.72, "width": 4.4, "bottom": 0, "top": 3 },
+                { "along": 3.28, "width": 3.4, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
               ]
             },
             {
@@ -11385,14 +10676,7 @@
               "size": [6.1, 3.8, 0.2],
               "colour": "#e6e0d3",
               "id": "store1-north-wall",
-              "openings": [
-                {
-                  "along": -0.05,
-                  "width": 3,
-                  "bottom": 0,
-                  "top": 3
-                }
-              ]
+              "openings": [{ "along": -0.05, "width": 3, "bottom": 0, "top": 3 }]
             },
             {
               "type": "wall",
@@ -11489,26 +10773,9 @@
                   "colour": "#e6e0d3",
                   "id": "gap-store-2-west",
                   "openings": [
-                    {
-                      "along": -4.6,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    },
-                    {
-                      "along": 0,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    },
-                    {
-                      "along": 4.6,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": -4.6, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" },
+                    { "along": 0, "width": 4.4, "bottom": 0, "top": 3 },
+                    { "along": 4.6, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -11518,14 +10785,7 @@
                   "size": [16, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-2-east",
-                  "openings": [
-                    {
-                      "along": 4,
-                      "width": 3.6,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 4, "width": 3.6, "bottom": 0, "top": 3 }]
                 }
               ]
             },
@@ -11556,19 +10816,8 @@
                   "colour": "#e6e0d3",
                   "id": "gap-store-3-south",
                   "openings": [
-                    {
-                      "along": -3.45,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    },
-                    {
-                      "along": 2.55,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    }
+                    { "along": -3.45, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" },
+                    { "along": 2.55, "width": 4.4, "bottom": 0, "top": 3 }
                   ]
                 },
                 {
@@ -11578,14 +10827,7 @@
                   "size": [14.78, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-3-west",
-                  "openings": [
-                    {
-                      "along": 1.39,
-                      "width": 5,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 1.39, "width": 5, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -11594,14 +10836,7 @@
                   "size": [14.78, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-3-east",
-                  "openings": [
-                    {
-                      "along": -3.9,
-                      "width": 1.2,
-                      "bottom": 0,
-                      "top": 2.1
-                    }
-                  ]
+                  "openings": [{ "along": -3.9, "width": 1.2, "bottom": 0, "top": 2.1 }]
                 }
               ]
             },
@@ -11631,14 +10866,7 @@
                   "size": [13, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-4-south",
-                  "openings": [
-                    {
-                      "along": -0.2,
-                      "width": 5,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": -0.2, "width": 5, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -11657,19 +10885,8 @@
                   "colour": "#e6e0d3",
                   "id": "gap-store-4-east",
                   "openings": [
-                    {
-                      "along": -2.71,
-                      "width": 2.8,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    },
-                    {
-                      "along": 1.89,
-                      "width": 4,
-                      "bottom": 0,
-                      "top": 3
-                    }
+                    { "along": -2.71, "width": 2.8, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" },
+                    { "along": 1.89, "width": 4, "bottom": 0, "top": 3 }
                   ]
                 }
               ]
@@ -11719,19 +10936,8 @@
                   "colour": "#e6e0d3",
                   "id": "gap-store-5-east",
                   "openings": [
-                    {
-                      "along": -2.11,
-                      "width": 3.6,
-                      "bottom": 0,
-                      "top": 3
-                    },
-                    {
-                      "along": 1.69,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": -2.11, "width": 3.6, "bottom": 0, "top": 3 },
+                    { "along": 1.69, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 }
               ]
@@ -11754,14 +10960,7 @@
                   "size": [10.3, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-6-north",
-                  "openings": [
-                    {
-                      "along": 0.15,
-                      "width": 5,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0.15, "width": 5, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -11787,14 +10986,7 @@
                   "size": [11.22, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-6-east",
-                  "openings": [
-                    {
-                      "along": -0.61,
-                      "width": 4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": -0.61, "width": 4, "bottom": 0, "top": 3 }]
                 }
               ]
             },
@@ -11833,14 +11025,7 @@
                   "size": [12, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-7-west",
-                  "openings": [
-                    {
-                      "along": 1.4,
-                      "width": 3.6,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 1.4, "width": 3.6, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -11849,14 +11034,7 @@
                   "size": [12, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-7-east",
-                  "openings": [
-                    {
-                      "along": 0,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0, "width": 4.4, "bottom": 0, "top": 3 }]
                 }
               ]
             },
@@ -11904,14 +11082,7 @@
                   "size": [20, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-8-east",
-                  "openings": [
-                    {
-                      "along": -6.5,
-                      "width": 4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": -6.5, "width": 4, "bottom": 0, "top": 3 }]
                 }
               ]
             },
@@ -11934,19 +11105,8 @@
                   "colour": "#e6e0d3",
                   "id": "gap-store-9-north",
                   "openings": [
-                    {
-                      "along": -2.4,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    },
-                    {
-                      "along": 2.6,
-                      "width": 4,
-                      "bottom": 0,
-                      "top": 3
-                    }
+                    { "along": -2.4, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" },
+                    { "along": 2.6, "width": 4, "bottom": 0, "top": 3 }
                   ]
                 },
                 {
@@ -11964,14 +11124,7 @@
                   "size": [9.12, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-9-west",
-                  "openings": [
-                    {
-                      "along": 0.14,
-                      "width": 4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0.14, "width": 4, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -12002,14 +11155,7 @@
                   "size": [11, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-10-north",
-                  "openings": [
-                    {
-                      "along": 0,
-                      "width": 5,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0, "width": 5, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -12058,19 +11204,8 @@
                   "colour": "#e6e0d3",
                   "id": "gap-store-11-north",
                   "openings": [
-                    {
-                      "along": -1.5,
-                      "width": 4,
-                      "bottom": 0,
-                      "top": 3
-                    },
-                    {
-                      "along": 2.7,
-                      "width": 3,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": -1.5, "width": 4, "bottom": 0, "top": 3 },
+                    { "along": 2.7, "width": 3, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -12097,14 +11232,7 @@
                   "size": [9.12, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-11-east",
-                  "openings": [
-                    {
-                      "along": 0.14,
-                      "width": 4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0.14, "width": 4, "bottom": 0, "top": 3 }]
                 }
               ]
             },
@@ -12135,19 +11263,8 @@
                   "colour": "#e6e0d3",
                   "id": "gap-store-12-south",
                   "openings": [
-                    {
-                      "along": -1,
-                      "width": 5,
-                      "bottom": 0,
-                      "top": 3
-                    },
-                    {
-                      "along": 4.4,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": -1, "width": 5, "bottom": 0, "top": 3 },
+                    { "along": 4.4, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -12157,14 +11274,7 @@
                   "size": [9, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-12-west",
-                  "openings": [
-                    {
-                      "along": 0.08,
-                      "width": 4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0.08, "width": 4, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -12203,14 +11313,7 @@
                   "size": [14, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-13-south",
-                  "openings": [
-                    {
-                      "along": 0,
-                      "width": 6,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0, "width": 6, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -12228,14 +11331,7 @@
                   "size": [9, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-13-east",
-                  "openings": [
-                    {
-                      "along": 1.28,
-                      "width": 3.6,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 1.28, "width": 3.6, "bottom": 0, "top": 3 }]
                 }
               ]
             },
@@ -12266,19 +11362,8 @@
                   "colour": "#e6e0d3",
                   "id": "gap-store-15-south",
                   "openings": [
-                    {
-                      "along": -3,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    },
-                    {
-                      "along": 3,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": -3, "width": 4.4, "bottom": 0, "top": 3 },
+                    { "along": 3, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -12297,14 +11382,7 @@
                   "size": [9, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-15-east",
-                  "openings": [
-                    {
-                      "along": 0.08,
-                      "width": 4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0.08, "width": 4, "bottom": 0, "top": 3 }]
                 }
               ]
             },
@@ -12343,14 +11421,7 @@
                   "size": [9, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-16-west",
-                  "openings": [
-                    {
-                      "along": 0,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0, "width": 4.4, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -12398,14 +11469,7 @@
                   "size": [9, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-17-west",
-                  "openings": [
-                    {
-                      "along": 0,
-                      "width": 4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0, "width": 4, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -12437,13 +11501,7 @@
                   "colour": "#e6e0d3",
                   "id": "gap-store-18-north",
                   "openings": [
-                    {
-                      "along": 0,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": 0, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -12470,14 +11528,7 @@
                   "size": [9, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-18-east",
-                  "openings": [
-                    {
-                      "along": 0,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0, "width": 4.4, "bottom": 0, "top": 3 }]
                 }
               ]
             },
@@ -12508,13 +11559,7 @@
                   "colour": "#e6e0d3",
                   "id": "gap-store-19-south",
                   "openings": [
-                    {
-                      "along": 0,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": 0, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -12533,14 +11578,7 @@
                   "size": [9, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-19-east",
-                  "openings": [
-                    {
-                      "along": 0,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0, "width": 4.4, "bottom": 0, "top": 3 }]
                 }
               ]
             },
@@ -12563,19 +11601,8 @@
                   "colour": "#e6e0d3",
                   "id": "gap-store-20-north",
                   "openings": [
-                    {
-                      "along": -1.35,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    },
-                    {
-                      "along": 3.45,
-                      "width": 2.8,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": -1.35, "width": 4.4, "bottom": 0, "top": 3 },
+                    { "along": 3.45, "width": 2.8, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -12584,14 +11611,7 @@
                   "size": [12.7, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-20-south",
-                  "openings": [
-                    {
-                      "along": 3.45,
-                      "width": 3,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 3.45, "width": 3, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -12600,14 +11620,7 @@
                   "size": [7.77, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-20-west",
-                  "openings": [
-                    {
-                      "along": 0.065,
-                      "width": 3.6,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0.065, "width": 3.6, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -12639,26 +11652,9 @@
                   "colour": "#e6e0d3",
                   "id": "gap-store-21-north",
                   "openings": [
-                    {
-                      "along": -6,
-                      "width": 3.4,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    },
-                    {
-                      "along": -0.6,
-                      "width": 5,
-                      "bottom": 0,
-                      "top": 3
-                    },
-                    {
-                      "along": 5.4,
-                      "width": 3.4,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": -6, "width": 3.4, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" },
+                    { "along": -0.6, "width": 5, "bottom": 0, "top": 3 },
+                    { "along": 5.4, "width": 3.4, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -12685,14 +11681,7 @@
                   "size": [8, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "gap-store-21-east",
-                  "openings": [
-                    {
-                      "along": -0.02,
-                      "width": 3.6,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": -0.02, "width": 3.6, "bottom": 0, "top": 3 }]
                 }
               ]
             }
@@ -12738,14 +11727,7 @@
                   "size": [15, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-1-west",
-                  "openings": [
-                    {
-                      "along": -1.9,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": -1.9, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -12755,19 +11737,8 @@
                   "colour": "#e6e0d3",
                   "id": "outer-store-1-east",
                   "openings": [
-                    {
-                      "along": -0.9,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    },
-                    {
-                      "along": 3.9,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": -0.9, "width": 4.4, "bottom": 0, "top": 3 },
+                    { "along": 3.9, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 }
               ]
@@ -12816,14 +11787,7 @@
                   "size": [10, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-2-east",
-                  "openings": [
-                    {
-                      "along": 0,
-                      "width": 3.8,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0, "width": 3.8, "bottom": 0, "top": 3 }]
                 }
               ]
             },
@@ -12854,13 +11818,7 @@
                   "colour": "#e6e0d3",
                   "id": "outer-store-3-south",
                   "openings": [
-                    {
-                      "along": -2.5,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": -2.5, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -12870,14 +11828,7 @@
                   "size": [15, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-3-west",
-                  "openings": [
-                    {
-                      "along": 0,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": 0, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -12887,19 +11838,8 @@
                   "colour": "#e6e0d3",
                   "id": "outer-store-3-east",
                   "openings": [
-                    {
-                      "along": -2.5,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    },
-                    {
-                      "along": 3.5,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    }
+                    { "along": -2.5, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" },
+                    { "along": 3.5, "width": 4.4, "bottom": 0, "top": 3 }
                   ]
                 }
               ]
@@ -12922,14 +11862,7 @@
                   "size": [12, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-4-north",
-                  "openings": [
-                    {
-                      "along": -2,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": -2, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -12937,14 +11870,7 @@
                   "size": [12, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-4-south",
-                  "openings": [
-                    {
-                      "along": 1,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": 1, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -12963,26 +11889,9 @@
                   "colour": "#e6e0d3",
                   "id": "outer-store-4-east",
                   "openings": [
-                    {
-                      "along": -4.5,
-                      "width": 2,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    },
-                    {
-                      "along": -0.5,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    },
-                    {
-                      "along": 3.9,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": -4.5, "width": 2, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" },
+                    { "along": -0.5, "width": 4.4, "bottom": 0, "top": 3 },
+                    { "along": 3.9, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 }
               ]
@@ -13005,14 +11914,7 @@
                   "size": [7, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-5-north",
-                  "openings": [
-                    {
-                      "along": -1.5,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": -1.5, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -13020,14 +11922,7 @@
                   "size": [7, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-5-south",
-                  "openings": [
-                    {
-                      "along": 1.5,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": 1.5, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -13045,14 +11940,7 @@
                   "size": [13, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-5-east",
-                  "openings": [
-                    {
-                      "along": 0.5,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0.5, "width": 4.4, "bottom": 0, "top": 3 }]
                 }
               ]
             },
@@ -13074,14 +11962,7 @@
                   "size": [13, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-6-north",
-                  "openings": [
-                    {
-                      "along": -4.5,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": -4.5, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -13090,13 +11971,7 @@
                   "colour": "#e6e0d3",
                   "id": "outer-store-6-south",
                   "openings": [
-                    {
-                      "along": 0.5,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": 0.5, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -13115,14 +11990,7 @@
                   "size": [12.28, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-6-east",
-                  "openings": [
-                    {
-                      "along": 0.64,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0.64, "width": 4.4, "bottom": 0, "top": 3 }]
                 }
               ]
             },
@@ -13153,19 +12021,8 @@
                   "colour": "#e6e0d3",
                   "id": "outer-store-7-south",
                   "openings": [
-                    {
-                      "along": -3,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    },
-                    {
-                      "along": 3.4,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": -3, "width": 4.4, "bottom": 0, "top": 3 },
+                    { "along": 3.4, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -13184,14 +12041,7 @@
                   "size": [11.28, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-7-east",
-                  "openings": [
-                    {
-                      "along": -2.26,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": -2.26, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 }
               ]
             },
@@ -13221,14 +12071,7 @@
                   "size": [11, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-8-south",
-                  "openings": [
-                    {
-                      "along": 0.1,
-                      "width": 3.6,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0.1, "width": 3.6, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -13237,14 +12080,7 @@
                   "size": [6.78, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-8-west",
-                  "openings": [
-                    {
-                      "along": -0.01,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": -0.01, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -13284,19 +12120,8 @@
                   "colour": "#e6e0d3",
                   "id": "outer-store-9-south",
                   "openings": [
-                    {
-                      "along": -3.5,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    },
-                    {
-                      "along": 1.5,
-                      "width": 5,
-                      "bottom": 0,
-                      "top": 3
-                    }
+                    { "along": -3.5, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" },
+                    { "along": 1.5, "width": 5, "bottom": 0, "top": 3 }
                   ]
                 },
                 {
@@ -13345,14 +12170,7 @@
                   "size": [11, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-10-south",
-                  "openings": [
-                    {
-                      "along": 0.1,
-                      "width": 4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0.1, "width": 4, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -13401,26 +12219,9 @@
                   "colour": "#e6e0d3",
                   "id": "outer-store-11-south",
                   "openings": [
-                    {
-                      "along": -5,
-                      "width": 5,
-                      "bottom": 0,
-                      "top": 3
-                    },
-                    {
-                      "along": 1.6,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    },
-                    {
-                      "along": 6.6,
-                      "width": 2.4,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": -5, "width": 5, "bottom": 0, "top": 3 },
+                    { "along": 1.6, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" },
+                    { "along": 6.6, "width": 2.4, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -13439,14 +12240,7 @@
                   "size": [14.78, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-11-east",
-                  "openings": [
-                    {
-                      "along": -5.01,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": -5.01, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 }
               ]
             },
@@ -13477,19 +12271,8 @@
                   "colour": "#e6e0d3",
                   "id": "outer-store-12-south",
                   "openings": [
-                    {
-                      "along": -2,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    },
-                    {
-                      "along": 3.6,
-                      "width": 3,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": -2, "width": 4.4, "bottom": 0, "top": 3 },
+                    { "along": 3.6, "width": 3, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -13499,14 +12282,7 @@
                   "size": [13.78, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-12-west",
-                  "openings": [
-                    {
-                      "along": -0.11,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": -0.11, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -13515,14 +12291,7 @@
                   "size": [13.78, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-12-east",
-                  "openings": [
-                    {
-                      "along": -2.71,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": -2.71, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 }
               ]
             },
@@ -13553,26 +12322,9 @@
                   "colour": "#e6e0d3",
                   "id": "outer-store-13-south",
                   "openings": [
-                    {
-                      "along": -5.75,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    },
-                    {
-                      "along": -0.35,
-                      "width": 5,
-                      "bottom": 0,
-                      "top": 3
-                    },
-                    {
-                      "along": 5.65,
-                      "width": 3,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": -5.75, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" },
+                    { "along": -0.35, "width": 5, "bottom": 0, "top": 3 },
+                    { "along": 5.65, "width": 3, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -13582,14 +12334,7 @@
                   "size": [8.18, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-13-west",
-                  "openings": [
-                    {
-                      "along": 0.09,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": 0.09, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -13628,14 +12373,7 @@
                   "size": [12.3, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-14-south",
-                  "openings": [
-                    {
-                      "along": 0.15,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": 0.15, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -13645,26 +12383,9 @@
                   "colour": "#e6e0d3",
                   "id": "outer-store-14-west",
                   "openings": [
-                    {
-                      "along": -5.4,
-                      "width": 3,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    },
-                    {
-                      "along": 0,
-                      "width": 5,
-                      "bottom": 0,
-                      "top": 3
-                    },
-                    {
-                      "along": 5,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": -5.4, "width": 3, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" },
+                    { "along": 0, "width": 5, "bottom": 0, "top": 3 },
+                    { "along": 5, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -13704,14 +12425,7 @@
                   "size": [9.3, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-17-south",
-                  "openings": [
-                    {
-                      "along": -1.35,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": -1.35, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -13721,19 +12435,8 @@
                   "colour": "#e6e0d3",
                   "id": "outer-store-17-west",
                   "openings": [
-                    {
-                      "along": 0,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    },
-                    {
-                      "along": 4.4,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": 0, "width": 4.4, "bottom": 0, "top": 3 },
+                    { "along": 4.4, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -13765,14 +12468,7 @@
                   "size": [6.3, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-18-north",
-                  "openings": [
-                    {
-                      "along": 0.15,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": 0.15, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -13789,14 +12485,7 @@
                   "size": [13, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-18-west",
-                  "openings": [
-                    {
-                      "along": 0,
-                      "width": 4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0, "width": 4, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -13828,19 +12517,8 @@
                   "colour": "#e6e0d3",
                   "id": "outer-store-19-north",
                   "openings": [
-                    {
-                      "along": -2.5,
-                      "width": 5,
-                      "bottom": 0,
-                      "top": 3
-                    },
-                    {
-                      "along": 3.9,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": -2.5, "width": 5, "bottom": 0, "top": 3 },
+                    { "along": 3.9, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -13867,14 +12545,7 @@
                   "size": [11.22, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-19-east",
-                  "openings": [
-                    {
-                      "along": -4.61,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": -4.61, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 }
               ]
             },
@@ -13897,19 +12568,8 @@
                   "colour": "#e6e0d3",
                   "id": "outer-store-20-north",
                   "openings": [
-                    {
-                      "along": -4,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    },
-                    {
-                      "along": 1,
-                      "width": 5,
-                      "bottom": 0,
-                      "top": 3
-                    }
+                    { "along": -4, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" },
+                    { "along": 1, "width": 5, "bottom": 0, "top": 3 }
                   ]
                 },
                 {
@@ -13927,14 +12587,7 @@
                   "size": [10.22, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-20-west",
-                  "openings": [
-                    {
-                      "along": 3.89,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": 3.89, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -13943,14 +12596,7 @@
                   "size": [10.22, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-20-east",
-                  "openings": [
-                    {
-                      "along": 0.89,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": 0.89, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 }
               ]
             },
@@ -13972,14 +12618,7 @@
                   "size": [12, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-21-north",
-                  "openings": [
-                    {
-                      "along": 0,
-                      "width": 4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": 0, "width": 4, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -13996,14 +12635,7 @@
                   "size": [6.22, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-21-west",
-                  "openings": [
-                    {
-                      "along": -1.11,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": -1.11, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -14012,14 +12644,7 @@
                   "size": [6.22, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-21-east",
-                  "openings": [
-                    {
-                      "along": -0.11,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": -0.11, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 }
               ]
             },
@@ -14042,19 +12667,8 @@
                   "colour": "#e6e0d3",
                   "id": "outer-store-22-north",
                   "openings": [
-                    {
-                      "along": -2,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    },
-                    {
-                      "along": 3.6,
-                      "width": 3,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    }
+                    { "along": -2, "width": 4.4, "bottom": 0, "top": 3 },
+                    { "along": 3.6, "width": 3, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
                   ]
                 },
                 {
@@ -14072,14 +12686,7 @@
                   "size": [12.22, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-22-west",
-                  "openings": [
-                    {
-                      "along": 2.49,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": 2.49, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -14111,19 +12718,8 @@
                   "colour": "#e6e0d3",
                   "id": "outer-store-23-north",
                   "openings": [
-                    {
-                      "along": -3,
-                      "width": 3.6,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    },
-                    {
-                      "along": 2,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    }
+                    { "along": -3, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" },
+                    { "along": 2, "width": 4.4, "bottom": 0, "top": 3 }
                   ]
                 },
                 {
@@ -14172,14 +12768,7 @@
                   "size": [14, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-24-north",
-                  "openings": [
-                    {
-                      "along": -1,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": -1, "width": 4.4, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -14205,14 +12794,7 @@
                   "size": [8.22, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-24-east",
-                  "openings": [
-                    {
-                      "along": 0.39,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": 0.39, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 }
               ]
             },
@@ -14235,19 +12817,8 @@
                   "colour": "#e6e0d3",
                   "id": "outer-store-25-north",
                   "openings": [
-                    {
-                      "along": -3,
-                      "width": 3.4,
-                      "bottom": 0.8,
-                      "top": 2.5,
-                      "glass": "#a8d4e0"
-                    },
-                    {
-                      "along": 2.4,
-                      "width": 5,
-                      "bottom": 0,
-                      "top": 3
-                    }
+                    { "along": -3, "width": 3.4, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" },
+                    { "along": 2.4, "width": 5, "bottom": 0, "top": 3 }
                   ]
                 },
                 {
@@ -14265,14 +12836,7 @@
                   "size": [13.22, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-25-west",
-                  "openings": [
-                    {
-                      "along": 2.89,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": 2.89, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -14303,14 +12867,7 @@
                   "size": [9.7, 3.8, 0.2],
                   "colour": "#e6e0d3",
                   "id": "outer-store-26-north",
-                  "openings": [
-                    {
-                      "along": -0.05,
-                      "width": 4.4,
-                      "bottom": 0,
-                      "top": 3
-                    }
-                  ]
+                  "openings": [{ "along": -0.05, "width": 4.4, "bottom": 0, "top": 3 }]
                 },
                 {
                   "type": "wall",
@@ -14426,13 +12983,7 @@
               "colour": "#e6e0d3",
               "id": "gap-wall-10",
               "openings": [
-                {
-                  "along": 0,
-                  "width": 3.6,
-                  "bottom": 0.8,
-                  "top": 2.5,
-                  "glass": "#a8d4e0"
-                }
+                { "along": 0, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
               ]
             },
             {
@@ -14442,13 +12993,7 @@
               "colour": "#e6e0d3",
               "id": "gap-wall-11",
               "openings": [
-                {
-                  "along": 0,
-                  "width": 3.6,
-                  "bottom": 0.8,
-                  "top": 2.5,
-                  "glass": "#a8d4e0"
-                }
+                { "along": 0, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
               ]
             },
             {
@@ -14458,13 +13003,7 @@
               "colour": "#e6e0d3",
               "id": "gap-wall-12",
               "openings": [
-                {
-                  "along": 0,
-                  "width": 3.6,
-                  "bottom": 0.8,
-                  "top": 2.5,
-                  "glass": "#a8d4e0"
-                }
+                { "along": 0, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
               ]
             },
             {
@@ -14474,13 +13013,7 @@
               "colour": "#e6e0d3",
               "id": "gap-wall-13",
               "openings": [
-                {
-                  "along": 0,
-                  "width": 3.6,
-                  "bottom": 0.8,
-                  "top": 2.5,
-                  "glass": "#a8d4e0"
-                }
+                { "along": 0, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
               ]
             },
             {
@@ -14626,13 +13159,7 @@
               "colour": "#e6e0d3",
               "id": "gap-wall-31",
               "openings": [
-                {
-                  "along": -0.02,
-                  "width": 3.6,
-                  "bottom": 0.8,
-                  "top": 2.5,
-                  "glass": "#a8d4e0"
-                }
+                { "along": -0.02, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
               ]
             },
             {
@@ -14643,13 +13170,7 @@
               "colour": "#e6e0d3",
               "id": "gap-wall-32",
               "openings": [
-                {
-                  "along": -0.01,
-                  "width": 3.6,
-                  "bottom": 0.8,
-                  "top": 2.5,
-                  "glass": "#a8d4e0"
-                }
+                { "along": -0.01, "width": 3.6, "bottom": 0.8, "top": 2.5, "glass": "#a8d4e0" }
               ]
             },
             {
@@ -14679,14 +13200,7 @@
               "size": [32.1, 3.8, 0.2],
               "colour": "#e6e0d3",
               "id": "gap-wall-back-middle",
-              "openings": [
-                {
-                  "along": 4,
-                  "width": 1.4,
-                  "bottom": 0,
-                  "top": 2.2
-                }
-              ]
+              "openings": [{ "along": 4, "width": 1.4, "bottom": 0, "top": 2.2 }]
             },
             {
               "type": "box",
@@ -22023,14 +20537,7 @@
                   "pos": [-28.9, 6.2, 27.736],
                   "size": [9, 3.2, 0.15],
                   "colour": "#d7d3c9",
-                  "openings": [
-                    {
-                      "along": 2.1,
-                      "width": 1.6,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": 2.1, "width": 1.6, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -22244,14 +20751,7 @@
                   "yaw": 90,
                   "size": [5.3, 3.2, 0.15],
                   "colour": "#d7d3c9",
-                  "openings": [
-                    {
-                      "along": -0.65,
-                      "width": 1.2,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": -0.65, "width": 1.2, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -22336,14 +20836,7 @@
                   "pos": [2.1, 6.2, 28.936],
                   "size": [13, 3.2, 0.15],
                   "colour": "#d7d3c9",
-                  "openings": [
-                    {
-                      "along": 0.7,
-                      "width": 2.2,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": 0.7, "width": 2.2, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -23312,14 +21805,7 @@
                   "pos": [14.6, 6.2, -64.664],
                   "size": [22, 3.2, 0.15],
                   "colour": "#d7d3c9",
-                  "openings": [
-                    {
-                      "along": 4,
-                      "width": 1.6,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": 4, "width": 1.6, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "wall",
@@ -23327,14 +21813,7 @@
                   "yaw": 90,
                   "size": [4.6, 3.2, 0.15],
                   "colour": "#d7d3c9",
-                  "openings": [
-                    {
-                      "along": 0,
-                      "width": 1.4,
-                      "bottom": 0,
-                      "top": 2.2
-                    }
-                  ]
+                  "openings": [{ "along": 0, "width": 1.4, "bottom": 0, "top": 2.2 }]
                 },
                 {
                   "type": "prefab",
@@ -23738,18 +22217,8 @@
               "colour": "#1d1a2b",
               "id": "laser-west",
               "openings": [
-                {
-                  "along": 14.45,
-                  "width": 3.2,
-                  "bottom": 0,
-                  "top": 2.4
-                },
-                {
-                  "along": -11.55,
-                  "width": 3.2,
-                  "bottom": 0,
-                  "top": 2.4
-                }
+                { "along": 14.45, "width": 3.2, "bottom": 0, "top": 2.4 },
+                { "along": -11.55, "width": 3.2, "bottom": 0, "top": 2.4 }
               ]
             },
             {
@@ -23767,14 +22236,7 @@
               "size": [23.3, 3.8, 0.2],
               "colour": "#1d1a2b",
               "id": "laser-north",
-              "openings": [
-                {
-                  "along": -5.35,
-                  "width": 1.4,
-                  "bottom": 0,
-                  "top": 2.2
-                }
-              ]
+              "openings": [{ "along": -5.35, "width": 1.4, "bottom": 0, "top": 2.2 }]
             },
             {
               "type": "wall",
@@ -23790,14 +22252,7 @@
               "size": [17.1, 2.8, 0.2],
               "colour": "#1d1a2b",
               "id": "laser-lobby-wall",
-              "openings": [
-                {
-                  "along": -2.45,
-                  "width": 2.4,
-                  "bottom": 0,
-                  "top": 2.4
-                }
-              ]
+              "openings": [{ "along": -2.45, "width": 2.4, "bottom": 0, "top": 2.4 }]
             },
             {
               "type": "wall",
@@ -24104,14 +22559,7 @@
               "size": [10, 3, 0.2],
               "colour": "#1d1a2b",
               "id": "laser-prize-west",
-              "openings": [
-                {
-                  "along": 0,
-                  "width": 1.6,
-                  "bottom": 0,
-                  "top": 2.4
-                }
-              ]
+              "openings": [{ "along": 0, "width": 1.6, "bottom": 0, "top": 2.4 }]
             },
             {
               "type": "wall",
@@ -24268,18 +22716,8 @@
               "colour": "#e9e6df",
               "id": "dept-wall-west",
               "openings": [
-                {
-                  "along": -22,
-                  "width": 3.72,
-                  "bottom": 0,
-                  "top": 2.6
-                },
-                {
-                  "along": 20,
-                  "width": 1.4,
-                  "bottom": 0,
-                  "top": 2.2
-                }
+                { "along": -22, "width": 3.72, "bottom": 0, "top": 2.6 },
+                { "along": 20, "width": 1.4, "bottom": 0, "top": 2.2 }
               ]
             },
             {
@@ -24299,60 +22737,14 @@
               "colour": "#b3202a",
               "id": "dept-storefront",
               "openings": [
-                {
-                  "along": -19.695,
-                  "width": 5,
-                  "bottom": 0.5,
-                  "top": 3.4,
-                  "glass": "#a8d4e0"
-                },
-                {
-                  "along": -12.895,
-                  "width": 6,
-                  "bottom": 0.5,
-                  "top": 3.4,
-                  "glass": "#a8d4e0"
-                },
-                {
-                  "along": -7.295,
-                  "width": 3,
-                  "bottom": 0.5,
-                  "top": 3.4,
-                  "glass": "#a8d4e0"
-                },
-                {
-                  "along": -2.095,
-                  "width": 3.72,
-                  "bottom": 0,
-                  "top": 2.6
-                },
-                {
-                  "along": 2.505,
-                  "width": 3.72,
-                  "bottom": 0,
-                  "top": 2.6
-                },
-                {
-                  "along": 7.705,
-                  "width": 3,
-                  "bottom": 0.5,
-                  "top": 3.4,
-                  "glass": "#a8d4e0"
-                },
-                {
-                  "along": 13.505,
-                  "width": 6,
-                  "bottom": 0.5,
-                  "top": 3.4,
-                  "glass": "#a8d4e0"
-                },
-                {
-                  "along": 20.305,
-                  "width": 5,
-                  "bottom": 0.5,
-                  "top": 3.4,
-                  "glass": "#a8d4e0"
-                }
+                { "along": -19.695, "width": 5, "bottom": 0.5, "top": 3.4, "glass": "#a8d4e0" },
+                { "along": -12.895, "width": 6, "bottom": 0.5, "top": 3.4, "glass": "#a8d4e0" },
+                { "along": -7.295, "width": 3, "bottom": 0.5, "top": 3.4, "glass": "#a8d4e0" },
+                { "along": -2.095, "width": 3.72, "bottom": 0, "top": 2.6 },
+                { "along": 2.505, "width": 3.72, "bottom": 0, "top": 2.6 },
+                { "along": 7.705, "width": 3, "bottom": 0.5, "top": 3.4, "glass": "#a8d4e0" },
+                { "along": 13.505, "width": 6, "bottom": 0.5, "top": 3.4, "glass": "#a8d4e0" },
+                { "along": 20.305, "width": 5, "bottom": 0.5, "top": 3.4, "glass": "#a8d4e0" }
               ]
             },
             {
@@ -24429,18 +22821,8 @@
               "colour": "#e9e6df",
               "id": "dept-stock-wall",
               "openings": [
-                {
-                  "along": -24,
-                  "width": 3,
-                  "bottom": 0,
-                  "top": 3
-                },
-                {
-                  "along": 18,
-                  "width": 2.4,
-                  "bottom": 0,
-                  "top": 2.6
-                }
+                { "along": -24, "width": 3, "bottom": 0, "top": 3 },
+                { "along": 18, "width": 2.4, "bottom": 0, "top": 2.6 }
               ]
             },
             {
@@ -24457,14 +22839,7 @@
               "size": [6.1, 3.4, 0.2],
               "colour": "#e9e6df",
               "id": "dept-stock-divide",
-              "openings": [
-                {
-                  "along": 1.85,
-                  "width": 1.5,
-                  "bottom": 0,
-                  "top": 2.2
-                }
-              ]
+              "openings": [{ "along": 1.85, "width": 1.5, "bottom": 0, "top": 2.2 }]
             },
             {
               "type": "box",
@@ -24609,14 +22984,7 @@
               "size": [6.1, 3.4, 0.2],
               "colour": "#e9e6df",
               "id": "dept-stock-divide-2",
-              "openings": [
-                {
-                  "along": -0.25,
-                  "width": 1.5,
-                  "bottom": 0,
-                  "top": 2.2
-                }
-              ]
+              "openings": [{ "along": -0.25, "width": 1.5, "bottom": 0, "top": 2.2 }]
             },
             {
               "type": "wall",
@@ -24624,14 +22992,7 @@
               "size": [6.1, 3.4, 0.2],
               "colour": "#e9e6df",
               "id": "dept-stock-divide-3",
-              "openings": [
-                {
-                  "along": -0.45,
-                  "width": 1.5,
-                  "bottom": 0,
-                  "top": 2.2
-                }
-              ]
+              "openings": [{ "along": -0.45, "width": 1.5, "bottom": 0, "top": 2.2 }]
             },
             {
               "type": "box",
@@ -29663,32 +28024,10 @@
           "colour": "#2456a4",
           "id": "ikea-storefront-wall",
           "openings": [
-            {
-              "width": 8,
-              "bottom": 0.5,
-              "top": 3.2,
-              "glass": "#9fd0d8",
-              "along": -14.62
-            },
-            {
-              "width": 3.72,
-              "bottom": 0,
-              "top": 2.6,
-              "along": -5.12
-            },
-            {
-              "width": 3.72,
-              "bottom": 0,
-              "top": 2.6,
-              "along": -0.52
-            },
-            {
-              "width": 7,
-              "bottom": 0.5,
-              "top": 3.2,
-              "glass": "#9fd0d8",
-              "along": 5.78
-            }
+            { "width": 8, "bottom": 0.5, "top": 3.2, "glass": "#9fd0d8", "along": -14.62 },
+            { "width": 3.72, "bottom": 0, "top": 2.6, "along": -5.12 },
+            { "width": 3.72, "bottom": 0, "top": 2.6, "along": -0.52 },
+            { "width": 7, "bottom": 0.5, "top": 3.2, "glass": "#9fd0d8", "along": 5.78 }
           ]
         },
         {
@@ -29721,18 +28060,8 @@
           "colour": "#2456a4",
           "id": "ikea-exit-wall",
           "openings": [
-            {
-              "width": 3.72,
-              "bottom": 0,
-              "top": 2.6,
-              "along": -1.17
-            },
-            {
-              "width": 3.72,
-              "bottom": 0,
-              "top": 2.6,
-              "along": 3.43
-            }
+            { "width": 3.72, "bottom": 0, "top": 2.6, "along": -1.17 },
+            { "width": 3.72, "bottom": 0, "top": 2.6, "along": 3.43 }
           ]
         },
         {
@@ -29790,14 +28119,7 @@
           "size": [4, 2.6, 0.2],
           "colour": "#d9d6cf",
           "id": "ikea-fire-exit-wall",
-          "openings": [
-            {
-              "width": 1.6,
-              "bottom": 0,
-              "top": 2.1,
-              "along": 0
-            }
-          ]
+          "openings": [{ "width": 1.6, "bottom": 0, "top": 2.1, "along": 0 }]
         },
         {
           "type": "prefab",
@@ -29811,14 +28133,7 @@
           "size": [80.6, 3.2, 0.2],
           "colour": "#2456a4",
           "id": "ikea-wall-south-upper",
-          "openings": [
-            {
-              "width": 5.8,
-              "bottom": 0,
-              "top": 2.2,
-              "along": -6.2
-            }
-          ]
+          "openings": [{ "width": 5.8, "bottom": 0, "top": 2.2, "along": -6.2 }]
         },
         {
           "type": "wall",
@@ -29827,18 +28142,8 @@
           "colour": "#d9d6cf",
           "id": "ikea-wall-mid",
           "openings": [
-            {
-              "along": -28.3,
-              "width": 1.4,
-              "bottom": 0,
-              "top": 2.2
-            },
-            {
-              "width": 4.6,
-              "bottom": 0,
-              "top": 4,
-              "along": -1.3
-            }
+            { "along": -28.3, "width": 1.4, "bottom": 0, "top": 2.2 },
+            { "width": 4.6, "bottom": 0, "top": 4, "along": -1.3 }
           ]
         },
         {
@@ -29856,14 +28161,7 @@
           "size": [40, 5.8, 0.2],
           "colour": "#d9d6cf",
           "id": "ikea-wall-market-warehouse",
-          "openings": [
-            {
-              "width": 4.2,
-              "bottom": 0,
-              "top": 4,
-              "along": 15.9
-            }
-          ]
+          "openings": [{ "width": 4.2, "bottom": 0, "top": 4, "along": 15.9 }]
         },
         {
           "type": "wall",
@@ -29945,14 +28243,7 @@
           "size": [12.4, 2.6, 0.2],
           "colour": "#d9d6cf",
           "id": "wall-play-area-south",
-          "openings": [
-            {
-              "width": 1.8,
-              "bottom": 0,
-              "top": 2.1,
-              "along": -0.6
-            }
-          ]
+          "openings": [{ "width": 1.8, "bottom": 0, "top": 2.1, "along": -0.6 }]
         },
         {
           "type": "box",
@@ -30699,14 +28990,7 @@
       "size": [5.3, 2.6, 0.2],
       "colour": "#d9d6cf",
       "id": "room-c3-front-wall",
-      "openings": [
-        {
-          "along": 0.25,
-          "width": 1.4,
-          "bottom": 0,
-          "top": 2.2
-        }
-      ]
+      "openings": [{ "along": 0.25, "width": 1.4, "bottom": 0, "top": 2.2 }]
     },
     {
       "type": "group",
@@ -31576,30 +29860,10 @@
           "collide": false,
           "id": "liner-storefront",
           "openings": [
-            {
-              "along": -14.7,
-              "width": 8,
-              "bottom": 0.5,
-              "top": 3.2
-            },
-            {
-              "along": -5.2,
-              "width": 3.72,
-              "bottom": 0,
-              "top": 2.6
-            },
-            {
-              "along": -0.6,
-              "width": 3.72,
-              "bottom": 0,
-              "top": 2.6
-            },
-            {
-              "along": 5.7,
-              "width": 7,
-              "bottom": 0.5,
-              "top": 3.2
-            }
+            { "along": -14.7, "width": 8, "bottom": 0.5, "top": 3.2 },
+            { "along": -5.2, "width": 3.72, "bottom": 0, "top": 2.6 },
+            { "along": -0.6, "width": 3.72, "bottom": 0, "top": 2.6 },
+            { "along": 5.7, "width": 7, "bottom": 0.5, "top": 3.2 }
           ]
         },
         {
@@ -31611,18 +29875,8 @@
           "collide": false,
           "id": "liner-exit-wall",
           "openings": [
-            {
-              "along": -1.25,
-              "width": 3.72,
-              "bottom": 0,
-              "top": 2.6
-            },
-            {
-              "along": 3.35,
-              "width": 3.72,
-              "bottom": 0,
-              "top": 2.6
-            }
+            { "along": -1.25, "width": 3.72, "bottom": 0, "top": 2.6 },
+            { "along": 3.35, "width": 3.72, "bottom": 0, "top": 2.6 }
           ]
         },
         {
@@ -33792,19 +32046,8 @@
               "size": [8.32, 3, 0.2],
               "colour": "#b5b0a6",
               "openings": [
-                {
-                  "along": 2.66,
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1
-                },
-                {
-                  "along": -0.04,
-                  "width": 3.2,
-                  "bottom": 1,
-                  "top": 2.3,
-                  "glass": "#9fd0d8"
-                }
+                { "along": 2.66, "width": 1.2, "bottom": 0, "top": 2.1 },
+                { "along": -0.04, "width": 3.2, "bottom": 1, "top": 2.3, "glass": "#9fd0d8" }
               ]
             },
             {
@@ -33814,14 +32057,7 @@
               "yaw": 90,
               "size": [6.04, 3, 0.2],
               "colour": "#b5b0a6",
-              "openings": [
-                {
-                  "along": -0.02,
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1
-                }
-              ]
+              "openings": [{ "along": -0.02, "width": 1.2, "bottom": 0, "top": 2.1 }]
             },
             {
               "type": "box",
@@ -33902,14 +32138,7 @@
               "yaw": 90,
               "size": [40, 5.65, 0.2],
               "colour": "wall",
-              "openings": [
-                {
-                  "along": 15.96,
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1
-                }
-              ]
+              "openings": [{ "along": 15.96, "width": 1.2, "bottom": 0, "top": 2.1 }]
             },
             {
               "type": "door",
@@ -34000,14 +32229,7 @@
               "yaw": 90,
               "size": [9.85, 9, 0.2],
               "colour": "#b5b0a6",
-              "openings": [
-                {
-                  "along": 1.825,
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1
-                }
-              ]
+              "openings": [{ "along": 1.825, "width": 1.2, "bottom": 0, "top": 2.1 }]
             },
             {
               "type": "door",
@@ -34030,14 +32252,7 @@
               "yaw": 90,
               "size": [16.61, 9, 0.2],
               "colour": "#b5b0a6",
-              "openings": [
-                {
-                  "along": -0.145,
-                  "width": 3.74,
-                  "bottom": 0,
-                  "top": 2.6
-                }
-              ]
+              "openings": [{ "along": -0.145, "width": 3.74, "bottom": 0, "top": 2.6 }]
             },
             {
               "type": "box",
@@ -34052,14 +32267,7 @@
               "pos": [93.8, 0, 95.36],
               "size": [10.4, 9.2, 0.2],
               "colour": "#b5b0a6",
-              "openings": [
-                {
-                  "along": -1.8,
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1
-                }
-              ]
+              "openings": [{ "along": -1.8, "width": 1.2, "bottom": 0, "top": 2.1 }]
             },
             {
               "type": "door",
@@ -34084,14 +32292,7 @@
               "pos": [91.99, 0.2, 118.65],
               "size": [14.02, 9, 0.2],
               "colour": "#b5b0a6",
-              "openings": [
-                {
-                  "along": 0.01,
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1
-                }
-              ]
+              "openings": [{ "along": 0.01, "width": 1.2, "bottom": 0, "top": 2.1 }]
             },
             {
               "type": "door",
@@ -35192,13 +33393,7 @@
               "switch": {
                 "name": "dock door switch",
                 "useTime": 3,
-                "rows": [
-                  {
-                    "opens": "dock-door-1",
-                    "timer": 2,
-                    "openNoise": "door-buzzer"
-                  }
-                ]
+                "rows": [{ "opens": "dock-door-1", "timer": 2, "openNoise": "door-buzzer" }]
               },
               "yaw": 180
             },
@@ -35209,13 +33404,7 @@
               "switch": {
                 "name": "dock door switch",
                 "useTime": 3,
-                "rows": [
-                  {
-                    "opens": "dock-door-2",
-                    "timer": 2,
-                    "openNoise": "door-buzzer"
-                  }
-                ]
+                "rows": [{ "opens": "dock-door-2", "timer": 2, "openNoise": "door-buzzer" }]
               },
               "yaw": 180
             },
@@ -35226,13 +33415,7 @@
               "switch": {
                 "name": "dock door switch",
                 "useTime": 3,
-                "rows": [
-                  {
-                    "opens": "dock-door-4",
-                    "timer": 2,
-                    "openNoise": "door-buzzer"
-                  }
-                ]
+                "rows": [{ "opens": "dock-door-4", "timer": 2, "openNoise": "door-buzzer" }]
               },
               "yaw": 180
             },
@@ -35512,14 +33695,7 @@
               "pos": [91.96, 0.2, 118.77],
               "size": [13.96, 5.3999999999999995, 0.2],
               "colour": "#dfe6e8",
-              "openings": [
-                {
-                  "along": 0.04,
-                  "width": 1.2,
-                  "bottom": 0,
-                  "top": 2.1
-                }
-              ],
+              "openings": [{ "along": 0.04, "width": 1.2, "bottom": 0, "top": 2.1 }],
               "collide": false
             },
             {
@@ -35529,14 +33705,7 @@
               "yaw": 90,
               "size": [16.41, 5.3999999999999995, 0.2],
               "colour": "#dfe6e8",
-              "openings": [
-                {
-                  "along": -0.045,
-                  "width": 3.74,
-                  "bottom": 0,
-                  "top": 2.6
-                }
-              ],
+              "openings": [{ "along": -0.045, "width": 3.74, "bottom": 0, "top": 2.6 }],
               "collide": false
             },
             {
@@ -37228,12 +35397,7 @@
       "pos": [35.29, 3.5, 183.72],
       "switch": {
         "rows": [
-          {
-            "opens": "freight-elevator/gate",
-            "timer": 45,
-            "lasts": 45,
-            "noise": "alarm-siren"
-          }
+          { "opens": "freight-elevator/gate", "timer": 45, "lasts": 45, "noise": "alarm-siren" }
         ],
         "name": "freight-elevator-switch",
         "useTime": 3
@@ -37368,41 +35532,29 @@
       "type": "prefab",
       "prefab": "shipping-container-closed-end",
       "pos": [17.845, 0.01, 196.819]
+    },
+    {
+      "type": "playerSpawn",
+      "id": "spawn-2",
+      "pos": [28, 0.01, 190.5]
     }
   ],
   "zones": [
     {
-      "id": "extract",
-      "name": "Extraction",
+      "id": "car-extract",
+      "name": "Extracting...",
       "points": [
-        [167.0, 185.0],
-        [165.83, 187.83],
-        [163.0, 189.0],
-        [160.17, 187.83],
-        [159.0, 185.0],
-        [160.17, 182.17],
-        [163.0, 181.0],
-        [165.83, 182.17]
+        [25, 185],
+        [26, 190],
+        [25, 197.5],
+        [19.5, 200.5],
+        [16.5, 200.5],
+        [16.5, 191],
+        [16.5, 190.5]
       ],
       "extraction": {
-        "y": 0.01
-      }
-    },
-    {
-      "id": "extract-2",
-      "name": "Extraction",
-      "points": [
-        [11.5, 168.5],
-        [10.33, 171.33],
-        [7.5, 172.5],
-        [4.67, 171.33],
-        [3.5, 168.5],
-        [4.67, 165.67],
-        [7.5, 164.5],
-        [10.33, 165.67]
-      ],
-      "extraction": {
-        "y": 0
+        "y": 0,
+        "height": 5
       }
     }
   ],
