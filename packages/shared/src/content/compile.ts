@@ -302,6 +302,8 @@ interface Sink {
   barricades: CompiledBarricade[] | null;
   /** A barricade's blocker, for each in barricades. */
   blockers: BoxDef[] | null;
+  /** Invisible boxes' solids: blockers too, after the barricades' in world.blockers. */
+  invisible: BoxDef[] | null;
   buildings: CompiledBuilding[] | null;
   /** Instanced prefabs become groups; null flattens them into shapes like any prefab. */
   groups: Map<string, InstancedGroup> | null;
@@ -323,6 +325,7 @@ const DRAW_ONLY: Sink = {
   patrols: null,
   barricades: null,
   blockers: null,
+  invisible: null,
   buildings: null,
   groups: null,
   looks: null,
@@ -351,6 +354,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     patrols: [],
     barricades: [],
     blockers: [],
+    invisible: [],
     buildings: [],
     groups: new Map(),
     looks: [],
@@ -411,7 +415,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
       ladders,
       doors: out.doors!,
       glass: out.glass!,
-      blockers: out.blockers!,
+      blockers: [...out.blockers!, ...out.invisible!],
       switches,
     },
     shapes: out.shapes!,
@@ -442,6 +446,8 @@ export interface CompiledNodes {
   markers: CompiledMarker[];
   patrols: CompiledPatrol[];
   barricades: CompiledBarricade[];
+  /** Invisible boxes' solids, which the editor draws see-through. */
+  invisible: BoxDef[];
   buildings: CompiledBuilding[];
 }
 
@@ -464,6 +470,7 @@ export function compileNodes(
     markers: [],
     patrols: [],
     barricades: [],
+    invisible: [],
     buildings: [],
   };
   new Compiler(source, prefabs, null).nodes(
@@ -752,6 +759,17 @@ class Compiler {
     }
     const [x, y, z] = place(f, node.pos);
     const yaw = f.yaw + ('yaw' in node ? (node.yaw ?? 0) * DEG : 0);
+
+    // Not drawn: a solid only to movement (a map's edge).
+    if (node.type === 'box' && node.invisible) {
+      if (node.collide === false) this.fail(path, 'an invisible box has to collide');
+      if (node.loot || node.switch)
+        this.fail(path, "an invisible box can't be a loot container or a switch");
+      if (f.tilt || node.pitch || node.roll) this.fail(path, "an invisible box can't tilt");
+      const [hx, hy, hz] = [node.size[0] / 2, node.size[1] / 2, node.size[2] / 2];
+      out.invisible?.push(plainBox([x, y + hy, z], hx, hy, hz, yaw));
+      return;
+    }
 
     switch (node.type) {
       case 'box':

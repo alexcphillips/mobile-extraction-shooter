@@ -42,6 +42,27 @@ const crate: PrefabFile = {
 };
 
 describe('compileMap', () => {
+  it('makes an invisible box a blocker: not drawn, solid to movement, not to rays', () => {
+    const edge: MapNode = {
+      type: 'box',
+      pos: [0, 0, 0],
+      size: [0.2, 10, 8],
+      colour: '#ff0000',
+      invisible: true,
+    };
+    const m = compileMap(map([edge]), prefabs());
+    expect(m.shapes).toHaveLength(0);
+    expect(m.world.boxes).toHaveLength(0);
+    expect(m.world.blockers).toEqual([{ x: 0, y: 5, z: 0, hx: 0.1, hy: 5, hz: 4, yaw: 0 }]);
+    const w = new CollisionWorld(m.world);
+    expect(w.overlaps(0.2, 0, 0.3, 8, 9)).toBe(true);
+    expect(w.raycast(-5, 1, 0, 1, 0, 0, 20)).toBe(Infinity);
+    // The editor draws it see-through, from compileNodes.
+    expect(compileNodes([edge], prefabs()).invisible).toHaveLength(1);
+    expect(() => compileMap(map([{ ...edge, pitch: 10 }]), prefabs())).toThrow(/can't tilt/);
+    expect(() => compileMap(map([{ ...edge, collide: false }]), prefabs())).toThrow(/collide/);
+  });
+
   it('builds the terrain grid and centres boxes above their base', () => {
     const m = compileMap(
       map([{ type: 'box', pos: [1, 2, 3], size: [2, 4, 6], yaw: 90, colour: '#ff0000' }]),

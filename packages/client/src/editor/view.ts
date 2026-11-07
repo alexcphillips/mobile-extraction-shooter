@@ -42,6 +42,8 @@ const PREFAB_SCOPE = 0xc77dff;
 const BROKEN = 0xff00ff;
 /** A zombies barricade's planks. */
 const PLANK = 0x8a6239;
+/** Invisible boxes, drawn faint. */
+const GHOST = 0x4fc3f7;
 /** A barricade's outline and arrow, seen through walls; how deep the outline is, and the arrow long. */
 const BARRICADE_LINE = 0xffb347;
 const BARRICADE_DEPTH = 0.4;
@@ -201,6 +203,13 @@ export class EditorView {
   private cutY: number | null = null;
   /** Every material in the scene clips by these: the cutaway's plane, or none. */
   private readonly clipPlanes: THREE.Plane[] = [];
+  /** Invisible boxes (map edges): drawn faint, as the game doesn't draw them at all. */
+  private readonly ghostMaterial = Object.assign(shadedMaterial(), {
+    transparent: true,
+    opacity: 0.2,
+    depthWrite: false,
+    clippingPlanes: this.clipPlanes,
+  });
   /**
    * The cutaway's caps (the stencil technique): solids' back faces count up and front faces
    * down, so what's left non-zero is inside a cut solid, where the cap is drawn.
@@ -1054,6 +1063,15 @@ export class EditorView {
         const b = new TriangleBuilder(false);
         for (const s of out.shapes) b.shape(s);
         o.add(new THREE.Mesh(b.build(), this.material));
+      }
+      if (out.invisible.length) {
+        const b = new TriangleBuilder(false);
+        for (const d of out.invisible)
+          b.shape({ kind: 'box', ...d, pitch: 0, roll: 0, colour: GHOST });
+        const ghost = new THREE.Mesh(b.build(), this.ghostMaterial);
+        // Picked to select it, but not something to stand things on.
+        ghost.userData.marker = true;
+        o.add(ghost);
       }
       for (const d of out.doors) o.add(buildDoor(d, this.material));
       if (out.barricades.length) {

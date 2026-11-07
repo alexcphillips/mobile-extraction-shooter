@@ -1728,6 +1728,27 @@ function Inspector(props: {
           collides
         </label>
       ) : null}
+      {n.type === 'box' && (
+        <label
+          className="ed-field"
+          title="Not drawn in the game, and solid only to movement: shots and sight pass. For map edges."
+        >
+          <input
+            type="checkbox"
+            checked={n.invisible === true}
+            onChange={(e) =>
+              edit((m) => {
+                const r = m as { invisible?: true; collide?: boolean };
+                if (e.target.checked) {
+                  r.invisible = true;
+                  delete r.collide;
+                } else delete r.invisible;
+              })
+            }
+          />
+          invisible
+        </label>
+      )}
       {(n.type === 'box' || n.type === 'cylinder' || n.type === 'group' || n.type === 'prefab') && (
         <>
           <LootFields edit={edit} node={n} />

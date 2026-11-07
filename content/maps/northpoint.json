@@ -3289,41 +3289,6 @@
       "nodes": [
         {
           "type": "box",
-          "pos": [1.364, 0, -1.59],
-          "size": [0.9, 2.6, 0.2],
-          "colour": "wall",
-          "yaw": 180
-        },
-        {
-          "type": "box",
-          "pos": [-0.286, 0, -1.59],
-          "size": [2.4, 0.9, 0.2],
-          "colour": "wall",
-          "yaw": 180
-        },
-        {
-          "type": "box",
-          "pos": [-0.286, 2, -1.59],
-          "size": [2.4, 0.6, 0.2],
-          "colour": "wall",
-          "yaw": 180
-        },
-        {
-          "type": "box",
-          "pos": [-1.936, 0, -1.59],
-          "size": [0.9, 2.6, 0.2],
-          "colour": "wall",
-          "yaw": 180
-        },
-        {
-          "type": "glass",
-          "pos": [-0.286, 0.9, -1.59],
-          "size": [2.4, 1.1],
-          "colour": "#8fa7ae",
-          "yaw": 180
-        },
-        {
-          "type": "box",
           "pos": [-2.286, 0, -1.24],
           "size": [0.9, 2.6, 0.2],
           "colour": "wall",
@@ -3365,62 +3330,6 @@
         },
         {
           "type": "box",
-          "pos": [1.714, 0, 2.31],
-          "size": [0.4, 2.6, 0.2],
-          "colour": "wall",
-          "yaw": 90
-        },
-        {
-          "type": "box",
-          "pos": [1.714, 2.1, 1.41],
-          "size": [1.4, 0.5, 0.2],
-          "colour": "wall",
-          "yaw": 90
-        },
-        {
-          "type": "box",
-          "pos": [1.714, 0, 0.46],
-          "size": [0.5, 2.6, 0.2],
-          "colour": "wall",
-          "yaw": 90
-        },
-        {
-          "type": "box",
-          "pos": [1.714, 0, -0.49],
-          "size": [1.4, 0.9, 0.2],
-          "colour": "wall",
-          "yaw": 90
-        },
-        {
-          "type": "box",
-          "pos": [1.714, 2, -0.49],
-          "size": [1.4, 0.6, 0.2],
-          "colour": "wall",
-          "yaw": 90
-        },
-        {
-          "type": "box",
-          "pos": [1.714, 0, -1.44],
-          "size": [0.5, 2.6, 0.2],
-          "colour": "wall",
-          "yaw": 90
-        },
-        {
-          "type": "glass",
-          "pos": [1.714, 0.9, -0.49],
-          "size": [1.4, 1.1],
-          "colour": "#8fa7ae",
-          "yaw": 90
-        },
-        {
-          "type": "door",
-          "pos": [1.714, 0, 1.41],
-          "size": [1.4, 2.1],
-          "colour": "door-grey",
-          "yaw": 90
-        },
-        {
-          "type": "box",
           "pos": [-0.286, 0, 0.41],
           "size": [4, 0.2, 4],
           "colour": "wall"
@@ -3430,6 +3339,13 @@
           "pos": [-0.286, 2.4, 0.41],
           "size": [4, 0.2, 4],
           "colour": "wall"
+        },
+        {
+          "type": "box",
+          "pos": [-0.286, 0, -1.59],
+          "size": [4.2, 2.6, 0.2],
+          "colour": "#b5b0a6",
+          "yaw": 180
         }
       ],
       "yaw": 180,
@@ -35534,9 +35450,67 @@
       "pos": [17.845, 0.01, 196.819]
     },
     {
-      "type": "playerSpawn",
-      "id": "spawn-2",
-      "pos": [28, 0.01, 190.5]
+      "type": "box",
+      "pos": [89.986, 0, 149.9],
+      "size": [4.2, 2.6, 0.2],
+      "colour": "#b5b0a6",
+      "yaw": -90
+    },
+    {
+      "type": "group",
+      "name": "yard-boundary",
+      "pos": [0, 0, 0],
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [15.8, 0, 172.45],
+          "size": [0.2, 10, 23.5],
+          "colour": "barrier",
+          "invisible": true
+        },
+        {
+          "type": "box",
+          "pos": [14.2, 0, 184.1],
+          "size": [3.4, 10, 0.2],
+          "colour": "barrier",
+          "invisible": true
+        },
+        {
+          "type": "box",
+          "pos": [12.6, 0, 186.4],
+          "size": [0.2, 10, 4.8],
+          "colour": "barrier",
+          "invisible": true
+        },
+        {
+          "type": "box",
+          "pos": [14.2, 0, 188.7],
+          "size": [3.4, 10, 0.2],
+          "colour": "barrier",
+          "invisible": true
+        },
+        {
+          "type": "box",
+          "pos": [15.8, 0, 194.95],
+          "size": [0.2, 10, 12.7],
+          "colour": "barrier",
+          "invisible": true
+        },
+        {
+          "type": "box",
+          "pos": [53.625, 0, 201.2],
+          "size": [75.9, 10, 0.2],
+          "colour": "barrier",
+          "invisible": true
+        },
+        {
+          "type": "box",
+          "pos": [91.45, 0, 168.25],
+          "size": [0.2, 10, 66.1],
+          "colour": "barrier",
+          "invisible": true
+        }
+      ]
     }
   ],
   "zones": [

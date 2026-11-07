@@ -139,6 +139,13 @@ const boxSchema = z.strictObject({
   top: z.tuple([bulgeBy, bulgeBy]).optional(),
   /** How far the top face's middle is moved along x and z from over the bottom's, so it leans. */
   lean: z.tuple([finite, finite]).optional(),
+  /**
+   * Not drawn, and solid only to movement (2026-11-07, for map edges): shots, sight and
+   * throws pass through it, as through a barricade's blocker, so nobody sees shots stop in
+   * mid-air over a low wall. The editor shows it see-through. It can't tilt, be a loot
+   * container or a switch, or have collide: false.
+   */
+  invisible: z.literal(true).optional(),
   loot: lootSchema,
   switch: switchSchema,
 });
