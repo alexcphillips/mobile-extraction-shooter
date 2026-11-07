@@ -4,6 +4,7 @@ import {
   NavGrid,
   VAULT_ITEM,
   VENDOR,
+  spawnProblems,
   buyPrice,
   createState,
   // exposedSpawns, (with its check, off for now)
@@ -35,6 +36,10 @@ import {
 
 // Validates every file in content/ the way the game loads it.
 describe('content', () => {
+  it.each(mapIds())('map %s leaves no player spawn without an extraction', (id) => {
+    expect(spawnProblems(loadMap(id))).toEqual([]);
+  });
+
   it.each(mapIds())('map %s loads, compiles and builds a collision world', (id) => {
     const map = loadMap(id);
     expect(() => new CollisionWorld(map.world)).not.toThrow();

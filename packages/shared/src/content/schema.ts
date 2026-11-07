@@ -343,6 +343,12 @@ const playerSpawnSchema = z.strictObject({
   type: z.literal('playerSpawn'),
   ...marker,
   yaw: angle,
+  /**
+   * The extraction zones (by id) a player starting here can't use (2026-11-07, the user's
+   * call): a spawn in the loading yard doesn't get the yard's car extract. Each player's
+   * extractions are their own (sim/raid.ts openExtractions).
+   */
+  noExtracts: z.array(idSchema).optional(),
 });
 
 const enemySpawnSchema = z.strictObject({

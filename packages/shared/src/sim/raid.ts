@@ -2,7 +2,7 @@ import type { Search } from './search';
 import type { CompiledMap } from '../content/compile';
 import type { ItemDb } from '../content/items';
 import { removeAt, type Grid, type Item } from '../inventory/grid';
-import { nextInt, nextFloat } from '../rng';
+import { createRng, nextFloat, nextInt } from '../rng';
 import { TICK_RATE, TICK_SECONDS } from '../tick';
 import { createItem } from './create-item';
 import { CARRIED_GRIDS, GEAR_SLOTS, carriedGrid, createGear, type Gear } from './gear';
@@ -39,6 +39,8 @@ export interface ExtractionPoint {
   y: number;
   /** How far above the floor counts. */
   height: number;
+  /** Open in only some raids, picked for each player (extractionsFor). */
+  rotating: boolean;
   x: number;
   z: number;
 }
@@ -69,6 +71,15 @@ export interface RaidState {
    * search.ts). Missing (a raid saved before it) shows everything at once.
    */
   searches?: Record<string, Search>;
+  /** Seeds each spawn's pick of the rotating extractions (extractionsFor). */
+  seed?: number;
+  /** How many rotating extractions each player gets (the map's rotatingExtractions). */
+  rotatingOpen?: number | undefined;
+  /**
+   * The extraction points each player can use, by player id, then extraction id (2026-11-07,
+   * openExtractions). A player not here (a raid saved before) can use every one.
+   */
+  open?: Record<string, string[]>;
 }
 
 /** What a player's active quests want in a raid on a map (quests.ts raidObjectives). */
@@ -107,20 +118,15 @@ export interface LeaveEvent {
 }
 
 /**
- * Starts the raid's timer, running from now, and opens the map's extraction points: every
- * one that's always open, and map.rotatingExtractions of the rotating ones (all of them if
- * it doesn't say), picked with the raid's RNG so everyone in it has the same.
+ * Starts the raid's timer, running from now, with every extraction point on the map. Which
+ * a player can use is their own, from where they start (openExtractions). A seed for the
+ * rotating ones' picks is drawn from the raid's RNG only if there are any, so the map's
+ * other rolls stay as they were on maps without.
  */
 export function startRaid(state: SimState, map: CompiledMap, seconds: number): void {
   const extractions: ExtractionPoint[] = [];
-  const rotating = map.zones.filter((z) => z.extraction?.rotating);
-  for (let i = rotating.length - 1; i > 0; i--) {
-    const j = nextInt(state.rng, i + 1);
-    [rotating[i], rotating[j]] = [rotating[j]!, rotating[i]!];
-  }
-  const open = new Set(rotating.slice(0, map.rotatingExtractions ?? rotating.length));
   for (const zone of map.zones) {
-    if (!zone.extraction || (zone.extraction.rotating && !open.has(zone))) continue;
+    if (!zone.extraction) continue;
     const n = zone.points.length;
     extractions.push({
       id: zone.id,
@@ -128,16 +134,106 @@ export function startRaid(state: SimState, map: CompiledMap, seconds: number): v
       points: zone.points.map(([x, z]) => [x, z]),
       y: zone.extraction.y,
       height: zone.extraction.height ?? RAID.extractHeight,
+      rotating: !!zone.extraction.rotating,
       x: zone.points.reduce((s, p) => s + p[0], 0) / n,
       z: zone.points.reduce((s, p) => s + p[1], 0) / n,
     });
   }
+  const anyRotating = extractions.some((p) => p.rotating);
   state.raid = {
     endTick: state.tick + Math.round(seconds * TICK_RATE),
     extractions,
     investigate: [],
     searches: {},
+    seed: anyRotating ? Math.floor(nextFloat(state.rng) * 0x7fffffff) : 0,
+    rotatingOpen: map.rotatingExtractions,
+    open: {},
   };
+}
+
+/** A string's hash, for seeding a pick by name. */
+function hashOf(text: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+  return h >>> 0;
+}
+
+/**
+ * The extraction points a player starting at a spawn can use (2026-11-07, the user's
+ * call), by id: every always-open one the spawn doesn't rule out (its noExtracts), and
+ * the rotating ones picked for this raid and spawn that it doesn't rule out. The pick is
+ * the map's rotatingExtractions (all if it doesn't say) out of all its rotating ones,
+ * made before the spawn's rule: so a rotating extract stays a chance (3 of 5 is 60%) for
+ * every spawn that allows it, however many others that spawn rules out, and never turns
+ * into a certainty because the rest were. Players starting at the same spawn (a co-op
+ * party) get the same; each player's own, so in PvP others can have extracts you don't.
+ */
+export function extractionsFor(
+  raid: RaidState,
+  spawnId: string,
+  noExtracts: readonly string[] = [],
+): string[] {
+  const rotating = raid.extractions.filter((p) => p.rotating);
+  const rng = createRng((raid.seed ?? 0) ^ hashOf(spawnId));
+  for (let i = rotating.length - 1; i > 0; i--) {
+    const j = nextInt(rng, i + 1);
+    [rotating[i], rotating[j]] = [rotating[j]!, rotating[i]!];
+  }
+  const picked = new Set(rotating.slice(0, raid.rotatingOpen ?? rotating.length));
+  return raid.extractions
+    .filter((p) => (!p.rotating || picked.has(p)) && !noExtracts.includes(p.id))
+    .map((p) => p.id);
+}
+
+/** Gives a player the extractions their spawn allows (extractionsFor), for the raid. */
+export function openExtractions(
+  state: SimState,
+  c: Character,
+  spawn: { id: string; noExtracts?: readonly string[] | undefined },
+): void {
+  const raid = state.raid;
+  if (!raid) return;
+  (raid.open ??= {})[c.id] = extractionsFor(raid, spawn.id, spawn.noExtracts);
+}
+
+/**
+ * The extraction points a player can use: those they were given (openExtractions), or for
+ * one never given any (a raid saved before), every one.
+ */
+export function extractionsOf(state: SimState, c: Character): ExtractionPoint[] {
+  const raid = state.raid;
+  if (!raid) return [];
+  const ids = raid.open?.[c.id];
+  return ids ? raid.extractions.filter((p) => ids.includes(p.id)) : raid.extractions;
+}
+
+/**
+ * Spawns that would leave a player with no way out (for content checks and the editor):
+ * every extraction ruled out, or only rotating ones left and none opened. Each as
+ * "<spawn id>: why".
+ */
+export function spawnProblems(map: CompiledMap): string[] {
+  const extracts = map.zones.filter((z) => z.extraction);
+  if (!extracts.length) return [];
+  const ids = new Set(extracts.map((z) => z.id));
+  const out: string[] = [];
+  for (const m of map.markers) {
+    if (m.type !== 'playerSpawn') continue;
+    const no = m.noExtracts ?? [];
+    for (const id of no) if (!ids.has(id)) out.push(`${m.id}: no extraction "${id}"`);
+    const left = extracts.filter((z) => !no.includes(z.id));
+    const always = left.filter((z) => !z.extraction!.rotating).length;
+    if (always) continue;
+    // Only rotating ones: a raid opens n of all of them, so if n of the ones ruled out
+    // could be the ones opened, this spawn could get none.
+    const rotating = extracts.filter((z) => z.extraction!.rotating).length;
+    const allowed = left.length;
+    const n = Math.min(map.rotatingExtractions ?? rotating, rotating);
+    if (!allowed || !n) out.push(`${m.id}: no extraction it can use`);
+    else if (rotating - allowed >= n)
+      out.push(`${m.id}: only rotating extractions, and some raids open none of them`);
+  }
+  return out;
 }
 
 /**
@@ -208,11 +304,13 @@ export function timeLeft(state: SimState): number {
 }
 
 /**
- * The extraction point a character is standing in (inside its outline, from just under its
- * floor up to its height), or null.
+ * The extraction point a character is standing in (one of theirs, extractionsOf: inside
+ * its outline, from just under its floor up to its height), or null.
  */
 export function extractionAt(state: SimState, c: Character): ExtractionPoint | null {
+  const ids = state.raid?.open?.[c.id];
   for (const p of state.raid?.extractions ?? []) {
+    if (ids && !ids.includes(p.id)) continue;
     if (c.y < p.y - RAID.extractBelow || c.y > p.y + p.height) continue;
     if (insidePolygon(p.points, c.x, c.z)) return p;
   }

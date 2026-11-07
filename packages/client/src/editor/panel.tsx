@@ -873,6 +873,15 @@ function Zones({ editor, map, zone, point }: Parameters<typeof MapSettings>[0]) 
         Draw a zone
       </button>
       <RotatingCount editor={editor} map={map} />
+      {editor.spawnWarnings.length > 0 && (
+        <ul className="ed-list">
+          {editor.spawnWarnings.map((w) => (
+            <li key={w} className="ed-problem">
+              ⚠ Spawn {w}
+            </li>
+          ))}
+        </ul>
+      )}
       {z && (
         <>
           <Text label="name" value={z.name} onChange={(v) => v && edit((zz) => (zz.name = v))} />
@@ -1864,6 +1873,35 @@ function MarkerFields(props: { editor: MapEditor; node: MapNode; num: NumField; 
   const set = (key: string, v: unknown) => setField(editor, key, v);
   const tables = [...loadLootTables().keys()].sort();
   switch (n.type) {
+    case 'playerSpawn': {
+      // Which extractions a player starting here can use (2026-11-07): all but its noExtracts.
+      const extracts = editor.map.zones.filter((z) => z.extraction);
+      if (!extracts.length) return null;
+      const no = n.noExtracts ?? [];
+      const toggle = (id: string, can: boolean): void => {
+        const next = can ? no.filter((x) => x !== id) : [...no, id];
+        set('noExtracts', next.length ? next : undefined);
+      };
+      return (
+        <>
+          <p className="ed-note">Extractions a player starting here can use:</p>
+          {extracts.map((z) => (
+            <label key={z.id} className="ed-check">
+              <input
+                type="checkbox"
+                checked={!no.includes(z.id)}
+                onChange={(e) => toggle(z.id, e.target.checked)}
+              />
+              {z.name}
+              <span className="ed-type">
+                {z.id}
+                {z.extraction?.rotating ? ' · rotating' : ''}
+              </span>
+            </label>
+          ))}
+        </>
+      );
+    }
     case 'enemySpawn': {
       const { types, loadouts } = loadEnemies();
       const type = types.get(n.enemy);

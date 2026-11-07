@@ -10,7 +10,11 @@ import { CHEST, createHealth, dealDamage, HEAD } from './health';
 import {
   RAID,
   extractionAt,
+  extractionsFor,
+  extractionsOf,
   insidePolygon,
+  openExtractions,
+  spawnProblems,
   gearItems,
   investigateInReach,
   investigatedBy,
@@ -104,6 +108,7 @@ describe('raid', () => {
         ],
         y: 0,
         height: RAID.extractHeight,
+        rotating: false,
         x: 20,
         z: 0,
       },
@@ -303,7 +308,7 @@ describe('raid', () => {
     expect(extractionAt(state, c)).toBeNull();
   });
 
-  it('opens every always-open extraction and so many of the rotating ones, picked by the raid', () => {
+  it('gives each spawn its extractions: what it allows, and its own pick of the rotating ones', () => {
     const square = (id: string, x: number, rotating: boolean) => ({
       id,
       name: id,
@@ -315,10 +320,11 @@ describe('raid', () => {
       ],
       extraction: rotating ? { y: 0, rotating: true } : { y: 0 },
     });
-    const rotatingMap = (n?: number) =>
+    const yardMap = (n?: number) =>
       ({
         zones: [
           square('road', 0, false),
+          square('yard-car', 5, false),
           square('a', 10, true),
           square('b', 20, true),
           square('c', 30, true),
@@ -328,23 +334,100 @@ describe('raid', () => {
         rotatingExtractions: n,
         markers: [],
       }) as unknown as CompiledMap;
-    const open = (seed: number, n?: number) => {
+    const raidOf = (seed: number, n?: number) => {
       const state = createState(seed);
-      startRaid(state, rotatingMap(n), 60);
-      return state.raid!.extractions.map((p) => p.id);
+      startRaid(state, yardMap(n), 60);
+      return state.raid!;
     };
-    // 3 of the 5: the always-open one, and three others, the same for the same raid.
-    for (const seed of [1, 2, 3, 4, 5]) {
-      const ids = open(seed, 3);
-      expect(ids).toHaveLength(4);
-      expect(ids[0]).toBe('road');
-      expect(open(seed, 3)).toEqual(ids);
+    // The yard's spawn can't use the yard's car extract; another spawn can.
+    const raid = raidOf(1, 3);
+    const yard = extractionsFor(raid, 'yard-spawn', ['yard-car']);
+    expect(yard).toContain('road');
+    expect(yard).not.toContain('yard-car');
+    expect(yard).toHaveLength(4);
+    expect(extractionsFor(raid, 'north-spawn')).toContain('yard-car');
+    // A spawn's pick is the same each time in a raid (a co-op party shares it), and spawns
+    // and raids pick differently.
+    expect(extractionsFor(raid, 'yard-spawn', ['yard-car'])).toEqual(yard);
+    const picks = new Set<string>();
+    for (const seed of [1, 2, 3, 4, 5, 6])
+      for (const spawn of ['yard-spawn', 'north-spawn', 'bridge-spawn'])
+        picks.add(extractionsFor(raidOf(seed, 3), spawn).join());
+    expect(picks.size).toBeGreaterThan(3);
+    // Left out: every rotating one. 0: only the always-open ones.
+    expect(extractionsFor(raidOf(1), 'x')).toHaveLength(7);
+    expect(extractionsFor(raidOf(1, 0), 'x', ['yard-car'])).toEqual(['road']);
+  });
+
+  it('keeps a rotating extract a chance for a spawn that allows it, whatever else it rules out', () => {
+    // The car and four others rotate, three open a raid: 60% each, for any spawn.
+    const zones = ['car', 'a', 'b', 'c', 'd'].map((id) => ({
+      id,
+      name: id,
+      points: [],
+      extraction: { y: 0, rotating: true },
+    }));
+    const map = { zones, markers: [], rotatingExtractions: 3 } as unknown as CompiledMap;
+    const share = (no: string[]): number => {
+      let open = 0;
+      for (let seed = 1; seed <= 500; seed++) {
+        const state = createState(seed);
+        startRaid(state, map, 60);
+        if (extractionsFor(state.raid!, 'yard-spawn', no).includes('car')) open++;
+      }
+      return open / 500;
+    };
+    for (const no of [[], ['a', 'b'], ['a', 'b', 'c', 'd']]) {
+      expect(share(no)).toBeGreaterThan(0.5);
+      expect(share(no)).toBeLessThan(0.7);
     }
-    // Different raids pick differently.
-    const picks = new Set([1, 2, 3, 4, 5, 6, 7, 8].map((seed) => open(seed, 3).join()));
-    expect(picks.size).toBeGreaterThan(1);
-    // Left out: all of them. 0: only the always-open ones.
-    expect(open(1)).toHaveLength(6);
-    expect(open(1, 0)).toEqual(['road']);
+  });
+
+  it('lets a player leave only by their own extractions', () => {
+    const { state, c } = setup(20);
+    openExtractions(state, c, { id: 'spawn', noExtracts: ['gate'] });
+    expect(extractionsOf(state, c)).toEqual([]);
+    expect(extractionAt(state, c)).toBeNull();
+    openExtractions(state, c, { id: 'spawn' });
+    expect(extractionAt(state, c)?.id).toBe('gate');
+  });
+
+  it('finds spawns left with no way out', () => {
+    const map = (spawns: { id: string; noExtracts?: string[] }[], rotatingExtractions?: number) =>
+      ({
+        zones: [
+          { id: 'gate', name: 'Gate', points: [], extraction: { y: 0 } },
+          { id: 'boat', name: 'Boat', points: [], extraction: { y: 0, rotating: true } },
+        ],
+        markers: spawns.map((s) => ({ type: 'playerSpawn', ...s })),
+        rotatingExtractions,
+      }) as unknown as CompiledMap;
+    expect(spawnProblems(map([{ id: 'a' }, { id: 'b', noExtracts: ['gate'] }]))).toEqual([]);
+    // The boat might not be open: with it never opened, b has nothing.
+    expect(spawnProblems(map([{ id: 'b', noExtracts: ['gate'] }], 0))).toEqual([
+      'b: no extraction it can use',
+    ]);
+    // Only the boat, but it always opens (blank): fine. With a second rotating extract and
+    // one a raid, the one opened could be the one ruled out.
+    expect(spawnProblems(map([{ id: 'd', noExtracts: ['gate'] }]))).toEqual([]);
+    expect(spawnProblems(map([{ id: 'c', noExtracts: ['gate', 'boat', 'pier'] }]))).toEqual([
+      'c: no extraction "pier"',
+      'c: no extraction it can use',
+    ]);
+  });
+
+  it('warns of a spawn with only rotating extractions that a raid could leave it none of', () => {
+    const map = {
+      zones: [
+        { id: 'gate', name: 'Gate', points: [], extraction: { y: 0 } },
+        { id: 'boat', name: 'Boat', points: [], extraction: { y: 0, rotating: true } },
+        { id: 'car', name: 'Car', points: [], extraction: { y: 0, rotating: true } },
+      ],
+      markers: [{ type: 'playerSpawn', id: 'yard', noExtracts: ['gate', 'car'] }],
+      rotatingExtractions: 1,
+    } as unknown as CompiledMap;
+    expect(spawnProblems(map)).toEqual([
+      'yard: only rotating extractions, and some raids open none of them',
+    ]);
   });
 });

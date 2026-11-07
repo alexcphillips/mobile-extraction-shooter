@@ -16,6 +16,7 @@ import {
   type MapNode,
   type PrefabFile,
   type PrefabLookup,
+  spawnProblems,
 } from '@mes/shared';
 import * as THREE from 'three';
 import {
@@ -260,6 +261,11 @@ export interface EditorState {
   hiding: Hiding | null;
   /** The ids of the player spawns, as compiled (path ids), for where play-testing starts. */
   spawns: readonly string[];
+  /**
+   * Player spawns left with no extraction they can use, as "<spawn>: why" (2026-11-07,
+   * spawnProblems). Shown, not a save-blocking problem: a map is often half done.
+   */
+  spawnWarnings: readonly string[];
   brush: Brush;
   gizmo: 'translate' | 'rotate';
   gridSnap: number;
@@ -362,6 +368,7 @@ export class MapEditor {
       cut: null,
       hiding: null,
       spawns: [],
+      spawnWarnings: [],
       brush: { mode: 'raise', radius: 6, strength: 1, height: null },
       gizmo: 'translate',
       gridSnap: 0.5,
@@ -837,7 +844,8 @@ export class MapEditor {
       ? exposedSpawns(this.compiled.markers, new CollisionWorld(this.compiled.world))
       : [];
     this.ends = null;
-    this.set({ overlaps, problem, spawns: spawns ?? [], exposed });
+    const spawnWarnings = this.compiled ? spawnProblems(this.compiled) : [];
+    this.set({ overlaps, problem, spawns: spawns ?? [], exposed, spawnWarnings });
     this.mapChanged();
   }
 
@@ -986,6 +994,16 @@ export class MapEditor {
   }
 
   /** Picks a named zone (selecting nothing, since zones are the map's), or none. */
+  /** The map being edited (for the inspector's lists of its extraction zones). */
+  get map(): MapFile {
+    return this.state.map;
+  }
+
+  /** Player spawns left with no extraction they can use (EditorState.spawnWarnings). */
+  get spawnWarnings(): readonly string[] {
+    return this.state.spawnWarnings;
+  }
+
   pickZone(zone: number | null): void {
     if (zone !== null) this.select([], []);
     this.set({ zone, point: null });

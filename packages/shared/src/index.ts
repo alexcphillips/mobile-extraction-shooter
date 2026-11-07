@@ -156,6 +156,10 @@ export { oneOfPicks, rollEnemySpawns } from './sim/spawn-roll';
 export {
   RAID,
   extractionAt,
+  extractionsFor,
+  extractionsOf,
+  openExtractions,
+  spawnProblems,
   gearItems,
   markBrought,
   settleFound,

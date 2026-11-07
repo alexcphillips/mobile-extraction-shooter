@@ -29,6 +29,8 @@ import {
   restoreHealth,
   shootCharacter,
   spawnCharacter,
+  extractionsOf,
+  openExtractions,
   spawnEnemy,
   step,
   weaponDef,
@@ -341,7 +343,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let extractShown: readonly unknown[] | null = null;
   let extractCount = -1;
   const showExtractions = (): void => {
-    const open = sim.raid?.extractions ?? null;
+    // Yours (the raid's list for you is made once, so a change of it is a new array).
+    const open = sim.raid ? (sim.raid.open?.[player.id] ?? sim.raid.extractions) : null;
     if (open === extractShown && (open?.length ?? -1) === extractCount) return;
     extractShown = open;
     extractCount = open?.length ?? -1;
@@ -350,7 +353,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       extractView.geometry.dispose();
       (extractView.material as THREE.Material).dispose();
     }
-    extractView = open ? buildExtractions(open) : null;
+    extractView = open ? buildExtractions(extractionsOf(sim, player)) : null;
     if (extractView) scene.add(extractView);
   };
   if (zombiesMode) scene.add(buildWallBuys(map, items, world));
@@ -426,6 +429,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       fillLootContainers(sim, map, items, lootTables, lootKinds);
       rollLootSpawns(sim, map, items, lootTables);
       startRaid(sim, map, options.duration ?? raid.duration);
+      // Your extractions: those your spawn allows, rotating ones picked for it.
+      openExtractions(sim, player, spawn);
       startQuests(sim, map, items, player.id, raidObjectives(options.profile, quests, raid.map));
     }
     controls.yaw = spawn.yaw;
@@ -624,6 +629,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         );
         c.gear = structuredClone(gear);
         markBrought(c);
+        // Beside you, from your spawn: the same extractions as yours.
+        openExtractions(sim, c, spawn);
         return c;
       },
       { spawn: spawn.id, spawned, host: player, name: coop.name },

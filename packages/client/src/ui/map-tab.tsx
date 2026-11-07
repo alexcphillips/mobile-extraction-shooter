@@ -1,4 +1,11 @@
-import type { Character, CompiledMap, MapZone, Shape, SimState } from '@mes/shared';
+import {
+  extractionsOf,
+  type Character,
+  type CompiledMap,
+  type MapZone,
+  type Shape,
+  type SimState,
+} from '@mes/shared';
 import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
 /*
@@ -230,7 +237,8 @@ export function MapTab({ map, sim, player }: Props): ReactNode {
       {text}
     </text>
   );
-  const extractions = sim.raid?.extractions ?? [];
+  // Yours: those your spawn allows (sim/raid.ts extractionsOf).
+  const extractions = extractionsOf(sim, player);
   const arrow = 9 * k;
 
   return (
