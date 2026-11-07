@@ -90,6 +90,7 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel, onGiveUp }: P
             }
             onChange={(v) => set('lean', v)}
           />
+          <Toggle label="Aim while leaning" value={s.leanAim} onChange={(v) => set('leanAim', v)} />
           <Choice
             label="Firing"
             value={s.fire}

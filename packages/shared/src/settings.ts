@@ -32,6 +32,8 @@ const settingsSchema = z.object({
    * straighten up (2026-11-01). Toggle by default: a held button needs a third thumb.
    */
   lean: z.enum(['hold', 'toggle']).catch('toggle'),
+  /** Leaning aims too, for as long as you lean (2026-11-07, the user's request). */
+  leanAim: z.boolean().catch(false),
   /** auto: the gun also fires by itself while the crosshair is on an enemy. */
   fire: z.enum(['auto', 'manual']).catch('auto'),
   /** How much aim slows while passing over an enemy. */

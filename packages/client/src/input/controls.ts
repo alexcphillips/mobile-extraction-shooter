@@ -224,6 +224,11 @@ export class Controls {
     // Held: Q and E while down, else a button held. Toggled: what was last pressed.
     const keyLean = (k.has('KeyE') ? 1 : 0) - (k.has('KeyQ') ? 1 : 0);
     this.lean = settings.current.lean === 'hold' ? keyLean || this.leanOn : this.leanOn;
+    // Aim on lean (a setting): leaning aims for as long as it lasts, and so doesn't sprint.
+    if (settings.current.leanAim && this.lean !== 0) {
+      this.aim = true;
+      this.sprint = false;
+    }
   }
 
   /** Ends sprint lock, for things outside the controls (letting go of a ladder). */

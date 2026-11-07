@@ -6,6 +6,7 @@ describe('settings', () => {
     const s = defaultSettings();
     expect(s.aim).toBe('hold');
     expect(s.lean).toBe('toggle');
+    expect(s.leanAim).toBe(false);
     expect(s.fire).toBe('auto');
     expect(s.aimAssist).toBe('low');
     expect(s.layout).toEqual({});
