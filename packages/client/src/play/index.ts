@@ -1464,6 +1464,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         const e = enemies[i]!;
         if (sim.entities.includes(e.c)) continue;
         scene.remove(e.body.root);
+        e.body.dispose();
         if (e.zones) scene.remove(e.zones.root);
         enemies.splice(i, 1);
         enemyChars.splice(enemyChars.indexOf(e.c), 1);

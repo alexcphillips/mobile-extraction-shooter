@@ -381,6 +381,16 @@ export class CharacterBody {
   }
 
   /**
+   * Frees what's its own once it's out of the scene: the skeleton's bone texture and the
+   * mixer's actions. The geometry and material are shared by every body with the look.
+   */
+  dispose(): void {
+    this.mixer.stopAllAction();
+    this.mixer.uncacheRoot(this.root);
+    this.mesh.skeleton.dispose();
+  }
+
+  /**
    * Places the body between the last two ticks (alpha 0–1) and animates it, every few
    * frames when far away or off screen.
    */

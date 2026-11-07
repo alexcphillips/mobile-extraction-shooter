@@ -684,7 +684,8 @@ function sightRate(
   return rate;
 }
 
-function clearLine(
+/** Whether nothing solid is between two points (glass is seen and heard through). */
+export function clearLine(
   world: CollisionWorld,
   ox: number,
   oy: number,

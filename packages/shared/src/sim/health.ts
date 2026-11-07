@@ -367,6 +367,8 @@ export function restoreHealth(c: Character, items: ItemDb): void {
     h.bleeding[zone] = false;
     h.splinted[zone] = false;
   }
+  // One health bar is all in the chest.
+  if (h.pool !== undefined) h.hp[CHEST] = h.pool;
   h.dead = false;
   for (const armour of [c.gear.helmet, c.gear.bodyArmour]) {
     if (armour) armour.durability = maxDurability(items, armour);

@@ -200,30 +200,29 @@ const RENAMED_IN_5: Readonly<Record<string, string>> = {
   'ammo-762x54r-t46m': 'ammo-762x54r-hpbt',
 };
 
+/** Calls `visit` on every object in a stored profile, at any depth. */
+function eachObject(doc: unknown, visit: (o: Record<string, unknown>) => void): void {
+  if (Array.isArray(doc)) return doc.forEach((v) => eachObject(v, visit));
+  if (typeof doc !== 'object' || doc === null) return;
+  const o = doc as Record<string, unknown>;
+  visit(o);
+  for (const v of Object.values(o)) eachObject(v, visit);
+}
+
 /** A stored profile with guns of this item back on their own round (Item.loaded removed). */
 function unload(doc: Record<string, unknown>, gun: string): Record<string, unknown> {
-  const walk = (v: unknown): void => {
-    if (Array.isArray(v)) return v.forEach(walk);
-    if (typeof v !== 'object' || v === null) return;
-    const o = v as Record<string, unknown>;
+  eachObject(doc, (o) => {
     if (o.item === gun) delete o.loaded;
-    Object.values(o).forEach(walk);
-  };
-  walk(doc);
+  });
   return doc;
 }
 
 /** A stored profile with any optic taken off guns of this item (the optic is lost). */
 function dropOptics(doc: Record<string, unknown>, gun: string): Record<string, unknown> {
-  const walk = (v: unknown): void => {
-    if (Array.isArray(v)) return v.forEach(walk);
-    if (typeof v !== 'object' || v === null) return;
-    const o = v as Record<string, unknown>;
+  eachObject(doc, (o) => {
     const a = o.attachments as Record<string, unknown> | undefined;
     if (o.item === gun && a?.optic) a.optic = null;
-    Object.values(o).forEach(walk);
-  };
-  walk(doc);
+  });
   return doc;
 }
 

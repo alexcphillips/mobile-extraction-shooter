@@ -40,7 +40,26 @@ describe('mergeInputs', () => {
 
   it('repeats the last input without its presses when nothing new came', () => {
     const last = input({ moveY: 1, fire: true, jump: true, door: 3, search: 'desk' });
-    expect(mergeInputs([], last)).toMatchObject({ moveY: 1, fire: true, jump: false, door: null, search: null });
+    expect(mergeInputs([], last)).toMatchObject({
+      moveY: 1,
+      fire: true,
+      jump: false,
+      door: null,
+      search: null,
+    });
     expect(mergeInputs([], null)).toBeNull();
+  });
+
+  it("doesn't buy, detonate or put itself out twice when nothing new came", () => {
+    const last = input({ buy: 2, detonate: true, extinguish: true });
+    expect(mergeInputs([], last)).toMatchObject({ buy: null, detonate: false, extinguish: false });
+  });
+
+  it('keeps a buy, detonate or extinguish pressed before the latest input', () => {
+    const merged = mergeInputs(
+      [input({ buy: 0, detonate: true, extinguish: true, door: 0 }), input()],
+      null,
+    )!;
+    expect(merged).toMatchObject({ buy: 0, detonate: true, extinguish: true, door: 0 });
   });
 });

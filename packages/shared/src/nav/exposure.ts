@@ -1,4 +1,4 @@
-import { AI } from '../sim/ai';
+import { AI, clearLine } from '../sim/ai';
 import { MOVEMENT } from '../sim/movement';
 import type { CollisionWorld } from '../world/collision-world';
 import type { NavGrid } from './nav-grid';
@@ -157,22 +157,4 @@ export class Exposure {
       clearLine(this.world, ox, oy, oz, x, y + BODY, z)
     );
   }
-}
-
-function clearLine(
-  world: CollisionWorld,
-  ox: number,
-  oy: number,
-  oz: number,
-  tx: number,
-  ty: number,
-  tz: number,
-): boolean {
-  const dx = tx - ox;
-  const dy = ty - oy;
-  const dz = tz - oz;
-  const d = Math.hypot(dx, dy, dz);
-  if (d < 1e-6) return true;
-  // Glass is seen and heard through.
-  return world.raycast(ox, oy, oz, dx / d, dy / d, dz / d, d, undefined, true) === Infinity;
 }

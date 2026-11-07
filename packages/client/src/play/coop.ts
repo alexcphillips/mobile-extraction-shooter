@@ -64,39 +64,44 @@ interface Guest {
 }
 
 /**
+ * Every press in a PlayerInput (true or set for one tick), as it is when not pressed. A
+ * press left out of here would be repeated each tick no input came, or lost when two did.
+ */
+const PRESSES = {
+  jump: false,
+  reload: false,
+  draw: null,
+  throw: false,
+  detonate: false,
+  extinguish: false,
+  use: null,
+  door: null,
+  search: null,
+  investigate: false,
+  buy: null,
+} as const satisfies Partial<PlayerInput>;
+
+const PRESS_KEYS = Object.keys(PRESSES) as (keyof typeof PRESSES)[];
+
+/**
  * The inputs a guest sent since the last tick, as one: the latest stick, look and held
- * buttons, a press if any of them pressed, and every inventory action, in order.
+ * buttons, a press if any of them pressed (the last one, for a press with a value), and
+ * every inventory action, in order.
  */
 export function mergeInputs(queue: PlayerInput[], last: PlayerInput | null): PlayerInput | null {
   const latest = queue[queue.length - 1] ?? last;
   if (!latest) return null;
-  if (!queue.length) {
-    // Nothing new: keep moving and holding as before, but don't press anything twice.
-    return {
-      ...latest,
-      jump: false,
-      reload: false,
-      inventory: [],
-      draw: null,
-      throw: false,
-      use: null,
-      door: null,
-      search: null,
-      investigate: false,
-    };
-  }
+  // Nothing new: keep moving and holding as before, but don't press anything twice.
+  if (!queue.length) return { ...latest, ...PRESSES, inventory: [] };
   const inventory: InventoryAction[] = [];
-  const merged: PlayerInput = { ...latest, inventory };
+  const merged: PlayerInput = { ...latest, ...PRESSES, inventory };
+  const out = merged as unknown as Record<string, unknown>;
   for (const i of queue) {
-    merged.jump ||= i.jump;
-    merged.reload ||= i.reload;
-    merged.throw ||= !!i.throw;
-    merged.investigate ||= !!i.investigate;
-    if (i.draw) merged.draw = i.draw;
-    if (i.use) merged.use = i.use;
-    if (i.door !== null && i.door !== undefined) merged.door = i.door;
+    for (const key of PRESS_KEYS) {
+      const v = i[key];
+      if (v !== null && v !== undefined && v !== false) out[key] = v;
+    }
     if (i.switch !== null && i.switch !== undefined) merged.switch = i.switch;
-    if (i.search) merged.search = i.search;
     if (i.ammo) merged.ammo = i.ammo;
     if (i.inventory) inventory.push(...i.inventory);
   }

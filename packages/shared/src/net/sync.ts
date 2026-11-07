@@ -59,13 +59,16 @@ export function diff(
   if (isObject(prev) && isObject(next)) {
     let o: Record<string, Patch> | undefined;
     let d: string[] | undefined;
+    // A key set to undefined is as good as gone, as it is in JSON: sent as a deletion, or
+    // the guest would keep the old value while the host's mirror moved on.
     for (const key in next) {
-      if (omit.has(key)) continue;
+      if (omit.has(key) || next[key] === undefined) continue;
       const p = key in prev ? diff(prev[key], next[key], omit) : { $: strip(next[key], omit) };
       if (p) (o ??= {})[key] = p;
     }
     for (const key in prev) {
-      if (!(key in next) && !omit.has(key)) (d ??= []).push(key);
+      if (omit.has(key) || prev[key] === undefined) continue;
+      if (next[key] === undefined) (d ??= []).push(key);
     }
     if (!o && !d) return undefined;
     return d ? (o ? { o, d } : { d }) : { o: o! };
@@ -100,7 +103,8 @@ export function strip<T>(value: T, omit: ReadonlySet<string> = NONE): T {
   if (Array.isArray(value)) return value.map((v: unknown) => strip(v, omit)) as T;
   if (!isObject(value)) return value;
   const out: Json = {};
-  for (const key in value) if (!omit.has(key)) out[key] = strip(value[key], omit);
+  for (const key in value)
+    if (!omit.has(key) && value[key] !== undefined) out[key] = strip(value[key], omit);
   return out as T;
 }
 
