@@ -1,3 +1,4 @@
+import type { Search } from './search';
 import type { CompiledMap } from '../content/compile';
 import type { ItemDb } from '../content/items';
 import { removeAt, type Grid, type Item } from '../inventory/grid';
@@ -54,6 +55,11 @@ export interface RaidState {
   endTick: number;
   extractions: ExtractionPoint[];
   investigate: InvestigateSpot[];
+  /**
+   * Searches of containers and bodies, by "<player id>|<searchKey>" (2026-11-06,
+   * search.ts). Missing (a raid saved before it) shows everything at once.
+   */
+  searches?: Record<string, Search>;
 }
 
 /** What a player's active quests want in a raid on a map (quests.ts raidObjectives). */
@@ -102,6 +108,7 @@ export function startRaid(state: SimState, map: CompiledMap, seconds: number): v
     endTick: state.tick + Math.round(seconds * TICK_RATE),
     extractions,
     investigate: [],
+    searches: {},
   };
 }
 

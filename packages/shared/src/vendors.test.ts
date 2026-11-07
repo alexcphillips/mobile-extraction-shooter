@@ -4,13 +4,20 @@ import { STARTING_KIT_FORMAT } from './content/starting-kits';
 import { VENDOR_FORMAT, checkVendors, type VendorDef } from './content/vendors';
 import { addItem, countOf, createGrid } from './inventory/grid';
 import { PROFILE, PROFILE_FORMAT, newProfile, overRepaired, type Profile } from './profile';
+import { completeQuest } from './quests';
+import { QUEST_FORMAT } from './content/quests';
 import { createItem } from './sim/create-item';
 import { applyStash, openStash, stashOwner } from './stash';
 import { TEST_ITEMS as items } from './sim/test-items';
 import {
+  MAX_BUY,
   VENDOR,
   buyOffer,
   buyPrice,
+  nextRestock,
+  standingOf,
+  vendorLevel,
+  vendorStock,
   cantSell,
   depositInto,
   raidGains,
@@ -323,5 +330,109 @@ describe('repairs in the stash', () => {
     expect(helmet.durability).toBe(30);
     expect(countOf(p.stash[0]!, 'repair-kit')).toBe(0);
     expect(overRepaired(items, before, p)).toBe(false);
+  });
+});
+
+/** A vendor with levels: level 2 needs 0.2 rep and 1,000 spent, 3 more, 4 more still. */
+const levelled = (extra: Record<string, unknown> = {}): VendorDef =>
+  loadContent(
+    VENDOR_FORMAT,
+    {
+      formatVersion: 2,
+      id: 'smith',
+      name: 'Smith',
+      levels: [
+        { rep: 0.2, spent: 1000 },
+        { rep: 0.4, spent: 5000 },
+        { rep: 0.6, spent: 20_000 },
+      ],
+      sells: [{ item: 'bandage' }, { item: 'watch', level: 2 }, { item: 'scope', level: 4 }],
+      ...extra,
+    },
+    'smith.json',
+  );
+
+describe('vendor levels', () => {
+  it('go up with rep and money spent, each needing both and the levels before', () => {
+    const v = levelled();
+    expect(vendorLevel(v, { rep: 0, spent: 0 })).toBe(1);
+    // Money alone, or rep alone, isn't enough.
+    expect(vendorLevel(v, { rep: 0, spent: 1_000_000 })).toBe(1);
+    expect(vendorLevel(v, { rep: 1, spent: 999 })).toBe(1);
+    expect(vendorLevel(v, { rep: 0.2, spent: 1000 })).toBe(2);
+    expect(vendorLevel(v, { rep: 0.45, spent: 6000 })).toBe(3);
+    expect(vendorLevel(v, { rep: 5, spent: 1e9 })).toBe(4);
+  });
+
+  it('gate offers, and buying counts toward the next level', () => {
+    const v = levelled();
+    const p = profile();
+    expect(buyOffer(p, items, v, 1)).toMatch(/from level 2/);
+    expect(p.money).toBe(10_000);
+    // A bandage at 100 a time, ten of them in one go.
+    expect(buyOffer(p, items, v, 0, 0, 10)).toBeNull();
+    expect(p.money).toBe(9000);
+    expect(standingOf(p, 'smith')).toEqual({ rep: 0, spent: 1000 });
+    expect(countOf(p.stash[0]!, 'bandage')).toBe(10);
+    expect(buyOffer(p, items, v, 0, 0, MAX_BUY + 1)).toMatch(/at a time/);
+    // Spent enough, but no rep yet: still level 1. A quest's rep takes it to 2.
+    expect(buyOffer(p, items, v, 1)).toMatch(/from level 2/);
+    const quest = loadContent(
+      QUEST_FORMAT,
+      {
+        formatVersion: 1,
+        id: 'q',
+        name: 'Q',
+        vendor: 'smith',
+        description: 'A job.',
+        objectives: [{ id: 'w', type: 'handOver', item: 'watch', count: 1 }],
+        rewards: { rep: 0.2 },
+      },
+      'q.json',
+    );
+    p.quests.q = { status: 'active', progress: { w: 1 } };
+    expect(completeQuest(p, items, quest)).toBeNull();
+    expect(standingOf(p, 'smith')).toEqual({ rep: 0.2, spent: 1000 });
+    expect(buyOffer(p, items, v, 1)).toBeNull();
+  });
+
+  it('mark prices up, and a rotation shows the same few to everyone for a while', () => {
+    const v = levelled({
+      markup: 1.5,
+      rotation: { shown: 2, hours: 2 },
+      sells: [
+        { item: 'bandage' },
+        { item: 'watch' },
+        { item: 'medkit' },
+        { item: 'round', count: 10 },
+        { item: 'splint' },
+      ],
+    });
+    expect(buyPrice(items, v.sells[0]!, v)).toBe(150);
+    const t = Date.UTC(2026, 10, 6, 12, 30);
+    const now = vendorStock(v, t);
+    expect(now).toHaveLength(2);
+    expect(vendorStock(v, t + 60 * 60_000)).toEqual(now);
+    expect(nextRestock(v, t)).toBe(Date.UTC(2026, 10, 6, 14));
+    // Over a day, the picks change.
+    const seen = new Set<string>();
+    for (let h = 0; h < 24; h += 2) seen.add(vendorStock(v, t + h * 3_600_000).join());
+    expect(seen.size).toBeGreaterThan(3);
+    // What's not in stock now can't be bought.
+    const gone = [0, 1, 2, 3, 4].find((i) => !now.includes(i))!;
+    const p = profile();
+    expect(buyOffer(p, items, v, gone, 0, 1, t)).toMatch(/stock has changed/);
+    expect(buyOffer(p, items, v, now[0]!, 0, 1, t)).toBeNull();
+  });
+
+  it('refuses levels that need less than the one before', () => {
+    const bad = levelled({
+      levels: [
+        { rep: 0.2, spent: 1000 },
+        { rep: 0.1, spent: 5000 },
+        { rep: 0.6, spent: 20_000 },
+      ],
+    });
+    expect(() => checkVendors(new Map([['smith', bad]]), items)).toThrow(/needs less/);
   });
 });

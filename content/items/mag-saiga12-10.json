@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "mag-saiga12-10",
   "name": "Saiga-12 10-round magazine",
+  "shortName": "Saiga 10",
   "type": "attachment",
   "size": [1, 2],
   "value": 4000,

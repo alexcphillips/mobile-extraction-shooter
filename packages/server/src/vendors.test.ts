@@ -53,6 +53,41 @@ describe('vendors', () => {
     expect((await client.fails('POST', '/vendors/medic/buy', inRaid)).error).toBe('in-raid');
   });
 
+  it('buy several at once, count the spending, and keep locked offers locked', async () => {
+    const client = await signedIn();
+    const medic = vendorDef('medic')!;
+    const bandage = medic.sells.findIndex((o) => o.item === 'bandage');
+    const surgery = medic.sells.findIndex((o) => o.item === 'surgery-kit');
+    await client.setMoney(100_000);
+    let me = await client.ok('GET', '/profile');
+    const had = countOf(me.profile.stash[0]!, 'bandage');
+    const locked = await client.fails('POST', '/vendors/medic/buy', {
+      version: me.version,
+      offer: surgery,
+    });
+    expect(locked.message).toMatch(/from level 3/);
+    me = await client.ok('POST', '/vendors/medic/buy', {
+      version: me.version,
+      offer: bandage,
+      times: 5,
+    });
+    const price = items.get('bandage')!.value;
+    expect(countOf(me.profile.stash[0]!, 'bandage')).toBe(had + 5);
+    expect(me.profile.money).toBe(100_000 - 5 * price);
+    expect(me.profile.vendors.medic).toEqual({ rep: 0, spent: 5 * price });
+    const tooMany = await client.fails('POST', '/vendors/medic/buy', {
+      version: me.version,
+      offer: bandage,
+      times: 1000,
+    });
+    expect(tooMany.message).toMatch(/at a time/);
+    // A stash edit can't raise the standing.
+    const forged = structuredClone(me.profile);
+    forged.vendors.medic = { rep: 5, spent: 1e9 };
+    const edit = await client.fails('PUT', '/profile', { version: me.version, profile: forged });
+    expect(edit.message).toMatch(/standing/);
+  });
+
   it('sell from the gear or the stash for money, and refuse the knife or a bad ref', async () => {
     const client = await signedIn();
     const me = await client.ok('GET', '/profile');

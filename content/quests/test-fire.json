@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "id": "test-fire",
+  "name": "Test fire",
+  "vendor": "gunsmith",
+  "description": "I need rounds to prove a rebuild. Bring me a couple of boxes of 5.56 and I'll open the good drawer.",
+  "objectives": [
+    {
+      "id": "hand-over",
+      "type": "handOver",
+      "item": "ammo-556x45-fmj",
+      "count": 120
+    }
+  ],
+  "rewards": {
+    "money": 12000,
+    "items": [
+      {
+        "item": "compensator"
+      }
+    ],
+    "rep": 0.2
+  }
+}

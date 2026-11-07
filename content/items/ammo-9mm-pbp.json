@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "ammo-9mm-pbp",
   "name": "9 mm PBP",
+  "shortName": "9mm PBP",
   "type": "ammo",
   "size": [1, 1],
   "value": 110,

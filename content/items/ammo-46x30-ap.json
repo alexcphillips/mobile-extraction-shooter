@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "ammo-46x30-ap",
   "name": "4.6×30 mm AP SX",
+  "shortName": "4.6 AP",
   "type": "ammo",
   "size": [1, 1],
   "value": 450,

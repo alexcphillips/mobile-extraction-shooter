@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "mag-mp133-8",
   "name": "MP-133 8-shell magazine",
+  "shortName": "MP-133 8",
   "type": "attachment",
   "size": [2, 1],
   "value": 3000,

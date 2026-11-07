@@ -84,6 +84,8 @@ export interface BuyRequest {
   version: number;
   offer: number;
   page?: number;
+  /** How many of the offer (1 to MAX_BUY); 1 if left out. */
+  times?: number;
 }
 
 /**

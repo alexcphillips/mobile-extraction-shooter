@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "ammo-556x45-m995",
   "name": "5.56×45 mm M995",
+  "shortName": "5.56 M995",
   "type": "ammo",
   "size": [1, 1],
   "value": 450,

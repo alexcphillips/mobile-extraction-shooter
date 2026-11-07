@@ -143,8 +143,8 @@ export function handOver(profile: Profile, quest: QuestDef, objective: string): 
 
 /**
  * Finishes a quest with every objective done: its reward items go into the stash, page
- * `page` first, and its money into the balance. All or none: with no room in the stash
- * nothing changes. Returns why it can't be, or null.
+ * `page` first, its money into the balance, and its reputation to its vendor. All or
+ * none: with no room in the stash nothing changes. Returns why it can't be, or null.
  */
 export function completeQuest(
   profile: Profile,
@@ -158,6 +158,10 @@ export function completeQuest(
   if (!addToStash(profile, items, quest.rewards.items, page, newStashItem))
     return 'there is no room in your stash for the rewards';
   profile.money = Math.min(PROFILE.maxMoney, profile.money + quest.rewards.money);
+  if (quest.rewards.rep > 0) {
+    const was = profile.vendors[quest.vendor] ?? { rep: 0, spent: 0 };
+    profile.vendors[quest.vendor] = { ...was, rep: was.rep + quest.rewards.rep };
+  }
   profile.quests[quest.id] = { status: 'done' };
   return null;
 }
@@ -231,6 +235,11 @@ export function raidProgress(
 /** Whether two profiles' quests are the same: only the server's quest routes change them. */
 export function sameQuests(a: Profile, b: Profile): boolean {
   return JSON.stringify(sortKeys(a.quests)) === JSON.stringify(sortKeys(b.quests));
+}
+
+/** Whether two profiles stand the same with every vendor (only the server changes it). */
+export function sameStanding(a: Profile, b: Profile): boolean {
+  return JSON.stringify(sortKeys(a.vendors)) === JSON.stringify(sortKeys(b.vendors));
 }
 
 function sortKeys(v: unknown): unknown {

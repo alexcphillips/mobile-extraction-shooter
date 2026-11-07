@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "ammo-762x54r-7n1",
   "name": "7.62×54R 7N1",
+  "shortName": "54R 7N1",
   "type": "ammo",
   "size": [1, 1],
   "value": 300,

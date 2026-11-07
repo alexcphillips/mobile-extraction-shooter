@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "armour-repair-kit",
   "name": "Armour repair kit",
+  "shortName": "Repair kit",
   "type": "repair",
   "size": [2, 1],
   "value": 12000,

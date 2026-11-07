@@ -46,9 +46,9 @@ const BODY_ICON = `<svg viewBox="0 0 64 60" width="80" height="75">
 </svg>`;
 
 /** Zone colours by HP left: full, hurt, badly hurt, nearly gone, and 0 (broken, or dead). */
-const ZONE_COLOURS = ['#5cb85c', '#c9d23f', '#f0a030', '#e74c3c', '#222'];
+export const ZONE_COLOURS = ['#5cb85c', '#c9d23f', '#f0a030', '#e74c3c', '#222'];
 
-function zoneColour(hp: number, max: number): number {
+export function zoneColour(hp: number, max: number): number {
   if (hp <= 0) return 4;
   const f = hp / max;
   return f > 0.75 ? 0 : f > 0.5 ? 1 : f > 0.25 ? 2 : 3;

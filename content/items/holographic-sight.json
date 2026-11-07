@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "holographic-sight",
   "name": "Holographic sight",
+  "shortName": "Holo",
   "type": "attachment",
   "size": [1, 1],
   "value": 4000,

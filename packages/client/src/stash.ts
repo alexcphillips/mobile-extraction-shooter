@@ -80,11 +80,12 @@ export class StashSaver {
   }
 
   /** Buys a vendor's offer into the stash (session 13b), like buyPage. */
-  buy(vendor: string, offer: number, page: number): Promise<ProfileResponse> {
+  buy(vendor: string, offer: number, page: number, times = 1): Promise<ProfileResponse> {
     return this.post(`/vendors/${encodeURIComponent(vendor)}/buy`, {
       version: this.me.version,
       offer,
       page,
+      times,
     } satisfies BuyRequest);
   }
 

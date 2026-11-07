@@ -5,6 +5,7 @@ import {
   itemDef,
   loadedAmmo,
   lootContainerById,
+  revealed,
   sellPrice,
   sellTotal,
   stackSize,
@@ -27,6 +28,15 @@ import {
   type WeaponState,
   VAULT_ITEM,
   maxDurability,
+  CHEST,
+  HEAD,
+  HEALTH,
+  LEFT_ARM,
+  LEFT_LEG,
+  RIGHT_ARM,
+  RIGHT_LEG,
+  isBleeding,
+  isBroken,
 } from '@mes/shared';
 import {
   createContext,
@@ -48,6 +58,7 @@ import { CATEGORIES, type Category } from './stash-search';
 import { favourites, holdsFavourite, toggleFavourite } from './favourites';
 import { settings } from '../settings';
 import { sectionBoxes } from './inventory-layout';
+import { ZONE_COLOURS, zoneColour } from '../hud/vitals';
 
 type Tab = 'inventory' | 'map' | 'quests';
 
@@ -88,6 +99,7 @@ export function RaidScreen({ inv, version, ctx }: Props & { ctx: RaidContext }):
           </button>
         ))}
         <span className="raid-spacer" />
+        <HealthStrip c={ctx.player} />
         <UsePill inv={inv} />
         <button className="primary" onClick={close}>
           Close
@@ -108,6 +120,87 @@ export function RaidScreen({ inv, version, ctx }: Props & { ctx: RaidContext }):
         />
       )}
     </div>
+  );
+}
+
+/**
+ * Your health while the raid screen is open (2026-11-06): the HUD's body is too tall for
+ * the top bar on a phone, so it hides, and this small one sits in the bar instead. Each
+ * zone in its colour (bleeding ones pulse), and chips for bleeding and broken limbs; no
+ * total, as on the HUD.
+ */
+function HealthStrip({ c }: { c: Character }): ReactNode {
+  const h = c.health;
+  if (h.pool !== undefined) return null;
+  const fill = (zone: number) => ZONE_COLOURS[zoneColour(h.hp[zone]!, HEALTH.maxHp[zone]!)];
+  const bleed = (zone: number) => (h.bleeding[zone] ? 'bleed' : undefined);
+  const broken = ([LEFT_ARM, RIGHT_ARM, LEFT_LEG, RIGHT_LEG] as const).filter((z) =>
+    isBroken(h, z),
+  ).length;
+  const hp = (zone: number) => Math.ceil(h.hp[zone]!);
+  return (
+    <span
+      className="raid-health"
+      role="img"
+      aria-label={`Head ${hp(HEAD)}, chest ${hp(CHEST)}${isBleeding(h) ? ', bleeding' : ''}${broken ? `, ${broken} broken` : ''}`}
+      title={`Head ${hp(HEAD)} · Chest ${hp(CHEST)} · Arms ${hp(LEFT_ARM)}/${hp(RIGHT_ARM)} · Legs ${hp(LEFT_LEG)}/${hp(RIGHT_LEG)}`}
+    >
+      <svg viewBox="16 0 32 60" width="16" height="28" aria-hidden>
+        <circle cx="32" cy="6" r="5" fill={fill(HEAD)} className={bleed(HEAD)} />
+        <rect
+          x="26"
+          y="13"
+          width="12"
+          height="19"
+          rx="1.5"
+          fill={fill(CHEST)}
+          className={bleed(CHEST)}
+        />
+        <rect
+          x="39.5"
+          y="13"
+          width="4.5"
+          height="19"
+          rx="1.5"
+          fill={fill(LEFT_ARM)}
+          className={bleed(LEFT_ARM)}
+        />
+        <rect
+          x="20"
+          y="13"
+          width="4.5"
+          height="19"
+          rx="1.5"
+          fill={fill(RIGHT_ARM)}
+          className={bleed(RIGHT_ARM)}
+        />
+        <rect
+          x="32.5"
+          y="33.5"
+          width="5.5"
+          height="26"
+          rx="1.5"
+          fill={fill(LEFT_LEG)}
+          className={bleed(LEFT_LEG)}
+        />
+        <rect
+          x="26"
+          y="33.5"
+          width="5.5"
+          height="26"
+          rx="1.5"
+          fill={fill(RIGHT_LEG)}
+          className={bleed(RIGHT_LEG)}
+        />
+      </svg>
+      <span className="raid-health-hp">
+        {hp(HEAD)}
+        <small> head</small> {hp(CHEST)}
+        <small> chest</small>
+      </span>
+      {isBleeding(h) && <span className="chip bleed">🩸</span>}
+      {broken > 0 && <span className="chip">🦴{broken > 1 ? ` ×${broken}` : ''}</span>}
+    </span>
   );
 }
 
@@ -678,6 +771,14 @@ function Loot({ inv }: { inv: InventoryController }): ReactNode {
   if (!target) return panel('On the ground', <Ground inv={inv} />);
   const name = ctx.nameOf(target);
   if (!inv.reach) return panel(name, <p className="raid-note">Out of reach.</p>);
+  // Searching it (search.ts): what's not found yet shows as "?", and the header counts.
+  const found = ctx.stash ? null : revealed(ctx.sim, ctx.player, target);
+  const searching =
+    found && found.found < found.total ? (
+      <span className="inv-searching" role="status">
+        Searching… {found.found}/{found.total}
+      </span>
+    ) : null;
   if (target.kind === 'container') {
     const l = lootContainerById(ctx.sim, target.id)!;
     // The stash page's header (its tabs, sort and worth) comes from the stash screen.
@@ -687,10 +788,15 @@ function Loot({ inv }: { inv: InventoryController }): ReactNode {
         <SearchBox />
         <div className="inv-open">
           <Bag inv={inv} />
-          <GridView inv={inv} gref={{ owner: target, grid: 'loot' }} grid={l.grid} />
+          <GridView
+            inv={inv}
+            gref={{ owner: target, grid: 'loot' }}
+            grid={l.grid}
+            shown={found?.shown}
+          />
         </div>
       </>,
-      search?.head,
+      search?.head ?? searching,
     );
   }
   const id = target.kind === 'body' ? target.id : -1;
@@ -700,9 +806,9 @@ function Loot({ inv }: { inv: InventoryController }): ReactNode {
     name,
     <div className="inv-body">
       <Slots inv={inv} owner={target} slots={BODY_SLOTS} ch={body} />
-      <CharacterGrids inv={inv} owner={target} ch={body} vault={false} />
+      <CharacterGrids inv={inv} owner={target} ch={body} vault={false} shown={found?.shown} />
     </div>,
-    <Worth n={gearWorth(ctx.items, body)} />,
+    searching ?? <Worth n={gearWorth(ctx.items, body)} />,
   );
 }
 
@@ -842,7 +948,7 @@ function Ground({ inv }: { inv: InventoryController }): ReactNode {
                   grabX: 0,
                   grabY: 0,
                   colour: colourOf(def),
-                  label: def.name,
+                  label: tileName(def),
                   el: e.currentTarget,
                 })
               }
@@ -870,11 +976,14 @@ function CharacterGrids({
   owner,
   ch,
   vault,
+  shown,
 }: {
   inv: InventoryController;
   owner: Owner;
   ch: Character;
   vault: boolean;
+  /** For a body being searched: what's been found in its grids (the rest shows as "?"). */
+  shown?: ReadonlySet<Item> | undefined;
 }): ReactNode {
   const g = ch.gear;
   // As in Tarkov, the rig and backpack slots sit beside what's in them, not with the
@@ -889,13 +998,13 @@ function CharacterGrids({
       {grids.map(([label, name, grid, slot]) =>
         slot ? (
           <div key={name} className="inv-section inv-holder">
-            <Slots inv={inv} owner={owner} slots={[slot]} ch={ch} />
-            {grid && <GridView inv={inv} gref={{ owner, grid: name }} grid={grid} />}
+            <Slots inv={inv} owner={owner} slots={[slot]} ch={ch} shown={shown} />
+            {grid && <GridView inv={inv} gref={{ owner, grid: name }} grid={grid} shown={shown} />}
           </div>
         ) : grid ? (
           <div key={name} className="inv-section">
             <h3>{label}</h3>
-            <GridView inv={inv} gref={{ owner, grid: name }} grid={grid} />
+            <GridView inv={inv} gref={{ owner, grid: name }} grid={grid} shown={shown} />
           </div>
         ) : null,
       )}
@@ -940,11 +1049,14 @@ function Slots({
   owner,
   slots,
   ch,
+  shown,
 }: {
   inv: InventoryController;
   owner: Owner;
   slots: readonly GearSlot[];
   ch: Character;
+  /** A body being searched: what's been found in its grids (favourite stars count only those). */
+  shown?: ReadonlySet<Item> | undefined;
 }): ReactNode {
   const favs = favourites();
   return (
@@ -964,7 +1076,7 @@ function Slots({
             {!item && <span className="inv-slot-name">{SLOT_NAMES[slot]}</span>}
             {item && def && ref && (
               <div
-                className={`inv-item${inHand ? ' in-hand' : ''}${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${holdsFavourite(item, favs) ? ' favourite' : ''}`}
+                className={`inv-item${inHand ? ' in-hand' : ''}${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${holdsFavourite(item, favs, shown) ? ' favourite' : ''}`}
                 data-ref={JSON.stringify(ref)}
                 title={inHand ? 'In hand' : undefined}
                 data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
@@ -983,7 +1095,7 @@ function Slots({
                     grabX: 0,
                     grabY: 0,
                     colour: colourOf(def),
-                    label: def.name,
+                    label: tileName(def),
                     el: e.currentTarget,
                   })
                 }
@@ -991,7 +1103,7 @@ function Slots({
                 <ItemArt items={inv.ctx.items} item={item} def={def} />
                 <ItemLabel items={inv.ctx.items} item={item} def={def} />
                 {item.found && <span className="inv-item-found">✓</span>}
-                {holdsFavourite(item, favs) && <span className="inv-item-star">★</span>}
+                {holdsFavourite(item, favs, shown) && <span className="inv-item-star">★</span>}
               </div>
             )}
           </div>
@@ -1005,10 +1117,13 @@ function GridView({
   inv,
   gref,
   grid,
+  shown,
 }: {
   inv: InventoryController;
   gref: GridRef;
   grid: Grid;
+  /** Being searched: what's been found; the rest shows as "?" and can't be touched. */
+  shown?: ReadonlySet<Item> | undefined;
 }): ReactNode {
   const favs = favourites();
   const { cell } = inv;
@@ -1016,6 +1131,24 @@ function GridView({
   // Your own grids aren't searched, only the stash and what's in it.
   const hit = stashPageOf(gref.owner) >= 0 ? search?.hit : null;
   const tile = (g: Grid['items'][number], index: number, ox: number, oy: number) => {
+    if (shown && !shown.has(g.item)) {
+      const [sw, sh] = itemDef(inv.ctx.items, g.item.item).size;
+      return (
+        <div
+          key={index}
+          className="inv-item inv-unsearched"
+          aria-label="Not searched yet"
+          style={{
+            left: (g.x - ox) * cell,
+            top: (g.y - oy) * cell,
+            width: (g.rotated ? sh : sw) * cell,
+            height: (g.rotated ? sw : sh) * cell,
+          }}
+        >
+          ?
+        </div>
+      );
+    }
     const def = itemDef(inv.ctx.items, g.item.item);
     const w = g.rotated ? def.size[1] : def.size[0];
     const h = g.rotated ? def.size[0] : def.size[1];
@@ -1034,6 +1167,7 @@ function GridView({
           height: h * cell,
           background: tintOf(def),
           borderColor: colourOf(def),
+          ['--lines' as string]: nameLines(h, cell),
         }}
         onContextMenu={(e) => {
           e.preventDefault();
@@ -1049,7 +1183,7 @@ function GridView({
             grabX: Math.min(w - 1, Math.floor((e.clientX - r.left) / cell)),
             grabY: Math.min(h - 1, Math.floor((e.clientY - r.top) / cell)),
             colour: colourOf(def),
-            label: def.name,
+            label: tileName(def),
             el: e.currentTarget,
           });
         }}
@@ -1179,8 +1313,8 @@ function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemD
     return (
       <>
         <span className="inv-item-name">
-          {def.name}
-          <span className="inv-item-ammo">{itemDef(items, loadedAmmo(items, item)).name}</span>
+          {tileName(def)}
+          <span className="inv-item-ammo">{tileName(itemDef(items, loadedAmmo(items, item)))}</span>
         </span>
         <span className="inv-item-badge">
           <span className="inv-item-loaded">{item.mag ?? 0}</span>/{capacity}
@@ -1191,7 +1325,7 @@ function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemD
   const level = levelOf(def);
   return (
     <>
-      <span className="inv-item-name">{def.name}</span>
+      <span className="inv-item-name">{tileName(def)}</span>
       {level !== null && (
         <i className="level-tag inv-item-level" style={{ background: levelColour(level) }}>
           {level}
@@ -1200,6 +1334,21 @@ function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemD
       <span className="inv-item-badge">{badge(item, def)}</span>
     </>
   );
+}
+
+/**
+ * How many whole lines of its name a tile this many cells tall has room for above its
+ * badges, so a line is never half hidden (fonts as in style.css, by the cell size).
+ */
+function nameLines(cellsHigh: number, cell: number): number {
+  const line = Math.min(9, cell * 0.26) * 1.1;
+  const badges = Math.min(10, cell * 0.27) + 1;
+  return Math.max(1, Math.floor((cellsHigh * cell - 2 - badges) / line));
+}
+
+/** What an item's tile says: its short name, or its name (2026-11-06). */
+export function tileName(def: ItemDef): string {
+  return def.shortName ?? def.name;
 }
 
 /** A durability to one decimal place, without a trailing ".0". */

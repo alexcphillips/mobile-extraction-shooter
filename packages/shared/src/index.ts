@@ -369,6 +369,7 @@ export {
   type Spot,
 } from './inventory/grid';
 export { sortGrid, type SortKey } from './inventory/sort';
+export { SEARCH, isRevealed, revealed, searchKey } from './sim/search';
 export { DIR_Q, DIR_R, NAV, NavGrid } from './nav/nav-grid';
 export { EXPOSURE, Exposure, SPOT } from './nav/exposure';
 export { MAX_EXPAND, findPath, straight, type Avoid, type PathResult } from './nav/path';
@@ -599,6 +600,7 @@ export {
   settleFits,
   settleVault,
   type Profile,
+  type VendorStanding,
   type QuestState,
 } from './profile';
 export {
@@ -613,8 +615,14 @@ export {
 } from './stash';
 export {
   VENDOR,
+  MAX_BUY,
   buyOffer,
   buyPrice,
+  nextRestock,
+  offerLevel,
+  standingOf,
+  vendorLevel,
+  vendorStock,
   cantSell,
   condition,
   depositInto,
@@ -634,6 +642,7 @@ export {
 export {
   VENDOR_FORMAT,
   VENDOR_FORMAT_VERSION,
+  VENDOR_LEVELS,
   checkVendors,
   vendorSchema,
   type VendorDef,
@@ -669,6 +678,7 @@ export {
   raidObjectives,
   raidProgress,
   sameQuests,
+  sameStanding,
   type QuestStatus,
   type RaidProgress,
 } from './quests';

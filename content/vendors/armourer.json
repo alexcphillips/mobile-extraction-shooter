@@ -1,0 +1,68 @@
+{
+  "formatVersion": 2,
+  "id": "armourer",
+  "name": "Armourer",
+  "blurb": "Helmets, armour, rigs and packs, and the kits to keep them going.",
+  "order": 3,
+  "colour": "#6b8a5a",
+  "levels": [
+    {
+      "rep": 0.2,
+      "spent": 50000
+    },
+    {
+      "rep": 0.4,
+      "spent": 250000
+    },
+    {
+      "rep": 0.6,
+      "spent": 750000
+    }
+  ],
+  "sells": [
+    {
+      "item": "bump-helmet"
+    },
+    {
+      "item": "soft-vest"
+    },
+    {
+      "item": "chest-rig"
+    },
+    {
+      "item": "small-backpack"
+    },
+    {
+      "item": "riot-helmet",
+      "level": 2
+    },
+    {
+      "item": "police-vest",
+      "level": 2
+    },
+    {
+      "item": "armour-repair-kit",
+      "level": 2
+    },
+    {
+      "item": "steel-helmet",
+      "level": 3
+    },
+    {
+      "item": "tactical-vest",
+      "level": 3
+    },
+    {
+      "item": "large-backpack",
+      "level": 3
+    },
+    {
+      "item": "combat-helmet",
+      "level": 4
+    },
+    {
+      "item": "plate-carrier",
+      "level": 4
+    }
+  ]
+}

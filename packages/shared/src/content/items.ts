@@ -46,9 +46,9 @@ const burning = {
  *    in at 9 too: a new type changes no existing file, so it needed no new version. The
  *    uncommon and mythic rarities came in at 9 for the same reason.
  * 10 (2026-11-04): gun recoil gained a snap, and its recovery became a rate (per second)
- *    rather than degrees per second (sim/recoil.ts). Containers' optional sections and
- *    armour's optional repairLoss came in at 10 too (2026-11-06): an optional field
- *    changes no existing file.
+ *    rather than degrees per second (sim/recoil.ts). Containers' optional sections,
+ *    armour's optional repairLoss and every item's optional shortName came in at 10 too
+ *    (2026-11-06): an optional field changes no existing file.
  */
 export const ITEM_FORMAT_VERSION = 10;
 
@@ -85,6 +85,11 @@ const common = {
   formatVersion: z.literal(ITEM_FORMAT_VERSION),
   id: idSchema,
   name: z.string().min(1),
+  /**
+   * What its tile says, where the name won't fit (2026-11-06, as Tarkov's short names):
+   * "5.56 M855", "Band.". The details and hover card keep the name. The name if left out.
+   */
+  shortName: z.string().min(1).max(12).optional(),
   /** Its size in an inventory grid, [width, height] in cells, unrotated. */
   size: sizeSchema,
   /**

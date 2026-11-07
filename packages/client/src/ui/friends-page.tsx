@@ -1,5 +1,6 @@
 import {
   SOCIAL,
+  type Activity,
   type Friend,
   type FriendsResponse,
   type Party,
@@ -140,97 +141,113 @@ export function FriendsPage({
         <span className="raid-spacer" />
       </header>
       {notice && <p className="menu-notice">{notice}</p>}
-      <div className="vendors-body">
-        <form className="friends-add" onSubmit={add}>
-          <input
-            type="text"
-            value={name}
-            placeholder="Add a friend by username"
-            aria-label="Username"
-            autoCapitalize="off"
-            autoCorrect="off"
-            spellCheck={false}
-            maxLength={20}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <button className="primary" type="submit" disabled={busy || !name.trim()}>
-            Add
-          </button>
-        </form>
-        {!data && <p className="raid-note">Loading…</p>}
-        {data && data.incoming.length > 0 && (
-          <>
-            <h2 className="friends-head">Asking to be your friend</h2>
-            <ul className="vendors-offers">
-              {data.incoming.map((r) => (
-                <li key={r.id}>
-                  <span className="vendors-name">{r.username}</span>
-                  <button
-                    className="primary"
-                    disabled={busy}
-                    onClick={() => void run(acceptFriend(r.id), `${r.username} is a friend now.`)}
-                  >
-                    Accept
-                  </button>
-                  <button disabled={busy} onClick={() => void run(declineFriend(r.id))}>
-                    Decline
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-        {data && (
-          <>
-            <h2 className="friends-head">Friends</h2>
-            {data.friends.length === 0 ? (
-              <p className="raid-note">
-                No friends yet. Add one by their username, or send them your party's invite link
-                from the menu.
-              </p>
-            ) : (
-              <ul className="vendors-offers">
-                {data.friends.map((f) => (
-                  <li key={f.id} className={`friends-${f.activity}`}>
-                    <span className="vendors-name">
-                      {f.username}
-                      <span className="friends-line">{friendLine(f, party)}</span>
-                    </span>
-                    {!inMyParty(f.id) && (
-                      <button className="primary" disabled={busy || full} onClick={() => invite(f)}>
-                        Invite
-                      </button>
-                    )}
+      {/* Two panels (2026-11-06): adding and requests, and your friends. */}
+      <div className="friends-layout">
+        <section className="friends-panel">
+          <h2 className="friends-head">Add a friend</h2>
+          <form className="friends-add" onSubmit={add}>
+            <input
+              type="text"
+              value={name}
+              placeholder="Their username"
+              aria-label="Username"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              maxLength={20}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <button className="primary" type="submit" disabled={busy || !name.trim()}>
+              Add
+            </button>
+          </form>
+          <p className="raid-note">Or send them your party's invite link from the menu.</p>
+          {data && data.incoming.length > 0 && (
+            <>
+              <h3 className="friends-sub">Asking to be your friend</h3>
+              <ul className="friends-list">
+                {data.incoming.map((r) => (
+                  <li key={r.id}>
+                    <Avatar name={r.username} />
+                    <span className="vendors-name">{r.username}</span>
                     <button
-                      className={confirming === f.id ? 'confirm' : ''}
+                      className="primary"
                       disabled={busy}
-                      onBlur={() => setConfirming((c) => (c === f.id ? null : c))}
-                      onClick={() => remove(f)}
+                      onClick={() => void run(acceptFriend(r.id), `${r.username} is a friend now.`)}
                     >
-                      {confirming === f.id ? 'Remove?' : 'Remove'}
+                      Accept
+                    </button>
+                    <button disabled={busy} onClick={() => void run(declineFriend(r.id))}>
+                      Decline
                     </button>
                   </li>
                 ))}
               </ul>
-            )}
-          </>
-        )}
-        {data && data.outgoing.length > 0 && (
-          <>
-            <h2 className="friends-head">Waiting for an answer</h2>
-            <ul className="vendors-offers">
-              {data.outgoing.map((r) => (
-                <li key={r.id}>
-                  <span className="vendors-name">{r.username}</span>
-                  <button disabled={busy} onClick={() => void run(declineFriend(r.id))}>
-                    Take back
+            </>
+          )}
+          {data && data.outgoing.length > 0 && (
+            <>
+              <h3 className="friends-sub">Waiting for an answer</h3>
+              <ul className="friends-list">
+                {data.outgoing.map((r) => (
+                  <li key={r.id}>
+                    <Avatar name={r.username} />
+                    <span className="vendors-name">{r.username}</span>
+                    <button disabled={busy} onClick={() => void run(declineFriend(r.id))}>
+                      Take back
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
+        <section className="friends-panel">
+          <h2 className="friends-head">
+            Friends{data && data.friends.length > 0 && <span> · {data.friends.length}</span>}
+          </h2>
+          {!data && <p className="raid-note">Loading…</p>}
+          {data && data.friends.length === 0 && (
+            <p className="raid-note">No friends yet. Add one by their username.</p>
+          )}
+          {data && data.friends.length > 0 && (
+            <ul className="friends-list">
+              {data.friends.map((f) => (
+                <li key={f.id} className={`friends-${f.activity}`}>
+                  <Avatar name={f.username} activity={f.activity} />
+                  <span className="vendors-name">
+                    {f.username}
+                    <span className="friends-line">{friendLine(f, party)}</span>
+                  </span>
+                  {!inMyParty(f.id) && (
+                    <button className="primary" disabled={busy || full} onClick={() => invite(f)}>
+                      Invite
+                    </button>
+                  )}
+                  <button
+                    className={confirming === f.id ? 'confirm' : ''}
+                    disabled={busy}
+                    onBlur={() => setConfirming((c) => (c === f.id ? null : c))}
+                    onClick={() => remove(f)}
+                  >
+                    {confirming === f.id ? 'Remove?' : 'Remove'}
                   </button>
                 </li>
               ))}
             </ul>
-          </>
-        )}
+          )}
+        </section>
       </div>
     </div>
+  );
+}
+
+/** A player's initial in a square, with a dot for where they are: offline, in the menu, in a raid. */
+function Avatar({ name, activity }: { name: string; activity?: Activity }): ReactNode {
+  return (
+    <span className="friends-avatar" aria-hidden>
+      {name[0]?.toUpperCase()}
+      {activity && <span className={`friends-dot ${activity}`} />}
+    </span>
   );
 }

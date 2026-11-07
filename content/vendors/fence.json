@@ -1,0 +1,122 @@
+{
+  "formatVersion": 2,
+  "id": "fence",
+  "name": "Fence",
+  "blurb": "Doesn't ask where things came from, and you don't ask the price. New stock every few hours.",
+  "order": 5,
+  "colour": "#8a6bb3",
+  "markup": 1.6,
+  "rotation": {
+    "shown": 8,
+    "hours": 3
+  },
+  "levels": [
+    {
+      "rep": 0.2,
+      "spent": 100000
+    },
+    {
+      "rep": 0.4,
+      "spent": 400000
+    },
+    {
+      "rep": 0.6,
+      "spent": 1200000
+    }
+  ],
+  "sells": [
+    {
+      "item": "bottle-of-water"
+    },
+    {
+      "item": "smartphone"
+    },
+    {
+      "item": "brick-set"
+    },
+    {
+      "item": "laptop"
+    },
+    {
+      "item": "shed-key"
+    },
+    {
+      "item": "gold-watch",
+      "level": 2
+    },
+    {
+      "item": "graphics-card",
+      "level": 2
+    },
+    {
+      "item": "ruby-ring",
+      "level": 2
+    },
+    {
+      "item": "roof-key",
+      "level": 2
+    },
+    {
+      "item": "jade-dragon",
+      "level": 3
+    },
+    {
+      "item": "diamond-necklace",
+      "level": 3
+    },
+    {
+      "item": "gold-bar",
+      "level": 3
+    },
+    {
+      "item": "vault-key",
+      "level": 3
+    },
+    {
+      "item": "a5-kuroge-prime-ribeye",
+      "level": 3
+    },
+    {
+      "item": "awm",
+      "level": 4
+    },
+    {
+      "item": "heavy-helmet",
+      "level": 4
+    },
+    {
+      "item": "heavy-plate-carrier",
+      "level": 4
+    },
+    {
+      "item": "ammo-46x30-ap",
+      "count": 30,
+      "level": 4
+    },
+    {
+      "item": "ammo-545x39-bs",
+      "count": 30,
+      "level": 4
+    },
+    {
+      "item": "ammo-556x45-m995",
+      "count": 30,
+      "level": 4
+    },
+    {
+      "item": "ammo-762-m80a1",
+      "count": 20,
+      "level": 4
+    },
+    {
+      "item": "ammo-762x39-ap",
+      "count": 30,
+      "level": 4
+    },
+    {
+      "item": "ammo-9x39-bp",
+      "count": 25,
+      "level": 4
+    }
+  ]
+}

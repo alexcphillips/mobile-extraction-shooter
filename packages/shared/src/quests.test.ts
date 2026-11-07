@@ -289,11 +289,11 @@ describe('checkQuests', () => {
     expect(check({ ...radio, requires: ['watches'] }, watches)).toThrow(/loop/);
     const twice = { ...radio, objectives: [radio.objectives[0]!, radio.objectives[0]!] };
     expect(check(twice)).toThrow(/two objectives/);
-    expect(check({ ...radio, rewards: { money: 0, items: [{ item: 'notes' }] } })).toThrow(
+    expect(check({ ...radio, rewards: { money: 0, items: [{ item: 'notes' }], rep: 0 } })).toThrow(
       /quest item/,
     );
     expect(
-      check({ ...radio, rewards: { money: 0, items: [{ item: 'cash', count: 5000 }] } }),
+      check({ ...radio, rewards: { money: 0, items: [{ item: 'cash', count: 5000 }], rep: 0 } }),
     ).toThrow(/more than a stack/);
   });
 });

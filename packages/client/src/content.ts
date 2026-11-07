@@ -530,7 +530,8 @@ export function loadVendors(): ReadonlyMap<string, VendorDef> {
   if (!vendors) {
     const all = loadById(VENDOR_FORMAT, vendorFiles);
     checkVendors(all, loadItems());
-    vendors = all;
+    // In their order on the vendors page.
+    vendors = new Map([...all].sort(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0)));
   }
   return vendors;
 }

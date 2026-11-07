@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "mag-glock-33",
   "name": "Glock 33-round magazine",
+  "shortName": "Glock 33",
   "type": "attachment",
   "size": [1, 2],
   "value": 4000,

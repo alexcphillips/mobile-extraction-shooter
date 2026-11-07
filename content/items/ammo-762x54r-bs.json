@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "ammo-762x54r-bs",
   "name": "7.62×54R BS",
+  "shortName": "54R BS",
   "type": "ammo",
   "size": [1, 1],
   "value": 1100,

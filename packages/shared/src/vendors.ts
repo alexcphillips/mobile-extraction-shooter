@@ -1,7 +1,8 @@
 import { itemDef, type ItemDb } from './content/items';
-import type { VendorDef, VendorOffer } from './content/vendors';
+import { VENDOR_LEVELS, type VendorDef, type VendorOffer } from './content/vendors';
 import { removeAt, type Grid, type Item } from './inventory/grid';
-import { PROFILE, type Profile } from './profile';
+import { PROFILE, type Profile, type VendorStanding } from './profile';
+import { createRng, nextInt } from './rng';
 import { GEAR_SLOTS, type Gear, type GearSlot } from './sim/gear';
 import { loadedAmmo } from './sim/weapons';
 import type { GridName, ItemRef } from './sim/looting';
@@ -121,16 +122,72 @@ export function cantSell(items: ItemDb, item: Item): string | null {
   return null;
 }
 
-/** What an offer costs: the item, and any attachments it comes with. */
-export function buyPrice(items: ItemDb, offer: VendorOffer): number {
+/**
+ * What an offer costs: the item, and any attachments it comes with, times the vendor's
+ * markup (whole money).
+ */
+export function buyPrice(items: ItemDb, offer: VendorOffer, vendor?: VendorDef): number {
   const parts = (offer.attachments ?? []).reduce((n, a) => n + itemDef(items, a).value, 0);
-  return itemDef(items, offer.item).value * (offer.count ?? 1) + parts;
+  const base = itemDef(items, offer.item).value * (offer.count ?? 1) + parts;
+  return Math.round(base * (vendor?.markup ?? 1));
+}
+
+/** The most of one offer bought in one go. */
+export const MAX_BUY = 50;
+
+/** Where a player stands with a vendor: nothing if they've never dealt. */
+export function standingOf(profile: Profile, vendor: string): VendorStanding {
+  return profile.vendors[vendor] ?? { rep: 0, spent: 0 };
+}
+
+/** A vendor's level for a player (1 to VENDOR_LEVELS): each level needs the ones before it. */
+export function vendorLevel(vendor: VendorDef, standing: VendorStanding): number {
+  let level = 1;
+  for (const need of vendor.levels) {
+    if (standing.rep + 1e-9 < need.rep || standing.spent < need.spent) break;
+    level++;
+  }
+  return Math.min(level, VENDOR_LEVELS);
+}
+
+/** The level an offer is sold from. */
+export const offerLevel = (offer: VendorOffer): number => offer.level ?? 1;
+
+/**
+ * Which of a vendor's offers it has at a time (Unix ms), by index: all of them, or for one
+ * with a rotation, `shown` of them picked by the vendor and the time window, so everyone
+ * sees the same and the server agrees with the page.
+ */
+export function vendorStock(vendor: VendorDef, now: number): number[] {
+  const all = vendor.sells.map((_, i) => i);
+  const r = vendor.rotation;
+  if (!r) return all;
+  const window = Math.floor(now / (r.hours * 3_600_000));
+  let seed = window;
+  for (const ch of vendor.id) seed = (Math.imul(seed, 31) + ch.charCodeAt(0)) | 0;
+  const rng = createRng(seed >>> 0);
+  // A shuffle's first `shown`, back in the vendor's order.
+  for (let i = all.length - 1; i > 0; i--) {
+    const j = nextInt(rng, i + 1);
+    [all[i], all[j]] = [all[j]!, all[i]!];
+  }
+  return all.slice(0, r.shown).sort((a, b) => a - b);
+}
+
+/** When a vendor with a rotation next changes its stock (Unix ms), or null for one without. */
+export function nextRestock(vendor: VendorDef, now: number): number | null {
+  const r = vendor.rotation;
+  if (!r) return null;
+  const span = r.hours * 3_600_000;
+  return (Math.floor(now / span) + 1) * span;
 }
 
 /**
- * Buys a vendor's offer into the stash, page `page` first, then the others: the money goes
- * down by its price. Returns why it can't be (no such offer, not enough money, no room),
- * or null once bought; refused, nothing changes.
+ * Buys `times` of a vendor's offer into the stash, page `page` first, then the others:
+ * the money goes down by the price and the spending with the vendor up by it. The offer
+ * must be in stock now (vendorStock) and at a level the player has reached. Returns why
+ * it can't be (no such offer, too low a level, not enough money, no room), or null once
+ * bought; refused, nothing changes.
  */
 export function buyOffer(
   profile: Profile,
@@ -138,15 +195,25 @@ export function buyOffer(
   vendor: VendorDef,
   index: number,
   page = 0,
+  times = 1,
+  now = Date.now(),
 ): string | null {
   const offer = vendor.sells[index];
   if (!offer || !items.has(offer.item)) return `${vendor.name} has no offer ${index}`;
-  const price = buyPrice(items, offer);
+  if (!Number.isInteger(times) || times < 1 || times > MAX_BUY)
+    return `buy 1 to ${MAX_BUY} at a time`;
+  if (!vendorStock(vendor, now).includes(index))
+    return `${vendor.name} doesn't have that any more: the stock has changed`;
+  const standing = standingOf(profile, vendor.id);
+  const need = offerLevel(offer);
+  if (vendorLevel(vendor, standing) < need) return `${vendor.name} sells that from level ${need}`;
+  const price = buyPrice(items, offer, vendor) * times;
   if (profile.money < price)
     return `that costs ${price.toLocaleString('en')}, and you have ${profile.money.toLocaleString('en')}`;
-  if (!addToStash(profile, items, [offer], page, newStashItem))
+  if (!addToStash(profile, items, Array<VendorOffer>(times).fill(offer), page, newStashItem))
     return 'there is no room in your stash';
   profile.money -= price;
+  profile.vendors[vendor.id] = { ...standing, spent: standing.spent + price };
   return null;
 }
 

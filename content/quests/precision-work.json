@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "id": "precision-work",
+  "name": "Precision work",
+  "vendor": "gunsmith",
+  "description": "Scope electronics are hard to come by. Graphics cards have the chips I need.",
+  "requires": ["test-fire"],
+  "objectives": [
+    {
+      "id": "hand-over",
+      "type": "handOver",
+      "item": "graphics-card",
+      "count": 2
+    }
+  ],
+  "rewards": {
+    "money": 45000,
+    "items": [
+      {
+        "item": "suppressor"
+      }
+    ],
+    "rep": 0.4
+  }
+}

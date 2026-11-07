@@ -18,13 +18,19 @@ export function favourites(): ReadonlySet<string> {
 
 /**
  * Whether an item is a favourite, or holds one: fitted to a gun, or inside a rig or
- * backpack (so a body's bag lights up for what's in it).
+ * backpack (so a body's bag lights up for what's in it). With `shown` (a body being
+ * searched), only what's been found inside counts: a star mustn't give the rest away.
  */
-export function holdsFavourite(item: Item, set: ReadonlySet<string>): boolean {
+export function holdsFavourite(
+  item: Item,
+  set: ReadonlySet<string>,
+  shown?: ReadonlySet<Item>,
+): boolean {
   if (!set.size) return false;
   if (set.has(item.item)) return true;
   for (const part of Object.values(item.attachments ?? {})) if (part && set.has(part)) return true;
-  for (const g of item.grid?.items ?? []) if (holdsFavourite(g.item, set)) return true;
+  for (const g of item.grid?.items ?? [])
+    if ((!shown || shown.has(g.item)) && holdsFavourite(g.item, set, shown)) return true;
   return false;
 }
 

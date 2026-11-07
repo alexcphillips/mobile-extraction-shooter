@@ -292,6 +292,11 @@ export interface PlayerInput {
   switch?: number | null;
   /** Finish searching a loot container, by its id: a press. Opening its screen sends it today. */
   search?: string | null;
+  /**
+   * The container or body whose screen is open (search.ts searchKey), sent every tick it
+   * is: it's searched while it's open and in reach (2026-11-06).
+   */
+  looting?: string | null;
   /** Investigate the quest marker in reach (session 14b): a press. */
   investigate?: boolean;
   /** Zombies mode: use a buy spot in reach, by its index in state.zombies.buys: a press. */

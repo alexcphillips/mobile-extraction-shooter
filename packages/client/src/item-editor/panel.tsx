@@ -160,6 +160,13 @@ function ItemPage(props: { editor: ItemEditor; state: ItemEditorState; def: Item
           content/items/{def.id}.json · {def.type}
         </p>
         <Text label="name" value={def.name} onChange={(v) => b.edit((d) => put(d, ['name'], v))} />
+        <Text
+          label="short name (tiles, 12 at most; blank is the name)"
+          value={def.shortName ?? ''}
+          onChange={(v) =>
+            b.edit((d) => put(d, ['shortName'], v.trim() ? v.slice(0, 12) : undefined))
+          }
+        />
         <h4>in the inventory</h4>
         <Row>
           <N {...b} path={['size', 0]} label="width (cells)" min={1} />

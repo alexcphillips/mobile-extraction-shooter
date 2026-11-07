@@ -70,6 +70,8 @@ vendors.post('/:id/buy', async (c) => {
   const raw = await body(c);
   if (!isObject(raw) || typeof raw.version !== 'number' || !Number.isInteger(raw.offer))
     return fail(c, 'bad-request', 'version and offer are required');
+  const times = raw.times ?? 1;
+  if (!Number.isInteger(times)) return fail(c, 'bad-request', 'times must be a whole number');
   const page = raw.page ?? 0;
   if (!Number.isInteger(page) || (page as number) < 0)
     return fail(c, 'bad-request', 'page must be a whole number');
@@ -87,6 +89,7 @@ vendors.post('/:id/buy', async (c) => {
     vendor,
     raw.offer as number,
     Math.min(page as number, profile.stash.length - 1),
+    times as number,
   );
   if (bad) return fail(c, 'invalid', bad);
   const res = await writeProfile(db, account, current.version, profile).run();

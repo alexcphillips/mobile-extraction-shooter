@@ -10,7 +10,9 @@ const normalise = (text: string): string => text.toLowerCase().replaceAll('×', 
 
 /** An item's name, and the names of what's fitted to it or stored in it. */
 function namesOf(items: ItemDb, item: Item): string {
-  const names = [itemDef(items, item.item).name];
+  const def = itemDef(items, item.item);
+  // Its short name too: "m855" finds the 5.56 rounds whatever their full name says.
+  const names = [def.name, def.shortName ?? ''];
   for (const part of Object.values(item.attachments ?? {})) {
     if (part !== null) names.push(itemDef(items, part).name);
   }

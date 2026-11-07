@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "gold-watch",
   "name": "Gold watch",
+  "shortName": "Watch",
   "type": "loot",
   "size": [1, 1],
   "value": 15000,

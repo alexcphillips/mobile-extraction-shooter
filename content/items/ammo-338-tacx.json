@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "ammo-338-tacx",
   "name": ".338 Lapua Magnum TAC-X",
+  "shortName": ".338 TAC-X",
   "type": "ammo",
   "size": [1, 1],
   "value": 200,

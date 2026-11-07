@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "bottle-of-water",
   "name": "Bottle of water",
+  "shortName": "Water",
   "type": "loot",
   "size": [1, 2],
   "value": 800,

@@ -78,14 +78,26 @@ export const PROFILE = {
 export type QuestState =
   { status: 'active'; progress: Record<string, number> } | { status: 'done' };
 
+/**
+ * Where a player stands with a vendor (2026-11-06): reputation from its quests, and the
+ * money spent with it. Together they set its level (vendorLevel, vendors.ts). A vendor not
+ * in the profile is at 0 and 0.
+ */
+export interface VendorStanding {
+  rep: number;
+  spent: number;
+}
+
 export interface Profile {
-  formatVersion: 7;
+  formatVersion: 8;
   money: number;
   /** The stash's pages, bought with money (at least one). */
   stash: Grid[];
   gear: Gear;
   /** Only the server changes these (PUT /api/profile refuses it). */
   quests: Record<string, QuestState>;
+  /** By vendor id. Only the server changes these, as for quests. */
+  vendors: Record<string, VendorStanding>;
 }
 
 const count = z.int().min(0);
@@ -144,14 +156,15 @@ const questStateShape = z.discriminatedUnion('status', [
 ]);
 
 const profileShape = z.strictObject({
-  formatVersion: z.literal(7),
+  formatVersion: z.literal(8),
   money: count,
   stash: z.array(gridShape).min(1),
   gear: gearShape,
   quests: z.record(idSchema, questStateShape),
+  vendors: z.record(idSchema, z.strictObject({ rep: amount, spent: count })),
 });
 
-export const PROFILE_FORMAT_VERSION = 7;
+export const PROFILE_FORMAT_VERSION = 8;
 
 export const PROFILE_FORMAT: ContentFormat<Profile> = {
   kind: 'profile',
@@ -172,6 +185,8 @@ export const PROFILE_FORMAT: ContentFormat<Profile> = {
     // 2026-11-05: the generic sniper rifle was deleted; it becomes an SV-98, which fires
     // 7.62×54R, so any 7.62×51 round it was loaded with is forgotten (it keeps its count).
     6: (doc) => unload(renameItems(doc, { 'sniper-rifle': 'sv-98' }), 'sv-98'),
+    // 2026-11-06: vendor levels; everyone starts at nothing with every vendor.
+    7: (doc) => ({ ...doc, vendors: {} }),
   },
 };
 
@@ -277,7 +292,7 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
     if (addItem(items, stash, kitItem(items, kit, s.item, s.count ?? 1)) > 0)
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
-  return { formatVersion: 7, money: kit.money, stash: [stash], gear, quests: {} };
+  return { formatVersion: 8, money: kit.money, stash: [stash], gear, quests: {}, vendors: {} };
 }
 
 /** What the next stash page costs, or null if there are already as many as there can be. */

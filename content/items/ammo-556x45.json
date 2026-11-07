@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "ammo-556x45",
   "name": "5.56×45 mm M855",
+  "shortName": "5.56 M855",
   "type": "ammo",
   "size": [1, 1],
   "value": 55,

@@ -419,17 +419,18 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
           setNotice(null);
           setPage('stash');
         }}
-        onBuy={(vendor, offer) => {
+        onBuy={(vendor, offer, times) => {
           const o = vendor.sells[offer]!;
           const name = itemDef(opts.items, o.item).name;
+          const n = (o.count ?? 1) * times;
           return saver
-            .buy(vendor.id, offer, startPage)
+            .buy(vendor.id, offer, startPage, times)
             .then(
               (bought) =>
                 reopen(
                   bought,
                   startPage,
-                  `Bought ${name}${(o.count ?? 1) > 1 ? ` ×${o.count}` : ''}: it's in your stash.`,
+                  `Bought ${name}${n > 1 ? ` ×${n}` : ''}: it's in your stash.`,
                 ),
               refused(`${name} wasn't bought`),
             );

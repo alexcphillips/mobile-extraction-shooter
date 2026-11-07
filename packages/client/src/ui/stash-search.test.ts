@@ -9,6 +9,7 @@ const items = new Map(
     def('dot', 'Red dot', 'attachment'),
     def('round', '7.62×39 mm AP', 'ammo'),
     def('pack', 'Small backpack', 'container'),
+    { ...def('m855', '5.56×45 mm M855', 'ammo'), shortName: '5.56 M855' },
   ].map((d) => [d.id, d]),
 ) as unknown as ItemDb;
 
@@ -65,5 +66,10 @@ describe('stash search', () => {
     expect(guns(plain('round'))).toBe(false);
     expect(searcher(items, 'ap', 'ammo')!(plain('round'))).toBe(true);
     expect(searcher(items, 'ap', 'gear')!(plain('round'))).toBe(false);
+  });
+
+  it('finds an item by its short name too', () => {
+    expect(searcher(items, 'm855')!(plain('m855'))).toBe(true);
+    expect(searcher(items, '5.56 m855')!(plain('m855'))).toBe(true);
   });
 });

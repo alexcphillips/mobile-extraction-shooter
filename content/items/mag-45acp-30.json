@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "mag-45acp-30",
   "name": "30-round .45 ACP magazine",
+  "shortName": ".45 30",
   "type": "attachment",
   "size": [1, 2],
   "value": 6000,

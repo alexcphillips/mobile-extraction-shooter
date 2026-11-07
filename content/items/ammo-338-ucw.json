@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "ammo-338-ucw",
   "name": ".338 Lapua Magnum UCW",
+  "shortName": ".338 UCW",
   "type": "ammo",
   "size": [1, 1],
   "value": 400,

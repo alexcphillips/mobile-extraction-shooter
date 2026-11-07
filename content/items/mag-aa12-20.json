@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "mag-aa12-20",
   "name": "AA-12 20-round drum",
+  "shortName": "AA-12 20",
   "type": "attachment",
   "size": [2, 2],
   "value": 12000,

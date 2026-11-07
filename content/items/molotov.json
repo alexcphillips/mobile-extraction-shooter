@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "molotov",
   "name": "Molotov cocktail",
+  "shortName": "Molotov",
   "type": "grenade",
   "size": [1, 2],
   "value": 1800,

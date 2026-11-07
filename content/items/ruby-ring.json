@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "ruby-ring",
   "name": "Ruby ring",
+  "shortName": "Ring",
   "type": "loot",
   "size": [1, 1],
   "value": 28000,

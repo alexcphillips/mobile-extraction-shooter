@@ -1,4 +1,4 @@
-import { stackSize, type ItemDb, type ItemDef } from '@mes/shared';
+import { createItem, stackSize, type ItemDb, type ItemDef } from '@mes/shared';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   readCheats,
@@ -10,6 +10,7 @@ import {
 } from '../admin-cheats';
 import { loadZombies, zombiesIds } from '../content';
 import type { GameMode } from './last-raid';
+import { itemPortrait } from '../render/item-portrait';
 import { colourOf } from './raid-screen';
 
 /*
@@ -281,27 +282,31 @@ export function AdminPage({
         </div>
       ) : (
         <div className="vendors-body">
-          <ul className="vendors-offers">
+          {/* As cards, like a vendor's goods (2026-11-06). */}
+          <ul className="vendors-grid">
             {list.map((def) => {
               const stack = stackSize(def);
+              const url = itemPortrait(items, createItem(items, def.id), def.size);
               return (
-                <li key={def.id}>
-                  <span
-                    className="vendors-icon"
-                    style={{
-                      background: colourOf(def),
-                      aspectRatio: `${def.size[0]} / ${def.size[1]}`,
-                    }}
-                  />
-                  <span className="vendors-name">{def.name}</span>
-                  <button disabled={giving !== null} onClick={() => give(def, 1)}>
-                    {giving === def.id ? 'Giving…' : 'Give 1'}
-                  </button>
-                  {stack > 1 && (
-                    <button disabled={giving !== null} onClick={() => give(def, stack)}>
-                      Give {stack}
+                <li
+                  key={def.id}
+                  className="admin-card"
+                  style={{ ['--rarity' as string]: colourOf(def) }}
+                >
+                  <span className="vendors-offer-art">
+                    {url && <img src={url} alt="" draggable={false} />}
+                  </span>
+                  <span className="vendors-offer-name">{def.name}</span>
+                  <span className="admin-give">
+                    <button disabled={giving !== null} onClick={() => give(def, 1)}>
+                      {giving === def.id ? '…' : 'Give 1'}
                     </button>
-                  )}
+                    {stack > 1 && (
+                      <button disabled={giving !== null} onClick={() => give(def, stack)}>
+                        ×{stack}
+                      </button>
+                    )}
+                  </span>
                 </li>
               );
             })}

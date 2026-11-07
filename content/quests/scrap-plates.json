@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "id": "scrap-plates",
+  "name": "Scrap plates",
+  "vendor": "armourer",
+  "description": "Old police vests still have good plates in them. Bring me two and I can make something better.",
+  "objectives": [
+    {
+      "id": "hand-over",
+      "type": "handOver",
+      "item": "police-vest",
+      "count": 2
+    }
+  ],
+  "rewards": {
+    "money": 15000,
+    "items": [
+      {
+        "item": "armour-repair-kit"
+      }
+    ],
+    "rep": 0.2
+  }
+}

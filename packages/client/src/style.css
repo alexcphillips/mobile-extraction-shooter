@@ -872,28 +872,37 @@ body:has(#controls.editing) :is(#hud, #presets, #settings-button, #vitals, #ammo
 
 #layout-bar button,
 .panel button {
-  padding: 9px 12px;
-  border: 0;
-  border-radius: 6px;
-  background: #3a434c;
+  padding: 8px 12px;
+  border: 1px solid #36424b;
+  border-radius: 4px;
+  background: linear-gradient(to bottom, #2a333a, #222a30);
   color: #fff;
   font: inherit;
 }
 
 #layout-bar button:last-child,
 .panel button.primary {
-  background: #e3a33a;
+  border-color: #f0b850;
+  background: linear-gradient(to bottom, #f0b24a, #d8952c);
   color: #000;
 }
 
-/* Settings screen. */
+/*
+ * Settings screen (restyled 2026-11-06, the inventory screens' look): a framed panel with a
+ * title bar, its sections as cards, two columns where there's room, choices as one
+ * segmented control.
+ */
 #ui {
   position: fixed;
   inset: 0;
   z-index: 3;
   display: flex;
+  align-items: center;
   justify-content: center;
-  background: rgb(0 0 0 / 0.55);
+  box-sizing: border-box;
+  padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+    max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  background: rgb(0 0 0 / 0.6);
 }
 
 #ui[hidden] {
@@ -903,13 +912,15 @@ body:has(#controls.editing) :is(#hud, #presets, #settings-button, #vitals, #ammo
 .panel {
   display: flex;
   flex-direction: column;
-  width: min(640px, 100%);
+  width: min(960px, 100%);
   max-height: 100%;
   box-sizing: border-box;
-  padding: max(8px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
-    max(8px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
-  background: #1d2328;
+  overflow: hidden;
+  border: 1px solid #2b353d;
+  border-radius: 4px;
+  background: radial-gradient(ellipse at 70% 0%, rgb(60 80 95 / 0.25), transparent 60%), #11171b;
   color: #e8ecef;
+  box-shadow: 0 10px 40px rgb(0 0 0 / 0.5);
   font:
     14px/1.4 system-ui,
     -apple-system,
@@ -920,28 +931,48 @@ body:has(#controls.editing) :is(#hud, #presets, #settings-button, #vitals, #ammo
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 0;
+  padding: 8px 12px 8px 16px;
+  border-bottom: 1px solid #2b353d;
+  background: linear-gradient(to bottom, #222b32, #1a2228);
+  box-shadow: inset 4px 0 0 #e3a33a;
 }
 
 .panel h1 {
   margin: 0;
-  font-size: 18px;
+  font-size: 15px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 /* The body blocks all touch scrolling; only this scrolls. */
 .panel-body {
+  padding: 12px;
   overflow-y: auto;
+  columns: 2 360px;
+  column-gap: 12px;
   touch-action: pan-y;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.panel-body section {
+  break-inside: avoid;
+  margin: 0 0 12px;
+  padding: 0 12px 10px;
+  border: 1px solid #2b353d;
+  border-radius: 4px;
+  background: #141a1f;
 }
 
 .panel h2 {
-  margin: 16px 0 6px;
-  font-size: 12px;
+  margin: 0 -12px 10px;
+  padding: 6px 12px;
+  border-bottom: 1px solid #2b353d;
+  color: #dfe5ea;
+  font-size: 11px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #9aa6b0;
 }
 
 .panel fieldset {
@@ -952,23 +983,33 @@ body:has(#controls.editing) :is(#hud, #presets, #settings-button, #vitals, #ammo
 
 .panel legend {
   padding: 0 0 6px;
+  color: #c8d1d8;
 }
 
+/* Choices as one segmented control. */
 .choices {
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
-  gap: 6px;
+  overflow: hidden;
+  border: 1px solid #36424b;
+  border-radius: 4px;
 }
 
 .choices label {
-  padding: 8px 12px;
-  border-radius: 6px;
-  background: #2c343b;
+  padding: 7px 12px;
+  border-right: 1px solid #36424b;
+  background: #1c242a;
+  cursor: pointer;
+}
+
+.choices label:last-child {
+  border-right: 0;
 }
 
 .choices label.checked {
-  background: #e3a33a;
+  background: linear-gradient(to bottom, #f0b24a, #d8952c);
   color: #000;
+  font-weight: 600;
 }
 
 .choices input {
@@ -978,7 +1019,7 @@ body:has(#controls.editing) :is(#hud, #presets, #settings-button, #vitals, #ammo
 .hint {
   margin: 6px 0 0;
   font-size: 12px;
-  color: #9aa6b0;
+  color: #8d99a3;
 }
 
 .slider {
@@ -1072,8 +1113,30 @@ body:has(#raid:not([hidden])) :is(#hud, #ammo, #controls, #settings-button) {
   text-shadow: 0 0 2px #000;
 }
 
+/* The raid screen shows its own small health strip in the top bar instead (2026-11-06). */
 body:has(#raid:not([hidden])) #vitals {
-  z-index: 1;
+  display: none;
+}
+
+.raid-health {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 6px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.raid-health small {
+  color: var(--ui-muted);
+  font-size: 10px;
+}
+
+/* A bleeding zone: a pulsing white outline, as on the HUD. */
+.raid-health svg .bleed {
+  stroke: #fff;
+  stroke-width: 1.6;
+  animation: bleed-pulse 0.9s ease-in-out infinite alternate;
 }
 
 /* The inventory screens' palette (2026-11-06, the Delta Force look). */
@@ -1554,11 +1617,20 @@ body:has(#raid:not([hidden])) #vitals {
   top: 2px;
   left: 3px;
   right: 3px;
-  font-size: 9px;
+  /* Smaller on a phone's smaller cells; nameLines (raid-screen.tsx) uses the same sizes. */
+  font-size: min(9px, calc(var(--cell) * 0.26));
   line-height: 1.1;
   overflow: hidden;
-  overflow-wrap: anywhere;
-  max-height: calc(100% - 14px);
+  /*
+   * Lines break between words only, never inside one ("Bandag e"), and only as many as
+   * fit above the badges show (--lines, set per tile); a word too long for the tile is cut.
+   */
+  overflow-wrap: normal;
+  word-break: keep-all;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--lines, 3);
+  line-clamp: var(--lines, 3);
 }
 
 /* Badges shrink with the cells, so a level tag and a count still fit side by side. */
@@ -1577,6 +1649,36 @@ body:has(#raid:not([hidden])) #vitals {
   font-size: 10px;
   font-weight: 700;
   color: #7fd08a;
+}
+
+/* Not searched out yet (2026-11-06): a dark tile with a "?", pulsing while it's searched. */
+.inv-item.inv-unsearched {
+  display: grid;
+  place-items: center;
+  border-color: #3a454e;
+  background: repeating-linear-gradient(-45deg, #161d22 0 6px, #1b2329 6px 12px);
+  color: #6d7a85;
+  font-size: 15px;
+  font-weight: 700;
+  animation: unsearched 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes unsearched {
+  to {
+    color: #a7b3bd;
+  }
+}
+
+.inv-searching {
+  color: #f0c060;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inv-item.inv-unsearched {
+    animation: none;
+  }
 }
 
 /* A favourite (2026-11-06): a gold star top right, the found tick beside it. */
@@ -1775,7 +1877,12 @@ body:has(#raid:not([hidden])) #vitals {
   font-size: 11px;
 }
 
-/* Landscape only: on a phone held upright, cover everything (the game pauses too). */
+/*
+ * Landscape only: on a phone held upright, cover everything (the game pauses too). Above
+ * every screen, the menu and the stash included (2026-11-06: without a z-index the menu,
+ * which covers the screen too, hid it, so a phone opened upright showed the menu sideways
+ * instead of this). Only signing in shows over it (below), where typing is easier upright.
+ */
 #portrait {
   display: none;
 }
@@ -1784,17 +1891,47 @@ body:has(#raid:not([hidden])) #vitals {
   #portrait {
     position: fixed;
     inset: 0;
+    z-index: 30;
     display: flex;
+    flex-direction: column;
+    gap: 20px;
     align-items: center;
     justify-content: center;
     padding: 32px;
-    background: #1d2328;
+    background: radial-gradient(ellipse at 50% 30%, rgb(60 80 95 / 0.35), transparent 60%), #0e1215;
     color: #e8ecef;
     font:
       16px/1.5 system-ui,
       -apple-system,
       sans-serif;
     text-align: center;
+  }
+}
+
+/* A phone turning on its side, over and over. */
+.portrait-phone {
+  color: #e3a33a;
+  animation: portrait-turn 2.4s ease-in-out infinite;
+}
+
+@keyframes portrait-turn {
+  0%,
+  25% {
+    transform: rotate(0deg);
+  }
+  50%,
+  85% {
+    transform: rotate(-90deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portrait-phone {
+    animation: none;
+    transform: rotate(-90deg);
   }
 }
 
@@ -1809,7 +1946,15 @@ body:has(#raid:not([hidden])) #vitals {
   display: none;
 }
 
+/*
+ * The results screen (reworked 2026-11-06): a banner in how the raid ended's colour with
+ * the time, kills, raid gain and losses, then panels, as the inventory's.
+ */
 .results {
+  --ui-panel: #141a1f;
+  --ui-line: #2b353d;
+  --ui-muted: #8d99a3;
+  --tone: #e3a33a;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1819,7 +1964,13 @@ body:has(#raid:not([hidden])) #vitals {
   padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
     max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
   overflow-y: auto;
-  background: rgb(22 27 31 / 0.96);
+  background:
+    radial-gradient(
+      ellipse at 50% 0%,
+      color-mix(in srgb, var(--tone) 22%, transparent),
+      transparent 55%
+    ),
+    rgb(12 16 19 / 0.97);
   color: #e8ecef;
   font:
     14px/1.3 system-ui,
@@ -1828,41 +1979,101 @@ body:has(#raid:not([hidden])) #vitals {
   animation: results-in 0.4s ease-out;
 }
 
+.results.extracted {
+  --tone: #4fd06a;
+}
+
+.results.killed {
+  --tone: #e5533f;
+}
+
+.results.mia {
+  --tone: #e3a33a;
+}
+
 @keyframes results-in {
   from {
     opacity: 0;
   }
 }
 
-.results header {
+/* The zombies results' plain header, centred. */
+.results > header:not(.results-banner) {
   text-align: center;
 }
 
 .results h1 {
   margin: 0;
-  font-size: 26px;
-}
-
-.results.extracted h1 {
-  color: #6cff8a;
-}
-
-.results.killed h1 {
-  color: #ff6b5a;
-}
-
-.results.mia h1 {
-  color: #e3a33a;
+  color: var(--tone);
+  font-size: 28px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .results header p {
   margin: 4px 0 0;
 }
 
-.results-stats,
+.results-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 24px;
+  width: min(100%, 1100px);
+  box-sizing: border-box;
+  padding: 12px 16px;
+  border: 1px solid var(--ui-line);
+  border-radius: 4px;
+  background: linear-gradient(to right, color-mix(in srgb, var(--tone) 20%, #141a1f), #141a1f 60%);
+  box-shadow: inset 4px 0 0 var(--tone);
+}
+
+.results-detail {
+  color: #c8d1d8;
+}
+
+.results-stats {
+  display: flex;
+  gap: 22px;
+  margin: 0;
+}
+
+.results-stats dt {
+  color: var(--ui-muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.results-stats dd {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.results-stats dd.gain {
+  color: #f0c060;
+}
+
+.results-stats dd.loss {
+  color: #e5736a;
+}
+
+.results-banner .results-save {
+  flex-basis: 100%;
+}
+
 .results-empty,
-.results-count {
-  color: #9aa6b0;
+.results-count,
+.results-note {
+  color: var(--ui-muted);
+}
+
+.results-note {
+  margin: 6px 0 0;
+  font-size: 12px;
 }
 
 .results-save {
@@ -1884,74 +2095,151 @@ body:has(#raid:not([hidden])) #vitals {
   color: #ff6b5a;
 }
 
-.results-cols {
+/* The panels, two across where there's room. */
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  align-items: start;
+  gap: 10px;
+  width: min(100%, 1100px);
+}
+
+.results-panel {
+  padding: 0 12px 12px;
+  border: 1px solid var(--ui-line);
+  border-radius: 4px;
+  background: var(--ui-panel);
+}
+
+.results-panel > header {
   display: flex;
-  gap: 32px;
-  min-height: 0;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 -12px 10px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--ui-line);
+  background: linear-gradient(to bottom, #222b32, #1a2228);
+  box-shadow: inset 3px 0 0 var(--ui-accent, #e3a33a);
 }
 
-/* What the new items are worth: one a line, the price on the right, then the sum. */
-.results-gain {
-  width: min(100%, 360px);
+.results h2 {
+  margin: 0;
+  color: #dfe5ea;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
-.results-gain ul {
-  columns: 1;
+.results-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.results-gain li,
-.results-gain-total {
+.results-cash {
+  margin: 8px 0 0;
+  color: #f0c060;
+}
+
+/* What the new items are worth: one a line, the price on the right. */
+.results-gain li {
   display: flex;
   justify-content: space-between;
   gap: 16px;
 }
 
 .results-gain-total {
-  margin: 4px 0 0;
-  font-weight: bold;
-  color: #e3a33a;
-}
-
-/* What the raid did for your quests (session 14b): one objective a line. */
-.results-quests ul {
-  columns: 1;
-}
-
-/* After a death, what hurt you: one source a line, the killer in red. */
-.results-damage ul {
-  columns: 1;
+  color: #f0c060;
+  font-size: 15px;
 }
 
 .results-damage li.killer {
   color: #ff6b5a;
 }
 
-.results h2 {
-  margin: 0 0 4px;
-  font-size: 14px;
-  color: #9aa6b0;
-}
-
 .results ul {
   margin: 0;
   padding: 0;
   list-style: none;
-  columns: 2;
-  column-gap: 20px;
 }
 
 .results li {
-  break-inside: avoid;
+  padding: 3px 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.05);
 }
 
 .results button {
   padding: 10px 24px;
   border: 0;
-  border-radius: 8px;
-  background: #e3a33a;
+  border-radius: 4px;
+  background: linear-gradient(to bottom, #f0b24a, #d8952c);
   color: #000;
   font: inherit;
   font-weight: bold;
+}
+
+.results-continue {
+  min-width: 200px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* An item as a small card (ui/item-tile.tsx): results, quest rewards. */
+.item-tile {
+  display: flex;
+  flex-direction: column;
+  width: 74px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--rarity) 70%, transparent);
+  border-radius: 3px;
+  background: #121a1f;
+}
+
+.item-tile-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 52px;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--rarity) 55%, transparent),
+    transparent 85%
+  );
+}
+
+.item-tile-art img {
+  max-width: 90%;
+  max-height: 46px;
+  object-fit: contain;
+}
+
+.item-tile-count {
+  position: absolute;
+  right: 3px;
+  bottom: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  text-shadow: 0 0 3px #000;
+}
+
+.item-tile-name {
+  overflow: hidden;
+  padding: 3px 5px;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-tile-note {
+  padding: 0 5px 4px;
+  color: #f0c060;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.item-tile.lost {
+  filter: grayscale(0.85);
+  opacity: 0.6;
 }
 
 /* Sign in and create an account (ui/account.tsx), over everything, in either orientation. */
@@ -2449,15 +2737,361 @@ body:has(#layout-bar) #menu {
   color: #e8ecef;
 }
 
+/*
+ * The vendors page (reworked 2026-11-06, after Tarkov's traders): the vendors down the
+ * side, the one picked's level and goods beside them.
+ */
+.vendors-layout {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  min-height: 0;
+}
+
+.vendors-list {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 6px;
+  width: clamp(120px, 16vw, 200px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.raid .vendors-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  text-align: left;
+  box-shadow: inset 3px 0 0 transparent;
+}
+
+.raid .vendors-card.active {
+  border-color: var(--vendor);
+  background: linear-gradient(to right, color-mix(in srgb, var(--vendor) 28%, #1a2126), #1a2126);
+  box-shadow: inset 3px 0 0 var(--vendor);
+  color: inherit;
+}
+
+.vendors-portrait {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 4px;
+  background: linear-gradient(
+    to bottom right,
+    var(--vendor),
+    color-mix(in srgb, var(--vendor) 45%, #000)
+  );
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
+}
+
+.vendors-card-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.vendors-card-text b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A level as Tarkov writes it: I to IV. */
+.vendors-ll {
+  color: #f0c060;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.vendors-ll.big {
+  font-size: 13px;
+}
+
+.vendors-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 10px 10px;
+  border: 1px solid var(--ui-line);
+  border-radius: 4px;
+  background: var(--ui-panel);
+  box-shadow: inset 0 3px 0 var(--vendor);
+  scrollbar-width: thin;
+}
+
+.vendors-head {
+  padding: 10px 0 6px;
+}
+
+.vendors-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.vendors-title h2 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.vendors-tag {
+  padding: 1px 7px;
+  border: 1px solid var(--ui-line);
+  border-radius: 10px;
+  color: var(--ui-muted);
+  font-size: 11px;
+}
+
+.vendors-blurb {
+  margin: 4px 0 6px;
+  color: var(--ui-muted);
+}
+
+.vendors-progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin: 0;
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+
+.vendors-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vendors-bar-track {
+  width: 90px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #0d1215;
+}
+
+.vendors-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--vendor);
+  transform-origin: left;
+}
+
+.vendors-bar.met .vendors-bar-fill {
+  background: #6cbf5a;
+}
+
+.vendors-bar-text {
+  color: #c8d1d8;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Search, kinds, sort and locked: stays in view while the goods scroll. */
+.vendors-tools {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 -10px 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--ui-line);
+  background: var(--ui-panel);
+}
+
+/* 16px, or iOS zooms in on focus; the page's user-select: none would stop typing. */
+.vendors-tools input {
+  flex: 0 1 160px;
+  min-width: 80px;
+  box-sizing: border-box;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid #39434b;
+  border-radius: 4px;
+  outline: none;
+  appearance: none;
+  background: #0f1417;
+  color: #e8ecef;
+  font: inherit;
+  font-size: 16px;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.vendors-tools input:focus {
+  border-color: var(--ui-accent);
+}
+
+.vendors-tools input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.vendors-tools select {
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid #36424b;
+  border-radius: 4px;
+  background: #222a30;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+}
+
+.raid .vendors-tools > button {
+  flex: none;
+  height: 30px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.vendors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+/* An offer: its picture on its rarity's colour, name, price and level. */
+.raid .vendors-offer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  height: 100%;
+  padding: 0 0 6px;
+  overflow: hidden;
+  text-align: left;
+}
+
+.vendors-offer-art {
+  display: grid;
+  place-items: center;
+  height: 64px;
+  background:
+    linear-gradient(to top, color-mix(in srgb, var(--rarity) 55%, transparent), transparent 80%),
+    #121a1f;
+  border-bottom: 2px solid var(--rarity);
+}
+
+.vendors-offer-art img {
+  max-width: 90%;
+  max-height: 58px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.vendors-offer-name {
+  padding: 0 7px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.vendors-offer-name span {
+  color: var(--ui-muted);
+  font-weight: 400;
+}
+
+.vendors-offer-price {
+  margin-top: auto;
+  padding: 0 7px;
+  color: #f0c060;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.vendors-offer-price.short {
+  color: #c96a5a;
+}
+
+.vendors-offer-ll {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  padding: 0 5px;
+  border-radius: 3px;
+  background: rgb(0 0 0 / 0.65);
+  color: #f0c060;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.raid .vendors-offer.locked {
+  filter: grayscale(0.8);
+  opacity: 0.55;
+}
+
+.vendors-qty {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.vendors-qty b {
+  min-width: 34px;
+  text-align: center;
+}
+
+.vendors-locked-note {
+  color: var(--ui-muted);
+}
+
+.raid button.confirm {
+  border-color: #6cff8a;
+  background: #6cff8a;
+  color: #000;
+}
+
+/* The admin page's items, as cards (2026-11-06). */
+.admin-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+  padding-bottom: 6px;
+  border: 1px solid #36424b;
+  border-radius: 4px;
+  background: linear-gradient(to bottom, #222a30, #1a2126);
+}
+
+.admin-give {
+  display: flex;
+  gap: 4px;
+  margin-top: auto;
+  padding: 0 6px;
+}
+
+.raid .admin-give button {
+  flex: 1;
+  padding: 4px 6px;
+  font-size: 12px;
+}
+
+/* Lists of rows, from before the vendors page's rework: the friends, quests and admin pages. */
 .vendors-body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-}
-
-.vendors-blurb {
-  margin: 0 0 8px;
-  color: #9aa6b0;
 }
 
 .vendors-offers {
@@ -2474,8 +3108,9 @@ body:has(#layout-bar) #menu {
   align-items: center;
   gap: 10px;
   padding: 6px 6px 6px 10px;
-  border-radius: 6px;
-  background: #252c32;
+  border: 1px solid var(--ui-line);
+  border-radius: 4px;
+  background: var(--ui-panel);
 }
 
 .vendors-icon {
@@ -2499,7 +3134,6 @@ body:has(#layout-bar) #menu {
   min-width: 92px;
 }
 
-/* An offer's picture and name: a tap opens its details. */
 .raid .vendors-offers button.vendors-item {
   display: flex;
   flex: 1;
@@ -2507,17 +3141,13 @@ body:has(#layout-bar) #menu {
   gap: 10px;
   min-width: 0;
   padding: 0;
+  border: 0;
   background: none;
   text-align: left;
 }
 
 .vendors-offers button:disabled {
   opacity: 0.45;
-}
-
-.vendors-offers button.confirm {
-  background: #6cff8a;
-  color: #000;
 }
 
 /* Picked to sell, several at once (session 13b). */
@@ -2571,20 +3201,33 @@ body:has(#layout-bar) #menu {
   color: #9aa6b0;
 }
 
-/* The quests page (session 14): a vendor's quests as cards, in a chain. */
-.quests-badge {
-  margin-left: 6px;
-  padding: 0 6px;
-  border-radius: 8px;
+/*
+ * The quests page (session 14; reworked 2026-11-06): the vendors page's layout, tabs by
+ * status, and each quest a card with an edge in its status's colour.
+ */
+.vendors-badge {
+  margin-left: auto;
+  padding: 0 7px;
+  border-radius: 9px;
   background: #6cff8a;
   color: #000;
   font-size: 12px;
   font-weight: 700;
 }
 
+.quests-tab-count {
+  margin-left: 2px;
+  color: var(--ui-muted);
+  font-size: 11px;
+}
+
+.raid .quests .vendors-tools button.active .quests-tab-count {
+  color: #3d2a08;
+}
+
 .quests-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
   gap: 8px;
   margin: 0 0 8px;
   padding: 0;
@@ -2592,20 +3235,37 @@ body:has(#layout-bar) #menu {
 }
 
 .quests-quest {
+  --status: #55636e;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  background: #252c32;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--ui-line);
+  border-radius: 4px;
+  background: linear-gradient(to bottom right, #1a2228, #141a1f);
+  box-shadow: inset 3px 0 0 var(--status);
+}
+
+.quests-quest.active {
+  --status: #e3a33a;
+}
+
+.quests-quest.ready {
+  --status: #6cff8a;
+  border-color: #3f7a4a;
+}
+
+.quests-quest.available {
+  --status: #6fa8dc;
 }
 
 .quests-quest.locked {
   opacity: 0.55;
 }
 
-.quests-quest.ready {
-  box-shadow: inset 0 0 0 2px #6cff8a;
+.quests-quest.done {
+  --status: #3c6e46;
+  opacity: 0.75;
 }
 
 .quests-head {
@@ -2616,22 +3276,23 @@ body:has(#layout-bar) #menu {
 
 .quests-name {
   flex: 1;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .quests-status {
-  font-size: 12px;
-  color: #9aa6b0;
-}
-
-.quests-status.ready,
-.quests-status.available {
-  color: #6cff8a;
+  padding: 1px 8px;
+  border: 1px solid var(--status, #55636e);
+  border-radius: 10px;
+  color: var(--status, #9aa6b0);
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 .quests-text {
   margin: 0;
-  color: #9aa6b0;
+  color: #b3bec7;
+  font-style: italic;
 }
 
 .quests-objectives {
@@ -2639,7 +3300,8 @@ body:has(#layout-bar) #menu {
   flex-direction: column;
   gap: 4px;
   margin: 0;
-  padding: 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--ui-line);
   list-style: none;
 }
 
@@ -2665,36 +3327,65 @@ body:has(#layout-bar) #menu {
 }
 
 .quests-objective {
+  display: flex;
   flex: 1;
+  flex-direction: column;
+  gap: 3px;
 }
 
-.quests-objective span {
-  color: #9aa6b0;
+.quests-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ui-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.quests-objectives li.done .vendors-bar-fill {
+  background: #6cbf5a;
 }
 
 .quests-foot {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-end;
   gap: 8px;
 }
 
 .quests-rewards {
+  display: flex;
   flex: 1;
-  color: #9aa6b0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
 }
 
-.quests-rewards b {
-  color: #e8ecef;
-  font-weight: 600;
+.quests-rewards-label {
+  flex-basis: 100%;
+  color: var(--ui-muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.quests-chip {
+  padding: 3px 9px;
+  border: 1px solid var(--ui-line);
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.quests-chip.money {
+  color: #f0c060;
+}
+
+.quests-chip.rep {
+  color: #8fd1ff;
 }
 
 .quests button:disabled {
   opacity: 0.45;
-}
-
-.quests button.confirm {
-  background: #6cff8a;
-  color: #000;
 }
 
 /* Picking the map to raid, when there's more than one. */
@@ -3080,11 +3771,57 @@ body:has(#layout-bar) #menu {
 }
 
 /* The friends page (co-op C1–C2). */
+/* The friends page (restyled 2026-11-06): adding and requests, and your friends, as panels. */
+.friends-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(300px, 2fr);
+  align-items: start;
+  gap: 10px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 640px) {
+  .friends-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.friends-panel {
+  padding: 0 12px 12px;
+  border: 1px solid var(--ui-line);
+  border-radius: 4px;
+  background: var(--ui-panel);
+}
+
+.friends-head {
+  margin: 0 -12px 10px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--ui-line);
+  background: linear-gradient(to bottom, #222b32, #1a2228);
+  box-shadow: inset 3px 0 0 var(--ui-accent);
+  color: #dfe5ea;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.friends-head span {
+  color: var(--ui-muted);
+}
+
+.friends-sub {
+  margin: 14px 0 6px;
+  color: var(--ui-muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .friends-add {
   display: flex;
   gap: 6px;
-  max-width: 420px;
-  margin-bottom: 10px;
 }
 
 .friends-add input {
@@ -3092,28 +3829,70 @@ body:has(#layout-bar) #menu {
   min-width: 0;
   padding: 7px 10px;
   border: 1px solid #3a444c;
-  border-radius: 6px;
-  background: #161b1f;
+  border-radius: 4px;
+  background: #0f1417;
   color: inherit;
   /* 16px stops iOS zooming in on focus. */
-  font:
-    16px system-ui,
-    -apple-system,
-    sans-serif;
+  font-size: 16px;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
-.friends-head {
-  margin: 12px 0 6px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #9aa6b0;
+.friends-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.friends-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border: 1px solid var(--ui-line);
+  border-radius: 4px;
+  background: #1a2126;
+}
+
+.friends-avatar {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 4px;
+  background: linear-gradient(to bottom right, #3a4a57, #222c33);
+  font-weight: 800;
+}
+
+.friends-dot {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #1a2126;
+  border-radius: 50%;
+  background: #55636e;
+}
+
+.friends-dot.menu {
+  background: #4fd06a;
+}
+
+.friends-dot.raid {
+  background: #e3a33a;
 }
 
 .friends-line {
   display: block;
+  color: var(--ui-muted);
   font-size: 12px;
+  font-weight: 400;
 }
 
 .friends-offline .vendors-name {

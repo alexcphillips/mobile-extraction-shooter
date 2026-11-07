@@ -1,6 +1,8 @@
 import {
   handOverCount,
-  itemDef,
+  newStashItem,
+  standingOf,
+  vendorLevel,
   objectiveGoal,
   objectiveProgress,
   objectiveText,
@@ -12,12 +14,16 @@ import {
   type VendorDef,
 } from '@mes/shared';
 import { useEffect, useState, type ReactNode } from 'react';
+import { ItemTile } from './item-tile';
+import { VendorCard } from './vendors-page';
 
 /*
  * The quests page between raids (session 14): each vendor's quests, in a chain. Accept
  * one, hand items over from the stash (a second tap confirms, as they're gone), and claim
  * the rewards into the stash once every objective is done. Progress in raids comes with
- * the raid's result (14b).
+ * the raid's result (14b). Reworked 2026-11-06 after Tarkov's tasks: the vendors who give
+ * quests down the side with a count ready to hand in, tabs for active, available, done or
+ * all, and each quest a card with its objectives' progress bars and its rewards as tiles.
  */
 
 /** The order quests are listed in: what needs doing first, done ones last. */
@@ -48,14 +54,42 @@ export function questsLine(quests: readonly QuestDef[], me: ProfileResponse): st
   return parts.length ? parts.join(' · ') : quests.length ? 'Nothing new' : 'None yet';
 }
 
-function rewardsText(items: ItemDb, q: QuestDef): string {
-  const parts = q.rewards.items.map((r) => {
-    const name = itemDef(items, r.item).name;
-    return (r.count ?? 1) > 1 ? `${name} ×${r.count}` : name;
-  });
-  if (q.rewards.money) parts.unshift(`${q.rewards.money.toLocaleString()} money`);
-  return parts.join(', ') || 'Nothing';
+/** A quest's rewards: money and rep as chips, items as tiles. */
+function Rewards({ items, q }: { items: ItemDb; q: QuestDef }): ReactNode {
+  const { money, rep } = q.rewards;
+  const none = !money && !rep && !q.rewards.items.length;
+  return (
+    <div className="quests-rewards">
+      <span className="quests-rewards-label">Rewards</span>
+      {none && <span className="quests-chip">Nothing</span>}
+      {money > 0 && <span className="quests-chip money">{money.toLocaleString()} money</span>}
+      {rep > 0 && <span className="quests-chip rep">+{rep.toFixed(2)} rep</span>}
+      {q.rewards.items.map((r, i) => (
+        <ItemTile
+          key={i}
+          items={items}
+          item={newStashItem(items, { item: r.item, count: r.count ?? 1 })}
+          count={r.count ?? 1}
+        />
+      ))}
+    </div>
+  );
 }
+
+/** Which quests the page shows (2026-11-06, as Tarkov's task tabs). */
+type Show = 'open' | 'available' | 'done' | 'all';
+const SHOWS: readonly [Show, string][] = [
+  ['open', 'Active'],
+  ['available', 'Available'],
+  ['done', 'Done'],
+  ['all', 'All'],
+];
+const SHOWN: Record<Show, (s: QuestStatus) => boolean> = {
+  open: (s) => s === 'active' || s === 'ready',
+  available: (s) => s === 'available' || s === 'locked',
+  done: (s) => s === 'done',
+  all: () => true,
+};
 
 export function QuestsPage({
   vendors,
@@ -82,7 +116,18 @@ export function QuestsPage({
   onComplete: (q: QuestDef) => Promise<void>;
 }): ReactNode {
   const givers = vendors.filter((v) => quests.some((q) => q.vendor === v.id));
-  const [shown, setShown] = useState(0);
+  const p = me.profile;
+  const count = (v: VendorDef, s: QuestStatus) =>
+    quests.filter((q) => q.vendor === v.id && questStatus(p, q) === s).length;
+  // Open on the first vendor with something to hand in, else with something new.
+  const [shown, setShown] = useState(() =>
+    Math.max(
+      0,
+      givers.findIndex((v) => count(v, 'ready') > 0),
+      givers.findIndex((v) => count(v, 'available') > 0),
+    ),
+  );
+  const [show, setShow] = useState<Show>('all');
   // Handing over asks for a second tap on the same objective: `${quest}/${objective}`.
   const [confirming, setConfirming] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -100,33 +145,16 @@ export function QuestsPage({
     setBusy(key);
     void fn().finally(() => setBusy(null));
   };
-  const p = me.profile;
-  const list = quests
+  const all = quests
     .filter((q) => q.vendor === vendor?.id)
     .map((q) => ({ q, status: questStatus(p, q) }))
     .sort((a, b) => ORDER[a.status] - ORDER[b.status]);
-  const done = list.filter((x) => x.status === 'done');
-  const open = list.filter((x) => x.status !== 'done');
+  const list = all.filter((x) => SHOWN[show](x.status));
   return (
     <div className="raid stash vendors quests" role="dialog" aria-label="Quests">
       <header className="raid-tabs">
         <button onClick={onBack}>Back</button>
-        {givers.map((v, i) => {
-          const ready = quests.filter((q) => q.vendor === v.id && questStatus(p, q) === 'ready');
-          return (
-            <button
-              key={v.id}
-              className={i === shown ? 'active' : ''}
-              onClick={() => {
-                setConfirming(null);
-                setShown(i);
-              }}
-            >
-              {v.name}
-              {ready.length > 0 && <span className="quests-badge">{ready.length}</span>}
-            </button>
-          );
-        })}
+        <span className="stash-title">Quests</span>
         <span className="raid-spacer" />
         <span className="vendors-money">
           <b>{p.money.toLocaleString()}</b> money
@@ -134,105 +162,156 @@ export function QuestsPage({
         <button onClick={onStash}>Stash</button>
       </header>
       {notice && <p className="menu-notice">{notice}</p>}
-      <div className="vendors-body">
-        {!vendor && <p className="raid-note">No quests yet.</p>}
-        <ul className="quests-list">
-          {open.map(({ q, status }) => {
-            const locked = status === 'locked';
-            const before = q.requires
-              .filter((r) => p.quests[r]?.status !== 'done')
-              .map((r) => quests.find((x) => x.id === r)?.name ?? r);
-            return (
-              <li key={q.id} className={`quests-quest ${status}`}>
-                <div className="quests-head">
-                  <span className="quests-name">{q.name}</span>
-                  <span className={`quests-status ${status}`}>{STATUS_TEXT[status]}</span>
-                </div>
-                {locked ? (
-                  <p className="quests-text">After {before.join(' and ')}.</p>
-                ) : (
-                  <>
-                    <p className="quests-text">{q.description}</p>
-                    <ul className="quests-objectives">
-                      {q.objectives.map((o) => {
-                        const goal = objectiveGoal(o);
-                        const got = objectiveProgress(p, q, o);
-                        const key = `${q.id}/${o.id}`;
-                        const have = o.type === 'handOver' ? handOverCount(p, o) : 0;
-                        const give = Math.min(have, goal - got);
-                        return (
-                          <li key={o.id} className={got >= goal ? 'done' : ''}>
-                            <span className="quests-tick">{got >= goal ? '✓' : '○'}</span>
-                            <span className="quests-objective">
-                              {objectiveText(items, o)}
-                              {goal > 1 && (
-                                <span>
-                                  {' '}
-                                  · {got} / {goal}
-                                </span>
-                              )}
-                            </span>
-                            {o.type === 'handOver' && status === 'active' && got < goal && (
-                              <button
-                                className={confirming === key ? 'confirm' : ''}
-                                disabled={!give || busy !== null}
-                                onBlur={() => setConfirming((c) => (c === key ? null : c))}
-                                onClick={() =>
-                                  confirming === key
-                                    ? run(key, () => onHandOver(q, o.id))
-                                    : setConfirming(key)
-                                }
-                              >
-                                {busy === key
-                                  ? 'Handing over…'
-                                  : confirming === key
-                                    ? `Hand over ${give}?`
-                                    : have
-                                      ? `Hand over · ${have} in stash`
-                                      : 'None in stash'}
-                              </button>
-                            )}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </>
-                )}
-                <div className="quests-foot">
-                  <span className="quests-rewards">
-                    Rewards: <b>{rewardsText(items, q)}</b>
+      <div className="vendors-layout">
+        <nav className="vendors-list" aria-label="Vendors">
+          {givers.map((v, i) => (
+            <VendorCard
+              key={v.id}
+              vendor={v}
+              level={vendorLevel(v, standingOf(p, v.id))}
+              active={i === shown}
+              badge={count(v, 'ready')}
+              onClick={() => {
+                setConfirming(null);
+                setShown(i);
+              }}
+            />
+          ))}
+        </nav>
+        <section
+          className="vendors-main"
+          style={{ ['--vendor' as string]: vendor?.colour ?? '#e3a33a' }}
+        >
+          {!vendor ? (
+            <p className="raid-note">No quests yet.</p>
+          ) : (
+            <>
+              <header className="vendors-head">
+                <div className="vendors-title">
+                  <h2>{vendor.name}</h2>
+                  <span className="vendors-tag">
+                    {all.filter((x) => x.status === 'done').length} / {all.length} done
                   </span>
-                  {status === 'available' && (
-                    <button
-                      className="primary"
-                      disabled={busy !== null}
-                      onClick={() => run(q.id, () => onAccept(q))}
-                    >
-                      {busy === q.id ? 'Accepting…' : 'Accept'}
-                    </button>
-                  )}
-                  {status === 'ready' && (
-                    <button
-                      className="primary"
-                      disabled={busy !== null}
-                      onClick={() => run(q.id, () => onComplete(q))}
-                    >
-                      {busy === q.id ? 'Handing in…' : 'Hand in'}
-                    </button>
-                  )}
                 </div>
-              </li>
-            );
-          })}
-        </ul>
-        {done.length > 0 && (
-          <p className="raid-note">Done: {done.map((x) => x.q.name).join(', ')}.</p>
-        )}
-        {vendor && !open.length && !done.length && <p className="raid-note">No quests yet.</p>}
-        <p className="raid-note">
-          Items are handed over from your stash, not from what you wear or carry. Rewards go into
-          your stash.
-        </p>
+              </header>
+              <div className="vendors-tools" role="tablist" aria-label="Show">
+                {SHOWS.map(([s, label]) => {
+                  const n = all.filter((x) => SHOWN[s](x.status)).length;
+                  return (
+                    <button
+                      key={s}
+                      role="tab"
+                      aria-selected={s === show}
+                      className={s === show ? 'active' : undefined}
+                      onClick={() => setShow(s)}
+                    >
+                      {label} <span className="quests-tab-count">{n}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <ul className="quests-list">
+                {list.map(({ q, status }) => {
+                  const locked = status === 'locked';
+                  const before = q.requires
+                    .filter((r) => p.quests[r]?.status !== 'done')
+                    .map((r) => quests.find((x) => x.id === r)?.name ?? r);
+                  return (
+                    <li key={q.id} className={`quests-quest ${status}`}>
+                      <div className="quests-head">
+                        <span className="quests-name">{q.name}</span>
+                        <span className={`quests-status ${status}`}>{STATUS_TEXT[status]}</span>
+                      </div>
+                      {locked ? (
+                        <p className="quests-text">🔒 After {before.join(' and ')}.</p>
+                      ) : (
+                        <>
+                          <p className="quests-text">{q.description}</p>
+                          <ul className="quests-objectives">
+                            {q.objectives.map((o) => {
+                              const goal = objectiveGoal(o);
+                              const got = Math.min(goal, objectiveProgress(p, q, o));
+                              const key = `${q.id}/${o.id}`;
+                              const have = o.type === 'handOver' ? handOverCount(p, o) : 0;
+                              const give = Math.min(have, goal - got);
+                              return (
+                                <li key={o.id} className={got >= goal ? 'done' : ''}>
+                                  <span className="quests-tick">{got >= goal ? '✓' : '○'}</span>
+                                  <span className="quests-objective">
+                                    {objectiveText(items, o)}
+                                    {status !== 'available' && (
+                                      <span className="quests-progress">
+                                        <span className="vendors-bar-track">
+                                          <span
+                                            className="vendors-bar-fill"
+                                            style={{
+                                              transform: `scaleX(${goal ? got / goal : 1})`,
+                                            }}
+                                          />
+                                        </span>
+                                        {got} / {goal}
+                                      </span>
+                                    )}
+                                  </span>
+                                  {o.type === 'handOver' && status === 'active' && got < goal && (
+                                    <button
+                                      className={confirming === key ? 'confirm' : ''}
+                                      disabled={!give || busy !== null}
+                                      onBlur={() => setConfirming((c) => (c === key ? null : c))}
+                                      onClick={() =>
+                                        confirming === key
+                                          ? run(key, () => onHandOver(q, o.id))
+                                          : setConfirming(key)
+                                      }
+                                    >
+                                      {busy === key
+                                        ? 'Handing over…'
+                                        : confirming === key
+                                          ? `Hand over ${give}?`
+                                          : have
+                                            ? `Hand over · ${have} in stash`
+                                            : 'None in stash'}
+                                    </button>
+                                  )}
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </>
+                      )}
+                      <div className="quests-foot">
+                        <Rewards items={items} q={q} />
+                        {status === 'available' && (
+                          <button
+                            className="primary"
+                            disabled={busy !== null}
+                            onClick={() => run(q.id, () => onAccept(q))}
+                          >
+                            {busy === q.id ? 'Accepting…' : 'Accept'}
+                          </button>
+                        )}
+                        {status === 'ready' && (
+                          <button
+                            className="primary"
+                            disabled={busy !== null}
+                            onClick={() => run(q.id, () => onComplete(q))}
+                          >
+                            {busy === q.id ? 'Handing in…' : 'Hand in'}
+                          </button>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+                {!list.length && <li className="raid-note">Nothing here.</li>}
+              </ul>
+              <p className="raid-note">
+                Items are handed over from your stash, not from what you wear or carry. Rewards go
+                into your stash, and rep counts toward the vendor's level.
+              </p>
+            </>
+          )}
+        </section>
       </div>
     </div>
   );

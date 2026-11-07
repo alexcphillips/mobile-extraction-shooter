@@ -10,7 +10,8 @@ import { TICK_SECONDS } from '../tick';
 import { updateExtinguish, updateFire } from './fire';
 import { switchHand } from './gear';
 import { updateGrenades, updateThrow } from './grenades';
-import { applyInventory, searchContainer } from './looting';
+import { applyInventory, canReach, searchContainer } from './looting';
+import { ownerOfKey, searchTick } from './search';
 import { updateMedUse } from './meds';
 import { updateMelee } from './melee';
 import { fitLean, moveCharacter, separateCharacters } from './movement';
@@ -60,6 +61,11 @@ export function step(
     if (used != null || e.switching) holdSwitch(state, world, e, used ?? null);
     const search = inputs[e.id]?.search;
     if (search != null) searchContainer(state, e, search);
+    const looting = inputs[e.id]?.looting;
+    if (looting) {
+      const owner = ownerOfKey(looting);
+      if (owner && canReach(state, e, owner)) searchTick(state, e, looting);
+    }
     if (inputs[e.id]?.investigate) investigate(state, e);
     const spot = inputs[e.id]?.buy;
     if (spot != null) buy(state, items, e, spot);

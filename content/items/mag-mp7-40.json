@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "mag-mp7-40",
   "name": "MP7 40-round magazine",
+  "shortName": "MP7 40",
   "type": "attachment",
   "size": [1, 2],
   "value": 5000,

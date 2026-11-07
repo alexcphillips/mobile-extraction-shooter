@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "ammo-45acp-ap",
   "name": ".45 ACP AP",
+  "shortName": ".45 AP",
   "type": "ammo",
   "size": [1, 1],
   "value": 120,

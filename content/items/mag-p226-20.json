@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "mag-p226-20",
   "name": "P226 20-round magazine",
+  "shortName": "P226 20",
   "type": "attachment",
   "size": [1, 1],
   "value": 3000,

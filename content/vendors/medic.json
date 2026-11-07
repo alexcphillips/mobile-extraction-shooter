@@ -1,13 +1,38 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "id": "medic",
   "name": "Medic",
-  "blurb": "Patches you up, and your armour too.",
+  "blurb": "Patches you up. The serious kit is for regulars.",
+  "order": 4,
+  "colour": "#b8504a",
+  "levels": [
+    {
+      "rep": 0.2,
+      "spent": 20000
+    },
+    {
+      "rep": 0.4,
+      "spent": 80000
+    },
+    {
+      "rep": 0.6,
+      "spent": 200000
+    }
+  ],
   "sells": [
-    { "item": "bandage" },
-    { "item": "splint" },
-    { "item": "medkit" },
-    { "item": "surgery-kit" },
-    { "item": "armour-repair-kit" }
+    {
+      "item": "bandage"
+    },
+    {
+      "item": "splint"
+    },
+    {
+      "item": "medkit",
+      "level": 2
+    },
+    {
+      "item": "surgery-kit",
+      "level": 3
+    }
   ]
 }

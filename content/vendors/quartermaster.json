@@ -1,73 +1,284 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "id": "quartermaster",
   "name": "Quartermaster",
-  "blurb": "Guns, rounds and basic kit. The good stuff you find yourself.",
+  "blurb": "Basic guns, rounds and grenades. Earn his trust and the good rounds come out of the back.",
+  "order": 1,
+  "colour": "#c98a2e",
+  "levels": [
+    {
+      "rep": 0.2,
+      "spent": 50000
+    },
+    {
+      "rep": 0.4,
+      "spent": 250000
+    },
+    {
+      "rep": 0.6,
+      "spent": 750000
+    }
+  ],
   "sells": [
-    { "item": "m9a3" },
-    { "item": "p226" },
-    { "item": "assault-rifle" },
-    { "item": "aks-74u" },
-    { "item": "aug-a3", "attachments": ["aug-optic"] },
-    { "item": "mp5" },
-    { "item": "mpx" },
-    { "item": "ump45" },
-    { "item": "shotgun" },
-    { "item": "saiga-12" },
-    { "item": "crossbow" },
-    { "item": "ammo-9mm-pso", "count": 30 },
-    { "item": "ammo-9mm", "count": 30 },
-    { "item": "ammo-9mm-ap", "count": 30 },
-    { "item": "ammo-762x39-lp", "count": 30 },
-    { "item": "ammo-762x39-t45m", "count": 30 },
-    { "item": "ammo-762x39", "count": 30 },
-    { "item": "ammo-556x45-hp", "count": 30 },
-    { "item": "ammo-556x45-fmj", "count": 30 },
-    { "item": "ammo-556x45", "count": 30 },
-    { "item": "buckshot", "count": 20 },
-    { "item": "flechette", "count": 20 },
-    { "item": "slug", "count": 20 },
-    { "item": "ammo-545x39-hp", "count": 30 },
-    { "item": "ammo-545x39", "count": 30 },
-    { "item": "ammo-545x39-pp", "count": 30 },
-    { "item": "ammo-46x30-action", "count": 30 },
-    { "item": "ammo-46x30-subsonic", "count": 30 },
-    { "item": "ammo-46x30-jsp", "count": 30 },
-    { "item": "ammo-9x39", "count": 20 },
-    { "item": "ammo-9x39-spp", "count": 20 },
-    { "item": "ammo-762-nosler", "count": 20 },
-    { "item": "ammo-762-tcw", "count": 20 },
-    { "item": "ammo-762-bcp", "count": 20 },
-    { "item": "ammo-762", "count": 20 },
-    { "item": "ammo-762x54r-hpbt", "count": 20 },
-    { "item": "ammo-338-tacx", "count": 10 },
-    { "item": "ammo-338-ucw", "count": 10 },
-    { "item": "ammo-762x54r", "count": 20 },
-    { "item": "crossbow-bolt", "count": 10 },
-    { "item": "ammo-9mm-inc", "count": 30 },
-    { "item": "ammo-45acp-jhp", "count": 25 },
-    { "item": "ammo-45acp", "count": 25 },
-    { "item": "ammo-45acp-ap", "count": 25 },
-    { "item": "ammo-762x39-inc", "count": 30 },
-    { "item": "frag-grenade" },
-    { "item": "flash-grenade" },
-    { "item": "smoke-grenade" },
-    { "item": "molotov" },
-    { "item": "mag-9mm-24" },
-    { "item": "mag-p226-20" },
-    { "item": "mag-mp133-8" },
-    { "item": "mag-saiga12-10" },
-    { "item": "mag-mpx-41" },
-    { "item": "red-dot" },
-    { "item": "muzzle-brake" },
-    { "item": "compensator" },
-    { "item": "bump-helmet" },
-    { "item": "riot-helmet" },
-    { "item": "steel-helmet" },
-    { "item": "soft-vest" },
-    { "item": "police-vest" },
-    { "item": "tactical-vest" },
-    { "item": "chest-rig" },
-    { "item": "small-backpack" }
+    {
+      "item": "m9a3"
+    },
+    {
+      "item": "p226"
+    },
+    {
+      "item": "aks-74u"
+    },
+    {
+      "item": "assault-rifle"
+    },
+    {
+      "item": "shotgun"
+    },
+    {
+      "item": "ammo-338-tacx",
+      "count": 10
+    },
+    {
+      "item": "ammo-45acp-jhp",
+      "count": 25
+    },
+    {
+      "item": "ammo-46x30-action",
+      "count": 30
+    },
+    {
+      "item": "ammo-545x39-hp",
+      "count": 30
+    },
+    {
+      "item": "ammo-556x45-hp",
+      "count": 30
+    },
+    {
+      "item": "ammo-762-nosler",
+      "count": 20
+    },
+    {
+      "item": "ammo-762x39-lp",
+      "count": 30
+    },
+    {
+      "item": "ammo-9mm-pso",
+      "count": 30
+    },
+    {
+      "item": "buckshot",
+      "count": 20
+    },
+    {
+      "item": "buckshot-inc",
+      "count": 20
+    },
+    {
+      "item": "flamethrower-fuel",
+      "count": 100
+    },
+    {
+      "item": "smoke-grenade"
+    },
+    {
+      "item": "molotov"
+    },
+    {
+      "item": "mp5",
+      "level": 2
+    },
+    {
+      "item": "ump45",
+      "level": 2
+    },
+    {
+      "item": "ammo-45acp",
+      "count": 25,
+      "level": 2
+    },
+    {
+      "item": "ammo-46x30-subsonic",
+      "count": 30,
+      "level": 2
+    },
+    {
+      "item": "ammo-545x39",
+      "count": 30,
+      "level": 2
+    },
+    {
+      "item": "ammo-556x45-fmj",
+      "count": 30,
+      "level": 2
+    },
+    {
+      "item": "ammo-762-tcw",
+      "count": 20,
+      "level": 2
+    },
+    {
+      "item": "ammo-762x39-t45m",
+      "count": 30,
+      "level": 2
+    },
+    {
+      "item": "ammo-762x54r-hpbt",
+      "count": 20,
+      "level": 2
+    },
+    {
+      "item": "ammo-9mm",
+      "count": 30,
+      "level": 2
+    },
+    {
+      "item": "ammo-9mm-inc",
+      "count": 30,
+      "level": 2
+    },
+    {
+      "item": "ammo-9x39",
+      "count": 25,
+      "level": 2
+    },
+    {
+      "item": "flash-grenade",
+      "level": 2
+    },
+    {
+      "item": "ammo-338-ucw",
+      "count": 10,
+      "level": 3
+    },
+    {
+      "item": "ammo-45acp-ap",
+      "count": 25,
+      "level": 3
+    },
+    {
+      "item": "ammo-46x30-jsp",
+      "count": 30,
+      "level": 3
+    },
+    {
+      "item": "ammo-545x39-pp",
+      "count": 30,
+      "level": 3
+    },
+    {
+      "item": "ammo-556x45",
+      "count": 30,
+      "level": 3
+    },
+    {
+      "item": "ammo-762-bcp",
+      "count": 20,
+      "level": 3
+    },
+    {
+      "item": "ammo-762x39",
+      "count": 30,
+      "level": 3
+    },
+    {
+      "item": "ammo-762x39-inc",
+      "count": 30,
+      "level": 3
+    },
+    {
+      "item": "ammo-9mm-ap",
+      "count": 30,
+      "level": 3
+    },
+    {
+      "item": "ammo-9x39-spp",
+      "count": 25,
+      "level": 3
+    },
+    {
+      "item": "flechette",
+      "count": 20,
+      "level": 3
+    },
+    {
+      "item": "slug",
+      "count": 20,
+      "level": 3
+    },
+    {
+      "item": "frag-grenade",
+      "level": 3
+    },
+    {
+      "item": "ammo-338",
+      "count": 10,
+      "level": 4
+    },
+    {
+      "item": "ammo-46x30",
+      "count": 30,
+      "level": 4
+    },
+    {
+      "item": "ammo-545x39-bp",
+      "count": 30,
+      "level": 4
+    },
+    {
+      "item": "ammo-556x45-m855a1",
+      "count": 30,
+      "level": 4
+    },
+    {
+      "item": "ammo-762",
+      "count": 20,
+      "level": 4
+    },
+    {
+      "item": "ammo-762-inc",
+      "count": 20,
+      "level": 4
+    },
+    {
+      "item": "ammo-762-m62",
+      "count": 20,
+      "level": 4
+    },
+    {
+      "item": "ammo-762x39-bp",
+      "count": 30,
+      "level": 4
+    },
+    {
+      "item": "ammo-762x54r",
+      "count": 20,
+      "level": 4
+    },
+    {
+      "item": "ammo-762x54r-7n1",
+      "count": 20,
+      "level": 4
+    },
+    {
+      "item": "ammo-9mm-pbp",
+      "count": 30,
+      "level": 4
+    },
+    {
+      "item": "ammo-9x39-pab9",
+      "count": 25,
+      "level": 4
+    },
+    {
+      "item": "ammo-9x39-sp6",
+      "count": 25,
+      "level": 4
+    },
+    {
+      "item": "c4",
+      "level": 4
+    }
   ]
 }

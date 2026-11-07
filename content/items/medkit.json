@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "medkit",
   "name": "Medkit",
+  "shortName": "Med",
   "type": "med",
   "size": [1, 2],
   "value": 4000,

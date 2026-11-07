@@ -1,0 +1,20 @@
+{
+  "formatVersion": 1,
+  "id": "shiny-stock",
+  "name": "Shiny stock",
+  "vendor": "fence",
+  "description": "Phones sell. Bring me a couple and we can be friends.",
+  "objectives": [
+    {
+      "id": "hand-over",
+      "type": "handOver",
+      "item": "smartphone",
+      "count": 2
+    }
+  ],
+  "rewards": {
+    "money": 10000,
+    "items": [],
+    "rep": 0.2
+  }
+}

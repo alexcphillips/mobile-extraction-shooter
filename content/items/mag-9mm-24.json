@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "mag-9mm-24",
   "name": "24-round 9 mm magazine",
+  "shortName": "9mm 24",
   "type": "attachment",
   "size": [1, 1],
   "value": 2500,

@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "ammo-762",
   "name": "7.62×51 mm M80",
+  "shortName": ".308 M80",
   "type": "ammo",
   "size": [1, 1],
   "value": 120,

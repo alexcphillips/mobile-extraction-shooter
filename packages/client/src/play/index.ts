@@ -44,6 +44,7 @@ import {
   entityById,
   loadedAmmo,
   placeLootContainers,
+  searchKey,
   lootContainerById,
   type InventoryAction,
   type Item,
@@ -817,6 +818,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let screen: RaidScreenHandle | null = null;
   let opening = false;
   let screenOpen = false;
+  // What the open screen shows beside your gear (a container or body is searched while open).
+  let openTarget: Owner | null = null;
   const pending: InventoryAction[] = [];
   input.inventory = pending;
   let inventoryChanged = false;
@@ -835,6 +838,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   function openScreen(target: Owner | null): void {
     controls.reset();
     screenOpen = true;
+    openTarget = target;
     controls.cursor.want(false);
     if (screen) {
       screen.setTarget(target);
@@ -874,6 +878,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   }
   function closeScreen(): void {
     screenOpen = false;
+    openTarget = null;
     // From the key or click that closed it, if it was one: browsers only lock on a gesture.
     if (!ended) controls.cursor.want(true);
     pending.length = 0;
@@ -1208,6 +1213,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       if (screenOpen) closeScreen();
       else openScreen(null);
     }
+    // Searched for as long as it's open (search.ts).
+    input.looting = screenOpen && openTarget ? searchKey(openTarget) : null;
     if (screenOpen) {
       if (dead) closeScreen();
       input.moveX = input.moveY = 0;
@@ -1465,7 +1472,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // Redraw the raid screen when the inventory changed, and now and then for what's in
     // reach and what enemies took from their dead; more often while a med or repair is in
     // use, for its progress.
-    if (screen && (inventoryChanged || sim.tick % (player.using ? 3 : 10) === 0)) screen.refresh();
+    // More often while using something or searching, so it shows as it goes.
+    const often = player.using || input.looting;
+    if (screen && (inventoryChanged || sim.tick % (often ? 3 : 10) === 0)) screen.refresh();
     // From the state, not the death event: a debug hurt or giving up kills outside the tick.
     if (player.health.dead) {
       const killer = taken.find((s) => s.killed)?.key;

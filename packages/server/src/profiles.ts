@@ -9,6 +9,7 @@ import {
   loadSettings,
   restGear,
   sameQuests,
+  sameStanding,
   settleBags,
   settleFits,
   settleGuns,
@@ -117,6 +118,8 @@ profiles.put('/', async (c) => {
     return fail(c, 'invalid', 'stash pages are only added by buying them');
   if (!sameQuests(current.profile, next))
     return fail(c, 'invalid', 'quests only change through the quest routes');
+  if (!sameStanding(current.profile, next))
+    return fail(c, 'invalid', 'standing with vendors only changes through buying and quests');
   const gained = itemGained(items, current.profile, next);
   if (gained) return fail(c, 'invalid', `more "${gained}" than before`);
   // Free repairs are an admin cheat: only on the dev server (see admin.ts).

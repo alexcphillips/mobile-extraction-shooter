@@ -15,6 +15,8 @@ import {
   createGrid,
   dropAt,
   findSpot,
+  itemHeight,
+  itemWidth,
   placeAt,
   removeAt,
   rotateAt,
@@ -35,6 +37,7 @@ import {
   type GearSlot,
 } from './gear';
 import type { CollisionWorld } from '../world/collision-world';
+import { isRevealed, revealed } from './search';
 import { createItem } from './create-item';
 import { dropItem, type GroundItem } from './ground';
 import { cameOffGun } from './raid';
@@ -389,9 +392,10 @@ function find(state: SimState, c: Character, ref: ItemRef): Found | null {
   }
   const grid = gridOf(state, c, ref);
   const g = grid?.items[ref.index];
-  return grid && g?.item.item === ref.item
-    ? { at: 'grid', grid, index: ref.index, g, item: g.item }
-    : null;
+  if (!grid || g?.item.item !== ref.item) return null;
+  // Not yet searched out (search.ts): as good as not there. A bag's inside shows with it.
+  if (!ref.inside && !isRevealed(state, c, ref.owner, g.item)) return null;
+  return { at: 'grid', grid, index: ref.index, g, item: g.item };
 }
 
 /** Takes a found item out of where it is. */
@@ -592,10 +596,30 @@ function moveTo(ctx: Ctx, from: Found, to: Target): boolean {
   if (!('grid' in to)) return toGround(ctx, from);
   const grid = gridOf(state, c, to);
   if (!grid) return false;
+  if (!to.inside && hidesUnder(ctx, to, grid, from.item)) return false;
   if (from.at === 'grid') return dropAt(items, from.grid, from.index, grid, to.x, to.y, to.rotated);
   if (!placeAt(items, grid, from.item, to.x, to.y, to.rotated)) return false;
   takeOut(from);
   return true;
+}
+
+/** Whether dropping an item at a grid spot would land on something not yet searched out. */
+function hidesUnder(
+  ctx: Ctx,
+  to: GridRef & { x: number; y: number; rotated: boolean },
+  grid: Grid,
+  item: Item,
+): boolean {
+  const r = revealed(ctx.state, ctx.c, to.owner);
+  if (!r || r.found === r.total) return false;
+  const w = itemWidth(ctx.items, item.item, to.rotated);
+  const h = itemHeight(ctx.items, item.item, to.rotated);
+  return grid.items.some((o) => {
+    if (r.shown.has(o.item)) return false;
+    const ow = itemWidth(ctx.items, o.item.item, o.rotated);
+    const oh = itemHeight(ctx.items, o.item.item, o.rotated);
+    return to.x < o.x + ow && o.x < to.x + w && to.y < o.y + oh && o.y < to.y + h;
+  });
 }
 
 /** Drops a found item at c's feet. */

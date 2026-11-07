@@ -84,8 +84,10 @@ export const questSchema = z.strictObject({
       money: z.int().min(0).default(0),
       /** Into the stash, in this order. */
       items: z.array(stackOf).default([]),
+      /** Reputation with the vendor who gives it, toward its levels (2026-11-06). */
+      rep: z.number().min(0).default(0),
     })
-    .default({ money: 0, items: [] }),
+    .default({ money: 0, items: [], rep: 0 }),
 });
 
 export type QuestDef = z.infer<typeof questSchema>;

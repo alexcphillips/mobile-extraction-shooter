@@ -1,0 +1,157 @@
+{
+  "formatVersion": 2,
+  "id": "gunsmith",
+  "name": "Gunsmith",
+  "blurb": "Attachments, magazines and the better guns, for those who come back.",
+  "order": 2,
+  "colour": "#6f8fb3",
+  "levels": [
+    {
+      "rep": 0.2,
+      "spent": 50000
+    },
+    {
+      "rep": 0.4,
+      "spent": 250000
+    },
+    {
+      "rep": 0.6,
+      "spent": 750000
+    }
+  ],
+  "sells": [
+    {
+      "item": "red-dot"
+    },
+    {
+      "item": "holographic-sight"
+    },
+    {
+      "item": "compensator"
+    },
+    {
+      "item": "mag-9mm-24"
+    },
+    {
+      "item": "mag-p226-20"
+    },
+    {
+      "item": "mag-mp133-8"
+    },
+    {
+      "item": "aug-a3",
+      "attachments": ["aug-optic"],
+      "level": 2
+    },
+    {
+      "item": "mpx",
+      "level": 2
+    },
+    {
+      "item": "saiga-12",
+      "level": 2
+    },
+    {
+      "item": "crossbow",
+      "level": 2
+    },
+    {
+      "item": "g18c",
+      "level": 2
+    },
+    {
+      "item": "muzzle-brake",
+      "level": 2
+    },
+    {
+      "item": "aug-optic",
+      "level": 2
+    },
+    {
+      "item": "mag-762x39-45",
+      "level": 2
+    },
+    {
+      "item": "mag-glock-33",
+      "level": 2
+    },
+    {
+      "item": "mag-mpx-41",
+      "level": 2
+    },
+    {
+      "item": "mag-saiga12-10",
+      "level": 2
+    },
+    {
+      "item": "mag-mp7-40",
+      "level": 2
+    },
+    {
+      "item": "crossbow-bolt",
+      "count": 10,
+      "level": 2
+    },
+    {
+      "item": "m416",
+      "level": 3
+    },
+    {
+      "item": "mp7",
+      "level": 3
+    },
+    {
+      "item": "g3",
+      "level": 3
+    },
+    {
+      "item": "suppressor",
+      "level": 3
+    },
+    {
+      "item": "mag-45acp-30",
+      "level": 3
+    },
+    {
+      "item": "mag-aa12-20",
+      "level": 3
+    },
+    {
+      "item": "crossbow-bolt-inc",
+      "count": 10,
+      "level": 3
+    },
+    {
+      "item": "as-val",
+      "level": 4
+    },
+    {
+      "item": "scar-h",
+      "level": 4
+    },
+    {
+      "item": "sv-98",
+      "level": 4
+    },
+    {
+      "item": "aa-12",
+      "level": 4
+    },
+    {
+      "item": "smg",
+      "level": 4
+    },
+    {
+      "item": "grenade-launcher",
+      "level": 4
+    },
+    {
+      "item": "flamethrower",
+      "level": 4
+    },
+    {
+      "item": "scope-4x",
+      "level": 4
+    }
+  ]
+}

@@ -7,11 +7,12 @@ import {
   type ItemDb,
   type LeaveReason,
 } from '@mes/shared';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { clock } from '../hud/raid-hud';
 import { describeSource, type DamageLog } from '../play/damage-log';
 import type { SaveStatus } from '../raids';
+import { ItemTile, tallied } from './item-tile';
 
 /** How the raid ended for you, and what you came out with. */
 export interface RaidResult {
@@ -40,28 +41,49 @@ const TITLES: Record<RaidResult['how'], string> = {
   mia: 'Missing in action',
 };
 
-/** Items by name, with stacks and copies added up, in the order first seen. */
-function tally(items: ItemDb, list: readonly Item[]): [string, number][] {
-  const counts = new Map<string, number>();
-  for (const i of list) {
-    const name = itemDef(items, i.item).name;
-    counts.set(name, (counts.get(name) ?? 0) + i.count);
-  }
-  return [...counts];
-}
-
-function ItemList({ items, list, empty }: { items: ItemDb; list: Item[]; empty: string }) {
-  const rows = tally(items, list);
+/** Items as tiles, a tile per kind with its count, dearest first; or a line if there are none. */
+function Tiles({
+  items,
+  list,
+  empty,
+  lost = false,
+}: {
+  items: ItemDb;
+  list: readonly Item[];
+  empty: string;
+  lost?: boolean;
+}) {
+  const rows = tallied(list, (i) => sellPrice(items, i));
   if (!rows.length) return <p className="results-empty">{empty}</p>;
   return (
-    <ul>
-      {rows.map(([name, n]) => (
-        <li key={name}>
-          {name}
-          {n > 1 && <span className="results-count"> ×{n}</span>}
-        </li>
+    <div className="results-tiles">
+      {rows.map((r) => (
+        <ItemTile key={r.item.item} items={items} item={r.item} count={r.count} lost={lost} />
       ))}
-    </ul>
+    </div>
+  );
+}
+
+/** A panel of the results screen: a title bar and what's in it. */
+function Panel({
+  title,
+  aside,
+  className = '',
+  children,
+}: {
+  title: string;
+  aside?: ReactNode;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className={`results-panel ${className}`}>
+      <header>
+        <h2>{title}</h2>
+        {aside}
+      </header>
+      {children}
+    </section>
   );
 }
 
@@ -70,9 +92,12 @@ function Gain({ items, result }: { items: ItemDb; result: RaidResult }) {
   const gains = raidGains(items, result.kept);
   const total = gains.reduce((n, g) => n + g.price, 0);
   return (
-    <section className="results-gain">
-      <h2>Raid gain</h2>
-      {gains.length > 0 && (
+    <Panel
+      title="Raid gain"
+      className="results-gain"
+      aside={<b className="results-gain-total">{total.toLocaleString()}</b>}
+    >
+      {gains.length > 0 ? (
         <ul>
           {gains.map((g) => (
             <li key={g.id}>
@@ -84,12 +109,11 @@ function Gain({ items, result }: { items: ItemDb; result: RaidResult }) {
             </li>
           ))}
         </ul>
+      ) : (
+        <p className="results-empty">Nothing found in this raid came out with you.</p>
       )}
-      <p className="results-gain-total">
-        <span>Total at vendor prices</span>
-        <span>{total.toLocaleString()}</span>
-      </p>
-    </section>
+      <p className="results-note">Found in raid, at vendor prices (cash at its full value).</p>
+    </Panel>
   );
 }
 
@@ -187,64 +211,83 @@ function Results({
     (n, i) => n + (isMoney(items, i.item) ? sellPrice(items, i) : 0),
     0,
   );
+  const gain = raidGains(items, result.kept).reduce((n, g) => n + g.price, 0);
+  const lost = result.lost.reduce((n, i) => n + sellPrice(items, i), 0);
   return (
     <div className={`results ${result.how}`}>
-      <header>
-        <h1>{TITLES[result.how]}</h1>
-        <p>{result.detail}</p>
-        <p className="results-stats">
-          {clock(result.seconds)} in raid · {result.kills} {result.kills === 1 ? 'kill' : 'kills'}
-        </p>
+      <header className="results-banner">
+        <div>
+          <h1>{TITLES[result.how]}</h1>
+          <p className="results-detail">{result.detail}</p>
+        </div>
+        <dl className="results-stats">
+          <div>
+            <dt>Time</dt>
+            <dd>{clock(result.seconds)}</dd>
+          </div>
+          <div>
+            <dt>Kills</dt>
+            <dd>{result.kills}</dd>
+          </div>
+          <div>
+            <dt>Raid gain</dt>
+            <dd className="gain">{gain.toLocaleString()}</dd>
+          </div>
+          {!result.keptAll && lost > 0 && (
+            <div>
+              <dt>Lost</dt>
+              <dd className="loss">{lost.toLocaleString()}</dd>
+            </div>
+          )}
+        </dl>
         <SaveLine saving={saving} />
       </header>
-      <div className="results-cols">
-        <section>
-          <h2>
-            {survived
+      <div className="results-grid">
+        <Panel
+          title={
+            survived
               ? 'You brought out'
               : result.keptAll
                 ? 'You kept everything (admin cheat)'
-                : 'You kept (vault and knife)'}
-          </h2>
-          <ItemList items={items} list={result.kept} empty="Nothing" />
+                : 'You kept (vault and knife)'
+          }
+        >
+          <Tiles items={items} list={result.kept} empty="Nothing" />
           {cash > 0 && (
             <p className="results-cash">{cash.toLocaleString()} cash goes into your money.</p>
           )}
-        </section>
+        </Panel>
         {!result.keptAll && (
-          <section>
-            <h2>You lost</h2>
-            <ItemList items={items} list={result.lost} empty="Nothing" />
-          </section>
+          <Panel title="You lost" className="results-lost">
+            <Tiles items={items} list={result.lost} empty="Nothing" lost />
+          </Panel>
+        )}
+        <Gain items={items} result={result} />
+        {result.how === 'killed' && result.taken.length > 0 && (
+          <Panel title="What hit you" className="results-damage">
+            <ul>
+              {result.taken.map((s) => (
+                <li key={s.key} className={s.killed ? 'killer' : undefined}>
+                  {describeSource(s)}
+                  {s.killed && <span className="results-count"> · killing blow</span>}
+                </li>
+              ))}
+            </ul>
+          </Panel>
+        )}
+        {result.quests.length > 0 && (
+          <Panel title="Quests" className="results-quests">
+            <ul>
+              {result.quests.map((q, i) => (
+                <li key={i}>
+                  ✓ {q.text} <span className="results-count">· {q.quest}</span>
+                </li>
+              ))}
+            </ul>
+          </Panel>
         )}
       </div>
-      <Gain items={items} result={result} />
-      {result.how === 'killed' && result.taken.length > 0 && (
-        <section className="results-damage">
-          <h2>What hit you</h2>
-          <ul>
-            {result.taken.map((s) => (
-              <li key={s.key} className={s.killed ? 'killer' : undefined}>
-                {describeSource(s)}
-                {s.killed && <span className="results-count"> · killing blow</span>}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-      {result.quests.length > 0 && (
-        <section className="results-quests">
-          <h2>Quests</h2>
-          <ul>
-            {result.quests.map((q, i) => (
-              <li key={i}>
-                ✓ {q.text} <span className="results-count">· {q.quest}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-      <button className="primary" onClick={onNext}>
+      <button className="primary results-continue" onClick={onNext}>
         Continue
       </button>
     </div>

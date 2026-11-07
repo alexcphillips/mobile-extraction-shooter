@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "ammo-762-tcw",
   "name": "7.62×51 mm TCW SP",
+  "shortName": ".308 TCW",
   "type": "ammo",
   "size": [1, 1],
   "value": 80,

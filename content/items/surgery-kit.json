@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "surgery-kit",
   "name": "Surgery kit",
+  "shortName": "Surgery",
   "type": "med",
   "size": [2, 1],
   "value": 9000,

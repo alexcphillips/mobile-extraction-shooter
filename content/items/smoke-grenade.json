@@ -2,6 +2,7 @@
   "formatVersion": 10,
   "id": "smoke-grenade",
   "name": "Smoke grenade",
+  "shortName": "Smoke",
   "type": "grenade",
   "size": [1, 1],
   "value": 2000,

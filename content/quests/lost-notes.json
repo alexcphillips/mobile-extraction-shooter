@@ -15,5 +15,13 @@
       "text": "Find the patient notes (by the car, or in the locked shed) and get out with them"
     }
   ],
-  "rewards": { "money": 25000, "items": [{ "item": "surgery-kit" }] }
+  "rewards": {
+    "money": 25000,
+    "items": [
+      {
+        "item": "surgery-kit"
+      }
+    ],
+    "rep": 0.4
+  }
 }
