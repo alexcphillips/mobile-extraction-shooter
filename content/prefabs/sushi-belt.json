@@ -1,0 +1,94 @@
+{
+  "formatVersion": 3,
+  "id": "sushi-belt",
+  "name": "Sushi belt counter",
+  "colours": {
+    "body": "#2b2d33",
+    "belt": "#a9afb3",
+    "plate-a": "#d0402f",
+    "plate-b": "#e0c030",
+    "top": "#c9a877",
+    "stool": "#7a2f2f"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [6, 0.95, 1.1],
+      "colour": "body"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.95, 0],
+      "size": [6.1, 0.05, 1.2],
+      "colour": "top"
+    },
+    {
+      "type": "box",
+      "pos": [0, 1, 0],
+      "size": [5.8, 0.03, 0.4],
+      "colour": "belt",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-2.2, 1.03, 0],
+      "radius": 0.09,
+      "height": 0.02,
+      "colour": "plate-a",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.9, 1.03, 0],
+      "radius": 0.09,
+      "height": 0.02,
+      "colour": "plate-b",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.4, 1.03, 0],
+      "radius": 0.09,
+      "height": 0.02,
+      "colour": "plate-a",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [1.8, 1.03, 0],
+      "radius": 0.09,
+      "height": 0.02,
+      "colour": "plate-b",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-2, 0, 0.98],
+      "size": [0.4, 0.62, 0.4],
+      "colour": "stool"
+    },
+    {
+      "type": "box",
+      "pos": [-0.7, 0, 0.98],
+      "size": [0.4, 0.62, 0.4],
+      "colour": "stool"
+    },
+    {
+      "type": "box",
+      "pos": [0.7, 0, 0.98],
+      "size": [0.4, 0.62, 0.4],
+      "colour": "stool"
+    },
+    {
+      "type": "box",
+      "pos": [2, 0, 0.98],
+      "size": [0.4, 0.62, 0.4],
+      "colour": "stool"
+    }
+  ]
+}

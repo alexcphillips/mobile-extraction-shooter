@@ -1,0 +1,39 @@
+{
+  "formatVersion": 3,
+  "id": "medical-cart",
+  "name": "Medical cart",
+  "colours": {
+    "body": "#e9ecea",
+    "drawer": "#a8483a",
+    "top": "#7f868a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [0.7, 0.95, 0.5],
+      "colour": "body"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.2, 0.26],
+      "size": [0.6, 0.22, 0.01],
+      "colour": "drawer",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.55, 0.26],
+      "size": [0.6, 0.22, 0.01],
+      "colour": "drawer",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.95, 0],
+      "size": [0.74, 0.03, 0.54],
+      "colour": "top",
+      "collide": false
+    }
+  ]
+}

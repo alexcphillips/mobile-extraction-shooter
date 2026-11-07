@@ -1,0 +1,38 @@
+{
+  "formatVersion": 3,
+  "id": "espresso-bar",
+  "name": "Espresso bar",
+  "colours": {
+    "body": "#6a4a3a",
+    "top": "#e6e0d3",
+    "machine": "#a9afb3",
+    "cups": "#e9e6df"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [3.4, 1, 0.8],
+      "colour": "body"
+    },
+    {
+      "type": "box",
+      "pos": [0, 1, 0],
+      "size": [3.5, 0.05, 0.9],
+      "colour": "top"
+    },
+    {
+      "type": "box",
+      "pos": [-0.8, 1.05, -0.1],
+      "size": [0.9, 0.42, 0.5],
+      "colour": "machine"
+    },
+    {
+      "type": "box",
+      "pos": [0.7, 1.05, 0],
+      "size": [0.8, 0.12, 0.3],
+      "colour": "cups",
+      "collide": false
+    }
+  ]
+}

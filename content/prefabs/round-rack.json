@@ -1,0 +1,36 @@
+{
+  "formatVersion": 3,
+  "id": "round-rack",
+  "name": "Round clothes rack",
+  "colours": {
+    "pole": "#3d4148",
+    "cloth": "#b05a7a"
+  },
+  "nodes": [
+    {
+      "type": "cylinder",
+      "pos": [0, 0, 0],
+      "radius": 0.28,
+      "height": 0.05,
+      "colour": "pole",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0, 0],
+      "radius": 0.04,
+      "height": 1.4,
+      "colour": "pole",
+      "sides": 6
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.5, 0],
+      "radius": 0.56,
+      "height": 0.86,
+      "colour": "cloth",
+      "sides": 8
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "formatVersion": 3,
+  "id": "office-screen",
+  "name": "Office screen",
+  "colours": {
+    "fabric": "#7f8a92",
+    "frame": "#d7d9d8",
+    "paper": "#e9e6df",
+    "mark": "#3f6f9a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [2.4, 1.75, 0.1],
+      "colour": "fabric"
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.75, 0],
+      "size": [2.44, 0.04, 0.14],
+      "colour": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.2, 0, 0],
+      "size": [0.04, 1.77, 0.14],
+      "colour": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.2, 0, 0],
+      "size": [0.04, 1.77, 0.14],
+      "colour": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.6, 1, 0.054],
+      "size": [0.3, 0.42, 0.004],
+      "colour": "paper",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.15, 1.1, 0.054],
+      "size": [0.3, 0.42, 0.004],
+      "colour": "paper",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.5, 0.95, 0.054],
+      "size": [0.5, 0.3, 0.004],
+      "colour": "mark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.4, 1, -0.054],
+      "size": [0.3, 0.42, 0.004],
+      "colour": "paper",
+      "collide": false
+    }
+  ]
+}

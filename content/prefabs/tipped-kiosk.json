@@ -1,0 +1,61 @@
+{
+  "formatVersion": 3,
+  "id": "tipped-kiosk",
+  "name": "Tipped kiosk",
+  "colours": {
+    "body": "#b05a7a",
+    "top": "#e6e0d3",
+    "base": "#3d4148",
+    "stock": "#e0c030"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [2.4, 1.1, 1.1],
+      "colour": "body"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.2, 0.56],
+      "size": [2.2, 0.7, 0.02],
+      "colour": "top",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.28, 0.05, 0],
+      "size": [0.14, 0.9, 0.9],
+      "colour": "base"
+    },
+    {
+      "type": "box",
+      "pos": [1.28, 0.05, 0],
+      "size": [0.14, 0.9, 0.9],
+      "colour": "base"
+    },
+    {
+      "type": "box",
+      "pos": [-0.3, 0, 0.95],
+      "size": [0.5, 0.2, 0.35],
+      "colour": "stock",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.5, 0, 1.1],
+      "size": [0.3, 0.14, 0.26],
+      "colour": "stock",
+      "collide": false,
+      "yaw": 30
+    },
+    {
+      "type": "box",
+      "pos": [0.9, 0, 0.78],
+      "size": [0.36, 0.18, 0.3],
+      "colour": "top",
+      "collide": false,
+      "yaw": -25
+    }
+  ]
+}

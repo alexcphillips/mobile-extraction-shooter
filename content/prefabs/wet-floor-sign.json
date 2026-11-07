@@ -1,0 +1,32 @@
+{
+  "formatVersion": 3,
+  "id": "wet-floor-sign",
+  "name": "Wet floor sign",
+  "colours": {
+    "sign": "#d8b52e",
+    "mark": "#2b2d33"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0.09],
+      "size": [0.32, 0.6, 0.02],
+      "colour": "sign",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, -0.09],
+      "size": [0.32, 0.6, 0.02],
+      "colour": "sign",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.26, 0.102],
+      "size": [0.14, 0.18, 0.004],
+      "colour": "mark",
+      "collide": false
+    }
+  ]
+}

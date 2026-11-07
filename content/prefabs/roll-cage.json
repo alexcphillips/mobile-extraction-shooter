@@ -1,0 +1,167 @@
+{
+  "formatVersion": 3,
+  "id": "roll-cage",
+  "name": "Roll cage",
+  "colours": {
+    "metal": "#8d9296",
+    "metal-dark": "#5e6468",
+    "load": "#c7a877",
+    "load-dark": "#a98a5a",
+    "wheel": "#26282b"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0.12, 0],
+      "size": [0.8, 0.06, 0.7],
+      "colour": "metal"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.18, 0],
+      "size": [0.66, 1.45, 0.56],
+      "colour": "load"
+    },
+    {
+      "type": "box",
+      "pos": [-0.14, 0.18, 0.285],
+      "size": [0.3, 1.2, 0.006],
+      "colour": "load-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.2, 0.8, 0.285],
+      "size": [0.24, 0.58, 0.006],
+      "colour": "load-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.38, 0.12, -0.33],
+      "size": [0.03, 1.63, 0.03],
+      "colour": "metal-dark",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.38, 0, -0.33],
+      "radius": 0.05,
+      "height": 0.09,
+      "colour": "wheel",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.38, 0.12, 0.33],
+      "size": [0.03, 1.63, 0.03],
+      "colour": "metal-dark",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.38, 0, 0.33],
+      "radius": 0.05,
+      "height": 0.09,
+      "colour": "wheel",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.38, 1.72, 0],
+      "size": [0.03, 0.03, 0.66],
+      "colour": "metal",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.38, 0.6, 0],
+      "size": [0.02, 0.02, 0.66],
+      "colour": "metal",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.38, 1.15, 0],
+      "size": [0.02, 0.02, 0.66],
+      "colour": "metal",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.38, 0.12, -0.33],
+      "size": [0.03, 1.63, 0.03],
+      "colour": "metal-dark",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.38, 0, -0.33],
+      "radius": 0.05,
+      "height": 0.09,
+      "colour": "wheel",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.38, 0.12, 0.33],
+      "size": [0.03, 1.63, 0.03],
+      "colour": "metal-dark",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.38, 0, 0.33],
+      "radius": 0.05,
+      "height": 0.09,
+      "colour": "wheel",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.38, 1.72, 0],
+      "size": [0.03, 0.03, 0.66],
+      "colour": "metal",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.38, 0.6, 0],
+      "size": [0.02, 0.02, 0.66],
+      "colour": "metal",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.38, 1.15, 0],
+      "size": [0.02, 0.02, 0.66],
+      "colour": "metal",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.72, -0.33],
+      "size": [0.76, 0.03, 0.03],
+      "colour": "metal",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.6, -0.33],
+      "size": [0.76, 0.02, 0.02],
+      "colour": "metal",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.15, -0.33],
+      "size": [0.76, 0.02, 0.02],
+      "colour": "metal",
+      "collide": false
+    }
+  ]
+}

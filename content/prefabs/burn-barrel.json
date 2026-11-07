@@ -1,0 +1,50 @@
+{
+  "formatVersion": 3,
+  "id": "burn-barrel",
+  "name": "Burn barrel",
+  "colours": {
+    "steel": "#4a3a34",
+    "char": "#1d1e21",
+    "fire": "#e07b2e",
+    "flame": "#f2c230"
+  },
+  "nodes": [
+    {
+      "type": "cylinder",
+      "pos": [0, 0, 0],
+      "radius": 0.32,
+      "height": 0.9,
+      "colour": "steel",
+      "sides": 8
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.88, 0],
+      "radius": 0.28,
+      "height": 0.04,
+      "colour": "char",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.9, 0],
+      "radius": 0.22,
+      "height": 0.32,
+      "colour": "fire",
+      "radiusTop": 0.04,
+      "sides": 6,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.05, 0.9, 0.04],
+      "radius": 0.1,
+      "height": 0.2,
+      "colour": "flame",
+      "radiusTop": 0,
+      "sides": 6,
+      "collide": false
+    }
+  ]
+}

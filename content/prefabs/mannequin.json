@@ -1,0 +1,65 @@
+{
+  "formatVersion": 3,
+  "id": "mannequin",
+  "name": "Mannequin",
+  "colours": {
+    "body": "#d9d3c6",
+    "stand": "#3d4148",
+    "cloth": "#8a6a7a"
+  },
+  "nodes": [
+    {
+      "type": "cylinder",
+      "pos": [0, 0, 0],
+      "radius": 0.2,
+      "height": 0.04,
+      "colour": "stand",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.04, 0],
+      "size": [0.05, 0.82, 0.05],
+      "colour": "stand"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.86, 0],
+      "size": [0.34, 0.56, 0.2],
+      "colour": "cloth"
+    },
+    {
+      "type": "box",
+      "pos": [-0.22, 0.92, 0],
+      "size": [0.08, 0.5, 0.08],
+      "colour": "body",
+      "collide": false,
+      "roll": 8
+    },
+    {
+      "type": "box",
+      "pos": [0.22, 0.92, 0],
+      "size": [0.08, 0.5, 0.08],
+      "colour": "body",
+      "collide": false,
+      "roll": -8
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 1.42, 0],
+      "radius": 0.04,
+      "height": 0.07,
+      "colour": "body",
+      "sides": 6,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.49, 0],
+      "size": [0.17, 0.22, 0.19],
+      "colour": "body",
+      "collide": false
+    }
+  ]
+}

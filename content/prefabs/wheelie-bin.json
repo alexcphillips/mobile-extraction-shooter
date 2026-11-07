@@ -1,0 +1,57 @@
+{
+  "formatVersion": 3,
+  "id": "wheelie-bin",
+  "name": "Wheelie bin",
+  "colours": {
+    "plastic": "#3f6b52",
+    "plastic-dark": "#2e4f3c",
+    "wheel": "#26282b"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0.1, 0],
+      "size": [0.68, 1, 0.72],
+      "colour": "plastic"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.3, 0.363],
+      "size": [0.5, 0.5, 0.006],
+      "colour": "plastic-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.1, 0.03],
+      "size": [0.72, 0.05, 0.8],
+      "colour": "plastic-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.0, -0.4],
+      "size": [0.56, 0.04, 0.05],
+      "colour": "plastic-dark",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.3, 0, -0.3],
+      "radius": 0.1,
+      "height": 0.2,
+      "colour": "wheel",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.3, 0, -0.3],
+      "radius": 0.1,
+      "height": 0.2,
+      "colour": "wheel",
+      "sides": 8,
+      "collide": false
+    }
+  ]
+}

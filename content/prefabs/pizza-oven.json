@@ -1,0 +1,46 @@
+{
+  "formatVersion": 3,
+  "id": "pizza-oven",
+  "name": "Pizza oven",
+  "colours": {
+    "brick": "#a8583a",
+    "mouth": "#1d1e21",
+    "fire": "#e07b2e",
+    "steel": "#a9afb3"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [2.2, 0.9, 1.4],
+      "colour": "steel"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.9, 0],
+      "size": [2.2, 1, 1.4],
+      "colour": "brick",
+      "top": [1.6, 0.9]
+    },
+    {
+      "type": "box",
+      "pos": [0, 1, 0.71],
+      "size": [0.9, 0.5, 0.02],
+      "colour": "mouth",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.02, 0.72],
+      "size": [0.6, 0.1, 0.01],
+      "colour": "fire",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.6, 1.9, -0.3],
+      "size": [0.3, 1.2, 0.3],
+      "colour": "brick"
+    }
+  ]
+}

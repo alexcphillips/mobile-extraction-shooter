@@ -1,0 +1,82 @@
+{
+  "formatVersion": 3,
+  "id": "waste-compactor",
+  "name": "Waste compactor",
+  "colours": {
+    "body": "#3f6b52",
+    "body-dark": "#2e4f3c",
+    "steel": "#7f868b",
+    "hazard": "#d8b52e",
+    "mark": "#2b2d33"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0.8],
+      "size": [2.3, 2.5, 3.6],
+      "colour": "body"
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.5, 0.8],
+      "size": [2.34, 0.08, 3.64],
+      "colour": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.02, 0.8],
+      "size": [2.36, 0.2, 3.66],
+      "colour": "mark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, -1.9],
+      "size": [2.4, 1.35, 1.4],
+      "colour": "steel"
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.35, -1.9],
+      "size": [2.44, 0.06, 1.44],
+      "colour": "mark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.1, -2.61],
+      "size": [2.3, 0.25, 0.02],
+      "colour": "hazard",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.16, 1.2, 0.8],
+      "size": [0.02, 0.6, 2.4],
+      "colour": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.16, 1.2, 0.8],
+      "size": [0.02, 0.6, 2.4],
+      "colour": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.8, 2.61],
+      "size": [1.2, 0.3, 0.02],
+      "colour": "hazard",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.17, 0.4, -0.6],
+      "size": [0.06, 1.6, 0.08],
+      "colour": "steel",
+      "collide": false
+    }
+  ]
+}

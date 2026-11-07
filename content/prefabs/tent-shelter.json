@@ -1,0 +1,49 @@
+{
+  "formatVersion": 3,
+  "id": "tent-shelter",
+  "name": "Tent shelter",
+  "colours": {
+    "cloth": "#5f6f4a",
+    "cloth-b": "#4f5f3e",
+    "pole": "#3d4148",
+    "mat": "#7a6a5a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, -0.74],
+      "size": [2.6, 0.05, 1.7],
+      "colour": "cloth",
+      "collide": false,
+      "pitch": -52
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, 0.74],
+      "size": [2.6, 0.05, 1.7],
+      "colour": "cloth-b",
+      "collide": false,
+      "pitch": 52
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.3, 0],
+      "size": [2.5, 0.7, 1.2],
+      "colour": "cloth-b"
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.28, 0],
+      "size": [2.7, 0.04, 0.04],
+      "colour": "pole",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [2.5, 0.04, 2],
+      "colour": "mat",
+      "collide": false
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "formatVersion": 3,
+  "id": "ceiling-debris",
+  "name": "Ceiling debris",
+  "colours": {
+    "slab": "#a9a69e",
+    "rubble": "#8a8c82",
+    "rebar": "#5a4a3a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [-0.6, 0, 0],
+      "size": [3.2, 0.3, 2.4],
+      "colour": "slab",
+      "pitch": -16,
+      "roll": 9
+    },
+    {
+      "type": "box",
+      "pos": [1.2, 0, 0.5],
+      "size": [2.4, 0.28, 2],
+      "colour": "slab",
+      "pitch": 14,
+      "roll": -20
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [2.4, 0.75, 1.5],
+      "colour": "rubble"
+    },
+    {
+      "type": "box",
+      "pos": [-1.6, 0, -0.8],
+      "size": [0.7, 0.4, 0.7],
+      "colour": "rubble",
+      "yaw": 20
+    },
+    {
+      "type": "box",
+      "pos": [1.9, 0, -0.9],
+      "size": [0.6, 0.3, 0.5],
+      "colour": "rubble",
+      "yaw": 45
+    },
+    {
+      "type": "box",
+      "pos": [0.2, 0, 1.4],
+      "size": [0.5, 0.26, 0.4],
+      "colour": "rubble",
+      "collide": false,
+      "yaw": 15
+    },
+    {
+      "type": "box",
+      "pos": [-1, 0.5, 0.4],
+      "size": [0.04, 0.04, 2.2],
+      "colour": "rebar",
+      "collide": false,
+      "pitch": -38
+    },
+    {
+      "type": "box",
+      "pos": [0.8, 0.5, -0.3],
+      "size": [0.04, 0.04, 1.9],
+      "colour": "rebar",
+      "collide": false,
+      "pitch": 30,
+      "roll": 20
+    },
+    {
+      "type": "box",
+      "pos": [1.4, 0.6, 0.6],
+      "size": [0.04, 0.04, 1.6],
+      "colour": "rebar",
+      "collide": false,
+      "roll": 40
+    }
+  ]
+}

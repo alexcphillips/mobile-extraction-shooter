@@ -1,0 +1,64 @@
+{
+  "formatVersion": 3,
+  "id": "dead-planter",
+  "name": "Dead planter",
+  "colours": {
+    "body": "#8a8c82",
+    "soil": "#4a3a2c",
+    "stalk": "#6b5a42"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [3, 0.72, 1],
+      "colour": "body"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.72, 0],
+      "size": [2.8, 0.03, 0.8],
+      "colour": "soil",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.72, 0],
+      "size": [3.1, 0.05, 1.1],
+      "colour": "body",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1, 0.72, 0.1],
+      "size": [0.05, 0.8, 0.05],
+      "colour": "stalk",
+      "collide": false,
+      "roll": 12
+    },
+    {
+      "type": "box",
+      "pos": [-0.5, 0.72, -0.2],
+      "size": [0.05, 0.5, 0.05],
+      "colour": "stalk",
+      "collide": false,
+      "roll": -18
+    },
+    {
+      "type": "box",
+      "pos": [0.3, 0.72, 0.15],
+      "size": [0.05, 1, 0.05],
+      "colour": "stalk",
+      "collide": false,
+      "roll": 8
+    },
+    {
+      "type": "box",
+      "pos": [0.9, 0.72, -0.1],
+      "size": [0.05, 0.6, 0.05],
+      "colour": "stalk",
+      "collide": false,
+      "roll": -14
+    }
+  ]
+}

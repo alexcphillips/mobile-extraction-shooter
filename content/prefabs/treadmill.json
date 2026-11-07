@@ -1,0 +1,38 @@
+{
+  "formatVersion": 3,
+  "id": "treadmill",
+  "name": "Treadmill",
+  "colours": {
+    "deck": "#2b2d33",
+    "frame": "#7f868a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [0.8, 0.2, 1.8],
+      "colour": "deck"
+    },
+    {
+      "type": "box",
+      "pos": [-0.36, 0.2, -0.76],
+      "size": [0.06, 1.05, 0.06],
+      "colour": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.36, 0.2, -0.76],
+      "size": [0.06, 1.05, 0.06],
+      "colour": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.2, -0.76],
+      "size": [0.8, 0.2, 0.2],
+      "colour": "deck",
+      "collide": false
+    }
+  ]
+}

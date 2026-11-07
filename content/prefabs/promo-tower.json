@@ -1,0 +1,75 @@
+{
+  "formatVersion": 3,
+  "id": "promo-tower",
+  "name": "Promo tower",
+  "colours": {
+    "panel": "#e9e6df",
+    "accent": "#b05a7a",
+    "poster": "#e6e0d3",
+    "foot": "#3d4148"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [1.1, 2.1, 1.1],
+      "colour": "panel"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.02, 0],
+      "size": [1.16, 0.12, 1.16],
+      "colour": "foot",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.1, 0],
+      "size": [1.16, 0.1, 1.16],
+      "colour": "accent",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.5, 0.555],
+      "size": [0.8, 1.3, 0.006],
+      "colour": "accent",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.5, -0.555],
+      "size": [0.8, 1.3, 0.006],
+      "colour": "poster",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.555, 0.5, 0],
+      "size": [0.006, 1.3, 0.8],
+      "colour": "accent",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.555, 0.5, 0],
+      "size": [0.006, 1.3, 0.8],
+      "colour": "poster",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.75, 0.56],
+      "size": [0.5, 0.5, 0.004],
+      "colour": "poster",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.75, -0.56],
+      "size": [0.5, 0.5, 0.004],
+      "colour": "poster",
+      "collide": false
+    }
+  ]
+}

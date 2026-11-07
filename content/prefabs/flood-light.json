@@ -1,0 +1,64 @@
+{
+  "formatVersion": 3,
+  "id": "flood-light",
+  "name": "Flood light pole",
+  "colours": {
+    "pole": "#6f777b",
+    "lamp": "#3d4148",
+    "lens": "#f4f2ec"
+  },
+  "nodes": [
+    {
+      "type": "cylinder",
+      "pos": [0, 0, 0],
+      "radius": 0.12,
+      "height": 7.5,
+      "colour": "pole",
+      "sides": 8
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0, 0],
+      "radius": 0.24,
+      "height": 0.3,
+      "colour": "pole",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 7.3, -0.1],
+      "size": [1.2, 0.08, 0.08],
+      "colour": "pole",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.4, 7.0, -0.25],
+      "size": [0.4, 0.3, 0.25],
+      "colour": "lamp",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.4, 7.0, -0.25],
+      "size": [0.4, 0.3, 0.25],
+      "colour": "lamp",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.4, 7.0, -0.38],
+      "size": [0.34, 0.24, 0.01],
+      "colour": "lens",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.4, 7.0, -0.38],
+      "size": [0.34, 0.24, 0.01],
+      "colour": "lens",
+      "collide": false
+    }
+  ]
+}

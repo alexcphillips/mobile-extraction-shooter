@@ -10,7 +10,7 @@
   "nodes": [
     {
       "type": "cylinder",
-      "pos": [0, 0, 0],
+      "pos": [0, 0.02, 0],
       "radius": 0.28,
       "height": 0.03,
       "colour": "dark",

@@ -1,0 +1,68 @@
+{
+  "formatVersion": 3,
+  "id": "tech-wall-display",
+  "name": "Tech wall display",
+  "colours": {
+    "panel": "#e9ecef",
+    "screen": "#1d1e21",
+    "glow": "#58e0d0",
+    "shelf": "#2b2d33"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0.2, 0],
+      "size": [3, 2.4, 0.14],
+      "colour": "panel"
+    },
+    {
+      "type": "box",
+      "pos": [0, 1, 0.13],
+      "size": [2.8, 0.04, 0.2],
+      "colour": "shelf",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.95, 1.45, 0.08],
+      "size": [0.8, 0.62, 0.03],
+      "colour": "screen",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.95, 1.49, 0.1],
+      "size": [0.72, 0.54, 0.01],
+      "colour": "glow",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.45, 0.08],
+      "size": [0.8, 0.62, 0.03],
+      "colour": "screen",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.49, 0.1],
+      "size": [0.72, 0.54, 0.01],
+      "colour": "glow",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.95, 1.45, 0.08],
+      "size": [0.8, 0.62, 0.03],
+      "colour": "screen",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.95, 1.49, 0.1],
+      "size": [0.72, 0.54, 0.01],
+      "colour": "glow",
+      "collide": false
+    }
+  ]
+}

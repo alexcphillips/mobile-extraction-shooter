@@ -1,0 +1,84 @@
+{
+  "formatVersion": 3,
+  "id": "retail-gondola",
+  "name": "Retail gondola",
+  "colours": {
+    "body": "#d7d9d8",
+    "goods-a": "#e07b2e",
+    "goods-b": "#3f6f9a",
+    "goods-c": "#e6e0d3",
+    "edge": "#8d9296",
+    "label": "#2b2d33"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [3, 1.35, 0.9],
+      "colour": "body"
+    },
+    {
+      "type": "box",
+      "pos": [-0.95, 0.3, 0],
+      "size": [0.87, 0.36, 1.0],
+      "colour": "goods-a",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.05, 0.3, 0],
+      "size": [1.07, 0.36, 1.0],
+      "colour": "goods-b",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.0, 0.3, 0],
+      "size": [0.77, 0.36, 1.0],
+      "colour": "goods-c",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.8, 0.84, 0],
+      "size": [1.17, 0.36, 1.0],
+      "colour": "goods-b",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.1, 0.84, 0],
+      "size": [0.57, 0.36, 1.0],
+      "colour": "goods-c",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.9, 0.84, 0],
+      "size": [0.97, 0.36, 1.0],
+      "colour": "goods-a",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.35, 0],
+      "size": [2.9, 0.03, 0.84],
+      "colour": "edge",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.505, 0.3, 0],
+      "size": [0.012, 0.9, 0.6],
+      "colour": "goods-a",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.505, 0.3, 0],
+      "size": [0.012, 0.9, 0.6],
+      "colour": "goods-b",
+      "collide": false
+    }
+  ]
+}

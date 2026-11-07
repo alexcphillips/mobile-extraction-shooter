@@ -1,0 +1,35 @@
+{
+  "formatVersion": 3,
+  "id": "fallen-sign",
+  "name": "Fallen sign",
+  "colours": {
+    "panel": "#2f6b4f",
+    "face": "#e9e6df",
+    "frame": "#3d4148"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [4, 0.1, 1.2],
+      "colour": "panel",
+      "pitch": -20
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.08, 0],
+      "size": [3, 0.02, 0.7],
+      "colour": "face",
+      "collide": false,
+      "pitch": -20
+    },
+    {
+      "type": "box",
+      "pos": [1.9, 0, 0.3],
+      "size": [0.06, 1.2, 0.06],
+      "colour": "frame",
+      "collide": false,
+      "roll": 24
+    }
+  ]
+}

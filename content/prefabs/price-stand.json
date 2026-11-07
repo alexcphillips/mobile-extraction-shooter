@@ -1,0 +1,47 @@
+{
+  "formatVersion": 3,
+  "id": "price-stand",
+  "name": "Price stand",
+  "colours": {
+    "pole": "#3d4148",
+    "card": "#e6e0d3",
+    "mark": "#b8413a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [0.3, 0.03, 0.3],
+      "colour": "pole",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [0.03, 1.2, 0.03],
+      "colour": "pole",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.1, 0],
+      "size": [0.44, 0.34, 0.02],
+      "colour": "card",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.32, 0.012],
+      "size": [0.36, 0.08, 0.004],
+      "colour": "mark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.32, -0.012],
+      "size": [0.36, 0.08, 0.004],
+      "colour": "mark",
+      "collide": false
+    }
+  ]
+}

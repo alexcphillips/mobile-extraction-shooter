@@ -1,0 +1,96 @@
+{
+  "formatVersion": 3,
+  "id": "bar-counter",
+  "name": "Bar counter",
+  "colours": {
+    "body": "#4a2f20",
+    "top": "#c8a24b",
+    "rail": "#a9afb3",
+    "stool": "#2b2d33"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [4, 1.05, 0.7],
+      "colour": "body"
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.05, 0.03],
+      "size": [4.08, 0.05, 0.86],
+      "colour": "top"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.2, 0.42],
+      "size": [3.9, 0.04, 0.04],
+      "colour": "rail",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-1.4, 0, 0.85],
+      "radius": 0.05,
+      "height": 0.68,
+      "colour": "rail",
+      "sides": 6
+    },
+    {
+      "type": "cylinder",
+      "pos": [-1.4, 0.68, 0.85],
+      "radius": 0.19,
+      "height": 0.06,
+      "colour": "stool",
+      "sides": 8
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.5, 0, 0.85],
+      "radius": 0.05,
+      "height": 0.68,
+      "colour": "rail",
+      "sides": 6
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.5, 0.68, 0.85],
+      "radius": 0.19,
+      "height": 0.06,
+      "colour": "stool",
+      "sides": 8
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.5, 0, 0.85],
+      "radius": 0.05,
+      "height": 0.68,
+      "colour": "rail",
+      "sides": 6
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.5, 0.68, 0.85],
+      "radius": 0.19,
+      "height": 0.06,
+      "colour": "stool",
+      "sides": 8
+    },
+    {
+      "type": "cylinder",
+      "pos": [1.4, 0, 0.85],
+      "radius": 0.05,
+      "height": 0.68,
+      "colour": "rail",
+      "sides": 6
+    },
+    {
+      "type": "cylinder",
+      "pos": [1.4, 0.68, 0.85],
+      "radius": 0.19,
+      "height": 0.06,
+      "colour": "stool",
+      "sides": 8
+    }
+  ]
+}

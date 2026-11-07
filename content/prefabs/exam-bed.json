@@ -1,0 +1,31 @@
+{
+  "formatVersion": 3,
+  "id": "exam-bed",
+  "name": "Exam bed",
+  "colours": {
+    "pad": "#6fa8a0",
+    "frame": "#d7d9d8",
+    "paper": "#f4f2ec"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [0.8, 0.7, 1.9],
+      "colour": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.7, 0],
+      "size": [0.76, 0.1, 1.86],
+      "colour": "pad"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.8, 0],
+      "size": [0.5, 0.01, 1.8],
+      "colour": "paper",
+      "collide": false
+    }
+  ]
+}

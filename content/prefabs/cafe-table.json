@@ -1,0 +1,36 @@
+{
+  "formatVersion": 3,
+  "id": "cafe-table",
+  "name": "Cafe table",
+  "colours": {
+    "top": "#c9a877",
+    "leg": "#3d4148",
+    "seat": "#8a6a4a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0.72, 0],
+      "size": [0.9, 0.05, 0.9],
+      "colour": "top"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [0.1, 0.72, 0.1],
+      "colour": "leg"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, -0.72],
+      "size": [0.42, 0.45, 0.42],
+      "colour": "seat"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, 0.72],
+      "size": [0.42, 0.45, 0.42],
+      "colour": "seat"
+    }
+  ]
+}

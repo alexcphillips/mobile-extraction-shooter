@@ -1,0 +1,105 @@
+{
+  "formatVersion": 3,
+  "id": "retail-gondola-tall",
+  "name": "Tall retail gondola",
+  "colours": {
+    "body": "#d7d9d8",
+    "goods-a": "#e07b2e",
+    "goods-b": "#3f6f9a",
+    "goods-c": "#e6e0d3",
+    "edge": "#8d9296",
+    "label": "#2b2d33"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [3, 1.9, 0.7],
+      "colour": "body"
+    },
+    {
+      "type": "box",
+      "pos": [-0.95, 0.25, 0],
+      "size": [0.87, 0.46, 0.8],
+      "colour": "goods-a",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.05, 0.25, 0],
+      "size": [1.07, 0.46, 0.8],
+      "colour": "goods-b",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.0, 0.25, 0],
+      "size": [0.77, 0.46, 0.8],
+      "colour": "goods-c",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.8, 0.8, 0],
+      "size": [1.17, 0.46, 0.8],
+      "colour": "goods-b",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.1, 0.8, 0],
+      "size": [0.57, 0.46, 0.8],
+      "colour": "goods-c",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.9, 0.8, 0],
+      "size": [0.97, 0.46, 0.8],
+      "colour": "goods-a",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.95, 1.35, 0],
+      "size": [0.87, 0.42, 0.8],
+      "colour": "goods-a",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.05, 1.35, 0],
+      "size": [1.07, 0.42, 0.8],
+      "colour": "goods-b",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.0, 1.35, 0],
+      "size": [0.77, 0.42, 0.8],
+      "colour": "goods-c",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.9, 0],
+      "size": [3.02, 0.22, 0.14],
+      "colour": "label",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.94, 0.074],
+      "size": [1.2, 0.14, 0.006],
+      "colour": "goods-c",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.94, -0.074],
+      "size": [1.2, 0.14, 0.006],
+      "colour": "goods-c",
+      "collide": false
+    }
+  ]
+}

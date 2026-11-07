@@ -1,0 +1,38 @@
+{
+  "formatVersion": 3,
+  "id": "salon-station",
+  "name": "Salon station",
+  "colours": {
+    "chair": "#3d4148",
+    "mirror": "#bfe0e6",
+    "frame": "#e6e0d3"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0.5],
+      "size": [0.56, 0.5, 0.56],
+      "colour": "chair"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.5, 0.76],
+      "size": [0.5, 0.56, 0.08],
+      "colour": "chair",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.1, 0],
+      "size": [1.1, 0.8, 0.3],
+      "colour": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [0, 1, 0.02],
+      "size": [1, 1, 0.04],
+      "colour": "mirror",
+      "collide": false
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "formatVersion": 3,
+  "id": "planter-screen",
+  "name": "Planter screen",
+  "colours": {
+    "box": "#6a4a3a",
+    "box-dark": "#4f3729",
+    "leaf": "#3f7d4a",
+    "leaf-light": "#4f9558"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [2.4, 0.6, 0.5],
+      "colour": "box"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.56, 0],
+      "size": [2.44, 0.06, 0.54],
+      "colour": "box-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.6, 0],
+      "size": [2.2, 1.15, 0.3],
+      "colour": "leaf"
+    },
+    {
+      "type": "box",
+      "pos": [-0.6, 0.7, 0],
+      "size": [0.8, 1.0, 0.36],
+      "colour": "leaf-light",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.5, 0.8, 0.02],
+      "size": [0.9, 0.98, 0.34],
+      "colour": "leaf-light",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.05, 1.55, 0],
+      "size": [1.1, 0.3, 0.26],
+      "colour": "leaf",
+      "collide": false
+    }
+  ]
+}

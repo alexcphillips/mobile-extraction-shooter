@@ -1,0 +1,31 @@
+{
+  "formatVersion": 3,
+  "id": "dumbbell-rack",
+  "name": "Dumbbell rack",
+  "colours": {
+    "frame": "#2b2d33",
+    "weight": "#7f868a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [2.4, 0.96, 0.5],
+      "colour": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.5, 0.1],
+      "size": [2.2, 0.14, 0.3],
+      "colour": "weight",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.96, 0.1],
+      "size": [2.2, 0.14, 0.3],
+      "colour": "weight",
+      "collide": false
+    }
+  ]
+}

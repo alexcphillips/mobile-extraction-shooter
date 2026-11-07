@@ -1,0 +1,79 @@
+{
+  "formatVersion": 3,
+  "id": "tech-display-table",
+  "name": "Tech display table",
+  "colours": {
+    "top": "#c9a877",
+    "side": "#e9ecef",
+    "device": "#1d1e21",
+    "screen": "#58e0d0"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0.8, 0],
+      "size": [2.8, 0.06, 1.1],
+      "colour": "top"
+    },
+    {
+      "type": "box",
+      "pos": [-1.25, 0, 0],
+      "size": [0.1, 0.8, 1],
+      "colour": "side"
+    },
+    {
+      "type": "box",
+      "pos": [1.25, 0, 0],
+      "size": [0.1, 0.8, 1],
+      "colour": "side"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.1, 0],
+      "size": [2.4, 0.56, 0.12],
+      "colour": "side"
+    },
+    {
+      "type": "box",
+      "pos": [-0.95, 0.86, -0.25],
+      "size": [0.2, 0.02, 0.36],
+      "colour": "device",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.4, 0.86, 0.25],
+      "size": [0.2, 0.02, 0.36],
+      "colour": "device",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.2, 0.86, -0.22],
+      "size": [0.46, 0.02, 0.34],
+      "colour": "device",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.85, 0.86, 0.22],
+      "size": [0.46, 0.02, 0.34],
+      "colour": "device",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.2, 0.88, -0.22],
+      "size": [0.4, 0.005, 0.28],
+      "colour": "screen",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.85, 0.88, 0.22],
+      "size": [0.4, 0.005, 0.28],
+      "colour": "screen",
+      "collide": false
+    }
+  ]
+}
