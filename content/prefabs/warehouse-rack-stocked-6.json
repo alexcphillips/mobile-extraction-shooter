@@ -1,0 +1,22 @@
+{
+  "formatVersion": 3,
+  "id": "warehouse-rack-stocked-6",
+  "name": "Stocked rack, picked over",
+  "nodes": [
+    {
+      "type": "prefab",
+      "prefab": "warehouse-rack",
+      "pos": [0, 0, 0]
+    },
+    {
+      "type": "prefab",
+      "prefab": "stock-crate",
+      "pos": [0.68, 0, 0]
+    },
+    {
+      "type": "prefab",
+      "prefab": "stock-wrapped",
+      "pos": [-0.68, 2, 0]
+    }
+  ]
+}

@@ -3862,17 +3862,18 @@
     },
     {
       "type": "group",
+      "name": "rack-lane-36-cut",
       "pos": [36, 0.2, 116],
       "nodes": [
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-1",
+          "prefab": "warehouse-rack-stocked-7",
           "pos": [0.644, 0, 4.2],
           "yaw": 90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-2",
+          "prefab": "warehouse-rack-stocked-3",
           "pos": [0.644, 0, 1.4],
           "yaw": 90
         },
@@ -3884,7 +3885,7 @@
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack",
+          "prefab": "warehouse-rack-stocked-2",
           "pos": [0.644, 0, -4.2],
           "yaw": 90
         },
@@ -3896,27 +3897,27 @@
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-1",
+          "prefab": "warehouse-rack-stocked-3",
           "pos": [-0.656, 0, 1.4],
           "yaw": -90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack",
+          "prefab": "warehouse-rack-stocked-1",
           "pos": [-0.656, 0, -1.4],
           "yaw": -90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-2",
-          "pos": [-0.65, 0, -4.2],
+          "prefab": "warehouse-rack-stocked-7",
+          "pos": [-0.656, 0, -4.2],
           "yaw": -90
         }
-      ],
-      "name": "warehouse-lane-1"
+      ]
     },
     {
       "type": "group",
+      "name": "rack-lane-42-nest",
       "pos": [42, 0.2, 116],
       "nodes": [
         {
@@ -3927,25 +3928,25 @@
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-2",
+          "prefab": "warehouse-rack-stocked-4",
           "pos": [0.644, 0, 1.4],
           "yaw": 90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-1",
+          "prefab": "warehouse-rack-stocked-4",
           "pos": [0.644, 0, -1.4],
           "yaw": 90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack",
+          "prefab": "warehouse-rack-stocked-7",
           "pos": [0.644, 0, -4.2],
           "yaw": 90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-2",
+          "prefab": "warehouse-rack-stocked-7",
           "pos": [-0.656, 0, 4.2],
           "yaw": -90
         },
@@ -3957,76 +3958,214 @@
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack",
+          "prefab": "warehouse-rack-stocked-4",
           "pos": [-0.656, 0, -1.4],
           "yaw": -90
         },
         {
           "type": "prefab",
           "prefab": "warehouse-rack-stocked-2",
-          "pos": [-0.606, 0, -4.2],
+          "pos": [-0.656, 0, -4.2],
           "yaw": -90
         }
-      ],
-      "name": "warehouse-lane-1"
+      ]
     },
     {
       "type": "group",
+      "name": "rack-lane-48-ladder",
       "pos": [48, 0.2, 116],
       "nodes": [
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-1",
+          "prefab": "warehouse-rack-stocked-5",
           "pos": [0.644, 0, 4.2],
           "yaw": 90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-2",
+          "prefab": "warehouse-rack-stocked-6",
           "pos": [0.644, 0, 1.4],
           "yaw": 90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-1",
+          "prefab": "warehouse-rack-stocked-5",
           "pos": [0.644, 0, -1.4],
           "yaw": 90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack",
+          "prefab": "warehouse-rack-stocked-6",
           "pos": [0.644, 0, -4.2],
           "yaw": 90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-2",
+          "prefab": "warehouse-rack-stocked-1",
           "pos": [-0.656, 0, 4.2],
           "yaw": -90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-1",
+          "prefab": "warehouse-rack-stocked-2",
           "pos": [-0.656, 0, 1.4],
           "yaw": -90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack",
+          "prefab": "warehouse-rack-stocked-7",
           "pos": [-0.656, 0, -1.4],
           "yaw": -90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-2",
-          "pos": [-0.606, 0, -4.2],
+          "prefab": "warehouse-rack-stocked-1",
+          "pos": [-0.656, 0, -4.2],
           "yaw": -90
+        },
+        {
+          "type": "ladder",
+          "id": "rack-ladder",
+          "pos": [0.644, 0, -5.64],
+          "yaw": 180,
+          "height": 3.7,
+          "colour": "#d8b52e"
+        },
+        {
+          "type": "group",
+          "name": "rack-bridge",
+          "pos": [0, 0, 0],
+          "nodes": [
+            {
+              "type": "box",
+              "pos": [2.994, 3.6500000000000004, 1.4],
+              "size": [3.66, 0.05, 1],
+              "colour": "#5d6266"
+            },
+            {
+              "type": "box",
+              "pos": [2.994, 3.5300000000000002, 0.9299999999999999],
+              "size": [3.66, 0.12, 0.06],
+              "colour": "#2c4668",
+              "collide": false
+            },
+            {
+              "type": "box",
+              "pos": [2.994, 3.5300000000000002, 1.8699999999999999],
+              "size": [3.66, 0.12, 0.06],
+              "colour": "#2c4668",
+              "collide": false
+            },
+            {
+              "type": "box",
+              "pos": [1.53, 3.701, 1.4],
+              "size": [0.04, 0.002, 0.94],
+              "colour": "#2c4668",
+              "collide": false
+            },
+            {
+              "type": "box",
+              "pos": [2.262, 3.701, 1.4],
+              "size": [0.04, 0.002, 0.94],
+              "colour": "#2c4668",
+              "collide": false
+            },
+            {
+              "type": "box",
+              "pos": [2.994, 3.701, 1.4],
+              "size": [0.04, 0.002, 0.94],
+              "colour": "#2c4668",
+              "collide": false
+            },
+            {
+              "type": "box",
+              "pos": [3.726, 3.701, 1.4],
+              "size": [0.04, 0.002, 0.94],
+              "colour": "#2c4668",
+              "collide": false
+            },
+            {
+              "type": "box",
+              "pos": [4.458, 3.701, 1.4],
+              "size": [0.04, 0.002, 0.94],
+              "colour": "#2c4668",
+              "collide": false
+            },
+            {
+              "type": "box",
+              "pos": [2.994, 4.65, 0.93],
+              "size": [3.66, 0.05, 0.05],
+              "colour": "#d8b52e"
+            },
+            {
+              "type": "box",
+              "pos": [2.994, 4.2, 0.93],
+              "size": [3.66, 0.04, 0.04],
+              "colour": "#d8b52e",
+              "collide": false
+            },
+            {
+              "type": "box",
+              "pos": [1.214, 3.7, 0.93],
+              "size": [0.05, 0.95, 0.05],
+              "colour": "#d8b52e",
+              "collide": false
+            },
+            {
+              "type": "box",
+              "pos": [2.994, 3.7, 0.93],
+              "size": [0.05, 0.95, 0.05],
+              "colour": "#d8b52e",
+              "collide": false
+            },
+            {
+              "type": "box",
+              "pos": [4.774, 3.7, 0.93],
+              "size": [0.05, 0.95, 0.05],
+              "colour": "#d8b52e",
+              "collide": false
+            },
+            {
+              "type": "box",
+              "pos": [2.994, 4.65, 1.87],
+              "size": [3.66, 0.05, 0.05],
+              "colour": "#d8b52e"
+            },
+            {
+              "type": "box",
+              "pos": [2.994, 4.2, 1.87],
+              "size": [3.66, 0.04, 0.04],
+              "colour": "#d8b52e",
+              "collide": false
+            },
+            {
+              "type": "box",
+              "pos": [1.214, 3.7, 1.87],
+              "size": [0.05, 0.95, 0.05],
+              "colour": "#d8b52e",
+              "collide": false
+            },
+            {
+              "type": "box",
+              "pos": [2.994, 3.7, 1.87],
+              "size": [0.05, 0.95, 0.05],
+              "colour": "#d8b52e",
+              "collide": false
+            },
+            {
+              "type": "box",
+              "pos": [4.774, 3.7, 1.87],
+              "size": [0.05, 0.95, 0.05],
+              "colour": "#d8b52e",
+              "collide": false
+            }
+          ]
         }
-      ],
-      "name": "warehouse-lane-1"
+      ]
     },
     {
       "type": "group",
+      "name": "rack-lane-54-bridge",
       "pos": [54, 0.2, 116],
       "nodes": [
         {
@@ -4037,56 +4176,56 @@
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-2",
+          "prefab": "warehouse-rack-stocked-7",
           "pos": [0.644, 0, 1.4],
           "yaw": 90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-1",
+          "prefab": "warehouse-rack-stocked-2",
           "pos": [0.644, 0, -1.4],
           "yaw": 90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack",
+          "prefab": "warehouse-rack-stocked-3",
           "pos": [0.644, 0, -4.2],
           "yaw": 90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-2",
+          "prefab": "warehouse-rack-stocked-6",
           "pos": [-0.656, 0, 4.2],
           "yaw": -90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-1",
+          "prefab": "warehouse-rack-stocked-5",
           "pos": [-0.656, 0, 1.4],
           "yaw": -90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack",
+          "prefab": "warehouse-rack-stocked-1",
           "pos": [-0.656, 0, -1.4],
           "yaw": -90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-2",
-          "pos": [-0.606, 0, -4.2],
+          "prefab": "warehouse-rack-stocked-3",
+          "pos": [-0.656, 0, -4.2],
           "yaw": -90
         }
-      ],
-      "name": "warehouse-lane-1"
+      ]
     },
     {
       "type": "group",
+      "name": "rack-lane-60-picked",
       "pos": [60, 0.2, 116],
       "nodes": [
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-1",
+          "prefab": "warehouse-rack-stocked-6",
           "pos": [0.644, 0, 4.2],
           "yaw": 90
         },
@@ -4098,13 +4237,13 @@
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-1",
+          "prefab": "warehouse-rack",
           "pos": [0.644, 0, -1.4],
           "yaw": 90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack",
+          "prefab": "warehouse-rack-stocked-6",
           "pos": [0.644, 0, -4.2],
           "yaw": 90
         },
@@ -4116,7 +4255,7 @@
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-1",
+          "prefab": "warehouse-rack-stocked-6",
           "pos": [-0.656, 0, 1.4],
           "yaw": -90
         },
@@ -4128,67 +4267,66 @@
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-2",
-          "pos": [-0.606, 0, -4.2],
+          "prefab": "warehouse-rack-stocked-3",
+          "pos": [-0.656, 0, -4.2],
           "yaw": -90
         }
-      ],
-      "name": "warehouse-lane-1"
+      ]
     },
     {
       "type": "group",
+      "name": "rack-lane-66-cut",
       "pos": [66, 0.2, 116],
       "nodes": [
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-1",
+          "prefab": "warehouse-rack-stocked-3",
           "pos": [0.644, 0, 4.2],
           "yaw": 90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-2",
+          "prefab": "warehouse-rack-stocked-1",
           "pos": [0.644, 0, 1.4],
           "yaw": 90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-1",
+          "prefab": "warehouse-rack-stocked-7",
           "pos": [0.644, 0, -1.4],
           "yaw": 90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack",
+          "prefab": "warehouse-rack-stocked-1",
           "pos": [0.644, 0, -4.2],
           "yaw": 90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-2",
+          "prefab": "warehouse-rack-stocked-3",
           "pos": [-0.656, 0, 4.2],
           "yaw": -90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-1",
+          "prefab": "warehouse-rack-stocked-7",
           "pos": [-0.656, 0, 1.4],
           "yaw": -90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack",
+          "prefab": "warehouse-rack-stocked-2",
           "pos": [-0.656, 0, -1.4],
           "yaw": -90
         },
         {
           "type": "prefab",
-          "prefab": "warehouse-rack-stocked-2",
-          "pos": [-0.606, 0, -4.2],
+          "prefab": "warehouse-rack-stocked-1",
+          "pos": [-0.656, 0, -4.2],
           "yaw": -90
         }
-      ],
-      "name": "warehouse-lane-1"
+      ]
     },
     {
       "type": "group",
@@ -32613,72 +32751,73 @@
           "nodes": [
             {
               "type": "group",
+              "name": "warehouse-lane-west-1",
               "pos": [36, 0.2, 102.6],
               "nodes": [
                 {
                   "type": "prefab",
-                  "prefab": "warehouse-rack-stocked-1",
+                  "prefab": "warehouse-rack-stocked-2",
                   "pos": [0.644, 0, 4.2],
                   "yaw": 90
                 },
                 {
                   "type": "prefab",
-                  "prefab": "warehouse-rack-stocked-2",
+                  "prefab": "warehouse-rack-stocked-1",
                   "pos": [0.644, 0, 1.4],
                   "yaw": 90
                 },
                 {
                   "type": "prefab",
-                  "prefab": "warehouse-rack-stocked-1",
+                  "prefab": "warehouse-rack-stocked-3",
                   "pos": [0.644, 0, -1.4],
                   "yaw": 90
                 },
                 {
                   "type": "prefab",
-                  "prefab": "warehouse-rack",
+                  "prefab": "warehouse-rack-stocked-7",
                   "pos": [0.644, 0, -4.2],
                   "yaw": 90
                 },
                 {
                   "type": "prefab",
-                  "prefab": "warehouse-rack-stocked-2",
+                  "prefab": "warehouse-rack-stocked-1",
                   "pos": [-0.656, 0, 4.2],
                   "yaw": -90
                 },
                 {
                   "type": "prefab",
-                  "prefab": "warehouse-rack-stocked-1",
+                  "prefab": "warehouse-rack-stocked-7",
                   "pos": [-0.656, 0, 1.4],
                   "yaw": -90
                 },
                 {
                   "type": "prefab",
-                  "prefab": "warehouse-rack",
+                  "prefab": "warehouse-rack-stocked-3",
                   "pos": [-0.656, 0, -1.4],
                   "yaw": -90
                 },
                 {
                   "type": "prefab",
                   "prefab": "warehouse-rack-stocked-2",
-                  "pos": [-0.65, 0, -4.2],
+                  "pos": [-0.656, 0, -4.2],
                   "yaw": -90
                 }
-              ],
-              "name": "warehouse-lane-west-1"
+              ]
             },
             {
               "type": "group",
+              "name": "warehouse-lane-west-2",
               "pos": [42, 0.2, 102.6],
               "nodes": [
                 {
                   "type": "prefab",
-                  "prefab": "warehouse-rack-stocked-1",
+                  "prefab": "warehouse-rack-stocked-7",
                   "pos": [0.644, 0, 4.2],
                   "yaw": 90
                 },
                 {
                   "type": "prefab",
-                  "prefab": "warehouse-rack-stocked-2",
+                  "prefab": "warehouse-rack-stocked-6",
                   "pos": [0.644, 0, 1.4],
                   "yaw": 90
                 },
@@ -32690,13 +32829,13 @@
                 },
                 {
                   "type": "prefab",
-                  "prefab": "warehouse-rack",
+                  "prefab": "warehouse-rack-stocked-2",
                   "pos": [0.644, 0, -4.2],
                   "yaw": 90
                 },
                 {
                   "type": "prefab",
-                  "prefab": "warehouse-rack-stocked-2",
+                  "prefab": "warehouse-rack-stocked-1",
                   "pos": [-0.656, 0, 4.2],
                   "yaw": -90
                 },
@@ -32708,18 +32847,17 @@
                 },
                 {
                   "type": "prefab",
-                  "prefab": "warehouse-rack",
+                  "prefab": "warehouse-rack-stocked-6",
                   "pos": [-0.656, 0, -1.4],
                   "yaw": -90
                 },
                 {
                   "type": "prefab",
-                  "prefab": "warehouse-rack-stocked-2",
-                  "pos": [-0.606, 0, -4.2],
+                  "prefab": "warehouse-rack-stocked-7",
+                  "pos": [-0.656, 0, -4.2],
                   "yaw": -90
                 }
-              ],
-              "name": "warehouse-lane-west-2"
+              ]
             }
           ]
         },
