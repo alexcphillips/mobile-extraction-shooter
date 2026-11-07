@@ -62,3 +62,35 @@ Only when the user asks for a container (see Collision). A container is a node w
 3. Place one near the player spawn in northpoint, on clear ground (list the nodes within a few metres first), so the user can find it. Tell them the map may be open in their editor: if it saves over the file, the placement goes, the prefab stays.
 4. Check the user's existing prefabs before making one: they may already have a version (empty-pallet) or a convention to keep (a colour slot the map passes down).
 5. Say what wasn't seen: these are built from numbers, so ask for a screenshot and fix from it.
+
+## Mall finishes (2026-11-06)
+The user loved the Northpoint atrium's main stairs and wants this look carried through the main mall (not the warehouse, yard or other areas). Find them in the `main-stairs` group of `atrium-floorplan`.
+
+- **Palette:**
+
+| Use | Colour |
+|---|---|
+| Treads, landings, pale stone | `#e6e0d3` |
+| Balustrades, plinths, columns, planters | `#3d4148` |
+| Brass rail caps and trim | `#c8a24b` |
+| Glass (drawn see-through) | `#9fd0d8` |
+| Atrium floor field / arcade floor and tile lines | `#cfc8b9` / `#b7b0a2` |
+| Tree trunk / soil | `#6b4f35` / `#5a4632` |
+| Tree crown, dark to light | `#3f7d4a`, `#4f9558`, `#63ad69` |
+
+- **Solid sloped rail, for any flight:** a dark box 0.25 m thick, its top 1.0 m above the line of the steps, tilted to the stair's slope so it really collides and works as waist-high cover. Stairs' own `sides` are drawn only, so don't use them where people could fall. For a 0.5 slope: pitch −26.565 (a box rises towards local +z with negative pitch), size `[0.25, 0.894, run / cos + 0.3]`, and pos y = height of the steps at mid-flight + 0.5 − 0.447.
+- **Brass cap:** the same length and tilt on top of the rail, `[0.32, 0.06, length]`, `collide: false`.
+- **Flat edges (landings, and the ring when it gets railings):** `glass` panels 1.0 m high and 0.05 thick, a brass cap on top at the same size as above, and a dark 0.25 m post at each corner. Glass can be shot out, which is part of the appeal.
+- **Long glass rails (`ring-railing`):** panes about 3.75 m between posts, with one brass cap over each unbroken run. All glass draws as one instanced mesh, so short panes add no draw calls. A 0.25 × 0.3 m dark fascia under the deck edge (`ring-fascia`) matches the bridge beams.
+- **Food stall (`food-stall`):** origin on the floor under its middle, faces +z, 3.6 × 2.6 m and 3 m to the sign. A customer counter at the front, solid sides, and a 1 m door in the back wall, so you can get in and use it as cover. Pass `colours: { accent }` per stall for its canopy; the rest stays in the palette. Interior is about 3.2 × 1.9 m, ready for a loot spot.
+- **Food court table (`food-court-table`):** origin on the floor under its middle, 0.76 m high, four stools fixed round it. Bolted furniture, so it doesn't count as a moving prop.
+- **Floors:** one plain walkable slab with a thin `collide: false` finish on top (`atrium-floor-finish`), so patterns never change how the floor walks. Each layer is at least 0.01 m higher than the one below, to avoid flicker. Tile lines follow the column spacing.
+- **Store fittings:** all face +z with their origin on the floor under their middle, and all take colour slots so each store can tint them. `store-shelf` (1.9 m) and `store-shelf-low` (1.25 m, see over it) are 3 × 0.9 m with goods on both faces; `bookcase-tall` is 3 × 0.46 × 2.56 m; `clothes-rail` is 2.4 m, with a solid block of clothes that counts as cover; `arcade-cabinet`; `shop-counter` is 3 m with a till; `shoe-bench` is 2.2 m with a fitting mirror. Set `yaw` to something other than 0 or 90 on loose fittings like rails, so a shop floor doesn't read as a grid.
+- **Restroom fittings:** `toilet` faces +z with its back at −z; `sink-counter` is 2.4 m with a mirror on its back wall.
+- **Home furniture:** all light, 2–11 parts, facing +z with a colour slot or two: `bed-double`, `wardrobe`, `kitchen-run`, `coffee-table`, `tv-unit`, `floor-lamp`, `nightstand`, `dining-set`, `market-bin`. Reach for these instead of `table-and-chairs` (41) or `office-chair` (20) anywhere they repeat. For long shelving, use one solid box with through-strips of colour instead of many units.
+- **Which way things face:** fittings face +z, but the older `couch` faces **−z** (its back is at +z), so a couch facing +z needs yaw 180.
+- **Back of house:** `locker-bank`, `vending-machine`, `monitor-desk`, `cctv-wall` and `office-safe`, 4–10 parts each, facing +z with their backs to the wall.
+- **Office safe:** make one lootable on the placement: `loot: { container: "office-safe", searched: "office-safe-open" }`. Also `server-rack`, `notice-board` (hangs on a wall at floor level) and `water-cooler` for offices.
+- **Shop dressing:** `shopping-trolley`, `potted-plant`, `flat-pack-stack` and `aisle-sign` are 3–4 parts each, cheap enough to scatter. Keep aisles at least 1.5 m clear and leave a stack out of doorways.
+- **Stores in general:** vary width, depth, setback and door position; no two stores share a layout. Use a `wall` with glazed `openings` for a shopfront.
+- **Round stuff:** dark planters and columns with 8–10 sides; a tree's crown is three stacked cylinders that flare out and back in, because cones read as Christmas trees.

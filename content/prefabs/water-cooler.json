@@ -1,0 +1,27 @@
+{
+  "formatVersion": 3,
+  "id": "water-cooler",
+  "name": "Water cooler",
+  "colours": {
+    "body": "#d7d9d8",
+    "water": "#6fa8d6"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [0.34, 1.05, 0.34],
+      "colour": "body"
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 1.05, 0],
+      "radius": 0.14,
+      "height": 0.42,
+      "colour": "water",
+      "radiusTop": 0.1,
+      "sides": 8,
+      "collide": false
+    }
+  ]
+}

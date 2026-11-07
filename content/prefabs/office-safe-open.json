@@ -1,0 +1,68 @@
+{
+  "formatVersion": 3,
+  "id": "office-safe-open",
+  "name": "Office safe, open",
+  "colours": {
+    "body": "#3a3d42",
+    "door": "#50545a",
+    "steel": "#a9afb3",
+    "inside": "#15161a",
+    "shelf": "#50545a",
+    "cash": "#6fa06a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [0.9, 1.15, 0.75],
+      "colour": "body",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.08, 0.376],
+      "size": [0.78, 1, 0.01],
+      "colour": "inside",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.6, 0.38],
+      "size": [0.76, 0.03, 0.04],
+      "colour": "shelf",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.42, 0.08, 0.78],
+      "size": [0.03, 1, 0.78],
+      "colour": "door",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.44, 0.6, 0.7],
+      "radius": 0.1,
+      "height": 0.03,
+      "colour": "steel",
+      "pitch": 0,
+      "roll": 90,
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.16, 0.63, 0.39],
+      "size": [0.2, 0.1, 0.03],
+      "colour": "cash",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.14, 0.11, 0.39],
+      "size": [0.24, 0.12, 0.03],
+      "colour": "cash",
+      "collide": false
+    }
+  ]
+}

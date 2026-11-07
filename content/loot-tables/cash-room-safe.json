@@ -1,0 +1,29 @@
+{
+  "formatVersion": 1,
+  "id": "cash-room-safe",
+  "name": "Cash room safe",
+  "rolls": [2, 4],
+  "items": [
+    {
+      "item": "cash",
+      "weight": 10,
+      "count": [400, 3000]
+    },
+    {
+      "item": "gold-watch",
+      "weight": 1
+    },
+    {
+      "item": "gold-bar",
+      "weight": 0.5
+    },
+    {
+      "item": "ruby-ring",
+      "weight": 0.4
+    },
+    {
+      "item": "diamond-necklace",
+      "weight": 0.2
+    }
+  ]
+}

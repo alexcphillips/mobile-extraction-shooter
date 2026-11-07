@@ -1,0 +1,101 @@
+{
+  "formatVersion": 3,
+  "id": "food-court-table",
+  "name": "Food court table",
+  "colours": {
+    "seat": "#c8a24b",
+    "stone": "#e6e0d3",
+    "dark": "#3d4148"
+  },
+  "nodes": [
+    {
+      "type": "cylinder",
+      "pos": [0, 0, 0],
+      "radius": 0.28,
+      "height": 0.03,
+      "colour": "dark",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0, 0],
+      "radius": 0.07,
+      "height": 0.72,
+      "colour": "dark",
+      "sides": 6
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.72, 0],
+      "radius": 0.58,
+      "height": 0.04,
+      "colour": "stone",
+      "sides": 10
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.651, 0, 0.651],
+      "radius": 0.06,
+      "height": 0.42,
+      "colour": "dark",
+      "sides": 6
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.651, 0.42, 0.651],
+      "radius": 0.21,
+      "height": 0.05,
+      "colour": "seat",
+      "sides": 8
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.651, 0, -0.651],
+      "radius": 0.06,
+      "height": 0.42,
+      "colour": "dark",
+      "sides": 6
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.651, 0.42, -0.651],
+      "radius": 0.21,
+      "height": 0.05,
+      "colour": "seat",
+      "sides": 8
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.651, 0, -0.651],
+      "radius": 0.06,
+      "height": 0.42,
+      "colour": "dark",
+      "sides": 6
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.651, 0.42, -0.651],
+      "radius": 0.21,
+      "height": 0.05,
+      "colour": "seat",
+      "sides": 8
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.651, 0, 0.651],
+      "radius": 0.06,
+      "height": 0.42,
+      "colour": "dark",
+      "sides": 6
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.651, 0.42, 0.651],
+      "radius": 0.21,
+      "height": 0.05,
+      "colour": "seat",
+      "sides": 8
+    }
+  ]
+}

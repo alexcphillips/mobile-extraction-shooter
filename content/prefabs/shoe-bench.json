@@ -1,0 +1,37 @@
+{
+  "formatVersion": 3,
+  "id": "shoe-bench",
+  "name": "Shoe bench",
+  "colours": {
+    "seat": "#b05a3a",
+    "base": "#3d4148",
+    "mirror": "#9fd0d8"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [2.2, 0.34, 0.5],
+      "colour": "base"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.34, 0],
+      "size": [2.28, 0.1, 0.56],
+      "colour": "seat"
+    },
+    {
+      "type": "box",
+      "pos": [1.2, 0, 0],
+      "size": [0.06, 1.1, 0.4],
+      "colour": "base"
+    },
+    {
+      "type": "box",
+      "pos": [1.235, 0.2, 0],
+      "size": [0.02, 0.85, 0.34],
+      "colour": "mirror",
+      "collide": false
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "formatVersion": 3,
+  "id": "notice-board",
+  "name": "Notice board",
+  "colours": {
+    "board": "#a88a5a",
+    "frame": "#5a4638",
+    "paper": "#e9e6df",
+    "paper-b": "#e0c030"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 1.3, 0],
+      "size": [1.5, 0.95, 0.03],
+      "colour": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.33, 0.02],
+      "size": [1.42, 0.89, 0.02],
+      "colour": "board",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.42, 1.6, 0.04],
+      "size": [0.32, 0.42, 0.01],
+      "colour": "paper",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.05, 1.5, 0.04],
+      "size": [0.36, 0.26, 0.01],
+      "colour": "paper-b",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.42, 1.45, 0.04],
+      "size": [0.3, 0.56, 0.01],
+      "colour": "paper",
+      "collide": false
+    }
+  ]
+}

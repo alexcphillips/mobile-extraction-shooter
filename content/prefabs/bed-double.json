@@ -1,0 +1,52 @@
+{
+  "formatVersion": 3,
+  "id": "bed-double",
+  "name": "Double bed",
+  "colours": {
+    "frame": "#8a6a4a",
+    "sheet": "#e9e6df",
+    "throw": "#3f6f9a",
+    "pillow": "#f4f2ec"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [1.7, 0.3, 2.1],
+      "colour": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.3, 0.02],
+      "size": [1.6, 0.22, 2.0],
+      "colour": "sheet"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.5, 0.45],
+      "size": [1.64, 0.05, 1.1],
+      "colour": "throw",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.4, 0.52, -0.72],
+      "size": [0.65, 0.13, 0.4],
+      "colour": "pillow",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.4, 0.52, -0.72],
+      "size": [0.65, 0.13, 0.4],
+      "colour": "pillow",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, -1.08],
+      "size": [1.76, 1.05, 0.07],
+      "colour": "frame"
+    }
+  ]
+}

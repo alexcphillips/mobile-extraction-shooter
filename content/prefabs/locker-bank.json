@@ -1,0 +1,60 @@
+{
+  "formatVersion": 3,
+  "id": "locker-bank",
+  "name": "Locker bank",
+  "colours": {
+    "body": "#7f8f8a",
+    "door": "#93a39e",
+    "vent": "#3d4148"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [1.8, 1.9, 0.5],
+      "colour": "body"
+    },
+    {
+      "type": "box",
+      "pos": [-0.6, 0.08, 0.26],
+      "size": [0.54, 1.76, 0.02],
+      "colour": "door",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.6, 1.55, 0.275],
+      "size": [0.3, 0.14, 0.01],
+      "colour": "vent",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.08, 0.26],
+      "size": [0.54, 1.76, 0.02],
+      "colour": "door",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.55, 0.275],
+      "size": [0.3, 0.14, 0.01],
+      "colour": "vent",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.6, 0.08, 0.26],
+      "size": [0.54, 1.76, 0.02],
+      "colour": "door",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.6, 1.55, 0.275],
+      "size": [0.3, 0.14, 0.01],
+      "colour": "vent",
+      "collide": false
+    }
+  ]
+}

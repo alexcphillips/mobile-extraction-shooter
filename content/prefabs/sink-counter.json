@@ -1,0 +1,65 @@
+{
+  "formatVersion": 3,
+  "id": "sink-counter",
+  "name": "Sink counter",
+  "colours": {
+    "top": "#e6e0d3",
+    "base": "#3d4148",
+    "basin": "#eef0ef",
+    "mirror": "#9fd0d8",
+    "tap": "#c8a24b"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, -0.02],
+      "size": [2.4, 0.82, 0.5],
+      "colour": "base"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.82, 0],
+      "size": [2.46, 0.06, 0.56],
+      "colour": "top"
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.75, 0.88, 0.02],
+      "radius": 0.17,
+      "height": 0.03,
+      "colour": "basin",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.75, 0.88, -0.2],
+      "size": [0.04, 0.16, 0.04],
+      "colour": "tap",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.75, 0.88, 0.02],
+      "radius": 0.17,
+      "height": 0.03,
+      "colour": "basin",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.75, 0.88, -0.2],
+      "size": [0.04, 0.16, 0.04],
+      "colour": "tap",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.15, -0.27],
+      "size": [2.3, 0.9, 0.02],
+      "colour": "mirror",
+      "collide": false
+    }
+  ]
+}

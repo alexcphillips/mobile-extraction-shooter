@@ -1,0 +1,36 @@
+{
+  "formatVersion": 3,
+  "id": "flat-pack-stack",
+  "name": "Flat-pack stack",
+  "colours": {
+    "pallet": "#a88048",
+    "box-a": "#c7a877",
+    "box-b": "#b8965f"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [1.2, 0.14, 0.8],
+      "colour": "pallet"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.14, 0],
+      "size": [1.14, 0.42, 0.76],
+      "colour": "box-a"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.56, 0],
+      "size": [1.1, 0.42, 0.74],
+      "colour": "box-b"
+    },
+    {
+      "type": "box",
+      "pos": [0.02, 0.98, 0.01],
+      "size": [1.04, 0.34, 0.7],
+      "colour": "box-a"
+    }
+  ]
+}

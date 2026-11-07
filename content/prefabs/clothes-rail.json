@@ -1,0 +1,94 @@
+{
+  "formatVersion": 3,
+  "id": "clothes-rail",
+  "name": "Clothes rail",
+  "colours": {
+    "frame": "#3d4148",
+    "cloth-a": "#b05a7a",
+    "cloth-b": "#e6e0d3",
+    "cloth-c": "#3f6f9a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [-1.15, 0, 0],
+      "size": [0.06, 1.6, 0.5],
+      "colour": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [1.15, 0, 0],
+      "size": [0.06, 1.6, 0.5],
+      "colour": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.55, 0],
+      "size": [2.36, 0.04, 0.04],
+      "colour": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.5, 0],
+      "size": [2.1, 1.0, 0.38],
+      "colour": "cloth-a"
+    },
+    {
+      "type": "box",
+      "pos": [-0.8, 0.48, -0.2],
+      "size": [0.42, 1.02, 0.04],
+      "colour": "cloth-b",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.8, 0.48, 0.2],
+      "size": [0.42, 1.02, 0.04],
+      "colour": "cloth-b",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.2, 0.48, -0.2],
+      "size": [0.3, 1.02, 0.04],
+      "colour": "cloth-c",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.2, 0.48, 0.2],
+      "size": [0.3, 1.02, 0.04],
+      "colour": "cloth-c",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.35, 0.48, -0.2],
+      "size": [0.46, 1.02, 0.04],
+      "colour": "cloth-b",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.35, 0.48, 0.2],
+      "size": [0.46, 1.02, 0.04],
+      "colour": "cloth-b",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.85, 0.48, -0.2],
+      "size": [0.26, 1.02, 0.04],
+      "colour": "cloth-c",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.85, 0.48, 0.2],
+      "size": [0.26, 1.02, 0.04],
+      "colour": "cloth-c",
+      "collide": false
+    }
+  ]
+}

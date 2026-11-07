@@ -1,0 +1,38 @@
+{
+  "formatVersion": 3,
+  "id": "floor-lamp",
+  "name": "Floor lamp",
+  "colours": {
+    "pole": "#3d4148",
+    "shade": "#e8d8a8"
+  },
+  "nodes": [
+    {
+      "type": "cylinder",
+      "pos": [0, 0, 0],
+      "radius": 0.16,
+      "height": 0.03,
+      "colour": "pole",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0, 0],
+      "radius": 0.025,
+      "height": 1.55,
+      "colour": "pole",
+      "sides": 6
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 1.5, 0],
+      "radius": 0.24,
+      "height": 0.28,
+      "colour": "shade",
+      "radiusTop": 0.16,
+      "sides": 8,
+      "collide": false
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "formatVersion": 3,
+  "id": "market-bin",
+  "name": "Market bin",
+  "colours": {
+    "bin": "#3d4148",
+    "goods-a": "#e07b2e",
+    "goods-b": "#3f6f9a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [1.2, 0.72, 1.2],
+      "colour": "bin"
+    },
+    {
+      "type": "box",
+      "pos": [-0.27, 0.72, 0],
+      "size": [0.56, 0.14, 1.1],
+      "colour": "goods-a",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.27, 0.72, 0],
+      "size": [0.54, 0.2, 1.1],
+      "colour": "goods-b",
+      "collide": false
+    }
+  ]
+}

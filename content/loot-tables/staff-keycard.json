@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "staff-keycard",
+  "name": "Staff keycard",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "staff-keycard",
+      "weight": 1
+    }
+  ]
+}
