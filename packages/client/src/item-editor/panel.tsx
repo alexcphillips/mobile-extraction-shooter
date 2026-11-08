@@ -499,6 +499,22 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
               hint="The share of what a repair mends that comes off its max. Blank is 0.1"
             />
           </Row>
+          <Row>
+            <N
+              {...b}
+              path={['mask', 'edge']}
+              label="mask: view hidden (0–0.4)"
+              min={0}
+              hint="A face mask: the share of the screen's width hidden at each side. Blank is none"
+            />
+            <N
+              {...b}
+              path={['mask', 'muffle']}
+              label="mask: muffle (Hz)"
+              min={200}
+              hint="A face mask: sounds above this are muffled for whoever wears it. Blank is none"
+            />
+          </Row>
         </>
       );
     case 'attachment':

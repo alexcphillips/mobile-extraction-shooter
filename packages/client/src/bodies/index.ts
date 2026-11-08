@@ -72,6 +72,19 @@ const POSES: Pose[] = [
   { name: 'knife', set: knife },
   { name: 'knife slash', set: knife, slash: true },
   { name: 'unarmed', set: () => {} },
+  {
+    // AI-7: Jug's gear, firing mid-slide.
+    name: 'Jug slide',
+    set: (c, i) => {
+      giveWeapon(c, i, 'rpk-16', ['mag-545x39-100-jug', 'red-dot']);
+      wearArmour(c, i, 'jug-mask');
+      wearArmour(c, i, 'jug-armour');
+      c.aim = 1;
+      c.height = MOVEMENT.slideHeight;
+      c.slide = { t: 0, dx: 0, dz: -1 };
+      moving(MOVEMENT.slideSpeed, 0)(c);
+    },
+  },
 ];
 
 function character(id: number, x: number): Character {

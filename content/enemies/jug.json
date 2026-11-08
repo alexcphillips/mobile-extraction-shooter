@@ -1,0 +1,38 @@
+{
+  "formatVersion": 2,
+  "id": "jug",
+  "name": "Jug",
+  "faction": "boss",
+  "loadout": "jug-kit",
+  "skill": {
+    "reaction": 0.35,
+    "aimError": 5,
+    "aimSettled": 0.7,
+    "aimSettle": 1,
+    "holdChance": 0,
+    "fov": 110,
+    "listen": 15,
+    "hearing": 2,
+    "bold": true,
+    "charge": true,
+    "slide": true,
+    "relentless": true
+  },
+  "outfits": [
+    {
+      "skin": "#c49a7a",
+      "top": "#34302a",
+      "bottom": "#2c2a26",
+      "hands": "#161616",
+      "feet": "#1a1a1a"
+    }
+  ],
+  "loot": {
+    "rolls": [1, 3],
+    "tables": {
+      "military": 1,
+      "medical": 1,
+      "electronics": 0.5
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "formatVersion": 10,
+  "id": "mag-545x39-100-jug",
+  "name": "Jug's 100-round 5.45×39 drum",
+  "shortName": "Jug drum",
+  "type": "attachment",
+  "size": [2, 2],
+  "value": 32000,
+  "rarity": "mythic",
+  "slot": "magazine",
+  "weapons": ["rpk-16"],
+  "mods": {
+    "magazine": 55,
+    "reloadTime": 1.8,
+    "aimTime": 1.15
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.035, -0.005],
+        "size": [0.03, 0.07, 0.06],
+        "colour": "#2a2d30",
+        "pitch": 8
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.14, -0.025],
+        "radius": 0.085,
+        "height": 0.08,
+        "sides": 12,
+        "colour": "#3b3f43",
+        "roll": 90
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.042, -0.14, -0.025],
+        "radius": 0.058,
+        "height": 0.008,
+        "sides": 12,
+        "colour": "#1d1f21",
+        "roll": 90
+      },
+      {
+        "type": "box",
+        "pos": [0.047, -0.14, -0.025],
+        "size": [0.004, 0.012, 0.07],
+        "colour": "#39ff6a"
+      },
+      {
+        "type": "box",
+        "pos": [-0.042, -0.14, -0.025],
+        "size": [0.006, 0.05, 0.05],
+        "colour": "#2a2d30"
+      }
+    ]
+  }
+}

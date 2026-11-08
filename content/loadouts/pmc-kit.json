@@ -154,5 +154,9 @@
     { "weight": 1, "item": "small-backpack" },
     { "weight": 1, "item": "medium-backpack" },
     { "weight": 1, "item": "large-backpack" }
+  ],
+  "grenades": [
+    { "weight": 1, "item": null },
+    { "weight": 3, "item": "frag-grenade", "count": [1, 2] }
   ]
 }

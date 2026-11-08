@@ -373,6 +373,22 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
           ? [['Max durability', `${tenths(item.max)} of ${def.durability}`] as Row]
           : []),
         ['Repair loss', `${Math.round(repairLossOf(def) * 100)}% of what's mended`],
+        // A face mask's cost (AI-7, Jug's).
+        ...(def.mask?.edge || def.mask?.muffle
+          ? [
+              [
+                'Mask',
+                [
+                  def.mask.edge
+                    ? `hides ${Math.round(def.mask.edge * 100)}% of the view each side`
+                    : '',
+                  def.mask.muffle ? 'muffles sound' : '',
+                ]
+                  .filter(Boolean)
+                  .join(', '),
+              ] as Row,
+            ]
+          : []),
       ];
     case 'attachment': {
       const fits = def.weapons

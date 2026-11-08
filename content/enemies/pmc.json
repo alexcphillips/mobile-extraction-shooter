@@ -52,7 +52,8 @@
     }
   ],
   "voice": {
-    "callout": "pmc-callout"
+    "callout": "pmc-callout",
+    "grenade": "pmc-grenade"
   },
   "loot": {
     "rolls": [1, 3],

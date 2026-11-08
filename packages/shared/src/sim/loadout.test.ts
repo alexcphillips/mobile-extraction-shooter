@@ -133,6 +133,36 @@ describe('loadouts', () => {
     expect(bad({ helmets: [{ weight: 1, item: 'vest' }] })).toThrow(/not helmet armour/);
     expect(bad({ rigs: [{ weight: 1, item: 'backpack' }] })).toThrow(/not a rig/);
     expect(bad({ backpacks: [{ weight: 1, item: 'watch' }] })).toThrow(/not a backpack/);
+    expect(bad({ grenades: [{ weight: 1, item: 'rifle' }] })).toThrow(/not a grenade to throw/);
+    expect(
+      bad({
+        grenades: [
+          { weight: 1, item: null },
+          { weight: 1, item: 'grenade' },
+        ],
+      }),
+    ).not.toThrow();
+  });
+
+  it('rolls grenades by weight and count, stowed first so they go in the pockets (AI-6)', () => {
+    const kit = loadout({
+      weapons: [{ weight: 1, item: 'rifle', spare: [200, 200] }],
+      grenades: [
+        { weight: 1, item: null },
+        { weight: 3, item: 'grenade', count: [1, 2] },
+      ],
+    });
+    const rng = createRng(5);
+    const c = character();
+    const counts = [0, 0, 0];
+    for (let i = 0; i < 2000; i++) {
+      equipLoadout(c, TEST_ITEMS, kit, rng);
+      const pockets = c.gear.pockets.items.filter((gi) => gi.item.item === 'grenade').length;
+      counts[pockets]!++;
+    }
+    expect(counts[0]! / 2000).toBeCloseTo(0.25, 1);
+    expect(counts[1]! / 2000).toBeCloseTo(0.375, 1);
+    expect(counts[2]! / 2000).toBeCloseTo(0.375, 1);
   });
 
   it('puts a pistol in the sidearm slot, wears a rig and backpack, and stows the spare rounds', () => {

@@ -1,5 +1,11 @@
 import type { EnemySkill, Faction } from '../content/enemies';
-import { grenadeDef, weaponDef, type ItemDb } from '../content/items';
+import {
+  grenadeDef,
+  grenadeEffect,
+  weaponDef,
+  type GrenadeDef,
+  type ItemDb,
+} from '../content/items';
 import type { NavGrid } from '../nav/nav-grid';
 import { findPath, type Avoid } from '../nav/path';
 import { chance, nextFloat, nextRange } from '../rng';
@@ -8,7 +14,7 @@ import type { CollisionWorld } from '../world/collision-world';
 import { openDoorAhead } from './doors';
 import { hostile } from './factions';
 import { FIRE, inFire } from './fire';
-import { smokeBlocks, type Grenade } from './grenades';
+import { GRENADE, predictThrow, smokeBlocks, throwable, type Grenade } from './grenades';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import { MOVEMENT } from './movement';
 import {
@@ -21,7 +27,7 @@ import {
   type PlayerInput,
   type SimState,
 } from './state';
-import { heldWeapon } from './gear';
+import { QUICK_GRIDS, carriedGrid, heldWeapon } from './gear';
 import { createWeaponStats, reloadRound, weaponStats } from './weapons';
 import {
   ROUTES,
@@ -283,6 +289,69 @@ export const TACTICS = {
    */
   rushTime: 5,
   rushSprint: 4,
+  /**
+   * Grenades (AI-6; design.md → AI → PMCs → Fighting): an enemy carrying a frag that has
+   * lost its target for throwAfter, but no longer than throwFresh, may throw it at where it
+   * was, about throwRate times a second while it holds the angle, holds a way up, fires at
+   * its cover or waits in cover; never while pushing at it (the user's call, 2026-11-08)...
+   */
+  throwAfter: 1.5,
+  throwFresh: 12,
+  throwRate: 0.4,
+  /**
+   * ...at least throwMin from it (the user's call, 2026-11-08: not from close up; outside a
+   * frag's blast, which it would run from though it can't be hurt by its own), when an arc first lands within throwSlack of the spot, with a clear line from
+   * there to it...
+   */
+  throwMin: 10,
+  throwSlack: 2.5,
+  /**
+   * ...and the area's token is free: no grenade of any AI's live, or about to be thrown,
+   * within tokenRadius of the spot. Each thrower waits throwGap before its next, or retry
+   * after finding no arc.
+   */
+  tokenRadius: 20,
+  throwGap: 20,
+  retry: 2,
+  /** It gives up turning to throw after this long. */
+  throwTurn: 1.5,
+};
+
+/**
+ * How Jug fights (AI-7; design.md → AI → Jug), through his skill's `bold`, `charge`, `slide`
+ * and `relentless`. Distances in metres, times in seconds; first guesses to tune in play.
+ */
+export const JUG = {
+  /** Bold: it looks this long at what it heard before going to it (others AI.lookTime). */
+  boldLook: 0.4,
+  /** Charging: it walks at a target it sees, firing, down to this far... */
+  chargeClose: 4,
+  /** ...and out of sight sprints to where it was, while further than this. */
+  chargeSprint: 6,
+  /**
+   * Sliding: sprinting at its target, seen or where it was, from this far off, when nothing
+   * is in the way for slideClear along where it's going (a slide is about 3.8 m), and no
+   * sooner than slideGap after the last.
+   */
+  slideRange: [4, 10] as const,
+  slideClear: 4,
+  slideGap: 3,
+  /**
+   * The hunt (relentless): the way its quarry goes, a point each time it has gone trailStep
+   * from the last, the newest trailMax kept (the oldest dropped). It walks them in turn,
+   * dropping each it gets within trailReach of, and sprints while the newest is further than
+   * trailSprint.
+   */
+  trailStep: 1.5,
+  trailMax: 80,
+  trailReach: 1,
+  trailSprint: 8,
+  /**
+   * On its perception ticks it skips ahead to the newest point it can see within trailSee,
+   * looking at no more than trailLooks of them, newest first.
+   */
+  trailSee: 25,
+  trailLooks: 16,
 };
 
 /** A squad member shouting that it has spotted someone (AI rework session 5). */
@@ -488,6 +557,31 @@ export interface AiState {
   planned?: boolean;
   /** The tick it last called out a target it spotted (AI rework session 5). */
   calledAt?: number;
+  /**
+   * About to throw a grenade (AI-6): the item, the spot it's thrown at, the look it's
+   * thrown along (before the throw's loft) and seconds left to turn to it. It holds its
+   * area's token meanwhile. Null or missing when not.
+   */
+  toss?: {
+    item: string;
+    x: number;
+    y: number;
+    z: number;
+    yaw: number;
+    pitch: number;
+    time: number;
+  } | null;
+  /** The tick it may next think about throwing one. Missing is any time. */
+  nextThrow?: number;
+  /** The tick it may next slide (AI-7, skill.slide). Missing is any time. */
+  nextSlide?: number;
+  /**
+   * A relentless enemy's quarry (AI-7, Jug): who last hit it, hunted until one of them is
+   * dead, and the way the quarry has gone since it was last seen, as flat x, y, z points
+   * (JUG.trailStep apart). Missing or 0 when not hunting.
+   */
+  quarry?: EntityId;
+  trail?: number[];
 }
 
 export type Quirk = 'stop' | 'crouch' | 'sprint';
@@ -693,7 +787,7 @@ export function updateAi(
     const input = ai.input;
     input.moveX = input.moveY = 0;
     input.fire = input.aim = input.reload = input.crouch = input.sprint = false;
-    input.extinguish = false;
+    input.extinguish = input.throw = input.slide = false;
     if (c.health.dead) continue;
     if (ai.zombie) hunt(state, c, ai, items, nav);
     else {
@@ -702,6 +796,8 @@ export function updateAi(
         listenForSteps(state, c, ai);
         if (ai.skill.listen) listenForHands(state, c, ai);
         if (ai.squad !== undefined) shareTarget(state, c, ai);
+        if (ai.quarry) track(state, c, ai);
+        if (ai.awareness === 'alert') considerThrow(state, c, ai, world, items);
       }
       hearEvents(state, c, ai, world, nav);
       behave(state, c, ai, world, items, nav);
@@ -772,7 +868,7 @@ function look(
     if (ai.seesTarget || ai.unseen < AI.intuition) setFocus(ai, target.x, target.y, target.z);
     ai.unseen = ai.seesTarget ? 0 : ai.unseen + PERCEIVE_DT;
     checkReachable(ai, c, target, nav);
-    if (!ai.reachable && ai.unseen >= AI.giveUp) {
+    if (!ai.reachable && ai.unseen >= AI.giveUp && ai.quarry !== ai.target) {
       calmDown(c, ai);
       return;
     }
@@ -945,7 +1041,9 @@ function listenForSteps(state: SimState, c: Character, ai: AiState): void {
     if (e.ai || e.health.dead || e.admin?.peaceful || e.mode !== 'ground') continue;
     if (e.height < MOVEMENT.standHeight - 0.1) continue;
     const speed = Math.hypot(e.vx, e.vz);
-    const range = speed > MOVEMENT.walkSpeed + 0.5 ? AI.sprintSteps : speed > 1 ? AI.walkSteps : 0;
+    const range =
+      (speed > MOVEMENT.walkSpeed + 0.5 ? AI.sprintSteps : speed > 1 ? AI.walkSteps : 0) *
+      (ai.skill.hearing ?? 1);
     const d = Math.hypot(e.x - c.x, e.y - c.y, e.z - c.z);
     if (d > range) continue;
     if (ai.awareness === 'alert') {
@@ -1012,8 +1110,8 @@ function hearEvents(
   nav: NavGrid,
 ): void {
   // The map's hearing scale (AI rework session 1): guns are heard 110–190 m, about all of
-  // a small map, so a map can make every noise carry less there.
-  const scale = state.hearingScale ?? 1;
+  // a small map, so a map can make every noise carry less there. Jug hears further (AI-7).
+  const scale = (state.hearingScale ?? 1) * (ai.skill.hearing ?? 1);
   for (const ev of state.events) {
     if (ev.type === 'damage') {
       if (ev.target !== c.id || ev.by === 0 || ev.by === c.id) continue;
@@ -1022,6 +1120,7 @@ function hearEvents(
         alarm(ai, by, by.x, by.y, by.z);
         ai.hurt = true;
         ai.aimError += AI.hitFlinch * DEG;
+        if (ai.skill.relentless && ai.quarry !== by.id) startHunt(ai, by);
       }
       continue;
     }
@@ -1206,6 +1305,7 @@ function heardNoise(
     investigate &&
     ai.awareness !== 'alert' &&
     ai.squad === undefined &&
+    !ai.skill.bold &&
     !joinResponders(state, c, nx, nz);
   suspect(c, ai, nx, y, nz, investigate && !capped, loud);
   // Enough are going already: it looks, and stops checking anything else.
@@ -1334,6 +1434,8 @@ function suspect(
   cautious = false,
 ): void {
   if (ai.awareness === 'alert') return;
+  // Bold (AI-7, Jug): straight there, never stopping short to watch.
+  if (ai.skill.bold) cautious = false;
   const was = ai.awareness;
   ai.awareness = 'suspicious';
   ai.loot = null;
@@ -1349,7 +1451,7 @@ function suspect(
   ai.investigate = investigate || (was === 'suspicious' && ai.investigate);
   ai.cautious = investigate ? cautious : ai.investigate && !!ai.cautious;
   ai.activity = 'look';
-  ai.timer = AI.lookTime;
+  ai.timer = ai.skill.bold ? JUG.boldLook : AI.lookTime;
   ai.hasGoal = false;
   ai.lookYaw = c.yaw;
 }
@@ -1449,6 +1551,10 @@ function behave(
     faceYaw = fleeYaw;
     turn = AI.alertTurnRate;
     ai.input.sprint = true;
+  } else if (ai.toss && throwing(state, c, ai)) {
+    faceYaw = tossYaw;
+    facePitch = tossPitch;
+    turn = AI.alertTurnRate;
   } else
     switch (ai.activity) {
       case 'patrol': {
@@ -1550,7 +1656,8 @@ function behave(
           ai.input.aim = true;
           break;
         }
-        const r = moveTo(state, c, ai, nav, ai.focusX, ai.focusY, ai.focusZ, AI.investigatePace);
+        const pace = ai.skill.bold ? AI.alertPace : AI.investigatePace;
+        const r = moveTo(state, c, ai, nav, ai.focusX, ai.focusY, ai.focusZ, pace);
         faceYaw = moveYaw;
         if (r !== 'moving') {
           ai.activity = 'scan';
@@ -1595,9 +1702,13 @@ function behave(
         // Heard you reload or heal: pushing at you meanwhile (listenForHands).
         const rushing = (ai.rush ?? 0) > 0;
         if (rushing) ai.rush! -= DT;
+        // Jug hunting whoever hit him (AI-7): along the way they went, never searching.
+        const hunting = !!ai.quarry && ai.quarry === ai.target && !!ai.trail?.length;
         if (!ai.seesTarget) {
           if (!ai.reachable) {
             if (ai.unseen >= AI.intuition && startHold(state, c, ai, world, nav, target)) break;
+          } else if (hunting) {
+            followTrail(state, c, ai, world);
           } else if (rushing) {
             // Straight at it.
           } else if (
@@ -1625,22 +1736,38 @@ function behave(
         fight(state, c, ai, world, items, nav, target);
         faceYaw = aimYaw;
         facePitch = aimPitch;
+        // Charging (AI-7, Jug) sprints after you out of sight, like a rush.
+        const charging = !!ai.skill.charge && !rushing;
+        quarryPoint(ai, target, hunting);
         if (
-          rushing &&
+          (rushing || charging) &&
           !ai.seesTarget &&
+          !c.slide &&
           (wishX !== 0 || wishZ !== 0) &&
-          Math.hypot(ai.focusX - c.x, ai.focusZ - c.z) > TACTICS.rushSprint
+          Math.hypot(quarryX - c.x, quarryZ - c.z) >
+            (charging ? JUG.chargeSprint : TACTICS.rushSprint)
         ) {
           // Sprinting round the corner, slowing to come round it aimed.
           faceYaw = moveYaw;
           facePitch = 0;
           ai.input.sprint = true;
         }
+        if (ai.skill.slide) {
+          const s = slideIn(state, c, ai, world, nav);
+          if (s === 'sprint') {
+            faceYaw = Math.atan2(-wishX, -wishZ);
+            facePitch = 0;
+          } else if (c.slide && !ai.seesTarget) {
+            // Coming round the corner low, facing where it's after.
+            faceYaw = yawTo(c, quarryX, quarryZ);
+          }
+        }
         if (!ai.seesTarget) break;
         ai.exposed += DT;
-        // Not hiding while you reload: that's the moment to push.
+        // Not hiding while you reload: that's the moment to push. Jug never hides (AI-7).
         const wantCover =
           !rushing &&
+          !ai.skill.charge &&
           (ai.hurt || ai.exposed >= ai.exposeLimit || (w.mag === 0 && ai.exposed > 0.5));
         if (!wantCover || coversLeft <= 0) break;
         coversLeft--;
@@ -2040,6 +2167,155 @@ function quirks(state: SimState, ai: AiState): void {
   }
 }
 
+// -------------------------------------------------------------------------------- Jug
+
+/** Starts hunting whoever hit it (AI-7, skill.relentless), from where they are now. */
+function startHunt(ai: AiState, by: Character): void {
+  ai.quarry = by.id;
+  if (ai.trail) ai.trail.length = 0;
+  else ai.trail = [];
+  ai.trail.push(by.x, by.y, by.z);
+}
+
+/**
+ * The hunt, on perception ticks (AI-7; design.md → AI → Jug): keeps the way its quarry goes
+ * (starting afresh from where it is whenever it sees it), and is alert to it again whenever
+ * it isn't fighting anyone else. Over once the quarry is dead, gone or peaceful.
+ */
+function track(state: SimState, c: Character, ai: AiState): void {
+  const q = entityById(state, ai.quarry!);
+  const t = (ai.trail ??= []);
+  if (!q || q.health.dead || q.admin?.peaceful) {
+    ai.quarry = 0;
+    t.length = 0;
+    return;
+  }
+  const n = t.length;
+  if (ai.target === q.id && ai.seesTarget) {
+    t.length = 0;
+    t.push(q.x, q.y, q.z);
+  } else if (
+    q.mode === 'ground' &&
+    (n === 0 ||
+      Math.hypot(q.x - t[n - 3]!, q.z - t[n - 1]!) >= JUG.trailStep ||
+      Math.abs(q.y - t[n - 2]!) > MOVEMENT.stepUp)
+  ) {
+    // The oldest dropped when it's full (shifted down in place: no allocation).
+    if (n >= JUG.trailMax * 3) {
+      t.copyWithin(0, 3);
+      t.length -= 3;
+    }
+    t.push(q.x, q.y, q.z);
+  }
+  if (ai.awareness !== 'alert') alarm(ai, q, t[0]!, t[1]!, t[2]!);
+}
+
+/**
+ * Out of sight of its quarry: on along the trail, dropping the points it has reached and
+ * any older than one it can see (the newest stays, where to look once there), always
+ * pushing.
+ */
+function followTrail(state: SimState, c: Character, ai: AiState, world: CollisionWorld): void {
+  const t = ai.trail!;
+  let drop = 0;
+  if ((state.tick + c.id) % AI.perceiveEvery === 0) {
+    const eye = eyeHeight(c);
+    for (let i = t.length - 3, looks = 0; i > 0 && looks < JUG.trailLooks; i -= 3) {
+      if (Math.hypot(t[i]! - c.x, t[i + 2]! - c.z) > JUG.trailSee) continue;
+      looks++;
+      if (clearLine(world, c.x, eye, c.z, t[i]!, t[i + 1]! + 1, t[i + 2]!)) {
+        drop = i;
+        break;
+      }
+    }
+  }
+  while (
+    drop + 3 < t.length &&
+    Math.hypot(t[drop]! - c.x, t[drop + 2]! - c.z) < JUG.trailReach &&
+    Math.abs(t[drop + 1]! - c.y) < 1.5
+  )
+    drop += 3;
+  if (drop > 0) {
+    t.copyWithin(0, drop);
+    t.length -= drop;
+  }
+  setFocus(ai, t[0]!, t[1]!, t[2]!);
+  ai.push = true;
+}
+
+// Where quarryPoint found it after: its target seen, the newest of the trail, or the focus.
+let quarryX = 0;
+let quarryZ = 0;
+
+/** Where it's after, in quarryX, quarryZ: what it sees, the hunt's newest point, or where it was. */
+function quarryPoint(ai: AiState, target: Character, hunting: boolean): void {
+  const t = ai.trail;
+  if (ai.seesTarget) {
+    quarryX = target.x;
+    quarryZ = target.z;
+  } else if (hunting && t && t.length >= 3) {
+    quarryX = t[t.length - 3]!;
+    quarryZ = t[t.length - 1]!;
+  } else {
+    quarryX = ai.focusX;
+    quarryZ = ai.focusZ;
+  }
+}
+
+/**
+ * Jug's sprint-slide (AI-7; design.md → AI → Jug), after fight() has decided where it goes
+ * (wishX, wishZ) and quarryPoint where it's after: going at it from JUG.slideRange away,
+ * with clear floor on its own level ahead, it sprints for a tick, then slides (firing still,
+ * as fight() decides). 'sprint' while it's getting up speed, 'slide' as it starts one.
+ */
+function slideIn(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  world: CollisionWorld,
+  nav: NavGrid,
+): 'none' | 'sprint' | 'slide' {
+  if (c.slide || c.mode !== 'ground' || state.tick < (ai.nextSlide ?? 0)) return 'none';
+  const wish = Math.hypot(wishX, wishZ);
+  if (wish < 0.5) return 'none';
+  const qx = quarryX - c.x;
+  const qz = quarryZ - c.z;
+  const d = Math.hypot(qx, qz);
+  if (d < JUG.slideRange[0] || d > JUG.slideRange[1]) return 'none';
+  const dx = wishX / wish;
+  const dz = wishZ / wish;
+  // Headed at it, give or take a corner: within 50°.
+  if ((dx * qx + dz * qz) / d < 0.64) return 'none';
+  // Nothing in the way at the knees or chest, glass included, and floor at its own height
+  // where it ends.
+  const reach = JUG.slideClear;
+  if (
+    world.raycast(c.x, c.y + 0.5, c.z, dx, 0, dz, reach) !== Infinity ||
+    world.raycast(c.x, c.y + 1, c.z, dx, 0, dz, reach) !== Infinity
+  )
+    return 'none';
+  const ex = c.x + dx * reach;
+  const ez = c.z + dz * reach;
+  const n = nav.nearest(ex, c.y, ez);
+  if (
+    n < 0 ||
+    Math.abs(nav.nodeY(n) - c.y) > MOVEMENT.stepUp ||
+    Math.hypot(nav.nodeX(n) - ex, nav.nodeZ(n) - ez) > nav.cellSize
+  )
+    return 'none';
+  if (Math.hypot(c.vx, c.vz) >= MOVEMENT.slideFrom) {
+    ai.input.slide = true;
+    ai.nextSlide = state.tick + Math.round(JUG.slideGap / DT);
+    return 'slide';
+  }
+  // Up to a sprint first (sprinting is no firing nor aiming).
+  ai.input.sprint = true;
+  ai.input.fire = ai.input.aim = false;
+  wishX = dx;
+  wishZ = dz;
+  return 'sprint';
+}
+
 // ----------------------------------------------------------------------------- squads
 
 /**
@@ -2418,6 +2694,174 @@ function landsNear(world: CollisionWorld, c: Character, x: number, y: number, z:
   if (d < 1e-6) return true;
   const hit = world.raycast(c.x, oy, c.z, dx / d, dy / d, dz / d, d, undefined, true);
   return hit >= d - TACTICS.coverSlack;
+}
+
+/**
+ * Whether to throw a grenade (AI-6; design.md → AI → PMCs → Fighting), on its perception
+ * ticks while alert: out of sight of its target for a while but not long, holding the
+ * angle or a way up, firing at its cover or in cover (not pushing, flanking, rushing or
+ * running from a grenade), at least throwMin from where it was, it
+ * now and then picks the first frag it carries, and an arc that lands it by where its
+ * target was (throwArc). Only one AI grenade at a time near any spot (the area's token,
+ * tokenTaken). Then it turns and throws (throwing).
+ */
+function considerThrow(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  world: CollisionWorld,
+  items: ItemDb,
+): void {
+  if (ai.seesTarget || ai.flee || ai.toss || (ai.rush ?? 0) > 0) return;
+  if (state.tick < (ai.nextThrow ?? 0)) return;
+  const a = ai.activity;
+  if (a !== 'engage' && a !== 'suppress' && a !== 'hold' && a !== 'cover') return;
+  // Pushing in to where it lost its target: it goes in shooting, not throwing.
+  if (a === 'engage' && ai.push) return;
+  if (ai.unseen < TACTICS.throwAfter || ai.unseen > TACTICS.throwFresh) return;
+  if (c.draw > 0 || c.extinguish || (c.throwCooldown ?? 0) > 0 || c.mode !== 'ground') return;
+  if ((heldWeapon(c)?.reloading ?? 0) > 0) return;
+  const target = entityById(state, ai.target);
+  if (!target || target.health.dead) return;
+  const def = carriedFrag(c, items);
+  if (!def) return;
+  if (!chance(state.rng, TACTICS.throwRate * PERCEIVE_DT)) return;
+  const x = ai.focusX;
+  const y = ai.focusY;
+  const z = ai.focusZ;
+  if (Math.hypot(x - c.x, z - c.z) < TACTICS.throwMin) return;
+  if (tokenTaken(state, items, x, z)) return;
+  if (!throwArc(state, world, c, def, x, y, z)) {
+    ai.nextThrow = state.tick + Math.round(TACTICS.retry / DT);
+    return;
+  }
+  ai.toss = { item: def.id, x, y, z, yaw: arcYaw, pitch: arcPitch, time: TACTICS.throwTurn };
+}
+
+/** The first frag (a grenade that blasts) in reach, pockets then rig, or null. */
+function carriedFrag(c: Character, items: ItemDb): GrenadeDef | null {
+  for (let g = 0; g < QUICK_GRIDS; g++) {
+    const list = carriedGrid(c.gear, g)?.items;
+    if (!list) continue;
+    for (let i = 0; i < list.length; i++) {
+      const id = list[i]!.item.item;
+      if (!throwable(items, id)) continue;
+      const def = grenadeDef(items, id);
+      if (grenadeEffect(def) === 'frag' && def.damage > 0) return def;
+    }
+  }
+  return null;
+}
+
+/**
+ * Whether the area's grenade token is taken (design.md → AI → Unreachable player): an AI's
+ * blasting grenade is live within tokenRadius of (x, z), or an AI is turning to throw one
+ * at a spot that close.
+ */
+function tokenTaken(state: SimState, items: ItemDb, x: number, z: number): boolean {
+  const r = TACTICS.tokenRadius;
+  for (const g of state.grenades) {
+    if (Math.hypot(g.x - x, g.z - z) > r || grenadeDef(items, g.item).damage <= 0) continue;
+    if (entityById(state, g.by)?.ai) return true;
+  }
+  for (const e of state.entities) {
+    const t = e.ai?.toss;
+    if (t && !e.health.dead && Math.hypot(t.x - x, t.z - z) <= r) return true;
+  }
+  return false;
+}
+
+// What throwArc found: the look to throw along (before the loft).
+let arcYaw = 0;
+let arcPitch = 0;
+// Where predictThrow says a grenade ends up.
+const landed = { x: 0, y: 0, z: 0 };
+// Of the distance to the spot, how far each arc tried aims: at it, then short, since a
+// grenade hops and rolls on after it lands.
+const ARC_SHORT = [1, 0.9, 0.8, 0.7, 0.55] as const;
+
+/**
+ * A throw from c's eye that ends up, bounces and all (predictThrow), within throwSlack of
+ * (x, y, z) (feet height) with a clear line from there to its middle, so the blast reaches
+ * it: straight at it if that does, else lobbed over cover (if the ceiling allows), each
+ * aimed at the spot and then short of it. Into arcYaw, arcPitch.
+ */
+function throwArc(
+  state: SimState,
+  world: CollisionWorld,
+  c: Character,
+  def: GrenadeDef,
+  x: number,
+  y: number,
+  z: number,
+): boolean {
+  const dx = x - c.x;
+  const dz = z - c.z;
+  const d = Math.hypot(dx, dz);
+  if (d < 1e-3) return false;
+  const h = y + 0.1 - eyeHeight(c);
+  const v = def.throwSpeed;
+  const g = GRENADE.gravity;
+  const yaw = Math.atan2(-dx, -dz);
+  const ty = y + MOVEMENT.standHeight * 0.5;
+  for (let sign = -1; sign <= 1; sign += 2) {
+    for (const k of ARC_SHORT) {
+      // Launch angles reaching (kd, h) at speed v: tan θ = (v² ∓ √(v⁴ − g(g(kd)² + 2hv²))) / (g kd).
+      const r = d * k;
+      const disc = v ** 4 - g * (g * r * r + 2 * h * v * v);
+      if (disc < 0) continue;
+      const pitch = Math.atan((v * v + sign * Math.sqrt(disc)) / (g * r)) - GRENADE.loft;
+      if (pitch > MOVEMENT.pitchLimit || pitch < -MOVEMENT.pitchLimit) continue;
+      predictThrow(world, c, def, yaw, pitch, landed);
+      if (Math.hypot(landed.x - x, landed.z - z) > TACTICS.throwSlack) continue;
+      if (Math.abs(landed.y - y) > 1.5) continue;
+      // Where it lands sees the spot (lifted off the surface, as a blast is).
+      const ly = landed.y + GRENADE.lift;
+      if (!clearLine(world, landed.x, ly, landed.z, x, ty, z)) continue;
+      if (smokeBlocks(state.smokes, landed.x, ly, landed.z, x, ty, z)) continue;
+      arcYaw = yaw;
+      arcPitch = pitch;
+      return true;
+    }
+  }
+  return false;
+}
+
+// Where throwing wants it to look.
+let tossYaw = 0;
+let tossPitch = 0;
+
+/**
+ * One tick of getting a grenade away: standing still (crouched behind low cover), it turns
+ * to the throw's look (allowing for its recoil, which the throw adds) and lets go on the
+ * tick its turn gets there. Seeing its
+ * target again, not alert any more, or too long turning, it doesn't. Returns whether it's
+ * still about it; the rest of what it was doing waits meanwhile.
+ */
+function throwing(state: SimState, c: Character, ai: AiState): boolean {
+  const t = ai.toss!;
+  t.time -= DT;
+  if (t.time <= 0 || ai.seesTarget || ai.awareness !== 'alert') {
+    ai.toss = null;
+    return false;
+  }
+  tossYaw = t.yaw - c.recoilYaw;
+  tossPitch = t.pitch - c.recoilPitch;
+  // In the stance the arc was worked out from: crouched behind low cover stays down.
+  ai.input.crouch = ai.activity === 'cover' && ai.coverLow;
+  const step = AI.alertTurnRate * DT;
+  if (
+    Math.abs(angleDiff(c.yaw, tossYaw)) <= step &&
+    Math.abs(c.pitch - tossPitch) <= step &&
+    Math.hypot(c.vx, c.vz) < AI.stuckSpeed
+  ) {
+    ai.input.throw = true;
+    ai.input.grenade = t.item;
+    ai.toss = null;
+    ai.nextThrow = state.tick + Math.round(TACTICS.throwGap / DT);
+    ai.hasGoal = false;
+  }
+  return true;
 }
 
 /** Whether the squad's leader is at its current stop (arrived there, not yet moved on). */
@@ -2940,7 +3384,9 @@ function fleeGrenade(
   let found: Grenade | null = null;
   let radius = 0;
   for (const g of state.grenades) {
-    // Only what would hurt it: not a flash or smoke, nor C4 it doesn't know is a bomb.
+    // Only what would hurt it: not a flash or smoke, nor C4 it doesn't know is a bomb. Its
+    // own and its allies' are run from too (AI-6), though they can't hurt it (health.ts
+    // byAlly): it doesn't stand by a grenade.
     const def = grenadeDef(items, g.item);
     if (def.damage <= 0 || g.remote) continue;
     const r = def.radius;
@@ -3142,7 +3588,11 @@ function fight(
     if (ai.push)
       moving =
         moveTo(state, c, ai, nav, ai.focusX, ai.focusY, ai.focusZ, AI.alertPace, true) === 'moving';
-  } else if (across > Math.min(def.range * AI.engageRange, AI.maxEngage)) {
+  } else if (
+    across >
+    (ai.skill.charge ? JUG.chargeClose : Math.min(def.range * AI.engageRange, AI.maxEngage))
+  ) {
+    // Jug walks right at you, firing (AI-7).
     moving =
       moveTo(state, c, ai, nav, target.x, target.y, target.z, AI.alertPace, true) === 'moving';
   } else {

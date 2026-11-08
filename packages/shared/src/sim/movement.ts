@@ -72,6 +72,18 @@ export const MOVEMENT = {
   leanTime: 0.15,
   /** A lean stops this far short of a wall, so the head (and eye) stays out of it. */
   leanHeadRoom: 0.15,
+  /**
+   * The sprint-slide (AI-7; design.md → AI → Jug: his alone): from at least slideFrom, it
+   * goes low (slideHeight) along the way it was going, from slideSpeed slowing evenly to
+   * slideEndSpeed over slideTime (about 3.8 m), turning at most slideSteer radians a second
+   * towards the stick. A wall that stops it ends it; so does leaving the ground.
+   */
+  slideFrom: 4.5,
+  slideSpeed: 7.5,
+  slideEndSpeed: 2,
+  slideTime: 0.8,
+  slideHeight: 1.1,
+  slideSteer: 1.2,
 } as const;
 
 const DT = TICK_SECONDS;
@@ -121,11 +133,15 @@ export function moveCharacter(
     prone = !!input.prone && !sprint;
     jump = input.jump && !c.jumpHeld;
     c.jumpHeld = input.jump;
+    if (input.slide && !c.slide) startSlide(c);
   } else {
     c.jumpHeld = false;
   }
+  if (c.slide && c.mode !== 'ground') c.slide = null;
+  // No jumping out of a slide, nor lying down in one.
+  if (c.slide) jump = prone = false;
   let lean = input?.lean !== undefined && Number.isFinite(input.lean) ? input.lean : 0;
-  if (sprint || prone || isProne(c) || c.mode !== 'ground') lean = 0;
+  if (sprint || prone || isProne(c) || c.mode !== 'ground' || c.slide) lean = 0;
   if (c.lean || lean) {
     const change = DT / MOVEMENT.leanTime;
     const now = c.lean ?? 0;
@@ -150,10 +166,47 @@ export function moveCharacter(
   const M = MOVEMENT;
   let stance: number = M.standHeight;
   if (c.mode === 'ground' && prone) stance = M.proneHeight;
+  else if (c.slide) stance = M.slideHeight;
   else if (c.mode !== 'ladder' && (crouch || prone)) stance = M.crouchHeight;
   updateStance(c, stance, world);
   if (c.mode === 'ladder') climb(c, wishX, wishZ, jump, world);
   else if (!grabLadder(c, wishX, wishZ, world)) walk(c, wishX, wishZ, sprint, jump, world);
+}
+
+/**
+ * Starts a sprint-slide (AI-7), only for an enemy whose skill has `slide` (Jug), standing
+ * on the ground and moving at least MOVEMENT.slideFrom. Allocates only when it starts one.
+ */
+function startSlide(c: Character): void {
+  if (!c.ai?.skill.slide || c.mode !== 'ground' || isCrouched(c)) return;
+  const speed = Math.hypot(c.vx, c.vz);
+  if (speed < MOVEMENT.slideFrom) return;
+  c.slide = { t: 0, dx: c.vx / speed, dz: c.vz / speed };
+}
+
+/**
+ * One tick of a slide's speed into c.vx, c.vz: slowing evenly, turning a little towards
+ * the stick (wishX, wishZ).
+ */
+function slideVelocity(c: Character, wishX: number, wishZ: number): void {
+  const M = MOVEMENT;
+  const s = c.slide!;
+  s.t += DT;
+  if (wishX !== 0 || wishZ !== 0) {
+    // The signed angle from the heading to the stick, turned through at most slideSteer.
+    const cross = s.dx * wishZ - s.dz * wishX;
+    const dot = s.dx * wishX + s.dz * wishZ;
+    const turn = Math.max(-M.slideSteer * DT, Math.min(M.slideSteer * DT, Math.atan2(cross, dot)));
+    const cos = Math.cos(turn);
+    const sin = Math.sin(turn);
+    const dx = s.dx * cos - s.dz * sin;
+    s.dz = s.dx * sin + s.dz * cos;
+    s.dx = dx;
+  }
+  const k = Math.min(1, s.t / M.slideTime);
+  const speed = (M.slideSpeed + (M.slideEndSpeed - M.slideSpeed) * k) * legSpeedScale(c.health);
+  c.vx = s.dx * speed;
+  c.vz = s.dz * speed;
 }
 
 /** Crouched or prone: lower than standing. */
@@ -187,7 +240,10 @@ function walk(
 ): void {
   const M = MOVEMENT;
   const crouched = isCrouched(c);
-  if (c.mode === 'ground') {
+  if (c.mode === 'ground' && c.slide) {
+    slideVelocity(c, wishX, wishZ);
+    limitSlope(c, world);
+  } else if (c.mode === 'ground') {
     const knife = !crouched && c.gear.hand === 'knife' && c.gear.knife ? M.knifeSpeed : 1;
     const crouchSpeed = isProne(c) ? M.proneSpeed : M.crouchSpeed;
     let speed =
@@ -216,6 +272,9 @@ function walk(
   c.vz = (pos.z - c.z) / DT;
   c.x = pos.x;
   c.z = pos.z;
+  // A slide ends on time, or against a wall that has stopped it.
+  if (c.slide && (c.slide.t >= M.slideTime || Math.hypot(c.vx, c.vz) < M.slideEndSpeed * 0.5))
+    c.slide = null;
 
   if (c.mode === 'ground') {
     if (jump && !crouched) {

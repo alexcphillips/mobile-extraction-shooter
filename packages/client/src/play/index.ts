@@ -1,4 +1,5 @@
 import {
+  armourDef,
   CollisionWorld,
   FixedTimestep,
   GRAPHICS_QUALITY,
@@ -835,6 +836,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let burnShown = false;
   let blindShown = -1;
   let veilShown = -1;
+  // A mask's narrower view and muffled sound (AI-7), by the helmet they were last set for.
+  const maskEl = document.getElementById('mask-view')!;
+  let maskFor: string | null = null;
+  maskEl.classList.remove('on');
+  sounds().setMuffle(null);
 
   // Debug actions: hurt me, heal me; on screen and keys 7 and 8.
   if (options.debug) {
@@ -1786,6 +1792,16 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     if (blindStep !== blindShown) {
       blindShown = blindStep;
       blindEl.style.opacity = String(blindStep);
+    }
+    // Wearing a mask (AI-7, Jug's): the view's edges hidden and every sound muffled, until
+    // the raid is over.
+    const helmet = alive && !ended ? (v.gear.helmet?.item ?? null) : null;
+    if (helmet !== maskFor) {
+      maskFor = helmet;
+      const mask = helmet ? armourDef(items, helmet).mask : undefined;
+      maskEl.classList.toggle('on', !!mask?.edge);
+      if (mask?.edge) maskEl.style.setProperty('--edge', `${mask.edge * 100}%`);
+      sounds().setMuffle(mask?.muffle ?? null);
     }
     // In a smoke cloud: greyer the deeper in, so being inside one hides the world too.
     let veil = 0;

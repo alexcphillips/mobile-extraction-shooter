@@ -260,33 +260,95 @@ export function launchGrenade(
   speed: number,
   armIn?: number,
 ): Grenade {
+  const g: Grenade = {
+    id: state.nextId++,
+    item: def.id,
+    by: c.id,
+    x: 0,
+    y: 0,
+    z: 0,
+    vx: 0,
+    vy: 0,
+    vz: 0,
+    fuse: def.fuse,
+    resting: false,
+  };
+  leaveHand(world, g, eyeX(c), eyeHeight(c), eyeZ(c), yaw, pitch, speed, c.vx, c.vy, c.vz);
+  if (armIn !== undefined) g.armIn = armIn;
+  if (grenadeEffect(def) === 'c4') g.remote = true;
+  state.grenades.push(g);
+  return g;
+}
+
+/**
+ * Puts g a hand's length from an eye at (ox, oy, oz) along yaw and pitch, lofted
+ * GRENADE.loft (or short of a wall), moving at speed plus the thrower's own (vx, vy, vz;
+ * only rising adds).
+ */
+function leaveHand(
+  world: CollisionWorld,
+  g: Grenade,
+  ox: number,
+  oy: number,
+  oz: number,
+  yaw: number,
+  pitch: number,
+  speed: number,
+  vx: number,
+  vy: number,
+  vz: number,
+): void {
   const p = Math.min(Math.PI / 2, pitch + GRENADE.loft);
   const cp = Math.cos(p);
   const dx = -Math.sin(yaw) * cp;
   const dy = Math.sin(p);
   const dz = -Math.cos(yaw) * cp;
-  const ox = eyeX(c);
-  const oy = eyeHeight(c);
-  const oz = eyeZ(c);
   const wall = world.raycast(ox, oy, oz, dx, dy, dz, GRENADE.hand + GRENADE.size);
   const out = Math.max(0, Math.min(GRENADE.hand, wall - GRENADE.size));
-  const g: Grenade = {
-    id: state.nextId++,
-    item: def.id,
-    by: c.id,
-    x: ox + dx * out,
-    y: oy + dy * out,
-    z: oz + dz * out,
-    vx: dx * speed + c.vx,
-    vy: dy * speed + Math.max(0, c.vy),
-    vz: dz * speed + c.vz,
-    fuse: def.fuse,
-    resting: false,
-  };
-  if (armIn !== undefined) g.armIn = armIn;
-  if (grenadeEffect(def) === 'c4') g.remote = true;
-  state.grenades.push(g);
-  return g;
+  g.x = ox + dx * out;
+  g.y = oy + dy * out;
+  g.z = oz + dz * out;
+  g.vx = dx * speed + vx;
+  g.vy = dy * speed + Math.max(0, vy);
+  g.vz = dz * speed + vz;
+}
+
+// The grenade predictThrow flies.
+const ghost: Grenade = {
+  id: 0,
+  item: '',
+  by: 0,
+  x: 0,
+  y: 0,
+  z: 0,
+  vx: 0,
+  vy: 0,
+  vz: 0,
+  fuse: 0,
+  resting: false,
+};
+
+/**
+ * Where a grenade thrown from c's eye along yaw and pitch, c standing still, would be
+ * when it goes off: the same flight and bounces as a real one, tick by tick, stopping
+ * once it lies still (AI-6: an enemy picking its throw). Nobody is in the way (a thrown
+ * one passes through people) and nothing is heard. Into out.
+ */
+export function predictThrow(
+  world: CollisionWorld,
+  c: Character,
+  def: GrenadeDef,
+  yaw: number,
+  pitch: number,
+  out: { x: number; y: number; z: number },
+): void {
+  const g = ghost;
+  g.resting = false;
+  leaveHand(world, g, eyeX(c), eyeHeight(c), eyeZ(c), yaw, pitch, def.throwSpeed, 0, 0, 0);
+  for (let t = def.fuse; t > 1e-9 && !g.resting; t -= TICK_SECONDS) moveGrenade(null, g, world);
+  out.x = g.x;
+  out.y = g.y;
+  out.z = g.z;
 }
 
 /**
@@ -322,9 +384,10 @@ export function updateGrenades(state: SimState, world: CollisionWorld, items: It
  * the map, bouncing off (restitution into the surface, friction along it). Slow on a
  * floor, it stops there, until the floor goes (a door swinging away). An armed impact fuse
  * stops it on the map or on someone (not who fired it) instead: returns true, there. C4
- * sticks to the first thing it hits, wall or floor, and stays.
+ * sticks to the first thing it hits, wall or floor, and stays. Without a state (predictThrow),
+ * nothing is heard.
  */
-function moveGrenade(state: SimState, g: Grenade, world: CollisionWorld): boolean {
+function moveGrenade(state: SimState | null, g: Grenade, world: CollisionWorld): boolean {
   const r = GRENADE.size;
   if (g.resting && g.remote) return false;
   if (g.resting) {
@@ -341,7 +404,7 @@ function moveGrenade(state: SimState, g: Grenade, world: CollisionWorld): boolea
     const dz = g.vz / speed;
     const travel = speed * left;
     const d = world.raycast(g.x, g.y, g.z, dx, dy, dz, travel + r, hit);
-    if (g.armIn !== undefined) {
+    if (g.armIn !== undefined && state) {
       // Someone in the way once it's armed: it goes off on them. Before that it passes
       // through, as a thrown one does.
       const reach = Math.min(d, travel);
@@ -371,7 +434,7 @@ function moveGrenade(state: SimState, g: Grenade, world: CollisionWorld): boolea
       // close wall bounces back as a thrown one would rather than going off at your feet.
       // A pane it hits breaks (a molotov smashes on it).
       if (g.armIn <= d) {
-        breakGlass(state, world, glassHit(world, hit), g.by);
+        if (state) breakGlass(state, world, glassHit(world, hit), g.by);
         return true;
       }
       delete g.armIn;
@@ -391,7 +454,7 @@ function moveGrenade(state: SimState, g: Grenade, world: CollisionWorld): boolea
     g.vx = tx * GRENADE.friction + hit.nx * back;
     g.vy = ty * GRENADE.friction + hit.ny * back;
     g.vz = tz * GRENADE.friction + hit.nz * back;
-    if (-into > GRENADE.bounceSound) {
+    if (state && -into > GRENADE.bounceSound) {
       state.events.push({
         type: 'bounce',
         grenade: g.id,

@@ -1,5 +1,5 @@
 import { attachmentDef, weaponDef, type ItemDb } from '../content/items';
-import type { ArmourOption, ContainerOption, LoadoutDef } from '../content/enemies';
+import type { ArmourOption, ContainerOption, GrenadeOption, LoadoutDef } from '../content/enemies';
 import { byWeight, nextFloat, nextRange, type Rng } from '../rng';
 import { createItem } from './create-item';
 import { createGear, equip, stow, type GearSlot } from './gear';
@@ -11,8 +11,9 @@ import { giveWeapon } from './weapons';
  * Rolls a loadout and equips a character with it, each part picked by weight on its own:
  * a gun with its attachments and a full magazine of its round (picked by weight, if it
  * lists rounds), taken out; armour, a rig and a backpack
- * (or none) in each slot; and spare rounds stowed in pockets, rig and backpack (what
- * doesn't fit is left out). Replaces everything it had except the vault.
+ * (or none) in each slot; grenades (AI-6), stowed first so they're in reach to throw; and
+ * spare rounds stowed in pockets, rig and backpack (what doesn't fit is left out).
+ * Replaces everything it had except the vault.
  */
 export function equipLoadout(c: Character, items: ItemDb, loadout: LoadoutDef, rng: Rng): void {
   const vault = c.gear.vault;
@@ -35,6 +36,7 @@ export function equipLoadout(c: Character, items: ItemDb, loadout: LoadoutDef, r
   c.gear.bodyArmour = rollArmour(items, loadout.bodyArmour, rng);
   rollContainer(c, items, 'rig', loadout.rigs, rng);
   rollContainer(c, items, 'backpack', loadout.backpacks, rng);
+  rollGrenades(c, items, loadout.grenades, rng);
   if (spare > 0) stow(c, items, { item: ammo, count: spare });
 }
 
@@ -60,4 +62,18 @@ function rollContainer(
   if (!options?.length) return;
   const o = byWeight(rng, options);
   if (o.item !== null) equip(c, items, slot, createItem(items, o.item));
+}
+
+function rollGrenades(
+  c: Character,
+  items: ItemDb,
+  options: readonly GrenadeOption[] | undefined,
+  rng: Rng,
+): void {
+  if (!options?.length) return;
+  const o = byWeight(rng, options);
+  if (o.item === null) return;
+  const [min, max] = o.count ?? [1, 1];
+  const n = min + Math.floor(nextFloat(rng) * (max - min + 1));
+  for (let i = 0; i < n; i++) stow(c, items, createItem(items, o.item));
 }

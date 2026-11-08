@@ -35114,14 +35114,30 @@
         },
         {
           "type": "enemySpawn",
-          "id": "gun-store-boss",
-          "pos": [-40, 6.2, 105],
-          "yaw": 0,
-          "enemy": "boss-scav",
-          "chance": 0.6,
-          "lootWeights": {
-            "military": 2
-          }
+          "id": "jug",
+          "pos": [-80, 0.2, 95],
+          "yaw": 180,
+          "enemy": "jug",
+          "chance": 0.15,
+          "patrol": "jug-ground-floor"
+        },
+        {
+          "type": "patrol",
+          "id": "jug-ground-floor",
+          "points": [
+            { "pos": [-80, 0.2, 95], "wait": 6, "radius": 2 },
+            [-72, 0.2, 70],
+            { "pos": [-75, 0.2, 50], "wait": 5, "radius": 2 },
+            [-60, 0.2, 60],
+            [-55, 0.2, 72],
+            [-38, 0.2, 65],
+            { "pos": [-22, 0.2, 72], "wait": 5, "radius": 3 },
+            [-5, 0.2, 72],
+            [15, 0.2, 72],
+            { "pos": [36, 0.2, 71], "wait": 4, "radius": 2 },
+            { "pos": [40, 0.2, 60], "wait": 6, "radius": 1 }
+          ],
+          "loop": false
         }
       ]
     },

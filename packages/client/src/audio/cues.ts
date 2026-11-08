@@ -151,6 +151,10 @@ export class SoundCues {
         const thrower = entityById(sim, e.by);
         if (own) this.sound.play(id);
         else if (thrower) this.at(id, thrower.x, thrower.y + CHEST, thrower.z);
+        // An enemy shouts as it throws (AI-6), in its type's voice.
+        const shout = thrower?.look && this.enemies.get(thrower.look.type)?.voice?.grenade;
+        if (thrower && shout)
+          this.at(shout, thrower.x, thrower.y + MOVEMENT.standHeight - 0.2, thrower.z);
         return;
       }
       case 'bounce': {

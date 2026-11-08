@@ -59,6 +59,13 @@ const TUNE = {
    * how much of it the lower spine takes; the upper spine takes the rest. */
   leanRate: 20,
   leanLow: 0.6,
+  /**
+   * Sliding (AI-7): how quickly the body goes into and out of it (per second), how far the
+   * hips tip back and how much of that the chest takes back up (radians).
+   */
+  slideRate: 14,
+  slideBack: 0.6,
+  slideChest: 0.4,
   /** The arms hold the gun by IK within this distance (m) of the camera... */
   ikRange: 30,
   /** ...and the animation updates every frame within the first distance, every 2nd within
@@ -313,6 +320,8 @@ export class CharacterBody {
   private twist = 0;
   /** The lean as drawn, smoothed from the sim's. */
   private lean = 0;
+  /** How far into its slide pose it's drawn, 0–1 (AI-7). */
+  private slid = 0;
   private kick = 0;
   private flinch = 0;
   private deadFor = 0;
@@ -471,6 +480,8 @@ export class CharacterBody {
     if (dead) legs = CLIP.death;
     // A vault is the jump clip too; prone has no clips yet, so it's drawn crouched.
     else if (ch.mode === 'air' || ch.mode === 'vault') legs = CLIP.air;
+    // A slide (AI-7, Jug's) is the crouch, tipped back below.
+    else if (ch.slide) legs = CLIP.crouchIdle;
     else if (speed <= TUNE.still) legs = crouched ? CLIP.crouchIdle : CLIP.idle;
     else if (crouched) legs = CLIP.crouchWalk;
     else if (speed <= TUNE.walkUpTo) legs = CLIP.walk;
@@ -514,6 +525,14 @@ export class CharacterBody {
     if (Math.abs(this.twist) > 1e-3) {
       turnWorld(this.bone.hips, UP, this.twist);
       turnWorld(this.bone.spine1, UP, -this.twist);
+    }
+    // Sliding: tipped back from the hips, legs out in front, the chest kept up to fire.
+    this.slid += ((!dead && ch.slide ? 1 : 0) - this.slid) * (1 - Math.exp(-dt * TUNE.slideRate));
+    if (this.slid > 1e-3) {
+      this.root.getWorldQuaternion(rootQ);
+      leanAxis.set(1, 0, 0).applyQuaternion(rootQ);
+      turnWorld(this.bone.hips, leanAxis, TUNE.slideBack * this.slid);
+      turnWorld(this.bone.spine1, leanAxis, -TUNE.slideChest * this.slid);
     }
     // Leaning: the spine tips sideways from the hips, as the sim's hit zones do. The gun
     // is placed from the shoulder below, so the arms come with it. No clip needed.

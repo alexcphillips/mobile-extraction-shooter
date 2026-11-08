@@ -1,0 +1,98 @@
+{
+  "formatVersion": 10,
+  "id": "jug-mask",
+  "name": "Jug's mask",
+  "shortName": "Jug mask",
+  "type": "armour",
+  "size": [2, 2],
+  "value": 45000,
+  "rarity": "mythic",
+  "slot": "helmet",
+  "level": 6,
+  "durability": 120,
+  "repairLoss": 0.06,
+  "mask": {
+    "edge": 0.16,
+    "muffle": 2200
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 1.719, 0],
+        "radius": 0.142,
+        "radiusTop": 0.116,
+        "height": 0.122,
+        "sides": 10,
+        "colour": "#55595d"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 1.795, 0],
+        "radius": 0.116,
+        "radiusTop": 0.06,
+        "height": 0.036,
+        "sides": 10,
+        "colour": "#4a4e52"
+      },
+      { "type": "box", "pos": [0, 1.735, 0.02], "size": [0.03, 0.11, 0.27], "colour": "#3d4145" },
+      { "type": "box", "pos": [0.128, 1.67, 0], "size": [0.034, 0.12, 0.16], "colour": "#4a4636" },
+      { "type": "box", "pos": [-0.128, 1.67, 0], "size": [0.034, 0.12, 0.16], "colour": "#4a4636" },
+      { "type": "box", "pos": [0, 1.62, 0.11], "size": [0.24, 0.12, 0.05], "colour": "#4a4636" },
+      { "type": "box", "pos": [0, 1.63, -0.135], "size": [0.23, 0.22, 0.016], "colour": "#23272b" },
+      { "type": "box", "pos": [0, 1.745, -0.135], "size": [0.25, 0.03, 0.03], "colour": "#55595d" },
+      {
+        "type": "box",
+        "pos": [0.122, 1.63, -0.1],
+        "size": [0.02, 0.22, 0.07],
+        "colour": "#55595d"
+      },
+      {
+        "type": "box",
+        "pos": [-0.122, 1.63, -0.1],
+        "size": [0.02, 0.22, 0.07],
+        "colour": "#55595d"
+      },
+      {
+        "type": "box",
+        "pos": [-0.048, 1.672, -0.145],
+        "size": [0.03, 0.03, 0.004],
+        "colour": "#39ff6a"
+      },
+      {
+        "type": "box",
+        "pos": [0.048, 1.672, -0.145],
+        "size": [0.03, 0.03, 0.004],
+        "colour": "#39ff6a"
+      },
+      {
+        "type": "box",
+        "pos": [-0.058, 1.597, -0.145],
+        "size": [0.04, 0.012, 0.004],
+        "colour": "#39ff6a",
+        "roll": -35
+      },
+      {
+        "type": "box",
+        "pos": [-0.02, 1.585, -0.145],
+        "size": [0.04, 0.012, 0.004],
+        "colour": "#39ff6a",
+        "roll": 30
+      },
+      {
+        "type": "box",
+        "pos": [0.02, 1.585, -0.145],
+        "size": [0.04, 0.012, 0.004],
+        "colour": "#39ff6a",
+        "roll": -30
+      },
+      {
+        "type": "box",
+        "pos": [0.058, 1.597, -0.145],
+        "size": [0.04, 0.012, 0.004],
+        "colour": "#39ff6a",
+        "roll": 35
+      }
+    ]
+  }
+}

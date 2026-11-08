@@ -483,6 +483,30 @@ body {
   pointer-events: none;
 }
 
+/*
+ * Wearing a mask (AI-7, Jug's): the sides of the view dark, fading in over --edge of the
+ * screen's width (play/index.ts sets it from the item's mask.edge). Under the HUD.
+ */
+#mask-view {
+  --edge: 16%;
+  position: fixed;
+  inset: 0;
+  display: none;
+  background: linear-gradient(
+    to right,
+    #050505 0,
+    rgb(5 5 5 / 0.9) calc(var(--edge) * 0.45),
+    transparent var(--edge),
+    transparent calc(100% - var(--edge)),
+    rgb(5 5 5 / 0.9) calc(100% - var(--edge) * 0.45),
+    #050505 100%
+  );
+  pointer-events: none;
+}
+#mask-view.on {
+  display: block;
+}
+
 /* Floating move stick, placed where the left thumb lands. */
 #stick {
   position: fixed;

@@ -311,6 +311,17 @@ const armourSchema = z.strictObject({
    * Force's "durability cost", 2026-11-06; sim/repair.ts). REPAIR.loss if left out.
    */
   repairLoss: z.number().min(0).lt(1).optional(),
+  /**
+   * A helmet with a full face mask (AI-7, Jug's): worn by a player, it hides `edge` of the
+   * view at each side (0–0.4 of the screen's width, fading in) and muffles every sound
+   * above `muffle` Hz. Either left out does nothing.
+   */
+  mask: z
+    .strictObject({
+      edge: z.number().min(0).max(0.4).optional(),
+      muffle: z.number().min(200).max(20000).optional(),
+    })
+    .optional(),
   ...plainModel,
 });
 

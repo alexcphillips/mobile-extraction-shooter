@@ -7,7 +7,12 @@ import {
   spawnProblems,
   buyPrice,
   createState,
+  createRng,
+  createWeaponStats,
+  equipLoadout,
   exposedSpawns,
+  heldWeapon,
+  weaponStats,
   createItem,
   spawnCharacter,
   spawnEnemy,
@@ -56,13 +61,40 @@ describe('content', () => {
     expect(() => checkLootContainers(map)).not.toThrow();
     // Raids start out of the enemies' sight (the map editor warns about these too), and as
     // far from them as the map asks (enemyClearance; northpoint asks for none, 2026-11-07).
-    expect(
-      exposedSpawns(map.markers, new CollisionWorld(map.world), map.enemyClearance),
-    ).toEqual([]);
+    expect(exposedSpawns(map.markers, new CollisionWorld(map.world), map.enemyClearance)).toEqual(
+      [],
+    );
   });
 
   it('enemy types and loadouts load and their references are sound', () => {
     expect(loadEnemies().types.size).toBeGreaterThan(0);
+  });
+
+  it("Jug (AI-7): his RPK-16 holds 100 with his drum, in his mask and plates; on Northpoint's ground floor 15% of raids", () => {
+    const items = loadItems();
+    const { types, loadouts } = loadEnemies();
+    const jug = types.get('jug')!;
+    expect(jug.faction).toBe('boss');
+    const state = createState(1);
+    const world = new CollisionWorld(loadMap('test-map').world);
+    const c = spawnCharacter(state, world, 0, 0);
+    equipLoadout(c, items, loadouts.get(jug.loadout)!, createRng(1));
+    const w = heldWeapon(c)!;
+    expect(w.item).toBe('rpk-16');
+    expect(weaponStats(items, w, createWeaponStats()).magazine).toBe(100);
+    expect(w.mag).toBe(100);
+    expect([c.gear.helmet?.item, c.gear.bodyArmour?.item]).toEqual(['jug-mask', 'jug-armour']);
+    const mask = items.get('jug-mask');
+    expect(mask?.type === 'armour' && mask.level === 6 && mask.mask?.muffle).toBeTruthy();
+
+    const map = loadMap('northpoint');
+    const spawns = map.markers.filter((m) => m.type === 'enemySpawn' && m.enemy === 'jug');
+    expect(spawns).toHaveLength(1);
+    expect(spawns[0]).toMatchObject({ chance: 0.15, patrol: 'jug-ground-floor' });
+    // The yard boss is gone from Northpoint.
+    expect(map.markers.some((m) => m.type === 'enemySpawn' && m.enemy === 'boss-scav')).toBe(false);
+    const patrol = map.patrols.find((p) => p.id === 'jug-ground-floor')!;
+    expect(patrol.points.every((p) => p.y < 1)).toBe(true);
   });
 
   it('items load and their references are sound', () => {

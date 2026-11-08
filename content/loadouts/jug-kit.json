@@ -1,0 +1,20 @@
+{
+  "formatVersion": 1,
+  "id": "jug-kit",
+  "weapons": [
+    {
+      "weight": 1,
+      "item": "rpk-16",
+      "spare": [200, 300],
+      "attachments": [{ "item": "mag-545x39-100-jug" }, { "item": "red-dot", "chance": 0.5 }],
+      "ammo": [
+        { "weight": 3, "item": "ammo-545x39-hp" },
+        { "weight": 1, "item": "ammo-545x39" }
+      ]
+    }
+  ],
+  "helmets": [{ "weight": 1, "item": "jug-mask" }],
+  "bodyArmour": [{ "weight": 1, "item": "jug-armour" }],
+  "rigs": [{ "weight": 1, "item": "chest-rig" }],
+  "backpacks": [{ "weight": 1, "item": null }]
+}

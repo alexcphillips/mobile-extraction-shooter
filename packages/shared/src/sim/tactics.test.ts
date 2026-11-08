@@ -4,7 +4,8 @@ import { NavGrid } from '../nav/nav-grid';
 import { TICK_RATE } from '../tick';
 import { CollisionWorld, type BoxDef } from '../world/collision-world';
 import { AI, DEFAULT_SKILL, TACTICS, joinSquad, spawnEnemy, updateAi } from './ai';
-import { heldWeapon } from './gear';
+import { createItem } from './create-item';
+import { heldWeapon, stow } from './gear';
 import type { MedUse } from './meds';
 import { createState, spawnCharacter, type Character, type SimState } from './state';
 import { step } from './step';
@@ -14,7 +15,7 @@ import { giveWeapon } from './weapons';
 /*
  * How PMCs fight (AI rework session 5): the callout, sprinting to cover and leaving it
  * sooner, pushing on a reload or heal they hear, and a squad splitting into holders firing
- * at your cover and flankers.
+ * at your cover and flankers. AI-6: frag grenades.
  */
 
 function makeWorld(boxes: BoxDef[] = [], half = 60): CollisionWorld {
@@ -292,5 +293,141 @@ describe('PMC fighting', () => {
     run(state, world, nav, 3);
     run(copy, world, nav, 3);
     expect(copy.entities.map((e) => [e.x, e.z])).toEqual(state.entities.map((e) => [e.x, e.z]));
+  });
+});
+
+describe('PMC grenades', () => {
+  /** A squad of n carrying `kit` each, standing `dist` m north of a 3 m wall you hide 2 m behind. */
+  function behindWall(
+    seed: number,
+    dist: number,
+    n = 2,
+    kit: string[] = ['grenade'],
+  ): { state: SimState; world: CollisionWorld; nav: NavGrid; team: Character[]; me: Character } {
+    const world = makeWorld([wall(-4, -2, 4, -2)]);
+    const nav = new NavGrid(world);
+    const state = createState(seed);
+    const team = Array.from({ length: n }, (_, i) =>
+      pmc(state, world, (i - (n - 1) / 2) * 3, -dist, Math.PI),
+    );
+    for (const m of team) for (const id of kit) stow(m, items, createItem(items, id));
+    squad(team);
+    // Seen out in the open first, then behind the wall.
+    const me = you(state, world, 7, 0);
+    run(state, world, nav, 5);
+    expect(team.every((m) => m.ai!.awareness === 'alert')).toBe(true);
+    me.x = 0;
+    me.z = 0;
+    return { state, world, nav, team, me };
+  }
+
+  it('lobs a frag over your cover that lands by you; its mates take nothing', () => {
+    const { state, world, nav, team, me } = behindWall(2, 14);
+    const ids = new Set(team.map((m) => m.id));
+    let thrown = 0;
+    let off = Infinity;
+    let hurt = 0;
+    run(state, world, nav, 15, () => {
+      for (const e of state.events) {
+        if (e.type === 'throw' && ids.has(e.by)) thrown++;
+        if (e.type === 'explosion' && ids.has(e.by))
+          off = Math.min(off, Math.hypot(e.x - me.x, e.z - me.z));
+        if (e.type === 'damage' && e.cause === 'explosion') {
+          expect(ids.has(e.target)).toBe(false);
+          if (e.target === me.id) hurt += e.amount;
+        }
+      }
+    });
+    expect(thrown).toBeGreaterThanOrEqual(1);
+    expect(off).toBeLessThan(TACTICS.throwSlack);
+    expect(hurt).toBeGreaterThan(200);
+  });
+
+  it('throws onto a roof it cannot get up to', () => {
+    // A 14 m square block 4.5 m tall, with no way up; you on it, out of sight over 10 m in.
+    const world = makeWorld([{ x: 0, y: 2.25, z: 0, hx: 7, hy: 2.25, hz: 7, yaw: 0 }]);
+    const nav = new NavGrid(world);
+    const state = createState(2);
+    const c = pmc(state, world, 0, -20, Math.PI);
+    stow(c, items, createItem(items, 'grenade'));
+    const me = you(state, world, 0, -6);
+    expect(me.y).toBeCloseTo(4.5, 1);
+    run(state, world, nav, 4);
+    expect(c.ai!.awareness).toBe('alert');
+    me.z = 4;
+    let landed: { x: number; y: number; z: number } | null = null;
+    let threwFrom = '';
+    run(state, world, nav, 25, () => {
+      for (const e of state.events) {
+        if (e.type === 'throw') threwFrom = c.ai!.activity;
+        if (e.type === 'explosion' && !landed) landed = { x: e.x, y: e.y, z: e.z };
+      }
+    });
+    expect(c.ai!.reachable).toBe(false);
+    expect(threwFrom).not.toBe('');
+    expect(landed!.y).toBeGreaterThan(4.5);
+    expect(Math.hypot(landed!.x - me.x, landed!.z - me.z)).toBeLessThan(TACTICS.throwSlack);
+  });
+
+  it('never throws from close up, while pushing, or without a frag', () => {
+    const throws = (s: SimState, seconds: number, world: CollisionWorld, nav: NavGrid): number => {
+      let n = 0;
+      run(s, world, nav, seconds, () => {
+        n += s.events.filter((e) => e.type === 'throw').length;
+      });
+      return n;
+    };
+    // Closer than throwMin.
+    for (const seed of [1, 2, 3]) {
+      const { state, world, nav } = behindWall(seed, 7);
+      expect(throws(state, 12, world, nav)).toBe(0);
+    }
+    // Only a flash and a smoke.
+    for (const seed of [1, 2, 3]) {
+      const { state, world, nav } = behindWall(seed, 14, 2, ['flash', 'smoke']);
+      expect(throws(state, 12, world, nav)).toBe(0);
+    }
+    // On its own, always pushing in when it loses you.
+    for (const seed of [1, 2, 3]) {
+      const world = makeWorld([wall(-4, -2, 4, -2)]);
+      const nav = new NavGrid(world);
+      const state = createState(seed);
+      const c = pmc(state, world, 0, -14, Math.PI, { ...PMC_SKILL, holdChance: 0 });
+      stow(c, items, createItem(items, 'grenade'));
+      const me = you(state, world, 7, 0);
+      run(state, world, nav, 5);
+      me.x = 0;
+      me.z = 0;
+      expect(throws(state, 12, world, nav)).toBe(0);
+    }
+  });
+
+  it('one AI grenade at a time near a spot: the area token', () => {
+    let thrown = 0;
+    for (const seed of [1, 2, 3, 4]) {
+      const { state, world, nav, team } = behindWall(seed, 14, 4, ['grenade', 'grenade']);
+      run(state, world, nav, 25, () => {
+        thrown += state.events.filter((e) => e.type === 'throw').length;
+        let live = state.grenades.length;
+        for (const m of team) if (m.ai!.toss) live++;
+        expect(live).toBeLessThanOrEqual(1);
+      });
+    }
+    expect(thrown).toBeGreaterThanOrEqual(2);
+  });
+
+  it('a raid saved while it turns to throw carries on the same', () => {
+    const { state, world, nav, team } = behindWall(2, 14);
+    let saved: SimState | null = null;
+    for (let i = 0; i < 15 * TICK_RATE && !saved; i++) {
+      step(state, world, items, {}, nav);
+      if (team.some((m) => m.ai!.toss)) saved = JSON.parse(JSON.stringify(state)) as SimState;
+    }
+    expect(saved).not.toBeNull();
+    run(state, world, nav, 5);
+    run(saved!, world, nav, 5);
+    expect(saved!.entities.map((e) => [e.x, e.z, e.health.hp])).toEqual(
+      state.entities.map((e) => [e.x, e.z, e.health.hp]),
+    );
   });
 });

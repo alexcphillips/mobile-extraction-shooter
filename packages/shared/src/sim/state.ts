@@ -44,6 +44,18 @@ export interface Vaulting {
   t: number;
 }
 
+/**
+ * A sprint-slide in progress (AI-7: Jug's alone, see movement.ts slide): low, along a
+ * heading set when it started, slowing as it goes.
+ */
+export interface Sliding {
+  /** Seconds into it. */
+  t: number;
+  /** Its heading, a flat unit vector. */
+  dx: number;
+  dz: number;
+}
+
 /** A player or AI body: a vertical capsule standing at (x, y, z). */
 /** What an enemy looks like: its enemy type's id, and an index into the type's outfits. */
 export interface EnemyLook {
@@ -77,6 +89,8 @@ export interface Character {
   ladder: number;
   /** The vault in progress while mode is 'vault', otherwise null. */
   vaulting: Vaulting | null;
+  /** A sprint-slide in progress, on the ground (AI-7). Null or missing (older saves) when not. */
+  slide?: Sliding | null;
   /** The jump button last tick, so holding it jumps once. */
   jumpHeld: boolean;
   /** How fast it hit the ground if it landed this tick (m/s), otherwise 0. For fall damage. */
@@ -293,6 +307,11 @@ export interface PlayerInput {
   lean?: number;
   /** Also vaults, when facing something low and close enough (see findVault). */
   jump: boolean;
+  /**
+   * Start a sprint-slide (AI-7): a press, while sprinting. Only a character whose AI's skill
+   * has `slide` (Jug) can: anyone else's is ignored, players' included.
+   */
+  slide?: boolean;
   /** The trigger, held. */
   fire: boolean;
   /** Aiming down the sights, held (toggling is the client's setting). */

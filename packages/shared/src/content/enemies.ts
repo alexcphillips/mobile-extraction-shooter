@@ -57,6 +57,27 @@ const skillSchema = z.strictObject({
    * pushes round the corner at them (AI rework session 5). Left out, 0: never.
    */
   listen: nonNegative.optional(),
+  /**
+   * Hears this many times as far as anyone else (AI-7, Jug): footsteps, gunfire, blasts
+   * and glass. Left out, 1.
+   */
+  hearing: positive.optional(),
+  /**
+   * Checks what it hears at once and fast (AI-7, Jug): a short look, then straight there at
+   * a full walk, without stopping short to watch, and never held back by AI.responders.
+   */
+  bold: z.boolean().optional(),
+  /**
+   * Never takes cover (AI-7, Jug): walks at you firing, and sprints after you out of sight.
+   */
+  charge: z.boolean().optional(),
+  /** Sprint-slides at you and round corners, firing mid-slide (AI-7: Jug's alone). */
+  slide: z.boolean().optional(),
+  /**
+   * Hit by someone, it hunts them along the way they go until one of them is dead (AI-7,
+   * Jug): it never searches, gives up or goes back to its patrol meanwhile.
+   */
+  relentless: z.boolean().optional(),
 });
 
 /** The colours of its body, by part. Gear is drawn over it. */
@@ -93,9 +114,9 @@ export const enemySchema = z.strictObject({
   outfits: z.array(outfitSchema).min(1).optional(),
   /**
    * What it says (AI rework session 5): sound ids in content/sounds. `callout` is shouted
-   * when a squad member spots someone. Silent if left out.
+   * when a squad member spots someone, `grenade` as it throws one (AI-6). Silent if left out.
    */
-  voice: z.strictObject({ callout: idSchema.optional() }).optional(),
+  voice: z.strictObject({ callout: idSchema.optional(), grenade: idSchema.optional() }).optional(),
   /**
    * What it carries besides its loadout (session 11), stowed in its pockets, rig and
    * backpack when it spawns; what doesn't fit is left out. Each of `rolls` items comes
@@ -148,6 +169,14 @@ const containerOptionSchema = z.strictObject({
   item: idSchema.nullable(),
 });
 
+const grenadeOptionSchema = z.strictObject({
+  weight: positive,
+  /** null: none. A grenade to throw (not a launcher's round). */
+  item: idSchema.nullable(),
+  /** How many, rolled between these. Defaults to [1, 1]. */
+  count: rangeOf(z.int().min(1)).optional(),
+});
+
 export const loadoutSchema = z.strictObject({
   formatVersion: z.literal(LOADOUT_FORMAT_VERSION),
   id: idSchema,
@@ -157,6 +186,11 @@ export const loadoutSchema = z.strictObject({
   bodyArmour: z.array(armourOptionSchema).optional(),
   rigs: z.array(containerOptionSchema).optional(),
   backpacks: z.array(containerOptionSchema).optional(),
+  /**
+   * Grenades it carries (AI-6), stowed first so they're in its pockets: an enemy carrying a
+   * frag throws it when it loses you (sim/ai.ts considerThrow). None if left out.
+   */
+  grenades: z.array(grenadeOptionSchema).optional(),
 });
 
 export type EnemyDef = z.infer<typeof enemySchema>;
@@ -168,6 +202,7 @@ export type LoadoutDef = z.infer<typeof loadoutSchema>;
 export type WeaponOption = z.infer<typeof weaponOptionSchema>;
 export type ArmourOption = z.infer<typeof armourOptionSchema>;
 export type ContainerOption = z.infer<typeof containerOptionSchema>;
+export type GrenadeOption = z.infer<typeof grenadeOptionSchema>;
 
 export const ENEMY_FORMAT: ContentFormat<EnemyDef> = {
   kind: 'enemy',
@@ -196,7 +231,7 @@ export const LOADOUT_FORMAT: ContentFormat<LoadoutDef> = {
 
 /**
  * Checks references: every enemy's loadout exists, and every loadout's items exist, are
- * the right type, and its attachments fit their gun.
+ * the right type (grenades ones to throw), and its attachments fit their gun.
  */
 export function checkEnemies(
   enemies: ReadonlyMap<string, EnemyDef>,
@@ -257,6 +292,12 @@ export function checkEnemies(
         if (item?.type !== 'container' || item.slot !== slot)
           throw new ContentError(source, `"${o.item}" is not a ${slot}`);
       }
+    }
+    for (const o of l.grenades ?? []) {
+      if (o.item === null) continue;
+      const item = items.get(o.item);
+      if (item?.type !== 'grenade' || item.calibre !== undefined)
+        throw new ContentError(source, `"${o.item}" is not a grenade to throw`);
     }
   }
 }

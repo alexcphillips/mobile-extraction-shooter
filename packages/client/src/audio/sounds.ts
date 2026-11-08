@@ -47,6 +47,9 @@ export class SoundPlayer {
     source: null,
   }));
   private master: GainNode | null = null;
+  /** Between the master and the speakers while muffled (a mask: AI-7), else unused. */
+  private muffler: BiquadFilterNode | null = null;
+  private muffle: number | null = null;
   private volume = 1;
   private readonly at: Placement = { gain: 1, pan: 0, cutoff: SPATIAL.open };
 
@@ -61,6 +64,16 @@ export class SoundPlayer {
   setVolume(volume: number): void {
     this.volume = volume;
     if (this.master) this.master.gain.value = volume;
+  }
+
+  /**
+   * Muffles everything above this many Hz (wearing a mask, AI-7), or nothing with null.
+   * Cheap to call every frame: it only rewires when the value changes.
+   */
+  setMuffle(hz: number | null): void {
+    if (hz === this.muffle) return;
+    this.muffle = hz;
+    if (this.master) this.route(this.master.context as AudioContext);
   }
 
   /** Renders every sound now, so none renders the first time it's heard in a raid. */
@@ -169,9 +182,25 @@ export class SoundPlayer {
     if (!this.master) {
       this.master = ctx.createGain();
       this.master.gain.value = this.volume;
-      this.master.connect(ctx.destination);
+      this.route(ctx);
     }
     return this.master;
+  }
+
+  /** The master straight to the speakers, or through the muffler. */
+  private route(ctx: AudioContext): void {
+    const master = this.master!;
+    master.disconnect();
+    if (this.muffle === null) {
+      master.connect(ctx.destination);
+      return;
+    }
+    if (!this.muffler) {
+      this.muffler = ctx.createBiquadFilter();
+      this.muffler.connect(ctx.destination);
+    }
+    this.muffler.frequency.value = this.muffle;
+    master.connect(this.muffler);
   }
 }
 
