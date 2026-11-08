@@ -31,13 +31,13 @@
     {
       "type": "box",
       "pos": [-0.6, 0.7, 0],
-      "size": [0.8, 1.0, 0.36],
+      "size": [0.8, 1, 0.36],
       "colour": "leaf-light",
       "collide": false
     },
     {
       "type": "box",
-      "pos": [0.5, 0.8, 0.02],
+      "pos": [0.5, 0.8, 0.01],
       "size": [0.9, 0.98, 0.34],
       "colour": "leaf-light",
       "collide": false

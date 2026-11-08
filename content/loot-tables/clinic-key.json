@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "clinic-key",
+  "name": "Medical clinic back door key",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "clinic-key",
+      "weight": 1
+    }
+  ]
+}

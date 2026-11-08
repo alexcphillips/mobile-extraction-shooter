@@ -1,0 +1,46 @@
+{
+  "formatVersion": 10,
+  "id": "mag-545x39-95",
+  "name": "95-round 5.45×39 drum",
+  "shortName": "5.45 95",
+  "type": "attachment",
+  "size": [2, 2],
+  "value": 12000,
+  "rarity": "rare",
+  "slot": "magazine",
+  "weapons": ["rpk-16", "ak-74m"],
+  "mods": {
+    "magazine": 50,
+    "reloadTime": 1.5,
+    "aimTime": 1.1
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.035, -0.005],
+        "size": [0.03, 0.07, 0.06],
+        "colour": "#2a2d30",
+        "pitch": 8
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.13, -0.025],
+        "radius": 0.075,
+        "height": 0.07,
+        "sides": 12,
+        "colour": "#2a2d30",
+        "roll": 90
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.037, -0.13, -0.025],
+        "radius": 0.05,
+        "height": 0.008,
+        "sides": 12,
+        "colour": "#1d1f21",
+        "roll": 90
+      }
+    ]
+  }
+}

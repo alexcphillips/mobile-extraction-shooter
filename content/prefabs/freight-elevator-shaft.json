@@ -30,44 +30,44 @@
     },
     {
       "type": "box",
-      "pos": [-2.675, 0, 3.275],
+      "pos": [-2.675, 0, 3.3],
       "size": [0.35, 4.2, 0.15],
       "colour": "steel"
     },
     {
       "type": "box",
-      "pos": [2.675, 0, 3.275],
+      "pos": [2.675, 0, 3.3],
       "size": [0.35, 4.2, 0.15],
       "colour": "steel"
     },
     {
       "type": "box",
       "pos": [0, 3.8, 3.275],
-      "size": [5.0, 0.4, 0.15],
+      "size": [5, 0.4, 0.15],
       "colour": "steel"
     },
     {
       "type": "box",
       "pos": [-2.95, 0, -3.45],
-      "size": [0.3, 10.0, 0.3],
+      "size": [0.3, 10, 0.3],
       "colour": "steel-dark"
     },
     {
       "type": "box",
       "pos": [-2.95, 0, 3.45],
-      "size": [0.3, 10.0, 0.3],
+      "size": [0.3, 10, 0.3],
       "colour": "steel-dark"
     },
     {
       "type": "box",
       "pos": [2.95, 0, -3.45],
-      "size": [0.3, 10.0, 0.3],
+      "size": [0.3, 10, 0.3],
       "colour": "steel-dark"
     },
     {
       "type": "box",
       "pos": [2.95, 0, 3.45],
-      "size": [0.3, 10.0, 0.3],
+      "size": [0.3, 10, 0.3],
       "colour": "steel-dark"
     },
     {
@@ -190,7 +190,7 @@
     },
     {
       "type": "box",
-      "pos": [0, 9.8, -3.0],
+      "pos": [0, 9.8, -3],
       "size": [6.2, 0.2, 0.2],
       "colour": "steel-dark",
       "collide": false
@@ -204,7 +204,7 @@
     },
     {
       "type": "box",
-      "pos": [0, 10.0, -2.4],
+      "pos": [0, 10, -2.4],
       "size": [2.4, 0.1, 1.6],
       "colour": "steel",
       "collide": false

@@ -1,0 +1,21 @@
+{
+  "formatVersion": 10,
+  "id": "clinic-key",
+  "name": "Medical clinic back door key",
+  "shortName": "Clinic key",
+  "type": "key",
+  "size": [1, 1],
+  "value": 20000,
+  "rarity": "rare",
+  "uses": 3,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.14, 0.07, 0.14],
+        "colour": "#3a8f5c"
+      }
+    ]
+  }
+}

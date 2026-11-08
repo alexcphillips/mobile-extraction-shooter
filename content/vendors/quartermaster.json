@@ -30,6 +30,9 @@
       "item": "aks-74u"
     },
     {
+      "item": "sks"
+    },
+    {
       "item": "assault-rifle"
     },
     {
@@ -91,6 +94,14 @@
     },
     {
       "item": "ump45",
+      "level": 2
+    },
+    {
+      "item": "r93",
+      "level": 2
+    },
+    {
+      "item": "ak-74m",
       "level": 2
     },
     {
@@ -173,6 +184,11 @@
       "level": 3
     },
     {
+      "item": "ammo-68x51-fmj",
+      "count": 20,
+      "level": 3
+    },
+    {
       "item": "ammo-762-bcp",
       "count": 20,
       "level": 3
@@ -233,6 +249,11 @@
     },
     {
       "item": "ammo-762",
+      "count": 20,
+      "level": 4
+    },
+    {
+      "item": "ammo-68x51-hybrid",
       "count": 20,
       "level": 4
     },

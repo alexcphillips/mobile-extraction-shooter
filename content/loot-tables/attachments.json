@@ -17,6 +17,8 @@
     { "item": "mag-aa12-20", "weight": 0.1 },
     { "item": "mag-saiga12-10", "weight": 0.4 },
     { "item": "mag-mp7-40", "weight": 0.3 },
+    { "item": "mag-545x39-95", "weight": 0.15 },
+    { "item": "mag-545x39-45", "weight": 0.5 },
     { "item": "mag-mpx-41", "weight": 0.3 },
     { "item": "mag-glock-33", "weight": 0.3 },
     { "item": "mag-45acp-30", "weight": 0.2 },

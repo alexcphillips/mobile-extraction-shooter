@@ -646,6 +646,13 @@ export const mapSchema = z
      * random at the raid's start; all of them if left out or more than there are.
      */
     rotatingExtractions: z.int().min(0).optional(),
+    /**
+     * Metres an enemy spawn must keep from every player spawn (2026-11-07, the user's call):
+     * AI.spawnClearance (60) if left out. Being in sight of one within AI.sightRange is
+     * flagged whatever this is. Northpoint uses 0: indoors, walls do the work, and 60 m
+     * left almost nowhere for enemies between its edge spawns.
+     */
+    enemyClearance: nonNegative.optional(),
     zones: z.array(zoneSchema).superRefine((zones, ctx) => {
       const seen = new Set<string>();
       zones.forEach((zone, i) => {

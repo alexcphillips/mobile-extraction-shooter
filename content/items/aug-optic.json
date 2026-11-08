@@ -8,7 +8,18 @@
   "value": 9000,
   "rarity": "rare",
   "slot": "optic",
-  "weapons": ["aug-a3", "assault-rifle", "m416", "scar-h", "g3"],
+  "weapons": [
+    "aug-a3",
+    "assault-rifle",
+    "m416",
+    "scar-h",
+    "g3",
+    "rpk-16",
+    "pkm",
+    "m250",
+    "mcx-spear",
+    "ak-74m"
+  ],
   "mods": {
     "aimTime": 1.1
   },

@@ -53,7 +53,7 @@
     },
     {
       "type": "box",
-      "pos": [0, 0.85, 0],
+      "pos": [0, 0.88, 0],
       "size": [1.74, 0.28, 0.64],
       "colour": "glass",
       "collide": false

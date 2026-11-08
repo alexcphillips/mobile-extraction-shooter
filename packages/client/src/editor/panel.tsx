@@ -873,6 +873,23 @@ function Zones({ editor, map, zone, point }: Parameters<typeof MapSettings>[0]) 
         Draw a zone
       </button>
       <RotatingCount editor={editor} map={map} />
+      <div className="ed-row">
+        <Num
+          label="enemy spawns keep from player spawns (m)"
+          value={map.enemyClearance}
+          min={0}
+          onChange={(v) =>
+            editor.editMap((m) => {
+              if (v === undefined) delete m.enemyClearance;
+              else m.enemyClearance = v;
+            })
+          }
+        />
+      </div>
+      <p className="ed-note">
+        Blank keeps them 60 m away. Any enemy in sight of a player spawn (within 70 m) is
+        flagged whatever this is.
+      </p>
       {editor.spawnWarnings.length > 0 && (
         <ul className="ed-list">
           {editor.spawnWarnings.map((w) => (

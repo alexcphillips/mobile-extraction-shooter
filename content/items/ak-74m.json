@@ -1,0 +1,175 @@
+{
+  "formatVersion": 10,
+  "id": "ak-74m",
+  "name": "AK-74M",
+  "type": "weapon",
+  "size": [4, 2],
+  "value": 22000,
+  "rarity": "uncommon",
+  "ammo": "ammo-545x39",
+  "hold": "rifle",
+  "fireMode": "auto",
+  "rpm": 650,
+  "magazine": 30,
+  "reloadTime": 2.4,
+  "aimTime": 0.29,
+  "drawTime": 0.8,
+  "range": 325,
+  "loudness": 185,
+  "slots": ["optic", "muzzle", "magazine"],
+  "hipSpread": 3,
+  "aimSpread": 0.5,
+  "recoil": {
+    "up": 1.41,
+    "side": 0.57,
+    "snap": 42,
+    "recovery": 3,
+    "angle": 6
+  },
+  "sounds": {
+    "shot": "rifle-shot",
+    "suppressed": "rifle-shot-suppressed",
+    "reload": "rifle-reload"
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, -0.06],
+        "size": [0.05, 0.065, 0.26],
+        "colour": "#2b2d2f"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.036, -0.04],
+        "size": [0.044, 0.01, 0.22],
+        "colour": "#35383b"
+      },
+      {
+        "type": "box",
+        "pos": [0.031, 0.012, -0.15],
+        "size": [0.016, 0.012, 0.014],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0.027, 0.004, -0.02],
+        "size": [0.004, 0.022, 0.09],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.033, 0.2],
+        "size": [0.04, 0.07, 0.26],
+        "colour": "#232527",
+        "pitch": 8
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.075, 0.285],
+        "size": [0.038, 0.06, 0.09],
+        "colour": "#232527",
+        "pitch": 8
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.058, 0.333],
+        "size": [0.042, 0.112, 0.012],
+        "colour": "#1d1f21",
+        "pitch": 8
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.075, 0.05],
+        "size": [0.034, 0.09, 0.04],
+        "colour": "#232527",
+        "pitch": -18
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.05, -0.005],
+        "size": [0.012, 0.006, 0.07],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.008, -0.27],
+        "size": [0.05, 0.05, 0.16],
+        "colour": "#232527"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.032, -0.26],
+        "size": [0.036, 0.028, 0.13],
+        "colour": "#232527"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.005, -0.37],
+        "radius": 0.011,
+        "height": 0.34,
+        "colour": "#1d1f21",
+        "pitch": 90
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.022, -0.37],
+        "size": [0.028, 0.04, 0.024],
+        "colour": "#2b2d2f"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.018, -0.48],
+        "size": [0.026, 0.034, 0.024],
+        "colour": "#2b2d2f"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.048, -0.48],
+        "size": [0.006, 0.024, 0.006],
+        "colour": "#1d1f21"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.005, -0.57],
+        "radius": 0.016,
+        "height": 0.06,
+        "colour": "#2b2d2f",
+        "pitch": 90,
+        "hiddenBy": "muzzle"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.07, -0.09],
+        "size": [0.03, 0.08, 0.07],
+        "colour": "#6b3a2e",
+        "pitch": 10,
+        "hiddenBy": "magazine"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.138, -0.11],
+        "size": [0.03, 0.065, 0.065],
+        "colour": "#6b3a2e",
+        "pitch": 25,
+        "hiddenBy": "magazine"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.05, -0.19],
+        "size": [0.03, 0.02, 0.04],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic"
+      }
+    ],
+    "grip": [0, -0.07, 0.05],
+    "support": [0, -0.04, -0.27],
+    "muzzle": [0, 0.005, -0.6],
+    "sight": [0, 0.06, -0.19],
+    "mounts": {
+      "optic": [0, 0.041, -0.04],
+      "muzzle": [0, 0.005, -0.54],
+      "magazine": [0, -0.035, -0.085]
+    }
+  }
+}

@@ -1,0 +1,173 @@
+{
+  "formatVersion": 3,
+  "id": "gun-wall-rack",
+  "name": "Gun wall rack",
+  "colours": {
+    "base": "#2b2d33",
+    "board": "#4a4d52",
+    "gun": "#1f2124",
+    "stock": "#6b5a44",
+    "label": "#d7c9a0"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [3, 0.9, 0.5],
+      "colour": "base"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.9, -0.19],
+      "size": [3, 1.42, 0.12],
+      "colour": "board"
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.32, -0.15],
+      "size": [3.04, 0.08, 0.2],
+      "colour": "base",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.14, -0.125],
+      "size": [2.6, 0.12, 0.005],
+      "colour": "label",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.46, 0.252],
+      "size": [2.9, 0.02, 0.004],
+      "colour": "board",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.72, 1.2, -0.105],
+      "size": [1, 0.05, 0.04],
+      "colour": "gun",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.14, 1.12, -0.105],
+      "size": [0.26, 0.12, 0.045],
+      "colour": "stock",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.66, 1.09, -0.105],
+      "size": [0.07, 0.12, 0.035],
+      "colour": "gun",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.72, 1.2, -0.105],
+      "size": [1, 0.05, 0.04],
+      "colour": "gun",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.3, 1.12, -0.105],
+      "size": [0.26, 0.12, 0.045],
+      "colour": "stock",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.78, 1.09, -0.105],
+      "size": [0.07, 0.12, 0.035],
+      "colour": "gun",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.72, 1.58, -0.105],
+      "size": [1, 0.05, 0.04],
+      "colour": "gun",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.14, 1.5, -0.105],
+      "size": [0.26, 0.12, 0.045],
+      "colour": "gun",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.66, 1.47, -0.105],
+      "size": [0.07, 0.12, 0.035],
+      "colour": "gun",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.72, 1.58, -0.105],
+      "size": [1, 0.05, 0.04],
+      "colour": "gun",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.3, 1.5, -0.105],
+      "size": [0.26, 0.12, 0.045],
+      "colour": "gun",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.78, 1.47, -0.105],
+      "size": [0.07, 0.12, 0.035],
+      "colour": "gun",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.72, 1.96, -0.105],
+      "size": [1, 0.05, 0.04],
+      "colour": "gun",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.14, 1.88, -0.105],
+      "size": [0.26, 0.12, 0.045],
+      "colour": "stock",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.66, 1.85, -0.105],
+      "size": [0.07, 0.12, 0.035],
+      "colour": "gun",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.72, 1.96, -0.105],
+      "size": [1, 0.05, 0.04],
+      "colour": "gun",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.3, 1.88, -0.105],
+      "size": [0.26, 0.12, 0.045],
+      "colour": "stock",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.78, 1.85, -0.105],
+      "size": [0.07, 0.12, 0.035],
+      "colour": "gun",
+      "collide": false
+    }
+  ]
+}

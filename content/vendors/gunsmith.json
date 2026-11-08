@@ -88,6 +88,10 @@
       "level": 2
     },
     {
+      "item": "mag-545x39-45",
+      "level": 2
+    },
+    {
       "item": "crossbow-bolt",
       "count": 10,
       "level": 2
@@ -102,6 +106,14 @@
     },
     {
       "item": "g3",
+      "level": 3
+    },
+    {
+      "item": "rpk-16",
+      "level": 3
+    },
+    {
+      "item": "mag-545x39-95",
       "level": 3
     },
     {
@@ -131,7 +143,7 @@
     },
     {
       "item": "sv-98",
-      "level": 4
+      "level": 2
     },
     {
       "item": "aa-12",

@@ -713,12 +713,13 @@ export interface ExposedSpawn {
 }
 
 /**
- * Enemy spawns too near a player spawn: within AI.spawnClearance, or within sight range
- * with nothing between their standing eyes.
+ * Enemy spawns too near a player spawn: within `clearance` (the map's enemyClearance, else
+ * AI.spawnClearance), or within sight range with nothing between their standing eyes.
  */
 export function exposedSpawns(
   markers: readonly { type: string; id: string; x: number; y: number; z: number }[],
   world: CollisionWorld,
+  clearance: number = AI.spawnClearance,
 ): ExposedSpawn[] {
   const eye = MOVEMENT.standHeight - MOVEMENT.eyeBelowTop;
   const ground = (m: { x: number; y: number; z: number }): number =>
@@ -730,9 +731,9 @@ export function exposedSpawns(
     for (const e of markers) {
       if (e.type !== 'enemySpawn') continue;
       const distance = Math.hypot(e.x - p.x, e.z - p.z);
-      if (distance > Math.max(AI.spawnClearance, AI.sightRange)) continue;
+      if (distance > Math.max(clearance, AI.sightRange)) continue;
       const seen = distance <= AI.sightRange && clearLine(world, p.x, py, p.z, e.x, ground(e), e.z);
-      if (seen || distance < AI.spawnClearance)
+      if (seen || distance < clearance)
         out.push({ enemy: e.id, player: p.id, distance, seen });
     }
   }

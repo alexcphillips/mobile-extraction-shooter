@@ -7,7 +7,7 @@ import {
   spawnProblems,
   buyPrice,
   createState,
-  // exposedSpawns, (with its check, off for now)
+  exposedSpawns,
   createItem,
   spawnCharacter,
   spawnEnemy,
@@ -54,10 +54,11 @@ describe('content', () => {
     expect(() => checkEnemySpawns(map)).not.toThrow();
     expect(() => checkDoorKeys(map)).not.toThrow();
     expect(() => checkLootContainers(map)).not.toThrow();
-    // Raids start out of the enemies' sight (the map editor warns about these too). Off for
-    // now (2026-11-05, the user's call): northpoint has enemy spawns within 60 m of its
-    // player spawn, none in sight of it, to be settled later.
-    // expect(exposedSpawns(map.markers, new CollisionWorld(map.world))).toEqual([]);
+    // Raids start out of the enemies' sight (the map editor warns about these too), and as
+    // far from them as the map asks (enemyClearance; northpoint asks for none, 2026-11-07).
+    expect(
+      exposedSpawns(map.markers, new CollisionWorld(map.world), map.enemyClearance),
+    ).toEqual([]);
   });
 
   it('enemy types and loadouts load and their references are sound', () => {

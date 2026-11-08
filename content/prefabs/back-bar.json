@@ -39,7 +39,7 @@
     },
     {
       "type": "box",
-      "pos": [0, 1.96, 0.21],
+      "pos": [0, 1.96, 0.23],
       "size": [3.7, 0.34, 0.08],
       "colour": "bottle-c",
       "collide": false

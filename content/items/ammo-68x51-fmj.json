@@ -1,0 +1,22 @@
+{
+  "formatVersion": 10,
+  "id": "ammo-68x51-fmj",
+  "name": "6.8×51 mm SIG FMJ",
+  "shortName": "6.8 FMJ",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 100,
+  "rarity": "rare",
+  "stack": 40,
+  "calibre": "6.8x51",
+  "level": 3,
+  "damage": 68,
+  "armourDamage": 16,
+  "bleedChance": 0.45,
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "colour": "#b08d3c" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "colour": "#4677b3" }
+    ]
+  }
+}

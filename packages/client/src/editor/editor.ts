@@ -841,7 +841,11 @@ export class MapEditor {
     }
     const spawns = this.compiled?.markers.filter((m) => m.type === 'playerSpawn').map((m) => m.id);
     const exposed = this.compiled
-      ? exposedSpawns(this.compiled.markers, new CollisionWorld(this.compiled.world))
+      ? exposedSpawns(
+          this.compiled.markers,
+          new CollisionWorld(this.compiled.world),
+          this.compiled.enemyClearance,
+        )
       : [];
     this.ends = null;
     const spawnWarnings = this.compiled ? spawnProblems(this.compiled) : [];

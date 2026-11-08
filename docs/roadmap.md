@@ -611,11 +611,52 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
   - Built: `playerSpawn.noExtracts`; `RaidState` keeps every extraction point (`rotating` on each), a `seed` (drawn only if any rotate) and each player's `open` list; `extractionsFor` (allowed, plus the spawn's seeded pick of the rotating ones), `openExtractions`, `extractionsOf`, `extractionAt` going by your own, and `spawnProblems`. Client: your list at raid start and a co-op guest's from the shared spawn, the borders and map tab showing yours; the editor's spawn checkboxes and the spawn warnings in map settings (not save-blocking). A content test runs `spawnProblems` on every map.
   - Checked: 9 new tests (788): the yard spawn without the yard's car, another spawn with it; the same pick for a spawn, different picks across spawns and raids; blank and 0; leaving only by your own; spawns left with nothing, or naming one that isn't there. In headless Chrome: Northpoint's spawn listed its extraction with the box ticked, and unticking it worked. **Not yet played** with spawns ruled out. Then (same day, after the user asked to check a rotating car stays a chance): the pick is made out of all the map's rotating extractions before the spawn's rule, not out of the ones it allows, which had made the car open in 100% of raids for a spawn ruling out the others (measured over 2,000 raids; now about 60% at 3 of 5 for every spawn allowing it); `spawnProblems` also warns of a spawn with only rotating extractions that a raid could leave none of. 2 more tests (790).
 
+## The AI rework: scavs, PMCs and Jug (planned 2026-11-07 with the user)
+The design is in design.md → AI → Scavs, PMCs and bosses. Scavs and PMCs first; **Jug last**, since he reuses squads, suppression, grenades, voice lines and the hunt. Every number is a first guess to tune in play, and each session checks the AI in the sim on Northpoint, including the tick cost with everyone present.
+
+- [ ] **AI-1. Factions, and AI fighting AI.**
+  - Enemy format 2 with a migration: `faction` (`scav`, `pmc`, `boss`; existing types become scav and boss) and `outfits` (a list, one picked per spawn) in place of `outfit`.
+  - Targets: an enemy fights any hostile character it sees, not only players (today every AI skips other AI). Allies' shots join the fight only within a faction; other factions' shots are a noise to check. No seeking each other out.
+  - Map `hearingScale` (format bump and editor field), Northpoint at 0.6.
+  - Measure perception cost with about 20 AI on Northpoint; stagger more if needed.
+- [ ] **AI-2. Scavs.**
+  - Waves (a third at start, the rest every few minutes) and replenishing (a freed slot refilled out of sight and away from every player, slowing late, capped at about twice the slots), kept in the saved raid.
+  - The responder trickle for sustained fire. Erratic movement, a narrower field of view, never suppressed.
+  - Civilian outfits; scav loot reweighted (household, electronics, basic computer parts; medical rare, military very rare).
+- [ ] **AI-3. PMC type, kit and squads.**
+  - `pmc` enemy type, uniform, kit (armour 3–5 worn, modded guns, capped rounds, tactical rig, mid–large backpack), skill.
+  - Squads of 2–4, 3–6 PMCs in all at raid start, at unused player spawns. Shared awareness inside a squad; a squad member follows its leader and spreads out.
+  - Northpoint's enemy setup updated.
+- [ ] **AI-4. PMC routes, looting and extracting.**
+  - `poi` markers (loot, choke, extraction, weight), placed in the editor and on Northpoint.
+  - Squads walk chains of them and leave the raid at an extraction. Searching containers (shown as searched) and bodies they killed, items into their bags.
+  - Hearing gunfire by share of loudness (20% alert, 70% advance, 100% head that way), squads outside the scav responder limit, the hunt ending after 15–20 s of nothing.
+- [ ] **AI-5. PMC fighting.**
+  - The spotting callout (voice line sounds; AI speaking is new). Less time in cover; sprinting to it.
+  - Hearing heals and reloads (about 10 m) and pushing round the corner.
+  - Squad roles: firing at your last known position, and flanking to a spot at least 45° off.
+- [ ] **AI-6. AI grenades.**
+  - PMCs throw frags into hard cover or your last known position, one at a time per area from a shared token, and AI can't hurt itself with them (design.md → AI → Unreachable player).
+- [ ] **AI-7. Jug 1: gear, the hunt and the slide.**
+  - Waits for the user's LMGs. Jug's enemy type, home-made level 6 helmet and armour, the mask item (narrower view, muffled sound) and the exclusive drum.
+  - His territory, hearing and leaving it for fights; the unleashed hunt along your path; the sprint-slide (his alone).
+  - Replaces `boss-scav` on Northpoint.
+- [ ] **AI-8. Jug 2: the rest of his gimmick.**
+  - Continuous suppression while walking forward; kicking doors; smashing glass displays; charging at grenades.
+  - The enraged counter; stagger from heavy rounds.
+  - Clanking footsteps, breathing and muttering.
+
+**Questions for the user (raised while planning):**
+- Does Jug kick open **locked** doors? The current rule is that enemies never open locked doors. I'd keep it, so a locked key room is still a refuge from him.
+- PMC names in the damage log ("Halvorsen (PMC) shot you…"), or just "PMC"?
+- How often Jug is in a raid (the yard boss is 60%)?
+- An industrial loot table (tools, tape, fuel, bolts) needs new items; worth adding for scavs?
+
 ## After v1 (not scheduled)
 - Co-op vs. AI, phones and PCs together (a player's device hosts, others connect over WebRTC; client movement prediction, shared loot rolls, quest items only for the holder). The plan, session by session, is [coop.md](coop.md).
 - Weekly admin challenges (raid configs, publishing from the server without a redeploy).
 - NPC flea market (explain it and decide first). Trading with friends.
-- Grenades for AI (with a shared token), gyro aiming, water slowing movement, more attachment slots.
+- Gyro aiming, water slowing movement, more attachment slots.
 - Inventory icons drawn from item models (left out of session 18b).
 
 ## Open questions

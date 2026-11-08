@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "music-store-key",
+  "name": "Music store back door key",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "music-store-key",
+      "weight": 1
+    }
+  ]
+}

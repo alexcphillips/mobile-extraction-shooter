@@ -1,0 +1,21 @@
+{
+  "formatVersion": 10,
+  "id": "key-shop-key",
+  "name": "Key cutter's back door key",
+  "shortName": "Key cutter",
+  "type": "key",
+  "size": [1, 1],
+  "value": 16000,
+  "rarity": "rare",
+  "uses": 5,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.14, 0.07, 0.14],
+        "colour": "#c8a24b"
+      }
+    ]
+  }
+}

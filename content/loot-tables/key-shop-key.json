@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "key-shop-key",
+  "name": "Key cutter's back door key",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "key-shop-key",
+      "weight": 1
+    }
+  ]
+}

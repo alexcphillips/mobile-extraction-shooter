@@ -233,6 +233,8 @@ export interface CompiledMap {
   zones: MapZone[];
   /** How many rotating extraction zones a raid opens (MapFile.rotatingExtractions). */
   rotatingExtractions?: number | undefined;
+  /** How far enemy spawns keep from player spawns (MapFile.enemyClearance). */
+  enemyClearance?: number | undefined;
 }
 
 export type PrefabLookup = ReadonlyMap<string, PrefabFile>;
@@ -430,6 +432,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     buildings: out.buildings!,
     zones: map.zones,
     rotatingExtractions: map.rotatingExtractions,
+    enemyClearance: map.enemyClearance,
   };
 }
 

@@ -791,4 +791,19 @@ describe('spawn clearance', () => {
       ['open', true],
     ]);
   });
+
+  it("flags only what's in sight with a map's clearance of 0", () => {
+    const world = makeWorld([aabb(-5, 0, 3, 5, 4, 4)], 120);
+    const at = (type: string, id: string, x: number, z: number) => ({ type, id, x, y: 0, z });
+    const flagged = exposedSpawns(
+      [
+        at('playerSpawn', 'p', 0, 0),
+        at('enemySpawn', 'walled', 0, 8),
+        at('enemySpawn', 'open', 10, 0),
+      ],
+      world,
+      0,
+    );
+    expect(flagged.map((f) => f.enemy)).toEqual(['open']);
+  });
 });
