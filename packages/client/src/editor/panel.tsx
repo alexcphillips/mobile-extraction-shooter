@@ -887,8 +887,76 @@ function Zones({ editor, map, zone, point }: Parameters<typeof MapSettings>[0]) 
         />
       </div>
       <p className="ed-note">
-        Blank keeps them 60 m away. Any enemy in sight of a player spawn (within 70 m) is
-        flagged whatever this is.
+        Blank keeps them 60 m away. Any enemy in sight of a player spawn (within 70 m) is flagged
+        whatever this is.
+      </p>
+      <div className="ed-row">
+        <Num
+          label="how far noises carry for the AI (× loudness)"
+          value={map.hearingScale}
+          min={0.05}
+          onChange={(v) =>
+            editor.editMap((m) => {
+              if (v === undefined || v <= 0) delete m.hearingScale;
+              else m.hearingScale = v;
+            })
+          }
+        />
+      </div>
+      <p className="ed-note">
+        Blank is 1. Scales how far enemies hear shots, blasts and breaking glass on this map;
+        footsteps aren't scaled.
+      </p>
+      <div className="ed-row">
+        <Num
+          label="share of scavs in at the start"
+          value={map.scavStartShare}
+          min={0.05}
+          onChange={(v) =>
+            editor.editMap((m) => {
+              if (v === undefined || v <= 0) delete m.scavStartShare;
+              else m.scavStartShare = Math.min(1, v);
+            })
+          }
+        />
+      </div>
+      <p className="ed-note">
+        Blank is a third. The rest of the scav slots arrive in waves of the same size, every 3
+        minutes.
+      </p>
+      <div className="ed-row">
+        <Num
+          label="PMCs, fewest"
+          value={map.pmcs?.count[0]}
+          min={0}
+          onChange={(v) =>
+            editor.editMap((m) => {
+              const max = m.pmcs?.count[1] ?? 0;
+              if (v === undefined || (v <= 0 && max <= 0)) delete m.pmcs;
+              else {
+                const min = Math.max(0, Math.round(v));
+                m.pmcs = { ...m.pmcs, count: [min, Math.max(min, max)] };
+              }
+            })
+          }
+        />
+        <Num
+          label="most"
+          value={map.pmcs?.count[1]}
+          min={0}
+          onChange={(v) =>
+            editor.editMap((m) => {
+              if (v === undefined || v <= 0) delete m.pmcs;
+              else {
+                const max = Math.round(v);
+                m.pmcs = { ...m.pmcs, count: [Math.min(m.pmcs?.count[0] ?? max, max), max] };
+              }
+            })
+          }
+        />
+      </div>
+      <p className="ed-note">
+        Blank is none. PMCs all start in, in squads of 2–4, each at a player spawn nobody is using.
       </p>
       {editor.spawnWarnings.length > 0 && (
         <ul className="ed-list">
@@ -2016,6 +2084,29 @@ function MarkerFields(props: { editor: MapEditor; node: MapNode; num: NumField; 
               onChange={(v) => set('oneOf', v || undefined)}
             />
           </div>
+        </>
+      );
+    case 'poi':
+      return (
+        <>
+          <Pick
+            label="kind"
+            value={n.kind}
+            options={['loot', 'choke']}
+            onChange={(v) => set('kind', v ?? 'loot')}
+          />
+          <div className="ed-row">
+            <span title="How likely a PMC squad's route is to take it in, against the others">
+              {num('weight', 'weight', 1)}
+            </span>
+            <span title="Loot: containers within this are searched. Choke: watched from a spot within it">
+              {num('radius', 'radius', n.kind === 'loot' ? 8 : 2)}
+            </span>
+          </div>
+          <p className="ed-note">
+            PMC squads walk from one point of interest to the next, searching loot spots and
+            watching chokes, then leave at an extraction.
+          </p>
         </>
       );
     case 'questMarker': {

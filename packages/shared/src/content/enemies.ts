@@ -16,7 +16,7 @@ const positive = finite.refine((n) => n > 0, 'must be greater than 0');
 const nonNegative = finite.refine((n) => n >= 0, 'must be 0 or more');
 const fraction = finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1');
 
-export const ENEMY_FORMAT_VERSION = 1;
+export const ENEMY_FORMAT_VERSION = 2;
 export const LOADOUT_FORMAT_VERSION = 1;
 
 /** How well it fights. Bosses are better at all of it. */
@@ -31,6 +31,17 @@ const skillSchema = z.strictObject({
   aimSettle: positive,
   /** After losing sight of you, the chance it holds the angle rather than pushing. */
   holdChance: fraction,
+  /**
+   * Its whole field of view in degrees (AI rework session 2): scavs see less to the sides
+   * than PMCs. Left out, AI.fov (120).
+   */
+  fov: finite.refine((n) => n >= 30 && n <= 180, 'must be from 30 to 180').optional(),
+  /**
+   * How erratic it moves, 0–1 (AI rework session 2, scavs): sudden stops, crouches and
+   * short sprints at random while walking about, and random crouches while fighting. 1 is
+   * about one every AI.quirkEvery seconds. Left out, 0: never.
+   */
+  erratic: fraction.optional(),
 });
 
 /** The colours of its body, by part. Gear is drawn over it. */
@@ -44,15 +55,27 @@ export const outfitSchema = z.strictObject({
   feet: hexColourSchema,
 });
 
+/**
+ * Who it sides with (format 2, AI rework session 1; design.md → AI → Scavs, PMCs and
+ * bosses). Scavs and bosses are allies; PMCs are hostile to everyone, and everyone is
+ * hostile to players. See hostile() in sim/ai.ts.
+ */
+export const FACTIONS = ['scav', 'pmc', 'boss'] as const;
+export const factionSchema = z.enum(FACTIONS);
+
 export const enemySchema = z.strictObject({
   formatVersion: z.literal(ENEMY_FORMAT_VERSION),
   id: idSchema,
   name: z.string().min(1),
+  faction: factionSchema,
   /** The loadout it rolls, unless its spawn names another. */
   loadout: idSchema,
   skill: skillSchema,
-  /** A plain default outfit if left out. */
-  outfit: outfitSchema.optional(),
+  /**
+   * The looks it can have; each spawn picks one at random (format 2). A plain default
+   * outfit if left out.
+   */
+  outfits: z.array(outfitSchema).min(1).optional(),
   /**
    * What it carries besides its loadout (session 11), stowed in its pockets, rig and
    * backpack when it spawns; what doesn't fit is left out. Each of `rolls` items comes
@@ -117,6 +140,7 @@ export const loadoutSchema = z.strictObject({
 });
 
 export type EnemyDef = z.infer<typeof enemySchema>;
+export type Faction = z.infer<typeof factionSchema>;
 export type EnemySkill = z.infer<typeof skillSchema>;
 export type Outfit = z.infer<typeof outfitSchema>;
 export type EnemyLoot = NonNullable<EnemyDef['loot']>;
@@ -129,7 +153,18 @@ export const ENEMY_FORMAT: ContentFormat<EnemyDef> = {
   kind: 'enemy',
   version: ENEMY_FORMAT_VERSION,
   schema: enemySchema,
-  migrations: {},
+  // Format 2 (AI rework session 1): a faction, scav unless the file says otherwise (the
+  // yard boss's file was rewritten as a boss), and a list of outfits in place of one.
+  migrations: {
+    1: (doc) => {
+      const { outfit, ...rest } = doc;
+      return {
+        ...rest,
+        faction: 'scav',
+        ...(outfit === undefined ? {} : { outfits: [outfit] }),
+      };
+    },
+  },
 };
 
 export const LOADOUT_FORMAT: ContentFormat<LoadoutDef> = {

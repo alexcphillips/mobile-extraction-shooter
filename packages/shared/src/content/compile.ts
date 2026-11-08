@@ -146,6 +146,7 @@ type MarkerNode = Extract<
       | 'lootContainer'
       | 'lootSpawn'
       | 'questMarker'
+      | 'poi'
       | 'zombieSpawn'
       | 'wallBuy'
       | 'mysteryBox';
@@ -157,6 +158,7 @@ const MARKER_TYPES = new Set<string>([
   'lootContainer',
   'lootSpawn',
   'questMarker',
+  'poi',
   'zombieSpawn',
   'wallBuy',
   'mysteryBox',
@@ -235,6 +237,12 @@ export interface CompiledMap {
   rotatingExtractions?: number | undefined;
   /** How far enemy spawns keep from player spawns (MapFile.enemyClearance). */
   enemyClearance?: number | undefined;
+  /** How far noises carry for the AI there (MapFile.hearingScale); 1 if undefined. */
+  hearingScale?: number | undefined;
+  /** The share of scav slots in at raid start (MapFile.scavStartShare); a third if undefined. */
+  scavStartShare?: number | undefined;
+  /** PMC squads at raid start (MapFile.pmcs); none if undefined. */
+  pmcs?: { enemy?: string | undefined; count: [number, number] } | undefined;
 }
 
 export type PrefabLookup = ReadonlyMap<string, PrefabFile>;
@@ -433,6 +441,9 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     zones: map.zones,
     rotatingExtractions: map.rotatingExtractions,
     enemyClearance: map.enemyClearance,
+    hearingScale: map.hearingScale,
+    scavStartShare: map.scavStartShare,
+    pmcs: map.pmcs,
   };
 }
 

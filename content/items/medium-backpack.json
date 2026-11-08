@@ -1,0 +1,33 @@
+{
+  "formatVersion": 10,
+  "id": "medium-backpack",
+  "name": "Medium backpack",
+  "type": "container",
+  "size": [3, 3],
+  "value": 10000,
+  "rarity": "uncommon",
+  "slot": "backpack",
+  "grid": [3, 4],
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 1.172, 0.242],
+        "size": [0.316, 0.434, 0.207],
+        "colour": "#4a4f3a"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.379, 0.217],
+        "size": [0.276, 0.059, 0.158],
+        "colour": "#3f4432"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.064, 0.325],
+        "size": [0.217, 0.138, 0.059],
+        "colour": "#3f4432"
+      }
+    ]
+  }
+}

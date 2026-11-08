@@ -35434,10 +35434,136 @@
       "pos": [37, 6.2, 45],
       "yaw": 15,
       "noExtracts": ["main-entrance", "fire-exit-east"]
+    },
+    {
+      "type": "group",
+      "name": "PMC points of interest",
+      "pos": [0, 0, 0],
+      "nodes": [
+        {
+          "type": "poi",
+          "id": "poi-yard-crates",
+          "pos": [72, 0.2, 186],
+          "kind": "loot",
+          "weight": 2,
+          "radius": 10
+        },
+        {
+          "type": "poi",
+          "id": "poi-admin-office",
+          "pos": [40, 0.4, 192],
+          "kind": "loot",
+          "radius": 7
+        },
+        {
+          "type": "poi",
+          "id": "poi-front-offices",
+          "pos": [28, 0.2, 50],
+          "kind": "loot",
+          "weight": 1.5,
+          "radius": 12
+        },
+        {
+          "type": "poi",
+          "id": "poi-warehouse-office",
+          "pos": [61, 0.2, 98],
+          "kind": "loot",
+          "radius": 6
+        },
+        {
+          "type": "poi",
+          "id": "poi-gun-store",
+          "pos": [-36, 6.2, 111],
+          "kind": "loot",
+          "weight": 2,
+          "radius": 6
+        },
+        {
+          "type": "poi",
+          "id": "poi-security-office",
+          "pos": [-23, 6.2, 42],
+          "kind": "loot",
+          "radius": 6
+        },
+        {
+          "type": "poi",
+          "id": "poi-staff-lockers",
+          "pos": [-12, 6.2, 5],
+          "kind": "loot",
+          "radius": 9
+        },
+        { "type": "poi", "id": "poi-upper-east-lockers", "pos": [50, 6.2, 49], "kind": "loot" },
+        {
+          "type": "poi",
+          "id": "poi-laser-tag-crate",
+          "pos": [63, 6.5, 65],
+          "kind": "loot",
+          "radius": 5
+        },
+        {
+          "type": "poi",
+          "id": "poi-music-store",
+          "pos": [-52, 6.2, 107],
+          "kind": "loot",
+          "radius": 7
+        },
+        {
+          "type": "poi",
+          "id": "poi-vault-offices",
+          "pos": [-46, 6.2, 11],
+          "kind": "loot",
+          "radius": 6
+        },
+        {
+          "type": "poi",
+          "id": "poi-tech-upper",
+          "pos": [-27, 6.2, 80],
+          "kind": "loot",
+          "radius": 5
+        },
+        {
+          "type": "poi",
+          "id": "poi-jewellery",
+          "pos": [-9, 6.2, 104],
+          "kind": "loot",
+          "radius": 6
+        },
+        {
+          "type": "poi",
+          "id": "poi-key-shop",
+          "pos": [22, 6.2, 55.5],
+          "kind": "loot",
+          "radius": 5
+        },
+        {
+          "type": "poi",
+          "id": "poi-staff-fridge",
+          "pos": [33, 0.2, 145],
+          "kind": "loot",
+          "weight": 0.5,
+          "radius": 4
+        },
+        { "type": "poi", "id": "poi-atrium", "pos": [-20, 0.2, 78], "kind": "choke" },
+        { "type": "poi", "id": "poi-food-court", "pos": [0, 0.2, 71], "kind": "choke" },
+        { "type": "poi", "id": "poi-dept-aisles", "pos": [-72, 0.2, 92], "kind": "choke" },
+        { "type": "poi", "id": "poi-furniture-showroom", "pos": [47, 0.2, 78], "kind": "choke" },
+        { "type": "poi", "id": "poi-furniture-market", "pos": [60, 0.2, 21], "kind": "choke" },
+        { "type": "poi", "id": "poi-warehouse-racks", "pos": [44, 0.2, 110], "kind": "choke" },
+        { "type": "poi", "id": "poi-dock-hall", "pos": [71, 0.2, 133], "kind": "choke" },
+        { "type": "poi", "id": "poi-service-corridor", "pos": [4, 0.2, 116], "kind": "choke" },
+        { "type": "poi", "id": "poi-south-stores", "pos": [-33, 0.2, 96], "kind": "choke" },
+        { "type": "poi", "id": "poi-upper-ring-west", "pos": [-50, 6.2, 88], "kind": "choke" },
+        { "type": "poi", "id": "poi-upper-ring-east", "pos": [11, 6.2, 75], "kind": "choke" },
+        { "type": "poi", "id": "poi-upper-west-run", "pos": [-88, 6.2, 89], "kind": "choke" },
+        { "type": "poi", "id": "poi-yard-containers", "pos": [58, 0.2, 198], "kind": "choke" }
+      ]
     }
   ],
   "rotatingExtractions": 1,
   "enemyClearance": 0,
+  "hearingScale": 0.6,
+  "scavStartShare": 0.5,
+  "pmcs": { "count": [3, 6] },
   "zones": [
     {
       "id": "car-extract",

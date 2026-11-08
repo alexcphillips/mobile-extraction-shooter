@@ -138,8 +138,11 @@ export interface RaidSnapshot {
   /** The player spawn's id (for the stats line). */
   spawn: string;
   player: EntityId;
-  /** Each enemy spawn marker's id, and the entity spawned there. */
-  enemies: Record<string, EntityId>;
+  /**
+   * Each enemy spawn marker's id (or "spawner:<type>:<entity>"), and the entity there: kept
+   * by raids saved before enemies carried their look (Character.look), to find their type.
+   */
+  enemies?: Record<string, EntityId>;
   kills: number;
   /** What hurt you so far; missing from raids saved before it was kept. */
   taken?: DamageLog;

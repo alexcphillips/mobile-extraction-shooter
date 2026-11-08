@@ -38,6 +38,8 @@ import {
   type Character,
   type EntityId,
   type EnemyDef,
+  type EnemySpawnOptions,
+  type Outfit,
   type SpawnRequestEvent,
   type CompiledMap,
   type RaidDef,
@@ -62,7 +64,7 @@ import {
   settleFound,
   keptItems,
   rollEnemyLoot,
-  rollEnemySpawns,
+  startEnemies,
   rollLootSpawns,
   startRaid,
   itemDef,
@@ -271,6 +273,23 @@ const POWERUP_NAMES: Record<Powerup, string> = {
 };
 
 /** A zombies game as a raid config, for what reads one: its map, and no timer to speak of. */
+/** What an enemy spawn takes from its type. */
+function typeOptions(type: EnemyDef): EnemySpawnOptions {
+  return {
+    skill: type.skill,
+    faction: type.faction,
+    outfits: type.outfits?.length ?? 1,
+    type: type.id,
+  };
+}
+
+/** The outfit an enemy of this type was given at spawn (Character.look). */
+function outfitOf(type: EnemyDef, outfit: number): Outfit {
+  const outfits = type.outfits;
+  if (!outfits) return DEFAULT_OUTFIT;
+  return outfits[outfit] ?? outfits[0]!;
+}
+
 function zombiesRaid(def: ZombiesDef): RaidDef {
   return {
     formatVersion: RAID_FORMAT_VERSION,
@@ -390,7 +409,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       raid: options.raid,
       spawn: welcome.spawn,
       player: welcome.you,
-      enemies: welcome.spawned,
       kills: 0,
       taken: [],
       sim: welcome.state,
@@ -402,6 +420,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   (sim as Partial<SimState>).smokes ??= [];
   (sim as Partial<SimState>).flames ??= [];
   (sim as Partial<SimState>).fires ??= [];
+  // How far noises carry for the AI on this map (AI rework session 1).
+  sim.hearingScale = map.hearingScale ?? 1;
   const spawns = map.markers.filter((m) => m.type === 'playerSpawn');
   const spawn =
     spawns.find((m) => m.id === (resume?.spawn ?? options.spawn)) ??
@@ -536,11 +556,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   /** Whoever set you alight, for the damage log. */
   const burnerName = (by: number): string =>
     by === player.id ? 'Your own flamethrower' : (names.get(by) ?? 'Someone');
-  /**
-   * Each enemy spawn marker's id, and the entity there, for saving the raid. Enemies from
-   * an admin spawner gun go in as "spawner:<type>:<entity>", so a resumed raid knows them.
-   */
-  const spawned: Record<string, number> = {};
   const enemies: {
     c: Character;
     body: CharacterBody;
@@ -556,56 +571,52 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
    * Draws an enemy of a type (or a zombie, in zombies mode) that's in the state, armed by
    * `arm` (if it isn't yet).
    */
-  function addEnemy(c: Character, type: Pick<EnemyDef, 'name' | 'outfit'>, arm: () => void): void {
-    const body = new CharacterBody(rig, type.outfit ?? DEFAULT_OUTFIT, c);
+  function addEnemy(c: Character, name: string, outfit: Outfit, arm: () => void): void {
+    const body = new CharacterBody(rig, outfit, c);
     scene.add(body.root);
     const zones = options.hitZones ? new CapsuleBody(0.45) : null;
     if (zones) scene.add(zones.root);
     enemies.push({ c, body, zones, diedAt: 0, arm });
     enemyChars.push(c);
     bodyOf.set(c.id, body);
-    names.set(c.id, type.name);
+    names.set(c.id, name);
     enemyBars?.add(c);
   }
-  // A new raid rolls which spawns are used (oneOf, chance); resumed, those in the state are.
-  const enemySpawns = resume
-    ? map.markers.filter((m) => m.type === 'enemySpawn')
-    : rollEnemySpawns(sim.rng, map);
-  for (const m of enemySpawns) {
-    if (m.type !== 'enemySpawn') continue;
-    const type = types.get(m.enemy)!;
-    const loadout = loadouts.get(m.loadout ?? type.loadout)!;
-    const patrol = m.patrol === undefined ? undefined : patrols.get(m.patrol);
-    // Resumed, the enemy is already in the state, as it was.
-    const saved = resume ? sim.entities.find((e) => e.id === resume.enemies[m.id]) : undefined;
-    if (resume && !saved) continue;
-    const c =
-      saved ??
-      spawnEnemy(sim, world, m.x, m.y, m.z, m.yaw, {
-        patrol,
-        radius: m.radius,
-        skill: type.skill,
-      });
-    spawned[m.id] = c.id;
-    const arm = (): void => {
-      equipLoadout(c, items, loadout, sim.rng);
-      rollEnemyLoot(c, items, lootTables, type.loot, m.lootWeights, sim.rng);
-    };
-    if (!saved) arm();
-    addEnemy(c, type, arm);
+  // A new raid puts its enemies in (sim/waves.ts): the bosses and a third of the scavs now,
+  // the rest of the scavs in waves. Resumed, or a co-op guest, they're in the state already.
+  if (!resume) {
+    startEnemies(sim, world, map, items, { types, loadouts, tables: lootTables, patrols });
+  } else {
+    // Saved before enemies kept their look (AI rework session 2): their type from the
+    // spawn marker, or the spawner gun's key, they were saved under; the first outfit.
+    for (const [key, id] of Object.entries(resume.enemies ?? {})) {
+      const c = sim.entities.find((e) => e.id === id);
+      const marker = map.markers.find((m) => m.id === key);
+      const type = key.startsWith('spawner:')
+        ? key.split(':')[1]
+        : marker?.type === 'enemySpawn'
+          ? marker.enemy
+          : undefined;
+      if (c && !c.look && type) c.look = { type, outfit: 0 };
+    }
   }
-  /** The arming for an enemy from a spawner gun: its type's loadout and loot. */
-  const armSpawned = (c: Character, type: EnemyDef) => (): void => {
+  /** Arming for ?respawn: its type's loadout and loot (not a spawn's own). */
+  const armOf = (c: Character, type: EnemyDef) => (): void => {
     equipLoadout(c, items, loadouts.get(type.loadout)!, sim.rng);
     rollEnemyLoot(c, items, lootTables, type.loot, undefined, sim.rng);
   };
-  for (const [key, id] of Object.entries(resume?.enemies ?? {})) {
-    const type = types.get(key.split(':')[1] ?? '');
-    const saved = sim.entities.find((e) => e.id === id);
-    if (!key.startsWith('spawner:') || !type || !saved) continue;
-    spawned[key] = id;
-    addEnemy(saved, type, armSpawned(saved, type));
+  /**
+   * Draws every enemy in the state not drawn yet: at the start, and each tick for those
+   * arriving in waves or from a spawner gun, on the host and on co-op guests alike.
+   */
+  function drawNewEnemies(): void {
+    for (const c of sim.entities) {
+      if (!c.look || bodyOf.has(c.id)) continue;
+      const type = types.get(c.look.type);
+      if (type) addEnemy(c, type.name, outfitOf(type, c.look.outfit), armOf(c, type));
+    }
   }
+  drawNewEnemies();
   // The other players in a party raid, drawn like enemies but never armed or brought back.
   const others: { c: Character; body: CharacterBody }[] = [];
   function addOther(c: Character, name: string): void {
@@ -639,7 +650,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         openExtractions(sim, c, spawn);
         return c;
       },
-      { spawn: spawn.id, spawned, host: player, name: coop.name },
+      { spawn: spawn.id, host: player, name: coop.name },
       sim,
     );
     for (const a of admitted) addOther(a.character, a.name);
@@ -657,11 +668,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   function spawnRequested(e: SpawnRequestEvent): void {
     const type = types.get(e.enemy);
     if (!type) return;
-    const c = spawnEnemy(sim, world, e.x, e.y, e.z, e.yaw, { skill: type.skill });
-    const arm = armSpawned(c, type);
-    arm();
-    spawned[`spawner:${type.id}:${c.id}`] = c.id;
-    addEnemy(c, type, arm);
+    const c = spawnEnemy(sim, world, e.x, e.y, e.z, e.yaw, typeOptions(type));
+    armOf(c, type)();
+    drawNewEnemies();
   }
 
   const input: PlayerInput = {
@@ -1084,7 +1093,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       raid: options.raid,
       spawn: spawn.id,
       player: player.id,
-      enemies: spawned,
       kills,
       taken,
       sim,
@@ -1464,21 +1472,26 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // The death event comes before the hit that caused it, so this waits for the loop.
     if (died) logKiller(taken, lastHit);
 
-    if (zombiesMode) {
-      // Zombies climb in during the round and their bodies go a few seconds after dying.
-      for (let i = enemies.length - 1; i >= 0; i--) {
-        const e = enemies[i]!;
-        if (sim.entities.includes(e.c)) continue;
-        scene.remove(e.body.root);
-        e.body.dispose();
-        if (e.zones) scene.remove(e.zones.root);
-        enemies.splice(i, 1);
-        enemyChars.splice(enemyChars.indexOf(e.c), 1);
-        bodyOf.delete(e.c.id);
-      }
-      for (const c of sim.entities)
-        if (c.ai?.zombie && !bodyOf.has(c.id)) addEnemy(c, zombiesMode.zombie, () => {});
+    // Gone from the raid: zombies' bodies a few seconds after dying, and PMC squads that
+    // extracted (AI rework session 4).
+    for (let i = enemies.length - 1; i >= 0; i--) {
+      const e = enemies[i]!;
+      if (sim.entities.includes(e.c)) continue;
+      scene.remove(e.body.root);
+      e.body.dispose();
+      if (e.zones) scene.remove(e.zones.root);
+      enemies.splice(i, 1);
+      enemyChars.splice(enemyChars.indexOf(e.c), 1);
+      bodyOf.delete(e.c.id);
+      enemyBars?.remove(e.c);
     }
+    if (zombiesMode) {
+      for (const c of sim.entities)
+        if (c.ai?.zombie && !bodyOf.has(c.id))
+          addEnemy(c, zombiesMode.zombie.name, zombiesMode.zombie.outfit, () => {});
+    }
+    // Scavs arriving in waves (sim/waves.ts), here and on co-op guests.
+    drawNewEnemies();
     for (const e of enemies) {
       e.body.tick(e.c);
       if (!e.c.health.dead) e.diedAt = 0;

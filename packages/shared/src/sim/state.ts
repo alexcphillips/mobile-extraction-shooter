@@ -15,6 +15,8 @@ import type { SwingEvent } from './melee';
 import { MOVEMENT } from './movement';
 import type { InvestigateEvent, LeaveEvent, LeftRaid, RaidState } from './raid';
 import type { RecoilState } from './recoil';
+import type { WavesState } from './waves';
+import type { Poi, SquadState } from './routes';
 import type { ShotEvent } from './weapons';
 import type { BuyEvent, PlankEvent, PowerupEvent, RoundEvent, ZombiesState } from './zombies';
 
@@ -43,6 +45,12 @@ export interface Vaulting {
 }
 
 /** A player or AI body: a vertical capsule standing at (x, y, z). */
+/** What an enemy looks like: its enemy type's id, and an index into the type's outfits. */
+export interface EnemyLook {
+  type: string;
+  outfit: number;
+}
+
 export interface Character {
   id: EntityId;
   kind: 'character';
@@ -78,6 +86,13 @@ export interface Character {
   gear: Gear;
   /** A player's in a raid: see markBrought. */
   marked: boolean;
+  /**
+   * An enemy's type and which of its outfits it wears, picked at spawn (AI rework session 2).
+   * Here rather than in `ai`, since co-op guests aren't sent the AI's state but must draw
+   * the same look, and draw enemies that arrive mid-raid. Missing for players, zombies,
+   * and enemies saved before it.
+   */
+  look?: EnemyLook;
   /** How far into aiming down the sights: 0 at the hip, 1 fully aimed. */
   aim: number;
   /** Seconds left taking out what's in its hands; it can't fire, swing or aim until 0. */
@@ -230,9 +245,28 @@ export interface SimState {
   /** Players who have left the raid alive, with what they carried. */
   left: LeftRaid[];
   /**
+   * The map's hearing scale (MapFile.hearingScale, AI rework session 1): every shot's,
+   * blast's and breaking pane's loudness is multiplied by it for the AI's hearing. Set when
+   * the raid starts; missing is 1.
+   */
+  hearingScale?: number;
+  /**
    * A zombies game's rounds, points and buy spots (2026-11-04); null or missing in a raid.
    */
   zombies?: ZombiesState | null;
+  /**
+   * The raid's scav slots and the waves still to come, and gunfire for the trickle (AI
+   * rework session 2, sim/waves.ts). Null or missing outside a raid and in raids saved
+   * before waves (whose enemies all started in).
+   */
+  waves?: WavesState | null;
+  /**
+   * The map's points of interest, for PMC squads' routes, and each squad's route and what
+   * it has done (AI rework session 4, sim/routes.ts). Missing outside a raid, in raids
+   * saved before routes, and on maps without PMCs: squads then guard their spawn.
+   */
+  pois?: Poi[] | null;
+  squads?: SquadState[] | null;
   /** What happened during the last tick; cleared at the start of each. */
   events: SimEvent[];
 }

@@ -47,7 +47,7 @@ describe('register', () => {
       'tactical-vest',
       'steel-helmet',
       'chest-rig',
-      'small-backpack',
+      'medium-backpack',
       'medkit',
       'splint',
       'surgery-kit',

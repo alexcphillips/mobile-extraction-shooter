@@ -1,0 +1,210 @@
+import type { CompiledMap } from '../content/compile';
+import type { ItemDb } from '../content/items';
+import { nextIntIn } from '../rng';
+import type { CollisionWorld } from '../world/collision-world';
+import { AI, SQUAD, clearLine, joinSquad, playerDistance, spawnEnemy } from './ai';
+import { equipLoadout } from './loadout';
+import { rollEnemyLoot } from './loot-roll';
+import { MOVEMENT } from './movement';
+import { RAID } from './raid';
+import { inExtraction, newSquad, squadState, startPois } from './routes';
+import type { Character, SimState } from './state';
+import { TICK_SECONDS } from '../tick';
+import type { EnemyContent } from './waves';
+
+/*
+ * PMC squads (AI rework session 3; design.md → AI → PMCs). A map's `pmcs` puts 3–6 (say)
+ * PMCs in at raid start, in squads of 2–4, each squad at a player spawn nobody is using:
+ * out of every player's sight and away from them, and away from the other squads. They
+ * don't replenish. A squad's members are allies (factions.ts); the first leads and the
+ * rest follow it in formation (ai.ts, follow).
+ *
+ * On a map with points of interest (`poi` markers), each squad walks a route of them,
+ * searching loot spots, and leaves the raid at an extraction (AI-4, routes.ts). Without,
+ * a squad's leader guards its spawn like a scav would.
+ */
+
+export const PMC_SQUADS = {
+  /** Squads are this many, fewest and most. */
+  size: [2, 4] as const,
+  /** A squad never starts closer than this to a player, nor in a player's sight. */
+  minDistance: 30,
+  /** A spawn this far from every player is picked over a nearer one. */
+  preferDistance: 60,
+  /** Squads start at least this far apart, and out of each other's sight, if they can. */
+  apart: 50,
+  /** A member with no clear place in formation starts within this of the spawn. */
+  spread: 2.5,
+};
+
+/** n PMCs split into squads of PMC_SQUADS.size, at random; a lone PMC only if n is 1. */
+export function squadSizes(rng: SimState['rng'], n: number): number[] {
+  const [min, max] = PMC_SQUADS.size;
+  const out: number[] = [];
+  let left = n;
+  while (left > 0) {
+    if (left <= min) {
+      out.push(left);
+      break;
+    }
+    // Any size that doesn't leave too few for another squad.
+    const sizes: number[] = [];
+    for (let s = min; s <= Math.min(max, left); s++)
+      if (left - s === 0 || left - s >= min) sizes.push(s);
+    const s = sizes[nextIntIn(rng, 0, sizes.length - 1)]!;
+    out.push(s);
+    left -= s;
+  }
+  return out;
+}
+
+interface Spot {
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  eye: number;
+}
+
+/**
+ * Puts the map's PMC squads in (map.pmcs), each at its own unused player spawn. Call after
+ * placing the players. Fewer squads if there aren't spawns enough. Returns the PMCs.
+ */
+export function startSquads(
+  state: SimState,
+  world: CollisionWorld,
+  map: CompiledMap,
+  items: ItemDb,
+  content: EnemyContent,
+): Character[] {
+  const pmcs = map.pmcs;
+  if (!pmcs || pmcs.count[1] <= 0) return [];
+  const id = pmcs.enemy ?? 'pmc';
+  const type = content.types.get(id);
+  if (!type) throw new Error(`the map's pmcs: no enemy type "${id}"`);
+  const loadout = content.loadouts.get(type.loadout);
+  if (!loadout) throw new Error(`enemy type "${id}": no loadout "${type.loadout}"`);
+  const rng = state.rng;
+  const sizes = squadSizes(rng, nextIntIn(rng, pmcs.count[0], pmcs.count[1]));
+  startPois(state, map);
+  const routes = (state.pois?.length ?? 0) > 0;
+
+  const eye = MOVEMENT.standHeight - MOVEMENT.eyeBelowTop;
+  const spawns: Spot[] = [];
+  for (const m of map.markers) {
+    if (m.type !== 'playerSpawn') continue;
+    const y = world.groundAt(m.x, m.z, MOVEMENT.radius, m.y + 0.5);
+    spawns.push({ x: m.x, y, z: m.z, yaw: m.yaw, eye: y + eye });
+  }
+  const used: Spot[] = [];
+  const out: Character[] = [];
+  for (const size of sizes) {
+    const spot = pickSpawn(state, world, spawns, used);
+    if (!spot) break;
+    used.push(spot);
+    let squad = 0;
+    for (let slot = 0; slot < size; slot++) {
+      const [x, z, radius] = place(world, spot, slot);
+      const c = spawnEnemy(state, world, x, spot.y, z, spot.yaw, {
+        radius,
+        skill: type.skill,
+        faction: type.faction,
+        outfits: type.outfits?.length ?? 1,
+        type: id,
+      });
+      equipLoadout(c, items, loadout, rng);
+      rollEnemyLoot(c, items, content.tables, type.loot, undefined, rng);
+      // A squad is known by its first leader's id.
+      if (slot === 0) squad = c.id;
+      joinSquad(c, squad, slot);
+      out.push(c);
+    }
+    if (routes) newSquad(state, world, squad);
+  }
+  return out;
+}
+
+/**
+ * Once a tick, after the AI: squad members standing in their extraction zone count up, and
+ * leave the raid with what they carry after RAID.extractTime, as a player would (AI-4).
+ * They're taken out of state.entities, with a leave event; not into state.left, which is
+ * players'.
+ */
+export function updateSquads(state: SimState): void {
+  if (!state.squads?.length) return;
+  let gone = false;
+  for (const c of state.entities) {
+    const ai = c.ai;
+    if (!ai || ai.squad === undefined || c.health.dead) continue;
+    const sq = squadState(state, ai.squad);
+    const inside = !!sq && sq.leaving && ai.activity === 'extract' && inExtraction(state, c, sq);
+    c.extracting = inside ? c.extracting + TICK_SECONDS : 0;
+    if (c.extracting >= RAID.extractTime - 1e-9) {
+      state.events.push({ type: 'leave', by: c.id, how: 'extracted', at: sq!.extract });
+      gone = true;
+    }
+  }
+  if (!gone) return;
+  for (let i = state.entities.length - 1; i >= 0; i--) {
+    const c = state.entities[i]!;
+    if (c.ai?.squad !== undefined && !c.health.dead && c.extracting >= RAID.extractTime - 1e-9)
+      state.entities.splice(i, 1);
+  }
+}
+
+/**
+ * An unused player spawn for a squad, at random: clear of every player, preferring those
+ * far from them, then those apart from the squads already placed. Null if none is clear.
+ */
+function pickSpawn(
+  state: SimState,
+  world: CollisionWorld,
+  spawns: Spot[],
+  used: Spot[],
+): Spot | null {
+  // Tiers: far and apart, apart, any clear one.
+  const tiers: Spot[][] = [[], [], []];
+  for (const s of spawns) {
+    if (used.includes(s)) continue;
+    const d = playerDistance(state, world, s.x, s.eye, s.z);
+    if (d < PMC_SQUADS.minDistance) continue;
+    const apart = used.every((u) => {
+      const gap = Math.hypot(u.x - s.x, u.z - s.z);
+      return (
+        gap >= PMC_SQUADS.apart &&
+        !(gap <= AI.sightRange && clearLine(world, u.x, u.eye, u.z, s.x, s.eye, s.z))
+      );
+    });
+    tiers[apart ? (d >= PMC_SQUADS.preferDistance ? 0 : 1) : 2]!.push(s);
+  }
+  for (const t of tiers) if (t.length) return t[nextIntIn(state.rng, 0, t.length - 1)]!;
+  return null;
+}
+
+/**
+ * Where a squad member starts: the leader on the spawn, the rest in their places in
+ * formation behind it, facing the spawn's way, where that's clear; else near the spawn.
+ * As [x, z, radius to spawn within].
+ */
+function place(world: CollisionWorld, spot: Spot, slot: number): [number, number, number] {
+  if (slot === 0) return [spot.x, spot.z, 0];
+  const n = SQUAD.formation.length;
+  const [back0, side] = SQUAD.formation[Math.min(slot, n) - 1]!;
+  const back = back0 + 3 * Math.max(0, slot - n);
+  const fx = -Math.sin(spot.yaw);
+  const fz = -Math.cos(spot.yaw);
+  const x = spot.x - fx * back + fz * side;
+  const z = spot.z - fz * back - fx * side;
+  const ground = world.groundAt(x, z, MOVEMENT.radius, spot.y + 0.5);
+  const clear =
+    Math.abs(ground - spot.y) <= SQUAD.rise &&
+    !world.overlaps(
+      x,
+      z,
+      MOVEMENT.radius,
+      ground + MOVEMENT.stepUp,
+      ground + MOVEMENT.standHeight,
+    ) &&
+    clearLine(world, spot.x, spot.y + 1, spot.z, x, ground + 1, z);
+  return clear ? [x, z, 0] : [spot.x, spot.z, PMC_SQUADS.spread];
+}

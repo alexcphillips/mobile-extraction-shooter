@@ -26,11 +26,11 @@ describe('item editor', () => {
   });
 
   it('finds what an edit breaks elsewhere in content/', () => {
-    // An attachment lists the gun it fits; a loadout puts a suppressor on the M9A3.
+    // An attachment lists the gun it fits; a loadout puts a suppressor on the boss's rifle.
     const noMags = edited('assault-rifle', (d) => setSlots(d, ['optic', 'muzzle']));
     expect(itemContentProblem(noMags)).toMatch(/mag-762x39-45.*no magazine slot/);
-    const noMuzzle = edited('m9a3', (d) => setSlots(d, ['magazine']));
-    expect(itemContentProblem(noMuzzle)).toMatch(/loadouts\/scav-kit.*suppressor/);
+    const noMuzzle = edited('assault-rifle', (d) => setSlots(d, ['optic', 'magazine']));
+    expect(itemContentProblem(noMuzzle)).toMatch(/loadouts\/boss-kit.*suppressor/);
     // The test map's shed door needs a key item.
     const notAKey = edited('shed-key', (d) => {
       d.type = 'loot';

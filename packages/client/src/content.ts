@@ -249,6 +249,13 @@ export function checkEnemySpawns(map: CompiledMap): void {
       if (!loadLootTables().has(id)) throw new Error(`enemy spawn ${m.id}: no loot table "${id}"`);
     }
   }
+  // The map's PMC squads (AI-3): an enemy type that's a PMC, so its squads are allies.
+  if (map.pmcs) {
+    const id = map.pmcs.enemy ?? 'pmc';
+    const type = types.get(id);
+    if (!type) throw new Error(`pmcs: no enemy type "${id}"`);
+    if (type.faction !== 'pmc') throw new Error(`pmcs: "${id}" is not a PMC`);
+  }
 }
 
 /** Checks that a map's locked doors name key items that exist. */

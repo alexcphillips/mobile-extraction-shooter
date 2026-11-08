@@ -27,7 +27,8 @@ export type CoopOptions =
   | { role: 'guest'; session: string; name: string; host: { id: string; name: string } };
 
 /** Left out of what's sent: the RNG and the AI's workings stay on the host. */
-const OMIT: ReadonlySet<string> = new Set(['rng', 'events', 'ai']);
+// The waves' queue and the content copied into it (sim/waves.ts) too: only the host spawns.
+const OMIT: ReadonlySet<string> = new Set(['rng', 'events', 'ai', 'waves']);
 
 /** What the host sends a guest once, when it joins. */
 export interface Welcome {
@@ -38,8 +39,6 @@ export interface Welcome {
   state: SimState;
   /** The player spawn everyone started at. */
   spawn: string;
-  /** Each enemy spawn marker's entity, as a saved raid keeps them. */
-  spawned: Record<string, EntityId>;
   /** Every player's character and name, the host's included. */
   players: Record<EntityId, string>;
 }
@@ -146,7 +145,7 @@ export class CoopHost {
    */
   async admit(
     spawn: (name: string, gear: Gear, index: number) => Character,
-    base: { spawn: string; spawned: Record<string, EntityId>; host: Character; name: string },
+    base: { spawn: string; host: Character; name: string },
     sim: SimState,
   ): Promise<{ character: Character; name: string }[]> {
     const joins = this.guests.map(
@@ -185,7 +184,6 @@ export class CoopHost {
         you: g.character.id,
         state: this.mirror as SimState,
         spawn: base.spawn,
-        spawned: base.spawned,
         players,
       });
     }

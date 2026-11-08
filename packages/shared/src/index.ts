@@ -86,6 +86,7 @@ export {
   type AdminCheats,
   type SpawnRequestEvent,
   type Character,
+  type EnemyLook,
   type Entity,
   type EntityId,
   type MoveMode,
@@ -128,9 +129,12 @@ export {
 export {
   AI,
   DEFAULT_SKILL,
+  SQUAD,
   exposedSpawns,
+  joinSquad,
   resetEnemy,
   spawnEnemy,
+  squadLeader,
   updateAi,
   type AiActivity,
   type AiState,
@@ -139,6 +143,8 @@ export {
   type ExposedSpawn,
   type PatrolDef,
 } from './sim/ai';
+export { factionOf, hostile } from './sim/factions';
+export { PMC_SQUADS, squadSizes, startSquads } from './sim/squads';
 export { equipLoadout } from './sim/loadout';
 export {
   containerMix,
@@ -153,6 +159,15 @@ export {
   type LootTables,
 } from './sim/loot-roll';
 export { oneOfPicks, rollEnemySpawns } from './sim/spawn-roll';
+export {
+  SCAV_WAVES,
+  startEnemies,
+  updateWaves,
+  type EnemyContent,
+  type WavesState,
+  type WaveSlot,
+  type WaveSpot,
+} from './sim/waves';
 export {
   RAID,
   extractionAt,
@@ -543,6 +558,7 @@ export { placeholderModel } from './content/placeholder-models';
 export {
   ENEMY_FORMAT,
   ENEMY_FORMAT_VERSION,
+  FACTIONS,
   LOADOUT_FORMAT,
   LOADOUT_FORMAT_VERSION,
   checkEnemies,
@@ -551,6 +567,7 @@ export {
   type EnemyDef,
   type EnemyLoot,
   type EnemySkill,
+  type Faction,
   type Outfit,
   type LoadoutDef,
   type WeaponOption,

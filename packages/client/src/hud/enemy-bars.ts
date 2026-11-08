@@ -43,6 +43,15 @@ export class EnemyBars {
     this.at.push(-1);
   }
 
+  /** Stops drawing one that has left the raid (a PMC that extracted, a cleared zombie). */
+  remove(c: Character): void {
+    const i = this.chars.indexOf(c);
+    if (i < 0) return;
+    this.els[i]!.remove();
+    for (const list of [this.chars, this.els, this.fills, this.labels, this.hp, this.at])
+      list.splice(i, 1);
+  }
+
   /** Call once per frame, after the camera has moved. `shown`: false hides them all. */
   update(camera: THREE.PerspectiveCamera, shown: boolean): void {
     // The window's size, not the element's, which would force a layout every frame.

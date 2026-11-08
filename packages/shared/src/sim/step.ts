@@ -2,6 +2,8 @@ import type { ItemDb } from '../content/items';
 import type { NavGrid } from '../nav/nav-grid';
 import type { CollisionWorld } from '../world/collision-world';
 import { updateAi } from './ai';
+import { updateWaves } from './waves';
+import { updateSquads } from './squads';
 import { syncDoors, useDoor } from './doors';
 import { holdSwitch, tickSwitches } from './switches';
 import { syncGlass } from './glass';
@@ -105,6 +107,10 @@ export function step(
   // Zombies mode: points, clearing away the dead and the rounds, before the new ones think.
   if (nav) updateZombies(state, world, items, nav);
   if (nav) updateAi(state, world, items, nav);
+  // Scavs arriving in waves and refilling freed slots, and the trickle to long fights.
+  updateWaves(state, world, items);
+  // PMC squads standing in their extraction leave the raid.
+  updateSquads(state);
   state.tick++;
   // Last, so a player who leaves did everything else this tick.
   updateRaid(state);

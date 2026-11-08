@@ -614,23 +614,47 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
 ## The AI rework: scavs, PMCs and Jug (planned 2026-11-07 with the user)
 The design is in design.md → AI → Scavs, PMCs and bosses. Scavs and PMCs first; **Jug last**, since he reuses squads, suppression, grenades, voice lines and the hunt. Every number is a first guess to tune in play, and each session checks the AI in the sim on Northpoint, including the tick cost with everyone present.
 
-- [ ] **AI-1. Factions, and AI fighting AI.**
+- [x] **AI-1. Factions, and AI fighting AI.**
   - Enemy format 2 with a migration: `faction` (`scav`, `pmc`, `boss`; existing types become scav and boss) and `outfits` (a list, one picked per spawn) in place of `outfit`.
   - Targets: an enemy fights any hostile character it sees, not only players (today every AI skips other AI). Allies' shots join the fight only within a faction; other factions' shots are a noise to check. No seeking each other out.
   - Map `hearingScale` (format bump and editor field), Northpoint at 0.6.
   - Measure perception cost with about 20 AI on Northpoint; stagger more if needed.
-- [ ] **AI-2. Scavs.**
+  - **Done 2026-11-07.** Built: enemy format 2 (`faction`, `outfits`, migration), `sim/factions.ts` (`hostile`, `factionOf`), every place the AI skipped other AI now asks `hostile` (sight, hits, fire, shots, the ally-in-the-way check, the responder cap), `byAlly` in place of `byEnemyOnEnemy`, the outfit picked per spawn into `AiState.outfit`, `MapFile.hearingScale` → `SimState.hearingScale` with an editor field, Northpoint at 0.6. 8 tests in `factions.test.ts` (hostility, damage, a scav and a PMC fighting it out alone, alarm by a hostile hit, a hostile's shots heard as a noise, the hearing scale, outfit picks, the migration).
+  - **No map format bump** for `hearingScale`: it's an optional field, and the project bumps only when files would break (as for `enemyClearance`).
+  - **Cost:** cheap (tech-stack.md → AI → Cost): 20 AI on Northpoint about 0.1 ms a tick on the Mac, a 10 v 10 open brawl worst 1.8 ms. No extra staggering.
+  - Decisions (design.md → AI → Built in AI-1): footsteps players' only and unscaled; PMC vs PMC hostile until squads; a hostile's shot treated like a player's.
+  - **Not checked in a browser:** nothing on screen changed except the editor field and enemies' outfits (still one each), and Northpoint has no PMCs yet to watch fight.
+- [x] **AI-2. Scavs.**
   - Waves (a third at start, the rest every few minutes) and replenishing (a freed slot refilled out of sight and away from every player, slowing late, capped at about twice the slots), kept in the saved raid.
   - The responder trickle for sustained fire. Erratic movement, a narrower field of view, never suppressed.
   - Civilian outfits; scav loot reweighted (household, electronics, basic computer parts; medical rare, military very rare).
-- [ ] **AI-3. PMC type, kit and squads.**
+  - **Done 2026-11-07.** Built: `sim/waves.ts`: `startEnemies` (every non-scav enemy at raid start as before; scav **slots**, a third started, the rest queued in waves) and `updateWaves` in `step` (waves, refills, the cap, the trickle), with the queue and the content it spawns from in `SimState.waves`, so a saved raid keeps it. Enemy skill gained optional `fov` and `erratic` (no format bump); `quirks` in `sim/ai.ts`; `freeToCheck` and `checkGunfire` for the trickle. **`Character.look`** (type and outfit) replaces AI-1's `AiState.outfit`. Client: `startEnemies` in place of the client's own spawning, and `drawNewEnemies` each tick draws any enemy with a look it hasn't drawn yet. Content: the scav's 100° view, `erratic: 1`, 8 civilian outfits, loot reweighted (household 4, electronics 3, computer-parts-basic 1.5, medical 0.4, military 0.15); no suppressors in `scav-kit`.
+  - **Fixed along the way (co-op):** guests are never sent `ai`, so AI-1's outfit pick never reached them, and an enemy that arrived mid-raid (a spawner gun's) was never drawn on a guest. The look is on the character now, which guests do get; `Welcome.spawned` is gone and `waves` isn't sent. `RaidSnapshot.enemies` is kept only to read raids saved before (their enemies get a look from the marker they were saved under).
+  - Checked: 12 new tests in `waves.test.ts` (a third and every boss at start, waves on time; same seed same raid, outfits picked; refill on a later wave and slower late; the cap; never in sight or close, waiting until clear; the queue in a JSON save; no waves without scav spawns; the trickle drawing the nearest free scav every 30 s and forgetting a quiet fight; erratic quirks and none for a steady enemy; the 100° view). 827 tests in all. The item editor's test now uses the AKS-74U's muzzle brake, since the scav kit's suppressor is gone.
+  - **Checked in the sim on Northpoint** (3 player spawns, a 20-minute raid each, a scav killed every 45 s): 12 slots, 4 at start, waves at about 3 and 6 minutes, refills on later waves, 24 spawned in all (the cap), none in sight of you or within 30 m (one did land in view through its spawn radius at first; now checked where it lands). `step` 0.05–0.07 ms on average, worst about 1 ms after the first tick.
+  - **Not checked in a browser** (no browser to drive from this session): the outfits, and scavs appearing mid-raid on the host and a guest.
+  - **After review (the user's calls, same day):** the scav kit is low-quality gear (unmodded guns, level 1 rounds and sometimes level 2, buckshot only, no armour or level 1–2 worn), and a map's optional `scavStartShare` (editor field under the hearing scale; no format bump) sets how many scavs start in, with **Northpoint at a half**. The item editor's test now uses the boss kit's suppressor. 1 more test (828). The Northpoint sim run wasn't repeated (the user's call).
+  - `computer-parts-basic` holds only the A5 ribeye for now: a placeholder the user will fill (2026-11-07). Scavs drop from it about one roll in eight.
+- [x] **AI-3. PMC type, kit and squads.**
   - `pmc` enemy type, uniform, kit (armour 3–5 worn, modded guns, capped rounds, tactical rig, mid–large backpack), skill.
   - Squads of 2–4, 3–6 PMCs in all at raid start, at unused player spawns. Shared awareness inside a squad; a squad member follows its leader and spreads out.
   - Northpoint's enemy setup updated.
-- [ ] **AI-4. PMC routes, looting and extracting.**
+  - **Done 2026-11-07.** Built: `content/enemies/pmc.json` and `content/loadouts/pmc-kit.json`; the map's optional `pmcs` (`{ enemy?, count }`, no format bump) with editor fields (fewest, most) under the scav share, and the client's content check that it names a PMC type; `sim/squads.ts` (`PMC_SQUADS`, `squadSizes`, `startSquads`, called by `startEnemies`); in `sim/ai.ts` `AiState.squad`/`squadSlot`, `SQUAD`, `joinSquad`, `squadLeader`, the `follow` activity (`followSpot`, `standable`, side swap on a turn back), `tellLeader` and `shareTarget`; `playerDistance` moved there from `waves.ts`; `hostile` makes a squad's members allies. Northpoint: `pmcs` 3–6. Calls in design.md → AI → PMCs → Built in AI-3.
+  - Checked: 7 new tests in `squads.test.ts` (sizes always 2–4; 20 raids on a ring of spawns: armed, not at yours, 30 m+ from you, squads 50 m+ apart, allies inside and hostile across; fewer squads with too few spawns, none without `pmcs`; following a walking leader 40 s, never more than 10 m behind nor within 1.2 m of each other, through a turn back; the next in line leading; the whole squad alert when one is shot; a follower's noise checked by its leader). 835 tests in all.
+  - **Checked in the sim on Northpoint:** 10 minutes from each of the 9 player spawns: 3–6 PMCs in 1–3 squads, 60–155 m from you, followers 2–5 m from their leader. **Found and fixed:** a follower whose place was off the nav grid replanned every tick (1 ms a tick on average); now 0.06–0.11 ms, worst 1–3 ms. Standing in a squad's view 10–25 m off, from 6 spawns: every member alert on the same tick (1.3–4 s), every member fired, 0.07–0.3 ms a tick on average.
+  - **Not checked in a browser** (no browser from this session): the uniform, squads in formation on screen, the editor fields.
+  - **Not done (AI-4 and AI-5):** squads stand at their spawn (no routes yet), the callout, squads outside the scav responder cap (they still count among their own squad's), roles and flanking.
+- [x] **AI-4. PMC routes, looting and extracting.**
   - `poi` markers (loot, choke, extraction, weight), placed in the editor and on Northpoint.
   - Squads walk chains of them and leave the raid at an extraction. Searching containers (shown as searched) and bodies they killed, items into their bags.
   - Hearing gunfire by share of loudness (20% alert, 70% advance, 100% head that way), squads outside the scav responder limit, the hunt ending after 15–20 s of nothing.
+  - **Done 2026-11-07.** Built: the `poi` node (`kind` loot or choke, `weight`, `radius`; no format bump) with its editor marker and inspector; `sim/routes.ts` (`ROUTES`, `Poi`, `SquadState`, `startPois`, `newSquad`, `pickStop`, `nearestStop`, `stopToward`, `chooseExtraction`, `extractSpot`, `inExtraction`, `pickContainer`, `pickBody`, `takeLoot`); `SimState.pois` and `squads`; in `sim/ai.ts` the `route`, `loot` and `extract` activities (`walkRoute`, `lootStep`, `joinLeader`, `headToward`, `endStop`), squads' hearing tiers, kills remembered from death events, the hunt timer, no responder cap for squads; `updateSquads` in `step` taking extracted PMCs out with a `leave` event; the client drawing out any enemy that's left the state. Calls in design.md → AI → PMCs → Built in AI-4.
+  - **Extractions are the map's extraction zones**, not an `extraction` kind of `poi` as planned: one set of data to keep right.
+  - **Also changed for everyone:** `findPath` takes a `greed` (weighted A*), used by squads' calm walking; `moveTo` no longer forgets how long it's been stuck when its goal only moves on, and sidesteps for 0.6 s when stuck. Found on Northpoint: a follower pressed for minutes against a 4 cm display panel near (-5.4, 97.5) that the nav grid doesn't see, replanning every few ticks so it never counted as stuck. It now walks free.
+  - Checked: 9 new tests in `routes.test.ts` (stop to stop with the squad following; a loot spot's containers shared out, searched and emptied into bags; leaving on time and out of the raid, not into `state.left`; straight out with little time left; walking to a body the follower killed and emptying its pockets; far gunfire turning the route, nearer gunfire checked with care, close gunfire alert; the hunt ending 15–20 s after losing you; a saved raid carrying on the same; no pois, no routes). 844 tests in all.
+  - **Checked in the sim on Northpoint** (20-minute raids, you peaceful, throwaway tests since deleted). **PMCs only** (4 raids): squads went through 10–23 stops, searched 8–26 containers, carried up to 35 items, and those alive at their leave time left by the yard car, the one always-open extraction not behind a switch (squads sent to the main entrance or the fire exit picked again). One follower wedged on scenery at (24, 0.7, 36) for the rest of a raid and its leader left without it. **With the scavs and the yard boss** (3 raids): every PMC was dead within about 5½ minutes, mostly to scavs and the boss at the gun store, having killed 4–8 scavs each raid and the boss in all three; none lived to leave. Cost: see tech-stack.md → PMC routes → Cost: averages fine, but far more path-search spikes (worst 10–37 ms against 6–18 ms without routes).
+  - **Not checked in a browser** (no browser from this session): the editor's poi marker and fields, containers showing as searched when a PMC searches them, PMCs vanishing when they extract, on the host and a co-op guest.
+  - **Not done:** PMCs don't use switches, so on Northpoint they only ever leave by the yard car; they don't take worn gear or guns off bodies; a squad doesn't wait for a follower left far behind. Long-range path searches are still expensive (above).
 - [ ] **AI-5. PMC fighting.**
   - The spotting callout (voice line sounds; AI speaking is new). Less time in cover; sprinting to it.
   - Hearing heals and reloads (about 10 m) and pushing round the corner.
@@ -648,9 +672,34 @@ The design is in design.md → AI → Scavs, PMCs and bosses. Scavs and PMCs fir
 
 **Questions for the user (raised while planning):**
 - Does Jug kick open **locked** doors? The current rule is that enemies never open locked doors. I'd keep it, so a locked key room is still a refuge from him.
-- PMC names in the damage log ("Halvorsen (PMC) shot you…"), or just "PMC"?
+- PMC names in the damage log ("Halvorsen (PMC) shot you…"), or just "PMC"? (AI-3 went with "PMC" for now.)
+- No medium backpack exists, so PMCs carry a small or a large one (AI-3). Add a medium backpack item?
 - How often Jug is in a raid (the yard boss is 60%)?
 - An industrial loot table (tools, tape, fuel, bolts) needs new items; worth adding for scavs?
+- **(AI-4) PMCs don't survive Northpoint's scavs.** In 3 full raids with you peaceful, every PMC was dead within about 5½ minutes, fighting scavs and the yard boss (the gun store, a weight-2 loot spot, is the boss's). So in practice you meet them early, then mostly scav waves. Intended, or should PMCs avoid scavs unless shot at, or should squads skip the gun store? (Not tuned: your call.)
+- **(AI-4) Path-search spikes.** Roaming squads start fights across the map, and the AI's long path searches (50 m+, especially between floors) cost 3–14 ms each on a Mac when they hit the search budget, several times that on a phone. Worth a session for a cheaper long-range pathfinder (a coarse graph over the nav grid's regions) before more AI?
+- **(AI-4) Switches:** should PMCs open switch doors (the main shutter's siren, the fire exit's chain) to leave? Today they skip those extractions.
+
+## The Hangar (planned 2026-11-07 with the user)
+After the AI rework, before co-op. The design is [hangar.md](hangar.md). The material items and loot tables are the user's.
+
+- [ ] **H1. Modules and upgrades.**
+  - Module content as data (`content/hangar/`, schema, format version): each module's levels, with item costs, the Power grid level each needs, and what a level unlocks.
+  - Hangar state in the profile (format bump); only the server changes it, like vendor standing.
+  - `POST` upgrade on the server, taking items from the stash pages as quest hand-overs do (plain items only, never from worn gear). Upgrades are instant.
+  - Content test: no upgrade cost is on any vendor's list.
+- [ ] **H2. Crafting.**
+  - Recipes as data (module, module level, inputs, output, time; optional blueprint).
+  - Start, and collect, on the server, with the server's clock (finish times computed when read, so crafts run while the app is closed). One craft per module; output waits until collected.
+  - Content test: no recipe input is on any vendor's list.
+- [ ] **H3. The Hangar page.**
+  - A menu button and a page of module cards in the vendors page's look: level, what the next one needs (have / need), the craft running with its time left, recipes, Collect.
+- [ ] **H4. Quarters and the secure locker.**
+  - Quarters gates buying stash pages; the starting stash and vault shrink (vault 1×2, up to 3×3 through the locker); category pages (ammo, meds, weapons) and where a double-tap goes.
+  - Wipe prod before this ships (no users yet).
+- [ ] **H5. Intel desk.**
+  - Drive items, timed decryption, and its results: keycards or door codes, vendor rep, blueprints. Blueprints unlock recipes.
+  - Contracts that reuse what exists, if wanted then (timer from Get contract).
 
 ## After v1 (not scheduled)
 - Co-op vs. AI, phones and PCs together (a player's device hosts, others connect over WebRTC; client movement prediction, shared loot rolls, quest items only for the holder). The plan, session by session, is [coop.md](coop.md).

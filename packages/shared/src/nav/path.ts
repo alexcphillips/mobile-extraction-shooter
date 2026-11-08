@@ -85,7 +85,10 @@ function estimate(nav: NavGrid, n: number): number {
  *
  * Nodes in different components can't reach each other, so then it heads greedily for
  * the closest spot it can find within a smaller budget. With avoid, it goes round those
- * spots where it can.
+ * spots where it can. A greed over 1 (weighted A*) finds a path up to that much longer
+ * than the shortest, expanding far fewer nodes: for long walks where the best way doesn't
+ * matter (AI rework session 4: PMC routes cross the map, and the shortest way could use
+ * the whole budget, some 30 ms on a Mac).
  */
 export function findPath(
   nav: NavGrid,
@@ -93,6 +96,7 @@ export function findPath(
   to: number,
   out: number[],
   avoid?: Avoid,
+  greed = 1,
 ): PathResult {
   out.length = 0;
   if (from < 0 || to < 0) return 'none';
@@ -106,7 +110,7 @@ export function findPath(
   goalZ = nav.nodeZ(to);
   const reachable = nav.component[from] === nav.component[to];
   const limit = reachable ? MAX_EXPAND : MAX_EXPAND / 5;
-  const weight = reachable ? 1 : 2;
+  const weight = reachable ? greed : Math.max(2, greed);
   const shun = avoid && avoid.spots.length > 0 ? avoid : undefined;
 
   s.g[from] = 0;

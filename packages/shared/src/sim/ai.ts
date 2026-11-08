@@ -1,4 +1,4 @@
-import type { EnemySkill } from '../content/enemies';
+import type { EnemySkill, Faction } from '../content/enemies';
 import { grenadeDef, weaponDef, type ItemDb } from '../content/items';
 import type { NavGrid } from '../nav/nav-grid';
 import { findPath, type Avoid } from '../nav/path';
@@ -6,6 +6,7 @@ import { chance, nextFloat, nextRange } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import type { CollisionWorld } from '../world/collision-world';
 import { openDoorAhead } from './doors';
+import { hostile } from './factions';
 import { FIRE, inFire } from './fire';
 import { smokeBlocks, type Grenade } from './grenades';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
@@ -22,6 +23,25 @@ import {
 } from './state';
 import { heldWeapon } from './gear';
 import { createWeaponStats, reloadRound, weaponStats } from './weapons';
+import {
+  ROUTES,
+  chooseExtraction,
+  extractSpot,
+  inExtraction,
+  nearestStop,
+  pickBody,
+  pickContainer,
+  pickStop,
+  searchTime,
+  squadState,
+  stopToward,
+  takeLoot,
+  lootInReach,
+  type LootTarget,
+  type SquadState,
+} from './routes';
+import { searchContainer } from './looting';
+import { timeLeft } from './raid';
 import { ZOMBIES, type WindowState, type ZombieMind } from './zombies';
 
 /*
@@ -133,6 +153,15 @@ export const AI = {
   /** Looks around this long where the noise was, or at a noise not worth checking. */
   scanTime: 5,
   calmTime: 3,
+  /**
+   * Erratic movement (AI rework session 2, scavs): with skill.erratic 1, a quirk about
+   * every quirkEvery seconds (×0.5–1.5) while walking about: a stop, a crouch-walk or a
+   * short sprint, each lasting its range in seconds. While fighting only crouches, as often.
+   */
+  quirkEvery: 6,
+  quirkStop: [0.6, 1.8] as const,
+  quirkCrouch: [1.2, 3] as const,
+  quirkSprint: [0.8, 2] as const,
   /** Spots to check when searching, each within searchRadius of where you were last seen. */
   searchSpots: 3,
   searchRadius: 12,
@@ -202,6 +231,8 @@ export const AI = {
   /** Moving slower than this for stuckTime means stuck: plan again, then give up. */
   stuckSpeed: 0.3,
   stuckTime: 1.5,
+  /** Stuck, it sidesteps this many seconds before going on (AI rework session 4). */
+  unstickTime: 0.6,
   /** Path searches across all enemies in one tick; the rest wait a tick. */
   plansPerTick: 2,
   /** A goal that moves further than this needs a new path. */
@@ -233,7 +264,11 @@ export type AiActivity =
   | 'hold' // alert, can't reach you: holding a way up
   | 'loiter' // alert, can't reach you: moving to another spot near the way up
   | 'search' // walking to a spot to check
-  | 'searchScan'; // looking around a searched spot
+  | 'searchScan' // looking around a searched spot
+  | 'follow' // a squad member (AI-3): keeping its place beside its leader
+  | 'route' // a squad's leader (AI-4): walking to its next point of interest, or its extraction
+  | 'loot' // a squad member (AI-4): walking to a container or body and searching it
+  | 'extract'; // a squad member (AI-4): standing in its extraction zone until it leaves
 
 export interface AiState {
   awareness: Awareness;
@@ -242,6 +277,8 @@ export interface AiState {
   input: PlayerInput;
   /** How well it fights, from its enemy type. */
   skill: EnemySkill;
+  /** Who it sides with, from its enemy type (see factions.ts). Missing (older saves) is scav. */
+  faction?: Faction;
   homeX: number;
   homeY: number;
   homeZ: number;
@@ -343,7 +380,56 @@ export interface AiState {
   fires?: number;
   /** A zombie's (zombies mode, sim/zombies.ts): it hunts instead (see hunt). Missing for others. */
   zombie?: ZombieMind | null;
+  /**
+   * An erratic enemy's current quirk (AI rework session 2, skill.erratic): 'stop', 'crouch'
+   * or 'sprint' for quirkTime more seconds; quirkNext counts down to the next. Missing
+   * (older saves, and enemies that aren't erratic) is none.
+   */
+  quirk?: Quirk | null;
+  quirkTime?: number;
+  quirkNext?: number;
+  /**
+   * A PMC's squad (AI rework session 3): its id, shared by its members, who are allies
+   * (factions.ts hostile). Missing for an enemy on its own.
+   */
+  squad?: number;
+  /**
+   * Its place in the squad: the living member with the lowest leads, the rest follow it
+   * in formation (in this order). Missing is 0.
+   */
+  squadSlot?: number;
+  /**
+   * A follower's: the leader's heading its place was last worked out from, and whether its
+   * side of the formation is swapped (−1) since the leader turned back. Missing is none, 1.
+   */
+  followYaw?: number;
+  followSide?: number;
+  /**
+   * A squad member's (AI rework session 4): the container or body it's going to search, or
+   * searching; null or missing when none.
+   */
+  loot?: LootTarget | null;
+  /** A squad's leader: back on the route at the nearest stop, after a fight or a check. */
+  reroute?: boolean;
+  /**
+   * Stuck: seconds left sidestepping, and which way (1 right, −1 left). Missing (older
+   * saves) is none.
+   */
+  unstick?: number;
+  unstickSide?: number;
+  /**
+   * A leaving squad's leader whose way out kept stopping short: the stop it goes by first
+   * (an index into SimState.pois), and how many it has tried.
+   */
+  detour?: number | undefined;
+  detours?: number;
+  /** A squad's leader: paths that got only part way to its stop so far (ROUTES.partial). */
+  legTries?: number;
+  /** A squad member hunting someone it lost: seconds left before it gives up. */
+  hunt?: number | undefined;
 }
+
+export type Quirk = 'stop' | 'crouch' | 'sprint';
 
 export interface PatrolDef {
   points: readonly { x: number; y: number; z: number; wait: number; radius: number }[];
@@ -357,6 +443,12 @@ export interface EnemySpawnOptions {
   radius?: number | undefined;
   /** How well it fights; DEFAULT_SKILL if left out. */
   skill?: EnemySkill | undefined;
+  /** Who it sides with; scav if left out. */
+  faction?: Faction | undefined;
+  /** How many outfits its type has: one is picked at random. 1 if left out. */
+  outfits?: number | undefined;
+  /** Its enemy type's id, put in Character.look with the outfit for drawing. */
+  type?: string | undefined;
 }
 
 /** A middling enemy, for tests and enemies with no type. */
@@ -396,7 +488,14 @@ export function spawnEnemy(
   yaw: number,
   options: EnemySpawnOptions = {},
 ): Character {
-  const { patrol, radius = 0, skill = DEFAULT_SKILL } = options;
+  const {
+    patrol,
+    radius = 0,
+    skill = DEFAULT_SKILL,
+    faction = 'scav',
+    outfits = 1,
+    type,
+  } = options;
   let sx = x;
   let sz = z;
   for (let tries = 0; radius > 0 && tries < 10; tries++) {
@@ -414,11 +513,15 @@ export function spawnEnemy(
   }
   // Below the spawn's height plus a little, so a spawn under a roof stays inside.
   const c = spawnCharacter(state, world, sx, sz, yaw, y + 0.5, false);
+  // Only rolled when there's a choice, so a type with one outfit draws nothing from the RNG.
+  const outfit = outfits > 1 ? Math.floor(nextFloat(state.rng) * outfits) : 0;
+  if (type !== undefined) c.look = { type, outfit };
   c.ai = {
     awareness: 'unaware',
     activity: 'guard',
     input: createInput(),
     skill: { ...skill },
+    faction,
     homeX: c.x,
     homeY: c.y,
     homeZ: c.z,
@@ -536,8 +639,9 @@ export function updateAi(
       if ((state.tick + c.id) % AI.perceiveEvery === 0) {
         look(state, c, ai, world, nav);
         listenForSteps(state, c, ai);
+        if (ai.squad !== undefined) shareTarget(state, c, ai);
       }
-      hearEvents(state, c, ai, world);
+      hearEvents(state, c, ai, world, nav);
       behave(state, c, ai, world, items, nav);
     }
     // A closed door on the way to the next waypoint opens as it gets there.
@@ -549,7 +653,10 @@ export function updateAi(
 
 // ---------------------------------------------------------------------------- perception
 
-/** Sight: notices whoever it can see best, and keeps track of its target while alert. */
+/**
+ * Sight: notices whoever hostile it can see best (players, and other factions' enemies:
+ * AI rework session 1), and keeps track of its target while alert.
+ */
 function look(
   state: SimState,
   c: Character,
@@ -562,7 +669,7 @@ function look(
   const saw = ai.seesTarget;
   ai.seesTarget = false;
   for (const e of state.entities) {
-    if (e.ai || e.health.dead || e.admin?.peaceful) continue;
+    if (e.health.dead || e.admin?.peaceful || !hostile(c, e)) continue;
     const rate = sightRate(state, c, ai, e, world);
     if (e.id === ai.target && rate > 0) ai.seesTarget = true;
     if (rate > bestRate) {
@@ -652,7 +759,8 @@ function sightRate(
   const across = Math.hypot(dx, dz);
   if (across > AI.sightRange) return 0;
   const ahead = across > 1e-6 ? (dx * -Math.sin(c.yaw) + dz * -Math.cos(c.yaw)) / across : 1;
-  if (ahead < HALF_FOV_COS) return 0;
+  const halfFov = ai.skill.fov === undefined ? HALF_FOV_COS : Math.cos((ai.skill.fov / 2) * DEG);
+  if (ahead < halfFov) return 0;
   // In sight if the head or the middle of the body is, leaned out from cover or not.
   const h = headPoint;
   const b = chestPoint;
@@ -671,7 +779,7 @@ function sightRate(
   let rate = 1 / AI.reaction;
   if (d > AI.nearRange) rate *= (AI.nearRange / d) ** AI.farFalloff;
   if (ahead < CENTRE_COS) {
-    const edge = (CENTRE_COS - ahead) / (CENTRE_COS - HALF_FOV_COS);
+    const edge = (CENTRE_COS - ahead) / (CENTRE_COS - halfFov);
     rate *= 1 - (1 - AI.peripheralRate) * edge;
   }
   if (e.height < MOVEMENT.standHeight - 0.1) rate *= AI.crouchedRate;
@@ -701,6 +809,28 @@ export function clearLine(
   if (d < 1e-6) return true;
   // Glass is seen and heard through.
   return world.raycast(ox, oy, oz, dx / d, dy / d, dz / d, d, undefined, true) === Infinity;
+}
+
+/**
+ * How far the nearest living player is from an eye at (x, eye, z); 0 if one can see it
+ * (within sight range). Infinity with none. For spawning enemies out of players' way.
+ */
+export function playerDistance(
+  state: SimState,
+  world: CollisionWorld,
+  x: number,
+  eye: number,
+  z: number,
+): number {
+  let best = Infinity;
+  for (const e of state.entities) {
+    if (e.ai || e.health.dead) continue;
+    const ey = eyeHeight(e);
+    const d = Math.hypot(e.x - x, ey - eye, e.z - z);
+    if (d <= AI.sightRange && clearLine(world, e.x, ey, e.z, x, eye, z)) return 0;
+    if (d < best) best = d;
+  }
+  return best;
 }
 
 /** An enemy spawn too near a player spawn. Ids are the markers' path ids. */
@@ -733,14 +863,16 @@ export function exposedSpawns(
       const distance = Math.hypot(e.x - p.x, e.z - p.z);
       if (distance > Math.max(clearance, AI.sightRange)) continue;
       const seen = distance <= AI.sightRange && clearLine(world, p.x, py, p.z, e.x, ground(e), e.z);
-      if (seen || distance < clearance)
-        out.push({ enemy: e.id, player: p.id, distance, seen });
+      if (seen || distance < clearance) out.push({ enemy: e.id, player: p.id, distance, seen });
     }
   }
   return out;
 }
 
-/** Footsteps: sprinting and walking are heard nearby; crouching is silent. */
+/**
+ * Footsteps: sprinting and walking are heard nearby; crouching is silent. Players' only:
+ * enemies don't go looking for each other (AI rework session 1), they fight on sight.
+ */
 function listenForSteps(state: SimState, c: Character, ai: AiState): void {
   for (const e of state.entities) {
     if (e.ai || e.health.dead || e.admin?.peaceful || e.mode !== 'ground') continue;
@@ -758,12 +890,21 @@ function listenForSteps(state: SimState, c: Character, ai: AiState): void {
 }
 
 /** Shots and hits from this tick's events. */
-function hearEvents(state: SimState, c: Character, ai: AiState, world: CollisionWorld): void {
+function hearEvents(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  world: CollisionWorld,
+  nav: NavGrid,
+): void {
+  // The map's hearing scale (AI rework session 1): guns are heard 110–190 m, about all of
+  // a small map, so a map can make every noise carry less there.
+  const scale = state.hearingScale ?? 1;
   for (const ev of state.events) {
     if (ev.type === 'damage') {
       if (ev.target !== c.id || ev.by === 0 || ev.by === c.id) continue;
       const by = entityById(state, ev.by);
-      if (by && !by.ai && !by.admin?.peaceful) {
+      if (by && !by.health.dead && hostile(c, by) && !by.admin?.peaceful) {
         alarm(ai, by, by.x, by.y, by.z);
         ai.hurt = true;
         ai.aimError += AI.hitFlinch * DEG;
@@ -771,20 +912,29 @@ function hearEvents(state: SimState, c: Character, ai: AiState, world: Collision
       continue;
     }
     if (ev.type === 'explosion') {
-      heardExplosion(state, c, ai, world, ev.x, ev.y, ev.z, ev.loudness, ev.by);
+      heardExplosion(state, c, ai, world, ev.x, ev.y, ev.z, ev.loudness * scale, ev.by);
       continue;
     }
     if (ev.type === 'glass') {
-      // Glass breaking: go and look, as for a blast. An enemy's own isn't worth it.
-      if (!entityById(state, ev.by)?.ai)
-        heardExplosion(state, c, ai, world, ev.x, ev.y, ev.z, ev.loudness, ev.by);
+      // Glass breaking: go and look, as for a blast. An ally's isn't worth it.
+      const by = entityById(state, ev.by);
+      if (!by || hostile(c, by))
+        heardExplosion(state, c, ai, world, ev.x, ev.y, ev.z, ev.loudness * scale, ev.by);
+      continue;
+    }
+    if (ev.type === 'death') {
+      // A squad remembers who it killed, to search the body (AI rework session 4).
+      if (ev.by === c.id && ev.target !== c.id && ai.squad !== undefined) {
+        const sq = squadState(state, ai.squad);
+        if (sq && !sq.kills.includes(ev.target)) sq.kills.push(ev.target);
+      }
       continue;
     }
     if (ev.type === 'ignite') {
       // Set alight: as good as shot, by whoever lit it.
       if (ev.target !== c.id || ev.by === 0 || ev.by === c.id) continue;
       const by = entityById(state, ev.by);
-      if (by && !by.ai && !by.admin?.peaceful) {
+      if (by && !by.health.dead && hostile(c, by) && !by.admin?.peaceful) {
         alarm(ai, by, by.x, by.y, by.z);
         ai.hurt = true;
       }
@@ -793,8 +943,11 @@ function hearEvents(state: SimState, c: Character, ai: AiState, world: Collision
     if (ev.type !== 'shot' || ev.by === c.id) continue;
     const by = entityById(state, ev.by);
     if (!by || by.health.dead) continue;
-    if (by.ai) {
-      allyShot(state, c, ai, world, by, ev.fromX, ev.fromY, ev.fromZ, ev.loudness);
+    // An ally's shots join it in the fight; a hostile's (a player's, or another
+    // faction's: AI rework session 1) are heard as below, a noise to check.
+    if (!hostile(c, by)) {
+      if (by.ai)
+        allyShot(state, c, ai, world, by, ev.fromX, ev.fromY, ev.fromZ, ev.loudness * scale);
       continue;
     }
     const cy = c.y + c.height * 0.6;
@@ -814,12 +967,25 @@ function hearEvents(state: SimState, c: Character, ai: AiState, world: Collision
       alarm(ai, by, by.x, by.y, by.z);
       continue;
     }
-    if (d > ev.loudness) continue;
-    const loud = heardLoudness(world, c, ev.fromX, ev.fromY, ev.fromZ, ev.loudness);
-    if (d <= loud * AI.alertShot) {
+    if (d > ev.loudness * scale) continue;
+    const loud = heardLoudness(world, c, ev.fromX, ev.fromY, ev.fromZ, ev.loudness * scale);
+    // A squad on a route (AI rework session 4): alert within 20%, stops and advances within
+    // 70%, and further out turns its route that way without stopping.
+    const routed = !!squadState(state, ai.squad);
+    if (d <= loud * (routed ? ROUTES.alertShot : AI.alertShot)) {
       alarm(ai, by, by.x, by.y, by.z);
+    } else if (routed && d > loud * ROUTES.advanceShot) {
+      if (d <= loud && ai.awareness !== 'alert') headToward(state, c, ai, by.x, by.z, nav);
     } else if (d <= loud && ai.awareness !== 'alert') {
-      heardAt(state, c, ai, by, d, d <= loud * AI.investigateShot, true);
+      heardAt(
+        state,
+        c,
+        ai,
+        by,
+        d,
+        d <= loud * (routed ? ROUTES.advanceShot : AI.investigateShot),
+        true,
+      );
     }
   }
 }
@@ -844,7 +1010,7 @@ function allyShot(
   const d = Math.hypot(x - c.x, y - eyeHeight(c), z - c.z);
   if (d > loudness * AI.investigateShot) return;
   const target = entityById(state, ally.ai.target);
-  if (!target || target.health.dead || target.admin?.peaceful) return;
+  if (!target || target.health.dead || target.admin?.peaceful || !hostile(c, target)) return;
   const loud = heardLoudness(world, c, x, y, z, loudness);
   if (d <= loud * AI.alertShot) alarm(ai, target, target.x, target.y, target.z);
   else if (d <= loud * AI.investigateShot)
@@ -920,8 +1086,13 @@ function heardNoise(
   const around = nextFloat(state.rng) * Math.PI * 2;
   const nx = x + Math.cos(around) * off;
   const nz = z + Math.sin(around) * off;
+  // A squad decides as one and isn't held to the scavs' cap (AI rework session 4).
   const capped =
-    loud && investigate && ai.awareness !== 'alert' && !joinResponders(state, c, nx, nz);
+    loud &&
+    investigate &&
+    ai.awareness !== 'alert' &&
+    ai.squad === undefined &&
+    !joinResponders(state, c, nx, nz);
   suspect(c, ai, nx, y, nz, investigate && !capped, loud);
   // Enough are going already: it looks, and stops checking anything else.
   if (capped) ai.investigate = false;
@@ -950,8 +1121,32 @@ function responding(ai: AiState): boolean {
 }
 
 /**
- * Whether c may go to check a loud noise at (x, z): at most AI.responders go to the same
- * one, the nearest first. A nearer enemy takes the place of the furthest one going, which
+ * Whether an enemy is free to be sent to gunfire by the trickle (sim/waves.ts): alive, not
+ * fighting, not running from a grenade, and not already going to check something.
+ */
+export function freeToCheck(c: Character): boolean {
+  const ai = c.ai;
+  return (
+    !!ai &&
+    !ai.zombie &&
+    !c.health.dead &&
+    !ai.flee &&
+    ai.awareness !== 'alert' &&
+    !(ai.awareness === 'suspicious' && ai.investigate)
+  );
+}
+
+/**
+ * Sends an enemy to check gunfire at (x, y, z), with care (stopping short to watch), past
+ * the responder cap: the trickle to a long fight (sim/waves.ts).
+ */
+export function checkGunfire(c: Character, x: number, y: number, z: number): void {
+  suspect(c, c.ai!, x, y, z, true, true);
+}
+
+/**
+ * Whether c may go to check a loud noise at (x, z): at most AI.responders of its allies go
+ * to the same one, the nearest first (another faction's don't count). A nearer enemy takes the place of the furthest one going, which
  * stays where it is and looks around.
  */
 function joinResponders(state: SimState, c: Character, x: number, z: number): boolean {
@@ -959,7 +1154,7 @@ function joinResponders(state: SimState, c: Character, x: number, z: number): bo
   let furthest: Character | null = null;
   let furthestD = -1;
   for (const e of state.entities) {
-    if (e === c || !e.ai || e.health.dead || !responding(e.ai)) continue;
+    if (e === c || !e.ai || e.health.dead || !responding(e.ai) || hostile(c, e)) continue;
     if (Math.hypot(e.ai.focusX - x, e.ai.focusZ - z) > AI.responderRadius) continue;
     count++;
     const d = Math.hypot(e.x - x, e.z - z);
@@ -1027,6 +1222,7 @@ function suspect(
   if (ai.awareness === 'alert') return;
   const was = ai.awareness;
   ai.awareness = 'suspicious';
+  ai.loot = null;
   setFocus(ai, x, y, z);
   if (
     investigate &&
@@ -1051,6 +1247,9 @@ function alarm(ai: AiState, target: Character, x: number, y: number, z: number):
   if (ai.awareness !== 'alert') {
     ai.hasGoal = false;
     ai.activity = 'engage';
+    ai.loot = null;
+    ai.hunt = undefined;
+    if (ai.squad !== undefined) ai.reroute = true;
     ai.reaction = ai.skill.reaction;
     ai.aimError = ai.skill.aimError * DEG;
     ai.burst = ai.pause = 0;
@@ -1067,12 +1266,15 @@ function alarm(ai: AiState, target: Character, x: number, y: number, z: number):
   setFocus(ai, x, y, z);
 }
 
-function startSearch(ai: AiState): void {
+function startSearch(state: SimState, ai: AiState): void {
   ai.awareness = 'searching';
   ai.activity = 'search';
   ai.searchLeft = AI.searchSpots;
   ai.notice = AI.glimpse;
   ai.hasGoal = false;
+  // A squad on a route hunts on until it's gone 15–20 s without seeing its target.
+  if (squadState(state, ai.squad))
+    ai.hunt = Math.max(2, nextRange(state.rng, ROUTES.huntTime[0], ROUTES.huntTime[1]) - ai.unseen);
 }
 
 /**
@@ -1087,7 +1289,13 @@ function calmDown(c: Character, ai: AiState, resume = true): void {
   ai.hasGoal = false;
   ai.replans = 0;
   ai.burst = 0;
-  if (ai.patrol.length > 0) {
+  ai.loot = null;
+  ai.hunt = undefined;
+  if (ai.squad !== undefined && (ai.squadSlot ?? 0) > 0) {
+    // A squad member keeps its place by the leader (or leads, if the leader's gone).
+    ai.activity = 'follow';
+    ai.legSet = false;
+  } else if (ai.patrol.length > 0) {
     ai.activity = 'patrol';
     ai.legSet = false;
     let best = Infinity;
@@ -1156,11 +1364,23 @@ function behave(
       case 'wait':
         faceYaw = lookAround(ai);
         if (ai.timer <= 0) {
-          nextPatrolPoint(ai);
-          ai.activity = 'patrol';
+          if (ai.squad !== undefined) {
+            // Done watching a choke: on to the next stop.
+            endStop(state, ai);
+          } else {
+            nextPatrolPoint(ai);
+            ai.activity = 'patrol';
+          }
         }
         break;
       case 'guard':
+        // A squad's leader with a route walks it (AI rework session 4); without, it guards.
+        if (ai.squad !== undefined && squadState(state, ai.squad)) {
+          ai.activity = 'route';
+          ai.legSet = false;
+          ai.hasGoal = false;
+          break;
+        }
         if (Math.hypot(ai.homeX - c.x, ai.homeZ - c.z) > 1.5) {
           moveTo(state, c, ai, nav, ai.homeX, ai.homeY, ai.homeZ, AI.patrolPace);
           faceYaw = moveYaw;
@@ -1175,7 +1395,10 @@ function behave(
         break;
       case 'look':
         faceYaw = yawTo(c, ai.focusX, ai.focusZ);
+        if (ai.timer <= 0 && ai.investigate && tellLeader(state, c, ai)) break;
         if (ai.timer <= 0) {
+          // Off its route to check something: back on it at the nearest stop afterwards.
+          if (ai.investigate && ai.squad !== undefined) ai.reroute = true;
           ai.activity = ai.investigate ? 'investigate' : 'scan';
           ai.timer = AI.calmTime;
           ai.lookYaw = faceYaw;
@@ -1237,7 +1460,7 @@ function behave(
           if (!ai.reachable) {
             if (ai.unseen >= AI.intuition && startHold(state, c, ai, world, nav, target)) break;
           } else if (ai.unseen >= (ai.push ? AI.loseTrack : AI.holdAngle)) {
-            startSearch(ai);
+            startSearch(state, ai);
             break;
           }
         }
@@ -1376,6 +1599,10 @@ function behave(
         break;
       }
       case 'search': {
+        if (ai.hunt !== undefined && (ai.hunt -= DT) <= 0) {
+          calmDown(c, ai);
+          break;
+        }
         const r = moveTo(state, c, ai, nav, ai.focusX, ai.focusY, ai.focusZ, AI.alertPace);
         faceYaw = moveYaw;
         if (r !== 'moving') {
@@ -1385,16 +1612,130 @@ function behave(
         }
         break;
       }
-      case 'searchScan':
+      case 'searchScan': {
         faceYaw = lookAround(ai);
+        // A squad hunting goes on checking spots until its hunt runs out.
+        const hunting = ai.hunt !== undefined && (ai.hunt -= DT) > 0;
+        if (ai.hunt !== undefined && !hunting) {
+          calmDown(c, ai);
+          break;
+        }
         if (ai.timer > 0) break;
-        if (ai.searchLeft-- <= 0 || !pickSearchSpot(state, c, ai, nav)) {
+        if ((!hunting && ai.searchLeft-- <= 0) || !pickSearchSpot(state, c, ai, nav)) {
           calmDown(c, ai);
         } else {
           ai.activity = 'search';
           ai.hasGoal = false;
         }
         break;
+      }
+      case 'follow': {
+        const leader = squadLeader(state, c);
+        if (!leader || leader === c) {
+          leadSquad(c, ai);
+          break;
+        }
+        // The leader searching a loot spot, or leaving: it helps, or goes too (AI-4).
+        if (joinLeader(state, c, ai, leader, nav)) break;
+        // Where to stand, checked on its perception ticks (a few rays).
+        if (!ai.legSet || (state.tick + c.id) % AI.perceiveEvery === 0)
+          followSpot(state, c, ai, world, leader);
+        const d = Math.hypot(ai.legX - c.x, ai.legZ - c.z);
+        if (ai.hasGoal || d > SQUAD.slack) {
+          // Faster the further behind, slowing as it gets there.
+          const pace = Math.min(AI.alertPace, AI.patrolPace + SQUAD.hurry * d);
+          const r = moveTo(
+            state,
+            c,
+            ai,
+            nav,
+            ai.legX,
+            ai.legY,
+            ai.legZ,
+            pace,
+            false,
+            SQUAD.arrive,
+            ROUTES.greed,
+          );
+          if (r === 'moving') {
+            faceYaw = moveYaw;
+            break;
+          }
+          // As close as it gets (or no way there): here will do until the leader moves on,
+          // rather than planning the same way again every tick.
+          ai.hasGoal = false;
+          ai.legX = c.x;
+          ai.legY = c.y;
+          ai.legZ = c.z;
+        }
+        // In place: watching its own side.
+        faceYaw = ai.lookYaw;
+        turn = AI.turnRate / 2;
+        break;
+      }
+      case 'route': {
+        const sq = squadState(state, ai.squad);
+        if (!sq) {
+          ai.activity = 'guard';
+          break;
+        }
+        faceYaw = walkRoute(state, c, ai, world, nav, sq);
+        break;
+      }
+      case 'loot':
+        faceYaw = lootStep(state, c, ai, items, nav);
+        break;
+      case 'extract': {
+        const sq = squadState(state, ai.squad);
+        if (!sq) {
+          calmDown(c, ai);
+          break;
+        }
+        if (!ai.legSet) {
+          const spot = extractSpot(state, world, sq);
+          ai.legX = spot?.[0] ?? sq.exX;
+          ai.legY = spot?.[1] ?? sq.exY;
+          ai.legZ = spot?.[2] ?? sq.exZ;
+          ai.legSet = true;
+          ai.hasGoal = false;
+          ai.lookYaw = c.yaw;
+        }
+        if (ai.hasGoal || !near(c, ai.legX, ai.legY, ai.legZ)) {
+          const r = moveTo(
+            state,
+            c,
+            ai,
+            nav,
+            ai.legX,
+            ai.legY,
+            ai.legZ,
+            ROUTES.pace,
+            false,
+            0.4,
+            ROUTES.greed,
+          );
+          if (r === 'moving') {
+            faceYaw = moveYaw;
+            break;
+          }
+          if (!inExtraction(state, c, sq)) {
+            // Got only part way: the leader walks there as on its route (round by another
+            // stop if need be), the rest follow.
+            if (squadLeader(state, c) === c) {
+              ai.activity = 'route';
+              ai.legSet = false;
+            } else calmDown(c, ai);
+            break;
+          }
+          ai.legX = c.x;
+          ai.legY = c.y;
+          ai.legZ = c.z;
+        }
+        // Standing in it (squads.ts updateSquads counts it down), watching about.
+        faceYaw = lookAround(ai);
+        turn = AI.turnRate / 2;
+        break;
+      }
     }
 
   // On fire: it puts itself out, which stops it fighting meanwhile (sim/fire.ts), and it
@@ -1411,6 +1752,7 @@ function behave(
     wishZ = d > 1e-3 ? (dz / d) * AI.alertPace : Math.sin(a) * AI.alertPace;
     ai.hasGoal = false;
   }
+  if (ai.skill.erratic && !fire) quirks(state, ai);
   input.yaw = turnToward(c.yaw, faceYaw, turn * DT);
   input.pitch = c.pitch + Math.max(-turn * DT, Math.min(turn * DT, facePitch - c.pitch));
   // The stick is relative to where it faces; moveTo left a world direction in wishX, Z.
@@ -1419,6 +1761,554 @@ function behave(
   input.moveX = cy * wishX - sy * wishZ;
   input.moveY = -(sy * wishX + cy * wishZ);
   wishX = wishZ = 0;
+}
+
+/**
+ * An erratic enemy's quirks (AI rework session 2, scavs; design.md → AI → Scavs): now and
+ * then, while walking about, it stops dead, crouch-walks or breaks into a short sprint;
+ * while fighting it drops into a crouch. Changes this tick's wish and stance only, so
+ * whatever it was doing carries on afterwards.
+ */
+function quirks(state: SimState, ai: AiState): void {
+  const a = ai.activity;
+  const fighting = a === 'engage';
+  const walking = a === 'patrol' || a === 'investigate' || a === 'search' || a === 'loiter';
+  if (ai.flee || (!walking && !fighting)) {
+    ai.quirk = null;
+    return;
+  }
+  const moving = wishX !== 0 || wishZ !== 0;
+  const every = AI.quirkEvery / ai.skill.erratic!;
+  if (ai.quirk) {
+    ai.quirkTime = (ai.quirkTime ?? 0) - DT;
+    // Fighting crouches only; a walking quirk ends when the walk does.
+    if (ai.quirkTime <= 0 || (fighting && ai.quirk !== 'crouch') || (!fighting && !moving))
+      ai.quirk = null;
+  }
+  if (!ai.quirk) {
+    ai.quirkNext = (ai.quirkNext ?? every * nextRange(state.rng, 0.5, 1.5)) - DT;
+    if (ai.quirkNext > 0 || (!moving && !fighting)) return;
+    ai.quirkNext = every * nextRange(state.rng, 0.5, 1.5);
+    const r = fighting ? 0.5 : nextFloat(state.rng);
+    const [quirk, range] =
+      r < 0.35
+        ? (['stop', AI.quirkStop] as const)
+        : r < 0.7
+          ? (['crouch', AI.quirkCrouch] as const)
+          : (['sprint', AI.quirkSprint] as const);
+    ai.quirk = quirk;
+    ai.quirkTime = nextRange(state.rng, range[0], range[1]);
+  }
+  if (ai.quirk === 'stop') {
+    wishX = wishZ = 0;
+    // Standing still on purpose isn't being stuck.
+    ai.stuck = 0;
+  } else if (ai.quirk === 'crouch') {
+    ai.input.crouch = true;
+  } else if (moving) {
+    const d = Math.hypot(wishX, wishZ);
+    wishX /= d;
+    wishZ /= d;
+    ai.input.sprint = true;
+  }
+}
+
+// ----------------------------------------------------------------------------- squads
+
+/**
+ * PMC squads (AI rework session 3; design.md → AI → PMCs). Distances in metres, angles in
+ * degrees; first guesses to tune in play.
+ */
+export const SQUAD = {
+  /**
+   * Each follower's place behind its leader, by its rank among the living followers:
+   * metres back, metres to the side, and which way it watches from the leader's heading.
+   * Ranks past the list stand further back in the middle.
+   */
+  formation: [
+    [3, 2.5, 60],
+    [3, -2.5, -60],
+    [6, 0, 180],
+  ] as const,
+  /** A follower walks back to its place once this far off it... */
+  slack: 2,
+  /** ...and stops this close. */
+  arrive: 1,
+  /** Its pace is AI.patrolPace plus this for every metre it is off its place (up to AI.alertPace). */
+  hurry: 0.1,
+  /** Its place is worked out from where the leader will be this many seconds on. */
+  lead: 0.6,
+  /** The leader's way turning by more than this many degrees swaps the squad's sides. */
+  reverse: 120,
+  /** With no clear place in formation, it keeps this close to the leader. */
+  close: 2.5,
+  /** A place is no good more than this above or below the leader's feet. */
+  rise: 0.6,
+};
+
+/** Puts an enemy in a squad at a place (0 leads); followers start following. */
+export function joinSquad(c: Character, squad: number, slot: number): void {
+  const ai = c.ai!;
+  ai.squad = squad;
+  ai.squadSlot = slot;
+  calmDown(c, ai, false);
+}
+
+/** Its squad's leader: the living member in the lowest place. Null if it has no squad. */
+export function squadLeader(state: SimState, c: Character): Character | null {
+  const squad = c.ai?.squad;
+  if (squad === undefined) return null;
+  let best: Character | null = null;
+  for (const e of state.entities) {
+    if (!e.ai || e.ai.squad !== squad || e.health.dead) continue;
+    if (!best || (e.ai.squadSlot ?? 0) < (best.ai!.squadSlot ?? 0)) best = e;
+  }
+  return best;
+}
+
+/** Its leader's gone and it's next: it leads from where it stands. */
+function leadSquad(c: Character, ai: AiState): void {
+  ai.squadSlot = 0;
+  ai.homeX = c.x;
+  ai.homeY = c.y;
+  ai.homeZ = c.z;
+  ai.homeYaw = c.yaw;
+  calmDown(c, ai, false);
+}
+
+/** Its rank among the living followers, from 1. */
+function followRank(state: SimState, c: Character, ai: AiState): number {
+  const slot = ai.squadSlot ?? 0;
+  let rank = 0;
+  for (const e of state.entities)
+    if (
+      e !== c &&
+      e.ai &&
+      e.ai.squad === ai.squad &&
+      !e.health.dead &&
+      (e.ai.squadSlot ?? 0) < slot
+    )
+      rank++;
+  return rank;
+}
+
+/**
+ * Where a follower stands: its place in formation behind the leader (by the way the
+ * leader walks, or faces while it stands), else straight behind it, else close by on its
+ * own side. Kept while the leader stands still, so a guarding leader looking about
+ * doesn't shuffle its squad. Sets leg* and the way it watches (lookYaw).
+ */
+function followSpot(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  world: CollisionWorld,
+  leader: Character,
+): void {
+  const moving = Math.hypot(leader.vx, leader.vz) > 0.5;
+  if (ai.legSet && !moving) return;
+  const heading = moving
+    ? Math.atan2(-leader.vx, -leader.vz)
+    : leader.ai?.activity === 'guard'
+      ? leader.ai.homeYaw
+      : leader.yaw;
+  const fx = -Math.sin(heading);
+  const fz = -Math.cos(heading);
+  // The leader turning back on itself: the squad keeps to its sides of the way rather
+  // than crossing over (each follower's sides swap, so it stays where it is).
+  if (
+    ai.followYaw !== undefined &&
+    Math.abs(angleDiff(heading, ai.followYaw)) > SQUAD.reverse * DEG
+  )
+    ai.followSide = -(ai.followSide ?? 1);
+  ai.followYaw = heading;
+  const flip = ai.followSide ?? 1;
+  const rank = followRank(state, c, ai);
+  const n = SQUAD.formation.length;
+  const [back0, side0, watch] = SQUAD.formation[Math.min(rank, n) - 1] ?? SQUAD.formation[0];
+  const back = back0 + 3 * Math.max(0, rank - n);
+  const side = side0 * flip;
+  ai.legSet = true;
+  ai.lookYaw = heading + watch * flip * DEG;
+  // Where the leader is about to be, so it keeps up rather than trailing.
+  const lx = leader.x + leader.vx * SQUAD.lead;
+  const lz = leader.z + leader.vz * SQUAD.lead;
+  // Side is fz, −fx: to the right of the heading.
+  if (
+    standable(world, leader, lx - fx * back + fz * side, lz - fz * back - fx * side) ||
+    standable(world, leader, lx - fx * back, lz - fz * back)
+  ) {
+    ai.legX = standX;
+    ai.legY = standY;
+    ai.legZ = standZ;
+    return;
+  }
+  const dx = c.x - leader.x;
+  const dz = c.z - leader.z;
+  const d = Math.hypot(dx, dz);
+  const k = d > SQUAD.close ? SQUAD.close / d : 1;
+  ai.legX = leader.x + dx * k;
+  ai.legY = leader.y;
+  ai.legZ = leader.z + dz * k;
+}
+
+/**
+ * Whether a follower can stand at (x, z) near the leader's height, in the clear and in a
+ * straight line from it (not through a wall). Leaves the spot in standX, Y, Z if so.
+ */
+function standable(world: CollisionWorld, leader: Character, x: number, z: number): boolean {
+  const ground = world.groundAt(x, z, MOVEMENT.radius, leader.y + 0.5);
+  if (Math.abs(ground - leader.y) > SQUAD.rise) return false;
+  if (
+    world.overlaps(x, z, MOVEMENT.radius, ground + MOVEMENT.stepUp, ground + MOVEMENT.standHeight)
+  )
+    return false;
+  if (!clearLine(world, leader.x, leader.y + 1, leader.z, x, ground + 1, z)) return false;
+  // Not off a ledge onto lower ground on the way.
+  if (
+    Math.abs(
+      world.groundAt((x + leader.x) / 2, (z + leader.z) / 2, MOVEMENT.radius, leader.y + 0.5) -
+        leader.y,
+    ) > SQUAD.rise
+  )
+    return false;
+  standX = x;
+  standY = ground;
+  standZ = z;
+  return true;
+}
+let standX = 0;
+let standY = 0;
+let standZ = 0;
+
+/**
+ * A follower wanting to check a noise tells its leader instead, who goes (unless it's
+ * fighting or already checking something), and goes back to its place: the squad moves
+ * as one. False if it leads or has no squad.
+ */
+function tellLeader(state: SimState, c: Character, ai: AiState): boolean {
+  const leader = squadLeader(state, c);
+  if (!leader || leader === c) return false;
+  const l = leader.ai!;
+  if (l.awareness !== 'alert' && !responding(l))
+    suspect(leader, l, ai.focusX, ai.focusY, ai.focusZ, true, !!ai.cautious);
+  calmDown(c, ai);
+  return true;
+}
+
+/**
+ * The whole squad knows where its target is at once (design.md → AI → PMCs → Seeing you):
+ * while a member sees whoever it's fighting (or has just lost them), the rest are alert to
+ * them too, and those already fighting them out of sight know where they are.
+ */
+function shareTarget(state: SimState, c: Character, ai: AiState): void {
+  if (ai.awareness !== 'alert' || (!ai.seesTarget && ai.unseen >= AI.intuition)) return;
+  const target = entityById(state, ai.target);
+  if (!target || target.health.dead || target.admin?.peaceful) return;
+  for (const e of state.entities) {
+    const m = e.ai;
+    if (!m || e === c || m.squad !== ai.squad || e.health.dead) continue;
+    if (m.awareness !== 'alert') alarm(m, target, target.x, target.y, target.z);
+    else if (m.target === ai.target && !m.seesTarget) setFocus(m, target.x, target.y, target.z);
+  }
+}
+
+/** Whether the squad's leader is at its current stop (arrived there, not yet moved on). */
+function atStop(sq: SquadState): boolean {
+  return sq.stop >= 0 && sq.visited[sq.visited.length - 1] === sq.stop;
+}
+
+/** The leader is done with its stop (or gives it up): on to the next. */
+function endStop(state: SimState, ai: AiState): void {
+  const sq = squadState(state, ai.squad);
+  if (sq && atStop(sq)) sq.stop = -1;
+  ai.activity = 'route';
+  ai.loot = null;
+  ai.legSet = false;
+  ai.hasGoal = false;
+}
+
+/**
+ * A squad's leader on its route (AI rework session 4): a body its squad killed nearby
+ * first, then on to its stop (picking one when it needs to), or to its extraction once
+ * it's leaving. Arriving, it searches a loot spot or watches a choke. Returns its heading.
+ */
+function walkRoute(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  world: CollisionWorld,
+  nav: NavGrid,
+  sq: SquadState,
+): number {
+  // Little time left: straight out, whatever it was doing.
+  if (!sq.leaving && sq.extract && timeLeft(state) < ROUTES.leaveBy) {
+    sq.leaving = true;
+    ai.legSet = false;
+  }
+  if (!ai.legSet) {
+    const body = pickBody(state, c, sq, nav);
+    if (body) {
+      ai.activity = 'loot';
+      ai.loot = body;
+      ai.timer = ROUTES.lootMax;
+      ai.hasGoal = false;
+      return c.yaw;
+    }
+    if (!sq.leaving && ai.reroute) {
+      const n = nearestStop(state, sq, c, nav);
+      if (n >= 0) sq.stop = n;
+    }
+    ai.reroute = false;
+    // Time to go after this stop.
+    if (!sq.leaving && sq.stop < 0 && sq.extract && sq.leaveTick >= 0 && state.tick >= sq.leaveTick)
+      sq.leaving = true;
+    // Out by an extraction it can walk into now: one behind a door still shut (a switch
+    // nobody has used) won't do. With none, it stays in the raid and roams on.
+    if (sq.leaving && !chooseExtraction(state, world, sq, c, nav)) {
+      sq.leaving = false;
+      sq.extract = null;
+    }
+    if (!sq.leaving && sq.stop < 0) {
+      sq.stop = pickStop(state, sq, c, nav);
+      if (sq.stop < 0) {
+        // Nowhere to go: it stands and looks about for a while.
+        ai.activity = 'wait';
+        ai.timer = ROUTES.chokeWait[1];
+        ai.lookYaw = c.yaw;
+        return c.yaw;
+      }
+    }
+    ai.hasGoal = false;
+    ai.legSet = true;
+    const detour = sq.leaving && ai.detour !== undefined ? state.pois![ai.detour] : undefined;
+    if (detour) {
+      ai.legX = detour.x;
+      ai.legY = detour.y;
+      ai.legZ = detour.z;
+    } else if (sq.leaving) {
+      ai.legX = sq.exX;
+      ai.legY = sq.exY;
+      ai.legZ = sq.exZ;
+    } else {
+      const p = state.pois![sq.stop]!;
+      ai.legX = p.x;
+      ai.legY = p.y;
+      ai.legZ = p.z;
+      // A spot within the stop's radius (a loot spot's searching starts from wherever).
+      const r = p.kind === 'choke' ? p.radius : Math.min(p.radius, 2);
+      if (r > 0 && randomSpotNear(state, c, nav, p.x, p.y, p.z, r)) {
+        ai.legX = spotX;
+        ai.legY = spotY;
+        ai.legZ = spotZ;
+      }
+    }
+  }
+  const r = moveTo(
+    state,
+    c,
+    ai,
+    nav,
+    ai.legX,
+    ai.legY,
+    ai.legZ,
+    ROUTES.pace,
+    false,
+    AI.arrive,
+    ROUTES.greed,
+  );
+  if (r === 'moving') return moveYaw;
+  // The end of a path that got only part way (a long way round): on from here.
+  const short = r === 'failed' || Math.hypot(ai.legX - c.x, ai.legZ - c.z) > ROUTES.partial;
+  if (r === 'arrived' && short) {
+    ai.legTries = (ai.legTries ?? 0) + 1;
+    if (ai.legTries <= ROUTES.partialTries) return moveYaw;
+  }
+  ai.legTries = 0;
+  ai.legSet = false;
+  if (sq.leaving) {
+    if (ai.detour !== undefined && !short) {
+      // Round the way that wouldn't go: now for the extraction again.
+      ai.detour = undefined;
+      return c.yaw;
+    }
+    if (short) {
+      // The way out keeps stopping short (too far to plan in one go, or a dead end): by
+      // way of another stop, a few times, before it gives up and roams on.
+      ai.detours = (ai.detours ?? 0) + 1;
+      const via = ai.detours <= ROUTES.detours ? pickStop(state, sq, c, nav) : -1;
+      if (via >= 0) {
+        ai.detour = via;
+        return c.yaw;
+      }
+      ai.detour = undefined;
+      sq.leaving = false;
+      sq.extract = null;
+      return c.yaw;
+    }
+    ai.detours = 0;
+    ai.activity = 'extract';
+    return c.yaw;
+  }
+  sq.visited.push(sq.stop);
+  if (r === 'failed') {
+    sq.stop = -1;
+    return c.yaw;
+  }
+  const p = state.pois![sq.stop]!;
+  if (p.kind === 'loot') {
+    ai.activity = 'loot';
+    ai.loot = null;
+    ai.timer = ROUTES.lootMax;
+  } else {
+    ai.activity = 'wait';
+    ai.timer = nextRange(state.rng, ROUTES.chokeWait[0], ROUTES.chokeWait[1]);
+    ai.lookYaw = c.yaw;
+  }
+  return c.yaw;
+}
+
+/** Whether any living squad mate of c is searching something. */
+function squadLooting(state: SimState, c: Character): boolean {
+  for (const e of state.entities)
+    if (e !== c && !e.health.dead && e.ai?.squad === c.ai!.squad && e.ai!.activity === 'loot')
+      return true;
+  return false;
+}
+
+/**
+ * A squad member searching (AI rework session 4): walks to a container or body, searches it
+ * for a time by how much is in it, and takes what fits into its rig and backpack. The
+ * leader goes on to the next thing at its loot spot (or a body), and once there's nothing
+ * left waits for the rest (up to ROUTES.lootMax there) before moving on; the others go back
+ * to following. Returns its heading.
+ */
+function lootStep(state: SimState, c: Character, ai: AiState, items: ItemDb, nav: NavGrid): number {
+  const sq = squadState(state, ai.squad);
+  if (!sq) {
+    calmDown(c, ai);
+    return c.yaw;
+  }
+  const leads = squadLeader(state, c) === c;
+  if (!ai.loot) {
+    const stop = atStop(sq) ? state.pois![sq.stop]! : null;
+    ai.loot =
+      (leads ? pickBody(state, c, sq, nav) : null) ??
+      (stop?.kind === 'loot' ? pickContainer(state, c, sq, stop, nav) : null);
+    if (!ai.loot) {
+      if (!leads) {
+        calmDown(c, ai);
+      } else if (ai.timer > 0 && squadLooting(state, c)) {
+        return lookAround(ai);
+      } else {
+        endStop(state, ai);
+      }
+      return c.yaw;
+    }
+    ai.hasGoal = false;
+  }
+  const t = ai.loot;
+  if (t.search < 0) {
+    if (!lootInReach(state, c, t)) {
+      const r = moveTo(
+        state,
+        c,
+        ai,
+        nav,
+        t.x,
+        t.y,
+        t.z,
+        ROUTES.pace,
+        false,
+        AI.arrive,
+        ROUTES.greed,
+      );
+      if (r === 'moving') return moveYaw;
+      if (!lootInReach(state, c, t)) {
+        // Can't get to it: give it up.
+        doneWith(sq, t);
+        ai.loot = null;
+        return c.yaw;
+      }
+    }
+    t.search = searchTime(state, t.key);
+    ai.hasGoal = false;
+  }
+  t.search -= DT;
+  if (t.search <= 0) {
+    if (t.key.startsWith('c:')) searchContainer(state, c, t.key.slice(2));
+    takeLoot(state, items, c, t.key);
+    doneWith(sq, t);
+    ai.loot = null;
+  }
+  return yawTo(c, t.x, t.z);
+}
+
+/** A container the squad has searched, or a body: not searched again. */
+function doneWith(sq: SquadState, t: LootTarget): void {
+  if (t.key.startsWith('c:')) sq.looted.push(t.key.slice(2));
+  else {
+    const i = sq.kills.indexOf(Number(t.key.slice(2)));
+    if (i >= 0) sq.kills.splice(i, 1);
+  }
+}
+
+/**
+ * A follower whose leader is searching a loot spot searches a container there too, and one
+ * whose leader is leaving goes into the extraction with it. True if it did either.
+ */
+function joinLeader(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  leader: Character,
+  nav: NavGrid,
+): boolean {
+  const l = leader.ai!;
+  if (l.activity !== 'loot' && l.activity !== 'extract') return false;
+  const sq = squadState(state, ai.squad);
+  if (!sq) return false;
+  if (l.activity === 'extract') {
+    // Only from close by: one left far behind follows on until it's caught up.
+    if (Math.hypot(leader.x - c.x, leader.z - c.z) > ROUTES.joinExtract) return false;
+    ai.activity = 'extract';
+    ai.legSet = false;
+    return true;
+  }
+  if ((state.tick + c.id) % AI.perceiveEvery !== 0 || !atStop(sq)) return false;
+  const stop = state.pois![sq.stop]!;
+  if (stop.kind !== 'loot') return false;
+  const t = pickContainer(state, c, sq, stop, nav);
+  if (!t) return false;
+  ai.activity = 'loot';
+  ai.loot = t;
+  ai.hasGoal = false;
+  return true;
+}
+
+/**
+ * Gunfire heard far off (AI rework session 4): the squad's leader turns its route towards
+ * it, to the nearest stop that way, without stopping to check. Its squad mates leave it
+ * to the leader. Not while it's leaving, fighting or checking something.
+ */
+function headToward(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  x: number,
+  z: number,
+  nav: NavGrid,
+): void {
+  if (squadLeader(state, c) !== c) return;
+  const sq = squadState(state, ai.squad);
+  if (!sq || sq.leaving) return;
+  if (ai.activity !== 'route' && ai.activity !== 'wait' && ai.activity !== 'loot') return;
+  const i = stopToward(state, c, x, z, nav);
+  if (i < 0 || i === sq.stop) return;
+  if (atStop(sq) || ai.activity !== 'route') endStop(state, ai);
+  sq.stop = i;
+  ai.legSet = false;
+  ai.hasGoal = false;
 }
 
 // ---------------------------------------------------------------------------- zombies
@@ -1900,7 +2790,7 @@ function aimAt(state: SimState, c: Character, ai: AiState, x: number, y: number,
     c.recoilPitch * AI.recoilControl;
 }
 
-/** Whether a shot at (x, y, z) would reach the target before any other enemy. */
+/** Whether a shot at (x, y, z) would reach the target before any ally. */
 function clearOfAllies(
   state: SimState,
   c: Character,
@@ -1917,7 +2807,9 @@ function clearOfAllies(
   if (d < 1e-6) return true;
   if (raycastCharacters(state, c.x, oy, c.z, dx / d, dy / d, dz / d, d, c.id, allyHit) === Infinity)
     return true;
-  return allyHit.id === target.id || !entityById(state, allyHit.id)?.ai;
+  if (allyHit.id === target.id) return true;
+  const hit = entityById(state, allyHit.id);
+  return !hit?.ai || hostile(c, hit);
 }
 
 /**
@@ -2099,10 +2991,15 @@ function moveTo(
   pace: number,
   strafe = false,
   arrive: number = AI.arrive,
+  greed = 1,
 ): 'moving' | 'arrived' | 'failed' {
   moveYaw = c.yaw;
   if (!ai.hasGoal || Math.hypot(ai.goalX - x, ai.goalY - y, ai.goalZ - z) > AI.replanDistance) {
     if (plansLeft <= 0) return 'moving';
+    // A goal that only moved on (a leader walking, a target running) keeps the time it has
+    // been stuck: planning again every few ticks mustn't hide that it isn't getting
+    // anywhere (AI rework session 4).
+    const fresh = !ai.hasGoal;
     plansLeft--;
     avoidFire.spots = state.fires;
     const result = findPath(
@@ -2111,6 +3008,7 @@ function moveTo(
       nav.nearest(x, y, z, GOAL_RISE),
       ai.path,
       avoidFire,
+      greed,
     );
     ai.fires = newestFire(state);
     ai.hasGoal = true;
@@ -2118,7 +3016,7 @@ function moveTo(
     ai.goalY = y;
     ai.goalZ = z;
     ai.pathIndex = ai.path.length > 3 ? 1 : 0;
-    ai.stuck = 0;
+    if (fresh) ai.stuck = 0;
     if (result === 'none' && Math.hypot(x - c.x, z - c.z) > arrive) return 'failed';
   }
 
@@ -2143,6 +3041,10 @@ function moveTo(
   if (ai.stuck > AI.stuckTime) {
     ai.hasGoal = false;
     ai.stuck = 0;
+    // Sidestep a moment, either way in turn: off a thin panel the nav grid can't see, or
+    // out of a corner, rather than pressing into it again on the new path.
+    ai.unstick = AI.unstickTime;
+    ai.unstickSide = (c.id + ai.replans) % 2 ? 1 : -1;
     if (++ai.replans > 2) {
       ai.replans = 0;
       return 'failed';
@@ -2159,6 +3061,13 @@ function moveTo(
   const speed = strafe || off < Math.PI / 3 ? pace : pace * 0.3;
   wishX = (dx / d) * speed;
   wishZ = (dz / d) * speed;
+  if ((ai.unstick ?? 0) > 0) {
+    ai.unstick! -= DT;
+    // Across the way it was going, and a little back.
+    const side = ai.unstickSide ?? 1;
+    wishX = ((-dz / d) * side - (dx / d) * 0.3) * pace;
+    wishZ = ((dx / d) * side - (dz / d) * 0.3) * pace;
+  }
   return 'moving';
 }
 

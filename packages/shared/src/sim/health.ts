@@ -2,6 +2,7 @@ import { armourDef, type AmmoDef, type ItemDb } from '../content/items';
 import type { Item } from '../inventory/grid';
 import { chance } from '../rng';
 import { TICK_SECONDS } from '../tick';
+import { hostile } from './factions';
 import { maxDurability } from './repair';
 import type { Character, EntityId, SimState } from './state';
 
@@ -263,8 +264,8 @@ export function shootCharacter(
  * chest lets through its share by the wound's level and wears down, then what got
  * through may start bleeding. Shots, swings and blasts (sim/grenades.ts) all end here.
  * In zombies mode a player's blasts never hurt players (the ray gun's bolts burst close
- * by), and under insta-kill any hit on a zombie kills it. Enemies never hurt each other
- * (byEnemyOnEnemy).
+ * by), and under insta-kill any hit on a zombie kills it. Enemies never hurt their
+ * allies (byAlly).
  */
 export function woundZone(
   state: SimState,
@@ -276,7 +277,7 @@ export function woundZone(
   by: EntityId,
   cause: DamageCause,
 ): void {
-  if (c.health.dead || byEnemyOnEnemy(state, c, by)) return;
+  if (c.health.dead || byAlly(state, c, by)) return;
   const zombies = state.zombies;
   if (zombies && !c.ai && cause === 'explosion' && by !== 0 && isPlayer(state, by)) return;
   if (zombies && zombies.instaKill > 0 && c.ai?.zombie && by !== 0) damage = INSTA_KILL;
@@ -309,13 +310,14 @@ export function woundZone(
 const INSTA_KILL = 1e6;
 
 /**
- * Whether a hit on c by `by` is one enemy's on another (the user's call, 2026-11-06):
+ * Whether a hit on c by `by` is an enemy's on its ally (the user's call, 2026-11-06):
  * those do nothing, shot, swung, blown up or set alight, so a stray round, a pellet or a
- * fire never thins out a group. The round still stops on the body it hits.
+ * fire never thins out a group. The round still stops on the body it hits. Since AI rework
+ * session 1, enemies of hostile factions (factions.ts) hurt each other like players.
  */
-export function byEnemyOnEnemy(state: SimState, c: Character, by: EntityId): boolean {
+export function byAlly(state: SimState, c: Character, by: EntityId): boolean {
   if (!c.ai || by === 0) return false;
-  for (const e of state.entities) if (e.id === by) return !!e.ai;
+  for (const e of state.entities) if (e.id === by) return !!e.ai && !hostile(c, e);
   return false;
 }
 

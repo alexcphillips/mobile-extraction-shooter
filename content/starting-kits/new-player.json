@@ -8,7 +8,7 @@
     "helmet": "steel-helmet",
     "bodyArmour": "tactical-vest",
     "rig": "chest-rig",
-    "backpack": "small-backpack"
+    "backpack": "medium-backpack"
   },
   "carried": [
     { "item": "ammo-556x45", "count": 180 },
@@ -32,9 +32,9 @@
     { "item": "steel-helmet" },
     { "item": "steel-helmet" },
     { "item": "steel-helmet" },
-    { "item": "small-backpack" },
-    { "item": "small-backpack" },
-    { "item": "small-backpack" },
+    { "item": "medium-backpack" },
+    { "item": "medium-backpack" },
+    { "item": "medium-backpack" },
     { "item": "chest-rig" },
     { "item": "chest-rig" },
     { "item": "chest-rig" },

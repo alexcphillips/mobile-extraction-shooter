@@ -6,108 +6,81 @@
       "weight": 3,
       "item": "m9a3",
       "spare": [15, 45],
-      "attachments": [{ "item": "suppressor", "chance": 0.15 }],
       "ammo": [
         { "weight": 3, "item": "ammo-9mm-pso" },
-        { "weight": 2, "item": "ammo-9mm" }
+        { "weight": 1, "item": "ammo-9mm" }
       ]
     },
     {
       "weight": 0.6,
       "item": "assault-rifle",
       "spare": [30, 90],
-      "attachments": [
-        { "item": "red-dot", "chance": 0.25 },
-        { "item": "muzzle-brake", "chance": 0.2 }
-      ],
       "ammo": [
-        { "weight": 2, "item": "ammo-762x39-lp" },
-        { "weight": 2, "item": "ammo-762x39-t45m" },
-        { "weight": 1, "item": "ammo-762x39" }
+        { "weight": 3, "item": "ammo-762x39-lp" },
+        { "weight": 1, "item": "ammo-762x39-t45m" }
       ]
     },
     {
       "weight": 2,
       "item": "shotgun",
       "spare": [12, 24],
-      "ammo": [
-        { "weight": 3, "item": "buckshot" },
-        { "weight": 1, "item": "flechette" }
-      ]
+      "ammo": [{ "weight": 1, "item": "buckshot" }]
     },
     {
       "weight": 1.2,
       "item": "aks-74u",
       "spare": [30, 90],
-      "attachments": [{ "item": "muzzle-brake", "chance": 0.15 }],
       "ammo": [
-        { "weight": 2, "item": "ammo-545x39-hp" },
-        { "weight": 3, "item": "ammo-545x39" },
-        { "weight": 0.5, "item": "ammo-545x39-pp" }
+        { "weight": 3, "item": "ammo-545x39-hp" },
+        { "weight": 1, "item": "ammo-545x39" }
       ]
     },
     {
       "weight": 1,
       "item": "sks",
       "spare": [20, 40],
-      "attachments": [{ "item": "scope-4x", "chance": 0.1 }],
       "ammo": [
-        { "weight": 2, "item": "ammo-762x39-lp" },
-        { "weight": 2, "item": "ammo-762x39-t45m" },
-        { "weight": 1, "item": "ammo-762x39" }
+        { "weight": 3, "item": "ammo-762x39-lp" },
+        { "weight": 1, "item": "ammo-762x39-t45m" }
       ]
     },
     {
       "weight": 0.8,
       "item": "ak-74m",
       "spare": [30, 90],
-      "attachments": [
-        { "item": "red-dot", "chance": 0.2 },
-        { "item": "muzzle-brake", "chance": 0.15 }
-      ],
       "ammo": [
-        { "weight": 2, "item": "ammo-545x39-hp" },
-        { "weight": 3, "item": "ammo-545x39" },
-        { "weight": 0.5, "item": "ammo-545x39-pp" }
+        { "weight": 3, "item": "ammo-545x39-hp" },
+        { "weight": 1, "item": "ammo-545x39" }
       ]
     },
     {
       "weight": 2,
       "item": "mp5",
       "spare": [30, 90],
-      "attachments": [
-        { "item": "red-dot", "chance": 0.2 },
-        { "item": "suppressor", "chance": 0.15 }
-      ],
       "ammo": [
-        { "weight": 2, "item": "ammo-9mm-pso" },
-        { "weight": 2, "item": "ammo-9mm" },
-        { "weight": 0.5, "item": "ammo-9mm-ap" }
+        { "weight": 3, "item": "ammo-9mm-pso" },
+        { "weight": 1, "item": "ammo-9mm" }
       ]
     },
     {
       "weight": 1.6,
       "item": "ump45",
       "spare": [25, 75],
-      "attachments": [{ "item": "red-dot", "chance": 0.2 }],
       "ammo": [
         { "weight": 3, "item": "ammo-45acp-jhp" },
-        { "weight": 2, "item": "ammo-45acp" }
+        { "weight": 1, "item": "ammo-45acp" }
       ]
     }
   ],
   "helmets": [
-    { "weight": 3, "item": null },
-    { "weight": 2, "item": "bump-helmet", "condition": [0.4, 1] },
-    { "weight": 1, "item": "riot-helmet", "condition": [0.3, 0.9] },
-    { "weight": 0.5, "item": "steel-helmet", "condition": [0.3, 0.9] }
+    { "weight": 4, "item": null },
+    { "weight": 2, "item": "bump-helmet", "condition": [0.3, 0.8] },
+    { "weight": 0.5, "item": "riot-helmet", "condition": [0.3, 0.7] }
   ],
   "bodyArmour": [
     { "weight": 4, "item": null },
-    { "weight": 2, "item": "soft-vest", "condition": [0.4, 1] },
-    { "weight": 1, "item": "police-vest", "condition": [0.3, 0.9] },
-    { "weight": 0.4, "item": "tactical-vest", "condition": [0.3, 0.9] },
-    { "weight": 0.2, "item": "plate-carrier", "condition": [0.3, 0.9] }
+    { "weight": 2, "item": "soft-vest", "condition": [0.3, 0.8] },
+    { "weight": 0.5, "item": "police-vest", "condition": [0.3, 0.7] }
   ],
   "rigs": [
     { "weight": 2, "item": null },

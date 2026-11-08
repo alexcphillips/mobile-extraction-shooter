@@ -9,6 +9,7 @@ const MARKER_COLOURS: Record<CompiledMarker['type'], number> = {
   lootContainer: 0xf1c40f,
   lootSpawn: 0xf39c12,
   questMarker: 0x9b59b6,
+  poi: 0x00cec9,
   zombieSpawn: 0x6ab04c,
   wallBuy: 0xe1b12c,
   mysteryBox: 0x8e44ad,

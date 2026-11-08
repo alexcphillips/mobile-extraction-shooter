@@ -400,6 +400,24 @@ const lootSpawnSchema = z.strictObject({
   oneOf: idSchema.optional(),
 });
 
+/**
+ * A point of interest for PMC squads' routes (AI rework session 4; design.md → AI → PMCs):
+ * a loot spot they search, or a choke they pass through and watch. A squad walks a chain
+ * of them, picked by weight, and leaves the raid at an extraction zone.
+ */
+const poiSchema = z.strictObject({
+  type: z.literal('poi'),
+  ...marker,
+  kind: z.enum(['loot', 'choke']),
+  /** How likely a route is to take it in, against the others. Defaults to 1. */
+  weight: nonNegative.optional(),
+  /**
+   * Metres: a loot spot's containers within this are searched; a choke is watched from a
+   * spot within it. Defaults to 8 for loot, 2 for a choke.
+   */
+  radius: nonNegative.optional(),
+});
+
 const questMarkerSchema = z.strictObject({
   type: z.literal('questMarker'),
   id: idSchema,
@@ -517,6 +535,7 @@ export const nodeSchema: z.ZodDiscriminatedUnion<
     typeof lootContainerSchema,
     typeof lootSpawnSchema,
     typeof questMarkerSchema,
+    typeof poiSchema,
     typeof zombieSpawnSchema,
     typeof wallBuySchema,
     typeof mysteryBoxSchema,
@@ -540,6 +559,7 @@ export const nodeSchema: z.ZodDiscriminatedUnion<
   lootContainerSchema,
   lootSpawnSchema,
   questMarkerSchema,
+  poiSchema,
   zombieSpawnSchema,
   wallBuySchema,
   mysteryBoxSchema,
@@ -653,6 +673,33 @@ export const mapSchema = z
      * left almost nowhere for enemies between its edge spawns.
      */
     enemyClearance: nonNegative.optional(),
+    /**
+     * Multiplies every shot's, blast's and breaking pane's loudness for the AI's hearing
+     * there (AI rework session 1, the user's call): guns are heard 110–190 m, about all of
+     * a small map. 1 if left out; Northpoint uses 0.6. Footsteps aren't scaled. An optional
+     * field, so still format 4.
+     */
+    hearingScale: positive.optional(),
+    /**
+     * The share of scav slots filled at raid start (AI rework session 2): the rest come in
+     * waves of that size. A third if left out; Northpoint starts half, since it's a hard map
+     * (the user's call). An optional field, so still format 4.
+     */
+    scavStartShare: finite.refine((n) => n > 0 && n <= 1, 'must be over 0, up to 1').optional(),
+    /**
+     * PMC squads in a raid (AI rework session 3): between `count[0]` and `count[1]` PMCs
+     * of the `enemy` type ('pmc' if left out), all at raid start, in squads of 2–4 at
+     * player spawns nobody is using (sim/squads.ts). None if left out; Northpoint has 3–6.
+     * An optional field, so still format 4.
+     */
+    pmcs: z
+      .strictObject({
+        enemy: idSchema.optional(),
+        count: z
+          .tuple([z.int().min(0), z.int().min(0)])
+          .refine(([min, max]) => min <= max, 'min must not be above max'),
+      })
+      .optional(),
     zones: z.array(zoneSchema).superRefine((zones, ctx) => {
       const seen = new Set<string>();
       zones.forEach((zone, i) => {

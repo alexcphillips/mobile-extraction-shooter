@@ -1,28 +1,84 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "id": "scav",
   "name": "Scav",
+  "faction": "scav",
   "loadout": "scav-kit",
   "skill": {
     "reaction": 0.7,
     "aimError": 7,
     "aimSettled": 0.7,
     "aimSettle": 1.6,
-    "holdChance": 0.4
+    "holdChance": 0.4,
+    "fov": 100,
+    "erratic": 1
   },
-  "outfit": {
-    "skin": "#c99a78",
-    "top": "#6b6a4a",
-    "bottom": "#4a4f5a",
-    "hands": "#3b3530",
-    "feet": "#2e2a26"
-  },
+  "outfits": [
+    {
+      "skin": "#c99a78",
+      "top": "#6b6a4a",
+      "bottom": "#4a4f5a",
+      "hands": "#3b3530",
+      "feet": "#2e2a26"
+    },
+    {
+      "skin": "#e0b896",
+      "top": "#c0392b",
+      "bottom": "#3d4f6b",
+      "hands": "#e0b896",
+      "feet": "#d8d8d0"
+    },
+    {
+      "skin": "#8d5a3b",
+      "top": "#2c3e8f",
+      "bottom": "#2c3e8f",
+      "hands": "#8d5a3b",
+      "feet": "#e6e6e0"
+    },
+    {
+      "skin": "#a8714f",
+      "top": "#2e8b74",
+      "bottom": "#2e8b74",
+      "hands": "#a8714f",
+      "feet": "#2a2a2e"
+    },
+    {
+      "skin": "#f0c8a8",
+      "top": "#c9a227",
+      "bottom": "#6e6e70",
+      "hands": "#f0c8a8",
+      "feet": "#3a3026"
+    },
+    {
+      "skin": "#c99a78",
+      "top": "#6b3fa0",
+      "bottom": "#2b2b30",
+      "hands": "#2b2b30",
+      "feet": "#2b2b30"
+    },
+    {
+      "skin": "#8d5a3b",
+      "top": "#d9772b",
+      "bottom": "#5a4632",
+      "hands": "#3b3530",
+      "feet": "#2e2a26"
+    },
+    {
+      "skin": "#e0b896",
+      "top": "#8a8d91",
+      "bottom": "#3d4f6b",
+      "hands": "#e0b896",
+      "feet": "#b23a3a"
+    }
+  ],
   "loot": {
     "rolls": [1, 3],
     "tables": {
-      "household": 3,
-      "medical": 1,
-      "military": 1
+      "household": 4,
+      "electronics": 3,
+      "computer-parts-basic": 1.5,
+      "medical": 0.4,
+      "military": 0.15
     }
   }
 }

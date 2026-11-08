@@ -1,7 +1,8 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "id": "boss-scav",
   "name": "Yard boss",
+  "faction": "boss",
   "loadout": "boss-kit",
   "skill": {
     "reaction": 0.4,
@@ -10,13 +11,15 @@
     "aimSettle": 0.9,
     "holdChance": 0.7
   },
-  "outfit": {
-    "skin": "#b08566",
-    "top": "#2f3a2c",
-    "bottom": "#2b2f2a",
-    "hands": "#1f1f1f",
-    "feet": "#1a1a1a"
-  },
+  "outfits": [
+    {
+      "skin": "#b08566",
+      "top": "#2f3a2c",
+      "bottom": "#2b2f2a",
+      "hands": "#1f1f1f",
+      "feet": "#1a1a1a"
+    }
+  ],
   "loot": {
     "rolls": [2, 4],
     "tables": {
