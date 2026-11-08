@@ -395,7 +395,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const fires = new FireViews();
   scene.add(fires.root);
   const viewmodel = new Viewmodel();
-  const cues = new SoundCues(sounds(), world, items);
+  const cues = new SoundCues(sounds(), world, items, types);
   // Rendered now rather than as each is first heard (if audio is unlocked yet).
   sounds().prepare();
   const rig = new CharacterRig(await loadCharacter('/characters/mannequin.glb'));

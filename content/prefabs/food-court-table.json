@@ -37,13 +37,13 @@
       "type": "cylinder",
       "pos": [0.651, 0, 0.651],
       "radius": 0.06,
-      "height": 0.42,
+      "height": 0.46,
       "colour": "dark",
       "sides": 6
     },
     {
       "type": "cylinder",
-      "pos": [0.651, 0.42, 0.651],
+      "pos": [0.651, 0.46, 0.651],
       "radius": 0.21,
       "height": 0.05,
       "colour": "seat",
@@ -53,13 +53,13 @@
       "type": "cylinder",
       "pos": [0.651, 0, -0.651],
       "radius": 0.06,
-      "height": 0.42,
+      "height": 0.46,
       "colour": "dark",
       "sides": 6
     },
     {
       "type": "cylinder",
-      "pos": [0.651, 0.42, -0.651],
+      "pos": [0.651, 0.46, -0.651],
       "radius": 0.21,
       "height": 0.05,
       "colour": "seat",
@@ -69,13 +69,13 @@
       "type": "cylinder",
       "pos": [-0.651, 0, -0.651],
       "radius": 0.06,
-      "height": 0.42,
+      "height": 0.46,
       "colour": "dark",
       "sides": 6
     },
     {
       "type": "cylinder",
-      "pos": [-0.651, 0.42, -0.651],
+      "pos": [-0.651, 0.46, -0.651],
       "radius": 0.21,
       "height": 0.05,
       "colour": "seat",
@@ -85,13 +85,13 @@
       "type": "cylinder",
       "pos": [-0.651, 0, 0.651],
       "radius": 0.06,
-      "height": 0.42,
+      "height": 0.46,
       "colour": "dark",
       "sides": 6
     },
     {
       "type": "cylinder",
-      "pos": [-0.651, 0.42, 0.651],
+      "pos": [-0.651, 0.46, 0.651],
       "radius": 0.21,
       "height": 0.05,
       "colour": "seat",

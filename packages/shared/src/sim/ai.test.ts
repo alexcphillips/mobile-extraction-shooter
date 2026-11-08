@@ -520,6 +520,24 @@ describe('enemy behaviour', () => {
     expect(s.enemy.ai!.activity).toBe('guard');
   });
 
+  it("guards where it is when it can't get back to its spot, rather than planning every tick", () => {
+    // Its spot is inside a block it can't stand in (AI rework session 5: a scav on
+    // Northpoint planned the same long way home every tick, 5 ms a tick).
+    const s = setup(0, 50, { boxes: [aabb(8, 0, -2, 12, 3, 2)] });
+    const ai = s.enemy.ai!;
+    ai.homeX = 10;
+    ai.homeZ = 0;
+    s.run(2);
+    expect(ai.activity).toBe('guard');
+    expect(Math.hypot(ai.homeX - s.enemy.x, ai.homeZ - s.enemy.z)).toBeLessThan(1.5);
+    let planned = 0;
+    for (let i = 0; i < TICK_RATE; i++) {
+      s.run(1 / TICK_RATE);
+      if (ai.hasGoal) planned++;
+    }
+    expect(planned).toBe(0);
+  });
+
   it('pushes bodies apart', () => {
     const s = setup(0.2, 0);
     s.run(1 / TICK_RATE);

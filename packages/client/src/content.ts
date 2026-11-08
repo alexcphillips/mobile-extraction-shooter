@@ -183,7 +183,7 @@ export function loadItems(): ItemDb {
 export function loadSounds(): SoundDb {
   if (!sounds) {
     const all = loadById(SOUND_FORMAT, soundFiles);
-    checkSounds(all, loadItems(), Object.values(GAME_SOUNDS));
+    checkSounds(all, loadItems(), gameSounds());
     sounds = all;
   }
   return sounds;
@@ -197,7 +197,7 @@ export function soundSources(): ReadonlyMap<string, SoundDef> {
 /** What the items and the game would find missing with these sounds, or null. */
 export function soundContentProblem(all: SoundDb): string | null {
   try {
-    checkSounds(all, loadItems(), Object.values(GAME_SOUNDS));
+    checkSounds(all, loadItems(), gameSounds());
   } catch (err) {
     return err instanceof Error ? err.message : String(err);
   }
@@ -214,7 +214,18 @@ export function soundUses(id: string): string[] {
   }
   for (const [cue, sound] of Object.entries(GAME_SOUNDS))
     if (sound === id) out.push(`game: ${cue}`);
+  for (const type of loadEnemies().types.values())
+    for (const [line, sound] of Object.entries(type.voice ?? {}))
+      if (sound === id) out.push(`${type.id} ${line}`);
   return out;
+}
+
+/** The sounds the game plays itself, and enemies' voice lines (AI rework session 5). */
+function gameSounds(): string[] {
+  const ids: string[] = Object.values(GAME_SOUNDS);
+  for (const type of loadEnemies().types.values())
+    for (const sound of Object.values(type.voice ?? {})) if (sound) ids.push(sound);
+  return ids;
 }
 
 export interface Enemies {

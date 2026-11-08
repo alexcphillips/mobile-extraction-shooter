@@ -245,6 +245,53 @@ export const AI = {
   fleeDirections: 12,
 } as const;
 
+/**
+ * How a squad fights (AI rework session 5; design.md → AI → PMCs → Fighting). Distances in
+ * metres, times in seconds, angles in degrees; first guesses to tune in play.
+ */
+export const TACTICS = {
+  /** A squad member spotting someone calls out, unless a mate did within this long. */
+  calloutGap: 4,
+  /**
+   * Its target out of sight of the whole squad for AI.intuition, the squad splits: the
+   * last half (rounded down) by place flank, the rest hold and fire at its cover...
+   */
+  suppressTime: [6, 10] as const,
+  /** ...in bursts of this many rounds, this many seconds apart... */
+  suppressBurst: [2, 4] as const,
+  suppressPause: [0.8, 1.6] as const,
+  /** ...only where its rounds would hit this close short of where it last saw it, or past it. */
+  coverSlack: 2.5,
+  /**
+   * A flanker goes to a spot that sees where its target was at least flankAngle off the
+   * line from the holders, flankRange from it, the nearest of flankSamples tried...
+   */
+  flankAngle: 45,
+  flankRange: [6, 18] as const,
+  flankSamples: 16,
+  /** ...that still sees it this far either side... */
+  flankMargin: 0.4,
+  /** ...sprinting while further than this from it, giving up after flankTime, there this close... */
+  sprintFrom: 8,
+  flankTime: 20,
+  flankArrive: 0.4,
+  /** ...and watches from there this long before searching. */
+  flankWatch: 6,
+  /**
+   * Hearing its target reload or heal (skill.listen): it pushes to it for this long, not
+   * taking cover, sprinting while further than rushSprint from where it heard it.
+   */
+  rushTime: 5,
+  rushSprint: 4,
+};
+
+/** A squad member shouting that it has spotted someone (AI rework session 5). */
+export interface CalloutEvent {
+  type: 'callout';
+  by: EntityId;
+  target: EntityId;
+}
+
 export type Awareness = 'unaware' | 'suspicious' | 'alert' | 'searching';
 
 /** What it's doing, within its awareness state. */
@@ -261,6 +308,8 @@ export type AiActivity =
   | 'takeCover' // alert: moving to cover
   | 'cover' // alert: in cover, reloading
   | 'peek' // alert: out of cover to look for you again
+  | 'suppress' // alert, a squad member (AI-5): holding, firing at where it lost you
+  | 'flank' // alert, a squad member (AI-5): going to a spot that sees where it lost you from the side
   | 'hold' // alert, can't reach you: holding a way up
   | 'loiter' // alert, can't reach you: moving to another spot near the way up
   | 'search' // walking to a spot to check
@@ -427,6 +476,18 @@ export interface AiState {
   legTries?: number;
   /** A squad member hunting someone it lost: seconds left before it gives up. */
   hunt?: number | undefined;
+  /**
+   * Heard its target reload or heal (AI rework session 5): seconds left pushing at it.
+   * Missing is none.
+   */
+  rush?: number;
+  /**
+   * A squad member: whether it has taken its part (holding or flanking) since it last saw
+   * its target, so it splits from the squad once per time it loses it. Missing is false.
+   */
+  planned?: boolean;
+  /** The tick it last called out a target it spotted (AI rework session 5). */
+  calledAt?: number;
 }
 
 export type Quirk = 'stop' | 'crouch' | 'sprint';
@@ -639,6 +700,7 @@ export function updateAi(
       if ((state.tick + c.id) % AI.perceiveEvery === 0) {
         look(state, c, ai, world, nav);
         listenForSteps(state, c, ai);
+        if (ai.skill.listen) listenForHands(state, c, ai);
         if (ai.squad !== undefined) shareTarget(state, c, ai);
       }
       hearEvents(state, c, ai, world, nav);
@@ -704,6 +766,8 @@ function look(
         !chance(state.rng, ai.skill.holdChance) ||
         !clearLine(world, c.x, eyeHeight(c), c.z, ai.focusX, ai.focusY + 1.2, ai.focusZ);
     }
+    // Seeing it again, it may take its part in the squad's plan afresh next time it loses it.
+    if (ai.seesTarget) ai.planned = false;
     // Knows roughly where you went for a moment after losing sight of you.
     if (ai.seesTarget || ai.unseen < AI.intuition) setFocus(ai, target.x, target.y, target.z);
     ai.unseen = ai.seesTarget ? 0 : ai.unseen + PERCEIVE_DT;
@@ -720,8 +784,11 @@ function look(
     return;
   }
   ai.notice = Math.min(1, ai.notice + bestRate * PERCEIVE_DT);
-  if (ai.notice >= 1) alarm(ai, best, best.x, best.y, best.z);
-  else if (ai.notice >= AI.glimpse || ai.awareness !== 'unaware')
+  if (ai.notice >= 1) {
+    const was = ai.awareness;
+    alarm(ai, best, best.x, best.y, best.z);
+    if (was !== 'alert' && ai.squad !== undefined) callout(state, c, ai, best);
+  } else if (ai.notice >= AI.glimpse || ai.awareness !== 'unaware')
     suspect(c, ai, best.x, best.y, best.z, true);
 }
 
@@ -884,6 +951,53 @@ function listenForSteps(state: SimState, c: Character, ai: AiState): void {
     if (ai.awareness === 'alert') {
       if (e.id === ai.target) setFocus(ai, e.x, e.y, e.z);
     } else {
+      heardAt(state, c, ai, e, d, true);
+    }
+  }
+}
+
+/**
+ * A squad member that has just spotted someone shouts (design.md → AI → PMCs → Seeing you):
+ * a voice line the client plays. It still fires only after its reaction time. One shout
+ * for a squad at a time, so a squad seeing you together calls out once.
+ */
+function callout(state: SimState, c: Character, ai: AiState, target: Character): void {
+  const gap = TACTICS.calloutGap / DT;
+  for (const e of state.entities) {
+    const m = e.ai;
+    if (m && m.squad === ai.squad && !e.health.dead && state.tick - (m.calledAt ?? -Infinity) < gap)
+      return;
+  }
+  ai.calledAt = state.tick;
+  state.events.push({ type: 'callout', by: c.id, target: target.id });
+}
+
+/**
+ * Hearing a player reload or use a med within skill.listen (AI rework session 5; design.md
+ * → AI → PMCs → Fighting): by its sound, walls or not, as for footsteps. Fighting that
+ * player out of sight, it pushes round the corner at it; otherwise it goes to check.
+ * Players' only, like footsteps.
+ */
+function listenForHands(state: SimState, c: Character, ai: AiState): void {
+  const range = ai.skill.listen!;
+  for (const e of state.entities) {
+    if (e.ai || e.health.dead || e.admin?.peaceful) continue;
+    if (!e.using && !((heldWeapon(e)?.reloading ?? 0) > 0)) continue;
+    const d = Math.hypot(e.x - c.x, e.y - c.y, e.z - c.z);
+    if (d > range) continue;
+    const fighting = ai.awareness === 'alert' || ai.awareness === 'searching';
+    if (fighting && e.id === ai.target) {
+      if (ai.awareness === 'alert' && ai.seesTarget) continue;
+      if (ai.awareness !== 'alert') alarm(ai, e, e.x, e.y, e.z);
+      setFocus(ai, e.x, e.y, e.z);
+      ai.unseen = 0;
+      ai.push = true;
+      ai.rush = TACTICS.rushTime;
+      if (ai.activity !== 'engage') {
+        ai.activity = 'engage';
+        ai.hasGoal = false;
+      }
+    } else if (ai.awareness !== 'alert') {
       heardAt(state, c, ai, e, d, true);
     }
   }
@@ -1258,6 +1372,8 @@ function alarm(ai: AiState, target: Character, x: number, y: number, z: number):
     ai.hurt = false;
     ai.push = true;
     ai.reachable = true;
+    ai.rush = 0;
+    ai.planned = false;
   }
   ai.awareness = 'alert';
   ai.target = target.id;
@@ -1291,6 +1407,7 @@ function calmDown(c: Character, ai: AiState, resume = true): void {
   ai.burst = 0;
   ai.loot = null;
   ai.hunt = undefined;
+  ai.rush = 0;
   if (ai.squad !== undefined && (ai.squadSlot ?? 0) > 0) {
     // A squad member keeps its place by the leader (or leads, if the leader's gone).
     ai.activity = 'follow';
@@ -1382,9 +1499,28 @@ function behave(
           break;
         }
         if (Math.hypot(ai.homeX - c.x, ai.homeZ - c.z) > 1.5) {
-          moveTo(state, c, ai, nav, ai.homeX, ai.homeY, ai.homeZ, AI.patrolPace);
+          const r = moveTo(
+            state,
+            c,
+            ai,
+            nav,
+            ai.homeX,
+            ai.homeY,
+            ai.homeZ,
+            AI.patrolPace,
+            false,
+            AI.arrive,
+            ROUTES.greed,
+          );
           faceYaw = moveYaw;
-          break;
+          if (r === 'moving') break;
+          // As close as it gets (a long way round that runs out of search, or a spot it
+          // can't stand on): it guards here, rather than planning the same way every tick
+          // (AI rework session 5: one scav on Northpoint cost 5 ms a tick doing that).
+          ai.homeX = c.x;
+          ai.homeY = c.y;
+          ai.homeZ = c.z;
+          ai.hasGoal = false;
         }
         faceYaw = ai.lookYaw;
         turn = AI.turnRate / 2;
@@ -1456,9 +1592,21 @@ function behave(
           calmDown(c, ai);
           break;
         }
+        // Heard you reload or heal: pushing at you meanwhile (listenForHands).
+        const rushing = (ai.rush ?? 0) > 0;
+        if (rushing) ai.rush! -= DT;
         if (!ai.seesTarget) {
           if (!ai.reachable) {
             if (ai.unseen >= AI.intuition && startHold(state, c, ai, world, nav, target)) break;
+          } else if (rushing) {
+            // Straight at it.
+          } else if (
+            ai.squad !== undefined &&
+            !ai.planned &&
+            ai.unseen >= AI.intuition &&
+            takePart(state, c, ai, world, nav)
+          ) {
+            break;
           } else if (ai.unseen >= (ai.push ? AI.loseTrack : AI.holdAngle)) {
             startSearch(state, ai);
             break;
@@ -1477,10 +1625,23 @@ function behave(
         fight(state, c, ai, world, items, nav, target);
         faceYaw = aimYaw;
         facePitch = aimPitch;
+        if (
+          rushing &&
+          !ai.seesTarget &&
+          (wishX !== 0 || wishZ !== 0) &&
+          Math.hypot(ai.focusX - c.x, ai.focusZ - c.z) > TACTICS.rushSprint
+        ) {
+          // Sprinting round the corner, slowing to come round it aimed.
+          faceYaw = moveYaw;
+          facePitch = 0;
+          ai.input.sprint = true;
+        }
         if (!ai.seesTarget) break;
         ai.exposed += DT;
+        // Not hiding while you reload: that's the moment to push.
         const wantCover =
-          ai.hurt || ai.exposed >= ai.exposeLimit || (w.mag === 0 && ai.exposed > 0.5);
+          !rushing &&
+          (ai.hurt || ai.exposed >= ai.exposeLimit || (w.mag === 0 && ai.exposed > 0.5));
         if (!wantCover || coversLeft <= 0) break;
         coversLeft--;
         ai.hurt = false;
@@ -1500,6 +1661,8 @@ function behave(
       case 'takeCover': {
         faceYaw = yawTo(c, ai.focusX, ai.focusZ);
         reloadIfLow(c, items, 1);
+        // A PMC sprints there (AI rework session 5), turning to face you for the last of it.
+        const sprint = !!ai.skill.sprintToCover && Math.hypot(ai.coverX - c.x, ai.coverZ - c.z) > 2;
         // Right onto the spot: a little off it may not be hidden.
         const r = moveTo(
           state,
@@ -1510,14 +1673,19 @@ function behave(
           ai.coverY,
           ai.coverZ,
           AI.alertPace,
-          true,
+          !sprint,
           0.3,
         );
+        if (sprint && r === 'moving') {
+          faceYaw = moveYaw;
+          ai.input.sprint = true;
+        }
         if (r === 'failed') {
           backToFight(state, ai);
         } else if (r === 'arrived') {
           ai.activity = 'cover';
-          ai.timer = nextRange(state.rng, AI.coverTime[0], AI.coverTime[1]);
+          const [min, max] = ai.skill.coverTime ?? AI.coverTime;
+          ai.timer = nextRange(state.rng, min, max);
           ai.exposed = 0;
         }
         break;
@@ -1545,6 +1713,65 @@ function behave(
           near(c, ai.peekX, ai.peekY, ai.peekZ) ||
           moveTo(state, c, ai, nav, ai.peekX, ai.peekY, ai.peekZ, AI.alertPace, true) !== 'moving';
         if (ai.seesTarget || (out && ai.timer <= 0)) backToFight(state, ai);
+        break;
+      }
+      case 'suppress':
+        if (ai.seesTarget) backToFight(state, ai);
+        else if (ai.timer <= 0 || !heldWeapon(c)) startSearch(state, ai);
+        else {
+          suppress(state, c, ai, world, items);
+          faceYaw = aimYaw;
+          facePitch = aimPitch;
+        }
+        break;
+      case 'flank': {
+        if (ai.seesTarget) {
+          backToFight(state, ai);
+          break;
+        }
+        // Right onto the spot: a little off, round a corner, it may not see.
+        const off = Math.hypot(ai.coverX - c.x, ai.coverZ - c.z);
+        if (off > TACTICS.flankArrive) {
+          const far = off > TACTICS.sprintFrom;
+          const r = moveTo(
+            state,
+            c,
+            ai,
+            nav,
+            ai.coverX,
+            ai.coverY,
+            ai.coverZ,
+            AI.alertPace,
+            !far,
+            TACTICS.flankArrive * 0.75,
+          );
+          if (r === 'failed' || ai.timer <= 0) {
+            startSearch(state, ai);
+            break;
+          }
+          if (r === 'moving') {
+            // Running wide, then coming up on it aimed.
+            if (far) {
+              faceYaw = moveYaw;
+              ai.input.sprint = true;
+            } else {
+              faceYaw = yawTo(c, ai.focusX, ai.focusZ);
+              ai.input.aim = true;
+            }
+            break;
+          }
+          // There, or as close as it gets: watches from here.
+          ai.coverX = c.x;
+          ai.coverY = c.y;
+          ai.coverZ = c.z;
+          ai.timer = TACTICS.flankWatch;
+        }
+        faceYaw = yawTo(c, ai.focusX, ai.focusZ);
+        const across = Math.hypot(ai.focusX - c.x, ai.focusZ - c.z);
+        facePitch = Math.atan2(ai.focusY + 1.2 - eyeHeight(c), across);
+        ai.input.aim = true;
+        reloadIfLow(c, items, 1);
+        if (ai.timer <= 0) startSearch(state, ai);
         break;
       }
       case 'hold': {
@@ -2011,6 +2238,186 @@ function shareTarget(state: SimState, c: Character, ai: AiState): void {
     if (m.awareness !== 'alert') alarm(m, target, target.x, target.y, target.z);
     else if (m.target === ai.target && !m.seesTarget) setFocus(m, target.x, target.y, target.z);
   }
+}
+
+// The squad members fighting a target, by place (takePart).
+const fighters: Character[] = [];
+const bySlot = (a: Character, b: Character): number =>
+  (a.ai!.squadSlot ?? 0) - (b.ai!.squadSlot ?? 0);
+
+/**
+ * Its target gone from the whole squad's sight (design.md → AI → PMCs → Fighting), each
+ * member fighting it takes a part: the last half by place (rounded down) flank to a spot
+ * that sees where it was from the side, the rest hold where they are and fire at its
+ * cover. Alone, or with a mate still seeing it, it fights on as anyone would. A flanker
+ * with no flanking spot pushes in as anyone would. Returns whether it took a part; false
+ * too when it has to wait a tick for a cover search.
+ */
+function takePart(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  world: CollisionWorld,
+  nav: NavGrid,
+): boolean {
+  fighters.length = 0;
+  for (const e of state.entities) {
+    const m = e.ai;
+    if (!m || m.squad !== ai.squad || e.health.dead) continue;
+    if (m.awareness !== 'alert' || m.target !== ai.target) continue;
+    // A mate can still see it: it fights on, told where it is (shareTarget).
+    if (m.seesTarget) return false;
+    fighters.push(e);
+  }
+  if (fighters.length < 2) {
+    ai.planned = true;
+    return false;
+  }
+  fighters.sort(bySlot);
+  const holders = fighters.length - Math.floor(fighters.length / 2);
+  const rank = fighters.indexOf(c);
+  if (rank < holders) {
+    ai.planned = true;
+    ai.activity = 'suppress';
+    ai.timer = nextRange(state.rng, TACTICS.suppressTime[0], TACTICS.suppressTime[1]);
+    ai.burst = ai.pause = 0;
+    ai.hasGoal = false;
+    return true;
+  }
+  if (coversLeft <= 0) return false;
+  coversLeft--;
+  ai.planned = true;
+  // Off the line from the holders (their middle) to where it was.
+  let hx = 0;
+  let hz = 0;
+  for (let i = 0; i < holders; i++) {
+    hx += fighters[i]!.x / holders;
+    hz += fighters[i]!.z / holders;
+  }
+  if (!findFlank(state, c, ai, world, nav, hx, hz)) return false;
+  ai.activity = 'flank';
+  ai.timer = TACTICS.flankTime;
+  ai.hasGoal = false;
+  return true;
+}
+
+/**
+ * A spot c can walk to that sees where its target was (its focus) standing, from it and
+ * flankMargin either side, flankRange from it, at least flankAngle off the line from (hx,
+ * hz) to it, and not another's cover: the nearest of flankSamples tried, into coverX, Y,
+ * Z. At most three rays per spot tried, and none for one further than the best so far.
+ */
+function findFlank(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  world: CollisionWorld,
+  nav: NavGrid,
+  hx: number,
+  hz: number,
+): boolean {
+  const here = nav.nearest(c.x, c.y, c.z);
+  if (here < 0) return false;
+  const fx = ai.focusX;
+  const fz = ai.focusZ;
+  const fy = ai.focusY + 1.2;
+  const from =
+    Math.hypot(hx - fx, hz - fz) > 1
+      ? Math.atan2(hz - fz, hx - fx)
+      : Math.atan2(c.z - fz, c.x - fx);
+  const minCos = Math.cos(TACTICS.flankAngle * DEG);
+  const eye = MOVEMENT.standHeight - MOVEMENT.eyeBelowTop;
+  let best = Infinity;
+  for (let i = 0; i < TACTICS.flankSamples; i++) {
+    // 45°–135° to one side or the other of the holders' line.
+    const off = nextRange(state.rng, TACTICS.flankAngle, 180 - TACTICS.flankAngle) * DEG;
+    const a = from + (chance(state.rng, 0.5) ? off : -off);
+    const r = nextRange(state.rng, TACTICS.flankRange[0], TACTICS.flankRange[1]);
+    const n = nav.nearest(fx + Math.cos(a) * r, ai.focusY, fz + Math.sin(a) * r);
+    if (n < 0 || nav.component[n] !== nav.component[here]) continue;
+    const x = nav.nodeX(n);
+    const y = nav.nodeY(n);
+    const z = nav.nodeZ(n);
+    const d = Math.hypot(x - c.x, z - c.z);
+    if (d >= best || d < 2 || taken(state, c, x, z)) continue;
+    // Still far enough round once on the nav grid.
+    const sx = x - fx;
+    const sz = z - fz;
+    const sd = Math.hypot(sx, sz);
+    if (sd < TACTICS.flankRange[0] * 0.8) continue;
+    if ((sx * Math.cos(from) + sz * Math.sin(from)) / sd > minCos) continue;
+    // Seeing it from a little either side too, not just past a corner's edge.
+    const mx = (-sz / sd) * TACTICS.flankMargin;
+    const mz = (sx / sd) * TACTICS.flankMargin;
+    if (
+      !clearLine(world, x, y + eye, z, fx, fy, fz) ||
+      !clearLine(world, x + mx, y + eye, z + mz, fx, fy, fz) ||
+      !clearLine(world, x - mx, y + eye, z - mz, fx, fy, fz)
+    )
+      continue;
+    best = d;
+    ai.coverX = x;
+    ai.coverY = y;
+    ai.coverZ = z;
+  }
+  return best < Infinity;
+}
+
+/**
+ * One tick of holding and firing at where its target went out of sight (its focus, kept
+ * up to date by mates who see it): aimed, in short bursts with pauses, and only while its
+ * rounds would land on the cover there rather than on a wall in front of it.
+ */
+function suppress(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  world: CollisionWorld,
+  items: ItemDb,
+): void {
+  const w = heldWeapon(c)!;
+  const def = weaponDef(items, w.item);
+  const tx = ai.focusX;
+  const ty = ai.focusY + MOVEMENT.standHeight * 0.6;
+  const tz = ai.focusZ;
+  const across = Math.hypot(tx - c.x, tz - c.z);
+  const settled = ai.skill.aimSettled * DEG;
+  ai.aimError = settled + (ai.aimError - settled) * Math.exp(-DT / ai.skill.aimSettle);
+  aimAt(state, c, ai, tx, ty, tz);
+  ai.input.aim = across > AI.aimDownRange;
+  reloadIfLow(c, items, 0.3);
+  const ready =
+    w.mag > 0 &&
+    w.reloading === 0 &&
+    across <= def.range &&
+    Math.abs(angleDiff(c.yaw, aimYaw)) < AI.fireCone * DEG;
+  if (ai.burst <= 0 && ai.pause <= 0 && ready && landsNear(world, c, tx, ty, tz)) {
+    const rounds = Math.round(
+      nextRange(state.rng, TACTICS.suppressBurst[0], TACTICS.suppressBurst[1]),
+    );
+    ai.burst = def.fireMode === 'semi' ? DT / 2 : (rounds * 60) / def.rpm;
+  }
+  if (ai.burst > 0) {
+    const target = entityById(state, ai.target);
+    ai.input.fire = ready && (!target || clearOfAllies(state, c, target, tx, ty, tz));
+    ai.burst -= DT;
+    if (ai.burst <= 0)
+      ai.pause = nextRange(state.rng, TACTICS.suppressPause[0], TACTICS.suppressPause[1]);
+  } else {
+    ai.pause -= DT;
+  }
+}
+
+/** Whether a shot from c's eye at (x, y, z) gets at least within coverSlack of it. */
+function landsNear(world: CollisionWorld, c: Character, x: number, y: number, z: number): boolean {
+  const oy = eyeHeight(c);
+  const dx = x - c.x;
+  const dy = y - oy;
+  const dz = z - c.z;
+  const d = Math.hypot(dx, dy, dz);
+  if (d < 1e-6) return true;
+  const hit = world.raycast(c.x, oy, c.z, dx / d, dy / d, dz / d, d, undefined, true);
+  return hit >= d - TACTICS.coverSlack;
 }
 
 /** Whether the squad's leader is at its current stop (arrived there, not yet moved on). */
@@ -2960,7 +3367,7 @@ function taken(state: SimState, c: Character, x: number, z: number): boolean {
     if (e === c || !o || e.health.dead) continue;
     const a = o.activity;
     if (
-      (a === 'takeCover' || a === 'cover' || a === 'hold') &&
+      (a === 'takeCover' || a === 'cover' || a === 'hold' || a === 'flank') &&
       Math.hypot(o.coverX - x, o.coverZ - z) < 1.2
     )
       return true;

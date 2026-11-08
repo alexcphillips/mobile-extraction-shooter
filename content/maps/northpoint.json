@@ -34877,7 +34877,7 @@
         {
           "type": "enemySpawn",
           "id": "tech-upper",
-          "pos": [-26, 6.2, 79],
+          "pos": [-26.4, 6.2, 77.6],
           "yaw": -75,
           "enemy": "scav",
           "oneOf": "np-tech"

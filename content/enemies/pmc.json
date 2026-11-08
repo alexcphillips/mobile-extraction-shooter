@@ -9,7 +9,10 @@
     "aimError": 5,
     "aimSettled": 0.4,
     "aimSettle": 1.2,
-    "holdChance": 0.5
+    "holdChance": 0.5,
+    "coverTime": [0.6, 1.4],
+    "sprintToCover": true,
+    "listen": 10
   },
   "outfits": [
     {
@@ -48,6 +51,9 @@
       "feet": "#2b2620"
     }
   ],
+  "voice": {
+    "callout": "pmc-callout"
+  },
   "loot": {
     "rolls": [1, 3],
     "tables": {

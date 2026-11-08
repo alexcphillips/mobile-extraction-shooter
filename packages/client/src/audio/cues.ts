@@ -11,6 +11,7 @@ import {
   weaponDef,
   type Character,
   type CollisionWorld,
+  type EnemyDef,
   type EntityId,
   type ItemDb,
   type SimEvent,
@@ -78,6 +79,8 @@ export class SoundCues {
     private readonly sound: SoundPlayer,
     private readonly world: CollisionWorld,
     private readonly items: ItemDb,
+    /** Enemy types by id, for their voice lines. */
+    private readonly enemies: ReadonlyMap<string, EnemyDef> = new Map(),
   ) {}
 
   /** After each tick, with the player's look (the sim's yaw lags the controls'). */
@@ -251,6 +254,13 @@ export class SoundCues {
       case 'leave':
         if (own && e.how === 'extracted') this.sound.play(S.extracted);
         return;
+      case 'callout': {
+        // A PMC shouting that it has seen someone (AI rework session 5), in its type's voice.
+        const caller = entityById(sim, e.by);
+        const id = caller?.look && this.enemies.get(caller.look.type)?.voice?.callout;
+        if (caller && id) this.at(id, caller.x, caller.y + MOVEMENT.standHeight - 0.2, caller.z);
+        return;
+      }
     }
   }
 

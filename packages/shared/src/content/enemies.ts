@@ -42,6 +42,21 @@ const skillSchema = z.strictObject({
    * about one every AI.quirkEvery seconds. Left out, 0: never.
    */
   erratic: fraction.optional(),
+  /**
+   * Seconds in cover before peeking out again, [min, max] (AI rework session 5): PMCs spend
+   * less time in cover than scavs. Left out, AI.coverTime.
+   */
+  coverTime: z
+    .tuple([nonNegative, nonNegative])
+    .refine(([min, max]) => min <= max, 'min must not be above max')
+    .optional(),
+  /** Sprints to cover rather than backing into it facing you (AI rework session 5). */
+  sprintToCover: z.boolean().optional(),
+  /**
+   * Hears a player reloading or using a med within this many metres, walls or not, and
+   * pushes round the corner at them (AI rework session 5). Left out, 0: never.
+   */
+  listen: nonNegative.optional(),
 });
 
 /** The colours of its body, by part. Gear is drawn over it. */
@@ -76,6 +91,11 @@ export const enemySchema = z.strictObject({
    * outfit if left out.
    */
   outfits: z.array(outfitSchema).min(1).optional(),
+  /**
+   * What it says (AI rework session 5): sound ids in content/sounds. `callout` is shouted
+   * when a squad member spots someone. Silent if left out.
+   */
+  voice: z.strictObject({ callout: idSchema.optional() }).optional(),
   /**
    * What it carries besides its loadout (session 11), stowed in its pockets, rig and
    * backpack when it spawns; what doesn't fit is left out. Each of `rolls` items comes
