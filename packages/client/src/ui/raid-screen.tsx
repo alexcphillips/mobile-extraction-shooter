@@ -533,7 +533,7 @@ function HoverCard({ inv, hover }: { inv: InventoryController; hover: Hover }): 
         {item.found ? ' · found in raid' : ''}
         {favourites().has(item.item) ? ' · ★ favourite' : ''}
       </span>
-      {state && <span>{def.type === 'armour' ? `Durability ${state}` : state}</span>}
+      {state && <span>{hoverState(def, state)}</span>}
       <span>
         {no && item.grid?.items.length
           ? `Sells for ${sellPrice(items, item).toLocaleString()} once empty`
@@ -1423,7 +1423,8 @@ function tintOf(def: ItemDef): string {
 const gunStats = createWeaponStats();
 
 /**
- * What a tile shows: its name, and in the corner a badge (a stack's count, durability…).
+ * What a tile shows: its name, and bottom right a badge (a stack's count, durability…).
+ * Every count or amount goes bottom right, in that one badge (the user's rule, 2026-11-09).
  * A gun shows the calibre it takes under its name, without dots (5.56x45 reads 556x45),
  * and loaded/capacity in the corner, larger; rigs and backpacks show only their name.
  */
@@ -1449,21 +1450,13 @@ function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemD
       <span className={def.type === 'armour' ? 'inv-item-badge inv-item-light' : 'inv-item-badge'}>
         {badge(item, def)}
       </span>
-      {def.type === 'med' && def.effect !== 'heal' && (
-        <span className="inv-item-badge inv-item-cells">
-          {item.left ?? 1}/{def.uses ?? 1}
-        </span>
-      )}
-      {def.type === 'container' && def.slot !== 'vault' && (
-        <span className="inv-item-badge inv-item-cells">{cellsInside(def)}</span>
-      )}
     </>
   );
 }
 
 /**
- * How many cells a rig or backpack holds (2026-11-09, the user's call: bottom left of its
- * tile, until they have icons): its sections' cells, or its whole grid's.
+ * How many cells a rig or backpack holds (2026-11-09, the user's call, until they have
+ * icons): its sections' cells, or its whole grid's.
  */
 function cellsInside(def: Extract<ItemDef, { type: 'container' }>): number {
   if (!def.sections) return def.grid[0] * def.grid[1];
@@ -1480,6 +1473,14 @@ function nameLines(cellsHigh: number, cell: number): number {
   return Math.max(1, Math.floor((cellsHigh * cell - 2 - badges) / line));
 }
 
+/** A tile's badge in words, for the hover card: "Durability 40/40", "12 cells", "2/2 uses". */
+function hoverState(def: ItemDef, state: string): string {
+  if (def.type === 'armour') return `Durability ${state}`;
+  if (def.type === 'container') return `${state} cells`;
+  if (def.type === 'med' && def.effect !== 'heal') return `${state} uses`;
+  return state;
+}
+
 /** What an item's tile says: its short name, or its name (2026-11-06). */
 export function tileName(def: ItemDef): string {
   return def.shortName ?? def.name;
@@ -1491,8 +1492,8 @@ export function tenths(n: number): string {
 }
 
 /**
- * The small text in an item's corner: a stack's count, rounds loaded, durability, a
- * medkit's HP or a repair kit's points left (whole numbers only)…
+ * The small text in an item's bottom-right corner: a stack's count, durability, a medkit's
+ * HP, a med's or key's uses, a rig's cells or a repair kit's points left (whole numbers)…
  */
 function badge(item: Item, def: ItemDef): string {
   switch (def.type) {
@@ -1500,16 +1501,19 @@ function badge(item: Item, def: ItemDef): string {
       // Out of its max now, which repairs wear down (sim/repair.ts).
       return `${tenths(item.durability ?? 0)}/${tenths(item.max ?? def.durability)}`;
     case 'med':
-      // The HP left, whole (a heal spends fractions of it), without "HP" (2026-11-09).
-      // Other meds' uses are a badge of their own, bottom left (usesBadge).
-      return def.effect === 'heal' ? `${Math.floor(item.left ?? 0)}` : '';
+      // The HP left, whole (a heal spends fractions of it), without "HP"; other meds' uses
+      // left out of their total, like 2/2 (2026-11-09).
+      return def.effect === 'heal'
+        ? `${Math.floor(item.left ?? 0)}`
+        : `${item.left ?? def.uses ?? 1}/${def.uses ?? 1}`;
     case 'repair':
       return `${Math.floor(item.left ?? 0)}`;
     case 'key':
       // Uses left out of its total, like 1/3 (2026-11-09), not ×1.
       return def.uses === undefined ? '' : `${item.left ?? def.uses}/${def.uses}`;
     case 'container':
-      return '';
+      // How many cells it holds; the vault is never a tile.
+      return def.slot === 'vault' ? '' : `${cellsInside(def)}`;
     default:
       return stackSize(def) > 1 || item.count > 1 ? `${item.count}` : '';
   }

@@ -1878,6 +1878,8 @@ body:has(#raid:not([hidden])) #vitals {
  */
 .inv-slots.halves {
   grid-template-columns: repeat(6, calc(var(--cell) - 2px));
+  /* More room before the rig, pockets and backpack under it (2026-11-09, the user's call). */
+  margin-bottom: 20px;
 }
 
 .inv-slots.halves .inv-slot {
@@ -2198,12 +2200,6 @@ body:has(#raid:not([hidden])) #vitals {
 /* Durability, at normal weight; a stack's count stays bold. */
 .inv-item-badge.inv-item-light {
   font-weight: 400;
-}
-
-/* A rig's or backpack's cells, or a med's uses left (x/y), bold, bottom left (2026-11-09). */
-.inv-item-badge.inv-item-cells {
-  left: 3px;
-  right: auto;
 }
 
 .inv-drop {
