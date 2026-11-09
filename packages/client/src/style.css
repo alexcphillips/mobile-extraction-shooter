@@ -1634,8 +1634,9 @@ body:has(#raid:not([hidden])) #vitals {
     padding-left: 24px;
   }
 
+  /* 48 px since 2026-11-09 (the user's call; it was 24). */
   .inv-left {
-    gap: 24px;
+    gap: 48px;
   }
 }
 
@@ -1878,8 +1879,6 @@ body:has(#raid:not([hidden])) #vitals {
  */
 .inv-slots.halves {
   grid-template-columns: repeat(6, calc(var(--cell) - 2px));
-  /* More room before the rig, pockets and backpack under it (2026-11-09, the user's call). */
-  margin-bottom: 20px;
 }
 
 .inv-slots.halves .inv-slot {

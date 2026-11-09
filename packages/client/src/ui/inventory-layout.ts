@@ -29,9 +29,9 @@ const STASH_CHIPS = 48 + 6;
 const MAX_CELL = 44;
 /**
  * Extra pixels across on a PC: the loadout's space from the left and from the carried
- * panel (style.css, the same media query).
+ * panel past the 8 px gap it has anyway (style.css, the same media query).
  */
-const PC_ROOM = 24 + 16;
+const PC_ROOM = 24 + 40;
 const PC = '(hover: hover) and (pointer: fine)';
 
 export interface InventoryLayout {
