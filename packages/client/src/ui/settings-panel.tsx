@@ -1,6 +1,6 @@
 import type { Settings } from '@mes/shared';
 import { useId, useState, useSyncExternalStore, type ReactNode } from 'react';
-import { signOut, username } from '../account';
+import { isAdmin, signOut, username } from '../account';
 import { firstPad } from '../input/gamepad';
 import { diagnose, snapshot } from '../input/pad-diagnostics';
 import { openPadTest } from '../input/pad-test';
@@ -244,11 +244,13 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel, onGiveUp }: P
             hint="Lower draws the 3D view at a lower resolution, which runs smoother and saves battery. Low also turns off edge smoothing, from the next raid."
             onChange={(v) => set('graphics', v)}
           />
-          <Toggle
-            label="Show performance stats"
-            value={s.showStats}
-            onChange={(v) => set('showStats', v)}
-          />
+          {(isAdmin || import.meta.env.DEV) && (
+            <Toggle
+              label="Show performance stats (admin)"
+              value={s.showStats}
+              onChange={(v) => set('showStats', v)}
+            />
+          )}
         </section>
         <section>
           <h2>Account</h2>

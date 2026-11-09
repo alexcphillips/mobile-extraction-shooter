@@ -5,6 +5,7 @@ import { loadItems, startingKit } from './content';
 import type { Env } from './env';
 import { body, fail, isObject } from './errors';
 import { profileResponse } from './profiles';
+import { withAdmin } from './admin-users';
 
 /*
  * Accounts and sessions (session 12): a username and password. See tech-stack.md →
@@ -166,7 +167,7 @@ auth.post('/register', async (c) => {
     if (String(err).includes('UNIQUE')) return fail(c, 'username-taken');
     throw err;
   }
-  return c.json(await profileResponse(db, id), 201);
+  return c.json(withAdmin(c.env, await profileResponse(db, id)), 201);
 });
 
 auth.post('/login', async (c) => {
@@ -198,7 +199,7 @@ auth.post('/login', async (c) => {
       .bind(account.id, now),
     await startSession(c, account.id),
   ]);
-  return c.json(await profileResponse(db, account.id));
+  return c.json(withAdmin(c.env, await profileResponse(db, account.id)));
 });
 
 auth.post('/logout', async (c) => {

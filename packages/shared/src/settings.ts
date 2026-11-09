@@ -92,7 +92,7 @@ const settingsObject = z.object({
   inputPreference: z.enum(['auto', 'controller']).catch('auto'),
   /** Every sound's loudness (session 19): 0 is silent. */
   volume: range(0, 1, 0.8),
-  /** The fps and timings overlay. */
+  /** The fps and timings overlay. Admins only since 2026-11-09 (ProfileResponse.admin). */
   showStats: z.boolean().catch(true),
   /**
    * How sharp the 3D view is drawn (2026-11-07, for the phone): high is up to 2 pixels per

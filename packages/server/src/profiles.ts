@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { withAdmin } from './admin-users';
 import {
   PROFILE_FORMAT,
   buyStashPage,
@@ -87,7 +88,9 @@ export const AT_VERSION = '(SELECT version FROM profiles WHERE account_id = ?) =
 
 export const profiles = new Hono<AppEnv>();
 
-profiles.get('/', async (c) => c.json(await profileResponse(c.env.DB, c.var.account)));
+profiles.get('/', async (c) =>
+  c.json(withAdmin(c.env, await profileResponse(c.env.DB, c.var.account))),
+);
 
 /**
  * Saves a profile edited between raids (session 13's stash). Sanity limits: well-formed,

@@ -51,6 +51,11 @@ export interface ProfileResponse {
   raid: OpenRaid | null;
   /** The settings last saved from any device, or null if none ever were. */
   settings: SavedSettings | null;
+  /**
+   * An admin account (2026-11-09): sees the stats overlay and its setting. Sent with
+   * GET /api/profile, logging in and registering; missing from other replies.
+   */
+  admin?: boolean;
 }
 
 /** Settings as synced: the newest change wins, wherever it was made. */

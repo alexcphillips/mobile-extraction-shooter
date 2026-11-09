@@ -14,6 +14,22 @@ async function signedIn(admin: boolean) {
 }
 
 describe('admin', () => {
+  it('says which accounts are admins', async () => {
+    const plain = new TestClient(testEnv());
+    expect((await plain.register()).admin).toBe(false);
+    expect((await plain.ok('GET', '/profile')).admin).toBe(false);
+    // Named in ADMIN_USERS: an admin in the live game, but the admin routes stay hidden.
+    const named = new TestClient({ ...testEnv(), ADMIN_USERS: 'bob, ana' });
+    expect((await named.register()).admin).toBe(true);
+    const me = await named.ok('GET', '/profile');
+    expect(me.admin).toBe(true);
+    const give = { version: me.version, item: 'bandage', count: 1 };
+    expect((await named.fails('POST', '/admin/give', give)).error).toBe('not-found');
+    expect((await named.register('carl')).admin).toBe(false);
+    // Everyone on the dev server.
+    expect((await (await signedIn(true)).ok('GET', '/profile')).admin).toBe(true);
+  });
+
   it('is not there without ADMIN', async () => {
     const client = await signedIn(false);
     const me = await client.ok('GET', '/profile');

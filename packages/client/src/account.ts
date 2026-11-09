@@ -35,6 +35,24 @@ const MESSAGES: Partial<Record<ApiErrorCode | 'offline', string>> = {
 /** The username signed in, once known; null if signed out or the server couldn't be reached. */
 export let username: string | null = null;
 
+/**
+ * Whether the signed-in account is an admin (the server's ADMIN_USERS, or any account on
+ * the dev server), which shows the stats overlay and its setting. False until known.
+ */
+export let isAdmin = false;
+const adminListeners = new Set<() => void>();
+
+/** Calls back whenever isAdmin changes. */
+export function onAdminChange(listener: () => void): void {
+  adminListeners.add(listener);
+}
+
+function setAdmin(on: boolean): void {
+  if (on === isAdmin) return;
+  isAdmin = on;
+  for (const l of adminListeners) l();
+}
+
 export async function call(method: string, path: string, body?: unknown): Promise<Response> {
   let res: Response;
   try {
@@ -69,6 +87,7 @@ export async function fetchProfile(): Promise<ProfileResponse | null> {
   try {
     const me = (await (await call('GET', '/profile')).json()) as ProfileResponse;
     username = me.username;
+    setAdmin(me.admin === true);
     return me;
   } catch (err) {
     if (err instanceof AccountError && err.code === 'signed-out') return null;
@@ -83,12 +102,14 @@ export async function signIn(
 ): Promise<ProfileResponse> {
   const me = (await (await call('POST', `/${mode}`, login)).json()) as ProfileResponse;
   username = me.username;
+  setAdmin(me.admin === true);
   return me;
 }
 
 export async function signOut(): Promise<void> {
   await call('POST', '/logout');
   username = null;
+  setAdmin(false);
 }
 
 /** How long settings wait after a change before they're sent, so a slider drag is one save. */
