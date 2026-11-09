@@ -335,13 +335,16 @@ export function Inventory({ inv, version }: Props): ReactNode {
               <>
                 <Worth n={gearWorth(ctx.items, ctx.player)} label="Gear Value" full />
                 <span className="inv-panel-fill" />
-                <button
-                  className={`inv-help-button${help ? ' active' : ''}`}
-                  aria-label="How the inventory works"
-                  onClick={() => setHelp(!help)}
-                >
-                  ?
-                </button>
+                {/* Not in the stash (2026-11-09, the user's call); still in a raid. */}
+                {!ctx.stash && (
+                  <button
+                    className={`inv-help-button${help ? ' active' : ''}`}
+                    aria-label="How the inventory works"
+                    onClick={() => setHelp(!help)}
+                  >
+                    ?
+                  </button>
+                )}
               </>
             }
           >
