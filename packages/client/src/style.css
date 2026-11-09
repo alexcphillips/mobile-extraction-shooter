@@ -2886,117 +2886,6 @@ body:has(#layout-bar) #menu {
   opacity: 0.45;
 }
 
-.menu-top {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #2b353d;
-}
-
-.menu h1 {
-  margin: 0;
-  font-size: 22px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #e3a33a;
-}
-
-.menu-who {
-  color: #9aa6b0;
-}
-
-.menu-who b {
-  color: #e8ecef;
-}
-
-.menu-body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: safe center;
-  gap: 10px;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-.menu-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  width: min(560px, 100%);
-}
-
-/* The menu's cards: framed, with an amber edge (the Delta Force look, 2026-11-06). */
-.menu-buttons button {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  padding: 14px 16px;
-  border-radius: 4px;
-  background: linear-gradient(to bottom right, #1d252b, #151b20);
-  box-shadow:
-    inset 3px 0 0 #3a4650,
-    0 4px 14px rgb(0 0 0 / 0.3);
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-align: left;
-  text-transform: uppercase;
-}
-
-@media (hover: hover) {
-  .menu-buttons button:not(:disabled):hover {
-    box-shadow:
-      inset 3px 0 0 #e3a33a,
-      0 4px 14px rgb(0 0 0 / 0.3);
-  }
-}
-
-.menu-buttons button span {
-  font-size: 13px;
-  font-weight: normal;
-  letter-spacing: 0;
-  text-transform: none;
-  color: #9aa6b0;
-}
-
-/* A notification on a card (UX-5): new quests, friend requests. Bright, as a phone app's. */
-.menu-buttons button {
-  position: relative;
-}
-
-.menu-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 2px 8px;
-  border-radius: 10px;
-  background: #ff4b3a;
-  box-shadow: 0 0 10px rgb(255 75 58 / 0.55);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  line-height: 16px;
-  white-space: nowrap;
-}
-
-.menu-buttons button.menu-raid {
-  grid-column: 1 / -1;
-  border-color: #f0b850;
-  background: linear-gradient(to bottom, #f0b24a, #d8952c);
-  box-shadow: 0 4px 18px rgb(227 163 58 / 0.25);
-  color: #000;
-  font-size: 18px;
-}
-
-.menu-buttons button.menu-raid span {
-  color: #3d2a08;
-}
-
 .menu-notice {
   margin: 0 0 6px;
   max-width: 560px;
@@ -4027,123 +3916,6 @@ body:has(#layout-bar) #menu {
   opacity: 0.45;
 }
 
-/* Picking the map to raid, when there's more than one. */
-.menu-maps {
-  grid-column: 1 / -1;
-  display: flex;
-  gap: 6px;
-}
-
-.menu-buttons .menu-maps button {
-  flex: 1;
-  align-items: center;
-  padding: 9px 10px;
-  font-size: 15px;
-}
-
-.menu-buttons .menu-maps button.active {
-  outline: 2px solid #e3a33a;
-  outline-offset: -2px;
-  background: #2c343b;
-  color: #e8ecef;
-}
-
-/* The game mode switch at the top of the menu (2026-11-04): each mode has its own menu. */
-.menu-modes {
-  display: flex;
-  gap: 4px;
-  width: min(560px, 100%);
-  padding: 4px;
-  box-sizing: border-box;
-  border: 1px solid #2b353d;
-  border-radius: 4px;
-  background: #11161a;
-}
-
-.menu .menu-modes button {
-  flex: 1;
-  padding: 10px;
-  border-radius: 7px;
-  background: transparent;
-  color: #9aa6b0;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.menu .menu-modes button.active {
-  background: #2c343b;
-  color: #e3a33a;
-}
-
-/*
- * The mode you're not on lights up in its own colour under the pointer (not on touch,
- * where hover sticks after a tap).
- */
-@media (hover: hover) {
-  .menu .menu-modes button:not(.active):not(:disabled):hover {
-    background: #222930;
-    color: #e3a33a;
-  }
-
-  .menu .menu-modes button[data-mode='zombies']:not(.active):not(:disabled):hover {
-    color: #8fc25a;
-  }
-}
-
-/* Zombies' menu: the same layout, in green. */
-.menu.zombies h1,
-.menu.zombies .menu-modes button.active,
-.menu.zombies .menu-notice {
-  color: #8fc25a;
-}
-
-.menu.zombies .menu-buttons button.menu-raid {
-  background: #8fc25a;
-}
-
-.menu.zombies .menu-buttons button.menu-raid span {
-  color: #22340f;
-}
-
-.menu.zombies .menu-buttons .menu-maps button.active {
-  outline-color: #8fc25a;
-}
-
-/* What a mode's menu tells you about it, beside its buttons. */
-.menu-card {
-  padding: 12px 16px;
-  border-radius: 8px;
-  background: #252c32;
-}
-
-.menu-card.wide {
-  grid-column: 1 / -1;
-}
-
-.menu-card h2 {
-  margin: 0 0 4px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #9aa6b0;
-}
-
-.menu-card p {
-  margin: 0;
-  font-size: 14px;
-}
-
-.menu-card p + p {
-  margin-top: 4px;
-}
-
-.menu-card .menu-card-note {
-  color: #9aa6b0;
-}
-
 /*
  * The item details (2026-10-30, after Delta Force): a card over the inventory or vendors,
  * picture on the left and what the item is on the right, its actions along the bottom.
@@ -4964,4 +4736,1132 @@ input[type='range'].pad-grabbed {
   overflow: auto;
   font-size: 11px;
   white-space: pre-wrap;
+}
+
+/*
+ * The main menu as a lobby (2026-11-09, the user's request): the character on a plinth in
+ * the middle (a canvas behind everything), small framed buttons down the left, the
+ * loadout and Deploy on the right, the mode switch top left. Deploy opens the map screen
+ * over it. Amber for extraction, green for zombies, through --accent.
+ */
+.menu.lobby {
+  --accent: #e3a33a;
+  --accent-deep: #c4842a;
+  --accent-ink: #1d1404;
+  --accent-glow: rgb(227 163 58 / 0.14);
+  --panel: rgb(14 18 21 / 0.78);
+  --line: #2b353d;
+  --muted: #9aa6b0;
+  --mark: 'EXTRACTION';
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  background:
+    radial-gradient(ellipse 46% 62% at 50% 64%, var(--accent-glow), transparent 70%),
+    radial-gradient(ellipse at 50% 0%, rgb(60 80 95 / 0.28), transparent 60%),
+    linear-gradient(to bottom, #11171b, #0a0e11 75%);
+}
+
+.menu.lobby.zombies {
+  --accent: #8fc25a;
+  --accent-deep: #6f9e3f;
+  --accent-ink: #13200a;
+  --accent-glow: rgb(143 194 90 / 0.13);
+  --mark: 'ZOMBIES';
+}
+
+/* A floor grid running away under the plinth. */
+.menu.lobby::before {
+  content: '';
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  top: 58%;
+  bottom: -30%;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  transform: perspective(300px) rotateX(58deg);
+  transform-origin: top;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 25%, transparent 85%);
+  mask-image: linear-gradient(to bottom, transparent, #000 25%, transparent 85%);
+  pointer-events: none;
+}
+
+.lobby-stage {
+  position: absolute;
+  inset: 0;
+}
+
+/* The mode's name, huge and faint, behind the character. */
+.lobby-stage::before {
+  content: var(--mark);
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 18%;
+  text-align: center;
+  font:
+    900 clamp(64px, 15vw, 220px) / 1 system-ui,
+    -apple-system,
+    sans-serif;
+  letter-spacing: 0.06em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(255 255 255 / 0.07);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.lobby-canvas {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.4s;
+  touch-action: none;
+  cursor: grab;
+}
+
+.lobby-canvas.ready {
+  opacity: 1;
+}
+
+.lobby-canvas:active {
+  cursor: grabbing;
+}
+
+/* Everything over the canvas lets drags through to it, except what's on it. */
+.lobby-top,
+.lobby-main,
+.lobby-party {
+  position: relative;
+  pointer-events: none;
+}
+
+.lobby-top > *,
+.lobby-main > *,
+.lobby-party > * {
+  pointer-events: auto;
+}
+
+.lobby .lobby-icon {
+  flex: none;
+}
+
+/* The top bar: the mode on the left; party, money, name and settings on the right. */
+.lobby-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: max(10px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 0
+    max(16px, env(safe-area-inset-left));
+}
+
+.lobby .lobby-mode-button,
+.lobby .lobby-chip,
+.lobby .lobby-icon-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--panel);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.lobby .lobby-mode-button {
+  padding: 5px 12px 5px 10px;
+  color: var(--accent);
+}
+
+.lobby-mode-button > span {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.lobby-mode-button small {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  color: var(--muted);
+}
+
+.lobby .lobby-mode-button:disabled {
+  opacity: 1;
+}
+
+.lobby .lobby-chip {
+  position: relative;
+  height: 36px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.lobby .lobby-chip.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.lobby .lobby-chip .lobby-badge {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+}
+
+.lobby .lobby-icon-button {
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  box-sizing: border-box;
+  padding: 0;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.lobby-money {
+  padding: 0 4px 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.lobby-who {
+  max-width: 10em;
+  overflow: hidden;
+  padding-right: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lobby-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #ff4b3a;
+  box-shadow: 0 0 10px rgb(255 75 58 / 0.55);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+/* The body: buttons down the left, loadout and Deploy down the right. */
+.lobby-main {
+  display: flex;
+  flex: 1;
+  gap: 16px;
+  min-height: 0;
+  padding: 12px max(16px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+}
+
+.lobby-nav {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 184px;
+}
+
+.lobby .lobby-nav button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-left: 2px solid #3a4650;
+  border-radius: 2px;
+  background: var(--panel);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: #cfd6db;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-align: left;
+  text-transform: uppercase;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    padding 0.12s;
+}
+
+.lobby .lobby-nav button:not(:disabled):active {
+  background: rgb(36 45 52 / 0.9);
+}
+
+@media (hover: hover) {
+  .lobby .lobby-nav button:not(:disabled):hover {
+    padding-left: 16px;
+    border-color: var(--line);
+    border-left-color: var(--accent);
+    background: rgb(28 36 42 / 0.9);
+    color: #fff;
+  }
+}
+
+.lobby .lobby-nav button.soon {
+  color: var(--muted);
+}
+
+.lobby-nav .lobby-icon {
+  color: var(--accent);
+}
+
+.lobby-nav .soon .lobby-icon {
+  color: var(--muted);
+}
+
+.lobby-nav-label {
+  flex: 1;
+}
+
+.lobby-soon {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 5px;
+  border: 1px solid #3a4650;
+  border-radius: 2px;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+}
+
+.lobby-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 248px;
+}
+
+.lobby .lobby-card {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 8px 9px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--panel);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  text-align: left;
+}
+
+.lobby-card-head {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 2px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.lobby-worth {
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.lobby-card p {
+  margin: 0 2px;
+  font-size: 13px;
+}
+
+.lobby-card .lobby-card-note {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.lobby-slots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 44px;
+  gap: 4px;
+}
+
+.lobby-slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #34404a;
+  border-radius: 2px;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--rarity) 42%, transparent),
+    rgb(255 255 255 / 0.03) 75%
+  );
+}
+
+.lobby-slot.wide {
+  grid-column: span 2;
+}
+
+.lobby-slot img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.lobby-slot-name {
+  position: absolute;
+  left: 4px;
+  bottom: 2px;
+  max-width: calc(100% - 8px);
+  overflow: hidden;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px #000;
+  white-space: nowrap;
+}
+
+.lobby-slot.empty {
+  border-style: dashed;
+  border-color: #2e3840;
+  background: none;
+}
+
+.lobby-slot.empty .lobby-slot-name {
+  position: static;
+  color: #56636d;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-shadow: none;
+}
+
+@media (hover: hover) {
+  .lobby .lobby-card.lobby-loadout:hover {
+    border-color: #4a5862;
+  }
+}
+
+/* Deploy: big, in the mode's colour, with a cut corner. */
+.lobby .lobby-deploy-button,
+.lobby .lobby-go {
+  position: relative;
+  border: none;
+  border-radius: 0;
+  background: linear-gradient(to bottom, var(--accent), var(--accent-deep));
+  box-shadow: none;
+  color: var(--accent-ink);
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+}
+
+.lobby .lobby-deploy-button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 10px 16px 11px;
+  text-align: left;
+}
+
+.lobby .lobby-deploy-button::after,
+.lobby .lobby-go::after {
+  content: '';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-top: 3px solid currentColor;
+  border-right: 3px solid currentColor;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.lobby-deploy-label {
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.lobby-deploy-line {
+  max-width: calc(100% - 28px);
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.8;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .lobby .lobby-deploy-button:not(:disabled):hover,
+  .lobby .lobby-go:not(:disabled):hover {
+    filter: brightness(1.08);
+  }
+}
+
+/* The party, along the bottom under the character. */
+.lobby-party {
+  position: absolute;
+  left: 50%;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transform: translateX(-50%);
+}
+
+.lobby-party li {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--panel);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.lobby-party li span {
+  color: var(--accent);
+}
+
+.lobby-party li i {
+  color: var(--muted);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.lobby-party li.ready {
+  border-color: #3f6b49;
+}
+
+.lobby-party li.ready i {
+  color: #8fe0a0;
+}
+
+.lobby-party li.away {
+  opacity: 0.55;
+}
+
+.lobby .lobby-toast {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: calc(max(14px, env(safe-area-inset-bottom)) + 40px);
+  max-width: min(520px, calc(100% - 32px));
+  padding: 8px 14px;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  border-radius: 2px;
+  background: rgb(18 23 27 / 0.96);
+  color: #f2dcb0;
+  font-size: 13px;
+  transform: translateX(-50%);
+  animation: lobby-rise 0.18s ease-out;
+}
+
+.lobby.zombies .lobby-toast {
+  color: #cfe8b4;
+}
+
+/* Drawers: the modes from the left, the party from the right. */
+.lobby-drawer-wrap {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  background: rgb(0 0 0 / 0.45);
+  animation: lobby-fade 0.15s ease-out;
+}
+
+.lobby-drawer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  width: min(380px, 86vw);
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: #10151a;
+}
+
+.lobby-drawer.left {
+  left: 0;
+  padding-left: env(safe-area-inset-left);
+  border-right: 1px solid var(--line);
+  animation: lobby-slide-left 0.18s ease-out;
+}
+
+.lobby-drawer.right {
+  right: 0;
+  padding-right: env(safe-area-inset-right);
+  border-left: 1px solid var(--line);
+  animation: lobby-slide-right 0.18s ease-out;
+}
+
+.lobby-drawer > header {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px 10px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.lobby-drawer h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.lobby-drawer-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 16px;
+}
+
+.lobby-drawer .party {
+  width: 100%;
+}
+
+.lobby-drawer .party-row {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.lobby-drawer .party-members {
+  flex-direction: column;
+}
+
+.lobby-drawer .party-row .raid-spacer {
+  display: none;
+}
+
+.lobby-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lobby .lobby-modes button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-left: 3px solid #3a4650;
+  border-radius: 2px;
+  background: #161c21;
+  text-align: left;
+}
+
+.lobby .lobby-modes button.active {
+  border-left-color: #e3a33a;
+  background: #1c242a;
+}
+
+.lobby .lobby-modes button[data-mode='zombies'].active {
+  border-left-color: #8fc25a;
+}
+
+.lobby-mode-name {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.lobby-modes .active[data-mode='extraction'] .lobby-mode-name {
+  color: #e3a33a;
+}
+
+.lobby-modes .active[data-mode='zombies'] .lobby-mode-name {
+  color: #8fc25a;
+}
+
+.lobby-mode-line {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.lobby-mode-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.lobby-mode-tags span {
+  padding: 1px 6px;
+  border: 1px solid #3a4650;
+  border-radius: 2px;
+  color: #b9c3ca;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* The deploy screen: maps on the left, the map from above, intel and Go on the right. */
+.lobby-deploy {
+  position: absolute;
+  z-index: 8;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgb(60 80 95 / 0.22), transparent 60%), rgb(10 13 16 / 0.97);
+  animation: lobby-fade 0.15s ease-out;
+}
+
+.lobby-deploy-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: max(6px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 0
+    max(8px, env(safe-area-inset-left));
+}
+
+.lobby .lobby-back {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.lobby-deploy-top h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.lobby-locked {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.lobby-deploy-body {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 180px 1fr 248px;
+  gap: 12px;
+  min-height: 0;
+  padding: 8px max(16px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+}
+
+.lobby-maps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.lobby .lobby-maps button {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 10px;
+  align-items: center;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-left: 3px solid #3a4650;
+  border-radius: 2px;
+  background: #141a1f;
+  text-align: left;
+}
+
+.lobby .lobby-maps button.active {
+  border-left-color: var(--accent);
+  background: #1c242a;
+}
+
+.lobby-map-index {
+  grid-row: span 2;
+  color: #45525c;
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.lobby-maps .active .lobby-map-index {
+  color: var(--accent);
+}
+
+.lobby-map-name {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.lobby-map-line {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.lobby-overview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background:
+    linear-gradient(rgb(255 255 255 / 0.025) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(90deg, rgb(255 255 255 / 0.025) 1px, transparent 1px) 0 0 / 24px 24px,
+    #080b0d;
+}
+
+/* Corner brackets, as on a scope's view. */
+.lobby-overview::before,
+.lobby-overview::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--accent);
+  pointer-events: none;
+}
+
+.lobby-overview::before {
+  top: -1px;
+  left: -1px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.lobby-overview::after {
+  right: -1px;
+  bottom: -1px;
+  border-left: none;
+  border-top: none;
+}
+
+.map-overview {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.lobby-no-map {
+  color: var(--muted);
+}
+
+.lobby-deploy-side {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.lobby-intel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: #11161a;
+}
+
+.lobby-intel-title {
+  margin: 0 0 2px;
+  color: var(--accent);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.lobby-fact {
+  display: grid;
+  grid-template-columns: 16px auto 1fr;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.lobby-fact .lobby-icon {
+  color: var(--muted);
+}
+
+.lobby-fact-label {
+  color: var(--muted);
+}
+
+.lobby-fact-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.lobby-intel-note {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.lobby-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: auto 0 0;
+  padding-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.lobby-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  box-sizing: border-box;
+  border: 2px solid #9dffb0;
+}
+
+.lobby-legend i.maybe {
+  margin-left: 6px;
+  border: 2px dashed #e3a33a;
+}
+
+.lobby .lobby-go {
+  height: 58px;
+  flex: none;
+  padding: 0 16px;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+/* In someone else's party and not ready yet: outlined, not filled. */
+.lobby .lobby-go:not(.primary) {
+  background: #141a1f;
+  box-shadow: inset 0 0 0 1px var(--accent);
+  color: var(--accent);
+}
+
+.lobby-go-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+@keyframes lobby-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes lobby-rise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+}
+
+@keyframes lobby-slide-left {
+  from {
+    transform: translateX(-24px);
+    opacity: 0;
+  }
+}
+
+@keyframes lobby-slide-right {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+
+/* A phone held sideways: tighter all round. */
+@media (max-height: 500px) {
+  .lobby-top {
+    padding-top: max(8px, env(safe-area-inset-top));
+  }
+
+  .lobby-main {
+    padding-top: 8px;
+  }
+
+  .lobby-nav {
+    gap: 4px;
+    width: 156px;
+  }
+
+  .lobby .lobby-nav button {
+    height: 34px;
+    font-size: 12px;
+  }
+
+  .lobby-right {
+    width: 214px;
+  }
+
+  .lobby-slots {
+    grid-auto-rows: 34px;
+  }
+
+  .lobby .lobby-deploy-button {
+    padding: 8px 14px 9px;
+  }
+
+  .lobby-deploy-label {
+    font-size: 20px;
+  }
+
+  .lobby-who {
+    display: none;
+  }
+
+  .lobby-deploy-body {
+    grid-template-columns: 148px 1fr 200px;
+    gap: 8px;
+    padding-top: 4px;
+  }
+
+  .lobby .lobby-maps button {
+    padding: 7px 10px;
+  }
+
+  .lobby-intel {
+    gap: 5px;
+    padding: 8px 10px;
+  }
+
+  .lobby-intel-title {
+    font-size: 15px;
+  }
+
+  .lobby-fact {
+    font-size: 12px;
+  }
+
+  .lobby .lobby-go {
+    height: 48px;
+    font-size: 17px;
+  }
+}
+
+/* A big screen: a little more room. */
+@media (min-width: 1280px) and (min-height: 720px) {
+  .lobby-main {
+    padding: 20px 32px 28px;
+  }
+
+  .lobby-top {
+    padding: 18px 32px 0;
+  }
+
+  .lobby-nav {
+    gap: 6px;
+    width: 220px;
+  }
+
+  .lobby .lobby-nav button {
+    height: 46px;
+    font-size: 14px;
+  }
+
+  .lobby-right {
+    width: 300px;
+  }
+
+  .lobby-slots {
+    grid-auto-rows: 54px;
+  }
+
+  .lobby-deploy-body {
+    grid-template-columns: 240px 1fr 300px;
+    gap: 16px;
+    padding: 12px 32px 28px;
+  }
+}
+
+/* A long fact (the mystery box's guns, what you're taking in): under its label. */
+.lobby-fact.block {
+  grid-template-columns: 16px 1fr;
+  row-gap: 2px;
+}
+
+.lobby-fact.block .lobby-fact-value {
+  grid-column: 2;
+  font-weight: 600;
+  text-align: left;
+}
+
+/* The deploy screen covers the lobby fully: nothing shows through. */
+.lobby-deploy {
+  background: radial-gradient(ellipse at 50% 0%, rgb(60 80 95 / 0.22), transparent 60%), #0a0d10;
+}
+
+/* A long map name wraps between words rather than being cut off. */
+.lobby-map-name {
+  line-height: 1.15;
+}
+
+@media (max-height: 500px) {
+  /* Only the lock on a phone: the word doesn't fit beside the name. */
+  .lobby-soon {
+    padding: 2px 4px;
+    font-size: 0;
+  }
+
+  .lobby .lobby-nav button {
+    letter-spacing: 0.1em;
+  }
+
+  .lobby-map-name {
+    font-size: 12px;
+    letter-spacing: 0.03em;
+  }
 }

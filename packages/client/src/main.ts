@@ -306,7 +306,7 @@ async function runGame(
   const raids = raidIds()
     .map((id) => loadRaid(id))
     .sort((a, b) => Number(b.id === wanted) - Number(a.id === wanted))
-    .map((r) => ({ id: r.id, name: r.name, duration: r.duration }));
+    .map((r) => ({ id: r.id, name: r.name, duration: r.duration, map: r.map }));
   const play = (
     raid: string,
     serverRaid: string,
@@ -365,6 +365,7 @@ async function runGame(
         return {
           id,
           name: def.name,
+          map: def.map,
           points: def.points.start,
           kit: Object.values(gear).filter((g) => g !== undefined),
           box: def.box.map((o) => o.item),

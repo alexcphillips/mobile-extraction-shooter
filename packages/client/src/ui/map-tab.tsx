@@ -30,7 +30,7 @@ interface Footprint {
   fill: string;
 }
 
-interface MapLayers {
+export interface MapLayers {
   minX: number;
   minZ: number;
   w: number;
@@ -43,6 +43,41 @@ interface MapLayers {
 }
 
 const cache = new WeakMap<CompiledMap, MapLayers>();
+
+/** A map's static layers, built once per map and kept (shared with the menu's overview). */
+export function mapLayers(map: CompiledMap): MapLayers {
+  let l = cache.get(map);
+  if (!l) {
+    l = buildLayers(map);
+    cache.set(map, l);
+  }
+  return l;
+}
+
+/** The ground, water and footprints, drawn in map metres. */
+export function MapGround({ layers }: { layers: MapLayers }): ReactNode {
+  return (
+    <g>
+      <rect
+        x={layers.minX}
+        y={layers.minZ}
+        width={layers.w}
+        height={layers.h}
+        fill={layers.ground}
+      />
+      {layers.water.map(([x, z, w, h], i) => (
+        <rect key={i} x={x} y={z} width={w + 0.05} height={h + 0.05} fill={layers.waterColour} />
+      ))}
+      {layers.footprints.map((f, i) =>
+        f.points ? (
+          <polygon key={i} points={f.points} fill={f.fill} />
+        ) : (
+          <circle key={i} cx={f.cx} cy={f.cz} r={f.r} fill={f.fill} />
+        ),
+      )}
+    </g>
+  );
+}
 
 function css(colour: number): string {
   return `#${colour.toString(16).padStart(6, '0')}`;
@@ -133,7 +168,7 @@ function buildLayers(map: CompiledMap): MapLayers {
  * that would run into one already placed (zoomed in, they part and both show). Widths
  * are guessed from the number of letters.
  */
-function zoneLabels(map: CompiledMap, font: number): [number, number, MapZone][] {
+export function zoneLabels(map: CompiledMap, font: number): [number, number, MapZone][] {
   const out: [number, number, MapZone][] = [];
   const placed: [number, number, number, number][] = [];
   const area = (zone: MapZone): number => {
@@ -167,14 +202,7 @@ interface Props {
 }
 
 export function MapTab({ map, sim, player }: Props): ReactNode {
-  const layers = useMemo(() => {
-    let l = cache.get(map);
-    if (!l) {
-      l = buildLayers(map);
-      cache.set(map, l);
-    }
-    return l;
-  }, [map]);
+  const layers = useMemo(() => mapLayers(map), [map]);
   const [near, setNear] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
   const [size, setSize] = useState({ w: 1, h: 1 });
@@ -195,30 +223,7 @@ export function MapTab({ map, sim, player }: Props): ReactNode {
   const k = Math.max(view.w / size.w, view.h / size.h);
 
   // The static layers don't depend on the zoom, so React skips them on a redraw.
-  const ground = useMemo(
-    () => (
-      <g>
-        <rect
-          x={layers.minX}
-          y={layers.minZ}
-          width={layers.w}
-          height={layers.h}
-          fill={layers.ground}
-        />
-        {layers.water.map(([x, z, w, h], i) => (
-          <rect key={i} x={x} y={z} width={w + 0.05} height={h + 0.05} fill={layers.waterColour} />
-        ))}
-        {layers.footprints.map((f, i) =>
-          f.points ? (
-            <polygon key={i} points={f.points} fill={f.fill} />
-          ) : (
-            <circle key={i} cx={f.cx} cy={f.cz} r={f.r} fill={f.fill} />
-          ),
-        )}
-      </g>
-    ),
-    [layers],
-  );
+  const ground = useMemo(() => <MapGround layers={layers} />, [layers]);
 
   const font = 11 * k;
   const label = (x: number, z: number, text: string, fill: string, key: string): ReactNode => (
@@ -294,7 +299,7 @@ export function MapTab({ map, sim, player }: Props): ReactNode {
 }
 
 /** The northern edge (least z) of an extraction's outline, to put its name above it. */
-function northOf(p: { points: readonly (readonly [number, number])[] }): number {
+export function northOf(p: { points: readonly (readonly [number, number])[] }): number {
   let z = Infinity;
   for (const pt of p.points) z = Math.min(z, pt[1]);
   return z;
