@@ -2160,14 +2160,14 @@ body:has(#raid:not([hidden])) #vitals {
   line-height: min(12px, calc(var(--cell) * 0.34));
 }
 
-/* A gun's rounds, under its name. */
+/* The calibre a gun takes, under its name. */
 .inv-item-ammo {
   display: block;
   color: rgb(232 236 239 / 0.7);
 }
 
-/* A gun's rounds loaded, larger than its capacity beside it. */
-.inv-item-loaded {
+/* A gun's rounds loaded and its capacity, larger than other badges. */
+.inv-item-badge.inv-item-mag {
   font-size: 14px;
 }
 

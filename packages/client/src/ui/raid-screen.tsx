@@ -1,9 +1,9 @@
 import {
   ATTACHMENT_SLOTS,
+  calibreOf,
   cantSell,
   createWeaponStats,
   itemDef,
-  loadedAmmo,
   lootContainerById,
   revealed,
   sellPrice,
@@ -1415,8 +1415,8 @@ const gunStats = createWeaponStats();
 
 /**
  * What a tile shows: its name, and in the corner a badge (a stack's count, durability…).
- * A gun shows its rounds under its name and loaded/capacity in the corner, the rounds
- * loaded larger; rigs and backpacks show only their name.
+ * A gun shows the calibre it takes under its name, without dots (5.56x45 reads 556x45),
+ * and loaded/capacity in the corner, larger; rigs and backpacks show only their name.
  */
 function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemDef }): ReactNode {
   if (def.type === 'weapon') {
@@ -1425,10 +1425,10 @@ function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemD
       <>
         <span className="inv-item-name">
           {tileName(def)}
-          <span className="inv-item-ammo">{tileName(itemDef(items, loadedAmmo(items, item)))}</span>
+          <span className="inv-item-ammo">{calibreOf(items, def).replaceAll('.', '')}</span>
         </span>
-        <span className="inv-item-badge">
-          <span className="inv-item-loaded">{item.mag ?? 0}</span>/{capacity}
+        <span className="inv-item-badge inv-item-mag">
+          {item.mag ?? 0}/{capacity}
         </span>
       </>
     );
