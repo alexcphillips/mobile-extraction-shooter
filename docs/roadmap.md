@@ -877,6 +877,11 @@ A PS4 controller (DualShock 4) on a PC browser: raids **and** every menu and inv
   - **Checked:** 8 new tests (977 in all): pulse sizes (fire, hit, blast falloff, too far), the dual-rumble call, a weaker pulse not cutting in, a pad without rumble; the layout naming every used button once (not Share or PS) and following the settings; `rumble` falling back. Typecheck, lint, format. In headless Chrome against Vite with a faked pad whose `vibrationActuator` records calls, in a zombies raid: firing the pistol sends a dual rumble; a frag 3 m away sends full-strength pulses, one 60 m away none; settings show the Controller section, the 17-row table, and Rumble off silences firing; the hand slots show the pad labels. A temporary debug hook (spawning grenades) was used and removed.
   - **Not checked:** the real DS4's rumble in Chrome on macOS (whether Chrome drives it there, and how the strengths feel); the inventory's pad help line in a browser (zombies has no bag, and the check didn't sign in); Edge and Firefox (Firefox has no `vibrationActuator`, so no rumble).
 
+- [ ] **CP-4. Controller not picked up (reported 2026-11-08, Chrome over HTTPS in prod).**
+  - Diagnostics added: `input/pad-diagnostics.ts` (pure `diagnose`: no API / blocked by permissions policy or a frame / no pad listed yet / non-standard mapping / ready; `padLog` of connect events, started in main.ts) and `input/pad-test.ts`, a live plain-DOM panel (every pad slot's id, mapping, buttons lit, axes; the input mode and what last switched it; Copy report). Opened from **Settings → Controller → Test controller** (the section now always shows off touch) or `?padtest`. `input/mode.ts` records the cause of each mode switch.
+  - New setting `inputPreference` (auto / controller only): with a pad listed, keys and the mouse don't take the mode from it; touch always does, so a phone that synced it stays playable.
+  - **Next:** the user's copied report decides the fix (e.g. a fallback map for a non-standard DS4, or a header change).
+
 ## The Hangar (planned 2026-11-07 with the user)
 After the AI rework, before co-op. The design is [hangar.md](hangar.md). The material items and loot tables are the user's.
 

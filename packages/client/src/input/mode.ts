@@ -1,3 +1,14 @@
+import { settings } from '../settings';
+import { firstPad } from './gamepad';
+
+/** Settings say controller only, and the browser lists one: keys and mouse don't take over. */
+function padLocked(): boolean {
+  return (
+    settings.current.inputPreference === 'controller' &&
+    firstPad(navigator.getGamepads?.() ?? []) !== null
+  );
+}
+
 export type InputMode = 'touch' | 'desktop' | 'gamepad';
 
 type Listener = (mode: InputMode) => void;
@@ -18,22 +29,26 @@ class Mode {
     ? 'desktop'
     : 'touch';
   private readonly listeners = new Set<Listener>();
+  /** The last switches and what caused each, newest last (for the controller test). */
+  readonly changes: { t: number; mode: InputMode; cause: string }[] = [];
 
   constructor() {
     document.body.dataset.input = this.mode;
     window.addEventListener(
       'pointerdown',
       (e) => {
-        if (e.pointerType === 'touch') this.set('touch');
+        if (e.pointerType === 'touch') this.set('touch', 'touch');
         // Not a synthetic one: the pad's own cursor (CP-2) sends those.
-        else if (e.pointerType === 'mouse' && e.isTrusted) this.set('desktop');
+        else if (e.pointerType === 'mouse' && e.isTrusted && !padLocked())
+          this.set('desktop', 'mouse click');
       },
       true,
     );
     window.addEventListener(
       'keydown',
       (e) => {
-        if (this.mode === 'gamepad' && e.isTrusted) this.set('desktop');
+        if (this.mode === 'gamepad' && e.isTrusted && !padLocked())
+          this.set('desktop', `key ${e.code}`);
       },
       true,
     );
@@ -43,9 +58,10 @@ class Mode {
         if (
           this.mode === 'gamepad' &&
           e.isTrusted &&
+          !padLocked() &&
           Math.abs(e.movementX) + Math.abs(e.movementY) >= MOUSE_WAKE
         )
-          this.set('desktop');
+          this.set('desktop', `mouse moved ${Math.abs(e.movementX) + Math.abs(e.movementY)}px`);
       },
       true,
     );
@@ -75,12 +91,14 @@ class Mode {
 
   /** The pad was used. */
   usePad(): void {
-    this.set('gamepad');
+    this.set('gamepad', 'controller');
   }
 
-  private set(mode: InputMode): void {
+  private set(mode: InputMode, cause: string): void {
     if (mode === this.mode) return;
     this.mode = mode;
+    this.changes.push({ t: Math.round(performance.now()), mode, cause });
+    if (this.changes.length > 20) this.changes.shift();
     document.body.dataset.input = mode;
     for (const l of this.listeners) l(mode);
   }

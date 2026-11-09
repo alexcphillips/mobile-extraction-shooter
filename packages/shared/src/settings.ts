@@ -84,6 +84,12 @@ const settingsObject = z.object({
    * default; falls back on its own, so no format bump.
    */
   rumble: z.boolean().catch(true),
+  /**
+   * What decides mouse and keyboard versus controller (2026-11-08). auto: the last one used.
+   * controller: while a controller is listed, keys and the mouse never take the game from it
+   * (touch still does, so a phone that synced this stays playable). Falls back on its own.
+   */
+  inputPreference: z.enum(['auto', 'controller']).catch('auto'),
   /** Every sound's loudness (session 19): 0 is silent. */
   volume: range(0, 1, 0.8),
   /** The fps and timings overlay. */

@@ -43,6 +43,8 @@ import {
 import { settings } from './settings';
 import { lastRaid } from './ui/last-raid';
 import { padCursor } from './input/pad-cursor';
+import { padLog } from './input/pad-diagnostics';
+import { openPadTest } from './input/pad-test';
 
 const byId = (id: string): HTMLElement => {
   const el = document.getElementById(id);
@@ -70,6 +72,9 @@ const message = (err: unknown): string => (err instanceof Error ? err.message : 
 watchPauseTriggers();
 // A controller works menus with a cursor of its own (CP-2), once one is connected.
 padCursor.start();
+// What the browser reports about controllers, for Settings → Controller and the test.
+padLog.start();
+if (new URLSearchParams(location.search).has('padtest')) openPadTest();
 unlockAudioOnTap();
 preventZoom();
 // Menu buttons tick (session 19); the raid's controls and inventory have their own sounds.

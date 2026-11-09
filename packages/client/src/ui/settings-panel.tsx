@@ -2,6 +2,8 @@ import type { Settings } from '@mes/shared';
 import { useId, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { signOut, username } from '../account';
 import { firstPad } from '../input/gamepad';
+import { diagnose, snapshot } from '../input/pad-diagnostics';
+import { openPadTest } from '../input/pad-test';
 import { inputMode } from '../input/mode';
 import { PAD_GLYPHS, padLayout } from '../input/pad-labels';
 import { LayoutSettings } from './layout-settings';
@@ -34,6 +36,8 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel, onGiveUp }: P
   const [showLayout, setShowLayout] = useState(false);
   // With a pad in use, or one plugged in (Chrome lists a pad only after a press on it).
   const pad = inputMode.gamepad || firstPad(navigator.getGamepads?.() ?? []) !== null;
+  const padSnap = snapshot();
+  const padStatus = diagnose(padSnap.env, padSnap.pads);
   const set = <K extends keyof Settings>(key: K, value: Settings[K]): void =>
     settings.update((draft) => {
       draft[key] = value;
@@ -182,14 +186,30 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel, onGiveUp }: P
             onChange={(v) => set('invertY', v)}
           />
         </section>
-        {pad && (
+        {/* Always on desktop, so a pad that isn't picked up can be looked into. */}
+        {(pad || !inputMode.touch) && (
           <section className={showLayout ? 'wide' : undefined}>
             <h2>Controller</h2>
-            <Toggle label="Rumble" value={s.rumble} onChange={(v) => set('rumble', v)} />
+            <p className={padStatus.status === 'ok' ? 'hint' : 'hint bad'}>{padStatus.title}</p>
+            <Choice
+              label="Input"
+              value={s.inputPreference}
+              options={[
+                ['auto', 'Last used'],
+                ['controller', 'Controller only'],
+              ]}
+              hint="Controller only: while a controller is connected, the keyboard and mouse never switch the game away from it."
+              onChange={(v) => set('inputPreference', v)}
+            />
+            {padStatus.status !== 'ok' && <p className="hint">{padStatus.detail}</p>}
+            {pad && <Toggle label="Rumble" value={s.rumble} onChange={(v) => set('rumble', v)} />}
             <div className="row">
-              <button onClick={() => setShowLayout((v) => !v)}>
-                {showLayout ? 'Hide button layout' : 'Show button layout'}
-              </button>
+              {pad && (
+                <button onClick={() => setShowLayout((v) => !v)}>
+                  {showLayout ? 'Hide button layout' : 'Show button layout'}
+                </button>
+              )}
+              <button onClick={openPadTest}>Test controller</button>
             </div>
             {showLayout && <PadLayoutTable s={s} />}
           </section>
