@@ -55,6 +55,7 @@ import { MapTab } from './map-tab';
 import type { RaidContext } from './raid';
 import { RaidQuests } from './raid-quests';
 import { CATEGORIES, type Category } from './stash-search';
+import { CategoryIcon } from './category-icons';
 import { favourites, holdsFavourite, toggleFavourite } from './favourites';
 import { settings } from '../settings';
 import { sectionBoxes } from './inventory-layout';
@@ -72,9 +73,11 @@ export interface StashSearch {
   hit: ((item: Item) => boolean) | null;
   /** How many items are found on every page. */
   found: number;
-  /** The stash panel's title and the rest of its header: cells used, sort. */
+  /** The stash panel's title and the rest of its header: cells used. */
   title: ReactNode;
   head: ReactNode;
+  /** The bar along the stash panel's bottom: sort, and sell (2026-11-09). */
+  foot: ReactNode;
   /** The page tabs and buying a page, down the right of the grid (UX-3, 2026-11-08). */
   tabs: ReactNode;
 }
@@ -450,12 +453,15 @@ function Panel({
   width,
   title,
   head,
+  foot,
   children,
 }: {
   className: string;
   width: number;
   title?: ReactNode;
   head?: ReactNode;
+  /** A thin bar under the content, that stays put while it scrolls. */
+  foot?: ReactNode;
   children: ReactNode;
 }): ReactNode {
   return (
@@ -469,6 +475,7 @@ function Panel({
       <div className="inv-panel-body" style={{ width }}>
         {children}
       </div>
+      {foot && <footer className="inv-panel-foot">{foot}</footer>}
     </section>
   );
 }
@@ -850,12 +857,18 @@ function Picker({
 function Loot({ inv }: { inv: InventoryController }): ReactNode {
   const { ctx, target, layout } = inv;
   const search = useContext(StashSearchContext);
-  const panel = (title: ReactNode, body: ReactNode, head?: ReactNode): ReactNode => (
+  const panel = (
+    title: ReactNode,
+    body: ReactNode,
+    head?: ReactNode,
+    foot?: ReactNode,
+  ): ReactNode => (
     <Panel
       className={`inv-loot${target && stashPageOf(target) >= 0 ? ' is-stash' : ''}`}
       width={layout.loot}
       title={title}
       head={head}
+      foot={foot}
     >
       {body}
     </Panel>
@@ -897,6 +910,7 @@ function Loot({ inv }: { inv: InventoryController }): ReactNode {
         </div>
       </>,
       search?.head ?? searching,
+      search?.foot,
     );
   }
   const id = target.kind === 'body' ? target.id : -1;
@@ -914,8 +928,8 @@ function Loot({ inv }: { inv: InventoryController }): ReactNode {
 
 /**
  * The kinds of item to show (2026-11-06), down the left of the stash page (2026-11-09,
- * the user's call; they were along the top): the rest are dimmed. On a phone, a row
- * along the top instead (2026-11-09, style.css). Stays in view while the page scrolls.
+ * the user's call; they were along the top), on a phone too, as icons: the rest are
+ * dimmed. Stays in view while the page scrolls.
  */
 function StashChips(): ReactNode {
   const search = useContext(StashSearchContext);
@@ -928,10 +942,12 @@ function StashChips(): ReactNode {
           key={c.id}
           role="radio"
           aria-checked={c.id === category}
+          aria-label={c.label}
+          title={c.label}
           className={c.id === category ? 'active' : undefined}
           onClick={() => setCategory(c.id)}
         >
-          {c.label}
+          <CategoryIcon id={c.id} />
         </button>
       ))}
     </div>

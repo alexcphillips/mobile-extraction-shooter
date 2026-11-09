@@ -471,13 +471,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
           void saver.flush();
           setPage('menu');
         }}
-        raidButton={raidButton}
         startPage={startPage}
-        onVendors={() => {
-          setNotice(null);
-          void saver.flush();
-          setPage('vendors');
-        }}
         onSell={(refs, on) => {
           const name =
             refs.length === 1 ? itemDef(opts.items, refs[0]!.item).name : `${refs.length} items`;
@@ -745,10 +739,8 @@ function StashPage({
   saver,
   notice,
   onBack,
-  raidButton,
   onBuyPage,
   onSell,
-  onVendors,
   startPage,
 }: {
   stash: StashState;
@@ -757,12 +749,10 @@ function StashPage({
   saver: StashSaver;
   notice: string | null;
   onBack: () => void;
-  raidButton: RaidButton;
   /** Buys the next page; resolves with whether it was bought. */
   onBuyPage: () => Promise<boolean>;
   /** Sells items, all or none; the page shown is kept. Resolves when sold or refused. */
   onSell: (refs: ItemRef[], page: number) => Promise<void>;
-  onVendors: () => void;
   /** The page to show when the stash is (re)opened. */
   startPage: number;
 }): ReactNode {
@@ -919,6 +909,11 @@ function StashPage({
       <span className="stash-used" title="Cells used on this page">
         {used}/{page.w * page.h}
       </span>
+    </>
+  );
+  // The bar along the stash's bottom (2026-11-09, the user's call): sort, and sell.
+  const foot = (
+    <>
       <span className="stash-sort">
         <button
           className={sortOpen ? 'active' : undefined}
@@ -937,6 +932,8 @@ function StashPage({
           </span>
         )}
       </span>
+      <span className="raid-spacer" />
+      {!inv.selling && <button onClick={() => inv.startSelling()}>Sell</button>}
     </>
   );
   const search: StashSearch = {
@@ -952,26 +949,15 @@ function StashPage({
       </>
     ),
     head,
+    foot,
     tabs,
   };
   return (
     <div className="raid stash" role="dialog" aria-label="Stash">
+      {/* Only Back (2026-11-09, the user's call): money, Vendors and the raid button are on
+          the menu, selling and sorting in the bar along the stash's bottom. */}
       <header className="raid-tabs">
         <button onClick={onBack}>Back</button>
-        <span className="stash-title">Stash</span>
-        <span className="raid-spacer" />
-        <span className="vendors-money">
-          <b>{stash.profile.money.toLocaleString()}</b> money
-        </span>
-        {!inv.selling && <button onClick={() => inv.startSelling()}>Select to sell</button>}
-        <button onClick={onVendors}>Vendors</button>
-        <button
-          className={raidButton.primary ? 'primary' : undefined}
-          disabled={raidButton.disabled}
-          onClick={raidButton.onClick}
-        >
-          {raidButton.label}
-        </button>
       </header>
       {(sortNote ?? notice) && <p className="menu-notice">{sortNote ?? notice}</p>}
       <StashSearchContext.Provider value={search}>

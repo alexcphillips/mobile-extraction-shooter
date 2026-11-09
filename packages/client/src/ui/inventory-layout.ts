@@ -22,10 +22,10 @@ const MIN_CELL = 24;
 /** The stash's page tabs, down the right of its grid (UX-3): a tab and the gap before it. */
 export const PAGE_TABS = 34;
 /**
- * The stash's kinds of item, down the left of its grid (2026-11-09): the column and its gap.
- * Not on a phone, where they're a row above the grid (style.css, the same media query).
+ * The stash's kinds of item, a column of icons down the left of its grid (2026-11-09, on a
+ * phone too): the column and its gap (style.css → .stash-kinds).
  */
-const STASH_CHIPS = 48 + 6;
+const STASH_CHIPS = 32 + 6;
 const MAX_CELL = 44;
 /**
  * Extra pixels across on a PC: the loadout's space from the left and from the carried
@@ -134,7 +134,7 @@ export function inventoryLayout(
   const carried = carriedAcross(items);
   const lootCells = PROFILE.stash[0];
   const pc = typeof matchMedia === 'function' && matchMedia(PC).matches;
-  const tabs = stash ? PAGE_TABS + (pc ? STASH_CHIPS : 0) : 0;
+  const tabs = stash ? PAGE_TABS + STASH_CHIPS : 0;
   const room = pc ? PC_ROOM : 0;
   // Merged, the column is as wide as the wider of the two at any cell size.
   const leftCells = pc ? GEAR_CELLS + carried.cells : Math.max(GEAR_CELLS, carried.cells);
