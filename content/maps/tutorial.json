@@ -1,0 +1,288 @@
+{
+  "formatVersion": 4,
+  "id": "tutorial",
+  "name": "Tutorial house",
+  "environment": {
+    "sky": "#9fb3c8",
+    "fogNear": 40,
+    "fogFar": 120
+  },
+  "terrain": {
+    "origin": [-8, -12],
+    "cellSize": 4,
+    "heights": [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    ],
+    "colour": "#6b8f4e"
+  },
+  "colours": {
+    "paint": "#d9cfb8",
+    "floor": "#8a6a4a",
+    "ceiling": "#ece8de",
+    "glass": "#a8c8d8",
+    "door": "#6b4a2b",
+    "hedge": "#4f6b3a"
+  },
+  "nodes": [
+    {
+      "type": "playerSpawn",
+      "id": "start",
+      "pos": [1.6, 0, 0.4],
+      "yaw": -90
+    },
+    {
+      "type": "box",
+      "id": "floor",
+      "pos": [16, 0, 0],
+      "size": [32.4, 0.04, 6.4],
+      "colour": "floor"
+    },
+    {
+      "type": "box",
+      "id": "ceiling",
+      "pos": [16, 2.8, 0],
+      "size": [32.6, 0.2, 6.6],
+      "colour": "ceiling"
+    },
+    {
+      "type": "wall",
+      "id": "north-wall",
+      "pos": [16, 0, -3.1],
+      "size": [32.4, 2.8, 0.2],
+      "colour": "paint",
+      "openings": [
+        {
+          "along": -12,
+          "width": 1.2,
+          "bottom": 0.9,
+          "top": 2.0,
+          "glass": "glass"
+        },
+        {
+          "along": 11,
+          "width": 1.2,
+          "bottom": 0.9,
+          "top": 2.0,
+          "glass": "glass"
+        }
+      ]
+    },
+    {
+      "type": "wall",
+      "id": "south-wall",
+      "pos": [16, 0, 3.1],
+      "size": [32.4, 2.8, 0.2],
+      "colour": "paint",
+      "openings": [
+        {
+          "along": -12,
+          "width": 1.2,
+          "bottom": 0.9,
+          "top": 2.0,
+          "glass": "glass"
+        },
+        {
+          "along": 10,
+          "width": 1.0,
+          "bottom": 0,
+          "top": 2.1
+        }
+      ]
+    },
+    {
+      "type": "wall",
+      "id": "west-wall",
+      "pos": [-0.1, 0, 0],
+      "yaw": 90,
+      "size": [6.4, 2.8, 0.2],
+      "colour": "paint",
+      "openings": []
+    },
+    {
+      "type": "wall",
+      "id": "east-wall",
+      "pos": [32.1, 0, 0],
+      "yaw": 90,
+      "size": [6.4, 2.8, 0.2],
+      "colour": "paint",
+      "openings": []
+    },
+    {
+      "type": "wall",
+      "id": "bedroom-wall",
+      "pos": [8, 0, 0],
+      "yaw": 90,
+      "size": [6, 2.8, 0.15],
+      "colour": "paint",
+      "openings": [
+        {
+          "along": 0,
+          "width": 1.1,
+          "bottom": 0,
+          "top": 2.2
+        }
+      ]
+    },
+    {
+      "type": "wall",
+      "id": "living-wall",
+      "pos": [22, 0, 0],
+      "yaw": 90,
+      "size": [6, 2.8, 0.15],
+      "colour": "paint",
+      "openings": [
+        {
+          "along": 1.2,
+          "width": 1.1,
+          "bottom": 0,
+          "top": 2.2
+        }
+      ]
+    },
+    {
+      "type": "prefab",
+      "id": "bed",
+      "prefab": "bed-double",
+      "pos": [1.2, 0.04, -1.9]
+    },
+    {
+      "type": "prefab",
+      "id": "nightstand",
+      "prefab": "nightstand",
+      "pos": [2.45, 0.04, -2.75]
+    },
+    {
+      "type": "prefab",
+      "id": "wardrobe",
+      "prefab": "wardrobe",
+      "pos": [5.7, 0.04, -2.65]
+    },
+    {
+      "type": "prefab",
+      "id": "debris",
+      "prefab": "fallen-joists",
+      "pos": [11.5, 0.04, 0],
+      "yaw": 90
+    },
+    {
+      "type": "prefab",
+      "id": "barricade",
+      "prefab": "furniture-barricade",
+      "pos": [15.5, 0.04, 0],
+      "yaw": 90
+    },
+    {
+      "type": "lootSpawn",
+      "id": "bandage-spot",
+      "pos": [16.9, 0.04, 0.7],
+      "lootTable": "tutorial-bandage"
+    },
+    {
+      "type": "questMarker",
+      "id": "bandage",
+      "pos": [16.9, 0.04, 0.7]
+    },
+    {
+      "type": "prefab",
+      "id": "tv",
+      "prefab": "tv-unit",
+      "pos": [31.7, 0.04, 0.6],
+      "yaw": -90
+    },
+    {
+      "type": "prefab",
+      "id": "couch",
+      "prefab": "couch",
+      "pos": [27, 0.04, -2.4]
+    },
+    {
+      "type": "prefab",
+      "id": "coffee-table",
+      "prefab": "coffee-table",
+      "pos": [27, 0.04, -1.3]
+    },
+    {
+      "type": "enemySpawn",
+      "id": "scav",
+      "pos": [29.8, 0.04, 0.6],
+      "yaw": -90,
+      "enemy": "scav",
+      "loadout": "tutorial-scav-kit",
+      "deaf": true,
+      "passive": true,
+      "harmless": true,
+      "once": true,
+      "noLoot": true
+    },
+    {
+      "type": "door",
+      "id": "front-door",
+      "pos": [26, 0.04, 3.1],
+      "size": [1.0, 2.06],
+      "key": "front-door-key",
+      "colour": "door"
+    },
+    {
+      "type": "questMarker",
+      "id": "front-door-marker",
+      "pos": [26, 0.04, 2.7]
+    },
+    {
+      "type": "box",
+      "id": "yard-hedge-west",
+      "pos": [23, 0, 6.1],
+      "size": [0.6, 2.4, 5.8],
+      "bulge": [0.08, 0.08, 0, 0.1, 0, 0],
+      "colour": "hedge"
+    },
+    {
+      "type": "box",
+      "id": "yard-hedge-east",
+      "pos": [30, 0, 6.1],
+      "size": [0.6, 2.4, 5.8],
+      "bulge": [0.08, 0.08, 0, 0.1, 0, 0],
+      "colour": "hedge"
+    },
+    {
+      "type": "box",
+      "id": "yard-hedge-south",
+      "pos": [26.5, 0, 9.1],
+      "size": [7.6, 2.4, 0.6],
+      "bulge": [0, 0, 0, 0.1, 0.08, 0.08],
+      "colour": "hedge"
+    }
+  ],
+  "enemyClearance": 0,
+  "zones": [
+    {
+      "id": "past-barricade",
+      "name": "Past the barricade",
+      "points": [
+        [16.1, -3],
+        [22, -3],
+        [22, 3],
+        [16.1, 3]
+      ]
+    },
+    {
+      "id": "front-yard",
+      "name": "Front yard",
+      "points": [
+        [23.3, 3.3],
+        [29.7, 3.3],
+        [29.7, 8.8],
+        [23.3, 8.8]
+      ],
+      "extraction": {
+        "y": 0
+      }
+    }
+  ]
+}

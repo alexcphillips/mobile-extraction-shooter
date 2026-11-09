@@ -20,6 +20,7 @@ import { fitLean, moveCharacter, separateCharacters } from './movement';
 import { investigate, updateRaid } from './raid';
 import type { SimState, TickInputs } from './state';
 import { updateWeapon } from './weapons';
+import { snagOnWire } from './wire';
 import { buy, holdsDeathMachine, rebuild, updateZombies } from './zombies';
 
 /**
@@ -92,6 +93,7 @@ export function step(
   }
   separateCharacters(state.entities, world);
   for (const e of state.entities) fitLean(e, world);
+  for (const e of state.entities) snagOnWire(state, world, e);
   for (const e of state.entities) {
     if (e.health.dead) continue;
     const input = inputs[e.id] ?? e.ai?.input;

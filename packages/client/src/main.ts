@@ -13,6 +13,7 @@ import { watchPauseTriggers } from './app/pause';
 import { Hud } from './hud/hud';
 import { OpticOverlay } from './hud/optic';
 import { RaidHud } from './hud/raid-hud';
+import { HitDirection } from './hud/hit-direction';
 import { Vitals } from './hud/vitals';
 import { startBodies } from './bodies';
 import { startPerfTest } from './perf';
@@ -200,6 +201,7 @@ function playElements(): PlayElements {
     hud,
     optic: new OpticOverlay(byId('optic')),
     vitals: new Vitals(byId('vitals'), byId('ammo'), byId('hurt')),
+    hitDirection: new HitDirection(byId('hit-dir')),
     raidHud: new RaidHud(byId('timer'), byId('extract'), byId('prompt'), byId('use-ring')),
     raid: byId('raid'),
     results: byId('results'),

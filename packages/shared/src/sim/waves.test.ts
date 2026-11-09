@@ -97,6 +97,56 @@ const six = [
   spawn('boss', -120, 130, { enemy: 'boss' }),
 ];
 
+describe("the tutorial's scav (TU-2)", () => {
+  it('a spawn put in once is no wave slot, carries its loadout only, with its flags', () => {
+    const looter: EnemyDef = {
+      ...enemyType('scav', 'scav'),
+      loot: { rolls: [2, 2], tables: { stuff: 1 } },
+    };
+    const keyKit: LoadoutDef = { ...kit, id: 'key-kit', carried: [{ item: 'key' }] };
+    const tutorial: EnemyContent = {
+      ...content,
+      types: new Map([['scav', looter]]),
+      loadouts: new Map([['key-kit', keyKit]]),
+      tables: new Map([
+        [
+          'stuff',
+          {
+            formatVersion: 1,
+            id: 'stuff',
+            name: 'Stuff',
+            rolls: [1, 1],
+            items: [{ item: 'bandage', weight: 1 }],
+          },
+        ],
+      ]),
+    };
+    const state = createState(1);
+    const world = makeWorld();
+    const map = mapOf([
+      spawn('scav', -20, 0, {
+        loadout: 'key-kit',
+        once: true,
+        noLoot: true,
+        deaf: true,
+        passive: true,
+        harmless: true,
+      }),
+    ]);
+    spawnCharacter(state, world, 120, 0, 0, 1);
+    startRaid(state, map, 1200);
+    const [c] = startEnemies(state, world, map, items, tutorial);
+    expect(state.waves).toBeUndefined();
+    expect(c!.ai).toMatchObject({ deaf: true, passive: true, harmless: true });
+    // The key in its pockets, and nothing from its type's loot.
+    expect(c!.gear.pockets.items.map((g) => g.item.item)).toContain('key');
+    expect(c!.gear.pockets.items.some((g) => g.item.item === 'bandage')).toBe(false);
+    c!.health.dead = true;
+    run(state, world, SCAV_WAVES.interval * 3);
+    expect(state.entities.filter((e) => e.ai)).toHaveLength(1);
+  });
+});
+
 describe('scav waves', () => {
   it('starts a third of the scav slots and every boss; the rest come in waves', () => {
     const { state, world, started } = raid(six);

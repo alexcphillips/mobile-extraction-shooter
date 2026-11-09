@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "id": "tutorial",
+  "money": 0,
+  "gear": {
+    "primary1": "m416",
+    "sidearm": "m9a3",
+    "helmet": "steel-helmet",
+    "bodyArmour": "tactical-vest",
+    "rig": "chest-rig",
+    "backpack": "medium-backpack"
+  },
+  "carried": [
+    { "item": "ammo-556x45", "count": 90 },
+    { "item": "ammo-9mm", "count": 30 }
+  ],
+  "loaded": { "m416": "ammo-556x45", "m9a3": "ammo-9mm" },
+  "fitted": { "m416": ["red-dot"] }
+}

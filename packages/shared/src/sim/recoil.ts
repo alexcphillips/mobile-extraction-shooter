@@ -68,6 +68,49 @@ export const RECOIL = {
   rest: 1e-5,
 };
 
+/**
+ * Aim punch (TU-1, 2026-11-09, the user's call: being shot as in Tarkov). A hit on a player
+ * (shot, knife or blast, not a fall) throws where the gun points: recoilPitch and recoilYaw
+ * jump by the punch, then the recoil spring brings them back to the kick at the gun's snap.
+ * So it moves where shots go, not only the view, and runs at the tick, so co-op agrees. A
+ * hit that does no damage still punches (the tutorial's harmless scav). Enemies aren't
+ * punched: their aim has its own model (ai.ts). Degrees.
+ */
+export const PUNCH = {
+  /** Any hit, even one doing no damage. */
+  base: 1.5,
+  /** More for each HP the hit was worth (lost plus stopped by armour). */
+  perHp: 0.05,
+  /** The most one hit throws, and the most all the punches still settling add up to. */
+  most: 5,
+  /** How far off straight up it may go either way: mostly up, as in Tarkov. */
+  spread: 60,
+};
+
+/**
+ * Punches c's aim for a hit worth `hp` (lost plus absorbed). Several in one tick (a
+ * shotgun's pellets, a blast's six zones) together never go past PUNCH.most. Its direction
+ * comes from the tick and the character, not the sim's rng, so punches leave every other
+ * roll as it was.
+ */
+export function punchAim(state: SimState, c: Character, hp: number): void {
+  if (c.ai || c.health.dead) return;
+  const r = (c.recoil ??= createRecoil());
+  const most = PUNCH.most * DEG;
+  const off = Math.hypot(c.recoilPitch - r.kickPitch, c.recoilYaw - r.kickYaw);
+  const size = Math.min(most - off, Math.min(PUNCH.most, PUNCH.base + PUNCH.perHp * hp) * DEG);
+  if (size <= 0) return;
+  const angle = (punchRoll(state.tick, c.id) * 2 - 1) * PUNCH.spread * DEG;
+  c.recoilPitch += size * Math.cos(angle);
+  c.recoilYaw += size * Math.sin(angle);
+}
+
+/** A number in [0, 1) from the tick and an id, the same every time. */
+function punchRoll(tick: number, id: number): number {
+  const x = Math.sin(tick * 12.9898 + id * 78.233) * 43758.5453;
+  return x - Math.floor(x);
+}
+
 /** A character's recoil spring, made at its first shot. Angles in radians. */
 export interface RecoilState {
   /** Where the kicks have pushed the gun; it wears off to 0 and the gun chases it. */

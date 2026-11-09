@@ -3,6 +3,7 @@ import type { Item } from '../inventory/grid';
 import { chance } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import { hostile } from './factions';
+import { punchAim } from './recoil';
 import { maxDurability } from './repair';
 import type { Character, EntityId, SimState } from './state';
 
@@ -277,9 +278,11 @@ export function woundZone(
   const zombies = state.zombies;
   if (zombies && !c.ai && cause === 'explosion' && by !== 0 && isPlayer(state, by)) return;
   if (zombies && zombies.instaKill > 0 && c.ai?.zombie && by !== 0) damage = INSTA_KILL;
-  if (c.admin?.infiniteHealth) {
-    // Still a hit, for markers and the HUD, but nothing lost.
+  if (c.admin?.infiniteHealth || harmless(state, by)) {
+    // Still a hit, for markers and the HUD, but nothing lost. Also a harmless enemy's
+    // (the tutorial's scav, TU-2): felt in full, with nothing at stake.
     state.events.push({ type: 'damage', target: c.id, by, zone, amount: 0, absorbed: 0, cause });
+    punchAim(state, c, damage);
     return;
   }
   let absorbed = 0;
@@ -299,6 +302,7 @@ export function woundZone(
     c.health.bleeding[zone] = true;
   }
   state.events.push({ type: 'damage', target: c.id, by, zone, amount, absorbed, cause });
+  punchAim(state, c, amount + absorbed);
 }
 
 /** More than anything has: an insta-kill hit. */
@@ -313,6 +317,13 @@ const INSTA_KILL = 1e6;
 export function byAlly(state: SimState, c: Character, by: EntityId): boolean {
   if (!c.ai || by === 0) return false;
   for (const e of state.entities) if (e.id === by) return !!e.ai && !hostile(c, e);
+  return false;
+}
+
+/** Whether `by` is a harmless enemy (AiState.harmless, TU-2), whose hits do no damage. */
+function harmless(state: SimState, by: EntityId): boolean {
+  if (by === 0) return false;
+  for (const e of state.entities) if (e.id === by) return !!e.ai?.harmless;
   return false;
 }
 

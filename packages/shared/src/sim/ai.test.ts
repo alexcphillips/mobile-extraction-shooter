@@ -89,6 +89,8 @@ function setup(
     yaw?: number;
     half?: number;
     skill?: Partial<EnemySkill>;
+    /** The tutorial's flags (TU-2). */
+    flags?: { deaf?: boolean; passive?: boolean; harmless?: boolean };
   } = {},
 ): Setup {
   const world = makeWorld(options.boxes, options.half);
@@ -97,6 +99,7 @@ function setup(
   const enemy = spawnEnemy(state, world, 0, 0, 0, options.yaw ?? 0, {
     patrol: options.patrol,
     skill: { ...DEFAULT_SKILL, ...options.skill },
+    ...options.flags,
   });
   const player = spawnCharacter(state, world, px, pz);
   const run = (seconds: number, inp = input()): void => {
@@ -835,6 +838,57 @@ describe('enemy combat', () => {
       step(b.state, b.world, TEST_ITEMS, { [a.player.id]: walk }, a.nav);
     }
     expect(b.state).toEqual(a.state);
+  });
+});
+
+describe("the tutorial's flags (TU-2)", () => {
+  it('passive: never notices you in front of it, walking or shooting, until it is hit', () => {
+    const s = setup(0, -6, { flags: { passive: true } });
+    s.run(4, input({ moveX: 1 }));
+    shootUp(s);
+    s.run(2);
+    expect(s.enemy.ai!.awareness).toBe('unaware');
+    expect(s.enemy.ai!.notice).toBe(0);
+    // Knifed: from then on it fights like any other.
+    const k = setup(0, 1, { flags: { passive: true } });
+    equip(k.player, TEST_ITEMS, 'knife', createItem(TEST_ITEMS, 'knife'));
+    k.run(0.5, input({ draw: 'knife' }));
+    k.run(1 / TICK_RATE, input({ draw: 'knife', fire: true, pitch: -0.3 }));
+    expect(k.enemy.ai!.awareness).toBe('alert');
+    expect(k.enemy.ai!.passive).toBeUndefined();
+  });
+
+  it('deaf: sees you, but not a shot behind it', () => {
+    const behind = setup(0, 10, { flags: { deaf: true } });
+    shootUp(behind);
+    behind.run(1);
+    expect(behind.enemy.ai!.awareness).toBe('unaware');
+    const front = setup(0, -8, { flags: { deaf: true } });
+    front.run(3);
+    expect(front.enemy.ai!.awareness).toBe('alert');
+  });
+
+  it('harmless: its shots hit, felt in full (aim punch), but take no HP and start no bleed', () => {
+    const s = setup(0, -12, { flags: { harmless: true } });
+    giveWeapon(s.enemy, TEST_ITEMS, 'rifle');
+    stow(s.enemy, TEST_ITEMS, { item: 'round', count: 300 });
+    const hp = [...s.player.health.hp];
+    let hits = 0;
+    let punched = false;
+    for (let t = 0; t < 10 * TICK_RATE; t++) {
+      s.run(1 / TICK_RATE);
+      for (const e of s.state.events)
+        if (e.type === 'damage' && e.target === s.player.id && e.cause === 'shot') {
+          hits++;
+          expect(e.amount).toBe(0);
+        }
+      if (s.player.recoilPitch !== 0) punched = true;
+    }
+    expect(hits).toBeGreaterThan(5);
+    expect(punched).toBe(true);
+    expect(s.player.health.hp).toEqual(hp);
+    expect(s.player.health.bleeding.includes(true)).toBe(false);
+    expect(s.player.health.dead).toBe(false);
   });
 });
 

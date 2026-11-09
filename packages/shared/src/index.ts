@@ -729,3 +729,16 @@ export {
 export { pickHost } from './coop/host';
 export { apply, diff, strip, type Patch } from './net/sync';
 export { gunRecoil } from './sim/recoil';
+export {
+  TUTORIAL_FORMAT,
+  TUTORIAL_FORMAT_VERSION,
+  compileTutorial,
+  tutorialSchema,
+  type CompiledTutorial,
+  type CompiledTutorialStep,
+  type TutorialDef,
+  type TutorialStep,
+  type TutorialTrigger,
+} from './content/tutorials';
+export { advanceTutorial, startTutorial, tutorialDone, type TutorialProgress } from './tutorial';
+export { snagOnWire, type WireEvent } from './sim/wire';

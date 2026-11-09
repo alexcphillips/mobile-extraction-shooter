@@ -11,6 +11,7 @@ import {
   RAID_FORMAT,
   SOUND_FORMAT,
   STARTING_KIT_FORMAT,
+  TUTORIAL_FORMAT,
   VENDOR_FORMAT,
   ZOMBIES_FORMAT,
   checkEnemies,
@@ -26,9 +27,11 @@ import {
   checkSounds,
   itemSounds,
   compileMap,
+  compileTutorial,
   loadById,
   newProfile,
   type CompiledMap,
+  type CompiledTutorial,
   type EnemyDef,
   type ItemDb,
   type ItemDef,
@@ -110,6 +113,11 @@ const zombiesFiles = import.meta.glob<unknown>('../../../content/zombies/*.json'
   import: 'default',
 });
 
+const tutorialFiles = import.meta.glob<unknown>('../../../content/tutorials/*.json', {
+  eager: true,
+  import: 'default',
+});
+
 let prefabs: Map<string, PrefabFile> | undefined;
 let items: ItemDb | undefined;
 let maps: Map<string, MapFile> | undefined;
@@ -148,11 +156,14 @@ let origins: ReadonlyMap<string, ItemSource> | undefined;
 export function itemOrigins(): ReadonlyMap<string, ItemSource> {
   if (!origins) {
     raids ??= loadById(RAID_FORMAT, raidFiles);
-    const raidMaps = [...raids.values()].map((r) => ({
-      id: r.map,
-      name: r.name,
-      markers: compiledMarkers.get(r.map) ?? loadMap(r.map).markers,
-    }));
+    // The tutorial's raid (offline) isn't somewhere items come from.
+    const raidMaps = [...raids.values()]
+      .filter((r) => !r.offline)
+      .map((r) => ({
+        id: r.map,
+        name: r.name,
+        markers: compiledMarkers.get(r.map) ?? loadMap(r.map).markers,
+      }));
     const e = loadEnemies();
     origins = sourceIndex({
       items: loadItems(),
@@ -172,9 +183,8 @@ export function itemOrigins(): ReadonlyMap<string, ItemSource> {
 export function warmItemOrigins(): void {
   if (origins) return;
   raids ??= loadById(RAID_FORMAT, raidFiles);
-  const left = [...new Set([...raids.values()].map((r) => r.map))].filter(
-    (m) => !compiledMarkers.has(m),
-  );
+  const online = [...raids.values()].filter((r) => !r.offline);
+  const left = [...new Set(online.map((r) => r.map))].filter((m) => !compiledMarkers.has(m));
   const step = (): void => {
     if (origins) return;
     const next = left.shift();
@@ -530,9 +540,10 @@ function countLootTable(value: unknown, id: string): number {
   );
 }
 
+/** The raids to pick from: not the offline ones (the tutorial's). */
 export function raidIds(): string[] {
   raids ??= loadById(RAID_FORMAT, raidFiles);
-  return [...raids.keys()];
+  return [...raids.values()].filter((r) => !r.offline).map((r) => r.id);
 }
 
 /** A raid config from content/raids, checked to name a map that exists. */
@@ -543,6 +554,29 @@ export function loadRaid(id: string): RaidDef {
   if (!mapIds().includes(raid.map))
     throw new Error(`content/raids/${id}.json: no map "${raid.map}"`);
   return raid;
+}
+
+export function tutorialIds(): string[] {
+  return [...loadById(TUTORIAL_FORMAT, tutorialFiles).keys()];
+}
+
+/**
+ * A tutorial from content/tutorials (TU-2, 2026-11-09), checked against the rest of content:
+ * its raid (offline), its kit, the items its steps name, and the zones, doors and markers
+ * in its map.
+ */
+export function loadTutorial(id: string): CompiledTutorial {
+  const def = loadById(TUTORIAL_FORMAT, tutorialFiles).get(id);
+  const source = `content/tutorials/${id}.json`;
+  if (!def) throw new Error(`no tutorial "${id}" in content/tutorials`);
+  const raid = loadRaid(def.raid);
+  if (!raid.offline) throw new Error(`${source}: raid "${raid.id}" isn't offline`);
+  loadStartingKit(def.kit);
+  const items = loadItems();
+  for (const s of def.steps)
+    if (s.trigger.type === 'carry' && !items.has(s.trigger.item))
+      throw new Error(`${source}: step "${s.id}": no item "${s.trigger.item}"`);
+  return compileTutorial(def, loadMap(raid.map));
 }
 
 let zombies: Map<string, ZombiesDef> | undefined;

@@ -386,6 +386,20 @@ const enemySpawnSchema = z.strictObject({
       finite.refine((n) => n >= 0, 'must be 0 or more'),
     )
     .optional(),
+  /*
+   * The tutorial's flags (TU-2, 2026-11-09; design.md → Tutorial): on the spawn, so any
+   * enemy type can have them. Optional fields, so still map format 4.
+   */
+  /** Hears nothing: no footsteps, shots, blasts, doors or glass. Hits still alarm it. */
+  deaf: z.literal(true).optional(),
+  /** Never notices anyone on its own, by sight or sound, until it's hit (or set alight). */
+  passive: z.literal(true).optional(),
+  /** Its shots, swings and blasts do no damage. They're still hits, felt in full. */
+  harmless: z.literal(true).optional(),
+  /** Put in at raid start and never again: a scav here isn't a wave slot. */
+  once: z.literal(true).optional(),
+  /** Carries only its loadout, not its type's loot. */
+  noLoot: z.literal(true).optional(),
 });
 
 const lootContainerSchema = z.strictObject({
@@ -533,6 +547,20 @@ const glassSchema = z.strictObject({
   colour: colourRefSchema,
 });
 
+/**
+ * Barbed wire (TU-2, 2026-11-09; design.md → Tutorial): a box you can't see or bump into,
+ * pos the middle of its base. Touching it, standing, crouched or prone, starts a light
+ * bleed, once each time you go in. Draw the coils beside it with collide: false shapes.
+ */
+const wireSchema = z.strictObject({
+  type: z.literal('wire'),
+  id: idSchema.optional(),
+  pos: vec3,
+  yaw: angle,
+  /** Full width (x), height (y) and depth (z). */
+  size: size3,
+});
+
 export const nodeSchema: z.ZodDiscriminatedUnion<
   [
     typeof boxSchema,
@@ -545,6 +573,7 @@ export const nodeSchema: z.ZodDiscriminatedUnion<
     typeof doorSchema,
     typeof moverSchema,
     typeof glassSchema,
+    typeof wireSchema,
     typeof playerSpawnSchema,
     typeof pmcSpawnSchema,
     typeof enemySpawnSchema,
@@ -570,6 +599,7 @@ export const nodeSchema: z.ZodDiscriminatedUnion<
   doorSchema,
   moverSchema,
   glassSchema,
+  wireSchema,
   playerSpawnSchema,
   pmcSpawnSchema,
   enemySpawnSchema,

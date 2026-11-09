@@ -22,6 +22,12 @@ export const raidSchema = z.strictObject({
     .number()
     .refine((n) => Number.isFinite(n) && n > 0, 'must be greater than 0')
     .default(15 * 60),
+  /**
+   * Played offline, never on the server (TU-2, 2026-11-09: the tutorial): not in the raid
+   * list, the server won't start it, and its map isn't counted where items come from.
+   * An optional field, so still format 1.
+   */
+  offline: z.literal(true).optional(),
 });
 
 export type RaidDef = z.infer<typeof raidSchema>;

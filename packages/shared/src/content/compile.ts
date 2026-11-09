@@ -309,6 +309,8 @@ interface Sink {
   movers: PendingMover[] | null;
   switches: PendingSwitch[] | null;
   glass: CompiledGlass[] | null;
+  /** Barbed wire's boxes (TU-2). */
+  wires: BoxDef[] | null;
   markers: CompiledMarker[] | null;
   patrols: CompiledPatrol[] | null;
   barricades: CompiledBarricade[] | null;
@@ -333,6 +335,7 @@ const DRAW_ONLY: Sink = {
   movers: null,
   switches: null,
   glass: null,
+  wires: null,
   markers: null,
   patrols: null,
   barricades: null,
@@ -362,6 +365,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     movers: [],
     switches: [],
     glass: [],
+    wires: [],
     markers: [],
     patrols: [],
     barricades: [],
@@ -429,6 +433,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
       glass: out.glass!,
       blockers: [...out.blockers!, ...out.invisible!],
       switches,
+      wires: out.wires!,
     },
     shapes: out.shapes!,
     instanced: [...out.groups!.values()],
@@ -503,6 +508,7 @@ export function compileNodes(
       blockers: null,
       movers: null,
       switches: null,
+      wires: null,
     },
   );
   return out;
@@ -1011,6 +1017,13 @@ class Compiler {
           colour: this.colour(node.colour, scope, path),
         });
         return;
+
+      case 'wire': {
+        if (f.tilt) this.cantTilt(path, 'wire');
+        const [w, h, d] = node.size;
+        out.wires?.push({ x, y: y + h / 2, z, hx: w / 2, hy: h / 2, hz: d / 2, yaw });
+        return;
+      }
 
       case 'barricade': {
         if (f.tilt) this.cantTilt(path, 'barricades');

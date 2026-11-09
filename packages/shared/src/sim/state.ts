@@ -16,6 +16,7 @@ import { MOVEMENT } from './movement';
 import type { InvestigateEvent, LeaveEvent, LeftRaid, RaidState } from './raid';
 import type { RecoilState } from './recoil';
 import type { WavesState } from './waves';
+import type { WireEvent } from './wire';
 import type { Poi, SquadState } from './routes';
 import type { ShotEvent } from './weapons';
 import type { BuyEvent, PlankEvent, PowerupEvent, RoundEvent, ZombiesState } from './zombies';
@@ -134,6 +135,8 @@ export interface Character {
   using: MedUse | null;
   /** The switch it's holding the use button on, and for how many seconds so far. */
   switching?: { index: number; held: number };
+  /** Touching barbed wire last tick (TU-2, sim/wire.ts). Missing (older saves) is false. */
+  inWire?: boolean;
   /** Seconds it has stood in an extraction point; 0 when not in one. */
   extracting: number;
   /**
@@ -207,7 +210,8 @@ export type SimEvent =
   | PlankEvent
   | PowerupEvent
   | CalloutEvent
-  | VoiceEvent;
+  | VoiceEvent
+  | WireEvent;
 
 /**
  * An admin gun's shot (WeaponDef.spawns) asking for an enemy of that type here, facing

@@ -92,7 +92,9 @@ raids.post('/', async (c) => {
   const raw = await body(c);
   if (!isObject(raw) || typeof raw.raid !== 'string')
     return fail(c, 'bad-request', 'raid is required');
-  if (!raidDef(raw.raid)) return fail(c, 'invalid', `no raid "${raw.raid}"`);
+  // An offline raid (the tutorial's, TU-2) is never played on the server.
+  if (!raidDef(raw.raid) || raidDef(raw.raid)!.offline)
+    return fail(c, 'invalid', `no raid "${raw.raid}"`);
   const db = c.env.DB;
   const account = c.var.account;
   const current = await profileResponse(db, account);

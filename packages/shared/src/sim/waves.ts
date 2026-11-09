@@ -78,6 +78,11 @@ export interface WaveSpot {
   type: string;
   loadout: string;
   lootWeights: Record<string, number> | null;
+  /** The spawn's tutorial flags (TU-2): see EnemySpawnOptions. Missing is false. */
+  deaf?: boolean;
+  passive?: boolean;
+  harmless?: boolean;
+  noLoot?: boolean;
 }
 
 export interface WaveSlot {
@@ -180,7 +185,8 @@ export function startEnemies(
     const type = content.types.get(m.enemy);
     if (!type) throw new Error(`enemy spawn "${m.id}": no enemy type "${m.enemy}"`);
     const spot = waveSpot(world, m, type, content);
-    if (type.faction !== 'scav') {
+    // A spawn put in once (TU-2) is no wave slot, whatever its faction.
+    if (type.faction !== 'scav' || m.once) {
       out.push(spawnSpot(state, world, items, content, spot));
       continue;
     }
@@ -269,6 +275,10 @@ function waveSpot(
     type: m.enemy,
     loadout: m.loadout ?? type.loadout,
     lootWeights: m.lootWeights ? { ...m.lootWeights } : null,
+    ...(m.deaf && { deaf: true }),
+    ...(m.passive && { passive: true }),
+    ...(m.harmless && { harmless: true }),
+    ...(m.noLoot && { noLoot: true }),
   };
 }
 
@@ -290,9 +300,13 @@ function spawnSpot(
     type: type.id,
     voiced: !!(type.voice?.breathe || type.voice?.mutter),
     limbHealth: type.limbHealth,
+    deaf: spot.deaf,
+    passive: spot.passive,
+    harmless: spot.harmless,
   });
   equipLoadout(c, items, content.loadouts.get(spot.loadout)!, state.rng);
-  rollEnemyLoot(c, items, content.tables, type.loot, spot.lootWeights ?? undefined, state.rng);
+  if (!spot.noLoot)
+    rollEnemyLoot(c, items, content.tables, type.loot, spot.lootWeights ?? undefined, state.rng);
   return c;
 }
 
@@ -312,6 +326,9 @@ function spawnSlot(
     faction: type.faction,
     outfits: type.outfits,
     type: spot.type,
+    deaf: spot.deaf,
+    passive: spot.passive,
+    harmless: spot.harmless,
   });
   // The spawn's radius may have put it somewhere a player can see, or too close: then on
   // the spot itself, which was checked.
@@ -325,7 +342,15 @@ function spawnSlot(
   }
   equipLoadout(c, items, waves.loadouts[spot.loadout]!, state.rng);
   const tables: LootTables = new Map(Object.entries(waves.tables));
-  rollEnemyLoot(c, items, tables, type.loot ?? undefined, spot.lootWeights ?? undefined, state.rng);
+  if (!spot.noLoot)
+    rollEnemyLoot(
+      c,
+      items,
+      tables,
+      type.loot ?? undefined,
+      spot.lootWeights ?? undefined,
+      state.rng,
+    );
   return c;
 }
 

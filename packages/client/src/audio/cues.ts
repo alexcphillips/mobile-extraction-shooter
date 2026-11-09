@@ -179,13 +179,12 @@ export class SoundCues {
           if (e.target === player.id) this.sound.play(S.impactArmour);
           else this.at(S.impactArmour, target.x, target.y + CHEST, target.z);
         }
-        // Several hits in one burst (or one blast's zones) make one grunt.
-        if (
-          e.target === player.id &&
-          e.amount > 0 &&
-          sim.tick - this.hurtTick > 0.25 / TICK_SECONDS
-        ) {
+        if (e.target !== player.id) return;
+        // Being hit (TU-1): the thud of the round or blade, and a grunt, on any hit, even one
+        // doing no damage. Several hits in one burst (or one blast's zones) make one of each.
+        if (sim.tick - this.hurtTick > 0.25 / TICK_SECONDS) {
           this.hurtTick = sim.tick;
+          if (e.cause !== 'explosion') this.sound.play(S.impactFlesh);
           this.sound.play(S.hurt);
         }
         return;

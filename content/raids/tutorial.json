@@ -1,0 +1,8 @@
+{
+  "formatVersion": 1,
+  "id": "tutorial",
+  "name": "Tutorial",
+  "map": "tutorial",
+  "duration": 1800,
+  "offline": true
+}

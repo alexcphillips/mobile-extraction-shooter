@@ -13,6 +13,7 @@ import {
   RIGHT_LEG,
   TOTAL_HP,
   bleed,
+  applyFall,
   brokenArms,
   dealDamage,
   isBroken,
@@ -25,6 +26,7 @@ import {
   totalHp,
   wearArmour,
 } from './health';
+import { PUNCH, settleRecoil } from './recoil';
 import { createState, spawnCharacter, type Character, type SimState } from './state';
 import { step } from './step';
 import { TEST_ITEMS } from './test-items';
@@ -262,5 +264,47 @@ describe('fall damage', () => {
     expect(top.health.hp[CHEST]).toBeGreaterThan(75);
     expect(top.health.hp[CHEST]).toBeLessThan(83);
     expect(top.health.hp[HEAD]).toBeLessThan(33);
+  });
+});
+
+describe('aim punch', () => {
+  const DEG = Math.PI / 180;
+  const off = (c: Character): number => Math.hypot(c.recoilPitch, c.recoilYaw) / DEG;
+
+  it("throws a hit player's aim, mostly up, and the spring brings it back", () => {
+    const { state, c } = setup();
+    shootCharacter(state, TEST_ITEMS, c, LEFT_ARM, round, 0);
+    const lost = 60 - c.health.hp[LEFT_ARM]!;
+    expect(off(c)).toBeCloseTo(Math.min(PUNCH.most, PUNCH.base + PUNCH.perHp * lost));
+    expect(c.recoilPitch).toBeGreaterThan(0);
+    for (let i = 0; i < TICK_RATE; i++) settleRecoil(c, 30, 6, false);
+    expect(off(c)).toBe(0);
+  });
+
+  it('punches a hit that does no damage', () => {
+    const { state, c } = setup();
+    c.admin = {
+      infiniteHealth: true,
+      infiniteAmmo: false,
+      peaceful: false,
+      infiniteConsumables: false,
+    };
+    shootCharacter(state, TEST_ITEMS, c, CHEST, round, 0);
+    expect(c.health.hp[CHEST]).toBe(85);
+    expect(off(c)).toBeGreaterThanOrEqual(PUNCH.base);
+  });
+
+  it('never adds up past its most in one go, and leaves enemies and falls alone', () => {
+    const { state, c } = setup();
+    for (let i = 0; i < 9; i++) shootCharacter(state, TEST_ITEMS, c, LEFT_LEG, round, 0);
+    expect(off(c)).toBeLessThanOrEqual(PUNCH.most + 1e-9);
+    const enemy = setup();
+    enemy.c.ai = {} as Character['ai'];
+    shootCharacter(enemy.state, TEST_ITEMS, enemy.c, LEFT_ARM, round, 0);
+    expect(off(enemy.c)).toBe(0);
+    const faller = setup();
+    faller.c.landingSpeed = 30;
+    applyFall(faller.state, faller.c);
+    expect(off(faller.c)).toBe(0);
   });
 });

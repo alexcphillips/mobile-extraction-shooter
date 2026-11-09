@@ -816,6 +816,15 @@ export interface AiState {
   stagger?: number;
   /** Breathes and mutters (AI-8): its type has those voice lines. Missing is false. */
   voiced?: boolean;
+  /*
+   * The tutorial's flags (TU-2, 2026-11-09), from its spawn. Missing is false.
+   */
+  /** Hears nothing (footsteps, hands, shots, blasts, doors, glass); a hit still alarms it. */
+  deaf?: boolean;
+  /** Notices nobody by sight or sound; cleared once it's hit or set alight. */
+  passive?: boolean;
+  /** Its hits do no damage (health.ts woundZone), but are hits in every other way. */
+  harmless?: boolean;
 }
 
 export type Quirk = 'stop' | 'crouch' | 'sprint';
@@ -842,6 +851,10 @@ export interface EnemySpawnOptions {
   voiced?: boolean | undefined;
   /** Its arms' and legs' HP as a multiple of everyone's (the enemy type's limbHealth). */
   limbHealth?: number | undefined;
+  /** The tutorial's flags (TU-2), from its spawn: see AiState.deaf, passive and harmless. */
+  deaf?: boolean | undefined;
+  passive?: boolean | undefined;
+  harmless?: boolean | undefined;
 }
 
 /** A middling enemy, for tests and enemies with no type. */
@@ -978,6 +991,9 @@ export function spawnEnemy(
     wayZ: 0,
   };
   if (voiced) c.ai.voiced = true;
+  if (options.deaf) c.ai.deaf = true;
+  if (options.passive) c.ai.passive = true;
+  if (options.harmless) c.ai.harmless = true;
   // Tougher limbs (Jug, 2026-11-08): more HP, kept in the state like any other.
   for (let z = LEFT_ARM; z <= RIGHT_LEG; z++) c.health.hp[z] = HEALTH.maxHp[z]! * limbHealth;
   calmDown(c, c.ai, false);
@@ -1037,9 +1053,10 @@ export function updateAi(
     if (ai.zombie) hunt(state, c, ai, items, nav);
     else {
       if ((state.tick + c.id) % AI.perceiveEvery === 0) {
-        look(state, c, ai, world, nav);
-        listenForSteps(state, c, ai);
-        if (ai.skill.listen) listenForHands(state, c, ai);
+        // Passive (the tutorial's scav, TU-2): nothing is noticed until it's hit.
+        if (!ai.passive) look(state, c, ai, world, nav);
+        if (!ai.deaf && !ai.passive) listenForSteps(state, c, ai);
+        if (ai.skill.listen && !ai.deaf && !ai.passive) listenForHands(state, c, ai);
         if (ai.squad !== undefined) shareTarget(state, c, ai);
         if (ai.quarry) track(state, c, ai);
         if (ai.awareness === 'alert') considerThrow(state, c, ai, world, items);
@@ -1512,6 +1529,8 @@ function hearEvents(
       if (ev.target !== c.id || ev.by === 0 || ev.by === c.id) continue;
       const by = entityById(state, ev.by);
       if (by && !by.health.dead && hostile(c, by) && !by.admin?.peaceful) {
+        // A hit wakes a passive enemy (TU-2): from now on it sees as any other does.
+        delete ai.passive;
         // Hurt by someone it can't see (asked before it turns to them): Jug's rage (AI-8).
         if (ai.skill.enrage && !ai.rage) hurtUnseen(state, c, ai, world, by, ev.amount);
         alarm(ai, by, by.x, by.y, by.z);
@@ -1524,6 +1543,8 @@ function hearEvents(
       }
       continue;
     }
+    // Deaf, or passive until hit (TU-2): only being hurt or set alight gets through.
+    if ((ai.deaf || ai.passive) && ev.type !== 'death' && ev.type !== 'ignite') continue;
     if (ev.type === 'door') {
       // Jug kicking a door in (AI-8): heard like glass breaking, further. An ally's isn't
       // worth checking.
@@ -1557,6 +1578,7 @@ function hearEvents(
       if (ev.target !== c.id || ev.by === 0 || ev.by === c.id) continue;
       const by = entityById(state, ev.by);
       if (by && !by.health.dead && hostile(c, by) && !by.admin?.peaceful) {
+        delete ai.passive;
         alarm(ai, by, by.x, by.y, by.z);
         ai.hurt = true;
       }
@@ -1769,6 +1791,8 @@ export function freeToCheck(c: Character): boolean {
     !ai.zombie &&
     !c.health.dead &&
     !ai.flee &&
+    !ai.deaf &&
+    !ai.passive &&
     ai.awareness !== 'alert' &&
     !(ai.awareness === 'suspicious' && ai.investigate)
   );

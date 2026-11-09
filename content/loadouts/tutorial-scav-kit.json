@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "id": "tutorial-scav-kit",
+  "weapons": [
+    {
+      "weight": 1,
+      "item": "m9a3",
+      "spare": [15, 15],
+      "ammo": [{ "weight": 1, "item": "ammo-9mm" }]
+    }
+  ],
+  "carried": [{ "item": "front-door-key" }]
+}

@@ -18,7 +18,8 @@ import { giveWeapon } from './weapons';
  * a gun with its attachments and a full magazine of its round (picked by weight, if it
  * lists rounds), taken out; armour, a rig and a backpack
  * (or none) in each slot; grenades (AI-6), stowed first so they're in reach to throw; and
- * spare rounds stowed in pockets, rig and backpack (what doesn't fit is left out).
+ * spare rounds stowed in pockets, rig and backpack (what doesn't fit is left out). What it
+ * always carries (`carried`, TU-2) is stowed before the grenades.
  * Replaces everything it had except the vault.
  */
 export function equipLoadout(c: Character, items: ItemDb, loadout: LoadoutDef, rng: Rng): void {
@@ -42,6 +43,8 @@ export function equipLoadout(c: Character, items: ItemDb, loadout: LoadoutDef, r
   c.gear.bodyArmour = rollArmour(items, loadout.bodyArmour, rng);
   rollContainer(c, items, 'rig', loadout.rigs, rng);
   rollContainer(c, items, 'backpack', loadout.backpacks, rng);
+  for (const k of loadout.carried ?? [])
+    for (let i = 0; i < (k.count ?? 1); i++) stow(c, items, createItem(items, k.item));
   rollGrenades(c, items, loadout.grenades, rng);
   for (const group of loadout.meds ?? []) rollGrenades(c, items, group, rng);
   if (spare > 0) stow(c, items, { item: ammo, count: spare });

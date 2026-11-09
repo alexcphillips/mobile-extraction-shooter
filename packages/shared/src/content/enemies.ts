@@ -382,6 +382,12 @@ export const loadoutSchema = z.strictObject({
    * (skill.heals) uses them. None if left out.
    */
   meds: z.array(z.array(medOptionSchema).min(1)).optional(),
+  /**
+   * Items it always carries (TU-2, 2026-11-09: the tutorial scav's front door key), stowed
+   * before anything else so they're in its pockets. None if left out; an optional field,
+   * so still format 1.
+   */
+  carried: z.array(z.strictObject({ item: idSchema, count: z.int().min(1).optional() })).optional(),
 });
 
 export type EnemyDef = z.infer<typeof enemySchema>;
@@ -497,5 +503,7 @@ export function checkEnemies(
         if (items.get(o.item)?.type !== 'med')
           throw new ContentError(source, `"${o.item}" is not a med`);
       }
+    for (const k of l.carried ?? [])
+      if (!items.has(k.item)) throw new ContentError(source, `no item "${k.item}"`);
   }
 }

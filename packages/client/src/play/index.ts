@@ -127,6 +127,7 @@ import { EnemyBars } from '../hud/enemy-bars';
 import { QuestMarkers } from '../hud/quest-markers';
 import type { RaidHud } from '../hud/raid-hud';
 import { SpectateBar } from '../hud/spectate';
+import type { HitDirection } from '../hud/hit-direction';
 import type { Vitals } from '../hud/vitals';
 import { Controls } from '../input/controls';
 import { inputMode } from '../input/mode';
@@ -178,6 +179,8 @@ export interface PlayElements {
   hud: Hud;
   optic: OpticOverlay;
   vitals: Vitals;
+  /** Where hits on you came from (TU-1). */
+  hitDirection: HitDirection;
   /** The raid timer and the extraction countdown. */
   raidHud: RaidHud;
   /** Where the raid screen (inventory, map, quests) opens. */
@@ -1009,6 +1012,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   });
   function endRaid(how: LeaveReason | 'killed', detail: string, now: number): void {
     if (ended) return;
+    el.hitDirection.clear();
     giveUp.set(null);
     if (zombiesMode) {
       // Nothing to keep, lose or save: how far you got.
@@ -1098,6 +1102,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // teammate still in it, until they're out too or you go to the results. Only what they
   // see, never a free camera, so it tells you no more than they could.
   let watching: Character | null = null;
+  /** The view's sideways jolt from the last hit (TU-1), radians; it fades each frame. */
+  let punchRoll = 0;
   const spectateBar = coop
     ? new SpectateBar(
         () => watch(-1),
@@ -1113,6 +1119,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const i = live.findIndex((o) => o.c === watching);
     watching = live[i < 0 ? 0 : (i + step + live.length) % live.length]!.c;
     showOthers();
+    el.hitDirection.clear();
     // Straight there, not swept across the map from the last view.
     follow();
     Object.assign(prev, cur);
@@ -1409,7 +1416,22 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     let lastHit = burn ? fireKey(burn.by) : 'bleeding';
     let lit = false;
     let died = false;
+    // The last blast this tick, for where its hits came from (its event comes first).
+    let blastX = viewer.x;
+    let blastZ = viewer.z;
     for (const e of sim.events) {
+      // Being hit (TU-1): where from, for the arcs; any hit, even one doing no damage.
+      if (e.type === 'shot' && e.hit === 'character' && e.target === viewer.id) {
+        el.hitDirection.hit(viewer.x, viewer.z, e.fromX, e.fromZ, now / 1000);
+      } else if (e.type === 'swing' && e.hit === 'character' && e.target === viewer.id) {
+        const by = entityById(sim, e.by);
+        if (by) el.hitDirection.hit(viewer.x, viewer.z, by.x, by.z, now / 1000);
+      } else if (e.type === 'explosion') {
+        blastX = e.x;
+        blastZ = e.z;
+      } else if (e.type === 'damage' && e.cause === 'explosion' && e.target === viewer.id) {
+        el.hitDirection.hit(viewer.x, viewer.z, blastX, blastZ, now / 1000);
+      }
       if (e.type === 'shot' && e.by === player.id && e.pellet === 0) {
         const gun = heldWeapon(player);
         rumble.fired(gun ? weaponDef(items, gun.item).recoil.up : 1, now);
@@ -1484,9 +1506,15 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         );
       } else if (e.type === 'damage') {
         if (e.amount > 0) bodyOf.get(e.target)?.hit();
-        if (e.target === (watching ?? player).id && e.amount > 0) el.vitals.hurtFlash();
+        // A hit always shows, even one doing no damage (TU-1); a fall only when it hurts.
+        const felt = e.amount > 0 || e.cause !== 'fall';
+        if (e.target === viewer.id && felt) {
+          el.vitals.hurtFlash();
+          // The view jolts sideways a little, the way the sim's punch threw the aim.
+          punchRoll = (viewer.recoilYaw >= 0 ? -1 : 1) * Math.min(4, 1.5 + e.amount / 20) * DEG;
+        }
         if (e.target === player.id) {
-          if (e.amount > 0) rumble.hurt(e.amount, now);
+          if (felt) rumble.hurt(e.amount, now);
           hitLost += e.amount;
           const by = e.by === player.id ? 'Your own grenade' : names.get(e.by);
           lastHit = logHit(taken, e, by ?? 'Someone');
@@ -1767,7 +1795,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       pitch = lerp(prev.pitch, cur.pitch);
     }
     // Leaning tilts the view a third as far as the body (about 10°), towards the lean.
-    const roll = -lerp(prev.lean, cur.lean) * MOVEMENT.leanAngle * LEAN_ROLL;
+    // A hit's jolt (TU-1) fades in about a fifth of a second.
+    punchRoll *= Math.exp(-dtMs / 70);
+    const roll = -lerp(prev.lean, cur.lean) * MOVEMENT.leanAngle * LEAN_ROLL + punchRoll;
     const aim = lerp(prev.aim, cur.aim);
     const w = heldWeapon(v);
     const optic = w?.attachments.optic
@@ -1794,6 +1824,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       roll,
     );
     const alive = !v.health.dead;
+    el.hitDirection.update(yaw, camera.position.x, camera.position.z, time / 1000);
     el.optic.set(optic);
     el.optic.visible = alive && aim >= (zoom > 1 ? SCOPE_IN : RETICLE_IN);
     // Where the gun points, from the camera: the sim's aim, so the reticle is where shots go.

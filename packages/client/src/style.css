@@ -424,6 +424,27 @@ body {
   animation: hurt 0.5s ease-out;
 }
 
+/* Where a hit came from (TU-1): red arcs around the middle, turned by hud/hit-direction.ts. */
+#hit-dir {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  --hit-arc-radius: -22vmin;
+}
+
+.hit-arc {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18vmin;
+  height: 4vmin;
+  border-top: 5px solid rgb(225 30 30 / 0.95);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  filter: drop-shadow(0 0 4px rgb(255 0 0 / 0.7));
+  opacity: 0;
+}
+
 @keyframes hurt {
   from {
     opacity: 1;

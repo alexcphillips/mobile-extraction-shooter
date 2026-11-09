@@ -1,0 +1,109 @@
+{
+  "formatVersion": 1,
+  "id": "tutorial",
+  "raid": "tutorial",
+  "kit": "tutorial",
+  "steps": [
+    {
+      "id": "move",
+      "prompt": {
+        "touch": "Move with your left thumb. Drag on the right side to look around.",
+        "gamepad": "Move with the left stick. Look with the right stick.",
+        "desktop": "Move with W A S D. Look with the mouse."
+      },
+      "trigger": { "type": "moved", "distance": 3 }
+    },
+    {
+      "id": "vault",
+      "prompt": {
+        "touch": "The ceiling has come down. Run at it and tap jump to climb over.",
+        "gamepad": "The ceiling has come down. Run at it and press ✕ to climb over.",
+        "desktop": "The ceiling has come down. Run at it and press Space to climb over."
+      },
+      "trigger": { "type": "vault" }
+    },
+    {
+      "id": "crawl",
+      "prompt": {
+        "touch": "Tap crouch and get through the gap under the barricade.",
+        "gamepad": "Press ○ to crouch and get through the gap under the barricade.",
+        "desktop": "Press C to crouch and get through the gap under the barricade."
+      },
+      "trigger": { "type": "zone", "zone": "past-barricade" }
+    },
+    {
+      "id": "bandage",
+      "prompt": {
+        "touch": "The wire cut you: you're bleeding. Look at the bandage and tap use to pick it up.",
+        "gamepad": "The wire cut you: you're bleeding. Look at the bandage and press □ to pick it up.",
+        "desktop": "The wire cut you: you're bleeding. Look at the bandage and press F to pick it up."
+      },
+      "trigger": { "type": "carry", "item": "bandage" },
+      "marker": "bandage"
+    },
+    {
+      "id": "heal",
+      "prompt": {
+        "touch": "Tap the heal button to stop the bleeding.",
+        "gamepad": "Press L1 to stop the bleeding.",
+        "desktop": "Press H to stop the bleeding."
+      },
+      "trigger": { "type": "notBleeding" }
+    },
+    {
+      "id": "shoot",
+      "prompt": {
+        "touch": "A scav, with his back to you. Tap aim, then hold fire.",
+        "gamepad": "A scav, with his back to you. Hold L2 to aim and R2 to fire.",
+        "desktop": "A scav, with his back to you. Hold the right mouse button to aim, and click to fire."
+      },
+      "trigger": { "type": "kill" }
+    },
+    {
+      "id": "reload",
+      "prompt": {
+        "touch": "Tap reload.",
+        "gamepad": "Press □ to reload.",
+        "desktop": "Press R to reload."
+      },
+      "trigger": { "type": "reload" }
+    },
+    {
+      "id": "search",
+      "prompt": {
+        "touch": "Look down at his body and tap loot.",
+        "gamepad": "Look down at his body and press □ to loot it.",
+        "desktop": "Look down at his body and press F to loot it."
+      },
+      "trigger": { "type": "searchBody" }
+    },
+    {
+      "id": "key",
+      "prompt": {
+        "touch": "There's a key in his pocket. Double-tap it to take it.",
+        "gamepad": "There's a key in his pocket. Move to it and press □ to take it.",
+        "desktop": "There's a key in his pocket. Double-click it, or drag it into your pockets."
+      },
+      "trigger": { "type": "carry", "item": "front-door-key" }
+    },
+    {
+      "id": "door",
+      "prompt": {
+        "touch": "Close the bag, then tap use on the front door to unlock it.",
+        "gamepad": "Press ○ to close the bag, then □ on the front door to unlock it.",
+        "desktop": "Press Tab to close the bag, then F on the front door to unlock it."
+      },
+      "trigger": { "type": "door", "door": "front-door" },
+      "marker": "front-door-marker"
+    },
+    {
+      "id": "extract",
+      "prompt": {
+        "touch": "Step outside. Stay in the yard until the countdown ends to extract.",
+        "gamepad": "Step outside. Stay in the yard until the countdown ends to extract.",
+        "desktop": "Step outside. Stay in the yard until the countdown ends to extract."
+      },
+      "trigger": { "type": "extract" }
+    }
+  ]
+}

@@ -149,6 +149,8 @@ export interface WorldDef {
    * shots, claws and sight pass through. Last of the solids.
    */
   blockers?: readonly BoxDef[];
+  /** Barbed wire (TU-2): not solid, only touched (see touchesWire). */
+  wires?: readonly BoxDef[];
 }
 
 export interface Ladder extends LadderDef {
@@ -179,6 +181,7 @@ export interface GroundHit {
 // the middle and its rise per metre along x and z; highest point. All but tilted boxes have
 // flat undersides, and their rises are 0.
 const STRIDE = 14;
+const WIRE_STRIDE = 8;
 const GRID_CELL = 4;
 /**
  * How far under the lowest terrain falling through a hole lands: deep enough that the
@@ -211,6 +214,8 @@ export class CollisionWorld {
   /** Solid index of the first door: doors come after boxes and ramps. */
   readonly firstDoor: number;
   readonly glass: readonly GlassDef[];
+  /** Barbed wire: centre x, y, z, half-extents x, y, z, cos and sin of yaw, WIRE_STRIDE each. */
+  private readonly wires: Float64Array;
   /** Solid index of the first pane of glass: glass comes after doors. */
   readonly firstGlass: number;
   /** Solid index of the first blocker, which rays pass through: blockers come last. */
@@ -237,6 +242,14 @@ export class CollisionWorld {
       for (const solid of s.solids) this.switchSolids.set(solid, k);
     });
     this.glass = def.glass ?? [];
+    const wires = def.wires ?? [];
+    this.wires = new Float64Array(wires.length * WIRE_STRIDE);
+    wires.forEach((w, k) =>
+      this.wires.set(
+        [w.x, w.y, w.z, w.hx, w.hy, w.hz, Math.cos(w.yaw), Math.sin(w.yaw)],
+        k * WIRE_STRIDE,
+      ),
+    );
     this.firstDoor = def.boxes.length + def.ramps.length;
     this.firstGlass = this.firstDoor + this.doors.length;
     this.firstBlocker = this.firstGlass + this.glass.length;
@@ -460,6 +473,28 @@ export class CollisionWorld {
    * Would pushOut move a standing circle with this height range? The same rules: solids
    * with their top at or below low, or their bottom at or above high, don't count.
    */
+  /**
+   * Whether an upright capsule's circle at (x, z), from low to high, touches any barbed wire
+   * (TU-2). Few maps have any, so they're looped over rather than gridded.
+   */
+  touchesWire(x: number, z: number, radius: number, low: number, high: number): boolean {
+    const w = this.wires;
+    for (let i = 0; i < w.length; i += WIRE_STRIDE) {
+      if (low >= w[i + 1]! + w[i + 4]! || high <= w[i + 1]! - w[i + 4]!) continue;
+      const dx = x - w[i]!;
+      const dz = z - w[i + 2]!;
+      const c = w[i + 6]!;
+      const s = w[i + 7]!;
+      // Into its frame (yaw turns local x towards −z, as for every solid).
+      const lx = dx * c - dz * s;
+      const lz = dx * s + dz * c;
+      const ex = Math.max(0, Math.abs(lx) - w[i + 3]!);
+      const ez = Math.max(0, Math.abs(lz) - w[i + 5]!);
+      if (ex * ex + ez * ez < radius * radius) return true;
+    }
+    return false;
+  }
+
   overlaps(x: number, z: number, radius: number, low: number, high: number): boolean {
     const n = this.grid.query(x - radius, z - radius, x + radius, z + radius, this.found);
     for (let k = 0; k < n; k++) {
