@@ -63,7 +63,14 @@ import { favourites } from './favourites';
 import { sounds } from '../audio/sounds';
 import { GAME_SOUNDS } from '../audio/sound-ids';
 import { PartyStrip } from './party-strip';
-import { Inventory, StashSearchContext, Worth, worth, type StashSearch } from './raid-screen';
+import {
+  Inventory,
+  StashSearchContext,
+  Worth,
+  gearWorth,
+  worth,
+  type StashSearch,
+} from './raid-screen';
 import { countHits, searcher, type Category } from './stash-search';
 import { QuestsPage, questCounts, questsLine } from './quests-page';
 import { VendorsPage } from './vendors-page';
@@ -638,11 +645,10 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
     });
   }
   const invites = partyRes?.invites.length ?? 0;
-  const gear = me.profile.gear as unknown as Record<GearSlot, Item | null>;
-  const gearWorth = worth(
-    opts.items,
-    LOADOUT_SLOTS.flatMap((s) => (gear[s] ? [gear[s]] : [])),
-  );
+  // Everything you take in, vault included, as the stash's Gear Value shows it (2026-11-09).
+  const loadoutWorth = gearWorth(opts.items, me.profile.gear);
+  // The vault and knife survive a death, so only the rest is at risk.
+  const atRisk = gearWorth(opts.items, me.profile.gear, false);
 
   const top = (
     <header className="lobby-top">
@@ -714,7 +720,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
     <LoadoutCard
       items={opts.items}
       player={stash.player}
-      worth={gearWorth}
+      worth={loadoutWorth}
       onOpen={() => setPage('stash')}
     />
   );
@@ -808,7 +814,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
               </>
             )}
             <Fact icon="squad" label="At risk">
-              ${gearWorth.toLocaleString()}
+              ${atRisk.toLocaleString()}
             </Fact>
             <Fact icon="squad" label="Taking in" block>
               {loadoutLine(opts.items, me)}
@@ -900,17 +906,6 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
     </div>
   );
 }
-
-/** The slots whose gear the loadout card's worth counts. */
-const LOADOUT_SLOTS: readonly GearSlot[] = [
-  'primary1',
-  'primary2',
-  'sidearm',
-  'helmet',
-  'bodyArmour',
-  'rig',
-  'backpack',
-];
 
 /** The Friends button's line: who's online, from the menu's heartbeat (UX-5). */
 function friendsLine(p: PartyResponse | null): string {

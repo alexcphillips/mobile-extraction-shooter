@@ -28,10 +28,18 @@ export const PAGE_TABS = 34;
 const STASH_CHIPS = 30 + 6;
 const MAX_CELL = 44;
 /**
- * Extra pixels across on a PC: the loadout's space from the left and from the carried
- * panel past the 8 px gap it has anyway (style.css, the same media query).
+ * On a PC, the gap between your gear and what you carry, both on the one Loadout card
+ * (2026-11-09, the user's call: they had been two panels 48 px apart).
  */
-const PC_ROOM = 24 + 40;
+export const LOADOUT_SPLIT = 40;
+/** A panel's border and its body's side padding (style.css → .inv-panel, .inv-panel-body). */
+const PANEL_CHROME = 2 + 8 + 14;
+/**
+ * Extra pixels across on a PC, against OVERHEAD's 8 px gap and panel per column: the
+ * loadout's space from the left (style.css, the same media query), the split inside its
+ * card, less the panel the carried column no longer has.
+ */
+const PC_ROOM = 24 + (LOADOUT_SPLIT - 8) - PANEL_CHROME;
 const PC = '(hover: hover) and (pointer: fine)';
 
 export interface InventoryLayout {

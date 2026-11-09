@@ -58,7 +58,7 @@ import { CATEGORIES, type Category } from './stash-search';
 import { CategoryIcon } from './category-icons';
 import { favourites, holdsFavourite, toggleFavourite } from './favourites';
 import { settings } from '../settings';
-import { sectionBoxes } from './inventory-layout';
+import { LOADOUT_SPLIT, sectionBoxes } from './inventory-layout';
 import { ZONE_COLOURS, zoneColour } from '../hud/vitals';
 
 type Tab = 'inventory' | 'map' | 'quests';
@@ -333,11 +333,11 @@ export function Inventory({ inv, version }: Props): ReactNode {
         <div className="inv-left">
           <Panel
             className="inv-gear"
-            width={layout.gear}
+            width={layout.merged ? layout.gear : layout.gear + LOADOUT_SPLIT + layout.carried}
             foot={stashSearch?.gearFoot}
             head={
               <>
-                <Worth n={gearWorth(ctx.items, ctx.player)} label="Gear Value" full />
+                <Worth n={gearWorth(ctx.items, ctx.player.gear)} label="Gear Value" full />
                 <span className="inv-panel-fill" />
                 {/* Not in the stash (2026-11-09, the user's call); still in a raid. */}
                 {!ctx.stash && (
@@ -358,14 +358,18 @@ export function Inventory({ inv, version }: Props): ReactNode {
                 <CharacterGrids inv={inv} owner={SELF} ch={ctx.player} vault />
               </>
             ) : (
-              <Slots inv={inv} owner={SELF} slots={MY_SLOTS} ch={ctx.player} />
+              // On a PC, your gear and what you carry are one card, a gap apart, so its
+              // Gear Value reads as the whole of it (2026-11-09, the user's call).
+              <div className="inv-split" style={{ gap: LOADOUT_SPLIT }}>
+                <div style={{ width: layout.gear }}>
+                  <Slots inv={inv} owner={SELF} slots={MY_SLOTS} ch={ctx.player} />
+                </div>
+                <div style={{ width: layout.carried }}>
+                  <CharacterGrids inv={inv} owner={SELF} ch={ctx.player} vault />
+                </div>
+              </div>
             )}
           </Panel>
-          {!layout.merged && (
-            <Panel className="inv-carried" width={layout.carried}>
-              <CharacterGrids inv={inv} owner={SELF} ch={ctx.player} vault />
-            </Panel>
-          )}
           {!inv.selling && selected && sel && (
             <ItemDetails
               panel
@@ -507,13 +511,17 @@ export function Worth({
 
 const COMPACT = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 });
 
-/** What a vendor would pay for everything a character has on them, vault included. */
-function gearWorth(items: ItemDb, c: Character): number {
-  const g = c.gear;
+/**
+ * What a vendor would pay for everything a character has on them: the gear slots, pockets,
+ * rig, backpack and (unless `vault` is false) the vault. The stash's Gear Value and the main
+ * menu's loadout card both show this, so they agree (2026-11-09).
+ */
+export function gearWorth(items: ItemDb, g: Character['gear'], vault = true): number {
   const list: Item[] = [];
   for (const it of [g.primary1, g.primary2, g.sidearm, g.helmet, g.bodyArmour, g.rig, g.backpack])
     if (it) list.push(it);
-  for (const grid of [g.pockets, g.rig?.grid, g.backpack?.grid, g.vault])
+  // The rig's and backpack's contents come in with them: worth() counts what's inside.
+  for (const grid of [g.pockets, vault ? g.vault : null])
     for (const gi of grid?.items ?? []) list.push(gi.item);
   return worth(items, list);
 }
@@ -929,7 +937,7 @@ function Loot({ inv }: { inv: InventoryController }): ReactNode {
       <Slots inv={inv} owner={target} slots={BODY_SLOTS} ch={body} />
       <CharacterGrids inv={inv} owner={target} ch={body} vault={false} shown={found?.shown} />
     </div>,
-    searching ?? <Worth n={gearWorth(ctx.items, body)} />,
+    searching ?? <Worth n={gearWorth(ctx.items, body.gear)} />,
   );
 }
 

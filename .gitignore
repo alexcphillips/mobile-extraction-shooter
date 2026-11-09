@@ -154,3 +154,6 @@ vite.config.ts.timestamp-*
 
 # Bundled content for the server (scripts/bundle-content.mjs)
 packages/server/src/generated/content.js
+
+# Screenshots from scripts/look.mjs
+look-*.png

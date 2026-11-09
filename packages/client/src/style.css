@@ -1600,22 +1600,19 @@ body:has(#raid:not([hidden])) #vitals {
 }
 
 /*
- * On a PC (2026-11-09, the user's call): the loadout off the screen's left edge, and room
- * between it and the carried panel. A phone keeps them tight. inventory-layout.ts counts
- * this room (PC_ROOM).
+ * On a PC (2026-11-09, the user's call): the loadout off the screen's left edge. A phone
+ * keeps it tight. inventory-layout.ts counts this room (PC_ROOM).
  */
 @media (hover: hover) and (pointer: fine) {
   .inv-cols {
     padding-left: 24px;
   }
+}
 
-  /*
-   * 48 px since 2026-11-09 (the user's call). Through .inv-cols so it beats the plain
-   * .inv-left rule further down, which had kept the gap at 8 px all along.
-   */
-  .inv-cols .inv-left {
-    gap: 48px;
-  }
+/* On a PC, your gear and what you carry side by side on one card (inventory-layout.ts → LOADOUT_SPLIT). */
+.inv-split {
+  display: flex;
+  align-items: flex-start;
 }
 
 .inv-panel {
