@@ -2169,6 +2169,12 @@ body:has(#raid:not([hidden])) #vitals {
 /* A gun's rounds loaded and its capacity, larger than other badges. */
 .inv-item-badge.inv-item-mag {
   font-size: 14px;
+  font-weight: 400;
+}
+
+/* Durability, at normal weight; a stack's count stays bold. */
+.inv-item-badge.inv-item-light {
+  font-weight: 400;
 }
 
 .inv-drop {

@@ -1442,7 +1442,9 @@ function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemD
           {level}
         </i>
       )}
-      <span className="inv-item-badge">{badge(item, def)}</span>
+      <span className={def.type === 'armour' ? 'inv-item-badge inv-item-light' : 'inv-item-badge'}>
+        {badge(item, def)}
+      </span>
     </>
   );
 }
