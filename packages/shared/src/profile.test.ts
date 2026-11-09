@@ -15,6 +15,7 @@ import {
   settleFits,
   settleGuns,
   settlePockets,
+  settleStash,
   settleVault,
   type Profile,
 } from './profile';
@@ -324,6 +325,28 @@ describe('settleVault', () => {
     settleVault(items, p.gear, p.stash);
     expect(p.gear.vault!.w).toBe(6);
     expect(checkProfile(items, p)).toMatch(/vault: must be 2×2/);
+  });
+});
+
+describe('settleStash', () => {
+  it('widens a page saved 9 wide, moving nothing', () => {
+    const p = profile();
+    // As saved while pages were 9×30.
+    const page = p.stash[0]!;
+    page.w = 9;
+    placeAt(items, page, createItem(items, 'watch'), 8, 5, false);
+    expect(checkProfile(items, p)).toMatch(/stash page 1/);
+    settleStash(items, p.stash);
+    expect([page.w, page.h]).toEqual([10, 30]);
+    expect(page.items.find((g) => g.item.item === 'watch')).toMatchObject({ x: 8, y: 5 });
+    expect(checkProfile(items, p)).toBeNull();
+  });
+
+  it('leaves any other size alone', () => {
+    const p = profile();
+    p.stash[0]!.w = 12;
+    settleStash(items, p.stash);
+    expect(p.stash[0]!.w).toBe(12);
   });
 });
 

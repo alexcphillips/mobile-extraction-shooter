@@ -643,6 +643,7 @@ export {
   settleFits,
   settlePockets,
   settleVault,
+  settleStash,
   type Profile,
   type VendorStanding,
   type QuestState,

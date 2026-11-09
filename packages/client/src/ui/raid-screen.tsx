@@ -237,6 +237,27 @@ const SLOT_NAMES: Record<GearSlot, string> = {
   rig: 'Rig',
   backpack: 'Backpack',
 };
+/**
+ * What an empty gear slot shows faintly, so you can tell the slots apart at a glance
+ * (2026-11-09): a bare M416 in the gun slots. The others to follow.
+ */
+const SLOT_GHOSTS: Partial<Record<GearSlot, string>> = { primary1: 'm416', primary2: 'm416' };
+
+/** An empty slot's ghost: its item's picture as a flat light grey shape. */
+function SlotGhost({ items, slot }: { items: ItemDb; slot: GearSlot }): ReactNode {
+  const id = SLOT_GHOSTS[slot];
+  const def = id ? items.get(id) : undefined;
+  if (!def) return null;
+  const url = itemPortrait(items, { item: def.id, count: 1 }, def.size);
+  if (!url) return null;
+  return (
+    <span
+      className="inv-slot-ghost"
+      style={{ maskImage: `url(${url})`, WebkitMaskImage: `url(${url})` }}
+    />
+  );
+}
+
 /** Gun slots are drawn twice as wide; the helmet and armour have a row each, centred. */
 const WIDE: ReadonlySet<GearSlot> = new Set(['primary1', 'primary2']);
 const CENTRE: ReadonlySet<GearSlot> = new Set(['helmet', 'bodyArmour']);
@@ -285,10 +306,10 @@ export function Inventory({ inv, version }: Props): ReactNode {
           <Panel
             className="inv-gear"
             width={layout.gear}
-            title="Loadout"
             head={
               <>
-                <Worth n={gearWorth(ctx.items, ctx.player)} />
+                <Worth n={gearWorth(ctx.items, ctx.player)} label="Gear Value" full />
+                <span className="inv-panel-fill" />
                 <button
                   className={`inv-help-button${help ? ' active' : ''}`}
                   aria-label="How the inventory works"
@@ -301,7 +322,7 @@ export function Inventory({ inv, version }: Props): ReactNode {
           >
             <Slots inv={inv} owner={SELF} slots={MY_SLOTS} ch={ctx.player} />
           </Panel>
-          <Panel className="inv-carried" width={layout.carried} title="Carried">
+          <Panel className="inv-carried" width={layout.carried}>
             <CharacterGrids inv={inv} owner={SELF} ch={ctx.player} vault />
           </Panel>
           {!inv.selling && selected && sel && (
@@ -391,6 +412,7 @@ interface Hover {
 /**
  * A framed column with a title bar (2026-11-06, the Delta Force look): its content is
  * `width` wide however full it is, so the columns beside it never move; it scrolls down.
+ * With no title and nothing for the bar, it has no bar (Loadout and Carried, 2026-11-09).
  */
 function Panel({
   className,
@@ -401,16 +423,18 @@ function Panel({
 }: {
   className: string;
   width: number;
-  title: ReactNode;
+  title?: ReactNode;
   head?: ReactNode;
   children: ReactNode;
 }): ReactNode {
   return (
     <section className={`inv-panel ${className}`}>
-      <header className="inv-panel-head">
-        <h2>{title}</h2>
-        {head}
-      </header>
+      {(title || head) && (
+        <header className="inv-panel-head">
+          {title && <h2>{title}</h2>}
+          {head}
+        </header>
+      )}
       <div className="inv-panel-body" style={{ width }}>
         {children}
       </div>
@@ -419,10 +443,19 @@ function Panel({
 }
 
 /** Money as a vendor would pay it, short (12.3k), with the whole sum on hover. */
-export function Worth({ n, label = 'Worth' }: { n: number; label?: string }): ReactNode {
+export function Worth({
+  n,
+  label = 'Worth',
+  full = false,
+}: {
+  n: number;
+  label?: string;
+  /** The whole number with commas (1,234,567), not shortened (1.2M). */
+  full?: boolean;
+}): ReactNode {
   return (
     <span className="inv-worth" title={`${label} ${n.toLocaleString()}`}>
-      {label} <b>{COMPACT.format(n)}</b>
+      {label} <b>{full ? n.toLocaleString('en') : COMPACT.format(n)}</b>
     </span>
   );
 }
@@ -721,7 +754,7 @@ function Parts({
             <button
               key={slot}
               className={`inv-part${inv.picking === slot ? ' open' : ''}`}
-              style={def ? { background: tintOf(def), borderColor: colourOf(def) } : undefined}
+              style={def ? { background: tintOf(def) } : undefined}
               onClick={() => inv.togglePicker(slot)}
             >
               <span className="inv-part-slot">{PART_NAMES[slot]}</span>
@@ -813,11 +846,12 @@ function Loot({ inv }: { inv: InventoryController }): ReactNode {
     return panel(
       search?.title ?? name,
       <>
-        <SearchBox />
+        {/* The search box is off for now (2026-11-09, the user's call); see SearchBox. */}
         <div className="inv-open">
           <Bag inv={inv} />
           {search ? (
             <div className="stash-paged">
+              <StashChips />
               <GridView inv={inv} gref={{ owner: target, grid: 'loot' }} grid={l.grid} />
               {search.tabs}
             </div>
@@ -848,13 +882,42 @@ function Loot({ inv }: { inv: InventoryController }): ReactNode {
 }
 
 /**
+ * The kinds of item to show (2026-11-06), down the left of the stash page (2026-11-09,
+ * the user's call; they were along the top): the rest are dimmed. Stays in view while
+ * the page scrolls.
+ */
+function StashChips(): ReactNode {
+  const search = useContext(StashSearchContext);
+  if (!search) return null;
+  const { category, setCategory } = search;
+  return (
+    <div className="stash-kinds" role="radiogroup" aria-label="Show">
+      {CATEGORIES.map((c) => (
+        <button
+          key={c.id}
+          role="radio"
+          aria-checked={c.id === category}
+          className={c.id === category ? 'active' : undefined}
+          onClick={() => setCategory(c.id)}
+        >
+          {c.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/**
  * The stash's search box (2026-11-05). In the stash's column, not on the top bar, which
  * has no room left on a phone; it stays in view while the stash scrolls under it.
+ * Not shown since 2026-11-09 (the user's call, may come back): Loot no longer renders it,
+ * and the query stays empty. Its kinds of item moved to StashChips.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function SearchBox(): ReactNode {
   const search = useContext(StashSearchContext);
   if (!search) return null;
-  const { query, setQuery, category, setCategory, hit, found } = search;
+  const { query, setQuery, setCategory, hit, found } = search;
   return (
     <div className="stash-search">
       <div className="stash-search-row">
@@ -893,20 +956,6 @@ function SearchBox(): ReactNode {
             </button>
           </>
         )}
-      </div>
-      {/* Kinds of item (2026-11-06): the rest are dimmed, as for the search. */}
-      <div className="stash-chips" role="radiogroup" aria-label="Show">
-        {CATEGORIES.map((c) => (
-          <button
-            key={c.id}
-            role="radio"
-            aria-checked={c.id === category}
-            className={c.id === category ? 'active' : undefined}
-            onClick={() => setCategory(c.id)}
-          >
-            {c.label}
-          </button>
-        ))}
       </div>
     </div>
   );
@@ -968,7 +1017,6 @@ function Ground({ inv }: { inv: InventoryController }): ReactNode {
                 width: def.size[0] * cell,
                 height: def.size[1] * cell,
                 background: tintOf(def),
-                borderColor: colourOf(def),
               }}
               onContextMenu={(e) => {
                 e.preventDefault();
@@ -1069,7 +1117,7 @@ function VaultSlot({ items }: { items: ItemDb }): ReactNode {
         <div
           className="inv-item"
           title="Your vault: always equipped"
-          style={{ background: tintOf(def), borderColor: colourOf(def) }}
+          style={{ background: tintOf(def) }}
         >
           <ItemArt items={items} item={item} def={def} />
           <ItemLabel items={items} item={item} def={def} />
@@ -1109,6 +1157,7 @@ function Slots({
           >
             {/* Named only while empty: the item's own name would show through it. */}
             {!item && <span className="inv-slot-name">{SLOT_NAMES[slot]}</span>}
+            {!item && <SlotGhost items={inv.ctx.items} slot={slot} />}
             {item && def && ref && (
               <div
                 className={`inv-item${inHand ? ' in-hand' : ''}${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${holdsFavourite(item, favs, shown) ? ' favourite' : ''}`}
@@ -1116,7 +1165,7 @@ function Slots({
                 title={inHand ? 'In hand' : undefined}
                 data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
                 data-armour={def.type === 'armour' ? JSON.stringify(ref) : undefined}
-                style={{ background: tintOf(def), borderColor: colourOf(def) }}
+                style={{ background: tintOf(def) }}
                 onContextMenu={(e) => {
                   e.preventDefault();
                   inv.inspect(ref);
@@ -1201,7 +1250,6 @@ function GridView({
           width: w * cell,
           height: h * cell,
           background: tintOf(def),
-          borderColor: colourOf(def),
           ['--lines' as string]: nameLines(h, cell),
         }}
         onContextMenu={(e) => {
@@ -1329,11 +1377,12 @@ export function colourOf(def: ItemDef): string {
 
 /**
  * An item tile's background: its rarity's colour rising from the bottom edge over the dark
- * cell (2026-11-06, the Delta Force look).
+ * cell (2026-11-06, the Delta Force look). Translucent all the way, so the grid's lines show
+ * through the tile (2026-11-09).
  */
 function tintOf(def: ItemDef): string {
   const c = RARITY_COLOURS[def.rarity];
-  return `linear-gradient(to top, ${c}b0, ${c}40 55%, ${c}26), #161d22`;
+  return `linear-gradient(to top, ${c}8c, ${c}40 55%, ${c}26)`;
 }
 
 // Scratch for a gun's magazine size with its attachments.

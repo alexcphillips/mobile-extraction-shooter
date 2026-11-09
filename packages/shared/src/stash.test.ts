@@ -245,7 +245,12 @@ describe('the stash', () => {
     p.stash[1]!.items.splice(-1, 1);
     const rounds = p.gear.pockets.items.findIndex((g) => g.item.item === 'round');
     const n = p.gear.pockets.items[rounds]!.item.count;
-    p.stash[1]!.items.push({ x: 9, y: 29, rotated: false, item: createItem(items, 'round', 40) });
+    p.stash[1]!.items.push({
+      x: PROFILE.stash[0] - 1,
+      y: 29,
+      rotated: false,
+      item: createItem(items, 'round', 40),
+    });
     applyStash(
       s,
       items,
@@ -264,7 +269,7 @@ describe('the stash', () => {
       applyStash(s, items, {
         type: 'move',
         from: { ...page1, index: at, item: 'round' },
-        to: { ...stash, x: 9, y: 0, rotated: false },
+        to: { ...stash, x: PROFILE.stash[0] - 1, y: 0, rotated: false },
       }),
     ).toBe(true);
     expect(checkProfile(items, p)).toBeNull();
@@ -278,7 +283,12 @@ describe('the stash', () => {
     // Page 2 full, with room for 10 more rounds on its last stack.
     while (addItem(items, p.stash[1]!, createItem(items, 'watch')) === 0);
     p.stash[1]!.items.splice(-1, 1);
-    p.stash[1]!.items.push({ x: 9, y: 29, rotated: false, item: createItem(items, 'round', 90) });
+    p.stash[1]!.items.push({
+      x: PROFILE.stash[0] - 1,
+      y: 29,
+      rotated: false,
+      item: createItem(items, 'round', 90),
+    });
     const rounds = p.gear.pockets.items.findIndex((g) => g.item.item === 'round');
     const from = { owner: self, grid: 'pockets', index: rounds, item: 'round' } as const;
     expect(applyStash(s, items, { type: 'quick', from, to: stashOwner(1), count: 30 }, 1)).toBe(

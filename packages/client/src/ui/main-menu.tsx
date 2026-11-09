@@ -809,7 +809,9 @@ function StashPage({
   const [version, bump] = useReducer((n: number) => n + 1, 0);
   // Buying asks for a second tap, and so does selling everything (showing what it brings).
   const [confirming, setConfirming] = useState(false);
-  const [buying, setBuying] = useState(false);
+  const [, setBuying] = useState(false); // `buying`, read by the parked + button
+  // The locked next page's tooltip (2026-11-09: buying pages is parked behind a lock).
+  const [lockTip, setLockTip] = useState(false);
   const [sellAllFor, setSellAllFor] = useState<number | null>(null);
   const [sellingAll, setSellingAll] = useState(false);
   const [query, setQuery] = useState('');
@@ -869,6 +871,8 @@ function StashPage({
     setSellingAll(true);
     void onSellAll(Math.max(0, shown)).finally(() => setSellingAll(false));
   };
+  // Not wired to anything while the next page shows a lock (2026-11-09); see the tabs.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const buy = (): void => {
     if (!confirming) {
       setConfirming(true);
@@ -920,7 +924,9 @@ function StashPage({
           {hit && hits[p]! > 0 && <span className="stash-page-hits">{hits[p]}</span>}
         </button>
       ))}
-      {price !== null && (
+      {/*
+        The next page, locked (2026-11-09, the user's call): a tap shows a tooltip, for now
+        a placeholder. It was a + that bought the page (two taps), with `buy`:
         <button
           className={`stash-buy${confirming ? ' confirm' : ''}`}
           title={`Buy another page for ${price.toLocaleString()}`}
@@ -930,6 +936,32 @@ function StashPage({
         >
           {buying ? '…' : confirming ? `Buy · ${price.toLocaleString()}?` : '+'}
         </button>
+      */}
+      {price !== null && (
+        <span className="stash-lock-wrap">
+          <button
+            className={`stash-lock${lockTip ? ' active' : ''}`}
+            aria-label="Locked page"
+            aria-describedby={lockTip ? 'stash-lock-tip' : undefined}
+            onClick={() => setLockTip(!lockTip)}
+            onBlur={() => setLockTip(false)}
+          >
+            <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+              <path
+                d="M4.5 7V5a3.5 3.5 0 0 1 7 0v2"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+              />
+              <rect x="3" y="7" width="10" height="7.5" rx="1.2" fill="currentColor" />
+            </svg>
+          </button>
+          {lockTip && (
+            <span id="stash-lock-tip" className="stash-lock-tip" role="tooltip">
+              Placeholder todo
+            </span>
+          )}
+        </span>
       )}
     </div>
   );

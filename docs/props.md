@@ -62,6 +62,7 @@ Only when the user asks for a container (see Collision). A container is a node w
 - Ramps (wedges) and stairs **rise towards local +z**.
 - Box extras: `bulge` `[−x, +x, bottom, top, −z, +z]` pushes each face's middle out (padding, sacks, rounded backs); `top` `[w, d]` sizes the top face (pinch, flare, a tapered leg); `lean` `[x, z]` moves the top over. Stairs: `sides` for solid sloped side walls.
 - Groups take `name` (shown in the editor), not `id`.
+- **Item models face −z, unlike prefabs** (`content/models.ts`): a gun's barrel, a knife's blade and worn gear's front all point along −z. That way its inventory picture faces left (design.md → Item pictures face left, 2026-11-09).
 
 ## Process
 1. Write the prefab with a short Python generator in the scratchpad (helpers `box`, `cyl`, `wall`), so positions are computed (radial legs, rows of slats) and a change is a re-run. Comment each part in the script, not the JSON.

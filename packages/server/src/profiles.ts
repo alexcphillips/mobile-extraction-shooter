@@ -16,6 +16,7 @@ import {
   settleGuns,
   settlePockets,
   settleVault,
+  settleStash,
   type Profile,
   type ProfileResponse,
 } from '@mes/shared';
@@ -25,12 +26,13 @@ import { body, fail, isObject } from './errors';
 
 /**
  * A stored profile, loaded through its format's migrations, with any pistol moved out of
- * a primary slot, an old 2×3 vault shrunk, old 4×1 pockets split into slots, bags given their defs' shapes and items that
+ * a primary slot, 9-wide stash pages widened, an old 2×3 vault shrunk, old 4×1 pockets split into slots, bags given their defs' shapes and items that
  * grew re-fitted (all need the items, so they aren't format migrations).
  */
 export function parseProfile(data: string): Profile {
   const p = loadContent(PROFILE_FORMAT, JSON.parse(data), 'profile');
   const items = loadItems();
+  settleStash(items, p.stash);
   settleGuns(items, p.gear, p.stash);
   settleVault(items, p.gear, p.stash);
   settlePockets(items, p.gear, p.stash);

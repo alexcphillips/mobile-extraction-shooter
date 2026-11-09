@@ -68,9 +68,10 @@ export type Rarity = (typeof RARITIES)[number];
 
 /**
  * Where an item's picture (its inventory tile and its details) is taken from (2026-11-02):
- * straight down with the back (−z) at the top, from the front (+z), from its right side
- * (+x, a gun's barrel to the left, a little from above), or angled (from above at a
- * three-quarter turn). Left out: side for guns, knives and magazines, else angled.
+ * straight down with the back (−z) at the top, from the front (+z), from its left side
+ * (−x, a gun's barrel to the left, a little from above), or angled (a near-diagonal
+ * three-quarter turn from the front-left, the front (−z) to the left, about 18° from above). Every picture faces
+ * left (2026-11-09). Left out: side for guns, knives and magazines, else angled.
  */
 export const ITEM_VIEWS = ['top', 'front', 'side', 'angled'] as const;
 export type ItemView = (typeof ITEM_VIEWS)[number];

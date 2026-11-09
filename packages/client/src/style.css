@@ -1614,6 +1614,31 @@ body:has(#raid:not([hidden])) #vitals {
   min-width: 0;
 }
 
+/* Loadout's bar has no title, so no amber edge either (2026-11-09). */
+.inv-gear .inv-panel-head {
+  box-shadow: none;
+}
+
+/* Pushes what follows it in a title bar to the right (Loadout's worth left, ? right). */
+.inv-panel-fill {
+  flex: 1;
+}
+
+/*
+ * On a PC (2026-11-09, the user's call): the loadout off the screen's left edge, and room
+ * between it and the carried panel. A phone keeps them tight. inventory-layout.ts counts
+ * this room (PC_ROOM).
+ */
+@media (hover: hover) and (pointer: fine) {
+  .inv-cols {
+    padding-left: 24px;
+  }
+
+  .inv-left {
+    gap: 24px;
+  }
+}
+
 .inv-panel {
   display: flex;
   flex: none;
@@ -1853,6 +1878,21 @@ body:has(#raid:not([hidden])) #vitals {
   color: #7f8b95;
 }
 
+/* An empty slot's ghost: the picture of what goes there, flat light grey and faint. */
+.inv-slot-ghost {
+  position: absolute;
+  inset: 6px;
+  background: #c8ced3;
+  opacity: 0.14;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  pointer-events: none;
+}
+
 .inv-slot.drop-ok {
   outline: 2px solid #6fbf5a;
 }
@@ -1954,11 +1994,10 @@ body:has(#raid:not([hidden])) #vitals {
   }
 }
 
-/* A soft glow in its rarity's colour when the mouse is on it. */
+/* A white border when the mouse is on it (a glow until 2026-11-09). */
 @media (hover: hover) {
   .inv-item:hover {
-    filter: brightness(1.18);
-    box-shadow: 0 0 10px -2px currentColor;
+    border-color: #e8ecef;
   }
 }
 
@@ -2980,7 +3019,7 @@ body:has(#layout-bar) #menu {
 
 .stash-pages {
   position: sticky;
-  top: 38px;
+  top: 0;
   z-index: 2;
   display: flex;
   flex: none;
@@ -3003,6 +3042,38 @@ body:has(#layout-bar) #menu {
   border-color: var(--ui-accent);
   background: #2c343b;
   color: #ffd27a;
+}
+
+/* The next page, locked (2026-11-09); a tap shows its tooltip to the left, over the grid. */
+.stash-lock-wrap {
+  position: relative;
+  display: flex;
+}
+
+.raid .stash-pages button.stash-lock {
+  display: grid;
+  place-items: center;
+  color: #8a96a0;
+}
+
+.raid .stash-pages button.stash-lock.active {
+  color: #e8ecef;
+}
+
+.stash-lock-tip {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 6px);
+  transform: translateY(-50%);
+  padding: 5px 8px;
+  border: 1px solid var(--ui-line);
+  border-radius: 4px;
+  background: #1b2227;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);
+  color: #dfe5ea;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .raid .stash-pages button.stash-buy:disabled {
@@ -3108,7 +3179,7 @@ body:has(#layout-bar) #menu {
   min-width: 90px;
 }
 
-/* The kinds of item to show; scrolls sideways if the column is narrow. */
+/* The kinds of item to show (the vendors page); scrolls sideways if the column is narrow. */
 .stash-chips {
   display: flex;
   flex: 1;
@@ -3123,6 +3194,28 @@ body:has(#layout-bar) #menu {
   height: 24px;
   padding: 0 7px;
   border-radius: 12px;
+  font-size: 11px;
+}
+
+/*
+ * The stash's kinds of item, a column down the left of its page (2026-11-09),
+ * STASH_CHIPS wide in inventory-layout.ts with the gap after it.
+ */
+.stash-kinds {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 4px;
+  width: 48px;
+}
+
+.raid .stash-kinds button {
+  height: 28px;
+  padding: 0 4px;
+  border-radius: 4px;
   font-size: 11px;
 }
 
@@ -3162,11 +3255,6 @@ body:has(#layout-bar) #menu {
 
 .inv-item.dimmed {
   opacity: 0.22;
-}
-
-/* A bag opened from the page sits below the search box, not behind it. */
-.stash .inv-bag {
-  top: 70px;
 }
 
 /* Selling from the stash: a second tap confirms. */

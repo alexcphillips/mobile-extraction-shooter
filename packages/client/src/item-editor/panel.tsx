@@ -819,8 +819,8 @@ function AttachmentFields(
 const VIEW_NOTES: Record<ItemView, string> = {
   top: 'straight down, the back (−z) at the top',
   front: 'from the front (+z)',
-  side: "from the right (+x), a gun's barrel to the left",
-  angled: 'from above at a three-quarter turn',
+  side: "from the left (−x), a gun's barrel to the left",
+  angled: 'a near-diagonal three-quarter turn, the front (−z) to the left, a little from above',
 };
 
 /**

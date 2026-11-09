@@ -58,7 +58,8 @@ import {
 export const PROFILE = {
   /**
    * A stash page's size, [width, height]. Session 13 kept 10×30: ten columns fit beside
-   * the gear and carried grids on a landscape phone, and the rows scroll.
+   * the gear and carried grids on a landscape phone, and the rows scroll. It was 9×30 for part of 2026-11-09, then
+   * back to 10×30 (the user's call); settleStash widens pages saved at 9×30.
    */
   stash: [10, 30],
   /**
@@ -342,6 +343,21 @@ export function settleVault(items: ItemDb, gear: Gear, stash: readonly Grid[]): 
   const vault = gear.vault;
   if (!vault || vault.w !== 2 || vault.h !== 3) return;
   reshape(items, vault, GEAR.vault[0], GEAR.vault[1], undefined, stash);
+}
+
+/**
+ * Widens stash pages saved at 9×30 (briefly the size on 2026-11-09) back to PROFILE.stash
+ * (see reshape); nothing moves. Only that size is settled. Run where settleGuns is, before
+ * settleFits.
+ */
+export function settleStash(items: ItemDb, stash: readonly Grid[]): void {
+  const [w, h] = PROFILE.stash;
+  for (const page of stash) {
+    if (page.w !== 9 || page.h !== 30) continue;
+    // Not one with an item that doesn't exist: checkProfile refuses it.
+    if (page.items.every((g) => items.has(g.item.item)))
+      reshape(items, page, w, h, undefined, stash);
+  }
 }
 
 /**

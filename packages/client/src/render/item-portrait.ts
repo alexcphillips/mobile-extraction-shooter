@@ -48,10 +48,18 @@ const VIEWS: Record<ItemView, { from: THREE.Vector3; up: THREE.Vector3 }> = {
   // Straight down, the back (−z) at the top.
   top: { from: new THREE.Vector3(0, 1, 0), up: new THREE.Vector3(0, 0, -1) },
   front: { from: new THREE.Vector3(0, 0, 1), up: new THREE.Vector3(0, 1, 0) },
-  // Side on (barrel to the left), a little from above.
-  side: { from: new THREE.Vector3(1, 0.25, 0).normalize(), up: new THREE.Vector3(0, 1, 0) },
-  // From above at a three-quarter turn.
-  angled: { from: new THREE.Vector3(1, 1.1, 1.2).normalize(), up: new THREE.Vector3(0, 1, 0) },
+  // Every picture faces left (2026-11-09, the user's rule): every item model faces −z (a
+  // gun's barrel, worn gear's front; content/models.ts), so −z is towards the left.
+  // Side on from −x, so the barrel points left, a little from above. (It was from +x, which
+  // pointed it right.)
+  side: { from: new THREE.Vector3(-1, 0.25, 0).normalize(), up: new THREE.Vector3(0, 1, 0) },
+  // A near-diagonal three-quarter turn from the front-left, so the front (−z) faces left,
+  // about 18° from above (2026-11-09: half the old 35°, turned from 40° to 43° off the
+  // front-back line). It was from the back-right (+x, +z), which showed worn gear's back.
+  angled: {
+    from: new THREE.Vector3(-1, 0.47, -1.08).normalize(),
+    up: new THREE.Vector3(0, 1, 0),
+  },
 };
 
 /**
