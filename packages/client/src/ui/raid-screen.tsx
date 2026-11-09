@@ -1163,12 +1163,12 @@ function Slots({
   ch: Character;
   /** A body being searched: what's been found in its grids (favourite stars count only those). */
   shown?: ReadonlySet<Item> | undefined;
-  /** The helmet and armour on a row each, centred (false: side by side, as on a phone). */
+  /** The helmet and armour on a row each, centred (false: side by side, half the row each, as on a phone). */
   centred?: boolean;
 }): ReactNode {
   const favs = favourites();
   return (
-    <div className="inv-slots">
+    <div className={`inv-slots${centred ? '' : ' halves'}`}>
       {slots.map((slot) => {
         const item = (ch.gear as unknown as Record<GearSlot, Item | null>)[slot];
         const def = item && itemDef(inv.ctx.items, item.item);
@@ -1177,7 +1177,7 @@ function Slots({
         return (
           <div
             key={slot}
-            className={`inv-slot${WIDE.has(slot) ? ' wide' : centred && CENTRE.has(slot) ? ' centre' : ''}`}
+            className={`inv-slot${WIDE.has(slot) ? ' wide' : CENTRE.has(slot) ? (centred ? ' centre' : ' half') : ''}`}
             data-drop={JSON.stringify({ owner, slot })}
           >
             {/* Named only while empty: the item's own name would show through it. */}

@@ -1870,6 +1870,28 @@ body:has(#raid:not([hidden])) #vitals {
   width: calc(var(--cell) * 2);
 }
 
+/*
+ * On a phone (2026-11-09, the user's call): the same width as three two-cell columns, cut
+ * into six so the helmet and armour can take half the row each, as wide together as a
+ * primary and the knife. Six columns of a cell less 2 px with 4 px gaps keep a primary at
+ * four cells and 4 px, and the sidearm and knife at two cells.
+ */
+.inv-slots.halves {
+  grid-template-columns: repeat(6, calc(var(--cell) - 2px));
+}
+
+.inv-slots.halves .inv-slot {
+  grid-column: span 2;
+}
+
+.inv-slots.halves .inv-slot.wide {
+  grid-column: span 4;
+}
+
+.inv-slots.halves .inv-slot.half {
+  grid-column: span 3;
+}
+
 .inv-slot-name {
   position: absolute;
   top: 2px;
