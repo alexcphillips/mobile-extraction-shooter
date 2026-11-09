@@ -52,6 +52,7 @@ import {
   type ItemSource,
 } from '@mes/shared';
 import { GAME_SOUNDS } from './audio/sound-ids';
+import { CONTROLS } from './hud/layout';
 
 // Every content file is bundled, and in dev, Vite reloads the page when one changes.
 const mapFiles = import.meta.glob<unknown>('../../../content/maps/*.json', {
@@ -573,9 +574,13 @@ export function loadTutorial(id: string): CompiledTutorial {
   if (!raid.offline) throw new Error(`${source}: raid "${raid.id}" isn't offline`);
   loadStartingKit(def.kit);
   const items = loadItems();
-  for (const s of def.steps)
+  const buttons = new Set<string>(CONTROLS.map((c) => c.id));
+  for (const s of def.steps) {
     if (s.trigger.type === 'carry' && !items.has(s.trigger.item))
       throw new Error(`${source}: step "${s.id}": no item "${s.trigger.item}"`);
+    for (const b of s.buttons ?? [])
+      if (!buttons.has(b)) throw new Error(`${source}: step "${s.id}": no HUD button "${b}"`);
+  }
   return compileTutorial(def, loadMap(raid.map));
 }
 

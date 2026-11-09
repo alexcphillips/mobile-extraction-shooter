@@ -2,7 +2,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { pause } from '../app/pause';
 import type { Hud } from '../hud/hud';
 import { editLayout } from '../hud/layout-editor';
-import { giveUp } from '../play/give-up';
+import { giveUp, skipTutorial } from '../play/give-up';
 import { SettingsPanel } from './settings-panel';
 
 let root: Root | null = null;
@@ -22,6 +22,7 @@ export function openSettings(container: HTMLElement, hud: Hud, onClose?: () => v
     container.hidden = true;
   };
   const onGiveUp = giveUp.handler;
+  const onSkip = skipTutorial.handler;
   root.render(
     <SettingsPanel
       closeLabel={onClose ? 'Done' : 'Resume'}
@@ -42,6 +43,16 @@ export function openSettings(container: HTMLElement, hud: Hud, onClose?: () => v
           onGiveUp();
         })
       }
+      onSkipTutorial={
+        onSkip &&
+        (() => {
+          close();
+          pause.set('menu', false);
+          onSkip();
+        })
+      }
+      // From the menu only: a fresh page, which plays it and comes back.
+      onReplayTutorial={onClose ? () => location.assign('/?tutorial') : null}
     />,
   );
 }

@@ -36,12 +36,14 @@ import {
   loadQuests,
   loadRaid,
   loadStartingKit,
+  loadTutorial,
   loadVendors,
   loadZombies,
   raidIds,
   zombiesIds,
 } from './content';
 import { settings } from './settings';
+import { setTutorialSeen, tutorialSeen } from './tutorial-seen';
 import { lastRaid } from './ui/last-raid';
 import { padCursor } from './input/pad-cursor';
 import { padLog } from './input/pad-diagnostics';
@@ -168,9 +170,63 @@ if (location.pathname === '/bodies') {
   const joinCode = joinCodeIn(location.pathname);
   if (joinCode) history.replaceState(null, '', `/${location.search}`);
   const zombies = q.get('zombies');
-  (zombies !== null ? playZombies(zombies || zombiesIds()[0]!, q) : runGame(q, joinCode)).catch(
-    (err: unknown) => (status.textContent = `raid failed: ${message(err)}`),
-  );
+  // ?tutorial plays the tutorial (Settings → Play the tutorial again); ?signup, which it
+  // leaves to, opens the account screen on creating one. Neither stays in the address.
+  const tutorial = q.has('tutorial');
+  const signup = q.has('signup');
+  if (tutorial || signup) {
+    q.delete('tutorial');
+    q.delete('signup');
+    const rest = q.toString();
+    history.replaceState(null, '', `${location.pathname}${rest ? `?${rest}` : ''}`);
+  }
+  (zombies !== null
+    ? playZombies(zombies || zombiesIds()[0]!, q)
+    : tutorial
+      ? playTutorial(q)
+      : runGame(q, joinCode, signup)
+  ).catch((err: unknown) => (status.textContent = `raid failed: ${message(err)}`));
+}
+
+/**
+ * The tutorial (TU-3, design.md → Tutorial): its offline raid in its kit, with no server
+ * and no sign-in. Finishing or skipping it marks it seen on this device and goes to the
+ * account screen, on creating an account (or, signed in, to the menu).
+ */
+async function playTutorial(q: URLSearchParams): Promise<void> {
+  const def = loadTutorial('tutorial');
+  await startPlay(playElements(), {
+    ...debugOptions(q),
+    raid: def.raid,
+    test: null,
+    serverRaid: '',
+    profile: newProfile(loadItems(), loadStartingKit(def.kit)),
+    resume: null,
+    tutorial: {
+      def,
+      leave: () => {
+        setTutorialSeen();
+        location.replace('/?signup');
+      },
+    },
+    status: (text) => (status.textContent = text),
+  });
+}
+
+/**
+ * A first launch: nobody signed in (or the server out of reach, since the tutorial needs
+ * none) and the tutorial not yet seen here. Someone signed in has it marked seen.
+ */
+async function firstLaunch(): Promise<boolean> {
+  if (tutorialSeen()) return false;
+  try {
+    if (!(await fetchProfile())) return true;
+  } catch (err) {
+    if (err instanceof AccountError && err.code === 'offline') return true;
+    throw err;
+  }
+  setTutorialSeen();
+  return false;
 }
 
 /**
@@ -207,6 +263,7 @@ function playElements(): PlayElements {
     results: byId('results'),
     questMarkers: byId('quest-markers'),
     enemyBars: byId('enemy-bars'),
+    tutorial: byId('tutorial'),
   };
 }
 
@@ -233,8 +290,16 @@ function debugOptions(
  * results screen's button reloads the page, which comes back here. With no connection when
  * starting, it says so and goes back to the menu.
  */
-async function runGame(q: URLSearchParams, joinCode: string | null): Promise<void> {
-  const prepared = await prepareMenu();
+async function runGame(
+  q: URLSearchParams,
+  joinCode: string | null,
+  signup: boolean,
+): Promise<void> {
+  if (await firstLaunch()) {
+    await playTutorial(q);
+    return;
+  }
+  const prepared = await prepareMenu(signup);
   let me = prepared.me;
   const items = loadItems();
   const wanted = q.get('raid') ?? lastRaid();
@@ -354,10 +419,15 @@ async function noConnection(button: string): Promise<void> {
  * told, so the stash can be edited. With no connection it says
  * so, with a button to try again, since the profile lives on the server.
  */
-async function prepareMenu(): Promise<{ me: ProfileResponse; resume: RaidSnapshot | null }> {
+async function prepareMenu(
+  signup: boolean,
+): Promise<{ me: ProfileResponse; resume: RaidSnapshot | null }> {
   for (;;) {
     try {
-      let me = (await fetchProfile()) ?? (await (await accountUi()).showAccount(byId('account')));
+      let me =
+        (await fetchProfile()) ??
+        (await (await accountUi()).showAccount(byId('account'), signup ? 'register' : 'login'));
+      setTutorialSeen();
       syncSettings(me);
       const notices: string[] = [];
       const pending = await sendPending();

@@ -15,3 +15,18 @@ export const giveUp = {
     return handler;
   },
 };
+
+let skipHandler: (() => void) | null = null;
+
+/**
+ * Leaving the tutorial from the settings screen (TU-3): set while one is going, so the
+ * settings screen shows Skip tutorial in place of Give up.
+ */
+export const skipTutorial = {
+  set(fn: (() => void) | null): void {
+    skipHandler = fn;
+  },
+  get handler(): (() => void) | null {
+    return skipHandler;
+  },
+};

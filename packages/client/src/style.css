@@ -126,6 +126,154 @@ body {
   display: none;
 }
 
+/* The tutorial (TU-3, hud/tutorial-card.ts): the prompt card at the top, the bright marker
+   over the step's spot, and the step's touch buttons outlined. Over the raid screen, since
+   a step can need the bag open. */
+#tutorial {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#tutorial[hidden],
+#tutorial [hidden] {
+  display: none;
+}
+
+/* Top left, under the raid timer: the top middle is where the body figure shows when
+   you're hurt (the bandage and heal steps), and the right has the touch buttons. */
+.tutorial-card {
+  position: absolute;
+  top: calc(max(10px, env(safe-area-inset-top)) + 36px);
+  left: max(12px, env(safe-area-inset-left));
+  width: min(320px, 36vw);
+  padding: 8px 12px 9px;
+  border: 2px solid #ffd23f;
+  border-radius: 10px;
+  background: rgb(14 18 24 / 0.92);
+  color: #f6f2e6;
+  font:
+    14px/1.3 system-ui,
+    sans-serif;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.45);
+}
+
+.tutorial-card.new {
+  animation: tutorial-in 0.45s ease-out;
+}
+
+@keyframes tutorial-in {
+  from {
+    opacity: 0;
+    translate: -8px 0;
+  }
+}
+
+.tutorial-count {
+  color: #ffd23f;
+  font:
+    bold 11px/1.2 ui-monospace,
+    monospace;
+  letter-spacing: 0.05em;
+}
+
+.tutorial-card p {
+  margin: 2px 0 0;
+}
+
+.tutorial-skip {
+  margin-top: 6px;
+  color: rgb(246 242 230 / 0.65);
+  font-size: 12px;
+}
+
+/* Touch taps the button; a mouse or pad is told the way through settings instead. */
+.tutorial-skip > button {
+  display: none;
+  pointer-events: auto;
+  padding: 4px 12px;
+  border: 1px solid rgb(255 255 255 / 0.4);
+  border-radius: 6px;
+  background: rgb(255 255 255 / 0.08);
+  color: inherit;
+  font: inherit;
+}
+
+.tutorial-skip.touch > button {
+  display: inline-block;
+}
+
+/* With the raid screen open, in the tab bar's gap (between the tabs and the health
+   figure), smaller and without the step count, clear of the grids. */
+body:has(#raid:not([hidden])) .tutorial-card {
+  top: max(4px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(400px, 46vw);
+  text-align: center;
+  padding: 3px 8px 4px;
+  border-width: 1px;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+body:has(#raid:not([hidden])) .tutorial-count {
+  display: none;
+}
+
+/* A gold chevron bobbing over the spot, with the distance under it. */
+.tutorial-marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: -34px 0 0 -30px;
+  width: 60px;
+  padding-top: 30px;
+  color: #ffd23f;
+  font:
+    bold 13px/1.2 ui-monospace,
+    monospace;
+  text-align: center;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.85);
+  will-change: transform;
+}
+
+.tutorial-marker::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 18px;
+  width: 0;
+  height: 0;
+  border: 12px solid transparent;
+  border-top: 18px solid #ffd23f;
+  border-bottom: 0;
+  filter: drop-shadow(0 0 4px rgb(255 210 63 / 0.8));
+  animation: tutorial-bob 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes tutorial-bob {
+  to {
+    translate: 0 6px;
+  }
+}
+
+/* The button the prompt names, pulsing gold. */
+.control.tutorial-hint {
+  border-color: #ffd23f;
+  animation: tutorial-pulse 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes tutorial-pulse {
+  from {
+    box-shadow: 0 0 0 2px rgb(255 210 63 / 0.7);
+  }
+  to {
+    box-shadow: 0 0 0 7px rgb(255 210 63 / 0.15);
+  }
+}
+
 /* The enemy health bars admin cheat: one over each living enemy (hud/enemy-bars.ts). */
 #enemy-bars {
   position: fixed;

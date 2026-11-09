@@ -51,6 +51,11 @@ export const tutorialStepSchema = z.strictObject({
    * shows: the bandage, the body, the door.
    */
   marker: z.string().min(1).optional(),
+  /**
+   * Touch buttons to outline while the step shows (TU-3), by their HUD ids (the client's
+   * hud/layout.ts checks them): "jump", "crouch", "interact", "heal" and so on.
+   */
+  buttons: z.array(z.string().min(1)).optional(),
 });
 
 export const tutorialSchema = z.strictObject({

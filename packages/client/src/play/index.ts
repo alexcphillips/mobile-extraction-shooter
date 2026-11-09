@@ -1,4 +1,7 @@
 import {
+  advanceTutorial,
+  startTutorial,
+  type CompiledTutorial,
   armourDef,
   CollisionWorld,
   FixedTimestep,
@@ -170,7 +173,8 @@ import {
 } from '../raids';
 import type { RaidResult } from '../ui/results';
 import { CoopGuest, CoopHost, type CoopOptions, type Welcome } from './coop';
-import { giveUp } from './give-up';
+import { giveUp, skipTutorial } from './give-up';
+import { TutorialCard } from '../hud/tutorial-card';
 import { lootableInReach } from './loot';
 
 export interface PlayElements {
@@ -191,6 +195,8 @@ export interface PlayElements {
   questMarkers: HTMLElement;
   /** For the enemy health bars admin cheat. */
   enemyBars: HTMLElement;
+  /** Where the tutorial's prompt card and marker go (TU-3). */
+  tutorial: HTMLElement;
 }
 
 /** What dev-only extras in a raid get (the map notes, dev-notes.ts, 2026-10-30). */
@@ -254,6 +260,12 @@ export interface PlayOptions {
    * the profile's gear (its kit, not your stash). Nothing is saved or sent.
    */
   zombies?: ZombiesDef | null;
+  /**
+   * The tutorial (TU-3) in its offline raid (`raid`), wearing the profile's gear (its kit):
+   * its steps' prompts on screen as they come. Nothing is saved or sent; `leave` is called
+   * to skip it or, from the results, to go on.
+   */
+  tutorial?: { def: CompiledTutorial; leave: () => void } | null;
 }
 
 /** How far into aiming a red dot's reticle shows, once the sight has come up to the eye. */
@@ -347,6 +359,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     status('');
   }
   const zombiesMode = options.zombies ?? null;
+  const tutorialMode = options.tutorial ?? null;
   const raid =
     options.test?.raid ?? (zombiesMode ? zombiesRaid(zombiesMode) : loadRaid(options.raid));
   const map = options.test?.map ?? loadMap(raid.map);
@@ -485,7 +498,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       startRaid(sim, map, options.duration ?? raid.duration);
       // Your extractions: those your spawn allows, rotating ones picked for it.
       openExtractions(sim, player, spawn);
-      startQuests(sim, map, items, player.id, raidObjectives(options.profile, quests, raid.map));
+      if (!tutorialMode)
+        startQuests(sim, map, items, player.id, raidObjectives(options.profile, quests, raid.map));
     }
     controls.yaw = spawn.yaw;
   }
@@ -511,6 +525,13 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const held = heldWeapon(player);
   if (held) viewmodel.setGun(held, items);
   const questMarkers = new QuestMarkers(el.questMarkers, sim.raid?.investigate ?? [], player);
+  // The tutorial's steps (TU-3), followed after every tick; its card shows the one on.
+  const tutorialProgress = tutorialMode ? startTutorial(player) : null;
+  const tutorialCard = tutorialMode
+    ? new TutorialCard(el.tutorial, tutorialMode.def, el.hud, tutorialMode.leave)
+    : null;
+  tutorialCard?.show(0);
+  skipTutorial.set(tutorialMode && tutorialMode.leave);
   /** A dev screen (a note being written, or the zombies admin panel) is open. */
   let devScreen = false;
   // Zombies mode's in-game admin panel, on the dev server.
@@ -1005,15 +1026,37 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // Giving up from the settings screen kills you on the next tick.
   let givingUp = false;
   let gaveUp = false;
-  giveUp.set(() => {
-    givingUp = true;
-    // The results screen wants the cursor free.
-    controls.cursor.want(false);
-  });
+  if (!tutorialMode)
+    giveUp.set(() => {
+      givingUp = true;
+      // The results screen wants the cursor free.
+      controls.cursor.want(false);
+    });
   function endRaid(how: LeaveReason | 'killed', detail: string, now: number): void {
     if (ended) return;
     el.hitDirection.clear();
     giveUp.set(null);
+    skipTutorial.set(null);
+    tutorialCard?.close();
+    if (tutorialMode) {
+      // Nothing to keep, lose or save.
+      ended = {
+        how,
+        detail,
+        seconds: sim.tick / TICK_RATE,
+        kills,
+        kept: [],
+        lost: [],
+        quests: [],
+        taken,
+        keptAll: false,
+        tutorial: true,
+      };
+      saving = Promise.resolve({ kind: 'test' });
+      resultsAt = now + (how === 'killed' ? RESULTS_AFTER_DEATH_MS : 0);
+      closeScreen();
+      return;
+    }
     if (zombiesMode) {
       // Nothing to keep, lose or save: how far you got.
       ended = {
@@ -1091,7 +1134,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     import('../ui/results')
       .then((ui) => {
         // The next raid starts from the page, which sends anything not yet saved first.
-        ui.showResults(el.results, result, items, saving!, () => location.reload());
+        ui.showResults(el.results, result, items, saving!, () =>
+          tutorialMode ? tutorialMode.leave() : location.reload(),
+        );
         // Nothing more to play: stop drawing. A host keeps the raid going for its guests.
         if (!host?.playing(sim)) pause.set('ended', true);
       })
@@ -1156,7 +1201,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // Saved whenever the page is hidden, in case iOS unloads it while you're away.
   const snapshot = (): void => {
     // A party raid can't be picked up again from one device (C7).
-    if (ended || options.test || coop || zombiesMode) return;
+    if (ended || options.test || coop || zombiesMode || tutorialMode) return;
     saveSnapshot({
       version: 1,
       serverRaid: options.serverRaid,
@@ -1405,6 +1450,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       }
     }
     pending.length = 0;
+    if (tutorialMode && advanceTutorial(tutorialMode.def, tutorialProgress!, sim, player.id))
+      tutorialCard!.show(tutorialProgress!.step);
     follow();
     // Whose eyes and ears the screen and sound are: yours, or the teammate's you watch.
     const viewer = watching ?? player;
@@ -1850,6 +1897,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     for (const o of others) o.body.update(o.c, items, alpha, dtMs / 1000, camera, frustum);
     aiDebug?.update(enemyChars);
     questMarkers.update(camera, alive && !screenOpen && !ended);
+    tutorialCard?.update(camera, player, alive && !screenOpen && !ended);
     enemyBars?.update(camera, alive && !screenOpen && !ended);
     updateDoors(mapView, sim.doors, dtMs / 1000);
     if (barricades && sim.zombies) barricades.update(sim.zombies.windows);

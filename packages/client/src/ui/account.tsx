@@ -18,6 +18,8 @@ function problem(mode: Mode, username: string, password: string, confirm: string
 
 interface Props {
   onDone: (me: ProfileResponse) => void;
+  /** Which form it opens on: creating an account after the tutorial (TU-3), else signing in. */
+  start: Mode;
 }
 
 /**
@@ -25,8 +27,8 @@ interface Props {
  * save it (autocomplete names the fields). There's no password reset, so creating an
  * account asks for the password twice.
  */
-function AccountScreen({ onDone }: Props): ReactNode {
-  const [mode, setMode] = useState<Mode>('login');
+function AccountScreen({ onDone, start }: Props): ReactNode {
+  const [mode, setMode] = useState<Mode>(start);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -121,12 +123,16 @@ function AccountScreen({ onDone }: Props): ReactNode {
  * Shows the sign-in screen over everything until someone signs in, then resolves with
  * their profile. Loaded lazily, like the other screens.
  */
-export function showAccount(container: HTMLElement): Promise<ProfileResponse> {
+export function showAccount(
+  container: HTMLElement,
+  start: Mode = 'login',
+): Promise<ProfileResponse> {
   return new Promise((resolve) => {
     const root = createRoot(container);
     container.hidden = false;
     root.render(
       <AccountScreen
+        start={start}
         onDone={(me) => {
           root.unmount();
           container.hidden = true;

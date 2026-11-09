@@ -26,10 +26,21 @@ interface Props {
   closeLabel: string;
   /** Dies on the spot; only during a raid. */
   onGiveUp?: (() => void) | null;
+  /** Leaves the tutorial; only during it (TU-3). */
+  onSkipTutorial?: (() => void) | null;
+  /** Plays the tutorial again; only from the main menu (TU-3). */
+  onReplayTutorial?: (() => void) | null;
 }
 
 /** The settings screen. Every change saves and applies straight away. */
-export function SettingsPanel({ onClose, onEditLayout, closeLabel, onGiveUp }: Props): ReactNode {
+export function SettingsPanel({
+  onClose,
+  onEditLayout,
+  closeLabel,
+  onGiveUp,
+  onSkipTutorial,
+  onReplayTutorial,
+}: Props): ReactNode {
   const s = useSyncExternalStore(subscribe, current);
   // Giving up asks again first: it loses everything you carry.
   const [confirming, setConfirming] = useState(false);
@@ -68,6 +79,18 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel, onGiveUp }: P
                 <button onClick={() => setConfirming(true)}>Give up</button>
               </div>
             )}
+          </section>
+        )}
+        {(onSkipTutorial || onReplayTutorial) && (
+          <section>
+            <h2>Tutorial</h2>
+            <div className="row">
+              {onSkipTutorial ? (
+                <button onClick={onSkipTutorial}>Skip tutorial</button>
+              ) : (
+                <button onClick={onReplayTutorial!}>Play the tutorial again</button>
+              )}
+            </div>
           </section>
         )}
         <section>

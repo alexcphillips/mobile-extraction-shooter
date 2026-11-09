@@ -20,7 +20,8 @@
         "gamepad": "The ceiling has come down. Run at it and press ✕ to climb over.",
         "desktop": "The ceiling has come down. Run at it and press Space to climb over."
       },
-      "trigger": { "type": "vault" }
+      "trigger": { "type": "vault" },
+      "buttons": ["jump"]
     },
     {
       "id": "crawl",
@@ -29,7 +30,8 @@
         "gamepad": "Press ○ to crouch and get through the gap under the barricade.",
         "desktop": "Press C to crouch and get through the gap under the barricade."
       },
-      "trigger": { "type": "zone", "zone": "past-barricade" }
+      "trigger": { "type": "zone", "zone": "past-barricade" },
+      "buttons": ["crouch"]
     },
     {
       "id": "bandage",
@@ -39,6 +41,7 @@
         "desktop": "The wire cut you: you're bleeding. Look at the bandage and press F to pick it up."
       },
       "trigger": { "type": "carry", "item": "bandage" },
+      "buttons": ["interact"],
       "marker": "bandage"
     },
     {
@@ -48,7 +51,8 @@
         "gamepad": "Press L1 to stop the bleeding.",
         "desktop": "Press H to stop the bleeding."
       },
-      "trigger": { "type": "notBleeding" }
+      "trigger": { "type": "notBleeding" },
+      "buttons": ["heal"]
     },
     {
       "id": "shoot",
@@ -57,7 +61,8 @@
         "gamepad": "A scav, with his back to you. Hold L2 to aim and R2 to fire.",
         "desktop": "A scav, with his back to you. Hold the right mouse button to aim, and click to fire."
       },
-      "trigger": { "type": "kill" }
+      "trigger": { "type": "kill" },
+      "buttons": ["aim", "fire"]
     },
     {
       "id": "reload",
@@ -66,7 +71,8 @@
         "gamepad": "Press □ to reload.",
         "desktop": "Press R to reload."
       },
-      "trigger": { "type": "reload" }
+      "trigger": { "type": "reload" },
+      "buttons": ["reload"]
     },
     {
       "id": "search",
@@ -75,7 +81,8 @@
         "gamepad": "Look down at his body and press □ to loot it.",
         "desktop": "Look down at his body and press F to loot it."
       },
-      "trigger": { "type": "searchBody" }
+      "trigger": { "type": "searchBody" },
+      "buttons": ["interact"]
     },
     {
       "id": "key",
@@ -94,6 +101,7 @@
         "desktop": "Press Tab to close the bag, then F on the front door to unlock it."
       },
       "trigger": { "type": "door", "door": "front-door" },
+      "buttons": ["interact"],
       "marker": "front-door-marker"
     },
     {

@@ -33,6 +33,8 @@ export interface RaidResult {
   keptAll: boolean;
   /** A zombies game (2026-11-04): how far you got. Nothing is kept or lost in one. */
   zombies?: { mode: string; round: number; points: number };
+  /** The tutorial (TU-3): nothing is kept or lost in it either. */
+  tutorial?: true;
 }
 
 const TITLES: Record<RaidResult['how'], string> = {
@@ -192,6 +194,34 @@ function ZombiesResults({
   );
 }
 
+/**
+ * The tutorial's end (TU-3): what extracting means, then on to the account (or the menu,
+ * played again). Killed, it offers another go.
+ */
+function TutorialResults({ result, onNext }: { result: RaidResult; onNext: () => void }) {
+  const out = result.how === 'extracted';
+  return (
+    <div className={`results ${result.how}`}>
+      <header>
+        <h1>{out ? 'Extracted' : TITLES[result.how]}</h1>
+        <p className="results-stats">
+          Tutorial · {clock(result.seconds)} · {result.kills}{' '}
+          {result.kills === 1 ? 'kill' : 'kills'}
+        </p>
+        <p>
+          {out
+            ? "That's a raid: go in with your gear, take what you find, and get out alive. Die in a real raid and you lose everything you carried in."
+            : 'Die in a real raid and you lose everything you carried in. Nothing was at stake here.'}
+        </p>
+      </header>
+      {!out && <button onClick={() => location.reload()}>Try again</button>}
+      <button className="primary" onClick={onNext}>
+        Continue
+      </button>
+    </div>
+  );
+}
+
 function Results({
   result,
   items,
@@ -205,6 +235,7 @@ function Results({
 }) {
   if (result.zombies)
     return <ZombiesResults result={result} zombies={result.zombies} onNext={onNext} />;
+  if (result.tutorial) return <TutorialResults result={result} onNext={onNext} />;
   const survived = result.how === 'extracted';
   // Cash you kept goes into your money when the server has the result (session 13b).
   const cash = result.kept.reduce(
