@@ -3273,9 +3273,47 @@ body:has(#layout-bar) #menu {
   right: auto;
 }
 
-/* The stash's top bar is only Back now, with no line under it (2026-11-09). */
-.stash > .raid-tabs {
+/*
+ * The stash's top bar (2026-11-09, the user's call): a back arrow, STASH, and the money on
+ * the right, with no line under it. Short, but the arrow's tap target is 44 px wide and
+ * the bar's full 32 px tall.
+ */
+.stash > .raid-tabs.stash-top {
+  align-items: center;
+  height: 32px;
+  margin-bottom: 4px;
+  padding-bottom: 0;
   border-bottom: 0;
+}
+
+.raid .stash-top .stash-back {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 32px;
+  margin-left: -6px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.stash-back svg {
+  width: 22px;
+  height: 22px;
+}
+
+.stash-top-title {
+  color: #dfe5ea;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.stash-money {
+  color: #e8ecef;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 /* The stash's title bar, shorter than the other panels' (2026-11-09, the user's call). */
