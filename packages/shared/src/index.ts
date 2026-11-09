@@ -559,19 +559,24 @@ export {
 } from './content/models';
 export { placeholderModel } from './content/placeholder-models';
 export {
+  BODY_BONES,
   ENEMY_FORMAT,
   ENEMY_FORMAT_VERSION,
   FACTIONS,
   LOADOUT_FORMAT,
   LOADOUT_FORMAT_VERSION,
   checkEnemies,
+  mirrorShape,
+  platingShapes,
   type ArmourOption,
+  type BodyBone,
   type ContainerOption,
   type EnemyDef,
   type EnemyLoot,
   type EnemySkill,
   type Faction,
   type Outfit,
+  type Plating,
   type LoadoutDef,
   type WeaponOption,
 } from './content/enemies';

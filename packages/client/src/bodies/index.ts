@@ -6,12 +6,13 @@ import {
   type Character,
   type ItemDb,
   heldWeapon,
+  type Outfit,
   createGear,
   createItem,
   equip,
 } from '@mes/shared';
 import * as THREE from 'three';
-import { loadItems } from '../content';
+import { loadEnemies, loadItems } from '../content';
 import { CapsuleBody } from '../render/capsule-body';
 import { DEFAULT_OUTFIT, loadCharacter } from '../render/character';
 import { CharacterBody, CharacterRig } from '../render/character-body';
@@ -22,6 +23,10 @@ interface Pose {
   set: (c: Character, items: ItemDb) => void;
   /** Swings its knife over and over. */
   slash?: boolean;
+  /** Drawn in this enemy type's first outfit, not the default (Jug's plating). */
+  enemy?: string;
+  /** None of the shared demo gear (helmet, plate carrier, backpack) on top. */
+  ownGear?: boolean;
 }
 
 const rifle = (c: Character, items: ItemDb): void =>
@@ -73,8 +78,34 @@ const POSES: Pose[] = [
   { name: 'knife slash', set: knife, slash: true },
   { name: 'unarmed', set: () => {} },
   {
+    // Jug standing, his plating (2026-11-08) with his kit.
+    name: 'Jug',
+    enemy: 'jug',
+    ownGear: true,
+    set: (c, i) => {
+      giveWeapon(c, i, 'rpk-16', ['mag-545x39-100-jug', 'red-dot']);
+      wearArmour(c, i, 'jug-mask');
+      wearArmour(c, i, 'jug-armour');
+      equip(c, i, 'rig', createItem(i, 'chest-rig'));
+    },
+  },
+  {
+    name: 'Jug sprint',
+    enemy: 'jug',
+    ownGear: true,
+    set: (c, i) => {
+      giveWeapon(c, i, 'rpk-16', ['mag-545x39-100-jug']);
+      wearArmour(c, i, 'jug-mask');
+      wearArmour(c, i, 'jug-armour');
+      equip(c, i, 'rig', createItem(i, 'chest-rig'));
+      moving(MOVEMENT.sprintSpeed, 0)(c);
+    },
+  },
+  {
     // AI-7: Jug's gear, firing mid-slide.
     name: 'Jug slide',
+    enemy: 'jug',
+    ownGear: true,
     set: (c, i) => {
       giveWeapon(c, i, 'rpk-16', ['mag-545x39-100-jug', 'red-dot']);
       wearArmour(c, i, 'jug-mask');
@@ -128,6 +159,7 @@ function character(id: number, x: number): Character {
 export async function startBodies(canvas: HTMLCanvasElement, status: HTMLElement): Promise<void> {
   const q = new URLSearchParams(location.search);
   const items = loadItems();
+  const enemies = loadEnemies();
   const rig = new CharacterRig(await loadCharacter('/characters/mannequin.glb'));
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -144,11 +176,16 @@ export async function startBodies(canvas: HTMLCanvasElement, status: HTMLElement
   const spacing = 1.4;
   const shown = POSES.map((pose, i) => {
     const c = character(i + 1, (i - (POSES.length - 1) / 2) * spacing);
-    if (i % 3 === 1) wearArmour(c, items, 'steel-helmet');
-    if (i % 2 === 0) wearArmour(c, items, 'plate-carrier');
-    if (i % 4 === 1) equip(c, items, 'backpack', createItem(items, 'small-backpack'));
+    if (!pose.ownGear) {
+      if (i % 3 === 1) wearArmour(c, items, 'steel-helmet');
+      if (i % 2 === 0) wearArmour(c, items, 'plate-carrier');
+      if (i % 4 === 1) equip(c, items, 'backpack', createItem(items, 'small-backpack'));
+    }
     pose.set(c, items);
-    const body = new CharacterBody(rig, DEFAULT_OUTFIT, c);
+    const outfit: Outfit = pose.enemy
+      ? (enemies.types.get(pose.enemy)?.outfits?.[0] ?? DEFAULT_OUTFIT)
+      : DEFAULT_OUTFIT;
+    const body = new CharacterBody(rig, outfit, c);
     scene.add(body.root);
     const zones = q.get('zones') === '0' ? null : new CapsuleBody(0.35);
     if (zones) scene.add(zones.root);

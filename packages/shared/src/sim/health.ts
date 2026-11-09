@@ -21,7 +21,7 @@ export const ZONE_NAMES = ['head', 'chest', 'left arm', 'right arm', 'left leg',
 export const HEALTH = {
   maxHp: [35, 85, 60, 60, 65, 65],
   /** Shot damage multipliers. Falls and bleeding ignore them. */
-  multiplier: [1.5, 1, 0.7, 0.7, 0.75, 0.75],
+  multiplier: [1, 1, 0.7, 0.7, 0.75, 0.75],
   /**
    * Damage to a broken limb, or beyond what breaks it, is spread evenly over every zone
    * with HP left (head included, as in Tarkov) at this rate.

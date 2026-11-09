@@ -1,4 +1,12 @@
-import { itemDef, modelShapes, type ItemDb, type Outfit, type Shape } from '@mes/shared';
+import {
+  itemDef,
+  modelShapes,
+  platingShapes,
+  type BodyBone,
+  type ItemDb,
+  type Outfit,
+  type Shape,
+} from '@mes/shared';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
@@ -21,6 +29,30 @@ export const MOUNTS = {
   weapon: WEAPON_BONE,
 } as const;
 
+/** Where an outfit's plating rides: the rig's bone for each body bone. */
+const PLATING_BONES: Record<BodyBone, string> = {
+  hips: 'DEF-hips',
+  belly: 'DEF-spine001',
+  chest: 'DEF-spine002',
+  upperChest: 'DEF-spine003',
+  neck: 'DEF-neck',
+  head: 'DEF-head',
+  upperArmL: 'DEF-upper_armL',
+  upperArmR: 'DEF-upper_armR',
+  forearmL: 'DEF-forearmL',
+  forearmR: 'DEF-forearmR',
+  handL: 'DEF-handL',
+  handR: 'DEF-handR',
+  thighL: 'DEF-thighL',
+  thighR: 'DEF-thighR',
+  shinL: 'DEF-shinL',
+  shinR: 'DEF-shinR',
+  footL: 'DEF-footL',
+  footR: 'DEF-footR',
+  toeL: 'DEF-toeL',
+  toeR: 'DEF-toeR',
+};
+
 /** The worn gear slots, in the order they're built. */
 const WORN = ['helmet', 'armour', 'rig', 'backpack'] as const;
 
@@ -32,7 +64,8 @@ export const DEFAULT_OUTFIT: Outfit = {
   feet: '#2e2a26',
 };
 
-type Part = keyof Outfit;
+/** The outfit's colours (not its plating). */
+type Part = Exclude<keyof Outfit, 'plating'>;
 const PARTS: readonly Part[] = ['skin', 'top', 'bottom', 'hands', 'feet'];
 /** The mannequin's joint bands are drawn this much darker than the part they're on. */
 const JOINT_SHADE = 0.8;
@@ -227,11 +260,18 @@ export function characterGeometry(
   gear: Gear,
   items: ItemDb,
 ): THREE.BufferGeometry {
-  const key = `${PARTS.map((p) => outfit[p]).join()} ${WORN.map((w) => gear[w]).join()} ${JSON.stringify(gear.gun)}`;
+  const plating = outfit.plating ? JSON.stringify(outfit.plating) : '';
+  const key = `${PARTS.map((p) => outfit[p]).join()} ${plating} ${WORN.map((w) => gear[w]).join()} ${JSON.stringify(gear.gun)}`;
   const cached = t.looks.get(key);
   if (cached) return cached;
 
   const pieces: { shapes: readonly Shape[]; bone: number }[] = [];
+  // Plating (Jug's limb plates): part of the body, each group on its own bone.
+  for (const group of platingShapes(outfit.plating)) {
+    const bone = t.bones.get(PLATING_BONES[group.bone]);
+    if (bone === undefined) throw new Error(`character has no bone for ${group.bone}`);
+    pieces.push({ shapes: inRestFrame(group.shapes, t.rest), bone });
+  }
   for (const slot of WORN) {
     const id = gear[slot];
     if (!id) continue;

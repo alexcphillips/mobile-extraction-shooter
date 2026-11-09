@@ -136,10 +136,10 @@ describe('armour', () => {
     const { state, c } = setup();
     wearArmour(c, TEST_ITEMS, 'helmet');
     shootCharacter(state, TEST_ITEMS, c, HEAD, ammoDef(TEST_ITEMS, 'bleeder'), 0);
-    // 10 × 1.5 = 15; a level 3 round against a level 3 helmet: half gets through.
-    expect(c.health.hp[HEAD]).toBeCloseTo(35 - 7.5);
+    // 10 (the head is ×1); a level 3 round against a level 3 helmet: half gets through.
+    expect(c.health.hp[HEAD]).toBeCloseTo(35 - 5);
     expect(c.gear.helmet?.durability).toBeCloseTo(30 - 10);
-    expect(state.events).toContainEqual(expect.objectContaining({ absorbed: 7.5 }));
+    expect(state.events).toContainEqual(expect.objectContaining({ absorbed: 5 }));
   });
 
   it('stops a round below its level outright, wearing less the further below', () => {

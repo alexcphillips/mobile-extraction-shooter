@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { ContentError, type ContentFormat } from './format';
 import { attachmentDef, firesRound, fits, weaponDef, type ItemDb } from './items';
+import type { Shape } from './compile';
+import { modelShapes, partSchema } from './models';
 import { hexColourSchema, idSchema } from './schema';
 
 /*
@@ -155,6 +157,47 @@ const skillSchema = z.strictObject({
   stagger: z.boolean().optional(),
 });
 
+/**
+ * The body's bones that plating can ride, by body part (L is the body's left, −x facing −z).
+ * The client maps them onto its rig.
+ */
+export const BODY_BONES = [
+  'hips',
+  'belly',
+  'chest',
+  'upperChest',
+  'neck',
+  'head',
+  'upperArmL',
+  'upperArmR',
+  'forearmL',
+  'forearmR',
+  'handL',
+  'handR',
+  'thighL',
+  'thighR',
+  'shinL',
+  'shinR',
+  'footL',
+  'footR',
+  'toeL',
+  'toeR',
+] as const;
+export type BodyBone = (typeof BODY_BONES)[number];
+
+/**
+ * Shapes that are part of the body, not gear (2026-11-08, Jug's limb plates): drawn always,
+ * never looted, and only looks (they stop nothing). Modelled like worn gear, on the body in
+ * its rest pose (a T-pose: arms out along x, palms down), each group moving rigidly with
+ * its bone. `mirror` draws a copy on the other side too (x flipped, onto the L/R twin).
+ */
+const platingSchema = z.strictObject({
+  bone: z.enum(BODY_BONES),
+  mirror: z.boolean().optional(),
+  parts: z.array(partSchema).min(1),
+});
+export type Plating = z.infer<typeof platingSchema>;
+
 /** The colours of its body, by part. Gear is drawn over it. */
 export const outfitSchema = z.strictObject({
   skin: hexColourSchema,
@@ -164,7 +207,46 @@ export const outfitSchema = z.strictObject({
   bottom: hexColourSchema,
   hands: hexColourSchema,
   feet: hexColourSchema,
+  /** Plating on the body itself, if any (see platingSchema). */
+  plating: z.array(platingSchema).optional(),
 });
+
+/** A shape reflected across x = 0: the same thing on the body's other side. */
+export function mirrorShape(s: Shape): Shape {
+  const out = { ...s, x: -s.x, yaw: -s.yaw, roll: -s.roll };
+  if (out.kind === 'slab') {
+    const [bl, br, fr, fl] = out.corners;
+    out.corners = [br, bl, fl, fr];
+  } else if (out.kind === 'box') {
+    if (out.bulge) {
+      const [nx, px, ...rest] = out.bulge;
+      out.bulge = [px, nx, ...rest];
+    }
+    if (out.lean) out.lean = [-out.lean[0], out.lean[1]];
+  }
+  return out;
+}
+
+/** The other side's bone: L for R and R for L; the middle's own. */
+function twinBone(bone: BodyBone): BodyBone {
+  const last = bone.at(-1);
+  if (last === 'L') return `${bone.slice(0, -1)}R` as BodyBone;
+  if (last === 'R') return `${bone.slice(0, -1)}L` as BodyBone;
+  return bone;
+}
+
+/** An outfit's plating as shapes by bone, mirrored groups doubled. */
+export function platingShapes(
+  plating: readonly Plating[] | undefined,
+): { bone: BodyBone; shapes: Shape[] }[] {
+  const out: { bone: BodyBone; shapes: Shape[] }[] = [];
+  for (const group of plating ?? []) {
+    const shapes = modelShapes(group);
+    out.push({ bone: group.bone, shapes });
+    if (group.mirror) out.push({ bone: twinBone(group.bone), shapes: shapes.map(mirrorShape) });
+  }
+  return out;
+}
 
 /**
  * Who it sides with (format 2, AI rework session 1; design.md → AI → Scavs, PMCs and

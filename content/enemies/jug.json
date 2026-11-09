@@ -26,7 +26,10 @@
     "heals": true,
     "roam": 45
   },
-  "voice": { "breathe": "jug-breathe", "mutter": "jug-mutter" },
+  "voice": {
+    "breathe": "jug-breathe",
+    "mutter": "jug-mutter"
+  },
   "steps": "jug-step",
   "outfits": [
     {
@@ -34,8 +37,274 @@
       "top": "#34302a",
       "bottom": "#2c2a26",
       "hands": "#161616",
-      "feet": "#1a1a1a"
+      "feet": "#1a1a1a",
+      "plating": [
+        {
+          "bone": "upperArmL",
+          "mirror": true,
+          "parts": [
+            {
+              "type": "box",
+              "pos": [-0.2, 1.515, 0.064],
+              "size": [0.17, 0.035, 0.2],
+              "colour": "#6b7075",
+              "roll": 12
+            },
+            {
+              "type": "box",
+              "pos": [-0.285, 1.49, 0.064],
+              "size": [0.09, 0.03, 0.18],
+              "colour": "#5f6469",
+              "roll": 26
+            },
+            {
+              "type": "box",
+              "pos": [-0.21, 1.45, -0.04],
+              "size": [0.15, 0.1, 0.025],
+              "colour": "#575c61",
+              "roll": 12
+            },
+            {
+              "type": "box",
+              "pos": [-0.21, 1.45, 0.168],
+              "size": [0.15, 0.1, 0.025],
+              "colour": "#575c61",
+              "roll": 12
+            },
+            {
+              "type": "box",
+              "pos": [-0.17, 1.537, 0.0],
+              "size": [0.022, 0.014, 0.022],
+              "colour": "#2b2d2f",
+              "roll": 12
+            },
+            {
+              "type": "box",
+              "pos": [-0.17, 1.537, 0.128],
+              "size": [0.022, 0.014, 0.022],
+              "colour": "#2b2d2f",
+              "roll": 12
+            },
+            {
+              "type": "box",
+              "pos": [-0.355, 1.425, 0.064],
+              "size": [0.15, 0.15, 0.155],
+              "colour": "#5f6469"
+            },
+            {
+              "type": "box",
+              "pos": [-0.42, 1.425, 0.064],
+              "size": [0.02, 0.17, 0.175],
+              "colour": "#4b5054"
+            }
+          ]
+        },
+        {
+          "bone": "forearmL",
+          "mirror": true,
+          "parts": [
+            {
+              "type": "box",
+              "pos": [-0.47, 1.42, 0.14],
+              "size": [0.07, 0.08, 0.04],
+              "colour": "#6b7075"
+            },
+            {
+              "type": "box",
+              "pos": [-0.6, 1.412, 0.07],
+              "size": [0.2, 0.135, 0.125],
+              "colour": "#5f6469"
+            },
+            {
+              "type": "box",
+              "pos": [-0.6, 1.482, 0.07],
+              "size": [0.18, 0.015, 0.07],
+              "colour": "#6b7075"
+            },
+            {
+              "type": "box",
+              "pos": [-0.53, 1.49, 0.07],
+              "size": [0.022, 0.014, 0.022],
+              "colour": "#2b2d2f"
+            },
+            {
+              "type": "box",
+              "pos": [-0.67, 1.49, 0.07],
+              "size": [0.022, 0.014, 0.022],
+              "colour": "#2b2d2f"
+            }
+          ]
+        },
+        {
+          "bone": "handL",
+          "mirror": true,
+          "parts": [
+            {
+              "type": "box",
+              "pos": [-0.775, 1.452, 0.068],
+              "size": [0.075, 0.018, 0.09],
+              "colour": "#575c61"
+            }
+          ]
+        },
+        {
+          "bone": "thighL",
+          "mirror": true,
+          "parts": [
+            {
+              "type": "box",
+              "pos": [-0.09, 0.9, -0.118],
+              "size": [0.16, 0.1, 0.03],
+              "colour": "#6b7075",
+              "pitch": 8
+            },
+            {
+              "type": "box",
+              "pos": [-0.09, 0.76, -0.113],
+              "size": [0.15, 0.22, 0.03],
+              "colour": "#5f6469"
+            },
+            {
+              "type": "box",
+              "pos": [-0.18, 0.76, -0.005],
+              "size": [0.026, 0.24, 0.16],
+              "colour": "#575c61"
+            },
+            {
+              "type": "box",
+              "pos": [-0.04, 0.84, -0.131],
+              "size": [0.022, 0.022, 0.012],
+              "colour": "#2b2d2f"
+            },
+            {
+              "type": "box",
+              "pos": [-0.14, 0.84, -0.131],
+              "size": [0.022, 0.022, 0.012],
+              "colour": "#2b2d2f"
+            },
+            {
+              "type": "box",
+              "pos": [-0.09, 0.55, -0.088],
+              "size": [0.1, 0.09, 0.04],
+              "colour": "#6b7075"
+            },
+            {
+              "type": "box",
+              "pos": [-0.09, 0.55, -0.112],
+              "size": [0.022, 0.022, 0.012],
+              "colour": "#2b2d2f"
+            }
+          ]
+        },
+        {
+          "bone": "shinL",
+          "mirror": true,
+          "parts": [
+            {
+              "type": "box",
+              "pos": [-0.088, 0.29, 0.04],
+              "size": [0.1, 0.26, 0.12],
+              "colour": "#575c61"
+            },
+            {
+              "type": "box",
+              "pos": [-0.088, 0.3, -0.027],
+              "size": [0.08, 0.25, 0.02],
+              "colour": "#5f6469"
+            },
+            {
+              "type": "box",
+              "pos": [-0.088, 0.2, 0.04],
+              "size": [0.11, 0.03, 0.13],
+              "colour": "#3e3a2e"
+            }
+          ]
+        },
+        {
+          "bone": "hips",
+          "parts": [
+            {
+              "type": "box",
+              "pos": [0, 1.0, 0.0],
+              "size": [0.3, 0.06, 0.255],
+              "colour": "#3e3a2e"
+            },
+            {
+              "type": "box",
+              "pos": [0, 1.0, -0.13],
+              "size": [0.08, 0.05, 0.012],
+              "colour": "#6b7075"
+            },
+            {
+              "type": "box",
+              "pos": [0, 0.905, -0.125],
+              "size": [0.13, 0.13, 0.03],
+              "colour": "#575c61",
+              "pitch": 6
+            },
+            {
+              "type": "box",
+              "pos": [0, 0.93, -0.143],
+              "size": [0.022, 0.022, 0.012],
+              "colour": "#2b2d2f",
+              "pitch": 6
+            },
+            {
+              "type": "box",
+              "pos": [0, 0.93, 0.13],
+              "size": [0.24, 0.1, 0.03],
+              "colour": "#575c61",
+              "pitch": -6
+            }
+          ]
+        },
+        {
+          "bone": "upperChest",
+          "parts": [
+            {
+              "type": "box",
+              "pos": [0, 1.45, -0.085],
+              "size": [0.24, 0.075, 0.03],
+              "colour": "#5f6469",
+              "pitch": 15
+            },
+            {
+              "type": "box",
+              "pos": [0, 1.46, 0.135],
+              "size": [0.25, 0.09, 0.03],
+              "colour": "#5f6469",
+              "pitch": -12
+            }
+          ]
+        },
+        {
+          "bone": "upperChest",
+          "mirror": true,
+          "parts": [
+            {
+              "type": "box",
+              "pos": [-0.125, 1.45, 0.02],
+              "size": [0.03, 0.075, 0.2],
+              "colour": "#575c61"
+            },
+            {
+              "type": "box",
+              "pos": [-0.08, 1.452, -0.102],
+              "size": [0.022, 0.022, 0.012],
+              "colour": "#2b2d2f",
+              "pitch": 15
+            }
+          ]
+        }
+      ]
     }
   ],
-  "loot": { "rolls": [1, 3], "tables": { "military": 1, "medical": 1, "electronics": 0.5 } }
+  "loot": {
+    "rolls": [1, 3],
+    "tables": {
+      "military": 1,
+      "medical": 1,
+      "electronics": 0.5
+    }
+  }
 }
