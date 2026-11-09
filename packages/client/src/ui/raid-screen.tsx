@@ -78,6 +78,8 @@ export interface StashSearch {
   head: ReactNode;
   /** The bar along the stash panel's bottom: sort, and sell (2026-11-09). */
   foot: ReactNode;
+  /** The bar along the equipment panel's bottom in the stash: quick equip (2026-11-09). */
+  gearFoot: ReactNode;
   /** The page tabs and buying a page, down the right of the grid (UX-3, 2026-11-08). */
   tabs: ReactNode;
 }
@@ -300,6 +302,7 @@ export function Inventory({ inv, version }: Props): ReactNode {
   const { ctx, selected, layout } = inv;
   const sel = selected && inv.find(selected);
   const [help, setHelp] = useState(false);
+  const stashSearch = useContext(StashSearchContext);
   // Favouriting changes the settings: redraw for it.
   useSyncExternalStore(subscribeSettings, () => settings.current);
   const favs = favourites();
@@ -331,6 +334,7 @@ export function Inventory({ inv, version }: Props): ReactNode {
           <Panel
             className="inv-gear"
             width={layout.gear}
+            foot={stashSearch?.gearFoot}
             head={
               <>
                 <Worth n={gearWorth(ctx.items, ctx.player)} label="Gear Value" full />

@@ -4,6 +4,7 @@
   "name": "RG-6 grenade launcher",
   "shortName": "RG-6",
   "type": "weapon",
+  "class": "special",
   "size": [3, 2],
   "value": 40000,
   "rarity": "epic",

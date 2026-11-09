@@ -3,6 +3,7 @@
   "id": "m416",
   "name": "M416",
   "type": "weapon",
+  "class": "assault",
   "size": [5, 2],
   "value": 34000,
   "rarity": "rare",

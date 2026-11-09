@@ -3,6 +3,7 @@
   "id": "g18c",
   "name": "Glock 18C",
   "type": "weapon",
+  "class": "pistol",
   "size": [2, 1],
   "value": 22000,
   "rarity": "rare",

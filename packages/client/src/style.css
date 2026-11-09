@@ -3140,6 +3140,28 @@ body:has(#layout-bar) #menu {
   right: auto;
 }
 
+/* Quick equip, along the equipment panel's bottom in the stash (2026-11-09). */
+.raid .inv-panel-foot .stash-quick-equip {
+  flex: 1;
+}
+
+/* A message over the stash that goes by itself: quick equip's "Stash full". */
+.raid .stash-toast {
+  position: fixed;
+  z-index: 30;
+  left: 50%;
+  bottom: calc(max(14px, env(safe-area-inset-bottom)) + 40px);
+  max-width: min(520px, calc(100% - 32px));
+  height: auto;
+  padding: 8px 14px;
+  border: 1px solid color-mix(in srgb, var(--ui-accent) 50%, transparent);
+  border-radius: 2px;
+  background: rgb(18 23 27 / 0.96);
+  color: #f2dcb0;
+  font-size: 13px;
+  transform: translateX(-50%);
+}
+
 /*
  * The stash's top bar (2026-11-09, the user's call): a back arrow, STASH, and the money on
  * the right, with no line under it. Short, but the arrow's tap target is 44 px wide and

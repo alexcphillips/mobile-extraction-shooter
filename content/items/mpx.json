@@ -3,6 +3,7 @@
   "id": "mpx",
   "name": "MPX",
   "type": "weapon",
+  "class": "smg",
   "size": [3, 2],
   "value": 26000,
   "rarity": "rare",

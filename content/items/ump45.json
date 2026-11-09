@@ -3,6 +3,7 @@
   "id": "ump45",
   "name": "UMP 45",
   "type": "weapon",
+  "class": "smg",
   "size": [3, 2],
   "value": 18000,
   "rarity": "uncommon",

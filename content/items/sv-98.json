@@ -3,6 +3,7 @@
   "id": "sv-98",
   "name": "SV-98",
   "type": "weapon",
+  "class": "sniper",
   "size": [5, 2],
   "value": 30000,
   "rarity": "rare",

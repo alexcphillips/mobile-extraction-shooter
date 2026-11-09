@@ -3,6 +3,7 @@
   "id": "p226",
   "name": "P226",
   "type": "weapon",
+  "class": "pistol",
   "size": [2, 1],
   "value": 10000,
   "rarity": "uncommon",

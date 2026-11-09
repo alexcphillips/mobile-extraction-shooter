@@ -7,7 +7,7 @@ import type { LootMix } from '../content/schema';
 import { addItem, type Item } from '../inventory/grid';
 import { byWeight, chance, nextFloat, nextInt, nextIntIn, type Rng } from '../rng';
 import { createItem } from './create-item';
-import { createWeapon } from './weapons';
+import { createWeapon, type WeaponState } from './weapons';
 import { stow } from './gear';
 import { oneOfPicks } from './spawn-roll';
 import type { Character, SimState } from './state';
@@ -54,7 +54,7 @@ export function lootRounds(items: ItemDb, calibre: string): readonly string[] {
  * A gun found in a raid (2026-11-09): one full magazine of a round picked at random from
  * lootRounds for its calibre, whatever its own round is; empty if its calibre has none.
  */
-export function createLootGun(items: ItemDb, id: string, rng: Rng): Item {
+export function createLootGun(items: ItemDb, id: string, rng: Rng): WeaponState {
   const rounds = lootRounds(items, calibreOf(items, weaponDef(items, id)));
   if (!rounds.length) {
     const gun = createWeapon(items, id);

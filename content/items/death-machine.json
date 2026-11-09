@@ -3,6 +3,7 @@
   "id": "death-machine",
   "name": "Minigun",
   "type": "weapon",
+  "class": "special",
   "size": [5, 2],
   "value": 0,
   "rarity": "legendary",

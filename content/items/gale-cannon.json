@@ -3,6 +3,7 @@
   "id": "gale-cannon",
   "name": "Gale Cannon",
   "type": "weapon",
+  "class": "special",
   "size": [4, 2],
   "value": 0,
   "rarity": "legendary",

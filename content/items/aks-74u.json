@@ -3,6 +3,7 @@
   "id": "aks-74u",
   "name": "AKS-74U",
   "type": "weapon",
+  "class": "assault",
   "size": [3, 2],
   "value": 16000,
   "rarity": "common",

@@ -3,6 +3,7 @@
   "id": "mp5",
   "name": "MP5-N",
   "type": "weapon",
+  "class": "smg",
   "size": [3, 2],
   "value": 18000,
   "rarity": "uncommon",

@@ -3,6 +3,7 @@
   "id": "saiga-12",
   "name": "Saiga-12",
   "type": "weapon",
+  "class": "shotgun",
   "size": [4, 2],
   "value": 30000,
   "rarity": "rare",

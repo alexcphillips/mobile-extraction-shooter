@@ -3,6 +3,7 @@
   "id": "m250",
   "name": "M250",
   "type": "weapon",
+  "class": "lmg",
   "size": [5, 2],
   "value": 65000,
   "rarity": "epic",

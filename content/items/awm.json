@@ -3,6 +3,7 @@
   "id": "awm",
   "name": "AWM",
   "type": "weapon",
+  "class": "sniper",
   "size": [5, 2],
   "value": 90000,
   "rarity": "legendary",

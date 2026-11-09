@@ -3,6 +3,7 @@
   "id": "scav-spawner",
   "name": "Scav spawner (admin)",
   "type": "weapon",
+  "class": "special",
   "size": [2, 1],
   "value": 0,
   "rarity": "legendary",

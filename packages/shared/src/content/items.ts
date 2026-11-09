@@ -48,8 +48,8 @@ const burning = {
  * 10 (2026-11-04): gun recoil gained a snap, and its recovery became a rate (per second)
  *    rather than degrees per second (sim/recoil.ts). Containers' optional sections,
  *    armour's optional repairLoss and every item's optional shortName came in at 10 too
- *    (2026-11-06), and loot's optional category (2026-11-09): an optional field changes no
- *    existing file.
+ *    (2026-11-06), loot's optional category and guns' optional class (2026-11-09): an
+ *    optional field changes no existing file.
  */
 export const ITEM_FORMAT_VERSION = 10;
 
@@ -119,6 +119,19 @@ const plainModel = { model: plainModelSchema };
 /** A sound file's id (content/sounds). */
 const soundId = idSchema;
 
+/** Kinds of gun (WeaponDef.class). */
+export const WEAPON_CLASSES = [
+  'assault',
+  'smg',
+  'shotgun',
+  'dmr',
+  'sniper',
+  'lmg',
+  'pistol',
+  'special',
+] as const;
+export type WeaponClass = (typeof WEAPON_CLASSES)[number];
+
 const weaponSchema = z
   .strictObject({
     ...common,
@@ -145,6 +158,12 @@ const weaponSchema = z
      * animations and where the gun sits in first person. Defaults to rifle.
      */
     hold: z.enum(['rifle', 'pistol']).optional(),
+    /**
+     * What kind of gun it is (2026-11-09), for quick equip (stash-quick-equip.ts): a sniper
+     * brings a close-range gun too, and special guns (admin, zombies, launchers, the
+     * flamethrower and crossbow) are never picked. Left out, assault.
+     */
+    class: z.enum(WEAPON_CLASSES).optional(),
     /** auto keeps firing while the trigger is held; semi fires once per pull. */
     fireMode: z.enum(['auto', 'semi']),
     /** Rounds per minute; for semi, the fastest it can be pulled. */

@@ -3,6 +3,7 @@
   "id": "smg",
   "name": "K10",
   "type": "weapon",
+  "class": "smg",
   "size": [3, 2],
   "value": 40000,
   "rarity": "epic",

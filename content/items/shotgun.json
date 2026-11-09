@@ -3,6 +3,7 @@
   "id": "shotgun",
   "name": "MP-133",
   "type": "weapon",
+  "class": "shotgun",
   "size": [4, 2],
   "value": 14000,
   "rarity": "common",

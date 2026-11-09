@@ -3,6 +3,7 @@
   "id": "flamethrower",
   "name": "Flamethrower",
   "type": "weapon",
+  "class": "special",
   "size": [4, 2],
   "value": 45000,
   "rarity": "epic",

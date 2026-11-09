@@ -3,6 +3,7 @@
   "id": "ak-74m",
   "name": "AK-74M",
   "type": "weapon",
+  "class": "assault",
   "size": [4, 2],
   "value": 22000,
   "rarity": "uncommon",

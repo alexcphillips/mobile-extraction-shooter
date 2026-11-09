@@ -3,6 +3,7 @@
   "id": "sks",
   "name": "SKS",
   "type": "weapon",
+  "class": "dmr",
   "size": [5, 1],
   "value": 12000,
   "rarity": "common",

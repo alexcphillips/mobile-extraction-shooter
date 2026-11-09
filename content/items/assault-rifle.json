@@ -3,6 +3,7 @@
   "id": "assault-rifle",
   "name": "AKM",
   "type": "weapon",
+  "class": "assault",
   "size": [4, 2],
   "value": 24000,
   "rarity": "common",

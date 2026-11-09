@@ -3,6 +3,7 @@
   "id": "aug-a3",
   "name": "AUG A3",
   "type": "weapon",
+  "class": "assault",
   "size": [4, 2],
   "value": 30000,
   "rarity": "rare",

@@ -3,6 +3,7 @@
   "id": "m9a3",
   "name": "M9A3",
   "type": "weapon",
+  "class": "pistol",
   "size": [2, 1],
   "value": 9000,
   "rarity": "uncommon",

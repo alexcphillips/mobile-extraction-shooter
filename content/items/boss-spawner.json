@@ -3,6 +3,7 @@
   "id": "boss-spawner",
   "name": "Boss spawner (admin)",
   "type": "weapon",
+  "class": "special",
   "size": [2, 1],
   "value": 0,
   "rarity": "legendary",

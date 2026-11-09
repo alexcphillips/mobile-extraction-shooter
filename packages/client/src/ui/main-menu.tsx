@@ -5,6 +5,7 @@ import {
   sortGrid,
   nextPagePrice,
   openStash,
+  quickEquip,
   stashOwner,
   stashPageOf,
   type GearSlot,
@@ -58,6 +59,9 @@ import {
 } from './lobby';
 import { mapFacts, overviewMap } from './map-overview';
 import { InventoryController } from './inventory-controller';
+import { favourites } from './favourites';
+import { sounds } from '../audio/sounds';
+import { GAME_SOUNDS } from '../audio/sound-ids';
 import { PartyStrip } from './party-strip';
 import { Inventory, StashSearchContext, Worth, worth, type StashSearch } from './raid-screen';
 import { countHits, searcher, type Category } from './stash-search';
@@ -955,6 +959,13 @@ function StashPage({
   const [category, setCategory] = useState<Category>('all');
   const [sortOpen, setSortOpen] = useState(false);
   const [sortNote, setSortNote] = useState<string | null>(null);
+  // A short message over the stash that goes by itself (quick equip's "Stash full").
+  const [toast, setToast] = useState<string | null>(null);
+  useEffect(() => {
+    if (!toast) return;
+    const t = window.setTimeout(() => setToast(null), 2500);
+    return () => window.clearTimeout(t);
+  }, [toast]);
   const hit = searcher(items, query, category);
   const hits = stash.profile.stash.map((page) => (hit ? countHits(page, hit) : 0));
   const price = nextPagePrice(stash.profile);
@@ -1018,6 +1029,19 @@ function StashPage({
       saver.changed();
       setSortNote(null);
     } else setSortNote("It wouldn't all fit sorted: make some room first.");
+    bump();
+  };
+  /**
+   * Empties the gear into the stash and puts on the best kit (2026-11-09, the user's
+   * call; stash-quick-equip.ts). If what comes off won't fit, nothing changes.
+   */
+  const equipBest = (): void => {
+    inv.select(null);
+    const result = quickEquip(stash.profile, items, favourites(), Math.max(0, shown));
+    if (result === 'full') {
+      sounds().play(GAME_SOUNDS.refuse);
+      setToast('Stash full');
+    } else if (result === 'equipped') saver.changed();
     bump();
   };
   const page = stash.profile.stash[Math.max(0, shown)]!;
@@ -1139,6 +1163,15 @@ function StashPage({
     ),
     head,
     foot,
+    gearFoot: (
+      <button
+        className="stash-quick-equip"
+        title="Put everything in the stash, then equip the best gun you have rounds for, armour, bags and meds"
+        onClick={equipBest}
+      >
+        Quick equip
+      </button>
+    ),
     tabs,
   };
   return (
@@ -1167,6 +1200,11 @@ function StashPage({
       <StashSearchContext.Provider value={search}>
         <Inventory inv={inv} version={version} />
       </StashSearchContext.Provider>
+      {toast && (
+        <button className="stash-toast" role="status" onClick={() => setToast(null)}>
+          {toast}
+        </button>
+      )}
     </div>
   );
 }

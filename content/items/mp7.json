@@ -3,6 +3,7 @@
   "id": "mp7",
   "name": "MP7",
   "type": "weapon",
+  "class": "smg",
   "size": [3, 2],
   "value": 32000,
   "rarity": "rare",

@@ -495,6 +495,7 @@ export {
   LEVELS,
   MED_EFFECTS,
   ITEM_VIEWS,
+  WEAPON_CLASSES,
   RARITIES,
   SCOPE_RADIUS,
   ammoDef,
@@ -531,6 +532,7 @@ export {
   type MedDef,
   type MedEffect,
   type ItemView,
+  type WeaponClass,
   type Rarity,
   type MeleeDef,
   type GrenadeDef,
@@ -661,6 +663,7 @@ export {
   stashPageOf,
   type StashState,
 } from './stash';
+export { QUICK_EQUIP_RELOADS, quickEquip, type QuickEquipResult } from './stash-quick-equip';
 export {
   VENDOR,
   MAX_BUY,

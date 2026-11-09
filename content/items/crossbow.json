@@ -3,6 +3,7 @@
   "id": "crossbow",
   "name": "Crossbow",
   "type": "weapon",
+  "class": "special",
   "size": [3, 2],
   "value": 16000,
   "rarity": "rare",

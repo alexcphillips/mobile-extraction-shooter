@@ -3,6 +3,7 @@
   "id": "aa-12",
   "name": "AA-12",
   "type": "weapon",
+  "class": "shotgun",
   "size": [5, 2],
   "value": 60000,
   "rarity": "epic",

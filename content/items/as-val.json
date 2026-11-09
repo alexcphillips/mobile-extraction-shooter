@@ -3,6 +3,7 @@
   "id": "as-val",
   "name": "AS VAL",
   "type": "weapon",
+  "class": "assault",
   "size": [4, 2],
   "value": 42000,
   "rarity": "epic",

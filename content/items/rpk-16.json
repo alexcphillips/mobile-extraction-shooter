@@ -3,6 +3,7 @@
   "id": "rpk-16",
   "name": "RPK-16",
   "type": "weapon",
+  "class": "lmg",
   "size": [5, 2],
   "value": 38000,
   "rarity": "rare",

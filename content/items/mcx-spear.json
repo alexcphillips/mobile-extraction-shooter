@@ -3,6 +3,7 @@
   "id": "mcx-spear",
   "name": "MCX-SPEAR",
   "type": "weapon",
+  "class": "assault",
   "size": [5, 2],
   "value": 48000,
   "rarity": "epic",

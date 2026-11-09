@@ -3,6 +3,7 @@
   "id": "ion-blaster",
   "name": "Ion Blaster",
   "type": "weapon",
+  "class": "special",
   "size": [2, 2],
   "value": 0,
   "rarity": "epic",

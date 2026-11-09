@@ -3,6 +3,7 @@
   "id": "g3",
   "name": "G3",
   "type": "weapon",
+  "class": "assault",
   "size": [5, 2],
   "value": 38000,
   "rarity": "rare",
