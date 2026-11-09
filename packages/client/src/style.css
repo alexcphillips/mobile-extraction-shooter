@@ -3219,6 +3219,38 @@ body:has(#layout-bar) #menu {
   font-size: 11px;
 }
 
+/*
+ * On a phone (2026-11-09, the user's call) the kinds are a row along the top of the page
+ * instead, so the grid gets the column's width back (STASH_CHIPS in inventory-layout.ts is
+ * 0 there, the same media query). The row scrolls sideways if the page is narrow; the page
+ * tabs stick under it.
+ */
+@media not ((hover: hover) and (pointer: fine)) {
+  .stash-paged {
+    flex-wrap: wrap;
+  }
+
+  .stash-kinds {
+    flex-basis: 100%;
+    flex-direction: row;
+    width: auto;
+    min-width: 0;
+    padding-bottom: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: var(--ui-panel);
+  }
+
+  .raid .stash-kinds button {
+    flex: none;
+    padding: 0 9px;
+  }
+
+  .stash-pages {
+    top: 32px;
+  }
+}
+
 /* 16px or more, or iOS zooms in on focus. The page's user-select: none would stop typing. */
 .stash-search input {
   flex: 1;

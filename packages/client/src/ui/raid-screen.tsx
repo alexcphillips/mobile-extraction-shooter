@@ -883,8 +883,8 @@ function Loot({ inv }: { inv: InventoryController }): ReactNode {
 
 /**
  * The kinds of item to show (2026-11-06), down the left of the stash page (2026-11-09,
- * the user's call; they were along the top): the rest are dimmed. Stays in view while
- * the page scrolls.
+ * the user's call; they were along the top): the rest are dimmed. On a phone, a row
+ * along the top instead (2026-11-09, style.css). Stays in view while the page scrolls.
  */
 function StashChips(): ReactNode {
   const search = useContext(StashSearchContext);
