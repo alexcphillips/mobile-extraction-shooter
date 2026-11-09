@@ -6,7 +6,7 @@
   "type": "attachment",
   "size": [1, 2],
   "value": 5000,
-  "rarity": "rare",
+  "rarity": "common",
   "slot": "magazine",
   "weapons": ["mp7"],
   "mods": {

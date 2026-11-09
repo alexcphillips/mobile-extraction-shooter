@@ -6,7 +6,7 @@
   "class": "lmg",
   "size": [5, 2],
   "value": 38000,
-  "rarity": "rare",
+  "rarity": "common",
   "ammo": "ammo-545x39",
   "hold": "rifle",
   "fireMode": "auto",

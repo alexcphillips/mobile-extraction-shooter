@@ -6,7 +6,7 @@
   "class": "special",
   "size": [4, 2],
   "value": 45000,
-  "rarity": "epic",
+  "rarity": "common",
   "ammo": "flamethrower-fuel",
   "hold": "rifle",
   "fireMode": "auto",

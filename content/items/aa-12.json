@@ -6,7 +6,7 @@
   "class": "shotgun",
   "size": [5, 2],
   "value": 60000,
-  "rarity": "epic",
+  "rarity": "common",
   "ammo": "buckshot",
   "hold": "rifle",
   "fireMode": "auto",

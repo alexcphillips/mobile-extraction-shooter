@@ -6,7 +6,7 @@
   "class": "sniper",
   "size": [5, 2],
   "value": 20000,
-  "rarity": "uncommon",
+  "rarity": "common",
   "ammo": "ammo-762-tcw",
   "hold": "rifle",
   "fireMode": "semi",

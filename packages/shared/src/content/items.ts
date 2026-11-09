@@ -68,6 +68,32 @@ export const RARITIES = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'myt
 export type Rarity = (typeof RARITIES)[number];
 
 /**
+ * What rarity colours say (2026-11-09, the user's call): an armour piece's or a round's
+ * level, a loot item's worth, and a rig's or backpack's room. Guns and attachments are all
+ * common: a gun is just a gun. checkItems holds content to this.
+ */
+export const COMMON_TYPES: ReadonlySet<string> = new Set(['weapon', 'attachment']);
+
+/**
+ * The most cells a rig or backpack can hold at each rarity, mythic past the last (the
+ * user's call, 2026-11-09; best guesses, with room for bigger bags than there are yet).
+ */
+export const BAG_RARITY_CELLS: readonly (readonly [Rarity, number])[] = [
+  ['common', 8],
+  ['uncommon', 14],
+  ['rare', 22],
+  ['epic', 32],
+  ['legendary', 44],
+];
+
+/** A rig's or backpack's rarity, from the cells its grid holds (BAG_RARITY_CELLS). */
+export function bagRarity(grid: readonly [number, number]): Rarity {
+  const cells = grid[0] * grid[1];
+  for (const [rarity, most] of BAG_RARITY_CELLS) if (cells <= most) return rarity;
+  return 'mythic';
+}
+
+/**
  * Where an item's picture (its inventory tile and its details) is taken from (2026-11-02):
  * straight down with the back (−z) at the top, from the front (+z), from its left side
  * (−x, a gun's barrel to the left, a little from above), or angled (a near-diagonal
@@ -980,6 +1006,19 @@ export function firesRound(items: ItemDb, weapon: WeaponDef, id: string): boolea
 export function checkItems(items: ItemDb): void {
   for (const item of items.values()) {
     const source = `content/items/${item.id}.json`;
+    if (COMMON_TYPES.has(item.type) && item.rarity !== 'common') {
+      throw new ContentError(source, `a ${item.type} is always common, not ${item.rarity}`);
+    }
+    if (item.type === 'container' && item.slot !== 'vault') {
+      const want = bagRarity(item.grid);
+      if (item.rarity !== want) {
+        const cells = item.grid[0] * item.grid[1];
+        throw new ContentError(
+          source,
+          `a ${item.slot} of ${cells} cells is ${want}, not ${item.rarity}`,
+        );
+      }
+    }
     if (item.type === 'weapon') {
       const ammo = roundOf(items, item.ammo);
       if (!ammo) {

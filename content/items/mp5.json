@@ -6,7 +6,7 @@
   "class": "smg",
   "size": [3, 2],
   "value": 18000,
-  "rarity": "uncommon",
+  "rarity": "common",
   "ammo": "ammo-9mm",
   "hold": "rifle",
   "fireMode": "auto",

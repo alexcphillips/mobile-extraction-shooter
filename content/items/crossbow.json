@@ -6,7 +6,7 @@
   "class": "special",
   "size": [3, 2],
   "value": 16000,
-  "rarity": "rare",
+  "rarity": "common",
   "ammo": "crossbow-bolt",
   "hold": "rifle",
   "fireMode": "semi",

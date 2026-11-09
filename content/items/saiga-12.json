@@ -6,7 +6,7 @@
   "class": "shotgun",
   "size": [4, 2],
   "value": 30000,
-  "rarity": "rare",
+  "rarity": "common",
   "ammo": "buckshot",
   "hold": "rifle",
   "fireMode": "semi",

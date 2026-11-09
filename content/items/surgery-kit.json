@@ -8,7 +8,7 @@
   "value": 9000,
   "rarity": "epic",
   "effect": "surgery",
-  "useTime": 12,
+  "useTime": 7,
   "uses": 4,
   "sounds": {
     "use": "med-use"

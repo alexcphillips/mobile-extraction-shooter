@@ -6,7 +6,7 @@
   "class": "sniper",
   "size": [5, 2],
   "value": 90000,
-  "rarity": "legendary",
+  "rarity": "common",
   "ammo": "ammo-338",
   "hold": "rifle",
   "fireMode": "semi",

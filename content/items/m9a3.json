@@ -6,7 +6,7 @@
   "class": "pistol",
   "size": [2, 1],
   "value": 9000,
-  "rarity": "uncommon",
+  "rarity": "common",
   "ammo": "ammo-9mm",
   "hold": "pistol",
   "fireMode": "semi",

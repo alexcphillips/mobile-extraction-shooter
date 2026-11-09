@@ -6,7 +6,7 @@
   "class": "lmg",
   "size": [5, 2],
   "value": 65000,
-  "rarity": "epic",
+  "rarity": "common",
   "ammo": "ammo-68x51-fmj",
   "hold": "rifle",
   "fireMode": "auto",

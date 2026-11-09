@@ -178,7 +178,8 @@ function pickGun(
     if (!classes(def.class ?? 'assault') || !fitsSlot(items, slot, it)) return null;
     const r = roundFor(p, items, it as WeaponState, def);
     if (!r) return null;
-    return [r.round.level, favourites.has(def.id) ? 1 : 0, rarityOf(def), def.value, it.mag ?? 0];
+    // Then the name A–Z (better); guns are all common, so rarity says nothing (2026-11-09).
+    return [r.round.level, favourites.has(def.id) ? 1 : 0];
   });
   // Scored again for the one picked, to get its round.
   if (gun) pick = roundFor(p, items, gun as WeaponState, itemDef(items, gun.item) as WeaponDef);

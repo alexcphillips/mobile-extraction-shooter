@@ -6,7 +6,7 @@
   "type": "attachment",
   "size": [1, 1],
   "value": 2500,
-  "rarity": "uncommon",
+  "rarity": "common",
   "slot": "muzzle",
   "mods": {
     "recoilSide": 0.8

@@ -7,7 +7,7 @@
   "class": "special",
   "size": [3, 2],
   "value": 40000,
-  "rarity": "epic",
+  "rarity": "common",
   "ammo": "frag-grenade",
   "launchSpeed": 40,
   "armDistance": 10,

@@ -6,7 +6,7 @@
   "type": "attachment",
   "size": [2, 2],
   "value": 32000,
-  "rarity": "mythic",
+  "rarity": "common",
   "slot": "magazine",
   "weapons": ["rpk-16"],
   "mods": {

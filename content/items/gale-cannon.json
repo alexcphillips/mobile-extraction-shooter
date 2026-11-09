@@ -6,7 +6,7 @@
   "class": "special",
   "size": [4, 2],
   "value": 0,
-  "rarity": "legendary",
+  "rarity": "common",
   "ammo": "gale-charge",
   "hold": "rifle",
   "fireMode": "semi",

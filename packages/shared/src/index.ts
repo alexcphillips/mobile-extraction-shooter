@@ -497,6 +497,7 @@ export {
   ITEM_VIEWS,
   WEAPON_CLASSES,
   RARITIES,
+  bagRarity,
   SCOPE_RADIUS,
   ammoDef,
   armourDef,

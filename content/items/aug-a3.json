@@ -6,7 +6,7 @@
   "class": "assault",
   "size": [4, 2],
   "value": 30000,
-  "rarity": "rare",
+  "rarity": "common",
   "ammo": "ammo-556x45",
   "hold": "rifle",
   "fireMode": "auto",

@@ -6,7 +6,7 @@
   "class": "assault",
   "size": [4, 2],
   "value": 42000,
-  "rarity": "epic",
+  "rarity": "common",
   "ammo": "ammo-9x39",
   "hold": "rifle",
   "fireMode": "auto",

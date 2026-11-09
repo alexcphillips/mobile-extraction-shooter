@@ -6,7 +6,7 @@
   "class": "lmg",
   "size": [5, 2],
   "value": 60000,
-  "rarity": "epic",
+  "rarity": "common",
   "ammo": "ammo-762x54r",
   "hold": "rifle",
   "fireMode": "auto",

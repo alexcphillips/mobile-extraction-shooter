@@ -6,7 +6,7 @@
   "class": "special",
   "size": [5, 2],
   "value": 0,
-  "rarity": "legendary",
+  "rarity": "common",
   "ammo": "ammo-762x39",
   "hold": "rifle",
   "fireMode": "auto",

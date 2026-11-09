@@ -5,7 +5,7 @@
   "type": "container",
   "size": [4, 4],
   "value": 20000,
-  "rarity": "rare",
+  "rarity": "epic",
   "slot": "backpack",
   "grid": [5, 6],
   "sections": [

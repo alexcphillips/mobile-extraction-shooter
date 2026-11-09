@@ -1,4 +1,10 @@
-import { defaultSounds, ITEM_FORMAT_VERSION, type ItemDb, type ItemDef } from '../content/items';
+import {
+  bagRarity,
+  defaultSounds,
+  ITEM_FORMAT_VERSION,
+  type ItemDb,
+  type ItemDef,
+} from '../content/items';
 import { placeholderModel } from '../content/placeholder-models';
 
 function common(id: string, size: [number, number]) {
@@ -362,12 +368,23 @@ const defs = [
   { ...common('repair-kit', [2, 1]), type: 'repair', points: 50, useTime: 5 },
 ];
 
+/** A rig's or backpack's grid; null for anything else (a vault has no rarity rule). */
+function bagOf(d: Record<string, unknown>): [number, number] | null {
+  return d.type === 'container' && d.slot !== 'vault' ? (d.grid as [number, number]) : null;
+}
+
 export const TEST_ITEMS: ItemDb = new Map(
   defs.map((d) => {
     const sounds = defaultSounds(d);
     return [
       d.id,
-      { ...d, rarity: 'common', ...(sounds && { sounds }), model: placeholderModel(d) } as ItemDef,
+      {
+        ...d,
+        // A rig's or backpack's rarity follows its cells (checkItems); the rest are common.
+        rarity: bagOf(d) ? bagRarity(bagOf(d)!) : 'common',
+        ...(sounds && { sounds }),
+        model: placeholderModel(d),
+      } as ItemDef,
     ];
   }),
 );

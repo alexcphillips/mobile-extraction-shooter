@@ -6,7 +6,7 @@
   "type": "attachment",
   "size": [2, 2],
   "value": 12000,
-  "rarity": "epic",
+  "rarity": "common",
   "slot": "magazine",
   "weapons": ["aa-12"],
   "mods": {
