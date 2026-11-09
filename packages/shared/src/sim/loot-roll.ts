@@ -1,12 +1,13 @@
 import type { CompiledMap } from '../content/compile';
 import type { EnemyLoot } from '../content/enemies';
-import type { ItemDb } from '../content/items';
+import { calibreOf, itemDef, weaponDef, type ItemDb } from '../content/items';
 import type { LootContainerDef } from '../content/loot-containers';
 import type { LootTableDef } from '../content/loot-tables';
 import type { LootMix } from '../content/schema';
 import { addItem, type Item } from '../inventory/grid';
-import { byWeight, chance, nextFloat, nextIntIn, type Rng } from '../rng';
+import { byWeight, chance, nextFloat, nextInt, nextIntIn, type Rng } from '../rng';
 import { createItem } from './create-item';
+import { createWeapon } from './weapons';
 import { stow } from './gear';
 import { oneOfPicks } from './spawn-roll';
 import type { Character, SimState } from './state';
@@ -25,9 +26,48 @@ function table(tables: LootTables, id: string): LootTableDef {
   return t;
 }
 
-/** One item from a table, picked by weight, with its count rolled. */
+/** A found gun's rounds: ammo of level LOOT_GUN_MAX_LEVEL or lower, common or uncommon. */
+export const LOOT_GUN_MAX_LEVEL = 2;
+const LOOT_GUN_RARITIES: ReadonlySet<string> = new Set(['common', 'uncommon']);
+
+// The rounds a found gun can be loaded with, by calibre, per item database.
+const lootRoundsCache = new WeakMap<ItemDb, Map<string, string[]>>();
+
+/** The rounds a found gun of this calibre can come loaded with (see LOOT_GUN_MAX_LEVEL). */
+export function lootRounds(items: ItemDb, calibre: string): readonly string[] {
+  let by = lootRoundsCache.get(items);
+  if (!by) {
+    by = new Map();
+    for (const def of items.values()) {
+      if (def.type !== 'ammo' || def.level > LOOT_GUN_MAX_LEVEL) continue;
+      if (!LOOT_GUN_RARITIES.has(def.rarity)) continue;
+      const list = by.get(def.calibre);
+      if (list) list.push(def.id);
+      else by.set(def.calibre, [def.id]);
+    }
+    lootRoundsCache.set(items, by);
+  }
+  return by.get(calibre) ?? [];
+}
+
+/**
+ * A gun found in a raid (2026-11-09): one full magazine of a round picked at random from
+ * lootRounds for its calibre, whatever its own round is; empty if its calibre has none.
+ */
+export function createLootGun(items: ItemDb, id: string, rng: Rng): Item {
+  const rounds = lootRounds(items, calibreOf(items, weaponDef(items, id)));
+  if (!rounds.length) {
+    const gun = createWeapon(items, id);
+    gun.mag = 0;
+    return gun;
+  }
+  return createWeapon(items, id, [], rounds[nextInt(rng, rounds.length)]);
+}
+
+/** One item from a table, picked by weight, with its count rolled. A gun: createLootGun. */
 export function rollItem(items: ItemDb, t: LootTableDef, rng: Rng): Item {
   const e = byWeight(rng, t.items);
+  if (itemDef(items, e.item).type === 'weapon') return createLootGun(items, e.item, rng);
   const count = e.count ? nextIntIn(rng, e.count[0], e.count[1]) : 1;
   return createItem(items, e.item, Math.max(1, count));
 }

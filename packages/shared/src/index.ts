@@ -150,8 +150,11 @@ export { factionOf, hostile } from './sim/factions';
 export { PMC_SQUADS, squadSizes, startSquads } from './sim/squads';
 export { equipLoadout } from './sim/loadout';
 export {
+  LOOT_GUN_MAX_LEVEL,
   containerMix,
+  createLootGun,
   fillLootContainers,
+  lootRounds,
   rollEnemyLoot,
   rollMix,
   rollLootSpawns,

@@ -63,6 +63,10 @@
       "count": 20
     },
     {
+      "item": "ammo-68x51-hp",
+      "count": 20
+    },
+    {
       "item": "ammo-762x39-lp",
       "count": 30
     },
@@ -126,6 +130,11 @@
     },
     {
       "item": "ammo-762-tcw",
+      "count": 20,
+      "level": 2
+    },
+    {
+      "item": "ammo-68x51-sp",
       "count": 20,
       "level": 2
     },

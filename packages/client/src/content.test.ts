@@ -1,17 +1,23 @@
 import {
   CollisionWorld,
   GEAR,
+  LOOT_GUN_MAX_LEVEL,
   NavGrid,
   VAULT_ITEM,
   VENDOR,
   spawnProblems,
+  ammoDef,
   buyPrice,
+  calibreOf,
+  createLootGun,
   createState,
   createRng,
   createWeaponStats,
   equipLoadout,
   exposedSpawns,
   heldWeapon,
+  loadedAmmo,
+  lootRounds,
   weaponStats,
   createItem,
   spawnCharacter,
@@ -115,6 +121,26 @@ describe('content', () => {
 
   it('loot tables load and their items are sound', () => {
     expect(loadLootTables().size).toBeGreaterThan(0);
+  });
+
+  it('every gun in a loot table comes full, of a common or uncommon round of level 1 or 2', () => {
+    const items = loadItems();
+    const rng = createRng(1);
+    for (const t of loadLootTables().values())
+      for (const e of t.items) {
+        const def = items.get(e.item)!;
+        if (def.type !== 'weapon') continue;
+        const calibre = calibreOf(items, def);
+        expect(lootRounds(items, calibre), `${e.item} (${calibre})`).not.toHaveLength(0);
+        for (let i = 0; i < 20; i++) {
+          const gun = createLootGun(items, e.item, rng);
+          const round = ammoDef(items, loadedAmmo(items, gun));
+          expect(round.level).toBeLessThanOrEqual(LOOT_GUN_MAX_LEVEL);
+          expect(['common', 'uncommon']).toContain(round.rarity);
+          expect(round.calibre).toBe(calibre);
+          expect(gun.mag).toBe(weaponStats(items, gun, createWeaponStats()).magazine);
+        }
+      }
   });
 
   it('vendors load and sell items that exist, for money', () => {

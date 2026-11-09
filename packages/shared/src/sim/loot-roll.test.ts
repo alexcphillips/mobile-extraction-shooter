@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CompiledMap } from '../content/compile';
+import { ammoDef, type ItemDb, type ItemDef } from '../content/items';
 import { LOOT_TABLE_FORMAT_VERSION, type LootTableDef } from '../content/loot-tables';
 import { countOf, createGrid } from '../inventory/grid';
 import { createRng } from '../rng';
@@ -9,6 +10,7 @@ import { createItem } from './create-item';
 import { equip } from './gear';
 import {
   fillLootContainers,
+  lootRounds,
   rollEnemyLoot,
   rollLootSpawns,
   rollMix,
@@ -16,6 +18,7 @@ import {
   type LootKinds,
 } from './loot-roll';
 import { createState } from './state';
+import { loadedAmmo } from './weapons';
 import { TEST_ITEMS as items } from './test-items';
 
 const world = new CollisionWorld({
@@ -81,8 +84,31 @@ describe('loot tables', () => {
     // About 3 to 1.
     expect(seen.cash / total).toBeGreaterThan(0.68);
     expect(seen.cash / total).toBeLessThan(0.82);
-    // A gun comes with a full magazine, like any new one.
-    expect(rollTable(items, tables.get('guns')!, rng)[0]).toMatchObject({ item: 'rifle', mag: 30 });
+    // A gun whose calibre has no common or uncommon round of level 1 or 2 comes empty.
+    expect(rollTable(items, tables.get('guns')!, rng)[0]).toMatchObject({ item: 'rifle', mag: 0 });
+  });
+
+  it('loads a found gun full, with a common or uncommon round of level 1 or 2 of its calibre', () => {
+    const round = (id: string, level: number, rarity: string): [string, ItemDef] => [
+      id,
+      { ...ammoDef(items, 'round'), id, level, rarity } as ItemDef,
+    ];
+    const db: ItemDb = new Map([
+      ...items,
+      round('soft', 1, 'common'),
+      round('fmj', 2, 'uncommon'),
+      round('rare-low', 2, 'rare'),
+    ]);
+    const rng = createRng(3);
+    const seen = new Set<string>();
+    for (let i = 0; i < 200; i++) {
+      const gun = rollTable(db, tables.get('guns')!, rng)[0]!;
+      expect(gun.mag).toBe(30);
+      seen.add(loadedAmmo(db, gun));
+    }
+    // Never its own round (level 3), a rare one or another calibre's.
+    expect([...seen].sort()).toEqual(['fmj', 'soft']);
+    expect(lootRounds(db, 'round')).toEqual(['soft', 'fmj']);
   });
 
   it('fills containers from their markers’ tables, the same for the same seed', () => {

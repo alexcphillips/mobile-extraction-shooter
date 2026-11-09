@@ -29,6 +29,8 @@
     { "item": "ammo-545x39-hp", "weight": 1, "count": [1, 10] },
     { "item": "ammo-545x39", "weight": 1, "count": [1, 10] },
     { "item": "ammo-762-tcw", "weight": 0.5, "count": [1, 10] },
+    { "item": "ammo-68x51-hp", "weight": 0.5, "count": [1, 10] },
+    { "item": "ammo-68x51-sp", "weight": 0.5, "count": [1, 10] },
     { "item": "ammo-68x51-fmj", "weight": 0.3, "count": [1, 10] },
     { "item": "crossbow-bolt", "weight": 1, "count": [1, 10] }
   ]
