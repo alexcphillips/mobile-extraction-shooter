@@ -15,5 +15,6 @@
   },
   "model": {
     "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.28], "colour": "#b04848" }]
-  }
+  },
+  "view": "frontRight"
 }

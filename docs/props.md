@@ -71,6 +71,24 @@ Only when the user asks for a container (see Collision). A container is a node w
 4. Check the user's existing prefabs before making one: they may already have a version (empty-pallet) or a convention to keep (a colour slot the map passes down).
 5. Say what wasn't seen: these are built from numbers, so ask for a screenshot and fix from it.
 
+## Item models (2026-11-09)
+Items (loot, guns, gear) are `model.parts` in their `content/items` JSON, drawn in tiles, on the ground and in hands. The user liked the cordless drill and the cash, and the jade dragon followed this recipe; use those three as references.
+
+- **Frame (`content/models.ts`):** metres; the front faces **−z** so the picture faces left; y up. A part's `pos` is its **centre** (map shapes use the base). Rotation is yaw, then pitch, then roll (Euler YXZ). A cylinder runs along its own y; `radiusTop: 0` makes a cone. To lay a cylinder or box from point a to b: direction d = b − a normalised, `pitch = acos(d.y)`, `yaw = atan2(d.x, d.z)`, pos the midpoint, height |d|. On the ground an item rests on its lowest point, so where the origin sits doesn't matter for loot.
+- **Real sizes:** model in true metres (the drill is about 0.29 m long, a bundle of notes 0.155 m). Nothing is scaled up for the picture; the tile fits whatever you build.
+- **Triangle budgets** (`item-editor/budget.ts`, shown on the model tab and amber when over): loot and knives **400**, muzzle and magazine attachments 300, optics 500, pistols 1,000, long guns 2,000, worn gear 1,200. Loot is drawn many at once, so the 400 is real. **What parts cost:** box 12; an n-sided cylinder 4n − 4 (8 sides 28, 12 sides 44); an n-sided cone 2n − 2 (3 sides 4, 4 sides 6). Round things at 12 sides blow the budget fast: the dragon's first try was 1,040.
+- **Cheap tricks that still read:** 5-sided cylinders for a body or limbs at this size; 3- and 4-sided cones for spikes, claws, horns and whiskers; one dark bar through a head shows as an eye on each side (one box, not two); two 6-sided cones base to base make a gem or pearl; a short cylinder chain overlaps each joint by about half its radius so bends don't open. There are no holes, so a ring or band goes round a side, never on a top (a ring on top covered the dragon's whole plinth).
+- **Read in two shades** (as for props): alternate shades on repeated segments (the coil, stacked notes), a darker shade where parts meet (the drill's rubber back, trigger and switch on orange), a light shade for edges and accents (the dragon's spines and claws). Thin surface details are 1–2 mm thick and 1 mm proud (the cash's print and portrait).
+- **Break up the block:** a second copy offset and turned a few degrees reads as a pile (the cash's top bundle is yawed 14°); a curl, tail flick or limb past the silhouette reads better than a clean column.
+- **Shape to the tile and view:** a 1 × 2 tile is tall, so build tall (the dragon on its stand); a 2 × 1 is long (the drill, side on). `view` picks the picture: the default `angled` (front left) for most loot, `side` for something read by its profile (guns, the drill), `top` for something flat (cash). Check the small picture, not just the big 3D view: details under a few millimetres vanish at tile size.
+- **Name and group every part** (`name`, `group`): the item editor lists parts by them, so a 40-part model can be found and edited a group at a time.
+- **Process:**
+  1. For computed positions (a coil, radial spikes, rows), write a throwaway generator script in the scratchpad that **replaces only `model`** in the item file, so its stats stay. Iterate with it, then leave it there. **The JSON is the model from then on** (the user's call, 2026-11-09, after the jade dragon): later changes are made in the JSON or the item editor, never by re-running an old script, which would undo edits made since. Simple hand-placed models (the drill, the cash) go straight into the JSON or the item editor.
+  2. `npx prettier --write` the item file.
+  3. With `npm run dev` up, `node scripts/item-shot.mjs <item-id> --out <scratchpad>/x` prints the budget line and saves the inventory pictures from every view plus the 3D and side views. Look at them and fix what reads wrong (floating parts, a colour covering another) before handing over.
+  4. Run the tests (`npx vitest run`, Node 22.23.4): the content test validates every item.
+  5. Say what was seen and what wasn't, and ask the user how it looks in the game.
+
 ## Item palette (2026-11-09, IE-2)
 The item editor's "house" swatches (`item-editor/palette.ts`), taken from the colours the content's items use most. Start a new item from these; keep two shades per material as for props.
 
