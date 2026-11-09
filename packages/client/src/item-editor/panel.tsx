@@ -982,6 +982,11 @@ function SizePreview({ def }: { def: ItemDef }) {
       </h4>
       <div className="ie-sizes">
         <Cells w={w} h={h} colour={colourOf(def)} label={tileName(def)} art={art} />
+        {/* Turned, as the inventory draws it when rotated (2026-11-09): the same picture, a
+            quarter turn clockwise. Every item that isn't square can be rotated. */}
+        {w !== h && (
+          <Cells w={h} h={w} colour={colourOf(def)} label={tileName(def)} art={art} turned />
+        )}
         {def.type === 'container' && <Cells w={def.grid[0]} h={def.grid[1]} colour="" label="" />}
       </div>
     </div>
@@ -994,6 +999,8 @@ function Cells(props: {
   colour: string;
   label: string;
   art?: string | null;
+  /** The art was drawn for the unturned tile (h × w) and is turned a quarter to fit. */
+  turned?: boolean;
 }) {
   const { w, h } = props;
   if (!(w >= 1 && h >= 1 && w <= 20 && h <= 20)) return null;
@@ -1011,7 +1018,18 @@ function Cells(props: {
             gridArea: `1 / 1 / ${h + 1} / ${w + 1}`,
           }}
         >
-          {props.art && <img className="ie-tile-art" src={props.art} alt="" />}
+          {props.art && (
+            <img
+              className={props.turned ? 'ie-tile-art ie-tile-art-turned' : 'ie-tile-art'}
+              src={props.art}
+              alt=""
+              style={
+                props.turned
+                  ? { width: `${(h / w) * 100}%`, height: `${(w / h) * 100}%` }
+                  : undefined
+              }
+            />
+          )}
           <span className="ie-tile-name">{props.label}</span>
         </div>
       ) : (

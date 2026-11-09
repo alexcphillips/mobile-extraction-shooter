@@ -181,6 +181,14 @@ body.item-editor #scene {
   height: 100%;
 }
 
+/* A rotated tile's picture: drawn at the unturned shape, centred and turned clockwise. */
+.ie-tile-art-turned {
+  inset: auto;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
 .ie-tile-name {
   position: relative;
   text-shadow: 0 0 3px rgb(0 0 0 / 0.9);
