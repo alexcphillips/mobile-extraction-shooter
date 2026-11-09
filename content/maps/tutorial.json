@@ -58,20 +58,8 @@
       "size": [32.4, 2.8, 0.2],
       "colour": "paint",
       "openings": [
-        {
-          "along": -12,
-          "width": 1.2,
-          "bottom": 0.9,
-          "top": 2.0,
-          "glass": "glass"
-        },
-        {
-          "along": 11,
-          "width": 1.2,
-          "bottom": 0.9,
-          "top": 2.0,
-          "glass": "glass"
-        }
+        { "along": -12, "width": 1.2, "bottom": 0.9, "top": 2, "glass": "glass" },
+        { "along": 11, "width": 1.2, "bottom": 0.9, "top": 2, "glass": "glass" }
       ]
     },
     {
@@ -81,19 +69,8 @@
       "size": [32.4, 2.8, 0.2],
       "colour": "paint",
       "openings": [
-        {
-          "along": -12,
-          "width": 1.2,
-          "bottom": 0.9,
-          "top": 2.0,
-          "glass": "glass"
-        },
-        {
-          "along": 10,
-          "width": 1.0,
-          "bottom": 0,
-          "top": 2.1
-        }
+        { "along": -12, "width": 1.2, "bottom": 0.9, "top": 2, "glass": "glass" },
+        { "along": 10, "width": 1, "bottom": 0, "top": 2.1 }
       ]
     },
     {
@@ -121,14 +98,7 @@
       "yaw": 90,
       "size": [6, 2.8, 0.15],
       "colour": "paint",
-      "openings": [
-        {
-          "along": 0,
-          "width": 1.1,
-          "bottom": 0,
-          "top": 2.2
-        }
-      ]
+      "openings": [{ "along": 0, "width": 1.1, "bottom": 0, "top": 2.2 }]
     },
     {
       "type": "wall",
@@ -137,14 +107,7 @@
       "yaw": 90,
       "size": [6, 2.8, 0.15],
       "colour": "paint",
-      "openings": [
-        {
-          "along": 1.2,
-          "width": 1.1,
-          "bottom": 0,
-          "top": 2.2
-        }
-      ]
+      "openings": [{ "along": 1.2, "width": 1.1, "bottom": 0, "top": 2.2 }]
     },
     {
       "type": "prefab",
@@ -200,7 +163,8 @@
       "type": "prefab",
       "id": "couch",
       "prefab": "couch",
-      "pos": [27, 0.04, -2.4]
+      "pos": [27, 0.04, -2.4],
+      "yaw": 180
     },
     {
       "type": "prefab",
@@ -225,7 +189,7 @@
       "type": "door",
       "id": "front-door",
       "pos": [26, 0.04, 3.1],
-      "size": [1.0, 2.06],
+      "size": [1, 2.06],
       "key": "front-door-key",
       "colour": "door"
     },
