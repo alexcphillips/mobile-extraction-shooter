@@ -262,29 +262,89 @@ export function Inventory({ inv, version }: Props): ReactNode {
       onPointerLeave={() => setHover(null)}
       onPointerDown={() => setHover(null)}
     >
-      <div className="inv-cols">
-        <Panel
-          className="inv-gear"
-          width={layout.gear}
-          title="Loadout"
-          head={
-            <>
-              <Worth n={gearWorth(ctx.items, ctx.player)} />
-              <button
-                className={`inv-help-button${help ? ' active' : ''}`}
-                aria-label="How the inventory works"
-                onClick={() => setHelp(!help)}
-              >
-                ?
-              </button>
-            </>
-          }
-        >
-          <Slots inv={inv} owner={SELF} slots={MY_SLOTS} ch={ctx.player} />
-        </Panel>
-        <Panel className="inv-carried" width={layout.carried} title="Carried">
-          <CharacterGrids inv={inv} owner={SELF} ch={ctx.player} vault />
-        </Panel>
+      <div
+        className="inv-cols"
+        onClick={(e) => {
+          // With no backdrop, a tap on nothing in particular closes the details (UX-2).
+          const t = e.target as HTMLElement;
+          if (inv.selected && !t.closest(BLANK_TAP_SKIPS)) inv.select(null);
+        }}
+      >
+        <div className="inv-left">
+          <Panel
+            className="inv-gear"
+            width={layout.gear}
+            title="Loadout"
+            head={
+              <>
+                <Worth n={gearWorth(ctx.items, ctx.player)} />
+                <button
+                  className={`inv-help-button${help ? ' active' : ''}`}
+                  aria-label="How the inventory works"
+                  onClick={() => setHelp(!help)}
+                >
+                  ?
+                </button>
+              </>
+            }
+          >
+            <Slots inv={inv} owner={SELF} slots={MY_SLOTS} ch={ctx.player} />
+          </Panel>
+          <Panel className="inv-carried" width={layout.carried} title="Carried">
+            <CharacterGrids inv={inv} owner={SELF} ch={ctx.player} vault />
+          </Panel>
+          {!inv.selling && selected && sel && (
+            <ItemDetails
+              panel
+              items={ctx.items}
+              item={sel.item}
+              quests={ctx.quests}
+              onClose={() => inv.select(null)}
+              extra={
+                sel.def.type === 'weapon' && <Parts inv={inv} gun={selected} item={sel.item} />
+              }
+              actions={
+                <>
+                  {'index' in selected && sel.def.size[0] !== sel.def.size[1] && (
+                    <button onClick={() => inv.rotate(selected)}>Rotate</button>
+                  )}
+                  {sel.def.type === 'weapon' && (sel.item.mag ?? 0) > 0 && (
+                    <button onClick={() => inv.unload(selected)}>Unload</button>
+                  )}
+                  {sel.def.type === 'med' && ctx.use && !ctx.player.using && (
+                    <button disabled={!inv.medRef(selected)} onClick={() => inv.useMed(selected)}>
+                      {inv.medRef(selected) ? 'Use' : 'Nothing to treat'}
+                    </button>
+                  )}
+                  <RepairButton inv={inv} armour={selected} item={sel.item} def={sel.def} />
+                  <button
+                    className={favs.has(sel.def.id) ? 'favourited' : undefined}
+                    aria-pressed={favs.has(sel.def.id)}
+                    title="Favourites are starred, and light up where they turn up in a body, a container or on the ground"
+                    onClick={() => toggleFavourite(sel.def.id)}
+                  >
+                    {favs.has(sel.def.id) ? '★ Favourite' : '☆ Favourite'}
+                  </button>
+                  {ctx.sell && !('ground' in selected) && (
+                    <SellButton key={refKey(selected)} inv={inv} at={selected} item={sel.item} />
+                  )}
+                  {ctx.sell && inv.canPick(selected) && (
+                    <button onClick={() => inv.startSelling(selected)}>Sell several</button>
+                  )}
+                  {!('ground' in selected) && !ctx.stash && (
+                    <button onClick={() => inv.toGround(selected)}>Drop</button>
+                  )}
+                  {'index' in selected && sel.item.count > 1 && (
+                    <Split key={refKey(selected)} inv={inv} at={selected} item={sel.item} />
+                  )}
+                  <button className="primary" onClick={() => inv.quick(selected)}>
+                    {quickLabel(selected, inv.quickTo(selected))}
+                  </button>
+                </>
+              }
+            />
+          )}
+        </div>
         <div className="inv-spacer" />
         <Loot inv={inv} />
       </div>
@@ -301,57 +361,12 @@ export function Inventory({ inv, version }: Props): ReactNode {
         </footer>
       )}
       {hover && !sel && <HoverCard inv={inv} hover={hover} />}
-      {!inv.selling && selected && sel && (
-        <ItemDetails
-          items={ctx.items}
-          item={sel.item}
-          quests={ctx.quests}
-          onClose={() => inv.select(null)}
-          extra={sel.def.type === 'weapon' && <Parts inv={inv} gun={selected} item={sel.item} />}
-          actions={
-            <>
-              {'index' in selected && sel.def.size[0] !== sel.def.size[1] && (
-                <button onClick={() => inv.rotate(selected)}>Rotate</button>
-              )}
-              {sel.def.type === 'weapon' && (sel.item.mag ?? 0) > 0 && (
-                <button onClick={() => inv.unload(selected)}>Unload</button>
-              )}
-              {sel.def.type === 'med' && ctx.use && !ctx.player.using && (
-                <button disabled={!inv.medRef(selected)} onClick={() => inv.useMed(selected)}>
-                  {inv.medRef(selected) ? 'Use' : 'Nothing to treat'}
-                </button>
-              )}
-              <RepairButton inv={inv} armour={selected} item={sel.item} def={sel.def} />
-              <button
-                className={favs.has(sel.def.id) ? 'favourited' : undefined}
-                aria-pressed={favs.has(sel.def.id)}
-                title="Favourites are starred, and light up where they turn up in a body, a container or on the ground"
-                onClick={() => toggleFavourite(sel.def.id)}
-              >
-                {favs.has(sel.def.id) ? '★ Favourite' : '☆ Favourite'}
-              </button>
-              {ctx.sell && !('ground' in selected) && (
-                <SellButton key={refKey(selected)} inv={inv} at={selected} item={sel.item} />
-              )}
-              {ctx.sell && inv.canPick(selected) && (
-                <button onClick={() => inv.startSelling(selected)}>Sell several</button>
-              )}
-              {!('ground' in selected) && !ctx.stash && (
-                <button onClick={() => inv.toGround(selected)}>Drop</button>
-              )}
-              {'index' in selected && sel.item.count > 1 && (
-                <Split key={refKey(selected)} inv={inv} at={selected} item={sel.item} />
-              )}
-              <button className="primary" onClick={() => inv.quick(selected)}>
-                {quickLabel(selected, inv.quickTo(selected))}
-              </button>
-            </>
-          }
-        />
-      )}
     </div>
   );
 }
+
+/** What a tap closing the details ignores: items, controls, and the details themselves. */
+const BLANK_TAP_SKIPS = '[data-ref], button, input, select, label, a, .item-details, .inv-bag';
 
 /** What's under the mouse: an item's ref (refKey's JSON) and where the pointer is. */
 interface Hover {

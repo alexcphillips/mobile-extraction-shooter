@@ -789,14 +789,18 @@ Cut at the user's call: valuables going to the vault by themselves, item and amm
 
 - [x] **UX-0. Crouch: toggle or hold** (2026-11-08, the user's call; design.md → Movement → Crouch: toggle or hold).
   - **Done 2026-11-08.** `crouch` in the shared settings (toggle by default; old saves get toggle), a Crouch choice in settings, and `input/controls.ts` reading it for C and the button.
-- [ ] **UX-1. Touch: scroll, and hold to drag.**
+- [x] **UX-1. Touch: scroll, and hold to drag.**
   - Today any press that moves starts a drag (`ui/drag.ts`), so a finger can't scroll a full stash. On touch: a finger that moves within about 200 ms scrolls; one held still about 200 ms lifts the item (drawn lifted, so you know). A mouse still drags at once.
   - Re-check the timings against double-tap (350 ms) and the tap that opens details.
-- [ ] **UX-2. The details panel.**
+  - **Done 2026-11-08** (design.md → Inventory and UI → Touch: scroll, or hold to lift). Items are `touch-action: pan-y` (were `none`), so the panel scrolls natively; `HOLD_MS` 200 in `ui/drag.ts`, with `touchPress` tested. Once lifted, a document `touchmove` listener (not passive, added once) cancels the finger's moves so the panel stays still; edge auto-scroll still works. Timings: 200 ms hold < 350 ms double-tap, and the details' 350 ms wait already skips a press that's still held. A lift let go in place is a tap. Not checked with a real finger here (no touch in the desktop browser).
+- [x] **UX-2. The details panel.**
   - A tap opens the details as a panel in place of the modal card; on a phone it takes the right column while open (the three columns leave no room beside them).
   - **Source** (the loot tables, vendors and, later, recipes that give it) and **Usage** (quests and, later, Hangar upgrades and recipes that want it), worked out from content, not written by hand. Value and Sell are already in the card; keep them.
   - No descriptions on guns, armour, backpacks and rigs. Material items show their category and keep a description.
   - A brief shade on the tile with a hint naming where a double-tap would put it ("double-tap → stash"), shown only the first few times.
+  - **Done 2026-11-08** (design.md → Inventory and UI → The details panel). The user's call while building: as Delta Force does, the panel goes **over Loadout and Carried for any item** (not the right column), with no backdrop. Built: `ItemDetails`' `panel` (the vendors page keeps the card), `.inv-left` around the two columns, a body class while dragging that hides the panel, a tap on nothing closing it; `sourceIndex`/`itemUsage` in shared (`content/item-sources.ts`), `itemOrigins`/`warmItemOrigins` in the client's content.ts (warmed from the main menu); `showQuickHint` (5 taps, localStorage). Gun stats moved under the picture, full width.
+  - **Checked:** 5 new tests (928 in all): the index on a small fixture (container kinds by count, a container's own table, loose maps, enemies from loadout and loot, vendor levels, rewards, quest spots, usage), and on the real content (bandages; every vendor's item has its vendor). Typecheck, lint, format.
+  - **Not checked:** in a browser or on a finger (no browser this session): the panel's fit at phone width, the hint, closing on a blank tap.
 - [ ] **UX-3. Grids.**
   - Stash page tabs down the right edge of the stash grid.
   - Pockets as **five 1×1 slots** (was a 4×1 grid). 1×2 items (a molotov) then can't go in pockets; the user knows and wants that (2026-11-08).

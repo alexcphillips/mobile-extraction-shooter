@@ -44,6 +44,9 @@ import {
   type StartingKitDef,
   type VendorDef,
   type ZombiesDef,
+  sourceIndex,
+  type CompiledMarker,
+  type ItemSource,
 } from '@mes/shared';
 import { GAME_SOUNDS } from './audio/sound-ids';
 
@@ -128,7 +131,61 @@ export function loadMap(id: string): CompiledMap {
   prefabs ??= loadById(PREFAB_FORMAT, prefabFiles);
   const map = maps.get(id);
   if (!map) throw new Error(`no map "${id}" in content/maps`);
-  return compileMap(map, prefabs);
+  const compiled = compileMap(map, prefabs);
+  compiledMarkers.set(id, compiled.markers);
+  return compiled;
+}
+
+/** Each map's markers from when it was last compiled, for the item sources (a raid's own map is). */
+const compiledMarkers = new Map<string, readonly CompiledMarker[]>();
+let origins: ReadonlyMap<string, ItemSource> | undefined;
+
+/**
+ * Where every item comes from (UX-2, 2026-11-08), worked out from content and every raid's
+ * map, for the item details. Compiling a map takes a moment (Northpoint about 40 ms on a
+ * Mac), so warmItemOrigins does it in idle time first; this does what's left at once.
+ */
+export function itemOrigins(): ReadonlyMap<string, ItemSource> {
+  if (!origins) {
+    raids ??= loadById(RAID_FORMAT, raidFiles);
+    const raidMaps = [...raids.values()].map((r) => ({
+      id: r.map,
+      name: r.name,
+      markers: compiledMarkers.get(r.map) ?? loadMap(r.map).markers,
+    }));
+    const e = loadEnemies();
+    origins = sourceIndex({
+      items: loadItems(),
+      lootTables: loadLootTables(),
+      lootContainers: loadLootContainers(),
+      enemies: e.types,
+      loadouts: e.loadouts,
+      vendors: loadVendors().values(),
+      quests: [...loadQuests().values()],
+      maps: raidMaps,
+    });
+  }
+  return origins;
+}
+
+/** Compiles the raids' maps for itemOrigins one at a time, between frames, then builds it. */
+export function warmItemOrigins(): void {
+  if (origins) return;
+  raids ??= loadById(RAID_FORMAT, raidFiles);
+  const left = [...new Set([...raids.values()].map((r) => r.map))].filter(
+    (m) => !compiledMarkers.has(m),
+  );
+  const step = (): void => {
+    if (origins) return;
+    const next = left.shift();
+    if (next === undefined) {
+      itemOrigins();
+      return;
+    }
+    if (!compiledMarkers.has(next)) loadMap(next);
+    setTimeout(step, 50);
+  };
+  setTimeout(step, 50);
 }
 
 /**

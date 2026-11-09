@@ -92,6 +92,44 @@ function swallowClick(e: Event): void {
 /** How far a pointer moves before a press becomes a drag, in CSS pixels. */
 const SLOP = 8;
 
+/**
+ * How long a finger holds still on an item before it lifts (UX-1, 2026-11-08). Shorter
+ * than DOUBLE_TAP_MS (350), so both taps of a double-tap stay taps; a finger that moves
+ * before then scrolls instead.
+ */
+export const HOLD_MS = 200;
+
+/**
+ * What a touch press on an item is so far: still waiting, a scroll (it moved past the
+ * slop before HOLD_MS), or a lift (it held still that long). A mouse skips this and drags
+ * as soon as it moves.
+ */
+export function touchPress(moved: number, heldMs: number): 'wait' | 'scroll' | 'lift' {
+  if (moved >= SLOP) return 'scroll';
+  return heldMs >= HOLD_MS ? 'lift' : 'wait';
+}
+
+/** Whether a finger holds a lifted item, so it mustn't scroll the page. */
+let holding = false;
+let blockerAdded = false;
+
+/**
+ * Items let a finger pan their panel (touch-action: pan-y), so once one is lifted its
+ * touchmoves are cancelled to keep the panel still. Added once, up front and not passive:
+ * Safari decides at touchstart whether a touch's moves can be cancelled.
+ */
+function addScrollBlocker(): void {
+  if (blockerAdded) return;
+  blockerAdded = true;
+  document.addEventListener(
+    'touchmove',
+    (e) => {
+      if (holding && e.cancelable) e.preventDefault();
+    },
+    { passive: false },
+  );
+}
+
 /** The fastest a drag held at a scrolling area's edge scrolls it, in cells a second. */
 const SCROLL_SPEED = 12;
 
@@ -106,8 +144,10 @@ function scrollerOf(el: Element | null): HTMLElement | null {
 
 /**
  * Drag and drop for inventory items, in plain DOM so a drag never re-renders React. A
- * press that moves becomes a drag with a ghost under the finger; one that doesn't is a
- * tap. While dragging, a second finger (or R) turns the item, and holding it within a cell
+ * mouse press that moves becomes a drag with a ghost under the pointer. A finger has to
+ * hold still for HOLD_MS first, and the item lifts (the ghost pops up under it); a finger
+ * that moves sooner is left to scroll the panel. A press that ends without moving is a
+ * tap, even after a lift. While dragging, a second finger (or R) turns the item, and holding it within a cell
  * of a scrolling area's top or bottom edge (or past it) scrolls that area.
  */
 export class DragController {
@@ -118,6 +158,11 @@ export class DragController {
   private x = 0;
   private y = 0;
   private dragging = false;
+  /** A touch press, which must hold still to lift (see touchPress). */
+  private touch = false;
+  /** Whether the pointer has moved past the slop since it went down. */
+  private moved = false;
+  private holdTimer = 0;
   private rotated = false;
   private ghost: HTMLElement | null = null;
   private hover: { zone: DropZone; el: HTMLElement; x: number; y: number; ok: boolean } | null =
@@ -130,6 +175,7 @@ export class DragController {
 
   constructor(private readonly host: DragHost) {
     this.highlight.className = 'inv-drop';
+    addScrollBlocker();
   }
 
   /** Call from an item's pointerdown. */
@@ -146,11 +192,16 @@ export class DragController {
     this.startX = this.x = e.clientX;
     this.startY = this.y = e.clientY;
     this.rotated = src.rotated;
+    this.moved = false;
+    this.touch = e.pointerType !== 'mouse';
+    if (this.touch) this.holdTimer = window.setTimeout(this.onHold, HOLD_MS);
     window.addEventListener('pointermove', this.onMove);
     window.addEventListener('pointerup', this.onUp);
     window.addEventListener('pointercancel', this.onCancel);
     window.addEventListener('pointerdown', this.onOtherDown, true);
     window.addEventListener('keydown', this.onKey);
+    // Android's long-press menu (a right-click) would open the details and drop the item.
+    window.addEventListener('contextmenu', this.onContextMenu, true);
   }
 
   /** Whether an item is pressed or being dragged. */
@@ -167,23 +218,48 @@ export class DragController {
     if (e.pointerId !== this.pointer || !this.src) return;
     this.x = e.clientX;
     this.y = e.clientY;
+    if (!this.moved) this.moved = Math.hypot(this.x - this.startX, this.y - this.startY) >= SLOP;
     if (!this.dragging) {
-      if (Math.hypot(this.x - this.startX, this.y - this.startY) < SLOP) return;
+      if (!this.moved) return;
+      // A finger that moves before it lifts is scrolling: let it go (the panel may already
+      // have cancelled the pointer). One moving sideways scrolls nothing, and still lets go.
+      if (this.touch) return this.end();
       this.start();
     }
     this.update();
+  };
+
+  private readonly onHold = (): void => {
+    this.holdTimer = 0;
+    if (!this.src || this.dragging) return;
+    // It might have moved past the slop between pointermove events; check what we have.
+    if (touchPress(Math.hypot(this.x - this.startX, this.y - this.startY), HOLD_MS) !== 'lift') {
+      return this.end();
+    }
+    holding = true;
+    this.start();
+    this.ghost!.classList.add('lifted');
+    this.update();
+  };
+
+  private readonly onContextMenu = (e: Event): void => {
+    if (!this.touch) return;
+    e.preventDefault();
+    e.stopPropagation();
   };
 
   private readonly onUp = (e: PointerEvent): void => {
     if (e.pointerId !== this.pointer || !this.src) return;
     const src = this.src;
     const hover = this.hover;
-    const dragging = this.dragging;
+    // A lifted item let go where it was picked up is a tap, not a drop on itself.
+    const dragging = this.dragging && this.moved;
+    const lifted = this.dragging;
     const rotated = this.rotated;
     this.end();
     // The click a drag ends with (a mouse's, in the same task) isn't a tap on whatever it
     // was dropped on. A touch drag ends with none, so don't wait for one.
-    if (dragging) {
+    if (lifted) {
       window.addEventListener('click', swallowClick, true);
       setTimeout(() => window.removeEventListener('click', swallowClick, true));
     }
@@ -216,6 +292,8 @@ export class DragController {
 
   private readonly onOtherDown = (e: PointerEvent): void => {
     if (e.pointerId === this.pointer || !this.dragging) return;
+    // Turning it counts as moving it: it'll drop where it's let go, not tap.
+    this.moved = true;
     e.preventDefault();
     e.stopPropagation();
     this.rotate();
@@ -230,6 +308,8 @@ export class DragController {
     const src = this.src!;
     this.dragging = true;
     src.el.classList.add('dragging');
+    // The details panel hides while dragging (UX-2), so what it covers can be dropped on.
+    document.body.classList.add('inv-dragging');
     const g = document.createElement('div');
     g.className = 'inv-ghost';
     g.style.background = src.colour;
@@ -346,6 +426,10 @@ export class DragController {
   }
 
   private end(): void {
+    clearTimeout(this.holdTimer);
+    this.holdTimer = 0;
+    // Only one item is ever pressed at a time, whichever controller has it.
+    if (this.touch) holding = false;
     this.clearHover();
     this.ghost?.remove();
     this.ghost = null;
@@ -353,6 +437,7 @@ export class DragController {
     this.scrollFrame = 0;
     this.scroller = null;
     this.src?.el.classList.remove('dragging');
+    if (this.dragging) document.body.classList.remove('inv-dragging');
     this.src = null;
     this.pointer = -1;
     this.dragging = false;
@@ -361,5 +446,6 @@ export class DragController {
     window.removeEventListener('pointercancel', this.onCancel);
     window.removeEventListener('pointerdown', this.onOtherDown, true);
     window.removeEventListener('keydown', this.onKey);
+    window.removeEventListener('contextmenu', this.onContextMenu, true);
   }
 }

@@ -154,7 +154,7 @@ function character(id: number, x: number): Character {
  * /bodies: every pose the character body has, side by side, with the simulation's hit
  * zones drawn see-through over them, to check animation and that bodies match their hit
  * zones. ?focus=<n> looks at one, ?view=front|side|back|top turns the camera, ?zones=0
- * hides the hit zones, ?t=<seconds> stops time there (for screenshots).
+ * hides the hit zones, ?close frames the head, ?t=<seconds> stops time there (for screenshots).
  */
 export async function startBodies(canvas: HTMLCanvasElement, status: HTMLElement): Promise<void> {
   const q = new URLSearchParams(location.search);
@@ -201,8 +201,10 @@ export async function startBodies(canvas: HTMLCanvasElement, status: HTMLElement
       s.body.root.visible = s === focus;
       if (s.zones) s.zones.root.visible = s === focus;
     }
-  const at = new THREE.Vector3(focus ? focus.c.x : 0, 1, 0);
-  const far = focus ? 3.2 : 26;
+  // ?close frames the head (for helmets and masks).
+  const close = q.has('close');
+  const at = new THREE.Vector3(focus ? focus.c.x : 0, close ? 1.66 : 1, 0);
+  const far = close ? 0.85 : focus ? 3.2 : 26;
   const DIRS: Record<string, readonly [number, number, number]> = {
     front: [0, 0.15, -1],
     side: [1, 0.15, 0],

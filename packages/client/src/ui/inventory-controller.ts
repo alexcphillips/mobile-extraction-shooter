@@ -76,6 +76,30 @@ export interface PartChoice {
   owner: Owner;
 }
 
+/** How many taps show where a double-tap would go, on this device (UX-2). */
+const QUICK_HINTS = 5;
+const HINT_KEY = 'mes-quick-hints';
+/** How long the hint stays on the tile. */
+const HINT_MS = 1600;
+
+/**
+ * Shades a tapped tile for a moment with where a double-tap would put it ("double-tap →
+ * stash"), the first few times only (UX-2, 2026-11-08). An attribute React doesn't own, so
+ * a redraw of the tile keeps it. The count is this device's: it's only a reminder.
+ */
+function showQuickHint(el: HTMLElement, to: string): void {
+  try {
+    const shown = Number(localStorage.getItem(HINT_KEY)) || 0;
+    if (shown >= QUICK_HINTS) return;
+    localStorage.setItem(HINT_KEY, String(shown + 1));
+  } catch {
+    // No storage (a private window): show it anyway.
+  }
+  if (!el.isConnected) return;
+  el.dataset.hint = `double-tap → ${to}`;
+  window.setTimeout(() => delete el.dataset.hint, HINT_MS);
+}
+
 /**
  * What the inventory tab does, outside React: the selected item (whose details are open),
  * taps and double-taps, and dragging. One per opening of the raid screen; it asks for a
@@ -597,9 +621,25 @@ export class InventoryController implements DragHost {
         const found = this.find(ref);
         if (!found) return;
         if (found.def.type === 'container' && 'index' in ref && !ref.inside) this.toggleBag(ref);
-        else this.select(ref);
+        else {
+          this.select(ref);
+          showQuickHint(src.el, this.quickHint(ref));
+        }
       }, DOUBLE_TAP_MS);
     }
+  }
+
+  /**
+   * Where a double-tap would put an item, for the hint a tap shows (UX-2): the open bag,
+   * the stash, what's open, or you.
+   */
+  quickHint(ref: ItemRef): string {
+    const bag = this.quickBag(ref);
+    if (bag) return this.find(bag)?.def.name ?? 'the bag';
+    const to = this.quickTo(ref);
+    if (to.kind !== 'self') return this.ctx.stash ? 'stash' : this.ctx.nameOf(to);
+    if (ref.owner.kind !== 'self') return 'your gear';
+    return 'slot' in ref ? 'your bags' : 'equip';
   }
 
   /** Opens an item's details at once (a right-click). */

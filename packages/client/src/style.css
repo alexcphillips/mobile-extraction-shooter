@@ -1325,7 +1325,7 @@ body:has(#raid:not([hidden])) #vitals {
   white-space: nowrap;
 }
 
-/* Each panel scrolls on its own; dragging an item doesn't scroll (touch-action below). */
+/* Each panel scrolls on its own; a finger on an item scrolls it until the item lifts (ui/drag.ts). */
 .inv-panel-body {
   box-sizing: content-box;
   flex: 1;
@@ -1595,7 +1595,38 @@ body:has(#raid:not([hidden])) #vitals {
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 0.18);
   border-radius: 3px;
-  touch-action: none;
+  /* A finger can scroll the panel from an item; holding still lifts it (ui/drag.ts). */
+  touch-action: pan-y;
+}
+
+/* Where a double-tap would put it, shaded over the tile the first few taps (UX-2). */
+.inv-item[data-hint]::after {
+  content: attr(data-hint);
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  background: rgb(0 0 0 / 0.62);
+  color: #ffd98a;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  pointer-events: none;
+  animation: quick-hint 1.6s ease-out forwards;
+}
+
+@keyframes quick-hint {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 /* A soft glow in its rarity's colour when the mouse is on it. */
@@ -1806,6 +1837,25 @@ body:has(#raid:not([hidden])) #vitals {
     sans-serif;
   overflow: hidden;
   pointer-events: none;
+}
+
+/* Lifted by a held finger (UX-1): it pops up off the grid, so you know it's picked up. */
+.inv-ghost.lifted {
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.55);
+  animation: inv-lift 120ms ease-out;
+}
+
+@keyframes inv-lift {
+  from {
+    scale: 1;
+    box-shadow: none;
+  }
+  50% {
+    scale: 1.12;
+  }
+  to {
+    scale: 1;
+  }
 }
 
 .inv-bar {
@@ -3551,11 +3601,124 @@ body:has(#layout-bar) #menu {
   flex-direction: column;
   width: min(600px, 100%);
   max-height: 100%;
-  overflow-y: auto;
   border-top: 4px solid;
   border-radius: 8px;
   background: #1b2126;
   box-shadow: 0 8px 32px rgb(0 0 0 / 0.6);
+}
+
+/* Everything between the title and the actions scrolls; they stay put. */
+.item-details-scroll {
+  flex: 1;
+  min-height: 0;
+  padding-bottom: 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #3a4650 transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+/*
+ * UX-2 (2026-11-08, the user's call, as Delta Force does): in the inventory the details are
+ * a panel over your Loadout and Carried columns, with no backdrop, so the stash, body or
+ * container stays in view: tap through it and the panel follows. Hidden while dragging, so
+ * you can drop onto your gear.
+ */
+.inv-left {
+  position: relative;
+  display: flex;
+  flex: none;
+  gap: 8px;
+  min-height: 0;
+}
+
+.item-details.panel {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: auto;
+  max-height: none;
+  border: 1px solid var(--ui-line);
+  border-top: 3px solid;
+  border-radius: 4px;
+  background: var(--ui-panel);
+  box-shadow: 0 4px 18px rgb(0 0 0 / 0.5);
+}
+
+body.inv-dragging .item-details.panel {
+  visibility: hidden;
+}
+
+.item-details.panel .item-details-head {
+  padding: 4px 6px 0 10px;
+}
+
+.item-details.panel .item-details-head h2 {
+  font-size: 15px;
+}
+
+.item-details.panel .item-details-body {
+  gap: 10px;
+  padding: 6px 10px 0;
+}
+
+.item-details.panel .item-details-pic {
+  width: min(38%, 120px);
+}
+
+.item-details.panel .item-details-stats,
+.item-details.panel .item-details-more {
+  padding: 0 10px;
+}
+
+.item-details.panel .item-details-stats {
+  grid-template-columns: 1fr;
+}
+
+.item-details.panel .item-details-actions {
+  padding: 6px 8px;
+  background: var(--ui-panel);
+}
+
+.item-details-more {
+  padding: 0 12px;
+}
+
+.item-details-more h3 {
+  margin: 8px 0 2px;
+  letter-spacing: normal;
+  text-transform: none;
+  color: #9aa6b0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.item-details-more p {
+  margin: 0 0 2px;
+}
+
+.item-details-list {
+  margin: 0;
+}
+
+.item-details-list div {
+  display: flex;
+  gap: 8px;
+  padding: 2px 0;
+  border-bottom: 1px solid #2c343b;
+}
+
+.item-details-list dt {
+  flex: none;
+  width: 92px;
+  color: #9aa6b0;
+}
+
+.item-details-list dd {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
 }
 
 .item-details-head {
@@ -3620,7 +3783,8 @@ body:has(#layout-bar) #menu {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   gap: 2px 12px;
-  margin: 0;
+  margin: 8px 0 0;
+  padding: 0 12px;
 }
 
 .item-details-stats div {
@@ -3640,21 +3804,12 @@ body:has(#layout-bar) #menu {
   text-align: right;
 }
 
-.item-details-quests h3 {
-  margin: 8px 0 2px;
-  letter-spacing: normal;
-  text-transform: none;
-  color: #9aa6b0;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.item-details-quests p {
-  margin: 0 0 2px;
-}
-
 .item-details-value {
   margin-top: 8px;
+}
+
+.item-details-info > :first-child {
+  margin-top: 0;
 }
 
 .item-details-total {
@@ -3682,13 +3837,11 @@ body:has(#layout-bar) #menu {
 }
 
 .item-details-actions {
-  position: sticky;
-  bottom: 0;
+  flex: none;
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 6px;
-  margin-top: 8px;
   padding: 8px 12px;
   border-top: 1px solid #2c343b;
   background: #1b2126;

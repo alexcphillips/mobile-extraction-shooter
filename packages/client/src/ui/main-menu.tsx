@@ -23,6 +23,7 @@ import {
   type StashState,
   type VendorDef,
 } from '@mes/shared';
+import { warmItemOrigins } from '../content';
 import {
   useCallback,
   useEffect,
@@ -998,6 +999,8 @@ export function showMainMenu(container: HTMLElement, opts: MenuOptions): Promise
   return new Promise((resolve) => {
     const root = createRoot(container);
     container.hidden = false;
+    // The item details' Source compiles every raid's map: do it now, between frames.
+    warmItemOrigins();
     root.render(
       <Menu
         opts={opts}

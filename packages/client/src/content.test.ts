@@ -26,6 +26,7 @@ import {
   checkEnemySpawns,
   checkLootContainers,
   checkZombieMarkers,
+  itemOrigins,
   loadEnemies,
   loadItems,
   loadLootTables,
@@ -141,6 +142,17 @@ describe('content', () => {
   it('quests load, and their vendors, items and markers exist', () => {
     expect(loadQuests().size).toBeGreaterThan(0);
     expect(() => checkQuestMarkers()).not.toThrow();
+  });
+
+  it('item sources (UX-2): bandages turn up in containers, loose, on enemies and at the medic', () => {
+    const b = itemOrigins().get('bandage')!;
+    expect(b.containers.length).toBeGreaterThan(0);
+    expect(b.enemies).toEqual(expect.arrayContaining(['PMC', 'Jug']));
+    expect(b.vendors.map((v) => v.vendor)).toContain('Medic');
+    // Every item a vendor sells has a source; quest items have their spot.
+    for (const v of loadVendors().values())
+      for (const o of v.sells)
+        expect(itemOrigins().get(o.item)?.vendors.length, o.item).toBeGreaterThan(0);
   });
 
   it.each(raidIds())('raid %s loads and names a map', (id) => {

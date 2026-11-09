@@ -291,6 +291,14 @@ export {
   type ToGround,
 } from './sim/looting';
 export {
+  hasSource,
+  itemUsage,
+  sourceIndex,
+  type ItemSource,
+  type ItemUsage,
+  type SourceContent,
+} from './content/item-sources';
+export {
   LOOT_CONTAINER_FORMAT,
   LOOT_CONTAINER_FORMAT_VERSION,
   lootContainerSchema,

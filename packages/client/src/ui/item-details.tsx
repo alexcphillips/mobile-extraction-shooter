@@ -8,7 +8,6 @@ import {
   itemDef,
   loadedAmmo,
   objectiveText,
-  questsFor,
   roundOf,
   sellParts,
   weaponStats,
@@ -20,8 +19,12 @@ import {
   type QuestDef,
   type WeaponState,
   repairLossOf,
+  hasSource,
+  itemUsage,
+  type ItemSource,
 } from '@mes/shared';
 import { useEffect, useMemo, type ReactNode } from 'react';
+import { itemOrigins } from '../content';
 import { itemPortrait } from '../render/item-portrait';
 import { levelColour } from './levels';
 import { colourOf, tenths } from './raid-screen';
@@ -29,11 +32,22 @@ import { colourOf, tenths } from './raid-screen';
 /*
  * The item details (2026-10-30, after Delta Force): a tap on any item, in a raid or
  * between raids, opens a card with its picture, name, description, what it does, what a
- * vendor pays for it and the quests that want it; the item's actions go along the bottom.
+ * vendor pays for it, where it comes from and what wants it; the item's actions go along
+ * the bottom. In the inventory it's a panel over your gear and what you carry (UX-2), with
+ * no backdrop, so the stash, body or container stays in view and usable beside it.
  */
 
 /** Every item's description, until items have their own. */
 const DESCRIPTION = 'Placeholder';
+
+/** Kinds whose stats say what they are, so they have no description (UX-2, the user's call). */
+const NO_DESCRIPTION: ReadonlySet<ItemDef['type']> = new Set(['weapon', 'armour', 'container']);
+
+/** Vendor levels as the vendors page writes them. */
+const ROMAN = ['', 'I', 'II', 'III', 'IV'];
+
+/** At most this many container kinds are named; the rest are counted. */
+const MOST_CONTAINERS = 6;
 
 const MED_EFFECTS: Record<string, string> = {
   heal: "Restores HP to limbs that aren't broken, from its pool.",
@@ -54,6 +68,7 @@ export function ItemDetails({
   buyFor,
   extra,
   actions,
+  panel = false,
   onClose,
 }: {
   items: ItemDb;
@@ -66,6 +81,8 @@ export function ItemDetails({
   extra?: ReactNode;
   /** Buttons along the bottom. */
   actions?: ReactNode;
+  /** A panel placed by its parent, with no backdrop (the inventory's), not a card over everything. */
+  panel?: boolean;
   onClose: () => void;
 }): ReactNode {
   const def = itemDef(items, item.item);
@@ -86,30 +103,26 @@ export function ItemDetails({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [items, item.item, attachments?.optic, attachments?.muzzle, attachments?.magazine],
   );
-  const wanted = quests ? questsFor(quests, def.id) : [];
-  return (
+  const usage = quests ? itemUsage(quests, def.id).quests : [];
+  const source = itemOrigins().get(def.id);
+  const card = (
     <div
-      className="item-details-back"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+      className={`item-details${panel ? ' panel' : ''}`}
+      role="dialog"
+      aria-label={def.name}
+      style={{ borderTopColor: colourOf(def) }}
     >
-      <div
-        className="item-details"
-        role="dialog"
-        aria-label={def.name}
-        style={{ borderTopColor: colourOf(def) }}
-      >
-        <header className="item-details-head">
-          <h2>{def.name}</h2>
-          <span className="item-details-kind">
-            {kindOf(def)} · {def.rarity[0]!.toUpperCase() + def.rarity.slice(1)}
-          </span>
-          <span className="raid-spacer" />
-          <button className="item-details-close" aria-label="Close" onClick={onClose}>
-            ✕
-          </button>
-        </header>
+      <header className="item-details-head">
+        <h2>{def.name}</h2>
+        <span className="item-details-kind">
+          {kindOf(def)} · {def.rarity[0]!.toUpperCase() + def.rarity.slice(1)}
+        </span>
+        <span className="raid-spacer" />
+        <button className="item-details-close" aria-label="Close" onClick={onClose}>
+          ✕
+        </button>
+      </header>
+      <div className="item-details-scroll">
         <div className="item-details-body">
           <div
             className="item-details-pic"
@@ -118,38 +131,79 @@ export function ItemDetails({
             {picture && <img src={picture} alt="" draggable={false} />}
           </div>
           <div className="item-details-info">
-            <p className="item-details-desc">{DESCRIPTION}</p>
-            <dl className="item-details-stats">
-              {item.found && (
-                <div>
-                  <dt>Found in raid</dt>
-                  <dd>Yes</dd>
-                </div>
-              )}
-              {rows(items, item, def).map(([label, value]) => (
-                <div key={label}>
-                  <dt>{label}</dt>
-                  <dd>{value}</dd>
-                </div>
-              ))}
-            </dl>
-            {wanted.length > 0 && (
-              <div className="item-details-quests">
-                <h3>{def.type === 'quest' ? 'Quest item for' : 'Needed for'}</h3>
-                {wanted.map(({ quest, objective }) => (
-                  <p key={`${quest.id} ${objective.id}`}>
-                    <b>{quest.name}</b> · {objectiveText(items, objective)}
-                  </p>
-                ))}
-              </div>
-            )}
+            {!NO_DESCRIPTION.has(def.type) && <p className="item-details-desc">{DESCRIPTION}</p>}
             <Value items={items} item={item} buyFor={buyFor} />
           </div>
         </div>
+        <dl className="item-details-stats">
+          {item.found && (
+            <div>
+              <dt>Found in raid</dt>
+              <dd>Yes</dd>
+            </div>
+          )}
+          {rows(items, item, def).map(([label, value]) => (
+            <div key={label}>
+              <dt>{label}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+        </dl>
         {extra}
-        {actions && <footer className="item-details-actions">{actions}</footer>}
+        {usage.length > 0 && (
+          <section className="item-details-more">
+            <h3>{def.type === 'quest' ? 'Quest item for' : 'Usage'}</h3>
+            {usage.map(({ quest, objective }) => (
+              <p key={`${quest.id} ${objective.id}`}>
+                <b>{quest.name}</b> · {objectiveText(items, objective)}
+              </p>
+            ))}
+          </section>
+        )}
+        {hasSource(source) && <Source source={source} />}
       </div>
+      {actions && <footer className="item-details-actions">{actions}</footer>}
     </div>
+  );
+  if (panel) return card;
+  return (
+    <div
+      className="item-details-back"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      {card}
+    </div>
+  );
+}
+
+/** Where it comes from (UX-2): containers, loose spots, enemies, vendors and quests. */
+function Source({ source: s }: { source: ItemSource }): ReactNode {
+  const lines: Row[] = [];
+  if (s.containers.length) {
+    const named = s.containers.slice(0, MOST_CONTAINERS).join(', ');
+    const more = s.containers.length - MOST_CONTAINERS;
+    lines.push(['Containers', more > 0 ? `${named} and ${more} more` : named]);
+  }
+  if (s.loose.length) lines.push(['Lying loose', s.loose.join(', ')]);
+  if (s.enemies.length) lines.push(['On enemies', s.enemies.join(', ')]);
+  if (s.vendors.length)
+    lines.push(['Sold by', s.vendors.map((v) => `${v.vendor} ${ROMAN[v.level]}`).join(', ')]);
+  if (s.rewards.length) lines.push(['Quest reward', s.rewards.join(', ')]);
+  for (const q of s.questSpots) lines.push(['Quest spot', `${q.map} (${q.quest})`]);
+  return (
+    <section className="item-details-more">
+      <h3>Source</h3>
+      <dl className="item-details-list">
+        {lines.map(([label, value]) => (
+          <div key={label + String(value)}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
   );
 }
 
