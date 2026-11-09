@@ -8,13 +8,15 @@
       "spare": [200, 300],
       "attachments": [{ "item": "mag-545x39-100-jug" }, { "item": "red-dot", "chance": 0.5 }],
       "ammo": [
-        { "weight": 3, "item": "ammo-545x39-hp" },
-        { "weight": 1, "item": "ammo-545x39" }
+        { "weight": 3, "item": "ammo-545x39-bs" },
+        { "weight": 1, "item": "ammo-545x39-bp" }
       ]
     }
   ],
   "helmets": [{ "weight": 1, "item": "jug-mask" }],
   "bodyArmour": [{ "weight": 1, "item": "jug-armour" }],
   "rigs": [{ "weight": 1, "item": "chest-rig" }],
-  "backpacks": [{ "weight": 1, "item": null }]
+  "backpacks": [{ "weight": 1, "item": null }],
+  "grenades": [{ "weight": 1, "item": "smoke-grenade", "count": [2, 2] }],
+  "meds": [[{ "weight": 1, "item": "bandage", "count": [2, 3] }]]
 }

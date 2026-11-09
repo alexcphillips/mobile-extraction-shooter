@@ -5,6 +5,7 @@ import { bakedMaterial } from './material';
 
 const MARKER_COLOURS: Record<CompiledMarker['type'], number> = {
   playerSpawn: 0x2e86de,
+  pmcSpawn: 0x1abc9c,
   enemySpawn: 0xe74c3c,
   lootContainer: 0xf1c40f,
   lootSpawn: 0xf39c12,

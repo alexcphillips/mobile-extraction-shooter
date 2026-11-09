@@ -141,6 +141,7 @@ export {
   type AiState,
   type Awareness,
   type CalloutEvent,
+  type VoiceEvent,
   type EnemySpawnOptions,
   type ExposedSpawn,
   type PatrolDef,

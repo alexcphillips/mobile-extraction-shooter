@@ -1,5 +1,11 @@
 import { attachmentDef, weaponDef, type ItemDb } from '../content/items';
-import type { ArmourOption, ContainerOption, GrenadeOption, LoadoutDef } from '../content/enemies';
+import type {
+  ArmourOption,
+  ContainerOption,
+  GrenadeOption,
+  LoadoutDef,
+  MedOption,
+} from '../content/enemies';
 import { byWeight, nextFloat, nextRange, type Rng } from '../rng';
 import { createItem } from './create-item';
 import { createGear, equip, stow, type GearSlot } from './gear';
@@ -37,6 +43,7 @@ export function equipLoadout(c: Character, items: ItemDb, loadout: LoadoutDef, r
   rollContainer(c, items, 'rig', loadout.rigs, rng);
   rollContainer(c, items, 'backpack', loadout.backpacks, rng);
   rollGrenades(c, items, loadout.grenades, rng);
+  for (const group of loadout.meds ?? []) rollGrenades(c, items, group, rng);
   if (spare > 0) stow(c, items, { item: ammo, count: spare });
 }
 
@@ -64,10 +71,11 @@ function rollContainer(
   if (o.item !== null) equip(c, items, slot, createItem(items, o.item));
 }
 
+/** One of options by weight, stowed: grenades, or a group of meds (the same shape). */
 function rollGrenades(
   c: Character,
   items: ItemDb,
-  options: readonly GrenadeOption[] | undefined,
+  options: readonly (GrenadeOption | MedOption)[] | undefined,
   rng: Rng,
 ): void {
   if (!options?.length) return;

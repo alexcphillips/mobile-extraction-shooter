@@ -142,6 +142,7 @@ type MarkerNode = Extract<
   {
     type:
       | 'playerSpawn'
+      | 'pmcSpawn'
       | 'enemySpawn'
       | 'lootContainer'
       | 'lootSpawn'
@@ -154,6 +155,7 @@ type MarkerNode = Extract<
 >;
 const MARKER_TYPES = new Set<string>([
   'playerSpawn',
+  'pmcSpawn',
   'enemySpawn',
   'lootContainer',
   'lootSpawn',

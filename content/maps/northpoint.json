@@ -35114,30 +35114,50 @@
         },
         {
           "type": "enemySpawn",
-          "id": "jug",
-          "pos": [-80, 0.2, 95],
+          "id": "jug-ikea",
+          "pos": [29.75, 0.2, 50.75],
           "yaw": 180,
           "enemy": "jug",
-          "chance": 0.15,
-          "patrol": "jug-ground-floor"
+          "chance": 0.4,
+          "oneOf": "jug",
+          "patrol": "jug-ikea-floor"
         },
         {
           "type": "patrol",
-          "id": "jug-ground-floor",
+          "id": "jug-ikea-floor",
           "points": [
-            { "pos": [-80, 0.2, 95], "wait": 6, "radius": 2 },
-            [-72, 0.2, 70],
-            { "pos": [-75, 0.2, 50], "wait": 5, "radius": 2 },
-            [-60, 0.2, 60],
-            [-55, 0.2, 72],
-            [-38, 0.2, 65],
-            { "pos": [-22, 0.2, 72], "wait": 5, "radius": 3 },
-            [-5, 0.2, 72],
-            [15, 0.2, 72],
-            { "pos": [36, 0.2, 71], "wait": 4, "radius": 2 },
-            { "pos": [40, 0.2, 60], "wait": 6, "radius": 1 }
+            { "pos": [29.75, 0.2, 50.75], "wait": 6, "radius": 2 },
+            [25.75, 0.2, 24.75],
+            { "pos": [41.75, 0.2, 24.75], "wait": 5, "radius": 2 },
+            [59.25, 0.2, 20.25],
+            { "pos": [76.75, 0.2, 24.75], "wait": 5, "radius": 2 },
+            [75.75, 0.2, 44.25],
+            { "pos": [75.75, 0.2, 65.75], "wait": 5, "radius": 2 },
+            { "pos": [53.25, 0.2, 61.75], "wait": 6, "radius": 2 }
           ],
           "loop": false
+        },
+        {
+          "type": "enemySpawn",
+          "id": "jug-target",
+          "pos": [-80.25, 0.2, 95.25],
+          "yaw": 180,
+          "enemy": "jug",
+          "chance": 0.4,
+          "oneOf": "jug",
+          "patrol": "jug-target-floor"
+        },
+        {
+          "type": "patrol",
+          "id": "jug-target-floor",
+          "points": [
+            { "pos": [-80.25, 0.2, 95.25], "wait": 6, "radius": 2 },
+            [-72.25, 0.2, 69.75],
+            { "pos": [-75.25, 0.2, 48.25], "wait": 5, "radius": 2 },
+            [-59.75, 0.2, 59.25],
+            { "pos": [-55.25, 0.2, 71.75], "wait": 5, "radius": 2 },
+            [-65.75, 0.2, 87.75]
+          ]
         }
       ]
     },
@@ -35462,14 +35482,16 @@
           "pos": [72, 0.2, 186],
           "kind": "loot",
           "weight": 2,
-          "radius": 10
+          "radius": 10,
+          "area": "yard"
         },
         {
           "type": "poi",
           "id": "poi-admin-office",
           "pos": [40, 0.4, 192],
           "kind": "loot",
-          "radius": 7
+          "radius": 7,
+          "area": "yard"
         },
         {
           "type": "poi",
@@ -35477,14 +35499,16 @@
           "pos": [28, 0.2, 50],
           "kind": "loot",
           "weight": 1.5,
-          "radius": 12
+          "radius": 12,
+          "area": "east"
         },
         {
           "type": "poi",
           "id": "poi-warehouse-office",
           "pos": [61, 0.2, 98],
           "kind": "loot",
-          "radius": 6
+          "radius": 6,
+          "area": "east"
         },
         {
           "type": "poi",
@@ -35492,64 +35516,79 @@
           "pos": [-36, 6.2, 111],
           "kind": "loot",
           "weight": 2,
-          "radius": 6
+          "radius": 6,
+          "area": "upper-west"
         },
         {
           "type": "poi",
           "id": "poi-security-office",
           "pos": [-23, 6.2, 42],
           "kind": "loot",
-          "radius": 6
+          "radius": 6,
+          "area": "upper-west"
         },
         {
           "type": "poi",
           "id": "poi-staff-lockers",
           "pos": [-12, 6.2, 5],
           "kind": "loot",
-          "radius": 9
+          "radius": 9,
+          "area": "upper-west"
         },
-        { "type": "poi", "id": "poi-upper-east-lockers", "pos": [50, 6.2, 49], "kind": "loot" },
+        {
+          "type": "poi",
+          "id": "poi-upper-east-lockers",
+          "pos": [50, 6.2, 49],
+          "kind": "loot",
+          "area": "upper-east"
+        },
         {
           "type": "poi",
           "id": "poi-laser-tag-crate",
           "pos": [63, 6.5, 65],
           "kind": "loot",
-          "radius": 5
+          "radius": 5,
+          "area": "upper-east"
         },
         {
           "type": "poi",
           "id": "poi-music-store",
           "pos": [-52, 6.2, 107],
           "kind": "loot",
-          "radius": 7
+          "radius": 7,
+          "area": "upper-west"
         },
         {
           "type": "poi",
           "id": "poi-vault-offices",
           "pos": [-46, 6.2, 11],
           "kind": "loot",
-          "radius": 6
+          "radius": 6,
+          "area": "upper-west"
         },
         {
           "type": "poi",
           "id": "poi-tech-upper",
           "pos": [-27, 6.2, 80],
           "kind": "loot",
-          "radius": 5
+          "radius": 5,
+          "area": "upper-west"
         },
         {
           "type": "poi",
           "id": "poi-jewellery",
           "pos": [-9, 6.2, 104],
           "kind": "loot",
-          "radius": 6
+          "radius": 6,
+          "area": "upper-west"
         },
         {
           "type": "poi",
           "id": "poi-key-shop",
           "pos": [22, 6.2, 55.5],
           "kind": "loot",
-          "radius": 5
+          "radius": 5,
+          "area": "upper-east"
         },
         {
           "type": "poi",
@@ -35557,23 +35596,112 @@
           "pos": [33, 0.2, 145],
           "kind": "loot",
           "weight": 0.5,
-          "radius": 4
+          "radius": 4,
+          "area": "east"
         },
-        { "type": "poi", "id": "poi-atrium", "pos": [-20, 0.2, 78], "kind": "choke" },
-        { "type": "poi", "id": "poi-food-court", "pos": [0, 0.2, 71], "kind": "choke" },
-        { "type": "poi", "id": "poi-dept-aisles", "pos": [-72, 0.2, 92], "kind": "choke" },
-        { "type": "poi", "id": "poi-furniture-showroom", "pos": [47, 0.2, 78], "kind": "choke" },
-        { "type": "poi", "id": "poi-furniture-market", "pos": [60, 0.2, 21], "kind": "choke" },
-        { "type": "poi", "id": "poi-warehouse-racks", "pos": [44, 0.2, 110], "kind": "choke" },
-        { "type": "poi", "id": "poi-dock-hall", "pos": [71, 0.2, 133], "kind": "choke" },
-        { "type": "poi", "id": "poi-service-corridor", "pos": [4, 0.2, 116], "kind": "choke" },
-        { "type": "poi", "id": "poi-south-stores", "pos": [-33, 0.2, 96], "kind": "choke" },
-        { "type": "poi", "id": "poi-upper-ring-west", "pos": [-50, 6.2, 88], "kind": "choke" },
-        { "type": "poi", "id": "poi-upper-ring-east", "pos": [11, 6.2, 75], "kind": "choke" },
-        { "type": "poi", "id": "poi-upper-west-run", "pos": [-88, 6.2, 89], "kind": "choke" },
-        { "type": "poi", "id": "poi-yard-containers", "pos": [58, 0.2, 198], "kind": "choke" }
+        {
+          "type": "poi",
+          "id": "poi-atrium",
+          "pos": [-20, 0.2, 78],
+          "kind": "choke",
+          "area": "centre"
+        },
+        {
+          "type": "poi",
+          "id": "poi-food-court",
+          "pos": [0, 0.2, 71],
+          "kind": "choke",
+          "area": "centre"
+        },
+        {
+          "type": "poi",
+          "id": "poi-dept-aisles",
+          "pos": [-72, 0.2, 92],
+          "kind": "choke",
+          "area": "west"
+        },
+        {
+          "type": "poi",
+          "id": "poi-furniture-showroom",
+          "pos": [47, 0.2, 78],
+          "kind": "choke",
+          "area": "east"
+        },
+        {
+          "type": "poi",
+          "id": "poi-furniture-market",
+          "pos": [60, 0.2, 21],
+          "kind": "choke",
+          "area": "east"
+        },
+        {
+          "type": "poi",
+          "id": "poi-warehouse-racks",
+          "pos": [44, 0.2, 110],
+          "kind": "choke",
+          "area": "east"
+        },
+        {
+          "type": "poi",
+          "id": "poi-dock-hall",
+          "pos": [71, 0.2, 133],
+          "kind": "choke",
+          "area": "east"
+        },
+        {
+          "type": "poi",
+          "id": "poi-service-corridor",
+          "pos": [4, 0.2, 116],
+          "kind": "choke",
+          "area": "centre"
+        },
+        {
+          "type": "poi",
+          "id": "poi-south-stores",
+          "pos": [-33, 0.2, 96],
+          "kind": "choke",
+          "area": "west"
+        },
+        {
+          "type": "poi",
+          "id": "poi-upper-ring-west",
+          "pos": [-50, 6.2, 88],
+          "kind": "choke",
+          "area": "upper-west"
+        },
+        {
+          "type": "poi",
+          "id": "poi-upper-ring-east",
+          "pos": [11, 6.2, 75],
+          "kind": "choke",
+          "area": "upper-east"
+        },
+        {
+          "type": "poi",
+          "id": "poi-upper-west-run",
+          "pos": [-88, 6.2, 89],
+          "kind": "choke",
+          "area": "upper-west"
+        },
+        {
+          "type": "poi",
+          "id": "poi-yard-containers",
+          "pos": [58, 0.2, 198],
+          "kind": "choke",
+          "area": "yard"
+        }
       ]
-    }
+    },
+    { "type": "pmcSpawn", "id": "pmc-spawn-front", "pos": [0.75, 0.0, 4.75], "yaw": 91 },
+    { "type": "pmcSpawn", "id": "pmc-spawn-yard", "pos": [18.75, 0.0, 190.75], "yaw": -93 },
+    { "type": "pmcSpawn", "id": "pmc-spawn-east-lot", "pos": [96.75, 0.2, 10.75], "yaw": 106 },
+    {
+      "type": "pmcSpawn",
+      "id": "pmc-spawn-warehouse-upper",
+      "pos": [39.75, 6.2, 112.75],
+      "yaw": -57
+    },
+    { "type": "pmcSpawn", "id": "pmc-spawn-upper-west", "pos": [-38.25, 6.2, 46.75], "yaw": -73 }
   ],
   "rotatingExtractions": 1,
   "enemyClearance": 0,

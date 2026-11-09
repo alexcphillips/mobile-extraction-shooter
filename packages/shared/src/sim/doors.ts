@@ -51,10 +51,11 @@ export interface DoorState {
 /**
  * What using a door did. locked: it's locked and you have no key (or you're an enemy).
  * blocked: someone stands in the doorway, so it can't close. bought: a door with a cost,
- * paid for; poor: not enough points for it (zombies mode).
+ * paid for; poor: not enough points for it (zombies mode). kicked: opened by Jug kicking it
+ * in (AI-8), loud.
  */
 export type DoorResult =
-  'opened' | 'closed' | 'unlocked' | 'locked' | 'blocked' | 'bought' | 'poor';
+  'opened' | 'closed' | 'unlocked' | 'locked' | 'blocked' | 'bought' | 'poor' | 'kicked';
 
 export interface DoorEvent {
   type: 'door';
@@ -136,6 +137,7 @@ export function useDoor(
   items: ItemDb,
   c: Character,
   i: number,
+  kick = false,
 ): void {
   const d = state.doors[i];
   if (!d || d.gone || c.health.dead || !doorInReach(world, c, i)) return;
@@ -168,8 +170,8 @@ export function useDoor(
   } else if (d.open) {
     if (c.ai) return;
     result = inDoorway(state, world, i) ? 'blocked' : 'closed';
-  } else result = 'opened';
-  if (result === 'opened' || result === 'unlocked' || result === 'bought') {
+  } else result = kick ? 'kicked' : 'opened';
+  if (result === 'opened' || result === 'kicked' || result === 'unlocked' || result === 'bought') {
     d.open = true;
     d.flipped = onPlusSide(world.doors[i]!, c);
   } else if (result === 'closed') d.open = false;
@@ -195,7 +197,8 @@ function inDoorway(state: SimState, world: CollisionWorld, i: number): boolean {
 
 /**
  * An enemy walking from where it is towards (x, z) opens the first closed, unlocked door
- * whose doorway that line crosses, once it's close.
+ * whose doorway that line crosses, once it's close (DOOR.aiReach). Given a kick reach
+ * (Jug, AI-8), it kicks it open from that far instead.
  */
 export function openDoorAhead(
   state: SimState,
@@ -204,13 +207,15 @@ export function openDoorAhead(
   c: Character,
   x: number,
   z: number,
+  kick?: number,
 ): void {
+  const reach = kick ?? DOOR.aiReach;
   for (let i = 0; i < state.doors.length; i++) {
     const s = state.doors[i]!;
     if (s.open || s.locked) continue;
     const d = world.doors[i]!;
     if (Math.abs(c.y - d.y) > MOVEMENT.stepUp) continue;
-    if (world.doorDistance(i, false, c.x, c.z) > DOOR.aiReach) continue;
+    if (world.doorDistance(i, false, c.x, c.z) > reach) continue;
     // Both ends in the door's frame: does the line cross its plane within its width?
     const cs = Math.cos(d.yaw);
     const sn = Math.sin(d.yaw);
@@ -221,7 +226,7 @@ export function openDoorAhead(
     if (az > 0 === bz > 0) continue;
     const t = az / (az - bz);
     if (Math.abs(ax + (bx - ax) * t) > d.width / 2 + MOVEMENT.radius) continue;
-    useDoor(state, world, items, c, i);
+    useDoor(state, world, items, c, i, kick !== undefined);
     return;
   }
 }

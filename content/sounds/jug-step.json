@@ -1,0 +1,84 @@
+{
+  "formatVersion": 1,
+  "id": "jug-step",
+  "name": "Jug's clanking step",
+  "gain": 0.9,
+  "range": 50,
+  "pitchJitter": 0.1,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "brown",
+      "at": 0,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.09,
+      "curve": 2,
+      "gain": 0.8,
+      "filter": {
+        "type": "lowpass",
+        "freq": [350, 120],
+        "q": 0.7
+      }
+    },
+    {
+      "source": "noise",
+      "colour": "white",
+      "at": 0.012,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.03,
+      "curve": 2,
+      "gain": 0.3,
+      "filter": {
+        "type": "bandpass",
+        "freq": [3200, 3200],
+        "q": 1.5
+      }
+    },
+    {
+      "source": "tone",
+      "wave": "triangle",
+      "freq": [1130, 1100],
+      "at": 0.012,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.22,
+      "curve": 2.5,
+      "gain": 0.22
+    },
+    {
+      "source": "tone",
+      "wave": "triangle",
+      "freq": [1710, 1690],
+      "at": 0.014,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.16,
+      "curve": 2.5,
+      "gain": 0.16
+    },
+    {
+      "source": "tone",
+      "wave": "sine",
+      "freq": [2470, 2450],
+      "at": 0.05,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.14,
+      "curve": 2.5,
+      "gain": 0.12
+    },
+    {
+      "source": "tone",
+      "wave": "triangle",
+      "freq": [830, 815],
+      "at": 0.06,
+      "attack": 0.001,
+      "hold": 0,
+      "decay": 0.2,
+      "curve": 2.5,
+      "gain": 0.14
+    }
+  ]
+}

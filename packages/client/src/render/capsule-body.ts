@@ -104,7 +104,8 @@ export class CapsuleBody {
     );
     for (let zone = 0; zone < ZONE_COUNT; zone++) {
       const colour = this.zones[zone]!.color;
-      const left = h.hp[zone]! / HEALTH.maxHp[zone]!;
+      // Jug's limbs start above everyone's full (limbHealth): full colour.
+      const left = Math.min(1, h.hp[zone]! / HEALTH.maxHp[zone]!);
       if (h.dead) colour.copy(DEAD);
       else if (isBroken(h, zone as Zone)) colour.copy(BROKEN);
       else if (left > 0.5) colour.lerpColors(HALF, FULL, (left - 0.5) * 2);

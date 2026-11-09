@@ -3,7 +3,7 @@ import type { CompiledMap } from '../content/compile';
 import { addItem, createGrid } from '../inventory/grid';
 import { NavGrid } from '../nav/nav-grid';
 import { TICK_RATE } from '../tick';
-import { CollisionWorld } from '../world/collision-world';
+import { CollisionWorld, type BoxDef } from '../world/collision-world';
 import { DEFAULT_SKILL, joinSquad, spawnEnemy, squadLeader, updateAi } from './ai';
 import { createItem } from './create-item';
 import { equip } from './gear';
@@ -11,12 +11,13 @@ import { CHEST, shootCharacter } from './health';
 import { ammoDef } from '../content/items';
 import type { LootContainer } from './looting';
 import { startRaid } from './raid';
-import { ROUTES, newSquad, squadState, startPois } from './routes';
+import { ROUTES, newSquad, pickStop, squadState, startPois } from './routes';
+import type { WavesState } from './waves';
 import { createState, spawnCharacter, type Character, type SimState } from './state';
 import { step } from './step';
 import { TEST_ITEMS as items } from './test-items';
 
-function makeWorld(half = 80): CollisionWorld {
+function makeWorld(half = 80, boxes: BoxDef[] = []): CollisionWorld {
   const n = Math.ceil(half / 4) * 2;
   return new CollisionWorld({
     terrain: {
@@ -27,7 +28,7 @@ function makeWorld(half = 80): CollisionWorld {
       rows: n,
       heights: Array((n + 1) ** 2).fill(0),
     },
-    boxes: [],
+    boxes,
     ramps: [],
     ladders: [],
   });
@@ -172,6 +173,20 @@ describe('PMC routes', () => {
     expect(state.left).toHaveLength(0);
   });
 
+  it('picks its time to leave late in the raid, between 75% and 90% of it, varied', () => {
+    const state = createState(9);
+    const world = makeWorld();
+    startRaid(state, mapOf([], [exit(30, 0)]), 1500);
+    const shares: number[] = [];
+    for (let i = 0; i < 200; i++)
+      shares.push(newSquad(state, world, 1000 + i).leaveTick / (1500 * TICK_RATE));
+    expect(Math.min(...shares)).toBeGreaterThanOrEqual(0.75);
+    expect(Math.max(...shares)).toBeLessThanOrEqual(0.9);
+    // Spread over that, not bunched.
+    expect(shares.filter((x) => x < 0.8).length).toBeGreaterThan(40);
+    expect(shares.filter((x) => x > 0.85).length).toBeGreaterThan(40);
+  });
+
   it('heads straight out with little raid time left', () => {
     const state = createState(6);
     const world = makeWorld();
@@ -184,6 +199,37 @@ describe('PMC routes', () => {
     run(state, world, 1, nav);
     expect(sq.leaving).toBe(true);
     expect(sq.visited).toHaveLength(0);
+  });
+
+  it('leaving, it sprints across open ground but walks a corridor', () => {
+    const sprintShare = (corridor: boolean): number => {
+      const state = createState(6);
+      // A corridor 3 m wide along the way out, or open ground.
+      const boxes = corridor
+        ? [
+            { x: 0, y: 1.5, z: -1.7, hx: 25, hy: 1.5, hz: 0.2, yaw: 0 },
+            { x: 0, y: 1.5, z: 1.7, hx: 25, hy: 1.5, hz: 0.2, yaw: 0 },
+          ]
+        : [];
+      const world = makeWorld(80, boxes);
+      const nav = new NavGrid(world);
+      const team = squadAt(state, world, 1, -20, 0);
+      team[0]!.ai!.skill = { ...team[0]!.ai!.skill, sprints: true };
+      const map = mapOf([poi('a', 'choke', -30, 0)], [exit(30, 0)]);
+      startRaid(state, map, ROUTES.leaveBy - 10);
+      startPois(state, map);
+      newSquad(state, world, team[0]!.id);
+      let moving = 0;
+      let sprinting = 0;
+      for (let i = 0; i < 6 * TICK_RATE; i++) {
+        step(state, world, items, {}, nav);
+        if (Math.hypot(team[0]!.vx, team[0]!.vz) > 1) moving++;
+        if (team[0]!.ai!.input.sprint) sprinting++;
+      }
+      return sprinting / Math.max(1, moving);
+    };
+    expect(sprintShare(false)).toBeGreaterThan(0.6);
+    expect(sprintShare(true)).toBe(0);
   });
 
   it('walks to a body it killed and takes what it carried', () => {
@@ -309,6 +355,108 @@ describe('PMC routes', () => {
     const a = state.entities.find((e) => e.id === team[0]!.id)!;
     const b = saved.entities.find((e) => e.id === team[0]!.id)!;
     expect([b.x, b.z]).toEqual([a.x, a.z]);
+  });
+
+  it('keeps apart from rival squads early in the raid, not later', () => {
+    // Two loot spots 80 m apart; squad A heads for the east one; squad B's leader is 50 m
+    // from each.
+    const world = makeWorld();
+    const nav = new NavGrid(world);
+    const state = createState(3);
+    startPois(state, mapOf([poi('west', 'loot', -40, 0), poi('east', 'loot', 40, 0)]));
+    const a = squadAt(state, world, 2, 60, 10);
+    const b = squadAt(state, world, 2, 0, -30);
+    const sa = newSquad(state, world, a[0]!.ai!.squad!);
+    const sb = newSquad(state, world, b[0]!.ai!.squad!);
+    state.squads = [sa, sb];
+    sa.stop = 1;
+    const east = (sinceStart: number): number => {
+      state.waves = { start: state.tick - Math.round(sinceStart * TICK_RATE) } as WavesState;
+      let n = 0;
+      for (let i = 0; i < 400; i++) if (pickStop(state, sb, b[0]!, nav) === 1) n++;
+      return n / 400;
+    };
+    expect(east(10)).toBeLessThan(0.1);
+    expect(east(ROUTES.apartFor + 10)).toBeGreaterThan(0.35);
+  });
+
+  it('keeps to its own area early in the raid, not later', () => {
+    // Two loot spots 80 m apart in different areas; the squad 50 m from each, given the east.
+    const world = makeWorld();
+    const nav = new NavGrid(world);
+    const state = createState(3);
+    startPois(
+      state,
+      mapOf([
+        { ...poi('west', 'loot', -40, 0), area: 'w' },
+        { ...poi('east', 'loot', 40, 0), area: 'e' },
+      ]),
+    );
+    const b = squadAt(state, world, 1, 0, -30);
+    const sb = newSquad(state, world, b[0]!.ai!.squad!);
+    sb.area = 'e';
+    state.squads = [sb];
+    const east = (sinceStart: number): number => {
+      state.waves = { start: state.tick - Math.round(sinceStart * TICK_RATE) } as WavesState;
+      let n = 0;
+      for (let i = 0; i < 400; i++) if (pickStop(state, sb, b[0]!, nav) === 1) n++;
+      return n / 400;
+    };
+    expect(east(10)).toBeGreaterThan(0.9);
+    expect(east(ROUTES.areaFor + 10)).toBeLessThan(0.65);
+  });
+
+  it("keeps off a boss's ground early in the raid, not later", () => {
+    // Two loot spots 80 m apart, a boss guarding the east one; the squad 50 m from each.
+    const world = makeWorld();
+    const nav = new NavGrid(world);
+    const state = createState(3);
+    startPois(state, mapOf([poi('west', 'loot', -40, 0), poi('east', 'loot', 40, 0)]));
+    spawnEnemy(state, world, 45, 0, 5, 0, { faction: 'boss' });
+    const b = squadAt(state, world, 1, 0, -30);
+    const sb = newSquad(state, world, b[0]!.ai!.squad!);
+    state.squads = [sb];
+    const east = (sinceStart: number): number => {
+      state.waves = { start: state.tick - Math.round(sinceStart * TICK_RATE) } as WavesState;
+      let n = 0;
+      for (let i = 0; i < 400; i++) if (pickStop(state, sb, b[0]!, nav) === 1) n++;
+      return n / 400;
+    };
+    expect(east(10)).toBeLessThan(0.1);
+    expect(east(ROUTES.bossFor + 10)).toBeGreaterThan(0.35);
+  });
+
+  it("early on, a leader's way between stops goes round a boss's ground", () => {
+    const closest = (sinceStart: number): number => {
+      // Stops west and east; a boss guarding the middle of the straight line between.
+      const world = makeWorld();
+      const nav = new NavGrid(world);
+      const state = createState(4);
+      startPois(state, mapOf([poi('east', 'choke', 30, 0)]));
+      const boss = spawnEnemy(state, world, 0, 0, 0, 0, { faction: 'boss' });
+      const b = squadAt(state, world, 1, -30, 0);
+      const sq = newSquad(state, world, b[0]!.ai!.squad!);
+      state.squads = [sq];
+      state.waves = { start: state.tick - Math.round(sinceStart * TICK_RATE) } as WavesState;
+      // Only its ground matters here: peaceful, nobody fights it.
+      boss.admin = {
+        infiniteHealth: false,
+        infiniteAmmo: false,
+        peaceful: true,
+        infiniteConsumables: false,
+      };
+      let near = Infinity;
+      for (let i = 0; i < 40 * TICK_RATE; i++) {
+        step(state, world, items, {}, nav);
+        boss.x = 0;
+        boss.z = 0;
+        near = Math.min(near, Math.hypot(b[0]!.x, b[0]!.z));
+      }
+      expect(sq.visited).toContain(0);
+      return near;
+    };
+    expect(closest(10)).toBeGreaterThan(ROUTES.bossPathRadius - 4);
+    expect(closest(ROUTES.bossPathFor + 10)).toBeLessThan(5);
   });
 
   it('a map without points of interest leaves squads guarding, as before', () => {

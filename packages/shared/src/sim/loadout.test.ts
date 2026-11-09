@@ -165,6 +165,53 @@ describe('loadouts', () => {
     expect(counts[2]! / 2000).toBeCloseTo(0.375, 1);
   });
 
+  it('rolls each group of meds by weight and count, in reach before the spare rounds', () => {
+    const kit = loadout({
+      weapons: [{ weight: 1, item: 'rifle', spare: [300, 300] }],
+      rigs: [{ weight: 1, item: 'rig' }],
+      meds: [
+        [
+          { weight: 6, item: 'medkit', count: [1, 1] },
+          { weight: 2, item: 'medkit', count: [2, 2] },
+          { weight: 2, item: null },
+        ],
+        [
+          { weight: 5, item: 'bandage', count: [1, 1] },
+          { weight: 3, item: 'bandage', count: [2, 2] },
+          { weight: 2, item: null },
+        ],
+      ],
+    });
+    const rng = createRng(6);
+    const c = character();
+    const medkits = [0, 0, 0];
+    const bandages = [0, 0, 0];
+    for (let i = 0; i < 2000; i++) {
+      equipLoadout(c, TEST_ITEMS, kit, rng);
+      // Pockets and rig only: where they can be used from.
+      const reach = [...c.gear.pockets.items, ...(c.gear.rig?.grid?.items ?? [])];
+      medkits[reach.filter((g) => g.item.item === 'medkit').length]!++;
+      bandages[reach.filter((g) => g.item.item === 'bandage').length]!++;
+    }
+    expect(medkits.map((n) => n / 2000)).toEqual([
+      expect.closeTo(0.2, 1),
+      expect.closeTo(0.6, 1),
+      expect.closeTo(0.2, 1),
+    ]);
+    expect(bandages.map((n) => n / 2000)).toEqual([
+      expect.closeTo(0.2, 1),
+      expect.closeTo(0.5, 1),
+      expect.closeTo(0.3, 1),
+    ]);
+    expect(() =>
+      checkEnemies(
+        new Map(),
+        new Map([['kit', loadout({ meds: [[{ weight: 1, item: 'rifle' }]] })]]),
+        TEST_ITEMS,
+      ),
+    ).toThrow(/not a med/);
+  });
+
   it('puts a pistol in the sidearm slot, wears a rig and backpack, and stows the spare rounds', () => {
     const kit = loadout({
       weapons: [{ weight: 1, item: 'pistol', spare: [250, 250] }],

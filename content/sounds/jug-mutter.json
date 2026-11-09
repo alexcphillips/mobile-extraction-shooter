@@ -1,0 +1,189 @@
+{
+  "formatVersion": 1,
+  "id": "jug-mutter",
+  "name": "Jug muttering",
+  "gain": 0.75,
+  "range": 15,
+  "pitchJitter": 0.05,
+  "layers": [
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [112, 104],
+      "at": 0.0,
+      "attack": 0.02,
+      "hold": 0.14,
+      "decay": 0.06,
+      "curve": 1.5,
+      "gain": 0.45,
+      "drive": 0.2,
+      "filter": {
+        "type": "bandpass",
+        "freq": [560, 640],
+        "q": 2.2
+      }
+    },
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [112, 104],
+      "at": 0.0,
+      "attack": 0.02,
+      "hold": 0.14,
+      "decay": 0.06,
+      "curve": 1.5,
+      "gain": 0.15,
+      "filter": {
+        "type": "bandpass",
+        "freq": [1176.0, 1344.0],
+        "q": 3
+      }
+    },
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [118, 110],
+      "at": 0.2,
+      "attack": 0.02,
+      "hold": 0.1,
+      "decay": 0.06,
+      "curve": 1.5,
+      "gain": 0.45,
+      "drive": 0.2,
+      "filter": {
+        "type": "bandpass",
+        "freq": [700, 520],
+        "q": 2.2
+      }
+    },
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [118, 110],
+      "at": 0.2,
+      "attack": 0.02,
+      "hold": 0.1,
+      "decay": 0.06,
+      "curve": 1.5,
+      "gain": 0.15,
+      "filter": {
+        "type": "bandpass",
+        "freq": [1470.0, 1092.0],
+        "q": 3
+      }
+    },
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [104, 96],
+      "at": 0.34,
+      "attack": 0.02,
+      "hold": 0.18,
+      "decay": 0.06,
+      "curve": 1.5,
+      "gain": 0.45,
+      "drive": 0.2,
+      "filter": {
+        "type": "bandpass",
+        "freq": [480, 600],
+        "q": 2.2
+      }
+    },
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [104, 96],
+      "at": 0.34,
+      "attack": 0.02,
+      "hold": 0.18,
+      "decay": 0.06,
+      "curve": 1.5,
+      "gain": 0.15,
+      "filter": {
+        "type": "bandpass",
+        "freq": [1008.0, 1260.0],
+        "q": 3
+      }
+    },
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [120, 108],
+      "at": 0.75,
+      "attack": 0.02,
+      "hold": 0.12,
+      "decay": 0.06,
+      "curve": 1.5,
+      "gain": 0.45,
+      "drive": 0.2,
+      "filter": {
+        "type": "bandpass",
+        "freq": [650, 560],
+        "q": 2.2
+      }
+    },
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [120, 108],
+      "at": 0.75,
+      "attack": 0.02,
+      "hold": 0.12,
+      "decay": 0.06,
+      "curve": 1.5,
+      "gain": 0.15,
+      "filter": {
+        "type": "bandpass",
+        "freq": [1365.0, 1176.0],
+        "q": 3
+      }
+    },
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [100, 88],
+      "at": 0.92,
+      "attack": 0.02,
+      "hold": 0.22,
+      "decay": 0.06,
+      "curve": 1.5,
+      "gain": 0.45,
+      "drive": 0.2,
+      "filter": {
+        "type": "bandpass",
+        "freq": [520, 430],
+        "q": 2.2
+      }
+    },
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [100, 88],
+      "at": 0.92,
+      "attack": 0.02,
+      "hold": 0.22,
+      "decay": 0.06,
+      "curve": 1.5,
+      "gain": 0.15,
+      "filter": {
+        "type": "bandpass",
+        "freq": [1092.0, 903.0],
+        "q": 3
+      }
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0.5,
+      "attack": 0.03,
+      "hold": 0.05,
+      "decay": 0.08,
+      "gain": 0.15,
+      "filter": {
+        "type": "bandpass",
+        "freq": [1500, 1500],
+        "q": 2
+      }
+    }
+  ]
+}

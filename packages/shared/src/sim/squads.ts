@@ -1,13 +1,13 @@
 import type { CompiledMap } from '../content/compile';
 import type { ItemDb } from '../content/items';
-import { nextIntIn } from '../rng';
+import { nextFloat, nextIntIn } from '../rng';
 import type { CollisionWorld } from '../world/collision-world';
 import { AI, SQUAD, clearLine, joinSquad, playerDistance, spawnEnemy } from './ai';
 import { equipLoadout } from './loadout';
 import { rollEnemyLoot } from './loot-roll';
 import { MOVEMENT } from './movement';
 import { RAID } from './raid';
-import { inExtraction, newSquad, squadState, startPois } from './routes';
+import { inExtraction, nearBoss, newSquad, squadState, startPois, stopAreas } from './routes';
 import type { Character, SimState } from './state';
 import { TICK_SECONDS } from '../tick';
 import type { EnemyContent } from './waves';
@@ -26,32 +26,43 @@ import type { EnemyContent } from './waves';
 
 export const PMC_SQUADS = {
   /** Squads are this many, fewest and most. */
-  size: [2, 4] as const,
+  size: [1, 3] as const,
+  /**
+   * How likely each size is, solo first (2026-11-08, the user's call: mostly solos and
+   * duos, a rare trio; two squads turning on you together is hard enough).
+   */
+  sizeWeights: [0.45, 0.45, 0.1] as const,
   /** A squad never starts closer than this to a player, nor in a player's sight. */
   minDistance: 30,
   /** A spawn this far from every player is picked over a nearer one. */
   preferDistance: 60,
   /** Squads start at least this far apart, and out of each other's sight, if they can. */
   apart: 50,
+  /**
+   * A spawn this close to a boss's ground (its patrol, or its spawn) is used only when no
+   * other will do (2026-11-08, the user's go-ahead).
+   */
+  bossClear: 35,
+  /** Choosing a squad's area, each metre between floors counts as this many across. */
+  areaFloor: 8,
   /** A member with no clear place in formation starts within this of the spawn. */
   spread: 2.5,
 };
 
-/** n PMCs split into squads of PMC_SQUADS.size, at random; a lone PMC only if n is 1. */
+/** n PMCs split into squads by PMC_SQUADS.sizeWeights, at random (a size no bigger than what's left). */
 export function squadSizes(rng: SimState['rng'], n: number): number[] {
   const [min, max] = PMC_SQUADS.size;
   const out: number[] = [];
   let left = n;
   while (left > 0) {
-    if (left <= min) {
-      out.push(left);
-      break;
+    let total = 0;
+    for (let s = min; s <= Math.min(max, left); s++) total += PMC_SQUADS.sizeWeights[s - min]!;
+    let r = nextFloat(rng) * total;
+    let s = min;
+    for (; s < Math.min(max, left); s++) {
+      r -= PMC_SQUADS.sizeWeights[s - min]!;
+      if (r < 0) break;
     }
-    // Any size that doesn't leave too few for another squad.
-    const sizes: number[] = [];
-    for (let s = min; s <= Math.min(max, left); s++)
-      if (left - s === 0 || left - s >= min) sizes.push(s);
-    const s = sizes[nextIntIn(rng, 0, sizes.length - 1)]!;
     out.push(s);
     left -= s;
   }
@@ -91,16 +102,40 @@ export function startSquads(
 
   const eye = MOVEMENT.standHeight - MOVEMENT.eyeBelowTop;
   const spawns: Spot[] = [];
+  // Player spawns, and the map's PMC-only spawns (2026-11-08).
   for (const m of map.markers) {
-    if (m.type !== 'playerSpawn') continue;
+    if (m.type !== 'playerSpawn' && m.type !== 'pmcSpawn') continue;
     const y = world.groundAt(m.x, m.z, MOVEMENT.radius, m.y + 0.5);
     spawns.push({ x: m.x, y, z: m.z, yaw: m.yaw, eye: y + eye });
   }
+  // Each squad its own area of the map to start in (2026-11-08): the nearest one to its
+  // spawn not yet given out (a floor apart counts as far), else the nearest.
+  const areas = routes ? stopAreas(state) : [];
+  const given = new Set<string>();
+  const areaFor = (spot: Spot) => {
+    let best = null as (typeof areas)[number] | null;
+    let bestD = Infinity;
+    for (const free of [true, false]) {
+      for (const a of areas) {
+        if (free && given.has(a.id)) continue;
+        const d =
+          Math.hypot(a.x - spot.x, a.z - spot.z) + Math.abs(a.y - spot.y) * PMC_SQUADS.areaFloor;
+        if (d < bestD) {
+          bestD = d;
+          best = a;
+        }
+      }
+      if (best) break;
+    }
+    if (best) given.add(best.id);
+    return best;
+  };
   const used: Spot[] = [];
   const out: Character[] = [];
   for (const size of sizes) {
     const spot = pickSpawn(state, world, spawns, used);
     if (!spot) break;
+    const area = areaFor(spot);
     used.push(spot);
     let squad = 0;
     for (let slot = 0; slot < size; slot++) {
@@ -111,6 +146,8 @@ export function startSquads(
         faction: type.faction,
         outfits: type.outfits?.length ?? 1,
         type: id,
+        voiced: !!(type.voice?.breathe || type.voice?.mutter),
+        limbHealth: type.limbHealth,
       });
       equipLoadout(c, items, loadout, rng);
       rollEnemyLoot(c, items, content.tables, type.loot, undefined, rng);
@@ -119,7 +156,7 @@ export function startSquads(
       joinSquad(c, squad, slot);
       out.push(c);
     }
-    if (routes) newSquad(state, world, squad);
+    if (routes) newSquad(state, world, squad).area = area?.id ?? null;
   }
   return out;
 }
@@ -162,8 +199,8 @@ function pickSpawn(
   spawns: Spot[],
   used: Spot[],
 ): Spot | null {
-  // Tiers: far and apart, apart, any clear one.
-  const tiers: Spot[][] = [[], [], []];
+  // Tiers: far and apart, apart, any clear one, and last one by a boss's ground.
+  const tiers: Spot[][] = [[], [], [], []];
   for (const s of spawns) {
     if (used.includes(s)) continue;
     const d = playerDistance(state, world, s.x, s.eye, s.z);
@@ -175,9 +212,27 @@ function pickSpawn(
         !(gap <= AI.sightRange && clearLine(world, u.x, u.eye, u.z, s.x, s.eye, s.z))
       );
     });
-    tiers[apart ? (d >= PMC_SQUADS.preferDistance ? 0 : 1) : 2]!.push(s);
+    const byBoss = nearBoss(state, s.x, s.z, PMC_SQUADS.bossClear);
+    tiers[byBoss ? 3 : apart ? (d >= PMC_SQUADS.preferDistance ? 0 : 1) : 2]!.push(s);
   }
-  for (const t of tiers) if (t.length) return t[nextIntIn(state.rng, 0, t.length - 1)]!;
+  // Within the best tier, the spot furthest from the squads already placed (2026-11-08,
+  // the user's call: with the spawns by a boss's ground left out, squads started close and
+  // killed each other early); the first squad's at random.
+  for (const t of tiers) {
+    if (!t.length) continue;
+    if (!used.length) return t[nextIntIn(state.rng, 0, t.length - 1)]!;
+    let best = t[0]!;
+    let bestGap = -1;
+    for (const s of t) {
+      let gap = Infinity;
+      for (const u of used) gap = Math.min(gap, Math.hypot(u.x - s.x, u.z - s.z));
+      if (gap > bestGap) {
+        bestGap = gap;
+        best = s;
+      }
+    }
+    return best;
+  }
   return null;
 }
 

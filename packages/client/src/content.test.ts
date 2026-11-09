@@ -88,13 +88,19 @@ describe('content', () => {
     expect(mask?.type === 'armour' && mask.level === 6 && mask.mask?.muffle).toBeTruthy();
 
     const map = loadMap('northpoint');
+    // One of two homes (2026-11-08): the IKEA end or the department store, 40% of raids.
     const spawns = map.markers.filter((m) => m.type === 'enemySpawn' && m.enemy === 'jug');
-    expect(spawns).toHaveLength(1);
-    expect(spawns[0]).toMatchObject({ chance: 0.15, patrol: 'jug-ground-floor' });
+    expect(spawns).toHaveLength(2);
+    for (const s of spawns) expect(s).toMatchObject({ chance: 0.4, oneOf: 'jug' });
     // The yard boss is gone from Northpoint.
     expect(map.markers.some((m) => m.type === 'enemySpawn' && m.enemy === 'boss-scav')).toBe(false);
-    const patrol = map.patrols.find((p) => p.id === 'jug-ground-floor')!;
-    expect(patrol.points.every((p) => p.y < 1)).toBe(true);
+    for (const s of spawns) {
+      const patrol = map.patrols.find((p) => s.type === 'enemySpawn' && p.id === s.patrol)!;
+      expect(patrol.points.every((p) => p.y < 1)).toBe(true);
+      // Each keeps to its own end of the mall: IKEA east, the department store west.
+      const east = s.x > 0;
+      expect(patrol.points.every((p) => (east ? p.x > 20 : p.x < -50))).toBe(true);
+    }
   });
 
   it('items load and their references are sound', () => {

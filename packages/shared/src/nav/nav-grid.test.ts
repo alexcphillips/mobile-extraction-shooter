@@ -206,6 +206,35 @@ describe('NavGrid', () => {
   });
 });
 
+describe('pockets', () => {
+  /** Thin walls 2 m tall round a square of inner side `side` centred on the origin. */
+  const ring = (side: number): BoxDef[] => {
+    const h = side / 2;
+    const t = 0.1;
+    return [
+      aabb(-h - t, 0, -h - t, h + t, 2, -h),
+      aabb(-h - t, 0, h, h + t, 2, h + t),
+      aabb(-h - t, 0, -h, -h, 2, h),
+      aabb(h, 0, -h, h + t, 2, h),
+    ];
+  };
+  const sizeAt = (nav: NavGrid, x: number, z: number): number =>
+    nav.componentSizes[nav.component[nav.nearest(x, 0, z)]!]!;
+
+  it('looks past a pocket of a few nodes to the real area alongside', () => {
+    // 1.2 m inside: a node or few the grid leaves walkable, with no way out.
+    const nav = new NavGrid(makeWorld({ boxes: ring(1.2) }));
+    expect(sizeAt(nav, 0, 0)).toBeGreaterThan(1000);
+  });
+
+  it('keeps a body in a small room that is a real place', () => {
+    const nav = new NavGrid(makeWorld({ boxes: ring(3) }));
+    const inside = sizeAt(nav, 0, 0);
+    expect(inside).toBeGreaterThan(8);
+    expect(inside).toBeLessThan(100);
+  });
+});
+
 describe('findPath', () => {
   it('goes straight across open ground in one leg', () => {
     const nav = new NavGrid(makeWorld());

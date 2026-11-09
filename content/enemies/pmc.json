@@ -6,13 +6,23 @@
   "loadout": "pmc-kit",
   "skill": {
     "reaction": 0.45,
-    "aimError": 5,
-    "aimSettled": 0.4,
+    "aimError": 4,
+    "aimSettled": 0.3,
     "aimSettle": 1.2,
     "holdChance": 0.5,
     "coverTime": [0.6, 1.4],
     "sprintToCover": true,
-    "listen": 10
+    "burst": [5, 6],
+    "burstPause": [0.25, 0.45],
+    "spray": {
+      "range": 10,
+      "burst": [10, 15],
+      "pause": [0.05, 0.15]
+    },
+    "listen": 10,
+    "heals": true,
+    "sprints": true,
+    "pushChance": 0.35
   },
   "outfits": [
     {

@@ -5,158 +5,429 @@
     {
       "weight": 2,
       "item": "m416",
-      "spare": [60, 120],
+      "spare": [120, 210],
       "attachments": [
-        { "item": "scope-4x", "chance": 0.15 },
-        { "item": "holographic-sight", "chance": 0.4 },
-        { "item": "red-dot", "chance": 0.6 },
-        { "item": "suppressor", "chance": 0.5 },
-        { "item": "compensator", "chance": 0.5 }
+        {
+          "item": "scope-4x",
+          "chance": 0.15
+        },
+        {
+          "item": "holographic-sight",
+          "chance": 0.4
+        },
+        {
+          "item": "red-dot",
+          "chance": 0.6
+        },
+        {
+          "item": "suppressor",
+          "chance": 0.5
+        },
+        {
+          "item": "compensator",
+          "chance": 0.5
+        }
       ],
       "ammo": [
-        { "weight": 3, "item": "ammo-556x45-fmj" },
-        { "weight": 4, "item": "ammo-556x45" },
-        { "weight": 1.5, "item": "ammo-556x45-m855a1" },
-        { "weight": 0.3, "item": "ammo-556x45-m995" }
+        {
+          "weight": 3,
+          "item": "ammo-556x45-fmj"
+        },
+        {
+          "weight": 4,
+          "item": "ammo-556x45"
+        },
+        {
+          "weight": 1.5,
+          "item": "ammo-556x45-m855a1"
+        },
+        {
+          "weight": 0.3,
+          "item": "ammo-556x45-m995"
+        }
       ]
     },
     {
       "weight": 2,
       "item": "ak-74m",
-      "spare": [60, 120],
+      "spare": [120, 210],
       "attachments": [
-        { "item": "scope-4x", "chance": 0.15 },
-        { "item": "holographic-sight", "chance": 0.4 },
-        { "item": "red-dot", "chance": 0.6 },
-        { "item": "suppressor", "chance": 0.5 },
-        { "item": "muzzle-brake", "chance": 0.5 },
-        { "item": "mag-545x39-45", "chance": 0.3 }
+        {
+          "item": "scope-4x",
+          "chance": 0.15
+        },
+        {
+          "item": "holographic-sight",
+          "chance": 0.4
+        },
+        {
+          "item": "red-dot",
+          "chance": 0.6
+        },
+        {
+          "item": "suppressor",
+          "chance": 0.5
+        },
+        {
+          "item": "muzzle-brake",
+          "chance": 0.5
+        },
+        {
+          "item": "mag-545x39-45",
+          "chance": 0.3
+        }
       ],
       "ammo": [
-        { "weight": 3, "item": "ammo-545x39" },
-        { "weight": 4, "item": "ammo-545x39-pp" },
-        { "weight": 1.5, "item": "ammo-545x39-bp" },
-        { "weight": 0.3, "item": "ammo-545x39-bs" }
+        {
+          "weight": 3,
+          "item": "ammo-545x39"
+        },
+        {
+          "weight": 4,
+          "item": "ammo-545x39-pp"
+        },
+        {
+          "weight": 1.5,
+          "item": "ammo-545x39-bp"
+        },
+        {
+          "weight": 0.3,
+          "item": "ammo-545x39-bs"
+        }
       ]
     },
     {
       "weight": 1.5,
       "item": "assault-rifle",
-      "spare": [60, 120],
+      "spare": [120, 210],
       "attachments": [
-        { "item": "scope-4x", "chance": 0.15 },
-        { "item": "holographic-sight", "chance": 0.4 },
-        { "item": "red-dot", "chance": 0.6 },
-        { "item": "suppressor", "chance": 0.5 },
-        { "item": "muzzle-brake", "chance": 0.5 },
-        { "item": "mag-762x39-45", "chance": 0.3 }
+        {
+          "item": "scope-4x",
+          "chance": 0.15
+        },
+        {
+          "item": "holographic-sight",
+          "chance": 0.4
+        },
+        {
+          "item": "red-dot",
+          "chance": 0.6
+        },
+        {
+          "item": "suppressor",
+          "chance": 0.5
+        },
+        {
+          "item": "muzzle-brake",
+          "chance": 0.5
+        },
+        {
+          "item": "mag-762x39-45",
+          "chance": 0.3
+        }
       ],
       "ammo": [
-        { "weight": 3, "item": "ammo-762x39-t45m" },
-        { "weight": 4, "item": "ammo-762x39" },
-        { "weight": 1.5, "item": "ammo-762x39-bp" },
-        { "weight": 0.3, "item": "ammo-762x39-ap" }
+        {
+          "weight": 3,
+          "item": "ammo-762x39-t45m"
+        },
+        {
+          "weight": 4,
+          "item": "ammo-762x39"
+        },
+        {
+          "weight": 1.5,
+          "item": "ammo-762x39-bp"
+        },
+        {
+          "weight": 0.3,
+          "item": "ammo-762x39-ap"
+        }
       ]
     },
     {
       "weight": 1.2,
       "item": "mpx",
-      "spare": [60, 120],
+      "spare": [120, 210],
       "attachments": [
-        { "item": "holographic-sight", "chance": 0.5 },
-        { "item": "red-dot", "chance": 0.7 },
-        { "item": "suppressor", "chance": 0.6 },
-        { "item": "mag-mpx-41", "chance": 0.4 }
+        {
+          "item": "holographic-sight",
+          "chance": 0.5
+        },
+        {
+          "item": "red-dot",
+          "chance": 0.7
+        },
+        {
+          "item": "suppressor",
+          "chance": 0.6
+        },
+        {
+          "item": "mag-mpx-41",
+          "chance": 0.4
+        }
       ],
       "ammo": [
-        { "weight": 3, "item": "ammo-9mm" },
-        { "weight": 4, "item": "ammo-9mm-ap" },
-        { "weight": 1.5, "item": "ammo-9mm-pbp" }
+        {
+          "weight": 3,
+          "item": "ammo-9mm"
+        },
+        {
+          "weight": 4,
+          "item": "ammo-9mm-ap"
+        },
+        {
+          "weight": 1.5,
+          "item": "ammo-9mm-pbp"
+        }
       ]
     },
     {
       "weight": 1,
       "item": "mp7",
-      "spare": [60, 120],
+      "spare": [120, 210],
       "attachments": [
-        { "item": "holographic-sight", "chance": 0.5 },
-        { "item": "red-dot", "chance": 0.7 },
-        { "item": "suppressor", "chance": 0.6 },
-        { "item": "mag-mp7-40", "chance": 0.4 }
+        {
+          "item": "holographic-sight",
+          "chance": 0.5
+        },
+        {
+          "item": "red-dot",
+          "chance": 0.7
+        },
+        {
+          "item": "suppressor",
+          "chance": 0.6
+        },
+        {
+          "item": "mag-mp7-40",
+          "chance": 0.4
+        }
       ],
       "ammo": [
-        { "weight": 3, "item": "ammo-46x30-subsonic" },
-        { "weight": 4, "item": "ammo-46x30-jsp" },
-        { "weight": 1.5, "item": "ammo-46x30" },
-        { "weight": 0.3, "item": "ammo-46x30-ap" }
+        {
+          "weight": 3,
+          "item": "ammo-46x30-subsonic"
+        },
+        {
+          "weight": 4,
+          "item": "ammo-46x30-jsp"
+        },
+        {
+          "weight": 1.5,
+          "item": "ammo-46x30"
+        },
+        {
+          "weight": 0.3,
+          "item": "ammo-46x30-ap"
+        }
       ]
     },
     {
       "weight": 0.8,
       "item": "scar-h",
-      "spare": [40, 80],
+      "spare": [130, 220],
       "attachments": [
-        { "item": "scope-4x", "chance": 0.3 },
-        { "item": "holographic-sight", "chance": 0.4 },
-        { "item": "red-dot", "chance": 0.6 },
-        { "item": "suppressor", "chance": 0.4 },
-        { "item": "compensator", "chance": 0.5 }
+        {
+          "item": "scope-4x",
+          "chance": 0.3
+        },
+        {
+          "item": "holographic-sight",
+          "chance": 0.4
+        },
+        {
+          "item": "red-dot",
+          "chance": 0.6
+        },
+        {
+          "item": "suppressor",
+          "chance": 0.4
+        },
+        {
+          "item": "compensator",
+          "chance": 0.5
+        }
       ],
       "ammo": [
-        { "weight": 3, "item": "ammo-762-tcw" },
-        { "weight": 4, "item": "ammo-762-bcp" },
-        { "weight": 1.5, "item": "ammo-762" },
-        { "weight": 0.3, "item": "ammo-762-m80a1" }
+        {
+          "weight": 3,
+          "item": "ammo-762-tcw"
+        },
+        {
+          "weight": 4,
+          "item": "ammo-762-bcp"
+        },
+        {
+          "weight": 1.5,
+          "item": "ammo-762"
+        },
+        {
+          "weight": 0.3,
+          "item": "ammo-762-m80a1"
+        }
       ]
     },
     {
       "weight": 0.5,
       "item": "as-val",
-      "spare": [40, 80],
+      "spare": [130, 220],
       "attachments": [
-        { "item": "holographic-sight", "chance": 0.4 },
-        { "item": "red-dot", "chance": 0.6 }
+        {
+          "item": "holographic-sight",
+          "chance": 0.4
+        },
+        {
+          "item": "red-dot",
+          "chance": 0.6
+        }
       ],
       "ammo": [
-        { "weight": 3, "item": "ammo-9x39" },
-        { "weight": 4, "item": "ammo-9x39-spp" },
-        { "weight": 1.5, "item": "ammo-9x39-sp6" }
+        {
+          "weight": 3,
+          "item": "ammo-9x39"
+        },
+        {
+          "weight": 4,
+          "item": "ammo-9x39-spp"
+        },
+        {
+          "weight": 1.5,
+          "item": "ammo-9x39-sp6"
+        }
       ]
     },
     {
       "weight": 0.6,
       "item": "saiga-12",
-      "spare": [20, 40],
+      "spare": [40, 60],
       "attachments": [
-        { "item": "red-dot", "chance": 0.6 },
-        { "item": "mag-saiga12-10", "chance": 0.5 }
+        {
+          "item": "red-dot",
+          "chance": 0.6
+        },
+        {
+          "item": "mag-saiga12-10",
+          "chance": 0.5
+        }
       ],
       "ammo": [
-        { "weight": 2, "item": "buckshot" },
-        { "weight": 2, "item": "flechette" },
-        { "weight": 1, "item": "slug" }
+        {
+          "weight": 2,
+          "item": "buckshot"
+        },
+        {
+          "weight": 2,
+          "item": "flechette"
+        },
+        {
+          "weight": 1,
+          "item": "slug"
+        }
       ]
     }
   ],
   "helmets": [
-    { "weight": 1, "item": null },
-    { "weight": 3, "item": "steel-helmet", "condition": [0.6, 1] },
-    { "weight": 3, "item": "combat-helmet", "condition": [0.6, 1] },
-    { "weight": 0.6, "item": "heavy-helmet", "condition": [0.6, 1] }
+    {
+      "weight": 1,
+      "item": null
+    },
+    {
+      "weight": 3,
+      "item": "steel-helmet",
+      "condition": [0.6, 1]
+    },
+    {
+      "weight": 3,
+      "item": "combat-helmet",
+      "condition": [0.6, 1]
+    },
+    {
+      "weight": 0.6,
+      "item": "heavy-helmet",
+      "condition": [0.6, 1]
+    }
   ],
   "bodyArmour": [
-    { "weight": 3, "item": "tactical-vest", "condition": [0.6, 1] },
-    { "weight": 3, "item": "plate-carrier", "condition": [0.6, 1] },
-    { "weight": 0.6, "item": "heavy-plate-carrier", "condition": [0.6, 1] }
+    {
+      "weight": 3,
+      "item": "tactical-vest",
+      "condition": [0.6, 1]
+    },
+    {
+      "weight": 3,
+      "item": "plate-carrier",
+      "condition": [0.6, 1]
+    },
+    {
+      "weight": 0.6,
+      "item": "heavy-plate-carrier",
+      "condition": [0.6, 1]
+    }
   ],
-  "rigs": [{ "weight": 1, "item": "chest-rig" }],
+  "rigs": [
+    {
+      "weight": 1,
+      "item": "chest-rig"
+    }
+  ],
   "backpacks": [
-    { "weight": 1, "item": "small-backpack" },
-    { "weight": 1, "item": "medium-backpack" },
-    { "weight": 1, "item": "large-backpack" }
+    {
+      "weight": 1,
+      "item": "small-backpack"
+    },
+    {
+      "weight": 1,
+      "item": "medium-backpack"
+    },
+    {
+      "weight": 1,
+      "item": "large-backpack"
+    }
   ],
   "grenades": [
-    { "weight": 1, "item": null },
-    { "weight": 3, "item": "frag-grenade", "count": [1, 2] }
+    {
+      "weight": 1,
+      "item": null
+    },
+    {
+      "weight": 3,
+      "item": "frag-grenade",
+      "count": [1, 2]
+    }
+  ],
+  "meds": [
+    [
+      {
+        "weight": 6,
+        "item": "medkit",
+        "count": [1, 1]
+      },
+      {
+        "weight": 2,
+        "item": "medkit",
+        "count": [2, 2]
+      },
+      {
+        "weight": 2,
+        "item": null
+      }
+    ],
+    [
+      {
+        "weight": 5,
+        "item": "bandage",
+        "count": [1, 1]
+      },
+      {
+        "weight": 3,
+        "item": "bandage",
+        "count": [2, 2]
+      },
+      {
+        "weight": 2,
+        "item": null
+      }
+    ]
   ]
 }

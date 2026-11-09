@@ -2103,9 +2103,11 @@ function MarkerFields(props: { editor: MapEditor; node: MapNode; num: NumField; 
               {num('radius', 'radius', n.kind === 'loot' ? 8 : 2)}
             </span>
           </div>
+          <Text label="area" value={n.area ?? ''} onChange={(v) => set('area', v || undefined)} />
           <p className="ed-note">
             PMC squads walk from one point of interest to the next, searching loot spots and
-            watching chokes, then leave at an extraction.
+            watching chokes, then leave at an extraction. Each squad keeps to its own area (a name
+            shared by points of interest) for its first few minutes.
           </p>
         </>
       );

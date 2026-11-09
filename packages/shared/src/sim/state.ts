@@ -1,5 +1,5 @@
 import { createRng, type Rng } from '../rng';
-import type { AiState, CalloutEvent } from './ai';
+import type { AiState, CalloutEvent, VoiceEvent } from './ai';
 import type { CollisionWorld } from '../world/collision-world';
 import { createGear, type Gear, type Hand } from './gear';
 import type { DoorEvent, DoorState } from './doors';
@@ -206,7 +206,8 @@ export type SimEvent =
   | BuyEvent
   | PlankEvent
   | PowerupEvent
-  | CalloutEvent;
+  | CalloutEvent
+  | VoiceEvent;
 
 /**
  * An admin gun's shot (WeaponDef.spawns) asking for an enemy of that type here, facing

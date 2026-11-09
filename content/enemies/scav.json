@@ -6,8 +6,8 @@
   "loadout": "scav-kit",
   "skill": {
     "reaction": 0.7,
-    "aimError": 7,
-    "aimSettled": 0.7,
+    "aimError": 6,
+    "aimSettled": 0.55,
     "aimSettle": 1.6,
     "holdChance": 0.4,
     "fov": 100,

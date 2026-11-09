@@ -79,18 +79,27 @@ function run(state: SimState, world: CollisionWorld, seconds: number, nav?: NavG
 }
 
 describe('PMC squads', () => {
-  it('splits PMCs into squads of 2–4', () => {
+  it('splits PMCs mostly into solos and duos, with a rare trio', () => {
     const rng = createRng(7);
-    for (let n = 2; n <= 12; n++) {
-      for (let k = 0; k < 50; k++) {
+    const count = [0, 0, 0, 0];
+    for (let n = 1; n <= 12; n++) {
+      for (let k = 0; k < 200; k++) {
         const sizes = squadSizes(rng, n);
         expect(sizes.reduce((a, b) => a + b, 0)).toBe(n);
         for (const s of sizes) {
           expect(s).toBeGreaterThanOrEqual(PMC_SQUADS.size[0]);
           expect(s).toBeLessThanOrEqual(PMC_SQUADS.size[1]);
+          count[s]!++;
         }
       }
     }
+    const all = count[1]! + count[2]! + count[3]!;
+    // Of squads, not counting the last of a split (forced to fit what's left), about
+    // 45 / 45 / 10: solos and duos each over a third, trios under an eighth.
+    expect(count[1]! / all).toBeGreaterThan(0.35);
+    expect(count[2]! / all).toBeGreaterThan(0.35);
+    expect(count[3]! / all).toBeLessThan(0.125);
+    expect(count[3]).toBeGreaterThan(0);
     expect(squadSizes(rng, 1)).toEqual([1]);
     expect(squadSizes(rng, 0)).toEqual([]);
   });
@@ -119,10 +128,10 @@ describe('PMC squads', () => {
       }
       const leaders = [...squads.values()].map((s) => s[0]!);
       for (const s of squads.values()) {
-        expect(s.length).toBeGreaterThanOrEqual(2);
-        expect(s.length).toBeLessThanOrEqual(4);
+        expect(s.length).toBeGreaterThanOrEqual(PMC_SQUADS.size[0]);
+        expect(s.length).toBeLessThanOrEqual(PMC_SQUADS.size[1]);
         // The first leads from a spawn; the rest stand close behind it.
-        expect(squadLeader(state, s[1]!)).toBe(s[0]);
+        if (s.length > 1) expect(squadLeader(state, s[1]!)).toBe(s[0]);
         expect(s[0]!.ai!.activity).toBe('guard');
         for (const m of s.slice(1)) {
           expect(m.ai!.activity).toBe('follow');
@@ -140,6 +149,99 @@ describe('PMC squads', () => {
     }
   });
 
+  it("keeps squads off spawns by a boss's ground, unless there's nowhere else", () => {
+    // A boss patrolling past p0 (100, 0) and p1: no squad starts at either.
+    for (let seed = 1; seed <= 10; seed++) {
+      const state = createState(seed);
+      const world = makeWorld();
+      spawnCharacter(state, world, -100, 0, 0, 1);
+      spawnEnemy(state, world, 95, 0, 10, 0, {
+        faction: 'boss',
+        patrol: {
+          points: [
+            { x: 95, y: 0, z: 10, wait: 5, radius: 0 },
+            { x: 85, y: 0, z: 45, wait: 5, radius: 0 },
+          ],
+          repeatFrom: 0,
+          loop: true,
+        },
+      });
+      startRaid(state, mapOf(ring, { count: [6, 6] }), 1200);
+      startEnemies(state, world, mapOf(ring, { count: [6, 6] }), items, content);
+      const leaders = pmcs(state).filter((c) => (c.ai!.squadSlot ?? 0) === 0);
+      for (const c of leaders) {
+        expect(Math.hypot(c.x - 100, c.z)).toBeGreaterThan(1);
+        expect(Math.hypot(c.x - 86.6, c.z - 50)).toBeGreaterThan(1);
+      }
+    }
+    // Only a spawn by the boss left (and yours): it's used.
+    const state = createState(1);
+    const world = makeWorld();
+    spawnCharacter(state, world, -100, 0, 0, 1);
+    spawnEnemy(state, world, 95, 0, 0, 0, { faction: 'boss' });
+    const two = mapOf([playerSpawn('a', -100, 0), playerSpawn('b', 100, 0)], { count: [2, 2] });
+    startRaid(state, two, 1200);
+    startEnemies(state, world, two, items, content);
+    expect(pmcs(state).length).toBeGreaterThan(0);
+  });
+
+  it('gives each squad its own area and starts it near there', () => {
+    // Four areas, one at each point of the compass, each with a stop 90 m out; the ring of
+    // spawns 100 m out. Four squads (two each of two): each its own area, at the spawn by it.
+    const areaPoi = (id: string, x: number, z: number) => ({
+      type: 'poi',
+      id,
+      kind: 'loot',
+      x,
+      y: 0,
+      z,
+      yaw: 0,
+      area: id,
+    });
+    const pois = [
+      areaPoi('n', 0, -90),
+      areaPoi('s', 0, 90),
+      areaPoi('e', 90, 0),
+      areaPoi('w', -90, 0),
+    ];
+    for (let seed = 1; seed <= 5; seed++) {
+      const state = createState(seed);
+      const world = makeWorld();
+      spawnCharacter(state, world, 300, 300, 0, 1);
+      const map = mapOf([...ring, ...pois], { count: [8, 8] });
+      startRaid(state, map, 1200);
+      startEnemies(state, world, map, items, content);
+      const squads = state.squads ?? [];
+      const areas = squads.map((q) => q.area);
+      expect(new Set(areas.slice(0, 4)).size).toBe(Math.min(4, squads.length));
+      for (const q of squads.slice(0, 4)) {
+        const leader = state.entities.find((e) => e.id === q.id)!;
+        const p = pois.find((x) => x.id === q.area)!;
+        // Its spawn is the one nearest its area that keeps clear of the others.
+        expect(Math.hypot(leader.x - p.x, leader.z - p.z)).toBeLessThan(60);
+      }
+    }
+  });
+
+  it("starts squads at the map's PMC spawns as well as the player spawns", () => {
+    const state = createState(1);
+    const world = makeWorld();
+    spawnCharacter(state, world, 0, 0, 0, 1);
+    // Your spawn, and two PMC-only spawns.
+    const pmcSpawn = (id: string, x: number, z: number) => ({
+      ...playerSpawn(id, x, z),
+      type: 'pmcSpawn',
+    });
+    const map = mapOf([playerSpawn('a', 0, 0), pmcSpawn('p1', 100, 0), pmcSpawn('p2', -100, 0)], {
+      count: [2, 2],
+    });
+    startRaid(state, map, 1200);
+    startEnemies(state, world, map, items, content);
+    const leaders = pmcs(state).filter((c) => (c.ai!.squadSlot ?? 0) === 0);
+    expect(leaders.length).toBeGreaterThan(0);
+    for (const c of leaders) expect(Math.abs(Math.abs(c.x) - 100)).toBeLessThan(0.1);
+  });
+
   it('puts in fewer squads when there are too few clear spawns, and none without pmcs', () => {
     const state = createState(1);
     const world = makeWorld();
@@ -149,8 +251,10 @@ describe('PMC squads', () => {
     startRaid(state, map, 1200);
     startEnemies(state, world, map, items, content);
     const all = pmcs(state);
-    expect(all.length).toBeGreaterThanOrEqual(2);
-    expect(all.length).toBeLessThanOrEqual(4);
+    // One squad, at the one spawn left.
+    expect(all.length).toBeGreaterThanOrEqual(PMC_SQUADS.size[0]);
+    expect(all.length).toBeLessThanOrEqual(PMC_SQUADS.size[1]);
+    expect(new Set(all.map((c) => c.ai!.squad)).size).toBe(1);
     for (const c of all) expect(Math.hypot(c.x - 100, c.z)).toBeLessThan(8);
 
     const quiet = createState(1);

@@ -128,11 +128,10 @@ describe('the knife', () => {
     const hits = s.events.filter((e) => e.type === 'damage');
     expect(hits).toHaveLength(2);
     expect(hits[0]).toMatchObject({ zone: CHEST, cause: 'melee', by: s.player.id });
-    // The level 4 vest stops the level 1 knife but for blunt damage, and wears a little.
-    const blunt = 40 * ARMOUR.blunt.body;
-    expect(s.target.health.hp[CHEST]).toBeCloseTo(HEALTH.maxHp[CHEST]! - 2 * blunt);
+    // The level 4 vest stops the level 1 knife outright (no blunt damage), and wears a little.
+    expect(s.target.health.hp[CHEST]).toBe(HEALTH.maxHp[CHEST]);
     expect(s.target.gear.bodyArmour?.durability).toBeCloseTo(50 - 2 * 5 * ARMOUR.wear[3]);
-    expect(hits[0]!.type === 'damage' && hits[0]!.amount).toBeCloseTo(blunt);
+    expect(hits[0]!.type === 'damage' && hits[0]!.amount).toBe(0);
   });
 
   it("misses beyond its reach and through walls, but forgives an aim that's a little off", () => {

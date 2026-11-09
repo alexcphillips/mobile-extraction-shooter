@@ -79,7 +79,8 @@ export class EnemyBars {
       const hp = Math.ceil(totalHp(c.health));
       if (hp !== this.hp[i]) {
         this.hp[i] = hp;
-        this.fills[i]!.style.width = `${(hp / TOTAL_HP) * 100}%`;
+        // Jug's tougher limbs put him above everyone's full.
+        this.fills[i]!.style.width = `${Math.min(100, (hp / TOTAL_HP) * 100)}%`;
         this.labels[i]!.textContent = `${hp}/${TOTAL_HP}`;
         el.classList.toggle('low', hp < TOTAL_HP * 0.35);
       }

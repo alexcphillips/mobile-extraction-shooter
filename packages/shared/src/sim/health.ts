@@ -45,21 +45,15 @@ export const HEALTH = {
 } as const;
 
 /**
- * Armour against rounds, by level (a fixed comparison, with Tarkov's numbers and blunt
- * damage; design.md → Damage). Armour with durability left lets through a share of a hit's
- * damage by the round's level against its own, and wears by the round's armour damage.
- * Broken armour does nothing.
+ * Armour against rounds, by level (a fixed comparison, with Tarkov's numbers; design.md →
+ * Damage). Armour with durability left lets through a share of a hit's damage by the
+ * round's level against its own, and wears by the round's armour damage. A round below its
+ * level gets nothing through (2026-11-08, the user's call: no blunt damage). Broken armour
+ * does nothing.
  */
 export const ARMOUR = {
   /** Damage let through by a round level with the armour's level, one above, and more. */
   through: { level: 0.5, oneAbove: 0.75, above: 1 },
-  /**
-   * Blunt damage (2026-11-05, after Tarkov's blunt throughput): the share of a round below
-   * the armour's level that still gets through to the zone, by what's worn there. Tarkov
-   * sets it per piece, about a quarter for helmets and an eighth to a sixth for vests. It
-   * doesn't start bleeding.
-   */
-  blunt: { helmet: 0.25, body: 0.15 },
   /**
    * Armour damage multiplier by how many levels the armour is above the round: the first
    * at or below it, the last for that many or more.
@@ -68,13 +62,15 @@ export const ARMOUR = {
 } as const;
 
 /**
- * The share of a hit's damage armour with durability left lets through: blunt (the
- * armour's ARMOUR.blunt) for a round below its level.
+ * The share of a hit's damage armour with durability left lets through: none for a round
+ * below its level (2026-11-08, the user's call: it was a quarter through a helmet and a
+ * sixth through a vest, as blunt damage, which let low-level rounds kill through the best
+ * armour and favoured high-damage, low-level rounds).
  */
-export function throughArmour(roundLevel: number, armourLevel: number, blunt: number): number {
+export function throughArmour(roundLevel: number, armourLevel: number): number {
   const t = ARMOUR.through;
   const over = roundLevel - armourLevel;
-  return over < 0 ? blunt : over === 0 ? t.level : over === 1 ? t.oneAbove : t.above;
+  return over < 0 ? 0 : over === 0 ? t.level : over === 1 ? t.oneAbove : t.above;
 }
 
 /** The armour damage multiplier for a round against armour, by their levels. */
@@ -287,20 +283,19 @@ export function woundZone(
     return;
   }
   let absorbed = 0;
-  let blunt = false;
+  let stopped = false;
   const armour = zone === HEAD ? c.gear.helmet : zone === CHEST ? c.gear.bodyArmour : null;
   if (armour && armour.durability > 0) {
     const level = armourDef(items, armour.item).level;
-    blunt = wound.level < level;
-    const share = zone === HEAD ? ARMOUR.blunt.helmet : ARMOUR.blunt.body;
-    absorbed = damage * (1 - throughArmour(wound.level, level, share));
+    stopped = wound.level < level;
+    absorbed = damage * (1 - throughArmour(wound.level, level));
     const wear = wound.armourDamage * armourWear(wound.level, level);
     armour.durability = Math.max(0, armour.durability - wear);
     damage -= absorbed;
   }
   const amount = dealDamage(state, c, zone, damage, by);
   const bleeds = c.health.pool === undefined;
-  if (bleeds && !blunt && !c.health.dead && damage > 0 && chance(state.rng, wound.bleedChance)) {
+  if (bleeds && !stopped && !c.health.dead && damage > 0 && chance(state.rng, wound.bleedChance)) {
     c.health.bleeding[zone] = true;
   }
   state.events.push({ type: 'damage', target: c.id, by, zone, amount, absorbed, cause });

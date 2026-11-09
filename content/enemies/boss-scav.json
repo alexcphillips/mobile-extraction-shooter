@@ -9,7 +9,8 @@
     "aimError": 4,
     "aimSettled": 0.35,
     "aimSettle": 0.9,
-    "holdChance": 0.7
+    "holdChance": 0.7,
+    "sprints": true
   },
   "outfits": [
     {

@@ -214,17 +214,21 @@ export function soundUses(id: string): string[] {
   }
   for (const [cue, sound] of Object.entries(GAME_SOUNDS))
     if (sound === id) out.push(`game: ${cue}`);
-  for (const type of loadEnemies().types.values())
+  for (const type of loadEnemies().types.values()) {
     for (const [line, sound] of Object.entries(type.voice ?? {}))
       if (sound === id) out.push(`${type.id} ${line}`);
+    if (type.steps === id) out.push(`${type.id} steps`);
+  }
   return out;
 }
 
-/** The sounds the game plays itself, and enemies' voice lines (AI rework session 5). */
+/** The sounds the game plays itself, and enemies' voice lines (AI rework session 5) and steps (AI-8). */
 function gameSounds(): string[] {
   const ids: string[] = Object.values(GAME_SOUNDS);
-  for (const type of loadEnemies().types.values())
+  for (const type of loadEnemies().types.values()) {
     for (const sound of Object.values(type.voice ?? {})) if (sound) ids.push(sound);
+    if (type.steps) ids.push(type.steps);
+  }
   return ids;
 }
 

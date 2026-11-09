@@ -1,4 +1,10 @@
-import { grenadeDef, grenadeEffect, type GrenadeDef, type ItemDb } from '../content/items';
+import {
+  grenadeDef,
+  grenadeEffect,
+  type GrenadeDef,
+  type GrenadeEffect,
+  type ItemDb,
+} from '../content/items';
 import { removeAt } from '../inventory/grid';
 import { TICK_SECONDS } from '../tick';
 import { createRayHit, type CollisionWorld } from '../world/collision-world';
@@ -41,6 +47,8 @@ export const GRENADE = {
   hand: 0.4,
   /** Seconds between throws. */
   cooldown: 0.8,
+  /** Dropped at its feet (AI-8, Jug's smoke): let go this fast, straight down. */
+  drop: 1.5,
   /** Full damage out to this share of the radius, then falling off to nothing at it. */
   inner: 0.25,
   /** Each zone's share of the damage at the chest, by zone (the blast hits them all). */
@@ -237,6 +245,38 @@ export function updateThrow(
     grenadeEffect(def) === 'molotov' ? 0 : undefined,
   );
   state.events.push({ type: 'throw', by: c.id, grenade: g.id, item: id });
+}
+
+/**
+ * Drops the first carried grenade of an effect at c's feet (AI-8: Jug's smoke when
+ * enraged), as a throw straight down. Not on a ladder or vaulting, or straight after the
+ * last throw. Returns whether it did.
+ */
+export function dropGrenade(
+  state: SimState,
+  c: Character,
+  world: CollisionWorld,
+  items: ItemDb,
+  effect: GrenadeEffect,
+): boolean {
+  if (c.health.dead || (c.throwCooldown ?? 0) > 0 || c.mode === 'ladder' || c.mode === 'vault')
+    return false;
+  for (let gi = 0; gi < QUICK_GRIDS; gi++) {
+    const grid = carriedGrid(c.gear, gi);
+    if (!grid) continue;
+    for (let i = 0; i < grid.items.length; i++) {
+      const id = grid.items[i]!.item.item;
+      if (!throwable(items, id)) continue;
+      const def = grenadeDef(items, id);
+      if (grenadeEffect(def) !== effect) continue;
+      if (!c.admin?.infiniteConsumables) removeAt(grid, i);
+      c.throwCooldown = GRENADE.cooldown;
+      const g = launchGrenade(state, c, world, def, c.yaw, -Math.PI / 2, GRENADE.drop);
+      state.events.push({ type: 'throw', by: c.id, grenade: g.id, item: id });
+      return true;
+    }
+  }
+  return false;
 }
 
 /** Sets off every C4 c has placed: each goes off its fuse from now. */

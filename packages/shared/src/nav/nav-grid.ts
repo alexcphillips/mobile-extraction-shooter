@@ -16,6 +16,11 @@ export const NAV = {
   height: MOVEMENT.standHeight,
   /** Terrain steeper than this (rise over run) isn't walkable either way. */
   maxSlope: MOVEMENT.maxSlope,
+  /**
+   * A component of this many nodes or fewer (2 m²) is a pocket the grid left between
+   * obstacles, not a place: nearest() looks past it to a real area alongside.
+   */
+  pocket: 8,
 } as const;
 
 /** Neighbour directions: the four sides (+x, +z, −x, −z), then the four diagonals. */
@@ -226,13 +231,20 @@ export class NavGrid {
   /**
    * The node a body with its feet at (x, y, z) stands on: in its column or a nearby one,
    * at most maxRise above its feet and not far below. -1 if there's none. A looser
-   * maxRise finds a hand-placed spot whose height is only roughly right.
+   * maxRise finds a hand-placed spot whose height is only roughly right. A node in a pocket
+   * (a component of NAV.pocket nodes or fewer) is passed over for one in a real area nearby
+   * if there is one (2026-11-08: a PMC stood on a 3-node pocket by a spawn on Northpoint,
+   * so every path from it failed and it never moved again). pockets true finds the node
+   * as it is, pocket or not.
    */
-  nearest(x: number, y: number, z: number, maxRise: number = NAV.climb): number {
+  nearest(x: number, y: number, z: number, maxRise: number = NAV.climb, pockets = false): number {
     const q0 = Math.floor((x - this.minX) / this.cellSize);
     const r0 = Math.floor((z - this.minZ) / this.cellSize);
     let best = -1;
     let bestScore = Infinity;
+    let real = -1;
+    let realScore = Infinity;
+    const sizes = this.componentSizes;
     for (let r = r0 - 2; r <= r0 + 2; r++) {
       if (r < 0 || r >= this.rows) continue;
       for (let q = q0 - 2; q <= q0 + 2; q++) {
@@ -248,10 +260,14 @@ export class NavGrid {
             bestScore = score;
             best = k;
           }
+          if (score < realScore && (sizes[this.component[k]!] ?? Infinity) > NAV.pocket) {
+            realScore = score;
+            real = k;
+          }
         }
       }
     }
-    return best;
+    return real >= 0 && !pockets ? real : best;
   }
 
   /** The node in column (q, r) within a step of height h, or -1. */

@@ -125,6 +125,7 @@ export const QUICK: readonly Placeable[] = ['floor', 'slab'];
 /** What the marker tool places (session 17): the gameplay nodes. */
 export type MarkerKind =
   | 'playerSpawn'
+  | 'pmcSpawn'
   | 'enemySpawn'
   | 'patrol'
   | 'lootContainer'
@@ -138,6 +139,7 @@ export type MarkerKind =
   | 'barricade';
 export const MARKERS: Readonly<Record<MarkerKind, string>> = {
   playerSpawn: 'player spawn',
+  pmcSpawn: 'PMC spawn',
   enemySpawn: 'enemy spawn',
   patrol: 'patrol',
   lootContainer: 'loot container',
@@ -165,6 +167,7 @@ const ZOMBIES_MARKERS: readonly MarkerKind[] = [
 ];
 const EXTRACTION_MARKERS: readonly MarkerKind[] = [
   'playerSpawn',
+  'pmcSpawn',
   'enemySpawn',
   'patrol',
   'lootContainer',
@@ -2526,6 +2529,8 @@ function newMarker(kind: MarkerKind, pos: Vec3, taken: Set<string>, colour: stri
   switch (kind) {
     case 'playerSpawn':
       return { type: 'playerSpawn', id: uniqueId('spawn', taken), pos };
+    case 'pmcSpawn':
+      return { type: 'pmcSpawn', id: uniqueId('pmc-spawn', taken), pos };
     case 'enemySpawn':
       return {
         type: 'enemySpawn',

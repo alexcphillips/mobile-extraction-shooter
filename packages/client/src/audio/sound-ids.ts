@@ -21,6 +21,8 @@ export const GAME_SOUNDS = {
   /** Trying a locked door. */
   doorLocked: 'door-locked',
   doorUnlock: 'door-unlock',
+  /** Jug kicking a door in (AI-8). */
+  doorKick: 'door-kick',
   /** A pane of glass breaking (2026-11-02): softened, not a shriek. */
   glassBreak: 'glass-break',
   /** An enemy falling dead. */

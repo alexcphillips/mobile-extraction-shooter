@@ -288,6 +288,8 @@ function spawnSpot(
     faction: type.faction,
     outfits: type.outfits?.length ?? 1,
     type: type.id,
+    voiced: !!(type.voice?.breathe || type.voice?.mutter),
+    limbHealth: type.limbHealth,
   });
   equipLoadout(c, items, content.loadouts.get(spot.loadout)!, state.rng);
   rollEnemyLoot(c, items, content.tables, type.loot, spot.lootWeights ?? undefined, state.rng);

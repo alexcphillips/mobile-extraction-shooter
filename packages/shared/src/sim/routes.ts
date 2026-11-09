@@ -3,6 +3,7 @@ import { itemDef, type ItemDb } from '../content/items';
 import { addItem, itemHeight, itemWidth, removeAt, type Grid } from '../inventory/grid';
 import type { NavGrid } from '../nav/nav-grid';
 import { nextFloat, nextRange } from '../rng';
+import { TICK_RATE } from '../tick';
 import type { CollisionWorld } from '../world/collision-world';
 import { containerInReach, lootContainerById, type LootContainer } from './looting';
 import { MOVEMENT } from './movement';
@@ -59,12 +60,54 @@ export const ROUTES = {
   hopNear: 15,
   hopNearRate: 0.15,
   hopFar: 70,
+  /**
+   * Early on (ROUTES.apartFor), the falloff starts at this instead: a squad works its own
+   * end of the map before crossing it (2026-11-08: squads crossing the east warehouse and
+   * docks on their way to far stops met there and killed each other in the first 3 minutes).
+   */
+  hopFarEarly: 35,
   /** A stop it has been to counts this much as one it hasn't, once every stop is used up. */
   revisit: 0.2,
-  /** It heads out after the current stop from this share of the raid on, picked at random. */
-  leaveShare: [0.35, 0.8] as const,
-  /** With this many seconds of raid left it heads out at once. */
-  leaveBy: 180,
+  /**
+   * Keeping apart early (2026-11-08, the user's call: rival squads met in the first two
+   * minutes and wiped each other out): for apartFor seconds after the squads start, a stop
+   * within apartRadius of another living squad's members, or of the stop it's heading for,
+   * counts apartRate as much. They can still meet; PMC against PMC is fine.
+   */
+  apartFor: 360,
+  apartRadius: 35,
+  apartRate: 0.03,
+  /**
+   * Off a boss's ground early (2026-11-08, the user's go-ahead): for bossFor seconds after
+   * the squads start, a stop within bossClear of a living boss's patrol (its spawn without
+   * one) counts apartRate as much.
+   */
+  bossFor: 300,
+  bossClear: 25,
+  /**
+   * And their paths keep off it too (2026-11-08: Jug's ground lies across the mall, so
+   * squads walking between other stops met him in the first 3 minutes): for bossPathFor
+   * seconds, ground within bossPathRadius of a boss's patrol costs bossPathCost more a
+   * metre, so a leader goes round it where there's a way.
+   */
+  bossPathFor: 420,
+  /**
+   * Its own area first (2026-11-08, from a Gemini review: squads crossing the map to their
+   * first stops met in the middle): for areaFor seconds after the squads start, a stop
+   * outside a squad's area counts apartRate as much.
+   */
+  areaFor: 300,
+  bossPathRadius: 20,
+  bossPathCost: 3,
+  /**
+   * It heads out after the current stop from this share of the raid on, picked at random
+   * per squad (2026-11-08, the user's call: late and varied, one at 75%, another at 85%,
+   * up to 90%, most gone in the last few minutes; it was 35–80%, so squads left at about
+   * 13 minutes of 25 and the mall went quiet).
+   */
+  leaveShare: [0.75, 0.9] as const,
+  /** With this many seconds of raid left it heads out at once (after 90%'s 2.5 minutes). */
+  leaveBy: 120,
   /** Gunfire heard within this share of its loudness stops the looting and advances on it. */
   advanceShot: 0.7,
   /** Within this, alert. */
@@ -91,6 +134,8 @@ export interface Poi {
   z: number;
   weight: number;
   radius: number;
+  /** The part of the map it's in (MapFile poi `area`), or none. */
+  area?: string;
 }
 
 /** A PMC squad's route and what it's done, kept by the squad, whoever leads it. */
@@ -114,6 +159,11 @@ export interface SquadState {
   looted: string[];
   /** Bodies of those its members killed, by entity id, not yet searched. */
   kills: EntityId[];
+  /**
+   * Its own part of the map for the first ROUTES.areaFor (2026-11-08): stops in other
+   * areas count apartRate as much meanwhile. Missing or null with none.
+   */
+  area?: string | null;
 }
 
 /** Copies the map's points of interest into the state, for routes. */
@@ -129,6 +179,7 @@ export function startPois(state: SimState, map: CompiledMap): void {
       z: m.z,
       weight: m.weight ?? 1,
       radius: m.radius ?? (m.kind === 'loot' ? ROUTES.lootRadius : ROUTES.chokeRadius),
+      ...(m.area !== undefined && { area: m.area }),
     });
   }
   state.pois = pois;
@@ -291,6 +342,18 @@ function reachable(nav: NavGrid, c: Character, x: number, y: number, z: number):
  */
 export function pickStop(state: SimState, sq: SquadState, c: Character, nav: NavGrid): number {
   const pois = state.pois ?? [];
+  // From when startEnemies started the squads (and the waves).
+  const start = state.waves?.start;
+  const early =
+    start !== undefined &&
+    state.tick - start < ROUTES.apartFor * TICK_RATE &&
+    (state.squads?.length ?? 0) > 1;
+  const bossEarly = start !== undefined && state.tick - start < ROUTES.bossFor * TICK_RATE;
+  const areaEarly = inAreaTime(state, sq);
+  const far =
+    start !== undefined && state.tick - start < ROUTES.apartFor * TICK_RATE
+      ? ROUTES.hopFarEarly
+      : ROUTES.hopFar;
   let total = 0;
   const scores: number[] = [];
   for (let i = 0; i < pois.length; i++) {
@@ -298,16 +361,21 @@ export function pickStop(state: SimState, sq: SquadState, c: Character, nav: Nav
     let s = p.weight;
     if (sq.visited.includes(i)) s *= ROUTES.revisit;
     if (sq.visited[sq.visited.length - 1] === i) s = 0;
+    if (s > 0 && early && nearRival(state, sq, p.x, p.z)) s *= ROUTES.apartRate;
+    if (s > 0 && bossEarly && nearBoss(state, p.x, p.z, ROUTES.bossClear)) s *= ROUTES.apartRate;
+    if (s > 0 && areaEarly && p.area !== sq.area) s = 0;
     if (s > 0) {
       const d = Math.hypot(p.x - c.x, p.z - c.z);
       if (d < ROUTES.hopNear)
         s *= ROUTES.hopNearRate + (1 - ROUTES.hopNearRate) * (d / ROUTES.hopNear);
-      else if (d > ROUTES.hopFar) s *= (ROUTES.hopFar / d) ** 2;
+      else if (d > far) s *= (far / d) ** 2;
       if (!reachable(nav, c, p.x, p.y, p.z)) s = 0;
     }
     scores.push(s);
     total += s;
   }
+  // Its own area early on, unless nothing there will do: then anywhere.
+  if (total <= 0 && areaEarly) return pickStop(state, { ...sq, area: null }, c, nav);
   if (total <= 0) return -1;
   let r = nextFloat(state.rng) * total;
   for (let i = 0; i < scores.length; i++) {
@@ -318,20 +386,89 @@ export function pickStop(state: SimState, sq: SquadState, c: Character, nav: Nav
   return -1;
 }
 
-/** The nearest stop not yet visited that c can walk to, else −1: back on the route after a fight. */
+/**
+ * The areas of the map's stops (poi `area`), each with its middle, in order of first
+ * appearance; those by a living boss's ground (any stop within ROUTES.bossClear) left out.
+ */
+export function stopAreas(state: SimState): { id: string; x: number; y: number; z: number }[] {
+  const out: { id: string; x: number; y: number; z: number; n: number; boss: boolean }[] = [];
+  for (const p of state.pois ?? []) {
+    if (p.area === undefined) continue;
+    let a = out.find((o) => o.id === p.area);
+    if (!a) out.push((a = { id: p.area, x: 0, y: 0, z: 0, n: 0, boss: false }));
+    a.x += p.x;
+    a.y += p.y;
+    a.z += p.z;
+    a.n++;
+    if (nearBoss(state, p.x, p.z, ROUTES.bossClear)) a.boss = true;
+  }
+  return out
+    .filter((a) => !a.boss)
+    .map((a) => ({ id: a.id, x: a.x / a.n, y: a.y / a.n, z: a.z / a.n }));
+}
+
+/**
+ * Whether (x, z) is within r of a living boss's ground: any point of its patrol, or its
+ * spawn without one (2026-11-08: PMCs started on Jug's ground and killed him in seconds).
+ */
+export function nearBoss(state: SimState, x: number, z: number, r: number): boolean {
+  for (const e of state.entities) {
+    const ai = e.ai;
+    if (!ai || e.health.dead || ai.faction !== 'boss') continue;
+    const p = ai.patrol;
+    if (p.length === 0) {
+      if (Math.hypot(x - ai.homeX, z - ai.homeZ) <= r) return true;
+      continue;
+    }
+    for (let i = 0; i < p.length; i += 3)
+      if (Math.hypot(x - p[i]!, z - p[i + 2]!) <= r) return true;
+  }
+  return false;
+}
+
+/** Whether (x, z) is within apartRadius of another squad's living members or its stop. */
+function nearRival(state: SimState, sq: SquadState, x: number, z: number): boolean {
+  const r = ROUTES.apartRadius;
+  const pois = state.pois ?? [];
+  for (const o of state.squads ?? []) {
+    if (o.id === sq.id || o.stop < 0) continue;
+    const p = pois[o.stop];
+    if (p && Math.hypot(p.x - x, p.z - z) < r) return true;
+  }
+  for (const e of state.entities) {
+    const s = e.ai?.squad;
+    if (s === undefined || s === sq.id || e.health.dead) continue;
+    if (Math.hypot(e.x - x, e.z - z) < r) return true;
+  }
+  return false;
+}
+
+/** Whether a squad keeps to its own area yet (ROUTES.areaFor after the squads start). */
+function inAreaTime(state: SimState, sq: SquadState): boolean {
+  const start = state.waves?.start;
+  return !!sq.area && start !== undefined && state.tick - start < ROUTES.areaFor * TICK_RATE;
+}
+
+/**
+ * The nearest stop not yet visited that c can walk to, else −1: back on the route after a
+ * fight. Early on, in its own area if there's one there (2026-11-08).
+ */
 export function nearestStop(state: SimState, sq: SquadState, c: Character, nav: NavGrid): number {
   const pois = state.pois ?? [];
+  const own = inAreaTime(state, sq);
   let best = -1;
   let bestD = Infinity;
   for (let i = 0; i < pois.length; i++) {
     if (sq.visited.includes(i)) continue;
     const p = pois[i]!;
+    if (own && p.area !== sq.area) continue;
     const d = Math.hypot(p.x - c.x, p.y - c.y, p.z - c.z);
     if (d < bestD && reachable(nav, c, p.x, p.y, p.z)) {
       bestD = d;
       best = i;
     }
   }
+  if (best < 0 && own) return nearestStop(state, { ...sq, area: null }, c, nav);
   return best;
 }
 

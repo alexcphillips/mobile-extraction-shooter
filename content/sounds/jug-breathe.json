@@ -1,0 +1,68 @@
+{
+  "formatVersion": 1,
+  "id": "jug-breathe",
+  "name": "Jug breathing",
+  "gain": 0.7,
+  "range": 18,
+  "pitchJitter": 0.06,
+  "layers": [
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0,
+      "attack": 0.45,
+      "hold": 0.15,
+      "decay": 0.25,
+      "gain": 0.5,
+      "filter": {
+        "type": "bandpass",
+        "freq": [800, 1250],
+        "q": 1.6
+      }
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 0,
+      "attack": 0.45,
+      "hold": 0.15,
+      "decay": 0.25,
+      "gain": 0.2,
+      "filter": {
+        "type": "bandpass",
+        "freq": [2200, 2600],
+        "q": 4
+      }
+    },
+    {
+      "source": "noise",
+      "colour": "pink",
+      "at": 1.0,
+      "attack": 0.08,
+      "hold": 0.45,
+      "decay": 0.6,
+      "curve": 1.5,
+      "gain": 0.6,
+      "filter": {
+        "type": "bandpass",
+        "freq": [750, 480],
+        "q": 1.4
+      }
+    },
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [85, 75],
+      "at": 1.0,
+      "attack": 0.1,
+      "hold": 0.35,
+      "decay": 0.5,
+      "gain": 0.06,
+      "filter": {
+        "type": "lowpass",
+        "freq": [400, 300],
+        "q": 0.7
+      }
+    }
+  ]
+}

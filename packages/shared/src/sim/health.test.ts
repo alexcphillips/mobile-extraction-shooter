@@ -142,12 +142,14 @@ describe('armour', () => {
     expect(state.events).toContainEqual(expect.objectContaining({ absorbed: 7.5 }));
   });
 
-  it('stops a round below its level but for blunt damage, wearing less the further below', () => {
+  it('stops a round below its level outright, wearing less the further below', () => {
     const { state, c } = setup();
     wearArmour(c, TEST_ITEMS, 'vest');
-    // A level 3 round against a level 4 vest: only its blunt share gets through, and no bleed.
+    // A level 3 round against a level 4 vest: nothing gets through (no blunt damage since
+    // 2026-11-08), and no bleed; the hit is still an event, all absorbed.
     shootCharacter(state, TEST_ITEMS, c, CHEST, round, 0);
-    expect(c.health.hp[CHEST]).toBeCloseTo(85 - 40 * ARMOUR.blunt.body);
+    expect(c.health.hp[CHEST]).toBe(85);
+    expect(state.events).toContainEqual(expect.objectContaining({ amount: 0, absorbed: 40 }));
     expect(c.gear.bodyArmour?.durability).toBeCloseTo(50 - 10 * ARMOUR.wear[1]);
     expect(c.health.bleeding[CHEST]).toBe(false);
   });
@@ -169,11 +171,11 @@ describe('armour', () => {
     expect(c.gear.bodyArmour?.durability).toBe(50 - 15);
   });
 
-  it('compares levels, letting blunt damage through below', () => {
-    expect(throughArmour(1, 2, 0.15)).toBe(0.15);
-    expect(throughArmour(4, 4, 0.15)).toBe(0.5);
-    expect(throughArmour(5, 4, 0.15)).toBe(0.75);
-    expect(throughArmour(6, 4, 0.15)).toBe(1);
+  it('compares levels, letting nothing through below', () => {
+    expect(throughArmour(1, 2)).toBe(0);
+    expect(throughArmour(4, 4)).toBe(0.5);
+    expect(throughArmour(5, 4)).toBe(0.75);
+    expect(throughArmour(6, 4)).toBe(1);
     expect(armourWear(6, 1)).toBe(1);
     expect(armourWear(1, 6)).toBe(ARMOUR.wear[ARMOUR.wear.length - 1]);
   });

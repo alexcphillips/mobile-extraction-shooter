@@ -41,6 +41,8 @@ const STEP = {
   sprint: { range: 35, gain: 1 },
   /** Your own, heard less than others'. */
   own: 0.45,
+  /** An enemy type's own steps (Jug's) carry this many times as far, at full loudness. */
+  heavy: 1.5,
   /** A ladder step every this much climbed. */
   rung: 0.5,
   /** Landing faster than this (m/s) thuds, louder up to `hard`. */
@@ -206,6 +208,7 @@ export class SoundCues {
           closed: S.doorClose,
           locked: S.doorLocked,
           unlocked: S.doorUnlock,
+          kicked: S.doorKick,
           // Zombies mode: bought with points, or not enough of them.
           bought: S.doorUnlock,
           poor: S.doorLocked,
@@ -265,6 +268,13 @@ export class SoundCues {
         if (caller && id) this.at(id, caller.x, caller.y + MOVEMENT.standHeight - 0.2, caller.z);
         return;
       }
+      case 'voice': {
+        // Jug breathing or muttering through his mask (AI-8), in his type's voice.
+        const who = entityById(sim, e.by);
+        const id = who?.look && this.enemies.get(who.look.type)?.voice?.[e.line];
+        if (who && id) this.at(id, who.x, who.y + MOVEMENT.standHeight - 0.2, who.z);
+        return;
+      }
     }
   }
 
@@ -283,7 +293,10 @@ export class SoundCues {
         t.stride -= length;
         const crouched = c.height < MOVEMENT.standHeight - 0.1;
         const kind = crouched ? STEP.crouch : speed > STEP.sprinting ? STEP.sprint : STEP.walk;
+        // An enemy type's own steps (AI-8: Jug's clanking plates) carry further.
+        const steps = c.look && this.enemies.get(c.look.type)?.steps;
         if (own) this.sound.play(S.footstep, kind.gain * STEP.own);
+        else if (steps) this.at(steps, c.x, c.y + 0.5, c.z, kind.range * STEP.heavy, 1);
         else this.at(S.footstep, c.x, c.y + 0.1, c.z, kind.range, kind.gain);
       }
     } else if (c.mode !== 'ladder') {

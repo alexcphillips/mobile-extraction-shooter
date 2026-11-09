@@ -13,7 +13,7 @@ import {
   type SimState,
 } from './state';
 import { step } from './step';
-import { equip, stow } from './gear';
+import { equip, heldWeapon, stow } from './gear';
 import { createItem } from './create-item';
 import { CHEST, HEAD, LEFT_LEG, RIGHT_LEG } from './health';
 import { giveWeapon } from './weapons';
@@ -151,6 +151,18 @@ describe('enemy sight', () => {
     expect(runFor(setup(0, -(AI.sightRange + 5), { half: 80 }), 5)).toBe('unaware');
     const wall = setup(0, -10, { boxes: [aabb(-5, 0, -5.2, 5, 3, -5)] });
     expect(runFor(wall, 5)).toBe('unaware');
+  });
+
+  it('faces its spawn from its first tick, so it never glimpses what is behind it', () => {
+    // Facing +z, you 6 m off along −z: before (AI-7), it faced −z for its first tick.
+    const s = setup(0, -6, { yaw: Math.PI });
+    let turned = 0;
+    for (let i = 0; i < TICK_RATE; i++) {
+      s.run(1 / TICK_RATE);
+      turned = Math.max(turned, Math.abs(Math.cos(s.enemy.yaw) + 1));
+    }
+    expect(turned).toBeLessThan(1e-6);
+    expect(s.enemy.ai!.awareness).toBe('unaware');
   });
 
   it("doesn't see you while blinded by a flash, or through smoke", () => {
@@ -576,6 +588,43 @@ function hiddenFromPlayer(s: Setup, x: number, y: number, z: number): boolean {
   const d = Math.hypot(dx, dy, dz);
   return s.world.raycast(s.player.x, oy, s.player.z, dx / d, dy / d, dz / d, d) < Infinity;
 }
+
+describe('topping up', () => {
+  it('calm, it fills a part-empty magazine from the rounds it carries', () => {
+    const go = (spare: number) => {
+      const world = makeWorld();
+      const nav = new NavGrid(world);
+      const state = createState(5);
+      const c = spawnEnemy(state, world, 0, 0, 0, 0);
+      giveWeapon(c, TEST_ITEMS, 'rifle');
+      if (spare) stow(c, TEST_ITEMS, createItem(TEST_ITEMS, 'round', spare));
+      heldWeapon(c)!.mag = 7;
+      for (let i = 0; i < 4 * TICK_RATE; i++) step(state, world, TEST_ITEMS, {}, nav);
+      return heldWeapon(c)!.mag;
+    };
+    expect(go(100)).toBe(30);
+    // Nothing to load: it stays as it was.
+    expect(go(0)).toBe(7);
+  });
+});
+
+describe('getting unstuck', () => {
+  it('steps down off a tabletop the nav grid has no way down from, even with nowhere to go', () => {
+    // A table 0.77 m high: its top is an island of the grid; the floor all round is real.
+    // A guard standing on it (as a PMC got up onto a dining table on Northpoint and,
+    // finding no stop it could reach from there, stood on it to the end of the raid).
+    const world = makeWorld([aabb(-0.85, 0, -0.45, 0.85, 0.77, 0.45)]);
+    const nav = new NavGrid(world);
+    const state = createState(3);
+    const c = spawnEnemy(state, world, 0, 0.77, 0, 0);
+    expect(c.y).toBeCloseTo(0.77, 1);
+    for (let i = 0; i < 3 * TICK_RATE; i++) step(state, world, TEST_ITEMS, {}, nav);
+    expect(c.y).toBeLessThan(0.1);
+    // And stays down, guarding where it got to.
+    for (let i = 0; i < 5 * TICK_RATE; i++) step(state, world, TEST_ITEMS, {}, nav);
+    expect(c.y).toBeLessThan(0.1);
+  });
+});
 
 describe('enemy combat', () => {
   it('reacts before its first shot, then hits you', () => {

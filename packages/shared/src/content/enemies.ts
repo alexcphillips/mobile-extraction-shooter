@@ -50,6 +50,48 @@ const skillSchema = z.strictObject({
     .tuple([nonNegative, nonNegative])
     .refine(([min, max]) => min <= max, 'min must not be above max')
     .optional(),
+  /**
+   * Rounds per burst from an automatic, [min, max], and seconds between bursts, [min, max]
+   * (2026-11-08: PMCs fire longer bursts than scavs). Left out, AI.closeBurst or farBurst
+   * by distance and AI.burstPause (Jug: JUG.burst and burstPause). The pause still grows
+   * with distance, except Jug's.
+   */
+  burst: z
+    .tuple([z.int().min(1), z.int().min(1)])
+    .refine(([min, max]) => min <= max, 'min must not be above max')
+    .optional(),
+  burstPause: z
+    .tuple([nonNegative, nonNegative])
+    .refine(([min, max]) => min <= max, 'min must not be above max')
+    .optional(),
+  /**
+   * Close in (2026-11-08, PMCs, after Tarkov's): within `range` metres it sprays full auto,
+   * bursts of `burst` rounds `pause` seconds apart, in place of `burst` and `burstPause`.
+   * Left out, the same bursts at any range.
+   */
+  spray: z
+    .strictObject({
+      range: positive,
+      burst: z
+        .tuple([z.int().min(1), z.int().min(1)])
+        .refine(([min, max]) => min <= max, 'min must not be above max'),
+      pause: z
+        .tuple([nonNegative, nonNegative])
+        .refine(([min, max]) => min <= max, 'min must not be above max'),
+    })
+    .optional(),
+  /**
+   * Sprints as a move, not to get about (2026-11-08, the user's call; PMCs and bosses):
+   * alerted without seeing its target, it sprints to close the gap until it first sees it;
+   * leaving the raid, it sprints across open ground. (Flanking, going to cover out of sight,
+   * running from grenades and rushing a reload or heal sprint for everyone that does them.)
+   */
+  sprints: z.boolean().optional(),
+  /**
+   * Its target breaking line of sight, the chance it decides to rush its position at a
+   * sprint, as if it had heard a reload (2026-11-08, PMCs): one of a squad at a time.
+   */
+  pushChance: fraction.optional(),
   /** Sprints to cover rather than backing into it facing you (AI rework session 5). */
   sprintToCover: z.boolean().optional(),
   /**
@@ -78,6 +120,39 @@ const skillSchema = z.strictObject({
    * Jug): it never searches, gives up or goes back to its patrol meanwhile.
    */
   relentless: z.boolean().optional(),
+  /**
+   * Keeps to its ground (2026-11-08, Jug): within this many metres of its patrol (its spawn
+   * without one). Other AI's gunfire, blasts and glass draw it only from there, as do its
+   * allies' fights with AI; players' draw it anywhere. Left out, it goes wherever it hears.
+   */
+  territory: positive.optional(),
+  /**
+   * With a territory, how far beyond it a player's noise draws it out to check (2026-11-08,
+   * Jug: 45 m): further, it only turns to look and stays on its ground. Left out, any
+   * distance it would check at.
+   */
+  roam: nonNegative.optional(),
+  /**
+   * Treats itself (2026-11-08, PMCs): bandages bleeding, splints a broken limb and uses a
+   * medkit when badly hurt, from what it carries, never a surgery kit. Calm, whenever it
+   * needs to; fighting, only out of its target's sight, in cover nearby if there is any.
+   */
+  heals: z.boolean().optional(),
+  /**
+   * Kicks doors open and smashes glass in its way while alert (AI-8, Jug): an unlocked door
+   * from further off than others open one, without slowing, heard by enemies nearby.
+   */
+  smash: z.boolean().optional(),
+  /**
+   * Badly hurt by someone it can't see, it drops a smoke at its feet (if it carries one),
+   * fires blind down the line the hits came from and charges through it (AI-8, Jug).
+   */
+  enrage: z.boolean().optional(),
+  /**
+   * Heavy rounds throw its aim off hard and stop it firing for a moment (AI-8, Jug): a
+   * weakness, not a strength.
+   */
+  stagger: z.boolean().optional(),
 });
 
 /** The colours of its body, by part. Gear is drawn over it. */
@@ -113,10 +188,29 @@ export const enemySchema = z.strictObject({
    */
   outfits: z.array(outfitSchema).min(1).optional(),
   /**
-   * What it says (AI rework session 5): sound ids in content/sounds. `callout` is shouted
-   * when a squad member spots someone, `grenade` as it throws one (AI-6). Silent if left out.
+   * Its arms' and legs' HP, as a multiple of everyone's (2026-11-08, the user's call for
+   * Jug: 2). Head and chest are as anyone's. 1 if left out.
    */
-  voice: z.strictObject({ callout: idSchema.optional(), grenade: idSchema.optional() }).optional(),
+  limbHealth: positive.optional(),
+  /**
+   * What it says (AI rework session 5): sound ids in content/sounds. `callout` is shouted
+   * when a squad member spots someone, `grenade` as it throws one (AI-6), and `breathe` and
+   * `mutter` now and then while calm or hunting someone gone quiet (AI-8, Jug). Silent if
+   * left out.
+   */
+  voice: z
+    .strictObject({
+      callout: idSchema.optional(),
+      grenade: idSchema.optional(),
+      breathe: idSchema.optional(),
+      mutter: idSchema.optional(),
+    })
+    .optional(),
+  /**
+   * Its footsteps (AI-8: Jug's clanking plates), a sound id in content/sounds, heard
+   * further than a footstep. The usual footstep if left out.
+   */
+  steps: idSchema.optional(),
   /**
    * What it carries besides its loadout (session 11), stowed in its pockets, rig and
    * backpack when it spawns; what doesn't fit is left out. Each of `rolls` items comes
@@ -177,6 +271,14 @@ const grenadeOptionSchema = z.strictObject({
   count: rangeOf(z.int().min(1)).optional(),
 });
 
+const medOptionSchema = z.strictObject({
+  weight: positive,
+  /** null: none. A med (bandage, medkit…). */
+  item: idSchema.nullable(),
+  /** How many, rolled between these. Defaults to [1, 1]. */
+  count: rangeOf(z.int().min(1)).optional(),
+});
+
 export const loadoutSchema = z.strictObject({
   formatVersion: z.literal(LOADOUT_FORMAT_VERSION),
   id: idSchema,
@@ -191,6 +293,13 @@ export const loadoutSchema = z.strictObject({
    * frag throws it when it loses you (sim/ai.ts considerThrow). None if left out.
    */
   grenades: z.array(grenadeOptionSchema).optional(),
+  /**
+   * Meds it carries (2026-11-08): groups, each rolling one option by weight (say medkits:
+   * one usually, two sometimes, none sometimes; and bandages), stowed after grenades and
+   * before spare rounds so they're in its pockets or rig. An enemy that heals
+   * (skill.heals) uses them. None if left out.
+   */
+  meds: z.array(z.array(medOptionSchema).min(1)).optional(),
 });
 
 export type EnemyDef = z.infer<typeof enemySchema>;
@@ -198,6 +307,7 @@ export type Faction = z.infer<typeof factionSchema>;
 export type EnemySkill = z.infer<typeof skillSchema>;
 export type Outfit = z.infer<typeof outfitSchema>;
 export type EnemyLoot = NonNullable<EnemyDef['loot']>;
+export type MedOption = z.infer<typeof medOptionSchema>;
 export type LoadoutDef = z.infer<typeof loadoutSchema>;
 export type WeaponOption = z.infer<typeof weaponOptionSchema>;
 export type ArmourOption = z.infer<typeof armourOptionSchema>;
@@ -299,5 +409,11 @@ export function checkEnemies(
       if (item?.type !== 'grenade' || item.calibre !== undefined)
         throw new ContentError(source, `"${o.item}" is not a grenade to throw`);
     }
+    for (const group of l.meds ?? [])
+      for (const o of group) {
+        if (o.item === null) continue;
+        if (items.get(o.item)?.type !== 'med')
+          throw new ContentError(source, `"${o.item}" is not a med`);
+      }
   }
 }

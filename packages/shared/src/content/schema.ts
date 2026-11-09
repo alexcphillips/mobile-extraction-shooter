@@ -351,6 +351,16 @@ const playerSpawnSchema = z.strictObject({
   noExtracts: z.array(idSchema).optional(),
 });
 
+/**
+ * Where a PMC squad may start (2026-11-08, the user's call): besides the player spawns, so
+ * squads can start away from a boss's ground and each other. Players never start here.
+ */
+const pmcSpawnSchema = z.strictObject({
+  type: z.literal('pmcSpawn'),
+  ...marker,
+  yaw: angle,
+});
+
 const enemySpawnSchema = z.strictObject({
   type: z.literal('enemySpawn'),
   ...marker,
@@ -411,6 +421,12 @@ const poiSchema = z.strictObject({
   kind: z.enum(['loot', 'choke']),
   /** How likely a route is to take it in, against the others. Defaults to 1. */
   weight: nonNegative.optional(),
+  /**
+   * The part of the map it's in (2026-11-08): each PMC squad is given its own area at raid
+   * start and keeps to it for its first few minutes, so squads spread out. Left out, it's
+   * in no area (any squad's, any time).
+   */
+  area: idSchema.optional(),
   /**
    * Metres: a loot spot's containers within this are searched; a choke is watched from a
    * spot within it. Defaults to 8 for loot, 2 for a choke.
@@ -530,6 +546,7 @@ export const nodeSchema: z.ZodDiscriminatedUnion<
     typeof moverSchema,
     typeof glassSchema,
     typeof playerSpawnSchema,
+    typeof pmcSpawnSchema,
     typeof enemySpawnSchema,
     typeof patrolSchema,
     typeof lootContainerSchema,
@@ -554,6 +571,7 @@ export const nodeSchema: z.ZodDiscriminatedUnion<
   moverSchema,
   glassSchema,
   playerSpawnSchema,
+  pmcSpawnSchema,
   enemySpawnSchema,
   patrolSchema,
   lootContainerSchema,
