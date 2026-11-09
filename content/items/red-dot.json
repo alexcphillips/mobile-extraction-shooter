@@ -45,11 +45,11 @@
     "sight": [0, 0.035, -0.09]
   },
   "weapons": [
-    "assault-rifle",
+    "akm",
     "aug-a3",
     "crossbow",
-    "shotgun",
-    "smg",
+    "mp-133",
+    "k10",
     "mp5",
     "m416",
     "scar-h",

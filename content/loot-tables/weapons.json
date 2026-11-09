@@ -4,7 +4,7 @@
   "name": "Weapons",
   "rolls": [1, 1],
   "items": [
-    { "item": "assault-rifle", "weight": 0.4 },
+    { "item": "akm", "weight": 0.4 },
     { "item": "aks-74u", "weight": 0.6 },
     { "item": "ak-74m", "weight": 0.5 },
     { "item": "sks", "weight": 0.6 },
@@ -16,7 +16,7 @@
     { "item": "m416", "weight": 0.2 },
     { "item": "g3", "weight": 0.15 },
     { "item": "rpk-16", "weight": 0.15 },
-    { "item": "shotgun", "weight": 0.8 },
+    { "item": "mp-133", "weight": 0.8 },
     { "item": "saiga-12", "weight": 0.25 },
     { "item": "m9a3", "weight": 1.6 },
     { "item": "p226", "weight": 0.8 },

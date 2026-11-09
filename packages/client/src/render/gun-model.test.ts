@@ -6,7 +6,7 @@ import { gunModel, knifeModel } from './gun-model';
 const items = loadItems();
 const rifle = (attachments: Partial<Record<'optic' | 'muzzle' | 'magazine', string>>) =>
   ({
-    item: 'assault-rifle',
+    item: 'akm',
     mag: 0,
     cooldown: 0,
     reloading: 0,

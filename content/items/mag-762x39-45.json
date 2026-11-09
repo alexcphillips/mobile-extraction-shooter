@@ -8,7 +8,7 @@
   "value": 6000,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["assault-rifle"],
+  "weapons": ["akm"],
   "mods": {
     "magazine": 15,
     "reloadTime": 1.15

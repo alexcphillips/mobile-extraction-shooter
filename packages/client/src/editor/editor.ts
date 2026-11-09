@@ -2565,7 +2565,7 @@ function newMarker(kind: MarkerKind, pos: Vec3, taken: Set<string>, colour: stri
       return { type: 'zombieSpawn', pos };
     case 'wallBuy': {
       const guns = [...loadItems().values()].filter((i) => i.type === 'weapon').map((i) => i.id);
-      return { type: 'wallBuy', pos, item: first(guns, 'smg'), cost: 1000 };
+      return { type: 'wallBuy', pos, item: first(guns, 'k10'), cost: 1000 };
     }
     case 'mysteryBox':
       return { type: 'mysteryBox', pos, cost: 950 };

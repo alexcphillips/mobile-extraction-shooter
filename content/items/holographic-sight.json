@@ -86,11 +86,11 @@
     }
   },
   "weapons": [
-    "assault-rifle",
+    "akm",
     "aug-a3",
     "crossbow",
-    "shotgun",
-    "smg",
+    "mp-133",
+    "k10",
     "mp5",
     "m416",
     "scar-h",

@@ -41,9 +41,9 @@ describe('item editor', () => {
 
   it('finds what an edit breaks elsewhere in content/', () => {
     // An attachment lists the gun it fits; a loadout puts a suppressor on the PMCs' rifle.
-    const noMags = edited('assault-rifle', (d) => setSlots(d, ['optic', 'muzzle']));
+    const noMags = edited('akm', (d) => setSlots(d, ['optic', 'muzzle']));
     expect(itemContentProblem(noMags)).toMatch(/mag-762x39-45.*no magazine slot/);
-    const noMuzzle = edited('assault-rifle', (d) => setSlots(d, ['optic', 'magazine']));
+    const noMuzzle = edited('akm', (d) => setSlots(d, ['optic', 'magazine']));
     expect(itemContentProblem(noMuzzle)).toMatch(/loadouts\/pmc-kit.*suppressor/);
     // The tutorial's front door needs a key item.
     const notAKey = edited('front-door-key', (d) => {
@@ -62,7 +62,7 @@ describe('item editor', () => {
     expect(itemUses('ammo-9mm', items)).toEqual(
       expect.arrayContaining(['m9a3 fires it', 'vendor quartermaster', 'starting kit new-player']),
     );
-    expect(itemUses('assault-rifle', items)).toEqual(
+    expect(itemUses('akm', items)).toEqual(
       expect.arrayContaining(['scope-4x fits it', 'loadout scav-kit']),
     );
     expect(itemUses('m416', items)).toEqual(
@@ -108,10 +108,7 @@ describe('item editor', () => {
   });
 
   it("keeps a gun's mounts and hidden parts in step with its slots", () => {
-    const rifle = structuredClone(loadItems().get('assault-rifle')) as unknown as Record<
-      string,
-      unknown
-    >;
+    const rifle = structuredClone(loadItems().get('akm')) as unknown as Record<string, unknown>;
     setSlots(rifle, ['muzzle']);
     const model = rifle.model as { mounts: object; parts: { hiddenBy?: string }[] };
     expect(Object.keys(model.mounts)).toEqual(['muzzle']);
@@ -178,7 +175,7 @@ describe('item editor', () => {
     parts[4]!.pos[0] = 8;
     expect(clip[0]!.pos[0]).toBe(9);
     // A part's name and group pass the item schema, and the game ignores them.
-    const rifle = structuredClone(loadItems().get('assault-rifle')) as unknown as {
+    const rifle = structuredClone(loadItems().get('akm')) as unknown as {
       model: { parts: ModelPart[] };
     };
     const before = modelShapes(rifle.model);

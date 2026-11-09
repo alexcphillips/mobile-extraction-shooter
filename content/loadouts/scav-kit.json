@@ -13,7 +13,7 @@
     },
     {
       "weight": 0.6,
-      "item": "assault-rifle",
+      "item": "akm",
       "spare": [30, 90],
       "ammo": [
         { "weight": 3, "item": "ammo-762x39-lp" },
@@ -22,7 +22,7 @@
     },
     {
       "weight": 2,
-      "item": "shotgun",
+      "item": "mp-133",
       "spare": [12, 24],
       "ammo": [{ "weight": 1, "item": "buckshot" }]
     },

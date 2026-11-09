@@ -8,7 +8,7 @@
   "value": 3000,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["shotgun"],
+  "weapons": ["mp-133"],
   "mods": {
     "magazine": 2,
     "reloadTime": 1.33

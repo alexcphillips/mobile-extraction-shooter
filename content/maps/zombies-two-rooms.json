@@ -702,7 +702,7 @@
       "id": "buy-smg",
       "pos": [-4.5, 0, -7.4],
       "yaw": 0,
-      "item": "smg",
+      "item": "k10",
       "cost": 1000,
       "ammoCost": 500
     },
@@ -711,7 +711,7 @@
       "id": "buy-rifle",
       "pos": [5, 0, -7.4],
       "yaw": 0,
-      "item": "assault-rifle",
+      "item": "akm",
       "cost": 1500,
       "ammoCost": 750
     },
@@ -720,7 +720,7 @@
       "id": "buy-shotgun",
       "pos": [5, 0, 7.4],
       "yaw": 180,
-      "item": "shotgun",
+      "item": "mp-133",
       "cost": 1200,
       "ammoCost": 600
     },

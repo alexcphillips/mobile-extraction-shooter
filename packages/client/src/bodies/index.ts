@@ -29,8 +29,7 @@ interface Pose {
   ownGear?: boolean;
 }
 
-const rifle = (c: Character, items: ItemDb): void =>
-  void giveWeapon(c, items, 'assault-rifle', ['red-dot']);
+const rifle = (c: Character, items: ItemDb): void => void giveWeapon(c, items, 'akm', ['red-dot']);
 const pistol = (c: Character, items: ItemDb): void => void giveWeapon(c, items, 'm9a3');
 const knife = (c: Character, items: ItemDb): void => {
   equip(c, items, 'knife', createItem(items, 'knife'));

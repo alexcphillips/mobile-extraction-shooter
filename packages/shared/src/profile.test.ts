@@ -149,6 +149,18 @@ describe('PROFILE_FORMAT', () => {
     expect(p.gear.primary1!.item).toBe('sv-98');
     expect(p.gear.primary1!.loaded).toBeUndefined();
   });
+
+  it('gives guns named by class their own ids, in the stash and in gear (format 8 → 9)', () => {
+    const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
+    old.formatVersion = 8;
+    old.gear.primary1 = { ...old.gear.primary1, item: 'assault-rifle' };
+    old.gear.primary2 = { ...old.gear.primary1, item: 'shotgun' };
+    old.stash[0].items[0].item.item = 'smg';
+    const p = loadContent(PROFILE_FORMAT, old, 'p');
+    expect(p.gear.primary1!.item).toBe('akm');
+    expect(p.gear.primary2!.item).toBe('mp-133');
+    expect(p.stash[0]!.items[0]!.item.item).toBe('k10');
+  });
 });
 
 describe('checkProfile', () => {

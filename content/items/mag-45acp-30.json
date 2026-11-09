@@ -8,7 +8,7 @@
   "value": 6000,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["smg"],
+  "weapons": ["k10"],
   "mods": {
     "magazine": 5,
     "reloadTime": 1.05
