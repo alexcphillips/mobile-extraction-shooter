@@ -1,10 +1,7 @@
 import {
-  MAX_SELL,
   applyStash,
   itemDef,
   pickHost,
-  sellAll,
-  sellAllPrice,
   sortGrid,
   nextPagePrice,
   openStash,
@@ -476,7 +473,6 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
         quests={opts.quests}
         saver={saver}
         notice={notice}
-        busy={busy}
         onBack={() => {
           setNotice(null);
           void saver.flush();
@@ -488,33 +484,6 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
           setNotice(null);
           void saver.flush();
           setPage('vendors');
-        }}
-        onSellAll={async (on) => {
-          // Batches of at most MAX_SELL, each listed afresh from what the server has: refs
-          // are by index, so the last batch's selling moved the rest.
-          const before = saver.me.profile.money;
-          let sold = 0;
-          let last: ProfileResponse | null = null;
-          try {
-            await saver.flush();
-            for (;;) {
-              const refs = sellAll(saver.me.profile, opts.items).slice(0, MAX_SELL);
-              if (!refs.length) break;
-              last = await saver.sell(refs);
-              sold += refs.length;
-            }
-          } catch (err) {
-            refused(sold ? `Sold ${sold} items, then the rest weren't` : `Nothing was sold`)(err);
-            if (last) reopen(last, on, `Sold ${sold} items, then stopped.`);
-            return;
-          }
-          if (last)
-            reopen(
-              last,
-              on,
-              `Sold everything (${sold} items) for ${(last.profile.money - before).toLocaleString()}.`,
-            );
-          else setNotice('Nothing to sell.');
         }}
         onSell={(refs, on) => {
           const name =
@@ -709,6 +678,9 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
             </div>
           )}
           <button
+            // A false positive: raidButton holds `start`, which reaches the onStart ref
+            // through receive, but its fields are plain values read here, not the ref.
+            // eslint-disable-next-line react-hooks/refs
             className={`menu-raid${raidButton.primary ? ' primary' : ''}`}
             disabled={raidButton.disabled}
             onClick={raidButton.onClick}
@@ -779,12 +751,10 @@ function StashPage({
   quests,
   saver,
   notice,
-  busy,
   onBack,
   raidButton,
   onBuyPage,
   onSell,
-  onSellAll,
   onVendors,
   startPage,
 }: {
@@ -793,27 +763,22 @@ function StashPage({
   quests: readonly QuestDef[];
   saver: StashSaver;
   notice: string | null;
-  busy: boolean;
   onBack: () => void;
   raidButton: RaidButton;
   /** Buys the next page; resolves with whether it was bought. */
   onBuyPage: () => Promise<boolean>;
   /** Sells items, all or none; the page shown is kept. Resolves when sold or refused. */
   onSell: (refs: ItemRef[], page: number) => Promise<void>;
-  /** Sells everything that can be sold, gear and stash (sellAll); resolves when done. */
-  onSellAll: (page: number) => Promise<void>;
   onVendors: () => void;
   /** The page to show when the stash is (re)opened. */
   startPage: number;
 }): ReactNode {
   const [version, bump] = useReducer((n: number) => n + 1, 0);
-  // Buying asks for a second tap, and so does selling everything (showing what it brings).
+  // Buying asks for a second tap.
   const [confirming, setConfirming] = useState(false);
   const [, setBuying] = useState(false); // `buying`, read by the parked + button
   // The locked next page's tooltip (2026-11-09: buying pages is parked behind a lock).
   const [lockTip, setLockTip] = useState(false);
-  const [sellAllFor, setSellAllFor] = useState<number | null>(null);
-  const [sellingAll, setSellingAll] = useState(false);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<Category>('all');
   const [sortOpen, setSortOpen] = useState(false);
@@ -860,16 +825,6 @@ function StashPage({
   const show = (p: number): void => {
     setConfirming(false);
     inv.setTarget(stashOwner(p));
-  };
-  const sellEverything = (): void => {
-    if (sellingAll) return;
-    if (sellAllFor === null) {
-      setSellAllFor(sellAllPrice(stash.profile, items));
-      return;
-    }
-    setSellAllFor(null);
-    setSellingAll(true);
-    void onSellAll(Math.max(0, shown)).finally(() => setSellingAll(false));
   };
   // Not wired to anything while the next page shows a lock (2026-11-09); see the tabs.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1019,18 +974,6 @@ function StashPage({
         <span className="vendors-money">
           <b>{stash.profile.money.toLocaleString()}</b> money
         </span>
-        <button
-          className={`stash-buy${sellAllFor !== null ? ' confirm' : ''}`}
-          disabled={sellingAll || busy}
-          onClick={sellEverything}
-          onBlur={() => setSellAllFor(null)}
-        >
-          {sellingAll
-            ? 'Selling…'
-            : sellAllFor !== null
-              ? `Sell all for ${sellAllFor.toLocaleString()}?`
-              : 'Sell everything'}
-        </button>
         {!inv.selling && <button onClick={() => inv.startSelling()}>Select to sell</button>}
         <button onClick={onVendors}>Vendors</button>
         <button

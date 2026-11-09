@@ -674,8 +674,6 @@ export {
   depositMoney,
   isMoney,
   MAX_SELL,
-  sellAll,
-  sellAllPrice,
   sellItems,
   sellParts,
   sellTotal,
