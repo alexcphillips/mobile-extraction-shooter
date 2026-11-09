@@ -930,6 +930,11 @@ After the AI rework, before co-op. The design is [hangar.md](hangar.md). The mat
   - Drive items, timed decryption, and its results: keycards or door codes, vendor rep, blueprints. Blueprints unlock recipes.
   - Contracts that reuse what exists, if wanted then (timer from Get contract).
 
+- [x] **Map tab floors and labels (the user's call, 2026-11-09).** design.md → Inventory and UI → Map; tech-stack.md → the map tab.
+  - The map tab shows a floor at a time (map `floors`; Northpoint's Ground 0 m and Upper 6 m), framed on what's built; map labels (`mapLabel` marker, placed in the editor); extractions filled with a sign; your quest spots as diamonds (removed from the HUD). Northpoint's terrain cut from 448 × 480 m to 296 × 298 m (40 m round the built footprint, x −148…148, z −56…242; heights were all 0). The Mall's map, raid and notes deleted (the user's call).
+  - Checked: 4 new tests (labels compiled in a group, floors kept and refused out of order, `floorAt`, label overlap), all 1,003 pass; typecheck and lint. Northpoint's map tab rendered through the real component for both floors.
+  - **Not done:** no labels placed on Northpoint yet (the user names the places); there's no ground past a terrain's edge, so with 40 m left round Northpoint, the edge may show from the yard, the extract pockets and the cradle.
+
 ## After v1 (not scheduled)
 - Co-op vs. AI, phones and PCs together (a player's device hosts, others connect over WebRTC; client movement prediction, shared loot rolls, quest items only for the holder). The plan, session by session, is [coop.md](coop.md).
 - Weekly admin challenges (raid configs, publishing from the server without a redeploy).

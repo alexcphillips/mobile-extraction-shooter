@@ -132,6 +132,7 @@ export type MarkerKind =
   | 'lootSpawn'
   | 'questMarker'
   | 'poi'
+  | 'mapLabel'
   | 'door'
   | 'zombieSpawn'
   | 'wallBuy'
@@ -146,6 +147,7 @@ export const MARKERS: Readonly<Record<MarkerKind, string>> = {
   lootSpawn: 'loose loot',
   questMarker: 'quest marker',
   poi: 'point of interest',
+  mapLabel: 'map label',
   door: 'door',
   // Zombies mode (2026-11-04).
   zombieSpawn: 'zombie spawn',
@@ -174,6 +176,7 @@ const EXTRACTION_MARKERS: readonly MarkerKind[] = [
   'lootSpawn',
   'questMarker',
   'poi',
+  'mapLabel',
   'door',
 ];
 export const markersFor = (zombies: boolean): readonly MarkerKind[] =>
@@ -2554,6 +2557,8 @@ function newMarker(kind: MarkerKind, pos: Vec3, taken: Set<string>, colour: stri
       return { type: 'questMarker', id: uniqueId('quest-marker', taken), pos };
     case 'poi':
       return { type: 'poi', id: uniqueId('poi', taken), pos, kind: 'loot' };
+    case 'mapLabel':
+      return { type: 'mapLabel', pos, text: 'New label' };
     case 'door':
       return { type: 'door', pos, size: [1, 2.1], colour };
     case 'zombieSpawn':

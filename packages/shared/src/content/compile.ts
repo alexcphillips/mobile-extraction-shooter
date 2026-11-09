@@ -148,6 +148,7 @@ type MarkerNode = Extract<
       | 'lootSpawn'
       | 'questMarker'
       | 'poi'
+      | 'mapLabel'
       | 'zombieSpawn'
       | 'wallBuy'
       | 'mysteryBox';
@@ -161,6 +162,7 @@ const MARKER_TYPES = new Set<string>([
   'lootSpawn',
   'questMarker',
   'poi',
+  'mapLabel',
   'zombieSpawn',
   'wallBuy',
   'mysteryBox',
@@ -243,6 +245,8 @@ export interface CompiledMap {
   hearingScale?: number | undefined;
   /** The share of scav slots in at raid start (MapFile.scavStartShare); a third if undefined. */
   scavStartShare?: number | undefined;
+  /** The map tab's storeys, lowest first (MapFile.floors); one view from above if undefined. */
+  floors?: { name: string; y: number }[] | undefined;
   /** PMC squads at raid start (MapFile.pmcs); none if undefined. */
   pmcs?: { enemy?: string | undefined; count: [number, number] } | undefined;
 }
@@ -451,6 +455,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     hearingScale: map.hearingScale,
     scavStartShare: map.scavStartShare,
     pmcs: map.pmcs,
+    floors: map.floors,
   };
 }
 

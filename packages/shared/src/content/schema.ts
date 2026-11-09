@@ -454,6 +454,19 @@ const questMarkerSchema = z.strictObject({
   pos: vec3,
 });
 
+/**
+ * A name on the raid's map tab (2026-11-09, the user's call), such as "Warehouse" or "Tech
+ * store", placed in the map editor. pos's height picks the floor it shows on (the map's
+ * `floors`); nothing else uses it. An optional node, so still map format 4.
+ */
+const mapLabelSchema = z.strictObject({
+  type: z.literal('mapLabel'),
+  ...marker,
+  text: z.string().min(1).max(40),
+  /** 'area' is bigger, for a wing or a large store; 'place' (the default) for a room or shop. */
+  size: z.enum(['area', 'place']).optional(),
+});
+
 /*
  * Zombies mode's markers (2026-11-04, docs/design.md → Zombies). Ignored by extraction raids.
  */
@@ -582,6 +595,7 @@ export const nodeSchema: z.ZodDiscriminatedUnion<
     typeof lootSpawnSchema,
     typeof questMarkerSchema,
     typeof poiSchema,
+    typeof mapLabelSchema,
     typeof zombieSpawnSchema,
     typeof wallBuySchema,
     typeof mysteryBoxSchema,
@@ -608,6 +622,7 @@ export const nodeSchema: z.ZodDiscriminatedUnion<
   lootSpawnSchema,
   questMarkerSchema,
   poiSchema,
+  mapLabelSchema,
   zombieSpawnSchema,
   wallBuySchema,
   mysteryBoxSchema,
@@ -747,6 +762,17 @@ export const mapSchema = z
           .tuple([z.int().min(0), z.int().min(0)])
           .refine(([min, max]) => min <= max, 'min must not be above max'),
       })
+      .optional(),
+    /**
+     * The storeys the map tab shows one at a time (2026-11-09, the user's call), lowest
+     * first: each is drawn cut CUT_ABOVE over its floor's height `y`, as the editor's cutaway
+     * does, so a covered building shows its rooms, not its roof. Left out, the map tab shows
+     * everything from above. An optional field, so still format 4.
+     */
+    floors: z
+      .array(z.strictObject({ name: z.string().min(1).max(20), y: finite }))
+      .min(1)
+      .refine((f) => f.every((fl, i) => i === 0 || fl.y > f[i - 1]!.y), 'must go up, lowest first')
       .optional(),
     zones: z.array(zoneSchema).superRefine((zones, ctx) => {
       const seen = new Set<string>();

@@ -1545,7 +1545,11 @@ function dispose(root: THREE.Object3D, keep: THREE.Material): void {
     const m = o as THREE.Mesh;
     m.geometry?.dispose();
     const mats = Array.isArray(m.material) ? m.material : m.material ? [m.material] : [];
-    for (const mat of mats) if (mat !== keep) mat.dispose();
+    for (const mat of mats) {
+      if (mat === keep) continue;
+      (mat as THREE.MeshBasicMaterial).map?.dispose();
+      mat.dispose();
+    }
   });
 }
 

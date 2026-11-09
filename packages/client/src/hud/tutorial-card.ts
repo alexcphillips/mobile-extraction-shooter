@@ -3,7 +3,7 @@ import type * as THREE from 'three';
 import { inputMode, type InputMode } from '../input/mode';
 import type { Hud } from './hud';
 import type { ControlId } from './layout';
-import { screenSpot } from './quest-markers';
+import { screenSpot } from './screen-spot';
 
 /** How high over its spot the marker floats, in metres. */
 const LIFT = 0.6;

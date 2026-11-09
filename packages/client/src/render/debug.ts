@@ -11,6 +11,7 @@ const MARKER_COLOURS: Record<CompiledMarker['type'], number> = {
   lootSpawn: 0xf39c12,
   questMarker: 0x9b59b6,
   poi: 0x00cec9,
+  mapLabel: 0xf2efe6,
   zombieSpawn: 0x6ab04c,
   wallBuy: 0xe1b12c,
   mysteryBox: 0x8e44ad,
@@ -40,6 +41,12 @@ export function buildDebug(
     if (m.type === 'lootContainer' || m.type === 'lootSpawn') {
       const r = LOOT_MARKER;
       b.shape({ kind: 'box', x: m.x, y: m.y + r, z: m.z, hx: r, hy: r, hz: r, ...post });
+      continue;
+    }
+    if (m.type === 'mapLabel') {
+      // Its words lying on the floor, north up, read from the top view as on the map tab.
+      group.add(labelPlane(m.text, m.size === 'area', m.x, m.y + 0.15, m.z));
+      b.shape({ kind: 'box', x: m.x, y: m.y + 0.5, z: m.z, hx: 0.08, hy: 0.5, hz: 0.08, ...post });
       continue;
     }
     b.shape({ kind: 'box', x: m.x, y: m.y + 1, z: m.z, hx: 0.1, hy: 1, hz: 0.1, ...post });
@@ -115,4 +122,37 @@ export function buildDebug(
     }
   }
   return group;
+}
+
+/** Letters' height on the floor, in metres, for a place's label (an area's is twice it). */
+const LABEL_HEIGHT = 1.2;
+
+/** A map label's text as a flat plane, facing up, with its top to −z. */
+function labelPlane(text: string, area: boolean, x: number, y: number, z: number): THREE.Mesh {
+  const px = 64;
+  const canvas = document.createElement('canvas');
+  const g = canvas.getContext('2d')!;
+  const font = `${area ? 700 : 600} ${px}px system-ui, sans-serif`;
+  g.font = font;
+  canvas.width = Math.ceil(g.measureText(text).width + px * 0.6);
+  canvas.height = Math.round(px * 1.4);
+  g.fillStyle = 'rgba(20, 22, 26, 0.75)';
+  g.beginPath();
+  g.roundRect(0, 0, canvas.width, canvas.height, px * 0.25);
+  g.fill();
+  g.font = font;
+  g.fillStyle = area ? '#ffe08a' : '#f2efe6';
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.fillText(text, canvas.width / 2, canvas.height / 2);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const h = (area ? 2 : 1) * LABEL_HEIGHT * 1.4;
+  const mesh = new THREE.Mesh(
+    new THREE.PlaneGeometry((h * canvas.width) / canvas.height, h),
+    new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false }),
+  );
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.set(x, y, z);
+  return mesh;
 }

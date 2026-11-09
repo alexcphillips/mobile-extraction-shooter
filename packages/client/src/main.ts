@@ -261,7 +261,6 @@ function playElements(): PlayElements {
     raidHud: new RaidHud(byId('timer'), byId('extract'), byId('prompt'), byId('use-ring')),
     raid: byId('raid'),
     results: byId('results'),
-    questMarkers: byId('quest-markers'),
     enemyBars: byId('enemy-bars'),
     tutorial: byId('tutorial'),
   };

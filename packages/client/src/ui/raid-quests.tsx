@@ -37,7 +37,7 @@ function standing(
     const spot = sim.raid?.investigate.find((s) => s.holder === player.id && s.marker === o.marker);
     return spot?.done
       ? { done: true, note: 'Investigated' }
-      : { done: false, note: 'Marked on screen' };
+      : { done: false, note: 'Marked on your map' };
   }
   const carried = gearItems(player.gear).some((i) => i.item === o.item);
   return { done: false, note: carried ? 'Got it: now get out' : 'Not found yet' };

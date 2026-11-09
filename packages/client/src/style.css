@@ -84,48 +84,6 @@ body {
   display: none;
 }
 
-/* Quest markers to investigate (session 14b), over the world and through walls. */
-#quest-markers {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.quest-marker {
-  position: absolute;
-  top: 0;
-  left: 0;
-  margin: -9px 0 0 -30px;
-  width: 60px;
-  padding-top: 20px;
-  color: #ffe08a;
-  font:
-    bold 12px/1.2 ui-monospace,
-    monospace;
-  text-align: center;
-  text-shadow: 0 1px 2px rgb(0 0 0 / 0.8);
-  will-change: transform;
-}
-
-/* The diamond, centred on the spot; the distance under it. */
-.quest-marker::before {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 24px;
-  width: 11px;
-  height: 11px;
-  border: 2px solid #ffe08a;
-  background: rgb(255 224 138 / 0.25);
-  box-shadow: 0 0 3px rgb(0 0 0 / 0.6);
-  transform: rotate(45deg);
-}
-
-.quest-marker[hidden] {
-  display: none;
-}
-
 /* The tutorial (TU-3, hud/tutorial-card.ts): the prompt card at the top, the bright marker
    over the step's spot, and the step's touch buttons outlined. Over the raid screen, since
    a step can need the bag open. */
@@ -1581,6 +1539,23 @@ body:has(#raid:not([hidden])) #vitals {
   position: absolute;
   top: 6px;
   right: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+/* The floor buttons (2026-11-09), top floor first; the one shown lit, yours marked •. */
+.raid-map-floors {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.raid-map-floors button.on {
+  border-color: #ffd34d;
+  color: #ffd34d;
 }
 
 .raid-note {

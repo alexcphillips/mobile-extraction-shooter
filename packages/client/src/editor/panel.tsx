@@ -811,8 +811,66 @@ function MapSettings(props: {
         {map.terrain.cellSize} m. Press G to shape the ground.
       </p>
       <Extend editor={editor} cellSize={map.terrain.cellSize} />
+      <Floors editor={editor} map={map} />
       <Zones {...props} />
     </div>
+  );
+}
+
+/**
+ * The storeys the raid's map tab shows one at a time (2026-11-09): a name and the height of
+ * its floor, kept lowest first. None draws the map from above, roofs and all.
+ */
+function Floors({ editor, map }: { editor: MapEditor; map: MapFile }) {
+  const floors = map.floors ?? [];
+  const edit = (change: (f: NonNullable<MapFile['floors']>) => void) =>
+    editor.editMap((m) => {
+      const f = [...(m.floors ?? [])].map((x) => ({ ...x }));
+      change(f);
+      f.sort((a, b) => a.y - b.y);
+      // Two at one height can't both be kept (they must go up): the later one goes.
+      const kept = f.filter((x, i) => i === 0 || x.y > f[i - 1]!.y);
+      if (kept.length) m.floors = kept;
+      else delete m.floors;
+    });
+  return (
+    <>
+      <h4 title="The map tab in a raid shows one floor at a time, cut just over it">floors</h4>
+      {floors.map((f, i) => (
+        <div className="ed-row" key={`${i}-${f.name}-${f.y}`}>
+          <Text
+            label="name"
+            value={f.name}
+            onChange={(v) => v && edit((fs) => (fs[i]!.name = v.slice(0, 20)))}
+          />
+          <Num
+            label="floor at (m)"
+            value={f.y}
+            onChange={(v) => v !== undefined && edit((fs) => (fs[i]!.y = v))}
+          />
+          <button onClick={() => edit((fs) => fs.splice(i, 1))} title="Remove this floor">
+            ✕
+          </button>
+        </div>
+      ))}
+      <button
+        onClick={() =>
+          edit((fs) =>
+            fs.push({
+              name: fs.length ? `Floor ${fs.length + 1}` : 'Ground',
+              y: fs.length ? fs.at(-1)!.y + 3 : 0,
+            }),
+          )
+        }
+      >
+        Add a floor
+      </button>
+      <p className="ed-note">
+        {floors.length
+          ? 'The map tab shows each floor cut 1.5 m over its height, as the cutaway does. Map labels and extractions show on the floor they stand on.'
+          : 'None: the map tab shows the map from above, roofs and all. Add floors for a building with rooms under a roof.'}
+      </p>
+    </>
   );
 }
 
@@ -2108,6 +2166,27 @@ function MarkerFields(props: { editor: MapEditor; node: MapNode; num: NumField; 
             PMC squads walk from one point of interest to the next, searching loot spots and
             watching chokes, then leave at an extraction. Each squad keeps to its own area (a name
             shared by points of interest) for its first few minutes.
+          </p>
+        </>
+      );
+    case 'mapLabel':
+      return (
+        <>
+          <Text
+            label="text"
+            value={n.text}
+            onChange={(v) => set('text', v.slice(0, 40) || n.text)}
+          />
+          <Pick
+            label="size"
+            value={n.size ?? 'place'}
+            options={['place', 'area']}
+            onChange={(v) => set('size', v === 'area' ? 'area' : undefined)}
+          />
+          <p className="ed-note">
+            A name on the raid's map tab. Area is bigger, for a wing or a big store; place for a
+            room or shop. Its height picks the floor it shows on (the map's floors, in map
+            settings).
           </p>
         </>
       );

@@ -94,13 +94,14 @@ export function nodeYaw(n: MapNode): number {
   return 'yaw' in n ? (n.yaw ?? 0) : 0;
 }
 
-/** Whether a node has a yaw to turn. Patrols and loot spawns don't. */
+/** Whether a node has a yaw to turn. Patrols, loot spawns and map labels don't. */
 export function canTurn(n: MapNode): boolean {
   return (
     n.type !== 'patrol' &&
     n.type !== 'lootSpawn' &&
     n.type !== 'questMarker' &&
     n.type !== 'poi' &&
+    n.type !== 'mapLabel' &&
     n.type !== 'zombieSpawn'
   );
 }

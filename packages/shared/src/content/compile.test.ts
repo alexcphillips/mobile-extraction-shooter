@@ -452,6 +452,49 @@ describe('compileMap', () => {
     );
   });
 
+  it('places map labels as markers in world space and keeps the floors (2026-11-09)', () => {
+    const file = loadContent(
+      MAP_FORMAT,
+      {
+        ...map([
+          {
+            type: 'group',
+            pos: [10, 6, 0],
+            nodes: [{ type: 'mapLabel', id: 'tech', pos: [1, 0, 2], text: 'Tech store' }],
+          },
+          { type: 'mapLabel', pos: [0, 0, 0], text: 'Warehouse', size: 'area' },
+        ]),
+        floors: [
+          { name: 'Ground', y: 0 },
+          { name: 'Upper', y: 6 },
+        ],
+      },
+      'test.json',
+    );
+    const compiled = compileMap(file, prefabs());
+    const labels = compiled.markers.filter((m) => m.type === 'mapLabel');
+    expect(labels).toMatchObject([
+      { text: 'Tech store', x: 11, y: 6, z: 2 },
+      { text: 'Warehouse', size: 'area', x: 0, y: 0, z: 0 },
+    ]);
+    expect(compiled.floors).toEqual([
+      { name: 'Ground', y: 0 },
+      { name: 'Upper', y: 6 },
+    ]);
+  });
+
+  it('wants floors lowest first and labels with words', () => {
+    const floors = [
+      { name: 'Upper', y: 6 },
+      { name: 'Ground', y: 0 },
+    ];
+    expect(() => loadContent(MAP_FORMAT, { ...map([]), floors }, 'test.json')).toThrow(
+      /lowest first/,
+    );
+    const nodes = [{ type: 'mapLabel', pos: [0, 0, 0], text: '' }];
+    expect(() => loadContent(MAP_FORMAT, { ...map([]), nodes }, 'test.json')).toThrow();
+  });
+
   it("rejects a spawn whose patrol isn't beside it", () => {
     expect(() =>
       compileMap(

@@ -127,7 +127,6 @@ import { HandsHud } from '../hud/hands';
 import type { Hud } from '../hud/hud';
 import { AIM_FOV, FOV, aimedFov, type OpticOverlay } from '../hud/optic';
 import { EnemyBars } from '../hud/enemy-bars';
-import { QuestMarkers } from '../hud/quest-markers';
 import type { RaidHud } from '../hud/raid-hud';
 import { SpectateBar } from '../hud/spectate';
 import type { HitDirection } from '../hud/hit-direction';
@@ -190,8 +189,6 @@ export interface PlayElements {
   raid: HTMLElement;
   /** Where the results screen opens when the raid ends for you. */
   results: HTMLElement;
-  /** Where quest markers to investigate are drawn over the world. */
-  questMarkers: HTMLElement;
   /** For the enemy health bars admin cheat. */
   enemyBars: HTMLElement;
   /** Where the tutorial's prompt card and marker go (TU-3). */
@@ -523,7 +520,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     el.raidHud.note('Admin cheats on', performance.now());
   const held = heldWeapon(player);
   if (held) viewmodel.setGun(held, items);
-  const questMarkers = new QuestMarkers(el.questMarkers, sim.raid?.investigate ?? [], player);
   // The tutorial's steps (TU-3), followed after every tick; its card shows the one on.
   const tutorialProgress = tutorialMode ? startTutorial(player) : null;
   const tutorialCard = tutorialMode
@@ -1891,7 +1887,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     }
     for (const o of others) o.body.update(o.c, items, alpha, dtMs / 1000, camera, frustum);
     aiDebug?.update(enemyChars);
-    questMarkers.update(camera, alive && !screenOpen && !ended);
     tutorialCard?.update(camera, player, alive && !screenOpen && !ended);
     enemyBars?.update(camera, alive && !screenOpen && !ended);
     updateDoors(mapView, sim.doors, dtMs / 1000);
