@@ -128,6 +128,18 @@ function extent(box: THREE.Box3): [number, number] {
   return [hx, hy];
 }
 
+/**
+ * A picture of any shapes, not kept: the item editor's fits page draws guns as edited, each
+ * with an attachment, with this.
+ */
+export function shapesPortrait(
+  shapes: readonly Shape[],
+  view: ItemView,
+  shape?: readonly [number, number],
+): string | null {
+  return drawPortrait(shapes, view, shape);
+}
+
 function drawPortrait(
   shapes: readonly Shape[],
   view: ItemView,

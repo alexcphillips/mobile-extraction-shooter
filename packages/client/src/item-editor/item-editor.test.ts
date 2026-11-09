@@ -1,7 +1,16 @@
-import { ITEM_FORMAT, loadContent, type ItemDef } from '@mes/shared';
+import { ITEM_FORMAT, loadContent, modelShapes, type ItemDef, type ModelPart } from '@mes/shared';
 import { describe, expect, it } from 'vitest';
 import { itemContentProblem, itemUses, loadItems } from '../content';
-import { mirrorPart, setSlots } from './model-edit';
+import { budgetOf, triangleCount } from './budget';
+import {
+  appendParts,
+  duplicateParts,
+  groupsOf,
+  mirrorPart,
+  partLabel,
+  removeParts,
+  setSlots,
+} from './model-edit';
 import { storageRisks } from './risk';
 import { ITEM_TYPES, blankItem } from './templates';
 
@@ -123,5 +132,67 @@ describe('item editor', () => {
       colour: '#000000',
     };
     expect(mirrorPart(p)).toMatchObject({ pos: [-0.1, 0, -0.2], yaw: -20, pitch: 10 });
+  });
+  it('names, groups, duplicates, removes and pastes parts (IE-1)', () => {
+    const box = (x: number, extra: Partial<ModelPart> = {}): ModelPart =>
+      ({
+        type: 'box',
+        pos: [x, 0, 0],
+        size: [0.1, 0.1, 0.1],
+        colour: '#000000',
+        ...extra,
+      }) as ModelPart;
+    const parts = [
+      box(0, { group: 'stock', name: 'butt' }),
+      box(1),
+      box(2, { group: 'barrel' }),
+      box(3, { group: 'stock' }),
+    ];
+    expect(groupsOf(parts)).toEqual(['stock', 'barrel']);
+    expect(partLabel(parts[0]!, 0)).toBe('butt');
+    expect(partLabel(parts[1]!, 1)).toBe('box 2');
+    // One part's copy goes after it; several go to the end, mirrored left for right.
+    expect(duplicateParts(parts, [1], false)).toEqual([2]);
+    expect(parts).toHaveLength(5);
+    expect(duplicateParts(parts, [4, 0], true)).toEqual([5, 6]);
+    expect(parts[5]!.pos[0]).toBe(-0);
+    expect(parts[6]).toMatchObject({ pos: [-3, 0, 0], group: 'stock' });
+    // Removing keeps at least one part.
+    expect(
+      removeParts(
+        parts,
+        parts.map((_, i) => i),
+      ),
+    ).toBe(false);
+    expect(parts).toHaveLength(7);
+    expect(removeParts(parts, [0, 2, 6])).toBe(true);
+    expect(parts.map((p) => p.pos[0])).toEqual([1, 2, 3, -0]);
+    // Pasted parts are copies, at the end.
+    const clip = [box(9)];
+    expect(appendParts(parts, clip)).toEqual([4]);
+    parts[4]!.pos[0] = 8;
+    expect(clip[0]!.pos[0]).toBe(9);
+    // A part's name and group pass the item schema, and the game ignores them.
+    const rifle = structuredClone(loadItems().get('assault-rifle')) as unknown as {
+      model: { parts: ModelPart[] };
+    };
+    const before = modelShapes(rifle.model);
+    rifle.model.parts[0]!.name = 'receiver';
+    rifle.model.parts[0]!.group = 'body';
+    expect(() => loadContent(ITEM_FORMAT, structuredClone(rifle), 'r')).not.toThrow();
+    expect(modelShapes(rifle.model)).toEqual(before);
+  });
+
+  it('counts triangles against a budget by kind, and content is within it', () => {
+    const items = loadItems();
+    expect(budgetOf(items.get('m416')!)).toEqual({ triangles: 2000, kind: 'long gun' });
+    expect(budgetOf(items.get('m9a3')!).kind).toBe('pistol');
+    expect(budgetOf(items.get('red-dot')!).kind).toBe('optic');
+    const cube = modelShapes({
+      parts: [{ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], colour: '#000000' }],
+    });
+    expect(triangleCount(cube)).toBe(12);
+    for (const d of items.values())
+      expect(triangleCount(modelShapes(d.model)), d.id).toBeLessThanOrEqual(budgetOf(d).triangles);
   });
 });

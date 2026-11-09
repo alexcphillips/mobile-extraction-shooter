@@ -25,8 +25,19 @@ import { Viewmodel } from '../render/viewmodel';
  * game's field of view, to check the sight line.
  */
 
-/** What's picked: a part by index, or a point by its key ("grip", "mounts.optic"…). */
-export type Picked = { kind: 'part'; index: number } | { kind: 'point'; key: string } | null;
+/**
+ * What's picked: parts by index (one or several, IE-1), or a point by its key ("grip",
+ * "mounts.optic"…).
+ */
+export type Picked =
+  { kind: 'parts'; indices: readonly number[] } | { kind: 'point'; key: string } | null;
+
+/** A part's new place after a gizmo drag: its centre and its yaw, pitch and roll (degrees). */
+export interface PartMove {
+  index: number;
+  pos: Vec3;
+  angles: Vec3;
+}
 
 export interface ModelScene {
   parts: readonly ModelPart[];
@@ -49,9 +60,14 @@ export type FirstPerson =
 export type ViewMode = 'build' | 'hip' | 'aimed';
 
 export interface ModelViewEvents {
-  pick(p: Picked): void;
-  /** The gizmo moved what's picked: its new centre, and for a part its yaw, pitch and roll. */
-  moved(p: Picked, pos: Vec3, angles: Vec3 | null): void;
+  /** A click: what's under it (null for nothing); `add` with shift held. */
+  pick(p: Picked, add: boolean): void;
+  /** A box dragged on the view: the parts whose centres are inside it. */
+  boxPick(indices: number[], add: boolean): void;
+  /** The gizmo moved the picked parts. */
+  movedParts(moves: PartMove[]): void;
+  /** The gizmo moved a point. */
+  movedPoint(key: string, pos: Vec3): void;
   dragStart(): void;
   dragEnd(): void;
 }
@@ -90,6 +106,15 @@ export class ModelView {
   private picked: Picked = null;
   private pending: { scene: ModelScene; picked: Picked } | null = null;
   private down: { x: number; y: number } | null = null;
+  /** What the gizmo drives: the one picked part's place, or the middle of several. */
+  private readonly pivot = new THREE.Object3D();
+  /** The picked parts' meshes, and where each and the pivot were when a drag began. */
+  private chosen: { index: number; mesh: THREE.Mesh }[] = [];
+  private dragFrom: { pivot: THREE.Matrix4; parts: THREE.Matrix4[] } | null = null;
+  /** The box being dragged out to pick parts. */
+  private readonly band: HTMLDivElement;
+  private readonly onMove: (e: PointerEvent) => void;
+  private readonly onUp: (e: PointerEvent) => void;
   private running = true;
   private readonly ray = new THREE.Raycaster();
 
@@ -134,8 +159,15 @@ export class ModelView {
     this.gizmo.setSize(0.8);
     this.gizmo.addEventListener('dragging-changed', (e) => {
       this.orbit.enabled = !e.value;
-      if (e.value) this.events.dragStart();
-      else {
+      if (e.value) {
+        this.pivot.updateMatrix();
+        this.dragFrom = {
+          pivot: this.pivot.matrix.clone().invert(),
+          parts: this.chosen.map(({ mesh }) => (mesh.updateMatrix(), mesh.matrix.clone())),
+        };
+        this.events.dragStart();
+      } else {
+        this.dragFrom = null;
         this.events.dragEnd();
         const p = this.pending;
         this.pending = null;
@@ -143,19 +175,42 @@ export class ModelView {
       }
     });
     this.gizmo.addEventListener('objectChange', () => this.dragged());
-    this.scene.add(this.gizmo.getHelper());
+    this.scene.add(this.gizmo.getHelper(), this.pivot);
 
+    // A left click picks; a left drag off the gizmo draws a box that picks every part whose
+    // centre is inside it. Shift adds to what's picked.
+    this.band = document.createElement('div');
+    this.band.className = 'ie-band';
+    this.band.hidden = true;
+    canvas.parentElement?.append(this.band);
     canvas.addEventListener('pointerdown', (e) => {
       if (e.button === 0 && !e.altKey && this.gizmo.axis === null)
         this.down = { x: e.clientX, y: e.clientY };
     });
-    canvas.addEventListener('pointerup', (e) => {
+    this.onMove = (e) => {
+      const d = this.down;
+      if (!d || this.gizmo.dragging || this.mode !== 'build') return;
+      if (Math.hypot(e.clientX - d.x, e.clientY - d.y) <= 4) return;
+      const r = canvas.getBoundingClientRect();
+      Object.assign(this.band.style, {
+        left: `${Math.min(d.x, e.clientX) - r.left}px`,
+        top: `${Math.min(d.y, e.clientY) - r.top}px`,
+        width: `${Math.abs(e.clientX - d.x)}px`,
+        height: `${Math.abs(e.clientY - d.y)}px`,
+      });
+      this.band.hidden = false;
+    };
+    this.onUp = (e) => {
       const d = this.down;
       this.down = null;
+      this.band.hidden = true;
       if (!d || this.gizmo.dragging || this.mode !== 'build') return;
-      if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 4) return;
-      this.events.pick(this.pick(e));
-    });
+      if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 4) {
+        this.events.boxPick(this.inBox(d.x, d.y, e.clientX, e.clientY), e.shiftKey);
+      } else if (e.target === canvas) this.events.pick(this.pick(e), e.shiftKey);
+    };
+    window.addEventListener('pointermove', this.onMove);
+    window.addEventListener('pointerup', this.onUp);
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     this.camera.position.set(0.5, 0.3, 0.6);
     this.orbit.update();
@@ -173,6 +228,9 @@ export class ModelView {
 
   dispose(): void {
     this.running = false;
+    window.removeEventListener('pointermove', this.onMove);
+    window.removeEventListener('pointerup', this.onUp);
+    this.band.remove();
     this.gizmo.dispose();
     this.orbit.dispose();
     this.renderer.dispose();
@@ -209,6 +267,8 @@ export class ModelView {
     }
     this.picked = picked;
     this.gizmo.detach();
+    this.chosen = [];
+    const chosen = new Set(picked?.kind === 'parts' ? picked.indices : []);
     for (const g of [this.item, this.context]) {
       for (const o of g.children) (o as THREE.Mesh).geometry?.dispose();
       g.clear();
@@ -221,16 +281,17 @@ export class ModelView {
       if (!mesh) return;
       mesh.userData = { part: index };
       this.item.add(mesh);
-      if (picked?.kind === 'part' && picked.index === index) {
+      if (chosen.has(index)) {
         const edges = new THREE.LineSegments(
           new THREE.EdgesGeometry(mesh.geometry),
           new THREE.LineBasicMaterial({ color: 0xffe082, depthTest: false }),
         );
         edges.renderOrder = 5;
         mesh.add(edges);
-        this.gizmo.attach(mesh);
+        this.chosen.push({ index, mesh });
       }
     });
+    this.placePivot();
     for (const { key, at } of scene.points) {
       const on = picked?.kind === 'point' && picked.key === key;
       const dot = new THREE.Mesh(
@@ -246,7 +307,10 @@ export class ModelView {
       this.item.add(dot);
       if (on) this.gizmo.attach(dot);
     }
-    if (picked?.kind === 'point') this.gizmo.setMode('translate');
+    if (picked?.kind === 'point') {
+      this.gizmo.setMode('translate');
+      this.gizmo.setSpace('local');
+    }
     if (scene.sightLine) {
       const [x, y, z] = scene.sightLine;
       const line = new THREE.Line(
@@ -269,9 +333,33 @@ export class ModelView {
     if (this.body) this.body.visible = scene.body;
   }
 
-  /** Points the camera at what's drawn. */
+  /**
+   * The gizmo on the picked parts: one part's own place and turn (moved along its own
+   * axes), or the middle of several, square to the world.
+   */
+  private placePivot(): void {
+    const c = this.chosen;
+    if (!c.length) return;
+    if (c.length === 1) {
+      this.pivot.position.copy(c[0]!.mesh.position);
+      this.pivot.quaternion.copy(c[0]!.mesh.quaternion);
+      this.gizmo.setSpace('local');
+    } else {
+      const box = new THREE.Box3();
+      for (const { mesh } of c) box.expandByObject(mesh);
+      box.getCenter(this.pivot.position);
+      this.pivot.quaternion.identity();
+      this.gizmo.setSpace('world');
+    }
+    this.pivot.updateMatrix();
+    this.gizmo.attach(this.pivot);
+  }
+
+  /** Points the camera at the picked parts, or at everything drawn. */
   frame(): void {
-    const box = new THREE.Box3().setFromObject(this.item);
+    const box = new THREE.Box3();
+    for (const { mesh } of this.chosen) box.expandByObject(mesh);
+    if (box.isEmpty()) box.setFromObject(this.item);
     if (box.isEmpty()) return;
     const centre = box.getCenter(new THREE.Vector3());
     const r = Math.max(0.05, box.getSize(new THREE.Vector3()).length() / 2);
@@ -318,16 +406,53 @@ export class ModelView {
     const u = hit.object.userData as { part?: number; point?: string };
     return u.point !== undefined
       ? { kind: 'point', key: u.point }
-      : { kind: 'part', index: u.part! };
+      : { kind: 'parts', indices: [u.part!] };
+  }
+
+  /** The parts whose centres are inside a box dragged between two screen points. */
+  private inBox(x0: number, y0: number, x1: number, y1: number): number[] {
+    const r = this.canvas.getBoundingClientRect();
+    const [l, rt] = [Math.min(x0, x1) - r.left, Math.max(x0, x1) - r.left];
+    const [t, b] = [Math.min(y0, y1) - r.top, Math.max(y0, y1) - r.top];
+    const v = new THREE.Vector3();
+    const out: number[] = [];
+    for (const o of this.item.children) {
+      const index = (o.userData as { part?: number }).part;
+      if (index === undefined) continue;
+      v.copy(o.position).project(this.camera);
+      if (v.z > 1) continue;
+      const sx = ((v.x + 1) / 2) * r.width;
+      const sy = ((1 - v.y) / 2) * r.height;
+      if (sx >= l && sx <= rt && sy >= t && sy <= b) out.push(index);
+    }
+    return out;
   }
 
   private dragged(): void {
     const o = this.gizmo.object;
-    if (!o || !this.picked) return;
-    const pos: Vec3 = [o.position.x, o.position.y, o.position.z];
-    if (this.picked.kind === 'point') return this.events.moved(this.picked, pos, null);
-    const e = new THREE.Euler().setFromQuaternion(o.quaternion, 'YXZ');
-    this.events.moved(this.picked, pos, [e.y / DEG, e.x / DEG, e.z / DEG]);
+    const p = this.picked;
+    if (!o || !p) return;
+    if (p.kind === 'point')
+      return this.events.movedPoint(p.key, [o.position.x, o.position.y, o.position.z]);
+    const from = this.dragFrom;
+    if (!from) return;
+    // What the gizmo did to the pivot since the drag began, done to every picked part.
+    this.pivot.updateMatrix();
+    const delta = this.pivot.matrix.clone().multiply(from.pivot);
+    const m = new THREE.Matrix4();
+    const e = new THREE.Euler();
+    const s = new THREE.Vector3();
+    const moves: PartMove[] = this.chosen.map(({ index, mesh }, k) => {
+      m.multiplyMatrices(delta, from.parts[k]!);
+      m.decompose(mesh.position, mesh.quaternion, s);
+      e.setFromQuaternion(mesh.quaternion, 'YXZ');
+      return {
+        index,
+        pos: [mesh.position.x, mesh.position.y, mesh.position.z],
+        angles: [e.y / DEG, e.x / DEG, e.z / DEG],
+      };
+    });
+    this.events.movedParts(moves);
   }
 
   private resize(): void {

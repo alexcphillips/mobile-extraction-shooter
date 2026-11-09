@@ -40,6 +40,13 @@ const placed = {
    * under an optic, the standard magazine when another is fitted).
    */
   hiddenBy: slotSchema.optional(),
+  /**
+   * For the item editor only (2026-11-09, IE-1): a part's name ("bolt carrier") and the
+   * group it belongs to ("stock"), so a model of many parts can be found and picked a group
+   * at a time. The game ignores both, so adding them changed no format version.
+   */
+  name: z.string().min(1).max(40).optional(),
+  group: z.string().min(1).max(40).optional(),
 };
 
 export const partSchema = z.discriminatedUnion('type', [

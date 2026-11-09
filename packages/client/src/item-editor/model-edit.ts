@@ -67,6 +67,46 @@ export function newPart(type: ModelPart['type'], at: Vec3): ModelPart {
   return { type, pos, size: [0.05, 0.05, 0.1], colour: '#3a3f44' };
 }
 
+/** The groups a model's parts name, in the order they first come. */
+export function groupsOf(parts: readonly ModelPart[]): string[] {
+  return [...new Set(parts.flatMap((p) => (p.group ? [p.group] : [])))];
+}
+
+/** What a part is called in the editor: its name, else its type and number. */
+export const partLabel = (p: ModelPart, i: number): string => p.name ?? `${p.type} ${i + 1}`;
+
+/**
+ * Copies of some parts (mirrored left for right with `mirror`): one part's copy goes just
+ * after it, several parts' copies at the end in their order. Returns the copies' indices.
+ */
+export function duplicateParts(parts: ModelPart[], indices: readonly number[], mirror: boolean) {
+  const from = [...new Set(indices)].filter((i) => parts[i]).sort((a, b) => a - b);
+  const copies = from.map((i) => (mirror ? mirrorPart(parts[i]!) : structuredClone(parts[i]!)));
+  if (from.length === 1) {
+    parts.splice(from[0]! + 1, 0, copies[0]!);
+    return [from[0]! + 1];
+  }
+  const start = parts.length;
+  parts.push(...copies);
+  return copies.map((_, k) => start + k);
+}
+
+/** Takes parts away, keeping at least one; false (and nothing changed) if it would take all. */
+export function removeParts(parts: ModelPart[], indices: readonly number[]): boolean {
+  const gone = new Set(indices.filter((i) => parts[i]));
+  if (!gone.size || gone.size >= parts.length) return false;
+  const kept = parts.filter((_, i) => !gone.has(i));
+  parts.splice(0, parts.length, ...kept);
+  return true;
+}
+
+/** Adds parts (pasted from another item, say) at the end; returns their indices. */
+export function appendParts(parts: ModelPart[], add: readonly ModelPart[]): number[] {
+  const start = parts.length;
+  parts.push(...add.map((p) => structuredClone(p)));
+  return add.map((_, k) => start + k);
+}
+
 /** A copy of a part mirrored across x = 0 (left for right): its yaw and roll turn the other way. */
 export function mirrorPart(p: ModelPart): ModelPart {
   const out: ModelPart = { ...p, pos: [-p.pos[0], p.pos[1], p.pos[2]] };

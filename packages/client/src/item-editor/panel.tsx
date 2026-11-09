@@ -25,6 +25,7 @@ import { previewPortrait, viewOf } from '../render/item-portrait';
 import { colourOf } from '../ui/raid-screen';
 import type { Doc, ItemEditor, ItemEditorState } from './editor';
 import { fitPointsToSlot, setSlots } from './model-edit';
+import { FitsPage, type OpenFit } from './fits-panel';
 import { ModelTab } from './model-panel';
 import { ReticleDesigner } from './reticle';
 import { BLANK_OPTIC, ITEM_TYPES, type ItemType } from './templates';
@@ -38,7 +39,14 @@ import { BLANK_OPTIC, ITEM_TYPES, type ItemType } from './templates';
 export function ItemEditorPanel({ editor }: { editor: ItemEditor }) {
   const s = useSyncExternalStore(editor.subscribe, editor.getState);
   const [making, setMaking] = useState<'new' | 'copy' | null>(null);
-  const [tab, setTab] = useState<'stats' | 'model'>('stats');
+  const [tab, setTab] = useState<'stats' | 'model' | 'fits'>('stats');
+  /** A fit picked on the fits page, for the model tab to show; n tells repeats apart. */
+  const [fit, setFit] = useState<(OpenFit & { n: number }) | null>(null);
+  const openFit = (f: OpenFit): void => {
+    editor.select(f.gun);
+    setFit((was) => ({ ...f, n: (was?.n ?? 0) + 1 }));
+    setTab('model');
+  };
   const def = s.items.get(s.current);
   const status = s.message ?? (s.problem ? `Problem: ${s.problem}` : null);
   return (
@@ -76,7 +84,7 @@ export function ItemEditorPanel({ editor }: { editor: ItemEditor }) {
           </button>
         </div>
         <div className="ed-row ie-tabs">
-          {(['stats', 'model'] as const).map((t) => (
+          {(['stats', 'model', 'fits'] as const).map((t) => (
             <Toggle key={t} on={tab === t} onClick={() => setTab(t)}>
               {t}
             </Toggle>
@@ -89,8 +97,15 @@ export function ItemEditorPanel({ editor }: { editor: ItemEditor }) {
       </aside>
       {!def ? (
         <main />
+      ) : tab === 'fits' ? (
+        <FitsPage state={s} def={def} open={openFit} />
       ) : tab === 'model' ? (
-        <ModelTab editor={editor} state={s} def={def} />
+        <ModelTab
+          editor={editor}
+          state={s}
+          def={def}
+          request={fit && fit.gun === def.id ? fit : null}
+        />
       ) : (
         <ItemPage key={s.current} editor={editor} state={s} def={def} />
       )}

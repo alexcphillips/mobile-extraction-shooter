@@ -214,7 +214,42 @@ body.item-editor #scene {
 }
 
 .ie-parts {
-  max-height: 220px;
+  /* The form is a flex column: without this the list shrinks to its 80px minimum. */
+  flex-shrink: 0;
+  max-height: 320px;
+}
+
+/* Groups in the parts list, and the cost readout (IE-1). */
+.ie-group {
+  white-space: normal;
+}
+
+.ie-sub {
+  list-style: none;
+  margin: 0 0 0 14px;
+  padding: 0;
+}
+
+.ie-group-name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#editor .ie-fold {
+  padding: 0 4px;
+  min-width: 0;
+}
+
+.ie-cost {
+  margin: 4px 0;
+  color: var(--ed-dim);
+}
+
+.ie-cost.ie-over {
+  color: #f0b44a;
 }
 
 .ie-part {
@@ -268,6 +303,13 @@ body.item-editor #scene {
   border-radius: 4px;
 }
 
+.ie-band {
+  position: absolute;
+  border: 1px solid #ffe082;
+  background: rgba(255, 224, 130, 0.12);
+  pointer-events: none;
+}
+
 .ie-overlay {
   position: absolute;
   inset: 0;
@@ -314,4 +356,71 @@ body.item-editor #scene {
   inset: 0;
   width: 100%;
   height: 100%;
+}
+
+/* The fits page (IE-1): every gun with each attachment that fits. */
+.ie-fits {
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.ie-fit-row h4 {
+  margin: 10px 0 4px;
+}
+
+.ie-fit-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ie-fit {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 288px;
+}
+
+.ie-fit-side,
+.ie-fit-aimed {
+  width: 288px;
+  border-radius: 4px;
+  cursor: pointer;
+  /* Light enough that dark guns read, like an inventory tile. */
+  background: #59616b;
+}
+
+.ie-fit-side {
+  height: 144px;
+}
+
+.ie-fit-aimed {
+  position: relative;
+  height: 162px;
+  overflow: hidden;
+}
+
+.ie-fit-aimed svg,
+.ie-fit-aimed .ie-fit-wait {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* The aimed picture's middle, twice as close (CROP in fits-panel.tsx). */
+.ie-fit-aimed img {
+  position: absolute;
+  left: -50%;
+  top: -50%;
+  width: 200%;
+  height: 200%;
+}
+
+.ie-fit-aimed svg {
+  pointer-events: none;
+}
+
+.ie-fit-wait {
+  opacity: 0.4;
 }
