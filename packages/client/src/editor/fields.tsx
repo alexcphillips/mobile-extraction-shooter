@@ -70,11 +70,20 @@ function NumInput(props: {
   );
 }
 
-export function Text(props: { label: string; value: string; onChange: (v: string) => void }) {
+type TextProps = {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  /** Shown greyed while it's blank, e.g. what a blank falls back to. */
+  placeholder?: string;
+  maxLength?: number;
+};
+
+export function Text(props: TextProps) {
   return <TextInput key={props.value} {...props} />;
 }
 
-function TextInput(props: { label: string; value: string; onChange: (v: string) => void }) {
+function TextInput(props: TextProps) {
   const [text, setText] = useState(props.value);
   const commit = (): void => {
     if (text !== props.value) props.onChange(text.trim());
@@ -84,6 +93,8 @@ function TextInput(props: { label: string; value: string; onChange: (v: string) 
       {props.label}
       <input
         value={text}
+        placeholder={props.placeholder}
+        maxLength={props.maxLength}
         onChange={(e) => setText(e.target.value)}
         onBlur={commit}
         onKeyDown={(e) => e.key === 'Enter' && commit()}

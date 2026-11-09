@@ -214,14 +214,18 @@ body.editor #portrait {
 
 .ed-field {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 4px 6px;
   color: var(--ed-dim);
 }
 
-#editor .ed-field input:not([type]),
-#editor .ed-field select {
-  flex: 1;
+/* At least 140px to type in: a long label puts the box on its own line instead of
+   squeezing it to nothing. Direct children only: a combo's search box sits in a column
+   (.ed-combo-pop), where a 140px basis would be its height. */
+#editor .ed-field > input:not([type]),
+#editor .ed-field > select {
+  flex: 1 1 140px;
   min-width: 0;
   color: var(--ed-text);
 }
@@ -549,4 +553,9 @@ body.editor #portrait {
 .ed-extract {
   color: #9dffb0;
   font-size: 11px;
+}
+
+#editor input::placeholder {
+  color: var(--ed-dim);
+  opacity: 0.7;
 }

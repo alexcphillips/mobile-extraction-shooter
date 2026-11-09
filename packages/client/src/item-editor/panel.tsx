@@ -22,7 +22,7 @@ import { itemUses, soundSources } from '../content';
 import { C, Check, N, P, Row, put, type Bound } from '../editor/bound-fields';
 import { Text, Toggle } from '../editor/fields';
 import { previewPortrait, viewOf } from '../render/item-portrait';
-import { colourOf } from '../ui/raid-screen';
+import { colourOf, tileName } from '../ui/raid-screen';
 import type { Doc, ItemEditor, ItemEditorState } from './editor';
 import { fitPointsToSlot, setSlots } from './model-edit';
 import { FitsPage, type OpenFit } from './fits-panel';
@@ -176,8 +176,10 @@ function ItemPage(props: { editor: ItemEditor; state: ItemEditorState; def: Item
         </p>
         <Text label="name" value={def.name} onChange={(v) => b.edit((d) => put(d, ['name'], v))} />
         <Text
-          label="short name (tiles, 12 at most; blank is the name)"
+          label="short name (on its tile)"
           value={def.shortName ?? ''}
+          placeholder={def.name}
+          maxLength={12}
           onChange={(v) =>
             b.edit((d) => put(d, ['shortName'], v.trim() ? v.slice(0, 12) : undefined))
           }
@@ -929,7 +931,7 @@ function SizePreview({ def }: { def: ItemDef }) {
           ` · ${def.grid[0]}×${def.grid[1]} inside${def.sections ? `, ${def.sections.length} sections` : ''}`}
       </h4>
       <div className="ie-sizes">
-        <Cells w={w} h={h} colour={colourOf(def)} label={def.name} art={art} />
+        <Cells w={w} h={h} colour={colourOf(def)} label={tileName(def)} art={art} />
         {def.type === 'container' && <Cells w={def.grid[0]} h={def.grid[1]} colour="" label="" />}
       </div>
     </div>
