@@ -13,9 +13,9 @@ import { GEAR, POCKET_SECTIONS, PROFILE, sectionsOf, type ItemDb, type Section }
 export const SECTION_GAP = 6;
 /** Pixels between a rig's or backpack's slot and its grid. */
 export const HOLDER_GAP = 6;
-/** Gear slots across: two two-cell columns, and the gap between them. */
-const GEAR_CELLS = 4;
-const GEAR_GAP = 4;
+/** Gear slots across: three two-cell columns (a primary, then the sidearm or knife), and the gaps between them. */
+const GEAR_CELLS = 6;
+const GEAR_GAP = 8;
 /** What isn't cells across the screen: the page's padding, panel padding, gaps, scrollbars. */
 const OVERHEAD = 150;
 const MIN_CELL = 24;
@@ -40,6 +40,11 @@ export interface InventoryLayout {
   gear: number;
   carried: number;
   loot: number;
+  /**
+   * Not on a PC (2026-11-09, the user's call): the loadout and what you carry are one
+   * column, guns first, so `gear` is that column's width and `carried` isn't used.
+   */
+  merged: boolean;
 }
 
 /**
@@ -131,16 +136,19 @@ export function inventoryLayout(
   const pc = typeof matchMedia === 'function' && matchMedia(PC).matches;
   const tabs = stash ? PAGE_TABS + (pc ? STASH_CHIPS : 0) : 0;
   const room = pc ? PC_ROOM : 0;
-  const across = Math.floor(
-    (width - OVERHEAD - room - GEAR_GAP - carried.px - tabs) /
-      (GEAR_CELLS + carried.cells + lootCells),
-  );
+  // Merged, the column is as wide as the wider of the two at any cell size.
+  const leftCells = pc ? GEAR_CELLS + carried.cells : Math.max(GEAR_CELLS, carried.cells);
+  const leftPx = pc ? GEAR_GAP + carried.px : Math.max(GEAR_GAP, carried.px);
+  const across = Math.floor((width - OVERHEAD - room - leftPx - tabs) / (leftCells + lootCells));
   const down = Math.floor(height / 10.5);
   const cell = Math.max(MIN_CELL, Math.min(MAX_CELL, across, down));
+  const gear = GEAR_CELLS * cell + GEAR_GAP;
+  const carriedPx = carried.cells * cell + carried.px;
   return {
     cell,
-    gear: GEAR_CELLS * cell + GEAR_GAP,
-    carried: carried.cells * cell + carried.px,
+    gear: pc ? gear : Math.max(gear, carriedPx),
+    carried: carriedPx,
     loot: lootCells * cell + tabs,
+    merged: !pc,
   };
 }

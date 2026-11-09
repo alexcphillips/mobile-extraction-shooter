@@ -217,16 +217,29 @@ function HealthStrip({ c }: { c: Character }): ReactNode {
 
 const SELF: Owner = { kind: 'self' };
 const subscribeSettings = (onChange: () => void): (() => void) => settings.subscribe(onChange);
-// In body order, as Tarkov's: head, chest, the guns, then the sidearm and knife side by side.
+// Head, chest, then the guns: each primary with the sidearm or the knife beside it
+// (2026-11-09, the user's call; they were under both primaries before).
 const MY_SLOTS: readonly GearSlot[] = [
   'helmet',
   'bodyArmour',
   'primary1',
-  'primary2',
   'sidearm',
+  'primary2',
   'knife',
 ];
-const BODY_SLOTS: readonly GearSlot[] = ['helmet', 'bodyArmour', 'primary1', 'primary2', 'sidearm'];
+const BODY_SLOTS: readonly GearSlot[] = ['helmet', 'bodyArmour', 'primary1', 'sidearm', 'primary2'];
+/**
+ * Not on a PC, where the loadout and what you carry are one column (2026-11-09, the user's
+ * call): the guns first, then the helmet and armour side by side, then the rig and the rest.
+ */
+const PHONE_SLOTS: readonly GearSlot[] = [
+  'primary1',
+  'sidearm',
+  'primary2',
+  'knife',
+  'helmet',
+  'bodyArmour',
+];
 const SLOT_NAMES: Record<GearSlot, string> = {
   primary1: 'Primary 1',
   primary2: 'Primary 2',
@@ -258,7 +271,7 @@ function SlotGhost({ items, slot }: { items: ItemDb; slot: GearSlot }): ReactNod
   );
 }
 
-/** Gun slots are drawn twice as wide; the helmet and armour have a row each, centred. */
+/** Primaries are drawn twice as wide, a small slot beside each; the helmet and armour have a row each, centred. */
 const WIDE: ReadonlySet<GearSlot> = new Set(['primary1', 'primary2']);
 const CENTRE: ReadonlySet<GearSlot> = new Set(['helmet', 'bodyArmour']);
 
@@ -320,11 +333,20 @@ export function Inventory({ inv, version }: Props): ReactNode {
               </>
             }
           >
-            <Slots inv={inv} owner={SELF} slots={MY_SLOTS} ch={ctx.player} />
+            {layout.merged ? (
+              <>
+                <Slots inv={inv} owner={SELF} slots={PHONE_SLOTS} ch={ctx.player} centred={false} />
+                <CharacterGrids inv={inv} owner={SELF} ch={ctx.player} vault />
+              </>
+            ) : (
+              <Slots inv={inv} owner={SELF} slots={MY_SLOTS} ch={ctx.player} />
+            )}
           </Panel>
-          <Panel className="inv-carried" width={layout.carried}>
-            <CharacterGrids inv={inv} owner={SELF} ch={ctx.player} vault />
-          </Panel>
+          {!layout.merged && (
+            <Panel className="inv-carried" width={layout.carried}>
+              <CharacterGrids inv={inv} owner={SELF} ch={ctx.player} vault />
+            </Panel>
+          )}
           {!inv.selling && selected && sel && (
             <ItemDetails
               panel
@@ -1133,6 +1155,7 @@ function Slots({
   slots,
   ch,
   shown,
+  centred = true,
 }: {
   inv: InventoryController;
   owner: Owner;
@@ -1140,6 +1163,8 @@ function Slots({
   ch: Character;
   /** A body being searched: what's been found in its grids (favourite stars count only those). */
   shown?: ReadonlySet<Item> | undefined;
+  /** The helmet and armour on a row each, centred (false: side by side, as on a phone). */
+  centred?: boolean;
 }): ReactNode {
   const favs = favourites();
   return (
@@ -1152,7 +1177,7 @@ function Slots({
         return (
           <div
             key={slot}
-            className={`inv-slot${WIDE.has(slot) ? ' wide' : CENTRE.has(slot) ? ' centre' : ''}`}
+            className={`inv-slot${WIDE.has(slot) ? ' wide' : centred && CENTRE.has(slot) ? ' centre' : ''}`}
             data-drop={JSON.stringify({ owner, slot })}
           >
             {/* Named only while empty: the item's own name would show through it. */}

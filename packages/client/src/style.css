@@ -1774,7 +1774,7 @@ body:has(#raid:not([hidden])) #vitals {
 
 .inv-slots {
   display: grid;
-  grid-template-columns: repeat(2, calc(var(--cell) * 2));
+  grid-template-columns: repeat(3, calc(var(--cell) * 2));
   gap: 4px;
   margin-bottom: 8px;
 }
@@ -1865,7 +1865,7 @@ body:has(#raid:not([hidden])) #vitals {
 }
 
 .inv-slot.centre {
-  grid-column: span 2;
+  grid-column: span 3;
   justify-self: center;
   width: calc(var(--cell) * 2);
 }
