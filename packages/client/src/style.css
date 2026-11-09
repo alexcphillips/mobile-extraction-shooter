@@ -1634,8 +1634,11 @@ body:has(#raid:not([hidden])) #vitals {
     padding-left: 24px;
   }
 
-  /* 48 px since 2026-11-09 (the user's call; it was 24). */
-  .inv-left {
+  /*
+   * 48 px since 2026-11-09 (the user's call). Through .inv-cols so it beats the plain
+   * .inv-left rule further down, which had kept the gap at 8 px all along.
+   */
+  .inv-cols .inv-left {
     gap: 48px;
   }
 }
