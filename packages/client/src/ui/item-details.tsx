@@ -257,12 +257,6 @@ function Value({
   );
 }
 
-/** A loot category's id as words: "electronics" reads "Electronics", "pc-parts" "Pc parts". */
-export function categoryName(id: string): string {
-  const words = id.replaceAll('-', ' ');
-  return words[0]!.toUpperCase() + words.slice(1);
-}
-
 function kindOf(def: ItemDef): string {
   switch (def.type) {
     case 'weapon':
@@ -286,9 +280,10 @@ function kindOf(def: ItemDef): string {
     case 'quest':
       return 'Quest item';
     case 'loot':
-      // Only loot has a category (2026-11-09); keys, guns, armour and the rest show their kind.
+      // Only loot has a category (2026-11-09), shown as written ("Tool & Material"); keys,
+      // guns, armour and the rest show their kind.
       if (def.money) return 'Money';
-      return def.category ? categoryName(def.category) : 'Loot';
+      return def.category ?? 'Loot';
     case 'repair':
       return 'Repair kit';
   }

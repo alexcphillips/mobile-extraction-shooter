@@ -3,7 +3,7 @@
   "id": "laptop",
   "name": "Laptop",
   "type": "loot",
-  "category": "electronics",
+  "category": "Electronics",
   "size": [2, 2],
   "value": 18000,
   "rarity": "rare",

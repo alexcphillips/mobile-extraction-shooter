@@ -4,7 +4,7 @@
   "name": "Graphics card",
   "shortName": "GPU",
   "type": "loot",
-  "category": "electronics",
+  "category": "Electronics",
   "size": [2, 1],
   "value": 25000,
   "rarity": "epic",

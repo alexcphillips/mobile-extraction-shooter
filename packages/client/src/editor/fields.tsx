@@ -133,20 +133,11 @@ export function Pick(props: {
   );
 }
 
-/** Typed text as an id: lower case, spaces as dashes, other characters dropped. */
-export function asId(text: string): string {
-  return text
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-    .replace(/^-+|-+$/g, '');
-}
-
 /**
- * One of a list of ids, searchable (2026-11-09, for loot categories): a button that opens
- * a search box over the list. The top row makes what's typed a new id, if it isn't one
- * already; Enter picks an exact match, else the new one, else the only match.
+ * One of a list of names, searchable (2026-11-09, for loot categories): a button that opens
+ * a search box over the list. The top row makes what's typed a new one, as typed (trimmed;
+ * since 2026-11-09 it isn't turned into an id), if it isn't one already; Enter picks an
+ * exact match (any case), else the new one, else the only match.
  */
 export function Combo(props: {
   label: string;
@@ -174,17 +165,18 @@ export function Combo(props: {
     value === undefined || props.options.includes(value)
       ? props.options
       : [value, ...props.options];
-  const q = query.trim().toLowerCase();
-  const matches = all.filter((o) => o.includes(q) || o.includes(asId(q)));
-  const fresh = asId(query);
-  const canMake = fresh !== '' && !all.includes(fresh);
+  const fresh = query.trim();
+  const q = fresh.toLowerCase();
+  const matches = all.filter((o) => o.toLowerCase().includes(q));
+  const exact = all.find((o) => o.toLowerCase() === q);
+  const canMake = fresh !== '' && exact === undefined;
   const pick = (v: string | undefined) => {
     props.onChange(v);
     setOpen(false);
     setQuery('');
   };
   const enter = () => {
-    if (all.includes(fresh)) pick(fresh);
+    if (exact !== undefined) pick(exact);
     else if (canMake) pick(fresh);
     else if (matches.length === 1) pick(matches[0]);
   };
