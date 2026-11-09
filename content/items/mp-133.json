@@ -61,9 +61,19 @@
       },
       {
         "type": "box",
-        "pos": [0, 0.031, -0.66],
-        "size": [0.006, 0.006, 0.006],
-        "colour": "#c9c2a8"
+        "pos": [0, 0.0295, -0.66],
+        "size": [0.005, 0.003, 0.012],
+        "colour": "#c9c2a8",
+        "name": "front sight",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0355, -0.66],
+        "size": [0.009, 0.009, 0.009],
+        "colour": "#d9b85c",
+        "name": "front bead",
+        "group": "iron sights"
       },
       {
         "type": "cylinder",

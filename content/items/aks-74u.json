@@ -48,10 +48,57 @@
       },
       {
         "type": "box",
-        "pos": [0, 0.048, 0.06],
-        "size": [0.018, 0.016, 0.014],
+        "pos": [0, 0.0459, 0.06],
+        "size": [0.0189, 0.0099, 0.008],
         "colour": "#1d1f21",
-        "hiddenBy": "optic"
+        "hiddenBy": "optic",
+        "name": "rear sight",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0069, 0.0544, 0.06],
+        "size": [0.005, 0.0071, 0.008],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "rear sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.0069, 0.0544, 0.06],
+        "size": [0.005, 0.0071, 0.008],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "rear sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0485, -0.285],
+        "size": [0.0071, 0.0191, 0.006],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight post",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0163, 0.0433, -0.285],
+        "size": [0.0051, 0.0089, 0.006],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.0163, 0.0433, -0.285],
+        "size": [0.0051, 0.0089, 0.006],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight ear",
+        "group": "iron sights"
       },
       {
         "type": "box",
@@ -82,13 +129,6 @@
         "pos": [0, 0.02, -0.285],
         "size": [0.03, 0.045, 0.03],
         "colour": "#2b2d2f"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.05, -0.285],
-        "size": [0.006, 0.022, 0.006],
-        "colour": "#1d1f21",
-        "hiddenBy": "optic"
       },
       {
         "type": "cylinder",
@@ -171,7 +211,7 @@
     "muzzle": [0, 0.005, -0.39],
     "sight": [0, 0.058, 0.06],
     "mounts": {
-      "optic": [0, 0.041, 0.0],
+      "optic": [0, 0.041, 0],
       "muzzle": [0, 0.005, -0.32]
     }
   }

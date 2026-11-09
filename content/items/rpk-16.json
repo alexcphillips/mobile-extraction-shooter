@@ -39,10 +39,57 @@
       { "type": "box", "pos": [0, 0.046, -0.03], "size": [0.022, 0.01, 0.2], "colour": "#1d1f21" },
       {
         "type": "box",
-        "pos": [0, 0.06, 0.04],
-        "size": [0.02, 0.018, 0.014],
+        "pos": [0, 0.0561, 0.04],
+        "size": [0.0204, 0.0103, 0.008],
         "colour": "#1d1f21",
-        "hiddenBy": "optic"
+        "hiddenBy": "optic",
+        "name": "rear sight",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0075, 0.0651, 0.04],
+        "size": [0.0054, 0.0077, 0.008],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "rear sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.0075, 0.0651, 0.04],
+        "size": [0.0054, 0.0077, 0.008],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "rear sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.053, -0.6],
+        "size": [0.011, 0.032, 0.006],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight post",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0251, 0.0451, -0.6],
+        "size": [0.0079, 0.0163, 0.006],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.0251, 0.0451, -0.6],
+        "size": [0.0079, 0.0163, 0.006],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight ear",
+        "group": "iron sights"
       },
       {
         "type": "box",
@@ -83,13 +130,6 @@
         "pos": [0, 0.022, -0.6],
         "size": [0.024, 0.03, 0.022],
         "colour": "#2b2d2f"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.053, -0.6],
-        "size": [0.006, 0.032, 0.006],
-        "colour": "#1d1f21",
-        "hiddenBy": "optic"
       },
       {
         "type": "cylinder",

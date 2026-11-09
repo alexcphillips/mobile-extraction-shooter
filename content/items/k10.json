@@ -167,17 +167,75 @@
       },
       {
         "type": "box",
-        "pos": [0, 0.05, 0.04],
-        "size": [0.016, 0.02, 0.012],
+        "pos": [0, 0.0449, 0.04],
+        "size": [0.0163, 0.0098, 0.008],
         "colour": "#1d1f21",
-        "hiddenBy": "optic"
+        "hiddenBy": "optic",
+        "name": "rear sight",
+        "group": "iron sights"
       },
       {
         "type": "box",
-        "pos": [0, 0.05, -0.17],
-        "size": [0.01, 0.02, 0.01],
+        "pos": [0, 0.0482, 0.04],
+        "size": [0.0227, 0.0032, 0.008],
         "colour": "#1d1f21",
-        "hiddenBy": "optic"
+        "hiddenBy": "optic",
+        "name": "rear sight ring",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0098, 0.058, 0.04],
+        "size": [0.0032, 0.0163, 0.008],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "rear sight ring",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.0098, 0.058, 0.04],
+        "size": [0.0032, 0.0163, 0.008],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "rear sight ring",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0678, 0.04],
+        "size": [0.0227, 0.0032, 0.008],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "rear sight ring",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.049, -0.17],
+        "size": [0.0057, 0.018, 0.006],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight post",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0131, 0.0449, -0.17],
+        "size": [0.0041, 0.0098, 0.006],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.0131, 0.0449, -0.17],
+        "size": [0.0041, 0.0098, 0.006],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight ear",
+        "group": "iron sights"
       }
     ],
     "grip": [0, -0.07, 0.03],
@@ -185,7 +243,7 @@
     "muzzle": [0, 0, -0.27],
     "sight": [0, 0.058, 0.04],
     "mounts": {
-      "optic": [0, 0.04, 0.0],
+      "optic": [0, 0.04, 0],
       "muzzle": [0, 0, -0.25],
       "magazine": [0, -0.1, -0.09]
     }

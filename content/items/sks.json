@@ -54,10 +54,57 @@
       },
       {
         "type": "box",
-        "pos": [0, 0.04, -0.12],
-        "size": [0.024, 0.016, 0.03],
+        "pos": [0, 0.0343, -0.12],
+        "size": [0.033, 0.0045, 0.008],
         "colour": "#1d1f21",
-        "hiddenBy": "optic"
+        "hiddenBy": "optic",
+        "name": "rear sight",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0121, 0.0428, -0.12],
+        "size": [0.0088, 0.0125, 0.008],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "rear sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.0121, 0.0428, -0.12],
+        "size": [0.0088, 0.0125, 0.008],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "rear sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0346, -0.58],
+        "size": [0.0108, 0.0287, 0.006],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight post",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0246, 0.027, -0.58],
+        "size": [0.0077, 0.0134, 0.006],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.0246, 0.027, -0.58],
+        "size": [0.0077, 0.0134, 0.006],
+        "colour": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight ear",
+        "group": "iron sights"
       },
       {
         "type": "box",
@@ -108,13 +155,6 @@
         "pos": [0, 0.02, -0.58],
         "size": [0.022, 0.026, 0.02],
         "colour": "#2b2d2f"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.04, -0.58],
-        "size": [0.006, 0.018, 0.006],
-        "colour": "#1d1f21",
-        "hiddenBy": "optic"
       },
       {
         "type": "box",

@@ -146,15 +146,59 @@
       },
       {
         "type": "box",
-        "pos": [0, 0.029, 0.015],
-        "size": [0.016, 0.007, 0.007],
-        "colour": "#141516"
+        "pos": [0, 0.0267, 0.015],
+        "size": [0.0255, 0.0015, 0.008],
+        "colour": "#141516",
+        "name": "rear sight",
+        "group": "iron sights"
       },
       {
         "type": "box",
-        "pos": [0, 0.029, -0.148],
-        "size": [0.004, 0.007, 0.005],
-        "colour": "#141516"
+        "pos": [-0.0094, 0.0308, 0.015],
+        "size": [0.0068, 0.0065, 0.008],
+        "colour": "#141516",
+        "name": "rear sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.0094, 0.0308, 0.015],
+        "size": [0.0068, 0.0065, 0.008],
+        "colour": "#141516",
+        "name": "rear sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0094, 0.0308, 0.0194],
+        "size": [0.0026, 0.0026, 0.001],
+        "colour": "#e8e4d2",
+        "name": "rear sight dot",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.0094, 0.0308, 0.0194],
+        "size": [0.0026, 0.0026, 0.001],
+        "colour": "#e8e4d2",
+        "name": "rear sight dot",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.03, -0.148],
+        "size": [0.006, 0.008, 0.006],
+        "colour": "#141516",
+        "name": "front sight post",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0286, -0.1446],
+        "size": [0.0045, 0.0045, 0.001],
+        "colour": "#e8e4d2",
+        "name": "front sight dot",
+        "group": "iron sights"
       }
     ],
     "grip": [0, -0.055, 0.006],

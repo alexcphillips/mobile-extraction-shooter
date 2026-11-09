@@ -173,38 +173,62 @@
       },
       {
         "type": "box",
-        "pos": [0, 0.05, 0.0],
-        "size": [0.03, 0.02, 0.02],
-        "colour": "#1d1f21"
+        "pos": [0, 0.0535, 0],
+        "size": [0.0236, 0.0271, 0.008],
+        "colour": "#1d1f21",
+        "name": "rear sight",
+        "group": "iron sights"
       },
       {
         "type": "box",
-        "pos": [-0.011, 0.063, 0.0],
-        "size": [0.006, 0.026, 0.012],
-        "colour": "#1d1f21"
+        "pos": [-0.0086, 0.0715, 0],
+        "size": [0.0063, 0.0089, 0.008],
+        "colour": "#1d1f21",
+        "name": "rear sight ear",
+        "group": "iron sights"
       },
       {
         "type": "box",
-        "pos": [0.011, 0.063, 0.0],
-        "size": [0.006, 0.026, 0.012],
-        "colour": "#1d1f21"
+        "pos": [0.0086, 0.0715, 0],
+        "size": [0.0063, 0.0089, 0.008],
+        "colour": "#1d1f21",
+        "name": "rear sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.06, -0.52],
+        "size": [0.01, 0.032, 0.006],
+        "colour": "#1d1f21",
+        "name": "front sight post",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0229, 0.0528, -0.52],
+        "size": [0.0072, 0.0177, 0.006],
+        "colour": "#1d1f21",
+        "name": "front sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.0229, 0.0528, -0.52],
+        "size": [0.0072, 0.0177, 0.006],
+        "colour": "#1d1f21",
+        "name": "front sight ear",
+        "group": "iron sights"
       },
       {
         "type": "box",
         "pos": [0, 0.04, -0.52],
         "size": [0.016, 0.012, 0.012],
         "colour": "#1d1f21"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.06, -0.52],
-        "size": [0.004, 0.032, 0.006],
-        "colour": "#1d1f21"
       }
     ],
     "grip": [0, -0.095, 0.065],
     "support": [0, -0.08, -0.45],
     "muzzle": [0, 0, -0.67],
-    "sight": [0, 0.076, 0.0]
+    "sight": [0, 0.076, 0]
   }
 }

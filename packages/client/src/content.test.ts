@@ -149,6 +149,29 @@ describe('content', () => {
       for (const o of v.sells) expect(buyPrice(items, o)).toBeGreaterThan(0);
   });
 
+  it('iron sights line up: the post tip on the sight line, level with the notch or centred in the ring', () => {
+    // Aimed, the eye sits on model.sight's height looking along −z (render/viewmodel.ts).
+    let guns = 0;
+    for (const def of loadItems().values()) {
+      if (def.type !== 'weapon') continue;
+      const { parts, sight } = def.model;
+      const named = (name: string) =>
+        parts.filter((p) => p.name === name).flatMap((p) => (p.type === 'box' ? [p] : []));
+      const posts = [...named('front sight post'), ...named('front bead')];
+      if (!posts.length) continue;
+      guns++;
+      const top = (p: { pos: readonly number[]; size: readonly number[] }) =>
+        p.pos[1]! + p.size[1]! / 2;
+      for (const p of posts) expect(top(p), `${def.id} front post`).toBeCloseTo(sight[1], 3);
+      for (const p of named('rear sight ear'))
+        expect(top(p), `${def.id} rear notch`).toBeCloseTo(sight[1], 3);
+      // An aperture's side bars are centred on the line.
+      for (const p of named('rear sight ring').filter((p) => p.size[1] > p.size[0]))
+        expect(p.pos[1], `${def.id} rear ring`).toBeCloseTo(sight[1], 3);
+    }
+    expect(guns).toBeGreaterThanOrEqual(30);
+  });
+
   it("repairing armour never makes money: a kit's points cost more than they add", () => {
     const defs = [...loadItems().values()];
     for (const kit of defs) {
