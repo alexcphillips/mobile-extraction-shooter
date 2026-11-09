@@ -1143,7 +1143,8 @@ function CharacterGrids({
       )}
       {vault && g.vault && (
         <div className="inv-section">
-          <h3>Kept if you die</h3>
+          {/* Not in the stash (2026-11-09, the user's call); still in a raid. */}
+          {!inv.ctx.stash && <h3>Kept if you die</h3>}
           <div className="inv-holder">
             <VaultSlot items={inv.ctx.items} />
             <GridView inv={inv} gref={{ owner, grid: 'vault' }} grid={g.vault} />
