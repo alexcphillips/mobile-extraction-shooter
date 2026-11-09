@@ -60,6 +60,20 @@ const VIEWS: Record<ItemView, { from: THREE.Vector3; up: THREE.Vector3 }> = {
     from: new THREE.Vector3(-1, 0.47, -1.08).normalize(),
     up: new THREE.Vector3(0, 1, 0),
   },
+  // The same turn from the other three corners (2026-11-09, the user's call, to pick
+  // from instead of turning a model by hand). These don't face left; the item chooses.
+  frontRight: {
+    from: new THREE.Vector3(1, 0.47, -1.08).normalize(),
+    up: new THREE.Vector3(0, 1, 0),
+  },
+  backLeft: {
+    from: new THREE.Vector3(-1, 0.47, 1.08).normalize(),
+    up: new THREE.Vector3(0, 1, 0),
+  },
+  backRight: {
+    from: new THREE.Vector3(1, 0.47, 1.08).normalize(),
+    up: new THREE.Vector3(0, 1, 0),
+  },
 };
 
 /**

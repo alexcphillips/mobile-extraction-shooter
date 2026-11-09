@@ -1445,8 +1445,20 @@ function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemD
       <span className={def.type === 'armour' ? 'inv-item-badge inv-item-light' : 'inv-item-badge'}>
         {badge(item, def)}
       </span>
+      {def.type === 'container' && def.slot !== 'vault' && (
+        <span className="inv-item-badge inv-item-cells">{cellsInside(def)}</span>
+      )}
     </>
   );
+}
+
+/**
+ * How many cells a rig or backpack holds (2026-11-09, the user's call: bottom left of its
+ * tile, until they have icons): its sections' cells, or its whole grid's.
+ */
+function cellsInside(def: Extract<ItemDef, { type: 'container' }>): number {
+  if (!def.sections) return def.grid[0] * def.grid[1];
+  return def.sections.reduce((n, s) => n + s.size[0] * s.size[1], 0);
 }
 
 /**

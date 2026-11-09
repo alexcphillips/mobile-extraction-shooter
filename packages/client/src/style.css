@@ -2199,6 +2199,12 @@ body:has(#raid:not([hidden])) #vitals {
   font-weight: 400;
 }
 
+/* A rig's or backpack's cells, bold, bottom left (2026-11-09). */
+.inv-item-badge.inv-item-cells {
+  left: 3px;
+  right: auto;
+}
+
 .inv-drop {
   position: absolute;
   box-sizing: border-box;

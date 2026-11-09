@@ -72,8 +72,19 @@ export type Rarity = (typeof RARITIES)[number];
  * (−x, a gun's barrel to the left, a little from above), or angled (a near-diagonal
  * three-quarter turn from the front-left, the front (−z) to the left, about 18° from above). Every picture faces
  * left (2026-11-09). Left out: side for guns, knives and magazines, else angled.
+ * The same three-quarter turn from the other corners too (2026-11-09, the user's call, so
+ * a view can be picked rather than turned by hand): frontRight, backLeft, backRight.
+ * `angled` is the front-left one, kept under its old name so no item file changes.
  */
-export const ITEM_VIEWS = ['top', 'front', 'side', 'angled'] as const;
+export const ITEM_VIEWS = [
+  'top',
+  'front',
+  'side',
+  'angled',
+  'frontRight',
+  'backLeft',
+  'backRight',
+] as const;
 export type ItemView = (typeof ITEM_VIEWS)[number];
 
 const cells = z.int().min(1);

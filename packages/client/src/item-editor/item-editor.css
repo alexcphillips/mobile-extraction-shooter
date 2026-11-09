@@ -284,9 +284,10 @@ body.item-editor #scene {
   color: #fff;
 }
 
-/* The four views of an item's picture, to pick from (2026-11-02). */
+/* The views of an item's picture, to pick from (2026-11-02; seven since 2026-11-09, so they wrap). */
 .ie-views {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
@@ -295,7 +296,7 @@ body.item-editor #scene {
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  flex: 1;
+  flex: 1 0 64px;
   padding: 6px 2px;
   font-size: 11px;
 }

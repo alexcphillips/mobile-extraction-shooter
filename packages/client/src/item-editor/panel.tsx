@@ -820,7 +820,21 @@ const VIEW_NOTES: Record<ItemView, string> = {
   top: 'straight down, the back (−z) at the top',
   front: 'from the front (+z)',
   side: "from the left (−x), a gun's barrel to the left",
-  angled: 'a near-diagonal three-quarter turn, the front (−z) to the left, a little from above',
+  angled: 'a three-quarter turn from the front left, the front (−z) to the left, a little from above',
+  frontRight: 'a three-quarter turn from the front right, a little from above',
+  backLeft: 'a three-quarter turn from the back left, a little from above',
+  backRight: 'a three-quarter turn from the back right, a little from above',
+};
+
+/** What each view's button says (`angled` is the front-left one, under its old name). */
+const VIEW_LABELS: Record<ItemView, string> = {
+  top: 'top',
+  front: 'front',
+  side: 'side',
+  angled: 'front left',
+  frontRight: 'front right',
+  backLeft: 'back left',
+  backRight: 'back right',
 };
 
 /**
@@ -861,7 +875,7 @@ function ViewPicker(props: Bound & { def: ItemDef }) {
             >
               {arts[i] && <img src={arts[i]!} alt="" />}
             </span>
-            {v}
+            {VIEW_LABELS[v]}
             {v === byKind && <span className="ed-note"> (its kind&apos;s)</span>}
           </button>
         ))}
