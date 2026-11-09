@@ -4,8 +4,8 @@
   "name": "Cordless drill",
   "type": "loot",
   "size": [2, 1],
-  "value": 1000,
-  "rarity": "common",
+  "value": 2000,
+  "rarity": "uncommon",
   "view": "side",
   "model": {
     "parts": [

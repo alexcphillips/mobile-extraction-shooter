@@ -9,6 +9,95 @@
   "stack": 10000,
   "money": true,
   "model": {
-    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#5c9a4a" }]
-  }
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.0165, 0],
+        "size": [0.07, 0.03, 0.155],
+        "colour": "#c8d3b0",
+        "name": "note edges",
+        "group": "bottom bundle"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.001, 0],
+        "size": [0.068, 0.002, 0.153],
+        "colour": "#6e9d5c",
+        "name": "top note",
+        "group": "bottom bundle"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0005, 0],
+        "size": [0.05, 0.001, 0.125],
+        "colour": "#56834a",
+        "name": "print",
+        "group": "bottom bundle"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.0015, 0.04],
+        "radius": 0.014,
+        "height": 0.001,
+        "colour": "#a8c690",
+        "name": "portrait",
+        "group": "bottom bundle"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0165, 0],
+        "size": [0.072, 0.036, 0.028],
+        "colour": "#efe3c4",
+        "name": "band",
+        "group": "bottom bundle"
+      },
+      {
+        "type": "box",
+        "pos": [0.008, 0.0165, -0.004],
+        "size": [0.07, 0.03, 0.155],
+        "colour": "#c8d3b0",
+        "name": "note edges",
+        "yaw": 14,
+        "group": "top bundle"
+      },
+      {
+        "type": "box",
+        "pos": [0.008, 0.032, -0.004],
+        "size": [0.068, 0.002, 0.153],
+        "colour": "#6e9d5c",
+        "name": "top note",
+        "yaw": 14,
+        "group": "top bundle"
+      },
+      {
+        "type": "box",
+        "pos": [0.008, 0.0335, -0.004],
+        "size": [0.05, 0.001, 0.125],
+        "colour": "#56834a",
+        "name": "print",
+        "yaw": 14,
+        "group": "top bundle"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0177, 0.0345, 0.0348],
+        "radius": 0.014,
+        "height": 0.001,
+        "colour": "#a8c690",
+        "name": "portrait",
+        "yaw": 14,
+        "group": "top bundle"
+      },
+      {
+        "type": "box",
+        "pos": [0.008, 0.0165, -0.004],
+        "size": [0.072, 0.036, 0.028],
+        "colour": "#efe3c4",
+        "name": "band",
+        "yaw": 14,
+        "group": "top bundle"
+      }
+    ]
+  },
+  "view": "top"
 }
