@@ -116,8 +116,42 @@ export function ItemEditorPanel({ editor }: { editor: ItemEditor }) {
   );
 }
 
+/** The item list's open types, kept per browser (2026-11-09): a convenience, so it may be lost. */
+const OPEN_TYPES_KEY = 'item-editor-open-types';
+
+function loadOpenTypes(): Set<string> {
+  try {
+    const raw = JSON.parse(localStorage.getItem(OPEN_TYPES_KEY) ?? '[]') as unknown;
+    return new Set(Array.isArray(raw) ? raw.filter((t) => typeof t === 'string') : []);
+  } catch {
+    return new Set();
+  }
+}
+
 function ItemList({ state: s, editor }: { state: ItemEditorState; editor: ItemEditor }) {
   const [filter, setFilter] = useState('');
+  const [open, setOpen] = useState(loadOpenTypes);
+  const setOpenTypes = (next: Set<string>): void => {
+    setOpen(next);
+    try {
+      localStorage.setItem(OPEN_TYPES_KEY, JSON.stringify([...next]));
+    } catch {
+      // Storage blocked: it just won't be remembered.
+    }
+  };
+  const toggle = (type: string): void => {
+    const next = new Set(open);
+    if (!next.delete(type)) next.add(type);
+    setOpenTypes(next);
+  };
+  // Opening an item (from the list, a fit, New or Copy) opens its type, so it can be seen.
+  // Only when the open item's type changes, so closing that type afterwards sticks.
+  const currentType = s.items.get(s.current)?.type;
+  const [seenType, setSeenType] = useState<string | undefined>(undefined);
+  if (currentType !== seenType) {
+    setSeenType(currentType);
+    if (currentType && !open.has(currentType)) setOpen(new Set(open).add(currentType));
+  }
   const f = filter.trim().toLowerCase();
   const all = [...s.items.values()].filter(
     (d) => !f || d.id.includes(f) || d.name.toLowerCase().includes(f),
@@ -134,24 +168,40 @@ function ItemList({ state: s, editor }: { state: ItemEditorState; editor: ItemEd
         {ITEM_TYPES.map((type) => {
           const of = all.filter((d) => d.type === type).sort((a, b) => a.id.localeCompare(b.id));
           if (!of.length) return null;
+          // A search shows every match, whatever is closed.
+          const shown = !!f || open.has(type);
           return (
             <div key={type}>
-              <h4>{type}</h4>
-              <ul className="ed-list">
-                {of.map((d) => (
-                  <li
-                    key={d.id}
-                    className={d.id === s.current ? 'ed-on' : undefined}
-                    onClick={() => editor.select(d.id)}
-                    title={s.problems.get(d.id) ?? d.id}
-                  >
-                    <span className="ie-swatch" style={{ background: colourOf(d) }} />
-                    {d.name}
-                    {s.unsaved.includes(d.id) && <span className="ie-dot"> ●</span>}
-                    {s.problems.has(d.id) && <span className="ed-problem"> !</span>}
-                  </li>
-                ))}
-              </ul>
+              <h4>
+                <button
+                  className="ie-type"
+                  aria-expanded={shown}
+                  disabled={!!f}
+                  onClick={() => toggle(type)}
+                >
+                  <span className="ie-caret">{shown ? '▾' : '▸'}</span>
+                  {type} <span className="ie-count">{of.length}</span>
+                  {of.some((d) => s.unsaved.includes(d.id)) && <span className="ie-dot"> ●</span>}
+                  {of.some((d) => s.problems.has(d.id)) && <span className="ed-problem"> !</span>}
+                </button>
+              </h4>
+              {shown && (
+                <ul className="ed-list">
+                  {of.map((d) => (
+                    <li
+                      key={d.id}
+                      className={d.id === s.current ? 'ed-on' : undefined}
+                      onClick={() => editor.select(d.id)}
+                      title={s.problems.get(d.id) ?? d.id}
+                    >
+                      <span className="ie-swatch" style={{ background: colourOf(d) }} />
+                      {d.name}
+                      {s.unsaved.includes(d.id) && <span className="ie-dot"> ●</span>}
+                      {s.problems.has(d.id) && <span className="ed-problem"> !</span>}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           );
         })}

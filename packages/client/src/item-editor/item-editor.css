@@ -46,6 +46,31 @@ body.item-editor #scene {
   color: var(--ed-dim);
 }
 
+/* A type's heading opens and closes its list. */
+#editor .ie-type {
+  all: unset;
+  display: block;
+  width: 100%;
+  cursor: pointer;
+}
+
+#editor .ie-type:disabled {
+  cursor: default;
+}
+
+#editor .ie-type:focus-visible {
+  outline: 1px solid var(--ed-dim);
+}
+
+.ie-caret {
+  display: inline-block;
+  width: 1.2em;
+}
+
+.ie-count {
+  opacity: 0.6;
+}
+
 .ie-items .ed-list {
   max-height: none;
   min-height: 0;
