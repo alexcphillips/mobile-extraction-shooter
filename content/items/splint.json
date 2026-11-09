@@ -11,7 +11,125 @@
   "sounds": {
     "use": "bandage-use"
   },
+  "view": "top",
   "model": {
-    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#b04848" }]
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0.0, 0.003, 0.0],
+        "size": [0.1, 0.006, 0.31],
+        "colour": "#e6e0d3",
+        "name": "foam pad",
+        "group": "pad",
+        "yaw": 45
+      },
+      {
+        "type": "box",
+        "pos": [-0.0184, 0.011, 0.0184],
+        "size": [0.04, 0.01, 0.26],
+        "colour": "#c49a64",
+        "name": "left slat",
+        "group": "slats",
+        "yaw": 45
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.1103, 0.011, -0.0735],
+        "radius": 0.02,
+        "height": 0.01,
+        "sides": 8,
+        "colour": "#c49a64",
+        "name": "left slat front end",
+        "group": "slats",
+        "yaw": 45
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0735, 0.011, 0.1103],
+        "radius": 0.02,
+        "height": 0.01,
+        "sides": 8,
+        "colour": "#c49a64",
+        "name": "left slat back end",
+        "group": "slats",
+        "yaw": 45
+      },
+      {
+        "type": "box",
+        "pos": [0.0184, 0.011, -0.0184],
+        "size": [0.04, 0.01, 0.26],
+        "colour": "#b08552",
+        "name": "right slat",
+        "group": "slats",
+        "yaw": 45
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.0735, 0.011, -0.1103],
+        "radius": 0.02,
+        "height": 0.01,
+        "sides": 8,
+        "colour": "#b08552",
+        "name": "right slat front end",
+        "group": "slats",
+        "yaw": 45
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.1103, 0.011, 0.0735],
+        "radius": 0.02,
+        "height": 0.01,
+        "sides": 8,
+        "colour": "#b08552",
+        "name": "right slat back end",
+        "group": "slats",
+        "yaw": 45
+      },
+      {
+        "type": "box",
+        "pos": [-0.0672, 0.009, -0.0672],
+        "size": [0.108, 0.02, 0.024],
+        "colour": "#5a6340",
+        "name": "front strap",
+        "group": "straps",
+        "yaw": 45
+      },
+      {
+        "type": "box",
+        "pos": [0.0, 0.009, 0.0],
+        "size": [0.108, 0.02, 0.024],
+        "colour": "#5a6340",
+        "name": "middle strap",
+        "group": "straps",
+        "yaw": 45
+      },
+      {
+        "type": "box",
+        "pos": [0.0672, 0.009, 0.0672],
+        "size": [0.108, 0.02, 0.024],
+        "colour": "#5a6340",
+        "name": "back strap",
+        "group": "straps",
+        "yaw": 45
+      },
+      {
+        "type": "box",
+        "pos": [0.0156, 0.0205, -0.0156],
+        "size": [0.022, 0.004, 0.03],
+        "colour": "#2b2d2f",
+        "name": "buckle",
+        "group": "straps",
+        "yaw": 45
+      },
+      {
+        "type": "box",
+        "pos": [0.1301, 0.001, 0.0113],
+        "yaw": 33,
+        "size": [0.065, 0.002, 0.022],
+        "colour": "#4a5234",
+        "name": "loose strap end",
+        "group": "straps"
+      }
+    ]
   }
 }

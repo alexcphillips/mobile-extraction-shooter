@@ -11,26 +11,144 @@
     "parts": [
       {
         "type": "slab",
-        "pos": [0.02, 0.005, -0.02],
-        "size": [0.4, 0.07, 0.3],
-        "corners": [0.2, 0.2, 0.13, 0.05],
-        "colour": "#9d2a2a",
-        "segments": 6
+        "name": "fat edge",
+        "group": "steak",
+        "pos": [0.058, 0.0005, 0.004],
+        "size": [0.13, 0.023, 0.17],
+        "corners": [0.03, 0.08, 0.075, 0.03],
+        "colour": "#eadbc6",
+        "segments": 3
       },
       {
         "type": "slab",
-        "pos": [-0.03, 0.036, -0.06],
-        "size": [0.15, 0.01, 0.08],
-        "corners": [0.04, 0.02, 0.02, 0.02],
-        "colour": "#8f8f8f"
+        "name": "cap",
+        "group": "steak",
+        "pos": [-0.003, 0.001, 0],
+        "size": [0.228, 0.026, 0.166],
+        "corners": [0.06, 0.08, 0.065, 0.045],
+        "colour": "#b23f48",
+        "segments": 4
       },
       {
         "type": "slab",
-        "pos": [-0.03, 0.037, -0.06],
-        "size": [0.13, 0.01, 0.05],
-        "corners": [0.04, 0.02, 0.02, 0.02],
-        "colour": "#a74446"
+        "name": "seam",
+        "group": "steak",
+        "pos": [-0.032, 0.014, -0.003],
+        "size": [0.152, 0.002, 0.13],
+        "corners": [0.05, 0.06, 0.05, 0.055],
+        "colour": "#e2cdb6",
+        "segments": 3
+      },
+      {
+        "type": "slab",
+        "name": "eye",
+        "group": "steak",
+        "pos": [-0.034, 0.015, -0.004],
+        "size": [0.138, 0.002, 0.116],
+        "corners": [0.045, 0.055, 0.045, 0.05],
+        "colour": "#c95560",
+        "segments": 3
+      },
+      {
+        "type": "box",
+        "name": "marbling 1",
+        "group": "marbling",
+        "pos": [-0.06, 0.0165, -0.03],
+        "size": [0.005, 0.001, 0.05],
+        "colour": "#f3e6dc",
+        "yaw": 20
+      },
+      {
+        "type": "box",
+        "name": "marbling 2",
+        "group": "marbling",
+        "pos": [-0.02, 0.0165, -0.035],
+        "size": [0.004, 0.001, 0.035],
+        "colour": "#f3e6dc",
+        "yaw": -35
+      },
+      {
+        "type": "box",
+        "name": "marbling 3",
+        "group": "marbling",
+        "pos": [-0.075, 0.0165, 0.01],
+        "size": [0.006, 0.001, 0.04],
+        "colour": "#f3e6dc",
+        "yaw": 70
+      },
+      {
+        "type": "box",
+        "name": "marbling 4",
+        "group": "marbling",
+        "pos": [-0.035, 0.0165, 0],
+        "size": [0.004, 0.001, 0.055],
+        "colour": "#f3e6dc",
+        "yaw": 5
+      },
+      {
+        "type": "box",
+        "name": "marbling 5",
+        "group": "marbling",
+        "pos": [0.005, 0.0165, 0.015],
+        "size": [0.005, 0.001, 0.03],
+        "colour": "#f3e6dc",
+        "yaw": -60
+      },
+      {
+        "type": "box",
+        "name": "marbling 6",
+        "group": "marbling",
+        "pos": [-0.045, 0.0165, 0.035],
+        "size": [0.004, 0.001, 0.045],
+        "colour": "#f3e6dc",
+        "yaw": -15
+      },
+      {
+        "type": "box",
+        "name": "marbling 7",
+        "group": "marbling",
+        "pos": [0, 0.0165, -0.01],
+        "size": [0.006, 0.001, 0.02],
+        "colour": "#f3e6dc",
+        "yaw": 40
+      },
+      {
+        "type": "box",
+        "name": "marbling 8",
+        "group": "marbling",
+        "pos": [-0.08, 0.0165, -0.025],
+        "size": [0.005, 0.001, 0.018],
+        "colour": "#f3e6dc",
+        "yaw": -40
+      },
+      {
+        "type": "box",
+        "name": "marbling 9",
+        "group": "marbling",
+        "pos": [0.07, 0.0145, -0.045],
+        "size": [0.004, 0.001, 0.04],
+        "colour": "#f3e6dc",
+        "yaw": 55
+      },
+      {
+        "type": "box",
+        "name": "marbling 10",
+        "group": "marbling",
+        "pos": [0.075, 0.0145, 0.02],
+        "size": [0.005, 0.001, 0.045],
+        "colour": "#f3e6dc",
+        "yaw": 95
+      },
+      {
+        "type": "box",
+        "name": "marbling 11",
+        "group": "marbling",
+        "pos": [0.06, 0.0145, 0.06],
+        "size": [0.004, 0.001, 0.03],
+        "colour": "#f3e6dc",
+        "yaw": 140
       }
     ]
-  }
+  },
+  "view": "top"
 }
