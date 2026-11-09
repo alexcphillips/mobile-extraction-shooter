@@ -2521,18 +2521,6 @@ body:has(#raid:not([hidden])) #vitals {
   color: #9aa6b0;
 }
 
-.results-save.saved {
-  color: #6cff8a;
-}
-
-.results-save.queued {
-  color: #e3a33a;
-}
-
-.results-save.refused {
-  color: #ff6b5a;
-}
-
 /* The panels, two across where there's room. */
 .results-grid {
   display: grid;
@@ -2992,18 +2980,6 @@ body:has(#layout-bar) #menu {
 
 .stash-title {
   font-weight: 600;
-}
-
-.stash-save {
-  color: #9aa6b0;
-}
-
-.stash-save.saved {
-  color: #6cff8a;
-}
-
-.stash-save.failed {
-  color: #ff6b5a;
 }
 
 /*

@@ -169,7 +169,6 @@ import {
   saveResult,
   saveSnapshot,
   type RaidSnapshot,
-  type SaveStatus,
 } from '../raids';
 import type { RaidResult } from '../ui/results';
 import { CoopGuest, CoopHost, type CoopOptions, type Welcome } from './coop';
@@ -1021,7 +1020,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   /** What hurt you, for the results screen after a death. */
   const taken: DamageLog = resume?.taken ?? [];
   let ended: RaidResult | null = null;
-  let saving: Promise<SaveStatus> | null = null;
   let resultsAt = 0;
   // Giving up from the settings screen kills you on the next tick.
   let givingUp = false;
@@ -1052,7 +1050,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         keptAll: false,
         tutorial: true,
       };
-      saving = Promise.resolve({ kind: 'test' });
       resultsAt = now + (how === 'killed' ? RESULTS_AFTER_DEATH_MS : 0);
       closeScreen();
       return;
@@ -1075,7 +1072,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
           points: pointsOf(sim, player.id),
         },
       };
-      saving = Promise.resolve({ kind: 'test' });
       resultsAt = now + (how === 'killed' ? RESULTS_AFTER_DEATH_MS : 0);
       closeScreen();
       return;
@@ -1109,9 +1105,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // Sent now, as it is: the server keeps what the outcome allows.
     const gear = JSON.parse(JSON.stringify(player.gear)) as Gear;
     settleFound(gear);
-    if (options.test) saving = Promise.resolve({ kind: 'test' });
-    else {
-      saving = saveResult(options.serverRaid, {
+    if (!options.test) {
+      saveResult(options.serverRaid, {
         how,
         gear,
         seconds,
@@ -1119,7 +1114,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         detail,
         investigated,
         ...(cheats.keepGear ? { keepGear: true } : {}),
-      });
+      }).catch((err: unknown) => console.error('saving the raid failed', err));
       clearSnapshot();
     }
     resultsAt = now + (how === 'killed' ? RESULTS_AFTER_DEATH_MS : 0);
@@ -1134,7 +1129,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     import('../ui/results')
       .then((ui) => {
         // The next raid starts from the page, which sends anything not yet saved first.
-        ui.showResults(el.results, result, items, saving!, () =>
+        ui.showResults(el.results, result, items, () =>
           tutorialMode ? tutorialMode.leave() : location.reload(),
         );
         // Nothing more to play: stop drawing. A host keeps the raid going for its guests.

@@ -7,11 +7,10 @@ import {
   type ItemDb,
   type LeaveReason,
 } from '@mes/shared';
-import { useEffect, useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { clock } from '../hud/raid-hud';
 import { describeSource, type DamageLog } from '../play/damage-log';
-import type { SaveStatus } from '../raids';
 import { ItemTile, tallied } from './item-tile';
 
 /** How the raid ended for you, and what you came out with. */
@@ -119,38 +118,6 @@ function Gain({ items, result }: { items: ItemDb; result: RaidResult }) {
   );
 }
 
-const SAVE_TEXT: Record<SaveStatus['kind'] | 'saving', string> = {
-  saving: 'Saving…',
-  saved: 'Saved',
-  queued:
-    "Not saved yet: can't reach the server. It's kept on this phone and sent before your next raid.",
-  refused: '',
-  test: 'Play-test: nothing is saved. Continue plays it again.',
-};
-
-/** Whether the server has the result yet. */
-function SaveLine({ saving }: { saving: Promise<SaveStatus> }) {
-  const [status, setStatus] = useState<SaveStatus | null>(null);
-  useEffect(() => {
-    let live = true;
-    saving
-      .then((s) => live && setStatus(s))
-      .catch(
-        (err: unknown) =>
-          live && setStatus({ kind: 'refused', message: `Not saved: ${String(err)}` }),
-      );
-    return () => {
-      live = false;
-    };
-  }, [saving]);
-  const kind = status?.kind ?? 'saving';
-  return (
-    <p className={`results-save ${kind}`}>
-      {status?.kind === 'refused' ? status.message : SAVE_TEXT[kind]}
-    </p>
-  );
-}
-
 /** A zombies game's end: the round reached, kills and points, and what got you. */
 function ZombiesResults({
   result,
@@ -225,12 +192,10 @@ function TutorialResults({ result, onNext }: { result: RaidResult; onNext: () =>
 function Results({
   result,
   items,
-  saving,
   onNext,
 }: {
   result: RaidResult;
   items: ItemDb;
-  saving: Promise<SaveStatus>;
   onNext: () => void;
 }) {
   if (result.zombies)
@@ -271,7 +236,6 @@ function Results({
             </div>
           )}
         </dl>
-        <SaveLine saving={saving} />
       </header>
       <div className="results-grid">
         <Panel
@@ -327,18 +291,17 @@ function Results({
 
 /**
  * The results screen over the game when the raid ends for you: how it ended, time and
- * kills, what you keep, and whether the server has it yet. Loaded lazily, like the raid
+ * kills, and what you keep. Loaded lazily, like the raid
  * screen. The button goes back to the main menu (by reloading the page).
  */
 export function showResults(
   container: HTMLElement,
   result: RaidResult,
   items: ItemDb,
-  saving: Promise<SaveStatus>,
   onNext: () => void,
 ): void {
   container.hidden = false;
   createRoot(container).render(
-    <Results result={result} items={items} saving={saving} onNext={onNext} />,
+    <Results result={result} items={items} onNext={onNext} />,
   );
 }

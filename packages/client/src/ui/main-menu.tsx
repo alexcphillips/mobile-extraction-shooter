@@ -36,7 +36,7 @@ import { ConnTest, type TestReport } from '../net/conn-test';
 import { applySimCheats, readCheats } from '../admin-cheats';
 import type { CoopOptions } from '../play/coop';
 import { PartyWatch, joinParty, pickPartyRaid, setReady, startPartyRaid } from '../social';
-import { StashSaver, type StashSaveStatus } from '../stash';
+import { StashSaver } from '../stash';
 import { AdminPage } from './admin-page';
 import { ConnTestPanel } from './conn-test-panel';
 import { FriendsPage } from './friends-page';
@@ -121,13 +121,6 @@ const MODES: readonly { id: GameMode; label: string }[] = [
   { id: 'extraction', label: 'Extraction' },
   { id: 'zombies', label: 'Zombies' },
 ];
-
-const SAVE_TEXT: Record<StashSaveStatus['kind'], string> = {
-  saved: 'Saved',
-  unsaved: 'Saving…',
-  saving: 'Saving…',
-  failed: '',
-};
 
 function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => void }) {
   const [page, setPage] = useState<Page>('menu');
@@ -961,15 +954,11 @@ function StashPage({
     head,
     tabs,
   };
-  const status = saver.status;
   return (
     <div className="raid stash" role="dialog" aria-label="Stash">
       <header className="raid-tabs">
         <button onClick={onBack}>Back</button>
         <span className="stash-title">Stash</span>
-        <span className={`stash-save ${status.kind}`}>
-          {status.kind === 'failed' ? `Not saved: ${status.message}` : SAVE_TEXT[status.kind]}
-        </span>
         <span className="raid-spacer" />
         <span className="vendors-money">
           <b>{stash.profile.money.toLocaleString()}</b> money
