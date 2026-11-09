@@ -3239,15 +3239,24 @@ body:has(#layout-bar) #menu {
     flex-wrap: wrap;
   }
 
+  /*
+   * Flush under the panel's header: up into the panel body's 8 px top padding, so nothing
+   * shows between them as the page scrolls (2026-11-09). contain: inline-size keeps its
+   * buttons' width out of the box around it, which was sizing itself to the row, the
+   * grid and the tabs side by side and so scrolled the panel sideways.
+   */
   .stash-kinds {
+    top: -8px;
     flex-basis: 100%;
     flex-direction: row;
     width: auto;
     min-width: 0;
-    padding-bottom: 4px;
+    margin-top: -8px;
+    padding: 8px 0 4px;
     overflow-x: auto;
     scrollbar-width: none;
     background: var(--ui-panel);
+    contain: inline-size;
   }
 
   .raid .stash-kinds button {
