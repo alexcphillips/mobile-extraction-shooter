@@ -92,6 +92,22 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel, onGiveUp }: P
           />
           <Toggle label="Aim while leaning" value={s.leanAim} onChange={(v) => set('leanAim', v)} />
           <Choice
+            label="Crouch"
+            value={s.crouch}
+            options={[
+              ['toggle', 'Toggle'],
+              ['hold', 'Hold to crouch'],
+            ]}
+            hint={
+              inputMode.desktop
+                ? 'Toggle: C crouches until you press it again (or sprint). Hold: crouched while C is down.'
+                : s.crouch === 'hold'
+                  ? 'Hold: crouched while the button is down. Double-tap it to go prone; a tap gets up.'
+                  : 'Toggle: tap crouch to crouch until you tap it again (or sprint). Hold it to go prone.'
+            }
+            onChange={(v) => set('crouch', v)}
+          />
+          <Choice
             label="Firing"
             value={s.fire}
             options={[

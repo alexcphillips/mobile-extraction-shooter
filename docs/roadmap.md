@@ -782,6 +782,30 @@ The design is in design.md → AI → Scavs, PMCs and bosses. Scavs and PMCs fir
 - **(AI-7) PMCs kill Jug early.** In all 4 peaceful raids a PMC squad killed him within 6 minutes (as early as 46 s): bold and charging, he walks out to their gunfire and straight at a squad of 2–4, and his armour is only head and chest. Intended (PMCs thin him out, as they do in Tarkov), or should he leave PMCs be unless they come onto his ground or shoot him, or be tougher against AI?
 - ~~**(AI-7) Enemies face −z on their first tick**~~ Fixed 2026-11-08 (AI-8 → Follow-up), with a wider arc search so the roof throw still works.
 - ~~**Enemies never treat their wounds**~~ (found 2026-11-08: Jug won against every PMC squad in 3 of 6 Northpoint raids, then bled to death 8–11 minutes in). **The user's call (2026-11-08): no healing.** Jug is meant to be aggressive, not to stop and heal; bleeding out after a big fight is fine.
+- [ ] **Boss spawner spawns the map's boss** (the user's request, 2026-11-08). The admin Boss spawner spawns Jug everywhere for now (`content/items/boss-spawner.json`, `spawns: "jug"`). Later it should spawn the boss of the map you're on (Jug on Northpoint, `boss-scav` on the test map and the Mall), e.g. by reading the map's boss wave. `spawns` is one fixed id today, so it needs a way to say "this map's boss".
+
+## Inventory and controls UX (planned 2026-11-08 with the user, from their mobile UI notes)
+Cut at the user's call: valuables going to the vault by themselves, item and ammo cases, and extra vaults from quests (design.md → Inventory and UI → Not doing).
+
+- [x] **UX-0. Crouch: toggle or hold** (2026-11-08, the user's call; design.md → Movement → Crouch: toggle or hold).
+  - **Done 2026-11-08.** `crouch` in the shared settings (toggle by default; old saves get toggle), a Crouch choice in settings, and `input/controls.ts` reading it for C and the button.
+- [ ] **UX-1. Touch: scroll, and hold to drag.**
+  - Today any press that moves starts a drag (`ui/drag.ts`), so a finger can't scroll a full stash. On touch: a finger that moves within about 200 ms scrolls; one held still about 200 ms lifts the item (drawn lifted, so you know). A mouse still drags at once.
+  - Re-check the timings against double-tap (350 ms) and the tap that opens details.
+- [ ] **UX-2. The details panel.**
+  - A tap opens the details as a panel in place of the modal card; on a phone it takes the right column while open (the three columns leave no room beside them).
+  - **Source** (the loot tables, vendors and, later, recipes that give it) and **Usage** (quests and, later, Hangar upgrades and recipes that want it), worked out from content, not written by hand. Value and Sell are already in the card; keep them.
+  - No descriptions on guns, armour, backpacks and rigs. Material items show their category and keep a description.
+  - A brief shade on the tile with a hint naming where a double-tap would put it ("double-tap → stash"), shown only the first few times.
+- [ ] **UX-3. Grids.**
+  - Stash page tabs down the right edge of the stash grid.
+  - Pockets as **five 1×1 slots** (was a 4×1 grid). 1×2 items (a molotov) then can't go in pockets; the user knows and wants that (2026-11-08).
+  - A backpack's two 2×2 sections under its big grid are centred, not left-aligned.
+  - The vault's 1×2 start is H4's (hangar.md).
+- [ ] **UX-4. Control layouts.**
+  - Hide buttons you don't want. Up to **3 saved layouts**. **Share equipped controls**: a copy-paste code, no server (layouts are already fractions of the screen, so they carry across phone sizes).
+- [ ] **UX-5. Small ones.**
+  - The quests "N new" badge brighter, like a notification. The friends button shows "N online".
 
 ## The Hangar (planned 2026-11-07 with the user)
 After the AI rework, before co-op. The design is [hangar.md](hangar.md). The material items and loot tables are the user's.

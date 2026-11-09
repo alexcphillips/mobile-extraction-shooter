@@ -18,6 +18,8 @@ const TAP_MS = 250;
 const TAP_SLOP = 12;
 /** Holding the heal button this long opens the picker instead of using the default. */
 const LONG_PRESS_MS = 400;
+/** Hold-to-crouch's double-tap to prone: each tap this short, the second this soon. */
+const DOUBLE_TAP_MS = 300;
 /** The hand slots, in the order of their buttons and of keys 1–4. */
 const HANDS: readonly Hand[] = ['primary1', 'primary2', 'sidearm', 'knife'];
 
@@ -104,7 +106,10 @@ export class Controls {
   private stickX = 0;
   private stickY = 0;
   private touchJump = false;
-  private touchCrouch = false;
+  /** Crouched by the button or C: toggled, or while held (the crouch setting). */
+  private crouchOn = false;
+  /** When the crouch button last lifted from a tap, for hold mode's double-tap to prone. */
+  private crouchTapAt = -Infinity;
   /** Prone is a toggle on both: X, or holding the crouch button. */
   private proneOn = false;
   private touchAim = false;
@@ -215,11 +220,11 @@ export class Controls {
     if (this.fire && this.sprintLocked) this.setSprintLock(false);
     // Sprinting turns the crouch and lean toggles off (the sim only sprints forwards).
     if (this.sprint && this.moveY > 0) {
-      if (this.touchCrouch) this.setCrouch(false);
+      if (this.crouchOn) this.setCrouch(false);
       if (this.proneOn) this.setProne(false);
       if (this.leanOn) this.setLean(0);
     }
-    this.crouch = this.touchCrouch || k.has('KeyC');
+    this.crouch = this.crouchOn || (settings.current.crouch === 'hold' && k.has('KeyC'));
     this.prone = this.proneOn;
     // Held: Q and E while down, else a button held. Toggled: what was last pressed.
     const keyLean = (k.has('KeyE') ? 1 : 0) - (k.has('KeyQ') ? 1 : 0);
@@ -287,6 +292,24 @@ export class Controls {
         // A tap crouches (or stands, or gets up from prone to a crouch) when it lifts;
         // holding it goes prone, or gets up from prone.
         this.setSprintLock(false);
+        if (settings.current.crouch === 'hold') {
+          // Hold: crouched while down. Prone can't be a long press here, so a quick
+          // double-tap goes prone; from prone, a press gets up (crouched while held).
+          const now = performance.now();
+          if (this.proneOn) this.setProne(false);
+          else if (now - this.crouchTapAt < DOUBLE_TAP_MS) {
+            this.crouchTapAt = -Infinity;
+            this.setProne(true);
+            held(() => {});
+            break;
+          }
+          this.setCrouch(true);
+          held(() => {
+            if (performance.now() - now < DOUBLE_TAP_MS) this.crouchTapAt = performance.now();
+            if (!this.proneOn) this.setCrouch(false);
+          });
+          break;
+        }
         let long = false;
         const timer = setTimeout(() => {
           long = true;
@@ -298,7 +321,7 @@ export class Controls {
           if (this.proneOn) {
             this.setProne(false);
             this.setCrouch(true);
-          } else this.setCrouch(!this.touchCrouch);
+          } else this.setCrouch(!this.crouchOn);
         });
         break;
       }
@@ -367,7 +390,7 @@ export class Controls {
   }
 
   private setCrouch(on: boolean): void {
-    this.touchCrouch = on;
+    this.crouchOn = on;
     this.hud.button('crouch').classList.toggle('active', on);
   }
 
@@ -377,7 +400,7 @@ export class Controls {
     if (on) this.setCrouch(false);
     const button = this.hud.button('crouch');
     button.textContent = on ? 'prone' : 'crouch';
-    button.classList.toggle('active', on || this.touchCrouch);
+    button.classList.toggle('active', on || this.crouchOn);
   }
 
   /** Leans from a button or toggle; its button stays lit while it's on. */
@@ -411,7 +434,13 @@ export class Controls {
       const side = e.code === 'KeyQ' ? -1 : 1;
       this.setLean(this.leanOn === side ? 0 : side);
     } else if (e.code === 'KeyX') this.setProne(!this.proneOn);
-    else if ((e.code === 'KeyC' || e.code === 'Space') && this.proneOn) this.setProne(false);
+    else if (e.code === 'KeyC' && settings.current.crouch === 'toggle') {
+      // As the touch button's tap: from prone it gets up to a crouch.
+      if (this.proneOn) {
+        this.setProne(false);
+        this.setCrouch(true);
+      } else this.setCrouch(!this.crouchOn);
+    } else if ((e.code === 'KeyC' || e.code === 'Space') && this.proneOn) this.setProne(false);
     // G as its touch button too: a tap throws when it lifts, holding opens the picker.
     else if (e.code === 'KeyG')
       this.holdKey(

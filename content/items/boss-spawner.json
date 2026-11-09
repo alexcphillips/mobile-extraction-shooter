@@ -24,7 +24,7 @@
     "suppressed": "crossbow-shot",
     "reload": "pistol-reload"
   },
-  "spawns": "boss-scav",
+  "spawns": "jug",
   "model": {
     "parts": [
       { "type": "box", "pos": [0, 0.008, -0.06], "size": [0.03, 0.034, 0.19], "colour": "#d63a2b" },

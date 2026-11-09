@@ -7,6 +7,7 @@ describe('settings', () => {
     expect(s.aim).toBe('hold');
     expect(s.lean).toBe('toggle');
     expect(s.leanAim).toBe(false);
+    expect(s.crouch).toBe('toggle');
     expect(s.fire).toBe('auto');
     expect(s.aimAssist).toBe('low');
     expect(s.graphics).toBe('high');
@@ -17,6 +18,12 @@ describe('settings', () => {
     expect(loadSettings({ formatVersion: 1, graphics: 'low' }).graphics).toBe('low');
     expect(loadSettings({ formatVersion: 1 }).graphics).toBe('high');
     expect(loadSettings({ formatVersion: 1, graphics: 'ultra' }).graphics).toBe('high');
+  });
+
+  it('keeps a crouch setting, and settings saved before it get toggle (2026-11-08)', () => {
+    expect(loadSettings({ formatVersion: 1, crouch: 'hold' }).crouch).toBe('hold');
+    expect(loadSettings({ formatVersion: 1 }).crouch).toBe('toggle');
+    expect(loadSettings({ formatVersion: 1, crouch: 'squat' }).crouch).toBe('toggle');
   });
 
   it('round-trips through JSON', () => {

@@ -281,6 +281,8 @@ function typeOptions(type: EnemyDef): EnemySpawnOptions {
     faction: type.faction,
     outfits: type.outfits?.length ?? 1,
     type: type.id,
+    voiced: !!(type.voice?.breathe || type.voice?.mutter),
+    limbHealth: type.limbHealth,
   };
 }
 
