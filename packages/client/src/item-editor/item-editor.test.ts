@@ -40,13 +40,13 @@ describe('item editor', () => {
   });
 
   it('finds what an edit breaks elsewhere in content/', () => {
-    // An attachment lists the gun it fits; a loadout puts a suppressor on the boss's rifle.
+    // An attachment lists the gun it fits; a loadout puts a suppressor on the PMCs' rifle.
     const noMags = edited('assault-rifle', (d) => setSlots(d, ['optic', 'muzzle']));
     expect(itemContentProblem(noMags)).toMatch(/mag-762x39-45.*no magazine slot/);
     const noMuzzle = edited('assault-rifle', (d) => setSlots(d, ['optic', 'magazine']));
-    expect(itemContentProblem(noMuzzle)).toMatch(/loadouts\/boss-kit.*suppressor/);
-    // The test map's shed door needs a key item.
-    const notAKey = edited('shed-key', (d) => {
+    expect(itemContentProblem(noMuzzle)).toMatch(/loadouts\/pmc-kit.*suppressor/);
+    // The tutorial's front door needs a key item.
+    const notAKey = edited('front-door-key', (d) => {
       d.type = 'loot';
       delete d.uses;
     });
@@ -58,7 +58,7 @@ describe('item editor', () => {
 
   it('lists where content names an item', () => {
     const items = loadItems();
-    expect(itemUses('shed-key', items)).toContain('door shed-door on test-map');
+    expect(itemUses('front-door-key', items)).toContain('door front-door on tutorial');
     expect(itemUses('ammo-9mm', items)).toEqual(
       expect.arrayContaining(['m9a3 fires it', 'vendor quartermaster', 'starting kit new-player']),
     );
@@ -68,7 +68,7 @@ describe('item editor', () => {
     expect(itemUses('m416', items)).toEqual(
       expect.arrayContaining(['scope-4x fits it', 'starting kit new-player']),
     );
-    expect(itemUses('patient-notes', items)).toEqual(['quest lost-notes']);
+    expect(itemUses('jade-dragon', items)).toContain('quest something-special');
   });
 
   it('warns about changes that can break saved stashes, and only those', () => {
@@ -96,7 +96,7 @@ describe('item editor', () => {
       risks('mag-9mm-24', (d) => ((d.mods as { magazine: number }).magazine = 5)),
     ).toHaveLength(1);
     expect(risks('suppressor', (d) => (d.weapons = ['m9a3']))).toHaveLength(1);
-    expect(risks('shed-key', (d) => (d.uses = 5))).toHaveLength(1);
+    expect(risks('front-door-key', (d) => (d.uses = 5))).toHaveLength(1);
     // Making things bigger, or changing what doesn't limit saved items, is safe.
     expect(risks('m9a3', (d) => (d.magazine = 20))).toEqual([]);
     expect(risks('m9a3', (d) => (d.rpm = 300))).toEqual([]);

@@ -60,7 +60,7 @@ describe('admin', () => {
     ).toBe('not-found');
     const many = { version: v, item: 'm9a3', count: MAX_GIVE_STACKS + 1 };
     expect((await client.fails('POST', '/admin/give', many)).error).toBe('invalid');
-    await client.ok('POST', '/raids', { raid: 'test-raid' });
+    await client.ok('POST', '/raids', { raid: 'northpoint' });
     const inRaid = {
       version: (await client.ok('GET', '/profile')).version,
       item: 'bandage',

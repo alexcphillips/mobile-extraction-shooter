@@ -62,7 +62,7 @@ describe('wiping accounts', () => {
 
   it('closes an open raid, so its result puts nothing back', async () => {
     const { env, ana } = await players();
-    const { raid, profile } = await ana.ok('POST', '/raids', { raid: 'test-raid' });
+    const { raid, profile } = await ana.ok('POST', '/raids', { raid: 'northpoint' });
     await wipe(env, ['ana']);
     expect((await ana.ok('GET', '/profile')).raid).toBeNull();
     const end = { how: 'extracted', gear: profile.gear, seconds: 300, kills: 2, detail: 'Dock' };
@@ -87,7 +87,7 @@ describe('wiping accounts', () => {
       await env.DB.batch([
         env.DB.prepare(
           `INSERT INTO parties (id, code, leader, raid, created_at, started_at, session, host)
-           VALUES (?, ?, ?, 'test-raid', 1, 1, 's', ?)`,
+           VALUES (?, ?, ?, 'northpoint', 1, 1, 's', ?)`,
         ).bind(username, username, id, id),
         env.DB.prepare(
           'INSERT INTO party_members (account_id, party_id, joined_at) VALUES (?, ?, 1)',

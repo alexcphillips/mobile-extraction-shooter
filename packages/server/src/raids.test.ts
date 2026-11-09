@@ -28,8 +28,8 @@ function end(gear: Gear, how: EndRaidRequest['how'] = 'extracted'): EndRaidReque
 describe('raids', () => {
   it('opens a raid and locks the profile until it ends', async () => {
     const client = await signedIn();
-    const started = await client.ok('POST', '/raids', { raid: 'test-raid' });
-    expect(started.raid?.raid).toBe('test-raid');
+    const started = await client.ok('POST', '/raids', { raid: 'northpoint' });
+    expect(started.raid?.raid).toBe('northpoint');
     expect(started.version).toBe(2);
     const put = await client.fails('PUT', '/profile', {
       version: started.version,
@@ -40,7 +40,7 @@ describe('raids', () => {
 
   it('keeps everything after extracting', async () => {
     const client = await signedIn();
-    const { raid, profile } = await client.ok('POST', '/raids', { raid: 'test-raid' });
+    const { raid, profile } = await client.ok('POST', '/raids', { raid: 'northpoint' });
     const after = await client.ok('POST', `/raids/${raid!.id}/end`, end(looted(profile.gear)));
     expect(after.raid).toBeNull();
     expect(after.profile.gear.primary1?.item).toBe('m416');
@@ -53,7 +53,7 @@ describe('raids', () => {
   it('keeps only the knife and the vault after dying or going missing', async () => {
     for (const how of ['killed', 'mia'] as const) {
       const client = await signedIn();
-      const { raid, profile } = await client.ok('POST', '/raids', { raid: 'test-raid' });
+      const { raid, profile } = await client.ok('POST', '/raids', { raid: 'northpoint' });
       const after = await client.ok(
         'POST',
         `/raids/${raid!.id}/end`,
@@ -71,7 +71,7 @@ describe('raids', () => {
   it('keeps everything after a death with the keep-gear cheat, on the dev server only', async () => {
     for (const admin of [true, false]) {
       const client = await signedIn(admin);
-      const { raid, profile } = await client.ok('POST', '/raids', { raid: 'test-raid' });
+      const { raid, profile } = await client.ok('POST', '/raids', { raid: 'northpoint' });
       const after = await client.ok('POST', `/raids/${raid!.id}/end`, {
         ...end(looted(profile.gear), 'killed'),
         keepGear: true,
@@ -82,7 +82,7 @@ describe('raids', () => {
 
   it('takes the same result twice, but not a different one', async () => {
     const client = await signedIn();
-    const { raid, profile } = await client.ok('POST', '/raids', { raid: 'test-raid' });
+    const { raid, profile } = await client.ok('POST', '/raids', { raid: 'northpoint' });
     const result = end(looted(profile.gear));
     const first = await client.ok('POST', `/raids/${raid!.id}/end`, result);
     const again = await client.ok('POST', `/raids/${raid!.id}/end`, result);
@@ -96,8 +96,8 @@ describe('raids', () => {
 
   it('counts a raid that never reported as missing when the next one starts', async () => {
     const client = await signedIn();
-    const first = await client.ok('POST', '/raids', { raid: 'test-raid' });
-    const second = await client.ok('POST', '/raids', { raid: 'test-raid' });
+    const first = await client.ok('POST', '/raids', { raid: 'northpoint' });
+    const second = await client.ok('POST', '/raids', { raid: 'northpoint' });
     expect(second.raid?.id).not.toBe(first.raid?.id);
     expect(second.profile.gear.primary1).toBeNull();
     expect(second.profile.gear.knife?.item).toBe('knife');
@@ -112,7 +112,7 @@ describe('raids', () => {
 
   it('counts a raid that never reported as missing when asked, unlocking the profile', async () => {
     const client = await signedIn();
-    const { raid } = await client.ok('POST', '/raids', { raid: 'test-raid' });
+    const { raid } = await client.ok('POST', '/raids', { raid: 'northpoint' });
     const after = await client.ok('POST', `/raids/${raid!.id}/abandon`);
     expect(after.raid).toBeNull();
     expect(after.profile.gear.primary1).toBeNull();
@@ -127,7 +127,7 @@ describe('raids', () => {
 
   it('applies sanity limits to results', async () => {
     const client = await signedIn();
-    const { raid, profile } = await client.ok('POST', '/raids', { raid: 'test-raid' });
+    const { raid, profile } = await client.ok('POST', '/raids', { raid: 'northpoint' });
     const path = `/raids/${raid!.id}/end`;
 
     const forged = looted(profile.gear);
@@ -156,7 +156,7 @@ describe('raids', () => {
   it("refuses unknown raids and other players' raids", async () => {
     const client = await signedIn();
     expect((await client.fails('POST', '/raids', { raid: 'moon' })).error).toBe('invalid');
-    const { raid, profile } = await client.ok('POST', '/raids', { raid: 'test-raid' });
+    const { raid, profile } = await client.ok('POST', '/raids', { raid: 'northpoint' });
     const other = new TestClient(client.env);
     await other.register('bob');
     expect((await other.fails('POST', `/raids/${raid!.id}/end`, end(profile.gear))).error).toBe(
@@ -216,7 +216,7 @@ describe('POST /stash/pages', () => {
     expect((await client.fails('POST', '/stash/pages', { version: me.version })).error).toBe(
       'stale',
     );
-    const { raid } = await client.ok('POST', '/raids', { raid: 'test-raid' });
+    const { raid } = await client.ok('POST', '/raids', { raid: 'northpoint' });
     const v = (await client.ok('GET', '/profile')).version;
     expect((await client.fails('POST', '/stash/pages', { version: v })).error).toBe('in-raid');
     expect(raid).not.toBeNull();

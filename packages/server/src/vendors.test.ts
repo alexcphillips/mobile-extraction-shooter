@@ -47,7 +47,7 @@ describe('vendors', () => {
     expect((await client.fails('POST', '/vendors/medic/buy', again)).error).toBe('stale');
     const nobody = { version: bought.version, offer: 0 };
     expect((await client.fails('POST', '/vendors/nobody/buy', nobody)).error).toBe('not-found');
-    await client.ok('POST', '/raids', { raid: 'test-raid' });
+    await client.ok('POST', '/raids', { raid: 'northpoint' });
     const v = (await client.ok('GET', '/profile')).version;
     const inRaid = { version: v, offer: bandage };
     expect((await client.fails('POST', '/vendors/medic/buy', inRaid)).error).toBe('in-raid');
@@ -183,7 +183,7 @@ describe('cash from a raid', () => {
       ['killed', 1000],
     ] as const) {
       const client = await signedIn();
-      const { raid, profile } = await client.ok('POST', '/raids', { raid: 'test-raid' });
+      const { raid, profile } = await client.ok('POST', '/raids', { raid: 'northpoint' });
       const after = await client.ok(
         'POST',
         `/raids/${raid!.id}/end`,

@@ -4,7 +4,6 @@
   "name": "Shiny things",
   "vendor": "quartermaster",
   "description": "The scavs have been pocketing watches. Bring me a couple and I'll make it worth your while.",
-  "requires": ["radio-silence"],
   "objectives": [
     {
       "id": "watches",

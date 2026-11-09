@@ -110,7 +110,7 @@ describe('friends', () => {
     await befriend(ana!, bob!, 'bob');
     await json(bob!, 'POST', '/presence', { device: 'pc' });
     expect((await friendsOf(ana!)).friends[0]).toMatchObject({ activity: 'menu', device: 'pc' });
-    await bob!.ok('POST', '/raids', { raid: 'test-raid' });
+    await bob!.ok('POST', '/raids', { raid: 'northpoint' });
     expect((await friendsOf(ana!)).friends[0]!.activity).toBe('raid');
     expect((await bob!.fails('POST', '/presence', { device: 'fridge' })).error).toBe('bad-request');
   });
@@ -126,7 +126,7 @@ describe('friends', () => {
     expect(seen).toMatchObject({ friendCount: 2, friendsOnline: 0, friendRequests: 1 });
     await json(bob!, 'POST', '/presence', { device: 'phone' });
     // In a raid counts as online too; dee, only asking, isn't counted.
-    await cas!.ok('POST', '/raids', { raid: 'test-raid' });
+    await cas!.ok('POST', '/raids', { raid: 'northpoint' });
     await json(dee!, 'POST', '/presence', { device: 'pc' });
     seen = await json<PartyResponse>(ana!, 'POST', '/presence', { device: 'pc' });
     expect(seen).toMatchObject({ friendCount: 2, friendsOnline: 2, friendRequests: 1 });
@@ -212,10 +212,10 @@ describe('the party', () => {
     const bobId = joined.members[1]!.id;
     const ready = await json<PartyResponse>(bob!, 'POST', '/party/ready', { ready: true });
     expect(ready.party!.members[1]!.ready).toBe(true);
-    expect((await bob!.fails('POST', '/party/raid', { raid: 'test-raid' })).error).toBe('invalid');
+    expect((await bob!.fails('POST', '/party/raid', { raid: 'northpoint' })).error).toBe('invalid');
     expect((await ana!.fails('POST', '/party/raid', { raid: 'nope' })).error).toBe('not-found');
-    const picked = await json<PartyResponse>(ana!, 'POST', '/party/raid', { raid: 'test-raid' });
-    expect(picked.party!.raid).toBe('test-raid');
+    const picked = await json<PartyResponse>(ana!, 'POST', '/party/raid', { raid: 'northpoint' });
+    expect(picked.party!.raid).toBe('northpoint');
     expect(picked.party!.members[1]!.ready).toBe(false);
     expect((await bob!.fails('POST', '/party/kick', { account: bobId })).error).toBe('invalid');
     const kicked = await json<PartyResponse>(ana!, 'POST', '/party/kick', { account: bobId });
@@ -277,13 +277,13 @@ describe('starting a party raid', () => {
     await json(bob!, 'POST', '/party/join', { code });
     await json(ana!, 'POST', '/presence', { device: 'phone' });
     await json(bob!, 'POST', '/presence', { device: 'pc' });
-    await json(ana!, 'POST', '/party/raid', { raid: 'test-raid' });
+    await json(ana!, 'POST', '/party/raid', { raid: 'northpoint' });
     expect((await ana!.fails('POST', '/party/start')).message).toMatch(/waiting for bob/);
     await json(bob!, 'POST', '/party/ready', { ready: true });
     expect((await bob!.fails('POST', '/party/start')).message).toMatch(/leader/);
     const started = (await json<PartyResponse>(ana!, 'POST', '/party/start')).party!;
     const bobId = started.members.find((m) => m.username === 'bob')!.id;
-    expect(started.start).toMatchObject({ raid: 'test-raid', host: bobId });
+    expect(started.start).toMatchObject({ raid: 'northpoint', host: bobId });
     expect(started.members.every((m) => !m.ready)).toBe(true);
     expect((await partyOf(bob!)).party!.start!.session).toBe(started.start!.session);
     await ana!.env.DB.prepare('UPDATE parties SET started_at = 1').run();

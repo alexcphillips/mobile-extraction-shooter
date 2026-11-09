@@ -45,6 +45,7 @@ import {
   raidIds,
   zombiesIds,
 } from './content';
+import { loadTestMap } from './test/test-map';
 
 // Validates every file in content/ the way the game loads it.
 describe('content', () => {
@@ -83,7 +84,7 @@ describe('content', () => {
     const jug = types.get('jug')!;
     expect(jug.faction).toBe('boss');
     const state = createState(1);
-    const world = new CollisionWorld(loadMap('test-map').world);
+    const world = new CollisionWorld(loadTestMap().world);
     const c = spawnCharacter(state, world, 0, 0);
     equipLoadout(c, items, loadouts.get(jug.loadout)!, createRng(1));
     const w = heldWeapon(c)!;
@@ -99,8 +100,6 @@ describe('content', () => {
     const spawns = map.markers.filter((m) => m.type === 'enemySpawn' && m.enemy === 'jug');
     expect(spawns).toHaveLength(2);
     for (const s of spawns) expect(s).toMatchObject({ chance: 0.4, oneOf: 'jug' });
-    // The yard boss is gone from Northpoint.
-    expect(map.markers.some((m) => m.type === 'enemySpawn' && m.enemy === 'boss-scav')).toBe(false);
     for (const s of spawns) {
       const patrol = map.patrols.find((p) => s.type === 'enemySpawn' && p.id === s.patrol)!;
       expect(patrol.points.every((p) => p.y < 1)).toBe(true);
@@ -249,8 +248,18 @@ describe('content', () => {
     },
   );
 
-  it('includes the test map and raid', () => {
-    expect(mapIds()).toContain('test-map');
-    expect(raidIds()).toContain('test-raid');
+  it('the test map (tests only) passes the map checks, and is no map or raid in content/', () => {
+    const map = loadTestMap();
+    const world = new CollisionWorld(map.world);
+    expect(spawnProblems(map)).toEqual([]);
+    expect(() => checkEnemySpawns(map)).not.toThrow();
+    expect(() => checkDoorKeys(map)).not.toThrow();
+    expect(() => checkLootContainers(map)).not.toThrow();
+    expect(exposedSpawns(map.markers, world, map.enemyClearance)).toEqual([]);
+    expect(map.markers.map((m) => m.type).sort()).toEqual(
+      ['enemySpawn', 'lootContainer', 'playerSpawn', 'questMarker'].sort(),
+    );
+    expect(mapIds()).not.toContain('test-map');
+    expect(raidIds()).toEqual(['northpoint']);
   });
 });

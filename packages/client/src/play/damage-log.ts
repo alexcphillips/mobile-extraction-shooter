@@ -8,7 +8,7 @@ import { ZONE_NAMES, type DamageEvent } from '@mes/shared';
 export interface DamageSource {
   /** `${entity}:shot`, `${entity}:melee`, `${entity}:fire`, 'fall' or 'bleeding'. */
   key: string;
-  /** What to call it: the enemy type ("Yard boss"), "Fall" or "Bleeding". */
+  /** What to call it: the enemy type ("Jug"), "Fall" or "Bleeding". */
   name: string;
   cause: DamageEvent['cause'] | 'bleed' | 'fire';
   hits: number;
@@ -69,7 +69,7 @@ export function logKiller(log: DamageLog, key: string): void {
   for (const s of log) s.killed = s.key === key;
 }
 
-/** One line for a source: "Yard boss shot you 4 times for 142 (head, chest) · armour took 30". */
+/** One line for a source: "Jug shot you 4 times for 142 (head, chest) · armour took 30". */
 export function describeSource(s: DamageSource): string {
   const hp = Math.round(s.damage);
   if (s.cause === 'bleed') return `Bleeding took ${hp}`;
