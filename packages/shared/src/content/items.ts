@@ -362,8 +362,14 @@ const armourSchema = z.strictObject({
  * screen height from the aim point, with y down, so 50 reaches the top and bottom edges;
  * a scope's mask has a radius of SCOPE_RADIUS.
  */
+const hexColour = z.string().regex(/^#[0-9a-f]{6}$/i, 'must be #rrggbb');
+/**
+ * Each shape may have its own colour (IE-2, 2026-11-09: a red centre over black lines),
+ * else it takes the reticle's. Arcs and triangles came then too; none changed a format.
+ */
+const shapeColour = { colour: hexColour.optional() };
 const reticleShapeSchema = z.discriminatedUnion('type', [
-  z.strictObject({ type: z.literal('dot'), x: finite, y: finite, r: positive }),
+  z.strictObject({ type: z.literal('dot'), x: finite, y: finite, r: positive, ...shapeColour }),
   z.strictObject({
     type: z.literal('line'),
     x1: finite,
@@ -371,8 +377,46 @@ const reticleShapeSchema = z.discriminatedUnion('type', [
     x2: finite,
     y2: finite,
     width: positive,
+    ...shapeColour,
   }),
-  z.strictObject({ type: z.literal('ring'), x: finite, y: finite, r: positive, width: positive }),
+  z.strictObject({
+    type: z.literal('ring'),
+    x: finite,
+    y: finite,
+    r: positive,
+    width: positive,
+    ...shapeColour,
+  }),
+  /**
+   * Part of a ring: from `from` clockwise to `to`, in degrees from straight up (0 up, 90
+   * right), so `to` is above `from` by no more than a full turn.
+   */
+  z
+    .strictObject({
+      type: z.literal('arc'),
+      x: finite,
+      y: finite,
+      r: positive,
+      width: positive,
+      from: finite,
+      to: finite,
+      ...shapeColour,
+    })
+    .refine((a) => a.to > a.from && a.to - a.from <= 360, {
+      message: 'an arc runs clockwise from "from" to "to", more than 0 and at most 360 degrees',
+      path: ['to'],
+    }),
+  /** A filled triangle, for chevrons. */
+  z.strictObject({
+    type: z.literal('triangle'),
+    x1: finite,
+    y1: finite,
+    x2: finite,
+    y2: finite,
+    x3: finite,
+    y3: finite,
+    ...shapeColour,
+  }),
 ]);
 
 /** The scope mask's radius in reticle units (% of the screen height). */
@@ -413,7 +457,7 @@ const attachmentSchema = z
         /** Magnification. Above 1 is a scope: full-screen zoom behind a mask. */
         zoom: finite.refine((n) => n >= 1, 'must be 1 or more'),
         reticle: z.strictObject({
-          colour: z.string().regex(/^#[0-9a-f]{6}$/i, 'must be #rrggbb'),
+          colour: hexColour,
           shapes: z.array(reticleShapeSchema).min(1),
         }),
       })

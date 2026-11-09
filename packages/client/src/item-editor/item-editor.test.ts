@@ -1,6 +1,8 @@
 import { ITEM_FORMAT, loadContent, modelShapes, type ItemDef, type ModelPart } from '@mes/shared';
 import { describe, expect, it } from 'vitest';
 import { itemContentProblem, itemUses, loadItems } from '../content';
+import { reticleMarkup } from '../hud/optic';
+import { TriangleBuilder } from '../render/geometry';
 import { budgetOf, triangleCount } from './budget';
 import {
   appendParts,
@@ -10,7 +12,10 @@ import {
   partLabel,
   removeParts,
   setSlots,
+  type Axis,
 } from './model-edit';
+import { coloursOf } from './palette';
+import { dragged, mirrored, repeated } from './reticle-edit';
 import { storageRisks } from './risk';
 import { ITEM_TYPES, blankItem } from './templates';
 
@@ -155,7 +160,7 @@ describe('item editor', () => {
     expect(duplicateParts(parts, [1], false)).toEqual([2]);
     expect(parts).toHaveLength(5);
     expect(duplicateParts(parts, [4, 0], true)).toEqual([5, 6]);
-    expect(parts[5]!.pos[0]).toBe(-0);
+    expect(parts[5]!.pos[0]).toBe(0);
     expect(parts[6]).toMatchObject({ pos: [-3, 0, 0], group: 'stock' });
     // Removing keeps at least one part.
     expect(
@@ -166,7 +171,7 @@ describe('item editor', () => {
     ).toBe(false);
     expect(parts).toHaveLength(7);
     expect(removeParts(parts, [0, 2, 6])).toBe(true);
-    expect(parts.map((p) => p.pos[0])).toEqual([1, 2, 3, -0]);
+    expect(parts.map((p) => p.pos[0])).toEqual([1, 2, 3, 0]);
     // Pasted parts are copies, at the end.
     const clip = [box(9)];
     expect(appendParts(parts, clip)).toEqual([4]);
@@ -194,5 +199,140 @@ describe('item editor', () => {
     expect(triangleCount(cube)).toBe(12);
     for (const d of items.values())
       expect(triangleCount(modelShapes(d.model)), d.id).toBeLessThanOrEqual(budgetOf(d).triangles);
+  });
+
+  it('mirrors parts across y and z into true mirror images (IE-2)', () => {
+    /** A part's corners where the game draws them, rounded, as a sorted list. */
+    const corners = (p: ModelPart, flip?: Axis): string[] => {
+      const b = new TriangleBuilder(false);
+      for (const sh of modelShapes({ parts: [p] })) b.shape(sh);
+      const pos = b.build().getAttribute('position');
+      const out = new Set<string>();
+      for (let i = 0; i < pos.count; i++) {
+        const v = [pos.getX(i), pos.getY(i), pos.getZ(i)];
+        if (flip) v['xyz'.indexOf(flip)]! *= -1;
+        out.add(v.map((n) => (Math.round(n * 1e4) / 1e4 || 0).toFixed(4)).join(' '));
+      }
+      return [...out].sort();
+    };
+    const parts: ModelPart[] = [
+      {
+        type: 'wedge',
+        pos: [0.1, 0.2, -0.3],
+        size: [0.1, 0.2, 0.3],
+        yaw: 20,
+        pitch: 30,
+        roll: 10,
+        colour: '#000000',
+      },
+      {
+        type: 'cylinder',
+        pos: [0.05, -0.1, 0.2],
+        radius: 0.05,
+        radiusTop: 0.01,
+        height: 0.2,
+        sides: 5,
+        yaw: 15,
+        pitch: 70,
+        colour: '#000000',
+      },
+      {
+        type: 'slab',
+        pos: [0, 0.1, 0.1],
+        size: [0.2, 0.05, 0.3],
+        corners: [0.01, 0.02, 0.05, 0.08],
+        roll: 25,
+        colour: '#000000',
+      },
+      {
+        type: 'box',
+        pos: [0.2, 0.1, 0.1],
+        size: [0.2, 0.05, 0.3],
+        yaw: 40,
+        pitch: -10,
+        colour: '#000000',
+      },
+    ];
+    for (const p of parts)
+      for (const axis of ['x', 'y', 'z'] as const)
+        expect(corners(mirrorPart(p, axis)), `${p.type} across ${axis}`).toEqual(corners(p, axis));
+    // A plain box keeps its angles' signs simple, and its copies go after it.
+    expect(mirrorPart(parts[3]!, 'y')).toMatchObject({ pos: [0.2, -0.1, 0.1], yaw: 40, pitch: 10 });
+    expect(mirrorPart(parts[3]!, 'z')).toMatchObject({
+      pos: [0.2, 0.1, -0.1],
+      yaw: -40,
+      pitch: 10,
+    });
+    const list = [structuredClone(parts[3]!)];
+    expect(duplicateParts(list, [0], 'z')).toEqual([1]);
+    expect(list[1]!.pos[2]).toBe(-0.1);
+  });
+
+  it('lists an item’s colours by use (IE-2)', () => {
+    const p = (colour: string): ModelPart =>
+      ({ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], colour }) as ModelPart;
+    expect(coloursOf([p('#111111'), p('#222222'), p('#222222'), p('#AABBCC')])).toEqual([
+      '#222222',
+      '#111111',
+      '#aabbcc',
+    ]);
+  });
+
+  it('draws and edits arcs, triangles and shape colours in reticles (IE-2)', () => {
+    const scope = structuredClone(
+      [...loadItems().values()].find((d) => d.type === 'attachment' && d.optic && d.optic.zoom > 1),
+    ) as unknown as { optic: { zoom: number; reticle: { colour: string; shapes: object[] } } };
+    const arc = { type: 'arc', x: 0, y: 0, r: 10, width: 0.3, from: -45, to: 45 } as const;
+    const chevron = {
+      type: 'triangle',
+      x1: 0,
+      y1: 0,
+      x2: 1.5,
+      y2: 2.5,
+      x3: -1.5,
+      y3: 2.5,
+      colour: '#ff0000',
+    } as const;
+    scope.optic.reticle.shapes.push(arc, chevron, {
+      type: 'dot',
+      x: 0,
+      y: 0,
+      r: 0.5,
+      colour: '#ff0000',
+    });
+    const def = loadContent(ITEM_FORMAT, structuredClone(scope), 's');
+    if (def.type !== 'attachment' || !def.optic) throw new Error('not an optic');
+    const svg = reticleMarkup(def.optic);
+    expect(svg).toContain('<path d="M-7.071 -7.071A10 10 0 0 1 7.071 -7.071"');
+    expect(svg).toContain('<polygon points="0,0 1.5,2.5 -1.5,2.5" stroke="none" fill="#ff0000"');
+    expect(svg).toContain('r="0.5" stroke="none" fill="#ff0000"');
+    // An arc runs clockwise, more than nothing and no more than a full turn.
+    for (const bad of [{ to: -45 }, { from: 0, to: 361 }]) {
+      scope.optic.reticle.shapes = [{ ...arc, ...bad }];
+      expect(() => loadContent(ITEM_FORMAT, structuredClone(scope), 's')).toThrow(/clockwise/);
+    }
+    // Mirrored left for right, an arc on the right comes out on the left, running clockwise.
+    const right = { ...arc, from: 45, to: 135 };
+    expect(mirrored(right, 'x')).toMatchObject({ from: -135, to: -45 });
+    expect(mirrored(right, 'y')).toMatchObject({ from: 45, to: 135 });
+    expect(mirrored(chevron, 'y')).toMatchObject({ y1: 0, y2: -2.5, y3: -2.5 });
+    // Dragging an arc's end to straight down sets it to 180°, staying above the start.
+    const snap = (v: number): number => v;
+    expect(dragged(arc, 'to', 0, 0, snap, { x: 0, y: 10 }, true)).toMatchObject({
+      from: -45,
+      to: 180,
+    });
+    expect(dragged(arc, 'from', 0, 0, snap, { x: 10, y: 1 }, true)).toMatchObject({ from: -265 });
+    expect(dragged(chevron, 'c', 1, 1, snap, { x: 0, y: 0 }, false)).toMatchObject({
+      x1: 0,
+      x3: -0.5,
+      y3: 3.5,
+    });
+    // Repeated: plain shapes, each a step on.
+    expect(
+      repeated({ type: 'line', x1: 0, y1: 2, x2: 1, y2: 2, width: 0.2 }, 3, 0, 2).map(
+        (l) => l.type === 'line' && l.y1,
+      ),
+    ).toEqual([4, 6, 8]);
   });
 });

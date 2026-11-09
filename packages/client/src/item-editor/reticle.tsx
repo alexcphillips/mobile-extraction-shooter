@@ -1,13 +1,23 @@
 import { SCOPE_RADIUS, type OpticDef, type ReticleShape } from '@mes/shared';
 import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { HexColour, Num } from '../editor/fields';
-import { aimedFov, reticleMarkup } from '../hud/optic';
+import { aimedFov, arcPath, reticleMarkup } from '../hud/optic';
+import {
+  NEW_SHAPES,
+  SHAPE_FIELDS,
+  describe,
+  dragged,
+  mirrored,
+  repeated,
+  type Handle,
+} from './reticle-edit';
 
 /*
  * The reticle designer (session 18): the reticle drawn by the game's own markup
  * (hud/optic.ts) on a phone-shaped screen, over a person standing at a chosen range, sized
  * for the optic's zoom, so a mil line or a dot can be judged against a body. Shapes are
- * picked and dragged by their handles; a drag is one undo step.
+ * picked and dragged by their handles; a drag is one undo step. IE-2 added arcs, filled
+ * triangles, a colour per shape and a repeat tool.
  */
 
 /** An iPhone's screen in landscape; reticle units are % of its height. */
@@ -19,8 +29,6 @@ const SNAPS = [0, 0.1, 0.25, 0.5, 1] as const;
 const POINTS = 393 / 100;
 const HANDLE = 1.3;
 
-type Handle = 'move' | 'a' | 'b' | 'r';
-
 interface Drag {
   index: number;
   handle: Handle;
@@ -28,39 +36,9 @@ interface Drag {
   shape: ReticleShape;
 }
 
-/** A shape after dragging one of its handles by (dx, dy), to (x, y). */
-function dragged(s: ReticleShape, h: Handle, dx: number, dy: number, snap: (v: number) => number) {
-  switch (s.type) {
-    case 'line':
-      return {
-        ...s,
-        ...(h !== 'b' && { x1: snap(s.x1 + dx), y1: snap(s.y1 + dy) }),
-        ...(h !== 'a' && { x2: snap(s.x2 + dx), y2: snap(s.y2 + dy) }),
-      };
-    case 'dot':
-    case 'ring':
-      if (h === 'r') return { ...s, r: Math.max(snap(s.r + dx) || 0.05, 0.05) };
-      return { ...s, x: snap(s.x + dx), y: snap(s.y + dy) };
-  }
-}
-
-function mirrored(s: ReticleShape, axis: 'x' | 'y'): ReticleShape {
-  const f = (v: number, on: boolean): number => (on ? -v || 0 : v);
-  const x = axis === 'x';
-  if (s.type === 'line')
-    return { ...s, x1: f(s.x1, x), x2: f(s.x2, x), y1: f(s.y1, !x), y2: f(s.y2, !x) };
-  return { ...s, x: f(s.x, x), y: f(s.y, !x) };
-}
-
-const NEW: Record<ReticleShape['type'], ReticleShape> = {
-  dot: { type: 'dot', x: 0, y: 0, r: 0.6 },
-  line: { type: 'line', x1: 0, y1: 2, x2: 0, y2: 10, width: 0.3 },
-  ring: { type: 'ring', x: 0, y: 0, r: 4, width: 0.3 },
-};
-
-function describe(s: ReticleShape): string {
-  if (s.type === 'line') return `line (${s.x1}, ${s.y1}) → (${s.x2}, ${s.y2})`;
-  return `${s.type} at (${s.x}, ${s.y}), r ${s.r}`;
+/** A handle's circle. */
+function Dot(props: { x: number; y: number; on: (e: ReactPointerEvent) => void }) {
+  return <circle cx={props.x} cy={props.y} r={HANDLE} onPointerDown={props.on} />;
 }
 
 export function ReticleDesigner(props: {
@@ -74,12 +52,12 @@ export function ReticleDesigner(props: {
   const [snapStep, setSnap] = useState<number>(0.25);
   const [range, setRange] = useState<number>(50);
   const [dark, setDark] = useState(false);
+  const [rep, setRep] = useState({ n: 4, dx: 0, dy: 2 });
   const svg = useRef<SVGSVGElement>(null);
   const drag = useRef<Drag | null>(null);
   const selected = sel !== null ? shapes[sel] : undefined;
   const snap = (v: number): number =>
     snapStep ? Math.round(v / snapStep) * snapStep : Math.round(v * 100) / 100;
-  const tidy = (v: number): number => Number(v.toFixed(3));
 
   const units = (e: { clientX: number; clientY: number }): { x: number; y: number } => {
     const m = svg.current?.getScreenCTM()?.inverse();
@@ -100,7 +78,7 @@ export function ReticleDesigner(props: {
     const d = drag.current;
     if (!d) return;
     const p = units(e);
-    const next = dragged(d.shape, d.handle, p.x - d.from.x, p.y - d.from.y, (v) => tidy(snap(v)));
+    const next = dragged(d.shape, d.handle, p.x - d.from.x, p.y - d.from.y, snap, p, !!snapStep);
     edit((o) => void (o.reticle.shapes[d.index] = next), true);
   };
   const end = (): void => {
@@ -108,11 +86,17 @@ export function ReticleDesigner(props: {
     drag.current = null;
     props.gesture(false);
   };
-  const setShape = (change: (s: Record<string, number>) => void): void =>
+  const setShape = (change: (s: Record<string, unknown>) => void): void =>
     edit((o) => {
       const s = sel === null ? undefined : o.reticle.shapes[sel];
-      if (s) change(s as unknown as Record<string, number>);
+      if (s) change(s as unknown as Record<string, unknown>);
     });
+  /** Adds shapes after the end and picks the first of them. */
+  const add = (...more: ReticleShape[]): void => {
+    if (!more.length) return;
+    edit((o) => void o.reticle.shapes.push(...more.map((m) => structuredClone(m))));
+    setSel(shapes.length);
+  };
 
   // A person standing at the range, chest on the aim point, at the zoom's field of view.
   const fov = (aimedFov(optic.zoom) * Math.PI) / 180;
@@ -143,53 +127,12 @@ export function ReticleDesigner(props: {
         <g dangerouslySetInnerHTML={{ __html: reticleMarkup(optic) }} />
         {shapes.map((s, i) => (
           <g key={i} className="ie-hit" onPointerDown={(e) => start(e, i, 'move')}>
-            {s.type === 'line' ? (
-              <line x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} strokeWidth={Math.max(s.width, 2)} />
-            ) : (
-              <circle
-                cx={s.x}
-                cy={s.y}
-                r={s.type === 'dot' ? Math.max(s.r, 1) : s.r}
-                strokeWidth={s.type === 'ring' ? Math.max(s.width, 2) : 0}
-                fill={s.type === 'dot' ? 'transparent' : 'none'}
-              />
-            )}
+            <HitArea s={s} />
           </g>
         ))}
         {selected && sel !== null && (
           <g className="ie-handles">
-            {selected.type === 'line' ? (
-              <>
-                <circle
-                  cx={selected.x1}
-                  cy={selected.y1}
-                  r={HANDLE}
-                  onPointerDown={(e) => start(e, sel, 'a')}
-                />
-                <circle
-                  cx={selected.x2}
-                  cy={selected.y2}
-                  r={HANDLE}
-                  onPointerDown={(e) => start(e, sel, 'b')}
-                />
-              </>
-            ) : (
-              <>
-                <circle
-                  cx={selected.x}
-                  cy={selected.y}
-                  r={HANDLE}
-                  onPointerDown={(e) => start(e, sel, 'move')}
-                />
-                <rect
-                  x={selected.x + selected.r - HANDLE}
-                  y={selected.y - HANDLE}
-                  width={HANDLE * 2}
-                  height={HANDLE * 2}
-                  onPointerDown={(e) => start(e, sel, 'r')}
-                />
-              </>
-            )}
+            <Handles s={selected} on={(e, h) => start(e, sel, h)} />
           </g>
         )}
       </svg>
@@ -219,7 +162,7 @@ export function ReticleDesigner(props: {
           night
         </label>
         <HexColour
-          label="colour"
+          label="reticle colour"
           value={optic.reticle.colour}
           onChange={(c) => edit((o) => void (o.reticle.colour = c))}
         />
@@ -227,38 +170,25 @@ export function ReticleDesigner(props: {
       <p className="ed-note">
         Units are % of the screen height from the aim point, y down; 1 is about {POINTS.toFixed(1)}{' '}
         pt on an iPhone.{scope && ` The mask's edge is at ${SCOPE_RADIUS}.`} A person at {range} m
-        is {(1.8 * u).toFixed(1)} high. Drag a shape, or its handles.
+        is {(1.8 * u).toFixed(1)} high. Drag a shape, or its handles. Arc angles are degrees
+        clockwise from straight up.
       </p>
       <div className="ed-row">
-        {(['dot', 'line', 'ring'] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => {
-              edit((o) => void o.reticle.shapes.push({ ...NEW[t] }));
-              setSel(shapes.length);
-            }}
-          >
+        {(['dot', 'line', 'ring', 'arc', 'triangle'] as const).map((t) => (
+          <button key={t} onClick={() => add(NEW_SHAPES[t])}>
             + {t}
           </button>
         ))}
         <button
           disabled={!selected}
-          onClick={() => {
-            if (!selected) return;
-            edit((o) => void o.reticle.shapes.push(mirrored(selected, 'x')));
-            setSel(shapes.length);
-          }}
+          onClick={() => selected && add(mirrored(selected, 'x'))}
           title="A copy mirrored left to right"
         >
           mirror ↔
         </button>
         <button
           disabled={!selected}
-          onClick={() => {
-            if (!selected) return;
-            edit((o) => void o.reticle.shapes.push(mirrored(selected, 'y')));
-            setSel(shapes.length);
-          }}
+          onClick={() => selected && add(mirrored(selected, 'y'))}
           title="A copy mirrored top to bottom"
         >
           mirror ↕
@@ -278,31 +208,141 @@ export function ReticleDesigner(props: {
       <ul className="ed-list ie-shapes">
         {shapes.map((s, i) => (
           <li key={i} className={i === sel ? 'ed-on' : undefined} onClick={() => setSel(i)}>
+            {s.colour && <span className="ie-swatch" style={{ background: s.colour }} />}
             {describe(s)}
           </li>
         ))}
       </ul>
       {selected && (
-        <div className="ed-row">
-          {(selected.type === 'line'
-            ? (['x1', 'y1', 'x2', 'y2', 'width'] as const)
-            : selected.type === 'ring'
-              ? (['x', 'y', 'r', 'width'] as const)
-              : (['x', 'y', 'r'] as const)
-          ).map((k) => (
-            <Num
-              key={k}
-              label={
-                k === 'width'
-                  ? `width (${((selected as { width: number }).width * POINTS).toFixed(1)} pt)`
-                  : k
-              }
-              value={(selected as unknown as Record<string, number>)[k]}
-              onChange={(v) => setShape((s) => void (v !== undefined && (s[k] = v)))}
+        <>
+          <div className="ed-row">
+            {SHAPE_FIELDS[selected.type].map((k) => (
+              <Num
+                key={k}
+                label={
+                  k === 'width' && 'width' in selected
+                    ? `width (${(selected.width * POINTS).toFixed(1)} pt)`
+                    : k === 'from' || k === 'to'
+                      ? `${k} °`
+                      : k
+                }
+                value={(selected as unknown as Record<string, number>)[k]}
+                onChange={(v) => setShape((s) => void (v !== undefined && (s[k] = v)))}
+              />
+            ))}
+          </div>
+          <div className="ed-row ie-tools">
+            <HexColour
+              label={selected.colour ? 'own colour' : 'colour (the reticle’s)'}
+              value={selected.colour ?? optic.reticle.colour}
+              onChange={(c) => setShape((s) => void (s.colour = c))}
             />
-          ))}
-        </div>
+            {selected.colour && (
+              <button
+                onClick={() => setShape((s) => void delete s.colour)}
+                title="Draw it in the reticle's colour again"
+              >
+                Reticle colour
+              </button>
+            )}
+          </div>
+          <div className="ed-row ie-tools">
+            <Num
+              label="repeat ×"
+              value={rep.n}
+              min={1}
+              onChange={(v) => v !== undefined && setRep((r) => ({ ...r, n: Math.round(v) }))}
+            />
+            <Num
+              label="step x"
+              value={rep.dx}
+              onChange={(v) => v !== undefined && setRep((r) => ({ ...r, dx: v }))}
+            />
+            <Num
+              label="step y"
+              value={rep.dy}
+              onChange={(v) => v !== undefined && setRep((r) => ({ ...r, dy: v }))}
+            />
+            <button
+              disabled={rep.n < 1 || rep.n > 100 || (!rep.dx && !rep.dy)}
+              onClick={() => add(...repeated(selected, Math.min(rep.n, 100), rep.dx, rep.dy))}
+              title="Adds copies of the shape, each a step on from the one before (mil ticks, a ladder); they're plain shapes"
+            >
+              Repeat
+            </button>
+          </div>
+        </>
       )}
     </div>
+  );
+}
+
+/** What catches a click on a shape: wider than the shape, invisible. */
+function HitArea({ s }: { s: ReticleShape }) {
+  switch (s.type) {
+    case 'line':
+      return <line x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} strokeWidth={Math.max(s.width, 2)} />;
+    case 'triangle':
+      return (
+        <polygon
+          points={`${s.x1},${s.y1} ${s.x2},${s.y2} ${s.x3},${s.y3}`}
+          strokeWidth={1}
+          fill="transparent"
+        />
+      );
+    case 'arc':
+      return (
+        <path
+          d={arcPath(s.x, s.y, s.r, s.from, s.to)}
+          strokeWidth={Math.max(s.width, 2)}
+          fill="none"
+        />
+      );
+    case 'dot':
+      return <circle cx={s.x} cy={s.y} r={Math.max(s.r, 1)} strokeWidth={0} fill="transparent" />;
+    case 'ring':
+      return <circle cx={s.x} cy={s.y} r={s.r} strokeWidth={Math.max(s.width, 2)} fill="none" />;
+  }
+}
+
+/** The picked shape's handles: corners, a centre and radius, an arc's ends. */
+function Handles(props: { s: ReticleShape; on: (e: ReactPointerEvent, h: Handle) => void }) {
+  const { s, on } = props;
+  if (s.type === 'line')
+    return (
+      <>
+        <Dot x={s.x1} y={s.y1} on={(e) => on(e, 'a')} />
+        <Dot x={s.x2} y={s.y2} on={(e) => on(e, 'b')} />
+      </>
+    );
+  if (s.type === 'triangle')
+    return (
+      <>
+        <Dot x={s.x1} y={s.y1} on={(e) => on(e, 'a')} />
+        <Dot x={s.x2} y={s.y2} on={(e) => on(e, 'b')} />
+        <Dot x={s.x3} y={s.y3} on={(e) => on(e, 'c')} />
+      </>
+    );
+  const end = (deg: number): { x: number; y: number } => ({
+    x: s.x + s.r * Math.sin((deg * Math.PI) / 180),
+    y: s.y - s.r * Math.cos((deg * Math.PI) / 180),
+  });
+  return (
+    <>
+      <Dot x={s.x} y={s.y} on={(e) => on(e, 'move')} />
+      <rect
+        x={s.x + s.r - HANDLE}
+        y={s.y - HANDLE}
+        width={HANDLE * 2}
+        height={HANDLE * 2}
+        onPointerDown={(e) => on(e, 'r')}
+      />
+      {s.type === 'arc' && (
+        <>
+          <Dot {...end(s.from)} on={(e) => on(e, 'from')} />
+          <Dot {...end(s.to)} on={(e) => on(e, 'to')} />
+        </>
+      )}
+    </>
   );
 }

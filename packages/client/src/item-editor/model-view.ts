@@ -59,6 +59,35 @@ export type FirstPerson =
 
 export type ViewMode = 'build' | 'hip' | 'aimed';
 
+/**
+ * How building is looked at (IE-2): the orbit camera, or flat (orthographic) from one side.
+ * Side looks from −x, so a gun's barrel points left as in its picture; top looks down with
+ * the barrel left too, so the two line up; front looks along +z from −z, at the muzzle.
+ */
+export type Look = 'orbit' | 'side' | 'top' | 'front';
+export const FLAT_LOOKS = ['side', 'top', 'front'] as const;
+type FlatLook = (typeof FLAT_LOOKS)[number];
+
+/** Where each flat camera sits from what it looks at, and which way is up on screen. */
+const FLAT: Record<FlatLook, { from: THREE.Vector3; up: THREE.Vector3 }> = {
+  side: { from: new THREE.Vector3(-1, 0, 0), up: new THREE.Vector3(0, 1, 0) },
+  top: { from: new THREE.Vector3(0, 1, 0), up: new THREE.Vector3(1, 0, 0) },
+  front: { from: new THREE.Vector3(0, 0, -1), up: new THREE.Vector3(0, 1, 0) },
+};
+
+/**
+ * A picture to trace under the side view (IE-2), kept in the editor only: `width` metres
+ * along z, its middle at (y, z), its left towards −z (the barrel) unless flipped.
+ */
+export interface Reference {
+  url: string;
+  width: number;
+  y: number;
+  z: number;
+  opacity: number;
+  flip: boolean;
+}
+
 export interface ModelViewEvents {
   /** A click: what's under it (null for nothing); `add` with shift held. */
   pick(p: Picked, add: boolean): void;
@@ -92,6 +121,20 @@ export class ModelView {
   private readonly fpCamera = new THREE.PerspectiveCamera(FOV, 1, 0.01, 100);
   private readonly fpBackdrop = new THREE.Scene();
   private readonly orbit: OrbitControls;
+  /** The flat cameras, each with its own pan and zoom (OrbitControls fixes a camera's up). */
+  private readonly flats: Record<
+    FlatLook,
+    { camera: THREE.OrthographicCamera; controls: OrbitControls }
+  >;
+  private look: Look = 'orbit';
+  /** Half the height a flat camera shows at zoom 1, in metres. */
+  private flatSize = 0.4;
+  private readonly grids = new THREE.Group();
+  private readonly reference = new THREE.Mesh(
+    new THREE.PlaneGeometry(1, 1).rotateY(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide }),
+  );
+  private referenceUrl: string | null = null;
   private readonly gizmo: TransformControls;
   /** Parts and point dots: rebuilt by show(). */
   private readonly item = new THREE.Group();
@@ -140,16 +183,34 @@ export class ModelView {
     const grid = new THREE.GridHelper(2, 40, 0x56606c, 0x343b44);
     const fine = new THREE.GridHelper(0.4, 40, 0x56606c, 0x2a3038);
     fine.position.y = 0.0001;
-    this.scene.add(grid, fine, new THREE.AxesHelper(0.1), this.context, this.item);
+    this.grids.add(grid, fine);
+    this.reference.visible = false;
+    this.reference.renderOrder = -1;
+    this.scene.add(this.grids, this.reference, new THREE.AxesHelper(0.1), this.context, this.item);
 
     this.orbit = new OrbitControls(this.camera, canvas);
     this.orbit.mouseButtons = { LEFT: null, MIDDLE: THREE.MOUSE.PAN, RIGHT: THREE.MOUSE.ROTATE };
     this.orbit.zoomSpeed = 1.5;
-    // Option-drag orbits on a trackpad, as in the map editor.
+    const flat = (look: FlatLook) => {
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 100);
+      camera.up.copy(FLAT[look].up);
+      camera.position.copy(FLAT[look].from).multiplyScalar(10);
+      const controls = new OrbitControls(camera, canvas);
+      controls.enableRotate = false;
+      controls.zoomToCursor = true;
+      controls.zoomSpeed = 1.5;
+      controls.mouseButtons = { LEFT: null, MIDDLE: THREE.MOUSE.PAN, RIGHT: THREE.MOUSE.PAN };
+      controls.enabled = false;
+      return { camera, controls };
+    };
+    this.flats = { side: flat('side'), top: flat('top'), front: flat('front') };
+    // Option-drag orbits on a trackpad, as in the map editor (pans, in a flat view).
     canvas.addEventListener(
       'pointerdown',
       (e) => {
         this.orbit.mouseButtons.LEFT = e.altKey ? THREE.MOUSE.ROTATE : null;
+        for (const f of Object.values(this.flats))
+          f.controls.mouseButtons.LEFT = e.altKey ? THREE.MOUSE.PAN : null;
         this.gizmo.enabled = !e.altKey;
       },
       { capture: true },
@@ -158,7 +219,7 @@ export class ModelView {
     this.gizmo.setSpace('local');
     this.gizmo.setSize(0.8);
     this.gizmo.addEventListener('dragging-changed', (e) => {
-      this.orbit.enabled = !e.value;
+      this.controls.enabled = !e.value;
       if (e.value) {
         this.pivot.updateMatrix();
         this.dragFrom = {
@@ -233,6 +294,8 @@ export class ModelView {
     this.band.remove();
     this.gizmo.dispose();
     this.orbit.dispose();
+    for (const f of Object.values(this.flats)) f.controls.dispose();
+    this.setReference(null);
     this.renderer.dispose();
   }
 
@@ -241,6 +304,97 @@ export class ModelView {
     this.gizmo.setMode(mode);
     this.gizmo.setTranslationSnap(step || null);
     this.gizmo.setRotationSnap(angle ? angle * DEG : null);
+  }
+
+  /** The camera building is drawn with. */
+  private get active(): THREE.Camera {
+    return this.look === 'orbit' ? this.camera : this.flats[this.look].camera;
+  }
+
+  private get controls(): OrbitControls {
+    return this.look === 'orbit' ? this.orbit : this.flats[this.look].controls;
+  }
+
+  /**
+   * Looks at the item flat from one side, or with the orbit camera again. A flat view starts
+   * on what the orbit camera looked at; the grid moves behind the item, square to the view.
+   */
+  setLook(look: Look): void {
+    if (look === this.look) return;
+    const from = this.controls.target.clone();
+    this.controls.enabled = false;
+    this.look = look;
+    this.controls.enabled = true;
+    this.gizmo.camera = this.active;
+    if (look !== 'orbit') {
+      const f = this.flats[look];
+      f.controls.target.copy(from);
+      f.camera.position.copy(from).addScaledVector(FLAT[look].from, 10);
+      f.controls.update();
+    }
+    // The grid behind the item: in the plane square to the view, a metre back.
+    this.grids.rotation.set(0, 0, 0);
+    this.grids.position.set(0, 0, 0);
+    if (look === 'side') {
+      this.grids.rotation.z = Math.PI / 2;
+      this.grids.position.x = 1;
+    } else if (look === 'front') {
+      this.grids.rotation.x = Math.PI / 2;
+      this.grids.position.z = 1;
+    } else if (look === 'top') this.grids.position.y = -1;
+    this.reference.visible = look === 'side' && !!this.referenceUrl;
+  }
+
+  /** A picture to trace under the side view, or none. */
+  setReference(ref: Reference | null): void {
+    const m = this.reference.material as THREE.MeshBasicMaterial;
+    if (ref?.url !== this.referenceUrl) {
+      m.map?.dispose();
+      m.map = null;
+      this.referenceUrl = ref?.url ?? null;
+      if (ref) {
+        const tex = new THREE.TextureLoader().load(ref.url, (t) => {
+          // Its height from its width, once the picture has loaded.
+          const img = t.image as { width: number; height: number };
+          this.reference.userData.aspect = img.height / Math.max(1, img.width);
+          this.placeReference();
+        });
+        tex.colorSpace = THREE.SRGBColorSpace;
+        m.map = tex;
+      }
+      m.needsUpdate = true;
+    }
+    this.reference.userData.ref = ref;
+    this.placeReference();
+    this.reference.visible = this.look === 'side' && !!ref;
+  }
+
+  private placeReference(): void {
+    const ref = this.reference.userData.ref as Reference | null | undefined;
+    if (!ref) return;
+    const aspect = (this.reference.userData.aspect as number | undefined) ?? 0.5;
+    const m = this.reference.material as THREE.MeshBasicMaterial;
+    m.opacity = ref.opacity;
+    // The plane faces −x, its own +x along +z; just in front of the grid.
+    this.reference.position.set(0.95, ref.y, ref.z);
+    this.reference.scale.set(1, ref.width * aspect, ref.width * (ref.flip ? -1 : 1));
+  }
+
+  /**
+   * Which model axes the arrow keys move along: right and up on screen, and towards the
+   * viewer (⇧). The orbit view uses x, y and −z (forward, along a barrel).
+   */
+  screenAxes(): { right: Vec3; up: Vec3; out: Vec3 } {
+    if (this.look === 'orbit') return { right: [1, 0, 0], up: [0, 1, 0], out: [0, 0, -1] };
+    const c = this.flats[this.look].camera;
+    c.updateMatrixWorld();
+    const e = c.matrixWorld.elements;
+    const r = (v: number): number => Math.round(v);
+    return {
+      right: [r(e[0]!), r(e[1]!), r(e[2]!)],
+      up: [r(e[4]!), r(e[5]!), r(e[6]!)],
+      out: [r(e[8]!), r(e[9]!), r(e[10]!)],
+    };
   }
 
   setMode(mode: ViewMode, fp: FirstPerson | null): void {
@@ -363,6 +517,15 @@ export class ModelView {
     if (box.isEmpty()) return;
     const centre = box.getCenter(new THREE.Vector3());
     const r = Math.max(0.05, box.getSize(new THREE.Vector3()).length() / 2);
+    if (this.look !== 'orbit') {
+      const f = this.flats[this.look];
+      f.controls.target.copy(centre);
+      f.camera.position.copy(centre).addScaledVector(FLAT[this.look].from, 10);
+      f.camera.zoom = this.flatSize / (r * 1.15);
+      f.camera.updateProjectionMatrix();
+      f.controls.update();
+      return;
+    }
     this.orbit.target.copy(centre);
     if (this.bodyWanted) {
       // Worn gear: from outside the body, on the gear's side of it (the front by default).
@@ -397,7 +560,7 @@ export class ModelView {
       ((e.clientX - r.left) / r.width) * 2 - 1,
       -((e.clientY - r.top) / r.height) * 2 + 1,
     );
-    this.ray.setFromCamera(ndc, this.camera);
+    this.ray.setFromCamera(ndc, this.active);
     const hits = this.ray.intersectObjects(this.item.children, false);
     // Dots are drawn on top, so they win.
     const dot = hits.find((h) => h.object.userData.point !== undefined);
@@ -419,7 +582,7 @@ export class ModelView {
     for (const o of this.item.children) {
       const index = (o.userData as { part?: number }).part;
       if (index === undefined) continue;
-      v.copy(o.position).project(this.camera);
+      v.copy(o.position).project(this.active);
       if (v.z > 1) continue;
       const sx = ((v.x + 1) / 2) * r.width;
       const sy = ((1 - v.y) / 2) * r.height;
@@ -466,6 +629,14 @@ export class ModelView {
       c.aspect = w / Math.max(1, h);
       c.updateProjectionMatrix();
     }
+    const half = this.flatSize;
+    for (const { camera } of Object.values(this.flats)) {
+      camera.left = -half * (w / Math.max(1, h));
+      camera.right = half * (w / Math.max(1, h));
+      camera.top = half;
+      camera.bottom = -half;
+      camera.updateProjectionMatrix();
+    }
     this.overlay.setAttribute(
       'viewBox',
       `${-50 * (w / Math.max(1, h))} -50 ${100 * (w / Math.max(1, h))} 100`,
@@ -476,7 +647,7 @@ export class ModelView {
     this.renderer.clear();
     const vm = this.viewmodel;
     if (this.mode === 'build' || !vm || !this.fp) {
-      this.renderer.render(this.scene, this.camera);
+      this.renderer.render(this.scene, this.active);
       return;
     }
     const aimed = this.mode === 'aimed' && this.fp.kind === 'gun';

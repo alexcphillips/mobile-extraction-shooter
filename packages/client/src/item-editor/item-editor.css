@@ -183,7 +183,9 @@ body.item-editor #scene {
 }
 
 .ie-hit line,
-.ie-hit circle {
+.ie-hit circle,
+.ie-hit path,
+.ie-hit polygon {
   stroke: transparent;
   cursor: move;
 }
@@ -423,4 +425,43 @@ body.item-editor #scene {
 
 .ie-fit-wait {
   opacity: 0.4;
+}
+
+/* IE-2: colour swatches, the eyedropper, the picture to trace. */
+
+.ie-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+  margin: 4px 0;
+}
+
+.ie-swatches .ed-note {
+  min-width: 56px;
+}
+
+.ie-chip {
+  width: 16px;
+  height: 16px;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.ie-chip.ed-on {
+  outline: 2px solid #ffe082;
+  outline-offset: 1px;
+}
+
+.ie-dropper-note {
+  margin: 4px 0;
+  color: #ffe082;
+  font-size: 12px;
+}
+
+.ie-reference input[type='file'] {
+  max-width: 190px;
 }

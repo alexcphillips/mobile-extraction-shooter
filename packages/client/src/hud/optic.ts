@@ -12,14 +12,38 @@ export function aimedFov(zoom: number): number {
   return zoom > 1 ? (2 * Math.atan(Math.tan((FOV / 2) * DEG) / zoom)) / DEG : AIM_FOV;
 }
 
+/** A point on a circle, `deg` clockwise from straight up (reticle units are y down). */
+function onCircle(x: number, y: number, r: number, deg: number): string {
+  const a = deg * DEG;
+  const f = (n: number): string => String(Math.round(n * 1000) / 1000);
+  return `${f(x + r * Math.sin(a))} ${f(y - r * Math.cos(a))}`;
+}
+
+/** An arc's path: clockwise from `from` to `to`; a full turn is two halves. */
+export function arcPath(x: number, y: number, r: number, from: number, to: number): string {
+  const sweep = to - from;
+  if (sweep >= 360) {
+    const mid = from + 180;
+    return `M${onCircle(x, y, r, from)}A${r} ${r} 0 0 1 ${onCircle(x, y, r, mid)}A${r} ${r} 0 0 1 ${onCircle(x, y, r, from)}`;
+  }
+  return `M${onCircle(x, y, r, from)}A${r} ${r} 0 ${sweep > 180 ? 1 : 0} 1 ${onCircle(x, y, r, to)}`;
+}
+
 function shapeSvg(s: ReticleShape): string {
+  // A shape's own colour, else the reticle's from the group around it.
+  const fill = s.colour ? ` fill="${s.colour}"` : '';
+  const stroke = s.colour ? ` stroke="${s.colour}"` : '';
   switch (s.type) {
     case 'dot':
-      return `<circle cx="${s.x}" cy="${s.y}" r="${s.r}" stroke="none" />`;
+      return `<circle cx="${s.x}" cy="${s.y}" r="${s.r}" stroke="none"${fill} />`;
     case 'line':
-      return `<line x1="${s.x1}" y1="${s.y1}" x2="${s.x2}" y2="${s.y2}" stroke-width="${s.width}" />`;
+      return `<line x1="${s.x1}" y1="${s.y1}" x2="${s.x2}" y2="${s.y2}" stroke-width="${s.width}"${stroke} />`;
     case 'ring':
-      return `<circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="none" stroke-width="${s.width}" />`;
+      return `<circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="none" stroke-width="${s.width}"${stroke} />`;
+    case 'arc':
+      return `<path d="${arcPath(s.x, s.y, s.r, s.from, s.to)}" fill="none" stroke-width="${s.width}"${stroke} />`;
+    case 'triangle':
+      return `<polygon points="${s.x1},${s.y1} ${s.x2},${s.y2} ${s.x3},${s.y3}" stroke="none"${fill} />`;
   }
 }
 

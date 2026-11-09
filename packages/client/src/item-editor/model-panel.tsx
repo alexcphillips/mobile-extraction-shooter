@@ -25,15 +25,25 @@ import {
   newPart,
   partLabel,
   removeParts,
+  type Axis,
 } from './model-edit';
 import {
+  FLAT_LOOKS,
   ModelView,
   pointColour,
   type FirstPerson,
+  type Look,
   type ModelScene,
   type Picked,
   type ViewMode,
 } from './model-view';
+import { HOUSE_PALETTE, coloursOf } from './palette';
+import {
+  readReference,
+  removeReference,
+  writeReference,
+  type StoredReference,
+} from './reference-store';
 
 /*
  * The item editor's model tab (session 18b): the parts and points down the left, the 3D
@@ -165,6 +175,11 @@ export function ModelTab(props: {
   /** Attachments: the gun it's previewed on. */
   const [onGun, setOnGun] = useState<string | undefined>(undefined);
   const [clip, setClip] = useState<Clip | null>(readClip);
+  /** IE-2: orbit or a flat view, and the eyedropper (the next part clicked gives its colour). */
+  const [look, setLook] = useState<Look>('orbit');
+  const [dropper, setDropper] = useState(false);
+  /** What a click in the view does while the eyedropper is on; set every render. */
+  const dropRef = useRef<((p: Picked) => boolean) | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const overlay = useRef<SVGSVGElement>(null);
   const view = useRef<ModelView | null>(null);
@@ -193,14 +208,16 @@ export function ModelTab(props: {
     const v = new ModelView(canvas.current!, overlay.current!, {
       // Shift-click adds a part, or takes it away if it's picked; a click on nothing with
       // shift keeps what's picked.
-      pick: (p, add) =>
+      pick: (p, add) => {
+        if (dropRef.current?.(p)) return;
         setPicked((cur) => {
           if (!add) return p;
           if (p?.kind !== 'parts') return p ?? cur;
           const had = partsOf(cur);
           const i = p.indices[0]!;
           return asPicked(had.includes(i) ? had.filter((j) => j !== i) : [...had, i]);
-        }),
+        });
+      },
       boxPick: (indices, add) =>
         setPicked((cur) => asPicked(add ? [...partsOf(cur), ...indices] : indices)),
       movedParts: (moves) =>
@@ -285,6 +302,7 @@ export function ModelTab(props: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fpKey, db]);
   useEffect(() => view.current?.setGizmo(gizmo, step, angle), [gizmo, step, angle]);
+  useEffect(() => view.current?.setLook(look), [look]);
   // A new item: look at it.
   useEffect(() => {
     requestAnimationFrame(() => view.current?.frame());
@@ -299,8 +317,8 @@ export function ModelTab(props: {
     editModel((m) => m.parts.push(part));
     setPicked(asPicked([model.parts.length]));
   };
-  /** Copies of the picked parts, mirrored or not, which are then picked. */
-  const duplicate = (mirror: boolean): void => {
+  /** Copies of the picked parts, mirrored (across x, or the axis given) or not, then picked. */
+  const duplicate = (mirror: boolean | Axis): void => {
     if (!sel.length) return;
     let added: number[] = [];
     editModel((m) => (added = duplicateParts(m.parts, sel, mirror)));
@@ -328,8 +346,45 @@ export function ModelTab(props: {
   const editPicked = (change: (p: ModelPart) => void): void =>
     editModel((m) => sel.forEach((i) => m.parts[i] && change(m.parts[i])));
 
+  // The eyedropper: a part clicked in the view gives its colour to the picked parts.
+  useEffect(() => {
+    dropRef.current = dropper
+      ? (p) => {
+          const from = p?.kind === 'parts' ? model.parts[p.indices[0]!] : undefined;
+          if (from) editPicked((q) => (q.colour = from.colour));
+          setDropper(false);
+          return true;
+        }
+      : null;
+  });
+  if (dropper && !sel.length) setDropper(false);
+
+  /**
+   * Moves the picked parts or point by `n` snap steps (a millimetre with snap off) along an
+   * axis. Holding the key down is one undo step.
+   */
+  const nudge = (axis: Vec3, n: number, first: boolean): void => {
+    const d = (step || 0.001) * n;
+    const by = (v: Vec3): [number, number, number] => [
+      r4(v[0] + axis[0] * d),
+      r4(v[1] + axis[1] * d),
+      r4(v[2] + axis[2] * d),
+    ];
+    if (first) editor.beginGesture();
+    if (picked?.kind === 'point') {
+      const at = pointAt(model, picked.key);
+      if (at) editModel((m) => setPoint(m, picked.key, by(at)), true);
+    } else if (sel.length)
+      editModel(
+        (m) => sel.forEach((i) => m.parts[i] && (m.parts[i].pos = by(m.parts[i].pos))),
+        true,
+      );
+  };
+
   // Keys, while not typing: W move, E turn, ⌫ delete, ⌘D duplicate, M mirror, F frame,
-  // ⌘C copy, ⌘V paste, ⌘A pick every part, Esc pick nothing.
+  // ⌘C copy, ⌘V paste, ⌘A pick every part, Esc pick nothing (or stop the eyedropper);
+  // IE-2: 1 side, 2 top, 3 front, 0 orbit; arrows nudge (⇧↑↓ towards and away from you);
+  // I eyedropper.
   useEffect(() => {
     const key = (e: KeyboardEvent): void => {
       const t = e.target;
@@ -350,12 +405,28 @@ export function ModelTab(props: {
         e.preventDefault();
         return;
       }
+      const arrow = { arrowleft: -1, arrowright: 1, arrowup: 1, arrowdown: -1 }[k];
+      if (arrow !== undefined && mode === 'build' && (sel.length || picked?.kind === 'point')) {
+        const axes = view.current?.screenAxes();
+        if (!axes) return;
+        const along =
+          k === 'arrowleft' || k === 'arrowright' ? axes.right : e.shiftKey ? axes.out : axes.up;
+        nudge(along, arrow, !e.repeat);
+        e.preventDefault();
+        return;
+      }
       if (k === 'w') setGizmo('translate');
       else if (k === 'e') setGizmo('rotate');
       else if (k === 'f') view.current?.frame();
       else if (k === 'backspace' || k === 'delete') remove();
       else if (k === 'm') duplicate(true);
-      else if (k === 'escape') setPicked(null);
+      else if (k === 'i') setDropper((d) => !d && sel.length > 0);
+      else if (k === '0') setLook('orbit');
+      else if (k === '1' || k === '2' || k === '3') setLook(FLAT_LOOKS[Number(k) - 1]!);
+      else if (k === 'escape') {
+        if (dropper) setDropper(false);
+        else setPicked(null);
+      }
     };
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
@@ -427,6 +498,14 @@ export function ModelTab(props: {
             }
             duplicate={duplicate}
             remove={canRemove ? remove : null}
+            itemColours={coloursOf(model.parts)}
+            pickColour={(c) =>
+              setPicked(
+                asPicked(model.parts.flatMap((p, i) => (p.colour.toLowerCase() === c ? [i] : []))),
+              )
+            }
+            dropper={dropper}
+            setDropper={setDropper}
           />
         )}
         {keys.length > 0 && <h4>points</h4>}
@@ -484,6 +563,21 @@ export function ModelTab(props: {
               {m}
             </Toggle>
           ))}
+          {mode === 'build' &&
+            (['orbit', ...FLAT_LOOKS] as const).map((l, i) => (
+              <Toggle
+                key={l}
+                on={look === l}
+                onClick={() => setLook(l)}
+                title={
+                  l === 'orbit'
+                    ? '0: the orbit camera'
+                    : `${i}: flat from the ${l}${l === 'side' ? ' (the barrel to the left), with a picture to trace' : l === 'top' ? ' (the barrel to the left)' : ' (looking down the barrel)'}`
+                }
+              >
+                {l === 'orbit' ? '3D' : l}
+              </Toggle>
+            ))}
           {mode === 'build' && (
             <>
               <Toggle on={gizmo === 'translate'} onClick={() => setGizmo('translate')} title="W">
@@ -542,11 +636,20 @@ export function ModelTab(props: {
             </p>
           )}
         </div>
+        {dropper && (
+          <p className="ie-dropper-note">
+            Eyedropper: click a part to give its colour (Esc stops).
+          </p>
+        )}
+        {mode === 'build' && look === 'side' && (
+          <ReferenceFields key={def.id} item={def.id} view={view} />
+        )}
         <p className="ed-note">
           Click a part or point to pick it, shift-click to add one, drag a box to pick many; drag
-          the gizmo. Right-drag or ⌥-drag orbits, middle-drag pans, scroll zooms. W move, E turn, F
-          frame, M mirror a copy, ⌘D duplicate, ⌘C/⌘V copy and paste (into any item), ⌘A all, ⌫
-          delete, Esc none.
+          the gizmo. Right-drag or ⌥-drag orbits (pans in a flat view), middle-drag pans, scroll
+          zooms. 0 3D, 1 side, 2 top, 3 front. W move, E turn, F frame, arrows nudge by the snap
+          (⇧↑↓ in and out), M mirror a copy, I eyedropper, ⌘D duplicate, ⌘C/⌘V copy and paste (into
+          any item), ⌘A all, ⌫ delete, Esc none.
         </p>
       </section>
     </main>
@@ -724,8 +827,14 @@ function PickedFields(props: {
   edit: (change: (p: ModelPart) => void) => void;
   /** Edits the one picked part, when only one is. */
   single: ((change: (p: ModelPart) => void) => void) | undefined;
-  duplicate: (mirror: boolean) => void;
+  duplicate: (mirror: boolean | Axis) => void;
   remove: (() => void) | null;
+  /** The colours the item uses, most used first. */
+  itemColours: readonly string[];
+  /** Picks every part of a colour. */
+  pickColour: (c: string) => void;
+  dropper: boolean;
+  setDropper: (on: boolean) => void;
 }) {
   const { parts, picked, edit } = props;
   const chosen = picked.map((i) => parts[i]!);
@@ -780,6 +889,13 @@ function PickedFields(props: {
           value={first.colour}
           onChange={(c) => edit((q) => (q.colour = c))}
         />
+        <Toggle
+          on={props.dropper}
+          onClick={() => props.setDropper(!props.dropper)}
+          title="I: then click a part in the view to give its colour to the picked parts"
+        >
+          eyedropper
+        </Toggle>
         {props.gun && (
           <Pick
             label="hidden by"
@@ -795,12 +911,31 @@ function PickedFields(props: {
           />
         )}
       </div>
+      <Swatches
+        label="this item"
+        colours={props.itemColours.map((colour) => ({ colour, name: colour }))}
+        current={shared((p) => p.colour.toLowerCase())}
+        set={(c) => edit((q) => (q.colour = c))}
+        pickAll={props.pickColour}
+      />
+      <Swatches
+        label="house"
+        colours={HOUSE_PALETTE}
+        current={shared((p) => p.colour.toLowerCase())}
+        set={(c) => edit((q) => (q.colour = c))}
+      />
       <div className="ed-row">
         <button onClick={() => props.duplicate(false)} title="⌘D">
           Duplicate
         </button>
-        <button onClick={() => props.duplicate(true)} title="M: copies on the other side">
-          Mirror
+        <button onClick={() => props.duplicate('x')} title="M: copies on the other side (x = 0)">
+          Mirror x
+        </button>
+        <button onClick={() => props.duplicate('y')} title="Copies upside down, across y = 0">
+          Mirror y
+        </button>
+        <button onClick={() => props.duplicate('z')} title="Copies front to back, across z = 0">
+          Mirror z
         </button>
         <button
           onClick={() => props.remove?.()}
@@ -895,6 +1030,130 @@ function PartFields(props: { part: ModelPart; edit: (change: (p: ModelPart) => v
         {angle('pitch')}
         {angle('roll')}
       </div>
+    </div>
+  );
+}
+
+/**
+ * A row of colour swatches: a click colours the picked parts; with `pickAll`, shift-click
+ * picks every part of that colour instead.
+ */
+function Swatches(props: {
+  label: string;
+  colours: readonly { colour: string; name: string }[];
+  current: string | undefined;
+  set: (c: string) => void;
+  pickAll?: (c: string) => void;
+}) {
+  return (
+    <div className="ie-swatches">
+      <span className="ed-note">{props.label}</span>
+      {props.colours.map(({ colour, name }) => (
+        <button
+          key={colour}
+          className={colour === props.current ? 'ie-chip ed-on' : 'ie-chip'}
+          style={{ background: colour }}
+          title={`${name}${name === colour ? '' : ` ${colour}`}${props.pickAll ? ' · shift-click picks every part this colour' : ''}`}
+          onClick={(e) => (e.shiftKey && props.pickAll ? props.pickAll(colour) : props.set(colour))}
+        />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The picture to trace under the side view (IE-2): chosen from a file, kept for this item on
+ * this device (never in content), sized and placed in metres.
+ */
+function ReferenceFields(props: { item: string; view: { current: ModelView | null } }) {
+  const { item, view } = props;
+  // Keyed by the item, so a new item starts empty and loads its own.
+  const [ref, setRef] = useState<(StoredReference & { url: string }) | null>(null);
+  useEffect(() => {
+    let live = true;
+    void readReference(item).then((r) => {
+      if (live && r) setRef({ ...r, url: URL.createObjectURL(r.picture) });
+    });
+    return () => {
+      live = false;
+    };
+  }, [item]);
+  // Shown while this is; each picture's URL let go once it's replaced or gone.
+  useEffect(() => view.current?.setReference(ref), [ref, view]);
+  useEffect(() => () => view.current?.setReference(null), [view]);
+  const url = ref?.url;
+  useEffect(() => () => void (url && URL.revokeObjectURL(url)), [url]);
+
+  const change = (c: Partial<StoredReference>): void => {
+    if (!ref) return;
+    const next = { ...ref, ...c };
+    setRef(next);
+    const { url: _, ...stored } = next;
+    void writeReference(item, stored);
+  };
+  const choose = (file: File | undefined): void => {
+    if (!file) return;
+    const stored: StoredReference = ref
+      ? { ...ref, picture: file }
+      : { picture: file, width: 0.9, y: 0, z: 0, opacity: 0.5, flip: false };
+    const { url: _, ...plain } = stored as StoredReference & { url?: string };
+    setRef({ ...plain, url: URL.createObjectURL(file) });
+    void writeReference(item, plain);
+  };
+  return (
+    <div className="ed-row ie-tools ie-reference">
+      <label className="ed-field">
+        trace a picture
+        <input type="file" accept="image/*" onChange={(e) => choose(e.target.files?.[0])} />
+      </label>
+      {ref && (
+        <>
+          <Num
+            label="width m"
+            value={ref.width}
+            min={0.01}
+            onChange={(v) => v !== undefined && v > 0 && change({ width: v })}
+          />
+          <Num
+            label="middle y"
+            value={ref.y}
+            onChange={(v) => v !== undefined && change({ y: v })}
+          />
+          <Num
+            label="middle z"
+            value={ref.z}
+            onChange={(v) => v !== undefined && change({ z: v })}
+          />
+          <label className="ed-field">
+            show
+            <input
+              type="range"
+              min={0.1}
+              max={1}
+              step={0.05}
+              value={ref.opacity}
+              onChange={(e) => change({ opacity: Number(e.target.value) })}
+            />
+          </label>
+          <label className="ed-field">
+            <input
+              type="checkbox"
+              checked={ref.flip}
+              onChange={(e) => change({ flip: e.target.checked })}
+            />
+            flip
+          </label>
+          <button
+            onClick={() => {
+              setRef(null);
+              void removeReference(item);
+            }}
+            title="Forget the picture for this item"
+          >
+            Remove
+          </button>
+        </>
+      )}
     </div>
   );
 }

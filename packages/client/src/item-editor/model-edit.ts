@@ -6,6 +6,7 @@ import {
   type Vec3,
   type WeaponModel,
 } from '@mes/shared';
+import * as THREE from 'three';
 import type { Doc } from './editor';
 
 /*
@@ -79,9 +80,14 @@ export const partLabel = (p: ModelPart, i: number): string => p.name ?? `${p.typ
  * Copies of some parts (mirrored left for right with `mirror`): one part's copy goes just
  * after it, several parts' copies at the end in their order. Returns the copies' indices.
  */
-export function duplicateParts(parts: ModelPart[], indices: readonly number[], mirror: boolean) {
+export function duplicateParts(
+  parts: ModelPart[],
+  indices: readonly number[],
+  mirror: boolean | Axis,
+) {
   const from = [...new Set(indices)].filter((i) => parts[i]).sort((a, b) => a - b);
-  const copies = from.map((i) => (mirror ? mirrorPart(parts[i]!) : structuredClone(parts[i]!)));
+  const axis: Axis | null = mirror === true ? 'x' : mirror || null;
+  const copies = from.map((i) => (axis ? mirrorPart(parts[i]!, axis) : structuredClone(parts[i]!)));
   if (from.length === 1) {
     parts.splice(from[0]! + 1, 0, copies[0]!);
     return [from[0]! + 1];
@@ -107,15 +113,81 @@ export function appendParts(parts: ModelPart[], add: readonly ModelPart[]): numb
   return add.map((_, k) => start + k);
 }
 
-/** A copy of a part mirrored across x = 0 (left for right): its yaw and roll turn the other way. */
-export function mirrorPart(p: ModelPart): ModelPart {
-  const out: ModelPart = { ...p, pos: [-p.pos[0], p.pos[1], p.pos[2]] };
-  if (p.yaw) out.yaw = -p.yaw;
-  if (p.roll) out.roll = -p.roll;
-  // Left for right: back left swaps with back right, front right with front left.
+export type Axis = 'x' | 'y' | 'z';
+
+/** An angle in (−180, 180] (left as it is when it already is), without float noise. */
+const angle = (a: number): number => {
+  let r = Math.round(a * 10_000) / 10_000;
+  while (r > 180) r -= 360;
+  while (r <= -180) r += 360;
+  return r || 0;
+};
+
+/** Sets or (for 0) leaves out a part's yaw, pitch and roll. */
+function setAngles(p: ModelPart, yaw: number, pitch: number, roll: number): void {
+  for (const [k, a] of [
+    ['yaw', yaw],
+    ['pitch', pitch],
+    ['roll', roll],
+  ] as const) {
+    const v = angle(a);
+    if (v) p[k] = v;
+    else delete p[k];
+  }
+}
+
+/**
+ * The half turn, about one of its own axes, that makes a part flipped along its own `axis`
+ * out of itself, or null if it's the same flipped. A box and a slab are (a slab's corners
+ * swap instead); a wedge rises along z, so flipped along y it's turned about z, along z
+ * about y; a cylinder's first corner is on +x, so one of odd sides flipped along x is turned
+ * about y, and a cone flipped along y is turned about x.
+ */
+function halfTurn(p: ModelPart, axis: Axis): THREE.Vector3 | null {
+  if (p.type === 'wedge') {
+    if (axis === 'y') return new THREE.Vector3(0, 0, 1);
+    if (axis === 'z') return new THREE.Vector3(0, 1, 0);
+  } else if (p.type === 'cylinder') {
+    if (axis === 'x' && (p.sides ?? 8) % 2 === 1) return new THREE.Vector3(0, 1, 0);
+    if (axis === 'y' && p.radiusTop !== undefined && p.radiusTop !== p.radius)
+      return new THREE.Vector3(1, 0, 0);
+  }
+  return null;
+}
+
+/**
+ * A copy of a part mirrored across the model's x = 0 (left for right, the default), y = 0
+ * (top for bottom) or z = 0 (front for back). The mirror turns the part the other way about
+ * the two axes in the mirror's plane; a slab's corners swap; a part that isn't the same
+ * flipped is turned half round as well, so the copy is a true mirror image.
+ */
+export function mirrorPart(p: ModelPart, axis: Axis = 'x'): ModelPart {
+  const k = 'xyz'.indexOf(axis);
+  const out: ModelPart = structuredClone(p);
+  const pos: [number, number, number] = [p.pos[0], p.pos[1], p.pos[2]];
+  pos[k] = -pos[k]! || 0;
+  out.pos = pos;
+  // Mirrored, a turn about the axis across the mirror stays; the other two go the other way.
+  const yaw = axis === 'y' ? (p.yaw ?? 0) : -(p.yaw ?? 0);
+  const pitch = axis === 'x' ? (p.pitch ?? 0) : -(p.pitch ?? 0);
+  const roll = axis === 'z' ? (p.roll ?? 0) : -(p.roll ?? 0);
+  const turn = halfTurn(p, axis);
+  if (turn) {
+    // Its own half turn first (yaw, pitch, roll is Y·X·Z), then back into yaw, pitch, roll.
+    const q = new THREE.Quaternion()
+      .setFromEuler(new THREE.Euler(pitch * DEG, yaw * DEG, roll * DEG, 'YXZ'))
+      .multiply(new THREE.Quaternion().setFromAxisAngle(turn, Math.PI));
+    const e = new THREE.Euler().setFromQuaternion(q, 'YXZ');
+    setAngles(out, e.y / DEG, e.x / DEG, e.z / DEG);
+  } else setAngles(out, yaw, pitch, roll);
   if (out.type === 'slab') {
     const [bl, br, fr, fl] = out.corners;
-    out.corners = [br, bl, fl, fr];
+    // Left for right: back left swaps with back right, front right with front left. Front
+    // for back: back left with front left, back right with front right.
+    if (axis === 'x') out.corners = [br, bl, fl, fr];
+    if (axis === 'z') out.corners = [fl, fr, br, bl];
   }
   return out;
 }
+
+const DEG = Math.PI / 180;

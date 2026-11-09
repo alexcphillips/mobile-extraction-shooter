@@ -71,6 +71,19 @@ Only when the user asks for a container (see Collision). A container is a node w
 4. Check the user's existing prefabs before making one: they may already have a version (empty-pallet) or a convention to keep (a colour slot the map passes down).
 5. Say what wasn't seen: these are built from numbers, so ask for a screenshot and fix from it.
 
+## Item palette (2026-11-09, IE-2)
+The item editor's "house" swatches (`item-editor/palette.ts`), taken from the colours the content's items use most. Start a new item from these; keep two shades per material as for props.
+
+| Use | Colours |
+|---|---|
+| Blacks and greys (receivers, polymer, rails) | `#141516`, `#1d1f21`, `#2b2d2f`, `#3a3d40` |
+| Bare steel | `#8d8f91` |
+| Tan (FDE), khaki and olive furniture | `#a08c64`, `#b49a6c`, `#6e6a48`, `#5a6340`, `#3f4636` |
+| Wood | `#7a4524`, `#6b3a2e` |
+| Brass, copper | `#b08d3c`, `#b87333` |
+| Pale (labels, bone) | `#e6e0d3` |
+| Accents | orange `#d8461c`, blue `#4677b3`, green `#5c9a4a`, purple `#8a56b3`, glow green `#39ff6a` |
+
 ## Mall finishes (2026-11-06)
 The user loved the Northpoint atrium's main stairs and wants this look carried through the main mall (not the warehouse, yard or other areas). Find them in the `main-stairs` group of `atrium-floorplan`.
 
