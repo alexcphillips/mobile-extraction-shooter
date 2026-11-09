@@ -48,7 +48,8 @@ const burning = {
  * 10 (2026-11-04): gun recoil gained a snap, and its recovery became a rate (per second)
  *    rather than degrees per second (sim/recoil.ts). Containers' optional sections,
  *    armour's optional repairLoss and every item's optional shortName came in at 10 too
- *    (2026-11-06): an optional field changes no existing file.
+ *    (2026-11-06), and loot's optional category (2026-11-09): an optional field changes no
+ *    existing file.
  */
 export const ITEM_FORMAT_VERSION = 10;
 
@@ -629,6 +630,13 @@ const lootSchema = z.strictObject({
    * full value.
    */
   money: z.literal(true).optional(),
+  /**
+   * What kind of loot it is (2026-11-09), an id like "electronics", shown in item details
+   * in place of "Loot" ("Electronics"). Any id: the item editor offers the ones items
+   * already use and makes new ones. Set on the item, not taken from its loot tables, since
+   * one item is in several tables. Left out, it shows as "Loot".
+   */
+  category: idSchema.optional(),
   ...plainModel,
 });
 

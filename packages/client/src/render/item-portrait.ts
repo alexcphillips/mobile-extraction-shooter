@@ -111,6 +111,23 @@ export function previewPortrait(def: ItemDef, shape?: readonly [number, number])
 
 const corner = new THREE.Vector3();
 
+/** Half the width and height of a box as the camera sees it. */
+function extent(box: THREE.Box3): [number, number] {
+  let hx = 1e-3;
+  let hy = 1e-3;
+  for (let i = 0; i < 8; i++) {
+    corner.set(
+      i & 1 ? box.max.x : box.min.x,
+      i & 2 ? box.max.y : box.min.y,
+      i & 4 ? box.max.z : box.min.z,
+    );
+    corner.applyMatrix4(camera.matrixWorldInverse);
+    hx = Math.max(hx, Math.abs(corner.x));
+    hy = Math.max(hy, Math.abs(corner.y));
+  }
+  return [hx, hy];
+}
+
 function drawPortrait(
   shapes: readonly Shape[],
   view: ItemView,
@@ -151,17 +168,15 @@ function drawPortrait(
   // Fit the model's box as the camera sees it into the picture's shape, with a margin.
   g.computeBoundingBox();
   const box = g.boundingBox!;
-  let hx = 1e-3;
-  let hy = 1e-3;
-  for (let i = 0; i < 8; i++) {
-    corner.set(
-      i & 1 ? box.max.x : box.min.x,
-      i & 2 ? box.max.y : box.min.y,
-      i & 4 ? box.max.z : box.min.z,
-    );
-    corner.applyMatrix4(camera.matrixWorldInverse);
-    hx = Math.max(hx, Math.abs(corner.x));
-    hy = Math.max(hy, Math.abs(corner.y));
+  let [hx, hy] = extent(box);
+  // A model long one way in a tile long the other (a medkit, long front to back, in a
+  // tall 1×2 tile) is rolled a quarter turn to fill it (2026-11-09, the user's call). Its
+  // left goes to the bottom, so the tile turned (rotate(90deg), clockwise) faces left again.
+  if (width !== height && width > height !== hx > hy) {
+    camera.up.setFromMatrixColumn(camera.matrixWorld, 0);
+    camera.lookAt(0, 0, 0);
+    camera.updateMatrixWorld();
+    [hx, hy] = extent(box);
   }
   const aspect = width / height;
   const half = Math.max(hy, hx / aspect) * 1.08;

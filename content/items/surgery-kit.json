@@ -9,6 +9,7 @@
   "rarity": "epic",
   "effect": "surgery",
   "useTime": 12,
+  "uses": 4,
   "sounds": {
     "use": "med-use"
   },

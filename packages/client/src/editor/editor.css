@@ -226,6 +226,53 @@ body.editor #portrait {
   color: var(--ed-text);
 }
 
+/* A searchable pick (fields.tsx → Combo), its list over what's below. */
+.ed-combo {
+  position: relative;
+}
+
+#editor .ed-combo-value {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  color: var(--ed-text);
+}
+
+.ed-combo-pop {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 260px;
+  overflow-y: auto;
+  margin-top: 2px;
+  padding: 4px;
+  border: 1px solid var(--ed-line);
+  border-radius: 4px;
+  background: #1a1e24;
+}
+
+#editor .ed-combo-pop button {
+  text-align: left;
+}
+
+#editor .ed-combo-pop .ed-combo-new {
+  color: var(--ed-accent);
+}
+
+#editor .ed-combo-pop .ed-combo-new:disabled {
+  color: var(--ed-dim);
+}
+
+.ed-combo-none {
+  padding: 3px 7px;
+  color: var(--ed-dim);
+}
+
 #editor .ed-field input[type='color'] {
   width: 36px;
   height: 24px;

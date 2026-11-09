@@ -165,6 +165,8 @@ export class DragController {
   private holdTimer = 0;
   private rotated = false;
   private ghost: HTMLElement | null = null;
+  /** The empty slots marked as fitting the dragged item. */
+  private readonly fits: HTMLElement[] = [];
   private hover: { zone: DropZone; el: HTMLElement; x: number; y: number; ok: boolean } | null =
     null;
   private readonly highlight = document.createElement('div');
@@ -321,6 +323,20 @@ export class DragController {
     document.body.append(g);
     this.ghost = g;
     this.sizeGhost();
+    this.markFits();
+  }
+
+  /** Empty gear slots the item could go in, shaded green while it's dragged (2026-11-09). */
+  private markFits(): void {
+    const src = this.src!;
+    for (const el of document.querySelectorAll<HTMLElement>('.inv-slot[data-drop]')) {
+      if (el.querySelector('.inv-item')) continue;
+      const zone = this.host.zoneAt(el);
+      if (zone?.kind === 'slot' && this.host.canDrop(src, zone, 0, 0, this.rotated)) {
+        el.classList.add('drop-fits');
+        this.fits.push(el);
+      }
+    }
   }
 
   private rotate(): void {
@@ -435,6 +451,8 @@ export class DragController {
     // Only one item is ever pressed at a time, whichever controller has it.
     if (this.touch) holding = false;
     this.clearHover();
+    for (const el of this.fits) el.classList.remove('drop-fits');
+    this.fits.length = 0;
     this.ghost?.remove();
     this.ghost = null;
     cancelAnimationFrame(this.scrollFrame);

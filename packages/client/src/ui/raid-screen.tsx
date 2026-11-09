@@ -53,7 +53,6 @@ import { refKey, type InventoryController } from './inventory-controller';
 import { ItemDetails } from './item-details';
 import { MapTab } from './map-tab';
 import type { RaidContext } from './raid';
-import { levelColour, levelOf } from './levels';
 import { RaidQuests } from './raid-quests';
 import { CATEGORIES, type Category } from './stash-search';
 import { favourites, holdsFavourite, toggleFavourite } from './favourites';
@@ -252,9 +251,19 @@ const SLOT_NAMES: Record<GearSlot, string> = {
 };
 /**
  * What an empty gear slot shows faintly, so you can tell the slots apart at a glance
- * (2026-11-09): a bare M416 in the gun slots. The others to follow.
+ * (2026-11-09): a bare M416 in the gun slots, an M9A3 for the sidearm, and a typical item
+ * in each of the rest.
  */
-const SLOT_GHOSTS: Partial<Record<GearSlot, string>> = { primary1: 'm416', primary2: 'm416' };
+const SLOT_GHOSTS: Partial<Record<GearSlot, string>> = {
+  primary1: 'm416',
+  primary2: 'm416',
+  sidearm: 'm9a3',
+  knife: 'knife',
+  helmet: 'combat-helmet',
+  bodyArmour: 'plate-carrier',
+  rig: 'chest-rig',
+  backpack: 'medium-backpack',
+};
 
 /** An empty slot's ghost: its item's picture as a flat light grey shape. */
 function SlotGhost({ items, slot }: { items: ItemDb; slot: GearSlot }): ReactNode {
@@ -1433,18 +1442,18 @@ function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemD
       </>
     );
   }
-  const level = levelOf(def);
+  // No level tag on ammo and armour tiles (2026-11-09): the tile's rarity colour says it.
   return (
     <>
       <span className="inv-item-name">{tileName(def)}</span>
-      {level !== null && (
-        <i className="level-tag inv-item-level" style={{ background: levelColour(level) }}>
-          {level}
-        </i>
-      )}
       <span className={def.type === 'armour' ? 'inv-item-badge inv-item-light' : 'inv-item-badge'}>
         {badge(item, def)}
       </span>
+      {def.type === 'med' && def.effect !== 'heal' && (
+        <span className="inv-item-badge inv-item-cells">
+          {item.left ?? 1}/{def.uses ?? 1}
+        </span>
+      )}
       {def.type === 'container' && def.slot !== 'vault' && (
         <span className="inv-item-badge inv-item-cells">{cellsInside(def)}</span>
       )}
@@ -1481,19 +1490,24 @@ export function tenths(n: number): string {
   return String(Math.round(n * 10) / 10);
 }
 
-/** The small text in an item's corner: a stack's count, rounds loaded, durability… */
+/**
+ * The small text in an item's corner: a stack's count, rounds loaded, durability, a
+ * medkit's HP or a repair kit's points left (whole numbers only)…
+ */
 function badge(item: Item, def: ItemDef): string {
   switch (def.type) {
     case 'armour':
       // Out of its max now, which repairs wear down (sim/repair.ts).
       return `${tenths(item.durability ?? 0)}/${tenths(item.max ?? def.durability)}`;
     case 'med':
-      if (def.effect === 'heal') return `${item.left ?? 0} HP`;
-      return (def.uses ?? 1) > 1 ? `×${item.left ?? 0}` : '';
+      // The HP left, whole (a heal spends fractions of it), without "HP" (2026-11-09).
+      // Other meds' uses are a badge of their own, bottom left (usesBadge).
+      return def.effect === 'heal' ? `${Math.floor(item.left ?? 0)}` : '';
     case 'repair':
       return `${Math.floor(item.left ?? 0)}`;
     case 'key':
-      return def.uses === undefined ? '' : `×${item.left ?? 0}`;
+      // Uses left out of its total, like 1/3 (2026-11-09), not ×1.
+      return def.uses === undefined ? '' : `${item.left ?? def.uses}/${def.uses}`;
     case 'container':
       return '';
     default:

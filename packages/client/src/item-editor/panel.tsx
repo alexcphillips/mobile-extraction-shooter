@@ -19,7 +19,7 @@ import {
 import { useMemo, useState, useSyncExternalStore } from 'react';
 import { sounds } from '../audio/sounds';
 import { itemUses, soundSources } from '../content';
-import { Check, N, P, Row, put, type Bound } from '../editor/bound-fields';
+import { C, Check, N, P, Row, put, type Bound } from '../editor/bound-fields';
 import { Text, Toggle } from '../editor/fields';
 import { previewPortrait, viewOf } from '../render/item-portrait';
 import { colourOf } from '../ui/raid-screen';
@@ -213,6 +213,13 @@ function ItemPage(props: { editor: ItemEditor; state: ItemEditorState; def: Item
       </section>
     </main>
   );
+}
+
+/** The loot categories items use, A to Z: the category picker's list. */
+function categories(items: ReadonlyMap<string, ItemDef>): string[] {
+  const used = new Set<string>();
+  for (const d of items.values()) if (d.type === 'loot' && d.category) used.add(d.category);
+  return [...used].sort();
 }
 
 function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, ItemDef> }) {
@@ -667,6 +674,14 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
           <h4>loot</h4>
           <N {...b} path={['stack']} label="stack (blank: doesn't stack)" min={2} />
           <Check {...b} path={['money']} label="money: deposited at full value" />
+          <C
+            {...b}
+            path={['category']}
+            label="category (item details)"
+            options={categories(items)}
+            unset="none (shows Loot)"
+            newLabel="category"
+          />
         </>
       );
     case 'repair':
@@ -820,7 +835,8 @@ const VIEW_NOTES: Record<ItemView, string> = {
   top: 'straight down, the back (−z) at the top',
   front: 'from the front (+z)',
   side: "from the left (−x), a gun's barrel to the left",
-  angled: 'a three-quarter turn from the front left, the front (−z) to the left, a little from above',
+  angled:
+    'a three-quarter turn from the front left, the front (−z) to the left, a little from above',
   frontRight: 'a three-quarter turn from the front right, a little from above',
   backLeft: 'a three-quarter turn from the back left, a little from above',
   backRight: 'a three-quarter turn from the back right, a little from above',

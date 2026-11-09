@@ -1,0 +1,31 @@
+{
+  "formatVersion": 10,
+  "id": "tourniquet",
+  "name": "Tourniquet",
+  "shortName": "Tourn.",
+  "type": "med",
+  "size": [1, 1],
+  "value": 1000,
+  "rarity": "common",
+  "effect": "bandage",
+  "useTime": 2.5,
+  "uses": 4,
+  "sounds": {
+    "use": "bandage-use"
+  },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0], "size": [0.16, 0.025, 0.04], "colour": "#26292c" },
+      { "type": "box", "pos": [-0.02, 0.018, 0], "size": [0.05, 0.012, 0.045], "colour": "#3a3f44" },
+      {
+        "type": "cylinder",
+        "pos": [-0.02, 0.03, 0],
+        "radius": 0.006,
+        "height": 0.07,
+        "colour": "#1d1f21",
+        "pitch": 90
+      },
+      { "type": "box", "pos": [0.065, 0.015, 0], "size": [0.025, 0.006, 0.04], "colour": "#c23b30" }
+    ]
+  }
+}

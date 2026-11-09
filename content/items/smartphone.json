@@ -4,6 +4,7 @@
   "name": "Smartphone",
   "shortName": "Phone",
   "type": "loot",
+  "category": "electronics",
   "size": [1, 1],
   "value": 6000,
   "rarity": "rare",

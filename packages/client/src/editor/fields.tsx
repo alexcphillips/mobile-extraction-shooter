@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { round } from './doc';
 
 /*
@@ -119,5 +119,104 @@ export function Pick(props: {
         ))}
       </select>
     </label>
+  );
+}
+
+/** Typed text as an id: lower case, spaces as dashes, other characters dropped. */
+export function asId(text: string): string {
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
+ * One of a list of ids, searchable (2026-11-09, for loot categories): a button that opens
+ * a search box over the list. The top row makes what's typed a new id, if it isn't one
+ * already; Enter picks an exact match, else the new one, else the only match.
+ */
+export function Combo(props: {
+  label: string;
+  value: string | undefined;
+  options: readonly string[];
+  /** What a new one is called on the top row: "+ New category". */
+  newLabel: string;
+  unset?: string;
+  onChange: (v: string | undefined) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const box = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const outside = (e: PointerEvent) => {
+      if (!box.current?.contains(e.target as Node)) setOpen(false);
+    };
+    window.addEventListener('pointerdown', outside);
+    return () => window.removeEventListener('pointerdown', outside);
+  }, [open]);
+
+  const { value } = props;
+  const all =
+    value === undefined || props.options.includes(value)
+      ? props.options
+      : [value, ...props.options];
+  const q = query.trim().toLowerCase();
+  const matches = all.filter((o) => o.includes(q) || o.includes(asId(q)));
+  const fresh = asId(query);
+  const canMake = fresh !== '' && !all.includes(fresh);
+  const pick = (v: string | undefined) => {
+    props.onChange(v);
+    setOpen(false);
+    setQuery('');
+  };
+  const enter = () => {
+    if (all.includes(fresh)) pick(fresh);
+    else if (canMake) pick(fresh);
+    else if (matches.length === 1) pick(matches[0]);
+  };
+
+  return (
+    <span className="ed-field ed-combo" ref={box}>
+      {props.label}
+      <button className="ed-combo-value" onClick={() => setOpen(!open)}>
+        {value ?? props.unset ?? '—'} ▾
+      </button>
+      {open && (
+        <div className="ed-combo-pop">
+          <input
+            autoFocus
+            placeholder="Search, or type a new one"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') enter();
+              if (e.key === 'Escape') setOpen(false);
+            }}
+          />
+          <button className="ed-combo-new" disabled={!canMake} onClick={() => pick(fresh)}>
+            {canMake
+              ? `+ New ${props.newLabel} "${fresh}"`
+              : `+ New ${props.newLabel}: type a name`}
+          </button>
+          {props.unset !== undefined && q === '' && (
+            <button
+              className={value === undefined ? 'ed-on' : undefined}
+              onClick={() => pick(undefined)}
+            >
+              {props.unset}
+            </button>
+          )}
+          {matches.map((o) => (
+            <button key={o} className={o === value ? 'ed-on' : undefined} onClick={() => pick(o)}>
+              {o}
+            </button>
+          ))}
+          {matches.length === 0 && <span className="ed-combo-none">No match</span>}
+        </div>
+      )}
+    </span>
   );
 }

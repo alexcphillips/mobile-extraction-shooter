@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Num, Pick } from './fields';
+import { Combo, Num, Pick } from './fields';
 
 /*
  * Form fields bound to a path in a content file's raw JSON, edited through a change
@@ -81,6 +81,29 @@ export function P(
           props.then?.(d, o);
         })
       }
+    />
+  );
+}
+
+/** As P, but searchable, and a name typed that isn't in the list can be made new. */
+export function C(
+  props: Bound & {
+    path: Path;
+    label: string;
+    options: readonly string[];
+    unset?: string;
+    newLabel: string;
+  },
+) {
+  const v = get(props.doc, props.path);
+  return (
+    <Combo
+      label={props.label}
+      value={typeof v === 'string' ? v : undefined}
+      options={props.options}
+      newLabel={props.newLabel}
+      {...(props.unset !== undefined && { unset: props.unset })}
+      onChange={(o) => props.edit((d) => put(d, props.path, o))}
     />
   );
 }

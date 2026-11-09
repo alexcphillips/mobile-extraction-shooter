@@ -8,7 +8,8 @@
   "value": 400,
   "rarity": "common",
   "effect": "bandage",
-  "useTime": 2,
+  "useTime": 3,
+  "uses": 2,
   "sounds": {
     "use": "bandage-use"
   },
