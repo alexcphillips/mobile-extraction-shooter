@@ -25,7 +25,7 @@ export const PAGE_TABS = 34;
  * The stash's kinds of item, a column of icons down the left of its grid (2026-11-09, on a
  * phone too): the column and its gap (style.css → .stash-kinds).
  */
-const STASH_CHIPS = 32 + 6;
+const STASH_CHIPS = 30 + 6;
 const MAX_CELL = 44;
 /**
  * Extra pixels across on a PC: the loadout's space from the left and from the carried
