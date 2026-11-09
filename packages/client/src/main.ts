@@ -42,6 +42,7 @@ import {
 } from './content';
 import { settings } from './settings';
 import { lastRaid } from './ui/last-raid';
+import { padCursor } from './input/pad-cursor';
 
 const byId = (id: string): HTMLElement => {
   const el = document.getElementById(id);
@@ -67,6 +68,8 @@ void checkServer(byId('server'));
 const message = (err: unknown): string => (err instanceof Error ? err.message : String(err));
 
 watchPauseTriggers();
+// A controller works menus with a cursor of its own (CP-2), once one is connected.
+padCursor.start();
 unlockAudioOnTap();
 preventZoom();
 // Menu buttons tick (session 19); the raid's controls and inventory have their own sounds.

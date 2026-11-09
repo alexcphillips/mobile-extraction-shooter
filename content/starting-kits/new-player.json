@@ -56,5 +56,6 @@
     { "item": "bandage" },
     { "item": "bandage" }
   ],
-  "loaded": { "m416": "ammo-556x45", "m9a3": "ammo-9mm" }
+  "loaded": { "m416": "ammo-556x45", "m9a3": "ammo-9mm" },
+  "fitted": { "m416": ["red-dot"] }
 }

@@ -1,16 +1,39 @@
 import { itemDef, type ItemDb } from '../content/items';
-import { addItem, countOf, createGrid, takeFrom, type Grid, type Item } from '../inventory/grid';
+import {
+  addItem,
+  countOf,
+  createGrid,
+  takeFrom,
+  type Grid,
+  type Item,
+  type Section,
+} from '../inventory/grid';
 import type { ArmourState } from './health';
 import type { Character } from './state';
 import type { WeaponState } from './weapons';
 
 /** Sizes of the grids every player has. */
 export const GEAR = {
-  /** Pockets, [width, height]: always there, lost on death like the rest. */
-  pockets: [4, 1],
+  /**
+   * Pockets, [width, height]: always there, lost on death like the rest. Five 1×1 slots
+   * (POCKET_SECTIONS; the user's call, 2026-11-08, UX-3), so nothing bigger than 1×1 goes
+   * in: a 4×1 grid until then.
+   */
+  pockets: [5, 1],
   /** The vault: kept on death. Players only. VAULT_ITEM's grid is this size. */
   vault: [2, 2],
 } as const;
+
+/** The pockets' sections: one 1×1 slot per cell (see GEAR.pockets). */
+export const POCKET_SECTIONS: readonly Section[] = Array.from(
+  { length: GEAR.pockets[0] },
+  (_, x) => ({ x, y: 0, w: 1, h: 1 }),
+);
+
+/** A new, empty pockets grid. */
+export function createPockets(): Grid {
+  return createGrid(GEAR.pockets[0], GEAR.pockets[1], false, POCKET_SECTIONS);
+}
 
 /**
  * The item every player's vault is shown as, equipped beside its grid (the user's call,
@@ -72,7 +95,7 @@ export function createGear(vault: boolean): Gear {
     bodyArmour: null,
     rig: null,
     backpack: null,
-    pockets: createGrid(GEAR.pockets[0], GEAR.pockets[1]),
+    pockets: createPockets(),
     vault: vault ? createGrid(GEAR.vault[0], GEAR.vault[1]) : null,
   };
 }

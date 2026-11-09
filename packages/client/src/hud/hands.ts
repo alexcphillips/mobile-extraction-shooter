@@ -29,6 +29,8 @@ const GRENADE = svg('M10 2h5v2h-1v2.1a7 7 0 1 1-4 0V4h-1zm6 1l4 3-1 1-4-3z');
 const FLAME = svg('M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 2 1 3 2 3 0-3 0-5 1-8z');
 
 const HANDS: readonly Hand[] = ['primary1', 'primary2', 'sidearm', 'knife'];
+/** What takes each one out on a pad (CP-3), shown in place of 1–4 in gamepad mode. */
+const PAD_HANDS = ['△', '△', 'hold △', 'R3'];
 
 /** What a med would do, for the picker. */
 function does(items: ItemDb, c: Character, ref: MedRef): string {
@@ -86,6 +88,9 @@ export class HandsHud {
   private patting = false;
   private readonly healName: HTMLElement;
   private readonly picker: HTMLElement;
+  /** What each picker entry does, and the one a pad has highlighted (CP-1). */
+  private picks: (() => void)[] = [];
+  private highlight = 0;
   private best: MedRef | null = null;
   private healKey = '';
   private fireKey = '';
@@ -170,7 +175,7 @@ export class HandsHud {
           : def.type === 'weapon' && def.hold === 'pistol'
             ? PISTOL
             : RIFLE;
-      b.innerHTML = `<span class="slot-num">${i + 1}</span>${icon}`;
+      b.innerHTML = `<span class="slot-num" data-pad="${PAD_HANDS[i]}">${i + 1}</span>${icon}`;
       b.classList.toggle('idle', !it);
       b.classList.toggle('in-hand', !!it && g.hand === hand);
     });
@@ -288,6 +293,8 @@ export class HandsHud {
    */
   private openPicker(anchor: ControlId, entries: PickerEntry[]): void {
     this.picker.replaceChildren();
+    this.picks = entries.map((e) => e[2]);
+    this.highlight = 0;
     if (!entries.length) {
       this.hidePicker();
       return;
@@ -303,6 +310,7 @@ export class HandsHud {
       });
       this.picker.append(b);
     }
+    this.showHighlight();
     const at = this.hud.button(anchor).getBoundingClientRect();
     const shown = at.width > 0;
     this.picker.style.left = `${shown ? at.left + at.width / 2 : window.innerWidth / 2}px`;
@@ -315,5 +323,26 @@ export class HandsHud {
 
   hidePicker(): void {
     this.picker.hidden = true;
+  }
+
+  /** A pad moves the picker's highlight (−1 up, 1 down), stopping at the ends. */
+  stepPick(by: number): void {
+    if (!this.picks.length) return;
+    this.highlight = Math.max(0, Math.min(this.picks.length - 1, this.highlight + by));
+    this.showHighlight();
+  }
+
+  /** A pad picks the highlighted entry. */
+  choosePick(): void {
+    const pick = this.picks[this.highlight];
+    this.hidePicker();
+    pick?.();
+  }
+
+  private showHighlight(): void {
+    const buttons = this.picker.children;
+    for (let i = 0; i < buttons.length; i++) {
+      buttons[i]!.classList.toggle('highlight', i === this.highlight);
+    }
   }
 }

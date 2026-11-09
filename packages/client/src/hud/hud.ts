@@ -1,6 +1,6 @@
-import type { ControlPlacement } from '@mes/shared';
+import { equippedLayout, type ControlLayout, type ControlPlacement } from '@mes/shared';
 import { settings } from '../settings';
-import { CONTROLS, placementOf, type ControlDef, type ControlId } from './layout';
+import { CONTROLS, isHidden, placementOf, type ControlDef, type ControlId } from './layout';
 
 /**
  * The on-screen controls: the floating move stick, the sprint-lock badge and the buttons,
@@ -26,8 +26,8 @@ export class Hud {
       container.append(b);
       this.buttons.set(def.id, b);
     }
-    this.applyLayout(settings.current.layout);
-    settings.subscribe((s) => this.applyLayout(s.layout));
+    this.applyLayout(equippedLayout(settings.current));
+    settings.subscribe((s) => this.applyLayout(equippedLayout(s)));
   }
 
   button(id: ControlId): HTMLButtonElement {
@@ -36,8 +36,16 @@ export class Hud {
     return b;
   }
 
-  applyLayout(layout: Readonly<Record<string, ControlPlacement>>): void {
-    for (const def of CONTROLS) this.place(def, placementOf(def, layout));
+  applyLayout(layout: ControlLayout): void {
+    for (const def of CONTROLS) {
+      this.place(def, placementOf(def, layout.placements));
+      this.hide(def, isHidden(def, layout));
+    }
+  }
+
+  /** Hides a control the player doesn't want (UX-4); the layout editor still shows it, faded. */
+  hide(def: ControlDef, hidden: boolean): void {
+    this.button(def.id).classList.toggle('off', hidden);
   }
 
   place(def: ControlDef, p: ControlPlacement): void {

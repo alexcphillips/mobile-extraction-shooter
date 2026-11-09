@@ -329,7 +329,28 @@ export async function partyResponse(db: Db, me: string): Promise<PartyResponse> 
         .bind(me, row.id, now - SIGNAL.lifeMs)
         .first<{ n: number }>()
     : null;
-  return { party, invites, signals: waiting?.n ?? 0 };
+  const friends = await db
+    .prepare(
+      `SELECT count(f.accepted_at) AS friends,
+         count(CASE WHEN f.accepted_at IS NOT NULL AND (a.seen_at >= ? OR EXISTS (
+           SELECT 1 FROM raids r WHERE r.account_id = a.id AND r.ended_at IS NULL
+             AND r.started_at > ?)) THEN 1 END) AS online,
+         count(CASE WHEN f.accepted_at IS NULL AND f.to_account = ? THEN 1 END) AS requests
+       FROM friends f
+       JOIN accounts a ON a.id = CASE WHEN f.from_account = ? THEN f.to_account
+         ELSE f.from_account END
+       WHERE f.from_account = ? OR f.to_account = ?`,
+    )
+    .bind(now - SOCIAL.onlineMs, now - SOCIAL.raidMs, me, me, me, me)
+    .first<{ friends: number; online: number; requests: number }>();
+  return {
+    party,
+    invites,
+    signals: waiting?.n ?? 0,
+    friendCount: friends?.friends ?? 0,
+    friendsOnline: friends?.online ?? 0,
+    friendRequests: friends?.requests ?? 0,
+  };
 }
 
 /** Makes a party with me leading, if I'm not in one. Its id. */

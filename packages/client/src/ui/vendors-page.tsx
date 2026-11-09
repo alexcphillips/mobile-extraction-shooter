@@ -69,6 +69,7 @@ export function VendorsPage({
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<Category>('all');
   const [sort, setSort] = useState<Sort>('level');
+  const [sortOpen, setSortOpen] = useState(false);
   const [locked, setLocked] = useState(true);
   // The time, for a rotating vendor's stock and its countdown.
   const [now, setNow] = useState(() => Date.now());
@@ -120,7 +121,7 @@ export function VendorsPage({
       </header>
       {notice && <p className="menu-notice">{notice}</p>}
       <div className="vendors-layout">
-        <nav className="vendors-list" aria-label="Vendors">
+        <nav className="vendors-list" role="tablist" aria-label="Vendors">
           {vendors.map((v, i) => (
             <VendorCard
               key={v.id}
@@ -166,17 +167,35 @@ export function VendorsPage({
                 </button>
               ))}
             </div>
-            <select
-              aria-label="Sort by"
-              value={sort}
-              onChange={(e) => setSort(e.target.value as Sort)}
-            >
-              {SORTS.map(([s, label]) => (
-                <option key={s} value={s}>
-                  {label}
-                </option>
-              ))}
-            </select>
+            {/* Not a <select> (CP-2): a pad's cursor can't open a native one. */}
+            <span className="stash-sort">
+              <button
+                className={sortOpen ? 'active' : undefined}
+                aria-expanded={sortOpen}
+                aria-label="Sort by"
+                onClick={() => setSortOpen(!sortOpen)}
+              >
+                Sort: {SORTS.find(([s]) => s === sort)![1]}
+              </button>
+              {sortOpen && (
+                <span className="stash-sort-menu" role="menu">
+                  {SORTS.map(([s, label]) => (
+                    <button
+                      key={s}
+                      role="menuitemradio"
+                      aria-checked={s === sort}
+                      className={s === sort ? 'active' : undefined}
+                      onClick={() => {
+                        setSort(s);
+                        setSortOpen(false);
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </span>
+              )}
+            </span>
             <button
               className={locked ? undefined : 'active'}
               aria-pressed={!locked}
@@ -250,7 +269,8 @@ export function VendorCard({
     <button
       className={`vendors-card${active ? ' active' : ''}`}
       style={{ ['--vendor' as string]: colourOf2(vendor) }}
-      aria-pressed={active}
+      role="tab"
+      aria-selected={active}
       onClick={onClick}
     >
       <span className="vendors-portrait" aria-hidden>

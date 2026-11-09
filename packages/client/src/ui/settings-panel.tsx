@@ -1,7 +1,10 @@
 import type { Settings } from '@mes/shared';
 import { useId, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { signOut, username } from '../account';
+import { firstPad } from '../input/gamepad';
 import { inputMode } from '../input/mode';
+import { PAD_GLYPHS, padLayout } from '../input/pad-labels';
+import { LayoutSettings } from './layout-settings';
 import { settings } from '../settings';
 
 /** Signing out reloads the page, which then asks to sign in. */
@@ -28,6 +31,9 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel, onGiveUp }: P
   const s = useSyncExternalStore(subscribe, current);
   // Giving up asks again first: it loses everything you carry.
   const [confirming, setConfirming] = useState(false);
+  const [showLayout, setShowLayout] = useState(false);
+  // With a pad in use, or one plugged in (Chrome lists a pad only after a press on it).
+  const pad = inputMode.gamepad || firstPad(navigator.getGamepads?.() ?? []) !== null;
   const set = <K extends keyof Settings>(key: K, value: Settings[K]): void =>
     settings.update((draft) => {
       draft[key] = value;
@@ -72,7 +78,9 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel, onGiveUp }: P
             hint={
               inputMode.desktop
                 ? 'Toggle: right click (or Z) aims, and you stay aimed until you press it again.'
-                : 'Toggle: tap aim to aim, and you stay aimed until you tap it again.'
+                : inputMode.gamepad
+                  ? 'Toggle: L2 aims, and you stay aimed until you press it again.'
+                  : 'Toggle: tap aim to aim, and you stay aimed until you tap it again.'
             }
             onChange={(v) => set('aim', v)}
           />
@@ -86,7 +94,9 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel, onGiveUp }: P
             hint={
               inputMode.desktop
                 ? 'Toggle: Q or E leans until you press it again (or the other one, or sprint).'
-                : "Toggle: tap a lean button to lean until you tap it again (or sprint). Holding one means you can't fire with that thumb."
+                : inputMode.gamepad
+                  ? 'Toggle: D-pad ← or → leans until you press it again (or the other one, or sprint), so your thumb can go back to the stick.'
+                  : "Toggle: tap a lean button to lean until you tap it again (or sprint). Holding one means you can't fire with that thumb."
             }
             onChange={(v) => set('lean', v)}
           />
@@ -101,9 +111,13 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel, onGiveUp }: P
             hint={
               inputMode.desktop
                 ? 'Toggle: C crouches until you press it again (or sprint). Hold: crouched while C is down.'
-                : s.crouch === 'hold'
-                  ? 'Hold: crouched while the button is down. Double-tap it to go prone; a tap gets up.'
-                  : 'Toggle: tap crouch to crouch until you tap it again (or sprint). Hold it to go prone.'
+                : inputMode.gamepad
+                  ? s.crouch === 'hold'
+                    ? 'Hold: crouched while ○ is down. Double-tap it to go prone; a tap gets up.'
+                    : 'Toggle: ○ crouches until you press it again (or sprint). Hold it to go prone.'
+                  : s.crouch === 'hold'
+                    ? 'Hold: crouched while the button is down. Double-tap it to go prone; a tap gets up.'
+                    : 'Toggle: tap crouch to crouch until you tap it again (or sprint). Hold it to go prone.'
             }
             onChange={(v) => set('crouch', v)}
           />
@@ -130,7 +144,15 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel, onGiveUp }: P
             onChange={(v) => set('aimAssist', v)}
           />
           {/* Each way of playing has its own look speed; only the one in use shows. */}
-          {inputMode.desktop ? (
+          {inputMode.gamepad ? (
+            <Slider
+              label="Controller look sensitivity"
+              value={s.padSensitivity}
+              min={0.2}
+              max={3}
+              onChange={(v) => set('padSensitivity', v)}
+            />
+          ) : inputMode.desktop ? (
             <Slider
               label="Mouse sensitivity"
               value={s.mouseSensitivity}
@@ -159,12 +181,26 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel, onGiveUp }: P
             value={s.invertY}
             onChange={(v) => set('invertY', v)}
           />
-          {!inputMode.desktop && (
-            <div className="row">
-              <button onClick={onEditLayout}>Edit button layout</button>
-            </div>
-          )}
         </section>
+        {pad && (
+          <section className={showLayout ? 'wide' : undefined}>
+            <h2>Controller</h2>
+            <Toggle label="Rumble" value={s.rumble} onChange={(v) => set('rumble', v)} />
+            <div className="row">
+              <button onClick={() => setShowLayout((v) => !v)}>
+                {showLayout ? 'Hide button layout' : 'Show button layout'}
+              </button>
+            </div>
+            {showLayout && <PadLayoutTable s={s} />}
+          </section>
+        )}
+        {/* The touch buttons don't show on desktop or with a pad, so neither do their layouts. */}
+        {inputMode.touch && (
+          <section>
+            <h2>Buttons</h2>
+            <LayoutSettings s={s} onEdit={onEditLayout} />
+          </section>
+        )}
         <section>
           <h2>Sound</h2>
           <Slider
@@ -214,6 +250,44 @@ export function SettingsPanel({ onClose, onEditLayout, closeLabel, onGiveUp }: P
         </section>
       </div>
     </div>
+  );
+}
+
+/** The controller's buttons and what they do (CP-3), worded for the current settings. */
+function PadLayoutTable({ s }: { s: Settings }): ReactNode {
+  return (
+    <table className="pad-layout">
+      <thead>
+        <tr>
+          <th>Button</th>
+          <th>In a raid</th>
+          <th>In menus</th>
+        </tr>
+      </thead>
+      <tbody>
+        {padLayout(s).map((row) => (
+          <tr key={row.keys.join()}>
+            <td>
+              {row.keys.map((k) => (
+                <PadKey key={k} name={k} />
+              ))}
+            </td>
+            <td>{row.raid}</td>
+            <td>{row.menus || '—'}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+/** A pad button's name, face buttons as their round coloured glyph. */
+export function PadKey({ name }: { name: string }): ReactNode {
+  const face = PAD_GLYPHS.includes(name);
+  return (
+    <kbd className={face ? 'pad' : undefined} data-glyph={face ? name : undefined}>
+      {name}
+    </kbd>
   );
 }
 

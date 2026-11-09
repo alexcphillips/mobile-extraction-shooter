@@ -341,6 +341,18 @@ describe('firing', () => {
     expect(shooter.recoil?.kickPitch).toBeCloseTo(kick, 6);
   });
 
+  it('kicks a thumb (touch or a controller) RECOIL.thumb as hard as a mouse', () => {
+    const fireOnce = (thumb: boolean) => {
+      const { world, state, shooter } = range();
+      giveWeapon(shooter, TEST_ITEMS, 'shotgun');
+      step(state, world, TEST_ITEMS, { [shooter.id]: input({ pitch: 0.2, fire: true, thumb }) });
+      return shooter.recoil?.kickPitch ?? 0;
+    };
+    const mouse = fireOnce(false);
+    expect(mouse).toBeGreaterThan(0);
+    expect(fireOnce(true)).toBeCloseTo(mouse * RECOIL.thumb, 9);
+  });
+
   it('spreads pellets apart', () => {
     const { world, state, shooter } = range();
     const items = new Map(TEST_ITEMS);
@@ -422,8 +434,8 @@ describe('firing', () => {
   it('drops the rounds it swaps out when there is no room for them', () => {
     const { world, state, shooter } = range();
     giveWeapon(shooter, TEST_ITEMS, 'pistol');
-    // Pockets full: 3 cells of watches, 1 of AP rounds.
-    for (let i = 0; i < 3; i++) stow(shooter, TEST_ITEMS, { item: 'watch', count: 1 });
+    // Pockets full: 4 cells of watches, 1 of AP rounds.
+    for (let i = 0; i < 4; i++) stow(shooter, TEST_ITEMS, { item: 'watch', count: 1 });
     stow(shooter, TEST_ITEMS, { item: 'ap-round', count: 100 });
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ reload: true, ammo: 'ap-round' }) });
     for (let i = 0; i < TICK_RATE * 1.2; i++) step(state, world, TEST_ITEMS, {});

@@ -254,19 +254,21 @@ describe('repairing armour in a raid', () => {
     const vest = createArmour(items, 'vest');
     vest.durability = 10;
     equip(s.player, items, 'bodyArmour', vest);
+    // In a rig: the kit is 2×1, too big for the pockets' 1×1 slots.
+    equip(s.player, items, 'rig', createItem(items, 'rig'));
     stow(s.player, items, createItem(items, 'repair-kit'));
-    const pockets = s.player.gear.pockets;
+    const rig = s.player.gear.rig!.grid;
     const repair = (): InventoryAction => ({
       type: 'repair',
       kit: {
         owner: { kind: 'self' },
-        grid: 'pockets',
-        index: pockets.items.findIndex((gi) => gi.item.item === 'repair-kit'),
+        grid: 'rig',
+        index: rig.items.findIndex((gi) => gi.item.item === 'repair-kit'),
         item: 'repair-kit',
       },
       armour: { owner: { kind: 'self' }, slot: 'bodyArmour', item: 'vest' },
     });
-    const kit = () => pockets.items.find((gi) => gi.item.item === 'repair-kit')?.item;
+    const kit = () => rig.items.find((gi) => gi.item.item === 'repair-kit')?.item;
     return { ...s, vest, repair, kit };
   }
 

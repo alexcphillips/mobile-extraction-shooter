@@ -114,6 +114,23 @@ describe('friends', () => {
     expect((await friendsOf(ana!)).friends[0]!.activity).toBe('raid');
     expect((await bob!.fails('POST', '/presence', { device: 'fridge' })).error).toBe('bad-request');
   });
+
+  it("counts friends online and requests to you in the menu's heartbeat (UX-5)", async () => {
+    const [ana, bob, cas, dee] = await players('ana', 'bob', 'cas', 'dee', 'eve');
+    await befriend(ana!, bob!, 'bob');
+    await befriend(ana!, cas!, 'cas');
+    await json(dee!, 'POST', '/friends/requests', { username: 'ana' });
+    // One ana sent herself isn't a request to her.
+    await json(ana!, 'POST', '/friends/requests', { username: 'eve' });
+    let seen = await json<PartyResponse>(ana!, 'POST', '/presence', { device: 'pc' });
+    expect(seen).toMatchObject({ friendCount: 2, friendsOnline: 0, friendRequests: 1 });
+    await json(bob!, 'POST', '/presence', { device: 'phone' });
+    // In a raid counts as online too; dee, only asking, isn't counted.
+    await cas!.ok('POST', '/raids', { raid: 'test-raid' });
+    await json(dee!, 'POST', '/presence', { device: 'pc' });
+    seen = await json<PartyResponse>(ana!, 'POST', '/presence', { device: 'pc' });
+    expect(seen).toMatchObject({ friendCount: 2, friendsOnline: 2, friendRequests: 1 });
+  });
 });
 
 describe('the party', () => {

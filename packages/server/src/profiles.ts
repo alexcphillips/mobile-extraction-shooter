@@ -13,6 +13,7 @@ import {
   settleBags,
   settleFits,
   settleGuns,
+  settlePockets,
   settleVault,
   type Profile,
   type ProfileResponse,
@@ -23,7 +24,7 @@ import { body, fail, isObject } from './errors';
 
 /**
  * A stored profile, loaded through its format's migrations, with any pistol moved out of
- * a primary slot, an old 2×3 vault shrunk, bags given their defs' shapes and items that
+ * a primary slot, an old 2×3 vault shrunk, old 4×1 pockets split into slots, bags given their defs' shapes and items that
  * grew re-fitted (all need the items, so they aren't format migrations).
  */
 export function parseProfile(data: string): Profile {
@@ -31,6 +32,7 @@ export function parseProfile(data: string): Profile {
   const items = loadItems();
   settleGuns(items, p.gear, p.stash);
   settleVault(items, p.gear, p.stash);
+  settlePockets(items, p.gear, p.stash);
   settleBags(items, p.gear, p.stash);
   settleFits(items, p.gear, p.stash);
   return p;

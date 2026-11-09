@@ -14,10 +14,12 @@ import {
   settleBags,
   settleFits,
   settleGuns,
+  settlePockets,
   settleVault,
   type Profile,
 } from './profile';
 import { createItem } from './sim/create-item';
+import { POCKET_SECTIONS } from './sim/gear';
 import { keptGear } from './sim/raid';
 import { TEST_ITEMS as items } from './sim/test-items';
 import type { WeaponState } from './sim/weapons';
@@ -57,6 +59,21 @@ describe('newProfile', () => {
       ['rifle', true],
       ['pistol', false],
     ]);
+  });
+
+  it("fits every copy of a kit's gun with the attachments it names", () => {
+    const { gear, stash } = newProfile(items, {
+      ...kit,
+      stash: [{ item: 'rifle' }],
+      fitted: { rifle: ['scope'] },
+    });
+    expect(gear.primary1?.attachments?.optic).toBe('scope');
+    expect(stash[0]!.items[0]!.item.attachments?.optic).toBe('scope');
+    expect(gear.sidearm?.attachments?.optic).toBeNull();
+  });
+
+  it('refuses a kit fitting a gun with an attachment it cannot take', () => {
+    expect(() => newProfile(items, { ...kit, fitted: { pistol: ['scope'] } })).toThrow(/pistol/);
   });
 
   it('refuses a kit loading a gun with a round it cannot fire', () => {
@@ -335,6 +352,33 @@ describe('settleBags', () => {
     ]);
     expect(stored.grid!.items).toMatchObject([{ x: 1, y: 0, item: { item: 'medkit' } }]);
     expect(checkProfile(items, p)).toBeNull();
+  });
+});
+
+describe('settlePockets', () => {
+  it('splits old 4×1 pockets into five slots, moving anything bigger than 1×1 to the stash', () => {
+    const p = profile();
+    // As saved when the pockets were one 4×1 grid: the kit's rounds and bandage, and a
+    // scope (2×1) beside them.
+    const pockets = p.gear.pockets;
+    pockets.w = 4;
+    delete pockets.sections;
+    placeAt(items, pockets, createItem(items, 'scope'), 2, 0, false);
+    expect(checkProfile(items, p)).toMatch(/pockets: must be 5×1 in 5 sections/);
+    settlePockets(items, p.gear, p.stash);
+    expect(p.gear.pockets).toMatchObject({ w: 5, h: 1, sections: POCKET_SECTIONS });
+    expect(pockets.items.map((g) => g.item.item).sort()).toEqual(['bandage', 'round']);
+    expect(p.stash[0]!.items.some((g) => g.item.item === 'scope')).toBe(true);
+    expect(checkProfile(items, p)).toBeNull();
+  });
+
+  it('leaves any other shape alone', () => {
+    const p = profile();
+    p.gear.pockets.w = 8;
+    delete p.gear.pockets.sections;
+    settlePockets(items, p.gear, p.stash);
+    expect(p.gear.pockets.w).toBe(8);
+    expect(checkProfile(items, p)).toMatch(/pockets: must be 5×1/);
   });
 });
 

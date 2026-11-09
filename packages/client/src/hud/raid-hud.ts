@@ -1,3 +1,4 @@
+import { PAD_GLYPHS } from '../input/pad-labels';
 import { RAID, extractionAt, pointsOf, timeLeft, type Character, type SimState } from '@mes/shared';
 
 /** Under this many seconds left, the timer turns red. */
@@ -65,15 +66,15 @@ export class RaidHud {
   }
 
   /** Shows a warning under the crosshair for a moment, over the prompt. */
-  warn(text: string, now: number): void {
+  warn(text: string, now: number, ms = WARN_MS): void {
     this.warning = text;
-    this.warnUntil = now + WARN_MS;
+    this.warnUntil = now + ms;
     this.warnClass = true;
   }
 
   /** As warn, in the prompt's own colour: news, not a problem ("Investigated · …"). */
-  note(text: string, now: number): void {
-    this.warn(text, now);
+  note(text: string, now: number, ms = WARN_MS): void {
+    this.warn(text, now, ms);
     this.warnClass = false;
   }
 
@@ -91,6 +92,11 @@ export class RaidHud {
     if (shownKey) {
       const kbd = document.createElement('kbd');
       kbd.textContent = shownKey;
+      // A controller's face button (□ ✕ ○ △) is drawn as a round, coloured glyph.
+      if (PAD_GLYPHS.includes(shownKey)) {
+        kbd.className = 'pad';
+        kbd.dataset.glyph = shownKey;
+      }
       this.prompt.replaceChildren(kbd, ` ${shown}`);
     } else this.prompt.textContent = shown;
     this.prompt.hidden = !shown;

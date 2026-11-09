@@ -1,4 +1,4 @@
-import type { ControlPlacement } from '@mes/shared';
+import type { ControlLayout, ControlPlacement } from '@mes/shared';
 
 export type ControlId =
   | 'fire'
@@ -27,6 +27,11 @@ export interface ControlDef {
   /** Default centre, as a fraction of the screen. */
   x: number;
   y: number;
+  /**
+   * Can't be hidden (UX-4): on touch there's no other way to fire (or knife), use things
+   * (loot, doors, extracting) or open the bag.
+   */
+  required?: true;
 }
 
 /**
@@ -35,11 +40,11 @@ export interface ControlDef {
  * the notch's safe area kept clear on both sides.
  */
 export const CONTROLS: readonly ControlDef[] = [
-  { id: 'fire', label: 'fire', size: 88, x: 0.83, y: 0.64 },
+  { id: 'fire', label: 'fire', size: 88, x: 0.83, y: 0.64, required: true },
   { id: 'aim', label: 'aim', size: 62, x: 0.71, y: 0.82 },
   { id: 'reload', label: 'reload', size: 52, x: 0.71, y: 0.52 },
-  { id: 'interact', label: 'use', size: 56, x: 0.6, y: 0.66 },
-  { id: 'bag', label: 'bag', size: 50, x: 0.93, y: 0.2 },
+  { id: 'interact', label: 'use', size: 56, x: 0.6, y: 0.66, required: true },
+  { id: 'bag', label: 'bag', size: 50, x: 0.93, y: 0.2, required: true },
   { id: 'jump', label: 'jump', size: 60, x: 0.93, y: 0.46 },
   { id: 'crouch', label: 'crouch', size: 60, x: 0.93, y: 0.82 },
   { id: 'primary1', label: '1', size: 46, x: 0.31, y: 0.9 },
@@ -56,6 +61,11 @@ export const CONTROLS: readonly ControlDef[] = [
   { id: 'leanLeft', label: '◀ lean', size: 46, x: 0.76, y: 0.3 },
   { id: 'leanRight', label: 'lean ▶', size: 46, x: 0.86, y: 0.3 },
 ];
+
+/** Whether a layout hides a control. Required controls always show. */
+export function isHidden(def: ControlDef, layout: ControlLayout): boolean {
+  return !def.required && layout.hidden.includes(def.id);
+}
 
 export function placementOf(
   def: ControlDef,

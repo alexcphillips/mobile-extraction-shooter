@@ -317,6 +317,11 @@ export interface PlayerInput {
   fire: boolean;
   /** Aiming down the sights, held (toggling is the client's setting). */
   aim: boolean;
+  /**
+   * Aiming with a thumb (a touchscreen or a controller), not a mouse: recoil kicks
+   * RECOIL.thumb as hard. Left out, a mouse.
+   */
+  thumb?: boolean;
   /** Start a reload: a press, true for one tick. */
   reload: boolean;
   /**

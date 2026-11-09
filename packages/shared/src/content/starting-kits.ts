@@ -42,6 +42,11 @@ export const startingKitSchema = z.strictObject({
    * (the user's call, 2026-11-05). A gun not named here starts empty, as a vendor's does.
    */
   loaded: z.record(idSchema, idSchema).default({}),
+  /**
+   * Attachments fitted to a gun in this kit, by the gun's id: every copy of that gun gets
+   * them, worn or in the stash. A gun not named here comes bare.
+   */
+  fitted: z.record(idSchema, z.array(idSchema)).default({}),
 });
 
 export type StartingKitDef = z.infer<typeof startingKitSchema>;

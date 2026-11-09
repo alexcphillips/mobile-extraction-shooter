@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { FAVOURITES_MAX, defaultSettings, loadSettings } from './settings';
+import {
+  FAVOURITES_MAX,
+  LAYOUT_SLOTS,
+  defaultSettings,
+  equippedLayout,
+  loadSettings,
+} from './settings';
 
 describe('settings', () => {
   it('has the design defaults', () => {
@@ -11,7 +17,9 @@ describe('settings', () => {
     expect(s.fire).toBe('auto');
     expect(s.aimAssist).toBe('low');
     expect(s.graphics).toBe('high');
-    expect(s.layout).toEqual({});
+    expect(s.layouts).toHaveLength(LAYOUT_SLOTS);
+    for (const l of s.layouts) expect(l).toEqual({ placements: {}, hidden: [] });
+    expect(s.equippedLayout).toBe(0);
   });
 
   it('keeps a graphics setting, and settings saved before it get high (2026-11-07)', () => {
@@ -30,7 +38,9 @@ describe('settings', () => {
     const s = defaultSettings();
     s.aim = 'toggle';
     s.lookSensitivity = 1.7;
-    s.layout.fire = { x: 0.8, y: 0.7, scale: 1.2 };
+    s.layouts[1]!.placements.fire = { x: 0.8, y: 0.7, scale: 1.2 };
+    s.layouts[1]!.hidden = ['grenade'];
+    s.equippedLayout = 1;
     expect(loadSettings(JSON.parse(JSON.stringify(s)))).toEqual(s);
   });
 
@@ -40,14 +50,39 @@ describe('settings', () => {
       aim: 'sideways',
       lean: 'wobbly',
       lookSensitivity: 99,
+      padSensitivity: 0.1,
+      rumble: 'yes',
       invertY: true,
-      layout: { fire: { x: 0.5, y: 0.5, scale: 1 }, aim: { x: 7 } },
+      layouts: [{ placements: { fire: { x: 0.5, y: 0.5, scale: 1 }, aim: { x: 7 } } }, 5],
+      equippedLayout: 3,
     });
     expect(s.aim).toBe('hold');
     expect(s.lean).toBe('toggle');
     expect(s.lookSensitivity).toBe(1);
+    expect(s.padSensitivity).toBe(1);
+    expect(s.rumble).toBe(true);
     expect(s.invertY).toBe(true);
-    expect(s.layout).toEqual({ fire: { x: 0.5, y: 0.5, scale: 1 } });
+    expect(s.layouts[0]!.placements).toEqual({ fire: { x: 0.5, y: 0.5, scale: 1 } });
+    expect(s.layouts[1]).toEqual({ placements: {}, hidden: [] });
+    expect(s.layouts).toHaveLength(LAYOUT_SLOTS);
+    expect(s.equippedLayout).toBe(0);
+  });
+
+  it('moves a layout saved before UX-4 into the first slot, equipped', () => {
+    const s = loadSettings({
+      formatVersion: 1,
+      volume: 0.4,
+      layout: { fire: { x: 0.7, y: 0.6, scale: 1.3 } },
+    });
+    expect(equippedLayout(s)).toEqual({
+      placements: { fire: { x: 0.7, y: 0.6, scale: 1.3 } },
+      hidden: [],
+    });
+    expect(s.volume).toBe(0.4);
+    expect('layout' in s).toBe(false);
+    // Once there are slots, an old layout left over is ignored.
+    const later = loadSettings({ formatVersion: 1, layout: { fire: {} }, layouts: [] });
+    expect(later.layouts[0]!.placements).toEqual({});
   });
 
   it('gives the defaults for anything unreadable', () => {

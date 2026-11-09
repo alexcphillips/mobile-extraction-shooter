@@ -32,6 +32,7 @@ import {
   CARRIED_GRIDS,
   GEAR,
   GEAR_SLOTS,
+  POCKET_SECTIONS,
   carriedGrid,
   createGear,
   fitsSlot,
@@ -251,17 +252,20 @@ export function parseGear(raw: unknown): Gear | null {
   return parsed.success ? (parsed.data as unknown as Gear) : null;
 }
 
-/** A kit's item: a gun has a full magazine of the round kit.loaded names for it, or none. */
+/**
+ * A kit's item: a gun has the attachments kit.fitted names for it, and a full magazine of
+ * the round kit.loaded names for it, or none.
+ */
 function kitItem(items: ItemDb, kit: StartingKitDef, id: string, count = 1): Item {
   if (itemDef(items, id).type !== 'weapon') return createItem(items, id, count);
-  const gun = createWeapon(items, id, [], kit.loaded[id]);
+  const gun = createWeapon(items, id, kit.fitted[id] ?? [], kit.loaded[id]);
   if (kit.loaded[id] === undefined) gun.mag = 0;
   return gun;
 }
 
 /**
- * A new profile from a starting kit, with the knife. Throws if the kit doesn't fit, or
- * loads a gun with a round it can't fire.
+ * A new profile from a starting kit, with the knife. Throws if the kit doesn't fit, loads
+ * a gun with a round it can't fire, or fits a gun with an attachment it can't take.
  */
 export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
   for (const [gun, round] of Object.entries(kit.loaded)) {
@@ -338,6 +342,24 @@ export function settleVault(items: ItemDb, gear: Gear, stash: readonly Grid[]): 
   const vault = gear.vault;
   if (!vault || vault.w !== 2 || vault.h !== 3) return;
   reshape(items, vault, GEAR.vault[0], GEAR.vault[1], undefined, stash);
+}
+
+/**
+ * Turns pockets saved as the old 4×1 grid (until 2026-11-08) into GEAR.pockets' five 1×1
+ * slots (see reshape): anything bigger than 1×1 goes to the stash. As for the vault, only
+ * the old shape is settled. Run where settleGuns is.
+ */
+export function settlePockets(items: ItemDb, gear: Gear, stash: readonly Grid[]): void {
+  const p = gear.pockets;
+  if (p.w !== 4 || p.h !== 1 || p.sections) return;
+  reshape(
+    items,
+    p,
+    GEAR.pockets[0],
+    GEAR.pockets[1],
+    POCKET_SECTIONS.map((s) => ({ ...s })),
+    stash,
+  );
 }
 
 /**
@@ -536,8 +558,15 @@ export function checkGear(items: ItemDb, gear: Gear): string | null {
   }
   if (!gear.vault) return 'a player must have a vault';
   return (
-    checkGrid(items, gear.pockets, GEAR.pockets[0], GEAR.pockets[1], false, 'pockets') ??
-    checkGrid(items, gear.vault, GEAR.vault[0], GEAR.vault[1], false, 'vault')
+    checkGrid(
+      items,
+      gear.pockets,
+      GEAR.pockets[0],
+      GEAR.pockets[1],
+      false,
+      'pockets',
+      POCKET_SECTIONS,
+    ) ?? checkGrid(items, gear.vault, GEAR.vault[0], GEAR.vault[1], false, 'vault')
   );
 }
 

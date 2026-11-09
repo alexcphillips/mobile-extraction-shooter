@@ -20,10 +20,37 @@ const placementSchema = z.object({
 
 export type ControlPlacement = z.infer<typeof placementSchema>;
 
+/** How many button layouts a player can keep (UX-4). */
+export const LAYOUT_SLOTS = 3;
+
+/**
+ * One button layout: the moved controls by id (controls not listed are in their default
+ * place; unknown ids are ignored) and the controls the player has hidden.
+ */
+const controlLayoutSchema = z.object({
+  placements: z
+    .record(z.string(), z.unknown())
+    .catch({})
+    .transform((layout) => {
+      const out: Record<string, ControlPlacement> = {};
+      for (const [id, p] of Object.entries(layout)) {
+        const parsed = placementSchema.safeParse(p);
+        if (parsed.success) out[id] = parsed.data;
+      }
+      return out;
+    }),
+  hidden: z
+    .array(z.string().max(32))
+    .catch([])
+    .transform((ids) => [...new Set(ids)].slice(0, 64)),
+});
+
+export type ControlLayout = z.infer<typeof controlLayoutSchema>;
+
 /** The most favourites a player can have. */
 export const FAVOURITES_MAX = 200;
 
-const settingsSchema = z.object({
+const settingsObject = z.object({
   formatVersion: z.literal(1),
   /** Hold the aim button to aim, or tap to toggle. */
   aim: z.enum(['hold', 'toggle']).catch('hold'),
@@ -47,9 +74,16 @@ const settingsSchema = z.object({
   lookSensitivity: range(0.2, 3, 1),
   /** Look speed with a captured mouse or trackpad (desktop), apart from touch's. */
   mouseSensitivity: range(0.2, 3, 1),
+  /** Look speed with a controller's stick (CP-1, 2026-11-08), apart from touch's and the mouse's. */
+  padSensitivity: range(0.2, 3, 1),
   /** Look speed while aiming, as a fraction of the normal speed. */
   aimSensitivity: range(0.2, 1.5, 0.6),
   invertY: z.boolean().catch(false),
+  /**
+   * A controller rumbles on firing, being hit and explosions (CP-3, 2026-11-08). On by
+   * default; falls back on its own, so no format bump.
+   */
+  rumble: z.boolean().catch(true),
   /** Every sound's loudness (session 19): 0 is silent. */
   volume: range(0, 1, 0.8),
   /** The fps and timings overlay. */
@@ -69,21 +103,48 @@ const settingsSchema = z.object({
     .array(z.string().max(64))
     .catch([])
     .transform((ids) => [...new Set(ids)].slice(0, FAVOURITES_MAX)),
-  /** Moved controls by id. Controls not listed are in their default place; unknown ids are ignored. */
-  layout: z
-    .record(z.string(), z.unknown())
-    .catch({})
-    .transform((layout) => {
-      const out: Record<string, ControlPlacement> = {};
-      for (const [id, p] of Object.entries(layout)) {
-        const parsed = placementSchema.safeParse(p);
-        if (parsed.success) out[id] = parsed.data;
-      }
-      return out;
-    }),
+  /**
+   * The saved button layouts (UX-4, 2026-11-08): always LAYOUT_SLOTS of them, one equipped.
+   * A slot never edited is the default layout.
+   */
+  layouts: z
+    .array(z.unknown())
+    .catch([])
+    .transform((slots) =>
+      Array.from({ length: LAYOUT_SLOTS }, (_, i) => {
+        const slot = controlLayoutSchema.safeParse(slots[i] ?? {});
+        return slot.success ? slot.data : controlLayoutSchema.parse({});
+      }),
+    ),
+  equippedLayout: z
+    .number()
+    .int()
+    .min(0)
+    .max(LAYOUT_SLOTS - 1)
+    .catch(0),
 });
 
-export type Settings = z.infer<typeof settingsSchema>;
+/**
+ * Settings saved before UX-4 had one layout, `layout` (moved controls only): it becomes the
+ * first slot. Done here rather than as a format bump, so every other field still falls back
+ * on its own and an older build reading these settings isn't thrown back to the defaults.
+ */
+function migrateLayout(raw: unknown): unknown {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return raw;
+  const doc = raw as Record<string, unknown>;
+  if (doc.layouts !== undefined || doc.layout === undefined) return doc;
+  const { layout, ...rest } = doc;
+  return { ...rest, layouts: [{ placements: layout }] };
+}
+
+const settingsSchema = z.preprocess(migrateLayout, settingsObject);
+
+export type Settings = z.infer<typeof settingsObject>;
+
+/** The layout in use. */
+export function equippedLayout(s: Settings): ControlLayout {
+  return s.layouts[s.equippedLayout]!;
+}
 
 export type GraphicsQuality = Settings['graphics'];
 

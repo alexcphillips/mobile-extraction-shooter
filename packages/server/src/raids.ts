@@ -9,6 +9,7 @@ import {
   settleBags,
   settleFits,
   settleGuns,
+  settlePockets,
   settleVault,
   type EndRaidRequest,
   type ProfileResponse,
@@ -176,10 +177,11 @@ raids.post('/:id/end', async (c) => {
   const gear = keptGear(end.gear, keepAll, profile.gear.knife);
   restGear(gear);
   const items = loadItems();
-  // A raid started before pistols left the primary slots, the vault was 2×2 or bags had
-  // sections.
+  // A raid started before pistols left the primary slots, the vault was 2×2, pockets were
+  // five slots or bags had sections.
   settleGuns(items, gear, profile.stash);
   settleVault(items, gear, profile.stash);
+  settlePockets(items, gear, profile.stash);
   settleBags(items, gear, profile.stash);
   // Items that grew since; only when everything's kept anyway (see settleFits).
   if (keepAll) settleFits(items, gear, profile.stash);

@@ -48,7 +48,7 @@ import { InventoryController } from './inventory-controller';
 import { PartyStrip } from './party-strip';
 import { Inventory, StashSearchContext, Worth, worth, type StashSearch } from './raid-screen';
 import { countHits, searcher, type Category } from './stash-search';
-import { QuestsPage, questsLine } from './quests-page';
+import { QuestsPage, questCounts, questsLine } from './quests-page';
 import { VendorsPage } from './vendors-page';
 
 /** A raid the menu can start. */
@@ -569,7 +569,9 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
           </>
         )}
       </span>
-      <button onClick={() => opts.openSettings(redraw)}>Settings</button>
+      <button data-pad-options onClick={() => opts.openSettings(redraw)}>
+        Settings
+      </button>
     </header>
   );
   const modeTabs = zombiesModes.length > 0 && (
@@ -735,10 +737,15 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
           <button disabled={!opts.quests.length} onClick={() => setPage('quests')}>
             Quests
             <span>{questsLine(opts.quests, me)}</span>
+            <MenuBadge n={questCounts(opts.quests, me).fresh} label="new" />
           </button>
           <button onClick={() => setPage('friends')}>
             Friends
-            <span>Add friends and invite them to your party</span>
+            <span>{friendsLine(partyRes)}</span>
+            <MenuBadge
+              n={partyRes?.friendRequests ?? 0}
+              label={partyRes?.friendRequests === 1 ? 'request' : 'requests'}
+            />
           </button>
           {adminButton}
         </div>
@@ -746,6 +753,17 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
       </div>
     </div>
   );
+}
+
+/** A notification on a menu card, as a phone app's: N new quests, N friend requests (UX-5). */
+function MenuBadge({ n, label }: { n: number; label: string }): ReactNode {
+  return n > 0 ? <b className="menu-badge">{`${n} ${label}`}</b> : null;
+}
+
+/** The Friends button's line: who's online, from the menu's heartbeat (UX-5). */
+function friendsLine(p: PartyResponse | null): string {
+  if (!p || !p.friendCount) return 'Add friends and invite them to your party';
+  return p.friendsOnline ? `${p.friendsOnline} online` : 'No one online';
 }
 
 /** The stash's sorts, in the Sort menu. */
@@ -880,35 +898,43 @@ function StashPage({
     items,
     stash.profile.stash.flatMap((p) => p.items.map((g) => g.item)),
   );
+  // Down the right of the grid (UX-3, 2026-11-08), not in the header.
+  const tabs = (
+    <div
+      className="stash-pages"
+      role="tablist"
+      aria-label="Stash pages"
+      aria-orientation="vertical"
+    >
+      {stash.profile.stash.map((_, p) => (
+        <button
+          key={p}
+          role="tab"
+          aria-selected={p === shown}
+          className={`stash-page${p === shown ? ' active' : ''}${hit && !hits[p] ? ' no-hits' : ''}`}
+          aria-label={`Stash page ${p + 1}${hit ? `, ${hits[p]} found` : ''}`}
+          data-drop={JSON.stringify({ into: stashOwner(p) })}
+          onClick={() => show(p)}
+        >
+          {p + 1}
+          {hit && hits[p]! > 0 && <span className="stash-page-hits">{hits[p]}</span>}
+        </button>
+      ))}
+      {price !== null && (
+        <button
+          className={`stash-buy${confirming ? ' confirm' : ''}`}
+          title={`Buy another page for ${price.toLocaleString()}`}
+          disabled={buying || stash.profile.money < price}
+          onClick={buy}
+          onBlur={() => setConfirming(false)}
+        >
+          {buying ? '…' : confirming ? `Buy · ${price.toLocaleString()}?` : '+'}
+        </button>
+      )}
+    </div>
+  );
   const head = (
     <>
-      <div className="stash-pages" role="tablist" aria-label="Stash pages">
-        {stash.profile.stash.map((_, p) => (
-          <button
-            key={p}
-            role="tab"
-            aria-selected={p === shown}
-            className={`stash-page${p === shown ? ' active' : ''}${hit && !hits[p] ? ' no-hits' : ''}`}
-            aria-label={`Stash page ${p + 1}${hit ? `, ${hits[p]} found` : ''}`}
-            data-drop={JSON.stringify({ into: stashOwner(p) })}
-            onClick={() => show(p)}
-          >
-            {p + 1}
-            {hit && hits[p]! > 0 && <span className="stash-page-hits">{hits[p]}</span>}
-          </button>
-        ))}
-        {price !== null && (
-          <button
-            className={`stash-buy${confirming ? ' confirm' : ''}`}
-            title={`Buy another page for ${price.toLocaleString()}`}
-            disabled={buying || stash.profile.money < price}
-            onClick={buy}
-            onBlur={() => setConfirming(false)}
-          >
-            {buying ? '…' : confirming ? `Buy · ${price.toLocaleString()}?` : '+'}
-          </button>
-        )}
-      </div>
       <span className="raid-spacer" />
       <span className="stash-used" title="Cells used on this page">
         {used}/{page.w * page.h}
@@ -946,6 +972,7 @@ function StashPage({
       </>
     ),
     head,
+    tabs,
   };
   const status = saver.status;
   return (

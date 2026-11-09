@@ -1,26 +1,32 @@
-import type { ControlPlacement } from '@mes/shared';
+import { equippedLayout, type ControlLayout, type ControlPlacement } from '@mes/shared';
 import { settings } from '../settings';
 import type { Hud } from './hud';
-import { CONTROLS, placementOf, type ControlDef } from './layout';
+import { CONTROLS, isHidden, placementOf, type ControlDef } from './layout';
 
 const SCALE_STEP = 0.1;
 /** Keeps a control's centre this far (as a fraction) inside the screen edges. */
 const EDGE = 0.03;
 
 /**
- * Edits the HUD layout in place, over the paused game: drag a control to move it, tap it
- * to select it, and size it with the toolbar. Done saves the layout to settings; Cancel
- * puts it back as it was.
+ * Edits the equipped HUD layout in place, over the paused game: drag a control to move it,
+ * tap it to select it, size or hide it with the toolbar (hidden ones show faded, so they
+ * can be shown again). Done saves the layout to its slot in settings; Cancel puts it back
+ * as it was.
  */
 export function editLayout(hud: Hud, onClose: () => void): void {
+  const slot = settings.current.equippedLayout;
   const draft = new Map<ControlDef, ControlPlacement>();
-  const reset = (layout: Readonly<Record<string, ControlPlacement>>): void => {
+  const hidden = new Set<ControlDef>();
+  const reset = (layout: ControlLayout): void => {
+    hidden.clear();
     for (const def of CONTROLS) {
-      draft.set(def, { ...placementOf(def, layout) });
+      draft.set(def, { ...placementOf(def, layout.placements) });
       hud.place(def, draft.get(def)!);
+      if (isHidden(def, layout)) hidden.add(def);
+      hud.hide(def, hidden.has(def));
     }
   };
-  reset(settings.current.layout);
+  reset(equippedLayout(settings.current));
 
   let selected: ControlDef = CONTROLS[0]!;
   let drag: { id: number; dx: number; dy: number } | null = null;
@@ -40,11 +46,22 @@ export function editLayout(hud: Hud, onClose: () => void): void {
     hud.place(selected, p);
     showSelection();
   };
+  const hide = button('Hide', () => {
+    if (selected.required) return;
+    if (hidden.has(selected)) hidden.delete(selected);
+    else hidden.add(selected);
+    hud.hide(selected, hidden.has(selected));
+    showSelection();
+  });
   bar.append(
     label,
     button('−', () => resize(-SCALE_STEP)),
     button('+', () => resize(SCALE_STEP)),
-    button('Reset all', () => reset({})),
+    hide,
+    button('Reset all', () => {
+      reset({ placements: {}, hidden: [] });
+      showSelection();
+    }),
     button('Cancel', () => close(false)),
     button('Done', () => close(true)),
   );
@@ -53,7 +70,11 @@ export function editLayout(hud: Hud, onClose: () => void): void {
 
   function showSelection(): void {
     for (const [id, b] of hud.buttons) b.classList.toggle('selected', id === selected.id);
-    label.textContent = `Drag to move · ${selected.label} ${Math.round(draft.get(selected)!.scale * 100)}%`;
+    const off = hidden.has(selected);
+    label.textContent = `Layout ${slot + 1} · ${selected.label} ${Math.round(draft.get(selected)!.scale * 100)}%${off ? ' · hidden' : ''}`;
+    hide.textContent = off ? 'Show' : 'Hide';
+    // Fire, use and bag can't go: on touch nothing else does what they do.
+    hide.disabled = !!selected.required;
   }
   showSelection();
 
@@ -95,14 +116,16 @@ export function editLayout(hud: Hud, onClose: () => void): void {
     bar.remove();
     if (save) {
       settings.update((s) => {
-        s.layout = {};
+        const layout: ControlLayout = { placements: {}, hidden: [] };
         for (const [def, p] of draft) {
           // Only moved controls are saved, so a later change to a default still reaches them.
-          if (p.x !== def.x || p.y !== def.y || p.scale !== 1) s.layout[def.id] = p;
+          if (p.x !== def.x || p.y !== def.y || p.scale !== 1) layout.placements[def.id] = p;
+          if (hidden.has(def)) layout.hidden.push(def.id);
         }
+        s.layouts[slot] = layout;
       });
     } else {
-      hud.applyLayout(settings.current.layout);
+      hud.applyLayout(equippedLayout(settings.current));
     }
     onClose();
   }

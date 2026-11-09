@@ -5,7 +5,7 @@ import { TICK_RATE } from '../tick';
 import { CollisionWorld, type BoxDef } from '../world/collision-world';
 import { AI, DEFAULT_SKILL, TACTICS, joinSquad, spawnEnemy, updateAi } from './ai';
 import { createItem } from './create-item';
-import { heldWeapon, stow } from './gear';
+import { equip, heldWeapon, stow } from './gear';
 import { CHEST, LEFT_ARM, LEFT_LEG, shootCharacter } from './health';
 import { launchGrenade } from './grenades';
 import { ammoDef, grenadeDef } from '../content/items';
@@ -561,6 +561,8 @@ describe('PMC healing (2026-11-08)', () => {
     c.health.hp[CHEST] = 30;
   };
   const kit = (c: Character, ...ids: string[]): void => {
+    // A rig, as every PMC's kit has: a medkit (1×2) doesn't go in the pockets' 1×1 slots.
+    equip(c, items, 'rig', createItem(items, 'rig'));
     for (const id of ids) stow(c, items, createItem(items, id));
   };
   const usedOf = (

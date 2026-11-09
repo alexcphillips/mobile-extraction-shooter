@@ -3,6 +3,7 @@ import type { Hud } from '../hud/hud';
 import type { ControlId } from '../hud/layout';
 import { settings } from '../settings';
 import { CursorLock } from './cursor-lock';
+import { PadDriver, type PadPicker } from './pad-driver';
 
 const STICK_RADIUS = 60;
 const LOOK_SPEED = 0.006; // radians per CSS pixel at sensitivity 1
@@ -51,6 +52,9 @@ interface MoveTouch {
  * Z aims too (for a trackpad), 7 and 8 the debug actions. Mouse pointers never drive the
  * touch stick; CSS hides the touch-only buttons. (Before 2026-11-01, Q aimed, E was use
  * and F fired; leaning took Q and E.)
+ *
+ * A controller (CP-1) is read once a frame by `pad` (input/pad-driver.ts), which presses
+ * these same controls through `press`, so its toggles and long presses match touch's.
  */
 export class Controls {
   /** Move input, -1..1 per axis; y is forward. */
@@ -92,10 +96,41 @@ export class Controls {
   debug = -1;
   /** Look speed multiplier from aim assist, set by the game while the crosshair is on an enemy. */
   assist = 1;
+  /**
+   * The same for looking up and down. The game leaves it at 1 during a burst, so assist never
+   * slows pulling down against recoil (the user's call, 2026-11-08).
+   */
+  assistPitch = 1;
+  /**
+   * Rotational aim assist (pad only): how fast the target under the crosshair crosses the
+   * view, times its share, in radians per second; set by the game each tick, applied by the
+   * pad while steering (input/aim-follow.ts).
+   */
+  followYaw = 0;
+  followPitch = 0;
   /** Look speed is divided by this, set by the game while looking through a scope. */
   zoom = 1;
   /** Desktop mouse capture; the game frees the cursor while a screen needs it. */
   readonly cursor: CursorLock;
+  /** The controller (CP-1). */
+  readonly pad: PadDriver;
+  /** △ tapped on a pad: take out the other primary (the game knows which you carry). */
+  swapPrimary = false;
+  /** Set by the game each tick: the use prompt shows, so the pad's □ uses rather than reloads. */
+  canUse = false;
+  /** Set by the game: a raid screen (the bag, a container) is open. */
+  screenOpen = false;
+  /**
+   * Set by the game: a raid screen, the results or spectating is up, so the pad works the
+   * menu cursor (CP-2) rather than playing.
+   */
+  uiOpen = false;
+  /** Set by the game: the heal and grenade picker, which the pad steps through. */
+  picker: PadPicker | null = null;
+  /** The pad's move stick, and its sprint (L3), merged in update(). */
+  padMoveX = 0;
+  padMoveY = 0;
+  padSprint = false;
 
   private sprintLocked = false;
   private move: MoveTouch | null = null;
@@ -122,6 +157,7 @@ export class Controls {
   private pressedInteract = false;
   private pressedBag = false;
   private pressedDraw: Hand | null = null;
+  private pressedSwap = false;
   private pressedHeal = false;
   private pressedHealPick = false;
   private pressedThrow = false;
@@ -164,6 +200,7 @@ export class Controls {
     this.cursor = new CursorLock(target, hud.settingsButton, (locked) => {
       if (!locked) this.mouseFire = this.mouseAim = false;
     });
+    this.pad = new PadDriver(this, hud.settingsButton);
     // Toggled aim would stay on with no way to turn it off once switched to hold.
     settings.subscribe((s) => {
       if (s.aim === 'hold' && this.touchAim) this.toggleAim();
@@ -183,6 +220,7 @@ export class Controls {
     this.interactHeld = this.touchInteract || k.has('KeyF');
     this.bag = this.pressedBag;
     this.draw = this.pressedDraw;
+    this.swapPrimary = this.pressedSwap;
     this.heal = this.pressedHeal;
     this.healPick = this.pressedHealPick;
     this.throw = this.pressedThrow;
@@ -195,6 +233,7 @@ export class Controls {
     this.pressedThrow = this.pressedThrowPick = this.pressedDetonate = false;
     this.pressedExtinguish = false;
     this.pressedDraw = null;
+    this.pressedSwap = false;
     this.pressedDebug = -1;
 
     const kx = (k.has('KeyD') ? 1 : 0) - (k.has('KeyA') ? 1 : 0);
@@ -204,6 +243,11 @@ export class Controls {
       this.moveX = kx / len;
       this.moveY = ky / len;
       this.sprint = k.has('ShiftLeft') || k.has('ShiftRight');
+    } else if (this.padMoveX !== 0 || this.padMoveY !== 0) {
+      // A partial push walks; L3 sprints (forwards only, as in the sim).
+      this.moveX = this.padMoveX;
+      this.moveY = this.padMoveY;
+      this.sprint = this.padSprint && this.padMoveY > 0;
     } else if (this.sprintLocked) {
       // Locked: run forwards, steering with the stick if a thumb is on it.
       this.moveX = this.stickX;
@@ -241,8 +285,24 @@ export class Controls {
     this.setSprintLock(false);
   }
 
+  /** Takes out a hand slot, as its key does. */
+  drawHand(hand: Hand): void {
+    this.pressedDraw = hand;
+  }
+
+  /** Takes out the other primary next tick (the pad's △). */
+  pressSwap(): void {
+    this.pressedSwap = true;
+  }
+
+  /** Call once a frame, before the ticks: reads the pad and turns the view with its stick. */
+  frame(dtMs: number): void {
+    this.pad.frame(dtMs);
+  }
+
   /** Lets go of every touch and key, for pausing. Toggles (crouch, prone, toggled aim) stay. */
   reset(): void {
+    this.pad.reset();
     this.move = null;
     this.stickX = this.stickY = 0;
     this.hud.stick.hidden = true;
@@ -259,18 +319,28 @@ export class Controls {
   private onButton(id: ControlId, button: HTMLButtonElement, e: PointerEvent): void {
     e.preventDefault();
     button.setPointerCapture(e.pointerId);
-    const held = (release: () => void): void => {
+    // The fire button also looks, so the thumb can track a target while shooting.
+    if (id === 'fire') this.look.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    this.releases.set(e.pointerId, this.press(id));
+  }
+
+  /**
+   * Presses a control, as its touch button does (the pad presses them too, CP-1). Returns
+   * what to call when it's let go.
+   */
+  press(id: ControlId): () => void {
+    const button = this.hud.button(id);
+    let release = (): void => {};
+    const held = (onRelease: () => void): void => {
       button.classList.add('active');
-      this.releases.set(e.pointerId, () => {
+      release = () => {
         button.classList.remove('active');
-        release();
-      });
+        onRelease();
+      };
     };
     switch (id) {
       case 'fire':
-        // The fire button also looks, so the thumb can track a target while shooting.
         this.touchFire = true;
-        this.look.set(e.pointerId, { x: e.clientX, y: e.clientY });
         held(() => (this.touchFire = false));
         break;
       case 'aim':
@@ -382,6 +452,7 @@ export class Controls {
         this.pressedDraw = id;
         held(() => {});
     }
+    return () => release();
   }
 
   private toggleAim(): void {
@@ -526,12 +597,22 @@ export class Controls {
     last.y = e.clientY;
   };
 
-  /** Turns the view by a pointer's movement in CSS pixels, at `base` radians per pixel. */
-  private turn(dx: number, dy: number, base: number): void {
+  /** Turns the view with the target for `dt` seconds (rotational aim assist). */
+  follow(dt: number): void {
+    this.yaw += this.followYaw * dt;
+    this.pitch += this.followPitch * dt;
+    this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch));
+  }
+
+  /**
+   * Turns the view by a pointer's movement in CSS pixels, at `base` radians per pixel (or by
+   * a pad's stick: its rate times the frame's seconds, at `base` radians per second).
+   */
+  turn(dx: number, dy: number, base: number): void {
     const s = settings.current;
-    const speed = (base * (this.aim ? s.aimSensitivity : 1) * this.assist) / this.zoom;
-    this.yaw -= dx * speed;
-    this.pitch -= dy * speed * (s.invertY ? -1 : 1);
+    const speed = (base * (this.aim ? s.aimSensitivity : 1)) / this.zoom;
+    this.yaw -= dx * speed * this.assist;
+    this.pitch -= dy * speed * this.assistPitch * (s.invertY ? -1 : 1);
     this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch));
   }
 

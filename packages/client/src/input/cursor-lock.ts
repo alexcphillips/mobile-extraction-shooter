@@ -26,8 +26,10 @@ export class CursorLock {
       if (!paused) this.request();
     });
     window.addEventListener('keydown', this.onKey, true);
+    // A pad needs no lock (CP-1); back from it, a key press is a gesture that can lock.
     inputMode.subscribe(() => {
       if (!inputMode.desktop && this.locked) document.exitPointerLock();
+      else if (inputMode.desktop) this.request();
     });
     // From the click that started the raid, if the browser still counts it.
     this.request();

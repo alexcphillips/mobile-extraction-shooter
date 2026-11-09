@@ -38,6 +38,7 @@ import {
   isBleeding,
   isBroken,
 } from '@mes/shared';
+import { inputMode } from '../input/mode';
 import {
   createContext,
   useContext,
@@ -72,9 +73,11 @@ export interface StashSearch {
   hit: ((item: Item) => boolean) | null;
   /** How many items are found on every page. */
   found: number;
-  /** The stash panel's title and the rest of its header: page tabs, sort, worth. */
+  /** The stash panel's title and the rest of its header: cells used, sort. */
   title: ReactNode;
   head: ReactNode;
+  /** The page tabs and buying a page, down the right of the grid (UX-3, 2026-11-08). */
+  tabs: ReactNode;
 }
 
 export const StashSearchContext = createContext<StashSearch | null>(null);
@@ -93,11 +96,19 @@ export function RaidScreen({ inv, version, ctx }: Props & { ctx: RaidContext }):
   return (
     <div className="raid" role="dialog" aria-label="Raid">
       <header className="raid-tabs">
-        {(['inventory', 'map', 'quests'] as const).map((t) => (
-          <button key={t} className={t === tab ? 'active' : ''} onClick={() => setTab(t)}>
-            {t[0]!.toUpperCase() + t.slice(1)}
-          </button>
-        ))}
+        <span className="raid-tab-strip" role="tablist" aria-label="Raid screen">
+          {(['inventory', 'map', 'quests'] as const).map((t) => (
+            <button
+              key={t}
+              role="tab"
+              aria-selected={t === tab}
+              className={t === tab ? 'active' : ''}
+              onClick={() => setTab(t)}
+            >
+              {t[0]!.toUpperCase() + t.slice(1)}
+            </button>
+          ))}
+        </span>
         <span className="raid-spacer" />
         <HealthStrip c={ctx.player} />
         <UsePill inv={inv} />
@@ -350,9 +361,11 @@ export function Inventory({ inv, version }: Props): ReactNode {
       </div>
       {help && (
         <div className="inv-help" role="note" onClick={() => setHelp(false)}>
-          {ctx.stash
-            ? 'Tap for details · double-tap to move between your gear and the stash · drag to place · drag a repair kit onto armour to mend it · while dragging, tap with another finger (or press R) to rotate'
-            : 'Tap for details · double-tap to move · drag to place, or onto the ground to drop · drag a repair kit onto armour to mend it · while dragging, tap with another finger (or press R) to rotate'}
+          {inputMode.gamepad
+            ? `✕ select · △ details · □ quick move · hold ✕ and move to drag${ctx.stash ? '' : ' (onto the ground to drop)'} · △ while dragging rotates · ○ puts it back · L1/R1 change tab`
+            : ctx.stash
+              ? 'Tap for details · double-tap to move between your gear and the stash · drag to place · drag a repair kit onto armour to mend it · while dragging, tap with another finger (or press R) to rotate'
+              : 'Tap for details · double-tap to move · drag to place, or onto the ground to drop · drag a repair kit onto armour to mend it · while dragging, tap with another finger (or press R) to rotate'}
         </div>
       )}
       {inv.selling && (
@@ -796,19 +809,26 @@ function Loot({ inv }: { inv: InventoryController }): ReactNode {
     ) : null;
   if (target.kind === 'container') {
     const l = lootContainerById(ctx.sim, target.id)!;
-    // The stash page's header (its tabs, sort and worth) comes from the stash screen.
+    // The stash page's header (sort and cells used) and tabs come from the stash screen.
     return panel(
       search?.title ?? name,
       <>
         <SearchBox />
         <div className="inv-open">
           <Bag inv={inv} />
-          <GridView
-            inv={inv}
-            gref={{ owner: target, grid: 'loot' }}
-            grid={l.grid}
-            shown={found?.shown}
-          />
+          {search ? (
+            <div className="stash-paged">
+              <GridView inv={inv} gref={{ owner: target, grid: 'loot' }} grid={l.grid} />
+              {search.tabs}
+            </div>
+          ) : (
+            <GridView
+              inv={inv}
+              gref={{ owner: target, grid: 'loot' }}
+              grid={l.grid}
+              shown={found?.shown}
+            />
+          )}
         </div>
       </>,
       search?.head ?? searching,
@@ -1215,6 +1235,7 @@ function GridView({
       <div
         className="inv-grid"
         data-drop={JSON.stringify(gref)}
+        data-cell={cell}
         style={{ width: grid.w * cell, height: grid.h * cell }}
       >
         {grid.items.map((g, index) => tile(g, index, 0, 0))}
@@ -1238,6 +1259,7 @@ function GridView({
           className="inv-grid"
           data-drop={JSON.stringify(gref)}
           data-at={`${s.x},${s.y}`}
+          data-cell={cell}
           style={{ left, top, width: s.w * cell, height: s.h * cell }}
         >
           {grid.items.map((g, index) =>

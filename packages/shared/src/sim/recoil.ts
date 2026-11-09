@@ -39,6 +39,12 @@ export const RECOIL = {
   afterBurst: 4,
   /** The spring's damping ratio, below 1: the gun overshoots each kick a little. */
   damping: 0.6,
+  /**
+   * Every kick (up and sideways) of a player aiming with a thumb, on a touchscreen or a
+   * controller (PlayerInput.thumb): a mouse pulls down 20° with a flick of the wrist, a thumb
+   * runs out of screen (the user's call, 2026-11-08). Guns' numbers stay as scaled from Tarkov.
+   */
+  thumb: 0.6,
   /** The kick never climbs higher than this, in degrees: a safety, not reached by a magazine. */
   maxUp: 35,
   /**

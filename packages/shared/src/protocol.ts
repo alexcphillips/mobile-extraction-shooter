@@ -305,6 +305,11 @@ export interface PartyResponse {
   invites: PartyInvite[];
   /** Connection signals waiting for you (GET /api/party/signals takes them): someone's calling. */
   signals: number;
+  /** Your friends, and how many are online (in the menu or a raid, as FriendsResponse has it), for the menu's Friends button (UX-5). */
+  friendCount: number;
+  friendsOnline: number;
+  /** Friend requests to you, not yet answered. */
+  friendRequests: number;
 }
 
 /**

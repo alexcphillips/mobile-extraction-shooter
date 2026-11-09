@@ -47,6 +47,7 @@ import {
   type PartSlot,
   type RepairOn,
 } from './drag';
+import { inputMode } from '../input/mode';
 import type { InventoryContext } from './raid';
 
 const SELF: Owner = { kind: 'self' };
@@ -96,7 +97,8 @@ function showQuickHint(el: HTMLElement, to: string): void {
     // No storage (a private window): show it anyway.
   }
   if (!el.isConnected) return;
-  el.dataset.hint = `double-tap → ${to}`;
+  // With a pad, □ is the double-tap (CP-3).
+  el.dataset.hint = `${inputMode.gamepad ? '□' : 'double-tap'} → ${to}`;
   window.setTimeout(() => delete el.dataset.hint, HINT_MS);
 }
 
@@ -133,7 +135,7 @@ export class InventoryController implements DragHost {
     private readonly redraw: () => void,
   ) {
     this.target = target;
-    this.layout = inventoryLayout(ctx.items, window.innerWidth, window.innerHeight);
+    this.layout = inventoryLayout(ctx.items, window.innerWidth, window.innerHeight, !!ctx.stash);
     this.cell = this.layout.cell;
   }
 

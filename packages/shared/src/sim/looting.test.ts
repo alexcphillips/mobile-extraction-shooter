@@ -188,7 +188,8 @@ describe('looting', () => {
     act({ type: 'quick', from: { owner: body, slot: 'sidearm', item: 'pistol' }, to: self });
     expect(enemy.gear.sidearm).toBeNull();
     expect(c.gear.primary2).toBeNull();
-    expect(countOf(c.gear.pockets, 'pistol')).toBe(1);
+    // In the backpack: a 2×1 doesn't go in the pockets' 1×1 slots.
+    expect(countOf(c.gear.backpack!.grid, 'pistol')).toBe(1);
   });
 
   it('double-tapping loot into full pockets, rig and backpack puts it in the vault', () => {
@@ -280,11 +281,11 @@ describe('looting', () => {
     const { c, crate, box, act } = setup();
     // No vault, which would take what's left (tested above).
     c.gear.vault = null;
-    // Pockets (4×1) and a 4×4 backpack hold 8 stacks of 100 with nothing else in them.
+    // Pockets (five 1×1) and a 4×4 backpack hold 9 stacks of 100 with nothing else in them.
     for (let i = 0; i < 4; i++) addItem(items, c.gear.backpack!.grid, createItem(items, 'helmet'));
-    // The backpack is full of helmets, so only the pockets are left: 4 stacks of 100.
+    // The backpack is full of helmets, so only the pockets are left: 5 stacks of 100.
     addItem(items, crate.grid, { item: 'round', count: 100 });
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
       expect(
         act({
           type: 'quick',
@@ -295,13 +296,13 @@ describe('looting', () => {
       crate.grid.items.length = 0;
       addItem(items, crate.grid, { item: 'round', count: 100 });
     }
-    expect(countOf(c.gear.pockets, 'round')).toBe(400);
+    expect(countOf(c.gear.pockets, 'round')).toBe(500);
     expect(
       act({ type: 'quick', from: { owner: box, grid: 'loot', index: 0, item: 'round' }, to: self }),
     ).toBe(false);
     expect(crate.grid.items[0]!.item.count).toBe(100);
     // Topping up a partial stack moves only what fits.
-    c.gear.pockets.items[3]!.item.count = 70;
+    c.gear.pockets.items[4]!.item.count = 70;
     expect(
       act({ type: 'quick', from: { owner: box, grid: 'loot', index: 0, item: 'round' }, to: self }),
     ).toBe(true);
@@ -634,7 +635,10 @@ describe('looting', () => {
     expect(act({ ...off, to: null })).toBe(false);
     act({ type: 'attach', gun, from: { owner: self, grid: 'backpack', index: 1, item: 'scope' } });
     expect(act({ ...off, to: null })).toBe(true);
-    expect(countOf(c.gear.pockets, 'scope')).toBe(1);
+    // Into the backpack, beside the one already there: a 2×1 doesn't go in the pockets'
+    // 1×1 slots.
+    expect(countOf(c.gear.pockets, 'scope')).toBe(0);
+    expect(countOf(pack, 'scope')).toBe(2);
   });
 
   it('moves an attachment from one gun to another, swapping when it can', () => {
@@ -757,8 +761,13 @@ describe('looting', () => {
     equip(c, items, 'primary1', createItem(items, 'rifle'));
     const rifle = c.gear.primary1 as WeaponState;
     const gun = { owner: self, slot: 'primary1', item: 'rifle' } as const;
-    addItem(items, c.gear.pockets, createItem(items, 'big-mag'));
-    act({ type: 'attach', gun, from: { owner: self, grid: 'pockets', index: 0, item: 'big-mag' } });
+    // From the backpack: a 1×2 doesn't go in the pockets' 1×1 slots.
+    addItem(items, c.gear.backpack!.grid, createItem(items, 'big-mag'));
+    act({
+      type: 'attach',
+      gun,
+      from: { owner: self, grid: 'backpack', index: 0, item: 'big-mag' },
+    });
     rifle.mag = 50;
     // Everything carried is full: the 20 rounds are dropped at your feet.
     const fill = (grid: typeof c.gear.pockets) => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addItem, placeAt, type Item } from '../inventory/grid';
+import { addItem, canHold, placeAt, type Item } from '../inventory/grid';
 import { TICK_RATE } from '../tick';
 import { CollisionWorld } from '../world/collision-world';
 import { spawnEnemy } from './ai';
@@ -60,7 +60,11 @@ const reload: PlayerInput = {
 describe('gear', () => {
   it('gives players pockets and a vault, and enemies only pockets', () => {
     const { state, c } = setup();
-    expect(c.gear.pockets).toMatchObject({ w: 4, h: 1, containers: false });
+    // Five 1×1 slots (UX-3): nothing bigger goes in.
+    expect(c.gear.pockets).toMatchObject({ w: 5, h: 1, containers: false });
+    expect(c.gear.pockets.sections).toHaveLength(5);
+    expect(canHold(items, c.gear.pockets, createItem(items, 'scope'))).toBe(true);
+    expect(addItem(items, c.gear.pockets, createItem(items, 'scope'))).toBe(1);
     expect(c.gear.vault).toMatchObject({ w: 2, h: 2 });
     const enemy = spawnEnemy(state, world, 5, 0, 5, 0);
     expect(enemy.gear.vault).toBeNull();
@@ -116,9 +120,9 @@ describe('gear', () => {
     const { c } = setup();
     equip(c, items, 'rig', createItem(items, 'rig'));
     equip(c, items, 'backpack', createItem(items, 'backpack'));
-    // Pockets hold 4 stacks of 100, the 3×2 rig 6 more; the rest goes in the backpack.
-    expect(stow(c, items, one('round', 1050))).toBe(0);
-    expect(c.gear.pockets.items).toHaveLength(4);
+    // Pockets hold 5 stacks of 100, the 3×2 rig 6 more; the rest goes in the backpack.
+    expect(stow(c, items, one('round', 1150))).toBe(0);
+    expect(c.gear.pockets.items).toHaveLength(5);
     expect(c.gear.rig!.grid.items).toHaveLength(6);
     expect(c.gear.backpack!.grid.items.map((g) => g.item.count)).toEqual([50]);
     expect(c.gear.vault!.items).toHaveLength(0);
@@ -270,14 +274,15 @@ describe('meds', () => {
     expect(c.health.hp[CHEST]).toBe(85);
     expect(c.health.hp[LEFT_LEG]).toBe(0);
     expect(c.health.hp[LEFT_ARM]).toBe(60);
-    const kit = c.gear.pockets.items[0]!.item;
+    // A medkit is 1×2: it's in the rig, not the pockets' 1×1 slots.
+    const kit = c.gear.rig!.grid.items[0]!.item;
     expect(kit.left).toBeCloseTo(100 - 20 - 24.5 - 30);
     // Not needed now.
-    expect(useMed(c, items, { grid: 0, index: 0 })).toBe(false);
+    expect(useMed(c, items, { grid: 1, index: 0 })).toBe(false);
     // Spent, it's gone.
     dealDamage(state, c, LEFT_ARM, 50, 0);
-    useMed(c, items, { grid: 0, index: 0 });
+    useMed(c, items, { grid: 1, index: 0 });
     expect(c.health.hp[LEFT_ARM]).toBeCloseTo(10 + 25.5);
-    expect(c.gear.pockets.items).toHaveLength(0);
+    expect(c.gear.rig!.grid.items).toHaveLength(0);
   });
 });

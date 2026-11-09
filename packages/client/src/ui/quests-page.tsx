@@ -43,15 +43,27 @@ const STATUS_TEXT: Record<QuestStatus, string> = {
   done: 'Done',
 };
 
-/** What a vendor has for the player: quests ready to claim, then new ones. */
+/** How many quests are ready to claim, active, and new (taken from the menu's Quests button). */
+export function questCounts(
+  quests: readonly QuestDef[],
+  me: ProfileResponse,
+): { ready: number; active: number; fresh: number } {
+  const out = { ready: 0, active: 0, fresh: 0 };
+  for (const q of quests) {
+    const s = questStatus(me.profile, q);
+    if (s === 'ready') out.ready++;
+    else if (s === 'active') out.active++;
+    else if (s === 'available') out.fresh++;
+  }
+  return out;
+}
+
+/** The Quests button's line: ready to claim, then active. New ones get a badge (UX-5). */
 export function questsLine(quests: readonly QuestDef[], me: ProfileResponse): string {
-  const n = (s: QuestStatus) => quests.filter((q) => questStatus(me.profile, q) === s).length;
-  const parts = [
-    n('ready') && `${n('ready')} ready`,
-    n('active') && `${n('active')} active`,
-    n('available') && `${n('available')} new`,
-  ].filter(Boolean);
-  return parts.length ? parts.join(' · ') : quests.length ? 'Nothing new' : 'None yet';
+  const { ready, active, fresh } = questCounts(quests, me);
+  const parts = [ready && `${ready} ready`, active && `${active} active`].filter(Boolean);
+  if (parts.length) return parts.join(' · ');
+  return fresh ? 'New quests to take' : quests.length ? 'Nothing new' : 'None yet';
 }
 
 /** A quest's rewards: money and rep as chips, items as tiles. */
@@ -163,7 +175,7 @@ export function QuestsPage({
       </header>
       {notice && <p className="menu-notice">{notice}</p>}
       <div className="vendors-layout">
-        <nav className="vendors-list" aria-label="Vendors">
+        <nav className="vendors-list" role="tablist" aria-label="Vendors">
           {givers.map((v, i) => (
             <VendorCard
               key={v.id}

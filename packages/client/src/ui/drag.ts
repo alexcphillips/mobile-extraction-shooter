@@ -199,7 +199,8 @@ export class DragController {
     window.addEventListener('pointerup', this.onUp);
     window.addEventListener('pointercancel', this.onCancel);
     window.addEventListener('pointerdown', this.onOtherDown, true);
-    window.addEventListener('keydown', this.onKey);
+    // Before a page's own Esc (going back), so Esc only drops the drag.
+    window.addEventListener('keydown', this.onKey, true);
     // Android's long-press menu (a right-click) would open the details and drop the item.
     window.addEventListener('contextmenu', this.onContextMenu, true);
   }
@@ -301,7 +302,10 @@ export class DragController {
 
   private readonly onKey = (e: KeyboardEvent): void => {
     if (e.code === 'KeyR' && this.dragging && !e.repeat) this.rotate();
-    else if (e.code === 'Escape') this.end();
+    else if (e.code === 'Escape') {
+      e.stopPropagation();
+      this.end();
+    }
   };
 
   private start(): void {
@@ -445,7 +449,7 @@ export class DragController {
     window.removeEventListener('pointerup', this.onUp);
     window.removeEventListener('pointercancel', this.onCancel);
     window.removeEventListener('pointerdown', this.onOtherDown, true);
-    window.removeEventListener('keydown', this.onKey);
+    window.removeEventListener('keydown', this.onKey, true);
     window.removeEventListener('contextmenu', this.onContextMenu, true);
   }
 }

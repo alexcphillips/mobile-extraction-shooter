@@ -579,9 +579,10 @@ body {
 /*
  * Desktop (input/mode.ts sets body[data-input]): mouse and keys replace the touch controls.
  * The hand slots and heal button stay as a read-out (1–4, H), but can't be clicked. The
- * grenade button is hidden (G only, the user's call, 2026-11-01).
+ * grenade button is hidden (G only, the user's call, 2026-11-01). A controller (CP-1) hides
+ * the same ones, and labels the read-outs with its buttons.
  */
-body[data-input='desktop']
+body:is([data-input='desktop'], [data-input='gamepad'])
   :is(
     #stick,
     #sprint-lock,
@@ -601,8 +602,35 @@ body[data-input='desktop']
   display: none;
 }
 
-body[data-input='desktop'] .control {
+body:is([data-input='desktop'], [data-input='gamepad']) .control {
   pointer-events: none;
+}
+
+/* The mouse isn't captured with a pad, so its pointer is hidden; moving it brings it back. */
+body[data-input='gamepad'],
+body[data-input='gamepad'] * {
+  cursor: none !important;
+}
+
+body[data-input='gamepad']
+  .control:is([data-id='detonate'], [data-id='extinguish'], [data-id='heal'])::after {
+  position: absolute;
+  top: 3px;
+  font-size: 9px;
+  color: #fff;
+  opacity: 0.7;
+}
+
+body[data-input='gamepad'] .control[data-id='detonate']::after {
+  content: 'D-pad ↑';
+}
+
+body[data-input='gamepad'] .control[data-id='extinguish']::after {
+  content: 'D-pad ↓';
+}
+
+body[data-input='gamepad'] .control[data-id='heal']::after {
+  content: 'L1';
 }
 
 body[data-input='desktop'] .control[data-id='detonate']::after {
@@ -644,6 +672,28 @@ kbd {
   font:
     11px/1.3 ui-monospace,
     monospace;
+}
+
+/* A controller's face buttons, in their usual colours (hud/raid-hud.ts). */
+kbd.pad {
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+kbd.pad[data-glyph='□'] {
+  color: #e98ac4;
+}
+
+kbd.pad[data-glyph='✕'] {
+  color: #8ab4f0;
+}
+
+kbd.pad[data-glyph='○'] {
+  color: #f07a7a;
+}
+
+kbd.pad[data-glyph='△'] {
+  color: #6fd6b0;
 }
 
 /* HUD buttons, placed by hud/hud.ts from the saved layout (centre as % of the screen). */
@@ -701,6 +751,17 @@ kbd {
   transform: translateX(-50%);
   font-size: 9px;
   opacity: 0.7;
+}
+
+/* With a pad, the button that takes it out (CP-3) in place of the number. */
+body[data-input='gamepad'] .slot-num {
+  font-size: 0;
+  white-space: nowrap;
+}
+
+body[data-input='gamepad'] .slot-num::after {
+  content: attr(data-pad);
+  font-size: 9px;
 }
 
 /* Only while you have C4 placed (hud/hands.ts); the layout editor shows it anyway. */
@@ -814,6 +875,12 @@ kbd {
   opacity: 0.7;
 }
 
+/* The entry a pad would pick on letting go of L1 or R1 (CP-1). */
+body[data-input='gamepad'] .heal-picker button.highlight {
+  border-color: #fff;
+  background: rgb(70 70 70 / 0.95);
+}
+
 /* ?debug: hurt, heal, next optic and next muzzle (keys 7–0), down the left edge. */
 .debug-actions {
   position: fixed;
@@ -850,6 +917,22 @@ kbd {
 #controls.editing .control.selected {
   z-index: 1;
   border: 3px solid #e3a33a;
+}
+
+/* Hidden by the player's layout (UX-4); the editor shows them faded so they can come back. */
+#controls > .control.off {
+  display: none;
+}
+
+#controls.editing > .control.off {
+  display: grid;
+  place-items: center;
+  border-style: dotted;
+  opacity: 0.35;
+}
+
+#layout-bar button:disabled {
+  opacity: 0.4;
 }
 
 /* While editing the layout, only the controls and the toolbar show. */
@@ -1071,8 +1154,81 @@ body:has(#controls.editing) :is(#hud, #presets, #settings-button, #vitals, #ammo
   accent-color: #e3a33a;
 }
 
+/* A section across both columns of settings: the controller's button layout (CP-3). */
+.panel-body section.wide {
+  column-span: all;
+}
+
+.pad-layout {
+  width: 100%;
+  margin: 10px 0 0;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.pad-layout th {
+  padding: 4px 6px;
+  border-bottom: 1px solid #2b353d;
+  color: #8d99a3;
+  font-weight: 600;
+  text-align: left;
+}
+
+.pad-layout td {
+  padding: 5px 6px;
+  border-bottom: 1px solid #1f282e;
+  color: #c8d1d8;
+  vertical-align: top;
+}
+
+.pad-layout td:first-child {
+  white-space: nowrap;
+}
+
+.pad-layout kbd + kbd {
+  margin-left: 4px;
+}
+
 .row {
   margin: 4px 0 8px;
+}
+
+/* Layout share codes in settings (UX-4): a label over a text field, a button beside it. */
+.layout-share {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin: 8px 0 0;
+}
+
+.layout-share label {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.layout-share input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 7px 8px;
+  border: 1px solid #36424b;
+  border-radius: 4px;
+  background: #12171b;
+  color: #fff;
+  /* 16px keeps iOS from zooming in on focus. */
+  font:
+    16px/1.2 ui-monospace,
+    monospace;
+}
+
+.hint.bad {
+  color: #e8705a;
+}
+
+.panel button:disabled {
+  opacity: 0.45;
 }
 
 .account-row,
@@ -2578,6 +2734,27 @@ body:has(#layout-bar) #menu {
   color: #9aa6b0;
 }
 
+/* A notification on a card (UX-5): new quests, friend requests. Bright, as a phone app's. */
+.menu-buttons button {
+  position: relative;
+}
+
+.menu-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #ff4b3a;
+  box-shadow: 0 0 10px rgb(255 75 58 / 0.55);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
 .menu-buttons button.menu-raid {
   grid-column: 1 / -1;
   border-color: #f0b850;
@@ -2621,17 +2798,36 @@ body:has(#layout-bar) #menu {
   color: #ff6b5a;
 }
 
-/* Stash page tabs and buying the next page, in the stash panel's header. */
-.stash-pages {
+/*
+ * Stash page tabs and buying the next page, down the right of the grid (UX-3, 2026-11-08),
+ * staying in view under the search box while the page scrolls. PAGE_TABS in
+ * ui/inventory-layout.ts is this strip's width and the gap before it.
+ */
+.stash-paged {
   display: flex;
-  gap: 3px;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.stash-pages {
+  position: sticky;
+  top: 38px;
+  z-index: 2;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  /* The buy button's confirm is wider than the strip: it reaches left, over the grid. */
+  align-items: flex-end;
+  gap: 4px;
+  width: 28px;
 }
 
 .raid .stash-pages button {
-  min-width: 26px;
-  height: 24px;
+  min-width: 28px;
+  height: 32px;
   padding: 0 6px;
   font-size: 12px;
+  white-space: nowrap;
 }
 
 .raid .stash-pages button.stash-page.active {
@@ -2665,8 +2861,16 @@ body:has(#layout-bar) #menu {
   opacity: 0.45;
 }
 
+/* The count goes under the page's number, so the tab stays the strip's width. */
+.raid .stash-pages button.stash-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+}
+
 .stash-page-hits {
-  margin-left: 3px;
   color: #6cff8a;
   font-size: 10px;
 }
@@ -3017,15 +3221,13 @@ body:has(#layout-bar) #menu {
   display: none;
 }
 
-.vendors-tools select {
+.raid .vendors-tools .stash-sort > button {
   height: 30px;
-  padding: 0 6px;
-  border: 1px solid #36424b;
-  border-radius: 4px;
-  background: #222a30;
-  color: inherit;
-  font: inherit;
   font-size: 12px;
+}
+
+.raid .stash-sort-menu button.active {
+  color: #e3a33a;
 }
 
 .raid .vendors-tools > button {
@@ -4246,4 +4448,58 @@ body.spectating .spectate {
   gap: 6px;
   padding: 6px 0 6px 8px;
   border-left: 2px solid rgb(255 255 255 / 15%);
+}
+
+/* The controller's menu cursor (CP-2): a dot, and a ring round what it's on. */
+.raid-tab-strip {
+  display: contents;
+}
+
+.pad-cursor,
+.pad-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.pad-cursor {
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border: 2px solid #11171b;
+  border-radius: 50%;
+  background: #e3a33a;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.5);
+  box-sizing: border-box;
+}
+
+/* Holding something: an item being dragged, or a slider grabbed. */
+.pad-cursor.grab {
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  background: #6fbf5a;
+}
+
+.pad-ring {
+  box-sizing: border-box;
+  border: 2px solid #e3a33a;
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgb(227 163 58 / 0.45);
+  transition:
+    transform 60ms linear,
+    width 60ms linear,
+    height 60ms linear;
+}
+
+.pad-cursor[hidden],
+.pad-ring[hidden] {
+  display: none;
+}
+
+input[type='range'].pad-grabbed {
+  outline: 2px solid #6fbf5a;
+  outline-offset: 3px;
 }

@@ -37,6 +37,7 @@ import {
   step,
   weaponDef,
   type Character,
+  type Hand,
   type EntityId,
   type EnemyDef,
   type EnemySpawnOptions,
@@ -129,6 +130,8 @@ import { SpectateBar } from '../hud/spectate';
 import type { Vitals } from '../hud/vitals';
 import { Controls } from '../input/controls';
 import { inputMode } from '../input/mode';
+import { PadRumble } from '../input/pad-rumble';
+import { HIP_FOLLOW, PAD_FOLLOW, bearing, followRate } from '../input/aim-follow';
 import {
   anyCheat,
   applySimCheats,
@@ -263,6 +266,22 @@ const ENEMY_RESPAWN_MS = 6000;
 const RESULTS_AFTER_DEATH_MS = 1500;
 /** How much aim assist slows looking while the crosshair is on an enemy. */
 const ASSIST = { off: 1, low: 0.8, medium: 0.6, high: 0.45 } as const;
+/**
+ * The same with a controller (CP-1): a stick can't flick back onto a target as a thumb or
+ * mouse can, so it slows more. A first guess, for the user to tune with the real pad.
+ */
+const PAD_ASSIST = { off: 1, low: 0.7, medium: 0.5, high: 0.35 } as const;
+/** The point on a target that rotational aim assist follows: about chest height. */
+const FOLLOW_HEIGHT = 0.7;
+
+/** The primary △ takes out: the other one if you carry it, else whichever you carry. */
+function otherPrimary(gear: Character['gear']): Hand | null {
+  const first = gear.primary1 ? 'primary1' : null;
+  const second = gear.primary2 ? 'primary2' : null;
+  if (gear.hand === 'primary1') return second;
+  if (gear.hand === 'primary2') return first;
+  return first ?? second;
+}
 
 /** What the HUD calls each power-up. */
 const POWERUP_NAMES: Record<Powerup, string> = {
@@ -404,6 +423,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const rig = new CharacterRig(await loadCharacter('/characters/mannequin.glb'));
 
   const controls = new Controls(el.canvas, el.hud);
+  const rumble = new PadRumble();
+  controls.pad.onSoundLocked = () =>
+    el.raidHud.note('No sound yet: click or press a key once', performance.now(), 5000);
   const resume: RaidSnapshot | null =
     options.resume ??
     (welcome && {
@@ -776,6 +798,38 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     );
   }
 
+  // Rotational aim assist on a pad: the bearing to the target under the crosshair, a tick
+  // ago and now, by target (input/aim-follow.ts).
+  let followId = 0;
+  const followPrev = { yaw: 0, pitch: 0 };
+  const followNow = { yaw: 0, pitch: 0 };
+  const followOut = { yaw: 0, pitch: 0 };
+  function followTarget(target: boolean): void {
+    const share = PAD_FOLLOW[settings.current.aimAssist] * (controls.aim ? 1 : HIP_FOLLOW);
+    const c = target && inputMode.gamepad && share > 0 ? entityById(sim, aimHit.id) : undefined;
+    if (!c) {
+      followId = 0;
+      controls.followYaw = controls.followPitch = 0;
+      return;
+    }
+    bearing(
+      eyeX(player),
+      eyeHeight(player),
+      eyeZ(player),
+      c.x,
+      c.y + c.height * FOLLOW_HEIGHT,
+      c.z,
+      followNow,
+    );
+    if (followId === c.id) followRate(followPrev, followNow, 1 / TICK_RATE, share, followOut);
+    else followOut.yaw = followOut.pitch = 0;
+    controls.followYaw = followOut.yaw;
+    controls.followPitch = followOut.pitch;
+    followId = c.id;
+    followPrev.yaw = followNow.yaw;
+    followPrev.pitch = followNow.pitch;
+  }
+
   const debugRng = createRng(1);
   const muzzle = new THREE.Vector3();
   const gunPoint = new THREE.Vector3();
@@ -815,6 +869,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     (ref) => (picked = ref),
     (name) => el.raidHud.note(`Grenade · ${name}`, performance.now()),
   );
+  controls.picker = hands;
   // A flash's white screen, the grey of standing in smoke, and flames while you burn.
   const blindEl = document.getElementById('blind')!;
   const smokeVeil = document.getElementById('smoke-veil')!;
@@ -1118,7 +1173,12 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // Dead, or out of the raid: no more control.
     const dead = player.health.dead || ended !== null;
     const target = !dead && onTarget();
-    controls.assist = target ? ASSIST[settings.current.aimAssist] : 1;
+    controls.assist = target
+      ? (inputMode.gamepad ? PAD_ASSIST : ASSIST)[settings.current.aimAssist]
+      : 1;
+    followTarget(target);
+    // Mid-burst, assist only slows turning sideways, never pulling down against recoil.
+    controls.assistPitch = (player.recoil?.shots ?? 0) > 0 ? 1 : controls.assist;
     let fire = controls.fire;
     const held = heldWeapon(player);
     // Auto-fire holds the trigger (or swings the knife), but never stops a med being used,
@@ -1146,9 +1206,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.jump = controls.jump;
     input.fire = fire;
     input.aim = controls.aim;
+    input.thumb = !inputMode.desktop;
     input.reload = controls.reload;
-    input.draw = controls.draw;
-    if (controls.draw && controls.draw !== player.gear.hand && holdsDeathMachine(sim, player))
+    input.draw = controls.draw ?? (controls.swapPrimary ? otherPrimary(player.gear) : null);
+    if (input.draw && input.draw !== player.gear.hand && holdsDeathMachine(sim, player))
       el.raidHud.warn('Not while you hold the minigun', performance.now());
     input.throw = controls.throw;
     input.grenade = hands.grenadeChoice;
@@ -1222,6 +1283,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       useButton.textContent = label;
       useButton.classList.toggle('idle', !lootable && !spot && buySpot < 0 && barricade < 0);
     }
+    // The pad's □ uses only when there's something to use, else reloads (CP-1).
+    controls.canUse = label !== 'use' && label !== 'locked';
+    controls.screenOpen = screenOpen;
+    controls.uiOpen = screenOpen || !!ended || devScreen;
+
     let taking: string | null = null;
     input.door = null;
     input.search = null;
@@ -1344,6 +1410,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     let lit = false;
     let died = false;
     for (const e of sim.events) {
+      if (e.type === 'shot' && e.by === player.id && e.pellet === 0) {
+        const gun = heldWeapon(player);
+        rumble.fired(gun ? weaponDef(items, gun.item).recoil.up : 1, now);
+      }
       if (e.type === 'shot' && e.blast) {
         // A blast gun's gust (zombies mode's Gale Cannon): no tracer, a cone of wind.
         if (e.by === viewer.id) viewmodel.fired(now);
@@ -1399,16 +1469,24 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         }
       } else if (e.type === 'explosion') {
         grenades.explode(now, e.x, e.y, e.z, e.radius, grenadeEffect(grenadeDef(items, e.item)));
+        if (!player.health.dead) {
+          rumble.blast(Math.hypot(e.x - player.x, e.y - player.y, e.z - player.z), e.radius, now);
+        }
       } else if (e.type === 'ignite' && e.target === player.id) {
         lit = true;
         el.raidHud.warn(
-          inputMode.desktop ? 'You’re on fire · V to put it out' : 'You’re on fire · put it out',
+          inputMode.desktop
+            ? 'You’re on fire · V to put it out'
+            : inputMode.gamepad
+              ? 'You’re on fire · D-pad ↓ to put it out'
+              : 'You’re on fire · put it out',
           now,
         );
       } else if (e.type === 'damage') {
         if (e.amount > 0) bodyOf.get(e.target)?.hit();
         if (e.target === (watching ?? player).id && e.amount > 0) el.vitals.hurtFlash();
         if (e.target === player.id) {
+          if (e.amount > 0) rumble.hurt(e.amount, now);
           hitLost += e.amount;
           const by = e.by === player.id ? 'Your own grenade' : names.get(e.by);
           lastHit = logHit(taken, e, by ?? 'Someone');
@@ -1573,8 +1651,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
                   : spot
                     ? (markerText.get(spot.marker) ?? '')
                     : '';
-    // Desktop has no use button to say what F does, so the prompt says it.
-    if (inputMode.desktop && useLabel !== 'use' && useLabel !== 'locked') {
+    // Desktop has no use button to say what F does, so the prompt says it (□ on a pad).
+    if (!inputMode.touch && useLabel !== 'use' && useLabel !== 'locked') {
       // A door a switch is opening says so rather than offering to open it.
       const verb = useLabel[0]!.toUpperCase() + useLabel.slice(1);
       el.raidHud.setPrompt(
@@ -1590,7 +1668,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
                   : `${verb} ${prompt}`
                 : prompt || `${verb}${door ? ' door' : ''}`,
         now,
-        'F',
+        inputMode.gamepad ? '□' : 'F',
       );
     } else el.raidHud.setPrompt(prompt, now);
     const shown = watching ?? player;
@@ -1673,6 +1751,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const viewProjection = new THREE.Matrix4();
   startLoop(renderer, controls, (time, dtMs) => {
     const t0 = performance.now();
+    controls.frame(dtMs);
     const alpha = loop.advance(dtMs / 1000, tick);
     const lerp = (a: number, b: number): number => a + (b - a) * alpha;
     camera.position.set(lerp(prev.x, cur.x), lerp(prev.y, cur.y), lerp(prev.z, cur.z));
