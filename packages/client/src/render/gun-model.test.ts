@@ -45,7 +45,7 @@ describe('gun models', () => {
 
   it('draws the knife from its item', () => {
     const k = knifeModel(items, 'knife');
-    expect(k.shapes).toHaveLength(3);
+    expect(k.shapes).toHaveLength(4);
     expect(k.grip).toEqual([0, -0.055, 0.005]);
   });
 });

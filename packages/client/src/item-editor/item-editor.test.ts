@@ -68,7 +68,7 @@ describe('item editor', () => {
     expect(itemUses('m416', items)).toEqual(
       expect.arrayContaining(['scope-4x fits it', 'starting kit new-player']),
     );
-    expect(itemUses('jade-dragon', items)).toContain('quest something-special');
+    expect(itemUses('graphics-card', items)).toContain('quest precision-work');
   });
 
   it('warns about changes that can break saved stashes, and only those', () => {
