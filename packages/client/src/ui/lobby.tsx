@@ -402,6 +402,8 @@ export interface DeployEntry {
   name: string;
   /** Under the name: "20 min", "Solo · endless". */
   line: string;
+  /** Beside the line: "starter". */
+  tags?: readonly string[] | undefined;
 }
 
 /** The button that goes in: the raid button from main-menu.tsx. */
@@ -460,7 +462,14 @@ export function DeployScreen({
             >
               <span className="lobby-map-index">{String(i + 1).padStart(2, '0')}</span>
               <span className="lobby-map-name">{e.name}</span>
-              <span className="lobby-map-line">{e.line}</span>
+              <span className="lobby-map-line">
+                {e.line}
+                {e.tags?.map((t) => (
+                  <span key={t} className="lobby-map-tag">
+                    {t}
+                  </span>
+                ))}
+              </span>
             </button>
           ))}
         </div>

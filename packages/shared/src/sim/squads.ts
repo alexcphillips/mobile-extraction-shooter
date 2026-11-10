@@ -102,9 +102,10 @@ export function startSquads(
 
   const eye = MOVEMENT.standHeight - MOVEMENT.eyeBelowTop;
   const spawns: Spot[] = [];
-  // Player spawns, and the map's PMC-only spawns (2026-11-08).
+  // Player spawns, and the map's PMC-only spawns (2026-11-08); only the latter if the map
+  // says so (MT-9).
   for (const m of map.markers) {
-    if (m.type !== 'playerSpawn' && m.type !== 'pmcSpawn') continue;
+    if (m.type !== 'pmcSpawn' && (m.type !== 'playerSpawn' || pmcs.pmcSpawnsOnly)) continue;
     const y = world.groundAt(m.x, m.z, MOVEMENT.radius, m.y + 0.5);
     spawns.push({ x: m.x, y, z: m.z, yaw: m.yaw, eye: y + eye });
   }

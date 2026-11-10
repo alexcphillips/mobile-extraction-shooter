@@ -302,10 +302,10 @@ async function runGame(
   let me = prepared.me;
   const items = loadItems();
   const wanted = q.get('raid') ?? lastRaid();
+  // In the list's order (MT-2: the starter map first); the last one played is picked.
   const raids = raidIds()
     .map((id) => loadRaid(id))
-    .sort((a, b) => Number(b.id === wanted) - Number(a.id === wanted))
-    .map((r) => ({ id: r.id, name: r.name, duration: r.duration, map: r.map }));
+    .map((r) => ({ id: r.id, name: r.name, duration: r.duration, map: r.map, tags: r.tags }));
   const play = (
     raid: string,
     serverRaid: string,
@@ -357,6 +357,7 @@ async function runGame(
       me,
       items,
       raids,
+      raid: wanted,
       vendors: [...loadVendors().values()],
       zombies: zombiesIds().map((id) => {
         const def = loadZombies(id);

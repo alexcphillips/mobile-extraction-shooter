@@ -20,7 +20,7 @@ import { giveWeapon } from './weapons';
 import { TEST_ITEMS } from './test-items';
 
 /** Flat ground, half metres each way from the origin. */
-function makeWorld(boxes: BoxDef[] = [], half = 60): CollisionWorld {
+function makeWorld(boxes: BoxDef[] = [], half = 60, foliage?: BoxDef[]): CollisionWorld {
   const n = Math.ceil(half / 4) * 2;
   const def: WorldDef = {
     terrain: {
@@ -34,6 +34,7 @@ function makeWorld(boxes: BoxDef[] = [], half = 60): CollisionWorld {
     boxes,
     ramps: [],
     ladders: [],
+    ...(foliage && { foliage }),
   };
   return new CollisionWorld(def);
 }
@@ -85,6 +86,8 @@ function setup(
   pz: number,
   options: {
     boxes?: BoxDef[];
+    /** Sight-only boxes (MT-3). */
+    foliage?: BoxDef[];
     patrol?: PatrolDef;
     yaw?: number;
     half?: number;
@@ -93,7 +96,7 @@ function setup(
     flags?: { deaf?: boolean; passive?: boolean; harmless?: boolean };
   } = {},
 ): Setup {
-  const world = makeWorld(options.boxes, options.half);
+  const world = makeWorld(options.boxes, options.half, options.foliage);
   const nav = new NavGrid(world);
   const state = createState(7);
   const enemy = spawnEnemy(state, world, 0, 0, 0, options.yaw ?? 0, {
@@ -185,6 +188,15 @@ describe('enemy sight', () => {
     const boxes = [aabb(-5, 0, -9.2, 5, 1.2, -9)];
     expect(runFor(setup(0, -10, { boxes }), 3)).toBe('alert');
     expect(runFor(setup(0, -10, { boxes }), 3, input({ crouch: true }))).toBe('unaware');
+  });
+
+  it("doesn't see you through leaves, but hears a shot through them (MT-3)", () => {
+    const foliage = [aabb(-3, 0, -6, 3, 4, -5)];
+    expect(runFor(setup(0, -10), 3)).toBe('alert');
+    expect(runFor(setup(0, -10, { foliage }), 3)).toBe('unaware');
+    const s = setup(0, -20, { foliage });
+    shootUp(s);
+    expect(s.enemy.ai!.awareness).toBe('alert');
   });
 
   it('takes a while to notice you far off in the open', () => {

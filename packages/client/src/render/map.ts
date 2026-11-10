@@ -2,6 +2,7 @@ import type {
   CompiledDoor,
   CompiledGlass,
   CompiledMap,
+  CompiledWater,
   HeightGridDef,
   InstancedGroup,
   Shape,
@@ -162,24 +163,8 @@ export function buildMap(map: CompiledMap): MapView {
   const glass = map.glass.length ? buildGlass(map.glass) : null;
   if (glass) root.add(glass);
 
-  if (map.water) {
-    const t = map.world.terrain;
-    const w = t.cols * t.cellSize;
-    const d = t.rows * t.cellSize;
-    const water = new THREE.Mesh(
-      new THREE.PlaneGeometry(w, d).rotateX(-Math.PI / 2),
-      new THREE.MeshBasicMaterial({
-        color: map.water.colour,
-        transparent: true,
-        opacity: map.water.opacity,
-        depthWrite: false,
-      }),
-    );
-    water.position.set(t.minX + w / 2, map.water.level, t.minZ + d / 2);
-    water.updateMatrix();
-    water.matrixAutoUpdate = false;
-    root.add(water);
-  }
+  const water = buildWater(map.water);
+  if (water) root.add(water);
   const view: MapView = {
     root,
     doors,
@@ -527,4 +512,50 @@ export function buildDoor(door: CompiledDoor, material: THREE.Material): THREE.O
   pivot.add(new THREE.Mesh(b.build(), material));
   pivot.name = door.id;
   return pivot;
+}
+
+/**
+ * Every body of water as one see-through mesh (MT-1): a flat rectangle each at its level,
+ * coloured and faded per body through vertex colours with alpha. One draw call; null with
+ * none. Seen from both sides, so it shows from under the surface too.
+ */
+export function buildWater(water: readonly CompiledWater[]): THREE.Mesh | null {
+  if (!water.length) return null;
+  const pos = new Float32Array(water.length * 18);
+  const col = new Float32Array(water.length * 24);
+  const c = new THREE.Color();
+  water.forEach((w, k) => {
+    const cos = Math.cos(w.yaw);
+    const sin = Math.sin(w.yaw);
+    // Corners in its frame, then into the world as compile's place() does.
+    const corners = [
+      [-w.hx, -w.hz],
+      [w.hx, -w.hz],
+      [w.hx, w.hz],
+      [-w.hx, -w.hz],
+      [w.hx, w.hz],
+      [-w.hx, w.hz],
+    ] as const;
+    c.setHex(w.colour);
+    corners.forEach(([lx, lz], i) => {
+      pos.set([w.x + lx * cos + lz * sin, w.level, w.z - lx * sin + lz * cos], k * 18 + i * 3);
+      col.set([c.r, c.g, c.b, w.opacity], k * 24 + i * 4);
+    });
+  });
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.BufferAttribute(col, 4));
+  g.computeBoundingSphere();
+  const mesh = new THREE.Mesh(
+    g,
+    new THREE.MeshBasicMaterial({
+      vertexColors: true,
+      transparent: true,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    }),
+  );
+  mesh.name = 'water';
+  mesh.matrixAutoUpdate = false;
+  return mesh;
 }

@@ -1,0 +1,13 @@
+{
+  "formatVersion": 10,
+  "id": "wide-angle-lens",
+  "name": "Wide-angle lens",
+  "type": "loot",
+  "size": [2, 1],
+  "value": 1000,
+  "rarity": "rare",
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#a08a40" }]
+  },
+  "category": "Electronics"
+}

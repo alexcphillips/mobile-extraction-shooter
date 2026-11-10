@@ -1,5 +1,7 @@
 import {
+  HeightGrid,
   extractionsOf,
+  waterLevelAt,
   type Character,
   type CompiledMap,
   type CompiledMarker,
@@ -148,23 +150,27 @@ function footprint(s: Shape, px: number, py: number, pz: number, pyaw: number): 
 
 function buildBase(map: CompiledMap): MapBase {
   const t = map.world.terrain;
+  const grid = new HeightGrid(t);
   const footprints: Footprint[] = [];
-  for (const s of map.shapes) {
-    const f = footprint(s, 0, 0, 0, 0);
-    if (f) footprints.push(f);
-  }
+  // On ground raised above y 0 (a ridge, MT-2), heights count from the ground, so a cabin
+  // up a hill shows on the ground floor rather than being cut off above it.
+  const add = (f: Footprint | null): void => {
+    if (!f) return;
+    const lift = Math.max(0, grid.heightAt((f.minX + f.maxX) / 2, (f.minZ + f.maxZ) / 2));
+    f.bottom -= lift;
+    f.top -= lift;
+    footprints.push(f);
+  };
+  for (const s of map.shapes) add(footprint(s, 0, 0, 0, 0));
   for (const group of map.instanced) {
     for (const p of group.placements) {
-      for (const s of group.shapes) {
-        const f = footprint(s, p.x, p.y, p.z, p.yaw);
-        if (f) footprints.push(f);
-      }
+      for (const s of group.shapes) add(footprint(s, p.x, p.y, p.z, p.yaw));
     }
   }
   footprints.sort((a, b) => a.top - b.top);
   // Cells whose middle is under water, merged along each row.
   const water: MapBase['water'] = [];
-  if (map.water) {
+  if (map.water.length) {
     const corner = (i: number, j: number): number => t.heights[j * (t.cols + 1) + i]!;
     for (let j = 0; j < t.rows; j++) {
       let start = -1;
@@ -172,7 +178,11 @@ function buildBase(map: CompiledMap): MapBase {
         const wet =
           i < t.cols &&
           (corner(i, j) + corner(i + 1, j) + corner(i, j + 1) + corner(i + 1, j + 1)) / 4 <
-            map.water.level;
+            waterLevelAt(
+              map.water,
+              t.minX + (i + 0.5) * t.cellSize,
+              t.minZ + (j + 0.5) * t.cellSize,
+            );
         if (wet && start < 0) start = i;
         if (!wet && start >= 0) {
           water.push([
@@ -192,7 +202,7 @@ function buildBase(map: CompiledMap): MapBase {
     frame: frameOf(map, footprints, ground),
     groundColour: css(map.terrainColour),
     water,
-    waterColour: css(map.water?.colour ?? 0x3a6ea5),
+    waterColour: css(map.water[0]?.colour ?? 0x3a6ea5),
     footprints,
   };
 }

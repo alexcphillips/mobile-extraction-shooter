@@ -1,0 +1,110 @@
+{
+  "formatVersion": 3,
+  "id": "picket-fence",
+  "name": "Picket fence",
+  "colours": {
+    "paint": "#d8d2c4",
+    "paint-dark": "#bdb6a6",
+    "post": "#8f877a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [-1.5, 0, 0],
+      "size": [0.1, 1.05, 0.1],
+      "colour": "post"
+    },
+    {
+      "type": "box",
+      "pos": [1.5, 0, 0],
+      "size": [0.1, 1.05, 0.1],
+      "colour": "post"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.22, -0.015],
+      "size": [2.9, 0.08, 0.04],
+      "colour": "post",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.72, -0.015],
+      "size": [2.9, 0.08, 0.04],
+      "colour": "post",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.375, 0, 0.03],
+      "size": [0.09, 0.95, 0.025],
+      "colour": "paint-dark"
+    },
+    {
+      "type": "box",
+      "pos": [-1.125, 0, 0.03],
+      "size": [0.09, 0.98, 0.025],
+      "colour": "paint"
+    },
+    {
+      "type": "box",
+      "pos": [-0.875, 0, 0.03],
+      "size": [0.09, 0.95, 0.025],
+      "colour": "paint-dark"
+    },
+    {
+      "type": "box",
+      "pos": [-0.625, 0, 0.03],
+      "size": [0.09, 0.91, 0.025],
+      "colour": "paint"
+    },
+    {
+      "type": "box",
+      "pos": [-0.375, 0, 0.03],
+      "size": [0.09, 0.98, 0.025],
+      "colour": "paint-dark"
+    },
+    {
+      "type": "box",
+      "pos": [-0.125, 0, 0.03],
+      "size": [0.09, 0.95, 0.025],
+      "colour": "paint"
+    },
+    {
+      "type": "box",
+      "pos": [0.125, 0, 0.03],
+      "size": [0.09, 0.95, 0.025],
+      "colour": "paint-dark"
+    },
+    {
+      "type": "box",
+      "pos": [0.375, 0, 0.03],
+      "size": [0.09, 0.98, 0.025],
+      "colour": "paint"
+    },
+    {
+      "type": "box",
+      "pos": [0.625, 0, 0.03],
+      "size": [0.09, 0.91, 0.025],
+      "colour": "paint-dark"
+    },
+    {
+      "type": "box",
+      "pos": [0.875, 0, 0.03],
+      "size": [0.09, 0.95, 0.025],
+      "colour": "paint"
+    },
+    {
+      "type": "box",
+      "pos": [1.125, 0, 0.03],
+      "size": [0.09, 0.98, 0.025],
+      "colour": "paint-dark"
+    },
+    {
+      "type": "box",
+      "pos": [1.375, 0, 0.03],
+      "size": [0.09, 0.95, 0.025],
+      "colour": "paint"
+    }
+  ]
+}

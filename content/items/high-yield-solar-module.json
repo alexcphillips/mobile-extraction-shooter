@@ -5,7 +5,7 @@
   "type": "loot",
   "size": [3, 2],
   "value": 8000,
-  "rarity": "epic",
+  "rarity": "legendary",
   "model": {
     "parts": [
       {
@@ -162,7 +162,7 @@
       },
       {
         "type": "box",
-        "pos": [0.0, 0.0252, 0],
+        "pos": [0, 0.0252, 0],
         "size": [0.004, 0.0045, 0.274],
         "colour": "#e6e0d3",
         "name": "divider 3",
@@ -207,7 +207,7 @@
         "height": 0.1437,
         "sides": 5,
         "pitch": 91.8,
-        "yaw": 92.0,
+        "yaw": 92,
         "colour": "#1d1f21",
         "name": "lead + 1",
         "group": "leads"
@@ -218,7 +218,7 @@
         "radius": 0.0035,
         "height": 0.0826,
         "sides": 5,
-        "pitch": 90.0,
+        "pitch": 90,
         "yaw": 18.4,
         "colour": "#1d1f21",
         "name": "lead + 2",
@@ -260,7 +260,7 @@
         "radius": 0.0035,
         "height": 0.0941,
         "sides": 5,
-        "pitch": 90.0,
+        "pitch": 90,
         "yaw": 6.3,
         "colour": "#1d1f21",
         "name": "lead - 2",

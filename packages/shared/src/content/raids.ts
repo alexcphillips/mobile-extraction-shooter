@@ -28,6 +28,13 @@ export const raidSchema = z.strictObject({
    * An optional field, so still format 1.
    */
   offline: z.literal(true).optional(),
+  /**
+   * Where it sits in the map list, lowest first (MT-2, 2026-11-09: Silver Creek, the starter
+   * map, first); left out, after those that have one. An optional field, so still format 1.
+   */
+  order: z.int().optional(),
+  /** Short tags shown on its entry in the map list, such as "starter" (MT-2). */
+  tags: z.array(z.string().min(1).max(12)).optional(),
 });
 
 export type RaidDef = z.infer<typeof raidSchema>;

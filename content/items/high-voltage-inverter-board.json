@@ -1,0 +1,14 @@
+{
+  "formatVersion": 10,
+  "id": "high-voltage-inverter-board",
+  "name": "High-voltage inverter board",
+  "type": "loot",
+  "size": [1, 1],
+  "value": 1300,
+  "rarity": "uncommon",
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#a08a40" }]
+  },
+  "shortName": "Inverter",
+  "category": "Electronics"
+}

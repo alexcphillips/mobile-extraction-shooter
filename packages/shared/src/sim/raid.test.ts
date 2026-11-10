@@ -93,6 +93,14 @@ const run = (state: ReturnType<typeof setup>['state'], seconds: number): void =>
 };
 
 describe('raid', () => {
+  it("takes the map's hearing scale, 1 if it has none (MT-9)", () => {
+    const state = createState(1);
+    startRaid(state, { ...map, hearingScale: 0.6 }, 60);
+    expect(state.hearingScale).toBe(0.6);
+    startRaid(state, map, 60);
+    expect(state.hearingScale).toBe(1);
+  });
+
   it('opens the map’s extraction points and counts the timer down', () => {
     const { state, c } = setup(0, 60);
     // Only the zone that's an extraction point, with its middle for its label.

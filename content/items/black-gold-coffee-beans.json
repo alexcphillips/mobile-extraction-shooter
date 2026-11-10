@@ -1,0 +1,14 @@
+{
+  "formatVersion": 10,
+  "id": "black-gold-coffee-beans",
+  "name": "Black gold coffee beans",
+  "type": "loot",
+  "size": [1, 2],
+  "value": 2900,
+  "rarity": "epic",
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#a08a40" }]
+  },
+  "shortName": "Coffee",
+  "category": "Household"
+}

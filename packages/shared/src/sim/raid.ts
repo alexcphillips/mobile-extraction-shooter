@@ -124,6 +124,9 @@ export interface LeaveEvent {
  * other rolls stay as they were on maps without.
  */
 export function startRaid(state: SimState, map: CompiledMap, seconds: number): void {
+  // How far noises carry for the AI here (MT-9: was set only by the client, so a raid
+  // started elsewhere, like a sim test or a co-op host, heard at 1).
+  state.hearingScale = map.hearingScale ?? 1;
   const extractions: ExtractionPoint[] = [];
   for (const zone of map.zones) {
     if (!zone.extraction) continue;

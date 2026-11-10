@@ -1,6 +1,7 @@
 import { TICK_SECONDS } from '../tick';
 import {
   createRayHit,
+  DEEP_WATER,
   type CollisionWorld,
   type GroundHit,
   type Ladder,
@@ -267,6 +268,7 @@ function walk(
   world.pushOut(pos, M.radius, c.y + M.stepUp, c.y + c.height);
   pos.x = Math.max(t.minX + M.radius, Math.min(t.maxX - M.radius, pos.x));
   pos.z = Math.max(t.minZ + M.radius, Math.min(t.maxZ - M.radius, pos.z));
+  keepOutOfDeepWater(c, world);
   // Velocity becomes what actually happened, so walls stop momentum.
   c.vx = (pos.x - c.x) / DT;
   c.vz = (pos.z - c.z) / DT;
@@ -315,6 +317,33 @@ function walk(
     }
   }
   c.y = y;
+}
+
+/**
+ * How deep the water is under feet at y standing at (x, z): 0 on a solid (a bridge, a
+ * tunnel's floor), else the water over the terrain.
+ */
+function waterUnder(x: number, z: number, y: number, world: CollisionWorld): number {
+  world.groundAt(x, z, MOVEMENT.radius, y + MOVEMENT.stepUp, groundHit);
+  return groundHit.solid >= 0 ? 0 : world.waterDepth(x, z);
+}
+
+/**
+ * Deep water stops you like a wall (MT-1): pos may not be deeper than DEEP_WATER, unless
+ * you're already in deeper water (put there somehow) and it gets no deeper, so you can
+ * wade out. Blocked, it keeps whichever axis of the move it can, so you slide along the
+ * bank. Moves pos only.
+ */
+function keepOutOfDeepWater(c: Character, world: CollisionWorld): void {
+  if (world.water.length === 0) return;
+  const limit = Math.max(DEEP_WATER, waterUnder(c.x, c.z, c.y, world));
+  if (waterUnder(pos.x, pos.z, c.y, world) <= limit) return;
+  if (waterUnder(pos.x, c.z, c.y, world) <= limit) pos.z = c.z;
+  else if (waterUnder(c.x, pos.z, c.y, world) <= limit) pos.x = c.x;
+  else {
+    pos.x = c.x;
+    pos.z = c.z;
+  }
 }
 
 /**
@@ -427,6 +456,7 @@ function startVault(c: Character, world: CollisionWorld): boolean {
   if (toZ < t.minZ + M.radius || toZ > t.maxZ - M.radius) return false;
   const floor = onto ? top : world.groundAt(toX, toZ, M.radius, low);
   if (floor < c.y - M.vaultDrop) return false;
+  if (!onto && waterUnder(toX, toZ, floor, world) > DEEP_WATER) return false;
   let toHeight = c.height;
   if (world.overlaps(toX, toZ, M.radius, floor + M.stepUp, floor + M.standHeight)) {
     if (world.overlaps(toX, toZ, M.radius, floor + M.stepUp, floor + M.crouchHeight)) return false;
@@ -630,6 +660,7 @@ function shove(c: Character, dx: number, dz: number, world: CollisionWorld): voi
   pos.x = c.x + dx;
   pos.z = c.z + dz;
   world.pushOut(pos, MOVEMENT.radius, c.y + MOVEMENT.stepUp, c.y + c.height);
+  keepOutOfDeepWater(c, world);
   const t = world.terrain;
   c.x = Math.max(t.minX + MOVEMENT.radius, Math.min(t.maxX - MOVEMENT.radius, pos.x));
   c.z = Math.max(t.minZ + MOVEMENT.radius, Math.min(t.maxZ - MOVEMENT.radius, pos.z));

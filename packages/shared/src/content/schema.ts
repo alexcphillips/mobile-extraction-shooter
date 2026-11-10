@@ -115,9 +115,22 @@ const solid = {
   colour: colourRefSchema,
   /** Defaults to true. False makes it decoration only. */
   collide: z.boolean().optional(),
+  /**
+   * Leaves (MT-3, 2026-11-10): it doesn't collide and shots pass it, but the AI can't see
+   * through it, as players can't. A cone or tapered cylinder hides by two stacked boxes,
+   * narrower than its shape. It can't also have collide: true.
+   */
+  foliage: z.boolean().optional(),
 };
 
 const bulgeBy = finite.refine((n) => n >= 0, 'must be 0 or more');
+
+/**
+ * Drawn again past the fog as a flat silhouette, so it shows from anywhere on the map
+ * (MT-1, 2026-11-09): a fire lookout, a water tower. On a box, cylinder, group or placed
+ * prefab; a prefab can be one wherever it's placed (its own `landmark`).
+ */
+const landmarkSchema = z.literal(true).optional();
 
 const boxSchema = z.strictObject({
   type: z.literal('box'),
@@ -146,6 +159,7 @@ const boxSchema = z.strictObject({
    * container or a switch, or have collide: false.
    */
   invisible: z.literal(true).optional(),
+  landmark: landmarkSchema,
   loot: lootSchema,
   switch: switchSchema,
 });
@@ -161,6 +175,7 @@ const cylinderSchema = z.strictObject({
   sides: z.int().min(3).max(32).optional(),
   pitch: angle,
   roll: angle,
+  landmark: landmarkSchema,
   loot: lootSchema,
   switch: switchSchema,
 });
@@ -230,6 +245,7 @@ const prefabRefSchema = z.strictObject({
   roll: angle,
   /** Overrides the prefab's colour slots. Values can name slots of the enclosing scope. */
   colours: z.record(idSchema, colourRefSchema).optional(),
+  landmark: landmarkSchema,
   loot: lootSchema,
   switch: switchSchema,
 });
@@ -536,6 +552,7 @@ const groupSchema = z.strictObject({
   yaw: angle,
   pitch: angle,
   roll: angle,
+  landmark: landmarkSchema,
   loot: lootSchema,
   switch: switchSchema,
   get nodes(): z.ZodArray<typeof nodeSchema> {
@@ -574,6 +591,24 @@ const wireSchema = z.strictObject({
   size: size3,
 });
 
+/**
+ * A body of water (MT-1, 2026-11-09, the user's call): a flat see-through rectangle, its
+ * surface at pos's y, size wide (local x) and deep (local z), turned by yaw. Each has its
+ * own level, so a pond can sit above the creek below its weir. Where it's deeper than
+ * 1.2 m over the terrain it stops movement like a wall (see DEEP_WATER); shots and sight
+ * pass. Overlapping, the highest surface counts. Can't tilt.
+ */
+const waterSchema = z.strictObject({
+  type: z.literal('water'),
+  id: idSchema.optional(),
+  pos: vec3,
+  yaw: angle,
+  size: z.tuple([positive, positive]),
+  colour: colourRefSchema,
+  /** Defaults to 0.7. */
+  opacity: finite.refine((n) => n > 0 && n <= 1, 'must be in (0, 1]').optional(),
+});
+
 export const nodeSchema: z.ZodDiscriminatedUnion<
   [
     typeof boxSchema,
@@ -587,6 +622,7 @@ export const nodeSchema: z.ZodDiscriminatedUnion<
     typeof moverSchema,
     typeof glassSchema,
     typeof wireSchema,
+    typeof waterSchema,
     typeof playerSpawnSchema,
     typeof pmcSpawnSchema,
     typeof enemySpawnSchema,
@@ -614,6 +650,7 @@ export const nodeSchema: z.ZodDiscriminatedUnion<
   moverSchema,
   glassSchema,
   wireSchema,
+  waterSchema,
   playerSpawnSchema,
   pmcSpawnSchema,
   enemySpawnSchema,
@@ -714,6 +751,7 @@ export const mapSchema = z
       fogFar: positive,
     }),
     terrain: terrainSchema,
+    /** Water over the whole map, as one `water` node covering the terrain would be. */
     water: z
       .strictObject({
         level: finite,
@@ -761,6 +799,12 @@ export const mapSchema = z
         count: z
           .tuple([z.int().min(0), z.int().min(0)])
           .refine(([min, max]) => min <= max, 'min must not be above max'),
+        /**
+         * Squads start only at the map's `pmcSpawn` markers, never at unused player spawns
+         * (MT-9, 2026-11-10): on Silver Creek a squad at the far spawn of a starter's own
+         * end would meet them in their first seconds. Left out, both are used.
+         */
+        pmcSpawnsOnly: z.boolean().optional(),
       })
       .optional(),
     /**
@@ -799,6 +843,8 @@ export const prefabSchema = z.strictObject({
    * chunks. For small props placed many times (trees, crates).
    */
   instanced: z.boolean().optional(),
+  /** Every placement is a landmark (see landmarkSchema). */
+  landmark: landmarkSchema,
   /** Default colours for the slots its nodes use; each placement can override them. */
   colours: slotsSchema.optional(),
   /**

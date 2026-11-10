@@ -1,0 +1,14 @@
+{
+  "formatVersion": 10,
+  "id": "compressed-air-tank",
+  "name": "Compressed air tank",
+  "type": "loot",
+  "size": [3, 1],
+  "value": 1000,
+  "rarity": "rare",
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#a08a40" }]
+  },
+  "shortName": "Air tank",
+  "category": "Industrial"
+}

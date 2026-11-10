@@ -116,11 +116,12 @@ import {
   type WallSettings,
 } from './walls';
 
-export type Placeable = 'box' | 'cylinder' | 'ramp' | 'stairs' | 'ladder' | 'floor' | 'slab';
+export type Placeable =
+  'box' | 'cylinder' | 'ramp' | 'stairs' | 'ladder' | 'floor' | 'slab' | 'water';
 /** The shapes on number keys. */
 export const PLACEABLE: readonly Placeable[] = ['box', 'cylinder', 'ramp', 'stairs', 'ladder'];
 /** Thin boxes, a click each, for blocking out rooms fast: a floor and a straight wall. */
-export const QUICK: readonly Placeable[] = ['floor', 'slab'];
+export const QUICK: readonly Placeable[] = ['floor', 'slab', 'water'];
 
 /** What the marker tool places (session 17): the gameplay nodes. */
 export type MarkerKind =
@@ -202,7 +203,7 @@ type Patrol = Extract<MapNode, { type: 'patrol' }>;
  * then where it starts).
  */
 export interface Drawing {
-  what: 'patrol' | 'zone' | 'walls' | 'extend' | 'curve' | 'floor';
+  what: 'patrol' | 'zone' | 'walls' | 'extend' | 'curve' | 'floor' | 'water';
   index?: number;
   points: readonly Vec3[];
 }
@@ -479,6 +480,7 @@ export class MapEditor {
       drawing?.what !== 'walls' &&
       drawing?.what !== 'curve' &&
       drawing?.what !== 'floor' &&
+      drawing?.what !== 'water' &&
       !hole
     )
       this.view.setPreview(null);
@@ -1098,7 +1100,7 @@ export class MapEditor {
       return this.set({ drawing: { ...d, points: [...d.points, corner] } });
     }
     if (d.what === 'curve') return this.addCurvePoint(d, [p.x, p.y, p.z]);
-    if (d.what === 'floor') {
+    if (d.what === 'floor' || d.what === 'water') {
       // On wall ends or the grid, like a wall's corners; the second click makes it.
       const corner = this.wallCorner([], [p.x, d.points[0]?.[1] ?? p.y, p.z]);
       this.set({ drawing: { ...d, points: [...d.points, corner] } });
@@ -1136,7 +1138,10 @@ export class MapEditor {
   /** Shows the walls or curve being drawn, up to where the mouse is. */
   private hovered(e: PointerEvent): void {
     const d = this.state.drawing;
-    if ((d?.what !== 'walls' && d?.what !== 'curve' && d?.what !== 'floor') || !d.points.length)
+    if (
+      (d?.what !== 'walls' && d?.what !== 'curve' && d?.what !== 'floor' && d?.what !== 'water') ||
+      !d.points.length
+    )
       return;
     const p = this.view.pointUnder(e);
     if (!p) return;
@@ -1147,9 +1152,10 @@ export class MapEditor {
       if (message !== this.state.message) this.set({ message });
       return;
     }
-    if (d.what === 'floor') {
+    if (d.what === 'floor' || d.what === 'water') {
       const corner = this.wallCorner([], [p.x, d.points[0]![1], p.z]);
-      const floor = floorBox(d.points[0]!, corner, this.state.colour);
+      // Water is previewed as a thin floor over the same rectangle.
+      const floor = floorBox(d.points[0]!, corner, d.what === 'water' ? WATER : this.state.colour);
       this.view.setPreview(floor && [floor], this.slots());
       return;
     }
@@ -1169,7 +1175,11 @@ export class MapEditor {
     const need =
       d.what === 'zone'
         ? 3
-        : d.what === 'patrol' || d.what === 'walls' || d.what === 'curve' || d.what === 'floor'
+        : d.what === 'patrol' ||
+            d.what === 'walls' ||
+            d.what === 'curve' ||
+            d.what === 'floor' ||
+            d.what === 'water'
           ? 2
           : 1;
     if (pts.length < need) {
@@ -1183,6 +1193,21 @@ export class MapEditor {
       // Finished at its start: all the way round.
       const arc = this.curveArc(pts, pts[1]!);
       return this.makeCurve({ ...arc, sweep: 360 });
+    } else if (d.what === 'water') {
+      const floor = floorBox(pts[0]!, pts[1]!, WATER);
+      if (!floor) {
+        this.set({ message: 'Those corners are in line: click two opposite corners.' });
+        return;
+      }
+      const [w, , dd] = floor.size;
+      const water: MapNode = { type: 'water', pos: floor.pos, size: [w, dd], colour: WATER };
+      this.edit((nodes) => {
+        nodes.push(water);
+        return [nodes.length - 1];
+      });
+      this.set({
+        message: `Made ${w} × ${dd} m of water at y ${floor.pos[1]}: set its level (y) in the panel. Click its next first corner, or Esc.`,
+      });
     } else if (d.what === 'floor') {
       const floor = floorBox(pts[0]!, pts[1]!, this.state.colour);
       if (!floor) {
@@ -1787,8 +1812,8 @@ export class MapEditor {
       this.set({ drawing: { what: 'walls', points: [] } });
       return this.addPoint(e);
     }
-    if (tool === 'floor') {
-      this.set({ drawing: { what: 'floor', points: [] } });
+    if (tool === 'floor' || tool === 'water') {
+      this.set({ drawing: { what: tool, points: [] } });
       return this.addPoint(e);
     }
     if (tool === 'curve' && this.state.curve.mode === 'hole') return this.placeHole(e);
@@ -2434,6 +2459,8 @@ function toolHint(
     return `Click the ${tool === 'zone' ? "zone's corners" : "patrol's points"} in turn; Enter or click a point to finish. Esc stops.`;
   if (tool === 'floor')
     return 'Click one corner of the floor, then the opposite one (they snap to wall ends). Esc stops.';
+  if (tool === 'water')
+    return 'Click one corner of the water, then the opposite one; its surface starts at the first corner’s height. Esc stops.';
   if (tool === 'slab')
     return 'Click to place a thin wall (a box: resize it in the panel, R to turn it). Esc stops.';
   const what = tool === 'prefab' ? placing : tool === 'marker' ? MARKERS[marker] : tool;
@@ -2462,6 +2489,9 @@ const samePair = (
   [c, d]: readonly [NodePath, NodePath],
 ): boolean => a.join('.') === c.join('.') && b.join('.') === d.join('.');
 
+/** A new body of water's colour. */
+const WATER = '#3d7ea6';
+
 /** How thick a quick floor is. */
 const FLOOR_THICKNESS = 0.2;
 
@@ -2488,6 +2518,8 @@ function newShape(tool: Placeable, pos: [number, number, number], colour: string
       return { type: 'ladder', pos, height: 3, colour };
     case 'floor':
       return { type: 'box', pos, size: [4, FLOOR_THICKNESS, 4], colour };
+    case 'water':
+      return { type: 'water', pos, size: [4, 4], colour: WATER };
     case 'slab':
       return {
         type: 'box',

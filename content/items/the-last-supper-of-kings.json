@@ -1,0 +1,13 @@
+{
+  "formatVersion": 10,
+  "id": "the-last-supper-of-kings",
+  "name": "The last supper of kings",
+  "type": "loot",
+  "size": [4, 4],
+  "value": 120000,
+  "rarity": "mythic",
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#a08a40" }]
+  },
+  "category": "Craftwork"
+}

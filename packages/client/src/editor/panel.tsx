@@ -137,10 +137,12 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
             title={
               t === 'floor'
                 ? 'A thin floor: click two opposite corners'
-                : 'A thin 4 m straight wall where clicked (R to turn it)'
+                : t === 'water'
+                  ? 'Water: click two opposite corners. Deeper than 1.2 m stops movement'
+                  : 'A thin 4 m straight wall where clicked (R to turn it)'
             }
           >
-            {t === 'floor' ? 'floor' : 'wall ▭'}
+            {t === 'floor' ? 'floor' : t === 'water' ? 'water' : 'wall ▭'}
           </Toggle>
         ))}
         <Toggle
@@ -1252,7 +1254,9 @@ function DrawingNote({
             ? 'a curve'
             : drawing.what === 'floor'
               ? 'a floor'
-              : 'patrol points';
+              : drawing.what === 'water'
+                ? 'water'
+                : 'patrol points';
   if (drawing.what === 'curve') {
     const started = drawing.points.length > 1;
     return (
@@ -1437,6 +1441,19 @@ function PrefabSettings({ editor, prefab }: { editor: MapEditor; prefab: PrefabF
           }
         />
         instanced
+      </label>
+      <label
+        className="ed-field"
+        title="Every copy is also drawn past the fog as a flat silhouette, so it shows from anywhere on the map"
+      >
+        <input
+          type="checkbox"
+          checked={prefab.landmark === true}
+          onChange={(e) =>
+            edit((p) => (e.target.checked ? (p.landmark = true) : delete p.landmark))
+          }
+        />
+        landmark
       </label>
       <h4>colour slots</h4>
       <ColourSlots colours={prefab.colours} edit={edit} fresh="#b5b0a6" />
@@ -1827,6 +1844,17 @@ function Inspector(props: {
           zombies={props.zombies}
         />
       )}
+      {n.type === 'water' && (
+        <>
+          <p className="ed-note">
+            Its surface is at y. Deeper than 1.2 m over the ground stops movement.
+          </p>
+          <div className="ed-row">
+            {vec('size', ['w', 'd'])}
+            {num('opacity', 'opacity', 0.7)}
+          </div>
+        </>
+      )}
       {n.type === 'glass' && (
         <div className="ed-row">
           {vec('size', ['w', 'h'])}
@@ -1903,6 +1931,23 @@ function Inspector(props: {
       )}
       {(n.type === 'box' || n.type === 'cylinder' || n.type === 'group' || n.type === 'prefab') && (
         <>
+          <label
+            className="ed-field"
+            title="Also drawn past the fog as a flat silhouette, so it shows from anywhere on the map. One draw call for all of them."
+          >
+            <input
+              type="checkbox"
+              checked={n.landmark === true}
+              onChange={(e) =>
+                edit((m) => {
+                  const r = m as { landmark?: true };
+                  if (e.target.checked) r.landmark = true;
+                  else delete r.landmark;
+                })
+              }
+            />
+            landmark
+          </label>
           <LootFields edit={edit} node={n} />
           <SwitchFields editor={editor} edit={edit} node={n} />
         </>

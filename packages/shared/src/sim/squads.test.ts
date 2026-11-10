@@ -242,6 +242,33 @@ describe('PMC squads', () => {
     for (const c of leaders) expect(Math.abs(Math.abs(c.x) - 100)).toBeLessThan(0.1);
   });
 
+  it('with pmcSpawnsOnly (MT-9), never at an unused player spawn', () => {
+    const pmcSpawn = (id: string, x: number, z: number) => ({
+      ...playerSpawn(id, x, z),
+      type: 'pmcSpawn',
+    });
+    for (let seed = 1; seed <= 20; seed++) {
+      const state = createState(seed);
+      const world = makeWorld();
+      spawnCharacter(state, world, 0, 0, 0, 1);
+      // Free player spawns far from you, and one PMC spawn.
+      const map = mapOf(
+        [
+          playerSpawn('a', 0, 0),
+          playerSpawn('b', 100, 0),
+          playerSpawn('c', 0, 100),
+          pmcSpawn('p1', -100, 0),
+        ],
+        { count: [4, 4], pmcSpawnsOnly: true },
+      );
+      startRaid(state, map, 1200);
+      startEnemies(state, world, map, items, content);
+      const leaders = pmcs(state).filter((c) => (c.ai!.squadSlot ?? 0) === 0);
+      expect(leaders).toHaveLength(1);
+      expect(leaders[0]!.x).toBeCloseTo(-100, 1);
+    }
+  });
+
   it('puts in fewer squads when there are too few clear spawns, and none without pmcs', () => {
     const state = createState(1);
     const world = makeWorld();

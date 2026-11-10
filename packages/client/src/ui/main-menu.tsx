@@ -83,12 +83,16 @@ export interface RaidChoice {
   duration: number;
   /** Its map's id in content/maps, for the deploy screen's overview. */
   map: string;
+  /** Shown on its entry: "starter". */
+  tags?: string[] | undefined;
 }
 
 export interface MenuOptions {
   me: ProfileResponse;
   items: ItemDb;
   raids: RaidChoice[];
+  /** The raid picked at first (the last one played), else the first in the list. */
+  raid?: string | null;
   vendors: VendorDef[];
   quests: QuestDef[];
   /** Opens the settings screen over the menu; done is called when it closes. */
@@ -165,7 +169,9 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
   const [busy, setBusy] = useState(false);
   const [startPage, setStartPage] = useState(0);
   const me = saver.me;
-  const [raidId, setRaidId] = useState(opts.raids[0]?.id);
+  const [raidId, setRaidId] = useState(
+    () => opts.raids.find((r) => r.id === opts.raid)?.id ?? opts.raids[0]?.id,
+  );
   const zombiesModes = opts.zombies ?? [];
   // The game mode whose menu shows; extraction if there's no zombies mode to pick.
   const [mode, setMode] = useState<GameMode>(() =>
@@ -781,6 +787,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
           id: r.id,
           name: r.name,
           line: `${Math.round(r.duration / 60)} min`,
+          tags: r.tags,
         }))}
         selected={raid.id}
         onSelect={(id) => {

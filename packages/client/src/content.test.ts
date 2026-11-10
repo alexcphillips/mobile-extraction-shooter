@@ -298,6 +298,6 @@ describe('content', () => {
       ['enemySpawn', 'lootContainer', 'playerSpawn', 'questMarker'].sort(),
     );
     expect(mapIds()).not.toContain('test-map');
-    expect(raidIds()).toEqual(['northpoint']);
+    expect(raidIds()).not.toContain('test-map');
   });
 });

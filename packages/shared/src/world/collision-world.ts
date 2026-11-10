@@ -151,6 +151,39 @@ export interface WorldDef {
   blockers?: readonly BoxDef[];
   /** Barbed wire (TU-2): not solid, only touched (see touchesWire). */
   wires?: readonly BoxDef[];
+  /** Bodies of water (MT-1): flat rectangles, each with its own surface. */
+  water?: readonly WaterDef[];
+  /**
+   * Foliage (MT-3, 2026-11-10): boxes that only the AI's sight checks see (clearLine in
+   * ai.ts). Not solid to movement, shots, grenades or sound.
+   */
+  foliage?: readonly BoxDef[];
+}
+
+/** A body of water: a rectangle centred on (x, z), half-extents hx, hz, turned by yaw. */
+export interface WaterDef {
+  x: number;
+  z: number;
+  hx: number;
+  hz: number;
+  yaw: number;
+  /** Its surface's height. */
+  level: number;
+}
+
+/** The highest water surface over (x, z), or -Infinity where there's none. */
+export function waterLevelAt(water: readonly WaterDef[], x: number, z: number): number {
+  let best = -Infinity;
+  for (const w of water) {
+    if (w.level <= best) continue;
+    const dx = x - w.x;
+    const dz = z - w.z;
+    const c = Math.cos(w.yaw);
+    const s = Math.sin(w.yaw);
+    // Into its frame: yaw turns local +x to (cos, −sin) in world x, z.
+    if (Math.abs(dx * c - dz * s) <= w.hx && Math.abs(dx * s + dz * c) <= w.hz) best = w.level;
+  }
+  return best;
 }
 
 export interface Ladder extends LadderDef {
@@ -188,6 +221,11 @@ const GRID_CELL = 4;
  * fall kills (design.md → Fall damage), so a hole with nothing under it is a pit.
  */
 export const PIT_DEPTH = 60;
+/**
+ * Water deeper than this over the terrain stops bodies like a wall (MT-1, the user's call):
+ * players can't walk in and the nav grid has no ground there. Shots and sight still pass.
+ */
+export const DEEP_WATER = 1.2;
 /** Where a broken pane's solid goes: far enough out that nothing reaches it. */
 const GONE = 1e9;
 /**
@@ -205,6 +243,8 @@ const SOLID_CONTACT = 1e-3;
  */
 export class CollisionWorld {
   readonly terrain: HeightGrid;
+  /** Bodies of water; empty with none. */
+  readonly water: readonly WaterDef[];
   readonly ladders: readonly Ladder[];
   readonly doors: readonly DoorDef[];
   readonly switches: readonly SwitchDef[];
@@ -233,9 +273,18 @@ export class CollisionWorld {
   private readonly found: Uint32Array;
   private readonly walk = new CellWalk();
   private readonly terrainHit: SurfaceHit = { distance: 0, nx: 0, ny: 0, nz: 0 };
+  /** Foliage as a world of its own, so nothing else ever meets it; null with none. */
+  private readonly leaves: CollisionWorld | null;
+  /** The solid and face nearestSolid found, -1 for none. */
+  private hitSolid = -1;
+  private hitFace = -1;
 
   constructor(def: WorldDef) {
+    this.leaves = def.foliage?.length
+      ? new CollisionWorld({ terrain: def.terrain, boxes: def.foliage, ramps: [], ladders: [] })
+      : null;
     this.terrain = new HeightGrid(def.terrain);
+    this.water = def.water ?? [];
     this.doors = def.doors ?? [];
     this.switches = def.switches ?? [];
     this.switches.forEach((s, k) => {
@@ -436,6 +485,15 @@ export class CollisionWorld {
   }
 
   /**
+   * How deep the water is over the terrain at (x, z): 0 where it's dry, over a hole, or
+   * with no water. Solids over it (a bridge) don't count; see groundAt for what's underfoot.
+   */
+  waterDepth(x: number, z: number): number {
+    if (this.water.length === 0 || this.terrain.holeAt(x, z)) return 0;
+    return Math.max(0, waterLevelAt(this.water, x, z) - this.terrain.heightAt(x, z));
+  }
+
+  /**
    * The lowest solid underside above minBottom over a circle, or Infinity. Solids only
    * touching its edge (see SOLID_CONTACT) don't count.
    */
@@ -581,6 +639,68 @@ export class CollisionWorld {
     seeThrough = false,
   ): number {
     const solids = seeThrough ? this.firstGlass : this.firstBlocker;
+    const best = this.nearestSolid(ox, oy, oz, dx, dy, dz, maxDist, solids);
+    const bestSolid = this.hitSolid;
+    const bestFace = this.hitFace;
+    const t = this.terrain;
+
+    const td = t.raycast(ox, oy, oz, dx, dy, dz, best, this.terrainHit);
+    if (td <= best && td !== Infinity) {
+      if (hit) {
+        const h = this.terrainHit;
+        hit.kind = 'terrain';
+        hit.index = -1;
+        setHit(hit, td, h.nx, h.ny, h.nz);
+      }
+      return td;
+    }
+    if (bestSolid < 0) {
+      if (hit) {
+        hit.kind = 'none';
+        hit.index = -1;
+        setHit(hit, Infinity, 0, 0, 0);
+      }
+      return Infinity;
+    }
+    if (hit) {
+      hit.kind = 'solid';
+      hit.index = bestSolid;
+      this.faceNormal(bestSolid, bestFace, dx, dy, dz, best, hit);
+    }
+    return best;
+  }
+
+  /**
+   * Whether foliage is within maxDist along a unit direction (MT-3): for the AI's sight
+   * only. Terrain and solids are raycast's business.
+   */
+  foliageWithin(
+    ox: number,
+    oy: number,
+    oz: number,
+    dx: number,
+    dy: number,
+    dz: number,
+    maxDist: number,
+  ): boolean {
+    const l = this.leaves;
+    return l !== null && l.nearestSolid(ox, oy, oz, dx, dy, dz, maxDist, l.solidCount) < maxDist;
+  }
+
+  /**
+   * The nearest of solids 0..solids-1 along a unit direction, or maxDist; leaves which one
+   * and its entering face in hitSolid and hitFace (-1 for none).
+   */
+  private nearestSolid(
+    ox: number,
+    oy: number,
+    oz: number,
+    dx: number,
+    dy: number,
+    dz: number,
+    maxDist: number,
+    solids: number,
+  ): number {
     let best = maxDist;
     let bestSolid = -1;
     let bestFace = -1;
@@ -608,30 +728,8 @@ export class CollisionWorld {
         if (bestSolid >= 0 && best <= walk.tExit) break;
       } while (walk.next());
     }
-
-    const td = t.raycast(ox, oy, oz, dx, dy, dz, best, this.terrainHit);
-    if (td <= best && td !== Infinity) {
-      if (hit) {
-        const h = this.terrainHit;
-        hit.kind = 'terrain';
-        hit.index = -1;
-        setHit(hit, td, h.nx, h.ny, h.nz);
-      }
-      return td;
-    }
-    if (bestSolid < 0) {
-      if (hit) {
-        hit.kind = 'none';
-        hit.index = -1;
-        setHit(hit, Infinity, 0, 0, 0);
-      }
-      return Infinity;
-    }
-    if (hit) {
-      hit.kind = 'solid';
-      hit.index = bestSolid;
-      this.faceNormal(bestSolid, bestFace, dx, dy, dz, best, hit);
-    }
+    this.hitSolid = bestSolid;
+    this.hitFace = bestFace;
     return best;
   }
 

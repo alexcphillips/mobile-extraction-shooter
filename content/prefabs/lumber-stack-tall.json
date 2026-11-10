@@ -1,0 +1,9 @@
+{
+  "formatVersion": 3,
+  "id": "lumber-stack-tall",
+  "name": "Lumber stack (tall)",
+  "nodes": [
+    { "type": "prefab", "prefab": "lumber-stack", "pos": [0, 0, 0] },
+    { "type": "prefab", "prefab": "lumber-stack", "pos": [0.06, 1.2, 0], "yaw": 1 }
+  ]
+}

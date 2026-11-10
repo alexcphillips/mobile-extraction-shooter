@@ -272,3 +272,34 @@ describe('findPath', () => {
     expect(Math.hypot(end[0]!, end[2]!)).toBeLessThan(4);
   });
 });
+
+describe('NavGrid and deep water (MT-1)', () => {
+  /** A river along z down the middle, deeper than 1.2 m for |x| < about 6.4. */
+  function river(parts: Partial<WorldDef> = {}): CollisionWorld {
+    const heights = Array.from({ length: 121 }, (_, k) =>
+      Math.abs(-20 + 4 * (k % 11)) <= 4 ? -3 : 0,
+    );
+    return makeWorld({
+      terrain: { minX: -20, minZ: -20, cellSize: 4, cols: 10, rows: 10, heights },
+      water: [{ x: 0, z: 0, hx: 20, hz: 20, yaw: 0, level: 0 }],
+      ...parts,
+    });
+  }
+
+  it('has no ground under deep water, so the banks are apart', () => {
+    const nav = new NavGrid(river());
+    expect(layersAt(nav, 0.25, 0.25)).toBe(0);
+    expect(layersAt(nav, 6.25, 0.25)).toBe(0);
+    expect(layersAt(nav, 6.75, 0.25)).toBe(1);
+    expect(layersAt(nav, -10, 0)).toBe(1);
+    expect(nav.componentSizes).toHaveLength(2);
+  });
+
+  it('crosses on a bridge', () => {
+    const nav = new NavGrid(river({ boxes: [aabb(-10, -0.2, -1, 10, 0, 1)] }));
+    expect(layersAt(nav, 0.25, 0.25)).toBe(1);
+    expect(nav.componentSizes).toHaveLength(1);
+    const { result } = route(nav, [-12, 0, 8], [12, 0, 8]);
+    expect(result).toBe('found');
+  });
+});

@@ -1,0 +1,14 @@
+{
+  "formatVersion": 10,
+  "id": "power-supply-unit",
+  "name": "Power supply unit",
+  "type": "loot",
+  "size": [2, 2],
+  "value": 1000,
+  "rarity": "uncommon",
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#a08a40" }]
+  },
+  "shortName": "PSU",
+  "category": "Electronics"
+}

@@ -1,0 +1,85 @@
+{
+  "formatVersion": 3,
+  "id": "track",
+  "name": "Track (6 m)",
+  "colours": { "ballast": "#6a6560", "tie": "#4f4033", "rail": "#5a5552" },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, -0.2, 0],
+      "size": [6, 0.45, 3.2],
+      "colour": "ballast",
+      "top": [6, 2.4]
+    },
+    {
+      "type": "box",
+      "pos": [-2.625, 0.2, 0],
+      "size": [0.22, 0.12, 2.5],
+      "colour": "tie",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.875, 0.2, 0],
+      "size": [0.22, 0.12, 2.5],
+      "colour": "tie",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.125, 0.2, 0],
+      "size": [0.22, 0.12, 2.5],
+      "colour": "tie",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.375, 0.2, 0],
+      "size": [0.22, 0.12, 2.5],
+      "colour": "tie",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.375, 0.2, 0],
+      "size": [0.22, 0.12, 2.5],
+      "colour": "tie",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.125, 0.2, 0],
+      "size": [0.22, 0.12, 2.5],
+      "colour": "tie",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.875, 0.2, 0],
+      "size": [0.22, 0.12, 2.5],
+      "colour": "tie",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [2.625, 0.2, 0],
+      "size": [0.22, 0.12, 2.5],
+      "colour": "tie",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.3, -0.72],
+      "size": [6, 0.1, 0.08],
+      "colour": "rail",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.3, 0.72],
+      "size": [6, 0.1, 0.08],
+      "colour": "rail",
+      "collide": false
+    }
+  ]
+}

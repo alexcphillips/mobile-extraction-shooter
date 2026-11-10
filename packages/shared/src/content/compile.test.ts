@@ -42,6 +42,54 @@ const crate: PrefabFile = {
 };
 
 describe('compileMap', () => {
+  it('makes foliage sight-only (MT-3): drawn, not solid, but the AI cannot see through it', () => {
+    const tree: PrefabFile = {
+      formatVersion: 3,
+      id: 'tree',
+      instanced: true,
+      colours: { leaves: '#2f5d3a' },
+      nodes: [
+        {
+          type: 'cylinder',
+          pos: [0, 0, 0],
+          radius: 1.6,
+          radiusTop: 0,
+          height: 4,
+          colour: 'leaves',
+          collide: false,
+          foliage: true,
+        },
+      ],
+    };
+    const bush: MapNode = {
+      type: 'box',
+      pos: [5, 0, 0],
+      size: [2, 1.6, 1],
+      colour: '#2f5d3a',
+      foliage: true,
+    };
+    const m = compileMap(
+      map([{ type: 'prefab', prefab: 'tree', pos: [0, 0, 0], yaw: 30 }, bush]),
+      prefabs(tree),
+    );
+    expect(m.world.boxes).toHaveLength(0);
+    // The cone hides by two stacked boxes, wider below; the box by itself.
+    const [low, high, box] = m.world.foliage!;
+    expect(low).toMatchObject({ y: 1, hy: 1 });
+    expect(low!.hx).toBeCloseTo(0.96);
+    expect(high).toMatchObject({ y: 3, hy: 1 });
+    expect(high!.hx).toBeCloseTo(0.32);
+    expect(box).toEqual({ x: 5, y: 0.8, z: 0, hx: 1, hy: 0.8, hz: 0.5, yaw: 0 });
+    const w = new CollisionWorld(m.world);
+    expect(w.overlaps(0, 0, 0.3, 0.5, 1.5)).toBe(false);
+    expect(w.raycast(-5, 1.5, 0, 1, 0, 0, 20)).toBe(Infinity);
+    expect(w.foliageWithin(-5, 1.5, 0, 1, 0, 0, 20)).toBe(true);
+    expect(w.foliageWithin(-5, 1.5, 3, 1, 0, 0, 20)).toBe(false);
+    expect(() => compileMap(map([{ ...bush, collide: true }]), prefabs())).toThrow(
+      "foliage can't collide",
+    );
+  });
+
   it('makes an invisible box a blocker: not drawn, solid to movement, not to rays', () => {
     const edge: MapNode = {
       type: 'box',
@@ -227,6 +275,64 @@ describe('compileMap', () => {
     // Shapes are in the prefab's own frame.
     expect(plain!.shapes[0]).toMatchObject({ x: 1, y: 0.5, z: 0, colour: 0x8a5a33 });
     expect(dark!.shapes[0]!.colour).toBe(0);
+  });
+
+  it('collects landmarks again for their silhouette: nodes, groups and prefabs', () => {
+    const tower: PrefabFile = { ...crate, id: 'tower', instanced: true, landmark: true };
+    const lookout: MapNode = {
+      type: 'cylinder',
+      pos: [0, 0, 0],
+      radius: 1,
+      height: 10,
+      colour: '#ffffff',
+      landmark: true,
+    };
+    const group: MapNode = {
+      type: 'group',
+      pos: [5, 0, 0],
+      landmark: true,
+      nodes: [
+        { type: 'box', pos: [0, 0, 0], size: [2, 2, 2], colour: '#ffffff' },
+        // Marked inside a marked group: not doubled.
+        { type: 'box', pos: [0, 2, 0], size: [1, 1, 1], colour: '#ffffff', landmark: true },
+      ],
+    };
+    const tree: MapNode = { type: 'prefab', prefab: 'tower', pos: [10, 0, 0] };
+    const plain: MapNode = { type: 'box', pos: [0, 0, 9], size: [1, 1, 1], colour: '#ffffff' };
+    const m = compileMap(map([lookout, group, tree, plain]), prefabs(tower));
+    expect(m.landmarks.map((s) => s.kind)).toEqual(['cylinder', 'box', 'box', 'box']);
+    // In world space, the instanced prefab's copy flattened.
+    expect(m.landmarks[1]).toMatchObject({ x: 5, y: 1 });
+    expect(m.landmarks[3]).toMatchObject({ x: 11, y: 0.5, z: 0 });
+    // Still drawn and solid as usual.
+    expect(m.shapes).toHaveLength(4);
+    expect(m.instanced).toHaveLength(1);
+    expect(m.world.boxes).toHaveLength(5);
+    expect(compileMap(map([plain]), prefabs()).landmarks).toEqual([]);
+  });
+
+  it("compiles bodies of water: the map's own over everything first, then nodes", () => {
+    const pond: MapNode = {
+      type: 'group',
+      pos: [5, 0, 0],
+      yaw: 90,
+      nodes: [{ type: 'water', pos: [2, 1.5, 0], size: [8, 4], colour: '#336699' }],
+    };
+    const m = compileMap(
+      { ...map([pond]), water: { level: 0.2, colour: '#112233', opacity: 0.5 } },
+      prefabs(),
+    );
+    expect(m.water).toHaveLength(2);
+    expect(m.water[0]).toMatchObject({ x: 0, z: 0, hx: 20, hz: 20, level: 0.2, opacity: 0.5 });
+    const w = m.water[1]!;
+    // Turned with its group: local +x is world −z.
+    expect(w).toMatchObject({ hx: 4, hz: 2, level: 1.5, colour: 0x336699, opacity: 0.7 });
+    expect(w.x).toBeCloseTo(5);
+    expect(w.z).toBeCloseTo(-2);
+    expect(w.yaw).toBeCloseTo(Math.PI / 2);
+    expect(m.world.water).toBe(m.water);
+    const tilted: MapNode = { ...pond, pitch: 10 } as MapNode;
+    expect(() => compileMap(map([tilted]), prefabs())).toThrow(/water can't be in/);
   });
 
   it('gives markers and doors path ids in world space', () => {

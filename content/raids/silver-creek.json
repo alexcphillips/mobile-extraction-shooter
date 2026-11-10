@@ -1,0 +1,9 @@
+{
+  "formatVersion": 1,
+  "id": "silver-creek",
+  "name": "Silver Creek",
+  "map": "silver-creek",
+  "duration": 1200,
+  "order": 1,
+  "tags": ["starter"]
+}

@@ -1,0 +1,58 @@
+{
+  "formatVersion": 1,
+  "id": "scav-kit-light",
+  "weapons": [
+    {
+      "weight": 4,
+      "item": "m9a3",
+      "spare": [15, 30],
+      "ammo": [{ "weight": 1, "item": "ammo-9mm-pso" }]
+    },
+    {
+      "weight": 3,
+      "item": "mp-133",
+      "spare": [8, 16],
+      "ammo": [{ "weight": 1, "item": "buckshot" }]
+    },
+    {
+      "weight": 1.5,
+      "item": "mp5",
+      "spare": [30, 60],
+      "ammo": [{ "weight": 1, "item": "ammo-9mm-pso" }]
+    },
+    {
+      "weight": 1,
+      "item": "ump45",
+      "spare": [25, 50],
+      "ammo": [{ "weight": 1, "item": "ammo-45acp-jhp" }]
+    },
+    {
+      "weight": 0.8,
+      "item": "aks-74u",
+      "spare": [30, 60],
+      "ammo": [{ "weight": 1, "item": "ammo-545x39-hp" }]
+    },
+    {
+      "weight": 0.6,
+      "item": "sks",
+      "spare": [10, 20],
+      "ammo": [{ "weight": 1, "item": "ammo-762x39-lp" }]
+    }
+  ],
+  "helmets": [
+    { "weight": 8, "item": null },
+    { "weight": 1, "item": "bump-helmet", "condition": [0.3, 0.7] }
+  ],
+  "bodyArmour": [
+    { "weight": 8, "item": null },
+    { "weight": 1, "item": "soft-vest", "condition": [0.3, 0.7] }
+  ],
+  "rigs": [
+    { "weight": 4, "item": null },
+    { "weight": 1, "item": "chest-rig" }
+  ],
+  "backpacks": [
+    { "weight": 4, "item": null },
+    { "weight": 1, "item": "small-backpack" }
+  ]
+}

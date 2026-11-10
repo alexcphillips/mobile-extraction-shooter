@@ -4,6 +4,7 @@ import type {
   GlassDef,
   LadderDef,
   RampDef,
+  WaterDef,
   WorldDef,
   SwitchDef,
 } from '../world/collision-world';
@@ -111,6 +112,12 @@ export interface CompiledBarricade {
   width: number;
   height: number;
   planks: number;
+}
+
+/** A body of water in world space: what collides, and how it's drawn. */
+export interface CompiledWater extends WaterDef {
+  colour: number;
+  opacity: number;
 }
 
 /** A pane of glass, in the same order as world.glass (the sim's glass indices). */
@@ -221,10 +228,16 @@ export interface CompiledMap {
   name: string;
   environment: { sky: number; fogNear: number; fogFar: number };
   terrainColour: number;
-  water: { level: number; colour: number; opacity: number } | undefined;
+  /** Bodies of water, the map's own (MapFile.water) first; the same as world.water. */
+  water: CompiledWater[];
   world: WorldDef;
   /** Everything static that isn't instanced, merged by chunk when drawn. */
   shapes: Shape[];
+  /**
+   * The landmarks' shapes again (instanced prefabs flattened), drawn past the fog as one
+   * flat silhouette (MT-1). They're in shapes or instanced as well.
+   */
+  landmarks: Shape[];
   instanced: InstancedGroup[];
   searchedLooks: SearchedLook[];
   doors: CompiledDoor[];
@@ -248,7 +261,9 @@ export interface CompiledMap {
   /** The map tab's storeys, lowest first (MapFile.floors); one view from above if undefined. */
   floors?: { name: string; y: number }[] | undefined;
   /** PMC squads at raid start (MapFile.pmcs); none if undefined. */
-  pmcs?: { enemy?: string | undefined; count: [number, number] } | undefined;
+  pmcs?:
+    | { enemy?: string | undefined; count: [number, number]; pmcSpawnsOnly?: boolean | undefined }
+    | undefined;
 }
 
 export type PrefabLookup = ReadonlyMap<string, PrefabFile>;
@@ -266,6 +281,7 @@ const GLASS_THICKNESS = 0.02;
 /** A barricade's blocker: half its depth through the wall. */
 const BLOCKER_DEPTH = 0.3;
 const CYLINDER_SIDES = 8;
+const WATER_OPACITY = 0.7;
 const PATROL_WAIT = 3;
 /** Concrete, for a base without a colour of its own. */
 const BASE_COLOUR = 0x9e9b94;
@@ -315,6 +331,9 @@ interface Sink {
   glass: CompiledGlass[] | null;
   /** Barbed wire's boxes (TU-2). */
   wires: BoxDef[] | null;
+  /** Foliage's sight-only boxes (MT-3). */
+  foliage: BoxDef[] | null;
+  water: CompiledWater[] | null;
   markers: CompiledMarker[] | null;
   patrols: CompiledPatrol[] | null;
   barricades: CompiledBarricade[] | null;
@@ -327,6 +346,8 @@ interface Sink {
   groups: Map<string, InstancedGroup> | null;
   /** Null leaves containers in their closed look, as the editor draws them. */
   looks: SearchedLook[] | null;
+  /** Landmarks' shapes, again; null inside one, so a landmark in a landmark isn't doubled. */
+  landmarks: Shape[] | null;
 }
 
 /** Collects nothing; given shapes, it collects only those, with instanced prefabs flattened. */
@@ -340,6 +361,8 @@ const DRAW_ONLY: Sink = {
   switches: null,
   glass: null,
   wires: null,
+  foliage: null,
+  water: null,
   markers: null,
   patrols: null,
   barricades: null,
@@ -348,6 +371,7 @@ const DRAW_ONLY: Sink = {
   buildings: null,
   groups: null,
   looks: null,
+  landmarks: null,
 };
 
 type PrefabNode = Extract<MapNode, { type: 'prefab' }>;
@@ -370,6 +394,8 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     switches: [],
     glass: [],
     wires: [],
+    foliage: [],
+    water: [],
     markers: [],
     patrols: [],
     barricades: [],
@@ -378,6 +404,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     buildings: [],
     groups: new Map(),
     looks: [],
+    landmarks: [],
   };
   const terrain = {
     minX: map.terrain.origin[0],
@@ -389,6 +416,21 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     holes: holeFlags(heights[0]!.length - 1, heights.length - 1, map.terrain.holes),
   };
   const scope = slotColours(map.colours ?? {});
+  // The map's own water covers the whole terrain.
+  if (map.water) {
+    const hx = (terrain.cols * terrain.cellSize) / 2;
+    const hz = (terrain.rows * terrain.cellSize) / 2;
+    out.water!.push({
+      x: terrain.minX + hx,
+      z: terrain.minZ + hz,
+      hx,
+      hz,
+      yaw: 0,
+      level: map.water.level,
+      colour: hex(map.water.colour),
+      opacity: map.water.opacity,
+    });
+  }
   const compiler = new Compiler(source, prefabs, new HeightGrid(terrain));
   compiler.nodes(map.nodes, frame(0, 0, 0, 0), scope, '', [], out);
   const patrols = new Set(out.patrols!.map((p) => p.id));
@@ -427,7 +469,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     name: map.name,
     environment: { ...map.environment, sky: hex(map.environment.sky) },
     terrainColour: hex(map.terrain.colour),
-    water: map.water && { ...map.water, colour: hex(map.water.colour) },
+    water: out.water!,
     world: {
       terrain,
       boxes,
@@ -438,8 +480,11 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
       blockers: [...out.blockers!, ...out.invisible!],
       switches,
       wires: out.wires!,
+      water: out.water!,
+      foliage: out.foliage!,
     },
     shapes: out.shapes!,
+    landmarks: out.landmarks!,
     instanced: [...out.groups!.values()],
     searchedLooks: out.looks!,
     doors: out.doors!,
@@ -475,6 +520,7 @@ export interface CompiledNodes {
   /** Invisible boxes' solids, which the editor draws see-through. */
   invisible: BoxDef[];
   buildings: CompiledBuilding[];
+  water: CompiledWater[];
 }
 
 /**
@@ -498,6 +544,7 @@ export function compileNodes(
     barricades: [],
     invisible: [],
     buildings: [],
+    water: [],
   };
   new Compiler(source, prefabs, null).nodes(
     nodes,
@@ -514,6 +561,8 @@ export function compileNodes(
       movers: null,
       switches: null,
       wires: null,
+      foliage: null,
+      landmarks: null,
     },
   );
   return out;
@@ -597,16 +646,26 @@ class Compiler {
       const shapes = out.shapes?.length ?? 0;
       const look = 'loot' in node ? node.loot?.searched : undefined;
       // Its copies can't be instanced, as each has a look of its own.
-      const sink = look ? { ...out, groups: null } : out;
+      let sink = look ? { ...out, groups: null } : out;
       // A group has no id, so as a container it's "#" and its index.
       const id =
         (path ? `${path}/` : '') + (node.type !== 'group' && node.id ? node.id : `#${unnamed}${i}`);
+      // A landmark's shapes, again, for its silhouette past the fog; a landmark inside it
+      // is already in.
+      const landmark = 'landmark' in node && node.landmark && out.landmarks;
+      if (landmark) sink = { ...sink, landmarks: null };
       if (node.type === 'group') {
         // A group moves its nodes but adds nothing to their ids.
         const [x, y, z] = place(f, node.pos);
         const g = inner(f, x, y, z, node);
-        this.nodes(node.nodes, g, scope, path, stack, sink, `${unnamed}${i}.`);
-      } else this.node(node, f, scope, id, stack, sink);
+        const more = `${unnamed}${i}.`;
+        if (landmark)
+          this.nodes(node.nodes, g, scope, path, stack, { ...DRAW_ONLY, shapes: landmark }, more);
+        this.nodes(node.nodes, g, scope, path, stack, sink, more);
+      } else {
+        if (landmark) this.node(node, f, scope, id, stack, { ...DRAW_ONLY, shapes: landmark });
+        this.node(node, f, scope, id, stack, sink);
+      }
       if ('loot' in node && node.loot) {
         const [x, y, z] = place(f, node.pos);
         // A box or cylinder tilts on its own, about its centre: its look stays upright.
@@ -844,6 +903,33 @@ class Compiler {
         [shape.x, shape.y, shape.z] = place(f, [node.pos[0], node.pos[1] + hy, node.pos[2]]);
         if (f.tilt) [shape.yaw, shape.pitch, shape.roll] = eulerOf(turn!);
         out.shapes?.push(shape);
+        if (node.foliage) {
+          if (node.collide === true) this.fail(path, "foliage can't collide");
+          if (out.foliage) {
+            const at: Vec3 = [shape.x, shape.y, shape.z];
+            // A box hides as itself. A round shape hides by two stacked boxes, each half
+            // as wide as 0.8 × its mean radius over that half (between in- and circumscribed).
+            const parts: [number, number, number][] =
+              shape.kind === 'box'
+                ? [[0, hx, hy]]
+                : [
+                    [-hy / 2, 0.8 * ((3 * shape.radius + shape.radiusTop) / 4), hy / 2],
+                    [hy / 2, 0.8 * ((shape.radius + 3 * shape.radiusTop) / 4), hy / 2],
+                  ];
+            for (const [dy, half, hh] of parts) {
+              const depth = shape.kind === 'box' ? hz : half;
+              if (turn) {
+                const c: Vec3 = [
+                  at[0] + turn[1]! * dy,
+                  at[1] + turn[4]! * dy,
+                  at[2] + turn[7]! * dy,
+                ];
+                out.foliage.push(tiltedBox(c, turn, shape.yaw, half, hh, depth));
+              } else out.foliage.push(plainBox([at[0], at[1] + dy, at[2]], half, hh, depth, yaw));
+            }
+          }
+          return;
+        }
         if (node.collide !== false && out.boxes) {
           const at: Vec3 = [shape.x, shape.y, shape.z];
           out.boxes.push(
@@ -1023,6 +1109,21 @@ class Compiler {
         });
         return;
 
+      case 'water': {
+        if (f.tilt) this.cantTilt(path, 'water');
+        out.water?.push({
+          x,
+          z,
+          hx: node.size[0] / 2,
+          hz: node.size[1] / 2,
+          yaw,
+          level: y,
+          colour: this.colour(node.colour, scope, path),
+          opacity: node.opacity ?? WATER_OPACITY,
+        });
+        return;
+      }
+
       case 'wire': {
         if (f.tilt) this.cantTilt(path, 'wire');
         const [w, h, d] = node.size;
@@ -1141,6 +1242,10 @@ class Compiler {
       scope[slot] = this.colour(ref, parentScope, path);
     }
     const inner = [...stack, prefab.id];
+    if (prefab.landmark && out.landmarks) {
+      this.nodes(prefab.nodes, f, scope, path, inner, { ...DRAW_ONLY, shapes: out.landmarks });
+      out = { ...out, landmarks: null };
+    }
 
     if (prefab.building) {
       if (f.tilt) this.cantTilt(path, 'buildings');

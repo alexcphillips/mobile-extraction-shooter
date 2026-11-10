@@ -1,0 +1,70 @@
+{
+  "formatVersion": 3,
+  "id": "clothes-line",
+  "name": "Clothes line",
+  "colours": {
+    "post": "#6e6a62",
+    "sheet": "#d6d0c2",
+    "sheet-b": "#9fb0b8",
+    "shirt": "#8a4a3a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [-2, 0, 0],
+      "size": [0.08, 1.95, 0.08],
+      "colour": "post"
+    },
+    {
+      "type": "box",
+      "pos": [2, 0, 0],
+      "size": [0.08, 1.95, 0.08],
+      "colour": "post"
+    },
+    {
+      "type": "box",
+      "pos": [-2, 1.85, 0],
+      "size": [0.06, 0.06, 0.8],
+      "colour": "post",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [2, 1.85, 0],
+      "size": [0.06, 0.06, 0.8],
+      "colour": "post",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.88, 0],
+      "size": [4, 0.015, 0.015],
+      "colour": "post",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.2, 0.85, 0],
+      "size": [1.1, 1.03, 0.02],
+      "colour": "sheet",
+      "collide": false,
+      "top": [1.15, 0.02]
+    },
+    {
+      "type": "box",
+      "pos": [0.05, 1, 0.01],
+      "size": [0.95, 0.88, 0.02],
+      "colour": "sheet-b",
+      "collide": false,
+      "roll": 2
+    },
+    {
+      "type": "box",
+      "pos": [1.2, 1.35, 0],
+      "size": [0.5, 0.53, 0.03],
+      "colour": "shirt",
+      "collide": false,
+      "top": [0.62, 0.03]
+    }
+  ]
+}

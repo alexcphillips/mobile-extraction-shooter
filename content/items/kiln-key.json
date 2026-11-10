@@ -1,0 +1,21 @@
+{
+  "formatVersion": 10,
+  "id": "kiln-key",
+  "name": "Silver Creek drying kiln key",
+  "shortName": "Kiln key",
+  "type": "key",
+  "size": [1, 1],
+  "value": 12000,
+  "rarity": "uncommon",
+  "uses": 5,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.14, 0.07, 0.14],
+        "colour": "#8a4a3a"
+      }
+    ]
+  }
+}

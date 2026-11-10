@@ -1229,6 +1229,23 @@ function UsedBy({ id, items }: { id: string; items: ReadonlyMap<string, ItemDef>
   );
 }
 
+/** "Pool Pump Impeller" -> "pool-pump-impeller", as typed (a trailing dash is trimmed on make). */
+const toId = (text: string): string =>
+  text
+    .toLowerCase()
+    .replace(/[\s_]+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-/, '');
+
+/** "Pool Pump Impeller" -> "Pool pump impeller": a capital first, the rest lower case. */
+const toName = (text: string): string =>
+  text
+    .replace(/\s+/g, ' ')
+    .replace(/^\s/, '')
+    .toLowerCase()
+    .replace(/^./, (c) => c.toUpperCase());
+
 /** The form for a new item, blank of a type or a copy of the open one. */
 function NewItem(props: {
   editor: ItemEditor;
@@ -1239,7 +1256,8 @@ function NewItem(props: {
   const { state: s, copy } = props;
   const from = s.items.get(s.current);
   const [type, setType] = useState<ItemType>(from?.type ?? 'loot');
-  const [id, setId] = useState(copy && from ? `${from.id}-2` : '');
+  const [rawId, setId] = useState(copy && from ? `${from.id}-2` : '');
+  const id = rawId.replace(/-+$/, '');
   const [name, setName] = useState(copy && from ? `${from.name} 2` : '');
   const idProblem = !id
     ? 'needs an id'
@@ -1269,13 +1287,13 @@ function NewItem(props: {
         )}
         <label className="ed-field">
           id
-          <input value={id} autoFocus onChange={(e) => setId(e.target.value)} />
+          <input value={rawId} autoFocus onChange={(e) => setId(toId(e.target.value))} />
         </label>
         <label className="ed-field">
           name
           <input
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => setName(toName(e.target.value))}
             onKeyDown={(e) => e.key === 'Enter' && make()}
           />
         </label>

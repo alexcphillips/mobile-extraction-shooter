@@ -1,0 +1,14 @@
+{
+  "formatVersion": 10,
+  "id": "portrait-of-the-regent",
+  "name": "Portrait of the regent",
+  "type": "loot",
+  "size": [3, 2],
+  "value": 4000,
+  "rarity": "legendary",
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#a08a40" }]
+  },
+  "category": "Craftwork",
+  "shortName": "Regent"
+}

@@ -2,7 +2,7 @@
   "formatVersion": 10,
   "id": "diamond-necklace",
   "name": "Diamond necklace",
-  "shortName": "Necklace",
+  "shortName": "DNeck",
   "type": "loot",
   "size": [1, 2],
   "value": 60000,

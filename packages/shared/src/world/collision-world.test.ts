@@ -6,6 +6,7 @@ import {
   type BoxDef,
   type RampDef,
   type WorldDef,
+  waterLevelAt,
 } from './collision-world';
 import type { HeightGridDef } from './terrain';
 
@@ -260,5 +261,18 @@ describe('CollisionWorld standing queries', () => {
     expect(w.pushOut({ x: 0, z: -2.2 }, 0.3, 0.45, 1.8)).toBe(false);
     // At the side near the high end, the top is above step height.
     expect(w.pushOut({ x: 1.2, z: 1.5 }, 0.3, 0.45, 1.8)).toBe(true);
+  });
+});
+
+describe('waterLevelAt (MT-1)', () => {
+  it('finds the highest body over a point, turned by its yaw', () => {
+    const pond = { x: 0, z: 0, hx: 10, hz: 2, yaw: 0, level: 1 };
+    const creek = { x: 0, z: 0, hx: 10, hz: 2, yaw: Math.PI / 2, level: 0 };
+    expect(waterLevelAt([pond, creek], 8, 0)).toBe(1);
+    // Turned 90°, the creek runs along z.
+    expect(waterLevelAt([pond, creek], 0, 8)).toBe(0);
+    expect(waterLevelAt([pond, creek], 0, 0)).toBe(1);
+    expect(waterLevelAt([pond, creek], 8, 8)).toBe(-Infinity);
+    expect(waterLevelAt([], 0, 0)).toBe(-Infinity);
   });
 });

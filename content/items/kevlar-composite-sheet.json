@@ -1,0 +1,14 @@
+{
+  "formatVersion": 10,
+  "id": "kevlar-composite-sheet",
+  "name": "Kevlar composite sheet",
+  "type": "loot",
+  "size": [2, 2],
+  "value": 1000,
+  "rarity": "epic",
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#a08a40" }]
+  },
+  "shortName": "Kevlar sheet",
+  "category": "Industrial"
+}

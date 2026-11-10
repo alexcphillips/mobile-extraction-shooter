@@ -541,10 +541,13 @@ function countLootTable(value: unknown, id: string): number {
   );
 }
 
-/** The raids to pick from: not the offline ones (the tutorial's). */
+/** The raids to pick from, in their `order`: not the offline ones (the tutorial's). */
 export function raidIds(): string[] {
   raids ??= loadById(RAID_FORMAT, raidFiles);
-  return [...raids.values()].filter((r) => !r.offline).map((r) => r.id);
+  return [...raids.values()]
+    .filter((r) => !r.offline)
+    .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity) || a.id.localeCompare(b.id))
+    .map((r) => r.id);
 }
 
 /** A raid config from content/raids, checked to name a map that exists. */

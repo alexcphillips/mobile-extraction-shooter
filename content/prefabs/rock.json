@@ -1,0 +1,37 @@
+{
+  "formatVersion": 3,
+  "id": "rock",
+  "name": "Rock",
+  "instanced": true,
+  "colours": { "stone": "#8c8a84", "stone-dark": "#6e6c67" },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, -0.1, 0],
+      "size": [1.5, 0.8, 1.1],
+      "colour": "stone",
+      "bulge": [0.12, 0.12, 0, 0.12, 0.1, 0.1],
+      "top": [1.0, 0.7],
+      "lean": [0.1, -0.05]
+    },
+    {
+      "type": "box",
+      "pos": [0.6, -0.1, 0.35],
+      "size": [0.8, 0.6, 0.7],
+      "colour": "stone-dark",
+      "bulge": [0.08, 0.08, 0, 0.08, 0.08, 0.08],
+      "top": [0.5, 0.45],
+      "yaw": 35
+    },
+    {
+      "type": "box",
+      "pos": [-0.95, -0.075, 0.4],
+      "size": [0.35, 0.25, 0.3],
+      "colour": "stone-dark",
+      "collide": false,
+      "bulge": [0.04, 0.04, 0.04, 0.04, 0.04, 0.04],
+      "top": [0.2, 0.18],
+      "yaw": -20
+    }
+  ]
+}

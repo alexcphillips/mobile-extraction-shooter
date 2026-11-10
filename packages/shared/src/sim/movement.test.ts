@@ -775,3 +775,97 @@ describe('leaning', () => {
     expect(state).toEqual(a.state);
   });
 });
+
+describe('deep water (MT-1)', () => {
+  /**
+   * A river along z: the bed at `bed` for |x| ≤ 2, rising to the banks at |x| = 4, under
+   * water at `level`. With the defaults, deeper than 1.2 m for |x| < 2.8.
+   */
+  function river(
+    level: number | undefined,
+    parts: Partial<WorldDef> = {},
+    bed = -2,
+  ): CollisionWorld {
+    const t = flatTerrain();
+    const heights = Array.from(t.heights, (_, k) => (Math.abs(-50 + 2 * (k % 51)) <= 2 ? bed : 0));
+    const water = level === undefined ? [] : [{ x: 0, z: 0, hx: 50, hz: 50, yaw: 0, level }];
+    return makeWorld({ terrain: { ...t, heights }, water, ...parts });
+  }
+  // yaw −π/2 faces +x.
+  const EAST = input({ moveY: 1, yaw: -Math.PI / 2 });
+
+  it('stops you at the edge of deep water like a wall', () => {
+    const { c, run } = setup(river(0), -6, 0);
+    run(TICK_RATE * 4, EAST);
+    expect(c.x).toBeGreaterThan(-2.95);
+    expect(c.x).toBeLessThan(-2.8);
+    expect(c.vx).toBeCloseTo(0);
+    expect(c.mode).toBe('ground');
+  });
+
+  it('lets you wade water up to 1.2 m deep, and walk the bed with no water', () => {
+    for (const level of [-0.9, undefined]) {
+      const { c, run } = setup(river(level), -6, 0);
+      run(TICK_RATE * 4, EAST);
+      expect(c.x).toBeGreaterThan(4);
+    }
+  });
+
+  it('slides along the bank when pushed into it at an angle', () => {
+    const { c, run } = setup(river(0), -6, 0);
+    run(TICK_RATE * 3, input({ moveY: 1, yaw: -Math.PI / 4 }));
+    expect(c.x).toBeLessThan(-2.8);
+    expect(c.z).toBeLessThan(-4);
+  });
+
+  it('lets you cross on a bridge over it', () => {
+    const deck = aabb(-6, -0.3, -1, 6, 0.2, 1);
+    const { c, run } = setup(river(0, { boxes: [deck] }), -6, 0);
+    run(TICK_RATE * 4, EAST);
+    // Over the river and off the far end of the deck.
+    expect(c.x).toBeGreaterThan(6.5);
+    expect(c.y).toBeCloseTo(0);
+  });
+
+  it("won't let you vault off a low walkway's rail into it", () => {
+    // A walkway just over a 1.3 m deep bed, so the drop alone wouldn't stop the vault.
+    const deck = aabb(-6, -0.8, -1, 6, -0.4, 1);
+    const rail = aabb(-6, -0.4, 1, 6, 0.4, 1.1);
+    const world = river(0, { boxes: [deck, rail] }, -1.3);
+    // Facing +z, the rail, from the middle of the deck.
+    const { c, run } = setup(world, 0, 0.5, Math.PI);
+    run(TICK_RATE * 2, input({ moveY: 1, yaw: Math.PI, jump: true }));
+    // On the walkway or up on the rail, never down in the water.
+    expect(c.y).toBeGreaterThan(-0.45);
+  });
+
+  it('only where a body of water is, at its own level', () => {
+    // Water only north of z = 0: the river south of it is dry.
+    const north = { x: 0, z: -25, hx: 50, hz: 25, yaw: 0, level: 0 };
+    const t = flatTerrain();
+    const heights = Array.from(t.heights, (_, k) => (Math.abs(-50 + 2 * (k % 51)) <= 2 ? -2 : 0));
+    const dry = makeWorld({ terrain: { ...t, heights }, water: [north] });
+    const { c, run } = setup(dry, -6, 10);
+    run(TICK_RATE * 4, EAST);
+    expect(c.x).toBeGreaterThan(4);
+    // Turned 90°, a long narrow body across the river still blocks.
+    const turned = { x: 0, z: 10, hx: 3, hz: 50, yaw: Math.PI / 2, level: -0.5 };
+    const shallow = makeWorld({ terrain: { ...t, heights }, water: [north, turned] });
+    const d = setup(shallow, -6, 10);
+    d.run(TICK_RATE * 4, EAST);
+    // 1.5 m deep over the bed (−2), which is deeper than 1.2 for |x| < 2.3.
+    expect(d.c.x).toBeLessThan(-2.2);
+    expect(d.c.x).toBeGreaterThan(-2.5);
+  });
+
+  it('lets someone already in it wade out, but never deeper', () => {
+    const { c, run } = setup(river(0), -1, 0);
+    run(TICK_RATE * 2, input({ moveY: 1, yaw: Math.PI / 2 }));
+    // West: along the bottom (as deep) and up the bank, out.
+    expect(c.x).toBeLessThan(-4);
+    const { c: d, run: runD } = setup(river(0), -2.5, 0);
+    runD(TICK_RATE * 2, EAST);
+    // Back towards the middle is deeper.
+    expect(d.x).toBeCloseTo(-2.5);
+  });
+});

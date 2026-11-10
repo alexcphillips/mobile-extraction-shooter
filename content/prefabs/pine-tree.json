@@ -21,7 +21,8 @@
       "height": 2.6,
       "sides": 7,
       "colour": "leaves",
-      "collide": false
+      "collide": false,
+      "foliage": true
     },
     {
       "type": "cylinder",
@@ -31,7 +32,8 @@
       "height": 2.2,
       "sides": 7,
       "colour": "leaves",
-      "collide": false
+      "collide": false,
+      "foliage": true
     }
   ]
 }

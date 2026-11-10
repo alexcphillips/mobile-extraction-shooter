@@ -154,6 +154,7 @@ import { FIRE_SVG, FireViews } from '../render/fire';
 import { INCENDIARY_TRACER, TRACER_COLOUR } from '../render/effects';
 import { GrenadeViews } from '../render/grenades';
 import { GroundItems } from '../render/ground-items';
+import { LandmarkPass } from '../render/landmarks';
 import { buildMap, updateDoors, updateGlass, updateSearchedLooks } from '../render/map';
 import { buildWallBuys } from '../render/wall-buys';
 import { BoxOffers } from '../render/box-offers';
@@ -163,12 +164,7 @@ import { AiDebug, buildNavOverlay } from '../render/nav-debug';
 import { Viewmodel } from '../render/viewmodel';
 import { settings } from '../settings';
 import type { RaidScreenHandle } from '../ui/raid';
-import {
-  clearSnapshot,
-  saveResult,
-  saveSnapshot,
-  type RaidSnapshot,
-} from '../raids';
+import { clearSnapshot, saveResult, saveSnapshot, type RaidSnapshot } from '../raids';
 import type { RaidResult } from '../ui/results';
 import { CoopGuest, CoopHost, type CoopOptions, type Welcome } from './coop';
 import { giveUp, skipTutorial } from './give-up';
@@ -382,17 +378,21 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   });
   const pixelRatio = (): number => Math.min(window.devicePixelRatio, graphics().pixelRatio);
   renderer.setPixelRatio(pixelRatio());
-  // The world, then the gun over it with depth cleared, so it never pokes into walls.
+  // Landmarks past the fog, the world over them, then the gun over it, depth cleared
+  // between each, so the gun never pokes into walls.
   renderer.autoClear = false;
-  // Count both passes in the stats.
+  // Count every pass in the stats.
   renderer.info.autoReset = false;
   const { sky, fogNear, fogFar } = map.environment;
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(sky);
+  // The sky is the clear colour, not the scene's background: a background clears the
+  // screen, which would wipe the landmarks drawn before the world.
+  renderer.setClearColor(sky);
   scene.fog = new THREE.Fog(sky, fogNear, fogFar);
   // The far plane follows the fog distance.
   const camera = new THREE.PerspectiveCamera(FOV, 1, 0.05, fogFar);
   camera.rotation.order = 'YXZ';
+  const landmarks = new LandmarkPass(map);
 
   const mapView = buildMap(map);
   scene.add(mapView.root);
@@ -1789,6 +1789,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   function render(): void {
     renderer.info.reset();
     renderer.clear();
+    if (landmarks.render(renderer, camera)) renderer.clearDepth();
     renderer.render(scene, camera);
     renderer.clearDepth();
     renderer.render(viewmodel.scene, camera);

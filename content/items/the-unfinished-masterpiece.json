@@ -1,0 +1,14 @@
+{
+  "formatVersion": 10,
+  "id": "the-unfinished-masterpiece",
+  "name": "The unfinished masterpiece",
+  "type": "loot",
+  "size": [3, 3],
+  "value": 50000,
+  "rarity": "legendary",
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#a08a40" }]
+  },
+  "shortName": "Masterpiece",
+  "category": "Craftwork"
+}

@@ -5,8 +5,8 @@
   "shortName": "Jade",
   "type": "loot",
   "size": [1, 2],
-  "value": 45000,
-  "rarity": "legendary",
+  "value": 60000,
+  "rarity": "mythic",
   "model": {
     "parts": [
       {

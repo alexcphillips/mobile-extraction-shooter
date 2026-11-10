@@ -101,5 +101,6 @@
     ]
   },
   "view": "frontRight",
-  "category": "Craftwork"
+  "category": "Craftwork",
+  "shortName": "Gold bar"
 }

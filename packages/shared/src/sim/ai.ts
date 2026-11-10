@@ -1367,7 +1367,10 @@ function reactionTo(ai: AiState, target: Character): number {
   );
 }
 
-/** Whether nothing solid is between two points (glass is seen and heard through). */
+/**
+ * Whether nothing solid is between two points (glass is seen and heard through), nor
+ * foliage unless throughLeaves (for sound and blasts).
+ */
 export function clearLine(
   world: CollisionWorld,
   ox: number,
@@ -1376,14 +1379,17 @@ export function clearLine(
   tx: number,
   ty: number,
   tz: number,
+  throughLeaves = false,
 ): boolean {
   const dx = tx - ox;
   const dy = ty - oy;
   const dz = tz - oz;
   const d = Math.hypot(dx, dy, dz);
   if (d < 1e-6) return true;
-  // Glass is seen and heard through.
-  return world.raycast(ox, oy, oz, dx / d, dy / d, dz / d, d, undefined, true) === Infinity;
+  // Glass is seen and heard through. Foliage hides (MT-3) but sound and blasts pass it.
+  if (world.raycast(ox, oy, oz, dx / d, dy / d, dz / d, d, undefined, true) !== Infinity)
+    return false;
+  return throughLeaves || !world.foliageWithin(ox, oy, oz, dx / d, dy / d, dz / d, d);
 }
 
 /**
@@ -1705,7 +1711,7 @@ function heardLoudness(
   z: number,
   loudness: number,
 ): number {
-  return clearLine(world, x, y, z, c.x, eyeHeight(c), c.z) ? loudness : loudness * AI.muffled;
+  return clearLine(world, x, y, z, c.x, eyeHeight(c), c.z, true) ? loudness : loudness * AI.muffled;
 }
 
 /** Suspicious of a noise from e, d metres away. */
@@ -3777,7 +3783,7 @@ function arcLands(
   if (Math.abs(landed.y - y) > 1.5) return false;
   // Where it lands sees the spot (lifted off the surface, as a blast is).
   const ly = landed.y + GRENADE.lift;
-  if (!clearLine(world, landed.x, ly, landed.z, x, ty, z)) return false;
+  if (!clearLine(world, landed.x, ly, landed.z, x, ty, z, true)) return false;
   if (smokeBlocks(state.smokes, landed.x, ly, landed.z, x, ty, z)) return false;
   arcYaw = yaw;
   arcPitch = pitch;

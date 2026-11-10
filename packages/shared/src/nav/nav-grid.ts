@@ -1,5 +1,5 @@
 import { MOVEMENT } from '../sim/movement';
-import type { CollisionWorld } from '../world/collision-world';
+import { DEEP_WATER, type CollisionWorld } from '../world/collision-world';
 
 /** Navigation tuning, in metres. */
 export const NAV = {
@@ -117,7 +117,9 @@ export class NavGrid {
         const ground = hole ? -Infinity : t.heightAt(x, z);
         t.gradientAt(x, z, grad);
         const steep = grad.x * grad.x + grad.z * grad.z > NAV.maxSlope * NAV.maxSlope;
-        if (!hole && !steep && !inside(ground)) found[n++] = ground;
+        // Deep water stops bodies (MT-1): no ground under it, but a bridge over it is fine.
+        const deep = world.waterDepth(x, z) > DEEP_WATER;
+        if (!hole && !steep && !deep && !inside(ground)) found[n++] = ground;
         for (let k = 0; k < solids; k++) {
           const h = tops[k]!;
           if (h > ground - EPS && !inside(h)) found[n++] = h;

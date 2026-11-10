@@ -3,5 +3,6 @@
   "id": "northpoint",
   "name": "Northpoint",
   "map": "northpoint",
-  "duration": 1200
+  "duration": 1200,
+  "order": 2
 }

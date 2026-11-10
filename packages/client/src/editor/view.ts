@@ -16,7 +16,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import { buildDebug } from '../render/debug';
 import { TriangleBuilder } from '../render/geometry';
-import { CHUNK, buildDoor, buildGlassPane } from '../render/map';
+import { CHUNK, buildDoor, buildGlassPane, buildWater } from '../render/map';
 import { bakedMaterial, shadedMaterial } from '../render/material';
 import { nodePos, nodeYaw, round, type NodePath, type Vec3 } from './doc';
 import { disposeLabels } from '../notes';
@@ -542,20 +542,21 @@ export class EditorView {
       this.buildChunk(k);
     }
     if (map.water) {
-      const water = new THREE.Mesh(
-        new THREE.PlaneGeometry(t.cols * t.cellSize, t.rows * t.cellSize).rotateX(-Math.PI / 2),
-        new THREE.MeshBasicMaterial({
-          color: hex(map.water.colour),
-          transparent: true,
-          opacity: map.water.opacity,
-          depthWrite: false,
-        }),
-      );
-      water.position.set(
-        t.minX + (t.cols * t.cellSize) / 2,
-        map.water.level,
-        t.minZ + (t.rows * t.cellSize) / 2,
-      );
+      const hx = (t.cols * t.cellSize) / 2;
+      const hz = (t.rows * t.cellSize) / 2;
+      const { level, opacity } = map.water;
+      const water = buildWater([
+        {
+          x: t.minX + hx,
+          z: t.minZ + hz,
+          hx,
+          hz,
+          yaw: 0,
+          level,
+          opacity,
+          colour: hex(map.water.colour),
+        },
+      ])!;
       // Not a surface to land on.
       water.raycast = () => {};
       this.ground.add(water);
@@ -1099,6 +1100,12 @@ export class EditorView {
         for (const w of out.barricades) o.add(barricadeOutline(w));
       }
       for (const g of out.glass) o.add(buildGlassPane(g));
+      const water = buildWater(out.water);
+      if (water) {
+        // Picked to select it, but not something to stand things on.
+        water.userData.marker = true;
+        o.add(water);
+      }
       if (out.markers.length || out.patrols.length) {
         const posts = buildDebug(
           { markers: out.markers, patrols: out.patrols, zones: [] },
