@@ -1,0 +1,72 @@
+{
+  "formatVersion": 1,
+  "id": "kiln-stash",
+  "name": "Kiln key room",
+  "rolls": [3, 5],
+  "items": [
+    {
+      "item": "cash",
+      "weight": 6,
+      "count": [500, 4000]
+    },
+    {
+      "item": "ammo-762x39",
+      "weight": 3,
+      "count": [20, 60]
+    },
+    {
+      "item": "ammo-762x39-bp",
+      "weight": 1,
+      "count": [10, 30]
+    },
+    {
+      "item": "buckshot",
+      "weight": 1.5,
+      "count": [8, 24]
+    },
+    {
+      "item": "field-first-aid-kit",
+      "weight": 1.5
+    },
+    {
+      "item": "medical-pouch",
+      "weight": 1.5
+    },
+    {
+      "item": "surgery-kit",
+      "weight": 0.4
+    },
+    {
+      "item": "sks",
+      "weight": 1
+    },
+    {
+      "item": "mp-133",
+      "weight": 0.8
+    },
+    {
+      "item": "akm",
+      "weight": 0.4
+    },
+    {
+      "item": "police-vest",
+      "weight": 0.5
+    },
+    {
+      "item": "armour-repair-kit",
+      "weight": 0.4
+    },
+    {
+      "item": "heavy-duty-chain-hoist",
+      "weight": 0.6
+    },
+    {
+      "item": "compressed-air-tank",
+      "weight": 0.6
+    },
+    {
+      "item": "gold-watch",
+      "weight": 0.3
+    }
+  ]
+}

@@ -150,12 +150,7 @@ After the AI rework, before co-op. The design is [hangar.md](hangar.md). The mat
 ## Silver Creek, the starter map (planned 2026-11-09 with the user)
 See design.md → Raids and maps → Silver Creek for the layout and the user's calls (a Customs-style rectangle about 320 × 150 m, spawns at both ends and extracts at the far end, trees kept to the edges, five river crossings, three landmarks). Sketch: https://claude.ai/artifact/9v38f2y7U7tuf5cdKBxc84. As with Northpoint, the user places spawns and loot, and the bones are approved before detail. The sketch still shows a church; it's now the fire lookout, office and sheds (MT-3).
 
-- 9 finished sessions in [roadmap-done.md](roadmap-done.md).
-
-- [ ] **MT-10. Loot and quests:** loot tables and containers the new places need (sawmill tools, rail cargo, the kiln key; the mill office safe's table is the user's, it uses `cash-room-safe` for now); the user places the loot. 3–5 starter quests that teach the crossings, landmarks and tunnel.
-  - **Read:** design/raids-and-maps.md (loot); design/quests-and-vendors.md; tech/content-formats.md (loot tables); tech/quests-and-vendors.md.
-- [ ] **MT-11. Finish and performance:** a colour and finish pass, map tab labels, draw calls and triangles against the phone budget, and the review checklist over the finished map.
-  - **Read:** level-design.md; props.md; design/raids-and-maps.md → Silver Creek.
+- 11 finished sessions in [roadmap-done.md](roadmap-done.md). v1 of the map is built; it hasn't been played yet.
 
 Later, not counted in v1 of the map:
 - [ ] **MT-12. The foreman's crew**, the mill's boss. Design the gimmick with the user first (bosses rule a landmark, design.md → Bosses).

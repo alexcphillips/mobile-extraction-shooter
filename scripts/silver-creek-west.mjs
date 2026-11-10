@@ -999,6 +999,14 @@ export function buildWestEnd(h) {
     prefab('bush', 92, 140.5, {}, 0),
     prefab('rock', 12, 139, { yaw: -35 }, 0),
     prefab('bush-tall', 9.5, 141.5, {}, 0),
+    // In the field east of the west-1 spawn, where the MT-4 showcase stood until MT-11 (it
+    // was cover there): tall stacks at an angle, alternating, a pile, a rock and a shed.
+    prefab('lumber-stack-tall', 20, 52, { yaw: 32 }, 0),
+    prefab('shed-small', 32, 50, { yaw: 4 }, 0),
+    prefab('log-pile-tall', 28, 63, { yaw: -22 }, 0),
+    prefab('bush-tall', 13, 67, {}, 0),
+    prefab('lumber-stack-tall', 18, 74, { yaw: -35 }, 0),
+    prefab('rock-large', 31, 76, { yaw: 15 }, 0),
   ]);
 
   return group('West end', [
@@ -1009,6 +1017,6 @@ export function buildWestEnd(h) {
     gas,
     cover,
     label('Company houses', 62, 81),
-    label('Store', 38, 127.5),
+    // The store and its pumps are one place on the map tab: "Gas station" (MT-11).
   ]);
 }

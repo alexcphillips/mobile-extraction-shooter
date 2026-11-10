@@ -7,7 +7,177 @@
   "value": 1000,
   "rarity": "uncommon",
   "model": {
-    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#a08a40" }]
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0.06, 0.025],
+        "pitch": 90,
+        "radius": 0.031,
+        "height": 0.17,
+        "sides": 10,
+        "colour": "#4677b3",
+        "name": "motor housing",
+        "group": "body"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.06, 0.133],
+        "pitch": 90,
+        "radius": 0.03,
+        "radiusTop": 0.022,
+        "height": 0.05,
+        "sides": 8,
+        "colour": "#2b2d2f",
+        "name": "rear grip",
+        "group": "body"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.06, -0.058],
+        "pitch": 90,
+        "radius": 0.0325,
+        "height": 0.012,
+        "sides": 8,
+        "colour": "#355d8e",
+        "name": "front collar",
+        "group": "body"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0302, 0.064, 0.07],
+        "size": [0.004, 0.022, 0.006],
+        "colour": "#141516",
+        "name": "vent",
+        "group": "body"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0302, 0.064, 0.085],
+        "size": [0.004, 0.022, 0.006],
+        "colour": "#141516",
+        "name": "vent",
+        "group": "body"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0302, 0.064, 0.1],
+        "size": [0.004, 0.022, 0.006],
+        "colour": "#141516",
+        "name": "vent",
+        "group": "body"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0905, 0.03],
+        "size": [0.014, 0.006, 0.05],
+        "colour": "#141516",
+        "name": "switch rail",
+        "group": "body"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0935, 0.018],
+        "size": [0.012, 0.006, 0.012],
+        "colour": "#d8461c",
+        "name": "switch slider",
+        "group": "body"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.06, 0.173],
+        "pitch": 90,
+        "radius": 0.009,
+        "radiusTop": 0.006,
+        "height": 0.036,
+        "sides": 6,
+        "colour": "#141516",
+        "name": "strain relief",
+        "group": "cord"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.0407, 0.21],
+        "pitch": 128.0997,
+        "yaw": 0,
+        "radius": 0.0045,
+        "height": 0.0559,
+        "sides": 5,
+        "colour": "#141516",
+        "name": "cord",
+        "group": "cord"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.064, -0.095],
+        "size": [0.058, 0.05, 0.06],
+        "colour": "#3a3d40",
+        "name": "gear head",
+        "group": "head"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.091, -0.105],
+        "radius": 0.006,
+        "height": 0.006,
+        "sides": 6,
+        "colour": "#8d8f91",
+        "name": "spindle lock",
+        "group": "head"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.0715, 0.064, -0.095],
+        "roll": 90,
+        "radius": 0.011,
+        "radiusTop": 0.0125,
+        "height": 0.085,
+        "sides": 8,
+        "colour": "#2b2d2f",
+        "name": "side handle",
+        "group": "head"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.034, -0.105],
+        "radius": 0.012,
+        "height": 0.012,
+        "sides": 8,
+        "colour": "#8d8f91",
+        "name": "spindle collar",
+        "group": "disc"
+      },
+      {
+        "type": "slab",
+        "pos": [0, 0.034, -0.077],
+        "size": [0.126, 0.012, 0.068],
+        "corners": [0.004, 0.004, 0.034, 0.034],
+        "segments": 3,
+        "colour": "#8d8f91",
+        "name": "guard",
+        "group": "disc"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.0245, -0.105],
+        "radius": 0.0575,
+        "height": 0.003,
+        "sides": 12,
+        "colour": "#555759",
+        "name": "disc",
+        "group": "disc"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.021, -0.105],
+        "radius": 0.014,
+        "height": 0.004,
+        "sides": 6,
+        "colour": "#8d8f91",
+        "name": "flange nut",
+        "group": "disc"
+      }
+    ]
   },
-  "category": "Industrial"
+  "category": "Industrial",
+  "view": "top"
 }

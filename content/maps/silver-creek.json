@@ -5072,6 +5072,41 @@
               "type": "prefab",
               "prefab": "bush-tall",
               "pos": [9.5, 0, 141.5]
+            },
+            {
+              "type": "prefab",
+              "prefab": "lumber-stack-tall",
+              "pos": [20, 0, 52],
+              "yaw": 32
+            },
+            {
+              "type": "prefab",
+              "prefab": "shed-small",
+              "pos": [32, 0, 50],
+              "yaw": 4
+            },
+            {
+              "type": "prefab",
+              "prefab": "log-pile-tall",
+              "pos": [28, 0, 63],
+              "yaw": -22
+            },
+            {
+              "type": "prefab",
+              "prefab": "bush-tall",
+              "pos": [13, 0, 67]
+            },
+            {
+              "type": "prefab",
+              "prefab": "lumber-stack-tall",
+              "pos": [18, 0, 74],
+              "yaw": -35
+            },
+            {
+              "type": "prefab",
+              "prefab": "rock-large",
+              "pos": [31, 0, 76],
+              "yaw": 15
             }
           ]
         },
@@ -5079,11 +5114,6 @@
           "type": "mapLabel",
           "pos": [62, 0, 81],
           "text": "Company houses"
-        },
-        {
-          "type": "mapLabel",
-          "pos": [38, 0, 127.5],
-          "text": "Store"
         }
       ]
     },
@@ -6502,11 +6532,132 @@
           "pos": [0, 0, 0],
           "nodes": [
             {
-              "type": "box",
+              "type": "group",
+              "name": "Box truck",
               "pos": [73.5, 0, 116.55],
-              "size": [7, 3, 3.5],
-              "colour": "#7a4e34",
-              "id": "truck-1"
+              "yaw": 12,
+              "nodes": [
+                {
+                  "type": "box",
+                  "pos": [-1.05, 0.9, 0],
+                  "size": [4.9, 2.5, 2.5],
+                  "colour": "#d8d6d0",
+                  "id": "truck-1"
+                },
+                {
+                  "type": "box",
+                  "pos": [-1.05, 0, 0],
+                  "size": [4.9, 0.9, 2.5],
+                  "colour": "#1e1e1e",
+                  "id": "truck-1-blocker",
+                  "invisible": true
+                },
+                {
+                  "type": "box",
+                  "pos": [2.5, 0.6, 0],
+                  "size": [2, 2, 2.3],
+                  "colour": "#5a6e7a",
+                  "id": "truck-1-cab"
+                },
+                {
+                  "type": "box",
+                  "pos": [3.21, 1.7, 0],
+                  "size": [0.62, 0.7, 2.34],
+                  "colour": "#9cc4d0",
+                  "collide": false,
+                  "id": "truck-1-windscreen"
+                },
+                {
+                  "type": "box",
+                  "pos": [-1.05, 1.05, 0],
+                  "size": [4.94, 0.25, 2.54],
+                  "colour": "#7a4e34",
+                  "collide": false,
+                  "id": "truck-1-stripe"
+                },
+                {
+                  "type": "box",
+                  "pos": [-3.52, 0.95, 0],
+                  "size": [0.04, 2.4, 0.1],
+                  "colour": "#7c8288",
+                  "collide": false,
+                  "id": "truck-1-seam"
+                },
+                {
+                  "type": "box",
+                  "pos": [0, 0.45, 0],
+                  "size": [7, 0.45, 1],
+                  "colour": "#1e1e1e",
+                  "collide": false,
+                  "id": "truck-1-chassis"
+                },
+                {
+                  "type": "cylinder",
+                  "id": "truck-1-wheel-1n",
+                  "pos": [-2.5, 0.3, -1],
+                  "radius": 0.45,
+                  "height": 0.3,
+                  "sides": 10,
+                  "pitch": 90,
+                  "colour": "#1e1e1e",
+                  "collide": false
+                },
+                {
+                  "type": "cylinder",
+                  "id": "truck-1-wheel-1s",
+                  "pos": [-2.5, 0.3, 1],
+                  "radius": 0.45,
+                  "height": 0.3,
+                  "sides": 10,
+                  "pitch": 90,
+                  "colour": "#1e1e1e",
+                  "collide": false
+                },
+                {
+                  "type": "cylinder",
+                  "id": "truck-1-wheel-2n",
+                  "pos": [0.1, 0.3, -1],
+                  "radius": 0.45,
+                  "height": 0.3,
+                  "sides": 10,
+                  "pitch": 90,
+                  "colour": "#1e1e1e",
+                  "collide": false
+                },
+                {
+                  "type": "cylinder",
+                  "id": "truck-1-wheel-2s",
+                  "pos": [0.1, 0.3, 1],
+                  "radius": 0.45,
+                  "height": 0.3,
+                  "sides": 10,
+                  "pitch": 90,
+                  "colour": "#1e1e1e",
+                  "collide": false
+                },
+                {
+                  "type": "cylinder",
+                  "id": "truck-1-wheel-3n",
+                  "pos": [2.5, 0.3, -1],
+                  "radius": 0.45,
+                  "height": 0.3,
+                  "sides": 10,
+                  "pitch": 90,
+                  "colour": "#1e1e1e",
+                  "collide": false
+                },
+                {
+                  "type": "cylinder",
+                  "id": "truck-1-wheel-3s",
+                  "pos": [2.5, 0.3, 1],
+                  "radius": 0.45,
+                  "height": 0.3,
+                  "sides": 10,
+                  "pitch": 90,
+                  "colour": "#1e1e1e",
+                  "collide": false
+                }
+              ]
             },
             {
               "type": "group",
@@ -7269,11 +7420,6 @@
               ]
             }
           ]
-        },
-        {
-          "type": "mapLabel",
-          "pos": [136, 0, 46],
-          "text": "Rollway"
         }
       ]
     },
@@ -10099,6 +10245,81 @@
           "size": [7, 3.5, 5],
           "colour": "#9a9890",
           "id": "headgate-house"
+        },
+        {
+          "type": "box",
+          "pos": [216.5, 3.2, 101],
+          "size": [7.6, 0.25, 5.6],
+          "colour": "#6f6d68",
+          "collide": false,
+          "id": "headgate-roof"
+        },
+        {
+          "type": "box",
+          "pos": [220.02, 0, 101],
+          "size": [0.04, 2.1, 1.2],
+          "colour": "#7a4e34",
+          "collide": false,
+          "id": "headgate-door"
+        },
+        {
+          "type": "box",
+          "pos": [219.85, 0, 101],
+          "size": [0.9, 0.12, 1.2],
+          "colour": "#6f6d68",
+          "collide": false,
+          "id": "headgate-step"
+        },
+        {
+          "type": "box",
+          "pos": [215.1, 2.1, 98.48],
+          "size": [1.2, 0.6, 0.04],
+          "colour": "#9cc4d0",
+          "collide": false,
+          "id": "headgate-window-n1"
+        },
+        {
+          "type": "box",
+          "pos": [215.1, 2.1, 103.52],
+          "size": [1.2, 0.6, 0.04],
+          "colour": "#9cc4d0",
+          "collide": false,
+          "id": "headgate-window-s1"
+        },
+        {
+          "type": "box",
+          "pos": [218.1, 2.1, 98.48],
+          "size": [1.2, 0.6, 0.04],
+          "colour": "#9cc4d0",
+          "collide": false,
+          "id": "headgate-window-n2"
+        },
+        {
+          "type": "box",
+          "pos": [218.1, 2.1, 103.52],
+          "size": [1.2, 0.6, 0.04],
+          "colour": "#9cc4d0",
+          "collide": false,
+          "id": "headgate-window-s2"
+        },
+        {
+          "type": "cylinder",
+          "id": "headgate-wheel",
+          "pos": [212.85, 1, 101],
+          "radius": 0.45,
+          "height": 0.08,
+          "sides": 8,
+          "roll": 90,
+          "colour": "#d8b52e",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [212.9, 0.4, 101],
+          "size": [0.16, 1.05, 0.16],
+          "colour": "#7c8288",
+          "collide": false,
+          "id": "headgate-stem"
         },
         {
           "type": "box",
@@ -17602,13 +17823,13 @@
         },
         {
           "type": "mapLabel",
-          "pos": [262, 0, 38],
+          "pos": [240, 0, 52],
           "text": "Rail yard",
           "size": "area"
         },
         {
           "type": "mapLabel",
-          "pos": [60, 5.68, 10],
+          "pos": [195, 6.12, 8],
           "text": "Ridge",
           "size": "area"
         },
@@ -17619,12 +17840,52 @@
         },
         {
           "type": "mapLabel",
-          "pos": [27, 0, 38],
+          "pos": [201, 0, 64],
+          "text": "Teepee burner"
+        },
+        {
+          "type": "mapLabel",
+          "pos": [302, 0, 66],
+          "text": "Water tower"
+        },
+        {
+          "type": "mapLabel",
+          "pos": [296.75, 0, 74.5],
+          "text": "Pump house"
+        },
+        {
+          "type": "mapLabel",
+          "pos": [160, 2.92, 15],
+          "text": "Log jam"
+        },
+        {
+          "type": "mapLabel",
+          "pos": [166, 0, 58.5],
+          "text": "Log boom"
+        },
+        {
+          "type": "mapLabel",
+          "pos": [163, 0, 136],
+          "text": "Weir ford"
+        },
+        {
+          "type": "mapLabel",
+          "pos": [227.5, 0, 84.5],
+          "text": "Kiln 4"
+        },
+        {
+          "type": "mapLabel",
+          "pos": [217, 0, 105],
+          "text": "Headgate house"
+        },
+        {
+          "type": "mapLabel",
+          "pos": [24, 0, 37],
           "text": "Company office"
         },
         {
           "type": "mapLabel",
-          "pos": [53, 0, 40],
+          "pos": [57, 0, 44],
           "text": "Sheds"
         },
         {
@@ -17644,43 +17905,23 @@
         },
         {
           "type": "mapLabel",
-          "pos": [165, -3.5, 50],
+          "pos": [165, 0, 50],
           "text": "Mill pond"
         },
         {
           "type": "mapLabel",
-          "pos": [160, -3.5, 15],
-          "text": "Log jam"
-        },
-        {
-          "type": "mapLabel",
-          "pos": [166, -3.5, 58.5],
-          "text": "Log boom"
-        },
-        {
-          "type": "mapLabel",
-          "pos": [201, 0, 64],
-          "text": "Teepee burner"
-        },
-        {
-          "type": "mapLabel",
-          "pos": [225, 0, 85],
+          "pos": [225, 0, 92],
           "text": "Drying kilns"
         },
         {
           "type": "mapLabel",
           "pos": [185, 0.3, 97],
-          "text": "Office"
+          "text": "Mill office"
         },
         {
           "type": "mapLabel",
-          "pos": [167.75, -4, 118],
+          "pos": [167.75, 0, 118],
           "text": "Road bridge"
-        },
-        {
-          "type": "mapLabel",
-          "pos": [163, 0, 136],
-          "text": "Weir ford"
         },
         {
           "type": "mapLabel",
@@ -17689,17 +17930,17 @@
         },
         {
           "type": "mapLabel",
-          "pos": [302, 0, 72],
-          "text": "Water tower"
-        },
-        {
-          "type": "mapLabel",
           "pos": [277.5, 0, 36.5],
           "text": "Loading tower"
         },
         {
           "type": "mapLabel",
-          "pos": [268, 0, 131.5],
+          "pos": [248, 0, 40],
+          "text": "Freight dock"
+        },
+        {
+          "type": "mapLabel",
+          "pos": [270, 0, 129],
           "text": "Fuel tanks"
         },
         {
@@ -17714,7 +17955,7 @@
         },
         {
           "type": "mapLabel",
-          "pos": [247, 0, 132],
+          "pos": [240, 0, 137],
           "text": "Equipment depot"
         },
         {
@@ -17734,8 +17975,28 @@
         },
         {
           "type": "mapLabel",
-          "pos": [166, -6, 106],
+          "pos": [136, 0, 46],
+          "text": "Rollway"
+        },
+        {
+          "type": "mapLabel",
+          "pos": [166, -6, 102],
           "text": "Mill race tunnel"
+        },
+        {
+          "type": "mapLabel",
+          "pos": [122, -6, 109],
+          "text": "West stairs"
+        },
+        {
+          "type": "mapLabel",
+          "pos": [210, -6, 109],
+          "text": "East stairs"
+        },
+        {
+          "type": "mapLabel",
+          "pos": [178.8, -6, 109],
+          "text": "Ladder hatch"
         }
       ]
     },
@@ -18203,147 +18464,58 @@
     },
     {
       "type": "group",
-      "name": "MT-4 props (test placement)",
+      "name": "Quest markers",
       "pos": [0, 0, 0],
       "nodes": [
         {
-          "type": "prefab",
-          "prefab": "track",
-          "pos": [15, 0, 47]
+          "type": "questMarker",
+          "id": "sc-quest-lookout",
+          "pos": [30, 8.86, 8]
         },
         {
-          "type": "prefab",
-          "prefab": "track",
-          "pos": [21, 0, 47]
+          "type": "questMarker",
+          "id": "sc-quest-burner",
+          "pos": [201, 0, 72.6]
         },
         {
-          "type": "prefab",
-          "prefab": "track",
-          "pos": [27, 0, 47]
+          "type": "questMarker",
+          "id": "sc-quest-tower",
+          "pos": [296.75, 0, 72.4]
         },
         {
-          "type": "prefab",
-          "prefab": "boxcar",
-          "pos": [21, 0, 47]
+          "type": "questMarker",
+          "id": "sc-quest-jam",
+          "pos": [160.5, 2.92, 20]
         },
         {
-          "type": "prefab",
-          "prefab": "track",
-          "pos": [15, 0, 52]
+          "type": "questMarker",
+          "id": "sc-quest-boom",
+          "pos": [165, 0.05, 56]
         },
         {
-          "type": "prefab",
-          "prefab": "track",
-          "pos": [21, 0, 52]
+          "type": "questMarker",
+          "id": "sc-quest-ford",
+          "pos": [163, -2.6, 136]
         },
         {
-          "type": "prefab",
-          "prefab": "track",
-          "pos": [27, 0, 52]
+          "type": "questMarker",
+          "id": "sc-quest-race-1",
+          "pos": [142, -6, 106]
         },
         {
-          "type": "prefab",
-          "prefab": "flatcar",
-          "pos": [21, 0, 52]
+          "type": "questMarker",
+          "id": "sc-quest-race-2",
+          "pos": [164, -6, 106]
         },
         {
-          "type": "prefab",
-          "prefab": "track",
-          "pos": [15, 0, 57]
+          "type": "questMarker",
+          "id": "sc-quest-race-3",
+          "pos": [197, -6, 106.5]
         },
         {
-          "type": "prefab",
-          "prefab": "track",
-          "pos": [21, 0, 57]
-        },
-        {
-          "type": "prefab",
-          "prefab": "track",
-          "pos": [27, 0, 57]
-        },
-        {
-          "type": "prefab",
-          "prefab": "flatcar-logs",
-          "pos": [21, 0, 57]
-        },
-        {
-          "type": "prefab",
-          "prefab": "log",
-          "pos": [14, 0, 63]
-        },
-        {
-          "type": "prefab",
-          "prefab": "log-pile",
-          "pos": [21, 0, 63]
-        },
-        {
-          "type": "prefab",
-          "prefab": "log-pile-tall",
-          "pos": [29, 0, 63]
-        },
-        {
-          "type": "prefab",
-          "prefab": "lumber-stack",
-          "pos": [14, 0, 68]
-        },
-        {
-          "type": "prefab",
-          "prefab": "lumber-stack-tall",
-          "pos": [21, 0, 68]
-        },
-        {
-          "type": "prefab",
-          "prefab": "woodshed",
-          "pos": [29, 0, 68]
-        },
-        {
-          "type": "prefab",
-          "prefab": "shed-small",
-          "pos": [13, 0, 75]
-        },
-        {
-          "type": "prefab",
-          "prefab": "shed",
-          "pos": [21, 0, 75]
-        },
-        {
-          "type": "prefab",
-          "prefab": "shed",
-          "pos": [29, 0, 75],
-          "colours": {
-            "siding": "#8a4a3a",
-            "siding-dark": "#6e3a2e"
-          }
-        },
-        {
-          "type": "prefab",
-          "prefab": "rock",
-          "pos": [12, 0, 81]
-        },
-        {
-          "type": "prefab",
-          "prefab": "rock-large",
-          "pos": [17, 0, 81]
-        },
-        {
-          "type": "prefab",
-          "prefab": "tree-stump",
-          "pos": [21.5, 0, 81]
-        },
-        {
-          "type": "prefab",
-          "prefab": "bush",
-          "pos": [24.5, 0, 81]
-        },
-        {
-          "type": "prefab",
-          "prefab": "bush-tall",
-          "pos": [28, 0, 81]
-        },
-        {
-          "type": "prefab",
-          "prefab": "broadleaf-tree",
-          "pos": [32.5, 0, 81]
+          "type": "questMarker",
+          "id": "sc-quest-kiln",
+          "pos": [227.5, 0.1, 84.5]
         }
       ]
     }

@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "kiln-four",
+  "name": "Kiln four",
+  "vendor": "quartermaster",
+  "description": "That key opens the fourth drying kiln, the one with the small door on the south side. The foreman kept his stash in there. Go and see what's left. Locked rooms pay; that's what keys are for.",
+  "requires": ["under-the-mill"],
+  "objectives": [
+    {
+      "id": "kiln",
+      "type": "investigate",
+      "map": "silver-creek",
+      "marker": "sc-quest-kiln",
+      "text": "Unlock the fourth drying kiln and look inside"
+    }
+  ],
+  "rewards": {
+    "money": 25000,
+    "items": [
+      {
+        "item": "medium-backpack"
+      }
+    ],
+    "rep": 0.05
+  }
+}

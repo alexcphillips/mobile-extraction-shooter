@@ -1,0 +1,92 @@
+{
+  "formatVersion": 1,
+  "id": "sawmill-tools",
+  "name": "Sawmill tools",
+  "rolls": [1, 3],
+  "items": [
+    {
+      "item": "measuring-tape",
+      "weight": 3
+    },
+    {
+      "item": "screwdriver",
+      "weight": 3
+    },
+    {
+      "item": "box-of-nails",
+      "weight": 3
+    },
+    {
+      "item": "box-of-screws",
+      "weight": 3
+    },
+    {
+      "item": "wood-board",
+      "weight": 2
+    },
+    {
+      "item": "gear-set",
+      "weight": 2
+    },
+    {
+      "item": "steel-latch-set",
+      "weight": 2
+    },
+    {
+      "item": "duct-tape",
+      "weight": 2
+    },
+    {
+      "item": "electrical-tape",
+      "weight": 2
+    },
+    {
+      "item": "cordless-drill",
+      "weight": 1.5
+    },
+    {
+      "item": "circular-saw",
+      "weight": 1.5
+    },
+    {
+      "item": "extension-cord",
+      "weight": 1.5
+    },
+    {
+      "item": "angle-grinder",
+      "weight": 1
+    },
+    {
+      "item": "bolt-cutters",
+      "weight": 1
+    },
+    {
+      "item": "caulk-tube",
+      "weight": 1
+    },
+    {
+      "item": "anchoring-epoxy",
+      "weight": 1
+    },
+    {
+      "item": "pressure-gauge",
+      "weight": 1
+    },
+    {
+      "item": "valve-handwheel",
+      "weight": 1
+    },
+    {
+      "item": "solenoid-valve",
+      "weight": 0.6
+    },
+    {
+      "item": "compressed-air-tank",
+      "weight": 0.4
+    },
+    {
+      "item": "heavy-duty-chain-hoist",
+      "weight": 0.3
+    }
+  ]
+}

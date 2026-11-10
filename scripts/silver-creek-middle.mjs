@@ -67,7 +67,7 @@ function kit(h, s) {
 // ---------------------------------------------------------------------------- the middle
 
 export function buildMiddle(h, s) {
-  const { box, drawn, group, prefab, along, label, C, r2 } = h;
+  const { box, drawn, group, prefab, along, C, r2 } = h;
   const { on, bedded, logLine, copse, trailPile } = kit(h, s);
   const { jamCentre, jamHalf, bridgeX, fordX, TRAIL_Y } = s;
 
@@ -556,8 +556,38 @@ export function buildMiddle(h, s) {
     ),
     ...logLoad,
   ]);
+  // Truck-1 (MT-11, was a plain block): an abandoned box truck, cab east, standing 12° across
+  // the north lane and the centre line where the block stood, so it shades as much of the
+  // road as the 3.5 m block did. The box and cab collide; a body-only blocker under the box
+  // stops a prone crawl beneath; wheels and trim are drawn. In its own frame, along x.
+  const truck1 = group(
+    'Box truck',
+    [
+      box(-3.5, -1.25, 1.4, 1.25, 0.9, 3.4, C['paint-white'], { id: 'truck-1' }),
+      box(-3.5, -1.25, 1.4, 1.25, 0, 0.9, C.dark, { id: 'truck-1-blocker', invisible: true }),
+      box(1.5, -1.15, 3.5, 1.15, 0.6, 2.6, '#5a6e7a', { id: 'truck-1-cab' }),
+      drawn(2.9, -1.17, 3.52, 1.17, 1.7, 2.4, C.glass, { id: 'truck-1-windscreen' }),
+      drawn(-3.52, -1.27, 1.42, 1.27, 1.05, 1.3, C.rust, { id: 'truck-1-stripe' }),
+      drawn(-3.54, -0.05, -3.5, 0.05, 0.95, 3.35, C.metal, { id: 'truck-1-seam' }),
+      drawn(-3.5, -0.5, 3.5, 0.5, 0.45, 0.9, C.dark, { id: 'truck-1-chassis' }),
+      ...[-2.5, 0.1, 2.5].flatMap((x, k) =>
+        [-1, 1].map((sd) => ({
+          type: 'cylinder',
+          id: `truck-1-wheel-${k + 1}${sd < 0 ? 'n' : 's'}`,
+          pos: [x, 0.3, sd * 1.0],
+          radius: 0.45,
+          height: 0.3,
+          sides: 10,
+          pitch: 90,
+          colour: C.dark,
+          collide: false,
+        })),
+      ),
+    ],
+    { pos: [73.5, 0, 116.55], yaw: 12 },
+  );
   const trucks = group('Highway trucks', [
-    box(70, 114.8, 77, 118.3, 0, 3, C.rust, { id: 'truck-1' }),
+    truck1,
     logTruck,
     prefab('semi-tractor', 185.4, 116.55, { id: 'truck-2', yaw: -90 }, 0),
   ]);
@@ -624,7 +654,7 @@ export function buildMiddle(h, s) {
     trucks,
     ford,
     fields,
-    label('Rollway', 136, 46),
+    // The rollway's label is in the generator's list, last, so the log deck's wins (MT-11).
   ]);
 }
 

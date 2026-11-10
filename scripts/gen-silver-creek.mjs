@@ -12,6 +12,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { buildAi } from './silver-creek-ai.mjs';
 import { buildEastEnd } from './silver-creek-east.mjs';
 import { buildMiddle, buildRidge } from './silver-creek-middle.mjs';
+import { buildQuests } from './silver-creek-quests.mjs';
 import { buildWestEnd } from './silver-creek-west.mjs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -823,6 +824,8 @@ const burner = group(
 // apron. Each is laid out differently; the fourth is the locked key room (kiln-key).
 const KILN = { z0: sz(280), z1: sz(319), w: 5, tall: 4.5 };
 const kilns = [];
+/** The key room's floor, for its quest marker. */
+let keyRoom;
 for (let k = 0; k < 6; k++) {
   const x0 = sx(652 + 21 * k);
   const x1 = x0 + KILN.w;
@@ -831,6 +834,7 @@ for (let k = 0; k < 6; k++) {
   const fl = r2(hi + 0.1);
   const top = fl + KILN.tall;
   const name = k === 3 ? 'kiln-locked' : `kiln-${k + 1}`;
+  if (k === 3) keyRoom = { x: cx, z: KILN.z0 + 6.5, y: fl };
   // [north end, south end]: 'open' (the big door gone), 'wicket' (shut with a small door
   // in it), 'locked' (a wicket that needs the kiln key), 'shut'.
   const ends = [
@@ -1018,6 +1022,27 @@ const tunnel = group('Mill race tunnel', [
   box(shaftE.x0, T.z0, shaftE.x0 + 0.1, T.z1, 0, 1, C.metal, { id: 'shaft-e-rail-w' }),
   // The race's headgate house by the east exit, which was in open ground (MT-3).
   box(213, 98.5, 220, 103.5, -0.3, 3.2, C.concrete, { id: 'headgate-house' }),
+  // Its finish (MT-11), all drawn: a roof slab with an overhang, a steel door east, small
+  // high windows north and south, and the gate's wheel on the west wall over the race.
+  drawn(212.7, 98.2, 220.3, 103.8, 3.2, 3.45, C['dark-concrete'], { id: 'headgate-roof' }),
+  drawn(220, 100.4, 220.04, 101.6, 0, 2.1, C.rust, { id: 'headgate-door' }),
+  drawn(219.4, 100.4, 220.3, 101.6, 0, 0.12, C['dark-concrete'], { id: 'headgate-step' }),
+  ...[214.5, 217.5].flatMap((x, k) => [
+    drawn(x, 98.46, x + 1.2, 98.5, 2.1, 2.7, C.glass, { id: `headgate-window-n${k + 1}` }),
+    drawn(x, 103.5, x + 1.2, 103.54, 2.1, 2.7, C.glass, { id: `headgate-window-s${k + 1}` }),
+  ]),
+  {
+    type: 'cylinder',
+    id: 'headgate-wheel',
+    pos: [212.85, 1.0, 101],
+    radius: 0.45,
+    height: 0.08,
+    sides: 8,
+    roll: 90,
+    colour: C.ladder,
+    collide: false,
+  },
+  drawn(212.82, 100.92, 212.98, 101.08, 0.4, 1.45, C.metal, { id: 'headgate-stem' }),
   box(hatch.x0, T.z0, hatch.x1, T.z0 + 0.1, 0, 1, C.metal, { id: 'hatch-rail-n' }),
   box(hatch.x0, T.z1 - 0.1, hatch.x1, T.z1, 0, 1, C.metal, { id: 'hatch-rail-s' }),
   box(hatch.x1 - 0.1, T.z0, hatch.x1, T.z1, 0, 1, C.metal, { id: 'hatch-rail-e' }),
@@ -1369,36 +1394,51 @@ const markers = group('Spawns', [
   spawn('east-3', 315, 132, 90, EAST_EXTRACTS),
 ]);
 
+// Places go on the map tab in this order and one that would run into a name already placed
+// is left out until you zoom in (map-tab.tsx → placeLabels), so landmarks and the quests'
+// places come first. Spaced so at phone width only minor ones give way (MT-11).
 const labels = group('Map labels', [
   label('Company town', 50, 58, 'area'),
   label('Sawmill', 166, 84, 'area', MILL.floor),
-  label('Rail yard', 262, 38, 'area'),
-  label('Ridge', 60, 10, 'area'),
+  label('Rail yard', 240, 52, 'area'),
+  label('Ridge', 195, 8, 'area'),
+  // landmarks and the starter quests' places
   label('Fire lookout', LOOKOUT.x, LOOKOUT.z + 4),
-  label('Company office', 27, 38),
-  label('Sheds', 53, 40),
+  label('Teepee burner', 201, 64),
+  label('Water tower', tower.x, 66),
+  label('Pump house', 296.75, 74.5),
+  // On the water, y 0 or the trail's height: the bed's height put these on the Tunnel floor.
+  label('Log jam', 160, 15, undefined, TRAIL_Y),
+  label('Log boom', 166, 58.5, undefined, 0),
+  label('Weir ford', fordX, 136, undefined, 0),
+  label('Kiln 4', 227.5, 84.5),
+  label('Headgate house', 217, 105),
+  // the rest
+  label('Company office', 24, 37),
+  label('Sheds', 57, 44),
   label('Gas station', 28, 127),
   label('Log deck', 112, 44),
   label('Timber yard', 117, 90),
-  label('Mill pond', 165, 50),
-  label('Log jam', 160, 15),
-  label('Log boom', 166, 58.5),
-  label('Teepee burner', 201, 64),
-  label('Drying kilns', 225, 85),
-  label('Office', 185, 97, undefined, MILL.floor),
-  label('Road bridge', bridgeX, 118),
-  label('Weir ford', fordX, 136, undefined, 0),
+  label('Mill pond', 165, 50, undefined, 0),
+  label('Drying kilns', 225, 92),
+  label('Mill office', 185, 97, undefined, MILL.floor),
+  label('Road bridge', bridgeX, 118, undefined, 0),
   label('Engine shed', 262, 65),
-  label('Water tower', tower.x, tower.z),
   label('Loading tower', 277.5, 36.5),
-  label('Fuel tanks', 268, 131.5),
+  label('Freight dock', 248, 40),
+  label('Fuel tanks', 270, 129),
   label('Bunkhouse', 283, 96),
   label('Cookhouse', 278, 108),
-  label('Equipment depot', 247, 132),
+  label('Equipment depot', 240, 137),
   label('Hunting cabin', 84, 12),
   label('Campsite', 126, 12),
   label('Clear-cut', 228, 14),
-  label('Mill race tunnel', 166, zc, undefined, T.floor),
+  label('Rollway', 136, 46),
+  label('Mill race tunnel', 166, zc - 4, undefined, T.floor),
+  // The tunnel's ways out, on its own floor.
+  label('West stairs', (shaftW.x0 + shaftW.x1) / 2, zc + 3, undefined, T.floor),
+  label('East stairs', (shaftE.x0 + shaftE.x1) / 2, zc + 3, undefined, T.floor),
+  label('Ladder hatch', (hatch.x0 + hatch.x1) / 2, zc + 3, undefined, T.floor),
 ]);
 
 const helpers = { box, drawn, group, prefab, along, label, C, r2, groundAt, groundRange };
@@ -1427,6 +1467,7 @@ const map = {
     edges,
     labels,
     ...buildAi(helpers),
+    buildQuests(helpers, { lookout: LOOKOUT, tunnel: T, keyRoom }),
   ],
   floors: [
     { name: 'Tunnel', y: T.floor },

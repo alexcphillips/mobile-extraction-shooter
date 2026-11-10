@@ -1,0 +1,80 @@
+{
+  "formatVersion": 1,
+  "id": "rail-cargo",
+  "name": "Rail cargo",
+  "rolls": [1, 3],
+  "items": [
+    {
+      "item": "wood-board",
+      "weight": 2
+    },
+    {
+      "item": "steel-angle-bar",
+      "weight": 2
+    },
+    {
+      "item": "premix-concrete-bag",
+      "weight": 2
+    },
+    {
+      "item": "trade-documents",
+      "weight": 1.5
+    },
+    {
+      "item": "steel-framing",
+      "weight": 1.5
+    },
+    {
+      "item": "insulation-roll",
+      "weight": 1.5
+    },
+    {
+      "item": "corrugated-tubing",
+      "weight": 1.5
+    },
+    {
+      "item": "fiberglass-roll",
+      "weight": 1
+    },
+    {
+      "item": "bucket-of-paint",
+      "weight": 1
+    },
+    {
+      "item": "laundry-pods",
+      "weight": 1
+    },
+    {
+      "item": "bottle-of-water",
+      "weight": 1
+    },
+    {
+      "item": "protein-power",
+      "weight": 1
+    },
+    {
+      "item": "dehumidifier",
+      "weight": 0.8
+    },
+    {
+      "item": "portable-ac",
+      "weight": 0.5
+    },
+    {
+      "item": "industrial-air-duct-fan",
+      "weight": 0.5
+    },
+    {
+      "item": "kevlar-composite-sheet",
+      "weight": 0.3
+    },
+    {
+      "item": "carbon-fiber-laminate",
+      "weight": 0.3
+    },
+    {
+      "item": "high-yield-solar-module",
+      "weight": 0.15
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "toolbox",
+  "name": "Toolbox",
+  "grid": [4, 2],
+  "loot": {
+    "tables": {
+      "sawmill-tools": 1
+    },
+    "empty": 0.25
+  }
+}
