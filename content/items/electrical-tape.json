@@ -1,0 +1,239 @@
+{
+  "formatVersion": 10,
+  "id": "electrical-tape",
+  "name": "Electrical tape",
+  "type": "loot",
+  "size": [1, 1],
+  "value": 1000,
+  "rarity": "uncommon",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0.0261],
+        "yaw": 0,
+        "size": [0.017, 0.019, 0.0098],
+        "colour": "#1d1f21",
+        "name": "tape 1",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [0.013, 0, 0.0226],
+        "yaw": 30,
+        "size": [0.017, 0.019, 0.0098],
+        "colour": "#1d1f21",
+        "name": "tape 2",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [0.0226, 0, 0.0131],
+        "yaw": 60,
+        "size": [0.017, 0.019, 0.0098],
+        "colour": "#1d1f21",
+        "name": "tape 3",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [0.0261, 0, 0],
+        "yaw": 90,
+        "size": [0.017, 0.019, 0.0098],
+        "colour": "#1d1f21",
+        "name": "tape 4",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [0.0226, 0, -0.013],
+        "yaw": 120,
+        "size": [0.017, 0.019, 0.0098],
+        "colour": "#1d1f21",
+        "name": "tape 5",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [0.0131, 0, -0.0226],
+        "yaw": 150,
+        "size": [0.017, 0.019, 0.0098],
+        "colour": "#1d1f21",
+        "name": "tape 6",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0, -0.0261],
+        "yaw": 180,
+        "size": [0.017, 0.019, 0.0098],
+        "colour": "#1d1f21",
+        "name": "tape 7",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [-0.013, 0, -0.0226],
+        "yaw": 210,
+        "size": [0.017, 0.019, 0.0098],
+        "colour": "#1d1f21",
+        "name": "tape 8",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0226, 0, -0.0131],
+        "yaw": 240,
+        "size": [0.017, 0.019, 0.0098],
+        "colour": "#1d1f21",
+        "name": "tape 9",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0261, 0, 0],
+        "yaw": 270,
+        "size": [0.017, 0.019, 0.0098],
+        "colour": "#1d1f21",
+        "name": "tape 10",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0226, 0, 0.013],
+        "yaw": 300,
+        "size": [0.017, 0.019, 0.0098],
+        "colour": "#1d1f21",
+        "name": "tape 11",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0131, 0, 0.0226],
+        "yaw": 330,
+        "size": [0.017, 0.019, 0.0098],
+        "colour": "#1d1f21",
+        "name": "tape 12",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [0.0052, 0, 0.0193],
+        "yaw": 15,
+        "size": [0.0119, 0.0225, 0.003],
+        "colour": "#e6e0d3",
+        "name": "core 1",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [0.0141, 0, 0.0141],
+        "yaw": 45,
+        "size": [0.0119, 0.0225, 0.003],
+        "colour": "#e6e0d3",
+        "name": "core 2",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [0.0193, 0, 0.0052],
+        "yaw": 75,
+        "size": [0.0119, 0.0225, 0.003],
+        "colour": "#e6e0d3",
+        "name": "core 3",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [0.0193, 0, -0.0052],
+        "yaw": 105,
+        "size": [0.0119, 0.0225, 0.003],
+        "colour": "#e6e0d3",
+        "name": "core 4",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [0.0141, 0, -0.0141],
+        "yaw": 135,
+        "size": [0.0119, 0.0225, 0.003],
+        "colour": "#e6e0d3",
+        "name": "core 5",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [0.0052, 0, -0.0193],
+        "yaw": 165,
+        "size": [0.0119, 0.0225, 0.003],
+        "colour": "#e6e0d3",
+        "name": "core 6",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0052, 0, -0.0193],
+        "yaw": 195,
+        "size": [0.0119, 0.0225, 0.003],
+        "colour": "#e6e0d3",
+        "name": "core 7",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0141, 0, -0.0141],
+        "yaw": 225,
+        "size": [0.0119, 0.0225, 0.003],
+        "colour": "#e6e0d3",
+        "name": "core 8",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0193, 0, -0.0052],
+        "yaw": 255,
+        "size": [0.0119, 0.0225, 0.003],
+        "colour": "#e6e0d3",
+        "name": "core 9",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0193, 0, 0.0052],
+        "yaw": 285,
+        "size": [0.0119, 0.0225, 0.003],
+        "colour": "#e6e0d3",
+        "name": "core 10",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0141, 0, 0.0141],
+        "yaw": 315,
+        "size": [0.0119, 0.0225, 0.003],
+        "colour": "#e6e0d3",
+        "name": "core 11",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0052, 0, 0.0193],
+        "yaw": 345,
+        "size": [0.0119, 0.0225, 0.003],
+        "colour": "#e6e0d3",
+        "name": "core 12",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [-0.032, -0.0003, -0.0203],
+        "yaw": 201,
+        "size": [0.03, 0.0184, 0.001],
+        "colour": "#3a3d40",
+        "name": "loose end",
+        "group": "roll"
+      }
+    ]
+  },
+  "category": "Household"
+}

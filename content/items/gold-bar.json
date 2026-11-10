@@ -5,15 +5,101 @@
   "type": "loot",
   "size": [2, 1],
   "value": 80000,
-  "rarity": "legendary",
+  "rarity": "mythic",
   "model": {
     "parts": [
       {
+        "type": "cylinder",
+        "pos": [-0.08, 0, 0],
+        "yaw": 45,
+        "radius": 0.06364,
+        "radiusTop": 0.04525,
+        "height": 0.045,
+        "sides": 4,
+        "colour": "#d4a62a",
+        "name": "cast 1",
+        "group": "ingot"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.02667, 0, 0],
+        "yaw": 45,
+        "radius": 0.06364,
+        "radiusTop": 0.04525,
+        "height": 0.045,
+        "sides": 4,
+        "colour": "#d4a62a",
+        "name": "cast 2",
+        "group": "ingot"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.02667, 0, 0],
+        "yaw": 45,
+        "radius": 0.06364,
+        "radiusTop": 0.04525,
+        "height": 0.045,
+        "sides": 4,
+        "colour": "#d4a62a",
+        "name": "cast 3",
+        "group": "ingot"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.08, 0, 0],
+        "yaw": 45,
+        "radius": 0.06364,
+        "radiusTop": 0.04525,
+        "height": 0.045,
+        "sides": 4,
+        "colour": "#d4a62a",
+        "name": "cast 4",
+        "group": "ingot"
+      },
+      {
         "type": "box",
-        "pos": [0, 0, 0],
-        "size": [0.25, 0.06, 0.1],
-        "colour": "#d4a62a"
+        "pos": [0, 0.023, 0],
+        "size": [0.17, 0.002, 0.046],
+        "colour": "#b0821f",
+        "name": "cartouche",
+        "group": "stamp"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.06, 0.02425, 0],
+        "radius": 0.014,
+        "height": 0.0015,
+        "sides": 8,
+        "colour": "#f0cc63",
+        "name": "assay mark",
+        "group": "stamp"
+      },
+      {
+        "type": "box",
+        "pos": [0.015, 0.02425, -0.012],
+        "size": [0.1, 0.0015, 0.006],
+        "colour": "#f0cc63",
+        "name": "refiner",
+        "group": "stamp"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.02425, 0],
+        "size": [0.07, 0.0015, 0.006],
+        "colour": "#f0cc63",
+        "name": "fineness",
+        "group": "stamp"
+      },
+      {
+        "type": "box",
+        "pos": [0.0075, 0.02425, 0.012],
+        "size": [0.085, 0.0015, 0.006],
+        "colour": "#f0cc63",
+        "name": "serial",
+        "group": "stamp"
       }
     ]
-  }
+  },
+  "view": "frontRight",
+  "category": "Craftwork"
 }

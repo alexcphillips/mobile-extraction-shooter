@@ -6,8 +6,271 @@
   "type": "loot",
   "size": [1, 1],
   "value": 15000,
-  "rarity": "epic",
+  "rarity": "legendary",
   "model": {
-    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#a08a40" }]
-  }
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [-0.00029, 0.00017, -0.00037],
+        "pitch": -70.0,
+        "radius": 0.0205,
+        "height": 0.01,
+        "sides": 12,
+        "colour": "#c99a2e",
+        "name": "case",
+        "group": "case",
+        "yaw": 38.0
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.00405, 0.00239, -0.00519],
+        "pitch": -70.0,
+        "radius": 0.0205,
+        "height": 0.003,
+        "sides": 12,
+        "colour": "#f0cc63",
+        "name": "fluted bezel",
+        "group": "case",
+        "radiusTop": 0.0172,
+        "yaw": 38.0
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.00526, 0.00311, -0.00674],
+        "pitch": -70.0,
+        "radius": 0.0158,
+        "height": 0.0012,
+        "sides": 10,
+        "colour": "#1f5a3a",
+        "name": "dial",
+        "group": "dial",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.00567, 0.00335, -0.00726],
+        "pitch": 20.0,
+        "roll": 0,
+        "size": [0.0016, 0.0285, 0.001],
+        "colour": "#f0cc63",
+        "name": "batons 0",
+        "group": "dial",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.00567, 0.00335, -0.00726],
+        "pitch": 20.0,
+        "roll": 30,
+        "size": [0.0016, 0.0285, 0.001],
+        "colour": "#f0cc63",
+        "name": "batons 30",
+        "group": "dial",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.00567, 0.00335, -0.00726],
+        "pitch": 20.0,
+        "roll": 60,
+        "size": [0.0016, 0.0285, 0.001],
+        "colour": "#f0cc63",
+        "name": "batons 60",
+        "group": "dial",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.00567, 0.00335, -0.00726],
+        "pitch": 20.0,
+        "roll": 90,
+        "size": [0.0016, 0.0285, 0.001],
+        "colour": "#f0cc63",
+        "name": "batons 90",
+        "group": "dial",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.00567, 0.00335, -0.00726],
+        "pitch": 20.0,
+        "roll": 120,
+        "size": [0.0016, 0.0285, 0.001],
+        "colour": "#f0cc63",
+        "name": "batons 120",
+        "group": "dial",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.00567, 0.00335, -0.00726],
+        "pitch": 20.0,
+        "roll": 150,
+        "size": [0.0016, 0.0285, 0.001],
+        "colour": "#f0cc63",
+        "name": "batons 150",
+        "group": "dial",
+        "yaw": 38.0
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.0057, 0.00337, -0.0073],
+        "pitch": -70.0,
+        "radius": 0.0108,
+        "height": 0.0015,
+        "sides": 10,
+        "colour": "#24683f",
+        "name": "inner dial",
+        "group": "dial",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.01622, 0.00376, -0.00045],
+        "pitch": 20.0,
+        "roll": 90,
+        "size": [0.0032, 0.0045, 0.0012],
+        "colour": "#e6e0d3",
+        "name": "date window",
+        "group": "dial",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.00368, 0.01547, -0.0047],
+        "pitch": 20.0,
+        "roll": 0,
+        "size": [0.0042, 0.0028, 0.0012],
+        "colour": "#f0cc63",
+        "name": "crown logo",
+        "group": "dial",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.00403, 0.00541, -0.00921],
+        "pitch": 20.0,
+        "roll": 305,
+        "size": [0.0018, 0.0085, 0.0006],
+        "colour": "#f0cc63",
+        "name": "hour hand",
+        "group": "dial",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.00956, 0.00631, -0.00514],
+        "pitch": 20.0,
+        "roll": 60,
+        "size": [0.0013, 0.0125, 0.0006],
+        "colour": "#f0cc63",
+        "name": "minute hand",
+        "group": "dial",
+        "yaw": 38.0
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.01715, -0.00034, 0.01459],
+        "roll": 90,
+        "radius": 0.0032,
+        "height": 0.0045,
+        "sides": 4,
+        "colour": "#f0cc63",
+        "name": "winding crown",
+        "group": "case",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [0.01048, 0.02069, 0.01341],
+        "pitch": -5.556,
+        "size": [0.019, 0.0034, 0.015968704067246955],
+        "colour": "#c99a2e",
+        "name": "link 1",
+        "group": "bracelet",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [0.01897, 0.01853, 0.02429],
+        "pitch": 23.333,
+        "size": [0.0185, 0.0034, 0.015968704067246955],
+        "colour": "#a87b1d",
+        "name": "link 2",
+        "group": "bracelet",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [0.02577, 0.00997, 0.03299],
+        "pitch": 52.222,
+        "size": [0.019, 0.0034, 0.015968704067246955],
+        "colour": "#c99a2e",
+        "name": "link 3",
+        "group": "bracelet",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [0.02918, -0.00286, 0.03735],
+        "pitch": 81.111,
+        "size": [0.0185, 0.0034, 0.015968704067246955],
+        "colour": "#a87b1d",
+        "name": "link 4",
+        "group": "bracelet",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [0.02835, -0.01676, 0.03628],
+        "pitch": 110.0,
+        "size": [0.019, 0.0034, 0.015968704067246955],
+        "colour": "#c99a2e",
+        "name": "link 5",
+        "group": "bracelet",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [0.02348, -0.02828, 0.03005],
+        "pitch": 138.889,
+        "size": [0.0185, 0.0034, 0.015968704067246955],
+        "colour": "#a87b1d",
+        "name": "link 6",
+        "group": "bracelet",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [0.0158, -0.03455, 0.02022],
+        "pitch": 167.778,
+        "size": [0.019, 0.0034, 0.015968704067246955],
+        "colour": "#c99a2e",
+        "name": "link 7",
+        "group": "bracelet",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [0.0072, -0.03401, 0.00922],
+        "pitch": 196.667,
+        "size": [0.0185, 0.0034, 0.015968704067246955],
+        "colour": "#a87b1d",
+        "name": "link 8",
+        "group": "bracelet",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.00016, -0.02679, -0.0002],
+        "pitch": 225.556,
+        "size": [0.019, 0.0034, 0.015968704067246955],
+        "colour": "#c99a2e",
+        "name": "link 9",
+        "group": "bracelet",
+        "yaw": 38.0
+      }
+    ]
+  },
+  "category": "Craftwork"
 }
