@@ -87,3 +87,88 @@ export function describeSource(s: DamageSource): string {
   const armour = s.absorbed >= 1 ? ` · armour took ${Math.round(s.absorbed)}` : '';
   return `${what} ${times} for ${hp} (${s.zones.join(', ')})${armour}`;
 }
+
+/**
+ * One hit, or one tick's hits (a shotgun's pellets, a blast's zones), between you and an
+ * enemy, either way: the results screen lists the fight with whoever killed you, hit by
+ * hit (2026-11-10). Plain JSON, saved with the raid like DamageLog.
+ */
+export interface FightHit {
+  tick: number;
+  /** The enemy's entity. */
+  other: number;
+  /** You hit them (else they hit you). */
+  dealt: boolean;
+  cause: DamageEvent['cause'];
+  /** Zones hit, by name, in order. */
+  zones: string[];
+  hits: number;
+  damage: number;
+  absorbed: number;
+  /** Their hit that killed you. */
+  killing?: true;
+}
+
+export type FightLog = FightHit[];
+
+/** Enough for any one fight; the oldest go first. */
+const FIGHT_CAP = 500;
+
+/** Records a hit between you and someone else; falls and your own grenade aren't a fight. */
+export function logFight(log: FightLog, e: DamageEvent, you: number, tick: number): void {
+  const dealt = e.by === you;
+  if (dealt === (e.target === you) || e.by === 0) return;
+  // A hit doing nothing (a body already dead, a tutorial dummy) isn't part of it.
+  if (e.amount <= 0 && e.absorbed <= 0) return;
+  const other = dealt ? e.target : e.by;
+  const last = log[log.length - 1];
+  const zone = ZONE_NAMES[e.zone]!;
+  if (
+    last &&
+    last.tick === tick &&
+    last.other === other &&
+    last.dealt === dealt &&
+    last.cause === e.cause
+  ) {
+    if (e.cause !== 'explosion') last.hits++;
+    last.damage += e.amount;
+    last.absorbed += e.absorbed;
+    if (!last.zones.includes(zone)) last.zones.push(zone);
+    return;
+  }
+  log.push({
+    tick,
+    other,
+    dealt,
+    cause: e.cause,
+    zones: [zone],
+    hits: 1,
+    damage: e.amount,
+    absorbed: e.absorbed,
+  });
+  if (log.length > FIGHT_CAP) log.shift();
+}
+
+/** Marks their latest hit on you as the one that killed you. */
+export function logKillingHit(log: FightLog, other: number): void {
+  for (let i = log.length - 1; i >= 0; i--) {
+    const h = log[i]!;
+    if (h.other === other && !h.dealt) {
+      h.killing = true;
+      return;
+    }
+  }
+}
+
+/** The fight with one enemy, newest hit first. */
+export const fightWith = (log: FightLog, other: number): FightHit[] =>
+  log.filter((h) => h.other === other).reverse();
+
+/** One row: "You shot Scav · head, chest ×2 · 48 · armour took 12". */
+export function describeFightHit(h: FightHit, name: string): string {
+  const verb = h.cause === 'melee' ? 'stabbed' : h.cause === 'explosion' ? 'blew up' : 'shot';
+  const who = h.dealt ? `You ${verb} ${name}` : `${name} ${verb} you`;
+  const times = h.hits > 1 ? ` ×${h.hits}` : '';
+  const armour = h.absorbed >= 1 ? ` · armour took ${Math.round(h.absorbed)}` : '';
+  return `${who} · ${h.zones.join(', ')}${times} · ${Math.round(h.damage)}${armour}`;
+}

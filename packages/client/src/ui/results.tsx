@@ -3,6 +3,7 @@ import {
   itemDef,
   raidGains,
   sellPrice,
+  TICK_RATE,
   type Item,
   type ItemDb,
   type LeaveReason,
@@ -10,7 +11,12 @@ import {
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { clock } from '../hud/raid-hud';
-import { describeSource, type DamageLog } from '../play/damage-log';
+import {
+  describeFightHit,
+  describeSource,
+  type DamageLog,
+  type FightHit,
+} from '../play/damage-log';
 import { ItemTile, tallied } from './item-tile';
 
 /** How the raid ended for you, and what you came out with. */
@@ -28,12 +34,29 @@ export interface RaidResult {
   quests: { quest: string; text: string }[];
   /** What hurt you during the raid, shown after a death. */
   taken: DamageLog;
+  /** The fight with the enemy that killed you, newest hit first, if one did (2026-11-10). */
+  fight?: { name: string; hits: FightHit[] } | undefined;
   /** Everything kept: extracted, or the keep-gear admin cheat. */
   keptAll: boolean;
   /** A zombies game (2026-11-04): how far you got. Nothing is kept or lost in one. */
   zombies?: { mode: string; round: number; points: number };
   /** The tutorial (TU-3): nothing is kept or lost in it either. */
   tutorial?: true;
+}
+
+/** The fight with your killer, hit by hit both ways, the latest at the top. */
+function FightRows({ fight }: { fight: NonNullable<RaidResult['fight']> }) {
+  return (
+    <ol className="results-fight">
+      {fight.hits.map((h, i) => (
+        <li key={i} className={`${h.dealt ? 'dealt' : 'taken'}${h.killing ? ' killer' : ''}`}>
+          <span className="results-count">{clock(h.tick / TICK_RATE)}</span>{' '}
+          {describeFightHit(h, fight.name)}
+          {h.killing && <span className="results-count"> · killing blow</span>}
+        </li>
+      ))}
+    </ol>
+  );
 }
 
 const TITLES: Record<RaidResult['how'], string> = {
@@ -141,6 +164,12 @@ function ZombiesResults({
         </p>
         <p className="results-save test">Zombies: nothing from your stash goes in or comes out.</p>
       </header>
+      {result.fight && (
+        <section className="results-damage">
+          <h2>Fight with {result.fight.name}</h2>
+          <FightRows fight={result.fight} />
+        </section>
+      )}
       {result.taken.length > 0 && (
         <section className="results-damage">
           <h2>What hit you</h2>
@@ -258,6 +287,11 @@ function Results({
           </Panel>
         )}
         <Gain items={items} result={result} />
+        {result.how === 'killed' && result.fight && (
+          <Panel title={`Fight with ${result.fight.name}`} className="results-damage">
+            <FightRows fight={result.fight} />
+          </Panel>
+        )}
         {result.how === 'killed' && result.taken.length > 0 && (
           <Panel title="What hit you" className="results-damage">
             <ul>
@@ -301,7 +335,5 @@ export function showResults(
   onNext: () => void,
 ): void {
   container.hidden = false;
-  createRoot(container).render(
-    <Results result={result} items={items} onNext={onNext} />,
-  );
+  createRoot(container).render(<Results result={result} items={items} onNext={onNext} />);
 }

@@ -2588,6 +2588,26 @@ body:has(#raid:not([hidden])) #vitals {
   color: #ff6b5a;
 }
 
+/* The fight with your killer (2026-11-10): newest at the top, yours green, theirs red. */
+.results-fight {
+  max-height: 14em;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.results-fight li {
+  padding: 2px 0 2px 8px;
+  border-left: 3px solid;
+}
+
+.results-fight li.dealt {
+  border-color: #4fd06a;
+}
+
+.results-fight li.taken {
+  border-color: #ff6b5a;
+}
+
 .results ul {
   margin: 0;
   padding: 0;

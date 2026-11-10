@@ -6,7 +6,7 @@ import type {
   StartRaidRequest,
 } from '@mes/shared';
 import { AccountError, call } from './account';
-import type { DamageLog } from './play/damage-log';
+import type { DamageLog, FightLog } from './play/damage-log';
 
 /*
  * Raids on the server (session 12b). A raid starts on the server, which hands back the
@@ -146,6 +146,8 @@ export interface RaidSnapshot {
   kills: number;
   /** What hurt you so far; missing from raids saved before it was kept. */
   taken?: DamageLog;
+  /** Hits between you and enemies; missing from raids saved before 2026-11-10. */
+  fight?: FightLog;
   sim: SimState;
 }
 

@@ -144,7 +144,18 @@ import {
 } from '../admin-cheats';
 import { ZombiesAdmin } from './zombies-admin';
 import { buildDebug } from '../render/debug';
-import { fireKey, logBleed, logBurn, logHit, logKiller, type DamageLog } from './damage-log';
+import {
+  fightWith,
+  fireKey,
+  logBleed,
+  logBurn,
+  logFight,
+  logHit,
+  logKiller,
+  logKillingHit,
+  type DamageLog,
+  type FightLog,
+} from './damage-log';
 import { CapsuleBody } from '../render/capsule-body';
 import { DEFAULT_OUTFIT, loadCharacter } from '../render/character';
 import { CharacterBody, CharacterRig } from '../render/character-body';
@@ -1015,6 +1026,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let killedBy: string | null = null;
   /** What hurt you, for the results screen after a death. */
   const taken: DamageLog = resume?.taken ?? [];
+  /** Hits between you and enemies, for the fight with your killer. */
+  const fight: FightLog = resume?.fight ?? [];
+  /** The enemy that killed you, if one did. */
+  let killerId = 0;
   let ended: RaidResult | null = null;
   let resultsAt = 0;
   // Giving up from the settings screen kills you on the next tick.
@@ -1026,6 +1041,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       // The results screen wants the cursor free.
       controls.cursor.want(false);
     });
+  /** The fight with whoever killed you, newest hit first. */
+  const fightOf = (): RaidResult['fight'] => {
+    const hits = killerId ? fightWith(fight, killerId) : [];
+    return hits.length ? { name: names.get(killerId) ?? 'Someone', hits } : undefined;
+  };
   function endRaid(how: LeaveReason | 'killed', detail: string, now: number): void {
     if (ended) return;
     el.hitDirection.clear();
@@ -1043,6 +1063,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         lost: [],
         quests: [],
         taken,
+        fight: fightOf(),
         keptAll: false,
         tutorial: true,
       };
@@ -1061,6 +1082,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         lost: [],
         quests: [],
         taken,
+        fight: fightOf(),
         keptAll: false,
         zombies: {
           mode: zombiesMode.name,
@@ -1096,6 +1118,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       lost: gearItems(player.gear).filter((i) => !kept.includes(i)),
       quests: done.map((d) => ({ quest: d.quest.name, text: objectiveText(items, d.objective) })),
       taken,
+      fight: fightOf(),
       keptAll: keepAll,
     };
     // Sent now, as it is: the server keeps what the outcome allows.
@@ -1201,6 +1224,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       player: player.id,
       kills,
       taken,
+      fight,
       sim,
     });
   };
@@ -1558,10 +1582,12 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
           const by = e.by === player.id ? 'Your own grenade' : names.get(e.by);
           lastHit = logHit(taken, e, by ?? 'Someone');
         }
+        logFight(fight, e, player.id, sim.tick);
       } else if (e.type === 'death' && e.by === player.id && e.target !== player.id) {
         kills++;
       } else if (e.type === 'death' && e.target === player.id) {
         killedBy = names.get(e.by) ?? null;
+        if (e.by !== 0 && e.by !== player.id) killerId = e.by;
         died = true;
       } else if (e.type === 'leave' && e.by === player.id) {
         const at = sim.raid?.extractions.find((p) => p.id === e.at);
@@ -1624,6 +1650,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     if (lit && player.burn) logBurn(taken, player.burn.by, burnerName(player.burn.by), 0, true);
     // The death event comes before the hit that caused it, so this waits for the loop.
     if (died) logKiller(taken, lastHit);
+    // A hit, not their fire or your bleeding, finished you.
+    if (died && killerId && lastHit.startsWith(`${killerId}:`) && lastHit !== fireKey(killerId))
+      logKillingHit(fight, killerId);
 
     // Gone from the raid: zombies' bodies a few seconds after dying, and PMC squads that
     // extracted (AI rework session 4).
