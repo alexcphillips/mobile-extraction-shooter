@@ -193,10 +193,9 @@ describe('using meds', () => {
     expect(bandages(s.player)).toBe(1);
   });
 
-  it('stops when firing, sprinting, reloading or switching, and nothing is used', () => {
+  it('stops when firing, reloading or switching, and nothing is used', () => {
     const stops: Partial<PlayerInput>[] = [
       { fire: true, pitch: 1 },
-      { sprint: true, moveY: 1 },
       { reload: true },
       { draw: 'knife' },
     ];
@@ -210,6 +209,16 @@ describe('using meds', () => {
       expect(s.player.health.bleeding[LEFT_ARM]).toBe(true);
       expect(bandages(s.player)).toBe(1);
     }
+  });
+
+  it('goes on while moving or sprinting, at walking pace at most', () => {
+    const s = bleeding();
+    s.run(1, input({ use: treatments(s.player, items)[0]! }));
+    s.run(0.5, input({ sprint: true, moveY: 1 }));
+    expect(s.player.using).not.toBeNull();
+    expect(Math.hypot(s.player.vx, s.player.vz)).toBeLessThanOrEqual(MOVEMENT.useSpeed + 1e-6);
+    s.run(1, input({ sprint: true, moveY: 1 }));
+    expect(s.player.health.bleeding[LEFT_ARM]).toBe(false);
   });
 
   it('keeps the gun lowered, and a press to cancel stops it', () => {

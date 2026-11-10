@@ -140,8 +140,8 @@ export function startUse(c: Character, items: ItemDb, ref: MedRef): boolean {
 }
 
 /**
- * One tick of using a med: a press starts or stops one; firing, reloading, sprinting,
- * climbing or putting yourself out stops it; when its time is up it takes effect (useMed). If the med moved in
+ * One tick of using a med: a press starts or stops one; firing, reloading, climbing or
+ * putting yourself out stops it (moving and sprinting don't: you walk slowly, 2026-11-10); when its time is up it takes effect (useMed). If the med moved in
  * the meantime, the first carried one of the same item is used; if there's none, nothing
  * happens.
  */
@@ -164,8 +164,7 @@ export function updateMedUse(
   else if (input?.use) startUse(c, items, input.use);
   const u = c.using;
   if (!u) return;
-  const sprinting = !!input?.sprint && input.moveY > 0 && !input.aim;
-  if (input?.fire || input?.reload || sprinting || c.mode === 'ladder' || c.mode === 'vault') {
+  if (input?.fire || input?.reload || c.mode === 'ladder' || c.mode === 'vault') {
     c.using = null;
     return;
   }

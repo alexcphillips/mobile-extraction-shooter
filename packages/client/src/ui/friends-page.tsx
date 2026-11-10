@@ -1,6 +1,5 @@
 import {
   SOCIAL,
-  type Activity,
   type Friend,
   type FriendsResponse,
   type Party,
@@ -8,34 +7,15 @@ import {
 } from '@mes/shared';
 import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { AccountError } from '../account';
-import {
-  acceptFriend,
-  askFriend,
-  declineFriend,
-  fetchFriends,
-  inviteFriend,
-  unfriend,
-} from '../social';
+import { acceptFriend, askFriend, declineFriend, inviteFriend, unfriend } from '../social';
+import { Avatar, friendLine, useFriends } from './friends';
 
 /*
  * The friends page between raids (docs/coop.md, C1–C2): your friends with what they're
  * doing, requests either way, and adding someone by username. From here a friend can be
- * invited to your party (C3). Refreshed every SOCIAL.heartbeatMs while open.
+ * invited to your party (C3), as from the party drawer, which lists the friends online
+ * (2026-11-10). Refreshed every SOCIAL.heartbeatMs while open.
  */
-
-const ACTIVITY: Record<Friend['activity'], string> = {
-  offline: 'Offline',
-  menu: 'Online',
-  raid: 'In a raid',
-};
-
-function friendLine(f: Friend, party: Party | null): string {
-  const parts = [ACTIVITY[f.activity]];
-  if (f.device && f.activity !== 'offline') parts.push(f.device === 'pc' ? 'PC' : 'phone');
-  if (party?.members.some((m) => m.id === f.id)) parts.push('in your party');
-  else if (f.inParty) parts.push('in a party');
-  return parts.join(' · ');
-}
 
 export function FriendsPage({
   party,
@@ -48,8 +28,8 @@ export function FriendsPage({
   /** A party route's reply: the menu shows it at once. */
   onParty: (p: PartyResponse) => void;
 }): ReactNode {
-  const [data, setData] = useState<FriendsResponse | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [data, setData] = useFriends(setNotice);
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
   // Unfriending asks for a second tap.
@@ -69,26 +49,7 @@ export function FriendsPage({
     } finally {
       setBusy(false);
     }
-  }, []);
-
-  useEffect(() => {
-    let live = true;
-    const load = (): void => {
-      fetchFriends().then(
-        (r) => live && setData(r),
-        (err: unknown) => {
-          if (!(err instanceof AccountError)) throw err;
-          if (live) setNotice(err.message);
-        },
-      );
-    };
-    load();
-    const timer = window.setInterval(load, SOCIAL.heartbeatMs);
-    return () => {
-      live = false;
-      clearInterval(timer);
-    };
-  }, []);
+  }, [setData]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
@@ -161,7 +122,9 @@ export function FriendsPage({
               Add
             </button>
           </form>
-          <p className="raid-note">Or send them your party's invite link from the menu.</p>
+          <p className="raid-note">
+            Or send them your party's invite link from the Party button on the menu.
+          </p>
           {data && data.incoming.length > 0 && (
             <>
               <h3 className="friends-sub">Asking to be your friend</h3>
@@ -239,15 +202,5 @@ export function FriendsPage({
         </section>
       </div>
     </div>
-  );
-}
-
-/** A player's initial in a square, with a dot for where they are: offline, in the menu, in a raid. */
-function Avatar({ name, activity }: { name: string; activity?: Activity }): ReactNode {
-  return (
-    <span className="friends-avatar" aria-hidden>
-      {name[0]?.toUpperCase()}
-      {activity && <span className={`friends-dot ${activity}`} />}
-    </span>
   );
 }

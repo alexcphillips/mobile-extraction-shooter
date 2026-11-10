@@ -899,6 +899,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
             onParty={setPartyRes}
             onNotice={setNotice}
             onTest={startTest}
+            onFriends={() => setPage('friends')}
           />
           {testReport && (
             <ConnTestPanel

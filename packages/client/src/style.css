@@ -4278,6 +4278,30 @@ body.inv-dragging .item-details.panel {
   color: #9aa6b0;
 }
 
+/* The party drawer's friends online, each with a + to invite (2026-11-10). */
+.party-friends {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--ui-line);
+}
+
+.party-friends .friends-list .vendors-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.menu .party button.party-add {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+}
+
 /* The friends page (co-op C1–C2). */
 /* The friends page (restyled 2026-11-06): adding and requests, and your friends, as panels. */
 .friends-layout {

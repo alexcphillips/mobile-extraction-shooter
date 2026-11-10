@@ -19,7 +19,7 @@ import { startBodies } from './bodies';
 import { startPerfTest } from './perf';
 import { readParams } from './perf/params';
 import { mountPresets } from './perf/presets';
-import { AccountError, fetchProfile, isAdmin, onAdminChange, syncSettings } from './account';
+import { AccountError, fetchProfile, syncSettings } from './account';
 import type { CoopOptions } from './play/coop';
 import { joinCodeIn } from './social';
 import { startPlay, type PlayElements, type PlayOptions } from './play';
@@ -99,15 +99,14 @@ byId('settings-button').addEventListener('click', () => {
     .catch((err: unknown) => (status.textContent = `settings failed: ${message(err)}`));
 });
 
-// The fps, timings and enemy overlay: admins only (2026-11-09), and the dev-only pages.
+// The fps, timings and enemy overlay: dev builds only (2026-11-10), never in prod.
 const showStats = (): void => {
-  const on = (isAdmin || import.meta.env.DEV) && settings.current.showStats;
+  const on = import.meta.env.DEV && settings.current.showStats;
   byId('stats').hidden = !on;
   byId('server').hidden = !on;
 };
 showStats();
 settings.subscribe(showStats);
-onAdminChange(showStats);
 
 // iOS sets navigator.standalone when opened from the home screen.
 const standalone =
