@@ -147,6 +147,11 @@ export class Controls {
   private crouchTapAt = -Infinity;
   /** Prone is a toggle on both: X, or holding the crouch button. */
   private proneOn = false;
+  /** Last update's wish to crouch (or be prone) and to sprint, to tell which came last. */
+  private crouchWanted = false;
+  private sprintWanted = false;
+  /** Crouched mid-sprint: sprint stays off until it's let go, or you stand. */
+  private sprintHeldOff = false;
   private touchAim = false;
   /** The lean from the buttons, or toggled with Q and E: −1, 0 or 1. */
   private leanOn = 0;
@@ -262,6 +267,18 @@ export class Controls {
     if (this.aim || this.fire) this.sprint = false;
     // Firing ends sprint lock, as aiming does.
     if (this.fire && this.sprintLocked) this.setSprintLock(false);
+    // Whichever came last of sprinting and crouching wins (2026-11-10, the user's call):
+    // starting to sprint stands you up; crouching or going prone mid-sprint stops the
+    // sprint until sprint is let go or you stand again.
+    const crouchWanted =
+      this.crouchOn || this.proneOn || (settings.current.crouch === 'hold' && k.has('KeyC'));
+    const sprintWanted = this.sprint && this.moveY > 0;
+    if (crouchWanted && !this.crouchWanted && sprintWanted) this.sprintHeldOff = true;
+    else if (sprintWanted && !this.sprintWanted) this.sprintHeldOff = false;
+    if (!sprintWanted || !crouchWanted) this.sprintHeldOff = false;
+    this.crouchWanted = crouchWanted;
+    this.sprintWanted = sprintWanted;
+    if (this.sprintHeldOff) this.sprint = false;
     // Sprinting turns the crouch and lean toggles off (the sim only sprints forwards).
     if (this.sprint && this.moveY > 0) {
       if (this.crouchOn) this.setCrouch(false);
