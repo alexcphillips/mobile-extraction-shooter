@@ -280,7 +280,7 @@ function kindOf(def: ItemDef): string {
     case 'quest':
       return 'Quest item';
     case 'loot':
-      // Only loot has a category (2026-11-09), shown as written ("Tool & Material"); keys,
+      // Only loot has a category (2026-11-09), shown as written ("Industrial"); keys,
       // guns, armour and the rest show their kind.
       if (def.money) return 'Money';
       return def.category ?? 'Loot';

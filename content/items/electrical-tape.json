@@ -5,7 +5,7 @@
   "type": "loot",
   "size": [1, 1],
   "value": 1000,
-  "rarity": "uncommon",
+  "rarity": "common",
   "model": {
     "parts": [
       {

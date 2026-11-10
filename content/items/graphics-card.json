@@ -12,10 +12,207 @@
     "parts": [
       {
         "type": "box",
-        "pos": [0, 0, 0],
-        "size": [0.27, 0.05, 0.12],
-        "colour": "#2b2e31"
+        "pos": [0.001, 0.002, 0],
+        "size": [0.262, 0.004, 0.108],
+        "colour": "#3a3d40",
+        "name": "backplate",
+        "group": "board"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0043, 0],
+        "size": [0.27, 0.0016, 0.112],
+        "colour": "#141516",
+        "name": "pcb",
+        "group": "board"
+      },
+      {
+        "type": "box",
+        "pos": [-0.03, 0.0043, 0.059],
+        "size": [0.085, 0.0012, 0.01],
+        "colour": "#c8a24b",
+        "name": "pcie fingers",
+        "group": "board"
+      },
+      {
+        "type": "box",
+        "pos": [-0.137, 0.021, 0],
+        "size": [0.0016, 0.04, 0.12],
+        "colour": "#8d8f91",
+        "name": "bracket",
+        "group": "bracket"
+      },
+      {
+        "type": "box",
+        "pos": [-0.1388, 0.022, 0.006],
+        "size": [0.002, 0.01, 0.07],
+        "colour": "#141516",
+        "name": "ports",
+        "group": "bracket"
+      },
+      {
+        "type": "box",
+        "pos": [0.004, 0.0195, 0],
+        "size": [0.258, 0.029, 0.114],
+        "colour": "#2b2d2f",
+        "name": "shroud",
+        "group": "shroud"
+      },
+      {
+        "type": "box",
+        "pos": [0.108, 0.034, -0.052],
+        "size": [0.022, 0.009, 0.009],
+        "colour": "#141516",
+        "name": "power plug",
+        "group": "shroud"
+      },
+      {
+        "type": "box",
+        "pos": [-0.077, 0.0335, -0.0565],
+        "size": [0.046, 0.005, 0.005],
+        "colour": "#20f0ff",
+        "name": "rgb 1",
+        "group": "rgb"
+      },
+      {
+        "type": "box",
+        "pos": [-0.031, 0.0335, -0.0565],
+        "size": [0.046, 0.005, 0.005],
+        "colour": "#2a6bff",
+        "name": "rgb 2",
+        "group": "rgb"
+      },
+      {
+        "type": "box",
+        "pos": [0.015, 0.0335, -0.0565],
+        "size": [0.046, 0.005, 0.005],
+        "colour": "#b02cff",
+        "name": "rgb 3",
+        "group": "rgb"
+      },
+      {
+        "type": "box",
+        "pos": [0.061, 0.0335, -0.0565],
+        "size": [0.046, 0.005, 0.005],
+        "colour": "#ff2a7a",
+        "name": "rgb 4",
+        "group": "rgb"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.058, 0.035, 0.005],
+        "radius": 0.046,
+        "height": 0.003,
+        "sides": 10,
+        "colour": "#20f0ff",
+        "name": "ring",
+        "group": "fan 1"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.058, 0.036, 0.005],
+        "radius": 0.041,
+        "height": 0.003,
+        "sides": 10,
+        "colour": "#141516",
+        "name": "recess",
+        "group": "fan 1"
+      },
+      {
+        "type": "box",
+        "pos": [-0.058, 0.0377, 0.005],
+        "size": [0.078, 0.0015, 0.013],
+        "colour": "#4a4d50",
+        "name": "blades 0",
+        "group": "fan 1",
+        "yaw": 15
+      },
+      {
+        "type": "box",
+        "pos": [-0.058, 0.0379, 0.005],
+        "size": [0.078, 0.0015, 0.013],
+        "colour": "#4a4d50",
+        "name": "blades 60",
+        "group": "fan 1",
+        "yaw": 75
+      },
+      {
+        "type": "box",
+        "pos": [-0.058, 0.038, 0.005],
+        "size": [0.078, 0.0015, 0.013],
+        "colour": "#4a4d50",
+        "name": "blades 120",
+        "group": "fan 1",
+        "yaw": 135
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.058, 0.0385, 0.005],
+        "radius": 0.011,
+        "height": 0.004,
+        "sides": 6,
+        "colour": "#1d1f21",
+        "name": "hub",
+        "group": "fan 1"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.066, 0.035, 0.005],
+        "radius": 0.046,
+        "height": 0.003,
+        "sides": 10,
+        "colour": "#ff2a7a",
+        "name": "ring",
+        "group": "fan 2"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.066, 0.036, 0.005],
+        "radius": 0.041,
+        "height": 0.003,
+        "sides": 10,
+        "colour": "#141516",
+        "name": "recess",
+        "group": "fan 2"
+      },
+      {
+        "type": "box",
+        "pos": [0.066, 0.0377, 0.005],
+        "size": [0.078, 0.0015, 0.013],
+        "colour": "#4a4d50",
+        "name": "blades 0",
+        "group": "fan 2",
+        "yaw": 30
+      },
+      {
+        "type": "box",
+        "pos": [0.066, 0.0379, 0.005],
+        "size": [0.078, 0.0015, 0.013],
+        "colour": "#4a4d50",
+        "name": "blades 60",
+        "group": "fan 2",
+        "yaw": 90
+      },
+      {
+        "type": "box",
+        "pos": [0.066, 0.038, 0.005],
+        "size": [0.078, 0.0015, 0.013],
+        "colour": "#4a4d50",
+        "name": "blades 120",
+        "group": "fan 2",
+        "yaw": 150
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.066, 0.0385, 0.005],
+        "radius": 0.011,
+        "height": 0.004,
+        "sides": 6,
+        "colour": "#1d1f21",
+        "name": "hub",
+        "group": "fan 2"
       }
     ]
-  }
+  },
+  "view": "top"
 }

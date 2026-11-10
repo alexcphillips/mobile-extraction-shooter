@@ -1,0 +1,248 @@
+{
+  "formatVersion": 10,
+  "id": "duct-tape",
+  "name": "Duct tape",
+  "type": "loot",
+  "size": [1, 1],
+  "value": 800,
+  "rarity": "common",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0.0, 0, 0.044],
+        "yaw": 0.0,
+        "size": [0.0268, 0.048, 0.012],
+        "colour": "#9a9da0",
+        "name": "tape 1",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [0.022, 0, 0.0381],
+        "yaw": 30.0,
+        "size": [0.0268, 0.048, 0.012],
+        "colour": "#9a9da0",
+        "name": "tape 2",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [0.0381, 0, 0.022],
+        "yaw": 60.0,
+        "size": [0.0268, 0.048, 0.012],
+        "colour": "#9a9da0",
+        "name": "tape 3",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [0.044, 0, 0.0],
+        "yaw": 90.0,
+        "size": [0.0268, 0.048, 0.012],
+        "colour": "#9a9da0",
+        "name": "tape 4",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [0.0381, 0, -0.022],
+        "yaw": 120.0,
+        "size": [0.0268, 0.048, 0.012],
+        "colour": "#9a9da0",
+        "name": "tape 5",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [0.022, 0, -0.0381],
+        "yaw": 150.0,
+        "size": [0.0268, 0.048, 0.012],
+        "colour": "#9a9da0",
+        "name": "tape 6",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [0.0, 0, -0.044],
+        "yaw": 180.0,
+        "size": [0.0268, 0.048, 0.012],
+        "colour": "#9a9da0",
+        "name": "tape 7",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [-0.022, 0, -0.0381],
+        "yaw": 210.0,
+        "size": [0.0268, 0.048, 0.012],
+        "colour": "#9a9da0",
+        "name": "tape 8",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0381, 0, -0.022],
+        "yaw": 240.0,
+        "size": [0.0268, 0.048, 0.012],
+        "colour": "#9a9da0",
+        "name": "tape 9",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [-0.044, 0, -0.0],
+        "yaw": 270.0,
+        "size": [0.0268, 0.048, 0.012],
+        "colour": "#9a9da0",
+        "name": "tape 10",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0381, 0, 0.022],
+        "yaw": 300.0,
+        "size": [0.0268, 0.048, 0.012],
+        "colour": "#9a9da0",
+        "name": "tape 11",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [-0.022, 0, 0.0381],
+        "yaw": 330.0,
+        "size": [0.0268, 0.048, 0.012],
+        "colour": "#9a9da0",
+        "name": "tape 12",
+        "group": "roll"
+      },
+      {
+        "type": "box",
+        "pos": [0.0097, 0, 0.0362],
+        "yaw": 15.0,
+        "size": [0.0212, 0.05, 0.004],
+        "colour": "#b49a6c",
+        "name": "core 1",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [0.0265, 0, 0.0265],
+        "yaw": 45.0,
+        "size": [0.0212, 0.05, 0.004],
+        "colour": "#b49a6c",
+        "name": "core 2",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [0.0362, 0, 0.0097],
+        "yaw": 75.0,
+        "size": [0.0212, 0.05, 0.004],
+        "colour": "#b49a6c",
+        "name": "core 3",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [0.0362, 0, -0.0097],
+        "yaw": 105.0,
+        "size": [0.0212, 0.05, 0.004],
+        "colour": "#b49a6c",
+        "name": "core 4",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [0.0265, 0, -0.0265],
+        "yaw": 135.0,
+        "size": [0.0212, 0.05, 0.004],
+        "colour": "#b49a6c",
+        "name": "core 5",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [0.0097, 0, -0.0362],
+        "yaw": 165.0,
+        "size": [0.0212, 0.05, 0.004],
+        "colour": "#b49a6c",
+        "name": "core 6",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0097, 0, -0.0362],
+        "yaw": 195.0,
+        "size": [0.0212, 0.05, 0.004],
+        "colour": "#b49a6c",
+        "name": "core 7",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0265, 0, -0.0265],
+        "yaw": 225.0,
+        "size": [0.0212, 0.05, 0.004],
+        "colour": "#b49a6c",
+        "name": "core 8",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0362, 0, -0.0097],
+        "yaw": 255.0,
+        "size": [0.0212, 0.05, 0.004],
+        "colour": "#b49a6c",
+        "name": "core 9",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0362, 0, 0.0097],
+        "yaw": 285.0,
+        "size": [0.0212, 0.05, 0.004],
+        "colour": "#b49a6c",
+        "name": "core 10",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0265, 0, 0.0265],
+        "yaw": 315.0,
+        "size": [0.0212, 0.05, 0.004],
+        "colour": "#b49a6c",
+        "name": "core 11",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0097, 0, 0.0362],
+        "yaw": 345.0,
+        "size": [0.0212, 0.05, 0.004],
+        "colour": "#b49a6c",
+        "name": "core 12",
+        "group": "core"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0312, -0.0, -0.0395],
+        "yaw": 208.0,
+        "size": [0.032, 0.047, 0.0012],
+        "colour": "#7f8285",
+        "name": "flap 1",
+        "group": "flap"
+      },
+      {
+        "type": "box",
+        "pos": [-0.055, -0.0005, -0.0233],
+        "yaw": 222.0,
+        "size": [0.026, 0.046, 0.0012],
+        "colour": "#7f8285",
+        "name": "flap 2",
+        "group": "flap"
+      }
+    ]
+  },
+  "category": "Household"
+}

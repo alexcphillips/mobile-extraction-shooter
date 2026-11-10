@@ -1,0 +1,236 @@
+{
+  "formatVersion": 10,
+  "id": "pressure-gauge",
+  "name": "Pressure gauge",
+  "type": "loot",
+  "size": [1, 2],
+  "value": 1000,
+  "rarity": "uncommon",
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0.0, 0, 0.0],
+        "radius": 0.05,
+        "height": 0.032,
+        "sides": 12,
+        "colour": "#8d8f91",
+        "name": "case",
+        "group": "case",
+        "pitch": -90,
+        "yaw": 38.0
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.01047, 0, -0.0134],
+        "radius": 0.052,
+        "height": 0.006,
+        "sides": 12,
+        "colour": "#c4c7c9",
+        "name": "bezel",
+        "group": "case",
+        "pitch": -90,
+        "radiusTop": 0.048,
+        "yaw": 38.0
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.01201, 0, -0.01537],
+        "radius": 0.044,
+        "height": 0.002,
+        "sides": 10,
+        "colour": "#e6e0d3",
+        "name": "dial",
+        "group": "dial",
+        "pitch": -90,
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [0.00602, -0.02404, -0.03135],
+        "size": [0.0018, 0.008, 0.0012],
+        "colour": "#1d1f21",
+        "name": "tick 0",
+        "group": "dial",
+        "roll": -135,
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [0.01386, 0.0, -0.03748],
+        "size": [0.0018, 0.008, 0.0012],
+        "colour": "#1d1f21",
+        "name": "tick 1",
+        "group": "dial",
+        "roll": -90,
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [0.00602, 0.02404, -0.03135],
+        "size": [0.0018, 0.008, 0.0012],
+        "colour": "#1d1f21",
+        "name": "tick 2",
+        "group": "dial",
+        "roll": -45,
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.01293, 0.034, -0.01655],
+        "size": [0.0018, 0.008, 0.0012],
+        "colour": "#1d1f21",
+        "name": "tick 3",
+        "group": "dial",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.03187, 0.02404, -0.00175],
+        "size": [0.0018, 0.008, 0.0012],
+        "colour": "#1d1f21",
+        "name": "tick 4",
+        "group": "dial",
+        "roll": 45,
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.03972, 0.0, 0.00438],
+        "size": [0.0018, 0.008, 0.0012],
+        "colour": "#1d1f21",
+        "name": "tick 5",
+        "group": "dial",
+        "roll": 90,
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.03187, -0.02404, -0.00175],
+        "size": [0.0018, 0.008, 0.0012],
+        "colour": "#1d1f21",
+        "name": "tick 6",
+        "group": "dial",
+        "roll": 135,
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.04347, -0.0104, 0.00744],
+        "size": [0.0088, 0.003, 0.001],
+        "colour": "#c0281c",
+        "name": "red zone 0",
+        "group": "dial",
+        "roll": 105,
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.04109, -0.01825, 0.00558],
+        "size": [0.0088, 0.003, 0.001],
+        "colour": "#c0281c",
+        "name": "red zone 1",
+        "group": "dial",
+        "roll": 117,
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.03749, -0.0253, 0.00276],
+        "size": [0.0088, 0.003, 0.001],
+        "colour": "#c0281c",
+        "name": "red zone 2",
+        "group": "dial",
+        "roll": 129,
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.01287, -0.017, -0.01647],
+        "size": [0.016, 0.0028, 0.001],
+        "colour": "#5a5d60",
+        "name": "label",
+        "group": "dial",
+        "yaw": 38.0
+      },
+      {
+        "type": "box",
+        "pos": [-0.01975, 0.00919, -0.01274],
+        "size": [0.0022, 0.036, 0.001],
+        "colour": "#141516",
+        "name": "needle",
+        "group": "dial",
+        "roll": 40,
+        "yaw": 38.0
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.01428, 0, -0.01828],
+        "radius": 0.004,
+        "height": 0.002,
+        "sides": 6,
+        "colour": "#3a3d40",
+        "name": "hub",
+        "group": "dial",
+        "pitch": -90,
+        "yaw": 38.0
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0, 0.05, 0.0],
+        "radius": 0.004,
+        "height": 0.008,
+        "sides": 6,
+        "colour": "#1d1f21",
+        "name": "fill plug",
+        "group": "case",
+        "yaw": 38.0
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0, -0.0555, 0.0],
+        "radius": 0.007,
+        "height": 0.019,
+        "sides": 6,
+        "colour": "#8f7130",
+        "name": "neck",
+        "group": "stem",
+        "yaw": 38.0
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0, -0.069, 0.0],
+        "radius": 0.011,
+        "height": 0.01,
+        "sides": 6,
+        "colour": "#b08d3c",
+        "name": "hex",
+        "group": "stem",
+        "yaw": 38.0
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0, -0.081, 0.0],
+        "radius": 0.0065,
+        "height": 0.016,
+        "sides": 8,
+        "colour": "#8a6d2c",
+        "name": "thread",
+        "group": "stem",
+        "yaw": 38.0
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0, -0.0893, 0.0],
+        "radius": 0.003,
+        "height": 0.001,
+        "sides": 5,
+        "colour": "#141516",
+        "name": "bore",
+        "group": "stem",
+        "yaw": 38.0
+      }
+    ]
+  },
+  "category": "Industrial"
+}

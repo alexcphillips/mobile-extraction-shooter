@@ -721,7 +721,7 @@ const lootSchema = z.strictObject({
   money: z.literal(true).optional(),
   /**
    * What kind of loot it is (2026-11-09), a name as shown, in title case: "Electronics",
-   * "Tool & Material". Item details shows it as written in place of "Loot". Any name: the
+   * "Industrial". Item details shows it as written in place of "Loot". Any name: the
    * item editor offers the ones items already use and makes new ones. Set on the item, not
    * taken from its loot tables, since one item is in several tables. Left out, it shows as
    * "Loot".
