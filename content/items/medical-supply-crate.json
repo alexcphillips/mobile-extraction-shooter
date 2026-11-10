@@ -14,10 +14,172 @@
   "model": {
     "parts": [
       {
+        "type": "slab",
+        "pos": [0, -0.045, 0],
+        "size": [0.44, 0.17, 0.3],
+        "corners": [0.03, 0.03, 0.03, 0.03],
+        "segments": 2,
+        "colour": "#d6d0c2",
+        "name": "body",
+        "group": "shell"
+      },
+      {
+        "type": "slab",
+        "pos": [0, 0.044, 0],
+        "size": [0.444, 0.008, 0.304],
+        "corners": [0.032, 0.032, 0.032, 0.032],
+        "segments": 2,
+        "colour": "#1d1f21",
+        "name": "seam",
+        "group": "shell"
+      },
+      {
+        "type": "slab",
+        "pos": [0, 0.088, 0],
+        "size": [0.438, 0.08, 0.298],
+        "corners": [0.029, 0.029, 0.029, 0.029],
+        "segments": 2,
+        "colour": "#e6e0d3",
+        "name": "lid",
+        "group": "shell"
+      },
+      {
+        "type": "slab",
+        "pos": [0, -0.11, 0],
+        "size": [0.446, 0.014, 0.306],
+        "corners": [0.033, 0.033, 0.033, 0.033],
+        "segments": 2,
+        "colour": "#3a3d40",
+        "name": "bumper",
+        "group": "shell"
+      },
+      {
         "type": "box",
-        "pos": [0, 0, 0],
-        "size": [0.14, 0.07, 0.14],
-        "colour": "#b04848"
+        "pos": [-0.17, -0.137, -0.11],
+        "size": [0.05, 0.014, 0.05],
+        "colour": "#1d1f21",
+        "name": "foot 1",
+        "group": "shell"
+      },
+      {
+        "type": "box",
+        "pos": [0.17, -0.137, -0.11],
+        "size": [0.05, 0.014, 0.05],
+        "colour": "#1d1f21",
+        "name": "foot 2",
+        "group": "shell"
+      },
+      {
+        "type": "box",
+        "pos": [-0.17, -0.137, 0.11],
+        "size": [0.05, 0.014, 0.05],
+        "colour": "#1d1f21",
+        "name": "foot 3",
+        "group": "shell"
+      },
+      {
+        "type": "box",
+        "pos": [0.17, -0.137, 0.11],
+        "size": [0.05, 0.014, 0.05],
+        "colour": "#1d1f21",
+        "name": "foot 4",
+        "group": "shell"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.129, 0],
+        "size": [0.13, 0.002, 0.042],
+        "colour": "#b33a32",
+        "name": "top cross bar",
+        "group": "marks"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.1295, 0],
+        "size": [0.042, 0.003, 0.13],
+        "colour": "#b33a32",
+        "name": "top cross post",
+        "group": "marks"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.035, -0.151],
+        "size": [0.08, 0.026, 0.002],
+        "colour": "#b33a32",
+        "name": "front cross bar",
+        "group": "marks"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.035, -0.1515],
+        "size": [0.026, 0.08, 0.003],
+        "colour": "#b33a32",
+        "name": "front cross post",
+        "group": "marks"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.088, -0.1495],
+        "size": [0.15, 0.012, 0.002],
+        "colour": "#3a3d40",
+        "name": "stencil",
+        "group": "marks"
+      },
+      {
+        "type": "box",
+        "pos": [-0.135, 0.044, -0.157],
+        "size": [0.044, 0.06, 0.012],
+        "colour": "#1d1f21",
+        "name": "latch left",
+        "group": "latches"
+      },
+      {
+        "type": "box",
+        "pos": [-0.135, 0.062, -0.1635],
+        "size": [0.024, 0.012, 0.002],
+        "colour": "#8d8f91",
+        "name": "hasp left",
+        "group": "latches"
+      },
+      {
+        "type": "box",
+        "pos": [0.135, 0.044, -0.157],
+        "size": [0.044, 0.06, 0.012],
+        "colour": "#1d1f21",
+        "name": "latch right",
+        "group": "latches"
+      },
+      {
+        "type": "box",
+        "pos": [0.135, 0.062, -0.1635],
+        "size": [0.024, 0.012, 0.002],
+        "colour": "#8d8f91",
+        "name": "hasp right",
+        "group": "latches"
+      },
+      {
+        "type": "box",
+        "pos": [-0.231, -0.01, -0.07],
+        "size": [0.022, 0.022, 0.022],
+        "colour": "#1d1f21",
+        "name": "handle post front",
+        "group": "handle"
+      },
+      {
+        "type": "box",
+        "pos": [-0.231, -0.01, 0.07],
+        "size": [0.022, 0.022, 0.022],
+        "colour": "#1d1f21",
+        "name": "handle post back",
+        "group": "handle"
+      },
+      {
+        "type": "box",
+        "pos": [-0.243, -0.01, 0],
+        "size": [0.014, 0.02, 0.17],
+        "colour": "#1d1f21",
+        "name": "handle grip",
+        "group": "handle"
       }
     ]
   },

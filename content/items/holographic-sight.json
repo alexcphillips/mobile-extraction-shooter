@@ -80,8 +80,8 @@
     "reticle": {
       "colour": "#ff3b30",
       "shapes": [
-        { "type": "dot", "x": 0, "y": 0, "r": 0.3 },
-        { "type": "ring", "x": 0, "y": 0, "r": 3, "width": 0.3 }
+        { "type": "dot", "x": 0, "y": 0, "r": 0.2 },
+        { "type": "ring", "x": 0, "y": 0, "r": 2.8, "width": 0.3 }
       ]
     }
   },

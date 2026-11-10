@@ -157,17 +157,32 @@ describe('content', () => {
       const { parts, sight } = def.model;
       const named = (name: string) =>
         parts.filter((p) => p.name === name).flatMap((p) => (p.type === 'box' ? [p] : []));
+      // A post is an upright box or an upright frustum (the MP7's trapezoid post).
+      const conePosts = parts.flatMap((p) =>
+        p.type === 'cylinder' && p.name === 'front sight post' && !p.pitch && !p.roll
+          ? [p.pos[1] + p.height / 2]
+          : [],
+      );
       const posts = [...named('front sight post'), ...named('front bead')];
-      if (!posts.length) continue;
+      if (!posts.length && !conePosts.length) continue;
       guns++;
       const top = (p: { pos: readonly number[]; size: readonly number[] }) =>
         p.pos[1]! + p.size[1]! / 2;
       for (const p of posts) expect(top(p), `${def.id} front post`).toBeCloseTo(sight[1], 3);
+      for (const t of conePosts) expect(t, `${def.id} front post`).toBeCloseTo(sight[1], 3);
       for (const p of named('rear sight ear'))
         expect(top(p), `${def.id} rear notch`).toBeCloseTo(sight[1], 3);
-      // An aperture's side bars are centred on the line.
-      for (const p of named('rear sight ring').filter((p) => p.size[1] > p.size[0]))
-        expect(p.pos[1], `${def.id} rear ring`).toBeCloseTo(sight[1], 3);
+      const ring = named('rear sight ring');
+      if (ring.some((p) => p.roll)) {
+        // A round aperture (boxes rolled round a circle) is centred on the line.
+        const mean = (i: number) => ring.reduce((s, p) => s + p.pos[i]!, 0) / ring.length;
+        expect(mean(0), `${def.id} rear ring x`).toBeCloseTo(sight[0], 3);
+        expect(mean(1), `${def.id} rear ring y`).toBeCloseTo(sight[1], 3);
+      } else {
+        // A square aperture's side bars are centred on the line.
+        for (const p of ring.filter((p) => p.size[1] > p.size[0]))
+          expect(p.pos[1], `${def.id} rear ring`).toBeCloseTo(sight[1], 3);
+      }
     }
     expect(guns).toBeGreaterThanOrEqual(30);
   });
