@@ -498,3 +498,12 @@ body.item-editor #scene {
 .ie-reference input[type='file'] {
   max-width: 190px;
 }
+
+/* Loot's categories sit indented under the loot heading. */
+.ie-sub {
+  padding-left: 1.2em;
+}
+
+.ie-sub h4 {
+  margin-top: 2px;
+}

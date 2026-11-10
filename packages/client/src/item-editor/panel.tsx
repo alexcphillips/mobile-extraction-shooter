@@ -16,7 +16,7 @@ import {
   type ItemDef,
   type WeaponDef,
 } from '@mes/shared';
-import { useMemo, useState, useSyncExternalStore } from 'react';
+import { useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { sounds } from '../audio/sounds';
 import { itemUses, soundSources } from '../content';
 import { C, Check, N, P, Row, put, type Bound } from '../editor/bound-fields';
@@ -145,12 +145,16 @@ function ItemList({ state: s, editor }: { state: ItemEditorState; editor: ItemEd
     setOpenTypes(next);
   };
   // Opening an item (from the list, a fit, New or Copy) opens its type, so it can be seen.
-  // Only when the open item's type changes, so closing that type afterwards sticks.
-  const currentType = s.items.get(s.current)?.type;
-  const [seenType, setSeenType] = useState<string | undefined>(undefined);
-  if (currentType !== seenType) {
-    setSeenType(currentType);
-    if (currentType && !open.has(currentType)) setOpen(new Set(open).add(currentType));
+  // Only when the open item's type (or loot category) changes, so closing that type afterwards sticks.
+  // Loot also opens its category, keyed 'loot/<category>' ('loot/' for none).
+  const cur = s.items.get(s.current);
+  const currentType = cur?.type;
+  const currentGroup = cur?.type === 'loot' ? `loot/${cur.category ?? ''}` : currentType;
+  const [seenGroup, setSeenGroup] = useState<string | undefined>(undefined);
+  if (currentGroup !== seenGroup) {
+    setSeenGroup(currentGroup);
+    const want = [currentType, currentGroup].filter((k): k is string => !!k && !open.has(k));
+    if (want.length) setOpen(new Set([...open, ...want]));
   }
   const f = filter.trim().toLowerCase();
   const all = [...s.items.values()].filter(
@@ -168,45 +172,114 @@ function ItemList({ state: s, editor }: { state: ItemEditorState; editor: ItemEd
         {ITEM_TYPES.map((type) => {
           const of = all.filter((d) => d.type === type).sort((a, b) => a.id.localeCompare(b.id));
           if (!of.length) return null;
-          // A search shows every match, whatever is closed.
-          const shown = !!f || open.has(type);
           return (
-            <div key={type}>
-              <h4>
-                <button
-                  className="ie-type"
-                  aria-expanded={shown}
-                  disabled={!!f}
-                  onClick={() => toggle(type)}
-                >
-                  <span className="ie-caret">{shown ? '▾' : '▸'}</span>
-                  {type} <span className="ie-count">{of.length}</span>
-                  {of.some((d) => s.unsaved.includes(d.id)) && <span className="ie-dot"> ●</span>}
-                  {of.some((d) => s.problems.has(d.id)) && <span className="ed-problem"> !</span>}
-                </button>
-              </h4>
-              {shown && (
-                <ul className="ed-list">
-                  {of.map((d) => (
-                    <li
-                      key={d.id}
-                      className={d.id === s.current ? 'ed-on' : undefined}
-                      onClick={() => editor.select(d.id)}
-                      title={s.problems.get(d.id) ?? d.id}
-                    >
-                      <span className="ie-swatch" style={{ background: colourOf(d) }} />
-                      {d.name}
-                      {s.unsaved.includes(d.id) && <span className="ie-dot"> ●</span>}
-                      {s.problems.has(d.id) && <span className="ed-problem"> !</span>}
-                    </li>
-                  ))}
-                </ul>
+            <ItemGroup
+              key={type}
+              label={type}
+              of={of}
+              state={s}
+              // A search shows every match, whatever is closed.
+              shown={!!f || open.has(type)}
+              searching={!!f}
+              onToggle={() => toggle(type)}
+            >
+              {type === 'loot' ? (
+                // Loot is long, so it's split by loot category, each opening on its own.
+                <div className="ie-sub">
+                  {lootGroups(of).map(([category, items]) => {
+                    const key = `loot/${category}`;
+                    return (
+                      <ItemGroup
+                        key={key}
+                        label={category || 'no category'}
+                        of={items}
+                        state={s}
+                        shown={!!f || open.has(key)}
+                        searching={!!f}
+                        onToggle={() => toggle(key)}
+                      >
+                        <ItemRows of={items} state={s} editor={editor} />
+                      </ItemGroup>
+                    );
+                  })}
+                </div>
+              ) : (
+                <ItemRows of={of} state={s} editor={editor} />
               )}
-            </div>
+            </ItemGroup>
           );
         })}
       </div>
     </>
+  );
+}
+
+/** Loot by its category, A to Z, with uncategorised loot ('') last. */
+function lootGroups(of: readonly ItemDef[]): [string, ItemDef[]][] {
+  const by = new Map<string, ItemDef[]>();
+  for (const d of of) {
+    const c = (d.type === 'loot' && d.category) || '';
+    by.set(c, [...(by.get(c) ?? []), d]);
+  }
+  return [...by].sort(([a], [b]) => (!a ? 1 : !b ? -1 : a.localeCompare(b)));
+}
+
+/** A heading that opens and closes a group of the item list, with its count and marks. */
+function ItemGroup(props: {
+  label: string;
+  of: readonly ItemDef[];
+  state: ItemEditorState;
+  shown: boolean;
+  searching: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}) {
+  const { label, of, state: s, shown } = props;
+  return (
+    <div>
+      <h4>
+        <button
+          className="ie-type"
+          aria-expanded={shown}
+          disabled={props.searching}
+          onClick={props.onToggle}
+        >
+          <span className="ie-caret">{shown ? '▾' : '▸'}</span>
+          {label} <span className="ie-count">{of.length}</span>
+          {of.some((d) => s.unsaved.includes(d.id)) && <span className="ie-dot"> ●</span>}
+          {of.some((d) => s.problems.has(d.id)) && <span className="ed-problem"> !</span>}
+        </button>
+      </h4>
+      {shown && props.children}
+    </div>
+  );
+}
+
+function ItemRows({
+  of,
+  state: s,
+  editor,
+}: {
+  of: readonly ItemDef[];
+  state: ItemEditorState;
+  editor: ItemEditor;
+}) {
+  return (
+    <ul className="ed-list">
+      {of.map((d) => (
+        <li
+          key={d.id}
+          className={d.id === s.current ? 'ed-on' : undefined}
+          onClick={() => editor.select(d.id)}
+          title={s.problems.get(d.id) ?? d.id}
+        >
+          <span className="ie-swatch" style={{ background: colourOf(d) }} />
+          {d.name}
+          {s.unsaved.includes(d.id) && <span className="ie-dot"> ●</span>}
+          {s.problems.has(d.id) && <span className="ed-problem"> !</span>}
+        </li>
+      ))}
+    </ul>
   );
 }
 
