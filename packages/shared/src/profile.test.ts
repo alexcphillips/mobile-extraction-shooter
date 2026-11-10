@@ -396,6 +396,26 @@ describe('settleBags', () => {
     expect(stored.grid!.items).toMatchObject([{ x: 1, y: 0, item: { item: 'medkit' } }]);
     expect(checkProfile(items, p)).toBeNull();
   });
+
+  it('lets backpacks saved before 2026-11-10 take empty bags, and only backpacks', () => {
+    const p = profile();
+    const pack = createItem(items, 'backpack');
+    expect(pack.grid!.bags).toBe(true);
+    expect(createItem(items, 'rig').grid!.bags).toBeUndefined();
+    delete pack.grid!.bags;
+    p.gear.backpack = pack as typeof p.gear.backpack;
+    expect(checkProfile(items, p)).toMatch(/must take empty bags/);
+    settleBags(items, p.gear, p.stash);
+    expect(pack.grid!.bags).toBe(true);
+    expect(addItem(items, pack.grid!, createItem(items, 'rig'))).toBe(0);
+    expect(checkProfile(items, p)).toBeNull();
+    // A rig claiming to take bags is refused, and so are pockets.
+    p.gear.rig!.grid!.bags = true;
+    expect(checkProfile(items, p)).toMatch(/mustn't take empty bags/);
+    delete p.gear.rig!.grid!.bags;
+    p.gear.pockets.bags = true;
+    expect(checkProfile(items, p)).toMatch(/can't take bags/);
+  });
 });
 
 describe('settlePockets', () => {

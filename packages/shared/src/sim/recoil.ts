@@ -74,15 +74,16 @@ export const RECOIL = {
  * jump by the punch, then the recoil spring brings them back to the kick at the gun's snap.
  * So it moves where shots go, not only the view, and runs at the tick, so co-op agrees. A
  * hit that does no damage still punches (the tutorial's harmless scav). Enemies aren't
- * punched: their aim has its own model (ai.ts). Degrees.
+ * punched: their aim has its own model (ai.ts). Degrees. Cut to a tenth on 2026-11-10 (the
+ * user's call: it threw the aim too far); the view's roll in play/index.ts went with it.
  */
 export const PUNCH = {
   /** Any hit, even one doing no damage. */
-  base: 1.5,
+  base: 0.15,
   /** More for each HP the hit was worth (lost plus stopped by armour). */
-  perHp: 0.05,
+  perHp: 0.005,
   /** The most one hit throws, and the most all the punches still settling add up to. */
-  most: 5,
+  most: 0.5,
   /** How far off straight up it may go either way: mostly up, as in Tarkov. */
   spread: 60,
 };

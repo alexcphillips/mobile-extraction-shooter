@@ -17,7 +17,9 @@ import {
   type InventoryAction,
   type LootContainer,
   type Owner,
+  BODY_RADIUS,
   LOOT_REACH,
+  bodyInReach,
 } from './looting';
 import { gearItems, markBrought, settleFound } from './raid';
 import { createState, spawnCharacter, type PlayerInput } from './state';
@@ -208,6 +210,17 @@ describe('looting', () => {
     expect(crate.grid.items).toHaveLength(0);
   });
 
+  it('reaches a body as far as it lies from its feet', () => {
+    const { c, enemy } = setup();
+    enemy.x = 3;
+    expect(bodyInReach(c, enemy)).toBe(true);
+    enemy.x = LOOT_REACH + BODY_RADIUS + 0.1;
+    expect(bodyInReach(c, enemy)).toBe(false);
+    enemy.x = 1;
+    enemy.y = LOOT_REACH + 0.1;
+    expect(bodyInReach(c, enemy)).toBe(false);
+  });
+
   it('only reaches dead bodies and containers within reach', () => {
     const { state, c, enemy, crate, body, box, act } = setup();
     const take: InventoryAction = {
@@ -218,7 +231,8 @@ describe('looting', () => {
     enemy.health.dead = false;
     expect(act(take)).toBe(false);
     enemy.health.dead = true;
-    enemy.x = 3;
+    // A body reaches LOOT_REACH + BODY_RADIUS (3.2 m) from its feet, as far as the prompt shows.
+    enemy.x = 4;
     expect(act(take)).toBe(false);
     enemy.x = 1;
     // Can't loot yourself as a body.

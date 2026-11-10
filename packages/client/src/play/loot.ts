@@ -1,6 +1,8 @@
 import {
+  BODY_RADIUS,
   DOOR,
   LOOT_REACH,
+  bodyInReach,
   containerInReach,
   createRayHit,
   doorInReach,
@@ -356,7 +358,7 @@ function bodyScore(
   lz: number,
   b: Character,
 ): number {
-  if (Math.hypot(b.x - p.x, b.z - p.z) > LOOT_REACH + BODY_RADIUS) return -Infinity;
+  if (!bodyInReach(p, b)) return -Infinity;
   // Where the look meets the floor it lies on, a little above its feet.
   const drop = b.y + 0.2 - ey;
   if (ly >= 0 || drop >= 0) return -Infinity;
@@ -364,9 +366,6 @@ function bodyScore(
   const r = Math.hypot(ex + lx * t - b.x, ez + lz * t - b.z);
   return r <= BODY_RADIUS ? 1 - (0.5 * r) / BODY_RADIUS : -Infinity;
 }
-
-/** How far from its feet a body lying in any direction is covered: most of its length. */
-const BODY_RADIUS = 1.2;
 
 /** Whether a container or body, by where it stands, can be seen: a little above its feet. */
 function inSight(world: CollisionWorld, p: Character, x: number, y: number, z: number): boolean {

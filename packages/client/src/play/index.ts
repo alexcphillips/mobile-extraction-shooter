@@ -1548,8 +1548,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         const felt = e.amount > 0 || e.cause !== 'fall';
         if (e.target === viewer.id && felt) {
           el.vitals.hurtFlash();
-          // The view jolts sideways a little, the way the sim's punch threw the aim.
-          punchRoll = (viewer.recoilYaw >= 0 ? -1 : 1) * Math.min(4, 1.5 + e.amount / 20) * DEG;
+          // The view jolts sideways a little, the way the sim's punch threw the aim (cut to a
+          // tenth with PUNCH, 2026-11-10).
+          punchRoll = (viewer.recoilYaw >= 0 ? -1 : 1) * Math.min(0.4, 0.15 + e.amount / 200) * DEG;
         }
         if (e.target === player.id) {
           if (felt) rumble.hurt(e.amount, now);

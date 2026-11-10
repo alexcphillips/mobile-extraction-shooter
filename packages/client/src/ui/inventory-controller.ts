@@ -196,7 +196,7 @@ export class InventoryController implements DragHost {
 
   /**
    * The open rig or backpack a double-tap of yours goes into (the user's call,
-   * 2026-11-01), if one is open and the item can go in it (not another rig or backpack).
+   * 2026-11-01), if one is open and the item can go in it (canHold: a bag only empty, in a backpack).
    */
   quickBag(ref: ItemRef): InGrid | null {
     if (ref.owner.kind !== 'self') return null;

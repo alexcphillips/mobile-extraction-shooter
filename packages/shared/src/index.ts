@@ -265,7 +265,9 @@ export { createItem } from './sim/create-item';
 export { GROUND, dropItem, type GroundItem } from './sim/ground';
 export {
   GROUND_OWNER,
+  BODY_RADIUS,
   LOOT_REACH,
+  bodyInReach,
   applyInventory,
   loadGun,
   loadKind,

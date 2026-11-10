@@ -15,12 +15,12 @@ export function createItem(items: ItemDb, id: string, count = 1): Item {
       return createWeapon(items, id);
     case 'armour':
       return createArmour(items, id);
-    case 'container':
-      return {
-        item: id,
-        count: 1,
-        grid: createGrid(def.grid[0], def.grid[1], false, sectionsOf(def)),
-      };
+    case 'container': {
+      const grid = createGrid(def.grid[0], def.grid[1], false, sectionsOf(def));
+      // A backpack takes empty rigs and backpacks (see Grid.bags).
+      if (def.slot === 'backpack') grid.bags = true;
+      return { item: id, count: 1, grid };
+    }
     case 'med':
       return { item: id, count: 1, left: def.hp ?? def.uses ?? 1 };
     case 'repair':

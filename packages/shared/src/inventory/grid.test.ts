@@ -84,6 +84,20 @@ describe('grids', () => {
     expect(stash.items).toHaveLength(1);
   });
 
+  it("takes empty rigs and backpacks in a backpack's grid, but not full ones", () => {
+    const pack = createGrid(10, 10);
+    pack.bags = true;
+    const empty: Item = { item: 'rig', count: 1, grid: createGrid(3, 2) };
+    expect(canHold(items, pack, empty)).toBe(true);
+    expect(addItem(items, pack, empty)).toBe(0);
+    const full: Item = { item: 'backpack', count: 1, grid: createGrid(4, 4) };
+    addItem(items, full.grid!, one('pistol'));
+    expect(canHold(items, pack, full)).toBe(false);
+    expect(addItem(items, pack, full)).toBe(1);
+    // Never the vault, even empty.
+    expect(canHold(items, pack, { item: 'vault', count: 1, grid: createGrid(2, 2) })).toBe(false);
+  });
+
   it('moves and rotates by dropping, if there is room', () => {
     const g = createGrid(3, 2);
     placeAt(items, g, one('pistol'), 0, 0, false);

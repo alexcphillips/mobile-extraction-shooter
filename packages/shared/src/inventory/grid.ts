@@ -58,14 +58,20 @@ export interface GridItem {
 
 /**
  * A grid of cells that items sit in by size: pockets, a rig, a backpack, the vault, the
- * stash, or a loot container. No containers inside containers: only grids with
- * containers set (the stash, loot containers) take rigs and backpacks.
+ * stash, or a loot container. Only grids with containers set (the stash, loot containers)
+ * take rigs and backpacks with things in them; a backpack's (bags set) takes empty ones.
  */
 export interface Grid {
   w: number;
   h: number;
-  /** Whether rigs and backpacks can go in it. */
+  /** Whether rigs and backpacks can go in it, full or not. */
   containers: boolean;
+  /**
+   * A backpack's grid (2026-11-10, the user's call: to carry a looted bag out and keep
+   * your own): empty rigs and backpacks can go in it, so bags still never nest two deep.
+   * Set by createItem, and by settleBags on what was saved before.
+   */
+  bags?: true;
   /**
    * Its sections (2026-11-06), from a rig's or backpack's def: every item lies wholly in
    * one. Left out, the whole grid is one.
@@ -130,12 +136,16 @@ export function itemHeight(items: ItemDb, id: string, rotated: boolean): number 
   return rotated ? w : h;
 }
 
-/** Whether a grid may hold an item at all, wherever it goes: no containers in containers. */
+/**
+ * Whether a grid may hold an item at all, wherever it goes: rigs and backpacks only in
+ * grids with containers set, or empty in a backpack's.
+ */
 export function canHold(items: ItemDb, grid: Grid, item: Item): boolean {
   const def = itemDef(items, item.item);
+  if (def.type !== 'container') return true;
   // The vault is never an item anywhere (see VAULT_ITEM), even if content gives one out.
-  if (def.type === 'container' && def.slot === 'vault') return false;
-  return grid.containers || def.type !== 'container';
+  if (def.slot === 'vault') return false;
+  return grid.containers || (!!grid.bags && !item.grid?.items.length);
 }
 
 /**

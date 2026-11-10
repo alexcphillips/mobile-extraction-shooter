@@ -252,12 +252,30 @@ function near(c: Character, x: number, y: number, z: number): boolean {
   return Math.hypot(x - c.x, z - c.z) <= LOOT_REACH && Math.abs(y - c.y) <= LOOT_REACH;
 }
 
+/**
+ * How far from its feet a body lying in any direction is covered: most of its length. The
+ * use prompt finds a body anywhere it lies, so looting it reaches that far too (2026-11-10).
+ */
+export const BODY_RADIUS = 1.2;
+
+/**
+ * Whether c's feet are near enough a body to loot it: LOOT_REACH from any of it, so
+ * LOOT_REACH + BODY_RADIUS from its feet. The use prompt asks the same, so it never offers
+ * a body that then says it's out of reach.
+ */
+export function bodyInReach(c: Character, b: Character): boolean {
+  return (
+    Math.hypot(b.x - c.x, b.z - c.z) <= LOOT_REACH + BODY_RADIUS &&
+    Math.abs(b.y - c.y) <= LOOT_REACH
+  );
+}
+
 /** The character whose gear an owner is, if c may reach it: c itself, or a dead body. */
 function ownerCharacter(state: SimState, c: Character, owner: Owner): Character | null {
   if (owner.kind === 'self') return c;
   if (owner.kind !== 'body' || owner.id === c.id) return null;
   for (const e of state.entities) {
-    if (e.id === owner.id) return e.health.dead && near(c, e.x, e.y, e.z) ? e : null;
+    if (e.id === owner.id) return e.health.dead && bodyInReach(c, e) ? e : null;
   }
   return null;
 }
@@ -326,11 +344,13 @@ export function gridOf(state: SimState, c: Character, ref: GridRef): Grid | null
 }
 
 /**
- * The grid inside a rig or backpack lying in a grid, checked against what the sender saw;
- * with no bag, the grid itself.
+ * The grid inside a rig or backpack lying in a grid that takes full ones (a loot container,
+ * a stash page), checked against what the sender saw; with no bag, the grid itself. An
+ * empty bag in a backpack doesn't open, so nothing goes in it: bags never nest two deep.
  */
 export function bagGrid(grid: Grid | null, inside: BagRef | undefined): Grid | null {
   if (!grid || !inside) return grid;
+  if (!grid.containers) return null;
   const bag = grid.items[inside.index]?.item;
   return (bag?.item === inside.item && bag.grid) || null;
 }
