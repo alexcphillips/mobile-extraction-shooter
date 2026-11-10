@@ -161,6 +161,14 @@ describe('PROFILE_FORMAT', () => {
     expect(p.gear.primary2!.item).toBe('mp-133');
     expect(p.stash[0]!.items[0]!.item.item).toBe('k10');
   });
+
+  it('turns medkits into field first aid kits (format 9 → 10)', () => {
+    const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
+    old.formatVersion = 9;
+    old.stash[0].items[0].item.item = 'medkit';
+    const p = loadContent(PROFILE_FORMAT, old, 'p');
+    expect(p.stash[0]!.items[0]!.item.item).toBe('field-first-aid-kit');
+  });
 });
 
 describe('checkProfile', () => {

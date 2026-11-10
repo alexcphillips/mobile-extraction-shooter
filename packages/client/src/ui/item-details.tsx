@@ -457,6 +457,7 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
     }
     case 'med': {
       const out: Row[] = [['Does', MED_EFFECTS[def.effect]]];
+      if (def.bleedCost !== undefined) out.push(['Stops bleeding', `${def.bleedCost} HP each`]);
       if (def.effect === 'heal') out.push(['HP left', `${Math.floor(item.left ?? 0)} / ${def.hp}`]);
       else out.push(['Uses left', `${item.left ?? 1} / ${def.uses ?? 1}`]);
       out.push(['Use time', seconds(def.useTime)]);

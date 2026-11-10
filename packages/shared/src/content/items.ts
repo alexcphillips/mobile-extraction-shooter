@@ -48,7 +48,7 @@ const burning = {
  * 10 (2026-11-04): gun recoil gained a snap, and its recovery became a rate (per second)
  *    rather than degrees per second (sim/recoil.ts). Containers' optional sections,
  *    armour's optional repairLoss and every item's optional shortName came in at 10 too
- *    (2026-11-06), loot's optional category and guns' optional class (2026-11-09): an
+ *    (2026-11-06), loot's optional category, guns' optional class and meds' optional bleedCost (2026-11-09): an
  *    optional field changes no existing file.
  */
 export const ITEM_FORMAT_VERSION = 10;
@@ -523,6 +523,12 @@ const medSchema = z
     uses: z.int().min(1).optional(),
     /** heal only: the HP it holds in all, spent across uses. */
     hp: positive.optional(),
+    /**
+     * heal only, optional (2026-11-09): it also stops bleeding, each bleeding zone costing
+     * this much of its HP (or what's left), before it heals. Without it a heal never stops
+     * a bleed.
+     */
+    bleedCost: positive.optional(),
     /** Played as a use starts. */
     sounds: z.strictObject({ use: soundId }),
     ...plainModel,
@@ -530,6 +536,10 @@ const medSchema = z
   .refine((m) => (m.effect === 'heal') === (m.hp !== undefined), {
     message: 'heal needs hp, and only heal may have it',
     path: ['hp'],
+  })
+  .refine((m) => m.effect === 'heal' || m.bleedCost === undefined, {
+    message: 'only a heal can stop bleeding from its hp',
+    path: ['bleedCost'],
   })
   .refine((m) => m.effect !== 'heal' || m.uses === undefined, {
     message: 'heal uses up its hp, so it has no uses',

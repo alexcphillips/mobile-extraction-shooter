@@ -1,0 +1,26 @@
+{
+  "formatVersion": 10,
+  "id": "medical-supply-crate",
+  "name": "Medical supply crate",
+  "type": "med",
+  "size": [2, 2],
+  "value": 10000,
+  "rarity": "epic",
+  "effect": "heal",
+  "useTime": 5,
+  "sounds": {
+    "use": "bandage-use"
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.14, 0.07, 0.14],
+        "colour": "#b04848"
+      }
+    ]
+  },
+  "hp": 400,
+  "bleedCost": 30
+}

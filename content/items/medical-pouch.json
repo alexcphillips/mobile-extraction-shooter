@@ -1,0 +1,141 @@
+{
+  "formatVersion": 10,
+  "id": "medical-pouch",
+  "name": "Medical pouch",
+  "type": "med",
+  "size": [1, 1],
+  "value": 1500,
+  "rarity": "common",
+  "effect": "heal",
+  "useTime": 5,
+  "sounds": {
+    "use": "bandage-use"
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "slab",
+        "pos": [0, 0, 0.016],
+        "size": [0.15, 0.032, 0.12],
+        "corners": [0.018, 0.018, 0.018, 0.018],
+        "segments": 3,
+        "pitch": 90,
+        "colour": "#4a5236",
+        "name": "back half",
+        "group": "body"
+      },
+      {
+        "type": "slab",
+        "pos": [0, 0, -0.001],
+        "size": [0.152, 0.006, 0.122],
+        "corners": [0.019, 0.019, 0.019, 0.019],
+        "segments": 3,
+        "pitch": 90,
+        "colour": "#1d1f21",
+        "name": "zip",
+        "group": "body"
+      },
+      {
+        "type": "slab",
+        "pos": [0, 0, -0.017],
+        "size": [0.146, 0.03, 0.116],
+        "corners": [0.016, 0.016, 0.016, 0.016],
+        "segments": 3,
+        "pitch": 90,
+        "colour": "#5a6340",
+        "name": "front half",
+        "group": "body"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.004, -0.033],
+        "size": [0.062, 0.062, 0.002],
+        "colour": "#b33a32",
+        "name": "patch",
+        "group": "front"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.004, -0.0345],
+        "size": [0.04, 0.013, 0.002],
+        "colour": "#ece8df",
+        "name": "cross bar",
+        "group": "front"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.004, -0.0345],
+        "size": [0.013, 0.04, 0.001],
+        "colour": "#ece8df",
+        "name": "cross post",
+        "group": "front"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.046, -0.033],
+        "size": [0.138, 0.012, 0.002],
+        "colour": "#3f4636",
+        "name": "front strap",
+        "group": "front"
+      },
+      {
+        "type": "box",
+        "pos": [-0.05, 0.047, -0.0335],
+        "size": [0.007, 0.028, 0.003],
+        "colour": "#b33a32",
+        "name": "pull tab left",
+        "group": "pulls"
+      },
+      {
+        "type": "box",
+        "pos": [0.05, 0.047, -0.0335],
+        "size": [0.007, 0.028, 0.003],
+        "colour": "#b33a32",
+        "name": "pull tab right",
+        "group": "pulls"
+      },
+      {
+        "type": "box",
+        "pos": [-0.05, 0.0615, -0.002],
+        "size": [0.01, 0.004, 0.01],
+        "colour": "#1d1f21",
+        "name": "puller left",
+        "group": "pulls"
+      },
+      {
+        "type": "box",
+        "pos": [0.05, 0.0615, -0.002],
+        "size": [0.01, 0.004, 0.01],
+        "colour": "#1d1f21",
+        "name": "puller right",
+        "group": "pulls"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0625, 0.016],
+        "size": [0.05, 0.007, 0.014],
+        "colour": "#3f4636",
+        "name": "grab handle",
+        "group": "back"
+      },
+      {
+        "type": "box",
+        "pos": [-0.04, 0, 0.034],
+        "size": [0.026, 0.11, 0.004],
+        "colour": "#3f4636",
+        "name": "molle strap left",
+        "group": "back"
+      },
+      {
+        "type": "box",
+        "pos": [0.04, 0, 0.034],
+        "size": [0.026, 0.11, 0.004],
+        "colour": "#3f4636",
+        "name": "molle strap right",
+        "group": "back"
+      }
+    ]
+  },
+  "shortName": "Medic pouch",
+  "hp": 90
+}

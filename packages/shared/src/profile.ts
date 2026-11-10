@@ -91,7 +91,7 @@ export interface VendorStanding {
 }
 
 export interface Profile {
-  formatVersion: 9;
+  formatVersion: 10;
   money: number;
   /** The stash's pages, bought with money (at least one). */
   stash: Grid[];
@@ -158,7 +158,7 @@ const questStateShape = z.discriminatedUnion('status', [
 ]);
 
 const profileShape = z.strictObject({
-  formatVersion: z.literal(9),
+  formatVersion: z.literal(10),
   money: count,
   stash: z.array(gridShape).min(1),
   gear: gearShape,
@@ -166,7 +166,7 @@ const profileShape = z.strictObject({
   vendors: z.record(idSchema, z.strictObject({ rep: amount, spent: count })),
 });
 
-export const PROFILE_FORMAT_VERSION = 9;
+export const PROFILE_FORMAT_VERSION = 10;
 
 export const PROFILE_FORMAT: ContentFormat<Profile> = {
   kind: 'profile',
@@ -191,6 +191,8 @@ export const PROFILE_FORMAT: ContentFormat<Profile> = {
     7: (doc) => ({ ...doc, vendors: {} }),
     // 2026-11-09: guns named by class got their real names' ids.
     8: (doc) => renameItems(doc, { 'assault-rifle': 'akm', shotgun: 'mp-133', smg: 'k10' }),
+    // 2026-11-09: the medkit became the field first aid kit.
+    9: (doc) => renameItems(doc, { medkit: 'field-first-aid-kit' }),
   },
 };
 
@@ -298,7 +300,7 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
     if (addItem(items, stash, kitItem(items, kit, s.item, s.count ?? 1)) > 0)
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
-  return { formatVersion: 9, money: kit.money, stash: [stash], gear, quests: {}, vendors: {} };
+  return { formatVersion: 10, money: kit.money, stash: [stash], gear, quests: {}, vendors: {} };
 }
 
 /** What the next stash page costs, or null if there are already as many as there can be. */

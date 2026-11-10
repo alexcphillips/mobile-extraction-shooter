@@ -27,7 +27,7 @@ describe('quests', () => {
     expect(retry.error).toBe('stale');
 
     const kitBandages = countOf(me.profile.stash[0]!, 'bandage');
-    const kitMedkits = countOf(me.profile.stash[0]!, 'medkit');
+    const kitMedkits = countOf(me.profile.stash[0]!, 'field-first-aid-kit');
     await client.editProfile((p) => {
       for (let i = 0; i < 4; i++) addItem(items, p.stash[0]!, createItem(items, 'bandage'));
     });
@@ -46,7 +46,7 @@ describe('quests', () => {
     me = await client.ok('POST', '/quests/field-dressing/complete', { version: me.version });
     expect(me.profile.quests['field-dressing']).toEqual({ status: 'done' });
     expect(me.profile.money).toBe(money + questDef('field-dressing')!.rewards.money);
-    expect(countOf(me.profile.stash[0]!, 'medkit')).toBe(kitMedkits + 1);
+    expect(countOf(me.profile.stash[0]!, 'field-first-aid-kit')).toBe(kitMedkits + 1);
     // The next in the chain opens.
     me = await client.ok('POST', '/quests/test-notes/accept', { version: me.version });
     expect(me.profile.quests['test-notes']?.status).toBe('active');

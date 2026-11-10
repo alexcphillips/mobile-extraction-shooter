@@ -400,12 +400,12 @@
     [
       {
         "weight": 6,
-        "item": "medkit",
+        "item": "field-first-aid-kit",
         "count": [1, 1]
       },
       {
         "weight": 2,
-        "item": "medkit",
+        "item": "field-first-aid-kit",
         "count": [2, 2]
       },
       {

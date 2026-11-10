@@ -261,6 +261,34 @@ describe('meds', () => {
     expect(c.health.splinted[LEFT_LEG]).toBe(false);
   });
 
+  it('offers a heal that stops bleeding for a bleed, after bandages, even at full HP', () => {
+    const c = patient('med-crate', 'medkit', 'bandage');
+    c.health.bleeding[LEFT_ARM] = true;
+    expect(chosen(c)).toEqual(['bandage', 'med-crate']);
+    const crate = treatments(c, items)[1]!;
+    expect(startUse(c, items, crate)).toBe(true);
+  });
+
+  it('stops every bleed for its bleedCost each, then heals with what is left', () => {
+    const c = patient('med-crate');
+    const { state } = setup();
+    dealDamage(state, c, LEFT_ARM, 30, 0);
+    c.health.bleeding[CHEST] = true;
+    c.health.bleeding[LEFT_ARM] = true;
+    expect(useMed(c, items, treatments(c, items)[0]!)).toBe(true);
+    expect(c.health.bleeding).not.toContain(true);
+    // 100 − 2 × 30 = 40 left to heal with: the arm's 30, then 10 kept.
+    expect(c.health.hp[LEFT_ARM]).toBe(60);
+    expect(c.gear.rig!.grid.items[0]!.item.left).toBeCloseTo(10);
+  });
+
+  it('a plain heal never stops bleeding', () => {
+    const c = patient('medkit');
+    c.health.bleeding[CHEST] = true;
+    expect(chosen(c)).toEqual([]);
+    expect(startUse(c, items, { grid: 1, index: 0, item: 'medkit' })).toBe(false);
+  });
+
   it('heals down the order from its pool, skipping broken limbs, and keeps what is left', () => {
     const c = patient('medkit');
     const { state } = setup();

@@ -51,9 +51,9 @@ describe('item editor', () => {
       delete d.uses;
     });
     expect(itemContentProblem(notAKey)).toMatch(/door .* not a key item/);
-    // A new player carries a medkit.
-    const hugeMedkit = edited('medkit', (d) => (d.size = [5, 5]));
-    expect(itemContentProblem(hugeMedkit)).toMatch(/kit new-player: no room to carry "medkit"/);
+    // A new player carries a field first aid kit.
+    const hugeMedkit = edited('field-first-aid-kit', (d) => (d.size = [5, 5]));
+    expect(itemContentProblem(hugeMedkit)).toMatch(/kit new-player: no room to carry "field-first-aid-kit"/);
   });
 
   it('lists where content names an item', () => {
@@ -91,7 +91,7 @@ describe('item editor', () => {
     );
     expect(risks('steel-helmet', (d) => (d.durability = 30))).toHaveLength(1);
     expect(risks('cash', (d) => (d.stack = 100))).toHaveLength(1);
-    expect(risks('medkit', (d) => (d.hp = 150))).toHaveLength(1);
+    expect(risks('field-first-aid-kit', (d) => (d.hp = 150))).toHaveLength(1);
     expect(
       risks('mag-9mm-24', (d) => ((d.mods as { magazine: number }).magazine = 5)),
     ).toHaveLength(1);

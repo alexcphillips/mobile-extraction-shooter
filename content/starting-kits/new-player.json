@@ -16,7 +16,7 @@
     { "item": "bandage" },
     { "item": "bandage" },
     { "item": "splint" },
-    { "item": "medkit" },
+    { "item": "field-first-aid-kit" },
     { "item": "surgery-kit" }
   ],
   "stash": [
@@ -43,9 +43,9 @@
     { "item": "surgery-kit" },
     { "item": "surgery-kit" },
     { "item": "surgery-kit" },
-    { "item": "medkit" },
-    { "item": "medkit" },
-    { "item": "medkit" },
+    { "item": "field-first-aid-kit" },
+    { "item": "field-first-aid-kit" },
+    { "item": "field-first-aid-kit" },
     { "item": "splint" },
     { "item": "splint" },
     { "item": "splint" },

@@ -679,7 +679,10 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
               if (v === 'heal') {
                 put(d, ['uses'], undefined);
                 if (d.hp === undefined) put(d, ['hp'], 100);
-              } else put(d, ['hp'], undefined);
+              } else {
+                put(d, ['hp'], undefined);
+                put(d, ['bleedCost'], undefined);
+              }
             }}
           />
           <p className="ed-note">{MED_NOTES[def.effect]}</p>
@@ -691,6 +694,15 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
               <N {...b} path={['uses']} label="uses (1)" min={1} hint="Blank is 1" />
             )}
           </Row>
+          {def.effect === 'heal' && (
+            <N
+              {...b}
+              path={['bleedCost']}
+              label="HP to stop a bleed"
+              min={1}
+              hint="Blank: doesn't stop bleeding"
+            />
+          )}
         </>
       );
     case 'container':

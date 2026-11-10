@@ -94,6 +94,6 @@
     { "item": "chest-rig", "weight": 1 },
     { "item": "medium-backpack", "weight": 1 },
     { "item": "large-backpack", "weight": 0.5 },
-    { "item": "medkit", "weight": 1 }
+    { "item": "field-first-aid-kit", "weight": 1 }
   ]
 }

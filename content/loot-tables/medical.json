@@ -7,7 +7,7 @@
     { "item": "bandage", "weight": 4 },
     { "item": "tourniquet", "weight": 2 },
     { "item": "splint", "weight": 3 },
-    { "item": "medkit", "weight": 2 },
+    { "item": "field-first-aid-kit", "weight": 2 },
     { "item": "surgery-kit", "weight": 1 }
   ]
 }

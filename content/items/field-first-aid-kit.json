@@ -1,0 +1,27 @@
+{
+  "formatVersion": 10,
+  "id": "field-first-aid-kit",
+  "name": "Field first aid kit",
+  "shortName": "First aid",
+  "type": "med",
+  "size": [1, 2],
+  "value": 4000,
+  "rarity": "rare",
+  "effect": "heal",
+  "useTime": 6,
+  "hp": 220,
+  "sounds": {
+    "use": "med-use"
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.14, 0.07, 0.28],
+        "colour": "#b04848"
+      }
+    ]
+  },
+  "view": "frontRight"
+}

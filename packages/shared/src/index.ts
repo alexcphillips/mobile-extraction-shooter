@@ -335,6 +335,7 @@ export {
 export {
   EFFECT_PRIORITY,
   TREATMENT_ORDER,
+  medHelps,
   needs,
   startUse,
   treatments,

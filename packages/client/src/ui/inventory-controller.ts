@@ -19,7 +19,7 @@ import {
   sellPrice,
   stackSize,
   weaponDef,
-  zoneToTreat,
+  medHelps,
   type AttachmentSlot,
   type Character,
   type GearSlot,
@@ -394,7 +394,7 @@ export class InventoryController implements DragHost {
     const grid = CARRIED.indexOf(ref.grid);
     const def = this.find(ref)?.def;
     if (grid < 0 || def?.type !== 'med') return null;
-    if (zoneToTreat(this.ctx.player.health, def.effect) < 0) return null;
+    if (!medHelps(this.ctx.player.health, def)) return null;
     return { grid, index: ref.index, item: ref.item };
   }
 

@@ -1,4 +1,4 @@
-import { itemDef, type ItemDb, type MedEffect } from '../content/items';
+import { itemDef, type ItemDb, type ItemDef, type MedEffect } from '../content/items';
 import { removeAt } from '../inventory/grid';
 import { TICK_SECONDS } from '../tick';
 import { CARRIED_GRIDS, QUICK_GRIDS, carriedGrid, heldWeapon } from './gear';
@@ -10,6 +10,7 @@ import {
   LEFT_LEG,
   RIGHT_ARM,
   RIGHT_LEG,
+  isBleeding,
   type Health,
   type Zone,
 } from './health';
@@ -49,6 +50,17 @@ export function needs(h: Health, zone: Zone, effect: MedEffect): boolean {
     case 'heal':
       return hp > 0 && hp < HEALTH.maxHp[zone]!;
   }
+}
+
+/** Whether a heal stops bleeding too (bleedCost), and there's bleeding to stop. */
+function stopsBleeding(h: Health, def: ItemDef): boolean {
+  return def.type === 'med' && def.bleedCost !== undefined && !h.dead && isBleeding(h);
+}
+
+/** Whether a med would do something now: its effect, or a heal stopping a bleed. */
+export function medHelps(h: Health, def: ItemDef): boolean {
+  if (def.type !== 'med') return false;
+  return zoneToTreat(h, def.effect) >= 0 || stopsBleeding(h, def);
 }
 
 /** The first zone in TREATMENT_ORDER an effect would do something for, or -1. */
@@ -99,7 +111,10 @@ export function treatments(c: Character, items: ItemDb): MedRef[] {
       if (!grid) continue;
       grid.items.forEach((gi, index) => {
         const def = itemDef(items, gi.item.item);
-        if (def.type !== 'med' || def.effect !== effect || seen.has(def.id)) return;
+        if (def.type !== 'med' || seen.has(def.id)) return;
+        // A heal that stops bleeding is offered for bleeding too, after the bandages.
+        const fits = def.effect === effect || (effect === 'bandage' && def.bleedCost !== undefined);
+        if (!fits) return;
         seen.add(def.id);
         out.push({ grid: g, index, item: def.id });
       });
@@ -117,7 +132,7 @@ export function startUse(c: Character, items: ItemDb, ref: MedRef): boolean {
   const it = carriedGrid(c.gear, ref.grid)?.items[ref.index]?.item;
   if (!it || it.item !== ref.item || c.health.dead) return false;
   const def = itemDef(items, it.item);
-  if (def.type !== 'med' || zoneToTreat(c.health, def.effect) < 0) return false;
+  if (def.type !== 'med' || !medHelps(c.health, def)) return false;
   const w = heldWeapon(c);
   if (w) w.reloading = 0;
   c.using = { grid: ref.grid, index: ref.index, item: ref.item, left: def.useTime };
@@ -204,7 +219,8 @@ function firstCarried(c: Character, id: string): CarriedRef | null {
  * Uses a carried med once: the effect of finishing its use (startUse and updateMedUse add
  * the use time and cancelling). A bandage, splint or surgery kit treats one zone, the first in
  * TREATMENT_ORDER that needs it; a heal restores HP down that order, skipping broken
- * limbs, until its pool or the damage runs out. Used up, it's removed (never, with the
+ * limbs, until its pool or the damage runs out. A heal with a bleedCost first stops every
+ * bleeding zone, down the same order, for that much of its pool each. Used up, it's removed (never, with the
  * infinite consumables cheat). Returns whether it did anything.
  */
 export function useMed(c: Character, items: ItemDb, ref: CarriedRef): boolean {
@@ -215,7 +231,8 @@ export function useMed(c: Character, items: ItemDb, ref: CarriedRef): boolean {
   if (def.type !== 'med') return false;
   const h = c.health;
   const zone = zoneToTreat(h, def.effect);
-  if (zone < 0) return false;
+  const bleeds = def.effect === 'heal' && stopsBleeding(h, def);
+  if (zone < 0 && !bleeds) return false;
 
   let left = it.left ?? 1;
   switch (def.effect) {
@@ -233,6 +250,13 @@ export function useMed(c: Character, items: ItemDb, ref: CarriedRef): boolean {
       left--;
       break;
     case 'heal':
+      if (bleeds)
+        for (const z of TREATMENT_ORDER) {
+          if (left <= 0) break;
+          if (!h.bleeding[z]) continue;
+          h.bleeding[z] = false;
+          left -= Math.min(left, def.bleedCost!);
+        }
       for (const z of TREATMENT_ORDER) {
         if (left <= 0) break;
         if (!needs(h, z, 'heal')) continue;

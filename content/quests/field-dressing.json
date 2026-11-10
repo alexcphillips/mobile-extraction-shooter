@@ -16,7 +16,7 @@
     "money": 3000,
     "items": [
       {
-        "item": "medkit"
+        "item": "field-first-aid-kit"
       }
     ],
     "rep": 0.2
