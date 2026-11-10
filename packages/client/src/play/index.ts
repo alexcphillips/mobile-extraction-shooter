@@ -1026,6 +1026,13 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let killedBy: string | null = null;
   /** What hurt you, for the results screen after a death. */
   const taken: DamageLog = resume?.taken ?? [];
+  // Fetch the screens a raid opens later (inventory, settings, results) now, while the
+  // build this page came from is still the one deployed: a deploy mid-raid would leave their
+  // chunks missing (2026-11-10, "settings failed" while spectating). Failing here reloads
+  // (app/stale-build.ts), before the raid has much to lose.
+  void Promise.all([import('../ui/raid'), import('../ui/results'), import('../ui/menu')]).catch(
+    () => undefined,
+  );
   /** Hits between you and enemies, for the fight with your killer. */
   const fight: FightLog = resume?.fight ?? [];
   /** The enemy that killed you, if one did. */

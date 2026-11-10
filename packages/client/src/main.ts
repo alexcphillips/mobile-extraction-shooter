@@ -6,6 +6,7 @@ import {
   type ProfileResponse,
 } from '@mes/shared';
 import { unlockAudioOnTap } from './app/audio';
+import { reloadOnStaleBuild } from './app/stale-build';
 import { GAME_SOUNDS } from './audio/sound-ids';
 import { sounds } from './audio/sounds';
 import { preventZoom } from './app/no-zoom';
@@ -79,6 +80,7 @@ padCursor.start();
 padLog.start();
 if (new URLSearchParams(location.search).has('padtest')) openPadTest();
 unlockAudioOnTap();
+reloadOnStaleBuild();
 preventZoom();
 // Menu buttons tick (session 19); the raid's controls and inventory have their own sounds.
 byId('ui').addEventListener('click', (e) => {
