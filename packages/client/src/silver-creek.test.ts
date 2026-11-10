@@ -159,8 +159,11 @@ describe('Silver Creek', () => {
     expect(spots.filter(([, x, y, z]) => at(x, z, y) !== main).map(([id]) => id)).toEqual([]);
     // The mill's four sectors get the usual kit; the ends' and the ridge's the light one.
     const mill = new Set(['sc-hall', 'sc-yard', 'sc-kilns', 'sc-crossings']);
-    const scavs = map.markers.flatMap((m) => (m.type === 'enemySpawn' ? [m] : []));
-    expect(new Set(scavs.map((m) => m.enemy))).toEqual(new Set(['scav']));
+    const spawns = map.markers.flatMap((m) => (m.type === 'enemySpawn' ? [m] : []));
+    expect(new Set(spawns.map((m) => m.enemy))).toEqual(new Set(['scav', 'foreman']));
+    // The foreman (MT-12) once, on his patrol round the saw hall, his guards with him.
+    expect(spawns.filter((m) => m.enemy === 'foreman').map((m) => m.id)).toEqual(['boss-foreman']);
+    const scavs = spawns.filter((m) => m.enemy === 'scav');
     for (const m of scavs)
       expect([m.id, m.loadout]).toEqual([m.id, mill.has(m.oneOf!) ? undefined : 'scav-kit-light']);
     // Nine sectors, as against Northpoint's 12; PMCs start only round the mill.

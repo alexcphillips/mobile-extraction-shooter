@@ -6,11 +6,19 @@ import { chance, nextFloat, nextIntIn } from '../rng';
 import { TICK_RATE } from '../tick';
 import type { CollisionWorld } from '../world/collision-world';
 import { MOVEMENT } from './movement';
-import { AI, checkGunfire, freeToCheck, playerDistance, spawnEnemy, type PatrolDef } from './ai';
+import {
+  AI,
+  checkGunfire,
+  freeToCheck,
+  joinSquad,
+  playerDistance,
+  spawnEnemy,
+  type PatrolDef,
+} from './ai';
 import { factionOf } from './factions';
 import { equipLoadout } from './loadout';
 import { rollEnemyLoot, type LootTables } from './loot-roll';
-import { startSquads } from './squads';
+import { place, startSquads } from './squads';
 import { oneOfPicks } from './spawn-roll';
 import { entityById, eyeHeight, type Character, type EntityId, type SimState } from './state';
 
@@ -187,7 +195,9 @@ export function startEnemies(
     const spot = waveSpot(world, m, type, content);
     // A spawn put in once (TU-2) is no wave slot, whatever its faction.
     if (type.faction !== 'scav' || m.once) {
-      out.push(spawnSpot(state, world, items, content, spot));
+      const c = spawnSpot(state, world, items, content, spot);
+      out.push(c);
+      if (type.guards) out.push(...spawnGuards(state, world, items, content, spot, c, type.guards));
       continue;
     }
     // A scav's slot: its sector's spawns that are scavs too.
@@ -308,6 +318,43 @@ function spawnSpot(
   if (!spot.noLoot)
     rollEnemyLoot(c, items, content.tables, type.loot, spot.lootWeights ?? undefined, state.rng);
   return c;
+}
+
+/**
+ * A boss's guards (MT-12, the foreman's crew): put in round him in formation where he
+ * spawned (near him where that isn't clear), as his squad, which he leads. Each walks his
+ * patrol too, so its ground is his and it can lead the rest on it once he's dead.
+ */
+function spawnGuards(
+  state: SimState,
+  world: CollisionWorld,
+  items: ItemDb,
+  content: EnemyContent,
+  spot: WaveSpot,
+  boss: Character,
+  guards: NonNullable<EnemyDef['guards']>,
+): Character[] {
+  const type = content.types.get(guards.enemy)!;
+  const ground = { x: boss.x, y: boss.y, z: boss.z, yaw: spot.yaw };
+  joinSquad(boss, boss.id, 0);
+  const out: Character[] = [];
+  for (let slot = 1; slot <= guards.count; slot++) {
+    const [x, z, radius] = place(world, ground, slot);
+    const c = spawnSpot(state, world, items, content, {
+      ...spot,
+      id: `${spot.id}:guard-${slot}`,
+      x,
+      z,
+      radius,
+      patrol: spot.patrol ? copy(spot.patrol) : null,
+      type: guards.enemy,
+      loadout: type.loadout,
+      lootWeights: null,
+    });
+    joinSquad(c, boss.id, slot);
+    out.push(c);
+  }
+  return out;
 }
 
 /** A slot's scav at a spot, from what the state keeps. */

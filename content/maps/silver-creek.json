@@ -18113,6 +18113,25 @@
         },
         {
           "type": "enemySpawn",
+          "id": "boss-foreman",
+          "pos": [184, 0.3, 86],
+          "yaw": -90,
+          "enemy": "foreman",
+          "chance": 0.4,
+          "patrol": "pt-foreman"
+        },
+        {
+          "type": "patrol",
+          "id": "pt-foreman",
+          "points": [
+            { "pos": [184, 0.3, 86], "wait": 8, "radius": 2 },
+            { "pos": [164, 0.3, 98], "wait": 5, "radius": 2 },
+            { "pos": [147, 0.3, 96], "wait": 6, "radius": 2 },
+            { "pos": [148, 0.3, 77], "wait": 5, "radius": 2 }
+          ]
+        },
+        {
+          "type": "enemySpawn",
           "id": "sc-timber-yard",
           "pos": [112, 0, 98],
           "yaw": 0,

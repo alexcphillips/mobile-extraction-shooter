@@ -1,0 +1,55 @@
+{
+  "formatVersion": 2,
+  "id": "mill-guard",
+  "name": "Mill guard",
+  "faction": "boss",
+  "loadout": "mill-guard-kit",
+  "skill": {
+    "reaction": 0.45,
+    "aimError": 4,
+    "aimSettled": 0.3,
+    "aimSettle": 1.2,
+    "holdChance": 1,
+    "coverTime": [0.6, 1.4],
+    "sprintToCover": true,
+    "burst": [5, 6],
+    "burstPause": [0.25, 0.45],
+    "spray": { "range": 10, "burst": [10, 15], "pause": [0.05, 0.15] },
+    "sprints": true,
+    "territory": 25,
+    "roam": 0,
+    "anchored": true,
+    "pinFlank": { "after": 4, "within": 3 }
+  },
+  "outfits": [
+    {
+      "skin": "#c99a78",
+      "top": "#4d5258",
+      "bottom": "#3d3a34",
+      "hands": "#1e1e1e",
+      "feet": "#2b2620"
+    },
+    {
+      "skin": "#8d5a3b",
+      "top": "#4d5258",
+      "bottom": "#3d3a34",
+      "hands": "#1e1e1e",
+      "feet": "#2b2620"
+    },
+    {
+      "skin": "#e0b896",
+      "top": "#4d5258",
+      "bottom": "#3d3a34",
+      "hands": "#1e1e1e",
+      "feet": "#2b2620"
+    },
+    {
+      "skin": "#a8714f",
+      "top": "#4d5258",
+      "bottom": "#3d3a34",
+      "hands": "#1e1e1e",
+      "feet": "#2b2620"
+    }
+  ],
+  "voice": { "callout": "pmc-callout" }
+}

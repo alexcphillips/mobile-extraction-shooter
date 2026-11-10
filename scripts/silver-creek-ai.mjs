@@ -84,6 +84,24 @@ export function buildAi(h) {
       [184, 86, 5, 2, MILL],
       [148, 77, 3, 2, MILL],
     ]),
+    // The mill's boss (MT-12, the user's design): the foreman and his three guards, who
+    // hold the saw hall (their ground, 25 m from his patrol) and walk it with him. In 40% of
+    // raids, as Jug on Northpoint. Numbers and why: design/ai-scavs-pmcs-bosses.md → Foreman.
+    {
+      type: 'enemySpawn',
+      id: 'boss-foreman',
+      pos: pos(184, 86, MILL),
+      yaw: -90,
+      enemy: 'foreman',
+      chance: 0.4,
+      patrol: 'pt-foreman',
+    },
+    patrol('pt-foreman', [
+      [184, 86, 8, 2, MILL],
+      [164, 98, 5, 2, MILL],
+      [147, 96, 6, 2, MILL],
+      [148, 77, 5, 2, MILL],
+    ]),
     scav('sc-timber-yard', 112, 98, 0, { oneOf: 'sc-yard' }),
     scav('sc-log-deck', 128, 54, 90, { oneOf: 'sc-yard' }),
     scav('sc-burner', 206, 72, 180, { oneOf: 'sc-kilns', patrol: 'pt-kilns' }),

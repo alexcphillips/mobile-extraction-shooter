@@ -752,6 +752,11 @@ export interface AiState {
    * its target, so it splits from the squad once per time it loses it. Missing is false.
    */
   planned?: boolean;
+  /**
+   * Holding for a squad that flanks only when its target is pinned (skill.pinFlank, MT-12):
+   * seconds until it looks for a flanking spot again, having found none. Missing is 0.
+   */
+  pinTry?: number;
   /** The tick it last called out a target it spotted (AI rework session 5). */
   calledAt?: number;
   /**
@@ -1969,6 +1974,20 @@ function alarm(ai: AiState, target: Character, x: number, y: number, z: number):
   setFocus(ai, x, y, z);
 }
 
+/**
+ * Searching for its target, or, holding its ground (skill.anchored, MT-12) with the target
+ * last known off it, going back to its patrol rather than out after it.
+ */
+function searchOrReturn(state: SimState, c: Character, ai: AiState): void {
+  if (ai.skill.anchored && !onGround(ai, ai.focusX, ai.focusZ)) calmDown(c, ai);
+  else startSearch(state, ai);
+}
+
+/** Whether it may go after a target at (x, z): anywhere, unless it holds its ground (skill.anchored). */
+function mayGo(ai: AiState, x: number, z: number): boolean {
+  return !ai.skill.anchored || onGround(ai, x, z);
+}
+
 function startSearch(state: SimState, ai: AiState): void {
   ai.awareness = 'searching';
   ai.activity = 'search';
@@ -2088,7 +2107,8 @@ function behave(
       case 'wait':
         faceYaw = lookAround(ai);
         if (ai.timer <= 0) {
-          if (ai.squad !== undefined) {
+          // A squad on a route; a boss's with his guards (MT-12) walks his patrol.
+          if (ai.squad !== undefined && squadState(state, ai.squad)) {
             // Done watching a choke: on to the next stop.
             endStop(state, ai);
           } else {
@@ -2220,7 +2240,7 @@ function behave(
           ) {
             break;
           } else if (ai.unseen >= (ai.push ? AI.loseTrack : AI.holdAngle)) {
-            startSearch(state, ai);
+            searchOrReturn(state, c, ai);
             break;
           }
         }
@@ -2383,7 +2403,8 @@ function behave(
       }
       case 'suppress':
         if (ai.seesTarget) backToFight(state, ai);
-        else if (ai.timer <= 0 || !heldWeapon(c)) startSearch(state, ai);
+        else if (pinnedFlank(state, c, ai, world, nav)) break;
+        else if (ai.timer <= 0 || !heldWeapon(c)) searchOrReturn(state, c, ai);
         else if (ai.vantage) {
           // Moving to where its rounds will reach, aimed at where it lost its target.
           const v = ai.vantage;
@@ -2435,7 +2456,7 @@ function behave(
             flankAvoid(state, ai),
           );
           if (r === 'failed' || ai.timer <= 0) {
-            startSearch(state, ai);
+            searchOrReturn(state, c, ai);
             break;
           }
           if (r === 'moving') {
@@ -2460,7 +2481,7 @@ function behave(
         facePitch = Math.atan2(ai.focusY + 1.2 - eyeHeight(c), across);
         ai.input.aim = true;
         reloadIfLow(c, items, 1);
-        if (ai.timer <= 0) startSearch(state, ai);
+        if (ai.timer <= 0) searchOrReturn(state, c, ai);
         break;
       }
       case 'hold': {
@@ -3428,7 +3449,10 @@ function takePart(
     return false;
   }
   fighters.sort(bySlot);
-  const holders = fighters.length - Math.floor(fighters.length / 2);
+  // Flanking only once its target is pinned (skill.pinFlank): all hold for now.
+  const holders = ai.skill.pinFlank
+    ? fighters.length
+    : fighters.length - Math.floor(fighters.length / 2);
   const rank = fighters.indexOf(c);
   if (rank < holders) {
     ai.planned = true;
@@ -3438,6 +3462,7 @@ function takePart(
     ai.blocked = 0;
     ai.vantage = null;
     ai.hasGoal = false;
+    ai.pinTry = 0;
     return true;
   }
   if (coversLeft <= 0) return false;
@@ -3451,6 +3476,55 @@ function takePart(
     hz += fighters[i]!.z / holders;
   }
   if (!findFlank(state, c, ai, world, nav, hx, hz)) return false;
+  ai.activity = 'flank';
+  ai.timer = TACTICS.flankTime;
+  ai.hasGoal = false;
+  return true;
+}
+
+/**
+ * A squad that flanks only when its target is pinned (skill.pinFlank, MT-12: the foreman's
+ * crew holds their ground). Holding (suppress), a member other than the leader whose
+ * target has been out of its sight pinFlank.after seconds within pinFlank.within metres of
+ * where it was last known (its focus), with no mate flanking already, goes to a flanking
+ * spot off the line from the others. Having found none it looks again a second later.
+ * Returns whether it set off.
+ */
+function pinnedFlank(
+  state: SimState,
+  c: Character,
+  ai: AiState,
+  world: CollisionWorld,
+  nav: NavGrid,
+): boolean {
+  const pin = ai.skill.pinFlank;
+  if (!pin || ai.squad === undefined || (ai.squadSlot ?? 0) === 0) return false;
+  if ((ai.pinTry ?? 0) > 0) {
+    ai.pinTry! -= DT;
+    return false;
+  }
+  if (ai.unseen < pin.after || coversLeft <= 0) return false;
+  const target = entityById(state, ai.target);
+  if (!target || target.health.dead) return false;
+  if (Math.hypot(target.x - ai.focusX, target.z - ai.focusZ) > pin.within) return false;
+  let hx = 0;
+  let hz = 0;
+  let n = 0;
+  for (const e of state.entities) {
+    const m = e.ai;
+    if (!m || e === c || m.squad !== ai.squad || e.health.dead) continue;
+    if (m.activity === 'flank') return false;
+    if (m.awareness !== 'alert' || m.target !== ai.target) continue;
+    hx += e.x;
+    hz += e.z;
+    n++;
+  }
+  if (n === 0) return false;
+  coversLeft--;
+  if (!findFlank(state, c, ai, world, nav, hx / n, hz / n)) {
+    ai.pinTry = 1;
+    return false;
+  }
   ai.activity = 'flank';
   ai.timer = TACTICS.flankTime;
   ai.hasGoal = false;
@@ -4587,15 +4661,17 @@ function fight(
   if (hold) {
     // Moving already.
   } else if (!sees) {
-    if (ai.push)
+    if (ai.push && mayGo(ai, ai.focusX, ai.focusZ))
       moving =
         moveTo(state, c, ai, nav, ai.focusX, ai.focusY, ai.focusZ, AI.alertPace, true) === 'moving';
   } else if (
     // Jug walks right at you, firing (AI-7), and on round cover that shows only your head
     // rather than shooting into its edge (2026-11-08).
-    (ai.skill.charge && headOnly) ||
-    across >
-      (ai.skill.charge ? JUG.chargeClose : Math.min(def.range * AI.engageRange, AI.maxEngage))
+    ((ai.skill.charge && headOnly) ||
+      across >
+        (ai.skill.charge ? JUG.chargeClose : Math.min(def.range * AI.engageRange, AI.maxEngage))) &&
+    // Holding its ground (skill.anchored, MT-12), only after a target on it.
+    mayGo(ai, target.x, target.z)
   ) {
     moving =
       moveTo(state, c, ai, nav, target.x, target.y, target.z, AI.alertPace, true) === 'moving';

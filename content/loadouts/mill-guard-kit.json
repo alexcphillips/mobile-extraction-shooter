@@ -1,0 +1,45 @@
+{
+  "formatVersion": 1,
+  "id": "mill-guard-kit",
+  "weapons": [
+    {
+      "weight": 1,
+      "item": "mp5",
+      "spare": [120, 180],
+      "attachments": [{ "item": "red-dot", "chance": 0.4 }],
+      "ammo": [
+        { "weight": 1, "item": "ammo-9mm" },
+        { "weight": 1, "item": "ammo-9mm-ap" }
+      ]
+    },
+    {
+      "weight": 1,
+      "item": "aks-74u",
+      "spare": [120, 180],
+      "attachments": [{ "item": "red-dot", "chance": 0.4 }],
+      "ammo": [
+        { "weight": 1, "item": "ammo-545x39" },
+        { "weight": 1, "item": "ammo-545x39-pp" }
+      ]
+    },
+    {
+      "weight": 1,
+      "item": "ump45",
+      "spare": [100, 150],
+      "attachments": [{ "item": "red-dot", "chance": 0.4 }],
+      "ammo": [
+        { "weight": 1, "item": "ammo-45acp" },
+        { "weight": 1, "item": "ammo-45acp-ap" }
+      ]
+    }
+  ],
+  "helmets": [
+    { "weight": 1, "item": "riot-helmet", "condition": [0.7, 1] },
+    { "weight": 1, "item": "steel-helmet", "condition": [0.7, 1] }
+  ],
+  "bodyArmour": [
+    { "weight": 1, "item": "police-vest", "condition": [0.7, 1] },
+    { "weight": 1, "item": "tactical-vest", "condition": [0.7, 1] }
+  ],
+  "rigs": [{ "weight": 1, "item": "chest-rig" }]
+}

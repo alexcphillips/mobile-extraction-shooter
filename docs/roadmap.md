@@ -150,11 +150,9 @@ After the AI rework, before co-op. The design is [hangar.md](hangar.md). The mat
 ## Silver Creek, the starter map (planned 2026-11-09 with the user)
 See design.md → Raids and maps → Silver Creek for the layout and the user's calls (a Customs-style rectangle about 320 × 150 m, spawns at both ends and extracts at the far end, trees kept to the edges, five river crossings, three landmarks). Sketch: https://claude.ai/artifact/9v38f2y7U7tuf5cdKBxc84. As with Northpoint, the user places spawns and loot, and the bones are approved before detail. The sketch still shows a church; it's now the fire lookout, office and sheds (MT-3).
 
-- 11 finished sessions in [roadmap-done.md](roadmap-done.md). v1 of the map is built; it hasn't been played yet.
+- 12 finished sessions in [roadmap-done.md](roadmap-done.md). v1 of the map is built; it hasn't been played yet.
 
 Later, not counted in v1 of the map:
-- [ ] **MT-12. The foreman's crew**, the mill's boss. Design the gimmick with the user first (bosses rule a landmark, design.md → Bosses).
-  - **Read:** design/ai-scavs-pmcs-bosses.md → Bosses.
 - [ ] **MT-13. Conditional extracts:** the train (power it at the engine shed; switches already exist), the paid log truck, the raft. Water that slows you and splashes, if wanted then.
   - **Read:** design/raids-and-maps.md (extractions, switches); tech/content-formats.md.
 

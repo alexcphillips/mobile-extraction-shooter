@@ -240,9 +240,13 @@ function pickSpawn(
 /**
  * Where a squad member starts: the leader on the spawn, the rest in their places in
  * formation behind it, facing the spawn's way, where that's clear; else near the spawn.
- * As [x, z, radius to spawn within].
+ * As [x, z, radius to spawn within]. Also a boss's guards round him (waves.ts, MT-12).
  */
-function place(world: CollisionWorld, spot: Spot, slot: number): [number, number, number] {
+export function place(
+  world: CollisionWorld,
+  spot: Pick<Spot, 'x' | 'y' | 'z' | 'yaw'>,
+  slot: number,
+): [number, number, number] {
   if (slot === 0) return [spot.x, spot.z, 0];
   const n = SQUAD.formation.length;
   const [back0, side] = SQUAD.formation[Math.min(slot, n) - 1]!;

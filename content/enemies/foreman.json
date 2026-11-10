@@ -1,0 +1,37 @@
+{
+  "formatVersion": 2,
+  "id": "foreman",
+  "name": "Foreman",
+  "faction": "boss",
+  "loadout": "foreman-kit",
+  "limbHealth": 1.5,
+  "guards": { "enemy": "mill-guard", "count": 3 },
+  "skill": {
+    "reaction": 0.45,
+    "aimError": 4,
+    "aimSettled": 0.3,
+    "aimSettle": 1.2,
+    "holdChance": 1,
+    "coverTime": [0.6, 1.4],
+    "sprintToCover": true,
+    "burst": [5, 6],
+    "burstPause": [0.25, 0.45],
+    "spray": { "range": 10, "burst": [10, 15], "pause": [0.05, 0.15] },
+    "heals": true,
+    "sprints": true,
+    "territory": 25,
+    "roam": 0,
+    "anchored": true,
+    "pinFlank": { "after": 4, "within": 3 }
+  },
+  "outfits": [
+    {
+      "skin": "#c99a78",
+      "top": "#6b5434",
+      "bottom": "#3d3a34",
+      "hands": "#2a2118",
+      "feet": "#2b2620"
+    }
+  ],
+  "voice": { "callout": "pmc-callout" }
+}

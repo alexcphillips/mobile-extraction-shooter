@@ -1,0 +1,13 @@
+{
+  "formatVersion": 10,
+  "id": "refrigerant-canister",
+  "name": "Refrigerant canister",
+  "type": "loot",
+  "size": [1, 2],
+  "value": 1000,
+  "rarity": "common",
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#a08a40" }]
+  },
+  "category": "Industrial"
+}

@@ -1,0 +1,30 @@
+{
+  "formatVersion": 1,
+  "id": "foreman-kit",
+  "weapons": [
+    {
+      "weight": 1,
+      "item": "ak-74m",
+      "spare": [120, 210],
+      "attachments": [
+        { "item": "suppressor" },
+        { "item": "holographic-sight", "chance": 0.4 },
+        { "item": "red-dot", "chance": 0.6 }
+      ],
+      "ammo": [
+        { "weight": 4, "item": "ammo-545x39-bp" },
+        { "weight": 1, "item": "ammo-545x39-bs" }
+      ]
+    }
+  ],
+  "helmets": [
+    { "weight": 4, "item": "combat-helmet", "condition": [0.8, 1] },
+    { "weight": 1, "item": "heavy-helmet", "condition": [0.8, 1] }
+  ],
+  "bodyArmour": [
+    { "weight": 4, "item": "plate-carrier", "condition": [0.8, 1] },
+    { "weight": 1, "item": "heavy-plate-carrier", "condition": [0.8, 1] }
+  ],
+  "rigs": [{ "weight": 1, "item": "chest-rig" }],
+  "meds": [[{ "weight": 1, "item": "bandage" }]]
+}

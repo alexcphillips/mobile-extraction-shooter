@@ -135,6 +135,19 @@ const skillSchema = z.strictObject({
    */
   roam: nonNegative.optional(),
   /**
+   * Holds its ground (MT-12, the foreman's crew): with a territory, it never closes in on,
+   * pushes at or searches for a target off it, and out of sight with its target off its
+   * ground it goes back to its patrol. A flanker (pinFlank) still goes where its spot is.
+   */
+  anchored: z.boolean().optional(),
+  /**
+   * Flanks only when you're pinned (MT-12, the foreman's crew): with its target out of the
+   * whole squad's sight, everyone holds and fires at its cover; once it has been out of
+   * sight `after` seconds within `within` metres of where they last saw it, one member (not
+   * the leader) flanks, one at a time. Left out, the usual split (the last half flank).
+   */
+  pinFlank: z.strictObject({ after: positive, within: positive }).optional(),
+  /**
    * Treats itself (2026-11-08, PMCs): bandages bleeding, splints a broken limb and uses a
    * medkit when badly hurt, from what it carries, never a surgery kit. Calm, whenever it
    * needs to; fighting, only out of its target's sight, in cover nearby if there is any.
@@ -274,6 +287,12 @@ export const enemySchema = z.strictObject({
    * Jug: 2). Head and chest are as anyone's. 1 if left out.
    */
   limbHealth: positive.optional(),
+  /**
+   * Its guards (MT-12, the foreman's crew): `count` of enemy type `enemy`, put in round it
+   * where it spawns as its squad (it leads), following it on its patrol and sharing it.
+   * None if left out; an optional field, so still format 2.
+   */
+  guards: z.strictObject({ enemy: idSchema, count: z.int().min(1) }).optional(),
   /**
    * What it says (AI rework session 5): sound ids in content/sounds. `callout` is shouted
    * when a squad member spots someone, `grenade` as it throws one (AI-6), and `breathe` and
@@ -439,6 +458,13 @@ export function checkEnemies(
   for (const e of enemies.values()) {
     if (!loadouts.has(e.loadout)) {
       throw new ContentError(`content/enemies/${e.id}.json`, `no loadout "${e.loadout}"`);
+    }
+    const g = e.guards?.enemy;
+    if (g !== undefined && (!enemies.has(g) || enemies.get(g)!.guards)) {
+      throw new ContentError(
+        `content/enemies/${e.id}.json`,
+        enemies.has(g) ? `its guards "${g}" have guards of their own` : `no enemy type "${g}"`,
+      );
     }
   }
   // Admin spawner guns name the enemy they spawn.
