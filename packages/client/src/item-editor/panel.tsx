@@ -38,7 +38,7 @@ import { FitsPage, type OpenFit } from './fits-panel';
 import { Group, Labeled, RarityPicker, S, Segmented, T, Tick } from './form';
 import { ModelTab } from './model-panel';
 import { ReticleDesigner } from './reticle';
-import { BLANK_OPTIC, ITEM_TYPES, type ItemType } from './templates';
+import { BLANK_OPTIC, ITEM_KINDS, kindOf, type ItemKind, type ItemType } from './templates';
 
 /*
  * The item editor's page (session 18): the list of items down the left, the open item's
@@ -158,7 +158,7 @@ function ItemList({ state: s, editor }: { state: ItemEditorState; editor: ItemEd
   // Only when the open item's type (or loot category) changes, so closing that type afterwards sticks.
   // Loot also opens its category, keyed 'loot/<category>' ('loot/' for none).
   const cur = s.items.get(s.current);
-  const currentType = cur?.type;
+  const currentType = cur && kindOf(cur);
   const currentGroup = cur?.type === 'loot' ? `loot/${cur.category ?? ''}` : currentType;
   const [seenGroup, setSeenGroup] = useState<string | undefined>(undefined);
   if (currentGroup !== seenGroup) {
@@ -179,8 +179,8 @@ function ItemList({ state: s, editor }: { state: ItemEditorState; editor: ItemEd
         onChange={(e) => setFilter(e.target.value)}
       />
       <div className="ie-items">
-        {ITEM_TYPES.map((type) => {
-          const of = all.filter((d) => d.type === type).sort((a, b) => a.id.localeCompare(b.id));
+        {ITEM_KINDS.map((type) => {
+          const of = all.filter((d) => kindOf(d) === type).sort((a, b) => a.id.localeCompare(b.id));
           if (!of.length) return null;
           return (
             <ItemGroup
@@ -310,11 +310,11 @@ function ItemPage(props: { editor: ItemEditor; state: ItemEditorState; def: Item
           </div>
           <select
             className="ie-type-pick"
-            value={def.type}
-            title="Change its type: keeps its name, size, value, rarity and model; the rest starts from the new type's blank"
-            onChange={(e) => editor.changeType(e.target.value as ItemType)}
+            value={kindOf(def)}
+            title="Change its type: keeps its name, size, value, rarity and model; the rest starts from the new type's blank (a rig, armored rig or backpack keeps its inside too)"
+            onChange={(e) => editor.changeType(e.target.value as ItemKind)}
           >
-            {ITEM_TYPES.map((t) => (
+            {ITEM_KINDS.map((t) => (
               <option key={t}>{t}</option>
             ))}
           </select>
@@ -1618,7 +1618,7 @@ function NewItem(props: {
 }) {
   const { state: s, copy } = props;
   const from = s.items.get(s.current);
-  const [type, setType] = useState<ItemType>(from?.type ?? 'loot');
+  const [type, setType] = useState<ItemKind>(from ? kindOf(from) : 'loot');
   const [rawId, setId] = useState(copy && from ? `${from.id}-2` : '');
   const id = rawId.replace(/-+$/, '');
   const [name, setName] = useState(copy && from ? `${from.name} 2` : '');
@@ -1641,8 +1641,8 @@ function NewItem(props: {
         {!copy && (
           <label className="ed-field">
             type
-            <select value={type} onChange={(e) => setType(e.target.value as ItemType)}>
-              {ITEM_TYPES.map((t) => (
+            <select value={type} onChange={(e) => setType(e.target.value as ItemKind)}>
+              {ITEM_KINDS.map((t) => (
                 <option key={t}>{t}</option>
               ))}
             </select>

@@ -69,6 +69,7 @@ export function ItemDetails({
   buyFor,
   extra,
   actions,
+  corner,
   panel = false,
   onClose,
 }: {
@@ -82,6 +83,8 @@ export function ItemDetails({
   extra?: ReactNode;
   /** Buttons along the bottom. */
   actions?: ReactNode;
+  /** In the picture's top right corner: the favorite star. */
+  corner?: ReactNode;
   /** A panel placed by its parent, with no backdrop (the inventory's), not a card over everything. */
   panel?: boolean;
   onClose: () => void;
@@ -132,6 +135,7 @@ export function ItemDetails({
             style={{ background: `${colorOf(def)}33`, borderColor: colorOf(def) }}
           >
             {picture && <img src={picture} alt="" draggable={false} />}
+            {corner}
           </div>
           <div className="item-details-info">
             {!NO_DESCRIPTION.has(def.type) && <p className="item-details-desc">{DESCRIPTION}</p>}

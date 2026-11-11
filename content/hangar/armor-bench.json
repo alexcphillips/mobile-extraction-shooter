@@ -3,7 +3,7 @@
   "id": "armor-bench",
   "name": "Armor bench",
   "blurb": "Builds armor, rigs and backpacks, and better repair kits.",
-  "order": 2,
+  "order": 3,
   "levels": [
     {
       "cost": [

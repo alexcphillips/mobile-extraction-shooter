@@ -1,0 +1,390 @@
+/* The quest editor (2026-11-11): chains as vendor lanes on the left, the open quest's form on the right. */
+
+.qe {
+  position: fixed;
+  inset: 0 0 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  pointer-events: auto;
+}
+
+.qe-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--ed-bg);
+  border-radius: 6px;
+}
+
+#editor .qe-filter {
+  width: 240px;
+  margin-left: 8px;
+}
+
+.qe-count {
+  color: var(--ed-dim);
+}
+
+.qe-nav {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.qe-body {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+  min-height: 0;
+}
+
+/* The chains: scrolls both ways. */
+.qe-chains {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  background: var(--ed-bg);
+  border-radius: 6px;
+}
+
+.qe-canvas {
+  position: relative;
+}
+
+.qe-lane {
+  position: absolute;
+  left: 0;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--ed-line);
+}
+
+.qe-lane.qe-odd {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.qe-lane-head {
+  position: sticky;
+  left: 0;
+  width: 136px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 10px 8px 8px 10px;
+  border-left: 4px solid;
+  background: rgba(20, 23, 28, 0.94);
+  z-index: 2;
+}
+
+.qe-lane-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.qe-lane-sub {
+  color: var(--ed-dim);
+  font-size: 11px;
+}
+
+.qe-lane-sub.qe-short {
+  color: #ffb74d;
+}
+
+#editor .qe-lane-add {
+  margin-top: 6px;
+  font-size: 11px;
+  padding: 1px 6px;
+}
+
+.qe-edges {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.qe-edges path {
+  pointer-events: stroke;
+}
+
+.qe-card {
+  position: absolute;
+  z-index: 3;
+  box-sizing: border-box;
+  padding: 6px 18px 6px 9px;
+  border: 1px solid var(--ed-line);
+  border-left: 4px solid;
+  border-radius: 6px;
+  background: #222831;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    opacity 0.12s,
+    box-shadow 0.12s;
+}
+
+.qe-card:hover {
+  background: #283039;
+}
+
+.qe-card.qe-open {
+  box-shadow: 0 0 0 2px var(--ed-accent);
+}
+
+.qe-card.qe-dim {
+  opacity: 0.35;
+}
+
+.qe-card.qe-match {
+  box-shadow: 0 0 0 1px #ffd54f;
+}
+
+.qe-card.qe-bad {
+  border-top-color: #e57373;
+  border-right-color: #e57373;
+  border-bottom-color: #e57373;
+}
+
+.qe-card.qe-drop-ok {
+  box-shadow: 0 0 0 2px #66bb6a;
+}
+
+.qe-card.qe-drop-no {
+  opacity: 0.4;
+}
+
+.qe-card-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qe-card-line {
+  font-size: 11px;
+  color: var(--ed-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qe-card-reward {
+  color: #a5d6a7;
+}
+
+.qe-warn {
+  color: #e57373;
+}
+
+/* The dot on a card's right edge, dragged onto the quest it unlocks. */
+.qe-handle {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--ed-dim);
+  cursor: crosshair;
+}
+
+.qe-handle:hover {
+  background: var(--ed-accent);
+}
+
+/* The form. */
+.ie-form.qe-form {
+  width: 440px;
+}
+
+.qe-problem {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(229, 115, 115, 0.15);
+  color: #ff8a80;
+}
+
+.qe-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+#editor .qe-danger {
+  color: #ff8a80;
+}
+
+.qe-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #e57373;
+  border-radius: 6px;
+  background: var(--ed-bg);
+}
+
+.qe-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.qe-section > h4 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0;
+}
+
+.qe-h-extra {
+  display: flex;
+  gap: 4px;
+}
+
+.qe-add-row {
+  display: flex;
+  gap: 4px;
+}
+
+#editor .qe-add {
+  font-size: 11px;
+  padding: 1px 7px;
+}
+
+.qe-label {
+  font-size: 11px;
+  color: var(--ed-dim);
+}
+
+.qe-seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.qe-seg button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.qe-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.qe-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.qe-qchip {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid;
+  border-left-width: 3px;
+  border-radius: 4px;
+}
+
+#editor .qe-qchip button {
+  border: none;
+  background: transparent;
+}
+
+.qe-qchip-name {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+
+.qe-qchip-vendor {
+  font-size: 10px;
+  color: var(--ed-dim);
+}
+
+#editor .qe-x {
+  padding: 0 6px;
+  color: var(--ed-dim);
+}
+
+#editor .qe-x:hover:not(:disabled) {
+  color: #ff8a80;
+}
+
+.qe-textarea textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  font-size: 13px;
+  color: var(--ed-text);
+}
+
+.qe-objective {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--ed-line);
+  border-radius: 6px;
+}
+
+.qe-obj-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.qe-obj-tools {
+  display: flex;
+  gap: 2px;
+}
+
+.qe-obj-row,
+.qe-rewards {
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.qe-obj-row > .ed-field {
+  flex: 1;
+}
+
+.qe-obj-row .ed-num input,
+.qe-reward-row .ed-num input {
+  width: 64px;
+}
+
+.qe-check {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.qe-reward-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qe-reward-row > .le-chip-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.qe-reward-row .ed-num {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-direction: row;
+}

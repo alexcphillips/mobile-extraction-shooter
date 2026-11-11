@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "workshop-red-dot",
+  "module": "gun-workshop",
+  "level": 1,
+  "inputs": [
+    { "item": "electrical-tape", "count": 1 },
+    { "item": "duct-tape", "count": 1 }
+  ],
+  "output": { "item": "red-dot", "count": 1 },
+  "minutes": 45
+}

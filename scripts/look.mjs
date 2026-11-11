@@ -61,7 +61,8 @@ await page.goto(opt.query ? `${opt.base}/?${opt.query}` : opt.base);
 await page.waitForLoadState('networkidle');
 for (const sel of opt.clicks) {
   await page.locator(sel).first().click();
-  await page.waitForTimeout(300);
+  // Past the inventory's double-tap window (350 ms), so a tap's open isn't cancelled by the next.
+  await page.waitForTimeout(450);
 }
 await page.waitForTimeout(opt.wait);
 await page.screenshot({ path: opt.out });

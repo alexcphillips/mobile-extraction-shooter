@@ -42,7 +42,7 @@ export function cantUpgrade(profile: Profile, module: HangarModuleDef): string |
 
 /**
  * Upgrades a module a level, taking its cost out of the stash (all or nothing). Instant.
- * What the level gives in stash space (Quarters' category pages, the Secure locker's
+ * What the level gives in stash space (the Stash module's category pages, the Secure locker's
  * vault: H4) comes with it. Returns why it can't, or null.
  */
 export function upgradeModule(

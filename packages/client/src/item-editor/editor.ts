@@ -10,7 +10,7 @@ import {
 } from '@mes/shared';
 import { itemContentProblem } from '../content';
 import { storageRisks } from './risk';
-import { blankItem, retype, type ItemType } from './templates';
+import { blankItem, kindOf, retype, type ItemKind } from './templates';
 
 /** A rig's or backpack's cells (bagCells), or null for anything else or one not valid yet. */
 function cellsOf(doc: Doc): number | null {
@@ -182,14 +182,14 @@ export class ItemEditor {
   }
 
   /** Turns the current item into another type (see retype), as one undo step. */
-  changeType(type: ItemType): void {
+  changeType(kind: ItemKind): void {
     // From its file, not the item list, so an item that doesn't validate yet can change too.
     const file = this.files.get(this.state.current);
     if (file === undefined) return;
     const def = JSON.parse(file) as ItemDef;
-    if (def.type === type) return;
+    if (kindOf(def) === kind) return;
     const ammo = [...this.state.items.values()].find((d) => d.type === 'ammo')?.id;
-    const next = retype(def, type, ammo) as unknown as Doc;
+    const next = retype(def, kind, ammo) as unknown as Doc;
     this.edit((doc) => {
       for (const k of Object.keys(doc)) delete doc[k];
       Object.assign(doc, next);
@@ -197,7 +197,7 @@ export class ItemEditor {
   }
 
   /** Makes a new item, blank or (with `from`) a copy of another, and opens it. */
-  create(type: ItemType, id: string, name: string, from?: string): void {
+  create(kind: ItemKind, id: string, name: string, from?: string): void {
     if (this.files.has(id)) return this.set({ message: `There's already an item "${id}".` });
     let doc: Doc;
     const source = from === undefined ? undefined : this.files.get(from);
@@ -205,7 +205,7 @@ export class ItemEditor {
       doc = { ...(JSON.parse(source) as Doc), id, name };
     } else {
       const ammo = [...this.state.items.values()].find((d) => d.type === 'ammo')?.id;
-      doc = blankItem(type, id, name, ammo) as unknown as Doc;
+      doc = blankItem(kind, id, name, ammo) as unknown as Doc;
       fillRarity(null, doc);
     }
     this.push();

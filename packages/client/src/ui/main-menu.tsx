@@ -4,10 +4,10 @@ import {
   pickHost,
   sortGrid,
   nextPagePrice,
-  nextPageQuarters,
+  nextPageStashLevel,
   boughtPages,
   sortToCategoryPages,
-  QUARTERS,
+  STASH_MODULE,
   openStash,
   quickEquip,
   stashOwner,
@@ -1001,7 +1001,7 @@ function StashPage({
   // Buying asks for a second tap.
   const [confirming, setConfirming] = useState(false);
   const [buying, setBuying] = useState(false);
-  // The locked next page's tooltip: which Quarters level it needs (H4).
+  // The locked next page's tooltip: which Stash level it needs (H4).
   const [lockTip, setLockTip] = useState(false);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<Category>('all');
@@ -1017,9 +1017,9 @@ function StashPage({
   const hit = searcher(items, query, category);
   const hits = stash.profile.stash.map((page) => (hit ? countHits(page, hit) : 0));
   const price = nextPagePrice(stash.profile);
-  // The next page needs Quarters a level higher (H4); below it, the tab shows a lock.
-  const quarters = nextPageQuarters(stash.profile);
-  const locked = quarters !== null && (stash.profile.hangar[QUARTERS] ?? 0) < quarters;
+  // The next page needs Stash a level higher (H4); below it, the tab shows a lock.
+  const needs = nextPageStashLevel(stash.profile);
+  const locked = needs !== null && (stash.profile.hangar[STASH_MODULE] ?? 0) < needs;
   const bought = boughtPages(stash.profile);
   /** Leaving the stash: auto sort puts loose items onto their category pages first (H4). */
   const close = (): void => {
@@ -1141,7 +1141,7 @@ function StashPage({
         );
       })}
       {/*
-        The next page: a + that buys it (two taps), or with Quarters too low a lock whose
+        The next page: a + that buys it (two taps), or with Stash too low a lock whose
         tap says the level it needs (H4; a lock with a placeholder tooltip from 2026-11-09).
       */}
       {price !== null && !locked && (
@@ -1177,7 +1177,7 @@ function StashPage({
           </button>
           {lockTip && (
             <span id="stash-lock-tip" className="stash-lock-tip" role="tooltip">
-              Page {bought + 1} needs Quarters level {quarters} (Hangar)
+              Page {bought + 1} needs Stash module level {needs} (Hangar)
             </span>
           )}
         </span>

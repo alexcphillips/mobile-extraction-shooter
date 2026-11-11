@@ -46,13 +46,14 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   useSyncExternalStore,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from 'react';
 import { itemPortrait } from '../render/item-portrait';
-import { refKey, type InventoryController } from './inventory-controller';
+import { refKey, type InventoryController, type OpenBag } from './inventory-controller';
 import { ItemDetails } from './item-details';
 import { MapTab } from './map-tab';
 import type { RaidContext } from './raid';
@@ -389,6 +390,17 @@ export function Inventory({ inv, version }: Props): ReactNode {
               extra={
                 sel.def.type === 'weapon' && <Parts inv={inv} gun={selected} item={sel.item} />
               }
+              corner={
+                <button
+                  className={`item-details-fav${favs.has(sel.def.id) ? ' favorited' : ''}`}
+                  aria-pressed={favs.has(sel.def.id)}
+                  aria-label="Favorite"
+                  title="Favorites are starred, and light up where they turn up in a body, a container or on the ground"
+                  onClick={() => toggleFavorite(sel.def.id)}
+                >
+                  {favs.has(sel.def.id) ? '★' : '☆'}
+                </button>
+              }
               actions={
                 <>
                   {'index' in selected && sel.def.size[0] !== sel.def.size[1] && (
@@ -397,25 +409,24 @@ export function Inventory({ inv, version }: Props): ReactNode {
                   {sel.def.type === 'weapon' && (sel.item.mag ?? 0) > 0 && (
                     <button onClick={() => inv.unload(selected)}>Unload</button>
                   )}
+                  {sel.def.type === 'weapon' &&
+                    ((sel.item.mag ?? 0) > 0 ||
+                      Object.values(sel.item.attachments ?? {}).some((a) => a !== null)) && (
+                      <button
+                        title="Unloads it and takes every attachment off, the magazine too, into your backpack, then rig, then the ground"
+                        onClick={() => inv.strip(selected)}
+                      >
+                        Strip
+                      </button>
+                    )}
                   {sel.def.type === 'med' && ctx.use && !ctx.player.using && (
                     <button disabled={!inv.medRef(selected)} onClick={() => inv.useMed(selected)}>
                       {inv.medRef(selected) ? 'Use' : 'Nothing to treat'}
                     </button>
                   )}
                   <RepairButton inv={inv} armor={selected} item={sel.item} def={sel.def} />
-                  <button
-                    className={favs.has(sel.def.id) ? 'favorited' : undefined}
-                    aria-pressed={favs.has(sel.def.id)}
-                    title="Favorites are starred, and light up where they turn up in a body, a container or on the ground"
-                    onClick={() => toggleFavorite(sel.def.id)}
-                  >
-                    {favs.has(sel.def.id) ? '★ Favorite' : '☆ Favorite'}
-                  </button>
                   {ctx.sell && !('ground' in selected) && (
                     <SellButton key={refKey(selected)} inv={inv} at={selected} item={sel.item} />
-                  )}
-                  {ctx.sell && inv.canPick(selected) && (
-                    <button onClick={() => inv.startSelling(selected)}>Sell several</button>
                   )}
                   {!('ground' in selected) && !ctx.stash && (
                     <button onClick={() => inv.toGround(selected)}>Drop</button>
@@ -434,6 +445,7 @@ export function Inventory({ inv, version }: Props): ReactNode {
         <div className="inv-spacer" />
         <Loot inv={inv} />
       </div>
+      <Bags inv={inv} />
       {help && (
         <div className="inv-help" role="note" onClick={() => setHelp(false)}>
           {inputMode.gamepad
@@ -917,7 +929,6 @@ function Loot({ inv }: { inv: InventoryController }): ReactNode {
       <>
         {/* The search box is off for now (2026-11-09, the user's call); see SearchBox. */}
         <div className="inv-open">
-          <Bag inv={inv} />
           {search ? (
             <div className="stash-paged">
               <StashChips />
@@ -1034,23 +1045,58 @@ function SearchBox(): ReactNode {
 }
 
 /**
- * The rig or backpack opened with a tap from the open container or stash page (the
- * user's call, 2026-11-01): what's in it, to drag in and out of, with its details a
- * button away. Beside the container where there's room, else above it; it stays in view
- * while the container scrolls.
+ * The rigs and backpacks opened with a tap from the open container or stash page (the
+ * user's call, 2026-11-01): what's in each, to drag in and out of. Since 2026-11-11 (the
+ * user's call) each is a floating window over the whole inventory, up to MAX_BAGS, the
+ * newest on top, dragged by its title bar; a touch brings one to the front.
  */
-function Bag({ inv }: { inv: InventoryController }): ReactNode {
-  const open = inv.openBag();
-  if (!open) return null;
-  const { at, grid } = open;
-  const def = itemDef(inv.ctx.items, at.item);
+function Bags({ inv }: { inv: InventoryController }): ReactNode {
   return (
-    <div className="inv-bag" style={{ borderColor: colorOf(def) }}>
-      <header className="inv-bag-head">
+    <>
+      {inv.openBags().map((b) => (
+        <BagWindow key={refKey(b.at)} inv={inv} bag={b} />
+      ))}
+    </>
+  );
+}
+
+function BagWindow({ inv, bag }: { inv: InventoryController; bag: OpenBag }): ReactNode {
+  const { at, grid, item } = bag;
+  const def = itemDef(inv.ctx.items, at.item);
+  const el = useRef<HTMLDivElement>(null);
+  const grab = useRef<{ id: number; dx: number; dy: number } | null>(null);
+  const onDown = (e: ReactPointerEvent): void => {
+    if ((e.target as HTMLElement).closest('button')) return;
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    grab.current = { id: e.pointerId, dx: e.clientX - bag.x, dy: e.clientY - bag.y };
+  };
+  const onMove = (e: ReactPointerEvent): void => {
+    const g = grab.current;
+    if (!g || g.id !== e.pointerId) return;
+    const r = el.current?.getBoundingClientRect();
+    inv.moveBag(item, e.clientX - g.dx, e.clientY - g.dy, r?.width ?? 0, r?.height ?? 0);
+  };
+  const onUp = (e: ReactPointerEvent): void => {
+    if (grab.current?.id === e.pointerId) grab.current = null;
+  };
+  return (
+    <div
+      ref={el}
+      className="inv-bag"
+      style={{ borderColor: colorOf(def), left: bag.x, top: bag.y }}
+      onPointerDownCapture={() => inv.raiseBag(item)}
+    >
+      <header
+        className="inv-bag-head"
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={onUp}
+        onPointerCancel={onUp}
+      >
         <h3>{def.name}</h3>
         <span className="raid-spacer" />
-        <button onClick={() => inv.select(at)}>Details</button>
-        <button aria-label="Close" onClick={() => inv.closeBag()}>
+        <button aria-label="Close" onClick={() => inv.closeBag(item)}>
           ✕
         </button>
       </header>

@@ -142,6 +142,10 @@ if (location.pathname === '/bodies') {
   import('./loot-editor')
     .then((editor) => editor.startLootEditor(byId('editor')))
     .catch((err: unknown) => (status.textContent = `loot editor failed: ${message(err)}`));
+} else if (location.pathname === '/quest-editor' && import.meta.env.DEV) {
+  import('./quest-editor')
+    .then((editor) => editor.startQuestEditor(byId('editor')))
+    .catch((err: unknown) => (status.textContent = `quest editor failed: ${message(err)}`));
 } else if (location.pathname === '/sounds' && import.meta.env.DEV) {
   import('./sound-editor')
     .then((editor) => editor.startSoundEditor(byId('editor')))

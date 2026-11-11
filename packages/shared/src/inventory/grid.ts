@@ -89,7 +89,7 @@ export interface Grid {
    */
   sections?: Section[];
   /**
-   * A category stash page (H4, from Quarters): it holds only that category's kinds of item
+   * A category stash page (H4, from Stash): it holds only that category's kinds of item
    * (PAGE_CATEGORIES). Left out, anything.
    */
   only?: PageCategory;
@@ -153,7 +153,7 @@ export function itemHeight(items: ItemDb, id: string, rotated: boolean): number 
 }
 
 /**
- * The categories of stash page Quarters unlocks (H4; hangar.md → Quarters), and the kinds
+ * The categories of stash page Stash unlocks (H4; hangar.md → Stash), and the kinds
  * of item each holds: the same kinds as the stash's category chips.
  */
 export const PAGE_CATEGORIES = {

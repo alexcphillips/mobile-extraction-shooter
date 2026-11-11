@@ -18,7 +18,7 @@ import {
 import { colorsOf } from './palette';
 import { dragged, mirrored, repeated } from './reticle-edit';
 import { storageRisks } from './risk';
-import { ITEM_TYPES, blankItem, retype } from './templates';
+import { ITEM_KINDS, blankItem, kindOf, retype } from './templates';
 
 /** The content items with one changed, as a fresh database. */
 function edited(id: string, change: (d: Record<string, unknown>) => void): Map<string, ItemDef> {
@@ -30,10 +30,27 @@ function edited(id: string, change: (d: Record<string, unknown>) => void): Map<s
 }
 
 describe('item editor', () => {
-  it.each(ITEM_TYPES)('a new %s passes the item schema', (type) => {
-    const doc = blankItem(type, 'new-thing', 'New thing', 'ammo-9mm');
+  it.each(ITEM_KINDS)('a new %s passes the item schema', (kind) => {
+    const doc = blankItem(kind, 'new-thing', 'New thing', 'ammo-9mm');
     expect(() => loadContent(ITEM_FORMAT, structuredClone(doc), 'new')).not.toThrow();
     expect(Object.keys(doc).slice(0, 4)).toEqual(['formatVersion', 'id', 'name', 'type']);
+    expect(kindOf(doc)).toBe(kind);
+  });
+
+  it("gives a new rig the armored chest rig's model, worn on the chest", () => {
+    const armored = loadItems().get('armored-chest-rig')!;
+    for (const kind of ['rig', 'armored rig'] as const) {
+      expect(blankItem(kind, 'r', 'R').model).toEqual(armored.model);
+    }
+  });
+
+  it('turns a backpack into an armored rig, keeping its inside', () => {
+    const bag = blankItem('backpack', 'b', 'B');
+    const rig = retype(bag, 'armored rig');
+    expect(() => loadContent(ITEM_FORMAT, structuredClone(rig), 'r')).not.toThrow();
+    expect(rig).toMatchObject({ slot: 'rig', grid: [4, 4], model: bag.model });
+    expect(kindOf(retype(rig, 'backpack'))).toBe('backpack');
+    expect(retype(rig, 'backpack')).not.toHaveProperty('armor');
   });
 
   it('turns loot into a med, keeping what every type has and its model', () => {

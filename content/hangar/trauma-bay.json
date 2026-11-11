@@ -3,7 +3,7 @@
   "id": "trauma-bay",
   "name": "Trauma bay",
   "blurb": "Makes medkits and field surgery kits from medical loot.",
-  "order": 3,
+  "order": 4,
   "levels": [
     {
       "cost": [

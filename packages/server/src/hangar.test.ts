@@ -29,7 +29,7 @@ describe('the Hangar', () => {
   it('has every module, each with the Power grid able to power its levels', () => {
     const modules = loadHangar();
     expect(modules.get(POWER_GRID)?.levels.length).toBe(MODULE_LEVELS);
-    expect(modules.size).toBe(6);
+    expect(modules.size).toBe(7);
   });
 
   it('upgrades a module a level for its cost, once per version, within the Power grid', async () => {
@@ -66,14 +66,14 @@ describe('the Hangar', () => {
     expect(bandages(me.profile)).toBe(before - 1 - MODULE_LEVELS);
   });
 
-  it('grows the vault with the Secure locker and adds category pages with Quarters (H4)', async () => {
+  it('grows the vault with the Secure locker and adds category pages with Stash (H4)', async () => {
     const client = await withBandages(10);
     await client.editProfile((p) => (p.hangar[POWER_GRID] = MODULE_LEVELS));
     let me = await client.ok('GET', '/profile');
     expect(me.profile.gear.vault).toMatchObject({ w: 2, h: 1 });
     for (let l = 1; l <= MODULE_LEVELS; l++) {
       me = await client.ok('POST', '/hangar/secure-locker/upgrade', { version: me.version });
-      me = await client.ok('POST', '/hangar/quarters/upgrade', { version: me.version });
+      me = await client.ok('POST', '/hangar/stash/upgrade', { version: me.version });
     }
     expect(me.profile.gear.vault).toMatchObject({ w: 3, h: 3 });
     expect(me.profile.stash.map((g) => g.only ?? null)).toEqual([null, 'guns', 'ammo', 'meds']);

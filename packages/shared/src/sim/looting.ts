@@ -1,6 +1,7 @@
 import type { CompiledMap } from '../content/compile';
 import type { LootContainerDef } from '../content/loot-containers';
 import {
+  ATTACHMENT_SLOTS,
   attachmentDef,
   firesRound,
   fits,
@@ -193,6 +194,9 @@ export type Target = GridSpot | Omit<InSlot, 'item'> | ToGround;
  * - unload: takes the rounds out of a gun, wherever it is, into what you carry. A
  *   reload in progress stops.
  * - load (2026-10-30): a stack of rounds dropped on a gun that fires them (loadGun).
+ * - strip (2026-11-11, the user's call): unloads a gun and takes off every attachment
+ *   (the magazine too) into c's backpack, then rig, then at its feet (between raids, the
+ *   stash's pages). Refused if there's nothing to take off.
  * A magazine change hands back the rounds that no longer fit, into what you carry. What
  * has no room (those rounds, a part swapped off, a part taken off into what you carry)
  * is dropped at your feet rather than the action refused (session 11b).
@@ -212,6 +216,7 @@ export type InventoryAction =
     }
   | { type: 'repair'; kit: ItemRef; armor: ItemRef }
   | { type: 'unload'; gun: ItemRef }
+  | { type: 'strip'; gun: ItemRef }
   | { type: 'load'; gun: ItemRef; from: ItemRef };
 
 /** An inventory action was applied (ok) or refused. */
@@ -473,6 +478,8 @@ export function applyInventory(
       return startRepair(state, c, items, action.kit, action.armor);
     case 'unload':
       return unload(ctx, action.gun);
+    case 'strip':
+      return strip(ctx, action.gun);
     case 'load':
       return loadGun(state, c, items, action.gun, action.from, false, world);
   }
@@ -947,6 +954,33 @@ function unload(ctx: Ctx, gunRef: ItemRef): boolean {
   gun.reloading = 0;
   stowRounds(ctx, loadedAmmo(ctx.items, gun), n);
   return true;
+}
+
+/** Unloads a gun and takes every attachment off (see strip in InventoryAction). */
+function strip(ctx: Ctx, gunRef: ItemRef): boolean {
+  const { c, items } = ctx;
+  const gun = findGun(ctx, gunRef);
+  if (!gun) return false;
+  const slots = ATTACHMENT_SLOTS.filter((s) => gun.attachments[s] !== null);
+  if (!slots.length && gun.mag <= 0) return false;
+  const ammo = loadedAmmo(items, gun);
+  if (gun.mag > 0) bagOrDrop(ctx, cameOffGun(c, createItem(items, ammo, gun.mag)));
+  gun.mag = 0;
+  gun.reloading = 0;
+  for (const slot of slots) {
+    bagOrDrop(ctx, cameOffGun(c, createItem(items, gun.attachments[slot]!)));
+    detach(gun, items, slot);
+  }
+  return true;
+}
+
+/** Puts an item in c's backpack, then rig; what doesn't fit is dropped at its feet. */
+function bagOrDrop(ctx: Ctx, item: Item): void {
+  let left = item.count;
+  for (const grid of [ctx.c.gear.backpack?.grid, ctx.c.gear.rig?.grid]) {
+    if (grid && left > 0) left = addItem(ctx.items, grid, item);
+  }
+  if (left > 0) dropItem(ctx.state, ctx.c, item, ctx.world);
 }
 
 /** Rounds a gun handed back, into what c carries or else at its feet. */

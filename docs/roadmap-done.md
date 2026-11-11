@@ -941,3 +941,6 @@ The design is [hangar.md](hangar.md). The material items and loot tables are the
 - [x] **MT-12. The foreman's crew, 2026-11-10.** design/ai-scavs-pmcs-bosses.md → The foreman.
   - The user's design: a PMC-like boss (faction `boss`) with an always-suppressed AK-74M, epic gear and 20% legendary, 1.5× limbs, one bandage; three guards with SMGs and green-to-blue gear. New: an enemy type's `guards`, skill `anchored` (hold their ground) and `pinFlank` (one guard flanks once you're pinned). Fixed a boss leading a squad standing guard after his first patrol wait.
   - Checked: all 1,055 tests pass (new `foreman.test.ts`); typecheck, lint. A throwaway sim on Silver Creek for kits and the patrol. **Not played.**
+- [x] **Quest editor, 2026-11-11** (the user's request, not a planned session). design/editors.md → Quest editor.
+  - `/quest-editor`: vendor lanes with arrows across vendors, drag to link, a form for every quest field; random fixed ids; deleting rewires the chain; one save for every changed, new and deleted file.
+  - Checked: new `quest-editor.test.ts`; typecheck, lint; headless shots and a real save (rename, delete, new) through the dev server, then the files put back. **Not tried by the user yet.**

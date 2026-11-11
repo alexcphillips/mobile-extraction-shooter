@@ -1782,15 +1782,19 @@ body:has(#raid:not([hidden])) #vitals {
   flex: none;
 }
 
-/* Stays in view while the stash scrolls under it. */
+/*
+ * An open rig's or backpack's window (2026-11-11, the user's call): floating over the whole
+ * inventory, dragged by its title bar; later windows are later in the page, so on top. The
+ * item details card (z-index 5) stays above them.
+ */
 .inv-bag {
-  position: sticky;
-  top: 0;
-  z-index: 2;
+  position: fixed;
+  z-index: 4;
   padding: 6px;
   border: 1px solid;
   border-radius: 4px;
   background: #1b2227;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.55);
 }
 
 .inv-bag-head {
@@ -1798,15 +1802,20 @@ body:has(#raid:not([hidden])) #vitals {
   align-items: center;
   gap: 6px;
   margin-bottom: 6px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .inv-bag-head h3 {
   margin: 0;
+  white-space: nowrap;
 }
 
 .inv-bag-head button {
-  min-height: 32px;
-  padding: 0 10px;
+  min-height: 28px;
+  padding: 0 8px;
 }
 
 /* The rig or backpack whose contents are open. */
@@ -5215,7 +5224,7 @@ body:has(#layout-bar) #menu {
 .item-details.panel {
   position: absolute;
   inset: 0;
-  z-index: 3;
+  z-index: 5;
   width: auto;
   max-height: none;
   border: 1px solid var(--ui-line);
@@ -5332,6 +5341,7 @@ body.inv-dragging .item-details.panel {
 }
 
 .item-details-pic {
+  position: relative;
   flex: none;
   width: min(34%, 180px);
   aspect-ratio: 1;
@@ -5345,6 +5355,30 @@ body.inv-dragging .item-details.panel {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+/* The favorite star, in the picture's top right corner (2026-11-11, the user's call). */
+.raid .item-details-pic .item-details-fav {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 0;
+  min-height: 0;
+  padding: 2px 6px;
+  border: none;
+  background: none;
+  color: rgb(232 236 239 / 0.8);
+  font-size: 20px;
+  line-height: 1;
+}
+.raid .item-details-pic .item-details-fav.favorited {
+  color: #ffd25a;
+}
+@media (hover: hover) {
+  .raid .item-details-pic .item-details-fav:hover {
+    background: none;
+    color: #ffd25a;
+  }
 }
 
 .item-details-info {

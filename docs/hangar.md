@@ -12,7 +12,7 @@ The player's base between raids: modules you upgrade with loot, which then craft
 - **The Hangar doesn't print money.** Its workshop and crafting stations turn looted items into gear; no recipe outputs money, and there's no passive income module (no "Bitcoin farm"). (Clarified by the user, 2026-11-10.)
 - **Inputs can be anything, vendor stock included** (the user, 2026-11-10, replacing the earlier "nothing vendors sell" rule and its content test).
 - **Upgrades cost items; money may be added later** (the user, 2026-11-10): we start with items only.
-- **Placeholder costs:** every upgrade costs one bandage until the user hand-crafts the costs (2026-11-10). The four recipes in `content/recipes/` (H2) are placeholders too, from items that exist.
+- **Placeholder costs:** every upgrade costs one bandage until the user hand-crafts the costs (2026-11-10). The recipes in `content/recipes/` (H2, plus the Gun workshop's M9A3 and red dot from 2026-11-11) are placeholders too, from items that exist.
 - **A page of module cards, not a 3D space.** The Hangar is a menu page like the vendors page. A static low-poly diorama you tap into (modular and industrial, in the props style) can come later.
 - **Crafting:** minutes up to about 8 hours each; **one craft at a time per module**; finished output **waits in the module until collected**, so it's never lost to a full stash. **Upgrades are instant** (no build timer).
 - **Few modules, 3 levels each** to start. More only when something needs them (the pillar "short and readable").
@@ -21,17 +21,18 @@ The player's base between raids: modules you upgrade with loot, which then craft
 | Module | What it does |
 |---|---|
 | **Power grid** | The spine: its level caps every other module's level. No fuel to top up. |
-| **Munitions bench** | Loot into higher-level rounds, magazines and weapon attachments. |
+| **Munitions bench** | Loot into higher-level rounds. Only ammo since 2026-11-11 (the user's call): guns and attachments moved to the Gun workshop. |
+| **Gun workshop** (id `gun-workshop`, added 2026-11-11, the user's call) | Loot into guns, weapon attachments and magazines (magazines are attachments). Crafted guns come out empty, as vendors sell them. |
 | **Armor bench** | Armor, rigs and backpacks, and better repair kits (ones that wear the max down less: design.md → Armor repair kits). |
 | **Trauma bay** | Medkits and surgery kits from medical loot. Stimulants once boosters (temporary effects) exist. |
-| **Quarters** | Stash space. Its level unlocks the right to **buy** the next stash page (still paid for with money, so pages stay a money sink; one path, not two). Later levels unlock **category pages** (ammo, meds, weapons) in place of Tarkov-style cases. |
+| **Stash** (was Quarters until 2026-11-11, id `stash`) | Stash space. Its level unlocks the right to **buy** the next stash page (still paid for with money, so pages stay a money sink; one path, not two). Later levels unlock **category pages** (ammo, meds, weapons) in place of Tarkov-style cases. |
 | **Secure locker** | The vault: **1×2 at the start (1 tall, 2 wide), up to 3×3**. Its upgrades are the most expensive of every module; the user will balance them. |
 
-**Starting sizes shrink (the user's plan):** the vault goes from 2×2 to 1×2, and the starting stash shrinks too, with Quarters growing it. Exact sizes are the user's to balance. Prod will be wiped before this ships (no users yet), so there's no migration for pages already bought.
+**Starting sizes shrink (the user's plan):** the vault goes from 2×2 to 1×2, and the starting stash shrinks too, with the Stash module growing it. Exact sizes are the user's to balance. Prod will be wiped before this ships (no users yet), so there's no migration for pages already bought.
 
 **Built in H4 (2026-11-10), Claude's placeholders until the user balances them** (all in `PROFILE`, shared `profile.ts`):
-- Every bought stash page is **10×20** (was 10×30). Quarters level n lets you buy page n + 1 (prices unchanged: 100k, 250k, 500k), so level 3 allows the 4th and last page.
-- Quarters level 3 also gives the three **category pages, Guns, Ammo and Meds, 10×10 each**, free, all at once. They hold only their kinds (the stash chips' kinds: Guns takes guns, melee and attachments; Ammo takes rounds and grenades; Meds takes meds and repair kits) and no bags.
+- Every bought stash page is **10×20** (was 10×30). Stash module level n lets you buy page n + 1 (prices unchanged: 100k, 250k, 500k), so level 3 allows the 4th and last page.
+- Stash module level 3 also gives the three **category pages, Guns, Ammo and Meds, 10×10 each**, free, all at once. They hold only their kinds (the stash chips' kinds: Guns takes guns, melee and attachments; Ammo takes rounds and grenades; Meds takes meds and repair kits) and no bags.
 - **Auto sort on close:** leaving the stash moves loose items from the bought pages onto their category page where there's room. Nothing else is placed there by itself.
 - Vault by Secure locker level: **2 wide × 1 tall**, then 2×2, 3 wide × 2 tall, 3×3.
 

@@ -726,17 +726,48 @@ export function loadQuests(): ReadonlyMap<string, QuestDef> {
  * 14b), name quest markers on a map.
  */
 export function checkQuestMarkers(): void {
-  for (const q of loadQuests().values()) {
+  const problem = questMarkerProblem(loadQuests(), questMarkerIds);
+  if (problem) throw new Error(problem);
+}
+
+/**
+ * The first quest objective naming a map or quest marker that isn't there, or null.
+ * `markersOn` lists a map's quest marker ids, or undefined for no such map. The quest
+ * editor (2026-11-11) passes its own index, made once, so it needn't compile maps per edit.
+ */
+export function questMarkerProblem(
+  quests: ReadonlyMap<string, QuestDef>,
+  markersOn: (map: string) => readonly string[] | undefined,
+): string | null {
+  for (const q of quests.values()) {
     for (const o of q.objectives) {
       if (o.type === 'handOver') continue;
-      if (!mapIds().includes(o.map)) throw new Error(`quest ${q.id}: no map "${o.map}"`);
-      const markers = loadMap(o.map).markers;
+      const markers = markersOn(o.map);
+      if (!markers) return `quest ${q.id}: no map "${o.map}"`;
       for (const id of o.type === 'investigate' ? [o.marker] : o.spots) {
-        const found = markers.some((m) => m.type === 'questMarker' && m.id === id);
-        if (!found) throw new Error(`quest ${q.id}: no quest marker "${id}" on ${o.map}`);
+        if (!markers.includes(id)) return `quest ${q.id}: no quest marker "${id}" on ${o.map}`;
       }
     }
   }
+  return null;
+}
+
+/** A map's quest marker ids, or undefined if there's no such map. */
+export function questMarkerIds(map: string): string[] | undefined {
+  if (!mapIds().includes(map)) return undefined;
+  return loadMap(map)
+    .markers.filter((m) => m.type === 'questMarker')
+    .map((m) => m.id);
+}
+
+/** Every quest file as written, unchecked and without the schema's defaults, for the quest editor. */
+export function questDocs(): ReadonlyMap<string, unknown> {
+  return new Map(
+    Object.entries(questFiles).map(([path, doc]) => [
+      path.slice(path.lastIndexOf('/') + 1, -'.json'.length),
+      doc,
+    ]),
+  );
 }
 
 // The item editor (session 18) checks everything that names items against the items as

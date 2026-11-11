@@ -6,7 +6,7 @@ import type { Character, SimState } from './state';
 /*
  * Recoil (2026-11-04, the user's spec, after Delta Force and Tarkov): each shot kicks a
  * target up and randomly sideways, softer as the burst goes on; the target wears off at the gun's recovery rate (its climb
- * barely, during a burst: 2026-11-05, so it keeps climbing as in Tarkov), and the gun (Character.recoilPitch/recoilYaw) chases it on a damped
+ * not at all during a burst: 2026-11-11, so it keeps climbing as in Tarkov), and the gun (Character.recoilPitch/recoilYaw) chases it on a damped
  * spring at the gun's snap. So snap is how fast a kick lands and recovery how fast it
  * settles, separately. Stance and movement scale every kick. All of it runs at the fixed
  * tick, so co-op hosts agree; the frame splits the result between the view and the gun.
@@ -27,16 +27,22 @@ export const RECOIL = {
   resetTime: 0.25,
   /** Rounds from this one on (counting from 0) kick steadyKick: a steady climb, as in Tarkov. */
   steadyAfter: 5,
-  /** 0.5 until 2026-11-11, cut so a held mag stays on a body (the user's call). */
-  steadyKick: 0.35,
+  /**
+   * A bit softer than earlyKick, and with no wear-off in the burst the climb never levels
+   * off (the user's call, 2026-11-11: at 0.35 with inBurst 0.25 it flattened by round 10 and a
+   * light pull-down made it a laser).
+   */
+  steadyKick: 0.55,
   /**
    * During a burst the climb wears off at only this share of the gun's recovery, so it keeps
    * climbing until the player pulls it down (2026-11-05; at full recovery it leveled off by
    * round 10, and at 0.1 it still ate nearly half an SMG's late kicks). Sideways recovers in
    * full, so the shake doesn't wander. Raised from 0.05 on 2026-11-11 (the user's call: a
-   * held mag landed 1-4 rounds of 30 at 10-25m without a hard pull-down; it still climbs).
+   * held mag landed 1-4 rounds of 30 at 10-25m without a hard pull-down), then set to 0 the
+   * same day: any share here is proportional, so the climb levels off where it balances the
+   * kicks, and a light pull-down held it flat (the user's call: it climbs uncapped).
    */
-  inBurst: 0.25,
+  inBurst: 0,
   /** Once the burst is over, recovery is this much faster, so the gun comes back down. */
   afterBurst: 4,
   /** The spring's damping ratio, below 1: the gun overshoots each kick a little. */
@@ -54,8 +60,11 @@ export const RECOIL = {
    * scaled from Tarkov (the user's call, 2026-11-10: "reduce recoil across the board by 30%").
    */
   scale: 0.7,
-  /** The kick never climbs higher than this, in degrees: a safety, not reached by a magazine. */
-  maxUp: 35,
+  /**
+   * The kick never climbs higher than this, in degrees: a safety, not reached by a magazine.
+   * 35 until 2026-11-11; with no in-burst wear-off a long LMG belt would reach it and go flat.
+   */
+  maxUp: 80,
   /**
    * Aimed, recoil moves the sights as well as the view. aimedShare of it eases off at
    * aimedMax degrees (at no zoom), and aimedTail of it always goes to the sights, so they

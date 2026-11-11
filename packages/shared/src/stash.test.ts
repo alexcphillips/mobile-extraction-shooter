@@ -10,9 +10,9 @@ import {
   itemGained,
   newProfile,
   nextPagePrice,
-  nextPageQuarters,
+  nextPageStashLevel,
   settleHangarSpace,
-  QUARTERS,
+  STASH_MODULE,
   type Profile,
 } from './profile';
 import { createItem } from './sim/create-item';
@@ -232,7 +232,7 @@ describe('the stash', () => {
   it('sends a double-tap to the page shown, then the others', () => {
     const p = profile();
     p.money = PROFILE.pagePrices[0];
-    p.hangar[QUARTERS] = 1;
+    p.hangar[STASH_MODULE] = 1;
     expect(buyStashPage(p)).toBeNull();
     const s = openStash(p);
     // Page 2 shown and full: the helmet goes to page 1.
@@ -282,7 +282,7 @@ describe('the stash', () => {
   it('moves part of a stack by double-tap, on to the next page when one is full', () => {
     const p = profile();
     p.money = PROFILE.pagePrices[0];
-    p.hangar[QUARTERS] = 1;
+    p.hangar[STASH_MODULE] = 1;
     expect(buyStashPage(p)).toBeNull();
     const s = openStash(p);
     // Page 2 full, with room for 10 more rounds on its last stack.
@@ -380,12 +380,12 @@ describe('stash pages', () => {
     const p = profile();
     expect(nextPagePrice(p)).toBe(PROFILE.pagePrices[0]);
     p.money = PROFILE.pagePrices.reduce((a, b) => a + b, 0) + 5;
-    // Each needs Quarters a level higher (H4).
-    expect(nextPageQuarters(p)).toBe(1);
-    expect(buyStashPage(p)).toMatch(/Quarters at level 1/);
+    // Each needs Stash a level higher (H4).
+    expect(nextPageStashLevel(p)).toBe(1);
+    expect(buyStashPage(p)).toMatch(/Stash module at level 1/);
     expect(p.stash).toHaveLength(1);
     for (let i = 0; i < PROFILE.pagePrices.length; i++) {
-      p.hangar[QUARTERS] = i + 1;
+      p.hangar[STASH_MODULE] = i + 1;
       expect(buyStashPage(p)).toBeNull();
       expect(buyStashPage(p)).toMatch(new RegExp(`level ${i + 2}|every page`));
     }
@@ -393,7 +393,7 @@ describe('stash pages', () => {
     expect(p.money).toBe(5);
     expect(nextPagePrice(p)).toBeNull();
     expect(buyStashPage(p)).toMatch(/every page/);
-    // Quarters 3 has the category pages too.
+    // Stash 3 has the category pages too.
     expect(checkProfile(items, p)).toMatch(/category pages/);
     settleHangarSpace(items, p);
     expect(checkProfile(items, p)).toBeNull();
@@ -403,7 +403,7 @@ describe('stash pages', () => {
 
   it('puts a bought page before the category pages', () => {
     const p = profile();
-    p.hangar[QUARTERS] = 3;
+    p.hangar[STASH_MODULE] = 3;
     settleHangarSpace(items, p);
     p.money = PROFILE.pagePrices[0];
     expect(buyStashPage(p)).toBeNull();

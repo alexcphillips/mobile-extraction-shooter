@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "workshop-m9a3",
+  "module": "gun-workshop",
+  "level": 1,
+  "inputs": [
+    { "item": "box-of-screws", "count": 2 },
+    { "item": "screwdriver", "count": 1 }
+  ],
+  "output": { "item": "m9a3", "count": 1 },
+  "minutes": 60
+}

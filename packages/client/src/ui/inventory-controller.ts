@@ -118,6 +118,33 @@ function showQuickHint(el: HTMLElement, to: string): void {
  * taps and double-taps, and dragging. One per opening of the raid screen; it asks for a
  * redraw on a change.
  */
+/** At most this many bags open at once (2026-11-11, the user's call). */
+export const MAX_BAGS = 5;
+/** How far each new bag window sits right of and below the last. */
+const BAG_STEP = 16;
+/** A new bag window's top, in CSS pixels. */
+const BAG_TOP = 12;
+
+interface OpenBagWindow {
+  item: Item;
+  x: number;
+  y: number;
+}
+
+/** An open rig or backpack: where it lies, the grid inside, and its window's spot. */
+export interface OpenBag {
+  at: InGrid;
+  grid: Grid;
+  item: Item;
+  x: number;
+  y: number;
+}
+
+/** A bag window's width: its grid's cells and the window's padding and border. */
+export function bagWindowWidth(def: ItemDef, cell: number): number {
+  return def.type === 'container' ? def.grid[0] * cell + 14 : 200;
+}
+
 export class InventoryController implements DragHost {
   /** The columns' widths and the cell size in CSS pixels (inventory-layout.ts). */
   readonly layout: InventoryLayout;
@@ -130,10 +157,12 @@ export class InventoryController implements DragHost {
   picking: AttachmentSlot | null = null;
   target: Owner | null;
   /**
-   * The rig or backpack whose contents are open (2026-11-01): one lying in the open
-   * container or stash page. The item itself, to follow it when its index changes.
+   * The rigs and backpacks whose contents are open (2026-11-01; several since 2026-11-11,
+   * the user's call), each lying in the open container or stash page, as floating windows:
+   * the item itself (to follow it when its index changes) and where its window is. Oldest
+   * first, the last drawn on top.
    */
-  private bag: Item | null = null;
+  private bags: OpenBagWindow[] = [];
   /** The selected item itself, to follow it when its index changes. */
   private selectedItem: Item | null = null;
   private lastTap = { key: '', at: 0 };
@@ -153,46 +182,79 @@ export class InventoryController implements DragHost {
   /** Opens another body or container beside yours (null: just yours), with nothing selected. */
   setTarget(target: Owner | null): void {
     this.target = target;
-    this.bag = null;
+    this.bags = [];
     this.select(null);
   }
 
   /**
-   * The open rig or backpack: where it lies and the grid inside it. Null (and closed) if
-   * none is open, or it has left the open container or stash page, or gone out of reach.
+   * The open rigs and backpacks, bottom to top: where each lies, the grid inside it and
+   * its window's spot. One that has left the open container or stash page, or gone out of
+   * reach, closes.
    */
-  openBag(): { at: InGrid; grid: Grid } | null {
-    const bag = this.bag;
-    if (!bag) return null;
-    const at = this.target && this.reach ? this.locate(bag) : null;
-    if (
-      !at ||
-      !('index' in at) ||
-      at.inside ||
-      JSON.stringify(at.owner) !== JSON.stringify(this.target) ||
-      !bag.grid
-    ) {
-      this.bag = null;
-      return null;
-    }
-    return { at, grid: bag.grid };
+  openBags(): OpenBag[] {
+    const out: OpenBag[] = [];
+    const target = JSON.stringify(this.target);
+    this.bags = this.bags.filter((w) => {
+      const at = this.target && this.reach ? this.locateTop(w.item) : null;
+      if (!at || !('index' in at) || at.inside || JSON.stringify(at.owner) !== target) return false;
+      if (!w.item.grid) return false;
+      out.push({ at, grid: w.item.grid, item: w.item, x: w.x, y: w.y });
+      return true;
+    });
+    return out;
   }
 
-  /** Opens a rig or backpack lying in a grid to show what's in it, or closes it if open. */
+  /**
+   * Opens a rig or backpack lying in a grid in a window of its own, or closes it if open.
+   * A new window goes at the top of the screen, left of center, each further one 16 px
+   * right of and below the last; past MAX_BAGS the oldest closes.
+   */
   toggleBag(ref: ItemRef): void {
     const found = this.find(ref);
     if (!found || found.def.type !== 'container' || !('index' in ref) || ref.inside) return;
-    this.bag = this.bag === found.item ? null : found.item;
+    const i = this.bags.findIndex((w) => w.item === found.item);
+    if (i >= 0) this.bags.splice(i, 1);
+    else {
+      const last = this.bags[this.bags.length - 1];
+      const w = bagWindowWidth(found.def, this.cell);
+      let x = last ? last.x + BAG_STEP : window.innerWidth / 2 - w * 0.75;
+      let y = last ? last.y + BAG_STEP : BAG_TOP;
+      if (x + w > window.innerWidth || y > window.innerHeight / 2) {
+        x = window.innerWidth / 2 - w * 0.75;
+        y = BAG_TOP;
+      }
+      this.bags.push({ item: found.item, x: Math.max(0, x), y });
+      if (this.bags.length > MAX_BAGS) this.bags.shift();
+    }
     this.select(null);
   }
 
-  closeBag(): void {
-    this.bag = null;
+  /** Closes one bag's window. */
+  closeBag(item: Item): void {
+    this.bags = this.bags.filter((w) => w.item !== item);
+    this.redraw();
+  }
+
+  /** Puts a bag's window on top of the others. */
+  raiseBag(item: Item): void {
+    const i = this.bags.findIndex((w) => w.item === item);
+    if (i < 0 || i === this.bags.length - 1) return;
+    this.bags.push(...this.bags.splice(i, 1));
+    this.redraw();
+  }
+
+  /** Moves a bag's window (dragged by its title bar), kept on the screen. */
+  moveBag(item: Item, x: number, y: number, w: number, h: number): void {
+    const win = this.bags.find((b) => b.item === item);
+    if (!win) return;
+    win.x = Math.min(Math.max(0, x), Math.max(0, window.innerWidth - w));
+    win.y = Math.min(Math.max(0, y), Math.max(0, window.innerHeight - Math.min(h, 40)));
     this.redraw();
   }
 
   isOpenBag(ref: ItemRef): boolean {
-    return !!this.bag && this.find(ref)?.item === this.bag;
+    const item = this.find(ref)?.item;
+    return !!item && this.bags.some((w) => w.item === item);
   }
 
   /** Whether the open body or container is in reach. */
@@ -211,9 +273,11 @@ export class InventoryController implements DragHost {
    */
   quickBag(ref: ItemRef): InGrid | null {
     if (ref.owner.kind !== 'self') return null;
-    const open = this.openBag();
     const found = this.find(ref);
-    return open && found && canHold(this.ctx.items, open.grid, found.item) ? open.at : null;
+    if (!found) return null;
+    // The top one with room for it.
+    const open = this.openBags().reverse();
+    return open.find((b) => canHold(this.ctx.items, b.grid, found.item))?.at ?? null;
   }
 
   /** A double-tap's move: of the whole item, or with count of only that many of a stack. */
@@ -314,6 +378,13 @@ export class InventoryController implements DragHost {
   /** Takes the rounds out of a gun into what you carry. */
   unload(gun: ItemRef): void {
     this.ctx.send({ type: 'unload', gun });
+    this.redraw();
+  }
+
+  /** Unloads a gun and takes all its attachments off (the sim's strip). */
+  strip(gun: ItemRef): void {
+    this.picking = null;
+    this.ctx.send({ type: 'strip', gun });
     this.redraw();
   }
 
@@ -689,8 +760,25 @@ export class InventoryController implements DragHost {
     return this.find(p.gun)?.item.attachments?.[p.slot] === p.part;
   }
 
-  /** Where an item is now, among yours and what's open (and the open bag), or null. */
+  /** Where an item is now, among yours and what's open (and the open bags), or null. */
   private locate(item: Item): ItemRef | null {
+    const top = this.locateTop(item);
+    if (top) return top;
+    // In an open bag: found by where the bag is now.
+    for (const w of this.bags) {
+      if (item === w.item) continue;
+      const index = w.item.grid?.items.findIndex((g) => g.item === item) ?? -1;
+      if (index < 0) continue;
+      const bag = this.locateTop(w.item);
+      if (!bag || !('index' in bag) || bag.inside) continue;
+      const inside = { index: bag.index, item: bag.item };
+      return { owner: bag.owner, grid: bag.grid, inside, index, item: item.item };
+    }
+    return null;
+  }
+
+  /** Where an item is now, among yours and what's open, or on the ground (not in a bag). */
+  private locateTop(item: Item): ItemRef | null {
     const owners = this.target && this.reach ? [SELF, this.target] : [SELF];
     for (const owner of owners) {
       const ch = this.character(owner);
@@ -705,13 +793,6 @@ export class InventoryController implements DragHost {
         const index = grid?.items.findIndex((g) => g.item === item) ?? -1;
         if (index >= 0) return { owner, grid: name, index, item: item.item };
       }
-    }
-    // In the open bag: found by where the bag is now.
-    const bag = this.bag && item !== this.bag ? this.locate(this.bag) : null;
-    if (bag && 'index' in bag && !bag.inside) {
-      const index = this.bag!.grid?.items.findIndex((g) => g.item === item) ?? -1;
-      const inside = { index: bag.index, item: bag.item };
-      if (index >= 0) return { owner: bag.owner, grid: bag.grid, inside, index, item: item.item };
     }
     const ground = this.ctx.sim.ground.findIndex((g) => g.item === item);
     return ground >= 0 ? { owner: { kind: 'ground' }, ground, item: item.item } : null;

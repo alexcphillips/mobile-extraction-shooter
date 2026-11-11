@@ -192,10 +192,10 @@ describe('recoil', () => {
       pitches[19]!,
       pitches[29]!,
     ];
-    // It never levels off, but the late climb is gentle (2026-11-11), easing as it goes.
-    expect(twentieth - tenth).toBeGreaterThan(0.5 * DEG);
+    // It never levels off (2026-11-11): the late climb is steady, softer than the early kicks.
+    expect(twentieth - tenth).toBeGreaterThan(8 * DEG);
     expect(thirtieth - twentieth).toBeGreaterThan(0.25 * DEG);
-    expect(thirtieth - twentieth).toBeLessThan(twentieth - tenth);
+    expect(thirtieth - twentieth).toBeGreaterThan((twentieth - tenth) * 0.9);
     // The early rounds kick hardest: the first five climb more than the next five.
     expect(fifth).toBeGreaterThan(tenth - fifth);
     expect(thirtieth).toBeLessThan(RECOIL.maxUp * DEG);

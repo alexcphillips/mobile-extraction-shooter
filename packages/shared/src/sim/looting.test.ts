@@ -814,6 +814,31 @@ describe('looting', () => {
     expect(state.ground.map((g) => g.item.item)).toEqual(['round', 'big-mag']);
   });
 
+  it('strips a gun into the backpack, then the rig, then the ground', () => {
+    const { state, c, act } = setup();
+    equip(c, items, 'primary1', createItem(items, 'rifle'));
+    const rifle = c.gear.primary1 as WeaponState;
+    Object.assign(rifle.attachments, { optic: 'scope', muzzle: 'suppressor', magazine: 'big-mag' });
+    rifle.mag = 50;
+    const gun = { owner: self, slot: 'primary1', item: 'rifle' } as const;
+    expect(act({ type: 'strip', gun })).toBe(true);
+    expect(rifle.attachments).toMatchObject({ optic: null, muzzle: null, magazine: null });
+    expect(rifle.mag).toBe(0);
+    const pack = c.gear.backpack!.grid;
+    for (const id of ['scope', 'suppressor', 'big-mag']) expect(countOf(pack, id)).toBe(1);
+    expect(countOf(pack, 'round')).toBe(50);
+    expect(countOf(c.gear.pockets, 'round')).toBe(0);
+    // Nothing left to take off.
+    expect(act({ type: 'strip', gun })).toBe(false);
+    // No backpack or rig: at your feet.
+    rifle.attachments.optic = 'scope';
+    rifle.mag = 10;
+    c.gear.backpack = null;
+    c.gear.rig = null;
+    expect(act({ type: 'strip', gun })).toBe(true);
+    expect(state.ground.map((g) => g.item.item).sort()).toEqual(['round', 'scope']);
+  });
+
   it("unloads a gun's rounds into what you carry, and a body's gun into yours", () => {
     const { state, c, enemy, body, act } = setup();
     equip(c, items, 'primary1', createItem(items, 'rifle'));

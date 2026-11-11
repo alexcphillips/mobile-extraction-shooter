@@ -1,9 +1,9 @@
 {
   "formatVersion": 1,
-  "id": "quarters",
-  "name": "Quarters",
-  "blurb": "Stash space: unlocks buying the next stash page, then category pages.",
-  "order": 5,
+  "id": "gun-workshop",
+  "name": "Gun workshop",
+  "blurb": "Turns loot into guns, weapon attachments and magazines.",
+  "order": 2,
   "levels": [
     {
       "cost": [
@@ -12,7 +12,7 @@
           "count": 1
         }
       ],
-      "unlocks": "Buy stash page 2"
+      "unlocks": "Basic guns, sights and magazines"
     },
     {
       "cost": [
@@ -21,7 +21,7 @@
           "count": 1
         }
       ],
-      "unlocks": "Buy stash page 3"
+      "unlocks": "Better guns and attachments"
     },
     {
       "cost": [
@@ -30,7 +30,7 @@
           "count": 1
         }
       ],
-      "unlocks": "Buy stash page 4; Guns, Ammo and Meds pages"
+      "unlocks": "Top-tier guns and attachments"
     }
   ]
 }

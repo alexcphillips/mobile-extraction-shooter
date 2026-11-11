@@ -64,14 +64,14 @@ export const PROFILE = {
    * A stash page's size, [width, height]. Session 13 kept 10×30: ten columns fit beside
    * the gear and carried grids on a landscape phone, and the rows scroll. It was 9×30 for part of 2026-11-09, then
    * back to 10×30 (the user's call). H4 (2026-11-10) shrank it to 10×20, a placeholder
-   * until the user balances it, so Quarters' pages matter (hangar.md); settleStash
+   * until the user balances it, so the Stash module's pages matter (hangar.md); settleStash
    * reshapes pages saved at another size.
    */
   stash: [10, 20],
   /**
    * What each extra stash page costs, in order: everyone starts with one, so the most is
    * one more than there are prices. First guesses (session 13), kept against the item
-   * values in 13b. Each needs Quarters a level higher (H4): page 2 at level 1, and so on.
+   * values in 13b. Each needs Stash a level higher (H4): page 2 at level 1, and so on.
    */
   pagePrices: [100_000, 250_000, 500_000],
   /**
@@ -86,7 +86,7 @@ export const PROFILE = {
     [3, 3],
   ],
   /**
-   * The category pages (H4, hangar.md → Quarters), unlocked together at this Quarters
+   * The category pages (H4, hangar.md → Stash), unlocked together at this Stash
    * level, each its size. Placeholders until the user balances them.
    */
   categoryLevel: 3,
@@ -118,7 +118,7 @@ export interface VendorStanding {
 }
 
 export interface Profile {
-  formatVersion: 16;
+  formatVersion: 17;
   money: number;
   /** The stash's pages, bought with money (at least one). */
   stash: Grid[];
@@ -202,7 +202,7 @@ const questStateShape = z.discriminatedUnion('status', [
 ]);
 
 const profileShape = z.strictObject({
-  formatVersion: z.literal(16),
+  formatVersion: z.literal(17),
   money: count,
   stash: z.array(gridShape).min(1),
   gear: gearShape,
@@ -215,7 +215,7 @@ const profileShape = z.strictObject({
   ),
 });
 
-export const PROFILE_FORMAT_VERSION = 16;
+export const PROFILE_FORMAT_VERSION = 17;
 
 export const PROFILE_FORMAT: ContentFormat<Profile> = {
   kind: 'profile',
@@ -261,6 +261,11 @@ export const PROFILE_FORMAT: ContentFormat<Profile> = {
     // 2026-11-11: the Intel desk was deleted (the user's call), with its contracts, its
     // decryptions and the flash and hard drives they took.
     15: (doc) => dropIntelDesk(doc),
+    // 2026-11-11: the Quarters module was renamed the Stash module (id `stash`); its level carries over.
+    16: (doc) => {
+      const { quarters, ...hangar } = (doc.hangar ?? {}) as Record<string, unknown>;
+      return { ...doc, hangar: quarters === undefined ? hangar : { ...hangar, stash: quarters } };
+    },
   },
 };
 
@@ -431,7 +436,7 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
   return {
-    formatVersion: 16,
+    formatVersion: 17,
     money: kit.money,
     stash: [stash],
     gear,
@@ -443,7 +448,7 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
 }
 
 /** The Hangar modules whose levels give stash space (H4; hangar.md). */
-export const QUARTERS = 'quarters';
+export const STASH_MODULE = 'stash';
 export const SECURE_LOCKER = 'secure-locker';
 
 const levelOf = (p: Profile, module: string) => p.hangar[module] ?? 0;
@@ -459,21 +464,22 @@ export function nextPagePrice(p: Profile): number | null {
   return PROFILE.pagePrices[boughtPages(p) - 1] ?? null;
 }
 
-/** The Quarters level the next page needs (H4), or null if there are no more pages. */
-export function nextPageQuarters(p: Profile): number | null {
+/** The Stash level the next page needs (H4), or null if there are no more pages. */
+export function nextPageStashLevel(p: Profile): number | null {
   return nextPagePrice(p) === null ? null : boughtPages(p);
 }
 
 /**
  * Buys the next stash page, empty, after the bought ones (before any category pages): the
- * money goes down by its price. Returns why it can't (no more pages, Quarters too low, not
+ * money goes down by its price. Returns why it can't (no more pages, Stash too low, not
  * enough money), or null once bought. The server does this; the client only shows the price.
  */
 export function buyStashPage(p: Profile): string | null {
   const price = nextPagePrice(p);
   if (price === null) return 'the stash has every page it can';
-  const quarters = nextPageQuarters(p)!;
-  if (levelOf(p, QUARTERS) < quarters) return `the next page needs Quarters at level ${quarters}`;
+  const level = nextPageStashLevel(p)!;
+  if (levelOf(p, STASH_MODULE) < level)
+    return `the next page needs the Stash module at level ${level}`;
   if (p.money < price) return `a page costs ${price}, and you have ${p.money}`;
   p.money -= price;
   p.stash.splice(boughtPages(p), 0, createGrid(PROFILE.stash[0], PROFILE.stash[1], true));
@@ -486,17 +492,17 @@ export function vaultSize(p: Profile): readonly [number, number] {
   return sizes[Math.min(levelOf(p, SECURE_LOCKER), sizes.length - 1)]!;
 }
 
-/** The category pages a profile's Quarters level has unlocked, in order. */
+/** The category pages a profile's Stash level has unlocked, in order. */
 export function categoryPages(
   p: Profile,
 ): readonly { only: PageCategory; size: readonly [number, number] }[] {
-  return levelOf(p, QUARTERS) >= PROFILE.categoryLevel ? PROFILE.categoryPages : [];
+  return levelOf(p, STASH_MODULE) >= PROFILE.categoryLevel ? PROFILE.categoryPages : [];
 }
 
 /**
  * Gives a profile the stash space its Hangar levels give (H4): the vault at the Secure
  * locker's size (see reshape: what no longer fits goes to the stash), and any category
- * page Quarters has unlocked, empty, at the end. Run after an upgrade, and on stored
+ * page Stash has unlocked, empty, at the end. Run after an upgrade, and on stored
  * profiles where settleVault ran (only ever on what the server stored: a raid's vault
  * must come back the size it went in, checkGear's job).
  */
@@ -788,7 +794,7 @@ export function checkProfile(items: ItemDb, p: Profile): string | null {
   const bought = boughtPages(p);
   if (bought > PROFILE.pagePrices.length + 1)
     return `${bought} stash pages is more than there can be`;
-  // The category pages Quarters has unlocked, each once, after the bought ones (H4).
+  // The category pages Stash has unlocked, each once, after the bought ones (H4).
   const cats = categoryPages(p);
   if (p.stash.length - bought !== cats.length)
     return `${p.stash.length - bought} category pages, not ${cats.length}`;

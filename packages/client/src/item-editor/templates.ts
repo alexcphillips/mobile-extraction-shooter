@@ -1,13 +1,30 @@
-import { defaultSounds, ITEM_FORMAT_VERSION, placeholderModel, type ItemDef } from '@mes/shared';
+import {
+  defaultSounds,
+  ITEM_FORMAT_VERSION,
+  placeholderModel,
+  type ItemDef,
+  type ItemModel,
+} from '@mes/shared';
 
 export type ItemType = ItemDef['type'];
 
-/** The item types in the order the editor lists them. */
-export const ITEM_TYPES: readonly ItemType[] = [
+/**
+ * What the editor lists, picks and makes items as (2026-11-11, the user's call): the item
+ * types, with containers split into rigs, armored rigs and backpacks (a container is then
+ * only a vault). A kind is the editor's alone: the file still says `container` and its slot.
+ */
+export type ItemKind =
+  Exclude<ItemType, 'container'> | 'rig' | 'armored rig' | 'backpack' | 'container';
+
+/** The kinds in the order the editor lists them. */
+export const ITEM_KINDS: readonly ItemKind[] = [
   'weapon',
   'ammo',
   'attachment',
   'armor',
+  'rig',
+  'armored rig',
+  'backpack',
   'container',
   'med',
   'melee',
@@ -18,13 +35,40 @@ export const ITEM_TYPES: readonly ItemType[] = [
   'repair',
 ];
 
+/** An item's kind: a container by its slot and armor, anything else by its type. */
+export function kindOf(def: { type: string; slot?: unknown; armor?: unknown }): ItemKind {
+  if (def.type !== 'container') return def.type as ItemKind;
+  if (def.slot === 'rig') return def.armor ? 'armored rig' : 'rig';
+  return def.slot === 'backpack' ? 'backpack' : 'container';
+}
+
+/**
+ * A new rig's model, armored or not (2026-11-11, the user's call): the armored chest rig's,
+ * worn on the chest, so a new rig isn't a backpack on the back.
+ */
+const RIG_MODEL: ItemModel = {
+  parts: [
+    { type: 'box', pos: [0, 1.22, -0.14], size: [0.33, 0.3, 0.05], color: '#4c5a36' },
+    { type: 'box', pos: [0, 1.22, 0.14], size: [0.33, 0.3, 0.04], color: '#424e2f' },
+    { type: 'box', pos: [0.11, 1.38, 0], size: [0.07, 0.035, 0.29], color: '#4c5a36' },
+    { type: 'box', pos: [-0.11, 1.38, 0], size: [0.07, 0.035, 0.29], color: '#424e2f' },
+    { type: 'box', pos: [-0.12, 1.11, -0.185], size: [0.07, 0.1, 0.04], color: '#3b4529' },
+    { type: 'box', pos: [-0.04, 1.11, -0.185], size: [0.07, 0.1, 0.04], color: '#3b4529' },
+    { type: 'box', pos: [0.04, 1.11, -0.185], size: [0.07, 0.1, 0.04], color: '#3b4529' },
+    { type: 'box', pos: [0.12, 1.11, -0.185], size: [0.07, 0.1, 0.04], color: '#3b4529' },
+  ],
+};
+
+/** A rig's four 1×2 pouches, as the chest rigs have. */
+const RIG_POUCHES = [0, 1, 2, 3].map((x) => ({ at: [x, 0], size: [1, 2] }));
+
 /**
  * A new item of a type with middling stats to start from (session 18), keys in the order
  * the hand-written files use, then its kind's default sounds and placeholder model. A weapon fires
  * `ammo` (the first ammo item, say).
  */
-export function blankItem(type: ItemType, id: string, name: string, ammo = ''): ItemDef {
-  const doc = blankStats(type, id, name, ammo);
+export function blankItem(kind: ItemKind, id: string, name: string, ammo = ''): ItemDef {
+  const doc = blankStats(kind, id, name, ammo);
   const sounds = defaultSounds(doc);
   // Common to start with, after the value as the hand-written files have it.
   const stats = Object.entries(doc).flatMap(([k, v]) =>
@@ -33,13 +77,16 @@ export function blankItem(type: ItemType, id: string, name: string, ammo = ''): 
   return {
     ...Object.fromEntries(stats),
     ...(sounds && { sounds }),
-    model: placeholderModel(doc),
+    model: kind === 'rig' || kind === 'armored rig' ? copyModel(RIG_MODEL) : placeholderModel(doc),
   } as ItemDef;
 }
 
-function blankStats(type: ItemType, id: string, name: string, ammo: string) {
+const copyModel = (m: ItemModel): ItemModel => structuredClone(m);
+
+function blankStats(kind: ItemKind, id: string, name: string, ammo: string) {
   const common = { formatVersion: ITEM_FORMAT_VERSION as typeof ITEM_FORMAT_VERSION, id, name };
-  switch (type) {
+  const type = kind;
+  switch (kind) {
     case 'weapon':
       return {
         ...common,
@@ -86,8 +133,38 @@ function blankStats(type: ItemType, id: string, name: string, ammo: string) {
         level: 1,
         durability: 60,
       };
+    case 'rig':
+      return {
+        ...common,
+        type: 'container' as const,
+        size: [2, 3],
+        value: 6_000,
+        slot: 'rig',
+        grid: [4, 2],
+        sections: RIG_POUCHES,
+      };
+    case 'armored rig':
+      return {
+        ...common,
+        type: 'container' as const,
+        size: [3, 3],
+        value: 26_000,
+        slot: 'rig',
+        grid: [4, 2],
+        sections: RIG_POUCHES,
+        armor: { level: 3, durability: 55, repairLoss: 0.12 },
+      };
+    case 'backpack':
+      return {
+        ...common,
+        type: 'container' as const,
+        size: [3, 3],
+        value: 5_000,
+        slot: 'backpack',
+        grid: [4, 4],
+      };
     case 'container':
-      return { ...common, type, size: [3, 3], value: 5_000, slot: 'backpack', grid: [4, 4] };
+      return { ...common, type, size: [2, 2], value: 5_000, slot: 'vault', grid: [3, 3] };
     case 'med':
       return { ...common, type, size: [1, 1], value: 1_000, effect: 'bandage', useTime: 2 };
     case 'melee':
@@ -144,9 +221,26 @@ const KEPT_ON_RETYPE = ['name', 'shortName', 'size', 'value', 'rarity', 'view', 
  * type's blank stats and default sounds, keeping its name, size, value, rarity, view and
  * model. What only the old type had (a loot category, a gun's stats) is dropped.
  */
-export function retype(def: ItemDef, type: ItemType, ammo = ''): ItemDef {
-  const out = blankItem(type, def.id, def.name, ammo) as unknown as Record<string, unknown>;
+export function retype(def: ItemDef, kind: ItemKind, ammo = ''): ItemDef {
   const was = def as unknown as Record<string, unknown>;
+  // One container kind to another keeps its inside too: only its slot and armor change.
+  if (def.type === 'container' && CONTAINER_KINDS.includes(kind)) {
+    const out = { ...was, slot: kindSlot(kind) } as Record<string, unknown>;
+    if (kind === 'armored rig') out.armor ??= { level: 3, durability: 55, repairLoss: 0.12 };
+    else delete out.armor;
+    return out as unknown as ItemDef;
+  }
+  const out = blankItem(kind, def.id, def.name, ammo) as unknown as Record<string, unknown>;
   for (const k of KEPT_ON_RETYPE) if (was[k] !== undefined) out[k] = was[k];
   return out as unknown as ItemDef;
+}
+
+const CONTAINER_KINDS: readonly ItemKind[] = ['rig', 'armored rig', 'backpack', 'container'];
+
+function kindSlot(kind: ItemKind): string {
+  return kind === 'rig' || kind === 'armored rig'
+    ? 'rig'
+    : kind === 'backpack'
+      ? 'backpack'
+      : 'vault';
 }

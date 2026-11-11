@@ -19,7 +19,7 @@ import {
   settleHangarSpace,
   sortToCategoryPages,
   vaultSize,
-  QUARTERS,
+  STASH_MODULE,
   SECURE_LOCKER,
   type Profile,
 } from './profile';
@@ -195,6 +195,13 @@ describe('PROFILE_FORMAT', () => {
     });
   });
 
+  it('renames the Quarters module the Stash module, keeping its level (format 16 → 17)', () => {
+    const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
+    old.formatVersion = 16;
+    old.hangar = { quarters: 2, 'trauma-bay': 1 };
+    expect(loadContent(PROFILE_FORMAT, old, 'p').hangar).toEqual({ 'trauma-bay': 1, stash: 2 });
+  });
+
   it('takes out the deleted Intel desk, its contracts and drives (format 15 → 16)', () => {
     const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
     old.formatVersion = 15;
@@ -207,7 +214,7 @@ describe('PROFILE_FORMAT', () => {
     old.stash[0].items[0].item = { item: 'flash-drive', count: 1 };
     const kept = old.stash[0].items.length - 1;
     const p = loadContent(PROFILE_FORMAT, old, 'p');
-    expect(p.hangar).toEqual({ quarters: 1 });
+    expect(p.hangar).toEqual({ stash: 1 });
     expect(Object.keys(p.crafts)).toEqual(['trauma-bay']);
     expect(p).not.toHaveProperty('contracts');
     expect(p.stash[0]!.items).toHaveLength(kept);
@@ -393,9 +400,9 @@ describe('settleHangarSpace (H4)', () => {
     }
   });
 
-  it('adds the category pages at Quarters level 3, once, and checks them', () => {
+  it('adds the category pages at Stash level 3, once, and checks them', () => {
     const p = profile();
-    p.hangar[QUARTERS] = 3;
+    p.hangar[STASH_MODULE] = 3;
     expect(checkProfile(items, p)).toMatch(/category pages/);
     settleHangarSpace(items, p);
     settleHangarSpace(items, p);
@@ -414,7 +421,7 @@ describe('settleHangarSpace (H4)', () => {
 
   it('auto sort moves loose items onto their category page, topping up stacks', () => {
     const p = profile();
-    p.hangar[QUARTERS] = 3;
+    p.hangar[STASH_MODULE] = 3;
     settleHangarSpace(items, p);
     const page = p.stash[0]!;
     page.items = [];

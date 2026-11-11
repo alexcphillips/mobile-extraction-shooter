@@ -6,7 +6,9 @@
 // `create: true` a file is new, refused if one is there. All are checked and formatted
 // before any is written, so a map and the prefabs it uses go together (session 16b). The
 // editors check the docs first; this only checks they're map, prefab, item, sound, loot
-// table or loot container files (the loot editor, 2026-11-02).
+// table or loot container files (the loot editor, 2026-11-02), or quests (the quest editor,
+// 2026-11-11). With `delete: true` (quests only) a file is removed instead, so a quest and
+// the quests that required it change together.
 //
 // Notes (2026-10-30): GET /__editor/notes?map=<id> reads content/notes/<id>.json, and POST
 // /__editor/note with { map, add: { pos, text } } or { map, remove: id } changes it, stamped
@@ -14,14 +16,16 @@
 // reach other developers through git. Open pages hear of a change as `mes:notes`.
 import { execFile } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import { userInfo } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as prettier from 'prettier';
 
 const CONTENT = resolve(dirname(fileURLToPath(import.meta.url)), '../../content');
-const DIRS = ['maps', 'prefabs', 'items', 'sounds', 'loot-tables', 'loot-containers'];
+const DIRS = ['maps', 'prefabs', 'items', 'sounds', 'loot-tables', 'loot-containers', 'quests'];
+/** The only files that may be deleted: nothing else is checked for what names it. */
+const DELETABLE = /^quests\//;
 const FILE = new RegExp(`^(${DIRS.join('|')})\\/[a-z0-9][a-z0-9-]*\\.json$`);
 const ID = /^[a-z0-9][a-z0-9-]*$/;
 const NOTES_FORMAT = 1;
@@ -104,10 +108,17 @@ export function editorSave() {
             if (!Array.isArray(files) || !files.length)
               return reply(400, { error: 'no files to save' });
             const out = [];
-            for (const { file, doc, create } of files) {
+            for (const { file, doc, create, delete: remove } of files) {
               if (typeof file !== 'string' || !FILE.test(file))
                 return reply(400, { error: `not an editable content file: ${file}` });
               const path = resolve(CONTENT, file);
+              if (remove) {
+                if (!DELETABLE.test(file))
+                  return reply(400, { error: `content/${file} can't be deleted here` });
+                const old = await readFile(path, 'utf8').catch(() => null);
+                out.push({ file, path, text: null, changed: old !== null });
+                continue;
+              }
               const options = (await prettier.resolveConfig(path)) ?? {};
               const text = await prettier.format(layout(doc), { ...options, filepath: path });
               const old = await readFile(path, 'utf8').catch(() => null);
@@ -117,7 +128,8 @@ export function editorSave() {
             for (const f of out) {
               if (!f.changed) continue;
               written.set(f.path, f.text);
-              await writeFile(f.path, f.text);
+              if (f.text === null) await unlink(f.path);
+              else await writeFile(f.path, f.text);
             }
             reply(200, { changed: out.filter((f) => f.changed).map((f) => f.file) });
           } catch (err) {
@@ -136,7 +148,9 @@ export function editorSave() {
       // skipped that too (2026-11-02: a new item missing from the loot editor until the
       // server restarted). So everything is compiled afresh on its next load, globs
       // included; the open tabs still aren't reloaded.
-      if (type === 'create') this.environment.moduleGraph.invalidateAll();
+      if (type === 'create' || type === 'delete') this.environment.moduleGraph.invalidateAll();
+      // A file the editor deleted (written as null): the open editor already left it out.
+      if (mine === null) return type === 'delete' ? [] : undefined;
       // The editor that saved it already has it; other tabs pick it up when reloaded.
       if ((await read()) === mine) return [];
     },
