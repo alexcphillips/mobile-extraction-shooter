@@ -8,7 +8,7 @@
   "layers": [
     {
       "source": "noise",
-      "colour": "brown",
+      "color": "brown",
       "at": 0,
       "attack": 0.001,
       "hold": 0.01,
@@ -23,7 +23,7 @@
     },
     {
       "source": "noise",
-      "colour": "white",
+      "color": "white",
       "at": 0.005,
       "attack": 0.001,
       "hold": 0,
@@ -55,7 +55,7 @@
     },
     {
       "source": "noise",
-      "colour": "brown",
+      "color": "brown",
       "at": 0.32,
       "attack": 0.001,
       "hold": 0.01,
@@ -70,7 +70,7 @@
     },
     {
       "source": "noise",
-      "colour": "white",
+      "color": "white",
       "at": 0.32,
       "attack": 0.001,
       "hold": 0,

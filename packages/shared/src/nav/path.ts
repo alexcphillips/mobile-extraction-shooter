@@ -59,7 +59,7 @@ function scratchFor(nav: NavGrid): Scratch {
 export interface Avoid {
   spots: readonly { readonly x: number; readonly y: number; readonly z: number }[];
   radius: number;
-  /** Extra cost per node in one, in metres. */
+  /** Extra cost per node in one, in meters. */
   cost: number;
 }
 
@@ -137,7 +137,7 @@ export function findPath(
     if (++expanded >= limit) break;
     const hn = nav.nodeY(n);
     for (let d = 0; d < 8; d++) {
-      const m = nav.neighbour(n, d);
+      const m = nav.neighbor(n, d);
       if (m < 0 || s.closed[m] === s.search) continue;
       let g = s.g[n]! + (d < 4 ? cs : diagonal) + Math.abs(nav.nodeY(m) - hn);
       if (shun && near(shun, nav.nodeX(m), nav.nodeY(m), nav.nodeZ(m))) g += shun.cost;
@@ -281,7 +281,7 @@ export function straight(nav: NavGrid, walk: CellWalk, a: number, b: number): bo
     r = walk.r;
     let d = 0;
     while (d < 4 && (DIR_Q[d] !== dq || DIR_R[d] !== dr)) d++;
-    node = nav.neighbour(node, d);
+    node = nav.neighbor(node, d);
     if (node < 0) return false;
   }
   return node === b;

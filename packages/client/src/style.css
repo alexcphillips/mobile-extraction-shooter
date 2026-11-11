@@ -364,7 +364,7 @@ body:has(#raid:not([hidden])) .tutorial-count {
   overflow: visible;
 }
 
-/* Health, status chips and armour, top centre. */
+/* Health, status chips and armor, top center. */
 #vitals {
   position: fixed;
   top: max(8px, env(safe-area-inset-top));
@@ -390,11 +390,11 @@ body:has(#raid:not([hidden])) .tutorial-count {
   background: rgb(0 0 0 / 0.4);
 }
 
-.armour {
+.armor {
   display: flex;
 }
 
-/* Each zone coloured by HP with its HP beside it; a bleeding one pulses a white outline, seen on any colour. */
+/* Each zone colored by HP with its HP beside it; a bleeding one pulses a white outline, seen on any color. */
 .body {
   display: flex;
 }
@@ -414,7 +414,7 @@ body:has(#raid:not([hidden])) .tutorial-count {
   paint-order: stroke;
 }
 
-.armour-icons {
+.armor-icons {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -435,7 +435,7 @@ body:has(#raid:not([hidden])) .tutorial-count {
   }
 }
 
-.armour[hidden] {
+.armor[hidden] {
   display: none;
 }
 
@@ -477,7 +477,7 @@ body:has(#raid:not([hidden])) .tutorial-count {
   color: #e74c3c;
 }
 
-/* The round loaded, with its level's colour down its left edge. */
+/* The round loaded, with its level's color down its left edge. */
 #ammo .round {
   display: block;
   margin-top: 2px;
@@ -487,7 +487,7 @@ body:has(#raid:not([hidden])) .tutorial-count {
   opacity: 0.85;
 }
 
-/* An ammo or armour level, in its colour (grey to red). */
+/* An ammo or armor level, in its color (gray to red). */
 .level-tag {
   display: inline-block;
   min-width: 11px;
@@ -601,7 +601,7 @@ body:has(#raid:not([hidden])) .tutorial-count {
   }
 }
 
-/* Standing in smoke: grey over the world, under the HUD. */
+/* Standing in smoke: gray over the world, under the HUD. */
 #smoke-veil {
   position: fixed;
   inset: 0;
@@ -652,7 +652,7 @@ body:has(#raid:not([hidden])) .tutorial-count {
   display: none;
 }
 
-/* Where dragging the stick up locks sprinting: LOCK_DISTANCE (110px) above the centre. */
+/* Where dragging the stick up locks sprinting: LOCK_DISTANCE (110px) above the center. */
 #sprint-zone {
   position: absolute;
   top: -78px;
@@ -801,7 +801,7 @@ kbd {
     monospace;
 }
 
-/* A controller's face buttons, in their usual colours (hud/raid-hud.ts). */
+/* A controller's face buttons, in their usual colors (hud/raid-hud.ts). */
 kbd.pad {
   border-radius: 50%;
   font-weight: bold;
@@ -823,7 +823,7 @@ kbd.pad[data-glyph='△'] {
   color: #6fd6b0;
 }
 
-/* HUD buttons, placed by hud/hud.ts from the saved layout (centre as % of the screen). */
+/* HUD buttons, placed by hud/hud.ts from the saved layout (center as % of the screen). */
 #controls {
   position: fixed;
   inset: 0;
@@ -1840,7 +1840,7 @@ body:has(#raid:not([hidden])) #vitals {
   grid-column: span 2;
 }
 
-.inv-slot.centre {
+.inv-slot.center {
   grid-column: span 3;
   justify-self: center;
   width: calc(var(--cell) * 2);
@@ -1848,7 +1848,7 @@ body:has(#raid:not([hidden])) #vitals {
 
 /*
  * On a phone (2026-11-09, the user's call): the same width as three two-cell columns, cut
- * into six so the helmet and armour can take half the row each, as wide together as a
+ * into six so the helmet and armor can take half the row each, as wide together as a
  * primary and the knife. Six columns of a cell less 2 px with 4 px gaps keep a primary at
  * four cells and 4 px, and the sidearm and knife at two cells.
  */
@@ -1876,7 +1876,7 @@ body:has(#raid:not([hidden])) #vitals {
   color: #7f8b95;
 }
 
-/* The armour slot while an armoured rig is worn (2026-11-11): shut, hatched, saying why. */
+/* The armor slot while an armored rig is worn (2026-11-11): shut, hatched, saying why. */
 .inv-slot.shut {
   background: repeating-linear-gradient(
     -45deg,
@@ -1905,7 +1905,7 @@ body:has(#raid:not([hidden])) #vitals {
   color: #a7b0b8;
 }
 
-/* An empty slot's ghost: the picture of what goes there, flat light grey and faint. */
+/* An empty slot's ghost: the picture of what goes there, flat light gray and faint. */
 .inv-slot-ghost {
   position: absolute;
   inset: 6px;
@@ -2137,7 +2137,7 @@ body:has(#raid:not([hidden])) #vitals {
   }
 }
 
-/* A favourite (2026-11-06): a gold star top right, the found tick beside it. */
+/* A favorite (2026-11-06): a gold star top right, the found tick beside it. */
 .inv-item-star {
   position: absolute;
   top: 0;
@@ -2148,23 +2148,23 @@ body:has(#raid:not([hidden])) #vitals {
   text-shadow: 0 0 3px rgb(0 0 0 / 0.9);
 }
 
-.inv-item.favourite .inv-item-found {
+.inv-item.favorite .inv-item-found {
   right: 14px;
 }
 
 /*
- * Where a favourite turns up in a body, a container or on the ground (not your own gear
+ * Where a favorite turns up in a body, a container or on the ground (not your own gear
  * or the stash): a gold outline that glows, so it's seen at a glance.
  */
-.inv-loot:not(.is-stash) .inv-item.favourite {
+.inv-loot:not(.is-stash) .inv-item.favorite {
   border-color: #ffd25a;
   box-shadow:
     0 0 0 1px #ffd25a,
     0 0 12px 1px rgb(255 210 90 / 0.65);
-  animation: favourite-glow 1.6s ease-in-out infinite alternate;
+  animation: favorite-glow 1.6s ease-in-out infinite alternate;
 }
 
-@keyframes favourite-glow {
+@keyframes favorite-glow {
   from {
     box-shadow:
       0 0 0 1px #ffd25a,
@@ -2178,17 +2178,17 @@ body:has(#raid:not([hidden])) #vitals {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .inv-loot:not(.is-stash) .inv-item.favourite {
+  .inv-loot:not(.is-stash) .inv-item.favorite {
     animation: none;
   }
 }
 
-.raid button.favourited {
+.raid button.favorited {
   border-color: #ffd25a;
   color: #ffd25a;
 }
 
-/* The calibre a gun takes, under its name. */
+/* The caliber a gun takes, under its name. */
 .inv-item-ammo {
   display: block;
   color: rgb(232 236 239 / 0.7);
@@ -2419,7 +2419,7 @@ body:has(#raid:not([hidden])) #vitals {
 }
 
 /*
- * The results screen (reworked 2026-11-06): a banner in how the raid ended's colour with
+ * The results screen (reworked 2026-11-06): a banner in how the raid ended's color with
  * the time, kills, raid gain and losses, then panels, as the inventory's.
  */
 .results {
@@ -2469,7 +2469,7 @@ body:has(#raid:not([hidden])) #vitals {
   }
 }
 
-/* The zombies results' plain header, centred. */
+/* The zombies results' plain header, centered. */
 .results > header:not(.results-banner) {
   text-align: center;
 }
@@ -2871,7 +2871,7 @@ body:has(#raid:not([hidden])) #vitals {
 
 /*
  * The defeat screen (2026-11-11): the victory screen's bar and big numbers, with the last
- * fight beside them in place of you. Taken hits red, ghost on the left; dealt light grey,
+ * fight beside them in place of you. Taken hits red, ghost on the left; dealt light gray,
  * mirrored. The list scrolls inside its column, so the screen itself doesn't.
  */
 .defeat .victory-bar h1 {
@@ -2973,7 +2973,7 @@ body:has(#raid:not([hidden])) #vitals {
   font-weight: 600;
 }
 
-.combat-armour {
+.combat-armor {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -2981,7 +2981,7 @@ body:has(#raid:not([hidden])) #vitals {
   font-size: 12px;
 }
 
-.combat-armour svg {
+.combat-armor svg {
   width: 13px;
   height: 13px;
 }
@@ -3933,7 +3933,7 @@ body:has(#layout-bar) #menu {
   list-style: none;
 }
 
-/* An offer: its picture on its rarity's colour, name, price and level. */
+/* An offer: its picture on its rarity's color, name, price and level. */
 .raid .vendors-offer {
   position: relative;
   display: flex;
@@ -4383,7 +4383,7 @@ body:has(#layout-bar) #menu {
   gap: 4px;
 }
 
-/* Shop and Quests: big tabs, the one open lit in the trader's colour. */
+/* Shop and Quests: big tabs, the one open lit in the trader's color. */
 .trader-tabs {
   display: flex;
   flex-direction: column;
@@ -4782,7 +4782,7 @@ body:has(#layout-bar) #menu {
   opacity: 0.55;
 }
 
-/* A recipe's output: its picture on its rarity's colour and its name; a tap shows details. */
+/* A recipe's output: its picture on its rarity's color and its name; a tap shows details. */
 .raid .hangar-output {
   display: flex;
   flex: none;
@@ -4977,7 +4977,7 @@ body:has(#layout-bar) #menu {
 
 /*
  * The quests page (session 14; reworked 2026-11-06): the vendors page's layout, tabs by
- * status, and each quest a card with an edge in its status's colour.
+ * status, and each quest a card with an edge in its status's color.
  */
 .vendors-badge {
   margin-left: auto;
@@ -5755,7 +5755,7 @@ body.inv-dragging .item-details.panel {
 
 /*
  * Spectating, the HUD is the teammate's (the user's call, 2026-11-06): their limbs and
- * armour (#vitals), rounds (#ammo), the red flash when they're hit (#hurt), and their hand
+ * armor (#vitals), rounds (#ammo), the red flash when they're hit (#hurt), and their hand
  * slots, shown but not pressable. Every other control is hidden.
  */
 body.spectating :is(#stick, #sprint-lock, #prompt, #extract, .heal-picker) {
@@ -6431,7 +6431,7 @@ input[type='range'].pad-grabbed {
   }
 }
 
-/* Deploy: big, in the mode's colour, with a cut corner. */
+/* Deploy: big, in the mode's color, with a cut corner. */
 .lobby .lobby-deploy-button,
 .lobby .lobby-go {
   position: relative;

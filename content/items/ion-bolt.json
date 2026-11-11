@@ -6,7 +6,7 @@
   "size": [1, 1],
   "value": 0,
   "rarity": "epic",
-  "calibre": "ion",
+  "caliber": "ion",
   "stack": 40,
   "effect": "frag",
   "fuse": 3,
@@ -14,7 +14,7 @@
   "radius": 2.5,
   "damage": 400,
   "level": 6,
-  "armourDamage": 0,
+  "armorDamage": 0,
   "bleedChance": 0,
   "loudness": 150,
   "sounds": {
@@ -30,7 +30,7 @@
         "pitch": 90,
         "radius": 0.04,
         "height": 0.16,
-        "colour": "#7dff6a"
+        "color": "#7dff6a"
       },
       {
         "type": "cylinder",
@@ -38,7 +38,7 @@
         "pitch": 90,
         "radius": 0.055,
         "height": 0.05,
-        "colour": "#c9ffbf"
+        "color": "#c9ffbf"
       }
     ]
   }

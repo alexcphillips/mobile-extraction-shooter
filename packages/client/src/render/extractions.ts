@@ -2,7 +2,7 @@ import type { ExtractionPoint } from '@mes/shared';
 import * as THREE from 'three';
 
 /** Light green, and a short band: it marks where the zone is without hiding the ground. */
-const COLOUR = 0x9dffb0;
+const COLOR = 0x9dffb0;
 /** How tall the band is, from just over the floor. */
 const BAND = 0.25;
 const LIFT = 0.03;
@@ -32,7 +32,7 @@ export function buildExtractions(open: readonly ExtractionPoint[]): THREE.Mesh {
   const mesh = new THREE.Mesh(
     geometry,
     new THREE.MeshBasicMaterial({
-      color: COLOUR,
+      color: COLOR,
       transparent: true,
       opacity: 0.55,
       side: THREE.DoubleSide,

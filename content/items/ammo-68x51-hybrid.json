@@ -8,15 +8,15 @@
   "value": 150,
   "rarity": "epic",
   "stack": 40,
-  "calibre": "6.8x51",
+  "caliber": "6.8x51",
   "level": 4,
   "damage": 61,
-  "armourDamage": 25,
+  "armorDamage": 25,
   "bleedChance": 0.4,
   "model": {
     "parts": [
-      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "colour": "#8c8e90" },
-      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "colour": "#8a56b3" }
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "color": "#8c8e90" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "color": "#8a56b3" }
     ]
   }
 }

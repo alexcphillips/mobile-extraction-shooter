@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "locker-bank-open",
   "name": "Locker bank, open",
-  "colours": {
+  "colors": {
     "body": "#7f8f8a",
     "door": "#93a39e",
     "vent": "#3d4148",
@@ -14,84 +14,84 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [1.8, 1.9, 0.5],
-      "colour": "body",
+      "color": "body",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.6, 0.08, 0.252],
       "size": [0.52, 1.76, 0.01],
-      "colour": "inside",
+      "color": "inside",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.6, 1.2, 0.26],
       "size": [0.5, 0.02, 0.02],
-      "colour": "body",
+      "color": "body",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.87, 0.08, 0.52],
       "size": [0.02, 1.76, 0.54],
-      "colour": "door",
+      "color": "door",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.08, 0.252],
       "size": [0.52, 1.76, 0.01],
-      "colour": "inside",
+      "color": "inside",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.2, 0.26],
       "size": [0.5, 0.02, 0.02],
-      "colour": "body",
+      "color": "body",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.27, 0.08, 0.52],
       "size": [0.02, 1.76, 0.54],
-      "colour": "door",
+      "color": "door",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.6, 0.08, 0.252],
       "size": [0.52, 1.76, 0.01],
-      "colour": "inside",
+      "color": "inside",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.6, 1.2, 0.26],
       "size": [0.5, 0.02, 0.02],
-      "colour": "body",
+      "color": "body",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.32999999999999996, 0.08, 0.52],
       "size": [0.02, 1.76, 0.54],
-      "colour": "door",
+      "color": "door",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.6, 0.1, 0.26],
       "size": [0.3, 0.2, 0.03],
-      "colour": "stuff",
+      "color": "stuff",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.6, 1.24, 0.27],
       "size": [0.26, 0.12, 0.03],
-      "colour": "stuff",
+      "color": "stuff",
       "collide": false
     }
   ]

@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "fallen-joists",
   "name": "Fallen joists",
-  "colours": {
+  "colors": {
     "plaster": "#d6cfbf",
     "plaster-dark": "#aaa292",
     "wood": "#8a6a4a",
@@ -14,14 +14,14 @@
       "pos": [0, 0, 0],
       "size": [6, 0.55, 0.8],
       "bulge": [0, 0, 0, 0.1, 0.08, 0.08],
-      "colour": "plaster"
+      "color": "plaster"
     },
     {
       "type": "box",
       "pos": [0, 0.55, 0.02],
       "yaw": 2,
       "size": [6, 0.22, 0.2],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
@@ -29,7 +29,7 @@
       "pitch": -28,
       "yaw": 6,
       "size": [1.3, 0.04, 0.6],
-      "colour": "plaster-dark",
+      "color": "plaster-dark",
       "collide": false
     },
     {
@@ -38,7 +38,7 @@
       "pitch": 30,
       "yaw": -4,
       "size": [1.1, 0.04, 0.55],
-      "colour": "plaster-dark",
+      "color": "plaster-dark",
       "collide": false
     },
     {
@@ -47,7 +47,7 @@
       "pitch": -24,
       "yaw": -8,
       "size": [0.9, 0.04, 0.55],
-      "colour": "plaster",
+      "color": "plaster",
       "collide": false
     },
     {
@@ -56,7 +56,7 @@
       "yaw": 14,
       "pitch": -12,
       "size": [1.0, 0.02, 0.05],
-      "colour": "wood-dark",
+      "color": "wood-dark",
       "collide": false
     },
     {
@@ -65,7 +65,7 @@
       "yaw": -10,
       "pitch": 10,
       "size": [0.8, 0.02, 0.05],
-      "colour": "wood-dark",
+      "color": "wood-dark",
       "collide": false
     },
     {
@@ -73,7 +73,7 @@
       "pos": [-0.9, 0, -0.62],
       "yaw": 20,
       "size": [0.22, 0.12, 0.18],
-      "colour": "plaster-dark",
+      "color": "plaster-dark",
       "collide": false
     },
     {
@@ -81,7 +81,7 @@
       "pos": [1.6, 0, 0.6],
       "yaw": -35,
       "size": [0.18, 0.1, 0.2],
-      "colour": "plaster",
+      "color": "plaster",
       "collide": false
     },
     {
@@ -89,7 +89,7 @@
       "pos": [2.6, 0, -0.58],
       "yaw": 10,
       "size": [0.26, 0.14, 0.16],
-      "colour": "plaster",
+      "color": "plaster",
       "collide": false
     },
     {
@@ -97,7 +97,7 @@
       "pos": [-2.5, 0, 0.6],
       "yaw": 40,
       "size": [0.2, 0.1, 0.2],
-      "colour": "plaster-dark",
+      "color": "plaster-dark",
       "collide": false
     },
     {
@@ -105,7 +105,7 @@
       "pos": [-2.8, 0.62, 0.02],
       "yaw": 25,
       "size": [0.4, 0.06, 0.08],
-      "colour": "wood-dark",
+      "color": "wood-dark",
       "collide": false
     }
   ]

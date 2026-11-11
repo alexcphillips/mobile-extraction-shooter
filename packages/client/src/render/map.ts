@@ -41,7 +41,7 @@ interface DoorView {
   turn: number;
   /** How far open it's drawn, −1 (into −z) to 1 (into +z). */
   shown: number;
-  /** Its lamp's colour, if it has one. */
+  /** Its lamp's color, if it has one. */
   lamp: THREE.MeshBasicMaterial | null;
   /** A shutter: where its bottom starts, its height and how far it has rolled up, 0 to 1. */
   roll: { y: number; height: number; shown: number } | null;
@@ -95,7 +95,7 @@ interface LookChunk {
 
 /**
  * Builds a compiled map's scene: the terrain and static shapes merged into one mesh per
- * 32 m chunk, one instanced mesh per instanced prefab and colour set, the doors at rest as
+ * 32 m chunk, one instanced mesh per instanced prefab and color set, the doors at rest as
  * one mesh (and a mesh per door, drawn while it moves), one instanced see-through mesh for
  * all the glass, the looks of the containers with a searched look as one mesh per chunk,
  * and the water surface.
@@ -104,7 +104,7 @@ export function buildMap(map: CompiledMap): MapView {
   const root = new THREE.Group();
   const apart = new Set(map.searchedLooks.flatMap((l) => l.closed));
   const merged = apart.size ? map.shapes.filter((s) => !apart.has(s)) : map.shapes;
-  root.add(buildChunks(map.world.terrain, map.terrainColour, merged));
+  root.add(buildChunks(map.world.terrain, map.terrainColor, merged));
 
   const baked = bakedMaterial();
   const looks = new Map<string, LookView>();
@@ -242,7 +242,7 @@ const rootInverse = new THREE.Matrix4();
 
 /**
  * Non-indexed geometries end to end, each moved by its matrix if given. Normals are
- * turned by the matrix's 3 × 3 part, as the shaded material turns them, unnormalised.
+ * turned by the matrix's 3 × 3 part, as the shaded material turns them, unnormalized.
  */
 function mergeGeometry(
   parts: readonly THREE.BufferGeometry[],
@@ -274,10 +274,10 @@ function mergeGeometry(
   return out;
 }
 
-/** One mesh per chunk: its terrain cells and every shape whose centre is in it. */
+/** One mesh per chunk: its terrain cells and every shape whose center is in it. */
 export function buildChunks(
   terrain: HeightGridDef,
-  terrainColour: number,
+  terrainColor: number,
   shapes: readonly Shape[],
 ): THREE.Group {
   const cells = Math.max(1, Math.round(CHUNK / terrain.cellSize));
@@ -306,7 +306,7 @@ export function buildChunks(
         Math.min(terrain.cols, i0 + cells),
         j0,
         Math.min(terrain.rows, j0 + cells),
-        terrainColour,
+        terrainColor,
       );
       for (const s of byChunk[cz * nx + cx]!) b.shape(s);
       const mesh = new THREE.Mesh(b.build(), material);
@@ -358,7 +358,7 @@ export function updateDoors(
     const d = view.doors[i]!;
     const s = doors[i];
     moving[i] = false;
-    if (d.lamp) d.lamp.color.setHex(lampColour(s, view.clock));
+    if (d.lamp) d.lamp.color.setHex(lampColor(s, view.clock));
     if (d.roll) {
       const r = d.roll;
       moving[i] = !!s?.gone && r.shown < 1;
@@ -388,13 +388,13 @@ export function updateDoors(
 /** Which doors updateDoors moved this frame, by door index. */
 const moving: boolean[] = [];
 
-function lampColour(s: { open: boolean; opening?: number } | undefined, clock: number): number {
+function lampColor(s: { open: boolean; opening?: number } | undefined, clock: number): number {
   if (s?.open) return LAMP_OPEN;
   if (s?.opening === undefined) return LAMP_IDLE;
   return (clock * LAMP_RATE) % 1 < 0.5 ? LAMP_FLASH : LAMP_DARK;
 }
 
-/** A door's lamp: lit, so it reads at a distance, and with a colour of its own to change. */
+/** A door's lamp: lit, so it reads at a distance, and with a color of its own to change. */
 function buildLamp(door: CompiledDoor, root: THREE.Object3D): THREE.MeshBasicMaterial {
   const { pos, size } = door.lamp!;
   const material = new THREE.MeshBasicMaterial({ color: LAMP_IDLE });
@@ -435,7 +435,7 @@ function buildGlass(glass: readonly CompiledGlass[]): THREE.InstancedMesh {
   const c = new THREE.Color();
   glass.forEach((g, i) => {
     mesh.setMatrixAt(i, glassMatrix(g, m));
-    mesh.setColorAt(i, c.setHex(g.colour));
+    mesh.setColorAt(i, c.setHex(g.color));
   });
   mesh.computeBoundingSphere();
   mesh.matrixAutoUpdate = false;
@@ -450,7 +450,7 @@ function buildGlass(glass: readonly CompiledGlass[]): THREE.InstancedMesh {
  */
 export function buildGlassPane(g: CompiledGlass): THREE.Mesh {
   const material = glassMaterial();
-  material.color.setHex(g.colour);
+  material.color.setHex(g.color);
   const mesh = new THREE.Mesh(UNIT_PANE.clone(), material);
   glassMatrix(g, mesh.matrix).decompose(mesh.position, mesh.quaternion, mesh.scale);
   mesh.renderOrder = 1;
@@ -497,7 +497,7 @@ export function buildDoor(door: CompiledDoor, material: THREE.Material): THREE.O
     yaw: 0,
     pitch: 0,
     roll: 0,
-    colour: door.colour,
+    color: door.color,
     hx: door.width / 2,
     hy: door.height / 2,
     hz: door.thickness / 2,
@@ -516,7 +516,7 @@ export function buildDoor(door: CompiledDoor, material: THREE.Material): THREE.O
 
 /**
  * Every body of water as one see-through mesh (MT-1): a flat rectangle each at its level,
- * coloured and faded per body through vertex colours with alpha. One draw call; null with
+ * colored and faded per body through vertex colors with alpha. One draw call; null with
  * none. Seen from both sides, so it shows from under the surface too.
  */
 export function buildWater(water: readonly CompiledWater[]): THREE.Mesh | null {
@@ -536,7 +536,7 @@ export function buildWater(water: readonly CompiledWater[]): THREE.Mesh | null {
       [w.hx, w.hz],
       [-w.hx, w.hz],
     ] as const;
-    c.setHex(w.colour);
+    c.setHex(w.color);
     corners.forEach(([lx, lz], i) => {
       pos.set([w.x + lx * cos + lz * sin, w.level, w.z - lx * sin + lz * cos], k * 18 + i * 3);
       col.set([c.r, c.g, c.b, w.opacity], k * 24 + i * 4);

@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "freight-elevator-cab",
   "name": "Freight elevator cab",
-  "colours": {
+  "colors": {
     "deck": "#55595c",
     "paint": "#c8a02c",
     "paint-dark": "#94762a",
@@ -15,134 +15,134 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [5.2, 0.15, 6.2],
-      "colour": "deck"
+      "color": "deck"
     },
     {
       "type": "box",
       "pos": [-2.55, 0.15, 0],
       "size": [0.1, 3.6, 6.2],
-      "colour": "paint"
+      "color": "paint"
     },
     {
       "type": "box",
       "pos": [2.55, 0.15, 0],
       "size": [0.1, 3.6, 6.2],
-      "colour": "paint"
+      "color": "paint"
     },
     {
       "type": "box",
       "pos": [0, 0.15, -3.05],
       "size": [5.0, 3.6, 0.1],
-      "colour": "paint"
+      "color": "paint"
     },
     {
       "type": "box",
       "pos": [0, 3.75, 0],
       "size": [5.2, 0.1, 6.2],
-      "colour": "paint-dark"
+      "color": "paint-dark"
     },
     {
       "type": "box",
       "pos": [0, 3.85, 0],
       "size": [5.2, 0.3, 0.4],
-      "colour": "paint-dark",
+      "color": "paint-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 3.45, 3.05],
       "size": [5.0, 0.3, 0.1],
-      "colour": "paint-dark"
+      "color": "paint-dark"
     },
     {
       "type": "box",
       "pos": [-2.48, 0.95, 0],
       "size": [0.04, 0.14, 5.9],
-      "colour": "bump",
+      "color": "bump",
       "collide": false
     },
     {
       "type": "box",
       "pos": [2.48, 0.95, 0],
       "size": [0.04, 0.14, 5.9],
-      "colour": "bump",
+      "color": "bump",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.95, -2.98],
       "size": [4.92, 0.14, 0.04],
-      "colour": "bump",
+      "color": "bump",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-2.48, 1.85, 0],
       "size": [0.04, 0.14, 5.9],
-      "colour": "bump",
+      "color": "bump",
       "collide": false
     },
     {
       "type": "box",
       "pos": [2.48, 1.85, 0],
       "size": [0.04, 0.14, 5.9],
-      "colour": "bump",
+      "color": "bump",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.85, -2.98],
       "size": [4.92, 0.14, 0.04],
-      "colour": "bump",
+      "color": "bump",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.15, 2.85],
       "size": [5.0, 0.004, 0.3],
-      "colour": "hazard",
+      "color": "hazard",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-2.1, 0.15, 2.85],
       "size": [0.34, 0.006, 0.3],
-      "colour": "hazard-dark",
+      "color": "hazard-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.26, 0.15, 2.85],
       "size": [0.34, 0.006, 0.3],
-      "colour": "hazard-dark",
+      "color": "hazard-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.42, 0.15, 2.85],
       "size": [0.34, 0.006, 0.3],
-      "colour": "hazard-dark",
+      "color": "hazard-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.42, 0.15, 2.85],
       "size": [0.34, 0.006, 0.3],
-      "colour": "hazard-dark",
+      "color": "hazard-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [1.26, 0.15, 2.85],
       "size": [0.34, 0.006, 0.3],
-      "colour": "hazard-dark",
+      "color": "hazard-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [2.1, 0.15, 2.85],
       "size": [0.34, 0.006, 0.3],
-      "colour": "hazard-dark",
+      "color": "hazard-dark",
       "collide": false
     }
   ]

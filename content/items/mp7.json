@@ -40,7 +40,7 @@
         "group": "receiver",
         "pos": [0, 0.0115, -0.035],
         "size": [0.046, 0.049, 0.23],
-        "colour": "#262828"
+        "color": "#262828"
       },
       {
         "type": "box",
@@ -48,7 +48,7 @@
         "group": "receiver",
         "pos": [0, 0.0403, -0.035],
         "size": [0.022, 0.0095, 0.226],
-        "colour": "#1d1f21"
+        "color": "#1d1f21"
       },
       {
         "type": "box",
@@ -56,7 +56,7 @@
         "group": "receiver",
         "pos": [0, 0.0443, -0.12],
         "size": [0.024, 0.0025, 0.005],
-        "colour": "#141516"
+        "color": "#141516"
       },
       {
         "type": "box",
@@ -64,7 +64,7 @@
         "group": "receiver",
         "pos": [0, 0.0443, -0.098],
         "size": [0.024, 0.0025, 0.005],
-        "colour": "#141516"
+        "color": "#141516"
       },
       {
         "type": "box",
@@ -72,7 +72,7 @@
         "group": "receiver",
         "pos": [0, 0.0443, -0.076],
         "size": [0.024, 0.0025, 0.005],
-        "colour": "#141516"
+        "color": "#141516"
       },
       {
         "type": "box",
@@ -80,7 +80,7 @@
         "group": "receiver",
         "pos": [0, 0.0443, -0.054],
         "size": [0.024, 0.0025, 0.005],
-        "colour": "#141516"
+        "color": "#141516"
       },
       {
         "type": "box",
@@ -88,7 +88,7 @@
         "group": "receiver",
         "pos": [0, 0.0443, -0.032],
         "size": [0.024, 0.0025, 0.005],
-        "colour": "#141516"
+        "color": "#141516"
       },
       {
         "type": "box",
@@ -96,7 +96,7 @@
         "group": "receiver",
         "pos": [0, 0.0443, -0.01],
         "size": [0.024, 0.0025, 0.005],
-        "colour": "#141516"
+        "color": "#141516"
       },
       {
         "type": "box",
@@ -104,7 +104,7 @@
         "group": "receiver",
         "pos": [0, 0.0443, 0.012],
         "size": [0.024, 0.0025, 0.005],
-        "colour": "#141516"
+        "color": "#141516"
       },
       {
         "type": "box",
@@ -112,7 +112,7 @@
         "group": "receiver",
         "pos": [0, 0.0443, 0.034],
         "size": [0.024, 0.0025, 0.005],
-        "colour": "#141516"
+        "color": "#141516"
       },
       {
         "type": "box",
@@ -120,7 +120,7 @@
         "group": "receiver",
         "pos": [0, 0.004, -0.161],
         "size": [0.04, 0.036, 0.024],
-        "colour": "#1d1f21"
+        "color": "#1d1f21"
       },
       {
         "type": "box",
@@ -128,7 +128,7 @@
         "group": "receiver",
         "pos": [-0.024, 0, -0.11],
         "size": [0.004, 0.012, 0.07],
-        "colour": "#1d1f21"
+        "color": "#1d1f21"
       },
       {
         "type": "box",
@@ -136,7 +136,7 @@
         "group": "receiver",
         "pos": [-0.0235, -0.006, -0.03],
         "size": [0.002, 0.004, 0.17],
-        "colour": "#1d1f21"
+        "color": "#1d1f21"
       },
       {
         "type": "box",
@@ -144,7 +144,7 @@
         "group": "controls",
         "pos": [-0.0213, -0.022, 0.035],
         "size": [0.003, 0.005, 0.018],
-        "colour": "#5a5d60",
+        "color": "#5a5d60",
         "pitch": -25
       },
       {
@@ -153,7 +153,7 @@
         "group": "receiver",
         "pos": [0.024, 0, -0.11],
         "size": [0.004, 0.012, 0.07],
-        "colour": "#1d1f21"
+        "color": "#1d1f21"
       },
       {
         "type": "box",
@@ -161,7 +161,7 @@
         "group": "receiver",
         "pos": [0.0235, -0.006, -0.03],
         "size": [0.002, 0.004, 0.17],
-        "colour": "#1d1f21"
+        "color": "#1d1f21"
       },
       {
         "type": "box",
@@ -169,7 +169,7 @@
         "group": "controls",
         "pos": [0.0213, -0.022, 0.035],
         "size": [0.003, 0.005, 0.018],
-        "colour": "#5a5d60",
+        "color": "#5a5d60",
         "pitch": -25
       },
       {
@@ -178,7 +178,7 @@
         "group": "receiver",
         "pos": [0.0235, 0.012, 0],
         "size": [0.002, 0.014, 0.04],
-        "colour": "#141516"
+        "color": "#141516"
       },
       {
         "type": "box",
@@ -186,7 +186,7 @@
         "group": "receiver",
         "pos": [0, -0.025, -0.04],
         "size": [0.04, 0.026, 0.205],
-        "colour": "#3a3d40"
+        "color": "#3a3d40"
       },
       {
         "type": "box",
@@ -194,7 +194,7 @@
         "group": "receiver",
         "pos": [0, 0.008, 0.083],
         "size": [0.044, 0.05, 0.008],
-        "colour": "#1d1f21"
+        "color": "#1d1f21"
       },
       {
         "type": "box",
@@ -202,7 +202,7 @@
         "group": "controls",
         "pos": [0, 0.036, 0.084],
         "size": [0.034, 0.006, 0.01],
-        "colour": "#141516"
+        "color": "#141516"
       },
       {
         "type": "cylinder",
@@ -211,7 +211,7 @@
         "pos": [0, 0, -0.18],
         "radius": 0.008,
         "height": 0.03,
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "pitch": 90
       },
       {
@@ -221,7 +221,7 @@
         "pos": [0, 0, -0.2],
         "radius": 0.011,
         "height": 0.025,
-        "colour": "#262828",
+        "color": "#262828",
         "pitch": 90,
         "hiddenBy": "muzzle"
       },
@@ -231,7 +231,7 @@
         "group": "foregrip",
         "pos": [0, -0.043, -0.12],
         "size": [0.03, 0.012, 0.032],
-        "colour": "#1d1f21"
+        "color": "#1d1f21"
       },
       {
         "type": "box",
@@ -239,7 +239,7 @@
         "group": "foregrip",
         "pos": [0, -0.08, -0.12],
         "size": [0.026, 0.07, 0.03],
-        "colour": "#3a3d40",
+        "color": "#3a3d40",
         "pitch": -6
       },
       {
@@ -248,7 +248,7 @@
         "group": "foregrip",
         "pos": [0, -0.1178, -0.116],
         "size": [0.03, 0.008, 0.034],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "pitch": -6
       },
       {
@@ -257,7 +257,7 @@
         "group": "grip",
         "pos": [0, -0.08, 0.02],
         "size": [0.032, 0.1, 0.04],
-        "colour": "#3a3d40",
+        "color": "#3a3d40",
         "pitch": -8
       },
       {
@@ -266,7 +266,7 @@
         "group": "grip",
         "pos": [0, -0.0928, 0.0006],
         "size": [0.03, 0.007, 0.006],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "pitch": -8
       },
       {
@@ -275,7 +275,7 @@
         "group": "grip",
         "pos": [0, -0.1126, 0.0034],
         "size": [0.03, 0.007, 0.006],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "pitch": -8
       },
       {
@@ -284,7 +284,7 @@
         "group": "grip",
         "pos": [0, -0.042, 0.052],
         "size": [0.034, 0.012, 0.018],
-        "colour": "#1d1f21"
+        "color": "#1d1f21"
       },
       {
         "type": "box",
@@ -292,7 +292,7 @@
         "group": "grip",
         "pos": [0, -0.145, 0.03],
         "size": [0.026, 0.04, 0.036],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "pitch": -8,
         "hiddenBy": "magazine"
       },
@@ -302,7 +302,7 @@
         "group": "trigger",
         "pos": [0, -0.049, -0.065],
         "size": [0.01, 0.024, 0.006],
-        "colour": "#3a3d40"
+        "color": "#3a3d40"
       },
       {
         "type": "box",
@@ -310,7 +310,7 @@
         "group": "trigger",
         "pos": [0, -0.063, -0.034],
         "size": [0.01, 0.006, 0.065],
-        "colour": "#3a3d40"
+        "color": "#3a3d40"
       },
       {
         "type": "box",
@@ -318,7 +318,7 @@
         "group": "trigger",
         "pos": [0, -0.046, -0.025],
         "size": [0.005, 0.018, 0.006],
-        "colour": "#141516",
+        "color": "#141516",
         "pitch": 10
       },
       {
@@ -327,7 +327,7 @@
         "group": "stock",
         "pos": [-0.016, -0.01, 0.15],
         "size": [0.007, 0.009, 0.16],
-        "colour": "#1d1f21"
+        "color": "#1d1f21"
       },
       {
         "type": "box",
@@ -335,7 +335,7 @@
         "group": "stock",
         "pos": [0.016, -0.01, 0.15],
         "size": [0.007, 0.009, 0.16],
-        "colour": "#1d1f21"
+        "color": "#1d1f21"
       },
       {
         "type": "box",
@@ -343,7 +343,7 @@
         "group": "stock",
         "pos": [0, -0.025, 0.235],
         "size": [0.045, 0.07, 0.012],
-        "colour": "#3a3d40"
+        "color": "#3a3d40"
       },
       {
         "type": "box",
@@ -351,13 +351,13 @@
         "group": "stock",
         "pos": [0, -0.025, 0.244],
         "size": [0.047, 0.074, 0.006],
-        "colour": "#141516"
+        "color": "#141516"
       },
       {
         "type": "box",
         "pos": [0, 0.0475, 0.05],
         "size": [0.01, 0.007, 0.01],
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "hiddenBy": "optic",
         "group": "iron sights",
         "name": "rear sight base"
@@ -366,7 +366,7 @@
         "type": "box",
         "pos": [0, 0.071, 0.05],
         "size": [0.003, 0.0068, 0.006],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "roll": 90,
         "hiddenBy": "optic",
         "group": "iron sights",
@@ -376,7 +376,7 @@
         "type": "box",
         "pos": [-0.0053, 0.0693, 0.05],
         "size": [0.003, 0.0068, 0.006],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "roll": 126,
         "hiddenBy": "optic",
         "group": "iron sights",
@@ -386,7 +386,7 @@
         "type": "box",
         "pos": [-0.0086, 0.0648, 0.05],
         "size": [0.003, 0.0068, 0.006],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "roll": 162,
         "hiddenBy": "optic",
         "group": "iron sights",
@@ -396,7 +396,7 @@
         "type": "box",
         "pos": [-0.0086, 0.0592, 0.05],
         "size": [0.003, 0.0068, 0.006],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "roll": 198,
         "hiddenBy": "optic",
         "group": "iron sights",
@@ -406,7 +406,7 @@
         "type": "box",
         "pos": [-0.0053, 0.0547, 0.05],
         "size": [0.003, 0.0068, 0.006],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "roll": 234,
         "hiddenBy": "optic",
         "group": "iron sights",
@@ -416,7 +416,7 @@
         "type": "box",
         "pos": [0, 0.053, 0.05],
         "size": [0.003, 0.0068, 0.006],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "roll": 270,
         "hiddenBy": "optic",
         "group": "iron sights",
@@ -426,7 +426,7 @@
         "type": "box",
         "pos": [0.0053, 0.0547, 0.05],
         "size": [0.003, 0.0068, 0.006],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "roll": 306,
         "hiddenBy": "optic",
         "group": "iron sights",
@@ -436,7 +436,7 @@
         "type": "box",
         "pos": [0.0086, 0.0592, 0.05],
         "size": [0.003, 0.0068, 0.006],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "roll": 342,
         "hiddenBy": "optic",
         "group": "iron sights",
@@ -446,7 +446,7 @@
         "type": "box",
         "pos": [0.0086, 0.0648, 0.05],
         "size": [0.003, 0.0068, 0.006],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "roll": 378,
         "hiddenBy": "optic",
         "group": "iron sights",
@@ -456,7 +456,7 @@
         "type": "box",
         "pos": [0.0053, 0.0693, 0.05],
         "size": [0.003, 0.0068, 0.006],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "roll": 414,
         "hiddenBy": "optic",
         "group": "iron sights",
@@ -466,7 +466,7 @@
         "type": "box",
         "pos": [0, 0.0475, -0.14],
         "size": [0.026, 0.007, 0.016],
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "hiddenBy": "optic",
         "group": "iron sights",
         "name": "front sight base"
@@ -479,7 +479,7 @@
         "height": 0.012,
         "sides": 4,
         "yaw": 45,
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "hiddenBy": "optic",
         "group": "iron sights",
         "name": "front sight post"
@@ -488,7 +488,7 @@
         "type": "box",
         "pos": [-0.01, 0.0585, -0.14],
         "size": [0.003, 0.015, 0.005],
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "hiddenBy": "optic",
         "group": "iron sights",
         "name": "front sight ear"
@@ -497,7 +497,7 @@
         "type": "box",
         "pos": [0.01, 0.0585, -0.14],
         "size": [0.003, 0.015, 0.005],
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "hiddenBy": "optic",
         "group": "iron sights",
         "name": "front sight ear"

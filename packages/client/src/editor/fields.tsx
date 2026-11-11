@@ -9,7 +9,7 @@ import { round } from './doc';
 /** The value of a select's option that leaves a field out. */
 export const UNSET = '\u0000unset';
 
-export function HexColour(props: { label: string; value: string; onChange: (c: string) => void }) {
+export function HexColor(props: { label: string; value: string; onChange: (c: string) => void }) {
   return (
     <label className="ed-field">
       {props.label}
@@ -35,6 +35,8 @@ export function Num(props: {
   label: string;
   value: number | undefined;
   min?: number;
+  /** Shown grayed while it's blank: what a blank means. */
+  placeholder?: string;
   onChange: (v: number | undefined) => void;
 }) {
   const shown = props.value === undefined ? '' : String(round(props.value, 1e-3));
@@ -46,6 +48,7 @@ function NumInput(props: {
   label: string;
   shown: string;
   min?: number;
+  placeholder?: string;
   onChange: (v: number | undefined) => void;
 }) {
   const { shown } = props;
@@ -62,6 +65,7 @@ function NumInput(props: {
       {props.label}
       <input
         value={text}
+        placeholder={props.placeholder}
         onChange={(e) => setText(e.target.value)}
         onBlur={commit}
         onKeyDown={(e) => e.key === 'Enter' && commit()}
@@ -74,7 +78,7 @@ type TextProps = {
   label: string;
   value: string;
   onChange: (v: string) => void;
-  /** Shown greyed while it's blank, e.g. what a blank falls back to. */
+  /** Shown grayed while it's blank, e.g. what a blank falls back to. */
   placeholder?: string;
   maxLength?: number;
 };

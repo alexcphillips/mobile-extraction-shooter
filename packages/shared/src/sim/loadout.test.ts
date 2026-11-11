@@ -54,13 +54,13 @@ describe('loadouts', () => {
       equipLoadout(c, TEST_ITEMS, kit, rng);
       if (heldWeapon(c)!.item === 'rifle') rifles++;
       if (c.gear.helmet) helmets++;
-      expect(c.gear.bodyArmour).toBeNull();
+      expect(c.gear.bodyArmor).toBeNull();
     }
     expect(rifles / 2000).toBeCloseTo(0.75, 1);
     expect(helmets / 2000).toBeCloseTo(0.5, 1);
   });
 
-  it('rolls spare rounds, attachments by chance, and armour condition', () => {
+  it('rolls spare rounds, attachments by chance, and armor condition', () => {
     const kit = loadout({
       weapons: [
         {
@@ -74,7 +74,7 @@ describe('loadouts', () => {
           ],
         },
       ],
-      bodyArmour: [{ weight: 1, item: 'vest', condition: [0.5, 0.6] }],
+      bodyArmor: [{ weight: 1, item: 'vest', condition: [0.5, 0.6] }],
     });
     const rng = createRng(5);
     const c = character();
@@ -90,8 +90,8 @@ describe('loadouts', () => {
       expect(w.mag).toBeGreaterThan(30);
       if (w.attachments.muzzle) suppressed++;
       const full = 50;
-      expect(c.gear.bodyArmour!.durability).toBeGreaterThanOrEqual(full * 0.5 - 1e-9);
-      expect(c.gear.bodyArmour!.durability).toBeLessThanOrEqual(full * 0.6 + 1e-9);
+      expect(c.gear.bodyArmor!.durability).toBeGreaterThanOrEqual(full * 0.5 - 1e-9);
+      expect(c.gear.bodyArmor!.durability).toBeLessThanOrEqual(full * 0.6 + 1e-9);
     }
     expect(suppressed / 400).toBeCloseTo(0.5, 1);
   });
@@ -130,7 +130,7 @@ describe('loadouts', () => {
         ],
       }),
     ).toThrow(/doesn't fire "shell"/);
-    expect(bad({ helmets: [{ weight: 1, item: 'vest' }] })).toThrow(/not helmet armour/);
+    expect(bad({ helmets: [{ weight: 1, item: 'vest' }] })).toThrow(/not helmet armor/);
     expect(bad({ rigs: [{ weight: 1, item: 'backpack' }] })).toThrow(/not a rig/);
     expect(bad({ backpacks: [{ weight: 1, item: 'watch' }] })).toThrow(/not a backpack/);
     expect(bad({ grenades: [{ weight: 1, item: 'rifle' }] })).toThrow(/not a grenade to throw/);

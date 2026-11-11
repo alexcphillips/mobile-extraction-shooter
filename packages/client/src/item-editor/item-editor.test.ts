@@ -15,7 +15,7 @@ import {
   setSlots,
   type Axis,
 } from './model-edit';
-import { coloursOf } from './palette';
+import { colorsOf } from './palette';
 import { dragged, mirrored, repeated } from './reticle-edit';
 import { storageRisks } from './risk';
 import { ITEM_TYPES, blankItem, retype } from './templates';
@@ -65,25 +65,25 @@ describe('item editor', () => {
     expect(vault.rarity).toBe('common');
   });
 
-  it("fills in an armoured rig's rarity, and armour's, from the armour level", () => {
+  it("fills in an armored rig's rarity, and armor's, from the armor level", () => {
     type D = Record<string, unknown>;
     const rig = (level: number): D => ({
       type: 'container',
       slot: 'rig',
       rarity: 'common',
       grid: [7, 3],
-      armour: { level, durability: 40 },
+      armor: { level, durability: 40 },
     });
-    // Its room doesn't count once it has armour: 21 cells, but level 3 is rare.
+    // Its room doesn't count once it has armor: 21 cells, but level 3 is rare.
     const plain: D = { ...rig(3) };
-    delete plain.armour;
-    const armoured = rig(3);
-    fillRarity(plain, armoured);
-    expect(armoured.rarity).toBe('rare');
+    delete plain.armor;
+    const armored = rig(3);
+    fillRarity(plain, armored);
+    expect(armored.rarity).toBe('rare');
     const up = rig(5);
     fillRarity(rig(3), up);
     expect(up.rarity).toBe('legendary');
-    const vest: D = { type: 'armour', slot: 'body', rarity: 'common', level: 2 };
+    const vest: D = { type: 'armor', slot: 'body', rarity: 'common', level: 2 };
     fillRarity({ ...vest, level: 1 }, vest);
     expect(vest.rarity).toBe('uncommon');
   });
@@ -190,7 +190,7 @@ describe('item editor', () => {
       size: [1, 1, 1] as [number, number, number],
       yaw: 20,
       pitch: 10,
-      colour: '#000000',
+      color: '#000000',
     };
     expect(mirrorPart(p)).toMatchObject({ pos: [-0.1, 0, -0.2], yaw: -20, pitch: 10 });
   });
@@ -200,7 +200,7 @@ describe('item editor', () => {
         type: 'box',
         pos: [x, 0, 0],
         size: [0.1, 0.1, 0.1],
-        colour: '#000000',
+        color: '#000000',
         ...extra,
       }) as ModelPart;
     const parts = [
@@ -250,7 +250,7 @@ describe('item editor', () => {
     expect(budgetOf(items.get('m9a3')!).kind).toBe('pistol');
     expect(budgetOf(items.get('red-dot')!).kind).toBe('optic');
     const cube = modelShapes({
-      parts: [{ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], colour: '#000000' }],
+      parts: [{ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], color: '#000000' }],
     });
     expect(triangleCount(cube)).toBe(12);
     for (const d of items.values())
@@ -279,7 +279,7 @@ describe('item editor', () => {
         yaw: 20,
         pitch: 30,
         roll: 10,
-        colour: '#000000',
+        color: '#000000',
       },
       {
         type: 'cylinder',
@@ -290,7 +290,7 @@ describe('item editor', () => {
         sides: 5,
         yaw: 15,
         pitch: 70,
-        colour: '#000000',
+        color: '#000000',
       },
       {
         type: 'slab',
@@ -298,7 +298,7 @@ describe('item editor', () => {
         size: [0.2, 0.05, 0.3],
         corners: [0.01, 0.02, 0.05, 0.08],
         roll: 25,
-        colour: '#000000',
+        color: '#000000',
       },
       {
         type: 'box',
@@ -306,7 +306,7 @@ describe('item editor', () => {
         size: [0.2, 0.05, 0.3],
         yaw: 40,
         pitch: -10,
-        colour: '#000000',
+        color: '#000000',
       },
     ];
     for (const p of parts)
@@ -324,20 +324,20 @@ describe('item editor', () => {
     expect(list[1]!.pos[2]).toBe(-0.1);
   });
 
-  it('lists an item’s colours by use (IE-2)', () => {
-    const p = (colour: string): ModelPart =>
-      ({ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], colour }) as ModelPart;
-    expect(coloursOf([p('#111111'), p('#222222'), p('#222222'), p('#AABBCC')])).toEqual([
+  it('lists an item’s colors by use (IE-2)', () => {
+    const p = (color: string): ModelPart =>
+      ({ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], color }) as ModelPart;
+    expect(colorsOf([p('#111111'), p('#222222'), p('#222222'), p('#AABBCC')])).toEqual([
       '#222222',
       '#111111',
       '#aabbcc',
     ]);
   });
 
-  it('draws and edits arcs, triangles and shape colours in reticles (IE-2)', () => {
+  it('draws and edits arcs, triangles and shape colors in reticles (IE-2)', () => {
     const scope = structuredClone(
       [...loadItems().values()].find((d) => d.type === 'attachment' && d.optic && d.optic.zoom > 1),
-    ) as unknown as { optic: { zoom: number; reticle: { colour: string; shapes: object[] } } };
+    ) as unknown as { optic: { zoom: number; reticle: { color: string; shapes: object[] } } };
     const arc = { type: 'arc', x: 0, y: 0, r: 10, width: 0.3, from: -45, to: 45 } as const;
     const chevron = {
       type: 'triangle',
@@ -347,14 +347,14 @@ describe('item editor', () => {
       y2: 2.5,
       x3: -1.5,
       y3: 2.5,
-      colour: '#ff0000',
+      color: '#ff0000',
     } as const;
     scope.optic.reticle.shapes.push(arc, chevron, {
       type: 'dot',
       x: 0,
       y: 0,
       r: 0.5,
-      colour: '#ff0000',
+      color: '#ff0000',
     });
     const def = loadContent(ITEM_FORMAT, structuredClone(scope), 's');
     if (def.type !== 'attachment' || !def.optic) throw new Error('not an optic');

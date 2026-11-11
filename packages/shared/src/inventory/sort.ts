@@ -17,7 +17,7 @@ const TYPE_ORDER: readonly ItemDef['type'][] = [
   'attachment',
   'ammo',
   'grenade',
-  'armour',
+  'armor',
   'container',
   'med',
   'repair',

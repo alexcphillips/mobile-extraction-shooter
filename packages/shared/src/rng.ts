@@ -1,5 +1,5 @@
 /**
- * Seeded RNG (mulberry32). The state is a plain object so it serialises with the rest of
+ * Seeded RNG (mulberry32). The state is a plain object so it serializes with the rest of
  * the simulation state, and a restored state continues the same sequence.
  */
 export interface Rng {

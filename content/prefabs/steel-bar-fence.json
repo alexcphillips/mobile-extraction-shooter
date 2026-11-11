@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "steel-bar-fence",
   "name": "Steel bar fence",
-  "colours": {
+  "colors": {
     "steel": "#6f777b",
     "steel-dark": "#4e5558"
   },
@@ -11,143 +11,143 @@
       "type": "box",
       "pos": [-1.5, 0, 0],
       "size": [0.1, 2.46, 0.1],
-      "colour": "steel-dark"
+      "color": "steel-dark"
     },
     {
       "type": "box",
       "pos": [-1.5, 2.46, 0],
       "size": [0.12, 0.012, 0.12],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.5, 0, 0],
       "size": [0.22, 0.012, 0.22],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [1.5, 0, 0],
       "size": [0.1, 2.46, 0.1],
-      "colour": "steel-dark"
+      "color": "steel-dark"
     },
     {
       "type": "box",
       "pos": [1.5, 2.46, 0],
       "size": [0.12, 0.012, 0.12],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [1.5, 0, 0],
       "size": [0.22, 0.012, 0.22],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.22, 0],
       "size": [3.0, 0.07, 0.06],
-      "colour": "steel-dark"
+      "color": "steel-dark"
     },
     {
       "type": "box",
       "pos": [0, 2.1, 0],
       "size": [3.0, 0.07, 0.06],
-      "colour": "steel-dark"
+      "color": "steel-dark"
     },
     {
       "type": "box",
       "pos": [-1.3125, 0, 0],
       "size": [0.04, 2.4, 0.04],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [-1.125, 0, 0],
       "size": [0.04, 2.4, 0.04],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [-0.9375, 0, 0],
       "size": [0.04, 2.4, 0.04],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [-0.75, 0, 0],
       "size": [0.04, 2.4, 0.04],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [-0.5625, 0, 0],
       "size": [0.04, 2.4, 0.04],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [-0.375, 0, 0],
       "size": [0.04, 2.4, 0.04],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [-0.1875, 0, 0],
       "size": [0.04, 2.4, 0.04],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [0.0, 0, 0],
       "size": [0.04, 2.4, 0.04],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [0.1875, 0, 0],
       "size": [0.04, 2.4, 0.04],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [0.375, 0, 0],
       "size": [0.04, 2.4, 0.04],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [0.5625, 0, 0],
       "size": [0.04, 2.4, 0.04],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [0.75, 0, 0],
       "size": [0.04, 2.4, 0.04],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [0.9375, 0, 0],
       "size": [0.04, 2.4, 0.04],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [1.125, 0, 0],
       "size": [0.04, 2.4, 0.04],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [1.3125, 0, 0],
       "size": [0.04, 2.4, 0.04],
-      "colour": "steel"
+      "color": "steel"
     }
   ]
 }

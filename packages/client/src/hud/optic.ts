@@ -30,9 +30,9 @@ export function arcPath(x: number, y: number, r: number, from: number, to: numbe
 }
 
 function shapeSvg(s: ReticleShape): string {
-  // A shape's own colour, else the reticle's from the group around it.
-  const fill = s.colour ? ` fill="${s.colour}"` : '';
-  const stroke = s.colour ? ` stroke="${s.colour}"` : '';
+  // A shape's own color, else the reticle's from the group around it.
+  const fill = s.color ? ` fill="${s.color}"` : '';
+  const stroke = s.color ? ` stroke="${s.color}"` : '';
   switch (s.type) {
     case 'dot':
       return `<circle cx="${s.x}" cy="${s.y}" r="${s.r}" stroke="none"${fill} />`;
@@ -52,7 +52,7 @@ function shapeSvg(s: ReticleShape): string {
  * a scope's mask, then the reticle. The item editor draws its preview with this too.
  */
 export function reticleMarkup(optic: OpticDef): string {
-  const { colour, shapes } = optic.reticle;
+  const { color, shapes } = optic.reticle;
   const r = SCOPE_RADIUS;
   // A huge square with a round hole; the screen is never wider than 10 times its height.
   const mask =
@@ -62,14 +62,14 @@ export function reticleMarkup(optic: OpticDef): string {
       : '';
   return (
     mask +
-    `<g fill="${colour}" stroke="${colour}" stroke-linecap="butt">${shapes.map(shapeSvg).join('')}</g>`
+    `<g fill="${color}" stroke="${color}" stroke-linecap="butt">${shapes.map(shapeSvg).join('')}</g>`
   );
 }
 
 /**
  * The optic's reticle over the screen while aiming, and for scopes the black mask around
  * the sight picture. One SVG whose viewBox is the screen height from −50 to 50 around the
- * centre, so reticle units are % of the screen height, as in the item files. It's rebuilt
+ * center, so reticle units are % of the screen height, as in the item files. It's rebuilt
  * only when the optic changes and shown or hidden per frame. It's moved per frame to where
  * the gun points, by one SVG transform, so no strings are built.
  */
@@ -103,7 +103,7 @@ export class OpticOverlay {
     this.picture.innerHTML = reticleMarkup(optic);
   }
 
-  /** Where the gun points, in % of the screen height from the centre, y down. */
+  /** Where the gun points, in % of the screen height from the center, y down. */
   aimAt(x: number, y: number): void {
     if (this.shown) this.offset.setTranslate(x, y);
   }

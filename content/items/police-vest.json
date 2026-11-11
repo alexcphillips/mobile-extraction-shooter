@@ -2,7 +2,7 @@
   "formatVersion": 10,
   "id": "police-vest",
   "name": "Police vest",
-  "type": "armour",
+  "type": "armor",
   "size": [3, 3],
   "value": 12000,
   "rarity": "uncommon",
@@ -16,25 +16,25 @@
         "type": "box",
         "pos": [0, 1.222, 0.005],
         "size": [0.345, 0.315, 0.239],
-        "colour": "#1f2a3a"
+        "color": "#1f2a3a"
       },
       {
         "type": "box",
         "pos": [0, 1.113, -0.133],
         "size": [0.276, 0.099, 0.053],
-        "colour": "#1a2330"
+        "color": "#1a2330"
       },
       {
         "type": "box",
         "pos": [0.108, 1.379, 0],
         "size": [0.079, 0.039, 0.212],
-        "colour": "#1f2a3a"
+        "color": "#1f2a3a"
       },
       {
         "type": "box",
         "pos": [-0.108, 1.379, 0],
         "size": [0.079, 0.039, 0.212],
-        "colour": "#1a2330"
+        "color": "#1a2330"
       }
     ]
   }

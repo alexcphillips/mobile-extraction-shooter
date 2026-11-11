@@ -45,8 +45,8 @@ export const vendorSchema = z.strictObject({
   blurb: z.string().optional(),
   /** Where it comes in the vendors page's list, lowest first; 0 if left out. */
   order: z.int().optional(),
-  /** Its card's colour on the vendors page. */
-  colour: z
+  /** Its card's color on the vendors page. */
+  color: z
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/)
     .optional(),

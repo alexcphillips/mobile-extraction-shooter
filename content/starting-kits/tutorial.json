@@ -6,7 +6,7 @@
     "primary1": "m416",
     "sidearm": "m9a3",
     "helmet": "steel-helmet",
-    "bodyArmour": "tactical-vest",
+    "bodyArmor": "tactical-vest",
     "rig": "chest-rig",
     "backpack": "medium-backpack"
   },

@@ -11,7 +11,7 @@ import {
   type PrefabFile,
 } from './schema';
 
-function map(nodes: MapNode[], colours?: Record<string, string>): MapFile {
+function map(nodes: MapNode[], colors?: Record<string, string>): MapFile {
   const row = Array<number>(11).fill(0);
   return {
     formatVersion: 4,
@@ -22,9 +22,9 @@ function map(nodes: MapNode[], colours?: Record<string, string>): MapFile {
       origin: [-20, -20],
       cellSize: 4,
       heights: Array.from({ length: 11 }, () => row),
-      colour: '#6b8f4e',
+      color: '#6b8f4e',
     },
-    ...(colours && { colours }),
+    ...(colors && { colors }),
     nodes,
     zones: [],
   };
@@ -37,8 +37,8 @@ function prefabs(...list: PrefabFile[]): PrefabLookup {
 const crate: PrefabFile = {
   formatVersion: 3,
   id: 'crate',
-  colours: { wood: '#8a5a33' },
-  nodes: [{ type: 'box', pos: [1, 0, 0], size: [1, 1, 1], colour: 'wood' }],
+  colors: { wood: '#8a5a33' },
+  nodes: [{ type: 'box', pos: [1, 0, 0], size: [1, 1, 1], color: 'wood' }],
 };
 
 describe('compileMap', () => {
@@ -47,7 +47,7 @@ describe('compileMap', () => {
       formatVersion: 3,
       id: 'tree',
       instanced: true,
-      colours: { leaves: '#2f5d3a' },
+      colors: { leaves: '#2f5d3a' },
       nodes: [
         {
           type: 'cylinder',
@@ -55,7 +55,7 @@ describe('compileMap', () => {
           radius: 1.6,
           radiusTop: 0,
           height: 4,
-          colour: 'leaves',
+          color: 'leaves',
           collide: false,
           foliage: true,
         },
@@ -65,7 +65,7 @@ describe('compileMap', () => {
       type: 'box',
       pos: [5, 0, 0],
       size: [2, 1.6, 1],
-      colour: '#2f5d3a',
+      color: '#2f5d3a',
       foliage: true,
     };
     const m = compileMap(
@@ -95,7 +95,7 @@ describe('compileMap', () => {
       type: 'box',
       pos: [0, 0, 0],
       size: [0.2, 10, 8],
-      colour: '#ff0000',
+      color: '#ff0000',
       invisible: true,
     };
     const m = compileMap(map([edge]), prefabs());
@@ -111,9 +111,9 @@ describe('compileMap', () => {
     expect(() => compileMap(map([{ ...edge, collide: false }]), prefabs())).toThrow(/collide/);
   });
 
-  it('builds the terrain grid and centres boxes above their base', () => {
+  it('builds the terrain grid and centers boxes above their base', () => {
     const m = compileMap(
-      map([{ type: 'box', pos: [1, 2, 3], size: [2, 4, 6], yaw: 90, colour: '#ff0000' }]),
+      map([{ type: 'box', pos: [1, 2, 3], size: [2, 4, 6], yaw: 90, color: '#ff0000' }]),
       prefabs(),
     );
     expect(m.world.terrain).toMatchObject({ minX: -20, minZ: -20, cols: 10, rows: 10 });
@@ -122,7 +122,7 @@ describe('compileMap', () => {
     const b = m.world.boxes[0]!;
     expect([b.x, b.y, b.z, b.hx, b.hy, b.hz]).toEqual([1, 4, 3, 1, 2, 3]);
     expect(b.yaw).toBeCloseTo(Math.PI / 2);
-    expect(m.shapes[0]).toMatchObject({ kind: 'box', y: 4, colour: 0xff0000 });
+    expect(m.shapes[0]).toMatchObject({ kind: 'box', y: 4, color: 0xff0000 });
   });
 
   it('places prefab nodes in the placement frame', () => {
@@ -136,29 +136,29 @@ describe('compileMap', () => {
     expect(b.z).toBeCloseTo(-1);
     expect(b.y).toBeCloseTo(1.5);
     expect(b.yaw).toBeCloseTo(Math.PI / 2);
-    expect(m.shapes[0]!.colour).toBe(0x8a5a33);
+    expect(m.shapes[0]!.color).toBe(0x8a5a33);
   });
 
-  it('resolves colour slots through placements', () => {
+  it('resolves color slots through placements', () => {
     const m = compileMap(
       map(
         [
-          { type: 'prefab', prefab: 'crate', pos: [0, 0, 0], colours: { wood: '#123456' } },
-          { type: 'prefab', prefab: 'crate', pos: [0, 0, 5], colours: { wood: 'team' } },
+          { type: 'prefab', prefab: 'crate', pos: [0, 0, 0], colors: { wood: '#123456' } },
+          { type: 'prefab', prefab: 'crate', pos: [0, 0, 5], colors: { wood: 'team' } },
         ],
         { team: '#abcdef' },
       ),
       prefabs(crate),
     );
-    expect(m.shapes.map((s) => s.colour)).toEqual([0x123456, 0xabcdef]);
+    expect(m.shapes.map((s) => s.color)).toEqual([0x123456, 0xabcdef]);
   });
 
   describe('searched looks', () => {
-    const box = (colour: string, z = 0): MapNode => ({
+    const box = (color: string, z = 0): MapNode => ({
       type: 'box',
       pos: [0, 0.5, z],
       size: [1, 1, 1],
-      colour,
+      color,
     });
     const drawer: MapNode = {
       type: 'group',
@@ -174,7 +174,7 @@ describe('compileMap', () => {
       ...more,
     });
     const open = file('open', [{ ...box('slot', 1), collide: false } as MapNode], {
-      colours: { slot: '#222222' },
+      colors: { slot: '#222222' },
     });
     const place: MapNode = { type: 'prefab', id: 'c', prefab: 'cab', pos: [5, 0, 0], yaw: 90 };
 
@@ -188,7 +188,7 @@ describe('compileMap', () => {
       expect(look.closed).toEqual(m.shapes);
       // The look stands in the placement's frame: 1 m along z, turned 90°, is +x.
       expect(look.searched[0]!.x).toBeCloseTo(6);
-      expect(look.searched[0]!.colour).toBe(0x222222);
+      expect(look.searched[0]!.color).toBe(0x222222);
     });
 
     it('flattens an instanced prefab holding one', () => {
@@ -236,13 +236,13 @@ describe('compileMap', () => {
     );
     expect(() =>
       compileMap(
-        map([place({ colours: { paint: '#000000' } } as Partial<MapNode>)]),
+        map([place({ colors: { paint: '#000000' } } as Partial<MapNode>)]),
         prefabs(crate),
       ),
-    ).toThrow(/no colour slot "paint"/);
+    ).toThrow(/no color slot "paint"/);
     expect(() =>
-      compileMap(map([place({ colours: { wood: 'team' } } as Partial<MapNode>)]), prefabs(crate)),
-    ).toThrow(/unknown colour slot "team"/);
+      compileMap(map([place({ colors: { wood: 'team' } } as Partial<MapNode>)]), prefabs(crate)),
+    ).toThrow(/unknown color slot "team"/);
     const a: PrefabFile = {
       formatVersion: 3,
       id: 'a',
@@ -258,13 +258,13 @@ describe('compileMap', () => {
     );
   });
 
-  it('groups instanced prefabs by colours but still collides with every copy', () => {
+  it('groups instanced prefabs by colors but still collides with every copy', () => {
     const tree = { ...crate, id: 'tree', instanced: true };
-    const at = (x: number, colours?: Record<string, string>): MapNode => ({
+    const at = (x: number, colors?: Record<string, string>): MapNode => ({
       type: 'prefab',
       prefab: 'tree',
       pos: [x, 0, 0],
-      ...(colours && { colours }),
+      ...(colors && { colors }),
     });
     const m = compileMap(map([at(0), at(5), at(10, { wood: '#000000' })]), prefabs(tree));
     expect(m.shapes).toHaveLength(0);
@@ -273,8 +273,8 @@ describe('compileMap', () => {
     const [plain, dark] = m.instanced;
     expect(plain!.placements.map((p) => p.x)).toEqual([0, 5]);
     // Shapes are in the prefab's own frame.
-    expect(plain!.shapes[0]).toMatchObject({ x: 1, y: 0.5, z: 0, colour: 0x8a5a33 });
-    expect(dark!.shapes[0]!.colour).toBe(0);
+    expect(plain!.shapes[0]).toMatchObject({ x: 1, y: 0.5, z: 0, color: 0x8a5a33 });
+    expect(dark!.shapes[0]!.color).toBe(0);
   });
 
   it('collects landmarks again for their silhouette: nodes, groups and prefabs', () => {
@@ -284,7 +284,7 @@ describe('compileMap', () => {
       pos: [0, 0, 0],
       radius: 1,
       height: 10,
-      colour: '#ffffff',
+      color: '#ffffff',
       landmark: true,
     };
     const group: MapNode = {
@@ -292,13 +292,13 @@ describe('compileMap', () => {
       pos: [5, 0, 0],
       landmark: true,
       nodes: [
-        { type: 'box', pos: [0, 0, 0], size: [2, 2, 2], colour: '#ffffff' },
+        { type: 'box', pos: [0, 0, 0], size: [2, 2, 2], color: '#ffffff' },
         // Marked inside a marked group: not doubled.
-        { type: 'box', pos: [0, 2, 0], size: [1, 1, 1], colour: '#ffffff', landmark: true },
+        { type: 'box', pos: [0, 2, 0], size: [1, 1, 1], color: '#ffffff', landmark: true },
       ],
     };
     const tree: MapNode = { type: 'prefab', prefab: 'tower', pos: [10, 0, 0] };
-    const plain: MapNode = { type: 'box', pos: [0, 0, 9], size: [1, 1, 1], colour: '#ffffff' };
+    const plain: MapNode = { type: 'box', pos: [0, 0, 9], size: [1, 1, 1], color: '#ffffff' };
     const m = compileMap(map([lookout, group, tree, plain]), prefabs(tower));
     expect(m.landmarks.map((s) => s.kind)).toEqual(['cylinder', 'box', 'box', 'box']);
     // In world space, the instanced prefab's copy flattened.
@@ -316,17 +316,17 @@ describe('compileMap', () => {
       type: 'group',
       pos: [5, 0, 0],
       yaw: 90,
-      nodes: [{ type: 'water', pos: [2, 1.5, 0], size: [8, 4], colour: '#336699' }],
+      nodes: [{ type: 'water', pos: [2, 1.5, 0], size: [8, 4], color: '#336699' }],
     };
     const m = compileMap(
-      { ...map([pond]), water: { level: 0.2, colour: '#112233', opacity: 0.5 } },
+      { ...map([pond]), water: { level: 0.2, color: '#112233', opacity: 0.5 } },
       prefabs(),
     );
     expect(m.water).toHaveLength(2);
     expect(m.water[0]).toMatchObject({ x: 0, z: 0, hx: 20, hz: 20, level: 0.2, opacity: 0.5 });
     const w = m.water[1]!;
     // Turned with its group: local +x is world −z.
-    expect(w).toMatchObject({ hx: 4, hz: 2, level: 1.5, colour: 0x336699, opacity: 0.7 });
+    expect(w).toMatchObject({ hx: 4, hz: 2, level: 1.5, color: 0x336699, opacity: 0.7 });
     expect(w.x).toBeCloseTo(5);
     expect(w.z).toBeCloseTo(-2);
     expect(w.yaw).toBeCloseTo(Math.PI / 2);
@@ -347,7 +347,7 @@ describe('compileMap', () => {
           container: 'desk',
           lootTable: 'office',
         },
-        { type: 'door', pos: [0, 0, 3], size: [1, 2], colour: '#ffffff', key: 'house-key' },
+        { type: 'door', pos: [0, 0, 3], size: [1, 2], color: '#ffffff', key: 'house-key' },
       ],
     };
     const m = compileMap(
@@ -377,21 +377,21 @@ describe('compileMap', () => {
   it('collides tilted solids as their upright bounding box', () => {
     // A 4 m log tipped over onto its side: 4 m along x, 1 m high.
     const m = compileMap(
-      map([{ type: 'box', pos: [0, 0, 0], size: [1, 4, 1], roll: 90, colour: '#ffffff' }]),
+      map([{ type: 'box', pos: [0, 0, 0], size: [1, 4, 1], roll: 90, color: '#ffffff' }]),
       prefabs(),
     );
     const b = m.world.boxes[0]!;
     expect(b.hx).toBeCloseTo(2);
     expect(b.hy).toBeCloseTo(0.5);
     expect(b.hz).toBeCloseTo(0.5);
-    // It turns about its centre, 2 m above pos.
+    // It turns about its center, 2 m above pos.
     expect(b.x).toBeCloseTo(0);
     expect(b.y).toBeCloseTo(2);
   });
 
   it('collides a tilted box as a slab with a sloped top and underside', () => {
     const m = compileMap(
-      map([{ type: 'box', pos: [0, 0, 0], size: [2, 0.2, 8], pitch: -30, colour: '#ffffff' }]),
+      map([{ type: 'box', pos: [0, 0, 0], size: [2, 0.2, 8], pitch: -30, color: '#ffffff' }]),
       prefabs(),
     );
     const b = m.world.boxes[0]!;
@@ -406,7 +406,7 @@ describe('compileMap', () => {
   });
 
   it('takes what a tilted prefab or group holds with it, about its pos', () => {
-    const plank: MapNode = { type: 'box', pos: [0, 0, 2], size: [1, 0.2, 2], colour: '#ffffff' };
+    const plank: MapNode = { type: 'box', pos: [0, 0, 2], size: [1, 0.2, 2], color: '#ffffff' };
     const lib = prefabs({ formatVersion: 3, id: 'plank', nodes: [plank] });
     const placed: MapNode[] = [
       { type: 'group', pos: [5, 1, 0], pitch: -90, nodes: [plank] },
@@ -431,7 +431,7 @@ describe('compileMap', () => {
           pos: [0, 0, 0],
           yaw: 90,
           pitch: -20,
-          nodes: [{ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], pitch: -10, colour: '#ffffff' }],
+          nodes: [{ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], pitch: -10, color: '#ffffff' }],
         },
       ]),
       prefabs(),
@@ -443,14 +443,14 @@ describe('compileMap', () => {
   });
 
   it('fixes doors shut in something tilted and refuses ladders', () => {
-    const door: MapNode = { type: 'door', pos: [0, 0, 0], size: [1, 2], colour: '#ffffff' };
+    const door: MapNode = { type: 'door', pos: [0, 0, 0], size: [1, 2], color: '#ffffff' };
     const m = compileMap(
       map([{ type: 'group', pos: [0, 0, 0], pitch: 20, nodes: [door] }]),
       prefabs(),
     );
     expect(m.doors).toEqual([]);
     expect(m.world.boxes).toHaveLength(1);
-    const ladder: MapNode = { type: 'ladder', pos: [0, 0, 0], height: 2, colour: '#ffffff' };
+    const ladder: MapNode = { type: 'ladder', pos: [0, 0, 0], height: 2, color: '#ffffff' };
     expect(() =>
       compileMap(map([{ type: 'group', pos: [0, 0, 0], roll: 5, nodes: [ladder] }]), prefabs()),
     ).toThrow(/ladders can't be/);
@@ -463,7 +463,7 @@ describe('compileMap', () => {
           type: 'group',
           pos: [0, 0, 0],
           pitch: -10,
-          nodes: [{ type: 'ramp', pos: [0, 0, 0], size: [2, 1, 4], colour: '#ffffff' }],
+          nodes: [{ type: 'ramp', pos: [0, 0, 0], size: [2, 1, 4], color: '#ffffff' }],
         },
       ]),
       prefabs(),
@@ -478,9 +478,9 @@ describe('compileMap', () => {
   it('turns stairs and ladders into ramps and ladders, and skips decoration', () => {
     const m = compileMap(
       map([
-        { type: 'stairs', pos: [0, 0, 0], size: [2, 3, 6], colour: '#ffffff' },
-        { type: 'ladder', pos: [5, 1, 0], height: 3, colour: '#ffffff' },
-        { type: 'box', pos: [9, 0, 0], size: [1, 1, 1], colour: '#ffffff', collide: false },
+        { type: 'stairs', pos: [0, 0, 0], size: [2, 3, 6], color: '#ffffff' },
+        { type: 'ladder', pos: [5, 1, 0], height: 3, color: '#ffffff' },
+        { type: 'box', pos: [9, 0, 0], size: [1, 1, 1], color: '#ffffff', collide: false },
       ]),
       prefabs(),
     );
@@ -656,7 +656,7 @@ describe('compileMap', () => {
           pos: [10, 1, 0],
           yaw: 90,
           nodes: [
-            { type: 'box', pos: [1, 0, 0], size: [1, 1, 1], colour: '#ffffff' },
+            { type: 'box', pos: [1, 0, 0], size: [1, 1, 1], color: '#ffffff' },
             { type: 'questMarker', id: 'radio', pos: [0, 0, 2] },
             {
               type: 'group',
@@ -707,7 +707,7 @@ describe('compileMap', () => {
   it('makes a group a loot container of its solids, measured in its own yaw', () => {
     const m = compileMap(
       map([
-        { type: 'box', pos: [0, 0, 0], size: [1, 1, 1], colour: '#ffffff' },
+        { type: 'box', pos: [0, 0, 0], size: [1, 1, 1], color: '#ffffff' },
         {
           type: 'group',
           pos: [10, 0, 0],
@@ -715,9 +715,9 @@ describe('compileMap', () => {
           loot: { container: 'desk', lootTable: 'household' },
           nodes: [
             // A desk 2 m wide (x) and 1 m deep: a top and a leg, off the group's middle.
-            { type: 'box', pos: [1, 0.7, 0], size: [2, 0.1, 1], colour: '#ffffff' },
-            { type: 'box', pos: [0.1, 0, 0], size: [0.2, 0.7, 0.2], colour: '#ffffff' },
-            { type: 'box', pos: [5, 0, 0], size: [1, 1, 1], colour: '#ffffff', collide: false },
+            { type: 'box', pos: [1, 0.7, 0], size: [2, 0.1, 1], color: '#ffffff' },
+            { type: 'box', pos: [0.1, 0, 0], size: [0.2, 0.7, 0.2], color: '#ffffff' },
+            { type: 'box', pos: [5, 0, 0], size: [1, 1, 1], color: '#ffffff', collide: false },
           ],
         },
       ]),
@@ -740,7 +740,7 @@ describe('compileMap', () => {
       type: 'box',
       pos: [0, 0, 0],
       size: [1, 1, 1],
-      colour: '#ffffff',
+      color: '#ffffff',
       collide: false,
       loot,
     };
@@ -750,7 +750,7 @@ describe('compileMap', () => {
       pos: [0, 0, 0],
       loot,
       nodes: [
-        { type: 'box', id: 'drawer', pos: [0, 0, 0], size: [1, 1, 1], colour: '#fff000', loot },
+        { type: 'box', id: 'drawer', pos: [0, 0, 0], size: [1, 1, 1], color: '#fff000', loot },
       ],
     };
     expect(() => compileMap(map([nested]), prefabs())).toThrow(/can't hold another \(drawer\)/);
@@ -801,9 +801,9 @@ describe('concrete bases', () => {
   const shed: PrefabFile = {
     formatVersion: 3,
     id: 'shed',
-    colours: { base: '#777777' },
-    building: { size: [4, 2], centre: [1, 0], colour: 'base' },
-    nodes: [{ type: 'box', pos: [1, 0, 0], size: [4, 0.2, 2], colour: '#ffffff' }],
+    colors: { base: '#777777' },
+    building: { size: [4, 2], center: [1, 0], color: 'base' },
+    nodes: [{ type: 'box', pos: [1, 0, 0], size: [4, 0.2, 2], color: '#ffffff' }],
   };
   /** Ground falling 1 m every 4 m along +x, through 0 at x = 0. */
   const slope = (): MapFile => {
@@ -822,7 +822,7 @@ describe('concrete bases', () => {
       expect.objectContaining({ id: 'shed', prefab: 'shed', x: 1, y: 1, z: 0, hx: 2, hz: 1 }),
     ]);
     // The footprint runs from x = −1 (ground 0.25) to x = 3 (ground −0.75).
-    const base = c.shapes.find((s) => s.colour === 0x777777)!;
+    const base = c.shapes.find((s) => s.color === 0x777777)!;
     expect(base).toMatchObject({ kind: 'box', x: 1, z: 0, hx: 2, hz: 1 });
     if (base.kind !== 'box') throw new Error();
     expect(base.y + base.hy).toBeCloseTo(1);
@@ -840,7 +840,7 @@ describe('concrete bases', () => {
     // Turned 90°, the footprint's middle is at z = −1 and it spans x −1 to 1.
     expect(c.buildings[0]).toMatchObject({ z: -1 });
     expect(c.buildings[0]!.x).toBeCloseTo(0);
-    const bases = c.shapes.filter((s) => s.colour === 0x777777);
+    const bases = c.shapes.filter((s) => s.color === 0x777777);
     expect(bases).toHaveLength(1);
     if (bases[0]!.kind !== 'box') throw new Error();
     expect(bases[0]!.y - bases[0]!.hy).toBeCloseTo(-0.25 - 0.3);
@@ -854,17 +854,17 @@ describe('concrete bases', () => {
 });
 
 describe('compileNodes', () => {
-  it("compiles nodes on their own with the scope's colours, instanced prefabs flattened", () => {
+  it("compiles nodes on their own with the scope's colors, instanced prefabs flattened", () => {
     const out = compileNodes(
       [
         { type: 'prefab', prefab: 'tree', pos: [5, 0, 0] },
-        { type: 'box', pos: [0, 0, 0], size: [1, 1, 1], colour: 'concrete' },
+        { type: 'box', pos: [0, 0, 0], size: [1, 1, 1], color: 'concrete' },
         { type: 'questMarker', id: 'dock', pos: [0, 0, 0] },
       ],
       prefabs({ ...crate, id: 'tree', instanced: true }),
       { concrete: '#b5b0a6' },
     );
-    expect(out.shapes.map((s) => [s.x, s.colour])).toEqual([
+    expect(out.shapes.map((s) => [s.x, s.color])).toEqual([
       [6, 0x8a5a33],
       [0, 0xb5b0a6],
     ]);
@@ -877,7 +877,7 @@ describe('compileNodes', () => {
       pos: [2, 0, 3],
       yaw: 90,
       size: [6, 2.5, 0.2],
-      colour: '#ffffff',
+      color: '#ffffff',
       openings: [
         { along: 1.5, width: 1, bottom: 0.9, top: 2, glass: '#a8d4e0' },
         { along: -1.5, width: 1, bottom: 0, top: 2.5 },
@@ -894,7 +894,7 @@ describe('compileNodes', () => {
     expect(out.glass).toHaveLength(1);
     expect(out.glass[0]!.y).toBeCloseTo(0.9);
     expect(out.glass[0]!.z).toBeCloseTo(1.5);
-    expect(out.glass[0]).toMatchObject({ width: 1, thickness: 0.02, colour: 0xa8d4e0 });
+    expect(out.glass[0]).toMatchObject({ width: 1, thickness: 0.02, color: 0xa8d4e0 });
     expect(out.glass[0]!.height).toBeCloseTo(1.1);
 
     const overlapping = {

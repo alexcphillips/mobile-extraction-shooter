@@ -4,7 +4,7 @@ import { stackSize, type ItemDef } from '@mes/shared';
  * Changes to an item that can make items already saved in players' stashes and gear fail
  * the server's checks (checkProfile, session 12): a grid spot that no longer fits, a stack,
  * durability or uses over the new limit, an attachment that no longer fits its gun, a round
- * loaded in a gun of another calibre. The
+ * loaded in a gun of another caliber. The
  * server refuses a whole stash with one bad item in it, so the item editor warns about
  * these (it doesn't refuse them: before release nobody has a stash worth keeping).
  */
@@ -31,11 +31,11 @@ export function storageRisks(before: ItemDef, after: ItemDef): string[] {
     }
     case 'ammo': {
       const b = before as typeof after;
-      if (after.calibre !== b.calibre)
-        out.push('its calibre changed, so saved guns loaded with it may no longer fire it');
+      if (after.caliber !== b.caliber)
+        out.push('its caliber changed, so saved guns loaded with it may no longer fire it');
       break;
     }
-    case 'armour': {
+    case 'armor': {
       const b = before as typeof after;
       if (after.slot !== b.slot) out.push('saved ones are worn in the old slot');
       if (after.durability < b.durability)

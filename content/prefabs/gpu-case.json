@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "gpu-case",
   "name": "GPU display case",
-  "colours": {
+  "colors": {
     "plinth": "#e9ecef",
     "glass": "#bfe0e6",
     "card": "#1d1e21",
@@ -13,27 +13,27 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [0.7, 1, 0.7],
-      "colour": "plinth"
+      "color": "plinth"
     },
     {
       "type": "box",
       "pos": [0, 1, 0],
       "size": [0.62, 0.5, 0.62],
-      "colour": "glass",
+      "color": "glass",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.14, 0],
       "size": [0.42, 0.06, 0.2],
-      "colour": "card",
+      "color": "card",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.2, 0],
       "size": [0.14, 0.005, 0.14],
-      "colour": "fan",
+      "color": "fan",
       "collide": false
     }
   ]

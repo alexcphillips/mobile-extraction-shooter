@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "aquarium-stand",
   "name": "Aquarium stand",
-  "colours": {
+  "colors": {
     "stand": "#3d4148",
     "water": "#6fc0d6",
     "gravel": "#c8b48a"
@@ -12,20 +12,20 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [1.8, 0.8, 0.5],
-      "colour": "stand"
+      "color": "stand"
     },
     {
       "type": "box",
       "pos": [0, 0.8, 0],
       "size": [1.76, 0.5, 0.46],
-      "colour": "water",
+      "color": "water",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.8, 0],
       "size": [1.7, 0.06, 0.42],
-      "colour": "gravel",
+      "color": "gravel",
       "collide": false
     }
   ]

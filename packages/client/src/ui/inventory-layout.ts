@@ -85,7 +85,7 @@ export function gridAcross(w: number, sections: readonly Section[] | undefined) 
 /**
  * Where each section is drawn: at its cell, pushed right by a gap per column a section in
  * its band starts in before it, and down by a gap per row a section starts in before it.
- * Each band is centred across the widest (UX-3, 2026-11-08: the large backpack's pockets
+ * Each band is centered across the widest (UX-3, 2026-11-08: the large backpack's pockets
  * were left-aligned under its main space).
  */
 export function sectionBoxes(sections: readonly Section[], cell: number) {

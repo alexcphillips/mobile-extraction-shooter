@@ -19,14 +19,14 @@
         "type": "box",
         "pos": [0, -0.02, 0],
         "size": [0.05, 0.04, 0.07],
-        "colour": "#1d1f21"
+        "color": "#1d1f21"
       },
       {
         "type": "cylinder",
         "pos": [0, -0.1, 0.0],
         "radius": 0.075,
         "height": 0.06,
-        "colour": "#26282a",
+        "color": "#26282a",
         "roll": 90
       }
     ]

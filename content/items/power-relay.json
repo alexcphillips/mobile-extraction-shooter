@@ -12,7 +12,7 @@
         "type": "box",
         "pos": [0, 0.0425, 0.005],
         "size": [0.045, 0.085, 0.07],
-        "colour": "#b9bcbf",
+        "color": "#b9bcbf",
         "name": "case",
         "group": "case"
       },
@@ -20,7 +20,7 @@
         "type": "box",
         "pos": [0, 0.0425, -0.031],
         "size": [0.043, 0.05, 0.022],
-        "colour": "#4a4d50",
+        "color": "#4a4d50",
         "name": "front",
         "group": "front"
       },
@@ -28,7 +28,7 @@
         "type": "box",
         "pos": [0, 0.076, -0.0305],
         "size": [0.041, 0.012, 0.002],
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "name": "top terminal strip",
         "group": "terminals"
       },
@@ -39,7 +39,7 @@
         "radius": 0.0045,
         "height": 0.003,
         "sides": 6,
-        "colour": "#a6a8aa",
+        "color": "#a6a8aa",
         "name": "top screw 1",
         "group": "terminals"
       },
@@ -48,7 +48,7 @@
         "pos": [-0.013, 0.076, -0.0343],
         "size": [0.007, 0.0012, 0.001],
         "roll": 20,
-        "colour": "#3a3d40",
+        "color": "#3a3d40",
         "name": "top slot 1",
         "group": "terminals"
       },
@@ -59,7 +59,7 @@
         "radius": 0.0045,
         "height": 0.003,
         "sides": 6,
-        "colour": "#a6a8aa",
+        "color": "#a6a8aa",
         "name": "top screw 2",
         "group": "terminals"
       },
@@ -68,7 +68,7 @@
         "pos": [0, 0.076, -0.0343],
         "size": [0.007, 0.0012, 0.001],
         "roll": -35,
-        "colour": "#3a3d40",
+        "color": "#3a3d40",
         "name": "top slot 2",
         "group": "terminals"
       },
@@ -79,7 +79,7 @@
         "radius": 0.0045,
         "height": 0.003,
         "sides": 6,
-        "colour": "#a6a8aa",
+        "color": "#a6a8aa",
         "name": "top screw 3",
         "group": "terminals"
       },
@@ -88,7 +88,7 @@
         "pos": [0.013, 0.076, -0.0343],
         "size": [0.007, 0.0012, 0.001],
         "roll": 60,
-        "colour": "#3a3d40",
+        "color": "#3a3d40",
         "name": "top slot 3",
         "group": "terminals"
       },
@@ -96,7 +96,7 @@
         "type": "box",
         "pos": [0, 0.009, -0.0305],
         "size": [0.041, 0.012, 0.002],
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "name": "bottom terminal strip",
         "group": "terminals"
       },
@@ -107,7 +107,7 @@
         "radius": 0.0045,
         "height": 0.003,
         "sides": 6,
-        "colour": "#a6a8aa",
+        "color": "#a6a8aa",
         "name": "bottom screw 1",
         "group": "terminals"
       },
@@ -116,7 +116,7 @@
         "pos": [-0.013, 0.009, -0.0343],
         "size": [0.007, 0.0012, 0.001],
         "roll": 20,
-        "colour": "#3a3d40",
+        "color": "#3a3d40",
         "name": "bottom slot 1",
         "group": "terminals"
       },
@@ -127,7 +127,7 @@
         "radius": 0.0045,
         "height": 0.003,
         "sides": 6,
-        "colour": "#a6a8aa",
+        "color": "#a6a8aa",
         "name": "bottom screw 2",
         "group": "terminals"
       },
@@ -136,7 +136,7 @@
         "pos": [0, 0.009, -0.0343],
         "size": [0.007, 0.0012, 0.001],
         "roll": -35,
-        "colour": "#3a3d40",
+        "color": "#3a3d40",
         "name": "bottom slot 2",
         "group": "terminals"
       },
@@ -147,7 +147,7 @@
         "radius": 0.0045,
         "height": 0.003,
         "sides": 6,
-        "colour": "#a6a8aa",
+        "color": "#a6a8aa",
         "name": "bottom screw 3",
         "group": "terminals"
       },
@@ -156,7 +156,7 @@
         "pos": [0.013, 0.009, -0.0343],
         "size": [0.007, 0.0012, 0.001],
         "roll": 60,
-        "colour": "#3a3d40",
+        "color": "#3a3d40",
         "name": "bottom slot 3",
         "group": "terminals"
       },
@@ -164,7 +164,7 @@
         "type": "box",
         "pos": [0, 0.031, -0.0425],
         "size": [0.03, 0.016, 0.002],
-        "colour": "#e6e0d3",
+        "color": "#e6e0d3",
         "name": "label",
         "group": "front"
       },
@@ -172,7 +172,7 @@
         "type": "box",
         "pos": [0, 0.0365, -0.044],
         "size": [0.03, 0.004, 0.001],
-        "colour": "#d8461c",
+        "color": "#d8461c",
         "name": "label stripe",
         "group": "front"
       },
@@ -180,7 +180,7 @@
         "type": "box",
         "pos": [-0.002, 0.029, -0.044],
         "size": [0.022, 0.002, 0.001],
-        "colour": "#3a3d40",
+        "color": "#3a3d40",
         "name": "label text",
         "group": "front"
       },
@@ -188,7 +188,7 @@
         "type": "box",
         "pos": [-0.008, 0.055, -0.0425],
         "size": [0.012, 0.01, 0.002],
-        "colour": "#141516",
+        "color": "#141516",
         "name": "flag window",
         "group": "front"
       },
@@ -196,7 +196,7 @@
         "type": "box",
         "pos": [-0.008, 0.055, -0.044],
         "size": [0.006, 0.005, 0.001],
-        "colour": "#e8a020",
+        "color": "#e8a020",
         "name": "flag",
         "group": "front"
       },
@@ -204,7 +204,7 @@
         "type": "box",
         "pos": [0.011, 0.055, -0.043],
         "size": [0.008, 0.008, 0.004],
-        "colour": "#e8c832",
+        "color": "#e8c832",
         "name": "test button",
         "group": "front"
       },
@@ -212,7 +212,7 @@
         "type": "box",
         "pos": [-0.0233, 0.03, 0.008],
         "size": [0.002, 0.003, 0.04],
-        "colour": "#6e7174",
+        "color": "#6e7174",
         "name": "vent 1",
         "group": "case"
       },
@@ -220,7 +220,7 @@
         "type": "box",
         "pos": [-0.0233, 0.05, 0.008],
         "size": [0.002, 0.003, 0.04],
-        "colour": "#6e7174",
+        "color": "#6e7174",
         "name": "vent 2",
         "group": "case"
       }

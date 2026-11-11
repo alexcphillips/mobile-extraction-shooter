@@ -216,7 +216,7 @@ describe('Hangar crafting', () => {
     const { client, me } = await ready();
     const other = await client.fails('POST', '/hangar/trauma-bay/craft', {
       version: me.version,
-      recipe: 'armour-repair-kit',
+      recipe: 'armor-repair-kit',
     });
     expect(other.message).toMatch(/doesn't make that/);
     const level = await client.fails('POST', '/hangar/trauma-bay/craft', {

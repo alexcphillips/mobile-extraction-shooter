@@ -43,7 +43,7 @@ export const PMC_SQUADS = {
    * other will do (2026-11-08, the user's go-ahead).
    */
   bossClear: 35,
-  /** Choosing a squad's area, each metre between floors counts as this many across. */
+  /** Choosing a squad's area, each meter between floors counts as this many across. */
   areaFloor: 8,
   /** A member with no clear place in formation starts within this of the spawn. */
   spread: 2.5,

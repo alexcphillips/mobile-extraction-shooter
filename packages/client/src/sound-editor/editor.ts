@@ -46,7 +46,7 @@ export function blankSound(id: string, name: string): SoundDef {
     range: 20,
     pitchJitter: 0.05,
     layers: [
-      { source: 'noise', colour: 'white', at: 0, attack: 0.001, hold: 0, decay: 0.1, gain: 0.5 },
+      { source: 'noise', color: 'white', at: 0, attack: 0.001, hold: 0, decay: 0.1, gain: 0.5 },
     ],
   };
 }

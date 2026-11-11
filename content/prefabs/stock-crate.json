@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "stock-crate",
   "name": "Pallet crate",
-  "colours": {
+  "colors": {
     "wood": "#b08a52",
     "wood-dark": "#6f5230",
     "ply": "#c9ad7c",
@@ -14,54 +14,54 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [1.16, 0.1, 0.96],
-      "colour": "wood-dark"
+      "color": "wood-dark"
     },
     {
       "type": "box",
       "pos": [0, 0.1, 0],
       "size": [1.2, 0.044, 1],
-      "colour": "wood",
+      "color": "wood",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.144, 0],
       "size": [1.12, 1.05, 0.92],
-      "colour": "ply"
+      "color": "ply"
     },
     {
       "type": "box",
       "pos": [0, 0.144, 0],
       "size": [1.16, 0.09, 0.96],
-      "colour": "batten",
+      "color": "batten",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.105, 0],
       "size": [1.16, 0.09, 0.96],
-      "colour": "batten",
+      "color": "batten",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.144, 0],
       "size": [0.1, 1.05, 0.96],
-      "colour": "batten",
+      "color": "batten",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.31, 0.72, 0.462],
       "size": [0.32, 0.055, 0.003],
-      "colour": "stencil",
+      "color": "stencil",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.27, 0.62, 0.462],
       "size": [0.24, 0.055, 0.003],
-      "colour": "stencil",
+      "color": "stencil",
       "collide": false
     }
   ]

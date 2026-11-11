@@ -8,10 +8,10 @@
   "value": 130,
   "rarity": "rare",
   "stack": 60,
-  "calibre": "7.62x39",
+  "caliber": "7.62x39",
   "level": 3,
   "damage": 47,
-  "armourDamage": 14,
+  "armorDamage": 14,
   "bleedChance": 0.25,
   "incendiary": {
     "chance": 0.25,
@@ -24,13 +24,13 @@
         "type": "box",
         "pos": [0, 0, 0.015],
         "size": [0.14, 0.07, 0.11],
-        "colour": "#6e6a48"
+        "color": "#6e6a48"
       },
       {
         "type": "box",
         "pos": [0, 0, -0.055],
         "size": [0.14, 0.07, 0.03],
-        "colour": "#d8461c"
+        "color": "#d8461c"
       }
     ]
   }

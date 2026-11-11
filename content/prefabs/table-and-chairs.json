@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "table-and-chairs",
   "name": "Table and chairs",
-  "colours": {
+  "colors": {
     "wood": "#a98a63",
     "wood-dark": "#7d6346"
   },
@@ -11,20 +11,20 @@
       "type": "box",
       "pos": [0, 0.715, 0],
       "size": [1.4, 0.035, 0.8],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [-0.63, 0.62, 0],
       "size": [0.03, 0.095, 0.62],
-      "colour": "wood-dark",
+      "color": "wood-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.63, 0, -0.33],
       "size": [0.06, 0.62, 0.06],
-      "colour": "wood-dark",
+      "color": "wood-dark",
       "top": [0.04, 0.04],
       "collide": false
     },
@@ -32,7 +32,7 @@
       "type": "box",
       "pos": [-0.63, 0, 0.33],
       "size": [0.06, 0.62, 0.06],
-      "colour": "wood-dark",
+      "color": "wood-dark",
       "top": [0.04, 0.04],
       "collide": false
     },
@@ -40,14 +40,14 @@
       "type": "box",
       "pos": [0.63, 0.62, 0],
       "size": [0.03, 0.095, 0.62],
-      "colour": "wood-dark",
+      "color": "wood-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.63, 0, -0.33],
       "size": [0.06, 0.62, 0.06],
-      "colour": "wood-dark",
+      "color": "wood-dark",
       "top": [0.04, 0.04],
       "collide": false
     },
@@ -55,7 +55,7 @@
       "type": "box",
       "pos": [0.63, 0, 0.33],
       "size": [0.06, 0.62, 0.06],
-      "colour": "wood-dark",
+      "color": "wood-dark",
       "top": [0.04, 0.04],
       "collide": false
     },
@@ -63,14 +63,14 @@
       "type": "box",
       "pos": [0, 0.62, -0.33],
       "size": [1.2, 0.095, 0.03],
-      "colour": "wood-dark",
+      "color": "wood-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.62, 0.33],
       "size": [1.2, 0.095, 0.03],
-      "colour": "wood-dark",
+      "color": "wood-dark",
       "collide": false
     },
     {

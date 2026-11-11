@@ -1,16 +1,11 @@
 import {
   ATTACHMENT_SLOTS,
-  armourOf,
   bagCells,
-  bagRarity,
-  levelRarity,
   FIRE,
   GRENADE_EFFECTS,
   MED_EFFECTS,
   ITEM_VIEWS,
   type ItemView,
-  type Rarity,
-  RARITIES,
   VENDOR,
   firesRound,
   fits,
@@ -22,17 +17,25 @@ import {
   type ItemDef,
   type WeaponDef,
 } from '@mes/shared';
-import { useMemo, useState, useSyncExternalStore, type PointerEvent, type ReactNode } from 'react';
+import {
+  Fragment,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type PointerEvent,
+  type ReactNode,
+} from 'react';
 import { sounds } from '../audio/sounds';
 import { itemUses, soundSources } from '../content';
-import { C, Check, N, P, Row, put, type Bound } from '../editor/bound-fields';
+import { C, N, P, put, type Bound, type Path } from '../editor/bound-fields';
 import { Text, Toggle } from '../editor/fields';
 import { previewPortrait, viewOf } from '../render/item-portrait';
-import { colourOf, tileName } from '../ui/raid-screen';
+import { colorOf, tileName } from '../ui/raid-screen';
 import { sectionBoxes } from '../ui/inventory-layout';
 import type { Doc, ItemEditor, ItemEditorState } from './editor';
 import { fitPointsToSlot, setSlots } from './model-edit';
 import { FitsPage, type OpenFit } from './fits-panel';
+import { Group, Labeled, RarityPicker, S, Segmented, T, Tick } from './form';
 import { ModelTab } from './model-panel';
 import { ReticleDesigner } from './reticle';
 import { BLANK_OPTIC, ITEM_TYPES, type ItemType } from './templates';
@@ -221,7 +224,7 @@ function ItemList({ state: s, editor }: { state: ItemEditorState; editor: ItemEd
   );
 }
 
-/** Loot by its category, A to Z, with uncategorised loot ('') last. */
+/** Loot by its category, A to Z, with uncategorized loot ('') last. */
 function lootGroups(of: readonly ItemDef[]): [string, ItemDef[]][] {
   const by = new Map<string, ItemDef[]>();
   for (const d of of) {
@@ -280,7 +283,7 @@ function ItemRows({
           onClick={() => editor.select(d.id)}
           title={s.problems.get(d.id) ?? d.id}
         >
-          <span className="ie-swatch" style={{ background: colourOf(d) }} />
+          <span className="ie-swatch" style={{ background: colorOf(d) }} />
           {d.name}
           {s.unsaved.includes(d.id) && <span className="ie-dot"> ●</span>}
           {s.problems.has(d.id) && <span className="ed-problem"> !</span>}
@@ -299,45 +302,24 @@ function ItemPage(props: { editor: ItemEditor; state: ItemEditorState; def: Item
   const optic = def.type === 'attachment' && def.optic ? def.optic : null;
   return (
     <main className="ie-main">
-      <section className="ed-inspector ie-form">
-        <h3>{def.name}</h3>
-        <p className="ed-note">content/items/{def.id}.json</p>
-        <label
-          className="ed-field"
-          title="Keeps its name, size, value, rarity and model; the rest starts from the new type's blank"
-        >
-          type
-          <select value={def.type} onChange={(e) => editor.changeType(e.target.value as ItemType)}>
+      <section className="ie-form">
+        <header className="ie-head">
+          <div className="ie-head-name">
+            <h3>{def.name}</h3>
+            <span className="ed-note">content/items/{def.id}.json</span>
+          </div>
+          <select
+            className="ie-type-pick"
+            value={def.type}
+            title="Change its type: keeps its name, size, value, rarity and model; the rest starts from the new type's blank"
+            onChange={(e) => editor.changeType(e.target.value as ItemType)}
+          >
             {ITEM_TYPES.map((t) => (
               <option key={t}>{t}</option>
             ))}
           </select>
-        </label>
-        <Text label="name" value={def.name} onChange={(v) => b.edit((d) => put(d, ['name'], v))} />
-        <Text
-          label="short name (on its tile)"
-          value={def.shortName ?? ''}
-          placeholder={def.name}
-          onChange={(v) => b.edit((d) => put(d, ['shortName'], v.trim() ? v : undefined))}
-        />
-        <h4>in the inventory</h4>
-        <Row>
-          <N {...b} path={['size', 0]} label="width (cells)" min={1} />
-          <N {...b} path={['size', 1]} label="height (cells)" min={1} />
-        </Row>
-        <N
-          {...b}
-          path={['value']}
-          label="value (money, new)"
-          min={0}
-          hint="What vendors sell it for; they buy it for a share of this"
-        />
-        <P {...b} path={['rarity']} label="rarity (its tile's colour)" options={RARITIES} />
-        <RarityNote {...b} def={def} />
-        <ViewPicker {...b} def={def} />
-        <TypeFields {...b} def={def} items={s.items} />
-        <SoundFields {...b} def={def} />
-        {problem && <p className="ed-problem">{problem}</p>}
+        </header>
+        {problem && <p className="ed-problem ie-alert">{problem}</p>}
         {risks && (
           <div className="ie-risk">
             <strong>Saved stashes may break:</strong>
@@ -350,6 +332,36 @@ function ItemPage(props: { editor: ItemEditor; state: ItemEditorState; def: Item
             save until it&apos;s fixed by hand.
           </div>
         )}
+        <Group title="Item">
+          <Text
+            label="Name"
+            value={def.name}
+            onChange={(v) => b.edit((d) => put(d, ['name'], v))}
+          />
+          <span title="What its inventory tile says">
+            <Text
+              label="Short name"
+              value={def.shortName ?? ''}
+              placeholder={def.name}
+              onChange={(v) => b.edit((d) => put(d, ['shortName'], v.trim() ? v : undefined))}
+            />
+          </span>
+          <div className="ie-grid">
+            <N {...b} path={['size', 0]} label="Width" min={1} hint="Cells it takes up" />
+            <N {...b} path={['size', 1]} label="Height" min={1} hint="Cells it takes up" />
+            <N
+              {...b}
+              path={['value']}
+              label="Value"
+              min={0}
+              hint="What vendors sell it for new; they buy it for a share of this"
+            />
+          </div>
+          <RarityPicker {...b} def={def} />
+        </Group>
+        <TypeFields {...b} def={def} items={s.items} />
+        <SoundFields {...b} def={def} />
+        <ViewPicker {...b} def={def} />
       </section>
       <section className="ie-side">
         <SizePreview def={def} />
@@ -376,6 +388,35 @@ function categories(items: ReadonlyMap<string, ItemDef>): string[] {
   return [...used].sort();
 }
 
+/** Toggle chips for a set of names: each on or off. */
+function Chips(props: {
+  options: readonly string[];
+  on: (o: string) => boolean;
+  toggle: (o: string, on: boolean) => void;
+}) {
+  return (
+    <div className="ie-chips">
+      {props.options.map((o) => {
+        const on = props.on(o);
+        return (
+          <button
+            key={o}
+            className={on ? 'ed-on' : undefined}
+            aria-pressed={on}
+            onClick={() => props.toggle(o, !on)}
+          >
+            {o}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+const FUEL = { speed: 18, burnTime: 8, burnDamage: 1.5, fireTime: 7 };
+const INCENDIARY = { chance: 0.25, burnTime: 4, burnDamage: 1.5 };
+type AmmoKind = 'bullet' | 'incendiary' | 'fuel';
+
 function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, ItemDef> }) {
   const { def, items, ...b } = props;
   const ofType = (t: ItemType): string[] =>
@@ -384,311 +425,290 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
     case 'weapon':
       return (
         <>
-          <h4>gun</h4>
-          <P
-            {...b}
-            path={['ammo']}
-            label="ammo"
-            options={[
-              ...ofType('ammo'),
-              // Not C4: it's placed by hand, never launched.
-              ...ofType('grenade').filter((id) => roundOf(items, id)),
-            ]}
-          />
-          {items.get(def.ammo)?.type === 'grenade' && (
-            <Row>
-              <N
-                {...b}
-                path={['launchSpeed']}
-                label="launch speed (m/s)"
-                min={0}
-                hint="Grenade launchers: how fast a grenade leaves the barrel"
-              />
-              <N
-                {...b}
-                path={['armDistance']}
-                label="arms after (m)"
-                min={0}
-                hint="Goes off on impact once it's flown this far; blank keeps only the fuse"
-              />
-            </Row>
-          )}
-          <P
-            {...b}
-            path={['hold']}
-            label="held as"
-            options={['rifle', 'pistol']}
-            unset="rifle (default)"
-          />
-          <P {...b} path={['fireMode']} label="fire mode" options={['auto', 'semi']} />
-          <Row>
-            <N {...b} path={['rpm']} label="rounds a minute" min={0} />
-            <N {...b} path={['magazine']} label="magazine" min={1} />
-          </Row>
-          <Row>
-            <N {...b} path={['reloadTime']} label="reload (s)" min={0} />
-            <N {...b} path={['aimTime']} label="aim (s)" min={0} />
-            <N {...b} path={['drawTime']} label="draw (s)" min={0} />
-          </Row>
-          <Row>
-            <N {...b} path={['range']} label="range (m)" min={0} />
-            <N
+          <Group title="Gun">
+            <P
               {...b}
-              path={['loudness']}
-              label="heard to (m)"
-              min={0}
-              hint="How far away enemies hear a shot"
+              path={['ammo']}
+              label="Ammo"
+              options={[
+                ...ofType('ammo'),
+                // Not C4: it's placed by hand, never launched.
+                ...ofType('grenade').filter((id) => roundOf(items, id)),
+              ]}
             />
-          </Row>
-          <h4>accuracy (degrees)</h4>
-          <Row>
-            <N {...b} path={['hipSpread']} label="hip spread" min={0} />
-            <N {...b} path={['aimSpread']} label="aimed spread" min={0} />
-          </Row>
-          <Row>
-            <N {...b} path={['recoil', 'up']} label="kick up" min={0} />
-            <N {...b} path={['recoil', 'side']} label="kick sideways" min={0} />
-          </Row>
-          <Row>
-            <N
-              {...b}
-              path={['recoil', 'snap']}
-              label="snap (/s)"
-              min={0}
-              hint="How fast each kick lands: higher is snappier (about 40)"
-            />
-            <N
-              {...b}
-              path={['recoil', 'recovery']}
-              label="recovers (/s)"
-              min={0}
-              hint="How fast the kick wears off: higher settles sooner (about 3)"
-            />
-          </Row>
-          <Row>
-            <N
-              {...b}
-              path={['recoil', 'angle']}
-              label="kick angle (°)"
-              hint="Which way it climbs, off straight up: + right, − left, up to 45. Blank: straight up"
-            />
-            <N
-              {...b}
-              path={['recoil', 'stableAfter']}
-              label="steadies after (rounds)"
-              min={1}
-              hint="Past this round of a burst it stops climbing. Blank: climbs until recovery catches up"
-            />
-          </Row>
-          <h4>attachment slots</h4>
-          <Row>
-            {ATTACHMENT_SLOTS.map((slot) => (
-              <label key={slot} className="ed-field">
-                <input
-                  type="checkbox"
-                  checked={!!def.slots?.includes(slot)}
-                  onChange={(e) =>
-                    b.edit((d) => {
-                      const was = (d.slots as string[] | undefined) ?? [];
-                      setSlots(
-                        d,
-                        ATTACHMENT_SLOTS.filter((s) =>
-                          s === slot ? e.target.checked : was.includes(s),
-                        ),
-                      );
-                    })
-                  }
+            {items.get(def.ammo)?.type === 'grenade' && (
+              <div className="ie-grid">
+                <N
+                  {...b}
+                  path={['launchSpeed']}
+                  label="Launch speed (m/s)"
+                  min={0}
+                  hint="How fast a grenade leaves the barrel"
                 />
-                {slot}
-              </label>
-            ))}
-          </Row>
+                <N
+                  {...b}
+                  path={['armDistance']}
+                  label="Arms after (m)"
+                  min={0}
+                  placeholder="fuse only"
+                  hint="Goes off on impact once it's flown this far; blank keeps only the fuse"
+                />
+              </div>
+            )}
+            <div className="ie-grid">
+              <S
+                {...b}
+                path={['hold']}
+                label="Held as"
+                options={['rifle', 'pistol']}
+                fallback="rifle"
+              />
+              <S {...b} path={['fireMode']} label="Fire mode" options={['auto', 'semi']} />
+            </div>
+            <div className="ie-grid">
+              <N {...b} path={['rpm']} label="Rounds/min" min={0} />
+              <N {...b} path={['magazine']} label="Magazine" min={1} />
+              <N {...b} path={['range']} label="Range (m)" min={0} />
+            </div>
+            <div className="ie-grid">
+              <N {...b} path={['reloadTime']} label="Reload (s)" min={0} />
+              <N {...b} path={['aimTime']} label="Aim (s)" min={0} />
+              <N {...b} path={['drawTime']} label="Draw (s)" min={0} />
+            </div>
+            <div className="ie-grid">
+              <N
+                {...b}
+                path={['loudness']}
+                label="Heard to (m)"
+                min={0}
+                hint="How far away enemies hear a shot"
+              />
+            </div>
+          </Group>
+          <Group title="Accuracy" aside={<span className="ed-note">degrees</span>}>
+            <div className="ie-grid">
+              <N {...b} path={['hipSpread']} label="Hip spread" min={0} />
+              <N {...b} path={['aimSpread']} label="Aimed spread" min={0} />
+            </div>
+            <div className="ie-grid">
+              <N {...b} path={['recoil', 'up']} label="Kick up" min={0} />
+              <N {...b} path={['recoil', 'side']} label="Kick sideways" min={0} />
+            </div>
+            <div className="ie-grid">
+              <N
+                {...b}
+                path={['recoil', 'snap']}
+                label="Snap (/s)"
+                min={0}
+                hint="How fast each kick lands: higher is snappier (about 40)"
+              />
+              <N
+                {...b}
+                path={['recoil', 'recovery']}
+                label="Recovers (/s)"
+                min={0}
+                hint="How fast the kick wears off: higher settles sooner (about 3)"
+              />
+            </div>
+            <div className="ie-grid">
+              <N
+                {...b}
+                path={['recoil', 'angle']}
+                label="Kick angle (°)"
+                placeholder="straight up"
+                hint="Which way it climbs, off straight up: + right, − left, up to 45"
+              />
+              <N
+                {...b}
+                path={['recoil', 'stableAfter']}
+                label="Steadies after"
+                min={1}
+                placeholder="never"
+                hint="Rounds: past this round of a burst it stops climbing. Blank: climbs until recovery catches up"
+              />
+            </div>
+          </Group>
+          <Group title="Attachment slots">
+            <Chips
+              options={ATTACHMENT_SLOTS}
+              on={(slot) => !!def.slots?.includes(slot as (typeof ATTACHMENT_SLOTS)[number])}
+              toggle={(slot, on) =>
+                b.edit((d) => {
+                  const was = (d.slots as string[] | undefined) ?? [];
+                  setSlots(
+                    d,
+                    ATTACHMENT_SLOTS.filter((s) => (s === slot ? on : was.includes(s))),
+                  );
+                })
+              }
+            />
+          </Group>
         </>
       );
-    case 'ammo':
+    case 'ammo': {
+      const kind: AmmoKind = def.flame ? 'fuel' : def.incendiary ? 'incendiary' : 'bullet';
+      const setKind = (k: AmmoKind): void =>
+        b.edit((d) => {
+          // Fuel does no damage itself: the burning does it.
+          if (k === 'fuel') {
+            d.flame = { ...FUEL };
+            d.damage = 0;
+            delete d.incendiary;
+            delete d.pellets;
+            delete d.pelletSpread;
+            return;
+          }
+          if (d.flame) {
+            delete d.flame;
+            d.damage = 10;
+          }
+          if (k === 'incendiary') d.incendiary ??= { ...INCENDIARY };
+          else delete d.incendiary;
+        });
       return (
-        <>
-          <h4>rounds</h4>
-          <N {...b} path={['stack']} label="stack (most in one cell)" min={2} />
-          <Row>
+        <Group title="Rounds">
+          <Labeled label="Kind">
+            <Segmented
+              value={kind}
+              options={['bullet', 'incendiary', 'fuel'] as const}
+              labels={{ bullet: 'Bullet', incendiary: 'Incendiary', fuel: 'Flamethrower fuel' }}
+              titles={{
+                incendiary: 'May set alight whoever it hits, on top of its damage',
+                fuel: "A flamethrower's fuel: flames that set alight, no bullet",
+              }}
+              onChange={setKind}
+            />
+          </Labeled>
+          <div className="ie-grid">
             <Text
-              label="calibre"
-              value={def.calibre}
-              onChange={(v) => b.edit((d) => put(d, ['calibre'], v))}
+              label="Caliber"
+              value={def.caliber}
+              onChange={(v) => b.edit((d) => put(d, ['caliber'], v))}
             />
             <N
               {...b}
               path={['level']}
-              label="level (1–6)"
+              label="Level (1–6)"
               min={1}
-              hint="Against armour's level: below it does nothing until it breaks, level half, above all"
+              hint="Against armor's level: below it does nothing until it breaks, level half, above all"
             />
-          </Row>
-          <label
-            className="ed-field"
-            title="A flamethrower's fuel: flames that set alight, no bullet"
-          >
-            <input
-              type="checkbox"
-              checked={!!def.flame}
-              onChange={(e) =>
-                b.edit((d) => {
-                  // Fuel does no damage itself: the burning does it.
-                  if (e.target.checked) {
-                    d.flame = { speed: 18, burnTime: 8, burnDamage: 1.5, fireTime: 7 };
-                    d.damage = 0;
-                    delete d.pellets;
-                    delete d.pelletSpread;
-                  } else {
-                    delete d.flame;
-                    d.damage = 10;
-                  }
-                })
-              }
-            />
-            flamethrower fuel
-          </label>
-          {def.flame && (
+            <N {...b} path={['stack']} label="Stack" min={2} hint="Most in one cell" />
+          </div>
+          {def.flame ? (
             <>
-              <Row>
-                <N {...b} path={['flame', 'speed']} label="flame speed (m/s)" min={0} />
+              <div className="ie-grid">
+                <N {...b} path={['flame', 'speed']} label="Flame speed (m/s)" min={0} />
                 <N
                   {...b}
                   path={['flame', 'fireTime']}
-                  label="burns on the map (s)"
+                  label="Burns on the map (s)"
                   min={0}
                   hint="Where it lands; anyone touching it is set alight"
                 />
-              </Row>
-              <Row>
+              </div>
+              <div className="ie-grid">
                 <N
                   {...b}
                   path={['flame', 'burnDamage']}
-                  label="burn damage (/s a zone)"
+                  label="Burn damage (/s)"
                   min={0}
-                  hint="To every zone, past armour, while alight"
+                  hint="To every zone, past armor, while alight"
                 />
                 <N
                   {...b}
                   path={['flame', 'burnTime']}
-                  label="burns someone for (s)"
+                  label="Burns someone (s)"
                   min={0}
                   hint={`If they don't put it out, which takes ${FIRE.extinguishTime} s`}
                 />
-              </Row>
+              </div>
             </>
-          )}
-          {!def.flame && <N {...b} path={['damage']} label="damage (to the chest)" min={0} />}
-          {!def.flame && (
-            <label
-              className="ed-field"
-              title="May set alight whoever it hits, on top of its damage"
-            >
-              <input
-                type="checkbox"
-                checked={!!def.incendiary}
-                onChange={(e) =>
-                  b.edit((d) => {
-                    if (e.target.checked)
-                      d.incendiary = { chance: 0.25, burnTime: 4, burnDamage: 1.5 };
-                    else delete d.incendiary;
-                  })
-                }
+          ) : (
+            <div className="ie-grid">
+              <N {...b} path={['damage']} label="Damage" min={0} hint="To the chest" />
+              <N
+                {...b}
+                path={['pellets']}
+                label="Pellets"
+                min={2}
+                placeholder="1"
+                hint="Shotgun shells: pellets a round fires, each doing the damage"
               />
-              incendiary
-            </label>
+              <N
+                {...b}
+                path={['pelletSpread']}
+                label="Pellet spread (°)"
+                min={0}
+                hint="With pellets: the most each strays from the shot's line"
+              />
+            </div>
           )}
+          <div className="ie-grid">
+            <N
+              {...b}
+              path={['armorDamage']}
+              label="Armor damage"
+              min={0}
+              hint="Durability lost per hit, less against armor above its level"
+            />
+            <N {...b} path={['bleedChance']} label="Bleed chance (0–1)" min={0} />
+          </div>
           {def.incendiary && (
-            <Row>
+            <div className="ie-grid">
               <N
                 {...b}
                 path={['incendiary', 'chance']}
-                label="sets alight (0–1 a hit)"
+                label="Ignite chance"
                 min={0}
-                hint="Each pellet's own chance, for shells"
+                hint="0–1 a hit; each pellet's own chance, for shells"
               />
-              <N {...b} path={['incendiary', 'burnTime']} label="burns for (s)" min={0} />
-              <N
-                {...b}
-                path={['incendiary', 'burnDamage']}
-                label="burn damage (/s a zone)"
-                min={0}
-              />
-            </Row>
+              <N {...b} path={['incendiary', 'burnTime']} label="Burns for (s)" min={0} />
+              <N {...b} path={['incendiary', 'burnDamage']} label="Burn damage (/s)" min={0} />
+            </div>
           )}
-          <Row>
-            <N
-              {...b}
-              path={['armourDamage']}
-              label="armour damage"
-              min={0}
-              hint="Durability lost per hit, less against armour above its level"
-            />
-            <N {...b} path={['bleedChance']} label="bleed chance (0–1)" min={0} />
-          </Row>
-          <Row>
-            <N
-              {...b}
-              path={['pellets']}
-              label="pellets (1)"
-              min={2}
-              hint="Shotgun shells: pellets a round fires, each doing the damage; blank is 1"
-            />
-            <N
-              {...b}
-              path={['pelletSpread']}
-              label="pellet spread (°)"
-              min={0}
-              hint="With pellets: the most each strays from the shot's line"
-            />
-          </Row>
-        </>
+        </Group>
       );
-    case 'armour':
+    }
+    case 'armor':
       return (
         <>
-          <h4>armour</h4>
-          <P {...b} path={['slot']} label="worn as" options={['helmet', 'body']} />
-          <Row>
-            <N {...b} path={['level']} label="level (1–6)" min={1} />
-            <N {...b} path={['durability']} label="durability" min={0} />
-            <N
-              {...b}
-              path={['repairLoss']}
-              label="repair loss (0–1)"
-              min={0}
-              hint="The share of what a repair mends that comes off its max. Blank is 0.1"
-            />
-          </Row>
-          <Row>
-            <N
-              {...b}
-              path={['mask', 'edge']}
-              label="mask: view hidden (0–0.4)"
-              min={0}
-              hint="A face mask: the share of the screen's width hidden at each side. Blank is none"
-            />
-            <N
-              {...b}
-              path={['mask', 'muffle']}
-              label="mask: muffle (Hz)"
-              min={200}
-              hint="A face mask: sounds above this are muffled for whoever wears it. Blank is none"
-            />
-          </Row>
+          <Group title="Armor">
+            <S {...b} path={['slot']} label="Worn as" options={['helmet', 'body']} />
+            <ArmorStats {...b} at={[]} />
+          </Group>
+          <Group title="Face mask" aside={<span className="ed-note">blank: none</span>}>
+            <div className="ie-grid">
+              <N
+                {...b}
+                path={['mask', 'edge']}
+                label="View hidden (0–0.4)"
+                min={0}
+                placeholder="none"
+                hint="The share of the screen's width hidden at each side"
+              />
+              <N
+                {...b}
+                path={['mask', 'muffle']}
+                label="Muffle above (Hz)"
+                min={200}
+                placeholder="none"
+                hint="Sounds above this are muffled for whoever wears it"
+              />
+            </div>
+          </Group>
         </>
       );
     case 'attachment':
       return <AttachmentFields {...b} def={def} weapons={ofType('weapon')} items={items} />;
     case 'med':
       return (
-        <>
-          <h4>med</h4>
-          <P
+        <Group title="Medical">
+          <S
             {...b}
             path={['effect']}
-            label="does"
+            label="Does"
             options={MED_EFFECTS}
+            labels={{ bandage: 'Bandage', splint: 'Splint', surgery: 'Surgery', heal: 'Heal' }}
             then={(d, v) => {
               if (v === 'heal') {
                 put(d, ['uses'], undefined);
@@ -700,106 +720,84 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
             }}
           />
           <p className="ed-note">{MED_NOTES[def.effect]}</p>
-          <Row>
-            <N {...b} path={['useTime']} label="use time (s)" min={0} />
+          <div className="ie-grid">
+            <N {...b} path={['useTime']} label="Use time (s)" min={0} />
             {def.effect === 'heal' ? (
-              <N {...b} path={['hp']} label="HP in all" min={0} />
+              <>
+                <N {...b} path={['hp']} label="HP pool" min={0} />
+                <N
+                  {...b}
+                  path={['bleedCost']}
+                  label="HP per bleed"
+                  min={1}
+                  placeholder="can't"
+                  hint="HP from its pool to stop a bleed. Blank: it doesn't stop bleeding"
+                />
+              </>
             ) : (
-              <N {...b} path={['uses']} label="uses (1)" min={1} hint="Blank is 1" />
+              <N {...b} path={['uses']} label="Uses" min={1} placeholder="1" />
             )}
-          </Row>
-          {def.effect === 'heal' && (
-            <N
-              {...b}
-              path={['bleedCost']}
-              label="HP to stop a bleed"
-              min={1}
-              hint="Blank: doesn't stop bleeding"
-            />
-          )}
-        </>
+          </div>
+        </Group>
       );
     case 'container':
       return (
         <>
-          <h4>rig or backpack</h4>
-          <P
-            {...b}
-            path={['slot']}
-            label="worn as"
-            options={['rig', 'backpack', 'vault']}
-            // Only a rig has armour.
-            then={(d, v) => v !== 'rig' && put(d, ['armour'], undefined)}
-          />
-          <Row>
-            <N {...b} path={['grid', 0]} label="inside width" min={1} />
-            <N {...b} path={['grid', 1]} label="inside height" min={1} />
-          </Row>
-          {def.slot === 'rig' && (
-            <label
-              className="ed-field"
-              title="Covers the chest as body armour does, which can't be worn with it"
-            >
-              <input
-                type="checkbox"
-                checked={!!def.armour}
-                onChange={(e) =>
-                  b.edit((d) =>
-                    put(d, ['armour'], e.target.checked ? { level: 3, durability: 40 } : undefined),
-                  )
+          <Group title="Worn">
+            <S
+              {...b}
+              path={['slot']}
+              label="Worn as"
+              options={['rig', 'backpack', 'vault']}
+              // Only a rig has armor.
+              then={(d, v) => v !== 'rig' && put(d, ['armor'], undefined)}
+            />
+            {def.slot === 'rig' && (
+              <Tick
+                label="Armored"
+                checked={!!def.armor}
+                title="Covers the chest as body armor does, which can't be worn with it"
+                onChange={(on) =>
+                  b.edit((d) => put(d, ['armor'], on ? { level: 3, durability: 40 } : undefined))
                 }
               />
-              armoured
-            </label>
-          )}
-          {def.armour && (
-            <Row>
-              <N {...b} path={['armour', 'level']} label="armour level (1–6)" min={1} />
-              <N {...b} path={['armour', 'durability']} label="durability" min={0} />
-              <N
-                {...b}
-                path={['armour', 'repairLoss']}
-                label="repair loss (0–1)"
-                min={0}
-                hint="The share of what a repair mends that comes off its max. Blank is 0.1"
-              />
-            </Row>
-          )}
+            )}
+            {def.armor && <ArmorStats {...b} at={['armor']} />}
+          </Group>
           <SectionFields {...b} def={def} />
         </>
       );
     case 'melee':
       return (
-        <>
-          <h4>knife</h4>
-          <Row>
-            <N {...b} path={['damage']} label="damage" min={0} />
-            <N {...b} path={['level']} label="level (1–6)" min={1} />
-          </Row>
-          <Row>
-            <N {...b} path={['armourDamage']} label="armour damage" min={0} />
-            <N {...b} path={['bleedChance']} label="bleed chance" min={0} />
-          </Row>
-          <Row>
-            <N {...b} path={['swingTime']} label="swing (s)" min={0} />
-            <N {...b} path={['reach']} label="reach (m)" min={0} />
-            <N {...b} path={['drawTime']} label="draw (s)" min={0} />
-          </Row>
+        <Group title="Knife">
+          <div className="ie-grid">
+            <N {...b} path={['damage']} label="Damage" min={0} />
+            <N {...b} path={['level']} label="Level (1–6)" min={1} />
+          </div>
+          <div className="ie-grid">
+            <N {...b} path={['armorDamage']} label="Armor damage" min={0} />
+            <N {...b} path={['bleedChance']} label="Bleed chance" min={0} />
+          </div>
+          <div className="ie-grid">
+            <N {...b} path={['swingTime']} label="Swing (s)" min={0} />
+            <N {...b} path={['reach']} label="Reach (m)" min={0} />
+            <N {...b} path={['drawTime']} label="Draw (s)" min={0} />
+          </div>
           {def.id !== 'knife' && (
             <p className="ed-note">Players always carry the item called knife; this one is loot.</p>
           )}
-        </>
+        </Group>
       );
     case 'grenade':
       return (
-        <>
-          <h4>grenade</h4>
-          <P
+        <Group title="Grenade">
+          <S
             {...b}
             path={['effect']}
-            label="effect"
-            options={[...GRENADE_EFFECTS]}
-            unset="frag (default)"
+            label="Effect"
+            options={GRENADE_EFFECTS}
+            fallback="frag"
+            labels={{ frag: 'Frag', flash: 'Flash', smoke: 'Smoke', c4: 'C4', molotov: 'Molotov' }}
             then={(d, v) => {
               // Each effect's own field, there only for it.
               if (v === 'flash') d.blindTime ??= 5;
@@ -811,109 +809,134 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
             }}
           />
           {def.effect === 'flash' && (
-            <N
-              {...b}
-              path={['blindTime']}
-              label="blinds for (s)"
-              min={0}
-              hint="Looking at it, close; less further out"
-            />
+            <div className="ie-grid">
+              <N
+                {...b}
+                path={['blindTime']}
+                label="Blinds for (s)"
+                min={0}
+                hint="Looking at it, close; less further out"
+              />
+            </div>
           )}
           {def.effect === 'smoke' && (
-            <N {...b} path={['smokeTime']} label="cloud lasts (s)" min={0} />
+            <div className="ie-grid">
+              <N {...b} path={['smokeTime']} label="Cloud lasts (s)" min={0} />
+            </div>
           )}
           {def.effect === 'molotov' && (
-            <Row>
+            <div className="ie-grid">
               <N
                 {...b}
                 path={['fire', 'fireTime']}
-                label="fire burns (s)"
+                label="Fire burns (s)"
                 min={0}
                 hint="Spilled across its radius where it breaks"
               />
-              <N {...b} path={['fire', 'burnTime']} label="burns someone for (s)" min={0} />
-              <N {...b} path={['fire', 'burnDamage']} label="burn damage (/s a zone)" min={0} />
-            </Row>
+              <N {...b} path={['fire', 'burnTime']} label="Burns someone (s)" min={0} />
+              <N {...b} path={['fire', 'burnDamage']} label="Burn damage (/s)" min={0} />
+            </div>
           )}
-          <Row>
-            <N {...b} path={['damage']} label="damage at the centre" min={0} />
-            <N {...b} path={['level']} label="level (1–6)" min={1} />
-          </Row>
-          <Row>
-            <N {...b} path={['armourDamage']} label="armour damage" min={0} />
-            <N {...b} path={['bleedChance']} label="bleed chance" min={0} />
-          </Row>
-          <Row>
-            <N {...b} path={['radius']} label="radius (m)" min={0} />
+          <div className="ie-grid">
+            <N {...b} path={['damage']} label="Damage" min={0} hint="At the center" />
+            <N {...b} path={['level']} label="Level (1–6)" min={1} />
+            <N {...b} path={['radius']} label="Radius (m)" min={0} />
+          </div>
+          <div className="ie-grid">
+            <N {...b} path={['armorDamage']} label="Armor damage" min={0} />
+            <N {...b} path={['bleedChance']} label="Bleed chance" min={0} />
             <N
               {...b}
               path={['fuse']}
-              label="fuse (s)"
+              label="Fuse (s)"
               min={0}
               hint="From the throw; for C4, from the detonator"
             />
-          </Row>
-          <Row>
-            <N {...b} path={['throwSpeed']} label="throw speed (m/s)" min={0} />
-            <N {...b} path={['loudness']} label="heard from (m)" min={0} />
-          </Row>
-        </>
+          </div>
+          <div className="ie-grid">
+            <N {...b} path={['throwSpeed']} label="Throw speed (m/s)" min={0} />
+            <N {...b} path={['loudness']} label="Heard from (m)" min={0} />
+          </div>
+        </Group>
       );
     case 'key':
       return (
-        <>
-          <h4>key</h4>
-          <N
-            {...b}
-            path={['uses']}
-            label="uses (blank: never wears out)"
-            min={1}
-            hint="Unlocks this many times, then it's gone"
-          />
-        </>
+        <Group title="Key">
+          <div className="ie-grid">
+            <N
+              {...b}
+              path={['uses']}
+              label="Uses"
+              min={1}
+              placeholder="unlimited"
+              hint="Unlocks this many times, then it's gone"
+            />
+          </div>
+        </Group>
       );
     case 'loot':
       return (
-        <>
-          <h4>loot</h4>
-          <N {...b} path={['stack']} label="stack (blank: doesn't stack)" min={2} />
-          <Check {...b} path={['money']} label="money: deposited at full value" />
-          <C
-            {...b}
-            path={['category']}
-            label="category (item details)"
-            options={categories(items)}
-            unset="none (shows Loot)"
-            newLabel="category"
-          />
-        </>
+        <Group title="Loot">
+          <div className="ie-grid">
+            <N {...b} path={['stack']} label="Stack" min={2} placeholder="doesn't stack" />
+            <C
+              {...b}
+              path={['category']}
+              label="Category"
+              options={categories(items)}
+              unset="none (shows Loot)"
+              newLabel="category"
+            />
+          </div>
+          <T {...b} path={['money']} label="Money" title="Deposited at full value" />
+        </Group>
       );
     case 'repair':
       return (
-        <>
-          <h4>repair kit</h4>
-          <Row>
-            <N {...b} path={['points']} label="durability in all" min={0} />
-            <N {...b} path={['useTime']} label="use time (s)" min={0} />
-          </Row>
-        </>
+        <Group title="Repair kit">
+          <div className="ie-grid">
+            <N {...b} path={['points']} label="Durability in all" min={0} />
+            <N {...b} path={['useTime']} label="Use time (s)" min={0} />
+          </div>
+        </Group>
       );
     case 'quest':
       return (
-        <p className="ed-note">A quest item has nothing more: its quest says where it lies.</p>
+        <Group title="Quest item">
+          <p className="ed-note">Nothing more to set: its quest says where it lies.</p>
+        </Group>
       );
   }
 }
 
+/** Armor's level, durability and repair loss, on armor or under an armored rig's `armor`. */
+function ArmorStats(props: Bound & { at: Path }) {
+  const { at, ...b } = props;
+  return (
+    <div className="ie-grid">
+      <N {...b} path={[...at, 'level']} label="Level (1–6)" min={1} />
+      <N {...b} path={[...at, 'durability']} label="Durability" min={0} />
+      <N
+        {...b}
+        path={[...at, 'repairLoss']}
+        label="Repair loss"
+        min={0}
+        placeholder="0.1"
+        hint="0–1: the share of what a repair mends that comes off its max"
+      />
+    </div>
+  );
+}
+
 const SOUND_USES: Record<string, string> = {
-  shot: 'shot',
-  suppressed: 'shot, suppressed',
-  reload: 'reload',
-  swing: 'swing',
-  use: 'using it',
-  throw: 'throw',
-  bounce: 'bounce',
-  explode: 'going off',
+  shot: 'Shot',
+  suppressed: 'Shot, suppressed',
+  reload: 'Reload',
+  swing: 'Swing',
+  use: 'Using it',
+  throw: 'Throw',
+  bounce: 'Bounce',
+  explode: 'Going off',
 };
 
 /** The sound files it plays (session 19), each with a button to hear it and a link to tune it. */
@@ -922,20 +945,19 @@ function SoundFields(props: Bound & { def: ItemDef }) {
   if (!('sounds' in def)) return null;
   const ids = [...soundSources().keys()];
   return (
-    <>
-      <h4>sounds</h4>
+    <Group title="Sounds">
       {Object.entries(def.sounds).map(([use, id]) => (
-        <Row key={use}>
+        <div key={use} className="ie-sound">
           <P {...b} path={['sounds', use]} label={SOUND_USES[use] ?? use} options={ids} />
           <button onClick={() => sounds().play(id)} title="Play it">
             ▶
           </button>
-          <a className="ie-link" href={`/sounds?sound=${id}`} target="sounds">
+          <a className="ie-link" href={`/sounds?sound=${id}`} target="sounds" title="Tune it">
             tune
           </a>
-        </Row>
+        </div>
       ))}
-    </>
+    </Group>
   );
 }
 
@@ -946,17 +968,15 @@ const MED_NOTES: Record<(typeof MED_EFFECTS)[number], string> = {
   heal: "Restores HP to limbs that aren't broken, from its pool.",
 };
 
-// The first RECOIL_MODS share a row.
-const RECOIL_MODS = 4;
 const MODS: [key: string, label: string, hint: string][] = [
-  ['recoil', 'recoil ×', 'Kick up and sideways'],
-  ['recoilUp', 'kick up ×', 'On top of recoil ×'],
-  ['recoilSide', 'kick sideways ×', 'On top of recoil ×'],
-  ['ergonomics', 'ergonomics ×', 'Above 1 recovers from recoil faster'],
-  ['spread', 'spread ×', 'Hip and aimed spread'],
-  ['aimTime', 'aim time ×', ''],
-  ['reloadTime', 'reload ×', ''],
-  ['loudness', 'loudness ×', 'Below 1 is quieter'],
+  ['recoil', 'Recoil', 'Kick up and sideways'],
+  ['recoilUp', 'Kick up', 'On top of recoil'],
+  ['recoilSide', 'Kick sideways', 'On top of recoil'],
+  ['ergonomics', 'Ergonomics', 'Above 1 recovers from recoil faster'],
+  ['spread', 'Spread', 'Hip and aimed spread'],
+  ['aimTime', 'Aim time', ''],
+  ['reloadTime', 'Reload', ''],
+  ['loudness', 'Loudness', 'Below 1 is quieter'],
 ];
 
 function AttachmentFields(
@@ -970,91 +990,94 @@ function AttachmentFields(
   const listed = def.weapons ?? [];
   return (
     <>
-      <h4>attachment</h4>
-      <P
-        {...b}
-        path={['slot']}
-        label="slot"
-        options={ATTACHMENT_SLOTS}
-        then={(d, v) => {
-          if (v === 'optic' && d.optic === undefined)
-            put(d, ['optic'], structuredClone(BLANK_OPTIC));
-          if (v !== 'optic') put(d, ['optic'], undefined);
-          fitPointsToSlot(d);
-        }}
-      />
-      <h4>fits</h4>
-      <p className="ed-note">
-        {listed.length ? 'Only the guns ticked.' : `Every gun with a ${def.slot} slot.`}
-      </p>
-      <Row>
-        {[...new Set([...withSlot, ...listed])].map((w) => (
-          <label key={w} className="ed-field">
-            <input
-              type="checkbox"
-              checked={listed.includes(w)}
-              onChange={(e) =>
-                b.edit((d) => {
-                  const next = weapons.filter((x) =>
-                    x === w ? e.target.checked : listed.includes(x),
-                  );
-                  put(d, ['weapons'], next.length ? next : undefined);
-                })
-              }
+      <Group title="Attachment">
+        <S
+          {...b}
+          path={['slot']}
+          label="Slot"
+          options={ATTACHMENT_SLOTS}
+          then={(d, v) => {
+            if (v === 'optic' && d.optic === undefined)
+              put(d, ['optic'], structuredClone(BLANK_OPTIC));
+            if (v !== 'optic') put(d, ['optic'], undefined);
+            fitPointsToSlot(d);
+          }}
+        />
+        {def.optic && (
+          <div className="ie-grid">
+            <N
+              {...b}
+              path={['optic', 'zoom']}
+              label="Zoom"
+              min={1}
+              hint="1 is a red dot; above is a scope, which zooms the whole screen behind a mask"
             />
-            {w}
-          </label>
-        ))}
-      </Row>
-      <h4>changes to the gun (blank: none)</h4>
-      <Row>
-        {MODS.slice(0, RECOIL_MODS).map(([k, label, hint]) => (
-          <N key={k} {...b} path={['mods', k]} label={label} min={0} hint={hint} />
-        ))}
-      </Row>
-      <Row>
-        {MODS.slice(RECOIL_MODS).map(([k, label, hint]) => (
-          <N key={k} {...b} path={['mods', k]} label={label} min={0} hint={hint} />
-        ))}
-        <N {...b} path={['mods', 'magazine']} label="extra rounds" min={1} />
-      </Row>
-      {def.optic && (
-        <>
-          <h4>optic</h4>
-          <N
-            {...b}
-            path={['optic', 'zoom']}
-            label="zoom (1: red dot, above: scope)"
-            min={1}
-            hint="A scope zooms the whole screen behind a mask"
-          />
-        </>
-      )}
+          </div>
+        )}
+      </Group>
+      <Group
+        title="Fits"
+        aside={
+          <span className="ed-note">
+            {listed.length ? 'only those picked' : `every gun with a ${def.slot} slot`}
+          </span>
+        }
+      >
+        <Chips
+          options={[...new Set([...withSlot, ...listed])]}
+          on={(w) => listed.includes(w)}
+          toggle={(w, on) =>
+            b.edit((d) => {
+              const next = weapons.filter((x) => (x === w ? on : listed.includes(x)));
+              put(d, ['weapons'], next.length ? next : undefined);
+            })
+          }
+        />
+      </Group>
+      <Group
+        title="Changes to the gun"
+        aside={<span className="ed-note">× each, blank: none</span>}
+      >
+        <div className="ie-grid ie-grid-4">
+          {MODS.map(([k, label, hint]) => (
+            <N
+              key={k}
+              {...b}
+              path={['mods', k]}
+              label={label}
+              min={0}
+              placeholder="1"
+              hint={hint}
+            />
+          ))}
+          <N {...b} path={['mods', 'magazine']} label="Extra rounds" min={1} placeholder="0" />
+        </div>
+      </Group>
     </>
   );
 }
 
-/** The item at its grid size, and a rig's or backpack's grid inside. */
+/** Where each view is taken from, for its button's tooltip. */
 const VIEW_NOTES: Record<ItemView, string> = {
-  top: 'straight down, the back (−z) at the top',
-  front: 'from the front (+z)',
-  side: "from the left (−x), a gun's barrel to the left",
+  top: 'Straight down, the back (−z) at the top',
+  front: 'From the front (+z)',
+  side: "From the left (−x), a gun's barrel to the left",
   angled:
-    'a three-quarter turn from the front left, the front (−z) to the left, a little from above',
-  frontRight: 'a three-quarter turn from the front right, a little from above',
-  backLeft: 'a three-quarter turn from the back left, a little from above',
-  backRight: 'a three-quarter turn from the back right, a little from above',
+    'A three-quarter turn from the front left, the front (−z) to the left, a little from above',
+  frontRight: 'A three-quarter turn from the front right, a little from above',
+  backLeft: 'A three-quarter turn from the back left, a little from above',
+  backRight: 'A three-quarter turn from the back right, a little from above',
 };
 
 /** What each view's button says (`angled` is the front-left one, under its old name). */
 const VIEW_LABELS: Record<ItemView, string> = {
-  top: 'top',
-  front: 'front',
-  side: 'side',
-  angled: 'front left',
-  frontRight: 'front right',
-  backLeft: 'back left',
-  backRight: 'back right',
+  top: 'Top',
+  front: 'Front',
+  side: 'Side',
+  angled: 'Front L',
+  frontRight: 'Front R',
+  backLeft: 'Back L',
+  backRight: 'Back R',
 };
 
 /**
@@ -1072,16 +1095,15 @@ function ViewPicker(props: Bound & { def: ItemDef }) {
     [key],
   );
   const [w, h] = def.size;
-  const scale = 52 / Math.max(w, h);
+  const scale = 34 / Math.max(w, h);
   return (
-    <>
-      <h4>its picture, taken from</h4>
+    <Group title="Picture" aside={<span className="ed-note">taken from</span>}>
       <div className="ie-views">
         {ITEM_VIEWS.map((v, i) => (
           <button
             key={v}
-            className={v === current ? 'ie-view ed-on' : 'ie-view'}
-            title={VIEW_NOTES[v]}
+            className={v === current ? 'ie-view-pick ed-on' : 'ie-view-pick'}
+            title={`${VIEW_NOTES[v]}${v === byKind ? ' (the default for its kind)' : ''}`}
             onClick={() => props.edit((d) => put(d, ['view'], v === byKind ? undefined : v))}
           >
             <span
@@ -1089,18 +1111,18 @@ function ViewPicker(props: Bound & { def: ItemDef }) {
               style={{
                 width: w * scale,
                 height: h * scale,
-                background: `${colourOf(def)}66`,
-                borderColor: colourOf(def),
+                background: `${colorOf(def)}66`,
+                borderColor: colorOf(def),
               }}
             >
               {arts[i] && <img src={arts[i]!} alt="" />}
             </span>
-            {VIEW_LABELS[v]}
-            {v === byKind && <span className="ed-note"> (its kind&apos;s)</span>}
+            <span>{VIEW_LABELS[v]}</span>
+            {v === byKind && <span className="ie-auto">default</span>}
           </button>
         ))}
       </div>
-    </>
+    </Group>
   );
 }
 
@@ -1118,11 +1140,11 @@ function SizePreview({ def }: { def: ItemDef }) {
           ` · ${def.grid[0]}×${def.grid[1]} inside${def.sections ? `, ${def.sections.length} sections` : ''}`}
       </h4>
       <div className="ie-sizes">
-        <Cells w={w} h={h} colour={colourOf(def)} label={tileName(def)} art={art} />
+        <Cells w={w} h={h} color={colorOf(def)} label={tileName(def)} art={art} />
         {/* Turned, as the inventory draws it when rotated (2026-11-09): the same picture, a
             quarter turn clockwise. Every item that isn't square can be rotated. */}
         {w !== h && (
-          <Cells w={h} h={w} colour={colourOf(def)} label={tileName(def)} art={art} turned />
+          <Cells w={h} h={w} color={colorOf(def)} label={tileName(def)} art={art} turned />
         )}
         {def.type === 'container' && <InsidePreview def={def} />}
       </div>
@@ -1133,7 +1155,7 @@ function SizePreview({ def }: { def: ItemDef }) {
 /** A rig's or backpack's inside as the inventory draws it: each section its own box. */
 function InsidePreview({ def }: { def: ContainerDef }) {
   const [w, h] = def.grid;
-  if (!def.sections?.length) return <Cells w={w} h={h} colour="" label="" />;
+  if (!def.sections?.length) return <Cells w={w} h={h} color="" label="" />;
   // A cell is 44px with a 1px line between (as Cells draws it).
   const cell = 45;
   const boxes = sectionBoxes(
@@ -1150,59 +1172,54 @@ function InsidePreview({ def }: { def: ContainerDef }) {
     >
       {boxes.map(({ s, left, top }, i) => (
         <div key={i} style={{ left, top }}>
-          <Cells w={s.w} h={s.h} colour="" label="" />
+          <Cells w={s.w} h={s.h} color="" label="" />
         </div>
       ))}
     </div>
   );
 }
 
-/**
- * The rarity an item's level or room gives (2026-11-11): armour's and an armoured rig's by
- * armour level, a rig's or backpack's by its cells. Filled in when that changes (editor.ts),
- * and here, when set by hand to another, a button to go back to it. Nothing for the rest.
- */
-function RarityNote(props: Bound & { def: ItemDef }) {
-  const { def } = props;
-  const armour = armourOf(def);
-  let why: string;
-  let auto: Rarity;
-  if (armour) {
-    why = `level ${armour.level} armour`;
-    auto = levelRarity(armour.level);
-  } else if (def.type === 'container' && def.slot !== 'vault') {
-    const cells = bagCells(def);
-    why = `${cells} slot${cells === 1 ? '' : 's'}`;
-    auto = bagRarity(def);
-  } else return null;
-  return (
-    <p className="ed-note">
-      {why}: {auto}
-      {def.rarity !== auto && (
-        <>
-          {' '}
-          (set by hand){' '}
-          <button onClick={() => props.edit((d) => put(d, ['rarity'], auto))}>use {auto}</button>
-        </>
-      )}
-    </p>
+/** Each section's color in the painter, by its index. */
+const SECTION_COLORS = ['#4f8fd6', '#d68f4f', '#5fb36a', '#b45fc4', '#c9b13e', '#4fbfbf'];
+
+type Section = { at: [number, number]; size: [number, number] };
+type Layout = 'open' | 'columns' | 'rows' | 'custom';
+
+const columnsOf = (w: number, h: number): Section[] =>
+  Array.from({ length: w }, (_, x) => ({ at: [x, 0], size: [1, h] }));
+const rowsOf = (w: number, h: number): Section[] =>
+  Array.from({ length: h }, (_, y) => ({ at: [0, y], size: [w, 1] }));
+
+const sameSections = (a: readonly Section[], b: readonly Section[]): boolean =>
+  a.length === b.length &&
+  a.every(
+    (s, i) =>
+      s.at[0] === b[i]!.at[0] &&
+      s.at[1] === b[i]!.at[1] &&
+      s.size[0] === b[i]!.size[0] &&
+      s.size[1] === b[i]!.size[1],
   );
+
+/** Which preset a bag's sections match, or custom (drawn by hand). */
+function layoutOf(w: number, h: number, sections: readonly Section[]): Layout {
+  if (!sections.length) return 'open';
+  // A 1-wide or 1-tall inside is columns and rows at once: call it columns.
+  if (sameSections(sections, columnsOf(w, h))) return 'columns';
+  if (sameSections(sections, rowsOf(w, h))) return 'rows';
+  return 'custom';
 }
 
-/** Each section's colour in the painter, by its index. */
-const SECTION_COLOURS = ['#4f8fd6', '#d68f4f', '#5fb36a', '#b45fc4', '#c9b13e', '#4fbfbf'];
-
 /**
- * A rig's or backpack's sections (compartments, 2026-11-11): drag across free cells of
- * the inside to add one, × to remove it, or set its cell and size below. No sections is
- * one open grid. Pouches splits the inside into 1-wide columns, as the chest rig has.
+ * A rig's or backpack's inside (2026-11-11 rework): its size, then its layout as one open
+ * grid, columns, rows or custom pouches. Drag across free cells of the painter to add a
+ * pouch (which makes it custom), × to remove one; exact numbers are under "Positions".
  */
 function SectionFields(props: Bound & { def: ContainerDef }) {
   const { def } = props;
   const [w, h] = def.grid;
-  const sections = def.sections ?? [];
+  const sections = (def.sections ?? []) as Section[];
   const [drag, setDrag] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(null);
-  if (!(w >= 1 && h >= 1 && w <= 20 && h <= 20)) return null;
+  const valid = w >= 1 && h >= 1 && w <= 20 && h <= 20;
   const owner = (x: number, y: number): number =>
     sections.findIndex(
       ({ at: [sx, sy], size: [sw, sh] }) => x >= sx && y >= sy && x < sx + sw && y < sy + sh,
@@ -1218,7 +1235,7 @@ function SectionFields(props: Bound & { def: ContainerDef }) {
     for (let y = rect.y; y < rect.y + rect.h; y++)
       for (let x = rect.x; x < rect.x + rect.w; x++) if (owner(x, y) >= 0) rectFree = false;
   }
-  const set = (next: { at: [number, number]; size: [number, number] }[]) =>
+  const set = (next: Section[]) =>
     props.edit((d) => put(d, ['sections'], next.length ? next : undefined));
   const cellAt = (e: PointerEvent): [number, number] | null => {
     const el = (e.target as HTMLElement).closest<HTMLElement>('[data-cell]');
@@ -1232,145 +1249,196 @@ function SectionFields(props: Bound & { def: ContainerDef }) {
     }
     setDrag(null);
   };
-  const free = w * h - sections.reduce((n, s) => n + s.size[0] * s.size[1], 0);
+  const layout = layoutOf(w, h, sections);
+  const held = bagCells(def);
+  const free = w * h - (sections.length ? held : w * h);
+  // The box around the sections, for "fit inside" when it's smaller than the inside.
+  const box = sections.length
+    ? {
+        x0: Math.min(...sections.map((s) => s.at[0])),
+        y0: Math.min(...sections.map((s) => s.at[1])),
+        x1: Math.max(...sections.map((s) => s.at[0] + s.size[0])),
+        y1: Math.max(...sections.map((s) => s.at[1] + s.size[1])),
+      }
+    : null;
+  const canFit = !!box && (box.x0 > 0 || box.y0 > 0 || box.x1 < w || box.y1 < h);
+  const pick = (l: Layout): void => {
+    if (l === 'open') set([]);
+    else if (l === 'columns') set(columnsOf(w, h));
+    else if (l === 'rows') set(rowsOf(w, h));
+  };
   return (
-    <>
-      <h4>sections (compartments)</h4>
-      <p className="ed-note">
-        {sections.length
-          ? `Drag across free cells to add one. Items never reach across a section's edge.${free ? ` ${free} cell${free === 1 ? '' : 's'} in no section hold nothing.` : ''}`
-          : 'One open grid. Drag across the cells to make a section.'}
-      </p>
-      <div
-        className="ie-painter"
-        style={{
-          gridTemplateColumns: `repeat(${w}, 40px)`,
-          gridTemplateRows: `repeat(${h}, 40px)`,
-        }}
-        onPointerDown={(e) => {
-          const c = cellAt(e);
-          if (!c || owner(c[0], c[1]) >= 0) return;
-          (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-          setDrag({ x0: c[0], y0: c[1], x1: c[0], y1: c[1] });
-        }}
-        onPointerMove={(e) => {
-          if (!drag) return;
-          // Pointer capture sends moves here; find the cell under the pointer itself.
-          const el = document
-            .elementFromPoint(e.clientX, e.clientY)
-            ?.closest<HTMLElement>('.ie-painter [data-cell]');
-          if (!el) return;
-          const [x, y] = el.dataset.cell!.split(',').map(Number);
-          if (x !== drag.x1 || y !== drag.y1) setDrag({ ...drag, x1: x!, y1: y! });
-        }}
-        onPointerUp={end}
-        onPointerCancel={() => setDrag(null)}
-      >
-        {Array.from({ length: w * h }, (_, i) => {
-          const x = i % w;
-          const y = Math.floor(i / w);
-          const o = owner(x, y);
-          const inRect =
-            rect && x >= rect.x && y >= rect.y && x < rect.x + rect.w && y < rect.y + rect.h;
-          const colour = o >= 0 ? SECTION_COLOURS[o % SECTION_COLOURS.length] : undefined;
-          return (
-            <div
-              key={i}
-              data-cell={`${x},${y}`}
-              className={
-                inRect ? (rectFree ? 'ie-pcell ie-pcell-new' : 'ie-pcell ie-pcell-bad') : 'ie-pcell'
-              }
-              style={{
-                gridArea: `${y + 1} / ${x + 1}`,
-                ...(colour && { background: `${colour}99` }),
-              }}
-            />
-          );
-        })}
-        {sections.map(({ at: [x, y], size: [sw, sh] }, i) => (
-          <div
-            key={`s${i}`}
-            className="ie-psection"
-            style={{
-              gridArea: `${y + 1} / ${x + 1} / ${y + sh + 1} / ${x + sw + 1}`,
-              borderColor: SECTION_COLOURS[i % SECTION_COLOURS.length],
-            }}
-          >
-            <span>{i + 1}</span>
-            <button
-              title="Remove this section"
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={() => set(sections.filter((_, j) => j !== i))}
-            >
-              ×
-            </button>
-          </div>
-        ))}
+    <Group
+      title="Inside"
+      aside={
+        <span className="ed-note">
+          {held} cell{held === 1 ? '' : 's'}
+          {sections.length ? ` · ${sections.length} pouch${sections.length === 1 ? '' : 'es'}` : ''}
+        </span>
+      }
+    >
+      <div className="ie-grid">
+        <N {...props} path={['grid', 0]} label="Width" min={1} />
+        <N {...props} path={['grid', 1]} label="Height" min={1} />
       </div>
-      <Row>
-        <button
-          title="Splits the inside into 1-wide columns, each as tall as the inside"
-          onClick={() => set(Array.from({ length: w }, (_, x) => ({ at: [x, 0], size: [1, h] })))}
-        >
-          pouches (columns)
-        </button>
-        <button
-          title="Splits the inside into rows, each as wide as the inside"
-          onClick={() => set(Array.from({ length: h }, (_, y) => ({ at: [0, y], size: [w, 1] })))}
-        >
-          rows
-        </button>
-        <button
-          title="No sections: the inside is one open grid"
-          disabled={!sections.length}
-          onClick={() => set([])}
-        >
-          one open grid
-        </button>
-        <button
-          title="Shrinks the inside to the box around the sections"
-          disabled={!sections.length}
-          onClick={() =>
-            props.edit((d) => {
-              const ss = sections;
-              const x0 = Math.min(...ss.map((s) => s.at[0]));
-              const y0 = Math.min(...ss.map((s) => s.at[1]));
-              const x1 = Math.max(...ss.map((s) => s.at[0] + s.size[0]));
-              const y1 = Math.max(...ss.map((s) => s.at[1] + s.size[1]));
-              put(d, ['grid'], [x1 - x0, y1 - y0]);
-              put(
-                d,
-                ['sections'],
-                ss.map((s) => ({ at: [s.at[0] - x0, s.at[1] - y0], size: [...s.size] })),
-              );
-            })
+      <Labeled label="Layout">
+        <Segmented
+          value={layout}
+          options={
+            layout === 'custom'
+              ? (['open', 'columns', 'rows', 'custom'] as const)
+              : (['open', 'columns', 'rows'] as const)
           }
+          labels={{ open: 'Open', columns: 'Columns', rows: 'Rows', custom: 'Custom' }}
+          titles={{
+            open: 'No pouches: the inside is one grid',
+            columns: 'A pouch per column, each as tall as the inside',
+            rows: 'A pouch per row, each as wide as the inside',
+            custom: 'Pouches drawn by hand',
+          }}
+          onChange={pick}
+        />
+      </Labeled>
+      {valid && (
+        <div
+          className="ie-painter"
+          style={{
+            gridTemplateColumns: `repeat(${w}, 36px)`,
+            gridTemplateRows: `repeat(${h}, 36px)`,
+          }}
+          onPointerDown={(e) => {
+            const c = cellAt(e);
+            if (!c || owner(c[0], c[1]) >= 0) return;
+            (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+            setDrag({ x0: c[0], y0: c[1], x1: c[0], y1: c[1] });
+          }}
+          onPointerMove={(e) => {
+            if (!drag) return;
+            // Pointer capture sends moves here; find the cell under the pointer itself.
+            const el = document
+              .elementFromPoint(e.clientX, e.clientY)
+              ?.closest<HTMLElement>('.ie-painter [data-cell]');
+            if (!el) return;
+            const [x, y] = el.dataset.cell!.split(',').map(Number);
+            if (x !== drag.x1 || y !== drag.y1) setDrag({ ...drag, x1: x!, y1: y! });
+          }}
+          onPointerUp={end}
+          onPointerCancel={() => setDrag(null)}
         >
-          fit inside
-        </button>
-      </Row>
-      {sections.map((_, i) => (
-        <div key={i} className="ie-sec-row">
-          <span
-            className="ie-sec-num"
-            style={{ color: SECTION_COLOURS[i % SECTION_COLOURS.length] }}
-          >
-            {i + 1}
-          </span>
-          <N {...props} path={['sections', i, 'at', 0]} label="x" min={0} />
-          <N {...props} path={['sections', i, 'at', 1]} label="y" min={0} />
-          <N {...props} path={['sections', i, 'size', 0]} label="w" min={1} />
-          <N {...props} path={['sections', i, 'size', 1]} label="h" min={1} />
+          {Array.from({ length: w * h }, (_, i) => {
+            const x = i % w;
+            const y = Math.floor(i / w);
+            const o = owner(x, y);
+            const inRect =
+              rect && x >= rect.x && y >= rect.y && x < rect.x + rect.w && y < rect.y + rect.h;
+            const color = o >= 0 ? SECTION_COLORS[o % SECTION_COLORS.length] : undefined;
+            return (
+              <div
+                key={i}
+                data-cell={`${x},${y}`}
+                className={
+                  inRect
+                    ? rectFree
+                      ? 'ie-pcell ie-pcell-new'
+                      : 'ie-pcell ie-pcell-bad'
+                    : sections.length && o < 0
+                      ? 'ie-pcell ie-pcell-unused'
+                      : 'ie-pcell'
+                }
+                style={{
+                  gridArea: `${y + 1} / ${x + 1}`,
+                  ...(color && { background: `${color}55` }),
+                }}
+              />
+            );
+          })}
+          {sections.map(({ at: [x, y], size: [sw, sh] }, i) => (
+            <div
+              key={`s${i}`}
+              className="ie-psection"
+              style={{
+                gridArea: `${y + 1} / ${x + 1} / ${y + sh + 1} / ${x + sw + 1}`,
+                borderColor: SECTION_COLORS[i % SECTION_COLORS.length],
+              }}
+            >
+              <span>{i + 1}</span>
+              <button
+                title="Remove this pouch"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={() => set(sections.filter((_, j) => j !== i))}
+              >
+                ×
+              </button>
+            </div>
+          ))}
         </div>
-      ))}
-    </>
+      )}
+      <p className="ed-note">
+        Drag across empty cells to add a pouch. Items never reach across a pouch&apos;s edge.
+      </p>
+      {sections.length > 0 && free > 0 && (
+        <p className="ie-warn">
+          {free} cell{free === 1 ? '' : 's'} in no pouch hold nothing.
+        </p>
+      )}
+      {sections.length > 0 && (
+        <details className="ie-positions">
+          <summary>
+            Positions
+            {canFit && (
+              <button
+                title="Shrinks the inside to the box around the pouches"
+                onClick={(e) => {
+                  e.preventDefault();
+                  props.edit((d) => {
+                    const { x0, y0, x1, y1 } = box!;
+                    put(d, ['grid'], [x1 - x0, y1 - y0]);
+                    put(
+                      d,
+                      ['sections'],
+                      sections.map((s) => ({
+                        at: [s.at[0] - x0, s.at[1] - y0],
+                        size: [...s.size],
+                      })),
+                    );
+                  });
+                }}
+              >
+                Trim inside to fit
+              </button>
+            )}
+          </summary>
+          <div className="ie-sec-table">
+            <span />
+            <span className="ie-label">x</span>
+            <span className="ie-label">y</span>
+            <span className="ie-label">w</span>
+            <span className="ie-label">h</span>
+            {sections.map((_, i) => (
+              <Fragment key={i}>
+                <span
+                  className="ie-sec-num"
+                  style={{ color: SECTION_COLORS[i % SECTION_COLORS.length] }}
+                >
+                  {i + 1}
+                </span>
+                <N {...props} path={['sections', i, 'at', 0]} label="" min={0} />
+                <N {...props} path={['sections', i, 'at', 1]} label="" min={0} />
+                <N {...props} path={['sections', i, 'size', 0]} label="" min={1} />
+                <N {...props} path={['sections', i, 'size', 1]} label="" min={1} />
+              </Fragment>
+            ))}
+          </div>
+        </details>
+      )}
+    </Group>
   );
 }
 
 function Cells(props: {
   w: number;
   h: number;
-  colour: string;
+  color: string;
   label: string;
   art?: string | null;
   /** The art was drawn for the unturned tile (h × w) and is turned a quarter to fit. */
@@ -1389,12 +1457,12 @@ function Cells(props: {
         gridTemplateRows: `repeat(${h}, ${px}px)`,
       }}
     >
-      {props.colour ? (
+      {props.color ? (
         <div
           className="ie-tile"
           style={{
-            background: props.art ? `${props.colour}66` : props.colour,
-            borderColor: props.colour,
+            background: props.art ? `${props.color}66` : props.color,
+            borderColor: props.color,
             gridArea: `1 / 1 / ${h + 1} / ${w + 1}`,
           }}
         >
@@ -1447,7 +1515,7 @@ function Facts({ def, db }: { def: ItemDef; db: ItemDb }) {
         // Every pellet landing.
         const round = ammo.damage * (ammo.pellets ?? 1);
         lines.push(
-          `With ${ammo.name}: ${fmt(round * (def.rpm / 60), 0)} damage a second to an unarmoured chest, ${fmt(round * def.magazine, 0)} a magazine.`,
+          `With ${ammo.name}: ${fmt(round * (def.rpm / 60), 0)} damage a second to an unarmored chest, ${fmt(round * def.magazine, 0)} a magazine.`,
         );
       }
       break;
@@ -1476,7 +1544,7 @@ function Facts({ def, db }: { def: ItemDef; db: ItemDb }) {
     case 'med':
       if (def.effect === 'heal') lines.push(`${fmt(def.hp! / def.useTime, 1)} HP a second of use.`);
       break;
-    case 'armour':
+    case 'armor':
       lines.push(`${fmt(def.value / def.durability, 0)} money a point of durability.`);
       break;
   }

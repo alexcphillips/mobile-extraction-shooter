@@ -9,7 +9,7 @@ const body = (x: number, level: number, yaw = 0): CompiledWater => ({
   hz: 1,
   yaw,
   level,
-  colour: 0x3d7ea6,
+  color: 0x3d7ea6,
   opacity: 0.5,
 });
 

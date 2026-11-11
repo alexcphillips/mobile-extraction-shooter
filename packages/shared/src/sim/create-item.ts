@@ -1,11 +1,11 @@
 import { itemDef, sectionsOf, type ItemDb } from '../content/items';
 import { createGrid, type Item } from '../inventory/grid';
-import { createArmour } from './health';
+import { createArmor } from './health';
 import { createWeapon } from './weapons';
 
 /**
  * A new item with the fields its type needs: a gun with a full magazine and no
- * attachments, armour at full durability, an empty rig or backpack, a med, repair kit
+ * attachments, armor at full durability, an empty rig or backpack, a med, repair kit
  * or key unused. count is for items that stack (it isn't checked against the stack size).
  */
 export function createItem(items: ItemDb, id: string, count = 1): Item {
@@ -13,14 +13,14 @@ export function createItem(items: ItemDb, id: string, count = 1): Item {
   switch (def.type) {
     case 'weapon':
       return createWeapon(items, id);
-    case 'armour':
-      return createArmour(items, id);
+    case 'armor':
+      return createArmor(items, id);
     case 'container': {
       const grid = createGrid(def.grid[0], def.grid[1], false, sectionsOf(def));
       // A backpack takes empty rigs and backpacks (see Grid.bags).
       if (def.slot === 'backpack') grid.bags = true;
-      // An armoured rig at full durability, as armour (2026-11-11).
-      if (def.armour) return { item: id, count: 1, grid, durability: def.armour.durability };
+      // An armored rig at full durability, as armor (2026-11-11).
+      if (def.armor) return { item: id, count: 1, grid, durability: def.armor.durability };
       return { item: id, count: 1, grid };
     }
     case 'med':

@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "toilet",
   "name": "Toilet",
-  "colours": {
+  "colors": {
     "china": "#eef0ef",
     "seat": "#d7d9d8"
   },
@@ -11,14 +11,14 @@
       "type": "box",
       "pos": [0, 0, -0.28],
       "size": [0.42, 0.8, 0.18],
-      "colour": "china"
+      "color": "china"
     },
     {
       "type": "cylinder",
       "pos": [0, 0, 0.02],
       "radius": 0.17,
       "height": 0.32,
-      "colour": "china",
+      "color": "china",
       "radiusTop": 0.21,
       "sides": 8
     },
@@ -27,7 +27,7 @@
       "pos": [0, 0.32, 0.02],
       "radius": 0.22,
       "height": 0.05,
-      "colour": "seat",
+      "color": "seat",
       "sides": 8,
       "collide": false
     }

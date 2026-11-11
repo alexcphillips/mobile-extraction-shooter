@@ -36,20 +36,23 @@ export function FriendsPage({
   const [confirming, setConfirming] = useState<string | null>(null);
 
   /** Runs a friends route, showing its reply, or why it was refused. */
-  const run = useCallback(async (what: Promise<FriendsResponse>, done?: string) => {
-    setBusy(true);
-    try {
-      setData(await what);
-      setNotice(done ?? null);
-      return true;
-    } catch (err) {
-      if (!(err instanceof AccountError)) throw err;
-      setNotice(err.message);
-      return false;
-    } finally {
-      setBusy(false);
-    }
-  }, [setData]);
+  const run = useCallback(
+    async (what: Promise<FriendsResponse>, done?: string) => {
+      setBusy(true);
+      try {
+        setData(await what);
+        setNotice(done ?? null);
+        return true;
+      } catch (err) {
+        if (!(err instanceof AccountError)) throw err;
+        setNotice(err.message);
+        return false;
+      } finally {
+        setBusy(false);
+      }
+    },
+    [setData],
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {

@@ -2,14 +2,14 @@ import type { CompiledMap, Shape } from '@mes/shared';
 import * as THREE from 'three';
 import { TriangleBuilder } from './geometry';
 
-/** A silhouette is the sky's colour times this: a hazy shape, darker than the fog. */
+/** A silhouette is the sky's color times this: a hazy shape, darker than the fog. */
 export const SILHOUETTE_SHADE = 0.72;
-/** Shapes smaller than this (their largest size, in metres) are left out: no detail. */
+/** Shapes smaller than this (their largest size, in meters) are left out: no detail. */
 export const SILHOUETTE_MIN = 0.5;
 
 /**
  * The landmarks past the fog (MT-1, design.md → Raids and maps → Silver Creek): every
- * landmark's shapes merged into one flat-coloured mesh, drawn first with a camera that sees
+ * landmark's shapes merged into one flat-colored mesh, drawn first with a camera that sees
  * the whole map, then the world over it with depth cleared. So where the world is drawn
  * (up to the fog's far plane) it wins, and the silhouette shows only against the sky
  * beyond. One draw call, and none with no landmarks.
@@ -52,17 +52,17 @@ export class LandmarkPass {
   }
 }
 
-/** The landmarks' shapes, small ones left out, as one mesh in a flat colour; or null. */
+/** The landmarks' shapes, small ones left out, as one mesh in a flat color; or null. */
 export function buildSilhouettes(map: CompiledMap): THREE.Mesh | null {
   const b = new TriangleBuilder(false);
   for (const s of map.landmarks) if (largestSize(s) >= SILHOUETTE_MIN) b.shape(s);
   if (b.triangles === 0) return null;
   const geometry = b.build();
-  // One colour for all of it: the per-vertex colours and normals aren't used.
+  // One color for all of it: the per-vertex colors and normals aren't used.
   geometry.deleteAttribute('color');
   geometry.deleteAttribute('normal');
-  const colour = new THREE.Color(map.environment.sky).multiplyScalar(SILHOUETTE_SHADE);
-  const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: colour, fog: false }));
+  const color = new THREE.Color(map.environment.sky).multiplyScalar(SILHOUETTE_SHADE);
+  const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: color, fog: false }));
   mesh.name = 'landmarks';
   mesh.matrixAutoUpdate = false;
   return mesh;

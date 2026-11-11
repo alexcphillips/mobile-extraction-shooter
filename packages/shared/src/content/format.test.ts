@@ -30,7 +30,7 @@ const flatMap = (extra: Record<string, unknown> = {}): Record<string, unknown> =
       [0, 0],
       [0, 0],
     ],
-    colour: '#6b8f4e',
+    color: '#6b8f4e',
   },
   nodes: [],
   zones: [],
@@ -72,18 +72,18 @@ describe('map schema', () => {
 
   it('rejects unknown fields, so typos are caught', () => {
     expect(() => load(flatMap({ zone: [] }))).toThrow(/zone/);
-    const box = { type: 'box', pos: [0, 0, 0], size: [1, 1, 1], colour: '#ffffff', yaww: 9 };
+    const box = { type: 'box', pos: [0, 0, 0], size: [1, 1, 1], color: '#ffffff', yaww: 9 };
     expect(() => load(flatMap({ nodes: [box] }))).toThrow(/yaww/);
   });
 
-  it('checks shapes, colours, ids and the terrain grid', () => {
+  it('checks shapes, colors, ids and the terrain grid', () => {
     const box = (fields: Record<string, unknown>): unknown =>
       flatMap({
-        nodes: [{ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], colour: '#ffffff', ...fields }],
+        nodes: [{ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], color: '#ffffff', ...fields }],
       });
     expect(() => load(box({ size: [1, 0, 1] }))).toThrow(/greater than 0/);
-    expect(() => load(box({ colour: 'Red' }))).toThrow(/colour/);
-    expect(() => load(box({ colour: 'paint' }))).not.toThrow();
+    expect(() => load(box({ color: 'Red' }))).toThrow(/color/);
+    expect(() => load(box({ color: 'paint' }))).not.toThrow();
     const twice = { type: 'lootSpawn', id: 'a', pos: [0, 0, 0], lootTable: 'household' };
     expect(() => load(flatMap({ nodes: [twice, twice] }))).toThrow(/duplicate id "a"/);
     const ragged = flatMap();

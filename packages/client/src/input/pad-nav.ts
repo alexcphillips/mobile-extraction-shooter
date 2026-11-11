@@ -112,7 +112,7 @@ export function stepTarget(
 }
 
 /** The middle of the cell of a grid (`box`, cells `cell` px) a point is in, clamped to it. */
-export function cellCentre(x: number, y: number, box: Box, cell: number): [number, number] {
+export function cellCenter(x: number, y: number, box: Box, cell: number): [number, number] {
   const cols = Math.max(1, Math.round(box.width / cell));
   const rows = Math.max(1, Math.round(box.height / cell));
   const cx = clamp(Math.floor((x - box.left) / cell), 0, cols - 1);

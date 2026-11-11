@@ -6,7 +6,7 @@ import { itemDef, type Grid, type Item, type ItemDb, type ItemDef } from '@mes/s
  */
 
 /** Item names use ×, which nobody types on a phone: "7.62x39" should find them. */
-const normalise = (text: string): string => text.toLowerCase().replaceAll('×', 'x');
+const normalize = (text: string): string => text.toLowerCase().replaceAll('×', 'x');
 
 /** An item's name, and the names of what's fitted to it or stored in it. */
 function namesOf(items: ItemDb, item: Item): string {
@@ -28,7 +28,7 @@ export const CATEGORIES = [
   { id: 'all', label: 'All', types: [] },
   { id: 'guns', label: 'Guns', types: ['weapon', 'melee', 'attachment'] },
   { id: 'ammo', label: 'Ammo', types: ['ammo', 'grenade'] },
-  { id: 'gear', label: 'Gear', types: ['armour', 'container'] },
+  { id: 'gear', label: 'Gear', types: ['armor', 'container'] },
   { id: 'meds', label: 'Meds', types: ['med', 'repair'] },
   { id: 'loot', label: 'Loot', types: ['loot', 'key', 'quest'] },
 ] as const satisfies readonly { id: string; label: string; types: readonly ItemDef['type'][] }[];
@@ -45,12 +45,12 @@ export function searcher(
   query: string,
   category: Category = 'all',
 ): ((item: Item) => boolean) | null {
-  const words = normalise(query).split(/\s+/).filter(Boolean);
+  const words = normalize(query).split(/\s+/).filter(Boolean);
   const types: readonly string[] = CATEGORIES.find((c) => c.id === category)!.types;
   if (!words.length && !types.length) return null;
   return (item) => {
     if (types.length && !types.includes(itemDef(items, item.item).type)) return false;
-    const names = normalise(namesOf(items, item));
+    const names = normalize(namesOf(items, item));
     return words.every((w) => names.includes(w));
   };
 }

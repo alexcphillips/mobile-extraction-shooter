@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "suitcase",
   "name": "Suitcase",
-  "colours": {
+  "colors": {
     "shell": "#34566b",
     "shell-dark": "#294556",
     "trim": "#1e2124",
@@ -22,76 +22,76 @@
           "type": "box",
           "pos": [0, 0.06, 0],
           "size": [0.6, 0.8, 0.4],
-          "colour": "shell"
+          "color": "shell"
         },
         {
           "type": "box",
           "pos": [0.0, 0.0573, 0.0],
           "size": [0.6086, 0.8053, 0.0192],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.0714, 0.1133, 0.2032],
           "size": [0.0429, 0.6933, 0.005],
-          "colour": "shell-dark",
+          "color": "shell-dark",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.0714, 0.1133, -0.2032],
           "size": [0.0429, 0.6933, 0.005],
-          "colour": "shell-dark",
+          "color": "shell-dark",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.2043, 0.1133, 0.2032],
           "size": [0.0429, 0.6933, 0.005],
-          "colour": "shell-dark",
+          "color": "shell-dark",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.2043, 0.1133, -0.2032],
           "size": [0.0429, 0.6933, 0.005],
-          "colour": "shell-dark",
+          "color": "shell-dark",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.0571, 0.1133, 0.2032],
           "size": [0.0429, 0.48, 0.005],
-          "colour": "shell-dark",
+          "color": "shell-dark",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.0571, 0.1133, -0.2112],
           "size": [0.0429, 0.48, 0.005],
-          "colour": "shell-dark",
+          "color": "shell-dark",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.1714, 0.1133, 0.2032],
           "size": [0.0429, 0.48, 0.005],
-          "colour": "shell-dark",
+          "color": "shell-dark",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.1714, 0.1133, -0.2032],
           "size": [0.0429, 0.48, 0.005],
-          "colour": "shell-dark",
+          "color": "shell-dark",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.2429, 0.03, -0.136],
           "size": [0.065, 0.03, 0.065],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
@@ -99,7 +99,7 @@
           "pos": [-0.2429, 0.0245, -0.136],
           "radius": 0.042,
           "height": 0.035,
-          "colour": "trim",
+          "color": "trim",
           "sides": 8,
           "roll": 90,
           "collide": false
@@ -108,7 +108,7 @@
           "type": "box",
           "pos": [0.2429, 0.03, -0.136],
           "size": [0.065, 0.03, 0.065],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
@@ -116,7 +116,7 @@
           "pos": [0.2429, 0.0245, -0.136],
           "radius": 0.042,
           "height": 0.035,
-          "colour": "trim",
+          "color": "trim",
           "sides": 8,
           "roll": 90,
           "collide": false
@@ -125,7 +125,7 @@
           "type": "box",
           "pos": [-0.2429, 0.03, 0.136],
           "size": [0.065, 0.03, 0.065],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
@@ -133,7 +133,7 @@
           "pos": [-0.2429, 0.0245, 0.136],
           "radius": 0.042,
           "height": 0.035,
-          "colour": "trim",
+          "color": "trim",
           "sides": 8,
           "roll": 90,
           "collide": false
@@ -142,7 +142,7 @@
           "type": "box",
           "pos": [0.2429, 0.03, 0.136],
           "size": [0.065, 0.03, 0.065],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
@@ -150,7 +150,7 @@
           "pos": [0.2429, 0.0245, 0.136],
           "radius": 0.042,
           "height": 0.035,
-          "colour": "trim",
+          "color": "trim",
           "sides": 8,
           "roll": 90,
           "collide": false
@@ -159,7 +159,7 @@
           "type": "box",
           "pos": [0.1857, 0.7141, 0.2032],
           "size": [0.28, 0.0252, 0.003],
-          "colour": "accent",
+          "color": "accent",
           "roll": -45,
           "collide": false
         },
@@ -167,7 +167,7 @@
           "type": "box",
           "pos": [0.1857, 0.7141, -0.2032],
           "size": [0.28, 0.0252, 0.003],
-          "colour": "accent",
+          "color": "accent",
           "roll": -45,
           "collide": false
         },
@@ -175,7 +175,7 @@
           "type": "box",
           "pos": [0.2357, 0.7674, 0.2032],
           "size": [0.154, 0.0252, 0.003],
-          "colour": "accent",
+          "color": "accent",
           "roll": -45,
           "collide": false
         },
@@ -183,7 +183,7 @@
           "type": "box",
           "pos": [0.2357, 0.7674, -0.2016],
           "size": [0.154, 0.0252, 0.003],
-          "colour": "accent",
+          "color": "accent",
           "roll": -45,
           "collide": false
         },
@@ -191,42 +191,42 @@
           "type": "box",
           "pos": [0.3057, 0.54, 0.0],
           "size": [0.004, 0.0667, 0.0256],
-          "colour": "accent",
+          "color": "accent",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.0, 0.8604, -0.112],
           "size": [0.3143, 0.0072, 0.08],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.0, 0.8693, -0.112],
           "size": [0.2429, 0.024, 0.048],
-          "colour": "shell-dark",
+          "color": "shell-dark",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.0929, 0.8612, 0.08],
           "size": [0.0286, 0.0216, 0.048],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.0929, 0.8612, 0.08],
           "size": [0.0286, 0.0216, 0.048],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.0, 0.8848, 0.08],
           "size": [0.2143, 0.0144, 0.048],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         }
       ]

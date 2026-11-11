@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "goods-shutter",
   "name": "Goods shutter",
-  "colours": {
+  "colors": {
     "steel": "#5e6468",
     "steel-dark": "#474c50",
     "hazard": "#d8b52e",
@@ -18,7 +18,7 @@
       "thickness": 0.1,
       "look": "freight-elevator-gate",
       "rollUp": true,
-      "colour": "#9aa0a4",
+      "color": "#9aa0a4",
       "lamp": {
         "pos": [0, 3.95, 0.2],
         "size": [0.7, 0.22, 0.1]
@@ -28,74 +28,74 @@
       "type": "box",
       "pos": [-2.7, 0, 0],
       "size": [0.4, 3.8, 0.36],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [2.7, 0, 0],
       "size": [0.4, 3.8, 0.36],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [0, 3.8, 0],
       "size": [5.8, 0.7999999999999998, 0.36],
-      "colour": "steel-dark"
+      "color": "steel-dark"
     },
     {
       "type": "box",
       "pos": [-2.7, 0.12, 0],
       "size": [0.41000000000000003, 0.3, 0.37],
-      "colour": "hazard",
+      "color": "hazard",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-2.7, 0.42, 0],
       "size": [0.41000000000000003, 0.3, 0.37],
-      "colour": "hazard-dark",
+      "color": "hazard-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-2.7, 0.72, 0],
       "size": [0.41000000000000003, 0.3, 0.37],
-      "colour": "hazard",
+      "color": "hazard",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-2.7, 1.02, 0],
       "size": [0.41000000000000003, 0.3, 0.37],
-      "colour": "hazard-dark",
+      "color": "hazard-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [2.7, 0.12, 0],
       "size": [0.41000000000000003, 0.3, 0.37],
-      "colour": "hazard",
+      "color": "hazard",
       "collide": false
     },
     {
       "type": "box",
       "pos": [2.7, 0.42, 0],
       "size": [0.41000000000000003, 0.3, 0.37],
-      "colour": "hazard-dark",
+      "color": "hazard-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [2.7, 0.72, 0],
       "size": [0.41000000000000003, 0.3, 0.37],
-      "colour": "hazard",
+      "color": "hazard",
       "collide": false
     },
     {
       "type": "box",
       "pos": [2.7, 1.02, 0],
       "size": [0.41000000000000003, 0.3, 0.37],
-      "colour": "hazard-dark",
+      "color": "hazard-dark",
       "collide": false
     },
     {
@@ -103,7 +103,7 @@
       "pos": [-2.7, 0, -0.55],
       "radius": 0.08,
       "height": 1.0,
-      "colour": "hazard",
+      "color": "hazard",
       "sides": 8
     },
     {
@@ -111,7 +111,7 @@
       "pos": [-2.7, 0, 0.55],
       "radius": 0.08,
       "height": 1.0,
-      "colour": "hazard",
+      "color": "hazard",
       "sides": 8
     },
     {
@@ -119,7 +119,7 @@
       "pos": [2.7, 0, -0.55],
       "radius": 0.08,
       "height": 1.0,
-      "colour": "hazard",
+      "color": "hazard",
       "sides": 8
     },
     {
@@ -127,7 +127,7 @@
       "pos": [2.7, 0, 0.55],
       "radius": 0.08,
       "height": 1.0,
-      "colour": "hazard",
+      "color": "hazard",
       "sides": 8
     }
   ]

@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "barbed-wire",
   "name": "Barbed wire",
-  "colours": {
+  "colors": {
     "steel": "#9aa0a6",
     "steel-dark": "#62686e"
   },
@@ -12,7 +12,7 @@
       "pos": [-0.5, 0.104, 0.11],
       "pitch": -45,
       "size": [0.012, 0.012, 0.3111],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
@@ -20,7 +20,7 @@
       "pos": [-0.5, 0.324, -0.11],
       "pitch": -45,
       "size": [0.012, 0.012, 0.3111],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
@@ -28,7 +28,7 @@
       "pos": [-0.5, 0.104, -0.11],
       "pitch": 45,
       "size": [0.012, 0.012, 0.3111],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
@@ -36,35 +36,35 @@
       "pos": [-0.5, 0.324, 0.11],
       "pitch": 45,
       "size": [0.012, 0.012, 0.3111],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.25, 0.384, 0],
       "size": [0.012, 0.012, 0.34],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.25, 0.05, 0],
       "size": [0.012, 0.012, 0.34],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.25, 0.05, -0.17],
       "size": [0.012, 0.34, 0.012],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.25, 0.05, 0.17],
       "size": [0.012, 0.34, 0.012],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
@@ -72,7 +72,7 @@
       "pos": [0, 0.104, 0.11],
       "pitch": -45,
       "size": [0.012, 0.012, 0.3111],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
@@ -80,7 +80,7 @@
       "pos": [0, 0.324, -0.11],
       "pitch": -45,
       "size": [0.012, 0.012, 0.3111],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
@@ -88,7 +88,7 @@
       "pos": [0, 0.104, -0.11],
       "pitch": 45,
       "size": [0.012, 0.012, 0.3111],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
@@ -96,35 +96,35 @@
       "pos": [0, 0.324, 0.11],
       "pitch": 45,
       "size": [0.012, 0.012, 0.3111],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.25, 0.384, 0],
       "size": [0.012, 0.012, 0.34],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.25, 0.05, 0],
       "size": [0.012, 0.012, 0.34],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.25, 0.05, -0.17],
       "size": [0.012, 0.34, 0.012],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.25, 0.05, 0.17],
       "size": [0.012, 0.34, 0.012],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
@@ -132,7 +132,7 @@
       "pos": [0.5, 0.104, 0.11],
       "pitch": -45,
       "size": [0.012, 0.012, 0.3111],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
@@ -140,7 +140,7 @@
       "pos": [0.5, 0.324, -0.11],
       "pitch": -45,
       "size": [0.012, 0.012, 0.3111],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
@@ -148,7 +148,7 @@
       "pos": [0.5, 0.104, -0.11],
       "pitch": 45,
       "size": [0.012, 0.012, 0.3111],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
@@ -156,21 +156,21 @@
       "pos": [0.5, 0.324, 0.11],
       "pitch": 45,
       "size": [0.012, 0.012, 0.3111],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.215, -0.15],
       "size": [1.2, 0.01, 0.01],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.215, 0.15],
       "size": [1.2, 0.01, 0.01],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {

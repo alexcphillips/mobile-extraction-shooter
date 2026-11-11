@@ -43,7 +43,7 @@
     { "weight": 8, "item": null },
     { "weight": 1, "item": "bump-helmet", "condition": [0.3, 0.7] }
   ],
-  "bodyArmour": [
+  "bodyArmor": [
     { "weight": 8, "item": null },
     { "weight": 1, "item": "soft-vest", "condition": [0.3, 0.7] }
   ],

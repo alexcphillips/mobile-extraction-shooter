@@ -1,7 +1,7 @@
 {
   "formatVersion": 10,
-  "id": "armour-repair-kit",
-  "name": "Armour repair kit",
+  "id": "armor-repair-kit",
+  "name": "Armor repair kit",
   "shortName": "Repair kit",
   "type": "repair",
   "size": [2, 1],
@@ -13,6 +13,6 @@
     "use": "repair-use"
   },
   "model": {
-    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.28, 0.07, 0.14], "colour": "#2f7a7a" }]
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.28, 0.07, 0.14], "color": "#2f7a7a" }]
   }
 }

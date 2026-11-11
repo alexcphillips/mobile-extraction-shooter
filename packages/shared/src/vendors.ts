@@ -22,16 +22,16 @@ export const VENDOR = {
   sellShare: 0.5,
 } as const;
 
-/** How used an item is, from 0 (spent) to 1 (new): armour's durability, a med's uses. */
+/** How used an item is, from 0 (spent) to 1 (new): armor's durability, a med's uses. */
 export function condition(items: ItemDb, item: Item): number {
   const def = itemDef(items, item.item);
   const of = (left: number | undefined, max: number) => Math.min(1, (left ?? max) / max);
   switch (def.type) {
-    case 'armour':
+    case 'armor':
       return of(item.durability, def.durability);
     case 'container':
-      // An armoured rig wears as armour does (2026-11-11).
-      return def.armour ? of(item.durability, def.armour.durability) : 1;
+      // An armored rig wears as armor does (2026-11-11).
+      return def.armor ? of(item.durability, def.armor.durability) : 1;
     case 'med':
       return of(item.left, def.hp ?? def.uses ?? 1);
     case 'repair':

@@ -92,7 +92,7 @@ export interface Grenade {
   /** Lying still on a floor. */
   resting: boolean;
   /**
-   * Launched with an impact fuse: metres left to fly before it's armed, then it goes off
+   * Launched with an impact fuse: meters left to fly before it's armed, then it goes off
    * on the first thing it hits, the map or someone. Missing for a thrown one, and once it
    * has hit the map before arming (then only its fuse sets it off).
    */
@@ -115,7 +115,7 @@ export interface Smoke {
   x: number;
   y: number;
   z: number;
-  /** Its full radius, in metres. */
+  /** Its full radius, in meters. */
   radius: number;
   /** Seconds since it went off, and how long it lasts in all. */
   age: number;
@@ -152,7 +152,7 @@ export interface ExplosionEvent {
   y: number;
   z: number;
   radius: number;
-  /** How far away it can be heard, in metres. */
+  /** How far away it can be heard, in meters. */
   loudness: number;
 }
 
@@ -163,7 +163,7 @@ const charHit = createCharacterHit();
 /** Whether an item is a grenade to throw: not a launcher's own round (a ray gun's bolt). */
 export function throwable(items: ItemDb, id: string): boolean {
   const def = items.get(id);
-  return def?.type === 'grenade' && def.calibre === undefined;
+  return def?.type === 'grenade' && def.caliber === undefined;
 }
 
 /**
@@ -287,7 +287,7 @@ function detonate(state: SimState, c: Character): void {
 /**
  * Sets a grenade off from c's eye along yaw and pitch, lofted GRENADE.loft, at speed plus
  * c's own: a throw, or a launcher's shot (sim/weapons.ts). It starts a hand's length out,
- * or short of a wall. With armIn, it has an impact fuse armed after that many metres.
+ * or short of a wall. With armIn, it has an impact fuse armed after that many meters.
  * Returns it, already in state.grenades.
  */
 export function launchGrenade(

@@ -34,7 +34,7 @@ const kit = loadContent(
     formatVersion: 1,
     id: 'test',
     money: 10_000,
-    gear: { primary1: 'rifle', bodyArmour: 'vest', backpack: 'backpack' },
+    gear: { primary1: 'rifle', bodyArmor: 'vest', backpack: 'backpack' },
     carried: [{ item: 'round', count: 30 }],
     stash: [{ item: 'watch' }, { item: 'repair-kit' }],
     loaded: { rifle: 'round', pistol: 'round' },
@@ -243,40 +243,40 @@ describe('vendors', () => {
 describe('repairs in the stash', () => {
   it('mend at once with a kit from anywhere, and the server can tell honest ones', () => {
     const p = profile();
-    p.gear.bodyArmour!.durability = 5;
+    p.gear.bodyArmor!.durability = 5;
     const before = clone(p);
     const s = openStash(p);
     const kitAt = p.stash[0]!.items.findIndex((g) => g.item.item === 'repair-kit');
     const repair = {
       type: 'repair',
       kit: { ...page0, index: kitAt, item: 'repair-kit' },
-      armour: { owner: self, slot: 'bodyArmour', item: 'vest' },
+      armor: { owner: self, slot: 'bodyArmor', item: 'vest' },
     } as const;
     expect(applyStash(s, items, repair)).toBe(true);
     // The vest takes 45 of the kit's 50 points.
-    expect(p.gear.bodyArmour!.durability).toBe(50);
+    expect(p.gear.bodyArmor!.durability).toBe(50);
     expect(p.stash[0]!.items[kitAt]!.item.left).toBe(5);
     expect(overRepaired(items, before, p)).toBe(false);
     // Full now: nothing to do.
     expect(applyStash(s, items, repair)).toBe(false);
     // Spent: the last 5 points, and the kit is gone.
-    p.gear.bodyArmour!.durability = 40;
+    p.gear.bodyArmor!.durability = 40;
     expect(applyStash(s, items, repair)).toBe(true);
-    expect(p.gear.bodyArmour!.durability).toBe(45);
+    expect(p.gear.bodyArmor!.durability).toBe(45);
     expect(countOf(p.stash[0]!, 'repair-kit')).toBe(0);
 
-    // A client that mends armour for free is caught.
+    // A client that mends armor for free is caught.
     const forged = clone(before);
-    forged.gear.bodyArmour!.durability = 50;
+    forged.gear.bodyArmor!.durability = 50;
     expect(overRepaired(items, before, forged)).toBe(true);
-    // And so is one that gives worn armour its max back.
+    // And so is one that gives worn armor its max back.
     const worn = clone(before);
-    worn.gear.bodyArmour!.max = 40;
+    worn.gear.bodyArmor!.max = 40;
     const unworn = clone(worn);
-    delete unworn.gear.bodyArmour!.max;
+    delete unworn.gear.bodyArmor!.max;
     expect(overRepaired(items, worn, unworn)).toBe(true);
   });
-  it("mends armour that isn't worn: on a stash page, or in a bag stored there", () => {
+  it("mends armor that isn't worn: on a stash page, or in a bag stored there", () => {
     const p = profile();
     const vest = createItem(items, 'vest');
     vest.durability = 20;
@@ -295,7 +295,7 @@ describe('repairs in the stash', () => {
       applyStash(s, items, {
         type: 'repair',
         kit,
-        armour: { ...page0, index: at('vest'), item: 'vest' },
+        armor: { ...page0, index: at('vest'), item: 'vest' },
       }),
     ).toBe(true);
     expect(vest.durability).toBe(50);
@@ -304,7 +304,7 @@ describe('repairs in the stash', () => {
       applyStash(s, items, {
         type: 'repair',
         kit,
-        armour: {
+        armor: {
           ...page0,
           inside: { index: at('backpack'), item: 'backpack' },
           index: 0,
@@ -319,7 +319,7 @@ describe('repairs in the stash', () => {
 });
 
 /** A vendor with levels: level 2 needs 0.2 rep and 1,000 spent, 3 more, 4 more still. */
-const levelled = (extra: Record<string, unknown> = {}): VendorDef =>
+const leveled = (extra: Record<string, unknown> = {}): VendorDef =>
   loadContent(
     VENDOR_FORMAT,
     {
@@ -339,7 +339,7 @@ const levelled = (extra: Record<string, unknown> = {}): VendorDef =>
 
 describe('vendor levels', () => {
   it('go up with rep and money spent, each needing both and the levels before', () => {
-    const v = levelled();
+    const v = leveled();
     expect(vendorLevel(v, { rep: 0, spent: 0 })).toBe(1);
     // Money alone, or rep alone, isn't enough.
     expect(vendorLevel(v, { rep: 0, spent: 1_000_000 })).toBe(1);
@@ -350,7 +350,7 @@ describe('vendor levels', () => {
   });
 
   it('gate offers, and buying counts toward the next level', () => {
-    const v = levelled();
+    const v = leveled();
     const p = profile();
     expect(buyOffer(p, items, v, 1)).toMatch(/from level 2/);
     expect(p.money).toBe(10_000);
@@ -382,7 +382,7 @@ describe('vendor levels', () => {
   });
 
   it('mark prices up, and a rotation shows the same few to everyone for a while', () => {
-    const v = levelled({
+    const v = leveled({
       markup: 1.5,
       rotation: { shown: 2, hours: 2 },
       sells: [
@@ -411,7 +411,7 @@ describe('vendor levels', () => {
   });
 
   it('refuses levels that need less than the one before', () => {
-    const bad = levelled({
+    const bad = leveled({
       levels: [
         { rep: 0.2, spent: 1000 },
         { rep: 0.1, spent: 5000 },

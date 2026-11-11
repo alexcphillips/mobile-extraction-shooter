@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "truck-tire-1",
   "name": "truck tire 1",
-  "colours": {
+  "colors": {
     "tires": "#303030"
   },
   "nodes": [
@@ -19,7 +19,7 @@
               "pos": [0, 0, 0],
               "radius": 0.8,
               "height": 0.8,
-              "colour": "tires",
+              "color": "tires",
               "pitch": 0,
               "roll": 90,
               "sides": 16
@@ -31,7 +31,7 @@
           "pos": [-0.2, 0.4, 0],
           "radius": 0.5,
           "height": 0.05,
-          "colour": "#454545",
+          "color": "#454545",
           "pitch": 0,
           "roll": 90,
           "sides": 16

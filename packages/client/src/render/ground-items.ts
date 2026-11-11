@@ -9,8 +9,8 @@ const LIT = 1.6;
 /**
  * Items on the ground, drawn with their models (session 18b) merged into one mesh: one draw
  * call for them all. Rebuilt only when the list changes, which is checked each tick by
- * comparing the items. Guns, knives and magazines lie on their side, body armour, rigs and backpacks
- * on their back; everything else stands as modelled, its lowest point on the ground.
+ * comparing the items. Guns, knives and magazines lie on their side, body armor, rigs and backpacks
+ * on their back; everything else stands as modeled, its lowest point on the ground.
  */
 export class GroundItems {
   readonly root = new THREE.Group();
@@ -39,8 +39,8 @@ export class GroundItems {
   update(ground: readonly GroundItem[], lit: number): void {
     if (this.changed(ground)) this.rebuild(ground);
     if (lit !== this.lit) {
-      if (this.lit >= 0 && this.lit < this.drawn.length) this.colour(this.lit, 1 / LIT);
-      if (lit >= 0 && lit < this.drawn.length) this.colour(lit, LIT);
+      if (this.lit >= 0 && this.lit < this.drawn.length) this.color(this.lit, 1 / LIT);
+      if (lit >= 0 && lit < this.drawn.length) this.color(lit, LIT);
     }
     this.lit = lit;
   }
@@ -54,7 +54,7 @@ export class GroundItems {
     return false;
   }
 
-  /** An item's model as it lies on the ground: centred on its origin, resting on y = 0. */
+  /** An item's model as it lies on the ground: centered on its origin, resting on y = 0. */
   private laidDown(id: string): THREE.BufferGeometry {
     let g = this.laid.get(id);
     if (g) return g;
@@ -64,7 +64,7 @@ export class GroundItems {
     g = b.build();
     const long = def.type === 'attachment' && def.slot === 'magazine';
     if (def.type === 'weapon' || def.type === 'melee' || long) g.rotateZ(Math.PI / 2);
-    else if ((def.type === 'armour' && def.slot === 'body') || def.type === 'container')
+    else if ((def.type === 'armor' && def.slot === 'body') || def.type === 'container')
       g.rotateX(Math.PI / 2);
     g.computeBoundingBox();
     const box = g.boundingBox!;
@@ -83,7 +83,7 @@ export class GroundItems {
     const n = this.starts.at(-1)!;
     const position = new Float32Array(n * 3);
     const normal = new Float32Array(n * 3);
-    const colour = new Float32Array(n * 3);
+    const color = new Float32Array(n * 3);
     ground.forEach((g, i) => {
       const src = parts[i]!;
       this.m.compose(this.p.set(g.x, g.y, g.z), this.q.setFromAxisAngle(this.up, g.yaw), ONE);
@@ -100,18 +100,18 @@ export class GroundItems {
           .applyQuaternion(this.q)
           .toArray(normal, (start + k) * 3);
       }
-      colour.set(src.getAttribute('color').array, start * 3);
+      color.set(src.getAttribute('color').array, start * 3);
     });
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(position, 3));
     geo.setAttribute('normal', new THREE.BufferAttribute(normal, 3));
-    geo.setAttribute('color', new THREE.BufferAttribute(colour, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(color, 3));
     this.mesh.geometry.dispose();
     this.mesh.geometry = geo;
   }
 
-  /** Multiplies one drawn item's colours by k. */
-  private colour(i: number, k: number): void {
+  /** Multiplies one drawn item's colors by k. */
+  private color(i: number, k: number): void {
     const attr = this.mesh.geometry.getAttribute('color') as THREE.BufferAttribute;
     const a = attr.array as Float32Array;
     for (let j = this.starts[i]! * 3; j < this.starts[i + 1]! * 3; j++) a[j]! *= k;

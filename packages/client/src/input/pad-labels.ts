@@ -1,6 +1,6 @@
 import type { Settings } from '@mes/shared';
 
-/** A controller's face buttons, as prompts and hints name them (CP-1), drawn round and coloured. */
+/** A controller's face buttons, as prompts and hints name them (CP-1), drawn round and colored. */
 export const PAD_GLYPHS = '□✕○△';
 
 /** One input on the pad, and what it does in a raid and in menus ('' for nothing). */

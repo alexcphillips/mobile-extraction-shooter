@@ -12,7 +12,7 @@
         "type": "box",
         "pos": [0, 0.03, 0],
         "size": [0.05, 0.045, 0.075],
-        "colour": "#b08d3c",
+        "color": "#b08d3c",
         "name": "body",
         "group": "body"
       },
@@ -22,7 +22,7 @@
         "radius": 0.017,
         "height": 0.022,
         "sides": 6,
-        "colour": "#b08d3c",
+        "color": "#b08d3c",
         "name": "left port hex",
         "group": "body",
         "pitch": 90
@@ -33,7 +33,7 @@
         "radius": 0.0125,
         "height": 0.016,
         "sides": 8,
-        "colour": "#8a6a28",
+        "color": "#8a6a28",
         "name": "left thread",
         "group": "body",
         "pitch": 90
@@ -44,7 +44,7 @@
         "radius": 0.008,
         "height": 0.002,
         "sides": 5,
-        "colour": "#141516",
+        "color": "#141516",
         "name": "left bore",
         "group": "body",
         "pitch": 90
@@ -55,7 +55,7 @@
         "radius": 0.017,
         "height": 0.022,
         "sides": 6,
-        "colour": "#b08d3c",
+        "color": "#b08d3c",
         "name": "right port hex",
         "group": "body",
         "pitch": 90
@@ -66,7 +66,7 @@
         "radius": 0.0125,
         "height": 0.016,
         "sides": 8,
-        "colour": "#8a6a28",
+        "color": "#8a6a28",
         "name": "right thread",
         "group": "body",
         "pitch": 90
@@ -77,7 +77,7 @@
         "radius": 0.008,
         "height": 0.002,
         "sides": 5,
-        "colour": "#141516",
+        "color": "#141516",
         "name": "right bore",
         "group": "body",
         "pitch": 90
@@ -88,7 +88,7 @@
         "radius": 0.005,
         "height": 0.012,
         "sides": 6,
-        "colour": "#8d8f91",
+        "color": "#8d8f91",
         "name": "lever stem",
         "group": "lever",
         "roll": 90
@@ -99,7 +99,7 @@
         "radius": 0.007,
         "height": 0.004,
         "sides": 6,
-        "colour": "#a6a8aa",
+        "color": "#a6a8aa",
         "name": "pivot nut",
         "group": "lever",
         "roll": 90
@@ -108,7 +108,7 @@
         "type": "box",
         "pos": [-0.0405, 0.03, -0.03],
         "size": [0.005, 0.012, 0.075],
-        "colour": "#8d8f91",
+        "color": "#8d8f91",
         "name": "lever bar",
         "group": "lever"
       },
@@ -116,7 +116,7 @@
         "type": "box",
         "pos": [-0.0405, 0.03, -0.0505],
         "size": [0.009, 0.016, 0.039],
-        "colour": "#c8321e",
+        "color": "#c8321e",
         "name": "lever grip",
         "group": "lever"
       },
@@ -126,7 +126,7 @@
         "radius": 0.017,
         "height": 0.006,
         "sides": 6,
-        "colour": "#a6a8aa",
+        "color": "#a6a8aa",
         "name": "bonnet nut",
         "group": "coil"
       },
@@ -136,7 +136,7 @@
         "radius": 0.013,
         "height": 0.016,
         "sides": 8,
-        "colour": "#8d8f91",
+        "color": "#8d8f91",
         "name": "bonnet tube",
         "group": "coil"
       },
@@ -144,7 +144,7 @@
         "type": "box",
         "pos": [0, 0.093, 0],
         "size": [0.052, 0.05, 0.052],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "name": "coil",
         "group": "coil"
       },
@@ -154,7 +154,7 @@
         "radius": 0.009,
         "height": 0.006,
         "sides": 6,
-        "colour": "#a6a8aa",
+        "color": "#a6a8aa",
         "name": "top nut",
         "group": "coil"
       },
@@ -162,7 +162,7 @@
         "type": "box",
         "pos": [-0.0265, 0.097, 0],
         "size": [0.002, 0.022, 0.036],
-        "colour": "#e6e0d3",
+        "color": "#e6e0d3",
         "name": "label",
         "group": "coil"
       },
@@ -170,7 +170,7 @@
         "type": "box",
         "pos": [-0.028, 0.104, 0],
         "size": [0.001, 0.005, 0.036],
-        "colour": "#d8461c",
+        "color": "#d8461c",
         "name": "label stripe",
         "group": "coil"
       },
@@ -178,7 +178,7 @@
         "type": "box",
         "pos": [-0.028, 0.093, 0.002],
         "size": [0.001, 0.002, 0.026],
-        "colour": "#3a3d40",
+        "color": "#3a3d40",
         "name": "label text",
         "group": "coil"
       },
@@ -186,7 +186,7 @@
         "type": "box",
         "pos": [0, 0.093, 0.0315],
         "size": [0.03, 0.03, 0.013],
-        "colour": "#5a5d60",
+        "color": "#5a5d60",
         "name": "connector",
         "group": "connector"
       },
@@ -196,7 +196,7 @@
         "radius": 0.006,
         "height": 0.01,
         "sides": 6,
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "name": "cable gland",
         "group": "connector"
       },
@@ -207,7 +207,7 @@
         "radius": 0.0035,
         "height": 0.0381,
         "sides": 6,
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "name": "cable",
         "group": "connector",
         "pitch": 106.7712

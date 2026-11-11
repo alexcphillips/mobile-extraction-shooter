@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "briefcase",
   "name": "Briefcase",
-  "colours": {
+  "colors": {
     "shell": "#34566b",
     "shell-dark": "#294556",
     "trim": "#1e2124",
@@ -22,41 +22,41 @@
           "type": "box",
           "pos": [0, 0, 0],
           "size": [0.6, 0.15, 0.4],
-          "colour": "shell"
+          "color": "shell"
         },
         {
           "type": "box",
           "pos": [0, 0.069, 0],
           "size": [0.6086, 0.012, 0.4086],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.17, 0.151, 0],
           "size": [0.04, 0.003, 0.3],
-          "colour": "shell-dark",
+          "color": "shell-dark",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.06, 0.151, 0],
           "size": [0.04, 0.003, 0.3],
-          "colour": "shell-dark",
+          "color": "shell-dark",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.06, 0.151, 0],
           "size": [0.04, 0.003, 0.3],
-          "colour": "shell-dark",
+          "color": "shell-dark",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.19, 0.151, 0.095],
           "size": [0.0252, 0.003, 0.2],
-          "colour": "accent",
+          "color": "accent",
           "collide": false,
           "yaw": 45
         },
@@ -64,7 +64,7 @@
           "type": "box",
           "pos": [0.225, 0.151, 0.13],
           "size": [0.0252, 0.003, 0.11],
-          "colour": "accent",
+          "color": "accent",
           "collide": false,
           "yaw": 45
         },
@@ -72,91 +72,91 @@
           "type": "box",
           "pos": [-0.276, 0.151, -0.176],
           "size": [0.056, 0.004, 0.056],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.276, 0.151, 0.176],
           "size": [0.056, 0.004, 0.056],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.276, 0.151, -0.176],
           "size": [0.056, 0.004, 0.056],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.276, 0.151, 0.176],
           "size": [0.056, 0.004, 0.056],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.2, 0.051, 0.203],
           "size": [0.05, 0.048, 0.006],
-          "colour": "accent",
+          "color": "accent",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.2, 0.067, 0.207],
           "size": [0.022, 0.016, 0.003],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.075, 0.063, 0.215],
           "size": [0.02, 0.024, 0.03],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.2, 0.051, 0.203],
           "size": [0.05, 0.048, 0.006],
-          "colour": "accent",
+          "color": "accent",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.2, 0.067, 0.207],
           "size": [0.022, 0.016, 0.003],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.075, 0.063, 0.215],
           "size": [0.02, 0.024, 0.03],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0, 0.062, 0.236],
           "size": [0.17, 0.026, 0.024],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.16, 0.059, -0.203],
           "size": [0.06, 0.032, 0.005],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.16, 0.059, -0.203],
           "size": [0.06, 0.032, 0.005],
-          "colour": "trim",
+          "color": "trim",
           "collide": false
         }
       ]

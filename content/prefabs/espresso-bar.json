@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "espresso-bar",
   "name": "Espresso bar",
-  "colours": {
+  "colors": {
     "body": "#6a4a3a",
     "top": "#e6e0d3",
     "machine": "#a9afb3",
@@ -13,25 +13,25 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [3.4, 1, 0.8],
-      "colour": "body"
+      "color": "body"
     },
     {
       "type": "box",
       "pos": [0, 1, 0],
       "size": [3.5, 0.05, 0.9],
-      "colour": "top"
+      "color": "top"
     },
     {
       "type": "box",
       "pos": [-0.8, 1.05, -0.1],
       "size": [0.9, 0.42, 0.5],
-      "colour": "machine"
+      "color": "machine"
     },
     {
       "type": "box",
       "pos": [0.7, 1.05, 0],
       "size": [0.8, 0.12, 0.3],
-      "colour": "cups",
+      "color": "cups",
       "collide": false
     }
   ]

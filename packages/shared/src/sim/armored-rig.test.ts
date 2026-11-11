@@ -5,23 +5,23 @@ import { checkGear, settleBags } from '../profile';
 import { CollisionWorld } from '../world/collision-world';
 import { createItem } from './create-item';
 import {
-  ARMOURED_RIG_WORN,
-  BODY_ARMOUR_WORN,
-  chestArmour,
+  ARMORED_RIG_WORN,
+  BODY_ARMOR_WORN,
+  chestArmor,
   createGear,
   equip,
   gearConflict,
   type ContainerState,
 } from './gear';
-import { ARMOUR, CHEST, restoreHealth, shootCharacter, wearArmour } from './health';
+import { ARMOR, CHEST, restoreHealth, shootCharacter, wearArmor } from './health';
 import { applyInventory, type InventoryAction, type Owner } from './looting';
-import { repairArmour } from './repair';
+import { repairArmor } from './repair';
 import { createState, spawnCharacter } from './state';
 import { TEST_ITEMS as items } from './test-items';
 
 /*
- * Armoured rigs (2026-11-11, the user's call): a rig whose armour covers the chest as body
- * armour does, and which can't be worn with body armour.
+ * Armored rigs (2026-11-11, the user's call): a rig whose armor covers the chest as body
+ * armor does, and which can't be worn with body armor.
  */
 
 const world = new CollisionWorld({
@@ -48,46 +48,46 @@ function setup() {
   return { state, c, act };
 }
 
-describe('armoured rigs', () => {
+describe('armored rigs', () => {
   it('come new at full durability, and other rigs have none', () => {
     expect(createItem(items, 'plate-rig').durability).toBe(60);
     expect(createItem(items, 'rig').durability).toBeUndefined();
   });
 
-  it('cover the chest as body armour does, wearing by the same rules', () => {
+  it('cover the chest as body armor does, wearing by the same rules', () => {
     const { state, c } = setup();
     equip(c, items, 'rig', createItem(items, 'plate-rig'));
-    expect(chestArmour(items, c.gear)).toBe(c.gear.rig);
+    expect(chestArmor(items, c.gear)).toBe(c.gear.rig);
     // A level 3 round against level 4: nothing through, and it wears as the vest would.
     shootCharacter(state, items, c, CHEST, ammoDef(items, 'round'), 0);
     expect(c.health.hp[CHEST]).toBe(85);
-    expect(c.gear.rig?.durability).toBeCloseTo(60 - 10 * ARMOUR.wear[1]);
+    expect(c.gear.rig?.durability).toBeCloseTo(60 - 10 * ARMOR.wear[1]);
     // Healed back to full, it's mended too.
     restoreHealth(c, items);
     expect(c.gear.rig?.durability).toBe(60);
   });
 
-  it("don't count as armour without armour, and body armour comes first", () => {
+  it("don't count as armor without armor, and body armor comes first", () => {
     const gear = createGear(false);
     gear.rig = createItem(items, 'rig') as ContainerState;
-    expect(chestArmour(items, gear)).toBeNull();
+    expect(chestArmor(items, gear)).toBeNull();
   });
 
-  it('are repaired as armour, losing some max', () => {
+  it('are repaired as armor, losing some max', () => {
     const rig = createItem(items, 'plate-rig');
     rig.durability = 30;
     const kit = createItem(items, 'repair-kit');
-    expect(repairArmour(items, kit, rig)).toBeGreaterThan(0);
+    expect(repairArmor(items, kit, rig)).toBeGreaterThan(0);
     expect(rig.durability).toBeGreaterThan(30);
     expect(rig.max).toBeLessThan(60);
   });
 
-  it("won't go on over body armour, nor body armour under one", () => {
+  it("won't go on over body armor, nor body armor under one", () => {
     const { c, act } = setup();
-    wearArmour(c, items, 'vest');
+    wearArmor(c, items, 'vest');
     const bag = c.gear.backpack!.grid;
     placeAt(items, bag, createItem(items, 'plate-rig'), 0, 0, false);
-    expect(gearConflict(items, c.gear, 'rig', bag.items[0]!.item)).toBe(BODY_ARMOUR_WORN);
+    expect(gearConflict(items, c.gear, 'rig', bag.items[0]!.item)).toBe(BODY_ARMOR_WORN);
     const from = { owner: self, grid: 'backpack' as const, index: 0, item: 'plate-rig' };
     expect(act({ type: 'move', from, to: { owner: self, slot: 'rig' } })).toBe(false);
     expect(c.gear.rig).toBeNull();
@@ -96,29 +96,29 @@ describe('armoured rigs', () => {
     expect(c.gear.rig).toBeNull();
 
     // The other way round: with the rig on, the vest won't go on.
-    c.gear.bodyArmour = null;
+    c.gear.bodyArmor = null;
     expect(act({ type: 'move', from, to: { owner: self, slot: 'rig' } })).toBe(true);
     const vest = createItem(items, 'vest');
     placeAt(items, bag, vest, 0, 0, false);
-    expect(gearConflict(items, c.gear, 'bodyArmour', vest)).toBe(ARMOURED_RIG_WORN);
+    expect(gearConflict(items, c.gear, 'bodyArmor', vest)).toBe(ARMORED_RIG_WORN);
     const vestRef = { owner: self, grid: 'backpack' as const, index: 0, item: 'vest' };
-    expect(act({ type: 'move', from: vestRef, to: { owner: self, slot: 'bodyArmour' } })).toBe(
+    expect(act({ type: 'move', from: vestRef, to: { owner: self, slot: 'bodyArmor' } })).toBe(
       false,
     );
-    expect(c.gear.bodyArmour).toBeNull();
+    expect(c.gear.bodyArmor).toBeNull();
   });
 
-  it('are refused in a saved profile with body armour, and settled out of one', () => {
+  it('are refused in a saved profile with body armor, and settled out of one', () => {
     const gear = createGear(true);
     gear.rig = createItem(items, 'plate-rig') as ContainerState;
-    gear.bodyArmour = createItem(items, 'vest') as typeof gear.bodyArmour;
-    expect(checkGear(items, gear)).toMatch(/armoured rig/);
-    // Saved before the rig had armour: it gets durability, and the vest goes to the stash.
+    gear.bodyArmor = createItem(items, 'vest') as typeof gear.bodyArmor;
+    expect(checkGear(items, gear)).toMatch(/armored rig/);
+    // Saved before the rig had armor: it gets durability, and the vest goes to the stash.
     delete gear.rig.durability;
     const page = createGrid(10, 10, true);
     settleBags(items, gear, [page]);
     expect(gear.rig.durability).toBe(60);
-    expect(gear.bodyArmour).toBeNull();
+    expect(gear.bodyArmor).toBeNull();
     expect(page.items[0]?.item.item).toBe('vest');
     expect(checkGear(items, gear)).toBeNull();
   });
@@ -130,7 +130,7 @@ function fill(db: ItemDb, grid: Grid, n: number): void {
 }
 
 describe('swapping a bag with things in it for an empty one (2026-11-11)', () => {
-  it("moves an armoured rig's contents into the plain rig put on in its place", () => {
+  it("moves an armored rig's contents into the plain rig put on in its place", () => {
     const { c, act } = setup();
     equip(c, items, 'rig', createItem(items, 'plate-rig'));
     fill(items, c.gear.rig!.grid, 4);
@@ -139,7 +139,7 @@ describe('swapping a bag with things in it for an empty one (2026-11-11)', () =>
     expect(act({ type: 'move', from, to: { owner: self, slot: 'rig' } })).toBe(true);
     expect(c.gear.rig?.item).toBe('rig');
     expect(c.gear.rig?.grid.items).toHaveLength(4);
-    // The armoured rig went into the backpack, empty, where the plain one was.
+    // The armored rig went into the backpack, empty, where the plain one was.
     const old = c.gear.backpack!.grid.items.find((g) => g.item.item === 'plate-rig');
     expect(old?.item.grid?.items).toHaveLength(0);
   });

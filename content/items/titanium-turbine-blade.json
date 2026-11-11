@@ -12,7 +12,7 @@
         "type": "box",
         "pos": [-0.018, 0.00306, -0.00776],
         "size": [0.16, 0.0035, 0.017],
-        "colour": "#b4b8bc",
+        "color": "#b4b8bc",
         "name": "leading face",
         "group": "airfoil",
         "pitch": -14
@@ -21,7 +21,7 @@
         "type": "wedge",
         "pos": [-0.018, 0.0004, -0.01844],
         "size": [0.0035, 0.006, 0.16],
-        "colour": "#b4b8bc",
+        "color": "#b4b8bc",
         "name": "leading taper",
         "group": "airfoil",
         "yaw": 90,
@@ -31,7 +31,7 @@
         "type": "box",
         "pos": [-0.018, 0.00326, 0.00985],
         "size": [0.16, 0.0035, 0.021],
-        "colour": "#9a9ea3",
+        "color": "#9a9ea3",
         "name": "trailing face",
         "group": "airfoil",
         "pitch": 10
@@ -40,7 +40,7 @@
         "type": "wedge",
         "pos": [-0.018, 0.00031, 0.02659],
         "size": [0.0035, 0.014, 0.16],
-        "colour": "#9a9ea3",
+        "color": "#9a9ea3",
         "name": "trailing taper",
         "group": "airfoil",
         "yaw": 90,
@@ -50,7 +50,7 @@
         "type": "box",
         "pos": [0.0555, 0.00425, -0.01064],
         "size": [0.013, 0.001, 0.02101],
-        "colour": "#8a86b0",
+        "color": "#8a86b0",
         "name": "heat tint leading",
         "group": "airfoil",
         "pitch": -14
@@ -59,7 +59,7 @@
         "type": "box",
         "pos": [0.0555, 0.00401, 0.01626],
         "size": [0.013, 0.001, 0.03236],
-        "colour": "#77729c",
+        "color": "#77729c",
         "name": "heat tint trailing",
         "group": "airfoil",
         "pitch": 10
@@ -68,7 +68,7 @@
         "type": "box",
         "pos": [-0.082, 0.00409, -0.01173],
         "size": [0.0028, 0.001, 0.0022],
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "name": "cooling hole 0",
         "group": "airfoil",
         "pitch": -14
@@ -77,7 +77,7 @@
         "type": "box",
         "pos": [-0.056, 0.00385, -0.01267],
         "size": [0.0028, 0.001, 0.0022],
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "name": "cooling hole 1",
         "group": "airfoil",
         "pitch": -14
@@ -86,7 +86,7 @@
         "type": "box",
         "pos": [-0.03, 0.00361, -0.01362],
         "size": [0.0028, 0.001, 0.0022],
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "name": "cooling hole 2",
         "group": "airfoil",
         "pitch": -14
@@ -95,7 +95,7 @@
         "type": "box",
         "pos": [-0.004, 0.00338, -0.01457],
         "size": [0.0028, 0.001, 0.0022],
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "name": "cooling hole 3",
         "group": "airfoil",
         "pitch": -14
@@ -104,7 +104,7 @@
         "type": "box",
         "pos": [0.022, 0.00314, -0.01551],
         "size": [0.0028, 0.001, 0.0022],
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "name": "cooling hole 4",
         "group": "airfoil",
         "pitch": -14
@@ -113,7 +113,7 @@
         "type": "box",
         "pos": [0.068, 0, 0.00607],
         "size": [0.012, 0.018, 0.066],
-        "colour": "#9a9ea3",
+        "color": "#9a9ea3",
         "name": "platform",
         "group": "root"
       },
@@ -121,7 +121,7 @@
         "type": "box",
         "pos": [0.068, 0.0095, 0.02207],
         "size": [0.004, 0.001, 0.018],
-        "colour": "#6f7378",
+        "color": "#6f7378",
         "name": "part number",
         "group": "root"
       },
@@ -129,7 +129,7 @@
         "type": "box",
         "pos": [0.084, 0, 0.00607],
         "size": [0.03394, 0.015, 0.03394],
-        "colour": "#868a8f",
+        "color": "#868a8f",
         "name": "root lobe 0",
         "group": "root",
         "yaw": 45
@@ -138,7 +138,7 @@
         "type": "box",
         "pos": [0.099, 0, 0.00607],
         "size": [0.02828, 0.0144, 0.02828],
-        "colour": "#6f7378",
+        "color": "#6f7378",
         "name": "root lobe 1",
         "group": "root",
         "yaw": 45
@@ -147,7 +147,7 @@
         "type": "box",
         "pos": [0.113, 0, 0.00607],
         "size": [0.02263, 0.0138, 0.02263],
-        "colour": "#868a8f",
+        "color": "#868a8f",
         "name": "root lobe 2",
         "group": "root",
         "yaw": 45
@@ -156,7 +156,7 @@
         "type": "box",
         "pos": [0.126, 0, 0.00607],
         "size": [0.008, 0.013, 0.016],
-        "colour": "#6f7378",
+        "color": "#6f7378",
         "name": "root end",
         "group": "root"
       }

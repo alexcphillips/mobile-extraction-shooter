@@ -2,12 +2,12 @@
   "formatVersion": 3,
   "id": "semi-tractor",
   "name": "semi tractor",
-  "colours": {
+  "colors": {
     "cab": "#2f5d7c",
     "cab-dark": "#234760",
     "chassis": "#3a3a3e",
     "chassis-dark": "#26262a",
-    "tyre": "#232323",
+    "tire": "#232323",
     "hub": "#8a8a8a",
     "metal": "#a9adb2",
     "glass": "#25333d",
@@ -18,14 +18,14 @@
       "type": "box",
       "pos": [0, 0.25, -0.6],
       "size": [2.9, 0.6, 0.6],
-      "colour": "chassis"
+      "color": "chassis"
     },
     {
       "type": "cylinder",
       "pos": [1.24, 0.34, -0.6],
       "radius": 0.55,
       "height": 0.42,
-      "colour": "tyre",
+      "color": "tire",
       "roll": 90,
       "sides": 12,
       "collide": false
@@ -35,7 +35,7 @@
       "pos": [1.46, 0.535, -0.6],
       "radius": 0.3,
       "height": 0.03,
-      "colour": "hub",
+      "color": "hub",
       "roll": 90,
       "sides": 8,
       "collide": false
@@ -45,7 +45,7 @@
       "pos": [-1.24, 0.34, -0.6],
       "radius": 0.55,
       "height": 0.42,
-      "colour": "tyre",
+      "color": "tire",
       "roll": 90,
       "sides": 12,
       "collide": false
@@ -55,7 +55,7 @@
       "pos": [-1.46, 0.535, -0.6],
       "radius": 0.3,
       "height": 0.03,
-      "colour": "hub",
+      "color": "hub",
       "roll": 90,
       "sides": 8,
       "collide": false
@@ -64,14 +64,14 @@
       "type": "box",
       "pos": [0, 0.25, 0.6],
       "size": [2.9, 0.6, 0.6],
-      "colour": "chassis"
+      "color": "chassis"
     },
     {
       "type": "cylinder",
       "pos": [1.24, 0.34, 0.6],
       "radius": 0.55,
       "height": 0.42,
-      "colour": "tyre",
+      "color": "tire",
       "roll": 90,
       "sides": 12,
       "collide": false
@@ -81,7 +81,7 @@
       "pos": [1.46, 0.535, 0.6],
       "radius": 0.3,
       "height": 0.03,
-      "colour": "hub",
+      "color": "hub",
       "roll": 90,
       "sides": 8,
       "collide": false
@@ -91,7 +91,7 @@
       "pos": [-1.24, 0.34, 0.6],
       "radius": 0.55,
       "height": 0.42,
-      "colour": "tyre",
+      "color": "tire",
       "roll": 90,
       "sides": 12,
       "collide": false
@@ -101,7 +101,7 @@
       "pos": [-1.46, 0.535, 0.6],
       "radius": 0.3,
       "height": 0.03,
-      "colour": "hub",
+      "color": "hub",
       "roll": 90,
       "sides": 8,
       "collide": false
@@ -110,14 +110,14 @@
       "type": "box",
       "pos": [0, 0.25, 3.3],
       "size": [2.9, 0.6, 0.6],
-      "colour": "chassis"
+      "color": "chassis"
     },
     {
       "type": "cylinder",
       "pos": [1.24, 0.34, 3.3],
       "radius": 0.55,
       "height": 0.42,
-      "colour": "tyre",
+      "color": "tire",
       "roll": 90,
       "sides": 12,
       "collide": false
@@ -127,7 +127,7 @@
       "pos": [1.46, 0.535, 3.3],
       "radius": 0.3,
       "height": 0.03,
-      "colour": "hub",
+      "color": "hub",
       "roll": 90,
       "sides": 8,
       "collide": false
@@ -137,7 +137,7 @@
       "pos": [-1.24, 0.34, 3.3],
       "radius": 0.55,
       "height": 0.42,
-      "colour": "tyre",
+      "color": "tire",
       "roll": 90,
       "sides": 12,
       "collide": false
@@ -147,7 +147,7 @@
       "pos": [-1.46, 0.535, 3.3],
       "radius": 0.3,
       "height": 0.03,
-      "colour": "hub",
+      "color": "hub",
       "roll": 90,
       "sides": 8,
       "collide": false
@@ -156,95 +156,95 @@
       "type": "box",
       "pos": [0, 0.75, 1.5],
       "size": [1.0, 0.4, 5.4],
-      "colour": "chassis"
+      "color": "chassis"
     },
     {
       "type": "box",
       "pos": [0, 1.15, 0.0],
       "size": [1.1, 0.1, 1.1],
-      "colour": "chassis-dark",
+      "color": "chassis-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.15, 2.0],
       "size": [2.8, 2.35, 1.6],
-      "colour": "cab"
+      "color": "cab"
     },
     {
       "type": "box",
       "pos": [0, 3.5, 1.95],
       "size": [2.5, 0.12, 1.4],
-      "colour": "cab-dark",
+      "color": "cab-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.15, 3.5],
       "size": [2.4, 1.1, 1.4],
-      "colour": "cab",
+      "color": "cab",
       "top": [2.1, 1.4]
     },
     {
       "type": "box",
       "pos": [0, 1.3, 4.21],
       "size": [1.7, 0.75, 0.02],
-      "colour": "chassis-dark",
+      "color": "chassis-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.72, 4.26],
       "size": [2.8, 0.3, 0.25],
-      "colour": "metal"
+      "color": "metal"
     },
     {
       "type": "box",
       "pos": [1, 0.9, 4.4],
       "size": [0.4, 0.16, 0.02],
-      "colour": "lamp",
+      "color": "lamp",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1, 0.9, 4.4],
       "size": [0.4, 0.16, 0.02],
-      "colour": "lamp",
+      "color": "lamp",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 2.45, 2.81],
       "size": [2.5, 0.8, 0.02],
-      "colour": "glass",
+      "color": "glass",
       "collide": false
     },
     {
       "type": "box",
       "pos": [1.41, 2.45, 2.2],
       "size": [0.02, 0.75, 0.9],
-      "colour": "glass",
+      "color": "glass",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.41, 2.45, 2.2],
       "size": [0.02, 0.75, 0.9],
-      "colour": "glass",
+      "color": "glass",
       "collide": false
     },
     {
       "type": "box",
       "pos": [1.62, 2.3, 2.8],
       "size": [0.08, 0.55, 0.2],
-      "colour": "chassis-dark",
+      "color": "chassis-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.62, 2.3, 2.8],
       "size": [0.08, 0.55, 0.2],
-      "colour": "chassis-dark",
+      "color": "chassis-dark",
       "collide": false
     },
     {
@@ -252,7 +252,7 @@
       "pos": [1.25, 1.2, 1.0],
       "radius": 0.09,
       "height": 2.9,
-      "colour": "metal",
+      "color": "metal",
       "sides": 8,
       "collide": false
     },
@@ -260,14 +260,14 @@
       "type": "box",
       "pos": [1.24, 1.12, 3.3],
       "size": [0.5, 0.08, 1.25],
-      "colour": "cab-dark",
+      "color": "cab-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.24, 1.12, 3.3],
       "size": [0.5, 0.08, 1.25],
-      "colour": "cab-dark",
+      "color": "cab-dark",
       "collide": false
     }
   ]

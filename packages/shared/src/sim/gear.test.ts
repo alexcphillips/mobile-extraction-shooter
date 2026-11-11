@@ -81,7 +81,7 @@ describe('gear', () => {
     expect(fitsSlot(items, 'sidearm', rifle)).toBe(false);
     expect(fitsSlot(items, 'knife', one('knife'))).toBe(true);
     expect(fitsSlot(items, 'helmet', createItem(items, 'vest'))).toBe(false);
-    expect(fitsSlot(items, 'bodyArmour', createItem(items, 'vest'))).toBe(true);
+    expect(fitsSlot(items, 'bodyArmor', createItem(items, 'vest'))).toBe(true);
     expect(fitsSlot(items, 'rig', createItem(items, 'backpack'))).toBe(false);
     expect(fitsSlot(items, 'backpack', createItem(items, 'backpack'))).toBe(true);
     const { c } = setup();

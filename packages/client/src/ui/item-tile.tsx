@@ -1,11 +1,11 @@
 import { itemDef, type Item, type ItemDb } from '@mes/shared';
 import type { ReactNode } from 'react';
 import { itemPortrait } from '../render/item-portrait';
-import { colourOf, tileName } from './raid-screen';
+import { colorOf, tileName } from './raid-screen';
 
 /*
  * An item as a small card outside the inventory (2026-11-06): the results screen's
- * brought-out and lost, a quest's rewards. Its picture on its rarity's colour, its short
+ * brought-out and lost, a quest's rewards. Its picture on its rarity's color, its short
  * name, how many, and an optional line under it (a price).
  */
 export function ItemTile({
@@ -19,7 +19,7 @@ export function ItemTile({
   item: Item;
   count?: number;
   note?: ReactNode;
-  /** Gone (lost in a raid): greyed. */
+  /** Gone (lost in a raid): grayed. */
   lost?: boolean;
 }): ReactNode {
   const def = itemDef(items, item.item);
@@ -27,7 +27,7 @@ export function ItemTile({
   return (
     <span
       className={`item-tile${lost ? ' lost' : ''}`}
-      style={{ ['--rarity' as string]: colourOf(def) }}
+      style={{ ['--rarity' as string]: colorOf(def) }}
       title={def.name}
     >
       <span className="item-tile-art">

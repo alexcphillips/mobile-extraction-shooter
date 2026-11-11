@@ -11,7 +11,7 @@ function limb(
   to: readonly number[],
   hw: number,
   hh: number,
-  colour: number,
+  color: number,
 ): Shape {
   const dx = to[0]! - from[0]!;
   const dy = to[1]! - from[1]!;
@@ -28,7 +28,7 @@ function limb(
     yaw: Math.atan2(dx, dz),
     pitch: -Math.asin(dy / len),
     roll: 0,
-    colour,
+    color,
   };
 }
 

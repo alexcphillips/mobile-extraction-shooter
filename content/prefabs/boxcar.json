@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "boxcar",
   "name": "Boxcar",
-  "colours": {
+  "colors": {
     "body": "#8a4a3a",
     "body-dark": "#6e3a2e",
     "steel": "#3e3d3c",
@@ -11,14 +11,14 @@
     "deck": "#7a5a3a"
   },
   "nodes": [
-    { "type": "box", "pos": [-4.6, 0.7, -0.88], "size": [2.3, 0.3, 0.1], "colour": "steel" },
-    { "type": "box", "pos": [-4.6, 0.7, 0.88], "size": [2.3, 0.3, 0.1], "colour": "steel" },
+    { "type": "box", "pos": [-4.6, 0.7, -0.88], "size": [2.3, 0.3, 0.1], "color": "steel" },
+    { "type": "box", "pos": [-4.6, 0.7, 0.88], "size": [2.3, 0.3, 0.1], "color": "steel" },
     {
       "type": "cylinder",
       "pos": [-5.45, 0.76, -0.72],
       "radius": 0.42,
       "height": 0.12,
-      "colour": "wheel",
+      "color": "wheel",
       "collide": false,
       "pitch": 90
     },
@@ -27,7 +27,7 @@
       "pos": [-5.45, 0.76, 0.72],
       "radius": 0.42,
       "height": 0.12,
-      "colour": "wheel",
+      "color": "wheel",
       "collide": false,
       "pitch": 90
     },
@@ -36,7 +36,7 @@
       "pos": [-3.75, 0.76, -0.72],
       "radius": 0.42,
       "height": 0.12,
-      "colour": "wheel",
+      "color": "wheel",
       "collide": false,
       "pitch": 90
     },
@@ -45,18 +45,18 @@
       "pos": [-3.75, 0.76, 0.72],
       "radius": 0.42,
       "height": 0.12,
-      "colour": "wheel",
+      "color": "wheel",
       "collide": false,
       "pitch": 90
     },
-    { "type": "box", "pos": [4.6, 0.7, -0.88], "size": [2.3, 0.3, 0.1], "colour": "steel" },
-    { "type": "box", "pos": [4.6, 0.7, 0.88], "size": [2.3, 0.3, 0.1], "colour": "steel" },
+    { "type": "box", "pos": [4.6, 0.7, -0.88], "size": [2.3, 0.3, 0.1], "color": "steel" },
+    { "type": "box", "pos": [4.6, 0.7, 0.88], "size": [2.3, 0.3, 0.1], "color": "steel" },
     {
       "type": "cylinder",
       "pos": [3.75, 0.76, -0.72],
       "radius": 0.42,
       "height": 0.12,
-      "colour": "wheel",
+      "color": "wheel",
       "collide": false,
       "pitch": 90
     },
@@ -65,7 +65,7 @@
       "pos": [3.75, 0.76, 0.72],
       "radius": 0.42,
       "height": 0.12,
-      "colour": "wheel",
+      "color": "wheel",
       "collide": false,
       "pitch": 90
     },
@@ -74,7 +74,7 @@
       "pos": [5.45, 0.76, -0.72],
       "radius": 0.42,
       "height": 0.12,
-      "colour": "wheel",
+      "color": "wheel",
       "collide": false,
       "pitch": 90
     },
@@ -83,124 +83,124 @@
       "pos": [5.45, 0.76, 0.72],
       "radius": 0.42,
       "height": 0.12,
-      "colour": "wheel",
+      "color": "wheel",
       "collide": false,
       "pitch": 90
     },
-    { "type": "box", "pos": [0, 1.05, 0], "size": [13.0, 0.25, 2.4], "colour": "steel" },
-    { "type": "box", "pos": [0, 1.3, 0], "size": [13.0, 2.7, 3.2], "colour": "body" },
+    { "type": "box", "pos": [0, 1.05, 0], "size": [13.0, 0.25, 2.4], "color": "steel" },
+    { "type": "box", "pos": [0, 1.3, 0], "size": [13.0, 2.7, 3.2], "color": "body" },
     {
       "type": "box",
       "pos": [0, 4.0, 0],
       "size": [13.2, 0.2, 3.4],
-      "colour": "body-dark",
+      "color": "body-dark",
       "bulge": [0, 0, 0, 0.12, 0, 0]
     },
-    { "type": "box", "pos": [0, 1.35, -1.63], "size": [3.0, 2.5, 0.06], "colour": "body-dark" },
+    { "type": "box", "pos": [0, 1.35, -1.63], "size": [3.0, 2.5, 0.06], "color": "body-dark" },
     {
       "type": "box",
       "pos": [0, 3.91, -1.64],
       "size": [6.2, 0.08, 0.08],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-5.4, 1.3, -1.625],
       "size": [0.1, 2.7, 0.05],
-      "colour": "body-dark",
+      "color": "body-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-3.6, 1.3, -1.625],
       "size": [0.1, 2.7, 0.05],
-      "colour": "body-dark",
+      "color": "body-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [3.6, 1.3, -1.625],
       "size": [0.1, 2.7, 0.05],
-      "colour": "body-dark",
+      "color": "body-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [5.4, 1.3, -1.625],
       "size": [0.1, 2.7, 0.05],
-      "colour": "body-dark",
+      "color": "body-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-4.5, 3.125, -1.603],
       "size": [1.2, 0.35, 0.004],
-      "colour": "marks",
+      "color": "marks",
       "collide": false
     },
-    { "type": "box", "pos": [0, 1.35, 1.63], "size": [3.0, 2.5, 0.06], "colour": "body-dark" },
+    { "type": "box", "pos": [0, 1.35, 1.63], "size": [3.0, 2.5, 0.06], "color": "body-dark" },
     {
       "type": "box",
       "pos": [0, 3.91, 1.64],
       "size": [6.2, 0.08, 0.08],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-5.4, 1.3, 1.625],
       "size": [0.1, 2.7, 0.05],
-      "colour": "body-dark",
+      "color": "body-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-3.6, 1.3, 1.625],
       "size": [0.1, 2.7, 0.05],
-      "colour": "body-dark",
+      "color": "body-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [3.6, 1.3, 1.625],
       "size": [0.1, 2.7, 0.05],
-      "colour": "body-dark",
+      "color": "body-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [5.4, 1.3, 1.625],
       "size": [0.1, 2.7, 0.05],
-      "colour": "body-dark",
+      "color": "body-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [4.5, 3.125, 1.603],
       "size": [1.2, 0.35, 0.004],
-      "colour": "marks",
+      "color": "marks",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-6.75, 0.875, 0],
       "size": [0.5, 0.25, 0.3],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [6.75, 0.875, 0],
       "size": [0.5, 0.25, 0.3],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.25, 0],
       "size": [12.6, 0.8, 2.6],
-      "colour": "steel",
+      "color": "steel",
       "invisible": true
     }
   ]

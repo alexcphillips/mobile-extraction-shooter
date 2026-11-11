@@ -348,7 +348,7 @@
       "condition": [0.6, 1]
     }
   ],
-  "bodyArmour": [
+  "bodyArmor": [
     {
       "weight": 3,
       "item": "tactical-vest",

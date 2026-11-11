@@ -7,7 +7,7 @@
       "type": "prefab",
       "prefab": "hazard-barrel",
       "pos": [0, 0, 0],
-      "colours": { "paint": "#3f8a3f", "paint-dark": "#2c652c" }
+      "colors": { "paint": "#3f8a3f", "paint-dark": "#2c652c" }
     }
   ]
 }

@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "kitchen-run",
   "name": "Kitchen run",
-  "colours": {
+  "colors": {
     "body": "#e9e6df",
     "top": "#3d4148",
     "upper": "#c9d6da",
@@ -13,33 +13,33 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [2.4, 0.86, 0.6],
-      "colour": "body"
+      "color": "body"
     },
     {
       "type": "box",
       "pos": [0, 0.86, 0.01],
       "size": [2.44, 0.04, 0.64],
-      "colour": "top"
+      "color": "top"
     },
     {
       "type": "box",
       "pos": [0, 1.5, -0.13],
       "size": [2.4, 0.7, 0.34],
-      "colour": "upper",
+      "color": "upper",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.6, 0.9, 0.02],
       "size": [0.6, 0.02, 0.45],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.6, 0.9, 0.02],
       "size": [0.5, 0.02, 0.42],
-      "colour": "top",
+      "color": "top",
       "collide": false
     },
     {

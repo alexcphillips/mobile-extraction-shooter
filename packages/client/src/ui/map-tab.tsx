@@ -14,7 +14,7 @@ import { CUT_ABOVE } from '../editor/cut';
 
 /*
  * The map tab (session 11b): an SVG drawn from the map data, looking straight down with
- * −z up. Everything that stands is drawn as its footprint in its own colour, highest on
+ * −z up. Everything that stands is drawn as its footprint in its own color, highest on
  * top. A map with `floors` (2026-11-09) is shown a floor at a time, cut CUT_ABOVE over it
  * as the editor's cutaway is, so a covered building shows its rooms, not its roof; what's
  * well below the floor shown (an atrium's ground floor) is dimmed. Then named zones, map
@@ -24,11 +24,11 @@ import { CUT_ABOVE } from '../editor/cut';
  * redraw only moves your arrow.
  */
 
-/** How wide the "near me" view is, in metres. */
+/** How wide the "near me" view is, in meters. */
 const NEAR = 60;
 /** Footprints smaller than this (m²) are left out: cans, books, rungs. */
 const MIN_AREA = 0.08;
-/** Metres of ground shown round what's built. */
+/** Meters of ground shown round what's built. */
 const FRAME_MARGIN = 8;
 /** You (or a label) stand on a floor from this far under its height. */
 const ON_FLOOR = 0.5;
@@ -63,10 +63,10 @@ interface MapBase {
   ground: Frame;
   /** What's built and where the markers are, with a margin, inside the terrain. */
   frame: Frame;
-  groundColour: string;
+  groundColor: string;
   /** Water as rects, x, z, w, h. */
   water: [number, number, number, number][];
-  waterColour: string;
+  waterColor: string;
   /** Every footprint, lowest top first. */
   footprints: Footprint[];
 }
@@ -85,8 +85,8 @@ interface Cached {
 
 const cache = new WeakMap<CompiledMap, Cached>();
 
-function css(colour: number): string {
-  return `#${colour.toString(16).padStart(6, '0')}`;
+function css(color: number): string {
+  return `#${color.toString(16).padStart(6, '0')}`;
 }
 
 /** A shape's footprint, placed at (px, pz) turned by pyaw (for instanced copies). */
@@ -105,7 +105,7 @@ function footprint(s: Shape, px: number, py: number, pz: number, pyaw: number): 
         s.hx * Math.abs(Math.sin(s.roll));
   const bottom = py + s.y - half;
   const top = py + s.y + half;
-  const fill = css(s.colour);
+  const fill = css(s.color);
   if (s.kind === 'cylinder') {
     const r = Math.max(s.radius, s.radiusTop);
     if (Math.PI * r * r < MIN_AREA) return null;
@@ -201,9 +201,9 @@ function buildBase(map: CompiledMap): MapBase {
   return {
     ground,
     frame: frameOf(map, footprints, ground),
-    groundColour: css(map.terrainColour),
+    groundColor: css(map.terrainColor),
     water,
-    waterColour: css(map.water[0]?.colour ?? 0x3a6ea5),
+    waterColor: css(map.water[0]?.color ?? 0x3a6ea5),
     footprints,
   };
 }
@@ -291,7 +291,7 @@ export function mapLayers(map: CompiledMap, floor = groundFloor(map)): MapLayers
   return { minX: f.x, minZ: f.z, w: f.w, h: f.h, base, layers };
 }
 
-/** The ground, water and footprints, drawn in map metres; what's below the floor dimmed. */
+/** The ground, water and footprints, drawn in map meters; what's below the floor dimmed. */
 export function MapGround({ layers: drawn }: { layers: MapLayers }): ReactNode {
   const { base, layers } = drawn;
   const shape = (f: Footprint, i: number): ReactNode =>
@@ -303,9 +303,9 @@ export function MapGround({ layers: drawn }: { layers: MapLayers }): ReactNode {
   const g = base.ground;
   return (
     <g>
-      <rect x={g.x} y={g.z} width={g.w} height={g.h} fill={base.groundColour} />
+      <rect x={g.x} y={g.z} width={g.w} height={g.h} fill={base.groundColor} />
       {base.water.map(([x, z, w, h], i) => (
-        <rect key={i} x={x} y={z} width={w + 0.05} height={h + 0.05} fill={base.waterColour} />
+        <rect key={i} x={x} y={z} width={w + 0.05} height={h + 0.05} fill={base.waterColor} />
       ))}
       {layers.below.length > 0 && (
         <>
@@ -446,7 +446,7 @@ export function MapTab({ map, sim, player }: Props): ReactNode {
   const view = near
     ? { x: player.x - NEAR / 2, z: player.z - NEAR / 2, w: NEAR, h: NEAR }
     : base.frame;
-  // Metres per screen pixel, so labels and lines stay the same size at either zoom.
+  // Meters per screen pixel, so labels and lines stay the same size at either zoom.
   const k = Math.max(view.w / size.w, view.h / size.h);
 
   // The static layers don't depend on the zoom, so React skips them on a redraw.

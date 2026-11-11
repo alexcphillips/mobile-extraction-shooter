@@ -337,7 +337,11 @@ describe('firing', () => {
     expect(heldWeapon(shooter)?.mag).toBe(3);
     // One first-round kick of 2°, worn off for a tick at the in-burst rate.
     const kick =
-      2 * RECOIL.scale * RECOIL.firstShot * (Math.PI / 180) * Math.exp((-10 * RECOIL.inBurst) / TICK_RATE);
+      2 *
+      RECOIL.scale *
+      RECOIL.firstShot *
+      (Math.PI / 180) *
+      Math.exp((-10 * RECOIL.inBurst) / TICK_RATE);
     expect(shooter.recoil?.kickPitch).toBeCloseTo(kick, 6);
   });
 
@@ -413,7 +417,7 @@ describe('firing', () => {
     expect(carriedAmmo(shooter, 'ap-round')).toBe(13);
   });
 
-  it('reloads the best round carried when the loaded one runs out, never another calibre', () => {
+  it('reloads the best round carried when the loaded one runs out, never another caliber', () => {
     const { world, state, shooter } = range();
     giveWeapon(shooter, TEST_ITEMS, 'rifle');
     stow(shooter, TEST_ITEMS, { item: 'shell', count: 10 });
@@ -513,7 +517,11 @@ describe('attachments', () => {
     expect(state.events.find((e) => e.type === 'shot')).toMatchObject({ loudness: 37.5 });
     // Half the rifle's kick of 1°.
     const kick =
-      0.5 * RECOIL.scale * RECOIL.firstShot * (Math.PI / 180) * Math.exp((-10 * RECOIL.inBurst) / TICK_RATE);
+      0.5 *
+      RECOIL.scale *
+      RECOIL.firstShot *
+      (Math.PI / 180) *
+      Math.exp((-10 * RECOIL.inBurst) / TICK_RATE);
     expect(shooter.recoil?.kickPitch).toBeCloseTo(kick, 6);
   });
 

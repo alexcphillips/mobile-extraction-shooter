@@ -10,7 +10,7 @@ import type { Character, EntityId, SimState } from './state';
  */
 export interface HitCapsule {
   zone: Zone;
-  /** Ends of the capsule's axis for a standing character, in metres: side (+ is the
+  /** Ends of the capsule's axis for a standing character, in meters: side (+ is the
    * character's right), height above the feet, and forward. */
   a: readonly [number, number, number];
   b: readonly [number, number, number];
@@ -39,7 +39,7 @@ export const HIT_CAPSULES: readonly HitCapsule[] = [
 /**
  * How the clips carry the head off its standing place, measured from the drawn body and
  * averaged over each clip. Moving, it goes the way the body is going, as the hips twist
- * to it: at each speed in metres per second, this far along and this far down.
+ * to it: at each speed in meters per second, this far along and this far down.
  */
 const HEAD_MOVING: readonly (readonly [number, number, number])[] = [
   [0.4, 0, 0],
@@ -178,7 +178,7 @@ function placeEnd(
 }
 
 /**
- * The nearest living character's hit zone along a ray (d normalised), closer than
+ * The nearest living character's hit zone along a ray (d normalized), closer than
  * maxDist, skipping one entity (the shooter). Returns the distance, or Infinity.
  * Characters are few, so it checks each one's bounding sphere rather than keeping a
  * spatial hash of moving things.
@@ -221,7 +221,7 @@ export function raycastCharacters(
   return distance;
 }
 
-/** Distance along a ray (d normalised) to a sphere, or Infinity; 0 if the origin is inside. */
+/** Distance along a ray (d normalized) to a sphere, or Infinity; 0 if the origin is inside. */
 function raySphere(
   ox: number,
   oy: number,
@@ -245,7 +245,7 @@ function raySphere(
   return -b - Math.sqrt(h);
 }
 
-/** Distance along a ray (d normalised) to a capsule from a to b, or Infinity. */
+/** Distance along a ray (d normalized) to a capsule from a to b, or Infinity. */
 export function rayCapsule(
   ox: number,
   oy: number,

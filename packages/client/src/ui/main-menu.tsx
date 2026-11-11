@@ -65,7 +65,7 @@ import {
 } from './lobby';
 import { mapFacts, overviewMap } from './map-overview';
 import { InventoryController } from './inventory-controller';
-import { favourites } from './favourites';
+import { favorites } from './favorites';
 import { sounds } from '../audio/sounds';
 import { GAME_SOUNDS } from '../audio/sound-ids';
 import { PartyStrip } from './party-strip';
@@ -155,8 +155,8 @@ const joined = new Set<string>();
 
 type Page = 'menu' | 'stash' | 'vendors' | 'hangar' | 'admin' | 'friends';
 
-/** What you're taking in, for the menu: guns and armour by name. */
-const SHOWN: readonly GearSlot[] = ['primary1', 'primary2', 'sidearm', 'helmet', 'bodyArmour'];
+/** What you're taking in, for the menu: guns and armor by name. */
+const SHOWN: readonly GearSlot[] = ['primary1', 'primary2', 'sidearm', 'helmet', 'bodyArmor'];
 
 function loadoutLine(items: ItemDb, me: ProfileResponse): string {
   const gear = me.profile.gear as unknown as Record<GearSlot, Item | null>;
@@ -1096,7 +1096,7 @@ function StashPage({
    */
   const equipBest = (): void => {
     inv.select(null);
-    const result = quickEquip(stash.profile, items, favourites(), Math.max(0, shown));
+    const result = quickEquip(stash.profile, items, favorites(), Math.max(0, shown));
     if (result === 'full') {
       sounds().play(GAME_SOUNDS.refuse);
       setToast('Stash full');
@@ -1234,7 +1234,7 @@ function StashPage({
     gearFoot: (
       <button
         className="stash-quick-equip"
-        title="Put everything in the stash, then equip the best gun you have rounds for, armour, bags and meds"
+        title="Put everything in the stash, then equip the best gun you have rounds for, armor, bags and meds"
         onClick={equipBest}
       >
         Quick equip

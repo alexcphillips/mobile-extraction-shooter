@@ -4,7 +4,7 @@ import { CollisionWorld, type BoxDef } from '../world/collision-world';
 import { createGrid, placeAt } from '../inventory/grid';
 import { createItem } from './create-item';
 import { equip, heldWeapon, stow } from './gear';
-import { ARMOUR, CHEST, HEAD, HEALTH, LEFT_ARM, createArmour, dealDamage } from './health';
+import { ARMOR, CHEST, HEAD, HEALTH, LEFT_ARM, createArmor, dealDamage } from './health';
 import type { InventoryAction } from './looting';
 import { treatments } from './meds';
 import { MOVEMENT } from './movement';
@@ -116,9 +116,9 @@ describe('switching hands', () => {
 });
 
 describe('the knife', () => {
-  it('hits the zone under the crosshair within reach, through armour, at its pace', () => {
+  it('hits the zone under the crosshair within reach, through armor, at its pace', () => {
     const s = setup();
-    s.target.gear.bodyArmour = createArmour(items, 'vest');
+    s.target.gear.bodyArmor = createArmor(items, 'vest');
     const chest = lookAt(s.player, 0, 1.3, -1);
     s.run(0.25, input({ draw: 'knife', ...chest }));
     expect(s.player.gear.hand).toBe('knife');
@@ -130,7 +130,7 @@ describe('the knife', () => {
     expect(hits[0]).toMatchObject({ zone: CHEST, cause: 'melee', by: s.player.id });
     // The level 4 vest stops the level 1 knife outright (no blunt damage), and wears a little.
     expect(s.target.health.hp[CHEST]).toBe(HEALTH.maxHp[CHEST]);
-    expect(s.target.gear.bodyArmour?.durability).toBeCloseTo(50 - 2 * 5 * ARMOUR.wear[3]);
+    expect(s.target.gear.bodyArmor?.durability).toBeCloseTo(50 - 2 * 5 * ARMOR.wear[3]);
     expect(hits[0]!.type === 'damage' && hits[0]!.amount).toBe(0);
   });
 
@@ -256,13 +256,13 @@ describe('using meds', () => {
   });
 });
 
-describe('repairing armour in a raid', () => {
+describe('repairing armor in a raid', () => {
   /** setup() wearing a vest worn down to 10, with a repair kit (50 points) carried. */
   function worn() {
     const s = setup(5, 5);
-    const vest = createArmour(items, 'vest');
+    const vest = createArmor(items, 'vest');
     vest.durability = 10;
-    equip(s.player, items, 'bodyArmour', vest);
+    equip(s.player, items, 'bodyArmor', vest);
     // In a rig: the kit is 2×1, too big for the pockets' 1×1 slots.
     equip(s.player, items, 'rig', createItem(items, 'rig'));
     stow(s.player, items, createItem(items, 'repair-kit'));
@@ -275,7 +275,7 @@ describe('repairing armour in a raid', () => {
         index: rig.items.findIndex((gi) => gi.item.item === 'repair-kit'),
         item: 'repair-kit',
       },
-      armour: { owner: { kind: 'self' }, slot: 'bodyArmour', item: 'vest' },
+      armor: { owner: { kind: 'self' }, slot: 'bodyArmor', item: 'vest' },
     });
     const kit = () => rig.items.find((gi) => gi.item.item === 'repair-kit')?.item;
     return { ...s, vest, repair, kit };
@@ -313,23 +313,23 @@ describe('repairing armour in a raid', () => {
     expect(s.kit()?.left).toBe(50);
   });
 
-  it("mends a body's armour, worn or in its bags, and a crate's, in the kit's time", () => {
+  it("mends a body's armor, worn or in its bags, and a crate's, in the kit's time", () => {
     const s = worn();
     // A dead scav beside you: a worn helmet on its head and a worn vest in its backpack.
     s.target.x = 0;
     s.target.z = -1;
-    const helmet = createArmour(items, 'helmet');
+    const helmet = createArmor(items, 'helmet');
     helmet.durability = 10;
     equip(s.target, items, 'helmet', helmet);
     equip(s.target, items, 'backpack', createItem(items, 'backpack'));
-    const vest = createArmour(items, 'vest');
+    const vest = createArmor(items, 'vest');
     vest.durability = 40;
     placeAt(items, s.target.gear.backpack!.grid, vest, 0, 0, false);
     dealDamage(s.state, s.target, HEAD, 1000, 0);
     const body = { kind: 'body', id: s.target.id } as const;
-    const on = (armour: Extract<InventoryAction, { type: 'repair' }>['armour']) => ({
+    const on = (armor: Extract<InventoryAction, { type: 'repair' }>['armor']) => ({
       ...(s.repair() as Extract<InventoryAction, { type: 'repair' }>),
-      armour,
+      armor,
     });
     s.run(
       1 / TICK_RATE,
@@ -349,7 +349,7 @@ describe('repairing armour in a raid', () => {
     // A crate's, likewise.
     const crate = { id: 'crate', def: 'crate', x: 0, y: 0, z: 1, grid: createGrid(4, 4, true) };
     s.state.loot.push(crate);
-    const stored = createArmour(items, 'vest');
+    const stored = createArmor(items, 'vest');
     stored.durability = 45;
     placeAt(items, crate.grid, stored, 0, 0, false);
     const box = { kind: 'container', id: 'crate' } as const;
@@ -374,7 +374,7 @@ describe('repairing armour in a raid', () => {
     expect(s.kit()?.left).toBe(15);
   });
 
-  it('stops when firing, and refuses full armour or a kit in the vault', () => {
+  it('stops when firing, and refuses full armor or a kit in the vault', () => {
     const s = worn();
     s.run(1 / TICK_RATE, input({ inventory: [s.repair()] }));
     s.run(1 / TICK_RATE, input({ fire: true, pitch: 1 }));

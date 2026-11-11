@@ -37,7 +37,7 @@ function map(nodes: MapNode[]): MapFile {
       origin: [-20, -20],
       cellSize: 4,
       heights: Array.from({ length: 11 }, () => row),
-      colour: '#6b8f4e',
+      color: '#6b8f4e',
     },
     nodes,
     zones: [],
@@ -49,7 +49,7 @@ const box = (x: number, z: number, yaw?: number): MapNode => ({
   pos: [x, 0, z],
   ...(yaw !== undefined && { yaw }),
   size: [1, 1, 1],
-  colour: '#ffffff',
+  color: '#ffffff',
 });
 
 /** Where everything ends up in the world, which grouping must not change. */
@@ -58,7 +58,7 @@ const world = (m: MapFile, prefabs: ReadonlyMap<string, PrefabFile> = new Map())
   const r = (n: number) => Math.round(n * 1000) / 1000;
   return {
     boxes: c.world.boxes.map((b) => [r(b.x), r(b.y), r(b.z), r(b.yaw)]),
-    colours: c.shapes.map((s) => s.colour),
+    colors: c.shapes.map((s) => s.color),
     markers: c.markers.map((k) => [k.id, r(k.x), r(k.z), r(k.yaw)]),
     patrols: c.patrols.map((p) => p.points.map((q) => [r(q.x), r(q.z)])),
   };
@@ -154,11 +154,11 @@ describe('prefabs in the editor', () => {
   const shed: PrefabFile = {
     formatVersion: 3,
     id: 'shed',
-    colours: { walls: '#aa0000', roof: '#00aa00' },
+    colors: { walls: '#aa0000', roof: '#00aa00' },
     building: { size: [2, 2] },
     nodes: [
-      { type: 'box', pos: [0, 0, 0], size: [2, 2, 2], colour: 'walls' },
-      { type: 'box', pos: [0, 2, 0], size: [2, 0.2, 2], colour: 'roof' },
+      { type: 'box', pos: [0, 0, 0], size: [2, 2, 2], color: 'walls' },
+      { type: 'box', pos: [0, 2, 0], size: [2, 0.2, 2], color: 'roof' },
       { type: 'lootSpawn', id: 'shelf', pos: [0, 1, 0], lootTable: 'household' },
     ],
   };
@@ -166,29 +166,29 @@ describe('prefabs in the editor', () => {
   it('makes a prefab of what is selected, leaving the world as it was', () => {
     const m = map([
       box(-5, 0),
-      { type: 'box', pos: [4, 0, 2], yaw: 30, size: [1, 2, 1], colour: 'paint' },
-      { type: 'box', pos: [6, 1, 2], size: [1, 1, 1], colour: '#123456' },
+      { type: 'box', pos: [4, 0, 2], yaw: 30, size: [1, 2, 1], color: 'paint' },
+      { type: 'box', pos: [6, 1, 2], size: [1, 1, 1], color: '#123456' },
       { type: 'questMarker', id: 'radio', pos: [5, 1, 3] },
     ]);
-    m.colours = { paint: '#336699', unused: '#000000' };
+    m.colors = { paint: '#336699', unused: '#000000' };
     const before = world(m);
     const taken = collectIds(m.nodes);
-    const { prefab, index } = makePrefab(m.nodes, [3, 1, 2], 'well', 'Well', m.colours, taken);
+    const { prefab, index } = makePrefab(m.nodes, [3, 1, 2], 'well', 'Well', m.colors, taken);
     expect(index).toBe(1);
     // Only the slots it uses come along, and the placement passes the map's on.
-    expect(prefab).toMatchObject({ id: 'well', name: 'Well', colours: { paint: '#336699' } });
+    expect(prefab).toMatchObject({ id: 'well', name: 'Well', colors: { paint: '#336699' } });
     expect(prefab.nodes).toHaveLength(3);
     expect(m.nodes[1]).toEqual({
       type: 'prefab',
       id: 'well',
       prefab: 'well',
       pos: [5, 0, 2.333],
-      colours: { paint: 'paint' },
+      colors: { paint: 'paint' },
     });
     const prefabs = new Map([['well', prefab]]);
     const after = world(m, prefabs);
     expect(after.boxes).toEqual(before.boxes);
-    expect(after.colours).toEqual(before.colours);
+    expect(after.colors).toEqual(before.colors);
     // Ids inside a prefab come out under the placement's.
     expect(after.markers).toEqual([['well/radio', 5, 3, 0]]);
     expect(before.markers).toEqual([['radio', 5, 3, 0]]);
@@ -200,7 +200,7 @@ describe('prefabs in the editor', () => {
     expect(m.nodes).toEqual([{ type: 'prefab', prefab: 'pair', pos: [1, 0, 0] }]);
   });
 
-  it('unpacks a placement into a group, colours and all, with ids made unique', () => {
+  it('unpacks a placement into a group, colors and all, with ids made unique', () => {
     const m = map([
       { type: 'questMarker', id: 'shelf', pos: [20, 0, 20] },
       {
@@ -209,7 +209,7 @@ describe('prefabs in the editor', () => {
         prefab: 'shed',
         pos: [10, 0, 5],
         yaw: 90,
-        colours: { walls: '#0000ff' },
+        colors: { walls: '#0000ff' },
       },
     ]);
     const prefabs = new Map([['shed', shed]]);
@@ -217,17 +217,13 @@ describe('prefabs in the editor', () => {
     unpackPrefab(m.nodes, 1, shed, collectIds(m.nodes));
     expect(m.nodes[1]).toMatchObject({ type: 'group', name: 'shed-a', pos: [10, 0, 5], yaw: 90 });
     const g = m.nodes[1] as Extract<MapNode, { type: 'group' }>;
-    expect(g.nodes).toMatchObject([
-      { colour: '#0000ff' },
-      { colour: '#00aa00' },
-      { id: 'shelf-2' },
-    ]);
+    expect(g.nodes).toMatchObject([{ color: '#0000ff' }, { color: '#00aa00' }, { id: 'shelf-2' }]);
     const after = world(m, new Map());
     // The same boxes, less the concrete base (a group isn't a building).
     expect(after.boxes).toEqual(before.boxes.slice(0, 2));
-    expect(after.colours).toEqual(before.colours.slice(0, after.colours.length));
+    expect(after.colors).toEqual(before.colors.slice(0, after.colors.length));
     // The prefab itself is left as it was.
-    expect(shed.nodes[0]).toMatchObject({ colour: 'walls' });
+    expect(shed.nodes[0]).toMatchObject({ color: 'walls' });
   });
 
   it('finds nodes inside placed prefabs, and counts the copies', () => {
@@ -265,7 +261,7 @@ describe('prefabs in the editor', () => {
 describe('markerPath', () => {
   it("finds the node a compiled marker's id names, through groups", () => {
     const m = map([
-      { type: 'box', pos: [0, 0, 0], size: [1, 1, 1], colour: '#ffffff' },
+      { type: 'box', pos: [0, 0, 0], size: [1, 1, 1], color: '#ffffff' },
       {
         type: 'group',
         pos: [5, 0, 0],
@@ -338,7 +334,7 @@ describe('door targets', () => {
   const lift: PrefabFile = {
     formatVersion: 3,
     id: 'lift',
-    nodes: [{ type: 'door', id: 'gate', pos: [0, 0, 0], size: [2, 3], colour: '#ffffff' }],
+    nodes: [{ type: 'door', id: 'gate', pos: [0, 0, 0], size: [2, 3], color: '#ffffff' }],
   };
   const prefabs = new Map([['lift', lift]]);
 
@@ -350,7 +346,7 @@ describe('door targets', () => {
         pos: [0, 0, 0],
         nodes: [{ type: 'prefab', prefab: 'lift', pos: [0, 0, 0] }],
       },
-      { type: 'door', id: 'shed', pos: [0, 0, 0], size: [1, 2], colour: '#ffffff' },
+      { type: 'door', id: 'shed', pos: [0, 0, 0], size: [1, 2], color: '#ffffff' },
     ];
     const targets = doorTargets(nodes, prefabs);
     expect(targets.map((t) => t.id)).toEqual(['west/gate', 'lift/gate', 'shed']);

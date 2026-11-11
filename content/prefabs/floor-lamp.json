@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "floor-lamp",
   "name": "Floor lamp",
-  "colours": {
+  "colors": {
     "pole": "#3d4148",
     "shade": "#e8d8a8"
   },
@@ -12,7 +12,7 @@
       "pos": [0, 0, 0],
       "radius": 0.16,
       "height": 0.03,
-      "colour": "pole",
+      "color": "pole",
       "sides": 8,
       "collide": false
     },
@@ -21,7 +21,7 @@
       "pos": [0, 0, 0],
       "radius": 0.025,
       "height": 1.55,
-      "colour": "pole",
+      "color": "pole",
       "sides": 6
     },
     {
@@ -29,7 +29,7 @@
       "pos": [0, 1.5, 0],
       "radius": 0.24,
       "height": 0.28,
-      "colour": "shade",
+      "color": "shade",
       "radiusTop": 0.16,
       "sides": 8,
       "collide": false

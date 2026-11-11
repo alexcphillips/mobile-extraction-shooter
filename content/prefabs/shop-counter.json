@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "shop-counter",
   "name": "Shop counter",
-  "colours": {
+  "colors": {
     "body": "#e6e0d3",
     "top": "#3d4148",
     "till": "#2b2d33"
@@ -12,26 +12,26 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [3, 1.0, 0.7],
-      "colour": "body"
+      "color": "body"
     },
     {
       "type": "box",
       "pos": [0, 1.0, 0],
       "size": [3.08, 0.05, 0.78],
-      "colour": "top"
+      "color": "top"
     },
     {
       "type": "box",
       "pos": [-0.9, 1.05, 0],
       "size": [0.42, 0.14, 0.38],
-      "colour": "till",
+      "color": "till",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.9, 1.19, -0.08],
       "size": [0.36, 0.24, 0.03],
-      "colour": "till",
+      "color": "till",
       "collide": false
     },
     {

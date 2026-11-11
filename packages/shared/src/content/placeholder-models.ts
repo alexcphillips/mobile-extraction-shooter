@@ -9,26 +9,26 @@ import {
 /*
  * The placeholder models drawn before item models existed (sessions 6b–10b), for the format
  * 5 → 6 migration and for blank items: chosen by kind, as the client used to. Anything that
- * was never drawn gets a flat box the size of its inventory grid in its type's colour, as it
+ * was never drawn gets a flat box the size of its inventory grid in its type's color, as it
  * looked on the ground.
  */
 
 type V = [number, number, number];
-const box = (pos: V, size: V, colour: string, hiddenBy?: 'optic' | 'magazine'): ModelPart => ({
+const box = (pos: V, size: V, color: string, hiddenBy?: 'optic' | 'magazine'): ModelPart => ({
   type: 'box',
   pos,
   size,
-  colour,
+  color,
   ...(hiddenBy ? { hiddenBy } : {}),
 });
 /** A cylinder laid along z. */
-const tube = (pos: V, radius: number, height: number, colour: string): ModelPart => ({
+const tube = (pos: V, radius: number, height: number, color: string): ModelPart => ({
   type: 'cylinder',
   pos,
   pitch: 90,
   radius,
   height,
-  colour,
+  color,
 });
 
 const BODY = '#3a3f44';
@@ -117,7 +117,7 @@ const HELMET: ItemModel = {
       radius: 0.138,
       radiusTop: 0.113,
       height: 0.118,
-      colour: '#56603f',
+      color: '#56603f',
     },
     {
       type: 'cylinder',
@@ -125,7 +125,7 @@ const HELMET: ItemModel = {
       radius: 0.113,
       radiusTop: 0.059,
       height: 0.035,
-      colour: '#56603f',
+      color: '#56603f',
     },
   ],
 };
@@ -155,11 +155,11 @@ const RIG: ItemModel = {
   ],
 };
 
-/** The ground's colours by type, before models. */
-const COLOURS: Record<string, string> = {
+/** The ground's colors by type, before models. */
+const COLORS: Record<string, string> = {
   weapon: '#56653f',
   ammo: '#9a8238',
-  armour: '#3f5266',
+  armor: '#3f5266',
   attachment: '#5a4870',
   med: '#b04848',
   container: '#4c5a36',
@@ -195,12 +195,12 @@ export function placeholderModel(doc: Readonly<Record<string, unknown>>): ItemMo
       if (doc.slot === 'muzzle') return copy((mods?.loudness ?? 1) < 1 ? SUPPRESSOR : BRAKE);
       return copy(LONG_MAG);
     }
-    case 'armour':
+    case 'armor':
       return copy(doc.slot === 'helmet' ? HELMET : VEST);
     case 'container':
       return copy(doc.slot === 'rig' ? RIG : BACKPACK);
   }
   const [w, h] = Array.isArray(doc.size) ? (doc.size as number[]) : [1, 1];
-  const colour = COLOURS[doc.type as string] ?? '#808080';
-  return { parts: [box([0, 0, 0], [(w ?? 1) * CELL, HEIGHT, (h ?? 1) * CELL], colour)] };
+  const color = COLORS[doc.type as string] ?? '#808080';
+  return { parts: [box([0, 0, 0], [(w ?? 1) * CELL, HEIGHT, (h ?? 1) * CELL], color)] };
 }

@@ -52,20 +52,20 @@ export function fitPointsToSlot(doc: Doc): void {
   else delete model.muzzle;
 }
 
-/** A new part of a type, small and grey, at a point. */
+/** A new part of a type, small and gray, at a point. */
 export function newPart(type: ModelPart['type'], at: Vec3): ModelPart {
   const pos: [number, number, number] = [at[0], at[1], at[2]];
   if (type === 'cylinder')
-    return { type, pos, pitch: 90, radius: 0.02, height: 0.1, colour: '#3a3f44' };
+    return { type, pos, pitch: 90, radius: 0.02, height: 0.1, color: '#3a3f44' };
   if (type === 'slab')
     return {
       type,
       pos,
       size: [0.1, 0.03, 0.08],
       corners: [0.02, 0.02, 0.02, 0.02],
-      colour: '#3a3f44',
+      color: '#3a3f44',
     };
-  return { type, pos, size: [0.05, 0.05, 0.1], colour: '#3a3f44' };
+  return { type, pos, size: [0.05, 0.05, 0.1], color: '#3a3f44' };
 }
 
 /** The groups a model's parts name, in the order they first come. */

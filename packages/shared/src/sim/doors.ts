@@ -17,7 +17,7 @@ import type { Character, EntityId, SimState } from './state';
  * leaving the opening.
  */
 
-/** Door tuning, in metres. */
+/** Door tuning, in meters. */
 export const DOOR = {
   /** How far your feet can be from a door to use it: across, and up or down. */
   reach: 2,

@@ -16,7 +16,7 @@
         "height": 0.016,
         "radiusTop": 0.045,
         "sides": 8,
-        "colour": "#6b3a2e",
+        "color": "#6b3a2e",
         "name": "plinth",
         "group": "stand"
       },
@@ -27,7 +27,7 @@
         "height": 0.004,
         "radiusTop": 0.0505,
         "sides": 8,
-        "colour": "#b08d3c",
+        "color": "#b08d3c",
         "name": "brass band",
         "group": "stand"
       },
@@ -40,7 +40,7 @@
         "height": 0.024,
         "radiusTop": 0,
         "sides": 4,
-        "colour": "#2c7a52",
+        "color": "#2c7a52",
         "name": "tail tip",
         "group": "body"
       },
@@ -53,7 +53,7 @@
         "height": 0.0408,
         "radiusTop": 0.0076,
         "sides": 5,
-        "colour": "#3f9a6a",
+        "color": "#3f9a6a",
         "name": "coil",
         "group": "body"
       },
@@ -66,7 +66,7 @@
         "height": 0.0433,
         "radiusTop": 0.0092,
         "sides": 5,
-        "colour": "#2c7a52",
+        "color": "#2c7a52",
         "name": "coil",
         "group": "body"
       },
@@ -79,7 +79,7 @@
         "height": 0.0458,
         "radiusTop": 0.0108,
         "sides": 5,
-        "colour": "#3f9a6a",
+        "color": "#3f9a6a",
         "name": "coil",
         "group": "body"
       },
@@ -92,7 +92,7 @@
         "height": 0.0483,
         "radiusTop": 0.0124,
         "sides": 5,
-        "colour": "#2c7a52",
+        "color": "#2c7a52",
         "name": "coil",
         "group": "body"
       },
@@ -105,7 +105,7 @@
         "height": 0.0507,
         "radiusTop": 0.014,
         "sides": 5,
-        "colour": "#3f9a6a",
+        "color": "#3f9a6a",
         "name": "coil",
         "group": "body"
       },
@@ -117,7 +117,7 @@
         "radius": 0.014,
         "height": 0.0513,
         "sides": 5,
-        "colour": "#2c7a52",
+        "color": "#2c7a52",
         "name": "coil",
         "group": "body"
       },
@@ -129,7 +129,7 @@
         "radius": 0.014,
         "height": 0.0519,
         "sides": 5,
-        "colour": "#3f9a6a",
+        "color": "#3f9a6a",
         "name": "coil",
         "group": "body"
       },
@@ -141,7 +141,7 @@
         "radius": 0.014,
         "height": 0.0525,
         "sides": 5,
-        "colour": "#2c7a52",
+        "color": "#2c7a52",
         "name": "coil",
         "group": "body"
       },
@@ -154,7 +154,7 @@
         "height": 0.062,
         "radiusTop": 0.011,
         "sides": 5,
-        "colour": "#3f9a6a",
+        "color": "#3f9a6a",
         "name": "neck",
         "group": "body"
       },
@@ -167,7 +167,7 @@
         "height": 0.013,
         "radiusTop": 0,
         "sides": 4,
-        "colour": "#5fb585",
+        "color": "#5fb585",
         "name": "spine",
         "group": "spines"
       },
@@ -180,7 +180,7 @@
         "height": 0.015,
         "radiusTop": 0,
         "sides": 4,
-        "colour": "#5fb585",
+        "color": "#5fb585",
         "name": "spine",
         "group": "spines"
       },
@@ -193,7 +193,7 @@
         "height": 0.016,
         "radiusTop": 0,
         "sides": 4,
-        "colour": "#5fb585",
+        "color": "#5fb585",
         "name": "spine",
         "group": "spines"
       },
@@ -206,7 +206,7 @@
         "height": 0.018,
         "radiusTop": 0,
         "sides": 4,
-        "colour": "#5fb585",
+        "color": "#5fb585",
         "name": "spine",
         "group": "spines"
       },
@@ -219,7 +219,7 @@
         "height": 0.019,
         "radiusTop": 0,
         "sides": 4,
-        "colour": "#5fb585",
+        "color": "#5fb585",
         "name": "spine",
         "group": "spines"
       },
@@ -231,7 +231,7 @@
         "height": 0.017,
         "radiusTop": 0,
         "sides": 4,
-        "colour": "#5fb585",
+        "color": "#5fb585",
         "name": "mane",
         "group": "spines"
       },
@@ -243,7 +243,7 @@
         "height": 0.017,
         "radiusTop": 0,
         "sides": 4,
-        "colour": "#5fb585",
+        "color": "#5fb585",
         "name": "mane",
         "group": "spines"
       },
@@ -251,7 +251,7 @@
         "type": "box",
         "pos": [0, 0.186, -0.01],
         "size": [0.024, 0.02, 0.026],
-        "colour": "#3f9a6a",
+        "color": "#3f9a6a",
         "name": "skull",
         "group": "head"
       },
@@ -260,7 +260,7 @@
         "pos": [0, 0.1855, -0.031],
         "size": [0.018, 0.012, 0.02],
         "pitch": -6,
-        "colour": "#3f9a6a",
+        "color": "#3f9a6a",
         "name": "snout",
         "group": "head"
       },
@@ -269,7 +269,7 @@
         "pos": [0, 0.1765, -0.026],
         "size": [0.016, 0.005, 0.026],
         "pitch": 14,
-        "colour": "#2c7a52",
+        "color": "#2c7a52",
         "name": "lower jaw",
         "group": "head"
       },
@@ -277,7 +277,7 @@
         "type": "box",
         "pos": [0, 0.19, -0.016],
         "size": [0.0245, 0.004, 0.006],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "name": "eyes",
         "group": "head"
       },
@@ -290,7 +290,7 @@
         "height": 0.028,
         "radiusTop": 0,
         "sides": 4,
-        "colour": "#5fb585",
+        "color": "#5fb585",
         "name": "horn",
         "group": "head"
       },
@@ -303,7 +303,7 @@
         "height": 0.03,
         "radiusTop": 0,
         "sides": 3,
-        "colour": "#2c7a52",
+        "color": "#2c7a52",
         "name": "whisker",
         "group": "head"
       },
@@ -316,7 +316,7 @@
         "height": 0.028,
         "radiusTop": 0,
         "sides": 4,
-        "colour": "#5fb585",
+        "color": "#5fb585",
         "name": "horn",
         "group": "head"
       },
@@ -329,7 +329,7 @@
         "height": 0.03,
         "radiusTop": 0,
         "sides": 3,
-        "colour": "#2c7a52",
+        "color": "#2c7a52",
         "name": "whisker",
         "group": "head"
       },
@@ -342,7 +342,7 @@
         "height": 0.0194,
         "radiusTop": 0.0037,
         "sides": 4,
-        "colour": "#2c7a52",
+        "color": "#2c7a52",
         "name": "leg",
         "group": "legs"
       },
@@ -355,7 +355,7 @@
         "height": 0.008,
         "radiusTop": 0,
         "sides": 3,
-        "colour": "#5fb585",
+        "color": "#5fb585",
         "name": "claw",
         "group": "legs"
       },
@@ -368,7 +368,7 @@
         "height": 0.008,
         "radiusTop": 0,
         "sides": 3,
-        "colour": "#5fb585",
+        "color": "#5fb585",
         "name": "claw",
         "group": "legs"
       },
@@ -381,7 +381,7 @@
         "height": 0.0194,
         "radiusTop": 0.0056,
         "sides": 4,
-        "colour": "#3f9a6a",
+        "color": "#3f9a6a",
         "name": "leg",
         "group": "legs"
       },
@@ -394,7 +394,7 @@
         "height": 0.008,
         "radiusTop": 0,
         "sides": 3,
-        "colour": "#5fb585",
+        "color": "#5fb585",
         "name": "claw",
         "group": "legs"
       },
@@ -407,7 +407,7 @@
         "height": 0.008,
         "radiusTop": 0,
         "sides": 3,
-        "colour": "#5fb585",
+        "color": "#5fb585",
         "name": "claw",
         "group": "legs"
       },
@@ -420,7 +420,7 @@
         "height": 0.0657,
         "radiusTop": 0.0056,
         "sides": 4,
-        "colour": "#3f9a6a",
+        "color": "#3f9a6a",
         "name": "leg",
         "group": "pearl"
       },
@@ -433,7 +433,7 @@
         "height": 0.008,
         "radiusTop": 0,
         "sides": 3,
-        "colour": "#5fb585",
+        "color": "#5fb585",
         "name": "claw",
         "group": "pearl"
       },
@@ -446,7 +446,7 @@
         "height": 0.008,
         "radiusTop": 0,
         "sides": 3,
-        "colour": "#5fb585",
+        "color": "#5fb585",
         "name": "claw",
         "group": "pearl"
       },
@@ -457,7 +457,7 @@
         "height": 0.0085,
         "radiusTop": 0,
         "sides": 6,
-        "colour": "#e6e0d3",
+        "color": "#e6e0d3",
         "name": "pearl",
         "group": "pearl"
       },
@@ -469,7 +469,7 @@
         "height": 0.0085,
         "radiusTop": 0,
         "sides": 6,
-        "colour": "#e6e0d3",
+        "color": "#e6e0d3",
         "name": "pearl",
         "group": "pearl"
       }

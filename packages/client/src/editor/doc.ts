@@ -9,7 +9,7 @@ import {
 /*
  * Editing a map file in place: finding nodes by index path, moving them between frames,
  * grouping, duplicating, making and unpacking prefabs. The editor keeps the file as plain JSON, so what it saves is
- * exactly what it edited. Positions are rounded to a millimetre and angles to a hundredth
+ * exactly what it edited. Positions are rounded to a millimeter and angles to a hundredth
  * of a degree as they're written, to keep the files tidy.
  */
 
@@ -379,15 +379,15 @@ export function countPlacements(
 }
 
 /**
- * Calls `f` with every colour reference in these nodes, groups included (a shape's colour
+ * Calls `f` with every color reference in these nodes, groups included (a shape's color
  * and a placement's overrides), and puts back what it returns.
  */
-export function eachColour(nodes: MapNode[], f: (ref: string) => string): void {
+export function eachColor(nodes: MapNode[], f: (ref: string) => string): void {
   for (const n of nodes) {
-    if (n.type === 'group') eachColour(n.nodes, f);
+    if (n.type === 'group') eachColor(n.nodes, f);
     else if (n.type === 'prefab') {
-      for (const [slot, ref] of Object.entries(n.colours ?? {})) n.colours![slot] = f(ref);
-    } else if ('colour' in n && typeof n.colour === 'string') n.colour = f(n.colour);
+      for (const [slot, ref] of Object.entries(n.colors ?? {})) n.colors![slot] = f(ref);
+    } else if ('color' in n && typeof n.color === 'string') n.color = f(n.color);
   }
 }
 
@@ -399,8 +399,8 @@ export function placementNeedsId(prefab: PrefabFile): boolean {
 /**
  * Moves the nodes at these indices of a list into a new prefab, and puts one placement of
  * it in their place (at the first one's index), standing where a group of them would. The
- * colour slots they use (from `slots`, the file's own) come along as the prefab's, and the
- * placement passes the file's slots on to them, so nothing changes colour. The placement
+ * color slots they use (from `slots`, the file's own) come along as the prefab's, and the
+ * placement passes the file's slots on to them, so nothing changes color. The placement
  * gets an id (unique against `taken`) if what's in it has ids.
  */
 export function makePrefab(
@@ -414,16 +414,16 @@ export function makePrefab(
   const index = groupNodes(list, indices);
   const group = list[index] as Group;
   const used = new Set<string>();
-  eachColour(group.nodes, (ref) => {
+  eachColor(group.nodes, (ref) => {
     if (!ref.startsWith('#') && slots[ref] !== undefined) used.add(ref);
     return ref;
   });
-  const colours = Object.fromEntries([...used].map((s) => [s, slots[s]!]));
+  const colors = Object.fromEntries([...used].map((s) => [s, slots[s]!]));
   const prefab: PrefabFile = {
     formatVersion: PREFAB_FORMAT_VERSION,
     id,
     ...(name && { name }),
-    ...(used.size > 0 && { colours }),
+    ...(used.size > 0 && { colors }),
     nodes: group.nodes,
   };
   const placement: Placement = {
@@ -431,7 +431,7 @@ export function makePrefab(
     ...(placementNeedsId(prefab) && { id: uniqueId(id, taken) }),
     prefab: id,
     pos: group.pos,
-    ...(used.size > 0 && { colours: Object.fromEntries([...used].map((s) => [s, s])) }),
+    ...(used.size > 0 && { colors: Object.fromEntries([...used].map((s) => [s, s])) }),
   };
   list[index] = placement;
   return { prefab, index };
@@ -439,7 +439,7 @@ export function makePrefab(
 
 /**
  * Replaces the prefab placed at an index with a group of copies of its parts, where it
- * stood. Their colour slots become the placement's colours (hex, or the slot of the
+ * stood. Their color slots become the placement's colors (hex, or the slot of the
  * enclosing file it named), and their ids are made unique against `taken`. A building's
  * footprint doesn't come along: a group has none.
  */
@@ -451,7 +451,7 @@ export function unpackPrefab(
 ): void {
   const n = list[index];
   if (n?.type !== 'prefab') throw new Error('not a prefab');
-  const resolved: Record<string, string> = { ...prefab.colours, ...n.colours };
+  const resolved: Record<string, string> = { ...prefab.colors, ...n.colors };
   const group: Group = {
     type: 'group',
     name: n.id ?? prefab.id,
@@ -461,7 +461,7 @@ export function unpackPrefab(
     ...(n.roll ? { roll: n.roll } : {}),
     nodes: structuredClone(prefab.nodes),
   };
-  eachColour(group.nodes, (ref) => resolved[ref] ?? ref);
+  eachColor(group.nodes, (ref) => resolved[ref] ?? ref);
   list[index] = copyNode(group, taken);
 }
 

@@ -2,12 +2,12 @@ import { z } from 'zod';
 import type { ContentFormat } from './format';
 
 /*
- * Map and prefab files (content/maps, content/prefabs). Units are metres; angles are
+ * Map and prefab files (content/maps, content/prefabs). Units are meters; angles are
  * degrees, so files are easy to read and write by hand. y is up, and yaw 0 faces −z.
- * Every shape's pos is the centre of its base, so y is where it stands.
+ * Every shape's pos is the center of its base, so y is where it stands.
  *
  * Rotation is yaw, then pitch, then roll (three.js Euler order 'YXZ'). Box and cylinder
- * may tilt (pitch and roll), which turns them about their centre (pos raised by half the
+ * may tilt (pitch and roll), which turns them about their center (pos raised by half the
  * height). Prefabs and groups may too (2026-11-05), about their pos, taking all they hold
  * with them. Doors in them become panels fixed shut; ladders, glass, barricades and
  * buildings can't be in them. A tilted solid collides as a slab, with a sloped top and
@@ -24,12 +24,12 @@ const angle = finite.optional();
 export const idSchema = z
   .string()
   .regex(/^[a-z0-9][a-z0-9-]*$/, 'ids are lower-case letters, digits and dashes');
-export const hexColourSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'colours are #rrggbb');
-/** A #rrggbb colour, or the name of a colour slot in the enclosing prefab or map. */
-export const colourRefSchema = z
+export const hexColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'colors are #rrggbb');
+/** A #rrggbb color, or the name of a color slot in the enclosing prefab or map. */
+export const colorRefSchema = z
   .string()
-  .regex(/^(#[0-9a-fA-F]{6}|[a-z][a-z0-9-]*)$/, 'a colour is #rrggbb or a colour slot name');
-const slotsSchema = z.record(idSchema, hexColourSchema);
+  .regex(/^(#[0-9a-fA-F]{6}|[a-z][a-z0-9-]*)$/, 'a color is #rrggbb or a color slot name');
+const slotsSchema = z.record(idSchema, hexColorSchema);
 /** A node's path id, its ids joined by "/": "lift/gate". */
 const idPathSchema = z
   .string()
@@ -112,7 +112,7 @@ const solid = {
   id: idSchema.optional(),
   pos: vec3,
   yaw: angle,
-  colour: colourRefSchema,
+  color: colorRefSchema,
   /** Defaults to true. False makes it decoration only. */
   collide: z.boolean().optional(),
   /**
@@ -140,7 +140,7 @@ const boxSchema = z.strictObject({
   pitch: angle,
   roll: angle,
   /**
-   * How far out each face's middle is pushed, in metres (2026-11-03, for bags of concrete),
+   * How far out each face's middle is pushed, in meters (2026-11-03, for bags of concrete),
    * making that face a low pyramid: −x, +x, −y (bottom), +y (top), −z, +z, before turning.
    * Drawn only: it collides as the plain box. Left out, every face is flat.
    */
@@ -182,8 +182,8 @@ const cylinderSchema = z.strictObject({
 
 /**
  * A straight wall with openings (2026-11-02): pos is the middle of its base, its length
- * runs along local x. Each opening is a gap from `bottom` to `top`, `width` wide, centred
- * `along` metres from the wall's middle, optionally glazed with glass of that tint.
+ * runs along local x. Each opening is a gap from `bottom` to `top`, `width` wide, centered
+ * `along` meters from the wall's middle, optionally glazed with glass of that tint.
  */
 const wallSchema = z.strictObject({
   type: z.literal('wall'),
@@ -196,7 +196,7 @@ const wallSchema = z.strictObject({
       width: positive,
       bottom: finite.refine((n) => n >= 0, 'must be 0 or more'),
       top: positive,
-      glass: colourRefSchema.optional(),
+      glass: colorRefSchema.optional(),
     }),
   ),
 });
@@ -218,7 +218,7 @@ const stairsSchema = z.strictObject({
   /**
    * Solid side walls (2026-11-03, for outside stairs): one each side, 0.1 m thick inside
    * the width, whose top runs straight from the bottom step to the top one this many
-   * metres above the steps. Drawn only. Left out, there are none.
+   * meters above the steps. Drawn only. Left out, there are none.
    */
   sides: positive.optional(),
 });
@@ -232,7 +232,7 @@ const ladderSchema = z.strictObject({
   height: positive,
   /** Defaults to 0.6. */
   width: positive.optional(),
-  colour: colourRefSchema,
+  color: colorRefSchema,
 });
 
 const prefabRefSchema = z.strictObject({
@@ -243,8 +243,8 @@ const prefabRefSchema = z.strictObject({
   yaw: angle,
   pitch: angle,
   roll: angle,
-  /** Overrides the prefab's colour slots. Values can name slots of the enclosing scope. */
-  colours: z.record(idSchema, colourRefSchema).optional(),
+  /** Overrides the prefab's color slots. Values can name slots of the enclosing scope. */
+  colors: z.record(idSchema, colorRefSchema).optional(),
   landmark: landmarkSchema,
   loot: lootSchema,
   switch: switchSchema,
@@ -300,7 +300,7 @@ const doorSchema = z
      */
     lamp: z.strictObject({ pos: vec3, size: size3 }).optional(),
     open: z.boolean().optional(),
-    colour: colourRefSchema,
+    color: colorRefSchema,
   })
   .refine((d) => d.key === undefined || d.cost === undefined, {
     message: 'a door has a key or a cost, not both',
@@ -308,7 +308,7 @@ const doorSchema = z
   });
 
 /**
- * A prefab drawn apart from the map, moved by `travel` (metres, in its own frame) over the
+ * A prefab drawn apart from the map, moved by `travel` (meters, in its own frame) over the
  * timer of the door beside it that `door` names, then hidden as the door opens (2026-11-05).
  * Drawn only: it doesn't collide, so whatever it arrives as is solid in the map already.
  */
@@ -334,7 +334,7 @@ const patrolStopSchema = z.strictObject({
   pos: vec3,
   /** Seconds to stand here. Defaults to 3; 0 walks on without stopping. */
   wait: nonNegative.optional(),
-  /** Metres. Defaults to 0. */
+  /** Meters. Defaults to 0. */
   radius: nonNegative.optional(),
 });
 
@@ -392,7 +392,7 @@ const enemySpawnSchema = z.strictObject({
   loadout: idSchema.optional(),
   /** The id of a patrol beside it (in the same map or prefab) to walk; otherwise it guards its spot. */
   patrol: idSchema.optional(),
-  /** Spawns at a random spot within this many metres. Defaults to 0. */
+  /** Spawns at a random spot within this many meters. Defaults to 0. */
   radius: nonNegative.optional(),
   /** The chance it spawns at all, 0 to 1 (1 if left out). */
   chance: finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1').optional(),
@@ -477,7 +477,7 @@ const poiSchema = z.strictObject({
    */
   area: idSchema.optional(),
   /**
-   * Metres: a loot spot's containers within this are searched; a choke is watched from a
+   * Meters: a loot spot's containers within this are searched; a choke is watched from a
    * spot within it. Defaults to 8 for loot, 2 for a choke.
    */
   radius: nonNegative.optional(),
@@ -513,7 +513,7 @@ const mapLabelSchema = z.strictObject({
 const zombieSpawnSchema = z.strictObject({
   type: z.literal('zombieSpawn'),
   ...marker,
-  /** Spawns at a random spot within this many metres. Defaults to 0. */
+  /** Spawns at a random spot within this many meters. Defaults to 0. */
   radius: nonNegative.optional(),
   /** The id of a barricade beside it (in the same map or prefab) to break in through. */
   window: idSchema.optional(),
@@ -593,7 +593,7 @@ const glassSchema = z.strictObject({
   /** Defaults to 0.02: thinner than any wall. */
   thickness: positive.optional(),
   /** Its tint; drawn see-through. */
-  colour: colourRefSchema,
+  color: colorRefSchema,
 });
 
 /**
@@ -623,7 +623,7 @@ const waterSchema = z.strictObject({
   pos: vec3,
   yaw: angle,
   size: z.tuple([positive, positive]),
-  colour: colourRefSchema,
+  color: colorRefSchema,
   /** Defaults to 0.7. */
   opacity: finite.refine((n) => n > 0 && n <= 1, 'must be in (0, 1]').optional(),
 });
@@ -743,7 +743,7 @@ const terrainSchema = z
      * them can be reached (roadmap 19zm). Sorted by j, then i.
      */
     holes: z.array(z.tuple([z.number().int(), z.number().int()])).optional(),
-    colour: hexColourSchema,
+    color: hexColorSchema,
   })
   .refine((t) => t.heights.every((row) => row.length === t.heights[0]!.length), {
     message: 'every row of heights must be the same length',
@@ -765,7 +765,7 @@ export const mapSchema = z
     id: idSchema,
     name: z.string().min(1),
     environment: z.strictObject({
-      sky: hexColourSchema,
+      sky: hexColorSchema,
       fogNear: positive,
       fogFar: positive,
     }),
@@ -774,12 +774,12 @@ export const mapSchema = z
     water: z
       .strictObject({
         level: finite,
-        colour: hexColourSchema,
+        color: hexColorSchema,
         opacity: finite.refine((n) => n > 0 && n <= 1, 'must be in (0, 1]'),
       })
       .optional(),
-    /** Colour slots that the map's own nodes can use by name. */
-    colours: slotsSchema.optional(),
+    /** Color slots that the map's own nodes can use by name. */
+    colors: slotsSchema.optional(),
     nodes: nodesSchema,
     /**
      * How many of the rotating extraction zones are open each raid (2026-11-07), picked at
@@ -787,7 +787,7 @@ export const mapSchema = z
      */
     rotatingExtractions: z.int().min(0).optional(),
     /**
-     * Metres an enemy spawn must keep from every player spawn (2026-11-07, the user's call):
+     * Meters an enemy spawn must keep from every player spawn (2026-11-07, the user's call):
      * AI.spawnClearance (60) if left out. Being in sight of one within AI.sightRange is
      * flagged whatever this is. Northpoint uses 0: indoors, walls do the work, and 60 m
      * left almost nowhere for enemies between its edge spawns.
@@ -871,8 +871,8 @@ export const prefabSchema = z.strictObject({
   instanced: z.boolean().optional(),
   /** Every placement is a landmark (see landmarkSchema). */
   landmark: landmarkSchema,
-  /** Default colours for the slots its nodes use; each placement can override them. */
-  colours: slotsSchema.optional(),
+  /** Default colors for the slots its nodes use; each placement can override them. */
+  colors: slotsSchema.optional(),
   /**
    * Makes it a building (session 16): placed on a slope, a concrete base fills the gap
    * under its footprint down to the ground, and the editor won't let two buildings'
@@ -883,9 +883,9 @@ export const prefabSchema = z.strictObject({
       /** Width (x) and depth (z) of the footprint. */
       size: z.tuple([positive, positive]),
       /** x, z of the footprint's middle. Defaults to [0, 0]. */
-      centre: vec2.optional(),
-      /** The base's colour, a hex colour or one of the prefab's slots. Defaults to concrete. */
-      colour: colourRefSchema.optional(),
+      center: vec2.optional(),
+      /** The base's color, a hex color or one of the prefab's slots. Defaults to concrete. */
+      color: colorRefSchema.optional(),
     })
     .optional(),
   nodes: nodesSchema,

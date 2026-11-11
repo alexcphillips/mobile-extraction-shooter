@@ -22,7 +22,7 @@
       "thickness": 0.1,
       "look": "freight-elevator-gate",
       "rollUp": true,
-      "colour": "#9aa0a4",
+      "color": "#9aa0a4",
       "lamp": {
         "pos": [0, 3.9, 0.12],
         "size": [0.7, 0.22, 0.1]

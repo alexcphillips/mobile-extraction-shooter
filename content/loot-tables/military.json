@@ -90,7 +90,7 @@
     { "item": "tactical-vest", "weight": 0.8 },
     { "item": "plate-carrier", "weight": 0.5 },
     { "item": "heavy-plate-carrier", "weight": 0.15 },
-    { "item": "assault-armour", "weight": 0.05 },
+    { "item": "assault-armor", "weight": 0.05 },
     { "item": "chest-rig", "weight": 1 },
     { "item": "medium-backpack", "weight": 1 },
     { "item": "large-backpack", "weight": 0.5 },

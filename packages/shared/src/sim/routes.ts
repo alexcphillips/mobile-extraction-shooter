@@ -15,14 +15,14 @@ import { entityById, type Character, type EntityId, type SimState } from './stat
  *
  * A map's `poi` markers are the stops: loot spots (searched) and chokes (passed through and
  * watched). A squad goes from stop to stop, each picked by weight among those it hasn't
- * been to, favouring a fair walk over the one next door or the far end of the map: a chain
+ * been to, favoring a fair walk over the one next door or the far end of the map: a chain
  * of them, made up as it goes, so it can turn towards gunfire. From a time picked at raid
  * start (somewhere between a third and four fifths of the raid) it heads for its
  * extraction zone after the stop it's at, and with a few minutes left it heads there at
  * once. Each member stands in the zone RAID.extractTime and leaves the raid with what it
  * carries (squads.ts updateSquads).
  *
- * The behaviour is in ai.ts (route, loot, extract); this is the squad's state and the
+ * The behavior is in ai.ts (route, loot, extract); this is the squad's state and the
  * choices it makes. All of it is plain data in the state, so a saved raid keeps it.
  */
 
@@ -42,7 +42,7 @@ export const ROUTES = {
   partialTries: 4,
   /** A leaving squad whose way out keeps stopping short goes by another stop, up to this many times. */
   detours: 3,
-  /** A follower goes into the extraction with its leader from within this many metres. */
+  /** A follower goes into the extraction with its leader from within this many meters. */
   joinExtract: 20,
   /** Default radius of a loot spot (its containers within it are searched) and a choke. */
   lootRadius: 8,
@@ -55,7 +55,7 @@ export const ROUTES = {
   lootMax: 75,
   /**
    * A stop is picked by weight × how good the walk is: full between hopNear and hopFar
-   * metres, less nearer (down to hopNearRate at 0), and falling off as (hopFar / d)² beyond.
+   * meters, less nearer (down to hopNearRate at 0), and falling off as (hopFar / d)² beyond.
    */
   hopNear: 15,
   hopNearRate: 0.15,
@@ -88,7 +88,7 @@ export const ROUTES = {
    * And their paths keep off it too (2026-11-08: Jug's ground lies across the mall, so
    * squads walking between other stops met him in the first 3 minutes): for bossPathFor
    * seconds, ground within bossPathRadius of a boss's patrol costs bossPathCost more a
-   * metre, so a leader goes round it where there's a way.
+   * meter, so a leader goes round it where there's a way.
    */
   bossPathFor: 420,
   /**
@@ -116,7 +116,7 @@ export const ROUTES = {
   towardArc: 60,
   /** After a fight, the hunt ends this many seconds after it last saw or heard its target. */
   huntTime: [15, 20] as const,
-  /** Bodies it killed are walked to and searched if within this many metres. */
+  /** Bodies it killed are walked to and searched if within this many meters. */
   bodyRange: 40,
   /** Seconds to search a container or a body per item in it, and at least. */
   searchPerItem: 0.6,

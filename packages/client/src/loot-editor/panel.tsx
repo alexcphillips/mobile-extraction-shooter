@@ -10,8 +10,8 @@ import { useState, useSyncExternalStore } from 'react';
 import { loadItems, lootContainerUses, lootTableUses, type Use } from '../content';
 import { put, type Doc } from '../editor/bound-fields';
 import { Num, Text } from '../editor/fields';
-import { MixFields, ShareBar, WeightSlider, partColour } from '../editor/loot-mix';
-import { colourOf } from '../ui/raid-screen';
+import { MixFields, ShareBar, WeightSlider, partColor } from '../editor/loot-mix';
+import { colorOf } from '../ui/raid-screen';
 import {
   fileKey,
   parseKey,
@@ -216,7 +216,7 @@ function TablePage(props: { editor: LootEditor; state: LootEditorState; def: Loo
     weight: stats.entries
       .filter((e) => items.get(e.item)?.rarity === r)
       .reduce((a, e) => a + e.pick, 0),
-    colour: colourOf({ rarity: r } as Parameters<typeof colourOf>[0]),
+    color: colorOf({ rarity: r } as Parameters<typeof colorOf>[0]),
   })).filter((p) => p.weight > 0);
   const setCount = (i: number, lo: number, hi: number) =>
     edit((d) => put(d, ['items', i, 'count'], [lo, hi]));
@@ -253,7 +253,7 @@ function TablePage(props: { editor: LootEditor; state: LootEditorState; def: Loo
           parts={def.items.map((e, i) => ({
             label: items.get(e.item)?.name ?? e.item,
             weight: e.weight,
-            colour: partColour(i),
+            color: partColor(i),
           }))}
         />
         <div className="le-rows">
@@ -295,7 +295,7 @@ function TablePage(props: { editor: LootEditor; state: LootEditorState; def: Loo
                   onDragEnd={() => setDragFrom(null)}
                   title="Drag to reorder"
                 >
-                  <span className="ed-dot" style={{ background: partColour(i) }} />⠿
+                  <span className="ed-dot" style={{ background: partColor(i) }} />⠿
                 </span>
                 <ItemChip
                   items={items}
@@ -342,7 +342,7 @@ function TablePage(props: { editor: LootEditor; state: LootEditorState; def: Loo
                 </span>
                 <span className="le-odds">
                   <span className="le-bar">
-                    <span style={{ width: pct(st?.pick ?? 0), background: partColour(i) }} />
+                    <span style={{ width: pct(st?.pick ?? 0), background: partColor(i) }} />
                   </span>
                   {st ? pct(st.pick) : ''}
                 </span>

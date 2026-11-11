@@ -38,7 +38,7 @@ export function moved(s: ReticleShape, dx: number, dy: number): ReticleShape {
   }
 }
 
-/** The angle of (x, y) about a centre, degrees clockwise from up. */
+/** The angle of (x, y) about a center, degrees clockwise from up. */
 const angleAt = (cx: number, cy: number, x: number, y: number): number =>
   (Math.atan2(x - cx, cy - y) * 180) / Math.PI;
 
@@ -78,7 +78,7 @@ export function dragged(
           ? { ...s, from: tidy(inTurnBelow(a, s.to)) }
           : { ...s, to: tidy(inTurnAbove(a, s.from)) };
       }
-      // Its centre and radius drag as a ring's.
+      // Its center and radius drag as a ring's.
       return round(s, h, dx, dy, sn);
     case 'dot':
     case 'ring':

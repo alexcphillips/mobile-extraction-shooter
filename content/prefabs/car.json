@@ -2,17 +2,17 @@
   "formatVersion": 3,
   "id": "car",
   "name": "Car",
-  "colours": { "paint": "#7f8c8d", "glass": "#2c3e50", "tyre": "#222222" },
+  "colors": { "paint": "#7f8c8d", "glass": "#2c3e50", "tire": "#222222" },
   "nodes": [
-    { "type": "box", "pos": [0, 0.35, 0], "size": [1.8, 0.7, 4.2], "colour": "paint" },
-    { "type": "box", "pos": [0, 1.05, -0.3], "size": [1.6, 0.6, 2.2], "colour": "glass" },
+    { "type": "box", "pos": [0, 0.35, 0], "size": [1.8, 0.7, 4.2], "color": "paint" },
+    { "type": "box", "pos": [0, 1.05, -0.3], "size": [1.6, 0.6, 2.2], "color": "glass" },
     {
       "type": "cylinder",
       "pos": [0.95, 0.225, 1.4],
       "radius": 0.35,
       "height": 0.25,
       "roll": 90,
-      "colour": "tyre",
+      "color": "tire",
       "collide": false
     },
     {
@@ -21,7 +21,7 @@
       "radius": 0.35,
       "height": 0.25,
       "roll": 90,
-      "colour": "tyre",
+      "color": "tire",
       "collide": false
     },
     {
@@ -30,7 +30,7 @@
       "radius": 0.35,
       "height": 0.25,
       "roll": 90,
-      "colour": "tyre",
+      "color": "tire",
       "collide": false
     },
     {
@@ -39,7 +39,7 @@
       "radius": 0.35,
       "height": 0.25,
       "roll": 90,
-      "colour": "tyre",
+      "color": "tire",
       "collide": false
     }
   ]

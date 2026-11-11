@@ -158,7 +158,7 @@ describe('sound cues', () => {
     return { sim, player, enemy, played, cues };
   }
 
-  it('steps in time with walking: yours centred and quieter, none standing still', () => {
+  it('steps in time with walking: yours centered and quieter, none standing still', () => {
     const { sim, player, played, cues } = setup();
     for (let i = 0; i < 30; i++) cues.tick(sim, player, 0);
     expect(played).toEqual([]);

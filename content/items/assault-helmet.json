@@ -2,7 +2,7 @@
   "formatVersion": 10,
   "id": "assault-helmet",
   "name": "Assault helmet",
-  "type": "armour",
+  "type": "armor",
   "size": [2, 2],
   "value": 27000,
   "rarity": "mythic",
@@ -18,7 +18,7 @@
         "radius": 0.138,
         "radiusTop": 0.113,
         "height": 0.118,
-        "colour": "#4a5340"
+        "color": "#4a5340"
       },
       {
         "type": "cylinder",
@@ -26,10 +26,10 @@
         "radius": 0.113,
         "radiusTop": 0.059,
         "height": 0.035,
-        "colour": "#4a5340"
+        "color": "#4a5340"
       },
-      { "type": "box", "pos": [0, 1.66, -0.135], "size": [0.2, 0.1, 0.02], "colour": "#3a3f44" },
-      { "type": "box", "pos": [0, 1.66, -0.147], "size": [0.12, 0.025, 0.006], "colour": "#7fa0b0" }
+      { "type": "box", "pos": [0, 1.66, -0.135], "size": [0.2, 0.1, 0.02], "color": "#3a3f44" },
+      { "type": "box", "pos": [0, 1.66, -0.147], "size": [0.12, 0.025, 0.006], "color": "#7fa0b0" }
     ]
   }
 }

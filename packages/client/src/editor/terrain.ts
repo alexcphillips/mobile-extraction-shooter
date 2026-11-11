@@ -20,7 +20,7 @@ import { nodePos, nodeYaw, round } from './doc';
  */
 
 const DEG = Math.PI / 180;
-/** Heights in files are kept to a centimetre. */
+/** Heights in files are kept to a centimeter. */
 const HEIGHT_STEP = 0.01;
 /** Something whose base is this close to the ground is standing on it. */
 const ON_GROUND = 0.02;
@@ -40,9 +40,9 @@ export const isAreaMode = (mode: BrushMode): boolean => mode === 'level' || mode
 
 export interface Brush {
   mode: BrushMode;
-  /** Metres. */
+  /** Meters. */
   radius: number;
-  /** Raise and lower: metres a second at the middle. Flatten and smooth: how fast, 1 is usual. */
+  /** Raise and lower: meters a second at the middle. Flatten and smooth: how fast, 1 is usual. */
   strength: number;
   /** Level: the height to level to, or null for the ground where the drag starts. */
   height: number | null;
@@ -157,7 +157,7 @@ export function applyBrush(
         case 'smooth': {
           let sum = 0;
           let n = 0;
-          for (const [di, dj] of NEIGHBOURS) {
+          for (const [di, dj] of NEIGHBORS) {
             const ni = i + di;
             const nj = j + dj;
             if (ni < 0 || nj < 0 || ni > t.cols || nj > t.rows) continue;
@@ -173,7 +173,7 @@ export function applyBrush(
   return [i0, i1, j0, j1];
 }
 
-const NEIGHBOURS = [
+const NEIGHBORS = [
   [1, 0],
   [-1, 0],
   [0, 1],
@@ -181,7 +181,7 @@ const NEIGHBOURS = [
 ] as const;
 
 /**
- * Writes new corner heights and holes into the map, heights to a centimetre, and moves
+ * Writes new corner heights and holes into the map, heights to a centimeter, and moves
  * what stood on the old ground onto the new: shapes, markers and prefabs (not buildings),
  * and each point of a patrol on its own. Groups aren't moved themselves, only what's in them.
  */
@@ -285,7 +285,7 @@ export function extendMap(map: MapFile, side: Side, cells: number): void {
   }
 }
 
-/** A new map: flat ground at 0 centred on the origin, with a player spawn in the middle. */
+/** A new map: flat ground at 0 centered on the origin, with a player spawn in the middle. */
 export function newMap(id: string, name: string, size: number, cellSize: number): MapFile {
   const cells = Math.max(2, Math.round(size / cellSize));
   const half = round((cells * cellSize) / 2);
@@ -298,7 +298,7 @@ export function newMap(id: string, name: string, size: number, cellSize: number)
       origin: [-half, -half],
       cellSize,
       heights: Array.from({ length: cells + 1 }, () => Array<number>(cells + 1).fill(0)),
-      colour: '#6b8f4e',
+      color: '#6b8f4e',
     },
     nodes: [{ type: 'playerSpawn', id: 'spawn', pos: [0, 0, 0] }],
     zones: [],

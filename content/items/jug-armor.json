@@ -1,9 +1,9 @@
 {
   "formatVersion": 10,
-  "id": "jug-armour",
-  "name": "Jug's plate armour",
+  "id": "jug-armor",
+  "name": "Jug's plate armor",
   "shortName": "Jug plates",
-  "type": "armour",
+  "type": "armor",
   "size": [3, 3],
   "value": 65000,
   "rarity": "mythic",
@@ -17,154 +17,154 @@
         "type": "box",
         "pos": [0, 1.222, 0.005],
         "size": [0.37, 0.34, 0.3],
-        "colour": "#4a4636"
+        "color": "#4a4636"
       },
       {
         "type": "box",
         "pos": [0, 1.315, -0.165],
         "size": [0.35, 0.15, 0.04],
-        "colour": "#5f6469"
+        "color": "#5f6469"
       },
       {
         "type": "box",
         "pos": [0, 1.405, -0.148],
         "size": [0.3, 0.05, 0.035],
-        "colour": "#6b7075",
+        "color": "#6b7075",
         "pitch": 30
       },
       {
         "type": "box",
         "pos": [0, 1.19, -0.175],
         "size": [0.33, 0.11, 0.04],
-        "colour": "#575c61",
+        "color": "#575c61",
         "roll": 2
       },
       {
         "type": "box",
         "pos": [0, 1.085, -0.165],
         "size": [0.31, 0.1, 0.035],
-        "colour": "#4b5054"
+        "color": "#4b5054"
       },
       {
         "type": "box",
         "pos": [0, 1.245, -0.188],
         "size": [0.33, 0.01, 0.006],
-        "colour": "#5a4a3c"
+        "color": "#5a4a3c"
       },
       {
         "type": "box",
         "pos": [0.145, 1.37, -0.19],
         "size": [0.022, 0.022, 0.012],
-        "colour": "#2b2d2f"
+        "color": "#2b2d2f"
       },
       {
         "type": "box",
         "pos": [-0.145, 1.37, -0.19],
         "size": [0.022, 0.022, 0.012],
-        "colour": "#2b2d2f"
+        "color": "#2b2d2f"
       },
       {
         "type": "box",
         "pos": [0.145, 1.27, -0.19],
         "size": [0.022, 0.022, 0.012],
-        "colour": "#2b2d2f"
+        "color": "#2b2d2f"
       },
       {
         "type": "box",
         "pos": [-0.145, 1.27, -0.19],
         "size": [0.022, 0.022, 0.012],
-        "colour": "#2b2d2f"
+        "color": "#2b2d2f"
       },
       {
         "type": "box",
         "pos": [0.135, 1.215, -0.2],
         "size": [0.022, 0.022, 0.012],
-        "colour": "#2b2d2f"
+        "color": "#2b2d2f"
       },
       {
         "type": "box",
         "pos": [-0.135, 1.215, -0.2],
         "size": [0.022, 0.022, 0.012],
-        "colour": "#2b2d2f"
+        "color": "#2b2d2f"
       },
       {
         "type": "box",
         "pos": [0.19, 1.24, 0],
         "size": [0.028, 0.22, 0.24],
-        "colour": "#575c61"
+        "color": "#575c61"
       },
       {
         "type": "box",
         "pos": [-0.19, 1.24, 0],
         "size": [0.028, 0.22, 0.24],
-        "colour": "#575c61"
+        "color": "#575c61"
       },
       {
         "type": "box",
         "pos": [0, 1.255, 0.172],
         "size": [0.35, 0.28, 0.04],
-        "colour": "#5f6469"
+        "color": "#5f6469"
       },
       {
         "type": "box",
         "pos": [0, 1.41, 0.158],
         "size": [0.3, 0.05, 0.035],
-        "colour": "#6b7075",
+        "color": "#6b7075",
         "pitch": -30
       },
       {
         "type": "box",
         "pos": [0.145, 1.375, 0.195],
         "size": [0.022, 0.022, 0.012],
-        "colour": "#2b2d2f"
+        "color": "#2b2d2f"
       },
       {
         "type": "box",
         "pos": [-0.145, 1.375, 0.195],
         "size": [0.022, 0.022, 0.012],
-        "colour": "#2b2d2f"
+        "color": "#2b2d2f"
       },
       {
         "type": "box",
         "pos": [0.145, 1.14, 0.195],
         "size": [0.022, 0.022, 0.012],
-        "colour": "#2b2d2f"
+        "color": "#2b2d2f"
       },
       {
         "type": "box",
         "pos": [-0.145, 1.14, 0.195],
         "size": [0.022, 0.022, 0.012],
-        "colour": "#2b2d2f"
+        "color": "#2b2d2f"
       },
       {
         "type": "box",
         "pos": [0, 1.27, 0.194],
         "size": [0.12, 0.05, 0.004],
-        "colour": "#a08a4a"
+        "color": "#a08a4a"
       },
       {
         "type": "box",
         "pos": [0, 1.27, 0.197],
         "size": [0.08, 0.012, 0.003],
-        "colour": "#2b2d2f"
+        "color": "#2b2d2f"
       },
       {
         "type": "box",
         "pos": [0.108, 1.395, 0],
         "size": [0.09, 0.05, 0.29],
-        "colour": "#5f6469"
+        "color": "#5f6469"
       },
       {
         "type": "box",
         "pos": [-0.108, 1.395, 0],
         "size": [0.09, 0.05, 0.29],
-        "colour": "#575c61"
+        "color": "#575c61"
       },
       {
         "type": "box",
         "pos": [0, 1.03, 0.005],
         "size": [0.35, 0.08, 0.29],
-        "colour": "#3e3a2e"
+        "color": "#3e3a2e"
       }
     ]
   }

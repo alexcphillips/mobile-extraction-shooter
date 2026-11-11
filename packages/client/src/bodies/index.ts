@@ -2,7 +2,7 @@ import {
   MOVEMENT,
   createHealth,
   giveWeapon,
-  wearArmour,
+  wearArmor,
   type Character,
   type ItemDb,
   heldWeapon,
@@ -83,8 +83,8 @@ const POSES: Pose[] = [
     ownGear: true,
     set: (c, i) => {
       giveWeapon(c, i, 'rpk-16', ['mag-545x39-100-jug', 'red-dot']);
-      wearArmour(c, i, 'jug-mask');
-      wearArmour(c, i, 'jug-armour');
+      wearArmor(c, i, 'jug-mask');
+      wearArmor(c, i, 'jug-armor');
       equip(c, i, 'rig', createItem(i, 'chest-rig'));
     },
   },
@@ -94,8 +94,8 @@ const POSES: Pose[] = [
     ownGear: true,
     set: (c, i) => {
       giveWeapon(c, i, 'rpk-16', ['mag-545x39-100-jug']);
-      wearArmour(c, i, 'jug-mask');
-      wearArmour(c, i, 'jug-armour');
+      wearArmor(c, i, 'jug-mask');
+      wearArmor(c, i, 'jug-armor');
       equip(c, i, 'rig', createItem(i, 'chest-rig'));
       moving(MOVEMENT.sprintSpeed, 0)(c);
     },
@@ -107,8 +107,8 @@ const POSES: Pose[] = [
     ownGear: true,
     set: (c, i) => {
       giveWeapon(c, i, 'rpk-16', ['mag-545x39-100-jug', 'red-dot']);
-      wearArmour(c, i, 'jug-mask');
-      wearArmour(c, i, 'jug-armour');
+      wearArmor(c, i, 'jug-mask');
+      wearArmor(c, i, 'jug-armor');
       c.aim = 1;
       c.height = MOVEMENT.slideHeight;
       c.slide = { t: 0, dx: 0, dz: -1 };
@@ -176,8 +176,8 @@ export async function startBodies(canvas: HTMLCanvasElement, status: HTMLElement
   const shown = POSES.map((pose, i) => {
     const c = character(i + 1, (i - (POSES.length - 1) / 2) * spacing);
     if (!pose.ownGear) {
-      if (i % 3 === 1) wearArmour(c, items, 'steel-helmet');
-      if (i % 2 === 0) wearArmour(c, items, 'plate-carrier');
+      if (i % 3 === 1) wearArmor(c, items, 'steel-helmet');
+      if (i % 2 === 0) wearArmor(c, items, 'plate-carrier');
       if (i % 4 === 1) equip(c, items, 'backpack', createItem(items, 'small-backpack'));
     }
     pose.set(c, items);

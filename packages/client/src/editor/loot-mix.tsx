@@ -10,10 +10,10 @@ import { Num, Pick } from './fields';
  * and share bar the loot editor's tables use too.
  */
 
-/** A colour per part of a share bar, in order; "empty" is always grey. */
+/** A color per part of a share bar, in order; "empty" is always gray. */
 const PALETTE = ['#d08a2e', '#4f8fd0', '#59a85a', '#b0569c', '#c9b43a', '#46a9a3', '#c0583f'];
-export const EMPTY_COLOUR = '#3a4048';
-export const partColour = (i: number): string => PALETTE[i % PALETTE.length]!;
+export const EMPTY_COLOR = '#3a4048';
+export const partColor = (i: number): string => PALETTE[i % PALETTE.length]!;
 
 /** Each weight as a share of them all, like "80%". */
 function share(weight: number, mix: LootMix): string {
@@ -24,7 +24,7 @@ function share(weight: number, mix: LootMix): string {
 export interface SharePart {
   label: string;
   weight: number;
-  colour: string;
+  color: string;
 }
 
 /** Shares as one bar, each part as wide as its weight; the label shows on hover. */
@@ -38,7 +38,7 @@ export function ShareBar({ parts }: { parts: readonly SharePart[] }) {
         return (
           <span
             key={i}
-            style={{ flexGrow: p.weight, background: p.colour }}
+            style={{ flexGrow: p.weight, background: p.color }}
             title={`${p.label}: ${Math.round(f * 1000) / 10}%`}
           >
             {f > 0.12 ? p.label : ''}
@@ -146,15 +146,15 @@ export function MixFields(props: {
   const row = (at: number, id: string | null, weight: number) => set(withRow(at, id, weight));
   const drag = props.onDrag && ((m: Loose) => props.onDrag!(tidy(m)));
   const parts: SharePart[] = [
-    ...entries.map(([t, w], i) => ({ label: t, weight: w, colour: partColour(i) })),
-    ...(mix.empty ? [{ label: 'empty', weight: mix.empty, colour: EMPTY_COLOUR }] : []),
+    ...entries.map(([t, w], i) => ({ label: t, weight: w, color: partColor(i) })),
+    ...(mix.empty ? [{ label: 'empty', weight: mix.empty, color: EMPTY_COLOR }] : []),
   ];
   return (
     <div className="ed-mix">
       <ShareBar parts={parts} />
       {entries.map(([t, w], i) => (
         <div className="ed-row ed-mix-row" key={t}>
-          <span className="ed-dot" style={{ background: partColour(i) }} />
+          <span className="ed-dot" style={{ background: partColor(i) }} />
           <Pick label="" value={t} options={[t, ...unused]} onChange={(v) => v && row(i, v, w)} />
           {props.open ? (
             <button onClick={() => props.open!(t)} title={`Open ${t}`}>
@@ -182,7 +182,7 @@ export function MixFields(props: {
         </div>
       ))}
       <div className="ed-row ed-mix-row">
-        <span className="ed-dot" style={{ background: EMPTY_COLOUR }} />
+        <span className="ed-dot" style={{ background: EMPTY_COLOR }} />
         <span className="ed-mix-label">empty</span>
         <WeightSlider
           value={mix.empty ?? MIN}

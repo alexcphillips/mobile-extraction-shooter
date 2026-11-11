@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "cctv-wall",
   "name": "CCTV wall",
-  "colours": {
+  "colors": {
     "frame": "#1d1e21",
     "glow": "#58c0a0",
     "glow-b": "#3f8a7a"
@@ -12,63 +12,63 @@
       "type": "box",
       "pos": [0, 0.98, 0],
       "size": [2.92, 1.2, 0.08],
-      "colour": "frame",
+      "color": "frame",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.05, 1.05, 0.05],
       "size": [0.62, 0.48, 0.02],
-      "colour": "glow-b",
+      "color": "glow-b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.35, 1.05, 0.05],
       "size": [0.62, 0.48, 0.02],
-      "colour": "glow",
+      "color": "glow",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.35, 1.05, 0.05],
       "size": [0.62, 0.48, 0.02],
-      "colour": "glow-b",
+      "color": "glow-b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [1.05, 1.05, 0.05],
       "size": [0.62, 0.48, 0.02],
-      "colour": "glow",
+      "color": "glow",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.05, 1.62, 0.05],
       "size": [0.62, 0.48, 0.02],
-      "colour": "glow",
+      "color": "glow",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.35, 1.62, 0.05],
       "size": [0.62, 0.48, 0.02],
-      "colour": "glow-b",
+      "color": "glow-b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.35, 1.62, 0.05],
       "size": [0.62, 0.48, 0.02],
-      "colour": "glow",
+      "color": "glow",
       "collide": false
     },
     {
       "type": "box",
       "pos": [1.05, 1.62, 0.05],
       "size": [0.62, 0.48, 0.02],
-      "colour": "glow-b",
+      "color": "glow-b",
       "collide": false
     }
   ]

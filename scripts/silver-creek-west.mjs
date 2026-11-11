@@ -29,7 +29,7 @@ export function buildWestEnd(h) {
   const at = (name, x, z, y, extra = {}) => prefab(name, x, z, extra, y);
 
   // ---------------------------------------------------------------- fire lookout
-  // The tower from the greybox, now with rails on the landing's north and south sides (its
+  // The tower from the graybox, now with rails on the landing's north and south sides (its
   // west edge is left open to drop off, 2.5 m to the slope; the stairs come up the east),
   // cross bracing, and the flights on up to the cab, whose lowest
   // one starts 3.3 m above the landing (it has fallen away): out of reach even from the
@@ -111,7 +111,7 @@ export function buildWestEnd(h) {
         pos: [r2(x), r2(fy), r2(north ? z - 1.4 : z + 1.4)],
         yaw: north ? 90 : -90,
         size: [1.0, r2(fRise), 3.8],
-        colour: C.timber,
+        color: C.timber,
       });
     }
     return group(
@@ -127,7 +127,7 @@ export function buildWestEnd(h) {
           pos: [r2(x + half + run / 2), r2(y), z],
           yaw: -90,
           size: [2, landing, run],
-          colour: C.timber,
+          color: C.timber,
         },
         rail('lookout-rail-n', x - half, z - half, x + half, z - half + 0.1),
         rail('lookout-rail-s', x - half, z + half - 0.1, x + half, z + half),
@@ -163,7 +163,7 @@ export function buildWestEnd(h) {
           height: 2,
           sides: 4,
           yaw: 45,
-          colour: C.roof,
+          color: C.roof,
         },
         drawn(x - 0.05, z - 0.05, x + 0.05, z + 0.05, y + cab + 4.5, y + cab + 6, C.steel, {
           id: 'lookout-mast',
@@ -258,7 +258,7 @@ export function buildWestEnd(h) {
       pos: [0.9, fl, -0.2],
       yaw: 180,
       size: [1.05, r2(up - fl), 4.6],
-      colour: C.timber,
+      color: C.timber,
     });
     n.push(
       box(0.33, -2.4, 0.4, 2.1, up, up + 1.0, C['timber-dark'], { id: 'co-stair-rail-w' }),
@@ -324,7 +324,7 @@ export function buildWestEnd(h) {
         pos: [-7.75, 0, 5.65],
         yaw: 180,
         size: [1.2, up, 4.5],
-        colour: C.steel,
+        color: C.steel,
       },
       box(-8.5, 1.4, -7.0, 3.4, up - 0.15, up, C.steel, { id: 'co-fire-landing' }),
       box(-8.5, 1.33, -7.0, 1.4, up, up + 1.0, C['steel-dark'], { id: 'co-fire-rail-n' }),
@@ -339,7 +339,7 @@ export function buildWestEnd(h) {
   })();
 
   // ---------------------------------------------------------------- sheds
-  // The MT-4 sheds replace the greybox blocks: a red one and a grey one facing the town, two
+  // The MT-4 sheds replace the graybox blocks: a red one and a gray one facing the town, two
   // small ones turned to make lanes between them, and the woodshed's 1 m deep hide facing the
   // houses. Each has its own setback, so the lanes zigzag.
   const sheds = [
@@ -347,7 +347,7 @@ export function buildWestEnd(h) {
       'shed',
       47.5,
       36.5,
-      { id: 'shed-1', colours: { siding: C['siding-red'], 'siding-dark': '#6e3a2e' } },
+      { id: 'shed-1', colors: { siding: C['siding-red'], 'siding-dark': '#6e3a2e' } },
       0,
     ),
     prefab('shed', 59.5, 35.2, { id: 'shed-2', yaw: 4 }, 0),
@@ -355,7 +355,7 @@ export function buildWestEnd(h) {
       'shed-small',
       53.2,
       44.6,
-      { id: 'shed-3', yaw: 90, colours: { siding: C['timber-dark'], 'siding-dark': '#4a3828' } },
+      { id: 'shed-3', yaw: 90, colors: { siding: C['timber-dark'], 'siding-dark': '#4a3828' } },
       0,
     ),
     prefab('shed-small', 44.8, 44.2, { id: 'shed-4', yaw: 180 }, 0),
@@ -379,8 +379,8 @@ export function buildWestEnd(h) {
     name: 'House 1 (hall)',
     pos: [41.5, 72.5],
     yaw: 0,
-    colour: C.siding,
-    roofColour: C.roof,
+    color: C.siding,
+    roofColor: C.roof,
     ops: {
       front: [door(0), win(-3.3, 1.6), win(3.3)],
       back: [door(0), win(-3.3, 1.6), win(3.6, 1.0)],
@@ -422,8 +422,8 @@ export function buildWestEnd(h) {
     name: 'House 2 (open plan)',
     pos: [59.5, 72.5],
     yaw: 0,
-    colour: C['siding-sage'],
-    roofColour: C['roof-red'],
+    color: C['siding-sage'],
+    roofColor: C['roof-red'],
     ops: {
       front: [door(-2.0), win(-4.4), win(1.0, 1.6), win(4.6, 0.9)],
       back: [win(-3.4), { at: 0.2, width: 0.8, bottom: 1.4, top: 2.0, glass: C.glass }, win(3.5)],
@@ -480,8 +480,8 @@ export function buildWestEnd(h) {
     name: 'House 3 (caved in)',
     pos: [77.5, 72.5],
     yaw: 0,
-    colour: C['siding-cream'],
-    roofColour: C.roof,
+    color: C['siding-cream'],
+    roofColor: C.roof,
     roofGaps: [[1.5, 4.8]],
     ceilingHoles: [[1.5, -3.8, 4.8, -1.0]],
     ops: {
@@ -529,7 +529,7 @@ export function buildWestEnd(h) {
       ...fenceLine(`${id}-fence-back`, -7, -11.5, -1, -11.5, []),
       at('skip-bin', 4.4, -8.6, 0, { yaw: 8 }),
       at('log-pile', -3.4, -8.8, 0, { yaw: -4 }),
-      at('mailbox', 5.4, 6.9, 0, { yaw: 180, colours: { box: '#4a5a3a' } }),
+      at('mailbox', 5.4, 6.9, 0, { yaw: 180, colors: { box: '#4a5a3a' } }),
     ],
   });
 
@@ -540,8 +540,8 @@ export function buildWestEnd(h) {
     name: 'House 4 (rooms in a line)',
     pos: [45.5, 89.5],
     yaw: 180,
-    colour: C['siding-red'],
-    roofColour: C.roof,
+    color: C['siding-red'],
+    roofColor: C.roof,
     ops: {
       front: [door(-3.6), win(1.0, 1.0), win(3.6)],
       back: [win(-3.6, 1.2), win(0, 1.2), door(4.0)],
@@ -580,7 +580,7 @@ export function buildWestEnd(h) {
     yard: (id) => [
       ...fenceLine(`${id}-fence-back`, -7, -11.5, 7, -11.5, [4]),
       ...fenceLine(`${id}-fence-w`, -7, -4.5, -7, -11.5, [1]),
-      at('shed-small', -4.2, -9.4, 0, { colours: { siding: C['siding-cream'] } }),
+      at('shed-small', -4.2, -9.4, 0, { colors: { siding: C['siding-cream'] } }),
       at('lumber-stack', 3.2, -8.5, 0, { yaw: 85 }),
       at('mailbox', -1.6, 6.9, 0, { yaw: 180 }),
     ],
@@ -593,8 +593,8 @@ export function buildWestEnd(h) {
     name: 'House 5 (two storeys)',
     pos: [63.5, 89.5],
     yaw: 180,
-    colour: C['siding-blue'],
-    roofColour: C['roof-red'],
+    color: C['siding-blue'],
+    roofColor: C['roof-red'],
     twoStorey: true,
   });
 
@@ -604,8 +604,8 @@ export function buildWestEnd(h) {
     name: 'House 6 (boarded up)',
     pos: [81.5, 89.5],
     yaw: 180,
-    colour: C.siding,
-    roofColour: C.roof,
+    color: C.siding,
+    roofColor: C.roof,
     ops: {
       front: [],
       back: [door(-2.5), { at: 3.6, width: 1.4, ...WIN }],
@@ -702,7 +702,7 @@ export function buildWestEnd(h) {
   }
 
   /** House 5's plan, two storeys. */
-  function twoStorey(id, colour) {
+  function twoStorey(id, color) {
     const fl = 0.3;
     const up = 3.3;
     const top = 5.9;
@@ -723,10 +723,10 @@ export function buildWestEnd(h) {
       east: [win(2.2, 1.2), win(-2.2, 1.2)],
     };
     const ring = (lvl, b, t, ops) => [
-      wX(`${id}-${lvl}-front`, -5.5, 5.5, 4.4, b, t, colour, ops.front),
-      wX(`${id}-${lvl}-back`, -5.5, 5.5, -4.4, b, t, colour, ops.back),
-      wZ(`${id}-${lvl}-west`, -5.4, -4.3, 4.3, b, t, colour, ops.west),
-      wZ(`${id}-${lvl}-east`, 5.4, -4.3, 4.3, b, t, colour, ops.east),
+      wX(`${id}-${lvl}-front`, -5.5, 5.5, 4.4, b, t, color, ops.front),
+      wX(`${id}-${lvl}-back`, -5.5, 5.5, -4.4, b, t, color, ops.back),
+      wZ(`${id}-${lvl}-west`, -5.4, -4.3, 4.3, b, t, color, ops.west),
+      wZ(`${id}-${lvl}-east`, 5.4, -4.3, 4.3, b, t, color, ops.east),
     ];
     n.push(...ring('g', fl, up, g));
     // the stair hole: x −5.3..−4.15 over the flight, z −1.5..3.0
@@ -745,7 +745,7 @@ export function buildWestEnd(h) {
       pos: [-4.75, fl, 0.75],
       yaw: 180,
       size: [1.1, r2(up - fl), 4.5],
-      colour: C.timber,
+      color: C.timber,
     });
     n.push(
       along([-4.12, fl + 0.5, 3.0], [-4.12, up + 0.5, -1.5], 0.08, 1.0, C['timber-dark'], {
@@ -783,7 +783,7 @@ export function buildWestEnd(h) {
     );
     const rf = roof(`${id}-roof`, -5.5, 5.5, -4.5, 4.5, top + 0.2, 30, {
       roof: C['roof-red'],
-      gable: colour,
+      gable: color,
     });
     n.push(...rf.nodes);
     n.push(box(2.6, -1.0, 3.4, -0.2, top + 0.2, rf.ridge + 1.0, C.stone, { id: `${id}-chimney` }));
@@ -796,17 +796,17 @@ export function buildWestEnd(h) {
     const id = `house-${k + 1}`;
     let nodes;
     if (s.twoStorey) {
-      nodes = twoStorey(id, s.colour);
+      nodes = twoStorey(id, s.color);
       nodes.push(
         ...fenceLine(`${id}-fence-back`, -7, -11.5, 7, -11.5, [2]),
-        at('car', 3.5, -8.5, 0, { yaw: 8, colours: { paint: '#5a6a4a' } }),
+        at('car', 3.5, -8.5, 0, { yaw: 8, colors: { paint: '#5a6a4a' } }),
         at('clothes-line', -3.5, -8.0, 0, { yaw: -4 }),
         at('mailbox', 1.6, 6.9, 0, { yaw: 180 }),
       );
     } else {
       const sh = shell(id, {
         fl: FL,
-        colour: s.colour,
+        color: s.color,
         ops: s.ops,
         ceilingHoles: s.ceilingHoles ?? [],
       });
@@ -818,7 +818,7 @@ export function buildWestEnd(h) {
         4.5,
         sh.top,
         30,
-        { roof: s.roofColour, gable: s.colour },
+        { roof: s.roofColor, gable: s.color },
         s.roofGaps ?? [],
       );
       nodes = [...sh.nodes, ...rf.nodes, ...s.inside(id), ...s.yard(id)];
@@ -928,7 +928,7 @@ export function buildWestEnd(h) {
         radius: 0.13,
         height: 0.9,
         sides: 8,
-        colour: C.ladder,
+        color: C.ladder,
       },
       {
         type: 'cylinder',
@@ -937,10 +937,10 @@ export function buildWestEnd(h) {
         radius: 0.13,
         height: 0.9,
         sides: 8,
-        colour: C.ladder,
+        color: C.ladder,
       },
     ]),
-    prefab('car', 20, 126.8, { yaw: 2, colours: { paint: '#8a3a2e' } }, 0),
+    prefab('car', 20, 126.8, { yaw: 2, colors: { paint: '#8a3a2e' } }, 0),
     // the price sign by the highway
     {
       type: 'cylinder',
@@ -949,7 +949,7 @@ export function buildWestEnd(h) {
       radius: 0.15,
       height: 6.2,
       sides: 8,
-      colour: C.metal,
+      color: C.metal,
     },
     drawn(8.2, 122.6, 10.8, 123.0, 4.4, 6.4, C['store-red'], { id: 'price-sign' }),
     drawn(8.4, 122.55, 10.6, 123.05, 4.6, 5.6, C.trim, { id: 'price-sign-face' }),
@@ -965,29 +965,29 @@ export function buildWestEnd(h) {
       radius: 0.17,
       height: 1.0,
       sides: 8,
-      colour: '#d8d4ca',
+      color: '#d8d4ca',
     })),
-    // the back lot: a skip, pallets, tyres, a car up on blocks
+    // the back lot: a skip, pallets, tires, a car up on blocks
     prefab('skip-bin', 40.5, 137.5, { yaw: 8 }, 0),
     prefab('wood-pallet', 34.5, 136.2, { yaw: 20 }, 0),
     prefab('wood-pallet', 34.5, 136.2, { yaw: 14 }, 0.144),
     prefab('wood-pallet', 34.5, 136.2, { yaw: 25 }, 0.288),
     prefab('truck-tire-1', 31.5, 135.4, { yaw: 40 }, 0),
-    prefab('car', 25.5, 140, { yaw: 72, colours: { paint: '#6a5a4a' } }, 0.2),
+    prefab('car', 25.5, 140, { yaw: 72, colors: { paint: '#6a5a4a' } }, 0.2),
   ]);
 
   // ---------------------------------------------------------------- cover in the open
   // Cars along the houses' lane (staggered, so the 68 m lane has no clear line), and hard
   // cover over the open ground round the west spawns and south of the highway.
   const cover = group('West end cover', [
-    prefab('car', 50.5, 80.4, { yaw: 91, colours: { paint: '#4a5a6a' } }, 0),
-    prefab('car', 70.5, 82.3, { yaw: -88, colours: { paint: '#7a6a3a' } }, 0),
+    prefab('car', 50.5, 80.4, { yaw: 91, colors: { paint: '#4a5a6a' } }, 0),
+    prefab('car', 70.5, 82.3, { yaw: -88, colors: { paint: '#7a6a3a' } }, 0),
     prefab('rock-large', 72, 50.5, { yaw: 30 }, 0),
     prefab('log-pile', 82, 46, { yaw: 8 }, 0),
     prefab('lumber-stack', 38, 52.5, { yaw: 76 }, 0),
     prefab('rock', 40.5, 60.5, { yaw: 140 }, 0),
     prefab('bush-tall', 88, 56, {}, 0),
-    prefab('car', 24, 104, { yaw: 25, colours: { paint: '#5a4a3a' } }, 0),
+    prefab('car', 24, 104, { yaw: 25, colors: { paint: '#5a4a3a' } }, 0),
     prefab('rock-large', 33, 95, { yaw: -20 }, 0),
     prefab('bush-tall', 14, 92, {}, 0),
     prefab('rock', 16, 94, { yaw: 60 }, 0),

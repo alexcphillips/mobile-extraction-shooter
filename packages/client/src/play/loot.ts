@@ -373,7 +373,7 @@ function inSight(world: CollisionWorld, p: Character, x: number, y: number, z: n
 }
 
 /**
- * How near the crosshair passes a container marker's middle, half a metre above its marker (higher
+ * How near the crosshair passes a container marker's middle, half a meter above its marker (higher
  * is better, 0.5 to 1, so above a doorway), or -Infinity. Within CONTAINER_RADIUS counts.
  */
 function containerScore(

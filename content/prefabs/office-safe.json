@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "office-safe",
   "name": "Office safe",
-  "colours": {
+  "colors": {
     "body": "#3a3d42",
     "door": "#50545a",
     "steel": "#a9afb3"
@@ -12,13 +12,13 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [0.9, 1.15, 0.75],
-      "colour": "body"
+      "color": "body"
     },
     {
       "type": "box",
       "pos": [0, 0.08, 0.38],
       "size": [0.78, 1, 0.03],
-      "colour": "door",
+      "color": "door",
       "collide": false
     },
     {
@@ -26,7 +26,7 @@
       "pos": [0.1, 0.6, 0.4],
       "radius": 0.1,
       "height": 0.03,
-      "colour": "steel",
+      "color": "steel",
       "sides": 8,
       "collide": false
     },
@@ -34,7 +34,7 @@
       "type": "box",
       "pos": [-0.24, 0.56, 0.41],
       "size": [0.05, 0.3, 0.03],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     }
   ]

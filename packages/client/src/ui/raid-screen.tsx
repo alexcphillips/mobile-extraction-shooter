@@ -1,9 +1,9 @@
 import {
-  ARMOURED_RIG_WORN,
-  armourOf,
-  isArmouredRig,
+  ARMORED_RIG_WORN,
+  armorOf,
+  isArmoredRig,
   ATTACHMENT_SLOTS,
-  calibreOf,
+  caliberOf,
   cantSell,
   createWeaponStats,
   itemDef,
@@ -59,10 +59,10 @@ import type { RaidContext } from './raid';
 import { RaidQuests } from './raid-quests';
 import { CATEGORIES, type Category } from './stash-search';
 import { CategoryIcon } from './category-icons';
-import { favourites, holdsFavourite, toggleFavourite } from './favourites';
+import { favorites, holdsFavorite, toggleFavorite } from './favorites';
 import { settings } from '../settings';
 import { LOADOUT_SPLIT, sectionBoxes } from './inventory-layout';
-import { ZONE_COLOURS, zoneColour } from '../hud/vitals';
+import { ZONE_COLORS, zoneColor } from '../hud/vitals';
 
 type Tab = 'inventory' | 'map' | 'quests';
 
@@ -144,13 +144,13 @@ export function RaidScreen({ inv, version, ctx }: Props & { ctx: RaidContext }):
 /**
  * Your health while the raid screen is open (2026-11-06): the HUD's body is too tall for
  * the top bar on a phone, so it hides, and this small one sits in the bar instead. Each
- * zone in its colour (bleeding ones pulse), and chips for bleeding and broken limbs; no
+ * zone in its color (bleeding ones pulse), and chips for bleeding and broken limbs; no
  * total, as on the HUD.
  */
 function HealthStrip({ c }: { c: Character }): ReactNode {
   const h = c.health;
   if (h.pool !== undefined) return null;
-  const fill = (zone: number) => ZONE_COLOURS[zoneColour(h.hp[zone]!, HEALTH.maxHp[zone]!)];
+  const fill = (zone: number) => ZONE_COLORS[zoneColor(h.hp[zone]!, HEALTH.maxHp[zone]!)];
   const bleed = (zone: number) => (h.bleeding[zone] ? 'bleed' : undefined);
   const broken = ([LEFT_ARM, RIGHT_ARM, LEFT_LEG, RIGHT_LEG] as const).filter((z) =>
     isBroken(h, z),
@@ -228,16 +228,16 @@ const subscribeSettings = (onChange: () => void): (() => void) => settings.subsc
 // (2026-11-09, the user's call; they were under both primaries before).
 const MY_SLOTS: readonly GearSlot[] = [
   'helmet',
-  'bodyArmour',
+  'bodyArmor',
   'primary1',
   'sidearm',
   'primary2',
   'knife',
 ];
-const BODY_SLOTS: readonly GearSlot[] = ['helmet', 'bodyArmour', 'primary1', 'sidearm', 'primary2'];
+const BODY_SLOTS: readonly GearSlot[] = ['helmet', 'bodyArmor', 'primary1', 'sidearm', 'primary2'];
 /**
  * Not on a PC, where the loadout and what you carry are one column (2026-11-09, the user's
- * call): the guns first, then the helmet and armour side by side, then the rig and the rest.
+ * call): the guns first, then the helmet and armor side by side, then the rig and the rest.
  */
 const PHONE_SLOTS: readonly GearSlot[] = [
   'primary1',
@@ -245,7 +245,7 @@ const PHONE_SLOTS: readonly GearSlot[] = [
   'primary2',
   'knife',
   'helmet',
-  'bodyArmour',
+  'bodyArmor',
 ];
 const SLOT_NAMES: Record<GearSlot, string> = {
   primary1: 'Primary 1',
@@ -253,7 +253,7 @@ const SLOT_NAMES: Record<GearSlot, string> = {
   sidearm: 'Sidearm',
   knife: 'Knife',
   helmet: 'Helmet',
-  bodyArmour: 'Armour',
+  bodyArmor: 'Armor',
   rig: 'Rig',
   backpack: 'Backpack',
 };
@@ -268,12 +268,12 @@ const SLOT_GHOSTS: Partial<Record<GearSlot, string>> = {
   sidearm: 'm9a3',
   knife: 'knife',
   helmet: 'combat-helmet',
-  bodyArmour: 'plate-carrier',
+  bodyArmor: 'plate-carrier',
   rig: 'chest-rig',
   backpack: 'medium-backpack',
 };
 
-/** An empty slot's ghost: its item's picture as a flat light grey shape. */
+/** An empty slot's ghost: its item's picture as a flat light gray shape. */
 function SlotGhost({ items, slot }: { items: ItemDb; slot: GearSlot }): ReactNode {
   const id = SLOT_GHOSTS[slot];
   const def = id ? items.get(id) : undefined;
@@ -288,9 +288,9 @@ function SlotGhost({ items, slot }: { items: ItemDb; slot: GearSlot }): ReactNod
   );
 }
 
-/** Primaries are drawn twice as wide, a small slot beside each; the helmet and armour have a row each, centred. */
+/** Primaries are drawn twice as wide, a small slot beside each; the helmet and armor have a row each, centered. */
 const WIDE: ReadonlySet<GearSlot> = new Set(['primary1', 'primary2']);
-const CENTRE: ReadonlySet<GearSlot> = new Set(['helmet', 'bodyArmour']);
+const CENTER: ReadonlySet<GearSlot> = new Set(['helmet', 'bodyArmor']);
 
 /** Your gear and grids, beside what's open (a body, a container, the ground or the stash). */
 export function Inventory({ inv, version }: Props): ReactNode {
@@ -306,9 +306,9 @@ export function Inventory({ inv, version }: Props): ReactNode {
   const sel = selected && inv.find(selected);
   const [help, setHelp] = useState(false);
   const stashSearch = useContext(StashSearchContext);
-  // Favouriting changes the settings: redraw for it.
+  // Favoriting changes the settings: redraw for it.
   useSyncExternalStore(subscribeSettings, () => settings.current);
-  const favs = favourites();
+  const favs = favorites();
   const [hover, setHover] = useState<Hover | null>(null);
   // The hover card is for a mouse: on a phone a tap opens the details.
   const onPointerMove = (e: ReactPointerEvent): void => {
@@ -357,7 +357,13 @@ export function Inventory({ inv, version }: Props): ReactNode {
           >
             {layout.merged ? (
               <>
-                <Slots inv={inv} owner={SELF} slots={PHONE_SLOTS} ch={ctx.player} centred={false} />
+                <Slots
+                  inv={inv}
+                  owner={SELF}
+                  slots={PHONE_SLOTS}
+                  ch={ctx.player}
+                  centered={false}
+                />
                 <CharacterGrids inv={inv} owner={SELF} ch={ctx.player} vault />
               </>
             ) : (
@@ -396,14 +402,14 @@ export function Inventory({ inv, version }: Props): ReactNode {
                       {inv.medRef(selected) ? 'Use' : 'Nothing to treat'}
                     </button>
                   )}
-                  <RepairButton inv={inv} armour={selected} item={sel.item} def={sel.def} />
+                  <RepairButton inv={inv} armor={selected} item={sel.item} def={sel.def} />
                   <button
-                    className={favs.has(sel.def.id) ? 'favourited' : undefined}
+                    className={favs.has(sel.def.id) ? 'favorited' : undefined}
                     aria-pressed={favs.has(sel.def.id)}
-                    title="Favourites are starred, and light up where they turn up in a body, a container or on the ground"
-                    onClick={() => toggleFavourite(sel.def.id)}
+                    title="Favorites are starred, and light up where they turn up in a body, a container or on the ground"
+                    onClick={() => toggleFavorite(sel.def.id)}
                   >
-                    {favs.has(sel.def.id) ? '★ Favourite' : '☆ Favourite'}
+                    {favs.has(sel.def.id) ? '★ Favorite' : '☆ Favorite'}
                   </button>
                   {ctx.sell && !('ground' in selected) && (
                     <SellButton key={refKey(selected)} inv={inv} at={selected} item={sel.item} />
@@ -433,8 +439,8 @@ export function Inventory({ inv, version }: Props): ReactNode {
           {inputMode.gamepad
             ? `✕ select · △ details · □ quick move · hold ✕ and move to drag${ctx.stash ? '' : ' (onto the ground to drop)'} · △ while dragging rotates · ○ puts it back · L1/R1 change tab`
             : ctx.stash
-              ? 'Tap for details · double-tap to move between your gear and the stash · drag to place · drag a repair kit onto armour to mend it · while dragging, tap with another finger (or press R) to rotate'
-              : 'Tap for details · double-tap to move · drag to place, or onto the ground to drop · drag a repair kit onto armour to mend it · while dragging, tap with another finger (or press R) to rotate'}
+              ? 'Tap for details · double-tap to move between your gear and the stash · drag to place · drag a repair kit onto armor to mend it · while dragging, tap with another finger (or press R) to rotate'
+              : 'Tap for details · double-tap to move · drag to place, or onto the ground to drop · drag a repair kit onto armor to mend it · while dragging, tap with another finger (or press R) to rotate'}
         </div>
       )}
       {inv.selling && (
@@ -521,7 +527,7 @@ const COMPACT = new Intl.NumberFormat('en', { notation: 'compact', maximumFracti
  */
 export function gearWorth(items: ItemDb, g: Character['gear'], vault = true): number {
   const list: Item[] = [];
-  for (const it of [g.primary1, g.primary2, g.sidearm, g.helmet, g.bodyArmour, g.rig, g.backpack])
+  for (const it of [g.primary1, g.primary2, g.sidearm, g.helmet, g.bodyArmor, g.rig, g.backpack])
     if (it) list.push(it);
   // The rig's and backpack's contents come in with them: worth() counts what's inside.
   for (const grid of [g.pockets, vault ? g.vault : null])
@@ -551,12 +557,12 @@ function HoverCard({ inv, hover }: { inv: InventoryController; hover: Hover }): 
   const left = hover.x + 240 > window.innerWidth ? hover.x - 236 : hover.x + 16;
   const top = Math.min(hover.y + 16, window.innerHeight - 110);
   return (
-    <div className="inv-hover" style={{ left, top, borderColor: colourOf(def) }}>
-      <b style={{ color: colourOf(def) }}>{def.name}</b>
+    <div className="inv-hover" style={{ left, top, borderColor: colorOf(def) }}>
+      <b style={{ color: colorOf(def) }}>{def.name}</b>
       <span className="inv-hover-kind">
         {RARITY_NAMES[def.rarity]} {KIND_NAMES[def.type]}
         {item.found ? ' · found in raid' : ''}
-        {favourites().has(item.item) ? ' · ★ favourite' : ''}
+        {favorites().has(item.item) ? ' · ★ favorite' : ''}
       </span>
       {state && <span>{hoverState(def, state)}</span>}
       <span>
@@ -583,7 +589,7 @@ const KIND_NAMES: Record<ItemDef['type'], string> = {
   attachment: 'attachment',
   ammo: 'ammo',
   grenade: 'grenade',
-  armour: 'armour',
+  armor: 'armor',
   container: 'gear',
   med: 'med',
   repair: 'repair kit',
@@ -641,31 +647,31 @@ function Split({ inv, at, item }: { inv: InventoryController; at: InGrid; item: 
 }
 
 /**
- * Mends the selected armour with a repair kit you have (session 13b): at once in the
- * stash, over the kit's use time in a raid. Dragging a kit onto armour does the same.
+ * Mends the selected armor with a repair kit you have (session 13b): at once in the
+ * stash, over the kit's use time in a raid. Dragging a kit onto armor does the same.
  */
 function RepairButton({
   inv,
-  armour,
+  armor,
   item,
   def,
 }: {
   inv: InventoryController;
-  armour: ItemRef;
+  armor: ItemRef;
   item: Item;
   def: ItemDef;
 }): ReactNode {
-  // Armour, or an armoured rig (2026-11-11).
-  if (!armourOf(def)) return null;
+  // Armor, or an armored rig (2026-11-11).
+  if (!armorOf(def)) return null;
   // While anything is being used, the pill at the top shows it (and stops it).
   if (inv.ctx.player.using) return null;
   if ((item.durability ?? 0) >= maxDurability(inv.ctx.items, item) - 1e-6) return null;
-  const kit = inv.kitFor(armour);
+  const kit = inv.kitFor(armor);
   return (
     <button
       disabled={!kit}
       title={kit ? undefined : 'You need a repair kit with points left'}
-      onClick={() => inv.repair(armour)}
+      onClick={() => inv.repair(armor)}
     >
       Repair
     </button>
@@ -764,8 +770,8 @@ function UsePill({ inv }: { inv: InventoryController }): ReactNode {
   if (!u) return null;
   const total = timeToUse(items, u.item);
   const done = total > 0 ? Math.min(1, 1 - u.left / total) : 1;
-  const label = u.armour
-    ? `Repairing ${itemDef(items, u.armour.item).name.toLowerCase()}`
+  const label = u.armor
+    ? `Repairing ${itemDef(items, u.armor.item).name.toLowerCase()}`
     : itemDef(items, u.item).name;
   return (
     <button className="inv-use" aria-label={`${label}: tap to stop`} onClick={() => inv.stopUse()}>
@@ -1039,7 +1045,7 @@ function Bag({ inv }: { inv: InventoryController }): ReactNode {
   const { at, grid } = open;
   const def = itemDef(inv.ctx.items, at.item);
   return (
-    <div className="inv-bag" style={{ borderColor: colourOf(def) }}>
+    <div className="inv-bag" style={{ borderColor: colorOf(def) }}>
       <header className="inv-bag-head">
         <h3>{def.name}</h3>
         <span className="raid-spacer" />
@@ -1064,7 +1070,7 @@ const TO_GROUND = JSON.stringify({ owner: { kind: 'ground' } });
  * it; drag or double-tap one of these to take it.
  */
 function Ground({ inv }: { inv: InventoryController }): ReactNode {
-  const favs = favourites();
+  const favs = favorites();
   const { cell, ctx } = inv;
   const near = inv.nearby();
   return (
@@ -1075,10 +1081,10 @@ function Ground({ inv }: { inv: InventoryController }): ReactNode {
           return (
             <div
               key={ref.ground}
-              className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${holdsFavourite(g.item, favs) ? ' favourite' : ''}`}
+              className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${holdsFavorite(g.item, favs) ? ' favorite' : ''}`}
               data-ref={JSON.stringify(ref)}
               data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
-              data-armour={armourOf(def) ? JSON.stringify(ref) : undefined}
+              data-armor={armorOf(def) ? JSON.stringify(ref) : undefined}
               style={{
                 width: def.size[0] * cell,
                 height: def.size[1] * cell,
@@ -1096,7 +1102,7 @@ function Ground({ inv }: { inv: InventoryController }): ReactNode {
                   rotated: false,
                   grabX: 0,
                   grabY: 0,
-                  colour: colourOf(def),
+                  color: colorOf(def),
                   label: tileName(def),
                   el: e.currentTarget,
                 })
@@ -1105,7 +1111,7 @@ function Ground({ inv }: { inv: InventoryController }): ReactNode {
               <ItemArt items={ctx.items} item={g.item} def={def} cell={cell} />
               <ItemLabel items={ctx.items} item={g.item} def={def} />
               {g.item.found && <span className="inv-item-found">✓</span>}
-              {holdsFavourite(g.item, favs) && <span className="inv-item-star">★</span>}
+              {holdsFavorite(g.item, favs) && <span className="inv-item-star">★</span>}
             </div>
           );
         })}
@@ -1200,37 +1206,37 @@ function Slots({
   slots,
   ch,
   shown,
-  centred = true,
+  centered = true,
 }: {
   inv: InventoryController;
   owner: Owner;
   slots: readonly GearSlot[];
   ch: Character;
-  /** A body being searched: what's been found in its grids (favourite stars count only those). */
+  /** A body being searched: what's been found in its grids (favorite stars count only those). */
   shown?: ReadonlySet<Item> | undefined;
-  /** The helmet and armour on a row each, centred (false: side by side, half the row each, as on a phone). */
-  centred?: boolean;
+  /** The helmet and armor on a row each, centered (false: side by side, half the row each, as on a phone). */
+  centered?: boolean;
 }): ReactNode {
-  const favs = favourites();
+  const favs = favorites();
   return (
-    <div className={`inv-slots${centred ? '' : ' halves'}`}>
+    <div className={`inv-slots${centered ? '' : ' halves'}`}>
       {slots.map((slot) => {
         const item = (ch.gear as unknown as Record<GearSlot, Item | null>)[slot];
         const def = item && itemDef(inv.ctx.items, item.item);
         const inHand = owner.kind === 'self' && ch.gear.hand === slot && !!item;
         const ref: ItemRef | null = item ? { owner, slot, item: item.item } : null;
-        // Shut while an armoured rig is worn (2026-11-11): it's the chest armour then.
+        // Shut while an armored rig is worn (2026-11-11): it's the chest armor then.
         const shut =
-          slot === 'bodyArmour' &&
+          slot === 'bodyArmor' &&
           !item &&
           !!ch.gear.rig &&
-          isArmouredRig(itemDef(inv.ctx.items, ch.gear.rig.item));
+          isArmoredRig(itemDef(inv.ctx.items, ch.gear.rig.item));
         return (
           <div
             key={slot}
-            className={`inv-slot${WIDE.has(slot) ? ' wide' : CENTRE.has(slot) ? (centred ? ' centre' : ' half') : ''}${shut ? ' shut' : ''}`}
+            className={`inv-slot${WIDE.has(slot) ? ' wide' : CENTER.has(slot) ? (centered ? ' center' : ' half') : ''}${shut ? ' shut' : ''}`}
             data-drop={JSON.stringify({ owner, slot })}
-            title={shut ? ARMOURED_RIG_WORN : undefined}
+            title={shut ? ARMORED_RIG_WORN : undefined}
           >
             {/* Named only while empty: the item's own name would show through it. */}
             {!item && !shut && <span className="inv-slot-name">{SLOT_NAMES[slot]}</span>}
@@ -1243,11 +1249,11 @@ function Slots({
             )}
             {item && def && ref && (
               <div
-                className={`inv-item${inHand ? ' in-hand' : ''}${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${holdsFavourite(item, favs, shown) ? ' favourite' : ''}`}
+                className={`inv-item${inHand ? ' in-hand' : ''}${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${holdsFavorite(item, favs, shown) ? ' favorite' : ''}`}
                 data-ref={JSON.stringify(ref)}
                 title={inHand ? 'In hand' : undefined}
                 data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
-                data-armour={armourOf(def) ? JSON.stringify(ref) : undefined}
+                data-armor={armorOf(def) ? JSON.stringify(ref) : undefined}
                 style={{ background: tintOf(def) }}
                 onContextMenu={(e) => {
                   e.preventDefault();
@@ -1261,7 +1267,7 @@ function Slots({
                     rotated: false,
                     grabX: 0,
                     grabY: 0,
-                    colour: colourOf(def),
+                    color: colorOf(def),
                     label: tileName(def),
                     el: e.currentTarget,
                   })
@@ -1270,7 +1276,7 @@ function Slots({
                 <ItemArt items={inv.ctx.items} item={item} def={def} />
                 <ItemLabel items={inv.ctx.items} item={item} def={def} />
                 {item.found && <span className="inv-item-found">✓</span>}
-                {holdsFavourite(item, favs, shown) && <span className="inv-item-star">★</span>}
+                {holdsFavorite(item, favs, shown) && <span className="inv-item-star">★</span>}
               </div>
             )}
           </div>
@@ -1292,7 +1298,7 @@ function GridView({
   /** Being searched: what's been found; the rest shows as "?" and can't be touched. */
   shown?: ReadonlySet<Item> | undefined;
 }): ReactNode {
-  const favs = favourites();
+  const favs = favorites();
   const { cell } = inv;
   const search = useContext(StashSearchContext);
   // Your own grids aren't searched, only the stash and what's in it.
@@ -1323,10 +1329,10 @@ function GridView({
     return (
       <div
         key={index}
-        className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${inv.isOpenBag(ref) ? ' open' : ''}${hit && !hit(g.item) ? ' dimmed' : ''}${holdsFavourite(g.item, favs) ? ' favourite' : ''}`}
+        className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${inv.isOpenBag(ref) ? ' open' : ''}${hit && !hit(g.item) ? ' dimmed' : ''}${holdsFavorite(g.item, favs) ? ' favorite' : ''}`}
         data-ref={JSON.stringify(ref)}
         data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
-        data-armour={armourOf(def) ? JSON.stringify(ref) : undefined}
+        data-armor={armorOf(def) ? JSON.stringify(ref) : undefined}
         style={{
           left: (g.x - ox) * cell,
           top: (g.y - oy) * cell,
@@ -1348,7 +1354,7 @@ function GridView({
             rotated: g.rotated,
             grabX: Math.min(w - 1, Math.floor((e.clientX - r.left) / cell)),
             grabY: Math.min(h - 1, Math.floor((e.clientY - r.top) / cell)),
-            colour: colourOf(def),
+            color: colorOf(def),
             label: tileName(def),
             el: e.currentTarget,
           });
@@ -1357,7 +1363,7 @@ function GridView({
         <ItemArt items={inv.ctx.items} item={g.item} def={def} cell={cell} rotated={g.rotated} />
         <ItemLabel items={inv.ctx.items} item={g.item} def={def} />
         {g.item.found && <span className="inv-item-found">✓</span>}
-        {holdsFavourite(g.item, favs) && <span className="inv-item-star">★</span>}
+        {holdsFavorite(g.item, favs) && <span className="inv-item-star">★</span>}
       </div>
     );
   };
@@ -1442,9 +1448,9 @@ function quickLabel(ref: ItemRef, to: Owner): string {
   return 'slot' in ref ? 'Stow' : 'Equip';
 }
 
-/** A colour per item type, until the item editor gives items their own icons. */
+/** A color per item type, until the item editor gives items their own icons. */
 /** Gray, green, blue, purple, gold and red (design.md → Item tiles). */
-const RARITY_COLOURS: Record<Rarity, string> = {
+export const RARITY_COLORS: Record<Rarity, string> = {
   common: '#6f767d',
   uncommon: '#5c9a4a',
   rare: '#3d6fb0',
@@ -1453,18 +1459,18 @@ const RARITY_COLOURS: Record<Rarity, string> = {
   mythic: '#b8423a',
 };
 
-/** An item's colour, by its rarity. */
-export function colourOf(def: ItemDef): string {
-  return RARITY_COLOURS[def.rarity];
+/** An item's color, by its rarity. */
+export function colorOf(def: ItemDef): string {
+  return RARITY_COLORS[def.rarity];
 }
 
 /**
- * An item tile's background: its rarity's colour rising from the bottom edge over the dark
+ * An item tile's background: its rarity's color rising from the bottom edge over the dark
  * cell (2026-11-06, the Delta Force look). Translucent all the way, so the grid's lines show
  * through the tile (2026-11-09).
  */
 function tintOf(def: ItemDef): string {
-  const c = RARITY_COLOURS[def.rarity];
+  const c = RARITY_COLORS[def.rarity];
   return `linear-gradient(to top, ${c}8c, ${c}40 55%, ${c}26)`;
 }
 
@@ -1474,7 +1480,7 @@ const gunStats = createWeaponStats();
 /**
  * What a tile shows: its name, and bottom right a badge (a stack's count, durability…).
  * Every count or amount goes bottom right, in that one badge (the user's rule, 2026-11-09).
- * A gun shows the calibre it takes under its name, without dots (5.56x45 reads 556x45),
+ * A gun shows the caliber it takes under its name, without dots (5.56x45 reads 556x45),
  * and loaded/capacity in the corner, larger; rigs and backpacks show only their name.
  */
 function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemDef }): ReactNode {
@@ -1484,7 +1490,7 @@ function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemD
       <>
         <span className="inv-item-name">
           {tileName(def)}
-          <span className="inv-item-ammo">{calibreOf(items, def).replaceAll('.', '')}</span>
+          <span className="inv-item-ammo">{caliberOf(items, def).replaceAll('.', '')}</span>
         </span>
         <span className="inv-item-badge inv-item-mag">
           {item.mag ?? 0}/{capacity}
@@ -1492,11 +1498,11 @@ function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemD
       </>
     );
   }
-  // No level tag on ammo and armour tiles (2026-11-09): the tile's rarity colour says it.
+  // No level tag on ammo and armor tiles (2026-11-09): the tile's rarity color says it.
   return (
     <>
       <span className="inv-item-name">{tileName(def)}</span>
-      <span className={armourOf(def) ? 'inv-item-badge inv-item-light' : 'inv-item-badge'}>
+      <span className={armorOf(def) ? 'inv-item-badge inv-item-light' : 'inv-item-badge'}>
         {badge(item, def)}
       </span>
     </>
@@ -1524,7 +1530,7 @@ function nameLines(cellsHigh: number, cell: number): number {
 
 /** A tile's badge in words, for the hover card: "Durability 40/40", "12 cells", "2/2 uses". */
 function hoverState(def: ItemDef, state: string): string {
-  if (armourOf(def)) return `Durability ${state}`;
+  if (armorOf(def)) return `Durability ${state}`;
   if (def.type === 'container') return `${state} cells`;
   if (def.type === 'med' && def.effect !== 'heal') return `${state} uses`;
   return state;
@@ -1546,7 +1552,7 @@ export function tenths(n: number): string {
  */
 function badge(item: Item, def: ItemDef): string {
   switch (def.type) {
-    case 'armour':
+    case 'armor':
       // Out of its max now, which repairs wear down (sim/repair.ts).
       return `${tenths(item.durability ?? 0)}/${tenths(item.max ?? def.durability)}`;
     case 'med':
@@ -1562,9 +1568,9 @@ function badge(item: Item, def: ItemDef): string {
       return def.uses === undefined ? '' : `${item.left ?? def.uses}/${def.uses}`;
     case 'container':
       // How many cells it holds; the vault is never a tile.
-      // An armoured rig shows its durability, as armour does (2026-11-11).
-      if (def.armour)
-        return `${tenths(item.durability ?? 0)}/${tenths(item.max ?? def.armour.durability)}`;
+      // An armored rig shows its durability, as armor does (2026-11-11).
+      if (def.armor)
+        return `${tenths(item.durability ?? 0)}/${tenths(item.max ?? def.armor.durability)}`;
       return def.slot === 'vault' ? '' : `${cellsInside(def)}`;
     default:
       return stackSize(def) > 1 || item.count > 1 ? `${item.count}` : '';

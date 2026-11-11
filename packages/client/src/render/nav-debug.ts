@@ -34,7 +34,7 @@ export function buildNavOverlay(nav: NavGrid, kinds?: Uint8Array): THREE.Group {
   for (let r0 = 0; r0 < nav.rows; r0 += CHUNK) {
     for (let q0 = 0; q0 < nav.cols; q0 += CHUNK) {
       const positions: number[] = [];
-      const colours: number[] = [];
+      const colors: number[] = [];
       for (let r = r0; r < Math.min(nav.rows, r0 + CHUNK); r++) {
         for (let q = q0; q < Math.min(nav.cols, q0 + CHUNK); q++) {
           const c = r * nav.cols + q;
@@ -44,7 +44,7 @@ export function buildNavOverlay(nav: NavGrid, kinds?: Uint8Array): THREE.Group {
             const y = nav.nodeY(n) + LIFT;
             positions.push(x - h, y, z - h, x - h, y, z + h, x + h, y, z + h);
             positions.push(x - h, y, z - h, x + h, y, z + h, x + h, y, z - h);
-            const colour = kinds
+            const color = kinds
               ? kinds[n] === SPOT.reachable
                 ? MAIN
                 : kinds[n] === SPOT.hidden
@@ -53,14 +53,14 @@ export function buildNavOverlay(nav: NavGrid, kinds?: Uint8Array): THREE.Group {
               : nav.component[n] === main
                 ? MAIN
                 : ISLAND;
-            for (let k = 0; k < 6; k++) colours.push(colour.r, colour.g, colour.b);
+            for (let k = 0; k < 6; k++) colors.push(color.r, color.g, color.b);
           }
         }
       }
       if (positions.length === 0) continue;
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-      geometry.setAttribute('color', new THREE.Float32BufferAttribute(colours, 3));
+      geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
       geometry.computeBoundingSphere();
       group.add(new THREE.Mesh(geometry, material));
     }
@@ -68,7 +68,7 @@ export function buildNavOverlay(nav: NavGrid, kinds?: Uint8Array): THREE.Group {
   return group;
 }
 
-const AWARENESS_COLOURS: Record<Awareness, number> = {
+const AWARENESS_COLORS: Record<Awareness, number> = {
   unaware: 0x95a5a6,
   suspicious: 0xf1c40f,
   alert: 0xe74c3c,
@@ -79,7 +79,7 @@ const MAX_SEGMENTS = 1024;
 const CONE_LENGTH = 6;
 
 /**
- * What each enemy is thinking, for ?debug: a gem over its head coloured by awareness,
+ * What each enemy is thinking, for ?debug: a gem over its head colored by awareness,
  * the edges of its view, its path and what it's focused on. One mesh per enemy and one
  * line mesh for everything, updated in place every frame.
  */
@@ -87,15 +87,15 @@ export class AiDebug {
   readonly root = new THREE.Group();
   private readonly gems: THREE.Mesh<THREE.OctahedronGeometry, THREE.MeshBasicMaterial>[] = [];
   private readonly positions = new Float32Array(MAX_SEGMENTS * 6);
-  private readonly colours = new Float32Array(MAX_SEGMENTS * 6);
+  private readonly colors = new Float32Array(MAX_SEGMENTS * 6);
   private readonly lines: THREE.LineSegments;
-  private readonly colour = new THREE.Color();
+  private readonly color = new THREE.Color();
   private count = 0;
 
   constructor() {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(this.positions, 3));
-    geometry.setAttribute('color', new THREE.BufferAttribute(this.colours, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(this.colors, 3));
     this.lines = new THREE.LineSegments(
       geometry,
       new THREE.LineBasicMaterial({ vertexColors: true, depthTest: false }),
@@ -120,8 +120,8 @@ export class AiDebug {
       gem.visible = !!ai && !c.health.dead;
       if (!ai || c.health.dead) continue;
       gem.position.set(c.x, c.y + c.height + 0.4, c.z);
-      gem.material.color.setHex(AWARENESS_COLOURS[ai.awareness]);
-      this.colour.setHex(AWARENESS_COLOURS[ai.awareness]);
+      gem.material.color.setHex(AWARENESS_COLORS[ai.awareness]);
+      this.color.setHex(AWARENESS_COLORS[ai.awareness]);
 
       const ey = eyeHeight(c);
       for (let side = -1; side <= 1; side += 2) {
@@ -171,8 +171,8 @@ export class AiDebug {
     this.positions[o + 3] = x1;
     this.positions[o + 4] = y1;
     this.positions[o + 5] = z1;
-    const { r, g, b } = this.colour;
-    const cs = this.colours;
+    const { r, g, b } = this.color;
+    const cs = this.colors;
     cs[o] = cs[o + 3] = r;
     cs[o + 1] = cs[o + 4] = g;
     cs[o + 2] = cs[o + 5] = b;

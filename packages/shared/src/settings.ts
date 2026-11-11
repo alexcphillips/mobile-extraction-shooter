@@ -11,7 +11,7 @@ import { loadContent, type ContentFormat } from './content/format';
 const range = (min: number, max: number, fallback: number) =>
   z.number().min(min).max(max).catch(fallback);
 
-/** Where a HUD control sits: its centre as a fraction of the screen, and a size multiplier. */
+/** Where a HUD control sits: its center as a fraction of the screen, and a size multiplier. */
 const placementSchema = z.object({
   x: z.number().min(0).max(1),
   y: z.number().min(0).max(1),
@@ -47,8 +47,8 @@ const controlLayoutSchema = z.object({
 
 export type ControlLayout = z.infer<typeof controlLayoutSchema>;
 
-/** The most favourites a player can have. */
-export const FAVOURITES_MAX = 200;
+/** The most favorites a player can have. */
+export const FAVORITES_MAX = 200;
 
 const settingsObject = z.object({
   formatVersion: z.literal(1),
@@ -101,14 +101,14 @@ const settingsObject = z.object({
    */
   graphics: z.enum(['high', 'balanced', 'low']).catch('high'),
   /**
-   * Item ids the player has favourited (2026-11-06): marked with a star, and lit up where
+   * Item ids the player has favorited (2026-11-06): marked with a star, and lit up where
    * they turn up in a body, a container or on the ground. Ids no longer in content are
-   * harmless. At most FAVOURITES_MAX, to keep the settings small.
+   * harmless. At most FAVORITES_MAX, to keep the settings small.
    */
-  favourites: z
+  favorites: z
     .array(z.string().max(64))
     .catch([])
-    .transform((ids) => [...new Set(ids)].slice(0, FAVOURITES_MAX)),
+    .transform((ids) => [...new Set(ids)].slice(0, FAVORITES_MAX)),
   /**
    * The saved button layouts (UX-4, 2026-11-08): always LAYOUT_SLOTS of them, one equipped.
    * A slot never edited is the default layout.

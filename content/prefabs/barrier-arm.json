@@ -11,13 +11,13 @@
           "type": "box",
           "pos": [-0.006, 0, 1.9],
           "size": [0.5, 1.2, 0.6],
-          "colour": "#4d4d4d"
+          "color": "#4d4d4d"
         },
         {
           "type": "box",
           "pos": [0.006, 0.74, -1.9],
           "size": [0.2, 0.2, 7],
-          "colour": "#caac3f"
+          "color": "#caac3f"
         }
       ]
     }

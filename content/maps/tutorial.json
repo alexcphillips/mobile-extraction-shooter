@@ -20,9 +20,9 @@
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     ],
-    "colour": "#6b8f4e"
+    "color": "#6b8f4e"
   },
-  "colours": {
+  "colors": {
     "paint": "#d9cfb8",
     "floor": "#8a6a4a",
     "ceiling": "#ece8de",
@@ -42,21 +42,21 @@
       "id": "floor",
       "pos": [16, 0, 0],
       "size": [32.4, 0.04, 6.4],
-      "colour": "floor"
+      "color": "floor"
     },
     {
       "type": "box",
       "id": "ceiling",
       "pos": [16, 2.8, 0],
       "size": [32.6, 0.2, 6.6],
-      "colour": "ceiling"
+      "color": "ceiling"
     },
     {
       "type": "wall",
       "id": "north-wall",
       "pos": [16, 0, -3.1],
       "size": [32.4, 2.8, 0.2],
-      "colour": "paint",
+      "color": "paint",
       "openings": [
         { "along": -12, "width": 1.2, "bottom": 0.9, "top": 2, "glass": "glass" },
         { "along": 11, "width": 1.2, "bottom": 0.9, "top": 2, "glass": "glass" }
@@ -67,7 +67,7 @@
       "id": "south-wall",
       "pos": [16, 0, 3.1],
       "size": [32.4, 2.8, 0.2],
-      "colour": "paint",
+      "color": "paint",
       "openings": [
         { "along": -12, "width": 1.2, "bottom": 0.9, "top": 2, "glass": "glass" },
         { "along": 10, "width": 1, "bottom": 0, "top": 2.1 }
@@ -79,7 +79,7 @@
       "pos": [-0.1, 0, 0],
       "yaw": 90,
       "size": [6.4, 2.8, 0.2],
-      "colour": "paint",
+      "color": "paint",
       "openings": []
     },
     {
@@ -88,7 +88,7 @@
       "pos": [32.1, 0, 0],
       "yaw": 90,
       "size": [6.4, 2.8, 0.2],
-      "colour": "paint",
+      "color": "paint",
       "openings": []
     },
     {
@@ -97,7 +97,7 @@
       "pos": [8, 0, 0],
       "yaw": 90,
       "size": [6, 2.8, 0.15],
-      "colour": "paint",
+      "color": "paint",
       "openings": [{ "along": 0, "width": 1.1, "bottom": 0, "top": 2.2 }]
     },
     {
@@ -106,7 +106,7 @@
       "pos": [22, 0, 0],
       "yaw": 90,
       "size": [6, 2.8, 0.15],
-      "colour": "paint",
+      "color": "paint",
       "openings": [{ "along": 1.2, "width": 1.1, "bottom": 0, "top": 2.2 }]
     },
     {
@@ -194,7 +194,7 @@
       "pos": [26, 0.04, 3.1],
       "size": [1, 2.06],
       "key": "front-door-key",
-      "colour": "door"
+      "color": "door"
     },
     {
       "type": "questMarker",
@@ -207,7 +207,7 @@
       "pos": [23, 0, 6.1],
       "size": [0.6, 2.4, 5.8],
       "bulge": [0.08, 0.08, 0, 0.1, 0, 0],
-      "colour": "hedge"
+      "color": "hedge"
     },
     {
       "type": "box",
@@ -215,7 +215,7 @@
       "pos": [30, 0, 6.1],
       "size": [0.6, 2.4, 5.8],
       "bulge": [0.08, 0.08, 0, 0.1, 0, 0],
-      "colour": "hedge"
+      "color": "hedge"
     },
     {
       "type": "box",
@@ -223,7 +223,7 @@
       "pos": [26.5, 0, 9.1],
       "size": [7.6, 2.4, 0.6],
       "bulge": [0, 0, 0, 0.1, 0.08, 0.08],
-      "colour": "hedge"
+      "color": "hedge"
     }
   ],
   "enemyClearance": 0,

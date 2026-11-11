@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  FAVOURITES_MAX,
+  FAVORITES_MAX,
   LAYOUT_SLOTS,
   defaultSettings,
   equippedLayout,
@@ -91,17 +91,17 @@ describe('settings', () => {
     expect(loadSettings({ formatVersion: 99 })).toEqual(defaultSettings());
   });
 
-  it('keeps favourites once each, up to the most there can be', () => {
-    expect(defaultSettings().favourites).toEqual([]);
-    const s = loadSettings({ formatVersion: 1, favourites: ['gpu', 'gpu', 'ring'] });
-    expect(s.favourites).toEqual(['gpu', 'ring']);
-    const many = Array.from({ length: FAVOURITES_MAX + 5 }, (_, i) => `item-${i}`);
-    expect(loadSettings({ formatVersion: 1, favourites: many }).favourites).toHaveLength(
-      FAVOURITES_MAX,
+  it('keeps favorites once each, up to the most there can be', () => {
+    expect(defaultSettings().favorites).toEqual([]);
+    const s = loadSettings({ formatVersion: 1, favorites: ['gpu', 'gpu', 'ring'] });
+    expect(s.favorites).toEqual(['gpu', 'ring']);
+    const many = Array.from({ length: FAVORITES_MAX + 5 }, (_, i) => `item-${i}`);
+    expect(loadSettings({ formatVersion: 1, favorites: many }).favorites).toHaveLength(
+      FAVORITES_MAX,
     );
     // Not a list: none, and the rest of the settings kept.
-    const bad = loadSettings({ formatVersion: 1, favourites: 'gpu', volume: 0.3 });
-    expect(bad.favourites).toEqual([]);
+    const bad = loadSettings({ formatVersion: 1, favorites: 'gpu', volume: 0.3 });
+    expect(bad.favorites).toEqual([]);
     expect(bad.volume).toBe(0.3);
   });
 });

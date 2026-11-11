@@ -192,7 +192,7 @@ describe('recoil', () => {
       pitches[19]!,
       pitches[29]!,
     ];
-    // No levelling off: each ten rounds still climb a few degrees.
+    // No leveling off: each ten rounds still climb a few degrees.
     expect(twentieth - tenth).toBeGreaterThan(3 * DEG);
     expect(thirtieth - twentieth).toBeGreaterThan(2 * DEG);
     // The early rounds kick hardest: the first five climb more than the next five.
@@ -230,7 +230,7 @@ describe('gunRecoil', () => {
     expect(gunRecoil(r, 1)).toBeCloseTo(r * start, 4);
   });
 
-  it('keeps the gun near the centre, with more for a harder climb', () => {
+  it('keeps the gun near the center, with more for a harder climb', () => {
     const akm = gunRecoil(21 * DEG, 1);
     const scar = gunRecoil(28 * DEG, 1);
     expect(akm).toBeLessThan(6 * DEG);

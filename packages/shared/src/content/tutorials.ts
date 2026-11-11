@@ -17,7 +17,7 @@ const text = z.string().min(1);
 
 /** What ends a step. Each is checked once a tick, after the step that ran (tutorial.ts). */
 export const tutorialTriggerSchema = z.discriminatedUnion('type', [
-  /** Walked this many metres (straight-line, across the ground) from where the step began. */
+  /** Walked this many meters (straight-line, across the ground) from where the step began. */
   z.strictObject({ type: z.literal('moved'), distance: z.number().positive() }),
   /** Stood inside a zone of the map (by id; any zone, an extraction or not). */
   z.strictObject({ type: z.literal('zone'), zone: idSchema }),

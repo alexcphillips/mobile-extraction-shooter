@@ -74,7 +74,7 @@ export class BoxOffers {
     }
   }
 
-  /** A gun's geometry, centred on its origin, built once per gun. */
+  /** A gun's geometry, centered on its origin, built once per gun. */
   private gun(item: string): THREE.BufferGeometry {
     let g = this.geometry.get(item);
     if (g) return g;

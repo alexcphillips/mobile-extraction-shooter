@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "proper-protection",
   "name": "Proper protection",
-  "vendor": "armourer",
+  "vendor": "armorer",
   "description": "Steel helmets. Two of them. Don't ask what for.",
   "requires": ["scrap-plates"],
   "objectives": [

@@ -1,6 +1,6 @@
 import { attachmentDef, weaponDef, type ItemDb } from '../content/items';
 import type {
-  ArmourOption,
+  ArmorOption,
   ContainerOption,
   GrenadeOption,
   LoadoutDef,
@@ -9,14 +9,14 @@ import type {
 import { byWeight, nextFloat, nextRange, type Rng } from '../rng';
 import { createItem } from './create-item';
 import { createGear, equip, gearConflict, stow, type GearSlot } from './gear';
-import { createArmour } from './health';
+import { createArmor } from './health';
 import type { Character } from './state';
 import { giveWeapon } from './weapons';
 
 /**
  * Rolls a loadout and equips a character with it, each part picked by weight on its own:
  * a gun with its attachments and a full magazine of its round (picked by weight, if it
- * lists rounds), taken out; armour, a rig and a backpack
+ * lists rounds), taken out; armor, a rig and a backpack
  * (or none) in each slot; grenades (AI-6), stowed first so they're in reach to throw; and
  * spare rounds stowed in pockets, rig and backpack (what doesn't fit is left out). What it
  * always carries (`carried`, TU-2) is stowed before the grenades.
@@ -39,12 +39,12 @@ export function equipLoadout(c: Character, items: ItemDb, loadout: LoadoutDef, r
   const spare = Math.round(nextRange(rng, w.spare[0], w.spare[1]));
   const ammo = w.ammo?.length ? byWeight(rng, w.ammo).item : weaponDef(items, w.item).ammo;
   giveWeapon(c, items, w.item, attachments, ammo);
-  c.gear.helmet = rollArmour(items, loadout.helmets, rng);
-  c.gear.bodyArmour = rollArmour(items, loadout.bodyArmour, rng);
+  c.gear.helmet = rollArmor(items, loadout.helmets, rng);
+  c.gear.bodyArmor = rollArmor(items, loadout.bodyArmor, rng);
   rollContainer(c, items, 'rig', loadout.rigs, rng);
-  // An armoured rig is its chest armour (2026-11-11): body armour rolled too comes off.
+  // An armored rig is its chest armor (2026-11-11): body armor rolled too comes off.
   const rig = c.gear.rig;
-  if (rig && gearConflict(items, c.gear, 'rig', rig)) c.gear.bodyArmour = null;
+  if (rig && gearConflict(items, c.gear, 'rig', rig)) c.gear.bodyArmor = null;
   rollContainer(c, items, 'backpack', loadout.backpacks, rng);
   for (const k of loadout.carried ?? [])
     for (let i = 0; i < (k.count ?? 1); i++) stow(c, items, createItem(items, k.item));
@@ -53,16 +53,16 @@ export function equipLoadout(c: Character, items: ItemDb, loadout: LoadoutDef, r
   if (spare > 0) stow(c, items, { item: ammo, count: spare });
 }
 
-function rollArmour(
+function rollArmor(
   items: ItemDb,
-  options: readonly ArmourOption[] | undefined,
+  options: readonly ArmorOption[] | undefined,
   rng: Rng,
 ): Character['gear']['helmet'] {
   if (!options?.length) return null;
   const o = byWeight(rng, options);
   if (o.item === null) return null;
   const [min, max] = o.condition ?? [1, 1];
-  return createArmour(items, o.item, nextRange(rng, min, max));
+  return createArmor(items, o.item, nextRange(rng, min, max));
 }
 
 function rollContainer(

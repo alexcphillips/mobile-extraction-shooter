@@ -79,7 +79,7 @@ import { ZOMBIES, type WindowState, type ZombieMind } from './zombies';
 
 const DEG = Math.PI / 180;
 
-/** AI tuning. Distances in metres, times in seconds, rates per second. */
+/** AI tuning. Distances in meters, times in seconds, rates per second. */
 export const AI = {
   /** Sight and hearing are checked every this many ticks, staggered across enemies. */
   perceiveEvery: 3,
@@ -99,7 +99,7 @@ export const AI = {
   /**
    * Players first (2026-11-08, the user's call): choosing whom to notice, a player counts
    * playerFirst times as noticeable as an AI, so at similar distances it's you. Fighting an
-   * AI, it turns on a player it can see within playerSwitch metres who is no further than
+   * AI, it turns on a player it can see within playerSwitch meters who is no further than
    * playerCloser times the one it's fighting, or once it has lost sight of that one.
    */
   playerFirst: 1.5,
@@ -112,7 +112,7 @@ export const AI = {
    */
   aiEngage: 35,
   /** Within this angle from straight ahead, full rate; at the edge of view, peripheralRate. */
-  centreAngle: 25,
+  centerAngle: 25,
   peripheralRate: 0.35,
   crouchedRate: 0.6,
   /** Prone on top of crouched. */
@@ -313,7 +313,7 @@ export const AI = {
   fleeDirections: 12,
   /**
    * Of the spots outside the blast, one out of the thrower's sight counts as this many
-   * metres nearer (2026-11-08): it breaks for cover when there's some about, but a grenade
+   * meters nearer (2026-11-08): it breaks for cover when there's some about, but a grenade
    * still flushes it into the open rather than send it the long way round.
    */
   fleeHidden: 4,
@@ -321,7 +321,7 @@ export const AI = {
 
 /**
  * How a squad fights (AI rework session 5; design.md → AI → PMCs → Fighting). Distances in
- * metres, times in seconds, angles in degrees; first guesses to tune in play.
+ * meters, times in seconds, angles in degrees; first guesses to tune in play.
  */
 export const TACTICS = {
   /** A squad member spotting someone calls out, unless a mate did within this long. */
@@ -356,7 +356,7 @@ export const TACTICS = {
   flankMargin: 0.4,
   /**
    * ...going round, not past it: its way keeps flankShun from where it last saw it (each
-   * metre of path inside costs flankShunCost more), as from fire (2026-11-08).
+   * meter of path inside costs flankShunCost more), as from fire (2026-11-08).
    */
   flankShun: 4.5,
   flankShunCost: 2,
@@ -425,7 +425,7 @@ export const TACTICS = {
 
 /**
  * How Jug fights (AI-7; design.md → AI → Jug), through his skill's `bold`, `charge`, `slide`
- * and `relentless`. Distances in metres, times in seconds; first guesses to tune in play.
+ * and `relentless`. Distances in meters, times in seconds; first guesses to tune in play.
  */
 export const JUG = {
   /** Bold: it looks this long at what it heard before going to it (others AI.lookTime). */
@@ -502,7 +502,7 @@ export const JUG = {
   rageGap: 15,
   /**
    * Stagger (AI-8, skill.stagger): a shot by a round of staggerRound damage or more (before
-   * armour and the zone's multiplier) throws its aim off by staggerAim degrees, and it
+   * armor and the zone's multiplier) throws its aim off by staggerAim degrees, and it
    * can't fire, sprint or slide for staggerTime, moving at staggerPace.
    */
   staggerRound: 60,
@@ -842,7 +842,7 @@ export interface PatrolDef {
 
 export interface EnemySpawnOptions {
   patrol?: PatrolDef | undefined;
-  /** Spawns at a random clear spot within this many metres. */
+  /** Spawns at a random clear spot within this many meters. */
   radius?: number | undefined;
   /** How well it fights; DEFAULT_SKILL if left out. */
   skill?: EnemySkill | undefined;
@@ -1024,7 +1024,7 @@ export function resetEnemy(c: Character, world: CollisionWorld): void {
 const DT = TICK_SECONDS;
 const PERCEIVE_DT = AI.perceiveEvery * DT;
 const HALF_FOV_COS = Math.cos((AI.fov / 2) * DEG);
-const CENTRE_COS = Math.cos(AI.centreAngle * DEG);
+const CENTER_COS = Math.cos(AI.centerAngle * DEG);
 
 /** How far above a goal's given height its ground may be (patrol points on a slope). */
 const GOAL_RISE = 1.5;
@@ -1283,8 +1283,8 @@ function sightRate(
 
   let rate = 1 / AI.reaction;
   if (d > AI.nearRange) rate *= (AI.nearRange / d) ** AI.farFalloff;
-  if (ahead < CENTRE_COS) {
-    const edge = (CENTRE_COS - ahead) / (CENTRE_COS - halfFov);
+  if (ahead < CENTER_COS) {
+    const edge = (CENTER_COS - ahead) / (CENTER_COS - halfFov);
     rate *= 1 - (1 - AI.peripheralRate) * edge;
   }
   if (e.height < MOVEMENT.standHeight - 0.1) rate *= AI.crouchedRate;
@@ -1719,7 +1719,7 @@ function heardLoudness(
   return clearLine(world, x, y, z, c.x, eyeHeight(c), c.z, true) ? loudness : loudness * AI.muffled;
 }
 
-/** Suspicious of a noise from e, d metres away. */
+/** Suspicious of a noise from e, d meters away. */
 function heardAt(
   state: SimState,
   c: Character,
@@ -1734,7 +1734,7 @@ function heardAt(
 }
 
 /**
- * Suspicious of a noise at (x, y, z), d metres away: placed with an error that grows with
+ * Suspicious of a noise at (x, y, z), d meters away: placed with an error that grows with
  * d. A loud one (gunfire or a blast) is checked by only a few, with care.
  */
 function heardNoise(
@@ -2040,7 +2040,7 @@ function calmDown(c: Character, ai: AiState, resume = true): void {
   }
 }
 
-// ------------------------------------------------------------------------------ behaviour
+// ------------------------------------------------------------------------------ behavior
 
 function behave(
   state: SimState,
@@ -3062,7 +3062,7 @@ function pinDown(
   return true;
 }
 
-/** A hit of `hit` (after armour took its share) to a zone: staggered by a heavy round (AI-8). */
+/** A hit of `hit` (after armor took its share) to a zone: staggered by a heavy round (AI-8). */
 function staggered(ai: AiState, zone: number, hit: number): void {
   const k = HEALTH.multiplier[zone] ?? 1;
   if (hit / k < JUG.staggerRound) return;
@@ -3222,13 +3222,13 @@ function chargeGrenade(state: SimState, c: Character, ai: AiState, world: Collis
 // ----------------------------------------------------------------------------- squads
 
 /**
- * PMC squads (AI rework session 3; design.md → AI → PMCs). Distances in metres, angles in
+ * PMC squads (AI rework session 3; design.md → AI → PMCs). Distances in meters, angles in
  * degrees; first guesses to tune in play.
  */
 export const SQUAD = {
   /**
    * Each follower's place behind its leader, by its rank among the living followers:
-   * metres back, metres to the side, and which way it watches from the leader's heading.
+   * meters back, meters to the side, and which way it watches from the leader's heading.
    * Ranks past the list stand further back in the middle.
    */
   formation: [
@@ -3240,7 +3240,7 @@ export const SQUAD = {
   slack: 2,
   /** ...and stops this close. */
   arrive: 1,
-  /** Its pace is AI.patrolPace plus this for every metre it is off its place (up to AI.alertPace). */
+  /** Its pace is AI.patrolPace plus this for every meter it is off its place (up to AI.alertPace). */
   hurry: 0.1,
   /** Its place is worked out from where the leader will be this many seconds on. */
   lead: 0.6,
@@ -3489,7 +3489,7 @@ function takePart(
 /**
  * A squad that flanks only when its target is pinned (skill.pinFlank, MT-12: the foreman's
  * crew holds their ground). Holding (suppress), a member other than the leader whose
- * target has been out of its sight pinFlank.after seconds within pinFlank.within metres of
+ * target has been out of its sight pinFlank.after seconds within pinFlank.within meters of
  * where it was last known (its focus), with no mate flanking already, goes to a flanking
  * spot off the line from the others. Having found none it looks again a second later.
  * Returns whether it set off.
@@ -4209,11 +4209,11 @@ function headToward(
 
 // ---------------------------------------------------------------------------- zombies
 
-/** Zombie tuning (zombies mode). Distances in metres, times in seconds. */
+/** Zombie tuning (zombies mode). Distances in meters, times in seconds. */
 const HUNT = {
   /** It picks its prey again this often. */
   repick: 1,
-  /** It stops walking this close to its prey (centre to centre), and claws from... */
+  /** It stops walking this close to its prey (center to center), and claws from... */
   stop: 0.8,
   /** ...this far beyond the prey's capsule, a little short of its claws' reach... */
   clawSlack: 0.25,
@@ -4554,12 +4554,12 @@ function pickLeg(state: SimState, ai: AiState, nav: NavGrid): void {
   ai.legSet = true;
   const radius = ai.patrolRadii[i]!;
   if (radius <= 0) return;
-  const centre = nav.nearest(ai.legX, ai.legY, ai.legZ, GOAL_RISE);
+  const center = nav.nearest(ai.legX, ai.legY, ai.legZ, GOAL_RISE);
   for (let tries = 0; tries < 8; tries++) {
     const r = radius * Math.sqrt(nextFloat(state.rng));
     const a = nextFloat(state.rng) * Math.PI * 2;
     const n = nav.nearest(ai.legX + Math.cos(a) * r, ai.legY, ai.legZ + Math.sin(a) * r, GOAL_RISE);
-    if (n >= 0 && (centre < 0 || nav.component[n] === nav.component[centre])) {
+    if (n >= 0 && (center < 0 || nav.component[n] === nav.component[center])) {
       ai.legX = nav.nodeX(n);
       ai.legY = nav.nodeY(n);
       ai.legZ = nav.nodeZ(n);

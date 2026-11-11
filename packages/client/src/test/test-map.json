@@ -17,19 +17,19 @@
       [0, 0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0, 0]
     ],
-    "colour": "#6b8f4e"
+    "color": "#6b8f4e"
   },
-  "colours": { "concrete": "#b5b0a6", "paint": "#d9cfb8", "door": "#6b4a2b" },
+  "colors": { "concrete": "#b5b0a6", "paint": "#d9cfb8", "door": "#6b4a2b" },
   "enemyClearance": 0,
   "nodes": [
     { "type": "playerSpawn", "id": "spawn", "pos": [10, 0, 4], "yaw": 0 },
-    { "type": "box", "id": "cover", "pos": [4, 0, -2], "size": [2, 1, 0.5], "colour": "concrete" },
+    { "type": "box", "id": "cover", "pos": [4, 0, -2], "size": [2, 1, 0.5], "color": "concrete" },
     {
       "type": "wall",
       "id": "room-north",
       "pos": [-10, 0, -14],
       "size": [8.2, 2.8, 0.2],
-      "colour": "paint",
+      "color": "paint",
       "openings": []
     },
     {
@@ -37,7 +37,7 @@
       "id": "room-south",
       "pos": [-10, 0, -6],
       "size": [8.2, 2.8, 0.2],
-      "colour": "paint",
+      "color": "paint",
       "openings": [{ "along": 0, "width": 1, "bottom": 0, "top": 2.1 }]
     },
     {
@@ -46,7 +46,7 @@
       "pos": [-14, 0, -10],
       "yaw": 90,
       "size": [8, 2.8, 0.2],
-      "colour": "paint",
+      "color": "paint",
       "openings": []
     },
     {
@@ -55,10 +55,10 @@
       "pos": [-6, 0, -10],
       "yaw": 90,
       "size": [8, 2.8, 0.2],
-      "colour": "paint",
+      "color": "paint",
       "openings": []
     },
-    { "type": "door", "id": "room-door", "pos": [-10, 0, -6], "size": [1, 2.1], "colour": "door" },
+    { "type": "door", "id": "room-door", "pos": [-10, 0, -6], "size": [1, 2.1], "color": "door" },
     {
       "type": "lootContainer",
       "id": "room-crate",

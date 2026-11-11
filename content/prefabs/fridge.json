@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "fridge",
   "name": "fridge",
-  "colours": {
+  "colors": {
     "road": "#595959"
   },
   "nodes": [
@@ -10,7 +10,7 @@
       "type": "box",
       "pos": [43.266, 0, 1.399],
       "size": [113.113, 0.2, 25.736],
-      "colour": "road"
+      "color": "road"
     }
   ]
 }

@@ -21,7 +21,7 @@ describe('the map tab', () => {
     const at = (x: number, text: string, big = false) => ({ x, z: 0, text, big, key: text });
     const placed = placeLabels([at(0, 'Warehouse', true), at(3, 'Office'), at(40, 'Toys')], 1);
     expect(placed.map((l) => l.text)).toEqual(['Warehouse', 'Toys']);
-    // Zoomed in (a smaller font in metres), they part and both show.
+    // Zoomed in (a smaller font in meters), they part and both show.
     expect(placeLabels([at(0, 'Warehouse', true), at(3, 'Office')], 0.2)).toHaveLength(2);
   });
 });

@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "executive-desk",
   "name": "Executive desk",
-  "colours": {
+  "colors": {
     "wood": "#4a2f20",
     "wood-dark": "#32201a",
     "leather": "#23302a",
@@ -15,72 +15,72 @@
       "type": "box",
       "pos": [0, 0.74, 0],
       "size": [3.2, 0.08, 1.3],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [0, 0.7, 0],
       "size": [3.1, 0.04, 1.2],
-      "colour": "wood-dark"
+      "color": "wood-dark"
     },
     {
       "type": "box",
       "pos": [-1.2, 0, 0],
       "size": [0.72, 0.7, 1.12],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [1.2, 0, 0],
       "size": [0.72, 0.7, 1.12],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [0, 0.06, 0.5],
       "size": [1.72, 0.64, 0.07],
-      "colour": "wood-dark"
+      "color": "wood-dark"
     },
     {
       "type": "box",
       "pos": [0, 0.82, -0.05],
       "size": [1.5, 0.012, 0.72],
-      "colour": "leather",
+      "color": "leather",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.83, 0.65],
       "size": [3.2, 0.02, 0.02],
-      "colour": "brass",
+      "color": "brass",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.96, 0.1, 0.57],
       "size": [0.5, 0.02, 0.02],
-      "colour": "brass",
+      "color": "brass",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.96, 0.1, 0.57],
       "size": [0.5, 0.02, 0.02],
-      "colour": "brass",
+      "color": "brass",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.84, 0.34],
       "size": [0.5, 0.26, 0.04],
-      "colour": "screen",
+      "color": "screen",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.87, 0.32],
       "size": [0.44, 0.2, 0.01],
-      "colour": "glow",
+      "color": "glow",
       "collide": false
     },
     {
@@ -88,7 +88,7 @@
       "pos": [-1.25, 0.82, 0.3],
       "radius": 0.11,
       "height": 0.03,
-      "colour": "brass",
+      "color": "brass",
       "sides": 8,
       "collide": false
     },
@@ -97,7 +97,7 @@
       "pos": [-1.25, 0.82, 0.3],
       "radius": 0.015,
       "height": 0.42,
-      "colour": "brass",
+      "color": "brass",
       "sides": 6,
       "collide": false
     },
@@ -106,7 +106,7 @@
       "pos": [-1.25, 1.22, 0.3],
       "radius": 0.16,
       "height": 0.14,
-      "colour": "glow",
+      "color": "glow",
       "radiusTop": 0.1,
       "sides": 8,
       "collide": false
@@ -119,7 +119,7 @@
         "tables": {
           "documents": 2,
           "electronics": 1.5,
-          "jewellery": 0.3
+          "jewelry": 0.3
         }
       },
       "chance": 0.5

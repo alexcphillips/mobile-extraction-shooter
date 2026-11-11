@@ -12,7 +12,7 @@ import {
 } from './gamepad';
 import { inputMode } from './mode';
 import {
-  cellCentre,
+  cellCenter,
   cursorSpeed,
   dirStep,
   nearestBox,
@@ -467,7 +467,7 @@ class PadCursor {
     if (grid && cell > 0) {
       const r = grid.getBoundingClientRect();
       const from = this.dragging ? null : hit!.closest('.inv-item');
-      let [x, y] = cellCentre(this.x, this.y, r, cell);
+      let [x, y] = cellCenter(this.x, this.y, r, cell);
       for (let i = 0; i < 64; i++) {
         x += dx * cell;
         y += dy * cell;
@@ -509,7 +509,7 @@ class PadCursor {
     const x = Math.max(box.left + 1, Math.min(box.left + box.width - 1, this.x));
     const y = Math.max(box.top + 1, Math.min(box.top + box.height - 1, this.y));
     if (grid && cell > 0) {
-      const [cx, cy] = cellCentre(x, y, grid.getBoundingClientRect(), cell);
+      const [cx, cy] = cellCenter(x, y, grid.getBoundingClientRect(), cell);
       this.moveTo(cx, cy);
       return;
     }
@@ -575,7 +575,7 @@ class PadCursor {
     let r: Box = target.getBoundingClientRect();
     const cell = Number((target as HTMLElement).dataset.cell);
     if (target.classList.contains('inv-grid') && cell > 0) {
-      const [cx, cy] = cellCentre(this.x, this.y, r, cell);
+      const [cx, cy] = cellCenter(this.x, this.y, r, cell);
       r = { left: cx - cell / 2, top: cy - cell / 2, width: cell, height: cell };
     }
     this.ring.hidden = false;

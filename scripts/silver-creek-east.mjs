@@ -42,7 +42,7 @@ export function buildEastEnd(h, s) {
   const bedded = (name, x, z, hw, hd, extra = {}) =>
     prefab(name, x, z, extra, r2(groundRange(x - hw, z - hd, x + hw, z + hd)[0]));
   /** A cylinder from a to b ([x, y, z]), lying along that line. */
-  const pipe = (a, b, radius, colour, extra = {}) => {
+  const pipe = (a, b, radius, color, extra = {}) => {
     const [dx, dy, dz] = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
     const len = Math.hypot(dx, dy, dz);
     return {
@@ -53,7 +53,7 @@ export function buildEastEnd(h, s) {
       sides: 8,
       yaw: r2((Math.atan2(dx, dz) * 180) / Math.PI),
       pitch: r2((Math.acos(dy / len) * 180) / Math.PI),
-      colour,
+      color,
       ...extra,
     };
   };
@@ -124,8 +124,8 @@ export function buildEastEnd(h, s) {
   const car = (name, x, z, id, extra = {}) => at(name, x, z, 0, { id, ...extra });
   yard.push(
     car('boxcar', 210.5, T1, 'boxcar-1'),
-    car('boxcar', 226.5, T1, 'boxcar-2', { colours: { body: '#6e4a32', 'body-dark': '#553826' } }),
-    car('boxcar', 292.5, T1, 'boxcar-3', { colours: { body: '#5a5f4a', 'body-dark': '#454a39' } }),
+    car('boxcar', 226.5, T1, 'boxcar-2', { colors: { body: '#6e4a32', 'body-dark': '#553826' } }),
+    car('boxcar', 292.5, T1, 'boxcar-3', { colors: { body: '#5a5f4a', 'body-dark': '#454a39' } }),
     car('flatcar-logs', 238.5, T2, 'flatcar-1'),
     car('flatcar', 262.5, T2, 'flatcar-2'),
     car('flatcar', 306.5, T2, 'flatcar-3'),
@@ -184,7 +184,7 @@ export function buildEastEnd(h, s) {
       }),
     ]),
   );
-  // Tie stacks along the lane between the tracks (it ran 124 m clear in the greybox).
+  // Tie stacks along the lane between the tracks (it ran 124 m clear in the graybox).
   const LANE_N = T1 + 1.6 + 0.9 + 0.1; // a stack against the lane's north edge
   const LANE_S = T2 - 1.6 - 0.9 - 0.1;
   yard.push(
@@ -262,7 +262,7 @@ export function buildEastEnd(h, s) {
       pos: [DK.x0 - 3, 0, r2((DK.z0 + DK.z1) / 2)],
       yaw: 90,
       size: [r2(DK.z1 - DK.z0), DK.y, 6],
-      colour: C.concrete,
+      color: C.concrete,
     },
     {
       type: 'stairs',
@@ -270,7 +270,7 @@ export function buildEastEnd(h, s) {
       pos: [DK.x1 + 0.8, 0, r2((DK.z0 + DK.z1) / 2)],
       yaw: -90,
       size: [2.0, DK.y, 1.6],
-      colour: C.concrete,
+      color: C.concrete,
     },
     at('lumber-stack-tall', 239, DK.z0 + 0.7, DK.y, { id: 'dock-stack-1' }),
     at('lumber-stack-tall', 246.5, DK.z1 - 0.7, DK.y, { id: 'dock-stack-2' }),
@@ -305,11 +305,11 @@ export function buildEastEnd(h, s) {
       height: 0.12,
       pitch: 90,
       sides: 10,
-      colour: C.dark,
+      color: C.dark,
     })),
   ];
   yard.push(
-    at('shed', 214, 38.6, 0, { id: 'section-house', colours: { siding: C['siding-tan'] } }),
+    at('shed', 214, 38.6, 0, { id: 'section-house', colors: { siding: C['siding-tan'] } }),
     box(220.5, 39.2, 226.5, 40.4, 0, 0.75, C['timber-dark'], { id: 'rail-rack' }),
     ...[0, 1, 2, 3].map((k) =>
       drawn(220.6, 39.3 + k * 0.28, 226.4, 39.38 + k * 0.28, 0.75, 0.9, C.rail, {
@@ -318,7 +318,7 @@ export function buildEastEnd(h, s) {
     ),
     at('shed-small', 301, 36.6, 0, {
       id: 'speeder-shed',
-      colours: { siding: C['siding-red'], 'siding-dark': '#6e3a2e' },
+      colors: { siding: C['siding-red'], 'siding-dark': '#6e3a2e' },
     }),
     box(287, 38.6, 291.5, 40.6, 0, 0.8, C['tie-stack'], { id: 'old-ties' }),
     ...wheelSet('wheel-set-1', 229, 55.2),
@@ -438,7 +438,7 @@ export function buildEastEnd(h, s) {
       pos: [PIT.x0 + 0.85, -1.4, R1],
       yaw: -90,
       size: [1.2, 1.4, 1.7],
-      colour: C.concrete,
+      color: C.concrete,
     },
     {
       type: 'stairs',
@@ -446,7 +446,7 @@ export function buildEastEnd(h, s) {
       pos: [PIT.x1 - 0.85, -1.4, R1],
       yaw: 90,
       size: [1.2, 1.4, 1.7],
-      colour: C.concrete,
+      color: C.concrete,
     },
     ...[256.5, 261, 265.5].map((x, k) =>
       drawn(x - 0.2, PIT.z0 + 0.39, x + 0.2, PIT.z0 + 0.42, -0.7, -0.5, C.lamp, {
@@ -478,7 +478,7 @@ export function buildEastEnd(h, s) {
   ];
 
   // ------------------------------------------------------------------ water tower
-  // The greybox tower, perch and pump house (MT-3), dressed: rails on the platform's north,
+  // The graybox tower, perch and pump house (MT-3), dressed: rails on the platform's north,
   // east and south (a gap at the ladder; the west edge stays open over the pump house),
   // bracing, bands and a catwalk on the tank, a water column by road 2, and the pump house
   // made a room you can go in (its roof is still the step down from the platform).
@@ -541,7 +541,7 @@ export function buildEastEnd(h, s) {
         radius: 0.6,
         height: r2(TW.legs - towerY + 0.3),
         sides: 8,
-        colour: C.metal,
+        color: C.metal,
       },
       box(tx - 3, tz - 3, tx + 3, tz + 3, TW.platform - 0.2, TW.platform, C.metal, {
         id: 'tower-platform',
@@ -557,7 +557,7 @@ export function buildEastEnd(h, s) {
         radius: 4.3,
         height: 0.12,
         sides: 12,
-        colour: C.metal,
+        color: C.metal,
         collide: false,
       },
       {
@@ -567,7 +567,7 @@ export function buildEastEnd(h, s) {
         radius: 3.6,
         height: 5,
         sides: 12,
-        colour: C.rust,
+        color: C.rust,
       },
       ...[1.2, 2.5, 3.8].map((y, k) => ({
         type: 'cylinder',
@@ -576,7 +576,7 @@ export function buildEastEnd(h, s) {
         radius: 3.66,
         height: 0.14,
         sides: 12,
-        colour: C['timber-dark'],
+        color: C['timber-dark'],
         collide: false,
       })),
       {
@@ -587,7 +587,7 @@ export function buildEastEnd(h, s) {
         radiusTop: 0,
         height: 2,
         sides: 12,
-        colour: C.roof,
+        color: C.roof,
       },
       {
         type: 'cylinder',
@@ -596,7 +596,7 @@ export function buildEastEnd(h, s) {
         radius: 0.12,
         height: 0.7,
         sides: 6,
-        colour: C.metal,
+        color: C.metal,
         collide: false,
       },
       {
@@ -605,7 +605,7 @@ export function buildEastEnd(h, s) {
         pos: [tx, r2(towerY), tz + 3],
         yaw: 0,
         height: r2(TW.platform - towerY),
-        colour: C.ladder,
+        color: C.ladder,
       },
       // pump house: a door west, windows north and south, the pump and its pipe to the riser
       drawn(PH.x0 + 0.2, PH.z0 + 0.2, PH.x1 - 0.2, PH.z1 - 0.2, 0, 0.02, C['dark-concrete'], {
@@ -633,7 +633,7 @@ export function buildEastEnd(h, s) {
         radius: 0.25,
         height: 3.6,
         sides: 8,
-        colour: C.metal,
+        color: C.metal,
       },
       along([tx - 10.8, 3.4, tz - 2], [tx - 10.8, 3.3, R2 - 0.2], 0.22, 0.22, C.metal, {
         id: 'water-column-arm',
@@ -687,7 +687,7 @@ export function buildEastEnd(h, s) {
       pos: [r2((F1.x0 + F1.x1) / 2), 0, r2((F1.zTop + F1.zFoot) / 2)],
       yaw: 180,
       size: [r2(F1.x1 - F1.x0), LT.d1, r2(F1.zFoot - F1.zTop)],
-      colour: C.timber,
+      color: C.timber,
     },
     ltRail('lt-rail-1-hole', F1.x1 + 0.05, F1.zTop, F1.x1 + 0.15, F1.zFoot + 0.1, LT.d1),
     ltRail('lt-rail-1-n', LT.x0, LT.z0, LT.x1, LT.z0 + 0.1, LT.d1),
@@ -698,7 +698,7 @@ export function buildEastEnd(h, s) {
       pos: [r2((F2.x0 + F2.x1) / 2), LT.d1, r2((F2.zTop + F2.zFoot) / 2)],
       yaw: 0,
       size: [r2(F2.x1 - F2.x0), LT.d2 - LT.d1, r2(F2.zTop - F2.zFoot)],
-      colour: C.timber,
+      color: C.timber,
     },
     // deck 2 (z 36–39), with the hole over flight 2's top
     box(LT.x0, 36, F2.x0 - 0.05, 39, LT.d2 - 0.2, LT.d2, C.timber, { id: 'lt-deck-2' }),
@@ -801,7 +801,7 @@ export function buildEastEnd(h, s) {
       hw,
       hd,
       fl: FL,
-      colour: col,
+      color: col,
       ops: {
         front: [win(-9), win(-5.5), door(0), win(2.2), win(5.5), win(9)],
         back: [win(-9), win(-5.5), door(-1.8), win(1.8), win(5.5), win(9.6, 0.8, { bottom: 1.5 })],
@@ -871,7 +871,7 @@ export function buildEastEnd(h, s) {
       hw,
       hd,
       fl: FL,
-      colour: col,
+      color: col,
       ops: {
         front: [win(-5.2, 1.2), door(-2.5), win(0, 1.2), win(4.0)],
         back: [door(-5.0), win(-2.0), door(4.5)],
@@ -1019,7 +1019,7 @@ export function buildEastEnd(h, s) {
       pos: [DP.mz - 2.5, 0, 138.75],
       yaw: 90,
       size: [1.1, DP.my, 5.0],
-      colour: C.steel,
+      color: C.steel,
       sides: 1.0,
     },
     box(DP.mz, DP.z0 + 0.2, DP.mz + 0.08, 129, DP.my, DP.my + 1.0, C.hazard, {
@@ -1065,12 +1065,12 @@ export function buildEastEnd(h, s) {
     along([249, 0, 128.3], [252.5, 4.2, 128.3], 0.12, 0.12, C.hazard, { id: 'dp-hoist-leg-1' }),
     along([256, 0, 128.3], [252.5, 4.2, 128.3], 0.12, 0.12, C.hazard, { id: 'dp-hoist-leg-2' }),
     drawn(252.45, 128.25, 252.55, 128.35, 1.3, 4.2, C.dark, { id: 'dp-hoist-chain' }),
-    // along the walls: workbench, parts shelving under the mezzanine, tyres, crates
+    // along the walls: workbench, parts shelving under the mezzanine, tires, crates
     box(238, 139.1, 244, DP.z1 - 0.2, 0, 0.95, C.timber, { id: 'dp-bench' }),
     box(260.9, 128.8, DP.x1 - 0.2, 133.0, 0, 2.2, C['steel-dark'], { id: 'dp-shelving' }),
-    at('truck-tire-1', 233.4, 138.4, 0, { id: 'dp-tyre-1' }),
-    at('truck-tire-1', 233.4, 138.4, 0.8, { id: 'dp-tyre-2' }),
-    at('truck-tire-1', 233.6, 136.7, 0, { id: 'dp-tyre-3' }),
+    at('truck-tire-1', 233.4, 138.4, 0, { id: 'dp-tire-1' }),
+    at('truck-tire-1', 233.4, 138.4, 0.8, { id: 'dp-tire-2' }),
+    at('truck-tire-1', 233.6, 136.7, 0, { id: 'dp-tire-3' }),
     at('stock-crate', 246.2, 136.6, 0, { id: 'dp-crate-1' }),
     at('stock-crate', 246.2, 136.6, 1.2, { id: 'dp-crate-2' }),
     at('stock-crate', 247.5, 137.1, 0, { id: 'dp-crate-3', yaw: 10 }),
@@ -1079,7 +1079,7 @@ export function buildEastEnd(h, s) {
   ]);
 
   // ------------------------------------------------------------------ fuel tanks
-  // The two greybox tanks, now in a 0.9 m bund (gaps east and west so the AI can go
+  // The two graybox tanks, now in a 0.9 m bund (gaps east and west so the AI can go
   // through between them), with ladders drawn up their sides, a pump at the depot side.
   const FT = { x: 268, zs: [128, 135], r: 2.2, h: 4 };
   const BU = { x0: 264.6, x1: 271.4, z0: 124.8, z1: 138.2, gz: 131.5 };
@@ -1093,7 +1093,7 @@ export function buildEastEnd(h, s) {
         radius: FT.r,
         height: FT.h,
         sides: 10,
-        colour: C.rust,
+        color: C.rust,
       },
       {
         type: 'cylinder',
@@ -1103,7 +1103,7 @@ export function buildEastEnd(h, s) {
         radiusTop: 0.4,
         height: 0.5,
         sides: 10,
-        colour: C.roof,
+        color: C.roof,
         collide: false,
       },
       drawn(FT.x + FT.r - 0.02, z - 0.25, FT.x + FT.r + 0.08, z + 0.25, 0.3, FT.h, C.metal, {
@@ -1132,7 +1132,7 @@ export function buildEastEnd(h, s) {
 
   // ------------------------------------------------------------------ highway
   // Truck-3 is now a jackknifed fuel tanker: the trailer along the south lane, the tractor
-  // swung across the centre line. Roadworks by the east extract: a site office and culvert
+  // swung across the center line. Roadworks by the east extract: a site office and culvert
   // pipes on the verges (eye-height cover), jersey barriers in a chicane, cones.
   const TK = { x0: 244.2, x1: 256.2, z: 119.8 };
   const tanker = group('Tanker', [
@@ -1169,7 +1169,7 @@ export function buildEastEnd(h, s) {
         height: 0.5,
         sides: 10,
         pitch: 90,
-        colour: C.dark,
+        color: C.dark,
         collide: false,
       })),
     ),
@@ -1180,7 +1180,7 @@ export function buildEastEnd(h, s) {
       'semi-tractor',
       257.3,
       119.3,
-      { id: 'truck-3', yaw: 135, colours: { cab: '#d8d6d0', 'cab-dark': '#a8a6a0' } },
+      { id: 'truck-3', yaw: 135, colors: { cab: '#d8d6d0', 'cab-dark': '#a8a6a0' } },
       0,
     ),
     drawn(246, 119.5, 256, 123.6, 0.04, 0.05, '#2a2a2a', { id: 'tanker-spill' }),
@@ -1206,7 +1206,7 @@ export function buildEastEnd(h, s) {
     });
     return out;
   };
-  // A road roller left in the closed north lane, a works van across the centre line, and an
+  // A road roller left in the closed north lane, a works van across the center line, and an
   // arrow board on its trailer in the chicane: each blocks a standing eye.
   const roller = (id, x, z) => [
     box(x - 1.0, z - 1.0, x + 2.2, z + 1.0, 0.5, 1.9, C.hazard, { id }),
@@ -1244,7 +1244,7 @@ export function buildEastEnd(h, s) {
             height: 0.22,
             sides: 10,
             pitch: 90,
-            colour: C.dark,
+            color: C.dark,
             collide: false,
           })),
         ),
@@ -1282,7 +1282,7 @@ export function buildEastEnd(h, s) {
       [306, 120.8],
       [307.5, 119.6],
     ].map(([x, z], k) => at('traffic-cone', x, z, 0, { id: `rw-cone-${k + 1}` })),
-    at('car', 214.5, 123.2, 0, { id: 'rw-car', yaw: 84, colours: { paint: '#6a5a4a' } }),
+    at('car', 214.5, 123.2, 0, { id: 'rw-car', yaw: 84, colors: { paint: '#6a5a4a' } }),
   ]);
 
   // ------------------------------------------------------------------ the slope and fields

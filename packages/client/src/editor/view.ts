@@ -88,7 +88,7 @@ export interface ViewEvents {
   click(e: MouseEvent, index: number | null, outside: NodePath | null): void;
   doubleClick(index: number | null): void;
   moved(moves: Moved[]): void;
-  /** A node failed to build (an unknown colour slot or prefab, say). */
+  /** A node failed to build (an unknown color slot or prefab, say). */
   broken(message: string): void;
   /** A brush stroke ended, with the terrain's corner heights and holes as they now are. */
   terrain(heights: Float64Array, holes: Uint8Array): void;
@@ -144,7 +144,7 @@ export class EditorView {
   private surface: HeightGrid;
   /** The terrain as edited, and its meshes by chunk. */
   private grid: TerrainGrid | null = null;
-  private terrainColour = 0;
+  private terrainColor = 0;
   private chunks: THREE.Mesh[] = [];
   private chunkCells = 1;
   /** What the ground was built from, to rebuild it only when it changes. */
@@ -495,24 +495,24 @@ export class EditorView {
       nodes: readonly MapNode[],
       parent: THREE.Object3D,
       path: number[],
-      colours: Readonly<Record<string, string>>,
+      colors: Readonly<Record<string, string>>,
     ): void => {
       nodes.forEach((n, i) => {
         const p = [...path, i];
         const prefab = n.type === 'prefab' ? prefabs.get(n.prefab) : undefined;
         const open = !!prefab && p.length <= scope.length && p.every((v, k) => scope[k] === v);
-        const o = this.nodeObject(n, colours, problems, open);
+        const o = this.nodeObject(n, colors, problems, open);
         o.userData.path = p;
         parent.add(o);
         this.objects.set(p.join('.'), o);
-        if (n.type === 'group') add(n.nodes, o, p, colours);
+        if (n.type === 'group') add(n.nodes, o, p, colors);
         else if (open && prefab && n.type === 'prefab') {
           o.userData.prefab = true;
-          add(prefab.nodes, o, p, placementColours(prefab, n, colours));
+          add(prefab.nodes, o, p, placementColors(prefab, n, colors));
         }
       });
     };
-    add(map.nodes, this.root, [], map.colours ?? {});
+    add(map.nodes, this.root, [], map.colors ?? {});
     this.clip(this.root);
     this.scene.add(this.root);
     this.root.updateMatrixWorld(true);
@@ -530,7 +530,7 @@ export class EditorView {
     const t = terrainGrid(map);
     this.grid = t;
     this.setTerrain(t);
-    this.terrainColour = hex(map.terrain.colour);
+    this.terrainColor = hex(map.terrain.color);
     this.chunkCells = Math.max(1, Math.round(CHUNK / t.cellSize));
     const nx = Math.ceil(t.cols / this.chunkCells);
     const nz = Math.ceil(t.rows / this.chunkCells);
@@ -554,7 +554,7 @@ export class EditorView {
           yaw: 0,
           level,
           opacity,
-          colour: hex(map.water.colour),
+          color: hex(map.water.color),
         },
       ])!;
       // Not a surface to land on.
@@ -574,7 +574,7 @@ export class EditorView {
     const i0 = (k % nx) * n;
     const j0 = Math.floor(k / nx) * n;
     const b = new TriangleBuilder(true);
-    b.terrain(t, i0, Math.min(t.cols, i0 + n), j0, Math.min(t.rows, j0 + n), this.terrainColour);
+    b.terrain(t, i0, Math.min(t.cols, i0 + n), j0, Math.min(t.rows, j0 + n), this.terrainColor);
     const mesh = this.chunks[k]!;
     mesh.geometry.dispose();
     mesh.geometry = b.build();
@@ -743,8 +743,8 @@ export class EditorView {
   /** Shows nodes see-through in the scope's frame (walls being drawn), or none. */
   setPreview(
     nodes: readonly MapNode[] | null,
-    /** The colour slots in scope, for nodes coloured by name. */
-    colours: Readonly<Record<string, string>> = {},
+    /** The color slots in scope, for nodes colored by name. */
+    colors: Readonly<Record<string, string>> = {},
   ): void {
     if (this.preview) {
       this.preview.removeFromParent();
@@ -754,7 +754,7 @@ export class EditorView {
     if (!nodes?.length) return;
     const b = new TriangleBuilder(false);
     try {
-      for (const s of compileNodes(nodes, this.prefabs, colours).shapes) b.shape(s);
+      for (const s of compileNodes(nodes, this.prefabs, colors).shapes) b.shape(s);
     } catch {
       return;
     }
@@ -871,7 +871,7 @@ export class EditorView {
     this.orbit.update();
   }
 
-  /** The size of what's selected along x, in metres. */
+  /** The size of what's selected along x, in meters. */
   selectionWidth(): number {
     const box = new THREE.Box3();
     for (const i of this.selected) {
@@ -1024,7 +1024,7 @@ export class EditorView {
   /** A node's object; for a prefab being edited inside (`open`), only its frame and base. */
   private nodeObject(
     n: MapNode,
-    colours: Readonly<Record<string, string>>,
+    colors: Readonly<Record<string, string>>,
     problems: string[],
     open = false,
   ): THREE.Object3D {
@@ -1033,7 +1033,7 @@ export class EditorView {
     o.position.set(x, y, z);
     o.rotation.order = 'YXZ';
     o.rotation.y = nodeYaw(n) * DEG;
-    // These tilt about their pos, so the object does it; a shape tilts about its centre.
+    // These tilt about their pos, so the object does it; a shape tilts about its center.
     if (n.type === 'group' || n.type === 'prefab') {
       o.rotation.x = (n.pitch ?? 0) * DEG;
       o.rotation.z = (n.roll ?? 0) * DEG;
@@ -1056,7 +1056,7 @@ export class EditorView {
       }
     }
     try {
-      const out = compileNodes([local], this.prefabs, colours);
+      const out = compileNodes([local], this.prefabs, colors);
       if (out.buildings.length) o.userData.buildings = out.buildings;
       // Its parts are built one by one as the nodes they are.
       if (open) return o;
@@ -1068,7 +1068,7 @@ export class EditorView {
       if (out.invisible.length) {
         const b = new TriangleBuilder(false);
         for (const d of out.invisible)
-          b.shape({ kind: 'box', ...d, pitch: 0, roll: 0, colour: GHOST });
+          b.shape({ kind: 'box', ...d, pitch: 0, roll: 0, color: GHOST });
         const ghost = new THREE.Mesh(b.build(), this.ghostMaterial);
         // Picked to select it, but not something to stand things on.
         ghost.userData.marker = true;
@@ -1092,7 +1092,7 @@ export class EditorView {
               yaw: w.yaw,
               pitch: 0,
               roll: (i % 2 ? 1 : -1) * 0.2,
-              colour: PLANK,
+              color: PLANK,
             });
           }
         }
@@ -1118,7 +1118,7 @@ export class EditorView {
     } catch (err) {
       problems.push(err instanceof Error ? err.message : String(err));
       const b = new TriangleBuilder(false);
-      const s = { x: 0, y: 0.5, z: 0, yaw: 0, pitch: 0, roll: 0, colour: BROKEN };
+      const s = { x: 0, y: 0.5, z: 0, yaw: 0, pitch: 0, roll: 0, color: BROKEN };
       b.shape({ kind: 'box', ...s, hx: 0.5, hy: 0.5, hz: 0.5 });
       o.add(new THREE.Mesh(b.build(), this.material));
     }
@@ -1151,9 +1151,9 @@ export class EditorView {
     selected.forEach((i, k) => {
       const o = this.objectOf(i);
       if (!o) return;
-      const colour = k === selected.length - 1 ? ACTIVE : SELECTED;
-      const box = new THREE.BoxHelper(o, colour);
-      box.userData.selection = colour;
+      const color = k === selected.length - 1 ? ACTIVE : SELECTED;
+      const box = new THREE.BoxHelper(o, color);
+      box.userData.selection = color;
       this.helpers.add(box);
     });
     this.attachGizmo();
@@ -1446,11 +1446,11 @@ export class EditorView {
     const box = new THREE.Box3();
     for (const o of objects) box.expandByObject(o);
     if (box.isEmpty()) return;
-    const centre = box.getCenter(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
     const size = Math.max(2, box.getSize(new THREE.Vector3()).length());
     const dir = this.camera.position.clone().sub(this.orbit.target).normalize();
-    this.orbit.target.copy(centre);
-    this.camera.position.copy(centre).addScaledVector(dir, size * 1.2);
+    this.orbit.target.copy(center);
+    this.camera.position.copy(center).addScaledVector(dir, size * 1.2);
     this.orbit.update();
   }
 }
@@ -1505,19 +1505,19 @@ function darkenBackFaces(m: THREE.Material): void {
   };
 }
 
-const hex = (colour: string): number => parseInt(colour.slice(1), 16);
+const hex = (color: string): number => parseInt(color.slice(1), 16);
 
 /**
- * The hex colour of each slot of a placed prefab: its overrides (a hex colour, or a slot of
+ * The hex color of each slot of a placed prefab: its overrides (a hex color, or a slot of
  * the enclosing file's, `outer`) over the prefab's own.
  */
-function placementColours(
+function placementColors(
   prefab: PrefabFile,
   n: Extract<MapNode, { type: 'prefab' }>,
   outer: Readonly<Record<string, string>>,
 ): Record<string, string> {
-  const out: Record<string, string> = { ...prefab.colours };
-  for (const [slot, ref] of Object.entries(n.colours ?? {})) {
+  const out: Record<string, string> = { ...prefab.colors };
+  for (const [slot, ref] of Object.entries(n.colors ?? {})) {
     const c = ref.startsWith('#') ? ref : outer[ref];
     if (c !== undefined) out[slot] = c;
   }

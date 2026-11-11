@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "weight-bench",
   "name": "Weight bench",
-  "colours": {
+  "colors": {
     "pad": "#2b2d33",
     "frame": "#a9afb3",
     "plate": "#1d1e21"
@@ -12,25 +12,25 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [0.32, 0.44, 1.3],
-      "colour": "pad"
+      "color": "pad"
     },
     {
       "type": "box",
       "pos": [-0.55, 0, -0.6],
       "size": [0.06, 1.15, 0.06],
-      "colour": "frame"
+      "color": "frame"
     },
     {
       "type": "box",
       "pos": [0.55, 0, -0.6],
       "size": [0.06, 1.15, 0.06],
-      "colour": "frame"
+      "color": "frame"
     },
     {
       "type": "box",
       "pos": [0, 1.1, -0.6],
       "size": [1.9, 0.04, 0.04],
-      "colour": "frame",
+      "color": "frame",
       "collide": false
     },
     {
@@ -38,7 +38,7 @@
       "pos": [-0.86, 0.9, -0.6],
       "radius": 0.22,
       "height": 0.08,
-      "colour": "plate",
+      "color": "plate",
       "roll": 90,
       "sides": 8,
       "collide": false
@@ -48,7 +48,7 @@
       "pos": [0.86, 0.9, -0.6],
       "radius": 0.22,
       "height": 0.08,
-      "colour": "plate",
+      "color": "plate",
       "roll": 90,
       "sides": 8,
       "collide": false

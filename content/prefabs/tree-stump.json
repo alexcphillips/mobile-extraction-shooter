@@ -3,14 +3,14 @@
   "id": "tree-stump",
   "name": "Tree stump",
   "instanced": true,
-  "colours": { "bark": "#6b4f35", "cut": "#c9a46e" },
+  "colors": { "bark": "#6b4f35", "cut": "#c9a46e" },
   "nodes": [
     {
       "type": "cylinder",
       "pos": [0, -0.2, 0],
       "radius": 0.38,
       "height": 0.75,
-      "colour": "bark",
+      "color": "bark",
       "radiusTop": 0.32,
       "sides": 7
     },
@@ -19,7 +19,7 @@
       "pos": [0, 0.545, 0],
       "radius": 0.29,
       "height": 0.02,
-      "colour": "cut",
+      "color": "cut",
       "collide": false,
       "sides": 7
     },
@@ -30,7 +30,7 @@
       "top": [0.16, 0.1],
       "lean": [0, -0.2],
       "yaw": 20,
-      "colour": "bark",
+      "color": "bark",
       "collide": false
     },
     {
@@ -40,7 +40,7 @@
       "top": [0.16, 0.1],
       "lean": [0, -0.2],
       "yaw": 140,
-      "colour": "bark",
+      "color": "bark",
       "collide": false
     },
     {
@@ -50,7 +50,7 @@
       "top": [0.16, 0.1],
       "lean": [0, -0.2],
       "yaw": 260,
-      "colour": "bark",
+      "color": "bark",
       "collide": false
     }
   ]

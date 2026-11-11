@@ -1,7 +1,7 @@
 {
   "formatVersion": 3,
   "id": "hanging-jacket",
-  "colours": {
+  "colors": {
     "jacket": "#4a6487",
     "jacket-fold": "#3c5272",
     "jacket-light": "#567092",
@@ -19,14 +19,14 @@
           "type": "box",
           "pos": [0, -0.37, 0.065],
           "size": [0.36, 0.06, 0.11],
-          "colour": "jacket",
+          "color": "jacket",
           "top": [0.2, 0.11]
         },
         {
           "type": "box",
           "pos": [-0.12, -0.97, 0.065],
           "size": [0.13, 0.6, 0.1],
-          "colour": "jacket",
+          "color": "jacket",
           "top": [0.12, 0.1],
           "roll": 2,
           "pitch": -2
@@ -35,7 +35,7 @@
           "type": "box",
           "pos": [0.005, -0.93, 0.077],
           "size": [0.13, 0.56, 0.1],
-          "colour": "jacket-fold",
+          "color": "jacket-fold",
           "top": [0.12, 0.09],
           "pitch": -3
         },
@@ -43,7 +43,7 @@
           "type": "box",
           "pos": [0.12, -0.95, 0.061],
           "size": [0.13, 0.58, 0.1],
-          "colour": "jacket-light",
+          "color": "jacket-light",
           "top": [0.12, 0.1],
           "roll": -2,
           "pitch": -1
@@ -52,7 +52,7 @@
           "type": "box",
           "pos": [-0.175, -0.86, 0.095],
           "size": [0.1, 0.5, 0.08],
-          "colour": "jacket-fold",
+          "color": "jacket-fold",
           "top": [0.08, 0.07],
           "lean": [0.02, 0],
           "roll": 3
@@ -61,7 +61,7 @@
           "type": "box",
           "pos": [0.175, -0.88, 0.095],
           "size": [0.1, 0.52, 0.08],
-          "colour": "jacket",
+          "color": "jacket",
           "top": [0.08, 0.07],
           "lean": [-0.02, 0],
           "roll": -3
@@ -70,7 +70,7 @@
           "type": "box",
           "pos": [-0.172, -0.56, 0.095],
           "size": [0.105, 0.045, 0.085],
-          "colour": "stripe",
+          "color": "stripe",
           "roll": 3,
           "collide": false
         },
@@ -78,7 +78,7 @@
           "type": "box",
           "pos": [0.172, -0.58, 0.095],
           "size": [0.105, 0.045, 0.085],
-          "colour": "stripe",
+          "color": "stripe",
           "roll": -3,
           "collide": false
         }

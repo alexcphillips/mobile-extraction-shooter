@@ -34,8 +34,8 @@ describe('sounds', () => {
     // A tone needs a pitch, noise has none, and every layer must last some time.
     expect(() => load(layer({ source: 'tone' }))).toThrow(/a tone needs freq/);
     expect(() => load(layer({ freq: [100, 100] }))).toThrow(/noise has no freq/);
-    expect(() => load(layer({ source: 'tone', freq: [100, 100], colour: 'pink' }))).toThrow(
-      /a tone has no colour/,
+    expect(() => load(layer({ source: 'tone', freq: [100, 100], color: 'pink' }))).toThrow(
+      /a tone has no color/,
     );
     expect(() => load(layer({ attack: 0, decay: 0 }))).toThrow(/lasts no time/);
     expect(() => load(layer({ filter: { type: 'lowpass', freq: [10, 100], q: 1 } }))).toThrow(

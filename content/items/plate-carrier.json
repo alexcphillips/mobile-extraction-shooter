@@ -2,7 +2,7 @@
   "formatVersion": 10,
   "id": "plate-carrier",
   "name": "Plate carrier",
-  "type": "armour",
+  "type": "armor",
   "size": [3, 3],
   "value": 30000,
   "rarity": "epic",
@@ -16,25 +16,25 @@
         "type": "box",
         "pos": [0, 1.222, 0.005],
         "size": [0.345, 0.315, 0.266],
-        "colour": "#3d4733"
+        "color": "#3d4733"
       },
       {
         "type": "box",
         "pos": [0, 1.113, -0.133],
         "size": [0.276, 0.099, 0.059],
-        "colour": "#343d2c"
+        "color": "#343d2c"
       },
       {
         "type": "box",
         "pos": [0.108, 1.379, 0],
         "size": [0.079, 0.039, 0.236],
-        "colour": "#3d4733"
+        "color": "#3d4733"
       },
       {
         "type": "box",
         "pos": [-0.108, 1.379, 0],
         "size": [0.079, 0.039, 0.236],
-        "colour": "#3d4733"
+        "color": "#3d4733"
       }
     ]
   }

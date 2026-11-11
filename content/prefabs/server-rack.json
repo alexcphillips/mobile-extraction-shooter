@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "server-rack",
   "name": "Server rack",
-  "colours": {
+  "colors": {
     "body": "#1d1e21",
     "panel": "#3a3d42",
     "led": "#58c0a0",
@@ -13,62 +13,62 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [0.68, 2, 0.8],
-      "colour": "body"
+      "color": "body"
     },
     {
       "type": "box",
       "pos": [0, 0.3, 0.41],
       "size": [0.6, 0.32, 0.01],
-      "colour": "panel",
+      "color": "panel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.18, 0.42, 0.42],
       "size": [0.14, 0.05, 0.01],
-      "colour": "led-b",
+      "color": "led-b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.8, 0.41],
       "size": [0.6, 0.32, 0.01],
-      "colour": "panel",
+      "color": "panel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.18, 0.92, 0.42],
       "size": [0.14, 0.05, 0.01],
-      "colour": "led",
+      "color": "led",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.3, 0.41],
       "size": [0.6, 0.32, 0.01],
-      "colour": "panel",
+      "color": "panel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.18, 1.42, 0.42],
       "size": [0.14, 0.05, 0.01],
-      "colour": "led-b",
+      "color": "led-b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.75, 0.41],
       "size": [0.6, 0.32, 0.01],
-      "colour": "panel",
+      "color": "panel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.18, 1.87, 0.42],
       "size": [0.14, 0.05, 0.01],
-      "colour": "led",
+      "color": "led",
       "collide": false
     }
   ]

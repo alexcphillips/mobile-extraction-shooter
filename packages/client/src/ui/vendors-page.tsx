@@ -22,13 +22,13 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { itemPortrait } from '../render/item-portrait';
 import { ItemDetails } from './item-details';
 import { TraderQuests, vendorQuestCounts } from './quests-page';
-import { colourOf } from './raid-screen';
+import { colorOf } from './raid-screen';
 import { CATEGORIES, searcher, type Category } from './stash-search';
 
 /*
  * The vendors page between raids (session 13b; reworked 2026-11-06 after Tarkov's traders;
  * reworked again 2026-11-10, the user's call, as Tarkov's unified trader screen). It opens
- * on the hub: a card for each vendor, in its colour, with its level, the progress to the
+ * on the hub: a card for each vendor, in its color, with its level, the progress to the
  * next and its quests ready to hand in or new. A vendor opens on its own page, with its
  * standing down the side, a Shop and a Quests tab, and the other vendors to switch to.
  * Shop: its offers as cards, with category chips, a search and a sort; offers above its
@@ -152,7 +152,7 @@ export function VendorsPage({
         <button onClick={onStash}>Stash</button>
       </header>
       {notice && <p className="menu-notice">{notice}</p>}
-      <div className="trader-layout" style={{ ['--vendor' as string]: colourOf2(vendor) }}>
+      <div className="trader-layout" style={{ ['--vendor' as string]: colorOf2(vendor) }}>
         <aside className="trader-side">
           <div className="trader-id">
             <Emblem vendor={vendor} />
@@ -207,7 +207,7 @@ export function VendorsPage({
                 <button
                   key={v.id}
                   className={v.id === vendor.id ? 'on' : undefined}
-                  style={{ ['--vendor' as string]: colourOf2(v) }}
+                  style={{ ['--vendor' as string]: colorOf2(v) }}
                   aria-current={v.id === vendor.id}
                   aria-label={v.name}
                   title={v.name}
@@ -252,17 +252,17 @@ export function VendorsPage({
   );
 }
 
-/** A vendor's colour, or the amber the screens use. */
-function colourOf2(vendor: VendorDef): string {
-  return vendor.colour ?? '#e3a33a';
+/** A vendor's color, or the amber the screens use. */
+function colorOf2(vendor: VendorDef): string {
+  return vendor.color ?? '#e3a33a';
 }
 
-/** A vendor's mark: its initial on a hexagon in its colour. */
+/** A vendor's mark: its initial on a hexagon in its color. */
 function Emblem({ vendor, small }: { vendor: VendorDef; small?: boolean }): ReactNode {
   return (
     <span
       className={`trader-emblem${small ? ' small' : ''}`}
-      style={{ ['--vendor' as string]: colourOf2(vendor) }}
+      style={{ ['--vendor' as string]: colorOf2(vendor) }}
       aria-hidden
     >
       <span>{vendor.name[0]}</span>
@@ -296,7 +296,7 @@ function nextShare(vendor: VendorDef, standing: VendorStanding, level: number): 
   return Math.min(share(standing.rep, next.rep), share(standing.spent, next.spent));
 }
 
-/** A vendor on the hub: a tall card in its colour with its mark, level and quests. */
+/** A vendor on the hub: a tall card in its color with its mark, level and quests. */
 function TraderTile({
   vendor,
   index,
@@ -317,7 +317,7 @@ function TraderTile({
     <li style={{ ['--i' as string]: index }}>
       <button
         className="trader-tile"
-        style={{ ['--vendor' as string]: colourOf2(vendor) }}
+        style={{ ['--vendor' as string]: colorOf2(vendor) }}
         aria-label={`${vendor.name}, level ${level}${counts.ready ? `, ${counts.ready} quests ready` : ''}${counts.fresh ? `, ${counts.fresh} new quests` : ''}`}
         onClick={onClick}
       >
@@ -588,7 +588,7 @@ function OfferCard({
     <li>
       <button
         className={`vendors-offer${lock ? ' locked' : ''}`}
-        style={{ ['--rarity' as string]: colourOf(def) }}
+        style={{ ['--rarity' as string]: colorOf(def) }}
         aria-label={`${def.name}${n > 1 ? ` ×${n}` : ''}, ${price.toLocaleString()}${lock ? `, from level ${need}` : ''}`}
         onClick={onClick}
       >

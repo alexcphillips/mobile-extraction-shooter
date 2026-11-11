@@ -211,7 +211,7 @@ describe('the stash', () => {
     const action: InventoryAction = {
       type: 'repair',
       kit: { ...stash, index, item: 'repair-kit' },
-      armour: { owner: self, slot: 'helmet', item: 'helmet' },
+      armor: { owner: self, slot: 'helmet', item: 'helmet' },
     };
     p.gear.helmet!.durability = 10;
     s.player.admin = {

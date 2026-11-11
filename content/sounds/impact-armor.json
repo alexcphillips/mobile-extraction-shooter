@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
-  "id": "impact-armour",
-  "name": "Hitting armour",
+  "id": "impact-armor",
+  "name": "Hitting armor",
   "gain": 0.8,
   "range": 30,
   "pitchJitter": 0.08,
@@ -30,7 +30,7 @@
     },
     {
       "source": "noise",
-      "colour": "white",
+      "color": "white",
       "at": 0,
       "attack": 0.001,
       "hold": 0,

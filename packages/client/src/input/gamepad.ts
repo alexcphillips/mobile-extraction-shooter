@@ -133,7 +133,7 @@ const shaped = new Float32Array(2);
 
 /**
  * Works out one frame from the pad's state and the last frame (`prev`, untouched), `dt`
- * seconds later, into `out`. Buttons have a little hysteresis, so an analogue trigger
+ * seconds later, into `out`. Buttons have a little hysteresis, so an analog trigger
  * resting near halfway doesn't flicker.
  */
 export function mapPad(pad: PadState, prev: PadFrame, dt: number, out: PadFrame): void {

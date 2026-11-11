@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "area-familiarization",
   "name": "Local Recon",
-  "vendor": "armourer",
+  "vendor": "armorer",
   "description": "There are plenty of places worth knowing about around here. Visit the marked locations and familiarize yourself with the area.",
   "objectives": [
     {

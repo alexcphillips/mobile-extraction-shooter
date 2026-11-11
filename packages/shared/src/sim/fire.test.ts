@@ -152,7 +152,7 @@ describe('burning', () => {
     expect(state.fires).toHaveLength(0);
     run(state, world, ticks(FUEL.burnTime) + 2);
     expect(t.burn).toBeNull();
-    // Every zone, past armour: about burnDamage × 6 zones × burnTime.
+    // Every zone, past armor: about burnDamage × 6 zones × burnTime.
     const lost = TOTAL_HP - totalHp(t.health);
     expect(lost).toBeCloseTo(FUEL.burnDamage * 6 * FUEL.burnTime, -1);
     expect(t.health.hp.every((hp, z) => hp < [35, 85, 60, 60, 65, 65][z]!)).toBe(true);

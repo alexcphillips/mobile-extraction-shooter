@@ -41,7 +41,7 @@
     },
     {
       "source": "noise",
-      "colour": "white",
+      "color": "white",
       "at": 0,
       "attack": 0.001,
       "hold": 0,
@@ -51,7 +51,7 @@
     },
     {
       "source": "noise",
-      "colour": "white",
+      "color": "white",
       "at": 0.05,
       "attack": 0.001,
       "hold": 0,
@@ -61,7 +61,7 @@
     },
     {
       "source": "noise",
-      "colour": "white",
+      "color": "white",
       "at": 0.1,
       "attack": 0.001,
       "hold": 0,

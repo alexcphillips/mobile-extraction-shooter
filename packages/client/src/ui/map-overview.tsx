@@ -30,7 +30,7 @@ export function overviewMap(id: string): CompiledMap | null {
 
 /** What the overview's side says about a map. */
 export interface MapFacts {
-  /** Metres across, x by z. */
+  /** Meters across, x by z. */
   size: [number, number];
   /** Extractions open in every raid. */
   fixed: number;
@@ -80,7 +80,7 @@ export function MapOverview({ map }: { map: CompiledMap }): ReactNode {
     w: layers.w + 2 * pad,
     h: layers.h + 2 * pad,
   };
-  // Metres per screen pixel, so labels and lines are the same size on any screen.
+  // Meters per screen pixel, so labels and lines are the same size on any screen.
   const k = Math.max(view.w / size.w, view.h / size.h);
   const font = 10 * k;
   const label = (x: number, z: number, text: string, fill: string, key: string): ReactNode => (

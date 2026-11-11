@@ -31,7 +31,7 @@ export class Barricades {
     const total = windows.reduce((n, w) => n + w.max, 0);
     if (!total) return;
     const geo = new THREE.BoxGeometry(1, PLANK_HEIGHT, PLANK_THICKNESS);
-    const colour = new THREE.Color();
+    const color = new THREE.Color();
     geo.setAttribute(
       'color',
       new THREE.BufferAttribute(
@@ -59,7 +59,7 @@ export class Barricades {
         p.set(w.x + inX, w.y + 0.08 + up * (w.height - 0.16), w.z + inZ);
         s.set(w.width + OVERHANG * 2, 1, 1);
         this.matrices.push(new THREE.Matrix4().compose(p, q.setFromEuler(e), s));
-        this.mesh.setColorAt(k, colour.setHex(WOOD[(i + k) % WOOD.length]!));
+        this.mesh.setColorAt(k, color.setHex(WOOD[(i + k) % WOOD.length]!));
         this.mesh.setMatrixAt(k, this.hidden);
         k++;
       }

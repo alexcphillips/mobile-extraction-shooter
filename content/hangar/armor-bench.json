@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
-  "id": "armour-bench",
-  "name": "Armour bench",
-  "blurb": "Builds armour, rigs and backpacks, and better repair kits.",
+  "id": "armor-bench",
+  "name": "Armor bench",
+  "blurb": "Builds armor, rigs and backpacks, and better repair kits.",
   "order": 2,
   "levels": [
     {
@@ -21,7 +21,7 @@
           "count": 1
         }
       ],
-      "unlocks": "Armour and backpacks"
+      "unlocks": "Armor and backpacks"
     },
     {
       "cost": [
@@ -30,7 +30,7 @@
           "count": 1
         }
       ],
-      "unlocks": "Top-tier armour and kits"
+      "unlocks": "Top-tier armor and kits"
     }
   ]
 }

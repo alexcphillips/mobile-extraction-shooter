@@ -2,9 +2,9 @@ import { z } from 'zod';
 import type { ContentFormat } from './content/format';
 import {
   ATTACHMENT_SLOTS,
-  armourOf,
+  armorOf,
   firesRound,
-  isArmouredRig,
+  isArmoredRig,
   fits,
   itemDef,
   sectionsOf,
@@ -189,7 +189,7 @@ export const gearShape = z.strictObject({
   knife: slotShape,
   hand: z.enum(['primary1', 'primary2', 'sidearm', 'knife']),
   helmet: slotShape,
-  bodyArmour: slotShape,
+  bodyArmor: slotShape,
   rig: slotShape,
   backpack: slotShape,
   pockets: gridShape,
@@ -608,11 +608,11 @@ export function settleBags(items: ItemDb, gear: Gear, stash: readonly Grid[]): v
       for (const g of shed)
         if (!stash.some((page) => addItem(items, page, g.item) === 0)) grid.items.push(g);
     }
-    // A rig that gained armour in content since starts it new; one that lost it, sheds it.
-    if (def.armour) {
-      if (bag.durability === undefined) bag.durability = def.armour.durability;
-      if (bag.max !== undefined && bag.max > def.armour.durability) delete bag.max;
-      bag.durability = Math.min(bag.durability, bag.max ?? def.armour.durability);
+    // A rig that gained armor in content since starts it new; one that lost it, sheds it.
+    if (def.armor) {
+      if (bag.durability === undefined) bag.durability = def.armor.durability;
+      if (bag.max !== undefined && bag.max > def.armor.durability) delete bag.max;
+      bag.durability = Math.min(bag.durability, bag.max ?? def.armor.durability);
     } else {
       delete bag.durability;
       delete bag.max;
@@ -626,11 +626,11 @@ export function settleBags(items: ItemDb, gear: Gear, stash: readonly Grid[]): v
   settle(gear.rig);
   settle(gear.backpack);
   for (const page of stash) for (const g of page.items) settle(g.item);
-  // Body armour worn under a rig that became armoured goes to the stash (no room: it
+  // Body armor worn under a rig that became armored goes to the stash (no room: it
   // stays, and checkGear refuses it).
-  const body = gear.bodyArmour;
-  if (body && gear.rig && isArmouredRig(itemDef(items, gear.rig.item))) {
-    if (stash.some((page) => addItem(items, page, body) === 0)) gear.bodyArmour = null;
+  const body = gear.bodyArmor;
+  if (body && gear.rig && isArmoredRig(itemDef(items, gear.rig.item))) {
+    if (stash.some((page) => addItem(items, page, body) === 0)) gear.bodyArmor = null;
   }
 }
 
@@ -751,26 +751,26 @@ export function itemGained(items: ItemDb, before: Profile, after: Profile): stri
 }
 
 /**
- * The durability of all the armour, its max durability (sim/repair.ts), and the points
+ * The durability of all the armor, its max durability (sim/repair.ts), and the points
  * left in all the repair kits.
  */
 function repairTotals(items: ItemDb, p: Profile) {
   const out = { durability: 0, max: 0, points: 0 };
   forEachItem(p.gear, p.stash, (item) => {
     const def = items.get(item.item);
-    // Armour, and armoured rigs (2026-11-11).
-    const armour = def && armourOf(def);
-    if (armour) {
+    // Armor, and armored rigs (2026-11-11).
+    const armor = def && armorOf(def);
+    if (armor) {
       out.durability += item.durability ?? 0;
-      out.max += item.max ?? armour.durability;
+      out.max += item.max ?? armor.durability;
     } else if (def?.type === 'repair') out.points += item.left ?? 0;
   });
   return out;
 }
 
 /**
- * Whether armour gained more durability between two profiles than repair kits lost
- * points (session 13b): between raids, only repairs mend armour. Or gained max durability,
+ * Whether armor gained more durability between two profiles than repair kits lost
+ * points (session 13b): between raids, only repairs mend armor. Or gained max durability,
  * which nothing gives back (2026-11-06).
  */
 export function overRepaired(items: ItemDb, before: Profile, after: Profile): boolean {
@@ -822,8 +822,8 @@ export function checkGear(
     if (bad) return bad;
     if (!fitsSlot(items, slot, item)) return `${slot}: "${item.item}" can't go there`;
   }
-  if (gear.bodyArmour && gear.rig && isArmouredRig(itemDef(items, gear.rig.item)))
-    return "body armour can't be worn with an armoured rig";
+  if (gear.bodyArmor && gear.rig && isArmoredRig(itemDef(items, gear.rig.item)))
+    return "body armor can't be worn with an armored rig";
   if (!gear.vault) return 'a player must have a vault';
   // Only a backpack's grid takes empty bags (checkItem checks those).
   if (gear.pockets.bags || gear.vault.bags) return "pockets and the vault can't take bags";
@@ -867,7 +867,7 @@ function checkGrid(
 
 const scratchStats = createWeaponStats();
 
-/** Armour's durability, or an armoured rig's: 0 to its max, and its max to the def's. */
+/** Armor's durability, or an armored rig's: 0 to its max, and its max to the def's. */
 function checkDurability(item: Item, full: number, at: string): string | null {
   if (item.max !== undefined && item.max > full)
     return `${at}: max durability must be 0 to ${full}`;
@@ -886,16 +886,16 @@ function checkItem(items: ItemDb, item: Item, where: string): string | null {
   switch (def.type) {
     case 'weapon':
       return checkWeapon(items, item, def, at);
-    case 'armour':
+    case 'armor':
       return checkDurability(item, def.durability, at);
     case 'container':
       if (!item.grid) return `${at}: no grid`;
-      // An armoured rig has armour's durability (2026-11-11); another rig has none.
-      if (def.armour) {
-        const bad = checkDurability(item, def.armour.durability, at);
+      // An armored rig has armor's durability (2026-11-11); another rig has none.
+      if (def.armor) {
+        const bad = checkDurability(item, def.armor.durability, at);
         if (bad) return bad;
       } else if (item.durability !== undefined || item.max !== undefined)
-        return `${at}: only armour has durability`;
+        return `${at}: only armor has durability`;
       if (!!item.grid.bags !== (def.slot === 'backpack'))
         return `${at}: ${def.slot === 'backpack' ? 'must' : "mustn't"} take empty bags`;
       return checkGrid(items, item.grid, def.grid[0], def.grid[1], false, def.id, sectionsOf(def));

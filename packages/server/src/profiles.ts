@@ -99,9 +99,9 @@ profiles.get('/', async (c) =>
 /**
  * Saves a profile edited between raids (session 13's stash). Sanity limits: well-formed,
  * the same money (only vendors change it, on the server), no item there's more of than
- * before, no armour mended by more than repair kits spent (13b), and the same quests
+ * before, no armor mended by more than repair kits spent (13b), and the same quests
  * (14). Refused while the gear is in a raid. On the dev server, freeRepairs (the infinite
- * consumables cheat) lets armour mend without kits spending points.
+ * consumables cheat) lets armor mend without kits spending points.
  */
 profiles.put('/', async (c) => {
   const raw = await body(c);
@@ -136,7 +136,7 @@ profiles.put('/', async (c) => {
   // Free repairs are an admin cheat: only on the dev server (see admin.ts).
   const freeRepairs = raw.freeRepairs === true && c.env.ADMIN === '1';
   if (!freeRepairs && overRepaired(items, current.profile, next))
-    return fail(c, 'invalid', 'armour mended by more than repair kits spent');
+    return fail(c, 'invalid', 'armor mended by more than repair kits spent');
 
   restGear(next.gear);
   const res = await writeProfile(db, account, raw.version, next).run();

@@ -1,6 +1,6 @@
 import { SCOPE_RADIUS, type OpticDef, type ReticleShape } from '@mes/shared';
 import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import { HexColour, Num } from '../editor/fields';
+import { HexColor, Num } from '../editor/fields';
 import { aimedFov, arcPath, reticleMarkup } from '../hud/optic';
 import {
   NEW_SHAPES,
@@ -17,7 +17,7 @@ import {
  * (hud/optic.ts) on a phone-shaped screen, over a person standing at a chosen range, sized
  * for the optic's zoom, so a mil line or a dot can be judged against a body. Shapes are
  * picked and dragged by their handles; a drag is one undo step. IE-2 added arcs, filled
- * triangles, a colour per shape and a repeat tool.
+ * triangles, a color per shape and a repeat tool.
  */
 
 /** An iPhone's screen in landscape; reticle units are % of its height. */
@@ -161,10 +161,10 @@ export function ReticleDesigner(props: {
           <input type="checkbox" checked={dark} onChange={(e) => setDark(e.target.checked)} />
           night
         </label>
-        <HexColour
-          label="reticle colour"
-          value={optic.reticle.colour}
-          onChange={(c) => edit((o) => void (o.reticle.colour = c))}
+        <HexColor
+          label="reticle color"
+          value={optic.reticle.color}
+          onChange={(c) => edit((o) => void (o.reticle.color = c))}
         />
       </div>
       <p className="ed-note">
@@ -208,7 +208,7 @@ export function ReticleDesigner(props: {
       <ul className="ed-list ie-shapes">
         {shapes.map((s, i) => (
           <li key={i} className={i === sel ? 'ed-on' : undefined} onClick={() => setSel(i)}>
-            {s.colour && <span className="ie-swatch" style={{ background: s.colour }} />}
+            {s.color && <span className="ie-swatch" style={{ background: s.color }} />}
             {describe(s)}
           </li>
         ))}
@@ -232,17 +232,17 @@ export function ReticleDesigner(props: {
             ))}
           </div>
           <div className="ed-row ie-tools">
-            <HexColour
-              label={selected.colour ? 'own colour' : 'colour (the reticle’s)'}
-              value={selected.colour ?? optic.reticle.colour}
-              onChange={(c) => setShape((s) => void (s.colour = c))}
+            <HexColor
+              label={selected.color ? 'own color' : 'color (the reticle’s)'}
+              value={selected.color ?? optic.reticle.color}
+              onChange={(c) => setShape((s) => void (s.color = c))}
             />
-            {selected.colour && (
+            {selected.color && (
               <button
-                onClick={() => setShape((s) => void delete s.colour)}
-                title="Draw it in the reticle's colour again"
+                onClick={() => setShape((s) => void delete s.color)}
+                title="Draw it in the reticle's color again"
               >
-                Reticle colour
+                Reticle color
               </button>
             )}
           </div>
@@ -305,7 +305,7 @@ function HitArea({ s }: { s: ReticleShape }) {
   }
 }
 
-/** The picked shape's handles: corners, a centre and radius, an arc's ends. */
+/** The picked shape's handles: corners, a center and radius, an arc's ends. */
 function Handles(props: { s: ReticleShape; on: (e: ReactPointerEvent, h: Handle) => void }) {
   const { s, on } = props;
   if (s.type === 'line')

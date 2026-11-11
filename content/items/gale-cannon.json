@@ -41,20 +41,20 @@
         "type": "box",
         "pos": [0, 0, 0.05],
         "size": [0.09, 0.1, 0.32],
-        "colour": "#3a3f45"
+        "color": "#3a3f45"
       },
       {
         "type": "box",
         "pos": [0, -0.09, 0.1],
         "size": [0.04, 0.12, 0.05],
         "pitch": -15,
-        "colour": "#2a2d30"
+        "color": "#2a2d30"
       },
       {
         "type": "box",
         "pos": [0, -0.03, 0.27],
         "size": [0.06, 0.1, 0.14],
-        "colour": "#5a3a22"
+        "color": "#5a3a22"
       },
       {
         "type": "cylinder",
@@ -62,7 +62,7 @@
         "pitch": 90,
         "radius": 0.035,
         "height": 0.26,
-        "colour": "#3fd0c9"
+        "color": "#3fd0c9"
       },
       {
         "type": "cylinder",
@@ -70,7 +70,7 @@
         "pitch": 90,
         "radius": 0.04,
         "height": 0.02,
-        "colour": "#b87333"
+        "color": "#b87333"
       },
       {
         "type": "cylinder",
@@ -78,7 +78,7 @@
         "pitch": 90,
         "radius": 0.04,
         "height": 0.02,
-        "colour": "#b87333"
+        "color": "#b87333"
       },
       {
         "type": "cylinder",
@@ -86,7 +86,7 @@
         "pitch": 90,
         "radius": 0.045,
         "height": 0.22,
-        "colour": "#4a5058"
+        "color": "#4a5058"
       },
       {
         "type": "cylinder",
@@ -94,7 +94,7 @@
         "pitch": 90,
         "radius": 0.055,
         "height": 0.025,
-        "colour": "#b87333"
+        "color": "#b87333"
       },
       {
         "type": "cylinder",
@@ -102,7 +102,7 @@
         "pitch": 90,
         "radius": 0.055,
         "height": 0.025,
-        "colour": "#b87333"
+        "color": "#b87333"
       },
       {
         "type": "cylinder",
@@ -112,7 +112,7 @@
         "radiusTop": 0.12,
         "height": 0.16,
         "sides": 12,
-        "colour": "#b87333"
+        "color": "#b87333"
       }
     ],
     "grip": [0, -0.09, 0.1],

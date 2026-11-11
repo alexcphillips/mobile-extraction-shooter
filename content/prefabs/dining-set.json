@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "dining-set",
   "name": "Dining set",
-  "colours": {
+  "colors": {
     "top": "#c9a877",
     "leg": "#3d4148",
     "seat": "#6f5a48"
@@ -12,70 +12,70 @@
       "type": "box",
       "pos": [0, 0.72, 0],
       "size": [1.7, 0.05, 0.9],
-      "colour": "top"
+      "color": "top"
     },
     {
       "type": "box",
       "pos": [-0.7, 0, 0],
       "size": [0.08, 0.72, 0.8],
-      "colour": "leg"
+      "color": "leg"
     },
     {
       "type": "box",
       "pos": [0.7, 0, 0],
       "size": [0.08, 0.72, 0.8],
-      "colour": "leg"
+      "color": "leg"
     },
     {
       "type": "box",
       "pos": [-0.5, 0, -0.72],
       "size": [0.42, 0.51, 0.42],
-      "colour": "seat"
+      "color": "seat"
     },
     {
       "type": "box",
       "pos": [-0.5, 0.51, -0.91],
       "size": [0.42, 0.42, 0.05],
-      "colour": "seat",
+      "color": "seat",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.5, 0, -0.72],
       "size": [0.42, 0.51, 0.42],
-      "colour": "seat"
+      "color": "seat"
     },
     {
       "type": "box",
       "pos": [0.5, 0.51, -0.91],
       "size": [0.42, 0.42, 0.05],
-      "colour": "seat",
+      "color": "seat",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.5, 0, 0.72],
       "size": [0.42, 0.51, 0.42],
-      "colour": "seat"
+      "color": "seat"
     },
     {
       "type": "box",
       "pos": [-0.5, 0.51, 0.91],
       "size": [0.42, 0.42, 0.05],
-      "colour": "seat",
+      "color": "seat",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.5, 0, 0.72],
       "size": [0.42, 0.51, 0.42],
-      "colour": "seat"
+      "color": "seat"
     },
     {
       "type": "box",
       "pos": [0.5, 0.51, 0.91],
       "size": [0.42, 0.42, 0.05],
-      "colour": "seat",
+      "color": "seat",
       "collide": false
     }
   ]

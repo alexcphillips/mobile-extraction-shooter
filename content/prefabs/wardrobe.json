@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "wardrobe",
   "name": "Wardrobe",
-  "colours": {
+  "colors": {
     "body": "#e9e6df",
     "door": "#d7d3c9",
     "handle": "#3d4148"
@@ -12,34 +12,34 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [1.8, 2.2, 0.6],
-      "colour": "body"
+      "color": "body"
     },
     {
       "type": "box",
       "pos": [-0.45, 0.06, 0.31],
       "size": [0.86, 2.08, 0.02],
-      "colour": "door",
+      "color": "door",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.45, 0.06, 0.31],
       "size": [0.86, 2.08, 0.02],
-      "colour": "door",
+      "color": "door",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.08, 0.9, 0.33],
       "size": [0.03, 0.4, 0.02],
-      "colour": "handle",
+      "color": "handle",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.08, 0.9, 0.33],
       "size": [0.03, 0.4, 0.02],
-      "colour": "handle",
+      "color": "handle",
       "collide": false
     }
   ]

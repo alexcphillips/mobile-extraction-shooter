@@ -9,14 +9,14 @@
   "rarity": "common",
   "model": {
     "parts": [
-      { "type": "box", "pos": [0, 0, 0], "size": [0.22, 0.012, 0.3], "colour": "#c9a96a" },
+      { "type": "box", "pos": [0, 0, 0], "size": [0.22, 0.012, 0.3], "color": "#c9a96a" },
       {
         "type": "box",
         "pos": [0.004, 0.009, 0.004],
         "size": [0.2, 0.006, 0.28],
-        "colour": "#e8e4d8"
+        "color": "#e8e4d8"
       },
-      { "type": "box", "pos": [0, 0.014, 0], "size": [0.226, 0.004, 0.03], "colour": "#9b2d2a" }
+      { "type": "box", "pos": [0, 0.014, 0], "size": [0.226, 0.004, 0.03], "color": "#9b2d2a" }
     ]
   },
   "category": "Intel"

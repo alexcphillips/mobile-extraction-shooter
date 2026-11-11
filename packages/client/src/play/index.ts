@@ -2,7 +2,7 @@ import {
   advanceTutorial,
   startTutorial,
   type CompiledTutorial,
-  armourDef,
+  armorDef,
   CollisionWorld,
   FixedTimestep,
   GRAPHICS_QUALITY,
@@ -164,7 +164,7 @@ import { CharacterBody, CharacterRig } from '../render/character-body';
 import { Effects } from '../render/effects';
 import { buildExtractions } from '../render/extractions';
 import { FIRE_SVG, FireViews } from '../render/fire';
-import { INCENDIARY_TRACER, TRACER_COLOUR } from '../render/effects';
+import { INCENDIARY_TRACER, TRACER_COLOR } from '../render/effects';
 import { GrenadeViews } from '../render/grenades';
 import { GroundItems } from '../render/ground-items';
 import { LandmarkPass } from '../render/landmarks';
@@ -398,7 +398,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   renderer.info.autoReset = false;
   const { sky, fogNear, fogFar } = map.environment;
   const scene = new THREE.Scene();
-  // The sky is the clear colour, not the scene's background: a background clears the
+  // The sky is the clear color, not the scene's background: a background clears the
   // screen, which would wipe the landmarks drawn before the world.
   renderer.setClearColor(sky);
   scene.fog = new THREE.Fog(sky, fogNear, fogFar);
@@ -870,10 +870,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // Debug: where the sim will fire (cyan: its eye, look and recoil, without spread, to the
   // first surface) and where the player's last shots landed (magenta). Drawn over
   // everything, so on the phone you can see whether they line up with the crosshair.
-  function debugMarker(colour: number): THREE.Mesh {
+  function debugMarker(color: number): THREE.Mesh {
     const m = new THREE.Mesh(
       new THREE.OctahedronGeometry(1),
-      new THREE.MeshBasicMaterial({ color: colour, depthTest: false, fog: false }),
+      new THREE.MeshBasicMaterial({ color: color, depthTest: false, fog: false }),
     );
     m.renderOrder = 10;
     m.visible = false;
@@ -902,7 +902,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     (name) => el.raidHud.note(`Grenade · ${name}`, performance.now()),
   );
   controls.picker = hands;
-  // A flash's white screen, the grey of standing in smoke, and flames while you burn.
+  // A flash's white screen, the gray of standing in smoke, and flames while you burn.
   const blindEl = document.getElementById('blind')!;
   const smokeVeil = document.getElementById('smoke-veil')!;
   const burnEl = document.getElementById('burn')!;
@@ -1440,7 +1440,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     if (guest) {
       // A guest's hurt and heal would be undone by the host's next tick.
     } else if (options.debug && controls.debug === 0) {
-      // An AKM round to a random zone, armour and bleeding included.
+      // An AKM round to a random zone, armor and bleeding included.
       const zone = nextInt(debugRng, 6) as Zone;
       shootCharacter(sim, items, player, zone, ammoDef(items, 'ammo-762x39'), 0);
       el.vitals.hurtFlash();
@@ -1548,15 +1548,14 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         const tracer = !e.grenade && !e.flame;
         // An incendiary round: an orange tracer, and a burst of fire where it lands.
         const fiery = tracer && incendiary(e.by);
-        const colour = fiery ? INCENDIARY_TRACER : TRACER_COLOUR;
+        const color = fiery ? INCENDIARY_TRACER : TRACER_COLOR;
         if (e.by === viewer.id) {
           if (e.pellet === 0) viewmodel.fired(now);
           viewmodel.muzzleWorld(muzzle);
-          if (tracer)
-            effects.tracer(now, muzzle.x, muzzle.y, muzzle.z, e.toX, e.toY, e.toZ, colour);
+          if (tracer) effects.tracer(now, muzzle.x, muzzle.y, muzzle.z, e.toX, e.toY, e.toZ, color);
         } else {
           if (e.pellet === 0) bodyOf.get(e.by)?.fired();
-          if (tracer) effects.tracer(now, e.fromX, e.fromY, e.fromZ, e.toX, e.toY, e.toZ, colour);
+          if (tracer) effects.tracer(now, e.fromX, e.fromY, e.fromZ, e.toX, e.toY, e.toZ, color);
         }
         if (e.hit !== 'none') effects.impact(now, e.toX, e.toY, e.toZ, e.hit === 'character');
         if (fiery && e.hit !== 'none') fires.burst(now, e.toX, e.toY, e.toZ);
@@ -1582,7 +1581,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
             g.z + ez,
             g.y,
             g.y + g.height,
-            g.colour,
+            g.color,
           );
         }
       } else if (e.type === 'explosion') {
@@ -2016,12 +2015,12 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const helmet = alive && !ended ? (v.gear.helmet?.item ?? null) : null;
     if (helmet !== maskFor) {
       maskFor = helmet;
-      const mask = helmet ? armourDef(items, helmet).mask : undefined;
+      const mask = helmet ? armorDef(items, helmet).mask : undefined;
       maskEl.classList.toggle('on', !!mask?.edge);
       if (mask?.edge) maskEl.style.setProperty('--edge', `${mask.edge * 100}%`);
       sounds().setMuffle(mask?.muffle ?? null);
     }
-    // In a smoke cloud: greyer the deeper in, so being inside one hides the world too.
+    // In a smoke cloud: grayer the deeper in, so being inside one hides the world too.
     let veil = 0;
     for (const s of sim.smokes) {
       const r = smokeRadius(s);

@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "display-case",
   "name": "Display case",
-  "colours": {
+  "colors": {
     "base": "#d7d9d8",
     "glass": "#bfe0e6",
     "goods": "#c8a24b",
@@ -14,48 +14,48 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [1.8, 0.85, 0.7],
-      "colour": "base"
+      "color": "base"
     },
     {
       "type": "box",
       "pos": [0, 0.02, 0],
       "size": [1.84, 0.1, 0.74],
-      "colour": "trim",
+      "color": "trim",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.85, 0],
       "size": [1.74, 0.03, 0.64],
-      "colour": "trim",
+      "color": "trim",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.55, 0.88, 0],
       "size": [0.36, 0.07, 0.34],
-      "colour": "goods",
+      "color": "goods",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.88, 0.06],
       "size": [0.3, 0.1, 0.26],
-      "colour": "goods-b",
+      "color": "goods-b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.5, 0.88, -0.04],
       "size": [0.44, 0.06, 0.3],
-      "colour": "goods",
+      "color": "goods",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.88, 0],
       "size": [1.74, 0.28, 0.64],
-      "colour": "glass",
+      "color": "glass",
       "collide": false
     }
   ]

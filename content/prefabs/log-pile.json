@@ -2,20 +2,20 @@
   "formatVersion": 3,
   "id": "log-pile",
   "name": "Log pile",
-  "colours": { "bearer": "#4f3a27" },
+  "colors": { "bearer": "#4f3a27" },
   "nodes": [
     {
       "type": "box",
       "pos": [-2.1, 0.0, 0],
       "size": [0.16, 0.12, 1.8],
-      "colour": "bearer",
+      "color": "bearer",
       "collide": false
     },
     {
       "type": "box",
       "pos": [2.1, 0.0, 0],
       "size": [0.16, 0.12, 1.8],
-      "colour": "bearer",
+      "color": "bearer",
       "collide": false
     },
     { "type": "prefab", "prefab": "log", "pos": [0.18, 0.12, -0.5], "yaw": 1.5 },

@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "shopping-trolley",
   "name": "Shopping trolley",
-  "colours": {
+  "colors": {
     "wire": "#a9afb3",
     "handle": "#2456a4",
     "base": "#3d4148"
@@ -12,26 +12,26 @@
       "type": "box",
       "pos": [0, 0.08, 0],
       "size": [0.54, 0.06, 0.92],
-      "colour": "base"
+      "color": "base"
     },
     {
       "type": "box",
       "pos": [0, 0.42, 0.04],
       "size": [0.54, 0.5, 0.8],
-      "colour": "wire"
+      "color": "wire"
     },
     {
       "type": "box",
       "pos": [0, 0.98, -0.46],
       "size": [0.56, 0.04, 0.04],
-      "colour": "handle",
+      "color": "handle",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.06, -0.4],
       "size": [0.04, 0.9, 0.04],
-      "colour": "base",
+      "color": "base",
       "collide": false
     }
   ]

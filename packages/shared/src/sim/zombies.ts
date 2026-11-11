@@ -30,7 +30,7 @@ import {
  * that refills. Zombies' minds are in ai.ts (hunt).
  */
 
-/** Zombies tuning. Distances in metres, times in seconds. */
+/** Zombies tuning. Distances in meters, times in seconds. */
 export const ZOMBIES = {
   /** A zombie's body stays this long after it dies, then goes. */
   corpseTime: 4,

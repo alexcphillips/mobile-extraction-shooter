@@ -1,9 +1,9 @@
 import {
   ATTACHMENT_SLOTS,
   attachmentDef,
-  calibreOf,
+  caliberOf,
   fits,
-  roundCalibre,
+  roundCaliber,
   roundOf,
   weaponDef,
   type AmmoDef,
@@ -65,7 +65,7 @@ const UNARMED_AIM_TIME = 0.3;
 
 /**
  * A gun, in a gear slot or in a grid. Reloading takes rounds from the ammo carried (see
- * gear.ts), of the round loaded (Item.loaded) or another of its calibre. The timers only
+ * gear.ts), of the round loaded (Item.loaded) or another of its caliber. The timers only
  * matter while it's in someone's hands.
  */
 export interface WeaponState extends Item {
@@ -169,7 +169,7 @@ export interface ShotEvent {
   /** What it hit: nothing (range ran out), the map, or a character (target). */
   hit: 'none' | 'world' | 'character';
   target: EntityId;
-  /** How far away it can be heard, in metres (suppressors shrink it). */
+  /** How far away it can be heard, in meters (suppressors shrink it). */
   loudness: number;
   /**
    * Which pellet of the round (shotgun shells fire several, one event each); 0 for the
@@ -225,8 +225,8 @@ export function loadedAmmo(items: ItemDb, gun: Item): string {
 
 /**
  * What a reload of w would load, or null with nothing to load: the round asked for, if
- * in reach (pockets and rig: QUICK_GRIDS) and of its calibre; else the one loaded, if any
- * is in reach; else the highest level of its calibre in reach. Infinite ammo loads what's asked for or what's loaded.
+ * in reach (pockets and rig: QUICK_GRIDS) and of its caliber; else the one loaded, if any
+ * is in reach; else the highest level of its caliber in reach. Infinite ammo loads what's asked for or what's loaded.
  */
 export function reloadRound(
   c: Character,
@@ -235,11 +235,11 @@ export function reloadRound(
   want?: string | null,
 ): string | null {
   const def = weaponDef(items, w.item);
-  const calibre = calibreOf(items, def);
+  const caliber = caliberOf(items, def);
   const loaded = loadedAmmo(items, w);
   if (want) {
     const a = roundOf(items, want);
-    const ok = !!a && roundCalibre(a) === calibre;
+    const ok = !!a && roundCaliber(a) === caliber;
     if (ok && (freeAmmo(c, def) || carriedAmmo(c, want) > 0)) return want;
   }
   if (freeAmmo(c, def) || carriedAmmo(c, loaded) > 0) return loaded;
@@ -250,7 +250,7 @@ export function reloadRound(
     if (!grid) continue;
     for (const g of grid.items) {
       const a = roundOf(items, g.item.item);
-      if (a && roundCalibre(a) === calibre && a.level > bestLevel) {
+      if (a && roundCaliber(a) === caliber && a.level > bestLevel) {
         best = a.id;
         bestLevel = a.level;
       }
@@ -459,7 +459,7 @@ function finishReload(
   }
 }
 
-/** How far short of where an admin spawner's shot stopped its enemy spawns, in metres. */
+/** How far short of where an admin spawner's shot stopped its enemy spawns, in meters. */
 const SPAWN_BACK_OFF = 0.6;
 
 // Scratch, so firing allocates nothing but its event.

@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "server-row",
   "name": "Server row",
-  "colours": {
+  "colors": {
     "body": "#1d1e21",
     "panel": "#3a3d42",
     "led": "#58e0d0",
@@ -13,48 +13,48 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [4, 2, 0.8],
-      "colour": "body"
+      "color": "body"
     },
     {
       "type": "box",
       "pos": [0, 0.3, 0],
       "size": [3.9, 0.34, 0.84],
-      "colour": "panel",
+      "color": "panel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.8, 0],
       "size": [3.9, 0.34, 0.84],
-      "colour": "panel",
+      "color": "panel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.3, 0],
       "size": [3.9, 0.34, 0.84],
-      "colour": "panel",
+      "color": "panel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.1, 0.42, 0],
       "size": [1.3, 0.05, 0.86],
-      "colour": "led",
+      "color": "led",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.7, 0.92, 0],
       "size": [1.5, 0.05, 0.86],
-      "colour": "led-b",
+      "color": "led-b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.4, 1.42, 0],
       "size": [1.8, 0.05, 0.86],
-      "colour": "led",
+      "color": "led",
       "collide": false
     }
   ]

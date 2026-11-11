@@ -10,7 +10,7 @@ import {
 } from './collision-world';
 import type { HeightGridDef } from './terrain';
 
-/** Flat terrain at height h, 200 m square centred on the origin. */
+/** Flat terrain at height h, 200 m square centered on the origin. */
 function flat(h = 0): HeightGridDef {
   return {
     minX: -100,
@@ -135,7 +135,7 @@ describe('CollisionWorld.raycast', () => {
 });
 
 describe('CollisionWorld tilted boxes', () => {
-  // A 0.4 m thick slab over 8 × 3 m, rising 0.5 m per metre towards +z, its middle 2 m up.
+  // A 0.4 m thick slab over 8 × 3 m, rising 0.5 m per meter towards +z, its middle 2 m up.
   const slab: BoxDef = {
     x: 0,
     y: 2,
@@ -241,7 +241,7 @@ describe('CollisionWorld standing queries', () => {
     expect(w.pushOut(pos, 0.5, -0.5, 1)).toBe(false);
   });
 
-  it('pushes a centre that is inside out through the nearest side', () => {
+  it('pushes a center that is inside out through the nearest side', () => {
     const w = world({ boxes: [{ x: 0, y: 0, z: 0, hx: 2, hy: 1, hz: 1, yaw: 0 }] });
     const pos = { x: 1.5, z: 0.5 };
     w.pushOut(pos, 0.3, -1, 1);

@@ -270,7 +270,7 @@ describe('jumping', () => {
       const across = { x: Math.sin(yaw) * 1.4, z: Math.cos(yaw) * 1.4 };
       const floor = { ...aabb(-4, 0, -1.5, 4, 0.2, 1.5), ...across, yaw };
       const world = makeWorld({ boxes: [wall, floor] });
-      // Starting a metre out from the wall's −z face, walking at it and a little along it.
+      // Starting a meter out from the wall's −z face, walking at it and a little along it.
       const nx = -Math.sin(yaw);
       const nz = -Math.cos(yaw);
       const { c, run } = setup(world, nx * 1.1, nz * 1.1, yaw + Math.PI + 0.3, 0);

@@ -3,16 +3,16 @@ import type { Shape } from './compile';
 
 /*
  * Item models (item format 6, session 18b): an item is drawn as simple shapes, plus the
- * points the game needs to hold, aim and fit it. Units are metres, angles degrees, colours
+ * points the game needs to hold, aim and fit it. Units are meters, angles degrees, colors
  * #rrggbb.
  *
- * Frames: a weapon, attachment, knife or any other item is modelled with the barrel or
+ * Frames: a weapon, attachment, knife or any other item is modeled with the barrel or
  * blade along −z and y up; a gun's origin is where it sits on the body's weapon bone, an
- * attachment's is the point that goes on the gun's mount. Worn gear (armour, rigs and
- * backpacks) is modelled on the body in its rest pose: feet at y = 0, facing −z, 1.8 m tall.
+ * attachment's is the point that goes on the gun's mount. Worn gear (armor, rigs and
+ * backpacks) is modeled on the body in its rest pose: feet at y = 0, facing −z, 1.8 m tall.
  *
- * Unlike map shapes, a part's pos is its CENTRE (guns are built around the bore, not
- * standing on the ground). Rotation is yaw, then pitch, then roll about that centre (three.js
+ * Unlike map shapes, a part's pos is its CENTER (guns are built around the bore, not
+ * standing on the ground). Rotation is yaw, then pitch, then roll about that center (three.js
  * Euler order 'YXZ'), as for maps.
  */
 
@@ -22,7 +22,7 @@ export const vec3Schema = z.tuple([finite, finite, finite]);
 const size3 = z.tuple([positive, positive, positive]);
 const angle = finite.optional();
 const radius = finite.refine((n) => n >= 0, 'must be 0 or more');
-const colour = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'colours are #rrggbb');
+const color = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'colors are #rrggbb');
 
 /** The fixed attachment slots a gun can have. */
 export const ATTACHMENT_SLOTS = ['optic', 'muzzle', 'magazine'] as const;
@@ -34,7 +34,7 @@ const placed = {
   yaw: angle,
   pitch: angle,
   roll: angle,
-  colour,
+  color,
   /**
    * Guns only: the part isn't drawn while something is fitted in this slot (iron sights
    * under an optic, the standard magazine when another is fitted).
@@ -150,7 +150,7 @@ export function modelShapes(
       yaw: (p.yaw ?? 0) * DEG,
       pitch: (p.pitch ?? 0) * DEG,
       roll: (p.roll ?? 0) * DEG,
-      colour: parseInt(p.colour.slice(1), 16),
+      color: parseInt(p.color.slice(1), 16),
     };
     if (p.type === 'cylinder') {
       out.push({

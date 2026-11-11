@@ -14,7 +14,7 @@
         "group": "sheets",
         "pos": [0.006, 0.001, 0.004],
         "size": [0.2, 0.002, 0.34],
-        "colour": "#1f4677",
+        "color": "#1f4677",
         "yaw": -7
       },
       {
@@ -23,7 +23,7 @@
         "group": "sheets",
         "pos": [0, 0.0035, 0],
         "size": [0.2, 0.002, 0.34],
-        "colour": "#2b5a94"
+        "color": "#2b5a94"
       },
       {
         "type": "box",
@@ -31,7 +31,7 @@
         "group": "drawing",
         "pos": [-0.092, 0.005, 0],
         "size": [0.003, 0.001, 0.327],
-        "colour": "#e6eef5"
+        "color": "#e6eef5"
       },
       {
         "type": "box",
@@ -39,7 +39,7 @@
         "group": "drawing",
         "pos": [0, 0.0051, -0.162],
         "size": [0.187, 0.0012, 0.003],
-        "colour": "#e6eef5"
+        "color": "#e6eef5"
       },
       {
         "type": "box",
@@ -47,7 +47,7 @@
         "group": "drawing",
         "pos": [0.092, 0.005, 0],
         "size": [0.003, 0.001, 0.327],
-        "colour": "#e6eef5"
+        "color": "#e6eef5"
       },
       {
         "type": "box",
@@ -55,7 +55,7 @@
         "group": "drawing",
         "pos": [0, 0.0051, 0.162],
         "size": [0.187, 0.0012, 0.003],
-        "colour": "#e6eef5"
+        "color": "#e6eef5"
       },
       {
         "type": "cylinder",
@@ -65,7 +65,7 @@
         "radius": 0.045,
         "height": 0.001,
         "sides": 10,
-        "colour": "#e6eef5"
+        "color": "#e6eef5"
       },
       {
         "type": "cylinder",
@@ -75,7 +75,7 @@
         "radius": 0.039,
         "height": 0.001,
         "sides": 10,
-        "colour": "#2b5a94"
+        "color": "#2b5a94"
       },
       {
         "type": "cylinder",
@@ -85,7 +85,7 @@
         "radius": 0.024,
         "height": 0.001,
         "sides": 8,
-        "colour": "#e6eef5"
+        "color": "#e6eef5"
       },
       {
         "type": "cylinder",
@@ -95,7 +95,7 @@
         "radius": 0.019,
         "height": 0.001,
         "sides": 8,
-        "colour": "#2b5a94"
+        "color": "#2b5a94"
       },
       {
         "type": "box",
@@ -103,7 +103,7 @@
         "group": "drawing",
         "pos": [0.06, 0.005, -0.04],
         "size": [0.045, 0.001, 0.028],
-        "colour": "#5f8cc4"
+        "color": "#5f8cc4"
       },
       {
         "type": "box",
@@ -111,7 +111,7 @@
         "group": "drawing",
         "pos": [0.0286, 0.0051, -0.04],
         "size": [0.018, 0.0012, 0.0035],
-        "colour": "#e6eef5"
+        "color": "#e6eef5"
       },
       {
         "type": "box",
@@ -119,7 +119,7 @@
         "group": "drawing",
         "pos": [0.0232, 0.0051, -0.083],
         "size": [0.0035, 0.0012, 0.0328],
-        "colour": "#e6eef5",
+        "color": "#e6eef5",
         "yaw": 128.2204
       },
       {
@@ -130,7 +130,7 @@
         "radius": 0.024,
         "height": 0.001,
         "sides": 8,
-        "colour": "#e8c23a"
+        "color": "#e8c23a"
       },
       {
         "type": "box",
@@ -138,7 +138,7 @@
         "group": "warning",
         "pos": [-0.052, 0.006, 0.05],
         "size": [0.014, 0.001, 0.011],
-        "colour": "#141516",
+        "color": "#141516",
         "yaw": 90
       },
       {
@@ -147,7 +147,7 @@
         "group": "warning",
         "pos": [-0.0624, 0.006, 0.068],
         "size": [0.014, 0.001, 0.011],
-        "colour": "#141516",
+        "color": "#141516",
         "yaw": 210
       },
       {
@@ -156,7 +156,7 @@
         "group": "warning",
         "pos": [-0.0416, 0.006, 0.068],
         "size": [0.014, 0.001, 0.011],
-        "colour": "#141516",
+        "color": "#141516",
         "yaw": 330
       },
       {
@@ -167,7 +167,7 @@
         "radius": 0.0035,
         "height": 0.0014,
         "sides": 6,
-        "colour": "#141516"
+        "color": "#141516"
       },
       {
         "type": "box",
@@ -175,7 +175,7 @@
         "group": "stamp",
         "pos": [0.04, 0.005, 0.045],
         "size": [0.08, 0.001, 0.024],
-        "colour": "#b8322a",
+        "color": "#b8322a",
         "yaw": -14
       },
       {
@@ -184,7 +184,7 @@
         "group": "stamp",
         "pos": [0.04, 0.0055, 0.045],
         "size": [0.072, 0.001, 0.016],
-        "colour": "#2b5a94",
+        "color": "#2b5a94",
         "yaw": -14
       },
       {
@@ -193,7 +193,7 @@
         "group": "stamp",
         "pos": [0.04, 0.0062, 0.045],
         "size": [0.054, 0.0012, 0.006],
-        "colour": "#b8322a",
+        "color": "#b8322a",
         "yaw": -14
       },
       {
@@ -204,7 +204,7 @@
         "radius": 0.016,
         "height": 0.21,
         "sides": 10,
-        "colour": "#c9d6e3",
+        "color": "#c9d6e3",
         "roll": 90,
         "yaw": 12
       }

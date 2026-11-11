@@ -72,7 +72,7 @@ function grenadeDoes(items: ItemDb, id: string): string {
 /**
  * The hand-slot buttons and the heal button, written straight to the DOM like the rest of
  * the HUD. Each slot shows what's in it, dimmed when empty and outlined when in hand. The
- * heal button shows the med a tap would use (greyed out when nothing helps), and a ring
+ * heal button shows the med a tap would use (grayed out when nothing helps), and a ring
  * fills while one is being used. A long press opens a picker of every carried med that
  * would help. The fire button says "knife" with the knife out; aim and reload dim without
  * a gun. The grenade button shows the kind a tap throws and how many of it are carried,

@@ -17,19 +17,19 @@ const house: PrefabFile = {
   formatVersion: 3,
   id: 'house',
   building: { size: [4, 4] },
-  nodes: [{ type: 'box', pos: [0, 0, 0], size: [4, 3, 4], colour: '#ffffff' }],
+  nodes: [{ type: 'box', pos: [0, 0, 0], size: [4, 3, 4], color: '#ffffff' }],
 };
 const crate: PrefabFile = {
   formatVersion: 3,
   id: 'crate',
-  nodes: [{ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], colour: '#ffffff' }],
+  nodes: [{ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], color: '#ffffff' }],
 };
 const prefabs = new Map([
   ['house', house],
   ['crate', crate],
 ]);
 
-/** A flat 40 m map of 4 m cells, centred on the origin. */
+/** A flat 40 m map of 4 m cells, centered on the origin. */
 const map = (nodes: MapNode[]) => ({ ...newMap('test', 'Test', 40, 4), nodes });
 
 describe('level and hole', () => {
@@ -129,7 +129,7 @@ describe('brushes', () => {
     expect(at(7, 5)).toBe(0);
   });
 
-  it('flatten towards the level and smooth towards the neighbours', () => {
+  it('flatten towards the level and smooth towards the neighbors', () => {
     const t = terrainGrid(map([]));
     t.heights[5 * 11 + 5] = 4;
     applyBrush(t, { mode: 'smooth', radius: 2, strength: 1, height: null }, 0, 0, 1, 0);
@@ -148,7 +148,7 @@ describe('brushes', () => {
 });
 
 describe('setHeights', () => {
-  it('rounds to a centimetre and moves what stood on the ground, not buildings', () => {
+  it('rounds to a centimeter and moves what stood on the ground, not buildings', () => {
     const m = map([
       { type: 'prefab', prefab: 'crate', pos: [0, 0, 0] },
       { type: 'prefab', prefab: 'crate', pos: [0, 2, 0] },

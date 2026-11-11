@@ -10,133 +10,133 @@
           "type": "box",
           "pos": [-0.164, 0, 0.004],
           "size": [0.02, 0.6, 0.6],
-          "colour": "#dedede"
+          "color": "#dedede"
         },
         {
           "type": "box",
           "pos": [0.136, 0, 0.004],
           "size": [0.02, 0.1, 0.6],
-          "colour": "#dedede"
+          "color": "#dedede"
         },
         {
           "type": "glass",
           "pos": [0.136, 0.1, 0.004],
           "size": [0.46, 0.46],
-          "colour": "#cccccc",
+          "color": "#cccccc",
           "yaw": -90
         },
         {
           "type": "box",
           "pos": [0.136, 0.56, 0.004],
           "size": [0.02, 0.03, 0.6],
-          "colour": "#dedede"
+          "color": "#dedede"
         },
         {
           "type": "box",
           "pos": [-0.004, 0, 0.004],
           "size": [0.3, 0.01, 0.6],
-          "colour": "#dedede"
+          "color": "#dedede"
         },
         {
           "type": "box",
           "pos": [-0.004, 0.59, 0.004],
           "size": [0.3, 0.01, 0.6],
-          "colour": "#dedede"
+          "color": "#dedede"
         },
         {
           "type": "box",
           "pos": [0.136, 0.59, 0.004],
           "size": [0.02, 0.01, 0.6],
-          "colour": "#dedede"
+          "color": "#dedede"
         },
         {
           "type": "box",
           "pos": [-0.004, 0, 0.294],
           "size": [0.02, 0.6, 0.3],
-          "colour": "#dedede",
+          "color": "#dedede",
           "yaw": -90
         },
         {
           "type": "box",
           "pos": [0.136, 0, 0.259],
           "size": [0.02, 0.6, 0.05],
-          "colour": "#dedede",
+          "color": "#dedede",
           "yaw": 180
         },
         {
           "type": "box",
           "pos": [0.136, 0, -0.251],
           "size": [0.02, 0.6, 0.05],
-          "colour": "#dedede",
+          "color": "#dedede",
           "yaw": 180
         },
         {
           "type": "box",
           "pos": [-0.004, 0, -0.286],
           "size": [0.02, 0.6, 0.3],
-          "colour": "#dedede",
+          "color": "#dedede",
           "yaw": -90
         },
         {
           "type": "box",
           "pos": [-0.011, 0.1, 0.294],
           "size": [0.2, 0.4, 0.05],
-          "colour": "#636363"
+          "color": "#636363"
         },
         {
           "type": "box",
           "pos": [-0.002, 0.19, 0.119],
           "size": [0.15, 0.03, 0.3],
-          "colour": "#4a4a4a"
+          "color": "#4a4a4a"
         },
         {
           "type": "box",
           "pos": [-0.007, 0.007, 0.024],
           "size": [0.2, 0.01, 0.4],
-          "colour": "#3d3d3d"
+          "color": "#3d3d3d"
         },
         {
           "type": "box",
           "pos": [0.003, 0.22, 0.151],
           "size": [0.12, 0.01, 0.1],
-          "colour": "#b35151"
+          "color": "#b35151"
         },
         {
           "type": "box",
           "pos": [0.003, 0.22, 0.032],
           "size": [0.12, 0.01, 0.1],
-          "colour": "#5b92a9"
+          "color": "#5b92a9"
         },
         {
           "type": "box",
           "pos": [-0.154, 0.54, -0.301],
           "size": [0.05, 0.01, 0.01],
-          "colour": "#4f4f4f"
+          "color": "#4f4f4f"
         },
         {
           "type": "box",
           "pos": [-0.002, 0.256, 0.264],
           "size": [0.1, 0.05, 0.01],
-          "colour": "#61c45f"
+          "color": "#61c45f"
         },
         {
           "type": "box",
           "pos": [-0.002, 0.318, 0.264],
           "size": [0.1, 0.05, 0.01],
-          "colour": "#c9cb52"
+          "color": "#c9cb52"
         },
         {
           "type": "box",
           "pos": [-0.002, 0.377, 0.264],
           "size": [0.1, 0.05, 0.01],
-          "colour": "#ffae3d"
+          "color": "#ffae3d"
         },
         {
           "type": "cylinder",
           "pos": [-0.029, 0.107, -0.279],
           "radius": 0.08,
           "height": 0.025,
-          "colour": "#8f58bb",
+          "color": "#8f58bb",
           "pitch": 90
         },
         {
@@ -144,33 +144,33 @@
           "pos": [-0.029, 0.282, -0.279],
           "radius": 0.08,
           "height": 0.025,
-          "colour": "#dd6ece",
+          "color": "#dd6ece",
           "pitch": 90
         },
         {
           "type": "box",
           "pos": [-0.18, 0, -0.212],
           "size": [0.01, 0.6, 0.02],
-          "colour": "#8f58bb"
+          "color": "#8f58bb"
         },
         {
           "type": "box",
           "pos": [-0.11, 0.6, -0.212],
           "size": [0.15, 0.01, 0.02],
-          "colour": "#8f58bb"
+          "color": "#8f58bb"
         },
         {
           "type": "box",
           "pos": [-0.045, 0.6, -0.127],
           "size": [0.15, 0.01, 0.02],
-          "colour": "#8f58bb",
+          "color": "#8f58bb",
           "yaw": -90
         },
         {
           "type": "box",
           "pos": [-0.065, 0.6, -0.039],
           "size": [0.15, 0.01, 0.02],
-          "colour": "#8f58bb",
+          "color": "#8f58bb",
           "yaw": -90
         }
       ],

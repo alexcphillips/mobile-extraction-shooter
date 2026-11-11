@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "mall-bench",
   "name": "Mall bench",
-  "colours": {
+  "colors": {
     "seat": "#8a6a4a",
     "base": "#7f8078"
   },
@@ -11,19 +11,19 @@
       "type": "box",
       "pos": [-0.8, 0, 0],
       "size": [0.4, 0.42, 0.5],
-      "colour": "base"
+      "color": "base"
     },
     {
       "type": "box",
       "pos": [0.8, 0, 0],
       "size": [0.4, 0.42, 0.5],
-      "colour": "base"
+      "color": "base"
     },
     {
       "type": "box",
       "pos": [0, 0.42, 0],
       "size": [2.3, 0.08, 0.56],
-      "colour": "seat"
+      "color": "seat"
     }
   ]
 }

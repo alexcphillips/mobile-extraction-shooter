@@ -11,7 +11,7 @@ import {
 import { loadZombies, zombiesIds } from '../content';
 import type { GameMode } from './last-raid';
 import { itemPortrait } from '../render/item-portrait';
-import { colourOf } from './raid-screen';
+import { colorOf } from './raid-screen';
 
 /*
  * The admin page between raids (dev builds only, 2026-10-30): every item, given into the
@@ -61,7 +61,7 @@ const TABS: readonly { label: string; shows: (d: ItemDef) => boolean }[] = [
     label: 'Gear',
     // Not the vault, which is never an item to give (VAULT_ITEM).
     shows: (d) =>
-      (d.type === 'armour' || (d.type === 'container' && d.slot !== 'vault')) && !isAdminItem(d),
+      (d.type === 'armor' || (d.type === 'container' && d.slot !== 'vault')) && !isAdminItem(d),
   },
   { label: 'Other', shows: (d) => d.type === 'key' || d.type === 'quest' || d.type === 'loot' },
   { label: 'Admin', shows: isAdminItem },
@@ -291,7 +291,7 @@ export function AdminPage({
                 <li
                   key={def.id}
                   className="admin-card"
-                  style={{ ['--rarity' as string]: colourOf(def) }}
+                  style={{ ['--rarity' as string]: colorOf(def) }}
                 >
                   <span className="vendors-offer-art">
                     {url && <img src={url} alt="" draggable={false} />}

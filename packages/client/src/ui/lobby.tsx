@@ -8,7 +8,7 @@ import {
   fitsSlot,
   giveWeapon,
   itemDef,
-  wearArmour,
+  wearArmor,
   type Character,
   type CompiledMap,
   type GearSlot,
@@ -19,7 +19,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { itemPortrait } from '../render/item-portrait';
 import { LobbyCharacter } from '../render/lobby-character';
 import { MapOverview } from './map-overview';
-import { colourOf, tileName } from './raid-screen';
+import { colorOf, tileName } from './raid-screen';
 
 /*
  * The main menu as a lobby (2026-11-09, the user's request): your character in the middle
@@ -29,11 +29,11 @@ import { colourOf, tileName } from './raid-screen';
  * these are the pieces it's drawn with.
  */
 
-/** The mode's colour, in CSS and for the plinth's ring. */
+/** The mode's color, in CSS and for the plinth's ring. */
 export const ACCENT = { extraction: 0xe3a33a, zombies: 0x8fc25a } as const;
 
 // ---------------------------------------------------------------------------------------
-// Icons: 24-unit line drawings in the text colour.
+// Icons: 24-unit line drawings in the text color.
 
 const ICONS = {
   stash: 'M3 8l9-5 9 5v8l-9 5-9-5zM3 8l9 5 9-5M12 13v8',
@@ -133,8 +133,8 @@ export function kitLook(items: ItemDb, kit: readonly string[]): Character {
     const def = itemDef(items, id);
     if (def.type === 'weapon') {
       giveWeapon(c, items, id);
-    } else if (def.type === 'armour') {
-      wearArmour(c, items, id);
+    } else if (def.type === 'armor') {
+      wearArmor(c, items, id);
     } else {
       const item = createItem(items, id);
       const slot = (['rig', 'backpack', 'knife'] as const).find((s) => fitsSlot(items, s, item));
@@ -223,7 +223,7 @@ const LOADOUT: readonly { slot: GearSlot; label: string; wide?: boolean }[] = [
   { slot: 'primary1', label: 'Primary', wide: true },
   { slot: 'helmet', label: 'Helmet' },
   { slot: 'primary2', label: 'Secondary', wide: true },
-  { slot: 'bodyArmour', label: 'Armour' },
+  { slot: 'bodyArmor', label: 'Armor' },
   { slot: 'sidearm', label: 'Sidearm' },
   { slot: 'rig', label: 'Rig' },
   { slot: 'backpack', label: 'Backpack' },
@@ -252,7 +252,7 @@ function LoadoutSlot({
   return (
     <span
       className={`lobby-slot${wide ? ' wide' : ''}`}
-      style={{ ['--rarity' as string]: colourOf(def) }}
+      style={{ ['--rarity' as string]: colorOf(def) }}
       title={def.name}
     >
       {url && <img src={url} alt="" draggable={false} />}

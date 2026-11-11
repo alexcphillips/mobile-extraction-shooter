@@ -1,9 +1,9 @@
-import { armourDef, armourStatsOf, type AmmoDef, type ItemDb } from '../content/items';
+import { armorDef, armorStatsOf, type AmmoDef, type ItemDb } from '../content/items';
 import type { Item } from '../inventory/grid';
 import { chance } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import { hostile } from './factions';
-import { chestArmour } from './gear';
+import { chestArmor } from './gear';
 import { punchAim } from './recoil';
 import { maxDurability } from './repair';
 import type { Character, EntityId, SimState } from './state';
@@ -47,38 +47,38 @@ export const HEALTH = {
 } as const;
 
 /**
- * Armour against rounds, by level (a fixed comparison, with Tarkov's numbers; design.md →
- * Damage). Armour with durability left lets through a share of a hit's damage by the
- * round's level against its own, and wears by the round's armour damage. A round below its
- * level gets nothing through (2026-11-08, the user's call: no blunt damage). Broken armour
+ * Armor against rounds, by level (a fixed comparison, with Tarkov's numbers; design.md →
+ * Damage). Armor with durability left lets through a share of a hit's damage by the
+ * round's level against its own, and wears by the round's armor damage. A round below its
+ * level gets nothing through (2026-11-08, the user's call: no blunt damage). Broken armor
  * does nothing.
  */
-export const ARMOUR = {
-  /** Damage let through by a round level with the armour's level, one above, and more. */
+export const ARMOR = {
+  /** Damage let through by a round level with the armor's level, one above, and more. */
   through: { level: 0.5, oneAbove: 0.75, above: 1 },
   /**
-   * Armour damage multiplier by how many levels the armour is above the round: the first
+   * Armor damage multiplier by how many levels the armor is above the round: the first
    * at or below it, the last for that many or more.
    */
   wear: [1, 0.8, 0.6, 0.4],
 } as const;
 
 /**
- * The share of a hit's damage armour with durability left lets through: none for a round
+ * The share of a hit's damage armor with durability left lets through: none for a round
  * below its level (2026-11-08, the user's call: it was a quarter through a helmet and a
  * sixth through a vest, as blunt damage, which let low-level rounds kill through the best
- * armour and favoured high-damage, low-level rounds).
+ * armor and favored high-damage, low-level rounds).
  */
-export function throughArmour(roundLevel: number, armourLevel: number): number {
-  const t = ARMOUR.through;
-  const over = roundLevel - armourLevel;
+export function throughArmor(roundLevel: number, armorLevel: number): number {
+  const t = ARMOR.through;
+  const over = roundLevel - armorLevel;
   return over < 0 ? 0 : over === 0 ? t.level : over === 1 ? t.oneAbove : t.above;
 }
 
-/** The armour damage multiplier for a round against armour, by their levels. */
-export function armourWear(roundLevel: number, armourLevel: number): number {
-  const w = ARMOUR.wear;
-  return w[Math.min(w.length - 1, Math.max(0, armourLevel - roundLevel))]!;
+/** The armor damage multiplier for a round against armor, by their levels. */
+export function armorWear(roundLevel: number, armorLevel: number): number {
+  const w = ARMOR.wear;
+  return w[Math.min(w.length - 1, Math.max(0, armorLevel - roundLevel))]!;
 }
 
 /**
@@ -99,8 +99,8 @@ export interface Health {
   pool?: number;
 }
 
-/** Armour, worn or not: the item and its durability left. */
-export interface ArmourState extends Item {
+/** Armor, worn or not: the item and its durability left. */
+export interface ArmorState extends Item {
   durability: number;
 }
 
@@ -152,7 +152,7 @@ export interface DamageEvent {
   zone: Zone;
   /** HP lost, including what spilled over to the chest. */
   amount: number;
-  /** What armour stopped. */
+  /** What armor stopped. */
   absorbed: number;
   cause: DamageCause;
 }
@@ -167,7 +167,7 @@ export interface DeathEvent {
 }
 
 /**
- * Takes HP from a zone with no multiplier or armour. A broken limb spreads the damage
+ * Takes HP from a zone with no multiplier or armor. A broken limb spreads the damage
  * over the zones with HP left at the spillover rate, and so does whatever a hit has left
  * after breaking a limb. Head or chest at 0 kills. With one health bar (Health.pool) it all
  * comes off the chest. Returns the HP actually lost.
@@ -224,7 +224,7 @@ function spread(h: Health, amount: number): number {
 }
 
 /**
- * Kills outright, past armour, HP and the infinite health cheat: giving up a raid.
+ * Kills outright, past armor, HP and the infinite health cheat: giving up a raid.
  * Does nothing to the dead.
  */
 export function killCharacter(state: SimState, c: Character, by: EntityId): void {
@@ -237,11 +237,11 @@ export function killCharacter(state: SimState, c: Character, by: EntityId): void
 }
 
 /** What a hit does: a round's (AmmoDef) or the knife's (MeleeDef). */
-export type Wound = Pick<AmmoDef, 'damage' | 'level' | 'armourDamage' | 'bleedChance'>;
+export type Wound = Pick<AmmoDef, 'damage' | 'level' | 'armorDamage' | 'bleedChance'>;
 
 /**
- * A bullet or knife hit: the zone's multiplier, then armour on the head or chest lets
- * through its share by level (ARMOUR) and wears down, then what got through may start
+ * A bullet or knife hit: the zone's multiplier, then armor on the head or chest lets
+ * through its share by level (ARMOR) and wears down, then what got through may start
  * bleeding.
  */
 export function shootCharacter(
@@ -258,7 +258,7 @@ export function shootCharacter(
 }
 
 /**
- * A hit of this much damage to one zone, after any multiplier: armour on the head or
+ * A hit of this much damage to one zone, after any multiplier: armor on the head or
  * chest lets through its share by the wound's level and wears down, then what got
  * through may start bleeding. Shots, swings and blasts (sim/grenades.ts) all end here.
  * In zombies mode a player's blasts never hurt players (the ray gun's bolts burst close
@@ -288,13 +288,13 @@ export function woundZone(
   }
   let absorbed = 0;
   let stopped = false;
-  const armour = zone === HEAD ? c.gear.helmet : zone === CHEST ? chestArmour(items, c.gear) : null;
-  if (armour && armour.durability > 0) {
-    const level = armourStatsOf(items, armour.item).level;
+  const armor = zone === HEAD ? c.gear.helmet : zone === CHEST ? chestArmor(items, c.gear) : null;
+  if (armor && armor.durability > 0) {
+    const level = armorStatsOf(items, armor.item).level;
     stopped = wound.level < level;
-    absorbed = damage * (1 - throughArmour(wound.level, level));
-    const wear = wound.armourDamage * armourWear(wound.level, level);
-    armour.durability = Math.max(0, armour.durability - wear);
+    absorbed = damage * (1 - throughArmor(wound.level, level));
+    const wear = wound.armorDamage * armorWear(wound.level, level);
+    armor.durability = Math.max(0, armor.durability - wear);
     damage -= absorbed;
   }
   const amount = dealDamage(state, c, zone, damage, by);
@@ -368,7 +368,7 @@ export function bleed(state: SimState, c: Character): void {
   }
 }
 
-/** Back to full health with nothing bleeding, and worn armour back to full durability. */
+/** Back to full health with nothing bleeding, and worn armor back to full durability. */
 export function restoreHealth(c: Character, items: ItemDb): void {
   const h = c.health;
   for (let zone = 0; zone < ZONE_COUNT; zone++) {
@@ -379,19 +379,19 @@ export function restoreHealth(c: Character, items: ItemDb): void {
   // One health bar is all in the chest.
   if (h.pool !== undefined) h.hp[CHEST] = h.pool;
   h.dead = false;
-  for (const armour of [c.gear.helmet, chestArmour(items, c.gear)]) {
-    if (armour) armour.durability = maxDurability(items, armour);
+  for (const armor of [c.gear.helmet, chestArmor(items, c.gear)]) {
+    if (armor) armor.durability = maxDurability(items, armor);
   }
 }
 
-/** New armour, at its durability times condition (0–1). */
-export function createArmour(items: ItemDb, id: string, condition = 1): ArmourState {
-  return { item: id, count: 1, durability: armourStatsOf(items, id).durability * condition };
+/** New armor, at its durability times condition (0–1). */
+export function createArmor(items: ItemDb, id: string, condition = 1): ArmorState {
+  return { item: id, count: 1, durability: armorStatsOf(items, id).durability * condition };
 }
 
-/** Puts on new armour at full durability, in the slot its item says, replacing what was there. */
-export function wearArmour(c: Character, items: ItemDb, id: string): void {
-  const a = createArmour(items, id);
-  if (armourDef(items, id).slot === 'helmet') c.gear.helmet = a;
-  else c.gear.bodyArmour = a;
+/** Puts on new armor at full durability, in the slot its item says, replacing what was there. */
+export function wearArmor(c: Character, items: ItemDb, id: string): void {
+  const a = createArmor(items, id);
+  if (armorDef(items, id).slot === 'helmet') c.gear.helmet = a;
+  else c.gear.bodyArmor = a;
 }

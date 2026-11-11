@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "repair-use",
-  "name": "Armour repair",
+  "name": "Armor repair",
   "gain": 0.8,
   "range": 15,
   "pitchJitter": 0.05,
@@ -41,7 +41,7 @@
     },
     {
       "source": "noise",
-      "colour": "pink",
+      "color": "pink",
       "at": 0.1,
       "attack": 0.05,
       "hold": 0.5,
@@ -51,7 +51,7 @@
     },
     {
       "source": "noise",
-      "colour": "white",
+      "color": "white",
       "at": 1.2,
       "attack": 0.001,
       "hold": 0,

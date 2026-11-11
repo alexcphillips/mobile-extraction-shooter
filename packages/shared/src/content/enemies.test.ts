@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { mirrorShape, outfitSchema, platingShapes } from './enemies';
 
-const colours = {
+const colors = {
   skin: '#000000',
   top: '#000000',
   bottom: '#000000',
@@ -12,7 +12,7 @@ const colours = {
 describe('plating (Jug, 2026-11-08)', () => {
   it('mirrors a group onto the twin bone, flipped across x', () => {
     const outfit = outfitSchema.parse({
-      ...colours,
+      ...colors,
       plating: [
         {
           bone: 'upperArmL',
@@ -25,13 +25,13 @@ describe('plating (Jug, 2026-11-08)', () => {
               roll: 12,
               yaw: 5,
               pitch: 7,
-              colour: '#5f6469',
+              color: '#5f6469',
             },
           ],
         },
         {
           bone: 'hips',
-          parts: [{ type: 'box', pos: [0, 1, 0], size: [0.3, 0.06, 0.25], colour: '#3e3a2e' }],
+          parts: [{ type: 'box', pos: [0, 1, 0], size: [0.3, 0.06, 0.25], color: '#3e3a2e' }],
         },
       ],
     });
@@ -55,7 +55,7 @@ describe('plating (Jug, 2026-11-08)', () => {
       yaw: 0,
       pitch: 0,
       roll: 0,
-      colour: 0,
+      color: 0,
       hx: 0.1,
       hy: 0.1,
       hz: 0.1,
@@ -66,16 +66,16 @@ describe('plating (Jug, 2026-11-08)', () => {
   });
 
   it('leaves an outfit without plating as it was', () => {
-    expect(platingShapes(outfitSchema.parse(colours).plating)).toEqual([]);
+    expect(platingShapes(outfitSchema.parse(colors).plating)).toEqual([]);
   });
 
   it('rejects a bone the body does not have', () => {
     const bad = {
-      ...colours,
+      ...colors,
       plating: [
         {
           bone: 'tail',
-          parts: [{ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], colour: '#000000' }],
+          parts: [{ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], color: '#000000' }],
         },
       ],
     };

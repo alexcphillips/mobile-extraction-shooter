@@ -301,7 +301,7 @@ function Sheet({
 
 const money = (n: number): string => `$${n.toLocaleString()}`;
 
-/** A big number with its label, and beside it the button for its list (none: greyed). */
+/** A big number with its label, and beside it the button for its list (none: grayed). */
 function BigStat({
   label,
   value,
@@ -500,11 +500,11 @@ function Ghost({ zones }: { zones: readonly string[] }) {
 
 /**
  * One hit of the last fight (2026-11-11). Taken (red): the body you were hit on, the HP and
- * what armour took on the left; who, from how far (and, the fatal one, with what) on the
- * right. Dealt (grey): mirrored, with who you hit and from how far on the left.
+ * what armor took on the left; who, from how far (and, the fatal one, with what) on the
+ * right. Dealt (gray): mirrored, with who you hit and from how far on the left.
  */
 function CombatRow({ hit, items }: { hit: FightHit & { name: string }; items: ItemDb }) {
-  const metres = hit.distance === undefined ? '—' : `${Math.round(hit.distance)}m`;
+  const meters = hit.distance === undefined ? '—' : `${Math.round(hit.distance)}m`;
   const helmet = hit.zones.length === 1 && hit.zones[0] === ZONE_NAMES[HEAD];
   const name = (id: string | undefined): string | null =>
     id && items.has(id) ? itemDef(items, id).name : null;
@@ -520,7 +520,7 @@ function CombatRow({ hit, items }: { hit: FightHit & { name: string }; items: It
             {hit.hits > 1 && <small> ×{hit.hits}</small>}
           </b>
           {hit.absorbed >= 1 && (
-            <span className="combat-armour" title={helmet ? 'Helmet' : 'Armour'}>
+            <span className="combat-armor" title={helmet ? 'Helmet' : 'Armor'}>
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path fill="currentColor" d={helmet ? HELMET_PATH : VEST_PATH} />
               </svg>
@@ -541,7 +541,7 @@ function CombatRow({ hit, items }: { hit: FightHit & { name: string }; items: It
           </span>
         )}
         <span className="combat-from">
-          {hit.dealt ? 'Hits' : 'From'}: {metres}
+          {hit.dealt ? 'Hits' : 'From'}: {meters}
         </span>
       </div>
     </li>
@@ -633,13 +633,7 @@ function Defeat({
         </button>
       </footer>
       {sheet === 'value' && (
-        <ValueSheet
-          title="Match total"
-          items={items}
-          gains={gains}
-          total={total}
-          onClose={close}
-        />
+        <ValueSheet title="Match total" items={items} gains={gains} total={total} onClose={close} />
       )}
       {sheet === 'kills' && <KillsSheet kills={kills} onClose={close} />}
     </div>

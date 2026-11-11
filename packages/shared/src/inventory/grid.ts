@@ -3,22 +3,22 @@ import { itemDef, stackSize, type AttachmentSlot, type ItemDb } from '../content
 /**
  * One item, or a stack of one kind, wherever it is: in a grid, in a gear slot or on a gun.
  * Plain JSON-safe data. Which optional fields it has depends on its type; the sim's
- * narrower types (WeaponState, ArmourState, ContainerState) are Items with them required.
+ * narrower types (WeaponState, ArmorState, ContainerState) are Items with them required.
  */
 export interface Item {
   /** The item definition's id. */
   item: string;
   /** How many: 1 unless the item stacks. */
   count: number;
-  /** Armour: durability left. */
+  /** Armor: durability left. */
   durability?: number;
-  /** Armour: the most durability it can have, once repairs have worn it (sim/repair.ts). */
+  /** Armor: the most durability it can have, once repairs have worn it (sim/repair.ts). */
   max?: number;
   /** Meds: uses left, or HP left in a heal's pool. Repair kits: points left. Keys: uses left. */
   left?: number;
   /** Guns: rounds loaded. */
   mag?: number;
-  /** Guns: the round loaded, a round of its calibre; left out, its own (WeaponDef.ammo). */
+  /** Guns: the round loaded, a round of its caliber; left out, its own (WeaponDef.ammo). */
   loaded?: string;
   /** Guns: the attachment in each slot, or null. */
   attachments?: Record<AttachmentSlot, string | null>;

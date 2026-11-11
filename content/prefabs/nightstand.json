@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "nightstand",
   "name": "Nightstand",
-  "colours": {
+  "colors": {
     "body": "#8a6a4a",
     "shade": "#e8d8a8"
   },
@@ -11,14 +11,14 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [0.5, 0.52, 0.42],
-      "colour": "body"
+      "color": "body"
     },
     {
       "type": "cylinder",
       "pos": [0, 0.52, 0],
       "radius": 0.1,
       "height": 0.26,
-      "colour": "shade",
+      "color": "shade",
       "radiusTop": 0.06,
       "sides": 6,
       "collide": false

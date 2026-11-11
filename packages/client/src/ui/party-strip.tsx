@@ -25,7 +25,6 @@ import { Avatar, friendLine, useFriends } from './friends';
 /** Online before in a raid, then by name. */
 const RANK: Record<Friend['activity'], number> = { menu: 0, raid: 1, offline: 2 };
 
-
 /**
  * Shares the link: the share sheet on a phone, else copied (a PC often has no share sheet).
  * Resolves with what to tell the player.
@@ -221,9 +220,7 @@ export function PartyStrip({
         )}
       </div>
       <section className="party-friends" aria-label="Friends">
-        <h3 className="friends-sub">
-          Friends online{friends && <span> · {online.length}</span>}
-        </h3>
+        <h3 className="friends-sub">Friends online{friends && <span> · {online.length}</span>}</h3>
         {requests.length > 0 && (
           <ul className="friends-list">
             {requests.map((r) => (

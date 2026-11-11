@@ -22,13 +22,13 @@ import type { PlaceOptions, SoundPlayer } from './sounds';
 
 /** A shot this much quieter than its gun's own loudness (or more) sounds suppressed. */
 const SUPPRESSED = 0.75;
-/** A switch's noise is at its quietest this loud, this far from it (metres) or further. */
+/** A switch's noise is at its quietest this loud, this far from it (meters) or further. */
 const NOISE_FLOOR = 0.5;
 const NOISE_FAR = 80;
 /** An enemy's bullet passing within this of the player's head whizzes. */
 const WHIZZ = 2;
 
-/** Footsteps: a step every (base + per m/s × speed) metres; how far each carries, and how loud. */
+/** Footsteps: a step every (base + per m/s × speed) meters; how far each carries, and how loud. */
 const STEP = {
   base: 1.1,
   perSpeed: 0.1,
@@ -64,7 +64,7 @@ interface Track {
 /**
  * What the raid sounds like (session 19): after each tick, the sim's events and the
  * changes it doesn't report (footsteps, reloads, meds starting, the extraction countdown)
- * become sounds. The player's own are played centred; everyone else's from where they
+ * become sounds. The player's own are played centered; everyone else's from where they
  * happen, muffled when the map is in the way.
  */
 export class SoundCues {
@@ -176,8 +176,8 @@ export class SoundCues {
         if (e.cause === 'fall') return;
         const target = entityById(sim, e.target);
         if (target && e.absorbed > 0) {
-          if (e.target === player.id) this.sound.play(S.impactArmour);
-          else this.at(S.impactArmour, target.x, target.y + CHEST, target.z);
+          if (e.target === player.id) this.sound.play(S.impactArmor);
+          else this.at(S.impactArmor, target.x, target.y + CHEST, target.z);
         }
         if (e.target !== player.id) return;
         // Being hit (TU-1): the thud of the round or blade, and a grunt, on any hit, even one

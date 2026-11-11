@@ -1,5 +1,5 @@
 import {
-  calibreOf,
+  caliberOf,
   condition,
   createWeaponStats,
   firesRound,
@@ -15,7 +15,7 @@ import {
   type AttachmentMods,
   type Item,
   type ItemDb,
-  type ArmourStats,
+  type ArmorStats,
   type ItemDef,
   type QuestDef,
   type WeaponState,
@@ -27,8 +27,8 @@ import {
 import { useEffect, useMemo, type ReactNode } from 'react';
 import { hangarContent, itemOrigins } from '../content';
 import { itemPortrait } from '../render/item-portrait';
-import { levelColour } from './levels';
-import { colourOf, tenths } from './raid-screen';
+import { levelColor } from './levels';
+import { colorOf, tenths } from './raid-screen';
 
 /*
  * The item details (2026-10-30, after Delta Force): a tap on any item, in a raid or
@@ -42,7 +42,7 @@ import { colourOf, tenths } from './raid-screen';
 const DESCRIPTION = 'Placeholder';
 
 /** Kinds whose stats say what they are, so they have no description (UX-2, the user's call). */
-const NO_DESCRIPTION: ReadonlySet<ItemDef['type']> = new Set(['weapon', 'armour', 'container']);
+const NO_DESCRIPTION: ReadonlySet<ItemDef['type']> = new Set(['weapon', 'armor', 'container']);
 
 /** Vendor levels as the vendors page writes them. */
 const ROMAN = ['', 'I', 'II', 'III', 'IV'];
@@ -113,7 +113,7 @@ export function ItemDetails({
       className={`item-details${panel ? ' panel' : ''}`}
       role="dialog"
       aria-label={def.name}
-      style={{ borderTopColor: colourOf(def) }}
+      style={{ borderTopColor: colorOf(def) }}
     >
       <header className="item-details-head">
         <h2>{def.name}</h2>
@@ -129,7 +129,7 @@ export function ItemDetails({
         <div className="item-details-body">
           <div
             className="item-details-pic"
-            style={{ background: `${colourOf(def)}33`, borderColor: colourOf(def) }}
+            style={{ background: `${colorOf(def)}33`, borderColor: colorOf(def) }}
           >
             {picture && <img src={picture} alt="" draggable={false} />}
           </div>
@@ -295,14 +295,14 @@ function kindOf(def: ItemDef): string {
       return 'Gun';
     case 'ammo':
       return 'Ammo';
-    case 'armour':
-      return def.slot === 'helmet' ? 'Helmet' : 'Body armour';
+    case 'armor':
+      return def.slot === 'helmet' ? 'Helmet' : 'Body armor';
     case 'attachment':
       return { optic: 'Optic', muzzle: 'Muzzle device', magazine: 'Magazine' }[def.slot];
     case 'med':
       return 'Medical';
     case 'container':
-      return def.slot === 'rig' ? (def.armour ? 'Armoured rig' : 'Rig') : 'Backpack';
+      return def.slot === 'rig' ? (def.armor ? 'Armored rig' : 'Rig') : 'Backpack';
     case 'melee':
       return 'Melee';
     case 'grenade':
@@ -313,7 +313,7 @@ function kindOf(def: ItemDef): string {
       return 'Quest item';
     case 'loot':
       // Only loot has a category (2026-11-09), shown as written ("Industrial"); keys,
-      // guns, armour and the rest show their kind.
+      // guns, armor and the rest show their kind.
       if (def.money) return 'Money';
       return def.category ?? 'Loot';
     case 'repair':
@@ -323,7 +323,7 @@ function kindOf(def: ItemDef): string {
 
 function Level({ level }: { level: number }): ReactNode {
   return (
-    <i className="level-tag" style={{ background: levelColour(level) }}>
+    <i className="level-tag" style={{ background: levelColor(level) }}>
       {level}
     </i>
   );
@@ -354,7 +354,7 @@ function modRows(mods: AttachmentMods): Row[] {
 
 /** What flamethrower fuel's burning does to whoever it sets alight. */
 const burns = (f: BurnStats): string =>
-  `sets alight · ${f.burnDamage} a second to every limb, past armour, for ${seconds(f.burnTime)}`;
+  `sets alight · ${f.burnDamage} a second to every limb, past armor, for ${seconds(f.burnTime)}`;
 
 /** A launcher's impact fuse, for after its launch speed. */
 const impact = (arm: number | undefined): string =>
@@ -376,7 +376,7 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
       const round = roundOf(items, loadedAmmo(items, item))!;
       return [
         ['Fire rate', `${def.rpm} rpm · ${def.fireMode === 'auto' ? 'auto' : 'semi'}`],
-        ['Calibre', calibreOf(items, def)],
+        ['Caliber', caliberOf(items, def)],
         ['Loaded', `${item.mag ?? 0}/${s.magazine} · ${round.name}`],
         [
           'Damage',
@@ -384,7 +384,7 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
             round.damage > 0 ? (
               <>
                 <Level level={round.level} />
-                {round.damage} at the centre · {round.radius} m radius
+                {round.damage} at the center · {round.radius} m radius
               </>
             ) : (
               `none · ${grenadeEffect(round)}, ${round.radius} m radius`
@@ -395,7 +395,7 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
             <>
               <Level level={round.level} />
               {round.damage}
-              {round.pellets ? ` × ${round.pellets}` : ''} · {round.armourDamage} to armour
+              {round.pellets ? ` × ${round.pellets}` : ''} · {round.armorDamage} to armor
               {round.incendiary ? ` · ${percent(round.incendiary.chance)} to set alight` : ''}
             </>
           ),
@@ -425,7 +425,7 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
       );
       if (def.flame) {
         return [
-          ['Calibre', def.calibre],
+          ['Caliber', def.caliber],
           ['Damage', burns(def.flame)],
           [
             'Fire',
@@ -436,10 +436,10 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
         ];
       }
       return [
-        ['Calibre', def.calibre],
+        ['Caliber', def.caliber],
         ['Penetration', <Level key="l" level={def.level} />],
         ['Damage', `${def.damage}${def.pellets ? ` × ${def.pellets} pellets` : ''}`],
-        ['Armour damage', `${def.armourDamage}`],
+        ['Armor damage', `${def.armorDamage}`],
         ['Bleed chance', percent(def.bleedChance)],
         ...(def.incendiary
           ? [
@@ -453,9 +453,9 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
         ['Fired by', guns.length ? guns.map((g) => g.name).join(', ') : 'no gun yet'],
       ];
     }
-    case 'armour':
+    case 'armor':
       return [
-        ...armourRows(item, def),
+        ...armorRows(item, def),
         // A face mask's cost (AI-7, Jug's).
         ...(def.mask?.edge || def.mask?.muffle
           ? [
@@ -491,9 +491,9 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
     }
     case 'container':
       return [
-        // An armoured rig's armour (2026-11-11): the chest, as body armour.
-        ...(def.armour
-          ? [...armourRows(item, def.armour), ['Covers', 'Chest; no body armour with it'] as Row]
+        // An armored rig's armor (2026-11-11): the chest, as body armor.
+        ...(def.armor
+          ? [...armorRows(item, def.armor), ['Covers', 'Chest; no body armor with it'] as Row]
           : []),
         [
           'Inside',
@@ -506,7 +506,7 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
           'Damage',
           <>
             <Level level={def.level} />
-            {def.damage} · {def.armourDamage} to armour
+            {def.damage} · {def.armorDamage} to armor
           </>,
         ],
         ['Bleed chance', percent(def.bleedChance)],
@@ -548,7 +548,7 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
           'Damage',
           <>
             <Level level={def.level} />
-            {def.damage} at the centre · {def.armourDamage} to armour
+            {def.damage} at the center · {def.armorDamage} to armor
           </>,
         ],
         ['Radius', `${def.radius} m`],
@@ -565,7 +565,7 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
       ];
     case 'repair':
       return [
-        ['Does', 'Restores durability to armour.'],
+        ['Does', 'Restores durability to armor.'],
         ['Points left', `${Math.floor(item.left ?? 0)} / ${def.points}`],
         ['Use time', `${seconds(def.useTime)} in a raid, at once in the stash`],
       ];
@@ -596,8 +596,8 @@ function sectionsText(sections: readonly { size: readonly [number, number] }[]):
     .join(', ');
 }
 
-/** Armour's rows, or an armoured rig's: level, durability, what repairs wore off, repair loss. */
-function armourRows(item: Item, a: ArmourStats): Row[] {
+/** Armor's rows, or an armored rig's: level, durability, what repairs wore off, repair loss. */
+function armorRows(item: Item, a: ArmorStats): Row[] {
   return [
     ['Protection', <Level key="l" level={a.level} />],
     ['Durability', `${tenths(item.durability ?? 0)} / ${tenths(item.max ?? a.durability)}`],

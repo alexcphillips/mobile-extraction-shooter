@@ -124,7 +124,7 @@ export function sourceIndex(c: SourceContent): ReadonlyMap<string, ItemSource> {
       else if (gun?.type === 'weapon') has.add(gun.ammo);
       for (const a of w.attachments ?? []) has.add(a.item);
     }
-    for (const list of [l?.helmets, l?.bodyArmour, l?.rigs, l?.backpacks, l?.grenades])
+    for (const list of [l?.helmets, l?.bodyArmor, l?.rigs, l?.backpacks, l?.grenades])
       for (const o of list ?? []) if (o.item) has.add(o.item);
     for (const group of l?.meds ?? []) for (const o of group) if (o.item) has.add(o.item);
     for (const i of has) of(i).enemies.push(e.name);

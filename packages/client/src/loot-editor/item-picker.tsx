@@ -1,14 +1,14 @@
 import type { ItemDb, ItemDef } from '@mes/shared';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { colourOf } from '../ui/raid-screen';
+import { colorOf } from '../ui/raid-screen';
 
 /*
  * Picking items for a loot table (2026-11-02): a searchable list of every item as its tile
- * (rarity colour, size), name, type and value. One pick replaces a row's item; with
+ * (rarity color, size), name, type and value. One pick replaces a row's item; with
  * `multi`, ticked items are added together.
  */
 
-/** An item's tile, small: its rarity colour, its shape in cells. */
+/** An item's tile, small: its rarity color, its shape in cells. */
 export function ItemSwatch({ def, cell = 7 }: { def: ItemDef | undefined; cell?: number }) {
   if (!def) return <span className="le-swatch le-missing" title="No such item" />;
   const [w, h] = def.size;
@@ -18,8 +18,8 @@ export function ItemSwatch({ def, cell = 7 }: { def: ItemDef | undefined; cell?:
       style={{
         width: Math.min(w, 4) * cell,
         height: Math.min(h, 4) * cell,
-        background: `${colourOf(def)}88`,
-        borderColor: colourOf(def),
+        background: `${colorOf(def)}88`,
+        borderColor: colorOf(def),
       }}
       title={`${def.rarity}, ${w}×${h}`}
     />

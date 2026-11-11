@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "filing-cabinet-bottom-drawer-open",
   "name": "Filing cabinet bottom drawer (searched look)",
-  "colours": {
+  "colors": {
     "front": "#9ca0a5",
     "inside": "#3a3d42",
     "chrome": "#c4c7ca",
@@ -17,77 +17,77 @@
       "type": "box",
       "pos": [0, 0.05, 0.65],
       "size": [0.45, 0.315, 0.02],
-      "colour": "front",
+      "color": "front",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.265, 0.672],
       "size": [0.14, 0.02, 0.025],
-      "colour": "chrome",
+      "color": "chrome",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.31, 0.661],
       "size": [0.075, 0.035, 0.004],
-      "colour": "chrome",
+      "color": "chrome",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.3115, 0.6635],
       "size": [0.06, 0.025, 0.002],
-      "colour": "label",
+      "color": "label",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.2, 0.07, 0.375],
       "size": [0.015, 0.26, 0.53],
-      "colour": "front",
+      "color": "front",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.2, 0.07, 0.375],
       "size": [0.015, 0.26, 0.53],
-      "colour": "front",
+      "color": "front",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.07, 0.1175],
       "size": [0.385, 0.26, 0.015],
-      "colour": "front",
+      "color": "front",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.07, 0.375],
       "size": [0.385, 0.015, 0.53],
-      "colour": "inside",
+      "color": "inside",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.213, 0.2, 0.325],
       "size": [0.012, 0.02, 0.65],
-      "colour": "chrome",
+      "color": "chrome",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.213, 0.2, 0.325],
       "size": [0.012, 0.02, 0.65],
-      "colour": "chrome",
+      "color": "chrome",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.085, 0.147],
       "size": [0.37, 0.2437, 0.03],
-      "colour": "folder",
+      "color": "folder",
       "pitch": -0.8414120286146121,
       "collide": false
     },
@@ -95,7 +95,7 @@
       "type": "box",
       "pos": [0, 0.085, 0.178],
       "size": [0.37, 0.2218, 0.024],
-      "colour": "folder-alt",
+      "color": "folder-alt",
       "pitch": 0.2870560344535136,
       "collide": false
     },
@@ -103,14 +103,14 @@
       "type": "box",
       "pos": [-0.0349, 0.3068, 0.178],
       "size": [0.05, 0.022, 0.004],
-      "colour": "tab",
+      "color": "tab",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.085, 0.212],
       "size": [0.37, 0.2254, 0.036],
-      "colour": "folder",
+      "color": "folder",
       "pitch": -3.3124221304866266,
       "collide": false
     },
@@ -118,7 +118,7 @@
       "type": "box",
       "pos": [-0.0098, 0.085, 0.196],
       "size": [0.3, 0.2604, 0.003],
-      "colour": "paper",
+      "color": "paper",
       "pitch": -6,
       "collide": false
     },
@@ -126,7 +126,7 @@
       "type": "box",
       "pos": [0, 0.085, 0.246],
       "size": [0.37, 0.2223, 0.024],
-      "colour": "folder-alt",
+      "color": "folder-alt",
       "pitch": -0.6038464868598883,
       "collide": false
     },
@@ -134,14 +134,14 @@
       "type": "box",
       "pos": [0.085, 0.3073, 0.246],
       "size": [0.05, 0.022, 0.004],
-      "colour": "tab",
+      "color": "tab",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.085, 0.274],
       "size": [0.37, 0.2358, 0.024],
-      "colour": "folder",
+      "color": "folder",
       "pitch": 0.6639752356832584,
       "collide": false
     },
@@ -149,7 +149,7 @@
       "type": "box",
       "pos": [0, 0.085, 0.302],
       "size": [0.37, 0.2344, 0.024],
-      "colour": "folder-alt",
+      "color": "folder-alt",
       "pitch": -0.8265562027937587,
       "collide": false
     },
@@ -157,14 +157,14 @@
       "type": "box",
       "pos": [0.1238, 0.3194, 0.302],
       "size": [0.05, 0.022, 0.004],
-      "colour": "tab",
+      "color": "tab",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.0068, 0.085, 0.292],
       "size": [0.3, 0.2694, 0.003],
-      "colour": "paper",
+      "color": "paper",
       "pitch": -6,
       "collide": false
     },
@@ -172,7 +172,7 @@
       "type": "box",
       "pos": [0, 0.085, 0.33],
       "size": [0.37, 0.2272, 0.024],
-      "colour": "folder",
+      "color": "folder",
       "pitch": -2.8459593331404998,
       "collide": false
     },
@@ -180,7 +180,7 @@
       "type": "box",
       "pos": [0, 0.085, 0.358],
       "size": [0.37, 0.2343, 0.024],
-      "colour": "folder-alt",
+      "color": "folder-alt",
       "pitch": 0.48205821610250155,
       "collide": false
     },
@@ -188,14 +188,14 @@
       "type": "box",
       "pos": [0.0473, 0.3193, 0.358],
       "size": [0.05, 0.022, 0.004],
-      "colour": "tab",
+      "color": "tab",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.085, 0.392],
       "size": [0.37, 0.2343, 0.036],
-      "colour": "folder",
+      "color": "folder",
       "pitch": -2.497031785702852,
       "collide": false
     },
@@ -203,7 +203,7 @@
       "type": "box",
       "pos": [-0.0483, 0.085, 0.376],
       "size": [0.3, 0.2693, 0.003],
-      "colour": "paper",
+      "color": "paper",
       "pitch": -6,
       "collide": false
     },
@@ -211,7 +211,7 @@
       "type": "box",
       "pos": [0, 0.085, 0.432],
       "size": [0.37, 0.2216, 0.036],
-      "colour": "folder-alt",
+      "color": "folder-alt",
       "pitch": -3.5231906402701387,
       "collide": false
     },
@@ -219,14 +219,14 @@
       "type": "box",
       "pos": [-0.0765, 0.3066, 0.432],
       "size": [0.05, 0.022, 0.004],
-      "colour": "label",
+      "color": "label",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.085, 0.472],
       "size": [0.37, 0.2307, 0.036],
-      "colour": "folder",
+      "color": "folder",
       "pitch": -1.4868226369856679,
       "collide": false
     },
@@ -234,7 +234,7 @@
       "type": "box",
       "pos": [0, 0.085, 0.512],
       "size": [0.37, 0.2431, 0.036],
-      "colour": "folder-alt",
+      "color": "folder-alt",
       "pitch": -1.1073411524434693,
       "collide": false
     },
@@ -242,14 +242,14 @@
       "type": "box",
       "pos": [-0.0654, 0.3281, 0.512],
       "size": [0.05, 0.022, 0.004],
-      "colour": "tab",
+      "color": "tab",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.0239, 0.085, 0.496],
       "size": [0.3, 0.2781, 0.003],
-      "colour": "paper",
+      "color": "paper",
       "pitch": -6,
       "collide": false
     },
@@ -257,7 +257,7 @@
       "type": "box",
       "pos": [0, 0.085, 0.546],
       "size": [0.37, 0.222, 0.024],
-      "colour": "folder",
+      "color": "folder",
       "pitch": -1.5980070516349976,
       "collide": false
     },
@@ -265,7 +265,7 @@
       "type": "box",
       "pos": [0, 0.085, 0.577],
       "size": [0.37, 0.2419, 0.03],
-      "colour": "folder-alt",
+      "color": "folder-alt",
       "pitch": 1.8355623155137408,
       "collide": false
     },
@@ -273,14 +273,14 @@
       "type": "box",
       "pos": [-0.0551, 0.3269, 0.577],
       "size": [0.05, 0.022, 0.004],
-      "colour": "tab",
+      "color": "tab",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.085, 0.608],
       "size": [0.37, 0.2328, 0.024],
-      "colour": "folder",
+      "color": "folder",
       "pitch": -2.6803031708514142,
       "collide": false
     },
@@ -288,7 +288,7 @@
       "type": "box",
       "pos": [-0.019, 0.085, 0.598],
       "size": [0.3, 0.2678, 0.003],
-      "colour": "paper",
+      "color": "paper",
       "pitch": -6,
       "collide": false
     }

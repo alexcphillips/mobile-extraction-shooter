@@ -10,7 +10,7 @@ function slab(corners: [number, number, number, number], segments?: number) {
     pos: [0, 0, 0],
     size: [0.2, 0.04, 0.1],
     corners,
-    colour: '#aa3322',
+    color: '#aa3322',
     ...(segments !== undefined && { segments }),
   });
   const b = new TriangleBuilder(true);
@@ -55,7 +55,7 @@ describe('slab parts (2026-11-02)', () => {
       pos: [0.1, 0, 0],
       size: [0.2, 0.04, 0.1],
       corners: [0.04, 0.03, 0.02, 0.01],
-      colour: '#aa3322',
+      color: '#aa3322',
     });
     expect(mirrorPart(p)).toMatchObject({ pos: [-0.1, 0, 0], corners: [0.03, 0.04, 0.01, 0.02] });
   });

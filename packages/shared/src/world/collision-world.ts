@@ -11,7 +11,7 @@ import { HeightGrid, setHit, type HeightGridDef, type SurfaceHit } from './terra
 
 /**
  * The sloped top and underside of a tilted box (2026-11-05): a slab, whose ends are upright.
- * Each plane is its height over the footprint's middle and its rise per metre along local
+ * Each plane is its height over the footprint's middle and its rise per meter along local
  * x and z.
  */
 export interface BoxSlope {
@@ -24,7 +24,7 @@ export interface BoxSlope {
 }
 
 /**
- * A solid box: centre, half-extents and yaw. With a slope, those are its bounds, and the
+ * A solid box: center, half-extents and yaw. With a slope, those are its bounds, and the
  * planes cut the solid inside them.
  */
 export interface BoxDef {
@@ -39,7 +39,7 @@ export interface BoxDef {
 }
 
 /**
- * A solid wedge, used for stairs: a rectangle footprint (centre, half-extents, yaw), solid
+ * A solid wedge, used for stairs: a rectangle footprint (center, half-extents, yaw), solid
  * from `bottom` up to a sloped top that rises from `low` at local −z to `high` at local +z.
  */
 export interface RampDef {
@@ -160,7 +160,7 @@ export interface WorldDef {
   foliage?: readonly BoxDef[];
 }
 
-/** A body of water: a rectangle centred on (x, z), half-extents hx, hz, turned by yaw. */
+/** A body of water: a rectangle centered on (x, z), half-extents hx, hz, turned by yaw. */
 export interface WaterDef {
   x: number;
   z: number;
@@ -209,9 +209,9 @@ export interface GroundHit {
   solid: number;
 }
 
-// Solid layout: centre x, z; half-extents x, z; cos and sin of yaw; lowest point; top at
-// local −z and at +z (equal for boxes); the top's rise per metre along x; the underside at
-// the middle and its rise per metre along x and z; highest point. All but tilted boxes have
+// Solid layout: center x, z; half-extents x, z; cos and sin of yaw; lowest point; top at
+// local −z and at +z (equal for boxes); the top's rise per meter along x; the underside at
+// the middle and its rise per meter along x and z; highest point. All but tilted boxes have
 // flat undersides, and their rises are 0.
 const STRIDE = 14;
 const WIRE_STRIDE = 8;
@@ -254,7 +254,7 @@ export class CollisionWorld {
   /** Solid index of the first door: doors come after boxes and ramps. */
   readonly firstDoor: number;
   readonly glass: readonly GlassDef[];
-  /** Barbed wire: centre x, y, z, half-extents x, y, z, cos and sin of yaw, WIRE_STRIDE each. */
+  /** Barbed wire: center x, y, z, half-extents x, y, z, cos and sin of yaw, WIRE_STRIDE each. */
   private readonly wires: Float64Array;
   /** Solid index of the first pane of glass: glass comes after doors. */
   readonly firstGlass: number;
@@ -461,7 +461,7 @@ export class CollisionWorld {
 
   /**
    * Height of the highest surface under a standing circle whose top is at most maxTop:
-   * the terrain under its centre, or any solid it overlaps. Writes what was found to out.
+   * the terrain under its center, or any solid it overlaps. Writes what was found to out.
    * Over a hole with nothing in it, that's a floor PIT_DEPTH under the lowest terrain.
    */
   groundAt(x: number, z: number, radius: number, maxTop: number, out?: GroundHit): number {
@@ -596,14 +596,14 @@ export class CollisionWorld {
           pz = (localZ - closestZ) * f;
         } else if (under >= low && (this.s[o + 11] !== 0 || this.s[o + 12] !== 0)) {
           // Walked in under a sloped underside: back the way it rises until the head fits,
-          // not out through a side metres away.
+          // not out through a side meters away.
           const ux = this.s[o + 11]!;
           const uz = this.s[o + 12]!;
           const f = (high - under) / (ux * ux + uz * uz);
           px = ux * f;
           pz = uz * f;
         } else {
-          // Centre inside the rectangle: out through the nearest side.
+          // Center inside the rectangle: out through the nearest side.
           const penX = this.s[o + 2]! - Math.abs(localX);
           const penZ = this.s[o + 3]! - Math.abs(localZ);
           px = penX < penZ ? (localX < 0 ? -1 : 1) * (penX + radius) : 0;

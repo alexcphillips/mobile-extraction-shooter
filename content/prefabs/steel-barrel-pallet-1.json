@@ -1,13 +1,13 @@
 {
   "formatVersion": 3,
   "id": "steel-barrel-pallet-1",
-  "colours": { "wood-pallet": "#a88048" },
+  "colors": { "wood-pallet": "#a88048" },
   "nodes": [
     {
       "type": "prefab",
       "prefab": "wood-pallet-large",
       "pos": [0.027, 0, 0.498],
-      "colours": { "wood": "wood-pallet" }
+      "colors": { "wood": "wood-pallet" }
     },
     { "type": "prefab", "prefab": "steel-barrel", "pos": [0.66, 0.2, 0.06] },
     { "type": "prefab", "prefab": "steel-barrel", "pos": [0.66, 0.2, 0.76] },

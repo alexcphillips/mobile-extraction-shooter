@@ -13,7 +13,7 @@
         "type": "box",
         "pos": [0, 0.0175, 0.005],
         "size": [0.075, 0.035, 0.1],
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "name": "battery",
         "group": "battery"
       },
@@ -21,7 +21,7 @@
         "type": "box",
         "pos": [0, 0.026, -0.0455],
         "size": [0.03, 0.008, 0.002],
-        "colour": "#9fd36b",
+        "color": "#9fd36b",
         "name": "charge lights",
         "group": "battery"
       },
@@ -29,7 +29,7 @@
         "type": "box",
         "pos": [0, 0.041, 0.008],
         "size": [0.066, 0.012, 0.088],
-        "colour": "#d08a2a",
+        "color": "#d08a2a",
         "name": "foot",
         "group": "body"
       },
@@ -38,7 +38,7 @@
         "pos": [0, 0.1, 0.02],
         "size": [0.034, 0.11, 0.044],
         "pitch": -12,
-        "colour": "#d08a2a",
+        "color": "#d08a2a",
         "name": "grip",
         "group": "grip"
       },
@@ -47,7 +47,7 @@
         "pos": [0, 0.1013, 0.0453],
         "size": [0.036, 0.096, 0.008],
         "pitch": -12,
-        "colour": "#1f2123",
+        "color": "#1f2123",
         "name": "rubber back",
         "group": "grip"
       },
@@ -55,7 +55,7 @@
         "type": "box",
         "pos": [0, 0.128, -0.009],
         "size": [0.012, 0.024, 0.014],
-        "colour": "#1f2123",
+        "color": "#1f2123",
         "name": "trigger",
         "group": "grip"
       },
@@ -63,7 +63,7 @@
         "type": "box",
         "pos": [0, 0.15, 0.004],
         "size": [0.05, 0.01, 0.012],
-        "colour": "#1f2123",
+        "color": "#1f2123",
         "name": "forward/reverse switch",
         "group": "grip"
       },
@@ -74,7 +74,7 @@
         "radius": 0.032,
         "height": 0.13,
         "sides": 12,
-        "colour": "#d08a2a",
+        "color": "#d08a2a",
         "name": "motor housing",
         "group": "body"
       },
@@ -86,7 +86,7 @@
         "radiusTop": 0.022,
         "height": 0.02,
         "sides": 8,
-        "colour": "#1f2123",
+        "color": "#1f2123",
         "name": "rear cap",
         "group": "body"
       },
@@ -94,7 +94,7 @@
         "type": "box",
         "pos": [-0.0315, 0.178, 0.04],
         "size": [0.003, 0.022, 0.032],
-        "colour": "#1f2123",
+        "color": "#1f2123",
         "name": "vents",
         "group": "body"
       },
@@ -102,7 +102,7 @@
         "type": "box",
         "pos": [0.0315, 0.178, 0.04],
         "size": [0.003, 0.022, 0.032],
-        "colour": "#1f2123",
+        "color": "#1f2123",
         "name": "vents",
         "group": "body"
       },
@@ -113,7 +113,7 @@
         "radius": 0.028,
         "height": 0.024,
         "sides": 8,
-        "colour": "#1f2123",
+        "color": "#1f2123",
         "name": "gearbox",
         "group": "chuck"
       },
@@ -124,7 +124,7 @@
         "radius": 0.03,
         "height": 0.012,
         "sides": 8,
-        "colour": "#3a3f44",
+        "color": "#3a3f44",
         "name": "clutch ring",
         "group": "chuck"
       },
@@ -136,7 +136,7 @@
         "radiusTop": 0.013,
         "height": 0.04,
         "sides": 8,
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "name": "chuck",
         "group": "chuck"
       },
@@ -144,7 +144,7 @@
         "type": "box",
         "pos": [0, 0.178, -0.166],
         "size": [0.005, 0.005, 0.05],
-        "colour": "#b8bcc0",
+        "color": "#b8bcc0",
         "name": "bit",
         "group": "chuck"
       }

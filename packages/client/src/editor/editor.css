@@ -298,7 +298,7 @@ body.editor #portrait {
   color: var(--ed-dim);
 }
 
-/* A prefab being edited inside: the outline in the scene is this colour too. */
+/* A prefab being edited inside: the outline in the scene is this color too. */
 .ed-prefab,
 .ed-crumbs .ed-prefab:disabled {
   color: #c77dff;
@@ -542,7 +542,7 @@ body.editor #portrait {
   color: inherit;
 }
 
-/* A labelled checkbox on its own line (a zone's "Extraction point", 2026-11-07). */
+/* A labeled checkbox on its own line (a zone's "Extraction point", 2026-11-07). */
 .ed-check {
   display: flex;
   align-items: center;

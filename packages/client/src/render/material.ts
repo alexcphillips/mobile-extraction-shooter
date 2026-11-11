@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 
-/** Unlit vertex colours, for geometry with its shading baked in. */
+/** Unlit vertex colors, for geometry with its shading baked in. */
 export function bakedMaterial(): THREE.MeshBasicMaterial {
   return new THREE.MeshBasicMaterial({ vertexColors: true });
 }
 
 /**
- * Unlit vertex colours shaded per face on the GPU from the world-space normal, with the
+ * Unlit vertex colors shaded per face on the GPU from the world-space normal, with the
  * same formula as shade.ts. For instanced or moving geometry, whose baked shading would
  * go wrong as it turns.
  */

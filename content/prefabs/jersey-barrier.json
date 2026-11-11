@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "jersey-barrier",
   "name": "Jersey barrier",
-  "colours": {
+  "colors": {
     "concrete": "#b5b0a6",
     "concrete-dark": "#8e8a80",
     "shadow": "#3a3835",
@@ -13,76 +13,76 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [3.0, 0.09, 0.6],
-      "colour": "concrete-dark"
+      "color": "concrete-dark"
     },
     {
       "type": "box",
       "pos": [0, 0.09, 0],
       "size": [3.0, 0.24, 0.6],
-      "colour": "concrete",
+      "color": "concrete",
       "top": [3.0, 0.38]
     },
     {
       "type": "box",
       "pos": [0, 0.33, 0],
       "size": [3.0, 0.48, 0.38],
-      "colour": "concrete",
+      "color": "concrete",
       "top": [3.0, 0.16]
     },
     {
       "type": "box",
       "pos": [-0.9, 0.012, 0],
       "size": [0.5, 0.06, 0.602],
-      "colour": "shadow",
+      "color": "shadow",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.96, 0.81, 0],
       "size": [0.016, 0.06, 0.016],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.84, 0.81, 0],
       "size": [0.016, 0.06, 0.016],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.9, 0.87, 0],
       "size": [0.136, 0.016, 0.016],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.9, 0.012, 0],
       "size": [0.5, 0.06, 0.602],
-      "colour": "shadow",
+      "color": "shadow",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.84, 0.81, 0],
       "size": [0.016, 0.06, 0.016],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.96, 0.81, 0],
       "size": [0.016, 0.06, 0.016],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.9, 0.87, 0],
       "size": [0.136, 0.016, 0.016],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     }
   ]

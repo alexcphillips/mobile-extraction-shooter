@@ -248,7 +248,7 @@ describe('checkProfile', () => {
     expect(checkProfile(items, p)).toMatch(/sidearm/);
   });
 
-  it('checks guns, armour and meds against their limits', () => {
+  it('checks guns, armor and meds against their limits', () => {
     let p = profile();
     (p.gear.primary1 as WeaponState).mag = 31;
     expect(checkProfile(items, p)).toMatch(/more than its magazine/);

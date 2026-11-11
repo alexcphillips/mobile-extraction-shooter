@@ -326,7 +326,7 @@ function PadLayoutTable({ s }: { s: Settings }): ReactNode {
   );
 }
 
-/** A pad button's name, face buttons as their round coloured glyph. */
+/** A pad button's name, face buttons as their round colored glyph. */
 export function PadKey({ name }: { name: string }): ReactNode {
   const face = PAD_GLYPHS.includes(name);
   return (

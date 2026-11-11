@@ -15,7 +15,7 @@ import {
   type Zone,
 } from './health';
 import { reachableItem, type ItemRef } from './looting';
-import { kitUsedUp, repairArmour } from './repair';
+import { kitUsedUp, repairArmor } from './repair';
 import type { Character, PlayerInput, SimState } from './state';
 
 /** The fixed order meds treat zones in. There's no body diagram. */
@@ -86,12 +86,12 @@ export interface MedRef extends CarriedRef {
 
 /**
  * A med being used: which one, and the seconds left until it takes effect. Or a repair
- * kit (session 13b), with the armour it's repairing.
+ * kit (session 13b), with the armor it's repairing.
  */
 export interface MedUse extends MedRef {
   left: number;
-  /** A repair kit's: the armour piece, as the sender saw it. */
-  armour?: ItemRef;
+  /** A repair kit's: the armor piece, as the sender saw it. */
+  armor?: ItemRef;
 }
 
 /**
@@ -174,12 +174,12 @@ export function updateMedUse(
   const still = carriedGrid(c.gear, u.grid)?.items[u.index]?.item.item === u.item;
   const ref = still ? u : firstCarried(c, u.item);
   if (!ref) return;
-  if (u.armour) finishRepair(state, c, items, ref, u.armour);
+  if (u.armor) finishRepair(state, c, items, ref, u.armor);
   else useMed(c, items, ref);
 }
 
 /**
- * A repair's time is up: the kit's points go into the armour, if it's still there and in
+ * A repair's time is up: the kit's points go into the armor, if it's still there and in
  * reach (a body's or a crate's: walked away, nothing happens).
  */
 function finishRepair(
@@ -187,13 +187,13 @@ function finishRepair(
   c: Character,
   items: ItemDb,
   ref: CarriedRef,
-  armourRef: ItemRef,
+  armorRef: ItemRef,
 ): void {
   const grid = carriedGrid(c.gear, ref.grid)!;
   const kit = grid.items[ref.index]!.item;
-  const armour = reachableItem(state, c, armourRef);
+  const armor = reachableItem(state, c, armorRef);
   const points = kit.left ?? 0;
-  if (!armour || repairArmour(items, kit, armour) <= 0) return;
+  if (!armor || repairArmor(items, kit, armor) <= 0) return;
   // The infinite consumables cheat gives the points back.
   if (c.admin?.infiniteConsumables) kit.left = points;
   else if (kitUsedUp(kit)) removeAt(grid, ref.index);
@@ -216,7 +216,7 @@ function firstCarried(c: Character, id: string): CarriedRef | null {
 
 /**
  * Uses a carried med once: the effect of finishing its use (startUse and updateMedUse add
- * the use time and cancelling). A bandage, splint or surgery kit treats one zone, the first in
+ * the use time and canceling). A bandage, splint or surgery kit treats one zone, the first in
  * TREATMENT_ORDER that needs it; a heal restores HP down that order, skipping broken
  * limbs, until its pool or the damage runs out. A heal with a bleedCost first stops every
  * bleeding zone, down the same order, for that much of its pool each. Used up, it's removed (never, with the

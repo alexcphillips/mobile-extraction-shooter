@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "carton-display",
   "name": "Carton display",
-  "colours": {
+  "colors": {
     "wood": "#a98a5a",
     "a": "#c7a877",
     "b": "#e6e0d3",
@@ -13,55 +13,55 @@
       "type": "box",
       "pos": [0, 0.12, 0],
       "size": [1.1, 0.95, 1.0],
-      "colour": "a"
+      "color": "a"
     },
     {
       "type": "box",
       "pos": [0, 0, 0],
       "size": [1.14, 0.12, 1.04],
-      "colour": "wood",
+      "color": "wood",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.6, 0.503],
       "size": [1.12, 0.04, 0.006],
-      "colour": "wood",
+      "color": "wood",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.26, 0.12, 0.504],
       "size": [0.02, 0.94, 0.004],
-      "colour": "wood",
+      "color": "wood",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.07, 0],
       "size": [0.7, 0.2, 0.7],
-      "colour": "b",
+      "color": "b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.27, 0],
       "size": [0.46, 0.02, 0.46],
-      "colour": "accent",
+      "color": "accent",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.3, 0.508],
       "size": [0.5, 0.22, 0.004],
-      "colour": "accent",
+      "color": "accent",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.3, -0.503],
       "size": [0.5, 0.22, 0.004],
-      "colour": "accent",
+      "color": "accent",
       "collide": false
     }
   ]

@@ -16,7 +16,7 @@
         "size": [0.072, 0.008, 0.148],
         "corners": [0.01, 0.01, 0.01, 0.01],
         "segments": 3,
-        "colour": "#3a3d40",
+        "color": "#3a3d40",
         "name": "frame",
         "group": "body"
       },
@@ -26,7 +26,7 @@
         "size": [0.068, 0.001, 0.144],
         "corners": [0.009, 0.009, 0.009, 0.009],
         "segments": 2,
-        "colour": "#141516",
+        "color": "#141516",
         "name": "glass",
         "group": "screen"
       },
@@ -34,7 +34,7 @@
         "type": "box",
         "pos": [0, 0.009, -0.0295],
         "size": [0.062, 0.001, 0.079],
-        "colour": "#2f5a9a",
+        "color": "#2f5a9a",
         "name": "wallpaper top",
         "group": "screen"
       },
@@ -42,7 +42,7 @@
         "type": "box",
         "pos": [0, 0.009, 0.0395],
         "size": [0.062, 0.001, 0.059],
-        "colour": "#6a4aa3",
+        "color": "#6a4aa3",
         "name": "wallpaper bottom",
         "group": "screen"
       },
@@ -50,7 +50,7 @@
         "type": "box",
         "pos": [0, 0.0098, -0.064],
         "size": [0.018, 0.0006, 0.0045],
-        "colour": "#141516",
+        "color": "#141516",
         "name": "camera pill",
         "group": "screen"
       },
@@ -58,7 +58,7 @@
         "type": "box",
         "pos": [-0.024, 0.0102, -0.05],
         "size": [0.011, 0.0014, 0.011],
-        "colour": "#5c9a4a",
+        "color": "#5c9a4a",
         "name": "app 0",
         "group": "apps"
       },
@@ -66,7 +66,7 @@
         "type": "box",
         "pos": [-0.008, 0.0102, -0.05],
         "size": [0.011, 0.0014, 0.011],
-        "colour": "#f2f2f2",
+        "color": "#f2f2f2",
         "name": "app 1",
         "group": "apps"
       },
@@ -74,7 +74,7 @@
         "type": "box",
         "pos": [0.008, 0.0102, -0.05],
         "size": [0.011, 0.0014, 0.011],
-        "colour": "#e8b22c",
+        "color": "#e8b22c",
         "name": "app 2",
         "group": "apps"
       },
@@ -82,7 +82,7 @@
         "type": "box",
         "pos": [0.024, 0.0102, -0.05],
         "size": [0.011, 0.0014, 0.011],
-        "colour": "#d8461c",
+        "color": "#d8461c",
         "name": "app 3",
         "group": "apps"
       },
@@ -90,7 +90,7 @@
         "type": "box",
         "pos": [-0.024, 0.0102, -0.034],
         "size": [0.011, 0.0014, 0.011],
-        "colour": "#39b6e0",
+        "color": "#39b6e0",
         "name": "app 4",
         "group": "apps"
       },
@@ -98,7 +98,7 @@
         "type": "box",
         "pos": [-0.008, 0.0102, -0.034],
         "size": [0.011, 0.0014, 0.011],
-        "colour": "#e04a6a",
+        "color": "#e04a6a",
         "name": "app 5",
         "group": "apps"
       },
@@ -106,7 +106,7 @@
         "type": "box",
         "pos": [0.008, 0.0102, -0.034],
         "size": [0.011, 0.0014, 0.011],
-        "colour": "#8a56b3",
+        "color": "#8a56b3",
         "name": "app 6",
         "group": "apps"
       },
@@ -114,7 +114,7 @@
         "type": "box",
         "pos": [0.024, 0.0102, -0.034],
         "size": [0.011, 0.0014, 0.011],
-        "colour": "#f2f2f2",
+        "color": "#f2f2f2",
         "name": "app 7",
         "group": "apps"
       },
@@ -122,7 +122,7 @@
         "type": "box",
         "pos": [-0.024, 0.0102, -0.018],
         "size": [0.011, 0.0014, 0.011],
-        "colour": "#e8b22c",
+        "color": "#e8b22c",
         "name": "app 8",
         "group": "apps"
       },
@@ -130,7 +130,7 @@
         "type": "box",
         "pos": [-0.008, 0.0102, -0.018],
         "size": [0.011, 0.0014, 0.011],
-        "colour": "#4677b3",
+        "color": "#4677b3",
         "name": "app 9",
         "group": "apps"
       },
@@ -138,7 +138,7 @@
         "type": "box",
         "pos": [0.008, 0.0102, -0.018],
         "size": [0.011, 0.0014, 0.011],
-        "colour": "#5c9a4a",
+        "color": "#5c9a4a",
         "name": "app 10",
         "group": "apps"
       },
@@ -146,7 +146,7 @@
         "type": "box",
         "pos": [0.024, 0.0102, -0.018],
         "size": [0.011, 0.0014, 0.011],
-        "colour": "#ff7a2a",
+        "color": "#ff7a2a",
         "name": "app 11",
         "group": "apps"
       },
@@ -154,7 +154,7 @@
         "type": "box",
         "pos": [0, 0.0098, 0.058],
         "size": [0.06, 0.0006, 0.016],
-        "colour": "#9a8fc4",
+        "color": "#9a8fc4",
         "name": "dock",
         "group": "dock"
       },
@@ -162,7 +162,7 @@
         "type": "box",
         "pos": [-0.024, 0.0106, 0.058],
         "size": [0.0105, 0.0012, 0.0105],
-        "colour": "#5c9a4a",
+        "color": "#5c9a4a",
         "name": "dock app 0",
         "group": "dock"
       },
@@ -170,7 +170,7 @@
         "type": "box",
         "pos": [-0.008, 0.0106, 0.058],
         "size": [0.0105, 0.0012, 0.0105],
-        "colour": "#39b6e0",
+        "color": "#39b6e0",
         "name": "dock app 1",
         "group": "dock"
       },
@@ -178,7 +178,7 @@
         "type": "box",
         "pos": [0.008, 0.0106, 0.058],
         "size": [0.0105, 0.0012, 0.0105],
-        "colour": "#f2f2f2",
+        "color": "#f2f2f2",
         "name": "dock app 2",
         "group": "dock"
       },
@@ -186,7 +186,7 @@
         "type": "box",
         "pos": [0.024, 0.0106, 0.058],
         "size": [0.0105, 0.0012, 0.0105],
-        "colour": "#d8461c",
+        "color": "#d8461c",
         "name": "dock app 3",
         "group": "dock"
       },
@@ -194,7 +194,7 @@
         "type": "box",
         "pos": [0.0365, 0.004, -0.03],
         "size": [0.0015, 0.0035, 0.016],
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "name": "power",
         "group": "buttons"
       },
@@ -202,7 +202,7 @@
         "type": "box",
         "pos": [-0.0365, 0.004, -0.036],
         "size": [0.0015, 0.0035, 0.011],
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "name": "volume up",
         "group": "buttons"
       },
@@ -210,7 +210,7 @@
         "type": "box",
         "pos": [-0.0365, 0.004, -0.022],
         "size": [0.0015, 0.0035, 0.011],
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "name": "volume down",
         "group": "buttons"
       },
@@ -218,7 +218,7 @@
         "type": "box",
         "pos": [0.017, -0.001, -0.055],
         "size": [0.026, 0.002, 0.026],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "name": "camera bump",
         "group": "back"
       }

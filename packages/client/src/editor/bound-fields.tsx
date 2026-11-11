@@ -45,7 +45,9 @@ export interface Bound {
   edit: (change: (doc: Doc) => void) => void;
 }
 
-export function N(props: Bound & { path: Path; label: string; min?: number; hint?: string }) {
+export function N(
+  props: Bound & { path: Path; label: string; min?: number; hint?: string; placeholder?: string },
+) {
   const v = get(props.doc, props.path);
   return (
     <span title={props.hint}>
@@ -53,6 +55,7 @@ export function N(props: Bound & { path: Path; label: string; min?: number; hint
         label={props.label}
         value={typeof v === 'number' ? v : undefined}
         {...(props.min !== undefined && { min: props.min })}
+        {...(props.placeholder !== undefined && { placeholder: props.placeholder })}
         onChange={(n) => props.edit((d) => put(d, props.path, n))}
       />
     </span>

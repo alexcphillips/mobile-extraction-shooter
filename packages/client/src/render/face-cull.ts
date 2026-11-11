@@ -1,11 +1,11 @@
 import { HeightGrid, type HeightGridDef, type Shape } from '@mes/shared';
 import * as THREE from 'three';
 
-/** How far out from a face to look for what covers it, in metres. */
+/** How far out from a face to look for what covers it, in meters. */
 const NUDGE = 0.01;
 /** How far a point may stick out of a box, or up out of the ground, and still be inside. */
 const SLACK = 0.002;
-/** Grid cell for finding boxes near a face, in metres. */
+/** Grid cell for finding boxes near a face, in meters. */
 const CELL = 4;
 /** Ground corners under one face beyond this many aren't checked: it's left drawn. */
 const MAX_CORNERS = 4096;
@@ -23,7 +23,7 @@ const MAX_CORNERS = 4096;
  */
 export class FaceCull {
   private readonly ground: HeightGrid;
-  /** Per box: centre, rotation (row by row, local to world), half sizes. */
+  /** Per box: center, rotation (row by row, local to world), half sizes. */
   private readonly boxes: Float64Array;
   private readonly minX: number;
   private readonly minZ: number;

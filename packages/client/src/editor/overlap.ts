@@ -30,12 +30,12 @@ const JOINT = 0.45;
 const BUILDING_TOLERANCE = 0.01;
 /** Slabs this thin (floors) at the same level may overlap: it's floor laid over floor. */
 const SLAB = 0.6;
-/** A sloped railing's pieces no thicker than this may overlap their neighbours. */
+/** A sloped railing's pieces no thicker than this may overlap their neighbors. */
 const RUN_THICKNESS = 0.3;
 /** Ground this far above a building's floor shows through it. */
 const FLOOR_TOLERANCE = 0.05;
 
-/** A rectangle centred on (x, z), turned by yaw (radians), from y0 up to y1. */
+/** A rectangle centered on (x, z), turned by yaw (radians), from y0 up to y1. */
 export interface Solid {
   x: number;
   z: number;
@@ -117,7 +117,7 @@ export function sameSlab(a: Solid, b: Solid): boolean {
 /**
  * Whether two solids are pieces of one sloped railing (roadmap 19zo): the same thin
  * rectangle turned the same way, in line across it, at different heights. Tilted pieces
- * collide as their bounding boxes, which overlap their neighbours'.
+ * collide as their bounding boxes, which overlap their neighbors'.
  */
 export function sameRun(a: Solid, b: Solid): boolean {
   if (Math.abs(a.yaw - b.yaw) > 1e-6 || Math.abs(a.y0 - b.y0) < 0.01) return false;
@@ -188,7 +188,7 @@ function placedNodes(map: MapFile, prefabs: PrefabLookup): Placed[] {
       const g: Frame = { x, y, z, yaw: f.yaw + nodeYaw(n) * DEG };
       // A tilted group's nodes don't fit a yaw-only frame: its bounds stand for them.
       if (n.type === 'group' && !isTilted(n)) return walk(n.nodes, g, p);
-      const local = solidsOf(n, prefabs, map.colours ?? {});
+      const local = solidsOf(n, prefabs, map.colors ?? {});
       if (!local) return;
       const solids = [
         ...local.boxes.map((b) => toWorld(g, b.x, b.z, b.yaw, b.hx, b.hz, b.y - b.hy, b.y + b.hy)),
@@ -219,15 +219,15 @@ function placedNodes(map: MapFile, prefabs: PrefabLookup): Placed[] {
 function solidsOf(
   n: MapNode,
   prefabs: PrefabLookup,
-  colours: Readonly<Record<string, string>>,
+  colors: Readonly<Record<string, string>>,
 ): CompiledNodes | null {
-  if (isTilted(n)) return tryCompile({ ...n, pos: [0, 0, 0], yaw: 0 } as MapNode, prefabs, colours);
+  if (isTilted(n)) return tryCompile({ ...n, pos: [0, 0, 0], yaw: 0 } as MapNode, prefabs, colors);
   if (n.type === 'prefab') {
     const prefab = prefabs.get(n.prefab);
     if (!prefab) return null;
     let solids = prefabSolids.get(prefab) ?? null;
     if (!solids) {
-      // Its own colours, so overrides naming the map's slots don't matter here.
+      // Its own colors, so overrides naming the map's slots don't matter here.
       solids = tryCompile({ type: 'prefab', prefab: n.prefab, pos: [0, 0, 0] }, prefabs, {});
       if (!solids) return null;
       prefabSolids.set(prefab, solids);
@@ -237,16 +237,16 @@ function solidsOf(
   // Ladders stand against walls and markers aren't solid.
   if (n.type !== 'box' && n.type !== 'cylinder' && n.type !== 'ramp' && n.type !== 'stairs')
     return null;
-  return tryCompile({ ...n, pos: [0, 0, 0], yaw: 0 }, prefabs, colours);
+  return tryCompile({ ...n, pos: [0, 0, 0], yaw: 0 }, prefabs, colors);
 }
 
 function tryCompile(
   n: MapNode,
   prefabs: PrefabLookup,
-  colours: Readonly<Record<string, string>>,
+  colors: Readonly<Record<string, string>>,
 ): CompiledNodes | null {
   try {
-    return compileNodes([n], prefabs, colours);
+    return compileNodes([n], prefabs, colors);
   } catch {
     return null;
   }

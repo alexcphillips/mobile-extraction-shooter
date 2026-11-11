@@ -16,7 +16,7 @@ function compiled(nodes: MapNode[]) {
           origin: [-20, -20],
           cellSize: 4,
           heights: Array.from({ length: 11 }, () => row),
-          colour: '#6b8f4e',
+          color: '#6b8f4e',
         },
         nodes,
         zones: [],
@@ -32,14 +32,14 @@ const tower = (x: number): MapNode => ({
   pos: [x, 0, 0],
   landmark: true,
   nodes: [
-    { type: 'box', pos: [0, 0, 0], size: [3, 12, 3], colour: '#884422' },
+    { type: 'box', pos: [0, 0, 0], size: [3, 12, 3], color: '#884422' },
     // A ladder rung's worth of detail: left out of the silhouette.
-    { type: 'box', pos: [2, 1, 0], size: [0.4, 0.05, 0.05], colour: '#222222' },
+    { type: 'box', pos: [2, 1, 0], size: [0.4, 0.05, 0.05], color: '#222222' },
   ],
 });
 
 describe('landmark silhouettes (MT-1)', () => {
-  it('merges every landmark into one mesh, one draw call, in one flat colour', () => {
+  it('merges every landmark into one mesh, one draw call, in one flat color', () => {
     const one = buildSilhouettes(compiled([tower(0)]))!;
     const three = buildSilhouettes(compiled([tower(-10), tower(0), tower(10)]))!;
     // However many landmarks, one mesh with one material: one draw call.
@@ -56,7 +56,7 @@ describe('landmark silhouettes (MT-1)', () => {
   });
 
   it('draws nothing, and costs nothing, with no landmarks', () => {
-    const map = compiled([{ type: 'box', pos: [0, 0, 0], size: [3, 12, 3], colour: '#884422' }]);
+    const map = compiled([{ type: 'box', pos: [0, 0, 0], size: [3, 12, 3], color: '#884422' }]);
     expect(buildSilhouettes(map)).toBeNull();
     const pass = new LandmarkPass(map);
     expect(pass.scene.children).toHaveLength(0);

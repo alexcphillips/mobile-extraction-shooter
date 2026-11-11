@@ -12,7 +12,7 @@ import { step } from './step';
 import { TEST_ITEMS as items } from './test-items';
 import { SCAV_WAVES, startEnemies, updateWaves, type EnemyContent } from './waves';
 
-/** Flat ground, `half` metres each way, with optional boxes. */
+/** Flat ground, `half` meters each way, with optional boxes. */
 function makeWorld(half = 150, boxes: BoxDef[] = []): CollisionWorld {
   const n = Math.ceil(half / 4) * 2;
   return new CollisionWorld({

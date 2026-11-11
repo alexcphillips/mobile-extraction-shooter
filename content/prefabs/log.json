@@ -2,14 +2,14 @@
   "formatVersion": 3,
   "id": "log",
   "name": "Log",
-  "colours": { "bark": "#6b4f35", "cut": "#c9a46e" },
+  "colors": { "bark": "#6b4f35", "cut": "#c9a46e" },
   "nodes": [
     {
       "type": "cylinder",
       "pos": [0, -2.75, 0],
       "radius": 0.25,
       "height": 6.0,
-      "colour": "bark",
+      "color": "bark",
       "roll": 90
     },
     {
@@ -17,7 +17,7 @@
       "pos": [-3.008, 0.24, 0],
       "radius": 0.215,
       "height": 0.02,
-      "colour": "cut",
+      "color": "cut",
       "collide": false,
       "roll": 90,
       "sides": 6
@@ -27,7 +27,7 @@
       "pos": [3.008, 0.24, 0],
       "radius": 0.215,
       "height": 0.02,
-      "colour": "cut",
+      "color": "cut",
       "collide": false,
       "roll": 90,
       "sides": 6

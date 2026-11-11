@@ -11,7 +11,7 @@ import {
   type Zone,
 } from '@mes/shared';
 import * as THREE from 'three';
-import { armourColour } from '../hud/armour';
+import { armorColor } from '../hud/armor';
 
 const FULL = new THREE.Color(0x4caf50);
 const offset = [0, 0, 0];
@@ -21,8 +21,8 @@ const BROKEN = new THREE.Color(0x2b2b2b);
 const DEAD = new THREE.Color(0x777777);
 
 /**
- * Draws characters as their hit-zone capsules, each coloured by its HP, plus boxes for
- * worn armour. A debug view (?hitzones), drawn see-through over the real bodies to check
+ * Draws characters as their hit-zone capsules, each colored by its HP, plus boxes for
+ * worn armor. A debug view (?hitzones), drawn see-through over the real bodies to check
  * they're posed to match.
  */
 export class CapsuleBody {
@@ -103,17 +103,17 @@ export class CapsuleBody {
       this.headAt.z - offset[2]!,
     );
     for (let zone = 0; zone < ZONE_COUNT; zone++) {
-      const colour = this.zones[zone]!.color;
-      // Jug's limbs start above everyone's full (limbHealth): full colour.
+      const color = this.zones[zone]!.color;
+      // Jug's limbs start above everyone's full (limbHealth): full color.
       const left = Math.min(1, h.hp[zone]! / HEALTH.maxHp[zone]!);
-      if (h.dead) colour.copy(DEAD);
-      else if (isBroken(h, zone as Zone)) colour.copy(BROKEN);
-      else if (left > 0.5) colour.lerpColors(HALF, FULL, (left - 0.5) * 2);
-      else colour.lerpColors(LOW, HALF, left * 2);
+      if (h.dead) color.copy(DEAD);
+      else if (isBroken(h, zone as Zone)) color.copy(BROKEN);
+      else if (left > 0.5) color.lerpColors(HALF, FULL, (left - 0.5) * 2);
+      else color.lerpColors(LOW, HALF, left * 2);
     }
     this.helmet.visible = !!c.gear.helmet;
-    if (c.gear.helmet) this.helmet.material.color.set(armourColour(c.gear.helmet, items));
-    this.vest.visible = !!c.gear.bodyArmour;
-    if (c.gear.bodyArmour) this.vest.material.color.set(armourColour(c.gear.bodyArmour, items));
+    if (c.gear.helmet) this.helmet.material.color.set(armorColor(c.gear.helmet, items));
+    this.vest.visible = !!c.gear.bodyArmor;
+    if (c.gear.bodyArmor) this.vest.material.color.set(armorColor(c.gear.bodyArmor, items));
   }
 }

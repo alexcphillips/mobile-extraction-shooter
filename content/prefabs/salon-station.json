@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "salon-station",
   "name": "Salon station",
-  "colours": {
+  "colors": {
     "chair": "#3d4148",
     "mirror": "#bfe0e6",
     "frame": "#e6e0d3"
@@ -12,26 +12,26 @@
       "type": "box",
       "pos": [0, 0, 0.5],
       "size": [0.56, 0.5, 0.56],
-      "colour": "chair"
+      "color": "chair"
     },
     {
       "type": "box",
       "pos": [0, 0.5, 0.76],
       "size": [0.5, 0.56, 0.08],
-      "colour": "chair",
+      "color": "chair",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.1, 0],
       "size": [1.1, 0.8, 0.3],
-      "colour": "frame"
+      "color": "frame"
     },
     {
       "type": "box",
       "pos": [0, 1, 0.02],
       "size": [1, 1, 0.04],
-      "colour": "mirror",
+      "color": "mirror",
       "collide": false
     }
   ]

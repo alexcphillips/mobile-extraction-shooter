@@ -10,7 +10,7 @@ import { buildingKit } from './silver-creek-kit.mjs';
 
 /**
  * h: the generator's helpers (box, drawn, group, prefab, along, label, C, r2, groundAt,
- * groundRange). s: the site (TRAIL, TRAIL_Y, DAM_Z, jamCentre, jamHalf, bridgeX, fordX, sx, sz).
+ * groundRange). s: the site (TRAIL, TRAIL_Y, DAM_Z, jamCenter, jamHalf, bridgeX, fordX, sx, sz).
  */
 function kit(h, s) {
   const { prefab, r2, groundAt, groundRange, C } = h;
@@ -30,7 +30,7 @@ function kit(h, s) {
   const bedded = (name, x, z, hw, hd, extra = {}) =>
     prefab(name, x, z, extra, r2(groundRange(x - hw, z - hd, x + hw, z + hd)[0]));
   /** A cylinder from a to b ([x, y, z]), as a log lying along that line. */
-  const logLine = (a, b, radius, colour, extra = {}) => {
+  const logLine = (a, b, radius, color, extra = {}) => {
     const [dx, dy, dz] = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
     const len = Math.hypot(dx, dy, dz);
     return {
@@ -41,7 +41,7 @@ function kit(h, s) {
       sides: 8,
       yaw: r2((Math.atan2(dx, dz) * 180) / Math.PI),
       pitch: r2((Math.acos(dy / len) * 180) / Math.PI),
-      colour,
+      color,
       ...extra,
     };
   };
@@ -69,10 +69,10 @@ function kit(h, s) {
 export function buildMiddle(h, s) {
   const { box, drawn, group, prefab, along, C, r2 } = h;
   const { on, bedded, logLine, copse, trailPile } = kit(h, s);
-  const { jamCentre, jamHalf, bridgeX, fordX, TRAIL_Y } = s;
+  const { jamCenter, jamHalf, bridgeX, fordX, TRAIL_Y } = s;
 
   // ------------------------------------------------------------- log deck
-  // The greybox's five rows 4.5 m apart (2.7 m lanes) as log piles end to end: waist piles
+  // The graybox's five rows 4.5 m apart (2.7 m lanes) as log piles end to end: waist piles
   // (1.49 m) in rows 1, 3 and 5, eye-height piles (1.92 m) in rows 2 and 4. Each row its own:
   // row 2's cut-through is at the west, row 4's at the east, row 3 stops short with loose
   // logs, and row 5 has one tall pile mid-row to break the line along the deck's south face.
@@ -111,7 +111,7 @@ export function buildMiddle(h, s) {
     for (const [x, z, yaw] of row.loose ?? []) deck.push(prefab('log', x, z, { yaw }, 0));
   });
 
-  // The loader crane: the greybox's collision (cab perch at 6.6 m by ladder, player-only; the
+  // The loader crane: the graybox's collision (cab perch at 6.6 m by ladder, player-only; the
   // engine house a 3.3 m drop beside it) dressed with cab windows, a counterweight and an
   // exhaust, and its boom swung out over the deck with a log in the grapple (drawn only).
   const tip = [117.5, 5.6, 44];
@@ -127,7 +127,7 @@ export function buildMiddle(h, s) {
       pos: [130, 1, 38],
       yaw: 0,
       height: 5.6,
-      colour: C.ladder,
+      color: C.ladder,
     },
     drawn(128.45, 35.8, 131.55, 38.2, 5.0, 6.1, C.glass, { id: 'crane-windows-ns' }),
     drawn(128.8, 35.45, 131.2, 38.55, 5.0, 6.1, C.glass, { id: 'crane-windows-ew' }),
@@ -139,7 +139,7 @@ export function buildMiddle(h, s) {
       radius: 0.1,
       height: 1.6,
       sides: 6,
-      colour: C['steel-dark'],
+      color: C['steel-dark'],
       collide: false,
     },
     drawn(136, 35.6, 136.03, 38.4, 0.6, 2.4, C['steel-dark'], { id: 'crane-louvres' }),
@@ -181,7 +181,7 @@ export function buildMiddle(h, s) {
   ]);
 
   // ------------------------------------------------------------- timber yard
-  // The greybox's ten blocks filled with lumber stacks (4.8 × 1.2 m, 1.2 m or two high at
+  // The graybox's ten blocks filled with lumber stacks (4.8 × 1.2 m, 1.2 m or two high at
   // 2.4 m), rows 0.1 m apart so no one fits between them. Each block has its own pattern:
   // T tall, L low, - a stack missing. A low stack beside a tall one is a way up (jump and
   // vault 1.2 m at a time): the tall tops are a player-only layer over the maze, seen from
@@ -228,7 +228,7 @@ export function buildMiddle(h, s) {
       'shed-small',
       97.8,
       76,
-      { id: 'tally-shack', yaw: 90, colours: { siding: C['siding-red'] } },
+      { id: 'tally-shack', yaw: 90, colors: { siding: C['siding-red'] } },
       0,
     ),
     prefab('flood-light', 99.8, 79.4, { yaw: 120 }, 0),
@@ -313,15 +313,15 @@ export function buildMiddle(h, s) {
   ]);
 
   // ------------------------------------------------------------- log jam
-  // The greybox's logs across the ravine at trail height, with the jam's tangle piled against
+  // The graybox's logs across the ravine at trail height, with the jam's tangle piled against
   // their upstream face (drawn only: no climbing out of the water onto it), and hard cover on
   // the trail either side, staggered across it so the trail has no clear line to the jam.
   const logJam = group('Log jam', [
     ...[18.4, 19.2, 20, 20.8, 21.6].map((z, k) =>
       box(
-        jamCentre - jamHalf + (k % 2),
+        jamCenter - jamHalf + (k % 2),
         z - 0.4,
-        jamCentre + jamHalf - ((k + 1) % 2),
+        jamCenter + jamHalf - ((k + 1) % 2),
         z + 0.4,
         TRAIL_Y - 0.8,
         TRAIL_Y,
@@ -340,7 +340,7 @@ export function buildMiddle(h, s) {
       size: [0.7, 0.7, 9],
       yaw,
       pitch: 12,
-      colour: C.log,
+      color: C.log,
     })),
     ...[
       [
@@ -416,7 +416,7 @@ export function buildMiddle(h, s) {
       radius: 0.4,
       height: 0.18,
       sides: 8,
-      colour: C.dark,
+      color: C.dark,
       collide: false,
     },
   );
@@ -448,7 +448,7 @@ export function buildMiddle(h, s) {
         radius: 0.09,
         height: 6.2,
         sides: 6,
-        colour: C['steel-dark'],
+        color: C['steel-dark'],
       },
       along([x, 6.4, z], [x, 6.4, z + (z < 118 ? 1.6 : -1.6)], 0.12, 0.12, C['steel-dark'], {
         id: `lamp-${id}-arm`,
@@ -487,7 +487,7 @@ export function buildMiddle(h, s) {
     lamp('e', bx1 + 0.6, 122.1),
   ]);
 
-  // Abandoned trucks on the highway (MT-3): each straddles the centre line from its own lane,
+  // Abandoned trucks on the highway (MT-3): each straddles the center line from its own lane,
   // so no line runs the length of the road (truck-3, the tanker, is in the east script). The
   // two at the bridge are dressed: a loaded log truck west of it (eastbound, south lane) and
   // a tractor unit east of it (westbound).
@@ -519,7 +519,7 @@ export function buildMiddle(h, s) {
       'semi-tractor',
       147.6,
       LT.z,
-      { id: 'log-truck-tractor', yaw: 90, colours: { cab: '#7a2e24', 'cab-dark': '#5a2018' } },
+      { id: 'log-truck-tractor', yaw: 90, colors: { cab: '#7a2e24', 'cab-dark': '#5a2018' } },
       0,
     ),
     box(LT.x0, LT.z - 1.15, LT.x1, LT.z + 1.15, 0.95, 1.3, C['steel-dark'], {
@@ -550,14 +550,14 @@ export function buildMiddle(h, s) {
         height: 0.5,
         sides: 10,
         pitch: 90,
-        colour: C.dark,
+        color: C.dark,
         collide: false,
       })),
     ),
     ...logLoad,
   ]);
   // Truck-1 (MT-11, was a plain block): an abandoned box truck, cab east, standing 12° across
-  // the north lane and the centre line where the block stood, so it shades as much of the
+  // the north lane and the center line where the block stood, so it shades as much of the
   // road as the 3.5 m block did. The box and cab collide; a body-only blocker under the box
   // stops a prone crawl beneath; wheels and trim are drawn. In its own frame, along x.
   const truck1 = group(
@@ -579,7 +579,7 @@ export function buildMiddle(h, s) {
           height: 0.3,
           sides: 10,
           pitch: 90,
-          colour: C.dark,
+          color: C.dark,
           collide: false,
         })),
       ),
@@ -725,7 +725,7 @@ export function buildRidge(h, s) {
       radius: 0.1,
       height: r2(rf.ridge - FL + 0.4),
       sides: 6,
-      colour: C['steel-dark'],
+      color: C['steel-dark'],
       collide: false,
     },
     prefab('table-and-chairs', 85.6, 11.4, { yaw: 90 }, FL),
@@ -811,7 +811,7 @@ export function buildRidge(h, s) {
       radius: 0.75,
       height: 0.22,
       sides: 8,
-      colour: C.stone,
+      color: C.stone,
       collide: false,
     },
     {
@@ -821,7 +821,7 @@ export function buildRidge(h, s) {
       radius: 0.6,
       height: 0.01,
       sides: 8,
-      colour: C.ash,
+      color: C.ash,
       collide: false,
     },
     along([124.8, Y + 0.3, 15.5], [125.8, Y + 0.3, 16.1], 0.12, 0.12, C.dark, {
@@ -898,7 +898,7 @@ export function buildRidge(h, s) {
         pos: [r2(x), r2(y), r2(z + 1)],
         yaw: 0,
         height: 3.65,
-        colour: C.timber,
+        color: C.timber,
       },
       drawn(x - 0.6, z - 0.2, x + 0.6, z + 0.25, y + 3.65, y + 4.1, C['timber-dark'], {
         id: `stand-${id}-seat`,
@@ -995,7 +995,7 @@ export function buildRidge(h, s) {
       height: 2.4,
       sides: 10,
       roll: 90,
-      colour: C['paint-red'],
+      color: C['paint-red'],
     },
     on('rock-large', 220, 11, { yaw: 15 }),
     bedded('log-pile', 229, 9, 3, 0.8),

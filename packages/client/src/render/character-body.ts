@@ -288,7 +288,7 @@ function reach(
  * A character drawn with the animated body: legs from the moving clips, the upper body
  * holding the gun (by IK at the low ready or aimed, following where it looks), carrying it
  * in the right hand while reloading or sprinting, and falling down dead. The look (outfit,
- * helmet, armour and gun) is one skinned mesh. Positions are interpolated between ticks.
+ * helmet, armor and gun) is one skinned mesh. Positions are interpolated between ticks.
  */
 export class CharacterBody {
   readonly root: THREE.Group;
@@ -443,12 +443,12 @@ export class CharacterBody {
     const held = w ? gunKey(w) : (knife ?? '');
     const gear: Gear = {
       helmet: g.helmet?.item ?? null,
-      armour: g.bodyArmour?.item ?? null,
+      armor: g.bodyArmor?.item ?? null,
       rig: g.rig?.item ?? null,
       backpack: g.backpack?.item ?? null,
       gun: null,
     };
-    const key = `${gear.helmet} ${gear.armour} ${gear.rig} ${gear.backpack} ${held}`;
+    const key = `${gear.helmet} ${gear.armor} ${gear.rig} ${gear.backpack} ${held}`;
     if (key === this.look) return;
     this.look = key;
     this.gun = w ? gunModel(w, items) : null;

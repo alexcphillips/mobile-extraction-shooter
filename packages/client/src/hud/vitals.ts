@@ -1,5 +1,5 @@
 import {
-  chestArmour,
+  chestArmor,
   HEALTH,
   ZONE_COUNT,
   LEFT_ARM,
@@ -11,7 +11,7 @@ import {
   isBroken,
   createWeaponStats,
   weaponStats,
-  type ArmourState,
+  type ArmorState,
   type Character,
   type ItemDb,
   heldWeapon,
@@ -19,8 +19,8 @@ import {
   roundOf,
   loadedAmmo,
 } from '@mes/shared';
-import { levelColour } from '../ui/levels';
-import { armourColour } from './armour';
+import { levelColor } from '../ui/levels';
+import { armorColor } from './armor';
 
 const HELMET_ICON =
   '<svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M3 15a9 9 0 0 1 18 0v2H3z M2 17h20v2H2z"/></svg>';
@@ -46,10 +46,10 @@ const BODY_ICON = `<svg viewBox="0 0 64 60" width="80" height="75">
   <text data-hp="5" x="24" y="50" text-anchor="end"/>
 </svg>`;
 
-/** Zone colours by HP left: full, hurt, badly hurt, nearly gone, and 0 (broken, or dead). */
-export const ZONE_COLOURS = ['#5cb85c', '#c9d23f', '#f0a030', '#e74c3c', '#222'];
+/** Zone colors by HP left: full, hurt, badly hurt, nearly gone, and 0 (broken, or dead). */
+export const ZONE_COLORS = ['#5cb85c', '#c9d23f', '#f0a030', '#e74c3c', '#222'];
 
-export function zoneColour(hp: number, max: number): number {
+export function zoneColor(hp: number, max: number): number {
   if (hp <= 0) return 4;
   const f = hp / max;
   return f > 0.75 ? 0 : f > 0.5 ? 1 : f > 0.25 ? 2 : 3;
@@ -69,15 +69,15 @@ function setHidden(el: HTMLElement, hidden: boolean): void {
 
 /**
  * The player's status, written straight to the DOM (never through React): a body with
- * each zone coloured by its HP and its HP beside it, bleeding zones pulsing (as Tarkov
+ * each zone colored by its HP and its HP beside it, bleeding zones pulsing (as Tarkov
  * does: there's no total, since the head or chest decides death), chips for broken limbs
- * and bleeding, armour icons coloured by durability, and the ammo count with the round
- * loaded (coloured by level) and a reload bar. Also a red flash when hurt. There's no
+ * and bleeding, armor icons colored by durability, and the ammo count with the round
+ * loaded (colored by level) and a reload bar. Also a red flash when hurt. There's no
  * crosshair or hit marker (the user's call, 2026-11-05, as in Tarkov). With one health bar (zombies mode, Health.pool) it's just that bar.
  */
 export class Vitals {
   private readonly zones: SVGElement[];
-  /** What each zone shows: its colour index, plus 8 when bleeding. */
+  /** What each zone shows: its color index, plus 8 when bleeding. */
   private readonly zoneShown = Array<number>(ZONE_COUNT).fill(-1);
   private readonly hpTexts: SVGTextElement[];
   private readonly hpShown = Array<number>(ZONE_COUNT).fill(-1);
@@ -104,9 +104,9 @@ export class Vitals {
     vitals.innerHTML = `
       <div class="vitals-row">
         <span class="body">${BODY_ICON}</span>
-        <div class="armour-icons">
-          <span class="armour helmet">${HELMET_ICON}</span>
-          <span class="armour vest">${VEST_ICON}</span>
+        <div class="armor-icons">
+          <span class="armor helmet">${HELMET_ICON}</span>
+          <span class="armor vest">${VEST_ICON}</span>
         </div>
       </div>
       <div class="chips"></div>
@@ -141,7 +141,7 @@ export class Vitals {
         this.barShown = hp;
         const f = Math.max(0, Math.min(1, hp / pool));
         this.barFill.style.transform = `scaleX(${f})`;
-        this.barFill.style.background = ZONE_COLOURS[zoneColour(hp, pool)]!;
+        this.barFill.style.background = ZONE_COLORS[zoneColor(hp, pool)]!;
         this.barText.textContent = String(hp);
       }
     }
@@ -151,12 +151,12 @@ export class Vitals {
         this.hpShown[zone] = hp;
         this.hpTexts[zone]!.textContent = String(hp);
       }
-      const colour = zoneColour(h.hp[zone]!, HEALTH.maxHp[zone]!);
-      const shown = colour + (h.bleeding[zone] ? 8 : 0);
+      const color = zoneColor(h.hp[zone]!, HEALTH.maxHp[zone]!);
+      const shown = color + (h.bleeding[zone] ? 8 : 0);
       if (shown === this.zoneShown[zone]) continue;
       this.zoneShown[zone] = shown;
       const el = this.zones[zone]!;
-      el.style.fill = ZONE_COLOURS[colour]!;
+      el.style.fill = ZONE_COLORS[color]!;
       el.classList.toggle('bleed', h.bleeding[zone]!);
     }
 
@@ -174,9 +174,9 @@ export class Vitals {
       this.chips.innerHTML = chips.join('');
     }
 
-    this.armour(this.helmet, c.gear.helmet, items);
-    // Body armour, or an armoured rig (2026-11-11).
-    this.armour(this.vest, chestArmour(items, c.gear), items);
+    this.armor(this.helmet, c.gear.helmet, items);
+    // Body armor, or an armored rig (2026-11-11).
+    this.armor(this.vest, chestArmor(items, c.gear), items);
 
     const w = heldWeapon(c);
     setHidden(this.ammo, !w);
@@ -187,7 +187,7 @@ export class Vitals {
         this.roundId = id;
         const def = roundOf(items, id)!;
         this.round.textContent = def.name;
-        this.round.style.borderColor = levelColour(def.level);
+        this.round.style.borderColor = levelColor(def.level);
       }
       this.rounds.classList.toggle('empty', w.mag === 0);
       setHidden(this.reload, w.reloading === 0);
@@ -198,13 +198,13 @@ export class Vitals {
     }
   }
 
-  private armour(el: HTMLElement, a: ArmourState | null, items: ItemDb): void {
+  private armor(el: HTMLElement, a: ArmorState | null, items: ItemDb): void {
     setHidden(el, !a);
     if (a) {
-      const colour = armourColour(a, items);
-      if (el.dataset.colour !== colour) {
-        el.dataset.colour = colour;
-        el.style.color = colour;
+      const color = armorColor(a, items);
+      if (el.dataset.color !== color) {
+        el.dataset.color = color;
+        el.style.color = color;
       }
     }
   }

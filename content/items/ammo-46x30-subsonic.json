@@ -8,15 +8,15 @@
   "value": 45,
   "rarity": "uncommon",
   "stack": 60,
-  "calibre": "4.6x30",
+  "caliber": "4.6x30",
   "level": 2,
   "damage": 44,
-  "armourDamage": 7,
+  "armorDamage": 7,
   "bleedChance": 0.3,
   "model": {
     "parts": [
-      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "colour": "#a08a44" },
-      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "colour": "#5c9a4a" }
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "color": "#a08a44" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "color": "#5c9a4a" }
     ]
   }
 }

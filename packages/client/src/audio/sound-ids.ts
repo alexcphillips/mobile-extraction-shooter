@@ -8,8 +8,8 @@ export const GAME_SOUNDS = {
   impactWorld: 'impact-world',
   /** Hitting a body. */
   impactFlesh: 'impact-flesh',
-  /** Armour taking some of a hit. */
-  impactArmour: 'impact-armour',
+  /** Armor taking some of a hit. */
+  impactArmor: 'impact-armor',
   /** An enemy's bullet passing close by. */
   whizz: 'bullet-whizz',
   footstep: 'footstep',

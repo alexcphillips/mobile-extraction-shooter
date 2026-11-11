@@ -45,13 +45,13 @@ describe('walls', () => {
       0.2,
       '#ffffff',
     );
-    expect(a).toEqual({ type: 'box', pos: [2, 1, 0], size: [4.2, 2.6, 0.2], colour: '#ffffff' });
+    expect(a).toEqual({ type: 'box', pos: [2, 1, 0], size: [4.2, 2.6, 0.2], color: '#ffffff' });
     // Along +z: local +x is (cos yaw, −sin yaw), so yaw −90.
     expect(b).toEqual({
       type: 'box',
       pos: [4, 1, 1.5],
       size: [3.2, 2.6, 0.2],
-      colour: '#ffffff',
+      color: '#ffffff',
       yaw: -90,
     });
   });
@@ -68,7 +68,7 @@ describe('walls', () => {
       type: 'box' as const,
       pos: [0, 0, 0] as [number, number, number],
       size: [4, 2.6, 0.2] as [number, number, number],
-      colour: '#fff',
+      color: '#fff',
     };
     const pieces = cutWall(wall, { along: 0.5, width: 1, bottom: 0.9, top: 2 });
     expect(pieces.map((p) => [p.pos, p.size])).toEqual([
@@ -97,7 +97,7 @@ describe('walls', () => {
       pos: [10, 0, 5] as [number, number, number],
       size: [0.2, 2.6, 3] as [number, number, number],
       yaw: 90,
-      colour: '#fff',
+      color: '#fff',
     };
     // Local z, turned 90°, runs along world +x.
     expect(alongWall(wall, [11, 0, 5])).toBeCloseTo(1);
@@ -124,7 +124,7 @@ describe('walls', () => {
       type: 'box' as const,
       pos: [0, 0, 0] as [number, number, number],
       size: [10, 2.6, 0.2] as [number, number, number],
-      colour: '#fff',
+      color: '#fff',
     };
     const window = { along: 3, width: 1.5, bottom: 0.9, top: 2 };
     const openings = evenOpenings(10, window, 3);
@@ -134,14 +134,14 @@ describe('walls', () => {
     // Four solid stretches, and a sill and lintel each.
     expect(pieces).toHaveLength(4 + 3 * 2);
     const full = pieces.filter((p) => p.size[1] === 2.6);
-    // Placed to the millimetre.
+    // Placed to the millimeter.
     const want = [-4.3125, -1.4375, 1.4375, 4.3125];
     full.forEach((p, k) => {
       expect(p.pos[0]).toBeCloseTo(want[k]!, 2);
       expect(p.size[0]).toBe(1.375);
     });
     expect(() => evenOpenings(10, window, 7)).toThrow("don't fit");
-    // A set gap: a row centred on the wall, 1.5 + 0.5 + 1.5 + 0.5 + 1.5 = 5.5 m long.
+    // A set gap: a row centered on the wall, 1.5 + 0.5 + 1.5 + 0.5 + 1.5 = 5.5 m long.
     expect(evenOpenings(10, window, 3, 0.5).map((o) => o.along)).toEqual([-2, 0, 2]);
     expect(() => evenOpenings(10, window, 5, 2)).toThrow('2 m apart');
     expect(() => cutWall(wall, [window, { ...window, along: 3.5 }])).toThrow('overlap');
@@ -153,7 +153,7 @@ describe('walls', () => {
       pos: [10, 0, 5] as [number, number, number],
       size: [0.2, 2.6, 4] as [number, number, number],
       yaw: 90,
-      colour: '#fff',
+      color: '#fff',
     };
     const gap = { along: 0.5, width: 1.2, bottom: 0.9, top: 2 };
     const wall = toWall(box, [gap]);
@@ -168,7 +168,7 @@ describe('walls', () => {
 
   it('split a wall node around a doorway, keeping each side its windows', () => {
     const wall = toWall(
-      { type: 'box', id: 'front', pos: [0, 0, 0], size: [10, 2.6, 0.2], colour: '#fff' },
+      { type: 'box', id: 'front', pos: [0, 0, 0], size: [10, 2.6, 0.2], color: '#fff' },
       [
         { along: -3, width: 1, bottom: 0.9, top: 2 },
         { along: 3, width: 1, bottom: 0.9, top: 2, glass: '#abc' },
@@ -192,14 +192,14 @@ describe('walls', () => {
   });
 
   it("space a wall node's windows evenly, keeping their widths", () => {
-    const wall = toWall({ type: 'box', pos: [0, 0, 0], size: [10, 2.6, 0.2], colour: '#fff' }, [
+    const wall = toWall({ type: 'box', pos: [0, 0, 0], size: [10, 2.6, 0.2], color: '#fff' }, [
       { along: 4, width: 2, bottom: 0.9, top: 2 },
       { along: -4, width: 1, bottom: 0.9, top: 2 },
     ]);
     spaceEvenly(wall);
     // (10 − 3) / 3 between each: −5 + 2.333 + 0.5, then 2.333 + 1 further on.
     expect(wall.openings.map((o) => o.along)).toEqual([-2.167, 1.667]);
-    // 1 m apart, centred: a row 1 + 1 + 2 = 4 m long.
+    // 1 m apart, centered: a row 1 + 1 + 2 = 4 m long.
     spaceEvenly(wall, 1);
     expect(wall.openings.map((o) => o.along)).toEqual([-1.5, 1]);
   });
@@ -209,7 +209,7 @@ describe('walls', () => {
       type: 'box' as const,
       pos: [0, 0, 0] as [number, number, number],
       size: [0.8, 2, 0.2] as [number, number, number],
-      colour: '#fff',
+      color: '#fff',
     };
     expect(() => cutWall(wall, { along: 0, width: 1, bottom: 0, top: 1.8 })).toThrow('long');
     expect(() =>
@@ -306,7 +306,7 @@ describe('walls', () => {
       pos: [10, 0, 5] as [number, number, number],
       size: [0.2, 2.6, 4] as [number, number, number],
       yaw: 90,
-      colour: '#fff',
+      color: '#fff',
     };
     const gap = { along: 0.5, width: 1.2, bottom: 0.9, top: 2 };
     const pieces: MapNode[] = cutWall(wall, gap);
@@ -316,7 +316,7 @@ describe('walls', () => {
       type: 'glass',
       pos: [10.5, 0.9, 5],
       size: [1.2, 1.1],
-      colour: '#abc',
+      color: '#abc',
     });
     expect(windowAt(sill!, pieces, '#abc')).toEqual(want);
     expect(windowAt(lintel!, pieces, '#abc')).toEqual(want);
@@ -351,21 +351,21 @@ describe('railings', () => {
     type: 'box',
     pos: [0, y, 0],
     size: [10, 0.2, 6],
-    colour: '#fff',
+    color: '#fff',
     ...(yaw !== undefined && { yaw }),
   });
-  const stairs: Stairs = { type: 'stairs', pos: [0, 0, 0], size: [2, 3, 6], colour: '#fff' };
+  const stairs: Stairs = { type: 'stairs', pos: [0, 0, 0], size: [2, 3, 6], color: '#fff' };
 
   it('go along the edge of a floor nearest the click, flush with it', () => {
     expect(edgeRailing(floor(), [4.8, 0.2, 1], 1.1, '#000')).toEqual([
-      { type: 'box', pos: [4.95, 0.2, 0], size: [0.1, 1.1, 6], colour: '#000' },
+      { type: 'box', pos: [4.95, 0.2, 0], size: [0.1, 1.1, 6], color: '#000' },
     ]);
     expect(edgeRailing(floor(), [1, 0.2, -2.9], 1.1, '#000')).toEqual([
-      { type: 'box', pos: [0, 0.2, -2.95], size: [10, 1.1, 0.1], colour: '#000' },
+      { type: 'box', pos: [0, 0.2, -2.95], size: [10, 1.1, 0.1], color: '#000' },
     ]);
     // Turned 90°, local +x points along −z.
     expect(edgeRailing(floor(0, 90), [0, 0.2, -4.8], 1.1, '#000')).toEqual([
-      { type: 'box', pos: [0, 0.2, -4.95], size: [0.1, 1.1, 6], colour: '#000', yaw: 90 },
+      { type: 'box', pos: [0, 0.2, -4.95], size: [0.1, 1.1, 6], color: '#000', yaw: 90 },
     ]);
     expect(() => edgeRailing({ ...floor(), pitch: 10 }, [4.8, 0.2, 0], 1.1, '#000')).toThrow(
       'tilted',
@@ -386,7 +386,7 @@ describe('railings', () => {
     const map = { ...newMap('t', 'T', 40, 4), nodes: [stairs, ...pieces] };
     expect(findOverlaps(map, new Map()).props).toEqual([]);
     // Two of the same crate overlapping still warn.
-    const crate: Box = { type: 'box', pos: [5, 0, 0], size: [0.2, 1, 2], colour: '#fff' };
+    const crate: Box = { type: 'box', pos: [5, 0, 0], size: [0.2, 1, 2], color: '#fff' };
     const twice = { ...map, nodes: [crate, { ...crate, pos: [5, 0, 0.5] as Box['pos'] }] };
     expect(findOverlaps(twice, new Map()).props).toHaveLength(1);
   });

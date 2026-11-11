@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "paper-stacks",
   "name": "Paper stacks",
-  "colours": {
+  "colors": {
     "paper": "#efede7",
     "paper-old": "#dcd6c4",
     "divider": "#d9c24f",
@@ -22,91 +22,91 @@
           "type": "box",
           "pos": [0.002, 0, 0.0015],
           "size": [0.21, 0.022, 0.297],
-          "colour": "paper",
+          "color": "paper",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.002, 0.022, 0.0015],
           "size": [0.21, 0.018, 0.297],
-          "colour": "paper-old",
+          "color": "paper-old",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.012, 0.04, 0.01],
           "size": [0.21, 0.002, 0.297],
-          "colour": "divider",
+          "color": "divider",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.002, 0.042, -0.0015],
           "size": [0.21, 0.025, 0.297],
-          "colour": "paper",
+          "color": "paper",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.002, 0.067, -0.0015],
           "size": [0.21, 0.02, 0.297],
-          "colour": "paper-old",
+          "color": "paper-old",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.045, 0.088, -0.115],
           "size": [0.08, 0.0012, 0.008],
-          "colour": "ink",
+          "color": "ink",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.0, 0.088, -0.075],
           "size": [0.16, 0.0012, 0.005],
-          "colour": "ink",
+          "color": "ink",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.0, 0.088, -0.049],
           "size": [0.16, 0.0012, 0.005],
-          "colour": "ink",
+          "color": "ink",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.005, 0.088, -0.023],
           "size": [0.15, 0.0012, 0.005],
-          "colour": "ink",
+          "color": "ink",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.0, 0.088, 0.003],
           "size": [0.16, 0.0012, 0.005],
-          "colour": "ink",
+          "color": "ink",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.0, 0.088, 0.029],
           "size": [0.16, 0.0012, 0.005],
-          "colour": "ink",
+          "color": "ink",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.035, 0.088, 0.055],
           "size": [0.09, 0.0012, 0.005],
-          "colour": "ink",
+          "color": "ink",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.05, 0.088, 0.1],
           "size": [0.05, 0.0012, 0.006],
-          "colour": "ink",
+          "color": "ink",
           "collide": false
         }
       ]
@@ -121,21 +121,21 @@
           "type": "box",
           "pos": [0.002, 0, 0.0015],
           "size": [0.21, 0.02, 0.297],
-          "colour": "paper-old",
+          "color": "paper-old",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.002, 0.02, 0.0015],
           "size": [0.21, 0.024, 0.297],
-          "colour": "paper",
+          "color": "paper",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.008, 0.044, 0.004],
           "size": [0.235, 0.004, 0.309],
-          "colour": "folder",
+          "color": "folder",
           "collide": false,
           "yaw": -2
         },
@@ -143,21 +143,21 @@
           "type": "box",
           "pos": [-0.05, 0.049, -0.1],
           "size": [0.09, 0.0012, 0.035],
-          "colour": "label",
+          "color": "label",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.05, 0.0502, -0.1],
           "size": [0.06, 0.0012, 0.006],
-          "colour": "ink",
+          "color": "ink",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.04, 0.049, 0.05],
           "size": [0.08, 0.0012, 0.022],
-          "colour": "stamp",
+          "color": "stamp",
           "collide": false,
           "yaw": -12
         }
@@ -173,70 +173,70 @@
           "type": "box",
           "pos": [0.002, 0, 0.0015],
           "size": [0.21, 0.016, 0.297],
-          "colour": "paper",
+          "color": "paper",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.002, 0.016, 0.0015],
           "size": [0.21, 0.012, 0.297],
-          "colour": "paper-old",
+          "color": "paper-old",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0.002, 0.028, -0.0015],
           "size": [0.21, 0.02, 0.297],
-          "colour": "paper",
+          "color": "paper",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0, 0.049, -0.12],
           "size": [0.17, 0.0012, 0.025],
-          "colour": "ink",
+          "color": "ink",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0, 0.049, -0.07],
           "size": [0.17, 0.0012, 0.002],
-          "colour": "ink",
+          "color": "ink",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0, 0.049, -0.035],
           "size": [0.17, 0.0012, 0.002],
-          "colour": "ink",
+          "color": "ink",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0, 0.049, 0.0],
           "size": [0.17, 0.0012, 0.002],
-          "colour": "ink",
+          "color": "ink",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0, 0.049, 0.035],
           "size": [0.17, 0.0012, 0.002],
-          "colour": "ink",
+          "color": "ink",
           "collide": false
         },
         {
           "type": "box",
           "pos": [0, 0.049, 0.07],
           "size": [0.17, 0.0012, 0.002],
-          "colour": "ink",
+          "color": "ink",
           "collide": false
         },
         {
           "type": "box",
           "pos": [-0.03, 0.049, -0.0],
           "size": [0.002, 0.0012, 0.14],
-          "colour": "ink",
+          "color": "ink",
           "collide": false
         }
       ]

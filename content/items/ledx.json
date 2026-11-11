@@ -13,7 +13,7 @@
         "pos": [0, 0.012, 0.028],
         "size": [0.042, 0.024, 0.126],
         "corners": [0.013, 0.013, 0.013, 0.013],
-        "colour": "#e6e0d3",
+        "color": "#e6e0d3",
         "name": "handle",
         "group": "body"
       },
@@ -21,7 +21,7 @@
         "type": "box",
         "pos": [0, 0.012, 0.025],
         "size": [0.044, 0.006, 0.1],
-        "colour": "#4677b3",
+        "color": "#4677b3",
         "name": "stripe",
         "group": "body"
       },
@@ -31,7 +31,7 @@
         "radius": 0.032,
         "height": 0.026,
         "sides": 10,
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "name": "head",
         "group": "head",
         "pitch": 90
@@ -42,7 +42,7 @@
         "radius": 0.034,
         "height": 0.006,
         "sides": 10,
-        "colour": "#4677b3",
+        "color": "#4677b3",
         "name": "collar",
         "group": "head",
         "pitch": 90
@@ -53,7 +53,7 @@
         "radius": 0.026,
         "height": 0.002,
         "sides": 10,
-        "colour": "#141516",
+        "color": "#141516",
         "name": "lens",
         "group": "head",
         "pitch": 90
@@ -62,7 +62,7 @@
         "type": "box",
         "pos": [0.01516, 0.04075, -0.0625],
         "size": [0.006, 0.006, 0.002],
-        "colour": "#ff4a2a",
+        "color": "#ff4a2a",
         "name": "led 0",
         "group": "leds",
         "roll": 30
@@ -71,7 +71,7 @@
         "type": "box",
         "pos": [0.0, 0.0495, -0.0625],
         "size": [0.006, 0.006, 0.002],
-        "colour": "#ff4a2a",
+        "color": "#ff4a2a",
         "name": "led 1",
         "group": "leds",
         "roll": 90
@@ -80,7 +80,7 @@
         "type": "box",
         "pos": [-0.01516, 0.04075, -0.0625],
         "size": [0.006, 0.006, 0.002],
-        "colour": "#ff4a2a",
+        "color": "#ff4a2a",
         "name": "led 2",
         "group": "leds",
         "roll": 150
@@ -89,7 +89,7 @@
         "type": "box",
         "pos": [-0.01516, 0.02325, -0.0625],
         "size": [0.006, 0.006, 0.002],
-        "colour": "#ff4a2a",
+        "color": "#ff4a2a",
         "name": "led 3",
         "group": "leds",
         "roll": 210
@@ -98,7 +98,7 @@
         "type": "box",
         "pos": [-0.0, 0.0145, -0.0625],
         "size": [0.006, 0.006, 0.002],
-        "colour": "#ff4a2a",
+        "color": "#ff4a2a",
         "name": "led 4",
         "group": "leds",
         "roll": 270
@@ -107,7 +107,7 @@
         "type": "box",
         "pos": [0.01516, 0.02325, -0.0625],
         "size": [0.006, 0.006, 0.002],
-        "colour": "#ff4a2a",
+        "color": "#ff4a2a",
         "name": "led 5",
         "group": "leds",
         "roll": 330
@@ -118,7 +118,7 @@
         "radius": 0.0065,
         "height": 0.002,
         "sides": 8,
-        "colour": "#cfe6ff",
+        "color": "#cfe6ff",
         "name": "sensor",
         "group": "leds",
         "pitch": 90
@@ -127,7 +127,7 @@
         "type": "box",
         "pos": [0, 0.0245, 0.0],
         "size": [0.026, 0.002, 0.026],
-        "colour": "#141516",
+        "color": "#141516",
         "name": "screen",
         "group": "controls"
       },
@@ -135,7 +135,7 @@
         "type": "box",
         "pos": [0.002, 0.0258, 0.0],
         "size": [0.014, 0.001, 0.005],
-        "colour": "#39ff6a",
+        "color": "#39ff6a",
         "name": "readout",
         "group": "controls"
       },
@@ -145,7 +145,7 @@
         "radius": 0.005,
         "height": 0.004,
         "sides": 8,
-        "colour": "#d8461c",
+        "color": "#d8461c",
         "name": "power",
         "group": "controls"
       },
@@ -153,7 +153,7 @@
         "type": "box",
         "pos": [0, 0.025, 0.044],
         "size": [0.009, 0.004, 0.006],
-        "colour": "#3a3d40",
+        "color": "#3a3d40",
         "name": "mode",
         "group": "controls"
       },
@@ -161,7 +161,7 @@
         "type": "box",
         "pos": [0, 0.0245, 0.072],
         "size": [0.013, 0.001, 0.0045],
-        "colour": "#b04848",
+        "color": "#b04848",
         "name": "cross h",
         "group": "controls"
       },
@@ -169,7 +169,7 @@
         "type": "box",
         "pos": [0, 0.0247, 0.072],
         "size": [0.0045, 0.0014, 0.013],
-        "colour": "#b04848",
+        "color": "#b04848",
         "name": "cross v",
         "group": "controls"
       },
@@ -177,7 +177,7 @@
         "type": "box",
         "pos": [0, 0.012, 0.094],
         "size": [0.016, 0.006, 0.008],
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "name": "lanyard",
         "group": "body"
       }

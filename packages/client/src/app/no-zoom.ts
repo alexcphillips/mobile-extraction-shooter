@@ -8,8 +8,8 @@ function unzoomed(): boolean {
 
 /**
  * Stops Safari zooming the game. iOS ignores the viewport's user-scalable=no, and the
- * page's touch-action doesn't catch every double tap, and cancelling pointer events (as
- * the controls do) doesn't stop it: only touch and gesture events do. Cancelling them
+ * page's touch-action doesn't catch every double tap, and canceling pointer events (as
+ * the controls do) doesn't stop it: only touch and gesture events do. Canceling them
  * leaves the touches themselves alone, so two thumbs and fast taps on the buttons still
  * work. If the page is zoomed in anyway, nothing is blocked, so you can pinch back out.
  */
@@ -24,7 +24,7 @@ export function preventZoom(): void {
       { passive: false },
     );
   }
-  // Double tap: cancelling the second touchend stops the zoom (and only its click).
+  // Double tap: canceling the second touchend stops the zoom (and only its click).
   let lastEnd = -Infinity;
   document.addEventListener(
     'touchend',

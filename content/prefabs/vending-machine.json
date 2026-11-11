@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "vending-machine",
   "name": "Vending machine",
-  "colours": {
+  "colors": {
     "body": "#a8483a",
     "window": "#1d1e21",
     "goods": "#e0c030",
@@ -13,34 +13,34 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [1, 1.9, 0.8],
-      "colour": "body"
+      "color": "body"
     },
     {
       "type": "box",
       "pos": [-0.14, 0.62, 0.41],
       "size": [0.6, 1.12, 0.02],
-      "colour": "window",
+      "color": "window",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.14, 0.86, 0.42],
       "size": [0.5, 0.7, 0.01],
-      "colour": "goods",
+      "color": "goods",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.36, 0.9, 0.41],
       "size": [0.14, 0.5, 0.02],
-      "colour": "slot",
+      "color": "slot",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.14, 0.2, 0.41],
       "size": [0.6, 0.2, 0.02],
-      "colour": "slot",
+      "color": "slot",
       "collide": false
     }
   ]

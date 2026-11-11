@@ -42,7 +42,7 @@ function addLayer(
   const drive = l.drive ? 1 + l.drive * 9 : 0;
   const driveNorm = drive ? Math.tanh(drive) : 1;
   const filter = l.filter ? new Biquad() : null;
-  const noise = l.source === 'noise' ? noiseSource(l.colour ?? 'white', random) : null;
+  const noise = l.source === 'noise' ? noiseSource(l.color ?? 'white', random) : null;
   const wave = l.wave ?? 'sine';
   let phase = 0;
   for (let i = 0; i < n; i++) {
@@ -106,9 +106,9 @@ export function envelope(
  * White noise from the rng, or pink (Paul Kellett's economy filter) or brown (leaky
  * integration), each scaled to about the same loudness as white.
  */
-function noiseSource(colour: 'white' | 'pink' | 'brown', random: () => number): () => number {
-  if (colour === 'white') return () => random() * 2 - 1;
-  if (colour === 'pink') {
+function noiseSource(color: 'white' | 'pink' | 'brown', random: () => number): () => number {
+  if (color === 'white') return () => random() * 2 - 1;
+  if (color === 'pink') {
     let b0 = 0;
     let b1 = 0;
     let b2 = 0;

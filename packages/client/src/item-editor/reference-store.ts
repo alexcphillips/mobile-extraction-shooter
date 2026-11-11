@@ -6,7 +6,7 @@
 
 export interface StoredReference {
   picture: Blob;
-  /** Metres along z the picture spans. */
+  /** Meters along z the picture spans. */
   width: number;
   /** Where its middle is. */
   y: number;

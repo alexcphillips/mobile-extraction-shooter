@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "floor-rug",
   "name": "Floor rug",
-  "colours": {
+  "colors": {
     "rug": "#8a3f5f",
     "border": "#e6e0d3"
   },
@@ -11,14 +11,14 @@
       "type": "box",
       "pos": [0, 0.002, 0],
       "size": [3, 0.006, 2],
-      "colour": "border",
+      "color": "border",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.006, 0],
       "size": [2.8, 0.006, 1.8],
-      "colour": "rug",
+      "color": "rug",
       "collide": false
     }
   ]

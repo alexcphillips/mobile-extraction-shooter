@@ -23,22 +23,22 @@ function cellsOf(doc: Doc): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/** An armour level 1–6, or null if it isn't one (yet). */
+/** An armor level 1–6, or null if it isn't one (yet). */
 const levelIn = (v: unknown): number | null =>
   typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 6 ? v : null;
 
 /**
- * What an item's rarity follows, and the rarity it gives: armour's level, an armoured
- * rig's armour level (2026-11-11: as chest armour, not its room), or a rig's or
+ * What an item's rarity follows, and the rarity it gives: armor's level, an armored
+ * rig's armor level (2026-11-11: as chest armor, not its room), or a rig's or
  * backpack's cells. Null for anything else.
  */
 function rarityBasis(doc: Doc | null): { key: string; rarity: Rarity } | null {
   if (!doc) return null;
   const level =
-    doc.type === 'armour'
+    doc.type === 'armor'
       ? levelIn(doc.level)
-      : doc.type === 'container' && doc.armour && typeof doc.armour === 'object'
-        ? levelIn((doc.armour as Doc).level)
+      : doc.type === 'container' && doc.armor && typeof doc.armor === 'object'
+        ? levelIn((doc.armor as Doc).level)
         : null;
   if (level !== null) return { key: `level ${level}`, rarity: levelRarity(level) };
   const cells = cellsOf(doc);
@@ -48,7 +48,7 @@ function rarityBasis(doc: Doc | null): { key: string; rarity: Rarity } | null {
 
 /**
  * Auto-fill (2026-11-11, the user's call): when what an item's rarity follows changes
- * (rarityBasis: a bag's grid or sections, an armour level, gaining armour or becoming one),
+ * (rarityBasis: a bag's grid or sections, an armor level, gaining armor or becoming one),
  * its rarity is set from it. Picking a rarity by hand afterwards overrides it until that
  * changes again.
  */

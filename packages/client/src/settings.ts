@@ -53,12 +53,12 @@ class SettingsStore {
     for (const l of this.listeners) l(next);
   }
 
-  /** Back to the defaults, but for favourites, which aren't settings to reset. */
+  /** Back to the defaults, but for favorites, which aren't settings to reset. */
   reset(): void {
     this.update((s) => {
-      const favourites = s.favourites;
+      const favorites = s.favorites;
       Object.assign(s, defaultSettings());
-      s.favourites = favourites;
+      s.favorites = favorites;
     });
   }
 

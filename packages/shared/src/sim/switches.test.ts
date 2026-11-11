@@ -29,14 +29,14 @@ const LIFT: PrefabFile = {
   formatVersion: 3,
   id: 'lift',
   nodes: [
-    { type: 'box', pos: [-2, 0, 0], size: [2, 3, 0.2], colour: WHITE },
-    { type: 'box', pos: [2, 0, 0], size: [2, 3, 0.2], colour: WHITE },
+    { type: 'box', pos: [-2, 0, 0], size: [2, 3, 0.2], color: WHITE },
+    { type: 'box', pos: [2, 0, 0], size: [2, 3, 0.2], color: WHITE },
     {
       type: 'door',
       id: 'gate',
       pos: [0, 0, 0],
       size: [2, 3],
-      colour: WHITE,
+      color: WHITE,
       look: 'cab',
       rollUp: true,
     },
@@ -46,7 +46,7 @@ const LIFT: PrefabFile = {
 const CAB: PrefabFile = {
   formatVersion: 3,
   id: 'cab',
-  nodes: [{ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], colour: WHITE }],
+  nodes: [{ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], color: WHITE }],
 };
 
 function compile(nodes: MapNode[]) {
@@ -60,7 +60,7 @@ function compile(nodes: MapNode[]) {
       origin: [-20, -20],
       cellSize: 4,
       heights: Array.from({ length: 11 }, () => row),
-      colour: '#6b8f4e',
+      color: '#6b8f4e',
     },
     nodes,
     zones: [],
@@ -77,7 +77,7 @@ const lever = (rows: { opens: string; timer?: number; noise?: string; lasts?: nu
     type: 'box',
     pos: [0, 0, 5],
     size: [0.4, 1, 0.2],
-    colour: WHITE,
+    color: WHITE,
     switch: { name: 'Power', rows },
   }) as MapNode;
 
@@ -196,8 +196,8 @@ describe('switches', () => {
   it('runs a row for each door, on timers of their own', () => {
     const { state, run } = raid([
       LIFT_AT,
-      { type: 'box', pos: [8, 0, 0], size: [2, 3, 0.2], colour: WHITE },
-      { type: 'door', id: 'other', pos: [12, 0, 0], size: [1, 2], colour: WHITE },
+      { type: 'box', pos: [8, 0, 0], size: [2, 3, 0.2], color: WHITE },
+      { type: 'door', id: 'other', pos: [12, 0, 0], size: [1, 2], color: WHITE },
       lever([
         { opens: 'lift-1/gate', timer: 2 },
         { opens: 'other', timer: 4 },
@@ -304,7 +304,7 @@ describe('movers', () => {
 
   it('turns its travel with its yaw', () => {
     const map = compile([
-      { type: 'door', id: 'd', pos: [0, 0, 0], size: [1, 2], colour: WHITE },
+      { type: 'door', id: 'd', pos: [0, 0, 0], size: [1, 2], color: WHITE },
       { type: 'mover', prefab: 'cab', pos: [0, 0, 0], yaw: 90, travel: [0, 0, 2], door: 'd' },
     ]);
     expect(map.movers[0]!.travel[0]).toBeCloseTo(2);

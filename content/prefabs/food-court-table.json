@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "food-court-table",
   "name": "Food court table",
-  "colours": {
+  "colors": {
     "seat": "#c8a24b",
     "stone": "#e6e0d3",
     "dark": "#3d4148"
@@ -13,7 +13,7 @@
       "pos": [0, 0.02, 0],
       "radius": 0.28,
       "height": 0.03,
-      "colour": "dark",
+      "color": "dark",
       "sides": 8,
       "collide": false
     },
@@ -22,7 +22,7 @@
       "pos": [0, 0, 0],
       "radius": 0.07,
       "height": 0.72,
-      "colour": "dark",
+      "color": "dark",
       "sides": 6
     },
     {
@@ -30,7 +30,7 @@
       "pos": [0, 0.72, 0],
       "radius": 0.58,
       "height": 0.04,
-      "colour": "stone",
+      "color": "stone",
       "sides": 10
     },
     {
@@ -38,7 +38,7 @@
       "pos": [0.651, 0, 0.651],
       "radius": 0.06,
       "height": 0.46,
-      "colour": "dark",
+      "color": "dark",
       "sides": 6
     },
     {
@@ -46,7 +46,7 @@
       "pos": [0.651, 0.46, 0.651],
       "radius": 0.21,
       "height": 0.05,
-      "colour": "seat",
+      "color": "seat",
       "sides": 8
     },
     {
@@ -54,7 +54,7 @@
       "pos": [0.651, 0, -0.651],
       "radius": 0.06,
       "height": 0.46,
-      "colour": "dark",
+      "color": "dark",
       "sides": 6
     },
     {
@@ -62,7 +62,7 @@
       "pos": [0.651, 0.46, -0.651],
       "radius": 0.21,
       "height": 0.05,
-      "colour": "seat",
+      "color": "seat",
       "sides": 8
     },
     {
@@ -70,7 +70,7 @@
       "pos": [-0.651, 0, -0.651],
       "radius": 0.06,
       "height": 0.46,
-      "colour": "dark",
+      "color": "dark",
       "sides": 6
     },
     {
@@ -78,7 +78,7 @@
       "pos": [-0.651, 0.46, -0.651],
       "radius": 0.21,
       "height": 0.05,
-      "colour": "seat",
+      "color": "seat",
       "sides": 8
     },
     {
@@ -86,7 +86,7 @@
       "pos": [-0.651, 0, 0.651],
       "radius": 0.06,
       "height": 0.46,
-      "colour": "dark",
+      "color": "dark",
       "sides": 6
     },
     {
@@ -94,7 +94,7 @@
       "pos": [-0.651, 0.46, 0.651],
       "radius": 0.21,
       "height": 0.05,
-      "colour": "seat",
+      "color": "seat",
       "sides": 8
     }
   ]

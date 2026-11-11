@@ -1,4 +1,4 @@
-// Generates the Silver Creek greybox (roadmap MT-2): content/maps/silver-creek.json and
+// Generates the Silver Creek graybox (roadmap MT-2): content/maps/silver-creek.json and
 // content/raids/silver-creek.json, from the whiteboard sketch (docs/design/raids-and-maps.md
 // → Silver Creek). It's a starting point for the user to reshape in the map editor, so it
 // refuses to overwrite the map unless given --force.
@@ -6,7 +6,7 @@
 //   node scripts/gen-silver-creek.mjs [--force]
 //
 // The play area is x 0..320 (west to east), z 0..150 (north to south); the sketch's pixels
-// are 3 to the metre from (40, 46). The valley floor is y 0, the ridge rises to the north.
+// are 3 to the meter from (40, 46). The valley floor is y 0, the ridge rises to the north.
 import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { buildAi } from './silver-creek-ai.mjs';
@@ -35,7 +35,7 @@ const r2 = (n) => Math.round(n * 100) / 100;
 const lerp = (a, b, t) => a + (b - a) * t;
 const clamp01 = (t) => Math.min(1, Math.max(0, t));
 const smooth = (t) => t * t * (3 - 2 * t);
-/** Sketch pixels to metres. */
+/** Sketch pixels to meters. */
 const sx = (px) => r2((px - 40) / 3);
 const sz = (py) => r2((py - 46) / 3);
 
@@ -54,7 +54,7 @@ const TRAIL_Y = r2(ridge(TRAIL.z));
 /**
  * Level ground on the ridge (MT-7): the hunting cabin's terrace above the trail, and the
  * campsite's clearing cut back into the slope, level with the trail. Each blends back into
- * the slope over `blend` metres; the trail's bench is left alone.
+ * the slope over `blend` meters; the trail's bench is left alone.
  */
 const CABIN_PAD = { x0: 73, x1: 95, z0: 6, z1: 14.6, y: 5.4, blend: 2.4 };
 const CAMP_PAD = { x0: 117, x1: 135, z0: 11, z1: 17.5, y: TRAIL_Y, blend: 3 };
@@ -115,7 +115,7 @@ function distToPolyline(line, x, z) {
   }
   return best;
 }
-/** Where the creek centre is at a z (south of the pond). */
+/** Where the creek center is at a z (south of the pond). */
 function creekX(z) {
   for (let i = 0; i + 1 < CREEK_SOUTH.length; i++) {
     const [ax, az] = CREEK_SOUTH[i];
@@ -244,12 +244,12 @@ const C = {
 };
 
 /** A box from its x and z extents, bottom and top. */
-function box(x0, z0, x1, z1, bottom, top, colour, extra = {}) {
+function box(x0, z0, x1, z1, bottom, top, color, extra = {}) {
   return {
     type: 'box',
     pos: [r2((x0 + x1) / 2), r2(bottom), r2((z0 + z1) / 2)],
     size: [r2(x1 - x0), r2(top - bottom), r2(z1 - z0)],
-    colour,
+    color,
     ...extra,
   };
 }
@@ -277,7 +277,7 @@ const LOOKOUT = { x: 30, z: 8 };
 
 // --- the middle and the ridge: scripts/silver-creek-middle.mjs (MT-7), built once every
 // helper is defined. The crossings' places are kept here for the roads and labels.
-const jamCentre = 160.5;
+const jamCenter = 160.5;
 const jamHalf = 12;
 const bridgeX = r2(creekX(118));
 const fordX = r2(creekX(136));
@@ -309,8 +309,8 @@ Object.assign(C, {
 });
 
 /** Drawn only: no collision. */
-const drawn = (x0, z0, x1, z1, bottom, top, colour, extra = {}) =>
-  box(x0, z0, x1, z1, bottom, top, colour, { collide: false, ...extra });
+const drawn = (x0, z0, x1, z1, bottom, top, color, extra = {}) =>
+  box(x0, z0, x1, z1, bottom, top, color, { collide: false, ...extra });
 /** A placed prefab; y defaults to the hall floor. */
 const prefab = (name, x, z, extra = {}, y = F) => ({
   type: 'prefab',
@@ -319,27 +319,27 @@ const prefab = (name, x, z, extra = {}, y = F) => ({
   ...extra,
 });
 /** A wall running along x at z, from x0 to x1; openings measured along +x from its middle. */
-const wallX = (id, x0, x1, z, bottom, top, colour, openings = [], thick = 0.3) => ({
+const wallX = (id, x0, x1, z, bottom, top, color, openings = [], thick = 0.3) => ({
   type: 'wall',
   id,
   pos: [r2((x0 + x1) / 2), r2(bottom), r2(z)],
   size: [r2(x1 - x0), r2(top - bottom), thick],
-  colour,
+  color,
   openings,
 });
 /** A wall running along z at x; `at` gives openings by their world z. */
-const wallZ = (id, x, z0, z1, bottom, top, colour, openings = [], thick = 0.3) => ({
+const wallZ = (id, x, z0, z1, bottom, top, color, openings = [], thick = 0.3) => ({
   type: 'wall',
   id,
   pos: [r2(x), r2(bottom), r2((z0 + z1) / 2)],
   yaw: 90,
   size: [r2(z1 - z0), r2(top - bottom), thick],
-  colour,
+  color,
   // A yaw-90 wall measures `along` along −z.
   openings: openings.map(({ at, ...o }) => ({ ...o, along: r2((z0 + z1) / 2 - at) })),
 });
 /** A shape tilted along a line from a to b ([x, y, z]); local z runs a → b. */
-function along(a, b, w, h, colour, extra = {}) {
+function along(a, b, w, h, color, extra = {}) {
   const [dx, dy, dz] = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
   const flat = Math.hypot(dx, dz);
   return {
@@ -348,7 +348,7 @@ function along(a, b, w, h, colour, extra = {}) {
     size: [w, h, r2(Math.hypot(flat, dy))],
     yaw: r2((Math.atan2(dx, dz) * 180) / Math.PI),
     pitch: r2((-Math.atan2(dy, flat) * 180) / Math.PI),
-    colour,
+    color,
     collide: false,
     ...extra,
   };
@@ -356,7 +356,7 @@ function along(a, b, w, h, colour, extra = {}) {
 
 /**
  * Live rolls along x (the saw line): a waist-high bed of rollers. One invisible box keeps
- * the greybox's collision (waist cover, 1.1 m, vaultable); the frame and rollers are drawn.
+ * the graybox's collision (waist cover, 1.1 m, vaultable); the frame and rollers are drawn.
  */
 function liveRolls(id, x0, x1, z0, z1) {
   const parts = [
@@ -373,7 +373,7 @@ function liveRolls(id, x0, x1, z0, z1) {
       height: r2(z1 - z0 - 0.12),
       sides: 6,
       pitch: 90,
-      colour: C.roller,
+      color: C.roller,
       collide: false,
     });
   }
@@ -408,7 +408,7 @@ const headrig = group('Headrig', [
     height: 0.3,
     sides: 12,
     roll: 90,
-    colour: C.rust,
+    color: C.rust,
     collide: false,
     id: `band-wheel-${k + 1}`,
   })),
@@ -440,7 +440,7 @@ const debarker = group('Debarker', [
     height: 7,
     sides: 10,
     roll: 90,
-    colour: C.rust,
+    color: C.rust,
   },
   ...[183.6, 186, 188.4].map((x, k) => ({
     type: 'cylinder',
@@ -449,7 +449,7 @@ const debarker = group('Debarker', [
     height: 0.25,
     sides: 10,
     roll: 90,
-    colour: C['steel-dark'],
+    color: C['steel-dark'],
     collide: false,
     id: `debarker-ring-${k + 1}`,
   })),
@@ -494,7 +494,7 @@ const powerUnit = group('Hydraulic power unit', [
   prefab('steel-barrel', 174.9, 75.8),
 ]);
 
-// Saw line: the greybox's three runs of live rolls, with the cut-throughs kept.
+// Saw line: the graybox's three runs of live rolls, with the cut-throughs kept.
 const sawLine = group('Saw line', [
   liveRolls('saw-line-w', 144, 158, 87.4, 88.6),
   liveRolls('saw-line-mid', 161, 172, 87.4, 88.6),
@@ -594,7 +594,7 @@ const office = group('Mill office', [
     pos: [r2((OFF.x0 + OFF.x1) / 2 - 2.4), F, r2(OFF.z0 + 0.1)],
     yaw: 0,
     size: [1.1, 2.1],
-    colour: C['timber-dark'],
+    color: C['timber-dark'],
   },
   {
     type: 'door',
@@ -602,7 +602,7 @@ const office = group('Mill office', [
     pos: [r2(OFF.x0 + 0.1), F, 97.2],
     yaw: 90,
     size: [1.1, 2.1],
-    colour: C['timber-dark'],
+    color: C['timber-dark'],
   },
   box(OFF.x0, OFF.z0, OFF.x1, OFF.z1, offTop, offTop + 0.2, C.roof, { id: 'office-roof' }),
   {
@@ -611,7 +611,7 @@ const office = group('Mill office', [
     pos: [r2(OFF.x0 - 3.3), F, r2(OFF.z1 - 1)],
     yaw: 90,
     size: [2, r2(OFF.h + 0.2), 6.6],
-    colour: C.timber,
+    color: C.timber,
   },
   // Inside: the manager's desk by the window, files, and the safe against the back wall.
   prefab('desk', 187.6, 96.4, { yaw: 180 }),
@@ -627,7 +627,7 @@ const office = group('Mill office', [
   prefab('notice-board', 188.4, 101.6, { yaw: 180 }, F),
 ]);
 
-// The hall's shell, as the greybox's, with a gabled roof drawn over it, trusses and high
+// The hall's shell, as the graybox's, with a gabled roof drawn over it, trusses and high
 // windows; and an opening high in the north wall for the jack ladder.
 const sawmill = group('Sawmill', [
   box(MILL.x0, MILL.z0, MILL.x1, MILL.z1, -0.2, MILL.floor, C['dark-concrete'], {
@@ -638,7 +638,7 @@ const sawmill = group('Sawmill', [
     id: 'mill-wall-n',
     pos: [(MILL.x0 + MILL.x1) / 2, MILL.floor, MILL.z0 + 0.15],
     size: [millW, wallH, 0.3],
-    colour: C.timber,
+    color: C.timber,
     openings: [door(-16), door(16), { along: 24.2, width: 1.4, bottom: 3, top: 4.4 }],
   },
   {
@@ -646,7 +646,7 @@ const sawmill = group('Sawmill', [
     id: 'mill-wall-s',
     pos: [(MILL.x0 + MILL.x1) / 2, MILL.floor, MILL.z1 - 0.15],
     size: [millW, wallH, 0.3],
-    colour: C.timber,
+    color: C.timber,
     openings: [door(-18), door(6)],
   },
   {
@@ -655,7 +655,7 @@ const sawmill = group('Sawmill', [
     pos: [MILL.x0 + 0.15, MILL.floor, (MILL.z0 + MILL.z1) / 2],
     yaw: 90,
     size: [millD - 0.6, wallH, 0.3],
-    colour: C.timber,
+    color: C.timber,
     openings: [door(0)],
   },
   {
@@ -664,7 +664,7 @@ const sawmill = group('Sawmill', [
     pos: [MILL.x1 - 0.15, MILL.floor, (MILL.z0 + MILL.z1) / 2],
     yaw: 90,
     size: [millD - 0.6, wallH, 0.3],
-    colour: C.timber,
+    color: C.timber,
     openings: [door(-4)],
   },
   box(
@@ -682,7 +682,7 @@ const sawmill = group('Sawmill', [
     type: 'ramp',
     pos: [166, MILL.tall + 0.3, 80.75],
     size: [53, 3.2, 14.5],
-    colour: C.roof,
+    color: C.roof,
     collide: false,
   },
   {
@@ -690,7 +690,7 @@ const sawmill = group('Sawmill', [
     pos: [166, MILL.tall + 0.3, 95.25],
     yaw: 180,
     size: [53, 3.2, 14.5],
-    colour: C.roof,
+    color: C.roof,
     collide: false,
   },
   // Trusses under the roof every 8 m, and high windows along both long walls.
@@ -739,7 +739,7 @@ function slopedLog(a, b, radius = 0.25) {
     height: r2(len),
     sides: 8,
     pitch: r2(90 - (Math.atan2(b[1] - a[1], b[2] - a[2]) * 180) / Math.PI),
-    colour: C.log,
+    color: C.log,
     collide: false,
   };
 }
@@ -785,7 +785,7 @@ const burner = group(
       radiusTop: BURN.rTop,
       height: BURN.h,
       sides: 10,
-      colour: C.burner,
+      color: C.burner,
     },
     {
       type: 'cylinder',
@@ -794,7 +794,7 @@ const burner = group(
       radius: 1.8,
       height: 1.6,
       sides: 10,
-      colour: C.rust,
+      color: C.rust,
     },
     ...[3.5, 8, 12.5].map((y) => ({
       type: 'cylinder',
@@ -803,7 +803,7 @@ const burner = group(
       radiusTop: r2(burnR(y + 0.4) + 0.06),
       height: 0.4,
       sides: 10,
-      colour: C.rust,
+      color: C.rust,
       collide: false,
     })),
     // The ash door on the south side, leaning with the cone.
@@ -812,7 +812,7 @@ const burner = group(
       pos: [BURN.x, 0, r2(BURN.z + burnR(1.1) + 0.02)],
       size: [1.8, 2.2, 0.12],
       pitch: -14.4,
-      colour: C.dark,
+      color: C.dark,
       collide: false,
     },
     box(BURN.x - 2, BURN.z + 5.4, BURN.x + 1.6, BURN.z + 7.2, -0.2, 0.45, C.ash, {
@@ -903,7 +903,7 @@ for (let k = 0; k < 6; k++) {
         yaw: 0,
         size: [1.1, 2.1],
         thickness: 0.08,
-        colour: kind === 'locked' ? C['siding-red'] : C.steel,
+        color: kind === 'locked' ? C['siding-red'] : C.steel,
         ...(kind === 'locked' ? { key: 'kiln-key' } : {}),
       });
     return nodes;
@@ -1016,7 +1016,7 @@ const tunnel = group('Mill race tunnel', [
     pos: [(shaftW.x0 + shaftW.x1) / 2, T.floor, zc],
     yaw: -90,
     size: [3, -T.floor, shaftW.x1 - shaftW.x0],
-    colour: C.concrete,
+    color: C.concrete,
   },
   {
     type: 'stairs',
@@ -1024,7 +1024,7 @@ const tunnel = group('Mill race tunnel', [
     pos: [(shaftE.x0 + shaftE.x1) / 2, T.floor, zc],
     yaw: 90,
     size: [3, -T.floor, shaftE.x1 - shaftE.x0],
-    colour: C.concrete,
+    color: C.concrete,
   },
   // The roof: ground-level fill on land, the creek bed's slab under the creek.
   box(shaftW.x1, T.z0, bankW, T.z1, T.ceiling, 0, C.dirt, { id: 'tunnel-roof-w' }),
@@ -1039,7 +1039,7 @@ const tunnel = group('Mill race tunnel', [
     pos: [hatch.x0, T.floor, zc],
     yaw: 90,
     height: -T.floor,
-    colour: C.ladder,
+    color: C.ladder,
   },
   // Rails across the shafts' deep ends (MT-3: walking off the roof dropped you 4.6 m).
   box(shaftW.x1 - 0.1, T.z0, shaftW.x1, T.z1, 0, 1, C.metal, { id: 'shaft-w-rail-e' }),
@@ -1063,7 +1063,7 @@ const tunnel = group('Mill race tunnel', [
     height: 0.08,
     sides: 8,
     roll: 90,
-    colour: C.ladder,
+    color: C.ladder,
     collide: false,
   },
   drawn(212.82, 100.92, 212.98, 101.08, 0.4, 1.45, C.metal, { id: 'headgate-stem' }),
@@ -1336,7 +1336,7 @@ function creekBodies(line, level, id, clipStart) {
       pos: [r2((ax + bx) / 2 + ux * mid), level, r2((az + bz) / 2 + uz * mid)],
       yaw: r2((Math.atan2(ux, uz) * 180) / Math.PI),
       size: [16, r2(len + before + after)],
-      colour: C.water,
+      color: C.water,
     });
   }
   return out;
@@ -1348,22 +1348,22 @@ const water = group('Water', [
     id: 'mill-pond',
     pos: [POND.x, POND_LEVEL, r2((42 + DAM_Z - 1) / 2)],
     size: [2 * POND.rx + 8, r2(DAM_Z - 1 - 42)],
-    colour: C.water,
+    color: C.water,
   },
   {
     type: 'water',
     id: 'mill-race',
     pos: [145, RACE_LEVEL, r2((DAM_Z - 1 + 74) / 2)],
     size: [4, r2(74 - DAM_Z + 1)],
-    colour: C.water,
+    color: C.water,
   },
   ...creekBodies(CREEK_SOUTH, CREEK_LEVEL, 'creek', true),
 ]);
 
 // --- roads
-const road = (id, x0, z0, x1, z1, colour = C.road) => ({
+const road = (id, x0, z0, x1, z1, color = C.road) => ({
   id,
-  ...box(x0, z0, x1, z1, 0, 0.04, colour, { collide: false }),
+  ...box(x0, z0, x1, z1, 0, 0.04, color, { collide: false }),
 });
 const roads = group('Roads', [
   road('highway-w', -MARGIN, 114.5, bridgeX - 11, 121.5),
@@ -1375,13 +1375,13 @@ const roads = group('Roads', [
   road('forecourt', 10, 121.5, 46, 134, C.road),
   {
     id: 'ridge-trail',
-    ...box(-MARGIN, 18.5, jamCentre - jamHalf, 21.5, TRAIL_Y, TRAIL_Y + 0.04, C.dirt, {
+    ...box(-MARGIN, 18.5, jamCenter - jamHalf, 21.5, TRAIL_Y, TRAIL_Y + 0.04, C.dirt, {
       collide: false,
     }),
   },
   {
     id: 'ridge-trail-e',
-    ...box(jamCentre + jamHalf, 18.5, W + MARGIN, 21.5, TRAIL_Y, TRAIL_Y + 0.04, C.dirt, {
+    ...box(jamCenter + jamHalf, 18.5, W + MARGIN, 21.5, TRAIL_Y, TRAIL_Y + 0.04, C.dirt, {
       collide: false,
     }),
   },
@@ -1466,14 +1466,14 @@ const labels = group('Map labels', [
 ]);
 
 const helpers = { box, drawn, group, prefab, along, label, C, r2, groundAt, groundRange };
-const site = { TRAIL, TRAIL_Y, DAM_Z, jamCentre, jamHalf, bridgeX, fordX, sx, sz, CABIN_PAD };
+const site = { TRAIL, TRAIL_Y, DAM_Z, jamCenter, jamHalf, bridgeX, fordX, sx, sz, CABIN_PAD };
 
 const map = {
   formatVersion: 4,
   id: 'silver-creek',
   name: 'Silver Creek',
   environment: { sky: '#a9b2b6', fogNear: 45, fogFar: 120 },
-  terrain: { origin: ORIGIN, cellSize: CELL, heights, holes, colour: '#7a7a4c' },
+  terrain: { origin: ORIGIN, cellSize: CELL, heights, holes, color: '#7a7a4c' },
   // The AI (MT-9): design/ai-scavs-pmcs-bosses.md → Silver Creek.
   hearingScale: 0.6,
   pmcs: { count: [2, 4], pmcSpawnsOnly: true },

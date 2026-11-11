@@ -1,7 +1,7 @@
 import { MOVEMENT } from '../sim/movement';
 import { DEEP_WATER, type CollisionWorld } from '../world/collision-world';
 
-/** Navigation tuning, in metres. */
+/** Navigation tuning, in meters. */
 export const NAV = {
   /** Columns are this far apart. */
   cellSize: 0.5,
@@ -10,7 +10,7 @@ export const NAV = {
    * so 1 m doorways stay open whatever the grid's alignment; bodies slide along walls.
    */
   radius: 0.2,
-  /** Neighbours this much higher or lower are linked: steps, stairs and slopes. */
+  /** Neighbors this much higher or lower are linked: steps, stairs and slopes. */
   climb: MOVEMENT.stepUp,
   /** Headroom needed: AI doesn't crouch to get somewhere. */
   height: MOVEMENT.standHeight,
@@ -23,7 +23,7 @@ export const NAV = {
   pocket: 8,
 } as const;
 
-/** Neighbour directions: the four sides (+x, +z, −x, −z), then the four diagonals. */
+/** Neighbor directions: the four sides (+x, +z, −x, −z), then the four diagonals. */
 export const DIR_Q = [1, 0, -1, 0, 1, -1, -1, 1] as const;
 export const DIR_R = [0, 1, 0, -1, 1, 1, -1, -1] as const;
 /** The two sides each diagonal passes between: a diagonal never cuts a corner. */
@@ -42,7 +42,7 @@ const NONE = 0xffffffff;
 /**
  * Where AI can walk: a grid of columns over the map, each holding a node for every
  * surface in it where a standing body fits (the ground, floors, roofs, stairs), so it has
- * several layers where floors stack. Nodes link to neighbours within a step's height, so
+ * several layers where floors stack. Nodes link to neighbors within a step's height, so
  * stairs and slopes connect floors; ladders don't (AI never climbs them).
  *
  * Built once from the collision world, like it, and never part of the sim state. It's
@@ -62,7 +62,7 @@ export class NavGrid {
   readonly nodeColumn: Uint32Array;
   /** Height of each node's surface. */
   readonly heights: Float32Array;
-  /** Bit d set: linked to the neighbour in direction d. */
+  /** Bit d set: linked to the neighbor in direction d. */
   readonly links: Uint8Array;
   /** Nodes that can reach each other share a component. Numbered from 0. */
   readonly component: Uint32Array;
@@ -220,7 +220,7 @@ export class NavGrid {
   }
 
   /** The node linked to in direction d, or -1. */
-  neighbour(node: number, d: number): number {
+  neighbor(node: number, d: number): number {
     if (!(this.links[node]! & (1 << d))) return -1;
     const c = this.nodeColumn[node]!;
     return this.nodeNear(
@@ -289,7 +289,7 @@ export class NavGrid {
   }
 
   /**
-   * Is the halfway point between two neighbours as clear as a node has to be? Two nodes can
+   * Is the halfway point between two neighbors as clear as a node has to be? Two nodes can
    * sit either side of something thinner than a cell's spare room, such as a fence: 0.5 m
    * apart, with a 4 cm bar blocking only 0.44 m of that (2026-11-05).
    */
@@ -382,7 +382,7 @@ export class NavGrid {
       while (head < tail) {
         const n = queue[head++]!;
         for (let d = 0; d < 8; d++) {
-          const m = this.neighbour(n, d);
+          const m = this.neighbor(n, d);
           if (m >= 0 && this.component[m] === NONE) {
             this.component[m] = id;
             queue[tail++] = m;

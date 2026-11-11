@@ -20,7 +20,7 @@
         "pos": [0, 0, -0.045],
         "radius": 0.011,
         "height": 0.09,
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "pitch": 90
       },
       {
@@ -28,7 +28,7 @@
         "pos": [0, 0, -0.095],
         "radius": 0.012,
         "height": 0.012,
-        "colour": "#2a2c2e",
+        "color": "#2a2c2e",
         "pitch": 90
       }
     ]

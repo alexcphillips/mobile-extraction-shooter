@@ -11,7 +11,7 @@ import {
   type LootTableDef,
 } from '@mes/shared';
 import { useMemo, useState } from 'react';
-import { colourOf } from '../ui/raid-screen';
+import { colorOf } from '../ui/raid-screen';
 
 /*
  * Sample containers rolled as a raid would roll them (2026-11-02): a mix (a table alone is
@@ -133,8 +133,8 @@ function SampleGrid({ items, grid }: { items: ItemDb; grid: Grid }) {
               top: g.y * CELL,
               width: w * CELL,
               height: h * CELL,
-              background: `${colourOf(def)}88`,
-              borderColor: colourOf(def),
+              background: `${colorOf(def)}88`,
+              borderColor: colorOf(def),
             }}
           >
             {def.name}

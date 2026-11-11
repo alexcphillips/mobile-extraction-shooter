@@ -28,7 +28,7 @@ export const startingKitSchema = z.strictObject({
       primary2: idSchema.optional(),
       sidearm: idSchema.optional(),
       helmet: idSchema.optional(),
-      bodyArmour: idSchema.optional(),
+      bodyArmor: idSchema.optional(),
       rig: idSchema.optional(),
       backpack: idSchema.optional(),
     })

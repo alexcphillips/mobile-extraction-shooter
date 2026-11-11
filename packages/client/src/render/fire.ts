@@ -40,7 +40,7 @@ const BODY_SIZE = 0.7;
 /** Flames are this wide for their height (a cell is half as wide as it is tall). */
 const WIDTH = 0.5;
 /**
- * How much a flame hides what's behind it: below 1, the rest of its colour adds to the
+ * How much a flame hides what's behind it: below 1, the rest of its color adds to the
  * scene, so it glows rather than looking pasted on, yet still reads in daylight.
  */
 const COVER = 0.7;
@@ -71,7 +71,7 @@ const CORE =
   'M32 62C38 76 44 88 43 102C42 114 38 122 32 122C26 122 21 114 21 104C21 90 27 78 32 62Z';
 const CORE_SHIFT = [0, 3, -3, 0];
 
-/** The defs every flame shares: its colours up its height, its core, and soft edges. */
+/** The defs every flame shares: its colors up its height, its core, and soft edges. */
 const FLAME_DEFS = `
     <linearGradient id="body" x1="0" y1="1" x2="0" y2="0">
       <stop offset="0" stop-color="#fff2b8"/>
@@ -144,7 +144,7 @@ function svgTexture(svg: string): THREE.Texture {
 /**
  * A basic material for camera-facing squares with two per-instance values: aFrame, which
  * cell of a sheet `cells` wide to show, and aFade, 0 to 1. A glow is drawn premultiplied
- * and only partly covering (COVER), so its colour adds to what's behind it.
+ * and only partly covering (COVER), so its color adds to what's behind it.
  */
 function spriteMaterial(map: THREE.Texture, cells: number, glow: boolean): THREE.Material {
   const m = new THREE.MeshBasicMaterial({

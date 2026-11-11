@@ -37,7 +37,7 @@
     { "weight": 1, "item": "riot-helmet", "condition": [0.7, 1] },
     { "weight": 1, "item": "steel-helmet", "condition": [0.7, 1] }
   ],
-  "bodyArmour": [
+  "bodyArmor": [
     { "weight": 1, "item": "police-vest", "condition": [0.7, 1] },
     { "weight": 1, "item": "tactical-vest", "condition": [0.7, 1] }
   ],

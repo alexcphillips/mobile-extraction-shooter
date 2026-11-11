@@ -28,14 +28,14 @@ export interface WallSettings {
   /** How many windows one click cuts, spaced evenly along the wall (2026-11-02). */
   count: number;
   /**
-   * With a count over 1, the gap between the windows, the row centred on the wall; 0 spaces
+   * With a count over 1, the gap between the windows, the row centered on the wall; 0 spaces
    * them evenly along the whole wall instead (2026-11-02).
    */
   gap: number;
   /** Cutting a window glazes it. */
   glass: boolean;
   /** The tint of glass put in. */
-  glassColour: string;
+  glassColor: string;
 }
 
 export const WALL_DEFAULTS: WallSettings = {
@@ -47,7 +47,7 @@ export const WALL_DEFAULTS: WallSettings = {
   count: 1,
   gap: 0,
   glass: true,
-  glassColour: '#a8d4e0',
+  glassColor: '#a8d4e0',
 };
 
 export const RAILING_THICKNESS = 0.1;
@@ -82,7 +82,7 @@ export function edgeRailing(
   n: Box | Sloped,
   at: readonly number[],
   height: number,
-  colour: string,
+  color: string,
 ): Box[] {
   if (n.type === 'box' && (n.pitch || n.roll)) throw new Error('a tilted box has no flat edge');
   const yaw = (n.yaw ?? 0) * DEG;
@@ -100,7 +100,7 @@ export function edgeRailing(
     n.pos[2] - x * s + z * c,
   ];
   const piece = (size: Vec3, pos: Vec3, pitch = 0): Box => {
-    const b: Box = { type: 'box', pos: [0, 0, 0], size, colour };
+    const b: Box = { type: 'box', pos: [0, 0, 0], size, color };
     if (pitch) b.pitch = pitch;
     placeNode(b, pos, n.yaw ?? 0);
     return b;
@@ -147,7 +147,7 @@ export function wallBoxes(
   corners: readonly Vec3[],
   height: number,
   thickness: number,
-  colour: string,
+  color: string,
 ): Box[] {
   const y = corners[0]?.[1] ?? 0;
   const out: Box[] = [];
@@ -157,13 +157,13 @@ export function wallBoxes(
     const length = Math.hypot(bx - ax, bz - az);
     if (length < 0.01) continue;
     // Local +x runs along the wall: (cos yaw, −sin yaw), as compile turns things.
-    // To a tenth of a degree: corners rounded to the millimetre would leave 14.99° for 15°.
+    // To a tenth of a degree: corners rounded to the millimeter would leave 14.99° for 15°.
     const yaw = Math.round((Math.atan2(-(bz - az), bx - ax) / DEG) * 10) / 10;
     const box: Box = {
       type: 'box',
       pos: [0, 0, 0],
       size: [round(length + thickness), round(height), round(thickness)],
-      colour,
+      color,
     };
     placeNode(box, [(ax + bx) / 2, y, (az + bz) / 2], yaw);
     out.push(box);
@@ -244,7 +244,7 @@ export function alongWall(b: Box, p: readonly number[]): number {
 
 /**
  * `count` openings like `o` (its along is ignored) along a wall `length` long: `gap` apart in
- * a row centred on the wall, or with no gap given (or 0), spaced evenly, the same gap between
+ * a row centered on the wall, or with no gap given (or 0), spaced evenly, the same gap between
  * each and at both ends. Throws if they don't fit (with 10 cm between, spaced evenly).
  */
 export function evenOpenings(length: number, o: Opening, count: number, gap = 0): Opening[] {
@@ -319,9 +319,9 @@ export function doorIn(b: Box, o: Opening): { pos: Vec3; yaw: number } {
 }
 
 /** A pane of glass filling a gap cut by `cutWall`. */
-export function glassIn(b: Box, o: Opening, colour: string): Glass {
+export function glassIn(b: Box, o: Opening, color: string): Glass {
   const { pos, yaw } = doorIn(b, o);
-  const glass: Glass = { type: 'glass', pos, size: [o.width, round(o.top - o.bottom)], colour };
+  const glass: Glass = { type: 'glass', pos, size: [o.width, round(o.top - o.bottom)], color };
   placeNode(glass, pos, yaw);
   return glass;
 }
@@ -332,7 +332,7 @@ export function glassIn(b: Box, o: Opening, colour: string): Glass {
  * it down to the next (a lintel), as wide as the piece. Null if it's neither, or the gap
  * has glass in it already.
  */
-export function windowAt(piece: Box, siblings: readonly MapNode[], colour: string): Glass | null {
+export function windowAt(piece: Box, siblings: readonly MapNode[], color: string): Glass | null {
   if (piece.pitch || piece.roll) return null;
   const { axis, length, dx, dz } = wallAxis(piece);
   const thick = piece.size[2 - axis]!;
@@ -374,7 +374,7 @@ export function windowAt(piece: Box, siblings: readonly MapNode[], colour: strin
   }
   const yaw = (piece.yaw ?? 0) - (axis === 2 ? 90 : 0);
   const pos: Vec3 = [piece.pos[0], round(y0), piece.pos[2]];
-  const glass: Glass = { type: 'glass', pos, size: [length, round(y1 - y0)], colour };
+  const glass: Glass = { type: 'glass', pos, size: [length, round(y1 - y0)], color };
   placeNode(glass, pos, yaw);
   return glass;
 }
@@ -394,7 +394,7 @@ export function toWall(b: Box, openings: WallGap[] = []): Wall {
     ...(b.id === undefined ? {} : { id: b.id }),
     pos: [...b.pos],
     size: [length, b.size[1], b.size[2 - axis]!],
-    colour: b.colour,
+    color: b.color,
     ...(b.collide === undefined ? {} : { collide: b.collide }),
     openings,
   };
@@ -428,7 +428,7 @@ export function openingAt(w: Wall, along: number): number {
 
 /**
  * Moves a wall's openings so the gaps between them and at the ends are all the same, or
- * with a gap given, `gap` apart in a row centred on the wall.
+ * with a gap given, `gap` apart in a row centered on the wall.
  */
 export function spaceEvenly(w: Wall, gap = 0): void {
   const sorted = [...w.openings].sort((a, b) => a.along - b.along);
@@ -482,7 +482,7 @@ export function splitWall(
       type: 'box',
       pos: wallPoint(w, along, o.top).map((v) => round(v)) as Vec3,
       size: [o.width, round(height - o.top), w.size[2]],
-      colour: w.colour,
+      color: w.color,
     };
     if (w.yaw) lintel.yaw = w.yaw;
     if (w.collide !== undefined) lintel.collide = w.collide;

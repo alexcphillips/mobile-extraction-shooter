@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "stock-cartons",
   "name": "Pallet of cartons",
-  "colours": {
+  "colors": {
     "wood": "#b08a52",
     "wood-dark": "#6f5230",
     "cardboard": "#c49a63",
@@ -15,45 +15,45 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [1.16, 0.1, 0.96],
-      "colour": "wood-dark"
+      "color": "wood-dark"
     },
     {
       "type": "box",
       "pos": [0, 0.1, 0],
       "size": [1.2, 0.044, 1.0],
-      "colour": "wood",
+      "color": "wood",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.144, 0],
       "size": [1.16, 0.4, 0.96],
-      "colour": "cardboard"
+      "color": "cardboard"
     },
     {
       "type": "box",
       "pos": [0, 0.544, 0],
       "size": [1.16, 0.4, 0.96],
-      "colour": "cardboard-dark"
+      "color": "cardboard-dark"
     },
     {
       "type": "box",
       "pos": [0, 0.944, 0],
       "size": [1.16, 0.4, 0.96],
-      "colour": "cardboard"
+      "color": "cardboard"
     },
     {
       "type": "box",
       "pos": [0, 0.144, 0],
       "size": [0.008, 1.2, 0.968],
-      "colour": "tape",
+      "color": "tape",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.3, 0.84, 0.481],
       "size": [0.2, 0.13, 0.003],
-      "colour": "label",
+      "color": "label",
       "collide": false
     }
   ]

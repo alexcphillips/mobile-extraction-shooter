@@ -3,7 +3,7 @@
   "id": "mailbox",
   "name": "Mailbox",
   "instanced": true,
-  "colours": {
+  "colors": {
     "box": "#5c6a72",
     "post": "#6e5a44",
     "flag": "#b03a2e"
@@ -13,14 +13,14 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [0.09, 1, 0.09],
-      "colour": "post",
+      "color": "post",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1, 0.05],
       "size": [0.24, 0.24, 0.46],
-      "colour": "box",
+      "color": "box",
       "collide": false,
       "bulge": [0, 0, 0, 0.06, 0, 0]
     },
@@ -28,7 +28,7 @@
       "type": "box",
       "pos": [0.135, 1.08, -0.05],
       "size": [0.02, 0.22, 0.05],
-      "colour": "flag",
+      "color": "flag",
       "collide": false
     }
   ]

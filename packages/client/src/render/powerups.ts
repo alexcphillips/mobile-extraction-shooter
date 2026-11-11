@@ -19,15 +19,15 @@ const box = (
   hx: number,
   hy: number,
   hz: number,
-  colour: number,
-): Shape => ({ kind: 'box', x, y, z, hx, hy, hz, colour, yaw: 0, pitch: 0, roll: 0 });
+  color: number,
+): Shape => ({ kind: 'box', x, y, z, hx, hy, hz, color, yaw: 0, pitch: 0, roll: 0 });
 const cyl = (
   x: number,
   y: number,
   z: number,
   radius: number,
   hy: number,
-  colour: number,
+  color: number,
   pitch = 0,
 ): Shape => ({
   kind: 'cylinder',
@@ -38,14 +38,14 @@ const cyl = (
   radiusTop: radius,
   hy,
   sides: 12,
-  colour,
+  color,
   yaw: 0,
   pitch,
   roll: 0,
 });
 
 /**
- * Each power-up's look, centred on its origin, about 0.5 m across: a skull for insta-kill,
+ * Each power-up's look, centered on its origin, about 0.5 m across: a skull for insta-kill,
  * an ammo crate for max ammo, two gold coins for double points, a hammer for carpenter, and
  * a minigun's barrels for the death machine.
  */

@@ -1,10 +1,10 @@
 import {
   RARITIES,
-  armourOf,
-  isArmouredRig,
+  armorOf,
+  isArmoredRig,
   itemDef,
-  roundCalibre,
-  calibreOf,
+  roundCaliber,
+  caliberOf,
   roundOf,
   sectionsOf,
   type AmmoDef,
@@ -31,7 +31,7 @@ import { createWeaponStats, loadedAmmo, weaponStats, type WeaponState } from './
 
 /** A gun is picked only with rounds of one kind for a full load and this many reloads. */
 export const QUICK_EQUIP_RELOADS = 3;
-/** Armour under this share of its durability ranks two levels lower. */
+/** Armor under this share of its durability ranks two levels lower. */
 const WORN_SHARE = 0.3;
 const WORN_PENALTY = 2;
 /** Bleeding: stop adding bandage meds at this many uses, or this many items. */
@@ -48,7 +48,7 @@ const STRIPPED: readonly GearSlot[] = [
   'primary2',
   'sidearm',
   'helmet',
-  'bodyArmour',
+  'bodyArmor',
   'rig',
   'backpack',
 ];
@@ -146,7 +146,7 @@ interface GunPick {
 function roundFor(p: Pool, items: ItemDb, gun: WeaponState, def: WeaponDef): GunPick | null {
   const round = roundOf(items, def.ammo);
   if (!round || round.type !== 'ammo') return null;
-  const calibre = calibreOf(items, def);
+  const caliber = caliberOf(items, def);
   const mag = weaponStats(items, gun, stats).magazine;
   const need = mag * (1 + QUICK_EQUIP_RELOADS);
   const loaded = loadedAmmo(items, gun);
@@ -156,7 +156,7 @@ function roundFor(p: Pool, items: ItemDb, gun: WeaponState, def: WeaponDef): Gun
     if (seen.has(id)) return;
     seen.add(id);
     const a = roundOf(items, id);
-    if (!a || a.type !== 'ammo' || roundCalibre(a) !== calibre) return;
+    if (!a || a.type !== 'ammo' || roundCaliber(a) !== caliber) return;
     const have = roundsIn(p, id) + (id === loaded ? gun.mag : 0);
     if (have < need) return;
     if (!top || better([a.level, a.damage], a.name, [top.level, top.damage], top.name)) top = a;
@@ -170,7 +170,7 @@ function roundFor(p: Pool, items: ItemDb, gun: WeaponState, def: WeaponDef): Gun
 function pickGun(
   p: Pool,
   items: ItemDb,
-  favourites: ReadonlySet<string>,
+  favorites: ReadonlySet<string>,
   slot: GearSlot,
   classes: (c: WeaponClass) => boolean,
 ): GunPick | null {
@@ -181,7 +181,7 @@ function pickGun(
     const r = roundFor(p, items, it as WeaponState, def);
     if (!r) return null;
     // Then the name A–Z (better); guns are all common, so rarity says nothing (2026-11-09).
-    return [r.round.level, favourites.has(def.id) ? 1 : 0];
+    return [r.round.level, favorites.has(def.id) ? 1 : 0];
   });
   // Scored again for the one picked, to get its round.
   if (gun) pick = roundFor(p, items, gun as WeaponState, itemDef(items, gun.item) as WeaponDef);
@@ -231,7 +231,7 @@ function cellsOf(def: Extract<ItemDef, { type: 'container' }>): number {
 export function quickEquip(
   profile: Profile,
   items: ItemDb,
-  favourites: ReadonlySet<string> = new Set(),
+  favorites: ReadonlySet<string> = new Set(),
   page = 0,
 ): QuickEquipResult {
   const before = JSON.stringify({ gear: profile.gear, stash: profile.stash.map((g) => g.items) });
@@ -254,30 +254,30 @@ export function quickEquip(
   emptyInto(gear.pockets);
   for (const it of [...p.loose]) if (it.grid) emptyInto(it.grid);
 
-  // Armour ranks by level (two lower when worn), then durability, then rarity. The chest's
-  // is body armour or an armoured rig, whichever is best (2026-11-11): never both.
-  const armourKey = (it: Item, def: ItemDef): readonly number[] | null => {
-    const a = armourOf(def);
+  // Armor ranks by level (two lower when worn), then durability, then rarity. The chest's
+  // is body armor or an armored rig, whichever is best (2026-11-11): never both.
+  const armorKey = (it: Item, def: ItemDef): readonly number[] | null => {
+    const a = armorOf(def);
     if (!a) return null;
     const dur = it.durability ?? a.durability;
     const worn = dur < maxDurability(items, it) * WORN_SHARE;
     return [a.level - (worn ? WORN_PENALTY : 0), dur, rarityOf(def)];
   };
   const chest = best(p, items, (it, def) =>
-    fitsSlot(items, 'bodyArmour', it) ||
-    (isArmouredRig(def) && def.type === 'container' && !def.admin)
-      ? armourKey(it, def)
+    fitsSlot(items, 'bodyArmor', it) ||
+    (isArmoredRig(def) && def.type === 'container' && !def.admin)
+      ? armorKey(it, def)
       : null,
   );
-  const armouredRig = !!chest && isArmouredRig(itemDef(items, chest.item));
+  const armoredRig = !!chest && isArmoredRig(itemDef(items, chest.item));
 
   // Rigs and backpacks first, so there's somewhere to carry the rest.
   for (const slot of ['rig', 'backpack'] as const) {
     const bag =
-      slot === 'rig' && armouredRig
+      slot === 'rig' && armoredRig
         ? chest
         : best(p, items, (it, def) =>
-            def.type === 'container' && !def.admin && !def.armour && fitsSlot(items, slot, it)
+            def.type === 'container' && !def.admin && !def.armor && fitsSlot(items, slot, it)
               ? [cellsOf(def)]
               : null,
           );
@@ -287,9 +287,9 @@ export function quickEquip(
     if (bag.grid) emptyInto(bag.grid);
     slots[slot] = bag;
   }
-  if (chest && !armouredRig) slots.bodyArmour = takeOut(p, chest);
+  if (chest && !armoredRig) slots.bodyArmor = takeOut(p, chest);
   const helmet = best(p, items, (it, def) =>
-    fitsSlot(items, 'helmet', it) ? armourKey(it, def) : null,
+    fitsSlot(items, 'helmet', it) ? armorKey(it, def) : null,
   );
   if (helmet) slots.helmet = takeOut(p, helmet);
 
@@ -298,20 +298,20 @@ export function quickEquip(
   const primary = pickGun(
     p,
     items,
-    favourites,
+    favorites,
     'primary1',
     (c) => c !== 'pistol' && c !== 'special',
   );
   if (primary) equipGun(p, items, gear, 'primary1', primary, carry);
-  const side = pickGun(p, items, favourites, 'sidearm', (c) => c === 'pistol');
+  const side = pickGun(p, items, favorites, 'sidearm', (c) => c === 'pistol');
   if (side) equipGun(p, items, gear, 'sidearm', side, carry);
   const sniper = primary && (itemDef(items, primary.gun.item) as WeaponDef).class === 'sniper';
   if (sniper) {
     const close =
-      pickGun(p, items, favourites, 'primary2', (c) => c === 'smg' || c === 'shotgun') ??
+      pickGun(p, items, favorites, 'primary2', (c) => c === 'smg' || c === 'shotgun') ??
       (side
         ? null
-        : pickGun(p, items, favourites, 'primary2', (c) => c !== 'pistol' && c !== 'special'));
+        : pickGun(p, items, favorites, 'primary2', (c) => c !== 'pistol' && c !== 'special'));
     if (close) equipGun(p, items, gear, 'primary2', close, carry);
   }
 

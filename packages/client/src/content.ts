@@ -29,8 +29,8 @@ import {
   checkQuests,
   checkVendors,
   checkProfile,
-  calibreOf,
-  roundCalibre,
+  caliberOf,
+  roundCaliber,
   roundOf,
   checkSounds,
   itemSounds,
@@ -645,7 +645,7 @@ export function loadZombies(id: string): ZombiesDef {
   for (const [gun, round] of Object.entries(def.ammo ?? {})) {
     const g = items.get(gun);
     const r = roundOf(items, round);
-    if (g?.type !== 'weapon' || !r || roundCalibre(r) !== calibreOf(items, g))
+    if (g?.type !== 'weapon' || !r || roundCaliber(r) !== caliberOf(items, g))
       throw new Error(`${file}: "${round}" is not a round "${gun}" fires`);
   }
   const minigun = items.get(def.powerups.minigun);

@@ -8,17 +8,17 @@
   "value": 120,
   "rarity": "rare",
   "stack": 30,
-  "calibre": "12g",
+  "caliber": "12g",
   "level": 3,
   "damage": 21,
-  "armourDamage": 3,
+  "armorDamage": 3,
   "bleedChance": 0.3,
   "pellets": 8,
   "pelletSpread": 2.4,
   "model": {
     "parts": [
-      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "colour": "#2f5d8a" },
-      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "colour": "#4677b3" }
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "color": "#2f5d8a" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "color": "#4677b3" }
     ]
   }
 }

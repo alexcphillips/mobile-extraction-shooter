@@ -10,7 +10,7 @@ import type { Character, SimState } from './state';
  */
 
 export const GROUND = {
-  /** How far in front of you a dropped item lands, in metres, unless a wall is closer. */
+  /** How far in front of you a dropped item lands, in meters, unless a wall is closer. */
   ahead: 0.9,
   /**
    * How far from that spot it may land, at random, so drops don't pile up exactly. At

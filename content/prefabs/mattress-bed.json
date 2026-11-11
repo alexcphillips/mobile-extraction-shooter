@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "mattress-bed",
   "name": "Floor bed",
-  "colours": {
+  "colors": {
     "mattress": "#b8ad98",
     "bag": "#3f5f7a"
   },
@@ -11,13 +11,13 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [1, 0.18, 2],
-      "colour": "mattress"
+      "color": "mattress"
     },
     {
       "type": "box",
       "pos": [0, 0.18, 0.25],
       "size": [0.9, 0.1, 1.4],
-      "colour": "bag",
+      "color": "bag",
       "collide": false
     }
   ]

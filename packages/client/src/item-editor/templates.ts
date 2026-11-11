@@ -7,7 +7,7 @@ export const ITEM_TYPES: readonly ItemType[] = [
   'weapon',
   'ammo',
   'attachment',
-  'armour',
+  'armor',
   'container',
   'med',
   'melee',
@@ -68,15 +68,15 @@ function blankStats(type: ItemType, id: string, name: string, ammo: string) {
         size: [1, 1],
         value: 30,
         stack: 60,
-        calibre: 'new',
+        caliber: 'new',
         level: 1,
         damage: 35,
-        armourDamage: 10,
+        armorDamage: 10,
         bleedChance: 0.2,
       };
     case 'attachment':
       return { ...common, type, size: [1, 1], value: 5_000, slot: 'muzzle', mods: { recoil: 0.9 } };
-    case 'armour':
+    case 'armor':
       return {
         ...common,
         type,
@@ -98,7 +98,7 @@ function blankStats(type: ItemType, id: string, name: string, ammo: string) {
         value: 500,
         damage: 40,
         level: 1,
-        armourDamage: 5,
+        armorDamage: 5,
         bleedChance: 0.3,
         swingTime: 0.5,
         reach: 1.5,
@@ -115,7 +115,7 @@ function blankStats(type: ItemType, id: string, name: string, ammo: string) {
         radius: 7,
         damage: 100,
         level: 3,
-        armourDamage: 15,
+        armorDamage: 15,
         bleedChance: 0.4,
         loudness: 1000,
       };
@@ -133,7 +133,7 @@ function blankStats(type: ItemType, id: string, name: string, ammo: string) {
 /** A new optic section, for an attachment moved to the optic slot: a red dot. */
 export const BLANK_OPTIC = {
   zoom: 1,
-  reticle: { colour: '#ff3b30', shapes: [{ type: 'dot' as const, x: 0, y: 0, r: 0.8 }] },
+  reticle: { color: '#ff3b30', shapes: [{ type: 'dot' as const, x: 0, y: 0, r: 0.8 }] },
 };
 
 /** What an item keeps when its type changes: what every type has, and its model. */

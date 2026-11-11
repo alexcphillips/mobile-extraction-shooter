@@ -19,7 +19,7 @@ const hertz = finite.refine((n) => n >= 20 && n <= 20_000, 'must be from 20 to 2
 /** A frequency that may glide: [start, end], reached after the layer's sweep. */
 const glide = z.tuple([hertz, hertz]);
 
-export const NOISE_COLOURS = ['white', 'pink', 'brown'] as const;
+export const NOISE_COLORS = ['white', 'pink', 'brown'] as const;
 export const WAVES = ['sine', 'triangle', 'square', 'saw'] as const;
 export const FILTERS = ['lowpass', 'highpass', 'bandpass'] as const;
 
@@ -27,7 +27,7 @@ const layerSchema = z.strictObject({
   /** noise: random hiss (white bright, pink softer, brown a rumble); tone: a wave. */
   source: z.enum(['noise', 'tone']),
   /** noise only. Defaults to white. */
-  colour: z.enum(NOISE_COLOURS).optional(),
+  color: z.enum(NOISE_COLORS).optional(),
   /** tone only. Defaults to sine. */
   wave: z.enum(WAVES).optional(),
   /** tone only: its pitch. */
@@ -80,8 +80,8 @@ export const soundSchema = z
         ctx.addIssue({ code: 'custom', message: 'a tone needs freq', path });
       if (l.source === 'noise' && (l.freq || l.wave))
         ctx.addIssue({ code: 'custom', message: 'noise has no freq or wave', path });
-      if (l.source === 'tone' && l.colour)
-        ctx.addIssue({ code: 'custom', message: 'a tone has no colour', path });
+      if (l.source === 'tone' && l.color)
+        ctx.addIssue({ code: 'custom', message: 'a tone has no color', path });
       if (l.attack + l.hold + l.decay === 0)
         ctx.addIssue({ code: 'custom', message: 'lasts no time: give it a hold or decay', path });
     });

@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "burn-barrel",
   "name": "Burn barrel",
-  "colours": {
+  "colors": {
     "steel": "#4a3a34",
     "char": "#1d1e21",
     "fire": "#e07b2e",
@@ -14,7 +14,7 @@
       "pos": [0, 0, 0],
       "radius": 0.32,
       "height": 0.9,
-      "colour": "steel",
+      "color": "steel",
       "sides": 8
     },
     {
@@ -22,7 +22,7 @@
       "pos": [0, 0.88, 0],
       "radius": 0.28,
       "height": 0.04,
-      "colour": "char",
+      "color": "char",
       "sides": 8,
       "collide": false
     },
@@ -31,7 +31,7 @@
       "pos": [0, 0.9, 0],
       "radius": 0.22,
       "height": 0.32,
-      "colour": "fire",
+      "color": "fire",
       "radiusTop": 0.04,
       "sides": 6,
       "collide": false
@@ -41,7 +41,7 @@
       "pos": [0.05, 0.9, 0.04],
       "radius": 0.1,
       "height": 0.2,
-      "colour": "flame",
+      "color": "flame",
       "radiusTop": 0,
       "sides": 6,
       "collide": false

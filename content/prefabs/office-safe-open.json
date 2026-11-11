@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "office-safe-open",
   "name": "Office safe, open",
-  "colours": {
+  "colors": {
     "body": "#3a3d42",
     "door": "#50545a",
     "steel": "#a9afb3",
@@ -15,28 +15,28 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [0.9, 1.15, 0.75],
-      "colour": "body",
+      "color": "body",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.08, 0.376],
       "size": [0.78, 1, 0.01],
-      "colour": "inside",
+      "color": "inside",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.6, 0.38],
       "size": [0.76, 0.03, 0.04],
-      "colour": "shelf",
+      "color": "shelf",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.42, 0.08, 0.78],
       "size": [0.03, 1, 0.78],
-      "colour": "door",
+      "color": "door",
       "collide": false
     },
     {
@@ -44,7 +44,7 @@
       "pos": [0.44, 0.6, 0.7],
       "radius": 0.1,
       "height": 0.03,
-      "colour": "steel",
+      "color": "steel",
       "pitch": 0,
       "roll": 90,
       "sides": 8,
@@ -54,14 +54,14 @@
       "type": "box",
       "pos": [-0.16, 0.63, 0.39],
       "size": [0.2, 0.1, 0.03],
-      "colour": "cash",
+      "color": "cash",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.14, 0.11, 0.39],
       "size": [0.24, 0.12, 0.03],
-      "colour": "cash",
+      "color": "cash",
       "collide": false
     }
   ]

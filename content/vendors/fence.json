@@ -4,7 +4,7 @@
   "name": "Fence",
   "blurb": "An elusive black-market intermediary. Buys and sells just about anything, no questions asked.",
   "order": 5,
-  "colour": "#8a6bb3",
+  "color": "#8a6bb3",
   "markup": 1.6,
   "rotation": {
     "shown": 8,

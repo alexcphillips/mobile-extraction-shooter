@@ -173,7 +173,7 @@
     },
     {
       "source": "noise",
-      "colour": "pink",
+      "color": "pink",
       "at": 0.5,
       "attack": 0.03,
       "hold": 0.05,

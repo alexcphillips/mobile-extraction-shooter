@@ -16,10 +16,10 @@ import type { LootMix, MapFile, MapNode, MapZone, PrefabFile } from './schema';
 /*
  * Flattens a map and the prefabs it places into plain data: the collision WorldDef for
  * the simulation, plus shapes, doors and markers in world space for the renderer and the
- * raid. Angles come out in radians and colours as 0xrrggbb numbers.
+ * raid. Angles come out in radians and colors as 0xrrggbb numbers.
  */
 
-/** A shape to draw, centred on (x, y, z), rotated yaw then pitch then roll ('YXZ'). */
+/** A shape to draw, centered on (x, y, z), rotated yaw then pitch then roll ('YXZ'). */
 interface ShapeBase {
   x: number;
   y: number;
@@ -27,7 +27,7 @@ interface ShapeBase {
   yaw: number;
   pitch: number;
   roll: number;
-  colour: number;
+  color: number;
 }
 
 export type Shape =
@@ -60,7 +60,7 @@ export type Shape =
       segments: number;
     });
 
-/** Copies of one instanced prefab with one set of colours, drawn as one instanced mesh. */
+/** Copies of one instanced prefab with one set of colors, drawn as one instanced mesh. */
 export interface InstancedGroup {
   prefab: string;
   /** In the prefab's own frame. */
@@ -72,7 +72,7 @@ export interface InstancedGroup {
 /** A door, in the same order as world.doors (the sim's door indices). */
 export interface CompiledDoor extends DoorDef {
   id: string;
-  colour: number;
+  color: number;
   /** What the use button calls it, if not a door. */
   name?: string;
   /** Drawn as these shapes, in the door's frame, instead of a door (a couch). */
@@ -116,18 +116,18 @@ export interface CompiledBarricade {
 
 /** A body of water in world space: what collides, and how it's drawn. */
 export interface CompiledWater extends WaterDef {
-  colour: number;
+  color: number;
   opacity: number;
 }
 
 /** A pane of glass, in the same order as world.glass (the sim's glass indices). */
 export interface CompiledGlass extends GlassDef {
   id: string;
-  colour: number;
+  color: number;
 }
 
 /**
- * A building's footprint (session 16), from its prefab's `building`: a rectangle centred on
+ * A building's footprint (session 16), from its prefab's `building`: a rectangle centered on
  * (x, z) and turned by yaw, with its floor at y.
  */
 export interface CompiledBuilding {
@@ -140,8 +140,8 @@ export interface CompiledBuilding {
   yaw: number;
   hx: number;
   hz: number;
-  /** The colour of its concrete base. */
-  colour: number;
+  /** The color of its concrete base. */
+  color: number;
 }
 
 type MarkerNode = Extract<
@@ -232,7 +232,7 @@ export interface CompiledMap {
   id: string;
   name: string;
   environment: { sky: number; fogNear: number; fogFar: number };
-  terrainColour: number;
+  terrainColor: number;
   /** Bodies of water, the map's own (MapFile.water) first; the same as world.water. */
   water: CompiledWater[];
   world: WorldDef;
@@ -290,11 +290,11 @@ const BLOCKER_DEPTH = 0.3;
 const CYLINDER_SIDES = 8;
 const WATER_OPACITY = 0.7;
 const PATROL_WAIT = 3;
-/** Concrete, for a base without a colour of its own. */
-const BASE_COLOUR = 0x9e9b94;
+/** Concrete, for a base without a color of its own. */
+const BASE_COLOR = 0x9e9b94;
 /** How far a base goes into the ground below the lowest point under it. */
 const BASE_BURY = 0.3;
-/** Rise per metre below which a plane counts as level. */
+/** Rise per meter below which a plane counts as level. */
 const FLAT = 1e-6;
 /** How much of a tilted wedge's up, or its slope's normal, must still point up. */
 const MIN_UP = 0.3;
@@ -422,7 +422,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     heights: heights.flat(),
     holes: holeFlags(heights[0]!.length - 1, heights.length - 1, map.terrain.holes),
   };
-  const scope = slotColours(map.colours ?? {});
+  const scope = slotColors(map.colors ?? {});
   // The map's own water covers the whole terrain.
   if (map.water) {
     const hx = (terrain.cols * terrain.cellSize) / 2;
@@ -434,7 +434,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
       hz,
       yaw: 0,
       level: map.water.level,
-      colour: hex(map.water.colour),
+      color: hex(map.water.color),
       opacity: map.water.opacity,
     });
   }
@@ -475,7 +475,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     id: map.id,
     name: map.name,
     environment: { ...map.environment, sky: hex(map.environment.sky) },
-    terrainColour: hex(map.terrain.colour),
+    terrainColor: hex(map.terrain.color),
     water: out.water!,
     world: {
       terrain,
@@ -532,13 +532,13 @@ export interface CompiledNodes {
 }
 
 /**
- * Compiles some nodes on their own, as the map editor draws them. `colours` are the
+ * Compiles some nodes on their own, as the map editor draws them. `colors` are the
  * slots of the map or prefab they're in.
  */
 export function compileNodes(
   nodes: readonly MapNode[],
   prefabs: PrefabLookup,
-  colours: Readonly<Record<string, string>> = {},
+  colors: Readonly<Record<string, string>> = {},
   source = 'editor',
 ): CompiledNodes {
   const out = {
@@ -554,25 +554,18 @@ export function compileNodes(
     buildings: [],
     water: [],
   };
-  new Compiler(source, prefabs, null).nodes(
-    nodes,
-    frame(0, 0, 0, 0),
-    slotColours(colours),
-    '',
-    [],
-    {
-      ...out,
-      ladders: null,
-      groups: null,
-      looks: null,
-      blockers: null,
-      movers: null,
-      switches: null,
-      wires: null,
-      foliage: null,
-      landmarks: null,
-    },
-  );
+  new Compiler(source, prefabs, null).nodes(nodes, frame(0, 0, 0, 0), slotColors(colors), '', [], {
+    ...out,
+    ladders: null,
+    groups: null,
+    looks: null,
+    blockers: null,
+    movers: null,
+    switches: null,
+    wires: null,
+    foliage: null,
+    landmarks: null,
+  });
   return out;
 }
 
@@ -596,7 +589,7 @@ export function concreteBase(
     yaw: b.yaw,
     pitch: 0,
     roll: 0,
-    colour: b.colour,
+    color: b.color,
     hx: b.hx,
     hy,
     hz: b.hz,
@@ -604,7 +597,7 @@ export function concreteBase(
 }
 
 /**
- * The lowest and highest ground under a footprint, sampled every half metre or less (and
+ * The lowest and highest ground under a footprint, sampled every half meter or less (and
  * on its edges), which is close enough with the base buried a little.
  */
 export function groundUnder(
@@ -676,7 +669,7 @@ class Compiler {
       }
       if ('loot' in node && node.loot) {
         const [x, y, z] = place(f, node.pos);
-        // A box or cylinder tilts on its own, about its centre: its look stays upright.
+        // A box or cylinder tilts on its own, about its center: its look stays upright.
         const shape = node.type === 'box' || node.type === 'cylinder';
         const g = inner(f, x, y, z, shape ? { yaw: node.yaw } : node);
         this.container(node.loot, id, g.yaw, boxes, markers, out);
@@ -788,7 +781,7 @@ class Compiler {
 
   /**
    * Records the two looks of the container just made from out.shapes from `first`. The
-   * searched one is the named prefab, drawn only, with the colours of any slots it shares.
+   * searched one is the named prefab, drawn only, with the colors of any slots it shares.
    */
   private searchedLook(
     name: string,
@@ -802,10 +795,10 @@ class Compiler {
     const prefab = this.prefabs.get(name);
     if (!prefab) this.fail(id, `no prefab "${name}" for its searched look`);
     if (!out.looks || !out.shapes) return;
-    const colours: Record<string, string> = {};
-    for (const slot of Object.keys(prefab.colours ?? {})) if (slot in scope) colours[slot] = slot;
+    const colors: Record<string, string> = {};
+    for (const slot of Object.keys(prefab.colors ?? {})) if (slot in scope) colors[slot] = slot;
     const searched: Shape[] = [];
-    const node = { type: 'prefab', prefab: name, pos: [0, 0, 0], colours } as const;
+    const node = { type: 'prefab', prefab: name, pos: [0, 0, 0], colors } as const;
     this.prefab(node as unknown as PrefabNode, f, scope, `${id}/searched`, stack, {
       ...DRAW_ONLY,
       shapes: searched,
@@ -817,10 +810,10 @@ class Compiler {
     throw new ContentError(this.source, `${path}: ${message}`);
   }
 
-  private colour(ref: string, scope: Scope, path: string): number {
+  private color(ref: string, scope: Scope, path: string): number {
     if (ref.startsWith('#')) return hex(ref);
     const c = scope[ref];
-    if (c === undefined) this.fail(path, `unknown colour slot "${ref}"`);
+    if (c === undefined) this.fail(path, `unknown color slot "${ref}"`);
     return c;
   }
 
@@ -875,14 +868,14 @@ class Compiler {
           : pitch || roll
             ? euler(yaw, pitch, roll)
             : null;
-        const colour = this.colour(node.colour, scope, path);
+        const color = this.color(node.color, scope, path);
         let hx: number;
         let hy: number;
         let hz: number;
         let shape: Shape;
         if (node.type === 'box') {
           [hx, hy, hz] = [node.size[0] / 2, node.size[1] / 2, node.size[2] / 2];
-          shape = { kind: 'box', x, y, z, yaw, pitch, roll, colour, hx, hy, hz };
+          shape = { kind: 'box', x, y, z, yaw, pitch, roll, color, hx, hy, hz };
           if (node.bulge?.some((b) => b > 0)) shape.bulge = node.bulge;
           if (node.top) shape.top = [node.top[0] / 2, node.top[1] / 2];
           if (node.lean?.some((d) => d !== 0)) shape.lean = node.lean;
@@ -900,14 +893,14 @@ class Compiler {
             yaw,
             pitch,
             roll,
-            colour,
+            color,
             radius,
             radiusTop,
             hy,
             sides,
           };
         }
-        // pos is the middle of the base before tilting; tilting turns it about its centre.
+        // pos is the middle of the base before tilting; tilting turns it about its center.
         [shape.x, shape.y, shape.z] = place(f, [node.pos[0], node.pos[1] + hy, node.pos[2]]);
         if (f.tilt) [shape.yaw, shape.pitch, shape.roll] = eulerOf(turn!);
         out.shapes?.push(shape);
@@ -953,7 +946,7 @@ class Compiler {
         if (typeof pieces === 'string') this.fail(path, pieces);
         if (f.tilt && node.openings.some((o) => o.glass !== undefined))
           this.cantTilt(path, 'glass');
-        const colour = this.colour(node.colour, scope, path);
+        const color = this.color(node.color, scope, path);
         const c = Math.cos(yaw);
         const s = Math.sin(yaw);
         const g = inner(f, x, y, z, node);
@@ -961,7 +954,7 @@ class Compiler {
           const mid = (p.from + p.to) / 2;
           const [hx, hy, hz] = [(p.to - p.from) / 2, (p.top - p.bottom) / 2, thick / 2];
           const at = place(g, [mid, p.bottom + hy, 0]);
-          this.box(at, g, hx, hy, hz, colour, node.collide !== false, out);
+          this.box(at, g, hx, hy, hz, color, node.collide !== false, out);
         }
         node.openings.forEach((o, k) => {
           if (o.glass === undefined) return;
@@ -974,7 +967,7 @@ class Compiler {
             width: o.width,
             height: o.top - o.bottom,
             thickness: GLASS_THICKNESS,
-            colour: this.colour(o.glass, scope, path),
+            color: this.color(o.glass, scope, path),
           });
         });
         return;
@@ -983,7 +976,7 @@ class Compiler {
       case 'ramp':
       case 'stairs': {
         const [w, h, d] = node.size;
-        const colour = this.colour(node.colour, scope, path);
+        const color = this.color(node.color, scope, path);
         if (f.tilt) {
           const g = inner(f, x, y, z, node);
           const flat: RampDef = {
@@ -1003,10 +996,10 @@ class Compiler {
           if (out.shapes) {
             const shapes =
               node.type === 'ramp'
-                ? [wedgeOf(flat, colour)]
+                ? [wedgeOf(flat, color)]
                 : [
-                    ...stairSteps(flat, node.steps ?? stepsOf(h), colour),
-                    ...(node.sides ? stairSides(flat, node.sides, colour) : []),
+                    ...stairSteps(flat, node.steps ?? stepsOf(h), color),
+                    ...(node.sides ? stairSides(flat, node.sides, color) : []),
                   ];
             out.shapes.push(...shapes.map((s) => moved(g, s)));
           }
@@ -1024,10 +1017,10 @@ class Compiler {
         };
         if (node.collide !== false) out.ramps?.push(ramp);
         if (!out.shapes) return;
-        if (node.type === 'ramp') out.shapes.push(wedgeOf(ramp, colour));
+        if (node.type === 'ramp') out.shapes.push(wedgeOf(ramp, color));
         else {
-          out.shapes.push(...stairSteps(ramp, node.steps ?? stepsOf(h), colour));
-          if (node.sides) out.shapes.push(...stairSides(ramp, node.sides, colour));
+          out.shapes.push(...stairSteps(ramp, node.steps ?? stepsOf(h), color));
+          if (node.sides) out.shapes.push(...stairSides(ramp, node.sides, color));
         }
         return;
       }
@@ -1043,7 +1036,7 @@ class Compiler {
           top: y + node.height,
         };
         out.ladders?.push(ladder);
-        out.shapes?.push(...ladderParts(ladder, this.colour(node.colour, scope, path)));
+        out.shapes?.push(...ladderParts(ladder, this.color(node.color, scope, path)));
         return;
       }
 
@@ -1065,7 +1058,7 @@ class Compiler {
           key: node.key,
           cost: node.cost,
           open: node.open ?? false,
-          colour: this.colour(node.colour, scope, path),
+          color: this.color(node.color, scope, path),
           ...(node.name !== undefined && { name: node.name }),
           ...(node.look !== undefined && {
             look: this.look(node.look, scope, path, stack),
@@ -1113,7 +1106,7 @@ class Compiler {
           width: node.size[0],
           height: node.size[1],
           thickness: node.thickness ?? GLASS_THICKNESS,
-          colour: this.colour(node.colour, scope, path),
+          color: this.color(node.color, scope, path),
         });
         return;
 
@@ -1126,7 +1119,7 @@ class Compiler {
           hz: node.size[1] / 2,
           yaw,
           level: y,
-          colour: this.colour(node.colour, scope, path),
+          color: this.color(node.color, scope, path),
           opacity: node.opacity ?? WATER_OPACITY,
         });
         return;
@@ -1175,20 +1168,20 @@ class Compiler {
     }
   }
 
-  /** A box drawn and maybe solid, centred at `at` and turned as frame g is. */
+  /** A box drawn and maybe solid, centered at `at` and turned as frame g is. */
   private box(
     at: Vec3,
     g: Frame,
     hx: number,
     hy: number,
     hz: number,
-    colour: number,
+    color: number,
     collide: boolean,
     out: Sink,
   ): void {
     const [x, y, z] = at;
     const [yaw, pitch, roll] = g.tilt ? eulerOf(g.tilt) : [g.yaw, 0, 0];
-    out.shapes?.push({ kind: 'box', x, y, z, yaw, pitch, roll, colour, hx, hy, hz });
+    out.shapes?.push({ kind: 'box', x, y, z, yaw, pitch, roll, color, hx, hy, hz });
     if (!collide) return;
     out.boxes?.push(
       g.tilt ? tiltedBox(at, g.tilt, yaw, hx, hy, hz) : plainBox(at, hx, hy, hz, yaw),
@@ -1206,10 +1199,10 @@ class Compiler {
   ): void {
     const [width, height] = node.size;
     const thick = (node.thickness ?? DOOR_THICKNESS) / 2;
-    const colour = this.colour(node.colour, scope, path);
+    const color = this.color(node.color, scope, path);
     const at = place(g, [0, height / 2, 0]);
     if (node.look === undefined) {
-      this.box(at, g, width / 2, height / 2, thick, colour, true, out);
+      this.box(at, g, width / 2, height / 2, thick, color, true, out);
       return;
     }
     out.boxes?.push(tiltedBox(at, g.tilt!, g.yaw, width / 2, height / 2, thick));
@@ -1265,10 +1258,10 @@ class Compiler {
         path,
         `prefab "${prefab.id}" contains itself (${[...stack, prefab.id].join(' > ')})`,
       );
-    const scope: Record<string, number> = slotColours(prefab.colours ?? {});
-    for (const [slot, ref] of Object.entries(node.colours ?? {})) {
-      if (!(slot in scope)) this.fail(path, `prefab "${prefab.id}" has no colour slot "${slot}"`);
-      scope[slot] = this.colour(ref, parentScope, path);
+    const scope: Record<string, number> = slotColors(prefab.colors ?? {});
+    for (const [slot, ref] of Object.entries(node.colors ?? {})) {
+      if (!(slot in scope)) this.fail(path, `prefab "${prefab.id}" has no color slot "${slot}"`);
+      scope[slot] = this.color(ref, parentScope, path);
     }
     const inner = [...stack, prefab.id];
     if (prefab.landmark && out.landmarks) {
@@ -1278,7 +1271,7 @@ class Compiler {
 
     if (prefab.building) {
       if (f.tilt) this.cantTilt(path, 'buildings');
-      const [cx, cz] = prefab.building.centre ?? [0, 0];
+      const [cx, cz] = prefab.building.center ?? [0, 0];
       const [x, y, z] = place(f, [cx, 0, cz]);
       const b: CompiledBuilding = {
         id: path,
@@ -1289,10 +1282,10 @@ class Compiler {
         yaw: f.yaw,
         hx: prefab.building.size[0] / 2,
         hz: prefab.building.size[1] / 2,
-        colour:
-          prefab.building.colour === undefined
-            ? BASE_COLOUR
-            : this.colour(prefab.building.colour, scope, path),
+        color:
+          prefab.building.color === undefined
+            ? BASE_COLOR
+            : this.color(prefab.building.color, scope, path),
       };
       out.buildings?.push(b);
       const base = this.terrain && concreteBase(this.terrain, b);
@@ -1314,7 +1307,7 @@ class Compiler {
       return;
     }
     // Instanced: collision, doors and markers go into the map as usual, but the shapes
-    // are built once per colour set in the prefab's own frame.
+    // are built once per color set in the prefab's own frame.
     this.nodes(prefab.nodes, f, scope, path, inner, { ...out, shapes: null });
     const key = `${prefab.id} ${Object.keys(scope)
       .sort()
@@ -1397,13 +1390,13 @@ function moved(g: Frame, s: Shape): Shape {
   return { ...s, x, y, z, yaw, pitch, roll };
 }
 
-function hex(colour: string): number {
-  return parseInt(colour.slice(1), 16);
+function hex(color: string): number {
+  return parseInt(color.slice(1), 16);
 }
 
-function slotColours(slots: Readonly<Record<string, string>>): Record<string, number> {
+function slotColors(slots: Readonly<Record<string, string>>): Record<string, number> {
   const out: Record<string, number> = {};
-  for (const [slot, colour] of Object.entries(slots)) out[slot] = hex(colour);
+  for (const [slot, color] of Object.entries(slots)) out[slot] = hex(color);
   return out;
 }
 
@@ -1471,13 +1464,13 @@ function footprintAxes(yaw: number): [Vec3, Vec3] {
   ];
 }
 
-/** A plane's rise per metre along directions e and g, from its normal. */
+/** A plane's rise per meter along directions e and g, from its normal. */
 function rise(n: Vec3, e: Vec3, g: Vec3): [number, number] {
   return [-dot(n, e) / n[1], -dot(n, g) / n[1]];
 }
 
 /**
- * The solid of a box turned by r, centred at `at`: a slab (BoxSlope) over a rectangle at
+ * The solid of a box turned by r, centered at `at`: a slab (BoxSlope) over a rectangle at
  * `yaw`. Its top and underside are the pair of faces with the most floor under them, so a
  * thin board is its broad faces however steep it stands. Upright ends rather than leaning
  * ones are the only difference from the real box, and the slab is cut to the box's bounds.
@@ -1513,7 +1506,7 @@ function tiltedBox(at: Vec3, r: Mat3, yaw: number, hx: number, hy: number, hz: n
 }
 
 /**
- * The solid of a wedge turned by r, centred at `at`, sloped on top as a ramp is. Stood too
+ * The solid of a wedge turned by r, centered at `at`, sloped on top as a ramp is. Stood too
  * steeply for its faces to be a top and underside, it's the solid of its box.
  */
 function tiltedWedge(at: Vec3, r: Mat3, yaw: number, hx: number, hy: number, hz: number): BoxDef {
@@ -1524,7 +1517,7 @@ function tiltedWedge(at: Vec3, r: Mat3, yaw: number, hx: number, hy: number, hz:
   const [e, g] = footprintAxes(yaw);
   const [topX, topZ] = rise(top, e, g);
   const [underX, underZ] = rise(up, e, g);
-  // The base's plane goes through its middle, hy down the wedge's own up from the centre.
+  // The base's plane goes through its middle, hy down the wedge's own up from the center.
   const base: Vec3 = [-up[0] * hy, -up[1] * hy, -up[2] * hy];
   const under = at[1] + base[1] - underX * dot(base, e) - underZ * dot(base, g);
   box.slope = { top: at[1], topX, topZ, under, underX, underZ };
@@ -1536,14 +1529,14 @@ function stepsOf(height: number): number {
 }
 
 /** A ramp drawn as a wedge. */
-function wedgeOf(ramp: RampDef, colour: number): Shape {
+function wedgeOf(ramp: RampDef, color: number): Shape {
   const hy = (ramp.high - ramp.bottom) / 2;
   const { x, z, yaw, hx, hz } = ramp;
-  return { kind: 'wedge', x, y: ramp.bottom + hy, z, yaw, pitch: 0, roll: 0, colour, hx, hy, hz };
+  return { kind: 'wedge', x, y: ramp.bottom + hy, z, yaw, pitch: 0, roll: 0, color, hx, hy, hz };
 }
 
 /** Steps drawn over a ramp: each step's top is at the ramp's height halfway along it. */
-function stairSteps(ramp: RampDef, n: number, colour: number): Shape[] {
+function stairSteps(ramp: RampDef, n: number, color: number): Shape[] {
   const depth = (2 * ramp.hz) / n;
   const c = Math.cos(ramp.yaw);
   const s = Math.sin(ramp.yaw);
@@ -1558,7 +1551,7 @@ function stairSteps(ramp: RampDef, n: number, colour: number): Shape[] {
       yaw: ramp.yaw,
       pitch: 0,
       roll: 0,
-      colour,
+      color,
       hx: ramp.hx,
       hy: (top - ramp.bottom) / 2,
       hz: depth / 2,
@@ -1570,14 +1563,14 @@ function stairSteps(ramp: RampDef, n: number, colour: number): Shape[] {
  * A stairs' side walls: each a box `height` tall from the bottom with a wedge on top rising
  * as the steps do, so its top is one straight slope `height` above them.
  */
-function stairSides(ramp: RampDef, height: number, colour: number): Shape[] {
+function stairSides(ramp: RampDef, height: number, color: number): Shape[] {
   const c = Math.cos(ramp.yaw);
   const s = Math.sin(ramp.yaw);
   const rise = (ramp.high - ramp.low) / 2;
   return [-1, 1].flatMap((side): Shape[] => {
     const lx = side * (ramp.hx - STAIR_SIDE / 2);
     const at = { x: ramp.x + lx * c, z: ramp.z - lx * s, yaw: ramp.yaw, pitch: 0, roll: 0 };
-    const size = { colour, hx: STAIR_SIDE / 2, hz: ramp.hz };
+    const size = { color, hx: STAIR_SIDE / 2, hz: ramp.hz };
     return [
       { kind: 'box', ...at, ...size, y: ramp.low + height / 2, hy: height / 2 },
       { kind: 'wedge', ...at, ...size, y: ramp.low + height + rise, hy: rise },
@@ -1586,7 +1579,7 @@ function stairSides(ramp: RampDef, height: number, colour: number): Shape[] {
 }
 
 /** Two rails and rungs every 0.3 m, just in front of the wall. */
-function ladderParts(l: LadderDef, colour: number): Shape[] {
+function ladderParts(l: LadderDef, color: number): Shape[] {
   const nx = Math.sin(l.yaw);
   const nz = Math.cos(l.yaw);
   const height = l.top - l.bottom;
@@ -1598,7 +1591,7 @@ function ladderParts(l: LadderDef, colour: number): Shape[] {
     yaw: l.yaw,
     pitch: 0,
     roll: 0,
-    colour,
+    color,
     hx,
     hy,
     hz: 0.03,

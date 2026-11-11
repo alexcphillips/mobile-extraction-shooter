@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "fitting-rooms",
   "name": "Fitting rooms",
-  "colours": {
+  "colors": {
     "wall": "#e9e6df",
     "trim": "#3d4148",
     "curtain": "#8a3f5f",
@@ -13,97 +13,97 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [3.6, 2.2, 1.5],
-      "colour": "wall"
+      "color": "wall"
     },
     {
       "type": "box",
       "pos": [0, 2.2, 0],
       "size": [3.64, 0.08, 1.54],
-      "colour": "trim",
+      "color": "trim",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.2, 0.15, 0.755],
       "size": [1.04, 1.95, 0.02],
-      "colour": "curtain",
+      "color": "curtain",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.5, 0.15, 0.768],
       "size": [0.06, 1.95, 0.012],
-      "colour": "fold",
+      "color": "fold",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.95, 0.15, 0.768],
       "size": [0.06, 1.95, 0.012],
-      "colour": "fold",
+      "color": "fold",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.2, 2.1, 0.77],
       "size": [1.1, 0.03, 0.03],
-      "colour": "trim",
+      "color": "trim",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.15, 0.755],
       "size": [1.04, 1.95, 0.02],
-      "colour": "curtain",
+      "color": "curtain",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.3, 0.15, 0.768],
       "size": [0.06, 1.95, 0.012],
-      "colour": "fold",
+      "color": "fold",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.25, 0.15, 0.768],
       "size": [0.06, 1.95, 0.012],
-      "colour": "fold",
+      "color": "fold",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 2.1, 0.77],
       "size": [1.1, 0.03, 0.03],
-      "colour": "trim",
+      "color": "trim",
       "collide": false
     },
     {
       "type": "box",
       "pos": [1.2, 0.15, 0.755],
       "size": [1.04, 1.95, 0.02],
-      "colour": "curtain",
+      "color": "curtain",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.8999999999999999, 0.15, 0.768],
       "size": [0.06, 1.95, 0.012],
-      "colour": "fold",
+      "color": "fold",
       "collide": false
     },
     {
       "type": "box",
       "pos": [1.45, 0.15, 0.768],
       "size": [0.06, 1.95, 0.012],
-      "colour": "fold",
+      "color": "fold",
       "collide": false
     },
     {
       "type": "box",
       "pos": [1.2, 2.1, 0.77],
       "size": [1.1, 0.03, 0.03],
-      "colour": "trim",
+      "color": "trim",
       "collide": false
     }
   ]

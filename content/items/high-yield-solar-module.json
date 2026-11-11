@@ -12,7 +12,7 @@
         "type": "box",
         "pos": [0, 0.015, -0.153],
         "size": [0.48, 0.03, 0.014],
-        "colour": "#b8bbbe",
+        "color": "#b8bbbe",
         "name": "rail back",
         "group": "frame"
       },
@@ -20,7 +20,7 @@
         "type": "box",
         "pos": [-0.233, 0.015, 0],
         "size": [0.014, 0.029, 0.292],
-        "colour": "#a3a6a9",
+        "color": "#a3a6a9",
         "name": "rail left",
         "group": "frame"
       },
@@ -28,7 +28,7 @@
         "type": "box",
         "pos": [0, 0.015, 0.153],
         "size": [0.48, 0.03, 0.014],
-        "colour": "#b8bbbe",
+        "color": "#b8bbbe",
         "name": "rail front",
         "group": "frame"
       },
@@ -36,7 +36,7 @@
         "type": "box",
         "pos": [0.233, 0.015, 0],
         "size": [0.014, 0.029, 0.292],
-        "colour": "#a3a6a9",
+        "color": "#a3a6a9",
         "name": "rail right",
         "group": "frame"
       },
@@ -44,7 +44,7 @@
         "type": "box",
         "pos": [0, 0.02, 0],
         "size": [0.454, 0.008, 0.294],
-        "colour": "#e6e0d3",
+        "color": "#e6e0d3",
         "name": "backsheet",
         "group": "cells"
       },
@@ -52,7 +52,7 @@
         "type": "box",
         "pos": [0, 0.0245, -0.105],
         "size": [0.436, 0.003, 0.066],
-        "colour": "#18233d",
+        "color": "#18233d",
         "name": "cell row 1",
         "group": "cells"
       },
@@ -60,7 +60,7 @@
         "type": "box",
         "pos": [0, 0.0255, -0.1215],
         "size": [0.434, 0.002, 0.002],
-        "colour": "#8a96aa",
+        "color": "#8a96aa",
         "name": "busbar 1a",
         "group": "busbars"
       },
@@ -68,7 +68,7 @@
         "type": "box",
         "pos": [0, 0.0255, -0.0885],
         "size": [0.434, 0.002, 0.002],
-        "colour": "#8a96aa",
+        "color": "#8a96aa",
         "name": "busbar 1b",
         "group": "busbars"
       },
@@ -76,7 +76,7 @@
         "type": "box",
         "pos": [0, 0.0245, -0.035],
         "size": [0.436, 0.003, 0.066],
-        "colour": "#1e2c4c",
+        "color": "#1e2c4c",
         "name": "cell row 2",
         "group": "cells"
       },
@@ -84,7 +84,7 @@
         "type": "box",
         "pos": [0, 0.0255, -0.0515],
         "size": [0.434, 0.002, 0.002],
-        "colour": "#8a96aa",
+        "color": "#8a96aa",
         "name": "busbar 2a",
         "group": "busbars"
       },
@@ -92,7 +92,7 @@
         "type": "box",
         "pos": [0, 0.0255, -0.0185],
         "size": [0.434, 0.002, 0.002],
-        "colour": "#8a96aa",
+        "color": "#8a96aa",
         "name": "busbar 2b",
         "group": "busbars"
       },
@@ -100,7 +100,7 @@
         "type": "box",
         "pos": [0, 0.0245, 0.035],
         "size": [0.436, 0.003, 0.066],
-        "colour": "#18233d",
+        "color": "#18233d",
         "name": "cell row 3",
         "group": "cells"
       },
@@ -108,7 +108,7 @@
         "type": "box",
         "pos": [0, 0.0255, 0.0185],
         "size": [0.434, 0.002, 0.002],
-        "colour": "#8a96aa",
+        "color": "#8a96aa",
         "name": "busbar 3a",
         "group": "busbars"
       },
@@ -116,7 +116,7 @@
         "type": "box",
         "pos": [0, 0.0255, 0.0515],
         "size": [0.434, 0.002, 0.002],
-        "colour": "#8a96aa",
+        "color": "#8a96aa",
         "name": "busbar 3b",
         "group": "busbars"
       },
@@ -124,7 +124,7 @@
         "type": "box",
         "pos": [0, 0.0245, 0.105],
         "size": [0.436, 0.003, 0.066],
-        "colour": "#1e2c4c",
+        "color": "#1e2c4c",
         "name": "cell row 4",
         "group": "cells"
       },
@@ -132,7 +132,7 @@
         "type": "box",
         "pos": [0, 0.0255, 0.0885],
         "size": [0.434, 0.002, 0.002],
-        "colour": "#8a96aa",
+        "color": "#8a96aa",
         "name": "busbar 4a",
         "group": "busbars"
       },
@@ -140,7 +140,7 @@
         "type": "box",
         "pos": [0, 0.0255, 0.1215],
         "size": [0.434, 0.002, 0.002],
-        "colour": "#8a96aa",
+        "color": "#8a96aa",
         "name": "busbar 4b",
         "group": "busbars"
       },
@@ -148,7 +148,7 @@
         "type": "box",
         "pos": [-0.1467, 0.0252, 0],
         "size": [0.004, 0.0045, 0.274],
-        "colour": "#e6e0d3",
+        "color": "#e6e0d3",
         "name": "divider 1",
         "group": "cells"
       },
@@ -156,7 +156,7 @@
         "type": "box",
         "pos": [-0.0733, 0.0252, 0],
         "size": [0.004, 0.0045, 0.274],
-        "colour": "#e6e0d3",
+        "color": "#e6e0d3",
         "name": "divider 2",
         "group": "cells"
       },
@@ -164,7 +164,7 @@
         "type": "box",
         "pos": [0, 0.0252, 0],
         "size": [0.004, 0.0045, 0.274],
-        "colour": "#e6e0d3",
+        "color": "#e6e0d3",
         "name": "divider 3",
         "group": "cells"
       },
@@ -172,7 +172,7 @@
         "type": "box",
         "pos": [0.0733, 0.0252, 0],
         "size": [0.004, 0.0045, 0.274],
-        "colour": "#e6e0d3",
+        "color": "#e6e0d3",
         "name": "divider 4",
         "group": "cells"
       },
@@ -180,7 +180,7 @@
         "type": "box",
         "pos": [0.1467, 0.0252, 0],
         "size": [0.004, 0.0045, 0.274],
-        "colour": "#e6e0d3",
+        "color": "#e6e0d3",
         "name": "divider 5",
         "group": "cells"
       },
@@ -188,7 +188,7 @@
         "type": "box",
         "pos": [-0.17, 0.0305, 0.153],
         "size": [0.06, 0.002, 0.008],
-        "colour": "#5c9a4a",
+        "color": "#5c9a4a",
         "name": "badge",
         "group": "frame"
       },
@@ -196,7 +196,7 @@
         "type": "box",
         "pos": [0.13, 0.009, -0.085],
         "size": [0.07, 0.016, 0.05],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "name": "junction box",
         "group": "leads"
       },
@@ -208,7 +208,7 @@
         "sides": 5,
         "pitch": 91.8,
         "yaw": 92,
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "name": "lead + 1",
         "group": "leads"
       },
@@ -220,7 +220,7 @@
         "sides": 5,
         "pitch": 90,
         "yaw": 18.4,
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "name": "lead + 2",
         "group": "leads"
       },
@@ -228,7 +228,7 @@
         "type": "box",
         "pos": [0.3201, 0.006, -0.0148],
         "size": [0.011, 0.011, 0.036],
-        "colour": "#3a3d40",
+        "color": "#3a3d40",
         "yaw": 18.4,
         "name": "mc4 +",
         "group": "leads"
@@ -237,7 +237,7 @@
         "type": "box",
         "pos": [0.322, 0.006, -0.0091],
         "size": [0.0125, 0.0125, 0.005],
-        "colour": "#c0392b",
+        "color": "#c0392b",
         "yaw": 18.4,
         "name": "mc4 + tag",
         "group": "leads"
@@ -250,7 +250,7 @@
         "sides": 5,
         "pitch": 92.3,
         "yaw": 84.9,
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "name": "lead - 1",
         "group": "leads"
       },
@@ -262,7 +262,7 @@
         "sides": 5,
         "pitch": 90,
         "yaw": 6.3,
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "name": "lead - 2",
         "group": "leads"
       },
@@ -270,7 +270,7 @@
         "type": "box",
         "pos": [0.2738, 0.006, 0.0459],
         "size": [0.011, 0.011, 0.036],
-        "colour": "#3a3d40",
+        "color": "#3a3d40",
         "yaw": 6.3,
         "name": "mc4 -",
         "group": "leads"

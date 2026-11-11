@@ -4,7 +4,7 @@
   "name": "Kovacs",
   "blurb": "A former military armorer turned weapons dealer. Specializes in firearms and ammunition.",
   "order": 1,
-  "colour": "#c98a2e",
+  "color": "#c98a2e",
   "levels": [
     {
       "rep": 0.2,

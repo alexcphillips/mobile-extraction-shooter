@@ -1,14 +1,14 @@
 import { TOTAL_HP, totalHp, type Character } from '@mes/shared';
 import * as THREE from 'three';
 
-/** How high over an enemy's head its bar floats, in metres. */
+/** How high over an enemy's head its bar floats, in meters. */
 const LIFT = 0.35;
-/** Bars beyond this far away aren't shown, in metres. */
+/** Bars beyond this far away aren't shown, in meters. */
 const RANGE = 120;
 
 /**
  * The enemy health bars admin cheat (2026-10-30): a bar over each living enemy on screen,
- * seen through walls, filled by its total HP and labelled with it, e.g. "185/370". One
+ * seen through walls, filled by its total HP and labeled with it, e.g. "185/370". One
  * element per enemy, made as it's added; each frame only moves a bar when it has moved a
  * whole pixel, and only changes the fill and label when the whole HP does.
  */

@@ -4,7 +4,7 @@
   "name": "Parker",
   "blurb": "A skilled weapons technician dealing in firearm modifications, attachments, and components.",
   "order": 2,
-  "colour": "#6f8fb3",
+  "color": "#6f8fb3",
   "levels": [
     {
       "rep": 0.2,

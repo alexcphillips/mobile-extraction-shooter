@@ -17,7 +17,7 @@ import { createWeapon } from './sim/weapons';
 import { createState, type Character, type SimState } from './sim/state';
 import { createHealth } from './sim/health';
 import { MOVEMENT } from './sim/movement';
-import { kitUsedUp, repairArmour } from './sim/repair';
+import { kitUsedUp, repairArmor } from './sim/repair';
 
 /*
  * The stash screen between raids (session 13). The profile is wrapped in a tiny raid
@@ -179,16 +179,16 @@ export function addToStash(
 }
 
 /**
- * A repair between raids: at once, with a kit and armour anywhere in the gear or stash.
+ * A repair between raids: at once, with a kit and armor anywhere in the gear or stash.
  * A kit with no points left is removed. The infinite consumables cheat (on s.player)
  * gives the points back.
  */
-function repairNow(s: StashState, items: ItemDb, kitRef: ItemRef, armourRef: ItemRef): boolean {
+function repairNow(s: StashState, items: ItemDb, kitRef: ItemRef, armorRef: ItemRef): boolean {
   const kit = itemAt(s, kitRef);
-  const armour = itemAt(s, armourRef);
-  if (!kit || !armour || kit.item !== kitRef.item || armour.item !== armourRef.item) return false;
+  const armor = itemAt(s, armorRef);
+  if (!kit || !armor || kit.item !== kitRef.item || armor.item !== armorRef.item) return false;
   const points = kit.left ?? 0;
-  if (repairArmour(items, kit, armour) <= 0) return false;
+  if (repairArmor(items, kit, armor) <= 0) return false;
   if (s.player.admin?.infiniteConsumables) kit.left = points;
   else if (kitUsedUp(kit) && 'index' in kitRef) {
     const grid = stashGridOf(s.profile, kitRef);
@@ -199,7 +199,7 @@ function repairNow(s: StashState, items: ItemDb, kitRef: ItemRef, armourRef: Ite
 
 /** Applies the action; a double-tap into a page without room for all of it tries the others. */
 function apply(s: StashState, items: ItemDb, action: InventoryAction): boolean {
-  if (action.type === 'repair') return repairNow(s, items, action.kit, action.armour);
+  if (action.type === 'repair') return repairNow(s, items, action.kit, action.armor);
   if (action.type === 'load') return loadGun(s.sim, s.player, items, action.gun, action.from, true);
   // Into a stored bag: that one only.
   const page = action.type === 'quick' && !action.inside ? stashPageOf(action.to) : -1;

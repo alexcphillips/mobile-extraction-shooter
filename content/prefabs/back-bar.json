@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "back-bar",
   "name": "Back bar",
-  "colours": {
+  "colors": {
     "body": "#32201a",
     "bottle-a": "#3f7d4a",
     "bottle-b": "#a8783a",
@@ -14,34 +14,34 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [4, 2.3, 0.4],
-      "colour": "body"
+      "color": "body"
     },
     {
       "type": "box",
       "pos": [0, 1.05, 0.24],
       "size": [3.8, 0.04, 0.1],
-      "colour": "glow",
+      "color": "glow",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.14, 0.21],
       "size": [3.7, 0.34, 0.08],
-      "colour": "bottle-a",
+      "color": "bottle-a",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.56, 0.21],
       "size": [3.7, 0.34, 0.08],
-      "colour": "bottle-b",
+      "color": "bottle-b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.96, 0.23],
       "size": [3.7, 0.34, 0.08],
-      "colour": "bottle-c",
+      "color": "bottle-c",
       "collide": false
     }
   ]

@@ -14,7 +14,7 @@
     }
   ],
   "helmets": [{ "weight": 1, "item": "jug-mask" }],
-  "bodyArmour": [{ "weight": 1, "item": "jug-armour" }],
+  "bodyArmor": [{ "weight": 1, "item": "jug-armor" }],
   "rigs": [{ "weight": 1, "item": "chest-rig" }],
   "backpacks": [{ "weight": 1, "item": null }],
   "grenades": [{ "weight": 1, "item": "smoke-grenade", "count": [2, 2] }],

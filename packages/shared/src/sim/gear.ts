@@ -1,4 +1,4 @@
-import { isArmouredRig, itemDef, type ItemDb } from '../content/items';
+import { isArmoredRig, itemDef, type ItemDb } from '../content/items';
 import {
   addItem,
   countOf,
@@ -8,7 +8,7 @@ import {
   type Item,
   type Section,
 } from '../inventory/grid';
-import type { ArmourState } from './health';
+import type { ArmorState } from './health';
 import type { Character } from './state';
 import type { WeaponState } from './weapons';
 
@@ -57,7 +57,7 @@ export const GEAR_SLOTS = [
   'sidearm',
   'knife',
   'helmet',
-  'bodyArmour',
+  'bodyArmor',
   'rig',
   'backpack',
 ] as const;
@@ -68,7 +68,7 @@ export type Hand = 'primary1' | 'primary2' | 'sidearm' | 'knife';
 
 /**
  * What a character carries. Plain JSON-safe data. Two primary guns (any gun), a sidearm
- * (pistols only), the knife, armour, a rig and a backpack, each holding one item or null;
+ * (pistols only), the knife, armor, a rig and a backpack, each holding one item or null;
  * pockets always; and, for players, the vault.
  */
 export interface Gear {
@@ -78,8 +78,8 @@ export interface Gear {
   knife: Item | null;
   /** What's in its hands. A gun slot that's empty means empty hands. */
   hand: Hand;
-  helmet: ArmourState | null;
-  bodyArmour: ArmourState | null;
+  helmet: ArmorState | null;
+  bodyArmor: ArmorState | null;
   rig: ContainerState | null;
   backpack: ContainerState | null;
   pockets: Grid;
@@ -95,7 +95,7 @@ export function createGear(vault: boolean): Gear {
     knife: null,
     hand: 'primary1',
     helmet: null,
-    bodyArmour: null,
+    bodyArmor: null,
     rig: null,
     backpack: null,
     pockets: createPockets(),
@@ -122,9 +122,9 @@ export function fitsSlot(items: ItemDb, slot: GearSlot, item: Item): boolean {
     case 'knife':
       return def.type === 'melee';
     case 'helmet':
-      return def.type === 'armour' && def.slot === 'helmet';
-    case 'bodyArmour':
-      return def.type === 'armour' && def.slot === 'body';
+      return def.type === 'armor' && def.slot === 'helmet';
+    case 'bodyArmor':
+      return def.type === 'armor' && def.slot === 'body';
     case 'rig':
     case 'backpack':
       return def.type === 'container' && def.slot === slot;
@@ -132,32 +132,32 @@ export function fitsSlot(items: ItemDb, slot: GearSlot, item: Item): boolean {
 }
 
 /**
- * What covers the chest (2026-11-11): body armour, or else an armoured rig, which can't be
+ * What covers the chest (2026-11-11): body armor, or else an armored rig, which can't be
  * worn with it (gearConflict). Null with neither.
  */
-export function chestArmour(items: ItemDb, gear: Gear): ArmourState | null {
-  if (gear.bodyArmour) return gear.bodyArmour;
+export function chestArmor(items: ItemDb, gear: Gear): ArmorState | null {
+  if (gear.bodyArmor) return gear.bodyArmor;
   const rig = gear.rig;
-  return rig && isArmouredRig(itemDef(items, rig.item)) ? (rig as ArmourState) : null;
+  return rig && isArmoredRig(itemDef(items, rig.item)) ? (rig as ArmorState) : null;
 }
 
-/** Why the body armour slot is shut while an armoured rig is worn (gearConflict). */
-export const ARMOURED_RIG_WORN = 'Your rig is armoured: take it off to wear body armour';
-/** Why an armoured rig can't go on over body armour (gearConflict). */
-export const BODY_ARMOUR_WORN = 'Take off your body armour first: this rig is armoured';
+/** Why the body armor slot is shut while an armored rig is worn (gearConflict). */
+export const ARMORED_RIG_WORN = 'Your rig is armored: take it off to wear body armor';
+/** Why an armored rig can't go on over body armor (gearConflict). */
+export const BODY_ARMOR_WORN = 'Take off your body armor first: this rig is armored';
 
 /**
  * Why an item can't go in a slot it fits, given what else is worn (2026-11-11, the user's
- * call): body armour and an armoured rig never go together, and nothing is moved to make
+ * call): body armor and an armored rig never go together, and nothing is moved to make
  * room. Null if it can.
  */
 export function gearConflict(items: ItemDb, gear: Gear, slot: GearSlot, item: Item): string | null {
   const def = itemDef(items, item.item);
-  if (slot === 'bodyArmour' && def.type === 'armour') {
+  if (slot === 'bodyArmor' && def.type === 'armor') {
     const rig = gear.rig;
-    if (rig && isArmouredRig(itemDef(items, rig.item))) return ARMOURED_RIG_WORN;
+    if (rig && isArmoredRig(itemDef(items, rig.item))) return ARMORED_RIG_WORN;
   }
-  if (slot === 'rig' && isArmouredRig(def) && gear.bodyArmour) return BODY_ARMOUR_WORN;
+  if (slot === 'rig' && isArmoredRig(def) && gear.bodyArmor) return BODY_ARMOR_WORN;
   return null;
 }
 

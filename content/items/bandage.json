@@ -22,7 +22,7 @@
         "radius": 0.03,
         "height": 0.095,
         "sides": 10,
-        "colour": "#f1efe8",
+        "color": "#f1efe8",
         "name": "gauze roll",
         "group": "roll"
       },
@@ -33,7 +33,7 @@
         "radius": 0.02,
         "height": 0.097,
         "sides": 10,
-        "colour": "#d9d6cc",
+        "color": "#d9d6cc",
         "name": "inner layers",
         "group": "roll"
       },
@@ -44,7 +44,7 @@
         "radius": 0.006,
         "height": 0.099,
         "sides": 6,
-        "colour": "#a8a396",
+        "color": "#a8a396",
         "name": "core",
         "group": "roll"
       },
@@ -55,7 +55,7 @@
         "radius": 0.0315,
         "height": 0.035,
         "sides": 10,
-        "colour": "#b04848",
+        "color": "#b04848",
         "name": "paper band",
         "group": "label"
       },
@@ -63,7 +63,7 @@
         "type": "box",
         "pos": [0, 0.0625, 0],
         "size": [0.007, 0.004, 0.02],
-        "colour": "#f4f2ec",
+        "color": "#f4f2ec",
         "name": "cross (long)",
         "group": "label"
       },
@@ -71,7 +71,7 @@
         "type": "box",
         "pos": [0, 0.0625, 0],
         "size": [0.02, 0.004, 0.007],
-        "colour": "#f4f2ec",
+        "color": "#f4f2ec",
         "name": "cross (short)",
         "group": "label"
       },
@@ -79,7 +79,7 @@
         "type": "box",
         "pos": [0, 0.001, -0.03],
         "size": [0.093, 0.002, 0.06],
-        "colour": "#e6e3da",
+        "color": "#e6e3da",
         "name": "flat tail",
         "group": "tail"
       },
@@ -88,7 +88,7 @@
         "pos": [0, 0.0098, -0.0709],
         "pitch": 20,
         "size": [0.093, 0.002, 0.032],
-        "colour": "#f1efe8",
+        "color": "#f1efe8",
         "name": "tail lift",
         "group": "tail"
       }

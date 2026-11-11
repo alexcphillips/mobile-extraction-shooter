@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "freight-elevator-shaft",
   "name": "Freight elevator shaft",
-  "colours": {
+  "colors": {
     "steel": "#70777d",
     "steel-dark": "#474d53",
     "panel": "#8d9296",
@@ -14,123 +14,123 @@
       "type": "box",
       "pos": [-2.775, 0, 0],
       "size": [0.15, 4.2, 6.7],
-      "colour": "panel"
+      "color": "panel"
     },
     {
       "type": "box",
       "pos": [2.775, 0, 0],
       "size": [0.15, 4.2, 6.7],
-      "colour": "panel"
+      "color": "panel"
     },
     {
       "type": "box",
       "pos": [0, 0, -3.275],
       "size": [5.4, 4.2, 0.15],
-      "colour": "panel"
+      "color": "panel"
     },
     {
       "type": "box",
       "pos": [-2.675, 0, 3.3],
       "size": [0.35, 4.2, 0.15],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [2.675, 0, 3.3],
       "size": [0.35, 4.2, 0.15],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [0, 3.8, 3.275],
       "size": [5, 0.4, 0.15],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [-2.95, 0, -3.45],
       "size": [0.3, 10, 0.3],
-      "colour": "steel-dark"
+      "color": "steel-dark"
     },
     {
       "type": "box",
       "pos": [-2.95, 0, 3.45],
       "size": [0.3, 10, 0.3],
-      "colour": "steel-dark"
+      "color": "steel-dark"
     },
     {
       "type": "box",
       "pos": [2.95, 0, -3.45],
       "size": [0.3, 10, 0.3],
-      "colour": "steel-dark"
+      "color": "steel-dark"
     },
     {
       "type": "box",
       "pos": [2.95, 0, 3.45],
       "size": [0.3, 10, 0.3],
-      "colour": "steel-dark"
+      "color": "steel-dark"
     },
     {
       "type": "box",
       "pos": [-2.86, 0, -1.6],
       "size": [0.03, 4.2, 0.14],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-2.86, 0, 1.6],
       "size": [0.03, 4.2, 0.14],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [2.86, 0, -1.6],
       "size": [0.03, 4.2, 0.14],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [2.86, 0, 1.6],
       "size": [0.03, 4.2, 0.14],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-2.95, 9.55, 0],
       "size": [0.2, 0.25, 6.6],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [2.95, 9.55, 0],
       "size": [0.2, 0.25, 6.6],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 9.55, -3.45],
       "size": [5.6, 0.25, 0.2],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 9.55, 3.45],
       "size": [5.6, 0.25, 0.2],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-2.95, 2.627, 0],
       "size": [0.08, 8.496, 0.08],
-      "colour": "steel",
+      "color": "steel",
       "collide": false,
       "pitch": 50.9716
     },
@@ -138,7 +138,7 @@
       "type": "box",
       "pos": [-2.95, 2.627, 0],
       "size": [0.08, 8.496, 0.08],
-      "colour": "steel",
+      "color": "steel",
       "collide": false,
       "pitch": -50.9716
     },
@@ -146,7 +146,7 @@
       "type": "box",
       "pos": [2.95, 2.627, 0],
       "size": [0.08, 8.496, 0.08],
-      "colour": "steel",
+      "color": "steel",
       "collide": false,
       "pitch": 50.9716
     },
@@ -154,7 +154,7 @@
       "type": "box",
       "pos": [2.95, 2.627, 0],
       "size": [0.08, 8.496, 0.08],
-      "colour": "steel",
+      "color": "steel",
       "collide": false,
       "pitch": -50.9716
     },
@@ -162,7 +162,7 @@
       "type": "box",
       "pos": [0, 3.0026, -3.45],
       "size": [0.08, 7.7448, 0.08],
-      "colour": "steel",
+      "color": "steel",
       "collide": false,
       "roll": 46.3079
     },
@@ -170,7 +170,7 @@
       "type": "box",
       "pos": [0, 3.0026, -3.45],
       "size": [0.08, 7.7448, 0.08],
-      "colour": "steel",
+      "color": "steel",
       "collide": false,
       "roll": -46.3079
     },
@@ -178,42 +178,42 @@
       "type": "box",
       "pos": [-0.5, 4.2, -3.15],
       "size": [0.03, 5.8, 0.03],
-      "colour": "rope",
+      "color": "rope",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.5, 4.2, -3.15],
       "size": [0.03, 5.8, 0.03],
-      "colour": "rope",
+      "color": "rope",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 9.8, -3],
       "size": [6.2, 0.2, 0.2],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 9.8, -1.8],
       "size": [6.2, 0.2, 0.2],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 10, -2.4],
       "size": [2.4, 0.1, 1.6],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.75, 10.1, -2.4],
       "size": [0.9, 0.7, 0.9],
-      "colour": "winch",
+      "color": "winch",
       "collide": false
     },
     {
@@ -222,7 +222,7 @@
       "radius": 0.4,
       "height": 1.5,
       "sides": 10,
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "roll": 90,
       "collide": false
     }

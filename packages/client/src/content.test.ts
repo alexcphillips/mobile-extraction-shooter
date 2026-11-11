@@ -8,7 +8,7 @@ import {
   spawnProblems,
   ammoDef,
   buyPrice,
-  calibreOf,
+  caliberOf,
   createLootGun,
   createState,
   createRng,
@@ -91,9 +91,9 @@ describe('content', () => {
     expect(w.item).toBe('rpk-16');
     expect(weaponStats(items, w, createWeaponStats()).magazine).toBe(100);
     expect(w.mag).toBe(100);
-    expect([c.gear.helmet?.item, c.gear.bodyArmour?.item]).toEqual(['jug-mask', 'jug-armour']);
+    expect([c.gear.helmet?.item, c.gear.bodyArmor?.item]).toEqual(['jug-mask', 'jug-armor']);
     const mask = items.get('jug-mask');
-    expect(mask?.type === 'armour' && mask.level === 6 && mask.mask?.muffle).toBeTruthy();
+    expect(mask?.type === 'armor' && mask.level === 6 && mask.mask?.muffle).toBeTruthy();
 
     const map = loadMap('northpoint');
     // One of two homes (2026-11-08): the IKEA end or the department store, 40% of raids.
@@ -129,14 +129,14 @@ describe('content', () => {
       for (const e of t.items) {
         const def = items.get(e.item)!;
         if (def.type !== 'weapon') continue;
-        const calibre = calibreOf(items, def);
-        expect(lootRounds(items, calibre), `${e.item} (${calibre})`).not.toHaveLength(0);
+        const caliber = caliberOf(items, def);
+        expect(lootRounds(items, caliber), `${e.item} (${caliber})`).not.toHaveLength(0);
         for (let i = 0; i < 20; i++) {
           const gun = createLootGun(items, e.item, rng);
           const round = ammoDef(items, loadedAmmo(items, gun));
           expect(round.level).toBeLessThanOrEqual(LOOT_GUN_MAX_LEVEL);
           expect(['common', 'uncommon']).toContain(round.rarity);
-          expect(round.calibre).toBe(calibre);
+          expect(round.caliber).toBe(caliber);
           expect(gun.mag).toBe(weaponStats(items, gun, createWeaponStats()).magazine);
         }
       }
@@ -149,7 +149,7 @@ describe('content', () => {
       for (const o of v.sells) expect(buyPrice(items, o)).toBeGreaterThan(0);
   });
 
-  it('iron sights line up: the post tip on the sight line, level with the notch or centred in the ring', () => {
+  it('iron sights line up: the post tip on the sight line, level with the notch or centered in the ring', () => {
     // Aimed, the eye sits on model.sight's height looking along −z (render/viewmodel.ts).
     let guns = 0;
     for (const def of loadItems().values()) {
@@ -174,12 +174,12 @@ describe('content', () => {
         expect(top(p), `${def.id} rear notch`).toBeCloseTo(sight[1], 3);
       const ring = named('rear sight ring');
       if (ring.some((p) => p.roll)) {
-        // A round aperture (boxes rolled round a circle) is centred on the line.
+        // A round aperture (boxes rolled round a circle) is centered on the line.
         const mean = (i: number) => ring.reduce((s, p) => s + p.pos[i]!, 0) / ring.length;
         expect(mean(0), `${def.id} rear ring x`).toBeCloseTo(sight[0], 3);
         expect(mean(1), `${def.id} rear ring y`).toBeCloseTo(sight[1], 3);
       } else {
-        // A square aperture's side bars are centred on the line.
+        // A square aperture's side bars are centered on the line.
         for (const p of ring.filter((p) => p.size[1] > p.size[0]))
           expect(p.pos[1], `${def.id} rear ring`).toBeCloseTo(sight[1], 3);
       }
@@ -187,13 +187,13 @@ describe('content', () => {
     expect(guns).toBeGreaterThanOrEqual(30);
   });
 
-  it("repairing armour never makes money: a kit's points cost more than they add", () => {
+  it("repairing armor never makes money: a kit's points cost more than they add", () => {
     const defs = [...loadItems().values()];
     for (const kit of defs) {
       if (kit.type !== 'repair') continue;
       for (const a of defs) {
-        if (a.type !== 'armour') continue;
-        // What a point of durability adds to the armour's sell price, against its cost.
+        if (a.type !== 'armor') continue;
+        // What a point of durability adds to the armor's sell price, against its cost.
         expect(
           (a.value * VENDOR.sellShare) / a.durability,
           `${kit.id} on ${a.id}`,

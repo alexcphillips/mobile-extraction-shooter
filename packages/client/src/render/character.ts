@@ -23,7 +23,7 @@ export const WEAPON_BONE = 'weapon';
  */
 export const MOUNTS = {
   helmet: 'DEF-head',
-  armour: 'DEF-spine002',
+  armor: 'DEF-spine002',
   rig: 'DEF-spine002',
   backpack: 'DEF-spine003',
   weapon: WEAPON_BONE,
@@ -54,7 +54,7 @@ const PLATING_BONES: Record<BodyBone, string> = {
 };
 
 /** The worn gear slots, in the order they're built. */
-const WORN = ['helmet', 'armour', 'rig', 'backpack'] as const;
+const WORN = ['helmet', 'armor', 'rig', 'backpack'] as const;
 
 export const DEFAULT_OUTFIT: Outfit = {
   skin: '#c99a78',
@@ -64,7 +64,7 @@ export const DEFAULT_OUTFIT: Outfit = {
   feet: '#2e2a26',
 };
 
-/** The outfit's colours (not its plating). */
+/** The outfit's colors (not its plating). */
 type Part = Exclude<keyof Outfit, 'plating'>;
 const PARTS: readonly Part[] = ['skin', 'top', 'bottom', 'hands', 'feet'];
 /** The mannequin's joint bands are drawn this much darker than the part they're on. */
@@ -82,7 +82,7 @@ function partOf(bone: string): Part {
 /** What a character wears (item ids, or null) and holds. */
 export interface Gear {
   helmet: string | null;
-  armour: string | null;
+  armor: string | null;
   rig: string | null;
   backpack: string | null;
   /** The gun's or knife's shapes, in its own frame; drawn on the weapon bone. */
@@ -111,7 +111,7 @@ export interface CharacterTemplate {
   looks: Map<string, THREE.BufferGeometry>;
   /**
    * How the rest pose was scaled and raised to stand 1.8 m tall on y = 0 (it's also turned
-   * to face −z), to put worn gear, modelled in game metres, into the rig's frame.
+   * to face −z), to put worn gear, modeled in game meters, into the rig's frame.
    */
   rest: { scale: number; y: number };
 }
@@ -222,10 +222,10 @@ export async function loadCharacter(url: string): Promise<CharacterTemplate> {
   return template;
 }
 
-export const NO_GEAR: Gear = { helmet: null, armour: null, rig: null, backpack: null, gun: null };
+export const NO_GEAR: Gear = { helmet: null, armor: null, rig: null, backpack: null, gun: null };
 
 /**
- * Worn gear's shapes, modelled on the body in game metres facing −z, moved into the rig's
+ * Worn gear's shapes, modeled on the body in game meters facing −z, moved into the rig's
  * rest frame: unscaled, unraised and turned back to face +z.
  */
 function inRestFrame(shapes: Shape[], rest: CharacterTemplate['rest']): Shape[] {
@@ -251,7 +251,7 @@ function inRestFrame(shapes: Shape[], rest: CharacterTemplate['rest']): Shape[] 
 }
 
 /**
- * The geometry for one look: the body in an outfit's colours, plus gear from its item
+ * The geometry for one look: the body in an outfit's colors, plus gear from its item
  * models. Cached by look, since a raid has only a few.
  */
 export function characterGeometry(
@@ -289,7 +289,7 @@ export function characterGeometry(
   const count = bodyCount + built.reduce((n, b) => n + b.geo.getAttribute('position').count, 0);
   const position = new Float32Array(count * 3);
   const normal = new Float32Array(count * 3);
-  const colour = new Float32Array(count * 3);
+  const color = new Float32Array(count * 3);
   const skinIndex = new Uint16Array(count * 4);
   const skinWeight = new Float32Array(count * 4);
   position.set(t.body.position);
@@ -302,16 +302,16 @@ export function characterGeometry(
     const part = t.body.part[i]!;
     const f = part >= 8 ? JOINT_SHADE : 1;
     const o = (part & 7) * 3;
-    colour[i * 3] = palette[o]! * f;
-    colour[i * 3 + 1] = palette[o + 1]! * f;
-    colour[i * 3 + 2] = palette[o + 2]! * f;
+    color[i * 3] = palette[o]! * f;
+    color[i * 3 + 1] = palette[o + 1]! * f;
+    color[i * 3 + 2] = palette[o + 2]! * f;
   }
   let v = bodyCount;
   for (const { geo, bone } of built) {
     const n = geo.getAttribute('position').count;
     position.set(geo.getAttribute('position').array, v * 3);
     normal.set(geo.getAttribute('normal').array, v * 3);
-    colour.set(geo.getAttribute('color').array, v * 3);
+    color.set(geo.getAttribute('color').array, v * 3);
     for (let i = 0; i < n; i++) {
       skinIndex[(v + i) * 4] = bone;
       skinWeight[(v + i) * 4] = 1;
@@ -323,7 +323,7 @@ export function characterGeometry(
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(position, 3));
   g.setAttribute('normal', new THREE.BufferAttribute(normal, 3));
-  g.setAttribute('color', new THREE.BufferAttribute(colour, 3));
+  g.setAttribute('color', new THREE.BufferAttribute(color, 3));
   g.setAttribute('skinIndex', new THREE.BufferAttribute(skinIndex, 4));
   g.setAttribute('skinWeight', new THREE.BufferAttribute(skinWeight, 4));
   t.looks.set(key, g);
@@ -341,13 +341,13 @@ export function cloneCharacter(t: CharacterTemplate): {
     if (o instanceof THREE.SkinnedMesh) mesh = o;
   });
   // Animation moves it far from its rest-pose bounds (lying dead, arms out), so cull by a
-  // sphere around the whole body instead. It's in the rest pose's frame: metres, unscaled.
+  // sphere around the whole body instead. It's in the rest pose's frame: meters, unscaled.
   mesh!.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0.9, 0), 1.6);
   return { root, mesh: mesh! };
 }
 
 /**
- * Unlit vertex colours shaded per face on the GPU from the skinned normal, with the same
+ * Unlit vertex colors shaded per face on the GPU from the skinned normal, with the same
  * formula as shade.ts, so the shading stays right as the body moves.
  */
 function characterMaterial(): THREE.MeshBasicMaterial {

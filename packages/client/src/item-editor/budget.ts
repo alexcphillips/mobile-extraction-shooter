@@ -27,7 +27,7 @@ export function budgetOf(def: ItemDef): Budget {
         : { triangles: 300, kind: `${def.slot} attachment` };
     case 'melee':
       return { triangles: 400, kind: 'knife' };
-    case 'armour':
+    case 'armor':
     case 'container':
       // Worn on every body.
       return { triangles: 1200, kind: 'worn gear' };

@@ -33,34 +33,34 @@
   },
   "model": {
     "parts": [
-      { "type": "box", "pos": [0, -0.01, -0.05], "size": [0.045, 0.05, 0.5], "colour": "#5a4030" },
+      { "type": "box", "pos": [0, -0.01, -0.05], "size": [0.045, 0.05, 0.5], "color": "#5a4030" },
       {
         "type": "box",
         "pos": [-0.15, 0.005, -0.26],
         "size": [0.3, 0.018, 0.025],
-        "colour": "#2a2d30",
+        "color": "#2a2d30",
         "yaw": 12
       },
       {
         "type": "box",
         "pos": [0.15, 0.005, -0.26],
         "size": [0.3, 0.018, 0.025],
-        "colour": "#2a2d30",
+        "color": "#2a2d30",
         "yaw": -12
       },
       {
         "type": "box",
         "pos": [0, 0.012, -0.23],
         "size": [0.58, 0.004, 0.004],
-        "colour": "#d8d0b8"
+        "color": "#d8d0b8"
       },
-      { "type": "box", "pos": [0, 0.025, -0.2], "size": [0.008, 0.008, 0.36], "colour": "#8a6d3b" },
-      { "type": "box", "pos": [0, -0.07, 0.05], "size": [0.04, 0.08, 0.04], "colour": "#5a4030" },
+      { "type": "box", "pos": [0, 0.025, -0.2], "size": [0.008, 0.008, 0.36], "color": "#8a6d3b" },
+      { "type": "box", "pos": [0, -0.07, 0.05], "size": [0.04, 0.08, 0.04], "color": "#5a4030" },
       {
         "type": "box",
         "pos": [0, 0.028, 0],
         "size": [0.0236, 0.0161, 0.008],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "hiddenBy": "optic",
         "name": "rear sight",
         "group": "iron sights"
@@ -69,7 +69,7 @@
         "type": "box",
         "pos": [-0.0086, 0.0405, 0],
         "size": [0.0063, 0.0089, 0.008],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "hiddenBy": "optic",
         "name": "rear sight ear",
         "group": "iron sights"
@@ -78,7 +78,7 @@
         "type": "box",
         "pos": [0.0086, 0.0405, 0],
         "size": [0.0063, 0.0089, 0.008],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "hiddenBy": "optic",
         "name": "rear sight ear",
         "group": "iron sights"
@@ -87,7 +87,7 @@
         "type": "box",
         "pos": [0, 0.037, -0.36],
         "size": [0.0081, 0.016, 0.006],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "hiddenBy": "optic",
         "name": "front sight post",
         "group": "iron sights"

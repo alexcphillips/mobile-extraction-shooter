@@ -56,7 +56,7 @@ export class LobbyCharacter {
     this.renderer.setClearColor(0x000000, 0);
     this.scene.add(this.turntable);
 
-    // The plinth: a dark disc, a lighter top and a thin ring in the mode's colour.
+    // The plinth: a dark disc, a lighter top and a thin ring in the mode's color.
     const base = new THREE.Mesh(
       new THREE.CylinderGeometry(0.78, 0.86, 0.12, 40),
       new THREE.MeshBasicMaterial({ color: 0x161c21 }),
@@ -82,7 +82,7 @@ export class LobbyCharacter {
     this.raf = requestAnimationFrame(this.frame);
   }
 
-  /** The ring's colour, for the mode shown. */
+  /** The ring's color, for the mode shown. */
   setAccent(accent: number): void {
     (this.plinth[2]!.material as THREE.MeshBasicMaterial).color.set(accent);
   }

@@ -24,7 +24,7 @@ export interface ControlDef {
   label: string;
   /** Diameter in CSS pixels at scale 1. */
   size: number;
-  /** Default centre, as a fraction of the screen. */
+  /** Default center, as a fraction of the screen. */
   x: number;
   y: number;
   /**

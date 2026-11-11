@@ -4,7 +4,7 @@ import type { Hud } from './hud';
 import { CONTROLS, isHidden, placementOf, type ControlDef } from './layout';
 
 const SCALE_STEP = 0.1;
-/** Keeps a control's centre this far (as a fraction) inside the screen edges. */
+/** Keeps a control's center this far (as a fraction) inside the screen edges. */
 const EDGE = 0.03;
 
 /**

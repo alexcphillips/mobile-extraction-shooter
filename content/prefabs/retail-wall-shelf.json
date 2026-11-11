@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "retail-wall-shelf",
   "name": "Retail wall shelf",
-  "colours": {
+  "colors": {
     "body": "#d7d9d8",
     "goods-a": "#e07b2e",
     "goods-b": "#3f6f9a",
@@ -15,76 +15,76 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [3, 2.2, 0.5],
-      "colour": "body"
+      "color": "body"
     },
     {
       "type": "box",
       "pos": [-0.85, 0.3, 0.05],
       "size": [1.07, 0.5, 0.42],
-      "colour": "goods-a",
+      "color": "goods-a",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.05, 0.3, 0.05],
       "size": [0.67, 0.5, 0.42],
-      "colour": "goods-c",
+      "color": "goods-c",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.9, 0.3, 0.05],
       "size": [0.97, 0.5, 0.42],
-      "colour": "goods-b",
+      "color": "goods-b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.0, 0.95, 0.05],
       "size": [0.77, 0.48, 0.42],
-      "colour": "goods-b",
+      "color": "goods-b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.05, 0.95, 0.05],
       "size": [1.27, 0.48, 0.42],
-      "colour": "goods-a",
+      "color": "goods-a",
       "collide": false
     },
     {
       "type": "box",
       "pos": [1.05, 0.95, 0.05],
       "size": [0.67, 0.48, 0.42],
-      "colour": "goods-c",
+      "color": "goods-c",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.7, 1.6, 0.05],
       "size": [1.37, 0.4, 0.42],
-      "colour": "goods-c",
+      "color": "goods-c",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.3, 1.6, 0.05],
       "size": [0.57, 0.4, 0.42],
-      "colour": "goods-b",
+      "color": "goods-b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [1.0, 1.6, 0.05],
       "size": [0.77, 0.4, 0.42],
-      "colour": "goods-a",
+      "color": "goods-a",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 2.04, 0.255],
       "size": [2.9, 0.14, 0.012],
-      "colour": "label",
+      "color": "label",
       "collide": false
     }
   ]

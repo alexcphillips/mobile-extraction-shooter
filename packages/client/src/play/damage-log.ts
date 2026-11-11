@@ -14,7 +14,7 @@ export interface DamageSource {
   hits: number;
   /** HP lost, spillover to the chest included. */
   damage: number;
-  /** What armour took. */
+  /** What armor took. */
   absorbed: number;
   /** Zones hit, by name, in the order first hit. */
   zones: string[];
@@ -69,7 +69,7 @@ export function logKiller(log: DamageLog, key: string): void {
   for (const s of log) s.killed = s.key === key;
 }
 
-/** One line for a source: "Jug shot you 4 times for 142 (head, chest) · armour took 30". */
+/** One line for a source: "Jug shot you 4 times for 142 (head, chest) · armor took 30". */
 export function describeSource(s: DamageSource): string {
   const hp = Math.round(s.damage);
   if (s.cause === 'bleed') return `Bleeding took ${hp}`;
@@ -84,8 +84,8 @@ export function describeSource(s: DamageSource): string {
           ? 'blew you up'
           : 'shot you';
   const what = s.cause === 'fall' ? `A fall ${verb}` : `${s.name} ${verb}`;
-  const armour = s.absorbed >= 1 ? ` · armour took ${Math.round(s.absorbed)}` : '';
-  return `${what} ${times} for ${hp} (${s.zones.join(', ')})${armour}`;
+  const armor = s.absorbed >= 1 ? ` · armor took ${Math.round(s.absorbed)}` : '';
+  return `${what} ${times} for ${hp} (${s.zones.join(', ')})${armor}`;
 }
 
 /**
@@ -107,7 +107,7 @@ export interface FightHit {
   absorbed: number;
   /** Their hit that killed you. */
   killing?: true;
-  /** Metres between shooter and target, when it landed (2026-11-11). */
+  /** Meters between shooter and target, when it landed (2026-11-11). */
   distance?: number;
   /** The shooter's gun (or knife) and the round, item ids, when known (2026-11-11). */
   weapon?: string;
@@ -201,11 +201,11 @@ export function lastCombat(log: FightLog, gap = COMBAT_GAP_TICKS): FightHit[] {
   return out;
 }
 
-/** One row: "You shot Scav · head, chest ×2 · 48 · armour took 12". */
+/** One row: "You shot Scav · head, chest ×2 · 48 · armor took 12". */
 export function describeFightHit(h: FightHit, name: string): string {
   const verb = h.cause === 'melee' ? 'stabbed' : h.cause === 'explosion' ? 'blew up' : 'shot';
   const who = h.dealt ? `You ${verb} ${name}` : `${name} ${verb} you`;
   const times = h.hits > 1 ? ` ×${h.hits}` : '';
-  const armour = h.absorbed >= 1 ? ` · armour took ${Math.round(h.absorbed)}` : '';
-  return `${who} · ${h.zones.join(', ')}${times} · ${Math.round(h.damage)}${armour}`;
+  const armor = h.absorbed >= 1 ? ` · armor took ${Math.round(h.absorbed)}` : '';
+  return `${who} · ${h.zones.join(', ')}${times} · ${Math.round(h.damage)}${armor}`;
 }

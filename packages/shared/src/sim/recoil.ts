@@ -30,7 +30,7 @@ export const RECOIL = {
   steadyKick: 0.5,
   /**
    * During a burst the climb wears off at only this share of the gun's recovery, so it keeps
-   * climbing until the player pulls it down (2026-11-05; at full recovery it levelled off by
+   * climbing until the player pulls it down (2026-11-05; at full recovery it leveled off by
    * round 10, and at 0.1 it still ate nearly half an SMG's late kicks). Sideways recovers in
    * full, so the shake doesn't wander.
    */
@@ -85,7 +85,7 @@ export const RECOIL = {
 export const PUNCH = {
   /** Any hit, even one doing no damage. */
   base: 0.15,
-  /** More for each HP the hit was worth (lost plus stopped by armour). */
+  /** More for each HP the hit was worth (lost plus stopped by armor). */
   perHp: 0.005,
   /** The most one hit throws, and the most all the punches still settling add up to. */
   most: 0.5,
@@ -180,14 +180,14 @@ export function kickRecoil(
 }
 
 /**
- * How much of a recoil angle moves the gun away from the centre of the view; the view takes
+ * How much of a recoil angle moves the gun away from the center of the view; the view takes
  * the rest, so the two always add up to where shots go. From the hip it's all on the view.
  * Aimed, the gun takes most of the first few degrees, then only RECOIL.aimedTail of the
- * climb (2026-11-05, for Tarkov's feel: a sharp kick near the centre, then the view climbs,
+ * climb (2026-11-05, for Tarkov's feel: a sharp kick near the center, then the view climbs,
  * rather than the sights walking up the screen). The tail matters: with a hard limit the
  * sights stopped moving at all, and the recoil seemed to stop with them. zoom is how many
  * times larger things are than at no zoom: dividing by it keeps the sights as far from the
- * centre on the screen through a scope. Display only: the sim's aim doesn't change.
+ * center on the screen through a scope. Display only: the sim's aim doesn't change.
  */
 export function gunRecoil(recoil: number, aim: number, zoom = 1): number {
   const r = Math.abs(recoil);

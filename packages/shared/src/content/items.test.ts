@@ -30,10 +30,10 @@ const ammo = m({
   size: [1, 1],
   value: 100,
   stack: 60,
-  calibre: 'round',
+  caliber: 'round',
   level: 3,
   damage: 40,
-  armourDamage: 10,
+  armorDamage: 10,
   bleedChance: 0.2,
 });
 const gun = m({
@@ -67,7 +67,7 @@ const scope = m({
   size: [2, 1],
   value: 100,
   slot: 'optic',
-  optic: { zoom: 4, reticle: { colour: '#000000', shapes: [dot] } },
+  optic: { zoom: 4, reticle: { color: '#000000', shapes: [dot] } },
 });
 const mag = m({
   formatVersion: ITEM_FORMAT_VERSION,
@@ -133,7 +133,7 @@ describe('items', () => {
     const helmet = {
       id: 'h',
       name: 'H',
-      type: 'armour',
+      type: 'armor',
       slot: 'helmet',
       absorb: 0.5,
       durability: 9,
@@ -165,7 +165,7 @@ describe('items', () => {
     expect(v4({ id: 'q', name: 'Q', type: 'quest', size: [1, 1] }).value).toBe(0);
   });
 
-  it('upgrades format 8 rounds, armour and knives with levels', () => {
+  it('upgrades format 8 rounds, armor and knives with levels', () => {
     const v8 = (raw: object, drop: string[]) =>
       loadContent(
         ITEM_FORMAT,
@@ -174,12 +174,12 @@ describe('items', () => {
         ),
         'x.json',
       );
-    expect(v8({ ...ammo, armourDamage: 1.5 }, ['calibre', 'level'])).toMatchObject({
-      calibre: 'round',
+    expect(v8({ ...ammo, armorDamage: 1.5 }, ['caliber', 'level'])).toMatchObject({
+      caliber: 'round',
       level: 1,
-      armourDamage: 15,
+      armorDamage: 15,
     });
-    const helmet = { id: 'h', name: 'H', type: 'armour', size: [2, 2], value: 1, rarity: 'common' };
+    const helmet = { id: 'h', name: 'H', type: 'armor', size: [2, 2], value: 1, rarity: 'common' };
     const old = { ...helmet, slot: 'helmet', absorb: 0.6, durability: 9, model: { parts: [] } };
     const up = v8({ ...old, model: placeholderModel(old) }, []);
     expect(up).toMatchObject({ level: 4 });
@@ -209,7 +209,7 @@ describe('items', () => {
         type: 'melee',
         damage: 40,
         level: 1,
-        armourDamage: 5,
+        armorDamage: 5,
         bleedChance: 0.3,
         swingTime: 0.5,
         reach: 1.5,
@@ -277,7 +277,7 @@ describe('items', () => {
     expect(red.type === 'attachment' && red.model.sight).toEqual([0, 0.045, -0.09]);
     // Anything never drawn before is a box the size of its grid, as it was on the ground.
     expect(v5({ ...ammo, size: [2, 1] }).model.parts).toEqual([
-      { type: 'box', pos: [0, 0, 0], size: [0.28, 0.07, 0.14], colour: '#9a8238' },
+      { type: 'box', pos: [0, 0, 0], size: [0.28, 0.07, 0.14], color: '#9a8238' },
     ]);
   });
 

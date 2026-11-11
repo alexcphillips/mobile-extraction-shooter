@@ -4,16 +4,16 @@ import type { FaceCull } from './face-cull';
 import { shade } from './shade';
 
 /**
- * Collects flat-shaded triangles into a non-indexed BufferGeometry with vertex colours.
- * Baked mode multiplies each face's colour by its shade, for static geometry. Otherwise it
- * stores plain colours and face normals, and the material shades them (see material.ts),
+ * Collects flat-shaded triangles into a non-indexed BufferGeometry with vertex colors.
+ * Baked mode multiplies each face's color by its shade, for static geometry. Otherwise it
+ * stores plain colors and face normals, and the material shades them (see material.ts),
  * for geometry that's instanced or moves.
  */
 export class TriangleBuilder {
   private readonly pos: number[] = [];
   private readonly col: number[] = [];
   private readonly nor: number[] = [];
-  private readonly colour = new THREE.Color();
+  private readonly color = new THREE.Color();
 
   /** With cull, faces it finds hidden are left out (static map geometry only). */
   constructor(
@@ -25,24 +25,24 @@ export class TriangleBuilder {
     return this.pos.length / 9;
   }
 
-  tri(a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3, colour: number): void {
+  tri(a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3, color: number): void {
     e1.subVectors(b, a);
     e2.subVectors(c, a);
     e1.cross(e2);
     const len = e1.length();
     if (len < 1e-9) return;
     e1.divideScalar(len);
-    this.colour.setHex(colour);
+    this.color.setHex(color);
     const f = this.baked ? shade(e1.x, e1.y) : 1;
     for (const p of [a, b, c]) {
       this.pos.push(p.x, p.y, p.z);
-      this.col.push(this.colour.r * f, this.colour.g * f, this.colour.b * f);
+      this.col.push(this.color.r * f, this.color.g * f, this.color.b * f);
       if (!this.baked) this.nor.push(e1.x, e1.y, e1.z);
     }
   }
 
   /** A convex polygon in shape-local space, wound so its front faces away from inside. */
-  poly(points: readonly THREE.Vector3[], inside: THREE.Vector3, m: THREE.Matrix4, colour: number) {
+  poly(points: readonly THREE.Vector3[], inside: THREE.Vector3, m: THREE.Matrix4, color: number) {
     // Its normal from every corner (Newell's), so corners that meet (a box tapered to an
     // edge) don't spoil it.
     e1.set(0, 0, 0);
@@ -73,8 +73,8 @@ export class TriangleBuilder {
       if (this.cull.hidden(world, n, e1.x, e1.y, e1.z)) return;
     }
     for (let i = 1; i + 1 < n; i++) {
-      if (flip) this.tri(world[0]!, world[i + 1]!, world[i]!, colour);
-      else this.tri(world[0]!, world[i]!, world[i + 1]!, colour);
+      if (flip) this.tri(world[0]!, world[i + 1]!, world[i]!, color);
+      else this.tri(world[0]!, world[i]!, world[i + 1]!, color);
     }
   }
 
@@ -96,14 +96,14 @@ export class TriangleBuilder {
         BOX_FACES.forEach((f, k) => {
           const ring = f.map((i) => c[i]!);
           const out = s.bulge?.[k] ?? 0;
-          if (out <= 0) return this.poly(ring, origin, matrix, s.colour);
+          if (out <= 0) return this.poly(ring, origin, matrix, s.color);
           // Bulged: four triangles up to the face's middle, pushed out along its normal.
           const [ax, sign] = BOX_FACE_NORMALS[k]!;
           const tip = v(0, 0, 0);
           for (const p of ring) tip.add(p);
           tip.multiplyScalar(1 / 4).setComponent(ax, tip.getComponent(ax) + sign * out);
           for (let i = 0; i < 4; i++)
-            this.poly([ring[i]!, ring[(i + 1) % 4]!, tip], origin, matrix, s.colour);
+            this.poly([ring[i]!, ring[(i + 1) % 4]!, tip], origin, matrix, s.color);
         });
         return;
       }
@@ -122,10 +122,10 @@ export class TriangleBuilder {
             radiusTop > 0
               ? [bottom[i]!, bottom[j]!, top[j]!, top[i]!]
               : [bottom[i]!, bottom[j]!, top[i]!];
-          this.poly(side, origin, matrix, s.colour);
+          this.poly(side, origin, matrix, s.color);
         }
-        this.poly(bottom, origin, matrix, s.colour);
-        if (radiusTop > 0) this.poly(top, origin, matrix, s.colour);
+        this.poly(bottom, origin, matrix, s.color);
+        if (radiusTop > 0) this.poly(top, origin, matrix, s.color);
         return;
       }
       case 'wedge': {
@@ -140,12 +140,12 @@ export class TriangleBuilder {
           [b[0]!, b[3]!, t[0]!],
           [b[1]!, b[2]!, t[1]!],
         ];
-        for (const f of faces) this.poly(f, inside, matrix, s.colour);
+        for (const f of faces) this.poly(f, inside, matrix, s.color);
         return;
       }
       case 'slab': {
         const { hx, hy, hz, segments } = s;
-        // Round the outline from above, corner by corner: each arc's centre is its radius
+        // Round the outline from above, corner by corner: each arc's center is its radius
         // in from both sides, and turns a quarter from one side to the next.
         const fit = Math.min(hx, hz);
         const ring: [number, number][] = [];
@@ -163,10 +163,10 @@ export class TriangleBuilder {
         const top = ring.map(([x, z]) => v(x, hy, z));
         for (let i = 0; i < ring.length; i++) {
           const j = (i + 1) % ring.length;
-          this.poly([bottom[i]!, bottom[j]!, top[j]!, top[i]!], origin, matrix, s.colour);
+          this.poly([bottom[i]!, bottom[j]!, top[j]!, top[i]!], origin, matrix, s.color);
         }
-        this.poly(bottom, origin, matrix, s.colour);
-        this.poly(top, origin, matrix, s.colour);
+        this.poly(bottom, origin, matrix, s.color);
+        this.poly(top, origin, matrix, s.color);
         return;
       }
     }
@@ -177,7 +177,7 @@ export class TriangleBuilder {
    * Flat cells drawn whole are merged into rectangles (2026-11-07), each a fan through
    * every cell corner round its edge, so what meets it shares its corners (no cracks).
    */
-  terrain(t: HeightGridDef, i0: number, i1: number, j0: number, j1: number, colour: number) {
+  terrain(t: HeightGridDef, i0: number, i1: number, j0: number, j1: number, color: number) {
     const corner = (i: number, j: number, out: THREE.Vector3): THREE.Vector3 =>
       out.set(t.minX + i * t.cellSize, t.heights[j * (t.cols + 1) + i]!, t.minZ + j * t.cellSize);
     const w = i1 - i0;
@@ -196,8 +196,8 @@ export class TriangleBuilder {
           flat[(j - j0) * w + (i - i0)] = 1;
           continue;
         }
-        if (a) this.tri(c00, c01, c10, colour);
-        if (b) this.tri(c10, c01, c11, colour);
+        if (a) this.tri(c00, c01, c10, color);
+        if (b) this.tri(c10, c01, c11, color);
       }
     }
     // Greedy: as wide as it goes along x, then as deep along z as every row is that wide.
@@ -209,7 +209,7 @@ export class TriangleBuilder {
         let r1 = r + 1;
         while (r1 < j1 - j0 && flat.subarray(r1 * w + q, r1 * w + q1).every(Boolean)) r1++;
         for (let k = r; k < r1; k++) flat.fill(0, k * w + q, k * w + q1);
-        this.flatRect(t, i0 + q, i0 + q1, j0 + r, j0 + r1, colour);
+        this.flatRect(t, i0 + q, i0 + q1, j0 + r, j0 + r1, color);
       }
     }
   }
@@ -225,7 +225,7 @@ export class TriangleBuilder {
     i1: number,
     j0: number,
     j1: number,
-    colour: number,
+    color: number,
   ): void {
     const y = t.heights[j0 * (t.cols + 1) + i0]!;
     const cs = t.cellSize;
@@ -241,7 +241,7 @@ export class TriangleBuilder {
     for (let j = j1; j > j0; j--) add(i1, j);
     for (let i = i1; i > i0; i--) add(i, j0);
     middle.set(t.minX + ((i0 + i1) / 2) * cs, y, t.minZ + ((j0 + j1) / 2) * cs);
-    for (let k = 0; k < n; k++) this.tri(middle, world[k]!, world[(k + 1) % n]!, colour);
+    for (let k = 0; k < n; k++) this.tri(middle, world[k]!, world[(k + 1) % n]!, color);
   }
 
   /** Whether a ground triangle is under a box (a floor laid on the ground). */

@@ -32,7 +32,7 @@ function box(
     yaw: 0,
     pitch: 0,
     roll: 0,
-    colour: 0x808080,
+    color: 0x808080,
     hx,
     hy,
     hz,
@@ -66,7 +66,7 @@ describe('hidden faces (2026-11-07)', () => {
     const wide = box(0, 1.5, 0, 2, 0.5, 2);
     const small = box(0, 2.5, 0, 1, 0.5, 1);
     // The small box's bottom is on the wide one's top; the wide top shows round it (and
-    // its bottom is a metre up).
+    // its bottom is a meter up).
     expect(kept(small, [wide, small])).toBe(10);
     expect(kept(wide, [wide, small])).toBe(12);
   });

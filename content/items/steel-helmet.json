@@ -2,7 +2,7 @@
   "formatVersion": 10,
   "id": "steel-helmet",
   "name": "Steel helmet",
-  "type": "armour",
+  "type": "armor",
   "size": [2, 2],
   "value": 12000,
   "rarity": "rare",
@@ -18,7 +18,7 @@
         "radius": 0.138,
         "radiusTop": 0.113,
         "height": 0.118,
-        "colour": "#56603f"
+        "color": "#56603f"
       },
       {
         "type": "cylinder",
@@ -26,7 +26,7 @@
         "radius": 0.113,
         "radiusTop": 0.059,
         "height": 0.035,
-        "colour": "#56603f"
+        "color": "#56603f"
       }
     ]
   }

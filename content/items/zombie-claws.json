@@ -8,7 +8,7 @@
   "rarity": "common",
   "damage": 50,
   "level": 1,
-  "armourDamage": 2,
+  "armorDamage": 2,
   "bleedChance": 0,
   "swingTime": 0.9,
   "reach": 1.4,
@@ -22,7 +22,7 @@
         "type": "box",
         "pos": [0, -0.05, -0.04],
         "size": [0.05, 0.03, 0.08],
-        "colour": "#7d8f6a"
+        "color": "#7d8f6a"
       }
     ],
     "grip": [0, -0.05, 0]

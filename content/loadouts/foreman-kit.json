@@ -21,7 +21,7 @@
     { "weight": 4, "item": "combat-helmet", "condition": [0.8, 1] },
     { "weight": 1, "item": "heavy-helmet", "condition": [0.8, 1] }
   ],
-  "bodyArmour": [
+  "bodyArmor": [
     { "weight": 4, "item": "plate-carrier", "condition": [0.8, 1] },
     { "weight": 1, "item": "heavy-plate-carrier", "condition": [0.8, 1] }
   ],

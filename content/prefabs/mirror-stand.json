@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "mirror-stand",
   "name": "Mirror stand",
-  "colours": {
+  "colors": {
     "frame": "#c8a24b",
     "glass": "#bfe0e6"
   },
@@ -11,21 +11,21 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [0.76, 0.04, 0.34],
-      "colour": "frame",
+      "color": "frame",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.04, 0],
       "size": [0.72, 1.86, 0.04],
-      "colour": "frame",
+      "color": "frame",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.1, 0.022],
       "size": [0.62, 1.74, 0.006],
-      "colour": "glass",
+      "color": "glass",
       "collide": false
     }
   ]

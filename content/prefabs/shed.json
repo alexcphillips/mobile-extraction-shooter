@@ -3,7 +3,7 @@
   "id": "shed",
   "name": "Shed",
   "building": { "size": [6.0, 4.5] },
-  "colours": {
+  "colors": {
     "siding": "#a8a090",
     "siding-dark": "#8a8374",
     "trim": "#d8d0c0",
@@ -14,26 +14,26 @@
     "steel": "#3e3d3c"
   },
   "nodes": [
-    { "type": "box", "pos": [0, 0.0, 0], "size": [6.0, 2.8, 4.5], "colour": "siding" },
+    { "type": "box", "pos": [0, 0.0, 0], "size": [6.0, 2.8, 4.5], "color": "siding" },
     {
       "type": "box",
       "pos": [0, 2.8, 0],
       "size": [6.0, 1.2, 4.5],
-      "colour": "siding",
+      "color": "siding",
       "top": [6.0, 0]
     },
     {
       "type": "box",
       "pos": [0, 0.0, 0],
       "size": [6.06, 0.2, 4.56],
-      "colour": "siding-dark",
+      "color": "siding-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 3.3365, -1.2541],
       "size": [6.5, 0.08, 2.8],
-      "colour": "roof-dark",
+      "color": "roof-dark",
       "collide": false,
       "pitch": -28.0725
     },
@@ -41,7 +41,7 @@
       "type": "box",
       "pos": [0, 3.3365, 1.2541],
       "size": [6.5, 0.08, 2.8],
-      "colour": "roof",
+      "color": "roof",
       "collide": false,
       "pitch": 28.0725
     },
@@ -49,70 +49,70 @@
       "type": "box",
       "pos": [0, 4.01, 0],
       "size": [6.5, 0.08, 0.3],
-      "colour": "roof-dark",
+      "color": "roof-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-3.01, 0.0, -2.26],
       "size": [0.12, 2.8, 0.12],
-      "colour": "trim",
+      "color": "trim",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-3.01, 0.0, 2.26],
       "size": [0.12, 2.8, 0.12],
-      "colour": "trim",
+      "color": "trim",
       "collide": false
     },
     {
       "type": "box",
       "pos": [3.01, 0.0, -2.26],
       "size": [0.12, 2.8, 0.12],
-      "colour": "trim",
+      "color": "trim",
       "collide": false
     },
     {
       "type": "box",
       "pos": [3.01, 0.0, 2.26],
       "size": [0.12, 2.8, 0.12],
-      "colour": "trim",
+      "color": "trim",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.5, 0.0, 2.27],
       "size": [1.0, 2.0, 0.04],
-      "colour": "door",
+      "color": "door",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.5, 2.02, 2.28],
       "size": [1.2, 0.12, 0.06],
-      "colour": "trim",
+      "color": "trim",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.12, 0.91, 2.3],
       "size": [0.06, 0.18, 0.04],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [1.4, 1.125, 2.26],
       "size": [0.95, 0.75, 0.02],
-      "colour": "trim",
+      "color": "trim",
       "collide": false
     },
     {
       "type": "box",
       "pos": [1.4, 1.2, 2.275],
       "size": [0.8, 0.6, 0.02],
-      "colour": "glass",
+      "color": "glass",
       "collide": false
     }
   ]

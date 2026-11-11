@@ -7,7 +7,7 @@
   "value": 90000,
   "rarity": "epic",
   "model": {
-    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#a08a40" }]
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]
   },
   "category": "Craftwork"
 }

@@ -24,7 +24,7 @@ import { buildChunks } from '../render/map';
 import { GRASS, boxShapes, makeBoxes, makeTerrain } from './world';
 
 const SKY = 0x9fb3c8;
-/** The perf scene has no weapons or armour. */
+/** The perf scene has no weapons or armor. */
 const NO_ITEMS: ItemDb = new Map();
 const EYE = 1.6;
 const WANDER_RADIUS = 35;

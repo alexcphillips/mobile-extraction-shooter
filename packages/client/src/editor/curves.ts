@@ -30,7 +30,7 @@ export interface CurveSettings {
   floorThickness: number;
   stairsWidth: number;
   stairsRise: number;
-  /** How far above the centre clicked it's built: a wall's foot, a floor's top, the stairs' foot. */
+  /** How far above the center clicked it's built: a wall's foot, a floor's top, the stairs' foot. */
   raise: number;
   holeRadius: number;
   /** Whether a hole gets a railing round its edge, and how tall. */
@@ -52,9 +52,9 @@ export const CURVE_DEFAULTS: CurveSettings = {
   railingHeight: 1.1,
 };
 
-/** A part of a circle: its centre (on the floor it's built from), radius and angles in degrees. */
+/** A part of a circle: its center (on the floor it's built from), radius and angles in degrees. */
 export interface Arc {
-  centre: Vec3;
+  center: Vec3;
   radius: number;
   /** Where it starts, from +x towards +z. */
   start: number;
@@ -66,7 +66,7 @@ export interface Arc {
 const PIECE_LENGTH = 2;
 const PIECE_ANGLE = 15;
 /**
- * The most neighbouring pieces overlap at the inside edge (about depth × the angle each
+ * The most neighboring pieces overlap at the inside edge (about depth × the angle each
  * covers): under overlap.ts's JOINT, so wide floors don't warn.
  */
 const PIECE_OVERLAP = 0.35;
@@ -90,13 +90,13 @@ type Piece = (
 
 /**
  * Boxes filling an arc in n pieces, each from the radius out its depth. Each piece's
- * outside face is a side of the polygon round its outer circle, so neighbours as deep meet
+ * outside face is a side of the polygon round its outer circle, so neighbors as deep meet
  * there with no gap and overlap a sliver further in.
  */
-function sectorBoxes(arc: Arc, n: number, colour: string, piece: Piece): Box[] {
+function sectorBoxes(arc: Arc, n: number, color: string, piece: Piece): Box[] {
   const step = arc.sweep / n;
   const half = Math.tan((Math.abs(step) / 2) * DEG);
-  const [cx, , cz] = arc.centre;
+  const [cx, , cz] = arc.center;
   const out: Box[] = [];
   for (let i = 0; i < n; i++) {
     const a = arc.start + (i + 0.5) * step;
@@ -108,9 +108,9 @@ function sectorBoxes(arc: Arc, n: number, colour: string, piece: Piece): Box[] {
       type: 'box',
       pos: [0, 0, 0],
       size: [round(length), round(top - bottom), round(depth)],
-      colour,
+      color,
     };
-    // Local +z faces out from the centre: (sin yaw, cos yaw) = (cos a, sin a).
+    // Local +z faces out from the center: (sin yaw, cos yaw) = (cos a, sin a).
     const yaw = Math.round((90 - a) * 10) / 10;
     placeNode(box, [cx + middle * Math.cos(a * DEG), bottom, cz + middle * Math.sin(a * DEG)], yaw);
     out.push(box);
@@ -119,13 +119,13 @@ function sectorBoxes(arc: Arc, n: number, colour: string, piece: Piece): Box[] {
 }
 
 /** The boxes of a curve drawn with these settings. */
-export function curveBoxes(arc: Arc, s: CurveSettings, colour: string): Box[] {
+export function curveBoxes(arc: Arc, s: CurveSettings, color: string): Box[] {
   // A hole is cut into a floor (cutHole), not drawn.
   if (s.mode === 'hole') return [];
-  const base = arc.centre[1] + s.raise;
+  const base = arc.center[1] + s.raise;
   if (s.mode === 'wall') {
     const n = pieceCount(arc, s.wallThickness);
-    return sectorBoxes(arc, n, colour, () => ({
+    return sectorBoxes(arc, n, color, () => ({
       depth: s.wallThickness,
       bottom: base,
       top: base + s.wallHeight,
@@ -133,7 +133,7 @@ export function curveBoxes(arc: Arc, s: CurveSettings, colour: string): Box[] {
   }
   if (s.mode === 'floor') {
     const n = pieceCount(arc, s.floorWidth);
-    return sectorBoxes(arc, n, colour, () => ({
+    return sectorBoxes(arc, n, color, () => ({
       depth: s.floorWidth,
       bottom: base - s.floorThickness,
       top: base,
@@ -142,8 +142,8 @@ export function curveBoxes(arc: Arc, s: CurveSettings, colour: string): Box[] {
   const n = stepCount(arc, s);
   const rise = s.stairsRise / n;
   // Each step a slab two steps deep, so the underside is open (walk under an escalator)
-  // and neighbours share no more than a step's height.
-  return sectorBoxes(arc, n, colour, (i) => {
+  // and neighbors share no more than a step's height.
+  return sectorBoxes(arc, n, color, (i) => {
     const top = base + (i + 1) * rise;
     return { depth: s.stairsWidth, bottom: Math.max(base, top - 2 * rise), top };
   });
@@ -190,7 +190,7 @@ export function followSweep(start: number, before: number, angle: number): numbe
 export function snapArc(arc: Arc, grid: number, angleSnap: number): Arc {
   const snap = (v: number, by: number) => (by ? Math.round(v / by) * by : v);
   return {
-    centre: arc.centre,
+    center: arc.center,
     radius: round(Math.max(grid || 0.1, snap(arc.radius, grid))),
     start: snap(arc.start, angleSnap),
     // Never nothing: at least one snap's worth, the way it was going.
@@ -214,14 +214,14 @@ export const RAILING_THICKNESS = 0.15;
  * the floor either side of a square round the hole and before and behind it, then pieces
  * round the hole reaching out to the square (and a little past, under the floor beside it,
  * which as a slab at the same level doesn't warn). With `railing`, a railing that tall
- * stands round the hole's edge, in `colour`. The pieces copy the floor; only the first
+ * stands round the hole's edge, in `color`. The pieces copy the floor; only the first
  * keeps its id. Throws if the floor is tilted or the hole doesn't fit inside it.
  */
 export function cutHole(
   floor: Box,
   hole: Hole,
   railing: number | null,
-  colour: string,
+  color: string,
 ): { floor: Box[]; railing: Box[] } {
   if (floor.pitch || floor.roll) throw new Error("a tilted box can't have a hole cut in it");
   const [w, h, d] = floor.size;
@@ -240,9 +240,9 @@ export function cutHole(
   rect(x + sq, hx, -hz, hz);
   rect(x - sq, x + sq, -hz, z - sq);
   rect(x - sq, x + sq, z + sq, hz);
-  const arc: Arc = { centre: [x, 0, z], radius, start: 0, sweep: 360 };
+  const arc: Arc = { center: [x, 0, z], radius, start: 0, sweep: 360 };
   const n = pieceCount(arc, sq * Math.SQRT2 - radius);
-  const ring = sectorBoxes(arc, n, floor.colour, (_, from, to) => ({
+  const ring = sectorBoxes(arc, n, floor.color, (_, from, to) => ({
     depth: squareReach(sq, from, to) - radius,
     bottom: 0,
     top: h,
@@ -257,9 +257,9 @@ export function cutHole(
   }
   const rails = railing
     ? curveBoxes(
-        { ...arc, centre: [x, h, z] },
+        { ...arc, center: [x, h, z] },
         { ...CURVE_DEFAULTS, mode: 'wall', wallHeight: railing, wallThickness: RAILING_THICKNESS },
-        colour,
+        color,
       )
     : [];
   // Out of the floor's frame into its parent's.

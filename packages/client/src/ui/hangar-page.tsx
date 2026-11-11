@@ -23,7 +23,7 @@ import {
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { itemPortrait } from '../render/item-portrait';
 import { ItemDetails } from './item-details';
-import { colourOf } from './raid-screen';
+import { colorOf } from './raid-screen';
 import { craftTime, timeLeft } from './hangar-text';
 import { ROMAN } from './vendors-page';
 
@@ -36,8 +36,8 @@ import { ROMAN } from './vendors-page';
  * server's clock (the reply's `now`), not the phone's.
  */
 
-/** The modules' colours down the side, in their order (the vendors page's amber first). */
-const COLOURS = ['#e3a33a', '#c96a5a', '#6a9fc9', '#6cc98a', '#b08ad0', '#c9b25a', '#5ab8b0'];
+/** The modules' colors down the side, in their order (the vendors page's amber first). */
+const COLORS = ['#e3a33a', '#c96a5a', '#6a9fc9', '#6cc98a', '#b08ad0', '#c9b25a', '#5ab8b0'];
 
 /** How far the server's clock is ahead of this device's, from a reply. */
 function skewOf(me: ProfileResponse): number {
@@ -93,7 +93,7 @@ export function HangarPage({
   }, [onBack, inspecting]);
   const module = modules[shown];
   if (!module) return null;
-  const colour = COLOURS[shown % COLOURS.length]!;
+  const color = COLORS[shown % COLORS.length]!;
   const own = recipes.filter((r) => r.module === module.id);
   return (
     <div className="raid stash vendors hangar" role="dialog" aria-label="Hangar">
@@ -110,7 +110,7 @@ export function HangarPage({
             <ModuleCard
               key={m.id}
               module={m}
-              colour={COLOURS[i % COLOURS.length]!}
+              color={COLORS[i % COLORS.length]!}
               level={moduleLevel(profile, m.id)}
               craft={moduleCraft(profile, m.id)}
               now={now}
@@ -122,7 +122,7 @@ export function HangarPage({
             />
           ))}
         </nav>
-        <section className="vendors-main" style={{ ['--vendor' as string]: colour }}>
+        <section className="vendors-main" style={{ ['--vendor' as string]: color }}>
           <ModuleHead
             key={module.id}
             module={module}
@@ -178,7 +178,7 @@ export function HangarPage({
 /** A module in the list down the side: its initial, name and level, and a craft's state. */
 function ModuleCard({
   module,
-  colour,
+  color,
   level,
   craft,
   now,
@@ -186,7 +186,7 @@ function ModuleCard({
   onClick,
 }: {
   module: HangarModuleDef;
-  colour: string;
+  color: string;
   level: number;
   craft: Craft | null;
   now: number;
@@ -197,7 +197,7 @@ function ModuleCard({
   return (
     <button
       className={`vendors-card${active ? ' active' : ''}${level ? '' : ' unbuilt'}`}
-      style={{ ['--vendor' as string]: colour }}
+      style={{ ['--vendor' as string]: color }}
       role="tab"
       aria-selected={active}
       onClick={onClick}
@@ -401,7 +401,7 @@ function CraftOutput({
   return (
     <button
       className="hangar-output"
-      style={{ ['--rarity' as string]: colourOf(def) }}
+      style={{ ['--rarity' as string]: colorOf(def) }}
       aria-label={`${def.name}${count > 1 ? ` ×${count}` : ''}: details`}
       onClick={() => onInspect(out)}
     >

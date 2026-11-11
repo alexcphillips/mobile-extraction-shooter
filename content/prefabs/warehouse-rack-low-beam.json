@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "warehouse-rack-low-beam",
   "name": "Warehouse pallet rack, low beam",
-  "colours": {
+  "colors": {
     "steel": "#3f6496",
     "steel-dark": "#2c4668",
     "beam": "#cf6f2c",
@@ -13,25 +13,25 @@
       "type": "box",
       "pos": [-1.4, 0, -0.5],
       "size": [0.08, 5.1, 0.08],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [-1.4, 0, 0.5],
       "size": [0.08, 5.1, 0.08],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [-1.4, 0.72, 0],
       "size": [0.05, 0.06, 0.92],
-      "colour": "steel-dark"
+      "color": "steel-dark"
     },
     {
       "type": "box",
       "pos": [-1.4, -0.0028, 0],
       "size": [0.04, 1.8456, 0.04],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false,
       "pitch": 29.8989
     },
@@ -39,7 +39,7 @@
       "type": "box",
       "pos": [-1.4, 1.5972, 0],
       "size": [0.04, 1.8456, 0.04],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false,
       "pitch": -29.8989
     },
@@ -47,7 +47,7 @@
       "type": "box",
       "pos": [-1.4, 3.1972, 0],
       "size": [0.04, 1.8456, 0.04],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false,
       "pitch": 29.8989
     },
@@ -55,25 +55,25 @@
       "type": "box",
       "pos": [1.4, 0, -0.5],
       "size": [0.08, 5.1, 0.08],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [1.4, 0, 0.5],
       "size": [0.08, 5.1, 0.08],
-      "colour": "steel"
+      "color": "steel"
     },
     {
       "type": "box",
       "pos": [1.4, 0.72, 0],
       "size": [0.05, 0.06, 0.92],
-      "colour": "steel-dark"
+      "color": "steel-dark"
     },
     {
       "type": "box",
       "pos": [1.4, -0.0028, 0],
       "size": [0.04, 1.8456, 0.04],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false,
       "pitch": 29.8989
     },
@@ -81,7 +81,7 @@
       "type": "box",
       "pos": [1.4, 1.5972, 0],
       "size": [0.04, 1.8456, 0.04],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false,
       "pitch": -29.8989
     },
@@ -89,7 +89,7 @@
       "type": "box",
       "pos": [1.4, 3.1972, 0],
       "size": [0.04, 1.8456, 0.04],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false,
       "pitch": 29.8989
     },
@@ -97,41 +97,41 @@
       "type": "box",
       "pos": [0, 1.36, -0.525],
       "size": [2.72, 0.11, 0.05],
-      "colour": "beam",
+      "color": "beam",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.36, 0.525],
       "size": [2.72, 0.11, 0.05],
-      "colour": "beam",
+      "color": "beam",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.47, 0],
       "size": [2.72, 0.03, 1.1],
-      "colour": "mesh"
+      "color": "mesh"
     },
     {
       "type": "box",
       "pos": [0, 3.56, -0.525],
       "size": [2.72, 0.11, 0.05],
-      "colour": "beam",
+      "color": "beam",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 3.56, 0.525],
       "size": [2.72, 0.11, 0.05],
-      "colour": "beam",
+      "color": "beam",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 3.67, 0],
       "size": [2.72, 0.03, 1.1],
-      "colour": "mesh"
+      "color": "mesh"
     }
   ]
 }

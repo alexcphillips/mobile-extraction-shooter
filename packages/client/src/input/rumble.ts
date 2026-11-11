@@ -28,7 +28,7 @@ export function firePulse(kickUp: number, out: Pulse): Pulse {
   return out;
 }
 
-/** Being hurt: `amount` HP lost (after armour). A graze is a bump, a 40+ hit a heavy jolt. */
+/** Being hurt: `amount` HP lost (after armor). A graze is a bump, a 40+ hit a heavy jolt. */
 export function hitPulse(amount: number, out: Pulse): Pulse {
   const k = clamp01(amount / 40);
   out.strong = 0.35 + 0.65 * k;
@@ -41,7 +41,7 @@ export function hitPulse(amount: number, out: Pulse): Pulse {
 export const BLAST_FELT = 4;
 
 /**
- * An explosion `distance` metres away with a damage radius `radius`: full inside the
+ * An explosion `distance` meters away with a damage radius `radius`: full inside the
  * radius, fading to nothing at BLAST_FELT radii. `strong` 0 means too far to feel.
  */
 export function blastPulse(distance: number, radius: number, out: Pulse): Pulse {

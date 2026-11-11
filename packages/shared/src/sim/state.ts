@@ -329,7 +329,7 @@ export interface PlayerInput {
   /** Start a reload: a press, true for one tick. */
   reload: boolean;
   /**
-   * With reload: the round to load, of the gun's calibre (the reload button's picker).
+   * With reload: the round to load, of the gun's caliber (the reload button's picker).
    * Another than the one loaded swaps them. Left out, see reloadRound.
    */
   ammo?: string | null;
@@ -465,7 +465,7 @@ export function eyeZ(c: Character): number {
 }
 
 /**
- * A point on the body's centre line, h metres above the feet, written into out: where it
+ * A point on the body's center line, h meters above the feet, written into out: where it
  * is with the lean, which tips everything above the hips sideways.
  */
 export function bodyPoint(c: Character, h: number, out: { x: number; y: number; z: number }): void {
@@ -475,13 +475,13 @@ export function bodyPoint(c: Character, h: number, out: { x: number; y: number; 
   out.z = c.z - side * Math.sin(c.yaw);
 }
 
-/** How far a point h above the feet on the centre line is moved to the right by the lean. */
+/** How far a point h above the feet on the center line is moved to the right by the lean. */
 function leanedSide(c: Character, h: number): number {
   const up = h - c.height * MOVEMENT.leanPivot;
   return c.lean && up > 0 ? up * Math.sin(c.lean * MOVEMENT.leanAngle) : 0;
 }
 
-/** Height above the feet of a point h up the centre line, once leaned. */
+/** Height above the feet of a point h up the center line, once leaned. */
 function leanedHeight(c: Character, h: number): number {
   const pivot = c.height * MOVEMENT.leanPivot;
   return c.lean && h > pivot ? pivot + (h - pivot) * Math.cos(c.lean * MOVEMENT.leanAngle) : h;

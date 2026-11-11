@@ -1,6 +1,6 @@
 import {
   FILTERS,
-  NOISE_COLOURS,
+  NOISE_COLORS,
   WAVES,
   idSchema,
   soundLength,
@@ -27,13 +27,13 @@ const DIRECTIONS = ['ahead', 'right', 'behind', 'left'] as const;
 type Direction = (typeof DIRECTIONS)[number];
 
 /**
- * Plays the open sound as edited, as the raid would: centred, or from a distance and
+ * Plays the open sound as edited, as the raid would: centered, or from a distance and
  * direction, through a wall. Its own player, so the game's sounds aren't touched.
  */
 export class Audition {
   private readonly player = new SoundPlayer(new Map());
   private loaded = '';
-  /** 0 plays it centred, as your own sounds are. */
+  /** 0 plays it centered, as your own sounds are. */
   distance = 0;
   direction: Direction = 'ahead';
   wall = false;
@@ -280,7 +280,7 @@ function SoundPage(props: {
 }
 
 const NEW_LAYER: Record<'noise' | 'tone', SoundLayer> = {
-  noise: { source: 'noise', colour: 'white', at: 0, attack: 0.001, hold: 0, decay: 0.1, gain: 0.5 },
+  noise: { source: 'noise', color: 'white', at: 0, attack: 0.001, hold: 0, decay: 0.1, gain: 0.5 },
   tone: {
     source: 'tone',
     wave: 'sine',
@@ -314,18 +314,18 @@ function LayerCard(props: {
           then={(d, v) => {
             const layer = layers(d)[i]!;
             if (v === 'tone') {
-              delete layer.colour;
+              delete layer.color;
               layer.wave ??= 'sine';
               layer.freq ??= [440, 440];
             } else {
               delete layer.wave;
               delete layer.freq;
-              layer.colour ??= 'white';
+              layer.color ??= 'white';
             }
           }}
         />
         {l.source === 'noise' ? (
-          <P {...b} path={at('colour')} label="colour" options={NOISE_COLOURS} unset="white" />
+          <P {...b} path={at('color')} label="color" options={NOISE_COLORS} unset="white" />
         ) : (
           <P {...b} path={at('wave')} label="wave" options={WAVES} unset="sine" />
         )}

@@ -82,7 +82,7 @@ export class SoundPlayer {
     if (ctx) for (const id of this.defs.keys()) this.buffer(ctx, id);
   }
 
-  /** Plays a sound as it is, centred: the player's own, and the HUD's and menus'. */
+  /** Plays a sound as it is, centered: the player's own, and the HUD's and menus'. */
   play(id: string, gain = 1): void {
     const at = this.at;
     at.gain = gain;

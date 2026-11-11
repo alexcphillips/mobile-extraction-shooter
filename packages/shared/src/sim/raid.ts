@@ -17,11 +17,11 @@ import type { Character, EntityId, SimState } from './state';
 export const RAID = {
   /** Seconds standing in an extraction point to leave by it. */
   extractTime: 7,
-  /** How far above its floor an extraction zone counts when it doesn't say, in metres. */
+  /** How far above its floor an extraction zone counts when it doesn't say, in meters. */
   extractHeight: 2,
-  /** How far under its floor still counts (a slope, a step), in metres. */
+  /** How far under its floor still counts (a slope, a step), in meters. */
   extractBelow: 0.5,
-  /** How close to a quest marker a player must be to investigate it, in metres (14b). */
+  /** How close to a quest marker a player must be to investigate it, in meters (14b). */
   investigateReach: 2.5,
 };
 

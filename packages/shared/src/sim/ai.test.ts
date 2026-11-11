@@ -19,7 +19,7 @@ import { CHEST, HEAD, LEFT_LEG, RIGHT_LEG } from './health';
 import { giveWeapon } from './weapons';
 import { TEST_ITEMS } from './test-items';
 
-/** Flat ground, half metres each way from the origin. */
+/** Flat ground, half meters each way from the origin. */
 function makeWorld(boxes: BoxDef[] = [], half = 60, foliage?: BoxDef[]): CollisionWorld {
   const n = Math.ceil(half / 4) * 2;
   const def: WorldDef = {
@@ -438,7 +438,7 @@ describe('grenades', () => {
   });
 });
 
-describe('enemy behaviour', () => {
+describe('enemy behavior', () => {
   it('walks its patrol, standing at stops and walking through the rest', () => {
     // In along x = 0, then back and forth between two stops by way of (15, 15). The
     // straight way between the stops is along z = 10, so going near (15, 15) shows the

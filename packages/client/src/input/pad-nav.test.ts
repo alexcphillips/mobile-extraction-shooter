@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cellCentre, cursorSpeed, nearestBox, stepRange, stepTarget, type Box } from './pad-nav';
+import { cellCenter, cursorSpeed, nearestBox, stepRange, stepTarget, type Box } from './pad-nav';
 
 const box = (left: number, top: number, width = 40, height = 30): Box => ({
   left,
@@ -55,11 +55,11 @@ describe('stepTarget', () => {
   });
 });
 
-describe('cellCentre', () => {
+describe('cellCenter', () => {
   it('finds the middle of the cell under a point, kept inside the grid', () => {
     const grid = box(100, 100, 200, 120); // 5 × 3 cells of 40
-    expect(cellCentre(150, 150, grid, 40)).toEqual([160, 160]);
-    expect(cellCentre(999, 999, grid, 40)).toEqual([280, 200]);
+    expect(cellCenter(150, 150, grid, 40)).toEqual([160, 160]);
+    expect(cellCenter(999, 999, grid, 40)).toEqual([280, 200]);
   });
 });
 

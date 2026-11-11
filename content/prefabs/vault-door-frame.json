@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "vault-door-frame",
   "name": "Vault door frame",
-  "colours": {
+  "colors": {
     "steel": "#8d9296",
     "steel-dark": "#4a4f54",
     "brass": "#c8a24b"
@@ -12,98 +12,98 @@
       "type": "box",
       "pos": [-0.975, 0, 0.34],
       "size": [0.35, 2.65, 0.08],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.975, 0, 0.34],
       "size": [0.35, 2.65, 0.08],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 2.3, 0.34],
       "size": [1.6, 0.35, 0.08],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.975, 0, -0.34],
       "size": [0.35, 2.65, 0.08],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.975, 0, -0.34],
       "size": [0.35, 2.65, 0.08],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 2.3, -0.34],
       "size": [1.6, 0.35, 0.08],
-      "colour": "steel",
+      "color": "steel",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0, 0],
       "size": [1.6, 0.03, 0.6],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.975, 0.4, 0.385],
       "size": [0.09, 0.09, 0.02],
-      "colour": "brass",
+      "color": "brass",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.975, 1.2, 0.385],
       "size": [0.09, 0.09, 0.02],
-      "colour": "brass",
+      "color": "brass",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.975, 2, 0.385],
       "size": [0.09, 0.09, 0.02],
-      "colour": "brass",
+      "color": "brass",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.975, 0.4, 0.385],
       "size": [0.09, 0.09, 0.02],
-      "colour": "brass",
+      "color": "brass",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.975, 1.2, 0.385],
       "size": [0.09, 0.09, 0.02],
-      "colour": "brass",
+      "color": "brass",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.975, 2, 0.385],
       "size": [0.09, 0.09, 0.02],
-      "colour": "brass",
+      "color": "brass",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.86, 0.3, 0.4],
       "size": [0.16, 1.7, 0.12],
-      "colour": "steel-dark",
+      "color": "steel-dark",
       "collide": false
     }
   ]

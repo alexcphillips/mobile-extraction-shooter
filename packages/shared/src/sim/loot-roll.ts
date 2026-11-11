@@ -1,6 +1,6 @@
 import type { CompiledMap } from '../content/compile';
 import type { EnemyLoot } from '../content/enemies';
-import { calibreOf, itemDef, weaponDef, type ItemDb } from '../content/items';
+import { caliberOf, itemDef, weaponDef, type ItemDb } from '../content/items';
 import type { LootContainerDef } from '../content/loot-containers';
 import type { LootTableDef } from '../content/loot-tables';
 import type { LootMix } from '../content/schema';
@@ -30,32 +30,32 @@ function table(tables: LootTables, id: string): LootTableDef {
 export const LOOT_GUN_MAX_LEVEL = 2;
 const LOOT_GUN_RARITIES: ReadonlySet<string> = new Set(['common', 'uncommon']);
 
-// The rounds a found gun can be loaded with, by calibre, per item database.
+// The rounds a found gun can be loaded with, by caliber, per item database.
 const lootRoundsCache = new WeakMap<ItemDb, Map<string, string[]>>();
 
-/** The rounds a found gun of this calibre can come loaded with (see LOOT_GUN_MAX_LEVEL). */
-export function lootRounds(items: ItemDb, calibre: string): readonly string[] {
+/** The rounds a found gun of this caliber can come loaded with (see LOOT_GUN_MAX_LEVEL). */
+export function lootRounds(items: ItemDb, caliber: string): readonly string[] {
   let by = lootRoundsCache.get(items);
   if (!by) {
     by = new Map();
     for (const def of items.values()) {
       if (def.type !== 'ammo' || def.level > LOOT_GUN_MAX_LEVEL) continue;
       if (!LOOT_GUN_RARITIES.has(def.rarity)) continue;
-      const list = by.get(def.calibre);
+      const list = by.get(def.caliber);
       if (list) list.push(def.id);
-      else by.set(def.calibre, [def.id]);
+      else by.set(def.caliber, [def.id]);
     }
     lootRoundsCache.set(items, by);
   }
-  return by.get(calibre) ?? [];
+  return by.get(caliber) ?? [];
 }
 
 /**
  * A gun found in a raid (2026-11-09): one full magazine of a round picked at random from
- * lootRounds for its calibre, whatever its own round is; empty if its calibre has none.
+ * lootRounds for its caliber, whatever its own round is; empty if its caliber has none.
  */
 export function createLootGun(items: ItemDb, id: string, rng: Rng): WeaponState {
-  const rounds = lootRounds(items, calibreOf(items, weaponDef(items, id)));
+  const rounds = lootRounds(items, caliberOf(items, weaponDef(items, id)));
   if (!rounds.length) {
     const gun = createWeapon(items, id);
     gun.mag = 0;

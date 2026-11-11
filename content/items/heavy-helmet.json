@@ -2,7 +2,7 @@
   "formatVersion": 10,
   "id": "heavy-helmet",
   "name": "Heavy helmet",
-  "type": "armour",
+  "type": "armor",
   "size": [2, 2],
   "value": 22000,
   "rarity": "legendary",
@@ -18,7 +18,7 @@
         "radius": 0.138,
         "radiusTop": 0.113,
         "height": 0.118,
-        "colour": "#3e4a3a"
+        "color": "#3e4a3a"
       },
       {
         "type": "cylinder",
@@ -26,10 +26,10 @@
         "radius": 0.113,
         "radiusTop": 0.059,
         "height": 0.035,
-        "colour": "#3e4a3a"
+        "color": "#3e4a3a"
       },
-      { "type": "box", "pos": [0.12, 1.69, 0], "size": [0.03, 0.08, 0.12], "colour": "#2b2d2f" },
-      { "type": "box", "pos": [-0.12, 1.69, 0], "size": [0.03, 0.08, 0.12], "colour": "#2b2d2f" }
+      { "type": "box", "pos": [0.12, 1.69, 0], "size": [0.03, 0.08, 0.12], "color": "#2b2d2f" },
+      { "type": "box", "pos": [-0.12, 1.69, 0], "size": [0.03, 0.08, 0.12], "color": "#2b2d2f" }
     ]
   }
 }

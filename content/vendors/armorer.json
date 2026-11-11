@@ -1,10 +1,10 @@
 {
   "formatVersion": 2,
-  "id": "armourer",
+  "id": "armorer",
   "name": "Mara",
   "blurb": "A seasoned equipment dealer specializing in body armor, tactical rigs, and field packs.",
   "order": 3,
-  "colour": "#6b8a5a",
+  "color": "#6b8a5a",
   "levels": [
     {
       "rep": 0.2,
@@ -45,7 +45,7 @@
       "level": 2
     },
     {
-      "item": "armour-repair-kit",
+      "item": "armor-repair-kit",
       "level": 2
     },
     {

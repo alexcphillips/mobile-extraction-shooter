@@ -1,7 +1,7 @@
 {
   "formatVersion": 3,
   "id": "wood-pallet",
-  "colours": {
+  "colors": {
     "wood": "#b08a52",
     "wood-dark": "#8a6738"
   },
@@ -10,133 +10,133 @@
       "type": "box",
       "pos": [0, 0, -0.45],
       "size": [1.2, 0.022, 0.1],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [0, 0, 0],
       "size": [1.2, 0.022, 0.1],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [0, 0, 0.45],
       "size": [1.2, 0.022, 0.1],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [-0.54, 0.022, -0.45],
       "size": [0.12, 0.078, 0.1],
-      "colour": "wood-dark"
+      "color": "wood-dark"
     },
     {
       "type": "box",
       "pos": [-0.54, 0.022, 0],
       "size": [0.12, 0.078, 0.1],
-      "colour": "wood-dark"
+      "color": "wood-dark"
     },
     {
       "type": "box",
       "pos": [-0.54, 0.022, 0.45],
       "size": [0.12, 0.078, 0.1],
-      "colour": "wood-dark"
+      "color": "wood-dark"
     },
     {
       "type": "box",
       "pos": [0, 0.022, -0.45],
       "size": [0.12, 0.078, 0.1],
-      "colour": "wood-dark"
+      "color": "wood-dark"
     },
     {
       "type": "box",
       "pos": [0, 0.022, 0],
       "size": [0.12, 0.078, 0.1],
-      "colour": "wood-dark"
+      "color": "wood-dark"
     },
     {
       "type": "box",
       "pos": [0, 0.022, 0.45],
       "size": [0.12, 0.078, 0.1],
-      "colour": "wood-dark"
+      "color": "wood-dark"
     },
     {
       "type": "box",
       "pos": [0.54, 0.022, -0.45],
       "size": [0.12, 0.078, 0.1],
-      "colour": "wood-dark"
+      "color": "wood-dark"
     },
     {
       "type": "box",
       "pos": [0.54, 0.022, 0],
       "size": [0.12, 0.078, 0.1],
-      "colour": "wood-dark"
+      "color": "wood-dark"
     },
     {
       "type": "box",
       "pos": [0.54, 0.022, 0.45],
       "size": [0.12, 0.078, 0.1],
-      "colour": "wood-dark"
+      "color": "wood-dark"
     },
     {
       "type": "box",
       "pos": [-0.54, 0.1, 0],
       "size": [0.12, 0.022, 1.0],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [0, 0.1, 0],
       "size": [0.12, 0.022, 1.0],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [0.54, 0.1, 0],
       "size": [0.12, 0.022, 1.0],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [0, 0.122, -0.45],
       "size": [1.2, 0.022, 0.1],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [0, 0.122, -0.3],
       "size": [1.2, 0.022, 0.1],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [0, 0.122, -0.15],
       "size": [1.2, 0.022, 0.1],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [0, 0.122, -0.0],
       "size": [1.2, 0.022, 0.1],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [0, 0.122, 0.15],
       "size": [1.2, 0.022, 0.1],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [0, 0.122, 0.3],
       "size": [1.2, 0.022, 0.1],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [0, 0.122, 0.45],
       "size": [1.2, 0.022, 0.1],
-      "colour": "wood"
+      "color": "wood"
     }
   ]
 }

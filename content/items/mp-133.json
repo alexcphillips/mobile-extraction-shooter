@@ -37,33 +37,33 @@
         "type": "box",
         "pos": [0, 0, -0.05],
         "size": [0.05, 0.065, 0.24],
-        "colour": "#2a2c2e"
+        "color": "#2a2c2e"
       },
       {
         "type": "box",
         "pos": [0.0255, 0.012, -0.06],
         "size": [0.002, 0.018, 0.06],
-        "colour": "#161718"
+        "color": "#161718"
       },
       {
         "type": "cylinder",
         "pos": [0, 0.012, -0.42],
         "radius": 0.012,
         "height": 0.5,
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "pitch": 90
       },
       {
         "type": "box",
         "pos": [0, 0.026, -0.42],
         "size": [0.006, 0.004, 0.48],
-        "colour": "#2a2c2e"
+        "color": "#2a2c2e"
       },
       {
         "type": "box",
         "pos": [0, 0.0295, -0.66],
         "size": [0.005, 0.003, 0.012],
-        "colour": "#c9c2a8",
+        "color": "#c9c2a8",
         "name": "front sight",
         "group": "iron sights"
       },
@@ -71,7 +71,7 @@
         "type": "box",
         "pos": [0, 0.0355, -0.66],
         "size": [0.009, 0.009, 0.009],
-        "colour": "#d9b85c",
+        "color": "#d9b85c",
         "name": "front bead",
         "group": "iron sights"
       },
@@ -80,7 +80,7 @@
         "pos": [0, -0.02, -0.35],
         "radius": 0.011,
         "height": 0.36,
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "pitch": 90
       },
       {
@@ -88,7 +88,7 @@
         "pos": [0, -0.02, -0.535],
         "radius": 0.012,
         "height": 0.012,
-        "colour": "#2a2c2e",
+        "color": "#2a2c2e",
         "pitch": 90,
         "hiddenBy": "magazine"
       },
@@ -96,51 +96,51 @@
         "type": "box",
         "pos": [0, -0.022, -0.32],
         "size": [0.048, 0.04, 0.15],
-        "colour": "#262626"
+        "color": "#262626"
       },
       {
         "type": "box",
         "pos": [0.0245, -0.022, -0.32],
         "size": [0.002, 0.006, 0.13],
-        "colour": "#161718"
+        "color": "#161718"
       },
       {
         "type": "box",
         "pos": [-0.0245, -0.022, -0.32],
         "size": [0.002, 0.006, 0.13],
-        "colour": "#161718"
+        "color": "#161718"
       },
       {
         "type": "box",
         "pos": [0, -0.045, 0.045],
         "size": [0.012, 0.008, 0.07],
-        "colour": "#1d1f21"
+        "color": "#1d1f21"
       },
       {
         "type": "box",
         "pos": [0, -0.038, 0.035],
         "size": [0.006, 0.02, 0.006],
-        "colour": "#1d1f21"
+        "color": "#1d1f21"
       },
       {
         "type": "box",
         "pos": [0, -0.045, 0.12],
         "size": [0.04, 0.05, 0.1],
-        "colour": "#262626",
+        "color": "#262626",
         "pitch": -15
       },
       {
         "type": "box",
         "pos": [0, -0.035, 0.255],
         "size": [0.045, 0.07, 0.2],
-        "colour": "#262626",
+        "color": "#262626",
         "pitch": 6
       },
       {
         "type": "box",
         "pos": [0, -0.052, 0.355],
         "size": [0.047, 0.11, 0.014],
-        "colour": "#161718",
+        "color": "#161718",
         "pitch": 6
       }
     ],

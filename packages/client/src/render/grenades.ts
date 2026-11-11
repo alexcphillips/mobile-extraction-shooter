@@ -20,7 +20,7 @@ const SPIN = 2.5;
 
 const FIREBALLS = 4;
 const FIREBALL_MS = 380;
-/** The fireball's size at its biggest, in metres. */
+/** The fireball's size at its biggest, in meters. */
 const FIREBALL_SIZE = 2.2;
 const FIRE_HOT = new THREE.Color(0xfff0b0);
 const FIRE_COOL = new THREE.Color(0x8a3a12);
@@ -76,7 +76,7 @@ const PUFFS: readonly (readonly [number, number, number, number])[] = [
 const SMOKE_OPACITY = 0.92;
 
 /**
- * One smoke puff as an SVG, drawn on a sprite that always faces the camera: a soft grey
+ * One smoke puff as an SVG, drawn on a sprite that always faces the camera: a soft gray
  * blob, a few overlapping circles fading out at the edge, so puffs blend into a cloud.
  */
 const SMOKE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-64 -64 128 128" width="128" height="128">
@@ -334,7 +334,7 @@ export class GrenadeViews {
     }
   }
 
-  /** An item's model, centred on its middle so it tumbles about it. */
+  /** An item's model, centered on its middle so it tumbles about it. */
   private geometry(id: string): THREE.BufferGeometry {
     let g = this.geometries.get(id);
     if (g) return g;

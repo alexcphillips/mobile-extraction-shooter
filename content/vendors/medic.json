@@ -4,7 +4,7 @@
   "name": "Doc",
   "blurb": "An experienced emergency physician supplying medical goods and pharmaceuticals.",
   "order": 4,
-  "colour": "#b8504a",
+  "color": "#b8504a",
   "levels": [
     {
       "rep": 0.2,

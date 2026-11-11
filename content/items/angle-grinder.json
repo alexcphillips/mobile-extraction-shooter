@@ -15,7 +15,7 @@
         "radius": 0.031,
         "height": 0.17,
         "sides": 10,
-        "colour": "#4677b3",
+        "color": "#4677b3",
         "name": "motor housing",
         "group": "body"
       },
@@ -27,7 +27,7 @@
         "radiusTop": 0.022,
         "height": 0.05,
         "sides": 8,
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "name": "rear grip",
         "group": "body"
       },
@@ -38,7 +38,7 @@
         "radius": 0.0325,
         "height": 0.012,
         "sides": 8,
-        "colour": "#355d8e",
+        "color": "#355d8e",
         "name": "front collar",
         "group": "body"
       },
@@ -46,7 +46,7 @@
         "type": "box",
         "pos": [-0.0302, 0.064, 0.07],
         "size": [0.004, 0.022, 0.006],
-        "colour": "#141516",
+        "color": "#141516",
         "name": "vent",
         "group": "body"
       },
@@ -54,7 +54,7 @@
         "type": "box",
         "pos": [-0.0302, 0.064, 0.085],
         "size": [0.004, 0.022, 0.006],
-        "colour": "#141516",
+        "color": "#141516",
         "name": "vent",
         "group": "body"
       },
@@ -62,7 +62,7 @@
         "type": "box",
         "pos": [-0.0302, 0.064, 0.1],
         "size": [0.004, 0.022, 0.006],
-        "colour": "#141516",
+        "color": "#141516",
         "name": "vent",
         "group": "body"
       },
@@ -70,7 +70,7 @@
         "type": "box",
         "pos": [0, 0.0905, 0.03],
         "size": [0.014, 0.006, 0.05],
-        "colour": "#141516",
+        "color": "#141516",
         "name": "switch rail",
         "group": "body"
       },
@@ -78,7 +78,7 @@
         "type": "box",
         "pos": [0, 0.0935, 0.018],
         "size": [0.012, 0.006, 0.012],
-        "colour": "#d8461c",
+        "color": "#d8461c",
         "name": "switch slider",
         "group": "body"
       },
@@ -90,7 +90,7 @@
         "radiusTop": 0.006,
         "height": 0.036,
         "sides": 6,
-        "colour": "#141516",
+        "color": "#141516",
         "name": "strain relief",
         "group": "cord"
       },
@@ -102,7 +102,7 @@
         "radius": 0.0045,
         "height": 0.0559,
         "sides": 5,
-        "colour": "#141516",
+        "color": "#141516",
         "name": "cord",
         "group": "cord"
       },
@@ -110,7 +110,7 @@
         "type": "box",
         "pos": [0, 0.064, -0.095],
         "size": [0.058, 0.05, 0.06],
-        "colour": "#3a3d40",
+        "color": "#3a3d40",
         "name": "gear head",
         "group": "head"
       },
@@ -120,7 +120,7 @@
         "radius": 0.006,
         "height": 0.006,
         "sides": 6,
-        "colour": "#8d8f91",
+        "color": "#8d8f91",
         "name": "spindle lock",
         "group": "head"
       },
@@ -132,7 +132,7 @@
         "radiusTop": 0.0125,
         "height": 0.085,
         "sides": 8,
-        "colour": "#2b2d2f",
+        "color": "#2b2d2f",
         "name": "side handle",
         "group": "head"
       },
@@ -142,7 +142,7 @@
         "radius": 0.012,
         "height": 0.012,
         "sides": 8,
-        "colour": "#8d8f91",
+        "color": "#8d8f91",
         "name": "spindle collar",
         "group": "disc"
       },
@@ -152,7 +152,7 @@
         "size": [0.126, 0.012, 0.068],
         "corners": [0.004, 0.004, 0.034, 0.034],
         "segments": 3,
-        "colour": "#8d8f91",
+        "color": "#8d8f91",
         "name": "guard",
         "group": "disc"
       },
@@ -162,7 +162,7 @@
         "radius": 0.0575,
         "height": 0.003,
         "sides": 12,
-        "colour": "#555759",
+        "color": "#555759",
         "name": "disc",
         "group": "disc"
       },
@@ -172,7 +172,7 @@
         "radius": 0.014,
         "height": 0.004,
         "sides": 6,
-        "colour": "#8d8f91",
+        "color": "#8d8f91",
         "name": "flange nut",
         "group": "disc"
       }

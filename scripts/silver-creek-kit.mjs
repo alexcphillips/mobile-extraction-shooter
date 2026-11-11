@@ -10,22 +10,22 @@ export const DOOR_H = 2.1;
 export function buildingKit(h) {
   const { box, drawn, along, C, r2 } = h;
   /** A wall along x at z; openings by their x (`at`). Outer walls 0.2, partitions 0.15. */
-  const wX = (id, x0, x1, z, bottom, top, colour, ops = [], thick = 0.2) => ({
+  const wX = (id, x0, x1, z, bottom, top, color, ops = [], thick = 0.2) => ({
     type: 'wall',
     id,
     pos: [r2((x0 + x1) / 2), r2(bottom), r2(z)],
     size: [r2(x1 - x0), r2(top - bottom), thick],
-    colour,
+    color,
     openings: ops.map(({ at, ...o }) => ({ ...o, along: r2(at - (x0 + x1) / 2) })),
   });
   /** A wall along z at x; openings by their z (`at`). A yaw-90 wall measures along −z. */
-  const wZ = (id, x, z0, z1, bottom, top, colour, ops = [], thick = 0.2) => ({
+  const wZ = (id, x, z0, z1, bottom, top, color, ops = [], thick = 0.2) => ({
     type: 'wall',
     id,
     pos: [r2(x), r2(bottom), r2((z0 + z1) / 2)],
     yaw: 90,
     size: [r2(z1 - z0), r2(top - bottom), thick],
-    colour,
+    color,
     openings: ops.map(({ at, ...o }) => ({ ...o, along: r2((z0 + z1) / 2 - at) })),
   });
   const door = (at, width = 1.2) => ({ at, width, bottom: 0, top: DOOR_H });
@@ -37,7 +37,7 @@ export function buildingKit(h) {
     pos: [r2(x), r2(y), r2(z)],
     yaw: 0,
     size: [width, DOOR_H],
-    colour: C['timber-dark'],
+    color: C['timber-dark'],
     ...extra,
   });
   const doorZ = (id, x, z, y, width = 1.2, extra = {}) => ({
@@ -50,7 +50,7 @@ export function buildingKit(h) {
    * (0.4 m eaves), over a drawn prism that closes the gable ends. `gaps` leaves holes along
    * x in the north (−z) slope, for a caved-in roof.
    */
-  function roof(id, x0, x1, z0, z1, eave, pitch, colours, gaps = []) {
+  function roof(id, x0, x1, z0, z1, eave, pitch, colors, gaps = []) {
     const t = Math.tan((pitch * Math.PI) / 180);
     const zc = (z0 + z1) / 2;
     const rise = ((z1 - z0) / 2) * t;
@@ -72,7 +72,7 @@ export function buildingKit(h) {
         [r2((xa + xb) / 2), b[0], b[1]],
         r2(xb - xa),
         0.15,
-        colours.roof,
+        colors.roof,
         {
           id: `${id}-${k}`,
           collide: true,
@@ -85,7 +85,7 @@ export function buildingKit(h) {
     nodes.push(slab('s', x0 - 0.3, x1 + 0.3, [ridge, zc], [lowY, z1 + 0.4]));
     runs(x0 + 0.01, x1 - 0.01, gaps).forEach(([xa, xb], k) =>
       nodes.push(
-        drawn(xa, z0, xb, z1, eave - 0.08, ridge - 0.08, colours.gable, {
+        drawn(xa, z0, xb, z1, eave - 0.08, ridge - 0.08, colors.gable, {
           id: `${id}-gable-${k + 1}`,
           top: [r2(xb - xa), 0],
         }),
@@ -101,7 +101,7 @@ export function buildingKit(h) {
    */
   function shell(
     id,
-    { hw = 5.5, hd = 4.5, fl = 0.35, wallH = 3.0, colour, ops, ceilingHoles = [] },
+    { hw = 5.5, hd = 4.5, fl = 0.35, wallH = 3.0, color, ops, ceilingHoles = [] },
   ) {
     const top = fl + wallH;
     const nodes = [
@@ -109,10 +109,10 @@ export function buildingKit(h) {
       drawn(-hw + 0.2, -hd + 0.2, hw - 0.2, hd - 0.2, fl, fl + 0.01, C.floorboards, {
         id: `${id}-boards`,
       }),
-      wX(`${id}-wall-front`, -hw, hw, hd - 0.1, fl, top + 0.2, colour, ops.front ?? []),
-      wX(`${id}-wall-back`, -hw, hw, -hd + 0.1, fl, top + 0.2, colour, ops.back ?? []),
-      wZ(`${id}-wall-west`, -hw + 0.1, -hd + 0.2, hd - 0.2, fl, top + 0.2, colour, ops.west ?? []),
-      wZ(`${id}-wall-east`, hw - 0.1, -hd + 0.2, hd - 0.2, fl, top + 0.2, colour, ops.east ?? []),
+      wX(`${id}-wall-front`, -hw, hw, hd - 0.1, fl, top + 0.2, color, ops.front ?? []),
+      wX(`${id}-wall-back`, -hw, hw, -hd + 0.1, fl, top + 0.2, color, ops.back ?? []),
+      wZ(`${id}-wall-west`, -hw + 0.1, -hd + 0.2, hd - 0.2, fl, top + 0.2, color, ops.west ?? []),
+      wZ(`${id}-wall-east`, hw - 0.1, -hd + 0.2, hd - 0.2, fl, top + 0.2, color, ops.east ?? []),
       // corner trim, drawn
       ...[
         [-1, -1],
@@ -151,7 +151,7 @@ export function buildingKit(h) {
   }
 
   /** A slab over a rectangle with rectangular holes cut out (split into strips along x). */
-  function slabWithHoles(id, x0, z0, x1, z1, bottom, top, colour, holes) {
+  function slabWithHoles(id, x0, z0, x1, z1, bottom, top, color, holes) {
     const xs = [...new Set([x0, x1, ...holes.flatMap((o) => [o[0], o[2]])])].sort((a, b) => a - b);
     const out = [];
     for (let i = 0; i + 1 < xs.length; i++) {
@@ -165,7 +165,7 @@ export function buildingKit(h) {
       if (z1 > z) out.push([a, z, b, z1]);
     }
     return out.map(([a, b, c, d], k) =>
-      box(a, b, c, d, bottom, top, colour, { id: `${id}-${k + 1}` }),
+      box(a, b, c, d, bottom, top, color, { id: `${id}-${k + 1}` }),
     );
   }
 

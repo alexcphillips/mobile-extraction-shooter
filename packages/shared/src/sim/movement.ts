@@ -9,7 +9,7 @@ import {
 import { legSpeedScale } from './health';
 import { eyeHeight, eyeX, eyeZ, type Character, type PlayerInput } from './state';
 
-/** Movement tuning. Distances in metres, speeds in metres per second. */
+/** Movement tuning. Distances in meters, speeds in meters per second. */
 export const MOVEMENT = {
   radius: 0.35,
   standHeight: 1.8,
@@ -39,7 +39,7 @@ export const MOVEMENT = {
   /** With stepUp, a jump gets onto ledges about 1 m high. */
   jumpHeight: 0.6,
   maxFallSpeed: 40,
-  /** Steering in the air, in metres per second per second. */
+  /** Steering in the air, in meters per second per second. */
   airAccel: 8,
   /** Steepest terrain you can walk up, as rise over run (1 = 45°). */
   maxSlope: 1,
@@ -91,7 +91,7 @@ const DT = TICK_SECONDS;
 const JUMP_SPEED = Math.sqrt(2 * MOVEMENT.gravity * MOVEMENT.jumpHeight);
 /** Push into a ladder at least this hard (as a fraction of a full stick) to grab it. */
 const LADDER_GRAB = 0.5;
-/** Where a climber's centre sits in front of the ladder. */
+/** Where a climber's center sits in front of the ladder. */
 const ON_LADDER = MOVEMENT.radius + 0.05;
 
 // Scratch space, so moving allocates nothing.
@@ -556,7 +556,7 @@ function startClimb(c: Character, index: number, l: Ladder, side: number): void 
   placeAtLadder(c, l, side, ON_LADDER);
 }
 
-/** Puts the capsule `front` metres out from the ladder's plane and `side` metres along it. */
+/** Puts the capsule `front` meters out from the ladder's plane and `side` meters along it. */
 function placeAtLadder(c: Character, l: Ladder, side: number, front: number): void {
   const s = Math.max(-l.halfWidth, Math.min(l.halfWidth, side));
   c.x = l.x + l.nx * front + l.nz * s;

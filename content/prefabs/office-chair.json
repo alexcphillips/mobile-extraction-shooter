@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "office-chair",
   "name": "Office chair",
-  "colours": {
+  "colors": {
     "fabric": "#2f343b",
     "plastic": "#1d1e21",
     "metal": "#8a8d91"
@@ -12,7 +12,7 @@
       "type": "box",
       "pos": [0.0, 0.05, 0.16],
       "size": [0.05, 0.035, 0.3],
-      "colour": "plastic",
+      "color": "plastic",
       "yaw": 0,
       "top": [0.04, 0.3],
       "collide": false
@@ -22,7 +22,7 @@
       "pos": [0.0, 0.015, 0.3],
       "radius": 0.03,
       "height": 0.03,
-      "colour": "plastic",
+      "color": "plastic",
       "sides": 6,
       "roll": 90,
       "yaw": 90,
@@ -32,7 +32,7 @@
       "type": "box",
       "pos": [0.1522, 0.05, 0.0494],
       "size": [0.05, 0.035, 0.3],
-      "colour": "plastic",
+      "color": "plastic",
       "yaw": 72,
       "top": [0.04, 0.3],
       "collide": false
@@ -42,7 +42,7 @@
       "pos": [0.2853, 0.015, 0.0927],
       "radius": 0.03,
       "height": 0.03,
-      "colour": "plastic",
+      "color": "plastic",
       "sides": 6,
       "roll": 90,
       "yaw": 162,
@@ -52,7 +52,7 @@
       "type": "box",
       "pos": [0.094, 0.05, -0.1294],
       "size": [0.05, 0.035, 0.3],
-      "colour": "plastic",
+      "color": "plastic",
       "yaw": 144,
       "top": [0.04, 0.3],
       "collide": false
@@ -62,7 +62,7 @@
       "pos": [0.1763, 0.015, -0.2427],
       "radius": 0.03,
       "height": 0.03,
-      "colour": "plastic",
+      "color": "plastic",
       "sides": 6,
       "roll": 90,
       "yaw": 234,
@@ -72,7 +72,7 @@
       "type": "box",
       "pos": [-0.094, 0.05, -0.1294],
       "size": [0.05, 0.035, 0.3],
-      "colour": "plastic",
+      "color": "plastic",
       "yaw": 216,
       "top": [0.04, 0.3],
       "collide": false
@@ -82,7 +82,7 @@
       "pos": [-0.1763, 0.015, -0.2427],
       "radius": 0.03,
       "height": 0.03,
-      "colour": "plastic",
+      "color": "plastic",
       "sides": 6,
       "roll": 90,
       "yaw": 306,
@@ -92,7 +92,7 @@
       "type": "box",
       "pos": [-0.1522, 0.05, 0.0494],
       "size": [0.05, 0.035, 0.3],
-      "colour": "plastic",
+      "color": "plastic",
       "yaw": 288,
       "top": [0.04, 0.3],
       "collide": false
@@ -102,7 +102,7 @@
       "pos": [-0.2853, 0.015, 0.0927],
       "radius": 0.03,
       "height": 0.03,
-      "colour": "plastic",
+      "color": "plastic",
       "sides": 6,
       "roll": 90,
       "yaw": 378,
@@ -113,7 +113,7 @@
       "pos": [0, 0.04, 0],
       "radius": 0.05,
       "height": 0.06,
-      "colour": "plastic",
+      "color": "plastic",
       "sides": 8,
       "collide": false
     },
@@ -122,7 +122,7 @@
       "pos": [0, 0.1, 0],
       "radius": 0.025,
       "height": 0.3,
-      "colour": "metal",
+      "color": "metal",
       "sides": 6,
       "collide": false
     },
@@ -130,14 +130,14 @@
       "type": "box",
       "pos": [0, 0.38, 0],
       "size": [0.22, 0.04, 0.22],
-      "colour": "plastic",
+      "color": "plastic",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.42, 0.02],
       "size": [0.5, 0.08, 0.48],
-      "colour": "fabric",
+      "color": "fabric",
       "top": [0.48, 0.46],
       "bulge": [0, 0, 0, 0.015, 0, 0.01]
     },
@@ -145,7 +145,7 @@
       "type": "box",
       "pos": [0, 0.36, -0.25],
       "size": [0.06, 0.3, 0.03],
-      "colour": "plastic",
+      "color": "plastic",
       "pitch": -8,
       "collide": false
     },
@@ -153,7 +153,7 @@
       "type": "box",
       "pos": [0, 0.6, -0.27],
       "size": [0.46, 0.55, 0.07],
-      "colour": "fabric",
+      "color": "fabric",
       "pitch": -8,
       "top": [0.4, 0.06],
       "bulge": [0, 0, 0, 0, 0, 0.015]
@@ -162,28 +162,28 @@
       "type": "box",
       "pos": [-0.27, 0.48, -0.02],
       "size": [0.04, 0.2, 0.04],
-      "colour": "plastic",
+      "color": "plastic",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.27, 0.68, -0.02],
       "size": [0.07, 0.03, 0.24],
-      "colour": "plastic",
+      "color": "plastic",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.27, 0.48, -0.02],
       "size": [0.04, 0.2, 0.04],
-      "colour": "plastic",
+      "color": "plastic",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.27, 0.68, -0.02],
       "size": [0.07, 0.03, 0.24],
-      "colour": "plastic",
+      "color": "plastic",
       "collide": false
     }
   ]

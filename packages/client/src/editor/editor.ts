@@ -192,14 +192,14 @@ function hasZombieMarkers(nodes: readonly MapNode[]): boolean {
 }
 const TOOL_KEYS = { prefab: '6', marker: '7', zone: '8', wall: '9', curve: '0' } as const;
 const DEG = Math.PI / 180;
-/** How near the last curve's centre a click must be to go on it. */
-const CENTRE_SNAP = 0.5;
+/** How near the last curve's center a click must be to go on it. */
+const CENTER_SNAP = 0.5;
 
 type Patrol = Extract<MapNode, { type: 'patrol' }>;
 
 /**
  * A patrol, named zone or run of walls being drawn a click at a time (points in the scope's
- * frame), points being added to the end of the patrol at `index`, or a curve (its centre,
+ * frame), points being added to the end of the patrol at `index`, or a curve (its center,
  * then where it starts).
  */
 export interface Drawing {
@@ -282,8 +282,8 @@ export interface EditorState {
   angleSnap: number;
   snapDown: boolean;
   objectSnap: boolean;
-  /** The colour new shapes get: the last one set. */
-  colour: string;
+  /** The color new shapes get: the last one set. */
+  color: string;
   /** Whether any file (the map or a prefab) differs from what's saved. */
   dirty: boolean;
   /** The files that do, for the save button. */
@@ -337,8 +337,8 @@ export class MapEditor {
   private handlesKey = '';
   /** The ends of the map's walls in the scope's frame, for corners to snap to; worked out when needed. */
   private ends: Vec3[] | null = null;
-  /** The last curve's centre and the scope it was in, for the next to line up with. */
-  private lastCentre: { scope: string; at: Vec3 } | null = null;
+  /** The last curve's center and the scope it was in, for the next to line up with. */
+  private lastCenter: { scope: string; at: Vec3 } | null = null;
   /** How far round the curve being drawn goes, followed as the mouse moves. */
   private sweep = 0;
   private draftTimer = 0;
@@ -385,7 +385,7 @@ export class MapEditor {
       angleSnap: 15,
       snapDown: true,
       objectSnap: true,
-      colour: '#b5b0a6',
+      color: '#b5b0a6',
       dirty: false,
       unsaved: [],
       saving: false,
@@ -396,7 +396,7 @@ export class MapEditor {
       canUndo: false,
       canRedo: false,
     };
-    this.files = this.serialise();
+    this.files = this.serialize();
     this.saved = new Map(this.files);
     const restored = this.restoreDraft();
     this.view = new EditorView(canvas, compileMap(this.state.map, this.prefabs), {
@@ -648,9 +648,9 @@ export class MapEditor {
     return ids;
   }
 
-  /** The colour slots of the file the scope is in. */
+  /** The color slots of the file the scope is in. */
   slots(): Readonly<Record<string, string>> {
-    return (this.scopePrefab() ?? this.state.map).colours ?? {};
+    return (this.scopePrefab() ?? this.state.map).colors ?? {};
   }
 
   /** The active (last selected) node. */
@@ -711,7 +711,7 @@ export class MapEditor {
   ): void {
     const before = this.snapshot();
     const selected = change(this.scopeNodes(), this.state.map);
-    const after = this.serialise();
+    const after = this.serialize();
     if (sameFiles(after, before.files)) return;
     this.load(after, before.files);
     // Buildings can't overlap: an edit that makes more of them overlap doesn't happen.
@@ -748,7 +748,7 @@ export class MapEditor {
   }
 
   /** Every file's JSON as it is now. */
-  private serialise(): Map<string, string> {
+  private serialize(): Map<string, string> {
     const files = new Map([[this.state.file, JSON.stringify(this.state.map)]]);
     for (const [id, p] of this.prefabs) files.set(prefabFile(id), JSON.stringify(p));
     return files;
@@ -1168,7 +1168,7 @@ export class MapEditor {
     if (!p) return;
     if (d.what === 'curve') {
       const arc = this.curveArc(d.points, [p.x, p.y, p.z]);
-      this.view.setPreview(curveBoxes(arc, this.state.curve, this.state.colour), this.slots());
+      this.view.setPreview(curveBoxes(arc, this.state.curve, this.state.color), this.slots());
       const message = curveReadout(arc, this.state.curve, d.points.length);
       if (message !== this.state.message) this.set({ message });
       return;
@@ -1176,14 +1176,14 @@ export class MapEditor {
     if (d.what === 'floor' || d.what === 'water') {
       const corner = this.wallCorner([], [p.x, d.points[0]![1], p.z]);
       // Water is previewed as a thin floor over the same rectangle.
-      const floor = floorBox(d.points[0]!, corner, d.what === 'water' ? WATER : this.state.colour);
+      const floor = floorBox(d.points[0]!, corner, d.what === 'water' ? WATER : this.state.color);
       this.view.setPreview(floor && [floor], this.slots());
       return;
     }
     const corner = this.wallCorner(d.points, [p.x, p.y, p.z]);
     const { height, thickness } = this.state.wall;
     this.view.setPreview(
-      wallBoxes([...d.points, corner], height, thickness, this.state.colour),
+      wallBoxes([...d.points, corner], height, thickness, this.state.color),
       this.slots(),
     );
   }
@@ -1221,7 +1221,7 @@ export class MapEditor {
         return;
       }
       const [w, , dd] = floor.size;
-      const water: MapNode = { type: 'water', pos: floor.pos, size: [w, dd], colour: WATER };
+      const water: MapNode = { type: 'water', pos: floor.pos, size: [w, dd], color: WATER };
       this.edit((nodes) => {
         nodes.push(water);
         return [nodes.length - 1];
@@ -1230,7 +1230,7 @@ export class MapEditor {
         message: `Made ${w} × ${dd} m of water at y ${floor.pos[1]}: set its level (y) in the panel. Click its next first corner, or Esc.`,
       });
     } else if (d.what === 'floor') {
-      const floor = floorBox(pts[0]!, pts[1]!, this.state.colour);
+      const floor = floorBox(pts[0]!, pts[1]!, this.state.color);
       if (!floor) {
         this.set({ message: 'Those corners are in line: click two opposite corners.' });
         return;
@@ -1255,7 +1255,7 @@ export class MapEditor {
     } else if (d.what === 'walls') {
       const { height, thickness } = this.state.wall;
       const corners = close ? [...pts, pts[0]!] : pts;
-      const walls = wallBoxes(corners, height, thickness, this.state.colour);
+      const walls = wallBoxes(corners, height, thickness, this.state.color);
       this.edit((nodes) => {
         const at = nodes.length;
         nodes.push(...walls);
@@ -1291,22 +1291,22 @@ export class MapEditor {
   // Curves
 
   /**
-   * A click while drawing a curve: the centre (on the last curve's, if near it, else on the
+   * A click while drawing a curve: the center (on the last curve's, if near it, else on the
    * grid), then where it starts (which sets its size), then where it ends, which makes it.
    */
   private addCurvePoint(d: Drawing, p: Vec3): void {
     if (!d.points.length) {
-      const last = this.lastCentre;
+      const last = this.lastCenter;
       const onLast =
         last?.scope === this.state.scope.join('.') &&
-        Math.hypot(last.at[0] - p[0], last.at[2] - p[2]) < CENTRE_SNAP;
+        Math.hypot(last.at[0] - p[0], last.at[2] - p[2]) < CENTER_SNAP;
       const grid = this.state.gridSnap;
       const [x, z] = grid ? [p[0], p[2]].map((v) => Math.round(v / grid) * grid) : [p[0], p[2]];
-      const centre: Vec3 = onLast ? last.at : [round(x!), round(p[1]), round(z!)];
+      const center: Vec3 = onLast ? last.at : [round(x!), round(p[1]), round(z!)];
       return this.set({
-        drawing: { ...d, points: [centre] },
+        drawing: { ...d, points: [center] },
         message:
-          (onLast ? "On the last curve's centre. " : '') +
+          (onLast ? "On the last curve's center. " : '') +
           'Now click where it starts: that sets how big the circle is.',
       });
     }
@@ -1314,7 +1314,7 @@ export class MapEditor {
     if (d.points.length === 1) {
       this.sweep = 0;
       return this.set({
-        drawing: { ...d, points: [arc.centre, onCircle(arc.centre, arc.radius, arc.start)] },
+        drawing: { ...d, points: [arc.center, onCircle(arc.center, arc.radius, arc.start)] },
         message:
           'Now click where it ends (it follows the mouse either way round), or click the start again for a full circle.',
       });
@@ -1328,21 +1328,21 @@ export class MapEditor {
    * clicked, a full circle out to the mouse; after, from the start round to the mouse.
    */
   private curveArc(points: readonly Vec3[], p: Vec3): Arc {
-    const centre = points[0]!;
+    const center = points[0]!;
     const edge = points[1] ?? p;
-    const start = angleFrom(centre, edge);
-    const radius = Math.hypot(edge[0] - centre[0], edge[2] - centre[2]);
+    const start = angleFrom(center, edge);
+    const radius = Math.hypot(edge[0] - center[0], edge[2] - center[2]);
     if (points.length < 2) this.sweep = 360;
-    else this.sweep = followSweep(start, this.sweep, angleFrom(centre, p));
+    else this.sweep = followSweep(start, this.sweep, angleFrom(center, p));
     const { gridSnap, angleSnap } = this.state;
-    return snapArc({ centre, radius, start, sweep: this.sweep }, gridSnap, angleSnap);
+    return snapArc({ center, radius, start, sweep: this.sweep }, gridSnap, angleSnap);
   }
 
-  /** Makes a curve's boxes, grouped, and remembers its centre for the next to line up with. */
+  /** Makes a curve's boxes, grouped, and remembers its center for the next to line up with. */
   private makeCurve(arc: Arc): void {
     const s = this.state.curve;
-    const boxes = curveBoxes(arc, s, this.state.colour);
-    this.lastCentre = { scope: this.state.scope.join('.'), at: arc.centre };
+    const boxes = curveBoxes(arc, s, this.state.color);
+    this.lastCenter = { scope: this.state.scope.join('.'), at: arc.center };
     const name = CURVE_NAMES[s.mode];
     this.edit((nodes) => {
       const at = nodes.length;
@@ -1364,7 +1364,7 @@ export class MapEditor {
     this.set({
       message:
         `Made ${name.toLowerCase()}: ${boxes.length} pieces, grouped.${steep} ` +
-        'To line something else up with it, click the same centre (it snaps).',
+        'To line something else up with it, click the same center (it snaps).',
     });
   }
 
@@ -1372,7 +1372,7 @@ export class MapEditor {
 
   /**
    * Puts a round hole (not cut yet) in the floor clicked, where clicked: on the floor's
-   * middle if within a metre of it, else on the grid. The floor can be inside a group in
+   * middle if within a meter of it, else on the grid. The floor can be inside a group in
    * scope; a placed prefab has to be gone into first.
    */
   private placeHole(e: MouseEvent): void {
@@ -1413,7 +1413,7 @@ export class MapEditor {
     const { holeRadius, railing, railingHeight } = this.state.curve;
     const hole: Hole = { x: h!.x, z: h!.z, radius: holeRadius };
     try {
-      const cut = cutHole(floor, hole, railing ? railingHeight : null, this.state.colour);
+      const cut = cutHole(floor, hole, railing ? railingHeight : null, this.state.color);
       return { floor, hole, cut, problem: null };
     } catch (err) {
       return { floor, hole, cut: null, problem: err instanceof Error ? err.message : String(err) };
@@ -1432,7 +1432,7 @@ export class MapEditor {
       radius: hole.radius,
       height: round(floor.size[1] + 0.4),
       sides: 32,
-      colour: '#ff8800',
+      color: '#ff8800',
       collide: false,
     };
     // The plug's middle in the floor's parent frame.
@@ -1703,7 +1703,7 @@ export class MapEditor {
 
   /**
    * Spaces the selected wall's windows evenly along it, keeping their widths, or the bar's
-   * gap apart, centred.
+   * gap apart, centered.
    */
   spaceWindows(): void {
     const a = this.active();
@@ -1855,7 +1855,7 @@ export class MapEditor {
     }
     const p = this.view.pointUnder(e);
     if (!p) return;
-    const { gridSnap, snapDown, colour, placing } = this.state;
+    const { gridSnap, snapDown, color, placing } = this.state;
     if (gridSnap) {
       p.x = round(Math.round(p.x / gridSnap) * gridSnap);
       p.z = round(Math.round(p.z / gridSnap) * gridSnap);
@@ -1878,11 +1878,11 @@ export class MapEditor {
       };
       placeNode(node, [p.x, p.y, p.z]);
     } else if (tool === 'marker') {
-      node = newMarker(this.state.marker, [p.x, p.y, p.z], collectIds(this.fileNodes()), colour);
+      node = newMarker(this.state.marker, [p.x, p.y, p.z], collectIds(this.fileNodes()), color);
       placeNode(node, nodePos(node));
       if (node.type === 'mysteryBox' && this.prefabs.has(MYSTERY_BOX)) node = withBox(node);
     } else {
-      node = newShape(tool, [p.x, p.y, p.z], colour);
+      node = newShape(tool, [p.x, p.y, p.z], color);
       placeNode(node, nodePos(node));
     }
     this.edit((nodes) => {
@@ -1980,7 +1980,7 @@ export class MapEditor {
           wall.openings.push({
             ...o,
             along: Math.max(-half, Math.min(half, o.along)),
-            ...(glazed ? { glass: this.state.wall.glassColour } : {}),
+            ...(glazed ? { glass: this.state.wall.glassColor } : {}),
           });
         }
         wall.openings.sort((a, b) => a.along - b.along);
@@ -1998,7 +1998,7 @@ export class MapEditor {
             type: 'door',
             pos: split.door,
             size: [width, DOOR_HEIGHT],
-            colour: this.state.colour,
+            color: this.state.color,
           };
           placeNode(door, split.door, split.yaw);
           doorNodes.push(door);
@@ -2018,7 +2018,7 @@ export class MapEditor {
             type: 'door',
             pos,
             size: [width, DOOR_HEIGHT],
-            colour: this.state.colour,
+            color: this.state.color,
           };
           placeNode(door, pos, yaw);
           pieces.push(door);
@@ -2076,7 +2076,7 @@ export class MapEditor {
         this.set({ message: 'Click the wall right under or over a window to glaze it.' });
         return;
       }
-      const tint = this.state.wall.glassColour;
+      const tint = this.state.wall.glassColor;
       this.edit((_, map) => {
         const w = nodesAt(map, parent, this.prefabs)[index] as typeof piece;
         w.openings[k]!.glass = tint;
@@ -2087,11 +2087,7 @@ export class MapEditor {
     }
     const glass =
       piece?.type === 'box'
-        ? windowAt(
-            piece,
-            nodesAt(this.state.map, parent, this.prefabs),
-            this.state.wall.glassColour,
-          )
+        ? windowAt(piece, nodesAt(this.state.map, parent, this.prefabs), this.state.wall.glassColor)
         : null;
     if (!glass) {
       this.set({
@@ -2141,7 +2137,7 @@ export class MapEditor {
     }
     let pieces: MapNode[];
     try {
-      pieces = edgeRailing(n, hit.at, railingHeight, this.state.colour);
+      pieces = edgeRailing(n, hit.at, railingHeight, this.state.color);
     } catch (err) {
       this.set({ message: `No railing: ${err instanceof Error ? err.message : err}.` });
       return;
@@ -2156,11 +2152,11 @@ export class MapEditor {
     });
   }
 
-  setColour(colour: string): void {
-    this.set({ colour });
+  setColor(color: string): void {
+    this.set({ color });
   }
 
-  /** Changes the map's own settings (environment, ground colour, water). */
+  /** Changes the map's own settings (environment, ground color, water). */
   editMap(change: (map: MapFile) => void): void {
     this.edit((_, map) => void change(map));
   }
@@ -2190,7 +2186,7 @@ export class MapEditor {
     if (!prefab) return;
     let out;
     try {
-      out = compileNodes(prefab.nodes, this.prefabs, prefab.colours);
+      out = compileNodes(prefab.nodes, this.prefabs, prefab.colors);
     } catch {
       return;
     }
@@ -2217,11 +2213,11 @@ export class MapEditor {
     const [x0, x1, z0, z1] = [Math.min(...xs), Math.max(...xs), Math.min(...zs), Math.max(...zs)];
     const cm = (v: number): number => round(v, 0.01);
     this.editPrefab((p) => {
-      const centre: [number, number] = [cm((x0 + x1) / 2), cm((z0 + z1) / 2)];
+      const center: [number, number] = [cm((x0 + x1) / 2), cm((z0 + z1) / 2)];
       p.building = {
         size: [cm(x1 - x0), cm(z1 - z0)],
-        ...(centre[0] || centre[1] ? { centre } : {}),
-        ...(p.building?.colour !== undefined && { colour: p.building.colour }),
+        ...(center[0] || center[1] ? { center } : {}),
+        ...(p.building?.color !== undefined && { color: p.building.color }),
       };
     });
   }
@@ -2433,7 +2429,7 @@ export class MapEditor {
 
 /** What the curve tool says as the mouse moves: the size, how far round, and for stairs how steep. */
 function curveReadout(arc: Arc, s: CurveSettings, clicks: number): string {
-  const parts = [`radius ${arc.radius} m`, `built at height ${round(arc.centre[1] + s.raise)} m`];
+  const parts = [`radius ${arc.radius} m`, `built at height ${round(arc.center[1] + s.raise)} m`];
   if (clicks > 1) parts.push(`${Math.abs(Math.round(arc.sweep))}° round`);
   if (s.mode === 'stairs') {
     const slope = Math.round(stairsSlope(arc, s));
@@ -2467,11 +2463,11 @@ function toolHint(
         ? 'Click near the edge of a floor, ramp or stairs for a railing along it; click a railing to cut a gap in it. Esc stops.'
         : `Click a wall to cut a ${wall.mode} there. Esc stops.`;
   if (tool === 'curve' && curve.mode === 'hole')
-    return 'Click a floor (a box) where the hole goes: it snaps to the middle, or in line with it, within a metre. Esc stops.';
+    return 'Click a floor (a box) where the hole goes: it snaps to the middle, or in line with it, within a meter. Esc stops.';
   if (tool === 'curve')
     return 'Click the middle of the circle. Everything is built outwards from the circle you click. Esc stops.';
   if (tool === 'terrain' && brush.mode === 'level')
-    return 'Drag a rectangle: every cell it touches is levelled to the height where you start (or the one set). Esc stops.';
+    return 'Drag a rectangle: every cell it touches is leveled to the height where you start (or the one set). Esc stops.';
   if (tool === 'terrain' && brush.mode === 'hole')
     return 'Drag a rectangle: every cell it touches becomes a hole, for building under the ground; ⇧ fills them. Esc stops.';
   if (tool === 'terrain')
@@ -2510,43 +2506,43 @@ const samePair = (
   [c, d]: readonly [NodePath, NodePath],
 ): boolean => a.join('.') === c.join('.') && b.join('.') === d.join('.');
 
-/** A new body of water's colour. */
+/** A new body of water's color. */
 const WATER = '#3d7ea6';
 
 /** How thick a quick floor is. */
 const FLOOR_THICKNESS = 0.2;
 
 /** A thin floor filling the rectangle between two opposite corners, standing at the first's height. Null if they're in line. */
-function floorBox(a: Vec3, b: Vec3, colour: string): Extract<MapNode, { type: 'box' }> | null {
+function floorBox(a: Vec3, b: Vec3, color: string): Extract<MapNode, { type: 'box' }> | null {
   const w = round(Math.abs(b[0] - a[0]));
   const d = round(Math.abs(b[2] - a[2]));
   if (!w || !d) return null;
   const pos: Vec3 = [round((a[0] + b[0]) / 2), a[1], round((a[2] + b[2]) / 2)];
-  return { type: 'box', pos: [...pos], size: [w, FLOOR_THICKNESS, d], colour };
+  return { type: 'box', pos: [...pos], size: [w, FLOOR_THICKNESS, d], color };
 }
 
-function newShape(tool: Placeable, pos: [number, number, number], colour: string): MapNode {
+function newShape(tool: Placeable, pos: [number, number, number], color: string): MapNode {
   switch (tool) {
     case 'box':
-      return { type: 'box', pos, size: [1, 1, 1], colour };
+      return { type: 'box', pos, size: [1, 1, 1], color };
     case 'cylinder':
-      return { type: 'cylinder', pos, radius: 0.5, height: 1, colour };
+      return { type: 'cylinder', pos, radius: 0.5, height: 1, color };
     case 'ramp':
-      return { type: 'ramp', pos, size: [2, 1, 3], colour };
+      return { type: 'ramp', pos, size: [2, 1, 3], color };
     case 'stairs':
-      return { type: 'stairs', pos, size: [1.2, 2, 3], colour };
+      return { type: 'stairs', pos, size: [1.2, 2, 3], color };
     case 'ladder':
-      return { type: 'ladder', pos, height: 3, colour };
+      return { type: 'ladder', pos, height: 3, color };
     case 'floor':
-      return { type: 'box', pos, size: [4, FLOOR_THICKNESS, 4], colour };
+      return { type: 'box', pos, size: [4, FLOOR_THICKNESS, 4], color };
     case 'water':
-      return { type: 'water', pos, size: [4, 4], colour: WATER };
+      return { type: 'water', pos, size: [4, 4], color: WATER };
     case 'slab':
       return {
         type: 'box',
         pos,
         size: [4, WALL_DEFAULTS.height, WALL_DEFAULTS.thickness],
-        colour,
+        color,
       };
   }
 }
@@ -2576,7 +2572,7 @@ function withBox(marker: Extract<MapNode, { type: 'mysteryBox' }>): MapNode {
   };
 }
 
-function newMarker(kind: MarkerKind, pos: Vec3, taken: Set<string>, colour: string): MapNode {
+function newMarker(kind: MarkerKind, pos: Vec3, taken: Set<string>, color: string): MapNode {
   const first = (ids: Iterable<string>, prefer: string): string => {
     const all = [...ids].sort();
     return all.includes(prefer) ? prefer : (all[0] ?? prefer);
@@ -2613,7 +2609,7 @@ function newMarker(kind: MarkerKind, pos: Vec3, taken: Set<string>, colour: stri
     case 'mapLabel':
       return { type: 'mapLabel', pos, text: 'New label' };
     case 'door':
-      return { type: 'door', pos, size: [1, 2.1], colour };
+      return { type: 'door', pos, size: [1, 2.1], color };
     case 'zombieSpawn':
       return { type: 'zombieSpawn', pos };
     case 'wallBuy': {

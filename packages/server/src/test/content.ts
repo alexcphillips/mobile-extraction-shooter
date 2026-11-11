@@ -14,7 +14,7 @@ export const testContent: Record<string, unknown> = {
     size: [1, 1],
     value: 0,
     rarity: 'common',
-    model: { parts: [{ type: 'box', pos: [0, 0, 0], size: [0.1, 0.1, 0.1], colour: '#8b4a8b' }] },
+    model: { parts: [{ type: 'box', pos: [0, 0, 0], size: [0.1, 0.1, 0.1], color: '#8b4a8b' }] },
   },
   'content/quests/test-notes.json': {
     formatVersion: 1,

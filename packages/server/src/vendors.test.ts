@@ -120,29 +120,29 @@ describe('vendors', () => {
     const me = await client.ok('GET', '/profile');
     const self = { kind: 'self' } as const;
     const helmet = { owner: self, slot: 'helmet', item: me.profile.gear.helmet!.item } as const;
-    const armour = {
+    const armor = {
       owner: self,
-      slot: 'bodyArmour',
-      item: me.profile.gear.bodyArmour!.item,
+      slot: 'bodyArmor',
+      item: me.profile.gear.bodyArmor!.item,
     } as const;
     const knife = { owner: self, slot: 'knife', item: 'knife' } as const;
     const refused = await client.fails('POST', '/vendors/sell', {
       version: me.version,
-      from: [helmet, armour, knife],
+      from: [helmet, armor, knife],
     });
     expect(refused.message).toMatch(/knife/);
     const sold = await client.ok('POST', '/vendors/sell', {
       version: me.version,
-      from: [helmet, armour],
+      from: [helmet, armor],
     });
     expect(sold.profile.gear.helmet).toBeNull();
-    expect(sold.profile.gear.bodyArmour).toBeNull();
+    expect(sold.profile.gear.bodyArmor).toBeNull();
     expect(sold.profile.money).toBe(
-      sellPrice(items, me.profile.gear.helmet!) + sellPrice(items, me.profile.gear.bodyArmour!),
+      sellPrice(items, me.profile.gear.helmet!) + sellPrice(items, me.profile.gear.bodyArmor!),
     );
   });
 
-  it('refuses a stash edit that mends armour without spending a repair kit', async () => {
+  it('refuses a stash edit that mends armor without spending a repair kit', async () => {
     const client = await signedIn();
     const me = await client.ok('GET', '/profile');
     const worn = await client.env.DB.prepare('SELECT data FROM profiles').first<{ data: string }>();

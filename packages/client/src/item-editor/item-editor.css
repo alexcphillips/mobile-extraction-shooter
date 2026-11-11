@@ -100,23 +100,281 @@ body.item-editor #scene {
 }
 
 .ie-form {
-  width: 330px;
+  width: 380px;
   flex: none;
-  padding: 8px;
-  background: var(--ed-bg);
-  border-radius: 6px;
-  border-top: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   overflow: auto;
 }
 
-.ie-form .ed-row {
-  flex-wrap: wrap;
+/* The stats form (2026-11-11 rework): a header, then a card per group of fields. */
+.ie-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--ed-bg);
+  border-radius: 6px;
 }
 
-.ie-form .ed-row > span {
-  display: flex;
+.ie-head-name {
   flex: 1;
-  min-width: 80px;
+  min-width: 0;
+}
+
+.ie-head h3 {
+  margin: 0 0 2px;
+  font-size: 15px;
+  color: var(--ed-accent);
+}
+
+.ie-head .ed-note {
+  font-size: 11px;
+}
+
+#editor .ie-type-pick {
+  flex: none;
+  padding: 3px 6px;
+  text-transform: capitalize;
+}
+
+.ie-alert {
+  margin: 0;
+  padding: 6px 8px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+}
+
+.ie-group-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 12px 12px;
+  background: var(--ed-bg);
+  border-radius: 6px;
+}
+
+.ie-group-card > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 20px;
+}
+
+/* A card with only its title (an unticked "armored") stays one line. */
+.ie-group-card > header:only-child {
+  margin-bottom: -4px;
+}
+
+.ie-group-card h4 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ed-text);
+}
+
+.ie-group-card > header .ed-note {
+  font-size: 11px;
+}
+
+/* Every field a label over its control, the same size. */
+.ie-form .ed-field,
+.ie-labeled {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--ed-dim);
+}
+
+#editor .ie-form .ed-field > input:not([type]),
+#editor .ie-form .ed-field > select,
+#editor .ie-form .ed-combo-value,
+#editor .ie-form .ed-num input {
+  flex: none;
+  width: 100%;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 3px 7px;
+  font-size: 13px;
+  color: var(--ed-text);
+}
+
+.ie-form .ed-num {
+  gap: 3px;
+}
+
+.ie-form .ed-num input::placeholder,
+.ie-form .ed-field input::placeholder {
+  color: var(--ed-dim);
+  opacity: 0.6;
+}
+
+.ie-label {
+  font-size: 11px;
+  color: var(--ed-dim);
+}
+
+/* Fields side by side, as many as fit, each at least 90px. */
+.ie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 8px;
+  align-items: end;
+}
+
+.ie-grid-4 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ie-grid > span {
+  display: flex;
+  min-width: 0;
+}
+
+/* Buttons joined in a row, one on. */
+.ie-seg {
+  display: flex;
+}
+
+#editor .ie-seg button {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 0;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+#editor .ie-seg button::first-letter {
+  text-transform: uppercase;
+}
+
+#editor .ie-seg button + button {
+  margin-left: -1px;
+}
+
+#editor .ie-seg button:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+#editor .ie-seg button:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+#editor .ie-seg button.ed-on {
+  position: relative;
+  color: #fff;
+}
+
+/* Toggle chips: attachment slots, guns an attachment fits. */
+.ie-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+#editor .ie-chips button {
+  padding: 3px 9px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: var(--ed-dim);
+}
+
+#editor .ie-chips button.ed-on {
+  color: var(--ed-text);
+}
+
+.ie-tick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ed-text);
+  cursor: pointer;
+}
+
+#editor .ie-tick input {
+  margin: 0;
+  accent-color: var(--ed-accent);
+}
+
+/* Rarity as chips in its color; the one its level or room gives is marked auto. */
+.ie-rarities {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+
+#editor .ie-rarity {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 8px;
+  font-size: 12px;
+  text-transform: capitalize;
+  color: var(--ed-dim);
+}
+
+#editor .ie-rarity::before {
+  content: '';
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--r);
+}
+
+#editor .ie-rarity.ie-rarity-on {
+  color: #fff;
+  border-color: var(--r);
+  background: color-mix(in srgb, var(--r) 35%, transparent);
+}
+
+.ie-auto {
+  padding: 0 4px;
+  border-radius: 3px;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ed-dim);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ie-sound {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 6px;
+  align-items: end;
+}
+
+#editor .ie-sound button {
+  height: 28px;
+}
+
+.ie-sound .ie-link {
+  align-self: center;
+  margin-top: 14px;
+  font-size: 12px;
+}
+
+.ie-warn {
+  margin: 0;
+  font-size: 12px;
+  color: #f0b44a;
+}
+
+.ie-form .ie-risk {
+  background: var(--ed-bg);
 }
 
 .ie-side {
@@ -181,7 +439,7 @@ body.item-editor #scene {
   height: 100%;
 }
 
-/* A rotated tile's picture: drawn at the unturned shape, centred and turned clockwise. */
+/* A rotated tile's picture: drawn at the unturned shape, centered and turned clockwise. */
 .ie-tile-art-turned {
   inset: auto;
   top: 50%;
@@ -363,19 +621,30 @@ body.item-editor #scene {
 
 /* The views of an item's picture, to pick from (2026-11-02; seven since 2026-11-09, so they wrap). */
 .ie-views {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
 }
 
-.ie-view {
+#editor .ie-view-pick {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-end;
   gap: 3px;
-  flex: 1 0 64px;
-  padding: 6px 2px;
-  font-size: 11px;
+  min-width: 0;
+  padding: 5px 1px 4px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+/* On a rarity chip, the auto mark sits on its top edge. */
+.ie-rarity .ie-auto {
+  position: absolute;
+  top: -6px;
+  right: 4px;
+  background: #2a3038;
+  border: 1px solid var(--ed-line);
 }
 
 .ie-view-tile {
@@ -460,7 +729,7 @@ body.item-editor #scene {
   opacity: 0.4;
 }
 
-/* IE-2: colour swatches, the eyedropper, the picture to trace. */
+/* IE-2: color swatches, the eyedropper, the picture to trace. */
 
 .ie-swatches {
   display: flex;
@@ -572,14 +841,43 @@ body.item-editor #scene {
   font-weight: bold;
 }
 
-.ie-sec-row {
-  display: grid;
-  grid-template-columns: 1.5em repeat(4, 1fr);
-  gap: 4px;
-  align-items: end;
+.ie-pcell-unused {
+  background: repeating-linear-gradient(45deg, #20252c 0 4px, #2a2f37 4px 8px);
 }
 
-.ie-sec-row input {
-  width: 100%;
-  min-width: 0;
+.ie-positions summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ed-dim);
+  cursor: pointer;
+}
+
+.ie-positions summary::before {
+  content: '▸';
+}
+
+.ie-positions[open] summary::before {
+  content: '▾';
+}
+
+.ie-positions summary::-webkit-details-marker {
+  display: none;
+}
+
+#editor .ie-positions summary button {
+  margin-left: auto;
+  font-size: 11px;
+}
+
+.ie-sec-table {
+  display: grid;
+  grid-template-columns: 1.5em repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.ie-sec-table > span:has(.ed-num) {
+  display: block;
 }

@@ -12,7 +12,7 @@
         "type": "box",
         "pos": [0, 0.0008, 0],
         "size": [0.14, 0.0016, 0.07],
-        "colour": "#2f6b3a",
+        "color": "#2f6b3a",
         "name": "pcb",
         "group": "board"
       },
@@ -20,7 +20,7 @@
         "type": "box",
         "pos": [-0.04, 0.00175, -0.003],
         "size": [0.034, 0.0003, 0.0025],
-        "colour": "#e6e0d3",
+        "color": "#e6e0d3",
         "name": "silkscreen label",
         "group": "board"
       },
@@ -28,7 +28,7 @@
         "type": "box",
         "pos": [-0.006, 0.0017, 0.01],
         "size": [0.0022, 0.0002, 0.024],
-        "colour": "#4c8f55",
+        "color": "#4c8f55",
         "name": "trace 0",
         "group": "board"
       },
@@ -36,7 +36,7 @@
         "type": "box",
         "pos": [0.02, 0.0017, 0.021],
         "size": [0.032, 0.0002, 0.0022],
-        "colour": "#4c8f55",
+        "color": "#4c8f55",
         "name": "trace 1",
         "group": "board"
       },
@@ -44,7 +44,7 @@
         "type": "box",
         "pos": [0.0515, 0.0031, -0.013],
         "size": [0.033, 0.003, 0.034],
-        "colour": "#8d9196",
+        "color": "#8d9196",
         "name": "heatsink base",
         "group": "heatsink"
       },
@@ -52,7 +52,7 @@
         "type": "box",
         "pos": [0.0375, 0.0124, -0.013],
         "size": [0.002, 0.016, 0.032],
-        "colour": "#c4c7c9",
+        "color": "#c4c7c9",
         "name": "fin 0",
         "group": "heatsink"
       },
@@ -60,7 +60,7 @@
         "type": "box",
         "pos": [0.045, 0.0124, -0.013],
         "size": [0.002, 0.016, 0.032],
-        "colour": "#c4c7c9",
+        "color": "#c4c7c9",
         "name": "fin 1",
         "group": "heatsink"
       },
@@ -68,7 +68,7 @@
         "type": "box",
         "pos": [0.0525, 0.0124, -0.013],
         "size": [0.002, 0.016, 0.032],
-        "colour": "#c4c7c9",
+        "color": "#c4c7c9",
         "name": "fin 2",
         "group": "heatsink"
       },
@@ -76,7 +76,7 @@
         "type": "box",
         "pos": [0.06, 0.0124, -0.013],
         "size": [0.002, 0.016, 0.032],
-        "colour": "#c4c7c9",
+        "color": "#c4c7c9",
         "name": "fin 3",
         "group": "heatsink"
       },
@@ -84,7 +84,7 @@
         "type": "box",
         "pos": [0.0675, 0.0124, -0.013],
         "size": [0.002, 0.016, 0.032],
-        "colour": "#c4c7c9",
+        "color": "#c4c7c9",
         "name": "fin 4",
         "group": "heatsink"
       },
@@ -92,7 +92,7 @@
         "type": "box",
         "pos": [0.0515, 0.00225, 0.0055],
         "size": [0.01, 0.0013, 0.006],
-        "colour": "#8d8f91",
+        "color": "#8d8f91",
         "name": "transistor tab",
         "group": "heatsink"
       },
@@ -100,7 +100,7 @@
         "type": "box",
         "pos": [0.0515, 0.00385, 0.014],
         "size": [0.01, 0.0045, 0.015],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "name": "transistor",
         "group": "heatsink"
       },
@@ -110,7 +110,7 @@
         "radius": 0.0065,
         "height": 0.013,
         "sides": 8,
-        "colour": "#2d4f8a",
+        "color": "#2d4f8a",
         "name": "cap big 0",
         "group": "parts"
       },
@@ -120,7 +120,7 @@
         "radius": 0.006,
         "height": 0.012,
         "sides": 8,
-        "colour": "#2d4f8a",
+        "color": "#2d4f8a",
         "name": "cap big 1",
         "group": "parts"
       },
@@ -130,7 +130,7 @@
         "radius": 0.004,
         "height": 0.008,
         "sides": 8,
-        "colour": "#2d4f8a",
+        "color": "#2d4f8a",
         "name": "cap small",
         "group": "parts"
       },
@@ -138,7 +138,7 @@
         "type": "box",
         "pos": [-0.022, 0.0031, -0.021],
         "size": [0.016, 0.003, 0.007],
-        "colour": "#1d1f21",
+        "color": "#1d1f21",
         "name": "ic",
         "group": "parts"
       },
@@ -146,7 +146,7 @@
         "type": "box",
         "pos": [-0.061, 0.0036, -0.024],
         "size": [0.004, 0.004, 0.004],
-        "colour": "#c0281c",
+        "color": "#c0281c",
         "name": "led",
         "group": "parts"
       },
@@ -154,7 +154,7 @@
         "type": "box",
         "pos": [-0.055, 0.0041, 0.007],
         "size": [0.009, 0.005, 0.009],
-        "colour": "#4677b3",
+        "color": "#4677b3",
         "name": "trimmer 0",
         "group": "trimmers"
       },
@@ -162,7 +162,7 @@
         "type": "box",
         "pos": [-0.055, 0.007, 0.007],
         "size": [0.005, 0.0012, 0.0015],
-        "colour": "#b08d3c",
+        "color": "#b08d3c",
         "name": "trimmer 0 adjuster",
         "group": "trimmers",
         "yaw": 20
@@ -171,7 +171,7 @@
         "type": "box",
         "pos": [-0.04, 0.0041, 0.007],
         "size": [0.009, 0.005, 0.009],
-        "colour": "#4677b3",
+        "color": "#4677b3",
         "name": "trimmer 1",
         "group": "trimmers"
       },
@@ -179,7 +179,7 @@
         "type": "box",
         "pos": [-0.04, 0.007, 0.007],
         "size": [0.005, 0.0012, 0.0015],
-        "colour": "#b08d3c",
+        "color": "#b08d3c",
         "name": "trimmer 1 adjuster",
         "group": "trimmers",
         "yaw": 65
@@ -188,7 +188,7 @@
         "type": "box",
         "pos": [-0.025, 0.0041, 0.007],
         "size": [0.009, 0.005, 0.009],
-        "colour": "#4677b3",
+        "color": "#4677b3",
         "name": "trimmer 2",
         "group": "trimmers"
       },
@@ -196,7 +196,7 @@
         "type": "box",
         "pos": [-0.025, 0.007, 0.007],
         "size": [0.005, 0.0012, 0.0015],
-        "colour": "#b08d3c",
+        "color": "#b08d3c",
         "name": "trimmer 2 adjuster",
         "group": "trimmers",
         "yaw": 110
@@ -205,7 +205,7 @@
         "type": "box",
         "pos": [-0.035, 0.0061, 0.0275],
         "size": [0.06, 0.009, 0.011],
-        "colour": "#c8c8c0",
+        "color": "#c8c8c0",
         "name": "terminal block",
         "group": "terminals"
       },
@@ -213,7 +213,7 @@
         "type": "box",
         "pos": [-0.059, 0.011, 0.0275],
         "size": [0.0048, 0.0012, 0.0048],
-        "colour": "#8d8f91",
+        "color": "#8d8f91",
         "name": "terminal screw 0",
         "group": "terminals",
         "yaw": 15
@@ -222,7 +222,7 @@
         "type": "box",
         "pos": [-0.047, 0.011, 0.0275],
         "size": [0.0048, 0.0012, 0.0048],
-        "colour": "#8d8f91",
+        "color": "#8d8f91",
         "name": "terminal screw 1",
         "group": "terminals",
         "yaw": 15
@@ -231,7 +231,7 @@
         "type": "box",
         "pos": [-0.035, 0.011, 0.0275],
         "size": [0.0048, 0.0012, 0.0048],
-        "colour": "#8d8f91",
+        "color": "#8d8f91",
         "name": "terminal screw 2",
         "group": "terminals",
         "yaw": 15
@@ -240,7 +240,7 @@
         "type": "box",
         "pos": [-0.023, 0.011, 0.0275],
         "size": [0.0048, 0.0012, 0.0048],
-        "colour": "#8d8f91",
+        "color": "#8d8f91",
         "name": "terminal screw 3",
         "group": "terminals",
         "yaw": 15
@@ -249,7 +249,7 @@
         "type": "box",
         "pos": [-0.011, 0.011, 0.0275],
         "size": [0.0048, 0.0012, 0.0048],
-        "colour": "#8d8f91",
+        "color": "#8d8f91",
         "name": "terminal screw 4",
         "group": "terminals",
         "yaw": 15

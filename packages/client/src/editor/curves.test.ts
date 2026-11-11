@@ -38,7 +38,7 @@ function worldOf(nodes: MapNode[]): CollisionWorld {
 }
 
 describe('curves', () => {
-  const full: Arc = { centre: [0, 0, 0], radius: 6, start: 0, sweep: 360 };
+  const full: Arc = { center: [0, 0, 0], radius: 6, start: 0, sweep: 360 };
 
   it('make a round floor with a round hole, with no gaps to fall through', () => {
     const floor = settings({ mode: 'floor', floorWidth: 3, floorThickness: 0.3, raise: 4 });
@@ -58,7 +58,7 @@ describe('curves', () => {
 
   it('make walls whose inside is the circle clicked, so a railing sits on the hole’s edge', () => {
     const wall = settings({ mode: 'wall', wallHeight: 1, wallThickness: 0.2 });
-    const quarter: Arc = { centre: [2, 0, 3], radius: 5, start: 0, sweep: 90 };
+    const quarter: Arc = { center: [2, 0, 3], radius: 5, start: 0, sweep: 90 };
     const boxes = curveBoxes(quarter, wall, '#fff');
     expect(boxes.length).toBe(6);
     // The first piece faces out along 7.5°: its middle is 5.1 m out, turned 82.5°.
@@ -73,7 +73,7 @@ describe('curves', () => {
     expect(followSweep(30, 0, 60)).toBe(30);
     expect(followSweep(0, 350, 20)).toBe(360);
     expect(snapArc({ ...full, radius: 5.8, start: 7, sweep: 2 }, 0.5, 15)).toEqual({
-      centre: [0, 0, 0],
+      center: [0, 0, 0],
       radius: 6,
       start: 0,
       sweep: 15,
@@ -95,7 +95,7 @@ describe('curves', () => {
 
   it('make curved stairs the real movement code walks up', () => {
     const stairs = settings({ mode: 'stairs', stairsWidth: 1.6, stairsRise: 2 });
-    const arc: Arc = { centre: [0, 0, 0], radius: 4, start: 0, sweep: 90 };
+    const arc: Arc = { center: [0, 0, 0], radius: 4, start: 0, sweep: 90 };
     expect(stepCount(arc, stairs)).toBe(8);
     expect(stairsSlope(arc, stairs)).toBeLessThan(20);
     const world = worldOf(curveBoxes(arc, stairs, '#fff'));
@@ -134,7 +134,7 @@ describe('curves', () => {
       pos: [5, 3.7, -2],
       yaw: 30,
       size: [20, 0.3, 16],
-      colour: '#888888',
+      color: '#888888',
     };
     // From the floor's own frame to the world.
     const world = (lx: number, lz: number): [number, number] => {
@@ -154,9 +154,9 @@ describe('curves', () => {
           if (r > hole.radius + 0.1) expect(w.groundAt(x, z, 0.01, 10)).toBeCloseTo(4, 3);
           if (r < hole.radius - 0.05) expect(w.groundAt(x, z, 0.01, 10)).toBe(0);
         }
-      // Only the first piece keeps the floor's id, and pieces keep its colour.
+      // Only the first piece keeps the floor's id, and pieces keep its color.
       expect(cut.floor.filter((b) => b.id)).toHaveLength(1);
-      expect(cut.floor.every((b) => b.colour === '#888888')).toBe(true);
+      expect(cut.floor.every((b) => b.color === '#888888')).toBe(true);
     });
 
     it('stand a railing on the hole’s edge', () => {

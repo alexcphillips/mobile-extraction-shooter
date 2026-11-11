@@ -32,7 +32,7 @@ describe('the Hangar page (H3)', () => {
       hangar: {},
       crafts: {
         'trauma-bay': { recipe: 'r', item: 'bandage', count: 1, done: 1_000 },
-        'armour-bench': { recipe: 'r', item: 'bandage', count: 1, done: 5_000 },
+        'armor-bench': { recipe: 'r', item: 'bandage', count: 1, done: 5_000 },
       },
     } as unknown as Profile;
     const me = { profile, now: 2_000 } as ProfileResponse;

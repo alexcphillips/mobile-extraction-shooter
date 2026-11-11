@@ -8,12 +8,12 @@
   "value": 150,
   "rarity": "common",
   "stack": 20,
-  "calibre": "bolt",
+  "caliber": "bolt",
   "level": 1,
   "damage": 80,
-  "armourDamage": 6,
+  "armorDamage": 6,
   "bleedChance": 0.75,
   "model": {
-    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.03, 0.03, 0.3], "colour": "#8a6d3b" }]
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.03, 0.03, 0.3], "color": "#8a6d3b" }]
   }
 }

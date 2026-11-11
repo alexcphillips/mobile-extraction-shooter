@@ -12,11 +12,11 @@ const WHITE = '#ffffff';
 
 /** A hollow 3 × 2.8 × 8 m container, open at −z and closed at +z, floor at y = 0. */
 const CONTAINER: MapNode[] = [
-  { type: 'box', pos: [0, 0, 0], size: [3, 0.2, 8], colour: WHITE },
-  { type: 'box', pos: [0, 2.6, 0], size: [3, 0.2, 8], colour: WHITE },
-  { type: 'box', pos: [-1.4, 0.2, 0], size: [0.2, 2.4, 8], colour: WHITE },
-  { type: 'box', pos: [1.4, 0.2, 0], size: [0.2, 2.4, 8], colour: WHITE },
-  { type: 'box', pos: [0, 0.2, 3.9], size: [2.6, 2.4, 0.2], colour: WHITE },
+  { type: 'box', pos: [0, 0, 0], size: [3, 0.2, 8], color: WHITE },
+  { type: 'box', pos: [0, 2.6, 0], size: [3, 0.2, 8], color: WHITE },
+  { type: 'box', pos: [-1.4, 0.2, 0], size: [0.2, 2.4, 8], color: WHITE },
+  { type: 'box', pos: [1.4, 0.2, 0], size: [0.2, 2.4, 8], color: WHITE },
+  { type: 'box', pos: [0, 0.2, 3.9], size: [2.6, 2.4, 0.2], color: WHITE },
 ];
 
 function worldWith(nodes: MapNode[]): CollisionWorld {
@@ -30,7 +30,7 @@ function worldWith(nodes: MapNode[]): CollisionWorld {
       origin: [-20, -20],
       cellSize: 4,
       heights: Array.from({ length: 11 }, () => row),
-      colour: '#6b8f4e',
+      color: '#6b8f4e',
     },
     nodes,
     zones: [],
@@ -104,7 +104,7 @@ describe('a tilted container', () => {
       pos: [0, 2, 0],
       size: [3, 0.2, 8],
       pitch: 20,
-      colour: WHITE,
+      color: WHITE,
     };
     const world = worldWith([plank]);
     const { c, walk } = walker(world, 0, -3.5, 1);

@@ -8,7 +8,7 @@ const r3 = (n) => Math.round(n * 1000) / 1000;
 const r1 = (n) => Math.round(n * 10) / 10;
 const D = Math.PI / 180;
 
-const R = 0.155; // visor radius from the head's centre (outside the dome's 0.142)
+const R = 0.155; // visor radius from the head's center (outside the dome's 0.142)
 const STEP = 32; // degrees per facet
 const ANGLES = [-64, -32, 0, 32, 64];
 const SHIELD = '#262b30';
@@ -27,7 +27,7 @@ const parts = [
     radiusTop: 0.116,
     height: 0.122,
     sides: 10,
-    colour: '#55595d',
+    color: '#55595d',
   },
   {
     type: 'cylinder',
@@ -36,13 +36,13 @@ const parts = [
     radiusTop: 0.06,
     height: 0.036,
     sides: 10,
-    colour: '#4a4e52',
+    color: '#4a4e52',
   },
-  { type: 'box', pos: [0, 1.735, 0.02], size: [0.03, 0.11, 0.27], colour: '#3d4145' },
+  { type: 'box', pos: [0, 1.735, 0.02], size: [0.03, 0.11, 0.27], color: '#3d4145' },
   // Ear plates sit back a little so the visor's side facets cover their fronts.
-  { type: 'box', pos: [0.128, 1.67, 0.03], size: [0.034, 0.12, 0.13], colour: '#4a4636' },
-  { type: 'box', pos: [-0.128, 1.67, 0.03], size: [0.034, 0.12, 0.13], colour: '#4a4636' },
-  { type: 'box', pos: [0, 1.62, 0.11], size: [0.24, 0.12, 0.05], colour: '#4a4636' },
+  { type: 'box', pos: [0.128, 1.67, 0.03], size: [0.034, 0.12, 0.13], color: '#4a4636' },
+  { type: 'box', pos: [-0.128, 1.67, 0.03], size: [0.034, 0.12, 0.13], color: '#4a4636' },
+  { type: 'box', pos: [0, 1.62, 0.11], size: [0.24, 0.12, 0.05], color: '#4a4636' },
   // Visor pivots on the ear plates.
   {
     type: 'cylinder',
@@ -51,7 +51,7 @@ const parts = [
     height: 0.016,
     sides: 8,
     roll: 90,
-    colour: '#55595d',
+    color: '#55595d',
   },
   {
     type: 'cylinder',
@@ -60,7 +60,7 @@ const parts = [
     height: 0.016,
     sides: 8,
     roll: 90,
-    colour: '#55595d',
+    color: '#55595d',
   },
 ];
 
@@ -77,7 +77,7 @@ for (const a of ANGLES) {
     pos: [r3(R * Math.sin(a * D)), r3(upY), r3(-R * Math.cos(a * D))],
     size: [r3(W), r3(upH), 0.016],
     yaw: -a,
-    colour: SHIELD,
+    color: SHIELD,
   });
 }
 for (const a of ANGLES) {
@@ -87,11 +87,11 @@ for (const a of ANGLES) {
     size: [r3(W - 0.004), CHIN_H, 0.014],
     yaw: -a,
     pitch: CHIN_PITCH,
-    colour: SHIELD,
+    color: SHIELD,
   });
 }
 
-// Paint, laid out flat (s along the curve in metres, y up), then put on the facet under it.
+// Paint, laid out flat (s along the curve in meters, y up), then put on the facet under it.
 const A = R + 0.008 + 0.0012 + 0.002; // facet face + 1.2 mm + half the paint's depth
 function paint(sv, y, len, thick, roll) {
   const b = sv / R;
@@ -103,7 +103,7 @@ function paint(sv, y, len, thick, roll) {
     size: [r3(len), r3(thick), 0.004],
     yaw: -a,
     roll: r1(roll),
-    colour: PAINT,
+    color: PAINT,
   });
 }
 function drip(sv, yTop, len, blob) {

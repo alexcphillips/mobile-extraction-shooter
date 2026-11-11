@@ -32,7 +32,7 @@ import { Viewmodel } from '../render/viewmodel';
 export type Picked =
   { kind: 'parts'; indices: readonly number[] } | { kind: 'point'; key: string } | null;
 
-/** A part's new place after a gizmo drag: its centre and its yaw, pitch and roll (degrees). */
+/** A part's new place after a gizmo drag: its center and its yaw, pitch and roll (degrees). */
 export interface PartMove {
   index: number;
   pos: Vec3;
@@ -46,7 +46,7 @@ export interface ModelScene {
   points: readonly { key: string; at: Vec3 }[];
   /** Drawn around the item and not pickable, in the item's frame. */
   context: readonly Shape[];
-  /** Worn gear: the body it's modelled on. */
+  /** Worn gear: the body it's modeled on. */
   body: boolean;
   /** Where the eye looks along −z from, when aimed. */
   sightLine: Vec3 | null;
@@ -76,7 +76,7 @@ const FLAT: Record<FlatLook, { from: THREE.Vector3; up: THREE.Vector3 }> = {
 };
 
 /**
- * A picture to trace under the side view (IE-2), kept in the editor only: `width` metres
+ * A picture to trace under the side view (IE-2), kept in the editor only: `width` meters
  * along z, its middle at (y, z), its left towards −z (the barrel) unless flipped.
  */
 export interface Reference {
@@ -91,7 +91,7 @@ export interface Reference {
 export interface ModelViewEvents {
   /** A click: what's under it (null for nothing); `add` with shift held. */
   pick(p: Picked, add: boolean): void;
-  /** A box dragged on the view: the parts whose centres are inside it. */
+  /** A box dragged on the view: the parts whose centers are inside it. */
   boxPick(indices: number[], add: boolean): void;
   /** The gizmo moved the picked parts. */
   movedParts(moves: PartMove[]): void;
@@ -101,18 +101,18 @@ export interface ModelViewEvents {
   dragEnd(): void;
 }
 
-const POINT_COLOURS: Record<string, number> = {
+const POINT_COLORS: Record<string, number> = {
   grip: 0xff7043,
   support: 0xffca28,
   muzzle: 0xef5350,
   sight: 0x42a5f5,
 };
-const MOUNT_COLOUR = 0xab47bc;
+const MOUNT_COLOR = 0xab47bc;
 const DEG = Math.PI / 180;
 const SKY = 0x9fb3c6;
 
-export const pointColour = (key: string): string =>
-  `#${(POINT_COLOURS[key] ?? MOUNT_COLOUR).toString(16).padStart(6, '0')}`;
+export const pointColor = (key: string): string =>
+  `#${(POINT_COLORS[key] ?? MOUNT_COLOR).toString(16).padStart(6, '0')}`;
 
 export class ModelView {
   private readonly renderer: THREE.WebGLRenderer;
@@ -127,7 +127,7 @@ export class ModelView {
     { camera: THREE.OrthographicCamera; controls: OrbitControls }
   >;
   private look: Look = 'orbit';
-  /** Half the height a flat camera shows at zoom 1, in metres. */
+  /** Half the height a flat camera shows at zoom 1, in meters. */
   private flatSize = 0.4;
   private readonly grids = new THREE.Group();
   private readonly reference = new THREE.Mesh(
@@ -239,7 +239,7 @@ export class ModelView {
     this.scene.add(this.gizmo.getHelper(), this.pivot);
 
     // A left click picks; a left drag off the gizmo draws a box that picks every part whose
-    // centre is inside it. Shift adds to what's picked.
+    // center is inside it. Shift adds to what's picked.
     this.band = document.createElement('div');
     this.band.className = 'ie-band';
     this.band.hidden = true;
@@ -299,7 +299,7 @@ export class ModelView {
     this.renderer.dispose();
   }
 
-  /** Move or turn with the gizmo, snapped to `step` metres (0: off) and `angle` degrees. */
+  /** Move or turn with the gizmo, snapped to `step` meters (0: off) and `angle` degrees. */
   setGizmo(mode: 'translate' | 'rotate', step: number, angle: number): void {
     this.gizmo.setMode(mode);
     this.gizmo.setTranslationSnap(step || null);
@@ -332,7 +332,7 @@ export class ModelView {
       f.camera.position.copy(from).addScaledVector(FLAT[look].from, 10);
       f.controls.update();
     }
-    // The grid behind the item: in the plane square to the view, a metre back.
+    // The grid behind the item: in the plane square to the view, a meter back.
     this.grids.rotation.set(0, 0, 0);
     this.grids.position.set(0, 0, 0);
     if (look === 'side') {
@@ -451,7 +451,7 @@ export class ModelView {
       const dot = new THREE.Mesh(
         new THREE.SphereGeometry(on ? 0.008 : 0.006, 12, 8),
         new THREE.MeshBasicMaterial({
-          color: POINT_COLOURS[key] ?? MOUNT_COLOUR,
+          color: POINT_COLORS[key] ?? MOUNT_COLOR,
           depthTest: false,
         }),
       );
@@ -515,31 +515,31 @@ export class ModelView {
     for (const { mesh } of this.chosen) box.expandByObject(mesh);
     if (box.isEmpty()) box.setFromObject(this.item);
     if (box.isEmpty()) return;
-    const centre = box.getCenter(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
     const r = Math.max(0.05, box.getSize(new THREE.Vector3()).length() / 2);
     if (this.look !== 'orbit') {
       const f = this.flats[this.look];
-      f.controls.target.copy(centre);
-      f.camera.position.copy(centre).addScaledVector(FLAT[this.look].from, 10);
+      f.controls.target.copy(center);
+      f.camera.position.copy(center).addScaledVector(FLAT[this.look].from, 10);
       f.camera.zoom = this.flatSize / (r * 1.15);
       f.camera.updateProjectionMatrix();
       f.controls.update();
       return;
     }
-    this.orbit.target.copy(centre);
+    this.orbit.target.copy(center);
     if (this.bodyWanted) {
       // Worn gear: from outside the body, on the gear's side of it (the front by default).
-      const out = new THREE.Vector3(centre.x, 0, centre.z);
+      const out = new THREE.Vector3(center.x, 0, center.z);
       if (out.length() < 0.05) out.set(0, 0, -1);
       out
         .normalize()
         .add(new THREE.Vector3(0.5, 0.4, 0))
         .normalize();
-      this.camera.position.copy(centre).addScaledVector(out, 1.4);
+      this.camera.position.copy(center).addScaledVector(out, 1.4);
     } else {
       // From the right and a little above: guns point along −z, so their right side.
       this.camera.position
-        .copy(centre)
+        .copy(center)
         .add(new THREE.Vector3(1.4, 0.7, -0.6).multiplyScalar(r * 1.6));
     }
     this.orbit.update();
@@ -572,7 +572,7 @@ export class ModelView {
       : { kind: 'parts', indices: [u.part!] };
   }
 
-  /** The parts whose centres are inside a box dragged between two screen points. */
+  /** The parts whose centers are inside a box dragged between two screen points. */
   private inBox(x0: number, y0: number, x1: number, y1: number): number[] {
     const r = this.canvas.getBoundingClientRect();
     const [l, rt] = [Math.min(x0, x1) - r.left, Math.max(x0, x1) - r.left];
@@ -666,7 +666,7 @@ export class ModelView {
   }
 }
 
-/** One part as a mesh at its place, turned about its centre, so the gizmo can move it. */
+/** One part as a mesh at its place, turned about its center, so the gizmo can move it. */
 function partMesh(p: ModelPart, material: THREE.Material): THREE.Mesh | null {
   const [shape] = modelShapes({ parts: [{ ...p, pos: [0, 0, 0], yaw: 0, pitch: 0, roll: 0 }] });
   if (!shape || !Object.values(shape).every((v) => typeof v !== 'number' || Number.isFinite(v)))

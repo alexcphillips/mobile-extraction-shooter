@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { ammoDef, armourDef } from '../content/items';
+import { ammoDef, armorDef } from '../content/items';
 import { TICK_RATE } from '../tick';
 import { CollisionWorld } from '../world/collision-world';
 import {
-  ARMOUR,
+  ARMOR,
   CHEST,
   HEAD,
   HEALTH,
@@ -19,12 +19,12 @@ import {
   isBroken,
   killCharacter,
   legSpeedScale,
-  armourWear,
+  armorWear,
   restoreHealth,
   shootCharacter,
-  throughArmour,
+  throughArmor,
   totalHp,
-  wearArmour,
+  wearArmor,
 } from './health';
 import { PUNCH, settleRecoil } from './recoil';
 import { createState, spawnCharacter, type Character, type SimState } from './state';
@@ -105,9 +105,9 @@ describe('damage', () => {
     ]);
   });
 
-  it('kills outright past armour and infinite health, once', () => {
+  it('kills outright past armor and infinite health, once', () => {
     const { state, c } = setup();
-    wearArmour(c, TEST_ITEMS, 'helmet');
+    wearArmor(c, TEST_ITEMS, 'helmet');
     c.admin = {
       infiniteHealth: true,
       infiniteAmmo: false,
@@ -133,10 +133,10 @@ describe('damage', () => {
   });
 });
 
-describe('armour', () => {
-  it('lets half through from a round of its level, and wears by its armour damage', () => {
+describe('armor', () => {
+  it('lets half through from a round of its level, and wears by its armor damage', () => {
     const { state, c } = setup();
-    wearArmour(c, TEST_ITEMS, 'helmet');
+    wearArmor(c, TEST_ITEMS, 'helmet');
     shootCharacter(state, TEST_ITEMS, c, HEAD, ammoDef(TEST_ITEMS, 'bleeder'), 0);
     // 10 (the head is ×1); a level 3 round against a level 3 helmet: half gets through.
     expect(c.health.hp[HEAD]).toBeCloseTo(35 - 5);
@@ -146,46 +146,46 @@ describe('armour', () => {
 
   it('stops a round below its level outright, wearing less the further below', () => {
     const { state, c } = setup();
-    wearArmour(c, TEST_ITEMS, 'vest');
+    wearArmor(c, TEST_ITEMS, 'vest');
     // A level 3 round against a level 4 vest: nothing gets through (no blunt damage since
     // 2026-11-08), and no bleed; the hit is still an event, all absorbed.
     shootCharacter(state, TEST_ITEMS, c, CHEST, round, 0);
     expect(c.health.hp[CHEST]).toBe(85);
     expect(state.events).toContainEqual(expect.objectContaining({ amount: 0, absorbed: 40 }));
-    expect(c.gear.bodyArmour?.durability).toBeCloseTo(50 - 10 * ARMOUR.wear[1]);
+    expect(c.gear.bodyArmor?.durability).toBeCloseTo(50 - 10 * ARMOR.wear[1]);
     expect(c.health.bleeding[CHEST]).toBe(false);
   });
 
   it('lets 75% of a round one level above through, and still wears', () => {
     const { state, c } = setup();
-    wearArmour(c, TEST_ITEMS, 'vest');
+    wearArmor(c, TEST_ITEMS, 'vest');
     shootCharacter(state, TEST_ITEMS, c, CHEST, ammoDef(TEST_ITEMS, 'ap-round'), 0);
     expect(c.health.hp[CHEST]).toBe(85 - 30 * 0.75);
-    expect(c.gear.bodyArmour?.durability).toBe(50 - 15);
+    expect(c.gear.bodyArmor?.durability).toBe(50 - 15);
   });
 
   it('lets all of a round two levels above through, and still wears', () => {
     const { state, c } = setup();
-    wearArmour(c, TEST_ITEMS, 'vest');
+    wearArmor(c, TEST_ITEMS, 'vest');
     const round = ammoDef(TEST_ITEMS, 'ap-round');
     shootCharacter(state, TEST_ITEMS, c, CHEST, { ...round, level: round.level + 1 }, 0);
     expect(c.health.hp[CHEST]).toBe(85 - 30);
-    expect(c.gear.bodyArmour?.durability).toBe(50 - 15);
+    expect(c.gear.bodyArmor?.durability).toBe(50 - 15);
   });
 
   it('compares levels, letting nothing through below', () => {
-    expect(throughArmour(1, 2)).toBe(0);
-    expect(throughArmour(4, 4)).toBe(0.5);
-    expect(throughArmour(5, 4)).toBe(0.75);
-    expect(throughArmour(6, 4)).toBe(1);
-    expect(armourWear(6, 1)).toBe(1);
-    expect(armourWear(1, 6)).toBe(ARMOUR.wear[ARMOUR.wear.length - 1]);
+    expect(throughArmor(1, 2)).toBe(0);
+    expect(throughArmor(4, 4)).toBe(0.5);
+    expect(throughArmor(5, 4)).toBe(0.75);
+    expect(throughArmor(6, 4)).toBe(1);
+    expect(armorWear(6, 1)).toBe(1);
+    expect(armorWear(1, 6)).toBe(ARMOR.wear[ARMOR.wear.length - 1]);
   });
 
   it('stops nothing when broken, and does not cover other zones', () => {
     const { state, c } = setup();
-    wearArmour(c, TEST_ITEMS, 'vest');
-    c.gear.bodyArmour!.durability = 0;
+    wearArmor(c, TEST_ITEMS, 'vest');
+    c.gear.bodyArmor!.durability = 0;
     shootCharacter(state, TEST_ITEMS, c, CHEST, round, 0);
     expect(c.health.hp[CHEST]).toBe(85 - 40);
     shootCharacter(state, TEST_ITEMS, c, LEFT_LEG, round, 0);
@@ -194,11 +194,11 @@ describe('armour', () => {
 
   it('is restored with health', () => {
     const { state, c } = setup();
-    wearArmour(c, TEST_ITEMS, 'vest');
+    wearArmor(c, TEST_ITEMS, 'vest');
     shootCharacter(state, TEST_ITEMS, c, CHEST, round, 0);
     restoreHealth(c, TEST_ITEMS);
     expect(totalHp(c.health)).toBe(TOTAL_HP);
-    expect(c.gear.bodyArmour?.durability).toBe(50);
+    expect(c.gear.bodyArmor?.durability).toBe(50);
   });
 });
 
@@ -221,11 +221,11 @@ describe('bleeding', () => {
     expect(c.health.hp[LEFT_ARM]).toBeCloseTo(c.health.hp[RIGHT_ARM]!);
   });
 
-  it('does not start when armour took the whole hit', () => {
+  it('does not start when armor took the whole hit', () => {
     const { state, c } = setup();
     const items = new Map(TEST_ITEMS);
-    items.set('helmet', { ...armourDef(TEST_ITEMS, 'helmet'), level: 6 });
-    wearArmour(c, items, 'helmet');
+    items.set('helmet', { ...armorDef(TEST_ITEMS, 'helmet'), level: 6 });
+    wearArmor(c, items, 'helmet');
     shootCharacter(state, items, c, HEAD, ammoDef(items, 'bleeder'), 0);
     expect(c.health.bleeding[HEAD]).toBe(false);
   });

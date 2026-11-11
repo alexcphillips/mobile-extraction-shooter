@@ -3,7 +3,7 @@
   "id": "jug-mask",
   "name": "Jug's mask",
   "shortName": "Jug mask",
-  "type": "armour",
+  "type": "armor",
   "size": [2, 2],
   "value": 45000,
   "rarity": "mythic",
@@ -24,7 +24,7 @@
         "radiusTop": 0.116,
         "height": 0.122,
         "sides": 10,
-        "colour": "#55595d"
+        "color": "#55595d"
       },
       {
         "type": "cylinder",
@@ -33,31 +33,31 @@
         "radiusTop": 0.06,
         "height": 0.036,
         "sides": 10,
-        "colour": "#4a4e52"
+        "color": "#4a4e52"
       },
       {
         "type": "box",
         "pos": [0, 1.735, 0.02],
         "size": [0.03, 0.11, 0.27],
-        "colour": "#3d4145"
+        "color": "#3d4145"
       },
       {
         "type": "box",
         "pos": [0.128, 1.67, 0.03],
         "size": [0.034, 0.12, 0.13],
-        "colour": "#4a4636"
+        "color": "#4a4636"
       },
       {
         "type": "box",
         "pos": [-0.128, 1.67, 0.03],
         "size": [0.034, 0.12, 0.13],
-        "colour": "#4a4636"
+        "color": "#4a4636"
       },
       {
         "type": "box",
         "pos": [0, 1.62, 0.11],
         "size": [0.24, 0.12, 0.05],
-        "colour": "#4a4636"
+        "color": "#4a4636"
       },
       {
         "type": "cylinder",
@@ -66,7 +66,7 @@
         "height": 0.016,
         "sides": 8,
         "roll": 90,
-        "colour": "#55595d"
+        "color": "#55595d"
       },
       {
         "type": "cylinder",
@@ -75,42 +75,42 @@
         "height": 0.016,
         "sides": 8,
         "roll": 90,
-        "colour": "#55595d"
+        "color": "#55595d"
       },
       {
         "type": "box",
         "pos": [-0.139, 1.67, -0.068],
         "size": [0.092, 0.19, 0.016],
         "yaw": 64,
-        "colour": "#262b30"
+        "color": "#262b30"
       },
       {
         "type": "box",
         "pos": [-0.082, 1.67, -0.131],
         "size": [0.092, 0.19, 0.016],
         "yaw": 32,
-        "colour": "#262b30"
+        "color": "#262b30"
       },
       {
         "type": "box",
         "pos": [0, 1.67, -0.155],
         "size": [0.092, 0.19, 0.016],
         "yaw": 0,
-        "colour": "#262b30"
+        "color": "#262b30"
       },
       {
         "type": "box",
         "pos": [0.082, 1.67, -0.131],
         "size": [0.092, 0.19, 0.016],
         "yaw": -32,
-        "colour": "#262b30"
+        "color": "#262b30"
       },
       {
         "type": "box",
         "pos": [0.139, 1.67, -0.068],
         "size": [0.092, 0.19, 0.016],
         "yaw": -64,
-        "colour": "#262b30"
+        "color": "#262b30"
       },
       {
         "type": "box",
@@ -118,7 +118,7 @@
         "size": [0.088, 0.075, 0.014],
         "yaw": 64,
         "pitch": -30,
-        "colour": "#262b30"
+        "color": "#262b30"
       },
       {
         "type": "box",
@@ -126,7 +126,7 @@
         "size": [0.088, 0.075, 0.014],
         "yaw": 32,
         "pitch": -30,
-        "colour": "#262b30"
+        "color": "#262b30"
       },
       {
         "type": "box",
@@ -134,7 +134,7 @@
         "size": [0.088, 0.075, 0.014],
         "yaw": 0,
         "pitch": -30,
-        "colour": "#262b30"
+        "color": "#262b30"
       },
       {
         "type": "box",
@@ -142,7 +142,7 @@
         "size": [0.088, 0.075, 0.014],
         "yaw": -32,
         "pitch": -30,
-        "colour": "#262b30"
+        "color": "#262b30"
       },
       {
         "type": "box",
@@ -150,7 +150,7 @@
         "size": [0.088, 0.075, 0.014],
         "yaw": -64,
         "pitch": -30,
-        "colour": "#262b30"
+        "color": "#262b30"
       },
       {
         "type": "box",
@@ -158,7 +158,7 @@
         "size": [0.03, 0.03, 0.004],
         "yaw": 32,
         "roll": 0,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -166,7 +166,7 @@
         "size": [0.028, 0.028, 0.004],
         "yaw": 32,
         "roll": 45,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -174,7 +174,7 @@
         "size": [0.016, 0.016, 0.004],
         "yaw": 32,
         "roll": 30,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -182,7 +182,7 @@
         "size": [0.005, 0.03, 0.004],
         "yaw": 0,
         "roll": 0,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -190,7 +190,7 @@
         "size": [0.009, 0.009, 0.004],
         "yaw": 0,
         "roll": 45,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -198,7 +198,7 @@
         "size": [0.034, 0.034, 0.004],
         "yaw": -32,
         "roll": 0,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -206,7 +206,7 @@
         "size": [0.032, 0.032, 0.004],
         "yaw": -32,
         "roll": 45,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -214,7 +214,7 @@
         "size": [0.014, 0.014, 0.004],
         "yaw": -32,
         "roll": 30,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -222,7 +222,7 @@
         "size": [0.005, 0.019, 0.004],
         "yaw": -32,
         "roll": 0,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -230,7 +230,7 @@
         "size": [0.009, 0.009, 0.004],
         "yaw": -32,
         "roll": 45,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -238,7 +238,7 @@
         "size": [0.031, 0.011, 0.004],
         "yaw": 32,
         "roll": -66.5,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -246,7 +246,7 @@
         "size": [0.031, 0.014, 0.004],
         "yaw": 32,
         "roll": -56.5,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -254,7 +254,7 @@
         "size": [0.031, 0.017, 0.004],
         "yaw": 0,
         "roll": -28.5,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -262,7 +262,7 @@
         "size": [0.031, 0.015, 0.004],
         "yaw": 0,
         "roll": -16.5,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -270,7 +270,7 @@
         "size": [0.031, 0.018, 0.004],
         "yaw": 0,
         "roll": 14.5,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -278,7 +278,7 @@
         "size": [0.031, 0.016, 0.004],
         "yaw": 0,
         "roll": 28.5,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -286,7 +286,7 @@
         "size": [0.031, 0.014, 0.004],
         "yaw": -32,
         "roll": 57.5,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -294,7 +294,7 @@
         "size": [0.031, 0.01, 0.004],
         "yaw": -32,
         "roll": 67.5,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -302,7 +302,7 @@
         "size": [0.005, 0.026, 0.004],
         "yaw": 0,
         "roll": 0,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -310,7 +310,7 @@
         "size": [0.009, 0.009, 0.004],
         "yaw": 0,
         "roll": 45,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -318,7 +318,7 @@
         "size": [0.005, 0.042, 0.004],
         "yaw": 0,
         "roll": 0,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -326,7 +326,7 @@
         "size": [0.009, 0.009, 0.004],
         "yaw": 0,
         "roll": 45,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -334,7 +334,7 @@
         "size": [0.005, 0.018, 0.004],
         "yaw": 0,
         "roll": 0,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       },
       {
         "type": "box",
@@ -342,7 +342,7 @@
         "size": [0.009, 0.009, 0.004],
         "yaw": 0,
         "roll": 45,
-        "colour": "#39ff6a"
+        "color": "#39ff6a"
       }
     ]
   }

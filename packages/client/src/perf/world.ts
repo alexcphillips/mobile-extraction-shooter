@@ -63,7 +63,7 @@ export function makeBoxes(count: number, seed: number, terrain: HeightGrid): Box
   return boxes;
 }
 
-/** The random boxes as shapes, each with a colour from the palette. */
+/** The random boxes as shapes, each with a color from the palette. */
 export function boxShapes(boxes: readonly BoxDef[], seed: number): Shape[] {
   const rng = createRng(seed + 1);
   return boxes.map((b) => ({
@@ -71,6 +71,6 @@ export function boxShapes(boxes: readonly BoxDef[], seed: number): Shape[] {
     ...b,
     pitch: 0,
     roll: 0,
-    colour: PALETTE[Math.floor(nextFloat(rng) * PALETTE.length)]!,
+    color: PALETTE[Math.floor(nextFloat(rng) * PALETTE.length)]!,
   }));
 }

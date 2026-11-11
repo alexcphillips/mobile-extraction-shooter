@@ -357,35 +357,35 @@ export class InventoryController implements DragHost {
   }
 
   /**
-   * Whether a kit (where it is) can mend an armour piece now: any you can reach, yours, a
+   * Whether a kit (where it is) can mend an armor piece now: any you can reach, yours, a
    * body's, a container's or the stash's (the user's call, 2026-11-06).
    */
-  canRepair(kit: ItemRef, armour: ItemRef): boolean {
+  canRepair(kit: ItemRef, armor: ItemRef): boolean {
     if (!('grid' in kit)) return false;
     const from = JSON.stringify([kit.owner, kit.grid]);
     if (!this.kitPlaces().some((p) => JSON.stringify([p.owner, p.grid]) === from)) return false;
     const k = this.find(kit);
-    const a = this.find(armour);
+    const a = this.find(armor);
     return !!k && !!a && repairable(this.ctx.items, k.item, a.item) > 0;
   }
 
-  /** A repair kit that can mend an armour piece now, or null. */
-  kitFor(armour: ItemRef): ItemRef | null {
+  /** A repair kit that can mend an armor piece now, or null. */
+  kitFor(armor: ItemRef): ItemRef | null {
     const { sim, player } = this.ctx;
     for (const place of this.kitPlaces()) {
       const grid = gridOf(sim, player, place);
       if (!grid) continue;
       for (let index = 0; index < grid.items.length; index++) {
         const ref = { ...place, index, item: grid.items[index]!.item.item };
-        if (this.canRepair(ref, armour)) return ref;
+        if (this.canRepair(ref, armor)) return ref;
       }
     }
     return null;
   }
 
-  /** Mends an armour piece with a kit (kitFor's if not given): at once in the stash, timed in a raid. */
-  repair(armour: ItemRef, kit = this.kitFor(armour)): void {
-    if (kit) this.ctx.send({ type: 'repair', kit, armour });
+  /** Mends an armor piece with a kit (kitFor's if not given): at once in the stash, timed in a raid. */
+  repair(armor: ItemRef, kit = this.kitFor(armor)): void {
+    if (kit) this.ctx.send({ type: 'repair', kit, armor });
     this.redraw();
   }
 
@@ -487,9 +487,9 @@ export class InventoryController implements DragHost {
     return { kind: 'part', gun, slot: part.slot };
   }
 
-  armourZone(src: DragSource, armour: ItemRef): DropZone | null {
+  armorZone(src: DragSource, armor: ItemRef): DropZone | null {
     if (isPart(src.ref) || this.find(src.ref)?.def.type !== 'repair') return null;
-    return { kind: 'repair', armour };
+    return { kind: 'repair', armor };
   }
 
   zoneAt(el: HTMLElement): DropZone | null {
@@ -507,7 +507,7 @@ export class InventoryController implements DragHost {
     const { sim, player, items } = this.ctx;
     // Picking items to sell: nothing moves.
     if (this.selling) return false;
-    if (zone.kind === 'repair') return !isPart(src.ref) && this.canRepair(src.ref, zone.armour);
+    if (zone.kind === 'repair') return !isPart(src.ref) && this.canRepair(src.ref, zone.armor);
     if (zone.kind === 'load') {
       if (isPart(src.ref)) return false;
       return !!loadKind(sim, player, items, zone.gun, src.ref, !!this.ctx.stash);
@@ -549,7 +549,7 @@ export class InventoryController implements DragHost {
     }
     if (zone.kind === 'slot') {
       if (!fitsSlot(items, zone.slot, found.item)) return false;
-      // Body armour and an armoured rig never go on together (2026-11-11).
+      // Body armor and an armored rig never go on together (2026-11-11).
       const ch = ownerCharacter(sim, player, zone.owner);
       return !ch || !gearConflict(items, ch.gear, zone.slot, found.item);
     }
@@ -573,7 +573,7 @@ export class InventoryController implements DragHost {
     );
   }
 
-  /** Body armour over an armoured rig, or the other way: says why on the tile (2026-11-11). */
+  /** Body armor over an armored rig, or the other way: says why on the tile (2026-11-11). */
   refused(src: DragSource, zone: DropZone): void {
     if (zone.kind !== 'slot' || isPart(src.ref)) return;
     const found = this.find(src.ref);

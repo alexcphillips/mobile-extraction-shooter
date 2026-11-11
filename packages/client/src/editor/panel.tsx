@@ -47,7 +47,7 @@ import {
   type MapEditor,
   type MarkerKind,
 } from './editor';
-import { HexColour, Num, Pick, Text, Toggle, UNSET } from './fields';
+import { HexColor, Num, Pick, Text, Toggle, UNSET } from './fields';
 import { BRUSH_MODES, SIDES, isAreaMode } from './terrain';
 import { PrefabBrowser } from './prefab-browser';
 import { CURVE_MODES, CURVE_NAMES, type CurveSettings } from './curves';
@@ -60,7 +60,7 @@ import { WALL_MODES } from './walls';
  */
 
 const STRENGTHS = [0.25, 0.5, 1, 2, 4];
-const EXTEND_METRES = [8, 16, 32, 64, 128];
+const EXTEND_METERS = [8, 16, 32, 64, 128];
 
 export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonly string[] }) {
   const s = useSyncExternalStore(editor.subscribe, editor.getState);
@@ -202,12 +202,12 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
         >
           curve
         </Toggle>
-        <span title="What new shapes, walls, floors and curves are coloured: a colour, or a slot of the map's (or the prefab's you're in)">
-          <Colour
+        <span title="What new shapes, walls, floors and curves are colored: a color, or a slot of the map's (or the prefab's you're in)">
+          <Color
             label="paint"
-            value={s.colour}
+            value={s.color}
             slots={Object.keys(editor.slots())}
-            onChange={(c) => c !== undefined && editor.setColour(c)}
+            onChange={(c) => c !== undefined && editor.setColor(c)}
           />
         </span>
         <Toggle on={s.tool === 'terrain'} onClick={() => editor.setTool('terrain')} title="G">
@@ -224,7 +224,7 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
         {s.grid && (
           <span
             className="ed-short"
-            title="The grid's height, in metres; blank follows the cutaway or the camera"
+            title="The grid's height, in meters; blank follows the cutaway or the camera"
           >
             <Num
               label="y"
@@ -248,7 +248,7 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
             <button onClick={() => editor.stepCut(-1)} title="↓: a floor down">
               ▼
             </button>
-            <span className="ed-short" title="The cut's height, in metres">
+            <span className="ed-short" title="The cut's height, in meters">
               <Num label="" value={s.cut} onChange={(v) => v !== undefined && editor.setCut(v)} />
             </span>
             <button onClick={() => editor.stepCut(1)} title="↑: a floor up">
@@ -282,7 +282,7 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
               </Toggle>
             ))}
             {s.brush.mode === 'level' && (
-              <span title="Metres; empty levels to the ground where the drag starts">
+              <span title="Meters; empty levels to the ground where the drag starts">
                 <Num
                   label="Height"
                   value={s.brush.height ?? undefined}
@@ -305,7 +305,7 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
                     ))}
                   </select>
                 </label>
-                <label title="Raise and lower: metres a second in the middle">
+                <label title="Raise and lower: meters a second in the middle">
                   Strength
                   <select
                     value={s.brush.strength}
@@ -336,7 +336,7 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
                 ))}
                 {s.wall.mode === 'railing' ? (
                   <>
-                    <span className="ed-short" title="Railing height, in metres">
+                    <span className="ed-short" title="Railing height, in meters">
                       <Num
                         label="height"
                         value={s.wall.railingHeight}
@@ -354,10 +354,10 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
                     </span>
                   </>
                 ) : s.wall.mode === 'glass' ? (
-                  <GlassTint editor={editor} colour={s.wall.glassColour} />
+                  <GlassTint editor={editor} color={s.wall.glassColor} />
                 ) : s.wall.mode === 'draw' ? (
                   <>
-                    <span className="ed-short" title="Wall height, in metres">
+                    <span className="ed-short" title="Wall height, in meters">
                       <Num
                         label="height"
                         value={s.wall.height}
@@ -365,7 +365,7 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
                         onChange={(v) => v && editor.setWall({ height: v })}
                       />
                     </span>
-                    <span className="ed-short" title="Wall thickness, in metres">
+                    <span className="ed-short" title="Wall thickness, in meters">
                       <Num
                         label="thick"
                         value={s.wall.thickness}
@@ -379,8 +379,8 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
                     className="ed-short"
                     title={
                       s.wall.mode === 'window'
-                        ? 'Window width, in metres: 0.7 or more to vault through. Its sill is 0.9 m up and it is 1.1 m tall.'
-                        : 'Door width, in metres. Doorways are 2.1 m tall.'
+                        ? 'Window width, in meters: 0.7 or more to vault through. Its sill is 0.9 m up and it is 1.1 m tall.'
+                        : 'Door width, in meters. Doorways are 2.1 m tall.'
                     }
                   >
                     <Num
@@ -403,7 +403,7 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
                     {s.wall.count > 1 && (
                       <span
                         className="ed-short"
-                        title="The gap between them, in metres, the row centred on the wall; blank or 0 spaces them evenly along the whole wall"
+                        title="The gap between them, in meters, the row centered on the wall; blank or 0 spaces them evenly along the whole wall"
                       >
                         <Num
                           label="gap"
@@ -422,7 +422,7 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
                         >
                           glazed
                         </Toggle>
-                        {s.wall.glass && <GlassTint editor={editor} colour={s.wall.glassColour} />}
+                        {s.wall.glass && <GlassTint editor={editor} color={s.wall.glassColor} />}
                       </>
                     )}
                   </span>
@@ -626,7 +626,7 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
             <LootGroupFields editor={editor} map={s.map} nodes={s.selected.map((i) => nodes[i]!)} />
           )}
         {!s.selected.length && !s.scope.length && (
-          <MapSettings editor={editor} map={s.map} zone={s.zone} point={s.point} paint={s.colour} />
+          <MapSettings editor={editor} map={s.map} zone={s.zone} point={s.point} paint={s.color} />
         )}
         {!s.selected.length && atPrefab && inPrefab && (
           <PrefabSettings editor={editor} prefab={inPrefab} />
@@ -640,7 +640,7 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
             prefabs={[...prefabs.keys()].sort()}
             mapId={s.map.id}
             point={s.point}
-            tint={s.wall.glassColour}
+            tint={s.wall.glassColor}
             gap={s.wall.gap}
             zombies={s.zombies}
           />
@@ -675,8 +675,8 @@ function CurveBar({ editor, curve }: { editor: MapEditor; curve: CurveSettings }
       ))}
       {curve.mode === 'wall' && (
         <>
-          {field('wallHeight', 'height', 'Wall height, in metres: about 1 for a railing')}
-          {field('wallThickness', 'thick', 'Wall thickness, in metres')}
+          {field('wallHeight', 'height', 'Wall height, in meters: about 1 for a railing')}
+          {field('wallThickness', 'thick', 'Wall thickness, in meters')}
         </>
       )}
       {curve.mode === 'floor' && (
@@ -684,20 +684,20 @@ function CurveBar({ editor, curve }: { editor: MapEditor; curve: CurveSettings }
           {field(
             'floorWidth',
             'width',
-            'How wide the ring of floor is, out from the hole, in metres',
+            'How wide the ring of floor is, out from the hole, in meters',
           )}
-          {field('floorThickness', 'thick', 'Floor thickness, in metres')}
+          {field('floorThickness', 'thick', 'Floor thickness, in meters')}
         </>
       )}
       {curve.mode === 'stairs' && (
         <>
-          {field('stairsWidth', 'width', 'Stairs width, in metres')}
-          {field('stairsRise', 'rise', 'How high the stairs climb, in metres: one floor up')}
+          {field('stairsWidth', 'width', 'Stairs width, in meters')}
+          {field('stairsRise', 'rise', 'How high the stairs climb, in meters: one floor up')}
         </>
       )}
       {curve.mode === 'hole' ? (
         <>
-          {field('holeRadius', 'radius', "The hole's radius, in metres (half across)", 0.25)}
+          {field('holeRadius', 'radius', "The hole's radius, in meters (half across)", 0.25)}
           <label title="A railing round the hole's edge">
             <input
               type="checkbox"
@@ -710,7 +710,7 @@ function CurveBar({ editor, curve }: { editor: MapEditor; curve: CurveSettings }
             field(
               'railingHeight',
               'height',
-              'Railing height, in metres: 1.1 or less can be vaulted',
+              'Railing height, in meters: 1.1 or less can be vaulted',
               0.1,
             )}
         </>
@@ -718,7 +718,7 @@ function CurveBar({ editor, curve }: { editor: MapEditor; curve: CurveSettings }
         field(
           'raise',
           'raise',
-          'How high above the centre you click it is built, in metres: a wall or the stairs stand there, a floor is walked on there. For an upper floor, its height.',
+          'How high above the center you click it is built, in meters: a wall or the stairs stand there, a floor is walked on there. For an upper floor, its height.',
           -100,
         )
       )}
@@ -800,7 +800,7 @@ function MapSettings(props: {
   map: MapFile;
   zone: number | null;
   point: number | null;
-  /** The colour new shapes get, for a new slot to start at. */
+  /** The color new shapes get, for a new slot to start at. */
   paint: string;
 }) {
   const { editor, map } = props;
@@ -810,21 +810,21 @@ function MapSettings(props: {
     <div className="ed-inspector">
       <h3>map</h3>
       <Text label="name" value={map.name} onChange={(v) => v && edit((m) => (m.name = v))} />
-      <HexColour
+      <HexColor
         label="sky"
         value={map.environment.sky}
         onChange={(c) => edit((m) => (m.environment.sky = c))}
       />
-      <HexColour
+      <HexColor
         label="ground"
-        value={map.terrain.colour}
-        onChange={(c) => edit((m) => (m.terrain.colour = c))}
+        value={map.terrain.color}
+        onChange={(c) => edit((m) => (m.terrain.color = c))}
       />
-      <h4 title="Named colours the map's shapes can use: change one and all of them change">
-        colour slots
+      <h4 title="Named colors the map's shapes can use: change one and all of them change">
+        color slots
       </h4>
-      <ColourSlots
-        colours={map.colours}
+      <ColorSlots
+        colors={map.colors}
         edit={edit}
         fresh={props.paint.startsWith('#') ? props.paint : '#b5b0a6'}
       />
@@ -848,7 +848,7 @@ function MapSettings(props: {
           checked={!!water}
           onChange={(e) =>
             edit((m) => {
-              if (e.target.checked) m.water = { level: 0, colour: '#3d7ea6', opacity: 0.7 };
+              if (e.target.checked) m.water = { level: 0, color: '#3d7ea6', opacity: 0.7 };
               else delete m.water;
             })
           }
@@ -870,10 +870,10 @@ function MapSettings(props: {
               onChange={(v) => v !== undefined && v <= 1 && edit((m) => (m.water!.opacity = v))}
             />
           </div>
-          <HexColour
+          <HexColor
             label="water"
-            value={water.colour}
-            onChange={(c) => edit((m) => (m.water!.colour = c))}
+            value={water.color}
+            onChange={(c) => edit((m) => (m.water!.color = c))}
           />
         </>
       )}
@@ -947,14 +947,14 @@ function Floors({ editor, map }: { editor: MapEditor; map: MapFile }) {
 
 /** Adds ground on a side of the map: how far, then which side. North is −z. */
 function Extend({ editor, cellSize }: { editor: MapEditor; cellSize: number }) {
-  const [metres, setMetres] = useState(32);
-  const cells = Math.max(1, Math.round(metres / cellSize));
+  const [meters, setMeters] = useState(32);
+  const cells = Math.max(1, Math.round(meters / cellSize));
   return (
     <div className="ed-row" title="Adds ground on that side; nothing on the map moves">
       <label>
         Extend
-        <select value={metres} onChange={(e) => setMetres(Number(e.target.value))}>
-          {EXTEND_METRES.map((m) => (
+        <select value={meters} onChange={(e) => setMeters(Number(e.target.value))}>
+          {EXTEND_METERS.map((m) => (
             <option key={m} value={m}>
               {m} m
             </option>
@@ -1425,38 +1425,38 @@ function NavPanel({ editor, hiding }: { editor: MapEditor; hiding: EditorState['
 }
 
 /**
- * Named colours of a map or prefab (wall, road…): what's in it can use one by name, so
- * changing the slot recolours all of it. A new one starts at `fresh`.
+ * Named colors of a map or prefab (wall, road…): what's in it can use one by name, so
+ * changing the slot recolors all of it. A new one starts at `fresh`.
  */
-function ColourSlots(props: {
-  colours: Readonly<Record<string, string>> | undefined;
-  edit: (change: (file: { colours?: Record<string, string> | undefined }) => void) => void;
+function ColorSlots(props: {
+  colors: Readonly<Record<string, string>> | undefined;
+  edit: (change: (file: { colors?: Record<string, string> | undefined }) => void) => void;
   fresh: string;
 }) {
-  const { colours, edit } = props;
+  const { colors, edit } = props;
   const [slot, setSlot] = useState('');
   const problem = !slot
     ? null
     : !idSchema.safeParse(slot).success
       ? 'lower-case letters, digits and dashes'
-      : colours?.[slot] !== undefined
+      : colors?.[slot] !== undefined
         ? 'there is one'
         : null;
   return (
     <>
-      {Object.entries(colours ?? {}).map(([name, colour]) => (
+      {Object.entries(colors ?? {}).map(([name, color]) => (
         <div key={name} className="ed-row">
-          <HexColour
+          <HexColor
             label={name}
-            value={colour}
-            onChange={(c) => edit((f) => (f.colours![name] = c))}
+            value={color}
+            onChange={(c) => edit((f) => (f.colors![name] = c))}
           />
           <button
             title="Remove the slot (what uses it must be changed first)"
             onClick={() =>
               edit((f) => {
-                delete f.colours![name];
-                if (!Object.keys(f.colours!).length) delete f.colours;
+                delete f.colors![name];
+                if (!Object.keys(f.colors!).length) delete f.colors;
               })
             }
           >
@@ -1472,7 +1472,7 @@ function ColourSlots(props: {
         <button
           disabled={!slot || !!problem}
           onClick={() => {
-            edit((f) => (f.colours = { ...f.colours, [slot]: props.fresh }));
+            edit((f) => (f.colors = { ...f.colors, [slot]: props.fresh }));
             setSlot('');
           }}
         >
@@ -1486,7 +1486,7 @@ function ColourSlots(props: {
 
 /**
  * The own settings of the prefab being edited inside, shown when nothing in it is selected:
- * its name, instancing, colour slots (their defaults) and building footprint.
+ * its name, instancing, color slots (their defaults) and building footprint.
  */
 function PrefabSettings({ editor, prefab }: { editor: MapEditor; prefab: PrefabFile }) {
   const edit = (change: (p: PrefabFile) => void) => editor.editPrefab(change);
@@ -1524,8 +1524,8 @@ function PrefabSettings({ editor, prefab }: { editor: MapEditor; prefab: PrefabF
         />
         landmark
       </label>
-      <h4>colour slots</h4>
-      <ColourSlots colours={prefab.colours} edit={edit} fresh="#b5b0a6" />
+      <h4>color slots</h4>
+      <ColorSlots colors={prefab.colors} edit={edit} fresh="#b5b0a6" />
       <h4>building</h4>
       <label className="ed-field" title="A footprint: a concrete base under it, and no overlaps">
         <input
@@ -1557,26 +1557,24 @@ function PrefabSettings({ editor, prefab }: { editor: MapEditor; prefab: PrefabF
               <Num
                 key={l}
                 label={l}
-                value={b.centre?.[k] ?? 0}
+                value={b.center?.[k] ?? 0}
                 onChange={(v) =>
                   setBuilding((f) => {
-                    const c: [number, number] = [...(f.centre ?? [0, 0])];
+                    const c: [number, number] = [...(f.center ?? [0, 0])];
                     c[k] = v ?? 0;
-                    if (c[0] || c[1]) f.centre = c;
-                    else delete f.centre;
+                    if (c[0] || c[1]) f.center = c;
+                    else delete f.center;
                   })
                 }
               />
             ))}
           </div>
-          <Colour
+          <Color
             label="base"
-            value={b.colour}
+            value={b.color}
             unset="concrete"
-            slots={Object.keys(prefab.colours ?? {})}
-            onChange={(c) =>
-              setBuilding((f) => (c === undefined ? delete f.colour : (f.colour = c)))
-            }
+            slots={Object.keys(prefab.colors ?? {})}
+            onChange={(c) => setBuilding((f) => (c === undefined ? delete f.color : (f.color = c)))}
           />
           <button onClick={() => editor.fitFootprint()} title="To what stands on the floor">
             Fit footprint
@@ -1944,20 +1942,20 @@ function Inspector(props: {
               ))}
             </select>
           </label>
-          <PlacementColours editor={editor} node={n} slots={props.slots} />
+          <PlacementColors editor={editor} node={n} slots={props.slots} />
         </>
       )}
-      {'colour' in n && (
-        <Colour
-          value={n.colour}
+      {'color' in n && (
+        <Color
+          value={n.color}
           slots={props.slots}
           onChange={(c) => {
             if (c === undefined) return;
-            // Glass keeps a tint of its own, so a wall drawn next isn't glass-coloured.
+            // Glass keeps a tint of its own, so a wall drawn next isn't glass-colored.
             if (n.type === 'glass') {
-              if (c.startsWith('#')) editor.setWall({ glassColour: c });
-            } else editor.setColour(c);
-            edit((m) => ((m as typeof n).colour = c));
+              if (c.startsWith('#')) editor.setWall({ glassColor: c });
+            } else editor.setColor(c);
+            edit((m) => ((m as typeof n).color = c));
           }}
         />
       )}
@@ -2036,14 +2034,14 @@ function Inspector(props: {
 
 /** A number typed in, applied on Enter or leaving the field. Empty clears an optional one. */
 /**
- * A #rrggbb colour (with a picker) or one of the colour slots of the file it's in. With
+ * A #rrggbb color (with a picker) or one of the color slots of the file it's in. With
  * `unset`, it can also be left out (and shows that label).
  */
-function Colour(props: {
+function Color(props: {
   label?: string;
   value: string | undefined;
   unset?: string;
-  /** The colour shown while it's unset. */
+  /** The color shown while it's unset. */
   shown?: string;
   slots: string[];
   onChange: (c: string | undefined) => void;
@@ -2052,7 +2050,7 @@ function Colour(props: {
   const hex = value?.startsWith('#') ?? false;
   return (
     <label className="ed-field">
-      {props.label ?? 'colour'}
+      {props.label ?? 'color'}
       <select
         value={value === undefined ? UNSET : hex ? '' : value}
         onChange={(e) => {
@@ -2075,36 +2073,36 @@ function Colour(props: {
 }
 
 /**
- * A placed prefab's colours: each of its slots left at the prefab's colour, or set for this
- * copy (a colour, or a slot of the file it's placed in).
+ * A placed prefab's colors: each of its slots left at the prefab's color, or set for this
+ * copy (a color, or a slot of the file it's placed in).
  */
-function PlacementColours(props: {
+function PlacementColors(props: {
   editor: MapEditor;
   node: Extract<MapNode, { type: 'prefab' }>;
   slots: string[];
 }) {
   const { editor, node: n } = props;
   const prefab = editor.prefabs.get(n.prefab);
-  const slots = Object.entries(prefab?.colours ?? {});
+  const slots = Object.entries(prefab?.colors ?? {});
   if (!slots.length) return null;
   return (
     <>
-      <h4>colours</h4>
-      {slots.map(([slot, colour]) => (
-        <Colour
+      <h4>colors</h4>
+      {slots.map(([slot, color]) => (
+        <Color
           key={slot}
           label={slot}
-          value={n.colours?.[slot]}
+          value={n.colors?.[slot]}
           unset="prefab's"
-          shown={colour}
+          shown={color}
           slots={props.slots}
           onChange={(c) =>
             editor.editActive((m) => {
               const p = m as typeof n;
-              if (c !== undefined) p.colours = { ...p.colours, [slot]: c };
-              else if (p.colours) {
-                delete p.colours[slot];
-                if (!Object.keys(p.colours).length) delete p.colours;
+              if (c !== undefined) p.colors = { ...p.colors, [slot]: c };
+              else if (p.colors) {
+                delete p.colors[slot];
+                if (!Object.keys(p.colors).length) delete p.colors;
               }
             })
           }
@@ -2453,7 +2451,7 @@ function WallFields(props: {
         </button>
         <span
           className="ed-short"
-          title="Blank or 0: even along the whole wall. Else this far apart, centred"
+          title="Blank or 0: even along the whole wall. Else this far apart, centered"
         >
           <Num
             label="gap"
@@ -2468,14 +2466,14 @@ function WallFields(props: {
 }
 
 /** The tint of glass the wall tool puts in. */
-function GlassTint(props: { editor: MapEditor; colour: string }) {
+function GlassTint(props: { editor: MapEditor; color: string }) {
   return (
     <label title="The tint of glass put in; it's drawn see-through">
       tint
       <input
         type="color"
-        value={props.colour}
-        onChange={(e) => props.editor.setWall({ glassColour: e.target.value })}
+        value={props.color}
+        onChange={(e) => props.editor.setWall({ glassColor: e.target.value })}
       />
     </label>
   );

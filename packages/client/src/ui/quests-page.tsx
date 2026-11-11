@@ -285,8 +285,8 @@ export function TraderQuests({
         {!list.length && <li className="raid-note">Nothing here.</li>}
       </ul>
       <p className="raid-note">
-        Items are handed over from your stash, not from what you wear or carry. Rewards go into
-        your stash, and rep counts toward {vendor.name}'s level.
+        Items are handed over from your stash, not from what you wear or carry. Rewards go into your
+        stash, and rep counts toward {vendor.name}'s level.
       </p>
     </>
   );

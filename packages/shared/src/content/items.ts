@@ -16,7 +16,7 @@ export { ATTACHMENT_SLOTS, type AttachmentSlot } from './models';
 
 /*
  * Item files (content/items/<id>.json): every kind of item, its size in the inventory
- * grid, and what it does. Times are seconds, angles degrees, distances metres.
+ * grid, and what it does. Times are seconds, angles degrees, distances meters.
  */
 
 const finite = z.number().refine(Number.isFinite, 'must be a finite number');
@@ -26,7 +26,7 @@ const fraction = finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1');
 
 /**
  * What setting someone alight does (2026-10-31, sim/fire.ts): how long they burn if they
- * don't put it out, and HP a second it takes from every zone, past armour.
+ * don't put it out, and HP a second it takes from every zone, past armor.
  */
 const burning = {
   burnTime: positive,
@@ -41,34 +41,34 @@ const burning = {
  * 6 (session 18b): every item gained a model (models.ts).
  * 7 (session 19): guns, knives, meds and repair kits gained sounds (sounds.ts).
  * 8: every item gained a rarity.
- * 9: ammo gained a calibre and a level; armour a level in place of absorb; the knife a
- *    level and armour damage (Delta Force-style tiers, design.md → Damage). Grenades came
+ * 9: ammo gained a caliber and a level; armor a level in place of absorb; the knife a
+ *    level and armor damage (Delta Force-style tiers, design.md → Damage). Grenades came
  *    in at 9 too: a new type changes no existing file, so it needed no new version. The
  *    uncommon and mythic rarities came in at 9 for the same reason.
  * 10 (2026-11-04): gun recoil gained a snap, and its recovery became a rate (per second)
  *    rather than degrees per second (sim/recoil.ts). Containers' optional sections,
- *    armour's optional repairLoss and every item's optional shortName came in at 10 too
+ *    armor's optional repairLoss and every item's optional shortName came in at 10 too
  *    (2026-11-06), loot's optional category, guns' optional class and meds' optional bleedCost (2026-11-09): an
  *    optional field changes no existing file.
  */
 export const ITEM_FORMAT_VERSION = 10;
 
 /**
- * Ammo and armour levels (a round's from its Tarkov penetration), 1 to LEVELS: grey, green, blue, purple,
- * gold, red. A round against armour compares levels (sim/health.ts).
+ * Ammo and armor levels (a round's from its Tarkov penetration), 1 to LEVELS: gray, green, blue, purple,
+ * gold, red. A round against armor compares levels (sim/health.ts).
  */
 export const LEVELS = 6;
 const levelSchema = z.int().min(1).max(LEVELS);
 
 /**
- * How rare an item is, which colours its tile (design.md → Item tiles), lowest first:
+ * How rare an item is, which colors its tile (design.md → Item tiles), lowest first:
  * gray, green, blue, purple, gold, red.
  */
 export const RARITIES = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'] as const;
 export type Rarity = (typeof RARITIES)[number];
 
 /**
- * What rarity colours say (2026-11-09, the user's call): an armour piece's or a round's
+ * What rarity colors say (2026-11-09, the user's call): an armor piece's or a round's
  * level, a loot item's worth, and a rig's or backpack's room. Guns and attachments are all
  * common: a gun is just a gun. checkItems holds content to this.
  */
@@ -177,7 +177,7 @@ const weaponSchema = z
     ...common,
     type: z.literal('weapon'),
     /**
-     * The round it comes loaded with. It fires any round of the same calibre (the one
+     * The round it comes loaded with. It fires any round of the same caliber (the one
      * loaded is on the gun, WeaponState.loaded). A grenade makes it a grenade launcher,
      * firing any grenade (see launchSpeed).
      */
@@ -189,7 +189,7 @@ const weaponSchema = z
     launchSpeed: positive.optional(),
     /**
      * Grenade launchers only: its grenades go off when they hit something (the map or
-     * someone) once they've flown this far, in metres. One that hits the map sooner never
+     * someone) once they've flown this far, in meters. One that hits the map sooner never
      * arms: it bounces and goes off on its fuse, as a thrown one does.
      */
     armDistance: nonNegative.optional(),
@@ -268,7 +268,7 @@ const weaponSchema = z
     spawns: idSchema.optional(),
     /**
      * A blast gun (zombies mode's Gale Cannon, 2026-11-04): each shot, instead of a bullet,
-     * kills every enemy within `range` metres and `angle` degrees either side of where it
+     * kills every enemy within `range` meters and `angle` degrees either side of where it
      * points that nothing solid hides, and flings them away at `push` m/s. Never players.
      */
     blast: z.strictObject({ range: positive, angle: positive, push: nonNegative }).optional(),
@@ -315,17 +315,17 @@ const ammoSchema = z
     type: z.literal('ammo'),
     /** Loose rounds stack up to this many in one place. */
     stack: stackSchema,
-    /** Which guns fire it: those whose own round has the same calibre. */
-    calibre: z.string().min(1),
-    /** Its penetration level, against an armour's level. */
+    /** Which guns fire it: those whose own round has the same caliber. */
+    caliber: z.string().min(1),
+    /** Its penetration level, against an armor's level. */
     level: levelSchema,
     /**
-     * Damage to the chest; other zones multiply it, then armour may stop some. Per pellet.
+     * Damage to the chest; other zones multiply it, then armor may stop some. Per pellet.
      * 0 only for flamethrower fuel, whose harm is the burning (flame).
      */
     damage: nonNegative,
-    /** Armour durability lost per hit (per pellet), less against armour above its level. */
-    armourDamage: nonNegative,
+    /** Armor durability lost per hit (per pellet), less against armor above its level. */
+    armorDamage: nonNegative,
     /** Chance that a hit which gets through starts bleeding. */
     bleedChance: fraction,
     /** Shotgun shells: one round fires this many pellets, each its own hit. Defaults to 1. */
@@ -370,8 +370,8 @@ const ammoSchema = z
     path: ['incendiary'],
   });
 
-/** What protects: armour's, and an armoured rig's armour (2026-11-11). */
-const armourStats = {
+/** What protects: armor's, and an armored rig's armor (2026-11-11). */
+const armorStats = {
   /** Its protection level, against a round's level. */
   level: levelSchema,
   durability: positive,
@@ -381,14 +381,14 @@ const armourStats = {
    */
   repairLoss: z.number().min(0).lt(1).optional(),
 };
-const armourStatsSchema = z.strictObject(armourStats);
+const armorStatsSchema = z.strictObject(armorStats);
 
-const armourSchema = z.strictObject({
+const armorSchema = z.strictObject({
   ...common,
-  type: z.literal('armour'),
-  /** A helmet covers the head, body armour the chest. */
+  type: z.literal('armor'),
+  /** A helmet covers the head, body armor the chest. */
   slot: z.enum(['helmet', 'body']),
-  ...armourStats,
+  ...armorStats,
   /**
    * A helmet with a full face mask (AI-7, Jug's): worn by a player, it hides `edge` of the
    * view at each side (0–0.4 of the screen's width, fading in) and muffles every sound
@@ -408,14 +408,14 @@ const armourSchema = z.strictObject({
  * screen height from the aim point, with y down, so 50 reaches the top and bottom edges;
  * a scope's mask has a radius of SCOPE_RADIUS.
  */
-const hexColour = z.string().regex(/^#[0-9a-f]{6}$/i, 'must be #rrggbb');
+const hexColor = z.string().regex(/^#[0-9a-f]{6}$/i, 'must be #rrggbb');
 /**
- * Each shape may have its own colour (IE-2, 2026-11-09: a red centre over black lines),
+ * Each shape may have its own color (IE-2, 2026-11-09: a red center over black lines),
  * else it takes the reticle's. Arcs and triangles came then too; none changed a format.
  */
-const shapeColour = { colour: hexColour.optional() };
+const shapeColor = { color: hexColor.optional() };
 const reticleShapeSchema = z.discriminatedUnion('type', [
-  z.strictObject({ type: z.literal('dot'), x: finite, y: finite, r: positive, ...shapeColour }),
+  z.strictObject({ type: z.literal('dot'), x: finite, y: finite, r: positive, ...shapeColor }),
   z.strictObject({
     type: z.literal('line'),
     x1: finite,
@@ -423,7 +423,7 @@ const reticleShapeSchema = z.discriminatedUnion('type', [
     x2: finite,
     y2: finite,
     width: positive,
-    ...shapeColour,
+    ...shapeColor,
   }),
   z.strictObject({
     type: z.literal('ring'),
@@ -431,7 +431,7 @@ const reticleShapeSchema = z.discriminatedUnion('type', [
     y: finite,
     r: positive,
     width: positive,
-    ...shapeColour,
+    ...shapeColor,
   }),
   /**
    * Part of a ring: from `from` clockwise to `to`, in degrees from straight up (0 up, 90
@@ -446,7 +446,7 @@ const reticleShapeSchema = z.discriminatedUnion('type', [
       width: positive,
       from: finite,
       to: finite,
-      ...shapeColour,
+      ...shapeColor,
     })
     .refine((a) => a.to > a.from && a.to - a.from <= 360, {
       message: 'an arc runs clockwise from "from" to "to", more than 0 and at most 360 degrees',
@@ -461,7 +461,7 @@ const reticleShapeSchema = z.discriminatedUnion('type', [
     y2: finite,
     x3: finite,
     y3: finite,
-    ...shapeColour,
+    ...shapeColor,
   }),
 ]);
 
@@ -503,7 +503,7 @@ const attachmentSchema = z
         /** Magnification. Above 1 is a scope: full-screen zoom behind a mask. */
         zoom: finite.refine((n) => n >= 1, 'must be 1 or more'),
         reticle: z.strictObject({
-          colour: hexColour,
+          color: hexColor,
           shapes: z.array(reticleShapeSchema).min(1),
         }),
       })
@@ -594,11 +594,11 @@ const containerSchema = z
      */
     sections: z.array(sectionSchema).min(1).optional(),
     /**
-     * An armoured rig's armour (2026-11-11, the user's call): it covers the chest as body
-     * armour does, with the same levels, wear and repairs, and body armour can't be worn
+     * An armored rig's armor (2026-11-11, the user's call): it covers the chest as body
+     * armor does, with the same levels, wear and repairs, and body armor can't be worn
      * with it (gearConflict). Rigs only.
      */
-    armour: armourStatsSchema.optional(),
+    armor: armorStatsSchema.optional(),
     /**
      * For testing only (2026-10-31): given from the admin page's Admin tab, so keep it out of
      * loot tables, loadouts and vendors (as an admin spawner gun).
@@ -610,9 +610,9 @@ const containerSchema = z
     message: 'sections must be inside the grid and not overlap',
     path: ['sections'],
   })
-  .refine((c) => !c.armour || c.slot === 'rig', {
-    message: 'only a rig can have armour',
-    path: ['armour'],
+  .refine((c) => !c.armor || c.slot === 'rig', {
+    message: 'only a rig can have armor',
+    path: ['armor'],
   });
 
 type SectionDef = z.infer<typeof sectionSchema>;
@@ -646,7 +646,7 @@ export function sectionsOf(
 
 /**
  * The knife. A swing hits the first body part in reach under the crosshair (or close to
- * it), like a shot: zone multipliers, then armour absorbs its share.
+ * it), like a shot: zone multipliers, then armor absorbs its share.
  */
 const meleeSchema = z.strictObject({
   ...common,
@@ -655,8 +655,8 @@ const meleeSchema = z.strictObject({
   damage: positive,
   /** Its penetration level, as for ammo. */
   level: levelSchema,
-  /** Armour durability lost per hit, as for ammo. */
-  armourDamage: nonNegative,
+  /** Armor durability lost per hit, as for ammo. */
+  armorDamage: nonNegative,
   /** Chance that a hit which gets through starts bleeding. */
   bleedChance: fraction,
   /** Seconds from one swing to the next. */
@@ -690,10 +690,10 @@ const grenadeSchema = z.strictObject({
   /** What it does; left out, a frag. */
   effect: z.enum(GRENADE_EFFECTS).optional(),
   /**
-   * Only launchers of this calibre fire it (2026-11-04, zombies mode's ray gun bolts); left
+   * Only launchers of this caliber fire it (2026-11-04, zombies mode's ray gun bolts); left
    * out, `grenade`, which every grenade launcher fires.
    */
-  calibre: z.string().min(1).optional(),
+  caliber: z.string().min(1).optional(),
   /** A launcher's own round stacks up to this many in one place, as ammo does. */
   stack: stackSchema.optional(),
   /** Seconds from the throw until it goes off; for c4, from the detonator. */
@@ -701,20 +701,20 @@ const grenadeSchema = z.strictObject({
   /** How fast it leaves the hand, in m/s. */
   throwSpeed: positive,
   /**
-   * It hurts out to here, in metres. A flash blinds out to here, and a smoke's cloud is
+   * It hurts out to here, in meters. A flash blinds out to here, and a smoke's cloud is
    * this big.
    */
   radius: positive,
   /**
-   * Damage to the chest at the centre; the other zones take their share (GRENADE.zones),
-   * and it falls off further out. Then armour stops some, as for ammo. 0 hurts no one
+   * Damage to the chest at the center; the other zones take their share (GRENADE.zones),
+   * and it falls off further out. Then armor stops some, as for ammo. 0 hurts no one
    * (flash and smoke).
    */
   damage: nonNegative,
   /** Its fragments' penetration level, as for ammo. */
   level: levelSchema,
-  /** Armour durability lost per zone hit, as for ammo. */
-  armourDamage: nonNegative,
+  /** Armor durability lost per zone hit, as for ammo. */
+  armorDamage: nonNegative,
   /** Chance that each zone hit which gets through starts bleeding. */
   bleedChance: fraction,
   /** How far away it can be heard going off (by AI), as for a gun. */
@@ -770,7 +770,7 @@ const lootSchema = z.strictObject({
   ...plainModel,
 });
 
-/** Armour repair kits. */
+/** Armor repair kits. */
 const repairSchema = z.strictObject({
   ...common,
   type: z.literal('repair'),
@@ -786,7 +786,7 @@ const repairSchema = z.strictObject({
 export const itemSchema = z.discriminatedUnion('type', [
   weaponSchema,
   ammoSchema,
-  armourSchema,
+  armorSchema,
   attachmentSchema,
   medSchema,
   containerSchema,
@@ -801,7 +801,7 @@ export const itemSchema = z.discriminatedUnion('type', [
 export type ItemDef = z.infer<typeof itemSchema>;
 export type WeaponDef = z.infer<typeof weaponSchema>;
 export type AmmoDef = z.infer<typeof ammoSchema>;
-export type ArmourDef = z.infer<typeof armourSchema>;
+export type ArmorDef = z.infer<typeof armorSchema>;
 export type AttachmentDef = z.infer<typeof attachmentSchema>;
 export type MedDef = z.infer<typeof medSchema>;
 export type MeleeDef = z.infer<typeof meleeSchema>;
@@ -830,7 +830,7 @@ export const ITEM_FORMAT: ContentFormat<ItemDef> = {
           return { ...doc, size: doc.hold === 'pistol' ? [2, 1] : [4, 2] };
         case 'ammo':
           return { ...doc, size: [1, 1], stack: 60 };
-        case 'armour':
+        case 'armor':
           return { ...doc, size: doc.slot === 'helmet' ? [2, 2] : [3, 3] };
         default:
           return { ...doc, size: [1, 1] };
@@ -859,20 +859,20 @@ export const ITEM_FORMAT: ContentFormat<ItemDef> = {
     },
     // Rarities: all common until the content files pick their own.
     7: (doc) => ({ ...doc, rarity: 'common' }),
-    // Levels. Each round becomes its own calibre so its guns still fire it; armour's level
-    // is guessed from how much it absorbed; old armour damage was per point absorbed.
+    // Levels. Each round becomes its own caliber so its guns still fire it; armor's level
+    // is guessed from how much it absorbed; old armor damage was per point absorbed.
     8: (doc) => {
       switch (doc.type) {
         case 'ammo':
           return {
             ...doc,
-            calibre: doc.id,
+            caliber: doc.id,
             level: 1,
-            armourDamage: 10 * Number(doc.armourDamage ?? 1),
+            armorDamage: 10 * Number(doc.armorDamage ?? 1),
           };
         case 'melee':
-          return { ...doc, level: 1, armourDamage: 5 };
-        case 'armour': {
+          return { ...doc, level: 1, armorDamage: 5 };
+        case 'armor': {
           const { absorb, ...rest } = doc;
           return {
             ...rest,
@@ -926,7 +926,7 @@ export function defaultSounds(doc: {
 const VALUE_GUESSES: Record<string, number> = {
   weapon: 10_000,
   ammo: 30,
-  armour: 10_000,
+  armor: 10_000,
   attachment: 5_000,
   med: 1_000,
   container: 5_000,
@@ -950,30 +950,30 @@ function itemOf<T extends ItemDef['type']>(
 
 export const weaponDef = (items: ItemDb, id: string): WeaponDef => itemOf(items, id, 'weapon');
 export const ammoDef = (items: ItemDb, id: string): AmmoDef => itemOf(items, id, 'ammo');
-export const armourDef = (items: ItemDb, id: string): ArmourDef => itemOf(items, id, 'armour');
+export const armorDef = (items: ItemDb, id: string): ArmorDef => itemOf(items, id, 'armor');
 
-/** What protects: armour's level, durability and repair loss, or an armoured rig's. */
-export type ArmourStats = z.infer<typeof armourStatsSchema>;
+/** What protects: armor's level, durability and repair loss, or an armored rig's. */
+export type ArmorStats = z.infer<typeof armorStatsSchema>;
 
-/** An item's armour (2026-11-11): armour's own, an armoured rig's, or null. */
-export function armourOf(def: ItemDef): ArmourStats | null {
-  if (def.type === 'armour') return def;
-  if (def.type === 'container') return def.armour ?? null;
+/** An item's armor (2026-11-11): armor's own, an armored rig's, or null. */
+export function armorOf(def: ItemDef): ArmorStats | null {
+  if (def.type === 'armor') return def;
+  if (def.type === 'container') return def.armor ?? null;
   return null;
 }
 
-/** An item's armour by id (armourOf); throws if it has none. */
-export function armourStatsOf(items: ItemDb, id: string): ArmourStats {
-  const a = armourOf(itemDef(items, id));
-  if (!a) throw new Error(`item "${id}" has no armour`);
+/** An item's armor by id (armorOf); throws if it has none. */
+export function armorStatsOf(items: ItemDb, id: string): ArmorStats {
+  const a = armorOf(itemDef(items, id));
+  if (!a) throw new Error(`item "${id}" has no armor`);
   return a;
 }
 
-/** Whether an item is a rig with armour (2026-11-11). */
-export const isArmouredRig = (def: ItemDef): boolean =>
-  def.type === 'container' && def.slot === 'rig' && !!def.armour;
+/** Whether an item is a rig with armor (2026-11-11). */
+export const isArmoredRig = (def: ItemDef): boolean =>
+  def.type === 'container' && def.slot === 'rig' && !!def.armor;
 
-/** An armour level's rarity, 1–6 common to mythic (2026-11-04): armour's and armoured rigs'. */
+/** An armor level's rarity, 1–6 common to mythic (2026-11-04): armor's and armored rigs'. */
 export const levelRarity = (level: number): Rarity =>
   RARITIES[Math.min(RARITIES.length, Math.max(1, Math.round(level))) - 1]!;
 export const attachmentDef = (items: ItemDb, id: string): AttachmentDef =>
@@ -1047,21 +1047,21 @@ export function roundOf(items: ItemDb, id: string): RoundDef | null {
   return def?.type === 'ammo' ? def : null;
 }
 
-/** A round's calibre: ammo's own; every grenade is 'grenade', fired by every launcher. */
-export const roundCalibre = (round: RoundDef): string =>
-  round.type === 'ammo' ? round.calibre : (round.calibre ?? 'grenade');
+/** A round's caliber: ammo's own; every grenade is 'grenade', fired by every launcher. */
+export const roundCaliber = (round: RoundDef): string =>
+  round.type === 'ammo' ? round.caliber : (round.caliber ?? 'grenade');
 
-/** The calibre a gun fires: its own round's. */
-export function calibreOf(items: ItemDb, weapon: WeaponDef): string {
+/** The caliber a gun fires: its own round's. */
+export function caliberOf(items: ItemDb, weapon: WeaponDef): string {
   const round = roundOf(items, weapon.ammo);
   if (!round) throw new Error(`item "${weapon.ammo}" is not a round`);
-  return roundCalibre(round);
+  return roundCaliber(round);
 }
 
-/** Whether a gun fires an item: a round of its calibre. */
+/** Whether a gun fires an item: a round of its caliber. */
 export function firesRound(items: ItemDb, weapon: WeaponDef, id: string): boolean {
   const round = roundOf(items, id);
-  return !!round && roundCalibre(round) === calibreOf(items, weapon);
+  return !!round && roundCaliber(round) === caliberOf(items, weapon);
 }
 
 /**
@@ -1087,8 +1087,8 @@ export function checkItems(items: ItemDb): void {
         throw new ContentError(source, 'only a gun firing grenades has armDistance');
       }
     } else if (item.type === 'grenade') {
-      if (item.stack !== undefined && item.calibre === undefined) {
-        throw new ContentError(source, "only a launcher's own round (with a calibre) stacks");
+      if (item.stack !== undefined && item.caliber === undefined) {
+        throw new ContentError(source, "only a launcher's own round (with a caliber) stacks");
       }
       const effect = grenadeEffect(item);
       if ((effect === 'flash') !== (item.blindTime !== undefined)) {

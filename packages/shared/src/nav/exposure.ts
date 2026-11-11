@@ -3,7 +3,7 @@ import { MOVEMENT } from '../sim/movement';
 import type { CollisionWorld } from '../world/collision-world';
 import type { NavGrid } from './nav-grid';
 
-/** Tuning for the map editor's search for hiding spots, in metres. */
+/** Tuning for the map editor's search for hiding spots, in meters. */
 export const EXPOSURE = {
   /** How far enemies see. */
   range: AI.sightRange,
@@ -51,7 +51,7 @@ export class Exposure {
   private readonly eyes: Float32Array[];
   private readonly bucketCols: number;
   private readonly bucketRows: number;
-  /** The eye that last saw a spot, tried first for the next (neighbours mostly share one). */
+  /** The eye that last saw a spot, tried first for the next (neighbors mostly share one). */
   private lastBucket = -1;
   private lastEye = -1;
 

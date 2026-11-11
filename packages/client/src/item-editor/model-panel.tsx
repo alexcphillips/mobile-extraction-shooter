@@ -15,7 +15,7 @@ import {
   type WeaponState,
 } from '@mes/shared';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Combo, HexColour, Num, Pick, Text, Toggle } from '../editor/fields';
+import { Combo, HexColor, Num, Pick, Text, Toggle } from '../editor/fields';
 import { budgetOf, triangleCount } from './budget';
 import type { ItemEditor, ItemEditorState } from './editor';
 import {
@@ -30,14 +30,14 @@ import {
 import {
   FLAT_LOOKS,
   ModelView,
-  pointColour,
+  pointColor,
   type FirstPerson,
   type Look,
   type ModelScene,
   type Picked,
   type ViewMode,
 } from './model-view';
-import { HOUSE_PALETTE, coloursOf } from './palette';
+import { HOUSE_PALETTE, colorsOf } from './palette';
 import {
   readReference,
   removeReference,
@@ -175,7 +175,7 @@ export function ModelTab(props: {
   /** Attachments: the gun it's previewed on. */
   const [onGun, setOnGun] = useState<string | undefined>(undefined);
   const [clip, setClip] = useState<Clip | null>(readClip);
-  /** IE-2: orbit or a flat view, and the eyedropper (the next part clicked gives its colour). */
+  /** IE-2: orbit or a flat view, and the eyedropper (the next part clicked gives its color). */
   const [look, setLook] = useState<Look>('orbit');
   const [dropper, setDropper] = useState(false);
   /** What a click in the view does while the eyedropper is on; set every render. */
@@ -346,12 +346,12 @@ export function ModelTab(props: {
   const editPicked = (change: (p: ModelPart) => void): void =>
     editModel((m) => sel.forEach((i) => m.parts[i] && change(m.parts[i])));
 
-  // The eyedropper: a part clicked in the view gives its colour to the picked parts.
+  // The eyedropper: a part clicked in the view gives its color to the picked parts.
   useEffect(() => {
     dropRef.current = dropper
       ? (p) => {
           const from = p?.kind === 'parts' ? model.parts[p.indices[0]!] : undefined;
-          if (from) editPicked((q) => (q.colour = from.colour));
+          if (from) editPicked((q) => (q.color = from.color));
           setDropper(false);
           return true;
         }
@@ -360,7 +360,7 @@ export function ModelTab(props: {
   if (dropper && !sel.length) setDropper(false);
 
   /**
-   * Moves the picked parts or point by `n` snap steps (a millimetre with snap off) along an
+   * Moves the picked parts or point by `n` snap steps (a millimeter with snap off) along an
    * axis. Holding the key down is one undo step.
    */
   const nudge = (axis: Vec3, n: number, first: boolean): void => {
@@ -498,10 +498,10 @@ export function ModelTab(props: {
             }
             duplicate={duplicate}
             remove={canRemove ? remove : null}
-            itemColours={coloursOf(model.parts)}
-            pickColour={(c) =>
+            itemColors={colorsOf(model.parts)}
+            pickColor={(c) =>
               setPicked(
-                asPicked(model.parts.flatMap((p, i) => (p.colour.toLowerCase() === c ? [i] : []))),
+                asPicked(model.parts.flatMap((p, i) => (p.color.toLowerCase() === c ? [i] : []))),
               )
             }
             dropper={dropper}
@@ -518,7 +518,7 @@ export function ModelTab(props: {
                 className="ie-point-name"
                 onClick={() => setPicked({ kind: 'point', key: k })}
               >
-                <span className="ie-swatch" style={{ background: pointColour(k) }} />
+                <span className="ie-swatch" style={{ background: pointColor(k) }} />
                 {k.replace('mounts.', 'mount: ')}
               </button>
               <span className="ed-note">{POINT_NOTES[k]}</span>
@@ -637,9 +637,7 @@ export function ModelTab(props: {
           )}
         </div>
         {dropper && (
-          <p className="ie-dropper-note">
-            Eyedropper: click a part to give its colour (Esc stops).
-          </p>
+          <p className="ie-dropper-note">Eyedropper: click a part to give its color (Esc stops).</p>
         )}
         {mode === 'build' && look === 'side' && (
           <ReferenceFields key={def.id} item={def.id} view={view} />
@@ -657,12 +655,12 @@ export function ModelTab(props: {
 }
 
 const FRAME_NOTES: Record<string, string> = {
-  weapon: 'Metres; the barrel along −z, y up. The origin sits on the body’s weapon bone.',
-  attachment: 'Metres; its origin goes on the gun’s mount for its slot.',
-  melee: 'Metres; the blade along −z, held at the grip.',
-  armour: 'Metres, on the body as it stands (feet at 0, facing −z).',
-  container: 'Metres, on the body as it stands (feet at 0, facing −z).',
-  other: 'Metres. On the ground it rests on its lowest point.',
+  weapon: 'Meters; the barrel along −z, y up. The origin sits on the body’s weapon bone.',
+  attachment: 'Meters; its origin goes on the gun’s mount for its slot.',
+  melee: 'Meters; the blade along −z, held at the grip.',
+  armor: 'Meters, on the body as it stands (feet at 0, facing −z).',
+  container: 'Meters, on the body as it stands (feet at 0, facing −z).',
+  other: 'Meters. On the ground it rests on its lowest point.',
 };
 
 function opticOf(db: ItemDb, id: string | undefined) {
@@ -701,7 +699,7 @@ function buildScene(
     fitted: new Set(),
     points,
     context: [],
-    body: def.type === 'armour' || def.type === 'container',
+    body: def.type === 'armor' || def.type === 'container',
     sightLine: null,
   };
   if (def.type === 'weapon') {
@@ -751,7 +749,7 @@ function PartList(props: {
       className={picked.includes(i) ? 'ed-on' : undefined}
       onClick={(e) => props.choose([i], e.shiftKey || e.metaKey ? 'toggle' : 'set')}
     >
-      <span className="ie-swatch" style={{ background: p.colour }} />
+      <span className="ie-swatch" style={{ background: p.color }} />
       {partLabel(p, i)}
       {p.name && <span className="ed-note"> · {p.type}</span>}
       {p.hiddenBy && <span className="ed-note"> · hidden by {p.hiddenBy}</span>}
@@ -816,7 +814,7 @@ function Cost(props: { def: ItemDef; scene: ModelScene; sceneKey: string }) {
 }
 
 /**
- * What the picked parts share (group, colour, what hides them) and what to do with them;
+ * What the picked parts share (group, color, what hides them) and what to do with them;
  * with one picked, its name, shape, place and turn as well.
  */
 function PickedFields(props: {
@@ -829,10 +827,10 @@ function PickedFields(props: {
   single: ((change: (p: ModelPart) => void) => void) | undefined;
   duplicate: (mirror: boolean | Axis) => void;
   remove: (() => void) | null;
-  /** The colours the item uses, most used first. */
-  itemColours: readonly string[];
-  /** Picks every part of a colour. */
-  pickColour: (c: string) => void;
+  /** The colors the item uses, most used first. */
+  itemColors: readonly string[];
+  /** Picks every part of a color. */
+  pickColor: (c: string) => void;
   dropper: boolean;
   setDropper: (on: boolean) => void;
 }) {
@@ -884,15 +882,15 @@ function PickedFields(props: {
       </div>
       {props.single && <PartFields part={first} edit={props.single} />}
       <div className="ed-row">
-        <HexColour
-          label={shared((p) => p.colour) ? 'colour' : 'colour (mixed)'}
-          value={first.colour}
-          onChange={(c) => edit((q) => (q.colour = c))}
+        <HexColor
+          label={shared((p) => p.color) ? 'color' : 'color (mixed)'}
+          value={first.color}
+          onChange={(c) => edit((q) => (q.color = c))}
         />
         <Toggle
           on={props.dropper}
           onClick={() => props.setDropper(!props.dropper)}
-          title="I: then click a part in the view to give its colour to the picked parts"
+          title="I: then click a part in the view to give its color to the picked parts"
         >
           eyedropper
         </Toggle>
@@ -913,16 +911,16 @@ function PickedFields(props: {
       </div>
       <Swatches
         label="this item"
-        colours={props.itemColours.map((colour) => ({ colour, name: colour }))}
-        current={shared((p) => p.colour.toLowerCase())}
-        set={(c) => edit((q) => (q.colour = c))}
-        pickAll={props.pickColour}
+        colors={props.itemColors.map((color) => ({ color, name: color }))}
+        current={shared((p) => p.color.toLowerCase())}
+        set={(c) => edit((q) => (q.color = c))}
+        pickAll={props.pickColor}
       />
       <Swatches
         label="house"
-        colours={HOUSE_PALETTE}
-        current={shared((p) => p.colour.toLowerCase())}
-        set={(c) => edit((q) => (q.colour = c))}
+        colors={HOUSE_PALETTE}
+        current={shared((p) => p.color.toLowerCase())}
+        set={(c) => edit((q) => (q.color = c))}
       />
       <div className="ed-row">
         <button onClick={() => props.duplicate(false)} title="⌘D">
@@ -975,7 +973,7 @@ function PartFields(props: { part: ModelPart; edit: (change: (p: ModelPart) => v
     <div className="ie-part">
       <div className="ed-row">
         {(['x', 'y', 'z'] as const).map((axis, j) =>
-          num(`centre ${axis}`, p.pos[j], (q, v) => (q.pos[j] = v)),
+          num(`center ${axis}`, p.pos[j], (q, v) => (q.pos[j] = v)),
         )}
       </div>
       {p.type === 'cylinder' ? (
@@ -1035,12 +1033,12 @@ function PartFields(props: { part: ModelPart; edit: (change: (p: ModelPart) => v
 }
 
 /**
- * A row of colour swatches: a click colours the picked parts; with `pickAll`, shift-click
- * picks every part of that colour instead.
+ * A row of color swatches: a click colors the picked parts; with `pickAll`, shift-click
+ * picks every part of that color instead.
  */
 function Swatches(props: {
   label: string;
-  colours: readonly { colour: string; name: string }[];
+  colors: readonly { color: string; name: string }[];
   current: string | undefined;
   set: (c: string) => void;
   pickAll?: (c: string) => void;
@@ -1048,13 +1046,13 @@ function Swatches(props: {
   return (
     <div className="ie-swatches">
       <span className="ed-note">{props.label}</span>
-      {props.colours.map(({ colour, name }) => (
+      {props.colors.map(({ color, name }) => (
         <button
-          key={colour}
-          className={colour === props.current ? 'ie-chip ed-on' : 'ie-chip'}
-          style={{ background: colour }}
-          title={`${name}${name === colour ? '' : ` ${colour}`}${props.pickAll ? ' · shift-click picks every part this colour' : ''}`}
-          onClick={(e) => (e.shiftKey && props.pickAll ? props.pickAll(colour) : props.set(colour))}
+          key={color}
+          className={color === props.current ? 'ie-chip ed-on' : 'ie-chip'}
+          style={{ background: color }}
+          title={`${name}${name === color ? '' : ` ${color}`}${props.pickAll ? ' · shift-click picks every part this color' : ''}`}
+          onClick={(e) => (e.shiftKey && props.pickAll ? props.pickAll(color) : props.set(color))}
         />
       ))}
     </div>
@@ -1063,7 +1061,7 @@ function Swatches(props: {
 
 /**
  * The picture to trace under the side view (IE-2): chosen from a file, kept for this item on
- * this device (never in content), sized and placed in metres.
+ * this device (never in content), sized and placed in meters.
  */
 function ReferenceFields(props: { item: string; view: { current: ModelView | null } }) {
   const { item, view } = props;

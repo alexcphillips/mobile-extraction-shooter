@@ -6,27 +6,27 @@
       "type": "box",
       "pos": [0, 0.25, 0.2],
       "size": [1.1, 0.6, 2],
-      "colour": "#e0a526"
+      "color": "#e0a526"
     },
     {
       "type": "box",
       "pos": [0, 0.25, 1.35],
       "size": [1.2, 0.75, 0.45],
-      "colour": "#c98f1c",
+      "color": "#c98f1c",
       "bulge": [0, 0, 0, 0, 0, 0.1]
     },
     {
       "type": "box",
       "pos": [0, 0.85, -0.55],
       "size": [1.1, 0.3, 0.5],
-      "colour": "#e0a526"
+      "color": "#e0a526"
     },
     {
       "type": "cylinder",
       "pos": [0.62, 0.175, -0.5],
       "radius": 0.3,
       "height": 0.25,
-      "colour": "#1f1f1f",
+      "color": "#1f1f1f",
       "sides": 12,
       "roll": 90
     },
@@ -35,7 +35,7 @@
       "pos": [-0.62, 0.175, -0.5],
       "radius": 0.3,
       "height": 0.25,
-      "colour": "#1f1f1f",
+      "color": "#1f1f1f",
       "sides": 12,
       "roll": 90
     },
@@ -44,7 +44,7 @@
       "pos": [0.6, 0.125, 1],
       "radius": 0.25,
       "height": 0.25,
-      "colour": "#1f1f1f",
+      "color": "#1f1f1f",
       "sides": 12,
       "roll": 90
     },
@@ -53,7 +53,7 @@
       "pos": [-0.6, 0.125, 1],
       "radius": 0.25,
       "height": 0.25,
-      "colour": "#1f1f1f",
+      "color": "#1f1f1f",
       "sides": 12,
       "roll": 90
     },
@@ -61,21 +61,21 @@
       "type": "box",
       "pos": [0, 0.85, 0.55],
       "size": [0.5, 0.12, 0.45],
-      "colour": "#1f1f1f",
+      "color": "#1f1f1f",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.97, 0.8],
       "size": [0.5, 0.5, 0.1],
-      "colour": "#1f1f1f",
+      "color": "#1f1f1f",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.15, -0.4],
       "size": [0.05, 0.35, 0.05],
-      "colour": "#3a3a3a",
+      "color": "#3a3a3a",
       "collide": false
     },
     {
@@ -83,7 +83,7 @@
       "pos": [0, 1.48, -0.38],
       "radius": 0.15,
       "height": 0.03,
-      "colour": "#1f1f1f",
+      "color": "#1f1f1f",
       "sides": 10,
       "pitch": -30,
       "collide": false,
@@ -93,73 +93,73 @@
       "type": "box",
       "pos": [0.52, 0.85, -0.3],
       "size": [0.06, 1.4, 0.06],
-      "colour": "#3a3a3a"
+      "color": "#3a3a3a"
     },
     {
       "type": "box",
       "pos": [0.52, 0.85, 1.05],
       "size": [0.06, 1.4, 0.06],
-      "colour": "#3a3a3a"
+      "color": "#3a3a3a"
     },
     {
       "type": "box",
       "pos": [-0.52, 0.85, -0.3],
       "size": [0.06, 1.4, 0.06],
-      "colour": "#3a3a3a"
+      "color": "#3a3a3a"
     },
     {
       "type": "box",
       "pos": [-0.52, 0.85, 1.05],
       "size": [0.06, 1.4, 0.06],
-      "colour": "#3a3a3a"
+      "color": "#3a3a3a"
     },
     {
       "type": "box",
       "pos": [0, 2.25, 0.375],
       "size": [1.15, 0.06, 1.5],
-      "colour": "#3a3a3a"
+      "color": "#3a3a3a"
     },
     {
       "type": "box",
       "pos": [0.38, 0.1, -0.95],
       "size": [0.1, 2.4, 0.14],
-      "colour": "#3a3a3a"
+      "color": "#3a3a3a"
     },
     {
       "type": "box",
       "pos": [-0.38, 0.1, -0.95],
       "size": [0.1, 2.4, 0.14],
-      "colour": "#3a3a3a"
+      "color": "#3a3a3a"
     },
     {
       "type": "box",
       "pos": [0, 1.3, -0.95],
       "size": [0.86, 0.08, 0.1],
-      "colour": "#3a3a3a"
+      "color": "#3a3a3a"
     },
     {
       "type": "box",
       "pos": [0, 2.42, -0.95],
       "size": [0.86, 0.08, 0.1],
-      "colour": "#3a3a3a"
+      "color": "#3a3a3a"
     },
     {
       "type": "box",
       "pos": [0, 0.1, -1.06],
       "size": [0.95, 0.5, 0.06],
-      "colour": "#9a9a9a"
+      "color": "#9a9a9a"
     },
     {
       "type": "box",
       "pos": [0.28, 0.08, -1.62],
       "size": [0.12, 0.05, 1.1],
-      "colour": "#9a9a9a"
+      "color": "#9a9a9a"
     },
     {
       "type": "box",
       "pos": [-0.28, 0.08, -1.62],
       "size": [0.12, 0.05, 1.1],
-      "colour": "#9a9a9a"
+      "color": "#9a9a9a"
     }
   ]
 }

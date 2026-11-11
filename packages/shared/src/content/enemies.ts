@@ -3,13 +3,13 @@ import { ContentError, type ContentFormat } from './format';
 import { attachmentDef, firesRound, fits, weaponDef, type ItemDb } from './items';
 import type { Shape } from './compile';
 import { modelShapes, partSchema } from './models';
-import { hexColourSchema, idSchema } from './schema';
+import { hexColorSchema, idSchema } from './schema';
 
 /*
  * Enemy types (content/enemies/<id>.json) and loadouts (content/loadouts/<id>.json),
  * from session 8. An enemy spawn in a map names a type, and optionally a loadout that
  * replaces the type's own. A loadout is rolled once when the enemy spawns: each part
- * (weapon, helmet, body armour) is picked by weight on its own, so a few lines give a lot
+ * (weapon, helmet, body armor) is picked by weight on its own, so a few lines give a lot
  * of variety. Times are seconds, angles degrees.
  */
 
@@ -67,7 +67,7 @@ const skillSchema = z.strictObject({
     .refine(([min, max]) => min <= max, 'min must not be above max')
     .optional(),
   /**
-   * Close in (2026-11-08, PMCs, after Tarkov's): within `range` metres it sprays full auto,
+   * Close in (2026-11-08, PMCs, after Tarkov's): within `range` meters it sprays full auto,
    * bursts of `burst` rounds `pause` seconds apart, in place of `burst` and `burstPause`.
    * Left out, the same bursts at any range.
    */
@@ -97,7 +97,7 @@ const skillSchema = z.strictObject({
   /** Sprints to cover rather than backing into it facing you (AI rework session 5). */
   sprintToCover: z.boolean().optional(),
   /**
-   * Hears a player reloading or using a med within this many metres, walls or not, and
+   * Hears a player reloading or using a med within this many meters, walls or not, and
    * pushes round the corner at them (AI rework session 5). Left out, 0: never.
    */
   listen: nonNegative.optional(),
@@ -123,7 +123,7 @@ const skillSchema = z.strictObject({
    */
   relentless: z.boolean().optional(),
   /**
-   * Keeps to its ground (2026-11-08, Jug): within this many metres of its patrol (its spawn
+   * Keeps to its ground (2026-11-08, Jug): within this many meters of its patrol (its spawn
    * without one). Other AI's gunfire, blasts and glass draw it only from there, as do its
    * allies' fights with AI; players' draw it anywhere. Left out, it goes wherever it hears.
    */
@@ -144,7 +144,7 @@ const skillSchema = z.strictObject({
   /**
    * Flanks only when you're pinned (MT-12, the foreman's crew): with its target out of the
    * whole squad's sight, everyone holds and fires at its cover; once it has been out of
-   * sight `after` seconds within `within` metres of where they last saw it, one member (not
+   * sight `after` seconds within `within` meters of where they last saw it, one member (not
    * the leader) flanks, one at a time. Left out, the usual split (the last half flank).
    */
   pinFlank: z.strictObject({ after: positive, within: positive }).optional(),
@@ -201,7 +201,7 @@ export type BodyBone = (typeof BODY_BONES)[number];
 
 /**
  * Shapes that are part of the body, not gear (2026-11-08, Jug's limb plates): drawn always,
- * never looted, and only looks (they stop nothing). Modelled like worn gear, on the body in
+ * never looted, and only looks (they stop nothing). Modeled like worn gear, on the body in
  * its rest pose (a T-pose: arms out along x, palms down), each group moving rigidly with
  * its bone. `mirror` draws a copy on the other side too (x flipped, onto the L/R twin).
  */
@@ -212,15 +212,15 @@ const platingSchema = z.strictObject({
 });
 export type Plating = z.infer<typeof platingSchema>;
 
-/** The colours of its body, by part. Gear is drawn over it. */
+/** The colors of its body, by part. Gear is drawn over it. */
 export const outfitSchema = z.strictObject({
-  skin: hexColourSchema,
+  skin: hexColorSchema,
   /** Torso and arms. */
-  top: hexColourSchema,
+  top: hexColorSchema,
   /** Hips and legs. */
-  bottom: hexColourSchema,
-  hands: hexColourSchema,
-  feet: hexColourSchema,
+  bottom: hexColorSchema,
+  hands: hexColorSchema,
+  feet: hexColorSchema,
   /** Plating on the body itself, if any (see platingSchema). */
   plating: z.array(platingSchema).optional(),
 });
@@ -341,7 +341,7 @@ const weaponOptionSchema = z.strictObject({
   spare: range,
   /**
    * The round it's loaded with and carries spares of, picked by weight from rounds of its
-   * calibre. Left out, its own (WeaponDef.ammo).
+   * caliber. Left out, its own (WeaponDef.ammo).
    */
   ammo: z
     .array(z.strictObject({ weight: positive, item: idSchema }))
@@ -351,7 +351,7 @@ const weaponOptionSchema = z.strictObject({
   attachments: z.array(z.strictObject({ item: idSchema, chance: fraction.optional() })).optional(),
 });
 
-const armourOptionSchema = z.strictObject({
+const armorOptionSchema = z.strictObject({
   weight: positive,
   /** null: nothing in this slot. */
   item: idSchema.nullable(),
@@ -386,8 +386,8 @@ export const loadoutSchema = z.strictObject({
   id: idSchema,
   /** A pistol goes in the sidearm slot, anything else in the first primary. */
   weapons: z.array(weaponOptionSchema).min(1),
-  helmets: z.array(armourOptionSchema).optional(),
-  bodyArmour: z.array(armourOptionSchema).optional(),
+  helmets: z.array(armorOptionSchema).optional(),
+  bodyArmor: z.array(armorOptionSchema).optional(),
   rigs: z.array(containerOptionSchema).optional(),
   backpacks: z.array(containerOptionSchema).optional(),
   /**
@@ -418,7 +418,7 @@ export type EnemyLoot = NonNullable<EnemyDef['loot']>;
 export type MedOption = z.infer<typeof medOptionSchema>;
 export type LoadoutDef = z.infer<typeof loadoutSchema>;
 export type WeaponOption = z.infer<typeof weaponOptionSchema>;
-export type ArmourOption = z.infer<typeof armourOptionSchema>;
+export type ArmorOption = z.infer<typeof armorOptionSchema>;
 export type ContainerOption = z.infer<typeof containerOptionSchema>;
 export type GrenadeOption = z.infer<typeof grenadeOptionSchema>;
 
@@ -498,13 +498,13 @@ export function checkEnemies(
     }
     for (const [slot, options] of [
       ['helmet', l.helmets],
-      ['body', l.bodyArmour],
+      ['body', l.bodyArmor],
     ] as const) {
       for (const o of options ?? []) {
         if (o.item === null) continue;
         const item = items.get(o.item);
-        if (item?.type !== 'armour' || item.slot !== slot)
-          throw new ContentError(source, `"${o.item}" is not ${slot} armour`);
+        if (item?.type !== 'armor' || item.slot !== slot)
+          throw new ContentError(source, `"${o.item}" is not ${slot} armor`);
       }
     }
     for (const [slot, options] of [
@@ -521,7 +521,7 @@ export function checkEnemies(
     for (const o of l.grenades ?? []) {
       if (o.item === null) continue;
       const item = items.get(o.item);
-      if (item?.type !== 'grenade' || item.calibre !== undefined)
+      if (item?.type !== 'grenade' || item.caliber !== undefined)
         throw new ContentError(source, `"${o.item}" is not a grenade to throw`);
     }
     for (const group of l.meds ?? [])

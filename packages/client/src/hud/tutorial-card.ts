@@ -5,7 +5,7 @@ import type { Hud } from './hud';
 import type { ControlId } from './layout';
 import { screenSpot } from './screen-spot';
 
-/** How high over its spot the marker floats, in metres. */
+/** How high over its spot the marker floats, in meters. */
 const LIFT = 0.6;
 
 /** Where to skip from, for inputs that can't tap the card's button. */
@@ -29,9 +29,9 @@ export class TutorialCard {
   private step: CompiledTutorialStep | null = null;
   private index = -1;
   private outlined: readonly string[] = [];
-  /** Where the marker is drawn, as screenSpot gives it; and its whole metres away. */
+  /** Where the marker is drawn, as screenSpot gives it; and its whole meters away. */
   private at = -1;
-  private metres = -1;
+  private meters = -1;
   private readonly unsubscribe: () => void;
 
   constructor(
@@ -62,7 +62,7 @@ export class TutorialCard {
     this.index = i;
     this.step = this.tutorial.steps[i] ?? null;
     this.at = -1;
-    this.metres = -1;
+    this.meters = -1;
     this.outline(this.step?.buttons ?? []);
     this.card.hidden = !this.step;
     if (!this.step) return;
@@ -89,8 +89,8 @@ export class TutorialCard {
       this.marker.style.transform = `translate(${at >> 16}px, ${at & 0xffff}px)`;
     }
     const d = Math.round(Math.hypot(m.x - player.x, m.y - player.y, m.z - player.z));
-    if (d !== this.metres) {
-      this.metres = d;
+    if (d !== this.meters) {
+      this.meters = d;
       this.marker.textContent = `${d} m`;
     }
   }

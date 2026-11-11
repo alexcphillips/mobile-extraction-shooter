@@ -3,7 +3,7 @@
   "id": "crate",
   "name": "Wooden crate",
   "instanced": true,
-  "colours": {
+  "colors": {
     "wood": "#a0703c",
     "band": "#6e4b2a"
   },
@@ -12,20 +12,20 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [0.8, 0.8, 0.8],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [0, 0.2, 0],
       "size": [0.85, 0.05, 0.85],
-      "colour": "band",
+      "color": "band",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.6, 0],
       "size": [0.85, 0.05, 0.85],
-      "colour": "band",
+      "color": "band",
       "collide": false
     }
   ]

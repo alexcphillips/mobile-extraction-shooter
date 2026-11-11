@@ -220,7 +220,7 @@ export function FitsPage(props: {
         <p className="ed-note">Open a gun or an attachment, or show every gun.</p>
       )}
       {only ? (
-        // One attachment: a tile per gun, labelled by the gun.
+        // One attachment: a tile per gun, labeled by the gun.
         <div className="ie-fit-tiles">
           {rows.flatMap(({ gun, fits }) =>
             fits.map(({ fit, keys }) => tile(gun, fit, keys, gun.name)),

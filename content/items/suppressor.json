@@ -20,7 +20,7 @@
         "pitch": 90,
         "radius": 0.02,
         "height": 0.16,
-        "colour": "#1d1f21"
+        "color": "#1d1f21"
       }
     ],
     "muzzle": [0, 0, -0.16]

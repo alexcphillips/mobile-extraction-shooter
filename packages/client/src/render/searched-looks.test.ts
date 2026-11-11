@@ -32,7 +32,7 @@ const file = loadContent(
       origin: [-20, -20],
       cellSize: 4,
       heights: Array.from({ length: 11 }, () => row),
-      colour: '#6b8f4e',
+      color: '#6b8f4e',
     },
     nodes: [{ type: 'prefab', id: 'cabinet', prefab: 'filing-cabinet', pos: [0, 0, 0] }],
     zones: [],

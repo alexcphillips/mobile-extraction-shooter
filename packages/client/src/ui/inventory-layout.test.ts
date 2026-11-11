@@ -6,7 +6,7 @@ const CELL = 40;
 const G = SECTION_GAP;
 
 describe('sectionBoxes', () => {
-  it('centres a band narrower than the widest under it (UX-3)', () => {
+  it('centers a band narrower than the widest under it (UX-3)', () => {
     // The large backpack: a 5×4 main space over a 2×2, a 1×2 and a 2×2.
     const sections = [
       { x: 0, y: 0, w: 5, h: 4 },
@@ -22,7 +22,7 @@ describe('sectionBoxes', () => {
   });
 
   it('keeps sections side by side in one band where their rows overlap', () => {
-    // A 2×2 pouch beside two 1×1s stacked: one band, nothing centred.
+    // A 2×2 pouch beside two 1×1s stacked: one band, nothing centered.
     const sections = [
       { x: 0, y: 0, w: 2, h: 2 },
       { x: 2, y: 0, w: 1, h: 1 },

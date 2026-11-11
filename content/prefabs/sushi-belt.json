@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "sushi-belt",
   "name": "Sushi belt counter",
-  "colours": {
+  "colors": {
     "body": "#2b2d33",
     "belt": "#a9afb3",
     "plate-a": "#d0402f",
@@ -15,19 +15,19 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [6, 0.95, 1.1],
-      "colour": "body"
+      "color": "body"
     },
     {
       "type": "box",
       "pos": [0, 0.95, 0],
       "size": [6.1, 0.05, 1.2],
-      "colour": "top"
+      "color": "top"
     },
     {
       "type": "box",
       "pos": [0, 1, 0],
       "size": [5.8, 0.03, 0.4],
-      "colour": "belt",
+      "color": "belt",
       "collide": false
     },
     {
@@ -35,7 +35,7 @@
       "pos": [-2.2, 1.03, 0],
       "radius": 0.09,
       "height": 0.02,
-      "colour": "plate-a",
+      "color": "plate-a",
       "sides": 8,
       "collide": false
     },
@@ -44,7 +44,7 @@
       "pos": [-0.9, 1.03, 0],
       "radius": 0.09,
       "height": 0.02,
-      "colour": "plate-b",
+      "color": "plate-b",
       "sides": 8,
       "collide": false
     },
@@ -53,7 +53,7 @@
       "pos": [0.4, 1.03, 0],
       "radius": 0.09,
       "height": 0.02,
-      "colour": "plate-a",
+      "color": "plate-a",
       "sides": 8,
       "collide": false
     },
@@ -62,7 +62,7 @@
       "pos": [1.8, 1.03, 0],
       "radius": 0.09,
       "height": 0.02,
-      "colour": "plate-b",
+      "color": "plate-b",
       "sides": 8,
       "collide": false
     },
@@ -70,25 +70,25 @@
       "type": "box",
       "pos": [-2, 0, 0.98],
       "size": [0.4, 0.62, 0.4],
-      "colour": "stool"
+      "color": "stool"
     },
     {
       "type": "box",
       "pos": [-0.7, 0, 0.98],
       "size": [0.4, 0.62, 0.4],
-      "colour": "stool"
+      "color": "stool"
     },
     {
       "type": "box",
       "pos": [0.7, 0, 0.98],
       "size": [0.4, 0.62, 0.4],
-      "colour": "stool"
+      "color": "stool"
     },
     {
       "type": "box",
       "pos": [2, 0, 0.98],
       "size": [0.4, 0.62, 0.4],
-      "colour": "stool"
+      "color": "stool"
     }
   ]
 }

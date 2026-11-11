@@ -13,20 +13,20 @@ const BLOOD = new THREE.Color(0xb03028);
 const GUST = new THREE.Color(0x9fe8e2);
 const GUST_PUFFS = 28;
 const GUST_STREAKS = 10;
-/** A tracer's colour: an ordinary round's, and an incendiary round's (2026-10-31). */
-export const TRACER_COLOUR = 0xffe9a0;
+/** A tracer's color: an ordinary round's, and an incendiary round's (2026-10-31). */
+export const TRACER_COLOR = 0xffe9a0;
 export const INCENDIARY_TRACER = 0xff6a1a;
 
 /**
  * Shot tracers and impact puffs, from fixed pools so firing allocates nothing: one line
- * mesh for every tracer (each its own colour) and one instanced mesh for every puff, two
+ * mesh for every tracer (each its own color) and one instanced mesh for every puff, two
  * draw calls in all.
  */
 export class Effects {
   readonly root = new THREE.Group();
   private readonly lines: THREE.LineSegments;
   private readonly linePos: Float32Array;
-  private readonly lineColour: Float32Array;
+  private readonly lineColor: Float32Array;
   private readonly c = new THREE.Color();
   private readonly tracerEnds = new Float64Array(TRACERS);
   private nextTracer = 0;
@@ -38,10 +38,10 @@ export class Effects {
 
   constructor() {
     this.linePos = new Float32Array(TRACERS * 6);
-    this.lineColour = new Float32Array(TRACERS * 6);
+    this.lineColor = new Float32Array(TRACERS * 6);
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(this.linePos, 3));
-    g.setAttribute('color', new THREE.BufferAttribute(this.lineColour, 3));
+    g.setAttribute('color', new THREE.BufferAttribute(this.lineColor, 3));
     this.lines = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ vertexColors: true }));
     this.lines.frustumCulled = false;
 
@@ -64,7 +64,7 @@ export class Effects {
     x1: number,
     y1: number,
     z1: number,
-    colour = TRACER_COLOUR,
+    color = TRACER_COLOR,
   ) {
     const i = this.nextTracer;
     this.nextTracer = (i + 1) % TRACERS;
@@ -77,9 +77,9 @@ export class Effects {
     p[o + 4] = y1;
     p[o + 5] = z1;
     this.tracerEnds[i] = now + TRACER_MS;
-    this.c.setHex(colour);
-    this.c.toArray(this.lineColour, o);
-    this.c.toArray(this.lineColour, o + 3);
+    this.c.setHex(color);
+    this.c.toArray(this.lineColor, o);
+    this.c.toArray(this.lineColor, o + 3);
     this.lines.geometry.attributes.position!.needsUpdate = true;
     this.lines.geometry.attributes.color!.needsUpdate = true;
   }
@@ -107,9 +107,9 @@ export class Effects {
     z1: number,
     y0: number,
     y1: number,
-    colour: number,
+    color: number,
   ): void {
-    this.c.setHex(colour);
+    this.c.setHex(color);
     for (let k = 0; k < SHARDS; k++) {
       const i = this.nextPuff;
       this.nextPuff = (i + 1) % IMPACTS;

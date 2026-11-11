@@ -54,7 +54,7 @@ import {
 } from './weapons';
 
 /**
- * How far a body or a loot container can be from your feet to loot it, in metres:
+ * How far a body or a loot container can be from your feet to loot it, in meters:
  * across, and up or down.
  */
 export const LOOT_REACH = 2;
@@ -187,7 +187,7 @@ export type Target = GridSpot | Omit<InSlot, 'item'> | ToGround;
  *   there (a swap), else into what you carry.
  * - detach: takes the attachment (`part`, as the sender saw it) out of a gun's slot, to a
  *   spot in a grid, or with to null into what you carry.
- * - repair (session 13b): starts repairing one of your armour pieces (worn or in a grid)
+ * - repair (session 13b): starts repairing one of your armor pieces (worn or in a grid)
  *   with a repair kit you carry (pockets, rig or backpack), taking the kit's use time like
  *   a med (see updateMedUse). The stash does it at once, from anywhere (applyStash).
  * - unload: takes the rounds out of a gun, wherever it is, into what you carry. A
@@ -210,7 +210,7 @@ export type InventoryAction =
       part: string;
       to: GridSpot | null;
     }
-  | { type: 'repair'; kit: ItemRef; armour: ItemRef }
+  | { type: 'repair'; kit: ItemRef; armor: ItemRef }
   | { type: 'unload'; gun: ItemRef }
   | { type: 'load'; gun: ItemRef; from: ItemRef };
 
@@ -378,7 +378,7 @@ export function lootInSight(
   return world.raycast(ex, ey, ez, dx / d, dy / d, dz / d, d) >= d - LOOT_SIGHT_SLACK;
 }
 
-/** How far short of a point lootInSight's ray may hit something, in metres. */
+/** How far short of a point lootInSight's ray may hit something, in meters. */
 const LOOT_SIGHT_SLACK = 0.15;
 
 /**
@@ -470,7 +470,7 @@ export function applyInventory(
     case 'detach':
       return detachPart(ctx, action.gun, action.slot, action.part, action.to);
     case 'repair':
-      return startRepair(state, c, items, action.kit, action.armour);
+      return startRepair(state, c, items, action.kit, action.armor);
     case 'unload':
       return unload(ctx, action.gun);
     case 'load':
@@ -575,7 +575,7 @@ export function reachableItem(state: SimState, c: Character, ref: ItemRef): Item
 
 /**
  * Starts a repair: the kit must be carried (not in the vault, as for meds) with points
- * left, and the armour not at full durability and in reach: yours, or a body's, a
+ * left, and the armor not at full durability and in reach: yours, or a body's, a
  * container's or on the ground (the user's call, 2026-11-06). A reload stops. Returns
  * whether it started.
  */
@@ -584,18 +584,18 @@ function startRepair(
   c: Character,
   items: ItemDb,
   kitRef: ItemRef,
-  armourRef: ItemRef,
+  armorRef: ItemRef,
 ): boolean {
   if (!('grid' in kitRef)) return false;
   const grid = CARRIED_NAMES.indexOf(kitRef.grid);
   const kit = grid < 0 ? null : ownItem(c.gear, kitRef);
-  const armour = reachableItem(state, c, armourRef);
-  if (!kit || !armour || repairable(items, kit, armour) <= 0) return false;
+  const armor = reachableItem(state, c, armorRef);
+  if (!kit || !armor || repairable(items, kit, armor) <= 0) return false;
   const def = itemDef(items, kit.item);
   if (def.type !== 'repair') return false;
   const w = heldWeapon(c);
   if (w) w.reloading = 0;
-  c.using = { grid, index: kitRef.index, item: kit.item, left: def.useTime, armour: armourRef };
+  c.using = { grid, index: kitRef.index, item: kit.item, left: def.useTime, armor: armorRef };
   return true;
 }
 
@@ -659,7 +659,7 @@ function stowOrDrop(ctx: Ctx, item: Item): void {
 /**
  * Drops an item on a gear slot, swapping with what's there if that fits where it came from.
  * An empty rig or backpack dropped on a slot whose bag has things in it takes them along
- * (the user's call, 2026-11-06; any rig, armoured or not, or backpack): see moveContents.
+ * (the user's call, 2026-11-06; any rig, armored or not, or backpack): see moveContents.
  * What doesn't fit in the new bag (2026-11-11, the user's call) is dropped at c's feet in a
  * raid, or put on the stash's pages between raids; with no room there it stays in the old
  * bag, which then swaps only where a bag with things in it may go.
@@ -751,7 +751,7 @@ function moveContents(items: ItemDb, from: Grid, to: Grid): void {
 function swapSlot(items: ItemDb, from: Found, ch: Character, slot: GearSlot): boolean {
   if (from.at === 'slot' && from.ch === ch && from.slot === slot) return false;
   if (!fitsSlot(items, slot, from.item)) return false;
-  // Body armour and an armoured rig never go on together (2026-11-11).
+  // Body armor and an armored rig never go on together (2026-11-11).
   if (gearConflict(items, ch.gear, slot, from.item)) return false;
   const old = slotOf(ch.gear, slot);
   if (!old) {
@@ -793,7 +793,7 @@ function swapSlot(items: ItemDb, from: Found, ch: Character, slot: GearSlot): bo
 /** Gun slots in the order a double-tapped gun fills them: a pistol has only the sidearm. */
 const PISTOL_SLOTS: readonly GearSlot[] = ['sidearm'];
 const GUN_SLOTS: readonly GearSlot[] = ['primary1', 'primary2'];
-const OTHER_SLOTS: readonly GearSlot[] = ['knife', 'helmet', 'bodyArmour', 'rig', 'backpack'];
+const OTHER_SLOTS: readonly GearSlot[] = ['knife', 'helmet', 'bodyArmor', 'rig', 'backpack'];
 
 /** Whether n of a stack of `of` is a whole number from 1 to all of it. */
 function validCount(n: number, of: number): boolean {

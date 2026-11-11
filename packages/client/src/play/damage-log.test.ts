@@ -34,7 +34,7 @@ describe('the damage log', () => {
     const key = logHit(log, hit(5, HEAD, 35), 'Jug');
     logKiller(log, key);
     expect(log.map(describeSource)).toEqual([
-      'Jug shot you 2 times for 75 (chest, head) · armour took 12',
+      'Jug shot you 2 times for 75 (chest, head) · armor took 12',
       'Scav shot you once for 20 (left leg)',
       'Bleeding took 3',
     ]);

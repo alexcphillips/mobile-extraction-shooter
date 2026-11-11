@@ -72,7 +72,7 @@ export class RaidHud {
     this.warnClass = true;
   }
 
-  /** As warn, in the prompt's own colour: news, not a problem ("Investigated · …"). */
+  /** As warn, in the prompt's own color: news, not a problem ("Investigated · …"). */
   note(text: string, now: number, ms = WARN_MS): void {
     this.warn(text, now, ms);
     this.warnClass = false;
@@ -92,7 +92,7 @@ export class RaidHud {
     if (shownKey) {
       const kbd = document.createElement('kbd');
       kbd.textContent = shownKey;
-      // A controller's face button (□ ✕ ○ △) is drawn as a round, coloured glyph.
+      // A controller's face button (□ ✕ ○ △) is drawn as a round, colored glyph.
       if (PAD_GLYPHS.includes(shownKey)) {
         kbd.className = 'pad';
         kbd.dataset.glyph = shownKey;

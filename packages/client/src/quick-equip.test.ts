@@ -51,7 +51,7 @@ function sound(before: Profile, p: Profile): void {
 }
 
 describe('quick equip', () => {
-  it('picks the gun it has rounds for, the best ammo, armour and bags', () => {
+  it('picks the gun it has rounds for, the best ammo, armor and bags', () => {
     const p = profile([
       // An M416 with plenty of M855A1, an AK with too few rounds for a load and 3 reloads.
       one('m416'),
@@ -73,7 +73,7 @@ describe('quick equip', () => {
     expect(g.primary1?.item).toBe('m416');
     expect(g.primary1?.loaded).toBe('ammo-556x45-m855a1');
     expect(g.primary2).toBeNull();
-    expect(g.bodyArmour?.item).toBe('heavy-plate-carrier');
+    expect(g.bodyArmor?.item).toBe('heavy-plate-carrier');
     expect(g.helmet?.item).toBe('steel-helmet');
     expect(g.backpack?.item).toBe('large-backpack');
     expect(g.rig?.item).toBe('chest-rig');

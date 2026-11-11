@@ -12,7 +12,7 @@
   "radius": 8,
   "damage": 110,
   "level": 3,
-  "armourDamage": 15,
+  "armorDamage": 15,
   "bleedChance": 0.4,
   "loudness": 1000,
   "sounds": {
@@ -27,7 +27,7 @@
         "pos": [0, 0, 0],
         "radius": 0.032,
         "height": 0.04,
-        "colour": "#5a6332"
+        "color": "#5a6332"
       },
       {
         "type": "cylinder",
@@ -35,7 +35,7 @@
         "radius": 0.032,
         "radiusTop": 0.02,
         "height": 0.015,
-        "colour": "#5a6332"
+        "color": "#5a6332"
       },
       {
         "type": "cylinder",
@@ -43,27 +43,27 @@
         "radius": 0.02,
         "radiusTop": 0.032,
         "height": 0.015,
-        "colour": "#5a6332"
+        "color": "#5a6332"
       },
       {
         "type": "cylinder",
         "pos": [0, 0.042, 0],
         "radius": 0.01,
         "height": 0.015,
-        "colour": "#7d7b6a"
+        "color": "#7d7b6a"
       },
       {
         "type": "box",
         "pos": [0.02, 0.025, 0],
         "size": [0.008, 0.045, 0.014],
-        "colour": "#7d7b6a"
+        "color": "#7d7b6a"
       },
       {
         "type": "cylinder",
         "pos": [-0.014, 0.045, 0],
         "radius": 0.008,
         "height": 0.003,
-        "colour": "#7d7b6a",
+        "color": "#7d7b6a",
         "roll": 90
       }
     ]

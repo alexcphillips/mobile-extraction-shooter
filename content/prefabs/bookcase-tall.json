@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "bookcase-tall",
   "name": "Tall bookcase",
-  "colours": {
+  "colors": {
     "wood": "#7d5a3c",
     "wood-dark": "#5a4029",
     "spine-a": "#b8413a",
@@ -14,123 +14,123 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [3, 2.5, 0.3],
-      "colour": "wood"
+      "color": "wood"
     },
     {
       "type": "box",
       "pos": [0, 2.5, 0],
       "size": [3.08, 0.06, 0.46],
-      "colour": "wood-dark"
+      "color": "wood-dark"
     },
     {
       "type": "box",
       "pos": [0, 0, 0],
       "size": [3.08, 0.12, 0.46],
-      "colour": "wood-dark"
+      "color": "wood-dark"
     },
     {
       "type": "box",
       "pos": [-1.15, 0.2, 0],
       "size": [0.46, 0.36, 0.42],
-      "colour": "spine-a",
+      "color": "spine-a",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.25, 0.2, 0],
       "size": [1.26, 0.36, 0.42],
-      "colour": "spine-b",
+      "color": "spine-b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.85, 0.2, 0],
       "size": [0.86, 0.36, 0.42],
-      "colour": "spine-c",
+      "color": "spine-c",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.95, 0.68, 0],
       "size": [0.86, 0.36, 0.42],
-      "colour": "spine-b",
+      "color": "spine-b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.2, 0.68, 0],
       "size": [0.56, 0.36, 0.42],
-      "colour": "spine-c",
+      "color": "spine-c",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.7, 0.68, 0],
       "size": [1.16, 0.36, 0.42],
-      "colour": "spine-a",
+      "color": "spine-a",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.15, 1.16, 0],
       "size": [0.46, 0.36, 0.42],
-      "colour": "spine-c",
+      "color": "spine-c",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.25, 1.16, 0],
       "size": [1.26, 0.36, 0.42],
-      "colour": "spine-a",
+      "color": "spine-a",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.85, 1.16, 0],
       "size": [0.86, 0.36, 0.42],
-      "colour": "spine-c",
+      "color": "spine-c",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.95, 1.64, 0],
       "size": [0.86, 0.36, 0.42],
-      "colour": "spine-a",
+      "color": "spine-a",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.2, 1.64, 0],
       "size": [0.56, 0.36, 0.42],
-      "colour": "spine-c",
+      "color": "spine-c",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.7, 1.64, 0],
       "size": [1.16, 0.36, 0.42],
-      "colour": "spine-a",
+      "color": "spine-a",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.15, 2.08, 0],
       "size": [0.46, 0.36, 0.42],
-      "colour": "spine-c",
+      "color": "spine-c",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.25, 2.08, 0],
       "size": [1.26, 0.36, 0.42],
-      "colour": "spine-a",
+      "color": "spine-a",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.85, 2.08, 0],
       "size": [0.86, 0.36, 0.42],
-      "colour": "spine-b",
+      "color": "spine-b",
       "collide": false
     }
   ]

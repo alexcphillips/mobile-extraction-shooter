@@ -8,7 +8,7 @@
   "layers": [
     {
       "source": "noise",
-      "colour": "pink",
+      "color": "pink",
       "at": 0,
       "attack": 0.001,
       "hold": 0,
@@ -30,7 +30,7 @@
     },
     {
       "source": "noise",
-      "colour": "white",
+      "color": "white",
       "at": 0.03,
       "attack": 0.001,
       "hold": 0,

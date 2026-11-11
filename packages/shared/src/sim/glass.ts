@@ -8,7 +8,7 @@ import type { EntityId, SimState } from './state';
  * is heard: enemies within GLASS.loudness go to look, less through walls.
  */
 
-/** Glass tuning, in metres. */
+/** Glass tuning, in meters. */
 export const GLASS = {
   /** How far away a pane breaking is heard (the user's call, 2026-11-02: about a room or two). */
   loudness: 12,

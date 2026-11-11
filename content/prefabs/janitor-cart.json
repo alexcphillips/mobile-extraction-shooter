@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "janitor-cart",
   "name": "Janitor cart",
-  "colours": {
+  "colors": {
     "plastic": "#d8b52e",
     "plastic-dark": "#a88a1f",
     "metal": "#8d9296",
@@ -15,19 +15,19 @@
       "type": "box",
       "pos": [0, 0.1, 0],
       "size": [1.1, 0.1, 0.55],
-      "colour": "plastic-dark"
+      "color": "plastic-dark"
     },
     {
       "type": "box",
       "pos": [-0.28, 0.2, 0],
       "size": [0.5, 0.72, 0.5],
-      "colour": "bag"
+      "color": "bag"
     },
     {
       "type": "box",
       "pos": [-0.28, 0.9, 0],
       "size": [0.54, 0.04, 0.54],
-      "colour": "plastic",
+      "color": "plastic",
       "collide": false
     },
     {
@@ -35,28 +35,28 @@
       "pos": [0.3, 0.2, 0],
       "radius": 0.21,
       "height": 0.3,
-      "colour": "plastic",
+      "color": "plastic",
       "sides": 8
     },
     {
       "type": "box",
       "pos": [0.3, 0.2, 0],
       "size": [0.03, 1.3, 0.03],
-      "colour": "metal",
+      "color": "metal",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.3, 1.5, 0],
       "size": [0.07, 0.05, 0.07],
-      "colour": "mop",
+      "color": "mop",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.14, 0.2, 0.14],
       "size": [0.03, 1.25, 0.03],
-      "colour": "metal",
+      "color": "metal",
       "collide": false
     },
     {
@@ -64,7 +64,7 @@
       "pos": [-0.45, 0, -0.2],
       "radius": 0.06,
       "height": 0.1,
-      "colour": "wheel",
+      "color": "wheel",
       "sides": 8,
       "collide": false
     },
@@ -73,7 +73,7 @@
       "pos": [0.45, 0, -0.2],
       "radius": 0.06,
       "height": 0.1,
-      "colour": "wheel",
+      "color": "wheel",
       "sides": 8,
       "collide": false
     },
@@ -82,7 +82,7 @@
       "pos": [-0.45, 0, 0.2],
       "radius": 0.06,
       "height": 0.1,
-      "colour": "wheel",
+      "color": "wheel",
       "sides": 8,
       "collide": false
     },
@@ -91,7 +91,7 @@
       "pos": [0.45, 0, 0.2],
       "radius": 0.06,
       "height": 0.1,
-      "colour": "wheel",
+      "color": "wheel",
       "sides": 8,
       "collide": false
     }

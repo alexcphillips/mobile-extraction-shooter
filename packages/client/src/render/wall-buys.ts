@@ -53,7 +53,7 @@ export function buildWallBuys(map: CompiledMap, items: ItemDb, world: CollisionW
   return root;
 }
 
-/** Joins non-indexed geometries with position, normal and colour into one. */
+/** Joins non-indexed geometries with position, normal and color into one. */
 function merge(parts: THREE.BufferGeometry[]): THREE.BufferGeometry {
   const n = parts.reduce((k, p) => k + p.getAttribute('position').count, 0);
   const out = new THREE.BufferGeometry();

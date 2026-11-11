@@ -21,7 +21,7 @@ export class PadRumble {
     if (this.on()) this.play(hitPulse(amount, this.pulse), now);
   }
 
-  /** Something blew up `distance` metres from you, with a damage radius `radius`. */
+  /** Something blew up `distance` meters from you, with a damage radius `radius`. */
   blast(distance: number, radius: number, now: number): void {
     if (this.on()) this.play(blastPulse(distance, radius, this.pulse), now);
   }

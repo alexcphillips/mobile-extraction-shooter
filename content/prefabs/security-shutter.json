@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "security-shutter",
   "name": "Security shutter",
-  "colours": {
+  "colors": {
     "slat": "#7f868b",
     "slat-dark": "#5e6468",
     "rail": "#474c50",
@@ -13,223 +13,223 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [3.72, 2.6, 0.08],
-      "colour": "slat"
+      "color": "slat"
     },
     {
       "type": "box",
       "pos": [0, 0.2, 0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.4, 0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.6, 0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.8, 0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.0, 0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.2, 0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.4, 0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.6, 0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.8, 0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 2.0, 0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 2.2, 0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 2.4, 0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.2, -0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.4, -0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.6, -0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.8, -0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.0, -0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.2, -0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.4, -0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.6, -0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.8, -0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 2.0, -0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 2.2, -0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 2.4, -0.045],
       "size": [3.7, 0.03, 0.012],
-      "colour": "slat-dark",
+      "color": "slat-dark",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-1.8, 0, 0],
       "size": [0.12, 2.6, 0.16],
-      "colour": "rail",
+      "color": "rail",
       "collide": false
     },
     {
       "type": "box",
       "pos": [1.8, 0, 0],
       "size": [0.12, 2.6, 0.16],
-      "colour": "rail",
+      "color": "rail",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 2.42, 0],
       "size": [3.72, 0.18, 0.2],
-      "colour": "rail",
+      "color": "rail",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.06, -0.05],
       "size": [3.7, 0.1, 0.02],
-      "colour": "rail",
+      "color": "rail",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.9, 0.17, -0.075],
       "size": [0.1, 0.13, 0.05],
-      "colour": "lock",
+      "color": "lock",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.06, 0.05],
       "size": [3.7, 0.1, 0.02],
-      "colour": "rail",
+      "color": "rail",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.9, 0.17, 0.075],
       "size": [0.1, 0.13, 0.05],
-      "colour": "lock",
+      "color": "lock",
       "collide": false
     }
   ]

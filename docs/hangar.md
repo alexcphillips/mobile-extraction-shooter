@@ -22,7 +22,7 @@ The player's base between raids: modules you upgrade with loot, which then craft
 |---|---|
 | **Power grid** | The spine: its level caps every other module's level. No fuel to top up. |
 | **Munitions bench** | Loot into higher-level rounds, magazines and weapon attachments. |
-| **Armour bench** | Armour, rigs and backpacks, and better repair kits (ones that wear the max down less: design.md → Armour repair kits). |
+| **Armor bench** | Armor, rigs and backpacks, and better repair kits (ones that wear the max down less: design.md → Armor repair kits). |
 | **Trauma bay** | Medkits and surgery kits from medical loot. Stimulants once boosters (temporary effects) exist. |
 | **Quarters** | Stash space. Its level unlocks the right to **buy** the next stash page (still paid for with money, so pages stay a money sink; one path, not two). Later levels unlock **category pages** (ammo, meds, weapons) in place of Tarkov-style cases. |
 | **Secure locker** | The vault: **1×2 at the start (1 tall, 2 wide), up to 3×3**. Its upgrades are the most expensive of every module; the user will balance them. |

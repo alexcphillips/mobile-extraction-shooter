@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "wall-poster",
   "name": "Wall poster",
-  "colours": {
+  "colors": {
     "frame": "#3d4148",
     "art": "#3f6f9a",
     "art-b": "#e6e0d3"
@@ -12,28 +12,28 @@
       "type": "box",
       "pos": [0, 1.2, 0.01],
       "size": [1.2, 1.6, 0.02],
-      "colour": "frame",
+      "color": "frame",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.24, 0.022],
       "size": [1.08, 1.48, 0.004],
-      "colour": "art",
+      "color": "art",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.1, 1.75, 0.026],
       "size": [0.7, 0.14, 0.004],
-      "colour": "art-b",
+      "color": "art-b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 1.32, 0.026],
       "size": [0.8, 0.34, 0.004],
-      "colour": "art-b",
+      "color": "art-b",
       "collide": false
     }
   ]

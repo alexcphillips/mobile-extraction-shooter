@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "hanging-sign",
   "name": "Hanging sign",
-  "colours": {
+  "colors": {
     "sign": "#3f6f9a",
     "text": "#e6e0d3",
     "rod": "#3d4148"
@@ -12,49 +12,49 @@
       "type": "box",
       "pos": [-0.7, 0.6, 0],
       "size": [0.02, 0.9, 0.02],
-      "colour": "rod",
+      "color": "rod",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.7, 0.6, 0],
       "size": [0.02, 0.9, 0.02],
-      "colour": "rod",
+      "color": "rod",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0, 0],
       "size": [1.7, 0.62, 0.04],
-      "colour": "sign",
+      "color": "sign",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.26, 0.024],
       "size": [1.1, 0.1, 0.004],
-      "colour": "text",
+      "color": "text",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.1, 0.024],
       "size": [0.7, 0.08, 0.004],
-      "colour": "text",
+      "color": "text",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.26, -0.024],
       "size": [1.1, 0.1, 0.004],
-      "colour": "text",
+      "color": "text",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.1, -0.024],
       "size": [0.7, 0.08, 0.004],
-      "colour": "text",
+      "color": "text",
       "collide": false
     }
   ]

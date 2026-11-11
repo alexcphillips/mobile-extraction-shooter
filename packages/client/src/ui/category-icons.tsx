@@ -3,7 +3,7 @@ import type { Category } from './stash-search';
 
 /*
  * The stash's kinds of item as icons (2026-11-09, the user's call, in place of their
- * words): 24-unit squares drawn in the button's text colour, so they dim and light up
+ * words): 24-unit squares drawn in the button's text color, so they dim and light up
  * with it. The words stay as each button's label and tooltip.
  */
 

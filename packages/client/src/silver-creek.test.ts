@@ -10,7 +10,7 @@ import {
 import { describe, expect, it } from 'vitest';
 import { loadMap, loadRaid, raidIds } from './content';
 
-// Silver Creek's greybox (MT-2): what the AI can reach, and what it can't, so a reshape in
+// Silver Creek's graybox (MT-2): what the AI can reach, and what it can't, so a reshape in
 // the editor that cuts a place off (or opens a perch to the AI) shows up here.
 describe('Silver Creek', () => {
   const map = loadMap('silver-creek');
@@ -327,7 +327,7 @@ describe('Silver Creek', () => {
   });
 });
 
-/** The sketch's pixels in metres, as the generator places the deer stand. */
+/** The sketch's pixels in meters, as the generator places the deer stand. */
 function sxz(p: number, z = false): number {
   return Math.round(((p - (z ? 46 : 40)) / 3) * 100) / 100;
 }

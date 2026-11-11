@@ -2,7 +2,7 @@
   "formatVersion": 3,
   "id": "cardboard-bale",
   "name": "Cardboard bale",
-  "colours": {
+  "colors": {
     "card": "#b8965f",
     "card-b": "#9f7f4c",
     "strap": "#2b2d33"
@@ -12,41 +12,41 @@
       "type": "box",
       "pos": [0, 0, 0],
       "size": [1.1, 0.85, 0.8],
-      "colour": "card"
+      "color": "card"
     },
     {
       "type": "box",
       "pos": [0, 0.28, 0.402],
       "size": [1.08, 0.1, 0.006],
-      "colour": "card-b",
+      "color": "card-b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.6, 0.402],
       "size": [1.08, 0.06, 0.006],
-      "colour": "card-b",
+      "color": "card-b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0, 0.28, -0.402],
       "size": [1.08, 0.1, 0.006],
-      "colour": "card-b",
+      "color": "card-b",
       "collide": false
     },
     {
       "type": "box",
       "pos": [-0.3, 0, 0],
       "size": [0.04, 0.86, 0.82],
-      "colour": "strap",
+      "color": "strap",
       "collide": false
     },
     {
       "type": "box",
       "pos": [0.3, 0, 0],
       "size": [0.04, 0.86, 0.82],
-      "colour": "strap",
+      "color": "strap",
       "collide": false
     }
   ]

@@ -57,7 +57,7 @@ for (const anim of root.listAnimations())
 const missing = [...CLIPS].filter((n) => !root.listAnimations().some((a) => a.getName() === n));
 if (missing.length) throw new Error(`missing clips: ${missing.join(', ')}`);
 
-// Flat colours: no textures, so no UVs.
+// Flat colors: no textures, so no UVs.
 for (const mesh of root.listMeshes())
   for (const prim of mesh.listPrimitives())
     for (const sem of ['TEXCOORD_0', 'TEXCOORD_1']) prim.setAttribute(sem, null);

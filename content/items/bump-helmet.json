@@ -2,7 +2,7 @@
   "formatVersion": 10,
   "id": "bump-helmet",
   "name": "Bump helmet",
-  "type": "armour",
+  "type": "armor",
   "size": [2, 2],
   "value": 3000,
   "rarity": "common",
@@ -18,7 +18,7 @@
         "radius": 0.138,
         "radiusTop": 0.113,
         "height": 0.118,
-        "colour": "#2d2f31"
+        "color": "#2d2f31"
       },
       {
         "type": "cylinder",
@@ -26,7 +26,7 @@
         "radius": 0.113,
         "radiusTop": 0.059,
         "height": 0.035,
-        "colour": "#2d2f31"
+        "color": "#2d2f31"
       }
     ]
   }

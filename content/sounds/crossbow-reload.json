@@ -8,7 +8,7 @@
   "layers": [
     {
       "source": "noise",
-      "colour": "white",
+      "color": "white",
       "at": 0.25,
       "attack": 0.001,
       "hold": 0,
@@ -19,7 +19,7 @@
     },
     {
       "source": "noise",
-      "colour": "white",
+      "color": "white",
       "at": 0.47,
       "attack": 0.001,
       "hold": 0,
@@ -30,7 +30,7 @@
     },
     {
       "source": "noise",
-      "colour": "white",
+      "color": "white",
       "at": 0.69,
       "attack": 0.001,
       "hold": 0,
@@ -41,7 +41,7 @@
     },
     {
       "source": "noise",
-      "colour": "white",
+      "color": "white",
       "at": 0.91,
       "attack": 0.001,
       "hold": 0,
@@ -52,7 +52,7 @@
     },
     {
       "source": "noise",
-      "colour": "white",
+      "color": "white",
       "at": 1.13,
       "attack": 0.001,
       "hold": 0,
@@ -63,7 +63,7 @@
     },
     {
       "source": "noise",
-      "colour": "white",
+      "color": "white",
       "at": 1.35,
       "attack": 0.001,
       "hold": 0,
@@ -74,7 +74,7 @@
     },
     {
       "source": "noise",
-      "colour": "white",
+      "color": "white",
       "at": 1.57,
       "attack": 0.001,
       "hold": 0,
@@ -85,7 +85,7 @@
     },
     {
       "source": "noise",
-      "colour": "white",
+      "color": "white",
       "at": 1.79,
       "attack": 0.001,
       "hold": 0,
@@ -96,7 +96,7 @@
     },
     {
       "source": "noise",
-      "colour": "pink",
+      "color": "pink",
       "at": 2.2,
       "attack": 0.001,
       "hold": 0,
@@ -107,7 +107,7 @@
     },
     {
       "source": "noise",
-      "colour": "white",
+      "color": "white",
       "at": 2.5,
       "attack": 0.001,
       "hold": 0,

@@ -77,7 +77,7 @@
     { "weight": 2, "item": "bump-helmet", "condition": [0.3, 0.8] },
     { "weight": 0.5, "item": "riot-helmet", "condition": [0.3, 0.7] }
   ],
-  "bodyArmour": [
+  "bodyArmor": [
     { "weight": 4, "item": null },
     { "weight": 2, "item": "soft-vest", "condition": [0.3, 0.8] },
     { "weight": 0.5, "item": "police-vest", "condition": [0.3, 0.7] }

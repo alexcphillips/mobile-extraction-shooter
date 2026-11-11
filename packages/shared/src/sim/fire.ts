@@ -21,7 +21,7 @@ import {
  * flies out to the gun's range, dropping a little. It sets alight whoever it hits; on the
  * map it leaves a patch of fire burning for its fuel's fireTime, and anyone touching that
  * is set alight too. Someone alight loses burnDamage HP a second from every zone, past
- * armour, until it burns out (burnTime) or they put themselves out (FIRE.extinguishTime),
+ * armor, until it burns out (burnTime) or they put themselves out (FIRE.extinguishTime),
  * which is quicker but stops them fighting meanwhile. Each fuel's numbers are in its item
  * file (AmmoDef.flame). A molotov (2026-10-31) spills fire across its radius where it
  * breaks (spillFire), and incendiary rounds may set alight whoever they hit (sim/weapons.ts).
@@ -35,7 +35,7 @@ export const FIRE = {
   nozzle: 0.5,
   /** Put back this far out from the surface it hit, so it burns on it, not in it. */
   surface: 0.05,
-  /** Fire on the map reaches this far from where it landed, in metres. */
+  /** Fire on the map reaches this far from where it landed, in meters. */
   patchRadius: 0.5,
   /** A flame landing this close to fire already burning feeds it rather than starting more. */
   merge: 0.6,
@@ -43,7 +43,7 @@ export const FIRE = {
   maxPatches: 48,
   /** Putting yourself out takes this long: quicker than burning out, and you can't fight. */
   extinguishTime: 3,
-  /** Enemies plan their paths around fire as if each step through it were this many metres. */
+  /** Enemies plan their paths around fire as if each step through it were this many meters. */
   avoidCost: 30,
   /** A molotov's fire: the middle, then rings at these shares of its radius, this many each. */
   spillRings: [0.5, 0.95],
@@ -65,7 +65,7 @@ export interface Flame {
   vx: number;
   vy: number;
   vz: number;
-  /** Metres left before it burns out in the air. */
+  /** Meters left before it burns out in the air. */
   left: number;
 }
 
@@ -110,7 +110,7 @@ const charHit = createCharacterHit();
 
 /**
  * Sends a blob of flame from c's eye along yaw and pitch, at the fuel's speed plus c's
- * own, to burn out after range metres: a flamethrower's shot (sim/weapons.ts). It starts
+ * own, to burn out after range meters: a flamethrower's shot (sim/weapons.ts). It starts
  * a nozzle's length out, or short of a wall. Returns it, already in state.flames.
  */
 export function launchFlame(

@@ -115,7 +115,7 @@ function carries(c: Character, item: string): boolean {
     g.sidearm,
     g.knife,
     g.helmet,
-    g.bodyArmour,
+    g.bodyArmor,
     g.rig,
     g.backpack,
   ])

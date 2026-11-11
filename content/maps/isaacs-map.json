@@ -337,7 +337,7 @@
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0
       ]
     ],
-    "colour": "#42463f"
+    "color": "#42463f"
   },
   "nodes": [
     {
@@ -350,7 +350,7 @@
       "pos": [-20, 0, 4],
       "radius": 25,
       "height": 1,
-      "colour": "#b5b0a6",
+      "color": "#b5b0a6",
       "sides": 8
     },
     {
@@ -362,7 +362,7 @@
           "type": "wall",
           "pos": [-16.893, 0, 10.892],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "openings": [{ "along": 0, "width": 1, "bottom": 0.9, "top": 2 }],
           "yaw": -57.2
         },
@@ -370,483 +370,483 @@
           "type": "box",
           "pos": [-15.744, 0, 12.495],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -51.6
         },
         {
           "type": "box",
           "pos": [-14.443, 0, 13.978],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -45.9
         },
         {
           "type": "box",
           "pos": [-13.004, 0, 15.327],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -40.3
         },
         {
           "type": "box",
           "pos": [-11.439, 0, 16.528],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -34.7
         },
         {
           "type": "box",
           "pos": [-9.764, 0, 17.569],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -29.1
         },
         {
           "type": "box",
           "pos": [-7.995, 0, 18.442],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -23.4
         },
         {
           "type": "box",
           "pos": [-6.149, 0, 19.136],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -17.8
         },
         {
           "type": "box",
           "pos": [-4.243, 0, 19.647],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -12.2
         },
         {
           "type": "box",
           "pos": [-2.297, 0, 19.968],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -6.6
         },
         {
           "type": "box",
           "pos": [-0.329, 0, 20.097],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -0.9
         },
         {
           "type": "box",
           "pos": [1.643, 0, 20.033],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 4.7
         },
         {
           "type": "box",
           "pos": [3.598, 0, 19.775],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 10.3
         },
         {
           "type": "box",
           "pos": [5.519, 0, 19.327],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 15.9
         },
         {
           "type": "box",
           "pos": [7.387, 0, 18.693],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 21.6
         },
         {
           "type": "box",
           "pos": [9.184, 0, 17.879],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 27.2
         },
         {
           "type": "box",
           "pos": [10.892, 0, 16.893],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 32.8
         },
         {
           "type": "box",
           "pos": [12.495, 0, 15.744],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 38.4
         },
         {
           "type": "box",
           "pos": [13.978, 0, 14.443],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 44.1
         },
         {
           "type": "box",
           "pos": [15.327, 0, 13.004],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 49.7
         },
         {
           "type": "box",
           "pos": [16.528, 0, 11.439],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 55.3
         },
         {
           "type": "box",
           "pos": [17.569, 0, 9.764],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 60.9
         },
         {
           "type": "box",
           "pos": [18.442, 0, 7.995],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 66.6
         },
         {
           "type": "box",
           "pos": [19.136, 0, 6.149],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 72.2
         },
         {
           "type": "box",
           "pos": [19.647, 0, 4.243],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 77.8
         },
         {
           "type": "box",
           "pos": [19.882, 0, 3.038],
           "size": [0.493, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 83.4
         },
         {
           "type": "box",
           "pos": [19.968, 2.1, 2.297],
           "size": [1, 48.5, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 83.4
         },
         {
           "type": "box",
           "pos": [20.054, 0, 1.556],
           "size": [0.493, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 83.4
         },
         {
           "type": "door",
           "pos": [19.968, 0, 2.297],
           "size": [1, 2.1],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 83.4
         },
         {
           "type": "box",
           "pos": [20.097, 0, 0.329],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 89.1
         },
         {
           "type": "box",
           "pos": [20.033, 0, -1.643],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 94.7
         },
         {
           "type": "box",
           "pos": [19.775, 0, -3.598],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 100.3
         },
         {
           "type": "box",
           "pos": [19.327, 0, -5.519],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 105.9
         },
         {
           "type": "box",
           "pos": [18.693, 0, -7.387],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 111.6
         },
         {
           "type": "box",
           "pos": [17.879, 0, -9.184],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 117.2
         },
         {
           "type": "box",
           "pos": [16.893, 0, -10.892],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 122.8
         },
         {
           "type": "box",
           "pos": [16.208, 0, -11.91],
           "size": [0.493, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 128.4
         },
         {
           "type": "box",
           "pos": [15.744, 2.1, -12.495],
           "size": [1, 48.5, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 128.4
         },
         {
           "type": "box",
           "pos": [15.28, 0, -13.08],
           "size": [0.493, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 128.4
         },
         {
           "type": "door",
           "pos": [15.744, 0, -12.495],
           "size": [1, 2.1],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 128.4
         },
         {
           "type": "box",
           "pos": [14.443, 0, -13.978],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 134.1
         },
         {
           "type": "box",
           "pos": [13.004, 0, -15.327],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 139.7
         },
         {
           "type": "box",
           "pos": [11.439, 0, -16.528],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 145.3
         },
         {
           "type": "box",
           "pos": [9.764, 0, -17.569],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 150.9
         },
         {
           "type": "box",
           "pos": [7.995, 0, -18.442],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 156.6
         },
         {
           "type": "box",
           "pos": [6.149, 0, -19.136],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 162.2
         },
         {
           "type": "box",
           "pos": [4.243, 0, -19.647],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 167.8
         },
         {
           "type": "box",
           "pos": [2.297, 0, -19.968],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 173.4
         },
         {
           "type": "box",
           "pos": [0.329, 0, -20.097],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": 179.1
         },
         {
           "type": "box",
           "pos": [-1.643, 0, -20.033],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -175.3
         },
         {
           "type": "box",
           "pos": [-3.598, 0, -19.775],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -169.7
         },
         {
           "type": "box",
           "pos": [-5.519, 0, -19.327],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -164.1
         },
         {
           "type": "box",
           "pos": [-7.387, 0, -18.693],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -158.4
         },
         {
           "type": "box",
           "pos": [-9.184, 0, -17.879],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -152.8
         },
         {
           "type": "box",
           "pos": [-10.892, 0, -16.893],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -147.2
         },
         {
           "type": "box",
           "pos": [-12.495, 0, -15.744],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -141.6
         },
         {
           "type": "box",
           "pos": [-13.978, 0, -14.443],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -135.9
         },
         {
           "type": "box",
           "pos": [-15.327, 0, -13.004],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -130.3
         },
         {
           "type": "box",
           "pos": [-16.528, 0, -11.439],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -124.7
         },
         {
           "type": "box",
           "pos": [-17.569, 0, -9.764],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -119.1
         },
         {
           "type": "box",
           "pos": [-18.442, 0, -7.995],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -113.4
         },
         {
           "type": "box",
           "pos": [-19.136, 0, -6.149],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -107.8
         },
         {
           "type": "box",
           "pos": [-19.647, 0, -4.243],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -102.2
         },
         {
           "type": "box",
           "pos": [-19.968, 0, -2.297],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -96.6
         },
         {
           "type": "box",
           "pos": [-20.097, 0, -0.329],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -90.9
         },
         {
           "type": "box",
           "pos": [-20.033, 0, 1.643],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -85.3
         },
         {
           "type": "box",
           "pos": [-19.775, 0, 3.598],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -79.7
         },
         {
           "type": "box",
           "pos": [-19.327, 0, 5.519],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -74.1
         },
         {
           "type": "box",
           "pos": [-18.693, 0, 7.387],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -68.4
         },
         {
           "type": "box",
           "pos": [-17.879, 0, 9.184],
           "size": [1.985, 50.6, 0.2],
-          "colour": "#b5b0a6",
+          "color": "#b5b0a6",
           "yaw": -62.8
         }
       ]
@@ -855,19 +855,19 @@
       "type": "box",
       "pos": [14, 0, -32],
       "size": [12, 0.2, 16],
-      "colour": "#b5b0a6"
+      "color": "#b5b0a6"
     },
     {
       "type": "box",
       "pos": [12, 0.2, -28],
       "size": [4, 2.6, 0.2],
-      "colour": "#b5b0a6"
+      "color": "#b5b0a6"
     }
   ],
   "zones": [],
   "water": {
     "level": 0.1,
-    "colour": "#3d7ea6",
+    "color": "#3d7ea6",
     "opacity": 0.7
   }
 }

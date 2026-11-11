@@ -207,7 +207,7 @@ describe('NavGrid', () => {
 });
 
 describe('pockets', () => {
-  /** Thin walls 2 m tall round a square of inner side `side` centred on the origin. */
+  /** Thin walls 2 m tall round a square of inner side `side` centered on the origin. */
   const ring = (side: number): BoxDef[] => {
     const h = side / 2;
     const t = 0.1;
