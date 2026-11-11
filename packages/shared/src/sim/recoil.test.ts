@@ -176,7 +176,7 @@ describe('recoil', () => {
     expect(free.recoilPitch).toBeGreaterThan(c.recoilPitch * 1.15);
   });
 
-  it('keeps climbing through a magazine, hardest at first, as in Tarkov', () => {
+  it('keeps climbing gently through a magazine, hardest at first', () => {
     const state = createState(1);
     const c = body();
     const pitches: number[] = [];
@@ -192,9 +192,10 @@ describe('recoil', () => {
       pitches[19]!,
       pitches[29]!,
     ];
-    // No leveling off: each ten rounds still climb a few degrees.
-    expect(twentieth - tenth).toBeGreaterThan(3 * DEG);
-    expect(thirtieth - twentieth).toBeGreaterThan(2 * DEG);
+    // It never levels off, but the late climb is gentle (2026-11-11), easing as it goes.
+    expect(twentieth - tenth).toBeGreaterThan(0.5 * DEG);
+    expect(thirtieth - twentieth).toBeGreaterThan(0.25 * DEG);
+    expect(thirtieth - twentieth).toBeLessThan(twentieth - tenth);
     // The early rounds kick hardest: the first five climb more than the next five.
     expect(fifth).toBeGreaterThan(tenth - fifth);
     expect(thirtieth).toBeLessThan(RECOIL.maxUp * DEG);

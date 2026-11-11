@@ -55,11 +55,14 @@ const SWAY_MOVING = 2;
 const SWAY_WALK_SPEED = 3;
 /** Sway per broken arm, added to 1. */
 const SWAY_BROKEN_ARM = 2;
-/** The furthest a gun lags behind turning, in radians. */
-const MAX_LAG_YAW = 1.5 * DEG;
-const MAX_LAG_PITCH = 1 * DEG;
+/**
+ * The furthest a gun lags behind turning, in radians. Cut from 1.5° and 1° on 2026-11-11 for
+ * mouse and thumb alike (the user's call: tracking a strafing target missed two in three).
+ */
+const MAX_LAG_YAW = 0.4 * DEG;
+const MAX_LAG_PITCH = 0.25 * DEG;
 /** How long the lag takes to settle, as a share of the gun's aim time: heavy guns lag longer. */
-const LAG_PER_AIM_TIME = 0.4;
+const LAG_PER_AIM_TIME = 0.2;
 /** The aim time used with nothing in hand. */
 const UNARMED_AIM_TIME = 0.3;
 

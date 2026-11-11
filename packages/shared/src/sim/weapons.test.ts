@@ -282,8 +282,8 @@ describe('firing', () => {
     expect(Math.abs(shooter.swayYaw!)).toBeLessThan(0.01);
     // Turning left leaves the gun behind, to the right.
     step(state, world, TEST_ITEMS, { [shooter.id]: { ...hold, yaw: 0.5 } });
-    expect(shooter.lagYaw).toBeLessThan(-0.02);
-    expect(shooter.lagYaw).toBeCloseTo((-1.5 * Math.PI) / 180);
+    expect(shooter.lagYaw).toBeLessThan(-0.005);
+    expect(shooter.lagYaw).toBeCloseTo((-0.4 * Math.PI) / 180);
     for (let i = 0; i < TICK_RATE; i++)
       step(state, world, TEST_ITEMS, { [shooter.id]: { ...hold, yaw: 0.5 } });
     expect(Math.abs(shooter.lagYaw!)).toBeLessThan(1e-3);
@@ -293,7 +293,7 @@ describe('firing', () => {
     const { world, state, shooter } = range();
     giveWeapon(shooter, TEST_ITEMS, 'rifle');
     shooter.aim = 1;
-    shooter.lagYaw = 0.02;
+    shooter.lagYaw = 0.006;
     shooter.lookYaw = 0;
     shooter.lookPitch = 0.5;
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ pitch: 0.5, aim: true, fire: true }) });
@@ -302,8 +302,8 @@ describe('firing', () => {
     // The rifle has no spread when aimed, so all of this is the gun's lag, to the right of −z.
     const yaw = Math.atan2(-(shot.toX - shot.fromX), -(shot.toZ - shot.fromZ));
     expect(yaw).toBeCloseTo(shooter.swayYaw!, 5);
-    expect(yaw).toBeLessThan(0.02);
-    expect(yaw).toBeGreaterThan(0.01);
+    expect(yaw).toBeLessThan(0.006);
+    expect(yaw).toBeGreaterThan(0.002);
   });
 
   it('gives enemies no sway', () => {

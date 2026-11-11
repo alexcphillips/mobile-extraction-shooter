@@ -27,14 +27,16 @@ export const RECOIL = {
   resetTime: 0.25,
   /** Rounds from this one on (counting from 0) kick steadyKick: a steady climb, as in Tarkov. */
   steadyAfter: 5,
-  steadyKick: 0.5,
+  /** 0.5 until 2026-11-11, cut so a held mag stays on a body (the user's call). */
+  steadyKick: 0.35,
   /**
    * During a burst the climb wears off at only this share of the gun's recovery, so it keeps
    * climbing until the player pulls it down (2026-11-05; at full recovery it leveled off by
    * round 10, and at 0.1 it still ate nearly half an SMG's late kicks). Sideways recovers in
-   * full, so the shake doesn't wander.
+   * full, so the shake doesn't wander. Raised from 0.05 on 2026-11-11 (the user's call: a
+   * held mag landed 1-4 rounds of 30 at 10-25m without a hard pull-down; it still climbs).
    */
-  inBurst: 0.05,
+  inBurst: 0.25,
   /** Once the burst is over, recovery is this much faster, so the gun comes back down. */
   afterBurst: 4,
   /** The spring's damping ratio, below 1: the gun overshoots each kick a little. */
@@ -43,8 +45,10 @@ export const RECOIL = {
    * Every kick (up and sideways) of a player aiming with a thumb, on a touchscreen or a
    * controller (PlayerInput.thumb): a mouse pulls down 20° with a flick of the wrist, a thumb
    * runs out of screen (the user's call, 2026-11-08). Guns' numbers stay as scaled from Tarkov.
+   * Raised from 0.6 on 2026-11-11 with the eased burst: at 0.6 an AKM held at 10 m with no
+   * pull-down landed 29 of 30.
    */
-  thumb: 0.6,
+  thumb: 0.75,
   /**
    * Every gun's kick (up and sideways), for everyone, on top of thumb: guns' numbers stay as
    * scaled from Tarkov (the user's call, 2026-11-10: "reduce recoil across the board by 30%").
