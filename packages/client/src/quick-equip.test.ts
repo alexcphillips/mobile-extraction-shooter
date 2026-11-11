@@ -121,14 +121,19 @@ describe('quick equip', () => {
       one('surgery-kit'),
       one('bandage'),
       one('bandage'),
-      one('tourniquet'),
+      one('cat-tourniquet'),
       one('splint'),
     ]);
     expect(quickEquip(p, items)).toBe('equipped');
     const carried = [...p.gear.pockets.items, ...(p.gear.rig?.grid?.items ?? [])].map(
       (g) => g.item.item,
     );
-    expect(carried.sort()).toEqual(['field-first-aid-kit', 'splint', 'surgery-kit', 'tourniquet']);
+    expect(carried.sort()).toEqual([
+      'field-first-aid-kit',
+      'splint',
+      'surgery-kit',
+      'cat-tourniquet',
+    ]);
     // Without the tourniquet, two bandages.
     const q = profile([one('chest-rig'), one('bandage'), one('bandage'), one('bandage')]);
     quickEquip(q, items);

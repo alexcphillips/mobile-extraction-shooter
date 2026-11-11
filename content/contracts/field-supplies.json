@@ -7,7 +7,7 @@
   "level": 2,
   "hours": 4,
   "objectives": [
-    { "id": "tourniquets", "type": "handOver", "item": "tourniquet", "count": 2 },
+    { "id": "tourniquets", "type": "handOver", "item": "cat-tourniquet", "count": 2 },
     { "id": "pmcs", "type": "kill", "faction": "pmc", "count": 1 }
   ],
   "rewards": { "items": [{ "item": "surgery-kit" }], "rep": 0.1 }
