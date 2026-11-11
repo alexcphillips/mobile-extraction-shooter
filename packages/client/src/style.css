@@ -2741,18 +2741,28 @@ body:has(#raid:not([hidden])) #vitals {
   color: #f0c060;
 }
 
+.victory-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+  min-width: 0;
+}
+
 .results .victory-more {
-  margin-top: 4px;
-  padding: 6px 14px;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border: 1px solid var(--ui-line);
   background: #1c242a;
   color: #dfe5ea;
-  font-size: 13px;
-  font-weight: 600;
 }
 
 .results .victory-more:disabled {
-  color: var(--ui-muted);
+  opacity: 0.35;
   background: transparent;
 }
 

@@ -21,6 +21,26 @@ import {
 import { ItemTile, tallied } from './item-tile';
 import { CharacterStage, lobbyLook } from './lobby';
 
+/** A list of rows with bullets: opens a breakdown sheet. */
+function RowsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+      <g fill="currentColor">
+        <circle cx="5" cy="6" r="1.6" />
+        <circle cx="5" cy="12" r="1.6" />
+        <circle cx="5" cy="18" r="1.6" />
+      </g>
+      <path
+        d="M9.5 6H20M9.5 12H20M9.5 18H20"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 /** Someone you killed, and the tick they died on. */
 export interface RaidKill {
   name: string;
@@ -318,25 +338,33 @@ function Victory({
         <div className="victory-stats">
           <section className="victory-stat">
             <span className="victory-label">Extracted value</span>
-            <b className="victory-big gain">{money(total)}</b>
-            <button
-              className="victory-more"
-              disabled={!gains.length}
-              onClick={() => setSheet('value')}
-            >
-              {gains.length ? 'View details' : 'Nothing found in raid'}
-            </button>
+            <div className="victory-row">
+              <b className="victory-big gain">{money(total)}</b>
+              <button
+                className="victory-more"
+                disabled={!gains.length}
+                aria-label={gains.length ? 'View details' : 'Nothing found in raid'}
+                title={gains.length ? 'View details' : 'Nothing found in raid'}
+                onClick={() => setSheet('value')}
+              >
+                <RowsIcon />
+              </button>
+            </div>
           </section>
           <section className="victory-stat">
             <span className="victory-label">Kills</span>
-            <b className="victory-big">{result.kills}</b>
-            <button
-              className="victory-more"
-              disabled={!kills.length}
-              onClick={() => setSheet('kills')}
-            >
-              {kills.length ? 'View kills' : 'No kills'}
-            </button>
+            <div className="victory-row">
+              <b className="victory-big">{result.kills}</b>
+              <button
+                className="victory-more"
+                disabled={!kills.length}
+                aria-label={kills.length ? 'View kills' : 'No kills'}
+                title={kills.length ? 'View kills' : 'No kills'}
+                onClick={() => setSheet('kills')}
+              >
+                <RowsIcon />
+              </button>
+            </div>
           </section>
           {result.quests.length > 0 && (
             <ul className="victory-quests">
