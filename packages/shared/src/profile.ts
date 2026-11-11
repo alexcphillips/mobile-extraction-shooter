@@ -115,7 +115,11 @@ export interface VendorStanding {
 }
 
 export interface Profile {
+<<<<<<< Updated upstream
   formatVersion: 13;
+=======
+  formatVersion: 11;
+>>>>>>> Stashed changes
   money: number;
   /** The stash's pages, bought with money (at least one). */
   stash: Grid[];
@@ -232,7 +236,11 @@ const questStateShape = z.discriminatedUnion('status', [
 ]);
 
 const profileShape = z.strictObject({
+<<<<<<< Updated upstream
   formatVersion: z.literal(13),
+=======
+  formatVersion: z.literal(11),
+>>>>>>> Stashed changes
   money: count,
   stash: z.array(gridShape).min(1),
   gear: gearShape,
@@ -260,7 +268,11 @@ const profileShape = z.strictObject({
   }),
 });
 
+<<<<<<< Updated upstream
 export const PROFILE_FORMAT_VERSION = 13;
+=======
+export const PROFILE_FORMAT_VERSION = 11;
+>>>>>>> Stashed changes
 
 export const PROFILE_FORMAT: ContentFormat<Profile> = {
   kind: 'profile',
@@ -287,12 +299,22 @@ export const PROFILE_FORMAT: ContentFormat<Profile> = {
     8: (doc) => renameItems(doc, { 'assault-rifle': 'akm', shotgun: 'mp-133', smg: 'k10' }),
     // 2026-11-09: the medkit became the field first aid kit.
     9: (doc) => renameItems(doc, { medkit: 'field-first-aid-kit' }),
+<<<<<<< Updated upstream
     // 2026-11-10 (H1): the Hangar; every module starts unbuilt.
     10: (doc) => ({ ...doc, hangar: {} }),
     // 2026-11-10 (H2): Hangar crafting; nothing is being made.
     11: (doc) => ({ ...doc, crafts: {} }),
     // 2026-11-10 (H6): the Intel desk's contracts; none taken.
     12: (doc) => ({ ...doc, contracts: { day: 0, taken: [] } }),
+=======
+    // 2026-11-10: the encrypted drive became the encrypted USB drive, and the
+    // nuclear facility blueprint became the nuclear facility schematics.
+    10: (doc) =>
+      renameItems(doc, {
+        'encrypted-drive': 'encrypted-usb-drive',
+        'nuclear-facility-blueprint': 'nuclear-facility-schematics',
+      }),
+>>>>>>> Stashed changes
   },
 };
 
@@ -400,6 +422,7 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
     if (addItem(items, stash, kitItem(items, kit, s.item, s.count ?? 1)) > 0)
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
+<<<<<<< Updated upstream
   return {
     formatVersion: 13,
     money: kit.money,
@@ -423,6 +446,9 @@ const levelOf = (p: Profile, module: string) => p.hangar[module] ?? 0;
 export function boughtPages(p: Profile): number {
   const n = p.stash.findIndex((g) => g.only);
   return n < 0 ? p.stash.length : n;
+=======
+  return { formatVersion: 11, money: kit.money, stash: [stash], gear, quests: {}, vendors: {} };
+>>>>>>> Stashed changes
 }
 
 /** What the next stash page costs, or null if there are already as many as there can be. */

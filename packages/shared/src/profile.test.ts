@@ -173,6 +173,14 @@ describe('PROFILE_FORMAT', () => {
     const p = loadContent(PROFILE_FORMAT, old, 'p');
     expect(p.stash[0]!.items[0]!.item.item).toBe('field-first-aid-kit');
   });
+
+  it('turns encrypted drives into encrypted USB drives (format 10 → 11)', () => {
+    const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
+    old.formatVersion = 10;
+    old.stash[0].items[0].item.item = 'encrypted-drive';
+    const p = loadContent(PROFILE_FORMAT, old, 'p');
+    expect(p.stash[0]!.items[0]!.item.item).toBe('encrypted-usb-drive');
+  });
 });
 
 describe('checkProfile', () => {
