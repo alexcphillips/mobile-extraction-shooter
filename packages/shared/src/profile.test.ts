@@ -174,12 +174,14 @@ describe('PROFILE_FORMAT', () => {
     expect(p.stash[0]!.items[0]!.item.item).toBe('field-first-aid-kit');
   });
 
-  it('turns encrypted drives into encrypted USB drives (format 10 → 11)', () => {
+  it('renames encrypted drives and nuclear facility blueprints (format 13 → 14)', () => {
     const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
-    old.formatVersion = 10;
+    old.formatVersion = 13;
     old.stash[0].items[0].item.item = 'encrypted-drive';
+    old.stash[0].items[1].item.item = 'nuclear-facility-blueprint';
     const p = loadContent(PROFILE_FORMAT, old, 'p');
     expect(p.stash[0]!.items[0]!.item.item).toBe('encrypted-usb-drive');
+    expect(p.stash[0]!.items[1]!.item.item).toBe('nuclear-facility-schematics');
   });
 });
 
