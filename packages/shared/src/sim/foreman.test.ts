@@ -188,11 +188,11 @@ describe('the foreman’s crew (MT-12)', () => {
 
   it('holds its ground: it never goes after you off it, and goes back once it loses you', () => {
     // You seen 40 m off from beyond its ground, then out of sight behind a wall.
-    const far = (anchored: boolean): number => {
+    const far = (anchored: boolean, roam = 0): number => {
       const world = makeWorld([wall(-6, 38, 6, 38)]);
       const nav = new NavGrid(world);
       const state = createState(7);
-      const skill = { ...CREW, holdChance: 0, anchored, pinFlank: undefined };
+      const skill = { ...CREW, holdChance: 0, anchored, roam, pinFlank: undefined };
       const c = spawnEnemy(state, world, 0, 0, 0, Math.PI, { faction: 'boss', skill });
       giveWeapon(c, items, 'rifle');
       const me = you(state, world, 12, 40);
@@ -206,7 +206,8 @@ describe('the foreman’s crew (MT-12)', () => {
       return most;
     };
     expect(far(true)).toBeLessThan(CREW.territory! + 1);
-    // Without it, it goes looking for you.
+    // Without it, it goes looking for you; and anchored, within roam of its ground.
     expect(far(false)).toBeGreaterThan(CREW.territory! + 1);
+    expect(far(true, 20)).toBeGreaterThan(CREW.territory! + 1);
   });
 });

@@ -1,0 +1,96 @@
+{
+  "formatVersion": 1,
+  "id": "art",
+  "name": "Art",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "moon-ornament",
+      "weight": 4
+    },
+    {
+      "item": "turtle-carving",
+      "weight": 4
+    },
+    {
+      "item": "engraved-compass",
+      "weight": 4
+    },
+    {
+      "item": "lighthouse-painting",
+      "weight": 2
+    },
+    {
+      "item": "waterfall-painting",
+      "weight": 2
+    },
+    {
+      "item": "antique-telescope",
+      "weight": 2
+    },
+    {
+      "item": "handcrafted-music-box",
+      "weight": 2
+    },
+    {
+      "item": "autumn-overlook",
+      "weight": 1
+    },
+    {
+      "item": "golden-harvest",
+      "weight": 1
+    },
+    {
+      "item": "lavender-fields",
+      "weight": 1
+    },
+    {
+      "item": "antique-chess-set",
+      "weight": 1
+    },
+    {
+      "item": "crystal-swan-ornament",
+      "weight": 1
+    },
+    {
+      "item": "ornate-teacup",
+      "weight": 1
+    },
+    {
+      "item": "porcelain-koi-fish",
+      "weight": 1
+    },
+    {
+      "item": "the-tempest",
+      "weight": 0.5
+    },
+    {
+      "item": "malachite-money-frog",
+      "weight": 0.5
+    },
+    {
+      "item": "historical-manuscript",
+      "weight": 0.5
+    },
+    {
+      "item": "the-unfinished-masterpiece",
+      "weight": 0.2
+    },
+    {
+      "item": "portrait-of-the-regent",
+      "weight": 0.2
+    },
+    {
+      "item": "marble-toad-sculpture",
+      "weight": 0.2
+    },
+    {
+      "item": "a-world-beyond",
+      "weight": 0.05
+    },
+    {
+      "item": "the-last-supper-of-kings",
+      "weight": 0.05
+    }
+  ]
+}

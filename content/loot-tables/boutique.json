@@ -6,16 +6,20 @@
   "items": [
     {
       "item": "gold-watch",
-      "weight": 3
+      "weight": 0.2
     },
     {
       "item": "ruby-ring",
-      "weight": 1
+      "weight": 0.5
     },
     {
       "item": "cash",
       "weight": 4,
       "count": [50, 400]
+    },
+    {
+      "item": "royal-heirloom-tiara",
+      "weight": 0.2
     }
   ]
 }

@@ -5,7 +5,10 @@
   "grid": [3, 4],
   "loot": {
     "tables": {
-      "boutique": 1
-    }
+      "fridge-food": 0.66,
+      "fridge-parts": 0.34
+    },
+    "empty": 0.5,
+    "each": true
   }
 }

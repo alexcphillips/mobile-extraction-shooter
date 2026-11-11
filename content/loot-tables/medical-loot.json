@@ -1,0 +1,100 @@
+{
+  "formatVersion": 1,
+  "id": "medical-loot",
+  "name": "Medical loot",
+  "rolls": [1, 2],
+  "items": [
+    {
+      "item": "allergy-medication",
+      "weight": 4
+    },
+    {
+      "item": "glass-sample-vial",
+      "weight": 4
+    },
+    {
+      "item": "surgical-gloves",
+      "weight": 4
+    },
+    {
+      "item": "water-purification-tablets",
+      "weight": 4
+    },
+    {
+      "item": "basic-suture-kit",
+      "weight": 4
+    },
+    {
+      "item": "glass-petri-dish-set",
+      "weight": 2
+    },
+    {
+      "item": "infusion-set",
+      "weight": 2
+    },
+    {
+      "item": "stethoscope",
+      "weight": 2
+    },
+    {
+      "item": "surgical-forceps",
+      "weight": 2
+    },
+    {
+      "item": "laboratory-notebook",
+      "weight": 2
+    },
+    {
+      "item": "bone-saw",
+      "weight": 1
+    },
+    {
+      "item": "ecg-monitor",
+      "weight": 1
+    },
+    {
+      "item": "electronic-thermometer",
+      "weight": 1
+    },
+    {
+      "item": "sterile-dressing-pack",
+      "weight": 1
+    },
+    {
+      "item": "blood-analyzer",
+      "weight": 0.5
+    },
+    {
+      "item": "blood-pressure-monitor",
+      "weight": 0.5
+    },
+    {
+      "item": "fluorescence-microscope",
+      "weight": 0.5
+    },
+    {
+      "item": "ledx",
+      "weight": 0.2
+    },
+    {
+      "item": "medical-ventilator",
+      "weight": 0.2
+    },
+    {
+      "item": "military-defibrillator",
+      "weight": 0.2
+    },
+    {
+      "item": "oximeter",
+      "weight": 0.2
+    },
+    {
+      "item": "experimental-drug-formula",
+      "weight": 0.2
+    },
+    {
+      "item": "portable-x-ray-unit",
+      "weight": 0.05
+    }
+  ]
+}

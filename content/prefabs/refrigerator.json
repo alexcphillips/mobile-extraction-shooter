@@ -11,7 +11,8 @@
         "container": "fridge",
         "mix": {
           "tables": {
-            "fridge-food": 0.66
+            "fridge-food": 0.66,
+            "fridge-parts": 0.34
           },
           "empty": 0.5,
           "each": true

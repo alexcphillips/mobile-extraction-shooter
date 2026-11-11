@@ -6,19 +6,19 @@
   "items": [
     {
       "item": "smartphone",
-      "weight": 5
+      "weight": 1
     },
     {
       "item": "laptop",
-      "weight": 2
+      "weight": 1
     },
     {
       "item": "graphics-card",
-      "weight": 0.7
+      "weight": 0.5
     },
     {
       "item": "cash",
-      "weight": 2,
+      "weight": 4,
       "count": [20, 200]
     },
     {
@@ -27,7 +27,75 @@
     },
     {
       "item": "hard-drive",
-      "weight": 0.5
+      "weight": 1
+    },
+    {
+      "item": "portable-power-bank",
+      "weight": 4
+    },
+    {
+      "item": "wireless-earbuds",
+      "weight": 4
+    },
+    {
+      "item": "rechargeable-battery",
+      "weight": 4
+    },
+    {
+      "item": "extension-cord",
+      "weight": 4
+    },
+    {
+      "item": "power-relay",
+      "weight": 4
+    },
+    {
+      "item": "led-tube",
+      "weight": 2
+    },
+    {
+      "item": "hd-webcam",
+      "weight": 2
+    },
+    {
+      "item": "avr-control-board",
+      "weight": 2
+    },
+    {
+      "item": "high-voltage-inverter-board",
+      "weight": 2
+    },
+    {
+      "item": "power-supply-unit",
+      "weight": 2
+    },
+    {
+      "item": "digital-thermostat",
+      "weight": 1
+    },
+    {
+      "item": "refrigerator-control-board",
+      "weight": 1
+    },
+    {
+      "item": "wide-angle-lens",
+      "weight": 1
+    },
+    {
+      "item": "ram-stick",
+      "weight": 1
+    },
+    {
+      "item": "slr-camera",
+      "weight": 0.2
+    },
+    {
+      "item": "voltex-vr-headset",
+      "weight": 0.2
+    },
+    {
+      "item": "wifi-toaster",
+      "weight": 0.05
     }
   ]
 }

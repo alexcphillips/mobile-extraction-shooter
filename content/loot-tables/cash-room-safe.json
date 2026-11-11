@@ -6,23 +6,27 @@
   "items": [
     {
       "item": "cash",
-      "weight": 10,
+      "weight": 4,
       "count": [400, 3000]
     },
     {
       "item": "gold-watch",
-      "weight": 1
+      "weight": 0.2
     },
     {
       "item": "gold-bar",
-      "weight": 0.5
+      "weight": 0.05
     },
     {
       "item": "ruby-ring",
-      "weight": 0.4
+      "weight": 0.5
     },
     {
       "item": "diamond-necklace",
+      "weight": 0.2
+    },
+    {
+      "item": "royal-heirloom-tiara",
       "weight": 0.2
     }
   ]

@@ -147,6 +147,8 @@ export interface RaidSnapshot {
   kills: number;
   /** Kills by faction (H6); missing from raids saved before contracts. */
   killed?: KillCounts;
+  /** Who you killed and when, oldest first; missing from raids saved before 2026-11-11. */
+  killList?: { name: string; tick: number }[];
   /** What hurt you so far; missing from raids saved before it was kept. */
   taken?: DamageLog;
   /** Hits between you and enemies; missing from raids saved before 2026-11-10. */

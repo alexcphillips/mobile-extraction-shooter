@@ -1,0 +1,72 @@
+{
+  "formatVersion": 1,
+  "id": "intel",
+  "name": "Intel",
+  "rolls": [1, 2],
+  "items": [
+    {
+      "item": "personnel-records",
+      "weight": 4
+    },
+    {
+      "item": "encrypted-usb-drive",
+      "weight": 2
+    },
+    {
+      "item": "intelligence-report",
+      "weight": 2
+    },
+    {
+      "item": "surveillance-report",
+      "weight": 2
+    },
+    {
+      "item": "signed-diplomatic-letter",
+      "weight": 1
+    },
+    {
+      "item": "nuclear-research-files",
+      "weight": 1
+    },
+    {
+      "item": "radar-system-designs",
+      "weight": 0.5
+    },
+    {
+      "item": "sealed-government-decree",
+      "weight": 0.5
+    },
+    {
+      "item": "weapons-development-files",
+      "weight": 0.5
+    },
+    {
+      "item": "executive-blackmail-file",
+      "weight": 0.2
+    },
+    {
+      "item": "experimental-drug-formula",
+      "weight": 0.2
+    },
+    {
+      "item": "nuclear-facility-schematics",
+      "weight": 0.2
+    },
+    {
+      "item": "strategic-defense-plans",
+      "weight": 0.2
+    },
+    {
+      "item": "global-surveillance-database",
+      "weight": 0.05
+    },
+    {
+      "item": "nuclear-launch-protocols",
+      "weight": 0.05
+    },
+    {
+      "item": "project-nightfall-archive",
+      "weight": 0.05
+    }
+  ]
+}

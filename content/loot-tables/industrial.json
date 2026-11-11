@@ -3,5 +3,206 @@
   "id": "industrial",
   "name": "Industrial",
   "rolls": [1, 2],
-  "items": [{ "item": "a5-kuroge-prime-ribeye", "weight": 1 }]
+  "items": [
+    {
+      "item": "anchoring-epoxy",
+      "weight": 4
+    },
+    {
+      "item": "box-of-nails",
+      "weight": 4
+    },
+    {
+      "item": "box-of-screws",
+      "weight": 4
+    },
+    {
+      "item": "caulk-tube",
+      "weight": 4
+    },
+    {
+      "item": "corrugated-tubing",
+      "weight": 4
+    },
+    {
+      "item": "dehumidifier",
+      "weight": 4
+    },
+    {
+      "item": "gear-set",
+      "weight": 4
+    },
+    {
+      "item": "measuring-tape",
+      "weight": 4
+    },
+    {
+      "item": "premix-concrete-bag",
+      "weight": 4
+    },
+    {
+      "item": "refrigerant-canister",
+      "weight": 4
+    },
+    {
+      "item": "screwdriver",
+      "weight": 4
+    },
+    {
+      "item": "security-keypad",
+      "weight": 4
+    },
+    {
+      "item": "steel-latch-set",
+      "weight": 4
+    },
+    {
+      "item": "wood-board",
+      "weight": 4
+    },
+    {
+      "item": "duct-tape",
+      "weight": 4
+    },
+    {
+      "item": "electrical-tape",
+      "weight": 4
+    },
+    {
+      "item": "extension-cord",
+      "weight": 4
+    },
+    {
+      "item": "power-relay",
+      "weight": 4
+    },
+    {
+      "item": "angle-grinder",
+      "weight": 2
+    },
+    {
+      "item": "bolt-cutters",
+      "weight": 2
+    },
+    {
+      "item": "circular-saw",
+      "weight": 2
+    },
+    {
+      "item": "cordless-drill",
+      "weight": 2
+    },
+    {
+      "item": "fiberglass-roll",
+      "weight": 2
+    },
+    {
+      "item": "high-amp-circuit-breaker",
+      "weight": 2
+    },
+    {
+      "item": "insulation-roll",
+      "weight": 2
+    },
+    {
+      "item": "pressure-gauge",
+      "weight": 2
+    },
+    {
+      "item": "solenoid-valve",
+      "weight": 2
+    },
+    {
+      "item": "steel-angle-bar",
+      "weight": 2
+    },
+    {
+      "item": "valve-handwheel",
+      "weight": 2
+    },
+    {
+      "item": "ballistic-glass-panel",
+      "weight": 1
+    },
+    {
+      "item": "bucket-of-paint",
+      "weight": 1
+    },
+    {
+      "item": "compressed-air-tank",
+      "weight": 1
+    },
+    {
+      "item": "condenser-coil",
+      "weight": 1
+    },
+    {
+      "item": "industrial-air-duct-fan",
+      "weight": 1
+    },
+    {
+      "item": "pool-pump-impeller-assembly",
+      "weight": 1
+    },
+    {
+      "item": "portable-ac",
+      "weight": 1
+    },
+    {
+      "item": "steel-framing",
+      "weight": 1
+    },
+    {
+      "item": "titanium-turbine-blade",
+      "weight": 1
+    },
+    {
+      "item": "carbon-fiber-laminate",
+      "weight": 0.5
+    },
+    {
+      "item": "heavy-duty-chain-hoist",
+      "weight": 0.5
+    },
+    {
+      "item": "hydraulic-press-head",
+      "weight": 0.5
+    },
+    {
+      "item": "kevlar-composite-sheet",
+      "weight": 0.5
+    },
+    {
+      "item": "waterjet-cutting-head",
+      "weight": 0.5
+    },
+    {
+      "item": "ev-battery",
+      "weight": 0.5
+    },
+    {
+      "item": "high-yield-solar-module",
+      "weight": 0.2
+    },
+    {
+      "item": "cryogenic-micro-cooler-engine",
+      "weight": 0.2
+    },
+    {
+      "item": "nuclear-fuel",
+      "weight": 0.2
+    },
+    {
+      "item": "fusion-reactor-core",
+      "weight": 0.05
+    },
+    {
+      "item": "mircroreactor",
+      "weight": 0.05
+    },
+    {
+      "item": "rocket-thruster",
+      "weight": 0.05
+    }
+  ]
 }

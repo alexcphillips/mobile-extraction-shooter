@@ -2635,6 +2635,201 @@ body:has(#raid:not([hidden])) #vitals {
   text-transform: uppercase;
 }
 
+/*
+ * The victory screen (2026-11-11): a thin bar (map, extraction, time), the extracted value
+ * and kills in big numbers on the left, you on the menu's plinth on the right. Sized off the
+ * height too, so a landscape phone (about 390px tall) fits it without scrolling.
+ */
+.results.victory {
+  align-items: stretch;
+  gap: 0;
+  padding-top: max(8px, env(safe-area-inset-top));
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
+  overflow: hidden;
+}
+
+.victory-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 28px;
+  padding: 6px 14px;
+  border: 1px solid var(--ui-line);
+  border-radius: 4px;
+  background: linear-gradient(to right, color-mix(in srgb, var(--tone) 22%, #141a1f), #141a1f 55%);
+  box-shadow: inset 4px 0 0 var(--tone);
+}
+
+.victory-bar h1 {
+  font-size: 18px;
+}
+
+.victory-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 24px;
+  margin: 0;
+}
+
+.victory-facts div {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.victory-facts dt {
+  color: var(--ui-muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.victory-facts dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.victory-main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.victory-stats {
+  display: flex;
+  flex: 1 1 55%;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(10px, 4vh, 36px);
+  min-width: 0;
+  padding: 8px clamp(4px, 3vw, 40px);
+}
+
+.victory-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.victory-label {
+  color: var(--ui-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.victory-big {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: clamp(36px, min(12vh, 9vw), 104px);
+  font-weight: 800;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.victory-stat + .victory-stat .victory-big {
+  font-size: clamp(30px, min(9vh, 7vw), 72px);
+}
+
+.results .gain {
+  color: #f0c060;
+}
+
+.results .victory-more {
+  margin-top: 4px;
+  padding: 6px 14px;
+  border: 1px solid var(--ui-line);
+  background: #1c242a;
+  color: #dfe5ea;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.results .victory-more:disabled {
+  color: var(--ui-muted);
+  background: transparent;
+}
+
+.victory-quests {
+  max-height: 5.5em;
+  overflow-y: auto;
+  font-size: 13px;
+}
+
+.victory-character {
+  position: relative;
+  flex: 1 1 45%;
+  min-width: 0;
+}
+
+.victory-foot {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* The breakdown and kill list: a sheet over the screen, the list scrolling inside it. */
+.victory-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: rgb(0 0 0 / 0.6);
+  animation: results-in 0.15s ease-out;
+}
+
+.victory-sheet {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 520px);
+  max-height: 100%;
+  padding: 0 12px 12px;
+  border: 1px solid var(--ui-line);
+  border-radius: 4px;
+  background: var(--ui-panel);
+}
+
+.victory-sheet > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 -12px 6px;
+  padding: 4px 4px 4px 12px;
+  border-bottom: 1px solid var(--ui-line);
+  background: linear-gradient(to bottom, #222b32, #1a2228);
+  box-shadow: inset 3px 0 0 var(--tone);
+}
+
+.results .victory-close {
+  padding: 8px 12px;
+  background: transparent;
+  color: #dfe5ea;
+}
+
+.victory-list {
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.victory-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
 /* An item as a small card (ui/item-tile.tsx): results, quest rewards. */
 .item-tile {
   display: flex;
@@ -6529,6 +6724,28 @@ input[type='range'].pad-grabbed {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+/* The deploy overview's floor buttons (2026-11-11), top floor first, over its corner. */
+.map-overview-floors {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.lobby .map-overview-floors button {
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: rgb(20 26 31 / 0.85);
+  color: #f2efe6;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.lobby .map-overview-floors button.on {
+  border-color: #ffd34d;
+  color: #ffd34d;
 }
 
 .lobby-no-map {

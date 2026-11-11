@@ -4,11 +4,12 @@ import {
   raidGains,
   sellPrice,
   TICK_RATE,
+  type Character,
   type Item,
   type ItemDb,
   type LeaveReason,
 } from '@mes/shared';
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { clock } from '../hud/raid-hud';
 import {
@@ -18,6 +19,13 @@ import {
   type FightHit,
 } from '../play/damage-log';
 import { ItemTile, tallied } from './item-tile';
+import { CharacterStage, lobbyLook } from './lobby';
+
+/** Someone you killed, and the tick they died on. */
+export interface RaidKill {
+  name: string;
+  tick: number;
+}
 
 /** How the raid ended for you, and what you came out with. */
 export interface RaidResult {
@@ -27,6 +35,14 @@ export interface RaidResult {
   /** Time in the raid. */
   seconds: number;
   kills: number;
+  /** Who you killed, the latest first (2026-11-11). Missing in zombies and the tutorial. */
+  killList?: RaidKill[];
+  /** The raid's name, for the victory screen. */
+  map?: string;
+  /** The extraction point you left by, if you did. */
+  place?: string;
+  /** You as you came out (a copy), for the victory screen's character. */
+  player?: Character;
   /** Without quest items, which the server takes (session 14b). */
   kept: Item[];
   lost: Item[];
@@ -218,6 +234,163 @@ function TutorialResults({ result, onNext }: { result: RaidResult; onNext: () =>
   );
 }
 
+/** The victory screen's pop-up list: the value's breakdown or the kills. */
+function Sheet({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  useEffect(() => {
+    const key = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', key);
+    return () => window.removeEventListener('keydown', key);
+  }, [onClose]);
+  return (
+    <div className="victory-backdrop" onClick={onClose}>
+      <section
+        className="victory-sheet"
+        role="dialog"
+        aria-label={title}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <header>
+          <h2>{title}</h2>
+          <button className="victory-close" onClick={onClose} aria-label="Close">
+            ✕
+          </button>
+        </header>
+        {children}
+      </section>
+    </div>
+  );
+}
+
+const money = (n: number): string => `$${n.toLocaleString()}`;
+
+/**
+ * A successful extract (2026-11-11): a thin bar with the map, extraction point and time;
+ * then what you came out with that you didn't bring in, in big numbers, and your kills,
+ * each with a list behind a button; you, on the menu's plinth, on the right.
+ */
+function Victory({
+  result,
+  player,
+  items,
+  onNext,
+}: {
+  result: RaidResult;
+  player: Character;
+  items: ItemDb;
+  onNext: () => void;
+}) {
+  const [sheet, setSheet] = useState<'value' | 'kills' | null>(null);
+  const [gains] = useState(() => raidGains(items, result.kept).sort((a, b) => b.price - a.price));
+  const [look] = useState(() => lobbyLook(player));
+  const total = gains.reduce((n, g) => n + g.price, 0);
+  const kills = result.killList ?? [];
+  const close = (): void => setSheet(null);
+  return (
+    <div className="results extracted victory">
+      <header className="victory-bar">
+        <h1>Extracted</h1>
+        <dl className="victory-facts">
+          <div>
+            <dt>Map</dt>
+            <dd>{result.map ?? '—'}</dd>
+          </div>
+          <div>
+            <dt>Extraction</dt>
+            <dd>{result.place ?? '—'}</dd>
+          </div>
+          <div>
+            <dt>Duration</dt>
+            <dd>{clock(result.seconds)}</dd>
+          </div>
+        </dl>
+      </header>
+      <div className="victory-main">
+        <div className="victory-stats">
+          <section className="victory-stat">
+            <span className="victory-label">Extracted value</span>
+            <b className="victory-big gain">{money(total)}</b>
+            <button
+              className="victory-more"
+              disabled={!gains.length}
+              onClick={() => setSheet('value')}
+            >
+              {gains.length ? 'View details' : 'Nothing found in raid'}
+            </button>
+          </section>
+          <section className="victory-stat">
+            <span className="victory-label">Kills</span>
+            <b className="victory-big">{result.kills}</b>
+            <button
+              className="victory-more"
+              disabled={!kills.length}
+              onClick={() => setSheet('kills')}
+            >
+              {kills.length ? 'View kills' : 'No kills'}
+            </button>
+          </section>
+          {result.quests.length > 0 && (
+            <ul className="victory-quests">
+              {result.quests.map((q, i) => (
+                <li key={i}>
+                  ✓ {q.text} <span className="results-count">· {q.quest}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div className="victory-character">
+          <CharacterStage items={items} character={look} accent={0x4fd06a} />
+        </div>
+      </div>
+      <footer className="victory-foot">
+        <button className="primary results-continue" onClick={onNext}>
+          Continue
+        </button>
+      </footer>
+      {sheet === 'value' && (
+        <Sheet title={`Extracted value · ${money(total)}`} onClose={close}>
+          <ul className="victory-list">
+            {gains.map((g) => (
+              <li key={g.id}>
+                <span>
+                  {itemDef(items, g.id).name}
+                  {g.count > 1 && !isMoney(items, g.id) && (
+                    <span className="results-count"> ×{g.count}</span>
+                  )}
+                </span>
+                <span className="gain">{money(g.price)}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="results-note">Found in raid, at vendor prices (cash at its full value).</p>
+        </Sheet>
+      )}
+      {sheet === 'kills' && (
+        <Sheet title={`Kills · ${kills.length}`} onClose={close}>
+          <ol className="victory-list">
+            {kills.map((k, i) => (
+              <li key={i}>
+                <span>{k.name}</span>
+                <span className="results-count">{clock(k.tick / TICK_RATE)}</span>
+              </li>
+            ))}
+          </ol>
+        </Sheet>
+      )}
+    </div>
+  );
+}
+
 function Results({
   result,
   items,
@@ -230,6 +403,8 @@ function Results({
   if (result.zombies)
     return <ZombiesResults result={result} zombies={result.zombies} onNext={onNext} />;
   if (result.tutorial) return <TutorialResults result={result} onNext={onNext} />;
+  if (result.how === 'extracted' && result.player)
+    return <Victory result={result} player={result.player} items={items} onNext={onNext} />;
   const survived = result.how === 'extracted';
   // Cash you kept goes into your money when the server has the result (session 13b).
   const cash = result.kept.reduce(

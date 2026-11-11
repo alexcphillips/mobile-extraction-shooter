@@ -4,7 +4,25 @@
   "name": "Fridge food",
   "rolls": [1, 2],
   "items": [
-    { "item": "bottle-of-water", "weight": 4.8 },
-    { "item": "a5-kuroge-prime-ribeye", "weight": 0.05 }
+    {
+      "item": "bottle-of-water",
+      "weight": 4
+    },
+    {
+      "item": "a5-kuroge-prime-ribeye",
+      "weight": 0.2
+    },
+    {
+      "item": "protein-power",
+      "weight": 4
+    },
+    {
+      "item": "black-gold-coffee-beans",
+      "weight": 0.5
+    },
+    {
+      "item": "estate-reserve-cabernet",
+      "weight": 0.2
+    }
   ]
 }

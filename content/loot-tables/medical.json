@@ -4,10 +4,33 @@
   "name": "Medical",
   "rolls": [1, 2],
   "items": [
-    { "item": "bandage", "weight": 4 },
-    { "item": "tourniquet", "weight": 2 },
-    { "item": "splint", "weight": 3 },
-    { "item": "field-first-aid-kit", "weight": 2 },
-    { "item": "surgery-kit", "weight": 1 }
+    {
+      "item": "bandage",
+      "weight": 4
+    },
+    {
+      "item": "tourniquet",
+      "weight": 2
+    },
+    {
+      "item": "splint",
+      "weight": 4
+    },
+    {
+      "item": "field-first-aid-kit",
+      "weight": 1
+    },
+    {
+      "item": "surgery-kit",
+      "weight": 2
+    },
+    {
+      "item": "medical-pouch",
+      "weight": 4
+    },
+    {
+      "item": "medical-supply-crate",
+      "weight": 0.5
+    }
   ]
 }

@@ -3,5 +3,38 @@
   "id": "computer-parts-basic",
   "name": "Computer parts basic",
   "rolls": [1, 2],
-  "items": [{ "item": "a5-kuroge-prime-ribeye", "weight": 1 }]
+  "items": [
+    {
+      "item": "power-supply-unit",
+      "weight": 2
+    },
+    {
+      "item": "hd-webcam",
+      "weight": 2
+    },
+    {
+      "item": "phase-change-thermal-paste",
+      "weight": 2
+    },
+    {
+      "item": "flash-drive",
+      "weight": 2
+    },
+    {
+      "item": "ram-stick",
+      "weight": 1
+    },
+    {
+      "item": "hard-drive",
+      "weight": 1
+    },
+    {
+      "item": "portable-power-bank",
+      "weight": 4
+    },
+    {
+      "item": "extension-cord",
+      "weight": 4
+    }
+  ]
 }

@@ -1979,13 +1979,17 @@ function alarm(ai: AiState, target: Character, x: number, y: number, z: number):
  * last known off it, going back to its patrol rather than out after it.
  */
 function searchOrReturn(state: SimState, c: Character, ai: AiState): void {
-  if (ai.skill.anchored && !onGround(ai, ai.focusX, ai.focusZ)) calmDown(c, ai);
+  if (!mayGo(ai, ai.focusX, ai.focusZ)) calmDown(c, ai);
   else startSearch(state, ai);
 }
 
-/** Whether it may go after a target at (x, z): anywhere, unless it holds its ground (skill.anchored). */
+/**
+ * Whether it may go after a target at (x, z): anywhere, unless it holds its ground
+ * (skill.anchored), then within skill.roam of it (2026-11-11, the user's call: the
+ * foreman's crew came out for noise but never pushed you just outside the mill).
+ */
 function mayGo(ai: AiState, x: number, z: number): boolean {
-  return !ai.skill.anchored || onGround(ai, x, z);
+  return !ai.skill.anchored || onGround(ai, x, z, ai.skill.roam ?? 0);
 }
 
 function startSearch(state: SimState, ai: AiState): void {

@@ -56,7 +56,7 @@ The design is in design.md → AI → Scavs, PMCs and bosses. Scavs and PMCs fir
 - PMC names in the damage log ("Halvorsen (PMC) shot you…"), or just "PMC"? (AI-3 went with "PMC" for now.)
 - No medium backpack exists, so PMCs carry a small or a large one (AI-3). Add a medium backpack item?
 - ~~How often Jug is in a raid (the yard boss is 60%)?~~ 15% (the user's call, 2026-11-08), then 40% the same day (the user's call).
-- An industrial loot table (tools, tape, fuel, bolts) needs new items; worth adding for scavs?
+- An industrial loot table (tools, tape, fuel, bolts) needs new items; worth adding for scavs? (2026-11-11: filled, and scavs roll it at 1.)
 - ~~**(AI-4) PMCs don't survive Northpoint's scavs.**~~ The user's call (2026-11-08): they fight scavs only when they meet them (AI-9). **Still open:** every PMC is still dead within about 12 minutes, 40% of them to rival PMC squads in the first 2 minutes (squads start at player spawns and their routes meet). They already ignore each other's gunfire (AI-9), so they meet because their routes cross. **The user's call (2026-11-08): PMC against PMC is fine; routes keep squads apart early** (AI-9).
 - ~~**(AI-14) PMCs still kill Jug on his ground**~~ AI-15 and AI-16 (PMC spawns, no blunt damage): Jug lives 3 of 6, PMCs kill each other once in 6 raids.
 - ~~**Scavs against armour** (AI-16)~~ Fine as it is (the user's call, 2026-11-08). AI-11 kept too.

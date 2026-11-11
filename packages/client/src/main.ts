@@ -82,6 +82,10 @@ padCursor.start();
 // What the browser reports about controllers, for Settings → Controller and the test.
 padLog.start();
 if (new URLSearchParams(location.search).has('padtest')) openPadTest();
+if (import.meta.env.DEV && new URLSearchParams(location.search).has('victory'))
+  void import('./ui/results-preview')
+    .then((m) => m.previewVictory(byId('results')))
+    .catch((err: unknown) => console.error('victory preview failed', err));
 unlockAudioOnTap();
 reloadOnStaleBuild();
 preventZoom();

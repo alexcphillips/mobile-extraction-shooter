@@ -1,12 +1,13 @@
 import type { CompiledMap } from '@mes/shared';
 import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { loadMap } from '../content';
-import { MapGround, mapLayers, northOf, zoneLabels } from './map-tab';
+import { groundFloor, MapGround, mapLayers, northOf, zoneLabels } from './map-tab';
 
 /*
  * A map seen from above for the menu's deploy screen (2026-11-09): the in-raid map tab's
  * drawing (footprints, water, named zones) with every extraction on it. Those open in
- * every raid are solid green; the ones only some raids open are dashed amber.
+ * every raid are solid green; the ones only some raids open are dashed amber. A map with
+ * floors opens on its ground floor, with buttons to see the others (2026-11-11).
  */
 
 /** Maps compiled for the overview, kept for the page's life (a few, compiled once each). */
@@ -54,7 +55,11 @@ export function mapFacts(map: CompiledMap): MapFacts {
 }
 
 export function MapOverview({ map }: { map: CompiledMap }): ReactNode {
-  const layers = useMemo(() => mapLayers(map), [map]);
+  // The floor shown, for the map it was picked on; another map starts on its ground floor.
+  const [pick, setPick] = useState<{ map: CompiledMap; floor: number } | null>(null);
+  const floor = pick?.map === map ? pick.floor : groundFloor(map);
+  const floors = map.floors;
+  const layers = useMemo(() => mapLayers(map, floor), [map, floor]);
   const ground = useMemo(() => <MapGround layers={layers} />, [layers]);
   const svgRef = useRef<SVGSVGElement>(null);
   const [size, setSize] = useState({ w: 1, h: 1 });
@@ -97,54 +102,69 @@ export function MapOverview({ map }: { map: CompiledMap }): ReactNode {
   );
   const extractions = map.zones.filter((z) => z.extraction);
   return (
-    <svg
-      ref={svgRef}
-      className="map-overview"
-      viewBox={`${view.x} ${view.z} ${view.w} ${view.h}`}
-      preserveAspectRatio="xMidYMid meet"
-      role="img"
-      aria-label={`${map.name} from above`}
-    >
-      {ground}
-      {map.zones
-        .filter((zone) => !zone.extraction)
-        .map((zone) => (
-          <polygon
-            key={zone.id}
-            points={zone.points.map(([x, z]) => `${x},${z}`).join(' ')}
-            fill="rgb(255 255 255 / 0.06)"
-            stroke="rgb(255 255 255 / 0.45)"
-            strokeWidth={1.2 * k}
-            strokeDasharray={`${4 * k} ${4 * k}`}
-          />
-        ))}
-      {zoneLabels(map, font).map(([x, z, zone]) =>
-        label(x, z, zone.name, '#f2efe6', `z-${zone.id}`),
+    <>
+      <svg
+        ref={svgRef}
+        className="map-overview"
+        viewBox={`${view.x} ${view.z} ${view.w} ${view.h}`}
+        preserveAspectRatio="xMidYMid meet"
+        role="img"
+        aria-label={`${map.name} from above`}
+      >
+        {ground}
+        {map.zones
+          .filter((zone) => !zone.extraction)
+          .map((zone) => (
+            <polygon
+              key={zone.id}
+              points={zone.points.map(([x, z]) => `${x},${z}`).join(' ')}
+              fill="rgb(255 255 255 / 0.06)"
+              stroke="rgb(255 255 255 / 0.45)"
+              strokeWidth={1.2 * k}
+              strokeDasharray={`${4 * k} ${4 * k}`}
+            />
+          ))}
+        {zoneLabels(map, font).map(([x, z, zone]) =>
+          label(x, z, zone.name, '#f2efe6', `z-${zone.id}`),
+        )}
+        {extractions.map((p) => {
+          const maybe = !!p.extraction?.rotating;
+          return (
+            <polygon
+              key={p.id}
+              points={p.points.map(([x, z]) => `${x},${z}`).join(' ')}
+              fill={maybe ? 'rgb(227 163 58 / 0.18)' : 'rgb(157 255 176 / 0.2)'}
+              stroke={maybe ? '#e3a33a' : '#9dffb0'}
+              strokeWidth={2 * k}
+              strokeDasharray={maybe ? `${5 * k} ${3 * k}` : undefined}
+            />
+          );
+        })}
+        {extractions.map((p) => {
+          const n = p.points.length;
+          const x = p.points.reduce((a, q) => a + q[0], 0) / n;
+          return label(
+            x,
+            northOf(p) - font,
+            p.name,
+            p.extraction?.rotating ? '#f3c472' : '#b9ffca',
+            `e-${p.id}`,
+          );
+        })}
+      </svg>
+      {floors && floors.length > 1 && (
+        <div className="map-overview-floors raid-map-floors">
+          {[...floors.keys()].reverse().map((i) => (
+            <button
+              key={i}
+              className={i === floor ? 'on' : undefined}
+              onClick={() => setPick({ map, floor: i })}
+            >
+              {floors[i]!.name}
+            </button>
+          ))}
+        </div>
       )}
-      {extractions.map((p) => {
-        const maybe = !!p.extraction?.rotating;
-        return (
-          <polygon
-            key={p.id}
-            points={p.points.map(([x, z]) => `${x},${z}`).join(' ')}
-            fill={maybe ? 'rgb(227 163 58 / 0.18)' : 'rgb(157 255 176 / 0.2)'}
-            stroke={maybe ? '#e3a33a' : '#9dffb0'}
-            strokeWidth={2 * k}
-            strokeDasharray={maybe ? `${5 * k} ${3 * k}` : undefined}
-          />
-        );
-      })}
-      {extractions.map((p) => {
-        const n = p.points.length;
-        const x = p.points.reduce((a, q) => a + q[0], 0) / n;
-        return label(
-          x,
-          northOf(p) - font,
-          p.name,
-          p.extraction?.rotating ? '#f3c472' : '#b9ffca',
-          `e-${p.id}`,
-        );
-      })}
-    </svg>
+    </>
   );
 }

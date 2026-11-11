@@ -281,8 +281,11 @@ export interface MapLayers {
   layers: FloorLayers;
 }
 
-/** A floor's drawing: by default the lowest floor, or from above for a map without floors. */
-export function mapLayers(map: CompiledMap, floor = map.floors?.length ? 0 : -1): MapLayers {
+/**
+ * A floor's drawing: by default the ground floor (the one at height 0, so not a tunnel under
+ * it; 2026-11-11), or from above for a map without floors.
+ */
+export function mapLayers(map: CompiledMap, floor = groundFloor(map)): MapLayers {
   const { base, layers } = layersOf(map, floor);
   const f = base.frame;
   return { minX: f.x, minZ: f.z, w: f.w, h: f.h, base, layers };
@@ -326,6 +329,11 @@ export function floorAt(floors: CompiledMap['floors'], y: number): number {
     if (f.y <= y + ON_FLOOR) at = i;
   });
   return at;
+}
+
+/** The floor at ground height (0), shown first on the deploy screen; -1 without floors. */
+export function groundFloor(map: CompiledMap): number {
+  return floorAt(map.floors, 0);
 }
 
 type Label = { x: number; z: number; text: string; big: boolean; key: string };

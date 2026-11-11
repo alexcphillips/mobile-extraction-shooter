@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "id": "fridge-parts",
+  "name": "Fridge parts",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "refrigerant-canister",
+      "weight": 4
+    },
+    {
+      "item": "power-relay",
+      "weight": 4
+    },
+    {
+      "item": "light-bulb",
+      "weight": 4
+    },
+    {
+      "item": "condenser-coil",
+      "weight": 1
+    },
+    {
+      "item": "refrigerator-control-board",
+      "weight": 1
+    },
+    {
+      "item": "digital-thermostat",
+      "weight": 1
+    }
+  ]
+}

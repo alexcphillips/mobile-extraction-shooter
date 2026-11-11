@@ -78,7 +78,8 @@
       "electronics": 3,
       "computer-parts-basic": 1.5,
       "medical": 0.4,
-      "military": 0.15
+      "military": 0.15,
+      "industrial": 1
     }
   }
 }

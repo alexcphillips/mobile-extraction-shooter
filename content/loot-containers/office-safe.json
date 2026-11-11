@@ -5,7 +5,9 @@
   "grid": [3, 3],
   "loot": {
     "tables": {
-      "cash-room-safe": 1
-    }
+      "cash-room-safe": 1,
+      "high-value": 0.25
+    },
+    "each": true
   }
 }

@@ -4,34 +4,179 @@
   "name": "Ammo",
   "rolls": [1, 3],
   "items": [
-    { "item": "buckshot", "weight": 1 },
-    { "item": "flechette", "weight": 1, "count": [1, 10] },
-    { "item": "slug", "weight": 1, "count": [1, 10] },
-    { "item": "ammo-762x39-lp", "weight": 1, "count": [1, 10] },
-    { "item": "ammo-762x39-bp", "weight": 1, "count": [1, 10] },
-    { "item": "ammo-762x39", "weight": 1, "count": [1, 10] },
-    { "item": "ammo-556x45-hp", "weight": 0.5, "count": [1, 10] },
-    { "item": "ammo-556x45-fmj", "weight": 1, "count": [1, 10] },
-    { "item": "ammo-556x45", "weight": 1, "count": [1, 10] },
-    { "item": "ammo-762x39-t45m", "weight": 1, "count": [1, 10] },
-    { "item": "ammo-9mm-ap", "weight": 1, "count": [1, 10] },
-    { "item": "ammo-9mm-pbp", "weight": 1, "count": [1, 10] },
-    { "item": "ammo-9mm-pso", "weight": 1, "count": [1, 10] },
-    { "item": "ammo-9mm", "weight": 1, "count": [1, 10] },
-    { "item": "ammo-45acp-jhp", "weight": 0.5, "count": [1, 10] },
-    { "item": "ammo-45acp", "weight": 0.5, "count": [1, 10] },
-    { "item": "ammo-762x54r-hpbt", "weight": 0.5, "count": [1, 10] },
-    { "item": "ammo-338-tacx", "weight": 0.2, "count": [1, 5] },
-    { "item": "ammo-762-nosler", "weight": 0.5, "count": [1, 10] },
-    { "item": "ammo-9x39", "weight": 0.5, "count": [1, 10] },
-    { "item": "ammo-46x30-action", "weight": 0.5, "count": [1, 10] },
-    { "item": "ammo-46x30-subsonic", "weight": 0.5, "count": [1, 10] },
-    { "item": "ammo-545x39-hp", "weight": 1, "count": [1, 10] },
-    { "item": "ammo-545x39", "weight": 1, "count": [1, 10] },
-    { "item": "ammo-762-tcw", "weight": 0.5, "count": [1, 10] },
-    { "item": "ammo-68x51-hp", "weight": 0.5, "count": [1, 10] },
-    { "item": "ammo-68x51-sp", "weight": 0.5, "count": [1, 10] },
-    { "item": "ammo-68x51-fmj", "weight": 0.3, "count": [1, 10] },
-    { "item": "crossbow-bolt", "weight": 1, "count": [1, 10] }
+    {
+      "item": "buckshot",
+      "weight": 4
+    },
+    {
+      "item": "flechette",
+      "weight": 1,
+      "count": [1, 10]
+    },
+    {
+      "item": "slug",
+      "weight": 1,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-762x39-lp",
+      "weight": 4,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-762x39-bp",
+      "weight": 0.5,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-762x39",
+      "weight": 1,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-556x45-hp",
+      "weight": 4,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-556x45-fmj",
+      "weight": 2,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-556x45",
+      "weight": 1,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-762x39-t45m",
+      "weight": 2,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-9mm-ap",
+      "weight": 1,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-9mm-pbp",
+      "weight": 0.5,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-9mm-pso",
+      "weight": 4,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-9mm",
+      "weight": 2,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-45acp-jhp",
+      "weight": 4,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-45acp",
+      "weight": 2,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-762x54r-hpbt",
+      "weight": 2,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-338-tacx",
+      "weight": 4,
+      "count": [1, 5]
+    },
+    {
+      "item": "ammo-762-nosler",
+      "weight": 4,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-9x39",
+      "weight": 2,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-46x30-action",
+      "weight": 4,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-46x30-subsonic",
+      "weight": 2,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-545x39-hp",
+      "weight": 4,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-545x39",
+      "weight": 2,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-762-tcw",
+      "weight": 2,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-68x51-hp",
+      "weight": 4,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-68x51-sp",
+      "weight": 2,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-68x51-fmj",
+      "weight": 1,
+      "count": [1, 10]
+    },
+    {
+      "item": "crossbow-bolt",
+      "weight": 4,
+      "count": [1, 10]
+    },
+    {
+      "item": "buckshot-inc",
+      "weight": 4,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-338-ucw",
+      "weight": 1,
+      "count": [1, 5]
+    },
+    {
+      "item": "ammo-46x30-jsp",
+      "weight": 1,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-545x39-pp",
+      "weight": 1,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-762-bcp",
+      "weight": 1,
+      "count": [1, 10]
+    },
+    {
+      "item": "ammo-9x39-spp",
+      "weight": 1,
+      "count": [1, 10]
+    }
   ]
 }

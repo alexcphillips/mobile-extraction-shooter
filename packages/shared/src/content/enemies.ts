@@ -136,8 +136,9 @@ const skillSchema = z.strictObject({
   roam: nonNegative.optional(),
   /**
    * Holds its ground (MT-12, the foreman's crew): with a territory, it never closes in on,
-   * pushes at or searches for a target off it, and out of sight with its target off its
-   * ground it goes back to its patrol. A flanker (pinFlank) still goes where its spot is.
+   * pushes at or searches for a target further off it than roam (2026-11-11; it was off
+   * the territory itself), and out of sight with its target that far off it goes back to
+   * its patrol. A flanker (pinFlank) still goes where its spot is.
    */
   anchored: z.boolean().optional(),
   /**

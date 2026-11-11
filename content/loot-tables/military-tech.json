@@ -6,7 +6,55 @@
   "items": [
     {
       "item": "military-binoculars",
+      "weight": 0.2
+    },
+    {
+      "item": "frequency-jammer-module",
+      "weight": 2
+    },
+    {
+      "item": "encrypted-military-radio",
       "weight": 1
+    },
+    {
+      "item": "military-circuit-board",
+      "weight": 1
+    },
+    {
+      "item": "military-ssd",
+      "weight": 1
+    },
+    {
+      "item": "encrypted-router",
+      "weight": 0.5
+    },
+    {
+      "item": "cryptographic-processor",
+      "weight": 0.5
+    },
+    {
+      "item": "portable-satcom",
+      "weight": 0.2
+    },
+    {
+      "item": "satellite-crypto-terminal",
+      "weight": 0.2
+    },
+    {
+      "item": "flight-data-recorder",
+      "weight": 0.2
+    },
+    {
+      "item": "combat-systems-terminal",
+      "weight": 0.05
+    },
+    {
+      "item": "armored-vehicle-battery",
+      "weight": 0.05
+    },
+    {
+      "item": "quantum-cryptographic-core",
+      "weight": 0.05
     }
   ]
 }

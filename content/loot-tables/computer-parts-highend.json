@@ -3,5 +3,42 @@
   "id": "computer-parts-highend",
   "name": "Computer parts highend",
   "rolls": [1, 2],
-  "items": [{ "item": "a5-kuroge-prime-ribeye", "weight": 1 }]
+  "items": [
+    {
+      "item": "power-supply-unit",
+      "weight": 2
+    },
+    {
+      "item": "phase-change-thermal-paste",
+      "weight": 2
+    },
+    {
+      "item": "ram-stick",
+      "weight": 1
+    },
+    {
+      "item": "hard-drive",
+      "weight": 1
+    },
+    {
+      "item": "graphics-card",
+      "weight": 0.5
+    },
+    {
+      "item": "voltex-cpu",
+      "weight": 0.5
+    },
+    {
+      "item": "voltex-v450-motherboard",
+      "weight": 0.5
+    },
+    {
+      "item": "voltex-vr-headset",
+      "weight": 0.2
+    },
+    {
+      "item": "voltex-quantum-storage-array",
+      "weight": 0.05
+    }
+  ]
 }

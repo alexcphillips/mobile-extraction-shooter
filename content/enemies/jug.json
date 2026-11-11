@@ -304,7 +304,8 @@
     "tables": {
       "military": 1,
       "medical": 1,
-      "electronics": 0.5
+      "electronics": 0.5,
+      "high-value": 0.4
     }
   }
 }

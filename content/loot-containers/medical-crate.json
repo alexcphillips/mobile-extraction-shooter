@@ -5,7 +5,9 @@
   "grid": [4, 3],
   "loot": {
     "tables": {
-      "medical": 1
-    }
+      "medical": 0.75,
+      "medical-loot": 0.25
+    },
+    "each": true
   }
 }

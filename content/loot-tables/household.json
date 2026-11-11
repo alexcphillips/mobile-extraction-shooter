@@ -4,13 +4,120 @@
   "name": "Household",
   "rolls": [1, 3],
   "items": [
-    { "item": "cash", "weight": 5, "count": [20, 300] },
-    { "item": "gold-watch", "weight": 1 },
-    { "item": "bandage", "weight": 3 },
-    { "item": "splint", "weight": 1 },
-    { "item": "ammo-9mm-pso", "weight": 1.5, "count": [8, 30] },
-    { "item": "ammo-9mm", "weight": 0.5, "count": [8, 30] },
-    { "item": "armour-repair-kit", "weight": 0.5 },
-    { "item": "molotov", "weight": 0.4 }
+    {
+      "item": "cash",
+      "weight": 4,
+      "count": [20, 300]
+    },
+    {
+      "item": "gold-watch",
+      "weight": 0.2
+    },
+    {
+      "item": "bandage",
+      "weight": 4
+    },
+    {
+      "item": "splint",
+      "weight": 4
+    },
+    {
+      "item": "ammo-9mm-pso",
+      "weight": 4,
+      "count": [8, 30]
+    },
+    {
+      "item": "ammo-9mm",
+      "weight": 2,
+      "count": [8, 30]
+    },
+    {
+      "item": "armour-repair-kit",
+      "weight": 1
+    },
+    {
+      "item": "molotov",
+      "weight": 1
+    },
+    {
+      "item": "alarm-clock",
+      "weight": 4
+    },
+    {
+      "item": "duct-tape",
+      "weight": 4
+    },
+    {
+      "item": "electrical-tape",
+      "weight": 4
+    },
+    {
+      "item": "flip-lighter",
+      "weight": 4
+    },
+    {
+      "item": "laundry-pods",
+      "weight": 4
+    },
+    {
+      "item": "light-bulb",
+      "weight": 4
+    },
+    {
+      "item": "matches",
+      "weight": 4
+    },
+    {
+      "item": "rechargeable-battery",
+      "weight": 4
+    },
+    {
+      "item": "toothpaste",
+      "weight": 4
+    },
+    {
+      "item": "water-purification-tablets",
+      "weight": 4
+    },
+    {
+      "item": "allergy-medication",
+      "weight": 4
+    },
+    {
+      "item": "moon-ornament",
+      "weight": 4
+    },
+    {
+      "item": "turtle-carving",
+      "weight": 4
+    },
+    {
+      "item": "engraved-compass",
+      "weight": 4
+    },
+    {
+      "item": "drain-cleaner",
+      "weight": 2
+    },
+    {
+      "item": "thermobrew",
+      "weight": 2
+    },
+    {
+      "item": "black-gold-coffee-beans",
+      "weight": 0.5
+    },
+    {
+      "item": "midnight-onyx-fountain-pen",
+      "weight": 0.5
+    },
+    {
+      "item": "estate-reserve-cabernet",
+      "weight": 0.2
+    },
+    {
+      "item": "limited-edition-slow-cooker",
+      "weight": 0.05
+    }
   ]
 }

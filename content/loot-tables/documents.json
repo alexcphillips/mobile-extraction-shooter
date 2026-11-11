@@ -3,5 +3,42 @@
   "id": "documents",
   "name": "Documents",
   "rolls": [1, 2],
-  "items": [{ "item": "trade-documents", "weight": 1 }]
+  "items": [
+    {
+      "item": "trade-documents",
+      "weight": 4
+    },
+    {
+      "item": "incident-report",
+      "weight": 4
+    },
+    {
+      "item": "personnel-records",
+      "weight": 4
+    },
+    {
+      "item": "sales-records",
+      "weight": 4
+    },
+    {
+      "item": "tech-manual",
+      "weight": 4
+    },
+    {
+      "item": "shipping-records-archive",
+      "weight": 2
+    },
+    {
+      "item": "survey-map-collection",
+      "weight": 2
+    },
+    {
+      "item": "laboratory-notebook",
+      "weight": 2
+    },
+    {
+      "item": "historical-manuscript",
+      "weight": 0.5
+    }
+  ]
 }

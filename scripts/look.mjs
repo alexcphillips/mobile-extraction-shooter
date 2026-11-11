@@ -3,13 +3,14 @@
 // request). Needs `npm run dev` (Vite on 5180 and the Worker on 8787).
 //
 //   node scripts/look.mjs [--phone] [--size 1440x900] [--click <selector>]... \
-//     [--wait <ms>] [--out <file.png>] [--base <url>] [--fresh]
+//     [--wait <ms>] [--out <file.png>] [--base <url>] [--query <q>] [--fresh]
 //
 // --click takes a Playwright selector ("text=Stash", "[aria-label='Loadout: open stash']")
 // and can be given several times, run in order. --phone is an iPhone 15 held sideways, as
 // the game wants (touch, no hover), which the inventory lays out differently from a PC.
 // --fresh signs in with a new account (a new character's starting kit) instead of the
 // shared test one.
+// --query adds a query string to the page (not the API), e.g. "victory" for the dev victory screen.
 import { chromium, devices } from 'playwright';
 
 /** The test account: on the local dev database only, so its password needn't be secret. */
@@ -27,6 +28,7 @@ for (let i = 0; i < args.length; i++) {
   else if (a === '--wait') opt.wait = Number(args[++i]);
   else if (a === '--out') opt.out = args[++i];
   else if (a === '--base') opt.base = args[++i];
+  else if (a === '--query') opt.query = args[++i];
   else throw new Error(`unknown option ${a}`);
 }
 opt.out ??= `look-${Date.now()}.png`;
@@ -55,7 +57,7 @@ if (!res.ok() && (await res.json().catch(() => null))?.error === 'wrong-login')
   res = await page.request.post(`${opt.base}/api/register`, { data: login });
 if (!res.ok()) throw new Error(`sign-in failed: ${res.status()} ${await res.text()}`);
 
-await page.goto(opt.base);
+await page.goto(opt.query ? `${opt.base}/?${opt.query}` : opt.base);
 await page.waitForLoadState('networkidle');
 for (const sel of opt.clicks) {
   await page.locator(sel).first().click();

@@ -1,0 +1,176 @@
+{
+  "formatVersion": 1,
+  "id": "high-value",
+  "name": "High value",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "a5-kuroge-prime-ribeye",
+      "weight": 0.2
+    },
+    {
+      "item": "cryogenic-micro-cooler-engine",
+      "weight": 0.2
+    },
+    {
+      "item": "diamond-necklace",
+      "weight": 0.2
+    },
+    {
+      "item": "estate-reserve-cabernet",
+      "weight": 0.2
+    },
+    {
+      "item": "executive-blackmail-file",
+      "weight": 0.2
+    },
+    {
+      "item": "experimental-drug-formula",
+      "weight": 0.2
+    },
+    {
+      "item": "flight-data-recorder",
+      "weight": 0.2
+    },
+    {
+      "item": "gold-watch",
+      "weight": 0.2
+    },
+    {
+      "item": "high-yield-solar-module",
+      "weight": 0.2
+    },
+    {
+      "item": "ledx",
+      "weight": 0.2
+    },
+    {
+      "item": "marble-toad-sculpture",
+      "weight": 0.2
+    },
+    {
+      "item": "medical-ventilator",
+      "weight": 0.2
+    },
+    {
+      "item": "military-binoculars",
+      "weight": 0.2
+    },
+    {
+      "item": "military-defibrillator",
+      "weight": 0.2
+    },
+    {
+      "item": "nuclear-facility-schematics",
+      "weight": 0.2
+    },
+    {
+      "item": "nuclear-fuel",
+      "weight": 0.2
+    },
+    {
+      "item": "oximeter",
+      "weight": 0.2
+    },
+    {
+      "item": "portable-satcom",
+      "weight": 0.2
+    },
+    {
+      "item": "portrait-of-the-regent",
+      "weight": 0.2
+    },
+    {
+      "item": "royal-heirloom-tiara",
+      "weight": 0.2
+    },
+    {
+      "item": "satellite-crypto-terminal",
+      "weight": 0.2
+    },
+    {
+      "item": "slr-camera",
+      "weight": 0.2
+    },
+    {
+      "item": "strategic-defense-plans",
+      "weight": 0.2
+    },
+    {
+      "item": "the-unfinished-masterpiece",
+      "weight": 0.2
+    },
+    {
+      "item": "voltex-vr-headset",
+      "weight": 0.2
+    },
+    {
+      "item": "a-world-beyond",
+      "weight": 0.05
+    },
+    {
+      "item": "armored-vehicle-battery",
+      "weight": 0.05
+    },
+    {
+      "item": "combat-systems-terminal",
+      "weight": 0.05
+    },
+    {
+      "item": "fusion-reactor-core",
+      "weight": 0.05
+    },
+    {
+      "item": "global-surveillance-database",
+      "weight": 0.05
+    },
+    {
+      "item": "gold-bar",
+      "weight": 0.05
+    },
+    {
+      "item": "jade-dragon",
+      "weight": 0.05
+    },
+    {
+      "item": "limited-edition-slow-cooker",
+      "weight": 0.05
+    },
+    {
+      "item": "mircroreactor",
+      "weight": 0.05
+    },
+    {
+      "item": "nuclear-launch-protocols",
+      "weight": 0.05
+    },
+    {
+      "item": "portable-x-ray-unit",
+      "weight": 0.05
+    },
+    {
+      "item": "project-nightfall-archive",
+      "weight": 0.05
+    },
+    {
+      "item": "quantum-cryptographic-core",
+      "weight": 0.05
+    },
+    {
+      "item": "rocket-thruster",
+      "weight": 0.05
+    },
+    {
+      "item": "the-last-supper-of-kings",
+      "weight": 0.05
+    },
+    {
+      "item": "voltex-quantum-storage-array",
+      "weight": 0.05
+    },
+    {
+      "item": "wifi-toaster",
+      "weight": 0.05
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "formatVersion": 1,
+  "id": "lab-tech",
+  "name": "Lab tech",
+  "rolls": [1, 2],
+  "items": [
+    {
+      "item": "glass-sample-vial",
+      "weight": 4
+    },
+    {
+      "item": "glass-petri-dish-set",
+      "weight": 2
+    },
+    {
+      "item": "laboratory-notebook",
+      "weight": 2
+    },
+    {
+      "item": "nuclear-research-files",
+      "weight": 1
+    },
+    {
+      "item": "titanium-turbine-blade",
+      "weight": 1
+    },
+    {
+      "item": "cryogenic-micro-cooler-engine",
+      "weight": 0.2
+    },
+    {
+      "item": "nuclear-fuel",
+      "weight": 0.2
+    },
+    {
+      "item": "fusion-reactor-core",
+      "weight": 0.05
+    },
+    {
+      "item": "mircroreactor",
+      "weight": 0.05
+    },
+    {
+      "item": "rocket-thruster",
+      "weight": 0.05
+    }
+  ]
+}

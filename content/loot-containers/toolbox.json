@@ -5,8 +5,10 @@
   "grid": [4, 2],
   "loot": {
     "tables": {
-      "sawmill-tools": 1
+      "sawmill-tools": 0.6,
+      "industrial": 0.4
     },
-    "empty": 0.25
+    "empty": 0.25,
+    "each": true
   }
 }

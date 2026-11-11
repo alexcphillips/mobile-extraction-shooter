@@ -6,11 +6,11 @@
   "items": [
     {
       "item": "graphics-card",
-      "weight": 2
+      "weight": 0.5
     },
     {
       "item": "laptop",
-      "weight": 1.5
+      "weight": 1
     },
     {
       "item": "smartphone",
@@ -19,6 +19,26 @@
     {
       "item": "hard-drive",
       "weight": 1
+    },
+    {
+      "item": "power-supply-unit",
+      "weight": 2
+    },
+    {
+      "item": "phase-change-thermal-paste",
+      "weight": 2
+    },
+    {
+      "item": "ram-stick",
+      "weight": 1
+    },
+    {
+      "item": "voltex-cpu",
+      "weight": 0.5
+    },
+    {
+      "item": "voltex-v450-motherboard",
+      "weight": 0.5
     }
   ]
 }
