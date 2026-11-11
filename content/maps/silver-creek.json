@@ -1285,8 +1285,10 @@
     "color": "#7a7a4c"
   },
   "hearingScale": 0.6,
+  "scavPerSlot": 3,
   "pmcs": {
-    "count": [2, 4],
+    "count": [3, 5],
+    "squads": 3,
     "pmcSpawnsOnly": true
   },
   "nodes": [
@@ -18010,7 +18012,8 @@
           "loadout": "scav-kit-light",
           "patrol": "pt-house-lane",
           "oneOf": "sc-west-houses",
-          "radius": 1.5
+          "radius": 1.5,
+          "once": true
         },
         {
           "type": "enemySpawn",
@@ -18021,7 +18024,8 @@
           "loadout": "scav-kit-light",
           "patrol": "pt-house-lane",
           "oneOf": "sc-west-houses",
-          "radius": 1.5
+          "radius": 1.5,
+          "once": true
         },
         {
           "type": "patrol",
@@ -18042,7 +18046,8 @@
           "loadout": "scav-kit-light",
           "oneOf": "sc-west-ridge",
           "radius": 1.5,
-          "chance": 0.6
+          "chance": 0.6,
+          "once": true
         },
         {
           "type": "enemySpawn",
@@ -18053,7 +18058,8 @@
           "loadout": "scav-kit-light",
           "oneOf": "sc-west-ridge",
           "radius": 1.5,
-          "chance": 0.6
+          "chance": 0.6,
+          "once": true
         },
         {
           "type": "enemySpawn",
@@ -18064,7 +18070,8 @@
           "loadout": "scav-kit-light",
           "oneOf": "sc-ridge",
           "radius": 1.5,
-          "chance": 0.6
+          "chance": 0.6,
+          "once": true
         },
         {
           "type": "enemySpawn",
@@ -18075,7 +18082,8 @@
           "loadout": "scav-kit-light",
           "oneOf": "sc-ridge",
           "radius": 1.5,
-          "chance": 0.6
+          "chance": 0.6,
+          "once": true
         },
         {
           "type": "enemySpawn",
@@ -18085,7 +18093,8 @@
           "enemy": "scav",
           "patrol": "pt-hall",
           "oneOf": "sc-hall",
-          "radius": 1.5
+          "radius": 1.5,
+          "once": true
         },
         {
           "type": "enemySpawn",
@@ -18095,7 +18104,8 @@
           "enemy": "scav",
           "patrol": "pt-hall",
           "oneOf": "sc-hall",
-          "radius": 1.5
+          "radius": 1.5,
+          "once": true
         },
         {
           "type": "patrol",
@@ -18133,7 +18143,8 @@
           "yaw": 0,
           "enemy": "scav",
           "oneOf": "sc-yard",
-          "radius": 1.5
+          "radius": 1.5,
+          "once": true
         },
         {
           "type": "enemySpawn",
@@ -18142,7 +18153,8 @@
           "yaw": 90,
           "enemy": "scav",
           "oneOf": "sc-yard",
-          "radius": 1.5
+          "radius": 1.5,
+          "once": true
         },
         {
           "type": "enemySpawn",
@@ -18152,7 +18164,8 @@
           "enemy": "scav",
           "patrol": "pt-kilns",
           "oneOf": "sc-kilns",
-          "radius": 1.5
+          "radius": 1.5,
+          "once": true
         },
         {
           "type": "enemySpawn",
@@ -18162,7 +18175,8 @@
           "enemy": "scav",
           "patrol": "pt-kilns",
           "oneOf": "sc-kilns",
-          "radius": 1.5
+          "radius": 1.5,
+          "once": true
         },
         {
           "type": "patrol",
@@ -18181,7 +18195,8 @@
           "yaw": -90,
           "enemy": "scav",
           "oneOf": "sc-crossings",
-          "radius": 1.5
+          "radius": 1.5,
+          "once": true
         },
         {
           "type": "enemySpawn",
@@ -18190,7 +18205,8 @@
           "yaw": 90,
           "enemy": "scav",
           "oneOf": "sc-crossings",
-          "radius": 1.5
+          "radius": 1.5,
+          "once": true
         },
         {
           "type": "enemySpawn",
@@ -18201,7 +18217,8 @@
           "loadout": "scav-kit-light",
           "patrol": "pt-east-yard",
           "oneOf": "sc-east-yard",
-          "radius": 1.5
+          "radius": 1.5,
+          "once": true
         },
         {
           "type": "enemySpawn",
@@ -18212,7 +18229,8 @@
           "loadout": "scav-kit-light",
           "patrol": "pt-east-yard",
           "oneOf": "sc-east-yard",
-          "radius": 1.5
+          "radius": 1.5,
+          "once": true
         },
         {
           "type": "patrol",
@@ -18232,7 +18250,8 @@
           "loadout": "scav-kit-light",
           "oneOf": "sc-east-south",
           "radius": 1.5,
-          "chance": 0.6
+          "chance": 0.6,
+          "once": true
         },
         {
           "type": "enemySpawn",
@@ -18243,7 +18262,195 @@
           "loadout": "scav-kit-light",
           "oneOf": "sc-east-south",
           "radius": 1.5,
-          "chance": 0.6
+          "chance": 0.6,
+          "once": true
+        },
+        {
+          "type": "enemySpawn",
+          "id": "sc-edge-nw",
+          "pos": [72, 5.85, 6],
+          "yaw": 180,
+          "enemy": "scav",
+          "loadout": "scav-kit-light",
+          "patrol": "pt-edge-nw",
+          "radius": 1.5
+        },
+        {
+          "type": "patrol",
+          "id": "pt-edge-nw",
+          "points": [
+            { "pos": [84, 2.92, 18], "wait": 2, "radius": 2 },
+            { "pos": [100, 2.92, 21], "wait": 2, "radius": 2 },
+            { "pos": [110, 0, 40], "wait": 3, "radius": 2 },
+            { "pos": [117, 0, 90], "wait": 4, "radius": 2 },
+            { "pos": [92, 0, 104], "wait": 3, "radius": 2 },
+            { "pos": [75, 0, 81], "wait": 4, "radius": 2 },
+            { "pos": [80, 0, 45], "wait": 3, "radius": 2 }
+          ],
+          "repeatFrom": 2
+        },
+        {
+          "type": "enemySpawn",
+          "id": "sc-edge-n",
+          "pos": [185, 6.12, 8],
+          "yaw": 180,
+          "enemy": "scav",
+          "patrol": "pt-edge-n",
+          "radius": 1.5
+        },
+        {
+          "type": "patrol",
+          "id": "pt-edge-n",
+          "points": [
+            { "pos": [190, 2.92, 21], "wait": 2, "radius": 2 },
+            { "pos": [160.5, 2.92, 20], "wait": 3, "radius": 2 },
+            { "pos": [126, 2.92, 14], "wait": 3, "radius": 2 },
+            { "pos": [128, 0, 44], "wait": 3, "radius": 2 },
+            { "pos": [166, 0, 56], "wait": 3, "radius": 2 },
+            { "pos": [194, 0, 66], "wait": 3, "radius": 2 },
+            { "pos": [222, 2.92, 20], "wait": 3, "radius": 2 }
+          ],
+          "repeatFrom": 1
+        },
+        {
+          "type": "enemySpawn",
+          "id": "sc-edge-nc",
+          "pos": [125, 6.62, 5],
+          "yaw": 180,
+          "enemy": "scav",
+          "patrol": "pt-edge-nc",
+          "radius": 1.5
+        },
+        {
+          "type": "patrol",
+          "id": "pt-edge-nc",
+          "points": [
+            { "pos": [126, 2.92, 14], "wait": 2, "radius": 2 },
+            { "pos": [128, 0, 44], "wait": 3, "radius": 2 },
+            { "pos": [117, 0, 90], "wait": 4, "radius": 2 },
+            { "pos": [168, 0.3, 118], "wait": 3, "radius": 2 },
+            { "pos": [195, 0, 112], "wait": 3, "radius": 2 },
+            { "pos": [194, 0, 66], "wait": 3, "radius": 2 },
+            { "pos": [166, 0, 56], "wait": 3, "radius": 2 }
+          ],
+          "repeatFrom": 1
+        },
+        {
+          "type": "enemySpawn",
+          "id": "sc-edge-ne2",
+          "pos": [220, 6.48, 6],
+          "yaw": 180,
+          "enemy": "scav",
+          "patrol": "pt-edge-ne2",
+          "radius": 1.5
+        },
+        {
+          "type": "patrol",
+          "id": "pt-edge-ne2",
+          "points": [
+            { "pos": [222, 2.92, 20], "wait": 2, "radius": 2 },
+            { "pos": [201, 0, 48], "wait": 3, "radius": 2 },
+            { "pos": [230, 0, 48], "wait": 3, "radius": 2 },
+            { "pos": [225, 0, 94], "wait": 4, "radius": 2 },
+            { "pos": [195, 0, 112], "wait": 3, "radius": 2 },
+            { "pos": [194, 0, 66], "wait": 3, "radius": 2 }
+          ],
+          "repeatFrom": 1
+        },
+        {
+          "type": "enemySpawn",
+          "id": "sc-edge-ne",
+          "pos": [255, 6.12, 8],
+          "yaw": 180,
+          "enemy": "scav",
+          "loadout": "scav-kit-light",
+          "patrol": "pt-edge-ne",
+          "radius": 1.5
+        },
+        {
+          "type": "patrol",
+          "id": "pt-edge-ne",
+          "points": [
+            { "pos": [250, 2.92, 20], "wait": 2, "radius": 2 },
+            { "pos": [230, 0, 48], "wait": 3, "radius": 2 },
+            { "pos": [250, 0, 70], "wait": 4, "radius": 2 },
+            { "pos": [250, 0, 95], "wait": 3, "radius": 2 },
+            { "pos": [225, 0, 94], "wait": 4, "radius": 2 },
+            { "pos": [206, 0, 72], "wait": 3, "radius": 2 }
+          ],
+          "repeatFrom": 1
+        },
+        {
+          "type": "enemySpawn",
+          "id": "sc-edge-sw",
+          "pos": [80, 1.75, 146],
+          "yaw": 0,
+          "enemy": "scav",
+          "loadout": "scav-kit-light",
+          "patrol": "pt-edge-sw",
+          "radius": 1.5
+        },
+        {
+          "type": "patrol",
+          "id": "pt-edge-sw",
+          "points": [
+            { "pos": [95, 0, 135], "wait": 2, "radius": 2 },
+            { "pos": [117, 0, 98], "wait": 4, "radius": 2 },
+            { "pos": [130, 0, 128], "wait": 3, "radius": 2 },
+            { "pos": [163, -2.6, 136], "wait": 3, "radius": 2 },
+            { "pos": [130, 0, 128], "wait": 2, "radius": 2 },
+            { "pos": [92, 0, 104], "wait": 3, "radius": 2 },
+            { "pos": [75, 0, 81], "wait": 4, "radius": 2 }
+          ],
+          "repeatFrom": 1
+        },
+        {
+          "type": "enemySpawn",
+          "id": "sc-edge-sc",
+          "pos": [150, 2.1, 147],
+          "yaw": 0,
+          "enemy": "scav",
+          "patrol": "pt-edge-sc",
+          "radius": 1.5
+        },
+        {
+          "type": "patrol",
+          "id": "pt-edge-sc",
+          "points": [
+            { "pos": [130, 0, 128], "wait": 2, "radius": 2 },
+            { "pos": [117, 0, 98], "wait": 4, "radius": 2 },
+            { "pos": [168, 0.3, 118], "wait": 3, "radius": 2 },
+            { "pos": [195, 0, 112], "wait": 3, "radius": 2 },
+            { "pos": [225, 0, 94], "wait": 4, "radius": 2 },
+            { "pos": [200, 0, 135], "wait": 3, "radius": 2 },
+            { "pos": [163, -2.6, 136], "wait": 3, "radius": 2 },
+            { "pos": [130, 0, 128], "wait": 3, "radius": 2 }
+          ],
+          "repeatFrom": 1
+        },
+        {
+          "type": "enemySpawn",
+          "id": "sc-edge-se",
+          "pos": [245, 1.75, 146],
+          "yaw": 0,
+          "enemy": "scav",
+          "loadout": "scav-kit-light",
+          "patrol": "pt-edge-se",
+          "radius": 1.5
+        },
+        {
+          "type": "patrol",
+          "id": "pt-edge-se",
+          "points": [
+            { "pos": [240, 0, 125], "wait": 2, "radius": 2 },
+            { "pos": [200, 0, 135], "wait": 3, "radius": 2 },
+            { "pos": [168, 0.3, 118], "wait": 3, "radius": 2 },
+            { "pos": [195, 0, 112], "wait": 3, "radius": 2 },
+            { "pos": [225, 0, 94], "wait": 4, "radius": 2 },
+            { "pos": [250, 0, 95], "wait": 3, "radius": 2 },
+            { "pos": [240, 0, 125], "wait": 3, "radius": 2 }
+          ],
+          "repeatFrom": 1
         }
       ]
     },

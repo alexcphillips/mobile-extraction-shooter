@@ -145,7 +145,9 @@ describe('Silver Creek', () => {
 
   it('the AI (MT-9): light-kit scavs at the ends and ridge, the usual kit and PMCs round the mill', () => {
     expect(map.hearingScale).toBe(0.6);
-    expect(map.pmcs).toEqual({ count: [2, 4], pmcSpawnsOnly: true });
+    // Three squads at the start (2026-11-11).
+    expect(map.pmcs).toEqual({ count: [3, 5], squads: 3, pmcSpawnsOnly: true });
+    expect(map.scavPerSlot).toBe(3);
     // Every spawn, patrol stop and point of interest stands on the AI's main area.
     const main = at(5, 60);
     const spots = [
@@ -164,10 +166,22 @@ describe('Silver Creek', () => {
     // The foreman (MT-12) once, on his patrol round the saw hall, his guards with him.
     expect(spawns.filter((m) => m.enemy === 'foreman').map((m) => m.id)).toEqual(['boss-foreman']);
     const scavs = spawns.filter((m) => m.enemy === 'scav');
-    for (const m of scavs)
+    // The points of interest's scavs are in once at the start (2026-11-11); only the edges'
+    // are wave slots, each walking in once and then looping on.
+    const posts = scavs.filter((m) => m.once);
+    const edges = scavs.filter((m) => !m.once);
+    for (const m of posts)
       expect([m.id, m.loadout]).toEqual([m.id, mill.has(m.oneOf!) ? undefined : 'scav-kit-light']);
-    // Nine sectors, as against Northpoint's 12; PMCs start only round the mill.
-    expect(new Set(scavs.map((m) => m.oneOf)).size).toBe(9);
+    // Nine sectors at the points of interest, as against Northpoint's 12.
+    expect(new Set(posts.map((m) => m.oneOf)).size).toBe(9);
+    expect(edges.map((m) => m.id).every((id) => id.startsWith('sc-edge-'))).toBe(true);
+    expect(edges).toHaveLength(8);
+    const patrols = new Map(map.patrols.map((p) => [p.id, p]));
+    for (const m of edges) {
+      expect(m.oneOf).toBeUndefined();
+      expect(patrols.get(m.patrol!)!.repeatFrom).toBeGreaterThan(0);
+    }
+    // PMCs start only round the mill.
     for (const m of map.markers.filter((m) => m.type === 'pmcSpawn'))
       expect(m.x > 100 && m.x < 228).toBe(true);
   });

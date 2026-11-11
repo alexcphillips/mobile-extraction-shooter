@@ -19,6 +19,8 @@ export function buildAi(h) {
   /**
    * A scav spawn. `light` puts it in the light kit (the ends and the ridge). A sector's
    * spawns share `oneOf`; `chance` is rolled once a raid for the whole sector (waves.ts).
+   * The points of interest's scavs are `once`: in at raid start, never again (2026-11-11,
+   * the user's call). Only the `edge` sectors are wave slots, refilled through the raid.
    */
   const scav = (id, x, z, yaw, o = {}) => ({
     type: 'enemySpawn',
@@ -31,6 +33,7 @@ export function buildAi(h) {
     ...(o.oneOf ? { oneOf: o.oneOf } : {}),
     radius: o.radius ?? 1.5,
     ...(o.chance !== undefined ? { chance: o.chance } : {}),
+    ...(o.edge ? {} : { once: true }),
   });
   /** A patrol stop: [x, z, wait, radius, floor]. */
   const stop = ([x, z, wait = 4, radius = 2, floor]) => ({ pos: pos(x, z, floor), wait, radius });
@@ -43,6 +46,8 @@ export function buildAi(h) {
 
   const HOUSE = 0.35;
   const MILL = 0.3;
+  /** The ridge trail's bench. */
+  const TRAIL = 2.92;
 
   // ---------------------------------------------------------------- scavs
   // Nine sectors: two at each end and one on the ridge in the light kit, four round the
@@ -133,6 +138,124 @@ export function buildAi(h) {
     ]),
     scav('sc-depot', 240, 130, 0, { light: true, oneOf: 'sc-east-south', chance: 0.6 }),
     scav('sc-tanker', 232, 116, 90, { light: true, oneOf: 'sc-east-south', chance: 0.6 }),
+
+    // The edges (2026-11-11, the user's call: Silver Creek was too quiet, its scavs standing
+    // at their posts while the PMCs picked them off far from you). Eight sectors in the trees
+    // on the ridge and the south edge, between the ends' spawns: the only wave slots. Each
+    // walks in once (repeatFrom) and then loops through several points of interest without
+    // stopping long, so they cross the map, meet the PMCs and come past you. The loops keep
+    // 55 m+ from the player spawns. The light kit but for the middle of the ridge's.
+    scav('sc-edge-nw', 72, 6, 180, { light: true, edge: true, patrol: 'pt-edge-nw' }),
+    patrol(
+      'pt-edge-nw',
+      [
+        [84, 18, 2],
+        [100, 21, 2, 2, TRAIL],
+        [110, 40, 3],
+        [117, 90, 4],
+        [92, 104, 3],
+        [75, 81, 4],
+        [80, 45, 3],
+      ],
+      { repeatFrom: 2 },
+    ),
+    scav('sc-edge-n', 185, 8, 180, { edge: true, patrol: 'pt-edge-n' }),
+    patrol(
+      'pt-edge-n',
+      [
+        [190, 21, 2, 2, TRAIL],
+        [160.5, 20, 3, 2, TRAIL],
+        [126, 14, 3, 2, TRAIL],
+        [128, 44, 3],
+        [166, 56, 3, 2, 0],
+        [194, 66, 3],
+        [222, 20, 3, 2, TRAIL],
+      ],
+      { repeatFrom: 1 },
+    ),
+    scav('sc-edge-nc', 125, 5, 180, { edge: true, patrol: 'pt-edge-nc' }),
+    patrol(
+      'pt-edge-nc',
+      [
+        [126, 14, 2, 2, TRAIL],
+        [128, 44, 3],
+        [117, 90, 4],
+        [168, 118, 3, 2, MILL],
+        [195, 112, 3],
+        [194, 66, 3],
+        [166, 56, 3, 2, 0],
+      ],
+      { repeatFrom: 1 },
+    ),
+    scav('sc-edge-ne2', 220, 6, 180, { edge: true, patrol: 'pt-edge-ne2' }),
+    patrol(
+      'pt-edge-ne2',
+      [
+        [222, 20, 2, 2, TRAIL],
+        [201, 48, 3],
+        [230, 48, 3],
+        [225, 94, 4],
+        [195, 112, 3],
+        [194, 66, 3],
+      ],
+      { repeatFrom: 1 },
+    ),
+    scav('sc-edge-ne', 255, 8, 180, { light: true, edge: true, patrol: 'pt-edge-ne' }),
+    patrol(
+      'pt-edge-ne',
+      [
+        [250, 20, 2, 2, TRAIL],
+        [230, 48, 3],
+        [250, 70, 4],
+        [250, 95, 3],
+        [225, 94, 4],
+        [206, 72, 3],
+      ],
+      { repeatFrom: 1 },
+    ),
+    scav('sc-edge-sw', 80, 146, 0, { light: true, edge: true, patrol: 'pt-edge-sw' }),
+    patrol(
+      'pt-edge-sw',
+      [
+        [95, 135, 2],
+        [117, 98, 4],
+        [130, 128, 3],
+        [163, 136, 3, 2, -2.6],
+        [130, 128, 2],
+        [92, 104, 3],
+        [75, 81, 4],
+      ],
+      { repeatFrom: 1 },
+    ),
+    scav('sc-edge-sc', 150, 147, 0, { edge: true, patrol: 'pt-edge-sc' }),
+    patrol(
+      'pt-edge-sc',
+      [
+        [130, 128, 2],
+        [117, 98, 4],
+        [168, 118, 3, 2, MILL],
+        [195, 112, 3],
+        [225, 94, 4],
+        [200, 135, 3],
+        [163, 136, 3, 2, -2.6],
+        [130, 128, 3],
+      ],
+      { repeatFrom: 1 },
+    ),
+    scav('sc-edge-se', 245, 146, 0, { light: true, edge: true, patrol: 'pt-edge-se' }),
+    patrol(
+      'pt-edge-se',
+      [
+        [240, 125, 2],
+        [200, 135, 3],
+        [168, 118, 3, 2, MILL],
+        [195, 112, 3],
+        [225, 94, 4],
+        [250, 95, 3],
+        [240, 125, 3],
+      ],
+      { repeatFrom: 1 },
+    ),
   ];
 
   // ---------------------------------------------------------------- PMCs

@@ -807,6 +807,12 @@ export const mapSchema = z
      */
     scavStartShare: finite.refine((n) => n > 0 && n <= 1, 'must be over 0, up to 1').optional(),
     /**
+     * Scavs per wave slot in a raid, the start's included (2026-11-11): the raid's cap is
+     * slots × this. 2 if left out. Silver Creek's slots are only its edges, whose scavs walk
+     * in across the map, so it lets them refill more. An optional field, so still format 4.
+     */
+    scavPerSlot: z.int().min(1).optional(),
+    /**
      * PMC squads in a raid (AI rework session 3): between `count[0]` and `count[1]` PMCs
      * of the `enemy` type ('pmc' if left out), all at raid start, in squads of 2–4 at
      * player spawns nobody is using (sim/squads.ts). None if left out; Northpoint has 3–6.
@@ -824,6 +830,12 @@ export const mapSchema = z
          * end would meet them in their first seconds. Left out, both are used.
          */
         pmcSpawnsOnly: z.boolean().optional(),
+        /**
+         * Exactly this many squads (2026-11-11, the user's call for Silver Creek: three
+         * groups in at the start), the PMCs dealt out among them, each of PMC_SQUADS.size.
+         * Left out, squads are rolled one by one by PMC_SQUADS.sizeWeights.
+         */
+        squads: z.int().min(1).optional(),
       })
       .optional(),
     /**

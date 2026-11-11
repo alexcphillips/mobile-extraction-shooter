@@ -1055,6 +1055,23 @@ function Zones({ editor, map, zone, point }: Parameters<typeof MapSettings>[0]) 
       </p>
       <div className="ed-row">
         <Num
+          label="scavs per slot in a raid"
+          value={map.scavPerSlot}
+          min={1}
+          onChange={(v) =>
+            editor.editMap((m) => {
+              if (v === undefined || v < 1) delete m.scavPerSlot;
+              else m.scavPerSlot = Math.round(v);
+            })
+          }
+        />
+      </div>
+      <p className="ed-note">
+        Blank is 2, the start's included. A freed slot refills with a later wave until then. Scavs
+        marked once never refill.
+      </p>
+      <div className="ed-row">
+        <Num
           label="PMCs, fewest"
           value={map.pmcs?.count[0]}
           min={0}
@@ -2193,6 +2210,17 @@ function MarkerFields(props: { editor: MapEditor; node: MapNode; num: NumField; 
               onChange={(v) => set('oneOf', v || undefined)}
             />
           </div>
+          <label
+            className="ed-field"
+            title="In at raid start and never again. Unticked, a scav spawn is a wave slot that refills through the raid"
+          >
+            <input
+              type="checkbox"
+              checked={!!n.once}
+              onChange={(e) => set('once', e.target.checked || undefined)}
+            />
+            start only, never respawns
+          </label>
           <h4 title="Multiplies how likely it drops from each table (1 if blank, 0 for never)">
             loot weights
           </h4>

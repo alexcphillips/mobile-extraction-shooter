@@ -49,9 +49,25 @@ export const PMC_SQUADS = {
   spread: 2.5,
 };
 
-/** n PMCs split into squads by PMC_SQUADS.sizeWeights, at random (a size no bigger than what's left). */
-export function squadSizes(rng: SimState['rng'], n: number): number[] {
+/**
+ * n PMCs split into squads by PMC_SQUADS.sizeWeights, at random (a size no bigger than what's
+ * left). With `squads`, exactly that many instead (fewer if n is smaller), the PMCs dealt out
+ * one at a time to squads picked at random, none over the biggest size (so n may be cut).
+ */
+export function squadSizes(rng: SimState['rng'], n: number, squads?: number): number[] {
   const [min, max] = PMC_SQUADS.size;
+  if (squads !== undefined) {
+    const k = Math.min(squads, n);
+    const out: number[] = Array(k).fill(min);
+    let left = Math.min(n, k * max) - k * min;
+    while (left > 0) {
+      const i = nextIntIn(rng, 0, k - 1);
+      if (out[i]! >= max) continue;
+      out[i]!++;
+      left--;
+    }
+    return out;
+  }
   const out: number[] = [];
   let left = n;
   while (left > 0) {
@@ -96,7 +112,7 @@ export function startSquads(
   const loadout = content.loadouts.get(type.loadout);
   if (!loadout) throw new Error(`enemy type "${id}": no loadout "${type.loadout}"`);
   const rng = state.rng;
-  const sizes = squadSizes(rng, nextIntIn(rng, pmcs.count[0], pmcs.count[1]));
+  const sizes = squadSizes(rng, nextIntIn(rng, pmcs.count[0], pmcs.count[1]), pmcs.squads);
   startPois(state, map);
   const routes = (state.pois?.length ?? 0) > 0;
 

@@ -238,7 +238,7 @@ export function startEnemies(
     const j = nextIntIn(rng, 0, i);
     [order[i], order[j]] = [order[j]!, order[i]!];
   }
-  waves.cap = n * SCAV_WAVES.perSlot;
+  waves.cap = n * (map.scavPerSlot ?? SCAV_WAVES.perSlot);
   let waveTick = 0;
   for (let k = 0; k < n; k++) {
     const i = order[k]!;

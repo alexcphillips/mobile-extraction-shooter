@@ -263,13 +263,20 @@ export interface CompiledMap {
   hearingScale?: number | undefined;
   /** The share of scav slots in at raid start (MapFile.scavStartShare); a third if undefined. */
   scavStartShare?: number | undefined;
+  /** Scavs per wave slot in a raid (MapFile.scavPerSlot); SCAV_WAVES.perSlot if undefined. */
+  scavPerSlot?: number | undefined;
   /** The map tab's storeys, lowest first (MapFile.floors); one view from above if undefined. */
   floors?: { name: string; y: number }[] | undefined;
   /** How many of each loot group a raid uses (MapFile.lootGroups); one if not named. */
   lootGroups?: Readonly<Record<string, { pick: number }>> | undefined;
   /** PMC squads at raid start (MapFile.pmcs); none if undefined. */
   pmcs?:
-    | { enemy?: string | undefined; count: [number, number]; pmcSpawnsOnly?: boolean | undefined }
+    | {
+        enemy?: string | undefined;
+        count: [number, number];
+        pmcSpawnsOnly?: boolean | undefined;
+        squads?: number | undefined;
+      }
     | undefined;
 }
 
@@ -507,6 +514,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     enemyClearance: map.enemyClearance,
     hearingScale: map.hearingScale,
     scavStartShare: map.scavStartShare,
+    scavPerSlot: map.scavPerSlot,
     pmcs: map.pmcs,
     floors: map.floors,
   };

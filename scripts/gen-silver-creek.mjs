@@ -1476,7 +1476,8 @@ const map = {
   terrain: { origin: ORIGIN, cellSize: CELL, heights, holes, color: '#7a7a4c' },
   // The AI (MT-9): design/ai-scavs-pmcs-bosses.md → Silver Creek.
   hearingScale: 0.6,
-  pmcs: { count: [2, 4], pmcSpawnsOnly: true },
+  scavPerSlot: 3,
+  pmcs: { count: [3, 5], squads: 3, pmcSpawnsOnly: true },
   nodes: [
     markers,
     buildWestEnd({ box, drawn, group, prefab, along, label, C, r2, groundRange }),

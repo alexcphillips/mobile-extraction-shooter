@@ -104,6 +104,21 @@ describe('PMC squads', () => {
     expect(squadSizes(rng, 0)).toEqual([]);
   });
 
+  it('makes exactly the squads a map asks for, the PMCs dealt out among them', () => {
+    const rng = createRng(3);
+    for (let n = 3; n <= 9; n++) {
+      for (let k = 0; k < 50; k++) {
+        const sizes = squadSizes(rng, n, 3);
+        expect(sizes).toHaveLength(3);
+        expect(sizes.reduce((a, b) => a + b, 0)).toBe(n);
+        for (const s of sizes) expect(s).toBeLessThanOrEqual(PMC_SQUADS.size[1]);
+      }
+    }
+    // Too few PMCs for the squads: one each. Too many: cut to full squads.
+    expect(squadSizes(rng, 2, 3)).toEqual([1, 1]);
+    expect(squadSizes(rng, 12, 3)).toEqual([3, 3, 3]);
+  });
+
   it('starts them armed, at player spawns nobody uses, away from you and each other', () => {
     for (let seed = 1; seed <= 20; seed++) {
       const state = createState(seed);
