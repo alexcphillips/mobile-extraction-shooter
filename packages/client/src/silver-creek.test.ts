@@ -191,6 +191,45 @@ describe('Silver Creek', () => {
     expect(at(165, 50, -3.5)).toBe(-1);
   });
 
+  it('banks are walkable above the deep water: whoever wades in walks back out', () => {
+    // Banks fell at 51° (over the 45° you can walk up), so the shallows along them were
+    // pits you walked down into and couldn't leave (2026-11-10). From every shallow spot
+    // on a bank, walking uphill (or, below the weir's face, along it) reaches dry
+    // ground.
+    const t = world.terrain;
+    const g = { x: 0, z: 0 };
+    const hit = { solid: -1 };
+    const walkOut = (x: number, z: number, yaw: number | null): boolean => {
+      const state = createState(1);
+      const c = spawnCharacter(state, world, x, z, 0, t.heightAt(x, z) + 0.05);
+      for (let k = 0; k < 150; k++) {
+        t.gradientAt(c.x, c.z, g);
+        const uphill = Math.hypot(g.x, g.z) > 0.05 ? Math.atan2(-g.x, -g.z) : c.yaw;
+        const input = { moveX: 0, moveY: 1, yaw: yaw ?? uphill, pitch: 0 } as PlayerInput;
+        step(state, world, new Map(), { [c.id]: input });
+      }
+      return world.waterDepth(c.x, c.z) === 0;
+    };
+    const stuck: string[] = [];
+    let tried = 0;
+    for (let x = 0.5; x < 320; x += 2) {
+      for (let z = 0.5; z < 150; z += 2) {
+        const depth = world.waterDepth(x, z);
+        if (t.holeAt(x, z) || depth < 0.1 || depth > 1.1) continue;
+        world.groundAt(x, z, 0.4, t.heightAt(x, z) + 0.45, hit);
+        t.gradientAt(x, z, g);
+        // On a flat bed (the ford's middle, among its boulders) there's no uphill to try.
+        if (hit.solid >= 0 || Math.hypot(g.x, g.z) < 0.05) continue;
+        tried++;
+        if (walkOut(x, z, null)) continue;
+        if ([0, 1, 2, 3].some((k) => walkOut(x, z, (k * Math.PI) / 2))) continue;
+        stuck.push(`${x}, ${z}`);
+      }
+    }
+    expect(tried).toBeGreaterThan(100);
+    expect(stuck).toEqual([]);
+  });
+
   it('ladder perches are player-only: the water tower, deer stands and crane cab', () => {
     const main = at(5, 60);
     expect(at(302, 74, 6.6)).not.toBe(main);

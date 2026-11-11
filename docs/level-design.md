@@ -36,6 +36,7 @@ From `MOVEMENT` in `packages/shared/src/sim/movement.ts` and design.md. Check th
 | Capsule | 0.35 m radius, so a gap needs about 0.75 m to pass |
 | Safe fall | up to about 3.9 m (12.5 m/s); about 5 m bruises, about 7 m breaks both legs |
 | Ladder | 2 m/s; it drops you 0.45 m past its top, onto whatever is there |
+| Terrain slope | walked up to 45° (rise over run 1), walked down at any steepness. So steeper ground you can reach must have a walkable way back up, or it's a pit. Banks down to water: 35° or less from the top to below the deep line (the water level less 1.2 m), steep only below it (Silver Creek, 2026-11-10) |
 | AI nav | 0.5 m cells, climbs 0.45 m, needs 1.8 m headroom (it doesn't crouch), slopes up to 45° |
 | AI sight | 120° view out to 70 m; full notice takes about 3 s at 25 m and 9 s at 50 m; crouching ×0.6 |
 | Warehouse ceiling | 5.85 m west of x 60, 9.2 m in the high bay |

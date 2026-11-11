@@ -125,12 +125,35 @@ function creekX(z) {
   throw new Error(`no creek at z ${z}`);
 }
 
-/** A channel's bed widening into banks that climb back to the ground at about 50°. */
-function carve(ground, bed, d, half, slope) {
-  if (d <= half) return bed;
-  const s = slope ?? Math.max(2, (ground - bed) * 0.8);
-  if (d >= half + s) return ground;
-  return lerp(bed, ground, (d - half) / s);
+/** Water deeper than this stops you (DEEP_WATER in the sim). */
+const DEEP = 1.2;
+/**
+ * The steepest a bank gets above the deep line (2026-11-10): walkable, as the sim stops you
+ * walking up terrain over 45°, so whoever walks down to the water can walk back out.
+ */
+const BANK = 0.7;
+/**
+ * A channel's bed widening into banks that climb back to the ground. With `slope`, one even
+ * slope that long (the ford's approaches). Otherwise the bank's top stays where the old 50°
+ * bank put it, and from there it falls at BANK to just below the deep line (the water's
+ * `level` less DEEP), then steeply to the bed, which narrows to make room (to `minHalf` at
+ * least, past which the bank's top moves out instead).
+ */
+function carve(ground, bed, d, half, slope, level, minHalf = -Infinity) {
+  if (slope !== undefined) {
+    if (d <= half) return bed;
+    if (d >= half + slope) return ground;
+    return lerp(bed, ground, (d - half) / slope);
+  }
+  const outer = half + Math.max(2, (ground - bed) * 0.8);
+  const toe = Math.max(bed, Math.min(ground, level - DEEP - 0.3));
+  const gentle = (ground - toe) / BANK;
+  const steep = (toe - bed) * 0.8;
+  const inner = Math.max(minHalf, outer - gentle - steep);
+  if (d <= inner) return bed;
+  if (d >= inner + steep + gentle) return ground;
+  if (d <= inner + steep) return lerp(bed, toe, (d - inner) / steep);
+  return lerp(toe, ground, (d - inner - steep) / gentle);
 }
 
 function height(x, z) {
@@ -139,9 +162,10 @@ function height(x, z) {
   const d = distToPolyline(CREEK, x, z);
   const ford = z >= FORD.z0 && z <= FORD.z1;
   const bed = z < DAM_Z ? -3.5 : ford ? FORD.bed : -4;
-  h = Math.min(h, carve(ground, bed, d, CREEK_HALF, ford ? FORD.approach : undefined));
+  const level = z < DAM_Z ? POND_LEVEL : CREEK_LEVEL;
+  h = Math.min(h, carve(ground, bed, d, CREEK_HALF, ford ? FORD.approach : undefined, level, 2));
   const e = Math.hypot((x - POND.x) / POND.rx, (z - POND.z) / POND.rz);
-  h = Math.min(h, carve(ground, -3.5, (e - 1) * POND.rz, 0));
+  h = Math.min(h, carve(ground, -3.5, (e - 1) * POND.rz, 0, undefined, POND_LEVEL));
   // The mill race: a wadeable ditch from the pond's south-west shore to the saw hall.
   if (x >= 143 && x <= 147 && z >= 60 && z <= 75) h = Math.min(h, -1.3);
   return r2(h);
