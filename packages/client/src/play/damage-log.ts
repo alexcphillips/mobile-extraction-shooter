@@ -1,4 +1,4 @@
-import { ZONE_NAMES, type DamageEvent } from '@mes/shared';
+import { TICK_RATE, ZONE_NAMES, type DamageEvent } from '@mes/shared';
 
 /**
  * What hurt you in a raid, for the results screen after a death: one row per enemy and
@@ -107,6 +107,18 @@ export interface FightHit {
   absorbed: number;
   /** Their hit that killed you. */
   killing?: true;
+  /** Metres between shooter and target, when it landed (2026-11-11). */
+  distance?: number;
+  /** The shooter's gun (or knife) and the round, item ids, when known (2026-11-11). */
+  weapon?: string;
+  ammo?: string;
+}
+
+/** What logFight can't see in a DamageEvent: how far, and with what. */
+export interface FightInfo {
+  distance?: number;
+  weapon?: string;
+  ammo?: string;
 }
 
 export type FightLog = FightHit[];
@@ -115,7 +127,13 @@ export type FightLog = FightHit[];
 const FIGHT_CAP = 500;
 
 /** Records a hit between you and someone else; falls and your own grenade aren't a fight. */
-export function logFight(log: FightLog, e: DamageEvent, you: number, tick: number): void {
+export function logFight(
+  log: FightLog,
+  e: DamageEvent,
+  you: number,
+  tick: number,
+  info?: FightInfo,
+): void {
   const dealt = e.by === you;
   if (dealt === (e.target === you) || e.by === 0) return;
   // A hit doing nothing (a body already dead, a tutorial dummy) isn't part of it.
@@ -145,6 +163,7 @@ export function logFight(log: FightLog, e: DamageEvent, you: number, tick: numbe
     hits: 1,
     damage: e.amount,
     absorbed: e.absorbed,
+    ...info,
   });
   if (log.length > FIGHT_CAP) log.shift();
 }
@@ -163,6 +182,24 @@ export function logKillingHit(log: FightLog, other: number): void {
 /** The fight with one enemy, newest hit first. */
 export const fightWith = (log: FightLog, other: number): FightHit[] =>
   log.filter((h) => h.other === other).reverse();
+
+/** Hits more than 30 s apart are separate fights. */
+export const COMBAT_GAP_TICKS = 30 * TICK_RATE;
+
+/**
+ * The latest fight, with everyone in it, newest hit first (2026-11-11): back from the last
+ * hit while each is within COMBAT_GAP_TICKS of the one after it.
+ */
+export function lastCombat(log: FightLog, gap = COMBAT_GAP_TICKS): FightHit[] {
+  const out: FightHit[] = [];
+  for (let i = log.length - 1; i >= 0; i--) {
+    const h = log[i]!;
+    const next = out[out.length - 1];
+    if (next && next.tick - h.tick > gap) break;
+    out.push(h);
+  }
+  return out;
+}
 
 /** One row: "You shot Scav · head, chest ×2 · 48 · armour took 12". */
 export function describeFightHit(h: FightHit, name: string): string {

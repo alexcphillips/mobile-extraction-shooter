@@ -150,6 +150,7 @@ import { buildDebug } from '../render/debug';
 import {
   fightWith,
   fireKey,
+  lastCombat,
   logBleed,
   logBurn,
   logFight,
@@ -157,6 +158,7 @@ import {
   logKiller,
   logKillingHit,
   type DamageLog,
+  type FightInfo,
   type FightLog,
 } from './damage-log';
 import { CapsuleBody } from '../render/capsule-body';
@@ -1061,6 +1063,23 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const hits = killerId ? fightWith(fight, killerId) : [];
     return hits.length ? { name: names.get(killerId) ?? 'Someone', hits } : undefined;
   };
+  /** The latest fight, everyone in it, newest hit first, each with the other's name. */
+  const combatOf = (): NonNullable<RaidResult['combat']> =>
+    lastCombat(fight).map((h) => ({ ...h, name: names.get(h.other) ?? 'Someone' }));
+  /** How far apart, and the shooter's gun and round (or knife), as a hit lands. */
+  const fightInfo = (e: { by: number; target: number; cause: string }): FightInfo => {
+    const from = sim.entities.find((c) => c.id === e.by);
+    const to = sim.entities.find((c) => c.id === e.target);
+    const info: FightInfo = {};
+    if (from && to) info.distance = Math.hypot(from.x - to.x, from.y - to.y, from.z - to.z);
+    if (from && e.cause === 'melee' && from.gear.knife) info.weapon = from.gear.knife.item;
+    const gun = from && e.cause === 'shot' ? heldWeapon(from) : null;
+    if (gun) {
+      info.weapon = gun.item;
+      info.ammo = loadedAmmo(items, gun);
+    }
+    return info;
+  };
   function endRaid(how: LeaveReason | 'killed', detail: string, now: number, place?: string): void {
     if (ended) return;
     el.hitDirection.clear();
@@ -1148,6 +1167,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       ],
       taken,
       fight: fightOf(),
+      ...(how === 'killed' ? { combat: combatOf(), killedBy: killedBy ?? detail } : {}),
       keptAll: keepAll,
     };
     // Sent now, as it is: the server keeps what the outcome allows.
@@ -1614,7 +1634,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
           const by = e.by === player.id ? 'Your own grenade' : names.get(e.by);
           lastHit = logHit(taken, e, by ?? 'Someone');
         }
-        logFight(fight, e, player.id, sim.tick);
+        // Only yours, either way: the lookups are for those (logFight checks the rest).
+        if ((e.by === player.id) !== (e.target === player.id) && e.by !== 0)
+          logFight(fight, e, player.id, sim.tick, fightInfo(e));
       } else if (e.type === 'death' && e.by === player.id && e.target !== player.id) {
         kills++;
         killList.push({ name: names.get(e.target) ?? 'Unknown', tick: sim.tick });

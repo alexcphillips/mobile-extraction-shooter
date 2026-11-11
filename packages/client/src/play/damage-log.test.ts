@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { CHEST, HEAD, LEFT_LEG, type DamageEvent } from '@mes/shared';
+import { CHEST, HEAD, LEFT_LEG, TICK_RATE, type DamageEvent } from '@mes/shared';
 import {
   describeFightHit,
   describeSource,
   fightWith,
+  lastCombat,
   logBleed,
   logFight,
   logHit,
@@ -64,5 +65,22 @@ describe('the fight log', () => {
       'You shot Jug · chest · 30',
     ]);
     expect(rows.map((h) => !!h.killing)).toEqual([true, false, false]);
+  });
+
+  it('keeps the latest fight with everyone in it, and how far and with what', () => {
+    const log: FightLog = [];
+    const s = (n: number) => n * TICK_RATE;
+    logFight(log, at(1, 5, CHEST, 10), 1, s(10)); // an old fight
+    logFight(log, at(7, 1, HEAD, 30), 1, s(100), { distance: 12 }); // you hit a Scav
+    logFight(log, at(1, 7, LEFT_LEG, 5), 1, s(120));
+    logFight(log, at(1, 5, HEAD, 60), 1, s(140), { distance: 38, weapon: 'm416', ammo: 'x' });
+    const rows = lastCombat(log);
+    expect(rows.map((h) => [h.other, h.dealt])).toEqual([
+      [5, false],
+      [7, false],
+      [7, true],
+    ]);
+    expect(rows[0]).toMatchObject({ distance: 38, weapon: 'm416', ammo: 'x' });
+    expect(rows[2]!.distance).toBe(12);
   });
 });

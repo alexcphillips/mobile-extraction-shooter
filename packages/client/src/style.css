@@ -2840,6 +2840,179 @@ body:has(#raid:not([hidden])) #vitals {
   font-variant-numeric: tabular-nums;
 }
 
+/*
+ * The defeat screen (2026-11-11): the victory screen's bar and big numbers, with the last
+ * fight beside them in place of you. Taken hits red, ghost on the left; dealt light grey,
+ * mirrored. The list scrolls inside its column, so the screen itself doesn't.
+ */
+.defeat .victory-bar h1 {
+  color: #ff6b5a;
+}
+
+.defeat-combat {
+  display: flex;
+  flex: 1 1 45%;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  min-height: 0;
+  padding: 8px 0 8px 8px;
+}
+
+.defeat-combat ol {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 2px 0 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.results .combat-row {
+  --hit: #ff5a48;
+  --ghost: rgb(255 90 72 / 0.3);
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 10px;
+  border: 1px solid rgb(229 83 63 / 0.35);
+  border-radius: 4px;
+  background: linear-gradient(to right, rgb(229 83 63 / 0.22), rgb(229 83 63 / 0.08));
+}
+
+.results .combat-row.killing {
+  border-color: #e5533f;
+  background: linear-gradient(to right, rgb(229 83 63 / 0.4), rgb(229 83 63 / 0.14));
+}
+
+.results .combat-row.dealt {
+  --hit: #fff;
+  --ghost: rgb(200 208 214 / 0.35);
+  flex-direction: row-reverse;
+  border-color: rgb(255 255 255 / 0.12);
+  background: linear-gradient(to left, rgb(214 220 225 / 0.16), rgb(214 220 225 / 0.06));
+}
+
+.combat-body {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.dealt .combat-body {
+  flex-direction: row-reverse;
+}
+
+.combat-ghost {
+  width: 22px;
+  height: 41px;
+  flex: none;
+}
+
+.combat-ghost > * {
+  fill: var(--ghost);
+}
+
+.combat-ghost > .on {
+  fill: var(--hit);
+}
+
+.combat-damage {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dealt .combat-damage {
+  align-items: flex-end;
+}
+
+.combat-damage b {
+  font-size: 15px;
+  color: var(--hit);
+}
+
+.combat-damage small {
+  color: var(--ui-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.combat-armour {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #b9c3ca;
+  font-size: 12px;
+}
+
+.combat-armour svg {
+  width: 13px;
+  height: 13px;
+}
+
+.combat-who {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 0;
+  text-align: right;
+}
+
+.dealt .combat-who {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.combat-who > * {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.combat-name {
+  font-size: 14px;
+}
+
+.combat-fatal {
+  color: #ff6b5a;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.combat-with,
+.combat-from {
+  color: #b9c3ca;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A portrait phone: the numbers above, the fight below taking what height is left. */
+@media (max-width: 640px) {
+  .defeat .victory-main {
+    flex-direction: column;
+  }
+
+  .defeat .victory-stats {
+    flex: none;
+    gap: 10px;
+    padding: 10px 4px;
+  }
+
+  .defeat-combat {
+    flex: 1 1 auto;
+    padding: 0 0 8px;
+  }
+}
+
 /* An item as a small card (ui/item-tile.tsx): results, quest rewards. */
 .item-tile {
   display: flex;

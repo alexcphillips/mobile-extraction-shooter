@@ -1,4 +1,5 @@
 import {
+  HEAD,
   isMoney,
   itemDef,
   raidGains,
@@ -8,6 +9,7 @@ import {
   type Item,
   type ItemDb,
   type LeaveReason,
+  ZONE_NAMES,
 } from '@mes/shared';
 import { useEffect, useState, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -70,6 +72,12 @@ export interface RaidResult {
   quests: { quest: string; text: string }[];
   /** What hurt you during the raid, shown after a death. */
   taken: DamageLog;
+  /**
+   * After a death (2026-11-11): the latest fight, everyone in it both ways, newest hit
+   * first, each with the other's name; and what killed you ("Scav", "Bled out").
+   */
+  combat?: (FightHit & { name: string })[];
+  killedBy?: string;
   /** The fight with the enemy that killed you, newest hit first, if one did (2026-11-10). */
   fight?: { name: string; hits: FightHit[] } | undefined;
   /** Everything kept: extracted, or the keep-gear admin cheat. */
@@ -293,6 +301,91 @@ function Sheet({
 
 const money = (n: number): string => `$${n.toLocaleString()}`;
 
+/** A big number with its label, and beside it the button for its list (none: greyed). */
+function BigStat({
+  label,
+  value,
+  className = '',
+  more,
+  none,
+  onMore,
+}: {
+  label: string;
+  value: ReactNode;
+  className?: string;
+  more: string;
+  none: string;
+  onMore: (() => void) | null;
+}) {
+  return (
+    <section className="victory-stat">
+      <span className="victory-label">{label}</span>
+      <div className="victory-row">
+        <b className={`victory-big ${className}`}>{value}</b>
+        <button
+          className="victory-more"
+          disabled={!onMore}
+          aria-label={onMore ? more : none}
+          title={onMore ? more : none}
+          onClick={onMore ?? undefined}
+        >
+          <RowsIcon />
+        </button>
+      </div>
+    </section>
+  );
+}
+
+/** The value sheet: found-in-raid items you kept, dearest first. */
+function ValueSheet({
+  title,
+  items,
+  gains,
+  total,
+  onClose,
+}: {
+  title: string;
+  items: ItemDb;
+  gains: ReturnType<typeof raidGains>;
+  total: number;
+  onClose: () => void;
+}) {
+  return (
+    <Sheet title={`${title} · ${money(total)}`} onClose={onClose}>
+      <ul className="victory-list">
+        {gains.map((g) => (
+          <li key={g.id}>
+            <span>
+              {itemDef(items, g.id).name}
+              {g.count > 1 && !isMoney(items, g.id) && (
+                <span className="results-count"> ×{g.count}</span>
+              )}
+            </span>
+            <span className="gain">{money(g.price)}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="results-note">Found in raid, at vendor prices (cash at its full value).</p>
+    </Sheet>
+  );
+}
+
+/** The kills sheet: who, and when in the raid. */
+function KillsSheet({ kills, onClose }: { kills: RaidKill[]; onClose: () => void }) {
+  return (
+    <Sheet title={`Kills · ${kills.length}`} onClose={onClose}>
+      <ol className="victory-list">
+        {kills.map((k, i) => (
+          <li key={i}>
+            <span>{k.name}</span>
+            <span className="results-count">{clock(k.tick / TICK_RATE)}</span>
+          </li>
+        ))}
+      </ol>
+    </Sheet>
+  );
+}
+
 /**
  * A successful extract (2026-11-11): a thin bar with the map, extraction point and time;
  * then what you came out with that you didn't bring in, in big numbers, and your kills,
@@ -336,36 +429,21 @@ function Victory({
       </header>
       <div className="victory-main">
         <div className="victory-stats">
-          <section className="victory-stat">
-            <span className="victory-label">Extracted value</span>
-            <div className="victory-row">
-              <b className="victory-big gain">{money(total)}</b>
-              <button
-                className="victory-more"
-                disabled={!gains.length}
-                aria-label={gains.length ? 'View details' : 'Nothing found in raid'}
-                title={gains.length ? 'View details' : 'Nothing found in raid'}
-                onClick={() => setSheet('value')}
-              >
-                <RowsIcon />
-              </button>
-            </div>
-          </section>
-          <section className="victory-stat">
-            <span className="victory-label">Kills</span>
-            <div className="victory-row">
-              <b className="victory-big">{result.kills}</b>
-              <button
-                className="victory-more"
-                disabled={!kills.length}
-                aria-label={kills.length ? 'View kills' : 'No kills'}
-                title={kills.length ? 'View kills' : 'No kills'}
-                onClick={() => setSheet('kills')}
-              >
-                <RowsIcon />
-              </button>
-            </div>
-          </section>
+          <BigStat
+            label="Extracted value"
+            value={money(total)}
+            className="gain"
+            more="View details"
+            none="Nothing found in raid"
+            onMore={gains.length ? () => setSheet('value') : null}
+          />
+          <BigStat
+            label="Kills"
+            value={result.kills}
+            more="View kills"
+            none="No kills"
+            onMore={kills.length ? () => setSheet('kills') : null}
+          />
           {result.quests.length > 0 && (
             <ul className="victory-quests">
               {result.quests.map((q, i) => (
@@ -386,35 +464,184 @@ function Victory({
         </button>
       </footer>
       {sheet === 'value' && (
-        <Sheet title={`Extracted value · ${money(total)}`} onClose={close}>
-          <ul className="victory-list">
-            {gains.map((g) => (
-              <li key={g.id}>
-                <span>
-                  {itemDef(items, g.id).name}
-                  {g.count > 1 && !isMoney(items, g.id) && (
-                    <span className="results-count"> ×{g.count}</span>
-                  )}
-                </span>
-                <span className="gain">{money(g.price)}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="results-note">Found in raid, at vendor prices (cash at its full value).</p>
-        </Sheet>
+        <ValueSheet
+          title="Extracted value"
+          items={items}
+          gains={gains}
+          total={total}
+          onClose={close}
+        />
       )}
-      {sheet === 'kills' && (
-        <Sheet title={`Kills · ${kills.length}`} onClose={close}>
-          <ol className="victory-list">
-            {kills.map((k, i) => (
-              <li key={i}>
-                <span>{k.name}</span>
-                <span className="results-count">{clock(k.tick / TICK_RATE)}</span>
-              </li>
-            ))}
-          </ol>
-        </Sheet>
+      {sheet === 'kills' && <KillsSheet kills={kills} onClose={close} />}
+    </div>
+  );
+}
+
+const HELMET_PATH = 'M3 15a9 9 0 0 1 18 0v2H3z M2 17h20v2H2z';
+const VEST_PATH = 'M7 2h3l2 3 2-3h3l2 4v15H5V6z';
+
+/**
+ * A front-on body, one shape per zone in Health's order, facing you (its left on your
+ * right), as the HUD's: the zones a hit landed on lit.
+ */
+function Ghost({ zones }: { zones: readonly string[] }) {
+  const on = (z: number): string => (zones.includes(ZONE_NAMES[z]!) ? 'on' : '');
+  return (
+    <svg className="combat-ghost" viewBox="16 0 32 60" aria-hidden="true">
+      <circle className={on(0)} cx="32" cy="6" r="5" />
+      <rect className={on(1)} x="26" y="13" width="12" height="19" rx="1.5" />
+      <rect className={on(2)} x="39.5" y="13" width="4.5" height="19" rx="1.5" />
+      <rect className={on(3)} x="20" y="13" width="4.5" height="19" rx="1.5" />
+      <rect className={on(4)} x="32.5" y="33.5" width="5.5" height="26" rx="1.5" />
+      <rect className={on(5)} x="26" y="33.5" width="5.5" height="26" rx="1.5" />
+    </svg>
+  );
+}
+
+/**
+ * One hit of the last fight (2026-11-11). Taken (red): the body you were hit on, the HP and
+ * what armour took on the left; who, from how far (and, the fatal one, with what) on the
+ * right. Dealt (grey): mirrored, with who you hit and from how far on the left.
+ */
+function CombatRow({ hit, items }: { hit: FightHit & { name: string }; items: ItemDb }) {
+  const metres = hit.distance === undefined ? '—' : `${Math.round(hit.distance)}m`;
+  const helmet = hit.zones.length === 1 && hit.zones[0] === ZONE_NAMES[HEAD];
+  const name = (id: string | undefined): string | null =>
+    id && items.has(id) ? itemDef(items, id).name : null;
+  const gun = hit.killing ? name(hit.weapon) : null;
+  const round = hit.killing ? name(hit.ammo) : null;
+  return (
+    <li className={`combat-row ${hit.dealt ? 'dealt' : 'taken'}${hit.killing ? ' killing' : ''}`}>
+      <div className="combat-body">
+        <Ghost zones={hit.zones} />
+        <div className="combat-damage">
+          <b>
+            −{Math.round(hit.damage)}
+            {hit.hits > 1 && <small> ×{hit.hits}</small>}
+          </b>
+          {hit.absorbed >= 1 && (
+            <span className="combat-armour" title={helmet ? 'Helmet' : 'Armour'}>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor" d={helmet ? HELMET_PATH : VEST_PATH} />
+              </svg>
+              −{Math.round(hit.absorbed)}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="combat-who">
+        <b className="combat-name">
+          {hit.name}
+          {hit.killing && <span className="combat-fatal"> · fatal</span>}
+        </b>
+        {gun && (
+          <span className="combat-with">
+            With: {gun}
+            {round && ` | ${round}`}
+          </span>
+        )}
+        <span className="combat-from">
+          {hit.dealt ? 'Hits' : 'From'}: {metres}
+        </span>
+      </div>
+    </li>
+  );
+}
+
+/**
+ * A death in a raid (2026-11-11): a red bar with the map, what killed you and the time;
+ * what you found and kept (the vault's), in big numbers, and your kills, each with a list
+ * behind a button; beside them the last fight, hit by hit both ways, the fatal one first.
+ */
+function Defeat({
+  result,
+  items,
+  onNext,
+}: {
+  result: RaidResult;
+  items: ItemDb;
+  onNext: () => void;
+}) {
+  const [sheet, setSheet] = useState<'value' | 'kills' | null>(null);
+  const [gains] = useState(() => raidGains(items, result.kept).sort((a, b) => b.price - a.price));
+  const total = gains.reduce((n, g) => n + g.price, 0);
+  const kills = result.killList ?? [];
+  const combat = result.combat ?? [];
+  const close = (): void => setSheet(null);
+  return (
+    <div className="results killed victory defeat">
+      <header className="victory-bar">
+        <h1>Extraction failed</h1>
+        <dl className="victory-facts">
+          <div>
+            <dt>Map</dt>
+            <dd>{result.map ?? '—'}</dd>
+          </div>
+          <div>
+            <dt>Killed by</dt>
+            <dd>{result.killedBy ?? result.detail}</dd>
+          </div>
+          <div>
+            <dt>Duration</dt>
+            <dd>{clock(result.seconds)}</dd>
+          </div>
+        </dl>
+      </header>
+      <div className="victory-main">
+        <div className="victory-stats">
+          <BigStat
+            label="Match total"
+            value={money(total)}
+            className="gain"
+            more="View details"
+            none="Nothing found in raid kept"
+            onMore={gains.length ? () => setSheet('value') : null}
+          />
+          <BigStat
+            label="Kills"
+            value={result.kills}
+            more="View kills"
+            none="No kills"
+            onMore={kills.length ? () => setSheet('kills') : null}
+          />
+          {result.quests.length > 0 && (
+            <ul className="victory-quests">
+              {result.quests.map((q, i) => (
+                <li key={i}>
+                  ✓ {q.text} <span className="results-count">· {q.quest}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <section className="defeat-combat" aria-label="Last fight">
+          <span className="victory-label">Last fight</span>
+          {combat.length ? (
+            <ol>
+              {combat.map((h, i) => (
+                <CombatRow key={i} hit={h} items={items} />
+              ))}
+            </ol>
+          ) : (
+            <p className="results-empty">No one hit you, and you hit no one.</p>
+          )}
+        </section>
+      </div>
+      <footer className="victory-foot">
+        <button className="primary results-continue" onClick={onNext}>
+          Continue
+        </button>
+      </footer>
+      {sheet === 'value' && (
+        <ValueSheet
+          title="Match total"
+          items={items}
+          gains={gains}
+          total={total}
+          onClose={close}
+        />
       )}
+      {sheet === 'kills' && <KillsSheet kills={kills} onClose={close} />}
     </div>
   );
 }
@@ -433,6 +660,8 @@ function Results({
   if (result.tutorial) return <TutorialResults result={result} onNext={onNext} />;
   if (result.how === 'extracted' && result.player)
     return <Victory result={result} player={result.player} items={items} onNext={onNext} />;
+  if (result.how === 'killed' && result.combat)
+    return <Defeat result={result} items={items} onNext={onNext} />;
   const survived = result.how === 'extracted';
   // Cash you kept goes into your money when the server has the result (session 13b).
   const cash = result.kept.reduce(

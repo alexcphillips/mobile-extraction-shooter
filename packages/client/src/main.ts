@@ -86,6 +86,10 @@ if (import.meta.env.DEV && new URLSearchParams(location.search).has('victory'))
   void import('./ui/results-preview')
     .then((m) => m.previewVictory(byId('results')))
     .catch((err: unknown) => console.error('victory preview failed', err));
+if (import.meta.env.DEV && new URLSearchParams(location.search).has('defeat'))
+  void import('./ui/results-preview')
+    .then((m) => m.previewDefeat(byId('results')))
+    .catch((err: unknown) => console.error('defeat preview failed', err));
 unlockAudioOnTap();
 reloadOnStaleBuild();
 preventZoom();
