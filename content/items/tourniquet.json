@@ -1,8 +1,8 @@
 {
   "formatVersion": 10,
   "id": "tourniquet",
-  "name": "Tourniquet",
-  "shortName": "Tourniq",
+  "name": "CAT tourniquet",
+  "shortName": "CAT",
   "type": "med",
   "size": [1, 1],
   "value": 1000,

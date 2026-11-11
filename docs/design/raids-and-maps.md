@@ -11,7 +11,7 @@ Part of the [design.md index](../design.md). Record decisions here, in the topic
 - On slopes, buildings sit on a concrete base that fills the gap down to the ground.
 - **Stairs and ladders** work for players. AI uses stairs and slopes, but never ladders.
 - **Key rooms:** locked doors that open with key items.
-- **Named zones** (for example "Science lab" or "Gas station") are drawn in the editor and used for map labels and loot weighting.
+- **Named zones** (for example "Science lab" or "Gas station") are drawn in the editor and used for map labels; a zone with `extraction` is an extraction point. **They don't weight loot** (the user's call, 2026-11-11): every loot spot and container already names its own table or mix, and prefab loot groups handle "one of these", so a zone multiplier would only hide changes from the spot.
 - **Loot:** containers (backpacks, desks, cabinets…) and loose item spawn points each reference a loot table ("household", "academic", "medical", "military", …). Everything is rolled once when the raid starts.
   - **Loose spawns (session 11b):** a loose spot holds **one item** from its table (the table's item count is for containers), and has a **chance** of holding anything at all (1 if not given), so loose loot isn't in the same places every raid. The small house's table spot is 0.7.
   - **One of several spots (2026-10-30, for the mall's keys):** loose spots that share a `oneOf` name are a set, and only one of them, picked at random, is used each raid (it then rolls its chance as usual). For an item that must be somewhere but not always in the same place, like a key, without making every spot roll it.

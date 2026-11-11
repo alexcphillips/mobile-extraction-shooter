@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "trauma-bay",
   "name": "Trauma bay",
-  "blurb": "Makes medkits and surgery kits from medical loot.",
+  "blurb": "Makes medkits and field surgery kits from medical loot.",
   "order": 3,
   "levels": [
     {
@@ -30,7 +30,7 @@
           "count": 1
         }
       ],
-      "unlocks": "Surgery kits"
+      "unlocks": "Field surgery kits"
     }
   ]
 }

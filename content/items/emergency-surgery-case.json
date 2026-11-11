@@ -1,0 +1,19 @@
+{
+  "formatVersion": 10,
+  "id": "emergency-surgery-case",
+  "name": "Emergency surgery case",
+  "type": "med",
+  "size": [2, 1],
+  "value": 1000,
+  "rarity": "epic",
+  "effect": "bandage",
+  "useTime": 5,
+  "sounds": {
+    "use": "bandage-use"
+  },
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#b04848" }]
+  },
+  "shortName": "Surgery case",
+  "uses": 6
+}

@@ -17,7 +17,7 @@ import {
 import { coloursOf } from './palette';
 import { dragged, mirrored, repeated } from './reticle-edit';
 import { storageRisks } from './risk';
-import { ITEM_TYPES, blankItem } from './templates';
+import { ITEM_TYPES, blankItem, retype } from './templates';
 
 /** The content items with one changed, as a fresh database. */
 function edited(id: string, change: (d: Record<string, unknown>) => void): Map<string, ItemDef> {
@@ -33,6 +33,14 @@ describe('item editor', () => {
     const doc = blankItem(type, 'new-thing', 'New thing', 'ammo-9mm');
     expect(() => loadContent(ITEM_FORMAT, structuredClone(doc), 'new')).not.toThrow();
     expect(Object.keys(doc).slice(0, 4)).toEqual(['formatVersion', 'id', 'name', 'type']);
+  });
+
+  it('turns loot into a med, keeping what every type has and its model', () => {
+    const kit = loadItems().get('basic-surgery-kit')!;
+    const med = retype({ ...kit, type: 'loot' } as typeof kit, 'med');
+    expect(() => loadContent(ITEM_FORMAT, structuredClone(med), 'med')).not.toThrow();
+    expect(med).toMatchObject({ type: 'med', name: kit.name, value: kit.value, model: kit.model });
+    expect(med).toHaveProperty('effect');
   });
 
   it('finds nothing wrong with the content as it is', () => {
@@ -53,14 +61,20 @@ describe('item editor', () => {
     expect(itemContentProblem(notAKey)).toMatch(/door .* not a key item/);
     // A new player carries a field first aid kit.
     const hugeMedkit = edited('field-first-aid-kit', (d) => (d.size = [5, 5]));
-    expect(itemContentProblem(hugeMedkit)).toMatch(/kit new-player: no room to carry "field-first-aid-kit"/);
+    expect(itemContentProblem(hugeMedkit)).toMatch(
+      /kit new-player: no room to carry "field-first-aid-kit"/,
+    );
   });
 
   it('lists where content names an item', () => {
     const items = loadItems();
     expect(itemUses('front-door-key', items)).toContain('door front-door on tutorial');
     expect(itemUses('ammo-9mm', items)).toEqual(
-      expect.arrayContaining(['m9a3 fires it', 'vendor guns-ammo-vendor', 'starting kit new-player']),
+      expect.arrayContaining([
+        'm9a3 fires it',
+        'vendor guns-ammo-vendor',
+        'starting kit new-player',
+      ]),
     );
     expect(itemUses('akm', items)).toEqual(
       expect.arrayContaining(['scope-4x fits it', 'loadout scav-kit']),

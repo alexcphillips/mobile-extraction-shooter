@@ -135,3 +135,18 @@ export const BLANK_OPTIC = {
   zoom: 1,
   reticle: { colour: '#ff3b30', shapes: [{ type: 'dot' as const, x: 0, y: 0, r: 0.8 }] },
 };
+
+/** What an item keeps when its type changes: what every type has, and its model. */
+const KEPT_ON_RETYPE = ['name', 'shortName', 'size', 'value', 'rarity', 'view', 'model'] as const;
+
+/**
+ * The item as another type (2026-11-11, for loot that should have been a med): the new
+ * type's blank stats and default sounds, keeping its name, size, value, rarity, view and
+ * model. What only the old type had (a loot category, a gun's stats) is dropped.
+ */
+export function retype(def: ItemDef, type: ItemType, ammo = ''): ItemDef {
+  const out = blankItem(type, def.id, def.name, ammo) as unknown as Record<string, unknown>;
+  const was = def as unknown as Record<string, unknown>;
+  for (const k of KEPT_ON_RETYPE) if (was[k] !== undefined) out[k] = was[k];
+  return out as unknown as ItemDef;
+}

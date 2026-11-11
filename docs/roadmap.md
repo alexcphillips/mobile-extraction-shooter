@@ -39,7 +39,7 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
 
 - [ ] **19b. The first real map.**
   - Claude drafts a one-page brief (points of interest, extractions, routes, key rooms) and a rough first version as data; the user reshapes it in the map editor, and Claude fixes the editor where it gets in the way (the user's call, 2026-10-30).
-  - What the map needs that isn't built: loot weighted by zone, enemy spawns kept away from the player's spawn, doors fitted into a wall's gap, **vaulting through standard-height windows** (design.md → Movement; the user's request, 2026-10-30: a simple scripted move, no complicated animation).
+  - What the map needs that isn't built: enemy spawns kept away from the player's spawn, doors fitted into a wall's gap, **vaulting through standard-height windows** (design.md → Movement; the user's request, 2026-10-30: a simple scripted move, no complicated animation).
 - [ ] **19c. The first content set.**
   - Items, prefabs, loot tables, enemies and a boss, quests and vendors, fitted to the map.
 - [ ] **20. Polish and v1 release.**

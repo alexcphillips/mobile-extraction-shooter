@@ -294,18 +294,24 @@ function ItemPage(props: { editor: ItemEditor; state: ItemEditorState; def: Item
     <main className="ie-main">
       <section className="ed-inspector ie-form">
         <h3>{def.name}</h3>
-        <p className="ed-note">
-          content/items/{def.id}.json · {def.type}
-        </p>
+        <p className="ed-note">content/items/{def.id}.json</p>
+        <label
+          className="ed-field"
+          title="Keeps its name, size, value, rarity and model; the rest starts from the new type's blank"
+        >
+          type
+          <select value={def.type} onChange={(e) => editor.changeType(e.target.value as ItemType)}>
+            {ITEM_TYPES.map((t) => (
+              <option key={t}>{t}</option>
+            ))}
+          </select>
+        </label>
         <Text label="name" value={def.name} onChange={(v) => b.edit((d) => put(d, ['name'], v))} />
         <Text
           label="short name (on its tile)"
           value={def.shortName ?? ''}
           placeholder={def.name}
-          maxLength={12}
-          onChange={(v) =>
-            b.edit((d) => put(d, ['shortName'], v.trim() ? v.slice(0, 12) : undefined))
-          }
+          onChange={(v) => b.edit((d) => put(d, ['shortName'], v.trim() ? v : undefined))}
         />
         <h4>in the inventory</h4>
         <Row>

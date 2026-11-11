@@ -128,7 +128,7 @@ const common = {
    * What its tile says, where the name won't fit (2026-11-06, as Tarkov's short names):
    * "5.56 M855", "Band.". The details and hover card keep the name. The name if left out.
    */
-  shortName: z.string().min(1).max(12).optional(),
+  shortName: z.string().min(1).optional(),
   /** Its size in an inventory grid, [width, height] in cells, unrotated. */
   size: sizeSchema,
   /**

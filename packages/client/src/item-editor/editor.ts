@@ -1,7 +1,7 @@
 import { ITEM_FORMAT, loadContent, type ItemDb, type ItemDef } from '@mes/shared';
 import { itemContentProblem } from '../content';
 import { storageRisks } from './risk';
-import { blankItem, type ItemType } from './templates';
+import { blankItem, retype, type ItemType } from './templates';
 
 /** Every item file's JSON by item id. */
 type Files = ReadonlyMap<string, string>;
@@ -124,6 +124,21 @@ export class ItemEditor {
 
   endGesture(): void {
     this.gesture = false;
+  }
+
+  /** Turns the current item into another type (see retype), as one undo step. */
+  changeType(type: ItemType): void {
+    // From its file, not the item list, so an item that doesn't validate yet can change too.
+    const file = this.files.get(this.state.current);
+    if (file === undefined) return;
+    const def = JSON.parse(file) as ItemDef;
+    if (def.type === type) return;
+    const ammo = [...this.state.items.values()].find((d) => d.type === 'ammo')?.id;
+    const next = retype(def, type, ammo) as unknown as Doc;
+    this.edit((doc) => {
+      for (const k of Object.keys(doc)) delete doc[k];
+      Object.assign(doc, next);
+    });
   }
 
   /** Makes a new item, blank or (with `from`) a copy of another, and opens it. */

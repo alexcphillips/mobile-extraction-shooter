@@ -184,5 +184,6 @@
     ]
   },
   "hp": 400,
-  "bleedCost": 30
+  "bleedCost": 25,
+  "shortName": "Med crate"
 }

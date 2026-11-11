@@ -1,0 +1,19 @@
+{
+  "formatVersion": 10,
+  "id": "basic-surgery-kit",
+  "name": "Basic surgery kit",
+  "type": "med",
+  "size": [1, 1],
+  "value": 1000,
+  "rarity": "common",
+  "effect": "surgery",
+  "useTime": 10,
+  "sounds": {
+    "use": "med-use"
+  },
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "colour": "#a08a40" }]
+  },
+  "shortName": "Basic surgery",
+  "uses": 2
+}
