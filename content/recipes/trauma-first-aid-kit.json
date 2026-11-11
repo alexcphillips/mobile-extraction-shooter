@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "trauma-first-aid-kit",
+  "module": "trauma-bay",
+  "level": 1,
+  "inputs": [
+    { "item": "bandage", "count": 2 },
+    { "item": "duct-tape", "count": 1 }
+  ],
+  "output": { "item": "field-first-aid-kit" },
+  "minutes": 20
+}

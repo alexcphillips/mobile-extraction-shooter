@@ -1,0 +1,36 @@
+{
+  "formatVersion": 1,
+  "id": "munitions-bench",
+  "name": "Munitions bench",
+  "blurb": "Turns loot into rounds, magazines and weapon attachments.",
+  "order": 1,
+  "levels": [
+    {
+      "cost": [
+        {
+          "item": "bandage",
+          "count": 1
+        }
+      ],
+      "unlocks": "Basic rounds and magazines"
+    },
+    {
+      "cost": [
+        {
+          "item": "bandage",
+          "count": 1
+        }
+      ],
+      "unlocks": "Better rounds and attachments"
+    },
+    {
+      "cost": [
+        {
+          "item": "bandage",
+          "count": 1
+        }
+      ],
+      "unlocks": "Top-tier rounds"
+    }
+  ]
+}

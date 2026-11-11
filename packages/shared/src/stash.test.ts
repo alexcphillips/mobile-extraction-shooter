@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { loadContent } from './content/format';
 import { STARTING_KIT_FORMAT } from './content/starting-kits';
-import { addItem, countOf } from './inventory/grid';
+import { addItem, countOf, createGrid } from './inventory/grid';
 import {
   PROFILE,
   PROFILE_FORMAT,
@@ -10,6 +10,9 @@ import {
   itemGained,
   newProfile,
   nextPagePrice,
+  nextPageQuarters,
+  settleHangarSpace,
+  QUARTERS,
   type Profile,
 } from './profile';
 import { createItem } from './sim/create-item';
@@ -229,6 +232,7 @@ describe('the stash', () => {
   it('sends a double-tap to the page shown, then the others', () => {
     const p = profile();
     p.money = PROFILE.pagePrices[0];
+    p.hangar[QUARTERS] = 1;
     expect(buyStashPage(p)).toBeNull();
     const s = openStash(p);
     // Page 2 shown and full: the helmet goes to page 1.
@@ -247,7 +251,7 @@ describe('the stash', () => {
     const n = p.gear.pockets.items[rounds]!.item.count;
     p.stash[1]!.items.push({
       x: PROFILE.stash[0] - 1,
-      y: 29,
+      y: PROFILE.stash[1] - 1,
       rotated: false,
       item: createItem(items, 'round', 40),
     });
@@ -278,6 +282,7 @@ describe('the stash', () => {
   it('moves part of a stack by double-tap, on to the next page when one is full', () => {
     const p = profile();
     p.money = PROFILE.pagePrices[0];
+    p.hangar[QUARTERS] = 1;
     expect(buyStashPage(p)).toBeNull();
     const s = openStash(p);
     // Page 2 full, with room for 10 more rounds on its last stack.
@@ -285,7 +290,7 @@ describe('the stash', () => {
     p.stash[1]!.items.splice(-1, 1);
     p.stash[1]!.items.push({
       x: PROFILE.stash[0] - 1,
-      y: 29,
+      y: PROFILE.stash[1] - 1,
       rotated: false,
       item: createItem(items, 'round', 90),
     });
@@ -374,17 +379,36 @@ describe('stash pages', () => {
   it('cost money, one after another, up to the last', () => {
     const p = profile();
     expect(nextPagePrice(p)).toBe(PROFILE.pagePrices[0]);
-    expect(buyStashPage(p)).toMatch(/costs/);
-    expect(p.stash).toHaveLength(1);
     p.money = PROFILE.pagePrices.reduce((a, b) => a + b, 0) + 5;
-    for (let i = 0; i < PROFILE.pagePrices.length; i++) expect(buyStashPage(p)).toBeNull();
+    // Each needs Quarters a level higher (H4).
+    expect(nextPageQuarters(p)).toBe(1);
+    expect(buyStashPage(p)).toMatch(/Quarters at level 1/);
+    expect(p.stash).toHaveLength(1);
+    for (let i = 0; i < PROFILE.pagePrices.length; i++) {
+      p.hangar[QUARTERS] = i + 1;
+      expect(buyStashPage(p)).toBeNull();
+      expect(buyStashPage(p)).toMatch(new RegExp(`level ${i + 2}|every page`));
+    }
     expect(p.stash).toHaveLength(PROFILE.pagePrices.length + 1);
     expect(p.money).toBe(5);
     expect(nextPagePrice(p)).toBeNull();
     expect(buyStashPage(p)).toMatch(/every page/);
+    // Quarters 3 has the category pages too.
+    expect(checkProfile(items, p)).toMatch(/category pages/);
+    settleHangarSpace(items, p);
     expect(checkProfile(items, p)).toBeNull();
-    p.stash.push(p.stash[0]!);
+    p.stash.unshift(createGrid(PROFILE.stash[0], PROFILE.stash[1], true));
     expect(checkProfile(items, p)).toMatch(/more than there can be/);
+  });
+
+  it('puts a bought page before the category pages', () => {
+    const p = profile();
+    p.hangar[QUARTERS] = 3;
+    settleHangarSpace(items, p);
+    p.money = PROFILE.pagePrices[0];
+    expect(buyStashPage(p)).toBeNull();
+    expect(p.stash.map((g) => g.only ?? null)).toEqual([null, null, 'guns', 'ammo', 'meds']);
+    expect(checkProfile(items, p)).toBeNull();
   });
 
   it('turns an old one-grid stash into the first page', () => {

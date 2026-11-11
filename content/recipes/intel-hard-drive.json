@@ -1,0 +1,16 @@
+{
+  "formatVersion": 1,
+  "id": "intel-hard-drive",
+  "name": "Decrypt a hard drive",
+  "module": "intel-desk",
+  "level": 2,
+  "inputs": [{ "item": "hard-drive", "count": 1 }],
+  "results": [
+    { "weight": 25, "item": "staff-keycard" },
+    { "weight": 15, "item": "clinic-key" },
+    { "weight": 15, "item": "key-shop-key" },
+    { "weight": 20, "vendor": "gunsmith", "rep": 0.1 },
+    { "weight": 25, "vendor": "armourer", "rep": 0.1 }
+  ],
+  "minutes": 180
+}

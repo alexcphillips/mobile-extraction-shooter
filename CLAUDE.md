@@ -9,7 +9,7 @@ Read only what the task needs. The big docs are split by topic; open an index, t
 - [docs/roadmap.md](docs/roadmap.md): v1 scope and the open work, session by session. Find your session, read its **Read:** line, do it, then tick it off, record anything you decided, and move it to [docs/roadmap-done.md](docs/roadmap-done.md) (the finished sessions, for history only).
 - [docs/props.md](docs/props.md): how to build props and prefabs in the house style (shapes, colours, collision, frame rules), and item models (frames, triangle budgets, the screenshot script).
 - [docs/level-design.md](docs/level-design.md): what we look for in tactical layouts (exposure, lanes, sightlines, what the AI can reach), a review checklist, and how to check movement in the sim. Read it before laying out or reviewing an area. It applies to extraction maps only, not zombies or other modes.
-- [docs/hangar.md](docs/hangar.md): the Hangar, the base between raids (modules, upgrades, crafting), planned for after the AI rework.
+- [docs/hangar.md](docs/hangar.md): the Hangar, the base between raids (modules, upgrades, crafting).
 - [docs/coop.md](docs/coop.md): the co-op to-do (friends, party, raid server), in the same session format.
 
 ## Standing rules

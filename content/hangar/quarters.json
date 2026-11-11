@@ -1,0 +1,36 @@
+{
+  "formatVersion": 1,
+  "id": "quarters",
+  "name": "Quarters",
+  "blurb": "Stash space: unlocks buying the next stash page, then category pages.",
+  "order": 5,
+  "levels": [
+    {
+      "cost": [
+        {
+          "item": "bandage",
+          "count": 1
+        }
+      ],
+      "unlocks": "Buy stash page 2"
+    },
+    {
+      "cost": [
+        {
+          "item": "bandage",
+          "count": 1
+        }
+      ],
+      "unlocks": "Buy stash page 3"
+    },
+    {
+      "cost": [
+        {
+          "item": "bandage",
+          "count": 1
+        }
+      ],
+      "unlocks": "Buy stash page 4; Guns, Ammo and Meds pages"
+    }
+  ]
+}

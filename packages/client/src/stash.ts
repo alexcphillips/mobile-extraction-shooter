@@ -2,6 +2,12 @@ import type {
   AdminGiveRequest,
   BuyPageRequest,
   BuyRequest,
+  HangarCollectRequest,
+  ContractClaimRequest,
+  ContractHandOverRequest,
+  ContractRequest,
+  HangarCraftRequest,
+  HangarRequest,
   ItemRef,
   ProfileResponse,
   QuestCompleteRequest,
@@ -125,6 +131,57 @@ export class StashSaver {
       version: this.me.version,
       page,
     } satisfies QuestCompleteRequest);
+  }
+
+  /** Upgrades a Hangar module a level (H3), paid from the stash, like buyPage. */
+  upgradeModule(module: string): Promise<ProfileResponse> {
+    return this.post(`/hangar/${encodeURIComponent(module)}/upgrade`, {
+      version: this.me.version,
+    } satisfies HangarRequest);
+  }
+
+  /** Starts a recipe in its Hangar module, its inputs from the stash, like buyPage. */
+  craft(module: string, recipe: string): Promise<ProfileResponse> {
+    return this.post(`/hangar/${encodeURIComponent(module)}/craft`, {
+      version: this.me.version,
+      recipe,
+    } satisfies HangarCraftRequest);
+  }
+
+  /** Collects a module's finished craft into the stash, page `page` first, like buyPage. */
+  collectCraft(module: string, page: number): Promise<ProfileResponse> {
+    return this.post(`/hangar/${encodeURIComponent(module)}/collect`, {
+      version: this.me.version,
+      page,
+    } satisfies HangarCollectRequest);
+  }
+
+  /** Takes a contract from the Intel desk's board (H6), like buyPage. */
+  takeContract(contract: string): Promise<ProfileResponse> {
+    return this.post(`/contracts/${encodeURIComponent(contract)}/take`, {
+      version: this.me.version,
+    } satisfies ContractRequest);
+  }
+
+  /** Hands over found-in-raid items for the running contract's objective, like buyPage. */
+  contractHandOver(objective: string): Promise<ProfileResponse> {
+    return this.post('/contracts/hand-over', {
+      version: this.me.version,
+      objective,
+    } satisfies ContractHandOverRequest);
+  }
+
+  /** Claims the finished contract's rewards into the stash, page `page` first, like buyPage. */
+  claimContract(page: number): Promise<ProfileResponse> {
+    return this.post('/contracts/claim', {
+      version: this.me.version,
+      page,
+    } satisfies ContractClaimRequest);
+  }
+
+  /** Gives up the running contract, like buyPage. */
+  dropContract(): Promise<ProfileResponse> {
+    return this.post('/contracts/drop', { version: this.me.version } satisfies ContractRequest);
   }
 
   /**

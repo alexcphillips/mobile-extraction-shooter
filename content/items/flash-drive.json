@@ -1,0 +1,122 @@
+{
+  "formatVersion": 10,
+  "id": "flash-drive",
+  "name": "Flash drive",
+  "type": "loot",
+  "size": [1, 1],
+  "value": 2500,
+  "rarity": "uncommon",
+  "category": "Electronics",
+  "model": {
+    "parts": [
+      {
+        "type": "slab",
+        "pos": [0, 0, -0.004],
+        "size": [0.022, 0.009, 0.046],
+        "corners": [0.004, 0.004, 0.004, 0.004],
+        "segments": 2,
+        "colour": "#2f4f7a",
+        "name": "body",
+        "group": "body"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0, 0.0155],
+        "size": [0.0226, 0.0096, 0.007],
+        "colour": "#1d1f21",
+        "name": "grip band",
+        "group": "body"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0002, 0.0275],
+        "size": [0.012, 0.0045, 0.016],
+        "colour": "#b9bcc0",
+        "name": "connector",
+        "group": "connector"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0016, 0.029],
+        "size": [0.0096, 0.0008, 0.012],
+        "colour": "#e6e0d3",
+        "name": "contact tongue",
+        "group": "connector"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0025, 0.0023, 0.032],
+        "size": [0.0022, 0.0006, 0.0024],
+        "colour": "#141516",
+        "name": "slot left",
+        "group": "connector"
+      },
+      {
+        "type": "box",
+        "pos": [0.0025, 0.0023, 0.032],
+        "size": [0.0022, 0.0006, 0.0024],
+        "colour": "#141516",
+        "name": "slot right",
+        "group": "connector"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0048, -0.006],
+        "size": [0.016, 0.0006, 0.022],
+        "colour": "#e6e0d3",
+        "name": "label",
+        "group": "face"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0052, -0.0135],
+        "size": [0.016, 0.0006, 0.005],
+        "colour": "#e3a33a",
+        "name": "label band",
+        "group": "face"
+      },
+      {
+        "type": "box",
+        "pos": [-0.002, 0.0052, -0.004],
+        "size": [0.01, 0.0006, 0.0016],
+        "colour": "#5a5d60",
+        "name": "label line 0",
+        "group": "face"
+      },
+      {
+        "type": "box",
+        "pos": [-0.003, 0.0052, 0.0],
+        "size": [0.008, 0.0006, 0.0016],
+        "colour": "#5a5d60",
+        "name": "label line 1",
+        "group": "face"
+      },
+      {
+        "type": "box",
+        "pos": [0.006, 0.0048, 0.0105],
+        "size": [0.003, 0.0006, 0.002],
+        "colour": "#39ff6a",
+        "name": "led",
+        "group": "face"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0048, -0.0225],
+        "size": [0.008, 0.0006, 0.003],
+        "colour": "#141516",
+        "name": "lanyard hole",
+        "group": "face"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.031],
+        "radius": 0.004,
+        "height": 0.0025,
+        "sides": 6,
+        "colour": "#c0281c",
+        "name": "lanyard ring",
+        "group": "lanyard"
+      }
+    ]
+  }
+}

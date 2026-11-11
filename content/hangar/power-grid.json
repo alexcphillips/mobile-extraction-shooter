@@ -1,0 +1,36 @@
+{
+  "formatVersion": 1,
+  "id": "power-grid",
+  "name": "Power grid",
+  "blurb": "Runs the Hangar. Its level caps every other module's.",
+  "order": 0,
+  "levels": [
+    {
+      "cost": [
+        {
+          "item": "bandage",
+          "count": 1
+        }
+      ],
+      "unlocks": "Powers level 1 modules"
+    },
+    {
+      "cost": [
+        {
+          "item": "bandage",
+          "count": 1
+        }
+      ],
+      "unlocks": "Powers level 2 modules"
+    },
+    {
+      "cost": [
+        {
+          "item": "bandage",
+          "count": 1
+        }
+      ],
+      "unlocks": "Powers level 3 modules"
+    }
+  ]
+}

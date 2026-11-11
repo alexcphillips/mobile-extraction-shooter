@@ -1,0 +1,36 @@
+{
+  "formatVersion": 1,
+  "id": "trauma-bay",
+  "name": "Trauma bay",
+  "blurb": "Makes medkits and surgery kits from medical loot.",
+  "order": 3,
+  "levels": [
+    {
+      "cost": [
+        {
+          "item": "bandage",
+          "count": 1
+        }
+      ],
+      "unlocks": "Bandages and splints"
+    },
+    {
+      "cost": [
+        {
+          "item": "bandage",
+          "count": 1
+        }
+      ],
+      "unlocks": "Medkits"
+    },
+    {
+      "cost": [
+        {
+          "item": "bandage",
+          "count": 1
+        }
+      ],
+      "unlocks": "Surgery kits"
+    }
+  ]
+}

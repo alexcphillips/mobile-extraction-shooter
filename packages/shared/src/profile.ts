@@ -25,6 +25,7 @@ import {
   type Grid,
   type GridItem,
   type Item,
+  type PageCategory,
   type Section,
 } from './inventory/grid';
 import { createItem } from './sim/create-item';
@@ -59,15 +60,38 @@ export const PROFILE = {
   /**
    * A stash page's size, [width, height]. Session 13 kept 10×30: ten columns fit beside
    * the gear and carried grids on a landscape phone, and the rows scroll. It was 9×30 for part of 2026-11-09, then
-   * back to 10×30 (the user's call); settleStash widens pages saved at 9×30.
+   * back to 10×30 (the user's call). H4 (2026-11-10) shrank it to 10×20, a placeholder
+   * until the user balances it, so Quarters' pages matter (hangar.md); settleStash
+   * reshapes pages saved at another size.
    */
-  stash: [10, 30],
+  stash: [10, 20],
   /**
    * What each extra stash page costs, in order: everyone starts with one, so the most is
    * one more than there are prices. First guesses (session 13), kept against the item
-   * values in 13b.
+   * values in 13b. Each needs Quarters a level higher (H4): page 2 at level 1, and so on.
    */
   pagePrices: [100_000, 250_000, 500_000],
+  /**
+   * The vault's size, [width, height], by the Secure locker's level (H4): 2 wide and 1
+   * tall unbuilt (the user's call, hangar.md), up to 3×3. The steps between are
+   * placeholders until the user balances them.
+   */
+  vaults: [
+    [2, 1],
+    [2, 2],
+    [3, 2],
+    [3, 3],
+  ],
+  /**
+   * The category pages (H4, hangar.md → Quarters), unlocked together at this Quarters
+   * level, each its size. Placeholders until the user balances them.
+   */
+  categoryLevel: 3,
+  categoryPages: [
+    { only: 'guns', size: [10, 10] },
+    { only: 'ammo', size: [10, 10] },
+    { only: 'meds', size: [10, 10] },
+  ],
   /** Money above this is refused as a sanity limit. */
   maxMoney: 1_000_000_000,
 } as const;
@@ -91,7 +115,7 @@ export interface VendorStanding {
 }
 
 export interface Profile {
-  formatVersion: 10;
+  formatVersion: 13;
   money: number;
   /** The stash's pages, bought with money (at least one). */
   stash: Grid[];
@@ -100,7 +124,55 @@ export interface Profile {
   quests: Record<string, QuestState>;
   /** By vendor id. Only the server changes these, as for quests. */
   vendors: Record<string, VendorStanding>;
+  /** Each Hangar module's level by its id (H1); a module not here is unbuilt. Only the server changes these. */
+  hangar: Record<string, number>;
+  /** The craft in each Hangar module, by module id (H2): running, or done and waiting to be collected. Only the server changes these. */
+  crafts: Record<string, Craft>;
+  /** The Intel desk's contracts (H6): what's been taken today and the one running. Only the server changes these. */
+  contracts: ContractState;
 }
+
+/**
+ * A profile's contracts (H6, shared contracts.ts). `taken` is what was taken on `day`
+ * (whole days on the server's clock, UTC), off the board until the next. `active` is the
+ * one running: its id, when its window ends (the server's clock, ms) and each objective's
+ * progress by id. A finished one never expires; an unfinished one past `ends` is lost.
+ */
+export interface ContractState {
+  day: number;
+  taken: string[];
+  active?: ActiveContract;
+}
+
+export interface ActiveContract {
+  id: string;
+  ends: number;
+  progress: Record<string, number>;
+}
+
+/**
+ * A craft in a Hangar module (H2). Its output is copied from the recipe when it starts, so
+ * a recipe changed or deleted later can't strand it. `done` is the server's clock (ms).
+ * It makes an item stack (`item`, `count`), or reputation with a vendor (`vendor`, `rep`:
+ * a decryption's roll, H5).
+ */
+export type Craft =
+  | {
+      recipe: string;
+      item: string;
+      count: number;
+      done: number;
+      vendor?: undefined;
+      rep?: undefined;
+    }
+  | {
+      recipe: string;
+      vendor: string;
+      rep: number;
+      done: number;
+      item?: undefined;
+      count?: undefined;
+    };
 
 const count = z.int().min(0);
 const amount = z.number().refine((n) => Number.isFinite(n) && n >= 0, 'must be 0 or more');
@@ -134,6 +206,7 @@ const gridShape = z.strictObject({
   containers: z.boolean(),
   bags: z.literal(true).optional(),
   sections: z.array(z.strictObject({ x: count, y: count, w: count, h: count })).optional(),
+  only: z.enum(['guns', 'ammo', 'meds']).optional(),
   items: z.array(z.strictObject({ x: count, y: count, rotated: z.boolean(), item: itemShape })),
 });
 
@@ -159,15 +232,35 @@ const questStateShape = z.discriminatedUnion('status', [
 ]);
 
 const profileShape = z.strictObject({
-  formatVersion: z.literal(10),
+  formatVersion: z.literal(13),
   money: count,
   stash: z.array(gridShape).min(1),
   gear: gearShape,
   quests: z.record(idSchema, questStateShape),
   vendors: z.record(idSchema, z.strictObject({ rep: amount, spent: count })),
+  hangar: z.record(idSchema, count),
+  crafts: z.record(
+    idSchema,
+    z.union([
+      z.strictObject({ recipe: idSchema, item: idSchema, count: z.int().min(1), done: count }),
+      z.strictObject({
+        recipe: idSchema,
+        vendor: idSchema,
+        rep: z.number().positive(),
+        done: count,
+      }),
+    ]),
+  ),
+  contracts: z.strictObject({
+    day: count,
+    taken: z.array(idSchema),
+    active: z
+      .strictObject({ id: idSchema, ends: count, progress: z.record(idSchema, count) })
+      .optional(),
+  }),
 });
 
-export const PROFILE_FORMAT_VERSION = 10;
+export const PROFILE_FORMAT_VERSION = 13;
 
 export const PROFILE_FORMAT: ContentFormat<Profile> = {
   kind: 'profile',
@@ -194,6 +287,12 @@ export const PROFILE_FORMAT: ContentFormat<Profile> = {
     8: (doc) => renameItems(doc, { 'assault-rifle': 'akm', shotgun: 'mp-133', smg: 'k10' }),
     // 2026-11-09: the medkit became the field first aid kit.
     9: (doc) => renameItems(doc, { medkit: 'field-first-aid-kit' }),
+    // 2026-11-10 (H1): the Hangar; every module starts unbuilt.
+    10: (doc) => ({ ...doc, hangar: {} }),
+    // 2026-11-10 (H2): Hangar crafting; nothing is being made.
+    11: (doc) => ({ ...doc, crafts: {} }),
+    // 2026-11-10 (H6): the Intel desk's contracts; none taken.
+    12: (doc) => ({ ...doc, contracts: { day: 0, taken: [] } }),
   },
 };
 
@@ -301,26 +400,109 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
     if (addItem(items, stash, kitItem(items, kit, s.item, s.count ?? 1)) > 0)
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
-  return { formatVersion: 10, money: kit.money, stash: [stash], gear, quests: {}, vendors: {} };
+  return {
+    formatVersion: 13,
+    money: kit.money,
+    stash: [stash],
+    gear,
+    quests: {},
+    vendors: {},
+    hangar: {},
+    crafts: {},
+    contracts: { day: 0, taken: [] },
+  };
+}
+
+/** The Hangar modules whose levels give stash space (H4; hangar.md). */
+export const QUARTERS = 'quarters';
+export const SECURE_LOCKER = 'secure-locker';
+
+const levelOf = (p: Profile, module: string) => p.hangar[module] ?? 0;
+
+/** How many bought pages (not category pages) a profile has: they come first. */
+export function boughtPages(p: Profile): number {
+  const n = p.stash.findIndex((g) => g.only);
+  return n < 0 ? p.stash.length : n;
 }
 
 /** What the next stash page costs, or null if there are already as many as there can be. */
 export function nextPagePrice(p: Profile): number | null {
-  return PROFILE.pagePrices[p.stash.length - 1] ?? null;
+  return PROFILE.pagePrices[boughtPages(p) - 1] ?? null;
+}
+
+/** The Quarters level the next page needs (H4), or null if there are no more pages. */
+export function nextPageQuarters(p: Profile): number | null {
+  return nextPagePrice(p) === null ? null : boughtPages(p);
 }
 
 /**
- * Buys the next stash page, empty, at the end: the money goes down by its price. Returns
- * why it can't (no more pages, not enough money), or null once bought. The server does
- * this; the client only shows the price.
+ * Buys the next stash page, empty, after the bought ones (before any category pages): the
+ * money goes down by its price. Returns why it can't (no more pages, Quarters too low, not
+ * enough money), or null once bought. The server does this; the client only shows the price.
  */
 export function buyStashPage(p: Profile): string | null {
   const price = nextPagePrice(p);
   if (price === null) return 'the stash has every page it can';
+  const quarters = nextPageQuarters(p)!;
+  if (levelOf(p, QUARTERS) < quarters) return `the next page needs Quarters at level ${quarters}`;
   if (p.money < price) return `a page costs ${price}, and you have ${p.money}`;
   p.money -= price;
-  p.stash.push(createGrid(PROFILE.stash[0], PROFILE.stash[1], true));
+  p.stash.splice(boughtPages(p), 0, createGrid(PROFILE.stash[0], PROFILE.stash[1], true));
   return null;
+}
+
+/** The vault's size, [width, height], at a profile's Secure locker level. */
+export function vaultSize(p: Profile): readonly [number, number] {
+  const sizes = PROFILE.vaults;
+  return sizes[Math.min(levelOf(p, SECURE_LOCKER), sizes.length - 1)]!;
+}
+
+/** The category pages a profile's Quarters level has unlocked, in order. */
+export function categoryPages(
+  p: Profile,
+): readonly { only: PageCategory; size: readonly [number, number] }[] {
+  return levelOf(p, QUARTERS) >= PROFILE.categoryLevel ? PROFILE.categoryPages : [];
+}
+
+/**
+ * Gives a profile the stash space its Hangar levels give (H4): the vault at the Secure
+ * locker's size (see reshape: what no longer fits goes to the stash), and any category
+ * page Quarters has unlocked, empty, at the end. Run after an upgrade, and on stored
+ * profiles where settleVault ran (only ever on what the server stored: a raid's vault
+ * must come back the size it went in, checkGear's job).
+ */
+export function settleHangarSpace(items: ItemDb, p: Profile): void {
+  const [w, h] = vaultSize(p);
+  const vault = p.gear.vault;
+  if (vault && (vault.w !== w || vault.h !== h)) reshape(items, vault, w, h, undefined, p.stash);
+  for (const c of categoryPages(p)) {
+    if (p.stash.some((g) => g.only === c.only)) continue;
+    const page = createGrid(c.size[0], c.size[1]);
+    page.only = c.only;
+    p.stash.push(page);
+  }
+}
+
+/**
+ * Auto sort on close (H4, the user's call, 2026-11-10): moves what lies loose on the bought
+ * pages onto the category page for its kind, as much as fits (stacks topped up first), so
+ * a double-tap into the stash needn't know about category pages. Returns whether anything
+ * moved. What doesn't fit stays where it was.
+ */
+export function sortToCategoryPages(items: ItemDb, p: Profile): boolean {
+  let moved = false;
+  for (const page of p.stash.slice(0, boughtPages(p))) {
+    page.items = page.items.filter((g) => {
+      const to = p.stash.find((c) => c.only && canHold(items, c, g.item));
+      if (!to) return true;
+      // addItem lowers the count by what it placed (the object itself goes over if it all fits).
+      const count = g.item.count;
+      const left = addItem(items, to, g.item);
+      if (left < count) moved = true;
+      return left > 0;
+    });
+  }
+  return moved;
 }
 
 /**
@@ -340,25 +522,15 @@ export function settleGuns(items: ItemDb, gear: Gear, stash: readonly Grid[]): v
 }
 
 /**
- * Shrinks a vault saved at its old size (2×3 until 2026-11-06) to GEAR.vault (see
- * reshape). Only the old size is settled, so a client can't grow its vault and have the
- * extra moved into the stash. Run where settleGuns is.
- */
-export function settleVault(items: ItemDb, gear: Gear, stash: readonly Grid[]): void {
-  const vault = gear.vault;
-  if (!vault || vault.w !== 2 || vault.h !== 3) return;
-  reshape(items, vault, GEAR.vault[0], GEAR.vault[1], undefined, stash);
-}
-
-/**
- * Widens stash pages saved at 9×30 (briefly the size on 2026-11-09) back to PROFILE.stash
- * (see reshape); nothing moves. Only that size is settled. Run where settleGuns is, before
- * settleFits.
+ * Gives bought stash pages saved at another size (9×30 briefly on 2026-11-09, 10×30 until
+ * H4) PROFILE.stash's (see reshape: what no longer fits moves to another page, or stays and
+ * checkProfile refuses it; prod was wiped for H4). Only for stored profiles. Run where
+ * settleGuns is, before settleFits.
  */
 export function settleStash(items: ItemDb, stash: readonly Grid[]): void {
   const [w, h] = PROFILE.stash;
   for (const page of stash) {
-    if (page.w !== 9 || page.h !== 30) continue;
+    if (page.only || (page.w === w && page.h === h)) continue;
     // Not one with an item that doesn't exist: checkProfile refuses it.
     if (page.items.every((g) => items.has(g.item.item)))
       reshape(items, page, w, h, undefined, stash);
@@ -567,23 +739,36 @@ export function overRepaired(items: ItemDb, before: Profile, after: Profile): bo
  */
 export function checkProfile(items: ItemDb, p: Profile): string | null {
   if (p.money > PROFILE.maxMoney) return `money ${p.money} is over the limit`;
-  if (p.stash.length > PROFILE.pagePrices.length + 1)
-    return `${p.stash.length} stash pages is more than there can be`;
+  const bought = boughtPages(p);
+  if (bought > PROFILE.pagePrices.length + 1)
+    return `${bought} stash pages is more than there can be`;
+  // The category pages Quarters has unlocked, each once, after the bought ones (H4).
+  const cats = categoryPages(p);
+  if (p.stash.length - bought !== cats.length)
+    return `${p.stash.length - bought} category pages, not ${cats.length}`;
   for (let i = 0; i < p.stash.length; i++) {
-    const [w, h] = PROFILE.stash;
-    const bad = checkGrid(items, p.stash[i]!, w, h, true, `stash page ${i + 1}`);
+    const cat = cats[i - bought];
+    const [w, h] = cat ? cat.size : PROFILE.stash;
+    const page = p.stash[i]!;
+    if (page.only !== cat?.only)
+      return `stash page ${i + 1} must be ${cat?.only ?? 'a bought page'}`;
+    const bad = checkGrid(items, page, w, h, !cat, `stash page ${i + 1}`);
     if (bad) return bad;
   }
-  return checkGear(items, p.gear);
+  return checkGear(items, p.gear, vaultSize(p));
 }
 
 /**
  * Checks gear against the items: every item exists, has the fields its type needs within
  * its limits (stack size, durability, rounds, uses), and fits where it is (its gear slot,
  * or inside its grid without overlapping, with no containers in containers). Pockets and
- * the vault must be their usual size. Returns the first problem, or null.
+ * the vault must be their usual size (the vault's, from the Secure locker: vaultSize). Returns the first problem, or null.
  */
-export function checkGear(items: ItemDb, gear: Gear): string | null {
+export function checkGear(
+  items: ItemDb,
+  gear: Gear,
+  vault: readonly [number, number] = GEAR.vault,
+): string | null {
   for (const slot of GEAR_SLOTS) {
     const item = gear[slot];
     if (!item) continue;
@@ -603,7 +788,7 @@ export function checkGear(items: ItemDb, gear: Gear): string | null {
       false,
       'pockets',
       POCKET_SECTIONS,
-    ) ?? checkGrid(items, gear.vault, GEAR.vault[0], GEAR.vault[1], false, 'vault')
+    ) ?? checkGrid(items, gear.vault, vault[0], vault[1], false, 'vault')
   );
 }
 

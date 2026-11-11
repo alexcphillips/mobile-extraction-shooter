@@ -35,6 +35,9 @@ import {
 import {
   loadItems,
   loadQuests,
+  loadHangar,
+  loadContracts,
+  loadRecipes,
   loadRaid,
   loadStartingKit,
   loadTutorial,
@@ -373,6 +376,9 @@ async function runGame(
         };
       }),
       quests: [...loadQuests().values()],
+      hangar: [...loadHangar().values()],
+      recipes: [...loadRecipes().values()],
+      contracts: loadContracts(),
       joinCode,
       openSettings: (done) => {
         import('./ui/menu')

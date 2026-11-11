@@ -1,0 +1,36 @@
+{
+  "formatVersion": 1,
+  "id": "secure-locker",
+  "name": "Secure locker",
+  "blurb": "Your vault, kept when you die. Grows with each level.",
+  "order": 6,
+  "levels": [
+    {
+      "cost": [
+        {
+          "item": "bandage",
+          "count": 1
+        }
+      ],
+      "unlocks": "Vault 2 \u00d7 2"
+    },
+    {
+      "cost": [
+        {
+          "item": "bandage",
+          "count": 1
+        }
+      ],
+      "unlocks": "Vault 3 \u00d7 2"
+    },
+    {
+      "cost": [
+        {
+          "item": "bandage",
+          "count": 1
+        }
+      ],
+      "unlocks": "Vault 3 \u00d7 3"
+    }
+  ]
+}

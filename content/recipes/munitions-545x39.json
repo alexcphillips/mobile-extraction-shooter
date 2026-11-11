@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "munitions-545x39",
+  "module": "munitions-bench",
+  "level": 1,
+  "inputs": [
+    { "item": "box-of-screws", "count": 1 },
+    { "item": "electrical-tape", "count": 1 }
+  ],
+  "output": { "item": "ammo-545x39", "count": 30 },
+  "minutes": 30
+}

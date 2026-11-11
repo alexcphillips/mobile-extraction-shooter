@@ -264,3 +264,56 @@ export function applyStash(
   if (!profile.gear[profile.gear.hand]) profile.gear.hand = 'knife';
   return true;
 }
+
+/*
+ * Taking items out of the stash for something between raids: a quest's hand-over (session
+ * 14) or a Hangar upgrade (H1). Only plain items count (nothing in them or fitted to
+ * them), from the pages and the rigs and backpacks stored on them, never from worn gear.
+ */
+
+/** An item in the stash that can be handed over: nothing in it or fitted to it. */
+export function plainItem(item: Item): boolean {
+  if (item.grid?.items.length) return false;
+  return !Object.values(item.attachments ?? {}).some((a) => a);
+}
+
+/** The stash's grids, each page then the rigs and backpacks in it. */
+function stashGrids(profile: Profile): Grid[] {
+  const out: Grid[] = [];
+  for (const page of profile.stash) {
+    out.push(page);
+    for (const g of page.items) if (g.item.grid) out.push(g.item.grid);
+  }
+  return out;
+}
+
+/** How many plain items matching `take` the stash holds. */
+export function stashCount(profile: Profile, take: (item: Item) => boolean): number {
+  let n = 0;
+  for (const grid of stashGrids(profile))
+    for (const g of grid.items) if (plainItem(g.item) && take(g.item)) n += g.item.count;
+  return n;
+}
+
+/**
+ * Takes up to `count` plain items matching `take` out of the stash, the last placed
+ * first, and returns how many it took.
+ */
+export function takeFromStash(
+  profile: Profile,
+  take: (item: Item) => boolean,
+  count: number,
+): number {
+  let need = count;
+  for (const grid of stashGrids(profile)) {
+    for (let i = grid.items.length - 1; i >= 0 && need > 0; i--) {
+      const item = grid.items[i]!.item;
+      if (!plainItem(item) || !take(item)) continue;
+      const n = Math.min(need, item.count);
+      item.count -= n;
+      if (item.count === 0) removeAt(grid, i);
+      need -= n;
+    }
+  }
+  return count - need;
+}

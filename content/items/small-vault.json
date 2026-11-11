@@ -8,7 +8,7 @@
   "rarity": "legendary",
   "view": "angled",
   "slot": "vault",
-  "grid": [2, 2],
+  "grid": [2, 1],
   "model": {
     "parts": [
       { "type": "box", "pos": [0, 0.11, 0], "size": [0.3, 0.22, 0.22], "colour": "#4a5157" },

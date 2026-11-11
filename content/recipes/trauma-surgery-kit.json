@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "id": "trauma-surgery-kit",
+  "module": "trauma-bay",
+  "level": 2,
+  "order": 1,
+  "inputs": [
+    { "item": "field-first-aid-kit", "count": 1 },
+    { "item": "splint", "count": 1 }
+  ],
+  "output": { "item": "surgery-kit" },
+  "minutes": 60
+}

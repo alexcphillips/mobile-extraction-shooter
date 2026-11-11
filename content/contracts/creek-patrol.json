@@ -1,0 +1,14 @@
+{
+  "formatVersion": 1,
+  "id": "creek-patrol",
+  "name": "Creek patrol",
+  "vendor": "fence",
+  "description": "Clear the scavs off Silver Creek and bring me some tape while you're there.",
+  "level": 1,
+  "hours": 3,
+  "objectives": [
+    { "id": "scavs", "type": "kill", "faction": "scav", "map": "silver-creek", "count": 3 },
+    { "id": "tape", "type": "handOver", "item": "duct-tape", "count": 2 }
+  ],
+  "rewards": { "items": [{ "item": "medium-backpack" }], "rep": 0.05 }
+}

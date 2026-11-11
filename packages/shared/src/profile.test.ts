@@ -16,7 +16,11 @@ import {
   settleGuns,
   settlePockets,
   settleStash,
-  settleVault,
+  settleHangarSpace,
+  sortToCategoryPages,
+  vaultSize,
+  QUARTERS,
+  SECURE_LOCKER,
   type Profile,
 } from './profile';
 import { createItem } from './sim/create-item';
@@ -197,7 +201,7 @@ describe('checkProfile', () => {
 
     p = profile();
     p.gear.vault!.w = 6;
-    expect(checkProfile(items, p)).toMatch(/vault: must be 2×2/);
+    expect(checkProfile(items, p)).toMatch(/vault: must be 2×1/);
 
     p = profile();
     p.gear.sidearm = p.gear.primary1;
@@ -315,58 +319,93 @@ describe('settleGuns', () => {
   });
 });
 
-describe('settleVault', () => {
-  it('shrinks an old 2×3 vault, moving what hangs off into the vault, else the stash', () => {
+describe('settleHangarSpace (H4)', () => {
+  it('shrinks a vault bigger than the Secure locker gives, moving what hangs off to the stash', () => {
     const p = profile();
-    // As saved when the vault was 2×3.
+    // As saved when the vault was 2×2.
     const vault = p.gear.vault!;
-    vault.h = 3;
+    expect([vault.w, vault.h]).toEqual([2, 1]);
+    vault.h = 2;
     placeAt(items, vault, createItem(items, 'bandage'), 0, 0, false);
-    placeAt(items, vault, createItem(items, 'watch'), 0, 2, false);
-    placeAt(items, vault, createItem(items, 'cash', 50), 1, 2, false);
-    placeAt(items, vault, createItem(items, 'bandage'), 1, 0, false);
-    placeAt(items, vault, createItem(items, 'bandage'), 1, 1, false);
-    expect(checkProfile(items, p)).toMatch(/vault: must be 2×2/);
-    settleVault(items, p.gear, p.stash);
-    expect([vault.w, vault.h]).toEqual([2, 2]);
-    expect(vault.items.map((g) => g.item.item).sort()).toEqual([
-      'bandage',
-      'bandage',
-      'bandage',
-      'watch',
-    ]);
-    expect(p.stash[0]!.items.some((gi) => gi.item.item === 'cash')).toBe(true);
+    placeAt(items, vault, createItem(items, 'watch'), 0, 1, false);
+    expect(checkProfile(items, p)).toMatch(/vault: must be 2×1/);
+    settleHangarSpace(items, p);
+    expect([vault.w, vault.h]).toEqual([2, 1]);
+    expect(vault.items.map((g) => g.item.item).sort()).toEqual(['bandage', 'watch']);
     expect(checkProfile(items, p)).toBeNull();
   });
 
-  it('leaves any other size alone', () => {
+  it('grows the vault with the locker, moving nothing', () => {
     const p = profile();
-    p.gear.vault!.w = 6;
-    settleVault(items, p.gear, p.stash);
-    expect(p.gear.vault!.w).toBe(6);
-    expect(checkProfile(items, p)).toMatch(/vault: must be 2×2/);
+    placeAt(items, p.gear.vault!, createItem(items, 'watch'), 1, 0, false);
+    for (const [level, size] of [
+      [1, [2, 2]],
+      [2, [3, 2]],
+      [3, [3, 3]],
+    ] as const) {
+      p.hangar[SECURE_LOCKER] = level;
+      expect(checkProfile(items, p)).toMatch(/vault: must be/);
+      settleHangarSpace(items, p);
+      expect(vaultSize(p)).toEqual(size);
+      expect([p.gear.vault!.w, p.gear.vault!.h]).toEqual(size);
+      expect(p.gear.vault!.items[0]).toMatchObject({ x: 1, y: 0 });
+      expect(checkProfile(items, p)).toBeNull();
+    }
+  });
+
+  it('adds the category pages at Quarters level 3, once, and checks them', () => {
+    const p = profile();
+    p.hangar[QUARTERS] = 3;
+    expect(checkProfile(items, p)).toMatch(/category pages/);
+    settleHangarSpace(items, p);
+    settleHangarSpace(items, p);
+    expect(p.stash.map((g) => g.only ?? null)).toEqual([null, 'guns', 'ammo', 'meds']);
+    expect(checkProfile(items, p)).toBeNull();
+    // Only their kinds go in.
+    expect(addItem(items, p.stash[2]!, createItem(items, 'round', 30))).toBe(0);
+    expect(addItem(items, p.stash[2]!, createItem(items, 'watch'))).toBe(1);
+    p.stash[3]!.items.push({ x: 0, y: 0, rotated: false, item: createItem(items, 'watch') });
+    expect(checkProfile(items, p)).toMatch(/can't go in stash page 4/);
+    p.stash[3]!.items = [];
+    // Not dropped, nor swapped about.
+    p.stash.splice(1, 1);
+    expect(checkProfile(items, p)).toMatch(/category pages/);
+  });
+
+  it('auto sort moves loose items onto their category page, topping up stacks', () => {
+    const p = profile();
+    p.hangar[QUARTERS] = 3;
+    settleHangarSpace(items, p);
+    const page = p.stash[0]!;
+    page.items = [];
+    addItem(items, page, createItem(items, 'round', 40));
+    addItem(items, page, createItem(items, 'bandage'));
+    addItem(items, page, createItem(items, 'watch'));
+    addItem(items, p.stash[2]!, createItem(items, 'round', 30));
+    expect(sortToCategoryPages(items, p)).toBe(true);
+    expect(page.items.map((g) => g.item.item)).toEqual(['watch']);
+    expect(p.stash[2]!.items.reduce((n, g) => n + g.item.count, 0)).toBe(70);
+    expect(p.stash[3]!.items.map((g) => [g.item.item, g.item.count])).toEqual([['bandage', 1]]);
+    expect(sortToCategoryPages(items, p)).toBe(false);
+    expect(checkProfile(items, p)).toBeNull();
   });
 });
 
 describe('settleStash', () => {
-  it('widens a page saved 9 wide, moving nothing', () => {
+  it('reshapes a page saved at an old size, moving only what hangs off', () => {
     const p = profile();
     // As saved while pages were 9×30.
     const page = p.stash[0]!;
     page.w = 9;
+    page.h = 30;
     placeAt(items, page, createItem(items, 'watch'), 8, 5, false);
+    placeAt(items, page, createItem(items, 'watch'), 0, 25, false);
     expect(checkProfile(items, p)).toMatch(/stash page 1/);
     settleStash(items, p.stash);
-    expect([page.w, page.h]).toEqual([10, 30]);
+    expect([page.w, page.h]).toEqual([10, 20]);
+    expect(page.items.filter((g) => g.item.item === 'watch')).toHaveLength(2);
     expect(page.items.find((g) => g.item.item === 'watch')).toMatchObject({ x: 8, y: 5 });
     expect(checkProfile(items, p)).toBeNull();
-  });
-
-  it('leaves any other size alone', () => {
-    const p = profile();
-    p.stash[0]!.w = 12;
-    settleStash(items, p.stash);
-    expect(p.stash[0]!.w).toBe(12);
   });
 });
 

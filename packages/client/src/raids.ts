@@ -1,6 +1,7 @@
 import type {
   EndRaidRequest,
   EntityId,
+  KillCounts,
   ProfileResponse,
   SimState,
   StartRaidRequest,
@@ -144,6 +145,8 @@ export interface RaidSnapshot {
    */
   enemies?: Record<string, EntityId>;
   kills: number;
+  /** Kills by faction (H6); missing from raids saved before contracts. */
+  killed?: KillCounts;
   /** What hurt you so far; missing from raids saved before it was kept. */
   taken?: DamageLog;
   /** Hits between you and enemies; missing from raids saved before 2026-11-10. */

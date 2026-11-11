@@ -125,27 +125,11 @@ Before building a lot of content and reworking gun and reticle models. Today's g
 - 2 finished sessions in [roadmap-done.md](roadmap-done.md).
 
 ## The Hangar (planned 2026-11-07 with the user)
-After the AI rework, before co-op. The design is [hangar.md](hangar.md). The material items and loot tables are the user's.
+The design is [hangar.md](hangar.md). The material items and loot tables are the user's.
 
-- 2 finished sessions in [roadmap-done.md](roadmap-done.md).
+- 8 finished sessions in [roadmap-done.md](roadmap-done.md).
 
-- [ ] **H1. Modules and upgrades.**
-  - Module content as data (`content/hangar/`, schema, format version): each module's levels, with item costs, the Power grid level each needs, and what a level unlocks.
-  - Hangar state in the profile (format bump); only the server changes it, like vendor standing.
-  - `POST` upgrade on the server, taking items from the stash pages as quest hand-overs do (plain items only, never from worn gear). Upgrades are instant.
-  - Content test: no upgrade cost is on any vendor's list.
-- [ ] **H2. Crafting.**
-  - Recipes as data (module, module level, inputs, output, time; optional blueprint).
-  - Start, and collect, on the server, with the server's clock (finish times computed when read, so crafts run while the app is closed). One craft per module; output waits until collected.
-  - Content test: no recipe input is on any vendor's list.
-- [ ] **H3. The Hangar page.**
-  - A menu button and a page of module cards in the vendors page's look: level, what the next one needs (have / need), the craft running with its time left, recipes, Collect.
-- [ ] **H4. Quarters and the secure locker.**
-  - Quarters gates buying stash pages; the starting stash and vault shrink (vault 1×2, up to 3×3 through the locker); category pages (ammo, meds, weapons) and where a double-tap goes.
-  - Wipe prod before this ships (no users yet).
-- [ ] **H5. Intel desk.**
-  - Drive items, timed decryption, and its results: keycards or door codes, vendor rep, blueprints. Blueprints unlock recipes.
-  - Contracts that reuse what exists, if wanted then (timer from Get contract).
+- [ ] **Wipe prod before H4 ships** (no users yet): stored pages and vaults are reshaped on load, but a full old stash could fail its check.
 
 ## Silver Creek, the starter map (planned 2026-11-09 with the user)
 See design.md → Raids and maps → Silver Creek for the layout and the user's calls (a Customs-style rectangle about 320 × 150 m, spawns at both ends and extracts at the far end, trees kept to the edges, five river crossings, three landmarks). Sketch: https://claude.ai/artifact/9v38f2y7U7tuf5cdKBxc84. As with Northpoint, the user places spawns and loot, and the bones are approved before detail. The sketch still shows a church; it's now the fire lookout, office and sheds (MT-3).

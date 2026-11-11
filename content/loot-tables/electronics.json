@@ -20,6 +20,14 @@
       "item": "cash",
       "weight": 2,
       "count": [20, 200]
+    },
+    {
+      "item": "flash-drive",
+      "weight": 2
+    },
+    {
+      "item": "hard-drive",
+      "weight": 0.5
     }
   ]
 }

@@ -1,16 +1,25 @@
 import {
+  CONTRACT_FORMAT,
+  HANGAR_FORMAT,
   ITEM_FORMAT,
   QUEST_FORMAT,
+  RECIPE_FORMAT,
   RAID_FORMAT,
   STARTING_KIT_FORMAT,
   VENDOR_FORMAT,
+  checkContracts,
+  checkHangar,
   checkItems,
   checkQuests,
+  checkRecipes,
   checkVendors,
   loadById,
+  type ContractDef,
+  type HangarModuleDef,
   type ItemDb,
   type QuestDef,
   type RaidDef,
+  type RecipeDef,
   type StartingKitDef,
   type VendorDef,
 } from '@mes/shared';
@@ -29,6 +38,9 @@ let raids: Map<string, RaidDef> | undefined;
 let kits: Map<string, StartingKitDef> | undefined;
 let vendors: Map<string, VendorDef> | undefined;
 let quests: Map<string, QuestDef> | undefined;
+let hangar: Map<string, HangarModuleDef> | undefined;
+let recipes: Map<string, RecipeDef> | undefined;
+let contracts: Map<string, ContractDef> | undefined;
 
 export function loadItems(): ItemDb {
   if (!items) {
@@ -79,4 +91,46 @@ export function loadQuests(): ReadonlyMap<string, QuestDef> {
 /** A quest by id, or undefined. */
 export function questDef(id: string): QuestDef | undefined {
   return loadQuests().get(id);
+}
+
+/** Every Hangar module, checked against the items. */
+export function loadHangar(): ReadonlyMap<string, HangarModuleDef> {
+  if (!hangar) {
+    const all = loadById(HANGAR_FORMAT, ofKind('hangar'));
+    checkHangar(all, loadItems());
+    hangar = all;
+  }
+  return hangar;
+}
+
+/** A Hangar module by id, or undefined. */
+export function hangarModule(id: string): HangarModuleDef | undefined {
+  return loadHangar().get(id);
+}
+
+/** Every crafting recipe, checked against the modules and items. */
+export function loadRecipes(): ReadonlyMap<string, RecipeDef> {
+  if (!recipes) {
+    const all = loadById(RECIPE_FORMAT, ofKind('recipes'));
+    checkRecipes(all, loadHangar(), loadItems(), loadVendors());
+    recipes = all;
+  }
+  return recipes;
+}
+
+/** A crafting recipe by id, or undefined. */
+export function recipeDef(id: string): RecipeDef | undefined {
+  return loadRecipes().get(id);
+}
+
+/** Every Intel desk contract (H6), checked against the vendors, items and the raids' maps. */
+export function loadContracts(): ReadonlyMap<string, ContractDef> {
+  if (!contracts) {
+    const all = loadById(CONTRACT_FORMAT, ofKind('contracts'));
+    raids ??= loadById(RAID_FORMAT, ofKind('raids'));
+    const maps = new Set([...raids.values()].map((r) => r.map));
+    checkContracts(all, loadVendors(), loadItems(), maps);
+    contracts = all;
+  }
+  return contracts;
 }

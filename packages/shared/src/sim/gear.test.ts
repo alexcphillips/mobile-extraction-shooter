@@ -65,7 +65,7 @@ describe('gear', () => {
     expect(c.gear.pockets.sections).toHaveLength(5);
     expect(canHold(items, c.gear.pockets, createItem(items, 'scope'))).toBe(true);
     expect(addItem(items, c.gear.pockets, createItem(items, 'scope'))).toBe(1);
-    expect(c.gear.vault).toMatchObject({ w: 2, h: 2 });
+    expect(c.gear.vault).toMatchObject({ w: 2, h: 1 });
     const enemy = spawnEnemy(state, world, 5, 0, 5, 0);
     expect(enemy.gear.vault).toBeNull();
   });

@@ -4,6 +4,10 @@ import {
   pickHost,
   sortGrid,
   nextPagePrice,
+  nextPageQuarters,
+  boughtPages,
+  sortToCategoryPages,
+  QUARTERS,
   openStash,
   quickEquip,
   stashOwner,
@@ -16,7 +20,10 @@ import {
   type PartyResponse,
   type ProfileResponse,
   type SignalsResponse,
+  type HangarModuleDef,
   type QuestDef,
+  type ContractDef,
+  type RecipeDef,
   type SortKey,
   type StashState,
   type VendorDef,
@@ -71,9 +78,12 @@ import {
   worth,
   type StashSearch,
 } from './raid-screen';
-import { countHits, searcher, type Category } from './stash-search';
+import { CATEGORIES, countHits, searcher, type Category } from './stash-search';
+import { CategoryIcon } from './category-icons';
 import { QuestsPage, questCounts, questsLine } from './quests-page';
 import { VendorsPage } from './vendors-page';
+import { HangarPage } from './hangar-page';
+import { collectedLine, contractRewards, hangarLine, readyCrafts, type Names } from './hangar-text';
 
 /** A raid the menu can start. */
 export interface RaidChoice {
@@ -95,6 +105,11 @@ export interface MenuOptions {
   raid?: string | null;
   vendors: VendorDef[];
   quests: QuestDef[];
+  /** The Hangar's modules (H3), in their order, and every crafting recipe. */
+  hangar: HangarModuleDef[];
+  recipes: RecipeDef[];
+  /** The Intel desk's contracts (H6), by id. */
+  contracts: ReadonlyMap<string, ContractDef>;
   /** Opens the settings screen over the menu; done is called when it closes. */
   openSettings: (done: () => void) => void;
   /** The code of a party invite link the game was opened from, to join on arrival. */
@@ -141,7 +156,7 @@ interface RaidButton {
 /** Party raids already joined from this tab, so coming back to the menu doesn't rejoin one. */
 const joined = new Set<string>();
 
-type Page = 'menu' | 'stash' | 'vendors' | 'quests' | 'admin' | 'friends';
+type Page = 'menu' | 'stash' | 'vendors' | 'quests' | 'hangar' | 'admin' | 'friends';
 
 /** What you're taking in, for the menu: guns and armour by name. */
 const SHOWN: readonly GearSlot[] = ['primary1', 'primary2', 'sidearm', 'helmet', 'bodyArmour'];
@@ -471,6 +486,106 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
       />
     );
   }
+  if (page === 'hangar') {
+    const name = (id: string): string => (opts.items.has(id) ? itemDef(opts.items, id).name : id);
+    const names: Names = {
+      item: name,
+      vendor: (id) => opts.vendors.find((v) => v.id === id)?.name ?? id,
+    };
+    return (
+      <HangarPage
+        modules={opts.hangar}
+        recipes={opts.recipes}
+        items={opts.items}
+        quests={opts.quests}
+        contracts={opts.contracts}
+        names={names}
+        mapName={(id) => opts.raids.find((r) => r.map === id)?.name ?? id}
+        me={me}
+        notice={notice}
+        onBack={() => {
+          setNotice(null);
+          setPage('menu');
+        }}
+        onStash={() => {
+          setNotice(null);
+          setPage('stash');
+        }}
+        contractActions={{
+          onTake: (def) =>
+            saver
+              .takeContract(def.id)
+              .then(
+                (r) => reopen(r, startPage, `Took ${def.name}: the clock is running.`),
+                refused(`${def.name} wasn't taken`),
+              ),
+          onHandOver: (_def, objective) =>
+            saver
+              .contractHandOver(objective)
+              .then(
+                (r) => reopen(r, startPage, 'Handed over.'),
+                refused('Nothing was handed over'),
+              ),
+          onClaim: (def) =>
+            saver
+              .claimContract(startPage)
+              .then(
+                (r) =>
+                  reopen(
+                    r,
+                    startPage,
+                    `${def.name} done: ${contractRewards(names, def)}. Rewards are in your stash.`,
+                  ),
+                refused(`${def.name} wasn't claimed`),
+              ),
+          onDrop: (def) =>
+            saver
+              .dropContract()
+              .then(
+                (r) => reopen(r, startPage, `Dropped ${def.name}.`),
+                refused(`${def.name} wasn't dropped`),
+              ),
+        }}
+        onUpgrade={(m) =>
+          saver.upgradeModule(m.id).then(
+            (r) => {
+              const level = r.profile.hangar[m.id] ?? 0;
+              reopen(
+                r,
+                startPage,
+                level > 1 ? `${m.name} is now level ${level}.` : `Built the ${m.name}.`,
+              );
+            },
+            refused(`The ${m.name} wasn't upgraded`),
+          )
+        }
+        onCraft={(m, recipe) =>
+          saver
+            .craft(m.id, recipe.id)
+            .then(
+              (r) =>
+                reopen(
+                  r,
+                  startPage,
+                  recipe.output
+                    ? `The ${m.name} is making ${name(recipe.output.item)}.`
+                    : `The ${m.name} is decrypting: collect it here once it's done.`,
+                ),
+              refused(`The ${m.name} didn't start`),
+            )
+        }
+        onCollect={(m) => {
+          const what = me.profile.crafts[m.id];
+          return saver
+            .collectCraft(m.id, startPage)
+            .then(
+              (r) => reopen(r, startPage, collectedLine(names, what)),
+              refused('Nothing was collected'),
+            );
+        }}
+      />
+    );
+  }
   if (page === 'friends') {
     return <FriendsPage party={party} onBack={() => setPage('menu')} onParty={setPartyRes} />;
   }
@@ -623,12 +738,10 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
           id: 'hangar',
           label: 'Hangar',
           icon: 'hangar',
-          soon: true,
-          title: 'Coming soon',
-          onClick: () =>
-            setNotice(
-              'The Hangar is coming: a base to upgrade with what you bring out, and craft gear in between raids.',
-            ),
+          disabled: !opts.hangar.length,
+          badge: readyCrafts(me, opts.contracts),
+          title: hangarLine(opts.hangar, me, opts.contracts),
+          onClick: () => setPage('hangar'),
         },
         {
           id: 'friends',
@@ -955,8 +1068,8 @@ function StashPage({
   const [version, bump] = useReducer((n: number) => n + 1, 0);
   // Buying asks for a second tap.
   const [confirming, setConfirming] = useState(false);
-  const [, setBuying] = useState(false); // `buying`, read by the parked + button
-  // The locked next page's tooltip (2026-11-09: buying pages is parked behind a lock).
+  const [buying, setBuying] = useState(false);
+  // The locked next page's tooltip: which Quarters level it needs (H4).
   const [lockTip, setLockTip] = useState(false);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<Category>('all');
@@ -972,6 +1085,15 @@ function StashPage({
   const hit = searcher(items, query, category);
   const hits = stash.profile.stash.map((page) => (hit ? countHits(page, hit) : 0));
   const price = nextPagePrice(stash.profile);
+  // The next page needs Quarters a level higher (H4); below it, the tab shows a lock.
+  const quarters = nextPageQuarters(stash.profile);
+  const locked = quarters !== null && (stash.profile.hangar[QUARTERS] ?? 0) < quarters;
+  const bought = boughtPages(stash.profile);
+  /** Leaving the stash: auto sort puts loose items onto their category pages first (H4). */
+  const close = (): void => {
+    if (sortToCategoryPages(items, stash.profile)) saver.changed();
+    onBack();
+  };
   // The controller's open "container" is the page shown: a double-tap into the stash
   // tries it first. A new stash (a page bought, or reloaded) opens on startPage.
   const inv = useMemo(() => {
@@ -987,8 +1109,12 @@ function StashPage({
           if (applyStash(stash, items, action, pageOf())) saver.changed();
           bump();
         },
-        nameOf: () => (stash.profile.stash.length > 1 ? `Stash · page ${pageOf() + 1}` : 'Stash'),
-        close: onBack,
+        nameOf: () => {
+          const only = stash.profile.stash[pageOf()]?.only;
+          if (only) return `Stash · ${CATEGORIES.find((c) => c.id === only)!.label}`;
+          return stash.profile.stash.length > 1 ? `Stash · page ${pageOf() + 1}` : 'Stash';
+        },
+        close,
         stash: true,
         sell: (refs) => onSell(refs, pageOf()),
         quests,
@@ -1003,17 +1129,15 @@ function StashPage({
   const shown = stashPageOf(inv.target ?? { kind: 'self' });
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
-      if (e.code === 'Escape') onBack();
+      if (e.code === 'Escape') close();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onBack]);
+  });
   const show = (p: number): void => {
     setConfirming(false);
     inv.setTarget(stashOwner(p));
   };
-  // Not wired to anything while the next page shows a lock (2026-11-09); see the tabs.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const buy = (): void => {
     if (!confirming) {
       setConfirming(true);
@@ -1064,38 +1188,47 @@ function StashPage({
       aria-label="Stash pages"
       aria-orientation="vertical"
     >
-      {stash.profile.stash.map((_, p) => (
-        <button
-          key={p}
-          role="tab"
-          aria-selected={p === shown}
-          className={`stash-page${p === shown ? ' active' : ''}${hit && !hits[p] ? ' no-hits' : ''}`}
-          aria-label={`Stash page ${p + 1}${hit ? `, ${hits[p]} found` : ''}`}
-          data-drop={JSON.stringify({ into: stashOwner(p) })}
-          onClick={() => show(p)}
-        >
-          {p + 1}
-          {hit && hits[p]! > 0 && <span className="stash-page-hits">{hits[p]}</span>}
-        </button>
-      ))}
+      {stash.profile.stash.map((g, p) => {
+        const label = g.only ? CATEGORIES.find((c) => c.id === g.only)!.label : `page ${p + 1}`;
+        return (
+          <button
+            key={p}
+            role="tab"
+            aria-selected={p === shown}
+            className={`stash-page${g.only ? ' stash-cat' : ''}${p === shown ? ' active' : ''}${hit && !hits[p] ? ' no-hits' : ''}`}
+            aria-label={`Stash ${label}${hit ? `, ${hits[p]} found` : ''}`}
+            title={g.only ? `${label} page: only ${label.toLowerCase()} go here` : undefined}
+            data-drop={JSON.stringify({ into: stashOwner(p) })}
+            onClick={() => show(p)}
+            // The next page's button comes after the bought pages, before the category ones.
+            style={{ order: g.only ? 2 : 0 }}
+          >
+            {g.only ? <CategoryIcon id={g.only} /> : p + 1}
+            {hit && hits[p]! > 0 && <span className="stash-page-hits">{hits[p]}</span>}
+          </button>
+        );
+      })}
       {/*
-        The next page, locked (2026-11-09, the user's call): a tap shows a tooltip, for now
-        a placeholder. It was a + that bought the page (two taps), with `buy`:
+        The next page: a + that buys it (two taps), or with Quarters too low a lock whose
+        tap says the level it needs (H4; a lock with a placeholder tooltip from 2026-11-09).
+      */}
+      {price !== null && !locked && (
         <button
           className={`stash-buy${confirming ? ' confirm' : ''}`}
-          title={`Buy another page for ${price.toLocaleString()}`}
+          title={`Buy page ${bought + 1} for ${price.toLocaleString()}`}
           disabled={buying || stash.profile.money < price}
           onClick={buy}
           onBlur={() => setConfirming(false)}
+          style={{ order: 1 }}
         >
           {buying ? '…' : confirming ? `Buy · ${price.toLocaleString()}?` : '+'}
         </button>
-      */}
-      {price !== null && (
-        <span className="stash-lock-wrap">
+      )}
+      {price !== null && locked && (
+        <span className="stash-lock-wrap" style={{ order: 1 }}>
           <button
             className={`stash-lock${lockTip ? ' active' : ''}`}
-            aria-label="Locked page"
+            aria-label={`Page ${bought + 1}, locked`}
             aria-describedby={lockTip ? 'stash-lock-tip' : undefined}
             onClick={() => setLockTip(!lockTip)}
             onBlur={() => setLockTip(false)}
@@ -1112,7 +1245,7 @@ function StashPage({
           </button>
           {lockTip && (
             <span id="stash-lock-tip" className="stash-lock-tip" role="tooltip">
-              Placeholder todo
+              Page {bought + 1} needs Quarters level {quarters} (Hangar)
             </span>
           )}
         </span>
@@ -1183,7 +1316,7 @@ function StashPage({
           call); Vendors and the raid button are on the menu, selling and sorting in the bar
           along the stash's bottom. */}
       <header className="raid-tabs stash-top">
-        <button className="stash-back" aria-label="Back" onClick={onBack}>
+        <button className="stash-back" aria-label="Back" onClick={close}>
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path
               d="M19 12H5M11 5l-7 7 7 7"

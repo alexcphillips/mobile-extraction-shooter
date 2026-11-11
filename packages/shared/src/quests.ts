@@ -1,10 +1,10 @@
 import { itemDef, type ItemDb } from './content/items';
 import type { QuestDef, QuestObjective, HandOverObjective } from './content/quests';
-import { removeAt, type Grid, type Item } from './inventory/grid';
+import type { Item } from './inventory/grid';
 import { PROFILE, type Profile } from './profile';
 import type { Gear } from './sim/gear';
 import { takeQuestItems, type RaidObjectives } from './sim/raid';
-import { addToStash, newStashItem } from './stash';
+import { addToStash, newStashItem, stashCount, takeFromStash } from './stash';
 
 /*
  * Quests between raids (session 14): accepting one, handing items over from the stash,
@@ -83,33 +83,14 @@ export function acceptQuest(profile: Profile, quest: QuestDef): string | null {
   return null;
 }
 
-/** An item in the stash that can be handed over: nothing in it or fitted to it. */
-function plain(item: Item): boolean {
-  if (item.grid?.items.length) return false;
-  return !Object.values(item.attachments ?? {}).some((a) => a);
-}
-
-/** The stash's grids, each page then the rigs and backpacks in it. */
-function stashGrids(profile: Profile): Grid[] {
-  const out: Grid[] = [];
-  for (const page of profile.stash) {
-    out.push(page);
-    for (const g of page.items) if (g.item.grid) out.push(g.item.grid);
-  }
-  return out;
-}
-
-/** Whether a stored item is one a hand-over takes. */
+/** Whether a stored item is one a hand-over takes (plain ones only: stashCount). */
 function handsOver(o: HandOverObjective, item: Item): boolean {
-  return item.item === o.item && plain(item) && (!o.foundInRaid || !!item.found);
+  return item.item === o.item && (!o.foundInRaid || !!item.found);
 }
 
 /** How many of an objective's items the stash has that could be handed over. */
 export function handOverCount(profile: Profile, o: HandOverObjective): number {
-  let n = 0;
-  for (const grid of stashGrids(profile))
-    for (const g of grid.items) if (handsOver(o, g.item)) n += g.item.count;
-  return n;
+  return stashCount(profile, (item) => handsOver(o, item));
 }
 
 /**
@@ -122,20 +103,9 @@ export function handOver(profile: Profile, quest: QuestDef, objective: string): 
   if (!o || o.type !== 'handOver') return 'that quest has no such hand-over';
   const s = profile.quests[quest.id];
   if (s?.status !== 'active') return "you haven't got that quest";
-  let need = objectiveGoal(o) - objectiveProgress(profile, quest, o);
+  const need = objectiveGoal(o) - objectiveProgress(profile, quest, o);
   if (need <= 0) return "that's handed over already";
-  let given = 0;
-  for (const grid of stashGrids(profile)) {
-    for (let i = grid.items.length - 1; i >= 0 && need > 0; i--) {
-      const item = grid.items[i]!.item;
-      if (!handsOver(o, item)) continue;
-      const n = Math.min(need, item.count);
-      item.count -= n;
-      if (item.count === 0) removeAt(grid, i);
-      need -= n;
-      given += n;
-    }
-  }
+  const given = takeFromStash(profile, (item) => handsOver(o, item), need);
   if (!given) return 'there are none in your stash';
   s.progress[o.id] = (s.progress[o.id] ?? 0) + given;
   return null;

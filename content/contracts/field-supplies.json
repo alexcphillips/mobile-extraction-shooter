@@ -1,0 +1,14 @@
+{
+  "formatVersion": 1,
+  "id": "field-supplies",
+  "name": "Field supplies",
+  "vendor": "medic",
+  "description": "The clinic's short. Bring tourniquets found out there, and keep the PMCs busy.",
+  "level": 2,
+  "hours": 4,
+  "objectives": [
+    { "id": "tourniquets", "type": "handOver", "item": "tourniquet", "count": 2 },
+    { "id": "pmcs", "type": "kill", "faction": "pmc", "count": 1 }
+  ],
+  "rewards": { "items": [{ "item": "surgery-kit" }], "rep": 0.1 }
+}

@@ -206,7 +206,12 @@ describe('POST /stash/pages', () => {
     const client = await signedIn();
     const me = await client.ok('GET', '/profile');
     const broke = await client.fails('POST', '/stash/pages', { version: me.version });
-    expect(broke.message).toMatch(/costs 100000/);
+    // It needs Quarters at level 1 (H4).
+    expect(broke.message).toMatch(/Quarters at level 1/);
+    await client.editProfile((p) => (p.hangar.quarters = 1));
+    expect((await client.fails('POST', '/stash/pages', { version: me.version })).message).toMatch(
+      /costs 100000/,
+    );
     await client.setMoney(120_000);
     const bought = await client.ok('POST', '/stash/pages', { version: me.version });
     expect(bought.profile.stash).toHaveLength(2);

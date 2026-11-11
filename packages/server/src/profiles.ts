@@ -9,13 +9,15 @@ import {
   overRepaired,
   loadSettings,
   restGear,
+  sameContracts,
+  sameHangar,
   sameQuests,
   sameStanding,
   settleBags,
   settleFits,
   settleGuns,
+  settleHangarSpace,
   settlePockets,
-  settleVault,
   settleStash,
   type Profile,
   type ProfileResponse,
@@ -26,7 +28,7 @@ import { body, fail, isObject } from './errors';
 
 /**
  * A stored profile, loaded through its format's migrations, with any pistol moved out of
- * a primary slot, 9-wide stash pages widened, an old 2×3 vault shrunk, old 4×1 pockets split into slots, bags given their defs' shapes and items that
+ * a primary slot, stash pages of an old size reshaped, the vault and category pages given their Hangar levels' (H4), old 4×1 pockets split into slots, bags given their defs' shapes and items that
  * grew re-fitted (all need the items, so they aren't format migrations).
  */
 export function parseProfile(data: string): Profile {
@@ -34,7 +36,7 @@ export function parseProfile(data: string): Profile {
   const items = loadItems();
   settleStash(items, p.stash);
   settleGuns(items, p.gear, p.stash);
-  settleVault(items, p.gear, p.stash);
+  settleHangarSpace(items, p);
   settlePockets(items, p.gear, p.stash);
   settleBags(items, p.gear, p.stash);
   settleFits(items, p.gear, p.stash);
@@ -70,6 +72,7 @@ export async function profileResponse(db: D1Database, account: string): Promise<
     settings: row.settings
       ? { settings: loadSettings(JSON.parse(row.settings)), at: row.settings_at }
       : null,
+    now: Date.now(),
   };
 }
 
@@ -127,6 +130,10 @@ profiles.put('/', async (c) => {
     return fail(c, 'invalid', 'quests only change through the quest routes');
   if (!sameStanding(current.profile, next))
     return fail(c, 'invalid', 'standing with vendors only changes through buying and quests');
+  if (!sameHangar(current.profile, next))
+    return fail(c, 'invalid', 'the Hangar only changes through its upgrade route');
+  if (!sameContracts(current.profile, next))
+    return fail(c, 'invalid', 'contracts only change through the contract routes');
   const gained = itemGained(items, current.profile, next);
   if (gained) return fail(c, 'invalid', `more "${gained}" than before`);
   // Free repairs are an admin cheat: only on the dev server (see admin.ts).

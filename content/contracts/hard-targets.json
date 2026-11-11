@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "id": "hard-targets",
+  "name": "Hard targets",
+  "vendor": "armourer",
+  "description": "A PMC crew is working Northpoint. Take two of them down.",
+  "level": 2,
+  "hours": 4,
+  "objectives": [
+    { "id": "pmcs", "type": "kill", "faction": "pmc", "map": "northpoint", "count": 2 }
+  ],
+  "rewards": { "items": [{ "item": "tactical-vest" }], "rep": 0.1 }
+}

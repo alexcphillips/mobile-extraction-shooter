@@ -72,9 +72,11 @@ import {
   startEnemies,
   rollLootSpawns,
   startRaid,
+  factionOf,
   itemDef,
   type LeaveReason,
   type Gear,
+  type KillCounts,
   type GraphicsQuality,
   findKey,
   keyName,
@@ -119,6 +121,7 @@ import {
   loadLootContainers,
   loadLootTables,
   loadMap,
+  loadContracts,
   loadQuests,
   loadRaid,
 } from '../content';
@@ -177,6 +180,7 @@ import { settings } from '../settings';
 import type { RaidScreenHandle } from '../ui/raid';
 import { clearSnapshot, saveResult, saveSnapshot, type RaidSnapshot } from '../raids';
 import type { RaidResult } from '../ui/results';
+import { contractRaidLines } from '../ui/hangar-text';
 import { CoopGuest, CoopHost, type CoopOptions, type Welcome } from './coop';
 import { giveUp, skipTutorial } from './give-up';
 import { TutorialCard } from '../hud/tutorial-card';
@@ -1022,6 +1026,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // The raid ends for you when you extract, die or run out of time; the results screen
   // comes up a moment later after a death, so you see it happen.
   let kills = resume?.kills ?? 0;
+  /** Kills by the faction killed (H6: contracts count them). */
+  const killed: KillCounts = { ...resume?.killed };
   /** The enemy type that killed you, if one did. */
   let killedBy: string | null = null;
   /** What hurt you, for the results screen after a death. */
@@ -1123,7 +1129,17 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       kills,
       kept: kept.filter((i) => !isQuestItem(i)),
       lost: gearItems(player.gear).filter((i) => !kept.includes(i)),
-      quests: done.map((d) => ({ quest: d.quest.name, text: objectiveText(items, d.objective) })),
+      quests: [
+        ...done.map((d) => ({ quest: d.quest.name, text: objectiveText(items, d.objective) })),
+        ...contractRaidLines(
+          options.profile,
+          loadContracts(),
+          raid.map,
+          killed,
+          { item: (id) => itemDef(items, id).name, vendor: (id) => id },
+          () => raid.name,
+        ),
+      ],
       taken,
       fight: fightOf(),
       keptAll: keepAll,
@@ -1137,6 +1153,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         gear,
         seconds,
         kills,
+        killed,
         detail,
         investigated,
         ...(cheats.keepGear ? { keepGear: true } : {}),
@@ -1230,6 +1247,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       spawn: spawn.id,
       player: player.id,
       kills,
+      killed,
       taken,
       fight,
       sim,
@@ -1592,6 +1610,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         logFight(fight, e, player.id, sim.tick);
       } else if (e.type === 'death' && e.by === player.id && e.target !== player.id) {
         kills++;
+        const target = sim.entities.find((c) => c.id === e.target);
+        const faction = target && factionOf(target);
+        if (faction) killed[faction] = (killed[faction] ?? 0) + 1;
       } else if (e.type === 'death' && e.target === player.id) {
         killedBy = names.get(e.by) ?? null;
         if (e.by !== 0 && e.by !== player.id) killerId = e.by;

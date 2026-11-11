@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "armour-repair-kit",
+  "module": "armour-bench",
+  "level": 1,
+  "inputs": [
+    { "item": "duct-tape", "count": 2 },
+    { "item": "box-of-screws", "count": 1 }
+  ],
+  "output": { "item": "armour-repair-kit" },
+  "minutes": 45
+}

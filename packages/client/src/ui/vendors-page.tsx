@@ -40,7 +40,7 @@ const SORTS: readonly [Sort, string][] = [
 ];
 
 /** Level numbers as Tarkov writes loyalty levels. */
-const ROMAN = ['', 'I', 'II', 'III', 'IV'];
+export const ROMAN = ['', 'I', 'II', 'III', 'IV'];
 
 const COMPACT = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 });
 

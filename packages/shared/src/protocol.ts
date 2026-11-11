@@ -1,3 +1,4 @@
+import type { KillCounts } from './contracts';
 import type { Profile } from './profile';
 import type { Settings } from './settings';
 import type { Gear } from './sim/gear';
@@ -51,6 +52,11 @@ export interface ProfileResponse {
   raid: OpenRaid | null;
   /** The settings last saved from any device, or null if none ever were. */
   settings: SavedSettings | null;
+  /**
+   * The server's clock (ms) as it answered (H2): Hangar crafts' `done` is on it, so the
+   * client works out time left from this, not its own clock.
+   */
+  now: number;
   /**
    * An admin account (2026-11-09): sees the stats overlay and its setting. Sent with
    * GET /api/profile, logging in and registering; missing from other replies.
@@ -121,6 +127,40 @@ export interface QuestCompleteRequest extends QuestRequest {
 }
 
 /**
+ * The Hangar (H1–H2), each naming the profile version read: POST /api/hangar/:id/upgrade
+ * (HangarRequest), /:id/craft (HangarCraftRequest: a recipe id) and /:id/collect
+ * (HangarCollectRequest: the output into the stash, page `page` first).
+ */
+export interface HangarRequest {
+  version: number;
+}
+
+export interface HangarCraftRequest extends HangarRequest {
+  recipe: string;
+}
+
+export interface HangarCollectRequest extends HangarRequest {
+  page?: number;
+}
+
+/**
+ * The Intel desk's contracts (H6), each naming the profile version read: POST
+ * /api/contracts/:id/take, and for the one running /api/contracts/hand-over
+ * (ContractHandOverRequest), /claim (ContractClaimRequest) and /drop.
+ */
+export interface ContractRequest {
+  version: number;
+}
+
+export interface ContractHandOverRequest extends ContractRequest {
+  objective: string;
+}
+
+export interface ContractClaimRequest extends ContractRequest {
+  page?: number;
+}
+
+/**
  * POST /api/admin/give: puts `count` new items into the stash, page `page` first, free.
  * Only on the dev server (`wrangler dev` sets ADMIN); elsewhere the route isn't there.
  */
@@ -152,6 +192,8 @@ export interface EndRaidRequest {
   /** Seconds in the raid. */
   seconds: number;
   kills: number;
+  /** The kills by the faction killed (H6, for contracts); none counted if left out. */
+  killed?: KillCounts;
   /** Where they extracted, or what killed them. */
   detail?: string;
   /** The quest markers they investigated (session 14b), by path id; counted even if they died. */

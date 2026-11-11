@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { TEST_ITEMS as items } from '../sim/test-items';
 import type { CompiledMarker } from './compile';
 import type { EnemyDef, LoadoutDef } from './enemies';
+import type { HangarModuleDef } from './hangar';
 import { hasSource, itemUsage, sourceIndex, type SourceContent } from './item-sources';
 import type { LootContainerDef } from './loot-containers';
 import type { LootTableDef } from './loot-tables';
 import type { QuestDef } from './quests';
+import type { RecipeDef } from './recipes';
 import type { VendorDef } from './vendors';
 
 const table = (id: string, ...ids: string[]): LootTableDef => ({
@@ -129,5 +131,43 @@ describe('sourceIndex', () => {
     expect(itemUsage([quest], 'watch').quests.map((q) => q.objective.id)).toEqual(['b']);
     expect(itemUsage([quest], 'notes').quests.map((q) => q.objective.id)).toEqual(['a']);
     expect(itemUsage([quest], 'vest').quests).toEqual([]);
+  });
+
+  it('the Hangar: what crafts it, and the recipes and upgrades that take it', () => {
+    const level = (item: string, count = 1) => ({ cost: [{ item, count }], unlocks: 'x' });
+    const bay = {
+      id: 'bay',
+      name: 'Trauma bay',
+      levels: [level('bandage'), level('watch', 2), level('bandage', 3)],
+    } as HangarModuleDef;
+    const recipe = (id: string, lvl: number, input: string, output: string): RecipeDef =>
+      ({
+        id,
+        module: 'bay',
+        level: lvl,
+        inputs: [{ item: input, count: 2 }],
+        output: { item: output },
+        minutes: 10,
+      }) as RecipeDef;
+    const hangar = {
+      modules: new Map([['bay', bay]]),
+      recipes: [recipe('a', 2, 'bandage', 'vest'), recipe('b', 1, 'watch', 'vest')],
+    };
+    const crafted = sourceIndex({ ...content, hangar }).get('vest');
+    // Two recipes in one module: the lower level is the one that counts.
+    expect(crafted!.crafted).toEqual([{ module: 'Trauma bay', level: 1 }]);
+    expect(hasSource(crafted)).toBe(true);
+    const uses = itemUsage([quest], 'bandage', hangar);
+    expect(uses.recipes.map((r) => [r.recipe.id, r.module])).toEqual([['a', 'Trauma bay']]);
+    expect(uses.upgrades).toEqual([
+      {
+        module: 'Trauma bay',
+        levels: [
+          { level: 1, count: 1 },
+          { level: 3, count: 3 },
+        ],
+      },
+    ]);
+    expect(itemUsage([quest], 'vest', hangar)).toMatchObject({ recipes: [], upgrades: [] });
   });
 });

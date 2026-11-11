@@ -20,8 +20,11 @@ export const GEAR = {
    * in: a 4×1 grid until then.
    */
   pockets: [5, 1],
-  /** The vault: kept on death. Players only. VAULT_ITEM's grid is this size. */
-  vault: [2, 2],
+  /**
+   * The vault: kept on death. Players only. This is its size with the Secure locker
+   * unbuilt (H4: 2 wide, 1 tall); the locker grows it (PROFILE.vaults, vaultSize).
+   */
+  vault: [2, 1],
 } as const;
 
 /** The pockets' sections: one 1×1 slot per cell (see GEAR.pockets). */

@@ -24,7 +24,7 @@ import {
   type ItemSource,
 } from '@mes/shared';
 import { useEffect, useMemo, type ReactNode } from 'react';
-import { itemOrigins } from '../content';
+import { hangarContent, itemOrigins } from '../content';
 import { itemPortrait } from '../render/item-portrait';
 import { levelColour } from './levels';
 import { colourOf, tenths } from './raid-screen';
@@ -103,7 +103,9 @@ export function ItemDetails({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [items, item.item, attachments?.optic, attachments?.muzzle, attachments?.magazine],
   );
-  const usage = quests ? itemUsage(quests, def.id).quests : [];
+  const uses = useMemo(() => itemUsage(quests ?? [], def.id, hangarContent()), [quests, def.id]);
+  const usage = uses.quests;
+  const crafting = uses.recipes.length > 0 || uses.upgrades.length > 0;
   const source = itemOrigins().get(def.id);
   const card = (
     <div
@@ -160,6 +162,33 @@ export function ItemDetails({
             ))}
           </section>
         )}
+        {crafting && (
+          <section className="item-details-more">
+            <h3>Hangar</h3>
+            {uses.recipes.map(({ recipe, module }) => (
+              <p key={recipe.id}>
+                <b>
+                  {module} {ROMAN[recipe.level]}
+                </b>{' '}
+                · {recipe.inputs.find((i) => i.item === def.id)!.count} to{' '}
+                {recipe.output ? (
+                  <>
+                    craft {itemDef(items, recipe.output.item).name}
+                    {(recipe.output.count ?? 1) > 1 && ` ×${recipe.output.count}`}
+                  </>
+                ) : (
+                  'decrypt'
+                )}
+              </p>
+            ))}
+            {uses.upgrades.map(({ module, levels }) => (
+              <p key={module}>
+                <b>{module}</b> · upgrade:{' '}
+                {levels.map((l) => `${l.count} for ${ROMAN[l.level]}`).join(', ')}
+              </p>
+            ))}
+          </section>
+        )}
         {hasSource(source) && <Source source={source} />}
       </div>
       {actions && <footer className="item-details-actions">{actions}</footer>}
@@ -191,6 +220,8 @@ function Source({ source: s }: { source: ItemSource }): ReactNode {
   if (s.vendors.length)
     lines.push(['Sold by', s.vendors.map((v) => `${v.vendor} ${ROMAN[v.level]}`).join(', ')]);
   if (s.rewards.length) lines.push(['Quest reward', s.rewards.join(', ')]);
+  if (s.crafted.length)
+    lines.push(['Crafted at', s.crafted.map((c) => `${c.module} ${ROMAN[c.level]}`).join(', ')]);
   for (const q of s.questSpots) lines.push(['Quest spot', `${q.map} (${q.quest})`]);
   return (
     <section className="item-details-more">

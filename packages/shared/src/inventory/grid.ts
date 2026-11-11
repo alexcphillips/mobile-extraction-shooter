@@ -77,6 +77,11 @@ export interface Grid {
    * one. Left out, the whole grid is one.
    */
   sections?: Section[];
+  /**
+   * A category stash page (H4, from Quarters): it holds only that category's kinds of item
+   * (PAGE_CATEGORIES). Left out, anything.
+   */
+  only?: PageCategory;
   items: GridItem[];
 }
 
@@ -137,10 +142,27 @@ export function itemHeight(items: ItemDb, id: string, rotated: boolean): number 
 }
 
 /**
+ * The categories of stash page Quarters unlocks (H4; hangar.md → Quarters), and the kinds
+ * of item each holds: the same kinds as the stash's category chips.
+ */
+export const PAGE_CATEGORIES = {
+  guns: ['weapon', 'melee', 'attachment'],
+  ammo: ['ammo', 'grenade'],
+  meds: ['med', 'repair'],
+} as const satisfies Record<string, readonly string[]>;
+export type PageCategory = keyof typeof PAGE_CATEGORIES;
+
+/** Whether an item is of a category page's kinds. */
+export function inCategory(items: ItemDb, category: PageCategory, item: Item): boolean {
+  return (PAGE_CATEGORIES[category] as readonly string[]).includes(itemDef(items, item.item).type);
+}
+
+/**
  * Whether a grid may hold an item at all, wherever it goes: rigs and backpacks only in
- * grids with containers set, or empty in a backpack's.
+ * grids with containers set, or empty in a backpack's; on a category page, only its kinds.
  */
 export function canHold(items: ItemDb, grid: Grid, item: Item): boolean {
+  if (grid.only && !inCategory(items, grid.only, item)) return false;
   const def = itemDef(items, item.item);
   if (def.type !== 'container') return true;
   // The vault is never an item anywhere (see VAULT_ITEM), even if content gives one out.

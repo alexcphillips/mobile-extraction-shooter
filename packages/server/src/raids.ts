@@ -1,6 +1,9 @@
 import { Hono } from 'hono';
 import {
+  FACTIONS,
   checkGear,
+  contractKills,
+  vaultSize,
   depositInto,
   keptGear,
   parseGear,
@@ -10,12 +13,13 @@ import {
   settleFits,
   settleGuns,
   settlePockets,
-  settleVault,
   type EndRaidRequest,
+  type Faction,
+  type KillCounts,
   type ProfileResponse,
 } from '@mes/shared';
 import type { AppEnv } from './auth';
-import { loadItems, loadQuests, raidDef } from './content';
+import { loadContracts, loadItems, loadQuests, raidDef } from './content';
 import { body, fail, isObject } from './errors';
 import { AT_VERSION, profileResponse, writeProfile } from './profiles';
 
@@ -39,7 +43,7 @@ const OUTCOMES = new Set<string>(['extracted', 'killed', 'mia']);
 
 function parseEnd(raw: unknown): EndRaidRequest | string {
   if (!isObject(raw)) return 'a result is required';
-  const { how, seconds, kills, detail, investigated } = raw;
+  const { how, seconds, kills, detail, investigated, killed } = raw;
   if (typeof how !== 'string' || !OUTCOMES.has(how)) return 'how is extracted, killed or mia';
   if (typeof seconds !== 'number' || !(seconds >= 0)) return 'seconds must be 0 or more';
   if (!Number.isInteger(kills) || (kills as number) < 0) return 'kills must be a whole number';
@@ -55,6 +59,8 @@ function parseEnd(raw: unknown): EndRaidRequest | string {
     )
   )
     return 'investigated must be a list of marker ids';
+  const byFaction = parseKilled(killed, kills as number);
+  if (typeof byFaction === 'string') return byFaction;
   return {
     how: how as EndRaidRequest['how'],
     gear,
@@ -62,8 +68,25 @@ function parseEnd(raw: unknown): EndRaidRequest | string {
     kills: kills as number,
     ...(detail !== undefined ? { detail } : {}),
     ...(investigated !== undefined ? { investigated: investigated as string[] } : {}),
+    ...(byFaction ? { killed: byFaction } : {}),
     ...(raw.keepGear === true ? { keepGear: true } : {}),
   };
+}
+
+/** A result's kills by faction (H6): whole numbers by known faction, adding up to no more than `kills`. */
+function parseKilled(raw: unknown, kills: number): KillCounts | null | string {
+  if (raw === undefined) return null;
+  const bad = 'killed must give whole numbers by faction, adding up to no more than kills';
+  if (!isObject(raw)) return bad;
+  const out: KillCounts = {};
+  let sum = 0;
+  for (const [k, v] of Object.entries(raw)) {
+    if (!(FACTIONS as readonly string[]).includes(k) || !Number.isInteger(v) || (v as number) < 0)
+      return bad;
+    out[k as Faction] = v as number;
+    sum += v as number;
+  }
+  return sum > kills ? bad : out;
 }
 
 /**
@@ -156,9 +179,17 @@ raids.post('/:id/end', async (c) => {
   const account = c.var.account;
   const id = c.req.param('id');
   const row = await db
-    .prepare('SELECT raid, ended_at, outcome, result FROM raids WHERE id = ? AND account_id = ?')
+    .prepare(
+      'SELECT raid, started_at, ended_at, outcome, result FROM raids WHERE id = ? AND account_id = ?',
+    )
     .bind(id, account)
-    .first<{ raid: string; ended_at: number | null; outcome: string; result: string | null }>();
+    .first<{
+      raid: string;
+      started_at: number;
+      ended_at: number | null;
+      outcome: string;
+      result: string | null;
+    }>();
   if (!row) return fail(c, 'not-found');
   const result = JSON.stringify(end);
   if (row.ended_at !== null) {
@@ -179,18 +210,22 @@ raids.post('/:id/end', async (c) => {
   const gear = keptGear(end.gear, keepAll, profile.gear.knife);
   restGear(gear);
   const items = loadItems();
-  // A raid started before pistols left the primary slots, the vault was 2×2, pockets were
-  // five slots or bags had sections.
+  // A raid started before pistols left the primary slots, pockets were five slots or bags
+  // had sections. The vault must come back the size it went in (no settling: that would
+  // move a forged bigger vault's extra into the stash).
   settleGuns(items, gear, profile.stash);
-  settleVault(items, gear, profile.stash);
   settlePockets(items, gear, profile.stash);
   settleBags(items, gear, profile.stash);
   // Items that grew since; only when everything's kept anyway (see settleFits).
   if (keepAll) settleFits(items, gear, profile.stash);
-  const bad = checkGear(items, gear);
+  const bad = checkGear(items, gear, vaultSize(profile));
   if (bad) return fail(c, 'invalid', bad);
   const map = raidDef(row.raid)?.map;
-  if (map) raidProgress(profile, loadQuests().values(), items, map, end.investigated ?? [], gear);
+  if (map) {
+    raidProgress(profile, loadQuests().values(), items, map, end.investigated ?? [], gear);
+    // Contracts (H6): kills count whatever the outcome, if the raid started in time.
+    contractKills(profile, loadContracts(), map, end.killed ?? {}, row.started_at);
+  }
   profile.gear = gear;
   depositInto(profile, items);
 

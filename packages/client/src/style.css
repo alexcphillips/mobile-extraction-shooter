@@ -2991,6 +2991,20 @@ body:has(#layout-bar) #menu {
   opacity: 0.45;
 }
 
+/* Category pages (H4) sit apart below the bought pages and the next page's button. */
+.raid .stash-pages button.stash-cat {
+  margin-top: 6px;
+}
+
+.raid .stash-pages button.stash-cat ~ button.stash-cat {
+  margin-top: 0;
+}
+
+.raid .stash-pages button.stash-cat svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* The count goes under the page's number, so the tab stays the strip's width. */
 .raid .stash-pages button.stash-page {
   display: flex;
@@ -3596,6 +3610,300 @@ body:has(#layout-bar) #menu {
 
 .vendors-locked-note {
   color: var(--ui-muted);
+}
+
+/*
+ * The Hangar page (H3): the vendors page's layout, with a module's levels, the next one's
+ * cost (have / need), the craft running and its recipes.
+ */
+.raid .vendors-card.unbuilt .vendors-portrait {
+  filter: grayscale(0.85);
+  opacity: 0.6;
+}
+
+.hangar-card-craft {
+  color: var(--ui-muted);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.hangar-card-craft.ready {
+  color: #6cff8a;
+}
+
+.hangar-levels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0 0 8px;
+  padding: 0;
+  color: var(--ui-muted);
+  font-size: 12px;
+  list-style: none;
+}
+
+.hangar-levels b {
+  margin-right: 3px;
+  color: var(--ui-muted);
+}
+
+.hangar-levels li.done,
+.hangar-levels li.done b {
+  color: #e8ecef;
+}
+
+.hangar-levels li.done b::after {
+  content: ' ✓';
+  color: #6cff8a;
+}
+
+.hangar-levels li.next b {
+  color: #f0c060;
+}
+
+.hangar-upgrade {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+
+.hangar-upgrade .primary {
+  margin-left: auto;
+}
+
+.hangar-why {
+  flex-basis: 100%;
+  text-align: right;
+}
+
+.hangar button.primary:disabled {
+  opacity: 0.45;
+}
+
+/* A phone's narrow side list: no initial, so the module's name has the room. */
+@media not ((hover: hover) and (pointer: fine)) {
+  .hangar .vendors-portrait {
+    display: none;
+  }
+
+  .hangar .vendors-card-text .vendors-ll {
+    white-space: nowrap;
+  }
+}
+
+/* An item a cost takes, have / need: red until there are enough. */
+.hangar-need {
+  padding: 2px 7px;
+  border: 1px solid #c96a5a;
+  border-radius: 10px;
+  color: #e8ecef;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.hangar-need b {
+  color: #c96a5a;
+  font-variant-numeric: tabular-nums;
+}
+
+.hangar-need.met {
+  border-color: color-mix(in srgb, #6cff8a 55%, transparent);
+}
+
+.hangar-need.met b {
+  color: #6cff8a;
+}
+
+.hangar-heading {
+  margin: 12px 0 6px;
+  color: var(--ui-muted);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* The craft in the module: its output, time left or Ready, and Collect. */
+.hangar-craft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 0;
+  padding: 6px;
+  border: 1px solid var(--ui-line);
+  border-radius: 4px;
+  background: #121a1f;
+}
+
+.hangar-craft.ready {
+  border-color: #6cff8a;
+}
+
+.hangar-craft-state {
+  flex: 1;
+  color: var(--ui-muted);
+}
+
+.hangar-craft-state b {
+  color: #e8ecef;
+  font-variant-numeric: tabular-nums;
+}
+
+.hangar-craft.ready .hangar-craft-state b {
+  color: #6cff8a;
+}
+
+.hangar-recipes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.hangar-recipe {
+  display: flex;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid var(--ui-line);
+  border-radius: 4px;
+  background: #121a1f;
+}
+
+.hangar-recipe.locked {
+  opacity: 0.55;
+}
+
+/* A recipe's output: its picture on its rarity's colour and its name; a tap shows details. */
+.raid .hangar-output {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 3px;
+  width: 104px;
+  padding: 0 0 5px;
+  overflow: hidden;
+  text-align: left;
+}
+
+.hangar-recipe-name {
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.hangar-recipe-name span {
+  color: var(--ui-muted);
+  font-weight: 400;
+}
+
+.hangar-recipe-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  min-width: 0;
+}
+
+.hangar-recipe-meta {
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+
+/* A rolled recipe's results and chances (H5: decryption). */
+.hangar-results {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-self: stretch;
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+
+.hangar-result {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hangar-result b {
+  color: var(--ui-accent);
+  white-space: nowrap;
+}
+
+.hangar-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.hangar-recipe-body .primary {
+  margin-top: auto;
+}
+
+/* The Intel desk's contracts (H6): the one running, and today's board. */
+.hangar-heading-note {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.hangar-contract-name {
+  font-size: 13px;
+}
+
+.hangar-contract-name b {
+  color: var(--vendor, var(--ui-accent));
+}
+
+.hangar-contract-text {
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+
+.hangar-objectives {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-self: stretch;
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+  list-style: none;
+}
+
+.hangar-objectives li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.hangar-objectives li > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.hangar-objectives b {
+  font-variant-numeric: tabular-nums;
+}
+
+.hangar-objectives li.done b {
+  color: #6cff8a;
+}
+
+.hangar-contract-buttons {
+  display: flex;
+  gap: 6px;
+  align-self: flex-end;
+}
+
+.hangar-craft.hangar-contract {
+  align-items: stretch;
 }
 
 .raid button.confirm {
