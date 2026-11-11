@@ -7,6 +7,8 @@ import { PROFILE, PROFILE_FORMAT, newProfile, overRepaired, type Profile } from 
 import { completeQuest } from './quests';
 import { QUEST_FORMAT } from './content/quests';
 import { createItem } from './sim/create-item';
+import { keptItems, markBrought, settleFound } from './sim/raid';
+import type { Character } from './sim/state';
 import { applyStash, openStash, stashOwner } from './stash';
 import { TEST_ITEMS as items } from './sim/test-items';
 import {
@@ -66,6 +68,22 @@ describe('raidGains', () => {
   it('is empty when nothing found was kept', () => {
     expect(raidGains(items, [])).toEqual([]);
     expect(raidGains(items, [{ ...createItem(items, 'watch'), brought: true }])).toEqual([]);
+  });
+
+  it('leaves out what was found in an earlier raid and taken back in (2026-11-11)', () => {
+    const vault = createGrid(2, 2);
+    addItem(items, vault, { ...createItem(items, 'watch'), found: true });
+    const c = { gear: { vault, knife: null } } as unknown as Character;
+    markBrought(c);
+    addItem(items, vault, stack('round', 15)); // looted in this raid
+    const kept = keptItems(c.gear, false);
+    expect(raidGains(items, kept).map((g) => g.id)).toEqual(['round']);
+    settleFound(c.gear);
+    // Both come out found, with no raid marks left for the stored profile.
+    expect(vault.items.map((g) => g.item)).toEqual([
+      { ...createItem(items, 'watch'), found: true },
+      { ...stack('round', 15), found: true },
+    ]);
   });
 });
 

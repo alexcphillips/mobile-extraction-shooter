@@ -26,19 +26,21 @@ describe('quests', () => {
     });
     expect(retry.error).toBe('stale');
 
-    const kitBandages = countOf(me.profile.stash[0]!, 'bandage');
+    const kitPacks = countOf(me.profile.stash[0]!, 'sterile-dressing-pack');
     const kitMedkits = countOf(me.profile.stash[0]!, 'field-first-aid-kit');
     await client.editProfile((p) => {
-      for (let i = 0; i < 4; i++) addItem(items, p.stash[0]!, createItem(items, 'bandage'));
+      for (let i = 0; i < 2; i++)
+        addItem(items, p.stash[0]!, createItem(items, 'sterile-dressing-pack'));
     });
     me = await client.ok('GET', '/profile');
     const notYet = await client.fails('POST', '/quests/field-dressing/complete', {
       version: me.version,
     });
     expect(notYet.message).toMatch(/isn't finished/);
-    const give = { version: me.version, objective: 'bandages' };
+    const give = { version: me.version, objective: 'sterile-dressing-pack' };
     me = await client.ok('POST', '/quests/field-dressing/hand-over', give);
-    expect(countOf(me.profile.stash[0]!, 'bandage')).toBe(kitBandages + 1);
+    // It wants one: one of the two is left.
+    expect(countOf(me.profile.stash[0]!, 'sterile-dressing-pack')).toBe(kitPacks + 1);
     expect((await client.fails('POST', '/quests/field-dressing/hand-over', give)).error).toBe(
       'stale',
     );

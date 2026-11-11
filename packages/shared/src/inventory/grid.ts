@@ -28,6 +28,11 @@ export interface Item {
   found?: true;
   /** In a raid: you took it in without found (markBrought). Unmarked, it's from the raid. */
   brought?: true;
+  /**
+   * In a raid: you took it in found (markBrought). It comes out found again, but it isn't
+   * new: the raid's gains leave it out (2026-11-11).
+   */
+  refound?: true;
 }
 
 /**
@@ -35,7 +40,12 @@ export interface Item {
  * differ by found, and a raid's by brought: neither mark outlives where it applies.
  */
 export function sameStack(a: Item, b: Item): boolean {
-  return a.item === b.item && !a.found === !b.found && !a.brought === !b.brought;
+  return (
+    a.item === b.item &&
+    !a.found === !b.found &&
+    !a.brought === !b.brought &&
+    !a.refound === !b.refound
+  );
 }
 
 /** Part of a stack, as a new stack: count n, with the found marks of the one it's from. */
@@ -45,6 +55,7 @@ export function stackOf(item: Item, n: number): Item {
     count: n,
     ...(item.found && { found: true }),
     ...(item.brought && { brought: true }),
+    ...(item.refound && { refound: true }),
   };
 }
 

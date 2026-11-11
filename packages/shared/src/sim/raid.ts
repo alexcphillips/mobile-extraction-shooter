@@ -382,13 +382,16 @@ export function gearItems(gear: Gear): Item[] {
 /**
  * Marks what a player takes into a raid, before it starts. In the raid `brought` tells
  * their own items from the raid's, which need no marking however they arrive: unmarked
- * means found, so a found item taken back in loses `found` here and earns it again.
+ * means found. A found item taken back in swaps `found` for `refound`: it comes out found
+ * again, but isn't counted as the raid's gain (2026-11-11).
  */
 export function markBrought(c: Character): void {
   c.marked = true;
   for (const item of gearItems(c.gear)) {
-    if (item.found) delete item.found;
-    else item.brought = true;
+    if (item.found) {
+      delete item.found;
+      item.refound = true;
+    } else item.brought = true;
   }
 }
 
@@ -405,6 +408,7 @@ export function cameOffGun(c: Character, item: Item): Item {
 /** Turns a raid's marks into stored ones as the gear leaves it: see markBrought. */
 export function settleFound(gear: Gear): void {
   for (const item of gearItems(gear)) {
+    delete item.refound;
     if (item.brought) delete item.brought;
     else item.found = true;
   }

@@ -129,10 +129,10 @@ describe('quick equip', () => {
       (g) => g.item.item,
     );
     expect(carried.sort()).toEqual([
+      'cat-tourniquet',
       'field-first-aid-kit',
       'splint',
       'surgery-kit',
-      'cat-tourniquet',
     ]);
     // Without the tourniquet, two bandages.
     const q = profile([one('chest-rig'), one('bandage'), one('bandage'), one('bandage')]);

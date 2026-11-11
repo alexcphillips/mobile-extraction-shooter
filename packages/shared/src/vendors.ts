@@ -96,14 +96,14 @@ export interface RaidGain {
 }
 
 /**
- * What's found in raid among the items kept from a raid, not yet settled (settleFound), by
- * what a vendor pays, cash at its full value: each found item with what's on it. What no
- * vendor wants is left out.
+ * What's new from this raid among the items kept from it, not yet settled (settleFound):
+ * not brought, nor found before and taken back in (refound). By what a vendor pays, cash
+ * at its full value: each found item with what's on it. What no vendor wants is left out.
  */
 export function raidGains(items: ItemDb, kept: readonly Item[]): RaidGain[] {
   const gains = new Map<string, RaidGain>();
   for (const item of kept) {
-    if (item.brought) continue;
+    if (item.brought || item.refound) continue;
     for (const p of sellParts(items, item)) {
       if (p.price <= 0) continue;
       const gain = gains.get(p.id) ?? { id: p.id, count: 0, price: 0 };
