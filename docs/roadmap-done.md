@@ -944,3 +944,4 @@ The design is [hangar.md](hangar.md). The material items and loot tables are the
 - [x] **Quest editor, 2026-11-11** (the user's request, not a planned session). design/editors.md → Quest editor.
   - `/quest-editor`: vendor lanes with arrows across vendors, drag to link, a form for every quest field; random fixed ids; deleting rewires the chain; one save for every changed, new and deleted file.
   - Checked: new `quest-editor.test.ts`; typecheck, lint; headless shots and a real save (rename, delete, new) through the dev server, then the files put back. **Not tried by the user yet.**
+  - Same day, the user's follow-up: + before and after each card, drag a card to move it in a chain or to another vendor, and a searchable requirement picker with vendor filters and tick boxes (the shared `SearchPicker`). Checked: 16 editor tests; the drags, + and picker driven in a headless browser.

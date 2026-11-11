@@ -3362,7 +3362,7 @@ body:has(#layout-bar) #menu {
   color: #8a96a0;
 }
 
-.raid .stash-pages button.stash-lock.active {
+.raid .stash-pages button.stash-lock.tip-open {
   color: #e8ecef;
 }
 

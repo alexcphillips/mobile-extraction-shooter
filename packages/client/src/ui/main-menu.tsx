@@ -1159,7 +1159,7 @@ function StashPage({
       {price !== null && locked && (
         <span className="stash-lock-wrap" style={{ order: 1 }}>
           <button
-            className={`stash-lock${lockTip ? ' active' : ''}`}
+            className={`stash-lock${lockTip ? ' tip-open' : ''}`}
             aria-label={`Page ${bought + 1}, locked`}
             aria-describedby={lockTip ? 'stash-lock-tip' : undefined}
             onClick={() => setLockTip(!lockTip)}

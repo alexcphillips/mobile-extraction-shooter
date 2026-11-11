@@ -9,7 +9,7 @@ import {
   type VendorDef,
 } from '@mes/shared';
 import { questMarkerProblem } from '../content';
-import { canRequire, newObjectiveId, newQuestId, rewireForDelete } from './chain';
+import { canRequire, descendants, newObjectiveId, newQuestId, rewireForDelete } from './chain';
 
 /*
  * The quest editor at /quest-editor (2026-11-11, the user's request): every quest at once,
@@ -217,10 +217,11 @@ export class QuestEditor {
   }
 
   /**
-   * Makes a new quest for a vendor and opens it: blank, a copy of `from`, or (with
-   * `after`) unlocked by that quest.
+   * Makes a new quest for a vendor and opens it: blank, or a copy of `from`. With `after`
+   * it's unlocked by that quest (a branch off it); with `before` it goes into the chain
+   * ahead of that quest, taking its requirements, and that quest then needs it.
    */
-  create(opts: { vendor: string; from?: string; after?: string }): string {
+  create(opts: { vendor: string; from?: string; after?: string; before?: string }): string {
     const id = newQuestId((x) => this.files.has(x) || this.saved.has(x));
     const source = opts.from === undefined ? undefined : this.files.get(opts.from);
     let doc: QuestDoc;
@@ -242,17 +243,81 @@ export class QuestEditor {
       };
     }
     doc.vendor = opts.vendor;
-    if (opts.after !== undefined) {
-      // After the description, where the hand-written files have it.
-      const { objectives, rewards, ...head } = doc;
-      doc = { ...head, requires: [opts.after], objectives, ...(rewards && { rewards }) };
+    const next = new Map(this.files);
+    let json = JSON.stringify(doc);
+    if (opts.after !== undefined) json = withRequires(json, [opts.after]);
+    const before = opts.before === undefined ? undefined : next.get(opts.before);
+    if (opts.before !== undefined && before !== undefined) {
+      json = withRequires(json, (JSON.parse(before) as QuestDoc).requires ?? []);
+      next.set(opts.before, withRequires(before, [id]));
     }
+    next.set(id, json);
     this.push();
-    this.files = new Map(this.files).set(id, JSON.stringify(doc));
+    this.files = next;
     this.state = { ...this.state, current: id };
     if (typeof history !== 'undefined') history.replaceState(null, '', `?open=${id}`);
-    this.refresh(`Made "${doc.name}": it's saved with the next save.`);
+    this.refresh(
+      opts.before !== undefined
+        ? `Made "${doc.name}" before ${this.name(opts.before)}: it's saved with the next save.`
+        : `Made "${doc.name}": it's saved with the next save.`,
+    );
     return id;
+  }
+
+  /** Sets everything a quest requires, refused if any of them needs it (a loop). */
+  setRequires(id: string, requires: readonly string[]): void {
+    const { quests } = this.state;
+    const after = descendants(quests, id);
+    const bad = requires.find((r) => r === id || after.has(r) || !quests.has(r));
+    if (bad !== undefined)
+      return this.set({
+        message: `${this.name(bad)} can't come before ${this.name(id)}: that would loop.`,
+      });
+    this.setMany(new Map([[id, [...requires]]]));
+  }
+
+  /** Moves a quest to another vendor, keeping its place in the chains. */
+  setVendor(id: string, vendor: string): void {
+    if (!this.world.vendors.has(vendor)) return;
+    this.change(
+      new Map([[id, (q: QuestDoc) => (q.vendor = vendor)]]),
+      `${this.name(id)} is now ${this.world.vendors.get(vendor)!.name}'s.`,
+    );
+  }
+
+  /**
+   * Moves a quest in the chains, as one undo step: out of where it is (the quests it
+   * unlocked take its requirements, as deleting does), then right after `target` (a branch
+   * off it) or right before it (taking its requirements, and `target` then needs it). Its
+   * vendor stays. It can't loop: once out, nothing needs it.
+   */
+  move(id: string, target: string, side: 'before' | 'after'): void {
+    const { quests } = this.state;
+    if (id === target || !quests.has(id) || !quests.has(target)) return;
+    const next = rewireForDelete(quests, id);
+    const reqOf = (x: string) => next.get(x) ?? quests.get(x)!.requires ?? [];
+    if (side === 'after') next.set(id, [target]);
+    else {
+      next.set(
+        id,
+        reqOf(target).filter((r) => r !== id),
+      );
+      next.set(target, [id]);
+    }
+    this.setMany(next, `Moved ${this.name(id)} ${side} ${this.name(target)}.`);
+  }
+
+  /** Sets several quests' requirements as one undo step. */
+  private setMany(requires: ReadonlyMap<string, string[]>, message?: string): void {
+    const next = new Map(this.files);
+    for (const [id, r] of requires) {
+      const json = next.get(id);
+      if (json !== undefined) next.set(id, withRequires(json, r));
+    }
+    if ([...next].every(([id, json]) => this.files.get(id) === json)) return;
+    this.push();
+    this.files = next;
+    this.refresh(message);
   }
 
   /**
@@ -266,12 +331,7 @@ export class QuestEditor {
     this.push();
     const next = new Map(this.files);
     next.delete(id);
-    for (const [d, requires] of rewired) {
-      const doc = JSON.parse(next.get(d)!) as QuestDoc;
-      if (requires.length) doc.requires = requires;
-      else delete doc.requires;
-      next.set(d, JSON.stringify(doc));
-    }
+    for (const [d, requires] of rewired) next.set(d, withRequires(next.get(d)!, requires));
     this.files = next;
     if (this.state.current === id) {
       this.state = { ...this.state, current: '' };
@@ -427,4 +487,27 @@ export class QuestEditor {
       this.redo();
     }
   }
+}
+
+/**
+ * A quest's JSON with these requirements: left out when there are none, and put after the
+ * description, where the hand-written files have it, when it wasn't there.
+ */
+export function withRequires(json: string, requires: readonly string[]): string {
+  const doc = JSON.parse(json) as QuestDoc;
+  if (!requires.length) {
+    delete doc.requires;
+    return JSON.stringify(doc);
+  }
+  if (doc.requires) {
+    doc.requires = [...requires];
+    return JSON.stringify(doc);
+  }
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(doc)) {
+    out[k] = v;
+    if (k === 'description') out.requires = [...requires];
+  }
+  out.requires ??= [...requires];
+  return JSON.stringify(out);
 }

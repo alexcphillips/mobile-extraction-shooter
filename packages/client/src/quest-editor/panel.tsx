@@ -1,6 +1,7 @@
 import { objectiveText, stackSize, type QuestObjective, type VendorDef } from '@mes/shared';
 import { useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { Num, Text } from '../editor/fields';
+import { SearchPicker, type PickerEntry } from '../editor/search-picker';
 import { ItemChip, ItemPicker } from '../loot-editor/item-picker';
 import {
   ancestors,
@@ -100,7 +101,7 @@ export function QuestEditorPanel({ editor }: { editor: QuestEditor }) {
       </div>
       <div className={s.problem && !s.message ? 'ed-status ed-problem' : 'ed-status'}>
         {status ??
-          'Click a quest to edit it. Drag from a quest’s dot onto another to make it unlock that one. ⌘S saves every changed quest; nothing saves while something is wrong.'}
+          'Click a quest to edit it. The + on either side makes a quest before or after it. Drag a quest onto the left or right half of another to move it there, or into another vendor’s row to give it to them. Drag a right-hand + onto a quest to add a requirement. ⌘S saves.'}
       </div>
     </div>
   );
@@ -109,12 +110,36 @@ export function QuestEditorPanel({ editor }: { editor: QuestEditor }) {
 /** A vendor's color, or gray. */
 const colorOfVendor = (v: VendorDef | undefined): string => v?.color ?? GRAY;
 
+/** A drag from a card's right-hand +: a click makes a quest after it, a drag links. */
+interface LinkDrag {
+  from: string;
+  x: number;
+  y: number;
+  moved: boolean;
+}
+
+/** A card's body being dragged: onto a card's half (before or after it), or into a lane. */
+interface MoveDrag {
+  id: string;
+  x: number;
+  y: number;
+  /** Where on the card it was picked up. */
+  dx: number;
+  dy: number;
+  started: boolean;
+  target:
+    | { kind: 'card'; id: string; side: 'before' | 'after' }
+    | { kind: 'lane'; vendor: string }
+    | null;
+}
+
 function ChainView(props: { editor: QuestEditor; state: QuestEditorState; filter: string }) {
   const { editor, state: s } = props;
   const { vendors, items } = editor.world;
   const layout = useMemo(() => layoutChains(s.quests, [...vendors.keys()]), [s.quests, vendors]);
   const box = useRef<HTMLDivElement>(null);
-  const [drag, setDrag] = useState<{ from: string; x: number; y: number } | null>(null);
+  const [link, setLink] = useState<LinkDrag | null>(null);
+  const [move, setMove] = useState<MoveDrag | null>(null);
   const [hover, setHover] = useState<string | null>(null);
 
   // Lane tops in pixels.
@@ -125,7 +150,8 @@ function ChainView(props: { editor: QuestEditor; state: QuestEditorState; filter
     y += lane.rows * (CARD_H + ROW_GAP) - ROW_GAP + LANE_PAD * 2;
   }
   const height = y;
-  const width = HEAD_W + LANE_PAD + layout.cols * (CARD_W + COL_GAP);
+  // One spare column, so there's room to drop after the last quest.
+  const width = HEAD_W + LANE_PAD + (layout.cols + 1) * (CARD_W + COL_GAP);
   const pos = new Map<string, { x: number; y: number }>();
   for (const c of layout.cards) {
     const q = s.quests.get(c.id)!;
@@ -137,7 +163,7 @@ function ChainView(props: { editor: QuestEditor; state: QuestEditorState; filter
   }
 
   // What lights up: the open quest's chains.
-  const focus = s.current || hover;
+  const focus = move?.started ? null : s.current || hover;
   const lit = useMemo(() => {
     if (!focus || !s.quests.has(focus)) return null;
     return new Set([focus, ...ancestors(s.quests, focus), ...descendants(s.quests, focus)]);
@@ -159,13 +185,65 @@ function ChainView(props: { editor: QuestEditor; state: QuestEditorState; filter
     const r = box.current!.getBoundingClientRect();
     return { x: e.clientX - r.left, y: e.clientY - r.top };
   };
-  const drop = (e: React.PointerEvent) => {
-    if (!drag) return;
-    const el = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-quest]');
-    const to = el?.getAttribute('data-quest');
-    setDrag(null);
-    droppedAt = performance.now();
-    if (to && to !== drag.from) editor.require(to, drag.from);
+  /** What's under the pointer for a moved card. */
+  const targetAt = (e: React.PointerEvent, id: string): MoveDrag['target'] => {
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    const card = under?.closest('[data-quest]');
+    const other = card?.getAttribute('data-quest');
+    if (card && other && other !== id) {
+      const r = card.getBoundingClientRect();
+      return {
+        kind: 'card',
+        id: other,
+        side: e.clientX < r.left + r.width / 2 ? 'before' : 'after',
+      };
+    }
+    if (card) return null;
+    const vendor = under?.closest('[data-lane]')?.getAttribute('data-lane');
+    return vendor && vendor !== s.quests.get(id)?.vendor && vendors.has(vendor)
+      ? { kind: 'lane', vendor }
+      : null;
+  };
+  const pointerMove = (e: React.PointerEvent) => {
+    if (link) {
+      const p = local(e);
+      const moved = link.moved || Math.hypot(p.x - link.x, p.y - link.y) > 4;
+      setLink({ from: link.from, ...p, moved });
+    } else if (move) {
+      const p = local(e);
+      const started = move.started || Math.hypot(p.x - move.x, p.y - move.y) > 5;
+      setMove({
+        ...move,
+        ...(started && p),
+        started,
+        target: started ? targetAt(e, move.id) : null,
+      });
+    }
+  };
+  const pointerUp = (e: React.PointerEvent) => {
+    if (link) {
+      setLink(null);
+      droppedAt = performance.now();
+      const from = s.quests.get(link.from);
+      if (!link.moved) {
+        if (from) editor.create({ vendor: from.vendor, after: link.from });
+        return;
+      }
+      const el = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-quest]');
+      const to = el?.getAttribute('data-quest');
+      if (to && to !== link.from) editor.require(to, link.from);
+    } else if (move) {
+      setMove(null);
+      if (!move.started) return;
+      droppedAt = performance.now();
+      const t = move.target;
+      if (t?.kind === 'card') editor.move(move.id, t.id, t.side);
+      else if (t?.kind === 'lane') editor.setVendor(move.id, t.vendor);
+    }
+  };
+  const cancel = () => {
+    setLink(null);
+    setMove(null);
   };
 
   const edges: ReactNode[] = [];
@@ -203,11 +281,13 @@ function ChainView(props: { editor: QuestEditor; state: QuestEditorState; filter
     }
   }
 
+  const moving = move?.started ? s.quests.get(move.id) : undefined;
   return (
     <div
-      className="qe-chains"
-      onPointerMove={(e) => drag && setDrag({ from: drag.from, ...local(e) })}
-      onPointerUp={drop}
+      className={moving ? 'qe-chains qe-dragging' : 'qe-chains'}
+      onPointerMove={pointerMove}
+      onPointerUp={pointerUp}
+      onPointerLeave={cancel}
       onClick={(e) => deselect(editor, e)}
     >
       <div
@@ -226,16 +306,21 @@ function ChainView(props: { editor: QuestEditor; state: QuestEditorState; filter
             height={lane.rows * (CARD_H + ROW_GAP) - ROW_GAP + LANE_PAD * 2}
             width={width}
             odd={i % 2 === 1}
+            dropping={
+              move?.target?.kind === 'lane' && move.target.vendor === lane.vendor
+                ? moving?.name
+                : undefined
+            }
           />
         ))}
         <svg className="qe-edges" width={width} height={height}>
           {edges}
-          {drag && pos.get(drag.from) && (
+          {link?.moved && pos.get(link.from) && (
             <line
-              x1={pos.get(drag.from)!.x + CARD_W}
-              y1={pos.get(drag.from)!.y + CARD_H / 2}
-              x2={drag.x}
-              y2={drag.y}
+              x1={pos.get(link.from)!.x + CARD_W}
+              y1={pos.get(link.from)!.y + CARD_H / 2}
+              x2={link.x}
+              y2={link.y}
               stroke="#ff8c00"
               strokeWidth={2}
               strokeDasharray="4 3"
@@ -245,7 +330,9 @@ function ChainView(props: { editor: QuestEditor; state: QuestEditorState; filter
         {layout.cards.map((c) => {
           const q = s.quests.get(c.id)!;
           const p = pos.get(c.id)!;
-          const dropOk = drag ? canRequire(s.quests, c.id, drag.from) : null;
+          const linking = link?.moved ? link : null;
+          const dropOk = linking ? canRequire(s.quests, c.id, linking.from) : null;
+          const t = move?.target?.kind === 'card' && move.target.id === c.id ? move.target : null;
           const cls = [
             'qe-card',
             c.id === s.current && 'qe-open',
@@ -253,12 +340,12 @@ function ChainView(props: { editor: QuestEditor; state: QuestEditorState; filter
             f && !matches(q) && 'qe-dim',
             f && matches(q) && 'qe-match',
             s.problems.has(c.id) && 'qe-bad',
-            drag && c.id !== drag.from && (dropOk ? 'qe-drop-ok' : 'qe-drop-no'),
+            linking && c.id !== linking.from && (dropOk ? 'qe-drop-ok' : 'qe-drop-no'),
+            moving && move!.id === c.id && 'qe-moving',
+            t && `qe-drop-${t.side}`,
           ]
             .filter(Boolean)
             .join(' ');
-          const rep = q.rewards?.rep ?? 0;
-          const rewardItems = q.rewards?.items?.length ?? 0;
           return (
             <div
               key={c.id}
@@ -271,45 +358,98 @@ function ChainView(props: { editor: QuestEditor; state: QuestEditorState; filter
                 height: CARD_H,
                 borderLeftColor: colorOfVendor(vendors.get(q.vendor)),
               }}
-              onClick={() => editor.select(c.id)}
+              onClick={() => performance.now() - droppedAt > 250 && editor.select(c.id)}
+              onPointerDown={(e) => {
+                if (e.button !== 0) return;
+                e.preventDefault();
+                const at = local(e);
+                setMove({
+                  id: c.id,
+                  ...at,
+                  dx: at.x - p.x,
+                  dy: at.y - p.y,
+                  started: false,
+                  target: null,
+                });
+              }}
               onPointerEnter={() => setHover(c.id)}
               onPointerLeave={() => setHover((h) => (h === c.id ? null : h))}
               title={s.problems.get(c.id) ?? q.description}
             >
-              <div className="qe-card-name">
-                {s.problems.has(c.id) && <span className="qe-warn">⚠ </span>}
-                {s.unsaved.includes(c.id) && <span className="ie-dot">● </span>}
-                {q.name}
-              </div>
-              <div className="qe-card-line">
-                {q.objectives.length === 1
-                  ? safeText(editor, q.objectives[0]!)
-                  : `${q.objectives.length} objectives`}
-              </div>
-              <div className="qe-card-line qe-card-reward">
-                {[
-                  (q.rewards?.money ?? 0) > 0 && money(q.rewards!.money!),
-                  rep > 0 && `+${rep} rep`,
-                  rewardItems > 0 && `${rewardItems} item${rewardItems === 1 ? '' : 's'}`,
-                ]
-                  .filter(Boolean)
-                  .join(' · ') || 'no reward'}
-              </div>
-              <span
-                className="qe-handle"
-                title="Drag onto a quest this one unlocks"
+              <CardBody editor={editor} state={s} quest={q} />
+              {t && <span className={`qe-drop-label qe-drop-label-${t.side}`}>{t.side}</span>}
+              <button
+                className="qe-plus qe-plus-before"
+                title="New quest before this one (it takes this one's requirements)"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  editor.create({ vendor: q.vendor, before: c.id });
+                }}
+              >
+                +
+              </button>
+              <button
+                className="qe-plus qe-plus-after"
+                title="Click: new quest after this one. Drag onto a quest: this one unlocks it too."
                 onClick={(e) => e.stopPropagation()}
                 onPointerDown={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
-                  setDrag({ from: c.id, ...local(e) });
+                  setLink({ from: c.id, ...local(e), moved: false });
                 }}
-              />
+              >
+                +
+              </button>
             </div>
           );
         })}
+        {moving && move && (
+          <div
+            className="qe-card qe-ghost"
+            style={{
+              left: move.x - move.dx,
+              top: move.y - move.dy,
+              width: CARD_W,
+              height: CARD_H,
+              borderLeftColor: colorOfVendor(vendors.get(moving.vendor)),
+            }}
+          >
+            <CardBody editor={editor} state={s} quest={moving} />
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+/** A card's name, first objective and rewards. */
+function CardBody(props: { editor: QuestEditor; state: QuestEditorState; quest: QuestDoc }) {
+  const { editor, state: s, quest: q } = props;
+  const rep = q.rewards?.rep ?? 0;
+  const rewardItems = q.rewards?.items?.length ?? 0;
+  return (
+    <>
+      <div className="qe-card-name">
+        {s.problems.has(q.id) && <span className="qe-warn">⚠ </span>}
+        {s.unsaved.includes(q.id) && <span className="ie-dot">● </span>}
+        {q.name}
+      </div>
+      <div className="qe-card-line">
+        {q.objectives.length === 1
+          ? safeText(editor, q.objectives[0]!)
+          : `${q.objectives.length} objectives`}
+      </div>
+      <div className="qe-card-line qe-card-reward">
+        {[
+          (q.rewards?.money ?? 0) > 0 && money(q.rewards!.money!),
+          rep > 0 && `+${rep} rep`,
+          rewardItems > 0 && `${rewardItems} item${rewardItems === 1 ? '' : 's'}`,
+        ]
+          .filter(Boolean)
+          .join(' · ') || 'no reward'}
+      </div>
+    </>
   );
 }
 
@@ -331,6 +471,8 @@ function Lane(props: {
   height: number;
   width: number;
   odd: boolean;
+  /** The name of a quest being dragged into this lane. */
+  dropping?: string | undefined;
 }) {
   const { editor, vendor } = props;
   const v = editor.world.vendors.get(vendor);
@@ -339,7 +481,10 @@ function Lane(props: {
   const top = v?.levels.at(-1)?.rep;
   return (
     <div
-      className={props.odd ? 'qe-lane qe-odd' : 'qe-lane'}
+      data-lane={vendor}
+      className={['qe-lane', props.odd && 'qe-odd', props.dropping && 'qe-lane-drop']
+        .filter(Boolean)
+        .join(' ')}
       style={{ top: props.top, height: props.height, width: props.width }}
       onClick={(e) => deselect(editor, e)}
     >
@@ -362,13 +507,23 @@ function Lane(props: {
           </button>
         )}
       </div>
+      {props.dropping && (
+        <div className="qe-lane-hint">
+          Give {props.dropping} to {v?.name ?? vendor}
+        </div>
+      )}
     </div>
   );
 }
 
-function Card(props: { title: string; extra?: ReactNode; children: ReactNode }) {
+function Card(props: {
+  title: string;
+  extra?: ReactNode;
+  className?: string;
+  children: ReactNode;
+}) {
   return (
-    <section className="ie-card qe-section">
+    <section className={`ie-card qe-section ${props.className ?? ''}`}>
       <h4>
         {props.title}
         {props.extra && <span className="qe-h-extra">{props.extra}</span>}
@@ -388,12 +543,6 @@ function QuestForm(props: { editor: QuestEditor; state: QuestEditorState; quest:
   const unlocked = unlocks(s.quests, q.id);
   const rewards = { money: 0, items: [], rep: 0, ...q.rewards };
   const vendorName = (id: string) => vendors.get(id)?.name ?? id;
-  const mayRequire = [...s.quests.values()]
-    .filter((o) => canRequire(s.quests, q.id, o.id))
-    .sort(
-      (a, b) =>
-        vendorName(a.vendor).localeCompare(vendorName(b.vendor)) || a.name.localeCompare(b.name),
-    );
 
   const QuestChip = ({ id, onRemove }: { id: string; onRemove?: () => void }) => {
     const other = s.quests.get(id);
@@ -439,8 +588,11 @@ function QuestForm(props: { editor: QuestEditor; state: QuestEditorState; quest:
       {problem && <div className="qe-problem">{problem}</div>}
 
       <div className="qe-actions">
+        <button onClick={() => editor.create({ vendor: q.vendor, before: q.id })}>
+          + Quest before
+        </button>
         <button onClick={() => editor.create({ vendor: q.vendor, after: q.id })}>
-          + Quest it unlocks
+          + Quest after
         </button>
         <button onClick={() => editor.create({ vendor: q.vendor, from: q.id })}>Copy</button>
         <button className="qe-danger" onClick={() => setConfirming(true)}>
@@ -485,7 +637,7 @@ function QuestForm(props: { editor: QuestEditor; state: QuestEditorState; quest:
                   ? { borderColor: colorOfVendor(v), color: colorOfVendor(v) }
                   : undefined
               }
-              onClick={() => editor.edit((d) => (d.vendor = v.id))}
+              onClick={() => editor.setVendor(q.id, v.id)}
             >
               <span className="qe-dot" style={{ background: colorOfVendor(v) }} />
               {v.name}
@@ -499,39 +651,26 @@ function QuestForm(props: { editor: QuestEditor; state: QuestEditorState; quest:
         />
       </Card>
 
-      <Card title="Chain">
+      <Card title="Chain" className="qe-chain-card">
         <div className="qe-label">Opens after</div>
         <div className="qe-chips">
           {requires.map((r) => (
             <QuestChip key={r} id={r} onRemove={() => editor.unrequire(q.id, r)} />
           ))}
           {!requires.length && <span className="ed-note">Open from the start</span>}
-          {adding ? (
-            <select
-              autoFocus
-              value=""
-              onBlur={() => setAdding(false)}
-              onChange={(e) => {
-                if (e.target.value) editor.require(q.id, e.target.value);
-                setAdding(false);
-              }}
-            >
-              <option value="">Pick a quest…</option>
-              {mayRequire.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {vendorName(o.vendor)}: {o.name}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <button
-              className="qe-add"
-              onClick={() => setAdding(true)}
-              disabled={!mayRequire.length}
-            >
+          <span>
+            <button className="qe-add" onClick={() => setAdding(true)}>
               + requirement
             </button>
-          )}
+            {adding && (
+              <RequirementPicker
+                editor={editor}
+                state={s}
+                quest={q}
+                close={() => setAdding(false)}
+              />
+            )}
+          </span>
         </div>
         <div className="qe-label">Unlocks</div>
         <div className="qe-chips">
@@ -638,6 +777,62 @@ function QuestForm(props: { editor: QuestEditor; state: QuestEditorState; quest:
         />
       </Card>
     </aside>
+  );
+}
+
+/**
+ * Picks everything a quest requires, ticked from what it has: searched by name, filtered by
+ * vendor. Quests that need this one (however far on) aren't offered, as they'd loop.
+ */
+function RequirementPicker(props: {
+  editor: QuestEditor;
+  state: QuestEditorState;
+  quest: QuestDoc;
+  close: () => void;
+}) {
+  const { editor, state: s, quest: q } = props;
+  const { vendors } = editor.world;
+  const order = [...vendors.keys()];
+  const entries = useMemo(() => {
+    const after = descendants(s.quests, q.id);
+    return [...s.quests.values()]
+      .filter((o) => o.id !== q.id && !after.has(o.id))
+      .sort(
+        (a, b) => order.indexOf(a.vendor) - order.indexOf(b.vendor) || a.name.localeCompare(b.name),
+      )
+      .map((o): PickerEntry => ({
+        id: o.id,
+        name: o.name,
+        group: o.vendor,
+        swatch: (
+          <span className="qe-dot" style={{ background: colorOfVendor(vendors.get(o.vendor)) }} />
+        ),
+        tag: vendors.get(o.vendor)?.name ?? o.vendor,
+        right: `${o.objectives.length} obj.`,
+      }));
+    // The order is fixed while it's open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s.quests, q.id, vendors]);
+  return (
+    <SearchPicker
+      entries={entries}
+      filters={[...vendors.values()].map((v) => ({
+        id: v.id,
+        label: v.name,
+        color: colorOfVendor(v),
+      }))}
+      placeholder="Find quests it needs done first"
+      empty="No quests match (quests that need this one aren't offered)."
+      multi
+      initial={q.requires ?? []}
+      doneLabel={(t) =>
+        t.length
+          ? `Needs ${t.length} quest${t.length === 1 ? '' : 's'} done`
+          : 'Open from the start'
+      }
+      onPick={(ids) => editor.setRequires(q.id, ids)}
+      close={props.close}
+    />
   );
 }
 

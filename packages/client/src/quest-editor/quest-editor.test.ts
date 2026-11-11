@@ -124,4 +124,58 @@ describe('quest editor', () => {
     expect(o.id).not.toBe('hand-over');
     expect(e.getState().problem).toBeNull();
   });
+
+  // Silver Creek's chain: area-familiarization → under-the-mill → kiln-four.
+  it('inserts a new quest before one, taking its requirements', () => {
+    const e = make();
+    const id = e.create({ vendor: 'armorer', before: 'kiln-four' });
+    const s = e.getState();
+    expect(s.quests.get(id)!.requires).toEqual(['under-the-mill']);
+    expect(s.quests.get('kiln-four')!.requires).toEqual([id]);
+    expect(s.problem).toBeNull();
+    e.undo();
+    expect(e.getState().quests.has(id)).toBe(false);
+    expect(e.getState().quests.get('kiln-four')!.requires).toEqual(['under-the-mill']);
+  });
+
+  it('moves a quest before another in one step, closing the gap it left', () => {
+    const e = make();
+    e.move('kiln-four', 'under-the-mill', 'before');
+    const s = e.getState();
+    expect(s.quests.get('kiln-four')!.requires).toEqual(['area-familiarization']);
+    expect(s.quests.get('under-the-mill')!.requires).toEqual(['kiln-four']);
+    expect(s.problem).toBeNull();
+    e.undo();
+    expect(e.getState().unsaved).toEqual([]);
+  });
+
+  it('moves a quest after another, its old dependents rewired', () => {
+    const e = make();
+    e.move('under-the-mill', 'kiln-four', 'after');
+    const s = e.getState();
+    expect(s.quests.get('kiln-four')!.requires).toEqual(['area-familiarization']);
+    expect(s.quests.get('under-the-mill')!.requires).toEqual(['kiln-four']);
+    expect(s.problem).toBeNull();
+  });
+
+  it('sets several requirements at once, refusing a loop', () => {
+    const e = make();
+    e.setRequires('kiln-four', ['under-the-mill', 'shiny-stock', 'scrap-plates']);
+    expect(e.getState().quests.get('kiln-four')!.requires).toEqual([
+      'under-the-mill',
+      'shiny-stock',
+      'scrap-plates',
+    ]);
+    e.setRequires('area-familiarization', ['kiln-four']);
+    expect(e.getState().quests.get('area-familiarization')!.requires).toBeUndefined();
+    expect(e.getState().message).toMatch(/loop/);
+  });
+
+  it('gives a quest to another vendor, keeping its links', () => {
+    const e = make();
+    e.setVendor('under-the-mill', 'medic');
+    const q = e.getState().quests.get('under-the-mill')!;
+    expect(q.vendor).toBe('medic');
+    expect(q.requires).toEqual(['area-familiarization']);
+  });
 });

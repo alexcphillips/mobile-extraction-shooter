@@ -188,8 +188,23 @@
 }
 
 .le-types button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11px;
   padding: 0 5px;
+}
+
+/* A filter's color (SearchPicker, 2026-11-11: a vendor's). */
+.le-filter-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.le-ticked {
+  align-self: center;
+  margin-left: auto;
 }
 
 .le-pick-list {
