@@ -149,6 +149,7 @@ export const gunState = (
       optic: attachments.optic ?? null,
       muzzle: attachments.muzzle ?? null,
       magazine: attachments.magazine ?? null,
+      laser: attachments.laser ?? null,
     },
   }) as WeaponState;
 

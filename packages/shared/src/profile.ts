@@ -118,7 +118,7 @@ export interface VendorStanding {
 }
 
 export interface Profile {
-  formatVersion: 17;
+  formatVersion: 18;
   money: number;
   /** The stash's pages, bought with money (at least one). */
   stash: Grid[];
@@ -202,7 +202,7 @@ const questStateShape = z.discriminatedUnion('status', [
 ]);
 
 const profileShape = z.strictObject({
-  formatVersion: z.literal(17),
+  formatVersion: z.literal(18),
   money: count,
   stash: z.array(gridShape).min(1),
   gear: gearShape,
@@ -215,7 +215,7 @@ const profileShape = z.strictObject({
   ),
 });
 
-export const PROFILE_FORMAT_VERSION = 17;
+export const PROFILE_FORMAT_VERSION = 18;
 
 export const PROFILE_FORMAT: ContentFormat<Profile> = {
   kind: 'profile',
@@ -265,6 +265,14 @@ export const PROFILE_FORMAT: ContentFormat<Profile> = {
     16: (doc) => {
       const { quarters, ...hangar } = (doc.hangar ?? {}) as Record<string, unknown>;
       return { ...doc, hangar: quarters === undefined ? hangar : { ...hangar, stash: quarters } };
+    },
+    // 2026-11-11: guns gained a laser slot, empty on every stored gun.
+    17: (doc) => {
+      eachObject(doc, (o) => {
+        const a = o.attachments as Record<string, unknown> | undefined;
+        if (a && !('laser' in a)) a.laser = null;
+      });
+      return doc;
     },
   },
 };
@@ -436,7 +444,7 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
   return {
-    formatVersion: 17,
+    formatVersion: 18,
     money: kit.money,
     stash: [stash],
     gear,

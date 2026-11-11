@@ -17,7 +17,7 @@
   "drawTime": 0.8,
   "range": 60,
   "loudness": 200,
-  "slots": ["optic", "magazine"],
+  "slots": ["optic", "magazine", "laser"],
   "hipSpread": 1.5,
   "aimSpread": 0.4,
   "recoil": {
@@ -150,7 +150,8 @@
     "sight": [0, 0.04, -0.06],
     "mounts": {
       "optic": [0, 0.0325, -0.02],
-      "magazine": [0, -0.02, -0.53]
+      "magazine": [0, -0.02, -0.53],
+      "laser": [0.036, 0.004, -0.38]
     }
   }
 }

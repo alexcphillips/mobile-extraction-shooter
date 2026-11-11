@@ -11,7 +11,7 @@ const rifle = (attachments: Partial<Record<'optic' | 'muzzle' | 'magazine', stri
     cooldown: 0,
     reloading: 0,
     triggerHeld: false,
-    attachments: { optic: null, muzzle: null, magazine: null, ...attachments },
+    attachments: { optic: null, muzzle: null, magazine: null, laser: null, ...attachments },
   }) as WeaponState;
 
 describe('gun models', () => {

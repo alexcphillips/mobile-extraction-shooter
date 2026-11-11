@@ -800,6 +800,7 @@ const PART_NAMES: Record<AttachmentSlot, string> = {
   optic: 'Optic',
   muzzle: 'Muzzle',
   magazine: 'Magazine',
+  laser: 'Laser',
 };
 
 /**

@@ -822,7 +822,12 @@ describe('looting', () => {
     rifle.mag = 50;
     const gun = { owner: self, slot: 'primary1', item: 'rifle' } as const;
     expect(act({ type: 'strip', gun })).toBe(true);
-    expect(rifle.attachments).toMatchObject({ optic: null, muzzle: null, magazine: null });
+    expect(rifle.attachments).toMatchObject({
+      optic: null,
+      muzzle: null,
+      magazine: null,
+      laser: null,
+    });
     expect(rifle.mag).toBe(0);
     const pack = c.gear.backpack!.grid;
     for (const id of ['scope', 'suppressor', 'big-mag']) expect(countOf(pack, id)).toBe(1);

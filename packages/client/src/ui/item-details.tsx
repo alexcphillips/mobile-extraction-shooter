@@ -105,7 +105,14 @@ export function ItemDetails({
     () => itemPortrait(items, item),
     // A gun's picture changes with its attachments; nothing else changes it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [items, item.item, attachments?.optic, attachments?.muzzle, attachments?.magazine],
+    [
+      items,
+      item.item,
+      attachments?.optic,
+      attachments?.muzzle,
+      attachments?.magazine,
+      attachments?.laser,
+    ],
   );
   const uses = useMemo(() => itemUsage(quests ?? [], def.id, hangarContent()), [quests, def.id]);
   const usage = uses.quests;
@@ -302,7 +309,9 @@ function kindOf(def: ItemDef): string {
     case 'armor':
       return def.slot === 'helmet' ? 'Helmet' : 'Body armor';
     case 'attachment':
-      return { optic: 'Optic', muzzle: 'Muzzle device', magazine: 'Magazine' }[def.slot];
+      return { optic: 'Optic', muzzle: 'Muzzle device', magazine: 'Magazine', laser: 'Laser' }[
+        def.slot
+      ];
     case 'med':
       return 'Medical';
     case 'container':
@@ -346,6 +355,7 @@ function modRows(mods: AttachmentMods): Row[] {
   const out: Row[] = [];
   if (mods.magazine) out.push(['Magazine', `+${mods.magazine} rounds`]);
   if (mods.spread) out.push(['Spread', change(mods.spread)]);
+  if (mods.hipSpread) out.push(['Hip-fire spread', change(mods.hipSpread)]);
   if (mods.recoil) out.push(['Recoil', change(mods.recoil)]);
   if (mods.recoilUp) out.push(['Vertical recoil', change(mods.recoilUp)]);
   if (mods.recoilSide) out.push(['Horizontal recoil', change(mods.recoilSide)]);

@@ -475,6 +475,8 @@ export const SCOPE_RADIUS = 46;
 const modsSchema = z.strictObject({
   /** Hip and aimed spread. */
   spread: positive.optional(),
+  /** Hip spread only, on top of spread (lasers, 2026-11-11). */
+  hipSpread: positive.optional(),
   /** Kick up and sideways. */
   recoil: positive.optional(),
   /** Kick up only, and sideways only, on top of recoil. */

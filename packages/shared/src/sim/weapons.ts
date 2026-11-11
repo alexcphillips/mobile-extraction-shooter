@@ -149,7 +149,7 @@ export function weaponStats(items: ItemDb, w: WeaponState, out: WeaponStats): We
     out.magazine += m.magazine ?? 0;
     out.reloadTime *= m.reloadTime ?? 1;
     out.aimTime *= m.aimTime ?? 1;
-    out.hipSpread *= m.spread ?? 1;
+    out.hipSpread *= (m.spread ?? 1) * (m.hipSpread ?? 1);
     out.aimSpread *= m.spread ?? 1;
     out.recoilUp *= (m.recoil ?? 1) * (m.recoilUp ?? 1);
     out.recoilSide *= (m.recoil ?? 1) * (m.recoilSide ?? 1);
@@ -213,7 +213,7 @@ export function createWeapon(
     cooldown: 0,
     reloading: 0,
     triggerHeld: false,
-    attachments: { optic: null, muzzle: null, magazine: null },
+    attachments: { optic: null, muzzle: null, magazine: null, laser: null },
   };
   if (ammo !== undefined && ammo !== weaponDef(items, id).ammo) w.loaded = ammo;
   for (const a of attachments) attach(w, items, a);

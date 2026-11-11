@@ -1,5 +1,6 @@
 import {
   addVec,
+  ATTACHMENT_SLOTS,
   attachmentDef,
   meleeDef,
   modelShapes,
@@ -37,7 +38,7 @@ export function gunModel(w: WeaponState, items: ItemDb): GunModel {
   let sight: Vec3 = m.sight;
   let muzzle: Vec3 = m.muzzle;
   let suppressed = gun.suppressed ?? false;
-  for (const slot of ['optic', 'muzzle', 'magazine'] as const) {
+  for (const slot of ATTACHMENT_SLOTS) {
     const id = a[slot];
     const mount = m.mounts?.[slot];
     if (!id || !mount) continue;
@@ -72,6 +73,6 @@ export function knifeModel(items: ItemDb, id: string): { shapes: Shape[]; grip: 
 
 /** A key that changes whenever the gun's model would. */
 export function gunKey(w: WeaponState): string {
-  const { optic, muzzle, magazine } = w.attachments;
-  return `${w.item} ${optic} ${muzzle} ${magazine}`;
+  const { optic, muzzle, magazine, laser } = w.attachments;
+  return `${w.item} ${optic} ${muzzle} ${magazine} ${laser}`;
 }

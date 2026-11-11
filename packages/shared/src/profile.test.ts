@@ -141,7 +141,7 @@ describe('PROFILE_FORMAT', () => {
     old.stash[0].items[0].item.item = 'pistol';
     const p = loadContent(PROFILE_FORMAT, old, 'p');
     expect(p.gear.primary1!.item).toBe('m9a3');
-    expect(p.gear.primary1!.attachments).toEqual({ ...attachments, optic: null });
+    expect(p.gear.primary1!.attachments).toEqual({ ...attachments, optic: null, laser: null });
     expect(p.stash[0]!.items[0]!.item.item).toBe('m9a3');
   });
 
@@ -200,6 +200,13 @@ describe('PROFILE_FORMAT', () => {
     old.formatVersion = 16;
     old.hangar = { quarters: 2, 'trauma-bay': 1 };
     expect(loadContent(PROFILE_FORMAT, old, 'p').hangar).toEqual({ 'trauma-bay': 1, stash: 2 });
+  });
+
+  it('gives every stored gun an empty laser slot (format 17 → 18)', () => {
+    const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
+    old.formatVersion = 17;
+    delete old.gear.primary1.attachments.laser;
+    expect(loadContent(PROFILE_FORMAT, old, 'p').gear.primary1!.attachments!.laser).toBeNull();
   });
 
   it('takes out the deleted Intel desk, its contracts and drives (format 15 → 16)', () => {

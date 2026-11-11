@@ -1,0 +1,35 @@
+{
+  "formatVersion": 10,
+  "id": "laser-sight",
+  "name": "Laser sight",
+  "shortName": "Laser",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 3500,
+  "rarity": "common",
+  "slot": "laser",
+  "mods": {
+    "hipSpread": 0.7
+  },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0], "size": [0.024, 0.024, 0.06], "color": "#1d1f21" },
+      { "type": "box", "pos": [0, 0, -0.027], "size": [0.026, 0.026, 0.008], "color": "#3a3d40" },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.0315],
+        "pitch": 90,
+        "radius": 0.006,
+        "height": 0.003,
+        "color": "#e53935"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0135, 0.018],
+        "size": [0.01, 0.004, 0.014],
+        "color": "#3a3d40"
+      },
+      { "type": "box", "pos": [0, 0, 0.031], "size": [0.02, 0.02, 0.003], "color": "#3a3d40" }
+    ]
+  }
+}

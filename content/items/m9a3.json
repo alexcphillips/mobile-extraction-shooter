@@ -17,7 +17,7 @@
   "drawTime": 0.4,
   "range": 100,
   "loudness": 120,
-  "slots": ["muzzle", "magazine"],
+  "slots": ["muzzle", "magazine", "laser"],
   "hipSpread": 2,
   "aimSpread": 0.55,
   "recoil": {
@@ -135,13 +135,13 @@
       },
       {
         "type": "box",
-        "pos": [0.0145, 0.016, 0.0],
+        "pos": [0.0145, 0.016, 0],
         "size": [0.004, 0.006, 0.012],
         "color": "#1d1f21"
       },
       {
         "type": "box",
-        "pos": [-0.0145, 0.016, 0.0],
+        "pos": [-0.0145, 0.016, 0],
         "size": [0.004, 0.006, 0.012],
         "color": "#1d1f21"
       },
@@ -208,7 +208,8 @@
     "sight": [0, 0.036, 0.01],
     "mounts": {
       "muzzle": [0, 0.012, -0.165],
-      "magazine": [0, -0.108, 0.014]
+      "magazine": [0, -0.108, 0.014],
+      "laser": [0, -0.038, -0.135]
     }
   }
 }

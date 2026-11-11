@@ -13,7 +13,7 @@ describe('favorites', () => {
     // A gun with a favorite fitted.
     const gun: Item = {
       ...plain('akm'),
-      attachments: { optic: 'red-dot', muzzle: null, magazine: null },
+      attachments: { optic: 'red-dot', muzzle: null, magazine: null, laser: null },
     };
     expect(holdsFavorite(gun, favs)).toBe(true);
     // A backpack with one inside, however deep.

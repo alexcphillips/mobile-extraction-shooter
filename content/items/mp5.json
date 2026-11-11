@@ -17,7 +17,7 @@
   "drawTime": 0.6,
   "range": 100,
   "loudness": 110,
-  "slots": ["optic", "muzzle"],
+  "slots": ["optic", "muzzle", "laser"],
   "hipSpread": 2.2,
   "aimSpread": 0.65,
   "recoil": {
@@ -256,7 +256,8 @@
     "sight": [0, 0.058, 0.07],
     "mounts": {
       "optic": [0, 0.035, 0.02],
-      "muzzle": [0, 0, -0.305]
+      "muzzle": [0, 0, -0.305],
+      "laser": [0.037, -0.008, -0.26]
     }
   }
 }

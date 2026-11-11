@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { AmmoDef } from '../content/items';
+import { weaponDef, type AmmoDef } from '../content/items';
 import { createRng, nextFloat } from '../rng';
 import { TICK_RATE } from '../tick';
 import { CollisionWorld } from '../world/collision-world';
@@ -26,6 +26,7 @@ import { TEST_ITEMS } from './test-items';
 import { carriedAmmo, heldWeapon, stow } from './gear';
 import {
   attach,
+  createWeapon,
   createWeaponStats,
   detach,
   giveWeapon,
@@ -525,6 +526,14 @@ describe('attachments', () => {
     expect(shooter.recoil?.kickPitch).toBeCloseTo(kick, 6);
   });
 
+  it('tightens hip-fire spread with a laser, not aimed spread', () => {
+    const rifle = { ...weaponDef(TEST_ITEMS, 'rifle'), hipSpread: 3, aimSpread: 0.5 };
+    const items = new Map(TEST_ITEMS).set('rifle', rifle);
+    const s = weaponStats(items, createWeapon(items, 'rifle', ['laser']), createWeaponStats());
+    expect(s.hipSpread).toBe(1.5);
+    expect(s.aimSpread).toBe(0.5);
+  });
+
   it('fills a bigger magazine, and reloads up to it', () => {
     const state = createState(1);
     const shooter = spawnCharacter(state, world, 0, 0);
@@ -563,6 +572,11 @@ describe('attachments', () => {
     expect(() => attach(w, TEST_ITEMS, 'scope')).toThrow(/doesn't fit/);
     expect(() => attach(w, TEST_ITEMS, 'big-mag')).toThrow(/doesn't fit/);
     attach(w, TEST_ITEMS, 'suppressor');
-    expect(w.attachments).toEqual({ optic: null, muzzle: 'suppressor', magazine: null });
+    expect(w.attachments).toEqual({
+      optic: null,
+      muzzle: 'suppressor',
+      magazine: null,
+      laser: null,
+    });
   });
 });

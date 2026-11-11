@@ -24,8 +24,8 @@ const angle = finite.optional();
 const radius = finite.refine((n) => n >= 0, 'must be 0 or more');
 const color = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'colors are #rrggbb');
 
-/** The fixed attachment slots a gun can have. */
-export const ATTACHMENT_SLOTS = ['optic', 'muzzle', 'magazine'] as const;
+/** The fixed attachment slots a gun can have. The laser (2026-11-11) only tightens hip fire. */
+export const ATTACHMENT_SLOTS = ['optic', 'muzzle', 'magazine', 'laser'] as const;
 export type AttachmentSlot = (typeof ATTACHMENT_SLOTS)[number];
 export const slotSchema = z.enum(ATTACHMENT_SLOTS);
 
