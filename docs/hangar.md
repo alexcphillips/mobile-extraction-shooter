@@ -38,7 +38,7 @@ The player's base between raids: modules you upgrade with loot, which then craft
 
 **Built in H5 (2026-11-10), placeholders until the user balances them:**
 - Two new drives, both loot in Electronics: **Flash drive** (uncommon, 2,500) and **Hard drive** (rare, 6,000). The older Encrypted drive stays plain loot. Drop weights added: flash drive in `electronics` (2) and `mall-office` (1), hard drive in `electronics` (0.5) and `pc-parts` (1).
-- **Decrypt a flash drive** (Intel I, 1 h): kiln key 30%, music store key 15%, Quartermaster +0.05 rep 30%, Fence +0.05 rep 25%. **Decrypt a hard drive** (Intel II, 3 h): staff keycard 25%, clinic key 15%, key shop key 15%, Armourer +0.10 rep 25%, Gunsmith +0.10 rep 20%. Intel III halves decryption time.
+- **Decrypt a flash drive** (Intel I, 1 h): kiln key 30%, music store key 15%, Kovacs +0.05 rep 30%, Fence +0.05 rep 25%. **Decrypt a hard drive** (Intel II, 3 h): staff keycard 25%, clinic key 15%, key shop key 15%, Harlan +0.10 rep 25%, Parker +0.10 rep 20%. Intel III halves decryption time.
 - The user's calls: keys and keycards only (no door codes yet), rep set per recipe, contracts in their own session. The result is rolled when decryption starts and shown when collected.
 
 **Built in H6 (2026-11-10): the Intel desk's contracts.** Timed jobs for a vendor. **The timer starts when you press Get contract** (the user's fix), so nobody misses a window for being away. The user's calls:

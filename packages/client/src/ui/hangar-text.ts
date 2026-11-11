@@ -134,7 +134,7 @@ export function contractObjectiveText(
   return `Hand over ${o.count > 1 ? `${o.count} × ` : ''}${names.item(o.item)} (found in raid)`;
 }
 
-/** "Field first aid kit, 5.45 rounds ×60, Quartermaster +0.05 rep": what a contract pays. */
+/** "Field first aid kit, 5.45 rounds ×60, Kovacs +0.05 rep": what a contract pays. */
 export function contractRewards(names: Names, def: ContractDef): string {
   const parts = def.rewards.items.map((r) => resultText(names, { item: r.item, count: r.count }));
   if (def.rewards.rep > 0)

@@ -1,7 +1,7 @@
 {
   "formatVersion": 2,
   "id": "medic",
-  "name": "Medic",
+  "name": "Doc",
   "blurb": "Patches you up. The serious kit is for regulars.",
   "order": 4,
   "colour": "#b8504a",

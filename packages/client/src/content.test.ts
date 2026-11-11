@@ -218,7 +218,7 @@ describe('content', () => {
     const b = itemOrigins().get('bandage')!;
     expect(b.containers.length).toBeGreaterThan(0);
     expect(b.enemies).toEqual(expect.arrayContaining(['PMC', 'Jug']));
-    expect(b.vendors.map((v) => v.vendor)).toContain('Medic');
+    expect(b.vendors.map((v) => v.vendor)).toContain('Doc');
     // Every item a vendor sells has a source; quest items have their spot.
     for (const v of loadVendors().values())
       for (const o of v.sells)
