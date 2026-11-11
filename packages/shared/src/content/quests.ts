@@ -13,7 +13,9 @@ import type { VendorDef } from './vendors';
  * - handOver: give the vendor some of a normal item, from the stash, between raids.
  * - extract: get out of a raid with a quest item (14b), which spawns only while the
  *   quest is active, at one of its spots on its map, picked at random each raid. Kept in
- *   the vault after dying counts too; the server takes it either way.
+ *   the vault after dying counts too; the server takes it either way. An optional `find`
+ *   line shows as a step before it: it ticks in a raid while you carry the item and
+ *   isn't saved (the user's call, 2026-11-11), so dying means finding it again.
  * Rewards are money and items, claimed into the stash once every objective is done.
  */
 
@@ -54,6 +56,8 @@ const extractSchema = z.strictObject({
   map: idSchema,
   /** questMarker path ids on that map; it lies at one of them, picked at random. */
   spots: z.array(z.string().min(1)).min(1),
+  /** A first step shown before it, for finding the item; not saved. */
+  find: z.string().min(1).optional(),
 });
 
 const objectiveSchema = z.discriminatedUnion('type', [

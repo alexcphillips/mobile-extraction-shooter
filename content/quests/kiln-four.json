@@ -15,12 +15,8 @@
     }
   ],
   "rewards": {
-    "money": 25000,
-    "items": [
-      {
-        "item": "medium-backpack"
-      }
-    ],
-    "rep": 0.05
+    "money": 5000,
+    "items": [],
+    "rep": 0.02
   }
 }

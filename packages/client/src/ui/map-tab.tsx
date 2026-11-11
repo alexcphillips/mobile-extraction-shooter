@@ -18,7 +18,8 @@ import { CUT_ABOVE } from '../editor/cut';
  * top. A map with `floors` (2026-11-09) is shown a floor at a time, cut CUT_ABOVE over it
  * as the editor's cutaway is, so a covered building shows its rooms, not its roof; what's
  * well below the floor shown (an atrium's ground floor) is dimmed. Then named zones, map
- * labels, your extraction points, your quest spots and you. The view is framed on what's
+ * labels, your extraction points and you (no quest spots since
+ * 2026-11-11: the objective's text and the map labels say where). The view is framed on what's
  * built, not the whole terrain. Each floor's layers are built once per map and kept, so a
  * redraw only moves your arrow.
  */
@@ -415,7 +416,6 @@ interface Props {
 }
 
 const EXTRACT = '#9dffb0';
-const QUEST = '#ffe08a';
 
 export function MapTab({ map, sim, player }: Props): ReactNode {
   const floors = map.floors;
@@ -476,9 +476,7 @@ export function MapTab({ map, sim, player }: Props): ReactNode {
 
   // Yours: those your spawn allows (sim/raid.ts extractionsOf).
   const extractions = extractionsOf(sim, player);
-  const quests = (sim.raid?.investigate ?? []).filter((s) => s.holder === player.id && !s.done);
   const arrow = 9 * k;
-  const diamond = 10 * k;
   const playerAway = away(player.y) !== '';
 
   return (
@@ -542,28 +540,6 @@ export function MapTab({ map, sim, player }: Props): ReactNode {
             away(p.y) !== '',
           ),
         )}
-        {quests.map((s) => {
-          const dim = away(s.y) !== '';
-          return (
-            <g key={s.marker} opacity={dim ? 0.55 : 1}>
-              <rect
-                x={s.x - diamond / 2}
-                y={s.z - diamond / 2}
-                width={diamond}
-                height={diamond}
-                transform={`rotate(45 ${s.x} ${s.z})`}
-                fill="rgb(255 224 138 / 0.35)"
-                stroke={QUEST}
-                strokeWidth={2 * k}
-              />
-              {dim &&
-                label(
-                  { x: s.x, z: s.z - diamond * 1.4, text: away(s.y).trim(), big: false, key: 'a' },
-                  QUEST,
-                )}
-            </g>
-          );
-        })}
         <g
           transform={`translate(${player.x} ${player.z}) rotate(${(-player.yaw * 180) / Math.PI})`}
           opacity={playerAway ? 0.5 : 1}

@@ -2,7 +2,7 @@
   "formatVersion": 10,
   "id": "tourniquet",
   "name": "Tourniquet",
-  "shortName": "Tourn.",
+  "shortName": "Tourniq",
   "type": "med",
   "size": [1, 1],
   "value": 1000,
@@ -16,7 +16,12 @@
   "model": {
     "parts": [
       { "type": "box", "pos": [0, 0, 0], "size": [0.16, 0.025, 0.04], "colour": "#26292c" },
-      { "type": "box", "pos": [-0.02, 0.018, 0], "size": [0.05, 0.012, 0.045], "colour": "#3a3f44" },
+      {
+        "type": "box",
+        "pos": [-0.02, 0.018, 0],
+        "size": [0.05, 0.012, 0.045],
+        "colour": "#3a3f44"
+      },
       {
         "type": "cylinder",
         "pos": [-0.02, 0.03, 0],

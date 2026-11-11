@@ -3,17 +3,17 @@
   "id": "field-dressing",
   "name": "Field dressing",
   "vendor": "medic",
-  "description": "I'm short on the basics. Bring me a few bandages and I'll show you I can pay better than I sell.",
+  "description": "Medical supplies are becoming harder to come by. Bring me a dressing pack if you find one.",
   "objectives": [
     {
-      "id": "bandages",
+      "id": "sterile-dressing-pack",
       "type": "handOver",
-      "item": "bandage",
-      "count": 3
+      "item": "sterile-dressing-pack",
+      "count": 1
     }
   ],
   "rewards": {
-    "money": 3000,
+    "money": 2000,
     "items": [
       {
         "item": "field-first-aid-kit"

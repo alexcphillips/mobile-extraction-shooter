@@ -37,10 +37,11 @@ function standing(
     const spot = sim.raid?.investigate.find((s) => s.holder === player.id && s.marker === o.marker);
     return spot?.done
       ? { done: true, note: 'Investigated' }
-      : { done: false, note: 'Marked on your map' };
+      : { done: false, note: 'Not investigated yet' };
   }
   const carried = gearItems(player.gear).some((i) => i.item === o.item);
-  return { done: false, note: carried ? 'Got it: now get out' : 'Not found yet' };
+  if (carried) return { done: false, note: 'Got it: now get out' };
+  return { done: false, note: o.find ? '' : 'Not found yet' };
 }
 
 export function RaidQuests({
@@ -76,15 +77,24 @@ export function RaidQuests({
             <ul className="quests-objectives">
               {q.objectives.map((o) => {
                 const s = standing(profile, sim, player, map, q, o);
-                return (
+                const found =
+                  o.type === 'extract' &&
+                  (s.done || gearItems(player.gear).some((i) => i.item === o.item));
+                return [
+                  o.type === 'extract' && o.find && (
+                    <li key={`${o.id}/find`} className={found ? 'done' : ''}>
+                      <span className="quests-tick">{found ? '✓' : '○'}</span>
+                      <span className="quests-objective">{o.find}</span>
+                    </li>
+                  ),
                   <li key={o.id} className={s.done ? 'done' : ''}>
                     <span className="quests-tick">{s.done ? '✓' : '○'}</span>
                     <span className="quests-objective">
                       {objectiveText(items, o)}
                       {s.note && <span className="raid-quests-note"> · {s.note}</span>}
                     </span>
-                  </li>
-                );
+                  </li>,
+                ];
               })}
             </ul>
           </li>

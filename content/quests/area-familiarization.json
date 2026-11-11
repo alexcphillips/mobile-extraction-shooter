@@ -1,16 +1,16 @@
 {
   "formatVersion": 1,
-  "id": "get-your-bearings",
-  "name": "Get your bearings",
-  "vendor": "guns-ammo-vendor",
-  "description": "New to Silver Creek? Learn the three things you can see from anywhere in the valley: the fire lookout on the west ridge, the teepee burner at the mill, the water tower at the east end. Keep one in view and you'll always know which way is out.",
+  "id": "area-familiarization",
+  "name": "Local Recon",
+  "vendor": "armourer",
+  "description": "There are plenty of places worth knowing about around here. Visit the marked locations and familiarize yourself with the area.",
   "objectives": [
     {
       "id": "lookout",
       "type": "investigate",
       "map": "silver-creek",
       "marker": "sc-quest-lookout",
-      "text": "Climb to the fire lookout's landing on the west ridge"
+      "text": "Investigate the fire lookout's landing on the west ridge"
     },
     {
       "id": "burner",
@@ -24,7 +24,7 @@
       "type": "investigate",
       "map": "silver-creek",
       "marker": "sc-quest-tower",
-      "text": "Look inside the pump house under the east water tower"
+      "text": "Investigate the pump house under the east water tower"
     }
   ],
   "rewards": {
@@ -37,6 +37,6 @@
         "item": "bandage"
       }
     ],
-    "rep": 0.05
+    "rep": 0.02
   }
 }

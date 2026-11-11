@@ -209,7 +209,13 @@ export function TraderQuests({
                       const key = `${q.id}/${o.id}`;
                       const have = o.type === 'handOver' ? handOverCount(p, o) : 0;
                       const give = Math.min(have, goal - got);
-                      return (
+                      return [
+                        o.type === 'extract' && o.find && (
+                          <li key={`${o.id}/find`} className={got >= goal ? 'done' : ''}>
+                            <span className="quests-tick">{got >= goal ? '✓' : '○'}</span>
+                            <span className="quests-objective">{o.find}</span>
+                          </li>
+                        ),
                         <li key={o.id} className={got >= goal ? 'done' : ''}>
                           <span className="quests-tick">{got >= goal ? '✓' : '○'}</span>
                           <span className="quests-objective">
@@ -246,8 +252,8 @@ export function TraderQuests({
                                     : 'None in stash'}
                             </button>
                           )}
-                        </li>
-                      );
+                        </li>,
+                      ];
                     })}
                   </ul>
                 </>

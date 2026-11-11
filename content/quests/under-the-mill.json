@@ -2,9 +2,9 @@
   "formatVersion": 1,
   "id": "under-the-mill",
   "name": "Under the mill",
-  "vendor": "guns-ammo-vendor",
-  "description": "The mill race runs in a tunnel under the sawmill, creek to creek. It's the way past the mill when the mill is busy. The headgate keeper left his logbook down there somewhere. Bring it out and I'll give you the key he gave me.",
-  "requires": ["ways-across"],
+  "vendor": "fence",
+  "description": "The mill keeper left his logbook in the tunnel under the mill somewhere. Bring it out and I'll give you the key he gave me.",
+  "requires": ["area-familiarization"],
   "objectives": [
     {
       "id": "logbook",
@@ -12,16 +12,17 @@
       "item": "race-logbook",
       "map": "silver-creek",
       "spots": ["sc-quest-race-1", "sc-quest-race-2", "sc-quest-race-3"],
-      "text": "Find the headgate logbook in the race tunnel and get out with it"
+      "find": "Find the logbook in the tunnel",
+      "text": "Extract with the logbook"
     }
   ],
   "rewards": {
-    "money": 20000,
+    "money": 3000,
     "items": [
       {
         "item": "kiln-key"
       }
     ],
-    "rep": 0.05
+    "rep": 0.02
   }
 }

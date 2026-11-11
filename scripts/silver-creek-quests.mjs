@@ -1,5 +1,5 @@
 // Silver Creek's quest markers (roadmap MT-10, 2026-11-10), used by gen-silver-creek.mjs: the
-// spots the four starter quests (content/quests: get-your-bearings, ways-across,
+// spots the four starter quests (content/quests: area-familiarization,
 // under-the-mill, kiln-four) send a new player to, so they learn the landmarks, the quiet
 // crossings, the race tunnel and a key room. Investigate markers tick within 2.5 m; the
 // logbook (an extract objective) lies at one of the race spots, picked each raid.
