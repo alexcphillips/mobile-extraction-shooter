@@ -1,5 +1,7 @@
 import {
   ATTACHMENT_SLOTS,
+  bagCells,
+  bagRarity,
   FIRE,
   GRENADE_EFFECTS,
   MED_EFFECTS,
@@ -12,17 +14,19 @@ import {
   roundOf,
   idSchema,
   type AttachmentDef,
+  type ContainerDef,
   type ItemDb,
   type ItemDef,
   type WeaponDef,
 } from '@mes/shared';
-import { useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useMemo, useState, useSyncExternalStore, type PointerEvent, type ReactNode } from 'react';
 import { sounds } from '../audio/sounds';
 import { itemUses, soundSources } from '../content';
 import { C, Check, N, P, Row, put, type Bound } from '../editor/bound-fields';
 import { Text, Toggle } from '../editor/fields';
 import { previewPortrait, viewOf } from '../render/item-portrait';
 import { colourOf, tileName } from '../ui/raid-screen';
+import { sectionBoxes } from '../ui/inventory-layout';
 import type { Doc, ItemEditor, ItemEditorState } from './editor';
 import { fitPointsToSlot, setSlots } from './model-edit';
 import { FitsPage, type OpenFit } from './fits-panel';
@@ -326,6 +330,7 @@ function ItemPage(props: { editor: ItemEditor; state: ItemEditorState; def: Item
           hint="What vendors sell it for; they buy it for a share of this"
         />
         <P {...b} path={['rarity']} label="rarity (its tile's colour)" options={RARITIES} />
+        {def.type === 'container' && def.slot !== 'vault' && <BagRarityNote {...b} def={def} />}
         <ViewPicker {...b} def={def} />
         <TypeFields {...b} def={def} items={s.items} />
         <SoundFields {...b} def={def} />
@@ -720,6 +725,7 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
             <N {...b} path={['grid', 0]} label="inside width" min={1} />
             <N {...b} path={['grid', 1]} label="inside height" min={1} />
           </Row>
+          <SectionFields {...b} def={def} />
         </>
       );
     case 'melee':
@@ -1078,9 +1084,236 @@ function SizePreview({ def }: { def: ItemDef }) {
         {w !== h && (
           <Cells w={h} h={w} colour={colourOf(def)} label={tileName(def)} art={art} turned />
         )}
-        {def.type === 'container' && <Cells w={def.grid[0]} h={def.grid[1]} colour="" label="" />}
+        {def.type === 'container' && <InsidePreview def={def} />}
       </div>
     </div>
+  );
+}
+
+/** A rig's or backpack's inside as the inventory draws it: each section its own box. */
+function InsidePreview({ def }: { def: ContainerDef }) {
+  const [w, h] = def.grid;
+  if (!def.sections?.length) return <Cells w={w} h={h} colour="" label="" />;
+  // A cell is 44px with a 1px line between (as Cells draws it).
+  const cell = 45;
+  const boxes = sectionBoxes(
+    def.sections.map(({ at: [x, y], size: [sw, sh] }) => ({ x, y, w: sw, h: sh })),
+    cell,
+  );
+  return (
+    <div
+      className="ie-sections"
+      style={{
+        width: Math.max(...boxes.map((b) => b.left + b.s.w * cell)),
+        height: Math.max(...boxes.map((b) => b.top + b.s.h * cell)),
+      }}
+    >
+      {boxes.map(({ s, left, top }, i) => (
+        <div key={i} style={{ left, top }}>
+          <Cells w={s.w} h={s.h} colour="" label="" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * A rig's or backpack's rarity by its cells (2026-11-11): filled in when they change
+ * (editor.ts), and here, when set by hand to another, a button to go back to it.
+ */
+function BagRarityNote(props: Bound & { def: ContainerDef }) {
+  const { def } = props;
+  const cells = bagCells(def);
+  const auto = bagRarity(def);
+  return (
+    <p className="ed-note">
+      {cells} slot{cells === 1 ? '' : 's'}: {auto} by size
+      {def.rarity !== auto && (
+        <>
+          {' '}
+          (set by hand){' '}
+          <button onClick={() => props.edit((d) => put(d, ['rarity'], auto))}>use {auto}</button>
+        </>
+      )}
+    </p>
+  );
+}
+
+/** Each section's colour in the painter, by its index. */
+const SECTION_COLOURS = ['#4f8fd6', '#d68f4f', '#5fb36a', '#b45fc4', '#c9b13e', '#4fbfbf'];
+
+/**
+ * A rig's or backpack's sections (compartments, 2026-11-11): drag across free cells of
+ * the inside to add one, × to remove it, or set its cell and size below. No sections is
+ * one open grid. Pouches splits the inside into 1-wide columns, as the chest rig has.
+ */
+function SectionFields(props: Bound & { def: ContainerDef }) {
+  const { def } = props;
+  const [w, h] = def.grid;
+  const sections = def.sections ?? [];
+  const [drag, setDrag] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(null);
+  if (!(w >= 1 && h >= 1 && w <= 20 && h <= 20)) return null;
+  const owner = (x: number, y: number): number =>
+    sections.findIndex(
+      ({ at: [sx, sy], size: [sw, sh] }) => x >= sx && y >= sy && x < sx + sw && y < sy + sh,
+    );
+  const rect = drag && {
+    x: Math.min(drag.x0, drag.x1),
+    y: Math.min(drag.y0, drag.y1),
+    w: Math.abs(drag.x1 - drag.x0) + 1,
+    h: Math.abs(drag.y1 - drag.y0) + 1,
+  };
+  let rectFree = !!rect;
+  if (rect) {
+    for (let y = rect.y; y < rect.y + rect.h; y++)
+      for (let x = rect.x; x < rect.x + rect.w; x++) if (owner(x, y) >= 0) rectFree = false;
+  }
+  const set = (next: { at: [number, number]; size: [number, number] }[]) =>
+    props.edit((d) => put(d, ['sections'], next.length ? next : undefined));
+  const cellAt = (e: PointerEvent): [number, number] | null => {
+    const el = (e.target as HTMLElement).closest<HTMLElement>('[data-cell]');
+    if (!el) return null;
+    const [x, y] = el.dataset.cell!.split(',').map(Number);
+    return [x!, y!];
+  };
+  const end = () => {
+    if (rect && rectFree) {
+      set([...sections, { at: [rect.x, rect.y], size: [rect.w, rect.h] }]);
+    }
+    setDrag(null);
+  };
+  const free = w * h - sections.reduce((n, s) => n + s.size[0] * s.size[1], 0);
+  return (
+    <>
+      <h4>sections (compartments)</h4>
+      <p className="ed-note">
+        {sections.length
+          ? `Drag across free cells to add one. Items never reach across a section's edge.${free ? ` ${free} cell${free === 1 ? '' : 's'} in no section hold nothing.` : ''}`
+          : 'One open grid. Drag across the cells to make a section.'}
+      </p>
+      <div
+        className="ie-painter"
+        style={{
+          gridTemplateColumns: `repeat(${w}, 40px)`,
+          gridTemplateRows: `repeat(${h}, 40px)`,
+        }}
+        onPointerDown={(e) => {
+          const c = cellAt(e);
+          if (!c || owner(c[0], c[1]) >= 0) return;
+          (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+          setDrag({ x0: c[0], y0: c[1], x1: c[0], y1: c[1] });
+        }}
+        onPointerMove={(e) => {
+          if (!drag) return;
+          // Pointer capture sends moves here; find the cell under the pointer itself.
+          const el = document
+            .elementFromPoint(e.clientX, e.clientY)
+            ?.closest<HTMLElement>('.ie-painter [data-cell]');
+          if (!el) return;
+          const [x, y] = el.dataset.cell!.split(',').map(Number);
+          if (x !== drag.x1 || y !== drag.y1) setDrag({ ...drag, x1: x!, y1: y! });
+        }}
+        onPointerUp={end}
+        onPointerCancel={() => setDrag(null)}
+      >
+        {Array.from({ length: w * h }, (_, i) => {
+          const x = i % w;
+          const y = Math.floor(i / w);
+          const o = owner(x, y);
+          const inRect =
+            rect && x >= rect.x && y >= rect.y && x < rect.x + rect.w && y < rect.y + rect.h;
+          const colour = o >= 0 ? SECTION_COLOURS[o % SECTION_COLOURS.length] : undefined;
+          return (
+            <div
+              key={i}
+              data-cell={`${x},${y}`}
+              className={
+                inRect ? (rectFree ? 'ie-pcell ie-pcell-new' : 'ie-pcell ie-pcell-bad') : 'ie-pcell'
+              }
+              style={{
+                gridArea: `${y + 1} / ${x + 1}`,
+                ...(colour && { background: `${colour}99` }),
+              }}
+            />
+          );
+        })}
+        {sections.map(({ at: [x, y], size: [sw, sh] }, i) => (
+          <div
+            key={`s${i}`}
+            className="ie-psection"
+            style={{
+              gridArea: `${y + 1} / ${x + 1} / ${y + sh + 1} / ${x + sw + 1}`,
+              borderColor: SECTION_COLOURS[i % SECTION_COLOURS.length],
+            }}
+          >
+            <span>{i + 1}</span>
+            <button
+              title="Remove this section"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => set(sections.filter((_, j) => j !== i))}
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+      <Row>
+        <button
+          title="Splits the inside into 1-wide columns, each as tall as the inside"
+          onClick={() => set(Array.from({ length: w }, (_, x) => ({ at: [x, 0], size: [1, h] })))}
+        >
+          pouches (columns)
+        </button>
+        <button
+          title="Splits the inside into rows, each as wide as the inside"
+          onClick={() => set(Array.from({ length: h }, (_, y) => ({ at: [0, y], size: [w, 1] })))}
+        >
+          rows
+        </button>
+        <button
+          title="No sections: the inside is one open grid"
+          disabled={!sections.length}
+          onClick={() => set([])}
+        >
+          one open grid
+        </button>
+        <button
+          title="Shrinks the inside to the box around the sections"
+          disabled={!sections.length}
+          onClick={() =>
+            props.edit((d) => {
+              const ss = sections;
+              const x0 = Math.min(...ss.map((s) => s.at[0]));
+              const y0 = Math.min(...ss.map((s) => s.at[1]));
+              const x1 = Math.max(...ss.map((s) => s.at[0] + s.size[0]));
+              const y1 = Math.max(...ss.map((s) => s.at[1] + s.size[1]));
+              put(d, ['grid'], [x1 - x0, y1 - y0]);
+              put(
+                d,
+                ['sections'],
+                ss.map((s) => ({ at: [s.at[0] - x0, s.at[1] - y0], size: [...s.size] })),
+              );
+            })
+          }
+        >
+          fit inside
+        </button>
+      </Row>
+      {sections.map((_, i) => (
+        <div key={i} className="ie-sec-row">
+          <span
+            className="ie-sec-num"
+            style={{ color: SECTION_COLOURS[i % SECTION_COLOURS.length] }}
+          >
+            {i + 1}
+          </span>
+          <N {...props} path={['sections', i, 'at', 0]} label="x" min={0} />
+          <N {...props} path={['sections', i, 'at', 1]} label="y" min={0} />
+          <N {...props} path={['sections', i, 'size', 0]} label="w" min={1} />
+          <N {...props} path={['sections', i, 'size', 1]} label="h" min={1} />
+        </div>
+      ))}
+    </>
   );
 }
 
@@ -1092,13 +1325,19 @@ function Cells(props: {
   art?: string | null;
   /** The art was drawn for the unturned tile (h × w) and is turned a quarter to fit. */
   turned?: boolean;
+  /** A cell's size in pixels; 44 left out. */
+  size?: number;
 }) {
   const { w, h } = props;
+  const px = props.size ?? 44;
   if (!(w >= 1 && h >= 1 && w <= 20 && h <= 20)) return null;
   return (
     <div
       className="ie-cells"
-      style={{ gridTemplateColumns: `repeat(${w}, 44px)`, gridTemplateRows: `repeat(${h}, 44px)` }}
+      style={{
+        gridTemplateColumns: `repeat(${w}, ${px}px)`,
+        gridTemplateRows: `repeat(${h}, ${px}px)`,
+      }}
     >
       {props.colour ? (
         <div

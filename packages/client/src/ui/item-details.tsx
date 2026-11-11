@@ -498,7 +498,7 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
       return [
         [
           'Inside',
-          `${def.grid[0]} × ${def.grid[1]} cells${def.sections ? ` in ${def.sections.length} sections` : ''}`,
+          def.sections ? sectionsText(def.sections) : `${def.grid[0]} × ${def.grid[1]} cells`,
         ],
       ];
     case 'melee':
@@ -575,4 +575,24 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
     case 'quest':
       return [];
   }
+}
+
+/**
+ * A rig's or backpack's sections, by size, biggest first (2026-11-11): "4 of 1 × 2",
+ * "6 × 4, 2 of 1 × 2".
+ */
+function sectionsText(sections: readonly { size: readonly [number, number] }[]): string {
+  const counts = new Map<string, { n: number; cells: number }>();
+  for (const {
+    size: [w, h],
+  } of sections) {
+    const k = `${w} × ${h}`;
+    const c = counts.get(k) ?? { n: 0, cells: w * h };
+    c.n++;
+    counts.set(k, c);
+  }
+  return [...counts]
+    .sort((a, b) => b[1].cells - a[1].cells)
+    .map(([k, { n }]) => (n === 1 ? k : `${n} of ${k}`))
+    .join(', ');
 }

@@ -1,7 +1,36 @@
-import { ITEM_FORMAT, loadContent, type ItemDb, type ItemDef } from '@mes/shared';
+import {
+  ITEM_FORMAT,
+  bagCells,
+  bagRarity,
+  loadContent,
+  type ItemDb,
+  type ItemDef,
+} from '@mes/shared';
 import { itemContentProblem } from '../content';
 import { storageRisks } from './risk';
 import { blankItem, retype, type ItemType } from './templates';
+
+/** A rig's or backpack's cells (bagCells), or null for anything else or one not valid yet. */
+function cellsOf(doc: Doc | null): number | null {
+  if (!doc || doc.type !== 'container' || doc.slot === 'vault') return null;
+  const grid = doc.grid;
+  const sections = doc.sections;
+  if (!Array.isArray(grid) || !grid.every((n) => typeof n === 'number')) return null;
+  if (sections !== undefined && !Array.isArray(sections)) return null;
+  const n = bagCells(doc as Parameters<typeof bagCells>[0]);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Auto-fill (2026-11-11, the user's call): when a rig's or backpack's cells change (its
+ * grid or sections, or it becomes one), its rarity is set from them (bagRarity). Picking a
+ * rarity by hand afterwards overrides it until the cells change again.
+ */
+export function fillBagRarity(before: Doc | null, doc: Doc): void {
+  const cells = cellsOf(doc);
+  if (cells === null || cells === cellsOf(before)) return;
+  doc.rarity = bagRarity(doc as Parameters<typeof bagRarity>[0]);
+}
 
 /** Every item file's JSON by item id. */
 type Files = ReadonlyMap<string, string>;
@@ -109,6 +138,7 @@ export class ItemEditor {
     if (before === undefined) return;
     const doc = JSON.parse(before) as Doc;
     change(doc);
+    fillBagRarity(JSON.parse(before) as Doc, doc);
     const json = JSON.stringify(doc);
     if (json === before) return;
     if (!(gesture && this.gesture)) this.push();
@@ -151,6 +181,7 @@ export class ItemEditor {
     } else {
       const ammo = [...this.state.items.values()].find((d) => d.type === 'ammo')?.id;
       doc = blankItem(type, id, name, ammo) as unknown as Doc;
+      fillBagRarity(null, doc);
     }
     this.push();
     this.files = new Map(this.files).set(id, JSON.stringify(doc));

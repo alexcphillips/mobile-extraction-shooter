@@ -514,6 +514,7 @@ export {
   ITEM_VIEWS,
   WEAPON_CLASSES,
   RARITIES,
+  bagCells,
   bagRarity,
   SCOPE_RADIUS,
   ammoDef,

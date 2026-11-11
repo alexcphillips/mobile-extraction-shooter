@@ -507,3 +507,79 @@ body.item-editor #scene {
 .ie-sub h4 {
   margin-top: 2px;
 }
+
+/* A rig's or backpack's sections (2026-11-11): the preview, each its own box, and the painter. */
+.ie-sections {
+  position: relative;
+}
+
+.ie-sections > div {
+  position: absolute;
+}
+
+.ie-painter {
+  position: relative;
+  display: grid;
+  gap: 1px;
+  padding: 1px;
+  margin: 4px 0;
+  width: max-content;
+  background: rgba(255, 255, 255, 0.12);
+  touch-action: none;
+  user-select: none;
+}
+
+.ie-pcell {
+  background: #20252c;
+  cursor: crosshair;
+}
+
+.ie-pcell-new {
+  background: #4f8fd6cc;
+}
+
+.ie-pcell-bad {
+  background: #ff8a8088;
+}
+
+.ie-psection {
+  position: relative;
+  border: 2px solid;
+  border-radius: 3px;
+  pointer-events: none;
+  font-size: 10px;
+}
+
+.ie-psection > span {
+  position: absolute;
+  left: 3px;
+  top: 1px;
+}
+
+.ie-psection > button {
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 0 3px;
+  font-size: 11px;
+  line-height: 1.2;
+  pointer-events: auto;
+}
+
+.ie-sec-num {
+  align-self: center;
+  min-width: 1.5em;
+  font-weight: bold;
+}
+
+.ie-sec-row {
+  display: grid;
+  grid-template-columns: 1.5em repeat(4, 1fr);
+  gap: 4px;
+  align-items: end;
+}
+
+.ie-sec-row input {
+  width: 100%;
+  min-width: 0;
+}

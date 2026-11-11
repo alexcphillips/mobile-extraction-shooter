@@ -377,8 +377,10 @@ const defs = [
 ];
 
 /** A rig's or backpack's grid; null for anything else (a vault has no rarity rule). */
-function bagOf(d: Record<string, unknown>): [number, number] | null {
-  return d.type === 'container' && d.slot !== 'vault' ? (d.grid as [number, number]) : null;
+function bagOf(d: Record<string, unknown>): Parameters<typeof bagRarity>[0] | null {
+  return d.type === 'container' && d.slot !== 'vault'
+    ? (d as unknown as Parameters<typeof bagRarity>[0])
+    : null;
 }
 
 export const TEST_ITEMS: ItemDb = new Map(
@@ -388,7 +390,7 @@ export const TEST_ITEMS: ItemDb = new Map(
       d.id,
       {
         ...d,
-        // A rig's or backpack's rarity follows its cells (checkItems); the rest are common.
+        // A rig's or backpack's rarity by its cells (bagRarity); the rest are common.
         rarity: bagOf(d) ? bagRarity(bagOf(d)!) : 'common',
         ...(sounds && { sounds }),
         model: placeholderModel(d),

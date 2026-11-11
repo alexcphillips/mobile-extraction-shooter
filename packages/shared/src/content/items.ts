@@ -76,19 +76,33 @@ export const COMMON_TYPES: ReadonlySet<string> = new Set(['weapon', 'attachment'
 
 /**
  * The most cells a rig or backpack can hold at each rarity, mythic past the last (the
- * user's call, 2026-11-09; best guesses, with room for bigger bags than there are yet).
+ * user's call, 2026-11-11, replacing 2026-11-09's 8/14/22/32/44). Only the rarity the item
+ * editor fills in: content may set another (bagRarity).
  */
 export const BAG_RARITY_CELLS: readonly (readonly [Rarity, number])[] = [
-  ['common', 8],
-  ['uncommon', 14],
-  ['rare', 22],
-  ['epic', 32],
-  ['legendary', 44],
+  ['common', 6],
+  ['uncommon', 8],
+  ['rare', 12],
+  ['epic', 16],
+  ['legendary', 20],
 ];
 
-/** A rig's or backpack's rarity, from the cells its grid holds (BAG_RARITY_CELLS). */
-export function bagRarity(grid: readonly [number, number]): Rarity {
-  const cells = grid[0] * grid[1];
+/** The cells a rig or backpack holds: its sections', or its whole grid's. */
+export function bagCells(bag: {
+  grid: readonly [number, number];
+  sections?: readonly { size: readonly [number, number] }[] | undefined;
+}): number {
+  if (bag.sections?.length) return bag.sections.reduce((n, s) => n + s.size[0] * s.size[1], 0);
+  return bag.grid[0] * bag.grid[1];
+}
+
+/**
+ * A rig's or backpack's rarity by the cells it holds (BAG_RARITY_CELLS): what the item
+ * editor fills in when its grid or sections change (2026-11-11). A default, not a rule:
+ * the editor can set another.
+ */
+export function bagRarity(bag: Parameters<typeof bagCells>[0]): Rarity {
+  const cells = bagCells(bag);
   for (const [rarity, most] of BAG_RARITY_CELLS) if (cells <= most) return rarity;
   return 'mythic';
 }
@@ -1019,16 +1033,6 @@ export function checkItems(items: ItemDb): void {
     const source = `content/items/${item.id}.json`;
     if (COMMON_TYPES.has(item.type) && item.rarity !== 'common') {
       throw new ContentError(source, `a ${item.type} is always common, not ${item.rarity}`);
-    }
-    if (item.type === 'container' && item.slot !== 'vault') {
-      const want = bagRarity(item.grid);
-      if (item.rarity !== want) {
-        const cells = item.grid[0] * item.grid[1];
-        throw new ContentError(
-          source,
-          `a ${item.slot} of ${cells} cells is ${want}, not ${item.rarity}`,
-        );
-      }
     }
     if (item.type === 'weapon') {
       const ammo = roundOf(items, item.ammo);
