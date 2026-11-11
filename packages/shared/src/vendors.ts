@@ -29,6 +29,9 @@ export function condition(items: ItemDb, item: Item): number {
   switch (def.type) {
     case 'armour':
       return of(item.durability, def.durability);
+    case 'container':
+      // An armoured rig wears as armour does (2026-11-11).
+      return def.armour ? of(item.durability, def.armour.durability) : 1;
     case 'med':
       return of(item.left, def.hp ?? def.uses ?? 1);
     case 'repair':

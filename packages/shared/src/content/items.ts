@@ -370,11 +370,8 @@ const ammoSchema = z
     path: ['incendiary'],
   });
 
-const armourSchema = z.strictObject({
-  ...common,
-  type: z.literal('armour'),
-  /** A helmet covers the head, body armour the chest. */
-  slot: z.enum(['helmet', 'body']),
+/** What protects: armour's, and an armoured rig's armour (2026-11-11). */
+const armourStats = {
   /** Its protection level, against a round's level. */
   level: levelSchema,
   durability: positive,
@@ -383,6 +380,15 @@ const armourSchema = z.strictObject({
    * Force's "durability cost", 2026-11-06; sim/repair.ts). REPAIR.loss if left out.
    */
   repairLoss: z.number().min(0).lt(1).optional(),
+};
+const armourStatsSchema = z.strictObject(armourStats);
+
+const armourSchema = z.strictObject({
+  ...common,
+  type: z.literal('armour'),
+  /** A helmet covers the head, body armour the chest. */
+  slot: z.enum(['helmet', 'body']),
+  ...armourStats,
   /**
    * A helmet with a full face mask (AI-7, Jug's): worn by a player, it hides `edge` of the
    * view at each side (0–0.4 of the screen's width, fading in) and muffles every sound
@@ -588,6 +594,12 @@ const containerSchema = z
      */
     sections: z.array(sectionSchema).min(1).optional(),
     /**
+     * An armoured rig's armour (2026-11-11, the user's call): it covers the chest as body
+     * armour does, with the same levels, wear and repairs, and body armour can't be worn
+     * with it (gearConflict). Rigs only.
+     */
+    armour: armourStatsSchema.optional(),
+    /**
      * For testing only (2026-10-31): given from the admin page's Admin tab, so keep it out of
      * loot tables, loadouts and vendors (as an admin spawner gun).
      */
@@ -597,6 +609,10 @@ const containerSchema = z
   .refine((c) => !c.sections || sectionsProblem(c.grid, c.sections) === null, {
     message: 'sections must be inside the grid and not overlap',
     path: ['sections'],
+  })
+  .refine((c) => !c.armour || c.slot === 'rig', {
+    message: 'only a rig can have armour',
+    path: ['armour'],
   });
 
 type SectionDef = z.infer<typeof sectionSchema>;
@@ -935,6 +951,31 @@ function itemOf<T extends ItemDef['type']>(
 export const weaponDef = (items: ItemDb, id: string): WeaponDef => itemOf(items, id, 'weapon');
 export const ammoDef = (items: ItemDb, id: string): AmmoDef => itemOf(items, id, 'ammo');
 export const armourDef = (items: ItemDb, id: string): ArmourDef => itemOf(items, id, 'armour');
+
+/** What protects: armour's level, durability and repair loss, or an armoured rig's. */
+export type ArmourStats = z.infer<typeof armourStatsSchema>;
+
+/** An item's armour (2026-11-11): armour's own, an armoured rig's, or null. */
+export function armourOf(def: ItemDef): ArmourStats | null {
+  if (def.type === 'armour') return def;
+  if (def.type === 'container') return def.armour ?? null;
+  return null;
+}
+
+/** An item's armour by id (armourOf); throws if it has none. */
+export function armourStatsOf(items: ItemDb, id: string): ArmourStats {
+  const a = armourOf(itemDef(items, id));
+  if (!a) throw new Error(`item "${id}" has no armour`);
+  return a;
+}
+
+/** Whether an item is a rig with armour (2026-11-11). */
+export const isArmouredRig = (def: ItemDef): boolean =>
+  def.type === 'container' && def.slot === 'rig' && !!def.armour;
+
+/** An armour level's rarity, 1–6 common to mythic (2026-11-04): armour's and armoured rigs'. */
+export const levelRarity = (level: number): Rarity =>
+  RARITIES[Math.min(RARITIES.length, Math.max(1, Math.round(level))) - 1]!;
 export const attachmentDef = (items: ItemDb, id: string): AttachmentDef =>
   itemOf(items, id, 'attachment');
 export const medDef = (items: ItemDb, id: string): MedDef => itemOf(items, id, 'med');

@@ -22,14 +22,6 @@
       "count": [20, 200]
     },
     {
-      "item": "flash-drive",
-      "weight": 2
-    },
-    {
-      "item": "hard-drive",
-      "weight": 1
-    },
-    {
       "item": "portable-power-bank",
       "weight": 4
     },

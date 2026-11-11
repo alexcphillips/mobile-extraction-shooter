@@ -82,6 +82,8 @@ export interface DragHost {
   /** Whether the item may drop on a zone there (x, y: the top-left cell for a grid). */
   canDrop: (src: DragSource, zone: DropZone, x: number, y: number, rotated: boolean) => boolean;
   drop: (src: DragSource, to: Target | PartSlot | Into | RepairOn | LoadOn) => void;
+  /** Let go over a zone that won't take it: to say why, if there's a reason worth it. */
+  refused?: (src: DragSource, zone: DropZone) => void;
   tap: (src: DragSource) => void;
 }
 
@@ -286,6 +288,8 @@ export class DragController {
                     ? { load: z.gun }
                     : { gun: z.gun, slot: z.slot },
       );
+    } else if (hover) {
+      this.host.refused?.(src, hover.zone);
     }
   };
 

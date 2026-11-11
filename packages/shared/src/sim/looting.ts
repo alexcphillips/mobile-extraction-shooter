@@ -30,6 +30,7 @@ import {
   carriedGrid,
   equip,
   fitsSlot,
+  gearConflict,
   heldWeapon,
   stow,
   unequip,
@@ -271,7 +272,7 @@ export function bodyInReach(c: Character, b: Character): boolean {
 }
 
 /** The character whose gear an owner is, if c may reach it: c itself, or a dead body. */
-function ownerCharacter(state: SimState, c: Character, owner: Owner): Character | null {
+export function ownerCharacter(state: SimState, c: Character, owner: Owner): Character | null {
   if (owner.kind === 'self') return c;
   if (owner.kind !== 'body' || owner.id === c.id) return null;
   for (const e of state.entities) {
@@ -658,17 +659,60 @@ function stowOrDrop(ctx: Ctx, item: Item): void {
 /**
  * Drops an item on a gear slot, swapping with what's there if that fits where it came from.
  * An empty rig or backpack dropped on a slot whose bag has things in it takes them along
- * (the user's call, 2026-11-06): see moveContents.
+ * (the user's call, 2026-11-06; any rig, armoured or not, or backpack): see moveContents.
+ * What doesn't fit in the new bag (2026-11-11, the user's call) is dropped at c's feet in a
+ * raid, or put on the stash's pages between raids; with no room there it stays in the old
+ * bag, which then swaps only where a bag with things in it may go.
  */
 function toSlot(ctx: Ctx, from: Found, ch: Character, slot: GearSlot): boolean {
   const { items } = ctx;
   if (gunToBag(ctx, from, ch, slot)) return true;
   const oldBag = slotOf(ch.gear, slot)?.grid;
   const newBag = from.item.grid;
-  const refill = !!oldBag?.items.length && newBag?.items.length === 0;
-  if (!swapSlot(items, from, ch, slot)) return false;
-  if (refill) moveContents(items, oldBag!, newBag!);
+  if (!oldBag?.items.length || newBag?.items.length !== 0) return swapSlot(items, from, ch, slot);
+  // An empty bag lying in the bag it would replace: that bag would end up inside itself.
+  if (from.at === 'grid' && from.grid === oldBag) return false;
+  // What wouldn't fit, tried on copies first, and whether it has somewhere to go.
+  const trialOld = copyOf(oldBag);
+  moveContents(items, trialOld, copyOf(newBag));
+  const spill = !trialOld.items.length || !ctx.stash || fitsStash(ctx, trialOld.items);
+  if (!spill) {
+    if (!swapSlot(items, from, ch, slot)) return false;
+    moveContents(items, oldBag, newBag);
+    return true;
+  }
+  // The old bag goes empty, so it may go wherever an empty one can (into a backpack too).
+  const contents = oldBag.items;
+  oldBag.items = [];
+  const swapped = swapSlot(items, from, ch, slot);
+  oldBag.items = contents;
+  if (!swapped) return false;
+  moveContents(items, oldBag, newBag);
+  for (const g of oldBag.items.splice(0)) {
+    if (ctx.stash) addToStash(ctx, g.item);
+    else dropItem(ctx.state, ctx.c, g.item, ctx.world);
+  }
   return true;
+}
+
+/** A deep copy of plain JSON data (items and grids are). */
+const copyOf = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
+
+/** The stash's pages, between raids: the stash screen's loot containers (stash.ts). */
+const stashPages = (ctx: Ctx): Grid[] => ctx.state.loot.map((l) => l.grid);
+
+/** Whether all of these would fit on the stash's pages, tried on copies. */
+function fitsStash(ctx: Ctx, left: readonly GridItem[]): boolean {
+  const pages = copyOf(stashPages(ctx));
+  return left.every((g) => {
+    const item = copyOf(g.item);
+    return pages.some((page) => addItem(ctx.items, page, item) === 0);
+  });
+}
+
+/** Puts an item on the first stash pages with room (fitsStash said there is). */
+function addToStash(ctx: Ctx, item: Item): void {
+  for (const page of stashPages(ctx)) if (addItem(ctx.items, page, item) === 0) return;
 }
 
 /**
@@ -707,6 +751,8 @@ function moveContents(items: ItemDb, from: Grid, to: Grid): void {
 function swapSlot(items: ItemDb, from: Found, ch: Character, slot: GearSlot): boolean {
   if (from.at === 'slot' && from.ch === ch && from.slot === slot) return false;
   if (!fitsSlot(items, slot, from.item)) return false;
+  // Body armour and an armoured rig never go on together (2026-11-11).
+  if (gearConflict(items, ch.gear, slot, from.item)) return false;
   const old = slotOf(ch.gear, slot);
   if (!old) {
     takeOut(from);
@@ -722,6 +768,7 @@ function swapSlot(items: ItemDb, from: Found, ch: Character, slot: GearSlot): bo
   }
   if (from.at === 'slot') {
     if (!fitsSlot(items, from.slot, old)) return false;
+    if (gearConflict(items, from.ch.gear, from.slot, old)) return false;
     unequip(from.ch, from.slot);
     equip(ch, items, slot, from.item);
     equip(from.ch, items, from.slot, old);
@@ -794,6 +841,7 @@ function quickMove(
       def.type !== 'weapon' ? OTHER_SLOTS : def.hold === 'pistol' ? PISTOL_SLOTS : GUN_SLOTS;
     for (const slot of slots) {
       if (slotOf(ch.gear, slot) || !fitsSlot(items, slot, from.item)) continue;
+      if (gearConflict(items, ch.gear, slot, from.item)) continue;
       takeOut(from);
       equip(ch, items, slot, from.item);
       return true;

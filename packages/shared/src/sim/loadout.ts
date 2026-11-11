@@ -8,7 +8,7 @@ import type {
 } from '../content/enemies';
 import { byWeight, nextFloat, nextRange, type Rng } from '../rng';
 import { createItem } from './create-item';
-import { createGear, equip, stow, type GearSlot } from './gear';
+import { createGear, equip, gearConflict, stow, type GearSlot } from './gear';
 import { createArmour } from './health';
 import type { Character } from './state';
 import { giveWeapon } from './weapons';
@@ -42,6 +42,9 @@ export function equipLoadout(c: Character, items: ItemDb, loadout: LoadoutDef, r
   c.gear.helmet = rollArmour(items, loadout.helmets, rng);
   c.gear.bodyArmour = rollArmour(items, loadout.bodyArmour, rng);
   rollContainer(c, items, 'rig', loadout.rigs, rng);
+  // An armoured rig is its chest armour (2026-11-11): body armour rolled too comes off.
+  const rig = c.gear.rig;
+  if (rig && gearConflict(items, c.gear, 'rig', rig)) c.gear.bodyArmour = null;
   rollContainer(c, items, 'backpack', loadout.backpacks, rng);
   for (const k of loadout.carried ?? [])
     for (let i = 0; i < (k.count ?? 1); i++) stow(c, items, createItem(items, k.item));

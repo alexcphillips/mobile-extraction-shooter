@@ -1,4 +1,7 @@
 import {
+  ARMOURED_RIG_WORN,
+  armourOf,
+  isArmouredRig,
   ATTACHMENT_SLOTS,
   calibreOf,
   cantSell,
@@ -652,7 +655,8 @@ function RepairButton({
   item: Item;
   def: ItemDef;
 }): ReactNode {
-  if (def.type !== 'armour') return null;
+  // Armour, or an armoured rig (2026-11-11).
+  if (!armourOf(def)) return null;
   // While anything is being used, the pill at the top shows it (and stops it).
   if (inv.ctx.player.using) return null;
   if ((item.durability ?? 0) >= maxDurability(inv.ctx.items, item) - 1e-6) return null;
@@ -1074,7 +1078,7 @@ function Ground({ inv }: { inv: InventoryController }): ReactNode {
               className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${holdsFavourite(g.item, favs) ? ' favourite' : ''}`}
               data-ref={JSON.stringify(ref)}
               data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
-              data-armour={def.type === 'armour' ? JSON.stringify(ref) : undefined}
+              data-armour={armourOf(def) ? JSON.stringify(ref) : undefined}
               style={{
                 width: def.size[0] * cell,
                 height: def.size[1] * cell,
@@ -1215,22 +1219,35 @@ function Slots({
         const def = item && itemDef(inv.ctx.items, item.item);
         const inHand = owner.kind === 'self' && ch.gear.hand === slot && !!item;
         const ref: ItemRef | null = item ? { owner, slot, item: item.item } : null;
+        // Shut while an armoured rig is worn (2026-11-11): it's the chest armour then.
+        const shut =
+          slot === 'bodyArmour' &&
+          !item &&
+          !!ch.gear.rig &&
+          isArmouredRig(itemDef(inv.ctx.items, ch.gear.rig.item));
         return (
           <div
             key={slot}
-            className={`inv-slot${WIDE.has(slot) ? ' wide' : CENTRE.has(slot) ? (centred ? ' centre' : ' half') : ''}`}
+            className={`inv-slot${WIDE.has(slot) ? ' wide' : CENTRE.has(slot) ? (centred ? ' centre' : ' half') : ''}${shut ? ' shut' : ''}`}
             data-drop={JSON.stringify({ owner, slot })}
+            title={shut ? ARMOURED_RIG_WORN : undefined}
           >
             {/* Named only while empty: the item's own name would show through it. */}
-            {!item && <span className="inv-slot-name">{SLOT_NAMES[slot]}</span>}
-            {!item && <SlotGhost items={inv.ctx.items} slot={slot} />}
+            {!item && !shut && <span className="inv-slot-name">{SLOT_NAMES[slot]}</span>}
+            {!item && !shut && <SlotGhost items={inv.ctx.items} slot={slot} />}
+            {shut && (
+              <span className="inv-slot-shut">
+                {SLOT_NAMES[slot]}
+                <small>{tileName(itemDef(inv.ctx.items, ch.gear.rig!.item))} worn</small>
+              </span>
+            )}
             {item && def && ref && (
               <div
                 className={`inv-item${inHand ? ' in-hand' : ''}${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${holdsFavourite(item, favs, shown) ? ' favourite' : ''}`}
                 data-ref={JSON.stringify(ref)}
                 title={inHand ? 'In hand' : undefined}
                 data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
-                data-armour={def.type === 'armour' ? JSON.stringify(ref) : undefined}
+                data-armour={armourOf(def) ? JSON.stringify(ref) : undefined}
                 style={{ background: tintOf(def) }}
                 onContextMenu={(e) => {
                   e.preventDefault();
@@ -1309,7 +1326,7 @@ function GridView({
         className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${inv.isOpenBag(ref) ? ' open' : ''}${hit && !hit(g.item) ? ' dimmed' : ''}${holdsFavourite(g.item, favs) ? ' favourite' : ''}`}
         data-ref={JSON.stringify(ref)}
         data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
-        data-armour={def.type === 'armour' ? JSON.stringify(ref) : undefined}
+        data-armour={armourOf(def) ? JSON.stringify(ref) : undefined}
         style={{
           left: (g.x - ox) * cell,
           top: (g.y - oy) * cell,
@@ -1479,7 +1496,7 @@ function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemD
   return (
     <>
       <span className="inv-item-name">{tileName(def)}</span>
-      <span className={def.type === 'armour' ? 'inv-item-badge inv-item-light' : 'inv-item-badge'}>
+      <span className={armourOf(def) ? 'inv-item-badge inv-item-light' : 'inv-item-badge'}>
         {badge(item, def)}
       </span>
     </>
@@ -1507,7 +1524,7 @@ function nameLines(cellsHigh: number, cell: number): number {
 
 /** A tile's badge in words, for the hover card: "Durability 40/40", "12 cells", "2/2 uses". */
 function hoverState(def: ItemDef, state: string): string {
-  if (def.type === 'armour') return `Durability ${state}`;
+  if (armourOf(def)) return `Durability ${state}`;
   if (def.type === 'container') return `${state} cells`;
   if (def.type === 'med' && def.effect !== 'heal') return `${state} uses`;
   return state;
@@ -1545,6 +1562,9 @@ function badge(item: Item, def: ItemDef): string {
       return def.uses === undefined ? '' : `${item.left ?? def.uses}/${def.uses}`;
     case 'container':
       // How many cells it holds; the vault is never a tile.
+      // An armoured rig shows its durability, as armour does (2026-11-11).
+      if (def.armour)
+        return `${tenths(item.durability ?? 0)}/${tenths(item.max ?? def.armour.durability)}`;
       return def.slot === 'vault' ? '' : `${cellsInside(def)}`;
     default:
       return stackSize(def) > 1 || item.count > 1 ? `${item.count}` : '';

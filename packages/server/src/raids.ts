@@ -1,8 +1,6 @@
 import { Hono } from 'hono';
 import {
-  FACTIONS,
   checkGear,
-  contractKills,
   vaultSize,
   depositInto,
   keptGear,
@@ -14,12 +12,10 @@ import {
   settleGuns,
   settlePockets,
   type EndRaidRequest,
-  type Faction,
-  type KillCounts,
   type ProfileResponse,
 } from '@mes/shared';
 import type { AppEnv } from './auth';
-import { loadContracts, loadItems, loadQuests, raidDef } from './content';
+import { loadItems, loadQuests, raidDef } from './content';
 import { body, fail, isObject } from './errors';
 import { AT_VERSION, profileResponse, writeProfile } from './profiles';
 
@@ -43,7 +39,7 @@ const OUTCOMES = new Set<string>(['extracted', 'killed', 'mia']);
 
 function parseEnd(raw: unknown): EndRaidRequest | string {
   if (!isObject(raw)) return 'a result is required';
-  const { how, seconds, kills, detail, investigated, killed } = raw;
+  const { how, seconds, kills, detail, investigated } = raw;
   if (typeof how !== 'string' || !OUTCOMES.has(how)) return 'how is extracted, killed or mia';
   if (typeof seconds !== 'number' || !(seconds >= 0)) return 'seconds must be 0 or more';
   if (!Number.isInteger(kills) || (kills as number) < 0) return 'kills must be a whole number';
@@ -59,8 +55,6 @@ function parseEnd(raw: unknown): EndRaidRequest | string {
     )
   )
     return 'investigated must be a list of marker ids';
-  const byFaction = parseKilled(killed, kills as number);
-  if (typeof byFaction === 'string') return byFaction;
   return {
     how: how as EndRaidRequest['how'],
     gear,
@@ -68,25 +62,8 @@ function parseEnd(raw: unknown): EndRaidRequest | string {
     kills: kills as number,
     ...(detail !== undefined ? { detail } : {}),
     ...(investigated !== undefined ? { investigated: investigated as string[] } : {}),
-    ...(byFaction ? { killed: byFaction } : {}),
     ...(raw.keepGear === true ? { keepGear: true } : {}),
   };
-}
-
-/** A result's kills by faction (H6): whole numbers by known faction, adding up to no more than `kills`. */
-function parseKilled(raw: unknown, kills: number): KillCounts | null | string {
-  if (raw === undefined) return null;
-  const bad = 'killed must give whole numbers by faction, adding up to no more than kills';
-  if (!isObject(raw)) return bad;
-  const out: KillCounts = {};
-  let sum = 0;
-  for (const [k, v] of Object.entries(raw)) {
-    if (!(FACTIONS as readonly string[]).includes(k) || !Number.isInteger(v) || (v as number) < 0)
-      return bad;
-    out[k as Faction] = v as number;
-    sum += v as number;
-  }
-  return sum > kills ? bad : out;
 }
 
 /**
@@ -221,11 +198,7 @@ raids.post('/:id/end', async (c) => {
   const bad = checkGear(items, gear, vaultSize(profile));
   if (bad) return fail(c, 'invalid', bad);
   const map = raidDef(row.raid)?.map;
-  if (map) {
-    raidProgress(profile, loadQuests().values(), items, map, end.investigated ?? [], gear);
-    // Contracts (H6): kills count whatever the outcome, if the raid started in time.
-    contractKills(profile, loadContracts(), map, end.killed ?? {}, row.started_at);
-  }
+  if (map) raidProgress(profile, loadQuests().values(), items, map, end.investigated ?? [], gear);
   profile.gear = gear;
   depositInto(profile, items);
 

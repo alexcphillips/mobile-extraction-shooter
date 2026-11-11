@@ -37,7 +37,6 @@ import {
   loadItems,
   loadLootTables,
   loadMap,
-  loadContracts,
   loadQuests,
   loadRaid,
   loadVendors,
@@ -206,12 +205,6 @@ describe('content', () => {
   it('quests load, and their vendors, items and markers exist', () => {
     expect(loadQuests().size).toBeGreaterThan(0);
     expect(() => checkQuestMarkers()).not.toThrow();
-  });
-
-  it('contracts (H6) load, checked against vendors, items and maps, a board of them per desk level', () => {
-    const all = [...loadContracts().values()];
-    for (let level = 1; level <= 3; level++)
-      expect(all.filter((c) => c.level <= level).length).toBeGreaterThanOrEqual(3);
   });
 
   it('item sources (UX-2): bandages turn up in containers, loose, on enemies and at the medic', () => {

@@ -1,5 +1,7 @@
 import {
   RARITIES,
+  armourOf,
+  isArmouredRig,
   itemDef,
   roundCalibre,
   calibreOf,
@@ -252,26 +254,44 @@ export function quickEquip(
   emptyInto(gear.pockets);
   for (const it of [...p.loose]) if (it.grid) emptyInto(it.grid);
 
+  // Armour ranks by level (two lower when worn), then durability, then rarity. The chest's
+  // is body armour or an armoured rig, whichever is best (2026-11-11): never both.
+  const armourKey = (it: Item, def: ItemDef): readonly number[] | null => {
+    const a = armourOf(def);
+    if (!a) return null;
+    const dur = it.durability ?? a.durability;
+    const worn = dur < maxDurability(items, it) * WORN_SHARE;
+    return [a.level - (worn ? WORN_PENALTY : 0), dur, rarityOf(def)];
+  };
+  const chest = best(p, items, (it, def) =>
+    fitsSlot(items, 'bodyArmour', it) ||
+    (isArmouredRig(def) && def.type === 'container' && !def.admin)
+      ? armourKey(it, def)
+      : null,
+  );
+  const armouredRig = !!chest && isArmouredRig(itemDef(items, chest.item));
+
   // Rigs and backpacks first, so there's somewhere to carry the rest.
   for (const slot of ['rig', 'backpack'] as const) {
-    const bag = best(p, items, (it, def) =>
-      def.type === 'container' && !def.admin && fitsSlot(items, slot, it) ? [cellsOf(def)] : null,
-    );
+    const bag =
+      slot === 'rig' && armouredRig
+        ? chest
+        : best(p, items, (it, def) =>
+            def.type === 'container' && !def.admin && !def.armour && fitsSlot(items, slot, it)
+              ? [cellsOf(def)]
+              : null,
+          );
     if (!bag) continue;
     takeOut(p, bag);
     // One stored with things in: they go to the stash.
     if (bag.grid) emptyInto(bag.grid);
     slots[slot] = bag;
   }
-  for (const slot of ['helmet', 'bodyArmour'] as const) {
-    const armour = best(p, items, (it, def) => {
-      if (def.type !== 'armour' || !fitsSlot(items, slot, it)) return null;
-      const dur = it.durability ?? def.durability;
-      const worn = dur < maxDurability(items, it) * WORN_SHARE;
-      return [def.level - (worn ? WORN_PENALTY : 0), dur, rarityOf(def)];
-    });
-    if (armour) slots[slot] = takeOut(p, armour);
-  }
+  if (chest && !armouredRig) slots.bodyArmour = takeOut(p, chest);
+  const helmet = best(p, items, (it, def) =>
+    fitsSlot(items, 'helmet', it) ? armourKey(it, def) : null,
+  );
+  if (helmet) slots.helmet = takeOut(p, helmet);
 
   // Guns: the best primary, a sidearm, and with a sniper a close-range gun.
   const carry: Item[] = [];

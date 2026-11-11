@@ -3,9 +3,6 @@ import type {
   BuyPageRequest,
   BuyRequest,
   HangarCollectRequest,
-  ContractClaimRequest,
-  ContractHandOverRequest,
-  ContractRequest,
   HangarCraftRequest,
   HangarRequest,
   ItemRef,
@@ -154,34 +151,6 @@ export class StashSaver {
       version: this.me.version,
       page,
     } satisfies HangarCollectRequest);
-  }
-
-  /** Takes a contract from the Intel desk's board (H6), like buyPage. */
-  takeContract(contract: string): Promise<ProfileResponse> {
-    return this.post(`/contracts/${encodeURIComponent(contract)}/take`, {
-      version: this.me.version,
-    } satisfies ContractRequest);
-  }
-
-  /** Hands over found-in-raid items for the running contract's objective, like buyPage. */
-  contractHandOver(objective: string): Promise<ProfileResponse> {
-    return this.post('/contracts/hand-over', {
-      version: this.me.version,
-      objective,
-    } satisfies ContractHandOverRequest);
-  }
-
-  /** Claims the finished contract's rewards into the stash, page `page` first, like buyPage. */
-  claimContract(page: number): Promise<ProfileResponse> {
-    return this.post('/contracts/claim', {
-      version: this.me.version,
-      page,
-    } satisfies ContractClaimRequest);
-  }
-
-  /** Gives up the running contract, like buyPage. */
-  dropContract(): Promise<ProfileResponse> {
-    return this.post('/contracts/drop', { version: this.me.version } satisfies ContractRequest);
   }
 
   /**

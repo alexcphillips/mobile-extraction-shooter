@@ -1,4 +1,5 @@
 import {
+  gearConflict,
   MOVEMENT,
   createGear,
   createHealth,
@@ -137,7 +138,7 @@ export function kitLook(items: ItemDb, kit: readonly string[]): Character {
     } else {
       const item = createItem(items, id);
       const slot = (['rig', 'backpack', 'knife'] as const).find((s) => fitsSlot(items, s, item));
-      if (slot) equip(c, items, slot, item);
+      if (slot && !gearConflict(items, c.gear, slot, item)) equip(c, items, slot, item);
     }
   }
   return c;

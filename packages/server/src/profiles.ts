@@ -9,7 +9,6 @@ import {
   overRepaired,
   loadSettings,
   restGear,
-  sameContracts,
   sameHangar,
   sameQuests,
   sameStanding,
@@ -132,8 +131,6 @@ profiles.put('/', async (c) => {
     return fail(c, 'invalid', 'standing with vendors only changes through buying and quests');
   if (!sameHangar(current.profile, next))
     return fail(c, 'invalid', 'the Hangar only changes through its upgrade route');
-  if (!sameContracts(current.profile, next))
-    return fail(c, 'invalid', 'contracts only change through the contract routes');
   const gained = itemGained(items, current.profile, next);
   if (gained) return fail(c, 'invalid', `more "${gained}" than before`);
   // Free repairs are an admin cheat: only on the dev server (see admin.ts).

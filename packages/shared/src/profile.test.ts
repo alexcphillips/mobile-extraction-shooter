@@ -188,15 +188,30 @@ describe('PROFILE_FORMAT', () => {
     const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
     old.formatVersion = 14;
     old.vendors = { quartermaster: { rep: 0.2, spent: 100 }, medic: { rep: 0.1, spent: 0 } };
-    old.crafts = {
-      'intel-desk': { recipe: 'intel-flash-drive', vendor: 'gunsmith', rep: 0.05, done: 1 },
-    };
     const p = loadContent(PROFILE_FORMAT, old, 'p');
     expect(p.vendors).toEqual({
       'guns-ammo-vendor': { rep: 0.2, spent: 100 },
       medic: { rep: 0.1, spent: 0 },
     });
-    expect(p.crafts['intel-desk']!.vendor).toBe('attachments-vendor');
+  });
+
+  it('takes out the deleted Intel desk, its contracts and drives (format 15 → 16)', () => {
+    const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
+    old.formatVersion = 15;
+    old.hangar = { 'intel-desk': 2, quarters: 1 };
+    old.crafts = {
+      'intel-desk': { recipe: 'intel-flash-drive', vendor: 'fence', rep: 0.05, done: 1 },
+      'trauma-bay': { recipe: 'r', item: 'bandage', count: 1, done: 1 },
+    };
+    old.contracts = { day: 3, taken: ['scav-sweep'] };
+    old.stash[0].items[0].item = { item: 'flash-drive', count: 1 };
+    const kept = old.stash[0].items.length - 1;
+    const p = loadContent(PROFILE_FORMAT, old, 'p');
+    expect(p.hangar).toEqual({ quarters: 1 });
+    expect(Object.keys(p.crafts)).toEqual(['trauma-bay']);
+    expect(p).not.toHaveProperty('contracts');
+    expect(p.stash[0]!.items).toHaveLength(kept);
+    expect(p.stash[0]!.items.some((g) => g.item.item === 'flash-drive')).toBe(false);
   });
 });
 

@@ -32,8 +32,6 @@ const moduleLevelSchema = z.strictObject({
   power: z.int().min(0).max(MODULE_LEVELS).optional(),
   /** What reaching it unlocks, in a line for the module's card. */
   unlocks: z.string().min(1),
-  /** From this level on, the module's crafts take this share of their minutes (H5: the Intel desk's faster decryption). */
-  craftTime: z.number().positive().max(1).optional(),
 });
 
 export const hangarModuleSchema = z.strictObject({
@@ -62,13 +60,6 @@ export const HANGAR_FORMAT: ContentFormat<HangarModuleDef> = {
 export function powerNeeded(module: HangarModuleDef, level: number): number {
   if (module.id === POWER_GRID) return 0;
   return module.levels[level - 1]?.power ?? level;
-}
-
-/** The share of a recipe's minutes a module's crafts take at `level`: the last `craftTime` up to it, else 1. */
-export function craftTimeAt(module: HangarModuleDef, level: number): number {
-  let share = 1;
-  for (const l of module.levels.slice(0, level)) share = l.craftTime ?? share;
-  return share;
 }
 
 /**

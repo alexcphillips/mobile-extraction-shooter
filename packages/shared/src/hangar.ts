@@ -1,6 +1,6 @@
-import { craftTimeAt, POWER_GRID, powerNeeded, type HangarModuleDef } from './content/hangar';
+import { POWER_GRID, powerNeeded, type HangarModuleDef } from './content/hangar';
 import type { ItemDb } from './content/items';
-import { rollResult, type RecipeDef } from './content/recipes';
+import type { RecipeDef } from './content/recipes';
 import { settleHangarSpace, type Craft, type Profile } from './profile';
 import { addToStash, newStashItem, stashCount, takeFromStash } from './stash';
 
@@ -76,8 +76,6 @@ export function sameHangar(a: Profile, b: Profile): boolean {
         x.recipe === y.recipe &&
         x.item === y.item &&
         x.count === y.count &&
-        x.vendor === y.vendor &&
-        x.rep === y.rep &&
         x.done === y.done
       );
     })
@@ -129,43 +127,31 @@ export function cantCraft(
   return null;
 }
 
-/** How long a recipe takes in its module at the profile's level, in ms (the level's `craftTime`, H5). */
-export function craftDuration(
-  profile: Profile,
-  module: HangarModuleDef,
-  recipe: RecipeDef,
-): number {
-  const share = craftTimeAt(module, moduleLevel(profile, module.id));
-  return Math.round(recipe.minutes * share * 60_000);
+/** How long a recipe takes, in ms. */
+export function craftDuration(recipe: RecipeDef): number {
+  return Math.round(recipe.minutes * 60_000);
 }
 
 /**
  * Starts a recipe in its module at `now` (ms, the server's clock), taking its inputs out
- * of the stash (all or nothing). A recipe with `results` rolls one now (`random` in
- * [0, 1)). Returns why it can't, or null.
+ * of the stash (all or nothing). Returns why it can't, or null.
  */
 export function startCraft(
   profile: Profile,
   module: HangarModuleDef,
   recipe: RecipeDef,
   now: number,
-  random: number = Math.random(),
 ): string | null {
   const bad = cantCraft(profile, module, recipe);
   if (bad) return bad;
   for (const c of recipe.inputs) takeFromStash(profile, (i) => i.item === c.item, c.count);
-  const done = now + craftDuration(profile, module, recipe);
-  const got = rollResult(recipe, random);
-  profile.crafts[module.id] =
-    got.vendor !== undefined
-      ? { recipe: recipe.id, vendor: got.vendor, rep: got.rep, done }
-      : { recipe: recipe.id, item: got.item, count: got.count, done };
+  const { item, count = 1 } = recipe.output;
+  profile.crafts[module.id] = { recipe: recipe.id, item, count, done: now + craftDuration(recipe) };
   return null;
 }
 
 /**
- * Collects a module's finished craft at `now` into the stash, page `page` first, or as
- * reputation with its vendor. If it
+ * Collects a module's finished craft at `now` into the stash, page `page` first. If it
  * isn't done, or the stash has no room, it stays in the module. Returns why it can't, or null.
  */
 export function collectCraft(
@@ -178,12 +164,6 @@ export function collectCraft(
   const craft = moduleCraft(profile, module.id);
   if (!craft) return `the ${module.name} has nothing to collect`;
   if (craftLeft(craft, now) > 0) return `the ${module.name} hasn't finished yet`;
-  if (craft.vendor !== undefined) {
-    const was = profile.vendors[craft.vendor] ?? { rep: 0, spent: 0 };
-    profile.vendors[craft.vendor] = { ...was, rep: was.rep + craft.rep };
-    delete profile.crafts[module.id];
-    return null;
-  }
   if (!items.has(craft.item)) return `"${craft.item}" no longer exists`;
   if (!addToStash(profile, items, [{ item: craft.item, count: craft.count }], page, newStashItem))
     return 'there is no room in your stash for it';

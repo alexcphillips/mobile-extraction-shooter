@@ -6,7 +6,7 @@ import type { HangarModuleDef } from './hangar';
 import type { LootContainerDef } from './loot-containers';
 import type { LootTableDef } from './loot-tables';
 import type { QuestDef, QuestObjective } from './quests';
-import { recipeResults, type RecipeDef } from './recipes';
+import type { RecipeDef } from './recipes';
 import type { VendorDef } from './vendors';
 import type { ItemDb } from './items';
 
@@ -148,13 +148,10 @@ export function sourceIndex(c: SourceContent): ReadonlyMap<string, ItemSource> {
     for (const r of c.hangar.recipes) {
       const module = c.hangar.modules.get(r.module)?.name ?? r.module;
       // One line per module, at the lowest level any of its recipes for it needs.
-      for (const x of recipeResults(r)) {
-        if (x.item === undefined) continue;
-        const crafted = of(x.item).crafted;
-        const has = crafted.find((y) => y.module === module);
-        if (has) has.level = Math.min(has.level, r.level);
-        else crafted.push({ module, level: r.level });
-      }
+      const crafted = of(r.output.item).crafted;
+      const has = crafted.find((y) => y.module === module);
+      if (has) has.level = Math.min(has.level, r.level);
+      else crafted.push({ module, level: r.level });
     }
 
   // Content checks already refuse unknown ids; this keeps a half-loaded editor safe.

@@ -1,4 +1,4 @@
-import { armourDef, type ArmourState, type ItemDb } from '@mes/shared';
+import { armourStatsOf, type ArmourState, type ItemDb } from '@mes/shared';
 
 export type ArmourCondition = 'good' | 'damaged' | 'low' | 'broken';
 
@@ -14,7 +14,7 @@ export const CONDITION_COLOURS: Readonly<Record<ArmourCondition, string>> = {
 };
 
 export function armourCondition(a: ArmourState, items: ItemDb): ArmourCondition {
-  const left = a.durability / armourDef(items, a.item).durability;
+  const left = a.durability / armourStatsOf(items, a.item).durability;
   return left <= 0 ? 'broken' : left < LOW ? 'low' : left < DAMAGED ? 'damaged' : 'good';
 }
 

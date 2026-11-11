@@ -228,6 +228,14 @@ const defs = [
   { ...common('backpack', [3, 3]), type: 'container', slot: 'backpack', grid: [4, 4] },
   { ...common('vault', [2, 2]), type: 'container', slot: 'vault', grid: [2, 2] },
   {
+    // An armoured rig (2026-11-11): the vest's level, chest armour as a rig.
+    ...common('plate-rig', [2, 3]),
+    type: 'container',
+    slot: 'rig',
+    grid: [2, 2],
+    armour: { level: 4, durability: 60, repairLoss: 0.1 },
+  },
+  {
     ...common('pouch-rig', [2, 2]),
     type: 'container',
     slot: 'rig',

@@ -1,4 +1,4 @@
-import { armourDef, itemDef, type ArmourDef, type ItemDb } from '../content/items';
+import { armourOf, armourStatsOf, itemDef, type ArmourStats, type ItemDb } from '../content/items';
 import type { Item } from '../inventory/grid';
 
 /*
@@ -19,20 +19,21 @@ export const REPAIR = {
 } as const;
 
 /** The share of the durability mended that comes off an armour's max. */
-export function repairLossOf(def: ArmourDef): number {
+export function repairLossOf(def: ArmourStats): number {
   return def.repairLoss ?? REPAIR.loss;
 }
 
 /** The most durability an armour piece can have now: its def's, less what repairs took. */
 export function maxDurability(items: ItemDb, armour: Item): number {
-  return armour.max ?? armourDef(items, armour.item).durability;
+  return armour.max ?? armourStatsOf(items, armour.item).durability;
 }
 
 /** How much a kit could restore to an armour piece now: 0 if either is used up or full. */
 export function repairable(items: ItemDb, kit: Item, armour: Item): number {
   const k = itemDef(items, kit.item);
-  const a = itemDef(items, armour.item);
-  if (k.type !== 'repair' || a.type !== 'armour') return 0;
+  // Armour, or an armoured rig's (2026-11-11).
+  const a = armourOf(itemDef(items, armour.item));
+  if (k.type !== 'repair' || !a) return 0;
   const missing = maxDurability(items, armour) - (armour.durability ?? 0);
   // Not for what's left over from rounding a full repair.
   if (missing < 1e-6) return 0;
@@ -47,7 +48,7 @@ export function repairable(items: ItemDb, kit: Item, armour: Item): number {
 export function repairArmour(items: ItemDb, kit: Item, armour: Item): number {
   const n = repairable(items, kit, armour);
   if (n <= 0) return 0;
-  const loss = repairLossOf(armourDef(items, armour.item));
+  const loss = repairLossOf(armourStatsOf(items, armour.item));
   // The durability that was missing that this mends: what's added, plus what's lost.
   const mended = n / (1 - loss);
   armour.max = maxDurability(items, armour) - mended * loss;

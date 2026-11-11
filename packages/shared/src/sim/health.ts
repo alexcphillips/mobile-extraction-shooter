@@ -1,8 +1,9 @@
-import { armourDef, type AmmoDef, type ItemDb } from '../content/items';
+import { armourDef, armourStatsOf, type AmmoDef, type ItemDb } from '../content/items';
 import type { Item } from '../inventory/grid';
 import { chance } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import { hostile } from './factions';
+import { chestArmour } from './gear';
 import { punchAim } from './recoil';
 import { maxDurability } from './repair';
 import type { Character, EntityId, SimState } from './state';
@@ -287,9 +288,9 @@ export function woundZone(
   }
   let absorbed = 0;
   let stopped = false;
-  const armour = zone === HEAD ? c.gear.helmet : zone === CHEST ? c.gear.bodyArmour : null;
+  const armour = zone === HEAD ? c.gear.helmet : zone === CHEST ? chestArmour(items, c.gear) : null;
   if (armour && armour.durability > 0) {
-    const level = armourDef(items, armour.item).level;
+    const level = armourStatsOf(items, armour.item).level;
     stopped = wound.level < level;
     absorbed = damage * (1 - throughArmour(wound.level, level));
     const wear = wound.armourDamage * armourWear(wound.level, level);
@@ -378,14 +379,14 @@ export function restoreHealth(c: Character, items: ItemDb): void {
   // One health bar is all in the chest.
   if (h.pool !== undefined) h.hp[CHEST] = h.pool;
   h.dead = false;
-  for (const armour of [c.gear.helmet, c.gear.bodyArmour]) {
+  for (const armour of [c.gear.helmet, chestArmour(items, c.gear)]) {
     if (armour) armour.durability = maxDurability(items, armour);
   }
 }
 
 /** New armour, at its durability times condition (0–1). */
 export function createArmour(items: ItemDb, id: string, condition = 1): ArmourState {
-  return { item: id, count: 1, durability: armourDef(items, id).durability * condition };
+  return { item: id, count: 1, durability: armourStatsOf(items, id).durability * condition };
 }
 
 /** Puts on new armour at full durability, in the slot its item says, replacing what was there. */

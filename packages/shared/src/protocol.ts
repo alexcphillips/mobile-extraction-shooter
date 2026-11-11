@@ -1,4 +1,3 @@
-import type { KillCounts } from './contracts';
 import type { Profile } from './profile';
 import type { Settings } from './settings';
 import type { Gear } from './sim/gear';
@@ -144,23 +143,6 @@ export interface HangarCollectRequest extends HangarRequest {
 }
 
 /**
- * The Intel desk's contracts (H6), each naming the profile version read: POST
- * /api/contracts/:id/take, and for the one running /api/contracts/hand-over
- * (ContractHandOverRequest), /claim (ContractClaimRequest) and /drop.
- */
-export interface ContractRequest {
-  version: number;
-}
-
-export interface ContractHandOverRequest extends ContractRequest {
-  objective: string;
-}
-
-export interface ContractClaimRequest extends ContractRequest {
-  page?: number;
-}
-
-/**
  * POST /api/admin/give: puts `count` new items into the stash, page `page` first, free.
  * Only on the dev server (`wrangler dev` sets ADMIN); elsewhere the route isn't there.
  */
@@ -192,8 +174,6 @@ export interface EndRaidRequest {
   /** Seconds in the raid. */
   seconds: number;
   kills: number;
-  /** The kills by the faction killed (H6, for contracts); none counted if left out. */
-  killed?: KillCounts;
   /** Where they extracted, or what killed them. */
   detail?: string;
   /** The quest markers they investigated (session 14b), by path id; counted even if they died. */

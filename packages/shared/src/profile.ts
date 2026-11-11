@@ -2,7 +2,9 @@ import { z } from 'zod';
 import type { ContentFormat } from './content/format';
 import {
   ATTACHMENT_SLOTS,
+  armourOf,
   firesRound,
+  isArmouredRig,
   fits,
   itemDef,
   sectionsOf,
@@ -37,6 +39,7 @@ import {
   carriedGrid,
   createGear,
   fitsSlot,
+  gearConflict,
   type Gear,
   type GearSlot,
 } from './sim/gear';
@@ -115,7 +118,7 @@ export interface VendorStanding {
 }
 
 export interface Profile {
-  formatVersion: 15;
+  formatVersion: 16;
   money: number;
   /** The stash's pages, bought with money (at least one). */
   stash: Grid[];
@@ -128,51 +131,18 @@ export interface Profile {
   hangar: Record<string, number>;
   /** The craft in each Hangar module, by module id (H2): running, or done and waiting to be collected. Only the server changes these. */
   crafts: Record<string, Craft>;
-  /** The Intel desk's contracts (H6): what's been taken today and the one running. Only the server changes these. */
-  contracts: ContractState;
-}
-
-/**
- * A profile's contracts (H6, shared contracts.ts). `taken` is what was taken on `day`
- * (whole days on the server's clock, UTC), off the board until the next. `active` is the
- * one running: its id, when its window ends (the server's clock, ms) and each objective's
- * progress by id. A finished one never expires; an unfinished one past `ends` is lost.
- */
-export interface ContractState {
-  day: number;
-  taken: string[];
-  active?: ActiveContract;
-}
-
-export interface ActiveContract {
-  id: string;
-  ends: number;
-  progress: Record<string, number>;
 }
 
 /**
  * A craft in a Hangar module (H2). Its output is copied from the recipe when it starts, so
  * a recipe changed or deleted later can't strand it. `done` is the server's clock (ms).
- * It makes an item stack (`item`, `count`), or reputation with a vendor (`vendor`, `rep`:
- * a decryption's roll, H5).
  */
-export type Craft =
-  | {
-      recipe: string;
-      item: string;
-      count: number;
-      done: number;
-      vendor?: undefined;
-      rep?: undefined;
-    }
-  | {
-      recipe: string;
-      vendor: string;
-      rep: number;
-      done: number;
-      item?: undefined;
-      count?: undefined;
-    };
+export interface Craft {
+  recipe: string;
+  item: string;
+  count: number;
+  done: number;
+}
 
 const count = z.int().min(0);
 const amount = z.number().refine((n) => Number.isFinite(n) && n >= 0, 'must be 0 or more');
@@ -232,7 +202,7 @@ const questStateShape = z.discriminatedUnion('status', [
 ]);
 
 const profileShape = z.strictObject({
-  formatVersion: z.literal(15),
+  formatVersion: z.literal(16),
   money: count,
   stash: z.array(gridShape).min(1),
   gear: gearShape,
@@ -241,26 +211,11 @@ const profileShape = z.strictObject({
   hangar: z.record(idSchema, count),
   crafts: z.record(
     idSchema,
-    z.union([
-      z.strictObject({ recipe: idSchema, item: idSchema, count: z.int().min(1), done: count }),
-      z.strictObject({
-        recipe: idSchema,
-        vendor: idSchema,
-        rep: z.number().positive(),
-        done: count,
-      }),
-    ]),
+    z.strictObject({ recipe: idSchema, item: idSchema, count: z.int().min(1), done: count }),
   ),
-  contracts: z.strictObject({
-    day: count,
-    taken: z.array(idSchema),
-    active: z
-      .strictObject({ id: idSchema, ends: count, progress: z.record(idSchema, count) })
-      .optional(),
-  }),
 });
 
-export const PROFILE_FORMAT_VERSION = 15;
+export const PROFILE_FORMAT_VERSION = 16;
 
 export const PROFILE_FORMAT: ContentFormat<Profile> = {
   kind: 'profile',
@@ -303,8 +258,48 @@ export const PROFILE_FORMAT: ContentFormat<Profile> = {
     // 2026-11-11: vendor ids say what they sell (the quartermaster became the
     // guns-ammo-vendor, the gunsmith the attachments-vendor). Rep and decryptions follow.
     14: (doc) => renameVendors(doc, RENAMED_VENDORS_IN_15),
+    // 2026-11-11: the Intel desk was deleted (the user's call), with its contracts, its
+    // decryptions and the flash and hard drives they took.
+    15: (doc) => dropIntelDesk(doc),
   },
 };
+
+/**
+ * Takes the Intel desk out of a stored profile (format 15 → 16): its level, any decryption
+ * in it (or any craft paying rep, which only it made), the contracts, and every flash and
+ * hard drive, wherever they lie.
+ */
+function dropIntelDesk(doc: Record<string, unknown>): Record<string, unknown> {
+  const d = { ...doc } as {
+    hangar?: Record<string, unknown>;
+    crafts?: Record<string, { vendor?: unknown }>;
+    contracts?: unknown;
+  };
+  delete d.contracts;
+  const { 'intel-desk': _level, ...hangar } = d.hangar ?? {};
+  d.hangar = hangar;
+  d.crafts = Object.fromEntries(
+    Object.entries(d.crafts ?? {}).filter(([id, c]) => id !== 'intel-desk' && !('vendor' in c)),
+  );
+  return dropItems(d as Record<string, unknown>, new Set(['flash-drive', 'hard-drive']));
+}
+
+/** Takes items of these ids out of every grid in a stored profile, at any depth. */
+function dropItems(doc: Record<string, unknown>, ids: ReadonlySet<string>) {
+  const walk = (v: unknown): unknown => {
+    if (Array.isArray(v)) return v.map(walk);
+    if (typeof v !== 'object' || v === null) return v;
+    const out: Record<string, unknown> = {};
+    for (const [k, x] of Object.entries(v)) out[k] = walk(x);
+    // A grid's items: { x, y, rotated, item: { item: id, ... } }.
+    if (Array.isArray(out.items))
+      out.items = out.items.filter(
+        (g) => !ids.has((g as { item?: { item?: string } }).item?.item ?? ''),
+      );
+    return out;
+  };
+  return walk(doc) as Record<string, unknown>;
+}
 
 const RENAMED_VENDORS_IN_15: Readonly<Record<string, string>> = {
   quartermaster: 'guns-ammo-vendor',
@@ -416,6 +411,8 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
   for (const [slot, id] of Object.entries(kit.gear) as [GearSlot, string][]) {
     const item = kitItem(items, kit, id);
     if (!fitsSlot(items, slot, item)) throw new Error(`kit ${kit.id}: "${id}" can't go in ${slot}`);
+    const conflict = gearConflict(items, gear, slot, item);
+    if (conflict) throw new Error(`kit ${kit.id}: "${id}": ${conflict}`);
     slots[slot] = item;
   }
   gear.hand = gear.primary1 ? 'primary1' : gear.sidearm ? 'sidearm' : 'knife';
@@ -434,7 +431,7 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
   return {
-    formatVersion: 15,
+    formatVersion: 16,
     money: kit.money,
     stash: [stash],
     gear,
@@ -442,7 +439,6 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
     vendors: {},
     hangar: {},
     crafts: {},
-    contracts: { day: 0, taken: [] },
   };
 }
 
@@ -612,6 +608,15 @@ export function settleBags(items: ItemDb, gear: Gear, stash: readonly Grid[]): v
       for (const g of shed)
         if (!stash.some((page) => addItem(items, page, g.item) === 0)) grid.items.push(g);
     }
+    // A rig that gained armour in content since starts it new; one that lost it, sheds it.
+    if (def.armour) {
+      if (bag.durability === undefined) bag.durability = def.armour.durability;
+      if (bag.max !== undefined && bag.max > def.armour.durability) delete bag.max;
+      bag.durability = Math.min(bag.durability, bag.max ?? def.armour.durability);
+    } else {
+      delete bag.durability;
+      delete bag.max;
+    }
     // The empty bags a backpack holds are settled as well.
     for (const g of bag.grid.items) settle(g.item);
     const sections = sectionsOf(def);
@@ -621,6 +626,12 @@ export function settleBags(items: ItemDb, gear: Gear, stash: readonly Grid[]): v
   settle(gear.rig);
   settle(gear.backpack);
   for (const page of stash) for (const g of page.items) settle(g.item);
+  // Body armour worn under a rig that became armoured goes to the stash (no room: it
+  // stays, and checkGear refuses it).
+  const body = gear.bodyArmour;
+  if (body && gear.rig && isArmouredRig(itemDef(items, gear.rig.item))) {
+    if (stash.some((page) => addItem(items, page, body) === 0)) gear.bodyArmour = null;
+  }
 }
 
 /**
@@ -747,9 +758,11 @@ function repairTotals(items: ItemDb, p: Profile) {
   const out = { durability: 0, max: 0, points: 0 };
   forEachItem(p.gear, p.stash, (item) => {
     const def = items.get(item.item);
-    if (def?.type === 'armour') {
+    // Armour, and armoured rigs (2026-11-11).
+    const armour = def && armourOf(def);
+    if (armour) {
       out.durability += item.durability ?? 0;
-      out.max += item.max ?? def.durability;
+      out.max += item.max ?? armour.durability;
     } else if (def?.type === 'repair') out.points += item.left ?? 0;
   });
   return out;
@@ -809,6 +822,8 @@ export function checkGear(
     if (bad) return bad;
     if (!fitsSlot(items, slot, item)) return `${slot}: "${item.item}" can't go there`;
   }
+  if (gear.bodyArmour && gear.rig && isArmouredRig(itemDef(items, gear.rig.item)))
+    return "body armour can't be worn with an armoured rig";
   if (!gear.vault) return 'a player must have a vault';
   // Only a backpack's grid takes empty bags (checkItem checks those).
   if (gear.pockets.bags || gear.vault.bags) return "pockets and the vault can't take bags";
@@ -852,6 +867,15 @@ function checkGrid(
 
 const scratchStats = createWeaponStats();
 
+/** Armour's durability, or an armoured rig's: 0 to its max, and its max to the def's. */
+function checkDurability(item: Item, full: number, at: string): string | null {
+  if (item.max !== undefined && item.max > full)
+    return `${at}: max durability must be 0 to ${full}`;
+  if (item.durability === undefined || item.durability > (item.max ?? full) + 1e-6)
+    return `${at}: durability must be 0 to ${item.max ?? full}`;
+  return null;
+}
+
 function checkItem(items: ItemDb, item: Item, where: string): string | null {
   const def = items.get(item.item);
   if (!def) return `${where}: no item "${item.item}"`;
@@ -863,13 +887,15 @@ function checkItem(items: ItemDb, item: Item, where: string): string | null {
     case 'weapon':
       return checkWeapon(items, item, def, at);
     case 'armour':
-      if (item.max !== undefined && item.max > def.durability)
-        return `${at}: max durability must be 0 to ${def.durability}`;
-      if (item.durability === undefined || item.durability > (item.max ?? def.durability) + 1e-6)
-        return `${at}: durability must be 0 to ${item.max ?? def.durability}`;
-      return null;
+      return checkDurability(item, def.durability, at);
     case 'container':
       if (!item.grid) return `${at}: no grid`;
+      // An armoured rig has armour's durability (2026-11-11); another rig has none.
+      if (def.armour) {
+        const bad = checkDurability(item, def.armour.durability, at);
+        if (bad) return bad;
+      } else if (item.durability !== undefined || item.max !== undefined)
+        return `${at}: only armour has durability`;
       if (!!item.grid.bags !== (def.slot === 'backpack'))
         return `${at}: ${def.slot === 'backpack' ? 'must' : "mustn't"} take empty bags`;
       return checkGrid(items, item.grid, def.grid[0], def.grid[1], false, def.id, sectionsOf(def));

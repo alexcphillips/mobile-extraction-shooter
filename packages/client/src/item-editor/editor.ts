@@ -2,7 +2,9 @@ import {
   ITEM_FORMAT,
   bagCells,
   bagRarity,
+  levelRarity,
   loadContent,
+  type Rarity,
   type ItemDb,
   type ItemDef,
 } from '@mes/shared';
@@ -11,8 +13,8 @@ import { storageRisks } from './risk';
 import { blankItem, retype, type ItemType } from './templates';
 
 /** A rig's or backpack's cells (bagCells), or null for anything else or one not valid yet. */
-function cellsOf(doc: Doc | null): number | null {
-  if (!doc || doc.type !== 'container' || doc.slot === 'vault') return null;
+function cellsOf(doc: Doc): number | null {
+  if (doc.type !== 'container' || doc.slot === 'vault') return null;
   const grid = doc.grid;
   const sections = doc.sections;
   if (!Array.isArray(grid) || !grid.every((n) => typeof n === 'number')) return null;
@@ -21,15 +23,38 @@ function cellsOf(doc: Doc | null): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/** An armour level 1–6, or null if it isn't one (yet). */
+const levelIn = (v: unknown): number | null =>
+  typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 6 ? v : null;
+
 /**
- * Auto-fill (2026-11-11, the user's call): when a rig's or backpack's cells change (its
- * grid or sections, or it becomes one), its rarity is set from them (bagRarity). Picking a
- * rarity by hand afterwards overrides it until the cells change again.
+ * What an item's rarity follows, and the rarity it gives: armour's level, an armoured
+ * rig's armour level (2026-11-11: as chest armour, not its room), or a rig's or
+ * backpack's cells. Null for anything else.
  */
-export function fillBagRarity(before: Doc | null, doc: Doc): void {
+function rarityBasis(doc: Doc | null): { key: string; rarity: Rarity } | null {
+  if (!doc) return null;
+  const level =
+    doc.type === 'armour'
+      ? levelIn(doc.level)
+      : doc.type === 'container' && doc.armour && typeof doc.armour === 'object'
+        ? levelIn((doc.armour as Doc).level)
+        : null;
+  if (level !== null) return { key: `level ${level}`, rarity: levelRarity(level) };
   const cells = cellsOf(doc);
-  if (cells === null || cells === cellsOf(before)) return;
-  doc.rarity = bagRarity(doc as Parameters<typeof bagRarity>[0]);
+  if (cells === null) return null;
+  return { key: `cells ${cells}`, rarity: bagRarity(doc as Parameters<typeof bagRarity>[0]) };
+}
+
+/**
+ * Auto-fill (2026-11-11, the user's call): when what an item's rarity follows changes
+ * (rarityBasis: a bag's grid or sections, an armour level, gaining armour or becoming one),
+ * its rarity is set from it. Picking a rarity by hand afterwards overrides it until that
+ * changes again.
+ */
+export function fillRarity(before: Doc | null, doc: Doc): void {
+  const now = rarityBasis(doc);
+  if (now && now.key !== rarityBasis(before)?.key) doc.rarity = now.rarity;
 }
 
 /** Every item file's JSON by item id. */
@@ -138,7 +163,7 @@ export class ItemEditor {
     if (before === undefined) return;
     const doc = JSON.parse(before) as Doc;
     change(doc);
-    fillBagRarity(JSON.parse(before) as Doc, doc);
+    fillRarity(JSON.parse(before) as Doc, doc);
     const json = JSON.stringify(doc);
     if (json === before) return;
     if (!(gesture && this.gesture)) this.push();
@@ -181,7 +206,7 @@ export class ItemEditor {
     } else {
       const ammo = [...this.state.items.values()].find((d) => d.type === 'ammo')?.id;
       doc = blankItem(type, id, name, ammo) as unknown as Doc;
-      fillBagRarity(null, doc);
+      fillRarity(null, doc);
     }
     this.push();
     this.files = new Map(this.files).set(id, JSON.stringify(doc));

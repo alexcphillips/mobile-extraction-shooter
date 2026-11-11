@@ -29,7 +29,7 @@ describe('the Hangar', () => {
   it('has every module, each with the Power grid able to power its levels', () => {
     const modules = loadHangar();
     expect(modules.get(POWER_GRID)?.levels.length).toBe(MODULE_LEVELS);
-    expect(modules.size).toBe(7);
+    expect(modules.size).toBe(6);
   });
 
   it('upgrades a module a level for its cost, once per version, within the Power grid', async () => {
@@ -171,19 +171,6 @@ describe('Hangar crafting', () => {
     expect(check({ output: { item: 'bandage', count: 1000 } })).toThrow(/than a stack/);
     expect(check({ module: 'nothing' })).toThrow(/no Hangar module/);
     expect(check({ level: 4 })).toThrow(/no level 4/);
-    const vendors = new Map([['fence', {}]]);
-    const rolled = (r: Partial<RecipeDef>) => () =>
-      checkRecipes(new Map([[base.id, { ...base, ...r }]]), loadHangar(), items, vendors);
-    const results = [{ weight: 1, vendor: 'fence', rep: 0.1 }];
-    expect(rolled({ results })).toThrow(/not both/);
-    expect(rolled({ output: undefined })).toThrow(/not both/);
-    expect(rolled({ output: undefined, results })).not.toThrow();
-    expect(
-      rolled({ output: undefined, results: [{ weight: 1, vendor: 'nobody', rep: 0.1 }] }),
-    ).toThrow(/no vendor "nobody"/);
-    expect(rolled({ output: undefined, results: [{ weight: 1, item: 'cash' }] })).toThrow(
-      /makes money/,
-    );
   });
 
   it('crafts on the server clock, and keeps the output until collected', async () => {
@@ -274,91 +261,5 @@ describe('Hangar crafting', () => {
     const full = await client.fails('POST', '/hangar/trauma-bay/collect', { version: me.version });
     expect(full.message).toMatch(/no room/);
     expect((await client.ok('GET', '/profile')).profile.crafts['trauma-bay']).toBeDefined();
-  });
-});
-
-describe('the Intel desk (H5)', () => {
-  const MIN = 60_000;
-  let clock = Date.now();
-  beforeEach(() => {
-    clock = Date.now();
-    vi.spyOn(Date, 'now').mockImplementation(() => clock);
-  });
-  afterEach(() => vi.restoreAllMocks());
-
-  /** A client with the Power grid and the Intel desk at `level`, and two flash drives. */
-  async function desk(level: number) {
-    const client = await withBandages(level * 2);
-    await client.editProfile((p) => {
-      for (let i = 0; i < 2; i++) addItem(items, p.stash[0]!, createItem(items, 'flash-drive'));
-    });
-    let me = await client.ok('GET', '/profile');
-    for (let i = 0; i < level; i++) {
-      me = await client.ok('POST', `/hangar/${POWER_GRID}/upgrade`, { version: me.version });
-      me = await client.ok('POST', '/hangar/intel-desk/upgrade', { version: me.version });
-    }
-    return { client, me };
-  }
-
-  it('rolls a decryption when it starts, and gives an item or vendor rep when collected', async () => {
-    const { client, me: start } = await desk(1);
-    const recipe = recipeDef('intel-flash-drive')!;
-    const drives = (p: typeof start.profile) => countItems(items, p).get('flash-drive') ?? 0;
-
-    // The first result (a key).
-    vi.spyOn(Math, 'random').mockReturnValue(0);
-    let me = await client.ok('POST', '/hangar/intel-desk/craft', {
-      version: start.version,
-      recipe: recipe.id,
-    });
-    expect(drives(me.profile)).toBe(1);
-    expect(me.profile.crafts['intel-desk']).toEqual({
-      recipe: recipe.id,
-      item: 'kiln-key',
-      count: 1,
-      done: clock + recipe.minutes * MIN,
-    });
-    clock += recipe.minutes * MIN;
-    me = await client.ok('POST', '/hangar/intel-desk/collect', { version: me.version });
-    expect(countItems(items, me.profile).get('kiln-key')).toBe(1);
-
-    // The last result (rep with the Fence).
-    vi.spyOn(Math, 'random').mockReturnValue(0.999);
-    me = await client.ok('POST', '/hangar/intel-desk/craft', {
-      version: me.version,
-      recipe: recipe.id,
-    });
-    expect(me.profile.crafts['intel-desk']).toMatchObject({ vendor: 'fence', rep: 0.05 });
-    const put = await client.fails('PUT', '/profile', {
-      version: me.version,
-      profile: { ...me.profile, crafts: {} },
-    });
-    expect(put.message).toMatch(/Hangar/);
-    clock += recipe.minutes * MIN;
-    const rep = me.profile.vendors['fence']?.rep ?? 0;
-    me = await client.ok('POST', '/hangar/intel-desk/collect', { version: me.version });
-    expect(me.profile.vendors['fence']!.rep).toBeCloseTo(rep + 0.05);
-    expect(me.profile.crafts).toEqual({});
-  });
-
-  it('needs level 2 for hard drives, and decrypts in half the time at level 3', async () => {
-    const low = await desk(1);
-    await low.client.editProfile((p) => {
-      addItem(items, p.stash[0]!, createItem(items, 'hard-drive'));
-    });
-    const me1 = await low.client.ok('GET', '/profile');
-    const locked = await low.client.fails('POST', '/hangar/intel-desk/craft', {
-      version: me1.version,
-      recipe: 'intel-hard-drive',
-    });
-    expect(locked.message).toMatch(/level 2/);
-
-    const { client, me } = await desk(3);
-    const recipe = recipeDef('intel-flash-drive')!;
-    const after = await client.ok('POST', '/hangar/intel-desk/craft', {
-      version: me.version,
-      recipe: recipe.id,
-    });
-    expect(after.profile.crafts['intel-desk']!.done).toBe(clock + (recipe.minutes * MIN) / 2);
   });
 });

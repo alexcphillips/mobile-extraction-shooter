@@ -25,10 +25,6 @@
     {
       "item": "gold-watch",
       "weight": 0.5
-    },
-    {
-      "item": "flash-drive",
-      "weight": 1
     }
   ]
 }

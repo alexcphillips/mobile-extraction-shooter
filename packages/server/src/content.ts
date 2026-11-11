@@ -1,5 +1,4 @@
 import {
-  CONTRACT_FORMAT,
   HANGAR_FORMAT,
   ITEM_FORMAT,
   QUEST_FORMAT,
@@ -7,14 +6,12 @@ import {
   RAID_FORMAT,
   STARTING_KIT_FORMAT,
   VENDOR_FORMAT,
-  checkContracts,
   checkHangar,
   checkItems,
   checkQuests,
   checkRecipes,
   checkVendors,
   loadById,
-  type ContractDef,
   type HangarModuleDef,
   type ItemDb,
   type QuestDef,
@@ -40,7 +37,6 @@ let vendors: Map<string, VendorDef> | undefined;
 let quests: Map<string, QuestDef> | undefined;
 let hangar: Map<string, HangarModuleDef> | undefined;
 let recipes: Map<string, RecipeDef> | undefined;
-let contracts: Map<string, ContractDef> | undefined;
 
 export function loadItems(): ItemDb {
   if (!items) {
@@ -112,7 +108,7 @@ export function hangarModule(id: string): HangarModuleDef | undefined {
 export function loadRecipes(): ReadonlyMap<string, RecipeDef> {
   if (!recipes) {
     const all = loadById(RECIPE_FORMAT, ofKind('recipes'));
-    checkRecipes(all, loadHangar(), loadItems(), loadVendors());
+    checkRecipes(all, loadHangar(), loadItems());
     recipes = all;
   }
   return recipes;
@@ -121,16 +117,4 @@ export function loadRecipes(): ReadonlyMap<string, RecipeDef> {
 /** A crafting recipe by id, or undefined. */
 export function recipeDef(id: string): RecipeDef | undefined {
   return loadRecipes().get(id);
-}
-
-/** Every Intel desk contract (H6), checked against the vendors, items and the raids' maps. */
-export function loadContracts(): ReadonlyMap<string, ContractDef> {
-  if (!contracts) {
-    const all = loadById(CONTRACT_FORMAT, ofKind('contracts'));
-    raids ??= loadById(RAID_FORMAT, ofKind('raids'));
-    const maps = new Set([...raids.values()].map((r) => r.map));
-    checkContracts(all, loadVendors(), loadItems(), maps);
-    contracts = all;
-  }
-  return contracts;
 }

@@ -1,5 +1,4 @@
 import {
-  INTEL_DESK,
   POWER_GRID,
   cantCraft,
   cantUpgrade,
@@ -11,9 +10,7 @@ import {
   newStashItem,
   powerNeeded,
   recipeCost,
-  rollsResult,
   upgradeCost,
-  type ContractDef,
   type Craft,
   type HangarModuleDef,
   type Item,
@@ -25,10 +22,9 @@ import {
 } from '@mes/shared';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { itemPortrait } from '../render/item-portrait';
-import { Contracts, type ContractActions } from './hangar-contracts';
 import { ItemDetails } from './item-details';
 import { colourOf } from './raid-screen';
-import { craftTime, resultChances, resultText, timeLeft, type Names } from './hangar-text';
+import { craftTime, timeLeft } from './hangar-text';
 import { ROMAN } from './vendors-page';
 
 /*
@@ -53,9 +49,6 @@ export function HangarPage({
   recipes,
   items,
   quests,
-  contracts,
-  names,
-  mapName,
   me,
   notice,
   onBack,
@@ -63,17 +56,12 @@ export function HangarPage({
   onUpgrade,
   onCraft,
   onCollect,
-  contractActions,
 }: {
   modules: readonly HangarModuleDef[];
   /** Every recipe, in their order. */
   recipes: readonly RecipeDef[];
   items: ItemDb;
   quests: readonly QuestDef[];
-  /** The Intel desk's contracts (H6), by id. */
-  contracts: ReadonlyMap<string, ContractDef>;
-  names: Names;
-  mapName: (id: string) => string;
   me: ProfileResponse;
   notice: string | null;
   onBack: () => void;
@@ -82,18 +70,14 @@ export function HangarPage({
   onUpgrade: (module: HangarModuleDef) => Promise<void>;
   onCraft: (module: HangarModuleDef, recipe: RecipeDef) => Promise<void>;
   onCollect: (module: HangarModuleDef) => Promise<void>;
-  contractActions: ContractActions;
 }): ReactNode {
   const [shown, setShown] = useState(0);
   const [inspecting, setInspecting] = useState<Item | null>(null);
   const profile = me.profile;
-  // The server's time, ticking each second while something is crafting, or on the Intel
-  // desk (a contract's time left, the board's next day).
+  // The server's time, ticking each second while something is crafting.
   const skew = useMemo(() => skewOf(me), [me]);
   const [now, setNow] = useState(() => Date.now() + skew);
-  const running =
-    Object.values(profile.crafts).some((c) => craftLeft(c, now) > 0) ||
-    modules[shown]?.id === INTEL_DESK;
+  const running = Object.values(profile.crafts).some((c) => craftLeft(c, now) > 0);
   // A new reply (a craft started) is caught up within the second.
   useEffect(() => {
     if (!running) return;
@@ -149,27 +133,14 @@ export function HangarPage({
           <CraftSlot
             items={items}
             module={module}
-            recipes={recipes}
             craft={moduleCraft(profile, module.id)}
             now={now}
             onInspect={setInspecting}
             onCollect={() => onCollect(module)}
           />
-          {module.id === INTEL_DESK && (
-            <Contracts
-              contracts={contracts}
-              profile={profile}
-              names={names}
-              mapName={mapName}
-              now={now}
-              actions={contractActions}
-            />
-          )}
           {own.length > 0 && (
             <>
-              <h3 className="hangar-heading">
-                {module.id === INTEL_DESK ? 'Decryption' : 'Recipes'}
-              </h3>
+              <h3 className="hangar-heading">Recipes</h3>
               <ul className="hangar-recipes">
                 {own.map((r) => (
                   <RecipeCard
@@ -178,7 +149,6 @@ export function HangarPage({
                     module={module}
                     recipe={r}
                     profile={profile}
-                    names={names}
                     onInspect={setInspecting}
                     onCraft={() => onCraft(module, r)}
                   />
@@ -366,7 +336,6 @@ function useOutput(items: ItemDb, item: string, count: number): Item {
 function CraftSlot({
   items,
   module,
-  recipes,
   craft,
   now,
   onInspect,
@@ -374,7 +343,6 @@ function CraftSlot({
 }: {
   items: ItemDb;
   module: HangarModuleDef;
-  recipes: readonly RecipeDef[];
   craft: Craft | null;
   now: number;
   onInspect: (item: Item) => void;
@@ -383,27 +351,17 @@ function CraftSlot({
   const [busy, setBusy] = useState(false);
   if (!craft) return null;
   const left = craftLeft(craft, now);
-  // A rolled recipe (a decryption, H5) keeps what it gives hidden until collected.
-  const recipe = recipes.find((r) => r.id === craft.recipe);
-  const rolled = !recipe || rollsResult(recipe) || craft.item === undefined;
-  const shown = rolled ? recipe?.inputs[0]?.item : craft.item;
   return (
     <div className={`hangar-craft${left ? '' : ' ready'}`}>
-      {shown && items.has(shown) ? (
-        <CraftOutput
-          items={items}
-          item={shown}
-          count={rolled ? 1 : craft.count!}
-          label={rolled ? recipe?.name : undefined}
-          onInspect={onInspect}
-        />
+      {items.has(craft.item) ? (
+        <CraftOutput items={items} item={craft.item} count={craft.count} onInspect={onInspect} />
       ) : (
-        <span className="hangar-recipe-name">{recipe?.name ?? craft.recipe}</span>
+        <span className="hangar-recipe-name">{craft.recipe}</span>
       )}
       <span className="hangar-craft-state">
         {left ? (
           <>
-            {rolled ? 'Decrypting' : 'Crafting'} · <b>{timeLeft(left)}</b> left
+            Crafting · <b>{timeLeft(left)}</b> left
           </>
         ) : (
           <b>Ready</b>
@@ -430,14 +388,11 @@ function CraftOutput({
   items,
   item,
   count,
-  label,
   onInspect,
 }: {
   items: ItemDb;
   item: string;
   count: number;
-  /** In place of the item's name (a rolled recipe's name). */
-  label?: string | undefined;
   onInspect: (item: Item) => void;
 }): ReactNode {
   const out = useOutput(items, item, count);
@@ -447,12 +402,12 @@ function CraftOutput({
     <button
       className="hangar-output"
       style={{ ['--rarity' as string]: colourOf(def) }}
-      aria-label={`${label ?? def.name}${count > 1 ? ` ×${count}` : ''}: details`}
+      aria-label={`${def.name}${count > 1 ? ` ×${count}` : ''}: details`}
       onClick={() => onInspect(out)}
     >
       <span className="vendors-offer-art">{url && <img src={url} alt="" draggable={false} />}</span>
       <span className="hangar-recipe-name">
-        {label ?? def.name}
+        {def.name}
         {count > 1 && <span> ×{count}</span>}
       </span>
     </button>
@@ -465,7 +420,6 @@ function RecipeCard({
   module,
   recipe,
   profile,
-  names,
   onInspect,
   onCraft,
 }: {
@@ -473,7 +427,6 @@ function RecipeCard({
   module: HangarModuleDef;
   recipe: RecipeDef;
   profile: Profile;
-  names: Names;
   onInspect: (item: Item) => void;
   onCraft: () => Promise<void>;
 }): ReactNode {
@@ -490,39 +443,17 @@ function RecipeCard({
   };
   return (
     <li className={`hangar-recipe${locked ? ' locked' : ''}`}>
-      {recipe.output ? (
-        <CraftOutput
-          items={items}
-          item={recipe.output.item}
-          count={recipe.output.count ?? 1}
-          label={recipe.name}
-          onInspect={onInspect}
-        />
-      ) : (
-        <CraftOutput
-          items={items}
-          item={recipe.inputs[0]!.item}
-          count={1}
-          label={recipe.name ?? `Decrypt ${names.item(recipe.inputs[0]!.item)}`}
-          onInspect={onInspect}
-        />
-      )}
+      <CraftOutput
+        items={items}
+        item={recipe.output.item}
+        count={recipe.output.count ?? 1}
+        onInspect={onInspect}
+      />
       <div className="hangar-recipe-body">
         <span className="hangar-recipe-meta">
-          {craftTime(craftDuration(profile, module, recipe) / 60_000)}
+          {craftTime(craftDuration(recipe) / 60_000)}
           {locked && ` · 🔒 level ${ROMAN[recipe.level]}`}
         </span>
-        {rollsResult(recipe) && (
-          <span className="hangar-results">
-            One of:
-            {resultChances(recipe).map(({ result, percent }, i) => (
-              <span key={i} className="hangar-result">
-                <span>{resultText(names, result)}</span>
-                <b>{percent}%</b>
-              </span>
-            ))}
-          </span>
-        )}
         <span className="hangar-inputs">
           {recipeCost(profile, recipe).map((c) => (
             <Need key={c.item} items={items} item={c.item} have={c.have} need={c.need} />
@@ -535,13 +466,7 @@ function RecipeCard({
           onBlur={() => setConfirming(false)}
           onClick={craft}
         >
-          {busy
-            ? 'Starting…'
-            : confirming
-              ? 'Use these items?'
-              : rollsResult(recipe)
-                ? 'Decrypt'
-                : 'Craft'}
+          {busy ? 'Starting…' : confirming ? 'Use these items?' : 'Craft'}
         </button>
       </div>
     </li>

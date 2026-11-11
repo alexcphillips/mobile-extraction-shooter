@@ -15,6 +15,7 @@ import {
   type AttachmentMods,
   type Item,
   type ItemDb,
+  type ArmourStats,
   type ItemDef,
   type QuestDef,
   type WeaponState,
@@ -301,7 +302,7 @@ function kindOf(def: ItemDef): string {
     case 'med':
       return 'Medical';
     case 'container':
-      return def.slot === 'rig' ? 'Rig' : 'Backpack';
+      return def.slot === 'rig' ? (def.armour ? 'Armoured rig' : 'Rig') : 'Backpack';
     case 'melee':
       return 'Melee';
     case 'grenade':
@@ -454,13 +455,7 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
     }
     case 'armour':
       return [
-        ['Protection', <Level key="l" level={def.level} />],
-        ['Durability', `${tenths(item.durability ?? 0)} / ${tenths(item.max ?? def.durability)}`],
-        // Repairs wear the max down (sim/repair.ts).
-        ...(item.max !== undefined
-          ? [['Max durability', `${tenths(item.max)} of ${def.durability}`] as Row]
-          : []),
-        ['Repair loss', `${Math.round(repairLossOf(def) * 100)}% of what's mended`],
+        ...armourRows(item, def),
         // A face mask's cost (AI-7, Jug's).
         ...(def.mask?.edge || def.mask?.muffle
           ? [
@@ -496,6 +491,10 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
     }
     case 'container':
       return [
+        // An armoured rig's armour (2026-11-11): the chest, as body armour.
+        ...(def.armour
+          ? [...armourRows(item, def.armour), ['Covers', 'Chest; no body armour with it'] as Row]
+          : []),
         [
           'Inside',
           def.sections ? sectionsText(def.sections) : `${def.grid[0]} × ${def.grid[1]} cells`,
@@ -595,4 +594,17 @@ function sectionsText(sections: readonly { size: readonly [number, number] }[]):
     .sort((a, b) => b[1].cells - a[1].cells)
     .map(([k, { n }]) => (n === 1 ? k : `${n} of ${k}`))
     .join(', ');
+}
+
+/** Armour's rows, or an armoured rig's: level, durability, what repairs wore off, repair loss. */
+function armourRows(item: Item, a: ArmourStats): Row[] {
+  return [
+    ['Protection', <Level key="l" level={a.level} />],
+    ['Durability', `${tenths(item.durability ?? 0)} / ${tenths(item.max ?? a.durability)}`],
+    // Repairs wear the max down (sim/repair.ts).
+    ...(item.max !== undefined
+      ? [['Max durability', `${tenths(item.max)} of ${a.durability}`] as Row]
+      : []),
+    ['Repair loss', `${Math.round(repairLossOf(a) * 100)}% of what's mended`],
+  ];
 }

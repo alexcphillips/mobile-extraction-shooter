@@ -8,6 +8,8 @@ import {
   firesRound,
   fits,
   fitsSlot,
+  gearConflict,
+  ownerCharacter,
   gridOf,
   groundInReach,
   isFree,
@@ -88,6 +90,15 @@ const HINT_MS = 1600;
  * stash"), the first few times only (UX-2, 2026-11-08). An attribute React doesn't own, so
  * a redraw of the tile keeps it. The count is this device's: it's only a reminder.
  */
+/** Shades a message over a tile for a moment, as the double-tap hint does. */
+function flashHint(el: HTMLElement, text: string): void {
+  if (!el.isConnected) return;
+  el.dataset.hint = text;
+  window.setTimeout(() => {
+    if (el.dataset.hint === text) delete el.dataset.hint;
+  }, HINT_MS * 1.5);
+}
+
 function showQuickHint(el: HTMLElement, to: string): void {
   try {
     const shown = Number(localStorage.getItem(HINT_KEY)) || 0;
@@ -536,7 +547,12 @@ export class InventoryController implements DragHost {
         fits(weaponDef(items, gun.item.item), found.def)
       );
     }
-    if (zone.kind === 'slot') return fitsSlot(items, zone.slot, found.item);
+    if (zone.kind === 'slot') {
+      if (!fitsSlot(items, zone.slot, found.item)) return false;
+      // Body armour and an armoured rig never go on together (2026-11-11).
+      const ch = ownerCharacter(sim, player, zone.owner);
+      return !ch || !gearConflict(items, ch.gear, zone.slot, found.item);
+    }
     const grid = zone.grid;
     if (!canHold(items, grid, found.item)) return false;
     // On a stack of the same item, it tops it up.
@@ -555,6 +571,16 @@ export class InventoryController implements DragHost {
       'index' in src.ref &&
       canSwap(items, fromGrid, src.ref.index, grid, x, y, rotated)
     );
+  }
+
+  /** Body armour over an armoured rig, or the other way: says why on the tile (2026-11-11). */
+  refused(src: DragSource, zone: DropZone): void {
+    if (zone.kind !== 'slot' || isPart(src.ref)) return;
+    const found = this.find(src.ref);
+    const ch = ownerCharacter(this.ctx.sim, this.ctx.player, zone.owner);
+    if (!found || !ch || !fitsSlot(this.ctx.items, zone.slot, found.item)) return;
+    const why = gearConflict(this.ctx.items, ch.gear, zone.slot, found.item);
+    if (why) flashHint(src.el, why);
   }
 
   drop(src: DragSource, to: Target | PartSlot | Into | RepairOn | LoadOn): void {

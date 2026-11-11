@@ -1,4 +1,5 @@
 import {
+  chestArmour,
   HEALTH,
   ZONE_COUNT,
   LEFT_ARM,
@@ -174,7 +175,8 @@ export class Vitals {
     }
 
     this.armour(this.helmet, c.gear.helmet, items);
-    this.armour(this.vest, c.gear.bodyArmour, items);
+    // Body armour, or an armoured rig (2026-11-11).
+    this.armour(this.vest, chestArmour(items, c.gear), items);
 
     const w = heldWeapon(c);
     setHidden(this.ammo, !w);

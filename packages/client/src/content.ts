@@ -15,15 +15,12 @@ import {
   TUTORIAL_FORMAT,
   VENDOR_FORMAT,
   ZOMBIES_FORMAT,
-  CONTRACT_FORMAT,
   HANGAR_FORMAT,
   RECIPE_FORMAT,
-  checkContracts,
   checkHangar,
   checkRecipes,
   type HangarContent,
   type HangarModuleDef,
-  type ContractDef,
   type RecipeDef,
   checkEnemies,
   checkEnemyLoot,
@@ -116,11 +113,6 @@ const hangarFiles = import.meta.glob<unknown>('../../../content/hangar/*.json', 
 });
 
 const recipeFiles = import.meta.glob<unknown>('../../../content/recipes/*.json', {
-  eager: true,
-  import: 'default',
-});
-
-const contractFiles = import.meta.glob<unknown>('../../../content/contracts/*.json', {
   eager: true,
   import: 'default',
 });
@@ -706,7 +698,7 @@ export function loadHangar(): ReadonlyMap<string, HangarModuleDef> {
 export function loadRecipes(): ReadonlyMap<string, RecipeDef> {
   if (!recipes) {
     const all = loadById(RECIPE_FORMAT, recipeFiles);
-    checkRecipes(all, loadHangar(), loadItems(), loadVendors());
+    checkRecipes(all, loadHangar(), loadItems());
     recipes = new Map(
       [...all].sort(([, a], [, b]) => a.level - b.level || (a.order ?? 0) - (b.order ?? 0)),
     );
@@ -717,18 +709,6 @@ export function loadRecipes(): ReadonlyMap<string, RecipeDef> {
 /** The Hangar's modules and recipes, for an item's sources and uses. */
 export function hangarContent(): HangarContent {
   return { modules: loadHangar(), recipes: [...loadRecipes().values()] };
-}
-
-let contracts: ReadonlyMap<string, ContractDef> | undefined;
-
-/** Every Intel desk contract (H6), checked against the vendors, items and maps. */
-export function loadContracts(): ReadonlyMap<string, ContractDef> {
-  if (!contracts) {
-    const all = loadById(CONTRACT_FORMAT, contractFiles);
-    checkContracts(all, loadVendors(), loadItems(), new Set(mapIds()));
-    contracts = all;
-  }
-  return contracts;
 }
 
 /** Every quest in content/quests, checked against the vendors and items. */
@@ -768,7 +748,6 @@ let raw:
       lootTables: ReadonlyMap<string, LootTableDef>;
       vendors: ReadonlyMap<string, VendorDef>;
       quests: ReadonlyMap<string, QuestDef>;
-      contracts: ReadonlyMap<string, ContractDef>;
       kits: ReadonlyMap<string, StartingKitDef>;
       doors: { map: string; id: string; key: string }[];
     }
@@ -787,7 +766,6 @@ function rawContent(): NonNullable<typeof raw> {
       lootTables: loadById(LOOT_TABLE_FORMAT, lootTableFiles),
       vendors: loadById(VENDOR_FORMAT, vendorFiles),
       quests: loadById(QUEST_FORMAT, questFiles),
-      contracts: loadById(CONTRACT_FORMAT, contractFiles),
       kits: loadById(STARTING_KIT_FORMAT, startingKitFiles),
       doors,
     };
@@ -809,7 +787,6 @@ export function itemContentProblem(items: ItemDb): string | null {
     checkLootTables(c.lootTables, items);
     checkVendors(c.vendors, items);
     checkQuests(c.quests, c.vendors, items);
-    checkContracts(c.contracts, c.vendors, items);
     checkSounds(loadById(SOUND_FORMAT, soundFiles), items, []);
     for (const d of c.doors) {
       if (items.get(d.key)?.type !== 'key')
@@ -842,7 +819,6 @@ export function itemUses(id: string, items: ItemDb): string[] {
     ['loot table', c.lootTables],
     ['vendor', c.vendors],
     ['quest', c.quests],
-    ['contract', c.contracts],
     ['starting kit', c.kits],
   ];
   for (const [kind, docs] of kinds) {

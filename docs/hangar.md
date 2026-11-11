@@ -24,7 +24,6 @@ The player's base between raids: modules you upgrade with loot, which then craft
 | **Munitions bench** | Loot into higher-level rounds, magazines and weapon attachments. |
 | **Armour bench** | Armour, rigs and backpacks, and better repair kits (ones that wear the max down less: design.md → Armour repair kits). |
 | **Trauma bay** | Medkits and surgery kits from medical loot. Stimulants once boosters (temporary effects) exist. |
-| **Intel desk** | Decrypts flash drives and hard drives found in raids, over real time, into keycards or door codes, or vendor reputation (blueprints are deferred). Contracts come here later. |
 | **Quarters** | Stash space. Its level unlocks the right to **buy** the next stash page (still paid for with money, so pages stay a money sink; one path, not two). Later levels unlock **category pages** (ammo, meds, weapons) in place of Tarkov-style cases. |
 | **Secure locker** | The vault: **1×2 at the start (1 tall, 2 wide), up to 3×3**. Its upgrades are the most expensive of every module; the user will balance them. |
 
@@ -36,26 +35,20 @@ The player's base between raids: modules you upgrade with loot, which then craft
 - **Auto sort on close:** leaving the stash moves loose items from the bought pages onto their category page where there's room. Nothing else is placed there by itself.
 - Vault by Secure locker level: **2 wide × 1 tall**, then 2×2, 3 wide × 2 tall, 3×3.
 
-**Built in H5 (2026-11-10), placeholders until the user balances them:**
-- Two new drives, both loot in Electronics: **Flash drive** (uncommon, 2,500) and **Hard drive** (rare, 6,000). The older Encrypted drive stays plain loot. Drop weights added: flash drive in `electronics` (2) and `mall-office` (1), hard drive in `electronics` (0.5) and `pc-parts` (1).
-- **Decrypt a flash drive** (Intel I, 1 h): kiln key 30%, music store key 15%, Kovacs +0.05 rep 30%, Fence +0.05 rep 25%. **Decrypt a hard drive** (Intel II, 3 h): staff keycard 25%, clinic key 15%, key shop key 15%, Harlan +0.10 rep 25%, Parker +0.10 rep 20%. Intel III halves decryption time.
-- The user's calls: keys and keycards only (no door codes yet), rep set per recipe, contracts in their own session. The result is rolled when decryption starts and shown when collected.
+**Deleted on 2026-11-11 (the user's call): the Intel desk**, built in H5 and H6, with its contracts, its drive decryption and the Flash drive and Hard drive items. The user's reasons, so it isn't proposed again in another form:
+- **Contracts were just quests from a different menu.** Timed jobs for a vendor with kill and hand-over objectives add nothing quests don't already do.
+- **Decrypting drives was too shallow:** put an item in, wait, get a key or some rep.
+- **Unlocking knowledge or map information** (the other idea for the desk) **goes against an even playing field** and isn't wanted, in the spirit of the first rule above.
 
-**Built in H6 (2026-11-10): the Intel desk's contracts.** Timed jobs for a vendor. **The timer starts when you press Get contract** (the user's fix), so nobody misses a window for being away. The user's calls:
-- **Rewards are items and rep** with the contract's vendor, never money (the Hangar doesn't print money).
-- **A board of 3 a day, one running at a time.** The board is picked by the UTC day from what the desk's level allows, the same for everyone; a contract taken stays off it until the next day. Desk I, II and III each add harder ones.
-- **Objectives:** kill N of a faction (scavs, PMCs or bosses), on one map or any; and hand over N of an item, **found in raid only**.
-- **Out of time unfinished, it's lost with no penalty.** A raid that started inside the window counts even if it ends after. A finished contract never expires; it waits to be claimed.
-- Claude's placeholders for the user to balance: six contracts (2–6 h windows, rewards of a few items and 0.05–0.15 rep), the board size, and the day boundary at UTC midnight.
+Saved profiles lose its level, a decryption in it, the contracts, and any flash or hard drives (profile format 16). The Encrypted USB drive was always plain loot and stays.
 
 ## Deferred
-- **More contracts:** ones needing new raid events ("intercept a supply drop within 3 hours") come with those events; extract objectives ("get out of Silver Creek twice") if wanted.
 - **Trophy wall:** display only, no perks. Counters from raid results (PMC kills, boss kills, special doors opened) and a slot per red-tier item given up to it. No player kills until PvP exists.
 - **Shooting range:** only once the Hangar is 3D.
 - **Bio lab and hazard zones:** wait for a map that wants them. The idea: a named zone gets a hazard (radiation, or gas in a mall: a burst chemical store, a flooded basement); inside it you build up a dose that lowers your max HP until anti-rad meds clear it; a respirator or suit (an item, not a stat) slows it; the best loot sits behind it. The bio lab would craft filters and anti-rad meds.
 - **Stimulants** (Trauma bay): wait for boosters.
 
-- **Door codes** (deferred 2026-11-10, H5): the Intel desk gives keys and keycards for now. Codes need a mechanic (a code learned in the profile opening a coded door) and a map with a coded door.
+- **Door codes** (deferred 2026-11-10, H5): codes need a mechanic (a code learned in the profile opening a coded door) and a map with a coded door.
 - **Blueprints** (deferred 2026-11-10). First guess when they come: handing one in unlocks its recipe for good, not consumed per craft.
 - **Where a double-tap into the stash goes once category pages exist:** auto sort on close handles it (the user, 2026-11-10); the specifics later.
 

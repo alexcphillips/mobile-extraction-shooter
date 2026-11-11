@@ -1,4 +1,4 @@
-import { itemDef, type ItemDb } from '../content/items';
+import { isArmouredRig, itemDef, type ItemDb } from '../content/items';
 import {
   addItem,
   countOf,
@@ -129,6 +129,36 @@ export function fitsSlot(items: ItemDb, slot: GearSlot, item: Item): boolean {
     case 'backpack':
       return def.type === 'container' && def.slot === slot;
   }
+}
+
+/**
+ * What covers the chest (2026-11-11): body armour, or else an armoured rig, which can't be
+ * worn with it (gearConflict). Null with neither.
+ */
+export function chestArmour(items: ItemDb, gear: Gear): ArmourState | null {
+  if (gear.bodyArmour) return gear.bodyArmour;
+  const rig = gear.rig;
+  return rig && isArmouredRig(itemDef(items, rig.item)) ? (rig as ArmourState) : null;
+}
+
+/** Why the body armour slot is shut while an armoured rig is worn (gearConflict). */
+export const ARMOURED_RIG_WORN = 'Your rig is armoured: take it off to wear body armour';
+/** Why an armoured rig can't go on over body armour (gearConflict). */
+export const BODY_ARMOUR_WORN = 'Take off your body armour first: this rig is armoured';
+
+/**
+ * Why an item can't go in a slot it fits, given what else is worn (2026-11-11, the user's
+ * call): body armour and an armoured rig never go together, and nothing is moved to make
+ * room. Null if it can.
+ */
+export function gearConflict(items: ItemDb, gear: Gear, slot: GearSlot, item: Item): string | null {
+  const def = itemDef(items, item.item);
+  if (slot === 'bodyArmour' && def.type === 'armour') {
+    const rig = gear.rig;
+    if (rig && isArmouredRig(itemDef(items, rig.item))) return ARMOURED_RIG_WORN;
+  }
+  if (slot === 'rig' && isArmouredRig(def) && gear.bodyArmour) return BODY_ARMOUR_WORN;
+  return null;
 }
 
 /**

@@ -19,6 +19,8 @@ export function createItem(items: ItemDb, id: string, count = 1): Item {
       const grid = createGrid(def.grid[0], def.grid[1], false, sectionsOf(def));
       // A backpack takes empty rigs and backpacks (see Grid.bags).
       if (def.slot === 'backpack') grid.bags = true;
+      // An armoured rig at full durability, as armour (2026-11-11).
+      if (def.armour) return { item: id, count: 1, grid, durability: def.armour.durability };
       return { item: id, count: 1, grid };
     }
     case 'med':

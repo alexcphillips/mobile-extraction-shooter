@@ -398,7 +398,7 @@ describe('looting', () => {
   });
 
   it('swaps an empty bag onto a full one, moving what was in it', () => {
-    const { c, crate, box, act } = setup();
+    const { state, c, crate, box, act } = setup();
     const worn = c.gear.backpack!;
     placeAt(items, worn.grid, createItem(items, 'watch'), 3, 3, false);
     placeAt(items, worn.grid, createItem(items, 'cash', 40), 0, 0, false);
@@ -416,16 +416,19 @@ describe('looting', () => {
     expect(crate.grid.items[0]!.item).toBe(worn);
     expect(worn.grid.items).toEqual([]);
 
-    // A smaller bag takes what fits, auto-placed; the rest stays in the old one.
+    // A smaller bag takes what fits, auto-placed; in a raid the rest is dropped at your
+    // feet (2026-11-11), leaving the old one empty.
     const small = createItem(items, 'backpack');
     small.grid = createGrid(1, 1);
     crate.grid.items.length = 0;
     placeAt(items, crate.grid, small, 0, 0, false);
     expect(act({ type: 'move', from, to: onto })).toBe(true);
     expect(small.grid.items).toMatchObject([{ x: 0, y: 0, item: { item: 'cash' } }]);
-    expect(fresh.grid!.items).toMatchObject([{ x: 3, y: 3, item: { item: 'watch' } }]);
+    expect(fresh.grid!.items).toEqual([]);
+    expect(state.ground.map((g) => g.item.item)).toContain('watch');
 
     // A bag with things in it swaps on its own.
+    placeAt(items, fresh.grid!, createItem(items, 'watch'), 0, 0, false);
     expect(act({ type: 'move', from, to: onto })).toBe(true);
     expect(c.gear.backpack).toBe(fresh);
     expect(fresh.grid!.items.map((g) => g.item.item)).toEqual(['watch']);

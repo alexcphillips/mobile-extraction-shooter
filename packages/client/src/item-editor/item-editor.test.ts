@@ -4,7 +4,7 @@ import { itemContentProblem, itemUses, loadItems } from '../content';
 import { reticleMarkup } from '../hud/optic';
 import { TriangleBuilder } from '../render/geometry';
 import { budgetOf, triangleCount } from './budget';
-import { fillBagRarity } from './editor';
+import { fillRarity } from './editor';
 import {
   appendParts,
   duplicateParts,
@@ -45,28 +45,47 @@ describe('item editor', () => {
   });
 
   it("fills in a rig's or backpack's rarity when its cells change, and lets it be set by hand", () => {
-    const bag = (): Record<string, unknown> => ({
+    type D = Record<string, unknown>;
+    const bag = (): D => ({ type: 'container', slot: 'rig', rarity: 'common', grid: [4, 2] });
+    const before = bag();
+    // 8 cells (4 × 2) is uncommon; sections count only their own cells.
+    const after: D = { ...bag(), grid: [4, 3], sections: [{ at: [0, 0], size: [1, 2] }] };
+    fillRarity(before, after);
+    expect(after.rarity).toBe('common');
+    const big: D = { ...bag(), grid: [7, 3] };
+    fillRarity(before, big);
+    expect(big.rarity).toBe('mythic');
+    // Set by hand, it stays while the cells don't change.
+    const picked: D = { ...bag(), rarity: 'epic' };
+    fillRarity(bag(), picked);
+    expect(picked.rarity).toBe('epic');
+    // The vault keeps its own.
+    const vault: D = { ...bag(), slot: 'vault', grid: [9, 9] };
+    fillRarity(null, vault);
+    expect(vault.rarity).toBe('common');
+  });
+
+  it("fills in an armoured rig's rarity, and armour's, from the armour level", () => {
+    type D = Record<string, unknown>;
+    const rig = (level: number): D => ({
       type: 'container',
       slot: 'rig',
       rarity: 'common',
-      grid: [4, 2],
+      grid: [7, 3],
+      armour: { level, durability: 40 },
     });
-    const before = bag();
-    // 8 cells (4 × 2) is uncommon; sections count only their own cells.
-    const after = { ...bag(), grid: [4, 3], sections: [{ at: [0, 0], size: [1, 2] }] };
-    fillBagRarity(before, after);
-    expect(after.rarity).toBe('common');
-    const big = { ...bag(), grid: [7, 3] };
-    fillBagRarity(before, big);
-    expect(big.rarity).toBe('mythic');
-    // Set by hand, it stays while the cells don't change.
-    const picked = { ...bag(), rarity: 'epic' };
-    fillBagRarity(bag(), picked);
-    expect(picked.rarity).toBe('epic');
-    // The vault keeps its own.
-    const vault = { ...bag(), slot: 'vault', grid: [9, 9] };
-    fillBagRarity(null, vault);
-    expect(vault.rarity).toBe('common');
+    // Its room doesn't count once it has armour: 21 cells, but level 3 is rare.
+    const plain: D = { ...rig(3) };
+    delete plain.armour;
+    const armoured = rig(3);
+    fillRarity(plain, armoured);
+    expect(armoured.rarity).toBe('rare');
+    const up = rig(5);
+    fillRarity(rig(3), up);
+    expect(up.rarity).toBe('legendary');
+    const vest: D = { type: 'armour', slot: 'body', rarity: 'common', level: 2 };
+    fillRarity({ ...vest, level: 1 }, vest);
+    expect(vest.rarity).toBe('uncommon');
   });
 
   it('finds nothing wrong with the content as it is', () => {

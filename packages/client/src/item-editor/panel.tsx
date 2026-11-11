@@ -1,12 +1,15 @@
 import {
   ATTACHMENT_SLOTS,
+  armourOf,
   bagCells,
   bagRarity,
+  levelRarity,
   FIRE,
   GRENADE_EFFECTS,
   MED_EFFECTS,
   ITEM_VIEWS,
   type ItemView,
+  type Rarity,
   RARITIES,
   VENDOR,
   firesRound,
@@ -330,7 +333,7 @@ function ItemPage(props: { editor: ItemEditor; state: ItemEditorState; def: Item
           hint="What vendors sell it for; they buy it for a share of this"
         />
         <P {...b} path={['rarity']} label="rarity (its tile's colour)" options={RARITIES} />
-        {def.type === 'container' && def.slot !== 'vault' && <BagRarityNote {...b} def={def} />}
+        <RarityNote {...b} def={def} />
         <ViewPicker {...b} def={def} />
         <TypeFields {...b} def={def} items={s.items} />
         <SoundFields {...b} def={def} />
@@ -720,11 +723,48 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
       return (
         <>
           <h4>rig or backpack</h4>
-          <P {...b} path={['slot']} label="worn as" options={['rig', 'backpack', 'vault']} />
+          <P
+            {...b}
+            path={['slot']}
+            label="worn as"
+            options={['rig', 'backpack', 'vault']}
+            // Only a rig has armour.
+            then={(d, v) => v !== 'rig' && put(d, ['armour'], undefined)}
+          />
           <Row>
             <N {...b} path={['grid', 0]} label="inside width" min={1} />
             <N {...b} path={['grid', 1]} label="inside height" min={1} />
           </Row>
+          {def.slot === 'rig' && (
+            <label
+              className="ed-field"
+              title="Covers the chest as body armour does, which can't be worn with it"
+            >
+              <input
+                type="checkbox"
+                checked={!!def.armour}
+                onChange={(e) =>
+                  b.edit((d) =>
+                    put(d, ['armour'], e.target.checked ? { level: 3, durability: 40 } : undefined),
+                  )
+                }
+              />
+              armoured
+            </label>
+          )}
+          {def.armour && (
+            <Row>
+              <N {...b} path={['armour', 'level']} label="armour level (1–6)" min={1} />
+              <N {...b} path={['armour', 'durability']} label="durability" min={0} />
+              <N
+                {...b}
+                path={['armour', 'repairLoss']}
+                label="repair loss (0–1)"
+                min={0}
+                hint="The share of what a repair mends that comes off its max. Blank is 0.1"
+              />
+            </Row>
+          )}
           <SectionFields {...b} def={def} />
         </>
       );
@@ -1118,16 +1158,26 @@ function InsidePreview({ def }: { def: ContainerDef }) {
 }
 
 /**
- * A rig's or backpack's rarity by its cells (2026-11-11): filled in when they change
- * (editor.ts), and here, when set by hand to another, a button to go back to it.
+ * The rarity an item's level or room gives (2026-11-11): armour's and an armoured rig's by
+ * armour level, a rig's or backpack's by its cells. Filled in when that changes (editor.ts),
+ * and here, when set by hand to another, a button to go back to it. Nothing for the rest.
  */
-function BagRarityNote(props: Bound & { def: ContainerDef }) {
+function RarityNote(props: Bound & { def: ItemDef }) {
   const { def } = props;
-  const cells = bagCells(def);
-  const auto = bagRarity(def);
+  const armour = armourOf(def);
+  let why: string;
+  let auto: Rarity;
+  if (armour) {
+    why = `level ${armour.level} armour`;
+    auto = levelRarity(armour.level);
+  } else if (def.type === 'container' && def.slot !== 'vault') {
+    const cells = bagCells(def);
+    why = `${cells} slot${cells === 1 ? '' : 's'}`;
+    auto = bagRarity(def);
+  } else return null;
   return (
     <p className="ed-note">
-      {cells} slot{cells === 1 ? '' : 's'}: {auto} by size
+      {why}: {auto}
       {def.rarity !== auto && (
         <>
           {' '}

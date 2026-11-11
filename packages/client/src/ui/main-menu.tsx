@@ -22,7 +22,6 @@ import {
   type SignalsResponse,
   type HangarModuleDef,
   type QuestDef,
-  type ContractDef,
   type RecipeDef,
   type SortKey,
   type StashState,
@@ -83,7 +82,7 @@ import { CategoryIcon } from './category-icons';
 import { questCounts, questsLine } from './quests-page';
 import { VendorsPage } from './vendors-page';
 import { HangarPage } from './hangar-page';
-import { collectedLine, contractRewards, hangarLine, readyCrafts, type Names } from './hangar-text';
+import { collectedLine, hangarLine, readyCrafts, type Names } from './hangar-text';
 
 /** A raid the menu can start. */
 export interface RaidChoice {
@@ -108,8 +107,6 @@ export interface MenuOptions {
   /** The Hangar's modules (H3), in their order, and every crafting recipe. */
   hangar: HangarModuleDef[];
   recipes: RecipeDef[];
-  /** The Intel desk's contracts (H6), by id. */
-  contracts: ReadonlyMap<string, ContractDef>;
   /** Opens the settings screen over the menu; done is called when it closes. */
   openSettings: (done: () => void) => void;
   /** The code of a party invite link the game was opened from, to join on arrival. */
@@ -469,19 +466,13 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
   }
   if (page === 'hangar') {
     const name = (id: string): string => (opts.items.has(id) ? itemDef(opts.items, id).name : id);
-    const names: Names = {
-      item: name,
-      vendor: (id) => opts.vendors.find((v) => v.id === id)?.name ?? id,
-    };
+    const names: Names = { item: name };
     return (
       <HangarPage
         modules={opts.hangar}
         recipes={opts.recipes}
         items={opts.items}
         quests={opts.quests}
-        contracts={opts.contracts}
-        names={names}
-        mapName={(id) => opts.raids.find((r) => r.map === id)?.name ?? id}
         me={me}
         notice={notice}
         onBack={() => {
@@ -491,41 +482,6 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
         onStash={() => {
           setNotice(null);
           setPage('stash');
-        }}
-        contractActions={{
-          onTake: (def) =>
-            saver
-              .takeContract(def.id)
-              .then(
-                (r) => reopen(r, startPage, `Took ${def.name}: the clock is running.`),
-                refused(`${def.name} wasn't taken`),
-              ),
-          onHandOver: (_def, objective) =>
-            saver
-              .contractHandOver(objective)
-              .then(
-                (r) => reopen(r, startPage, 'Handed over.'),
-                refused('Nothing was handed over'),
-              ),
-          onClaim: (def) =>
-            saver
-              .claimContract(startPage)
-              .then(
-                (r) =>
-                  reopen(
-                    r,
-                    startPage,
-                    `${def.name} done: ${contractRewards(names, def)}. Rewards are in your stash.`,
-                  ),
-                refused(`${def.name} wasn't claimed`),
-              ),
-          onDrop: (def) =>
-            saver
-              .dropContract()
-              .then(
-                (r) => reopen(r, startPage, `Dropped ${def.name}.`),
-                refused(`${def.name} wasn't dropped`),
-              ),
         }}
         onUpgrade={(m) =>
           saver.upgradeModule(m.id).then(
@@ -715,8 +671,8 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
           label: 'Hangar',
           icon: 'hangar',
           disabled: !opts.hangar.length,
-          badge: readyCrafts(me, opts.contracts),
-          title: hangarLine(opts.hangar, me, opts.contracts),
+          badge: readyCrafts(me),
+          title: hangarLine(opts.hangar, me),
           onClick: () => setPage('hangar'),
         },
         {
