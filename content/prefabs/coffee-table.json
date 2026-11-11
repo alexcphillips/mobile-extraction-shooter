@@ -24,6 +24,19 @@
       "pos": [0.45, 0, 0],
       "size": [0.06, 0.36, 0.5],
       "colour": "leg"
+    },
+    {
+      "type": "lootSpawn",
+      "id": "loose",
+      "pos": [0.2, 0.41, 0],
+      "mix": {
+        "tables": {
+          "household": 2,
+          "electronics": 0.5,
+          "documents": 0.5
+        }
+      },
+      "chance": 0.3
     }
   ]
 }

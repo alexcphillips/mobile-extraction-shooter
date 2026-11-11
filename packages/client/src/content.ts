@@ -1,5 +1,6 @@
 import {
   containerMix,
+  spotMix,
   ENEMY_FORMAT,
   ITEM_FORMAT,
   LOADOUT_FORMAT,
@@ -369,8 +370,9 @@ export function checkLootContainers(map: CompiledMap): void {
       throw new Error(
         `loot container ${m.id}: no kind "${m.container}" in content/loot-containers`,
       );
-    if (m.type === 'lootSpawn' && !tables.has(m.lootTable))
-      throw new Error(`${m.type} ${m.id}: no loot table "${m.lootTable}"`);
+    if (m.type === 'lootSpawn')
+      for (const t of Object.keys(spotMix(m).tables))
+        if (!tables.has(t)) throw new Error(`${m.type} ${m.id}: no loot table "${t}"`);
     if (m.type === 'lootContainer') {
       const mix = containerMix(m, kinds);
       if (!mix)
@@ -482,9 +484,14 @@ export function lootTableUses(id: string): readonly Use[] {
             count(t).containers++;
         }
         if (m.type === 'lootSpawn') {
-          const c = count(m.lootTable);
-          c.spots++;
-          c.odds += m.chance ?? 1;
+          // A spot in a mix counts for each of its tables, at that table's share of its odds.
+          const mix = spotMix(m);
+          const total = Object.values(mix.tables).reduce((a, b) => a + b, 0) + (mix.empty ?? 0);
+          for (const [t, w] of Object.entries(mix.tables)) {
+            const c = count(t);
+            c.spots++;
+            c.odds += ((m.chance ?? 1) * w) / total;
+          }
         }
         if (m.type === 'enemySpawn') {
           for (const [table, w] of Object.entries(m.lootWeights ?? {}))

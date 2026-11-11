@@ -281,4 +281,74 @@ describe('loot tables', () => {
     }
     expect([...used].sort()).toEqual([1, 2, 3]);
   });
+
+  it("picks a group's pick of units, a grouped copy's spots all together", () => {
+    const spot = (id: string, x: number, oneOf?: string, unit?: string) => ({
+      type: 'lootSpawn',
+      id,
+      lootTable: 'meds',
+      x,
+      y: 0,
+      z: 0,
+      yaw: 0,
+      ...(oneOf === undefined ? {} : { oneOf }),
+      ...(unit === undefined ? {} : { unit }),
+    });
+    const map = {
+      markers: [
+        spot('s1/a', 1, 'shelves', 's1'),
+        spot('s1/b', 1.5, 'shelves', 's1'),
+        spot('s2/a', 2, 'shelves', 's2'),
+        spot('s3/a', 3, 'shelves', 's3'),
+        spot('lone', 4, 'shelves'),
+      ],
+      lootGroups: { shelves: { pick: 2 } },
+    } as unknown as CompiledMap;
+    const units = new Set<string>();
+    for (let seed = 1; seed <= 80; seed++) {
+      const state = createState(seed);
+      rollLootSpawns(state, map, items, tables);
+      const xs = state.ground.map((g) => g.x);
+      const picked = new Set(xs.map((x) => (x < 2 ? 's1' : String(x))));
+      expect(picked.size).toBe(2);
+      // A picked copy has all its spots.
+      if (picked.has('s1')) expect(xs).toEqual(expect.arrayContaining([1, 1.5]));
+      for (const u of picked) units.add(u);
+    }
+    expect([...units].sort()).toEqual(['2', '3', '4', 's1']);
+    // A pick above the group's size uses all of it.
+    const all = { ...map, lootGroups: { shelves: { pick: 9 } } } as CompiledMap;
+    const state = createState(1);
+    rollLootSpawns(state, all, items, tables);
+    expect(state.ground).toHaveLength(5);
+    // A pick of 0 switches the group off.
+    const off = { ...map, lootGroups: { shelves: { pick: 0 } } } as CompiledMap;
+    const none = createState(1);
+    rollLootSpawns(none, off, items, tables);
+    expect(none.ground).toEqual([]);
+  });
+
+  it("rolls a spot's mix: a table by weight, or nothing by its empty weight", () => {
+    const spot = (mix: object) => ({
+      type: 'lootSpawn',
+      id: 'm',
+      mix,
+      x: 0,
+      y: 0,
+      z: 0,
+      yaw: 0,
+    });
+    const seen = new Map<string, number>();
+    let empty = 0;
+    for (let seed = 1; seed <= 400; seed++) {
+      const state = createState(seed);
+      const map = { markers: [spot({ tables: { meds: 1, guns: 1 }, empty: 2 })] };
+      rollLootSpawns(state, map as unknown as CompiledMap, items, tables);
+      if (!state.ground.length) empty++;
+      for (const g of state.ground) seen.set(g.item.item, (seen.get(g.item.item) ?? 0) + 1);
+    }
+    expect([...seen.keys()].sort()).toEqual(['bandage', 'rifle']);
+    expect(empty).toBeGreaterThan(150);
+    expect(empty).toBeLessThan(250);
+  });
 });

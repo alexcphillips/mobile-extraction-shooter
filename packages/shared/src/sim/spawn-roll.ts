@@ -7,26 +7,41 @@ import { chance, nextIntIn, type Rng } from '../rng';
  * picked at random, is used, and each used one then rolls its `chance` (1 if left out).
  */
 
-type Rolled = { type: string; id: string; oneOf?: string };
+type Rolled = { type: string; id: string; oneOf?: string; unit?: string };
+
+/** What a group picks a marker by: its placed prefab's path if that copy is in a group. */
+export const unitOf = (m: { id: string; unit?: string | undefined }): string => m.unit ?? m.id;
 
 /**
- * The ids of the markers of a type picked from their `oneOf` groups. Names are map-wide
+ * The units (unitOf) of the markers of a type picked from their `oneOf` groups: `pick`
+ * of each (counts, by name; one if not named), or all of them if there are fewer. A
+ * placed prefab in a group is one unit, however many spots it holds. Names are map-wide
  * and per type: a loot spawn's group never takes in an enemy spawn.
  */
 export function oneOfPicks(
   rng: Rng,
   markers: readonly CompiledMarker[],
   type: 'lootSpawn' | 'enemySpawn',
+  counts?: Readonly<Record<string, { pick: number }>>,
 ): Set<string> {
-  const groups = new Map<string, string[]>();
+  const groups = new Map<string, Set<string>>();
   for (const m of markers as readonly Rolled[]) {
     if (m.type !== type || m.oneOf === undefined) continue;
-    const ids = groups.get(m.oneOf);
-    if (ids) ids.push(m.id);
-    else groups.set(m.oneOf, [m.id]);
+    const units = groups.get(m.oneOf);
+    if (units) units.add(unitOf(m));
+    else groups.set(m.oneOf, new Set([unitOf(m)]));
   }
   const picked = new Set<string>();
-  for (const ids of groups.values()) picked.add(ids[nextIntIn(rng, 0, ids.length - 1)]!);
+  for (const [name, set] of groups) {
+    const units = [...set];
+    const pick = Math.min(counts?.[name]?.pick ?? 1, units.length);
+    // A partial shuffle: the first `pick` are a random choice (one draw for a pick of one).
+    for (let i = 0; i < pick; i++) {
+      const j = nextIntIn(rng, i, units.length - 1);
+      [units[i], units[j]] = [units[j]!, units[i]!];
+      picked.add(units[i]!);
+    }
+  }
   return picked;
 }
 

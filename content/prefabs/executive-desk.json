@@ -110,6 +110,19 @@
       "radiusTop": 0.1,
       "sides": 8,
       "collide": false
+    },
+    {
+      "type": "lootSpawn",
+      "id": "loose",
+      "pos": [1.05, 0.82, -0.15],
+      "mix": {
+        "tables": {
+          "documents": 2,
+          "electronics": 1.5,
+          "jewellery": 0.3
+        }
+      },
+      "chance": 0.5
     }
   ]
 }

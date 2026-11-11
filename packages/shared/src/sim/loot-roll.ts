@@ -9,7 +9,7 @@ import { byWeight, chance, nextFloat, nextInt, nextIntIn, type Rng } from '../rn
 import { createItem } from './create-item';
 import { createWeapon, type WeaponState } from './weapons';
 import { stow } from './gear';
-import { oneOfPicks } from './spawn-roll';
+import { oneOfPicks, unitOf } from './spawn-roll';
 import type { Character, SimState } from './state';
 
 /*
@@ -92,6 +92,11 @@ export function containerMix(c: ContainerLoot, kinds: LootKinds): LootMix | unde
   if (c.mix) return c.mix;
   if (c.lootTable !== undefined) return { tables: { [c.lootTable]: 1 } };
   return kinds.get(c.container)?.loot;
+}
+
+/** A loose spot's loot as a mix: its own, or its one table as a mix of one. */
+export function spotMix(m: { lootTable?: string | undefined; mix?: LootMix | undefined }): LootMix {
+  return m.mix ?? { tables: m.lootTable === undefined ? {} : { [m.lootTable]: 1 } };
 }
 
 /** The empty pick in a mix's options: no table has an empty id. */
@@ -177,8 +182,9 @@ export function rollEnemyLoot(
 
 /**
  * Puts a loose item on the ground at every lootSpawn marker that rolls its chance: one
- * item from its table (a loose spot ignores the table's rolls), lying at a random turn.
- * Of the spots sharing a `oneOf` name, only one picked at random is used.
+ * item from its table, or from a table its mix picks (a loose spot ignores the table's
+ * rolls), lying at a random turn. Of the spots and grouped copies sharing a `oneOf` name,
+ * only the map's `lootGroups` pick of them (one if not given) are used.
  */
 export function rollLootSpawns(
   state: SimState,
@@ -186,17 +192,27 @@ export function rollLootSpawns(
   items: ItemDb,
   tables: LootTables,
 ): void {
-  const picked = oneOfPicks(state.rng, map.markers, 'lootSpawn');
+  const picked = oneOfPicks(state.rng, map.markers, 'lootSpawn', map.lootGroups);
   for (const m of map.markers) {
     if (m.type !== 'lootSpawn') continue;
-    if (m.oneOf !== undefined && !picked.has(m.id)) continue;
+    if (m.oneOf !== undefined && !picked.has(unitOf(m))) continue;
     if (!chance(state.rng, m.chance ?? 1)) continue;
+    const id = m.lootTable ?? spotTable(m.mix!, state.rng);
+    if (id === NOTHING) continue;
     state.ground.push({
-      item: rollItem(items, table(tables, m.lootTable), state.rng),
+      item: rollItem(items, table(tables, id), state.rng),
       x: m.x,
       y: m.y,
       z: m.z,
       yaw: nextFloat(state.rng) * Math.PI * 2,
     });
   }
+}
+
+/** The table a loose spot's mix picks by weight, or NOTHING for its empty weight. */
+function spotTable(mix: LootMix, rng: Rng): string {
+  const options = Object.entries(mix.tables).map(([id, weight]) => ({ id, weight }));
+  if (mix.empty) options.push({ id: NOTHING, weight: mix.empty });
+  if (!options.length) return NOTHING;
+  return options.length === 1 ? options[0]!.id : byWeight(rng, options).id;
 }

@@ -210,6 +210,11 @@ export type CompiledMarker = Placed<MarkerNode> & {
   /** A container made of geometry: its footprint's half-width and half-depth, in its yaw. */
   hx?: number;
   hz?: number;
+  /**
+   * A loot spawn in a placed prefab with a `lootGroup` (its `oneOf` is then that name): the
+   * copy's path id, so the group picks the copy as one, with all its spots.
+   */
+  unit?: string;
 };
 
 /**
@@ -260,6 +265,8 @@ export interface CompiledMap {
   scavStartShare?: number | undefined;
   /** The map tab's storeys, lowest first (MapFile.floors); one view from above if undefined. */
   floors?: { name: string; y: number }[] | undefined;
+  /** How many of each loot group a raid uses (MapFile.lootGroups); one if not named. */
+  lootGroups?: Readonly<Record<string, { pick: number }>> | undefined;
   /** PMC squads at raid start (MapFile.pmcs); none if undefined. */
   pmcs?:
     | { enemy?: string | undefined; count: [number, number]; pmcSpawnsOnly?: boolean | undefined }
@@ -496,6 +503,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     buildings: out.buildings!,
     zones: map.zones,
     rotatingExtractions: map.rotatingExtractions,
+    lootGroups: map.lootGroups,
     enemyClearance: map.enemyClearance,
     hearingScale: map.hearingScale,
     scavStartShare: map.scavStartShare,
@@ -1222,6 +1230,27 @@ class Compiler {
   }
 
   private prefab(
+    node: PrefabNode,
+    f: Frame,
+    parentScope: Scope,
+    path: string,
+    stack: readonly string[],
+    out: Sink,
+  ): void {
+    const firstMarker = out.markers?.length ?? 0;
+    this.placePrefab(node, f, parentScope, path, stack, out);
+    // A copy in a loot group: its spots join the group as one (the outermost copy's wins).
+    if (node.lootGroup !== undefined && out.markers) {
+      for (let k = firstMarker; k < out.markers.length; k++) {
+        const m = out.markers[k]!;
+        if (m.type !== 'lootSpawn') continue;
+        m.oneOf = node.lootGroup;
+        m.unit = path;
+      }
+    }
+  }
+
+  private placePrefab(
     node: PrefabNode,
     f: Frame,
     parentScope: Scope,

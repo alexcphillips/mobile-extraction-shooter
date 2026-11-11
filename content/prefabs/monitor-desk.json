@@ -75,6 +75,19 @@
       "size": [0.5, 0.02, 0.16],
       "colour": "leg",
       "collide": false
+    },
+    {
+      "type": "lootSpawn",
+      "id": "loose",
+      "pos": [0.75, 0.77, 0.15],
+      "mix": {
+        "tables": {
+          "electronics": 2,
+          "pc-parts": 1,
+          "documents": 1
+        }
+      },
+      "chance": 0.4
     }
   ]
 }

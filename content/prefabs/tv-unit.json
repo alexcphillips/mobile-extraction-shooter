@@ -25,6 +25,18 @@
       "size": [0.3, 0.08, 0.2],
       "colour": "body",
       "collide": false
+    },
+    {
+      "type": "lootSpawn",
+      "id": "loose",
+      "pos": [0.8, 0.5, 0.05],
+      "mix": {
+        "tables": {
+          "household": 1,
+          "electronics": 1
+        }
+      },
+      "chance": 0.25
     }
   ]
 }

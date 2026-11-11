@@ -2,6 +2,7 @@ import {
   RAID,
   idSchema,
   nodeSchema,
+  spotMix,
   type MapFile,
   type MapNode,
   type PrefabFile,
@@ -17,7 +18,7 @@ import {
   loadQuests,
   loadSounds,
 } from '../content';
-import { ContainerLootFields } from './loot-mix';
+import { ContainerLootFields, MixFields } from './loot-mix';
 import {
   canEnter,
   canTurn,
@@ -618,6 +619,12 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
         {s.hole && <HoleNote editor={editor} hole={s.hole} label={editor.label(s.hole.path)} />}
         {s.nav && <NavPanel editor={editor} hiding={s.hiding} />}
         {s.selected.length > 1 && <p className="ed-note">{s.selected.length} selected.</p>}
+        {s.selected.length > 0 &&
+          s.selected.every(
+            (i) => nodes[i]?.type === 'prefab' || nodes[i]?.type === 'lootSpawn',
+          ) && (
+            <LootGroupFields editor={editor} map={s.map} nodes={s.selected.map((i) => nodes[i]!)} />
+          )}
         {!s.selected.length && !s.scope.length && (
           <MapSettings editor={editor} map={s.map} zone={s.zone} point={s.point} paint={s.colour} />
         )}
@@ -724,6 +731,68 @@ const HELP =
   'Two-finger scroll orbit, ⇧ pan · pinch zoom · ⌥-drag orbit, ⌥⇧-drag pan · WASD QE fly · ' +
   'click select, ⇧ add · double-click enter group or prefab · F focus · G ground · 7 marker · ' +
   '8 zone · 9 wall · 0 curve · P prefabs · N nav · H grid · C cut, ↑ ↓ floors';
+
+/**
+ * The loot group of the placed prefabs and loose spots selected (2026-11-10): a prefab's
+ * `lootGroup` (the copy counts as one, with all its spots) or a spot's `oneOf`, set on all
+ * of them at once, and how many of the group the map uses each raid.
+ */
+function LootGroupFields(props: { editor: MapEditor; map: MapFile; nodes: readonly MapNode[] }) {
+  const { editor, map, nodes } = props;
+  const groupOf = (n: MapNode): string | undefined =>
+    n.type === 'prefab' ? n.lootGroup : n.type === 'lootSpawn' ? n.oneOf : undefined;
+  const names = new Set(nodes.map(groupOf));
+  const name = names.size === 1 ? [...names][0] : undefined;
+  const many = nodes.length > 1;
+  const setName = (v: string) =>
+    editor.editSelected((n) => {
+      const r = n as { lootGroup?: string; oneOf?: string };
+      const key = n.type === 'prefab' ? 'lootGroup' : 'oneOf';
+      if (v) r[key] = v;
+      else delete r[key];
+    });
+  const size = name !== undefined ? editor.lootGroupSize(name) : null;
+  const pick = name !== undefined ? map.lootGroups?.[name]?.pick : undefined;
+  return (
+    <>
+      <div title="Prefabs and spots sharing this name are a group: only some of them, picked at random, are used each raid. A prefab counts as one, and each of its spots then rolls its chance.">
+        <Text
+          label="loot group"
+          value={name ?? ''}
+          placeholder={names.size > 1 ? 'several' : 'none'}
+          onChange={setName}
+        />
+      </div>
+      {name !== undefined && size && (
+        <div className="ed-row">
+          <Num
+            label="pick"
+            value={pick ?? 1}
+            min={0}
+            onChange={(v) =>
+              editor.editMap((m) => {
+                const n = v === undefined ? 1 : Math.max(0, Math.round(v));
+                const groups = { ...m.lootGroups };
+                if (n === 1) delete groups[name];
+                else groups[name] = { pick: n };
+                if (Object.keys(groups).length) m.lootGroups = groups;
+                else delete m.lootGroups;
+              })
+            }
+          />
+          <span className="ed-note">
+            {size.units
+              ? `of ${size.units} on the map (${size.spots} spot${size.spots === 1 ? '' : 's'})`
+              : 'holds no loot spots'}
+          </span>
+        </div>
+      )}
+      {many && name === undefined && names.size > 1 && (
+        <p className="ed-note">They&apos;re in different groups: a name puts them all in one.</p>
+      )}
+    </>
+  );
+}
 
 /** The map's own settings, shown when nothing is selected, and its named zones. */
 function MapSettings(props: {
@@ -2169,23 +2238,23 @@ function MarkerFields(props: { editor: MapEditor; node: MapNode; num: NumField; 
         />
       );
     case 'lootSpawn':
+      // An old single table shows as a mix of one, and is written as a mix once changed.
       return (
         <>
-          <Pick
-            label="loot"
-            value={n.lootTable}
-            options={tables}
-            onChange={(v) => set('lootTable', v)}
+          <MixFields
+            mix={spotMix(n)}
+            tables={tables}
+            single
+            onChange={(mix) =>
+              editor.editActive((m) => {
+                const r = m as typeof n;
+                delete r.lootTable;
+                r.mix = mix;
+              })
+            }
           />
           <div className="ed-row" title="The chance anything is there, 0 to 1">
             {num('chance', 'chance', 1)}
-          </div>
-          <div title="Spots sharing this name: only one, picked at random, is used each raid">
-            <Text
-              label="one of"
-              value={n.oneOf ?? ''}
-              onChange={(v) => set('oneOf', v || undefined)}
-            />
           </div>
         </>
       );

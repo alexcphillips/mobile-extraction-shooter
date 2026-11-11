@@ -792,6 +792,27 @@ export class MapEditor {
     if (i !== undefined) this.edit((nodes) => void change(nodes[i]!));
   }
 
+  /** Changes every selected node, as one undo step. */
+  editSelected(change: (n: MapNode) => void): void {
+    const sel = this.state.selected;
+    if (sel.length) this.edit((nodes) => void sel.forEach((i) => change(nodes[i]!)));
+  }
+
+  /**
+   * How many a loot group picks from on the map, as last compiled (2026-11-10): its placed
+   * prefabs and lone spots, each one; and how many spots they hold in all.
+   */
+  lootGroupSize(name: string): { units: number; spots: number } {
+    const units = new Set<string>();
+    let spots = 0;
+    for (const m of this.compiled?.markers ?? []) {
+      if (m.type !== 'lootSpawn' || m.oneOf !== name) continue;
+      units.add(m.unit ?? m.id);
+      spots++;
+    }
+    return { units: units.size, spots };
+  }
+
   /** Replaces the active node, with one typed in as JSON (checked by the caller). */
   replaceActive(node: MapNode): void {
     const i = this.state.selected[this.state.selected.length - 1];

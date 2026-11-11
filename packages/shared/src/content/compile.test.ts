@@ -601,6 +601,42 @@ describe('compileMap', () => {
     expect(() => loadContent(MAP_FORMAT, { ...map([]), nodes }, 'test.json')).toThrow();
   });
 
+  it("puts a grouped copy's loot spawns in its group, the copy as one unit", () => {
+    const shelf: PrefabFile = {
+      ...crate,
+      id: 'shelf',
+      nodes: [
+        ...crate.nodes,
+        { type: 'lootSpawn', id: 'a', pos: [0, 1, 0], lootTable: 'household' },
+        { type: 'lootSpawn', id: 'b', pos: [0, 2, 0], lootTable: 'household', oneOf: 'own' },
+      ],
+    };
+    const m = compileMap(
+      map([
+        { type: 'prefab', id: 's1', prefab: 'shelf', pos: [0, 0, 0], lootGroup: 'shelves' },
+        { type: 'prefab', id: 's2', prefab: 'shelf', pos: [5, 0, 0] },
+      ]),
+      prefabs(shelf),
+    );
+    const spots = m.markers.filter((k) => k.type === 'lootSpawn');
+    expect(spots.map((k) => [k.id, k.oneOf, k.unit])).toEqual([
+      ['s1/a', 'shelves', 's1'],
+      ['s1/b', 'shelves', 's1'],
+      ['s2/a', undefined, undefined],
+      ['s2/b', 'own', undefined],
+    ]);
+  });
+
+  it('takes a loot spawn with a mix, but not with a table and a mix, or an each', () => {
+    const spot = (extra: object) =>
+      map([{ type: 'lootSpawn', pos: [0, 0, 0], ...extra } as MapNode]);
+    const load = (extra: object) => () => loadContent(MAP_FORMAT, spot(extra), 'test.json');
+    expect(load({ mix: { tables: { household: 1 }, empty: 1 } })).not.toThrow();
+    expect(load({})).toThrow();
+    expect(load({ lootTable: 'household', mix: { tables: { household: 1 } } })).toThrow();
+    expect(load({ mix: { tables: { household: 1 }, each: true } })).toThrow();
+  });
+
   it("rejects a spawn whose patrol isn't beside it", () => {
     expect(() =>
       compileMap(

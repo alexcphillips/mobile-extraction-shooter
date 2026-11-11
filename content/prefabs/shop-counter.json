@@ -33,6 +33,19 @@
       "size": [0.36, 0.24, 0.03],
       "colour": "till",
       "collide": false
+    },
+    {
+      "type": "lootSpawn",
+      "id": "loose",
+      "pos": [0.6, 1.05, 0],
+      "mix": {
+        "tables": {
+          "register": 1,
+          "household": 1,
+          "electronics": 0.5
+        }
+      },
+      "chance": 0.3
     }
   ]
 }

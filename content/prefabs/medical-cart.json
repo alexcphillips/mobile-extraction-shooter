@@ -34,6 +34,17 @@
       "size": [0.74, 0.03, 0.54],
       "colour": "top",
       "collide": false
+    },
+    {
+      "type": "lootSpawn",
+      "id": "loose",
+      "pos": [0, 0.98, 0],
+      "mix": {
+        "tables": {
+          "medical": 1
+        }
+      },
+      "chance": 0.5
     }
   ]
 }

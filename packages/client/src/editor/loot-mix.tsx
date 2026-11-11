@@ -127,6 +127,8 @@ export function MixFields(props: {
   begin?: () => void;
   /** Opens a table: in the loot editor itself, or (unset) a link to it there. */
   open?: (table: string) => void;
+  /** A loose spot's: it holds one item, so there's no mixing within it. */
+  single?: boolean;
 }) {
   const { mix, tables } = props;
   const set = (m: Loose) => props.onChange(tidy(m));
@@ -208,17 +210,19 @@ export function MixFields(props: {
         >
           + table
         </button>
-        <label
-          className="ed-field"
-          title="Off: one pick for the whole container, so it's all one table's (8 in 10 all food, 2 in 10 all parts). On: a pick for every item, so one container holds a mix."
-        >
-          <input
-            type="checkbox"
-            checked={!!mix.each}
-            onChange={(e) => set({ ...mix, each: e.target.checked })}
-          />
-          mix within one container
-        </label>
+        {!props.single && (
+          <label
+            className="ed-field"
+            title="Off: one pick for the whole container, so it's all one table's (8 in 10 all food, 2 in 10 all parts). On: a pick for every item, so one container holds a mix."
+          >
+            <input
+              type="checkbox"
+              checked={!!mix.each}
+              onChange={(e) => set({ ...mix, each: e.target.checked })}
+            />
+            mix within one container
+          </label>
+        )}
       </div>
     </div>
   );

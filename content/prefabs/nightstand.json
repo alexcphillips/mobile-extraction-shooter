@@ -22,6 +22,19 @@
       "radiusTop": 0.06,
       "sides": 6,
       "collide": false
+    },
+    {
+      "type": "lootSpawn",
+      "id": "loose",
+      "pos": [0.12, 0.52, 0.08],
+      "mix": {
+        "tables": {
+          "household": 2,
+          "medical": 1,
+          "documents": 0.5
+        }
+      },
+      "chance": 0.3
     }
   ]
 }

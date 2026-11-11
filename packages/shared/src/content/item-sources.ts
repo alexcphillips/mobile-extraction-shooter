@@ -1,5 +1,5 @@
 import { questsFor } from '../quests';
-import { containerMix } from '../sim/loot-roll';
+import { containerMix, spotMix } from '../sim/loot-roll';
 import type { CompiledMarker } from './compile';
 import type { EnemyDef, LoadoutDef } from './enemies';
 import type { LootContainerDef } from './loot-containers';
@@ -83,7 +83,7 @@ export function sourceIndex(c: SourceContent): ReadonlyMap<string, ItemSource> {
           kinds.set(kind.name, (kinds.get(kind.name) ?? 0) + 1);
         }
       } else if (m.type === 'lootSpawn') {
-        for (const i of tableItems(m.lootTable)) {
+        for (const i of Object.keys(spotMix(m).tables).flatMap(tableItems)) {
           let maps = loose.get(i);
           if (!maps) loose.set(i, (maps = new Set()));
           maps.add(map.name);

@@ -3,5 +3,10 @@
   "id": "military-tech",
   "name": "Military tech",
   "rolls": [1, 2],
-  "items": [{ "item": "a5-kuroge-prime-ribeye", "weight": 1 }]
+  "items": [
+    {
+      "item": "military-binoculars",
+      "weight": 1
+    }
+  ]
 }

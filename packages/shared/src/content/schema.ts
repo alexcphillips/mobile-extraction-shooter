@@ -248,6 +248,13 @@ const prefabRefSchema = z.strictObject({
   landmark: landmarkSchema,
   loot: lootSchema,
   switch: switchSchema,
+  /**
+   * Puts every loot spawn in this copy into a group of the map's (2026-11-10, as a spot's
+   * `oneOf`), the copy counting as one: of the copies and spots in a group, the map's
+   * `lootGroups` pick (one if not given) are used each raid, and each of a used copy's
+   * spots rolls its chance. So "2 of these 6 shelves have loot".
+   */
+  lootGroup: idSchema.optional(),
 });
 
 /**
@@ -425,20 +432,32 @@ const lootContainerSchema = z.strictObject({
   ...containerLoot,
 });
 
-/** A spot where one loose item may lie, rolled from its loot table at raid start. */
-const lootSpawnSchema = z.strictObject({
-  type: z.literal('lootSpawn'),
-  ...marker,
-  lootTable: idSchema,
-  /** The chance anything is there, 0 to 1 (1 if left out). */
-  chance: finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1').optional(),
-  /**
-   * A name shared by spots of which only one is used each raid, picked at random (then
-   * rolling its chance as usual): for something that's in one of several places, like a
-   * key. Names are map-wide, not scoped by prefab.
-   */
-  oneOf: idSchema.optional(),
-});
+/**
+ * A spot where one loose item may lie, rolled at raid start from its loot table, or from
+ * its mix (2026-11-10): a table picked by weight (or nothing, by `empty`), then one item
+ * from it. One of the two; a mix has no `each`, since a spot holds one item.
+ */
+const lootSpawnSchema = z
+  .strictObject({
+    type: z.literal('lootSpawn'),
+    ...marker,
+    lootTable: idSchema.optional(),
+    mix: lootMixSchema.optional(),
+    /** The chance anything is there, 0 to 1 (1 if left out). */
+    chance: finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1').optional(),
+    /**
+     * A name shared by spots of which only one is used each raid, picked at random (then
+     * rolling its chance as usual): for something that's in one of several places, like a
+     * key. Names are map-wide, not scoped by prefab; the map's `lootGroups` can pick more
+     * than one, and a placed prefab's `lootGroup` puts all its spots in a group as one.
+     */
+    oneOf: idSchema.optional(),
+  })
+  .refine((m) => (m.lootTable === undefined) !== (m.mix === undefined), {
+    message: 'a loot spawn has a lootTable or a mix, not both',
+    path: ['lootTable'],
+  })
+  .refine((m) => !m.mix?.each, { message: "a loot spawn's mix has no each", path: ['mix'] });
 
 /**
  * A point of interest for PMC squads' routes (AI rework session 4; design.md → AI → PMCs):
@@ -818,6 +837,13 @@ export const mapSchema = z
       .min(1)
       .refine((f) => f.every((fl, i) => i === 0 || fl.y > f[i - 1]!.y), 'must go up, lowest first')
       .optional(),
+    /**
+     * How many of a loot group are used each raid (2026-11-10), by the group's name (a
+     * spot's `oneOf` or a placed prefab's `lootGroup`): one if not here, all of them if
+     * more than there are, and none at 0 (to switch off spots a prefab brings, as the
+     * tutorial does). An optional field, so still format 4.
+     */
+    lootGroups: z.record(idSchema, z.strictObject({ pick: z.int().min(0) })).optional(),
     zones: z.array(zoneSchema).superRefine((zones, ctx) => {
       const seen = new Set<string>();
       zones.forEach((zone, i) => {

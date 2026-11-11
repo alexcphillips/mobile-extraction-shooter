@@ -155,6 +155,7 @@ export { equipLoadout } from './sim/loadout';
 export {
   LOOT_GUN_MAX_LEVEL,
   containerMix,
+  spotMix,
   createLootGun,
   fillLootContainers,
   lootRounds,
