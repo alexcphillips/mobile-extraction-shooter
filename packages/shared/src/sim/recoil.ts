@@ -45,6 +45,11 @@ export const RECOIL = {
    * runs out of screen (the user's call, 2026-11-08). Guns' numbers stay as scaled from Tarkov.
    */
   thumb: 0.6,
+  /**
+   * Every gun's kick (up and sideways), for everyone, on top of thumb: guns' numbers stay as
+   * scaled from Tarkov (the user's call, 2026-11-10: "reduce recoil across the board by 30%").
+   */
+  scale: 0.7,
   /** The kick never climbs higher than this, in degrees: a safety, not reached by a magazine. */
   maxUp: 35,
   /**

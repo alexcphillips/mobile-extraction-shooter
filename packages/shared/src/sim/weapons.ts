@@ -360,10 +360,9 @@ export function updateWeapon(
   }
   const def = weaponDef(items, w.item);
   const s = weaponStats(items, w, stats);
-  if (input?.thumb) {
-    s.recoilUp *= RECOIL.thumb;
-    s.recoilSide *= RECOIL.thumb;
-  }
+  const kick = RECOIL.scale * (input?.thumb ? RECOIL.thumb : 1);
+  s.recoilUp *= kick;
+  s.recoilSide *= kick;
   // Not on a ladder or vaulting, not until it's drawn, nor while putting yourself out.
   const free = c.mode !== 'ladder' && c.mode !== 'vault' && c.draw === 0 && !c.extinguish;
 
