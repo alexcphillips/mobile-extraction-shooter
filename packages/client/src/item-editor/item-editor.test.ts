@@ -60,7 +60,7 @@ describe('item editor', () => {
     const items = loadItems();
     expect(itemUses('front-door-key', items)).toContain('door front-door on tutorial');
     expect(itemUses('ammo-9mm', items)).toEqual(
-      expect.arrayContaining(['m9a3 fires it', 'vendor quartermaster', 'starting kit new-player']),
+      expect.arrayContaining(['m9a3 fires it', 'vendor guns-ammo-vendor', 'starting kit new-player']),
     );
     expect(itemUses('akm', items)).toEqual(
       expect.arrayContaining(['scope-4x fits it', 'loadout scav-kit']),

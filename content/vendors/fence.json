@@ -2,7 +2,7 @@
   "formatVersion": 2,
   "id": "fence",
   "name": "Fence",
-  "blurb": "Doesn't ask where things came from, and you don't ask the price. New stock every few hours.",
+  "blurb": "An elusive black-market intermediary. Buys and sells just about anything, no questions asked.",
   "order": 5,
   "colour": "#8a6bb3",
   "markup": 1.6,

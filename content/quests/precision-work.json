@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "precision-work",
   "name": "Precision work",
-  "vendor": "gunsmith",
+  "vendor": "attachments-vendor",
   "description": "Scope electronics are hard to come by. Graphics cards have the chips I need.",
   "requires": ["test-fire"],
   "objectives": [

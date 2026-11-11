@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "ways-across",
   "name": "Ways across",
-  "vendor": "quartermaster",
+  "vendor": "guns-ammo-vendor",
   "description": "Everyone crosses the creek at the mill or the road bridge, and everyone gets shot there. There are quieter ways over. Walk them so you know them when you need them.",
   "requires": ["get-your-bearings"],
   "objectives": [

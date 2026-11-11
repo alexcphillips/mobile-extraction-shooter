@@ -115,7 +115,7 @@ export interface VendorStanding {
 }
 
 export interface Profile {
-  formatVersion: 14;
+  formatVersion: 15;
   money: number;
   /** The stash's pages, bought with money (at least one). */
   stash: Grid[];
@@ -232,7 +232,7 @@ const questStateShape = z.discriminatedUnion('status', [
 ]);
 
 const profileShape = z.strictObject({
-  formatVersion: z.literal(14),
+  formatVersion: z.literal(15),
   money: count,
   stash: z.array(gridShape).min(1),
   gear: gearShape,
@@ -260,7 +260,7 @@ const profileShape = z.strictObject({
   }),
 });
 
-export const PROFILE_FORMAT_VERSION = 14;
+export const PROFILE_FORMAT_VERSION = 15;
 
 export const PROFILE_FORMAT: ContentFormat<Profile> = {
   kind: 'profile',
@@ -300,8 +300,34 @@ export const PROFILE_FORMAT: ContentFormat<Profile> = {
         'encrypted-drive': 'encrypted-usb-drive',
         'nuclear-facility-blueprint': 'nuclear-facility-schematics',
       }),
+    // 2026-11-11: vendor ids say what they sell (the quartermaster became the
+    // guns-ammo-vendor, the gunsmith the attachments-vendor). Rep and decryptions follow.
+    14: (doc) => renameVendors(doc, RENAMED_VENDORS_IN_15),
   },
 };
+
+const RENAMED_VENDORS_IN_15: Readonly<Record<string, string>> = {
+  quartermaster: 'guns-ammo-vendor',
+  gunsmith: 'attachments-vendor',
+};
+
+/** Moves a stored profile's standing with renamed vendors, and crafts that pay them rep. */
+function renameVendors(
+  doc: Record<string, unknown>,
+  renamed: Readonly<Record<string, string>>,
+): Record<string, unknown> {
+  const d = doc as {
+    vendors?: Record<string, unknown>;
+    crafts?: Record<string, { vendor?: string }>;
+  };
+  const vendors: Record<string, unknown> = {};
+  for (const [id, standing] of Object.entries(d.vendors ?? {}))
+    vendors[renamed[id] ?? id] = standing;
+  const crafts: Record<string, unknown> = {};
+  for (const [id, c] of Object.entries(d.crafts ?? {}))
+    crafts[id] = c.vendor && renamed[c.vendor] ? { ...c, vendor: renamed[c.vendor] } : c;
+  return { ...d, vendors, crafts };
+}
 
 const RENAMED_IN_4: Readonly<Record<string, string>> = {
   'ammo-556': 'ammo-762x39',
@@ -408,7 +434,7 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
   return {
-    formatVersion: 14,
+    formatVersion: 15,
     money: kit.money,
     stash: [stash],
     gear,

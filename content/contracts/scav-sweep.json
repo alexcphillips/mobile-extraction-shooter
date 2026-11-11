@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "scav-sweep",
   "name": "Scav sweep",
-  "vendor": "quartermaster",
+  "vendor": "guns-ammo-vendor",
   "description": "Scavs are picking the roads clean. Thin them out, anywhere you find them.",
   "level": 1,
   "hours": 3,

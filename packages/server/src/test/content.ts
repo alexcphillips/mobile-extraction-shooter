@@ -39,7 +39,7 @@ export const testContent: Record<string, unknown> = {
     formatVersion: 1,
     id: 'test-radio',
     name: 'Test radio',
-    vendor: 'quartermaster',
+    vendor: 'guns-ammo-vendor',
     description: 'Tests only.',
     objectives: [
       {

@@ -8,7 +8,7 @@
   "results": [
     { "weight": 30, "item": "kiln-key" },
     { "weight": 15, "item": "music-store-key" },
-    { "weight": 30, "vendor": "quartermaster", "rep": 0.05 },
+    { "weight": 30, "vendor": "guns-ammo-vendor", "rep": 0.05 },
     { "weight": 25, "vendor": "fence", "rep": 0.05 }
   ],
   "minutes": 60

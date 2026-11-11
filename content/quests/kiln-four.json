@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "kiln-four",
   "name": "Kiln four",
-  "vendor": "quartermaster",
+  "vendor": "guns-ammo-vendor",
   "description": "That key opens the fourth drying kiln, the one with the small door on the south side. The foreman kept his stash in there. Go and see what's left. Locked rooms pay; that's what keys are for.",
   "requires": ["under-the-mill"],
   "objectives": [

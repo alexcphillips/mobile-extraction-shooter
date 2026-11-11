@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "get-your-bearings",
   "name": "Get your bearings",
-  "vendor": "quartermaster",
+  "vendor": "guns-ammo-vendor",
   "description": "New to Silver Creek? Learn the three things you can see from anywhere in the valley: the fire lookout on the west ridge, the teepee burner at the mill, the water tower at the east end. Keep one in view and you'll always know which way is out.",
   "objectives": [
     {

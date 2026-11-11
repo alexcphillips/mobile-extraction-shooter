@@ -1,8 +1,8 @@
 {
   "formatVersion": 2,
-  "id": "gunsmith",
+  "id": "attachments-vendor",
   "name": "Parker",
-  "blurb": "Attachments, magazines and the better guns, for those who come back.",
+  "blurb": "A skilled weapons technician dealing in firearm modifications, attachments, and components.",
   "order": 2,
   "colour": "#6f8fb3",
   "levels": [

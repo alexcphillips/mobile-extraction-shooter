@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "tool-run",
   "name": "Tool run",
-  "vendor": "gunsmith",
+  "vendor": "attachments-vendor",
   "description": "My drill died. Find me one, and some screws, out there, not off a shelf.",
   "level": 1,
   "hours": 2,

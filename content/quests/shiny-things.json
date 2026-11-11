@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "shiny-things",
   "name": "Shiny things",
-  "vendor": "quartermaster",
+  "vendor": "guns-ammo-vendor",
   "description": "The scavs have been pocketing watches. Bring me a couple and I'll make it worth your while.",
   "objectives": [
     {

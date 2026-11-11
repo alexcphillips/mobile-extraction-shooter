@@ -1,8 +1,8 @@
 {
   "formatVersion": 2,
-  "id": "quartermaster",
+  "id": "guns-ammo-vendor",
   "name": "Kovacs",
-  "blurb": "Basic guns, rounds and grenades. Earn his trust and the good rounds come out of the back.",
+  "blurb": "A former military armorer turned weapons dealer. Specializes in firearms and ammunition.",
   "order": 1,
   "colour": "#c98a2e",
   "levels": [

@@ -183,6 +183,21 @@ describe('PROFILE_FORMAT', () => {
     expect(p.stash[0]!.items[0]!.item.item).toBe('encrypted-usb-drive');
     expect(p.stash[0]!.items[1]!.item.item).toBe('nuclear-facility-schematics');
   });
+
+  it('moves rep with renamed vendors (format 14 → 15)', () => {
+    const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
+    old.formatVersion = 14;
+    old.vendors = { quartermaster: { rep: 0.2, spent: 100 }, medic: { rep: 0.1, spent: 0 } };
+    old.crafts = {
+      'intel-desk': { recipe: 'intel-flash-drive', vendor: 'gunsmith', rep: 0.05, done: 1 },
+    };
+    const p = loadContent(PROFILE_FORMAT, old, 'p');
+    expect(p.vendors).toEqual({
+      'guns-ammo-vendor': { rep: 0.2, spent: 100 },
+      medic: { rep: 0.1, spent: 0 },
+    });
+    expect(p.crafts['intel-desk']!.vendor).toBe('attachments-vendor');
+  });
 });
 
 describe('checkProfile', () => {

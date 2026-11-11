@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "under-the-mill",
   "name": "Under the mill",
-  "vendor": "quartermaster",
+  "vendor": "guns-ammo-vendor",
   "description": "The mill race runs in a tunnel under the sawmill, creek to creek. It's the way past the mill when the mill is busy. The headgate keeper left his logbook down there somewhere. Bring it out and I'll give you the key he gave me.",
   "requires": ["ways-across"],
   "objectives": [

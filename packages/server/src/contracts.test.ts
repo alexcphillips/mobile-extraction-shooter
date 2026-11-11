@@ -103,7 +103,7 @@ describe('Intel desk contracts', () => {
     me = await client.ok('POST', '/contracts/claim', { version: me.version });
     expect(me.profile.contracts.active).toBeUndefined();
     expect(countItems(items, me.profile).get('field-first-aid-kit')).toBe(kits + 1);
-    expect(me.profile.vendors.quartermaster?.rep).toBeCloseTo(0.05);
+    expect(me.profile.vendors['guns-ammo-vendor']?.rep).toBeCloseTo(0.05);
 
     // Taken today: off the board until tomorrow.
     expect(

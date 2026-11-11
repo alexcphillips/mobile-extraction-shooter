@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "headhunter",
   "name": "Headhunter",
-  "vendor": "gunsmith",
+  "vendor": "attachments-vendor",
   "description": "Someone's running a crew out there. Find their boss and end it.",
   "level": 3,
   "hours": 6,

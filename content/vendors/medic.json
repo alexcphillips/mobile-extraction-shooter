@@ -2,7 +2,7 @@
   "formatVersion": 2,
   "id": "medic",
   "name": "Doc",
-  "blurb": "Patches you up. The serious kit is for regulars.",
+  "blurb": "An experienced emergency physician supplying medical goods and pharmaceuticals.",
   "order": 4,
   "colour": "#b8504a",
   "levels": [
