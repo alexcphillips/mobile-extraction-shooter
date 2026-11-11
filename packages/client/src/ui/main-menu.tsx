@@ -80,7 +80,7 @@ import {
 } from './raid-screen';
 import { CATEGORIES, countHits, searcher, type Category } from './stash-search';
 import { CategoryIcon } from './category-icons';
-import { QuestsPage, questCounts, questsLine } from './quests-page';
+import { questCounts, questsLine } from './quests-page';
 import { VendorsPage } from './vendors-page';
 import { HangarPage } from './hangar-page';
 import { collectedLine, contractRewards, hangarLine, readyCrafts, type Names } from './hangar-text';
@@ -156,7 +156,7 @@ interface RaidButton {
 /** Party raids already joined from this tab, so coming back to the menu doesn't rejoin one. */
 const joined = new Set<string>();
 
-type Page = 'menu' | 'stash' | 'vendors' | 'quests' | 'hangar' | 'admin' | 'friends';
+type Page = 'menu' | 'stash' | 'vendors' | 'hangar' | 'admin' | 'friends';
 
 /** What you're taking in, for the menu: guns and armour by name. */
 const SHOWN: readonly GearSlot[] = ['primary1', 'primary2', 'sidearm', 'helmet', 'bodyArmour'];
@@ -403,55 +403,11 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
     [opts.items, zombiesMode],
   );
 
-  if (page === 'quests') {
+  if (page === 'vendors') {
     const progress = (r: ProfileResponse, q: QuestDef, o: string): number => {
       const s = r.profile.quests[q.id];
       return s?.status === 'active' ? (s.progress[o] ?? 0) : 0;
     };
-    return (
-      <QuestsPage
-        vendors={opts.vendors}
-        quests={opts.quests}
-        items={opts.items}
-        me={me}
-        notice={notice}
-        onBack={() => {
-          setNotice(null);
-          setPage('menu');
-        }}
-        onStash={() => {
-          setNotice(null);
-          setPage('stash');
-        }}
-        onAccept={(q) =>
-          saver
-            .acceptQuest(q.id)
-            .then(
-              (r) => reopen(r, startPage, `Accepted ${q.name}.`),
-              refused(`${q.name} wasn't accepted`),
-            )
-        }
-        onHandOver={(q, o) => {
-          const before = progress(me, q, o);
-          return saver.handOver(q.id, o).then((r) => {
-            const def = q.objectives.find((x) => x.id === o);
-            const name =
-              def && def.type === 'handOver' ? itemDef(opts.items, def.item).name : 'items';
-            reopen(r, startPage, `Handed over ${progress(r, q, o) - before} × ${name}.`);
-          }, refused('Nothing was handed over'));
-        }}
-        onComplete={(q) =>
-          saver
-            .completeQuest(q.id, startPage)
-            .then(
-              (r) => reopen(r, startPage, `${q.name} is done. The rewards are in your stash.`),
-              refused(`${q.name} wasn't handed in`),
-            )
-        }
-      />
-    );
-  }
-  if (page === 'vendors') {
     return (
       <VendorsPage
         vendors={opts.vendors}
@@ -483,6 +439,31 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
               refused(`${name} wasn't bought`),
             );
         }}
+        onAccept={(q) =>
+          saver
+            .acceptQuest(q.id)
+            .then(
+              (r) => reopen(r, startPage, `Accepted ${q.name}.`),
+              refused(`${q.name} wasn't accepted`),
+            )
+        }
+        onHandOver={(q, o) => {
+          const before = progress(me, q, o);
+          return saver.handOver(q.id, o).then((r) => {
+            const def = q.objectives.find((x) => x.id === o);
+            const name =
+              def && def.type === 'handOver' ? itemDef(opts.items, def.item).name : 'items';
+            reopen(r, startPage, `Handed over ${progress(r, q, o) - before} × ${name}.`);
+          }, refused('Nothing was handed over'));
+        }}
+        onComplete={(q) =>
+          saver
+            .completeQuest(q.id, startPage)
+            .then(
+              (r) => reopen(r, startPage, `${q.name} is done. The rewards are in your stash.`),
+              refused(`${q.name} wasn't handed in`),
+            )
+        }
       />
     );
   }
@@ -722,17 +703,12 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
           label: 'Vendors',
           icon: 'vendors',
           disabled: !opts.vendors.length,
-          title: opts.vendors.map((v) => v.name).join(' · ') || 'None yet',
-          onClick: () => setPage('vendors'),
-        },
-        {
-          id: 'quests',
-          label: 'Quests',
-          icon: 'quests',
-          disabled: !opts.quests.length,
+          // Quests live inside the vendors (2026-11-10), so their badge and line are here.
           badge: questCounts(opts.quests, me).fresh,
-          title: questsLine(opts.quests, me),
-          onClick: () => setPage('quests'),
+          title: opts.quests.length
+            ? questsLine(opts.quests, me)
+            : opts.vendors.map((v) => v.name).join(' · ') || 'None yet',
+          onClick: () => setPage('vendors'),
         },
         {
           id: 'hangar',
