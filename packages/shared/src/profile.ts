@@ -277,8 +277,11 @@ export const PROFILE_FORMAT: ContentFormat<Profile> = {
       });
       return doc;
     },
-    // 2026-11-11: the PMC level; everyone starts at no XP (a wipe follows anyway).
-    18: (doc) => ({ ...doc, xp: 0 }),
+    // 2026-11-11: the PMC level; everyone starts at no XP. Also the move to American
+    // spelling the same day, which renamed saved keys and ids (gear.bodyArmour, the
+    // armourer, the armour bench, armour items) without a migration of its own; a profile
+    // saved after it has nothing left to rename.
+    18: (doc) => ({ ...americanSpelling(doc), xp: 0 }),
   },
 };
 
@@ -359,6 +362,51 @@ function eachObject(doc: unknown, visit: (o: Record<string, unknown>) => void): 
   const o = doc as Record<string, unknown>;
   visit(o);
   for (const v of Object.values(o)) eachObject(v, visit);
+}
+
+/**
+ * The British spellings scripts/american-spelling.mjs changed (2026-11-11) that a stored
+ * profile can hold, in keys and ids, longest first. Lower case and Capitalized, as in
+ * bodyArmour.
+ */
+const BRITISH: readonly (readonly [RegExp, string])[] = (
+  [
+    ['jewellery', 'jewelry'],
+    ['aluminium', 'aluminum'],
+    ['armour', 'armor'],
+    ['colour', 'color'],
+    ['centre', 'center'],
+    ['calibre', 'caliber'],
+    ['favour', 'favor'],
+    ['metre', 'meter'],
+    ['licence', 'license'],
+    ['grey', 'gray'],
+  ] as const
+).flatMap(([gb, us]) => [
+  [new RegExp(gb, 'g'), us] as const,
+  [
+    new RegExp(gb[0]!.toUpperCase() + gb.slice(1), 'g'),
+    us[0]!.toUpperCase() + us.slice(1),
+  ] as const,
+]);
+
+function american(text: string): string {
+  let out = text;
+  for (const [gb, us] of BRITISH) out = out.replace(gb, us);
+  return out;
+}
+
+/** Every key and string in a stored profile in American spelling (format 18 → 19). */
+function americanSpelling(doc: Record<string, unknown>): Record<string, unknown> {
+  const walk = (v: unknown): unknown => {
+    if (typeof v === 'string') return american(v);
+    if (Array.isArray(v)) return v.map(walk);
+    if (typeof v !== 'object' || v === null) return v;
+    const out: Record<string, unknown> = {};
+    for (const [k, x] of Object.entries(v)) out[american(k)] = walk(x);
+    return out;
+  };
+  return walk(doc) as Record<string, unknown>;
 }
 
 /** A stored profile with guns of this item back on their own round (Item.loaded removed). */

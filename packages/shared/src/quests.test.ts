@@ -159,6 +159,23 @@ describe('quests', () => {
     expect(questStatus(p, watches)).toBe('available');
   });
 
+  it('stay hidden below their PMC level, and give XP when finished (2026-11-11)', () => {
+    const p = profile();
+    const veteran = quest({ ...radio, id: 'veteran', minLevel: 3, rewards: { xp: 2500 } });
+    expect(questStatus(p, veteran)).toBe('hidden');
+    expect(acceptQuest(p, veteran)).toMatch(/PMC level 3/);
+    // Level 3 needs 3,000 XP.
+    p.xp = 3000;
+    expect(questStatus(p, veteran)).toBe('available');
+    expect(acceptQuest(p, veteran)).toBeNull();
+    p.quests.veteran = { status: 'active', progress: { look: 1 } };
+    expect(completeQuest(p, items, veteran)).toBeNull();
+    expect(p.xp).toBe(5500);
+    // Once taken, a quest stays shown whatever the level.
+    p.xp = 0;
+    expect(questStatus(p, veteran)).toBe('done');
+  });
+
   it('take hand-overs from the stash and the bags in it, a bit at a time, not from gear', () => {
     const p = profile();
     p.quests.radio = { status: 'done' };
@@ -289,11 +306,14 @@ describe('checkQuests', () => {
     expect(check({ ...radio, requires: ['watches'] }, watches)).toThrow(/loop/);
     const twice = { ...radio, objectives: [radio.objectives[0]!, radio.objectives[0]!] };
     expect(check(twice)).toThrow(/two objectives/);
-    expect(check({ ...radio, rewards: { money: 0, items: [{ item: 'notes' }], rep: 0, xp: 0 } })).toThrow(
-      /quest item/,
-    );
     expect(
-      check({ ...radio, rewards: { money: 0, items: [{ item: 'cash', count: 5000 }], rep: 0, xp: 0 } }),
+      check({ ...radio, rewards: { money: 0, items: [{ item: 'notes' }], rep: 0, xp: 0 } }),
+    ).toThrow(/quest item/);
+    expect(
+      check({
+        ...radio,
+        rewards: { money: 0, items: [{ item: 'cash', count: 5000 }], rep: 0, xp: 0 },
+      }),
     ).toThrow(/more than a stack/);
   });
 });

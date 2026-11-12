@@ -209,6 +209,23 @@ describe('PROFILE_FORMAT', () => {
     expect(loadContent(PROFILE_FORMAT, old, 'p').gear.primary1!.attachments!.laser).toBeNull();
   });
 
+  it('starts the PMC level at 0 and moves British spellings to American (format 18 → 19)', () => {
+    const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
+    old.formatVersion = 18;
+    delete old.xp;
+    const { bodyArmor, ...gear } = old.gear;
+    old.gear = { ...gear, bodyArmour: bodyArmor };
+    old.vendors = { armourer: { rep: 0.2, spent: 5000 } };
+    old.hangar = { 'armour-bench': 2 };
+    old.stash[0].items[0].item = { item: 'armour-repair-kit', count: 1, left: 3 };
+    const p = loadContent(PROFILE_FORMAT, old, 'p');
+    expect(p.xp).toBe(0);
+    expect(p.gear.bodyArmor).toBeNull();
+    expect(p.vendors).toEqual({ armorer: { rep: 0.2, spent: 5000 } });
+    expect(p.hangar).toEqual({ 'armor-bench': 2 });
+    expect(p.stash[0]!.items[0]!.item.item).toBe('armor-repair-kit');
+  });
+
   it('takes out the deleted Intel desk, its contracts and drives (format 15 → 16)', () => {
     const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
     old.formatVersion = 15;

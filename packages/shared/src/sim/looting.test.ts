@@ -156,6 +156,19 @@ describe('found in raid', () => {
     expect(gearItems(gear).find((i) => i.item === 'watch')?.found).toBe(true);
   });
 
+  it('a run-through brings nothing new out found, but keeps what was (2026-11-11)', () => {
+    const { c, crate, act } = setup();
+    addItem(items, c.gear.backpack!.grid!, { item: 'watch', count: 1, found: true });
+    markBrought(c);
+    addItem(items, crate.grid, createItem(items, 'bandage'));
+    act({ type: 'quick', from: loot('bandage'), to: self });
+    const gear = JSON.parse(JSON.stringify(c.gear)) as typeof c.gear;
+    settleFound(gear, true);
+    const kept = gearItems(gear);
+    expect(kept.find((i) => i.item === 'bandage')?.found).toBeUndefined();
+    expect(kept.find((i) => i.item === 'watch')?.found).toBe(true);
+  });
+
   it('rounds and parts off a gun are not found, in a raid', () => {
     const { c, enemy, body, act } = setup();
     markBrought(c);

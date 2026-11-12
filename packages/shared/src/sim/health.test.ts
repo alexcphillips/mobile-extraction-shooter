@@ -100,8 +100,14 @@ describe('damage', () => {
     dealDamage(state, c, HEAD, 100, 7);
     expect(c.health.dead).toBe(true);
     expect(dealDamage(state, c, CHEST, 10, 7)).toBe(0);
+    // A kill to the head says so, for PMC XP's headshot bonus (2026-11-11).
     expect(state.events.filter((e) => e.type === 'death')).toEqual([
-      { type: 'death', target: c.id, by: 7 },
+      { type: 'death', target: c.id, by: 7, head: true },
+    ]);
+    const other = setup();
+    dealDamage(other.state, other.c, CHEST, 100, 7);
+    expect(other.state.events.filter((e) => e.type === 'death')).toEqual([
+      { type: 'death', target: other.c.id, by: 7 },
     ]);
   });
 

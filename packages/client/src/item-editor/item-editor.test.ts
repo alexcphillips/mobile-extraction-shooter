@@ -144,7 +144,7 @@ describe('item editor', () => {
     expect(itemUses('m416', items)).toEqual(
       expect.arrayContaining(['scope-4x fits it', 'starting kit new-player']),
     );
-    expect(itemUses('graphics-card', items)).toContain('quest precision-work');
+    expect(itemUses('smartphone', items)).toContain('quest shiny-stock');
   });
 
   it('warns about changes that can break saved stashes, and only those', () => {

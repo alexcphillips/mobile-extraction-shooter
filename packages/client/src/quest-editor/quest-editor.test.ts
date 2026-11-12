@@ -88,27 +88,27 @@ describe('quest editor', () => {
     e.remove('under-the-mill');
     const s = e.getState();
     expect(s.quests.has('under-the-mill')).toBe(false);
-    expect(s.quests.get('kiln-four')!.requires).toEqual(['area-familiarization']);
+    expect(s.quests.get('proper-protection')!.requires).toEqual(['area-familiarization']);
     expect(s.problem).toBeNull();
-    expect([...s.unsaved].sort()).toEqual(['kiln-four', 'under-the-mill']);
+    expect([...s.unsaved].sort()).toEqual(['proper-protection', 'under-the-mill']);
     e.undo();
-    expect(e.getState().quests.get('kiln-four')!.requires).toEqual(['under-the-mill']);
+    expect(e.getState().quests.get('proper-protection')!.requires).toEqual(['under-the-mill']);
     expect(e.getState().unsaved).toEqual([]);
   });
 
   it('makes a quest unlocked by another, for another vendor, that passes the checks', () => {
     const e = make();
     const vendor = [...loadVendors().keys()].find((v) => v !== 'guns-ammo-vendor')!;
-    const id = e.create({ vendor, after: 'kiln-four' });
+    const id = e.create({ vendor, after: 'proper-protection' });
     const q = e.getState().quests.get(id)!;
     expect(q.vendor).toBe(vendor);
-    expect(q.requires).toEqual(['kiln-four']);
+    expect(q.requires).toEqual(['proper-protection']);
     expect(e.getState().problem).toBeNull();
   });
 
   it('refuses a loop', () => {
     const e = make();
-    e.require('area-familiarization', 'kiln-four');
+    e.require('area-familiarization', 'proper-protection');
     expect(e.getState().quests.get('area-familiarization')!.requires).toBeUndefined();
     expect(e.getState().message).toMatch(/loop/);
   });
@@ -125,25 +125,25 @@ describe('quest editor', () => {
     expect(e.getState().problem).toBeNull();
   });
 
-  // Silver Creek's chain: area-familiarization → under-the-mill → kiln-four.
+  // Silver Creek's chain: area-familiarization → under-the-mill → proper-protection.
   it('inserts a new quest before one, taking its requirements', () => {
     const e = make();
-    const id = e.create({ vendor: 'armorer', before: 'kiln-four' });
+    const id = e.create({ vendor: 'armorer', before: 'proper-protection' });
     const s = e.getState();
     expect(s.quests.get(id)!.requires).toEqual(['under-the-mill']);
-    expect(s.quests.get('kiln-four')!.requires).toEqual([id]);
+    expect(s.quests.get('proper-protection')!.requires).toEqual([id]);
     expect(s.problem).toBeNull();
     e.undo();
     expect(e.getState().quests.has(id)).toBe(false);
-    expect(e.getState().quests.get('kiln-four')!.requires).toEqual(['under-the-mill']);
+    expect(e.getState().quests.get('proper-protection')!.requires).toEqual(['under-the-mill']);
   });
 
   it('moves a quest before another in one step, closing the gap it left', () => {
     const e = make();
-    e.move('kiln-four', 'under-the-mill', 'before');
+    e.move('proper-protection', 'under-the-mill', 'before');
     const s = e.getState();
-    expect(s.quests.get('kiln-four')!.requires).toEqual(['area-familiarization']);
-    expect(s.quests.get('under-the-mill')!.requires).toEqual(['kiln-four']);
+    expect(s.quests.get('proper-protection')!.requires).toEqual(['area-familiarization']);
+    expect(s.quests.get('under-the-mill')!.requires).toEqual(['proper-protection']);
     expect(s.problem).toBeNull();
     e.undo();
     expect(e.getState().unsaved).toEqual([]);
@@ -151,22 +151,22 @@ describe('quest editor', () => {
 
   it('moves a quest after another, its old dependents rewired', () => {
     const e = make();
-    e.move('under-the-mill', 'kiln-four', 'after');
+    e.move('under-the-mill', 'proper-protection', 'after');
     const s = e.getState();
-    expect(s.quests.get('kiln-four')!.requires).toEqual(['area-familiarization']);
-    expect(s.quests.get('under-the-mill')!.requires).toEqual(['kiln-four']);
+    expect(s.quests.get('proper-protection')!.requires).toEqual(['area-familiarization']);
+    expect(s.quests.get('under-the-mill')!.requires).toEqual(['proper-protection']);
     expect(s.problem).toBeNull();
   });
 
   it('sets several requirements at once, refusing a loop', () => {
     const e = make();
-    e.setRequires('kiln-four', ['under-the-mill', 'shiny-stock', 'scrap-plates']);
-    expect(e.getState().quests.get('kiln-four')!.requires).toEqual([
+    e.setRequires('proper-protection', ['under-the-mill', 'shiny-stock', 'field-dressing']);
+    expect(e.getState().quests.get('proper-protection')!.requires).toEqual([
       'under-the-mill',
       'shiny-stock',
-      'scrap-plates',
+      'field-dressing',
     ]);
-    e.setRequires('area-familiarization', ['kiln-four']);
+    e.setRequires('area-familiarization', ['proper-protection']);
     expect(e.getState().quests.get('area-familiarization')!.requires).toBeUndefined();
     expect(e.getState().message).toMatch(/loop/);
   });

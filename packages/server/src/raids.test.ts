@@ -153,6 +153,41 @@ describe('raids', () => {
     expect((await client.ok('GET', '/profile')).raid?.id).toBe(raid!.id);
   });
 
+  it('gives PMC XP for the kills and searches reported (2026-11-11)', async () => {
+    const client = await signedIn();
+    const { raid, profile } = await client.ok('POST', '/raids', { raid: 'northpoint' });
+    expect(profile.xp).toBe(0);
+    const after = await client.ok('POST', `/raids/${raid!.id}/end`, {
+      ...end(profile.gear),
+      killed: [{ enemy: 'scav' }, { enemy: 'pmc', head: true }],
+      searched: 3,
+    });
+    // 40 + 100 + 50 for the head + 3 × 10, × 1.3 for getting out.
+    expect(after.profile.xp).toBe(Math.round(220 * 1.3));
+  });
+
+  it('refuses XP reports past the limits', async () => {
+    const client = await signedIn();
+    const { raid, profile } = await client.ok('POST', '/raids', { raid: 'northpoint' });
+    const path = `/raids/${raid!.id}/end`;
+    const three = [{ enemy: 'scav' }, { enemy: 'scav' }, { enemy: 'scav' }];
+    expect(
+      (await client.fails('POST', path, { ...end(profile.gear), killed: three })).message,
+    ).toMatch(/at most the kills/);
+    expect(
+      (
+        await client.fails('POST', path, {
+          ...end(profile.gear),
+          killed: [{ enemy: 'scav', head: 1 }],
+        })
+      ).message,
+    ).toMatch(/enemy, head/);
+    expect(
+      (await client.fails('POST', path, { ...end(profile.gear), searched: 1e6 })).message,
+    ).toMatch(/searched/);
+    expect((await client.ok('GET', '/profile')).raid?.id).toBe(raid!.id);
+  });
+
   it("refuses unknown raids and other players' raids", async () => {
     const client = await signedIn();
     expect((await client.fails('POST', '/raids', { raid: 'moon' })).error).toBe('invalid');
@@ -198,6 +233,9 @@ describe('PUT /profile', () => {
     expect((await client.fails('PUT', '/profile', { version, profile })).message).toMatch(
       /only added by buying/,
     );
+    profile.stash.pop();
+    profile.xp += 1000;
+    expect((await client.fails('PUT', '/profile', { version, profile })).message).toMatch(/XP/);
   });
 });
 

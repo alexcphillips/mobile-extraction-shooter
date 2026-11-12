@@ -7,6 +7,7 @@ import {
   parseGear,
   raidProgress,
   raidXp,
+  XP,
   restGear,
   settleBags,
   settleFits,
@@ -35,8 +36,6 @@ export const RAIDS = {
   maxDetail: 100,
   /** Quest markers investigated in one raid. */
   maxInvestigated: 50,
-  /** Containers searched in one raid. */
-  maxSearched: 1000,
 };
 
 /** A result's `killed`: up to as many as its kills, each an enemy id and maybe a headshot. */
@@ -77,9 +76,9 @@ function parseEnd(raw: unknown): EndRaidRequest | string {
     searched !== undefined &&
     (!Number.isInteger(searched) ||
       (searched as number) < 0 ||
-      (searched as number) > RAIDS.maxSearched)
+      (searched as number) > XP.maxSearched)
   )
-    return `searched must be a whole number up to ${RAIDS.maxSearched}`;
+    return `searched must be a whole number up to ${XP.maxSearched}`;
   return {
     how: how as EndRaidRequest['how'],
     gear,

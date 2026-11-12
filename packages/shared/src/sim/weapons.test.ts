@@ -488,7 +488,13 @@ describe('firing', () => {
       step(state, world, TEST_ITEMS, { [shooter.id]: input({ ...aim, fire: true }) });
     }
     expect(target.health.dead).toBe(true);
-    expect(state.events).toContainEqual({ type: 'death', target: target.id, by: shooter.id });
+    // Aimed at the head.
+    expect(state.events).toContainEqual({
+      type: 'death',
+      target: target.id,
+      by: shooter.id,
+      head: true,
+    });
     step(state, world, TEST_ITEMS, { [target.id]: input({ fire: true, moveY: 1 }) });
     expect(heldWeapon(target)?.mag).toBe(30);
     expect(target.vz).toBe(0);
