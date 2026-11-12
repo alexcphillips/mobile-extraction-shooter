@@ -84,17 +84,31 @@ describe('grids', () => {
     expect(stash.items).toHaveLength(1);
   });
 
-  it("takes empty rigs and backpacks in a backpack's grid, but not full ones", () => {
+  it("takes rigs and backpacks, full or not, in a backpack's grid, but never in themselves", () => {
     const pack = createGrid(10, 10);
     pack.bags = true;
     const empty: Item = { item: 'rig', count: 1, grid: createGrid(3, 2) };
     expect(canHold(items, pack, empty)).toBe(true);
     expect(addItem(items, pack, empty)).toBe(0);
+    // A rig full of meds, and a full backpack, go in too (2026-11-11).
+    const fullRig: Item = { item: 'rig', count: 1, grid: createGrid(3, 2) };
+    addItem(items, fullRig.grid!, one('round'));
+    expect(addItem(items, pack, fullRig)).toBe(0);
     const full: Item = { item: 'backpack', count: 1, grid: createGrid(4, 4) };
+    full.grid!.bags = true;
     addItem(items, full.grid!, one('pistol'));
-    expect(canHold(items, pack, full)).toBe(false);
-    expect(addItem(items, pack, full)).toBe(1);
-    // Never the vault, even empty.
+    expect(addItem(items, pack, full)).toBe(0);
+    // As deep as you like, but a bag never goes in its own grid or one inside it.
+    const outer: Item = { item: 'backpack', count: 1, grid: pack };
+    expect(canHold(items, full.grid!, outer)).toBe(false);
+    expect(canHold(items, pack, outer)).toBe(false);
+    expect(canHold(items, full.grid!, { item: 'backpack', count: 1, grid: createGrid(2, 2) })).toBe(
+      true,
+    );
+    // Never a rig's grid, and never the vault, even empty.
+    expect(canHold(items, fullRig.grid!, { item: 'rig', count: 1, grid: createGrid(1, 1) })).toBe(
+      false,
+    );
     expect(canHold(items, pack, { item: 'vault', count: 1, grid: createGrid(2, 2) })).toBe(false);
   });
 

@@ -1046,8 +1046,8 @@ function SearchBox(): ReactNode {
 }
 
 /**
- * The rigs and backpacks opened with a tap from the open container or stash page (the
- * user's call, 2026-11-01): what's in each, to drag in and out of. Since 2026-11-11 (the
+ * The rigs and backpacks opened with a tap (the user's call, 2026-11-01), from any grid or
+ * from inside another bag (2026-11-11): what's in each, to drag in and out of. Since 2026-11-11 (the
  * user's call) each is a floating window over the whole inventory, up to MAX_BAGS, the
  * newest on top, dragged by its title bar; a touch brings one to the front.
  */
@@ -1101,11 +1101,7 @@ function BagWindow({ inv, bag }: { inv: InventoryController; bag: OpenBag }): Re
           ✕
         </button>
       </header>
-      <GridView
-        inv={inv}
-        gref={{ owner: at.owner, grid: at.grid, inside: { index: at.index, item: at.item } }}
-        grid={grid}
-      />
+      <GridView inv={inv} gref={bag.gref} grid={grid} />
     </div>
   );
 }

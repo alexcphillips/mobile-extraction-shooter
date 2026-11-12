@@ -103,17 +103,21 @@ function itemAt(s: StashState, ref: ItemRef): Item | null {
 /**
  * A grid of the profile's, by a ref as the stash screen sees it: one of the gear's (a
  * rig's or backpack's inside, the vault), a stash page, or inside a rig or backpack
- * stored on a page. Null if there's no such grid.
+ * lying on a page or in a backpack, at any depth. Null if there's no such grid.
  */
 export function stashGridOf(profile: Profile, ref: GridRef): Grid | null {
   const page = stashPageOf(ref.owner);
   if (page >= 0) {
     return ref.grid === 'loot' ? bagGrid(profile.stash[page] ?? null, ref.inside) : null;
   }
-  if (ref.inside) return null;
   if (ref.owner.kind !== 'self') return null;
   const g = profile.gear;
-  switch (ref.grid) {
+  // A bag lying in the backpack opens too, at any depth (2026-11-11).
+  return bagGrid(gearGridOf(g, ref.grid), ref.inside);
+}
+
+function gearGridOf(g: Profile['gear'], name: GridRef['grid']): Grid | null {
+  switch (name) {
     case 'pockets':
       return g.pockets;
     case 'rig':
@@ -277,13 +281,14 @@ export function plainItem(item: Item): boolean {
   return !Object.values(item.attachments ?? {}).some((a) => a);
 }
 
-/** The stash's grids, each page then the rigs and backpacks in it. */
+/** The stash's grids, each page then the rigs and backpacks in it (and rigs in those). */
 function stashGrids(profile: Profile): Grid[] {
   const out: Grid[] = [];
-  for (const page of profile.stash) {
-    out.push(page);
-    for (const g of page.items) if (g.item.grid) out.push(g.item.grid);
-  }
+  const add = (grid: Grid): void => {
+    out.push(grid);
+    for (const g of grid.items) if (g.item.grid) add(g.item.grid);
+  };
+  for (const page of profile.stash) add(page);
   return out;
 }
 

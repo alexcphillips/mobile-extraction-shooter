@@ -13,6 +13,7 @@ import {
 import {
   addItem,
   canHold,
+  holdsGrid,
   createGrid,
   dropAt,
   findSpot,
@@ -105,17 +106,19 @@ export const GROUND_OWNER: Owner = { kind: 'ground' };
 export type GridName = 'pockets' | 'rig' | 'backpack' | 'vault' | 'loot';
 
 /**
- * A rig or backpack lying in a grid that takes them (a loot container, a stash page), by
- * index; `item` is the definition id the sender saw there, as in InGrid.
+ * A rig or backpack lying in a grid that takes them (a loot container, a stash page, a
+ * backpack), by index; `item` is the definition id the sender saw there, as in InGrid.
+ * With `inside`, a bag lying in that one's grid in turn, to any depth (2026-11-11).
  */
 export interface BagRef {
   index: number;
   item: string;
+  inside?: BagRef;
 }
 
 /**
  * A grid by owner and name; with `inside`, the grid inside the rig or backpack lying in
- * that grid (2026-11-01: a tap opens one). No deeper: containers don't nest.
+ * that grid (2026-11-01: a tap opens one), or one lying in that, and so on.
  */
 export interface GridRef {
   owner: Owner;
@@ -175,8 +178,9 @@ export type Target = GridSpot | Omit<InSlot, 'item'> | ToGround;
  * - rotate: turns an item where it is.
  * - quick: double-tap. To yourself, into an empty gear slot it fits, else into what you
  *   carry; to a body, into its pockets, rig and backpack; to a container, into it; to the
- *   ground, dropped at your feet. With `inside`, to a container's stored rig or backpack
- *   instead (2026-11-01: the one open). A stack that only partly fits leaves the rest behind.
+ *   ground, dropped at your feet. With `inside`, to a rig or backpack lying in the owner's
+ *   `grid` (default 'loot') instead, at any depth (2026-11-01: the one open; any owner's
+ *   since 2026-11-11). A stack that only partly fits leaves the rest behind.
  *   With `count` (2026-11-01), only that many of a stack go; the rest stay where they were.
  *   Picking up with the use button is a quick move from the ground to yourself.
  * - split (2026-11-01): takes `count` off a stack in a grid into a new stack, in the
@@ -204,7 +208,7 @@ export type Target = GridSpot | Omit<InSlot, 'item'> | ToGround;
 export type InventoryAction =
   | { type: 'move'; from: ItemRef; to: Target }
   | { type: 'rotate'; at: InGrid }
-  | { type: 'quick'; from: ItemRef; to: Owner; inside?: BagRef; count?: number }
+  | { type: 'quick'; from: ItemRef; to: Owner; grid?: GridName; inside?: BagRef; count?: number }
   | { type: 'split'; at: InGrid; count: number }
   | { type: 'attach'; gun: ItemRef; from: ItemRef | PartRef }
   | {
@@ -346,19 +350,23 @@ export function gridOf(state: SimState, c: Character, ref: GridRef): Grid | null
     const ch = ownerCharacter(state, c, ref.owner);
     grid = ch ? gearGrid(ch.gear, ref.grid) : null;
   }
+  // A bag not yet searched out doesn't open; what's in one shows with it.
+  const bag = ref.inside && grid?.items[ref.inside.index]?.item;
+  if (bag && !isRevealed(state, c, ref.owner, bag)) return null;
   return bagGrid(grid, ref.inside);
 }
 
 /**
- * The grid inside a rig or backpack lying in a grid that takes full ones (a loot container,
- * a stash page), checked against what the sender saw; with no bag, the grid itself. An
- * empty bag in a backpack doesn't open, so nothing goes in it: bags never nest two deep.
+ * The grid inside a rig or backpack lying in a grid that takes them (a loot container, a
+ * stash page, a backpack), following `inside` down as deep as it goes, checked against
+ * what the sender saw at each step; with no bag, the grid itself.
  */
 export function bagGrid(grid: Grid | null, inside: BagRef | undefined): Grid | null {
   if (!grid || !inside) return grid;
-  if (!grid.containers) return null;
+  if (!grid.containers && !grid.bags) return null;
   const bag = grid.items[inside.index]?.item;
-  return (bag?.item === inside.item && bag.grid) || null;
+  if (bag?.item !== inside.item || !bag.grid) return null;
+  return bagGrid(bag.grid, inside.inside);
 }
 
 /**
@@ -460,10 +468,15 @@ export function applyInventory(
     case 'quick': {
       const from = find(state, c, action.from);
       const count = action.count ?? from?.item.count ?? 0;
+      const inside: GridRef | undefined = action.inside && {
+        owner: action.to,
+        grid: action.grid ?? 'loot',
+        inside: action.inside,
+      };
       return (
         !!from &&
         validCount(count, from.item.count) &&
-        quickMove(ctx, from, action.to, action.inside, count)
+        quickMove(ctx, from, action.to, inside, count)
       );
     }
     case 'split':
@@ -677,8 +690,10 @@ function toSlot(ctx: Ctx, from: Found, ch: Character, slot: GearSlot): boolean {
   const oldBag = slotOf(ch.gear, slot)?.grid;
   const newBag = from.item.grid;
   if (!oldBag?.items.length || newBag?.items.length !== 0) return swapSlot(items, from, ch, slot);
-  // An empty bag lying in the bag it would replace: that bag would end up inside itself.
-  if (from.at === 'grid' && from.grid === oldBag) return false;
+  // An empty bag lying in the bag it would replace (at any depth): that bag would end up
+  // inside itself.
+  const oldItem = slotOf(ch.gear, slot);
+  if (from.at === 'grid' && oldItem && holdsGrid(oldItem, from.grid)) return false;
   // What wouldn't fit, tried on copies first, and whether it has somewhere to go.
   const trialOld = copyOf(oldBag);
   moveContents(items, trialOld, copyOf(newBag));
@@ -825,7 +840,7 @@ function quickMove(
   ctx: Ctx,
   from: Found,
   to: Owner,
-  inside: BagRef | undefined,
+  inside: GridRef | undefined,
   n: number,
 ): boolean {
   const { state, c, items } = ctx;
@@ -842,7 +857,7 @@ function quickMove(
   // You or a body: an empty gear slot it fits first (a body's too, so a gun taken off a
   // scav goes back on it: the user's call, 2026-11-06), then the grids.
   const ch = to.kind === 'container' ? null : ownerCharacter(state, c, to);
-  if (whole && ch && !(from.at === 'slot' && from.ch === ch)) {
+  if (!inside && whole && ch && !(from.at === 'slot' && from.ch === ch)) {
     const def = itemDef(items, from.item.item);
     const slots =
       def.type !== 'weapon' ? OTHER_SLOTS : def.hold === 'pistol' ? PISTOL_SLOTS : GUN_SLOTS;
@@ -862,8 +877,10 @@ function quickMove(
       left = addItem(items, grid, moving);
     }
   };
-  if (to.kind === 'container') {
-    into(bagGrid(lootContainerById(state, to.id)?.grid ?? null, inside));
+  if (inside) {
+    into(gridOf(state, c, inside));
+  } else if (to.kind === 'container') {
+    into(lootContainerById(state, to.id)?.grid ?? null);
   } else {
     for (let i = 0; ch && i < CARRIED_GRIDS; i++) into(carriedGrid(ch.gear, i));
     // Your vault last, once pockets, rig and backpack are full (the user's call, 2026-10-30).

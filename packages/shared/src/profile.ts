@@ -631,7 +631,7 @@ export function settleBags(items: ItemDb, gear: Gear, stash: readonly Grid[]): v
       delete bag.durability;
       delete bag.max;
     }
-    // The empty bags a backpack holds are settled as well.
+    // The bags a backpack holds are settled as well.
     for (const g of bag.grid.items) settle(g.item);
     const sections = sectionsOf(def);
     if (sameShape(bag.grid, def.grid[0], def.grid[1], sections)) return;
@@ -657,11 +657,13 @@ export function settleBags(items: ItemDb, gear: Gear, stash: readonly Grid[]): v
  */
 export function settleFits(items: ItemDb, gear: Gear, stash: readonly Grid[]): void {
   const grids: Grid[] = [];
-  for (const page of stash) {
-    grids.push(page);
-    for (const g of page.items) if (g.item.grid) grids.push(g.item.grid);
-  }
-  for (const bag of [gear.rig, gear.backpack]) if (bag?.grid) grids.push(bag.grid);
+  // Every bag's grid, and the bags in it, at any depth.
+  const add = (grid: Grid): void => {
+    grids.push(grid);
+    for (const g of grid.items) if (g.item.grid) add(g.item.grid);
+  };
+  for (const page of stash) add(page);
+  for (const bag of [gear.rig, gear.backpack]) if (bag?.grid) add(bag.grid);
   grids.push(gear.pockets);
   if (gear.vault) grids.push(gear.vault);
   for (const grid of grids) {
@@ -839,7 +841,7 @@ export function checkGear(
   if (gear.bodyArmor && gear.rig && isArmoredRig(itemDef(items, gear.rig.item)))
     return "body armor can't be worn with an armored rig";
   if (!gear.vault) return 'a player must have a vault';
-  // Only a backpack's grid takes empty bags (checkItem checks those).
+  // Only a backpack's grid takes bags (checkItem checks those).
   if (gear.pockets.bags || gear.vault.bags) return "pockets and the vault can't take bags";
   return (
     checkGrid(
@@ -911,7 +913,7 @@ function checkItem(items: ItemDb, item: Item, where: string): string | null {
       } else if (item.durability !== undefined || item.max !== undefined)
         return `${at}: only armor has durability`;
       if (!!item.grid.bags !== (def.slot === 'backpack'))
-        return `${at}: ${def.slot === 'backpack' ? 'must' : "mustn't"} take empty bags`;
+        return `${at}: ${def.slot === 'backpack' ? 'must' : "mustn't"} take bags`;
       return checkGrid(items, item.grid, def.grid[0], def.grid[1], false, def.id, sectionsOf(def));
     case 'med':
       return checkLeft(item, def.hp ?? def.uses ?? 1, at);

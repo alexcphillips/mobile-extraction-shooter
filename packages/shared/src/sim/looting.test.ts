@@ -12,6 +12,7 @@ import { dealDamage, HEAD } from './health';
 import {
   applyInventory,
   canReach,
+  gridOf,
   lootInSight,
   placeLootContainers,
   type InventoryAction,
@@ -433,6 +434,87 @@ describe('looting', () => {
     expect(c.gear.backpack).toBe(fresh);
     expect(fresh.grid!.items.map((g) => g.item.item)).toEqual(['watch']);
     expect(small.grid.items.map((g) => g.item.item)).toEqual(['cash']);
+  });
+
+  it('nests full rigs and backpacks in a backpack, opening at any depth (2026-11-11)', () => {
+    const { state, c, crate, box, act } = setup();
+    const rig = createItem(items, 'rig');
+    placeAt(items, rig.grid!, createItem(items, 'bandage'), 0, 0, false);
+    equip(c, items, 'rig', rig);
+    const worn = c.gear.backpack!;
+    // Room for a backpack beside the rig.
+    worn.grid = createGrid(8, 8);
+    worn.grid.bags = true;
+    const pack = { owner: self, grid: 'backpack', x: 0, y: 0, rotated: false } as const;
+    // The worn rig, meds and all, dragged into the backpack.
+    expect(act({ type: 'move', from: { owner: self, slot: 'rig', item: 'rig' }, to: pack })).toBe(
+      true,
+    );
+    expect(c.gear.rig).toBeNull();
+    expect(worn.grid!.items[0]!.item).toBe(rig);
+    expect(rig.grid!.items.map((g) => g.item.item)).toEqual(['bandage']);
+
+    // A full backpack from the crate goes in too.
+    const mid = createItem(items, 'backpack');
+    placeAt(items, mid.grid!, createItem(items, 'watch'), 0, 0, false);
+    placeAt(items, crate.grid, mid, 0, 0, false);
+    const fromCrate = { owner: box, grid: 'loot', index: 0, item: 'backpack' } as const;
+    expect(act({ type: 'quick', from: fromCrate, to: self })).toBe(true);
+    const at = worn.grid!.items.findIndex((g) => g.item === mid);
+    expect(at).toBeGreaterThan(-1);
+
+    // It opens where it lies: the rig dragged into it, then a double-tap into it.
+    const inMid = { index: at, item: 'backpack' } as const;
+    const rigRef = { owner: self, grid: 'backpack', index: 0, item: 'rig' } as const;
+    expect(
+      act({
+        type: 'move',
+        from: rigRef,
+        to: { owner: self, grid: 'backpack', inside: inMid, x: 0, y: 1, rotated: false },
+      }),
+    ).toBe(true);
+    expect(mid.grid!.items.map((g) => g.item.item)).toEqual(['watch', 'rig']);
+    // A bag in a bag in a bag: the rig inside it opens too.
+    // (The rig left index 0, so the backpack moved down one.)
+    const now = { index: worn.grid.items.findIndex((g) => g.item === mid), item: 'backpack' };
+    const deep = { ...now, inside: { index: 1, item: 'rig' } };
+    const deepRef = { owner: self, grid: 'backpack', inside: deep } as const;
+    expect(gridOf(state, c, deepRef)).toBe(rig.grid);
+    // A double-tap into the open one goes there, not into a gear slot.
+    placeAt(items, crate.grid, createItem(items, 'bandage'), 0, 0, false);
+    const bandage = { owner: box, grid: 'loot', index: 0, item: 'bandage' } as const;
+    expect(act({ type: 'quick', from: bandage, to: self, grid: 'backpack', inside: deep })).toBe(
+      true,
+    );
+    expect(rig.grid!.items.map((g) => g.item.item)).toEqual(['bandage', 'bandage']);
+  });
+
+  it('never puts a bag inside itself (2026-11-11)', () => {
+    const { c, act } = setup();
+    const worn = c.gear.backpack!;
+    const inner = createItem(items, 'backpack');
+    placeAt(items, worn.grid!, inner, 0, 0, false);
+    // The worn backpack into the bag lying in it.
+    const inInner = {
+      owner: self,
+      grid: 'backpack',
+      inside: { index: 0, item: 'backpack' },
+    } as const;
+    expect(
+      act({
+        type: 'move',
+        from: { owner: self, slot: 'backpack', item: 'backpack' },
+        to: { ...inInner, x: 0, y: 0, rotated: false },
+      }),
+    ).toBe(false);
+    // Nor swapped onto its own slot from inside it, empty or full.
+    const onto = { owner: self, slot: 'backpack' } as const;
+    const from = { owner: self, grid: 'backpack', index: 0, item: 'backpack' } as const;
+    placeAt(items, worn.grid!, createItem(items, 'watch'), 4, 0, false);
+    expect(act({ type: 'move', from, to: onto })).toBe(false);
+    placeAt(items, inner.grid!, createItem(items, 'watch'), 0, 0, false);
+    expect(act({ type: 'move', from, to: onto })).toBe(false);
+    expect(c.gear.backpack).toBe(worn);
   });
 
   it('puts things back on a body: a double-tap into an empty slot, drags swapping', () => {

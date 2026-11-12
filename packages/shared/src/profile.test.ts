@@ -497,14 +497,14 @@ describe('settleBags', () => {
     expect(createItem(items, 'rig').grid!.bags).toBeUndefined();
     delete pack.grid!.bags;
     p.gear.backpack = pack as typeof p.gear.backpack;
-    expect(checkProfile(items, p)).toMatch(/must take empty bags/);
+    expect(checkProfile(items, p)).toMatch(/must take bags/);
     settleBags(items, p.gear, p.stash);
     expect(pack.grid!.bags).toBe(true);
     expect(addItem(items, pack.grid!, createItem(items, 'rig'))).toBe(0);
     expect(checkProfile(items, p)).toBeNull();
     // A rig claiming to take bags is refused, and so are pockets.
     p.gear.rig!.grid!.bags = true;
-    expect(checkProfile(items, p)).toMatch(/mustn't take empty bags/);
+    expect(checkProfile(items, p)).toMatch(/mustn't take bags/);
     delete p.gear.rig!.grid!.bags;
     p.gear.pockets.bags = true;
     expect(checkProfile(items, p)).toMatch(/can't take bags/);

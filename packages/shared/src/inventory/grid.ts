@@ -70,7 +70,7 @@ export interface GridItem {
 /**
  * A grid of cells that items sit in by size: pockets, a rig, a backpack, the vault, the
  * stash, or a loot container. Only grids with containers set (the stash, loot containers)
- * take rigs and backpacks with things in them; a backpack's (bags set) takes empty ones.
+ * or bags set (a backpack's) take rigs and backpacks, full or not.
  */
 export interface Grid {
   w: number;
@@ -79,7 +79,9 @@ export interface Grid {
   containers: boolean;
   /**
    * A backpack's grid (2026-11-10, the user's call: to carry a looted bag out and keep
-   * your own): empty rigs and backpacks can go in it, so bags still never nest two deep.
+   * your own): rigs and backpacks can go in it, full or not, as deep as you like
+   * (2026-11-11, the user's call), and each opens where it lies. A rig's grid never takes
+   * bags. A bag never goes inside itself (holdsGrid).
    * Set by createItem, and by settleBags on what was saved before.
    */
   bags?: true;
@@ -170,7 +172,8 @@ export function inCategory(items: ItemDb, category: PageCategory, item: Item): b
 
 /**
  * Whether a grid may hold an item at all, wherever it goes: rigs and backpacks only in
- * grids with containers set, or empty in a backpack's; on a category page, only its kinds.
+ * grids with containers or bags set, and never in their own grid or one inside it; on a
+ * category page, only its kinds.
  */
 export function canHold(items: ItemDb, grid: Grid, item: Item): boolean {
   if (grid.only && !inCategory(items, grid.only, item)) return false;
@@ -178,7 +181,17 @@ export function canHold(items: ItemDb, grid: Grid, item: Item): boolean {
   if (def.type !== 'container') return true;
   // The vault is never an item anywhere (see VAULT_ITEM), even if content gives one out.
   if (def.slot === 'vault') return false;
-  return grid.containers || (!!grid.bags && !item.grid?.items.length);
+  if (!grid.containers && !grid.bags) return false;
+  return !holdsGrid(item, grid);
+}
+
+/** Whether grid is item's own grid or lies anywhere inside it: a bag can't go in itself. */
+export function holdsGrid(item: Item, grid: Grid): boolean {
+  const own = item.grid;
+  if (!own) return false;
+  if (own === grid) return true;
+  for (const g of own.items) if (holdsGrid(g.item, grid)) return true;
+  return false;
 }
 
 /**

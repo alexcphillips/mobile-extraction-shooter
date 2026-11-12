@@ -23,6 +23,7 @@ import {
   weaponDef,
   medHelps,
   type AttachmentSlot,
+  type BagRef,
   type Character,
   type GearSlot,
   type GridName,
@@ -63,7 +64,21 @@ const CARRIED: readonly GridName[] = ['pockets', 'rig', 'backpack'];
 export function refKey(r: ItemRef): string {
   if ('ground' in r) return JSON.stringify([r.owner, r.ground]);
   if ('slot' in r) return JSON.stringify([r.owner, r.slot]);
-  return JSON.stringify([r.owner, r.grid, r.index, r.inside?.index ?? -1]);
+  return JSON.stringify([r.owner, r.grid, r.index, r.inside ?? null]);
+}
+
+/** A bag path with one more bag at its deep end. */
+function deeper(inside: BagRef | undefined, bag: BagRef): BagRef {
+  return inside ? { ...inside, inside: deeper(inside.inside, bag) } : bag;
+}
+
+/** The grid inside the bag a ref points at, as a ref (2026-11-11: at any depth). */
+export function insideOf(at: InGrid): GridRef & { inside: BagRef } {
+  return {
+    owner: at.owner,
+    grid: at.grid,
+    inside: deeper(at.inside, { index: at.index, item: at.item }),
+  };
 }
 
 function isPart(r: ItemRef | PartRef): r is PartRef {
@@ -131,9 +146,10 @@ interface OpenBagWindow {
   y: number;
 }
 
-/** An open rig or backpack: where it lies, the grid inside, and its window's spot. */
+/** An open rig or backpack: where it lies, the grid inside (and its ref), its window's spot. */
 export interface OpenBag {
   at: InGrid;
+  gref: GridRef & { inside: BagRef };
   grid: Grid;
   item: Item;
   x: number;
@@ -158,7 +174,8 @@ export class InventoryController implements DragHost {
   target: Owner | null;
   /**
    * The rigs and backpacks whose contents are open (2026-11-01; several since 2026-11-11,
-   * the user's call), each lying in the open container or stash page, as floating windows:
+   * the user's call), each lying in a grid of yours or what's open, or in another bag, at
+   * any depth (2026-11-11, the user's call), as floating windows:
    * the item itself (to follow it when its index changes) and where its window is. Oldest
    * first, the last drawn on top.
    */
@@ -188,17 +205,15 @@ export class InventoryController implements DragHost {
 
   /**
    * The open rigs and backpacks, bottom to top: where each lies, the grid inside it and
-   * its window's spot. One that has left the open container or stash page, or gone out of
-   * reach, closes.
+   * its window's spot. One that has left every grid in reach (put on, dropped, out of
+   * reach) closes.
    */
   openBags(): OpenBag[] {
     const out: OpenBag[] = [];
-    const target = JSON.stringify(this.target);
     this.bags = this.bags.filter((w) => {
-      const at = this.target && this.reach ? this.locateTop(w.item) : null;
-      if (!at || !('index' in at) || at.inside || JSON.stringify(at.owner) !== target) return false;
-      if (!w.item.grid) return false;
-      out.push({ at, grid: w.item.grid, item: w.item, x: w.x, y: w.y });
+      const at = this.locate(w.item);
+      if (!at || !('index' in at) || !w.item.grid) return false;
+      out.push({ at, gref: insideOf(at), grid: w.item.grid, item: w.item, x: w.x, y: w.y });
       return true;
     });
     return out;
@@ -211,7 +226,7 @@ export class InventoryController implements DragHost {
    */
   toggleBag(ref: ItemRef): void {
     const found = this.find(ref);
-    if (!found || found.def.type !== 'container' || !('index' in ref) || ref.inside) return;
+    if (!found || found.def.type !== 'container' || !('index' in ref)) return;
     const i = this.bags.findIndex((w) => w.item === found.item);
     if (i >= 0) this.bags.splice(i, 1);
     else {
@@ -268,16 +283,18 @@ export class InventoryController implements DragHost {
   }
 
   /**
-   * The open rig or backpack a double-tap of yours goes into (the user's call,
-   * 2026-11-01), if one is open and the item can go in it (canHold: a bag only empty, in a backpack).
+   * The open rig or backpack a double-tap goes into: the most recent window (opened or
+   * last touched) with room for it, ahead of the loadout, wherever the item is (yours, the
+   * stash's, a crate's or a body's: the user's call, 2026-11-11; until then only yours).
+   * Never the bag it's already in, or a bag into itself (canHold).
    */
-  quickBag(ref: ItemRef): InGrid | null {
-    if (ref.owner.kind !== 'self') return null;
+  quickBag(ref: ItemRef): OpenBag | null {
     const found = this.find(ref);
     if (!found) return null;
+    const from = 'index' in ref ? gridOf(this.ctx.sim, this.ctx.player, ref) : null;
     // The top one with room for it.
     const open = this.openBags().reverse();
-    return open.find((b) => canHold(this.ctx.items, b.grid, found.item))?.at ?? null;
+    return open.find((b) => b.grid !== from && canHold(this.ctx.items, b.grid, found.item)) ?? null;
   }
 
   /** A double-tap's move: of the whole item, or with count of only that many of a stack. */
@@ -290,8 +307,9 @@ export class InventoryController implements DragHost {
         ? {
             type: 'quick',
             from: ref,
-            to: bag.owner,
-            inside: { index: bag.index, item: bag.item },
+            to: bag.gref.owner,
+            grid: bag.gref.grid,
+            inside: bag.gref.inside,
             ...n,
           }
         : { type: 'quick', from: ref, to: this.quickTo(ref), ...n },
@@ -719,7 +737,7 @@ export class InventoryController implements DragHost {
         if (this.drag.busy) return;
         const found = this.find(ref);
         if (!found) return;
-        if (found.def.type === 'container' && 'index' in ref && !ref.inside) this.toggleBag(ref);
+        if (found.def.type === 'container' && 'index' in ref) this.toggleBag(ref);
         else {
           this.select(ref);
           showQuickHint(src.el, this.quickHint(ref));
@@ -734,7 +752,7 @@ export class InventoryController implements DragHost {
    */
   quickHint(ref: ItemRef): string {
     const bag = this.quickBag(ref);
-    if (bag) return this.find(bag)?.def.name ?? 'the bag';
+    if (bag) return this.find(bag.at)?.def.name ?? 'the bag';
     const to = this.quickTo(ref);
     if (to.kind !== 'self') return this.ctx.stash ? 'stash' : this.ctx.nameOf(to);
     if (ref.owner.kind !== 'self') return 'your gear';
@@ -760,25 +778,11 @@ export class InventoryController implements DragHost {
     return this.find(p.gun)?.item.attachments?.[p.slot] === p.part;
   }
 
-  /** Where an item is now, among yours and what's open (and the open bags), or null. */
+  /**
+   * Where an item is now, among yours and what's open, or on the ground: in a grid, or in a
+   * bag lying in one, at any depth (2026-11-11). Null if nowhere in reach.
+   */
   private locate(item: Item): ItemRef | null {
-    const top = this.locateTop(item);
-    if (top) return top;
-    // In an open bag: found by where the bag is now.
-    for (const w of this.bags) {
-      if (item === w.item) continue;
-      const index = w.item.grid?.items.findIndex((g) => g.item === item) ?? -1;
-      if (index < 0) continue;
-      const bag = this.locateTop(w.item);
-      if (!bag || !('index' in bag) || bag.inside) continue;
-      const inside = { index: bag.index, item: bag.item };
-      return { owner: bag.owner, grid: bag.grid, inside, index, item: item.item };
-    }
-    return null;
-  }
-
-  /** Where an item is now, among yours and what's open, or on the ground (not in a bag). */
-  private locateTop(item: Item): ItemRef | null {
     const owners = this.target && this.reach ? [SELF, this.target] : [SELF];
     for (const owner of owners) {
       const ch = this.character(owner);
@@ -790,12 +794,31 @@ export class InventoryController implements DragHost {
       }
       for (const name of GRID_NAMES) {
         const grid = gridOf(this.ctx.sim, this.ctx.player, { owner, grid: name });
-        const index = grid?.items.findIndex((g) => g.item === item) ?? -1;
-        if (index >= 0) return { owner, grid: name, index, item: item.item };
+        const at = grid && this.locateIn(grid, owner, name, undefined, item);
+        if (at) return at;
       }
     }
     const ground = this.ctx.sim.ground.findIndex((g) => g.item === item);
     return ground >= 0 ? { owner: { kind: 'ground' }, ground, item: item.item } : null;
+  }
+
+  /** An item in a grid, or in the bags in it (any deep), as a ref through `inside`. */
+  private locateIn(
+    grid: Grid,
+    owner: Owner,
+    name: GridName,
+    inside: BagRef | undefined,
+    item: Item,
+  ): InGrid | null {
+    const bags = grid.containers || !!grid.bags;
+    for (let index = 0; index < grid.items.length; index++) {
+      const g = grid.items[index]!.item;
+      if (g === item) return { owner, grid: name, ...(inside && { inside }), index, item: g.item };
+      if (!bags || !g.grid) continue;
+      const at = this.locateIn(g.grid, owner, name, deeper(inside, { index, item: g.item }), item);
+      if (at) return at;
+    }
+    return null;
   }
 
   private character(owner: Owner): Character | undefined {

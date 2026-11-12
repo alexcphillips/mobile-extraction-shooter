@@ -396,6 +396,7 @@ export {
 export {
   addItem,
   canHold,
+  holdsGrid,
   canSwap,
   countOf,
   createGrid,
