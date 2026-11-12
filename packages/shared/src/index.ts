@@ -768,6 +768,18 @@ export {
   type RaidProgress,
 } from './quests';
 export {
+  FACTION_XP,
+  XP,
+  enemyXp,
+  isRunThrough,
+  levelOf,
+  levelProgress,
+  raidXp,
+  xpForLevel,
+  type RaidKillXp,
+  type RaidXp,
+} from './xp';
+export {
   HANGAR_FORMAT,
   HANGAR_FORMAT_VERSION,
   MODULE_LEVELS,

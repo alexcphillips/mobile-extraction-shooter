@@ -3,6 +3,7 @@
   "id": "scav",
   "name": "Scav",
   "faction": "scav",
+  "xp": 40,
   "loadout": "scav-kit",
   "skill": {
     "reaction": 0.7,

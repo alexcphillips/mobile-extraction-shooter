@@ -6238,6 +6238,56 @@ input[type='range'].pad-grabbed {
   letter-spacing: 0.02em;
 }
 
+/* The PMC level (2026-11-11): a badge with a bar to the next level under it. */
+.level-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 30px;
+  padding: 0 2px;
+}
+
+.level-badge b {
+  min-width: 22px;
+  padding: 1px 5px;
+  border: 1px solid var(--accent, #e3a33a);
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.level-bar {
+  display: block;
+  width: 100%;
+  min-width: 30px;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 15%);
+}
+
+.level-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--accent, #e3a33a);
+}
+
+.results-level {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-top: 10px;
+}
+
+.results-level .level-bar {
+  flex: 1 1 120px;
+  height: 6px;
+}
+
 .lobby-who {
   max-width: 10em;
   overflow: hidden;

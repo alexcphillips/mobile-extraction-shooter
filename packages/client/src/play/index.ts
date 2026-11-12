@@ -86,6 +86,8 @@ import {
   objectiveText,
   raidObjectives,
   raidProgress,
+  raidXp,
+  type RaidKillXp,
   startQuests,
   type Profile,
   type SimState,
@@ -1026,6 +1028,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let kills = resume?.kills ?? 0;
   /** Who you killed and when, oldest first (for the results' kill list). */
   const killList: RaidKill[] = resume?.killList ?? [];
+  /** Your kills' enemy types and headshots, for PMC XP (2026-11-11). */
+  const xpKills: RaidKillXp[] = resume?.xpKills ?? [];
+  /** Containers you searched first, for PMC XP. */
+  let searched = resume?.searched ?? 0;
   /** The enemy type that killed you, if one did. */
   let killedBy: string | null = null;
   /** What hurt you, for the results screen after a death. */
@@ -1137,6 +1143,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       keptGear(structuredClone(player.gear), keepAll),
     );
     const isQuestItem = (i: Item): boolean => itemDef(items, i.item).type === 'quest';
+    // What the server will give, worked out the same way (xp.ts).
+    const xp = raidXp(how, seconds, xpKills, searched, types);
     ended = {
       how,
       detail,
@@ -1153,16 +1161,20 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       fight: fightOf(),
       ...(how === 'killed' ? { combat: combatOf(), killedBy: killedBy ?? detail } : {}),
       keptAll: keepAll,
+      xp: { ...xp, before: options.profile.xp },
     };
-    // Sent now, as it is: the server keeps what the outcome allows.
+    // Sent now, as it is: the server keeps what the outcome allows. A run-through brings
+    // nothing new out found in raid.
     const gear = JSON.parse(JSON.stringify(player.gear)) as Gear;
-    settleFound(gear);
+    settleFound(gear, xp.runThrough);
     if (!options.test) {
       saveResult(options.serverRaid, {
         how,
         gear,
         seconds,
         kills,
+        killed: xpKills,
+        searched,
         detail,
         investigated,
         ...(cheats.keepGear ? { keepGear: true } : {}),
@@ -1257,6 +1269,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       player: player.id,
       kills,
       killList,
+      xpKills,
+      searched,
       taken,
       fight,
       sim,
@@ -1621,6 +1635,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       } else if (e.type === 'death' && e.by === player.id && e.target !== player.id) {
         kills++;
         killList.push({ name: names.get(e.target) ?? 'Unknown', tick: sim.tick });
+        const enemy = entityById(sim, e.target)?.look?.type;
+        if (enemy) xpKills.push(e.head ? { enemy, head: true } : { enemy });
+      } else if (e.type === 'search' && e.by === player.id) {
+        searched++;
       } else if (e.type === 'death' && e.target === player.id) {
         killedBy = names.get(e.by) ?? null;
         if (e.by !== 0 && e.by !== player.id) killerId = e.by;

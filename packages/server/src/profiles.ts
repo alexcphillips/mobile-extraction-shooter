@@ -127,6 +127,8 @@ profiles.put('/', async (c) => {
     return fail(c, 'invalid', 'stash pages are only added by buying them');
   if (!sameQuests(current.profile, next))
     return fail(c, 'invalid', 'quests only change through the quest routes');
+  if (next.xp !== current.profile.xp)
+    return fail(c, 'invalid', 'XP only changes through raids and quests');
   if (!sameStanding(current.profile, next))
     return fail(c, 'invalid', 'standing with vendors only changes through buying and quests');
   if (!sameHangar(current.profile, next))

@@ -164,6 +164,8 @@ export interface DeathEvent {
   target: EntityId;
   /** Who shot, or 0 for a fall or bleeding. */
   by: EntityId;
+  /** The killing hit was to the head (for PMC XP's headshot bonus, 2026-11-11). */
+  head?: true;
 }
 
 /**
@@ -181,6 +183,7 @@ export function dealDamage(
 ): number {
   const h = c.health;
   if (h.dead || amount <= 0 || c.admin?.infiniteHealth) return 0;
+  const head = zone === HEAD;
   // One health bar: it's all the chest's.
   if (h.pool !== undefined) zone = CHEST;
   let lost = 0;
@@ -199,7 +202,7 @@ export function dealDamage(
   if (h.hp[HEAD]! <= 0 || h.hp[CHEST]! <= 0) {
     h.dead = true;
     h.bleeding.fill(false);
-    state.events.push({ type: 'death', target: c.id, by });
+    state.events.push({ type: 'death', target: c.id, by, ...(head && { head: true as const }) });
   }
   return lost;
 }

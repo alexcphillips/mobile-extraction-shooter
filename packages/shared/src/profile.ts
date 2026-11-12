@@ -118,8 +118,10 @@ export interface VendorStanding {
 }
 
 export interface Profile {
-  formatVersion: 18;
+  formatVersion: 19;
   money: number;
+  /** PMC XP in all (2026-11-11); the level is worked out from it (xp.ts). Only the server changes it. */
+  xp: number;
   /** The stash's pages, bought with money (at least one). */
   stash: Grid[];
   gear: Gear;
@@ -202,8 +204,9 @@ const questStateShape = z.discriminatedUnion('status', [
 ]);
 
 const profileShape = z.strictObject({
-  formatVersion: z.literal(18),
+  formatVersion: z.literal(19),
   money: count,
+  xp: count,
   stash: z.array(gridShape).min(1),
   gear: gearShape,
   quests: z.record(idSchema, questStateShape),
@@ -215,7 +218,7 @@ const profileShape = z.strictObject({
   ),
 });
 
-export const PROFILE_FORMAT_VERSION = 18;
+export const PROFILE_FORMAT_VERSION = 19;
 
 export const PROFILE_FORMAT: ContentFormat<Profile> = {
   kind: 'profile',
@@ -274,6 +277,8 @@ export const PROFILE_FORMAT: ContentFormat<Profile> = {
       });
       return doc;
     },
+    // 2026-11-11: the PMC level; everyone starts at no XP (a wipe follows anyway).
+    18: (doc) => ({ ...doc, xp: 0 }),
   },
 };
 
@@ -444,8 +449,9 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
   return {
-    formatVersion: 18,
+    formatVersion: 19,
     money: kit.money,
+    xp: 0,
     stash: [stash],
     gear,
     quests: {},

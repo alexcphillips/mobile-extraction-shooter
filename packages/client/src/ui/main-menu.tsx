@@ -37,6 +37,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { LevelBadge } from './level-badge';
 import { createRoot } from 'react-dom/client';
 import { AccountError, call } from '../account';
 import { ConnTest, type TestReport } from '../net/conn-test';
@@ -733,6 +734,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
           ${me.profile.money.toLocaleString()}
         </span>
       )}
+      {!zombies && <LevelBadge xp={me.profile.xp} />}
       <span className="lobby-who">{me.username}</span>
       <button
         className="lobby-icon-button"

@@ -6,6 +6,7 @@ import {
   keptGear,
   parseGear,
   raidProgress,
+  raidXp,
   restGear,
   settleBags,
   settleFits,
@@ -13,9 +14,10 @@ import {
   settlePockets,
   type EndRaidRequest,
   type ProfileResponse,
+  type RaidKillXp,
 } from '@mes/shared';
 import type { AppEnv } from './auth';
-import { loadItems, loadQuests, raidDef } from './content';
+import { loadEnemies, loadItems, loadQuests, raidDef } from './content';
 import { body, fail, isObject } from './errors';
 import { AT_VERSION, profileResponse, writeProfile } from './profiles';
 
@@ -33,13 +35,27 @@ export const RAIDS = {
   maxDetail: 100,
   /** Quest markers investigated in one raid. */
   maxInvestigated: 50,
+  /** Containers searched in one raid. */
+  maxSearched: 1000,
 };
+
+/** A result's `killed`: up to as many as its kills, each an enemy id and maybe a headshot. */
+function parseKilled(raw: unknown, kills: number): RaidKillXp[] | string {
+  if (!Array.isArray(raw) || raw.length > kills) return 'killed must list at most the kills';
+  const out: RaidKillXp[] = [];
+  for (const k of raw) {
+    if (!isObject(k) || typeof k.enemy !== 'string' || (k.head !== undefined && k.head !== true))
+      return 'each killed is { enemy, head? }';
+    out.push(k.head ? { enemy: k.enemy, head: true } : { enemy: k.enemy });
+  }
+  return out;
+}
 
 const OUTCOMES = new Set<string>(['extracted', 'killed', 'mia']);
 
 function parseEnd(raw: unknown): EndRaidRequest | string {
   if (!isObject(raw)) return 'a result is required';
-  const { how, seconds, kills, detail, investigated } = raw;
+  const { how, seconds, kills, detail, investigated, searched } = raw;
   if (typeof how !== 'string' || !OUTCOMES.has(how)) return 'how is extracted, killed or mia';
   if (typeof seconds !== 'number' || !(seconds >= 0)) return 'seconds must be 0 or more';
   if (!Number.isInteger(kills) || (kills as number) < 0) return 'kills must be a whole number';
@@ -55,6 +71,15 @@ function parseEnd(raw: unknown): EndRaidRequest | string {
     )
   )
     return 'investigated must be a list of marker ids';
+  const killed = raw.killed === undefined ? undefined : parseKilled(raw.killed, kills as number);
+  if (typeof killed === 'string') return killed;
+  if (
+    searched !== undefined &&
+    (!Number.isInteger(searched) ||
+      (searched as number) < 0 ||
+      (searched as number) > RAIDS.maxSearched)
+  )
+    return `searched must be a whole number up to ${RAIDS.maxSearched}`;
   return {
     how: how as EndRaidRequest['how'],
     gear,
@@ -62,6 +87,8 @@ function parseEnd(raw: unknown): EndRaidRequest | string {
     kills: kills as number,
     ...(detail !== undefined ? { detail } : {}),
     ...(investigated !== undefined ? { investigated: investigated as string[] } : {}),
+    ...(killed !== undefined ? { killed } : {}),
+    ...(searched !== undefined ? { searched: searched as number } : {}),
     ...(raw.keepGear === true ? { keepGear: true } : {}),
   };
 }
@@ -145,7 +172,7 @@ raids.post('/:id/abandon', async (c) => {
  * extracted; otherwise the knife and the vault), and the money (cash) in it goes into
  * the balance (session 13b). Quests (session 14b): markers investigated on the raid's map
  * count whatever the outcome, and quest items in the kept gear are taken, counting for an
- * active quest that wanted them. Sanity limits: the kept gear is
+ * active quest that wanted them. PMC XP from the kills and searches reported. Sanity limits: the kept gear is
  * well-formed and the time and kills are plausible. The same result sent again (a retry
  * whose reply was lost) gets the profile; a different one for an ended raid is raid-over.
  */
@@ -201,6 +228,14 @@ raids.post('/:id/end', async (c) => {
   if (map) raidProgress(profile, loadQuests().values(), items, map, end.investigated ?? [], gear);
   profile.gear = gear;
   depositInto(profile, items);
+  // PMC XP (2026-11-11): from the kills and searches reported, by the shared rules.
+  profile.xp += raidXp(
+    end.how,
+    end.seconds,
+    end.killed ?? [],
+    end.searched ?? 0,
+    loadEnemies(),
+  ).total;
 
   const results = await db.batch([
     db

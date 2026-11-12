@@ -2,6 +2,7 @@ import {
   HEAD,
   isMoney,
   itemDef,
+  levelProgress,
   raidGains,
   sellPrice,
   TICK_RATE,
@@ -9,6 +10,7 @@ import {
   type Item,
   type ItemDb,
   type LeaveReason,
+  type RaidXp,
   ZONE_NAMES,
 } from '@mes/shared';
 import { useEffect, useState, type ReactNode } from 'react';
@@ -86,6 +88,8 @@ export interface RaidResult {
   zombies?: { mode: string; round: number; points: number };
   /** The tutorial (TU-3): nothing is kept or lost in it either. */
   tutorial?: true;
+  /** PMC XP the raid gave, line by line, and the XP before it (2026-11-11). Not in zombies or the tutorial. */
+  xp?: RaidXp & { before: number };
 }
 
 /** The fight with your killer, hit by hit both ways, the latest at the top. */
@@ -370,6 +374,63 @@ function ValueSheet({
   );
 }
 
+/** The XP sheet: each line, the multiplier, and the level before and after. */
+function XpSheet({ xp, onClose }: { xp: NonNullable<RaidResult['xp']>; onClose: () => void }) {
+  const lines: [string, number][] = [
+    ['Kills', xp.kills],
+    ['Headshot bonus', xp.headshots],
+    ['Searching', xp.searching],
+  ];
+  const mult = xp.runThrough ? 'Run-through' : xp.multiplier > 1 ? 'Survived' : 'Did not survive';
+  return (
+    <Sheet title={`PMC XP · +${xp.total.toLocaleString()}`} onClose={onClose}>
+      <ul className="victory-list">
+        {lines.map(([label, n]) => (
+          <li key={label}>
+            <span>{label}</span>
+            <span>{n.toLocaleString()}</span>
+          </li>
+        ))}
+        <li>
+          <span>{mult}</span>
+          <span className="results-count">×{xp.multiplier}</span>
+        </li>
+      </ul>
+      <LevelLine xp={xp} />
+      {xp.runThrough && (
+        <p className="results-note">
+          Run-through: out too soon with too little done, so XP is halved and nothing new is found
+          in raid.
+        </p>
+      )}
+    </Sheet>
+  );
+}
+
+/** The PMC level after the raid, with a bar, and a level-up if there was one. */
+function LevelLine({ xp }: { xp: NonNullable<RaidResult['xp']> }) {
+  const was = levelProgress(xp.before).level;
+  const now = levelProgress(xp.before + xp.total);
+  return (
+    <div className="results-level">
+      <span>
+        PMC level {now.level}
+        {now.level > was && <b className="gain"> · level up!</b>}
+      </span>
+      {now.need !== null && (
+        <>
+          <span className="level-bar" aria-hidden>
+            <span style={{ width: `${(100 * now.into) / now.need}%` }} />
+          </span>
+          <span className="results-count">
+            {now.into.toLocaleString()} / {now.need.toLocaleString()} XP
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
 /** The kills sheet: who, and when in the raid. */
 function KillsSheet({ kills, onClose }: { kills: RaidKill[]; onClose: () => void }) {
   return (
@@ -402,7 +463,7 @@ function Victory({
   items: ItemDb;
   onNext: () => void;
 }) {
-  const [sheet, setSheet] = useState<'value' | 'kills' | null>(null);
+  const [sheet, setSheet] = useState<'value' | 'kills' | 'xp' | null>(null);
   const [gains] = useState(() => raidGains(items, result.kept).sort((a, b) => b.price - a.price));
   const [look] = useState(() => lobbyLook(player));
   const total = gains.reduce((n, g) => n + g.price, 0);
@@ -444,6 +505,15 @@ function Victory({
             none="No kills"
             onMore={kills.length ? () => setSheet('kills') : null}
           />
+          {result.xp && (
+            <BigStat
+              label={result.xp.runThrough ? 'PMC XP · run-through' : 'PMC XP'}
+              value={`+${result.xp.total.toLocaleString()}`}
+              more="View XP"
+              none="No XP"
+              onMore={() => setSheet('xp')}
+            />
+          )}
           {result.quests.length > 0 && (
             <ul className="victory-quests">
               {result.quests.map((q, i) => (
@@ -473,6 +543,7 @@ function Victory({
         />
       )}
       {sheet === 'kills' && <KillsSheet kills={kills} onClose={close} />}
+      {sheet === 'xp' && result.xp && <XpSheet xp={result.xp} onClose={close} />}
     </div>
   );
 }
@@ -562,7 +633,7 @@ function Defeat({
   items: ItemDb;
   onNext: () => void;
 }) {
-  const [sheet, setSheet] = useState<'value' | 'kills' | null>(null);
+  const [sheet, setSheet] = useState<'value' | 'kills' | 'xp' | null>(null);
   const [gains] = useState(() => raidGains(items, result.kept).sort((a, b) => b.price - a.price));
   const total = gains.reduce((n, g) => n + g.price, 0);
   const kills = result.killList ?? [];
@@ -604,6 +675,15 @@ function Defeat({
             none="No kills"
             onMore={kills.length ? () => setSheet('kills') : null}
           />
+          {result.xp && (
+            <BigStat
+              label={result.xp.runThrough ? 'PMC XP · run-through' : 'PMC XP'}
+              value={`+${result.xp.total.toLocaleString()}`}
+              more="View XP"
+              none="No XP"
+              onMore={() => setSheet('xp')}
+            />
+          )}
           {result.quests.length > 0 && (
             <ul className="victory-quests">
               {result.quests.map((q, i) => (
@@ -636,6 +716,7 @@ function Defeat({
         <ValueSheet title="Match total" items={items} gains={gains} total={total} onClose={close} />
       )}
       {sheet === 'kills' && <KillsSheet kills={kills} onClose={close} />}
+      {sheet === 'xp' && result.xp && <XpSheet xp={result.xp} onClose={close} />}
     </div>
   );
 }
@@ -680,6 +761,12 @@ function Results({
             <dt>Kills</dt>
             <dd>{result.kills}</dd>
           </div>
+          {result.xp && (
+            <div>
+              <dt>XP</dt>
+              <dd>+{result.xp.total.toLocaleString()}</dd>
+            </div>
+          )}
           <div>
             <dt>Raid gain</dt>
             <dd className="gain">{gain.toLocaleString()}</dd>
@@ -713,6 +800,11 @@ function Results({
           </Panel>
         )}
         <Gain items={items} result={result} />
+        {result.xp && (
+          <Panel title="PMC XP" className="results-quests">
+            <LevelLine xp={result.xp} />
+          </Panel>
+        )}
         {result.how === 'killed' && result.fight && (
           <Panel title={`Fight with ${result.fight.name}`} className="results-damage">
             <FightRows fight={result.fight} />

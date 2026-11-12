@@ -405,12 +405,17 @@ export function cameOffGun(c: Character, item: Item): Item {
   return item;
 }
 
-/** Turns a raid's marks into stored ones as the gear leaves it: see markBrought. */
-export function settleFound(gear: Gear): void {
+/**
+ * Turns a raid's marks into stored ones as the gear leaves it: see markBrought. After a
+ * run-through (xp.ts, 2026-11-11) nothing new comes out found; what was found before and
+ * taken back in still is.
+ */
+export function settleFound(gear: Gear, runThrough = false): void {
   for (const item of gearItems(gear)) {
+    const refound = item.refound;
     delete item.refound;
     if (item.brought) delete item.brought;
-    else item.found = true;
+    else if (!runThrough || refound) item.found = true;
   }
 }
 

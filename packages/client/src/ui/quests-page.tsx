@@ -31,6 +31,7 @@ const ORDER: Record<QuestStatus, number> = {
   available: 2,
   locked: 3,
   done: 4,
+  hidden: 5,
 };
 
 const STATUS_TEXT: Record<QuestStatus, string> = {
@@ -38,6 +39,7 @@ const STATUS_TEXT: Record<QuestStatus, string> = {
   active: 'Active',
   available: 'New',
   locked: 'Locked',
+  hidden: 'Hidden',
   done: 'Done',
 };
 
@@ -66,14 +68,15 @@ export function questsLine(quests: readonly QuestDef[], me: ProfileResponse): st
 
 /** A quest's rewards: money and rep as chips, items as tiles. */
 function Rewards({ items, q }: { items: ItemDb; q: QuestDef }): ReactNode {
-  const { money, rep } = q.rewards;
-  const none = !money && !rep && !q.rewards.items.length;
+  const { money, rep, xp } = q.rewards;
+  const none = !money && !rep && !xp && !q.rewards.items.length;
   return (
     <div className="quests-rewards">
       <span className="quests-rewards-label">Rewards</span>
       {none && <span className="quests-chip">Nothing</span>}
       {money > 0 && <span className="quests-chip money">{money.toLocaleString()} money</span>}
       {rep > 0 && <span className="quests-chip rep">+{rep.toFixed(2)} rep</span>}
+      {xp > 0 && <span className="quests-chip xp">+{xp.toLocaleString()} XP</span>}
       {q.rewards.items.map((r, i) => (
         <ItemTile
           key={i}
@@ -110,8 +113,10 @@ export function vendorQuestCounts(
   const out = { ready: 0, fresh: 0, active: 0, done: 0, all: 0 };
   for (const q of quests) {
     if (q.vendor !== vendor) continue;
-    out.all++;
     const s = questStatus(profile, q);
+    // Below its PMC level a quest doesn't show anywhere (2026-11-11).
+    if (s === 'hidden') continue;
+    out.all++;
     if (s === 'ready') out.ready++;
     else if (s === 'available') out.fresh++;
     else if (s === 'active') out.active++;
@@ -158,6 +163,7 @@ export function TraderQuests({
   const all = quests
     .filter((q) => q.vendor === vendor.id)
     .map((q) => ({ q, status: questStatus(p, q) }))
+    .filter((x) => x.status !== 'hidden')
     .sort((a, b) => ORDER[a.status] - ORDER[b.status]);
   const list = all.filter((x) => SHOWN[show](x.status));
   if (!all.length) {

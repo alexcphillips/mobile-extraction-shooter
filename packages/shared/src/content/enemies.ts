@@ -289,6 +289,11 @@ export const enemySchema = z.strictObject({
    */
   limbHealth: positive.optional(),
   /**
+   * The PMC XP for killing one (2026-11-11; design → Quests and vendors → PMC level). Its
+   * faction's (FACTION_XP, xp.ts) if left out; an optional field, so still format 2.
+   */
+  xp: z.int().min(0).optional(),
+  /**
    * Its guards (MT-12, the foreman's crew): `count` of enemy type `enemy`, put in round it
    * where it spawns as its squad (it leads), following it on its patrol and sharing it.
    * None if left out; an optional field, so still format 2.

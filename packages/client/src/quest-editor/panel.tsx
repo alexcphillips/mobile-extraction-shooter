@@ -1,4 +1,4 @@
-import { objectiveText, stackSize, type QuestObjective, type VendorDef } from '@mes/shared';
+import { objectiveText, stackSize, XP, type QuestObjective, type VendorDef } from '@mes/shared';
 import { useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { Num, Text } from '../editor/fields';
 import { SearchPicker, type PickerEntry } from '../editor/search-picker';
@@ -444,6 +444,8 @@ function CardBody(props: { editor: QuestEditor; state: QuestEditorState; quest: 
         {[
           (q.rewards?.money ?? 0) > 0 && money(q.rewards!.money!),
           rep > 0 && `+${rep} rep`,
+          (q.rewards?.xp ?? 0) > 0 && `${q.rewards!.xp!.toLocaleString()} XP`,
+          (q.minLevel ?? 1) > 1 && `lvl ${q.minLevel}+`,
           rewardItems > 0 && `${rewardItems} item${rewardItems === 1 ? '' : 's'}`,
         ]
           .filter(Boolean)
@@ -679,6 +681,22 @@ function QuestForm(props: { editor: QuestEditor; state: QuestEditorState; quest:
           ))}
           {!unlocked.length && <span className="ed-note">Nothing yet</span>}
         </div>
+        <div className="ed-row">
+          <Num
+            label="PMC level needed (hidden below it)"
+            value={q.minLevel}
+            min={1}
+            placeholder="any"
+            onChange={(v) =>
+              editor.edit((d) => {
+                const level =
+                  v === undefined ? 1 : Math.min(XP.maxLevel, Math.max(1, Math.round(v)));
+                if (level > 1) d.minLevel = level;
+                else delete d.minLevel;
+              })
+            }
+          />
+        </div>
       </Card>
 
       <Card
@@ -720,6 +738,14 @@ function QuestForm(props: { editor: QuestEditor; state: QuestEditorState; quest:
             value={rewards.rep}
             min={0}
             onChange={(v) => editor.edit((d) => (d.rewards = { ...rewards, rep: v ?? 0 }))}
+          />
+          <Num
+            label="PMC XP"
+            value={rewards.xp ?? 0}
+            min={0}
+            onChange={(v) =>
+              editor.edit((d) => (d.rewards = { ...rewards, xp: Math.max(0, Math.round(v ?? 0)) }))
+            }
           />
         </div>
         <RepHint editor={editor} state={s} quest={q} />

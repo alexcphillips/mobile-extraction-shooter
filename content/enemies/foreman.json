@@ -3,6 +3,7 @@
   "id": "foreman",
   "name": "Foreman",
   "faction": "boss",
+  "xp": 400,
   "loadout": "foreman-kit",
   "limbHealth": 1.5,
   "guards": { "enemy": "mill-guard", "count": 3 },
