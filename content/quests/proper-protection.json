@@ -3,23 +3,12 @@
   "id": "proper-protection",
   "name": "Proper protection",
   "vendor": "armorer",
-  "description": "Steel helmets. Two of them. Don't ask what for.",
-  "requires": ["scrap-plates"],
-  "objectives": [
-    {
-      "id": "hand-over",
-      "type": "handOver",
-      "item": "steel-helmet",
-      "count": 2
-    }
-  ],
+  "description": "Steel helmets. Two of them.",
+  "requires": ["under-the-mill"],
+  "objectives": [{ "id": "hand-over", "type": "handOver", "item": "steel-helmet", "count": 2 }],
   "rewards": {
     "money": 40000,
-    "items": [
-      {
-        "item": "tactical-vest"
-      }
-    ],
+    "items": [{ "item": "tactical-vest" }],
     "rep": 0.4
   }
 }
