@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "suitcase",
   "name": "Suitcase",
+  "tags": ["home"],
   "colors": {
     "shell": "#34566b",
     "shell-dark": "#294556",

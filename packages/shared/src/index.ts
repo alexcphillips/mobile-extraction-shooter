@@ -61,6 +61,14 @@ export {
   type Rng,
 } from './rng';
 export { HeightGrid, holeFlags, type HeightGridDef, type SurfaceHit } from './world/terrain';
+export {
+  centerline,
+  gradeRoads,
+  roadStrip,
+  ROAD,
+  type RoadLine,
+  type RoadSpec,
+} from './world/roads';
 export { CellWalk, StaticGrid } from './world/grid';
 export {
   CollisionWorld,
@@ -530,6 +538,7 @@ export {
   type MapFile,
   type MapNode,
   type MapZone,
+  type MapRoad,
   type PrefabFile,
 } from './content/schema';
 export {
@@ -680,6 +689,7 @@ export {
   type CompiledWater,
   type CompiledBarricade,
   type CompiledMap,
+  type CompiledRoad,
   type CompiledMarker,
   type CompiledNodes,
   type CompiledPatrol,

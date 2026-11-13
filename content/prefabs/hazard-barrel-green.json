@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "hazard-barrel-green",
   "name": "Hazard barrel (green)",
+  "tags": ["industrial"],
   "nodes": [
     {
       "type": "prefab",

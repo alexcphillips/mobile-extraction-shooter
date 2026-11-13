@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "pine-tree",
   "name": "Pine tree",
+  "tags": ["nature"],
   "instanced": true,
   "colors": { "trunk": "#6b4a2b", "leaves": "#2f5d3a" },
   "nodes": [

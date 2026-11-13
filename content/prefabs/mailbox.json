@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "mailbox",
   "name": "Mailbox",
+  "tags": ["street"],
   "instanced": true,
   "colors": {
     "box": "#5c6a72",

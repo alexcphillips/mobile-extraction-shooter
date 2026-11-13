@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "log",
   "name": "Log",
+  "tags": ["logging", "nature"],
   "colors": { "bark": "#6b4f35", "cut": "#c9a46e" },
   "nodes": [
     {

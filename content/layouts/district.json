@@ -141,7 +141,7 @@
       "yaw": -140,
       "y": 11,
       "floors": 2,
-      "floorHeight": 4.5,
+      "floorHeight": 6,
       "entrances": [
         { "side": "front", "width": 8, "kind": "main doors" },
         { "side": "front", "along": -30, "width": 3 },
@@ -162,7 +162,7 @@
       "yaw": -140,
       "y": 11,
       "floors": 2,
-      "floorHeight": 4.5,
+      "floorHeight": 6,
       "entrances": [
         { "side": "front", "width": 4, "kind": "main doors" },
         { "side": "right", "along": 12, "width": 4, "floor": 1, "kind": "glass bridge" },
@@ -181,7 +181,7 @@
       "yaw": -140,
       "y": 11,
       "floors": 2,
-      "floorHeight": 4.5,
+      "floorHeight": 6,
       "entrances": [
         { "side": "front", "width": 4, "kind": "lobby doors" },
         { "side": "left", "kind": "fire exit" },
@@ -197,7 +197,7 @@
       "w": 44,
       "d": 44,
       "yaw": -140,
-      "y": 12.5,
+      "y": 14,
       "floors": 4,
       "floorHeight": 3,
       "entrances": [

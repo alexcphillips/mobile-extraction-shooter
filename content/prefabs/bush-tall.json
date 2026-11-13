@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "bush-tall",
   "name": "Bush (tall)",
+  "tags": ["nature"],
   "instanced": true,
   "colors": { "leaves": "#5a6a32", "leaves-dark": "#46542a" },
   "nodes": [

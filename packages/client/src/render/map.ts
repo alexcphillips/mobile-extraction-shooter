@@ -2,6 +2,7 @@ import type {
   CompiledDoor,
   CompiledGlass,
   CompiledMap,
+  CompiledRoad,
   CompiledWater,
   HeightGridDef,
   InstancedGroup,
@@ -104,7 +105,7 @@ export function buildMap(map: CompiledMap): MapView {
   const root = new THREE.Group();
   const apart = new Set(map.searchedLooks.flatMap((l) => l.closed));
   const merged = apart.size ? map.shapes.filter((s) => !apart.has(s)) : map.shapes;
-  root.add(buildChunks(map.world.terrain, map.terrainColor, merged));
+  root.add(buildChunks(map.world.terrain, map.terrainColor, merged, map.roads));
 
   const baked = bakedMaterial();
   const looks = new Map<string, LookView>();
@@ -274,11 +275,15 @@ function mergeGeometry(
   return out;
 }
 
-/** One mesh per chunk: its terrain cells and every shape whose center is in it. */
+/**
+ * One mesh per chunk: its terrain cells, every shape whose center is in it, and the stretches
+ * of road (RD-1) that start in it.
+ */
 export function buildChunks(
   terrain: HeightGridDef,
   terrainColor: number,
   shapes: readonly Shape[],
+  roads: readonly CompiledRoad[] = [],
 ): THREE.Group {
   const cells = Math.max(1, Math.round(CHUNK / terrain.cellSize));
   const size = cells * terrain.cellSize;
@@ -289,6 +294,26 @@ export function buildChunks(
     const cx = Math.min(nx - 1, Math.max(0, Math.floor((s.x - terrain.minX) / size)));
     const cz = Math.min(nz - 1, Math.max(0, Math.floor((s.z - terrain.minZ) / size)));
     byChunk[cz * nx + cx]!.push(s);
+  }
+  // Each road's samples split into runs by the chunk each stretch starts in.
+  const runs: { road: CompiledRoad; from: number; to: number }[][] = Array.from(
+    { length: nx * nz },
+    () => [],
+  );
+  const chunkOf = (x: number, z: number) =>
+    Math.min(nz - 1, Math.max(0, Math.floor((z - terrain.minZ) / size))) * nx +
+    Math.min(nx - 1, Math.max(0, Math.floor((x - terrain.minX) / size)));
+  for (const road of roads) {
+    const n = road.strip.length / 6;
+    let from = 0;
+    let at = chunkOf(road.strip[0]!, road.strip[2]!);
+    for (let k = 1; k < n - 1; k++) {
+      const c = chunkOf(road.strip[k * 6]!, road.strip[k * 6 + 2]!);
+      if (c === at) continue;
+      runs[at]!.push({ road, from, to: k });
+      [from, at] = [k, c];
+    }
+    if (n > 1) runs[at]!.push({ road, from, to: n - 1 });
   }
 
   const group = new THREE.Group();
@@ -309,6 +334,7 @@ export function buildChunks(
         terrainColor,
       );
       for (const s of byChunk[cz * nx + cx]!) b.shape(s);
+      for (const r of runs[cz * nx + cx]!) b.strip(r.road.strip, r.from, r.to, r.road.color);
       const mesh = new THREE.Mesh(b.build(), material);
       mesh.matrixAutoUpdate = false;
       group.add(mesh);

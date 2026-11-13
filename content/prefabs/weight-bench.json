@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "weight-bench",
   "name": "Weight bench",
+  "tags": ["leisure"],
   "colors": {
     "pad": "#2b2d33",
     "frame": "#a9afb3",

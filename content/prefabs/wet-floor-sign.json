@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "wet-floor-sign",
   "name": "Wet floor sign",
+  "tags": ["store"],
   "colors": {
     "sign": "#d8b52e",
     "mark": "#2b2d33"

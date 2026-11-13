@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "wardrobe",
   "name": "Wardrobe",
+  "tags": ["home"],
   "colors": {
     "body": "#e9e6df",
     "door": "#d7d3c9",

@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "basket-stack",
   "name": "Basket stack",
+  "tags": ["store"],
   "colors": {
     "plastic": "#b8413a",
     "handle": "#3d4148"

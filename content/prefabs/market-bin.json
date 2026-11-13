@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "market-bin",
   "name": "Market bin",
+  "tags": ["store"],
   "colors": {
     "bin": "#3d4148",
     "goods-a": "#e07b2e",

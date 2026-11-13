@@ -1,6 +1,7 @@
 {
   "formatVersion": 3,
   "id": "car-crash-through-barrier",
+  "tags": ["street", "vehicle", "debris"],
   "colors": {
     "barrier": "#554f4f"
   },

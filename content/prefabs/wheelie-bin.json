@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "wheelie-bin",
   "name": "Wheelie bin",
+  "tags": ["street"],
   "colors": {
     "plastic": "#3f6b52",
     "plastic-dark": "#2e4f3c",

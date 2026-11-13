@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "salon-station",
   "name": "Salon station",
+  "tags": ["store"],
   "colors": {
     "chair": "#3d4148",
     "mirror": "#bfe0e6",

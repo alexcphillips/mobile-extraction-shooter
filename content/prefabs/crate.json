@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "crate",
   "name": "Wooden crate",
+  "tags": ["industrial"],
   "instanced": true,
   "colors": {
     "wood": "#a0703c",

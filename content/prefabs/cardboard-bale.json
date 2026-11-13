@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "cardboard-bale",
   "name": "Cardboard bale",
+  "tags": ["industrial"],
   "colors": {
     "card": "#b8965f",
     "card-b": "#9f7f4c",

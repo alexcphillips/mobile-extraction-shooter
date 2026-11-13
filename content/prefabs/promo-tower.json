@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "promo-tower",
   "name": "Promo tower",
+  "tags": ["store"],
   "colors": {
     "panel": "#e9e6df",
     "accent": "#b05a7a",

@@ -132,12 +132,10 @@ Later, not counted in v1 of the map:
   - **Read:** design/raids-and-maps.md (extractions, switches); tech/content-formats.md.
 
 ## Map tools (planned 2026-11-12 with the user)
-Tools for building many maps together: faster loops, better-measured layouts, less repetition, fewer tokens. MK-1 to MK-4 and MK-6 (the kit) are done. The rest land when a District session needs them. **Kit rule: a generator piece written once lives in its map script; written a second time, it moves to `scripts/mapkit/` with a sim test** (tech/editors.md → Map kit). Tool decisions go in tech/editors.md (editor and board) and level-design.md (the report's measures and yardsticks).
+Tools for building many maps together: faster loops, better-measured layouts, less repetition, fewer tokens. MK-1 to MK-6 are done. The rest land when a District session needs them. **Kit rule: a generator piece written once lives in its map script; written a second time, it moves to `scripts/mapkit/` with a sim test** (tech/editors.md → Map kit). Tool decisions go in tech/editors.md (editor and board) and level-design.md (the report's measures and yardsticks).
 
-- 5 finished sessions in [roadmap-done.md](roadmap-done.md).
+- 6 finished sessions in [roadmap-done.md](roadmap-done.md).
 
-- [ ] **MK-5. Prefab catalog.** `node scripts/prefabs.mjs [query]` lists prefabs with size, height class (low, waist, eye, tall), triangles, collision, loot and which maps use them, from the 213 files, so a session finds one to reuse without reading them; `--sheet` renders a thumbnail sheet (the prefab browser's thumbnails) for the user. Prefabs gain optional `tags` (cover, vehicle, street, store, military, …). Variants rather than copies: a prefab can take a color or part swap from its parent, so "the same car in four colors" is one prefab.
-  - **Read:** docs/props.md; tech/editors.md (prefab browser).
 - [ ] **MK-7. Plan variants.** For a room or building, generate several plans into a numbered top-down sheet (with each plan's report numbers: entrances, longest line, cover count), the user picks by number, and the pick is written into the map. For District's stores (DS-8) and in-between pieces.
   - **Read:** MK-3 and MK-4's notes.
 - [ ] **MK-8. Editor overlays.** The report's heatmaps (long lines, open patches, AI sight coverage) painted on the ground in the map editor, updated after an edit settles, so a problem shows while reshaping. Before DS-5.
@@ -162,9 +160,9 @@ A new map, **replacing Northpoint (the user's call, 2026-11-12)**: **a suburban 
 
 **Bones first (the user's call):** POIs as boxes, roads and terrain heights are built, walked and discussed before any detail. The layout lives in one table in the generator (POI positions, footprints, levels, gaps), so stretching or squeezing the map after a review is a re-run. Nothing after DS-3 starts until the user approves the bones.
 
-- 2 finished sessions in [roadmap-done.md](roadmap-done.md) (DS-1, the sketch; DS-2, the bones graybox).
+- 3 finished sessions in [roadmap-done.md](roadmap-done.md) (DS-1, the sketch; DS-2, the bones graybox; RD-1, roads by hand and the ownership split).
 
-- [ ] **DS-3. Bones review with the user.** Measured in the sim: walking and sprinting times between areas and edge to edge, the routes around and through the mall, open crossings over 40 m, lines of 70 m+, AI reach between levels, a first triangle and draw-call count. The user walks it; we discuss the flow and adjust the table (size included). **The user approves the bones here.**
+- [ ] **DS-3. Bones review with the user.** *(2026-11-12: the first walk rejected the generated ground and roads; since RD-1 the user shapes the terrain and draws the roads by hand, then walks it again.)* Measured in the sim: walking and sprinting times between areas and edge to edge, the routes around and through the mall, open crossings over 40 m, lines of 70 m+, AI reach between levels, a first triangle and draw-call count. The user walks it; we discuss the flow and adjust the table (size included). **The user approves the bones here.**
   - **Read:** DS-2's notes (roadmap-done.md) and design/maps/district.md → The bones graybox. Walk it from the raid list in a dev build (District, tagged test) or `/editor?map=district` → Play; `node scripts/map-report.mjs district` and `node scripts/district-probe.mjs` measure it. Change the table on the board (`/layout?map=district`), then `node scripts/gen-district.mjs`.
   - **Read:** level-design.md; MK-4's notes (the report does the measuring).
 - [ ] **DS-4. Long-range pathfinding** (AI-4's open question): a coarse graph over the nav grid's regions, so long searches across a district stay cheap on a phone. Before any AI work.

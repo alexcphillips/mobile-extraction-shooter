@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "paper-pile",
   "name": "Paper pile",
+  "tags": ["office", "debris"],
   "colors": {
     "paper": "#efede7",
     "paper-old": "#dcd6c4",

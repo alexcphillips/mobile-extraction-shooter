@@ -16,7 +16,9 @@ export function PrefabBrowser(props: { editor: MapEditor; state: EditorState; cl
   const prefabs = editor.prefabs;
   const q = query.trim().toLowerCase();
   const shown = [...prefabs.values()]
-    .filter((p) => !q || p.id.includes(q) || !!p.name?.toLowerCase().includes(q))
+    .filter(
+      (p) => !q || p.id.includes(q) || !!p.name?.toLowerCase().includes(q) || !!p.tags?.includes(q),
+    )
     .sort((a, b) => a.id.localeCompare(b.id));
   const pick = (id: string): void => {
     editor.setPlacing(id);

@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "warehouse-rack-stocked-5",
   "name": "Stocked rack, open top",
+  "tags": ["industrial"],
   "nodes": [
     {
       "type": "prefab",

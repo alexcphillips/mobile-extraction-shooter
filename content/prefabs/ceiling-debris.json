@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "ceiling-debris",
   "name": "Ceiling debris",
+  "tags": ["debris"],
   "colors": {
     "slab": "#a9a69e",
     "rubble": "#8a8c82",

@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "sandbag-wall",
   "name": "Sandbag wall",
+  "tags": ["military"],
   "colors": {
     "bag": "#a89a78",
     "bag-b": "#978a6a"

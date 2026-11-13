@@ -1,6 +1,7 @@
 {
   "formatVersion": 3,
   "id": "medical-crate",
+  "tags": ["medical", "military"],
   "nodes": [
     {
       "type": "group",

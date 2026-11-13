@@ -14,9 +14,13 @@
 //   `all`) hands groups (and everything under them) or fields back to the script.
 // - `--dump <file>` writes what the script made (before the merge) there as plain JSON and
 //   touches nothing else (MK-6): run it before and after a refactor and compare the two.
+// - `seed` (RD-1, 2026-11-12) holds fields the script only starts: written when the map has
+//   none, the user's from then on (never in the record, never replaced or removed). District
+//   seeds its terrain and roads this way, so they're shaped and drawn in the editor.
+//   `--reseed <field>[,<field>]` throws the map's own away and starts it from the seed again.
 
 import { createHash } from 'node:crypto';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { relative } from 'node:path';
 import * as prettier from 'prettier';
@@ -112,11 +116,23 @@ export function record(map, by) {
  * report row per group and field: { key, status, note? }, status one of same, updated,
  * new, kept, removed, deleted.
  */
-export function merge(old, fresh, { by, reclaim = [] } = {}) {
+export function merge(old, fresh, { by, reclaim = [], seed = {} } = {}) {
   fresh = { ...fresh, nodes: tagGroups(fresh.nodes) };
   delete fresh.generated;
-  if (!old) return { map: { ...fresh, generated: record(fresh, by) }, rows: [] };
+  if (!old) {
+    const map = { ...fresh, ...seed };
+    return { map: { ...map, generated: record(fresh, by) }, rows: [] };
+  }
   old = structuredClone(old);
+  // Seeded fields: the user's if the map has them, else the seed; never the script's again.
+  const seeded = [];
+  for (const [k, v] of Object.entries(seed)) {
+    if (old.generated) delete old.generated.fields[k];
+    if (!(k in old)) {
+      old[k] = v;
+      seeded.push(k);
+    }
+  }
   // A map from before records (or made by hand): its groups keyed by name path as the script
   // would, as if the script had last written today's output. What matches is the script's;
   // what differs counts as hand-edited and is kept.
@@ -164,6 +180,7 @@ export function merge(old, fresh, { by, reclaim = [] } = {}) {
       });
     } else rows.push({ key: k, status: 'removed', note: 'field the script no longer writes' });
   }
+  for (const k of seeded) rows.push({ key: k, status: 'new', note: 'seeded: yours from now on' });
 
   // Groups: decide each key, then find where it lives.
   const was = index(old.nodes);
@@ -328,7 +345,23 @@ export function options(argv = process.argv.slice(2)) {
   const d = argv.indexOf('--dump');
   const dump = d >= 0 ? argv[d + 1] : undefined;
   if (d >= 0 && !dump) throw new Error('--dump needs a file');
-  return { dryRun: argv.includes('--dry-run') || !!dump, reclaim, dump };
+  const r = argv.indexOf('--reseed');
+  const reseed = r >= 0 ? (argv[r + 1] ?? '').split(',').filter(Boolean) : [];
+  if (r >= 0 && !reseed.length) throw new Error('--reseed needs a field, fields split by commas');
+  return { dryRun: argv.includes('--dry-run') || !!dump, reclaim, dump, reseed };
+}
+
+/**
+ * The seeded fields as the merge will leave them (for a script that builds on them, as
+ * District's buildings stand on its terrain): each the map's own, or the seed where the map
+ * has none or `--reseed` names it.
+ */
+export function seededFields(file, seed, argv = process.argv.slice(2)) {
+  const { reseed } = options(argv);
+  const old = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {};
+  return Object.fromEntries(
+    Object.entries(seed).map(([k, v]) => [k, k in old && !reseed.includes(k) ? old[k] : v]),
+  );
 }
 
 const LABEL = {
@@ -364,16 +397,21 @@ export async function writeJson(path, doc) {
  * Merges a generated map into its file (see the top of this file), prints the report and
  * writes it unless it's a dry run. `by` is the generator script's path.
  */
-export async function writeGenerated({ file, map, by, root, argv }) {
-  const { dryRun, reclaim, dump } = options(argv);
+export async function writeGenerated({ file, map, by, root, argv, seed }) {
+  const { dryRun, reclaim, dump, reseed } = options(argv);
   if (dump) {
     await writeFile(dump, JSON.stringify({ ...map, nodes: tagGroups(map.nodes) }, null, 1));
     console.log(`${relative(root, file)}: dumped to ${dump}`);
     return { map, rows: [] };
   }
   const old = existsSync(file) ? JSON.parse(await readFile(file, 'utf8')) : null;
+  // Fields to start over from the seed: the map's own are dropped first.
+  for (const k of reseed) {
+    if (!(k in (seed ?? {}))) throw new Error(`--reseed ${k}: the script doesn't seed it`);
+    if (old) delete old[k];
+  }
   const rel = relative(root, file);
-  const { map: merged, rows } = merge(old, map, { by: relative(root, by), reclaim });
+  const { map: merged, rows } = merge(old, map, { by: relative(root, by), reclaim, seed });
   console.log(`${rel}: ${old ? report(rows) : 'new file'}`);
   if (dryRun) console.log('(dry run: nothing written)');
   else await writeJson(file, merged);

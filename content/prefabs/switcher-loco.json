@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "switcher-loco",
   "name": "Switcher locomotive",
+  "tags": ["vehicle", "rail"],
   "colors": {
     "body": "#3e5a3e",
     "stripe": "#d8b52e",

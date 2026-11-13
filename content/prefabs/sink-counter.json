@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "sink-counter",
   "name": "Sink counter",
+  "tags": ["food", "home"],
   "colors": {
     "top": "#e6e0d3",
     "base": "#3d4148",

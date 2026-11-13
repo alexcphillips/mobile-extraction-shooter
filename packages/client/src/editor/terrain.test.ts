@@ -7,6 +7,7 @@ import {
   extendMap,
   holeCells,
   levelCells,
+  levelFootprint,
   newMap,
   setHeights,
   terrainDef,
@@ -244,5 +245,58 @@ describe('overlaps', () => {
     t.heights[5 * 11 + 5] = 0.5;
     setHeights(m, t.heights, t.holes, prefabs);
     expect(findOverlaps(m, prefabs).buried).toEqual([[0]]);
+  });
+});
+
+describe('levelFootprint', () => {
+  // A 100 m slope rising 0.2 a meter along x, 2 m cells.
+  const grid = (h: (x: number) => number) => {
+    const heights = new Float64Array(51 * 51);
+    for (let j = 0; j <= 50; j++) for (let i = 0; i <= 50; i++) heights[j * 51 + i] = h(i * 2);
+    return {
+      minX: 0,
+      minZ: 0,
+      cellSize: 2,
+      cols: 50,
+      rows: 50,
+      heights,
+      holes: new Uint8Array(2500),
+    };
+  };
+  const slope = () => grid((x) => x * 0.2);
+  // A 20 × 10 m building in the middle, its floor at 8 (the ground runs 6 to 12 under it).
+  const outside = (x: number, z: number) =>
+    Math.hypot(Math.max(40 - x, x - 60, 0), Math.max(45 - z, z - 55, 0));
+  const bounds = [40, 45, 60, 55] as const;
+
+  it('levels under it and a margin past it, eases back, and leaves the rest', () => {
+    const t = slope();
+    const at = (x: number, z: number) => new HeightGrid(t).heightAt(x, z);
+    expect(levelFootprint(t, outside, bounds, 8, 3, 6)).not.toBeNull();
+    for (const [x, z] of [
+      [40, 45],
+      [60, 55],
+      [50, 50],
+      [62, 50],
+      [38, 50],
+    ])
+      expect(at(x!, z!)).toBe(8);
+    // Halfway along the bank on the uphill side: between the floor and the ground.
+    expect(at(66, 50)).toBeGreaterThan(8);
+    expect(at(66, 50)).toBeLessThan(66 * 0.2);
+    // Past the bank, as it was.
+    expect(at(72, 50)).toBeCloseTo(72 * 0.2, 6);
+    expect(at(50, 66)).toBeCloseTo(50 * 0.2, 6);
+  });
+
+  it('with no bank, steps straight back to the ground past the margin', () => {
+    const t = slope();
+    levelFootprint(t, outside, bounds, 8, 3, 0);
+    expect(new HeightGrid(t).heightAt(64, 50)).toBeCloseTo(64 * 0.2, 6);
+  });
+
+  it('says so when there was nothing to level', () => {
+    const t = grid(() => 0);
+    expect(levelFootprint(t, outside, bounds, 0, 3, 6)).toBeNull();
   });
 });

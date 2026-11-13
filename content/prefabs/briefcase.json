@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "briefcase",
   "name": "Briefcase",
+  "tags": ["office"],
   "colors": {
     "shell": "#34566b",
     "shell-dark": "#294556",

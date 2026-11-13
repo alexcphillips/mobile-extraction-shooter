@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "retail-gondola-tall",
   "name": "Tall retail gondola",
+  "tags": ["store"],
   "colors": {
     "body": "#d7d9d8",
     "goods-a": "#e07b2e",

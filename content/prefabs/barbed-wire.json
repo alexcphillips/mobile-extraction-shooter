@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "barbed-wire",
   "name": "Barbed wire",
+  "tags": ["military"],
   "colors": {
     "steel": "#9aa0a6",
     "steel-dark": "#62686e"

@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "back-bar",
   "name": "Back bar",
+  "tags": ["food"],
   "colors": {
     "body": "#32201a",
     "bottle-a": "#3f7d4a",

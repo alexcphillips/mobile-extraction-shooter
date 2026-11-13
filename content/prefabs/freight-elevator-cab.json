@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "freight-elevator-cab",
   "name": "Freight elevator cab",
+  "tags": ["industrial"],
   "colors": {
     "deck": "#55595c",
     "paint": "#c8a02c",

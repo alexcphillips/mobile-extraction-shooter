@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "refrigerator",
   "name": "Refrigerator",
+  "tags": ["food", "home"],
   "nodes": [
     {
       "type": "prefab",

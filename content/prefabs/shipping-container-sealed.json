@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "shipping-container-sealed",
   "name": "shipping container sealed",
+  "tags": ["industrial"],
   "colors": {
     "shipping-container-red-dark": "#853232",
     "shipping-container-red-shade": "#632525",

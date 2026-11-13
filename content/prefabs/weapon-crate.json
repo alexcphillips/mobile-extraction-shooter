@@ -1,6 +1,7 @@
 {
   "formatVersion": 3,
   "id": "weapon-crate",
+  "tags": ["military"],
   "nodes": [
     {
       "type": "group",

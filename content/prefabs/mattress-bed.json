@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "mattress-bed",
   "name": "Floor bed",
+  "tags": ["home"],
   "colors": {
     "mattress": "#b8ad98",
     "bag": "#3f5f7a"

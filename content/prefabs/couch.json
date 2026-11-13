@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "couch",
   "name": "Couch",
+  "tags": ["home"],
   "colors": {
     "fabric": "#6b3a3a",
     "leg": "#3a2a1e"

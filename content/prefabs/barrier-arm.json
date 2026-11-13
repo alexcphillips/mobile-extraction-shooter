@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "barrier-arm",
   "name": "barrier-arm",
+  "tags": ["street"],
   "nodes": [
     {
       "type": "group",

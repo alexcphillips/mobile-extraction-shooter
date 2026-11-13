@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "truck-tire-1",
   "name": "truck tire 1",
+  "tags": ["vehicle"],
   "colors": {
     "tires": "#303030"
   },

@@ -1,6 +1,7 @@
 {
   "formatVersion": 3,
   "id": "shipping-container-open-no-doors",
+  "tags": ["industrial"],
   "colors": {
     "shipping-container-red-dark": "#853232",
     "shipping-container-red-shade": "#632525",

@@ -1,6 +1,7 @@
 {
   "formatVersion": 3,
   "id": "wall-hook",
+  "tags": ["office"],
   "colors": {
     "metal": "#2b2b2b"
   },

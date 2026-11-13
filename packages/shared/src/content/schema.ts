@@ -738,6 +738,30 @@ const zoneSchema = z.strictObject({
     .optional(),
 });
 
+/**
+ * A road (RD-1, 2026-11-12, the user's call: roads are drawn by hand in the editor, not by
+ * a generator). Its points are where it was clicked; corners are rounded, and the ground is
+ * graded under it when the map is compiled (world/roads.ts), so the heights in the file stay
+ * the ground as shaped and moving a road leaves no scar. An optional field, so still map
+ * format 4.
+ */
+const roadSchema = z.strictObject({
+  id: idSchema,
+  name: z.string().min(1).optional(),
+  /** The centerline as clicked, in x, z. */
+  points: z.array(vec2).min(2),
+  /** Meters across the surface. */
+  width: positive,
+  /** Meters each side over which the ground eases back from the road (ROAD.shoulder). */
+  shoulder: finite.refine((n) => n >= 0, 'must be 0 or more').optional(),
+  /** Rounded corners' radius in meters (ROAD.radius); 0 keeps them sharp. */
+  radius: finite.refine((n) => n >= 0, 'must be 0 or more').optional(),
+  /** Steepest grade along it (0.08 is 8%); left out, it only smooths the ground's bumps. */
+  maxGrade: positive.optional(),
+  /** ROAD.color if left out (asphalt). */
+  color: hexColorSchema.optional(),
+});
+
 const terrainSchema = z
   .strictObject({
     /** x, z of the first corner. */
@@ -876,6 +900,18 @@ export const mapSchema = z
      * tutorial does). An optional field, so still format 4.
      */
     lootGroups: z.record(idSchema, z.strictObject({ pick: z.int().min(0) })).optional(),
+    /** Drawn by hand (RD-1); graded into the terrain at compile time, in file order. */
+    roads: z
+      .array(roadSchema)
+      .superRefine((roads, ctx) => {
+        const seen = new Set<string>();
+        roads.forEach((r, i) => {
+          if (seen.has(r.id))
+            ctx.addIssue({ code: 'custom', message: `duplicate road "${r.id}"`, path: [i] });
+          seen.add(r.id);
+        });
+      })
+      .optional(),
     zones: z.array(zoneSchema).superRefine((zones, ctx) => {
       const seen = new Set<string>();
       zones.forEach((zone, i) => {
@@ -896,6 +932,15 @@ export const prefabSchema = z.strictObject({
   formatVersion: z.literal(PREFAB_FORMAT_VERSION),
   id: idSchema,
   name: z.string().min(1).optional(),
+  /**
+   * What kind of thing it is and where it belongs (MK-5, 2026-11-12: store, street,
+   * vehicle, …), so `scripts/prefabs.mjs` and the browser can find one to reuse. The list is
+   * in docs/props.md → Prefab catalog. An optional field, so still format 3.
+   */
+  tags: z
+    .array(idSchema)
+    .refine((t) => new Set(t).size === t.length, 'tags must not repeat')
+    .optional(),
   /**
    * Draw every copy with one instanced mesh instead of merging copies into the map's
    * chunks. For small props placed many times (trees, crates).
@@ -925,6 +970,7 @@ export const prefabSchema = z.strictObject({
 
 export type MapNode = z.infer<typeof nodeSchema>;
 export type MapZone = z.infer<typeof zoneSchema>;
+export type MapRoad = z.infer<typeof roadSchema>;
 export type MapFile = z.infer<typeof mapSchema>;
 export type PrefabFile = z.infer<typeof prefabSchema>;
 

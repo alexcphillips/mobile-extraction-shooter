@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "gpu-case",
   "name": "GPU display case",
+  "tags": ["store"],
   "colors": {
     "plinth": "#e9ecef",
     "glass": "#bfe0e6",

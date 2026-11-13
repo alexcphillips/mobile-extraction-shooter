@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "jersey-barrier",
   "name": "Jersey barrier",
+  "tags": ["street"],
   "colors": {
     "concrete": "#b5b0a6",
     "concrete-dark": "#8e8a80",

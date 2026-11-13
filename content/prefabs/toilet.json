@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "toilet",
   "name": "Toilet",
+  "tags": ["home"],
   "colors": {
     "china": "#eef0ef",
     "seat": "#d7d9d8"

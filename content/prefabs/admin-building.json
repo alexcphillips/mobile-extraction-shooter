@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "admin-building",
   "name": "Admin building",
+  "tags": ["structure"],
   "colors": {
     "walls": "#c9c4b8",
     "partition": "#e3dfd6",

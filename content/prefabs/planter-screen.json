@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "planter-screen",
   "name": "Planter screen",
+  "tags": ["store"],
   "colors": {
     "box": "#6a4a3a",
     "box-dark": "#4f3729",

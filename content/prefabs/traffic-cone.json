@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "traffic-cone",
   "name": "Traffic cone",
+  "tags": ["street"],
   "instanced": true,
   "colors": {
     "plastic": "#e8641e",

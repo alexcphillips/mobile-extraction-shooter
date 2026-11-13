@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "stock-wrapped",
   "name": "Pallet of wrapped goods",
+  "tags": ["industrial"],
   "colors": {
     "wood": "#b08a52",
     "wood-dark": "#6f5230",

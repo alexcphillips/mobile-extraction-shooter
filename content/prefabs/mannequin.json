@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "mannequin",
   "name": "Mannequin",
+  "tags": ["store"],
   "colors": {
     "body": "#d9d3c6",
     "stand": "#3d4148",

@@ -138,6 +138,30 @@ describe('generated maps (MK-2)', () => {
     expect(map.water).toEqual({ level: 0 });
   });
 
+  it('seeds a field once, then leaves it to the user, even one the script used to write', () => {
+    const fresh = () => {
+      const m = script();
+      delete m.terrain;
+      return m;
+    };
+    // The script wrote the terrain until now; from here it only seeds it.
+    const m = first();
+    m.terrain.heights = [5, 5];
+    let { map, rows } = merge(m, fresh(), { by, seed: { terrain: { heights: [9, 9] } } });
+    expect(map.terrain.heights).toEqual([5, 5]);
+    expect(map.generated.fields.terrain).toBeUndefined();
+    expect(status(rows).terrain).toBeUndefined();
+    // Gone from the map: seeded again; there: left alone however the seed changes.
+    delete map.terrain;
+    ({ map, rows } = merge(map, fresh(), { by, seed: { terrain: { heights: [9, 9] } } }));
+    expect(map.terrain.heights).toEqual([9, 9]);
+    expect(status(rows).terrain).toBe('new');
+    ({ map } = merge(map, fresh(), { by, seed: { terrain: { heights: [1, 1] } } }));
+    expect(map.terrain.heights).toEqual([9, 9]);
+    // A new file gets the seed too.
+    expect(merge(null, fresh(), { by, seed: { roads: [] } }).map.roads).toEqual([]);
+  });
+
   it("a copied group's key is the copy's only once: the second one is the user's", () => {
     const m = first();
     m.nodes.push(structuredClone(m.nodes[1]));

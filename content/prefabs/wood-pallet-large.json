@@ -1,6 +1,7 @@
 {
   "formatVersion": 3,
   "id": "wood-pallet-large",
+  "tags": ["industrial"],
   "colors": {
     "wood": "#b08a52",
     "wood-dark": "#8a6738"

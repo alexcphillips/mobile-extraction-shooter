@@ -1,13 +1,17 @@
 import {
   HeightGrid,
+  ROAD,
   compileNodes,
   concreteBase,
+  gradeRoads,
+  roadStrip,
   type CompiledBarricade,
   type CompiledBuilding,
   type CompiledMap,
   type HeightGridDef,
   type MapFile,
   type MapNode,
+  type MapRoad,
   type PrefabFile,
   type PrefabLookup,
 } from '@mes/shared';
@@ -142,8 +146,13 @@ export class EditorView {
   private terrain: HeightGrid;
   /** The terrain without its holes, to find where the ground would be over one. */
   private surface: HeightGrid;
-  /** The terrain as edited, and its meshes by chunk. */
+  /** The terrain as shaped (what the brushes change and the file keeps), and its meshes by chunk. */
   private grid: TerrainGrid | null = null;
+  /** The terrain as drawn and picked: `grid` with the roads graded in (RD-1). */
+  private shown: TerrainGrid | null = null;
+  /** The map's roads, and one mesh each (picked by userData.road, its index). */
+  private roads: readonly MapRoad[] = [];
+  private readonly roadMeshes = new THREE.Group();
   private terrainColor = 0;
   private chunks: THREE.Mesh[] = [];
   private chunkCells = 1;
@@ -480,7 +489,7 @@ export class EditorView {
    */
   build(map: MapFile, prefabs: PrefabLookup, scope: NodePath, selected: readonly number[]): void {
     this.prefabs = prefabs;
-    const key = JSON.stringify([map.terrain, map.water, map.environment.sky, map.zones]);
+    const key = JSON.stringify([map.terrain, map.water, map.environment.sky, map.zones, map.roads]);
     if (key !== this.groundKey) {
       this.groundKey = key;
       this.buildGround(map);
@@ -529,7 +538,9 @@ export class EditorView {
     this.ground.clear();
     const t = terrainGrid(map);
     this.grid = t;
-    this.setTerrain(t);
+    this.roads = map.roads ?? [];
+    this.shown = { ...t, heights: t.heights.slice() };
+    this.regrade();
     this.terrainColor = hex(map.terrain.color);
     this.chunkCells = Math.max(1, Math.round(CHUNK / t.cellSize));
     const nx = Math.ceil(t.cols / this.chunkCells);
@@ -564,11 +575,121 @@ export class EditorView {
     const zones = buildDebug({ markers: [], patrols: [], zones: map.zones }, this.terrain);
     zones.traverse((o) => (o.raycast = () => {}));
     this.ground.add(zones);
+    this.ground.add(this.roadMeshes);
     this.clip(this.ground);
   }
 
+  /**
+   * Grades the roads into a copy of the shaped terrain (as compileMap does) and builds their
+   * meshes again. Returns the corners whose drawn height changed, or null if none did.
+   */
+  private regrade(): CellRect | null {
+    const base = this.grid!;
+    const shown = this.shown!;
+    const before = shown.heights.slice();
+    shown.heights.set(base.heights);
+    shown.holes = base.holes;
+    let lines: ReturnType<typeof gradeRoads> = [];
+    try {
+      lines = gradeRoads(shown, shown.heights, this.roads);
+    } catch {
+      // A road being drawn may not be whole yet; the ground stays as shaped.
+    }
+    this.setTerrain(shown);
+    for (const m of [...this.roadMeshes.children]) {
+      (m as THREE.Mesh).geometry.dispose();
+      this.roadMeshes.remove(m);
+    }
+    this.roads.forEach((r, k) => {
+      const line = lines[k];
+      if (!line) return;
+      const b = new TriangleBuilder(true);
+      const strip = roadStrip(shown, shown.heights, line, r.width);
+      b.strip(strip, 0, strip.length / 6 - 1, hex(r.color ?? ROAD.color));
+      const mesh = new THREE.Mesh(b.build(), this.baked);
+      mesh.userData.road = k;
+      this.roadMeshes.add(mesh);
+    });
+    let i0 = Infinity;
+    let i1 = -1;
+    let j0 = Infinity;
+    let j1 = -1;
+    const c = shown.cols + 1;
+    for (let q = 0; q < before.length; q++) {
+      if (before[q] === shown.heights[q]) continue;
+      const i = q % c;
+      const j = (q - i) / c;
+      i0 = Math.min(i0, i);
+      i1 = Math.max(i1, i);
+      j0 = Math.min(j0, j);
+      j1 = Math.max(j1, j);
+    }
+    return i1 < 0 ? null : [i0, i1, j0, j1];
+  }
+
+  /**
+   * A node's footprint on the ground, from its built object (2026-11-13, for leveling the
+   * ground under a building): the bounds of everything it draws in its own frame, so a
+   * turned building's is turned too. `y` is the node's own height (a building's floor, a
+   * placed prefab's base); `outside(x, z)` how far a world point is outside it; `bounds` its
+   * extent in the world; `w` and `d` its size. Null if it draws nothing.
+   */
+  footprint(path: NodePath): {
+    y: number;
+    w: number;
+    d: number;
+    outside: (x: number, z: number) => number;
+    bounds: [number, number, number, number];
+  } | null {
+    const o = this.objects.get(path.join('.'));
+    if (!o) return null;
+    o.updateMatrixWorld(true);
+    const inv = o.matrixWorld.clone().invert();
+    const box = new THREE.Box3();
+    const m = new THREE.Matrix4();
+    o.traverse((c) => {
+      const mesh = c as THREE.Mesh;
+      if (!mesh.isMesh || !mesh.geometry) return;
+      mesh.geometry.computeBoundingBox();
+      const b = mesh.geometry.boundingBox;
+      if (b && !b.isEmpty())
+        box.union(b.clone().applyMatrix4(m.multiplyMatrices(inv, mesh.matrixWorld)));
+    });
+    if (box.isEmpty()) return null;
+    const origin = new THREE.Vector3().setFromMatrixPosition(o.matrixWorld);
+    const p = new THREE.Vector3();
+    const outside = (x: number, z: number): number => {
+      p.set(x, origin.y, z).applyMatrix4(inv);
+      const dx = Math.max(box.min.x - p.x, p.x - box.max.x, 0);
+      const dz = Math.max(box.min.z - p.z, p.z - box.max.z, 0);
+      return Math.hypot(dx, dz);
+    };
+    const world = new THREE.Box3();
+    for (const [x, z] of [
+      [box.min.x, box.min.z],
+      [box.max.x, box.min.z],
+      [box.min.x, box.max.z],
+      [box.max.x, box.max.z],
+    ] as const)
+      world.expandByPoint(new THREE.Vector3(x!, 0, z!).applyMatrix4(o.matrixWorld));
+    return {
+      y: origin.y,
+      w: box.max.x - box.min.x,
+      d: box.max.z - box.min.z,
+      outside,
+      bounds: [world.min.x, world.min.z, world.max.x, world.max.z],
+    };
+  }
+
+  /** The road under the mouse (its index in the map's roads), or null. */
+  roadUnder(e: { clientX: number; clientY: number }): number | null {
+    this.aim(e);
+    const hit = this.raycaster.intersectObjects(this.roadMeshes.children, false).find(this.seen);
+    return hit ? (hit.object.userData.road as number) : null;
+  }
+
   private buildChunk(k: number): void {
-    const t = this.grid!;
+    const t = this.shown!;
     const n = this.chunkCells;
     const nx = Math.ceil(t.cols / n);
     const i0 = (k % nx) * n;
@@ -948,8 +1069,13 @@ export class EditorView {
   }
 
   /** Rebuilds what shows the terrain after its corners [i0, i1] × [j0, j1] changed. */
-  private terrainChanged([i0, i1, j0, j1]: readonly [number, number, number, number]): void {
-    this.setTerrain(this.grid!);
+  private terrainChanged(cells: readonly [number, number, number, number]): void {
+    // The roads are graded again: the ground under them changes where the brush reached.
+    const graded = this.regrade();
+    const i0 = Math.min(cells[0], graded?.[0] ?? Infinity);
+    const i1 = Math.max(cells[1], graded?.[1] ?? -Infinity);
+    const j0 = Math.min(cells[2], graded?.[2] ?? Infinity);
+    const j1 = Math.max(cells[3], graded?.[3] ?? -Infinity);
     const n = this.chunkCells;
     const nx = Math.ceil(this.grid!.cols / n);
     // Corners on a chunk's edge belong to the chunks either side.
@@ -1006,7 +1132,7 @@ export class EditorView {
     this.ring.visible = !!cells;
     if (!cells) return;
     const [i0, i1, j0, j1] = cells;
-    const t = this.grid!;
+    const t = this.shown!;
     const points: THREE.Vector3[] = [];
     const corner = (i: number, j: number): void => {
       const x = t.minX + i * t.cellSize;

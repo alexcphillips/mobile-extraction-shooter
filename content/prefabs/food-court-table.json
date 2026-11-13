@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "food-court-table",
   "name": "Food court table",
+  "tags": ["food"],
   "colors": {
     "seat": "#c8a24b",
     "stone": "#e6e0d3",

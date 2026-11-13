@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "shop-counter",
   "name": "Shop counter",
+  "tags": ["store"],
   "colors": {
     "body": "#e6e0d3",
     "top": "#3d4148",

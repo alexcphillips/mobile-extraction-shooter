@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "hazard-barrel-red",
   "name": "Hazard barrel (red)",
+  "tags": ["industrial"],
   "nodes": [
     {
       "type": "prefab",

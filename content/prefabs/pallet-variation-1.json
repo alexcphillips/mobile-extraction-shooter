@@ -1,6 +1,7 @@
 {
   "formatVersion": 3,
   "id": "pallet-variation-1",
+  "tags": ["industrial"],
   "nodes": [
     {
       "type": "group",

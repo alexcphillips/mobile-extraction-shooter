@@ -27,7 +27,7 @@ describe('layouts (MK-3)', () => {
     expect(l.areas[0]).toMatchObject({
       yaw: 0,
       floors: 1,
-      floorHeight: 4,
+      floorHeight: 5,
       tier: 'full',
       entrances: [],
     });

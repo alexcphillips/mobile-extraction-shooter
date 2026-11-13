@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "aquarium-stand",
   "name": "Aquarium stand",
+  "tags": ["store"],
   "colors": {
     "stand": "#3d4148",
     "water": "#6fc0d6",

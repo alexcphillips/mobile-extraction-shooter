@@ -60,11 +60,15 @@ export const layoutAreaSchema = z.strictObject({
   /** The place it belongs to (the mall, the plaza, …): drawn in one color, listed together. */
   poi: idSchema.optional(),
   ...rect,
-  /** Its ground floor's height; left out, the ground's height at its middle. */
+  /**
+   * Its ground floor's height; left out, the highest ground under it (District since RD-1:
+   * a foundation fills down to the lowest).
+   */
   y: meters.optional(),
   /** 0 for open ground (a yard, a lot, a court). */
   floors: z.number().int().nonnegative().default(1),
-  floorHeight: size.default(4),
+  /** 5 m (was 4 until 2026-11-12: the user found the bones' rooms low and cramped). */
+  floorHeight: size.default(5),
   /** How much of it is built: every room, one or two rooms, or a facade only. */
   tier: z.enum(['full', 'partial', 'facade']).default('full'),
   entrances: z.array(layoutEntranceSchema).default([]),

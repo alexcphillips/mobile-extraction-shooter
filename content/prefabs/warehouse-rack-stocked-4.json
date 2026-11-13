@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "warehouse-rack-stocked-4",
   "name": "Stocked rack, low beam, open middle",
+  "tags": ["industrial"],
   "nodes": [
     {
       "type": "prefab",

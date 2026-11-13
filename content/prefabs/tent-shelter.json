@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "tent-shelter",
   "name": "Tent shelter",
+  "tags": ["military"],
   "colors": {
     "cloth": "#5f6f4a",
     "cloth-b": "#4f5f3e",

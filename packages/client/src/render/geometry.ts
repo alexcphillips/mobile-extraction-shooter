@@ -9,6 +9,11 @@ import { shade } from './shade';
  * stores plain colors and face normals, and the material shades them (see material.ts),
  * for geometry that's instanced or moves.
  */
+const sl0 = new THREE.Vector3();
+const sr0 = new THREE.Vector3();
+const sl1 = new THREE.Vector3();
+const sr1 = new THREE.Vector3();
+
 export class TriangleBuilder {
   private readonly pos: number[] = [];
   private readonly col: number[] = [];
@@ -38,6 +43,22 @@ export class TriangleBuilder {
       this.pos.push(p.x, p.y, p.z);
       this.col.push(this.color.r * f, this.color.g * f, this.color.b * f);
       if (!this.baked) this.nor.push(e1.x, e1.y, e1.z);
+    }
+  }
+
+  /**
+   * A road's strip (CompiledRoad.strip: left and right edge per sample, x y z each) from
+   * sample `from` to sample `to`, as quads facing up.
+   */
+  strip(s: readonly number[], from: number, to: number, color: number): void {
+    for (let k = from; k < to; k++) {
+      const o = k * 6;
+      sl0.set(s[o]!, s[o + 1]!, s[o + 2]!);
+      sr0.set(s[o + 3]!, s[o + 4]!, s[o + 5]!);
+      sl1.set(s[o + 6]!, s[o + 7]!, s[o + 8]!);
+      sr1.set(s[o + 9]!, s[o + 10]!, s[o + 11]!);
+      this.tri(sl0, sr0, sl1, color);
+      this.tri(sl1, sr0, sr1, color);
     }
   }
 

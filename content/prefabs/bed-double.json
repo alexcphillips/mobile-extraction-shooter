@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "bed-double",
   "name": "Double bed",
+  "tags": ["home"],
   "colors": {
     "frame": "#8a6a4a",
     "sheet": "#e9e6df",

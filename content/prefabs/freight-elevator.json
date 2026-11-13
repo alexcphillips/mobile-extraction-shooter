@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "freight-elevator",
   "name": "Freight elevator",
+  "tags": ["industrial"],
   "nodes": [
     {
       "type": "prefab",

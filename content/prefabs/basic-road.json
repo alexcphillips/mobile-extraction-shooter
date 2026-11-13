@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "basic-road",
   "name": "road 1",
+  "tags": ["street"],
   "nodes": [
     {
       "type": "box",

@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "floor-rug",
   "name": "Floor rug",
+  "tags": ["store"],
   "colors": {
     "rug": "#8a3f5f",
     "border": "#e6e0d3"

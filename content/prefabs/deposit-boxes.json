@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "deposit-boxes",
   "name": "Safe deposit boxes",
+  "tags": ["store"],
   "colors": {
     "steel": "#9aa0a4",
     "steel-dark": "#5e6468",

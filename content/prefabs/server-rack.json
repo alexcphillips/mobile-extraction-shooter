@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "server-rack",
   "name": "Server rack",
+  "tags": ["office"],
   "colors": {
     "body": "#1d1e21",
     "panel": "#3a3d42",

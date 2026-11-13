@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "clothes-line",
   "name": "Clothes line",
+  "tags": ["home"],
   "colors": {
     "post": "#6e6a62",
     "sheet": "#d6d0c2",

@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "hazard-barrel",
   "name": "Hazard barrel (yellow)",
+  "tags": ["industrial"],
   "instanced": true,
   "colors": {
     "paint": "#dcae1e",

@@ -26,7 +26,17 @@ console.log(
 
 const layout = lib.loadLayout(readContent('layouts/district.json'), 'layout');
 const A = (id) => layout.areas.find((a) => a.id === id);
-const floorY = (a, k = 0) => (a.y ?? lib.heightAt(layout, a.x, a.z)) + k * a.floorHeight;
+/** The ground as the game grades it (the map's own terrain since RD-1, not the layout's). */
+const ground = new lib.HeightGrid(compiled.world.terrain);
+/** An area's floor as gen-district.mjs sets it: its y, or the highest ground under it. */
+const floorY = (a, k = 0) => {
+  let hi = -Infinity;
+  const f = frame(a);
+  for (let i = 0; i <= 8; i++)
+    for (let j = 0; j <= 8; j++)
+      hi = Math.max(hi, ground.heightAt(...f.toWorld(a.w * (i / 8 - 0.5), a.d * (j / 8 - 0.5))));
+  return Math.round((a.y ?? hi) * 100) / 100 + k * a.floorHeight;
+};
 /** A point inside an area at local (lx, lz) on floor k. */
 const P = (id, lx = 0, lz = 0, k = 0) => {
   const a = A(id);
@@ -43,7 +53,7 @@ const places = {
   'plaza level (promenade)': (() => {
     const z = layout.zones.find((q) => q.id === 'promenade').points;
     const [x, zz] = [z.reduce((a, p) => a + p[0], 0) / 4, z.reduce((a, p) => a + p[1], 0) / 4];
-    return [x, 15.6, zz];
+    return [x, ground.heightAt(x, zz) + 0.1, zz];
   })(),
   'garage deck 1': P('garage', 0, 15, 0),
   'garage deck 2 (bridge)': P('garage', 0, 15, 1),
@@ -60,31 +70,15 @@ const places = {
   'platform 2 (island)': P('rail-island', 20, 0),
   'platform 1': P('rail-platform', 20, 0),
   'footbridge deck': P('rail-footbridge', 0, 0),
-  'tracks (cut floor)': P('rail-train', 0, 14, 0).map((v, i) => (i === 1 ? 8.1 : v)),
+  'tracks (by the train)': (() => {
+    const p = P('rail-train', 0, 14, 0);
+    return [p[0], ground.heightAt(p[0], p[2]) + 0.1, p[2]];
+  })(),
   'goods shed': P('rail-goods', 0, 0),
   grocery: P('strip-grocery', 0, 0),
   'gas station shop': P('gas-kiosk', 0, 0),
   'aid tent': P('outpost-tent', 0, 0),
 };
-// The culvert's floor and the drain's middle, from the map's own nodes.
-const find = (name) => {
-  const stack = [...raw.nodes];
-  while (stack.length) {
-    const n = stack.pop();
-    if (n.name === name) return n;
-    if (n.nodes) stack.push(...n.nodes);
-  }
-};
-const drainMid = find('drain-24');
-places['storm drain'] = [drainMid.pos[0], drainMid.pos[1] + 0.1, drainMid.pos[2]];
-for (const n of ['drain-2', 'drain-pit']) {
-  const d = find(n);
-  places[n] = [d.pos[0], d.pos[1] + 0.1, d.pos[2]];
-}
-places['culvert floor'] = (() => {
-  const d = find('drain-1');
-  return [302.5, d.pos[1] + 0.1, 253];
-})();
 const rows = [];
 for (const [name, p] of Object.entries(places))
   rows.push({
@@ -96,15 +90,4 @@ console.table(rows);
 if (process.argv.includes('--walk')) {
   const w = walk(world, spawn, places['mall ground floor'], { seconds: 120 });
   console.log('walk to the mall', w.reached, w);
-}
-if (process.argv.includes('--drain')) {
-  const out = [];
-  for (let k = 1; ; k++) {
-    const d = find(`drain-${k}`);
-    if (!d) break;
-    const p = [d.pos[0], d.pos[1] + 0.1, d.pos[2]];
-    const n = nav.nearest(...p, lib.NAV.climb, true);
-    out.push(`${k}:${joined(nav, spawn, p) ? 'y' : 'n'}${n < 0 ? '?' : ''}@${d.pos[1]}`);
-  }
-  console.log(out.join(' '));
 }

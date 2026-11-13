@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "laptop-bag-open",
   "name": "Laptop bag (searched look)",
+  "tags": ["office"],
   "colors": {
     "nylon": "#2f3338",
     "nylon-dark": "#212428",

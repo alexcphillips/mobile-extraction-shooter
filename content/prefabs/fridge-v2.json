@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "fridge-v2",
   "name": "fridge-v2",
+  "tags": ["food"],
   "nodes": [
     {
       "type": "group",

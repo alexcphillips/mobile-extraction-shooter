@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "notice-board",
   "name": "Notice board",
+  "tags": ["office"],
   "colors": {
     "board": "#a88a5a",
     "frame": "#5a4638",

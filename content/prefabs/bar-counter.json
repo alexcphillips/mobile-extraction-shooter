@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "bar-counter",
   "name": "Bar counter",
+  "tags": ["food"],
   "colors": {
     "body": "#4a2f20",
     "top": "#c8a24b",

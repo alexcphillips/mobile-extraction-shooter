@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "filing-cabinet-top-drawer-open",
   "name": "Filing cabinet top drawer (searched look)",
+  "tags": ["office"],
   "colors": {
     "front": "#9ca0a5",
     "inside": "#3a3d42",

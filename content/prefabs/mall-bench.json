@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "mall-bench",
   "name": "Mall bench",
+  "tags": ["store"],
   "colors": {
     "seat": "#8a6a4a",
     "base": "#7f8078"

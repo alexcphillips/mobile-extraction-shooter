@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "freight-elevator-shaft",
   "name": "Freight elevator shaft",
+  "tags": ["industrial", "structure"],
   "colors": {
     "steel": "#70777d",
     "steel-dark": "#474d53",

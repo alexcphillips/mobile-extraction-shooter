@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "vending-machine",
   "name": "Vending machine",
+  "tags": ["food"],
   "colors": {
     "body": "#a8483a",
     "window": "#1d1e21",

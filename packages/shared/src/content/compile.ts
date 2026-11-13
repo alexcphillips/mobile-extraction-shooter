@@ -9,6 +9,7 @@ import type {
   SwitchDef,
 } from '../world/collision-world';
 import { HeightGrid, holeFlags } from '../world/terrain';
+import { gradeRoads, roadStrip, ROAD } from '../world/roads';
 import { ContentError } from './format';
 import { wallPieces } from './walls';
 import type { LootMix, MapFile, MapNode, MapZone, PrefabFile } from './schema';
@@ -228,6 +229,13 @@ export interface SearchedLook {
   searched: Shape[];
 }
 
+/** A road's strip: each centerline sample's left and right edge, x y z each (world/roads.ts). */
+export interface CompiledRoad {
+  id: string;
+  color: number;
+  strip: number[];
+}
+
 export interface CompiledMap {
   id: string;
   name: string;
@@ -255,6 +263,8 @@ export interface CompiledMap {
   /** Buildings' footprints; their concrete bases are in shapes and world.boxes. */
   buildings: CompiledBuilding[];
   zones: MapZone[];
+  /** Drawn on the ground; the terrain in world is already graded under them. */
+  roads: CompiledRoad[];
   /** How many rotating extraction zones a raid opens (MapFile.rotatingExtractions). */
   rotatingExtractions?: number | undefined;
   /** How far enemy spawns keep from player spawns (MapFile.enemyClearance). */
@@ -429,6 +439,13 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     heights: heights.flat(),
     holes: holeFlags(heights[0]!.length - 1, heights.length - 1, map.terrain.holes),
   };
+  // Roads grade the ground under them (RD-1): everything after stands on the graded ground.
+  const roadLines = gradeRoads(terrain, terrain.heights, map.roads ?? []);
+  const roads: CompiledRoad[] = (map.roads ?? []).map((r, k) => ({
+    id: r.id,
+    color: hex(r.color ?? ROAD.color),
+    strip: roadStrip(terrain, terrain.heights, roadLines[k]!, r.width),
+  }));
   const scope = slotColors(map.colors ?? {});
   // The map's own water covers the whole terrain.
   if (map.water) {
@@ -509,6 +526,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     barricades: out.barricades!,
     buildings: out.buildings!,
     zones: map.zones,
+    roads,
     rotatingExtractions: map.rotatingExtractions,
     lootGroups: map.lootGroups,
     enemyClearance: map.enemyClearance,

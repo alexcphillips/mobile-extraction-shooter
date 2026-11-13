@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "flood-light",
   "name": "Flood light pole",
+  "tags": ["street"],
   "colors": {
     "pole": "#6f777b",
     "lamp": "#3d4148",

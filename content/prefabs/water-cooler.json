@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "water-cooler",
   "name": "Water cooler",
+  "tags": ["food", "office"],
   "colors": {
     "body": "#d7d9d8",
     "water": "#6fa8d6"

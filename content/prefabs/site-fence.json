@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "site-fence",
   "name": "Site fence panel",
+  "tags": ["construction", "structure"],
   "colors": {
     "frame": "#a9afb0",
     "mesh": "#8d9496",

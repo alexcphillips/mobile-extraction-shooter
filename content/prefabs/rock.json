@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "rock",
   "name": "Rock",
+  "tags": ["nature"],
   "instanced": true,
   "colors": { "stone": "#8c8a84", "stone-dark": "#6e6c67" },
   "nodes": [

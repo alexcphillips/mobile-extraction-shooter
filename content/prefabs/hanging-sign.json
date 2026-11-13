@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "hanging-sign",
   "name": "Hanging sign",
+  "tags": ["store"],
   "colors": {
     "sign": "#3f6f9a",
     "text": "#e6e0d3",

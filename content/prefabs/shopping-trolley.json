@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "shopping-trolley",
   "name": "Shopping trolley",
+  "tags": ["vehicle", "store"],
   "colors": {
     "wire": "#a9afb3",
     "handle": "#2456a4",

@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "electrical-panel",
   "name": "Electrical panel",
+  "tags": ["office"],
   "colors": {
     "metal": "#6f7f86",
     "metal-dark": "#4d5559",

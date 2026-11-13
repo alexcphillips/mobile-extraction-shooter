@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "clothes-rail",
   "name": "Clothes rail",
+  "tags": ["store"],
   "colors": {
     "frame": "#3d4148",
     "cloth-a": "#b05a7a",

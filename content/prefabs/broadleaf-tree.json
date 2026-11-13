@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "broadleaf-tree",
   "name": "Broadleaf tree",
+  "tags": ["nature"],
   "instanced": true,
   "colors": { "trunk": "#5e4632", "leaves": "#9a7430", "leaves-dark": "#7a5a26" },
   "nodes": [

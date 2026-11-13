@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "shipping-container-closed-doors",
   "name": "shipping container doors",
+  "tags": ["industrial"],
   "colors": {
     "shipping-container-orange-dark": "#8f5238",
     "shipping-container-orange-shade": "#6b3d2a",

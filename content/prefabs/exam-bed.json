@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "exam-bed",
   "name": "Exam bed",
+  "tags": ["medical"],
   "colors": {
     "pad": "#6fa8a0",
     "frame": "#d7d9d8",

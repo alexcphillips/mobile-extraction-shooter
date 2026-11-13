@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "steel-bar-fence",
   "name": "Steel bar fence",
+  "tags": ["structure"],
   "colors": {
     "steel": "#6f777b",
     "steel-dark": "#4e5558"

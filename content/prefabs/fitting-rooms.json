@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "fitting-rooms",
   "name": "Fitting rooms",
+  "tags": ["store"],
   "colors": {
     "wall": "#e9e6df",
     "trim": "#3d4148",

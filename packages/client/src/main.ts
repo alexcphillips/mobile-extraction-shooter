@@ -155,6 +155,11 @@ if (location.pathname === '/bodies') {
   import('./layout-board')
     .then((board) => board.startLayoutBoard(byId('editor')))
     .catch((err: unknown) => (status.textContent = `layout board failed: ${message(err)}`));
+} else if (location.pathname === '/prefab-sheet' && import.meta.env.DEV) {
+  for (const id of ['controls', 'settings-button']) byId(id).hidden = true;
+  import('./editor/prefab-sheet')
+    .then((sheet) => sheet.startPrefabSheet(byId('editor')))
+    .catch((err: unknown) => (status.textContent = `prefab sheet failed: ${message(err)}`));
 } else if (location.pathname === '/sounds' && import.meta.env.DEV) {
   import('./sound-editor')
     .then((editor) => editor.startSoundEditor(byId('editor')))

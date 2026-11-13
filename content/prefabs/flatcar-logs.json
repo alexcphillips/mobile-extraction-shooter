@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "flatcar-logs",
   "name": "Flatcar with logs",
+  "tags": ["vehicle", "rail", "logging"],
   "nodes": [
     { "type": "prefab", "prefab": "flatcar", "pos": [0, 0, 0] },
     { "type": "prefab", "prefab": "log-pile", "pos": [-3.1, 1.45, 0] },

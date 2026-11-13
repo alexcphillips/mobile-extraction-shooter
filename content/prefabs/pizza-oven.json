@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "pizza-oven",
   "name": "Pizza oven",
+  "tags": ["food"],
   "colors": {
     "brick": "#a8583a",
     "mouth": "#1d1e21",

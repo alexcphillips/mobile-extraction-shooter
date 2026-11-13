@@ -6,7 +6,7 @@
 // DS-5 on, after the user approves the bones (DS-3).
 import { buildingKit } from './mapkit/building.mjs';
 import { frame } from './mapkit/frame.mjs';
-import { box, drawn, yawAlongZ } from './mapkit/nodes.mjs';
+import { box, drawn, r2, yawAlongZ } from './mapkit/nodes.mjs';
 import { runDownFrom, stairRun } from './mapkit/runs.mjs';
 
 export const C = {
@@ -336,6 +336,25 @@ function entranceAt(area, e) {
 }
 
 /**
+ * A building's foundation (RD-1, 2026-11-12: the gas station stood half sunk on a slope):
+ * concrete from under its floor slab down past the lowest ground under its footprint, so it
+ * never floats. Ground over the floor isn't cut away: dig it out in the editor. Null on flat
+ * ground. `groundIn` is the ground in the building's frame, from its floor.
+ */
+function plinth(a, groundIn) {
+  let lo = Infinity;
+  const nx = Math.max(1, Math.ceil(a.w / 2));
+  const nz = Math.max(1, Math.ceil(a.d / 2));
+  for (let i = 0; i <= nx; i++)
+    for (let k = 0; k <= nz; k++)
+      lo = Math.min(lo, groundIn(-a.w / 2 + (a.w * i) / nx, -a.d / 2 + (a.d * k) / nz));
+  if (lo > -0.6) return null;
+  const hw = a.w / 2;
+  const hd = a.d / 2;
+  return box(-hw, -hd, hw, hd, r2(lo - 0.3), -0.6, C['dark-concrete'], { id: `${a.id}-plinth` });
+}
+
+/**
  * Every area of the layout as bones. `floorOf(area)` is its ground floor's height, `groundAt`
  * the finished ground; `poiColor(area)` its place's color, for roofs and markers.
  */
@@ -355,15 +374,21 @@ export function buildAreas(layout, { floorOf, groundAt, poiColor, rail }) {
     const color = poiColor(a);
     const f = frame(a, y);
     const groundIn = f.groundIn(groundAt);
-    if (a.id === 'garage') out.push(garage(a, y));
-    else if (a.id === 'cons-block') out.push(openFrame(a, y));
+    let built;
+    if (a.id === 'garage') built = garage(a, y);
+    else if (a.id === 'cons-block') built = openFrame(a, y);
     else if (a.tier === 'facade')
-      out.push(block(`${a.id}-block`, a.name ?? a.id, a, y, a.floors * a.floorHeight, color));
-    else if (a.floors === 0) out.push(yard(a, y, color, groundIn));
-    else if (a.id === 'mall-main') out.push(shell(a, y, groundIn, mallMain(a, color)));
+      built = block(`${a.id}-block`, a.name ?? a.id, a, y, a.floors * a.floorHeight, color);
+    else if (a.floors === 0) built = yard(a, y, color, groundIn);
+    else if (a.id === 'mall-main') built = shell(a, y, groundIn, mallMain(a, color));
     else if (a.id === 'mall-dept')
-      out.push(shell(a, y, groundIn, { roof: color, voids: [[-7, -6, 7, 8]] }));
-    else out.push(shell(a, y, groundIn, { roof: color }));
+      built = shell(a, y, groundIn, { roof: color, voids: [[-7, -6, 7, 8]] });
+    else built = shell(a, y, groundIn, { roof: color });
+    if (a.floors > 0) {
+      const p = plinth(a, groundIn);
+      if (p) built.nodes.unshift(p);
+    }
+    out.push(built);
   }
   out.push(glassBridge(byId.get('garage'), byId.get('mall-dept'), floorOf));
   out.push(...station(layout, byId, rail));

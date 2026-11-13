@@ -1,5 +1,6 @@
 import {
   RAID,
+  ROAD,
   idSchema,
   nodeSchema,
   spotMix,
@@ -187,6 +188,13 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
           title="8: draw a named zone"
         >
           zone
+        </Toggle>
+        <Toggle
+          on={s.tool === 'road'}
+          onClick={() => editor.setTool('road')}
+          title="O: draw a road a point at a time; the ground is graded under it"
+        >
+          road
         </Toggle>
         <Toggle
           on={s.tool === 'wall'}
@@ -557,6 +565,13 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
           <button onClick={() => editor.dropSelected()} disabled={!s.selected.length} title="B">
             Drop
           </button>
+          <button
+            onClick={(e) => editor.levelUnderSelected(e.shiftKey)}
+            disabled={!s.selected.length}
+            title="Level the ground under each selected building to its floor, a little past its walls, easing back over 6 m; ⇧-click for no bank (a hill right against an uphill wall)"
+          >
+            Level ground
+          </button>
           <button onClick={() => editor.matchRotation()} disabled={s.selected.length < 2} title="M">
             Match turn
           </button>
@@ -626,7 +641,15 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
             <LootGroupFields editor={editor} map={s.map} nodes={s.selected.map((i) => nodes[i]!)} />
           )}
         {!s.selected.length && !s.scope.length && (
-          <MapSettings editor={editor} map={s.map} zone={s.zone} point={s.point} paint={s.color} />
+          <MapSettings
+            editor={editor}
+            map={s.map}
+            zone={s.zone}
+            road={s.road}
+            roadWidth={s.roadWidth}
+            point={s.point}
+            paint={s.color}
+          />
         )}
         {!s.selected.length && atPrefab && inPrefab && (
           <PrefabSettings editor={editor} prefab={inPrefab} />
@@ -730,7 +753,7 @@ function CurveBar({ editor, curve }: { editor: MapEditor; curve: CurveSettings }
 const HELP =
   'Two-finger scroll orbit, ⇧ pan · pinch zoom · ⌥-drag orbit, ⌥⇧-drag pan · WASD QE fly · ' +
   'click select, ⇧ add · double-click enter group or prefab · F focus · G ground · 7 marker · ' +
-  '8 zone · 9 wall · 0 curve · P prefabs · N nav · H grid · C cut, ↑ ↓ floors';
+  '8 zone · O road · 9 wall · 0 curve · P prefabs · N nav · H grid · C cut, ↑ ↓ floors';
 
 /**
  * The loot group of the placed prefabs and loose spots selected (2026-11-10): a prefab's
@@ -799,6 +822,8 @@ function MapSettings(props: {
   editor: MapEditor;
   map: MapFile;
   zone: number | null;
+  road: number | null;
+  roadWidth: number;
   point: number | null;
   /** The color new shapes get, for a new slot to start at. */
   paint: string;
@@ -809,6 +834,7 @@ function MapSettings(props: {
   return (
     <div className="ed-inspector">
       <h3>map</h3>
+      <Roads {...props} />
       <Text label="name" value={map.name} onChange={(v) => v && edit((m) => (m.name = v))} />
       <HexColor
         label="sky"
@@ -967,6 +993,131 @@ function Extend({ editor, cellSize }: { editor: MapEditor; cellSize: number }) {
         </button>
       ))}
     </div>
+  );
+}
+
+/**
+ * The map's roads (RD-1): drawn with the road tool (O), picked by clicking one or here. A
+ * picked road's points are handles; its fields set how it's graded into the ground.
+ */
+function Roads({ editor, map, road, roadWidth, point }: Parameters<typeof MapSettings>[0]) {
+  const roads = map.roads ?? [];
+  const r = road === null ? undefined : roads[road];
+  const edit = (change: (r: NonNullable<MapFile['roads']>[number]) => void) =>
+    editor.editMap((m) => change(m.roads![road!]!));
+  const opt = (key: 'shoulder' | 'radius' | 'maxGrade') => (v: number | undefined) =>
+    edit((rr) => {
+      if (v === undefined || (key === 'maxGrade' && v <= 0)) delete rr[key];
+      else rr[key] = key === 'maxGrade' ? v / 100 : Math.max(0, v);
+    });
+  return (
+    <>
+      <h4>roads</h4>
+      {roads.length > 0 && (
+        <ul className="ed-list ed-zones">
+          {roads.map((rr, i) => (
+            <li
+              key={i}
+              className={i === road ? 'ed-on' : undefined}
+              onClick={() => editor.pickRoad(i === road ? null : i)}
+            >
+              {rr.name ?? rr.id} <span className="ed-type">{rr.width} m</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="ed-row">
+        <button onClick={() => editor.setTool('road')} title="O">
+          Draw a road
+        </button>
+        <Num
+          label="new roads (m wide)"
+          value={roadWidth}
+          min={1}
+          onChange={(v) => v !== undefined && v > 0 && editor.setRoadWidth(v)}
+        />
+      </div>
+      {r && (
+        <>
+          <Text
+            label="name"
+            value={r.name ?? ''}
+            onChange={(v) =>
+              edit((rr) => {
+                if (v) rr.name = v;
+                else delete rr.name;
+              })
+            }
+          />
+          <Text label="id" value={r.id} onChange={(v) => v && edit((rr) => (rr.id = v))} />
+          <div className="ed-row">
+            <Num
+              label="width (m)"
+              value={r.width}
+              min={1}
+              onChange={(v) => v !== undefined && v > 0 && edit((rr) => (rr.width = v))}
+            />
+            <Num
+              label="shoulder (m)"
+              value={r.shoulder}
+              min={0}
+              placeholder={String(ROAD.shoulder)}
+              onChange={opt('shoulder')}
+            />
+          </div>
+          <div className="ed-row">
+            <Num
+              label="corner radius (m)"
+              value={r.radius}
+              min={0}
+              placeholder={String(ROAD.radius)}
+              onChange={opt('radius')}
+            />
+            <Num
+              label="steepest (%)"
+              value={r.maxGrade === undefined ? undefined : r.maxGrade * 100}
+              min={0}
+              placeholder="any"
+              onChange={opt('maxGrade')}
+            />
+          </div>
+          <HexColor
+            label="color"
+            value={r.color ?? ROAD.color}
+            onChange={(c) => edit((rr) => (rr.color = c))}
+          />
+          <p className="ed-note">
+            The ground is leveled across it and smoothed along it, easing back over the shoulder;
+            the file keeps the ground as shaped. Where roads cross, the one higher in this list sets
+            the height. Its ends join a road within {3} m.
+          </p>
+          <div className="ed-row">
+            <button disabled={point === null} onClick={() => editor.splitZoneEdge()}>
+              Add point after
+            </button>
+            <button disabled={point === null} onClick={() => editor.deletePoint()}>
+              Delete point
+            </button>
+            <button
+              disabled={road === 0}
+              title="Earlier roads set the height where roads cross"
+              onClick={() => {
+                editor.editMap((m) => {
+                  const [x] = m.roads!.splice(road!, 1);
+                  m.roads!.splice(road! - 1, 0, x!);
+                });
+                editor.pickRoad(road! - 1);
+              }}
+            >
+              Move up
+            </button>
+            <button onClick={() => editor.deleteRoad()} title="Delete">
+              Delete road
+            </button>
+          </div>
+        </>
+      )}
+    </>
   );
 }
 
@@ -1332,17 +1483,19 @@ function DrawingNote({
   const what =
     drawing.what === 'zone'
       ? 'a zone'
-      : drawing.what === 'patrol'
-        ? 'a patrol'
-        : drawing.what === 'walls'
-          ? 'walls'
-          : drawing.what === 'curve'
-            ? 'a curve'
-            : drawing.what === 'floor'
-              ? 'a floor'
-              : drawing.what === 'water'
-                ? 'water'
-                : 'patrol points';
+      : drawing.what === 'road'
+        ? 'a road'
+        : drawing.what === 'patrol'
+          ? 'a patrol'
+          : drawing.what === 'walls'
+            ? 'walls'
+            : drawing.what === 'curve'
+              ? 'a curve'
+              : drawing.what === 'floor'
+                ? 'a floor'
+                : drawing.what === 'water'
+                  ? 'water'
+                  : 'patrol points';
   if (drawing.what === 'curve') {
     const started = drawing.points.length > 1;
     return (
@@ -1505,6 +1658,9 @@ function ColorSlots(props: {
  * The own settings of the prefab being edited inside, shown when nothing in it is selected:
  * its name, instancing, color slots (their defaults) and building footprint.
  */
+/** A word that can be a prefab tag (an id: lower-case letters, digits and dashes). */
+const isTag = (t: string): boolean => /^[a-z0-9][a-z0-9-]*$/.test(t);
+
 function PrefabSettings({ editor, prefab }: { editor: MapEditor; prefab: PrefabFile }) {
   const edit = (change: (p: PrefabFile) => void) => editor.editPrefab(change);
   const b = prefab.building;
@@ -1517,6 +1673,25 @@ function PrefabSettings({ editor, prefab }: { editor: MapEditor; prefab: PrefabF
         label="name"
         value={prefab.name ?? ''}
         onChange={(v) => edit((p) => (v ? (p.name = v) : delete p.name))}
+      />
+      <Text
+        label="tags"
+        placeholder="store, cover"
+        value={(prefab.tags ?? []).join(', ')}
+        onChange={(v) =>
+          edit((p) => {
+            const tags = [
+              ...new Set(
+                v
+                  .toLowerCase()
+                  .split(/[\s,]+/)
+                  .filter(isTag),
+              ),
+            ];
+            if (tags.length) p.tags = tags;
+            else delete p.tags;
+          })
+        }
       />
       <label className="ed-field" title="One instanced mesh for every copy: for small props">
         <input

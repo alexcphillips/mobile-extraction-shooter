@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "furniture-barricade",
   "name": "Furniture barricade",
+  "tags": ["debris"],
   "colors": {
     "wardrobe": "#e9e6df",
     "wardrobe-dark": "#bdb8ad",

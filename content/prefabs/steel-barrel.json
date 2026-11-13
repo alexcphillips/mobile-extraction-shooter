@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "steel-barrel",
   "name": "Steel barrel",
+  "tags": ["industrial"],
   "instanced": true,
   "colors": { "steel": "#6c7075", "steel-dark": "#4a4d51", "metal": "#9a9ea3" },
   "nodes": [

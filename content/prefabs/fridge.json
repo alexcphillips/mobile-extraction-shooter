@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "fridge",
   "name": "fridge",
+  "tags": ["food", "home"],
   "colors": {
     "road": "#595959"
   },

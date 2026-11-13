@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "tech-display-table",
   "name": "Tech display table",
+  "tags": ["store"],
   "colors": {
     "top": "#c9a877",
     "side": "#e9ecef",

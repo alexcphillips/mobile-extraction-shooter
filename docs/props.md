@@ -37,6 +37,11 @@ How the forklift, pallets, office chair, clipboard and hanging jacket were made 
 - **Paper needs print on what's seen,** or it reads as blank stock, not documents (the user, on the first paper stacks). Vary it so pieces differ: a letter (heading, text lines, signature), a form (dark header bar, ruled rows), a folder (label, red stamp).
 - **Hanging, soft things obey gravity:** narrow, pinched at the hook, folds as strips at slightly different depths, angles and shades, uneven hems (the jacket after the user's reference shot).
 
+## Prefab catalog (MK-5, 2026-11-12)
+Before building a prefab, look for one to reuse: `node scripts/prefabs.mjs <words>` (size, height class, triangles, loot, where it's used), `--sheet` for pictures. Detail: tech/editors.md → Prefab catalog.
+- **Tags** say where a prefab belongs, one or more from this list: `street`, `vehicle`, `rail`, `store`, `food`, `office`, `home`, `leisure`, `medical`, `military`, `industrial`, `construction`, `logging`, `nature`, `structure` (buildings, doors, shutters, fences), `debris`. Tag every new prefab; add a tag to this list only when none fits. Cover isn't a tag: the catalog measures it (the height class) from what collides.
+- **Variants are nested copies, not copies** (the format already does it): a recolor is a prefab holding only the parent at its origin with `colors` overridden (`hazard-barrel-red`); a variant with more is the parent at its origin plus its own parts (`warehouse-rack-stocked-*`). Edit the parent and every variant follows. Removing or swapping a parent's parts has no format: split the parent so both build on a shared base. The catalog shows these as `recolor:` and `on:`.
+
 ## Collision
 - Only the main masses collide: a chair's seat and back, a forklift's body and mast, a pallet's boards.
 - Small details (`collide: false`): wheels, casters, columns, arm rests, handles, clips, text lines, wrap film.

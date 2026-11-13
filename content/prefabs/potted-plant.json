@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "potted-plant",
   "name": "Potted plant",
+  "tags": ["store"],
   "colors": {
     "pot": "#3d4148",
     "leaf": "#3f7d4a",

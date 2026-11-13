@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "burn-barrel",
   "name": "Burn barrel",
+  "tags": ["industrial", "debris"],
   "colors": {
     "steel": "#4a3a34",
     "char": "#1d1e21",

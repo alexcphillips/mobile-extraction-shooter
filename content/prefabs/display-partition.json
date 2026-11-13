@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "display-partition",
   "name": "Display partition",
+  "tags": ["store"],
   "colors": {
     "panel": "#e9e6df",
     "accent": "#3f6f9a",
