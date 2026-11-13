@@ -42,9 +42,7 @@ import {
   loadStartingKit,
   loadTutorial,
   loadVendors,
-  loadZombies,
   raidIds,
-  zombiesIds,
 } from './content';
 import { settings } from './settings';
 import { setTutorialSeen, tutorialSeen } from './tutorial-seen';
@@ -127,7 +125,14 @@ const standalone =
   (navigator as { standalone?: boolean }).standalone === true;
 
 // The editor pages hold Vite's reloads for files saved elsewhere (dev/hold-reload.ts).
-const EDITOR_PAGES = ['/editor', '/item-editor', '/loot-editor', '/quest-editor', '/layout', '/sounds'];
+const EDITOR_PAGES = [
+  '/editor',
+  '/item-editor',
+  '/loot-editor',
+  '/quest-editor',
+  '/layout',
+  '/sounds',
+];
 if (import.meta.hot && EDITOR_PAGES.includes(location.pathname)) holdReloads(import.meta.hot);
 
 if (location.pathname === '/bodies') {
@@ -185,8 +190,7 @@ if (location.pathname === '/bodies') {
     status.textContent = `perf test failed: ${message(err)}`;
   });
 } else {
-  // ?zombies=<id> goes straight into a zombies game from content/zombies (just ?zombies, the
-  // first), with no sign-in. ?raid=<id> picks a raid config from content/raids, ?time=<seconds> sets its timer,
+  // ?raid=<id> picks a raid config from content/raids, ?time=<seconds> sets its timer,
   // ?spawn=<id> a player spawn in its map (?at=<x>,<z> starts you at a point instead, on the
   // floor nearest the ground; ?at=<x>,<z>,<y> on the highest floor at or below y),
   // ?nav shows the navigation grid, and ?debug shows markers, zones, patrols
@@ -198,7 +202,6 @@ if (location.pathname === '/bodies') {
   // goes back to / so a reload doesn't join again.
   const joinCode = joinCodeIn(location.pathname);
   if (joinCode) history.replaceState(null, '', `/${location.search}`);
-  const zombies = q.get('zombies');
   // ?tutorial plays the tutorial (Settings → Play the tutorial again); ?signup, which it
   // leaves to, opens the account screen on creating one. Neither stays in the address.
   const tutorial = q.has('tutorial');
@@ -209,12 +212,9 @@ if (location.pathname === '/bodies') {
     const rest = q.toString();
     history.replaceState(null, '', `${location.pathname}${rest ? `?${rest}` : ''}`);
   }
-  (zombies !== null
-    ? playZombies(zombies || zombiesIds()[0]!, q)
-    : tutorial
-      ? playTutorial(q)
-      : runGame(q, joinCode, signup)
-  ).catch((err: unknown) => (status.textContent = `raid failed: ${message(err)}`));
+  (tutorial ? playTutorial(q) : runGame(q, joinCode, signup)).catch(
+    (err: unknown) => (status.textContent = `raid failed: ${message(err)}`),
+  );
 }
 
 /**
@@ -258,26 +258,6 @@ async function firstLaunch(): Promise<boolean> {
   return false;
 }
 
-/**
- * A zombies game (2026-11-04): no server, since nothing from the stash goes in and nothing
- * comes out. Everyone wears the mode's starting kit. The results screen's button reloads
- * the page, back to the menu (or, from ?zombies, another game).
- */
-async function playZombies(id: string, q: URLSearchParams): Promise<void> {
-  const def = loadZombies(id);
-  document.title = def.name;
-  await startPlay(playElements(), {
-    ...debugOptions(q),
-    raid: '',
-    test: null,
-    serverRaid: '',
-    profile: newProfile(loadItems(), loadStartingKit(def.kit)),
-    resume: null,
-    zombies: def,
-    status: (text) => (status.textContent = text),
-  });
-}
-
 /** The page's elements a raid draws into. */
 function playElements(): PlayElements {
   return {
@@ -292,7 +272,7 @@ function playElements(): PlayElements {
       byId('extract'),
       byId('prompt'),
       byId('use-ring'),
-      byId('breath-ring'),
+      byId('breath-bar'),
       byId('stamina-bar'),
     ),
     raid: byId('raid'),
@@ -403,18 +383,6 @@ async function runGame(
       raids,
       raid: wanted,
       vendors: [...loadVendors().values()],
-      zombies: zombiesIds().map((id) => {
-        const def = loadZombies(id);
-        const gear = loadStartingKit(def.kit).gear;
-        return {
-          id,
-          name: def.name,
-          map: def.map,
-          points: def.points.start,
-          kit: Object.values(gear).filter((g) => g !== undefined),
-          box: def.box.map((o) => o.item),
-        };
-      }),
       quests: [...loadQuests().values()],
       hangar: [...loadHangar().values()],
       recipes: [...loadRecipes().values()],
@@ -426,10 +394,6 @@ async function runGame(
       },
     });
     me = choice.me;
-    if (choice.zombies) {
-      await playZombies(choice.zombies, q);
-      return;
-    }
     let started: ProfileResponse;
     try {
       started = await startServerRaid(choice.raid);

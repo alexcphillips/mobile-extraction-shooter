@@ -1,5 +1,5 @@
 {
-  "formatVersion": 11,
+  "formatVersion": 12,
   "id": "quantum-cryptographic-core",
   "name": "Quantum cryptographic core",
   "type": "loot",

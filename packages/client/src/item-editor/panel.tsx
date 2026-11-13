@@ -1,7 +1,9 @@
 import {
   ATTACHMENT_SLOTS,
+  aimTimeAt,
+  drawTimeAt,
+  swayAt,
   bagCells,
-  FIRE,
   GRENADE_EFFECTS,
   MED_EFFECTS,
   ITEM_VIEWS,
@@ -11,7 +13,6 @@ import {
   firesRound,
   fits,
   itemSize,
-  roundOf,
   idSchema,
   type AttachmentDef,
   type ContainerDef,
@@ -473,10 +474,6 @@ function Chips(props: {
   );
 }
 
-const FUEL = { speed: 18, burnTime: 8, burnDamage: 1.5, fireTime: 7 };
-const INCENDIARY = { chance: 0.25, burnTime: 4, burnDamage: 1.5 };
-type AmmoKind = 'bullet' | 'incendiary' | 'fuel';
-
 function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, ItemDef> }) {
   const { def, items, ...b } = props;
   const ofType = (t: ItemType): string[] =>
@@ -486,35 +483,7 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
       return (
         <>
           <Group title="Gun">
-            <P
-              {...b}
-              path={['ammo']}
-              label="Ammo"
-              options={[
-                ...ofType('ammo'),
-                // Not C4: it's placed by hand, never launched.
-                ...ofType('grenade').filter((id) => roundOf(items, id)),
-              ]}
-            />
-            {items.get(def.ammo)?.type === 'grenade' && (
-              <div className="ie-grid">
-                <N
-                  {...b}
-                  path={['launchSpeed']}
-                  label="Launch speed (m/s)"
-                  min={0}
-                  hint="How fast a grenade leaves the barrel"
-                />
-                <N
-                  {...b}
-                  path={['armDistance']}
-                  label="Arms after (m)"
-                  min={0}
-                  placeholder="fuse only"
-                  hint="Goes off on impact once it's flown this far; blank keeps only the fuse"
-                />
-              </div>
-            )}
+            <P {...b} path={['ammo']} label="Ammo" options={ofType('ammo')} />
             <div className="ie-grid">
               <S
                 {...b}
@@ -538,8 +507,13 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
             </div>
             <div className="ie-grid">
               <N {...b} path={['reloadTime']} label="Reload (s)" min={0} />
-              <N {...b} path={['aimTime']} label="Aim (s)" min={0} />
-              <N {...b} path={['drawTime']} label="Draw (s)" min={0} />
+              <N
+                {...b}
+                path={['ergonomics']}
+                label="Ergonomics"
+                min={0}
+                hint={`0–100: aim ${fmt(aimTimeAt(def.ergonomics), 3)} s, draw ${fmt(drawTimeAt(def.ergonomics), 2)} s, sway ×${fmt(swayAt(def.ergonomics), 2)}`}
+              />
             </div>
             <div className="ie-grid">
               <N
@@ -641,39 +615,8 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
         </>
       );
     case 'ammo': {
-      const kind: AmmoKind = def.flame ? 'fuel' : def.incendiary ? 'incendiary' : 'bullet';
-      const setKind = (k: AmmoKind): void =>
-        b.edit((d) => {
-          // Fuel does no damage itself: the burning does it.
-          if (k === 'fuel') {
-            d.flame = { ...FUEL };
-            d.damage = 0;
-            delete d.incendiary;
-            delete d.pellets;
-            delete d.pelletSpread;
-            return;
-          }
-          if (d.flame) {
-            delete d.flame;
-            d.damage = 10;
-          }
-          if (k === 'incendiary') d.incendiary ??= { ...INCENDIARY };
-          else delete d.incendiary;
-        });
       return (
         <Group title="Rounds">
-          <Labeled label="Kind">
-            <Segmented
-              value={kind}
-              options={['bullet', 'incendiary', 'fuel'] as const}
-              labels={{ bullet: 'Bullet', incendiary: 'Incendiary', fuel: 'Flamethrower fuel' }}
-              titles={{
-                incendiary: 'May set alight whoever it hits, on top of its damage',
-                fuel: "A flamethrower's fuel: flames that set alight, no bullet",
-              }}
-              onChange={setKind}
-            />
-          </Labeled>
           <div className="ie-grid">
             <Text
               label="Caliber"
@@ -689,55 +632,24 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
             />
             <N {...b} path={['stack']} label="Stack" min={2} hint="Most in one cell" />
           </div>
-          {def.flame ? (
-            <>
-              <div className="ie-grid">
-                <N {...b} path={['flame', 'speed']} label="Flame speed (m/s)" min={0} />
-                <N
-                  {...b}
-                  path={['flame', 'fireTime']}
-                  label="Burns on the map (s)"
-                  min={0}
-                  hint="Where it lands; anyone touching it is set alight"
-                />
-              </div>
-              <div className="ie-grid">
-                <N
-                  {...b}
-                  path={['flame', 'burnDamage']}
-                  label="Burn damage (/s)"
-                  min={0}
-                  hint="To every zone, past armor, while alight"
-                />
-                <N
-                  {...b}
-                  path={['flame', 'burnTime']}
-                  label="Burns someone (s)"
-                  min={0}
-                  hint={`If they don't put it out, which takes ${FIRE.extinguishTime} s`}
-                />
-              </div>
-            </>
-          ) : (
-            <div className="ie-grid">
-              <N {...b} path={['damage']} label="Damage" min={0} hint="To the chest" />
-              <N
-                {...b}
-                path={['pellets']}
-                label="Pellets"
-                min={2}
-                placeholder="1"
-                hint="Shotgun shells: pellets a round fires, each doing the damage"
-              />
-              <N
-                {...b}
-                path={['pelletSpread']}
-                label="Pellet spread (°)"
-                min={0}
-                hint="With pellets: the most each strays from the shot's line"
-              />
-            </div>
-          )}
+          <div className="ie-grid">
+            <N {...b} path={['damage']} label="Damage" min={0} hint="To the chest" />
+            <N
+              {...b}
+              path={['pellets']}
+              label="Pellets"
+              min={2}
+              placeholder="1"
+              hint="Shotgun shells: pellets a round fires, each doing the damage"
+            />
+            <N
+              {...b}
+              path={['pelletSpread']}
+              label="Pellet spread (°)"
+              min={0}
+              hint="With pellets: the most each strays from the shot's line"
+            />
+          </div>
           <div className="ie-grid">
             <N
               {...b}
@@ -748,19 +660,6 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
             />
             <N {...b} path={['bleedChance']} label="Bleed chance (0–1)" min={0} />
           </div>
-          {def.incendiary && (
-            <div className="ie-grid">
-              <N
-                {...b}
-                path={['incendiary', 'chance']}
-                label="Ignite chance"
-                min={0}
-                hint="0–1 a hit; each pellet's own chance, for shells"
-              />
-              <N {...b} path={['incendiary', 'burnTime']} label="Burns for (s)" min={0} />
-              <N {...b} path={['incendiary', 'burnDamage']} label="Burn damage (/s)" min={0} />
-            </div>
-          )}
         </Group>
       );
     }
@@ -967,44 +866,16 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
             label="Effect"
             options={GRENADE_EFFECTS}
             fallback="frag"
-            labels={{ frag: 'Frag', flash: 'Flash', smoke: 'Smoke', c4: 'C4', molotov: 'Molotov' }}
+            labels={{ frag: 'Frag', smoke: 'Smoke' }}
             then={(d, v) => {
               // Each effect's own field, there only for it.
-              if (v === 'flash') d.blindTime ??= 5;
-              else delete d.blindTime;
               if (v === 'smoke') d.smokeTime ??= 25;
               else delete d.smokeTime;
-              if (v === 'molotov') d.fire ??= { burnTime: 8, burnDamage: 1.5, fireTime: 7 };
-              else delete d.fire;
             }}
           />
-          {def.effect === 'flash' && (
-            <div className="ie-grid">
-              <N
-                {...b}
-                path={['blindTime']}
-                label="Blinds for (s)"
-                min={0}
-                hint="Looking at it, close; less further out"
-              />
-            </div>
-          )}
           {def.effect === 'smoke' && (
             <div className="ie-grid">
               <N {...b} path={['smokeTime']} label="Cloud lasts (s)" min={0} />
-            </div>
-          )}
-          {def.effect === 'molotov' && (
-            <div className="ie-grid">
-              <N
-                {...b}
-                path={['fire', 'fireTime']}
-                label="Fire burns (s)"
-                min={0}
-                hint="Spilled across its radius where it breaks"
-              />
-              <N {...b} path={['fire', 'burnTime']} label="Burns someone (s)" min={0} />
-              <N {...b} path={['fire', 'burnDamage']} label="Burn damage (/s)" min={0} />
             </div>
           )}
           <div className="ie-grid">
@@ -1015,13 +886,7 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
           <div className="ie-grid">
             <N {...b} path={['armorDamage']} label="Armor damage" min={0} />
             <N {...b} path={['bleedChance']} label="Bleed chance" min={0} />
-            <N
-              {...b}
-              path={['fuse']}
-              label="Fuse (s)"
-              min={0}
-              hint="From the throw; for C4, from the detonator"
-            />
+            <N {...b} path={['fuse']} label="Fuse (s)" min={0} hint="From the throw" />
           </div>
           <div className="ie-grid">
             <N {...b} path={['throwSpeed']} label="Throw speed (m/s)" min={0} />
@@ -1142,7 +1007,7 @@ const MODS: [key: string, label: string, hint: string][] = [
   ['recoil', 'Recoil', 'Kick up and sideways'],
   ['recoilUp', 'Kick up', 'On top of recoil'],
   ['recoilSide', 'Kick sideways', 'On top of recoil'],
-  ['ergonomics', 'Ergonomics', 'Above 1 recovers from recoil faster'],
+  ['recovery', 'Recovery', 'Above 1 recovers from recoil faster'],
   ['spread', 'Spread', 'Hip and aimed spread'],
   ['aimTime', 'Aim time', ''],
   ['reloadTime', 'Reload', ''],
@@ -1297,6 +1162,13 @@ function AttachmentFields(
             />
           ))}
           <N {...b} path={['mods', 'magazine']} label="Extra rounds" min={1} placeholder="0" />
+          <N
+            {...b}
+            path={['mods', 'ergonomics']}
+            label="Ergonomics (+)"
+            placeholder="0"
+            hint="Points added to the gun's ergonomics; below 0 takes them off"
+          />
         </div>
       </Group>
     </>
@@ -2068,12 +1940,7 @@ function Facts({ def, db }: { def: ItemDef; db: ItemDb }) {
       lines.push(
         `A shot every ${fmt(gap, 3)} s; a full magazine lasts ${fmt(def.magazine * gap)} s.`,
       );
-      if (ammo?.type === 'ammo' && ammo.flame) {
-        const f = ammo.flame;
-        lines.push(
-          `With ${ammo.name}: a flame every ${fmt(gap, 3)} s, landing ${fmt(def.range / f.speed, 2)} s out at its range. Someone set alight loses ${fmt(f.burnDamage * 6 * f.burnTime, 0)} HP if they let it burn out, ${fmt(f.burnDamage * 6 * FIRE.extinguishTime, 0)} if they put it out at once.`,
-        );
-      } else if (ammo?.type === 'ammo') {
+      if (ammo?.type === 'ammo') {
         // Every pellet landing.
         const round = ammo.damage * (ammo.pellets ?? 1);
         lines.push(
@@ -2133,8 +2000,10 @@ function gunChanges(g: WeaponDef, a: AttachmentDef): string[] {
   show('aimed spread', g.aimSpread, m.spread, '°');
   show('kick up', g.recoil.up, (m.recoil ?? 1) * (m.recoilUp ?? 1), '°');
   show('kick sideways', g.recoil.side, (m.recoil ?? 1) * (m.recoilSide ?? 1), '°');
-  show('recovery', g.recoil.recovery, m.ergonomics, '/s');
-  show('aim', g.aimTime, m.aimTime, ' s');
+  show('recovery', g.recoil.recovery, m.recovery, '/s');
+  if (m.ergonomics)
+    out.push(`ergonomics ${fmt(g.ergonomics)} → ${fmt(g.ergonomics + m.ergonomics)}`);
+  show('aim', aimTimeAt(g.ergonomics + (m.ergonomics ?? 0)), m.aimTime, ' s');
   show('reload', g.reloadTime, m.reloadTime, ' s');
   show('heard to', g.loudness, m.loudness, ' m');
   return out;

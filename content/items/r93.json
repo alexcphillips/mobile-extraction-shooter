@@ -1,5 +1,5 @@
 {
-  "formatVersion": 11,
+  "formatVersion": 12,
   "id": "r93",
   "name": "R93",
   "type": "weapon",
@@ -15,8 +15,7 @@
   "magazine": 10,
   "feed": "magazine",
   "reloadTime": 3.4,
-  "aimTime": 0.34,
-  "drawTime": 0.85,
+  "ergonomics": 47,
   "range": 500,
   "loudness": 260,
   "defaults": {

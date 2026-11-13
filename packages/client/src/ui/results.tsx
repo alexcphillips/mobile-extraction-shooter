@@ -59,7 +59,7 @@ export interface RaidResult {
   /** Time in the raid. */
   seconds: number;
   kills: number;
-  /** Who you killed, the latest first (2026-11-11). Missing in zombies and the tutorial. */
+  /** Who you killed, the latest first (2026-11-11). Missing in the tutorial. */
   killList?: RaidKill[];
   /** The raid's name, for the victory screen. */
   map?: string;
@@ -84,11 +84,9 @@ export interface RaidResult {
   fight?: { name: string; hits: FightHit[] } | undefined;
   /** Everything kept: extracted, or the keep-gear admin cheat. */
   keptAll: boolean;
-  /** A zombies game (2026-11-04): how far you got. Nothing is kept or lost in one. */
-  zombies?: { mode: string; round: number; points: number };
-  /** The tutorial (TU-3): nothing is kept or lost in it either. */
+  /** The tutorial (TU-3): nothing is kept or lost in it. */
   tutorial?: true;
-  /** PMC XP the raid gave, line by line, and the XP before it (2026-11-11). Not in zombies or the tutorial. */
+  /** PMC XP the raid gave, line by line, and the XP before it (2026-11-11). Not in the tutorial. */
   xp?: RaidXp & { before: number };
 }
 
@@ -186,55 +184,6 @@ function Gain({ items, result }: { items: ItemDb; result: RaidResult }) {
       )}
       <p className="results-note">Found in raid, at vendor prices (cash at its full value).</p>
     </Panel>
-  );
-}
-
-/** A zombies game's end: the round reached, kills and points, and what got you. */
-function ZombiesResults({
-  result,
-  zombies,
-  onNext,
-}: {
-  result: RaidResult;
-  zombies: NonNullable<RaidResult['zombies']>;
-  onNext: () => void;
-}) {
-  return (
-    <div className="results killed">
-      <header>
-        <h1>Game over</h1>
-        <p>
-          {zombies.mode} · round {zombies.round}
-        </p>
-        <p className="results-stats">
-          {clock(result.seconds)} survived · {result.kills} {result.kills === 1 ? 'kill' : 'kills'}{' '}
-          · {zombies.points.toLocaleString()} points left
-        </p>
-        <p className="results-save test">Zombies: nothing from your stash goes in or comes out.</p>
-      </header>
-      {result.fight && (
-        <section className="results-damage">
-          <h2>Fight with {result.fight.name}</h2>
-          <FightRows fight={result.fight} />
-        </section>
-      )}
-      {result.taken.length > 0 && (
-        <section className="results-damage">
-          <h2>What hit you</h2>
-          <ul>
-            {result.taken.map((s) => (
-              <li key={s.key} className={s.killed ? 'killer' : undefined}>
-                {describeSource(s)}
-                {s.killed && <span className="results-count"> · killing blow</span>}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-      <button className="primary" onClick={onNext}>
-        Continue
-      </button>
-    </div>
   );
 }
 
@@ -736,8 +685,6 @@ function Results({
   items: ItemDb;
   onNext: () => void;
 }) {
-  if (result.zombies)
-    return <ZombiesResults result={result} zombies={result.zombies} onNext={onNext} />;
   if (result.tutorial) return <TutorialResults result={result} onNext={onNext} />;
   if (result.how === 'extracted' && result.player)
     return <Victory result={result} player={result.player} items={items} onNext={onNext} />;

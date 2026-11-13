@@ -50,16 +50,16 @@ describe('mergeInputs', () => {
     expect(mergeInputs([], null)).toBeNull();
   });
 
-  it("doesn't buy, detonate or put itself out twice when nothing new came", () => {
-    const last = input({ buy: 2, detonate: true, extinguish: true });
-    expect(mergeInputs([], last)).toMatchObject({ buy: null, detonate: false, extinguish: false });
+  it("doesn't throw or investigate twice when nothing new came", () => {
+    const last = input({ throw: true, investigate: true });
+    expect(mergeInputs([], last)).toMatchObject({ throw: false, investigate: false });
   });
 
-  it('keeps a buy, detonate or extinguish pressed before the latest input', () => {
+  it('keeps a throw or investigate pressed before the latest input', () => {
     const merged = mergeInputs(
-      [input({ buy: 0, detonate: true, extinguish: true, door: 0 }), input()],
+      [input({ throw: true, investigate: true, door: 0 }), input()],
       null,
     )!;
-    expect(merged).toMatchObject({ buy: 0, detonate: true, extinguish: true, door: 0 });
+    expect(merged).toMatchObject({ throw: true, investigate: true, door: 0 });
   });
 });

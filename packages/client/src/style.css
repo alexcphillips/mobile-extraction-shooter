@@ -347,23 +347,34 @@ body:has(#raid:not([hidden])) .tutorial-count {
   display: none;
 }
 
-/* Held breath left while aimed, faint and thin round the sights (BW-1, hud/raid-hud.ts). */
-#breath-ring {
+/*
+ * Held breath left while aimed (BW-1, hud/raid-hud.ts): a thin upright bar left of the sights,
+ * in view but off the aim line, filling from the bottom. Over the scope mask.
+ */
+#breath-bar {
   position: fixed;
   top: 50%;
-  left: 50%;
-  width: 72px;
-  height: 72px;
-  margin: -36px 0 0 -36px;
-  border-radius: 50%;
-  background: conic-gradient(rgb(255 255 255 / 0.4) var(--left, 0%), rgb(0 0 0 / 0.15) 0);
-  mask: radial-gradient(closest-side, transparent 92%, #000 95%);
-  -webkit-mask: radial-gradient(closest-side, transparent 92%, #000 95%);
+  left: calc(50% - 110px);
+  width: 3px;
+  height: 48px;
+  margin-top: -24px;
+  display: flex;
+  align-items: flex-end;
+  border-radius: 2px;
+  background: rgb(0 0 0 / 0.3);
   pointer-events: none;
   z-index: 2;
 }
 
-#breath-ring[hidden] {
+#breath-bar i {
+  display: block;
+  width: 100%;
+  height: var(--left, 0%);
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.55);
+}
+
+#breath-bar[hidden] {
   display: none;
 }
 
@@ -636,47 +647,6 @@ body:has(#raid:not([hidden])) .tutorial-count {
   }
 }
 
-/* Blinded by a flash grenade: the whole screen white, HUD and all (play/index.ts fades it). */
-#blind {
-  position: fixed;
-  inset: 0;
-  background: #fff;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 2;
-}
-
-/*
- * On fire (2026-10-31): flames along the bottom of the screen (play/index.ts sets them
- * from the fire's SVG) and a hot glow at the edges, under the HUD, flickering.
- */
-#burn {
-  position: fixed;
-  inset: 0;
-  background-repeat: repeat-x, no-repeat;
-  background-position:
-    0 calc(100% + 45px),
-    center;
-  background-size:
-    70px 140px,
-    100% 100%;
-  opacity: 0;
-  pointer-events: none;
-}
-
-#burn.on {
-  animation: burn-flicker 0.35s ease-in-out infinite alternate;
-}
-
-@keyframes burn-flicker {
-  from {
-    opacity: 0.75;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 /* Standing in smoke: gray over the world, under the HUD. */
 #smoke-veil {
   position: fixed;
@@ -880,6 +850,7 @@ body:is([data-input='desktop'], [data-input='gamepad'])
       [data-id='jump'],
       [data-id='crouch'],
       [data-id='grenade'],
+      [data-id='breathe'],
       [data-id='leanLeft'],
       [data-id='leanRight']
     )
@@ -897,43 +868,16 @@ body[data-input='gamepad'] * {
   cursor: none !important;
 }
 
-body[data-input='gamepad']
-  .control:is([data-id='detonate'], [data-id='extinguish'], [data-id='heal'])::after {
+body[data-input='gamepad'] .control[data-id='heal']::after {
   position: absolute;
   top: 3px;
   font-size: 9px;
   color: #fff;
   opacity: 0.7;
-}
-
-body[data-input='gamepad'] .control[data-id='detonate']::after {
-  content: 'D-pad ↑';
-}
-
-body[data-input='gamepad'] .control[data-id='extinguish']::after {
-  content: 'D-pad ↓';
 }
 
 body[data-input='gamepad'] .control[data-id='heal']::after {
   content: 'L1';
-}
-
-body[data-input='desktop'] .control[data-id='detonate']::after {
-  content: 'B';
-  position: absolute;
-  top: 3px;
-  font-size: 9px;
-  color: #fff;
-  opacity: 0.7;
-}
-
-body[data-input='desktop'] .control[data-id='extinguish']::after {
-  content: 'V';
-  position: absolute;
-  top: 3px;
-  font-size: 9px;
-  color: #fff;
-  opacity: 0.7;
 }
 
 body[data-input='desktop'] .control[data-id='heal']::after {
@@ -1049,41 +993,9 @@ body[data-input='gamepad'] .slot-num::after {
   font-size: 9px;
 }
 
-/* Only while you have C4 placed (hud/hands.ts); the layout editor shows it anyway. */
-.control[data-id='detonate'].unarmed {
-  display: none;
-}
-
 /* Only while aimed (hud/hands.ts, BW-2). */
 .control[data-id='breathe'].unaimed {
   display: none;
-}
-
-/* Only while you're on fire (hud/hands.ts), its ring filling as you put yourself out. */
-.control[data-id='extinguish'].unlit {
-  display: none;
-}
-
-.control[data-id='extinguish'] {
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: 1px;
-  border-color: rgb(255 150 60 / 0.9);
-  color: #ffb36b;
-  font:
-    10px ui-monospace,
-    monospace;
-}
-
-.control[data-id='extinguish'] .ring circle {
-  stroke: #ffd36b;
-}
-
-.control[data-id='detonate'] {
-  border-color: rgb(255 110 90 / 0.8);
-  color: #ffb4a8;
-  font-size: 9px;
 }
 
 /* The heal button: the med a tap uses, and a ring that fills while using one. The grenade
@@ -1194,14 +1106,6 @@ body[data-input='gamepad'] .heal-picker button.highlight {
 
 #controls.editing .control {
   border-style: dashed;
-}
-
-#controls.editing .control[data-id='detonate'].unarmed {
-  display: block;
-}
-
-#controls.editing .control[data-id='extinguish'].unlit {
-  display: grid;
 }
 
 #controls.editing .control[data-id='breathe'].unaimed {
@@ -1554,37 +1458,6 @@ body:has(#controls.editing) :is(#hud, #presets, #settings-button, #vitals, #ammo
 /* While it's open, the HUD goes, except the health bar, which sits in the tab bar's gap. */
 body:has(#raid:not([hidden])) :is(#hud, #ammo, #controls, #settings-button) {
   display: none;
-}
-
-/* Zombies mode's one health bar, in place of the body and its chips. */
-#vitals.pooled .vitals-row,
-#vitals.pooled .chips {
-  display: none;
-}
-#vitals .health-bar {
-  position: relative;
-  width: 180px;
-  height: 14px;
-  border-radius: 7px;
-  background: rgba(0, 0, 0, 0.55);
-  overflow: hidden;
-}
-#vitals .health-bar[hidden] {
-  display: none;
-}
-#vitals .health-bar div {
-  position: absolute;
-  inset: 0;
-  transform-origin: left;
-  transition: transform 0.15s;
-}
-#vitals .health-bar span {
-  position: relative;
-  display: block;
-  text-align: center;
-  line-height: 14px;
-  font-weight: bold;
-  text-shadow: 0 0 2px #000;
 }
 
 /* The raid screen shows its own small health strip in the top bar instead (2026-11-06). */
@@ -2667,7 +2540,7 @@ body:has(#raid:not([hidden])) #vitals {
   }
 }
 
-/* The zombies results' plain header, centered. */
+/* A plain results header (test raids, the tutorial), centered. */
 .results > header:not(.results-banner) {
   text-align: center;
 }
@@ -5606,6 +5479,28 @@ body.inv-dragging .item-details.panel {
   color: #9aa6b0;
 }
 
+/* A gun's 0–100 scores (ergonomics, accuracy): a short bar before the number. */
+.stat-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-bar {
+  display: inline-block;
+  width: 56px;
+  height: 5px;
+  border-radius: 3px;
+  background: #2c343b;
+  overflow: hidden;
+}
+
+.stat-bar i {
+  display: block;
+  height: 100%;
+  background: #e3a33a;
+}
+
 .item-details-stats dd {
   margin: 0;
   text-align: right;
@@ -6012,64 +5907,6 @@ body.spectating .spectate {
   transform: none;
 }
 
-/* Zombies mode's in-game admin panel (dev builds only). */
-.zombies-admin-button {
-  position: fixed;
-  top: max(8px, env(safe-area-inset-top));
-  left: 50%;
-  transform: translateX(110px);
-  z-index: 20;
-  padding: 4px 10px;
-  font:
-    12px system-ui,
-    sans-serif;
-  color: #fff;
-  background: rgba(120, 20, 20, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-}
-.zombies-admin {
-  position: fixed;
-  top: 48px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 21;
-  width: min(520px, calc(100vw - 32px));
-  max-height: calc(100vh - 96px);
-  overflow-y: auto;
-  padding: 12px;
-  color: #fff;
-  font:
-    13px system-ui,
-    sans-serif;
-  background: rgba(20, 22, 28, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-}
-.zombies-admin[hidden] {
-  display: none;
-}
-.zombies-admin h4 {
-  margin: 8px 0 4px;
-  font-size: 12px;
-  opacity: 0.7;
-}
-.zombies-admin button {
-  margin: 0 6px 6px 0;
-  padding: 6px 10px;
-  color: #fff;
-  background: #3a3f48;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-}
-.zombies-admin button:active {
-  background: #555c68;
-}
-.zombies-admin .zombies-admin-close {
-  display: block;
-  margin-top: 8px;
-}
-
 /* A switch's row in the map editor's inspector (2026-11-05). */
 .ed-sub {
   display: flex;
@@ -6236,7 +6073,7 @@ input[type='range'].pad-grabbed {
  * The main menu as a lobby (2026-11-09, the user's request): the character on a plinth in
  * the middle (a canvas behind everything), small framed buttons down the left, the
  * loadout and Deploy on the right, the mode switch top left. Deploy opens the map screen
- * over it. Amber for extraction, green for zombies, through --accent.
+ * over it. Amber for extraction, through --accent.
  */
 .menu.lobby {
   --accent: #e3a33a;
@@ -6254,14 +6091,6 @@ input[type='range'].pad-grabbed {
     radial-gradient(ellipse 46% 62% at 50% 64%, var(--accent-glow), transparent 70%),
     radial-gradient(ellipse at 50% 0%, rgb(60 80 95 / 0.28), transparent 60%),
     linear-gradient(to bottom, #11171b, #0a0e11 75%);
-}
-
-.menu.lobby.zombies {
-  --accent: #8fc25a;
-  --accent-deep: #6f9e3f;
-  --accent-ink: #13200a;
-  --accent-glow: rgb(143 194 90 / 0.13);
-  --mark: 'ZOMBIES';
 }
 
 /* A floor grid running away under the plinth. */
@@ -6854,10 +6683,6 @@ input[type='range'].pad-grabbed {
   animation: lobby-rise 0.18s ease-out;
 }
 
-.lobby.zombies .lobby-toast {
-  color: #cfe8b4;
-}
-
 /* Drawers: the modes from the left, the party from the right. */
 .lobby-drawer-wrap {
   position: absolute;
@@ -6960,10 +6785,6 @@ input[type='range'].pad-grabbed {
   background: #1c242a;
 }
 
-.lobby .lobby-modes button[data-mode='zombies'].active {
-  border-left-color: #8fc25a;
-}
-
 .lobby-mode-name {
   font-size: 16px;
   font-weight: 800;
@@ -6973,10 +6794,6 @@ input[type='range'].pad-grabbed {
 
 .lobby-modes .active[data-mode='extraction'] .lobby-mode-name {
   color: #e3a33a;
-}
-
-.lobby-modes .active[data-mode='zombies'] .lobby-mode-name {
-  color: #8fc25a;
 }
 
 .lobby-mode-line {
@@ -7427,7 +7244,7 @@ input[type='range'].pad-grabbed {
   }
 }
 
-/* A long fact (the mystery box's guns, what you're taking in): under its label. */
+/* A long fact (what you're taking in): under its label. */
 .lobby-fact.block {
   grid-template-columns: 16px 1fr;
   row-gap: 2px;

@@ -133,9 +133,7 @@ export class SoundCues {
           if (own) this.sound.play(id);
           else this.at(id, e.fromX, e.fromY, e.fromZ, e.loudness);
         }
-        // A launched grenade doesn't whizz; it's heard when it bounces and goes off. Nor
-        // does a flame: it's heard as it's fired, and when it sets someone alight.
-        if (!own && e.target !== player.id && e.pellet === 0 && !e.grenade && !e.flame)
+        if (!own && e.target !== player.id && e.pellet === 0)
           this.whizz(e.fromX, e.fromY, e.fromZ, e.toX, e.toY, e.toZ);
         if (e.hit === 'world') this.at(S.impactWorld, e.toX, e.toY, e.toZ);
         else if (e.hit === 'character' && e.target !== player.id)
@@ -175,10 +173,6 @@ export class SoundCues {
       case 'explosion':
         this.at(grenadeDef(this.items, e.item).sounds.explode, e.x, e.y, e.z, e.loudness);
         return;
-      case 'ignite':
-        if (e.target === player.id) this.sound.play(S.ignite);
-        else this.at(S.ignite, e.x, e.y + CHEST, e.z);
-        return;
       case 'damage': {
         if (e.cause === 'fall') return;
         const target = entityById(sim, e.target);
@@ -215,9 +209,6 @@ export class SoundCues {
           locked: S.doorLocked,
           unlocked: S.doorUnlock,
           kicked: S.doorKick,
-          // Zombies mode: bought with points, or not enough of them.
-          bought: S.doorUnlock,
-          poor: S.doorLocked,
         }[e.result];
         this.at(id, d.x, d.y + d.height / 2, d.z);
         return;
@@ -240,29 +231,6 @@ export class SoundCues {
         return;
       case 'investigate':
         if (own) this.sound.play(S.investigate);
-        return;
-      case 'buy':
-        // Zombies mode: paid (the till), the box's gun taken, or refused.
-        if (!own) return;
-        if (e.result === 'taken') this.sound.play(S.itemMove);
-        else {
-          const paid = e.result === 'bought' || e.result === 'ammo' || e.result === 'rolled';
-          this.sound.play(paid ? S.cash : S.refuse);
-        }
-        return;
-      case 'plank': {
-        // Nailed up, or torn off, at the window.
-        const w = sim.zombies?.windows[e.window];
-        if (w) this.at(e.added ? S.doorClose : S.doorLocked, w.x, w.y + w.height / 2, w.z);
-        return;
-      }
-      case 'powerup':
-        // Zombies mode: one turning up where a zombie fell, and one picked up.
-        if (e.what === 'dropped') this.at(S.investigate, e.x, e.y + 1, e.z);
-        else if (e.what === 'picked') this.sound.play(S.extracted);
-        return;
-      case 'round':
-        this.sound.play(e.started ? S.timerWarning : S.extracted);
         return;
       case 'leave':
         if (own && e.how === 'extracted') this.sound.play(S.extracted);

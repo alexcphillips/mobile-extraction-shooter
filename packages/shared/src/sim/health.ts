@@ -117,12 +117,6 @@ export interface Health {
   bleeding: boolean[];
   splinted: boolean[];
   dead: boolean;
-  /**
-   * One health bar instead of limbs (zombies mode's players, 2026-11-04): its most HP. All
-   * damage goes to the chest's HP, unmultiplied, and nothing bleeds or breaks. Missing for
-   * everyone else.
-   */
-  pool?: number;
 }
 
 /** Armor, worn or not: the item and its durability left. */
@@ -165,18 +159,17 @@ export function isBroken(h: Health, zone: Zone): boolean {
 /**
  * A stomach at 0 HP (GZ-3), until surgery: further hits on it spread more, and a player's
  * stamina and breath suffer (stamina.ts); anyone with one groans now and then (painNoise).
- * Not in zombies' one health bar.
  */
 export function stomachBlacked(h: Health): boolean {
-  return h.pool === undefined && !h.dead && h.hp[STOMACH]! <= 0;
+  return !h.dead && h.hp[STOMACH]! <= 0;
 }
 
 /**
- * The head or thorax under HEALTH.badlyHurt of its max (PS-1). Not in zombies' one health bar.
+ * The head or thorax under HEALTH.badlyHurt of its max (PS-1).
  * Painkillers (planned, not built) will hide it while they last.
  */
 export function badlyHurt(h: Health): boolean {
-  if (h.pool !== undefined || h.dead) return false;
+  if (h.dead) return false;
   const low = (zone: Zone): boolean => h.hp[zone]! < HEALTH.maxHp[zone]! * HEALTH.badlyHurt;
   return low(HEAD) || low(CHEST);
 }
@@ -228,8 +221,7 @@ export interface DeathEvent {
 /**
  * Takes HP from a zone with no multiplier or armor. A broken limb spreads the damage
  * over the zones with HP left at the spillover rate, and so does whatever a hit has left
- * after breaking a limb. Head or chest at 0 kills. With one health bar (Health.pool) it all
- * comes off the chest. Returns the HP actually lost.
+ * after breaking a limb. Head or chest at 0 kills. Returns the HP actually lost.
  */
 export function dealDamage(
   state: SimState,
@@ -241,8 +233,6 @@ export function dealDamage(
   const h = c.health;
   if (h.dead || amount <= 0 || c.admin?.infiniteHealth) return 0;
   const head = zone === HEAD;
-  // One health bar: it's all the chest's.
-  if (h.pool !== undefined) zone = CHEST;
   let lost = 0;
   let spill = 0;
   const vital = isVital(zone);
@@ -318,8 +308,19 @@ export function shootCharacter(
   fromZ = NaN,
   face = false,
 ): void {
-  const k = c.health.pool === undefined ? HEALTH.multiplier[zone]! : 1;
-  woundZone(state, items, c, zone, ammo.damage * k, ammo, by, cause, fromX, fromZ, face);
+  woundZone(
+    state,
+    items,
+    c,
+    zone,
+    ammo.damage * HEALTH.multiplier[zone]!,
+    ammo,
+    by,
+    cause,
+    fromX,
+    fromZ,
+    face,
+  );
 }
 
 /** How far either side of straight ahead a hit counts as from the front, as a cosine. */
@@ -377,9 +378,7 @@ function armorHit(
  * A hit of this much damage to one zone, after any multiplier: armor on the head or
  * chest lets through its share by the wound's level and wears down, then what got
  * through may start bleeding. Shots, swings and blasts (sim/grenades.ts) all end here.
- * In zombies mode a player's blasts never hurt players (the ray gun's bolts burst close
- * by), and under insta-kill any hit on a zombie kills it. Enemies never hurt their
- * allies (byAlly).
+ * Enemies never hurt their allies (byAlly).
  */
 export function woundZone(
   state: SimState,
@@ -395,9 +394,6 @@ export function woundZone(
   face = false,
 ): void {
   if (c.health.dead || byAlly(state, c, by)) return;
-  const zombies = state.zombies;
-  if (zombies && !c.ai && cause === 'explosion' && by !== 0 && isPlayer(state, by)) return;
-  if (zombies && zombies.instaKill > 0 && c.ai?.zombie && by !== 0) damage = INSTA_KILL;
   if (c.admin?.infiniteHealth || harmless(state, by)) {
     // Still a hit, for markers and the HUD, but nothing lost. Also a harmless enemy's
     // (the tutorial's scav, TU-2): felt in full, with nothing at stake.
@@ -426,8 +422,7 @@ export function woundZone(
     damage -= absorbed;
   }
   const amount = dealDamage(state, c, zone, damage, by);
-  const bleeds = c.health.pool === undefined;
-  if (bleeds && !stopped && !c.health.dead && damage > 0 && chance(state.rng, wound.bleedChance)) {
+  if (!stopped && !c.health.dead && damage > 0 && chance(state.rng, wound.bleedChance)) {
     c.health.bleeding[zone] = true;
   }
   state.events.push({
@@ -443,13 +438,10 @@ export function woundZone(
   punchAim(state, c, amount + absorbed);
 }
 
-/** More than anything has: an insta-kill hit. */
-const INSTA_KILL = 1e6;
-
 /**
  * Whether a hit on c by `by` is an enemy's on its ally (the user's call, 2026-11-06):
- * those do nothing, shot, swung, blown up or set alight, so a stray round, a pellet or a
- * fire never thins out a group. The round still stops on the body it hits. Since AI rework
+ * those do nothing, shot, swung or blown up, so a stray round or a pellet never thins out
+ * a group. The round still stops on the body it hits. Since AI rework
  * session 1, enemies of hostile factions (factions.ts) hurt each other like players.
  */
 export function byAlly(state: SimState, c: Character, by: EntityId): boolean {
@@ -462,12 +454,6 @@ export function byAlly(state: SimState, c: Character, by: EntityId): boolean {
 function harmless(state: SimState, by: EntityId): boolean {
   if (by === 0) return false;
   for (const e of state.entities) if (e.id === by) return !!e.ai?.harmless;
-  return false;
-}
-
-/** Whether an entity is a player (there and not an enemy). */
-function isPlayer(state: SimState, id: EntityId): boolean {
-  for (const e of state.entities) if (e.id === id) return !e.ai;
   return false;
 }
 
@@ -543,8 +529,6 @@ export function restoreHealth(c: Character, items: ItemDb): void {
     h.bleeding[zone] = false;
     h.splinted[zone] = false;
   }
-  // One health bar is all in the chest.
-  if (h.pool !== undefined) h.hp[CHEST] = h.pool;
   h.dead = false;
   for (const armor of [c.gear.helmet, chestArmor(items, c.gear)]) {
     if (armor) armor.durability = maxDurability(items, armor);

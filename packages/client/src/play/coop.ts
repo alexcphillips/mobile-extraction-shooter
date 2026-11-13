@@ -80,14 +80,11 @@ const PRESSES = {
   reload: false,
   draw: null,
   throw: false,
-  detonate: false,
-  extinguish: false,
   breathe: false,
   use: null,
   door: null,
   search: null,
   investigate: false,
-  buy: null,
 } as const satisfies Partial<PlayerInput>;
 
 const PRESS_KEYS = Object.keys(PRESSES) as (keyof typeof PRESSES)[];

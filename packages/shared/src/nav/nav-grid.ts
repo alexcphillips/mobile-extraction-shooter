@@ -76,10 +76,10 @@ export class NavGrid {
     const doorWas = world.doors.map((_, i) => [world.isDoorOpen(i), world.isDoorFlipped(i)]);
     const goneWas = world.doors.map((_, i) => world.isDoorGone(i));
     for (let i = 0; i < world.doors.length; i++) world.setDoorOpen(i, true);
-    // A door bought with points (zombies mode) never swings open: it goes, leaving its
-    // doorway (or the stairs a couch blocked) clear, so it's built as gone.
+    // A door that vanishes never swings open: it goes, leaving its doorway (or the stairs
+    // a couch blocked) clear, so it's built as gone.
     world.doors.forEach((d, i) => {
-      if (d.cost !== undefined || d.vanishes) world.setDoorGone(i, true);
+      if (d.vanishes) world.setDoorGone(i, true);
     });
     const t = world.terrain;
     const cs = this.cellSize;

@@ -542,7 +542,7 @@ export function checkEnemies(
     for (const o of l.grenades ?? []) {
       if (o.item === null) continue;
       const item = items.get(o.item);
-      if (item?.type !== 'grenade' || item.caliber !== undefined)
+      if (item?.type !== 'grenade')
         throw new ContentError(source, `"${o.item}" is not a grenade to throw`);
     }
     for (const group of l.meds ?? [])

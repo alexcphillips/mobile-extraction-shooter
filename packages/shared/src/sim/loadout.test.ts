@@ -311,24 +311,4 @@ describe('spare magazines (MG-3)', () => {
     );
     expect(count(many)).toEqual({ mags: 4, full: true, loose: 30 });
   });
-
-  it('none for other guns, nor with magazines off (zombies mode)', () => {
-    const c = character();
-    equipLoadout(
-      c,
-      TEST_ITEMS,
-      loadout({ ...rig, weapons: [{ weight: 1, item: 'smg', spare: [70, 70] }] }),
-      createRng(1),
-      false,
-    );
-    expect(carriedAmmo(c, 'round')).toBe(70);
-    const r = character();
-    equipLoadout(
-      r,
-      TEST_ITEMS,
-      loadout({ ...rig, weapons: [{ weight: 1, item: 'rifle', spare: [70, 70] }] }),
-      createRng(1),
-    );
-    expect(carriedAmmo(r, 'round')).toBe(70);
-  });
 });

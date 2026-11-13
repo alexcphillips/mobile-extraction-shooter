@@ -8,7 +8,8 @@ const empty = (): ControlLayout => ({ placements: {}, hidden: [] });
 describe('layout share codes', () => {
   it('gives every control a number', () => {
     for (const def of CONTROLS) expect(codeOrder).toContain(def.id);
-    expect(new Set(codeOrder).size).toBe(codeOrder.length);
+    const live = codeOrder.filter((id) => id !== null);
+    expect(new Set(live).size).toBe(live.length);
     expect(codeOrder.length).toBeLessThanOrEqual(64);
   });
 

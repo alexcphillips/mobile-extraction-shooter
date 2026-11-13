@@ -229,6 +229,13 @@ export const SOCIAL = {
   inviteMs: 5 * 60_000,
   /** An open raid started within this long shows its player as in a raid (ms). */
   raidMs: 20 * 60_000,
+  /**
+   * Away this long (not on the menu, not in a raid) and you drop out of your party, so a party
+   * from last night isn't still waiting on ready when you come back (ms).
+   */
+  awayMs: 30 * 60_000,
+  /** The longest raid (the tutorial's 30 minutes): an open raid this recent isn't away (ms). */
+  longestRaidMs: 30 * 60_000,
   /** How long a started raid stays on offer to the members (ms). */
   startMs: 60_000,
   /** A party's join code: letters and digits without look-alikes (0/O, 1/I/L). */

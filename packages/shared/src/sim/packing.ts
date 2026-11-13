@@ -18,7 +18,7 @@ import { createWeaponStats, loadedAmmo, weaponStats, type WeaponState } from './
  * MG-2 (2026-11-12): packing magazines takes time in a raid. A round at a time, it goes on
  * with the inventory closed, like a med: you can walk, and firing, aiming, reloading, a med,
  * a ladder or a vault stops it with what's done kept. Between raids, all of it is at once.
- * Zombies mode loads at once as before. Enemies never pack: their magazines fill as they
+ * Enemies never pack: their magazines fill as they
  * go in (MG-4, weapons.ts: magRounds).
  */
 export const PACKING = {
@@ -95,9 +95,9 @@ function setMag(items: ItemDb, item: Item, n: number, round: string): void {
 
 const scratch: Mag = { n: 0, capacity: 0, round: null };
 
-/** Whether a packing job would be timed for c: in a raid, not zombies mode (enemies too, MG-3). */
-export function packingTimed(state: SimState, _c: Character, stash: boolean): boolean {
-  return !stash && !state.zombies;
+/** Whether a packing job would be timed for c: in a raid (enemies too, MG-3). */
+export function packingTimed(_state: SimState, _c: Character, stash: boolean): boolean {
+  return !stash;
 }
 
 // ------------------------------------------------------------------------------ pack mags
@@ -309,7 +309,6 @@ export function updatePacking(
   if (!p) return;
   const stop =
     c.health.dead ||
-    !!c.extinguish ||
     !!c.using ||
     c.mode === 'ladder' ||
     c.mode === 'vault' ||

@@ -101,8 +101,7 @@ export function canTurn(n: MapNode): boolean {
     n.type !== 'lootSpawn' &&
     n.type !== 'questMarker' &&
     n.type !== 'poi' &&
-    n.type !== 'mapLabel' &&
-    n.type !== 'zombieSpawn'
+    n.type !== 'mapLabel'
   );
 }
 

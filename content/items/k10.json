@@ -1,5 +1,5 @@
 {
-  "formatVersion": 11,
+  "formatVersion": 12,
   "id": "k10",
   "name": "K10",
   "type": "weapon",
@@ -15,8 +15,7 @@
   "magazine": 25,
   "feed": "magazine",
   "reloadTime": 2.2,
-  "aimTime": 0.21,
-  "drawTime": 0.6,
+  "ergonomics": 76,
   "range": 80,
   "loudness": 110,
   "defaults": {

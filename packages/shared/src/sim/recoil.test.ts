@@ -208,7 +208,7 @@ describe('recoil attachment mods', () => {
     const brake = TEST_ITEMS.get('suppressor') as AttachmentDef;
     items.set('suppressor', {
       ...brake,
-      mods: { recoilUp: 0.5, recoilSide: 0.8, ergonomics: 1.5 },
+      mods: { recoilUp: 0.5, recoilSide: 0.8, recovery: 1.5 },
     });
     const bare = weaponStats(items, createWeapon(items, 'rifle'), createWeaponStats());
     const s = weaponStats(items, createWeapon(items, 'rifle', ['suppressor']), createWeaponStats());

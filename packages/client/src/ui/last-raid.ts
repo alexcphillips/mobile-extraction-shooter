@@ -23,15 +23,11 @@ export function rememberRaid(id: string): void {
 
 const MODE_KEY = 'mes.mode';
 
-/** The main menu's game modes (2026-11-04). */
-export type GameMode = 'extraction' | 'zombies';
+/** The main menu's game modes (2026-11-04); extraction is the only one for now. */
+export type GameMode = 'extraction';
 
 export function lastMode(): GameMode {
-  try {
-    return localStorage.getItem(MODE_KEY) === 'zombies' ? 'zombies' : 'extraction';
-  } catch {
-    return 'extraction';
-  }
+  return 'extraction';
 }
 
 export function rememberMode(mode: GameMode): void {

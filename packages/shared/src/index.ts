@@ -219,38 +219,6 @@ export {
   type RaidState,
 } from './sim/raid';
 export {
-  ZOMBIES,
-  adminGiveGun,
-  adminPowerup,
-  buy,
-  buyInReach,
-  spotPrice,
-  holdsDeathMachine,
-  isZombie,
-  pointsOf,
-  rebuild,
-  roundSize,
-  barricadeWindows,
-  startZombies,
-  updateZombies,
-  windowInReach,
-  windowSpot,
-  type DeathMachine,
-  type PlankEvent,
-  type PowerupDrop,
-  type PowerupEvent,
-  type WindowState,
-  type BuyEvent,
-  type BuyResult,
-  type BoxOffer,
-  type BuySpot,
-  type RoundEvent,
-  type ZombieMind,
-  type ZombieSpawn,
-  type ZombiesRules,
-  type ZombiesState,
-} from './sim/zombies';
-export {
   CARRIED_GRIDS,
   QUICK_GRIDS,
   GEAR,
@@ -350,14 +318,6 @@ export {
 } from './content/loot-tables';
 export { RAID_FORMAT, RAID_FORMAT_VERSION, raidSchema, type RaidDef } from './content/raids';
 export {
-  POWERUPS,
-  ZOMBIES_FORMAT,
-  ZOMBIES_FORMAT_VERSION,
-  zombiesSchema,
-  type Powerup,
-  type ZombiesDef,
-} from './content/zombies';
-export {
   STARTING_KIT_FORMAT,
   STARTING_KIT_FORMAT_VERSION,
   startingKitSchema,
@@ -380,19 +340,6 @@ export {
 } from './sim/meds';
 export { MELEE, updateMelee, type SwingEvent } from './sim/melee';
 export { PACKING, holdsMagazine, packable, type Packing } from './sim/packing';
-export {
-  FIRE,
-  ignite,
-  inFire,
-  launchFlame,
-  spillFire,
-  updateExtinguish,
-  updateFire,
-  type Burn,
-  type FirePatch,
-  type Flame,
-  type IgniteEvent,
-} from './sim/fire';
 export {
   GRENADE,
   blastShare,
@@ -594,15 +541,17 @@ export {
   meleeDef,
   grenadeDef,
   grenadeEffect,
-  burnOf,
-  fireTimeOf,
-  type BurnStats,
   GRENADE_EFFECTS,
   repairDef,
   roundCaliber,
   roundOf,
   stackSize,
   weaponDef,
+  ERGO,
+  aimTimeAt,
+  drawTimeAt,
+  swayAt,
+  ergonomicsOf,
   type AmmoDef,
   type ArmorDef,
   type ArmorStats,
@@ -687,7 +636,6 @@ export {
   type CompiledMover,
   type CompiledGlass,
   type CompiledWater,
-  type CompiledBarricade,
   type CompiledMap,
   type CompiledRoad,
   type CompiledMarker,

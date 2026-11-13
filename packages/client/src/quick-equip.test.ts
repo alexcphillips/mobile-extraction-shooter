@@ -109,7 +109,7 @@ describe('quick equip', () => {
   });
 
   it('never picks special guns', () => {
-    const p = profile([one('crossbow'), one('crossbow-bolt', 40)]);
+    const p = profile([one('scav-spawner'), one('ammo-9mm', 40)]);
     expect(quickEquip(p, items)).toBe('unchanged');
     expect(p.gear.primary1).toBeNull();
   });

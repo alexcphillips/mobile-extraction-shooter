@@ -100,21 +100,6 @@ export interface CompiledMover {
   shapes: Shape[];
 }
 
-/**
- * A barricaded window (zombies mode), in world space: (x, y, z) is the middle of its sill,
- * yaw turns +z to the inside. Its blocker is in world.blockers, in the same order.
- */
-export interface CompiledBarricade {
-  id: string;
-  x: number;
-  y: number;
-  z: number;
-  yaw: number;
-  width: number;
-  height: number;
-  planks: number;
-}
-
 /** A body of water in world space: what collides, and how it's drawn. */
 export interface CompiledWater extends WaterDef {
   color: number;
@@ -156,10 +141,7 @@ type MarkerNode = Extract<
       | 'lootSpawn'
       | 'questMarker'
       | 'poi'
-      | 'mapLabel'
-      | 'zombieSpawn'
-      | 'wallBuy'
-      | 'mysteryBox';
+      | 'mapLabel';
   }
 >;
 const MARKER_TYPES = new Set<string>([
@@ -171,9 +153,6 @@ const MARKER_TYPES = new Set<string>([
   'questMarker',
   'poi',
   'mapLabel',
-  'zombieSpawn',
-  'wallBuy',
-  'mysteryBox',
 ]);
 
 /** A point on a patrol in world space. Points to walk through have wait 0 and radius 0. */
@@ -258,8 +237,6 @@ export interface CompiledMap {
   glass: CompiledGlass[];
   markers: CompiledMarker[];
   patrols: CompiledPatrol[];
-  /** Zombies mode's barricaded windows. */
-  barricades: CompiledBarricade[];
   /** Buildings' footprints; their concrete bases are in shapes and world.boxes. */
   buildings: CompiledBuilding[];
   zones: MapZone[];
@@ -302,8 +279,6 @@ const DOOR_THICKNESS = 0.05;
 /** How far from a switch's edge your feet can be to use it. */
 const SWITCH_REACH = 2;
 const GLASS_THICKNESS = 0.02;
-/** A barricade's blocker: half its depth through the wall. */
-const BLOCKER_DEPTH = 0.3;
 const CYLINDER_SIDES = 8;
 const WATER_OPACITY = 0.7;
 const PATROL_WAIT = 3;
@@ -360,10 +335,7 @@ interface Sink {
   water: CompiledWater[] | null;
   markers: CompiledMarker[] | null;
   patrols: CompiledPatrol[] | null;
-  barricades: CompiledBarricade[] | null;
-  /** A barricade's blocker, for each in barricades. */
-  blockers: BoxDef[] | null;
-  /** Invisible boxes' solids: blockers too, after the barricades' in world.blockers. */
+  /** Invisible boxes' solids: world.blockers. */
   invisible: BoxDef[] | null;
   buildings: CompiledBuilding[] | null;
   /** Instanced prefabs become groups; null flattens them into shapes like any prefab. */
@@ -389,8 +361,6 @@ const DRAW_ONLY: Sink = {
   water: null,
   markers: null,
   patrols: null,
-  barricades: null,
-  blockers: null,
   invisible: null,
   buildings: null,
   groups: null,
@@ -422,8 +392,6 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     water: [],
     markers: [],
     patrols: [],
-    barricades: [],
-    blockers: [],
     invisible: [],
     buildings: [],
     groups: new Map(),
@@ -469,11 +437,6 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     if (m.type === 'enemySpawn' && m.patrol !== undefined && !patrols.has(m.patrol))
       throw new ContentError(source, `${m.id}: no patrol "${m.patrol}" beside it`);
   }
-  const windows = new Set(out.barricades!.map((b) => b.id));
-  for (const m of out.markers!) {
-    if (m.type === 'zombieSpawn' && m.window !== undefined && !windows.has(m.window))
-      throw new ContentError(source, `${m.id}: no barricade "${m.window}" beside it`);
-  }
   const doorIndex = doorFinder(source, out.doors!);
   const switches = out.switches!.map((s) => ({
     ...s,
@@ -508,7 +471,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
       ladders,
       doors: out.doors!,
       glass: out.glass!,
-      blockers: [...out.blockers!, ...out.invisible!],
+      blockers: out.invisible!,
       switches,
       wires: out.wires!,
       water: out.water!,
@@ -523,7 +486,6 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     glass: out.glass!,
     markers: out.markers!,
     patrols: out.patrols!,
-    barricades: out.barricades!,
     buildings: out.buildings!,
     zones: map.zones,
     roads,
@@ -550,7 +512,6 @@ export interface CompiledNodes {
   glass: CompiledGlass[];
   markers: CompiledMarker[];
   patrols: CompiledPatrol[];
-  barricades: CompiledBarricade[];
   /** Invisible boxes' solids, which the editor draws see-through. */
   invisible: BoxDef[];
   buildings: CompiledBuilding[];
@@ -575,7 +536,6 @@ export function compileNodes(
     glass: [],
     markers: [],
     patrols: [],
-    barricades: [],
     invisible: [],
     buildings: [],
     water: [],
@@ -585,7 +545,6 @@ export function compileNodes(
     ladders: null,
     groups: null,
     looks: null,
-    blockers: null,
     movers: null,
     switches: null,
     wires: null,
@@ -1082,7 +1041,6 @@ class Compiler {
           thickness: node.thickness ?? DOOR_THICKNESS,
           hinge: node.hinge ?? 'left',
           key: node.key,
-          cost: node.cost,
           open: node.open ?? false,
           color: this.color(node.color, scope, path),
           ...(node.name !== undefined && { name: node.name }),
@@ -1158,23 +1116,6 @@ class Compiler {
         return;
       }
 
-      case 'barricade': {
-        if (f.tilt) this.cantTilt(path, 'barricades');
-        const [width, height] = node.size;
-        out.barricades?.push({ id: path, x, y, z, yaw, width, height, planks: node.planks ?? 6 });
-        // Fills the opening, and a little beyond, so nothing squeezes past.
-        out.blockers?.push({
-          x,
-          y: y + height / 2,
-          z,
-          hx: width / 2 + 0.05,
-          hy: height / 2 + 0.05,
-          hz: BLOCKER_DEPTH,
-          yaw,
-        });
-        return;
-      }
-
       case 'prefab':
         this.prefab(node, inner(f, x, y, z, node), scope, path, stack, out);
         return;
@@ -1186,9 +1127,6 @@ class Compiler {
           // A patrol is named beside the spawn; it comes out with its full path.
           if (marker.type === 'enemySpawn' && marker.patrol !== undefined)
             marker.patrol = path.slice(0, path.lastIndexOf('/') + 1) + marker.patrol;
-          // And a zombie spawn's window, beside it too.
-          if (marker.type === 'zombieSpawn' && marker.window !== undefined)
-            marker.window = path.slice(0, path.lastIndexOf('/') + 1) + marker.window;
           out.markers.push(marker);
         }
     }

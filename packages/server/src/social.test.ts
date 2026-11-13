@@ -224,6 +224,31 @@ describe('the party', () => {
     expect((await partyOf(bob!)).party).toBeNull();
   });
 
+  it('drops members away too long, but not one in a raid, and not a returning one', async () => {
+    const [ana, bob, cat] = await players('ana', 'bob', 'cat');
+    const { code } = (await json<PartyResponse>(ana!, 'POST', '/party')).party!;
+    await json(bob!, 'POST', '/party/join', { code });
+    const catId = (await json<PartyResponse>(cat!, 'POST', '/party/join', { code })).party!
+      .members[2]!.id;
+    const db = ana!.env.DB;
+    const old = Date.now() - SOCIAL.awayMs - 60_000;
+    await db.prepare('UPDATE party_members SET joined_at = ?').bind(old).run();
+    await db.prepare('UPDATE accounts SET seen_at = ?').bind(old).run();
+    // Cat is in a raid that started 10 minutes ago.
+    await db
+      .prepare(
+        "INSERT INTO raids (id, account_id, raid, started_at) VALUES ('r1', ?, 'northpoint', ?)",
+      )
+      .bind(catId, Date.now() - 10 * 60_000)
+      .run();
+    // Ana comes back hours later: she drops out first, then Bob is dropped from the old party.
+    const back = await json<PartyResponse>(ana!, 'POST', '/presence', { device: 'pc' });
+    expect(back.party).toBeNull();
+    const left = (await partyOf(cat!)).party!;
+    expect(left.members.map((m) => m.username)).toEqual(['cat']);
+    expect((await partyOf(bob!)).party).toBeNull();
+  });
+
   it('accepting an invite leaves the party you were in', async () => {
     const [ana, bob, cat] = await players('ana', 'bob', 'cat');
     const catId = await befriend(ana!, cat!, 'cat');

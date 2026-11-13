@@ -1,5 +1,5 @@
 {
-  "formatVersion": 11,
+  "formatVersion": 12,
   "id": "encrypted-usb-drive",
   "name": "Encrypted USB drive",
   "type": "loot",

@@ -33,7 +33,7 @@ import { entityById, eyeHeight, type Character, type EntityId, type SimState } f
  * or close to one: it waits for a spot in its sector that's clear.
  *
  * Everything needed to spawn and arm them later (their types' skill, loadouts and loot
- * tables) is copied into the state at raid start, as zombies mode does with its rules, so
+ * tables) is copied into the state at raid start, so
  * a saved raid resumes with its queue and the co-op host needs nothing more.
  *
  * Also here: the scavs' **trickle** to a long fight. One noise draws at most 2 (ai.ts);
@@ -314,7 +314,7 @@ function spawnSpot(
     passive: spot.passive,
     harmless: spot.harmless,
   });
-  equipLoadout(c, items, content.loadouts.get(spot.loadout)!, state.rng, !state.zombies);
+  equipLoadout(c, items, content.loadouts.get(spot.loadout)!, state.rng);
   if (!spot.noLoot)
     rollEnemyLoot(c, items, content.tables, type.loot, spot.lootWeights ?? undefined, state.rng);
   return c;
@@ -387,7 +387,7 @@ function spawnSlot(
     c.z = c.ai!.homeZ = spot.z;
     c.y = c.ai!.homeY = world.groundAt(spot.x, spot.z, MOVEMENT.radius, spot.y + 0.5);
   }
-  equipLoadout(c, items, waves.loadouts[spot.loadout]!, state.rng, !state.zombies);
+  equipLoadout(c, items, waves.loadouts[spot.loadout]!, state.rng);
   const tables: LootTables = new Map(Object.entries(waves.tables));
   if (!spot.noLoot)
     rollEnemyLoot(
@@ -484,7 +484,7 @@ function trickle(state: SimState, waves: WavesState): void {
   const scale = state.hearingScale ?? 1;
   const r2 = SCAV_WAVES.trickleRadius * SCAV_WAVES.trickleRadius;
   for (const ev of state.events) {
-    if (ev.type !== 'shot' || ev.pellet !== 0 || ev.grenade || ev.flame) continue;
+    if (ev.type !== 'shot' || ev.pellet !== 0) continue;
     const loud = ev.loudness * scale;
     let fire: Gunfire | undefined;
     for (const g of waves.gunfire) {

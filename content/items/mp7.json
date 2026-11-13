@@ -1,5 +1,5 @@
 {
-  "formatVersion": 11,
+  "formatVersion": 12,
   "id": "mp7",
   "name": "MP7",
   "type": "weapon",
@@ -15,8 +15,7 @@
   "magazine": 30,
   "feed": "magazine",
   "reloadTime": 2.1,
-  "aimTime": 0.221,
-  "drawTime": 0.55,
+  "ergonomics": 73,
   "range": 100,
   "loudness": 120,
   "defaults": {

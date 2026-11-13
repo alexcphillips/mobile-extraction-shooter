@@ -15,7 +15,6 @@ import { TICK_SECONDS } from '../tick';
 import { createRayHit, type CollisionWorld } from '../world/collision-world';
 import { openDoorAhead } from './doors';
 import { hostile } from './factions';
-import { FIRE, inFire } from './fire';
 import { breakGlass, glassHit } from './glass';
 import {
   GRENADE,
@@ -61,7 +60,6 @@ import {
 } from './routes';
 import { searchContainer } from './looting';
 import { timeLeft } from './raid';
-import { ZOMBIES, type WindowState, type ZombieMind } from './zombies';
 
 /*
  * Enemy AI. Session 7: getting around, seeing and hearing. Session 8: fighting. Each
@@ -696,14 +694,6 @@ export interface AiState {
    */
   flee?: { grenade: number; x: number; y: number; z: number } | null;
   /**
-   * The newest fire on the map (by id) its path was planned or checked knowing of
-   * (2026-10-31): newer fire across the rest of the path plans it again, round it.
-   * Missing (older saves) is 0.
-   */
-  fires?: number;
-  /** A zombie's (zombies mode, sim/zombies.ts): it hunts instead (see hunt). Missing for others. */
-  zombie?: ZombieMind | null;
-  /**
    * An erratic enemy's current quirk (AI rework session 2, skill.erratic): 'stop', 'crouch'
    * or 'sprint' for quirkTime more seconds; quirkNext counts down to the next. Missing
    * (older saves, and enemies that aren't erratic) is none.
@@ -1060,11 +1050,10 @@ export function updateAi(
     const input = ai.input;
     input.moveX = input.moveY = 0;
     input.fire = input.aim = input.reload = input.crouch = input.sprint = false;
-    input.extinguish = input.throw = input.slide = false;
+    input.throw = input.slide = false;
     input.use = null;
     if (c.health.dead) continue;
-    if (ai.zombie) hunt(state, c, ai, items, nav);
-    else {
+    {
       if ((state.tick + c.id) % AI.perceiveEvery === 0) {
         // Passive (the tutorial's scav, TU-2): nothing is noticed until it's hit.
         if (!ai.passive) look(state, c, ai, world, nav);
@@ -1083,7 +1072,7 @@ export function updateAi(
       // walked into the next fight half empty and ran dry).
       // Its magazines fill as they go in (MG-4, weapons.ts: magRounds), so one is always
       // full while it has loose rounds; no packing.
-      if (ai.awareness === 'unaware' && !c.using && !ai.zombie) reloadIfLow(state, c, items, 1);
+      if (ai.awareness === 'unaware' && !c.using) reloadIfLow(state, c, items, 1);
       if (ai.voiced) breathe(state, c, ai);
     }
     // A closed door on the way to the next waypoint opens as it gets there; Jug, alert,
@@ -1255,8 +1244,8 @@ const headPoint = { x: 0, y: 0, z: 0 };
 const chestPoint = { x: 0, y: 0, z: 0 };
 
 /**
- * How fast it notices e (per second), or 0 if it can't see e: not while blinded by a
- * flash, nor through smoke (2026-10-31).
+ * How fast it notices e (per second), or 0 if it can't see e: not through smoke
+ * (2026-10-31).
  */
 function sightRate(
   state: SimState,
@@ -1265,7 +1254,6 @@ function sightRate(
   e: Character,
   world: CollisionWorld,
 ): number {
-  if (c.blind) return 0;
   const ox = c.x;
   const oy = eyeHeight(c);
   const oz = c.z;
@@ -1575,8 +1563,8 @@ function hearEvents(
       }
       continue;
     }
-    // Deaf, or passive until hit (TU-2): only being hurt or set alight gets through.
-    if ((ai.deaf || ai.passive) && ev.type !== 'death' && ev.type !== 'ignite') continue;
+    // Deaf, or passive until hit (TU-2): only being hurt gets through.
+    if ((ai.deaf || ai.passive) && ev.type !== 'death') continue;
     if (ev.type === 'door') {
       // Jug kicking a door in (AI-8): heard like glass breaking, further. An ally's isn't
       // worth checking.
@@ -1613,17 +1601,6 @@ function hearEvents(
       if (ev.by === c.id && ev.target !== c.id && ai.squad !== undefined) {
         const sq = squadState(state, ai.squad);
         if (sq && !sq.kills.includes(ev.target)) sq.kills.push(ev.target);
-      }
-      continue;
-    }
-    if (ev.type === 'ignite') {
-      // Set alight: as good as shot, by whoever lit it.
-      if (ev.target !== c.id || ev.by === 0 || ev.by === c.id) continue;
-      const by = entityById(state, ev.by);
-      if (by && !by.health.dead && hostile(c, by) && !by.admin?.peaceful) {
-        delete ai.passive;
-        alarm(ai, by, by.x, by.y, by.z);
-        ai.hurt = true;
       }
       continue;
     }
@@ -1831,7 +1808,6 @@ export function freeToCheck(c: Character): boolean {
   const ai = c.ai;
   return (
     !!ai &&
-    !ai.zombie &&
     !c.health.dead &&
     !ai.flee &&
     !ai.deaf &&
@@ -2712,21 +2688,8 @@ function behave(
       }
     }
 
-  // On fire: it puts itself out, which stops it fighting meanwhile (sim/fire.ts), and it
-  // steps out of any fire it's standing in, straight away from it.
   const input = ai.input;
-  input.extinguish = !!c.burn && !c.extinguish;
-  const fire = inFire(state, c);
-  if (fire) {
-    const dx = c.x - fire.x;
-    const dz = c.z - fire.z;
-    const d = Math.hypot(dx, dz);
-    const a = d > 1e-3 ? 0 : nextFloat(state.rng) * Math.PI * 2;
-    wishX = d > 1e-3 ? (dx / d) * AI.alertPace : Math.cos(a) * AI.alertPace;
-    wishZ = d > 1e-3 ? (dz / d) * AI.alertPace : Math.sin(a) * AI.alertPace;
-    ai.hasGoal = false;
-  }
-  if (ai.skill.erratic && !fire) quirks(state, ai);
+  if (ai.skill.erratic) quirks(state, ai);
   // Staggered by a heavy round (AI-8): no firing, sprinting or sliding, and slowed.
   if ((ai.stagger ?? 0) > 0) {
     input.fire = input.sprint = input.slide = false;
@@ -2825,7 +2788,7 @@ function treating(
     return true;
   }
   if ((state.tick + c.id) % AI.perceiveEvery !== 0) return false;
-  if (c.draw > 0 || c.extinguish || c.mode !== 'ground' || ai.flee) return false;
+  if (c.draw > 0 || c.mode !== 'ground' || ai.flee) return false;
   if ((heldWeapon(c)?.reloading ?? 0) > 0) return false;
   if (alert && ai.unseen < HEAL.unseen) return false;
   const med = pickMed(c, items);
@@ -3229,7 +3192,7 @@ function chargeGrenade(state: SimState, c: Character, ai: AiState, world: Collis
   if (ai.awareness === 'alert' && ai.seesTarget) return;
   const eye = eyeHeight(c);
   for (const g of state.grenades) {
-    if (g.id <= (ai.bait ?? 0) || g.remote) continue;
+    if (g.id <= (ai.bait ?? 0)) continue;
     const by = entityById(state, g.by);
     if (!by || by.health.dead || by.admin?.peaceful || !hostile(c, by)) continue;
     if (Math.hypot(g.x - c.x, g.y - c.y, g.z - c.z) > JUG.baitRange) continue;
@@ -3763,7 +3726,7 @@ function considerThrow(
   // Pushing in to where it lost its target: it goes in shooting, not throwing.
   if (a === 'engage' && ai.push) return;
   if (ai.unseen < TACTICS.throwAfter || ai.unseen > TACTICS.throwFresh) return;
-  if (c.draw > 0 || c.extinguish || (c.throwCooldown ?? 0) > 0 || c.mode !== 'ground') return;
+  if (c.draw > 0 || (c.throwCooldown ?? 0) > 0 || c.mode !== 'ground') return;
   if ((heldWeapon(c)?.reloading ?? 0) > 0) return;
   const target = entityById(state, ai.target);
   if (!target || target.health.dead) return;
@@ -4239,203 +4202,6 @@ function headToward(
   ai.hasGoal = false;
 }
 
-// ---------------------------------------------------------------------------- zombies
-
-/** Zombie tuning (zombies mode). Distances in meters, times in seconds. */
-const HUNT = {
-  /** It picks its prey again this often. */
-  repick: 1,
-  /** It stops walking this close to its prey (center to center), and claws from... */
-  stop: 0.8,
-  /** ...this far beyond the prey's capsule, a little short of its claws' reach... */
-  clawSlack: 0.25,
-  /** ...when facing it within this many degrees, and this near its height. */
-  clawCone: 35,
-  clawHeight: 1.2,
-  /** It turns to face its prey, not where its path goes, from this close. */
-  faceFrom: 3,
-  /** It's at its window this close to the outside spot. */
-  atWindow: 0.5,
-};
-
-/**
- * A zombie's tick (sim/zombies.ts): no perceiving, hiding or shooting. Outside, it first
- * breaks in through its window (see breakIn). Then it always knows where the players are
- * and goes for the nearest it can walk to (else the nearest at all), picked again every so
- * often, by the shortest way, at a walk (zombies never get faster), and swings its claws
- * once it's close and facing them. Opens doors on the way like any enemy; a locked one (not
- * yet bought) cuts it off.
- */
-function hunt(state: SimState, c: Character, ai: AiState, items: ItemDb, nav: NavGrid): void {
-  const input = ai.input;
-  const mind = ai.zombie!;
-  const w = state.zombies?.windows[mind.window];
-  if (w) {
-    breakIn(state, c, ai, mind, w, items, nav);
-    return;
-  }
-  // Climbing in: a path from where it started would lead back outside.
-  if (c.mode === 'vault') {
-    ai.hasGoal = false;
-    return;
-  }
-  ai.timer -= DT;
-  let prey = entityById(state, ai.target);
-  if (ai.timer <= 0 || !prey || prey.health.dead || prey.ai) {
-    ai.timer = HUNT.repick;
-    prey = pickPrey(state, c, nav);
-    ai.target = prey?.id ?? 0;
-  }
-  if (!prey) return;
-  const dx = prey.x - c.x;
-  const dz = prey.z - c.z;
-  const d = Math.hypot(dx, dz);
-  let faceYaw = yawTo(c, prey.x, prey.z);
-  if (d > HUNT.stop) {
-    const r = moveTo(state, c, ai, nav, prey.x, prey.y, prey.z, 1, false, HUNT.stop);
-    if (r === 'failed' || r === 'arrived') {
-      // No way there (or at the path's end): straight at it.
-      wishX = dx / d;
-      wishZ = dz / d;
-      ai.hasGoal = false;
-    } else if (d > HUNT.faceFrom) faceYaw = moveYaw;
-  }
-  const chest = eyeHeight(c) - (prey.y + prey.height * 0.6);
-  const facePitch = -Math.atan2(chest, Math.max(d, 0.1));
-  const claws = c.gear.knife ? items.get(c.gear.knife.item) : undefined;
-  const reach = claws?.type === 'melee' ? claws.reach : 1.5;
-  input.fire =
-    d - MOVEMENT.radius < reach - HUNT.clawSlack &&
-    Math.abs(prey.y - c.y) < HUNT.clawHeight &&
-    Math.abs(angleDiff(c.yaw, faceYaw)) < HUNT.clawCone * DEG;
-
-  const turn = AI.alertTurnRate * DT;
-  input.yaw = turnToward(c.yaw, faceYaw, turn);
-  input.pitch = c.pitch + Math.max(-turn, Math.min(turn, facePitch - c.pitch));
-  const sy = Math.sin(input.yaw);
-  const cy = Math.cos(input.yaw);
-  input.moveX = cy * wishX - sy * wishZ;
-  input.moveY = -(sy * wishX + cy * wishZ);
-  wishX = wishZ = 0;
-}
-
-/**
- * A zombie outside: it walks to its window's outside spot, then, facing in, tears off a
- * plank every tearTime, clawing instead whenever a player is in reach on the other side
- * (claws and shots pass a window). With no planks left it climbs through to the inside spot
- * and hunts from there.
- */
-function breakIn(
-  state: SimState,
-  c: Character,
-  ai: AiState,
-  mind: ZombieMind,
-  w: WindowState,
-  items: ItemDb,
-  nav: NavGrid,
-): void {
-  if (c.mode === 'vault') return;
-  const input = ai.input;
-  const out = side(w, -1);
-  const d = Math.hypot(out.x - c.x, out.z - c.z);
-  let faceYaw = w.yaw + Math.PI;
-  let facePitch = 0;
-  if (d > HUNT.atWindow) {
-    const r = moveTo(state, c, ai, nav, out.x, c.y, out.z, 1, false, HUNT.atWindow * 0.8);
-    if (r === 'failed') {
-      wishX = (out.x - c.x) / d;
-      wishZ = (out.z - c.z) / d;
-      ai.hasGoal = false;
-    }
-    faceYaw = d > HUNT.faceFrom ? moveYaw : yawTo(c, out.x, out.z);
-  } else {
-    // At the window. A player in reach inside gets clawed through it.
-    const claws = c.gear.knife ? items.get(c.gear.knife.item) : undefined;
-    const reach = claws?.type === 'melee' ? claws.reach : 1.5;
-    let prey: Character | undefined;
-    let preyD = reach - HUNT.clawSlack + MOVEMENT.radius;
-    for (const e of state.entities) {
-      if (e.ai || e.health.dead || e.admin?.peaceful) continue;
-      const pd = Math.hypot(e.x - c.x, e.z - c.z);
-      if (pd < preyD && Math.abs(e.y - c.y) < HUNT.clawHeight) {
-        preyD = pd;
-        prey = e;
-      }
-    }
-    const zombies = state.zombies!;
-    if (prey) {
-      faceYaw = yawTo(c, prey.x, prey.z);
-      facePitch = -Math.atan2(eyeHeight(c) - (prey.y + prey.height * 0.6), Math.max(preyD, 0.1));
-      input.fire = Math.abs(angleDiff(c.yaw, faceYaw)) < HUNT.clawCone * DEG;
-    } else if (w.planks > 0) {
-      w.tear += DT;
-      if (w.tear >= zombies.rules.barricades.tearTime) {
-        w.tear = 0;
-        w.planks--;
-        state.events.push({
-          type: 'plank',
-          by: c.id,
-          window: zombies.windows.indexOf(w),
-          added: false,
-          points: 0,
-        });
-      }
-    } else {
-      // Over the sill and in.
-      const into = side(w, 1);
-      c.mode = 'vault';
-      c.vaulting = {
-        fromX: c.x,
-        fromY: c.y,
-        fromZ: c.z,
-        toX: into.x,
-        toY: c.y,
-        toZ: into.z,
-        top: w.y + 0.15,
-        fromHeight: c.height,
-        toHeight: c.height,
-        t: 0,
-      };
-      mind.window = -1;
-      ai.hasGoal = false;
-      ai.timer = 0;
-    }
-  }
-  const turn = AI.alertTurnRate * DT;
-  input.yaw = turnToward(c.yaw, faceYaw, turn);
-  input.pitch = c.pitch + Math.max(-turn, Math.min(turn, facePitch - c.pitch));
-  const sy = Math.sin(input.yaw);
-  const cy = Math.cos(input.yaw);
-  input.moveX = cy * wishX - sy * wishZ;
-  input.moveY = -(sy * wishX + cy * wishZ);
-  wishX = wishZ = 0;
-}
-
-/** A window's inside (1) or outside (−1) standing spot. */
-function side(w: WindowState, k: 1 | -1): { x: number; z: number } {
-  const d = k * ZOMBIES.windowStand;
-  return { x: w.x + Math.sin(w.yaw) * d, z: w.z + Math.cos(w.yaw) * d };
-}
-
-/** The nearest living player a zombie can walk to, else the nearest at all, or undefined. */
-function pickPrey(state: SimState, c: Character, nav: NavGrid): Character | undefined {
-  const here = nav.nearest(c.x, c.y, c.z);
-  let best: Character | undefined;
-  let bestD = Infinity;
-  for (const e of state.entities) {
-    if (e.ai || e.health.dead || e.admin?.peaceful) continue;
-    const there = nav.nearest(e.x, e.y, e.z);
-    const reachable = here >= 0 && there >= 0 && nav.component[here] === nav.component[there];
-    // One it can't walk to counts as much further away.
-    const d = Math.hypot(e.x - c.x, e.z - c.z) + (reachable ? 0 : 1e6);
-    if (d < bestD) {
-      bestD = d;
-      best = e;
-    }
-  }
-  return best;
-}
-
 // Where fleeGrenade wants it to face.
 let fleeYaw = 0;
 // A flee spot at least this far outside the blast radius counts as safe.
@@ -4467,11 +4233,11 @@ function fleeGrenade(
   let found: Grenade | null = null;
   let radius = 0;
   for (const g of state.grenades) {
-    // Only what would hurt it: not a flash or smoke, nor C4 it doesn't know is a bomb. Its
+    // Only what would hurt it: not smoke. Its
     // own and its allies' are run from too (AI-6), though they can't hurt it (health.ts
     // byAlly): it doesn't stand by a grenade.
     const def = grenadeDef(items, g.item);
-    if (def.damage <= 0 || g.remote) continue;
+    if (def.damage <= 0) continue;
     const r = def.radius;
     if (Math.hypot(g.x - c.x, g.y - c.y, g.z - c.z) > r + AI.fleeMargin) continue;
     if (ai.flee?.grenade !== g.id && !clearLine(world, c.x, eye, c.z, g.x, g.y + 0.1, g.z))
@@ -5026,7 +4792,7 @@ function moveTo(
   strafe = false,
   arrive: number = AI.arrive,
   greed = 1,
-  shun: Avoid = avoidFire,
+  shun?: Avoid,
 ): 'moving' | 'arrived' | 'failed' {
   moveYaw = c.yaw;
   if (!ai.hasGoal || Math.hypot(ai.goalX - x, ai.goalY - y, ai.goalZ - z) > AI.replanDistance) {
@@ -5037,7 +4803,6 @@ function moveTo(
     // anywhere (AI rework session 4).
     const fresh = !ai.hasGoal;
     plansLeft--;
-    avoidFire.spots = state.fires;
     const result = findPath(
       nav,
       nav.nearest(c.x, c.y, c.z),
@@ -5046,7 +4811,6 @@ function moveTo(
       shun,
       greed,
     );
-    ai.fires = newestFire(state);
     ai.hasGoal = true;
     ai.goalX = x;
     ai.goalY = y;
@@ -5069,7 +4833,6 @@ function moveTo(
     return 'arrived';
   }
   // Fire newer than the plan across the rest of the way: plan again, round it.
-  if (fireAcross(state, c, ai)) ai.hasGoal = false;
 
   // Stuck against something (little ground covered in stuckTime, however fast it jitters):
   // plan again from here, and give up after a few tries.
@@ -5115,13 +4878,6 @@ function moveTo(
   }
   return 'moving';
 }
-
-/** Paths keep out of reach of fire on the map (sim/fire.ts); spots set before each plan. */
-const avoidFire: Avoid = {
-  spots: [],
-  radius: FIRE.patchRadius + MOVEMENT.radius + 0.3,
-  cost: FIRE.avoidCost,
-};
 
 /**
  * On an island of the nav grid (AI.island nodes or fewer) with its goal (if given) elsewhere: wishes
@@ -5213,42 +4969,32 @@ function stranded(
 
 /**
  * A flanker's way round (2026-11-08, an AI-5 loose end: its path could pass close to its
- * target): it keeps TACTICS.flankShun from where it last saw it, and from fire, set by
+ * target): it keeps TACTICS.flankShun from where it last saw it, set by
  * flankAvoid before each plan.
  */
 const flankSpots: { x: number; y: number; z: number }[] = [];
 const avoidFlank: Avoid = { spots: flankSpots, radius: 0, cost: TACTICS.flankShunCost };
 
 function flankAvoid(state: SimState, ai: AiState): Avoid {
-  // Reused objects: the target's spot first, then fire.
-  const n = 1 + state.fires.length;
-  while (flankSpots.length < n) flankSpots.push({ x: 0, y: 0, z: 0 });
-  flankSpots.length = n;
+  // A reused object: the target's spot.
+  if (!flankSpots.length) flankSpots.push({ x: 0, y: 0, z: 0 });
   flankSpots[0]!.x = ai.focusX;
   flankSpots[0]!.y = ai.focusY;
   flankSpots[0]!.z = ai.focusZ;
-  for (let i = 0; i < state.fires.length; i++) {
-    const p = state.fires[i]!;
-    const s = flankSpots[i + 1]!;
-    s.x = p.x;
-    s.y = p.y;
-    s.z = p.z;
-  }
   avoidFlank.radius = TACTICS.flankShun;
   return avoidFlank;
 }
 
 /**
  * A squad leader's way between stops early on (ROUTES.bossPathFor): round living bosses'
- * ground (their patrols); later, or with none about, just round fire.
+ * ground (their patrols); later, or with none about, nothing.
  */
 const bossSpots: { x: number; y: number; z: number }[] = [];
 const avoidBoss: Avoid = { spots: bossSpots, radius: 0, cost: 0 };
 
-function bossAvoid(state: SimState): Avoid {
-  avoidFire.spots = state.fires;
+function bossAvoid(state: SimState): Avoid | undefined {
   const start = state.waves?.start;
-  if (start === undefined || state.tick - start > ROUTES.bossPathFor / DT) return avoidFire;
+  if (start === undefined || state.tick - start > ROUTES.bossPathFor / DT) return undefined;
   bossSpots.length = 0;
   for (const e of state.entities) {
     const a = e.ai;
@@ -5257,51 +5003,10 @@ function bossAvoid(state: SimState): Avoid {
     for (let i = 0; i < a.patrol.length; i += 3)
       bossSpots.push({ x: a.patrol[i]!, y: a.patrol[i + 1]!, z: a.patrol[i + 2]! });
   }
-  if (!bossSpots.length) return avoidFire;
-  // Fire too (kept at the bosses' wider berth).
-  for (const p of state.fires) bossSpots.push(p);
+  if (!bossSpots.length) return undefined;
   avoidBoss.radius = ROUTES.bossPathRadius;
   avoidBoss.cost = ROUTES.bossPathCost;
   return avoidBoss;
-}
-
-/** The newest fire on the map's id, or 0. */
-function newestFire(state: SimState): number {
-  let id = 0;
-  for (const p of state.fires) if (p.id > id) id = p.id;
-  return id;
-}
-
-/**
- * Whether fire lit since ai's path was planned or last checked lies across the rest of
- * it, from where c is. Marks it all checked either way, so each is looked at once.
- */
-function fireAcross(state: SimState, c: Character, ai: AiState): boolean {
-  const known = ai.fires ?? 0;
-  const newest = newestFire(state);
-  if (newest <= known) return false;
-  ai.fires = newest;
-  const r2 = avoidFire.radius * avoidFire.radius;
-  for (const p of state.fires) {
-    if (p.id <= known || p.y < c.y - 0.5 || p.y > c.y + 2.2) continue;
-    let ax = c.x;
-    let az = c.z;
-    for (let i = ai.pathIndex * 3; i < ai.path.length; i += 3) {
-      const bx = ai.path[i]!;
-      const bz = ai.path[i + 2]!;
-      const dx = bx - ax;
-      const dz = bz - az;
-      const len2 = dx * dx + dz * dz;
-      const t =
-        len2 > 1e-12 ? Math.min(1, Math.max(0, ((p.x - ax) * dx + (p.z - az) * dz) / len2)) : 0;
-      const ex = ax + dx * t - p.x;
-      const ez = az + dz * t - p.z;
-      if (ex * ex + ez * ez < r2) return true;
-      ax = bx;
-      az = bz;
-    }
-  }
-  return false;
 }
 
 function yawTo(c: Character, x: number, z: number): number {

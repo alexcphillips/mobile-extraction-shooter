@@ -3,7 +3,6 @@ import { ammoDef } from '../content/items';
 import { CollisionWorld } from '../world/collision-world';
 import { NavGrid } from '../nav/nav-grid';
 import { DEFAULT_SKILL, spawnEnemy } from './ai';
-import { ignite } from './fire';
 import { CHEST, HEALTH, shootCharacter, totalHp, woundZone } from './health';
 import { createState, spawnCharacter } from './state';
 import { step } from './step';
@@ -29,7 +28,7 @@ const round = ammoDef(items, 'round');
 const full = totalHp({ hp: [...HEALTH.maxHp] } as never);
 
 describe('enemies never hurt each other', () => {
-  it("an enemy's shot, swing, blast or fire does nothing to another; a player's does", () => {
+  it("an enemy's shot, swing or blast does nothing to another; a player's does", () => {
     const state = createState(1);
     const player = spawnCharacter(state, world, 0, 0);
     const a = spawnEnemy(state, world, 5, 0, 5, 0);
@@ -37,15 +36,11 @@ describe('enemies never hurt each other', () => {
     shootCharacter(state, items, b, CHEST, round, a.id);
     shootCharacter(state, items, b, CHEST, round, a.id, 'melee');
     woundZone(state, items, b, CHEST, 500, round, a.id, 'explosion');
-    ignite(state, b, items, 'inc-round', a.id);
     expect(totalHp(b.health)).toBe(full);
-    expect(b.burn).toBeFalsy();
-    expect(state.events.filter((e) => e.type === 'damage' || e.type === 'ignite')).toEqual([]);
+    expect(state.events.filter((e) => e.type === 'damage')).toEqual([]);
     // A player's still land, and enemies still hurt players.
     shootCharacter(state, items, b, CHEST, round, player.id);
     expect(totalHp(b.health)).toBeLessThan(full);
-    ignite(state, b, items, 'inc-round', player.id);
-    expect(b.burn).toBeTruthy();
     shootCharacter(state, items, player, CHEST, round, a.id);
     expect(totalHp(player.health)).toBeLessThan(full);
   });

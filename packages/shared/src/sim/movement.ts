@@ -31,8 +31,6 @@ export const MOVEMENT = {
   useSpeed: 1.5,
   /** At most this fast while packing or unloading magazines (MG-4: a little quicker than a med). */
   packSpeed: 2,
-  /** The most you can walk while putting yourself out (2026-10-31): about half a walk. */
-  extinguishSpeed: 1.75,
   /** Walking and sprinting are this much faster with the knife out. */
   knifeSpeed: 1.1,
   /** Ledges this high are walked onto (kerbs, single steps); in the air, mantled onto. */
@@ -139,7 +137,6 @@ export function moveCharacter(
       !input.fire &&
       !input.aim &&
       my > 0 &&
-      !c.extinguish &&
       (!!c.ai || canSprint(c.load ?? 0)) &&
       staminaToSprint(c);
     crouch = input.crouch && !sprint;
@@ -268,7 +265,6 @@ function walk(
       (c.ai ? 1 : loadSpeed(c.load ?? 0) * (c.burden?.moveSpeed ?? 1));
     if (c.using) speed = Math.min(speed, M.useSpeed);
     if (c.packing) speed = Math.min(speed, M.packSpeed);
-    if (c.extinguish) speed = Math.min(speed, M.extinguishSpeed);
     c.vx = wishX * speed;
     c.vz = wishZ * speed;
     limitSlope(c, world);

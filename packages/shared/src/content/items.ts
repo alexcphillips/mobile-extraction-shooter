@@ -26,15 +26,6 @@ const nonNegative = finite.refine((n) => n >= 0, 'must be 0 or more');
 const fraction = finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1');
 
 /**
- * What setting someone alight does (2026-10-31, sim/fire.ts): how long they burn if they
- * don't put it out, and HP a second it takes from every zone, past armor.
- */
-const burning = {
-  burnTime: positive,
-  burnDamage: positive,
-};
-
-/**
  * 2 (session 6b): weapons gained loudness and slots; attachments were added.
  * 3 (session 9): every item gained a grid size, ammo a stack size; the other types were added.
  * 4 (session 10b): weapons gained a draw time; the knife gained its stats.
@@ -52,8 +43,49 @@ const burning = {
  *    (2026-11-06), loot's optional category, guns' optional class and meds' optional bleedCost (2026-11-09): an
  *    optional field changes no existing file.
  * 11 (BW-3, 2026-11-12): every item gained a weight in kg (a stacking item's is per one).
+ * 12 (2026-11-13): guns' aim and draw times became one ergonomics (ERGO), and an
+ *    attachment's `ergonomics` became points added to it; what it was (a recoil recovery
+ *    multiplier) is now `recovery`.
  */
-export const ITEM_FORMAT_VERSION = 11;
+export const ITEM_FORMAT_VERSION = 12;
+
+/**
+ * Ergonomics (2026-11-13, the user's call, after Tarkov): one handling number per gun, 0 to
+ * 100, higher handier, plus its attachments' points. It sets how long aiming in takes (and
+ * the sights' lag when turning, which follows aim time), how long taking it out takes, and
+ * how much the sights sway when aimed. Fitted so the guns' aim times stayed what they were.
+ */
+export const ERGO = {
+  /** Aim time at 0, and what each point takes off it, in seconds. */
+  aimAt0: 0.55,
+  aimPerPoint: 0.0045,
+  /** Draw time at 0, and what each point takes off it, in seconds. */
+  drawAt0: 1.75,
+  drawPerPoint: 0.016,
+  /** Aimed sway is 1× at this, and this much more (less) for each point below (above). */
+  swayAt: 50,
+  swayPerPoint: 0.008,
+  /** The fastest aim and draw, and the least and most sway, whatever the points. */
+  minAim: 0.12,
+  minDraw: 0.25,
+  minSway: 0.5,
+  maxSway: 1.6,
+} as const;
+
+/** Clamped to 0–100. */
+const ergo = (points: number): number => Math.max(0, Math.min(100, points));
+/** Seconds from the hip to fully aimed, for this much ergonomics. */
+export const aimTimeAt = (points: number): number =>
+  Math.max(ERGO.minAim, ERGO.aimAt0 - ERGO.aimPerPoint * ergo(points));
+/** Seconds to take the gun out, for this much ergonomics. */
+export const drawTimeAt = (points: number): number =>
+  Math.max(ERGO.minDraw, ERGO.drawAt0 - ERGO.drawPerPoint * ergo(points));
+/** Aimed sway's scale, for this much ergonomics. */
+export const swayAt = (points: number): number =>
+  Math.min(
+    ERGO.maxSway,
+    Math.max(ERGO.minSway, 1 + (ERGO.swayAt - ergo(points)) * ERGO.swayPerPoint),
+  );
 
 /**
  * Ammo and armor levels (a round's from its Tarkov penetration), 1 to LEVELS: gray, green, blue, purple,
@@ -156,7 +188,7 @@ const common = {
   /**
    * What one weighs in kg (BW-3): a stack's is this times its count. A gun's is without its
    * attachments, which weigh their own; a carrier's without its plates. 0 for things never
-   * carried (admin tools, zombie claws).
+   * carried (admin tools).
    */
   weight: nonNegative,
   rarity: z.enum(RARITIES),
@@ -186,21 +218,9 @@ const weaponSchema = z
     type: z.literal('weapon'),
     /**
      * The round it comes loaded with. It fires any round of the same caliber (the one
-     * loaded is on the gun, WeaponState.loaded). A grenade makes it a grenade launcher,
-     * firing any grenade (see launchSpeed).
+     * loaded is on the gun, WeaponState.loaded).
      */
     ammo: idSchema,
-    /**
-     * Grenade launchers only (2026-10-30): how fast a grenade leaves the barrel, in m/s.
-     * It flies, bounces and goes off as a thrown one does (sim/grenades.ts).
-     */
-    launchSpeed: positive.optional(),
-    /**
-     * Grenade launchers only: its grenades go off when they hit something (the map or
-     * someone) once they've flown this far, in meters. One that hits the map sooner never
-     * arms: it bounces and goes off on its fuse, as a thrown one does.
-     */
-    armDistance: nonNegative.optional(),
     /**
      * How it's held: a rifle in both hands at the shoulder, a pistol out in front. Picks the
      * animations and where the gun sits in first person. Defaults to rifle.
@@ -208,8 +228,8 @@ const weaponSchema = z
     hold: z.enum(['rifle', 'pistol']).optional(),
     /**
      * What kind of gun it is (2026-11-09), for quick equip (stash-quick-equip.ts): a sniper
-     * brings a close-range gun too, and special guns (admin, zombies, launchers, the
-     * flamethrower and crossbow) are never picked. Left out, assault.
+     * brings a close-range gun too, and special guns (admin) are never picked. Left out,
+     * assault.
      */
     class: z.enum(WEAPON_CLASSES).optional(),
     /** auto keeps firing while the trigger is held; semi fires once per pull. */
@@ -228,10 +248,11 @@ const weaponSchema = z
      */
     feed: z.literal('magazine').optional(),
     reloadTime: positive,
-    /** From the hip to fully aimed. */
-    aimTime: positive,
-    /** Taking it out: from switching to it until it can fire or aim. */
-    drawTime: positive,
+    /**
+     * Handling, 0 to 100 (ERGO, 2026-11-13): aim time, draw time and aimed sway, with its
+     * attachments' points added.
+     */
+    ergonomics: z.number().min(0).max(100),
     /** Shots stop here. */
     range: positive,
     /** How far away a shot can be heard (by AI, from session 7). Suppressors shrink it. */
@@ -289,17 +310,6 @@ const weaponSchema = z
      * admin page, so keep these out of loot tables, loadouts and vendors.
      */
     spawns: idSchema.optional(),
-    /**
-     * A blast gun (zombies mode's Gale Cannon, 2026-11-04): each shot, instead of a bullet,
-     * kills every enemy within `range` meters and `angle` degrees either side of where it
-     * points that nothing solid hides, and flings them away at `push` m/s. Never players.
-     */
-    blast: z.strictObject({ range: positive, angle: positive, push: nonNegative }).optional(),
-    /**
-     * Firing and reloading use no rounds (zombies mode's death machine, 2026-11-04). Given
-     * only by the game, so keep these out of loot tables, loadouts and vendors.
-     */
-    infiniteAmmo: z.literal(true).optional(),
   })
   .superRefine((w, ctx) => {
     const slots = w.slots ?? [];
@@ -360,9 +370,8 @@ const ammoSchema = z
     level: levelSchema,
     /**
      * Damage to the chest; other zones multiply it, then armor may stop some. Per pellet.
-     * 0 only for flamethrower fuel, whose harm is the burning (flame).
      */
-    damage: nonNegative,
+    damage: positive,
     /** Armor durability lost per hit (per pellet), less against armor above its level. */
     armorDamage: nonNegative,
     /** Chance that a hit which gets through starts bleeding. */
@@ -371,42 +380,11 @@ const ammoSchema = z
     pellets: z.int().min(2).optional(),
     /** With pellets: the most each pellet strays from the shot's line, in degrees. */
     pelletSpread: nonNegative.optional(),
-    /**
-     * Flamethrower fuel (2026-10-31): a shot is a blob of flame flying out to the gun's
-     * range (sim/fire.ts), not a bullet. It sets alight whoever it hits, and burns where it
-     * lands on the map; anyone touching that is set alight too.
-     */
-    flame: z
-      .strictObject({
-        /** How fast a blob leaves the nozzle, in m/s. */
-        speed: positive,
-        ...burning,
-        /** How long it burns where it lands on the map. */
-        fireTime: positive,
-      })
-      .optional(),
-    /**
-     * Incendiary rounds (2026-10-31): a hit (each pellet's, for shells) has this chance of
-     * setting whoever it hits alight, on top of its damage. No fire on the map.
-     */
-    incendiary: z.strictObject({ chance: fraction, ...burning }).optional(),
     ...plainModel,
   })
   .refine((a) => (a.pellets === undefined) === (a.pelletSpread === undefined), {
     message: 'pellets and pelletSpread go together',
     path: ['pelletSpread'],
-  })
-  .refine((a) => a.damage > 0 !== !!a.flame, {
-    message: 'damage must be above 0, and only flamethrower fuel (flame) does none',
-    path: ['damage'],
-  })
-  .refine((a) => !a.flame || a.pellets === undefined, {
-    message: 'fuel has no pellets',
-    path: ['pellets'],
-  })
-  .refine((a) => !a.flame || !a.incendiary, {
-    message: 'fuel burns already: it has no incendiary',
-    path: ['incendiary'],
   });
 
 /** What protects: armor's, and an armored rig's armor (2026-11-11). */
@@ -684,8 +662,11 @@ const modsSchema = z.strictObject({
   /** Kick up only, and sideways only, on top of recoil. */
   recoilUp: positive.optional(),
   recoilSide: positive.optional(),
-  /** Handling: multiplies how fast recoil wears off (above 1 recovers faster). */
-  ergonomics: positive.optional(),
+  /** Multiplies how fast recoil wears off (above 1 recovers faster). Was `ergonomics` before 12. */
+  recovery: positive.optional(),
+  /** Ergonomics points added to the gun's (ERGO), less than 0 to take them off. */
+  ergonomics: finite.optional(),
+  /** Multiplies aim time after ergonomics (a magnified scope's slower look through it). */
   aimTime: positive.optional(),
   reloadTime: positive.optional(),
   loudness: positive.optional(),
@@ -934,12 +915,9 @@ const meleeSchema = z.strictObject({
 
 /**
  * What a grenade does when it goes off (2026-10-31): frag hurts everyone in its radius;
- * flash blinds whoever is looking at it within its radius; smoke leaves a cloud enemies
- * can't see through; c4 sticks where it lands and waits for its thrower's detonator, then
- * goes off as a frag does; molotov (2026-10-31) breaks on the first thing it hits and
- * spills fire across its radius (sim/fire.ts), setting alight whoever stands in it.
+ * smoke leaves a cloud enemies can't see through.
  */
-export const GRENADE_EFFECTS = ['frag', 'flash', 'smoke', 'c4', 'molotov'] as const;
+export const GRENADE_EFFECTS = ['frag', 'smoke'] as const;
 export type GrenadeEffect = (typeof GRENADE_EFFECTS)[number];
 
 /**
@@ -952,26 +930,18 @@ const grenadeSchema = z.strictObject({
   type: z.literal('grenade'),
   /** What it does; left out, a frag. */
   effect: z.enum(GRENADE_EFFECTS).optional(),
-  /**
-   * Only launchers of this caliber fire it (2026-11-04, zombies mode's ray gun bolts); left
-   * out, `grenade`, which every grenade launcher fires.
-   */
-  caliber: z.string().min(1).optional(),
-  /** A launcher's own round stacks up to this many in one place, as ammo does. */
-  stack: stackSchema.optional(),
-  /** Seconds from the throw until it goes off; for c4, from the detonator. */
+  /** Seconds from the throw until it goes off. */
   fuse: positive,
   /** How fast it leaves the hand, in m/s. */
   throwSpeed: positive,
   /**
-   * It hurts out to here, in meters. A flash blinds out to here, and a smoke's cloud is
-   * this big.
+   * It hurts out to here, in meters. A smoke's cloud is this big.
    */
   radius: positive,
   /**
    * Damage to the chest at the center; the other zones take their share (GRENADE.zones),
    * and it falls off further out. Then armor stops some, as for ammo. 0 hurts no one
-   * (flash and smoke).
+   * (smoke).
    */
   damage: nonNegative,
   /** Its fragments' penetration level, as for ammo. */
@@ -982,18 +952,8 @@ const grenadeSchema = z.strictObject({
   bleedChance: fraction,
   /** How far away it can be heard going off (by AI), as for a gun. */
   loudness: positive,
-  /**
-   * Flash only: the longest it blinds someone, in seconds: looking at it, close; less
-   * further out.
-   */
-  blindTime: positive.optional(),
   /** Smoke only: how long its cloud lasts, in seconds. */
   smokeTime: positive.optional(),
-  /**
-   * Molotov only: its fire, as for flamethrower fuel: how long whoever it sets alight burns,
-   * how hard, and how long the fire it spills burns on the map.
-   */
-  fire: z.strictObject({ ...burning, fireTime: positive }).optional(),
   /** Leaving the hand, hitting something, and going off. */
   sounds: z.strictObject({ throw: soundId, bounce: soundId, explode: soundId }),
   ...plainModel,
@@ -1187,6 +1147,24 @@ export const ITEM_FORMAT: ContentFormat<ItemDef> = {
     // Weights, guessed from the type (the content files set their own). An older file
     // given its weight by hand keeps it.
     10: (doc) => ({ ...doc, weight: doc.weight ?? weightGuess(doc.type) }),
+    // Ergonomics from the aim time (ERGO's fit), and the old ergonomics multiplier as
+    // recovery. A stock's aim time becomes points, as the content's were converted.
+    11: (doc) => {
+      if (doc.type === 'weapon') {
+        const { aimTime, drawTime: _, ...rest } = doc as { aimTime?: number; drawTime?: number };
+        if (aimTime === undefined) return rest;
+        return { ...rest, ergonomics: Math.round((ERGO.aimAt0 - aimTime) / ERGO.aimPerPoint) };
+      }
+      if (doc.type !== 'attachment' || !doc.mods) return doc;
+      const { ergonomics, aimTime, ...mods } = doc.mods as Record<string, number | undefined>;
+      const out: Record<string, number> = {};
+      for (const [k, v] of Object.entries(mods)) if (v !== undefined) out[k] = v;
+      if (ergonomics !== undefined) out.recovery = ergonomics;
+      if (aimTime !== undefined && doc.slot === 'stock')
+        out.ergonomics = Math.round((1 - aimTime) * 60);
+      else if (aimTime !== undefined) out.aimTime = aimTime;
+      return { ...doc, mods: out };
+    },
   },
 };
 
@@ -1265,6 +1243,27 @@ function itemOf<T extends ItemDef['type']>(
 }
 
 export const weaponDef = (items: ItemDb, id: string): WeaponDef => itemOf(items, id, 'weapon');
+
+/**
+ * A gun's ergonomics with its attachments' points (ERGO): a folded stock counts as not
+ * there (WF-1). Clamped to 0–100.
+ */
+export function ergonomicsOf(
+  items: ItemDb,
+  w: {
+    item: string;
+    attachments: Readonly<Partial<Record<AttachmentSlot, string | null>>>;
+    folded?: boolean | undefined;
+  },
+): number {
+  let points = weaponDef(items, w.item).ergonomics;
+  for (const slot of ATTACHMENT_SLOTS) {
+    const id = w.attachments[slot];
+    if (!id || (slot === 'stock' && w.folded)) continue;
+    points += attachmentDef(items, id).mods?.ergonomics ?? 0;
+  }
+  return Math.max(0, Math.min(100, points));
+}
 export const ammoDef = (items: ItemDb, id: string): AmmoDef => itemOf(items, id, 'ammo');
 export const armorDef = (items: ItemDb, id: string): ArmorDef => itemOf(items, id, 'armor');
 
@@ -1300,30 +1299,6 @@ export const grenadeDef = (items: ItemDb, id: string): GrenadeDef => itemOf(item
 /** What a grenade does: its effect, a frag if it doesn't say. */
 export const grenadeEffect = (def: GrenadeDef): GrenadeEffect => def.effect ?? 'frag';
 
-/** How an item sets someone alight: how long they burn and how hard (sim/fire.ts). */
-export interface BurnStats {
-  readonly burnTime: number;
-  readonly burnDamage: number;
-}
-
-/**
- * How an item sets someone alight, or null if it doesn't: flamethrower fuel, incendiary
- * rounds, a molotov. Allocates nothing.
- */
-export function burnOf(items: ItemDb, id: string): BurnStats | null {
-  const def = items.get(id);
-  if (def?.type === 'ammo') return def.flame ?? def.incendiary ?? null;
-  if (def?.type === 'grenade') return def.fire ?? null;
-  return null;
-}
-
-/** How long fire an item leaves on the map burns, or 0: fuel's flames and a molotov's. */
-export function fireTimeOf(items: ItemDb, id: string): number {
-  const def = items.get(id);
-  if (def?.type === 'ammo') return def.flame?.fireTime ?? 0;
-  if (def?.type === 'grenade') return def.fire?.fireTime ?? 0;
-  return 0;
-}
 export const containerDef = (items: ItemDb, id: string): ContainerDef =>
   itemOf(items, id, 'container');
 export const repairDef = (items: ItemDb, id: string): RepairDef => itemOf(items, id, 'repair');
@@ -1336,9 +1311,7 @@ export function itemDef(items: ItemDb, id: string): ItemDef {
 
 /** How many of an item fit in one place: 1 unless it stacks. */
 export function stackSize(def: ItemDef): number {
-  return (def.type === 'ammo' || def.type === 'loot' || def.type === 'grenade') && def.stack
-    ? def.stack
-    : 1;
+  return (def.type === 'ammo' || def.type === 'loot') && def.stack ? def.stack : 1;
 }
 
 /** Whether an attachment can go on a gun: the gun has its slot, and it's on its list if any. */
@@ -1392,23 +1365,17 @@ export function itemSize(
   return w || h ? [def.size[0] + w, def.size[1] + h] : def.size;
 }
 
-/** What a gun can be loaded with: ammo, or grenades for a grenade launcher. */
-export type RoundDef = AmmoDef | GrenadeDef;
+/** What a gun can be loaded with: ammo. */
+export type RoundDef = AmmoDef;
 
-/**
- * An item as something a gun can load, or null if it isn't ammo or a grenade. C4 isn't a
- * round: it's placed by hand, never launched (2026-10-31).
- */
+/** An item as something a gun can load (ammo), or null if it isn't. */
 export function roundOf(items: ItemDb, id: string): RoundDef | null {
   const def = items.get(id);
-  // Neither C4 nor a molotov can be fired from a launcher.
-  if (def?.type === 'grenade') return def.effect === 'c4' || def.effect === 'molotov' ? null : def;
   return def?.type === 'ammo' ? def : null;
 }
 
-/** A round's caliber: ammo's own; every grenade is 'grenade', fired by every launcher. */
-export const roundCaliber = (round: RoundDef): string =>
-  round.type === 'ammo' ? round.caliber : (round.caliber ?? 'grenade');
+/** A round's caliber. */
+export const roundCaliber = (round: RoundDef): string => round.caliber;
 
 /** The caliber a gun fires: its own round's. */
 export function caliberOf(items: ItemDb, weapon: WeaponDef): string {
@@ -1424,8 +1391,7 @@ export function firesRound(items: ItemDb, weapon: WeaponDef, id: string): boolea
 }
 
 /**
- * Checks references between items: a weapon's ammo exists and is ammo (or a grenade other
- * than c4, with a launch speed), a grenade has the fields its effect needs, and an
+ * Checks references between items: a weapon's ammo exists and is ammo, a grenade has the fields its effect needs, and an
  * attachment's guns exist and have its slot.
  */
 export function checkItems(items: ItemDb): void {
@@ -1437,13 +1403,7 @@ export function checkItems(items: ItemDb): void {
     if (item.type === 'weapon') {
       const ammo = roundOf(items, item.ammo);
       if (!ammo) {
-        throw new ContentError(source, `ammo "${item.ammo}" is not an ammo or grenade item`);
-      }
-      if ((ammo.type === 'grenade') !== (item.launchSpeed !== undefined)) {
-        throw new ContentError(source, 'a gun firing grenades needs launchSpeed, and only it');
-      }
-      if (item.armDistance !== undefined && ammo.type !== 'grenade') {
-        throw new ContentError(source, 'only a gun firing grenades has armDistance');
+        throw new ContentError(source, `ammo "${item.ammo}" is not an ammo item`);
       }
       if (magazineFed(item)) {
         const id = item.defaults?.magazine;
@@ -1475,18 +1435,9 @@ export function checkItems(items: ItemDb): void {
         throw new ContentError(source, `comes with a ${side} plate but has no ${side} slot`);
     }
     if (item.type === 'grenade') {
-      if (item.stack !== undefined && item.caliber === undefined) {
-        throw new ContentError(source, "only a launcher's own round (with a caliber) stacks");
-      }
       const effect = grenadeEffect(item);
-      if ((effect === 'flash') !== (item.blindTime !== undefined)) {
-        throw new ContentError(source, 'a flash grenade needs blindTime, and only it');
-      }
       if ((effect === 'smoke') !== (item.smokeTime !== undefined)) {
         throw new ContentError(source, 'a smoke grenade needs smokeTime, and only it');
-      }
-      if ((effect === 'molotov') !== (item.fire !== undefined)) {
-        throw new ContentError(source, 'a molotov needs fire, and only it');
       }
     } else if (item.type === 'attachment') {
       for (const id of item.weapons ?? []) {

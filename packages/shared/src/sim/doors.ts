@@ -13,8 +13,6 @@ import type { Character, EntityId, SimState } from './state';
  * Its collision snaps at once; the renderer animates the swing. A door with a key starts
  * locked, and unlocking it (which uses up one of the key's uses) is for the rest of the
  * raid. Enemies open closed, unlocked doors in their way, and never close or unlock one.
- * In zombies mode a door can have a cost instead of a key: bought with points, it's gone,
- * leaving the opening.
  */
 
 /** Door tuning, in meters. */
@@ -42,20 +40,18 @@ export interface DoorState {
   /** The sound file to play as that timer ends. */
   openSound?: string | undefined;
   /**
-   * Bought (zombies mode): taken out of its doorway for good, leaving the opening. It's
-   * then open too. Missing (older saves) is false.
+   * Taken out of its doorway for good (a door that vanishes, opened by its switch), leaving
+   * the opening. It's then open too. Missing (older saves) is false.
    */
   gone?: boolean;
 }
 
 /**
  * What using a door did. locked: it's locked and you have no key (or you're an enemy).
- * blocked: someone stands in the doorway, so it can't close. bought: a door with a cost,
- * paid for; poor: not enough points for it (zombies mode). kicked: opened by Jug kicking it
- * in (AI-8), loud.
+ * blocked: someone stands in the doorway, so it can't close. kicked: opened by Jug kicking
+ * it in (AI-8), loud.
  */
-export type DoorResult =
-  'opened' | 'closed' | 'unlocked' | 'locked' | 'blocked' | 'bought' | 'poor' | 'kicked';
+export type DoorResult = 'opened' | 'closed' | 'unlocked' | 'locked' | 'blocked' | 'kicked';
 
 export interface DoorEvent {
   type: 'door';
@@ -64,12 +60,12 @@ export interface DoorEvent {
   result: DoorResult;
 }
 
-/** The doors as a map starts: a door with a key or a cost is locked unless it starts open. */
+/** The doors as a map starts: a door with a key is locked unless it starts open. */
 export function createDoors(world: CollisionWorld): DoorState[] {
   return world.doors.map((d) => ({
     open: d.open,
     flipped: false,
-    locked: (d.key !== undefined || d.cost !== undefined || !!d.switched) && !d.open,
+    locked: (d.key !== undefined || !!d.switched) && !d.open,
   }));
 }
 
@@ -127,8 +123,7 @@ export function findKey(gear: Gear, key: string): { grid: Grid; index: number } 
 /**
  * Opens, closes or unlocks door i for c, if it's in reach, and says what happened in an
  * event. A locked door with its key carried unlocks and opens in one go, using one of the
- * key's uses (gone at 0). A door with a cost is bought with the player's zombies points
- * instead, and opens in one go too. A door won't close on anyone standing in the doorway;
+ * key's uses (gone at 0). A door won't close on anyone standing in the doorway;
  * opening one into someone just pushes them aside as they next move. Enemies only ever open.
  */
 export function useDoor(
@@ -142,20 +137,7 @@ export function useDoor(
   const d = state.doors[i];
   if (!d || d.gone || c.health.dead || !doorInReach(world, c, i)) return;
   let result: DoorResult;
-  const cost = world.doors[i]!.cost;
-  const zombies = state.zombies;
-  if (d.locked && cost !== undefined) {
-    const have = zombies ? (zombies.points[c.id] ?? zombies.rules.points.start) : 0;
-    const free = !!c.admin?.infinitePoints;
-    if (c.ai || !zombies) result = 'locked';
-    else if (have < cost && !free) result = 'poor';
-    else {
-      if (!free) zombies.points[c.id] = have - cost;
-      d.locked = false;
-      d.gone = true;
-      result = 'bought';
-    }
-  } else if (d.locked && world.doors[i]!.key === undefined) {
+  if (d.locked && world.doors[i]!.key === undefined) {
     // Only its switch opens it.
     result = 'locked';
   } else if (d.locked) {
@@ -171,7 +153,7 @@ export function useDoor(
     if (c.ai) return;
     result = inDoorway(state, world, i) ? 'blocked' : 'closed';
   } else result = kick ? 'kicked' : 'opened';
-  if (result === 'opened' || result === 'kicked' || result === 'unlocked' || result === 'bought') {
+  if (result === 'opened' || result === 'kicked' || result === 'unlocked') {
     d.open = true;
     d.flipped = onPlusSide(world.doors[i]!, c);
   } else if (result === 'closed') d.open = false;

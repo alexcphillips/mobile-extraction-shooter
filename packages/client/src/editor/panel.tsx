@@ -41,7 +41,7 @@ import {
   CAMERA_START,
   GRID_SNAPS,
   MARKERS,
-  markersFor,
+  MARKER_LIST,
   PLACEABLE,
   QUICK,
   type EditorState,
@@ -165,23 +165,12 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
           title="What the marker tool places"
           onChange={(e) => editor.setMarker(e.target.value as MarkerKind)}
         >
-          {markersFor(s.zombies).map((kind) => (
+          {MARKER_LIST.map((kind) => (
             <option key={kind} value={kind}>
               {MARKERS[kind]}
             </option>
           ))}
         </select>
-        <label
-          className="ed-field"
-          title="A zombies map: the marker tool offers zombie spawns, barricades, wall guns and the mystery box instead of enemy spawns, loot, extractions and quest markers"
-        >
-          <input
-            type="checkbox"
-            checked={s.zombies}
-            onChange={(e) => editor.setZombies(e.target.checked)}
-          />
-          zombies
-        </label>
         <Toggle
           on={s.tool === 'zone'}
           onClick={() => editor.setTool('zone')}
@@ -665,7 +654,6 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
             point={s.point}
             tint={s.wall.glassColor}
             gap={s.wall.gap}
-            zombies={s.zombies}
           />
         )}
       </div>
@@ -1905,8 +1893,6 @@ function Inspector(props: {
   tint: string;
   /** The wall tool's gap between windows; 0 is even. */
   gap: number;
-  /** Whether it's a zombies map, for which of a door's fields show. */
-  zombies: boolean;
 }) {
   const { editor, node: n } = props;
   const edit: Edit = (change) => editor.editActive(change);
@@ -2091,17 +2077,9 @@ function Inspector(props: {
         </div>
       )}
       <MarkerFields editor={editor} node={n} num={num} mapId={props.mapId} />
-      {(n.type === 'door' || n.type === 'barricade') && (
-        <div className="ed-row">{vec('size', ['w', 'h'])}</div>
-      )}
+      {n.type === 'door' && <div className="ed-row">{vec('size', ['w', 'h'])}</div>}
       {n.type === 'door' && (
-        <DoorFields
-          edit={edit}
-          node={n}
-          num={num}
-          prefabs={[...editor.prefabs.keys()].sort()}
-          zombies={props.zombies}
-        />
+        <DoorFields edit={edit} node={n} num={num} prefabs={[...editor.prefabs.keys()].sort()} />
       )}
       {n.type === 'water' && (
         <>
@@ -2522,59 +2500,6 @@ function MarkerFields(props: { editor: MapEditor; node: MapNode; num: NumField; 
         </p>
       );
     }
-    case 'zombieSpawn':
-      return (
-        <>
-          <div className="ed-row" title="Zombies appear at a random spot within this">
-            {num('radius', 'spawn radius', 0)}
-          </div>
-          <Pick
-            label="window"
-            value={n.window}
-            options={editor.barricades()}
-            unset="none: hunts from here"
-            onChange={(v) => set('window', v)}
-          />
-        </>
-      );
-    case 'barricade':
-      return (
-        <>
-          <div className="ed-row" title="The most planks it takes, and starts with">
-            {num('planks', 'planks', 6)}
-          </div>
-          <p className="ed-note">
-            Click a wall to put it there, facing you (in a window, it fills it). Its arrow points
-            inside: turn it if that's the wrong way. Give the wall a window to match (the wall
-            tool), or the wall hides its planks. Zombie spawns name it to break in here.
-          </p>
-        </>
-      );
-    case 'wallBuy': {
-      const guns = [...loadItems().values()]
-        .filter((i) => i.type === 'weapon')
-        .map((i) => i.id)
-        .sort();
-      return (
-        <>
-          <Pick label="gun" value={n.item} options={guns} onChange={(v) => v && set('item', v)} />
-          <div className="ed-row" title="Points to buy it, and to buy its ammo once carried">
-            {num('cost', 'cost')}
-            {num('ammoCost', 'ammo cost', Math.round(n.cost / 2))}
-          </div>
-          <p className="ed-note">Hangs on the wall behind it: turn it so its flag points out.</p>
-        </>
-      );
-    }
-    case 'mysteryBox':
-      return (
-        <>
-          <div className="ed-row">{num('cost', 'cost')}</div>
-          <p className="ed-note">
-            Gives a random gun from the zombies mode's box list. Build the box itself beside it.
-          </p>
-        </>
-      );
     default:
       return null;
   }
@@ -2687,10 +2612,8 @@ function DoorFields(props: {
   edit: Edit;
   node: Extract<MapNode, { type: 'door' }>;
   num: NumField;
-  /** Prefab ids, for a look (zombies mode's couches). */
+  /** Prefab ids, for a look (something blocking the way until a switch opens it). */
   prefabs: string[];
-  /** A zombies map's doors are bought with points; an extraction map's are locked with keys. */
-  zombies: boolean;
 }) {
   const { edit, node: n } = props;
   const keys = [...loadItems().values()]
@@ -2712,20 +2635,13 @@ function DoorFields(props: {
         options={['left', 'right']}
         onChange={(v) => set('hinge', v === 'left' ? undefined : v)}
       />
-      {(!props.zombies || n.key !== undefined) && (
-        <Pick
-          label="key"
-          value={n.key}
-          options={keys}
-          unset="none: never locked"
-          onChange={(v) => set('key', v)}
-        />
-      )}
-      {(props.zombies || n.cost !== undefined) && (
-        <div className="ed-row" title="Zombies mode: points to buy it open, instead of a key">
-          {props.num('cost', 'zombies cost')}
-        </div>
-      )}
+      <Pick
+        label="key"
+        value={n.key}
+        options={keys}
+        unset="none: never locked"
+        onChange={(v) => set('key', v)}
+      />
       <Pick
         label="look"
         value={n.look}

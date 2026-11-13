@@ -2,7 +2,7 @@
 
 How to design and review map layouts and environments for tactical play. Read this before laying out or reviewing an area.
 
-**For the extraction mode's maps only** (the user's call, 2026-11-07), such as Northpoint and the test map. Other modes, like zombies, have their own goals, and these rules don't apply to them unless the user says so. It collects decisions made with the user. Where one is recorded in [design.md](design.md), that entry is the source; this page is the working summary. Add to it when a new principle is agreed.
+**For the extraction mode's maps only** (the user's call, 2026-11-07), such as Northpoint and the test map. Other modes would have their own goals, and these rules don't apply to them unless the user says so. It collects decisions made with the user. Where one is recorded in [design.md](design.md), that entry is the source; this page is the working summary. Add to it when a new principle is agreed.
 
 ## Principles
 

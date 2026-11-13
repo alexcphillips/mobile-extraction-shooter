@@ -62,7 +62,6 @@ import {
   LoadoutCard,
   LobbyNav,
   ModeList,
-  kitLook,
   lobbyLook,
   type ModeCard,
   type NavItem,
@@ -119,30 +118,12 @@ export interface MenuOptions {
   openSettings: (done: () => void) => void;
   /** The code of a party invite link the game was opened from, to join on arrival. */
   joinCode?: string | null;
-  /** Zombies modes (content/zombies), to play instead of a raid. */
-  zombies?: ZombiesChoice[];
 }
 
-/** A zombies mode the menu can start, with what its page shows about it. */
-export interface ZombiesChoice {
-  id: string;
-  name: string;
-  /** Its map's id in content/maps. */
-  map: string;
-  /** The points each player starts with. */
-  points: number;
-  /** Item ids of the gear everyone starts in (the knife besides). */
-  kit: string[];
-  /** Item ids of the mystery box's guns. */
-  box: string[];
-}
-
-/** What the player chose: a raid to start (or a zombies game), with the profile as saved. */
+/** What the player chose: a raid to start, with the profile as saved. */
 export interface MenuChoice {
   raid: string;
   me: ProfileResponse;
-  /** A zombies mode's id to play instead of the raid (2026-11-04). */
-  zombies?: string;
   /** A party raid: whether this device hosts it or joins it, and who's in it. */
   coop?: CoopOptions;
 }
@@ -192,13 +173,8 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
   const [raidId, setRaidId] = useState(
     () => opts.raids.find((r) => r.id === opts.raid)?.id ?? opts.raids[0]?.id,
   );
-  const zombiesModes = opts.zombies ?? [];
-  // The game mode whose menu shows; extraction if there's no zombies mode to pick.
-  const [mode, setMode] = useState<GameMode>(() =>
-    zombiesModes.length ? lastMode() : 'extraction',
-  );
-  const [zombiesId, setZombiesId] = useState(zombiesModes[0]?.id);
-  const zombiesMode = zombiesModes.find((z) => z.id === zombiesId) ?? zombiesModes[0];
+  // The game mode whose menu shows; extraction is the only one for now.
+  const [mode, setMode] = useState<GameMode>(lastMode);
   // The party and invites, kept fresh by the heartbeat while the menu shows (co-op C3).
   const [partyRes, setPartyRes] = useState<PartyResponse | null>(null);
   // Set further down, once what it needs is defined.
@@ -292,8 +268,8 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
     });
   }, [leading, raid, party?.raid]);
 
-  /** Saves the stash, then goes into the raid (or a zombies game, with zombies). */
-  const go = (raidId: string, coop?: CoopOptions, zombies?: string): void => {
+  /** Saves the stash, then goes into the raid. */
+  const go = (raidId: string, coop?: CoopOptions): void => {
     setBusy(true);
     void saver.flush().then((status) => {
       if (status.kind === 'failed') {
@@ -305,7 +281,6 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
         raid: raidId,
         me: saver.me,
         ...(coop ? { coop } : {}),
-        ...(zombies ? { zombies } : {}),
       });
     });
   };
@@ -410,10 +385,6 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
   // You as the lobby shows you, afresh each time you come back from another page.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const look = useMemo(() => lobbyLook(stash.player), [stash, page]);
-  const kit = useMemo(
-    () => (zombiesMode ? kitLook(opts.items, zombiesMode.kit) : null),
-    [opts.items, zombiesMode],
-  );
 
   if (page === 'vendors') {
     const progress = (r: ProfileResponse, q: QuestDef, o: string): number => {
@@ -622,8 +593,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
     setNotice(null);
     setSheet(null);
   };
-  const zombies = mode === 'zombies' && !!zombiesMode;
-  const accent = zombies ? ACCENT.zombies : ACCENT.extraction;
+  const accent = ACCENT.extraction;
   const modeCards: ModeCard[] = [
     {
       id: 'extraction',
@@ -631,16 +601,6 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
       line: 'Go in with your gear, loot what you can and get out alive. Die and you lose it.',
       tags: ['Solo or party', 'Keeps loot'],
     },
-    ...(zombiesModes.length
-      ? [
-          {
-            id: 'zombies',
-            name: 'Zombies',
-            line: 'Hold out against endless rounds. Earn points, open the box, rebuild the windows.',
-            tags: ['Solo', 'Fixed kit'],
-          },
-        ]
-      : []),
   ];
   const leaderName = party?.members.find((m) => m.id === party.leader)?.username ?? 'the leader';
   const partyStatus = together
@@ -652,63 +612,50 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
           ? `Waiting for ${waiting.map((m) => m.username).join(', ')}`
           : 'Everyone is ready'
     : undefined;
-  const nav: NavItem[] = zombies
-    ? [
-        {
-          id: 'friends',
-          label: 'Friends',
-          icon: 'friends',
-          badge: partyRes?.friendRequests ?? 0,
-          title: friendsLine(partyRes),
-          onClick: () => setPage('friends'),
-        },
-      ]
-    : [
-        {
-          id: 'stash',
-          label: 'Stash',
-          icon: 'stash',
-          title: loadoutLine(opts.items, me),
-          onClick: () => setPage('stash'),
-        },
-        {
-          id: 'vendors',
-          label: 'Vendors',
-          icon: 'vendors',
-          disabled: !opts.vendors.length,
-          // Quests live inside the vendors (2026-11-10), so their badge and line are here.
-          badge: questCounts(opts.quests, me).fresh,
-          title: opts.quests.length
-            ? questsLine(opts.quests, me)
-            : opts.vendors.map((v) => v.name).join(' · ') || 'None yet',
-          onClick: () => setPage('vendors'),
-        },
-        {
-          id: 'hangar',
-          label: 'Hangar',
-          icon: 'hangar',
-          disabled: !opts.hangar.length,
-          badge: readyCrafts(me),
-          title: hangarLine(opts.hangar, me),
-          onClick: () => setPage('hangar'),
-        },
-        {
-          id: 'friends',
-          label: 'Friends',
-          icon: 'friends',
-          badge: partyRes?.friendRequests ?? 0,
-          title: friendsLine(partyRes),
-          onClick: () => setPage('friends'),
-        },
-      ];
+  const nav: NavItem[] = [
+    {
+      id: 'stash',
+      label: 'Stash',
+      icon: 'stash',
+      title: loadoutLine(opts.items, me),
+      onClick: () => setPage('stash'),
+    },
+    {
+      id: 'vendors',
+      label: 'Vendors',
+      icon: 'vendors',
+      disabled: !opts.vendors.length,
+      // Quests live inside the vendors (2026-11-10), so their badge and line are here.
+      badge: questCounts(opts.quests, me).fresh,
+      title: opts.quests.length
+        ? questsLine(opts.quests, me)
+        : opts.vendors.map((v) => v.name).join(' · ') || 'None yet',
+      onClick: () => setPage('vendors'),
+    },
+    {
+      id: 'hangar',
+      label: 'Hangar',
+      icon: 'hangar',
+      disabled: !opts.hangar.length,
+      badge: readyCrafts(me),
+      title: hangarLine(opts.hangar, me),
+      onClick: () => setPage('hangar'),
+    },
+    {
+      id: 'friends',
+      label: 'Friends',
+      icon: 'friends',
+      badge: partyRes?.friendRequests ?? 0,
+      title: friendsLine(partyRes),
+      onClick: () => setPage('friends'),
+    },
+  ];
   if (import.meta.env.DEV) {
     nav.push({
       id: 'admin',
       label: 'Admin',
       icon: 'admin',
-      title: zombies
-        ? 'Infinite points, guns to start with, cheats (dev server only)'
-        : 'Give yourself items, turn on cheats (dev server only)',
+      title: 'Give yourself items, turn on cheats (dev server only)',
       onClick: () => setPage('admin'),
     });
   }
@@ -722,24 +669,24 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
     <header className="lobby-top">
       <button
         className="lobby-mode-button"
-        aria-label={`Game mode: ${zombies ? 'Zombies' : 'Extraction'}. Change`}
+        aria-label={`Game mode: ${mode === 'extraction' ? 'Extraction' : mode}. Change`}
         disabled={modeCards.length < 2}
         onClick={() => setSheet('modes')}
       >
         <Icon name="modes" size={16} />
         <span>
           <small>Mode</small>
-          {zombies ? 'Zombies' : 'Extraction'}
+          Extraction
         </span>
         {modeCards.length > 1 && <Icon name="chevron" size={14} />}
       </button>
       <span className="raid-spacer" />
-      {!zombies && (
+      {
         <span className="lobby-money" title={`${me.profile.money.toLocaleString()} money`}>
           ${me.profile.money.toLocaleString()}
         </span>
-      )}
-      {!zombies && <LevelBadge xp={me.profile.xp} />}
+      }
+      <LevelBadge xp={me.profile.xp} />
       <span className="lobby-who">{me.username}</span>
       <button
         className="lobby-icon-button"
@@ -764,17 +711,8 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
     </ul>
   );
 
-  // The card over Deploy: your loadout, or in zombies the kit everyone starts with.
-  const side = zombies ? (
-    <div className="lobby-card lobby-kit">
-      <span className="lobby-card-head">
-        <span>Starting kit</span>
-        <span className="lobby-worth">{zombiesMode.points.toLocaleString()} pts</span>
-      </span>
-      <p>{[...zombiesMode.kit.map((id) => itemDef(opts.items, id).name), 'Knife'].join(' · ')}</p>
-      <p className="lobby-card-note">Nothing from your stash goes in, and nothing comes out.</p>
-    </div>
-  ) : (
+  // The card over Deploy: your loadout.
+  const side = (
     <LoadoutCard
       items={opts.items}
       player={stash.player}
@@ -783,53 +721,10 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
     />
   );
 
-  const deployLine = zombies
-    ? `${zombiesMode.name} · solo`
-    : raid
-      ? `${raid.name} · ${Math.round(raid.duration / 60)} min`
-      : 'No maps';
+  const deployLine = raid ? `${raid.name} · ${Math.round(raid.duration / 60)} min` : 'No maps';
 
   let deploy: ReactNode = null;
-  if (sheet === 'deploy' && zombies) {
-    const names = (ids: readonly string[]): string =>
-      ids.map((id) => itemDef(opts.items, id).name).join(' · ');
-    deploy = (
-      <DeployScreen
-        title="Zombies"
-        entries={zombiesModes.map((z) => ({ id: z.id, name: z.name, line: 'Endless rounds' }))}
-        selected={zombiesMode.id}
-        onSelect={setZombiesId}
-        locked={null}
-        map={overviewMap(zombiesMode.map)}
-        info={
-          <>
-            <h3 className="lobby-intel-title">{zombiesMode.name}</h3>
-            <Fact icon="vendors" label="Points">
-              {zombiesMode.points.toLocaleString()}
-            </Fact>
-            <Fact icon="squad" label="Start with" block>
-              {names(zombiesMode.kit)} · Knife
-            </Fact>
-            <Fact icon="stash" label="Mystery box" block>
-              {names(zombiesMode.box)}
-            </Fact>
-            <p className="lobby-intel-note">
-              Zombies climb in through the windows, more and tougher each round. Shoot them and
-              rebuild barricades for points, then spend them on wall guns, doors and the box.
-            </p>
-          </>
-        }
-        action={{
-          label: busy ? 'Starting…' : 'Start game',
-          primary: true,
-          disabled: busy || !!party,
-          onClick: () => go('', undefined, zombiesMode.id),
-          status: party ? 'Solo only for now: leave the party to play' : undefined,
-        }}
-        onClose={() => setSheet(null)}
-      />
-    );
-  } else if (sheet === 'deploy' && raid) {
+  if (sheet === 'deploy' && raid) {
     const map = overviewMap(raid.map);
     const facts = map ? mapFacts(map) : null;
     deploy = (
@@ -898,12 +793,8 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
   }
 
   return (
-    <div className={`menu lobby${zombies ? ' zombies' : ''}`}>
-      <CharacterStage
-        items={opts.items}
-        character={zombies ? (kit ?? look) : look}
-        accent={accent}
-      />
+    <div className="menu lobby">
+      <CharacterStage items={opts.items} character={look} accent={accent} />
       {top}
       <div className="lobby-main">
         <LobbyNav items={nav} />
@@ -911,7 +802,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
         <div className="lobby-right">
           {side}
           {/* Party hangs left of Deploy so Deploy keeps the loadout card's width (2026-11-11). */}
-          {!zombies && (
+          {
             <button
               className={`lobby-chip lobby-party-button${together ? ' active' : ''}`}
               aria-label="Party"
@@ -921,18 +812,18 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
               <span>{party ? `${party.members.length}` : 'Party'}</span>
               {invites > 0 && <b className="lobby-badge">{invites}</b>}
             </button>
-          )}
+          }
           <button
             className="lobby-deploy-button"
-            disabled={zombies ? false : !raid}
+            disabled={!raid}
             onClick={() => {
               setNotice(null);
               setSheet('deploy');
             }}
           >
-            <span className="lobby-deploy-label">{zombies ? 'Play' : 'Deploy'}</span>
+            <span className="lobby-deploy-label">Deploy</span>
             <span className="lobby-deploy-line">{deployLine}</span>
-            {!zombies && partyStatus && <span className="lobby-deploy-line">{partyStatus}</span>}
+            {partyStatus && <span className="lobby-deploy-line">{partyStatus}</span>}
           </button>
         </div>
       </div>
@@ -947,13 +838,13 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
         <Drawer side="left" title="Game mode" onClose={() => setSheet(null)}>
           <ModeList
             modes={modeCards}
-            current={zombies ? 'zombies' : 'extraction'}
+            current={mode}
             disabled={busy}
             onPick={(id) => pickMode(id as GameMode)}
           />
         </Drawer>
       )}
-      {(sheet === 'party' || testReport) && !zombies && (
+      {(sheet === 'party' || testReport) && (
         <Drawer
           side="right"
           title="Party"

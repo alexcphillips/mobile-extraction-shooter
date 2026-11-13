@@ -43,7 +43,7 @@ export class EnemyBars {
     this.at.push(-1);
   }
 
-  /** Stops drawing one that has left the raid (a PMC that extracted, a cleared zombie). */
+  /** Stops drawing one that has left the raid (a PMC that extracted). */
   remove(c: Character): void {
     const i = this.chars.indexOf(c);
     if (i < 0) return;

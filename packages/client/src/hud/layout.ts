@@ -14,8 +14,6 @@ export type ControlId =
   | 'knife'
   | 'heal'
   | 'grenade'
-  | 'detonate'
-  | 'extinguish'
   | 'leanLeft'
   | 'leanRight'
   | 'breathe';
@@ -54,10 +52,6 @@ export const CONTROLS: readonly ControlDef[] = [
   { id: 'knife', label: '4', size: 46, x: 0.52, y: 0.9 },
   { id: 'heal', label: 'heal', size: 54, x: 0.6, y: 0.88 },
   { id: 'grenade', label: 'nade', size: 48, x: 0.6, y: 0.45 },
-  // Only shown while you have C4 placed (2026-10-31).
-  { id: 'detonate', label: 'detonate', size: 48, x: 0.6, y: 0.27 },
-  // Only shown while you're on fire (2026-10-31): big, and in reach of the right thumb.
-  { id: 'extinguish', label: 'put out', size: 64, x: 0.48, y: 0.62 },
   // Lean toggles (2026-11-01): a pair above fire, in reach of the right thumb between shots.
   { id: 'leanLeft', label: '◀ lean', size: 46, x: 0.76, y: 0.3 },
   { id: 'leanRight', label: 'lean ▶', size: 46, x: 0.86, y: 0.3 },

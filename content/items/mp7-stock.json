@@ -1,5 +1,5 @@
 {
-  "formatVersion": 11,
+  "formatVersion": 12,
   "id": "mp7-stock",
   "name": "MP7 skeleton stock",
   "shortName": "Stock",
@@ -15,7 +15,7 @@
   },
   "mods": {
     "recoil": 0.8,
-    "aimTime": 0.95
+    "ergonomics": 3
   },
   "model": {
     "parts": [

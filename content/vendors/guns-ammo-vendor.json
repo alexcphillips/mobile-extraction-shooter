@@ -79,18 +79,7 @@
       "count": 20
     },
     {
-      "item": "buckshot-inc",
-      "count": 20
-    },
-    {
-      "item": "flamethrower-fuel",
-      "count": 100
-    },
-    {
       "item": "smoke-grenade"
-    },
-    {
-      "item": "molotov"
     },
     {
       "item": "mp5",
@@ -154,17 +143,8 @@
       "level": 2
     },
     {
-      "item": "ammo-9mm-inc",
-      "count": 30,
-      "level": 2
-    },
-    {
       "item": "ammo-9x39",
       "count": 25,
-      "level": 2
-    },
-    {
-      "item": "flash-grenade",
       "level": 2
     },
     {
@@ -204,11 +184,6 @@
     },
     {
       "item": "ammo-762x39",
-      "count": 30,
-      "level": 3
-    },
-    {
-      "item": "ammo-762x39-inc",
       "count": 30,
       "level": 3
     },
@@ -267,11 +242,6 @@
       "level": 4
     },
     {
-      "item": "ammo-762-inc",
-      "count": 20,
-      "level": 4
-    },
-    {
       "item": "ammo-762-m62",
       "count": 20,
       "level": 4
@@ -304,10 +274,6 @@
     {
       "item": "ammo-9x39-sp6",
       "count": 25,
-      "level": 4
-    },
-    {
-      "item": "c4",
       "level": 4
     }
   ]

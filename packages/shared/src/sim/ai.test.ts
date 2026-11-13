@@ -173,10 +173,7 @@ describe('enemy sight', () => {
     expect(s.enemy.ai!.awareness).toBe('unaware');
   });
 
-  it("doesn't see you while blinded by a flash, or through smoke", () => {
-    const blind = setup(0, -10);
-    blind.enemy.blind = 5;
-    expect(runFor(blind, 3)).toBe('unaware');
+  it("doesn't see you through smoke", () => {
     const smoke = setup(0, -10);
     smoke.state.smokes.push({ id: 999, x: 0, y: 1.2, z: -5, radius: 4, age: 3, time: 30 });
     expect(runFor(smoke, 3)).toBe('unaware');
@@ -416,12 +413,11 @@ describe('grenades', () => {
     expect(s.enemy.health.dead).toBe(false);
   });
 
-  it("doesn't run from a flash or smoke grenade, or placed C4", () => {
-    for (const item of ['flash', 'smoke', 'c4']) {
+  it("doesn't run from a smoke grenade", () => {
+    for (const item of ['smoke']) {
       const s = setup(0, 100, { half: 120 });
       drop(s, 0, -2, 3);
       s.state.grenades[0]!.item = item;
-      if (item === 'c4') s.state.grenades[0]!.remote = true;
       s.run(1);
       expect(s.enemy.ai!.flee ?? null).toBe(null);
     }

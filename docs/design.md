@@ -23,6 +23,6 @@ From before the split: "These decisions were made in design sessions on 2026-10-
 | [design/tutorial.md](design/tutorial.md) | Tutorial (planned 2026-11-09 with the user) | 6 KB |
 | [design/controls.md](design/controls.md) | Controls and platform behavior | 10 KB |
 | [design/editors.md](design/editors.md) | Editors (admin only, desktop browser) | 13 KB |
-| [design/zombies.md](design/zombies.md) | Zombies (2026-11-04, the user's request and calls) | 7 KB |
+| [design/zombies.md](design/zombies.md) | Zombies: archived on the `zombies` branch (2026-11-13), and what went with it | 1 KB |
 
 References elsewhere in the form "design.md → Section" mean the topic file holding that section, listed above. "Raids and maps → Silver Creek" (or Northpoint, District, the Mall) means that map's file in `design/maps/` (split out 2026-11-12, MK-1).

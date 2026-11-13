@@ -14,8 +14,7 @@
   "rpm": 240,
   "magazine": 1,
   "reloadTime": 0.5,
-  "aimTime": 0.2,
-  "drawTime": 0.3,
+  "ergonomics": 78,
   "range": 100,
   "loudness": 5,
   "hipSpread": 0,
@@ -26,8 +25,8 @@
     "recovery": 18
   },
   "sounds": {
-    "shot": "crossbow-shot",
-    "suppressed": "crossbow-shot",
+    "shot": "pistol-shot-suppressed",
+    "suppressed": "pistol-shot-suppressed",
     "reload": "pistol-reload"
   },
   "spawns": "jug",

@@ -9,7 +9,6 @@ import { holdSwitch, tickSwitches } from './switches';
 import { syncGlass } from './glass';
 import { applyFall, bleed, painNoise } from './health';
 import { TICK_SECONDS } from '../tick';
-import { updateExtinguish, updateFire } from './fire';
 import { switchHand } from './gear';
 import { updateGrenades, updateThrow } from './grenades';
 import { applyInventory, canReach, searchContainer } from './looting';
@@ -23,7 +22,6 @@ import type { SimState, TickInputs } from './state';
 import { updateWeapon } from './weapons';
 import { snagOnWire } from './wire';
 import { countLoad, updateLoads } from './weight';
-import { buy, holdsDeathMachine, rebuild, updateZombies } from './zombies';
 
 /**
  * Advances the simulation by one fixed tick (TICK_SECONDS), in place. Mutating rather
@@ -33,8 +31,7 @@ import { buy, holdsDeathMachine, rebuild, updateZombies } from './zombies';
  * Enemies think at the end, from this tick's positions and events, and act on it next
  * tick. Without a nav grid they don't think, and stand still. The world and nav grid
  * follow the state's doors first. Inventory actions come first, so the rest of the tick
- * sees what they changed; then doors and investigating, switching hands, meds and putting
- * yourself out (which blocks switching hands, as a death machine does), and buying and rebuilding in zombies mode.
+ * sees what they changed; then doors and investigating, switching hands and meds.
  * Last, the raid: extracting, and the timer running out.
  */
 export function step(
@@ -74,19 +71,12 @@ export function step(
       if (owner && canReach(state, e, owner)) searchTick(state, e, looting);
     }
     if (inputs[e.id]?.investigate) investigate(state, e);
-    const spot = inputs[e.id]?.buy;
-    if (spot != null) buy(state, items, e, spot);
-    if (inputs[e.id]?.rebuild) rebuild(state, e);
   }
   // Switching hands and using meds before moving, which is slower while using one.
   for (const e of state.entities) {
     const input = e.health.dead ? undefined : (inputs[e.id] ?? e.ai?.input);
     if (e.draw > 0) e.draw = Math.max(0, e.draw - TICK_SECONDS);
-    if (e.blind) e.blind = Math.max(0, e.blind - TICK_SECONDS);
-    updateExtinguish(e, input);
-    // A death machine stays in the hands until it ends.
-    if (input?.draw && !e.extinguish && !holdsDeathMachine(state, e))
-      switchHand(e, items, input.draw);
+    if (input?.draw) switchHand(e, items, input.draw);
     updateMedUse(state, e, items, input);
     updatePacking(state, e, items, input, world);
   }
@@ -108,14 +98,10 @@ export function step(
   }
   // Thrown this tick or before: they fly, and those whose fuse is up go off. Smoke clears.
   updateGrenades(state, world, items);
-  // Flames fly and land, fire on the map burns down, and those alight burn.
-  updateFire(state, world, items);
   for (const e of state.entities) {
     bleed(state, e);
     painNoise(state, e);
   }
-  // Zombies mode: points, clearing away the dead and the rounds, before the new ones think.
-  if (nav) updateZombies(state, world, items, nav);
   if (nav) updateAi(state, world, items, nav);
   // Scavs arriving in waves and refilling freed slots, and the trickle to long fights.
   updateWaves(state, world, items);

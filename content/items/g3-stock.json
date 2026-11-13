@@ -1,5 +1,5 @@
 {
-  "formatVersion": 11,
+  "formatVersion": 12,
   "id": "g3-stock",
   "name": "G3 polymer stock",
   "shortName": "Stock",
@@ -15,7 +15,7 @@
   },
   "mods": {
     "recoil": 0.7,
-    "ergonomics": 1.1
+    "recovery": 1.1
   },
   "model": {
     "parts": [

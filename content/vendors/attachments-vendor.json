@@ -73,10 +73,6 @@
       "level": 2
     },
     {
-      "item": "crossbow",
-      "level": 2
-    },
-    {
       "item": "g18c",
       "level": 2
     },
@@ -110,11 +106,6 @@
     },
     {
       "item": "mag-545x39-45",
-      "level": 2
-    },
-    {
-      "item": "crossbow-bolt",
-      "count": 10,
       "level": 2
     },
     {
@@ -194,11 +185,6 @@
       "level": 3
     },
     {
-      "item": "crossbow-bolt-inc",
-      "count": 10,
-      "level": 3
-    },
-    {
       "item": "mcx-spear-stock",
       "level": 3
     },
@@ -236,14 +222,6 @@
     },
     {
       "item": "k10",
-      "level": 4
-    },
-    {
-      "item": "grenade-launcher",
-      "level": 4
-    },
-    {
-      "item": "flamethrower",
       "level": 4
     },
     {

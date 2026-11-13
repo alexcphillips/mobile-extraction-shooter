@@ -4,7 +4,7 @@ import type { EntityId, SimState } from './state';
 /*
  * Glass (design.md → Glass). A pane fills a window: solid to walk, vault and throw against,
  * seen through, and broken for the rest of the raid by a shot (which goes on through), a
- * knife, a blast in reach, or a grenade on an impact fuse (a molotov smashes on it). Breaking
+ * knife or a blast in reach. Breaking
  * is heard: enemies within GLASS.loudness go to look, less through walls.
  */
 
