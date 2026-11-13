@@ -1,30 +1,36 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ak-74m",
   "name": "AK-74M",
   "type": "weapon",
   "class": "assault",
-  "size": [4, 2],
-  "value": 22000,
+  "size": [3, 2],
+  "value": 16900,
+  "weight": 2.7,
   "rarity": "common",
   "ammo": "ammo-545x39",
   "hold": "rifle",
   "fireMode": "auto",
   "rpm": 650,
   "magazine": 30,
+  "feed": "magazine",
   "reloadTime": 2.4,
   "aimTime": 0.29,
   "drawTime": 0.8,
   "range": 325,
   "loudness": 185,
-  "slots": ["optic", "muzzle", "magazine", "laser"],
+  "defaults": {
+    "magazine": "ak-74m-mag",
+    "stock": "ak-74m-stock"
+  },
+  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
   "hipSpread": 3,
   "aimSpread": 0.5,
   "recoil": {
-    "up": 1.75,
-    "side": 0.57,
+    "up": 2.5,
+    "side": 0.81,
     "snap": 42,
-    "recovery": 3,
+    "recovery": 2.73,
     "angle": 6
   },
   "sounds": {
@@ -34,18 +40,8 @@
   },
   "model": {
     "parts": [
-      {
-        "type": "box",
-        "pos": [0, 0, -0.06],
-        "size": [0.05, 0.065, 0.26],
-        "color": "#2b2d2f"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.036, -0.04],
-        "size": [0.044, 0.01, 0.22],
-        "color": "#35383b"
-      },
+      { "type": "box", "pos": [0, 0, -0.06], "size": [0.05, 0.065, 0.26], "color": "#2b2d2f" },
+      { "type": "box", "pos": [0, 0.036, -0.04], "size": [0.044, 0.01, 0.22], "color": "#35383b" },
       {
         "type": "box",
         "pos": [0.031, 0.012, -0.15],
@@ -60,27 +56,6 @@
       },
       {
         "type": "box",
-        "pos": [0, -0.033, 0.2],
-        "size": [0.04, 0.07, 0.26],
-        "color": "#232527",
-        "pitch": 8
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.075, 0.285],
-        "size": [0.038, 0.06, 0.09],
-        "color": "#232527",
-        "pitch": 8
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.058, 0.333],
-        "size": [0.042, 0.112, 0.012],
-        "color": "#1d1f21",
-        "pitch": 8
-      },
-      {
-        "type": "box",
         "pos": [0, -0.075, 0.05],
         "size": [0.034, 0.09, 0.04],
         "color": "#232527",
@@ -92,18 +67,8 @@
         "size": [0.012, 0.006, 0.07],
         "color": "#1d1f21"
       },
-      {
-        "type": "box",
-        "pos": [0, -0.008, -0.27],
-        "size": [0.05, 0.05, 0.16],
-        "color": "#232527"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.032, -0.26],
-        "size": [0.036, 0.028, 0.13],
-        "color": "#232527"
-      },
+      { "type": "box", "pos": [0, -0.008, -0.27], "size": [0.05, 0.05, 0.16], "color": "#232527" },
+      { "type": "box", "pos": [0, 0.032, -0.26], "size": [0.036, 0.028, 0.13], "color": "#232527" },
       {
         "type": "cylinder",
         "pos": [0, 0.005, -0.37],
@@ -112,12 +77,7 @@
         "color": "#1d1f21",
         "pitch": 90
       },
-      {
-        "type": "box",
-        "pos": [0, 0.022, -0.37],
-        "size": [0.028, 0.04, 0.024],
-        "color": "#2b2d2f"
-      },
+      { "type": "box", "pos": [0, 0.022, -0.37], "size": [0.028, 0.04, 0.024], "color": "#2b2d2f" },
       {
         "type": "box",
         "pos": [0, 0.018, -0.48],
@@ -183,22 +143,6 @@
         "color": "#2b2d2f",
         "pitch": 90,
         "hiddenBy": "muzzle"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.07, -0.09],
-        "size": [0.03, 0.08, 0.07],
-        "color": "#6b3a2e",
-        "pitch": 10,
-        "hiddenBy": "magazine"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.138, -0.11],
-        "size": [0.03, 0.065, 0.065],
-        "color": "#6b3a2e",
-        "pitch": 25,
-        "hiddenBy": "magazine"
       }
     ],
     "grip": [0, -0.07, 0.05],
@@ -209,7 +153,12 @@
       "optic": [0, 0.041, -0.04],
       "muzzle": [0, 0.005, -0.54],
       "magazine": [0, -0.035, -0.085],
-      "laser": [0.037, -0.003, -0.33]
+      "laser": [0.037, -0.003, -0.33],
+      "stock": [0, -0.033, 0.07]
+    },
+    "stockFold": {
+      "pivot": [-0.025, 0, 0],
+      "yaw": 180
     }
   }
 }

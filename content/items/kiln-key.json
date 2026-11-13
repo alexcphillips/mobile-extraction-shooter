@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "kiln-key",
   "name": "Silver Creek drying kiln key",
   "shortName": "Kiln key",
   "type": "key",
   "size": [1, 1],
   "value": 12000,
+  "weight": 0.02,
   "rarity": "uncommon",
   "uses": 5,
   "model": {

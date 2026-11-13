@@ -318,7 +318,9 @@ export class NavGrid {
       const sb = side[b]!;
       if (sa < 0 || sb < 0) continue;
       const m = this.nodeNear(q + DIR_Q[d]!, r + DIR_R[d]!, h);
-      if (m < 0) continue;
+      // The corner between them too (MK-6, 2026-11-12): two walls meeting there can leave
+      // both sides open from outside, and the diagonal would cut through the corner one way.
+      if (m < 0 || !this.canCross(world, node, m)) continue;
       const hm = this.heights[m]!;
       if (
         Math.abs(this.heights[sa]! - hm) <= NAV.climb &&

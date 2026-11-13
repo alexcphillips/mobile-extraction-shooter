@@ -50,8 +50,54 @@ body.item-editor #scene {
 #editor .ie-type {
   all: unset;
   display: block;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   cursor: pointer;
+}
+
+.ie-group-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Opens a group's count by rarity (2026-11-12). */
+#editor .ie-rarity-btn {
+  all: unset;
+  flex: none;
+  padding: 0 4px;
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+#editor .ie-rarity-btn:hover,
+#editor .ie-rarity-btn-on {
+  opacity: 1;
+}
+
+#editor .ie-rarity-btn:focus-visible {
+  outline: 1px solid var(--ed-dim);
+}
+
+.ie-rarity-table {
+  margin: 2px 0 6px 1.2em;
+  font-size: 11px;
+  border-collapse: collapse;
+  text-transform: capitalize;
+}
+
+.ie-rarity-table td {
+  padding: 1px 8px 1px 0;
+}
+
+.ie-rarity-table td:not(:first-child) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ie-rarity-total {
+  color: var(--ed-dim);
+  border-top: 1px solid var(--ed-dim);
 }
 
 #editor .ie-type:disabled {
@@ -880,4 +926,25 @@ body.item-editor #scene {
 
 .ie-sec-table > span:has(.ed-num) {
   display: block;
+}
+
+/* A helmet's view (GZ-2), as the game draws it (style.css, #helmet-view), on a 16:9 card. */
+.ie-vision {
+  position: relative;
+  width: 240px;
+  aspect-ratio: 16 / 9;
+  margin-top: 6px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: linear-gradient(#6d8fa8, #a7b9a0 55%, #5e6b48 56%, #4a5638);
+}
+
+.ie-vision > div {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgb(5 5 5 / calc(var(--vignette) * 0.95)) 100%
+  );
 }

@@ -179,7 +179,7 @@ export function itemOrigins(): ReadonlyMap<string, ItemSource> {
     raids ??= loadById(RAID_FORMAT, raidFiles);
     // The tutorial's raid (offline) isn't somewhere items come from.
     const raidMaps = [...raids.values()]
-      .filter((r) => !r.offline)
+      .filter((r) => !r.offline && !r.dev)
       .map((r) => ({
         id: r.map,
         name: r.name,
@@ -205,7 +205,7 @@ export function itemOrigins(): ReadonlyMap<string, ItemSource> {
 export function warmItemOrigins(): void {
   if (origins) return;
   raids ??= loadById(RAID_FORMAT, raidFiles);
-  const online = [...raids.values()].filter((r) => !r.offline);
+  const online = [...raids.values()].filter((r) => !r.offline && !r.dev);
   const left = [...new Set(online.map((r) => r.map))].filter((m) => !compiledMarkers.has(m));
   const step = (): void => {
     if (origins) return;
@@ -568,11 +568,14 @@ function countLootTable(value: unknown, id: string): number {
   );
 }
 
-/** The raids to pick from, in their `order`: not the offline ones (the tutorial's). */
+/**
+ * The raids to pick from, in their `order`: not the offline ones (the tutorial's), and the
+ * `dev` ones (maps still being built) in dev builds only.
+ */
 export function raidIds(): string[] {
   raids ??= loadById(RAID_FORMAT, raidFiles);
   return [...raids.values()]
-    .filter((r) => !r.offline)
+    .filter((r) => !r.offline && (!r.dev || import.meta.env.DEV))
     .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity) || a.id.localeCompare(b.id))
     .map((r) => r.id);
 }

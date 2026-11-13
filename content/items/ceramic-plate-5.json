@@ -1,0 +1,28 @@
+{
+  "formatVersion": 11,
+  "id": "ceramic-plate-5",
+  "name": "Ceramic plate V",
+  "shortName": "Ceramic V",
+  "type": "plate",
+  "size": [2, 2],
+  "value": 24000,
+  "weight": 3,
+  "rarity": "legendary",
+  "level": 5,
+  "durability": 45,
+  "repairLoss": 0.3,
+  "material": "ceramic",
+  "model": {
+    "parts": [
+      {
+        "type": "slab",
+        "pos": [0, 0, 0],
+        "size": [0.25, 0.022, 0.3],
+        "corners": [0.05, 0.05, 0.02, 0.02],
+        "color": "#4c5a36"
+      },
+      { "type": "box", "pos": [0, 0.012, 0.04], "size": [0.14, 0.003, 0.06], "color": "#d8d2c0" }
+    ]
+  },
+  "view": "top"
+}

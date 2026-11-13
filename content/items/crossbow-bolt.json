@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "crossbow-bolt",
   "name": "Crossbow bolts",
   "shortName": "Bolts",
   "type": "ammo",
   "size": [1, 1],
   "value": 150,
+  "weight": 0.04,
   "rarity": "common",
   "stack": 20,
   "caliber": "bolt",

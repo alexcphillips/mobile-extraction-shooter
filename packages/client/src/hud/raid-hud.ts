@@ -48,13 +48,46 @@ export class RaidHud {
   private warnClass = true;
   /** The use ring's percentage, or −1 hidden. */
   private useShown = -1;
+  /** The breath ring's percentage, or −1 hidden. */
+  private breathShown = -1;
+  /** The stamina bar's percentage and whether it's winded, or '' hidden. */
+  private staminaShown = '';
 
   constructor(
     private readonly timer: HTMLElement,
     private readonly extract: HTMLElement,
     private readonly prompt: HTMLElement,
     private readonly useRing: HTMLElement,
+    private readonly breathRing: HTMLElement,
+    private readonly staminaBar: HTMLElement,
   ) {}
+
+  /**
+   * The thin bar under the sights (BW-4): stamina left, 0 to 1, or null hidden (full). Red
+   * while winded: run dry, no sprint until it's back over STAMINA.recover.
+   */
+  setStamina(fraction: number | null, winded: boolean): void {
+    const pct = fraction === null ? -1 : Math.min(100, Math.round(fraction * 100));
+    const key = pct < 0 ? '' : `${pct} ${winded}`;
+    if (key === this.staminaShown) return;
+    this.staminaShown = key;
+    this.staminaBar.hidden = pct < 0;
+    if (pct < 0) return;
+    this.staminaBar.style.setProperty('--left', `${pct}%`);
+    this.staminaBar.classList.toggle('winded', winded);
+  }
+
+  /**
+   * The faint ring round the sights while aimed (BW-1): how much held breath is left, 0 to 1,
+   * or null hidden. A trial against showing nothing, as the sway alone may be enough.
+   */
+  setBreath(fraction: number | null): void {
+    const shown = fraction === null ? -1 : Math.min(100, Math.round(fraction * 100));
+    if (shown === this.breathShown) return;
+    this.breathShown = shown;
+    this.breathRing.hidden = shown < 0;
+    if (shown >= 0) this.breathRing.style.setProperty('--left', `${shown}%`);
+  }
 
   /** The ring round the crosshair while holding the use button: how far along, 0 to 1. */
   setUse(fraction: number | null): void {

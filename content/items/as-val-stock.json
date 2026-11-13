@@ -1,0 +1,44 @@
+{
+  "formatVersion": 11,
+  "id": "as-val-stock",
+  "name": "AS VAL skeleton stock",
+  "shortName": "Stock",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 5000,
+  "weight": 0.4,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["as-val"],
+  "stock": {
+    "length": 1
+  },
+  "mods": {
+    "recoil": 0.8,
+    "aimTime": 0.95
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, 0.11],
+        "radius": 0.008,
+        "height": 0.22,
+        "color": "#1d1f21",
+        "pitch": 90
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.05, 0.11],
+        "size": [0.012, 0.012, 0.22],
+        "color": "#1d1f21",
+        "pitch": 14
+      },
+      { "type": "box", "pos": [0, -0.03, 0.225], "size": [0.03, 0.1, 0.012], "color": "#1d1f21" }
+    ],
+    "fold": {
+      "pivot": [-0.019, 0, 0],
+      "yaw": 180
+    }
+  }
+}

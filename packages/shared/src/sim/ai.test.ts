@@ -17,7 +17,8 @@ import { equip, heldWeapon, stow } from './gear';
 import { createItem } from './create-item';
 import { CHEST, HEAD, LEFT_LEG, RIGHT_LEG } from './health';
 import { giveWeapon } from './weapons';
-import { TEST_ITEMS } from './test-items';
+import { TEST_ITEMS, carryLoad } from './test-items';
+import { WEIGHT } from './weight';
 
 /** Flat ground, half meters each way from the origin. */
 function makeWorld(boxes: BoxDef[] = [], half = 60, foliage?: BoxDef[]): CollisionWorld {
@@ -105,6 +106,7 @@ function setup(
     ...options.flags,
   });
   const player = spawnCharacter(state, world, px, pz);
+  carryLoad(player, WEIGHT.reference);
   const run = (seconds: number, inp = input()): void => {
     for (let i = 0; i < seconds * TICK_RATE; i++)
       step(state, world, TEST_ITEMS, { [player.id]: inp }, nav);

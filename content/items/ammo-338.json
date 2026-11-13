@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-338",
   "name": ".338 Lapua Magnum FMJ",
   "shortName": ".338 FMJ",
   "type": "ammo",
   "size": [1, 1],
   "value": 700,
+  "weight": 0.045,
   "rarity": "epic",
   "stack": 20,
   "caliber": ".338LM",

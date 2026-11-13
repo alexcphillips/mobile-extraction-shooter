@@ -1,4 +1,4 @@
-import { isArmoredRig, itemDef, type ItemDb } from '../content/items';
+import { carrierOf, isArmoredRig, itemDef, type ItemDb } from '../content/items';
 import {
   addItem,
   countOf,
@@ -57,6 +57,7 @@ export const GEAR_SLOTS = [
   'sidearm',
   'knife',
   'helmet',
+  'headset',
   'bodyArmor',
   'rig',
   'backpack',
@@ -79,6 +80,8 @@ export interface Gear {
   /** What's in its hands. A gun slot that's empty means empty hands. */
   hand: Hand;
   helmet: ArmorState | null;
+  /** A headset (GZ-2): hearing. Shut while the helmet covers the ears. */
+  headset: Item | null;
   bodyArmor: ArmorState | null;
   rig: ContainerState | null;
   backpack: ContainerState | null;
@@ -95,6 +98,7 @@ export function createGear(vault: boolean): Gear {
     knife: null,
     hand: 'primary1',
     helmet: null,
+    headset: null,
     bodyArmor: null,
     rig: null,
     backpack: null,
@@ -123,6 +127,8 @@ export function fitsSlot(items: ItemDb, slot: GearSlot, item: Item): boolean {
       return def.type === 'melee';
     case 'helmet':
       return def.type === 'armor' && def.slot === 'helmet';
+    case 'headset':
+      return def.type === 'headset';
     case 'bodyArmor':
       return def.type === 'armor' && def.slot === 'body';
     case 'rig':
@@ -139,6 +145,56 @@ export function chestArmor(items: ItemDb, gear: Gear): ArmorState | null {
   if (gear.bodyArmor) return gear.bodyArmor;
   const rig = gear.rig;
   return rig && isArmoredRig(itemDef(items, rig.item)) ? (rig as ArmorState) : null;
+}
+
+/** Why the headset slot is shut while a helmet covers the ears (GZ-2, gearConflict). */
+export const EARS_COVERED = 'Your helmet covers your ears: take it off to wear a headset';
+/** Why a helmet that covers the ears can't go on over a headset (gearConflict). */
+export const HEADSET_WORN = 'Take off your headset first: this helmet covers your ears';
+
+/** Why a chest rig can't go over a bulky carrier, and the other way round (GZ-4). */
+export const CARRIER_BULKY = 'Your armor is bulky: no chest rig over it';
+export const RIG_WORN = 'Take off your rig first: this armor is too bulky for one';
+
+/** Whether a helmet shuts the headset slot (GZ-2). */
+export function blocksHeadset(items: ItemDb, helmet: Item | null): boolean {
+  const def = helmet && itemDef(items, helmet.item);
+  return def?.type === 'armor' && !!def.blocksHeadset;
+}
+
+/**
+ * How much better (+) or worse (−) a character hears with what's on its head (GZ-2): the
+ * helmet's and the headset's together, as a share. Client audio only.
+ */
+export function hearingOf(items: ItemDb, gear: Gear): number {
+  const helmet = gear.helmet && itemDef(items, gear.helmet.item);
+  const headset = gear.headset && itemDef(items, gear.headset.item);
+  return (
+    (helmet?.type === 'armor' ? (helmet.hearing ?? 0) : 0) +
+    (headset?.type === 'headset' ? headset.hearing : 0)
+  );
+}
+
+/** The slots whose gear can slow aiming and moving (GZ-1). */
+const BURDEN_SLOTS = ['helmet', 'bodyArmor', 'rig', 'backpack'] as const;
+
+/**
+ * What a character's worn gear costs it (GZ-1): aim time (×, 1 or more) and move speed
+ * (×, 1 or less), every piece's multiplied. Players only: the sim keeps it on
+ * Character.burden, counted with the load.
+ */
+export function gearBurden(items: ItemDb, gear: Gear): { aimTime: number; moveSpeed: number } {
+  let aimTime = 1;
+  let moveSpeed = 1;
+  for (const slot of BURDEN_SLOTS) {
+    const it = gear[slot];
+    if (!it) continue;
+    const def = itemDef(items, it.item);
+    if (def.type !== 'armor' && def.type !== 'container') continue;
+    aimTime *= def.aimTime ?? 1;
+    moveSpeed *= def.moveSpeed ?? 1;
+  }
+  return { aimTime, moveSpeed };
 }
 
 /** Why the body armor slot is shut while an armored rig is worn (gearConflict). */
@@ -158,6 +214,12 @@ export function gearConflict(items: ItemDb, gear: Gear, slot: GearSlot, item: It
     if (rig && isArmoredRig(itemDef(items, rig.item))) return ARMORED_RIG_WORN;
   }
   if (slot === 'rig' && isArmoredRig(def) && gear.bodyArmor) return BODY_ARMOR_WORN;
+  if (slot === 'headset' && blocksHeadset(items, gear.helmet)) return EARS_COVERED;
+  const body = gear.bodyArmor && itemDef(items, gear.bodyArmor.item);
+  if (slot === 'rig' && body && carrierOf(body)?.blocksRig) return CARRIER_BULKY;
+  if (slot === 'bodyArmor' && carrierOf(def)?.blocksRig && gear.rig) return RIG_WORN;
+  if (slot === 'helmet' && def.type === 'armor' && def.blocksHeadset && gear.headset)
+    return HEADSET_WORN;
   return null;
 }
 

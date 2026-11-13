@@ -2,6 +2,7 @@ import {
   ATTACHMENT_SLOTS,
   addVec,
   fits,
+  foldParts,
   modelShapes,
   partSchema,
   type AttachmentDef,
@@ -13,6 +14,7 @@ import {
   type Vec3,
   type WeaponDef,
   type WeaponState,
+  type Fold,
 } from '@mes/shared';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Combo, HexColor, Num, Pick, Text, Toggle } from '../editor/fields';
@@ -138,6 +140,7 @@ const asPicked = (indices: readonly number[]): Picked =>
 export const gunState = (
   item: string,
   attachments: Partial<Record<AttachmentSlot, string>>,
+  folded = false,
 ): WeaponState =>
   ({
     item,
@@ -150,7 +153,9 @@ export const gunState = (
       muzzle: attachments.muzzle ?? null,
       magazine: attachments.magazine ?? null,
       laser: attachments.laser ?? null,
+      stock: attachments.stock ?? null,
     },
+    ...(folded && attachments.stock && { folded: true }),
   }) as WeaponState;
 
 export function ModelTab(props: {
@@ -172,7 +177,11 @@ export function ModelTab(props: {
   const [step, setStep] = useState(0.005);
   const [angle, setAngle] = useState(15);
   /** Weapons: what's previewed in each slot. */
-  const [fitted, setFitted] = useState<Partial<Record<AttachmentSlot, string>>>({});
+  const [fitted, setFitted] = useState<Partial<Record<AttachmentSlot, string>>>(() =>
+    def.type === 'weapon' ? { ...def.defaults } : {},
+  );
+  /** WF-1: the stock previewed folded (nothing can be picked while it is). */
+  const [folded, setFolded] = useState(false);
   /** Attachments: the gun it's previewed on. */
   const [onGun, setOnGun] = useState<string | undefined>(undefined);
   const [clip, setClip] = useState<Clip | null>(readClip);
@@ -190,6 +199,8 @@ export function ModelTab(props: {
     setShown(def.id);
     setPicked(null);
     setMode('build');
+    setFitted(def.type === 'weapon' ? { ...def.defaults } : {});
+    setFolded(false);
   }
 
   // A fit opened from the fits page (set while rendering, like a new item above).
@@ -263,21 +274,38 @@ export function ModelTab(props: {
       : undefined;
   };
 
+  // WF-1: how the previewed stock folds, if it does: the gun's mount, else the stock's own.
+  const stockId =
+    def.type === 'weapon'
+      ? fittedOk('stock')
+      : def.type === 'attachment' && def.slot === 'stock'
+        ? def.id
+        : undefined;
+  const stockDef = stockId ? items.get(stockId) : undefined;
+  const mountFold = def.type === 'weapon' ? def.model.stockFold : gun?.model.stockFold;
+  const fold =
+    mountFold ?? (stockDef?.type === 'attachment' ? stockDef.model.fold : undefined) ?? null;
+  const foldedView = folded && !!fold;
+
   // What the view draws, and first person, from the item as edited.
-  const scene = buildScene(def, model, items, fittedOk, gun);
+  const scene = buildScene(def, model, items, fittedOk, gun, foldedView ? fold : null);
   const fp: FirstPerson | null = !db
     ? null
     : def.type === 'weapon'
       ? {
           kind: 'gun',
-          gun: gunState(def.id, Object.fromEntries(ATTACHMENT_SLOTS.map((k) => [k, fittedOk(k)]))),
+          gun: gunState(
+            def.id,
+            Object.fromEntries(ATTACHMENT_SLOTS.map((k) => [k, fittedOk(k)])),
+            foldedView,
+          ),
           db,
           optic: opticOf(db, fittedOk('optic')),
         }
       : def.type === 'attachment' && gun
         ? {
             kind: 'gun',
-            gun: gunState(gun.id, { [def.slot]: def.id }),
+            gun: gunState(gun.id, { [def.slot]: def.id }, foldedView),
             db,
             optic: def.slot === 'optic' ? (def.optic ?? null) : null,
           }
@@ -625,6 +653,18 @@ export function ModelTab(props: {
               onChange={(v) => setOnGun(v)}
             />
           )}
+          {fold && (
+            <Toggle
+              on={foldedView}
+              onClick={() => {
+                setFolded(!folded);
+                setPicked(null);
+              }}
+              title="Shows the stock folded, as it is in the game; parts can't be picked meanwhile"
+            >
+              folded
+            </Toggle>
+          )}
         </div>
         <div className="ie-canvas">
           <canvas ref={canvas} />
@@ -670,6 +710,15 @@ function opticOf(db: ItemDb, id: string | undefined) {
 }
 
 /** Shapes, skipping any that a half-typed field has broken. */
+/** A model's parts folded, or as they are if the fold is half typed in. */
+function safeFold(parts: readonly ModelPart[], fold: Fold): readonly ModelPart[] {
+  try {
+    return foldParts(parts, fold);
+  } catch {
+    return parts;
+  }
+}
+
 function safeShapes(
   parts: readonly ModelPart[],
   at?: Vec3,
@@ -690,6 +739,7 @@ function buildScene(
   items: ReadonlyMap<string, ItemDef>,
   fitted: (slot: AttachmentSlot) => string | undefined,
   gun: WeaponDef | undefined,
+  fold: Fold | null,
 ): ModelScene {
   const points = pointKeys(def).flatMap((key) => {
     const at = pointAt(model, key);
@@ -712,7 +762,8 @@ function buildScene(
       const a = items.get(fitted(slot)!) as AttachmentDef;
       const mount = pointAt(model, `mounts.${slot}`);
       if (!mount) continue;
-      context.push(...safeShapes(a.model.parts, mount));
+      const parts = slot === 'stock' && fold ? safeFold(a.model.parts, fold) : a.model.parts;
+      context.push(...safeShapes(parts, mount));
       if (slot === 'optic' && a.model.sight) sight = addVec(mount, a.model.sight);
     }
     scene.context = context;
@@ -723,6 +774,12 @@ function buildScene(
       // The gun around it, moved so this attachment's origin stays at the origin.
       const back: Vec3 = [-mount[0], -mount[1], -mount[2]];
       scene.context = safeShapes(gun.model.parts, back, (s) => s === def.slot);
+    }
+    if (fold) {
+      // Folded: drawn as context, so nothing is picked or moved where it doesn't live.
+      scene.context = [...scene.context, ...safeShapes(safeFold(model.parts, fold))];
+      scene.parts = [];
+      scene.points = [];
     }
     if (def.slot === 'optic') scene.sightLine = pointAt(model, 'sight') ?? null;
   }

@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "smoke-grenade",
   "name": "Smoke grenade",
   "shortName": "Smoke",
   "type": "grenade",
   "size": [1, 1],
   "value": 2000,
+  "weight": 0.5,
   "rarity": "common",
   "effect": "smoke",
   "fuse": 2,

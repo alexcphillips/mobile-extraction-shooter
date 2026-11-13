@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-556x45-m855a1",
   "name": "5.56×45 mm M855A1",
   "shortName": "5.56 M855A1",
   "type": "ammo",
   "size": [1, 1],
   "value": 150,
+  "weight": 0.012,
   "rarity": "epic",
   "stack": 60,
   "caliber": "5.56x45",

@@ -1,30 +1,36 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "m416",
   "name": "M416",
   "type": "weapon",
   "class": "assault",
-  "size": [5, 2],
-  "value": 34000,
+  "size": [4, 2],
+  "value": 27400,
+  "weight": 2.6,
   "rarity": "common",
   "ammo": "ammo-556x45",
   "hold": "rifle",
   "fireMode": "auto",
   "rpm": 850,
   "magazine": 30,
+  "feed": "magazine",
   "reloadTime": 2.3,
-  "aimTime": 0.26,
+  "aimTime": 0.248,
   "drawTime": 0.8,
   "range": 250,
   "loudness": 185,
-  "slots": ["optic", "muzzle", "laser"],
+  "defaults": {
+    "magazine": "m416-mag",
+    "stock": "m416-stock"
+  },
+  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
   "hipSpread": 3,
   "aimSpread": 0.4,
   "recoil": {
-    "up": 1.85,
-    "side": 0.84,
+    "up": 3.08,
+    "side": 1.4,
     "snap": 42,
-    "recovery": 3,
+    "recovery": 2.5,
     "angle": 5
   },
   "sounds": {
@@ -34,18 +40,8 @@
   },
   "model": {
     "parts": [
-      {
-        "type": "box",
-        "pos": [0, 0.02, 0.04],
-        "size": [0.042, 0.045, 0.18],
-        "color": "#232527"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.05, -0.075],
-        "size": [0.022, 0.012, 0.41],
-        "color": "#1d1f21"
-      },
+      { "type": "box", "pos": [0, 0.02, 0.04], "size": [0.042, 0.045, 0.18], "color": "#232527" },
+      { "type": "box", "pos": [0, 0.05, -0.075], "size": [0.022, 0.012, 0.41], "color": "#1d1f21" },
       {
         "type": "box",
         "pos": [0.0215, 0.02, 0.06],
@@ -58,18 +54,8 @@
         "size": [0.008, 0.012, 0.012],
         "color": "#1d1f21"
       },
-      {
-        "type": "box",
-        "pos": [0, 0.03, 0.14],
-        "size": [0.03, 0.012, 0.02],
-        "color": "#1d1f21"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.012, -0.19],
-        "size": [0.05, 0.062, 0.28],
-        "color": "#2b2e31"
-      },
+      { "type": "box", "pos": [0, 0.03, 0.14], "size": [0.03, 0.012, 0.02], "color": "#1d1f21" },
+      { "type": "box", "pos": [0, 0.012, -0.19], "size": [0.05, 0.062, 0.28], "color": "#2b2e31" },
       {
         "type": "box",
         "pos": [0.026, 0.012, -0.19],
@@ -177,44 +163,10 @@
         "name": "front sight ear",
         "group": "iron sights"
       },
-      {
-        "type": "box",
-        "pos": [0, -0.025, 0.05],
-        "size": [0.04, 0.045, 0.2],
-        "color": "#232527"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.065, -0.02],
-        "size": [0.036, 0.04, 0.05],
-        "color": "#232527"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.12, -0.022],
-        "size": [0.026, 0.08, 0.06],
-        "color": "#2a2d30",
-        "pitch": 6
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.185, -0.034],
-        "size": [0.026, 0.06, 0.058],
-        "color": "#2a2d30",
-        "pitch": 14
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.07, 0.05],
-        "size": [0.012, 0.008, 0.06],
-        "color": "#1d1f21"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.058, 0.04],
-        "size": [0.006, 0.02, 0.006],
-        "color": "#1d1f21"
-      },
+      { "type": "box", "pos": [0, -0.025, 0.05], "size": [0.04, 0.045, 0.2], "color": "#232527" },
+      { "type": "box", "pos": [0, -0.065, -0.02], "size": [0.036, 0.04, 0.05], "color": "#232527" },
+      { "type": "box", "pos": [0, -0.07, 0.05], "size": [0.012, 0.008, 0.06], "color": "#1d1f21" },
+      { "type": "box", "pos": [0, -0.058, 0.04], "size": [0.006, 0.02, 0.006], "color": "#1d1f21" },
       {
         "type": "box",
         "pos": [0, -0.09, 0.1],
@@ -229,24 +181,6 @@
         "height": 0.14,
         "color": "#1d1f21",
         "pitch": 90
-      },
-      {
-        "type": "box",
-        "pos": [0, 0, 0.26],
-        "size": [0.04, 0.06, 0.12],
-        "color": "#2b2e31"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.045, 0.295],
-        "size": [0.038, 0.04, 0.05],
-        "color": "#2b2e31"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.015, 0.322],
-        "size": [0.042, 0.1, 0.01],
-        "color": "#1d1f21"
       }
     ],
     "grip": [0, -0.08, 0.1],
@@ -256,7 +190,9 @@
     "mounts": {
       "optic": [0, 0.056, 0.08],
       "muzzle": [0, 0.012, -0.4],
-      "laser": [0.04, 0.004, -0.26]
+      "magazine": [0, -0.08, -0.022],
+      "laser": [0.04, 0.004, -0.26],
+      "stock": [0, 0, 0.2]
     }
   }
 }

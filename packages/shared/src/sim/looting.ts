@@ -5,7 +5,15 @@ import {
   attachmentDef,
   firesRound,
   fits,
+  isMagazine,
   itemDef,
+  magazineFed,
+  mountsOn,
+  carrierOf,
+  CARRIER,
+  type PlateSide,
+  roundOf,
+  stockFolds,
   weaponDef,
   type AttachmentSlot,
   type ItemDb,
@@ -17,6 +25,7 @@ import {
   createGrid,
   dropAt,
   findSpot,
+  inGrid,
   itemHeight,
   itemWidth,
   placeAt,
@@ -43,6 +52,15 @@ import type { CollisionWorld } from '../world/collision-world';
 import { isRevealed, revealed } from './search';
 import { createItem } from './create-item';
 import { dropItem, type GroundItem } from './ground';
+import {
+  holdsMagazine,
+  packAll,
+  packingTimed,
+  startLoad,
+  startPack,
+  startUnload,
+  stopPacking,
+} from './packing';
 import { cameOffGun } from './raid';
 import { repairable } from './repair';
 import { eyeHeight, eyeX, eyeZ, type Character, type EntityId, type SimState } from './state';
@@ -51,6 +69,9 @@ import {
   createWeaponStats,
   detach,
   loadedAmmo,
+  partIn,
+  partOut,
+  setFolded,
   weaponStats,
   type WeaponState,
 } from './weapons';
@@ -198,9 +219,26 @@ export type Target = GridSpot | Omit<InSlot, 'item'> | ToGround;
  * - unload: takes the rounds out of a gun, wherever it is, into what you carry. A
  *   reload in progress stops.
  * - load (2026-10-30): a stack of rounds dropped on a gun that fires them (loadGun).
+ *   Into a magazine (loose, or the one in a gun) it's a round at a time in a raid (MG-2,
+ *   sim/packing.ts), and so is unloading one.
+ * - pack (MG-2, 2026-11-12): Pack Mags: loose rounds in pockets and rig into the magazines
+ *   there, the fullest first; a round at a time in a raid (sim/packing.ts), at once
+ *   between raids. With stop, stops packing, keeping what's done.
  * - strip (2026-11-11, the user's call): unloads a gun and takes off every attachment
  *   (the magazine too) into c's backpack, then rig, then at its feet (between raids, the
  *   stash's pages). Refused if there's nothing to take off.
+ * - plate (GZ-4, 2026-11-12): puts a plate (in a grid) into a carrier's slot (`side`, or
+ *   the first empty one, else the front), what was there going where the plate was or into
+ *   what you carry. Between raids at once; in a raid it takes the carrier's swap time like
+ *   a med (MedUse.plate), and the plate must be carried. unplate takes one out, at once.
+ * - mount (GZ-5, 2026-11-12): fits a visor or night vision goggles (in a grid) to a helmet
+ *   that has the mount, wherever the helmet is; what was fitted goes where the part was,
+ *   else into what you carry. unmount takes it off (`part`, as the sender saw it) to a
+ *   grid spot, or with to null into what you carry.
+ * - fold (WF-1, 2026-11-12): folds or unfolds a gun's stock, if it folds. The gun in c's
+ *   hands takes FOLD_TIME to be ready again, as a draw does.
+ * A gun lying in a grid grows where it lies (to the right, or down when turned) when a
+ * stock goes on or unfolds; that's refused if the cells it needs aren't free (WF-1).
  * A magazine change hands back the rounds that no longer fit, into what you carry. What
  * has no room (those rounds, a part swapped off, a part taken off into what you carry)
  * is dropped at your feet rather than the action refused (session 11b).
@@ -221,7 +259,13 @@ export type InventoryAction =
   | { type: 'repair'; kit: ItemRef; armor: ItemRef }
   | { type: 'unload'; gun: ItemRef }
   | { type: 'strip'; gun: ItemRef }
-  | { type: 'load'; gun: ItemRef; from: ItemRef };
+  | { type: 'fold'; gun: ItemRef; folded: boolean }
+  | { type: 'mount'; helmet: ItemRef; from: ItemRef }
+  | { type: 'plate'; carrier: ItemRef; from: ItemRef; side?: PlateSide }
+  | { type: 'unplate'; carrier: ItemRef; side: PlateSide; plate: string; to: GridSpot | null }
+  | { type: 'unmount'; helmet: ItemRef; part: string; to: GridSpot | null }
+  | { type: 'load'; gun: ItemRef; from: ItemRef }
+  | { type: 'pack'; stop?: boolean };
 
 /** An inventory action was applied (ok) or refused. */
 export interface InventoryEvent {
@@ -493,8 +537,25 @@ export function applyInventory(
       return unload(ctx, action.gun);
     case 'strip':
       return strip(ctx, action.gun);
+    case 'fold':
+      return fold(ctx, action.gun, action.folded);
+    case 'mount':
+      return mountPart(ctx, action.helmet, action.from);
+    case 'plate':
+      return startPlate(ctx, action.carrier, action.from, action.side);
+    case 'unplate':
+      return takePlate(ctx, action.carrier, action.side, action.plate, action.to);
+    case 'unmount':
+      return unmountPart(ctx, action.helmet, action.part, action.to);
     case 'load':
-      return loadGun(state, c, items, action.gun, action.from, false, world);
+      return loadGun(state, c, items, action.gun, action.from, stash, world);
+    case 'pack':
+      if (action.stop) {
+        if (!c.packing) return false;
+        stopPacking(c);
+        return true;
+      }
+      return packingTimed(state, c, stash) ? startPack(c, items) : packAll(c, items);
   }
 }
 
@@ -518,9 +579,24 @@ export function loadKind(
   instant: boolean,
 ): 'reload' | 'load' | null {
   const f = find(state, c, gunRef);
-  const gun = f?.item.attachments ? (f.item as WeaponState) : null;
   const from = find(state, c, fromRef);
+  // A loose magazine takes rounds of its caliber, one round type at a time (MG-1).
+  const magDef = f && !f.item.attachments ? itemDef(items, f.item.item) : null;
+  if (f && from && magDef && isMagazine(magDef)) {
+    const round = roundOf(items, from.item.item);
+    if (round?.type !== 'ammo' || round.caliber !== magDef.caliber) return null;
+    const n = f.item.mag ?? 0;
+    if (n >= magDef.capacity || (n > 0 && f.item.loaded !== round.id)) return null;
+    return 'load';
+  }
+  const gun = f?.item.attachments ? (f.item as WeaponState) : null;
   if (!gun || !from || !firesRound(items, weaponDef(items, gun.item), from.item.item)) return null;
+  if (magazineFed(weaponDef(items, gun.item))) {
+    // Into the magazine in it, at once; the same rule as a loose one (MG-1).
+    if (gun.attachments.magazine === null) return null;
+    if (gun.mag > 0 && from.item.item !== loadedAmmo(items, gun)) return null;
+    return gun.mag < weaponStats(items, gun, loadStats).magazine ? 'load' : null;
+  }
   const full = gun.mag >= weaponStats(items, gun, loadStats).magazine;
   if (full && from.item.item === loadedAmmo(items, gun)) return null;
   if (instant || gun !== heldWeapon(c)) return 'load';
@@ -546,9 +622,24 @@ export function loadGun(
 ): boolean {
   const kind = loadKind(state, c, items, gunRef, fromRef, instant);
   if (!kind) return false;
-  const gun = find(state, c, gunRef)!.item as WeaponState;
+  const target = find(state, c, gunRef)!.item;
+  // Into a magazine, loose or in a gun: a round at a time in a raid (MG-2).
+  if (kind === 'load' && packingTimed(state, c, instant) && holdsMagazine(items, target)) {
+    return startLoad(state, c, items, gunRef, fromRef);
+  }
   const from = find(state, c, fromRef)!;
   const round = from.item.item;
+  if (!target.attachments) {
+    // A loose magazine (MG-1).
+    const capacity = attachmentDef(items, target.item).capacity!;
+    const n = Math.min(capacity - (target.mag ?? 0), from.item.count);
+    from.item.count -= n;
+    if (from.item.count === 0) takeOut(from);
+    target.mag = (target.mag ?? 0) + n;
+    target.loaded = round;
+    return true;
+  }
+  const gun = target as WeaponState;
   if (kind === 'reload') {
     gun.reloading = weaponStats(items, gun, loadStats).reloadTime;
     gun.reloadWith = round;
@@ -653,12 +744,12 @@ function hidesUnder(
 ): boolean {
   const r = revealed(ctx.state, ctx.c, to.owner);
   if (!r || r.found === r.total) return false;
-  const w = itemWidth(ctx.items, item.item, to.rotated);
-  const h = itemHeight(ctx.items, item.item, to.rotated);
+  const w = itemWidth(ctx.items, item, to.rotated);
+  const h = itemHeight(ctx.items, item, to.rotated);
   return grid.items.some((o) => {
     if (r.shown.has(o.item)) return false;
-    const ow = itemWidth(ctx.items, o.item.item, o.rotated);
-    const oh = itemHeight(ctx.items, o.item.item, o.rotated);
+    const ow = itemWidth(ctx.items, o.item, o.rotated);
+    const oh = itemHeight(ctx.items, o.item, o.rotated);
     return to.x < o.x + ow && o.x < to.x + w && to.y < o.y + oh && o.y < to.y + h;
   });
 }
@@ -828,7 +919,7 @@ function splitStack(ctx: Ctx, at: InGrid, n: number): boolean {
   const grid = gridOf(state, c, at);
   const g = grid?.items[at.index];
   if (!grid || g?.item.item !== at.item || !validCount(n, g.item.count - 1)) return false;
-  const spot = findSpot(items, grid, at.item);
+  const spot = findSpot(items, grid, g.item);
   if (!spot) return false;
   g.item.count -= n;
   grid.items.push({ ...spot, item: stackOf(g.item, n) });
@@ -893,20 +984,209 @@ function quickMove(
 
 /** A gun c can reach, by ref. */
 function findGun(ctx: Ctx, ref: ItemRef): WeaponState | null {
+  return findGunAt(ctx, ref)?.item ?? null;
+}
+
+/** A gun c can reach, and where it is. */
+function findGunAt(ctx: Ctx, ref: ItemRef): (Found & { item: WeaponState }) | null {
   const f = find(ctx.state, ctx.c, ref);
-  return f?.item.attachments ? (f.item as WeaponState) : null;
+  return f?.item.attachments ? (f as Found & { item: WeaponState }) : null;
+}
+
+/** Seconds the gun in hand takes to be ready after its stock folds or unfolds (WF-1). */
+export const FOLD_TIME = 0.5;
+
+/**
+ * Whether a gun would still fit where it lies with `slot` holding `part` (or folded as
+ * given): always outside a grid, and in one if the cells it would cover are inside the
+ * grid and free of everything but itself and `skip` (WF-1).
+ */
+function roomAs(
+  ctx: Ctx,
+  f: Found,
+  change: { slot?: AttachmentSlot; part?: string | null; folded?: boolean },
+  skip?: Item,
+): boolean {
+  if (f.at !== 'grid') return true;
+  const { items } = ctx;
+  const gun = f.item;
+  const next: Item = {
+    item: gun.item,
+    count: 1,
+    attachments: { ...gun.attachments! },
+    ...((change.folded ?? gun.folded) && { folded: true }),
+  };
+  if (change.slot) next.attachments![change.slot] = change.part ?? null;
+  if (change.slot === 'stock' && !change.part) delete next.folded;
+  const { grid, g } = f;
+  const w = itemWidth(items, next, g.rotated);
+  const h = itemHeight(items, next, g.rotated);
+  if (!inGrid(grid, g.x, g.y, w, h)) return false;
+  return grid.items.every((o) => {
+    if (o === g || o.item === skip) return true;
+    const ow = itemWidth(items, o.item, o.rotated);
+    const oh = itemHeight(items, o.item, o.rotated);
+    return !(g.x < o.x + ow && o.x < g.x + w && g.y < o.y + oh && o.y < g.y + h);
+  });
+}
+
+/** Where a plate dropped on a carrier goes (GZ-4): the side asked for, the first empty, or the front. */
+export function plateSide(items: ItemDb, carrier: Item, side?: PlateSide): PlateSide | null {
+  const slots = carrierOf(itemDef(items, carrier.item))?.plates ?? [];
+  if (side) return slots.includes(side) ? side : null;
+  return slots.find((s) => !carrier.plates?.[s]) ?? slots[0] ?? null;
+}
+
+/** Puts a plate in (see plate in InventoryAction): at once between raids, else timed. */
+function startPlate(ctx: Ctx, carrierRef: ItemRef, fromRef: ItemRef, want?: PlateSide): boolean {
+  const { state, c, items } = ctx;
+  const carrier = find(state, c, carrierRef);
+  const from = find(state, c, fromRef);
+  if (!carrier || from?.at !== 'grid' || itemDef(items, from.item.item).type !== 'plate')
+    return false;
+  const side = plateSide(items, carrier.item, want);
+  if (!side) return false;
+  if (ctx.stash) {
+    insertPlate(state, c, items, carrier.item, side, from.grid, from.index, ctx.world);
+    return true;
+  }
+  // In a raid, from what you carry, and it takes time (cancelled like a med's).
+  for (let i = 0; i < CARRIED_GRIDS; i++) {
+    if (carriedGrid(c.gear, i) !== from.grid) continue;
+    const time = carrierOf(itemDef(items, carrier.item.item))?.swapTime ?? CARRIER.swapTime;
+    c.using = {
+      grid: i,
+      index: from.index,
+      item: from.item.item,
+      left: time,
+      plate: { carrier: carrierRef, side },
+    };
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Moves the plate at grid[index] into a carrier's side (GZ-4): the one there goes where
+ * it was, else into what c carries, else at its feet.
+ */
+export function insertPlate(
+  state: SimState,
+  c: Character,
+  items: ItemDb,
+  carrier: Item,
+  side: PlateSide,
+  grid: Grid,
+  index: number,
+  world?: CollisionWorld,
+): void {
+  const g = grid.items[index];
+  if (!g || itemDef(items, g.item.item).type !== 'plate') return;
+  removeAt(grid, index);
+  const old = carrier.plates?.[side];
+  carrier.plates = { ...carrier.plates, [side]: g.item };
+  if (!old) return;
+  if (placeAt(items, grid, old, g.x, g.y, g.rotated) || addItem(items, grid, old) === 0) return;
+  if (stow(c, items, old) > 0) dropItem(state, c, old, world);
+}
+
+/** Takes a plate out (see unplate in InventoryAction). */
+function takePlate(
+  ctx: Ctx,
+  carrierRef: ItemRef,
+  side: PlateSide,
+  plate: string,
+  to: GridSpot | null,
+): boolean {
+  const { state, c, items } = ctx;
+  const carrier = find(state, c, carrierRef);
+  const p = carrier?.item.plates?.[side];
+  if (!carrier || p?.item !== plate) return false;
+  if (to) {
+    const grid = gridOf(state, c, to);
+    if (!grid || !placeAt(items, grid, p, to.x, to.y, to.rotated)) return false;
+  } else stowOrDrop(ctx, p);
+  delete carrier.item.plates![side];
+  if (!Object.keys(carrier.item.plates!).length) delete carrier.item.plates;
+  return true;
+}
+
+/** Fits a visor or goggles to a helmet (see mount in InventoryAction). */
+function mountPart(ctx: Ctx, helmetRef: ItemRef, fromRef: ItemRef): boolean {
+  const { state, c, items } = ctx;
+  const h = find(state, c, helmetRef);
+  const from = find(state, c, fromRef);
+  if (!h || from?.at !== 'grid' || h.item === from.item) return false;
+  if (!mountsOn(itemDef(items, h.item.item), itemDef(items, from.item.item))) return false;
+  const old = h.item.fitted;
+  const { grid, index, g } = from;
+  removeAt(grid, index);
+  h.item.fitted = from.item;
+  if (old) {
+    const placed =
+      placeAt(items, grid, old, g.x, g.y, g.rotated) ||
+      placeAt(items, grid, old, g.x, g.y, !g.rotated) ||
+      addItem(items, grid, old) === 0;
+    if (!placed) stowOrDrop(ctx, old);
+  }
+  return true;
+}
+
+/** Takes a helmet's visor or goggles off (see unmount in InventoryAction). */
+function unmountPart(ctx: Ctx, helmetRef: ItemRef, part: string, to: GridSpot | null): boolean {
+  const { state, c, items } = ctx;
+  const h = find(state, c, helmetRef);
+  const fitted = h?.item.fitted;
+  if (!h || fitted?.item !== part) return false;
+  if (to) {
+    const grid = gridOf(state, c, to);
+    if (!grid || !placeAt(items, grid, fitted, to.x, to.y, to.rotated)) return false;
+  } else stowOrDrop(ctx, fitted);
+  delete h.item.fitted;
+  return true;
+}
+
+/** Folds or unfolds a gun's stock (see fold in InventoryAction). */
+function fold(ctx: Ctx, gunRef: ItemRef, folded: boolean): boolean {
+  const { c, items } = ctx;
+  const f = findGunAt(ctx, gunRef);
+  if (!f || !stockFolds(items, f.item) || !!f.item.folded === folded) return false;
+  if (!folded && !roomAs(ctx, f, { folded: false })) return false;
+  setFolded(f.item, items, folded);
+  // In a raid, the gun in your hands is out of action for a moment.
+  if (!ctx.stash && f.at === 'slot' && f.ch === c && f.slot === c.gear.hand)
+    c.draw = Math.max(c.draw, FOLD_TIME);
+  return true;
 }
 
 function attachPart(ctx: Ctx, gunRef: ItemRef, fromRef: ItemRef): boolean {
   const { state, c, items } = ctx;
-  const gun = findGun(ctx, gunRef);
+  const at = findGunAt(ctx, gunRef);
+  const gun = at?.item;
   const from = find(state, c, fromRef);
-  if (!gun || from?.at !== 'grid') return false;
+  if (!at || !gun || from?.at !== 'grid') return false;
   const def = itemDef(items, from.item.item);
   if (def.type !== 'attachment' || !fits(weaponDef(items, gun.item), def)) return false;
+  if (!roomAs(ctx, at, { slot: def.slot, part: def.id }, from.item)) return false;
   const old = gun.attachments[def.slot];
   const { grid, index, g } = from;
   removeAt(grid, index);
+  if (isMagazine(def)) {
+    // A magazine goes in with its rounds, and the one out keeps its own (MG-1).
+    const out = old !== null ? partOut(gun, items, 'magazine').part : null;
+    partIn(gun, items, from.item);
+    if (out) {
+      const placed =
+        placeAt(items, grid, out, g.x, g.y, g.rotated) ||
+        placeAt(items, grid, out, g.x, g.y, !g.rotated) ||
+        addItem(items, grid, out) === 0;
+      if (!placed) stowOrDrop(ctx, out);
+    }
+    // Into the gun in your hands in a raid, it's out of action for as long as a reload.
+    if (!ctx.stash && at.at === 'slot' && at.ch === c && at.slot === c.gear.hand)
+      c.draw = Math.max(c.draw, weaponStats(items, gun, loadStats).reloadTime);
+    return true;
+  }
   // What was on the gun goes where the new part was, else anywhere in that grid or carried.
   if (old !== null) {
     const oldPart = createItem(items, old);
@@ -930,29 +1210,50 @@ function detachPart(
   const { state, c, items } = ctx;
   const gun = findGun(ctx, gunRef);
   if (!gun || gun.attachments[slot] !== part) return false;
-  const loose = cameOffGun(c, createItem(items, part));
+  const ammo = loadedAmmo(items, gun);
+  // Off first (a magazine takes its rounds with it, MG-1); back on if it can't go there.
+  const { part: loose, rounds } = partOut(gun, items, slot);
+  cameOffGun(c, loose);
   if (to) {
     // To a spot: refused if it doesn't fit there.
     const grid = gridOf(state, c, to);
-    if (!grid || !placeAt(items, grid, loose, to.x, to.y, to.rotated)) return false;
+    if (!grid || !placeAt(items, grid, loose, to.x, to.y, to.rotated)) {
+      partIn(gun, items, loose);
+      delete loose.brought;
+      if (rounds > 0) gun.mag += rounds;
+      return false;
+    }
   } else {
     stowOrDrop(ctx, loose);
   }
-  stowRounds(ctx, loadedAmmo(items, gun), detach(gun, items, slot));
+  stowRounds(ctx, ammo, rounds);
   return true;
 }
 
 /** Moves a part from one gun to another, swapping with what's there if it fits the first. */
 function movePart(ctx: Ctx, from: PartRef, toRef: ItemRef): boolean {
   const { items } = ctx;
-  const a = findGun(ctx, from.gun);
-  const b = findGun(ctx, toRef);
-  if (!a || !b || a === b || a.attachments[from.slot] !== from.part) return false;
+  const fa = findGunAt(ctx, from.gun);
+  const fb = findGunAt(ctx, toRef);
+  const a = fa?.item;
+  const b = fb?.item;
+  if (!fa || !fb || !a || !b || a === b || a.attachments[from.slot] !== from.part) return false;
   const def = attachmentDef(items, from.part);
   if (!fits(weaponDef(items, b.item), def)) return false;
   const slot = def.slot;
   const old = b.attachments[slot];
   const swap = old !== null && fits(weaponDef(items, a.item), attachmentDef(items, old));
+  if (!roomAs(ctx, fb, { slot, part: def.id })) return false;
+  if (swap && !roomAs(ctx, fa, { slot, part: old })) return false;
+  if (isMagazine(def)) {
+    // Magazines move with their rounds (MG-1).
+    const moving = partOut(a, items, slot).part;
+    const theirs = old !== null ? partOut(b, items, slot).part : null;
+    partIn(b, items, moving);
+    if (theirs && swap) partIn(a, items, theirs);
+    else if (theirs) stowOrDrop(ctx, cameOffGun(ctx.c, theirs));
+    return true;
+  }
   const outA = swap ? attach(a, items, old) : detach(a, items, slot);
   const outB = attach(b, items, def.id);
   // What was on the second gun goes into what you carry if it can't go on the first.
@@ -962,8 +1263,24 @@ function movePart(ctx: Ctx, from: PartRef, toRef: ItemRef): boolean {
   return true;
 }
 
-/** Empties a gun's rounds into what c carries; refused if it's empty. */
+/** Empties a gun's or a loose magazine's rounds into what c carries; refused if empty. */
 function unload(ctx: Ctx, gunRef: ItemRef): boolean {
+  const f = find(ctx.state, ctx.c, gunRef);
+  // A magazine, loose or in a gun: a round at a time in a raid (MG-2).
+  if (f && packingTimed(ctx.state, ctx.c, ctx.stash) && holdsMagazine(ctx.items, f.item)) {
+    return startUnload(ctx.state, ctx.c, ctx.items, gunRef);
+  }
+  const mag =
+    f && !f.item.attachments && isMagazine(itemDef(ctx.items, f.item.item)) ? f.item : null;
+  if (mag) {
+    const n = mag.mag ?? 0;
+    const round = mag.loaded;
+    if (n <= 0 || !round) return false;
+    delete mag.mag;
+    delete mag.loaded;
+    stowRounds(ctx, round, n);
+    return true;
+  }
   const gun = findGun(ctx, gunRef);
   if (!gun || gun.mag <= 0) return false;
   const n = gun.mag;
@@ -984,10 +1301,7 @@ function strip(ctx: Ctx, gunRef: ItemRef): boolean {
   if (gun.mag > 0) bagOrDrop(ctx, cameOffGun(c, createItem(items, ammo, gun.mag)));
   gun.mag = 0;
   gun.reloading = 0;
-  for (const slot of slots) {
-    bagOrDrop(ctx, cameOffGun(c, createItem(items, gun.attachments[slot]!)));
-    detach(gun, items, slot);
-  }
+  for (const slot of slots) bagOrDrop(ctx, cameOffGun(c, partOut(gun, items, slot).part));
   return true;
 }
 
@@ -1001,6 +1315,27 @@ function bagOrDrop(ctx: Ctx, item: Item): void {
 }
 
 /** Rounds a gun handed back, into what c carries or else at its feet. */
+/** Takes n rounds off a stack c can reach (MG-2's packing); false if it isn't there. */
+export function takeRounds(state: SimState, c: Character, ref: ItemRef, n: number): boolean {
+  const f = find(state, c, ref);
+  if (!f || f.item.count < n) return false;
+  f.item.count -= n;
+  if (f.item.count === 0) takeOut(f);
+  return true;
+}
+
+/** Puts n rounds into what c carries, or at its feet (MG-2's unloading). */
+export function stowRoundsFor(
+  state: SimState,
+  c: Character,
+  items: ItemDb,
+  world: CollisionWorld | undefined,
+  ammo: string,
+  n: number,
+): void {
+  stowRounds({ state, c, items, world, stash: false }, ammo, n);
+}
+
 function stowRounds(ctx: Ctx, ammo: string, n: number): void {
   if (n > 0) stowOrDrop(ctx, cameOffGun(ctx.c, createItem(ctx.items, ammo, n)));
 }

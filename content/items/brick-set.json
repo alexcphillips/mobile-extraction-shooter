@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "brick-set",
   "name": "Collector brick set",
   "shortName": "Bricks",
   "type": "loot",
   "size": [2, 2],
   "value": 12000,
+  "weight": 6,
   "rarity": "rare",
   "model": {
     "parts": [

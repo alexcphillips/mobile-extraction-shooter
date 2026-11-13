@@ -1,18 +1,21 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "mag-glock-33",
   "name": "Glock 33-round magazine",
   "shortName": "Glock 33",
   "type": "attachment",
   "size": [1, 2],
   "value": 4000,
+  "weight": 0.25,
   "rarity": "common",
   "slot": "magazine",
   "weapons": ["g18c"],
+  "capacity": 33,
+  "caliber": "9x19",
   "mods": {
-    "magazine": 16,
     "reloadTime": 1.15
   },
+  "rows": 1,
   "model": {
     "parts": [
       {

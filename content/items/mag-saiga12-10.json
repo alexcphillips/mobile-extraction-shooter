@@ -1,16 +1,18 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "mag-saiga12-10",
   "name": "Saiga-12 10-round magazine",
   "shortName": "Saiga 10",
   "type": "attachment",
   "size": [1, 2],
   "value": 4000,
+  "weight": 0.35,
   "rarity": "common",
   "slot": "magazine",
   "weapons": ["saiga-12"],
+  "capacity": 10,
+  "caliber": "12g",
   "mods": {
-    "magazine": 5,
     "reloadTime": 1.05
   },
   "model": {

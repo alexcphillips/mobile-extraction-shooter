@@ -1,0 +1,200 @@
+/* The layout board (MK-3): desktop only, loaded only at /layout. */
+
+body.layout-board {
+  background: #14171c;
+  overflow: hidden;
+}
+
+body.layout-board #scene {
+  display: none;
+}
+
+.lb {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  pointer-events: auto;
+}
+
+.lb-view {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.lb-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.lb-svg [data-kind] {
+  cursor: move;
+}
+
+.lb-svg .lb-handle {
+  fill: #fff;
+  stroke: #0a84ff;
+  stroke-width: calc(var(--px) * 2);
+  cursor: grab;
+}
+
+.lb-svg .lb-handle.rotate {
+  fill: #0a84ff;
+}
+
+.lb-svg .lb-handle.mid {
+  fill: #0a84ff;
+  fill-opacity: 0.5;
+  stroke: none;
+}
+
+.lb-svg .lb-handle.on {
+  fill: #ff8c00;
+}
+
+.lb-svg .lb-stalk {
+  stroke: #0a84ff;
+  stroke-width: calc(var(--px) * 1.5);
+}
+
+.lb-svg .lb-draft {
+  fill: none;
+  stroke: #0a84ff;
+  stroke-width: calc(var(--px) * 2);
+  stroke-dasharray: calc(var(--px) * 6) calc(var(--px) * 4);
+  pointer-events: none;
+}
+
+.lb-scale {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  box-sizing: border-box;
+  padding: 2px 0 4px;
+  border: 2px solid #1d2430;
+  border-top: none;
+  color: #1d2430;
+  background: rgba(255, 255, 255, 0.75);
+  background-clip: padding-box;
+  font-size: 11px;
+  line-height: 1;
+  text-align: center;
+  pointer-events: none;
+}
+
+.lb-side {
+  width: 340px;
+  flex: none;
+  overflow-y: auto;
+  background: var(--ed-bg);
+  border-left: 1px solid var(--ed-line);
+}
+
+.lb-panel {
+  padding: 8px 10px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lb-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.lb-grow {
+  flex: 1;
+}
+
+.lb-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.lb-problem {
+  color: #ff8a80;
+}
+
+.lb-message,
+.lb-dim,
+.lb-keys,
+.lb-readout {
+  color: var(--ed-dim);
+}
+
+.lb-readout {
+  font-variant-numeric: tabular-nums;
+  min-height: 2.7em;
+}
+
+.lb-section h3,
+.lb-section h4 {
+  margin: 6px 0 4px;
+}
+
+.lb-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px 6px;
+}
+
+.lb-field {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.lb-field > span {
+  color: var(--ed-dim);
+  font-size: 11px;
+}
+
+.lb-field input,
+.lb-field select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.lb-entrance {
+  display: grid;
+  grid-template-columns: 70px 1fr 1fr 1fr 1.4fr auto;
+  gap: 4px;
+  align-items: end;
+  margin-bottom: 4px;
+}
+
+.lb-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lb-list li {
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.lb-list li:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.lb-pick {
+  position: fixed;
+  inset: 40px;
+  color: #e6e9ee;
+  pointer-events: auto;
+}
+
+.lb-pick a {
+  color: #ff8c00;
+}

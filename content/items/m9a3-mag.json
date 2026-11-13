@@ -1,0 +1,26 @@
+{
+  "formatVersion": 11,
+  "id": "m9a3-mag",
+  "name": "M9A3 17-round magazine",
+  "shortName": "M9A3 17",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 1500,
+  "weight": 0.1,
+  "rarity": "common",
+  "slot": "magazine",
+  "weapons": ["m9a3"],
+  "capacity": 17,
+  "caliber": "9x19",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.002, 0],
+        "size": [0.024, 0.008, 0.04],
+        "color": "#1d1f21",
+        "pitch": -12
+      }
+    ]
+  }
+}

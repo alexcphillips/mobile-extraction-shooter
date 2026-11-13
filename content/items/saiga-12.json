@@ -1,30 +1,36 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "saiga-12",
   "name": "Saiga-12",
   "type": "weapon",
   "class": "shotgun",
-  "size": [4, 2],
-  "value": 30000,
+  "size": [3, 2],
+  "value": 23900,
+  "weight": 3,
   "rarity": "common",
   "ammo": "buckshot",
   "hold": "rifle",
   "fireMode": "semi",
   "rpm": 240,
   "magazine": 5,
+  "feed": "magazine",
   "reloadTime": 2.4,
   "aimTime": 0.31,
   "drawTime": 0.8,
   "range": 60,
   "loudness": 200,
-  "slots": ["optic", "muzzle", "magazine", "laser"],
+  "defaults": {
+    "magazine": "saiga-12-mag",
+    "stock": "saiga-12-stock"
+  },
+  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
   "hipSpread": 1.5,
   "aimSpread": 0.4,
   "recoil": {
-    "up": 4.43,
-    "side": 1.24,
+    "up": 6.33,
+    "side": 1.77,
     "snap": 36,
-    "recovery": 4
+    "recovery": 3.64
   },
   "sounds": {
     "shot": "shotgun-shot",
@@ -33,18 +39,8 @@
   },
   "model": {
     "parts": [
-      {
-        "type": "box",
-        "pos": [0, 0, -0.03],
-        "size": [0.052, 0.065, 0.24],
-        "color": "#2b2d2f"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.036, -0.02],
-        "size": [0.046, 0.01, 0.2],
-        "color": "#35383b"
-      },
+      { "type": "box", "pos": [0, 0, -0.03], "size": [0.052, 0.065, 0.24], "color": "#2b2d2f" },
+      { "type": "box", "pos": [0, 0.036, -0.02], "size": [0.046, 0.01, 0.2], "color": "#35383b" },
       {
         "type": "box",
         "pos": [0, 0.0431, -0.13],
@@ -111,24 +107,14 @@
         "size": [0.004, 0.022, 0.09],
         "color": "#1d1f21"
       },
-      {
-        "type": "box",
-        "pos": [0, 0.03, -0.23],
-        "size": [0.034, 0.028, 0.16],
-        "color": "#232323"
-      },
+      { "type": "box", "pos": [0, 0.03, -0.23], "size": [0.034, 0.028, 0.16], "color": "#232323" },
       {
         "type": "box",
         "pos": [0, -0.008, -0.23],
         "size": [0.054, 0.052, 0.17],
         "color": "#232323"
       },
-      {
-        "type": "box",
-        "pos": [0, 0.025, -0.33],
-        "size": [0.03, 0.04, 0.03],
-        "color": "#2b2d2f"
-      },
+      { "type": "box", "pos": [0, 0.025, -0.33], "size": [0.03, 0.04, 0.03], "color": "#2b2d2f" },
       {
         "type": "cylinder",
         "pos": [0, 0.005, -0.44],
@@ -152,26 +138,8 @@
         "pitch": 90,
         "hiddenBy": "muzzle"
       },
-      {
-        "type": "box",
-        "pos": [0, -0.075, -0.08],
-        "size": [0.044, 0.09, 0.08],
-        "color": "#1d1f21",
-        "pitch": 6,
-        "hiddenBy": "magazine"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.05, 0],
-        "size": [0.012, 0.006, 0.07],
-        "color": "#1d1f21"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.04, -0.01],
-        "size": [0.006, 0.02, 0.006],
-        "color": "#1d1f21"
-      },
+      { "type": "box", "pos": [0, -0.05, 0], "size": [0.012, 0.006, 0.07], "color": "#1d1f21" },
+      { "type": "box", "pos": [0, -0.04, -0.01], "size": [0.006, 0.02, 0.006], "color": "#1d1f21" },
       {
         "type": "box",
         "pos": [0, -0.075, 0.05],
@@ -179,25 +147,7 @@
         "color": "#232323",
         "pitch": -18
       },
-      {
-        "type": "box",
-        "pos": [0, -0.005, 0.1],
-        "size": [0.04, 0.05, 0.02],
-        "color": "#1d1f21"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.01, 0.22],
-        "size": [0.04, 0.06, 0.2],
-        "color": "#232323",
-        "pitch": 5
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.02, 0.325],
-        "size": [0.044, 0.1, 0.012],
-        "color": "#1d1f21"
-      }
+      { "type": "box", "pos": [0, -0.005, 0.1], "size": [0.04, 0.05, 0.02], "color": "#1d1f21" }
     ],
     "grip": [0, -0.07, 0.05],
     "support": [0, -0.03, -0.23],
@@ -207,7 +157,8 @@
       "optic": [0, 0.041, -0.02],
       "muzzle": [0, 0.005, -0.56],
       "magazine": [0, -0.03, -0.08],
-      "laser": [0.039, -0.003, -0.29]
+      "laser": [0.039, -0.003, -0.29],
+      "stock": [0, -0.01, 0.12]
     }
   }
 }

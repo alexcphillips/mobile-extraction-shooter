@@ -15,7 +15,8 @@ import {
   type Character,
   type ItemDb,
   heldWeapon,
-  carriedAmmo,
+  spareRounds,
+  type SimState,
   roundOf,
   loadedAmmo,
 } from '@mes/shared';
@@ -130,7 +131,7 @@ export class Vitals {
   }
 
   /** Call once per tick. */
-  update(c: Character, items: ItemDb): void {
+  update(c: Character, items: ItemDb, sim: SimState): void {
     const h = c.health;
     const pool = h.pool;
     this.vitals.classList.toggle('pooled', pool !== undefined);
@@ -182,7 +183,8 @@ export class Vitals {
     setHidden(this.ammo, !w);
     if (w) {
       const id = loadedAmmo(items, w);
-      setText(this.rounds, `${w.mag} / ${carriedAmmo(c, id)}`);
+      // With magazines, what's in the ones in reach that fit (MG-1).
+      setText(this.rounds, `${w.mag} / ${spareRounds(sim, c, items, w)}`);
       if (id !== this.roundId) {
         this.roundId = id;
         const def = roundOf(items, id)!;

@@ -1,5 +1,5 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "grenade-launcher",
   "name": "RG-6 grenade launcher",
   "shortName": "RG-6",
@@ -7,6 +7,7 @@
   "class": "special",
   "size": [3, 2],
   "value": 40000,
+  "weight": 2.5,
   "rarity": "common",
   "ammo": "frag-grenade",
   "launchSpeed": 40,

@@ -289,6 +289,8 @@ export interface PartyMember {
   ready: boolean;
   device: Device | null;
   online: boolean;
+  /** Their PMC level, so the leader sees who is too low for a locked map (2026-11-11). */
+  level: number;
 }
 
 export interface Party {

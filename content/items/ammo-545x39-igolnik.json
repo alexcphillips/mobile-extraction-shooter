@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-545x39-igolnik",
   "name": "5.45×39 mm Igolnik",
   "shortName": "5.45 Igolnik",
   "type": "ammo",
   "size": [1, 1],
   "value": 1000,
+  "weight": 0.011,
   "rarity": "mythic",
   "stack": 60,
   "caliber": "5.45x39",

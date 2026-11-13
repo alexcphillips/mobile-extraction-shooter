@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "a5-kuroge-prime-ribeye",
   "name": "A5 Kuroge Prime Ribeye",
   "shortName": "A5 Ribeye",
   "type": "loot",
   "size": [2, 2],
   "value": 120000,
+  "weight": 1.5,
   "rarity": "legendary",
   "model": {
     "parts": [

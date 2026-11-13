@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ContentError, type ContentFormat } from './format';
-import { attachmentDef, firesRound, fits, weaponDef, type ItemDb } from './items';
+import { attachmentDef, firesRound, fits, mountsOn, weaponDef, type ItemDb } from './items';
 import type { Shape } from './compile';
 import { modelShapes, partSchema } from './models';
 import { hexColorSchema, idSchema } from './schema';
@@ -362,6 +362,11 @@ const armorOptionSchema = z.strictObject({
   item: idSchema.nullable(),
   /** Durability left, as a fraction of full, rolled between these. Defaults to [1, 1]. */
   condition: rangeOf(fraction).optional(),
+  /**
+   * Helmets (GZ-5): a visor or night vision goggles to fit, by weight (null: none). Each
+   * must go on the helmet's mounts. A visor comes at the helmet's condition.
+   */
+  fitted: z.array(z.strictObject({ weight: positive, item: idSchema.nullable() })).optional(),
 });
 
 const containerOptionSchema = z.strictObject({
@@ -392,6 +397,8 @@ export const loadoutSchema = z.strictObject({
   /** A pistol goes in the sidearm slot, anything else in the first primary. */
   weapons: z.array(weaponOptionSchema).min(1),
   helmets: z.array(armorOptionSchema).optional(),
+  /** GZ-2: a headset (PMCs wear them). One rolled with a helmet that covers the ears is left off. */
+  headsets: z.array(containerOptionSchema).optional(),
   bodyArmor: z.array(armorOptionSchema).optional(),
   rigs: z.array(containerOptionSchema).optional(),
   backpacks: z.array(containerOptionSchema).optional(),
@@ -510,7 +517,16 @@ export function checkEnemies(
         const item = items.get(o.item);
         if (item?.type !== 'armor' || item.slot !== slot)
           throw new ContentError(source, `"${o.item}" is not ${slot} armor`);
+        for (const f of o.fitted ?? []) {
+          const part = f.item === null ? null : items.get(f.item);
+          if (f.item !== null && (!part || !mountsOn(item, part)))
+            throw new ContentError(source, `"${f.item}" doesn't go on "${o.item}"`);
+        }
       }
+    }
+    for (const o of l.headsets ?? []) {
+      if (o.item !== null && items.get(o.item)?.type !== 'headset')
+        throw new ContentError(source, `"${o.item}" is not a headset`);
     }
     for (const [slot, options] of [
       ['rig', l.rigs],

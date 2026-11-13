@@ -1,0 +1,33 @@
+{
+  "formatVersion": 11,
+  "id": "ak-74m-mag",
+  "name": "AK-74M 30-round magazine",
+  "shortName": "AK-74M 30",
+  "type": "attachment",
+  "size": [1, 2],
+  "value": 2500,
+  "weight": 0.22,
+  "rarity": "common",
+  "slot": "magazine",
+  "weapons": ["ak-74m", "aks-74u", "rpk-16"],
+  "capacity": 30,
+  "caliber": "5.45x39",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.035, -0.005],
+        "size": [0.03, 0.08, 0.07],
+        "color": "#6b3a2e",
+        "pitch": 10
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.103, -0.025],
+        "size": [0.03, 0.065, 0.065],
+        "color": "#6b3a2e",
+        "pitch": 25
+      }
+    ]
+  }
+}

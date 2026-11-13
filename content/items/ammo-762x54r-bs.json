@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-762x54r-bs",
   "name": "7.62×54R BS",
   "shortName": "54R BS",
   "type": "ammo",
   "size": [1, 1],
   "value": 1100,
+  "weight": 0.022,
   "rarity": "mythic",
   "stack": 40,
   "caliber": "7.62x54R",

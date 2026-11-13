@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "laptop",
   "name": "Laptop",
   "type": "loot",
   "category": "Electronics",
   "size": [2, 2],
   "value": 18000,
+  "weight": 2,
   "rarity": "rare",
   "model": {
     "parts": [

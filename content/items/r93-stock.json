@@ -1,0 +1,35 @@
+{
+  "formatVersion": 11,
+  "id": "r93-stock",
+  "name": "R93 stock",
+  "shortName": "Stock",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 2400,
+  "weight": 0.8,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["r93"],
+  "stock": {
+    "length": 1
+  },
+  "mods": {
+    "recoil": 0.65,
+    "ergonomics": 1.15
+  },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.12], "size": [0.04, 0.04, 0.24], "color": "#2e3135" },
+      { "type": "box", "pos": [0, -0.105, 0.175], "size": [0.04, 0.03, 0.15], "color": "#2e3135" },
+      { "type": "box", "pos": [0, -0.045, 0.23], "size": [0.042, 0.12, 0.06], "color": "#2e3135" },
+      { "type": "box", "pos": [0, 0.03, 0.16], "size": [0.036, 0.016, 0.11], "color": "#3a3d40" },
+      {
+        "type": "box",
+        "pos": [0, -0.045, 0.265],
+        "size": [0.048, 0.13, 0.012],
+        "color": "#1d1f21"
+      },
+      { "type": "box", "pos": [0, -0.135, 0.22], "size": [0.012, 0.03, 0.012], "color": "#1d1f21" }
+    ]
+  }
+}

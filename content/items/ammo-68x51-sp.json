@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-68x51-sp",
   "name": "6.8×51 mm SIG SP",
   "shortName": "6.8 SP",
   "type": "ammo",
   "size": [1, 1],
   "value": 80,
+  "weight": 0.025,
   "rarity": "uncommon",
   "stack": 40,
   "caliber": "6.8x51",

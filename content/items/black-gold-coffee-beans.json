@@ -1,10 +1,11 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "black-gold-coffee-beans",
   "name": "Black gold coffee beans",
   "type": "loot",
   "size": [1, 2],
   "value": 2900,
+  "weight": 0.5,
   "rarity": "epic",
   "model": {
     "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]

@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "compensator",
   "name": "Compensator",
   "shortName": "Comp.",
   "type": "attachment",
   "size": [1, 1],
   "value": 2500,
+  "weight": 0.1,
   "rarity": "common",
   "slot": "muzzle",
   "mods": {

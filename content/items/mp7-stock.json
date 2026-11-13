@@ -1,0 +1,60 @@
+{
+  "formatVersion": 11,
+  "id": "mp7-stock",
+  "name": "MP7 skeleton stock",
+  "shortName": "Stock",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 3800,
+  "weight": 0.4,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["mp7"],
+  "stock": {
+    "length": 1
+  },
+  "mods": {
+    "recoil": 0.8,
+    "aimTime": 0.95
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "name": "stock rod",
+        "group": "stock",
+        "pos": [-0.016, 0, 0.08],
+        "size": [0.007, 0.009, 0.16],
+        "color": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "name": "stock rod",
+        "group": "stock",
+        "pos": [0.016, 0, 0.08],
+        "size": [0.007, 0.009, 0.16],
+        "color": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "name": "butt plate",
+        "group": "stock",
+        "pos": [0, -0.015, 0.165],
+        "size": [0.045, 0.07, 0.012],
+        "color": "#3a3d40"
+      },
+      {
+        "type": "box",
+        "name": "butt pad",
+        "group": "stock",
+        "pos": [0, -0.015, 0.174],
+        "size": [0.047, 0.074, 0.006],
+        "color": "#141516"
+      }
+    ],
+    "fold": {
+      "pivot": [0, 0, 0],
+      "shift": [0, 0, -0.14]
+    }
+  }
+}

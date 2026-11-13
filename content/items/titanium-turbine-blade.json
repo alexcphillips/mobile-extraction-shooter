@@ -1,10 +1,11 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "titanium-turbine-blade",
   "name": "Titanium turbine blade",
   "type": "loot",
   "size": [3, 1],
   "value": 4000,
+  "weight": 1.5,
   "rarity": "rare",
   "model": {
     "parts": [

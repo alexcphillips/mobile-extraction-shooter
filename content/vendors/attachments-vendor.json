@@ -42,6 +42,24 @@
       "item": "mag-mp133-8"
     },
     {
+      "item": "akm-stock"
+    },
+    {
+      "item": "aks-74u-mag"
+    },
+    {
+      "item": "akm-mag"
+    },
+    {
+      "item": "m9a3-mag"
+    },
+    {
+      "item": "p226-mag"
+    },
+    {
+      "item": "m416-mag"
+    },
+    {
       "item": "aug-a3",
       "attachments": ["aug-optic"],
       "level": 2
@@ -100,6 +118,50 @@
       "level": 2
     },
     {
+      "item": "ak-74m-stock",
+      "level": 2
+    },
+    {
+      "item": "m416-stock",
+      "level": 2
+    },
+    {
+      "item": "aug-a3-mag",
+      "level": 2
+    },
+    {
+      "item": "mp5-mag",
+      "level": 2
+    },
+    {
+      "item": "r93-mag",
+      "level": 2
+    },
+    {
+      "item": "sv-98-mag",
+      "level": 2
+    },
+    {
+      "item": "ump45-mag",
+      "level": 2
+    },
+    {
+      "item": "ak-74m-mag",
+      "level": 2
+    },
+    {
+      "item": "g18c-mag",
+      "level": 2
+    },
+    {
+      "item": "mpx-mag",
+      "level": 2
+    },
+    {
+      "item": "saiga-12-mag",
+      "level": 2
+    },
+    {
       "item": "m416",
       "level": 3
     },
@@ -137,6 +199,26 @@
       "level": 3
     },
     {
+      "item": "mcx-spear-stock",
+      "level": 3
+    },
+    {
+      "item": "rpk-16-stock",
+      "level": 3
+    },
+    {
+      "item": "g3-mag",
+      "level": 3
+    },
+    {
+      "item": "mp7-mag",
+      "level": 3
+    },
+    {
+      "item": "rpk-16-mag",
+      "level": 3
+    },
+    {
       "item": "as-val",
       "level": 4
     },
@@ -166,6 +248,26 @@
     },
     {
       "item": "scope-4x",
+      "level": 4
+    },
+    {
+      "item": "as-val-mag",
+      "level": 4
+    },
+    {
+      "item": "awm-mag",
+      "level": 4
+    },
+    {
+      "item": "scar-h-mag",
+      "level": 4
+    },
+    {
+      "item": "aa-12-mag",
+      "level": 4
+    },
+    {
+      "item": "k10-mag",
       "level": 4
     }
   ]

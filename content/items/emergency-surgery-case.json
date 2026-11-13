@@ -1,10 +1,11 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "emergency-surgery-case",
   "name": "Emergency surgery case",
   "type": "med",
   "size": [2, 1],
   "value": 1000,
+  "weight": 1,
   "rarity": "epic",
   "effect": "bandage",
   "useTime": 5,

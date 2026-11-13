@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-9mm",
   "name": "9 mm Pst",
   "shortName": "9mm Pst",
   "type": "ammo",
   "size": [1, 1],
   "value": 20,
+  "weight": 0.008,
   "rarity": "uncommon",
   "stack": 60,
   "caliber": "9x19",

@@ -141,7 +141,12 @@ describe('PROFILE_FORMAT', () => {
     old.stash[0].items[0].item.item = 'pistol';
     const p = loadContent(PROFILE_FORMAT, old, 'p');
     expect(p.gear.primary1!.item).toBe('m9a3');
-    expect(p.gear.primary1!.attachments).toEqual({ ...attachments, optic: null, laser: null });
+    expect(p.gear.primary1!.attachments).toEqual({
+      ...attachments,
+      optic: null,
+      laser: null,
+      stock: null,
+    });
     expect(p.stash[0]!.items[0]!.item.item).toBe('m9a3');
   });
 
@@ -200,6 +205,38 @@ describe('PROFILE_FORMAT', () => {
     old.formatVersion = 16;
     old.hangar = { quarters: 2, 'trauma-bay': 1 };
     expect(loadContent(PROFILE_FORMAT, old, 'p').hangar).toEqual({ 'trauma-bay': 1, stash: 2 });
+  });
+
+  it('gives every stored gun the stock it was modeled with (format 19 → 20)', () => {
+    const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
+    old.formatVersion = 19;
+    delete old.gear.primary1.attachments.stock;
+    old.gear.sidearm = { ...JSON.parse(JSON.stringify(old.gear.primary1)), item: 'akm' };
+    const p = loadContent(PROFILE_FORMAT, old, 'p');
+    expect(p.gear.primary1!.attachments!.stock).toBeNull();
+    expect(p.gear.sidearm!.attachments!.stock).toBe('akm-stock');
+  });
+
+  it('fits each stored magazine-fed gun with its magazine, rounds and all (format 20 → 21)', () => {
+    const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
+    old.formatVersion = 20;
+    old.gear.sidearm = {
+      ...JSON.parse(JSON.stringify(old.gear.primary1)),
+      item: 'akm',
+      mag: 12,
+      attachments: { optic: null, muzzle: null, magazine: null, laser: null, stock: null },
+    };
+    const p = loadContent(PROFILE_FORMAT, old, 'p');
+    expect(p.gear.sidearm!.attachments!.magazine).toBe('akm-mag');
+    expect(p.gear.sidearm!.mag).toBe(12);
+    expect(p.gear.primary1!.attachments!.magazine).toBeNull();
+  });
+
+  it('gives stored gear an empty headset slot (format 21 → 22)', () => {
+    const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
+    old.formatVersion = 21;
+    delete old.gear.headset;
+    expect(loadContent(PROFILE_FORMAT, old, 'p').gear.headset).toBeNull();
   });
 
   it('gives every stored gun an empty laser slot (format 17 → 18)', () => {

@@ -5,7 +5,9 @@ import {
   type ItemDb,
   type ItemDef,
   type ItemView,
+  type AttachmentSlot,
   type Shape,
+  type WeaponDef,
   type WeaponState,
 } from '@mes/shared';
 import * as THREE from 'three';
@@ -100,13 +102,48 @@ export function itemPortrait(
  * A picture of a model as it's edited, for the item editor: not kept, so every change
  * shows. Drawn square, or with `shape` as a tile.
  */
-export function previewPortrait(def: ItemDef, shape?: readonly [number, number]): string | null {
+export function previewPortrait(
+  def: ItemDef,
+  shape?: readonly [number, number],
+  items?: ItemDb,
+): string | null {
   try {
-    return drawPortrait(modelShapes(def.model), viewOf(def), shape);
+    // A gun with what it comes with (its stock, WF-1), as it's seen in the game.
+    const gun = items && def.type === 'weapon' && def.defaults ? withDefaults(def, items) : null;
+    const shapes = gun ? gunModel(gun.state, gun.db).shapes : modelShapes(def.model);
+    return drawPortrait(shapes, viewOf(def), shape);
   } catch {
     // A model half typed in (a size of 0, say) draws nothing until it's fixed.
     return null;
   }
+}
+
+/**
+ * A gun as edited with the attachments it comes with that exist, and the items with it in,
+ * or null if it comes with none of them. For the item editor's pictures and size.
+ */
+export function withDefaults(
+  def: WeaponDef,
+  items: ItemDb,
+): { state: WeaponState; db: ItemDb } | null {
+  const db = new Map(items).set(def.id, def);
+  const state = {
+    item: def.id,
+    count: 1,
+    mag: 0,
+    cooldown: 0,
+    reloading: 0,
+    triggerHeld: false,
+    attachments: { optic: null, muzzle: null, magazine: null, laser: null, stock: null },
+  } as WeaponState;
+  let any = false;
+  for (const [slot, id] of Object.entries(def.defaults ?? {}) as [AttachmentSlot, string][]) {
+    const a = db.get(id);
+    if (a?.type !== 'attachment' || a.slot !== slot) continue;
+    state.attachments[slot] = id;
+    any = true;
+  }
+  return any ? { state, db } : null;
 }
 
 const corner = new THREE.Vector3();

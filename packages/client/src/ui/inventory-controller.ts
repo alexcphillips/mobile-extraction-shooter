@@ -1,4 +1,5 @@
 import { inventoryLayout, type InventoryLayout } from './inventory-layout';
+import { toggleNightVision } from '../play/night-vision';
 import {
   GEAR_SLOTS,
   canHold,
@@ -6,6 +7,10 @@ import {
   findSpot,
   canReach,
   firesRound,
+  isMagazine,
+  mountsOn,
+  carrierOf,
+  type PlateSide,
   fits,
   fitsSlot,
   gearConflict,
@@ -47,6 +52,8 @@ import {
   type DropZone,
   type Into,
   type LoadOn,
+  type MountOn,
+  type PlateOn,
   type PartSlot,
   type RepairOn,
 } from './drag';
@@ -320,7 +327,9 @@ export class InventoryController implements DragHost {
   canSplit(ref: InGrid): boolean {
     const found = this.find(ref);
     const grid = gridOf(this.ctx.sim, this.ctx.player, ref);
-    return !!found && !!grid && found.item.count > 1 && !!findSpot(this.ctx.items, grid, ref.item);
+    return (
+      !!found && !!grid && found.item.count > 1 && !!findSpot(this.ctx.items, grid, found.item)
+    );
   }
 
   /** Takes count off a stack into a new stack in the same grid (2026-11-01). */
@@ -393,9 +402,45 @@ export class InventoryController implements DragHost {
     this.redraw();
   }
 
-  /** Takes the rounds out of a gun into what you carry. */
+  /** Pack Mags (MG-2): loose rounds in pockets and rig into the magazines there. */
+  pack(): void {
+    this.ctx.send({ type: 'pack' });
+    this.redraw();
+  }
+
+  /** Stops packing or unloading, keeping what's done. */
+  stopPack(): void {
+    this.ctx.send({ type: 'pack', stop: true });
+    this.redraw();
+  }
+
+  /** Takes the rounds out of a gun or magazine into what you carry (a round at a time in a raid, MG-2). */
   unload(gun: ItemRef): void {
     this.ctx.send({ type: 'unload', gun });
+    this.redraw();
+  }
+
+  /** Folds or unfolds a gun's stock (WF-1). */
+  fold(gun: ItemRef, folded: boolean): void {
+    this.ctx.send({ type: 'fold', gun, folded });
+    this.redraw();
+  }
+
+  /** Night vision on or off (GZ-5), and the screen redrawn to say so. */
+  toggleNightVision(): void {
+    toggleNightVision();
+    this.redraw();
+  }
+
+  /** Takes a plate out of a carrier into what you carry (GZ-4). */
+  unplate(carrier: ItemRef, side: PlateSide, plate: string): void {
+    this.ctx.send({ type: 'unplate', carrier, side, plate, to: null });
+    this.redraw();
+  }
+
+  /** Takes a helmet's visor or goggles off into what you carry (GZ-5). */
+  unmount(helmet: ItemRef, part: string): void {
+    this.ctx.send({ type: 'unmount', helmet, part, to: null });
     this.redraw();
   }
 
@@ -570,6 +615,10 @@ export class InventoryController implements DragHost {
     ) {
       return firesRound(this.ctx.items, target, part.id) ? { kind: 'load', gun } : null;
     }
+    // Rounds of its caliber load a loose magazine (MG-1).
+    if (!isPart(ref) && part?.type === 'ammo' && target && isMagazine(target)) {
+      return part.caliber === target.caliber ? { kind: 'load', gun } : null;
+    }
     if (part?.type !== 'attachment' || target?.type !== 'weapon' || !fits(target, part)) {
       return null;
     }
@@ -577,7 +626,15 @@ export class InventoryController implements DragHost {
   }
 
   armorZone(src: DragSource, armor: ItemRef): DropZone | null {
-    if (isPart(src.ref) || this.find(src.ref)?.def.type !== 'repair') return null;
+    if (isPart(src.ref)) return null;
+    const def = this.find(src.ref)?.def;
+    // A visor or goggles onto a helmet with the mount for it (GZ-5).
+    const helmet = this.find(armor)?.def;
+    if (def && helmet && mountsOn(helmet, def)) return { kind: 'mount', helmet: armor };
+    // A plate onto a carrier with a plate slot (GZ-4).
+    if (def?.type === 'plate' && helmet && carrierOf(helmet)?.plates?.length)
+      return { kind: 'plate', carrier: armor };
+    if (def?.type !== 'repair') return null;
     return { kind: 'repair', armor };
   }
 
@@ -597,6 +654,8 @@ export class InventoryController implements DragHost {
     // Picking items to sell: nothing moves.
     if (this.selling) return false;
     if (zone.kind === 'repair') return !isPart(src.ref) && this.canRepair(src.ref, zone.armor);
+    if (zone.kind === 'mount' || zone.kind === 'plate')
+      return !isPart(src.ref) && 'grid' in src.ref;
     if (zone.kind === 'load') {
       if (isPart(src.ref)) return false;
       return !!loadKind(sim, player, items, zone.gun, src.ref, !!this.ctx.stash);
@@ -622,7 +681,7 @@ export class InventoryController implements DragHost {
       if (!grid || !canHold(items, grid, found.item)) return false;
       const stack = stackSize(found.def);
       return (
-        !!findSpot(items, grid, found.item.item) ||
+        !!findSpot(items, grid, found.item) ||
         grid.items.some((g) => sameStack(g.item, found.item) && g.item.count < stack)
       );
     }
@@ -672,9 +731,22 @@ export class InventoryController implements DragHost {
     if (why) flashHint(src.el, why);
   }
 
-  drop(src: DragSource, to: Target | PartSlot | Into | RepairOn | LoadOn): void {
+  drop(
+    src: DragSource,
+    to: Target | PartSlot | Into | RepairOn | LoadOn | MountOn | PlateOn,
+  ): void {
     this.cancelOpen();
     const ref = src.ref;
+    if ('plateInto' in to) {
+      if (!isPart(ref)) this.ctx.send({ type: 'plate', carrier: to.plateInto, from: ref });
+      this.redraw();
+      return;
+    }
+    if ('mount' in to) {
+      if (!isPart(ref)) this.ctx.send({ type: 'mount', helmet: to.mount, from: ref });
+      this.redraw();
+      return;
+    }
     if ('load' in to) {
       if (!isPart(ref)) this.ctx.send({ type: 'load', gun: to.load, from: ref });
       this.redraw();

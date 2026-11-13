@@ -1,0 +1,28 @@
+{
+  "formatVersion": 11,
+  "id": "pe-plate-3",
+  "name": "Polyethylene plate III",
+  "shortName": "Polyethylene III",
+  "type": "plate",
+  "size": [2, 2],
+  "value": 12000,
+  "weight": 1.5,
+  "rarity": "rare",
+  "level": 3,
+  "durability": 55,
+  "repairLoss": 0.03,
+  "material": "polyethylene",
+  "model": {
+    "parts": [
+      {
+        "type": "slab",
+        "pos": [0, 0, 0],
+        "size": [0.25, 0.022, 0.3],
+        "corners": [0.05, 0.05, 0.02, 0.02],
+        "color": "#d9d6cc"
+      },
+      { "type": "box", "pos": [0, 0.012, 0.04], "size": [0.14, 0.003, 0.06], "color": "#d8d2c0" }
+    ]
+  },
+  "view": "top"
+}

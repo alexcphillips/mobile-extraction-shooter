@@ -1,29 +1,27 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "mag-aa12-20",
   "name": "AA-12 20-round drum",
   "shortName": "AA-12 20",
   "type": "attachment",
   "size": [2, 2],
   "value": 12000,
+  "weight": 1.4,
   "rarity": "common",
   "slot": "magazine",
   "weapons": ["aa-12"],
+  "capacity": 20,
+  "caliber": "12g",
   "mods": {
-    "magazine": 12,
     "reloadTime": 1.4
   },
+  "rows": 1,
   "model": {
     "parts": [
-      {
-        "type": "box",
-        "pos": [0, -0.02, 0],
-        "size": [0.05, 0.04, 0.07],
-        "color": "#1d1f21"
-      },
+      { "type": "box", "pos": [0, -0.02, 0], "size": [0.05, 0.04, 0.07], "color": "#1d1f21" },
       {
         "type": "cylinder",
-        "pos": [0, -0.1, 0.0],
+        "pos": [0, -0.1, 0],
         "radius": 0.075,
         "height": 0.06,
         "color": "#26282a",

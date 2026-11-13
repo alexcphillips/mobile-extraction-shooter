@@ -1,15 +1,24 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "plate-carrier",
   "name": "Plate carrier",
   "type": "armor",
   "size": [3, 3],
   "value": 30000,
+  "weight": 1.5,
   "rarity": "epic",
   "slot": "body",
   "level": 4,
   "durability": 80,
   "repairLoss": 0.1,
+  "carrier": {
+    "plates": ["front", "back"],
+    "softZones": [],
+    "comesWith": {
+      "front": "ceramic-plate-4",
+      "back": "ceramic-plate-4"
+    }
+  },
   "model": {
     "parts": [
       {

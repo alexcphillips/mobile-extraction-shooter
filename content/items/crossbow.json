@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "crossbow",
   "name": "Crossbow",
   "type": "weapon",
   "class": "special",
   "size": [3, 2],
   "value": 16000,
+  "weight": 3,
   "rarity": "common",
   "ammo": "crossbow-bolt",
   "hold": "rifle",

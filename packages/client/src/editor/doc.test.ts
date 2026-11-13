@@ -137,6 +137,18 @@ describe('map editing', () => {
     expect(uniqueId('crate', new Set())).toBe('crate');
     m.nodes.push(copy);
     expect(() => compileMap(m, new Map())).not.toThrow();
+    // A generated group's copy is the user's: no generator key, inside it either.
+    const gen: MapNode = {
+      type: 'group',
+      gen: 'a',
+      pos: [0, 0, 0],
+      nodes: [{ type: 'group', gen: 'a/b', pos: [0, 0, 0], nodes: [] }],
+    };
+    expect(copyNode(gen, taken)).toEqual({
+      type: 'group',
+      pos: [0, 0, 0],
+      nodes: [{ type: 'group', pos: [0, 0, 0], nodes: [] }],
+    });
   });
 
   it('moves and turns nodes with the gizmo, patrols as one piece', () => {

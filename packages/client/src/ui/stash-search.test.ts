@@ -16,7 +16,7 @@ const items = new Map(
 const plain = (item: string): Item => ({ item, count: 1 });
 const akm: Item = {
   ...plain('akm'),
-  attachments: { optic: 'dot', muzzle: null, magazine: null, laser: null },
+  attachments: { optic: 'dot', muzzle: null, magazine: null, laser: null, stock: null },
 };
 
 describe('stash search', () => {

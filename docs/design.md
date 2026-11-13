@@ -7,7 +7,12 @@ From before the split: "These decisions were made in design sessions on 2026-10-
 | File | Sections | Size |
 |---|---|---|
 | [design/overview.md](design/overview.md) | Vision; Scope; Core loop and progression; Art direction; Sound (session 19, decided with the user 2026-10-30); Trust model; Characters (confirmed 2026-10-26); Future (designed for now, built later) | 18 KB |
-| [design/raids-and-maps.md](design/raids-and-maps.md) | Raids and maps | 48 KB |
+| [design/raids-and-maps.md](design/raids-and-maps.md) | Raids and maps: rules shared by every map (timer, spawns, terrain, loot, extraction, results, saving, switches, map select); the maps index | 22 KB |
+| [design/maps/silver-creek.md](design/maps/silver-creek.md) | Silver Creek, the starter map (summary first) | 23 KB |
+| [design/maps/northpoint.md](design/maps/northpoint.md) | Northpoint, the mall (summary first) | 31 KB |
+| [design/maps/district.md](design/maps/district.md) | District, planned (summary first) | 6 KB |
+| [design/maps/tutorial.md](design/maps/tutorial.md) | Tutorial house (summary; design in tutorial.md) | 1 KB |
+| [design/maps/mall.md](design/maps/mall.md) | The Mall, deleted (a record) | 3 KB |
 | [design/movement.md](design/movement.md) | Movement (decided 2026-10-26, session 3) | 7 KB |
 | [design/combat.md](design/combat.md) | Combat | 64 KB |
 | [design/damage-and-health.md](design/damage-and-health.md) | Damage, armor and health | 25 KB |
@@ -20,4 +25,4 @@ From before the split: "These decisions were made in design sessions on 2026-10-
 | [design/editors.md](design/editors.md) | Editors (admin only, desktop browser) | 13 KB |
 | [design/zombies.md](design/zombies.md) | Zombies (2026-11-04, the user's request and calls) | 7 KB |
 
-References elsewhere in the form "design.md → Section" mean the topic file holding that section, listed above.
+References elsewhere in the form "design.md → Section" mean the topic file holding that section, listed above. "Raids and maps → Silver Creek" (or Northpoint, District, the Mall) means that map's file in `design/maps/` (split out 2026-11-12, MK-1).

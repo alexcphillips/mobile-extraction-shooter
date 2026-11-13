@@ -1,15 +1,21 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "riot-helmet",
   "name": "Riot helmet",
   "type": "armor",
   "size": [2, 2],
   "value": 6000,
+  "weight": 1.8,
   "rarity": "uncommon",
   "slot": "helmet",
   "level": 2,
   "durability": 30,
   "repairLoss": 0.14,
+  "hearing": -0.1,
+  "vision": {
+    "vignette": 0.2
+  },
+  "visor": true,
   "model": {
     "parts": [
       {

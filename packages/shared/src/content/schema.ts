@@ -567,6 +567,13 @@ const groupSchema = z.strictObject({
   type: z.literal('group'),
   /** Shown in the editor. */
   name: z.string().min(1).optional(),
+  /**
+   * The key of a group a map generator made (MK-2, 2026-11-12; tech/editors.md → Generated
+   * maps): a re-run replaces it while it's as the script last wrote it (the map's
+   * `generated` hashes) and keeps it once edited by hand. The editor's copies drop it. An
+   * optional field, so still format 4.
+   */
+  gen: z.string().min(1).optional(),
   pos: vec3,
   yaw: angle,
   pitch: angle,
@@ -781,6 +788,19 @@ export const mapSchema = z
     /** Color slots that the map's own nodes can use by name. */
     colors: slotsSchema.optional(),
     nodes: nodesSchema,
+    /**
+     * What a generator script last wrote (MK-2, 2026-11-12; tech/editors.md → Generated
+     * maps): `by` is the script, `fields` a hash of each top-level field it owns, `groups`
+     * a hash of each `gen` group's own content as written. Only the scripts read it. An
+     * optional field, so still format 4.
+     */
+    generated: z
+      .strictObject({
+        by: z.string().min(1),
+        fields: z.record(z.string(), z.string()),
+        groups: z.record(z.string(), z.string()),
+      })
+      .optional(),
     /**
      * How many of the rotating extraction zones are open each raid (2026-11-07), picked at
      * random at the raid's start; all of them if left out or more than there are.

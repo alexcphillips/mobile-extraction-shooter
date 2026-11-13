@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-762-m80a1",
   "name": "7.62×51 mm M80A1",
   "shortName": ".308 M80A1",
   "type": "ammo",
   "size": [1, 1],
   "value": 380,
+  "weight": 0.025,
   "rarity": "legendary",
   "stack": 40,
   "caliber": "7.62x51",

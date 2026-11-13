@@ -15,11 +15,11 @@ A simplified mobile extraction shooter: the risk/reward loop of Tarkov without i
 | In | Out (deliberately) | Deferred |
 |---|---|---|
 | Extraction points, loot, stash, vault | PvP (a separate mode one day, not soon: the user's plan, 2026-11-05) | Co-op vs. AI (designed for from day one) |
-| NPC vendors, quests | Player auction house | Weekly admin challenges |
+| NPC vendors, quests | Player auction house (the flea market: a PvP-era feature, way later; the user, 2026-11-12) | Weekly admin challenges |
 | AI enemies and bosses | Attachments on attachments, taking guns apart | NPC-driven "flea market" (still to be explained and decided) |
 | Hit zones, limb health, armor durability | Area-specific helmets and visors | Trading with friends |
 | Healing that takes time, key rooms | Weather, day/night cycle | Grenades for AI (see AI) |
-| Fixed weapon attachment slots | Packing rounds into magazines, multiple mags | Gyro aiming |
+| Fixed weapon attachment slots | (Packing rounds into magazines moved in, 2026-11-12: roadmap → Magazines as items) | Gyro aiming |
 | Map editor, item editor (desktop) | Insurance | Water slowing movement |
 | | Vibration | Temporary effects, such as painkillers (session 9) |
 

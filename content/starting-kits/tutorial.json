@@ -11,8 +11,11 @@
     "backpack": "medium-backpack"
   },
   "carried": [
-    { "item": "ammo-556x45", "count": 90 },
-    { "item": "ammo-9mm", "count": 30 }
+    { "item": "m416-mag", "loaded": "ammo-556x45" },
+    { "item": "m416-mag", "loaded": "ammo-556x45" },
+    { "item": "m9a3-mag", "loaded": "ammo-9mm" },
+    { "item": "ammo-556x45", "count": 30 },
+    { "item": "ammo-9mm", "count": 13 }
   ],
   "loaded": { "m416": "ammo-556x45", "m9a3": "ammo-9mm" },
   "fitted": { "m416": ["red-dot"] }

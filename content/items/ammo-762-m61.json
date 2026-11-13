@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-762-m61",
   "name": "7.62×51 mm M61",
   "shortName": ".308 M61",
   "type": "ammo",
   "size": [1, 1],
   "value": 1000,
+  "weight": 0.025,
   "rarity": "mythic",
   "stack": 40,
   "caliber": "7.62x51",

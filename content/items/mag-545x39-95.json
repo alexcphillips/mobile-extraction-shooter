@@ -1,19 +1,22 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "mag-545x39-95",
   "name": "95-round 5.45×39 drum",
   "shortName": "5.45 95",
   "type": "attachment",
   "size": [2, 2],
   "value": 12000,
+  "weight": 0.9,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["rpk-16", "ak-74m"],
+  "weapons": ["ak-74m", "aks-74u", "rpk-16"],
+  "capacity": 95,
+  "caliber": "5.45x39",
   "mods": {
-    "magazine": 50,
     "reloadTime": 1.5,
     "aimTime": 1.1
   },
+  "rows": 1,
   "model": {
     "parts": [
       {

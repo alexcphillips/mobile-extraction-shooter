@@ -1,7 +1,9 @@
 import type { EnemySkill, Faction } from '../content/enemies';
 import {
+  carrierOf,
   grenadeDef,
   grenadeEffect,
+  itemDef,
   weaponDef,
   type GrenadeDef,
   type ItemDb,
@@ -37,8 +39,9 @@ import {
   type PlayerInput,
   type SimState,
 } from './state';
-import { QUICK_GRIDS, carriedGrid, heldWeapon } from './gear';
-import { createWeaponStats, reloadRound, weaponStats } from './weapons';
+import { QUICK_GRIDS, carriedGrid, chestArmor, heldWeapon } from './gear';
+import { canReload, createWeaponStats, weaponStats } from './weapons';
+import { loadNoise } from './weight';
 import {
   ROUTES,
   chooseExtraction,
@@ -1060,7 +1063,7 @@ export function updateAi(
       if ((state.tick + c.id) % AI.perceiveEvery === 0) {
         // Passive (the tutorial's scav, TU-2): nothing is noticed until it's hit.
         if (!ai.passive) look(state, c, ai, world, nav);
-        if (!ai.deaf && !ai.passive) listenForSteps(state, c, ai);
+        if (!ai.deaf && !ai.passive) listenForSteps(state, c, ai, items);
         if (ai.skill.listen && !ai.deaf && !ai.passive) listenForHands(state, c, ai);
         if (ai.squad !== undefined) shareTarget(state, c, ai);
         if (ai.quarry) track(state, c, ai);
@@ -1073,7 +1076,9 @@ export function updateAi(
       behave(state, c, ai, world, items, nav);
       // Out of a fight, it tops its magazine up from what it carries (2026-11-08: PMCs
       // walked into the next fight half empty and ran dry).
-      if (ai.awareness === 'unaware' && !c.using && !ai.zombie) reloadIfLow(c, items, 1);
+      // Its magazines fill as they go in (MG-4, weapons.ts: magRounds), so one is always
+      // full while it has loose rounds; no packing.
+      if (ai.awareness === 'unaware' && !c.using && !ai.zombie) reloadIfLow(state, c, items, 1);
       if (ai.voiced) breathe(state, c, ai);
     }
     // A closed door on the way to the next waypoint opens as it gets there; Jug, alert,
@@ -1456,17 +1461,28 @@ export function exposedSpawns(
 }
 
 /**
+ * How much further a character's footsteps carry for its chest armor (GZ-4: a carrier's
+ * noise) and, a player's, for its load (BW-3): quieter light, louder heavy.
+ */
+function stepNoise(items: ItemDb, e: Character): number {
+  const chest = chestArmor(items, e.gear);
+  const carrier = (chest && carrierOf(itemDef(items, chest.item))?.noise) || 1;
+  return carrier * (e.ai || e.load === undefined ? 1 : loadNoise(e.load));
+}
+
+/**
  * Footsteps: sprinting and walking are heard nearby; crouching is silent. Players' only:
  * enemies don't go looking for each other (AI rework session 1), they fight on sight.
  */
-function listenForSteps(state: SimState, c: Character, ai: AiState): void {
+function listenForSteps(state: SimState, c: Character, ai: AiState, items: ItemDb): void {
   for (const e of state.entities) {
     if (e.ai || e.health.dead || e.admin?.peaceful || e.mode !== 'ground') continue;
     if (e.height < MOVEMENT.standHeight - 0.1) continue;
     const speed = Math.hypot(e.vx, e.vz);
     const range =
       (speed > MOVEMENT.walkSpeed + 0.5 ? AI.sprintSteps : speed > 1 ? AI.walkSteps : 0) *
-      (ai.skill.hearing ?? 1);
+      (ai.skill.hearing ?? 1) *
+      stepNoise(items, e);
     const d = Math.hypot(e.x - c.x, e.y - c.y, e.z - c.z);
     if (d > range) continue;
     if (ai.awareness === 'alert') {
@@ -2196,7 +2212,7 @@ function behave(
         const across = Math.hypot(ai.focusX - c.x, ai.focusZ - c.z);
         facePitch = Math.atan2(ai.focusY + AI.watchHeight - eyeHeight(c), across);
         ai.input.aim = true;
-        reloadIfLow(c, items, 1);
+        reloadIfLow(state, c, items, 1);
         if (ai.timer <= 0) {
           ai.activity = 'creep';
           ai.hasGoal = false;
@@ -2338,7 +2354,7 @@ function behave(
         }
         faceYaw = yawTo(c, ai.focusX, ai.focusZ);
         // Topping up on the way only out of sight: a reload stops it firing.
-        if (!sees) reloadIfLow(c, items, 1);
+        if (!sees) reloadIfLow(state, c, items, 1);
         // A PMC sprints there (AI rework session 5), turning to face you for the last of it;
         // seeing its target, it walks there firing instead (2026-11-08).
         const sprint =
@@ -2383,7 +2399,7 @@ function behave(
       case 'cover':
         faceYaw = yawTo(c, ai.focusX, ai.focusZ);
         ai.input.crouch = ai.coverLow;
-        reloadIfLow(c, items, 1);
+        reloadIfLow(state, c, items, 1);
         // Time in cover. Once it has crouched and looked again, still seeing its target
         // means it's seen from somewhere else: this cover is no good.
         ai.exposed += DT;
@@ -2484,7 +2500,7 @@ function behave(
         const across = Math.hypot(ai.focusX - c.x, ai.focusZ - c.z);
         facePitch = Math.atan2(ai.focusY + 1.2 - eyeHeight(c), across);
         ai.input.aim = true;
-        reloadIfLow(c, items, 1);
+        reloadIfLow(state, c, items, 1);
         if (ai.timer <= 0) searchOrReturn(state, c, ai);
         break;
       }
@@ -2510,7 +2526,7 @@ function behave(
         const across = Math.hypot(ai.wayX - c.x, ai.wayZ - c.z);
         facePitch = Math.atan2(ai.wayY + 1 - eyeHeight(c), across);
         ai.input.aim = true;
-        reloadIfLow(c, items, 1);
+        reloadIfLow(state, c, items, 1);
         if (
           ai.timer <= 0 &&
           randomSpotNear(state, c, nav, ai.wayX, ai.wayY, ai.wayZ, AI.loiterRadius)
@@ -3123,7 +3139,7 @@ function raging(
       aimAt(state, c, ai, r.x, ty, r.z);
       const w = heldWeapon(c);
       if (w) {
-        reloadIfLow(c, items, 0);
+        reloadIfLow(state, c, items, 0);
         ai.input.fire =
           w.mag > 0 &&
           w.reloading === 0 &&
@@ -3619,7 +3635,7 @@ function suppress(
   ai.aimError = settled + (ai.aimError - settled) * Math.exp(-DT / ai.skill.aimSettle);
   aimAt(state, c, ai, tx, ty, tz);
   ai.input.aim = across > AI.aimDownRange;
-  reloadIfLow(c, items, 0.3);
+  reloadIfLow(state, c, items, 0.3);
   const ready =
     w.mag > 0 &&
     w.reloading === 0 &&
@@ -4697,7 +4713,7 @@ function fight(
   aimAt(state, c, ai, tx, ty, tz);
   input.aim = sees && across > AI.aimDownRange;
   // Jug empties his drum before reloading (AI-8): volume of fire.
-  reloadIfLow(c, items, sees || ai.skill.charge ? 0 : 0.5);
+  reloadIfLow(state, c, items, sees || ai.skill.charge ? 0 : 0.5);
 
   const ready =
     sees &&
@@ -4801,9 +4817,9 @@ function sidestep(state: SimState, c: Character, ai: AiState, nav: NavGrid): boo
 }
 
 /** Reloads when the magazine is below this fraction of full (0: only when empty). */
-function reloadIfLow(c: Character, items: ItemDb, fraction: number): void {
+function reloadIfLow(state: SimState, c: Character, items: ItemDb, fraction: number): void {
   const w = heldWeapon(c);
-  if (!w || w.reloading > 0 || reloadRound(c, items, w) === null) return;
+  if (!w || w.reloading > 0 || !canReload(state, c, items, w)) return;
   const full = weaponStats(items, w, gunStats).magazine;
   if (w.mag === 0 || w.mag < full * fraction) c.ai!.input.reload = true;
 }

@@ -1,0 +1,40 @@
+{
+  "formatVersion": 11,
+  "id": "k10-stock",
+  "name": "K10 tactical stock",
+  "shortName": "Stock",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 4800,
+  "weight": 0.4,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["m416", "mcx-spear", "k10", "mpx"],
+  "stock": {
+    "length": 1
+  },
+  "mods": {
+    "recoil": 0.6,
+    "ergonomics": 1.2,
+    "aimTime": 1.05
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, 0.065],
+        "radius": 0.013,
+        "height": 0.13,
+        "color": "#1d1f21",
+        "pitch": 90
+      },
+      { "type": "box", "pos": [0, -0.015, 0.145], "size": [0.036, 0.06, 0.12], "color": "#2b2e31" },
+      { "type": "box", "pos": [0, -0.06, 0.175], "size": [0.034, 0.04, 0.06], "color": "#2b2e31" },
+      { "type": "box", "pos": [0, -0.03, 0.208], "size": [0.038, 0.11, 0.01], "color": "#1d1f21" }
+    ],
+    "fold": {
+      "pivot": [0.023, 0, 0],
+      "yaw": 180
+    }
+  }
+}

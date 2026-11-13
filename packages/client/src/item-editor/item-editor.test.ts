@@ -111,9 +111,9 @@ describe('item editor', () => {
 
   it('finds what an edit breaks elsewhere in content/', () => {
     // An attachment lists the gun it fits; a loadout puts a suppressor on the PMCs' rifle.
-    const noMags = edited('akm', (d) => setSlots(d, ['optic', 'muzzle']));
-    expect(itemContentProblem(noMags)).toMatch(/mag-762x39-45.*no magazine slot/);
-    const noMuzzle = edited('akm', (d) => setSlots(d, ['optic', 'magazine']));
+    const noMags = edited('akm', (d) => setSlots(d, ['optic', 'muzzle', 'stock']));
+    expect(itemContentProblem(noMags)).toMatch(/akm-mag.*no magazine slot/);
+    const noMuzzle = edited('akm', (d) => setSlots(d, ['optic', 'magazine', 'stock']));
     expect(itemContentProblem(noMuzzle)).toMatch(/loadouts\/pmc-kit.*suppressor/);
     // The tutorial's front door needs a key item.
     const notAKey = edited('front-door-key', (d) => {
@@ -152,7 +152,7 @@ describe('item editor', () => {
     const risks = (id: string, change: (d: Record<string, unknown>) => void): string[] =>
       storageRisks(items.get(id)!, edited(id, change).get(id)!);
     expect(risks('m9a3', (d) => (d.size = [2, 2]))).toHaveLength(1);
-    expect(risks('m9a3', (d) => (d.magazine = 10))).toHaveLength(1);
+    expect(risks('mp-133', (d) => (d.magazine = 4))).toHaveLength(1);
     expect(risks('m9a3', (d) => setSlots(d, ['optic']))).toEqual([
       expect.stringMatching(/muzzle and magazine/),
     ]);
@@ -169,12 +169,14 @@ describe('item editor', () => {
     expect(risks('cash', (d) => (d.stack = 100))).toHaveLength(1);
     expect(risks('field-first-aid-kit', (d) => (d.hp = 150))).toHaveLength(1);
     expect(
-      risks('mag-9mm-24', (d) => ((d.mods as { magazine: number }).magazine = 5)),
+      risks('mag-mp133-8', (d) => ((d.mods as { magazine: number }).magazine = 1)),
     ).toHaveLength(1);
+    expect(risks('mag-9mm-24', (d) => (d.capacity = 20))).toHaveLength(1);
     expect(risks('suppressor', (d) => (d.weapons = ['m9a3']))).toHaveLength(1);
     expect(risks('front-door-key', (d) => (d.uses = 5))).toHaveLength(1);
     // Making things bigger, or changing what doesn't limit saved items, is safe.
-    expect(risks('m9a3', (d) => (d.magazine = 20))).toEqual([]);
+    expect(risks('mp-133', (d) => (d.magazine = 8))).toEqual([]);
+    expect(risks('mag-9mm-24', (d) => (d.capacity = 30))).toEqual([]);
     expect(risks('m9a3', (d) => (d.rpm = 300))).toEqual([]);
     expect(risks('chest-rig', (d) => (d.grid = [5, 3]))).toEqual([]);
     expect(risks('scope-4x', (d) => (d.weapons = [...(d.weapons as string[]), 'm9a3']))).toEqual(

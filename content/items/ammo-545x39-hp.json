@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-545x39-hp",
   "name": "5.45×39 mm HP",
   "shortName": "5.45 HP",
   "type": "ammo",
   "size": [1, 1],
   "value": 25,
+  "weight": 0.011,
   "rarity": "common",
   "stack": 60,
   "caliber": "5.45x39",

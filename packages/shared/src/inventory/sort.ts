@@ -1,4 +1,4 @@
-import { RARITIES, itemDef, type ItemDb, type ItemDef } from '../content/items';
+import { RARITIES, itemDef, itemSize, type ItemDb, type ItemDef } from '../content/items';
 import { addItem, type Grid, type GridItem, type Item } from './grid';
 
 /*
@@ -41,7 +41,10 @@ export function sortGrid(items: ItemDb, grid: Grid, by: SortKey): boolean {
     if (by === 'rarity') return -RARITIES.indexOf(d.rarity);
     return -d.value;
   };
-  const area = (item: Item): number => def(item).size[0] * def(item).size[1];
+  const area = (item: Item): number => {
+    const [w, h] = itemSize(items, item);
+    return w * h;
+  };
   list.sort(
     (a, b) =>
       rank(a) - rank(b) ||

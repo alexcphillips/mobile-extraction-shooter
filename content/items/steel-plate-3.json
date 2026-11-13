@@ -1,0 +1,28 @@
+{
+  "formatVersion": 11,
+  "id": "steel-plate-3",
+  "name": "Steel plate III",
+  "shortName": "Steel III",
+  "type": "plate",
+  "size": [2, 2],
+  "value": 9000,
+  "weight": 3.5,
+  "rarity": "rare",
+  "level": 3,
+  "durability": 80,
+  "repairLoss": 0.05,
+  "material": "steel",
+  "model": {
+    "parts": [
+      {
+        "type": "slab",
+        "pos": [0, 0, 0],
+        "size": [0.25, 0.022, 0.3],
+        "corners": [0.05, 0.05, 0.02, 0.02],
+        "color": "#4b4f53"
+      },
+      { "type": "box", "pos": [0, 0.012, 0.04], "size": [0.14, 0.003, 0.06], "color": "#d8d2c0" }
+    ]
+  },
+  "view": "top"
+}

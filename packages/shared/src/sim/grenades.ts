@@ -566,7 +566,7 @@ function explode(state: SimState, world: CollisionWorld, items: ItemDb, g: Grena
     if (f <= 0) continue;
     for (let zone = 0; zone < ZONE_COUNT; zone++) {
       const damage = def.damage * f * GRENADE.zones[zone]!;
-      woundZone(state, items, c, zone as Zone, damage, def, g.by, 'explosion');
+      woundZone(state, items, c, zone as Zone, damage, def, g.by, 'explosion', x, z);
     }
   }
 }

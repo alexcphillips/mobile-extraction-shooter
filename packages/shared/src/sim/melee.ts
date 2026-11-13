@@ -113,7 +113,7 @@ export function updateMelee(
   }
   if (hit === 'character') {
     const target = entityById(state, charHit.id);
-    if (target) shootCharacter(state, items, target, charHit.zone, def, c.id, 'melee');
+    if (target) shootCharacter(state, items, target, charHit.zone, def, c.id, 'melee', c.x, c.z);
   } else if (hit === 'world') breakGlass(state, world, pane, c.id);
   state.events.push({
     type: 'swing',

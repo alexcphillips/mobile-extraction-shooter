@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "music-store-key",
   "name": "Music store back door key",
   "shortName": "Music key",
   "type": "key",
   "size": [1, 1],
   "value": 14000,
+  "weight": 0.02,
   "rarity": "rare",
   "uses": 5,
   "model": {

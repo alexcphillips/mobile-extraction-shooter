@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "muzzle-brake",
   "name": "Muzzle brake",
   "shortName": "Brake",
   "type": "attachment",
   "size": [1, 1],
   "value": 4000,
+  "weight": 0.15,
   "rarity": "common",
   "slot": "muzzle",
   "mods": {

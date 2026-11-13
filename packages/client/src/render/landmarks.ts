@@ -8,7 +8,7 @@ export const SILHOUETTE_SHADE = 0.72;
 export const SILHOUETTE_MIN = 0.5;
 
 /**
- * The landmarks past the fog (MT-1, design.md → Raids and maps → Silver Creek): every
+ * The landmarks past the fog (MT-1, design/maps/silver-creek.md): every
  * landmark's shapes merged into one flat-colored mesh, drawn first with a camera that sees
  * the whole map, then the world over it with depth cleared. So where the world is drawn
  * (up to the fog's far plane) it wins, and the silhouette shows only against the sky

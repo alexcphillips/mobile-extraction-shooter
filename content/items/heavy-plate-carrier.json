@@ -1,15 +1,27 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "heavy-plate-carrier",
   "name": "Heavy plate carrier",
   "type": "armor",
   "size": [3, 3],
   "value": 42000,
+  "weight": 3.5,
   "rarity": "legendary",
   "slot": "body",
   "level": 5,
   "durability": 110,
   "repairLoss": 0.09,
+  "carrier": {
+    "plates": ["front", "back"],
+    "softZones": [],
+    "comesWith": {
+      "front": "ceramic-plate-5",
+      "back": "ceramic-plate-5"
+    },
+    "blocksRig": true,
+    "noise": 1.25,
+    "swapTime": 8
+  },
   "model": {
     "parts": [
       {
@@ -24,12 +36,7 @@
         "size": [0.287, 0.103, 0.063],
         "color": "#283225"
       },
-      {
-        "type": "box",
-        "pos": [0.108, 1.379, 0],
-        "size": [0.082, 0.041, 0.25],
-        "color": "#2f3a2c"
-      },
+      { "type": "box", "pos": [0.108, 1.379, 0], "size": [0.082, 0.041, 0.25], "color": "#2f3a2c" },
       {
         "type": "box",
         "pos": [-0.108, 1.379, 0],

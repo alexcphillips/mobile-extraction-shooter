@@ -347,6 +347,56 @@ body:has(#raid:not([hidden])) .tutorial-count {
   display: none;
 }
 
+/* Held breath left while aimed, faint and thin round the sights (BW-1, hud/raid-hud.ts). */
+#breath-ring {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 72px;
+  height: 72px;
+  margin: -36px 0 0 -36px;
+  border-radius: 50%;
+  background: conic-gradient(rgb(255 255 255 / 0.4) var(--left, 0%), rgb(0 0 0 / 0.15) 0);
+  mask: radial-gradient(closest-side, transparent 92%, #000 95%);
+  -webkit-mask: radial-gradient(closest-side, transparent 92%, #000 95%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+#breath-ring[hidden] {
+  display: none;
+}
+
+/* Stamina while not full (BW-4): a thin bar under the sights, red while winded. */
+#stamina-bar {
+  position: fixed;
+  top: calc(50% + 46px);
+  left: 50%;
+  width: 64px;
+  height: 3px;
+  margin-left: -32px;
+  border-radius: 2px;
+  background: rgb(0 0 0 / 0.3);
+  pointer-events: none;
+  z-index: 2;
+}
+
+#stamina-bar i {
+  display: block;
+  width: var(--left, 0%);
+  height: 100%;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.55);
+}
+
+#stamina-bar.winded i {
+  background: rgb(231 76 60 / 0.8);
+}
+
+#stamina-bar[hidden] {
+  display: none;
+}
+
 /* The optic's reticle and the scope mask, full screen (hud/optic.ts). */
 #optic {
   position: fixed;
@@ -634,6 +684,88 @@ body:has(#raid:not([hidden])) .tutorial-count {
   display: block;
 }
 
+/*
+ * A helmet's view (GZ-2): drawn over the screen, never a narrower field of view. A soft
+ * vignette by --vignette (0–1), or a hard shape set as its background (render/vision.ts).
+ * One element, so it costs nothing per frame.
+ */
+#helmet-view {
+  --vignette: 0;
+  --vignette-image: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgb(5 5 5 / calc(var(--vignette) * 0.95)) 100%
+  );
+  position: fixed;
+  inset: 0;
+  display: none;
+  pointer-events: none;
+  background: var(--vignette-image);
+}
+
+/*
+ * Night vision (GZ-5): the tint multiplied over the picture, grain shifting a step a frame
+ * (one small tiled texture), and the tube's dark mask: one overlay, so one pass. The canvas
+ * is brightened with a CSS filter and drawn at a lower resolution for softness (play).
+ */
+#nv-view {
+  --nv-tint: #7dff8a;
+  --nv-noise: 0.3;
+  position: fixed;
+  inset: 0;
+  display: none;
+  pointer-events: none;
+  background: var(--nv-tint);
+  mix-blend-mode: multiply;
+}
+
+#nv-view.on {
+  display: block;
+}
+
+#nv-view::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: var(--nv-noise);
+  mix-blend-mode: screen;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/></filter><rect width='128' height='128' filter='url(%23n)'/></svg>");
+  animation: nv-grain 0.25s steps(4) infinite;
+}
+
+#nv-view::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, transparent 38vmin, #000 40vmin);
+}
+
+/* Two tubes: a wide oval with a dark divider down the middle. */
+#nv-view.dual::after {
+  background:
+    linear-gradient(to right, transparent 49.2%, rgb(0 0 0 / 0.85) 50%, transparent 50.8%),
+    radial-gradient(ellipse 64vmin 40vmin at 50% 50%, transparent 94%, #000 100%);
+}
+
+@keyframes nv-grain {
+  0% {
+    background-position: 0 0;
+  }
+  25% {
+    background-position: -37px 23px;
+  }
+  50% {
+    background-position: 19px -41px;
+  }
+  75% {
+    background-position: -11px 53px;
+  }
+}
+
+#helmet-view.on {
+  display: block;
+}
+
 /* Floating move stick, placed where the left thumb lands. */
 #stick {
   position: fixed;
@@ -896,6 +1028,11 @@ body[data-input='gamepad'] .slot-num::after {
   display: none;
 }
 
+/* Only while aimed (hud/hands.ts, BW-2). */
+.control[data-id='breathe'].unaimed {
+  display: none;
+}
+
 /* Only while you're on fire (hud/hands.ts), its ring filling as you put yourself out. */
 .control[data-id='extinguish'].unlit {
   display: none;
@@ -1039,6 +1176,10 @@ body[data-input='gamepad'] .heal-picker button.highlight {
 
 #controls.editing .control[data-id='extinguish'].unlit {
   display: grid;
+}
+
+#controls.editing .control[data-id='breathe'].unaimed {
+  display: block;
 }
 
 #controls.editing .control.selected {
@@ -1681,6 +1822,19 @@ body:has(#raid:not([hidden])) #vitals {
   font-weight: 600;
 }
 
+/* The carried weight (BW-3): plain, amber while it slows you, red with no sprint. */
+.inv-load b {
+  color: #e8e8e8;
+}
+
+.inv-load.slow b {
+  color: #f0a040;
+}
+
+.inv-load.over b {
+  color: #f06050;
+}
+
 .raid .inv-help-button {
   width: 22px;
   height: 22px;
@@ -1875,6 +2029,15 @@ body:has(#raid:not([hidden])) #vitals {
 
 .inv-slots.halves .inv-slot.half {
   grid-column: span 3;
+}
+
+/* GZ-2: the helmet in the middle column with the headset to its right, on a PC. */
+.inv-slots:not(.halves) .inv-slot.head {
+  grid-column: 2;
+}
+
+.inv-slots:not(.halves) .inv-slot.ears {
+  grid-column: 3;
 }
 
 .inv-slot-name {
@@ -6398,12 +6561,23 @@ input[type='range'].pad-grabbed {
   letter-spacing: 0.12em;
 }
 
+/* Two columns: the loadout card and Deploy share the right one; Party sits left of Deploy and
+   the cell above it stays empty, so Deploy keeps the card's width. */
 .lobby-right {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  --lobby-right-w: 248px;
+  display: grid;
+  grid-template-columns: auto var(--lobby-right-w);
+  align-content: end;
   gap: 8px;
-  width: 248px;
+}
+
+.lobby-right > :not(.lobby-party-button) {
+  grid-column: 2;
+}
+
+.lobby-right > .lobby-party-button {
+  grid-column: 1;
+  grid-row: 2;
 }
 
 .lobby .lobby-card {
@@ -6547,6 +6721,17 @@ input[type='range'].pad-grabbed {
   border-top: 3px solid currentColor;
   border-right: 3px solid currentColor;
   transform: translateY(-50%) rotate(45deg);
+}
+
+.lobby .lobby-chip.lobby-party-button {
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  height: auto;
+  width: 64px;
+  padding: 0 6px;
+  font-size: 11px;
+  text-transform: uppercase;
 }
 
 .lobby-deploy-label {
@@ -7128,7 +7313,7 @@ input[type='range'].pad-grabbed {
   }
 
   .lobby-right {
-    width: 214px;
+    --lobby-right-w: 214px;
   }
 
   .lobby-slots {
@@ -7197,7 +7382,7 @@ input[type='range'].pad-grabbed {
   }
 
   .lobby-right {
-    width: 300px;
+    --lobby-right-w: 300px;
   }
 
   .lobby-slots {
@@ -7248,4 +7433,316 @@ input[type='range'].pad-grabbed {
     font-size: 12px;
     letter-spacing: 0.03em;
   }
+}
+
+/* The deploy screen's region map (2026-11-11): spans the list and overview columns, a made-up
+   valley in faded dark colors with a marker per raid. Inspired by a raid-select map, our own art. */
+.lobby-overview.lobby-region {
+  grid-column: 1 / 3;
+  padding: 0;
+  overflow: hidden;
+  background: #0d1215;
+}
+
+.region-map {
+  display: block;
+  width: 100%;
+  height: 100%;
+  font-family: inherit;
+}
+
+.region-land {
+  fill: #11171a;
+}
+
+.region-forest path {
+  fill: #131d19;
+}
+
+.region-contour path {
+  fill: none;
+  stroke: #1c2428;
+  stroke-width: 1.5;
+}
+
+.region-fields rect {
+  fill: #141b18;
+  stroke: #1d2622;
+  stroke-width: 1;
+}
+
+.region-water {
+  fill: #0e1a22;
+  stroke: #1b2c37;
+  stroke-width: 2;
+}
+
+.region-creek {
+  fill: none;
+  stroke: #1a2c37;
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+.region-road-minor path {
+  fill: none;
+  stroke: #1d2428;
+  stroke-width: 3;
+}
+
+.region-road {
+  fill: none;
+  stroke: #262e33;
+  stroke-width: 6;
+}
+
+.region-road-dash {
+  fill: none;
+  stroke: #161c1f;
+  stroke-width: 1;
+  stroke-dasharray: 8 8;
+}
+
+.region-blocks rect {
+  fill: #1a2125;
+}
+
+.region-mall {
+  fill: #232c31;
+  stroke: #2d373d;
+  stroke-width: 1.5;
+}
+
+.region-grid line {
+  stroke: rgb(255 255 255 / 0.035);
+  stroke-width: 1;
+}
+
+.region-grid-label text {
+  fill: #313c44;
+  font-size: 11px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.region-title {
+  fill: #1f282e;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 0.45em;
+  text-anchor: middle;
+}
+
+.region-compass circle {
+  fill: none;
+  stroke: #2b353d;
+  stroke-width: 1.5;
+}
+
+.region-compass path {
+  fill: #2b353d;
+}
+
+.region-compass path.north {
+  fill: #55636e;
+}
+
+.region-compass text {
+  fill: #55636e;
+  font-size: 13px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+
+/* A raid's marker: a ring with a diamond and a name plate; the picked one in the accent. */
+.region-spot {
+  cursor: pointer;
+  outline: none;
+}
+
+.region-hit {
+  fill: transparent;
+}
+
+.region-ring {
+  fill: #0b0f12;
+  stroke: #6b7a85;
+  stroke-width: 2.5;
+}
+
+.region-pin {
+  fill: #8d99a3;
+}
+
+.region-plate {
+  fill: rgb(10 14 17 / 0.88);
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.region-plate-edge {
+  fill: #3a4650;
+}
+
+.region-name {
+  fill: #e6e3da;
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.region-line {
+  fill: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.region-spot:hover .region-ring,
+.region-spot:focus-visible .region-ring {
+  stroke: #b9c3ca;
+}
+
+.region-spot.active .region-ring {
+  stroke: var(--accent);
+}
+
+.region-spot.active .region-pin,
+.region-spot.active .region-plate-edge {
+  fill: var(--accent);
+}
+
+.region-spot.active .region-plate {
+  stroke: rgb(227 163 58 / 0.45);
+}
+
+.region-spot.active .region-name {
+  fill: var(--accent);
+}
+
+.region-area {
+  fill: var(--accent-glow);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 6;
+  stroke-opacity: 0.4;
+}
+
+.region-pulse {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: region-pulse 1.8s ease-out infinite;
+}
+
+@keyframes region-pulse {
+  from {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
+/* Locked: dimmed and dashed, a lock in place of the diamond, and its level over it. */
+.region-spot.locked {
+  cursor: not-allowed;
+}
+
+.region-spot.locked .region-body {
+  opacity: 0.45;
+}
+
+.region-spot.locked .region-ring {
+  stroke: #55636e;
+  stroke-dasharray: 4 4;
+}
+
+.region-lock {
+  fill: none;
+  stroke: #8d99a3;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.region-spot.locked .region-name {
+  fill: #8d99a3;
+}
+
+.region-needs rect {
+  fill: #161c20;
+  stroke: #3a4650;
+  stroke-width: 1.5;
+}
+
+.region-needs path {
+  fill: none;
+  stroke: #b9c3ca;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.region-needs text {
+  fill: #d6dbde;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-anchor: middle;
+  text-transform: uppercase;
+}
+
+/* Region / Layout, over the pane's corner like the overview's floor buttons. */
+.lobby-view-toggle {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+}
+
+.lobby .lobby-view-toggle button {
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: rgb(20 26 31 / 0.85);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.lobby .lobby-view-toggle button + button {
+  margin-left: -1px;
+}
+
+.lobby .lobby-view-toggle button.on {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* A loaded magazine's stripe, in its round's tip (level) color (MG-2). */
+.inv-item-stripe {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 4px;
+  pointer-events: none;
+}
+
+/* Pack Mags (MG-2), in the gear panel's header. */
+.inv-pack {
+  flex: none;
+  padding: 2px 8px;
+  font-size: 12px;
+  white-space: nowrap;
 }

@@ -123,13 +123,105 @@ The design is [hangar.md](hangar.md). The material items and loot tables are the
 - [ ] **Wipe prod before H4 ships** (no users yet): stored pages and vaults are reshaped on load, but a full old stash could fail its check.
 
 ## Silver Creek, the starter map (planned 2026-11-09 with the user)
-See design.md → Raids and maps → Silver Creek for the layout and the user's calls (a Customs-style rectangle about 320 × 150 m, spawns at both ends and extracts at the far end, trees kept to the edges, five river crossings, three landmarks). Sketch: https://claude.ai/artifact/9v38f2y7U7tuf5cdKBxc84. As with Northpoint, the user places spawns and loot, and the bones are approved before detail. The sketch still shows a church; it's now the fire lookout, office and sheds (MT-3).
+See design/maps/silver-creek.md for the layout and the user's calls (a Customs-style rectangle about 320 × 150 m, spawns at both ends and extracts at the far end, trees kept to the edges, five river crossings, three landmarks). Sketch: https://claude.ai/artifact/9v38f2y7U7tuf5cdKBxc84. As with Northpoint, the user places spawns and loot, and the bones are approved before detail. The sketch still shows a church; it's now the fire lookout, office and sheds (MT-3).
 
 - 12 finished sessions in [roadmap-done.md](roadmap-done.md). v1 of the map is built; it hasn't been played yet.
 
 Later, not counted in v1 of the map:
 - [ ] **MT-13. Conditional extracts:** the train (power it at the engine shed; switches already exist), the paid log truck, the raft. Water that slows you and splashes, if wanted then.
   - **Read:** design/raids-and-maps.md (extractions, switches); tech/content-formats.md.
+
+## Map tools (planned 2026-11-12 with the user)
+Tools for building many maps together: faster loops, better-measured layouts, less repetition, fewer tokens. MK-1 to MK-4 and MK-6 (the kit) are done. The rest land when a District session needs them. **Kit rule: a generator piece written once lives in its map script; written a second time, it moves to `scripts/mapkit/` with a sim test** (tech/editors.md → Map kit). Tool decisions go in tech/editors.md (editor and board) and level-design.md (the report's measures and yardsticks).
+
+- 5 finished sessions in [roadmap-done.md](roadmap-done.md).
+
+- [ ] **MK-5. Prefab catalog.** `node scripts/prefabs.mjs [query]` lists prefabs with size, height class (low, waist, eye, tall), triangles, collision, loot and which maps use them, from the 213 files, so a session finds one to reuse without reading them; `--sheet` renders a thumbnail sheet (the prefab browser's thumbnails) for the user. Prefabs gain optional `tags` (cover, vehicle, street, store, military, …). Variants rather than copies: a prefab can take a color or part swap from its parent, so "the same car in four colors" is one prefab.
+  - **Read:** docs/props.md; tech/editors.md (prefab browser).
+- [ ] **MK-7. Plan variants.** For a room or building, generate several plans into a numbered top-down sheet (with each plan's report numbers: entrances, longest line, cover count), the user picks by number, and the pick is written into the map. For District's stores (DS-8) and in-between pieces.
+  - **Read:** MK-3 and MK-4's notes.
+- [ ] **MK-8. Editor overlays.** The report's heatmaps (long lines, open patches, AI sight coverage) painted on the ground in the map editor, updated after an edit settles, so a problem shows while reshaping. Before DS-5.
+  - **Read:** tech/editors.md (navigation overlay); MK-4's notes.
+- [ ] **MK-9. Flow runs.** Headless raids (AI-9's runs) with simple player bots (spawn, a POI, an extraction) logging positions, fights and deaths to heatmaps: where fights happen, which routes get used, which areas nobody visits. A pointer, not a verdict: bots don't play like the user. Before DS-15.
+  - **Read:** AI-9's notes in roadmap-done.md; design/ai.md.
+
+**Token habits for map sessions** (in force now; CLAUDE.md's lean-token rule applied to maps): query maps and prefabs with scripts (`map-report`, `prefabs.mjs`, a `node -e` over the JSON), never read a map file; read a map's summary in its design file, then search; one report table per check, not logs; roadmap notes a few lines, detail in the map's design file.
+
+## District (planned 2026-11-12 with the user; "Northpoint v2" while planning)
+A new map, **replacing Northpoint (the user's call, 2026-11-12)**: **a suburban commercial district built on a hill, with the mall at its center**, built from scratch by generator script (the Silver Creek way) into `content/maps/district.json`. **Northpoint is not touched**; which one stays is decided after v2 plays. Story: **an evacuation point that was overrun**. Areas, size, in-between rules and building depths: design/maps/district.md (every DS session reads its summary first). As before, the user places spawns and loot.
+
+**Bones first (the user's call):** POIs as boxes, roads and terrain heights are built, walked and discussed before any detail. The layout lives in one table in the generator (POI positions, footprints, levels, gaps), so stretching or squeezing the map after a review is a re-run. Nothing after DS-3 starts until the user approves the bones.
+
+- 2 finished sessions in [roadmap-done.md](roadmap-done.md) (DS-1, the sketch; DS-2, the bones graybox).
+
+- [ ] **DS-3. Bones review with the user.** Measured in the sim: walking and sprinting times between areas and edge to edge, the routes around and through the mall, open crossings over 40 m, lines of 70 m+, AI reach between levels, a first triangle and draw-call count. The user walks it; we discuss the flow and adjust the table (size included). **The user approves the bones here.**
+  - **Read:** DS-2's notes (roadmap-done.md) and design/maps/district.md → The bones graybox. Walk it from the raid list in a dev build (District, tagged test) or `/editor?map=district` → Play; `node scripts/map-report.mjs district` and `node scripts/district-probe.mjs` measure it. Change the table on the board (`/layout?map=district`), then `node scripts/gen-district.mjs`.
+  - **Read:** level-design.md; MK-4's notes (the report does the measuring).
+- [ ] **DS-4. Long-range pathfinding** (AI-4's open question): a coarse graph over the nav grid's regions, so long searches across a district stay cheap on a phone. Before any AI work.
+  - **Read:** tech/shared-sim.md (navigation); design/ai.md.
+- [ ] **DS-5. The mall's shell and service network.** Floors, the slope's two entry levels, storefront grid, employee halls, stockrooms, electrical, trash and security rooms, staff stairs, locked security doors and breakable access points.
+- [ ] **DS-6. The mall court.** The indoor garden, the helicopter crash, the bridges, the checkpoint and field hospital; lines held near 30 m.
+- [ ] **DS-7. The department store** (the user's spec: two floors, central opening, stockroom on the service corridor, receiving with a roll-up door, damaged upper floor) **and the cinema wing.**
+- [ ] **DS-8. The mall's key stores and shuttered stores.** Each its own plan; generated alternatives for the user to pick from. Props are the user's detail pass.
+- [ ] **DS-9. The roof terrace, the parking garage and the glass connector bridge.**
+- [ ] **DS-10. The plaza (restaurant court, jeweler, bank, phone repair) and the hotel** (the command post and the boss's ground).
+- [ ] **DS-11. The service quarter:** docks, the warehouse, substation, container stacks.
+- [ ] **DS-12. The furniture store and the construction site.**
+- [ ] **DS-13. The strip row, gas station and surface lot** (the convoy wreck, armored vehicle, abandoned landing zone).
+- [ ] **DS-14. The in-between:** the evacuation jam, terraces and stair cascades, the underpass, the culvert, service alleys, small structures, landscaping, evacuation leftovers; the 40 m rule measured. Split in two if it's too big.
+- [ ] **DS-15. AI.** Scavs where the story puts them, patrols through the in-between and the mall's upper level, PMC points of interest, the boss at the hotel.
+  - **Read:** design/ai-scavs-pmcs-bosses.md.
+- [ ] **DS-16. Palette, finish and performance.** Its own palette (the approved mall finishes reused where they fit); triangles and draw calls against Northpoint and Silver Creek; a naming pass so every business name is made up.
+- [ ] **DS-17. The freight elevator (2026-11-12; replaces the rotating raid events, which the user scrapped for something consistent):** a switch near the warehouse opens a freight elevator after 10–20 s. Starting it sounds a **local warning buzzer**, heard well around the warehouse, which the AI hears as a loud sound; there are **no long global alarms** (annoying in playtests). The user's design: shallow, a door opening on loose loot, reusing Northpoint's freight elevator and switch; the fighting is in the warehouse. Open: how enemies respond (the user: spawns triggered around the warehouse; Claude: a standing scav guard, the buzzer heard by the AI, and a response squad walking in from out of sight), where the switch is, and whether it needs the substation's power. Details in design/maps/district.md.
+
+Then the user: spawns, extractions, loot, quests. **Open:** whether District replaces Northpoint (quests, server tests and the raid id use `northpoint`) or both stay; raid length (about 25 minutes, to confirm in DS-3).
+
+## Breath, weight and stamina (planned 2026-11-11 with the user)
+Aim sway makes careful shots frustrating (design/combat.md → Sights move). **Sprint speed stays 6 m/s** (the user's call). **Weight slows players only, never enemies** (the user's call). Every number below is a first guess.
+
+- 4 finished sessions in [roadmap-done.md](roadmap-done.md).
+
+## Gear stats and hit zones (proposed 2026-11-11 by the user, design to confirm before building)
+GZ-3 after BW-4. GZ-2, GZ-4 and GZ-5 were done early (2026-11-12, the user's call) against today's hit zones; GZ-3 switches on their face and stomach coverage.
+
+- 4 finished sessions in [roadmap-done.md](roadmap-done.md).
+
+**Every new stat goes into the item editor in the same session that adds it** (the user's note, 2026-11-12), so all of it can be configured there. Each session below lists its editor work; read tech/editors.md for each.
+
+- [ ] **GZ-3. Thorax, stomach and face (settled with the user, 2026-11-12).** Separate pools: **head 35 and thorax 85 are vital; a new stomach zone of 70 is not** (440 in all). The stomach gets its own capsule under the thorax. **Face** is an angle check on the head capsule (a hit from the front, below the brow), sharing the head's HP; it matters for coverage only. **A blacked stomach** spreads 1.5× of any further hit over the zones with HP left (limbs stay at 0.7). Until surgery: a stamina cap, slower stamina refill, shorter breath, and **pain noises at a running footstep's range (15 m) that enemies hear and locate**. Enemies with a blacked stomach make the noise too, but get no other debuff. No hydration or food, ever. Painkillers and timed injector effects are coming and will be able to quiet it. HUD body: a 7th zone. **The damage log and the post-raid kill log show stomach and face hits** (the user's note, 2026-11-12). Meds: the stomach goes into the treatment order; a medkit skips a blacked stomach, as it does broken limbs. Enemies aim at center mass or slightly above: tune from where shots land at 10, 25 and 50 m in the sim. **Measure shots to kill, unarmored and thorax-only, with an AKM at 10 and 25 m, before and after.** The user expects thorax-only armor to feel rough rather than tankier than today. After BW-4 (it needs stamina).
+  - **Since GZ-4 and GZ-5 (2026-11-12):** carriers already store `plateZones`/`softZones` with `stomach`, and `armorHit` (`sim/health.ts`) only checks the thorax: add the stomach there. A visor takes any frontal head hit by an angle test (`fromFront`, 70°): replace it with the face zone. Hits carry their origin (`fromX`, `fromZ`) already.
+  - **Read:** design/damage-and-health.md (Hit zones, Limbs, Healing, HUD); tech/shared-sim.md (hit zones); design/ai.md (hearing, aim).
+## Magazines as items (planned 2026-11-12 with the user)
+Reverses "packing rounds into magazines, multiple mags" being out (design/overview.md): the user wants it because it's fun, and it makes rigs worth their slots. Loose rounds stay as what you pack from. Every number below is a first guess. Each session puts its new stats in the item editor.
+
+- 4 finished sessions in [roadmap-done.md](roadmap-done.md); none open.
+
+## Stocks and weapon footprints (planned 2026-11-12 with the user)
+A gun's grid size follows its state, and stocks become parts you swap. Each change is set per item in the item editor; many attachments change nothing. **Saved stashes that no longer fit are fine: prod gets wiped** (no players yet; the user's call), so no stash migration.
+
+- 2 finished sessions in [roadmap-done.md](roadmap-done.md); none left.
+
+## Pain and tremors (planned 2026-11-12 with the user)
+Needs timed effects and painkillers (planned by the user, not yet a session) for some of it.
+
+- [ ] **PS-1. Feeling hurt.** Broken arms already add sway (×3 one, ×5 both) and slow aiming (×1.5 each); **painkillers will hide it** for their duration, and surgery fixes it. **Low stamina** adds sway and shorter breath (BW-4). **Low health** (thorax or head under about 30%): a faint tremor in the sway and heavy breathing you hear. A **blacked stomach** is GZ-3 (cough and groans, which enemies hear), plus a subtle pain effect at the screen's edges. No energy or hydration (the user's call). The pain edge effect is one cheap overlay pass, never a real blur.
+  - **Read:** design/damage-and-health.md (Limbs, HUD); design/combat.md (Sights move); tech/client.md.
+
+**No suppression effects** (near misses blurring or muffling): dropped by the user, 2026-11-12. **Enemies get no headset hearing**: the cough's range does the job (the user's OK).
+
+## Replays: death replay and recorded sessions (planned 2026-11-12 with the user)
+The sim runs at 30 ticks a second from inputs with seeded random numbers, but **bit-exact determinism was never required** (tech/shared-sim.md: the co-op host is authoritative), so replaying from inputs has to be made exact first, then kept exact by tests.
+
+- [ ] **RP-1. Exact replays.** Find and remove what can make two runs of the same inputs differ (time read from the clock, `Math.random`, iteration over unordered collections, anything the client feeds back into the sim). A test runs raids twice from the same seed and inputs and compares a **state hash every second**. Then **a recording**: the raid's seed, content version and build, a full state snapshot at the start, the inputs per tick (compact: a few bytes a tick, changes only), and a state hash every second so a replay that drifts is caught where it drifts. **Known limit:** JavaScript engines may disagree on `Math.sin`, `Math.exp` and the like in the last bit, so an iPhone (Safari) recording may drift on a PC (Chrome or Node). Replays of iPhone recordings run in WebKit (Playwright), or the recording carries a full snapshot every 30–60 s to re-sync from.
+  - **Read:** tech/shared-sim.md; tech/overview.md.
+- [ ] **RP-2. Death replay.** When you die, watch the last **10–15 s** again from the killer's eyes (then from yours, a toggle), with the damage log's hits and zones beside it, then the post-raid screen. **It's the same recording as RP-1 and RP-3** (the user's note, 2026-11-12: one recording, the inputs that rebuild the whole match). Replaying from the raid's start would mean re-simulating up to 20 minutes at the moment you die, so the phone also keeps a snapshot every 5 s in a ring buffer as a shortcut to start from, then plays the recording's inputs from there with the same renderer. **Measure the snapshot first:** if it costs more than about 2 ms or allocates a lot on a phone, keep cheaper transform frames (positions, facing, pose, shots for characters near you) instead, which can't drift (a separate, local-only record; the uploaded recording stays inputs). Skippable, and off for zombies (leave zombies alone). In co-op, the host's state is what's replayed (later, with coop.md).
+  - **Read:** design/damage-and-health.md (HUD, damage log); tech/client.md; RP-1's notes.
+- [ ] **RP-3. Recorded sessions for debugging, monitoring and analytics.** Upload a raid's recording (RP-1) for a whole raid, then replay it on a dev machine to see a reported bug or a crash exactly. Sample a share of raids, plus every raid that hits an error or a slow frame. On the server: store them, an admin list with filters (map, build, device, errors), and a viewer. Analytics come from the same data (where people die, what kills them, how long raids last, extraction rates). **Before real users:** recordings are game inputs only, never the screen (the user's note, 2026-11-12), but they're still tied to an account, so the privacy policy (needed for accounts anyway) says they're kept for debugging and stats, with a retention limit (say 90 days). A consent prompt or opt-out isn't planned; check that's still right if analytics go beyond fixing and balancing the game, or for EU players. Upload size cap: gzip, and 20 minutes of inputs should be well under 1 MB.
+  - **Read:** tech/server.md; tech/client.md; RP-1's notes.
+
+## Scav runs (proposed 2026-11-12, design to confirm)
+- [ ] **SR-1. Play a raid as a scav.** A random scav kit (from the scav loadouts), on a cooldown, so losing your gear never locks you out and you can learn a map for free. **To decide:** cooldown length; whether scavs treat you as one of them (and what breaks that: shooting a scav); which maps, spawn points and how late in the raid you join; whether PMCs are hostile (yes, as now); what you can take home (all of it to the stash, as in Tarkov); quests and XP on a scav run or not; whether the Hangar can shorten the cooldown. Reuses scav loadouts, spawns and the AI's sides.
+  - **Read:** design/ai-scavs-pmcs-bosses.md; design/raids-and-maps.md; hangar.md.
 
 ## After v1 (not scheduled)
 - Co-op vs. AI, phones and PCs together (a player's device hosts, others connect over WebRTC; client movement prediction, shared loot rolls, quest items only for the holder). The plan, session by session, is [coop.md](coop.md).

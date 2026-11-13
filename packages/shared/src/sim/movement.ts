@@ -7,6 +7,8 @@ import {
   type Ladder,
 } from '../world/collision-world';
 import { legSpeedScale } from './health';
+import { canSprint, loadSpeed } from './weight';
+import { STAMINA, spendStamina, staminaToSprint, updateStamina } from './stamina';
 import { eyeHeight, eyeX, eyeZ, type Character, type PlayerInput } from './state';
 
 /** Movement tuning. Distances in meters, speeds in meters per second. */
@@ -27,6 +29,8 @@ export const MOVEMENT = {
   climbSpeed: 2,
   /** The most you can walk while using a med. */
   useSpeed: 1.5,
+  /** At most this fast while packing or unloading magazines (MG-4: a little quicker than a med). */
+  packSpeed: 2,
   /** The most you can walk while putting yourself out (2026-10-31): about half a walk. */
   extinguishSpeed: 1.75,
   /** Walking and sprinting are this much faster with the knife out. */
@@ -129,7 +133,15 @@ export function moveCharacter(
       my /= len;
     }
     // Firing or aiming stops a sprint, and so does putting yourself out.
-    sprint = input.sprint && !input.fire && !input.aim && my > 0 && !c.extinguish;
+    // Players carrying over WEIGHT.heavy can't sprint (BW-3).
+    sprint =
+      input.sprint &&
+      !input.fire &&
+      !input.aim &&
+      my > 0 &&
+      !c.extinguish &&
+      (!!c.ai || canSprint(c.load ?? 0)) &&
+      staminaToSprint(c);
     crouch = input.crouch && !sprint;
     prone = !!input.prone && !sprint;
     jump = input.jump && !c.jumpHeld;
@@ -138,6 +150,8 @@ export function moveCharacter(
   } else {
     c.jumpHeld = false;
   }
+  // Stamina (BW-4): sprinting on the ground drains it, anything else refills it.
+  updateStamina(c, sprint && c.mode === 'ground' && !c.slide && my > 0);
   if (c.slide && c.mode !== 'ground') c.slide = null;
   // No jumping out of a slide, nor lying down in one.
   if (c.slide) jump = prone = false;
@@ -250,8 +264,10 @@ function walk(
     let speed =
       (crouched ? crouchSpeed : sprint ? M.sprintSpeed : M.walkSpeed) *
       knife *
-      legSpeedScale(c.health);
+      legSpeedScale(c.health) *
+      (c.ai ? 1 : loadSpeed(c.load ?? 0) * (c.burden?.moveSpeed ?? 1));
     if (c.using) speed = Math.min(speed, M.useSpeed);
+    if (c.packing) speed = Math.min(speed, M.packSpeed);
     if (c.extinguish) speed = Math.min(speed, M.extinguishSpeed);
     c.vx = wishX * speed;
     c.vz = wishZ * speed;
@@ -282,6 +298,7 @@ function walk(
     if (jump && !crouched) {
       c.vy = JUMP_SPEED;
       c.mode = 'air';
+      spendStamina(c, STAMINA.jump);
     } else {
       // Follow the ground up steps and down slopes; fall off anything deeper.
       const ground = world.groundAt(c.x, c.z, M.radius, c.y + M.stepUp);
@@ -464,6 +481,7 @@ function startVault(c: Character, world: CollisionWorld): boolean {
   }
 
   c.mode = 'vault';
+  spendStamina(c, STAMINA.vault);
   c.vaulting = {
     fromX: c.x,
     fromY: c.y,

@@ -1,0 +1,33 @@
+{
+  "formatVersion": 11,
+  "id": "akm-mag",
+  "name": "AKM 30-round magazine",
+  "shortName": "AKM 30",
+  "type": "attachment",
+  "size": [1, 2],
+  "value": 2500,
+  "weight": 0.3,
+  "rarity": "common",
+  "slot": "magazine",
+  "weapons": ["akm"],
+  "capacity": 30,
+  "caliber": "7.62x39",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.035, -0.005],
+        "size": [0.03, 0.08, 0.07],
+        "color": "#8a3a1c",
+        "pitch": 10
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.103, -0.025],
+        "size": [0.03, 0.065, 0.065],
+        "color": "#8a3a1c",
+        "pitch": 25
+      }
+    ]
+  }
+}

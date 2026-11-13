@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-45acp-ap",
   "name": ".45 ACP AP",
   "shortName": ".45 AP",
   "type": "ammo",
   "size": [1, 1],
   "value": 120,
+  "weight": 0.015,
   "rarity": "rare",
   "stack": 50,
   "caliber": ".45acp",

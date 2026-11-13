@@ -1,15 +1,23 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "tactical-vest",
   "name": "Tactical vest",
   "type": "armor",
   "size": [3, 3],
   "value": 20000,
+  "weight": 2.5,
   "rarity": "rare",
   "slot": "body",
-  "level": 3,
+  "level": 2,
   "durability": 65,
   "repairLoss": 0.12,
+  "carrier": {
+    "plates": ["front"],
+    "softZones": ["thorax"],
+    "comesWith": {
+      "front": "steel-plate-3"
+    }
+  },
   "model": {
     "parts": [
       {

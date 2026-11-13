@@ -1,10 +1,11 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ballistic-glass-panel",
   "name": "Ballistic glass panel",
   "type": "loot",
   "size": [2, 2],
   "value": 1000,
+  "weight": 8,
   "rarity": "rare",
   "model": {
     "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]

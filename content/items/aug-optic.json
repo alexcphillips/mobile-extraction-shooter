@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "aug-optic",
   "name": "AUG A3 M1 1.5× optic",
   "shortName": "AUG 1.5×",
   "type": "attachment",
   "size": [2, 1],
   "value": 9000,
+  "weight": 0.3,
   "rarity": "common",
   "slot": "optic",
   "weapons": [

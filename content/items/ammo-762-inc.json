@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-762-inc",
   "name": "7.62\u00d751 Incendiary",
   "shortName": ".308 Inc.",
   "type": "ammo",
   "size": [1, 1],
   "value": 320,
+  "weight": 0.025,
   "rarity": "epic",
   "stack": 40,
   "caliber": "7.62x51",

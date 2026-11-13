@@ -1,4 +1,13 @@
-import { armorDef, armorStatsOf, type AmmoDef, type ItemDb } from '../content/items';
+import {
+  armorDef,
+  armorStatsOf,
+  carrierOf,
+  itemDef,
+  softZonesOf,
+  type AmmoDef,
+  type ItemDb,
+  type PlateSide,
+} from '../content/items';
 import type { Item } from '../inventory/grid';
 import { chance } from '../rng';
 import { TICK_SECONDS } from '../tick';
@@ -255,9 +264,60 @@ export function shootCharacter(
   ammo: Wound,
   by: EntityId,
   cause: 'shot' | 'melee' = 'shot',
+  fromX = NaN,
+  fromZ = NaN,
 ): void {
   const k = c.health.pool === undefined ? HEALTH.multiplier[zone]! : 1;
-  woundZone(state, items, c, zone, ammo.damage * k, ammo, by, cause);
+  woundZone(state, items, c, zone, ammo.damage * k, ammo, by, cause, fromX, fromZ);
+}
+
+/** How far either side of straight ahead a hit counts as from the front (GZ-5), as a cosine. */
+const FRONT_COS = Math.cos((70 * Math.PI) / 180);
+
+/**
+ * Whether a hit came from in front of c (GZ-5; GZ-4 picks plates by it): from (x, z),
+ * where the shot or swing started, within 70° of where c faces. Unknown (NaN) is the front.
+ */
+export function fromFront(c: Character, fromX: number, fromZ: number, cos = FRONT_COS): boolean {
+  const dx = fromX - c.x;
+  const dz = fromZ - c.z;
+  const d = Math.hypot(dx, dz);
+  if (!(d > 1e-6)) return true;
+  return (-Math.sin(c.yaw) * dx - Math.cos(c.yaw) * dz) / d >= cos;
+}
+
+/**
+ * What a hit on a zone meets (one check, no layering): on the head, a visor fitted to the
+ * helmet if the hit is from the front (GZ-5), else the helmet; on the chest, chestArmor.
+ */
+function armorHit(
+  items: ItemDb,
+  c: Character,
+  zone: Zone,
+  fromX: number,
+  fromZ: number,
+): ArmorState | null {
+  if (zone === CHEST) {
+    const chest = chestArmor(items, c.gear);
+    const carrier = chest && carrierOf(itemDef(items, chest.item));
+    if (!chest || !carrier) return chest;
+    // GZ-4: the plate on the side hit, if its plates cover the thorax; else the soft.
+    if (carrier.plates?.length && (carrier.plateZones ?? ['thorax']).includes('thorax')) {
+      const plate = chest.plates?.[fromFront(c, fromX, fromZ, 0) ? 'front' : 'back'];
+      if (plate && (plate.durability ?? 0) > 0) return plate as ArmorState;
+    }
+    return softZonesOf(carrier).includes('thorax') ? chest : null;
+  }
+  if (zone !== HEAD) return null;
+  const visor = c.gear.helmet?.fitted;
+  if (
+    visor &&
+    (visor.durability ?? 0) > 0 &&
+    itemDef(items, visor.item).type === 'visor' &&
+    fromFront(c, fromX, fromZ)
+  )
+    return visor as ArmorState;
+  return c.gear.helmet;
 }
 
 /**
@@ -277,6 +337,8 @@ export function woundZone(
   wound: Wound,
   by: EntityId,
   cause: DamageCause,
+  fromX = NaN,
+  fromZ = NaN,
 ): void {
   if (c.health.dead || byAlly(state, c, by)) return;
   const zombies = state.zombies;
@@ -291,7 +353,7 @@ export function woundZone(
   }
   let absorbed = 0;
   let stopped = false;
-  const armor = zone === HEAD ? c.gear.helmet : zone === CHEST ? chestArmor(items, c.gear) : null;
+  const armor = armorHit(items, c, zone, fromX, fromZ);
   if (armor && armor.durability > 0) {
     const level = armorStatsOf(items, armor.item).level;
     stopped = wound.level < level;
@@ -389,7 +451,28 @@ export function restoreHealth(c: Character, items: ItemDb): void {
 
 /** New armor, at its durability times condition (0–1). */
 export function createArmor(items: ItemDb, id: string, condition = 1): ArmorState {
-  return { item: id, count: 1, durability: armorStatsOf(items, id).durability * condition };
+  const armor: ArmorState = {
+    item: id,
+    count: 1,
+    durability: armorStatsOf(items, id).durability * condition,
+  };
+  return withPlates(items, armor, condition);
+}
+
+/** A carrier's plates as it comes (GZ-4: comesWith), at its condition; anything else as it is. */
+export function withPlates<T extends Item>(items: ItemDb, item: T, condition = 1): T {
+  const carrier = carrierOf(itemDef(items, item.item));
+  const sides = Object.entries(carrier?.comesWith ?? {}) as [PlateSide, string][];
+  if (!sides.length) return item;
+  item.plates = {};
+  for (const [side, plate] of sides) {
+    item.plates[side] = {
+      item: plate,
+      count: 1,
+      durability: armorStatsOf(items, plate).durability * condition,
+    };
+  }
+  return item;
 }
 
 /** Puts on new armor at full durability, in the slot its item says, replacing what was there. */

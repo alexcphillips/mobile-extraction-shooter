@@ -1,14 +1,13 @@
 // Generates the Silver Creek graybox (roadmap MT-2): content/maps/silver-creek.json and
-// content/raids/silver-creek.json, from the whiteboard sketch (docs/design/raids-and-maps.md
-// → Silver Creek). It's a starting point for the user to reshape in the map editor, so it
-// refuses to overwrite the map unless given --force.
+// content/raids/silver-creek.json, from the whiteboard sketch (docs/design/maps/silver-creek.md).
+// Re-runs keep what the user made or changed by hand (MK-2, scripts/mapkit/generated.mjs):
+// groups still as the script last wrote them are replaced, edited ones kept and listed. The
+// raid file is only written when it doesn't exist.
 //
-//   node scripts/gen-silver-creek.mjs [--force]
+//   node scripts/gen-silver-creek.mjs [--dry-run] [--reclaim <key>,… | all]
 //
 // The play area is x 0..320 (west to east), z 0..150 (north to south); the sketch's pixels
 // are 3 to the meter from (40, 46). The valley floor is y 0, the ridge rises to the north.
-import { existsSync } from 'node:fs';
-import { readFile, writeFile } from 'node:fs/promises';
 import { buildAi } from './silver-creek-ai.mjs';
 import { buildEastEnd } from './silver-creek-east.mjs';
 import { buildMiddle, buildRidge } from './silver-creek-middle.mjs';
@@ -16,8 +15,9 @@ import { buildQuests } from './silver-creek-quests.mjs';
 import { buildWestEnd } from './silver-creek-west.mjs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import * as prettier from 'prettier';
-import { layout } from '../packages/client/editor-save.mjs';
+import { writeGenerated, writeOnce } from './mapkit/generated.mjs';
+import { along, box, drawn, group, prefab as placed, r2 } from './mapkit/nodes.mjs';
+import { terrainGrid } from './mapkit/terrain.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const MAP_FILE = resolve(ROOT, 'content/maps/silver-creek.json');
@@ -31,7 +31,6 @@ const ORIGIN = [-MARGIN, -MARGIN];
 const COLS = (W + 2 * MARGIN) / CELL;
 const ROWS = (D + 2 * MARGIN) / CELL;
 
-const r2 = (n) => Math.round(n * 100) / 100;
 const lerp = (a, b, t) => a + (b - a) * t;
 const clamp01 = (t) => Math.min(1, Math.max(0, t));
 const smooth = (t) => t * t * (3 - 2 * t);
@@ -185,39 +184,13 @@ for (let j = 0; j < ROWS; j++) {
   }
 }
 
-const heights = [];
-for (let j = 0; j <= ROWS; j++) {
-  const row = [];
-  for (let i = 0; i <= COLS; i++) row.push(height(ORIGIN[0] + i * CELL, ORIGIN[1] + j * CELL));
-  heights.push(row);
-}
-/** The terrain under a point, as the game interpolates it (two triangles a cell). */
-function groundAt(x, z) {
-  const fx = (x - ORIGIN[0]) / CELL;
-  const fz = (z - ORIGIN[1]) / CELL;
-  const i = Math.min(COLS - 1, Math.max(0, Math.floor(fx)));
-  const j = Math.min(ROWS - 1, Math.max(0, Math.floor(fz)));
-  const u = fx - i;
-  const v = fz - j;
-  const h00 = heights[j][i];
-  const h10 = heights[j][i + 1];
-  const h01 = heights[j + 1][i];
-  const h11 = heights[j + 1][i + 1];
-  return lerp(lerp(h00, h10, u), lerp(h01, h11, u), v);
-}
-/** Lowest and highest ground under a rectangle. */
-function groundRange(x0, z0, x1, z1) {
-  let lo = Infinity;
-  let hi = -Infinity;
-  for (let x = x0; x <= x1 + 1e-6; x += Math.min(1, x1 - x0 || 1)) {
-    for (let z = z0; z <= z1 + 1e-6; z += Math.min(1, z1 - z0 || 1)) {
-      const h = groundAt(x, z);
-      lo = Math.min(lo, h);
-      hi = Math.max(hi, h);
-    }
-  }
-  return [lo, hi];
-}
+const { heights, groundAt, groundRange } = terrainGrid({
+  origin: ORIGIN,
+  cellSize: CELL,
+  cols: COLS,
+  rows: ROWS,
+  height,
+});
 
 // ---------------------------------------------------------------- nodes
 
@@ -243,23 +216,6 @@ const C = {
   burner: '#5a4c44',
 };
 
-/** A box from its x and z extents, bottom and top. */
-function box(x0, z0, x1, z1, bottom, top, color, extra = {}) {
-  return {
-    type: 'box',
-    pos: [r2((x0 + x1) / 2), r2(bottom), r2((z0 + z1) / 2)],
-    size: [r2(x1 - x0), r2(top - bottom), r2(z1 - z0)],
-    color,
-    ...extra,
-  };
-}
-const group = (name, nodes, extra = {}) => ({
-  type: 'group',
-  name,
-  pos: [0, 0, 0],
-  ...extra,
-  nodes,
-});
 const label = (text, x, z, size, y = groundAt(x, z)) => ({
   type: 'mapLabel',
   pos: [r2(x), r2(y), r2(z)],
@@ -308,16 +264,8 @@ Object.assign(C, {
   sawdust: '#c8a874',
 });
 
-/** Drawn only: no collision. */
-const drawn = (x0, z0, x1, z1, bottom, top, color, extra = {}) =>
-  box(x0, z0, x1, z1, bottom, top, color, { collide: false, ...extra });
 /** A placed prefab; y defaults to the hall floor. */
-const prefab = (name, x, z, extra = {}, y = F) => ({
-  type: 'prefab',
-  prefab: name,
-  pos: [r2(x), r2(y), r2(z)],
-  ...extra,
-});
+const prefab = (name, x, z, extra = {}, y = F) => placed(name, x, z, extra, y);
 /** A wall running along x at z, from x0 to x1; openings measured along +x from its middle. */
 const wallX = (id, x0, x1, z, bottom, top, color, openings = [], thick = 0.3) => ({
   type: 'wall',
@@ -338,22 +286,6 @@ const wallZ = (id, x, z0, z1, bottom, top, color, openings = [], thick = 0.3) =>
   // A yaw-90 wall measures `along` along −z.
   openings: openings.map(({ at, ...o }) => ({ ...o, along: r2((z0 + z1) / 2 - at) })),
 });
-/** A shape tilted along a line from a to b ([x, y, z]); local z runs a → b. */
-function along(a, b, w, h, color, extra = {}) {
-  const [dx, dy, dz] = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
-  const flat = Math.hypot(dx, dz);
-  return {
-    type: 'box',
-    pos: [r2((a[0] + b[0]) / 2), r2((a[1] + b[1]) / 2 - h / 2), r2((a[2] + b[2]) / 2)],
-    size: [w, h, r2(Math.hypot(flat, dy))],
-    yaw: r2((Math.atan2(dx, dz) * 180) / Math.PI),
-    pitch: r2((-Math.atan2(dy, flat) * 180) / Math.PI),
-    color,
-    collide: false,
-    ...extra,
-  };
-}
-
 /**
  * Live rolls along x (the saw line): a waist-high bed of rollers. One invisible box keeps
  * the graybox's collision (waist cover, 1.1 m, vaultable); the frame and rollers are drawn.
@@ -1556,24 +1488,6 @@ const raid = {
   tags: ['starter'],
 };
 
-async function write(path, doc) {
-  const options = (await prettier.resolveConfig(path)) ?? {};
-  await writeFile(path, await prettier.format(layout(doc), { ...options, filepath: path }));
-  console.log(`wrote ${path.slice(ROOT.length + 1)}`);
-}
-
-if (existsSync(MAP_FILE) && !process.argv.includes('--force')) {
-  console.error(
-    'content/maps/silver-creek.json exists (maybe reshaped in the editor); --force to overwrite',
-  );
-  process.exit(1);
-}
-// Keep anything placed by hand for testing (top-level groups named "… (test placement)").
-if (existsSync(MAP_FILE)) {
-  const old = JSON.parse(await readFile(MAP_FILE, 'utf8'));
-  map.nodes.push(
-    ...old.nodes.filter((n) => n.type === 'group' && / \(test placement\)$/.test(n.name ?? '')),
-  );
-}
-await write(MAP_FILE, map);
-await write(RAID_FILE, raid);
+const argv = process.argv.slice(2);
+await writeGenerated({ file: MAP_FILE, map, by: fileURLToPath(import.meta.url), root: ROOT, argv });
+await writeOnce({ file: RAID_FILE, doc: raid, root: ROOT, argv });

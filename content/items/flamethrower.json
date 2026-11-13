@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "flamethrower",
   "name": "Flamethrower",
   "type": "weapon",
   "class": "special",
   "size": [4, 2],
   "value": 45000,
+  "weight": 9,
   "rarity": "common",
   "ammo": "flamethrower-fuel",
   "hold": "rifle",

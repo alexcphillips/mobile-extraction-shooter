@@ -1,0 +1,33 @@
+{
+  "formatVersion": 11,
+  "id": "m416-mag",
+  "name": "M416 30-round magazine",
+  "shortName": "M416 30",
+  "type": "attachment",
+  "size": [1, 2],
+  "value": 2500,
+  "weight": 0.12,
+  "rarity": "common",
+  "slot": "magazine",
+  "weapons": ["m416"],
+  "capacity": 30,
+  "caliber": "5.56x45",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.04, 0],
+        "size": [0.026, 0.08, 0.06],
+        "color": "#2a2d30",
+        "pitch": 6
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.105, -0.012],
+        "size": [0.026, 0.06, 0.058],
+        "color": "#2a2d30",
+        "pitch": 14
+      }
+    ]
+  }
+}

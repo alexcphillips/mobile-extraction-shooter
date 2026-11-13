@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-46x30-subsonic",
   "name": "4.6×30 mm Subsonic SX",
   "shortName": "4.6 Subs.",
   "type": "ammo",
   "size": [1, 1],
   "value": 45,
+  "weight": 0.007,
   "rarity": "uncommon",
   "stack": 60,
   "caliber": "4.6x30",

@@ -278,6 +278,8 @@ export function applyStash(
 /** An item in the stash that can be handed over: nothing in it or fitted to it. */
 export function plainItem(item: Item): boolean {
   if (item.grid?.items.length) return false;
+  // A magazine with rounds in it (MG-1).
+  if (item.mag && !item.attachments) return false;
   return !Object.values(item.attachments ?? {}).some((a) => a);
 }
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { EnemySkill } from '../content/enemies';
 import { NavGrid } from '../nav/nav-grid';
+import { WEIGHT } from './weight';
 import { TICK_RATE } from '../tick';
 import { CollisionWorld, type BoxDef, type DoorDef, type GlassDef } from '../world/collision-world';
 import { AI, DEFAULT_SKILL, JUG, spawnEnemy, updateAi } from './ai';
@@ -28,7 +29,7 @@ import {
   type SimState,
 } from './state';
 import { step } from './step';
-import { TEST_ITEMS as items } from './test-items';
+import { TEST_ITEMS as items, carryLoad } from './test-items';
 import { giveWeapon } from './weapons';
 import { ammoDef, grenadeDef } from '../content/items';
 
@@ -109,6 +110,7 @@ function jug(
 function you(state: SimState, world: CollisionWorld, x: number, z: number, y?: number): Character {
   const c = spawnCharacter(state, world, x, z, 0, y);
   c.health.hp.fill(1e6);
+  carryLoad(c, WEIGHT.reference);
   return c;
 }
 

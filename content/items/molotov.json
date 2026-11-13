@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "molotov",
   "name": "Molotov cocktail",
   "shortName": "Molotov",
   "type": "grenade",
   "size": [1, 2],
   "value": 1800,
+  "weight": 0.8,
   "rarity": "common",
   "effect": "molotov",
   "fuse": 5,

@@ -3,6 +3,9 @@ import {
   startTutorial,
   type CompiledTutorial,
   armorDef,
+  hearingOf,
+  type NightVisionDef,
+  type VisorDef,
   CollisionWorld,
   FixedTimestep,
   GRAPHICS_QUALITY,
@@ -107,6 +110,7 @@ import {
   startZombies,
   type Powerup,
   type ZombiesDef,
+  BREATH,
 } from '@mes/shared';
 import * as THREE from 'three';
 import { startLoop } from '../app/loop';
@@ -185,6 +189,8 @@ import { CoopGuest, CoopHost, type CoopOptions, type Welcome } from './coop';
 import { giveUp, skipTutorial } from './give-up';
 import { TutorialCard } from '../hud/tutorial-card';
 import { lootableInReach } from './loot';
+import { showNightVision, showVision } from '../render/vision';
+import { nightVisionOn, resetNightVision, toggleNightVision } from './night-vision';
 
 export interface PlayElements {
   canvas: HTMLCanvasElement;
@@ -391,7 +397,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     antialias: graphics().antialias,
     powerPreference: 'high-performance',
   });
-  const pixelRatio = (): number => Math.min(window.devicePixelRatio, graphics().pixelRatio);
+  // Night vision's softness draws the scene at a lower resolution (GZ-5): cheaper, not dearer.
+  let nvScale = 1;
+  const pixelRatio = (): number =>
+    Math.min(window.devicePixelRatio, graphics().pixelRatio) * nvScale;
   renderer.setPixelRatio(pixelRatio());
   // Landmarks past the fog, the world over them, then the gun over it, depth cleared
   // between each, so the gun never pokes into walls.
@@ -932,6 +941,23 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let maskFor: string | null = null;
   maskEl.classList.remove('on');
   sounds().setMuffle(null);
+  // GZ-2: what the helmet takes of the view (one element over the screen, set when the
+  // helmet changes, so nothing per frame), and how well the head's gear hears.
+  const helmetEl = document.getElementById('helmet-view') ?? document.createElement('div');
+  helmetEl.id = 'helmet-view';
+  maskEl.after(helmetEl);
+  helmetEl.classList.remove('on');
+  let hearFor = '';
+  let viewFor = '';
+  sounds().setHearing(0);
+  // GZ-5: night vision, switched by the player (N, or the helmet's details), drawn while on
+  // and goggles are fitted.
+  const nvEl = document.getElementById('nv-view') ?? document.createElement('div');
+  nvEl.id = 'nv-view';
+  helmetEl.after(nvEl);
+  let nvFor: string | null = null;
+  showNightVision(nvEl, null);
+  resetNightVision();
 
   // Debug actions: hurt me, heal me; on screen and keys 7 and 8.
   if (options.debug) {
@@ -954,6 +980,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let screen: RaidScreenHandle | null = null;
   let opening = false;
   let screenOpen = false;
+  // Packing magazines last frame (MG-2): it starts by letting go of a toggled aim.
+  let wasPacking = false;
   // What the open screen shows beside your gear (a container or body is searched while open).
   let openTarget: Owner | null = null;
   const pending: InventoryAction[] = [];
@@ -1320,9 +1348,12 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.lean = controls.lean;
     input.jump = controls.jump;
     input.fire = fire;
+    if (!!player.packing && !wasPacking) controls.dropAim();
+    wasPacking = !!player.packing;
     input.aim = controls.aim;
     input.thumb = !inputMode.desktop;
     input.reload = controls.reload;
+    input.quickReload = controls.quickReload;
     input.draw = controls.draw ?? (controls.swapPrimary ? otherPrimary(player.gear) : null);
     if (input.draw && input.draw !== player.gear.hand && holdsDeathMachine(sim, player))
       el.raidHud.warn('Not while you hold the minigun', performance.now());
@@ -1330,6 +1361,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.grenade = hands.grenadeChoice;
     input.detonate = controls.detonate;
     input.extinguish = controls.extinguish;
+    input.breathe = controls.breathe;
     if (controls.throwPick && !dead) hands.showGrenadePicker(player, items);
     // A tap on the heal button uses what it shows, or stops a med being used.
     input.use = controls.heal ? (player.using ? 'cancel' : hands.choice) : picked;
@@ -1446,10 +1478,13 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       if (dead) closeScreen();
       input.moveX = input.moveY = 0;
       input.sprint = input.jump = input.fire = input.aim = input.reload = false;
+      input.quickReload = false;
       input.throw = input.detonate = false;
     }
     // Jumping lets go of a ladder, and ends sprint lock with it.
     if (controls.jump && player.mode === 'ladder') controls.unlockSprint();
+    // A sprint lock that runs dry drops to a walk (BW-4).
+    if (player.winded) controls.unlockSprint();
 
     if (guest) {
       // A guest's hurt and heal would be undone by the host's next tick.
@@ -1774,10 +1809,23 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     }
     // Spectating, the HUD shows the teammate you watch: their limbs, gun and rounds (the
     // user's call, 2026-11-06).
-    el.vitals.update(watching ?? player, items);
+    el.vitals.update(watching ?? player, items, sim);
     el.raidHud.update(sim, player, ended !== null);
     const flipping = player.switching;
     el.raidHud.setUse(flipping ? flipping.held / world.switches[flipping.index]!.useTime : null);
+    // Held breath left, while aimed and not full (BW-1).
+    const breather = watching ?? player;
+    const breath = breather.breath ?? BREATH.hold;
+    el.raidHud.setBreath(
+      !breather.health.dead && breather.aim >= 0.5 && breath < BREATH.hold
+        ? breath / BREATH.hold
+        : null,
+    );
+    // Stamina, while not full (BW-4).
+    el.raidHud.setStamina(
+      !breather.health.dead && breather.stamina !== undefined ? breather.stamina : null,
+      !!breather.winded,
+    );
     // The item the use button would take: lit up, and named under the crosshair. Picking
     // one up this tick may have moved the rest along the list.
     const onGround = lootable?.kind === 'ground' && sim.ground[lootable.index] === lootable.g;
@@ -2037,6 +2085,41 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       maskEl.classList.toggle('on', !!mask?.edge);
       if (mask?.edge) maskEl.style.setProperty('--edge', `${mask.edge * 100}%`);
       sounds().setMuffle(mask?.muffle ?? null);
+    }
+    // The helmet's view with a visor's over it and its cracks (GZ-5), redrawn as it wears
+    // by a crack at a time, so rarely.
+    const fitted = alive && !ended ? v.gear.helmet?.fitted : undefined;
+    const visor = fitted && items.get(fitted.item)?.type === 'visor' ? fitted : undefined;
+    const visorDef = visor ? (items.get(visor.item) as VisorDef) : undefined;
+    const wear = visor && visorDef ? 1 - (visor.durability ?? 0) / visorDef.durability : 0;
+    const viewKey = `${helmet} ${visor?.item} ${Math.round(wear * 14)}`;
+    if (viewKey !== viewFor) {
+      viewFor = viewKey;
+      const own = helmet ? armorDef(items, helmet).vision : undefined;
+      const vv = visorDef?.vision;
+      showVision(helmetEl, {
+        vignette: Math.max(own?.vignette ?? 0, vv?.vignette ?? 0),
+        shape: vv?.shape ?? own?.shape,
+        cracks: visor ? { seed: visor.seed ?? 1, wear } : undefined,
+      });
+    }
+    if (controls.nightVision) toggleNightVision();
+    const goggles =
+      nightVisionOn() && fitted && items.get(fitted.item)?.type === 'nightVision'
+        ? (items.get(fitted.item) as NightVisionDef)
+        : null;
+    if ((goggles?.id ?? null) !== nvFor) {
+      nvFor = goggles?.id ?? null;
+      showNightVision(nvEl, goggles);
+      renderer.domElement.style.filter = goggles ? `brightness(${goggles.gain})` : '';
+      nvScale = goggles ? 1 - 0.6 * goggles.softness : 1;
+      renderer.setPixelRatio(pixelRatio());
+      resize();
+    }
+    const head = alive && !ended ? `${helmet} ${v.gear.headset?.item ?? ''}` : '';
+    if (head !== hearFor) {
+      hearFor = head;
+      sounds().setHearing(alive && !ended ? hearingOf(items, v.gear) : 0);
     }
     // In a smoke cloud: grayer the deeper in, so being inside one hides the world too.
     let veil = 0;

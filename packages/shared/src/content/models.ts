@@ -24,8 +24,12 @@ const angle = finite.optional();
 const radius = finite.refine((n) => n >= 0, 'must be 0 or more');
 const color = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'colors are #rrggbb');
 
-/** The fixed attachment slots a gun can have. The laser (2026-11-11) only tightens hip fire. */
-export const ATTACHMENT_SLOTS = ['optic', 'muzzle', 'magazine', 'laser'] as const;
+/**
+ * The fixed attachment slots a gun can have. The laser (2026-11-11) only tightens hip fire.
+ * The stock (WF-1, 2026-11-12) is the biggest recoil and handling part, and sets how long
+ * the gun is in a grid.
+ */
+export const ATTACHMENT_SLOTS = ['optic', 'muzzle', 'magazine', 'laser', 'stock'] as const;
 export type AttachmentSlot = (typeof ATTACHMENT_SLOTS)[number];
 export const slotSchema = z.enum(ATTACHMENT_SLOTS);
 
@@ -95,6 +99,18 @@ const parts = z.array(partSchema).min(1);
 /** Anything without points of its own: worn gear, meds, ammo, loot. */
 export const plainModelSchema = z.strictObject({ parts });
 
+/**
+ * How a stock folds (WF-1, 2026-11-12): its parts turn `yaw` degrees about an upright
+ * axis through `pivot` (from the stock mount; + turns toward +x), then move by `shift`
+ * (a collapsing stock slides forward along +z → −z). Either may be left out.
+ */
+export const foldSchema = z.strictObject({
+  pivot: vec3Schema,
+  yaw: angle,
+  shift: vec3Schema.optional(),
+});
+export type Fold = z.infer<typeof foldSchema>;
+
 export const weaponModelSchema = z.strictObject({
   parts,
   /** Where the right hand holds it; the left hand's grip is the support point. */
@@ -106,6 +122,11 @@ export const weaponModelSchema = z.strictObject({
   sight: vec3Schema,
   /** Where each slot's attachment goes: its origin is put here. One for every slot. */
   mounts: z.partialRecord(slotSchema, vec3Schema).optional(),
+  /**
+   * A folding stock mount (the AK-74M's, WF-1): any stock fitted folds this way, whether
+   * or not the stock folds by itself. Needs a stock mount.
+   */
+  stockFold: foldSchema.optional(),
 });
 
 export const attachmentModelSchema = z.strictObject({
@@ -114,6 +135,8 @@ export const attachmentModelSchema = z.strictObject({
   sight: vec3Schema.optional(),
   /** Muzzle devices: where shots leave, from its origin. */
   muzzle: vec3Schema.optional(),
+  /** Stocks that fold by themselves (WF-1): how, from its origin. */
+  fold: foldSchema.optional(),
 });
 
 export const meleeModelSchema = z.strictObject({
@@ -178,6 +201,28 @@ export function modelShapes(
     }
   }
   return out;
+}
+
+/**
+ * A model's parts folded (WF-1): each turned about the fold's upright axis and moved by its
+ * shift. Exact for any part, since a part's yaw is its outermost turn (order YXZ).
+ * Allocates: call it when a model is built, not per frame.
+ */
+export function foldParts(parts: readonly ModelPart[], fold: Fold): ModelPart[] {
+  const yaw = fold.yaw ?? 0;
+  const a = yaw * DEG;
+  const cos = Math.cos(a);
+  const sin = Math.sin(a);
+  const [px, , pz] = fold.pivot;
+  const [sx, sy, sz] = fold.shift ?? [0, 0, 0];
+  return parts.map((p) => {
+    const dx = p.pos[0] - px;
+    const dz = p.pos[2] - pz;
+    // A turn about +y by a: x' = x cos + z sin, z' = −x sin + z cos (three.js's rotation).
+    const x = px + dx * cos + dz * sin + sx;
+    const z = pz - dx * sin + dz * cos + sz;
+    return { ...p, pos: [x, p.pos[1] + sy, z], yaw: (p.yaw ?? 0) + yaw || undefined };
+  });
 }
 
 export const addVec = (a: Vec3, b: Vec3): [number, number, number] => [

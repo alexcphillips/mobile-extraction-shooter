@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "buckshot-inc",
   "name": "12-gauge dragon's breath",
   "shortName": "12ga Dragon",
   "type": "ammo",
   "size": [1, 1],
   "value": 120,
+  "weight": 0.04,
   "rarity": "common",
   "stack": 30,
   "caliber": "12g",

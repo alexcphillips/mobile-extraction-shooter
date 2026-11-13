@@ -1,0 +1,43 @@
+{
+  "formatVersion": 11,
+  "id": "nvg-monocular",
+  "name": "Night vision monocular",
+  "shortName": "NV mono",
+  "type": "nightVision",
+  "size": [1, 2],
+  "value": 30000,
+  "weight": 0.5,
+  "rarity": "rare",
+  "tint": "#7dff8a",
+  "noise": 0.35,
+  "softness": 0.4,
+  "gain": 3,
+  "shape": "tube",
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 1.78, -0.1], "size": [0.04, 0.025, 0.04], "color": "#1d1f21" },
+      {
+        "type": "box",
+        "pos": [-0.02, 1.75, -0.115],
+        "size": [0.03, 0.04, 0.02],
+        "color": "#262828"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.035, 1.72, -0.13],
+        "radius": 0.016,
+        "height": 0.06,
+        "pitch": 90,
+        "color": "#262828"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.035, 1.72, -0.162],
+        "radius": 0.012,
+        "height": 0.004,
+        "pitch": 90,
+        "color": "#3d6b4a"
+      }
+    ]
+  }
+}

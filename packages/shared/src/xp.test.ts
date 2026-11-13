@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { XP, enemyXp, levelOf, levelProgress, raidXp, xpForLevel } from './xp';
+import { XP, enemyXp, levelOf, levelProgress, raidXp, underLevel, xpForLevel } from './xp';
 
 const enemies = new Map([
   ['scav', { faction: 'scav' as const }],
@@ -46,5 +46,16 @@ describe('raid XP', () => {
       raidXp('extracted', 100, [{ enemy: 'pmc' }, { enemy: 'scav' }], 1, enemies).runThrough,
     ).toBe(false);
     expect(raidXp('killed', 100, [], 0, enemies).runThrough).toBe(false);
+  });
+});
+
+describe('underLevel', () => {
+  const m = (username: string, level: number) => ({ username, level });
+  it('names whoever is below the level', () => {
+    expect(underLevel([m('ana', 2), m('bob', 3)], 2)).toBeNull();
+    expect(underLevel([m('ana', 2), m('bob', 1)], 2)).toBe('bob needs level 2');
+    expect(underLevel([m('ana', 1), m('bob', 1), m('cas', 1)], 2)).toBe(
+      'ana, bob and cas need level 2',
+    );
   });
 });

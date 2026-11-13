@@ -73,6 +73,7 @@ const PRESSES = {
   throw: false,
   detonate: false,
   extinguish: false,
+  breathe: false,
   use: null,
   door: null,
   search: null,

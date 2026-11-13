@@ -6,6 +6,12 @@ import {
   firesRound,
   isArmoredRig,
   fits,
+  isMagazine,
+  carrierOf,
+  mountsOn,
+  type PlateSide,
+  roundOf,
+  stockFolds,
   itemDef,
   sectionsOf,
   stackSize,
@@ -118,7 +124,7 @@ export interface VendorStanding {
 }
 
 export interface Profile {
-  formatVersion: 19;
+  formatVersion: 22;
   money: number;
   /** PMC XP in all (2026-11-11); the level is worked out from it (xp.ts). Only the server changes it. */
   xp: number;
@@ -161,6 +167,10 @@ const itemShape: z.ZodType = z.lazy(() =>
     mag: count.optional(),
     loaded: idSchema.optional(),
     attachments: z.record(z.enum(ATTACHMENT_SLOTS), idSchema.nullable()).optional(),
+    folded: z.literal(true).optional(),
+    fitted: itemShape.optional(),
+    plates: z.strictObject({ front: itemShape.optional(), back: itemShape.optional() }).optional(),
+    seed: z.int().optional(),
     grid: gridShape.optional(),
     found: z.literal(true).optional(),
     // A gun's state in the sim; restGear resets it before it's stored.
@@ -168,6 +178,7 @@ const itemShape: z.ZodType = z.lazy(() =>
     reloading: z.number().optional(),
     reloadWith: idSchema.optional(),
     reloadByHand: z.literal(true).optional(),
+    reloadQuick: z.literal(true).optional(),
     triggerHeld: z.boolean().optional(),
   }),
 );
@@ -191,6 +202,7 @@ export const gearShape = z.strictObject({
   knife: slotShape,
   hand: z.enum(['primary1', 'primary2', 'sidearm', 'knife']),
   helmet: slotShape,
+  headset: slotShape,
   bodyArmor: slotShape,
   rig: slotShape,
   backpack: slotShape,
@@ -204,7 +216,7 @@ const questStateShape = z.discriminatedUnion('status', [
 ]);
 
 const profileShape = z.strictObject({
-  formatVersion: z.literal(19),
+  formatVersion: z.literal(22),
   money: count,
   xp: count,
   stash: z.array(gridShape).min(1),
@@ -218,7 +230,7 @@ const profileShape = z.strictObject({
   ),
 });
 
-export const PROFILE_FORMAT_VERSION = 19;
+export const PROFILE_FORMAT_VERSION = 22;
 
 export const PROFILE_FORMAT: ContentFormat<Profile> = {
   kind: 'profile',
@@ -282,8 +294,95 @@ export const PROFILE_FORMAT: ContentFormat<Profile> = {
     // armourer, the armour bench, armour items) without a migration of its own; a profile
     // saved after it has nothing left to rename.
     18: (doc) => ({ ...americanSpelling(doc), xp: 0 }),
+    // 2026-11-12 (WF-1): guns gained a stock slot. A stored gun gets the stock it was
+    // modeled with (STOCKS_IN_20), so its stats and size stay as they were.
+    19: (doc) => {
+      eachObject(doc, (o) => {
+        const a = o.attachments as Record<string, unknown> | undefined;
+        if (a && !('stock' in a)) a.stock = STOCKS_IN_20[o.item as string] ?? null;
+      });
+      return doc;
+    },
+    // 2026-11-12 (MG-1): magazines became items. A stored magazine-fed gun with none fitted
+    // gets the one it comes with (MAGS_IN_21), holding the rounds it had loaded.
+    20: (doc) => {
+      eachObject(doc, (o) => {
+        const a = o.attachments as Record<string, unknown> | undefined;
+        const mag = MAGS_IN_21[o.item as string];
+        if (a && mag && !a.magazine) a.magazine = mag;
+      });
+      return doc;
+    },
+    // 2026-11-12 (GZ-2): a headset slot, empty.
+    21: (doc) => ({ ...doc, gear: { ...(doc.gear as object), headset: null } }),
   },
 };
+
+/**
+ * Each gun's own stock when stocks became parts (WF-1, format 19 → 20): the gun's
+ * `defaults.stock` then. Frozen here, as content may change later.
+ */
+const STOCKS_IN_20: Readonly<Record<string, string>> = Object.fromEntries(
+  [
+    'aa-12',
+    'ak-74m',
+    'akm',
+    'aks-74u',
+    'as-val',
+    'awm',
+    'g3',
+    'k10',
+    'm250',
+    'm416',
+    'mcx-spear',
+    'mp-133',
+    'mp5',
+    'mp7',
+    'mpx',
+    'pkm',
+    'r93',
+    'rpk-16',
+    'saiga-12',
+    'scar-h',
+    'sks',
+    'sv-98',
+    'ump45',
+  ].map((gun) => [gun, `${gun}-stock`]),
+);
+
+/**
+ * Each magazine-fed gun's own magazine when magazines became items (MG-1, format 20 → 21):
+ * the gun's `defaults.magazine` then. Frozen here, as content may change later.
+ */
+const MAGS_IN_21: Readonly<Record<string, string>> = Object.fromEntries(
+  [
+    'aa-12',
+    'ak-74m',
+    'akm',
+    'aks-74u',
+    'as-val',
+    'aug-a3',
+    'awm',
+    'g18c',
+    'g3',
+    'k10',
+    'm250',
+    'm416',
+    'm9a3',
+    'mcx-spear',
+    'mp5',
+    'mp7',
+    'mpx',
+    'p226',
+    'pkm',
+    'r93',
+    'rpk-16',
+    'saiga-12',
+    'scar-h',
+    'sv-98',
+    'ump45',
+  ].map((gun) => [gun, `${gun}-mag`]),
+);
 
 /**
  * Takes the Intel desk out of a stored profile (format 15 → 16): its level, any decryption
@@ -455,8 +554,15 @@ export function parseGear(raw: unknown): Gear | null {
  * A kit's item: a gun has the attachments kit.fitted names for it, and a full magazine of
  * the round kit.loaded names for it, or none.
  */
-function kitItem(items: ItemDb, kit: StartingKitDef, id: string, count = 1): Item {
-  if (itemDef(items, id).type !== 'weapon') return createItem(items, id, count);
+function kitItem(items: ItemDb, kit: StartingKitDef, id: string, count = 1, loaded?: string): Item {
+  const def = itemDef(items, id);
+  if (loaded !== undefined) {
+    const round = roundOf(items, loaded);
+    if (!isMagazine(def) || round?.type !== 'ammo' || round.caliber !== def.caliber)
+      throw new Error(`kit ${kit.id}: "${id}" can't be loaded with "${loaded}"`);
+    return { ...createItem(items, id, count), mag: def.capacity, loaded };
+  }
+  if (def.type !== 'weapon') return createItem(items, id, count);
   const gun = createWeapon(items, id, kit.fitted[id] ?? [], kit.loaded[id]);
   if (kit.loaded[id] === undefined) gun.mag = 0;
   return gun;
@@ -484,7 +590,7 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
   gear.hand = gear.primary1 ? 'primary1' : gear.sidearm ? 'sidearm' : 'knife';
   for (const s of kit.carried) {
     let left = s.count ?? 1;
-    const item = kitItem(items, kit, s.item, left);
+    const item = kitItem(items, kit, s.item, left, s.loaded);
     for (let i = 0; i < CARRIED_GRIDS && left > 0; i++) {
       const grid = carriedGrid(gear, i);
       if (grid) left = addItem(items, grid, item);
@@ -493,11 +599,11 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
   }
   const stash = createGrid(PROFILE.stash[0], PROFILE.stash[1], true);
   for (const s of kit.stash) {
-    if (addItem(items, stash, kitItem(items, kit, s.item, s.count ?? 1)) > 0)
+    if (addItem(items, stash, kitItem(items, kit, s.item, s.count ?? 1, s.loaded)) > 0)
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
   return {
-    formatVersion: 19,
+    formatVersion: 22,
     money: kit.money,
     xp: 0,
     stash: [stash],
@@ -752,8 +858,8 @@ function refit(items: ItemDb, grid: Grid, stash: readonly Grid[]): void {
   const off: GridItem[] = [];
   grid.items = [];
   for (const g of all) {
-    const w = itemWidth(items, g.item.item, g.rotated);
-    const h = itemHeight(items, g.item.item, g.rotated);
+    const w = itemWidth(items, g.item, g.rotated);
+    const h = itemHeight(items, g.item, g.rotated);
     if (isFree(items, grid, g.x, g.y, w, h)) grid.items.push(g);
     else off.push(g);
   }
@@ -767,13 +873,15 @@ function refit(items: ItemDb, grid: Grid, stash: readonly Grid[]): void {
 /** Puts every gun down: no cooldown, reload or trigger held, as stored between raids. */
 export function restGear(gear: Gear): void {
   forEachItem(gear, [], (item) => {
-    if (item.mag === undefined) return;
+    // Guns only: a loose magazine has rounds (mag) too (MG-1).
+    if (item.mag === undefined || !item.attachments) return;
     const w = item as WeaponState;
     w.cooldown = 0;
     w.reloading = 0;
     w.triggerHeld = false;
     delete w.reloadWith;
     delete w.reloadByHand;
+    delete w.reloadQuick;
   });
 }
 
@@ -804,6 +912,8 @@ export function countItems(items: ItemDb, p: Profile): Map<string, number> {
   const add = (id: string, n: number) => out.set(id, (out.get(id) ?? 0) + n);
   forEachItem(p.gear, p.stash, (item) => {
     add(item.item, item.count);
+    if (item.fitted) add(item.fitted.item, 1);
+    for (const p of Object.values(item.plates ?? {})) if (p) add(p.item, 1);
     for (const a of Object.values(item.attachments ?? {})) if (a) add(a, 1);
     if (item.mag) add(loadedAmmo(items, item), item.mag);
   });
@@ -927,8 +1037,8 @@ function checkGrid(
     const bad = checkItem(items, gi.item, at);
     if (bad) return bad;
     if (!canHold(items, grid, gi.item)) return `${at}: "${gi.item.item}" can't go in ${where}`;
-    const iw = itemWidth(items, gi.item.item, gi.rotated);
-    const ih = itemHeight(items, gi.item.item, gi.rotated);
+    const iw = itemWidth(items, gi.item, gi.rotated);
+    const ih = itemHeight(items, gi.item, gi.rotated);
     if (!isFree(items, grid, gi.x, gi.y, iw, ih, i))
       return `${at}: "${gi.item.item}" is outside the grid or overlaps another item`;
   }
@@ -953,10 +1063,30 @@ function checkItem(items: ItemDb, item: Item, where: string): string | null {
   if (item.count > stackSize(def)) return `${at}: ${item.count} is more than a stack`;
   if (item.grid && def.type !== 'container') return `${at}: only rigs and backpacks have a grid`;
   if (item.attachments && def.type !== 'weapon') return `${at}: only guns have attachments`;
+  if (item.fitted && def.type !== 'armor') return `${at}: only helmets have a visor or goggles`;
+  // A carrier's plates (GZ-4): plates, in slots it has.
+  for (const [side, p] of Object.entries(item.plates ?? {}) as [PlateSide, Item | undefined][]) {
+    if (!p) continue;
+    if (!carrierOf(def)?.plates?.includes(side)) return `${at}: no ${side} plate slot`;
+    if (items.get(p.item)?.type !== 'plate') return `${at}: "${p.item}" isn't a plate`;
+    const bad = checkItem(items, p, `${at} ${side} plate`);
+    if (bad) return bad;
+  }
   switch (def.type) {
     case 'weapon':
       return checkWeapon(items, item, def, at);
-    case 'armor':
+    case 'armor': {
+      // A helmet's visor or goggles (GZ-5).
+      if (item.fitted) {
+        const part = items.get(item.fitted.item);
+        if (!part || !mountsOn(def, part)) return `${at}: "${item.fitted.item}" doesn't go on it`;
+        const bad = checkItem(items, item.fitted, `${at} fitted`);
+        if (bad) return bad;
+      }
+      return checkDurability(item, def.durability, at);
+    }
+    case 'visor':
+    case 'plate':
       return checkDurability(item, def.durability, at);
     case 'container':
       if (!item.grid) return `${at}: no grid`;
@@ -975,9 +1105,26 @@ function checkItem(items: ItemDb, item: Item, where: string): string | null {
       return checkLeft(item, def.points, at);
     case 'key':
       return def.uses === undefined ? null : checkLeft(item, def.uses, at);
+    case 'attachment':
+      return checkMagazine(items, item, def, at);
     default:
       return null;
   }
+}
+
+/** A loose magazine's rounds (MG-1): up to its capacity, of one round of its caliber. */
+function checkMagazine(items: ItemDb, item: Item, def: AttachmentDef, at: string): string | null {
+  if (!isMagazine(def)) {
+    return item.mag !== undefined || item.loaded !== undefined ? `${at}: holds no rounds` : null;
+  }
+  const n = item.mag ?? 0;
+  if (n > def.capacity) return `${at}: ${n} rounds is more than it holds`;
+  if (n > 0 !== (item.loaded !== undefined))
+    return `${at}: rounds and the round loaded go together`;
+  const round = item.loaded === undefined ? null : roundOf(items, item.loaded);
+  if (item.loaded !== undefined && (round?.type !== 'ammo' || round.caliber !== def.caliber))
+    return `${at}: "${item.loaded}" isn't a ${def.caliber} round`;
+  return null;
 }
 
 function checkLeft(item: Item, max: number, at: string): string | null {
@@ -995,6 +1142,7 @@ function checkWeapon(items: ItemDb, item: Item, def: WeaponDef, at: string): str
     if (a?.type !== 'attachment' || a.slot !== slot || !fits(def, a as AttachmentDef))
       return `${at}: "${id}" doesn't fit its ${slot} slot`;
   }
+  if (item.folded && !stockFolds(items, item)) return `${at}: folded, with no stock that folds`;
   const w = { cooldown: 0, reloading: 0, triggerHeld: false, ...item } as WeaponState;
   const magazine = weaponStats(items, w, scratchStats).magazine;
   if (item.mag > magazine) return `${at}: ${item.mag} rounds is more than its magazine`;

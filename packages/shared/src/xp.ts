@@ -128,3 +128,17 @@ export function raidXp(
     total: Math.round(base * multiplier),
   };
 }
+
+/**
+ * Who in a party is below a map's level, as the menu and the start refusal say it:
+ * "Bob needs level 2", "Bob and Cas need level 2"; null when everyone is high enough.
+ */
+export function underLevel(
+  members: readonly { username: string; level: number }[],
+  minLevel: number,
+): string | null {
+  const low = members.filter((m) => m.level < minLevel).map((m) => m.username);
+  if (!low.length) return null;
+  const names = low.length === 1 ? low[0] : `${low.slice(0, -1).join(', ')} and ${low.at(-1)}`;
+  return `${names} ${low.length === 1 ? 'needs' : 'need'} level ${minLevel}`;
+}

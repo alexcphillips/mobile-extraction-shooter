@@ -25,6 +25,7 @@ import { step } from './step';
 import { TEST_ITEMS } from './test-items';
 import { carriedAmmo, heldWeapon, stow } from './gear';
 import {
+  BREATH,
   attach,
   createWeapon,
   createWeaponStats,
@@ -288,6 +289,116 @@ describe('firing', () => {
     for (let i = 0; i < TICK_RATE; i++)
       step(state, world, TEST_ITEMS, { [shooter.id]: { ...hold, yaw: 0.5 } });
     expect(Math.abs(shooter.lagYaw!)).toBeLessThan(1e-3);
+  });
+
+  describe('breath', () => {
+    /** Idle sway this tick as a share of unheld, standing still: lag is 0 with no turning. */
+    function swayShare(state: SimState, c: Character): number {
+      const unheld =
+        c.aim * Math.sin((state.tick - 1) * (1 / TICK_RATE) * 1.3) * ((0.35 * Math.PI) / 180);
+      return c.swayYaw! / unheld;
+    }
+    /** Steps, then the largest and smallest share of unheld sway over the ticks. */
+    function run(s: ReturnType<typeof range>, seconds: number, parts: Partial<PlayerInput>) {
+      let most = 0;
+      let least = Infinity;
+      for (let i = 0; i < Math.round(seconds * TICK_RATE); i++) {
+        step(s.state, s.world, TEST_ITEMS, { [s.shooter.id]: input({ pitch: 1, ...parts }) });
+        if (Math.abs(Math.sin((s.state.tick - 1) * (1 / TICK_RATE) * 1.3)) < 0.3) continue;
+        const share = swayShare(s.state, s.shooter);
+        most = Math.max(most, share);
+        least = Math.min(least, share);
+      }
+      return { most, least };
+    }
+
+    it('steadies the sway while aimed and still, until it runs out', () => {
+      const s = range();
+      giveWeapon(s.shooter, TEST_ITEMS, 'rifle');
+      run(s, 1, { aim: true });
+      expect(s.shooter.aim).toBe(1);
+      expect(swayShare(s.state, s.shooter)).toBeCloseTo(BREATH.steady, 5);
+      expect(run(s, BREATH.hold - 2, { aim: true }).most).toBeCloseTo(BREATH.steady, 5);
+      // It runs out: a wobble worse than today's sway, then today's, never worse, while it
+      // slowly refills.
+      const wobble = run(s, 2, { aim: true });
+      expect(s.shooter.breathOut).toBe(true);
+      expect(wobble.most).toBeGreaterThan(1.3);
+      const after = run(s, 3, { aim: true });
+      expect(after.least).toBeCloseTo(1, 5);
+      expect(after.most).toBeCloseTo(1, 5);
+      expect(s.shooter.breath).toBeCloseTo((4 * BREATH.hold) / BREATH.aimedRefill, 1);
+      // Full again, still aimed: it stays out until the breath button (BW-2).
+      run(s, BREATH.aimedRefill, { aim: true });
+      expect(s.shooter.breath).toBe(BREATH.hold);
+      expect(s.shooter.breathOut).toBe(true);
+      run(s, 1 / TICK_RATE, { aim: true, breathe: true });
+      run(s, 1, { aim: true });
+      expect(s.shooter.breathOut).toBeUndefined();
+      expect(swayShare(s.state, s.shooter)).toBeCloseTo(BREATH.steady, 5);
+    });
+
+    it('lets go and holds again with the breath button, keeping what is left', () => {
+      const s = range();
+      giveWeapon(s.shooter, TEST_ITEMS, 'rifle');
+      run(s, 2, { aim: true });
+      run(s, 1 / TICK_RATE, { aim: true, breathe: true });
+      expect(s.shooter.breathOut).toBe(true);
+      // Let go by hand: no wobble, today's sway, refilling at the aimed rate.
+      const out = run(s, 2, { aim: true });
+      expect(out.most).toBeCloseTo(1, 5);
+      expect(s.shooter.breath).toBeCloseTo(
+        BREATH.hold - 2 + (2 * BREATH.hold) / BREATH.aimedRefill,
+        1,
+      );
+      run(s, 1 / TICK_RATE, { aim: true, breathe: true });
+      run(s, 1, { aim: true });
+      expect(s.shooter.breathOut).toBeUndefined();
+      expect(swayShare(s.state, s.shooter)).toBeCloseTo(BREATH.steady, 5);
+    });
+
+    it('ignores the breath button with the gun down, or with no breath left', () => {
+      const s = range();
+      giveWeapon(s.shooter, TEST_ITEMS, 'rifle');
+      run(s, 1 / TICK_RATE, { breathe: true });
+      expect(s.shooter.breathOut).toBeUndefined();
+      s.shooter.breath = 0;
+      s.shooter.breathOut = true;
+      s.shooter.aim = 1;
+      step(s.state, s.world, TEST_ITEMS, { [s.shooter.id]: input({ aim: true, breathe: true }) });
+      expect(s.shooter.breathOut).toBe(true);
+    });
+
+    it('refills slowly while aimed, faster with the gun down', () => {
+      const s = range();
+      giveWeapon(s.shooter, TEST_ITEMS, 'rifle');
+      s.shooter.breath = 0;
+      run(s, 1, { aim: true });
+      const aimed = s.shooter.breath!;
+      expect(aimed).toBeGreaterThan(0);
+      expect(aimed).toBeLessThan(BREATH.hold / BREATH.aimedRefill);
+      run(s, 1.5, {});
+      expect(s.shooter.breathOut).toBeUndefined();
+      expect(s.shooter.breath).toBeCloseTo(aimed + BREATH.hold / 2, 5);
+      run(s, 3, {});
+      expect(s.shooter.breath).toBe(BREATH.hold);
+    });
+
+    it('is spent while moving aimed, without steadying the gun', () => {
+      const s = range();
+      giveWeapon(s.shooter, TEST_ITEMS, 'rifle');
+      run(s, 2, { aim: true, moveY: 1 });
+      expect(s.shooter.breath).toBeCloseTo(BREATH.hold - 2, 5);
+      expect(s.shooter.steady).toBe(0);
+    });
+
+    it('steadies sway that broken arms made worse by the same share', () => {
+      const s = range();
+      giveWeapon(s.shooter, TEST_ITEMS, 'rifle');
+      s.shooter.health.hp[LEFT_ARM] = 0;
+      run(s, 1, { aim: true });
+      expect(swayShare(s.state, s.shooter)).toBeCloseTo(3 * BREATH.steady, 5);
+    });
   });
 
   it('shoots where the gun points, not the view', () => {
@@ -583,6 +694,7 @@ describe('attachments', () => {
       muzzle: 'suppressor',
       magazine: null,
       laser: null,
+      stock: null,
     });
   });
 });

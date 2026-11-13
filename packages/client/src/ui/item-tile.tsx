@@ -1,4 +1,4 @@
-import { itemDef, type Item, type ItemDb } from '@mes/shared';
+import { itemDef, itemSize, type Item, type ItemDb } from '@mes/shared';
 import type { ReactNode } from 'react';
 import { itemPortrait } from '../render/item-portrait';
 import { colorOf, tileName } from './raid-screen';
@@ -23,7 +23,7 @@ export function ItemTile({
   lost?: boolean;
 }): ReactNode {
   const def = itemDef(items, item.item);
-  const url = itemPortrait(items, item, def.size);
+  const url = itemPortrait(items, item, itemSize(items, item));
   return (
     <span
       className={`item-tile${lost ? ' lost' : ''}`}

@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-338-tacx",
   "name": ".338 Lapua Magnum TAC-X",
   "shortName": ".338 TAC-X",
   "type": "ammo",
   "size": [1, 1],
   "value": 200,
+  "weight": 0.045,
   "rarity": "common",
   "stack": 20,
   "caliber": ".338LM",

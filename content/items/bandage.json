@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "bandage",
   "name": "Bandage",
   "shortName": "Band.",
   "type": "med",
   "size": [1, 1],
   "value": 400,
+  "weight": 0.05,
   "rarity": "common",
   "effect": "bandage",
   "useTime": 3,

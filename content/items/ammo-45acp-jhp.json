@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-45acp-jhp",
   "name": ".45 ACP JHP",
   "shortName": ".45 JHP",
   "type": "ammo",
   "size": [1, 1],
   "value": 30,
+  "weight": 0.015,
   "rarity": "common",
   "stack": 50,
   "caliber": ".45acp",

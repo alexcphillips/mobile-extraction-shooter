@@ -2,6 +2,7 @@ import {
   addVec,
   ATTACHMENT_SLOTS,
   attachmentDef,
+  foldParts,
   meleeDef,
   modelShapes,
   weaponDef,
@@ -43,7 +44,9 @@ export function gunModel(w: WeaponState, items: ItemDb): GunModel {
     const mount = m.mounts?.[slot];
     if (!id || !mount) continue;
     const def = attachmentDef(items, id);
-    modelShapes(def.model, shapes, mount);
+    // A folded stock turns about its hinge, the gun's or its own (WF-1).
+    const fold = slot === 'stock' && w.folded ? (m.stockFold ?? def.model.fold) : undefined;
+    modelShapes(fold ? { parts: foldParts(def.model.parts, fold) } : def.model, shapes, mount);
     if (slot === 'optic' && def.model.sight) sight = addVec(mount, def.model.sight);
     if (slot === 'muzzle') {
       if (def.model.muzzle) muzzle = addVec(mount, def.model.muzzle);
@@ -73,6 +76,6 @@ export function knifeModel(items: ItemDb, id: string): { shapes: Shape[]; grip: 
 
 /** A key that changes whenever the gun's model would. */
 export function gunKey(w: WeaponState): string {
-  const { optic, muzzle, magazine, laser } = w.attachments;
-  return `${w.item} ${optic} ${muzzle} ${magazine} ${laser}`;
+  const { optic, muzzle, magazine, laser, stock } = w.attachments;
+  return `${w.item} ${optic} ${muzzle} ${magazine} ${laser} ${stock}${w.folded ? ' folded' : ''}`;
 }

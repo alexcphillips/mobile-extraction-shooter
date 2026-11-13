@@ -1,0 +1,1105 @@
+{
+  "formatVersion": 1,
+  "id": "district",
+  "name": "District",
+  "bounds": {
+    "x0": 0,
+    "z0": 0,
+    "x1": 480,
+    "z1": 380
+  },
+  "slope": {
+    "low": [440, 330],
+    "lowY": 0,
+    "high": [80, 40],
+    "highY": 18
+  },
+  "pads": [
+    {
+      "id": "high-terrace",
+      "name": "Plaza level (mall upper floor)",
+      "x": 147.7,
+      "z": 95.6,
+      "w": 170,
+      "d": 56,
+      "yaw": -140,
+      "y": 15.5,
+      "edge": "wall"
+    },
+    {
+      "id": "mall-terrace",
+      "name": "Mall level (ground floor, forecourt)",
+      "x": 190.1,
+      "z": 146.1,
+      "w": 190,
+      "d": 76,
+      "yaw": -140,
+      "y": 11,
+      "blend": 8
+    },
+    {
+      "id": "garage-pad",
+      "name": "Garage",
+      "x": 78.2,
+      "z": 216.5,
+      "w": 52,
+      "d": 52,
+      "yaw": -140,
+      "y": 12.5
+    },
+    {
+      "id": "hotel-pad",
+      "name": "Hotel grounds",
+      "x": 342.8,
+      "z": 91.7,
+      "w": 70,
+      "d": 66,
+      "yaw": 130,
+      "y": 8.5
+    },
+    {
+      "id": "site-pad",
+      "name": "Construction site",
+      "x": 98.5,
+      "z": 74.2,
+      "w": 52,
+      "d": 76,
+      "yaw": -140,
+      "y": 17
+    },
+    {
+      "id": "strip-pad",
+      "name": "Strip row",
+      "x": 306.3,
+      "z": 296.8,
+      "w": 84,
+      "d": 42,
+      "yaw": 170,
+      "y": 5
+    },
+    {
+      "id": "lot-pad",
+      "name": "Surface lot",
+      "x": 262,
+      "z": 200.7,
+      "w": 78,
+      "d": 64,
+      "yaw": -140,
+      "y": 8.5
+    },
+    {
+      "id": "service-pad",
+      "name": "Service yard",
+      "x": 399.3,
+      "z": 185,
+      "w": 74,
+      "d": 76,
+      "yaw": 130,
+      "y": 3.5,
+      "edge": "wall"
+    },
+    {
+      "id": "lz-pad",
+      "name": "Landing zone",
+      "x": 289.2,
+      "z": 136.7,
+      "w": 56,
+      "d": 48,
+      "yaw": 130,
+      "y": 9.5
+    },
+    {
+      "id": "furniture-pad",
+      "name": "Furniture store",
+      "x": 403.9,
+      "z": 275.1,
+      "w": 84,
+      "d": 78,
+      "yaw": 130,
+      "y": 2.5
+    },
+    {
+      "id": "station-pad",
+      "name": "Station (hall and forecourt)",
+      "x": 165.1,
+      "z": 310.7,
+      "w": 66,
+      "d": 42,
+      "yaw": 130,
+      "y": 9
+    }
+  ],
+  "areas": [
+    {
+      "id": "mall-main",
+      "name": "Mall: court and concourse",
+      "poi": "mall",
+      "x": 185,
+      "z": 140,
+      "w": 96,
+      "d": 60,
+      "yaw": -140,
+      "y": 11,
+      "floors": 2,
+      "floorHeight": 4.5,
+      "entrances": [
+        { "side": "front", "width": 8, "kind": "main doors" },
+        { "side": "front", "along": -30, "width": 3 },
+        { "side": "front", "along": 30, "width": 3 },
+        { "side": "back", "along": -25, "width": 4, "floor": 1, "kind": "upper doors" },
+        { "side": "back", "along": 25, "width": 4, "floor": 1, "kind": "upper doors" },
+        { "side": "left", "along": -20, "width": 3, "kind": "service door" }
+      ]
+    },
+    {
+      "id": "mall-dept",
+      "name": "Department store (corner anchor)",
+      "poi": "mall",
+      "x": 134.2,
+      "z": 185.2,
+      "w": 40,
+      "d": 56,
+      "yaw": -140,
+      "y": 11,
+      "floors": 2,
+      "floorHeight": 4.5,
+      "entrances": [
+        { "side": "front", "width": 4, "kind": "main doors" },
+        { "side": "right", "along": 12, "width": 4, "floor": 1, "kind": "glass bridge" },
+        { "side": "right", "along": -16, "width": 3 },
+        { "side": "back", "along": 8, "width": 4, "kind": "receiving roll-up" }
+      ]
+    },
+    {
+      "id": "mall-cinema",
+      "name": "Cinema wing",
+      "poi": "mall",
+      "x": 227.8,
+      "z": 88.4,
+      "w": 36,
+      "d": 36,
+      "yaw": -140,
+      "y": 11,
+      "floors": 2,
+      "floorHeight": 4.5,
+      "entrances": [
+        { "side": "front", "width": 4, "kind": "lobby doors" },
+        { "side": "left", "kind": "fire exit" },
+        { "side": "back", "floor": 1, "kind": "fire exit" }
+      ]
+    },
+    {
+      "id": "garage",
+      "name": "Parking garage",
+      "poi": "garage",
+      "x": 78.2,
+      "z": 216.5,
+      "w": 44,
+      "d": 44,
+      "yaw": -140,
+      "y": 12.5,
+      "floors": 4,
+      "floorHeight": 3,
+      "entrances": [
+        { "side": "front", "width": 7, "kind": "ramp" },
+        { "side": "back", "along": 6, "width": 7, "kind": "ramp" },
+        { "side": "right", "along": -10, "kind": "stair" },
+        { "side": "left", "along": 14, "kind": "stair" },
+        { "side": "left", "along": 2, "width": 4, "floor": 1, "kind": "glass bridge" }
+      ]
+    },
+    {
+      "id": "glass-bridge",
+      "name": "Glass connector bridge (21 m, over the road)",
+      "poi": "garage",
+      "x": 102.5,
+      "z": 194.9,
+      "w": 6,
+      "d": 21,
+      "yaw": 124.6,
+      "y": 15.5,
+      "floorHeight": 3,
+      "entrances": [
+        { "side": "front", "width": 4 },
+        { "side": "back", "width": 4 }
+      ]
+    },
+    {
+      "id": "plaza-food",
+      "name": "Restaurant court (three kitchens)",
+      "poi": "plaza",
+      "x": 167.8,
+      "z": 60.4,
+      "w": 56,
+      "d": 20,
+      "yaw": -140,
+      "entrances": [
+        { "side": "front", "along": -18, "width": 3 },
+        { "side": "front", "width": 3 },
+        { "side": "front", "along": 18, "width": 3 },
+        { "side": "back", "along": -18, "width": 1.5, "kind": "service" },
+        { "side": "back", "width": 1.5, "kind": "service" },
+        { "side": "back", "along": 18, "width": 1.5, "kind": "service" }
+      ]
+    },
+    {
+      "id": "plaza-jeweler",
+      "name": "Jeweler",
+      "poi": "plaza",
+      "x": 135.9,
+      "z": 84.6,
+      "w": 18,
+      "d": 16,
+      "yaw": -140,
+      "entrances": [{ "side": "front" }, { "side": "back", "width": 1.5, "kind": "service" }]
+    },
+    {
+      "id": "plaza-bank",
+      "name": "Bank branch",
+      "poi": "plaza",
+      "x": 117.3,
+      "z": 102.8,
+      "w": 26,
+      "d": 22,
+      "yaw": -140,
+      "floors": 2,
+      "entrances": [
+        { "side": "front", "width": 3 },
+        { "side": "back", "along": 4, "width": 1.5, "kind": "service" },
+        { "side": "right", "width": 1.5 }
+      ]
+    },
+    {
+      "id": "plaza-phone",
+      "name": "Phone repair",
+      "poi": "plaza",
+      "x": 100.2,
+      "z": 119.8,
+      "w": 12,
+      "d": 14,
+      "yaw": -140,
+      "tier": "partial",
+      "entrances": [{ "side": "front" }, { "side": "right", "width": 1.5 }]
+    },
+    {
+      "id": "plaza-heli",
+      "name": "Crashed military helicopter (military loot)",
+      "poi": "plaza",
+      "x": 164.6,
+      "z": 97,
+      "w": 24,
+      "d": 8,
+      "yaw": -165,
+      "floors": 0
+    },
+    {
+      "id": "hotel-main",
+      "name": "Hotel (lobby, kitchen, two floors)",
+      "poi": "hotel",
+      "x": 352,
+      "z": 84,
+      "w": 48,
+      "d": 28,
+      "yaw": 130,
+      "floors": 3,
+      "entrances": [
+        { "side": "front", "width": 4, "kind": "lobby doors" },
+        { "side": "left", "along": 6, "kind": "kitchen door" },
+        { "side": "right", "along": -4 },
+        { "side": "back", "along": -12, "kind": "service" }
+      ]
+    },
+    {
+      "id": "hotel-forecourt",
+      "name": "Command post (forecourt)",
+      "poi": "hotel",
+      "x": 327.5,
+      "z": 104.6,
+      "w": 60,
+      "d": 30,
+      "yaw": 130,
+      "floors": 0
+    },
+    {
+      "id": "cons-block",
+      "name": "Half-built office block",
+      "poi": "construction",
+      "x": 89.5,
+      "z": 63.5,
+      "w": 36,
+      "d": 30,
+      "yaw": -140,
+      "floors": 4,
+      "floorHeight": 3.5,
+      "tier": "partial",
+      "entrances": [
+        { "side": "front", "along": -8, "width": 4, "kind": "open frame" },
+        { "side": "front", "along": 10, "width": 4, "kind": "open frame" },
+        { "side": "left", "width": 4, "kind": "open frame" },
+        { "side": "right", "width": 4, "kind": "open frame" },
+        { "side": "back", "width": 4, "kind": "open frame" }
+      ]
+    },
+    {
+      "id": "cons-yard",
+      "name": "Site yard (cabins, materials)",
+      "poi": "construction",
+      "x": 58.8,
+      "z": 89.2,
+      "w": 40,
+      "d": 28,
+      "yaw": -140,
+      "floors": 0
+    },
+    {
+      "id": "strip-grocery",
+      "name": "Grocery",
+      "poi": "strip",
+      "x": 333.6,
+      "z": 291.5,
+      "w": 22,
+      "d": 20,
+      "yaw": 170,
+      "entrances": [
+        { "side": "front", "along": -5, "width": 3 },
+        { "side": "front", "along": 5, "width": 3 },
+        { "side": "back", "width": 3, "kind": "roll-up" }
+      ]
+    },
+    {
+      "id": "strip-pharmacy",
+      "name": "Pharmacy (dispensary key room)",
+      "poi": "strip",
+      "x": 315.9,
+      "z": 288.4,
+      "w": 14,
+      "d": 20,
+      "yaw": 170,
+      "entrances": [{ "side": "front" }, { "side": "back", "width": 1.5, "kind": "service" }]
+    },
+    {
+      "id": "strip-sports",
+      "name": "Sporting goods",
+      "poi": "strip",
+      "x": 301.1,
+      "z": 285.8,
+      "w": 16,
+      "d": 20,
+      "yaw": 170,
+      "entrances": [
+        { "side": "front", "width": 3 },
+        { "side": "back", "width": 1.5, "kind": "service" }
+      ]
+    },
+    {
+      "id": "strip-convenience",
+      "name": "Convenience store",
+      "poi": "strip",
+      "x": 288.3,
+      "z": 283.5,
+      "w": 10,
+      "d": 20,
+      "yaw": 170,
+      "entrances": [
+        { "side": "front" },
+        { "side": "back", "width": 1.5, "kind": "service" },
+        { "side": "right", "width": 1.5 }
+      ]
+    },
+    {
+      "id": "strip-dentist",
+      "name": "Dentist (one room)",
+      "poi": "strip",
+      "x": 280.6,
+      "z": 281.2,
+      "w": 6,
+      "d": 18,
+      "yaw": 170,
+      "tier": "partial",
+      "entrances": [{ "side": "front", "width": 1.5 }]
+    },
+    {
+      "id": "strip-travel",
+      "name": "Travel agency (facade)",
+      "poi": "strip",
+      "x": 274.7,
+      "z": 280.1,
+      "w": 6,
+      "d": 18,
+      "yaw": 170,
+      "tier": "facade"
+    },
+    {
+      "id": "gas-kiosk",
+      "name": "Gas station shop",
+      "poi": "lot",
+      "x": 321.3,
+      "z": 229.3,
+      "w": 16,
+      "d": 12,
+      "yaw": 40,
+      "entrances": [{ "side": "front" }, { "side": "back", "width": 1.5, "kind": "service" }]
+    },
+    {
+      "id": "gas-canopy",
+      "name": "Pumps under the canopy",
+      "poi": "lot",
+      "x": 305.2,
+      "z": 218,
+      "w": 26,
+      "d": 18,
+      "yaw": -140,
+      "floors": 0
+    },
+    {
+      "id": "svc-warehouse",
+      "name": "Mall's warehouse",
+      "poi": "service",
+      "x": 409.1,
+      "z": 176.8,
+      "w": 48,
+      "d": 38,
+      "yaw": 130,
+      "floors": 1,
+      "floorHeight": 9,
+      "entrances": [
+        { "side": "front", "along": -14, "width": 4, "kind": "dock" },
+        { "side": "front", "width": 4, "kind": "dock" },
+        { "side": "front", "along": 14, "width": 4, "kind": "dock" },
+        { "side": "left" },
+        { "side": "right", "along": 6, "width": 4, "kind": "roll-up" },
+        { "side": "back", "along": -10 }
+      ]
+    },
+    {
+      "id": "svc-docks",
+      "name": "Loading docks",
+      "poi": "service",
+      "x": 382.4,
+      "z": 199.1,
+      "w": 56,
+      "d": 30,
+      "yaw": 130,
+      "floors": 0
+    },
+    {
+      "id": "svc-containers",
+      "name": "Container stacks (the cans)",
+      "poi": "service",
+      "x": 377.9,
+      "z": 137.7,
+      "w": 24,
+      "d": 40,
+      "yaw": 130,
+      "floors": 0
+    },
+    {
+      "id": "lot-substation",
+      "name": "Substation",
+      "poi": "lot",
+      "x": 212.2,
+      "z": 234.7,
+      "w": 30,
+      "d": 24,
+      "yaw": -140,
+      "floors": 0,
+      "tier": "partial",
+      "entrances": [
+        { "side": "front", "width": 3, "kind": "gate" },
+        { "side": "left", "width": 3, "kind": "gate" }
+      ]
+    },
+    {
+      "id": "furn-store",
+      "name": "Flat-pack furniture store",
+      "poi": "furniture",
+      "x": 410,
+      "z": 270,
+      "w": 60,
+      "d": 50,
+      "yaw": 130,
+      "floors": 2,
+      "floorHeight": 5,
+      "entrances": [
+        { "side": "front", "along": -12, "width": 5, "kind": "main doors" },
+        { "side": "front", "along": 18, "width": 4, "kind": "exit" },
+        { "side": "back", "along": -10, "width": 4, "kind": "roll-up" },
+        { "side": "back", "along": 8, "width": 4, "kind": "roll-up" },
+        { "side": "left", "kind": "fire exit" },
+        { "side": "right", "kind": "fire exit" }
+      ]
+    },
+    {
+      "id": "furn-yard",
+      "name": "Loading yard",
+      "poi": "furniture",
+      "x": 436,
+      "z": 248.1,
+      "w": 56,
+      "d": 16,
+      "yaw": 130,
+      "floors": 0
+    },
+    {
+      "id": "rail-hall",
+      "name": "Station hall (ticket hall, waiting room, offices upstairs)",
+      "poi": "rail",
+      "x": 158.2,
+      "z": 316.5,
+      "w": 52,
+      "d": 18,
+      "yaw": 130,
+      "y": 9,
+      "floors": 2,
+      "floorHeight": 5,
+      "entrances": [
+        { "side": "back", "along": -14, "width": 3, "kind": "main doors" },
+        { "side": "back", "along": 14, "width": 3 },
+        { "side": "front", "along": -10, "width": 4, "kind": "to platform 1" },
+        { "side": "front", "along": 12, "width": 3, "kind": "to platform 1" },
+        { "side": "left" },
+        { "side": "right" }
+      ]
+    },
+    {
+      "id": "rail-platform",
+      "name": "Platform 1 (canopy)",
+      "poi": "rail",
+      "x": 145.9,
+      "z": 326.8,
+      "w": 100,
+      "d": 7,
+      "yaw": 130,
+      "y": 9,
+      "floors": 0
+    },
+    {
+      "id": "rail-island",
+      "name": "Platform 2 (island, canopy)",
+      "poi": "rail",
+      "x": 133.7,
+      "z": 337.1,
+      "w": 90,
+      "d": 7,
+      "yaw": 130,
+      "y": 9,
+      "floors": 0
+    },
+    {
+      "id": "rail-footbridge",
+      "name": "Footbridge over track 1",
+      "poi": "rail",
+      "x": 128.2,
+      "z": 318.2,
+      "w": 4,
+      "d": 10,
+      "yaw": 130,
+      "y": 14,
+      "floorHeight": 3,
+      "entrances": [
+        { "side": "front", "width": 3 },
+        { "side": "back", "width": 3 }
+      ]
+    },
+    {
+      "id": "rail-train",
+      "name": "Stalled evacuation train on track 2 (locomotive, freight cars)",
+      "poi": "rail",
+      "x": 122.4,
+      "z": 336.1,
+      "w": 80,
+      "d": 4,
+      "yaw": 130,
+      "floors": 0
+    },
+    {
+      "id": "rail-goods",
+      "name": "Goods shed",
+      "poi": "rail",
+      "x": 193.9,
+      "z": 362.2,
+      "w": 18,
+      "d": 14,
+      "yaw": 130,
+      "floors": 1,
+      "floorHeight": 6,
+      "entrances": [
+        { "side": "front", "width": 4, "kind": "roll-up" },
+        { "side": "back" },
+        { "side": "right", "width": 4, "kind": "roll-up" }
+      ]
+    },
+    {
+      "id": "rail-forecourt",
+      "name": "Station forecourt (bus bay, taxi rank)",
+      "poi": "rail",
+      "x": 173.5,
+      "z": 303.7,
+      "w": 64,
+      "d": 20,
+      "yaw": 130,
+      "floors": 0
+    },
+    {
+      "id": "outpost",
+      "name": "Checkpoint outpost (barricades, tents, aid station, vehicles)",
+      "poi": "outpost",
+      "x": 330.3,
+      "z": 333.6,
+      "w": 46,
+      "d": 26,
+      "yaw": 170,
+      "floors": 0
+    },
+    {
+      "id": "outpost-tent",
+      "name": "Aid tent (medical supplies)",
+      "poi": "outpost",
+      "x": 337.3,
+      "z": 339.9,
+      "w": 14,
+      "d": 8,
+      "yaw": 170,
+      "tier": "partial",
+      "floorHeight": 3,
+      "entrances": [{ "side": "back" }, { "side": "left" }]
+    },
+    {
+      "id": "lot-parking",
+      "name": "Surface lot",
+      "poi": "lot",
+      "x": 262,
+      "z": 200.7,
+      "w": 70,
+      "d": 56,
+      "yaw": -140,
+      "floors": 0
+    },
+    {
+      "id": "lot-convoy",
+      "name": "Convoy wreck and armored vehicle (high-tier loot)",
+      "poi": "lot",
+      "x": 190.8,
+      "z": 203,
+      "w": 56,
+      "d": 12,
+      "yaw": -140,
+      "floors": 0
+    },
+    {
+      "id": "lot-lz",
+      "name": "Abandoned landing zone",
+      "poi": "lot",
+      "x": 289.2,
+      "z": 136.7,
+      "w": 48,
+      "d": 40,
+      "yaw": 130,
+      "floors": 0
+    }
+  ],
+  "roads": [
+    {
+      "id": "evac-road",
+      "name": "Evacuation road (command post to the highway)",
+      "width": 9,
+      "points": [
+        [326, 105.9],
+        [300, 118],
+        [287.4, 122],
+        [143.4, 242.8],
+        [160, 280],
+        [230, 302],
+        [318, 308],
+        [392, 322],
+        [474, 326]
+      ]
+    },
+    {
+      "id": "west-road",
+      "name": "West road (between the store and the garage)",
+      "width": 8,
+      "points": [
+        [143.4, 242.8],
+        [84.2, 172.4],
+        [52, 120]
+      ]
+    },
+    {
+      "id": "hill-road",
+      "name": "Hill road (over the mall, behind the plaza)",
+      "width": 7,
+      "points": [
+        [52, 120],
+        [53.4, 135.6],
+        [202, 10.9],
+        [262, 26],
+        [362.4, 127.5]
+      ]
+    },
+    {
+      "id": "east-road",
+      "name": "East road",
+      "width": 8,
+      "points": [
+        [392, 322],
+        [366, 292],
+        [364, 240],
+        [372, 204],
+        [379.4, 201.7]
+      ]
+    },
+    {
+      "id": "dock-road",
+      "name": "Dock road",
+      "kind": "service",
+      "width": 6,
+      "points": [
+        [239.2, 120.6],
+        [316, 196],
+        [379.4, 201.7]
+      ]
+    },
+    {
+      "id": "strip-alley",
+      "name": "Strip row service lane",
+      "kind": "service",
+      "width": 4,
+      "points": [
+        [349.6, 281.1],
+        [270.9, 267.3]
+      ]
+    },
+    {
+      "id": "site-road",
+      "name": "Site entrance",
+      "kind": "service",
+      "width": 6,
+      "points": [
+        [53.4, 135.6],
+        [68.5, 100.7]
+      ]
+    },
+    {
+      "id": "furn-drive",
+      "name": "Furniture store drive",
+      "kind": "service",
+      "width": 6,
+      "points": [
+        [364, 262],
+        [382.4, 293.1]
+      ]
+    },
+    {
+      "id": "rail-cut",
+      "name": "Rail cut (sunken; track 2, track 1 beside it)",
+      "kind": "path",
+      "width": 5,
+      "points": [
+        [31.1, 227.3],
+        [153.3, 372.9]
+      ]
+    },
+    {
+      "id": "culvert",
+      "name": "Drainage culvert (sunken)",
+      "kind": "path",
+      "width": 3,
+      "points": [
+        [302, 252],
+        [340, 262],
+        [374, 276]
+      ]
+    },
+    {
+      "id": "storm-drain",
+      "name": "Storm drain (underground): the culvert to the mall's service corridors",
+      "kind": "path",
+      "width": 2.5,
+      "points": [
+        [302, 252],
+        [270, 196],
+        [234.6, 124.5]
+      ]
+    },
+    {
+      "id": "ne-stairs",
+      "name": "Stairs by the cinema (mall level to plaza level)",
+      "kind": "path",
+      "width": 3,
+      "points": [
+        [257.8, 86.7],
+        [232.1, 56.1]
+      ]
+    },
+    {
+      "id": "sw-stairs",
+      "name": "Stairs by the department store",
+      "kind": "path",
+      "width": 3,
+      "points": [
+        [125.8, 215.7],
+        [91.1, 174.4]
+      ]
+    },
+    {
+      "id": "hotel-steps",
+      "name": "Hotel steps (plaza to the command post)",
+      "kind": "path",
+      "width": 3,
+      "points": [
+        [200.1, 49],
+        [214.8, 34],
+        [356, 119.8]
+      ]
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "crane",
+      "name": "Tower crane",
+      "x": 74.1,
+      "z": 45.1,
+      "w": 5,
+      "d": 5,
+      "yaw": -140,
+      "height": 48
+    },
+    {
+      "id": "hotel-tower",
+      "name": "Hotel tower (facade)",
+      "x": 352,
+      "z": 84,
+      "w": 24,
+      "d": 18,
+      "yaw": 130,
+      "height": 36
+    },
+    {
+      "id": "heli-tail",
+      "name": "Crashed helicopter's tail boom (plaza)",
+      "x": 171.2,
+      "z": 86.3,
+      "w": 3,
+      "d": 3,
+      "yaw": -165,
+      "height": 9
+    },
+    { "id": "cell-tower", "name": "Cell tower", "x": 452, "z": 244, "w": 4, "d": 4, "height": 30 }
+  ],
+  "zones": [
+    {
+      "id": "play-area",
+      "name": "Play edge",
+      "points": [
+        [40, 50],
+        [80, 15],
+        [250, 10],
+        [300, 35],
+        [360, 60],
+        [430, 80],
+        [465, 120],
+        [470, 330],
+        [430, 352],
+        [262, 376],
+        [140.2, 376],
+        [9.1, 219.7],
+        [22, 190],
+        [25, 110]
+      ]
+    },
+    {
+      "id": "escarpment",
+      "name": "Wooded escarpment (edge)",
+      "points": [
+        [300, 35],
+        [480, 0],
+        [480, 120],
+        [465, 120],
+        [430, 80],
+        [360, 60]
+      ]
+    },
+    {
+      "id": "embankment",
+      "name": "Highway embankment (edge)",
+      "points": [
+        [470, 330],
+        [480, 330],
+        [480, 360],
+        [430, 360],
+        [430, 352]
+      ]
+    },
+    {
+      "id": "overpass",
+      "name": "Collapsed overpass (deck down across the road)",
+      "points": [
+        [352, 286],
+        [366, 286],
+        [372, 350],
+        [358, 350]
+      ]
+    },
+    {
+      "id": "exit-train",
+      "name": "Extract (conditional): the train, power on at the substation",
+      "points": [
+        [156.3, 370.3],
+        [104.9, 309],
+        [111, 303.9],
+        [162.5, 365.2]
+      ]
+    },
+    {
+      "id": "exit-highway",
+      "name": "Extract: highway on-ramp",
+      "points": [
+        [440, 312],
+        [468, 312],
+        [468, 336],
+        [440, 336]
+      ]
+    },
+    {
+      "id": "exit-hilltop",
+      "name": "Extract: hilltop trail",
+      "points": [
+        [88, 18],
+        [116, 18],
+        [116, 40],
+        [88, 40]
+      ]
+    },
+    {
+      "id": "exit-escarpment",
+      "name": "Extract: escarpment trail",
+      "points": [
+        [418, 86],
+        [446, 92],
+        [446, 112],
+        [418, 106]
+      ]
+    },
+    {
+      "id": "promenade",
+      "name": "Plaza promenade",
+      "points": [
+        [225.7, 64.1],
+        [110.8, 160.5],
+        [92.8, 139],
+        [207.7, 42.6]
+      ]
+    },
+    {
+      "id": "roof-terrace",
+      "name": "Roof terrace",
+      "points": [
+        [221.8, 109.1],
+        [148.2, 170.9],
+        [128.9, 147.9],
+        [202.5, 86.2]
+      ]
+    },
+    {
+      "id": "checkpoint",
+      "name": "Forecourt checkpoint",
+      "points": [
+        [251.5, 125.9],
+        [159.6, 203.1],
+        [167.3, 212.3],
+        [259.2, 135.1]
+      ]
+    },
+    {
+      "id": "evac-jam",
+      "name": "Evacuation jam",
+      "points": [
+        [152, 284],
+        [240, 294],
+        [318, 300],
+        [474, 316],
+        [474, 336],
+        [318, 320],
+        [240, 312],
+        [148, 302]
+      ]
+    },
+    {
+      "id": "x-parade",
+      "name": "Long crossing: parade ground and landing zone (mall to command post)",
+      "points": [
+        [367.8, 130.8],
+        [308.6, 60.3],
+        [239.7, 118.2],
+        [298.8, 188.7]
+      ]
+    },
+    {
+      "id": "x-flats",
+      "name": "Long crossing: the open flats (gas station to furniture store)",
+      "points": [
+        [334, 228],
+        [372, 232],
+        [378, 268],
+        [336, 262]
+      ]
+    },
+    {
+      "id": "west-slope",
+      "name": "Terraces and the old quarry wall",
+      "points": [
+        [30, 150],
+        [60, 150],
+        [70, 210],
+        [40, 214]
+      ]
+    }
+  ],
+  "pois": {
+    "outpost": {
+      "name": "Checkpoint outpost",
+      "color": "#6f7d4a"
+    },
+    "rail": {
+      "name": "Station",
+      "color": "#5b6b8f"
+    },
+    "mall": {
+      "name": "Mall",
+      "color": "#c0583b"
+    },
+    "garage": {
+      "name": "Parking garage",
+      "color": "#6b6f78"
+    },
+    "plaza": {
+      "name": "Plaza",
+      "color": "#d29a2f"
+    },
+    "hotel": {
+      "name": "Hotel",
+      "color": "#8a4f9e"
+    },
+    "service": {
+      "name": "Service quarter",
+      "color": "#4f7a8a"
+    },
+    "furniture": {
+      "name": "Furniture store",
+      "color": "#3f7fbf"
+    },
+    "construction": {
+      "name": "Construction site",
+      "color": "#c9a227"
+    },
+    "strip": {
+      "name": "Strip row and gas station",
+      "color": "#4f9a5b"
+    },
+    "lot": {
+      "name": "Surface lot",
+      "color": "#7a6a4f"
+    }
+  }
+}

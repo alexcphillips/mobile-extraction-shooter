@@ -17,7 +17,8 @@ export type ControlId =
   | 'detonate'
   | 'extinguish'
   | 'leanLeft'
-  | 'leanRight';
+  | 'leanRight'
+  | 'breathe';
 
 export interface ControlDef {
   id: ControlId;
@@ -60,6 +61,8 @@ export const CONTROLS: readonly ControlDef[] = [
   // Lean toggles (2026-11-01): a pair above fire, in reach of the right thumb between shots.
   { id: 'leanLeft', label: '◀ lean', size: 46, x: 0.76, y: 0.3 },
   { id: 'leanRight', label: 'lean ▶', size: 46, x: 0.86, y: 0.3 },
+  // The breath button (BW-2): only shown while aimed, between use and aim.
+  { id: 'breathe', label: 'breathe', size: 46, x: 0.71, y: 0.67 },
 ];
 
 /** Whether a layout hides a control. Required controls always show. */

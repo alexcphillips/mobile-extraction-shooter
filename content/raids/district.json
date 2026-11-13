@@ -1,0 +1,10 @@
+{
+  "formatVersion": 1,
+  "id": "district",
+  "name": "District",
+  "map": "district",
+  "duration": 1500,
+  "order": 3,
+  "tags": ["test"],
+  "dev": true
+}

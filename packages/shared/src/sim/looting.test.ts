@@ -778,6 +778,7 @@ describe('looting', () => {
       formatVersion: ITEM_FORMAT_VERSION,
       id: 'brake',
       name: 'Brake',
+      weight: 0.15,
       size: [1, 1],
       value: 100,
       rarity: 'common',

@@ -7,7 +7,8 @@
 // outer walls 0.2 m, partitions 0.15 m, doorways 1.2 × 2.1 m, windows 0.9 to 2.0 m glazed
 // (vaultable once broken), rooms about 1.25× real. The valley floor here is flat at y 0.
 
-import { buildingKit, DOOR_H, WIN } from './silver-creek-kit.mjs';
+import { buildingKit, DOOR_H, WIN } from './mapkit/building.mjs';
+import { fenceRun } from './mapkit/fence.mjs';
 
 export function buildWestEnd(h) {
   const { box, drawn, group, prefab, along, label, C, r2, groundRange } = h;
@@ -678,28 +679,7 @@ export function buildWestEnd(h) {
    * A picket fence from (x0, z0) to (x1, z1) in 3 m bays; bays listed in `gaps` are broken
    * through (walkable). Ends short of a whole bay are left open.
    */
-  function fenceLine(id, x0, z0, x1, z1, gaps) {
-    const len = Math.hypot(x1 - x0, z1 - z0);
-    const n = Math.floor(len / 3);
-    const yaw = r2((Math.atan2(z1 - z0, x1 - x0) * -180) / Math.PI);
-    const out = [];
-    for (let k = 0; k < n; k++) {
-      const t = (k * 3 + 1.5) / len;
-      out.push(
-        at(
-          gaps.includes(k) ? 'picket-fence-gap' : 'picket-fence',
-          x0 + (x1 - x0) * t,
-          z0 + (z1 - z0) * t,
-          0,
-          {
-            id: `${id}-${k + 1}`,
-            ...(yaw ? { yaw } : {}),
-          },
-        ),
-      );
-    }
-    return out;
-  }
+  const fenceLine = (id, x0, z0, x1, z1, gaps) => fenceRun(id, [x0, z0], [x1, z1], { gaps });
 
   /** House 5's plan, two storeys. */
   function twoStorey(id, color) {

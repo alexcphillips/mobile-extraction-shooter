@@ -5,6 +5,8 @@ import {
   type ItemDb,
   type ItemDef,
 } from '../content/items';
+import type { ItemModel } from '../content/models';
+import { addItem, type Grid } from '../inventory/grid';
 import { placeholderModel } from '../content/placeholder-models';
 
 function common(id: string, size: [number, number]) {
@@ -222,6 +224,133 @@ const defs = [
     slot: 'laser',
     mods: { hipSpread: 0.5 },
   },
+  // WF-1: a carbine whose stock is a part, a fixed stock and a folding one.
+  {
+    formatVersion: ITEM_FORMAT_VERSION,
+    id: 'carbine',
+    size: [3, 2],
+    value: 100,
+    name: 'Carbine',
+    type: 'weapon',
+    ammo: 'round',
+    fireMode: 'auto',
+    rpm: 600,
+    magazine: 30,
+    reloadTime: 2,
+    aimTime: 0.2,
+    drawTime: 0.5,
+    range: 200,
+    loudness: 150,
+    defaults: { stock: 'stock' },
+    slots: ['optic', 'stock'],
+    hipSpread: 0,
+    aimSpread: 0,
+    recoil: { up: 2, side: 1, snap: 40, recovery: 10 },
+  },
+  {
+    ...common('stock', [2, 1]),
+    type: 'attachment',
+    slot: 'stock',
+    stock: { length: 1 },
+    mods: { recoil: 0.5, ergonomics: 2 },
+  },
+  {
+    ...common('folding-stock', [2, 1]),
+    type: 'attachment',
+    slot: 'stock',
+    stock: { length: 2, foldedLength: 1 },
+    mods: { recoil: 0.25 },
+  },
+  // MG-1: a gun that takes magazines, its own and a big one.
+  {
+    formatVersion: ITEM_FORMAT_VERSION,
+    id: 'smg',
+    size: [3, 2],
+    value: 100,
+    name: 'SMG',
+    type: 'weapon',
+    ammo: 'round',
+    fireMode: 'auto',
+    rpm: 600,
+    magazine: 20,
+    feed: 'magazine',
+    reloadTime: 2,
+    aimTime: 0.2,
+    drawTime: 0.5,
+    range: 200,
+    loudness: 150,
+    defaults: { magazine: 'smg-mag' },
+    slots: ['muzzle', 'magazine'],
+    hipSpread: 0,
+    aimSpread: 0,
+    recoil: { up: 1, side: 0, snap: 40, recovery: 10 },
+  },
+  {
+    ...common('smg-mag', [1, 1]),
+    type: 'attachment',
+    slot: 'magazine',
+    weapons: ['smg'],
+    capacity: 20,
+    caliber: 'round',
+  },
+  {
+    ...common('smg-drum', [2, 2]),
+    type: 'attachment',
+    slot: 'magazine',
+    weapons: ['smg'],
+    capacity: 50,
+    caliber: 'round',
+    mods: { reloadTime: 1.5 },
+    rows: 1, // WF-2: a row under the gun
+  },
+  // WF-2: a long suppressor, a column longer on the gun.
+  {
+    ...common('long-can', [2, 1]),
+    type: 'attachment',
+    slot: 'muzzle',
+    columns: 1,
+    mods: { loudness: 0.25 },
+  },
+  // GZ-2: a headset, and a helmet that covers the ears with comms built in.
+  { ...common('headset', [2, 1]), type: 'headset', hearing: 0.2 },
+  {
+    ...common('full-helmet', [2, 2]),
+    type: 'armor',
+    slot: 'helmet',
+    level: 4,
+    durability: 40,
+    hearing: 0.1,
+    blocksHeadset: true,
+    vision: { shape: 'slit' },
+    visor: true,
+  },
+  // GZ-4: plates, a carrier that comes with a front plate, and a bulky one.
+  { ...common('plate-4', [2, 2]), type: 'plate', level: 4, durability: 40 },
+  { ...common('plate-2', [2, 2]), type: 'plate', level: 2, durability: 40 },
+  {
+    ...common('carrier', [3, 3]),
+    type: 'armor',
+    slot: 'body',
+    level: 2,
+    durability: 30,
+    carrier: { plates: ['front', 'back'], comesWith: { front: 'plate-4' } },
+  },
+  {
+    ...common('bulky-carrier', [3, 3]),
+    type: 'armor',
+    slot: 'body',
+    level: 1,
+    durability: 30,
+    carrier: { plates: ['front'], softZones: ['thorax'], blocksRig: true, swapTime: 4 },
+  },
+  // GZ-5: a visor for it.
+  {
+    ...common('visor', [2, 1]),
+    type: 'visor',
+    level: 4,
+    durability: 20,
+    vision: { vignette: 0.2 },
+  },
   { ...common('bandage', [1, 1]), type: 'med', effect: 'bandage', useTime: 2 },
   { ...common('splint', [1, 1]), type: 'med', effect: 'splint', useTime: 3, uses: 2 },
   { ...common('surgery', [2, 1]), type: 'med', effect: 'surgery', useTime: 10 },
@@ -391,6 +520,8 @@ const defs = [
   { ...common('notes', [1, 1]), type: 'quest' },
   { ...common('cash', [1, 1]), value: 1, type: 'loot', stack: 1000, money: true },
   { ...common('watch', [1, 1]), type: 'loot' },
+  // A kg each, to carry a load in tests (BW-3; see carryLoad).
+  { ...common('ballast', [1, 1]), weight: 1, type: 'loot', stack: 1000 },
   { ...common('repair-kit', [2, 1]), type: 'repair', points: 50, useTime: 5 },
 ];
 
@@ -401,18 +532,33 @@ function bagOf(d: Record<string, unknown>): Parameters<typeof bagRarity>[0] | nu
     : null;
 }
 
+/** The folding stock folds by itself, about a hinge on its left. */
+function withFold(id: string, model: ItemModel): ItemModel {
+  return id === 'folding-stock' ? { ...model, fold: { pivot: [-0.03, 0, 0], yaw: 180 } } : model;
+}
+
 export const TEST_ITEMS: ItemDb = new Map(
   defs.map((d) => {
     const sounds = defaultSounds(d);
     return [
       d.id,
       {
+        // Weightless unless set (BW-3), so tests not about weight move as before.
+        weight: 0,
         ...d,
         // A rig's or backpack's rarity by its cells (bagRarity); the rest are common.
         rarity: bagOf(d) ? bagRarity(bagOf(d)!) : 'common',
         ...(sounds && { sounds }),
-        model: placeholderModel(d),
+        model: withFold(d.id, placeholderModel(d)),
       } as ItemDef,
     ];
   }),
 );
+
+/**
+ * Puts `kg` of ballast in a character's pockets (BW-3): the reference load (WEIGHT.reference)
+ * makes footsteps as loud as before weight, for tests about hearing.
+ */
+export function carryLoad(c: { gear: { pockets: Grid } }, kg: number): void {
+  addItem(TEST_ITEMS, c.gear.pockets, { item: 'ballast', count: kg });
+}

@@ -279,3 +279,56 @@ describe('loadouts', () => {
     ).toThrow();
   });
 });
+
+describe('spare magazines (MG-3)', () => {
+  const rig = { rigs: [{ weight: 1, item: 'rig' }] };
+
+  it('a magazine-fed gun gets 3 full spares, or 4 with rounds for 5; the rest stay loose', () => {
+    const count = (c: Character) => {
+      const mags = [...c.gear.pockets.items, ...c.gear.rig!.grid.items].filter(
+        (g) => g.item.item === 'smg-mag',
+      );
+      return {
+        mags: mags.length,
+        full: mags.every((g) => g.item.mag === 20),
+        loose: carriedAmmo(c, 'round'),
+      };
+    };
+    const few = character();
+    equipLoadout(
+      few,
+      TEST_ITEMS,
+      loadout({ ...rig, weapons: [{ weight: 1, item: 'smg', spare: [70, 70] }] }),
+      createRng(1),
+    );
+    expect(count(few)).toEqual({ mags: 3, full: true, loose: 10 });
+    const many = character();
+    equipLoadout(
+      many,
+      TEST_ITEMS,
+      loadout({ ...rig, weapons: [{ weight: 1, item: 'smg', spare: [110, 110] }] }),
+      createRng(1),
+    );
+    expect(count(many)).toEqual({ mags: 4, full: true, loose: 30 });
+  });
+
+  it('none for other guns, nor with magazines off (zombies mode)', () => {
+    const c = character();
+    equipLoadout(
+      c,
+      TEST_ITEMS,
+      loadout({ ...rig, weapons: [{ weight: 1, item: 'smg', spare: [70, 70] }] }),
+      createRng(1),
+      false,
+    );
+    expect(carriedAmmo(c, 'round')).toBe(70);
+    const r = character();
+    equipLoadout(
+      r,
+      TEST_ITEMS,
+      loadout({ ...rig, weapons: [{ weight: 1, item: 'rifle', spare: [70, 70] }] }),
+      createRng(1),
+    );
+    expect(carriedAmmo(r, 'round')).toBe(70);
+  });
+});

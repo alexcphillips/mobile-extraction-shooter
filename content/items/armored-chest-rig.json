@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "armored-chest-rig",
   "name": "Armored chest rig",
   "shortName": "Arm. rig",
   "type": "container",
   "size": [3, 3],
   "value": 26000,
+  "weight": 4.5,
   "rarity": "rare",
   "slot": "rig",
   "grid": [4, 2],
@@ -15,7 +16,18 @@
     { "at": [2, 0], "size": [1, 2] },
     { "at": [3, 0], "size": [1, 2] }
   ],
-  "armor": { "level": 3, "durability": 55, "repairLoss": 0.12 },
+  "armor": {
+    "level": 2,
+    "durability": 55,
+    "repairLoss": 0.12,
+    "carrier": {
+      "plates": ["front"],
+      "softZones": ["thorax"],
+      "comesWith": {
+        "front": "pe-plate-3"
+      }
+    }
+  },
   "model": {
     "parts": [
       { "type": "box", "pos": [0, 1.22, -0.14], "size": [0.33, 0.3, 0.05], "color": "#4c5a36" },

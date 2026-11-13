@@ -8,6 +8,7 @@ const member = (id: string, device: PartyMember['device'], online = true): Party
   ready: true,
   device,
   online,
+  level: 1,
 });
 
 const party = (...members: PartyMember[]): Party => ({

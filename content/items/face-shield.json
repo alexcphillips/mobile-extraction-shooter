@@ -1,0 +1,41 @@
+{
+  "formatVersion": 11,
+  "id": "face-shield",
+  "name": "Ballistic face shield",
+  "shortName": "Face shield",
+  "type": "visor",
+  "size": [2, 1],
+  "value": 15000,
+  "weight": 0.6,
+  "rarity": "rare",
+  "level": 3,
+  "durability": 25,
+  "repairLoss": 0.5,
+  "vision": {
+    "vignette": 0.2
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 1.69, -0.118],
+        "size": [0.2, 0.15, 0.012],
+        "pitch": -8,
+        "color": "#3a4652"
+      },
+      { "type": "box", "pos": [0, 1.765, -0.112], "size": [0.21, 0.014, 0.02], "color": "#1d1f21" },
+      {
+        "type": "box",
+        "pos": [-0.104, 1.73, -0.06],
+        "size": [0.012, 0.03, 0.11],
+        "color": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0.104, 1.73, -0.06],
+        "size": [0.012, 0.03, 0.11],
+        "color": "#1d1f21"
+      }
+    ]
+  }
+}
