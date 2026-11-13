@@ -30,6 +30,8 @@ export const GAME_SOUNDS = {
   /** The player hurt, and killed. */
   hurt: 'hurt',
   death: 'death',
+  /** A blacked stomach's cough and groan (GZ-3), yours or anyone's. */
+  pain: 'pain-groan',
   /** Taking out what's in your hands. */
   draw: 'draw',
   /** Each second of the extraction countdown, and getting out. */

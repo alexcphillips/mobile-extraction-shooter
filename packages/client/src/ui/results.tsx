@@ -553,14 +553,18 @@ const VEST_PATH = 'M7 2h3l2 3 2-3h3l2 4v15H5V6z';
 
 /**
  * A front-on body, one shape per zone in Health's order, facing you (its left on your
- * right), as the HUD's: the zones a hit landed on lit.
+ * right), as the HUD's: the zones a hit landed on lit. A face hit (GZ-3) lights the head and
+ * a face on it.
  */
 function Ghost({ zones }: { zones: readonly string[] }) {
   const on = (z: number): string => (zones.includes(ZONE_NAMES[z]!) ? 'on' : '');
+  const face = zones.includes('face');
   return (
     <svg className="combat-ghost" viewBox="16 0 32 60" aria-hidden="true">
-      <circle className={on(0)} cx="32" cy="6" r="5" />
-      <rect className={on(1)} x="26" y="13" width="12" height="19" rx="1.5" />
+      <circle className={face ? 'on' : on(0)} cx="32" cy="6" r="5" />
+      {face && <rect className="face" x="29.5" y="5.5" width="5" height="4" rx="1" />}
+      <rect className={on(1)} x="26" y="13" width="12" height="11.5" rx="1.5" />
+      <rect className={on(6)} x="26" y="25" width="12" height="7" rx="1.5" />
       <rect className={on(2)} x="39.5" y="13" width="4.5" height="19" rx="1.5" />
       <rect className={on(3)} x="20" y="13" width="4.5" height="19" rx="1.5" />
       <rect className={on(4)} x="32.5" y="33.5" width="5.5" height="26" rx="1.5" />
@@ -576,7 +580,9 @@ function Ghost({ zones }: { zones: readonly string[] }) {
  */
 function CombatRow({ hit, items }: { hit: FightHit & { name: string }; items: ItemDb }) {
   const meters = hit.distance === undefined ? '—' : `${Math.round(hit.distance)}m`;
-  const helmet = hit.zones.length === 1 && hit.zones[0] === ZONE_NAMES[HEAD];
+  // A face hit's armor is a visor (or a mask): helmet armor all the same.
+  const helmet =
+    hit.zones.length > 0 && hit.zones.every((z) => z === ZONE_NAMES[HEAD] || z === 'face');
   const name = (id: string | undefined): string | null =>
     id && items.has(id) ? itemDef(items, id).name : null;
   const gun = hit.killing ? name(hit.weapon) : null;

@@ -1,4 +1,5 @@
 import { TICK_SECONDS } from '../tick';
+import { stomachBlacked } from './health';
 import type { Character } from './state';
 import { WEIGHT } from './weight';
 
@@ -9,7 +10,7 @@ const DT = TICK_SECONDS;
  * drains it, jumping and vaulting take a chunk; empty, you can't sprint until it's back
  * over `recover`. It refills when you're not sprinting, faster still than moving, slower
  * over each weight threshold. Low, it shortens your held breath and slows its refill.
- * Players only: enemies sprint as they always have. First guesses.
+ * A blacked stomach (GZ-3) caps it, slows its refill and shortens breath further. Players only: enemies sprint as they always have. First guesses.
  */
 export const STAMINA = {
   /** Seconds of sprinting from full to empty. */
@@ -30,6 +31,14 @@ export const STAMINA = {
   breathEmpty: 0.5,
   /** Slower than this (m/s) counts as standing still. */
   stillSpeed: 0.5,
+  /**
+   * A blacked stomach (GZ-3), until surgery: stamina can't refill past `stomachCap`, refills
+   * at `stomachRefill` of its rate, and held breath goes `stomachBreath` as far (on top of
+   * low stamina's).
+   */
+  stomachCap: 0.5,
+  stomachRefill: 0.5,
+  stomachBreath: 0.6,
 } as const;
 
 /** Whether a player has the stamina to sprint: not since running dry, until it's over `recover`. */
@@ -50,16 +59,23 @@ export function spendStamina(c: Character, share: number): void {
 export function updateStamina(c: Character, sprinting: boolean): void {
   if (c.ai) return;
   const now = c.stamina ?? 1;
+  const stomach = stomachBlacked(c.health);
+  const cap = stomach ? STAMINA.stomachCap : 1;
   if (sprinting) {
-    setStamina(c, now - DT / STAMINA.sprint);
+    setStamina(c, Math.min(cap, now - DT / STAMINA.sprint));
     return;
   }
-  if (now >= 1) return;
+  if (now >= cap) {
+    if (now > cap) setStamina(c, cap);
+    return;
+  }
   const still = Math.hypot(c.vx, c.vz) < STAMINA.stillSpeed;
   const load = c.load ?? 0;
   const loaded =
-    load > WEIGHT.heavy ? STAMINA.refillHeavy : load > WEIGHT.from ? STAMINA.refillLoaded : 1;
-  setStamina(c, now + (DT * loaded) / (still ? STAMINA.refillStill : STAMINA.refillMoving));
+    (load > WEIGHT.heavy ? STAMINA.refillHeavy : load > WEIGHT.from ? STAMINA.refillLoaded : 1) *
+    (stomach ? STAMINA.stomachRefill : 1);
+  const time = still ? STAMINA.refillStill : STAMINA.refillMoving;
+  setStamina(c, Math.min(cap, now + (DT * loaded) / time));
 }
 
 function setStamina(c: Character, value: number): void {
@@ -77,6 +93,7 @@ function setStamina(c: Character, value: number): void {
  */
 export function staminaBreath(c: Character): number {
   const s = c.stamina ?? 1;
-  if (s >= STAMINA.breathFrom) return 1;
-  return STAMINA.breathEmpty + ((1 - STAMINA.breathEmpty) * s) / STAMINA.breathFrom;
+  const stomach = stomachBlacked(c.health) ? STAMINA.stomachBreath : 1;
+  if (s >= STAMINA.breathFrom) return stomach;
+  return stomach * (STAMINA.breathEmpty + ((1 - STAMINA.breathEmpty) * s) / STAMINA.breathFrom);
 }

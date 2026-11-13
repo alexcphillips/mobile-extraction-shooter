@@ -13,6 +13,7 @@
   "durability": 120,
   "repairLoss": 0.06,
   "blocksHeadset": true,
+  "coversFace": true,
   "mask": {
     "edge": 0.16,
     "muffle": 2200

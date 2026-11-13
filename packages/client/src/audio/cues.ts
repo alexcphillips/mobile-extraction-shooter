@@ -267,6 +267,13 @@ export class SoundCues {
         if (caller && id) this.at(id, caller.x, caller.y + MOVEMENT.standHeight - 0.2, caller.z);
         return;
       }
+      case 'pain': {
+        // A blacked stomach groaning (GZ-3): yours in your head, anyone else's where they are.
+        const who = entityById(sim, e.by);
+        if (own) this.sound.play(S.pain);
+        else if (who) this.at(S.pain, who.x, who.y + MOVEMENT.standHeight - 0.2, who.z);
+        return;
+      }
       case 'voice': {
         // Jug breathing or muttering through his mask (AI-8), in his type's voice.
         const who = entityById(sim, e.by);

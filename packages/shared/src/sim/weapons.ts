@@ -1028,7 +1028,18 @@ function castShot(
     const target = entityById(state, charHit.id);
     // An admin spawner's shots do no harm.
     if (target && !def.spawns) {
-      shootCharacter(state, items, target, charHit.zone, ammo, c.id, 'shot', c.x, c.z);
+      shootCharacter(
+        state,
+        items,
+        target,
+        charHit.zone,
+        ammo,
+        c.id,
+        'shot',
+        c.x,
+        c.z,
+        charHit.face,
+      );
       // An incendiary round may set them alight as well (2026-10-31).
       if (ammo.incendiary && chance(state.rng, ammo.incendiary.chance))
         ignite(state, target, items, ammo.id, c.id);

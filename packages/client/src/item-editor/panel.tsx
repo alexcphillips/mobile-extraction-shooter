@@ -1422,6 +1422,12 @@ function HelmetFields(props: Bound & { def: Extract<ItemDef, { type: 'armor' }> 
           label="Night vision mount"
           title="Night vision goggles can be fitted (GZ-5); one thing at a time, whichever"
         />
+        <T
+          {...b}
+          path={['coversFace']}
+          label="Covers the face"
+          title="A full mask (GZ-3): face hits with no visor fitted meet the helmet, not bare skin"
+        />
       </div>
       <div className="ie-grid">
         <N

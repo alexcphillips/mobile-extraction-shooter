@@ -68,8 +68,8 @@ describe('damage', () => {
     expect(isBroken(c.health, LEFT_LEG)).toBe(true);
     expect(c.health.hp[CHEST]).toBe(85);
     dealDamage(state, c, LEFT_LEG, 10, 0);
-    // Five zones left: head, chest, both arms and the other leg.
-    const each = (10 * HEALTH.spillover) / 5;
+    // Six zones left: head, chest, both arms, the other leg and the stomach.
+    const each = (10 * HEALTH.spillover) / 6;
     expect(c.health.hp[HEAD]).toBeCloseTo(35 - each);
     expect(c.health.hp[CHEST]).toBeCloseTo(85 - each);
     expect(c.health.hp[RIGHT_LEG]).toBeCloseTo(65 - each);
@@ -80,7 +80,7 @@ describe('damage', () => {
     const { state, c } = setup();
     const lost = dealDamage(state, c, LEFT_LEG, 75, 0);
     expect(c.health.hp[LEFT_LEG]).toBe(0);
-    expect(c.health.hp[CHEST]).toBeCloseTo(85 - (10 * HEALTH.spillover) / 5);
+    expect(c.health.hp[CHEST]).toBeCloseTo(85 - (10 * HEALTH.spillover) / 6);
     expect(lost).toBeCloseTo(65 + 10 * HEALTH.spillover);
   });
 
@@ -91,8 +91,8 @@ describe('damage', () => {
     const lost = dealDamage(state, c, LEFT_LEG, 50, 0);
     expect(c.health.dead).toBe(true);
     expect(c.health.hp[HEAD]).toBe(0);
-    // 35 spread over five zones is 7 each, but the head only had 1.
-    expect(lost).toBeCloseTo(1 + 4 * 7);
+    // 35 spread over six zones is 35/6 each, but the head only had 1.
+    expect(lost).toBeCloseTo(1 + (5 * 35) / 6);
   });
 
   it('kills at 0 head or chest HP, once', () => {

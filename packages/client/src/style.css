@@ -3123,6 +3123,11 @@ body:has(#raid:not([hidden])) #vitals {
   fill: var(--hit);
 }
 
+/* A face hit (GZ-3): a dark face on the lit head. */
+.combat-ghost > .face {
+  fill: rgb(0 0 0 / 0.45);
+}
+
 .combat-damage {
   display: flex;
   flex-direction: column;

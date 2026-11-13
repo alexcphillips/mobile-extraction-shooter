@@ -182,15 +182,10 @@ Aim sway makes careful shots frustrating (design/combat.md → Sights move). **S
 - 4 finished sessions in [roadmap-done.md](roadmap-done.md).
 
 ## Gear stats and hit zones (proposed 2026-11-11 by the user, design to confirm before building)
-GZ-3 after BW-4. GZ-2, GZ-4 and GZ-5 were done early (2026-11-12, the user's call) against today's hit zones; GZ-3 switches on their face and stomach coverage.
+- All 5 sessions finished, in [roadmap-done.md](roadmap-done.md).
 
-- 4 finished sessions in [roadmap-done.md](roadmap-done.md).
+**Every new stat goes into the item editor in the same session that adds it** (the user's note, 2026-11-12), so all of it can be configured there.
 
-**Every new stat goes into the item editor in the same session that adds it** (the user's note, 2026-11-12), so all of it can be configured there. Each session below lists its editor work; read tech/editors.md for each.
-
-- [ ] **GZ-3. Thorax, stomach and face (settled with the user, 2026-11-12).** Separate pools: **head 35 and thorax 85 are vital; a new stomach zone of 70 is not** (440 in all). The stomach gets its own capsule under the thorax. **Face** is an angle check on the head capsule (a hit from the front, below the brow), sharing the head's HP; it matters for coverage only. **A blacked stomach** spreads 1.5× of any further hit over the zones with HP left (limbs stay at 0.7). Until surgery: a stamina cap, slower stamina refill, shorter breath, and **pain noises at a running footstep's range (15 m) that enemies hear and locate**. Enemies with a blacked stomach make the noise too, but get no other debuff. No hydration or food, ever. Painkillers and timed injector effects are coming and will be able to quiet it. HUD body: a 7th zone. **The damage log and the post-raid kill log show stomach and face hits** (the user's note, 2026-11-12). Meds: the stomach goes into the treatment order; a medkit skips a blacked stomach, as it does broken limbs. Enemies aim at center mass or slightly above: tune from where shots land at 10, 25 and 50 m in the sim. **Measure shots to kill, unarmored and thorax-only, with an AKM at 10 and 25 m, before and after.** The user expects thorax-only armor to feel rough rather than tankier than today. After BW-4 (it needs stamina).
-  - **Since GZ-4 and GZ-5 (2026-11-12):** carriers already store `plateZones`/`softZones` with `stomach`, and `armorHit` (`sim/health.ts`) only checks the thorax: add the stomach there. A visor takes any frontal head hit by an angle test (`fromFront`, 70°): replace it with the face zone. Hits carry their origin (`fromX`, `fromZ`) already.
-  - **Read:** design/damage-and-health.md (Hit zones, Limbs, Healing, HUD); tech/shared-sim.md (hit zones); design/ai.md (hearing, aim).
 ## Magazines as items (planned 2026-11-12 with the user)
 Reverses "packing rounds into magazines, multiple mags" being out (design/overview.md): the user wants it because it's fun, and it makes rigs worth their slots. Loose rounds stay as what you pack from. Every number below is a first guess. Each session puts its new stats in the item editor.
 

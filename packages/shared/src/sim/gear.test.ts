@@ -247,8 +247,8 @@ describe('meds', () => {
     const chest = c.health.hp[CHEST]!;
     dealDamage(state, c, LEFT_LEG, 10, 0);
     expect(c.health.hp[LEFT_LEG]).toBe(0);
-    // Spread over head, chest and arms.
-    expect(c.health.hp[CHEST]).toBeCloseTo(chest - (10 * HEALTH.spillover) / 4);
+    // Spread over head, chest, arms and stomach.
+    expect(c.health.hp[CHEST]).toBeCloseTo(chest - (10 * HEALTH.spillover) / 5);
   });
 
   it('surgery brings a broken limb (splinted or not) back to 1 HP', () => {
@@ -295,8 +295,8 @@ describe('meds', () => {
     dealDamage(state, c, HEAD, 20, 0);
     dealDamage(state, c, LEFT_LEG, 100, 0);
     dealDamage(state, c, LEFT_ARM, 30, 0);
-    // The leg's spillover, (100 − 65) × 0.7 = 24.5, spread over the five other zones.
-    expect(c.health.hp[CHEST]).toBeCloseTo(85 - 4.9);
+    // The leg's spillover, (100 − 65) × 0.7 = 24.5, spread over the six other zones.
+    expect(c.health.hp[CHEST]).toBeCloseTo(85 - 24.5 / 6);
     useMed(c, items, treatments(c, items)[0]!);
     expect(c.health.hp[HEAD]).toBe(35);
     expect(c.health.hp[CHEST]).toBe(85);

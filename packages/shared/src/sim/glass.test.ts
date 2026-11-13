@@ -5,7 +5,7 @@ import { CollisionWorld, type GlassDef } from '../world/collision-world';
 import { spawnEnemy } from './ai';
 import { createItem } from './create-item';
 import { equip, heldWeapon } from './gear';
-import { CHEST } from './health';
+import { STOMACH } from './health';
 import {
   createState,
   eyeHeight,
@@ -100,7 +100,7 @@ describe('glass', () => {
       loudness: 12,
     });
     expect(state.events.find((e) => e.type === 'shot')).toMatchObject({ hit: 'character' });
-    expect(target.health.hp[CHEST]).toBeLessThan(85);
+    expect(target.health.hp[STOMACH]).toBeLessThan(70);
     expect(heldWeapon(shooter)?.mag).toBe(29);
   });
 

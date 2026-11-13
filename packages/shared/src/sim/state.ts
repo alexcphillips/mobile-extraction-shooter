@@ -1,5 +1,6 @@
 import { createRng, type Rng } from '../rng';
 import type { AiState, CalloutEvent, VoiceEvent } from './ai';
+import type { PainEvent } from './health';
 import type { CollisionWorld } from '../world/collision-world';
 import { createGear, type Gear, type Hand } from './gear';
 import type { DoorEvent, DoorState } from './doors';
@@ -151,6 +152,8 @@ export interface Character {
    */
   stamina?: number;
   winded?: boolean;
+  /** Seconds to its next groan while its stomach is blacked (GZ-3, painNoise); else missing. */
+  painIn?: number;
   /** Packing or unloading magazines (MG-2, sim/packing.ts); missing when not. */
   packing?: Packing;
   /** The switch it's holding the use button on, and for how many seconds so far. */
@@ -240,7 +243,8 @@ export type SimEvent =
   | PowerupEvent
   | CalloutEvent
   | VoiceEvent
-  | WireEvent;
+  | WireEvent
+  | PainEvent;
 
 /**
  * An admin gun's shot (WeaponDef.spawns) asking for an enemy of that type here, facing

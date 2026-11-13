@@ -16,7 +16,10 @@ import {
   LEFT_LEG,
   RIGHT_ARM,
   RIGHT_LEG,
+  STOMACH,
   isBleeding,
+  isLimb,
+  isVital,
   type Health,
   type Zone,
 } from './health';
@@ -28,6 +31,7 @@ import type { Character, PlayerInput, SimState } from './state';
 export const TREATMENT_ORDER: readonly Zone[] = [
   HEAD,
   CHEST,
+  STOMACH,
   LEFT_LEG,
   RIGHT_LEG,
   LEFT_ARM,
@@ -41,8 +45,6 @@ export const TREATMENT_ORDER: readonly Zone[] = [
  */
 export const EFFECT_PRIORITY: readonly MedEffect[] = ['bandage', 'splint', 'surgery', 'heal'];
 
-const isLimb = (zone: Zone): boolean => zone !== HEAD && zone !== CHEST;
-
 /** Whether an effect would do something for a zone. */
 export function needs(h: Health, zone: Zone, effect: MedEffect): boolean {
   const hp = h.hp[zone]!;
@@ -52,7 +54,8 @@ export function needs(h: Health, zone: Zone, effect: MedEffect): boolean {
     case 'splint':
       return isLimb(zone) && hp <= 0 && !h.splinted[zone];
     case 'surgery':
-      return isLimb(zone) && hp <= 0;
+      // A broken limb or a blacked stomach (GZ-3).
+      return !isVital(zone) && hp <= 0;
     case 'heal':
       return hp > 0 && hp < HEALTH.maxHp[zone]!;
   }

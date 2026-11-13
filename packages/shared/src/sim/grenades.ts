@@ -52,7 +52,7 @@ export const GRENADE = {
   /** Full damage out to this share of the radius, then falling off to nothing at it. */
   inner: 0.25,
   /** Each zone's share of the damage at the chest, by zone (the blast hits them all). */
-  zones: [0.6, 1, 0.8, 0.8, 0.9, 0.9],
+  zones: [0.6, 1, 0.8, 0.8, 0.9, 0.9, 1],
   /** The blast comes from this far above where it lies, so the floor doesn't hide it. */
   lift: 0.15,
   /** A flash blinds those looking within this angle of it (2026-10-31). */

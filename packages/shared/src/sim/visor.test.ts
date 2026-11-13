@@ -29,23 +29,36 @@ function setup() {
 }
 
 describe('visors', () => {
-  it('take a head hit from the front; from behind, the helmet does', () => {
+  it('take a face hit (GZ-3); any other head hit, the helmet does', () => {
     const { state, c } = setup();
     const helmet = c.gear.helmet!;
     helmet.fitted = createItem(items, 'visor');
-    woundZone(state, items, c, HEAD, 30, round, 0, 'shot', 0, -10);
+    woundZone(state, items, c, HEAD, 30, round, 0, 'shot', 0, -10, true);
     expect(helmet.fitted.durability).toBeLessThan(20);
     expect(helmet.durability).toBe(40);
-    woundZone(state, items, c, HEAD, 30, round, 0, 'shot', 0, 10);
+    // From the front, but over the brow.
+    woundZone(state, items, c, HEAD, 30, round, 0, 'shot', 0, -10);
     expect(helmet.durability).toBeLessThan(40);
   });
 
-  it('a broken visor lets the helmet take it', () => {
+  it('a face with no visor, or a broken one, is bare (GZ-3)', () => {
     const { state, c } = setup();
     const helmet = c.gear.helmet!;
     helmet.fitted = { ...createItem(items, 'visor'), durability: 0 };
-    woundZone(state, items, c, HEAD, 30, round, 0, 'shot', 0, -10);
-    expect(helmet.durability).toBeLessThan(40);
+    woundZone(state, items, c, HEAD, 30, round, 0, 'shot', 0, -10, true);
+    expect(helmet.durability).toBe(40);
+    expect(c.health.hp[HEAD]).toBe(5);
+    expect(state.events).toContainEqual(
+      expect.objectContaining({ type: 'damage', zone: HEAD, face: true, absorbed: 0 }),
+    );
+  });
+
+  it('a helmet that covers the face takes a face hit with no visor (GZ-3)', () => {
+    const { state, c } = setup();
+    equip(c, items, 'helmet', createArmor(items, 'mask-helmet'));
+    woundZone(state, items, c, HEAD, 30, round, 0, 'shot', 0, -10, true);
+    expect(c.gear.helmet!.durability).toBeLessThan(50);
+    expect(c.health.hp[HEAD]).toBe(35);
   });
 
   it('go on a helmet with the mount and come off again, keeping their wear', () => {

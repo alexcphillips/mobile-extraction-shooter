@@ -1,4 +1,14 @@
-import { CHEST, HEAD, LEFT_ARM, LEFT_LEG, RIGHT_ARM, RIGHT_LEG, type Zone } from './health';
+import {
+  CHEST,
+  HEAD,
+  LEFT_ARM,
+  LEFT_LEG,
+  RIGHT_ARM,
+  RIGHT_LEG,
+  STOMACH,
+  fromFront,
+  type Zone,
+} from './health';
 import { MOVEMENT } from './movement';
 import type { Character, EntityId, SimState } from './state';
 
@@ -19,15 +29,19 @@ export interface HitCapsule {
 
 /**
  * Matched to the drawn body in session 8b. The chest is two capsules side by side, so it's
- * wider than deep like a torso. Arms are held forward with a gun, as armed characters
+ * wider than deep like a torso. Since GZ-3 it's the thorax only, from the shoulders to
+ * about 1.11 m, and the stomach is two more under it, down to the hips (where the chest
+ * used to reach, 0.86 m); where they meet, whichever surface a ray reaches first. Arms are held forward with a gun, as armed characters
  * nearly always are: upper arms down from the shoulders to the elbows, forearms in to the
  * hands in front of the chest, so from the front they cover part of it. Measured from the
  * body holding a rifle and a pistol, aimed and at the low ready.
  */
 export const HIT_CAPSULES: readonly HitCapsule[] = [
   { zone: HEAD, a: [0.04, 1.58, 0.035], b: [0.04, 1.655, 0.035], radius: 0.125 },
-  { zone: CHEST, a: [-0.06, 0.98, 0], b: [-0.06, 1.36, 0], radius: 0.125 },
-  { zone: CHEST, a: [0.06, 0.98, 0], b: [0.06, 1.36, 0], radius: 0.125 },
+  { zone: CHEST, a: [-0.06, 1.17, 0], b: [-0.06, 1.36, 0], radius: 0.125 },
+  { zone: CHEST, a: [0.06, 1.17, 0], b: [0.06, 1.36, 0], radius: 0.125 },
+  { zone: STOMACH, a: [-0.06, 0.98, 0], b: [-0.06, 1.05, 0], radius: 0.12 },
+  { zone: STOMACH, a: [0.06, 0.98, 0], b: [0.06, 1.05, 0], radius: 0.12 },
   { zone: LEFT_ARM, a: [-0.16, 1.36, -0.03], b: [-0.14, 1.13, 0.02], radius: 0.065 },
   { zone: LEFT_ARM, a: [-0.14, 1.13, 0.02], b: [0.05, 1.24, 0.22], radius: 0.055 },
   { zone: RIGHT_ARM, a: [0.22, 1.35, -0.12], b: [0.27, 1.14, -0.1], radius: 0.065 },
@@ -112,10 +126,16 @@ export interface CharacterHit {
   id: EntityId;
   zone: Zone;
   distance: number;
+  /**
+   * A head hit to the face (GZ-3): from within 70° of where the body faces (fromFront) and
+   * under the brow, the head capsule's upper end. It shares the head's HP; only armor
+   * cares (a visor, or a helmet that covers the face).
+   */
+  face: boolean;
 }
 
 export function createCharacterHit(): CharacterHit {
-  return { id: 0, zone: CHEST, distance: Infinity };
+  return { id: 0, zone: CHEST, distance: Infinity, face: false };
 }
 
 // Scratch: capsule ends in world space.
@@ -198,6 +218,8 @@ export function raycastCharacters(
   let best = maxDist;
   let bestId = 0;
   let bestZone: Zone = CHEST;
+  let bestChar: Character | null = null;
+  let brow = 0;
   for (const c of state.entities) {
     if (c.id === skip || c.health.dead) continue;
     const half = c.height / 2;
@@ -209,6 +231,8 @@ export function raycastCharacters(
         best = t;
         bestId = c.id;
         bestZone = cap.zone;
+        bestChar = c;
+        brow = B[1]!;
       }
     }
   }
@@ -217,6 +241,8 @@ export function raycastCharacters(
     hit.id = bestId;
     hit.zone = bestZone;
     hit.distance = distance;
+    hit.face =
+      bestZone === HEAD && !!bestChar && oy + dy * best < brow && fromFront(bestChar, ox, oz);
   }
   return distance;
 }

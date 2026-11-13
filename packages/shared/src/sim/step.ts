@@ -7,7 +7,7 @@ import { updateSquads } from './squads';
 import { syncDoors, useDoor } from './doors';
 import { holdSwitch, tickSwitches } from './switches';
 import { syncGlass } from './glass';
-import { applyFall, bleed } from './health';
+import { applyFall, bleed, painNoise } from './health';
 import { TICK_SECONDS } from '../tick';
 import { updateExtinguish, updateFire } from './fire';
 import { switchHand } from './gear';
@@ -110,7 +110,10 @@ export function step(
   updateGrenades(state, world, items);
   // Flames fly and land, fire on the map burns down, and those alight burn.
   updateFire(state, world, items);
-  for (const e of state.entities) bleed(state, e);
+  for (const e of state.entities) {
+    bleed(state, e);
+    painNoise(state, e);
+  }
   // Zombies mode: points, clearing away the dead and the rounds, before the new ones think.
   if (nav) updateZombies(state, world, items, nav);
   if (nav) updateAi(state, world, items, nav);

@@ -51,6 +51,8 @@ import {
   LEFT_LEG,
   RIGHT_ARM,
   RIGHT_LEG,
+  STOMACH,
+  stomachBlacked,
   isBleeding,
   isBroken,
 } from '@mes/shared';
@@ -164,7 +166,8 @@ export function RaidScreen({ inv, version, ctx }: Props & { ctx: RaidContext }):
 /**
  * Your health while the raid screen is open (2026-11-06): the HUD's body is too tall for
  * the top bar on a phone, so it hides, and this small one sits in the bar instead. Each
- * zone in its color (bleeding ones pulse), and chips for bleeding and broken limbs; no
+ * zone in its color (bleeding ones pulse), and chips for bleeding, broken limbs and a
+ * blacked stomach; no
  * total, as on the HUD.
  */
 function HealthStrip({ c }: { c: Character }): ReactNode {
@@ -181,7 +184,7 @@ function HealthStrip({ c }: { c: Character }): ReactNode {
       className="raid-health"
       role="img"
       aria-label={`Head ${hp(HEAD)}, chest ${hp(CHEST)}${isBleeding(h) ? ', bleeding' : ''}${broken ? `, ${broken} broken` : ''}`}
-      title={`Head ${hp(HEAD)} · Chest ${hp(CHEST)} · Arms ${hp(LEFT_ARM)}/${hp(RIGHT_ARM)} · Legs ${hp(LEFT_LEG)}/${hp(RIGHT_LEG)}`}
+      title={`Head ${hp(HEAD)} · Chest ${hp(CHEST)} · Stomach ${hp(STOMACH)} · Arms ${hp(LEFT_ARM)}/${hp(RIGHT_ARM)} · Legs ${hp(LEFT_LEG)}/${hp(RIGHT_LEG)}`}
     >
       <svg viewBox="16 0 32 60" width="16" height="28" aria-hidden>
         <circle cx="32" cy="6" r="5" fill={fill(HEAD)} className={bleed(HEAD)} />
@@ -189,10 +192,19 @@ function HealthStrip({ c }: { c: Character }): ReactNode {
           x="26"
           y="13"
           width="12"
-          height="19"
+          height="11.5"
           rx="1.5"
           fill={fill(CHEST)}
           className={bleed(CHEST)}
+        />
+        <rect
+          x="26"
+          y="25"
+          width="12"
+          height="7"
+          rx="1.5"
+          fill={fill(STOMACH)}
+          className={bleed(STOMACH)}
         />
         <rect
           x="39.5"
@@ -238,6 +250,7 @@ function HealthStrip({ c }: { c: Character }): ReactNode {
       </span>
       {isBleeding(h) && <span className="chip bleed">🩸</span>}
       {broken > 0 && <span className="chip">🦴{broken > 1 ? ` ×${broken}` : ''}</span>}
+      {stomachBlacked(h) && <span className="chip">🤢</span>}
     </span>
   );
 }

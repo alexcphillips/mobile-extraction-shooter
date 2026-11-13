@@ -112,6 +112,14 @@ Items (loot, guns, gear) are `model.parts` in their `content/items` JSON, drawn 
   4. Run the tests (`npx vitest run`, Node 22.23.4): the content test validates every item.
   5. Say what was seen and what wasn't, and ask the user how it looks in the game.
 
+## Worn gear (2026-11-12)
+Helmets, visors, headsets, armor, rigs and backpacks make up the character, aimed at the look target in [design/overview.md](design/overview.md) → Characters. The item model rules above apply; on top of them:
+- **Facet, don't round.** The look is flat planes meeting at hard edges: wedges and boxes turned a few degrees, and 5–8-sided cylinders, not smooth many-sided shells. Per-face shading only shows facets that face different ways.
+- **Mind the shading formula** (`packages/client/src/render/shade.ts`, and the character shader copies it): faces turned left and right of the camera get the same shade (it uses |x|), and faces turned only toward or away from the camera barely differ. Facets read best when they tilt up or down. Open question with the user: whether worn gear gets a one-sided light term.
+- **What reads at a distance:** the helmet's outline and rails, a dark lens band across the face, the mag pouch row across the chest, two shades per piece (as above). Details under 1 cm vanish on a body across a room.
+- **Budget:** worn gear 1,200 triangles each (`item-editor/budget.ts`); six worn pieces at full budget plus a long gun is over 9,000 before the body, so most pieces should come in well under.
+- **No scratches, scuffs, grime or blood**, not even as 1 mm decals.
+
 ## Item palette (2026-11-09, IE-2)
 The item editor's "house" swatches (`item-editor/palette.ts`), taken from the colors the content's items use most. Start a new item from these; keep two shades per material as for props.
 

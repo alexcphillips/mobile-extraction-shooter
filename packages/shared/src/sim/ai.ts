@@ -25,7 +25,7 @@ import {
   throwable,
   type Grenade,
 } from './grenades';
-import { HEALTH, LEFT_ARM, RIGHT_LEG, TOTAL_HP, totalHp } from './health';
+import { HEALTH, LEFT_ARM, RIGHT_LEG, TOTAL_HP, isLimb, totalHp, type Zone } from './health';
 import { zoneToTreat, type MedRef } from './meds';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import { MOVEMENT } from './movement';
@@ -232,6 +232,11 @@ export const AI = {
    * Its aim wanders aimVertical as much up and down as across. Measured standing in the open
    * (PMC at 10 / 15 / 25 m): chest 84 / 70 / 43%, arms 16 / 25 / 45%, head 0 / 5 / 13%, legs
    * none (were 0 / 8 / 18%, aiming at 0.6 with 0.7 vertical wander).
+   * GZ-3 (2026-11-12, client/src/shots-to-kill.measure.test.ts: a PMC's AKM on someone
+   * standing still facing it, hits that landed, at 10 / 25 / 50 m): thorax 30 / 41 / 38%,
+   * stomach 17 / 9 / 13%, face 13 / 18 / 7%, head 9 / 2 / 4%, arms 27 / 26 / 33%, legs 5 / 4 /
+   * 5%. Kept here, over the thorax: aiming at the middle of the torso (0.65) put a fifth of
+   * hits in the legs and took twice the hits to kill through a plate carrier.
    */
   aimHeight: 0.75,
   aimVertical: 0.45,
@@ -1585,6 +1590,17 @@ function hearEvents(
       heardExplosion(state, c, ai, world, ev.x, ev.y, ev.z, ev.loudness * scale, ev.by);
       continue;
     }
+    if (ev.type === 'pain') {
+      // A player's blacked stomach groaning (GZ-3): heard as far as sprinting footsteps,
+      // walls or not, and placed as they are. Enemies' groans are for players only.
+      const by = entityById(state, ev.by);
+      if (!by || by.ai || by.health.dead || by.admin?.peaceful) continue;
+      const d = Math.hypot(by.x - c.x, by.y - c.y, by.z - c.z);
+      if (d > AI.sprintSteps * (ai.skill.hearing ?? 1)) continue;
+      if (ai.awareness !== 'alert') heardAt(state, c, ai, by, d, true);
+      else if (by.id === ai.target) setFocus(ai, by.x, by.y, by.z);
+      continue;
+    }
     if (ev.type === 'glass') {
       // Glass breaking: go and look, as for a blast. An ally's isn't worth it.
       const by = entityById(state, ev.by);
@@ -2871,7 +2887,7 @@ function pickMed(c: Character, items: ItemDb): MedRef | null {
   let low = totalHp(h) < TOTAL_HP * HEAL.hpShare;
   for (let z = 0; z < h.hp.length; z++) {
     if (h.bleeding[z]) bleeding = true;
-    if (z >= LEFT_ARM && h.hp[z]! <= 0 && !h.splinted[z]) broken = true;
+    if (isLimb(z as Zone) && h.hp[z]! <= 0 && !h.splinted[z]) broken = true;
     if (h.hp[z]! > 0 && h.hp[z]! < HEALTH.maxHp[z]! * HEAL.zoneShare) low = true;
   }
   // A medkit only mends a zone with HP left (a broken limb is down to 0).

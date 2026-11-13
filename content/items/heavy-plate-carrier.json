@@ -13,6 +13,7 @@
   "repairLoss": 0.09,
   "carrier": {
     "plates": ["front", "back"],
+    "plateZones": ["thorax", "stomach"],
     "softZones": [],
     "comesWith": {
       "front": "ceramic-plate-5",

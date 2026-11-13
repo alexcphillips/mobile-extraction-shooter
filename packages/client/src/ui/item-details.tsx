@@ -599,6 +599,7 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
         // GZ-2: hearing, the ears covered, what it takes of the view.
         ...(def.hearing ? [['Hearing', hearingText(def.hearing)] as Row] : []),
         ...(def.blocksHeadset ? [['Ears', 'covered: no headset with it'] as Row] : []),
+        ...(def.coversFace ? [['Face', 'covered, visor or not'] as Row] : []),
         ...(def.vision?.shape || def.vision?.vignette
           ? [
               [

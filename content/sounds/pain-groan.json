@@ -1,0 +1,67 @@
+{
+  "formatVersion": 1,
+  "id": "pain-groan",
+  "name": "Pain groan",
+  "gain": 0.8,
+  "range": 15,
+  "pitchJitter": 0.08,
+  "layers": [
+    {
+      "source": "noise",
+      "color": "pink",
+      "at": 0,
+      "attack": 0.005,
+      "hold": 0.03,
+      "decay": 0.09,
+      "curve": 2,
+      "gain": 0.55,
+      "filter": { "type": "bandpass", "freq": [900, 600], "q": 1.4 }
+    },
+    {
+      "source": "noise",
+      "color": "pink",
+      "at": 0.2,
+      "attack": 0.005,
+      "hold": 0.02,
+      "decay": 0.08,
+      "curve": 2,
+      "gain": 0.4,
+      "filter": { "type": "bandpass", "freq": [800, 550], "q": 1.4 }
+    },
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [128, 92],
+      "at": 0.4,
+      "attack": 0.08,
+      "hold": 0.35,
+      "decay": 0.25,
+      "curve": 1.5,
+      "gain": 0.45,
+      "drive": 0.25,
+      "filter": { "type": "bandpass", "freq": [620, 420], "q": 2.2 }
+    },
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [128, 92],
+      "at": 0.4,
+      "attack": 0.08,
+      "hold": 0.35,
+      "decay": 0.25,
+      "curve": 1.5,
+      "gain": 0.12,
+      "filter": { "type": "bandpass", "freq": [1300, 900], "q": 3 }
+    },
+    {
+      "source": "noise",
+      "color": "brown",
+      "at": 0.4,
+      "attack": 0.1,
+      "hold": 0.3,
+      "decay": 0.25,
+      "gain": 0.12,
+      "filter": { "type": "lowpass", "freq": [700, 500], "q": 0.7 }
+    }
+  ]
+}

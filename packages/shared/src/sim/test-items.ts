@@ -324,6 +324,15 @@ const defs = [
     vision: { shape: 'slit' },
     visor: true,
   },
+  // GZ-3: a full mask, covering the face itself.
+  {
+    ...common('mask-helmet', [2, 2]),
+    type: 'armor',
+    slot: 'helmet',
+    level: 5,
+    durability: 50,
+    coversFace: true,
+  },
   // GZ-4: plates, a carrier that comes with a front plate, and a bulky one.
   { ...common('plate-4', [2, 2]), type: 'plate', level: 4, durability: 40 },
   { ...common('plate-2', [2, 2]), type: 'plate', level: 2, durability: 40 },

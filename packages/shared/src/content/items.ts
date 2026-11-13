@@ -424,7 +424,7 @@ const armorStats = {
 /** A carrier's plate slots (GZ-4): front and back, no sides. */
 export const PLATE_SIDES = ['front', 'back'] as const;
 export type PlateSide = (typeof PLATE_SIDES)[number];
-/** The zones a carrier can cover (GZ-4); the stomach counts once GZ-3 adds it. */
+/** The zones a carrier can cover (GZ-4; the stomach since GZ-3). */
 export const COVER_ZONES = ['thorax', 'stomach'] as const;
 export type CoverZone = (typeof COVER_ZONES)[number];
 /** A plate's material (GZ-4): the item editor's preset; the stats are what count. */
@@ -517,6 +517,11 @@ const armorSchema = z
     /** Helmets (GZ-2): what it takes of the view. */
     vision: visionSchema.optional(),
     /**
+     * Helmets (GZ-3): it covers the face too (a full mask, Jug's), so a face hit with no
+     * visor fitted meets it. Without it, a face hit with no visor is bare.
+     */
+    coversFace: z.literal(true).optional(),
+    /**
      * Helmets (GZ-5): the mounts it has, a visor's and night vision's. Only one thing is
      * fitted at a time, whichever it is (Item.fitted).
      */
@@ -540,9 +545,9 @@ const armorSchema = z
   .refine(
     (a) =>
       a.slot === 'helmet' ||
-      (!a.hearing && !a.blocksHeadset && !a.vision && !a.visor && !a.nightVision),
+      (!a.hearing && !a.blocksHeadset && !a.vision && !a.visor && !a.nightVision && !a.coversFace),
     {
-      message: 'only a helmet has hearing, blocksHeadset, vision or mounts',
+      message: 'only a helmet has hearing, blocksHeadset, vision, coversFace or mounts',
       path: ['hearing'],
     },
   )
@@ -556,8 +561,8 @@ const armorSchema = z
   });
 
 /**
- * A visor (GZ-5): fitted to a helmet with a visor mount, it's armor for the face (a head
- * hit from the front, until GZ-3's face zone) with its own level and durability, and its
+ * A visor (GZ-5): fitted to a helmet with a visor mount, it's armor for the face (GZ-3: a
+ * head hit from the front, under the brow) with its own level and durability, and its
  * own view. Cracks spread over that view as it wears (drawn by the client).
  */
 const visorSchema = z.strictObject({

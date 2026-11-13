@@ -3,7 +3,17 @@ import { weaponDef, type AmmoDef } from '../content/items';
 import { createRng, nextFloat } from '../rng';
 import { TICK_RATE } from '../tick';
 import { CollisionWorld } from '../world/collision-world';
-import { CHEST, HEAD, LEFT_ARM, LEFT_LEG, RIGHT_ARM, RIGHT_LEG, TOTAL_HP, totalHp } from './health';
+import {
+  CHEST,
+  HEAD,
+  LEFT_ARM,
+  LEFT_LEG,
+  RIGHT_ARM,
+  RIGHT_LEG,
+  STOMACH,
+  TOTAL_HP,
+  totalHp,
+} from './health';
 import {
   HIT_CAPSULES,
   capsuleEnds,
@@ -149,13 +159,30 @@ describe('hit zones', () => {
     // Facing −x, towards the shots, so its right is −z.
     const { state } = target(Math.PI / 2);
     expect(zoneAt(state, 1.62, 0)).toBe(HEAD);
-    expect(zoneAt(state, 1.0, 0)).toBe(CHEST);
+    // GZ-3: the thorax over the stomach.
+    expect(zoneAt(state, 1.4, 0)).toBe(CHEST);
+    expect(zoneAt(state, 1.0, 0)).toBe(STOMACH);
     // The forearms, held forward in front of the chest.
     expect(zoneAt(state, 1.185, 0.045)).toBe(LEFT_ARM);
     expect(zoneAt(state, 1.2, -0.2)).toBe(RIGHT_ARM);
     expect(zoneAt(state, 0.5, 0.11)).toBe(LEFT_LEG);
     expect(zoneAt(state, 0.5, -0.11)).toBe(RIGHT_LEG);
     expect(zoneAt(state, 2.0, 0)).toBe(null);
+  });
+
+  it('counts a head hit from the front under the brow as the face (GZ-3)', () => {
+    const face = (yaw: number, y: number): boolean | null => {
+      const { state } = target(yaw);
+      const hit = createCharacterHit();
+      raycastCharacters(state, -10, y, 0, 1, 0, 0, 100, 0, hit);
+      return hit.zone === HEAD ? hit.face : null;
+    };
+    // Facing the shots (−x): under the brow is the face, over it isn't.
+    expect(face(Math.PI / 2, 1.6)).toBe(true);
+    expect(face(Math.PI / 2, 1.72)).toBe(false);
+    // From behind or the side, never.
+    expect(face(-Math.PI / 2, 1.6)).toBe(false);
+    expect(face(0, 1.6)).toBe(false);
   });
 
   it('turns with yaw', () => {
@@ -246,10 +273,10 @@ describe('firing', () => {
   it('hits what it aims at and leaves an event', () => {
     const { world, state, shooter, target } = range();
     giveWeapon(shooter, TEST_ITEMS, 'rifle');
-    // The chest, below the arms held in front of it.
+    // The stomach, below the arms held in front of the chest.
     const aim = lookAt(shooter, 0, 1.0, 0);
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ ...aim, fire: true }) });
-    expect(target.health.hp[CHEST]).toBe(85 - 40);
+    expect(target.health.hp[STOMACH]).toBe(70 - 40);
     expect(heldWeapon(shooter)?.mag).toBe(29);
     const shot = state.events.find((e) => e.type === 'shot');
     expect(shot).toMatchObject({ by: shooter.id, hit: 'character', target: target.id });
@@ -444,8 +471,8 @@ describe('firing', () => {
     const shots = state.events.filter((e) => e.type === 'shot');
     expect(shots.map((e) => e.pellet)).toEqual([0, 1, 2, 3, 4, 5]);
     expect(shots.every((e) => e.hit === 'character')).toBe(true);
-    // No spread: all six land in the chest.
-    expect(target.health.hp[CHEST]).toBe(85 - 6 * 5);
+    // No spread: all six land in the stomach.
+    expect(target.health.hp[STOMACH]).toBe(70 - 6 * 5);
     expect(heldWeapon(shooter)?.mag).toBe(3);
     // One first-round kick of 2°, worn off for a tick at the in-burst rate.
     const kick =
