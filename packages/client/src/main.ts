@@ -280,7 +280,7 @@ function playElements(): PlayElements {
     stats: byId('stats'),
     hud,
     optic: new OpticOverlay(byId('optic')),
-    vitals: new Vitals(byId('vitals'), byId('ammo'), byId('hurt')),
+    vitals: new Vitals(byId('vitals'), byId('ammo'), byId('hurt'), byId('pain')),
     hitDirection: new HitDirection(byId('hit-dir')),
     raidHud: new RaidHud(
       byId('timer'),

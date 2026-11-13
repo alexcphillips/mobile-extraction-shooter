@@ -6,6 +6,7 @@ import { CollisionWorld } from '../world/collision-world';
 import {
   CHEST,
   HEAD,
+  HEALTH,
   LEFT_ARM,
   LEFT_LEG,
   RIGHT_ARM,
@@ -316,6 +317,46 @@ describe('firing', () => {
     for (let i = 0; i < TICK_RATE; i++)
       step(state, world, TEST_ITEMS, { [shooter.id]: { ...hold, yaw: 0.5 } });
     expect(Math.abs(shooter.lagYaw!)).toBeLessThan(1e-3);
+  });
+
+  describe('feeling hurt (PS-1)', () => {
+    const DEG = Math.PI / 180;
+    /** Two shooters aimed in for a second, stepped in lockstep from here. */
+    function pair() {
+      const a = range();
+      const b = range();
+      for (const s of [a, b]) giveWeapon(s.shooter, TEST_ITEMS, 'rifle');
+      const tick = () => {
+        for (const s of [a, b])
+          step(s.state, s.world, TEST_ITEMS, {
+            [s.shooter.id]: input({ pitch: 1, aim: true }),
+          });
+      };
+      for (let i = 0; i < TICK_RATE; i++) tick();
+      return { a: a.shooter, b: b.shooter, tick };
+    }
+
+    it('low stamina sways more', () => {
+      const { a, b, tick } = pair();
+      b.stamina = 0;
+      tick();
+      expect(Math.abs(b.swayYaw!)).toBeGreaterThan(Math.abs(a.swayYaw!) * 1.7);
+    });
+
+    it('badly hurt adds a faint tremor, not before', () => {
+      const { a, b, tick } = pair();
+      b.health.hp[CHEST] = HEALTH.maxHp[CHEST]! * HEALTH.badlyHurt + 1;
+      tick();
+      expect(b.swayYaw).toBe(a.swayYaw);
+      b.health.hp[CHEST] = HEALTH.maxHp[CHEST]! * HEALTH.badlyHurt - 1;
+      let most = 0;
+      for (let i = 0; i < TICK_RATE; i++) {
+        tick();
+        most = Math.max(most, Math.abs(b.swayYaw! - a.swayYaw!));
+      }
+      expect(most).toBeGreaterThan(0.03 * DEG);
+      expect(most).toBeLessThan(0.1 * DEG);
+    });
   });
 
   describe('breath', () => {

@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { DEFAULT_OUTFIT } from './character';
 import { TriangleBuilder } from './geometry';
 import { gunKey, gunModel, knifeModel } from './gun-model';
-import { shadedMaterial } from './material';
+import { itemMaterial } from './material';
 
 /** A box from one point to another (in the gun's frame), as thick as given: a limb. */
 function limb(
@@ -104,7 +104,7 @@ export class Viewmodel {
   private slashMs = SLASH_MS;
 
   constructor(private readonly outfit: Outfit = DEFAULT_OUTFIT) {
-    this.model = new THREE.Mesh(new THREE.BufferGeometry(), shadedMaterial());
+    this.model = new THREE.Mesh(new THREE.BufferGeometry(), itemMaterial());
     this.flash = new THREE.Mesh(
       new THREE.BoxGeometry(0.06, 0.06, 0.08),
       new THREE.MeshBasicMaterial({ color: 0xffd36b }),

@@ -32,6 +32,8 @@ export const GAME_SOUNDS = {
   death: 'death',
   /** A blacked stomach's cough and groan (GZ-3), yours or anyone's. */
   pain: 'pain-groan',
+  /** Your own breathing when badly hurt (PS-1): heard only by you. */
+  heavyBreath: 'heavy-breathe',
   /** Taking out what's in your hands. */
   draw: 'draw',
   /** Each second of the extraction countdown, and getting out. */

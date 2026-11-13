@@ -11,7 +11,7 @@ import {
 } from '@mes/shared';
 import * as THREE from 'three';
 import { TriangleBuilder } from './geometry';
-import { shadedMaterial } from './material';
+import { itemMaterial } from './material';
 
 /** At most this many grenades drawn at once; more are rare, and skipped. */
 const GRENADES = 8;
@@ -127,7 +127,7 @@ export class GrenadeViews {
     private readonly items: ItemDb,
     private readonly world: CollisionWorld,
   ) {
-    const material = shadedMaterial();
+    const material = itemMaterial();
     for (let i = 0; i < GRENADES; i++) {
       const m = new THREE.Mesh(new THREE.BufferGeometry(), material);
       m.visible = false;

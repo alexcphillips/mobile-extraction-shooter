@@ -147,6 +147,16 @@ Tools for building many maps together: faster loops, better-measured layouts, le
 
 **Token habits for map sessions** (in force now; CLAUDE.md's lean-token rule applied to maps): query maps and prefabs with scripts (`map-report`, `prefabs.mjs`, a `node -e` over the JSON), never read a map file; read a map's summary in its design file, then search; one report table per check, not logs; roadmap notes a few lines, detail in the map's design file.
 
+## Characters: our own body and animations (planned 2026-11-12 with the user)
+Replace the Quaternius mannequin and clips with our own, **before the real armor and equipment models**, so gear is modeled against the final body. The pack is CC0, so this is for fit and look, not licensing. **Claude authors the body, poses and clips; the user only reviews and makes tiny tweaks** in a small editor. Design: design/overview.md → Characters (look target, body plan). Read: that section, tech/client.md (character rendering), [props.md](props.md) → Worn gear.
+
+- [ ] **CH-1. The rigid body.** One faceted piece per bone, in item-model parts (`content/characters/`), on the current skeleton and bone names so today's clips still play. Built around a fixed head volume matching the sim's head zone. Full helmets get `hidesHead` and the head isn't drawn; open helmets show it. Still one merged mesh and one draw call per character. Scavs without armor wear a cheap uniform layer (jacket, chest rig) so the bare body is rarely seen.
+- [ ] **CH-2. Fit check and one test kit.** A fit report (`scripts/anim-check.mjs --fit`): for each worn item, how deep body pieces poke through it, worst frame of every clip. Then one helmet (the look target's), one plate carrier and one rig built in the target style. **The user approves the look here** before more gear or animation work.
+- [ ] **CH-3. Animation tools for Claude.** Clips as JSON in `content/animations/`: keyed bone rotations in degrees, and lower-body or upper-body layers. Cycles (walk, run, crawl) come from a gait generator with a few numbers (stride, cadence, bounce, arm swing, lean), mirrored left to right. `scripts/anim-shot.mjs <clip>` renders a filmstrip (frames across the clip, side and front, ground line) and foot and hand trails. `anim-check` prints a table: foot slide while planted, feet through the floor, hands off the grip or magazine, joint limits, the jump at the loop seam. The user's editor: pick a clip, play and scrub, speed, the generator's sliders, nudge one bone on one key, all saved to the same JSON.
+- [ ] **CH-4. Legs and stance.** Idle, walk, run, sprint; crouch idle and walk; prone idle and crawl; jump; vault; death. Replaces the pack's clips.
+- [ ] **CH-5. Upper-body actions,** played over any stance: aim and low ready, reload per gun class, knife ready and slash, grenade throw, each med, packing mags. Recoil, hands on the gun (IK) and turning to the aim stay in code. No animations for searching, levers or anything else that tells another player nothing.
+- [ ] **CH-6. Drop the pack.** Remove the mannequin and its clips, and update the docs.
+
 ## District (planned 2026-11-12 with the user; "Northpoint v2" while planning)
 A new map, **replacing Northpoint (the user's call, 2026-11-12)**: **a suburban commercial district built on a hill, with the mall at its center**, built from scratch by generator script (the Silver Creek way) into `content/maps/district.json`. **Northpoint is not touched**; which one stays is decided after v2 plays. Story: **an evacuation point that was overrun**. Areas, size, in-between rules and building depths: design/maps/district.md (every DS session reads its summary first). As before, the user places spawns and loot.
 
@@ -197,12 +207,33 @@ A gun's grid size follows its state, and stocks become parts you swap. Each chan
 - 2 finished sessions in [roadmap-done.md](roadmap-done.md); none left.
 
 ## Pain and tremors (planned 2026-11-12 with the user)
-Needs timed effects and painkillers (planned by the user, not yet a session) for some of it.
+Painkillers hiding it come with Painkillers and injectors (below).
 
-- [ ] **PS-1. Feeling hurt.** Broken arms already add sway (×3 one, ×5 both) and slow aiming (×1.5 each); **painkillers will hide it** for their duration, and surgery fixes it. **Low stamina** adds sway and shorter breath (BW-4). **Low health** (thorax or head under about 30%): a faint tremor in the sway and heavy breathing you hear. A **blacked stomach** is GZ-3 (cough and groans, which enemies hear), plus a subtle pain effect at the screen's edges. No energy or hydration (the user's call). The pain edge effect is one cheap overlay pass, never a real blur.
-  - **Read:** design/damage-and-health.md (Limbs, HUD); design/combat.md (Sights move); tech/client.md.
+- 1 finished session in [roadmap-done.md](roadmap-done.md); none open.
 
 **No suppression effects** (near misses blurring or muffling): dropped by the user, 2026-11-12. **Enemies get no headset hearing**: the cough's range does the job (the user's OK).
+
+## Painkillers and injectors (planned 2026-11-12 with the user)
+Consumables that give **timed effects**: painkillers hide pain, injectors boost (or cost) something for a while. They go in the sim (`packages/shared`), so co-op hosts agree. The Hangar's rule holds: only items change your character, and only in a raid (hangar.md). Each session puts its new stats in the item editor. Sessions after PK-1 are a first cut; PK-1 may reshape them.
+
+- [ ] **PK-1. Finish the design with the user.** No code. Settle the questions below, write the answers into design/damage-and-health.md (a new Timed effects part) and tech/items-and-inventory.md, then rewrite PK-2 onward to fit.
+  - **Read:** design/damage-and-health.md (Limbs, Healing, Feeling hurt); design/combat.md (Sights move); design/movement.md (Stamina); hangar.md (Trauma bay); tech/items-and-inventory.md (meds).
+  - **Questions, most important first** (Claude's suggested default in brackets):
+    1. **What does a painkiller cost you?** With no downside it just switches PS-1 off. [It lasts a while (about 2–4 minutes), and as it wears off you get a short tremor; no other cost.]
+    2. **What does a painkiller hide?** Broken-arm sway and aim time, the low-health tremor and breathing, the pain edge? **Does it quiet the blacked stomach's groans that enemies hear?** That one changes fights. [All of PS-1 and the arms' sway, but not the arms' aim time; groans quieter (half the range), not gone.]
+    3. **Which injectors, and what each does.** Candidates: stamina (longer sprint, faster refill), steady aim (longer breath, less sway), regen (slow HP back on non-blacked zones), stop bleeding, carry more weight, faster healing. [4–5 to start, each with one benefit and one side effect (tremor, stamina drain, slower aim, a little HP loss; never hunger or thirst, which the game has none of).]
+    4. **Stacking:** the same one twice (refresh, extend or nothing), different ones together, an overdose rule? [Same one refreshes the timer; different ones stack; no overdose.]
+    5. **Using them:** use time, can you move or aim while injecting, do they go in the heal picker or their own slot or button? The controller has no buttons left (PC controller notes). [Injectors ~1.5 s, pills ~2 s, walking allowed; they join the heal picker (hold heal), never the tap heal.]
+    6. **Do enemies use them?** PMCs popping painkillers and a stim when hurt would make them tougher. [PMCs use painkillers only, later, in an AI session; scavs and Jug don't.]
+    7. **HUD:** effect icons with time left, and a tell when one is about to end. [A row of small icons under the body with a ring for time left, blinking the last 10 s.]
+    8. **Where they come from:** loot rarity, vendors, quests, Trauma bay crafting (hangar.md). [Painkillers common in medical loot and sold by the medic; injectors rare loot and craftable; none sold early.]
+    9. **Duration ticks in the sim, not the client**, and effects end at extraction and death (nothing carries out of a raid). [Yes.] Zombies mode: behind a flag, off by default (zombies-left-alone).
+- [ ] **PK-2. Timed effects and painkillers.** A sim system for timed effects on a character (start, tick, end, saved in state, no per-frame allocation), the effect kinds PK-1 settles for painkillers, the hook in `updateSway`, a painkiller item or two, use from the heal picker, item editor fields, tests.
+  - **Read:** design/damage-and-health.md (Timed effects); tech/shared-sim.md; tech/items-and-inventory.md; tech/editors.md.
+- [ ] **PK-3. Injectors.** The injectors PK-1 picks, their benefits and side effects on the PK-2 system, the HUD effect icons, item models in the house style, item editor fields, tests.
+  - **Read:** design/damage-and-health.md (Timed effects); docs/props.md (item models); tech/editors.md.
+- [ ] **PK-4. Into the game.** Loot tables, vendor stock, quests if any, and Trauma bay recipes if PK-1 says so.
+  - **Read:** design/damage-and-health.md (Timed effects); hangar.md (Trauma bay).
 
 ## Replays: death replay and recorded sessions (planned 2026-11-12 with the user)
 The sim runs at 30 ticks a second from inputs with seeded random numbers, but **bit-exact determinism was never required** (tech/shared-sim.md: the co-op host is authoritative), so replaying from inputs has to be made exact first, then kept exact by tests.
@@ -218,6 +249,21 @@ The sim runs at 30 ticks a second from inputs with seeded random numbers, but **
 - [ ] **SR-1. Play a raid as a scav.** A random scav kit (from the scav loadouts), on a cooldown, so losing your gear never locks you out and you can learn a map for free. **To decide:** cooldown length; whether scavs treat you as one of them (and what breaks that: shooting a scav); which maps, spawn points and how late in the raid you join; whether PMCs are hostile (yes, as now); what you can take home (all of it to the stash, as in Tarkov); quests and XP on a scav run or not; whether the Hangar can shorten the cooldown. Reuses scav loadouts, spawns and the AI's sides.
   - **Read:** design/ai-scavs-pmcs-bosses.md; design/raids-and-maps.md; hangar.md.
 
+## App Store and monetization (planned 2026-11-12 with the user; just before an App Store release)
+The user's brief: **a few dollars** for extra vault squares, an extra stash page or containers, maybe other ideas. **No ads of any kind.** Opt-in ads for a convenience may come once there are a lot of players, **never forced**. Rules: design/overview.md → Monetization.
+- [ ] **MZ-1. Settle what's for sale (design with the user, no code).** Write the answers into design/overview.md → Monetization and hangar.md, then rewrite MZ-2 onward to fit. **Conflicts with settled design to settle first:**
+  - **Vault squares** are the one thing that survives death. hangar.md makes the Secure locker the most expensive module and "the only lasting advantage", and design/inventory-and-ui.md rules out extra vaults from quests ("the secure locker stays the one way to a bigger vault"). Selling them skips the top of the progression, matters in co-op, and would be pay-to-win in a future PvP mode (where Tarkov drew its worst criticism).
+  - **Stash pages** are gated by the Stash module and bought with money, "one path, not two" (hangar.md). Selling one adds a second path.
+  - **Containers:** item and ammo cases are ruled out (category pages replace them).
+  - **Claude's suggestion:** sell what doesn't touch raids or progression: **cosmetics** (gun colors, outfits, lobby plinth and Hangar decor) and a **supporter pack**, plus at most **one extra stash page beyond the cap** (storage, not power). Keep the vault out of the store.
+  - Also decide: prices and how many products; one-time purchases only (no subscriptions or loot boxes); whether the web/PC version sells too (Stripe), and that a purchase on one platform counts on the other.
+- [ ] **MZ-2a. API and sign-in that work outside our own origin** (can be done any time; sooner is cheaper). An API base URL in the client, a bearer token for the app beside the web's cookie, CORS for `capacitor://localhost`. tech/overview.md → Platform.
+- [ ] **MZ-2b. Client versions.** The client sends its version; the server refuses below a minimum and the app says to update. Decide how many versions content and save formats stay compatible for, and **stop wiping prod** from the first store release (migrations come back).
+- [ ] **MZ-2c. The App Store build.** Capacitor with the built client bundled in (never loaded from our URL), landscape lock, status bar and home indicator hidden, safe areas, audio unlock and gamepad checked in WKWebView; Apple developer account, TestFlight. **Apple's rules:** a full game, not a website wrapper (guideline 4.2), no links out to web pages or payments; **account deletion in the app** (5.1.1(v)); a privacy policy and privacy labels (RP-3's recordings included); account recovery (email or Sign in with Apple), since a paid account behind a password with no reset is a support problem. **Read:** tech/overview.md → Platform; tech/server.md.
+- [ ] **MZ-3. Purchases on the server.** In-app purchase through StoreKit (required for digital goods on iOS; check the current rules on linking out to web payments). The server checks every transaction with Apple (App Store Server API), handles refunds from Apple's server notifications, and has **Restore purchases**. **Purchases are stored apart from the profile and survive prod wipes** (no migrations for now, but paid items can't be wiped); a wipe gives them back on the fresh profile. Tests for granting, refunds and restore.
+- [ ] **MZ-4. The store in the game.** A Store screen in the lobby, the products MZ-1 picks granted from purchases, admin tools to grant or revoke by hand, and a playthrough on TestFlight with sandbox purchases.
+- **Later, not scheduled:** opt-in rewarded ads for a convenience (say a shorter Hangar craft or scav cooldown), only once there are a lot of players, never forced, never needed to progress. It would add an ad SDK, Apple's tracking prompt and privacy labels.
+
 ## After v1 (not scheduled)
 - Co-op vs. AI, phones and PCs together (a player's device hosts, others connect over WebRTC; client movement prediction, shared loot rolls, quest items only for the holder). The plan, session by session, is [coop.md](coop.md).
 - Weekly admin challenges (raid configs, publishing from the server without a redeploy).
@@ -228,6 +274,5 @@ The sim runs at 30 ticks a second from inputs with seeded random numbers, but **
 ## Open questions
 - **Container search time** (session 10): Tarkov reveals a container's items one by one. Not designed; containers open instantly for now.
 - **Melee** (raised in session 9; the user's answer, 2026-10-26): there is a Tarkov-style knife attack with good damage, for raids where you bring nothing at all and for close quarters (design.md → Core loop → Knife). Built in session 10b.
-- **Temporary effects** (the user wants them, 2026-10-26): painkillers and similar. Not scheduled.
 - **Saved stashes after item changes** (session 18): shrinking an item can make a saved profile fail the server's checks, and the server then refuses every stash save for it. Before release, decide how to repair profiles when content changes (drop or move what no longer fits on load, say).
 - **Silver Creek's PMCs late in the raid** (MT-9; eased 2026-11-11, when the map got edge waves and 3 squads: 0.8 PMCs a raid left at 15 minutes): with weak scavs they mostly lived (20 of 33 at 15 minutes) and leave by the ends' extractions at 75–90% of the raid, so a starter extracting late may meet a geared squad there. Fine as the map's danger, or keep Silver Creek's squads off the ends (their own extraction, or leaving earlier)?

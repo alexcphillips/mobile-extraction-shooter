@@ -18,7 +18,7 @@ import { addItem, removeAt, type Grid, type Item } from '../inventory/grid';
 import { chance, nextFloat } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import { createRayHit, type CollisionWorld } from '../world/collision-world';
-import { CHEST, HEALTH, brokenArms, shootCharacter, woundZone } from './health';
+import { CHEST, HEALTH, badlyHurt, brokenArms, shootCharacter, woundZone } from './health';
 import {
   CARRIED_GRIDS,
   QUICK_GRIDS,
@@ -36,7 +36,7 @@ import { launchGrenade } from './grenades';
 import { GLASS, breakGlass, glassHit } from './glass';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import { RECOIL, kickRecoil, settleRecoil } from './recoil';
-import { staminaBreath } from './stamina';
+import { STAMINA, staminaBreath } from './stamina';
 import {
   bodyPoint,
   entityById,
@@ -59,6 +59,17 @@ const SWAY_MOVING = 2;
 const SWAY_WALK_SPEED = 3;
 /** Sway per broken arm, added to 1. */
 const SWAY_BROKEN_ARM = 2;
+/** Low stamina (PS-1): under STAMINA.breathFrom, sway grows to this added to 1 when empty. */
+const SWAY_TIRED = 0.8;
+/**
+ * Badly hurt (PS-1, HEALTH.badlyHurt): a faint, fast tremor on top of the sway, in radians.
+ * It's the hands, so held breath doesn't steady it. Two frequencies (rad/s) so it never
+ * settles into a rhythm; the tick (30 Hz) samples it a few times a shake, which reads as jitter.
+ */
+const TREMOR_YAW = 0.07 * DEG;
+const TREMOR_PITCH = 0.05 * DEG;
+const TREMOR_FREQ_A = 31;
+const TREMOR_FREQ_B = 47;
 /**
  * The furthest a gun lags behind turning, in radians. Cut from 1.5° and 1° on 2026-11-11 for
  * mouse and thumb alike (the user's call: tracking a strafing target missed two in three).
@@ -582,10 +593,23 @@ function updateSway(
   c.lagPitch = Math.max(-MAX_LAG_PITCH, Math.min(MAX_LAG_PITCH, lagPitch));
   const t = state.tick * DT;
   const moving = Math.min(1, Math.hypot(c.vx, c.vz) / SWAY_WALK_SPEED);
+  // Feeling hurt (PS-1): broken arms, low stamina and being badly hurt. Painkillers
+  // (planned, not built) will hide the arms and the tremor while they last.
+  const tired = Math.max(0, 1 - (c.stamina ?? 1) / STAMINA.breathFrom);
   const shake =
-    (1 + brokenArms(c.health) * SWAY_BROKEN_ARM) * (1 + (SWAY_MOVING - 1) * moving) * breath;
-  c.swayYaw = c.aim * (c.lagYaw + Math.sin(t * 1.3) * SWAY_YAW * shake);
-  c.swayPitch = c.aim * (c.lagPitch + Math.sin(t * 2.1) * SWAY_PITCH * shake);
+    (1 + brokenArms(c.health) * SWAY_BROKEN_ARM) *
+    (1 + tired * SWAY_TIRED) *
+    (1 + (SWAY_MOVING - 1) * moving) *
+    breath;
+  let tremorYaw = 0;
+  let tremorPitch = 0;
+  if (badlyHurt(c.health)) {
+    tremorYaw = (Math.sin(t * TREMOR_FREQ_A) + Math.sin(t * TREMOR_FREQ_B)) * 0.5 * TREMOR_YAW;
+    tremorPitch =
+      (Math.sin(t * TREMOR_FREQ_B + 1) + Math.sin(t * TREMOR_FREQ_A * 1.3)) * 0.5 * TREMOR_PITCH;
+  }
+  c.swayYaw = c.aim * (c.lagYaw + Math.sin(t * 1.3) * SWAY_YAW * shake + tremorYaw);
+  c.swayPitch = c.aim * (c.lagPitch + Math.sin(t * 2.1) * SWAY_PITCH * shake + tremorPitch);
 }
 
 /**

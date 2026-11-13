@@ -10,6 +10,12 @@ React Native / Expo Go was considered and rejected:
 
 Mobile Safari has a JIT and WebAssembly, needs no build step and no Apple developer account, and installs from Add to Home Screen. Every iOS browser uses Safari's engine underneath, so Chrome on iOS makes no difference.
 
+**An App Store build later (2026-11-12, roadmap MZ-2): the same client in a native shell, not a rewrite.** Capacitor around WKWebView, which is Safari's engine with the JIT, so it runs as well as the home-screen version. The client is **bundled in the app**, never loaded from our URL (that reads as a website wrapper under Apple's guideline 4.2, and changes the app outside review). What has to change first:
+- **API and sign-in:** the client calls `/api` on its own address and signs in with a same-origin `SameSite=Lax` cookie (`account.ts`, `server/src/auth.ts`). A bundled app's page lives at `capacitor://localhost`, so the cookie isn't sent. Fix: an API base URL, a bearer token for the app (the cookie stays for the web), and CORS for the app's address. Do it before more server code depends on the cookie.
+- **Old clients:** each client change waits for review and some players won't update, so the server needs a minimum client version (old apps told to update), and content and save formats stay compatible across a few versions. Once there are store players, "wipe instead of migrating" ends.
+- **Native polish:** landscape lock, hidden status bar and home indicator, safe areas; audio unlock and the gamepad API checked in WKWebView.
+- **Apple's requirements:** a developer account ($99 a year), in-app account deletion, a privacy policy and privacy labels, Apple's in-app purchase for anything sold, and account recovery (email or Sign in with Apple) since paid accounts can't sit behind a password with no reset.
+
 ## Repo layout (npm workspaces monorepo)
 npm, not pnpm (the user's choice, 2026-10-26). Each package lists every dependency it imports, since npm won't catch a package using a dependency that only another package declared.
 

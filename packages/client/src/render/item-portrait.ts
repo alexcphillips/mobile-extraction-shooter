@@ -13,7 +13,7 @@ import {
 import * as THREE from 'three';
 import { TriangleBuilder } from './geometry';
 import { gunKey, gunModel } from './gun-model';
-import { shadedMaterial } from './material';
+import { itemMaterial } from './material';
 
 /*
  * Item pictures for the item details (2026-10-30) and inventory tiles (2026-11-02): the
@@ -31,7 +31,7 @@ let renderer: THREE.WebGLRenderer | null = null;
 let failed = false;
 const scene = new THREE.Scene();
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 10);
-const mesh = new THREE.Mesh(new THREE.BufferGeometry(), shadedMaterial());
+const mesh = new THREE.Mesh(new THREE.BufferGeometry(), itemMaterial());
 scene.add(mesh);
 const cache = new Map<string, string>();
 

@@ -580,6 +580,32 @@ body:has(#raid:not([hidden])) .tutorial-count {
   animation: hurt 0.5s ease-out;
 }
 
+/* A blacked stomach (PS-1): a faint, slow-throbbing dark red at the edges. One static
+   gradient layer whose opacity animates (composited, no repaint), never a blur. */
+#pain {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgb(90 0 0 / 0.55) 100%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 1.5s;
+}
+
+#pain.on {
+  animation: pain 3.2s ease-in-out infinite;
+}
+
+@keyframes pain {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
 /* Where a hit came from (TU-1): red arcs around the middle, turned by hud/hit-direction.ts. */
 #hit-dir {
   position: fixed;

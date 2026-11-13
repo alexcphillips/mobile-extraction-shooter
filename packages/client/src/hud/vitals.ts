@@ -105,6 +105,8 @@ export class Vitals {
     vitals: HTMLElement,
     private readonly ammo: HTMLElement,
     private readonly hurt: HTMLElement,
+    /** The faint pain edge while the stomach is blacked (PS-1). */
+    private readonly pain?: HTMLElement,
   ) {
     vitals.innerHTML = `
       <div class="vitals-row">
@@ -179,6 +181,7 @@ export class Vitals {
       if (arms) chips.push(`<span class="chip">🦴 ${arms === 2 ? 'both arms' : 'arm'}</span>`);
       if (stomach) chips.push('<span class="chip">🤢 stomach</span>');
       this.chips.innerHTML = chips.join('');
+      this.pain?.classList.toggle('on', stomach);
     }
 
     this.armor(this.helmet, c.gear.helmet, items);

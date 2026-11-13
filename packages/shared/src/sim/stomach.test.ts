@@ -11,6 +11,7 @@ import {
   LEFT_LEG,
   PAIN,
   STOMACH,
+  badlyHurt,
   createArmor,
   dealDamage,
   painNoise,
@@ -146,5 +147,21 @@ describe('the stomach', () => {
     expect(n).toBeLessThanOrEqual(Math.ceil(30 / PAIN.every[0]) + 1);
     c.health.hp[STOMACH] = HEALTH.surgeryHp;
     expect(groans(10)).toBe(0);
+  });
+});
+
+describe('badly hurt (PS-1)', () => {
+  it('is the head or thorax under its share, not limbs, and not one health bar', () => {
+    const { c } = setup();
+    expect(badlyHurt(c.health)).toBe(false);
+    c.health.hp[LEFT_LEG] = 1;
+    expect(badlyHurt(c.health)).toBe(false);
+    c.health.hp[HEAD] = HEALTH.maxHp[HEAD]! * HEALTH.badlyHurt - 1;
+    expect(badlyHurt(c.health)).toBe(true);
+    c.health.hp[HEAD] = HEALTH.maxHp[HEAD]!;
+    c.health.hp[CHEST] = 10;
+    expect(badlyHurt(c.health)).toBe(true);
+    c.health.pool = 100;
+    expect(badlyHurt(c.health)).toBe(false);
   });
 });

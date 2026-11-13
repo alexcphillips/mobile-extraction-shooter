@@ -459,6 +459,7 @@ export {
   isLimb,
   isVital,
   stomachBlacked,
+  badlyHurt,
   createHealth,
   killCharacter,
   restoreHealth,

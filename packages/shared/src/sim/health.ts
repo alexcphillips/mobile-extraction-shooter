@@ -65,6 +65,11 @@ export const HEALTH = {
   fallDamagePerSpeed: 15,
   /** A broken limb's HP after surgery. */
   surgeryHp: 1,
+  /**
+   * Badly hurt (PS-1): the head or thorax under this share of its max. A player's aim gets a
+   * faint tremor (weapons.ts) and they hear themselves breathing hard (the client).
+   */
+  badlyHurt: 0.3,
 } as const;
 
 /**
@@ -164,6 +169,16 @@ export function isBroken(h: Health, zone: Zone): boolean {
  */
 export function stomachBlacked(h: Health): boolean {
   return h.pool === undefined && !h.dead && h.hp[STOMACH]! <= 0;
+}
+
+/**
+ * The head or thorax under HEALTH.badlyHurt of its max (PS-1). Not in zombies' one health bar.
+ * Painkillers (planned, not built) will hide it while they last.
+ */
+export function badlyHurt(h: Health): boolean {
+  if (h.pool !== undefined || h.dead) return false;
+  const low = (zone: Zone): boolean => h.hp[zone]! < HEALTH.maxHp[zone]! * HEALTH.badlyHurt;
+  return low(HEAD) || low(CHEST);
 }
 
 export function isBleeding(h: Health): boolean {

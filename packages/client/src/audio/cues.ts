@@ -1,6 +1,7 @@
 import {
   MOVEMENT,
   TICK_SECONDS,
+  badlyHurt,
   entityById,
   eyeHeight,
   grenadeDef,
@@ -61,6 +62,10 @@ interface Track {
   draw: number;
 }
 
+/** Heavy breathing when badly hurt (PS-1): seconds between breaths, and before the first. */
+const BREATHE_EVERY = 2.4;
+const BREATHE_FIRST = 0.6;
+
 /**
  * What the raid sounds like (session 19): after each tick, the sim's events and the
  * changes it doesn't report (footsteps, reloads, meds starting, the extraction countdown)
@@ -73,6 +78,8 @@ export class SoundCues {
   private extractSecond = 0;
   private warned = false;
   private hurtTick = -Infinity;
+  /** When your heavy breathing (PS-1) next sounds. */
+  private breatheAt = 0;
   private readonly options: PlaceOptions = {};
   /** When each noise (by its id) next starts again. */
   private readonly noiseAt = new Map<number, number>();
@@ -347,8 +354,16 @@ export class SoundCues {
     t.draw = c.draw;
   }
 
-  /** The extraction countdown and the timer running low. */
+  /** The extraction countdown, the timer running low, and breathing hard when badly hurt. */
   private raid(sim: SimState, player: Character): void {
+    // PS-1: only you hear it, and not while you're holding your breath to aim.
+    const now = sim.tick * TICK_SECONDS;
+    if (!badlyHurt(player.health) || (player.steady ?? 0) > 0.5) {
+      this.breatheAt = Math.max(this.breatheAt, now + BREATHE_FIRST);
+    } else if (now >= this.breatheAt) {
+      this.sound.play(S.heavyBreath);
+      this.breatheAt = now + BREATHE_EVERY;
+    }
     if (player.extracting > 0) {
       const second = Math.floor(player.extracting) + 1;
       if (second > this.extractSecond) this.sound.play(S.extractTick);
