@@ -8,6 +8,7 @@ import {
   type InventoryAction,
   type Patch,
   type PlayerInput,
+  type RaidObjectives,
   type SimEvent,
   type SimState,
 } from '@mes/shared';
@@ -43,8 +44,16 @@ export interface Welcome {
   players: Record<EntityId, string>;
 }
 
-type ToHost =
-  { t: 'join'; name: string; gear: Gear } | { t: 'input'; i: PlayerInput } | { t: 'giveUp' };
+/** A guest's join: its name, the gear it brought, and what its own quests want here. */
+interface Join {
+  t: 'join';
+  name: string;
+  gear: Gear;
+  /** Its active quests' markers and quest items on this map (missing from an older guest). */
+  quests?: RaidObjectives;
+}
+
+type ToHost = Join | { t: 'input'; i: PlayerInput } | { t: 'giveUp' };
 
 type ToGuest = Welcome | { t: 'tick'; p: Patch | null; e: SimEvent[] };
 
@@ -142,16 +151,17 @@ export class CoopHost {
 
   /**
    * Waits for each connected guest's join, makes its character (`spawn`, wearing the gear
-   * it brought), and sends it the state as it is, with the players and the raid's spawns.
+   * it brought and set up with its quests), and sends it the state as it is, with the
+   * players and the raid's spawns.
    */
   async admit(
-    spawn: (name: string, gear: Gear, index: number) => Character,
+    spawn: (name: string, join: Join, index: number) => Character,
     base: { spawn: string; host: Character; name: string },
     sim: SimState,
   ): Promise<{ character: Character; name: string }[]> {
     const joins = this.guests.map(
       (g) =>
-        new Promise<{ name: string; gear: Gear } | null>((resolve) => {
+        new Promise<Join | null>((resolve) => {
           const timer = setTimeout(() => resolve(null), JOIN_MS);
           g.link.listen((data) => {
             const m = JSON.parse(data) as ToHost;
@@ -169,7 +179,7 @@ export class CoopHost {
     got.forEach((join, i) => {
       const g = this.guests[i]!;
       if (!join) return;
-      g.character = spawn(g.name, join.gear, i);
+      g.character = spawn(g.name, join, i);
       admitted.push({ character: g.character, name: g.name });
     });
     this.mirror = strip(sim, OMIT);
@@ -244,11 +254,15 @@ export class CoopGuest {
 
   private constructor(private readonly link: PeerLink) {}
 
-  /** Connects to the host and joins, wearing `gear`; resolves with the state to start from. */
+  /**
+   * Connects to the host and joins, wearing `gear`, with `quests` (what its own quests want
+   * on this map) for the host to set up; resolves with the state to start from.
+   */
   static async connect(
     opts: Extract<CoopOptions, { role: 'guest' }>,
     name: string,
     gear: Gear,
+    quests: RaidObjectives,
     status: (text: string) => void,
   ): Promise<{ guest: CoopGuest; welcome: Welcome }> {
     const link = await answerHost(opts.session, opts.host, status);
@@ -267,7 +281,7 @@ export class CoopGuest {
         guest.lost = why;
         reject(new Error(`the connection closed (${why})`));
       };
-      link.send(JSON.stringify({ t: 'join', name, gear } satisfies ToHost));
+      link.send(JSON.stringify({ t: 'join', name, gear, quests } satisfies ToHost));
     });
     // The state's own events and RNG aren't sent.
     welcome.state.events = [];

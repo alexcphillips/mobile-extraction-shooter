@@ -50,6 +50,7 @@ import {
   type Outfit,
   type SpawnRequestEvent,
   type CompiledMap,
+  type ItemDb,
   type RaidDef,
   type PlayerInput,
   type Zone,
@@ -88,6 +89,7 @@ import {
   keptGear,
   objectiveText,
   raidObjectives,
+  type RaidObjectives,
   raidProgress,
   raidXp,
   type RaidKillXp,
@@ -340,6 +342,21 @@ function outfitOf(type: EnemyDef, outfit: number): Outfit {
   return outfits[outfit] ?? outfits[0]!;
 }
 
+/**
+ * A co-op guest's quest objectives, less any marker this map lacks or item the host doesn't
+ * know (a guest on other content), so they can't fail the host's raid.
+ */
+function knownObjectives(map: CompiledMap, items: ItemDb, o: RaidObjectives): RaidObjectives {
+  const markers = new Set(map.markers.filter((m) => m.type === 'questMarker').map((m) => m.id));
+  return {
+    investigate: o.investigate.filter((id) => markers.has(id)),
+    extract: o.extract
+      .filter((x) => items.has(x.item))
+      .map((x) => ({ item: x.item, spots: x.spots.filter((id) => markers.has(id)) }))
+      .filter((x) => x.spots.length > 0),
+  };
+}
+
 function zombiesRaid(def: ZombiesDef): RaidDef {
   return {
     formatVersion: RAID_FORMAT_VERSION,
@@ -368,7 +385,19 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let guest: CoopGuest | null = null;
   let welcome: Welcome | null = null;
   if (coop?.role === 'guest') {
-    ({ guest, welcome } = await CoopGuest.connect(coop, coop.name, options.profile.gear, status));
+    // Your quests are set up by the host, on your character: tell it what they want here.
+    const objectives = raidObjectives(
+      options.profile,
+      loadQuests().values(),
+      loadRaid(options.raid).map,
+    );
+    ({ guest, welcome } = await CoopGuest.connect(
+      coop,
+      coop.name,
+      options.profile.gear,
+      objectives,
+      status,
+    ));
     status('');
   }
   const zombiesMode = options.zombies ?? null;
@@ -702,7 +731,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const rx = Math.cos(spawn.yaw);
     const rz = -Math.sin(spawn.yaw);
     const admitted = await host.admit(
-      (_name, gear, i) => {
+      (_name, join, i) => {
         const side = (i % 2 ? -1 : 1) * (Math.floor(i / 2) + 1) * 0.9;
         const c = spawnCharacter(
           sim,
@@ -712,10 +741,14 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
           spawn.yaw,
           spawn.y + 0.5,
         );
-        c.gear = structuredClone(gear);
+        c.gear = structuredClone(join.gear);
         markBrought(c);
         // Beside you, from your spawn: the same extractions as yours.
         openExtractions(sim, c, spawn);
+        // Their quests' markers and items, as for yours. A marker this map lacks (the
+        // guest on other content) is dropped rather than failing the raid.
+        if (join.quests && !zombiesMode && !tutorialMode)
+          startQuests(sim, map, items, c.id, knownObjectives(map, items, join.quests));
         return c;
       },
       { spawn: spawn.id, host: player, name: coop.name },

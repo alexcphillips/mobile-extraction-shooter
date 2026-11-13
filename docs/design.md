@@ -19,7 +19,7 @@ From before the split: "These decisions were made in design sessions on 2026-10-
 | [design/ai.md](design/ai.md) | AI | 14 KB |
 | [design/ai-scavs-pmcs-bosses.md](design/ai-scavs-pmcs-bosses.md) | AI, continued: Scavs, PMCs and bosses (2026-11-07, designed with the user) | 56 KB |
 | [design/inventory-and-ui.md](design/inventory-and-ui.md) | Inventory and UI | 39 KB |
-| [design/quests-and-vendors.md](design/quests-and-vendors.md) | Quests and vendors | 12 KB |
+| [design/quests-and-vendors.md](design/quests-and-vendors.md) | Quests and vendors (overhaul brief at the end) | 12 KB |
 | [design/tutorial.md](design/tutorial.md) | Tutorial (planned 2026-11-09 with the user) | 6 KB |
 | [design/controls.md](design/controls.md) | Controls and platform behavior | 10 KB |
 | [design/editors.md](design/editors.md) | Editors (admin only, desktop browser) | 13 KB |
