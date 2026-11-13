@@ -1,5 +1,5 @@
 {
-  "formatVersion": 11,
+  "formatVersion": 12,
   "id": "m416",
   "name": "M416",
   "type": "weapon",
@@ -15,8 +15,7 @@
   "magazine": 30,
   "feed": "magazine",
   "reloadTime": 2.3,
-  "aimTime": 0.248,
-  "drawTime": 0.8,
+  "ergonomics": 67,
   "range": 250,
   "loudness": 185,
   "defaults": {

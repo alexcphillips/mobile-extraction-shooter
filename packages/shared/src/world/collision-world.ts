@@ -83,9 +83,7 @@ export interface DoorDef {
   hinge: 'left' | 'right';
   /** The key item that unlocks it; none means it's never locked. */
   key: string | undefined;
-  /** Zombies mode: points to buy it open instead of a key (2026-11-04). */
-  cost?: number | undefined;
-  /** How it starts. A door with a key or a cost starts locked unless it starts open. */
+  /** How it starts. A door with a key starts locked unless it starts open. */
   open: boolean;
   /** A switch opens it (2026-11-05): locked until then, whether or not it has a key. */
   switched?: boolean;
@@ -145,8 +143,8 @@ export interface WorldDef {
   switches?: readonly SwitchDef[];
   glass?: readonly GlassDef[];
   /**
-   * Solid to move into but not to rays (2026-11-04): a zombies barricade's window, which
-   * shots, claws and sight pass through. Last of the solids.
+   * Solid to move into but not to rays (2026-11-04): invisible boxes, which shots and
+   * sight pass through. Last of the solids.
    */
   blockers?: readonly BoxDef[];
   /** Barbed wire (TU-2): not solid, only touched (see touchesWire). */
@@ -266,7 +264,7 @@ export class CollisionWorld {
   private readonly doorOpen: Uint8Array;
   /** Opens (or last opened) into −z. */
   private readonly doorFlipped: Uint8Array;
-  /** Taken out for good (a zombies door bought): its solid is moved far away. */
+  /** Taken out for good (a door that vanishes): its solid is moved far away. */
   private readonly doorGone: Uint8Array;
   private readonly glassBroken: Uint8Array;
   private readonly grid: StaticGrid;

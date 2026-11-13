@@ -1,14 +1,6 @@
 import { createItem, stackSize, type ItemDb, type ItemDef } from '@mes/shared';
 import { useEffect, useState, type ReactNode } from 'react';
-import {
-  readCheats,
-  readZombieCheats,
-  saveCheats,
-  saveZombieCheats,
-  type Cheats,
-  type ZombieCheats,
-} from '../admin-cheats';
-import { loadZombies, zombiesIds } from '../content';
+import { readCheats, saveCheats, type Cheats } from '../admin-cheats';
 import type { GameMode } from './last-raid';
 import { itemPortrait } from '../render/item-portrait';
 import { colorOf } from './raid-screen';
@@ -17,9 +9,7 @@ import { colorOf } from './raid-screen';
  * The admin page between raids (dev builds only, 2026-10-30): every item, given into the
  * stash free, for testing. The server only allows it under `wrangler dev`. The Admin tab
  * has the admin-only items (spawner guns, the admin backpack); the Cheats tab turns on testing aids for your
- * next raids (see admin-cheats.ts), and the Zombies tab zombies mode's (2026-11-04).
- * Opened from zombies' menu it shows only what zombies uses (2026-11-04, the user's call):
- * no items, as nothing from the stash goes in, and only the cheats a zombies game reads.
+ * next raids (see admin-cheats.ts).
  */
 
 /**
@@ -28,25 +18,6 @@ import { colorOf } from './raid-screen';
  */
 const isAdminItem = (d: ItemDef): boolean =>
   (d.type === 'weapon' && d.spawns !== undefined) || (d.type === 'container' && !!d.admin);
-
-/**
- * Items only zombies mode uses (the user's call, 2026-11-04), left out of extraction's tabs:
- * any mode's box guns, death machine and zombie claws worth nothing to sell (so not ones
- * also found in raids), and those guns' own ammo.
- */
-function zombiesOnly(items: ItemDb): Set<string> {
-  const ids = new Set<string>();
-  for (const id of zombiesIds()) {
-    const def = loadZombies(id);
-    for (const item of [...def.box.map((o) => o.item), def.powerups.minigun, def.zombie.claws]) {
-      const d = items.get(item);
-      if (!d || d.value > 0) continue;
-      ids.add(item);
-      if (d.type === 'weapon' && items.get(d.ammo)?.value === 0) ids.add(d.ammo);
-    }
-  }
-  return ids;
-}
 
 const TABS: readonly { label: string; shows: (d: ItemDef) => boolean }[] = [
   {
@@ -71,8 +42,6 @@ const CHEATS: readonly {
   key: keyof Cheats;
   label: string;
   hint: string;
-  /** Extraction only: zombies has no meds to use up and no gear to keep. */
-  extractionOnly?: boolean;
 }[] = [
   {
     key: 'infiniteHealth',
@@ -88,13 +57,11 @@ const CHEATS: readonly {
     key: 'infiniteConsumables',
     label: 'Infinite consumables',
     hint: 'Meds and repair kits work but are never used up.',
-    extractionOnly: true,
   },
   {
     key: 'keepGear',
     label: 'Keep inventory on death',
     hint: 'Dying or going missing keeps everything, as if you extracted.',
-    extractionOnly: true,
   },
   {
     key: 'peaceful',
@@ -109,7 +76,7 @@ const CHEATS: readonly {
 ];
 
 /** The cheat toggles, saved on this device as they change; they apply from the next raid. */
-function CheatsTab({ mode }: { mode: GameMode }): ReactNode {
+function CheatsTab(): ReactNode {
   const [cheats, setCheats] = useState(readCheats);
   const set = (key: keyof Cheats, on: boolean): void => {
     const next = { ...cheats, [key]: on };
@@ -118,7 +85,7 @@ function CheatsTab({ mode }: { mode: GameMode }): ReactNode {
   };
   return (
     <div className="admin-cheats">
-      {CHEATS.filter((c) => mode === 'extraction' || !c.extractionOnly).map((c) => (
+      {CHEATS.map((c) => (
         <label key={c.key} className="toggle">
           <input
             type="checkbox"
@@ -131,95 +98,17 @@ function CheatsTab({ mode }: { mode: GameMode }): ReactNode {
           </span>
         </label>
       ))}
-      <p className="raid-note">
-        Kept on this device, for both modes. They apply from your next{' '}
-        {mode === 'zombies' ? 'game' : 'raid'}.
-      </p>
-    </div>
-  );
-}
-
-/**
- * Zombies mode's cheats: infinite points, every kill dropping a power-up, and guns to start each game with: every gun any
- * mode's mystery box or death machine gives, those found only in zombies first.
- */
-function ZombiesTab({ items }: { items: ItemDb }): ReactNode {
-  const [cheats, setCheats] = useState(readZombieCheats);
-  const save = (next: ZombieCheats): void => {
-    saveZombieCheats(next);
-    setCheats(next);
-  };
-  const guns = new Set<string>();
-  for (const id of zombiesIds()) {
-    const def = loadZombies(id);
-    guns.add(def.powerups.minigun);
-    for (const o of def.box) guns.add(o.item);
-  }
-  // Zombies-only guns are worth nothing to sell.
-  const list = [...guns]
-    .map((id) => items.get(id))
-    .filter((d): d is ItemDef => d?.type === 'weapon')
-    .sort((a, b) => Number(a.value > 0) - Number(b.value > 0) || a.name.localeCompare(b.name));
-  const toggle = (id: string, on: boolean): void =>
-    save({ ...cheats, guns: on ? [...cheats.guns, id] : cheats.guns.filter((g) => g !== id) });
-  return (
-    <div className="admin-cheats">
-      <label className="toggle">
-        <input
-          type="checkbox"
-          checked={cheats.infinitePoints}
-          onChange={(e) => save({ ...cheats, infinitePoints: e.target.checked })}
-        />
-        <span>
-          Infinite points
-          <span className="raid-note"> · Doors, couches, wall guns and the box cost nothing.</span>
-        </span>
-      </label>
-      <label className="toggle">
-        <input
-          type="checkbox"
-          checked={cheats.alwaysDrop}
-          onChange={(e) => save({ ...cheats, alwaysDrop: e.target.checked })}
-        />
-        <span>
-          Every kill drops a power-up
-          <span className="raid-note"> · Past the 4-a-round limit too.</span>
-        </span>
-      </label>
-      <h3>Start with</h3>
-      {list.map((d) => (
-        <label key={d.id} className="toggle">
-          <input
-            type="checkbox"
-            checked={cheats.guns.includes(d.id)}
-            onChange={(e) => toggle(d.id, e.target.checked)}
-          />
-          <span>
-            {d.name}
-            {d.value === 0 && <span className="raid-note"> · zombies only</span>}
-          </span>
-        </label>
-      ))}
-      <p className="raid-note">
-        Kept on this device; they apply from your next zombies game. Guns go in as bought ones do (a
-        pistol in the sidearm slot, others in the two primaries), so a third rifle replaces one. In
-        a game, the Admin button (or K) gives power-ups, points and guns.
-      </p>
+      <p className="raid-note">Kept on this device. They apply from your next raid.</p>
     </div>
   );
 }
 
 /** A tab: items to give, or a page of cheats. */
-type Tab =
-  { label: string; shows: (d: ItemDef) => boolean } | { label: string; page: 'cheats' | 'zombies' };
+type Tab = { label: string; shows: (d: ItemDef) => boolean } | { label: string; page: 'cheats' };
 
-/** Each mode's tabs: extraction's items and cheats, or zombies' own and the cheats it reads. */
+/** Each mode's tabs: extraction's items and cheats. */
 const MODE_TABS: Record<GameMode, readonly Tab[]> = {
   extraction: [...TABS, { label: 'Cheats', page: 'cheats' }],
-  zombies: [
-    { label: 'Zombies', page: 'zombies' },
-    { label: 'Cheats', page: 'cheats' },
-  ],
 };
 
 export function AdminPage({
@@ -250,9 +139,8 @@ export function AdminPage({
   }, [onBack]);
   const tabs = MODE_TABS[mode];
   const tab = tabs[shown] ?? tabs[0]!;
-  const [hidden] = useState(() => zombiesOnly(items));
   const list = [...items.values()]
-    .filter((d) => 'shows' in tab && tab.shows(d) && !hidden.has(d.id))
+    .filter((d) => 'shows' in tab && tab.shows(d))
     .sort((a, b) => a.name.localeCompare(b.name));
   const give = (def: ItemDef, count: number): void => {
     if (giving) return;
@@ -260,11 +148,7 @@ export function AdminPage({
     void onGive(def, count).finally(() => setGiving(null));
   };
   return (
-    <div
-      className={`raid stash vendors${mode === 'zombies' ? ' zombies' : ''}`}
-      role="dialog"
-      aria-label="Admin"
-    >
+    <div className="raid stash vendors" role="dialog" aria-label="Admin">
       <header className="raid-tabs">
         <button onClick={onBack}>Back</button>
         {tabs.map((t, i) => (
@@ -278,7 +162,7 @@ export function AdminPage({
       {notice && <p className="menu-notice">{notice}</p>}
       {'page' in tab ? (
         <div className="vendors-body">
-          {tab.page === 'zombies' ? <ZombiesTab items={items} /> : <CheatsTab mode={mode} />}
+          <CheatsTab />
         </div>
       ) : (
         <div className="vendors-body">

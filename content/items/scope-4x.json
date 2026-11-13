@@ -1,5 +1,5 @@
 {
-  "formatVersion": 11,
+  "formatVersion": 12,
   "id": "scope-4x",
   "name": "4× scope",
   "type": "attachment",
@@ -18,7 +18,6 @@
     "sv-98",
     "r93",
     "awm",
-    "crossbow",
     "rpk-16",
     "pkm",
     "m250",

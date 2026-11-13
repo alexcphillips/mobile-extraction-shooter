@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { weaponDef, type AmmoDef } from '../content/items';
+import { swayAt, weaponDef, type AmmoDef } from '../content/items';
 import { createRng, nextFloat } from '../rng';
 import { TICK_RATE } from '../tick';
 import { CollisionWorld } from '../world/collision-world';
@@ -360,10 +360,14 @@ describe('firing', () => {
   });
 
   describe('breath', () => {
-    /** Idle sway this tick as a share of unheld, standing still: lag is 0 with no turning. */
+    /**
+     * Idle sway this tick as a share of unheld, standing still: lag is 0 with no turning.
+     * Unheld includes the test rifle's ergonomics (ERGO).
+     */
     function swayShare(state: SimState, c: Character): number {
+      const gun = swayAt(weaponDef(TEST_ITEMS, 'rifle').ergonomics);
       const unheld =
-        c.aim * Math.sin((state.tick - 1) * (1 / TICK_RATE) * 1.3) * ((0.35 * Math.PI) / 180);
+        c.aim * Math.sin((state.tick - 1) * (1 / TICK_RATE) * 1.3) * ((0.35 * Math.PI) / 180) * gun;
       return c.swayYaw! / unheld;
     }
     /** Steps, then the largest and smallest share of unheld sway over the ticks. */

@@ -404,6 +404,28 @@ async function leaveParty(db: Db, me: string): Promise<void> {
       .run();
 }
 
+/**
+ * Takes out of my party everyone in it, me too, who has been away longer than SOCIAL.awayMs:
+ * not on the menu, not joined since, no raid ended since and none open that could still be
+ * running. Run before the heartbeat marks me seen, so coming back after hours leaves me on my own.
+ */
+async function dropAway(db: Db, me: string): Promise<void> {
+  const row = await partyOf(db, me);
+  if (!row) return;
+  const now = Date.now();
+  const since = now - SOCIAL.awayMs;
+  const { results } = await db
+    .prepare(
+      `SELECT m.account_id FROM party_members m JOIN accounts a ON a.id = m.account_id
+       WHERE m.party_id = ? AND a.seen_at < ? AND m.joined_at < ? AND NOT EXISTS (
+         SELECT 1 FROM raids r WHERE r.account_id = m.account_id
+           AND (r.ended_at > ? OR (r.ended_at IS NULL AND r.started_at > ?)))`,
+    )
+    .bind(row.id, since, since, since, since - SOCIAL.longestRaidMs)
+    .all<{ account_id: string }>();
+  for (const r of results) await leaveParty(db, r.account_id);
+}
+
 /** Puts me in a party (leaving mine), if it has room. Null, or why not. */
 async function joinParty(db: Db, me: string, party: string): Promise<string | null> {
   const mine = await partyOf(db, me);
@@ -424,7 +446,10 @@ const reply = async (c: Context<AppEnv>) => c.json(await partyResponse(c.env.DB,
 
 export const party = new Hono<AppEnv>();
 
-party.get('/', reply);
+party.get('/', async (c) => {
+  await dropAway(c.env.DB, c.var.account);
+  return reply(c);
+});
 
 /** Makes a party with you leading (for its invite link), or replies with yours. */
 party.post('/', async (c) => {
@@ -553,6 +578,7 @@ presence.post('/', async (c) => {
   const raw = await body(c);
   const d = isObject(raw) ? device(raw.device) : null;
   if (!d) return fail(c, 'bad-request', 'device is phone or pc');
+  await dropAway(c.env.DB, c.var.account);
   await c.env.DB.prepare('UPDATE accounts SET seen_at = ?, device = ? WHERE id = ?')
     .bind(Date.now(), d, c.var.account)
     .run();

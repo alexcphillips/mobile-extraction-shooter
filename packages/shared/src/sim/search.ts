@@ -11,7 +11,7 @@ import type { Character, SimState } from './state';
  * Until shown, an item can't be taken, swapped or dropped on (looting.ts).
  *
  * Only in a raid that keeps searches (RaidState.searches, set by startRaid): the stash,
- * zombies mode, tests and raids saved before it show everything at once.
+ * tests and raids saved before it show everything at once.
  */
 
 export const SEARCH = {

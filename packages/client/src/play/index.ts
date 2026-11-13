@@ -9,14 +9,12 @@ import {
   CollisionWorld,
   FixedTimestep,
   GRAPHICS_QUALITY,
-  GRENADE,
   grenadeDef,
   grenadeEffect,
   smokeBlocks,
   smokeRadius,
   NavGrid,
   ammoDef,
-  burnOf,
   attachmentDef,
   brokenArms,
   createCharacterHit,
@@ -98,20 +96,6 @@ import {
   type SimState,
   totalHp,
   isBleeding,
-  HEALTH,
-  ZONE_COUNT,
-  RAID_FORMAT_VERSION,
-  adminGiveGun,
-  adminPowerup,
-  buyInReach,
-  holdsDeathMachine,
-  windowInReach,
-  pointsOf,
-  spotPrice,
-  barricadeWindows,
-  startZombies,
-  type Powerup,
-  type ZombiesDef,
   BREATH,
 } from '@mes/shared';
 import * as THREE from 'three';
@@ -143,21 +127,12 @@ import { Controls } from '../input/controls';
 import { inputMode } from '../input/mode';
 import { PadRumble } from '../input/pad-rumble';
 import { HIP_FOLLOW, PAD_FOLLOW, bearing, followRate } from '../input/aim-follow';
-import {
-  anyCheat,
-  applySimCheats,
-  applyZombieCheats,
-  readCheats,
-  readZombieCheats,
-} from '../admin-cheats';
-import { ZombiesAdmin } from './zombies-admin';
+import { anyCheat, applySimCheats, readCheats } from '../admin-cheats';
 import { buildDebug } from '../render/debug';
 import {
   fightWith,
-  fireKey,
   lastCombat,
   logBleed,
-  logBurn,
   logFight,
   logHit,
   logKiller,
@@ -171,16 +146,11 @@ import { DEFAULT_OUTFIT, loadCharacter } from '../render/character';
 import { CharacterBody, CharacterRig } from '../render/character-body';
 import { Effects } from '../render/effects';
 import { buildExtractions } from '../render/extractions';
-import { FIRE_SVG, FireViews } from '../render/fire';
-import { INCENDIARY_TRACER, TRACER_COLOR } from '../render/effects';
+import { TRACER_COLOR } from '../render/effects';
 import { GrenadeViews } from '../render/grenades';
 import { GroundItems } from '../render/ground-items';
 import { LandmarkPass } from '../render/landmarks';
 import { buildMap, updateDoors, updateGlass, updateSearchedLooks } from '../render/map';
-import { buildWallBuys } from '../render/wall-buys';
-import { BoxOffers } from '../render/box-offers';
-import { Barricades } from '../render/barricades';
-import { Powerups } from '../render/powerups';
 import { AiDebug, buildNavOverlay } from '../render/nav-debug';
 import { Viewmodel } from '../render/viewmodel';
 import { settings } from '../settings';
@@ -271,11 +241,6 @@ export interface PlayOptions {
   /** Says what a party raid is waiting for while it connects. */
   status?: (text: string) => void;
   /**
-   * A zombies game (2026-11-04) instead of a raid: this mode's map and rules, and you wear
-   * the profile's gear (its kit, not your stash). Nothing is saved or sent.
-   */
-  zombies?: ZombiesDef | null;
-  /**
    * The tutorial (TU-3) in its offline raid (`raid`), wearing the profile's gear (its kit):
    * its steps' prompts on screen as they come. Nothing is saved or sent; `leave` is called
    * to skip it or, from the results, to go on.
@@ -313,16 +278,6 @@ function otherPrimary(gear: Character['gear']): Hand | null {
   return first ?? second;
 }
 
-/** What the HUD calls each power-up. */
-const POWERUP_NAMES: Record<Powerup, string> = {
-  instaKill: 'Insta-kill',
-  maxAmmo: 'Max ammo',
-  doublePoints: 'Double points',
-  carpenter: 'Carpenter',
-  deathMachine: 'Death machine',
-};
-
-/** A zombies game as a raid config, for what reads one: its map, and no timer to speak of. */
 /** What an enemy spawn takes from its type. */
 function typeOptions(type: EnemyDef): EnemySpawnOptions {
   return {
@@ -354,16 +309,6 @@ function knownObjectives(map: CompiledMap, items: ItemDb, o: RaidObjectives): Ra
       .filter((x) => items.has(x.item))
       .map((x) => ({ item: x.item, spots: x.spots.filter((id) => markers.has(id)) }))
       .filter((x) => x.spots.length > 0),
-  };
-}
-
-function zombiesRaid(def: ZombiesDef): RaidDef {
-  return {
-    formatVersion: RAID_FORMAT_VERSION,
-    id: `zombies-${def.id}`,
-    name: def.name,
-    map: def.map,
-    duration: 1,
   };
 }
 
@@ -400,10 +345,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     ));
     status('');
   }
-  const zombiesMode = options.zombies ?? null;
   const tutorialMode = options.tutorial ?? null;
-  const raid =
-    options.test?.raid ?? (zombiesMode ? zombiesRaid(zombiesMode) : loadRaid(options.raid));
+  const raid = options.test?.raid ?? loadRaid(options.raid);
   const map = options.test?.map ?? loadMap(raid.map);
   const items = loadItems();
   const lootTables = loadLootTables();
@@ -468,7 +411,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     extractView = open ? buildExtractions(extractionsOf(sim, player)) : null;
     if (extractView) scene.add(extractView);
   };
-  if (zombiesMode) scene.add(buildWallBuys(map, items, world));
   const groundItems = new GroundItems(items);
   scene.add(groundItems.root);
   if (options.debug) scene.add(buildDebug(map, world.terrain));
@@ -479,8 +421,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   scene.add(effects.root);
   const grenades = new GrenadeViews(items, world);
   scene.add(grenades.root);
-  const fires = new FireViews();
-  scene.add(fires.root);
   const viewmodel = new Viewmodel();
   const cues = new SoundCues(sounds(), world, items, types);
   // Rendered now rather than as each is first heard (if audio is unlocked yet).
@@ -504,12 +444,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       sim: welcome.state,
     });
   const sim = resume?.sim ?? createState(Date.now() >>> 0);
-  // A raid saved before grenades (2026-10-30) has none in flight, nor smoke or fire
-  // (2026-10-31).
+  // A raid saved before grenades (2026-10-30) has none in flight, nor smoke (2026-10-31).
   (sim as Partial<SimState>).grenades ??= [];
   (sim as Partial<SimState>).smokes ??= [];
-  (sim as Partial<SimState>).flames ??= [];
-  (sim as Partial<SimState>).fires ??= [];
   // How far noises carry for the AI on this map (AI rework session 1).
   sim.hearingScale = map.hearingScale ?? 1;
   const spawns = map.markers.filter((m) => m.type === 'playerSpawn');
@@ -539,17 +476,14 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     );
     player.gear = structuredClone(options.profile.gear);
     markBrought(player);
-    if (zombiesMode) startZombies(sim, map, zombiesMode);
-    else {
-      placeLootContainers(sim, map, lootKinds);
-      fillLootContainers(sim, map, items, lootTables, lootKinds);
-      rollLootSpawns(sim, map, items, lootTables);
-      startRaid(sim, map, options.duration ?? raid.duration);
-      // Your extractions: those your spawn allows, rotating ones picked for it.
-      openExtractions(sim, player, spawn);
-      if (!tutorialMode)
-        startQuests(sim, map, items, player.id, raidObjectives(options.profile, quests, raid.map));
-    }
+    placeLootContainers(sim, map, lootKinds);
+    fillLootContainers(sim, map, items, lootTables, lootKinds);
+    rollLootSpawns(sim, map, items, lootTables);
+    startRaid(sim, map, options.duration ?? raid.duration);
+    // Your extractions: those your spawn allows, rotating ones picked for it.
+    openExtractions(sim, player, spawn);
+    if (!tutorialMode)
+      startQuests(sim, map, items, player.id, raidObjectives(options.profile, quests, raid.map));
     controls.yaw = spawn.yaw;
   }
   // Admin cheats (dev builds only); ?peaceful turns that one on too. Set again when
@@ -557,20 +491,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const cheats = readCheats();
   cheats.peaceful ||= options.peaceful;
   applySimCheats(player, cheats);
-  // Zombies cheats (dev builds only): infinite points, and guns to start a new game with.
-  const zombieCheats = zombiesMode ? readZombieCheats() : null;
-  if (zombieCheats) {
-    applyZombieCheats(player, zombieCheats);
-    if (!resume)
-      for (const id of zombieCheats.guns) if (items.has(id)) adminGiveGun(sim, items, player, id);
-  }
-  if (
-    anyCheat(cheats) ||
-    zombieCheats?.infinitePoints ||
-    zombieCheats?.alwaysDrop ||
-    zombieCheats?.guns.length
-  )
-    el.raidHud.note('Admin cheats on', performance.now());
+  if (anyCheat(cheats)) el.raidHud.note('Admin cheats on', performance.now());
   const held = heldWeapon(player);
   if (held) viewmodel.setGun(held, items);
   // The tutorial's steps (TU-3), followed after every tick; its card shows the one on.
@@ -580,21 +501,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     : null;
   tutorialCard?.show(0);
   skipTutorial.set(tutorialMode && tutorialMode.leave);
-  /** A dev screen (a note being written, or the zombies admin panel) is open. */
+  /** A dev screen (a note being written) is open. */
   let devScreen = false;
-  // Zombies mode's in-game admin panel, on the dev server.
-  const zombiesAdmin =
-    import.meta.env.DEV && zombiesMode
-      ? new ZombiesAdmin(
-          items,
-          [...new Set([...zombiesMode.box.map((o) => o.item), zombiesMode.powerups.minigun])],
-          (open) => {
-            devScreen = open;
-            controls.reset();
-            controls.cursor.want(!open);
-          },
-        )
-      : null;
   // Map notes in every raid on the dev server; a build leaves them out.
   if (import.meta.env.DEV) {
     const dev: DevHooks = {
@@ -617,23 +525,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       if (o.type === 'investigate' && o.map === raid.map) markerText.set(o.marker, o.text);
     }
   }
-  // Zombies mode's windows' planks.
-  // Outside a zombies game (a map's play-test without zombie spawns), a barricade still
-  // blocks, so it's drawn boarded up full.
-  const barricades = sim.zombies
-    ? new Barricades(sim.zombies.windows)
-    : map.barricades.length
-      ? new Barricades(barricadeWindows(map))
-      : null;
-  if (barricades) {
-    if (!sim.zombies) barricades.update(barricadeWindows(map));
-    scene.add(barricades.root);
-  }
-  const powerupViews = sim.zombies ? new Powerups() : null;
-  if (powerupViews) scene.add(powerupViews.root);
-  // The mystery box's gun, hovering over it.
-  const boxOffers = sim.zombies ? new BoxOffers(sim.zombies.buys, items, world) : null;
-  if (boxOffers) scene.add(boxOffers.root);
   // Locked doors cut the nav grid now, not in the first frame.
   syncDoors(sim, world, nav);
   syncGlass(sim, world);
@@ -643,16 +534,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // Enemies: their type's skill, and its loadout (or the spawn's) rolled.
   const patrols = new Map(map.patrols.map((p) => [p.id, p]));
   const names = new Map<number, string>();
-  /** Whether someone's gun is loaded with incendiary rounds (for their shots' look). */
-  const incendiary = (id: number): boolean => {
-    const c = entityById(sim, id);
-    const w = c && heldWeapon(c);
-    const round = w ? items.get(loadedAmmo(items, w)) : undefined;
-    return round?.type === 'ammo' && !!round.incendiary;
-  };
-  /** Whoever set you alight, for the damage log. */
-  const burnerName = (by: number): string =>
-    by === player.id ? 'Your own flamethrower' : (names.get(by) ?? 'Someone');
   const enemies: {
     c: Character;
     body: CharacterBody;
@@ -665,8 +546,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const enemyBars = cheats.enemyHealth ? new EnemyBars(el.enemyBars) : null;
   el.enemyBars.hidden = !enemyBars;
   /**
-   * Draws an enemy of a type (or a zombie, in zombies mode) that's in the state, armed by
-   * `arm` (if it isn't yet).
+   * Draws an enemy of a type that's in the state, armed by `arm` (if it isn't yet).
    */
   function addEnemy(c: Character, name: string, outfit: Outfit, arm: () => void): void {
     const body = new CharacterBody(rig, outfit, c);
@@ -747,7 +627,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         openExtractions(sim, c, spawn);
         // Their quests' markers and items, as for yours. A marker this map lacks (the
         // guest on other content) is dropped rather than failing the raid.
-        if (join.quests && !zombiesMode && !tutorialMode)
+        if (join.quests && !tutorialMode)
           startQuests(sim, map, items, c.id, knownObjectives(map, items, join.quests));
         return c;
       },
@@ -946,28 +826,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     (name) => el.raidHud.note(`Grenade · ${name}`, performance.now()),
   );
   controls.picker = hands;
-  // A flash's white screen, the gray of standing in smoke, and flames while you burn.
-  const blindEl = document.getElementById('blind')!;
+  // The gray of standing in smoke.
   const smokeVeil = document.getElementById('smoke-veil')!;
-  const burnEl = document.getElementById('burn')!;
-  // The flame drawn once now into a bitmap at the size it's shown (style.css: 70 × 140), not
-  // left an SVG: the browser drew the SVG afresh for each of the row's flames the first time
-  // you caught fire, which stalled the game for most of a second (2026-10-31).
-  const glowEdge =
-    'radial-gradient(ellipse at center, transparent 55%, rgb(255 110 30 / 0.45) 100%)';
-  const flameImage = new Image();
-  flameImage.onload = () => {
-    const scale = Math.min(2, window.devicePixelRatio || 1);
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(70 * scale);
-    canvas.height = Math.round(140 * scale);
-    canvas.getContext('2d')?.drawImage(flameImage, 0, 0, canvas.width, canvas.height);
-    burnEl.style.backgroundImage = `url("${canvas.toDataURL()}"), ${glowEdge}`;
-  };
-  flameImage.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(FIRE_SVG)}`;
-  burnEl.style.backgroundImage = glowEdge;
-  let burnShown = false;
-  let blindShown = -1;
   let veilShown = -1;
   // A mask's narrower view and muffled sound (AI-7), by the helmet they were last set for.
   const maskEl = document.getElementById('mask-view')!;
@@ -1022,8 +882,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let inventoryChanged = false;
   const useButton = el.hud.button('interact');
   let useLabel = '';
-  // Zombies mode has no inventory: nothing to open it with.
-  if (zombiesMode) el.hud.button('bag').hidden = true;
   const nameOf = (o: Owner): string => {
     if (o.kind === 'container') {
       const l = lootContainerById(sim, o.id);
@@ -1166,29 +1024,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       closeScreen();
       return;
     }
-    if (zombiesMode) {
-      // Nothing to keep, lose or save: how far you got.
-      ended = {
-        how,
-        detail,
-        seconds: sim.tick / TICK_RATE,
-        kills,
-        kept: [],
-        lost: [],
-        quests: [],
-        taken,
-        fight: fightOf(),
-        keptAll: false,
-        zombies: {
-          mode: zombiesMode.name,
-          round: sim.zombies?.round ?? 0,
-          points: pointsOf(sim, player.id),
-        },
-      };
-      resultsAt = now + (how === 'killed' ? RESULTS_AFTER_DEATH_MS : 0);
-      closeScreen();
-      return;
-    }
     const survived = how === 'extracted';
     const keepAll = survived || cheats.keepGear;
     const kept = keptItems(player.gear, keepAll);
@@ -1321,7 +1156,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   // Saved whenever the page is hidden, in case iOS unloads it while you're away.
   const snapshot = (): void => {
     // A party raid can't be picked up again from one device (C7).
-    if (ended || options.test || coop || zombiesMode || tutorialMode) return;
+    if (ended || options.test || coop || tutorialMode) return;
     saveSnapshot({
       version: 1,
       serverRaid: options.serverRaid,
@@ -1360,13 +1195,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // Auto-fire holds the trigger (or swings the knife), but never stops a med being used,
     // and never fires an admin spawner gun: its new enemy is under the crosshair.
     const spawner = !!held && weaponDef(items, held.item).spawns !== undefined;
-    if (
-      target &&
-      settings.current.fire === 'auto' &&
-      !player.using &&
-      !player.extinguish &&
-      !spawner
-    ) {
+    if (target && settings.current.fire === 'auto' && !player.using && !spawner) {
       // A semi-automatic gun is pulled every other tick.
       const semi = !!held && weaponDef(items, held.item).fireMode === 'semi';
       fire ||= !semi || sim.tick % 2 === 0;
@@ -1388,12 +1217,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.reload = controls.reload;
     input.quickReload = controls.quickReload;
     input.draw = controls.draw ?? (controls.swapPrimary ? otherPrimary(player.gear) : null);
-    if (input.draw && input.draw !== player.gear.hand && holdsDeathMachine(sim, player))
-      el.raidHud.warn('Not while you hold the minigun', performance.now());
     input.throw = controls.throw;
     input.grenade = hands.grenadeChoice;
-    input.detonate = controls.detonate;
-    input.extinguish = controls.extinguish;
     input.breathe = controls.breathe;
     if (controls.throwPick && !dead) hands.showGrenadePicker(player, items);
     // A tap on the heal button uses what it shows, or stops a med being used.
@@ -1416,18 +1241,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const switchUseTime = switchIndex >= 0 ? world.switches[switchIndex]!.useTime : 0;
     const key = doorIndex >= 0 ? world.doors[doorIndex]!.key : undefined;
     const hasKey = !!door?.locked && key !== undefined && !!findKey(player.gear, key);
-    // Zombies mode: a door bought with points, and a buy spot in reach (an item or a door
-    // aimed at comes first).
-    const doorCost = door?.locked ? world.doors[doorIndex]!.cost : undefined;
-    const buySpot =
-      !zombiesMode || dead || screenOpen || lootable?.kind === 'ground' || lootable?.kind === 'door'
-        ? -1
-        : buyInReach(sim, player);
-    // A barricade in reach to nail planks up on, held, when nothing else is.
-    const barricade =
-      !zombiesMode || dead || screenOpen || buySpot >= 0 || lootable?.kind === 'door'
-        ? -1
-        : windowInReach(sim, player);
     // A quest marker in reach beats a container or body, but not aiming at an item or door.
     const spot =
       dead || screenOpen || lootable?.kind === 'ground' || lootable?.kind === 'door'
@@ -1437,31 +1250,23 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       ? 'investigate'
       : switchIndex >= 0
         ? 'activate'
-        : buySpot >= 0
-          ? sim.zombies!.buys[buySpot]!.offer?.by === player.id
-            ? 'take'
-            : 'buy'
-          : barricade >= 0
-            ? 'rebuild'
-            : !lootable
-              ? 'use'
-              : door
-                ? door.locked
-                  ? doorCost !== undefined
-                    ? 'buy'
-                    : hasKey
-                      ? 'unlock'
-                      : 'locked'
-                  : door.open
-                    ? 'close'
-                    : 'open'
-                : lootable.kind === 'ground'
-                  ? 'take'
-                  : 'loot';
+        : !lootable
+          ? 'use'
+          : door
+            ? door.locked
+              ? hasKey
+                ? 'unlock'
+                : 'locked'
+              : door.open
+                ? 'close'
+                : 'open'
+            : lootable.kind === 'ground'
+              ? 'take'
+              : 'loot';
     if (label !== useLabel) {
       useLabel = label;
       useButton.textContent = label;
-      useButton.classList.toggle('idle', !lootable && !spot && buySpot < 0 && barricade < 0);
+      useButton.classList.toggle('idle', !lootable && !spot);
     }
     // The pad's □ uses only when there's something to use, else reloads (CP-1).
     controls.canUse = label !== 'use' && label !== 'locked';
@@ -1472,8 +1277,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.door = null;
     input.search = null;
     input.investigate = false;
-    input.buy = null;
-    input.rebuild = !dead && barricade >= 0 && controls.interactHeld;
     input.switch =
       !dead && !spot && switchIndex >= 0 && (controls.interact || controls.interactHeld)
         ? switchIndex
@@ -1482,8 +1285,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       closeScreen();
     } else if (!dead && controls.interact && spot) {
       input.investigate = true;
-    } else if (!dead && controls.interact && buySpot >= 0) {
-      input.buy = buySpot;
     } else if (!dead && controls.interact && lootable?.kind === 'door') {
       input.door = lootable.index;
     } else if (!dead && controls.interact && lootable?.kind === 'ground') {
@@ -1501,7 +1302,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         input.search = lootable.c.id;
         openScreen({ kind: 'container', id: lootable.c.id });
       } else if (lootable.kind === 'body') openScreen({ kind: 'body', id: lootable.c.id });
-    } else if (!dead && controls.bag && !zombiesMode) {
+    } else if (!dead && controls.bag) {
       if (screenOpen) closeScreen();
       else openScreen(null);
     }
@@ -1512,7 +1313,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       input.moveX = input.moveY = 0;
       input.sprint = input.jump = input.fire = input.aim = input.reload = false;
       input.quickReload = false;
-      input.throw = input.detonate = false;
+      input.throw = false;
     }
     // Jumping lets go of a ladder, and ends sprint lock with it.
     if (controls.jump && player.mode === 'ladder') controls.unlockSprint();
@@ -1552,11 +1353,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     prev.yaw = cur.yaw;
     prev.pitch = cur.pitch;
     inventoryChanged = false;
-    // HP lost this tick that no hit explains is bleeding or burning (healing the same tick
-    // hides some). A death with no hit is the fire's, if you're alight.
+    // HP lost this tick that no hit explains is bleeding (healing the same tick hides some).
     const bleeding = isBleeding(player.health);
-    const burn = player.burn ? { ...player.burn } : null;
-    const hpBefore = bleeding || burn ? totalHp(player.health) : -1;
+    const hpBefore = bleeding ? totalHp(player.health) : -1;
     if (guest) {
       // A guest's raid runs on the host: send this tick's input, and take what came back.
       guest.sendInput(input);
@@ -1567,18 +1366,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       host?.fillInputs(inputs, (c) => killCharacter(sim, c, 0));
       step(sim, world, items, inputs, nav);
       host?.afterTick(sim);
-      // The zombies admin panel's asks, after the tick so their events are seen below.
-      if (zombiesAdmin && sim.zombies) {
-        for (const a of zombiesAdmin.actions.splice(0)) {
-          if (a.kind === 'powerup') adminPowerup(sim, items, player, a.powerup);
-          else if (a.kind === 'gun') adminGiveGun(sim, items, player, a.item);
-          else if (a.kind === 'points')
-            sim.zombies.points[player.id] = pointsOf(sim, player.id) + a.amount;
-          else
-            for (const c of sim.entities)
-              if (c.ai?.zombie && !c.health.dead) killCharacter(sim, c, player.id);
-        }
-      }
     }
     pending.length = 0;
     if (tutorialMode && advanceTutorial(tutorialMode.def, tutorialProgress!, sim, player.id))
@@ -1591,8 +1378,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     grenades.tick(sim.grenades);
     grenades.tickSmokes(sim.smokes);
     let hitLost = 0;
-    let lastHit = burn ? fireKey(burn.by) : 'bleeding';
-    let lit = false;
+    let lastHit = 'bleeding';
     let died = false;
     // The last blast this tick, for where its hits came from (its event comes first).
     let blastX = viewer.x;
@@ -1614,33 +1400,17 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         const gun = heldWeapon(player);
         rumble.fired(gun ? weaponDef(items, gun.item).recoil.up : 1, now);
       }
-      if (e.type === 'shot' && e.blast) {
-        // A blast gun's gust (zombies mode's Gale Cannon): no tracer, a cone of wind.
-        if (e.by === viewer.id) viewmodel.fired(now);
-        else bodyOf.get(e.by)?.fired();
-        const shooter = entityById(sim, e.by);
-        const gun = shooter && heldWeapon(shooter);
-        const angle = (gun ? (weaponDef(items, gun.item).blast?.angle ?? 30) : 30) * DEG;
-        const dx = (e.toX - e.fromX) / e.blast;
-        const dy = (e.toY - e.fromY) / e.blast;
-        const dz = (e.toZ - e.fromZ) / e.blast;
-        effects.gust(now, e.fromX, e.fromY - 0.15, e.fromZ, dx, dy, dz, e.blast, angle);
-      } else if (e.type === 'shot') {
-        // A launched grenade or a flame has no tracer: it's drawn flying (grenades, fires).
-        const tracer = !e.grenade && !e.flame;
-        // An incendiary round: an orange tracer, and a burst of fire where it lands.
-        const fiery = tracer && incendiary(e.by);
-        const color = fiery ? INCENDIARY_TRACER : TRACER_COLOR;
+      if (e.type === 'shot') {
+        const color = TRACER_COLOR;
         if (e.by === viewer.id) {
           if (e.pellet === 0) viewmodel.fired(now);
           viewmodel.muzzleWorld(muzzle);
-          if (tracer) effects.tracer(now, muzzle.x, muzzle.y, muzzle.z, e.toX, e.toY, e.toZ, color);
+          effects.tracer(now, muzzle.x, muzzle.y, muzzle.z, e.toX, e.toY, e.toZ, color);
         } else {
           if (e.pellet === 0) bodyOf.get(e.by)?.fired();
-          if (tracer) effects.tracer(now, e.fromX, e.fromY, e.fromZ, e.toX, e.toY, e.toZ, color);
+          effects.tracer(now, e.fromX, e.fromY, e.fromZ, e.toX, e.toY, e.toZ, color);
         }
         if (e.hit !== 'none') effects.impact(now, e.toX, e.toY, e.toZ, e.hit === 'character');
-        if (fiery && e.hit !== 'none') fires.burst(now, e.toX, e.toY, e.toZ);
         if (e.by === player.id && e.hit !== 'none' && shotMarkers.length) {
           const m = shotMarkers[nextShotMarker++ % shotMarkers.length]!;
           placeMarker(m, e.toX, e.toY, e.toZ, 0.006);
@@ -1671,16 +1441,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         if (!player.health.dead) {
           rumble.blast(Math.hypot(e.x - player.x, e.y - player.y, e.z - player.z), e.radius, now);
         }
-      } else if (e.type === 'ignite' && e.target === player.id) {
-        lit = true;
-        el.raidHud.warn(
-          inputMode.desktop
-            ? 'You’re on fire · V to put it out'
-            : inputMode.gamepad
-              ? 'You’re on fire · D-pad ↓ to put it out'
-              : 'You’re on fire · put it out',
-          now,
-        );
       } else if (e.type === 'damage') {
         if (e.amount > 0) bodyOf.get(e.target)?.hit();
         // A hit always shows, even one doing no damage (TU-1); a fall only when it hurts.
@@ -1721,33 +1481,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         el.raidHud.note(`${world.switches[e.index]?.name ?? 'Switch'} on`, now);
       } else if (e.type === 'door' && e.by === player.id && e.result === 'blocked') {
         el.raidHud.warn('Someone’s in the doorway', now);
-      } else if (e.type === 'door' && e.by === player.id && e.result === 'poor') {
-        el.raidHud.warn('Not enough points', now);
-      } else if (e.type === 'door' && e.by === player.id && e.result === 'bought') {
-        const name = map.doors[e.door]?.name;
-        el.raidHud.note(name ? `${name} cleared` : 'Door bought', now);
-      } else if (e.type === 'buy' && e.by === player.id) {
-        const name = e.item ? itemDef(items, e.item).name : '';
-        if (e.result === 'poor') el.raidHud.warn('Not enough points', now);
-        else if (e.result === 'full') el.raidHud.warn('Your ammo is full', now);
-        else if (e.result === 'busy') el.raidHud.warn('Not while you hold the minigun', now);
-        else if (e.result === 'ammo')
-          el.raidHud.note(name ? `${name} ammo filled` : 'Ammo filled', now);
-        else if (e.result === 'theirs') el.raidHud.warn('That gun is someone else’s', now);
-        else if (e.result === 'rolled') el.raidHud.note(`Mystery box · ${name}`, now);
-        else if (e.result === 'taken') el.raidHud.note(`Took ${name}`, now);
-        else el.raidHud.note(`Bought ${name}`, now);
-        inventoryChanged = true;
-      } else if (e.type === 'plank' && e.by === player.id && e.points > 0) {
-        el.raidHud.note(`Barricade · +${e.points}`, now);
-      } else if (e.type === 'powerup' && (e.what === 'picked' || e.what === 'ended')) {
-        const name = POWERUP_NAMES[e.kind];
-        if (e.what === 'picked') el.raidHud.note(`${name}!`, now);
-        else if (e.by === 0 || e.by === player.id) el.raidHud.note(`${name} over`, now);
-        inventoryChanged = true;
-      } else if (e.type === 'round') {
-        if (e.started) el.raidHud.note(`Round ${e.round}`, now);
-        else el.raidHud.note(`Round ${e.round} survived`, now);
       } else if (e.type === 'spawnRequest' && !guest) {
         spawnRequested(e);
       } else if (e.type === 'inventory' && e.by === player.id) {
@@ -1758,26 +1491,14 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
 
     if (hpBefore >= 0) {
       const lost = hpBefore - totalHp(player.health) - hitLost;
-      // Both at once: shared by how fast each takes HP.
-      const bleedRate = bleeding
-        ? player.health.bleeding.filter(Boolean).length * HEALTH.bleedRate
-        : 0;
-      // Whatever lit it: fuel, an incendiary round or a molotov (not only ammo).
-      const burnRate = burn ? ZONE_COUNT * (burnOf(items, burn.item)?.burnDamage ?? 0) : 0;
-      const toFire = burnRate > 0 ? lost * (burnRate / (burnRate + bleedRate)) : 0;
-      if (burn) logBurn(taken, burn.by, burnerName(burn.by), toFire);
-      if (bleeding) logBleed(taken, lost - toFire);
+      if (bleeding) logBleed(taken, lost);
     }
-    // Lit this tick: one more time set alight, by whoever it was.
-    if (lit && player.burn) logBurn(taken, player.burn.by, burnerName(player.burn.by), 0, true);
     // The death event comes before the hit that caused it, so this waits for the loop.
     if (died) logKiller(taken, lastHit);
-    // A hit, not their fire or your bleeding, finished you.
-    if (died && killerId && lastHit.startsWith(`${killerId}:`) && lastHit !== fireKey(killerId))
-      logKillingHit(fight, killerId);
+    // A hit, not your bleeding, finished you.
+    if (died && killerId && lastHit.startsWith(`${killerId}:`)) logKillingHit(fight, killerId);
 
-    // Gone from the raid: zombies' bodies a few seconds after dying, and PMC squads that
-    // extracted (AI rework session 4).
+    // Gone from the raid: PMC squads that extracted (AI rework session 4).
     for (let i = enemies.length - 1; i >= 0; i--) {
       const e = enemies[i]!;
       if (sim.entities.includes(e.c)) continue;
@@ -1788,11 +1509,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       enemyChars.splice(enemyChars.indexOf(e.c), 1);
       bodyOf.delete(e.c.id);
       enemyBars?.remove(e.c);
-    }
-    if (zombiesMode) {
-      for (const c of sim.entities)
-        if (c.ai?.zombie && !bodyOf.has(c.id))
-          addEnemy(c, zombiesMode.zombie.name, zombiesMode.zombie.outfit, () => {});
     }
     // Scavs arriving in waves (sim/waves.ts), here and on co-op guests.
     drawNewEnemies();
@@ -1831,13 +1547,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         ? 'Gave up'
         : killer === `${player.id}:explosion`
           ? 'By your own grenade'
-          : killer === fireKey(player.id)
-            ? 'In your own fire'
-            : killer === 'bleeding'
-              ? 'Bled out'
-              : killer === 'fall'
-                ? 'From a fall'
-                : 'From bleeding or a fall';
+          : killer === 'bleeding'
+            ? 'Bled out'
+            : killer === 'fall'
+              ? 'From a fall'
+              : 'From bleeding or a fall';
       endRaid('killed', killedBy ? `by a ${killedBy}` : how, now);
     }
     // Spectating, the HUD shows the teammate you watch: their limbs, gun and rounds (the
@@ -1869,19 +1583,13 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
         ? `${switchUseTime > 0 ? 'Hold to activate ' : ''}${world.switches[switchIndex]!.name}`
         : door?.opening !== undefined
           ? `Opening in ${Math.ceil(door.opening)} s`
-          : doorCost !== undefined
-            ? `${map.doors[doorIndex]?.name ? `Clear the ${map.doors[doorIndex]!.name!.toLowerCase()}` : 'Open door'} · ${doorCost.toLocaleString()} points`
-            : buySpot >= 0
-              ? buyLabel(buySpot)
-              : barricade >= 0
-                ? 'Hold to rebuild the barricade'
-                : doorKey
-                  ? hasKey
-                    ? `Unlock with ${doorKey}`
-                    : `Locked · needs ${doorKey}`
-                  : spot
-                    ? (markerText.get(spot.marker) ?? '')
-                    : '';
+          : doorKey
+            ? hasKey
+              ? `Unlock with ${doorKey}`
+              : `Locked · needs ${doorKey}`
+            : spot
+              ? (markerText.get(spot.marker) ?? '')
+              : '';
     // Desktop has no use button to say what F does, so the prompt says it (□ on a pad).
     if (!inputMode.touch && useLabel !== 'use' && useLabel !== 'locked') {
       // A door a switch is opening says so rather than offering to open it.
@@ -1903,9 +1611,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       );
     } else el.raidHud.setPrompt(prompt, now);
     const shown = watching ?? player;
-    let armed = false;
-    for (const g of sim.grenades) if (g.remote && g.by === shown.id) armed = true;
-    hands.update(shown, items, armed && !shown.health.dead);
+    hands.update(shown, items);
     // The mouse is captured unless a screen needs the cursor.
     controls.cursor.want(!screenOpen && !ended && !hands.pickerOpen && !devScreen);
     if (ended && resultsAt && now >= resultsAt) {
@@ -1915,20 +1621,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       else showResults(ended);
     }
     stats.tick(performance.now() - t0);
-  }
-
-  /** What a zombies buy spot sells you now, and for how much. */
-  function buyLabel(i: number): string {
-    const b = sim.zombies!.buys[i]!;
-    const { cost, ammo } = spotPrice(sim, player, i);
-    const price = `${cost.toLocaleString()} points`;
-    if (b.offer)
-      return b.offer.by === player.id
-        ? `Take ${itemDef(items, b.offer.item).name}`
-        : 'Mystery box · in use';
-    if (b.kind === 'mysteryBox') return `Mystery box · ${price}`;
-    const name = itemDef(items, b.item!).name;
-    return ammo ? `${name} ammo · ${price}` : `Buy ${name} · ${price}`;
   }
 
   /** An item's name, with its count if it's a stack. */
@@ -1969,10 +1661,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     }
   });
   grenades.warm(true);
-  fires.warm(true);
   render();
   grenades.warm(false);
-  fires.warm(false);
   for (const o of culled) o.frustumCulled = true;
 
   const loop = new FixedTimestep();
@@ -2056,9 +1746,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     tutorialCard?.update(camera, player, alive && !screenOpen && !ended);
     enemyBars?.update(camera, alive && !screenOpen && !ended);
     updateDoors(mapView, sim.doors, dtMs / 1000);
-    if (barricades && sim.zombies) barricades.update(sim.zombies.windows);
-    if (powerupViews && sim.zombies) powerupViews.update(sim.zombies.drops, time / 1000);
-    if (boxOffers && sim.zombies) boxOffers.update(sim.zombies.buys, time / 1000);
     updateSearchedLooks(mapView, sim.loot);
     updateGlass(mapView, sim.glass);
     if (aimMarker) {
@@ -2078,8 +1765,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     viewmodel.visible = alive && (!!w || knife) && !scoped;
     if (w) viewmodel.setGun(w, items);
     else if (knife) viewmodel.setKnife(v.gear.knife!.item, items);
-    // Lowered for a med, and while putting yourself out.
-    const down = v.using || v.extinguish ? 1 : 0;
+    // Lowered for a med.
+    const down = v.using ? 1 : 0;
     lowered += (down - lowered) * (1 - Math.exp(-dtMs / 90));
     viewmodel.update(
       camera,
@@ -2095,20 +1782,6 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     );
     effects.update(performance.now());
     grenades.update(performance.now(), alpha);
-    fires.update(performance.now(), alpha, sim, camera, v.id);
-    // On fire: flames along the bottom of the screen, flickering.
-    const burning = alive && !!v.burn;
-    if (burning !== burnShown) {
-      burnShown = burning;
-      burnEl.classList.toggle('on', burning);
-    }
-    // Blinded by a flash: all white, fading out over its last moments.
-    const blind = alive ? Math.min(1, (v.blind ?? 0) / GRENADE.blindFade) : 0;
-    const blindStep = Math.round(blind * 50) / 50;
-    if (blindStep !== blindShown) {
-      blindShown = blindStep;
-      blindEl.style.opacity = String(blindStep);
-    }
     // Wearing a mask (AI-7, Jug's): the view's edges hidden and every sound muffled, until
     // the raid is over.
     const helmet = alive && !ended ? (v.gear.helmet?.item ?? null) : null;

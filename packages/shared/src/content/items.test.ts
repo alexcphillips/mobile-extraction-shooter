@@ -50,8 +50,7 @@ const gun = m({
   rpm: 600,
   magazine: 30,
   reloadTime: 2,
-  aimTime: 0.25,
-  drawTime: 0.8,
+  ergonomics: 67,
   range: 150,
   loudness: 150,
   slots: ['optic', 'magazine'],
@@ -115,7 +114,7 @@ describe('items', () => {
   });
 
   it('upgrades format 1 weapons with a default loudness', () => {
-    const { loudness: _, slots: __, size: ___, drawTime: ____, ...old } = gun;
+    const { loudness: _, slots: __, size: ___, ...old } = gun;
     const def = loadContent(ITEM_FORMAT, { ...old, formatVersion: 1 }, 'gun.json');
     expect(def).toMatchObject({ loudness: 150, formatVersion: ITEM_FORMAT_VERSION });
     expect(def.type === 'weapon' && def.slots).toBe(undefined);
@@ -146,15 +145,30 @@ describe('items', () => {
     expect(v2({ ...helmet, slot: 'body' }, []).size).toEqual([3, 3]);
   });
 
-  it('upgrades format 3 weapons with a draw time by hold, and the knife with its stats', () => {
-    const v3 = (raw: object) => {
-      const { drawTime: _, ...old } = raw as { drawTime?: number };
-      return loadContent(ITEM_FORMAT, { ...old, formatVersion: 3 }, 'x.json');
-    };
-    expect(v3(gun)).toMatchObject({ drawTime: 0.8 });
-    expect(v3({ ...gun, hold: 'pistol' })).toMatchObject({ drawTime: 0.4 });
+  it('upgrades format 3 knives with their stats', () => {
+    const v3 = (raw: object) => loadContent(ITEM_FORMAT, { ...raw, formatVersion: 3 }, 'x.json');
     const knife = { id: 'k', name: 'K', type: 'melee', size: [1, 2] };
     expect(v3(knife)).toMatchObject({ damage: 40, reach: 1.5, swingTime: 0.5 });
+  });
+
+  it("upgrades format 11 guns to ergonomics, and attachments' ergonomics to recovery", () => {
+    const { ergonomics: _, ...rest } = gun as { ergonomics: number };
+    const old = { ...rest, formatVersion: 11, aimTime: 0.25, drawTime: 0.8 };
+    const def = loadContent(ITEM_FORMAT, old, 'g.json');
+    expect(def).toMatchObject({ ergonomics: 67 });
+    expect(def).not.toHaveProperty('aimTime');
+    expect(def).not.toHaveProperty('drawTime');
+    const stock = {
+      ...mag,
+      id: 'st',
+      slot: 'stock',
+      stock: { length: 1 },
+      formatVersion: 11,
+      mods: { recoil: 0.6, ergonomics: 1.2, aimTime: 1.05 },
+    };
+    expect(loadContent(ITEM_FORMAT, stock, 's.json')).toMatchObject({
+      mods: { recoil: 0.6, recovery: 1.2, ergonomics: -3 },
+    });
   });
 
   it('upgrades format 4 items with a value by type, and repair kits with a use time', () => {

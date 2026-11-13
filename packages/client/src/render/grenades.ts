@@ -24,11 +24,6 @@ const FIREBALL_MS = 380;
 const FIREBALL_SIZE = 2.2;
 const FIRE_HOT = new THREE.Color(0xfff0b0);
 const FIRE_COOL = new THREE.Color(0x8a3a12);
-/** A flash's burst: white, smaller and quicker than a fireball. */
-const FLASH_MS = 160;
-const FLASH_SIZE = 1.4;
-const FLASH_HOT = new THREE.Color(0xffffff);
-const FLASH_COOL = new THREE.Color(0xdde8ff);
 
 const WAVES = 4;
 /** The shockwave reaches the radius by then, and is gone by WAVE_MS. */
@@ -114,7 +109,6 @@ export class GrenadeViews {
   private readonly fireballs: THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>[] = [];
   private readonly fireEnds = new Float64Array(FIREBALLS);
   /** Whether each fireball is a flash's burst. */
-  private readonly fireFlash = new Uint8Array(FIREBALLS);
   private nextFire = 0;
   private readonly waves: THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>[] = [];
   private readonly waveEnds = new Float64Array(WAVES);
@@ -249,9 +243,8 @@ export class GrenadeViews {
   }
 
   /**
-   * A grenade going off at (x, y, z) with this radius: a fireball and shockwave, a flash's
-   * burst, a molotov's fireball alone (its fire is drawn by FireViews), or for smoke nothing
-   * (its cloud comes from the sim's smokes).
+   * A grenade going off at (x, y, z) with this radius: a fireball and shockwave, or for
+   * smoke nothing (its cloud comes from the sim's smokes).
    */
   explode(
     now: number,
@@ -263,14 +256,10 @@ export class GrenadeViews {
   ): void {
     if (effect === 'smoke') return;
     const f = this.fireballs[this.nextFire]!;
-    const flash = effect === 'flash';
-    this.fireEnds[this.nextFire] = now + (flash ? FLASH_MS : FIREBALL_MS);
-    this.fireFlash[this.nextFire] = flash ? 1 : 0;
+    this.fireEnds[this.nextFire] = now + FIREBALL_MS;
     this.nextFire = (this.nextFire + 1) % FIREBALLS;
-    f.position.set(x, y + (flash ? 0.1 : 0.3), z);
+    f.position.set(x, y + 0.3, z);
     f.visible = true;
-    // A flash has no shockwave, nor a molotov: its spilled fire shows how far it reached.
-    if (flash || effect === 'molotov') return;
 
     const w = this.waves[this.nextWave]!;
     this.waveEnds[this.nextWave] = now + WAVE_MS;
@@ -302,17 +291,15 @@ export class GrenadeViews {
       const end = this.fireEnds[i]!;
       if (end === 0) continue;
       const f = this.fireballs[i]!;
-      const flash = this.fireFlash[i] === 1;
-      const t = 1 - Math.max(0, (end - now) / (flash ? FLASH_MS : FIREBALL_MS));
+      const t = 1 - Math.max(0, (end - now) / FIREBALL_MS);
       if (t >= 1) {
         this.fireEnds[i] = 0;
         f.visible = false;
         continue;
       }
       // Fast out, then holding while it cools and fades.
-      const size = flash ? FLASH_SIZE : FIREBALL_SIZE;
-      f.scale.setScalar(size * (0.25 + 0.75 * (1 - (1 - t) ** 3)));
-      f.material.color.lerpColors(flash ? FLASH_HOT : FIRE_HOT, flash ? FLASH_COOL : FIRE_COOL, t);
+      f.scale.setScalar(FIREBALL_SIZE * (0.25 + 0.75 * (1 - (1 - t) ** 3)));
+      f.material.color.lerpColors(FIRE_HOT, FIRE_COOL, t);
       f.material.opacity = 1 - t * t;
     }
 

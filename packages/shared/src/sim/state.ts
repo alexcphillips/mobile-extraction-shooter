@@ -6,7 +6,6 @@ import { createGear, type Gear, type Hand } from './gear';
 import type { DoorEvent, DoorState } from './doors';
 import type { DoorSwitchedEvent, SwitchEvent, SwitchNoise } from './switches';
 import type { GlassEvent } from './glass';
-import type { Burn, FirePatch, Flame, IgniteEvent } from './fire';
 import type { BounceEvent, ExplosionEvent, Grenade, Smoke, ThrowEvent } from './grenades';
 import type { GroundItem } from './ground';
 import { createHealth, type DamageEvent, type DeathEvent, type Health } from './health';
@@ -21,7 +20,6 @@ import type { WavesState } from './waves';
 import type { WireEvent } from './wire';
 import type { Poi, SquadState } from './routes';
 import type { ShotEvent } from './weapons';
-import type { BuyEvent, PlankEvent, PowerupEvent, RoundEvent, ZombiesState } from './zombies';
 
 export type EntityId = number;
 
@@ -106,8 +104,8 @@ export interface Character {
   /**
    * An enemy's type and which of its outfits it wears, picked at spawn (AI rework session 2).
    * Here rather than in `ai`, since co-op guests aren't sent the AI's state but must draw
-   * the same look, and draw enemies that arrive mid-raid. Missing for players, zombies,
-   * and enemies saved before it.
+   * the same look, and draw enemies that arrive mid-raid. Missing for players and
+   * enemies saved before it.
    */
   look?: EnemyLook;
   /** How far into aiming down the sights: 0 at the hip, 1 fully aimed. */
@@ -118,21 +116,6 @@ export interface Character {
   swing: number;
   /** Seconds until it can throw another grenade; missing (as in older saves) is 0. */
   throwCooldown?: number;
-  /**
-   * Seconds left blinded by a flash grenade (2026-10-31): an enemy sees nothing, a player's
-   * screen is white. Missing (as in older saves) is 0.
-   */
-  blind?: number;
-  /**
-   * On fire (2026-10-31): seconds left, who lit it and with what. Null or missing (as in
-   * older saves) when not.
-   */
-  burn?: Burn | null;
-  /**
-   * Seconds left putting itself out (2026-10-31); it can't fire, aim, reload, throw, swing,
-   * switch hands or use a med meanwhile, and walks slowly. Missing (older saves) is 0.
-   */
-  extinguish?: number;
   /** The med it's using, or null. */
   using: MedUse | null;
   /**
@@ -209,10 +192,6 @@ export interface AdminCheats {
   peaceful: boolean;
   /** Meds and repair kits work but are never used up. */
   infiniteConsumables: boolean;
-  /** Zombies mode: buying costs no points (2026-11-04). Missing is off. */
-  infinitePoints?: boolean;
-  /** Zombies mode: every zombie it kills drops a power-up, past the round's cap. Missing is off. */
-  alwaysDrop?: boolean;
 }
 
 /** Only characters so far. Loot containers and ground items have their own lists. */
@@ -225,7 +204,6 @@ export type SimEvent =
   | ThrowEvent
   | BounceEvent
   | ExplosionEvent
-  | IgniteEvent
   | DamageEvent
   | DeathEvent
   | InventoryEvent
@@ -237,10 +215,6 @@ export type SimEvent =
   | GlassEvent
   | InvestigateEvent
   | SpawnRequestEvent
-  | RoundEvent
-  | BuyEvent
-  | PlankEvent
-  | PowerupEvent
   | CalloutEvent
   | VoiceEvent
   | WireEvent
@@ -274,14 +248,10 @@ export interface SimState {
   loot: LootContainer[];
   /** Items lying loose: rolled at loot spawns, dropped, or with nowhere else to go. */
   ground: GroundItem[];
-  /** Grenades thrown and not yet gone off, and C4 waiting for its detonator. */
+  /** Grenades thrown and not yet gone off. */
   grenades: Grenade[];
   /** Smoke grenades' clouds, until they clear (2026-10-31). */
   smokes: Smoke[];
-  /** Flamethrower blobs in flight (2026-10-31). */
-  flames: Flame[];
-  /** Fire burning where flames landed on the map, until it burns out (2026-10-31). */
-  fires: FirePatch[];
   /** Each of the world's doors, by index; filled in by the first step (see syncDoors). */
   doors: DoorState[];
   /** Each of the world's switches, by index: true once used (see tickSwitches). */
@@ -303,10 +273,6 @@ export interface SimState {
    * the raid starts; missing is 1.
    */
   hearingScale?: number;
-  /**
-   * A zombies game's rounds, points and buy spots (2026-11-04); null or missing in a raid.
-   */
-  zombies?: ZombiesState | null;
   /**
    * The raid's scav slots and the waves still to come, and gunfire for the trickle (AI
    * rework session 2, sim/waves.ts). Null or missing outside a raid and in raids saved
@@ -382,10 +348,6 @@ export interface PlayerInput {
    * none of it carried, the first grenade carried.
    */
   grenade?: string | null;
-  /** Set off every C4 it has placed: a press. */
-  detonate?: boolean;
-  /** Start putting itself out while on fire: a press (2026-10-31). */
-  extinguish?: boolean;
   /**
    * The breath button (BW-2): a press while aimed. Holding, it breathes out; breathing, it
    * holds again with what's left. Ignored with the gun down.
@@ -406,10 +368,6 @@ export interface PlayerInput {
   looting?: string | null;
   /** Investigate the quest marker in reach (session 14b): a press. */
   investigate?: boolean;
-  /** Zombies mode: use a buy spot in reach, by its index in state.zombies.buys: a press. */
-  buy?: number | null;
-  /** Zombies mode: nail planks up on the window in reach, held. */
-  rebuild?: boolean;
 }
 
 /**
@@ -428,8 +386,6 @@ export function createState(seed: number): SimState {
     ground: [],
     grenades: [],
     smokes: [],
-    flames: [],
-    fires: [],
     doors: [],
     switches: [],
     noises: [],

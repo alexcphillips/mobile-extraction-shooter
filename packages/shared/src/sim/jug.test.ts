@@ -817,8 +817,6 @@ describe('local AI fights, and Jug on his ground (2026-11-08)', () => {
       target: 0,
       loudness: 150,
       pellet: 0,
-      grenade: 0,
-      flame: 0,
     });
     updateAi(state, world, items, nav);
     return c.ai!.awareness !== 'unaware';
@@ -856,8 +854,6 @@ describe('local AI fights, and Jug on his ground (2026-11-08)', () => {
         target: 0,
         loudness: 150,
         pellet: 0,
-        grenade: 0,
-        flame: 0,
       });
       updateAi(state, world, items, nav);
       const heard = c.ai!.awareness !== 'unaware';

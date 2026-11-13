@@ -389,8 +389,6 @@ describe('PMC fighting', () => {
         target: 0,
         loudness: 150,
         pellet: 0,
-        grenade: 0,
-        flame: 0,
       });
       updateAi(state, world, items, nav);
       return team[0]!.ai!.awareness;
@@ -504,9 +502,9 @@ describe('PMC grenades', () => {
       const { state, world, nav } = behindWall(seed, 7);
       expect(throws(state, 12, world, nav)).toBe(0);
     }
-    // Only a flash and a smoke.
+    // Only a smoke.
     for (const seed of [1, 2, 3]) {
-      const { state, world, nav } = behindWall(seed, 14, 2, ['flash', 'smoke']);
+      const { state, world, nav } = behindWall(seed, 14, 2, ['smoke']);
       expect(throws(state, 12, world, nav)).toBe(0);
     }
     // On its own, always pushing in when it loses you.

@@ -30,7 +30,7 @@ packages/
   shared/    # game simulation, rules, data schemas. No three.js, React or DOM.
   client/    # Vite app: three.js renderer, React UI, input; includes /editor
   server/    # Cloudflare Worker
-content/     # JSON game data: maps, prefabs, items, loot tables, quests, vendors, enemies, zombies modes
+content/     # JSON game data: maps, prefabs, items, loot tables, quests, vendors, enemies
 docs/
 ```
 

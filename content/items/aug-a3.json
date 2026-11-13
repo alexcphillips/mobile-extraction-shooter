@@ -1,5 +1,5 @@
 {
-  "formatVersion": 11,
+  "formatVersion": 12,
   "id": "aug-a3",
   "name": "AUG A3",
   "type": "weapon",
@@ -15,8 +15,7 @@
   "magazine": 30,
   "feed": "magazine",
   "reloadTime": 2.6,
-  "aimTime": 0.2,
-  "drawTime": 0.8,
+  "ergonomics": 78,
   "range": 250,
   "loudness": 180,
   "defaults": {

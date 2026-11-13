@@ -166,11 +166,6 @@ export function updateMedUse(
     c.using = null;
     return;
   }
-  // Not while putting yourself out (2026-10-31).
-  if (c.extinguish) {
-    c.using = null;
-    return;
-  }
   if (input?.use === 'cancel') c.using = null;
   else if (input?.use) startUse(c, items, input.use);
   const u = c.using;

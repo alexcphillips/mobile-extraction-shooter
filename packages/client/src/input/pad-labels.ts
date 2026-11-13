@@ -58,8 +58,7 @@ export function padLayout(s: Pick<Settings, 'aim' | 'crouch' | 'lean'>): PadRow[
       raid: s.lean === 'toggle' ? 'Lean (press again to straighten)' : 'Lean while held',
       menus: 'Step the cursor',
     },
-    { keys: ['D-pad ↑'], raid: 'Detonate C4', menus: 'Step the cursor' },
-    { keys: ['D-pad ↓'], raid: 'Put out fire', menus: 'Step the cursor' },
+    { keys: ['D-pad ↑', 'D-pad ↓'], raid: '—', menus: 'Step the cursor' },
     { keys: ['Options'], raid: 'Settings', menus: 'Close the screen' },
     { keys: ['Touchpad'], raid: 'Bag', menus: 'Close the bag' },
   ];

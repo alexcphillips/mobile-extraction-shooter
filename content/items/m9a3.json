@@ -1,5 +1,5 @@
 {
-  "formatVersion": 11,
+  "formatVersion": 12,
   "id": "m9a3",
   "name": "M9A3",
   "type": "weapon",
@@ -15,8 +15,7 @@
   "magazine": 17,
   "feed": "magazine",
   "reloadTime": 1.6,
-  "aimTime": 0.18,
-  "drawTime": 0.4,
+  "ergonomics": 82,
   "range": 100,
   "loudness": 120,
   "defaults": {

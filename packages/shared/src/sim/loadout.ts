@@ -29,14 +29,7 @@ import { giveWeapon, type WeaponState } from './weapons';
  * always carries (`carried`, TU-2) is stowed before the grenades.
  * Replaces everything it had except the vault.
  */
-export function equipLoadout(
-  c: Character,
-  items: ItemDb,
-  loadout: LoadoutDef,
-  rng: Rng,
-  /** Spare magazines for a magazine-fed gun (MG-3); false in zombies mode. */
-  magazines = true,
-): void {
+export function equipLoadout(c: Character, items: ItemDb, loadout: LoadoutDef, rng: Rng): void {
   const vault = c.gear.vault;
   c.gear = createGear(false);
   c.gear.vault = vault;
@@ -72,7 +65,7 @@ export function equipLoadout(
     for (let i = 0; i < (k.count ?? 1); i++) stow(c, items, createItem(items, k.item));
   rollGrenades(c, items, loadout.grenades, rng);
   // MG-3: spare magazines first, so they land in pockets and rig, in reach of a reload.
-  const loose = spare - (magazines ? stowMagazines(c, items, gun, ammo, spare) : 0);
+  const loose = spare - stowMagazines(c, items, gun, ammo, spare);
   for (const group of loadout.meds ?? []) rollGrenades(c, items, group, rng);
   if (loose > 0) stow(c, items, { item: ammo, count: loose });
 }

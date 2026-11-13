@@ -1,13 +1,17 @@
 import {
   ATTACHMENT_SLOTS,
+  ERGO,
+  aimTimeAt,
   attachmentDef,
   caliberOf,
+  ergonomicsOf,
   fits,
   isMagazine,
   magazineFed,
   roundCaliber,
   roundOf,
   stockFolds,
+  swayAt,
   weaponDef,
   type AmmoDef,
   type AttachmentSlot,
@@ -15,10 +19,10 @@ import {
   type WeaponDef,
 } from '../content/items';
 import { addItem, removeAt, type Grid, type Item } from '../inventory/grid';
-import { chance, nextFloat } from '../rng';
+import { nextFloat } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import { createRayHit, type CollisionWorld } from '../world/collision-world';
-import { CHEST, HEALTH, badlyHurt, brokenArms, shootCharacter, woundZone } from './health';
+import { HEALTH, badlyHurt, brokenArms, shootCharacter } from './health';
 import {
   CARRIED_GRIDS,
   QUICK_GRIDS,
@@ -31,14 +35,11 @@ import {
 } from './gear';
 import { dropItem } from './ground';
 import { cameOffGun } from './raid';
-import { ignite, launchFlame } from './fire';
-import { launchGrenade } from './grenades';
 import { GLASS, breakGlass, glassHit } from './glass';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import { RECOIL, kickRecoil, settleRecoil } from './recoil';
 import { STAMINA, staminaBreath } from './stamina';
 import {
-  bodyPoint,
   entityById,
   eyeHeight,
   eyeX,
@@ -143,6 +144,8 @@ export interface WeaponState extends Item {
 export interface WeaponStats {
   magazine: number;
   reloadTime: number;
+  /** Handling with its attachments' points (ERGO): sets aim time and aimed sway. */
+  ergonomics: number;
   aimTime: number;
   hipSpread: number;
   aimSpread: number;
@@ -153,7 +156,7 @@ export interface WeaponStats {
   recoilAngle: number;
   /** The round past which a burst stops climbing; 0 never. */
   recoilStableAfter: number;
-  /** The gun's recoil recovery with attachments' ergonomics. */
+  /** The gun's recoil recovery with its attachments' recovery. */
   recoilRecovery: number;
   loudness: number;
 }
@@ -162,6 +165,7 @@ export function createWeaponStats(): WeaponStats {
   return {
     magazine: 0,
     reloadTime: 0,
+    ergonomics: 0,
     aimTime: 0,
     hipSpread: 0,
     aimSpread: 0,
@@ -188,7 +192,8 @@ export function weaponStats(items: ItemDb, w: WeaponState, out: WeaponStats): We
   // A magazine-fed gun holds what its magazine does, nothing without one (MG-1).
   out.magazine = magazineFed(def) ? capacityOf(items, w.attachments.magazine) : def.magazine;
   out.reloadTime = def.reloadTime;
-  out.aimTime = def.aimTime;
+  out.ergonomics = ergonomicsOf(items, w);
+  out.aimTime = aimTimeAt(out.ergonomics);
   out.hipSpread = def.hipSpread;
   out.aimSpread = def.aimSpread;
   out.recoilUp = def.recoil.up;
@@ -211,7 +216,7 @@ export function weaponStats(items: ItemDb, w: WeaponState, out: WeaponStats): We
     out.aimSpread *= m.spread ?? 1;
     out.recoilUp *= (m.recoil ?? 1) * (m.recoilUp ?? 1);
     out.recoilSide *= (m.recoil ?? 1) * (m.recoilSide ?? 1);
-    out.recoilRecovery *= m.ergonomics ?? 1;
+    out.recoilRecovery *= m.recovery ?? 1;
     out.loudness *= m.loudness ?? 1;
   }
   return out;
@@ -237,21 +242,6 @@ export interface ShotEvent {
    * first and for ordinary rounds. Sounds and muzzle flashes go with pellet 0 only.
    */
   pellet: number;
-  /**
-   * A grenade launcher's shot: the grenade's id (it flies as state.grenades), and the
-   * shot goes nowhere (to is from, hit none). 0 for bullets.
-   */
-  grenade: number;
-  /**
-   * A flamethrower's shot (2026-10-31): the flame's id (it flies as state.flames), and the
-   * shot goes nowhere, as a launcher's does. 0 for everything else.
-   */
-  flame: number;
-  /**
-   * A blast gun's shot (2026-11-04, WeaponDef.blast): how far its blast reaches; to is
-   * where it points at that range. Missing for everything else.
-   */
-  blast?: number;
 }
 
 // Scratch for working out stats, so a tick allocates nothing.
@@ -427,13 +417,13 @@ export function partIn(w: WeaponState, items: ItemDb, part: Item): number {
 }
 
 /**
- * Whether c's reloads of a gun take magazine items (MG-1): a magazine-fed gun, outside
- * zombies mode (left alone, the user's call) and without free ammo. Enemies too since
+ * Whether c's reloads of a gun take magazine items (MG-1): a magazine-fed gun without
+ * free ammo. Enemies too since
  * MG-3; with no loaded magazine in reach they load loose rounds into the one in the gun
  * (reloadLoose).
  */
 export function usesMagazines(state: SimState, c: Character, def: WeaponDef): boolean {
-  return magazineFed(def) && !state.zombies && !freeAmmo(c, def);
+  return magazineFed(def) && !freeAmmo(c, def);
 }
 
 /**
@@ -569,12 +559,14 @@ function armScale(c: Character, perArm: number): number {
 /**
  * A player's gun off the view this tick: the sim's, so shots and co-op hosts agree. Sway
  * comes from the tick rather than the random numbers, and enemies have none. `aiming` is
- * whether they're aiming in, which holds their breath.
+ * whether they're aiming in, which holds their breath. The gun's ergonomics scale its idle
+ * sway (ERGO); the lag when turning follows its aim time.
  */
 function updateSway(
   state: SimState,
   c: Character,
   aimTime: number,
+  ergonomics: number,
   aiming: boolean,
   breathe = false,
 ): void {
@@ -600,6 +592,7 @@ function updateSway(
     (1 + brokenArms(c.health) * SWAY_BROKEN_ARM) *
     (1 + tired * SWAY_TIRED) *
     (1 + (SWAY_MOVING - 1) * moving) *
+    swayAt(ergonomics) *
     breath;
   let tremorYaw = 0;
   let tremorPitch = 0;
@@ -669,7 +662,7 @@ export function updateWeapon(
   const w = heldWeapon(c);
   if (!w) {
     c.aim = 0;
-    updateSway(state, c, UNARMED_AIM_TIME, false);
+    updateSway(state, c, UNARMED_AIM_TIME, ERGO.swayAt, false);
     settleRecoil(c, RECOIL.unarmedSnap, RECOIL.unarmedRecovery, false);
     return;
   }
@@ -678,8 +671,8 @@ export function updateWeapon(
   const kick = RECOIL.scale * (input?.thumb ? RECOIL.thumb : 1);
   s.recoilUp *= kick;
   s.recoilSide *= kick;
-  // Not on a ladder or vaulting, not until it's drawn, nor while putting yourself out.
-  const free = c.mode !== 'ladder' && c.mode !== 'vault' && c.draw === 0 && !c.extinguish;
+  // Not on a ladder or vaulting, nor until it's drawn.
+  const free = c.mode !== 'ladder' && c.mode !== 'vault' && c.draw === 0;
 
   // Broken arms and worn gear (GZ-1, players only) slow aiming in.
   const aimStep =
@@ -687,7 +680,7 @@ export function updateWeapon(
   // Using a med lowers the gun.
   const aiming = !!input?.aim && free && !c.using;
   c.aim = Math.max(0, Math.min(1, c.aim + (aiming ? aimStep : -aimStep)));
-  updateSway(state, c, s.aimTime, aiming, !!input?.breathe);
+  updateSway(state, c, s.aimTime, s.ergonomics, aiming, !!input?.breathe);
 
   const quick = !!input?.quickReload && usesMagazines(state, c, def);
   if (w.reloading > 0) {
@@ -723,11 +716,10 @@ export function updateWeapon(
 }
 
 /**
- * Firing and reloading take no rounds: the infinite ammo cheat, an admin spawner gun, or a
- * gun that never runs out (zombies mode's death machine).
+ * Firing and reloading take no rounds: the infinite ammo cheat or an admin spawner gun.
  */
 const freeAmmo = (c: Character, def: WeaponDef): boolean =>
-  !!c.admin?.infiniteAmmo || def.spawns !== undefined || !!def.infiniteAmmo;
+  !!c.admin?.infiniteAmmo || def.spawns !== undefined;
 
 /**
  * Starts a reload, unless there's nothing to load or it's full of the same round. With
@@ -877,49 +869,7 @@ function fire(
   const yaw = c.yaw + c.recoilYaw + (c.swayYaw ?? 0) + off * Math.cos(around);
   const pitch = c.pitch + c.recoilPitch + (c.swayPitch ?? 0) + off * Math.sin(around);
   const ammo = roundOf(items, loadedAmmo(items, w))!;
-  if (def.blast && ammo.type === 'ammo') {
-    blastShot(state, c, def.blast, yaw, pitch, s, ammo, world, items);
-  } else if (ammo.type === 'grenade') {
-    // A launcher: the grenade flies from here as a thrown one does, only faster, and with
-    // an impact fuse if the launcher arms it.
-    const speed = def.launchSpeed ?? ammo.throwSpeed;
-    const g = launchGrenade(state, c, world, ammo, yaw, pitch, speed, def.armDistance);
-    state.events.push({
-      type: 'shot',
-      by: c.id,
-      fromX: g.x,
-      fromY: g.y,
-      fromZ: g.z,
-      toX: g.x,
-      toY: g.y,
-      toZ: g.z,
-      hit: 'none',
-      target: 0,
-      loudness: s.loudness,
-      pellet: 0,
-      grenade: g.id,
-      flame: 0,
-    });
-  } else if (ammo.flame) {
-    // A flamethrower: a blob of flame flies out to its range, setting alight what it hits.
-    const f = launchFlame(state, c, world, ammo, yaw, pitch, def.range);
-    state.events.push({
-      type: 'shot',
-      by: c.id,
-      fromX: f.x,
-      fromY: f.y,
-      fromZ: f.z,
-      toX: f.x,
-      toY: f.y,
-      toZ: f.z,
-      hit: 'none',
-      target: 0,
-      loudness: s.loudness,
-      pellet: 0,
-      grenade: 0,
-      flame: f.id,
-    });
-  } else if (!ammo.pellets) {
+  if (!ammo.pellets) {
     castShot(state, c, yaw, pitch, def, s, ammo, world, items, 0);
   } else {
     const pelletSpread = (ammo.pelletSpread ?? 0) * DEG;
@@ -934,74 +884,6 @@ function fire(
 
   kickRecoil(state, c, s.recoilUp, s.recoilSide, s.recoilAngle, s.recoilStableAfter);
 }
-
-// Scratch for where a blast's target's chest is.
-const blastPoint = { x: 0, y: 0, z: 0 };
-
-/**
- * A blast gun's shot (WeaponDef.blast): every living enemy within its range and cone that
- * nothing solid hides from the shooter's eye takes a killing hit, and is flung away.
- */
-function blastShot(
-  state: SimState,
-  c: Character,
-  blast: NonNullable<WeaponDef['blast']>,
-  yaw: number,
-  pitch: number,
-  s: WeaponStats,
-  ammo: AmmoDef,
-  world: CollisionWorld,
-  items: ItemDb,
-): void {
-  const cp = Math.cos(pitch);
-  const dx = -Math.sin(yaw) * cp;
-  const dy = Math.sin(pitch);
-  const dz = -Math.cos(yaw) * cp;
-  const ox = eyeX(c);
-  const oy = eyeHeight(c);
-  const oz = eyeZ(c);
-  const cone = Math.cos(blast.angle * DEG);
-  for (const e of state.entities) {
-    if (!e.ai || e.health.dead) continue;
-    const p = blastPoint;
-    bodyPoint(e, e.height * 0.6, p);
-    const tx = p.x - ox;
-    const ty = p.y - oy;
-    const tz = p.z - oz;
-    const d = Math.hypot(tx, ty, tz);
-    if (d > blast.range || d < 1e-6) continue;
-    // Within the cone, measured across the ground (it's wide, not a pencil).
-    const across = Math.hypot(tx, tz);
-    const ahead = across > 1e-6 ? (tx * dx + tz * dz) / (across * Math.hypot(dx, dz)) : 1;
-    if (ahead < cone && d > 1) continue;
-    if (world.raycast(ox, oy, oz, tx / d, ty / d, tz / d, d) < d) continue;
-    woundZone(state, items, e, CHEST, BLAST_DAMAGE, ammo, c.id, 'shot', c.x, c.z);
-    const k = blast.push / Math.max(across, 1e-6);
-    e.vx += tx * k;
-    e.vz += tz * k;
-    e.vy += blast.push * 0.35;
-  }
-  state.events.push({
-    type: 'shot',
-    by: c.id,
-    fromX: ox,
-    fromY: oy,
-    fromZ: oz,
-    toX: ox + dx * blast.range,
-    toY: oy + dy * blast.range,
-    toZ: oz + dz * blast.range,
-    hit: 'none',
-    target: 0,
-    loudness: s.loudness,
-    pellet: 0,
-    grenade: 0,
-    flame: 0,
-    blast: blast.range,
-  });
-}
-
-/** More than anything has: a blast kills. */
-const BLAST_DAMAGE = 1e6;
 
 /** One bullet or pellet from the shooter's eye along yaw and pitch: hits and its event. */
 function castShot(
@@ -1064,9 +946,6 @@ function castShot(
         c.z,
         charHit.face,
       );
-      // An incendiary round may set them alight as well (2026-10-31).
-      if (ammo.incendiary && chance(state.rng, ammo.incendiary.chance))
-        ignite(state, target, items, ammo.id, c.id);
     }
   } else if (wd < Infinity) {
     hit = 'world';
@@ -1097,7 +976,5 @@ function castShot(
     target: hit === 'character' ? charHit.id : 0,
     loudness: s.loudness,
     pellet,
-    grenade: 0,
-    flame: 0,
   });
 }

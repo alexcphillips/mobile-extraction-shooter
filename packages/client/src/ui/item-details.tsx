@@ -2,6 +2,7 @@ import {
   caliberOf,
   condition,
   createWeaponStats,
+  drawTimeAt,
   firesRound,
   grenadeEffect,
   isMoney,
@@ -12,7 +13,6 @@ import {
   roundOf,
   sellParts,
   weaponStats,
-  type BurnStats,
   type AttachmentMods,
   type Item,
   type ItemDb,
@@ -424,6 +424,32 @@ function Level({ level }: { level: number }): ReactNode {
 }
 
 const seconds = (s: number): string => `${+s.toFixed(2)} s`;
+
+/*
+ * Gun stats as scores (2026-11-13, the user's call): ergonomics is the gun's own number
+ * (ERGO); accuracy and recoil are fixed scales of the sim's degrees, so a new gun never
+ * moves the others' numbers. Accuracy is 100 less ACCURACY_PER_DEG for each degree of aimed
+ * spread; recoil is the kick in degrees times RECOIL_UP and RECOIL_SIDE (lower is better).
+ */
+const ACCURACY_PER_DEG = 60;
+const RECOIL_UP = 40;
+const RECOIL_SIDE = 100;
+
+/** A 0–100 score with a bar, for the gun rows. */
+function Score({ value, title }: { value: number; title?: string }): ReactNode {
+  const v = Math.max(0, Math.min(100, Math.round(value)));
+  return (
+    <span className="stat-score" title={title}>
+      <span className="stat-bar">
+        <i style={{ width: `${v}%` }} />
+      </span>
+      {v}
+    </span>
+  );
+}
+
+/** Points added or taken off: "+5", "−3". */
+const points = (n: number): string => (n > 0 ? `+${n}` : `−${-n}`);
 const percent = (f: number): string => `${Math.round(f * 100)}%`;
 
 /** An attachment's change to a stat, as a percentage: "−20%". */
@@ -448,27 +474,12 @@ function modRows(mods: AttachmentMods): Row[] {
   if (mods.recoil) out.push(['Recoil', change(mods.recoil)]);
   if (mods.recoilUp) out.push(['Vertical recoil', change(mods.recoilUp)]);
   if (mods.recoilSide) out.push(['Horizontal recoil', change(mods.recoilSide)]);
-  if (mods.ergonomics) out.push(['Ergonomics', change(mods.ergonomics)]);
+  if (mods.ergonomics) out.push(['Ergonomics', points(mods.ergonomics)]);
+  if (mods.recovery) out.push(['Recoil recovery', change(mods.recovery)]);
   if (mods.aimTime) out.push(['Aim time', change(mods.aimTime)]);
   if (mods.reloadTime) out.push(['Reload time', change(mods.reloadTime)]);
   if (mods.loudness) out.push(['Loudness', change(mods.loudness)]);
   return out;
-}
-
-/** What flamethrower fuel's burning does to whoever it sets alight. */
-const burns = (f: BurnStats): string =>
-  `sets alight · ${f.burnDamage} a second to every limb, past armor, for ${seconds(f.burnTime)}`;
-
-/** A launcher's impact fuse, for after its launch speed. */
-const impact = (arm: number | undefined): string =>
-  arm === undefined ? '' : ` · goes off on impact past ${arm} m`;
-
-/** A grenade's launchers, if any gun fires it. */
-function launchers(items: ItemDb, id: string): Row[] {
-  const guns = [...items.values()].filter(
-    (g) => g.type === 'weapon' && !g.spawns && firesRound(items, g, id),
-  );
-  return guns.length ? [['Fired by', guns.map((g) => g.name).join(', ')]] : [];
 }
 
 /** The stats that matter for each kind of item. */
@@ -483,42 +494,36 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
         ['Loaded', `${item.mag ?? 0}/${s.magazine} · ${round.name}`],
         [
           'Damage',
-          round.type === 'grenade' ? (
-            round.damage > 0 ? (
-              <>
-                <Level level={round.level} />
-                {round.damage} at the center · {round.radius} m radius
-              </>
-            ) : (
-              `none · ${grenadeEffect(round)}, ${round.radius} m radius`
-            )
-          ) : round.flame ? (
-            burns(round.flame)
-          ) : (
-            <>
-              <Level level={round.level} />
-              {round.damage}
-              {round.pellets ? ` × ${round.pellets}` : ''} · {round.armorDamage} to armor
-              {round.incendiary ? ` · ${percent(round.incendiary.chance)} to set alight` : ''}
-            </>
-          ),
+          <>
+            <Level level={round.level} />
+            {round.damage}
+            {round.pellets ? ` × ${round.pellets}` : ''} · {round.armorDamage} to armor
+          </>,
         ],
-        ['Reload', seconds(s.reloadTime)],
-        ['Aim time', seconds(s.aimTime)],
+        [
+          'Ergonomics',
+          <Score
+            key="e"
+            value={s.ergonomics}
+            title={`Aim ${seconds(s.aimTime)} · draw ${seconds(drawTimeAt(s.ergonomics))}`}
+          />,
+        ],
+        [
+          'Accuracy',
+          <>
+            <Score
+              value={100 - ACCURACY_PER_DEG * s.aimSpread}
+              title={`${+s.aimSpread.toFixed(2)}° aimed`}
+            />
+            <small> · hip {+s.hipSpread.toFixed(1)}°</small>
+          </>,
+        ],
         [
           'Recoil',
-          `${+s.recoilUp.toFixed(2)}° up · ${+s.recoilSide.toFixed(2)}° side · recovers ${+s.recoilRecovery.toFixed(2)}/s` +
-            (s.recoilAngle
-              ? ` · drifts ${Math.abs(s.recoilAngle)}° ${s.recoilAngle > 0 ? 'right' : 'left'}`
-              : '') +
-            (s.recoilStableAfter ? ` · steadies after ${s.recoilStableAfter} rounds` : ''),
+          `${Math.round(s.recoilUp * RECOIL_UP)} vertical · ${Math.round(s.recoilSide * RECOIL_SIDE)} horizontal`,
         ],
-        ['Spread', `${+s.hipSpread.toFixed(2)}° hip · ${+s.aimSpread.toFixed(2)}° aimed`],
-        def.launchSpeed
-          ? ['Launch speed', `${def.launchSpeed} m/s${impact(def.armDistance)}`]
-          : round.type === 'ammo' && round.flame
-            ? ['Range', `${def.range} m · flames fly at ${round.flame.speed} m/s`]
-            : ['Range', `${def.range} m`],
+        ['Reload', seconds(s.reloadTime)],
+        ['Range', `${def.range} m`],
         ['Heard from', `${Math.round(s.loudness)} m`],
       ];
     }
@@ -526,32 +531,12 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
       const guns = [...items.values()].filter(
         (g) => g.type === 'weapon' && !g.spawns && firesRound(items, g, def.id),
       );
-      if (def.flame) {
-        return [
-          ['Caliber', def.caliber],
-          ['Damage', burns(def.flame)],
-          [
-            'Fire',
-            `burns ${seconds(def.flame.fireTime)} where it lands, lighting whoever touches it`,
-          ],
-          ['Stack', `${item.count} / ${def.stack}`],
-          ['Fired by', guns.length ? guns.map((g) => g.name).join(', ') : 'no gun yet'],
-        ];
-      }
       return [
         ['Caliber', def.caliber],
         ['Penetration', <Level key="l" level={def.level} />],
         ['Damage', `${def.damage}${def.pellets ? ` × ${def.pellets} pellets` : ''}`],
         ['Armor damage', `${def.armorDamage}`],
         ['Bleed chance', percent(def.bleedChance)],
-        ...(def.incendiary
-          ? [
-              [
-                'Incendiary',
-                `${percent(def.incendiary.chance)} a hit · ${burns(def.incendiary)}`,
-              ] as Row,
-            ]
-          : []),
         ['Stack', `${item.count} / ${def.stack}`],
         ['Fired by', guns.length ? guns.map((g) => g.name).join(', ') : 'no gun yet'],
       ];
@@ -688,34 +673,16 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
     case 'grenade': {
       const effect = grenadeEffect(def);
       const end: Row[] = [
-        ['Fuse', effect === 'c4' ? `${seconds(def.fuse)} after the detonator` : seconds(def.fuse)],
+        ['Fuse', seconds(def.fuse)],
         ['Heard from', `${def.loudness} m`],
-        ...launchers(items, def.id),
       ];
-      if (effect === 'flash')
-        return [
-          ['Effect', 'Blinds whoever is looking at it'],
-          ['Radius', `${def.radius} m`],
-          ['Blinds for', `up to ${seconds(def.blindTime ?? 0)}`],
-          ...end,
-        ];
       if (effect === 'smoke')
         return [
           ['Effect', 'A cloud enemies can’t see through'],
           ['Cloud', `${def.radius} m · ${seconds(def.smokeTime ?? 0)}`],
           ...end,
         ];
-      if (effect === 'molotov' && def.fire)
-        return [
-          ['Effect', 'Breaks where it lands and spills fire; can’t be fired from a launcher'],
-          ['Fire', `${def.radius} m across · burns ${seconds(def.fire.fireTime)}`],
-          ['Damage', burns(def.fire)],
-          ['Heard from', `${def.loudness} m`],
-        ];
       return [
-        ...(effect === 'c4'
-          ? [['Effect', 'Sticks where it lands; set it off with the detonator'] as Row]
-          : []),
         [
           'Damage',
           <>

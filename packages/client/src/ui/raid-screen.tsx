@@ -172,7 +172,6 @@ export function RaidScreen({ inv, version, ctx }: Props & { ctx: RaidContext }):
  */
 function HealthStrip({ c }: { c: Character }): ReactNode {
   const h = c.health;
-  if (h.pool !== undefined) return null;
   const fill = (zone: number) => ZONE_COLORS[zoneColor(h.hp[zone]!, HEALTH.maxHp[zone]!)];
   const bleed = (zone: number) => (h.bleeding[zone] ? 'bleed' : undefined);
   const broken = ([LEFT_ARM, RIGHT_ARM, LEFT_LEG, RIGHT_LEG] as const).filter((z) =>

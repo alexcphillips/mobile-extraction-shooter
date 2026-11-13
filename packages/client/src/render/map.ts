@@ -395,7 +395,7 @@ export function updateDoors(
       d.pivot.visible = r.shown < 1;
       continue;
     }
-    // A bought door (zombies mode) is gone from its doorway.
+    // A door that vanished (opened by its switch) is gone from its doorway.
     d.pivot.visible = !s?.gone;
     const target = s?.open ? (s.flipped ? -1 : 1) : 0;
     if (d.shown === target) continue;
@@ -502,7 +502,7 @@ const ZERO_MATRIX = new THREE.Matrix4().makeScale(0, 0, 0);
 /** A pivot at the hinge holding the door panel. Seen from +z, a left hinge is at −x. */
 export function buildDoor(door: CompiledDoor, material: THREE.Material): THREE.Object3D {
   if (door.look) {
-    // A couch blocking the stairs (zombies mode): its prefab where the door is. It never
+    // Something blocking the way (a door's look): its prefab where the door is. It never
     // swings, so it hangs from its own middle, which updateDoors leaves be.
     const look = new TriangleBuilder(false);
     for (const s of door.look) look.shape(s);

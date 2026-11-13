@@ -1,5 +1,5 @@
 {
-  "formatVersion": 11,
+  "formatVersion": 12,
   "id": "sv-98-stock",
   "name": "SV-98 stock",
   "shortName": "Stock",
@@ -15,7 +15,7 @@
   },
   "mods": {
     "recoil": 0.65,
-    "ergonomics": 1.15
+    "recovery": 1.15
   },
   "model": {
     "parts": [

@@ -1,14 +1,7 @@
 import {
-  gearConflict,
   MOVEMENT,
-  createGear,
   createHealth,
-  createItem,
-  equip,
-  fitsSlot,
-  giveWeapon,
   itemDef,
-  wearArmor,
   type Character,
   type CompiledMap,
   type GearSlot,
@@ -31,7 +24,7 @@ import { RegionMap, type RegionSpot } from './region-map';
  */
 
 /** The mode's color, in CSS and for the plinth's ring. */
-export const ACCENT = { extraction: 0xe3a33a, zombies: 0x8fc25a } as const;
+export const ACCENT = { extraction: 0xe3a33a } as const;
 
 // ---------------------------------------------------------------------------------------
 // Icons: 24-unit line drawings in the text color.
@@ -125,24 +118,6 @@ export function lobbyLook(player: Character): Character {
       ? ((['primary1', 'primary2', 'sidearm'] as const).find((s) => g[s]) ?? 'knife')
       : g.hand;
   return standing({ ...g, hand });
-}
-
-/** Someone in a zombies mode's starting kit, the knife besides. */
-export function kitLook(items: ItemDb, kit: readonly string[]): Character {
-  const c = standing(createGear(false));
-  for (const id of kit) {
-    const def = itemDef(items, id);
-    if (def.type === 'weapon') {
-      giveWeapon(c, items, id);
-    } else if (def.type === 'armor') {
-      wearArmor(c, items, id);
-    } else {
-      const item = createItem(items, id);
-      const slot = (['rig', 'backpack', 'knife'] as const).find((s) => fitsSlot(items, s, item));
-      if (slot && !gearConflict(items, c.gear, slot, item)) equip(c, items, slot, item);
-    }
-  }
-  return c;
 }
 
 export function CharacterStage({
@@ -398,7 +373,7 @@ export function ModeList({
   );
 }
 
-/** A map (or zombies mode) on the deploy screen's list. */
+/** A map on the deploy screen's list. */
 export interface DeployEntry {
   id: string;
   name: string;

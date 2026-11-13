@@ -7,14 +7,7 @@ import {
   newProfile,
   type PrefabFile,
 } from '@mes/shared';
-import {
-  checkDoorKeys,
-  checkZombieMarkers,
-  loadItems,
-  loadStartingKit,
-  loadZombies,
-  zombiesIds,
-} from './content';
+import { checkDoorKeys, loadItems, loadStartingKit } from './content';
 import { startPlay, type PlayElements, type PlayOptions } from './play';
 import { readPlayTest } from './play-test-handoff';
 
@@ -27,9 +20,6 @@ const KIT = 'new-player';
  * kit, and nothing is saved or sent. The URL takes the game's debug options (?spawn, ?at,
  * ?debug, ?nav, ?peaceful…). The results screen's Continue reloads the page, which plays the
  * map again as the editor last handed it over.
- *
- * A map with zombie spawns is played as a zombies game (2026-11-05), with the rules and kit
- * of the zombies mode that uses it, or else the first mode's.
  */
 export async function startPlayTest(
   el: PlayElements,
@@ -43,14 +33,6 @@ export async function startPlayTest(
   const map = compileMap(loadContent(MAP_FORMAT, files.map, `maps/${files.map.id}.json`), prefabs);
   checkDoorKeys(map);
   const items = loadItems();
-  let zombies = null;
-  if (map.markers.some((m) => m.type === 'zombieSpawn')) {
-    checkZombieMarkers(map);
-    const modes = zombiesIds().map(loadZombies);
-    const mode = modes.find((z) => z.map === files.map.id) ?? modes[0];
-    if (!mode) throw new Error('the map has zombie spawns, but there are no zombies modes');
-    zombies = { ...mode, map: files.map.id };
-  }
   document.title = `Play-test: ${map.name}`;
   backToEditor(files.map.id);
   await startPlay(el, {
@@ -67,9 +49,8 @@ export async function startPlayTest(
       },
     },
     serverRaid: '',
-    profile: newProfile(items, loadStartingKit(zombies?.kit ?? KIT)),
+    profile: newProfile(items, loadStartingKit(KIT)),
     resume: null,
-    zombies,
   });
 }
 

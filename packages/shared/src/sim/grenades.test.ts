@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { addItem } from '../inventory/grid';
-import { checkItems, firesRound, grenadeDef, weaponDef, type ItemDef } from '../content/items';
+import { grenadeDef } from '../content/items';
 import { TICK_RATE } from '../tick';
 import { CollisionWorld, type BoxDef } from '../world/collision-world';
 import { createItem } from './create-item';
-import { carriedAmmo, equip, stow } from './gear';
+import { equip, stow } from './gear';
 import { GRENADE, blastShare, carriedGrenades, smokeBlocks, smokeRadius } from './grenades';
 import { CHEST, HEAD, TOTAL_HP, totalHp } from './health';
 import {
@@ -16,7 +16,6 @@ import {
 } from './state';
 import { step } from './step';
 import { TEST_ITEMS } from './test-items';
-import { giveWeapon } from './weapons';
 
 function makeWorld(boxes: BoxDef[] = []): CollisionWorld {
   return new CollisionWorld({
@@ -240,117 +239,6 @@ describe('going off', () => {
   });
 });
 
-describe('grenade launcher', () => {
-  /** A shooter at the origin facing −z with a loaded launcher and `n` spare grenades. */
-  function armed(n = 0) {
-    const s = setup(n);
-    const w = giveWeapon(s.c, TEST_ITEMS, 'launcher');
-    return { ...s, w };
-  }
-
-  it('fires a grenade per pull, much faster than a throw, with a shot event and no hit', () => {
-    const { world, state, c, w } = armed();
-    step(state, world, TEST_ITEMS, { [c.id]: input({ fire: true }) });
-    expect(w.mag).toBe(5);
-    expect(state.grenades).toHaveLength(1);
-    const g = state.grenades[0]!;
-    expect(g.by).toBe(c.id);
-    expect(Math.hypot(g.vx, g.vy, g.vz)).toBeCloseTo(40, 0);
-    const shot = state.events.find((e) => e.type === 'shot');
-    expect(shot).toMatchObject({ hit: 'none', grenade: g.id, loudness: 120 });
-    expect(state.events.some((e) => e.type === 'throw')).toBe(false);
-    // Semi: holding the trigger fires no more.
-    run(state, world, 60, { [c.id]: input({ fire: true }) });
-    expect(w.mag).toBe(5);
-  });
-
-  /** Ticks until the first explosion, and the explosion, or null. */
-  function untilExplosion(state: SimState, world: CollisionWorld) {
-    for (let i = 0; i < FUSE_TICKS + 5; i++) {
-      step(state, world, TEST_ITEMS, {});
-      for (const e of state.events) if (e.type === 'explosion') return { tick: i, e };
-    }
-    return null;
-  }
-
-  it('goes off where it first lands, far beyond where a throw lands, armed by then', () => {
-    const { world, state, c } = armed();
-    step(state, world, TEST_ITEMS, { [c.id]: input({ fire: true }) });
-    const hit = untilExplosion(state, world)!;
-    // Well before its fuse, on the ground; a level throw lands at about 8 m.
-    expect(hit.tick).toBeLessThan(FUSE_TICKS / 2);
-    expect(-hit.e.z).toBeGreaterThan(30);
-    expect(hit.e.y).toBeLessThan(0.5);
-    expect(state.grenades).toHaveLength(0);
-  });
-
-  it("bounces off a wall it hits before it's armed, and goes off on its fuse", () => {
-    const wall = { x: 0, y: 3, z: -5.2, hx: 5, hy: 3, hz: 0.2, yaw: 0 };
-    const world = makeWorld([wall]);
-    const state = createState(1);
-    const c = spawnCharacter(state, world, 0, 0);
-    giveWeapon(c, TEST_ITEMS, 'launcher');
-    step(state, world, TEST_ITEMS, { [c.id]: input({ fire: true }) });
-    let bounced = false;
-    let at = -1;
-    for (let i = 0; i < FUSE_TICKS + 5 && at < 0; i++) {
-      step(state, world, TEST_ITEMS, {});
-      bounced ||= state.events.some((e) => e.type === 'bounce');
-      if (state.events.some((e) => e.type === 'explosion')) at = i;
-    }
-    expect(bounced).toBe(true);
-    // On its fuse (the shot's tick counts down too, and i counts from 0 here).
-    expect(at).toBe(FUSE_TICKS - 2);
-  });
-
-  it('goes off on someone it hits once armed, passing through anyone closer', () => {
-    const { world, state, c } = armed();
-    const near = spawnCharacter(state, world, 0, -5);
-    const far = spawnCharacter(state, world, 0, -20);
-    // Aimed a little low, against the loft, so it reaches the far one's chest.
-    step(state, world, TEST_ITEMS, { [c.id]: input({ fire: true, pitch: -0.07 }) });
-    const hit = untilExplosion(state, world)!;
-    expect(Math.abs(hit.e.z - far.z)).toBeLessThan(1);
-    expect(hit.e.y).toBeGreaterThan(0.5);
-    expect(far.health.dead).toBe(true);
-    // The near one was flown through, and is beyond the blast.
-    expect(totalHp(near.health)).toBe(TOTAL_HP);
-  });
-
-  it('reloads from the grenades carried, and those are what the throw button counts', () => {
-    const { world, state, c, w } = armed(3);
-    w.mag = 0;
-    step(state, world, TEST_ITEMS, { [c.id]: input({ reload: true }) });
-    expect(w.reloading).toBeGreaterThan(0);
-    run(state, world, 5 * TICK_RATE + 1);
-    expect(w.mag).toBe(3);
-    expect(carriedAmmo(c, 'grenade')).toBe(0);
-    expect(carriedGrenades(c, TEST_ITEMS)).toBe(0);
-  });
-
-  it("doesn't reload from grenades in the backpack", () => {
-    const { world, state, c, w } = armed(0);
-    w.mag = 0;
-    equip(c, TEST_ITEMS, 'backpack', createItem(TEST_ITEMS, 'backpack'));
-    addItem(TEST_ITEMS, c.gear.backpack!.grid, { item: 'grenade', count: 1 });
-    step(state, world, TEST_ITEMS, { [c.id]: input({ reload: true }) });
-    expect(w.reloading).toBe(0);
-    run(state, world, 5 * TICK_RATE + 1);
-    expect(w.mag).toBe(0);
-    expect(c.gear.backpack!.grid.items).toHaveLength(1);
-  });
-
-  it('survives a JSON save and restore with a grenade in flight', () => {
-    const { world, state, c } = armed();
-    step(state, world, TEST_ITEMS, { [c.id]: input({ fire: true }) });
-    run(state, world, 5);
-    const copy = JSON.parse(JSON.stringify(state)) as SimState;
-    run(state, world, 30);
-    run(copy, world, 30);
-    expect(copy.grenades).toEqual(state.grenades);
-  });
-});
-
 describe('grenade types', () => {
   /** A grenade of this item lying at (x, y, z) with its fuse nearly out. */
   function place(state: SimState, by: Character, item: string, x: number, z: number, y = 0.06) {
@@ -371,38 +259,13 @@ describe('grenade types', () => {
 
   it('throws the kind picked, or the first carried when none of it is', () => {
     const { world, state, c } = setup(1);
-    stow(c, TEST_ITEMS, { item: 'flash', count: 1 });
-    step(state, world, TEST_ITEMS, { [c.id]: input({ throw: true, grenade: 'flash' }) });
-    expect(state.grenades[0]!.item).toBe('flash');
-    expect(carriedGrenades(c, TEST_ITEMS, 'flash')).toBe(0);
+    stow(c, TEST_ITEMS, { item: 'smoke', count: 1 });
+    step(state, world, TEST_ITEMS, { [c.id]: input({ throw: true, grenade: 'smoke' }) });
+    expect(state.grenades[0]!.item).toBe('smoke');
+    expect(carriedGrenades(c, TEST_ITEMS, 'smoke')).toBe(0);
     run(state, world, Math.ceil(GRENADE.cooldown * TICK_RATE));
-    step(state, world, TEST_ITEMS, { [c.id]: input({ throw: true, grenade: 'flash' }) });
+    step(state, world, TEST_ITEMS, { [c.id]: input({ throw: true, grenade: 'smoke' }) });
     expect(state.grenades[1]!.item).toBe('grenade');
-  });
-
-  it('flash: blinds those looking at it, close enough, with nothing in the way', () => {
-    const wall = { x: 0, y: 2, z: 13, hx: 3, hy: 2, hz: 0.1, yaw: 0 };
-    const { world, state, c } = setup(0, [wall]);
-    // Each faces −z (yaw 0); the flash goes off at (0, 0): ahead of those south of it.
-    const looking = spawnCharacter(state, world, 0, 4);
-    const away = spawnCharacter(state, world, 3, -4);
-    const far = spawnCharacter(state, world, -3, 14);
-    const hidden = spawnCharacter(state, world, 0, 14);
-    const sideways = spawnCharacter(state, world, -4, 3, Math.PI / 2);
-    c.x = 30;
-    place(state, c, 'flash', 0, 0);
-    step(state, world, TEST_ITEMS, {});
-    expect(state.events.some((e) => e.type === 'explosion' && e.item === 'flash')).toBe(true);
-    expect(looking.blind).toBeGreaterThan(4);
-    expect(away.blind ?? 0).toBe(0);
-    expect(far.blind ?? 0).toBe(0);
-    expect(hidden.blind ?? 0).toBe(0);
-    // Turned to its left, to −x: the flash is off to its right.
-    expect(sideways.blind ?? 0).toBe(0);
-    // It hurts no one, and wears off.
-    expect(totalHp(looking.health)).toBe(TOTAL_HP);
-    run(state, world, 5 * TICK_RATE);
-    expect(looking.blind).toBe(0);
   });
 
   it('smoke: leaves a cloud that hides what is behind it, then clears', () => {
@@ -421,54 +284,9 @@ describe('grenade types', () => {
     expect(smokeBlocks(state.smokes, 0, 1.6, 10, 0, 1.6, -10)).toBe(false);
   });
 
-  it('c4: sticks to the wall it hits and waits for the detonator, then goes off', () => {
-    const wall = { x: 0, y: 3, z: -3.2, hx: 5, hy: 3, hz: 0.2, yaw: 0 };
-    const { world, state, c } = setup(0, [wall]);
-    stow(c, TEST_ITEMS, { item: 'c4', count: 1 });
-    const victim = spawnCharacter(state, world, 2, -2);
-    step(state, world, TEST_ITEMS, { [c.id]: input({ throw: true }) });
-    run(state, world, 10 * TICK_RATE);
-    const g = state.grenades[0]!;
-    expect(g.remote).toBe(true);
-    expect(g.resting).toBe(true);
-    // On the wall's face, above the ground: stuck, not slid down.
-    expect(g.z).toBeCloseTo(-3 + GRENADE.size, 2);
-    expect(g.y).toBeGreaterThan(0.5);
-    expect(totalHp(victim.health)).toBe(TOTAL_HP);
-    // Someone else's detonator does nothing.
-    step(state, world, TEST_ITEMS, { [victim.id]: input({ detonate: true }) });
-    run(state, world, TICK_RATE);
-    expect(state.grenades).toHaveLength(1);
-    step(state, world, TEST_ITEMS, { [c.id]: input({ detonate: true }) });
-    run(state, world, 4);
-    expect(state.grenades).toHaveLength(0);
-    expect(victim.health.dead).toBe(true);
-  });
-
-  it('a launcher fires flash and smoke grenades, never c4', () => {
-    const launcher = weaponDef(TEST_ITEMS, 'launcher');
-    expect(firesRound(TEST_ITEMS, launcher, 'flash')).toBe(true);
-    expect(firesRound(TEST_ITEMS, launcher, 'smoke')).toBe(true);
-    expect(firesRound(TEST_ITEMS, launcher, 'c4')).toBe(false);
-    const withC4 = new Map<string, ItemDef>(TEST_ITEMS);
-    withC4.set('launcher', { ...launcher, ammo: 'c4' });
-    expect(() => checkItems(withC4)).toThrow(/not an ammo or grenade/);
-  });
-
-  it("refuses a flash with no blindTime, or smokeTime on what isn't smoke", () => {
-    const flash = grenadeDef(TEST_ITEMS, 'flash');
-    const items = new Map<string, ItemDef>(TEST_ITEMS);
-    items.set('flash', { ...flash, blindTime: undefined });
-    expect(() => checkItems(items)).toThrow(/blindTime/);
-    items.set('flash', { ...flash, smokeTime: 5 });
-    expect(() => checkItems(items)).toThrow(/smokeTime/);
-  });
-
-  it('survives a JSON save and restore with smoke and placed c4', () => {
+  it('survives a JSON save and restore with smoke', () => {
     const { world, state, c } = setup(0);
-    stow(c, TEST_ITEMS, { item: 'c4', count: 1 });
     place(state, c, 'smoke', 5, 0);
-    step(state, world, TEST_ITEMS, { [c.id]: input({ throw: true }) });
     run(state, world, 30);
     const copy = JSON.parse(JSON.stringify(state)) as SimState;
     run(state, world, 30);

@@ -12,9 +12,6 @@ const MARKER_COLORS: Record<CompiledMarker['type'], number> = {
   questMarker: 0x9b59b6,
   poi: 0x00cec9,
   mapLabel: 0xf2efe6,
-  zombieSpawn: 0x6ab04c,
-  wallBuy: 0xe1b12c,
-  mysteryBox: 0x8e44ad,
 };
 const ZONE_COLOR = 0xffffff;
 /** Extraction zones: light green, flat at their floor's height, with their top. */

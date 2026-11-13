@@ -1,5 +1,5 @@
 {
-  "formatVersion": 11,
+  "formatVersion": 12,
   "id": "pkm",
   "name": "PKM",
   "type": "weapon",
@@ -15,8 +15,7 @@
   "magazine": 100,
   "feed": "magazine",
   "reloadTime": 5,
-  "aimTime": 0.42,
-  "drawTime": 1.4,
+  "ergonomics": 29,
   "range": 375,
   "loudness": 240,
   "defaults": {

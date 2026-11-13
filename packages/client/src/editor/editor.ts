@@ -25,9 +25,7 @@ import {
   checkDoorKeys,
   checkEnemySpawns,
   checkLootContainers,
-  checkZombieMarkers,
   loadEnemies,
-  loadItems,
   loadLootContainers,
   loadLootTables,
   loadQuests,
@@ -146,11 +144,7 @@ export type MarkerKind =
   | 'questMarker'
   | 'poi'
   | 'mapLabel'
-  | 'door'
-  | 'zombieSpawn'
-  | 'wallBuy'
-  | 'mysteryBox'
-  | 'barricade';
+  | 'door';
 export const MARKERS: Readonly<Record<MarkerKind, string>> = {
   playerSpawn: 'player spawn',
   pmcSpawn: 'PMC spawn',
@@ -162,25 +156,9 @@ export const MARKERS: Readonly<Record<MarkerKind, string>> = {
   poi: 'point of interest',
   mapLabel: 'map label',
   door: 'door',
-  // Zombies mode (2026-11-04).
-  zombieSpawn: 'zombie spawn',
-  wallBuy: 'wall gun',
-  mysteryBox: 'mystery box',
-  barricade: 'barricade',
 };
-/**
- * The markers each kind of map uses (2026-11-05): the zombies checkbox swaps the extraction
- * game's (enemy spawns, loot, extractions, quests) for zombies mode's.
- */
-const ZOMBIES_MARKERS: readonly MarkerKind[] = [
-  'playerSpawn',
-  'zombieSpawn',
-  'barricade',
-  'wallBuy',
-  'mysteryBox',
-  'door',
-];
-const EXTRACTION_MARKERS: readonly MarkerKind[] = [
+/** The markers the marker tool offers, in its list's order. */
+export const MARKER_LIST: readonly MarkerKind[] = [
   'playerSpawn',
   'pmcSpawn',
   'enemySpawn',
@@ -192,18 +170,7 @@ const EXTRACTION_MARKERS: readonly MarkerKind[] = [
   'mapLabel',
   'door',
 ];
-export const markersFor = (zombies: boolean): readonly MarkerKind[] =>
-  zombies ? ZOMBIES_MARKERS : EXTRACTION_MARKERS;
-const ZOMBIE_ONLY = new Set<string>(['zombieSpawn', 'barricade', 'wallBuy', 'mysteryBox']);
-
-/** Whether a map has any of zombies mode's markers (in groups too), so is a zombies map. */
-function hasZombieMarkers(nodes: readonly MapNode[]): boolean {
-  return nodes.some(
-    (n) => ZOMBIE_ONLY.has(n.type) || (n.type === 'group' && hasZombieMarkers(n.nodes)),
-  );
-}
 const TOOL_KEYS = { prefab: '6', marker: '7', zone: '8', wall: '9', curve: '0' } as const;
-const DEG = Math.PI / 180;
 /** The biggest footprint leveling takes, either way: past it, it's a group of buildings. */
 const LEVEL_MAX = 150;
 /** How near a road's end must be to another road's end, or past its edge, to join it. */
@@ -255,8 +222,6 @@ export interface EditorState {
   placing: string;
   /** What the marker tool places. */
   marker: MarkerKind;
-  /** Whether it's editing a zombies map: which markers the marker tool offers. */
-  zombies: boolean;
   /** Whether the prefab browser is open. */
   browsing: boolean;
   /** The map's notes (content/notes), and the one picked. */
@@ -372,7 +337,6 @@ export class MapEditor {
     private readonly maps: ReadonlyMap<string, MapFile>,
   ) {
     const doc = structuredClone(map);
-    const zombies = hasZombieMarkers(doc.nodes);
     this.prefabs = new Map([...prefabs].map(([id, p]) => [id, structuredClone(p)]));
     this.state = {
       file,
@@ -381,8 +345,7 @@ export class MapEditor {
       selected: [],
       tool: 'select',
       placing: [...prefabs.keys()][0] ?? '',
-      marker: zombies ? 'zombieSpawn' : 'enemySpawn',
-      zombies,
+      marker: 'enemySpawn',
       browsing: false,
       notes: [],
       note: null,
@@ -563,20 +526,6 @@ export class MapEditor {
     this.setTool('marker');
   }
 
-  /**
-   * Switches between editing an extraction map and a zombies map. The marker tool offers only
-   * that kind's markers, so the picked one changes if the other kind doesn't use it.
-   */
-  setZombies(zombies: boolean): void {
-    const offered = markersFor(zombies);
-    const marker = offered.includes(this.state.marker)
-      ? this.state.marker
-      : zombies
-        ? 'zombieSpawn'
-        : 'enemySpawn';
-    this.set({ zombies, marker });
-  }
-
   /** Opens or closes the prefab browser. */
   setBrowsing(browsing: boolean): void {
     this.set({ browsing });
@@ -655,19 +604,6 @@ export class MapEditor {
       const tag = (nodes[i] as { switch?: { rows: { opens: string }[] } }).switch;
       if (tag?.rows[row]) tag.rows[row].opens = id;
     });
-  }
-
-  /** The barricades' ids in the file the scope is in, for zombie spawns to name. */
-  barricades(): string[] {
-    const ids: string[] = [];
-    const walk = (nodes: readonly MapNode[]): void => {
-      for (const n of nodes) {
-        if (n.type === 'group') walk(n.nodes);
-        else if (n.type === 'barricade') ids.push(n.id);
-      }
-    };
-    walk(this.fileNodes());
-    return ids;
   }
 
   /** The color slots of the file the scope is in. */
@@ -2031,16 +1967,6 @@ export class MapEditor {
       return this.addPoint(e);
     }
     if (tool === 'select' || tool === 'terrain') return;
-    if (tool === 'marker' && this.state.marker === 'barricade') {
-      const barricade = this.barricadeOnWall(e);
-      if (barricade) {
-        this.edit((nodes) => {
-          nodes.push(barricade);
-          return [nodes.length - 1];
-        });
-        return;
-      }
-    }
     const p = this.view.pointUnder(e);
     if (!p) return;
     const { gridSnap, snapDown, color, placing } = this.state;
@@ -2068,7 +1994,6 @@ export class MapEditor {
     } else if (tool === 'marker') {
       node = newMarker(this.state.marker, [p.x, p.y, p.z], collectIds(this.fileNodes()), color);
       placeNode(node, nodePos(node));
-      if (node.type === 'mysteryBox' && this.prefabs.has(MYSTERY_BOX)) node = withBox(node);
     } else {
       node = newShape(tool, [p.x, p.y, p.z], color);
       placeNode(node, nodePos(node));
@@ -2077,57 +2002,6 @@ export class MapEditor {
       nodes.push(node);
       return [nodes.length - 1];
     });
-  }
-
-  /**
-   * A barricade for the wall clicked (2026-11-05): in the middle of its thickness, along it,
-   * at the sill, so its planks aren't buried in the wall, facing the side clicked. In a
-   * wall node's opening it fills the opening; elsewhere it's at the usual window's sill.
-   * Null when what's clicked isn't a wall in scope.
-   */
-  private barricadeOnWall(e: MouseEvent): MapNode | null {
-    const hit = this.view.pickLeaf(e);
-    if (!hit || hit.path.length !== this.state.scope.length + 1) return null;
-    const wall = nodeAt(this.state.map, hit.path, this.prefabs);
-    if (wall?.type !== 'wall' && wall?.type !== 'box') return null;
-    let dx: number;
-    let dz: number;
-    if (wall.type === 'wall') {
-      const yaw = (wall.yaw ?? 0) * DEG;
-      [dx, dz] = [Math.cos(yaw), -Math.sin(yaw)];
-    } else {
-      // Only something thin enough to be a wall.
-      if (Math.min(wall.size[0], wall.size[2]) > VAULT_THICKNESS) return null;
-      ({ dx, dz } = wallAxis(wall));
-    }
-    let along = wall.type === 'wall' ? wallAlong(wall, hit.at) : alongWall(wall, hit.at);
-    let size: [number, number] = [1.4, WINDOW_HEIGHT];
-    let sill = WINDOW_SILL;
-    const gap = wall.type === 'wall' ? wall.openings[openingAt(wall, along)] : undefined;
-    if (gap) {
-      along = gap.along;
-      size = [gap.width, round(gap.top - gap.bottom)];
-      sill = gap.bottom;
-    } else {
-      const grid = this.state.gridSnap || 0.05;
-      along = Math.round(along / grid) * grid;
-    }
-    // Its +z faces the side clicked.
-    let yaw = Math.atan2(-dz, dx);
-    const side =
-      (hit.at[0] - wall.pos[0]) * Math.sin(yaw) + (hit.at[2] - wall.pos[2]) * Math.cos(yaw);
-    if (side < 0) yaw += Math.PI;
-    return {
-      type: 'barricade',
-      id: uniqueId('window', collectIds(this.fileNodes())),
-      pos: [
-        round(wall.pos[0] + along * dx),
-        round(wall.pos[1] + sill),
-        round(wall.pos[2] + along * dz),
-      ],
-      yaw: round(((((yaw / DEG) % 360) + 540) % 360) - 180),
-      size,
-    };
   }
 
   /**
@@ -2749,26 +2623,6 @@ function newShape(tool: Placeable, pos: [number, number, number], color: string)
  * table there are (the scav and household if they exist). Spawns, extractions and quest
  * markers get ids, since other things name them.
  */
-/** The mystery box marker's box (2026-11-05), placed with it. */
-const MYSTERY_BOX = 'mystery-box';
-
-/**
- * A mystery box marker grouped with the box itself, so they move and turn together: the
- * box where clicked, and the marker 1 m in front of it, facing away, which is where the
- * game looks for the box (render/box-offers.ts) and where you stand to use it.
- */
-function withBox(marker: Extract<MapNode, { type: 'mysteryBox' }>): MapNode {
-  return {
-    type: 'group',
-    name: 'Mystery box',
-    pos: marker.pos,
-    nodes: [
-      { type: 'prefab', prefab: MYSTERY_BOX, pos: [0, 0, 0] },
-      { ...marker, pos: [0, 0, 1] },
-    ],
-  };
-}
-
 function newMarker(kind: MarkerKind, pos: Vec3, taken: Set<string>, color: string): MapNode {
   const first = (ids: Iterable<string>, prefer: string): string => {
     const all = [...ids].sort();
@@ -2807,16 +2661,6 @@ function newMarker(kind: MarkerKind, pos: Vec3, taken: Set<string>, color: strin
       return { type: 'mapLabel', pos, text: 'New label' };
     case 'door':
       return { type: 'door', pos, size: [1, 2.1], color };
-    case 'zombieSpawn':
-      return { type: 'zombieSpawn', pos };
-    case 'wallBuy': {
-      const guns = [...loadItems().values()].filter((i) => i.type === 'weapon').map((i) => i.id);
-      return { type: 'wallBuy', pos, item: first(guns, 'k10'), cost: 1000 };
-    }
-    case 'mysteryBox':
-      return { type: 'mysteryBox', pos, cost: 950 };
-    case 'barricade':
-      return { type: 'barricade', id: uniqueId('window', taken), pos, size: [1.4, 1.2] };
     case 'patrol':
       throw new Error('patrols are drawn a point at a time');
   }
@@ -2833,7 +2677,6 @@ export function check(map: MapFile, prefabs: PrefabLookup, file: string): string
     checkEnemySpawns(compiled);
     checkDoorKeys(compiled);
     checkLootContainers(compiled);
-    checkZombieMarkers(compiled);
     for (const q of loadQuests().values()) {
       for (const o of q.objectives) {
         if (o.type === 'handOver' || o.map !== map.id) continue;

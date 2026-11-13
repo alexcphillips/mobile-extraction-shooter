@@ -17,9 +17,9 @@ const PREFIX = 'MES1-';
 /**
  * Every control's number in a code. **Append only**: a number never changes or is reused,
  * or old codes would move the wrong buttons. A code naming a number this build doesn't
- * know (made by a newer one) has that entry skipped.
+ * know (made by a newer one), or one retired (null), has that entry skipped.
  */
-const CODE_ORDER: readonly ControlId[] = [
+const CODE_ORDER: readonly (ControlId | null)[] = [
   'fire',
   'aim',
   'reload',
@@ -33,8 +33,9 @@ const CODE_ORDER: readonly ControlId[] = [
   'knife',
   'heal',
   'grenade',
-  'detonate',
-  'extinguish',
+  // Retired 2026-11-13 with C4 and fire: detonate, put out.
+  null,
+  null,
   'leanLeft',
   'leanRight',
   'breathe',
@@ -45,7 +46,7 @@ const MOVED = 0x80;
 const INDEX = 0x3f;
 
 /** Exposed for the test that every control has a number. */
-export const codeOrder: readonly ControlId[] = CODE_ORDER;
+export const codeOrder: readonly (ControlId | null)[] = CODE_ORDER;
 
 function check(bytes: readonly number[]): number {
   let sum = 0x5a;
@@ -76,6 +77,7 @@ const FULL = 0xffff;
 export function encodeLayout(layout: ControlLayout): string {
   const bytes: number[] = [];
   CODE_ORDER.forEach((id, index) => {
+    if (!id) return;
     const p = layout.placements[id];
     const hidden = layout.hidden.includes(id);
     if (!p && !hidden) return;
@@ -121,7 +123,7 @@ export function decodeLayout(code: string): ControlLayout | { error: string } {
       };
     }
     const id = CODE_ORDER[head & INDEX];
-    if (!id) continue; // a control from a newer build
+    if (!id) continue; // a control from a newer build, or a retired one
     if (p) layout.placements[id] = p;
     if (head & HIDDEN && !CONTROLS.find((d) => d.id === id)?.required) layout.hidden.push(id);
   }

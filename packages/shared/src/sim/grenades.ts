@@ -8,11 +8,9 @@ import {
 import { removeAt } from '../inventory/grid';
 import { TICK_SECONDS } from '../tick';
 import { createRayHit, type CollisionWorld } from '../world/collision-world';
-import { spillFire } from './fire';
 import { QUICK_GRIDS, carriedGrid, heldWeapon } from './gear';
 import { ZONE_COUNT, woundZone, type Zone } from './health';
-import { breakGlass, breakGlassNear, glassHit } from './glass';
-import { createCharacterHit, raycastCharacters } from './hit-zones';
+import { breakGlassNear } from './glass';
 import type { CarriedRef } from './meds';
 import {
   eyeHeight,
@@ -55,15 +53,6 @@ export const GRENADE = {
   zones: [0.6, 1, 0.8, 0.8, 0.9, 0.9, 1],
   /** The blast comes from this far above where it lies, so the floor doesn't hide it. */
   lift: 0.15,
-  /** A flash blinds those looking within this angle of it (2026-10-31). */
-  flashAngle: 60 * DEG,
-  /**
-   * Of a flash's blindTime, the share at the edge of its radius; it rises to all of it
-   * inside GRENADE.inner of the radius.
-   */
-  blindFloor: 0.3,
-  /** A player's white screen fades out over the last this many seconds of being blind. */
-  blindFade: 1.5,
   /** A smoke cloud grows to its radius over this many seconds... */
   smokeGrow: 2,
   /** ...and shrinks away over its last this many. */
@@ -91,17 +80,6 @@ export interface Grenade {
   fuse: number;
   /** Lying still on a floor. */
   resting: boolean;
-  /**
-   * Launched with an impact fuse: meters left to fly before it's armed, then it goes off
-   * on the first thing it hits, the map or someone. Missing for a thrown one, and once it
-   * has hit the map before arming (then only its fuse sets it off).
-   */
-  armIn?: number;
-  /**
-   * C4 (2026-10-31): stuck where it first hit and waiting for its thrower's detonator, its
-   * fuse not running. Missing once detonated, and for every other grenade.
-   */
-  remote?: boolean;
 }
 
 /**
@@ -158,12 +136,10 @@ export interface ExplosionEvent {
 
 // Scratch, so moving grenades allocates nothing.
 const hit = createRayHit();
-const charHit = createCharacterHit();
 
-/** Whether an item is a grenade to throw: not a launcher's own round (a ray gun's bolt). */
+/** Whether an item is a grenade to throw. */
 export function throwable(items: ItemDb, id: string): boolean {
-  const def = items.get(id);
-  return def?.type === 'grenade' && def.caliber === undefined;
+  return items.get(id)?.type === 'grenade';
 }
 
 /**
@@ -199,9 +175,8 @@ export function carriedGrenades(c: Character, items: ItemDb, id?: string | null)
 /**
  * One tick of throwing: a press throws the grenade picked (input.grenade), or the first
  * carried, along the look (with recoil, lofted a little), adding the thrower's own speed.
- * Not on a ladder or vaulting, while taking something out or putting yourself out, or
- * straight after the last throw. It stops a reload or a med. The infinite consumables cheat keeps the grenade.
- * The detonator works whatever else it's doing.
+ * Not on a ladder or vaulting, while taking something out, or straight after the last
+ * throw. It stops a reload or a med. The infinite consumables cheat keeps the grenade.
  */
 export function updateThrow(
   state: SimState,
@@ -211,12 +186,10 @@ export function updateThrow(
   items: ItemDb,
 ): void {
   if (c.throwCooldown) c.throwCooldown = Math.max(0, c.throwCooldown - TICK_SECONDS);
-  if (input?.detonate && !c.health.dead) detonate(state, c);
   if (
     !input?.throw ||
     c.health.dead ||
     c.draw > 0 ||
-    c.extinguish ||
     (c.throwCooldown ?? 0) > 0 ||
     c.mode === 'ladder' ||
     c.mode === 'vault'
@@ -233,7 +206,6 @@ export function updateThrow(
   const w = heldWeapon(c);
   if (w) w.reloading = 0;
 
-  // A molotov breaks on the first thing it hits: an impact fuse armed from the hand.
   const g = launchGrenade(
     state,
     c,
@@ -242,7 +214,6 @@ export function updateThrow(
     c.yaw + c.recoilYaw,
     c.pitch + c.recoilPitch,
     def.throwSpeed,
-    grenadeEffect(def) === 'molotov' ? 0 : undefined,
   );
   state.events.push({ type: 'throw', by: c.id, grenade: g.id, item: id });
 }
@@ -279,15 +250,9 @@ export function dropGrenade(
   return false;
 }
 
-/** Sets off every C4 c has placed: each goes off its fuse from now. */
-function detonate(state: SimState, c: Character): void {
-  for (const g of state.grenades) if (g.by === c.id && g.remote) delete g.remote;
-}
-
 /**
  * Sets a grenade off from c's eye along yaw and pitch, lofted GRENADE.loft, at speed plus
- * c's own: a throw, or a launcher's shot (sim/weapons.ts). It starts a hand's length out,
- * or short of a wall. With armIn, it has an impact fuse armed after that many meters.
+ * c's own. It starts a hand's length out, or short of a wall.
  * Returns it, already in state.grenades.
  */
 export function launchGrenade(
@@ -298,7 +263,6 @@ export function launchGrenade(
   yaw: number,
   pitch: number,
   speed: number,
-  armIn?: number,
 ): Grenade {
   const g: Grenade = {
     id: state.nextId++,
@@ -314,8 +278,6 @@ export function launchGrenade(
     resting: false,
   };
   leaveHand(world, g, eyeX(c), eyeHeight(c), eyeZ(c), yaw, pitch, speed, c.vx, c.vy, c.vz);
-  if (armIn !== undefined) g.armIn = armIn;
-  if (grenadeEffect(def) === 'c4') g.remote = true;
   state.grenades.push(g);
   return g;
 }
@@ -393,7 +355,7 @@ export function predictThrow(
 
 /**
  * One tick of every grenade: each flies and bounces, and goes off when its fuse runs out
- * or, armed, when it hits something (explode). Placed C4's fuse waits for the detonator.
+ * (explode).
  * Those gone off are removed, keeping the rest in order. Smoke clouds age first, and
  * those that have cleared go.
  */
@@ -411,9 +373,9 @@ export function updateGrenades(state: SimState, world: CollisionWorld, items: It
   let kept = 0;
   for (let i = 0; i < list.length; i++) {
     const g = list[i]!;
-    const struck = moveGrenade(state, g, world);
-    if (!g.remote) g.fuse -= TICK_SECONDS;
-    if (struck || g.fuse <= 1e-9) explode(state, world, items, g);
+    moveGrenade(state, g, world);
+    g.fuse -= TICK_SECONDS;
+    if (g.fuse <= 1e-9) explode(state, world, items, g);
     else list[kept++] = g;
   }
   list.length = kept;
@@ -422,16 +384,13 @@ export function updateGrenades(state: SimState, world: CollisionWorld, items: It
 /**
  * Gravity, then the tick's flight as up to three straight legs: each ends where it hits
  * the map, bouncing off (restitution into the surface, friction along it). Slow on a
- * floor, it stops there, until the floor goes (a door swinging away). An armed impact fuse
- * stops it on the map or on someone (not who fired it) instead: returns true, there. C4
- * sticks to the first thing it hits, wall or floor, and stays. Without a state (predictThrow),
- * nothing is heard.
+ * floor, it stops there, until the floor goes (a door swinging away). Without a state
+ * (predictThrow), nothing is heard.
  */
-function moveGrenade(state: SimState | null, g: Grenade, world: CollisionWorld): boolean {
+function moveGrenade(state: SimState | null, g: Grenade, world: CollisionWorld): void {
   const r = GRENADE.size;
-  if (g.resting && g.remote) return false;
   if (g.resting) {
-    if (world.raycast(g.x, g.y, g.z, 0, -1, 0, r + 0.05) < Infinity) return false;
+    if (world.raycast(g.x, g.y, g.z, 0, -1, 0, r + 0.05) < Infinity) return;
     g.resting = false;
   }
   g.vy -= GRENADE.gravity * TICK_SECONDS;
@@ -444,23 +403,10 @@ function moveGrenade(state: SimState | null, g: Grenade, world: CollisionWorld):
     const dz = g.vz / speed;
     const travel = speed * left;
     const d = world.raycast(g.x, g.y, g.z, dx, dy, dz, travel + r, hit);
-    if (g.armIn !== undefined && state) {
-      // Someone in the way once it's armed: it goes off on them. Before that it passes
-      // through, as a thrown one does.
-      const reach = Math.min(d, travel);
-      const cd = raycastCharacters(state, g.x, g.y, g.z, dx, dy, dz, reach, g.by, charHit);
-      if (cd < Infinity && g.armIn <= cd) {
-        g.x += dx * cd;
-        g.y += dy * cd;
-        g.z += dz * cd;
-        return true;
-      }
-    }
     if (d === Infinity) {
       g.x += dx * travel;
       g.y += dy * travel;
       g.z += dz * travel;
-      if (g.armIn !== undefined) g.armIn = Math.max(0, g.armIn - travel);
       break;
     }
     // Where it touches: its size out from the surface, not back along its path, which on
@@ -469,21 +415,6 @@ function moveGrenade(state: SimState | null, g: Grenade, world: CollisionWorld):
     g.y += dy * d + hit.ny * r;
     g.z += dz * d + hit.nz * r;
     left -= Math.max(0, d - r) / speed;
-    if (g.armIn !== undefined) {
-      // Armed, it goes off here; hitting something first, it never arms, so a shot off a
-      // close wall bounces back as a thrown one would rather than going off at your feet.
-      // A pane it hits breaks (a molotov smashes on it).
-      if (g.armIn <= d) {
-        if (state) breakGlass(state, world, glassHit(world, hit), g.by);
-        return true;
-      }
-      delete g.armIn;
-    }
-    if (g.remote) {
-      g.vx = g.vy = g.vz = 0;
-      g.resting = true;
-      break;
-    }
     const into = g.vx * hit.nx + g.vy * hit.ny + g.vz * hit.nz;
     if (into >= 0) break;
     // Split into along the surface and into it; keep some of one, bounce some of the other.
@@ -511,13 +442,11 @@ function moveGrenade(state: SimState | null, g: Grenade, world: CollisionWorld):
       break;
     }
   }
-  return false;
 }
 
 /**
- * Goes off: its event, then by its effect: a flash blinds, a smoke leaves its cloud, a
- * molotov spills fire, and otherwise every living character in reach takes its share of
- * the damage.
+ * Goes off: its event, then by its effect: a smoke leaves its cloud, and otherwise every
+ * living character in reach takes its share of the damage.
  */
 function explode(state: SimState, world: CollisionWorld, items: ItemDb, g: Grenade): void {
   const def = grenadeDef(items, g.item);
@@ -535,17 +464,8 @@ function explode(state: SimState, world: CollisionWorld, items: ItemDb, g: Grena
     radius: def.radius,
     loudness: def.loudness,
   });
-  // A blast breaks the glass around it; a flash or smoke doesn't.
-  if (effect !== 'flash' && effect !== 'smoke')
-    breakGlassNear(state, world, x, y, z, def.radius, g.by);
-  if (effect === 'flash') {
-    flash(state, world, def, x, y, z);
-    return;
-  }
-  if (effect === 'molotov') {
-    spillFire(state, world, items, g.item, g.by, x, g.y, z, def.radius);
-    return;
-  }
+  // A blast breaks the glass around it; smoke doesn't.
+  if (effect !== 'smoke') breakGlassNear(state, world, x, y, z, def.radius, g.by);
   if (effect === 'smoke') {
     const time = def.smokeTime ?? 0;
     state.smokes.push({
@@ -568,46 +488,6 @@ function explode(state: SimState, world: CollisionWorld, items: ItemDb, g: Grena
       const damage = def.damage * f * GRENADE.zones[zone]!;
       woundZone(state, items, c, zone as Zone, damage, def, g.by, 'explosion', x, z);
     }
-  }
-}
-
-/**
- * A flash at (x, y, z) blinds every living character within its radius that is looking
- * within GRENADE.flashAngle of it, with nothing (map or smoke) between it and their eye:
- * all of blindTime close, falling to blindFloor of it at the radius. A longer blindness
- * already running is kept.
- */
-function flash(
-  state: SimState,
-  world: CollisionWorld,
-  def: GrenadeDef,
-  x: number,
-  y: number,
-  z: number,
-): void {
-  const facingMin = Math.cos(GRENADE.flashAngle);
-  const inner = def.radius * GRENADE.inner;
-  for (const c of state.entities) {
-    if (c.health.dead) continue;
-    const ey = eyeHeight(c);
-    const dx = x - eyeX(c);
-    const dy = y - ey;
-    const dz = z - eyeZ(c);
-    const d = Math.hypot(dx, dy, dz);
-    if (d >= def.radius) continue;
-    if (d > 1e-6) {
-      const yaw = c.yaw + c.recoilYaw;
-      const pitch = c.pitch + c.recoilPitch;
-      const cp = Math.cos(pitch);
-      const facing =
-        (-Math.sin(yaw) * cp * dx + Math.sin(pitch) * dy - Math.cos(yaw) * cp * dz) / d;
-      if (facing < facingMin) continue;
-    }
-    if (!clear(world, x, y, z, c.x, ey, c.z)) continue;
-    if (smokeBlocks(state.smokes, x, y, z, c.x, ey, c.z)) continue;
-    const f = d <= inner ? 1 : 1 - (d - inner) / (def.radius - inner);
-    const time = (def.blindTime ?? 0) * (GRENADE.blindFloor + (1 - GRENADE.blindFloor) * f);
-    c.blind = Math.max(c.blind ?? 0, time);
   }
 }
 

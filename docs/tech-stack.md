@@ -12,7 +12,6 @@ Status: **confirmed by the user on 2026-10-26.**
 | [tech/items-and-inventory.md](tech/items-and-inventory.md) | Item format; Inventory model; Hands, meds and the knife; Looting and inventory actions | 31 KB |
 | [tech/quests-and-vendors.md](tech/quests-and-vendors.md) | Quests; Vendors and money | 7 KB |
 | [tech/tutorial.md](tech/tutorial.md) | Tutorial | 3 KB |
-| [tech/zombies.md](tech/zombies.md) | Zombies mode | 10 KB |
 | [tech/client.md](tech/client.md) | Client (`packages/client`) | 33 KB |
 | [tech/editors.md](tech/editors.md) | Editors (`/editor` route in the client) | 30 KB |
 | [tech/server.md](tech/server.md) | Server (`packages/server`) | 7 KB |

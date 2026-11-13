@@ -1,5 +1,5 @@
 {
-  "formatVersion": 11,
+  "formatVersion": 12,
   "id": "sks",
   "name": "SKS",
   "type": "weapon",
@@ -14,8 +14,7 @@
   "rpm": 300,
   "magazine": 10,
   "reloadTime": 2.6,
-  "aimTime": 0.3,
-  "drawTime": 0.8,
+  "ergonomics": 56,
   "range": 200,
   "loudness": 190,
   "defaults": {

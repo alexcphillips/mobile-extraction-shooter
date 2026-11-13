@@ -1,7 +1,6 @@
 import {
   throwable,
   QUICK_GRIDS,
-  FIRE,
   carriedGrenade,
   carriedGrenades,
   carriedGrid,
@@ -27,7 +26,6 @@ const RIFLE = svg('M1 9h14V8h3v1h5v2h-5l-1 1H9l-1 4H5l1-4H4l-2 2H1z');
 const PISTOL = svg('M4 8h16v3h-8l-1 5H7l1-5H4z');
 const KNIFE = svg('M2 14l2-2h7l11-3-2 3-7 2H4z');
 const GRENADE = svg('M10 2h5v2h-1v2.1a7 7 0 1 1-4 0V4h-1zm6 1l4 3-1 1-4-3z');
-const FLAME = svg('M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 2 1 3 2 3 0-3 0-5 1-8z');
 
 const HANDS: readonly Hand[] = ['primary1', 'primary2', 'sidearm', 'knife'];
 /** What takes each one out on a pad (CP-3), shown in place of 1–4 in gamepad mode. */
@@ -59,14 +57,8 @@ function grenadeDoes(items: ItemDb, id: string): string {
   switch (grenadeEffect(def)) {
     case 'frag':
       return `blast, ${def.radius} m`;
-    case 'flash':
-      return `blinds, ${def.radius} m`;
     case 'smoke':
       return `smoke for ${def.smokeTime ?? 0} s`;
-    case 'c4':
-      return 'place it, then detonate';
-    case 'molotov':
-      return `spills fire, ${def.radius} m`;
   }
 }
 
@@ -77,17 +69,12 @@ function grenadeDoes(items: ItemDb, id: string): string {
  * fills while one is being used. A long press opens a picker of every carried med that
  * would help. The fire button says "knife" with the knife out; aim and reload dim without
  * a gun. The grenade button shows the kind a tap throws and how many of it are carried,
- * dimmed with none; a long press picks the kind (2026-10-31). The detonate button shows
- * only while you have C4 placed, and the put out button only while you're on fire, its
- * ring filling as you put yourself out. The breath button shows only while aimed (BW-2),
+ * dimmed with none; a long press picks the kind (2026-10-31). The breath button shows only while aimed (BW-2),
  * saying what a tap does: breathe out while holding, hold while breathing.
  */
 export class HandsHud {
   private readonly slotKeys = HANDS.map(() => '');
   private readonly ring: SVGCircleElement;
-  private readonly outRing: SVGCircleElement;
-  private burning = false;
-  private patting = false;
   private readonly healName: HTMLElement;
   private readonly picker: HTMLElement;
   /** What each picker entry does, and the one a pad has highlighted (CP-1). */
@@ -103,7 +90,6 @@ export class HandsHud {
   private grenadePick: string | null = null;
   /** The kind a tap throws: the one picked while any are carried, else the first. */
   private grenadeNext: string | null = null;
-  private armed = false;
   /** The breath button's look: '' hidden, else the label it shows. */
   private breathKey = '';
   private ticks = 0;
@@ -126,14 +112,7 @@ export class HandsHud {
     grenade.innerHTML = `<span class="slot-num"></span>${GRENADE}<span class="heal-name"></span>`;
     this.grenadeCount = grenade.querySelector('.slot-num')!;
     this.grenadeName = grenade.querySelector('.heal-name')!;
-    hud.button('detonate').classList.add('unarmed');
     hud.button('breathe').classList.add('unaimed');
-    const out = hud.button('extinguish');
-    out.innerHTML =
-      '<svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="16.5" pathLength="1"/></svg>' +
-      `${FLAME}<span class="heal-name">put out</span>`;
-    out.classList.add('unlit');
-    this.outRing = out.querySelector('circle')!;
     // A ring that fills while packing or unloading magazines (MG-2); a reload stops it.
     const reload = hud.button('reload');
     reload.innerHTML =
@@ -168,11 +147,8 @@ export class HandsHud {
     return this.grenadeNext;
   }
 
-  /**
-   * Call once per tick, with whether you have C4 placed. Works out the heal and grenade
-   * buttons' choices about 10 times a second.
-   */
-  update(c: Character, items: ItemDb, armed: boolean): void {
+  /** Call once per tick. Works out the heal and grenade buttons' choices about 10 times a second. */
+  update(c: Character, items: ItemDb): void {
     const g = c.gear;
     HANDS.forEach((hand, i) => {
       const it = g[hand];
@@ -215,10 +191,6 @@ export class HandsHud {
         this.hud.button('grenade').classList.toggle('idle', n === 0);
       }
     }
-    if (armed !== this.armed) {
-      this.armed = armed;
-      this.hud.button('detonate').classList.toggle('unarmed', !armed);
-    }
     const aimed = !c.health.dead && c.aim >= 0.5;
     const breathKey = !aimed ? '' : c.breathOut ? 'hold' : 'breathe';
     if (breathKey !== this.breathKey) {
@@ -226,19 +198,6 @@ export class HandsHud {
       const b = this.hud.button('breathe');
       b.classList.toggle('unaimed', !aimed);
       if (aimed) b.textContent = breathKey;
-    }
-    const burning = !!c.burn && !c.health.dead;
-    const patting = burning && !!c.extinguish;
-    if (burning !== this.burning || patting !== this.patting) {
-      this.burning = burning;
-      this.patting = patting;
-      const out = this.hud.button('extinguish');
-      out.classList.toggle('unlit', !burning);
-      out.classList.toggle('using', patting);
-    }
-    if (patting) {
-      const done = 1 - (c.extinguish ?? 0) / FIRE.extinguishTime;
-      this.outRing.style.strokeDashoffset = String(1 - done);
     }
     const name = c.using
       ? itemDef(items, c.using.item).name

@@ -1,5 +1,5 @@
 {
-  "formatVersion": 11,
+  "formatVersion": 12,
   "id": "p226",
   "name": "P226",
   "type": "weapon",
@@ -15,8 +15,7 @@
   "magazine": 15,
   "feed": "magazine",
   "reloadTime": 1.6,
-  "aimTime": 0.17,
-  "drawTime": 0.4,
+  "ergonomics": 84,
   "range": 100,
   "loudness": 120,
   "defaults": {

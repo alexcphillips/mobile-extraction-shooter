@@ -206,7 +206,7 @@ export class PadDriver {
         this.hold(b, c.press('crouch'));
         break;
       case PAD.square:
-        // Use only when the prompt shows; held, it keeps using (rebuilding a barricade).
+        // Use only when the prompt shows; held, it keeps using (a switch's hold).
         this.hold(b, c.press(c.canUse ? 'interact' : 'reload'));
         break;
       case PAD.triangle: {
@@ -244,12 +244,6 @@ export class PadDriver {
       case PAD.left:
       case PAD.right:
         if (!picking) this.hold(b, c.press(b === PAD.left ? 'leanLeft' : 'leanRight'));
-        break;
-      case PAD.up:
-        if (!picking) c.press('detonate')();
-        break;
-      case PAD.down:
-        if (!picking) c.press('extinguish')();
         break;
       case PAD.touchpad:
         c.press('bag')();

@@ -161,7 +161,5 @@ describe('badly hurt (PS-1)', () => {
     c.health.hp[HEAD] = HEALTH.maxHp[HEAD]!;
     c.health.hp[CHEST] = 10;
     expect(badlyHurt(c.health)).toBe(true);
-    c.health.pool = 100;
-    expect(badlyHurt(c.health)).toBe(false);
   });
 });

@@ -1,4 +1,11 @@
-import { carrierOf, isArmoredRig, itemDef, type ItemDb } from '../content/items';
+import {
+  carrierOf,
+  drawTimeAt,
+  ergonomicsOf,
+  isArmoredRig,
+  itemDef,
+  type ItemDb,
+} from '../content/items';
 import {
   addItem,
   countOf,
@@ -264,7 +271,9 @@ export function drawTime(items: ItemDb, gear: Gear, hand: Hand): number {
   const it = gear[hand];
   if (!it) return 0;
   const def = itemDef(items, it.item);
-  return def.type === 'weapon' || def.type === 'melee' ? def.drawTime : 0;
+  // A gun's comes from its ergonomics, attachments' points included (ERGO).
+  if (def.type === 'weapon') return drawTimeAt(ergonomicsOf(items, it as WeaponState));
+  return def.type === 'melee' ? def.drawTime : 0;
 }
 
 function holster(w: WeaponState): void {

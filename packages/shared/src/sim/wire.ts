@@ -6,8 +6,8 @@ import type { Character, EntityId, SimState } from './state';
 /*
  * Barbed wire (TU-2, 2026-11-09; design.md → Tutorial): touching a map's wire, standing,
  * crouched or prone, starts a light bleed on a leg, once each time you go in, not every
- * tick you're in it. A bandage stops it as any other. One health bar (zombies mode) and the
- * infinite health cheat never bleed, so wire does nothing to them.
+ * tick you're in it. A bandage stops it as any other. The infinite health cheat never
+ * bleeds, so wire does nothing to it.
  */
 
 /** Wire snagging someone: for a sound and the HUD. */
@@ -24,7 +24,7 @@ export function snagOnWire(state: SimState, world: CollisionWorld, c: Character)
     return;
   }
   const touching = world.touchesWire(c.x, c.z, MOVEMENT.radius, c.y, c.y + c.height);
-  if (touching && !c.inWire && c.health.pool === undefined && !c.admin?.infiniteHealth) {
+  if (touching && !c.inWire && !c.admin?.infiniteHealth) {
     // Which leg is a hash of the tick and who, so the sim's rng isn't drawn from.
     const zone = (state.tick + c.id) % 2 === 0 ? LEFT_LEG : RIGHT_LEG;
     c.health.bleeding[zone] = true;

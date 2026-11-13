@@ -272,7 +272,7 @@ function pickGun(
 ): GunPick | null {
   let pick: GunPick | null = null;
   const gun = best(p, items, (it, def) => {
-    if (def.type !== 'weapon' || def.spawns || def.blast) return null;
+    if (def.type !== 'weapon' || def.spawns) return null;
     if (!classes(def.class ?? 'assault') || !fitsSlot(items, slot, it)) return null;
     const r = roundFor(p, items, it as WeaponState, def);
     if (!r) return null;

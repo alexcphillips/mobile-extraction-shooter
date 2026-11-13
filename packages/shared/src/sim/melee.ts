@@ -72,7 +72,6 @@ export function updateMelee(
     !input?.fire ||
     c.draw > 0 ||
     c.swing > 0 ||
-    c.extinguish ||
     c.mode === 'ladder' ||
     c.mode === 'vault'
   )
