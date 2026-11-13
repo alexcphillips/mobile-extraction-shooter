@@ -26,7 +26,11 @@ export function padLayout(s: Pick<Settings, 'aim' | 'crouch' | 'lean'>): PadRow[
       raid: s.aim === 'toggle' ? 'Aim (press again to stop)' : 'Aim while held',
       menus: '',
     },
-    { keys: ['L3'], raid: 'Sprint (until you stop pushing forwards)', menus: '' },
+    {
+      keys: ['L3'],
+      raid: 'Sprint (until you stop pushing forwards); while aimed, breathe out or hold your breath',
+      menus: '',
+    },
     { keys: ['R3'], raid: 'Knife', menus: '' },
     { keys: ['✕'], raid: 'Jump, vault, get up from prone', menus: 'Click; hold and move to drag' },
     {

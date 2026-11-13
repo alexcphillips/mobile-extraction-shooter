@@ -15,11 +15,12 @@ import {
   type Item,
   type ItemDb,
 } from '@mes/shared';
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { itemPortrait } from '../render/item-portrait';
 import { LobbyCharacter } from '../render/lobby-character';
 import { MapOverview } from './map-overview';
 import { colorOf, tileName } from './raid-screen';
+import { RegionMap, type RegionSpot } from './region-map';
 
 /*
  * The main menu as a lobby (2026-11-09, the user's request): your character in the middle
@@ -405,6 +406,10 @@ export interface DeployEntry {
   line: string;
   /** Beside the line: "starter". */
   tags?: readonly string[] | undefined;
+  /** Its spot on the region map; with every entry placed, the region map stands in for the list. */
+  at?: { x: number; y: number } | undefined;
+  /** Why it can't be picked yet ("Level 2"), or null. */
+  needs?: string | null | undefined;
 }
 
 /** The button that goes in: the raid button from main-menu.tsx. */
@@ -440,6 +445,24 @@ export function DeployScreen({
   onClose: () => void;
 }): ReactNode {
   useEscape(onClose);
+  // The region map (2026-11-11) when every entry has a spot on it; Layout shows the picked
+  // map from above (its extracts), as the middle pane did before.
+  const spots: RegionSpot[] | null = entries.every((e) => e.at)
+    ? entries.map((e) => ({
+        id: e.id,
+        name: e.name,
+        line: [e.line, ...(e.tags ?? [])].join(' · '),
+        x: e.at!.x,
+        y: e.at!.y,
+        needs: e.needs ?? null,
+      }))
+    : null;
+  const [view, setView] = useState<'region' | 'layout'>('region');
+  const overview = map ? (
+    <MapOverview map={map} />
+  ) : (
+    <p className="lobby-no-map">No overview yet</p>
+  );
   return (
     <div className="lobby-deploy" role="dialog" aria-label={title}>
       <header className="lobby-deploy-top">
@@ -451,32 +474,55 @@ export function DeployScreen({
         {locked && <span className="lobby-locked">{locked}</span>}
       </header>
       <div className="lobby-deploy-body">
-        <div className="lobby-maps" role="radiogroup" aria-label="Map">
-          {entries.map((e, i) => (
-            <button
-              key={e.id}
-              role="radio"
-              aria-checked={e.id === selected}
-              className={e.id === selected ? 'active' : undefined}
-              disabled={!!locked && e.id !== selected}
-              onClick={() => onSelect(e.id)}
-            >
-              <span className="lobby-map-index">{String(i + 1).padStart(2, '0')}</span>
-              <span className="lobby-map-name">{e.name}</span>
-              <span className="lobby-map-line">
-                {e.line}
-                {e.tags?.map((t) => (
-                  <span key={t} className="lobby-map-tag">
-                    {t}
+        {spots ? (
+          <div className="lobby-overview lobby-region">
+            {view === 'region' ? (
+              <RegionMap spots={spots} selected={selected} onSelect={onSelect} frozen={!!locked} />
+            ) : (
+              overview
+            )}
+            <div className="lobby-view-toggle" role="radiogroup" aria-label="View">
+              {(['region', 'layout'] as const).map((v) => (
+                <button
+                  key={v}
+                  role="radio"
+                  aria-checked={view === v}
+                  className={view === v ? 'on' : undefined}
+                  onClick={() => setView(v)}
+                >
+                  {v === 'region' ? 'Region' : 'Layout'}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="lobby-maps" role="radiogroup" aria-label="Map">
+              {entries.map((e, i) => (
+                <button
+                  key={e.id}
+                  role="radio"
+                  aria-checked={e.id === selected}
+                  className={e.id === selected ? 'active' : undefined}
+                  disabled={(!!locked && e.id !== selected) || !!e.needs}
+                  onClick={() => onSelect(e.id)}
+                >
+                  <span className="lobby-map-index">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="lobby-map-name">{e.name}</span>
+                  <span className="lobby-map-line">
+                    {e.line}
+                    {e.tags?.map((t) => (
+                      <span key={t} className="lobby-map-tag">
+                        {t}
+                      </span>
+                    ))}
                   </span>
-                ))}
-              </span>
-            </button>
-          ))}
-        </div>
-        <div className="lobby-overview">
-          {map ? <MapOverview map={map} /> : <p className="lobby-no-map">No overview yet</p>}
-        </div>
+                </button>
+              ))}
+            </div>
+            <div className="lobby-overview">{overview}</div>
+          </>
+        )}
         <div className="lobby-deploy-side">
           <div className="lobby-intel">{info}</div>
           <button

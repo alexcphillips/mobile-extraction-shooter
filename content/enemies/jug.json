@@ -3,6 +3,7 @@
   "id": "jug",
   "name": "Jug",
   "faction": "boss",
+  "xp": 400,
   "loadout": "jug-kit",
   "limbHealth": 2,
   "skill": {

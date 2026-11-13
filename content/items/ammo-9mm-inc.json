@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-9mm-inc",
   "name": "9 mm Incendiary",
   "shortName": "9mm Inc.",
   "type": "ammo",
   "size": [1, 1],
   "value": 60,
+  "weight": 0.008,
   "rarity": "uncommon",
   "stack": 60,
   "caliber": "9x19",

@@ -2,6 +2,7 @@ import {
   defaultSounds,
   ITEM_FORMAT_VERSION,
   placeholderModel,
+  weightGuess,
   type ItemDef,
   type ItemModel,
 } from '@mes/shared';
@@ -33,6 +34,10 @@ export const ITEM_KINDS: readonly ItemKind[] = [
   'quest',
   'loot',
   'repair',
+  'headset',
+  'visor',
+  'nightVision',
+  'plate',
 ];
 
 /** An item's kind: a container by its slot and armor, anything else by its type. */
@@ -70,9 +75,11 @@ const RIG_POUCHES = [0, 1, 2, 3].map((x) => ({ at: [x, 0], size: [1, 2] }));
 export function blankItem(kind: ItemKind, id: string, name: string, ammo = ''): ItemDef {
   const doc = blankStats(kind, id, name, ammo);
   const sounds = defaultSounds(doc);
-  // Common to start with, after the value as the hand-written files have it.
+  // A guessed weight and common to start with, after the value as the hand-written files have them.
   const stats = Object.entries(doc).flatMap(([k, v]) =>
-    k === 'value' ? [[k, v] as const, ['rarity', 'common'] as const] : [[k, v] as const],
+    k === 'value'
+      ? [[k, v] as const, ['weight', weightGuess(doc.type)] as const, ['rarity', 'common'] as const]
+      : [[k, v] as const],
   );
   return {
     ...Object.fromEntries(stats),
@@ -204,6 +211,41 @@ function blankStats(kind: ItemKind, id: string, name: string, ammo: string) {
       return { ...common, type, size: [1, 1], value: 1_000 };
     case 'repair':
       return { ...common, type, size: [2, 1], value: 10_000, points: 50, useTime: 8 };
+    case 'headset':
+      return { ...common, type, size: [2, 1], value: 8_000, hearing: 0.15 };
+    case 'visor':
+      return {
+        ...common,
+        type,
+        size: [2, 1],
+        value: 12_000,
+        level: 3,
+        durability: 30,
+        repairLoss: 0.5,
+        vision: { vignette: 0.25 },
+      };
+    case 'plate':
+      return {
+        ...common,
+        type,
+        size: [2, 2],
+        value: 15_000,
+        level: 4,
+        durability: 50,
+        repairLoss: 0.1,
+      };
+    case 'nightVision':
+      return {
+        ...common,
+        type,
+        size: [1, 2],
+        value: 30_000,
+        tint: '#7dff8a',
+        noise: 0.35,
+        softness: 0.4,
+        gain: 3,
+        shape: 'tube',
+      };
   }
 }
 

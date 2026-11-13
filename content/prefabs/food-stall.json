@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "food-stall",
   "name": "Food stall",
+  "tags": ["food"],
   "colors": {
     "accent": "#b8413a",
     "stone": "#e6e0d3",

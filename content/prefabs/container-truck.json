@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "container-truck",
   "name": "container truck",
+  "tags": ["vehicle", "industrial"],
   "colors": {
     "cab": "#2f5d7c",
     "trailer": "#5b6068",

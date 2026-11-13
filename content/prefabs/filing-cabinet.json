@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "filing-cabinet",
   "name": "Filing cabinet",
+  "tags": ["office"],
   "colors": {
     "body": "#8d9196",
     "front": "#9ca0a5",

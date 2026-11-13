@@ -7,7 +7,7 @@ import { updateSquads } from './squads';
 import { syncDoors, useDoor } from './doors';
 import { holdSwitch, tickSwitches } from './switches';
 import { syncGlass } from './glass';
-import { applyFall, bleed } from './health';
+import { applyFall, bleed, painNoise } from './health';
 import { TICK_SECONDS } from '../tick';
 import { updateExtinguish, updateFire } from './fire';
 import { switchHand } from './gear';
@@ -15,12 +15,14 @@ import { updateGrenades, updateThrow } from './grenades';
 import { applyInventory, canReach, searchContainer } from './looting';
 import { ownerOfKey, searchTick } from './search';
 import { updateMedUse } from './meds';
+import { updatePacking } from './packing';
 import { updateMelee } from './melee';
 import { fitLean, moveCharacter, separateCharacters } from './movement';
 import { investigate, updateRaid } from './raid';
 import type { SimState, TickInputs } from './state';
 import { updateWeapon } from './weapons';
 import { snagOnWire } from './wire';
+import { countLoad, updateLoads } from './weight';
 import { buy, holdsDeathMachine, rebuild, updateZombies } from './zombies';
 
 /**
@@ -56,7 +58,9 @@ export function step(
         ok: applyInventory(state, e, items, a, world),
       });
     }
+    if (!e.ai && actions.length) countLoad(items, e);
   }
+  updateLoads(state, items);
   for (const e of state.entities) {
     const door = inputs[e.id]?.door;
     if (door != null) useDoor(state, world, items, e, door);
@@ -84,6 +88,7 @@ export function step(
     if (input?.draw && !e.extinguish && !holdsDeathMachine(state, e))
       switchHand(e, items, input.draw);
     updateMedUse(state, e, items, input);
+    updatePacking(state, e, items, input, world);
   }
   // Everyone moves, then everyone shoots, so shots see this tick's positions.
   for (const e of state.entities) {
@@ -105,7 +110,10 @@ export function step(
   updateGrenades(state, world, items);
   // Flames fly and land, fire on the map burns down, and those alight burn.
   updateFire(state, world, items);
-  for (const e of state.entities) bleed(state, e);
+  for (const e of state.entities) {
+    bleed(state, e);
+    painNoise(state, e);
+  }
   // Zombies mode: points, clearing away the dead and the rounds, before the new ones think.
   if (nav) updateZombies(state, world, items, nav);
   if (nav) updateAi(state, world, items, nav);

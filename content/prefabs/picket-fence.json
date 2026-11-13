@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "picket-fence",
   "name": "Picket fence",
+  "tags": ["structure"],
   "colors": {
     "paint": "#d8d2c4",
     "paint-dark": "#bdb6a6",

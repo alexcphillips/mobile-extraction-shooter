@@ -1,6 +1,7 @@
 {
   "formatVersion": 3,
   "id": "rocket-thruster",
+  "tags": ["military"],
   "nodes": [
     {
       "type": "cylinder",

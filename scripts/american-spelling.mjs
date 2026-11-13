@@ -74,6 +74,16 @@ export function americanise(text) {
 
 // This file lists the British forms, so it's left as it is.
 const SELF = 'scripts/american-spelling.mjs';
+// Files that must keep British forms: the profile migration renames the old saved keys and ids
+// (bodyArmour, armourer, …) and its test builds old profiles with them (2026-11-12).
+const KEEP = [SELF, 'packages/shared/src/profile.ts', 'packages/shared/src/profile.test.ts'];
+
+// Anything but --dry (a typo, --help) prints the usage instead of running.
+const unknown = process.argv.slice(2).filter((a) => a !== '--dry');
+if (unknown.length) {
+  console.log('usage: node scripts/american-spelling.mjs [--dry]');
+  process.exit(1);
+}
 
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8', maxBuffer: 1 << 28 });
 
@@ -81,7 +91,7 @@ const git = (...args) => execFileSync('git', args, { encoding: 'utf8', maxBuffer
 const any = WORDS.map(([gb]) => gb).join('|');
 let files = [];
 try {
-  files = git('grep', '-I', '-l', '-i', '-E', any, '--', '.', ':!package-lock.json', `:!${SELF}`)
+  files = git('grep', '-I', '-l', '-i', '-E', any, '--', '.', ':!package-lock.json', ...KEEP.map((f) => `:!${f}`))
     .split('\n')
     .filter(Boolean);
 } catch {
@@ -96,13 +106,14 @@ for (const f of files) {
   if (after === before) continue;
   for (const [re] of RULES) hits += (before.match(re) ?? []).length;
   changed++;
+  console.log(`${dry ? 'would change' : 'changed'} ${f}`);
   if (!dry) writeFileSync(f, after);
 }
 
 // Then rename tracked files whose paths have British spellings.
 const renames = git('ls-files')
   .split('\n')
-  .filter((f) => f && f !== SELF)
+  .filter((f) => f && !KEEP.includes(f))
   .map((f) => [f, americanise(f)])
   .filter(([a, b]) => a !== b);
 for (const [from, to] of renames) {

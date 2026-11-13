@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-9mm-pso",
   "name": "9 mm PSO",
   "shortName": "9mm PSO",
   "type": "ammo",
   "size": [1, 1],
   "value": 12,
+  "weight": 0.008,
   "rarity": "common",
   "stack": 60,
   "caliber": "9x19",

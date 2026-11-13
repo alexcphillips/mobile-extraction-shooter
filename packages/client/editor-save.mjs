@@ -6,9 +6,10 @@
 // `create: true` a file is new, refused if one is there. All are checked and formatted
 // before any is written, so a map and the prefabs it uses go together (session 16b). The
 // editors check the docs first; this only checks they're map, prefab, item, sound, loot
-// table or loot container files (the loot editor, 2026-11-02), or quests (the quest editor,
-// 2026-11-11). With `delete: true` (quests only) a file is removed instead, so a quest and
-// the quests that required it change together.
+// table or loot container files (the loot editor, 2026-11-02), quests (the quest editor,
+// 2026-11-11) or layouts (the layout board, MK-3, 2026-11-12). With `delete: true`
+// (quests only) a file is removed instead, so a quest and the quests that required it
+// change together.
 //
 // Notes (2026-10-30): GET /__editor/notes?map=<id> reads content/notes/<id>.json, and POST
 // /__editor/note with { map, add: { pos, text } } or { map, remove: id } changes it, stamped
@@ -23,7 +24,16 @@ import { fileURLToPath } from 'node:url';
 import * as prettier from 'prettier';
 
 const CONTENT = resolve(dirname(fileURLToPath(import.meta.url)), '../../content');
-const DIRS = ['maps', 'prefabs', 'items', 'sounds', 'loot-tables', 'loot-containers', 'quests'];
+const DIRS = [
+  'maps',
+  'prefabs',
+  'items',
+  'sounds',
+  'loot-tables',
+  'loot-containers',
+  'quests',
+  'layouts',
+];
 /** The only files that may be deleted: nothing else is checked for what names it. */
 const DELETABLE = /^quests\//;
 const FILE = new RegExp(`^(${DIRS.join('|')})\\/[a-z0-9][a-z0-9-]*\\.json$`);

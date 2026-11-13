@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "wall-poster",
   "name": "Wall poster",
+  "tags": ["store"],
   "colors": {
     "frame": "#3d4148",
     "art": "#3f6f9a",

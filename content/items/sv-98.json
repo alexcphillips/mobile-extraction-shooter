@@ -1,30 +1,36 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "sv-98",
   "name": "SV-98",
   "type": "weapon",
   "class": "sniper",
-  "size": [5, 2],
-  "value": 30000,
+  "size": [4, 2],
+  "value": 23900,
+  "weight": 5,
   "rarity": "common",
   "ammo": "ammo-762x54r-hpbt",
   "hold": "rifle",
   "fireMode": "semi",
   "rpm": 30,
   "magazine": 10,
+  "feed": "magazine",
   "reloadTime": 3.4,
   "aimTime": 0.4,
   "drawTime": 1,
   "range": 500,
   "loudness": 260,
-  "slots": ["optic", "muzzle", "laser"],
+  "defaults": {
+    "magazine": "sv-98-mag",
+    "stock": "sv-98-stock"
+  },
+  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
   "hipSpread": 6,
   "aimSpread": 0.05,
   "recoil": {
-    "up": 3.72,
-    "side": 1.67,
+    "up": 5.72,
+    "side": 2.57,
     "snap": 30,
-    "recovery": 3
+    "recovery": 2.61
   },
   "sounds": {
     "shot": "sniper-shot",
@@ -33,24 +39,9 @@
   },
   "model": {
     "parts": [
-      {
-        "type": "box",
-        "pos": [0, 0.005, -0.04],
-        "size": [0.036, 0.04, 0.22],
-        "color": "#26292b"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.032, -0.05],
-        "size": [0.022, 0.012, 0.24],
-        "color": "#1d1f21"
-      },
-      {
-        "type": "box",
-        "pos": [0.03, 0, 0.05],
-        "size": [0.03, 0.01, 0.01],
-        "color": "#1d1f21"
-      },
+      { "type": "box", "pos": [0, 0.005, -0.04], "size": [0.036, 0.04, 0.22], "color": "#26292b" },
+      { "type": "box", "pos": [0, 0.032, -0.05], "size": [0.022, 0.012, 0.24], "color": "#1d1f21" },
+      { "type": "box", "pos": [0.03, 0, 0.05], "size": [0.03, 0.01, 0.01], "color": "#1d1f21" },
       {
         "type": "box",
         "pos": [0.046, -0.012, 0.05],
@@ -146,72 +137,16 @@
         "name": "front sight hood",
         "group": "iron sights"
       },
-      {
-        "type": "box",
-        "pos": [0, -0.03, -0.3],
-        "size": [0.05, 0.05, 0.3],
-        "color": "#3f4636"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.035, -0.03],
-        "size": [0.05, 0.05, 0.24],
-        "color": "#3f4636"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.075, -0.06],
-        "size": [0.03, 0.05, 0.08],
-        "color": "#1d1f21"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.07, 0.03],
-        "size": [0.012, 0.008, 0.05],
-        "color": "#1d1f21"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.058, 0.02],
-        "size": [0.006, 0.02, 0.006],
-        "color": "#1d1f21"
-      },
+      { "type": "box", "pos": [0, -0.03, -0.3], "size": [0.05, 0.05, 0.3], "color": "#3f4636" },
+      { "type": "box", "pos": [0, -0.035, -0.03], "size": [0.05, 0.05, 0.24], "color": "#3f4636" },
+      { "type": "box", "pos": [0, -0.07, 0.03], "size": [0.012, 0.008, 0.05], "color": "#1d1f21" },
+      { "type": "box", "pos": [0, -0.058, 0.02], "size": [0.006, 0.02, 0.006], "color": "#1d1f21" },
       {
         "type": "box",
         "pos": [0, -0.085, 0.09],
         "size": [0.035, 0.09, 0.04],
         "color": "#3f4636",
         "pitch": -20
-      },
-      {
-        "type": "box",
-        "pos": [0, 0, 0.185],
-        "size": [0.045, 0.04, 0.23],
-        "color": "#3f4636"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.1, 0.22],
-        "size": [0.045, 0.05, 0.2],
-        "color": "#3f4636"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.04, 0.3],
-        "size": [0.045, 0.12, 0.08],
-        "color": "#3f4636"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.028, 0.25],
-        "size": [0.04, 0.015, 0.1],
-        "color": "#30362a"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.04, 0.345],
-        "size": [0.048, 0.13, 0.012],
-        "color": "#1d1f21"
       }
     ],
     "grip": [0, -0.08, 0.09],
@@ -221,7 +156,9 @@
     "mounts": {
       "optic": [0, 0.038, 0],
       "muzzle": [0, 0, -0.74],
-      "laser": [0.037, -0.008, -0.36]
+      "magazine": [0, -0.05, -0.06],
+      "laser": [0.037, -0.008, -0.36],
+      "stock": [0, 0, 0.07]
     }
   }
 }

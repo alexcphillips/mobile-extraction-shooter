@@ -2,7 +2,7 @@
 // their patrols, PMC spawns, and the PMCs' points of interest with their areas.
 //
 // The starter map is easier through how many enemies there are and what they carry, not
-// through dumber AI (design/raids-and-maps.md → Silver Creek): few scavs at the two ends, in
+// through dumber AI (design/maps/silver-creek.md): few scavs at the two ends, in
 // the light scav kit (`scav-kit-light`), and the usual scav kit round the mill, where the PMCs
 // start too. Claude's first pass, for the user to reshape in the editor; the numbers and why
 // are in design/ai-scavs-pmcs-bosses.md → Silver Creek (MT-9).

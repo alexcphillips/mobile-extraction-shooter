@@ -7,12 +7,13 @@
  */
 export const testContent: Record<string, unknown> = {
   'content/items/test-notes-item.json': {
-    formatVersion: 10,
+    formatVersion: 11,
     id: 'test-notes-item',
     name: 'Test notes',
     type: 'quest',
     size: [1, 1],
     value: 0,
+    weight: 0.1,
     rarity: 'common',
     model: { parts: [{ type: 'box', pos: [0, 0, 0], size: [0.1, 0.1, 0.1], color: '#8b4a8b' }] },
   },

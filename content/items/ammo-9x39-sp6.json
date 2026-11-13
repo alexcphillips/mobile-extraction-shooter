@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-9x39-sp6",
   "name": "9×39 mm SP-6",
   "shortName": "9x39 SP-6",
   "type": "ammo",
   "size": [1, 1],
   "value": 180,
+  "weight": 0.023,
   "rarity": "epic",
   "stack": 50,
   "caliber": "9x39",

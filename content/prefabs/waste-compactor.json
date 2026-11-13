@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "waste-compactor",
   "name": "Waste compactor",
+  "tags": ["industrial"],
   "colors": {
     "body": "#3f6b52",
     "body-dark": "#2e4f3c",

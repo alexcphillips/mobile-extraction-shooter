@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "sushi-belt",
   "name": "Sushi belt counter",
+  "tags": ["food"],
   "colors": {
     "body": "#2b2d33",
     "belt": "#a9afb3",

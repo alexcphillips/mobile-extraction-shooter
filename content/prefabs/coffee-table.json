@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "coffee-table",
   "name": "Coffee table",
+  "tags": ["home"],
   "colors": {
     "top": "#8a6a4a",
     "leg": "#3d4148"

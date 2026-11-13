@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-68x51-hp",
   "name": "6.8×51 mm SIG HP",
   "shortName": "6.8 HP",
   "type": "ammo",
   "size": [1, 1],
   "value": 60,
+  "weight": 0.025,
   "rarity": "common",
   "stack": 40,
   "caliber": "6.8x51",

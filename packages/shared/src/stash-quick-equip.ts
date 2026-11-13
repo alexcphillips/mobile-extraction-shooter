@@ -5,6 +5,9 @@ import {
   itemDef,
   roundCaliber,
   caliberOf,
+  fits,
+  isMagazine,
+  magazineFed,
   roundOf,
   sectionsOf,
   type AmmoDef,
@@ -17,7 +20,13 @@ import { addItem, stackOf, type Grid, type Item } from './inventory/grid';
 import type { Profile } from './profile';
 import { carriedGrid, CARRIED_GRIDS, fitsSlot, type Gear, type GearSlot } from './sim/gear';
 import { maxDurability } from './sim/repair';
-import { createWeaponStats, loadedAmmo, weaponStats, type WeaponState } from './sim/weapons';
+import {
+  createWeaponStats,
+  loadedAmmo,
+  partIn,
+  weaponStats,
+  type WeaponState,
+} from './sim/weapons';
 
 /*
  * Quick equip (2026-11-09, the user's call), from the stash's equipment panel. Everything
@@ -142,10 +151,16 @@ interface GunPick {
   need: number;
 }
 
-/** The round a gun would be loaded with: the highest level it has enough of, or null. */
+/**
+ * The round a gun would be loaded with: the highest level it has enough of, or null. A
+ * magazine-fed gun (MG-4) needs a magazine (fitted, or one in the pool) and enough rounds
+ * of its caliber in all, of any kinds and in any magazines that fit it; its round is the
+ * best that fills its magazine.
+ */
 function roundFor(p: Pool, items: ItemDb, gun: WeaponState, def: WeaponDef): GunPick | null {
   const round = roundOf(items, def.ammo);
   if (!round || round.type !== 'ammo') return null;
+  if (magazineFed(def)) return magRoundFor(p, items, gun, def);
   const caliber = caliberOf(items, def);
   const mag = weaponStats(items, gun, stats).magazine;
   const need = mag * (1 + QUICK_EQUIP_RELOADS);
@@ -163,6 +178,87 @@ function roundFor(p: Pool, items: ItemDb, gun: WeaponState, def: WeaponDef): Gun
   };
   consider(loaded);
   for (const it of poolItems(p)) consider(it.item);
+  return top ? { gun, round: top, need } : null;
+}
+
+/** Magazines in the pool that fit a gun, the biggest first, then the fullest. */
+function magsFor(p: Pool, items: ItemDb, def: WeaponDef): Item[] {
+  const out: Item[] = [];
+  for (const it of poolItems(p)) {
+    const d = itemDef(items, it.item);
+    if (isMagazine(d) && fits(def, d)) out.push(it);
+  }
+  const cap = (it: Item): number => (itemDef(items, it.item) as { capacity: number }).capacity;
+  return out.sort((a, b) => cap(b) - cap(a) || (b.mag ?? 0) - (a.mag ?? 0));
+}
+
+/** Rounds of each kind of a caliber in the pool, plus those in these magazines and the gun. */
+function caliberRounds(
+  p: Pool,
+  items: ItemDb,
+  caliber: string,
+  gun: WeaponState | null,
+  mags: readonly Item[],
+): Map<string, number> {
+  const out = new Map<string, number>();
+  const add = (id: string, n: number): void => {
+    const a = roundOf(items, id);
+    if (n > 0 && a?.type === 'ammo' && roundCaliber(a) === caliber)
+      out.set(id, (out.get(id) ?? 0) + n);
+  };
+  for (const it of poolItems(p)) add(it.item, it.count);
+  if (gun && gun.attachments.magazine !== null) add(loadedAmmo(items, gun), gun.mag);
+  for (const m of mags) if (m.loaded) add(m.loaded, m.mag ?? 0);
+  return out;
+}
+
+/**
+ * The best round for a magazine of `capacity` (MG-4): the highest level with enough to fill
+ * it, else the one with the most rounds (as much as possible), or null with none.
+ */
+function fillRound(
+  items: ItemDb,
+  have: ReadonlyMap<string, number>,
+  capacity: number,
+): AmmoDef | null {
+  let full: AmmoDef | null = null;
+  let most: AmmoDef | null = null;
+  let mostN = 0;
+  for (const [id, n] of have) {
+    if (n <= 0) continue;
+    const a = roundOf(items, id) as AmmoDef;
+    if (
+      n >= capacity &&
+      (!full || better([a.level, a.damage], a.name, [full.level, full.damage], full.name))
+    )
+      full = a;
+    if (n > mostN || (n === mostN && most && a.level > most.level)) {
+      most = a;
+      mostN = n;
+    }
+  }
+  return full ?? most;
+}
+
+/** The magazines a magazine-fed gun would take: the one in it (or the best to fit) and spares. */
+function chosenMags(p: Pool, items: ItemDb, gun: WeaponState, def: WeaponDef): Item[] {
+  const n = QUICK_EQUIP_RELOADS + (gun.attachments.magazine === null ? 1 : 0);
+  return magsFor(p, items, def).slice(0, n);
+}
+
+function magRoundFor(p: Pool, items: ItemDb, gun: WeaponState, def: WeaponDef): GunPick | null {
+  const mags = chosenMags(p, items, gun, def);
+  if (gun.attachments.magazine === null && mags.length === 0) return null;
+  const capacity =
+    gun.attachments.magazine !== null
+      ? weaponStats(items, gun, stats).magazine
+      : (itemDef(items, mags[0]!.item) as { capacity: number }).capacity;
+  const need = capacity * (1 + QUICK_EQUIP_RELOADS);
+  const have = caliberRounds(p, items, caliberOf(items, def), gun, mags);
+  let total = 0;
+  for (const n of have.values()) total += n;
+  if (total < need) return null;
+  const top = fillRound(items, have, capacity);
   return top ? { gun, round: top, need } : null;
 }
 
@@ -199,6 +295,11 @@ function equipGun(
 ) {
   const gun = takeOut(p, pick.gun) as WeaponState;
   const def = itemDef(items, gun.item) as WeaponDef;
+  if (magazineFed(def)) {
+    equipMagGun(p, items, gun, def, carry);
+    (gear as unknown as Record<GearSlot, Item | null>)[slot] = gun;
+    return;
+  }
   const old = loadedAmmo(items, gun);
   if (old !== pick.round.id) {
     if (gun.mag > 0) p.loose.push({ item: old, count: gun.mag });
@@ -215,6 +316,69 @@ function equipGun(
   delete gun.reloadByHand;
   carry.push(...takeRounds(p, pick.round.id, mag * QUICK_EQUIP_RELOADS));
   (gear as unknown as Record<GearSlot, Item | null>)[slot] = gun;
+}
+
+/**
+ * A magazine-fed gun (MG-4, the user's call): a magazine in it (the best in the pool if it
+ * had none) and up to QUICK_EQUIP_RELOADS spares, emptied and packed again, the gun's
+ * first: each with the highest level round that fills it, or as many of one kind as are
+ * left. Short of spares, loose rounds for the missing reloads come along, to pack in the
+ * raid. Spares and rounds go in `carry`.
+ */
+function equipMagGun(p: Pool, items: ItemDb, gun: WeaponState, def: WeaponDef, carry: Item[]) {
+  const mags = chosenMags(p, items, gun, def);
+  for (const m of mags) takeOut(p, m);
+  if (gun.attachments.magazine === null) partIn(gun, items, mags.shift()!);
+  // Every round back in the pool, to pack again.
+  if (gun.mag > 0) p.loose.push({ item: loadedAmmo(items, gun), count: gun.mag });
+  gun.mag = 0;
+  delete gun.loaded;
+  for (const m of mags) {
+    if ((m.mag ?? 0) > 0 && m.loaded) p.loose.push({ item: m.loaded, count: m.mag! });
+    delete m.mag;
+    delete m.loaded;
+  }
+  const caliber = caliberOf(items, def);
+  const fill = (capacity: number): { round: string; n: number } | null => {
+    const have = caliberRounds(p, items, caliber, null, []);
+    const a = fillRound(items, have, capacity);
+    if (!a) return null;
+    let n = 0;
+    for (const r of takeRounds(p, a.id, capacity)) n += r.count;
+    return { round: a.id, n };
+  };
+  const g = fill(weaponStats(items, gun, stats).magazine);
+  if (g) {
+    gun.mag = g.n;
+    if (g.round !== def.ammo) gun.loaded = g.round;
+  }
+  for (const m of mags) {
+    const f = fill((itemDef(items, m.item) as { capacity: number }).capacity);
+    if (f) {
+      m.mag = f.n;
+      m.loaded = f.round;
+    }
+    carry.push(m);
+  }
+  gun.reloading = 0;
+  gun.cooldown = 0;
+  gun.triggerHeld = false;
+  delete gun.reloadWith;
+  delete gun.reloadByHand;
+  // Fewer spares than reloads: loose rounds for the rest, the best first.
+  let short = (QUICK_EQUIP_RELOADS - mags.length) * weaponStats(items, gun, stats).magazine;
+  while (short > 0) {
+    const have = caliberRounds(p, items, caliber, null, []);
+    let top: AmmoDef | null = null;
+    for (const id of have.keys()) {
+      const a = roundOf(items, id) as AmmoDef;
+      if (!top || a.level > top.level) top = a;
+    }
+    if (!top) break;
+    const taken = takeRounds(p, top.id, short);
+    for (const r of taken) short -= r.count;
+    carry.push(...taken);
+  }
 }
 
 /** How many cells a rig or backpack holds. */

@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "track",
   "name": "Track (6 m)",
+  "tags": ["rail"],
   "colors": { "ballast": "#6a6560", "tie": "#4f4033", "rail": "#5a5552" },
   "nodes": [
     {

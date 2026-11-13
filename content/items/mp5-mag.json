@@ -1,0 +1,33 @@
+{
+  "formatVersion": 11,
+  "id": "mp5-mag",
+  "name": "MP5-N 30-round magazine",
+  "shortName": "MP5-N 30",
+  "type": "attachment",
+  "size": [1, 2],
+  "value": 2500,
+  "weight": 0.15,
+  "rarity": "common",
+  "slot": "magazine",
+  "weapons": ["mp5"],
+  "capacity": 30,
+  "caliber": "9x19",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.038, 0],
+        "size": [0.024, 0.075, 0.035],
+        "color": "#1d1f21",
+        "pitch": 10
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.105, -0.02],
+        "size": [0.024, 0.07, 0.035],
+        "color": "#1d1f21",
+        "pitch": 25
+      }
+    ]
+  }
+}

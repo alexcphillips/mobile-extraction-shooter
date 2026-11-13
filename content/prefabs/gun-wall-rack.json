@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "gun-wall-rack",
   "name": "Gun wall rack",
+  "tags": ["store"],
   "colors": {
     "base": "#2b2d33",
     "board": "#4a4d52",

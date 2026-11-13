@@ -1,0 +1,36 @@
+{
+  "formatVersion": 11,
+  "id": "saiga-12-stock",
+  "name": "Saiga-12 polymer stock",
+  "shortName": "Stock",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 3600,
+  "weight": 0.4,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["akm", "ak-74m", "saiga-12", "rpk-16"],
+  "stock": {
+    "length": 1
+  },
+  "mods": {
+    "recoil": 0.7,
+    "ergonomics": 1.1
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0.1],
+        "size": [0.04, 0.06, 0.2],
+        "color": "#232323",
+        "pitch": 5
+      },
+      { "type": "box", "pos": [0, -0.01, 0.205], "size": [0.044, 0.1, 0.012], "color": "#1d1f21" }
+    ],
+    "fold": {
+      "pivot": [-0.026, 0, 0],
+      "yaw": 180
+    }
+  }
+}

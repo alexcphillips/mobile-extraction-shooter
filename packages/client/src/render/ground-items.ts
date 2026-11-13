@@ -1,7 +1,7 @@
 import { itemDef, modelShapes, type GroundItem, type Item, type ItemDb } from '@mes/shared';
 import * as THREE from 'three';
 import { TriangleBuilder } from './geometry';
-import { shadedMaterial } from './material';
+import { itemMaterial } from './material';
 
 /** How much lighter the item the use button would take is drawn. */
 const LIT = 1.6;
@@ -30,7 +30,7 @@ export class GroundItems {
   private readonly up = new THREE.Vector3(0, 1, 0);
 
   constructor(private readonly items: ItemDb) {
-    this.mesh = new THREE.Mesh(new THREE.BufferGeometry(), shadedMaterial());
+    this.mesh = new THREE.Mesh(new THREE.BufferGeometry(), itemMaterial());
     this.mesh.frustumCulled = false;
     this.root.add(this.mesh);
   }

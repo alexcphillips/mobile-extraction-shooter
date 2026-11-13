@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "carton-display",
   "name": "Carton display",
+  "tags": ["store"],
   "colors": {
     "wood": "#a98a5a",
     "a": "#c7a877",

@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "flash-grenade",
   "name": "Flash grenade",
   "shortName": "Flash",
   "type": "grenade",
   "size": [1, 1],
   "value": 2500,
+  "weight": 0.4,
   "rarity": "rare",
   "effect": "flash",
   "fuse": 2,

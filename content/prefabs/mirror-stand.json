@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "mirror-stand",
   "name": "Mirror stand",
+  "tags": ["store"],
   "colors": {
     "frame": "#c8a24b",
     "glass": "#bfe0e6"

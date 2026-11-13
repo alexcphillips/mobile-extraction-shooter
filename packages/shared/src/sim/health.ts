@@ -1,6 +1,15 @@
-import { armorDef, armorStatsOf, type AmmoDef, type ItemDb } from '../content/items';
+import {
+  armorDef,
+  armorStatsOf,
+  carrierOf,
+  itemDef,
+  softZonesOf,
+  type AmmoDef,
+  type ItemDb,
+  type PlateSide,
+} from '../content/items';
 import type { Item } from '../inventory/grid';
-import { chance } from '../rng';
+import { chance, nextRange } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import { hostile } from './factions';
 import { chestArmor } from './gear';
@@ -15,20 +24,32 @@ export const LEFT_ARM = 2;
 export const RIGHT_ARM = 3;
 export const LEFT_LEG = 4;
 export const RIGHT_LEG = 5;
-export type Zone = 0 | 1 | 2 | 3 | 4 | 5;
-export const ZONE_COUNT = 6;
-export const ZONE_NAMES = ['head', 'chest', 'left arm', 'right arm', 'left leg', 'right leg'];
+/** GZ-3: under the chest (the thorax), its own capsule. Not vital; at 0 HP it's "blacked". */
+export const STOMACH = 6;
+export type Zone = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export const ZONE_COUNT = 7;
+export const ZONE_NAMES = [
+  'head',
+  'chest',
+  'left arm',
+  'right arm',
+  'left leg',
+  'right leg',
+  'stomach',
+];
 
 /** Damage and health tuning. Arrays are by zone. */
 export const HEALTH = {
-  maxHp: [35, 85, 60, 60, 65, 65],
+  maxHp: [35, 85, 60, 60, 65, 65, 70],
   /** Shot damage multipliers. Falls and bleeding ignore them. */
-  multiplier: [1, 1, 0.7, 0.7, 0.75, 0.75],
+  multiplier: [1, 1, 0.7, 0.7, 0.75, 0.75, 1],
   /**
    * Damage to a broken limb, or beyond what breaks it, is spread evenly over every zone
    * with HP left (head included, as in Tarkov) at this rate.
    */
   spillover: 0.7,
+  /** The same for a blacked stomach (GZ-3): more than it was, not less. */
+  stomachSpillover: 1.5,
   /**
    * HP per second lost to bleeding in all, however many zones bleed: it's split evenly
    * between them, so more wounds don't bleed faster (design.md → Damage).
@@ -44,6 +65,11 @@ export const HEALTH = {
   fallDamagePerSpeed: 15,
   /** A broken limb's HP after surgery. */
   surgeryHp: 1,
+  /**
+   * Badly hurt (PS-1): the head or thorax under this share of its max. A player's aim gets a
+   * faint tremor (weapons.ts) and they hear themselves breathing hard (the client).
+   */
+  badlyHurt: 0.3,
 } as const;
 
 /**
@@ -82,8 +108,8 @@ export function armorWear(roundLevel: number, armorLevel: number): number {
 }
 
 /**
- * A character's limbs. Head or chest at 0 HP is death; any other zone at 0 is broken,
- * unless it's splinted: a splint takes away the effects, but the limb stays at 0 HP and
+ * A character's limbs. Head or chest at 0 HP is death; any other zone at 0 is broken (the
+ * stomach: blacked), unless it's splinted (limbs only): a splint takes away the effects, but the limb stays at 0 HP and
  * damage to it still spills over.
  */
 export interface Health {
@@ -121,9 +147,38 @@ export function totalHp(h: Health): number {
   return sum;
 }
 
-/** A limb at 0 HP: it has broken-limb effects unless splinted. */
+/** Head and chest: at 0 HP, death. */
+export function isVital(zone: Zone): boolean {
+  return zone === HEAD || zone === CHEST;
+}
+
+/** An arm or a leg (not the stomach): splints treat these. */
+export function isLimb(zone: Zone): boolean {
+  return !isVital(zone) && zone !== STOMACH;
+}
+
+/** A limb at 0 HP: it has broken-limb effects unless splinted. A blacked stomach counts. */
 export function isBroken(h: Health, zone: Zone): boolean {
-  return zone !== HEAD && zone !== CHEST && h.hp[zone]! <= 0 && !h.splinted[zone];
+  return !isVital(zone) && h.hp[zone]! <= 0 && !h.splinted[zone];
+}
+
+/**
+ * A stomach at 0 HP (GZ-3), until surgery: further hits on it spread more, and a player's
+ * stamina and breath suffer (stamina.ts); anyone with one groans now and then (painNoise).
+ * Not in zombies' one health bar.
+ */
+export function stomachBlacked(h: Health): boolean {
+  return h.pool === undefined && !h.dead && h.hp[STOMACH]! <= 0;
+}
+
+/**
+ * The head or thorax under HEALTH.badlyHurt of its max (PS-1). Not in zombies' one health bar.
+ * Painkillers (planned, not built) will hide it while they last.
+ */
+export function badlyHurt(h: Health): boolean {
+  if (h.pool !== undefined || h.dead) return false;
+  const low = (zone: Zone): boolean => h.hp[zone]! < HEALTH.maxHp[zone]! * HEALTH.badlyHurt;
+  return low(HEAD) || low(CHEST);
 }
 
 export function isBleeding(h: Health): boolean {
@@ -155,6 +210,8 @@ export interface DamageEvent {
   /** What armor stopped. */
   absorbed: number;
   cause: DamageCause;
+  /** A head hit to the face (GZ-3): from the front, under the brow. */
+  face?: true;
 }
 
 export type DamageCause = 'shot' | 'melee' | 'fall' | 'explosion';
@@ -164,6 +221,8 @@ export interface DeathEvent {
   target: EntityId;
   /** Who shot, or 0 for a fall or bleeding. */
   by: EntityId;
+  /** The killing hit was to the head (for PMC XP's headshot bonus, 2026-11-11). */
+  head?: true;
 }
 
 /**
@@ -181,25 +240,28 @@ export function dealDamage(
 ): number {
   const h = c.health;
   if (h.dead || amount <= 0 || c.admin?.infiniteHealth) return 0;
+  const head = zone === HEAD;
   // One health bar: it's all the chest's.
   if (h.pool !== undefined) zone = CHEST;
   let lost = 0;
   let spill = 0;
-  if (zone !== HEAD && zone !== CHEST && h.hp[zone]! <= 0) {
-    // Broken, splinted or not.
+  const vital = isVital(zone);
+  if (!vital && h.hp[zone]! <= 0) {
+    // Broken (splinted or not) or blacked.
     spill = amount;
   } else {
     const before = h.hp[zone]!;
     const after = Math.max(0, before - amount);
     h.hp[zone] = after;
     lost = before - after;
-    if (zone !== HEAD && zone !== CHEST) spill = amount - lost;
+    if (!vital) spill = amount - lost;
   }
-  if (spill > 0) lost += spread(h, spill * HEALTH.spillover);
+  const rate = zone === STOMACH ? HEALTH.stomachSpillover : HEALTH.spillover;
+  if (spill > 0) lost += spread(h, spill * rate);
   if (h.hp[HEAD]! <= 0 || h.hp[CHEST]! <= 0) {
     h.dead = true;
     h.bleeding.fill(false);
-    state.events.push({ type: 'death', target: c.id, by });
+    state.events.push({ type: 'death', target: c.id, by, ...(head && { head: true as const }) });
   }
   return lost;
 }
@@ -240,9 +302,9 @@ export function killCharacter(state: SimState, c: Character, by: EntityId): void
 export type Wound = Pick<AmmoDef, 'damage' | 'level' | 'armorDamage' | 'bleedChance'>;
 
 /**
- * A bullet or knife hit: the zone's multiplier, then armor on the head or chest lets
- * through its share by level (ARMOR) and wears down, then what got through may start
- * bleeding.
+ * A bullet or knife hit: the zone's multiplier, then armor on the zone lets through its
+ * share by level (ARMOR) and wears down, then what got through may start bleeding. `face`:
+ * a head hit from the front under the brow (raycastCharacters).
  */
 export function shootCharacter(
   state: SimState,
@@ -252,9 +314,63 @@ export function shootCharacter(
   ammo: Wound,
   by: EntityId,
   cause: 'shot' | 'melee' = 'shot',
+  fromX = NaN,
+  fromZ = NaN,
+  face = false,
 ): void {
   const k = c.health.pool === undefined ? HEALTH.multiplier[zone]! : 1;
-  woundZone(state, items, c, zone, ammo.damage * k, ammo, by, cause);
+  woundZone(state, items, c, zone, ammo.damage * k, ammo, by, cause, fromX, fromZ, face);
+}
+
+/** How far either side of straight ahead a hit counts as from the front, as a cosine. */
+export const FRONT_COS = Math.cos((70 * Math.PI) / 180);
+
+/**
+ * Whether a hit came from in front of c (GZ-3's face; GZ-4 picks plates by it, at 90°):
+ * from (x, z), where the shot or swing started, within 70° of where c faces. Unknown (NaN)
+ * is the front.
+ */
+export function fromFront(c: Character, fromX: number, fromZ: number, cos = FRONT_COS): boolean {
+  const dx = fromX - c.x;
+  const dz = fromZ - c.z;
+  const d = Math.hypot(dx, dz);
+  if (!(d > 1e-6)) return true;
+  return (-Math.sin(c.yaw) * dx - Math.cos(c.yaw) * dz) / d >= cos;
+}
+
+/**
+ * What a hit on a zone meets (one check, no layering). On the head: a face hit (GZ-3) meets
+ * a visor fitted to the helmet, else a helmet that covers the face (`coversFace`), else
+ * nothing; any other head hit, the helmet. On the chest (the thorax) or stomach, chestArmor,
+ * as its carrier covers that zone: the plate on the side hit, else its soft armor.
+ */
+function armorHit(
+  items: ItemDb,
+  c: Character,
+  zone: Zone,
+  fromX: number,
+  fromZ: number,
+  face: boolean,
+): ArmorState | null {
+  if (zone === CHEST || zone === STOMACH) {
+    const chest = chestArmor(items, c.gear);
+    const carrier = chest && carrierOf(itemDef(items, chest.item));
+    // Armor that isn't a carrier (an armored rig) covers the thorax only.
+    if (!chest || !carrier) return zone === CHEST ? chest : null;
+    const covers = zone === CHEST ? 'thorax' : 'stomach';
+    if (carrier.plates?.length && (carrier.plateZones ?? ['thorax']).includes(covers)) {
+      const plate = chest.plates?.[fromFront(c, fromX, fromZ, 0) ? 'front' : 'back'];
+      if (plate && (plate.durability ?? 0) > 0) return plate as ArmorState;
+    }
+    return softZonesOf(carrier).includes(covers) ? chest : null;
+  }
+  if (zone !== HEAD) return null;
+  const helmet = c.gear.helmet;
+  if (!face) return helmet;
+  const visor = helmet?.fitted;
+  if (visor && (visor.durability ?? 0) > 0 && itemDef(items, visor.item).type === 'visor')
+    return visor as ArmorState;
+  return helmet && armorDef(items, helmet.item).coversFace ? helmet : null;
 }
 
 /**
@@ -274,6 +390,9 @@ export function woundZone(
   wound: Wound,
   by: EntityId,
   cause: DamageCause,
+  fromX = NaN,
+  fromZ = NaN,
+  face = false,
 ): void {
   if (c.health.dead || byAlly(state, c, by)) return;
   const zombies = state.zombies;
@@ -282,13 +401,22 @@ export function woundZone(
   if (c.admin?.infiniteHealth || harmless(state, by)) {
     // Still a hit, for markers and the HUD, but nothing lost. Also a harmless enemy's
     // (the tutorial's scav, TU-2): felt in full, with nothing at stake.
-    state.events.push({ type: 'damage', target: c.id, by, zone, amount: 0, absorbed: 0, cause });
+    state.events.push({
+      type: 'damage',
+      target: c.id,
+      by,
+      zone,
+      amount: 0,
+      absorbed: 0,
+      cause,
+      ...(face && { face: true as const }),
+    });
     punchAim(state, c, damage);
     return;
   }
   let absorbed = 0;
   let stopped = false;
-  const armor = zone === HEAD ? c.gear.helmet : zone === CHEST ? chestArmor(items, c.gear) : null;
+  const armor = armorHit(items, c, zone, fromX, fromZ, face);
   if (armor && armor.durability > 0) {
     const level = armorStatsOf(items, armor.item).level;
     stopped = wound.level < level;
@@ -302,7 +430,16 @@ export function woundZone(
   if (bleeds && !stopped && !c.health.dead && damage > 0 && chance(state.rng, wound.bleedChance)) {
     c.health.bleeding[zone] = true;
   }
-  state.events.push({ type: 'damage', target: c.id, by, zone, amount, absorbed, cause });
+  state.events.push({
+    type: 'damage',
+    target: c.id,
+    by,
+    zone,
+    amount,
+    absorbed,
+    cause,
+    ...(face && { face: true as const }),
+  });
   punchAim(state, c, amount + absorbed);
 }
 
@@ -356,6 +493,36 @@ function fallOn(state: SimState, c: Character, zone: Zone, damage: number): void
   });
 }
 
+/**
+ * A blacked stomach's groans and coughs (GZ-3): every few seconds, heard as far as a
+ * sprinting footstep (AI.sprintSteps, 15 m). Enemies hear a player's and come to it, as to
+ * footsteps; an enemy's are only for players to hear. Painkillers will quiet them.
+ */
+export const PAIN = {
+  /** Seconds from blacking to the first groan, and between groans. */
+  first: [0.5, 2],
+  every: [4, 8],
+} as const;
+
+/** A groan from a blacked stomach (GZ-3, painNoise), for enemies' ears and the client. */
+export interface PainEvent {
+  type: 'pain';
+  by: EntityId;
+}
+
+/** One tick of a character's pain noises: a groan now and then while its stomach is blacked. */
+export function painNoise(state: SimState, c: Character): void {
+  if (!stomachBlacked(c.health)) {
+    delete c.painIn;
+    return;
+  }
+  if (c.painIn === undefined) c.painIn = nextRange(state.rng, PAIN.first[0], PAIN.first[1]);
+  c.painIn -= TICK_SECONDS;
+  if (c.painIn > 0) return;
+  c.painIn = nextRange(state.rng, PAIN.every[0], PAIN.every[1]);
+  state.events.push({ type: 'pain', by: c.id });
+}
+
 /** One tick of bleeding, the rate shared between the bleeding zones. */
 export function bleed(state: SimState, c: Character): void {
   const h = c.health;
@@ -386,7 +553,28 @@ export function restoreHealth(c: Character, items: ItemDb): void {
 
 /** New armor, at its durability times condition (0–1). */
 export function createArmor(items: ItemDb, id: string, condition = 1): ArmorState {
-  return { item: id, count: 1, durability: armorStatsOf(items, id).durability * condition };
+  const armor: ArmorState = {
+    item: id,
+    count: 1,
+    durability: armorStatsOf(items, id).durability * condition,
+  };
+  return withPlates(items, armor, condition);
+}
+
+/** A carrier's plates as it comes (GZ-4: comesWith), at its condition; anything else as it is. */
+export function withPlates<T extends Item>(items: ItemDb, item: T, condition = 1): T {
+  const carrier = carrierOf(itemDef(items, item.item));
+  const sides = Object.entries(carrier?.comesWith ?? {}) as [PlateSide, string][];
+  if (!sides.length) return item;
+  item.plates = {};
+  for (const [side, plate] of sides) {
+    item.plates[side] = {
+      item: plate,
+      count: 1,
+      durability: armorStatsOf(items, plate).durability * condition,
+    };
+  }
+  return item;
 }
 
 /** Puts on new armor at full durability, in the slot its item says, replacing what was there. */

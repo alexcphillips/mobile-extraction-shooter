@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "portacabin",
   "name": "Portacabin",
+  "tags": ["industrial", "construction", "structure"],
   "colors": {
     "body": "#d7d9d8",
     "trim": "#3f6f9a",

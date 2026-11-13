@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "goods-shutter",
   "name": "Goods shutter",
+  "tags": ["industrial", "structure"],
   "colors": {
     "steel": "#5e6468",
     "steel-dark": "#474c50",

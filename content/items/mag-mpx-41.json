@@ -1,16 +1,18 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "mag-mpx-41",
   "name": "MPX 41-round magazine",
   "shortName": "MPX 41",
   "type": "attachment",
   "size": [1, 2],
   "value": 4500,
+  "weight": 0.2,
   "rarity": "common",
   "slot": "magazine",
   "weapons": ["mpx"],
+  "capacity": 41,
+  "caliber": "9x19",
   "mods": {
-    "magazine": 11,
     "reloadTime": 1.1
   },
   "model": {

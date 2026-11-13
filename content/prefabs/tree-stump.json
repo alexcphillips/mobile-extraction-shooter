@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "tree-stump",
   "name": "Tree stump",
+  "tags": ["logging", "nature"],
   "instanced": true,
   "colors": { "bark": "#6b4f35", "cut": "#c9a46e" },
   "nodes": [

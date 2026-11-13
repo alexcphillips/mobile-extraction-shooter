@@ -16,6 +16,7 @@ import {
   type Hand,
   type ItemDb,
   type MedRef,
+  PACKING,
 } from '@mes/shared';
 import type { Hud } from './hud';
 import type { ControlId } from './layout';
@@ -78,7 +79,8 @@ function grenadeDoes(items: ItemDb, id: string): string {
  * a gun. The grenade button shows the kind a tap throws and how many of it are carried,
  * dimmed with none; a long press picks the kind (2026-10-31). The detonate button shows
  * only while you have C4 placed, and the put out button only while you're on fire, its
- * ring filling as you put yourself out.
+ * ring filling as you put yourself out. The breath button shows only while aimed (BW-2),
+ * saying what a tap does: breathe out while holding, hold while breathing.
  */
 export class HandsHud {
   private readonly slotKeys = HANDS.map(() => '');
@@ -102,7 +104,11 @@ export class HandsHud {
   /** The kind a tap throws: the one picked while any are carried, else the first. */
   private grenadeNext: string | null = null;
   private armed = false;
+  /** The breath button's look: '' hidden, else the label it shows. */
+  private breathKey = '';
   private ticks = 0;
+  private readonly packRing: SVGCircleElement;
+  private packing = false;
 
   constructor(
     private readonly hud: Hud,
@@ -121,12 +127,19 @@ export class HandsHud {
     this.grenadeCount = grenade.querySelector('.slot-num')!;
     this.grenadeName = grenade.querySelector('.heal-name')!;
     hud.button('detonate').classList.add('unarmed');
+    hud.button('breathe').classList.add('unaimed');
     const out = hud.button('extinguish');
     out.innerHTML =
       '<svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="16.5" pathLength="1"/></svg>' +
       `${FLAME}<span class="heal-name">put out</span>`;
     out.classList.add('unlit');
     this.outRing = out.querySelector('circle')!;
+    // A ring that fills while packing or unloading magazines (MG-2); a reload stops it.
+    const reload = hud.button('reload');
+    reload.innerHTML =
+      '<svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="16.5" pathLength="1"/></svg>' +
+      '<span>reload</span>';
+    this.packRing = reload.querySelector('circle')!;
     this.picker = document.createElement('div');
     this.picker.className = 'heal-picker';
     this.picker.hidden = true;
@@ -206,6 +219,14 @@ export class HandsHud {
       this.armed = armed;
       this.hud.button('detonate').classList.toggle('unarmed', !armed);
     }
+    const aimed = !c.health.dead && c.aim >= 0.5;
+    const breathKey = !aimed ? '' : c.breathOut ? 'hold' : 'breathe';
+    if (breathKey !== this.breathKey) {
+      this.breathKey = breathKey;
+      const b = this.hud.button('breathe');
+      b.classList.toggle('unaimed', !aimed);
+      if (aimed) b.textContent = breathKey;
+    }
     const burning = !!c.burn && !c.health.dead;
     const patting = burning && !!c.extinguish;
     if (burning !== this.burning || patting !== this.patting) {
@@ -235,6 +256,17 @@ export class HandsHud {
     if (c.using) {
       const done = 1 - c.using.left / timeToUse(items, c.using.item);
       this.ring.style.strokeDashoffset = String(1 - done);
+    }
+
+    const p = c.packing;
+    if (!!p !== this.packing) {
+      this.packing = !!p;
+      this.hud.button('reload').classList.toggle('using', !!p);
+    }
+    if (p && p.total > 0) {
+      const per = p.kind === 'unload' ? PACKING.unloadPerRound : PACKING.perRound;
+      const done = Math.min(1, (p.done + 1 - Math.max(0, p.next) / per) / p.total);
+      this.packRing.style.strokeDashoffset = String(1 - done);
     }
 
     const gun = !!heldWeapon(c);

@@ -5,6 +5,7 @@ import { PROFILE, type Profile } from './profile';
 import type { Gear } from './sim/gear';
 import { takeQuestItems, type RaidObjectives } from './sim/raid';
 import { addToStash, newStashItem, stashCount, takeFromStash } from './stash';
+import { levelOf } from './xp';
 
 /*
  * Quests between raids (session 14): accepting one, handing items over from the stash,
@@ -14,8 +15,11 @@ import { addToStash, newStashItem, stashCount, takeFromStash } from './stash';
  * raidProgress what its result counts.
  */
 
-/** Where a quest is for a player. "ready" is active with every objective done. */
-export type QuestStatus = 'locked' | 'available' | 'active' | 'ready' | 'done';
+/**
+ * Where a quest is for a player. "ready" is active with every objective done; "hidden"
+ * needs a higher PMC level than the player's, and shows nowhere (2026-11-11).
+ */
+export type QuestStatus = 'hidden' | 'locked' | 'available' | 'active' | 'ready' | 'done';
 
 /** How much progress an objective needs: the items to hand over, else 1. */
 export function objectiveGoal(o: QuestObjective): number {
@@ -38,6 +42,7 @@ export function questStatus(profile: Profile, quest: QuestDef): QuestStatus {
     );
     return done ? 'ready' : 'active';
   }
+  if (levelOf(profile.xp) < (quest.minLevel ?? 1)) return 'hidden';
   const open = quest.requires.every((r) => profile.quests[r]?.status === 'done');
   return open ? 'available' : 'locked';
 }
@@ -77,6 +82,7 @@ export function questsFor(
 /** Accepts a quest that's open to the player. Returns why it can't be, or null. */
 export function acceptQuest(profile: Profile, quest: QuestDef): string | null {
   const status = questStatus(profile, quest);
+  if (status === 'hidden') return `that quest needs PMC level ${quest.minLevel}`;
   if (status === 'locked') return 'finish the quests before it first';
   if (status !== 'available') return 'you already have that quest';
   profile.quests[quest.id] = { status: 'active', progress: {} };
@@ -113,7 +119,7 @@ export function handOver(profile: Profile, quest: QuestDef, objective: string): 
 
 /**
  * Finishes a quest with every objective done: its reward items go into the stash, page
- * `page` first, its money into the balance, and its reputation to its vendor. All or
+ * `page` first, its money into the balance, its XP to the PMC level, and its reputation to its vendor. All or
  * none: with no room in the stash nothing changes. Returns why it can't be, or null.
  */
 export function completeQuest(
@@ -128,6 +134,7 @@ export function completeQuest(
   if (!addToStash(profile, items, quest.rewards.items, page, newStashItem))
     return 'there is no room in your stash for the rewards';
   profile.money = Math.min(PROFILE.maxMoney, profile.money + quest.rewards.money);
+  profile.xp += quest.rewards.xp;
   if (quest.rewards.rep > 0) {
     const was = profile.vendors[quest.vendor] ?? { rep: 0, spent: 0 };
     profile.vendors[quest.vendor] = { ...was, rep: was.rep + quest.rewards.rep };

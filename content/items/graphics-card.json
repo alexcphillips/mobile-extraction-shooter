@@ -1,5 +1,5 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "graphics-card",
   "name": "Graphics card",
   "shortName": "GPU",
@@ -7,6 +7,7 @@
   "category": "Electronics",
   "size": [2, 1],
   "value": 25000,
+  "weight": 1,
   "rarity": "epic",
   "model": {
     "parts": [

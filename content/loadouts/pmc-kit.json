@@ -340,12 +340,54 @@
     {
       "weight": 3,
       "item": "combat-helmet",
-      "condition": [0.6, 1]
+      "condition": [0.6, 1],
+      "fitted": [
+        {
+          "weight": 3,
+          "item": null
+        },
+        {
+          "weight": 2,
+          "item": "face-shield"
+        },
+        {
+          "weight": 0.4,
+          "item": "nvg-monocular"
+        }
+      ]
     },
     {
       "weight": 0.6,
       "item": "heavy-helmet",
-      "condition": [0.6, 1]
+      "condition": [0.6, 1],
+      "fitted": [
+        {
+          "weight": 1,
+          "item": null
+        },
+        {
+          "weight": 1,
+          "item": "heavy-visor"
+        }
+      ]
+    }
+  ],
+  "headsets": [
+    {
+      "weight": 2,
+      "item": null
+    },
+    {
+      "weight": 3,
+      "item": "basic-headset"
+    },
+    {
+      "weight": 2,
+      "item": "tactical-headset"
+    },
+    {
+      "weight": 0.3,
+      "item": "elite-headset"
     }
   ],
   "bodyArmor": [

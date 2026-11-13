@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "espresso-bar",
   "name": "Espresso bar",
+  "tags": ["food"],
   "colors": {
     "body": "#6a4a3a",
     "top": "#e6e0d3",

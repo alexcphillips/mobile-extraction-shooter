@@ -1,15 +1,27 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "assault-armor",
   "name": "Assault armor",
   "type": "armor",
   "size": [3, 3],
   "value": 50000,
+  "weight": 4,
   "rarity": "mythic",
   "slot": "body",
   "level": 6,
   "durability": 130,
   "repairLoss": 0.08,
+  "carrier": {
+    "plates": ["front", "back"],
+    "softZones": [],
+    "comesWith": {
+      "front": "ceramic-plate-6",
+      "back": "ceramic-plate-6"
+    },
+    "blocksRig": true,
+    "noise": 1.2,
+    "swapTime": 3
+  },
   "model": {
     "parts": [
       {
@@ -24,12 +36,7 @@
         "size": [0.293, 0.105, 0.065],
         "color": "#30353a"
       },
-      {
-        "type": "box",
-        "pos": [0.108, 1.379, 0],
-        "size": [0.084, 0.041, 0.26],
-        "color": "#3a3f44"
-      },
+      { "type": "box", "pos": [0.108, 1.379, 0], "size": [0.084, 0.041, 0.26], "color": "#3a3f44" },
       {
         "type": "box",
         "pos": [-0.108, 1.379, 0],

@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-9x39-spp",
   "name": "9×39 mm SPP",
   "shortName": "9x39 SPP",
   "type": "ammo",
   "size": [1, 1],
   "value": 90,
+  "weight": 0.023,
   "rarity": "rare",
   "stack": 50,
   "caliber": "9x39",

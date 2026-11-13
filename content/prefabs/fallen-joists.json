@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "fallen-joists",
   "name": "Fallen joists",
+  "tags": ["construction", "debris"],
   "colors": {
     "plaster": "#d6cfbf",
     "plaster-dark": "#aaa292",

@@ -7,6 +7,7 @@ import {
   plainModelSchema,
   slotSchema,
   weaponModelSchema,
+  type AttachmentSlot,
   type ModelPart,
 } from './models';
 import { placeholderModel } from './placeholder-models';
@@ -50,8 +51,9 @@ const burning = {
  *    armor's optional repairLoss and every item's optional shortName came in at 10 too
  *    (2026-11-06), loot's optional category, guns' optional class and meds' optional bleedCost (2026-11-09): an
  *    optional field changes no existing file.
+ * 11 (BW-3, 2026-11-12): every item gained a weight in kg (a stacking item's is per one).
  */
-export const ITEM_FORMAT_VERSION = 10;
+export const ITEM_FORMAT_VERSION = 11;
 
 /**
  * Ammo and armor levels (a round's from its Tarkov penetration), 1 to LEVELS: gray, green, blue, purple,
@@ -151,6 +153,12 @@ const common = {
    * that can't be bought or sold.
    */
   value: z.int().min(0),
+  /**
+   * What one weighs in kg (BW-3): a stack's is this times its count. A gun's is without its
+   * attachments, which weigh their own; a carrier's without its plates. 0 for things never
+   * carried (admin tools, zombie claws).
+   */
+  weight: nonNegative,
   rarity: z.enum(RARITIES),
   view: z.enum(ITEM_VIEWS).optional(),
 };
@@ -208,7 +216,17 @@ const weaponSchema = z
     fireMode: z.enum(['auto', 'semi']),
     /** Rounds per minute; for semi, the fastest it can be pulled. */
     rpm: positive,
+    /**
+     * Rounds it holds. A magazine-fed gun's (feed) is its default magazine's capacity, for
+     * the editor's numbers: what it holds is the fitted magazine's.
+     */
     magazine: z.int().min(1),
+    /**
+     * How it's loaded (MG-1, 2026-11-12): 'magazine' takes magazine items (attachments with
+     * a capacity) in its magazine slot, and a reload swaps in the fullest one carried. Left
+     * out, loose rounds go straight in (tubes, internal magazines, the special guns).
+     */
+    feed: z.literal('magazine').optional(),
     reloadTime: positive,
     /** From the hip to fully aimed. */
     aimTime: positive,
@@ -223,6 +241,11 @@ const weaponSchema = z
      * Its loudness and shot sound are already the suppressed ones, and it has no muzzle slot.
      */
     suppressed: z.literal(true).optional(),
+    /**
+     * The attachments a new one comes with, by slot (WF-1, 2026-11-12: its own stock), from
+     * a vendor, loot or a loadout. Each must fit it. Loadouts may put others on top.
+     */
+    defaults: z.partialRecord(slotSchema, idSchema).optional(),
     /** The attachment slots it has, each at most once. None if left out. */
     slots: z
       .array(slotSchema)
@@ -297,6 +320,22 @@ const weaponSchema = z
           path: ['model', 'mounts', slot],
         });
       }
+    }
+    for (const slot of Object.keys(w.defaults ?? {}) as AttachmentSlot[]) {
+      if (!slots.includes(slot)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `comes with a ${slot} but has no ${slot} slot`,
+          path: ['defaults', slot],
+        });
+      }
+    }
+    if (w.model.stockFold && !slots.includes('stock')) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'a folding stock mount needs a stock slot',
+        path: ['model', 'stockFold'],
+      });
     }
     w.model.parts.forEach((p, i) => {
       if (p.hiddenBy && !slots.includes(p.hiddenBy)) {
@@ -381,25 +420,188 @@ const armorStats = {
    */
   repairLoss: z.number().min(0).lt(1).optional(),
 };
-const armorStatsSchema = z.strictObject(armorStats);
 
-const armorSchema = z.strictObject({
-  ...common,
-  type: z.literal('armor'),
-  /** A helmet covers the head, body armor the chest. */
-  slot: z.enum(['helmet', 'body']),
-  ...armorStats,
-  /**
-   * A helmet with a full face mask (AI-7, Jug's): worn by a player, it hides `edge` of the
-   * view at each side (0–0.4 of the screen's width, fading in) and muffles every sound
-   * above `muffle` Hz. Either left out does nothing.
-   */
-  mask: z
-    .strictObject({
-      edge: z.number().min(0).max(0.4).optional(),
-      muffle: z.number().min(200).max(20000).optional(),
-    })
+/** A carrier's plate slots (GZ-4): front and back, no sides. */
+export const PLATE_SIDES = ['front', 'back'] as const;
+export type PlateSide = (typeof PLATE_SIDES)[number];
+/** The zones a carrier can cover (GZ-4; the stomach since GZ-3). */
+export const COVER_ZONES = ['thorax', 'stomach'] as const;
+export type CoverZone = (typeof COVER_ZONES)[number];
+/** A plate's material (GZ-4): the item editor's preset; the stats are what count. */
+export const PLATE_MATERIALS = ['ceramic', 'steel', 'polyethylene'] as const;
+
+/**
+ * Body armor or an armored rig as a plate carrier (GZ-4, 2026-11-12). One check per hit,
+ * no layering: a plate in the side hit (front or back, by the hit's direction against
+ * the body's facing) on a zone its plates cover; else its own soft rating (its level and
+ * durability) on a zone that covers; else flesh. Without this, armor protects as before.
+ */
+const carrierSchema = z.strictObject({
+  /** Its plate slots. Any plate fits any carrier with the slot. None if left out. */
+  plates: z
+    .array(z.enum(PLATE_SIDES))
+    .refine((a) => new Set(a).size === a.length, 'lists a side twice')
     .optional(),
+  /** What its plates cover. Left out, the thorax. */
+  plateZones: z.array(z.enum(COVER_ZONES)).optional(),
+  /** What its own (soft) rating covers. Left out: the thorax without plate slots, else nothing. */
+  softZones: z.array(z.enum(COVER_ZONES)).optional(),
+  /** The plates a new one comes with, by side (from a vendor, loot or a loadout). */
+  comesWith: z.partialRecord(z.enum(PLATE_SIDES), idSchema).optional(),
+  /** Bulky: no chest rig over it (as an armored rig shuts the armor slot). */
+  blocksRig: z.literal(true).optional(),
+  /** Footsteps carry this much further to enemies (1.2–1.3 for a heavy one). Left out, 1. */
+  noise: z.number().min(0.5).max(3).optional(),
+  /** Seconds to put a plate in, in a raid. Left out, CARRIER.swapTime. */
+  swapTime: positive.optional(),
+});
+export type CarrierDef = z.infer<typeof carrierSchema>;
+
+/** Defaults for carriers (GZ-4). */
+export const CARRIER = { swapTime: 6 };
+
+/**
+ * What worn gear costs its wearer (GZ-1, 2026-11-12): helmets, body armor, rigs and
+ * backpacks. Players only; enemies ignore it. Several worn together multiply. Left out, 1.
+ */
+const burden = {
+  /** Aiming in takes this much longer (×): 1.1 is 10% slower. */
+  aimTime: z.number().min(1).max(3).optional(),
+  /**
+   * Walking, sprinting and crouching speed (×): 0.88 is 12% slower (the user's call,
+   * 2026-11-12, on top of weight's slowdown).
+   */
+  moveSpeed: z.number().min(0.5).max(1).optional(),
+};
+
+/** A plate (GZ-4): the protection that goes in a carrier's front or back slot. */
+const plateSchema = z.strictObject({
+  ...common,
+  type: z.literal('plate'),
+  ...armorStats,
+  material: z.enum(PLATE_MATERIALS).optional(),
+  ...plainModel,
+});
+
+/**
+ * The hard shapes a helmet's view can have (GZ-2, 2026-11-12), drawn over the screen by the
+ * client: an angular T-shaped visor slit, or cheek guards closing in at the bottom corners.
+ */
+export const VISION_SHAPES = ['slit', 'cheeks'] as const;
+export type VisionShape = (typeof VISION_SHAPES)[number];
+
+/** How much of the view a helmet (or a visor, GZ-5) takes: drawn over it, never a narrower field of view. */
+const visionSchema = z.strictObject({
+  /** A soft dark vignette round the edges, 0 (none) to 1 (heavy). */
+  vignette: fraction.optional(),
+  /** A hard shape (VISION_SHAPES) instead of or with the vignette. */
+  shape: z.enum(VISION_SHAPES).optional(),
+});
+
+const armorSchema = z
+  .strictObject({
+    ...common,
+    type: z.literal('armor'),
+    /** A helmet covers the head, body armor the chest. */
+    slot: z.enum(['helmet', 'body']),
+    ...armorStats,
+    ...burden,
+    /**
+     * Helmets (GZ-2): how much better (+) or worse (−) the wearer hears, as a share: −0.15
+     * is 15% shorter and quieter. Only a helmet that blocks the headset slot may hear better
+     * (integrated comms), so a boost never stacks with a headset's.
+     */
+    hearing: z.number().min(-0.9).max(1).optional(),
+    /** Helmets (GZ-2): covers the ears, so no headset goes on with it. */
+    blocksHeadset: z.literal(true).optional(),
+    /** Helmets (GZ-2): what it takes of the view. */
+    vision: visionSchema.optional(),
+    /**
+     * Helmets (GZ-3): it covers the face too (a full mask, Jug's), so a face hit with no
+     * visor fitted meets it. Without it, a face hit with no visor is bare.
+     */
+    coversFace: z.literal(true).optional(),
+    /**
+     * Helmets (GZ-5): the mounts it has, a visor's and night vision's. Only one thing is
+     * fitted at a time, whichever it is (Item.fitted).
+     */
+    visor: z.literal(true).optional(),
+    nightVision: z.literal(true).optional(),
+    /** Body armor (GZ-4): a plate carrier. */
+    carrier: carrierSchema.optional(),
+    /**
+     * A helmet with a full face mask (AI-7, Jug's): worn by a player, it hides `edge` of the
+     * view at each side (0–0.4 of the screen's width, fading in) and muffles every sound
+     * above `muffle` Hz. Either left out does nothing.
+     */
+    mask: z
+      .strictObject({
+        edge: z.number().min(0).max(0.4).optional(),
+        muffle: z.number().min(200).max(20000).optional(),
+      })
+      .optional(),
+    ...plainModel,
+  })
+  .refine(
+    (a) =>
+      a.slot === 'helmet' ||
+      (!a.hearing && !a.blocksHeadset && !a.vision && !a.visor && !a.nightVision && !a.coversFace),
+    {
+      message: 'only a helmet has hearing, blocksHeadset, vision, coversFace or mounts',
+      path: ['hearing'],
+    },
+  )
+  .refine((a) => a.slot === 'body' || !a.carrier, {
+    message: 'only body armor is a carrier',
+    path: ['carrier'],
+  })
+  .refine((a) => (a.hearing ?? 0) <= 0 || a.blocksHeadset, {
+    message: 'only a helmet that blocks the headset slot hears better (integrated comms)',
+    path: ['hearing'],
+  });
+
+/**
+ * A visor (GZ-5): fitted to a helmet with a visor mount, it's armor for the face (GZ-3: a
+ * head hit from the front, under the brow) with its own level and durability, and its
+ * own view. Cracks spread over that view as it wears (drawn by the client).
+ */
+const visorSchema = z.strictObject({
+  ...common,
+  type: z.literal('visor'),
+  ...armorStats,
+  vision: visionSchema,
+  ...plainModel,
+});
+
+/** The shapes night vision's view can have (GZ-5): one tube, or two side by side. */
+export const NIGHT_VISION_SHAPES = ['tube', 'dual'] as const;
+
+/**
+ * Night vision goggles (GZ-5): fitted to a helmet's night vision mount and switched on, the
+ * screen is drawn through them (client only): tinted, grainy, softer and brighter, inside
+ * the tube's shape. They do little until there are night raids.
+ */
+const nightVisionSchema = z.strictObject({
+  ...common,
+  type: z.literal('nightVision'),
+  /** The phosphor's color. */
+  tint: z.string().regex(/^#[0-9a-f]{6}$/i, 'must be #rrggbb'),
+  /** Grain and static, 0 (none) to 1. */
+  noise: fraction,
+  /** How soft the picture is, 0 (sharp) to 1: drawn at a lower resolution. */
+  softness: fraction,
+  /** How much brighter, 1 (none) or more. */
+  gain: z.number().min(1).max(8),
+  shape: z.enum(NIGHT_VISION_SHAPES),
+  ...plainModel,
+});
+
+/** A headset (GZ-2): worn in its own slot, it makes the wearer hear further and louder. */
+const headsetSchema = z.strictObject({
+  ...common,
+  type: z.literal('headset'),
+  /** How much better the wearer hears, as a share: 0.2 is 20% further and louder. */
+  hearing: z.number().min(0).max(1),
   ...plainModel,
 });
 
@@ -499,6 +701,13 @@ const attachmentSchema = z
     /** The guns it fits. Left out, it fits every gun with its slot. */
     weapons: z.array(idSchema).min(1).optional(),
     mods: modsSchema.optional(),
+    /**
+     * Magazines (MG-1): the rounds it holds and their caliber, so it's a magazine item that
+     * keeps its own rounds (one round type at a time). Without, a magazine-slot part is an
+     * extension (a tube's), adding mods.magazine.
+     */
+    capacity: z.int().min(1).optional(),
+    caliber: z.string().min(1).optional(),
     /** Optics only: how it looks through it. */
     optic: z
       .strictObject({
@@ -510,7 +719,54 @@ const attachmentSchema = z
         }),
       })
       .optional(),
+    /**
+     * Stocks only (WF-1, 2026-11-12): how many grid cells it adds to the gun's length
+     * (its width, unrotated), and folded (`foldedLength`, 0 if left out). A folded stock
+     * counts as not there: none of its mods apply. It folds if its model has a fold, or
+     * the gun's stock mount does.
+     */
+    stock: z
+      .strictObject({
+        length: z.int().min(0),
+        foldedLength: z.int().min(0).optional(),
+      })
+      .optional(),
+    /**
+     * WF-2 (2026-11-12): rows a fitted magazine adds under the gun (`magazine` slot only),
+     * and columns a fitted muzzle device adds to its length (`muzzle` slot only). Most
+     * add none; a drum or long magazine adds a row, a suppressor a column.
+     */
+    rows: z.int().min(0).optional(),
+    columns: z.int().min(0).optional(),
     model: attachmentModelSchema,
+  })
+  .refine((a) => a.rows === undefined || a.slot === 'magazine', {
+    message: 'only a magazine adds rows',
+    path: ['rows'],
+  })
+  .refine((a) => a.columns === undefined || a.slot === 'muzzle', {
+    message: 'only a muzzle device adds columns',
+    path: ['columns'],
+  })
+  .refine((a) => (a.capacity === undefined) === (a.caliber === undefined), {
+    message: 'a magazine needs both capacity and caliber',
+    path: ['caliber'],
+  })
+  .refine((a) => a.capacity === undefined || (a.slot === 'magazine' && !a.mods?.magazine), {
+    message: 'only a magazine-slot part holds rounds, and then it adds none (mods.magazine)',
+    path: ['capacity'],
+  })
+  .refine((a) => a.capacity === undefined || !!a.weapons, {
+    message: 'a magazine lists the guns it fits (weapons)',
+    path: ['weapons'],
+  })
+  .refine((a) => (a.slot === 'stock') === !!a.stock, {
+    message: 'stocks need a stock section, and only stocks may have one',
+    path: ['stock'],
+  })
+  .refine((a) => a.slot === 'stock' || !a.model.fold, {
+    message: 'only a stock folds',
+    path: ['model', 'fold'],
   })
   .refine((a) => (a.slot === 'optic') === !!a.optic, {
     message: 'optics need an optic section, and only optics may have one',
@@ -588,6 +844,7 @@ const containerSchema = z
     ...common,
     type: z.literal('container'),
     slot: z.enum(['rig', 'backpack', 'vault']),
+    ...burden,
     /** The grid inside, [width, height] in cells: with sections, the box around them. */
     grid: sizeSchema,
     /**
@@ -600,7 +857,7 @@ const containerSchema = z
      * armor does, with the same levels, wear and repairs, and body armor can't be worn
      * with it (gearConflict). Rigs only.
      */
-    armor: armorStatsSchema.optional(),
+    armor: z.strictObject({ ...armorStats, carrier: carrierSchema.optional() }).optional(),
     /**
      * For testing only (2026-10-31): given from the admin page's Admin tab, so keep it out of
      * loot tables, loadouts and vendors (as an admin spawner gun).
@@ -611,6 +868,10 @@ const containerSchema = z
   .refine((c) => !c.sections || sectionsProblem(c.grid, c.sections) === null, {
     message: 'sections must be inside the grid and not overlap',
     path: ['sections'],
+  })
+  .refine((c) => c.slot !== 'vault' || (!c.aimTime && !c.moveSpeed), {
+    message: 'the vault is never worn, so it has no aim time or move speed',
+    path: ['aimTime'],
   })
   .refine((c) => !c.armor || c.slot === 'rig', {
     message: 'only a rig can have armor',
@@ -798,6 +1059,10 @@ export const itemSchema = z.discriminatedUnion('type', [
   questSchema,
   lootSchema,
   repairSchema,
+  headsetSchema,
+  visorSchema,
+  nightVisionSchema,
+  plateSchema,
 ]);
 
 export type ItemDef = z.infer<typeof itemSchema>;
@@ -810,6 +1075,31 @@ export type MeleeDef = z.infer<typeof meleeSchema>;
 export type GrenadeDef = z.infer<typeof grenadeSchema>;
 export type ContainerDef = z.infer<typeof containerSchema>;
 export type RepairDef = z.infer<typeof repairSchema>;
+export type HeadsetDef = z.infer<typeof headsetSchema>;
+export type VisorDef = z.infer<typeof visorSchema>;
+export type PlateDef = z.infer<typeof plateSchema>;
+
+/** An item's carrier settings (GZ-4): body armor's or an armored rig's, or null. */
+export function carrierOf(def: ItemDef): CarrierDef | null {
+  if (def.type === 'armor') return def.carrier ?? null;
+  if (def.type === 'container') return def.armor?.carrier ?? null;
+  return null;
+}
+
+/** What a carrier's own soft rating covers (GZ-4; see softZones). */
+export function softZonesOf(carrier: CarrierDef): readonly CoverZone[] {
+  return carrier.softZones ?? (carrier.plates?.length ? [] : ['thorax']);
+}
+export type NightVisionDef = z.infer<typeof nightVisionSchema>;
+
+/** Whether a helmet takes a part (GZ-5): a visor on a visor mount, goggles on a night vision one. */
+export function mountsOn(helmet: ItemDef, part: ItemDef): boolean {
+  if (helmet.type !== 'armor' || helmet.slot !== 'helmet') return false;
+  return (
+    (part.type === 'visor' && !!helmet.visor) ||
+    (part.type === 'nightVision' && !!helmet.nightVision)
+  );
+}
 export type AttachmentMods = z.infer<typeof modsSchema>;
 export type OpticDef = NonNullable<AttachmentDef['optic']>;
 export type ReticleShape = z.infer<typeof reticleShapeSchema>;
@@ -894,6 +1184,9 @@ export const ITEM_FORMAT: ContentFormat<ItemDef> = {
         recoil: { ...recoil, snap: 40, recovery: Math.max(1, recoil.recovery / 3) },
       };
     },
+    // Weights, guessed from the type (the content files set their own). An older file
+    // given its weight by hand keeps it.
+    10: (doc) => ({ ...doc, weight: doc.weight ?? weightGuess(doc.type) }),
   },
 };
 
@@ -925,6 +1218,27 @@ export function defaultSounds(doc: {
   }
 }
 
+/** A first weight for a new item of a type, in kg (the migration's, and the item editor's). */
+export function weightGuess(type: unknown): number {
+  return WEIGHT_GUESSES[type as string] ?? 0.5;
+}
+
+/** Kg by type, for the format 10 → 11 migration; a stacking item's is per one. */
+const WEIGHT_GUESSES: Record<string, number> = {
+  weapon: 3,
+  ammo: 0.015,
+  armor: 2,
+  plate: 3,
+  attachment: 0.2,
+  med: 0.2,
+  container: 1,
+  melee: 0.3,
+  grenade: 0.4,
+  key: 0.02,
+  loot: 0.5,
+  repair: 1.5,
+};
+
 const VALUE_GUESSES: Record<string, number> = {
   weapon: 10_000,
   ammo: 30,
@@ -955,11 +1269,11 @@ export const ammoDef = (items: ItemDb, id: string): AmmoDef => itemOf(items, id,
 export const armorDef = (items: ItemDb, id: string): ArmorDef => itemOf(items, id, 'armor');
 
 /** What protects: armor's level, durability and repair loss, or an armored rig's. */
-export type ArmorStats = z.infer<typeof armorStatsSchema>;
+export type ArmorStats = z.infer<z.ZodObject<typeof armorStats>>;
 
 /** An item's armor (2026-11-11): armor's own, an armored rig's, or null. */
 export function armorOf(def: ItemDef): ArmorStats | null {
-  if (def.type === 'armor') return def;
+  if (def.type === 'armor' || def.type === 'visor' || def.type === 'plate') return def;
   if (def.type === 'container') return def.armor ?? null;
   return null;
 }
@@ -1035,6 +1349,49 @@ export function fits(weapon: WeaponDef, attachment: AttachmentDef): boolean {
   );
 }
 
+/** Whether an item is a magazine that holds its own rounds (MG-1). */
+export function isMagazine(
+  def: ItemDef,
+): def is AttachmentDef & { capacity: number; caliber: string } {
+  return def.type === 'attachment' && def.capacity !== undefined;
+}
+
+/** Whether a gun takes magazine items (MG-1). */
+export const magazineFed = (def: WeaponDef): boolean => def.feed === 'magazine';
+
+/** Whether the stock on a gun folds: the stock folds by itself, or the gun's mount does. */
+export function stockFolds(
+  items: ItemDb,
+  gun: { item: string; attachments?: Record<AttachmentSlot, string | null> },
+): boolean {
+  const id = gun.attachments?.stock;
+  if (!id) return false;
+  return !!weaponDef(items, gun.item).model.stockFold || !!attachmentDef(items, id).model.fold;
+}
+
+/**
+ * An item's size in a grid, [width, height] unrotated: its own, and for a gun its length
+ * grows by its stock's (folded or not, WF-1) and its muzzle device's columns, and its
+ * height by its magazine's rows (WF-2). Allocates nothing unless a gun grows.
+ */
+export function itemSize(
+  items: ItemDb,
+  item: { item: string; attachments?: Record<AttachmentSlot, string | null>; folded?: true },
+): readonly [number, number] {
+  const def = itemDef(items, item.item);
+  const a = def.type === 'weapon' ? item.attachments : undefined;
+  if (!a) return def.size;
+  let w = 0;
+  let h = 0;
+  if (a.stock) {
+    const s = attachmentDef(items, a.stock).stock;
+    w += (item.folded ? s?.foldedLength : s?.length) ?? 0;
+  }
+  if (a.muzzle) w += attachmentDef(items, a.muzzle).columns ?? 0;
+  if (a.magazine) h += attachmentDef(items, a.magazine).rows ?? 0;
+  return w || h ? [def.size[0] + w, def.size[1] + h] : def.size;
+}
+
 /** What a gun can be loaded with: ammo, or grenades for a grenade launcher. */
 export type RoundDef = AmmoDef | GrenadeDef;
 
@@ -1088,7 +1445,36 @@ export function checkItems(items: ItemDb): void {
       if (item.armDistance !== undefined && ammo.type !== 'grenade') {
         throw new ContentError(source, 'only a gun firing grenades has armDistance');
       }
-    } else if (item.type === 'grenade') {
+      if (magazineFed(item)) {
+        const id = item.defaults?.magazine;
+        const mag = id ? items.get(id) : undefined;
+        if (!mag || !isMagazine(mag)) {
+          throw new ContentError(source, 'a magazine-fed gun comes with a magazine (defaults)');
+        }
+        if (mag.capacity !== item.magazine) {
+          throw new ContentError(
+            source,
+            `magazine is ${item.magazine}, its magazine holds ${mag.capacity}`,
+          );
+        }
+      }
+      for (const [slot, id] of Object.entries(item.defaults ?? {})) {
+        const part = items.get(id);
+        if (part?.type !== 'attachment' || part.slot !== slot) {
+          throw new ContentError(source, `default ${slot} "${id}" is not a ${slot} attachment`);
+        }
+        if (!fits(item, part)) {
+          throw new ContentError(source, `default ${slot} "${id}" doesn't fit it`);
+        }
+      }
+    }
+    const carrier = carrierOf(item);
+    for (const [side, id] of Object.entries(carrier?.comesWith ?? {})) {
+      if (items.get(id)?.type !== 'plate') throw new ContentError(source, `"${id}" is not a plate`);
+      if (!carrier!.plates?.includes(side as PlateSide))
+        throw new ContentError(source, `comes with a ${side} plate but has no ${side} slot`);
+    }
+    if (item.type === 'grenade') {
       if (item.stack !== undefined && item.caliber === undefined) {
         throw new ContentError(source, "only a launcher's own round (with a caliber) stacks");
       }
@@ -1110,6 +1496,17 @@ export function checkItems(items: ItemDb): void {
         }
         if (!fits(weapon, item)) {
           throw new ContentError(source, `weapon "${id}" has no ${item.slot} slot`);
+        }
+        if (item.slot === 'magazine' && isMagazine(item) !== magazineFed(weapon)) {
+          throw new ContentError(
+            source,
+            isMagazine(item)
+              ? `weapon "${id}" doesn't take magazines (feed)`
+              : `weapon "${id}" takes magazines, and this holds no rounds (capacity)`,
+          );
+        }
+        if (isMagazine(item) && item.caliber !== caliberOf(items, weapon)) {
+          throw new ContentError(source, `weapon "${id}" fires ${caliberOf(items, weapon)}`);
         }
       }
     }

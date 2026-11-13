@@ -12,6 +12,12 @@ const MOUSE_LOOK_SPEED = 0.0025;
 /** A captured mouse move bigger than this is a browser glitch (they happen on locking), not a flick. */
 const MOUSE_JUMP = 400;
 const PITCH_LIMIT = 1.4;
+/**
+ * A touch that misses a button by up to this many pixels presses it anyway, so a near-miss
+ * doesn't start the move stick or a look drag (2026-11-11).
+ */
+const BUTTON_SLOP = 12;
+
 /** Dragging this far straight up from where the thumb landed locks sprinting. #sprint-zone in style.css marks the spot. */
 const LOCK_DISTANCE = 110;
 /** A touch shorter and smaller than this is a tap (which unlocks sprinting). */
@@ -72,6 +78,15 @@ export class Controls {
   pitch = 0;
   /** Presses, each true for the one tick after its button went down. */
   reload = false;
+  /**
+   * A second reload press within DOUBLE_TAP_MS of the first (MG-1, as crouch's double-tap): a fast reload, which
+   * drops the magazine taken out. Any reload button: the touch one, R or □.
+   */
+  quickReload = false;
+  private lastReload = -Infinity;
+  /** Night vision on or off (GZ-5): N on a keyboard. Touch and pads: the helmet's details. */
+  nightVision = false;
+  private pressedNightVision = false;
   interact = false;
   /** The use button held down (zombies mode rebuilds a barricade while it's held). */
   interactHeld = false;
@@ -92,6 +107,8 @@ export class Controls {
   detonate = false;
   /** The put out button: put yourself out while on fire. */
   extinguish = false;
+  /** The breath button (BW-2): let a held breath go, or hold again. Shift, L3 or its button, while aimed. */
+  breathe = false;
   /** A debug action (0 or 1), or -1. */
   debug = -1;
   /** Look speed multiplier from aim assist, set by the game while the crosshair is on an enemy. */
@@ -169,6 +186,7 @@ export class Controls {
   private pressedThrowPick = false;
   private pressedDetonate = false;
   private pressedExtinguish = false;
+  private pressedBreathe = false;
   private pressedDebug = -1;
   private readonly keys = new Set<string>();
   /** H or G while held: called with whether the release is a tap. */
@@ -208,7 +226,7 @@ export class Controls {
     this.pad = new PadDriver(this, hud.settingsButton);
     // Toggled aim would stay on with no way to turn it off once switched to hold.
     settings.subscribe((s) => {
-      if (s.aim === 'hold' && this.touchAim) this.toggleAim();
+      if (s.aim === 'hold' && this.touchAim) this.setTouchAim(false);
       if (s.lean === 'hold' && this.leanOn) this.setLean(0);
     });
   }
@@ -221,6 +239,12 @@ export class Controls {
     this.aim = this.touchAim || this.mouseAim || holdZ;
     this.fire = this.touchFire || this.mouseFire;
     this.reload = this.pressedReload;
+    this.quickReload = false;
+    if (this.pressedReload) {
+      const now = performance.now();
+      this.quickReload = now - this.lastReload < DOUBLE_TAP_MS;
+      this.lastReload = this.quickReload ? -Infinity : now;
+    }
     this.interact = this.pressedInteract;
     this.interactHeld = this.touchInteract || k.has('KeyF');
     this.bag = this.pressedBag;
@@ -232,11 +256,14 @@ export class Controls {
     this.throwPick = this.pressedThrowPick;
     this.detonate = this.pressedDetonate;
     this.extinguish = this.pressedExtinguish;
+    this.breathe = this.pressedBreathe;
+    this.nightVision = this.pressedNightVision;
     this.debug = this.pressedDebug;
     this.pressedReload = this.pressedInteract = this.pressedBag = false;
     this.pressedHeal = this.pressedHealPick = false;
     this.pressedThrow = this.pressedThrowPick = this.pressedDetonate = false;
-    this.pressedExtinguish = false;
+    this.pressedExtinguish = this.pressedBreathe = false;
+    this.pressedNightVision = false;
     this.pressedDraw = null;
     this.pressedSwap = false;
     this.pressedDebug = -1;
@@ -264,14 +291,17 @@ export class Controls {
       // Pushing the stick to the rim sprints (forwards only, as in the sim).
       this.sprint = this.stickY > 0 && Math.hypot(this.stickX, this.stickY) > 0.95;
     }
+    const keyLean = (k.has('KeyE') ? 1 : 0) - (k.has('KeyQ') ? 1 : 0);
+    const leanWanted = this.leanOn !== 0 || (settings.current.lean === 'hold' && keyLean !== 0);
+    // Aim on lean (a setting): leaning aims for as long as it lasts, and so doesn't sprint.
+    // Checked before sprinting, which would straighten up and drop the aim (2026-11-11).
+    if (settings.current.leanAim && leanWanted) this.aim = true;
     if (this.aim || this.fire) this.sprint = false;
     // Firing ends sprint lock, as aiming does.
     if (this.fire && this.sprintLocked) this.setSprintLock(false);
     // Whichever came last of sprinting and crouching (or leaning) wins (2026-11-10, the
     // user's call): starting to sprint stands you up straight; crouching, going prone or
     // leaning mid-sprint stops the sprint until sprint is let go or you stand straight again.
-    const keyLean = (k.has('KeyE') ? 1 : 0) - (k.has('KeyQ') ? 1 : 0);
-    const leanWanted = this.leanOn !== 0 || (settings.current.lean === 'hold' && keyLean !== 0);
     const crouchWanted =
       this.crouchOn ||
       this.proneOn ||
@@ -294,11 +324,6 @@ export class Controls {
     this.prone = this.proneOn;
     // Held: Q and E while down, else a button held. Toggled: what was last pressed.
     this.lean = settings.current.lean === 'hold' ? keyLean || this.leanOn : this.leanOn;
-    // Aim on lean (a setting): leaning aims for as long as it lasts, and so doesn't sprint.
-    if (settings.current.leanAim && this.lean !== 0) {
-      this.aim = true;
-      this.sprint = false;
-    }
   }
 
   /** Ends sprint lock, for things outside the controls (letting go of a ladder). */
@@ -369,6 +394,7 @@ export class Controls {
         if (settings.current.aim === 'toggle') {
           this.toggleAim();
         } else {
+          this.straightenToAim();
           this.touchAim = true;
           held(() => (this.touchAim = false));
         }
@@ -452,6 +478,10 @@ export class Controls {
         this.pressedExtinguish = true;
         held(() => {});
         break;
+      case 'breathe':
+        this.pressedBreathe = true;
+        held(() => {});
+        break;
       case 'grenade':
       case 'heal': {
         // A tap uses (or throws) the default when it lifts; holding opens the picker instead.
@@ -477,9 +507,31 @@ export class Controls {
     return () => release();
   }
 
+  /**
+   * With aim on lean, aiming while leaning straightens up into a plain aim instead of
+   * stacking a second aim on the lean (2026-11-11, the user's call).
+   */
+  private straightenToAim(): boolean {
+    if (!settings.current.leanAim || this.leanOn === 0) return false;
+    this.setLean(0);
+    return true;
+  }
+
+  /**
+   * Lets go of a toggled aim (MG-2): packing magazines starts with the gun down, else a
+   * toggled aim would stop it the moment the inventory closes.
+   */
+  dropAim(): void {
+    if (this.touchAim) this.setTouchAim(false);
+  }
+
   private toggleAim(): void {
-    this.touchAim = !this.touchAim;
-    this.hud.button('aim').classList.toggle('active', this.touchAim);
+    this.setTouchAim(this.straightenToAim() || !this.touchAim);
+  }
+
+  private setTouchAim(on: boolean): void {
+    this.touchAim = on;
+    this.hud.button('aim').classList.toggle('active', on);
   }
 
   private setCrouch(on: boolean): void {
@@ -515,14 +567,19 @@ export class Controls {
     // H as its touch button: a tap heals when it lifts, holding opens the picker.
     // Not Shift+H (2026-10-30): Shift is sprint, so healing on the run picked.
     if (e.code === 'KeyR') this.pressedReload = true;
+    // Shift is sprint, which aiming stops, so while aimed it's the breath button (BW-2).
+    else if ((e.code === 'ShiftLeft' || e.code === 'ShiftRight') && this.aim)
+      this.pressedBreathe = true;
     else if (e.code === 'KeyH')
       this.holdKey(
         e.code,
         () => (this.pressedHeal = true),
         () => (this.pressedHealPick = true),
       );
-    else if (e.code === 'KeyZ' && settings.current.aim === 'toggle') this.toggleAim();
-    else if (e.code === 'KeyF') this.pressedInteract = true;
+    else if (e.code === 'KeyZ') {
+      if (settings.current.aim === 'toggle') this.toggleAim();
+      else this.straightenToAim();
+    } else if (e.code === 'KeyF') this.pressedInteract = true;
     else if ((e.code === 'KeyQ' || e.code === 'KeyE') && settings.current.lean === 'toggle') {
       const side = e.code === 'KeyQ' ? -1 : 1;
       this.setLean(this.leanOn === side ? 0 : side);
@@ -543,6 +600,7 @@ export class Controls {
       );
     else if (e.code === 'KeyB') this.pressedDetonate = true;
     else if (e.code === 'KeyV') this.pressedExtinguish = true;
+    else if (e.code === 'KeyN') this.pressedNightVision = true;
     else if (e.code === 'KeyI' || e.code === 'Tab') {
       e.preventDefault();
       this.pressedBag = true;
@@ -568,9 +626,34 @@ export class Controls {
     this.pressedDebug = i;
   }
 
+  /**
+   * The closest shown button whose edge is within BUTTON_SLOP of a touch that missed every
+   * button, so a near-miss presses it instead of starting the stick or a look drag.
+   */
+  private nearButton(x: number, y: number): [ControlId, HTMLButtonElement] | null {
+    if (this.hud.container.classList.contains('editing')) return null;
+    let best: [ControlId, HTMLButtonElement] | null = null;
+    let bestGap = BUTTON_SLOP;
+    for (const entry of this.hud.buttons) {
+      const r = entry[1].getBoundingClientRect();
+      if (r.width === 0) continue; // hidden (display: none)
+      const gap = Math.hypot(x - (r.left + r.width / 2), y - (r.top + r.height / 2)) - r.width / 2;
+      if (gap <= bestGap) {
+        bestGap = gap;
+        best = entry;
+      }
+    }
+    return best;
+  }
+
   private readonly onDown = (e: PointerEvent): void => {
     // The mouse looks and shoots through the captured cursor instead.
     if (e.pointerType === 'mouse') return;
+    const near = this.nearButton(e.clientX, e.clientY);
+    if (near) {
+      this.onButton(near[0], near[1], e);
+      return;
+    }
     if (e.clientX < window.innerWidth / 2 && !this.move) {
       this.move = {
         id: e.pointerId,
@@ -645,7 +728,10 @@ export class Controls {
     if (e.button === 0) this.mouseFire = true;
     else if (e.button === 2) {
       if (settings.current.aim === 'toggle') this.toggleAim();
-      else this.mouseAim = true;
+      else {
+        this.straightenToAim();
+        this.mouseAim = true;
+      }
     }
   };
 

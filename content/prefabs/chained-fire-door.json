@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "chained-fire-door",
   "name": "Chained fire door",
+  "tags": ["structure"],
   "colors": {
     "door": "#6f7f86",
     "bar": "#c9ccc9",

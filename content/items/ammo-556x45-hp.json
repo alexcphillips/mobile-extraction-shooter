@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-556x45-hp",
   "name": "5.56×45 mm HP",
   "shortName": "5.56 HP",
   "type": "ammo",
   "size": [1, 1],
   "value": 30,
+  "weight": 0.012,
   "rarity": "common",
   "stack": 60,
   "caliber": "5.56x45",

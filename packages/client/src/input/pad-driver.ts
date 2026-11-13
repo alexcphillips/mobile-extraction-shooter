@@ -192,7 +192,9 @@ export class PadDriver {
         this.hold(b, c.press('aim'));
         break;
       case PAD.l3:
-        this.sprintOn = true;
+        // Aiming stops sprinting, so while aimed L3 is the breath button (BW-2).
+        if (c.aim) c.press('breathe')();
+        else this.sprintOn = true;
         break;
       case PAD.r3:
         c.drawHand('knife');

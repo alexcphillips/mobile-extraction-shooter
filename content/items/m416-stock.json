@@ -1,0 +1,28 @@
+{
+  "formatVersion": 11,
+  "id": "m416-stock",
+  "name": "M416 tactical stock",
+  "shortName": "Stock",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 4100,
+  "weight": 0.4,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["m416", "mcx-spear", "k10", "mpx"],
+  "stock": {
+    "length": 1
+  },
+  "mods": {
+    "recoil": 0.6,
+    "ergonomics": 1.2,
+    "aimTime": 1.05
+  },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.06], "size": [0.04, 0.06, 0.12], "color": "#2b2e31" },
+      { "type": "box", "pos": [0, -0.045, 0.095], "size": [0.038, 0.04, 0.05], "color": "#2b2e31" },
+      { "type": "box", "pos": [0, -0.015, 0.122], "size": [0.042, 0.1, 0.01], "color": "#1d1f21" }
+    ]
+  }
+}

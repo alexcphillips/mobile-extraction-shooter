@@ -5,10 +5,12 @@ import {
   GRENADE_EFFECTS,
   MED_EFFECTS,
   ITEM_VIEWS,
+  RARITIES,
   type ItemView,
   VENDOR,
   firesRound,
   fits,
+  itemSize,
   roundOf,
   idSchema,
   type AttachmentDef,
@@ -16,6 +18,15 @@ import {
   type ItemDb,
   type ItemDef,
   type WeaponDef,
+  type Fold,
+  VISION_SHAPES,
+  NIGHT_VISION_SHAPES,
+  PLATE_MATERIALS,
+  PLATE_SIDES,
+  COVER_ZONES,
+  CARRIER,
+  type CarrierDef,
+  type VisionShape,
 } from '@mes/shared';
 import {
   Fragment,
@@ -27,10 +38,11 @@ import {
 } from 'react';
 import { sounds } from '../audio/sounds';
 import { itemUses, soundSources } from '../content';
-import { C, N, P, put, type Bound, type Path } from '../editor/bound-fields';
-import { Text, Toggle } from '../editor/fields';
-import { previewPortrait, viewOf } from '../render/item-portrait';
-import { colorOf, tileName } from '../ui/raid-screen';
+import { C, get, N, P, put, type Bound, type Path } from '../editor/bound-fields';
+import { HexColor, Num, Text, Toggle } from '../editor/fields';
+import { previewPortrait, viewOf, withDefaults } from '../render/item-portrait';
+import { crackBackground, visionBackground } from '../render/vision';
+import { colorOf, RARITY_COLORS, tileName } from '../ui/raid-screen';
 import { sectionBoxes } from '../ui/inventory-layout';
 import type { Doc, ItemEditor, ItemEditorState } from './editor';
 import { fitPointsToSlot, setSlots } from './model-edit';
@@ -245,9 +257,10 @@ function ItemGroup(props: {
   children: ReactNode;
 }) {
   const { label, of, state: s, shown } = props;
+  const [rarities, setRarities] = useState(false);
   return (
     <div>
-      <h4>
+      <h4 className="ie-group-head">
         <button
           className="ie-type"
           aria-expanded={shown}
@@ -259,9 +272,43 @@ function ItemGroup(props: {
           {of.some((d) => s.unsaved.includes(d.id)) && <span className="ie-dot"> ●</span>}
           {of.some((d) => s.problems.has(d.id)) && <span className="ed-problem"> !</span>}
         </button>
+        <button
+          className={rarities ? 'ie-rarity-btn ie-rarity-btn-on' : 'ie-rarity-btn'}
+          title={`${label} by rarity`}
+          aria-pressed={rarities}
+          onClick={() => setRarities(!rarities)}
+        >
+          ▤
+        </button>
       </h4>
+      {rarities && <RarityBreakdown of={of} />}
       {shown && props.children}
     </div>
+  );
+}
+
+/** How many of a group's items are each rarity, with its share, in the rarity's color. */
+function RarityBreakdown({ of }: { of: readonly ItemDef[] }) {
+  const counts = RARITIES.map((r) => [r, of.filter((d) => d.rarity === r).length] as const);
+  return (
+    <table className="ie-rarity-table">
+      <tbody>
+        {counts
+          .filter(([, n]) => n > 0)
+          .map(([r, n]) => (
+            <tr key={r} style={{ color: RARITY_COLORS[r] }}>
+              <td>{r}</td>
+              <td>{n}</td>
+              <td>{((n / of.length) * 100).toFixed(1)}%</td>
+            </tr>
+          ))}
+        <tr className="ie-rarity-total">
+          <td>total</td>
+          <td>{of.length}</td>
+          <td />
+        </tr>
+      </tbody>
+    </table>
   );
 }
 
@@ -356,15 +403,28 @@ function ItemPage(props: { editor: ItemEditor; state: ItemEditorState; def: Item
               min={0}
               hint="What vendors sell it for new; they buy it for a share of this"
             />
+            <N
+              {...b}
+              path={['weight']}
+              label="Weight (kg)"
+              min={0}
+              hint={
+                def.type === 'ammo'
+                  ? 'One round; a stack weighs this times its count'
+                  : def.type === 'weapon'
+                    ? 'Bare: attachments and loaded rounds weigh their own'
+                    : 'Empty: what it holds weighs its own'
+              }
+            />
           </div>
           <RarityPicker {...b} def={def} />
         </Group>
         <TypeFields {...b} def={def} items={s.items} />
         <SoundFields {...b} def={def} />
-        <ViewPicker {...b} def={def} />
+        <ViewPicker {...b} def={def} items={s.items} />
       </section>
       <section className="ie-side">
-        <SizePreview def={def} />
+        <SizePreview def={def} items={s.items} />
         {s.db && <Facts def={def} db={s.db} />}
         <UsedBy id={def.id} items={s.db ?? s.items} />
         {optic && (
@@ -465,6 +525,12 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
               />
               <S {...b} path={['fireMode']} label="Fire mode" options={['auto', 'semi']} />
             </div>
+            <Tick
+              label="Takes magazines"
+              checked={def.feed === 'magazine'}
+              title="Reloads swap in magazine items, which need a magazine slot and one it comes with; unticked, loose rounds go straight in (a tube)"
+              onChange={(on) => b.edit((d) => put(d, ['feed'], on ? 'magazine' : undefined))}
+            />
             <div className="ie-grid">
               <N {...b} path={['rpm']} label="Rounds/min" min={0} />
               <N {...b} path={['magazine']} label="Magazine" min={1} />
@@ -543,6 +609,35 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
               }
             />
           </Group>
+          {!!def.slots?.length && (
+            <Group
+              title="Comes with"
+              aside={<span className="ed-note">from vendors, loot and loadouts</span>}
+            >
+              <div className="ie-grid">
+                {(def.slots ?? []).map((slot) => (
+                  <P
+                    key={slot}
+                    {...b}
+                    path={['defaults', slot]}
+                    label={slot}
+                    options={[...items.values()]
+                      .filter((a) => a.type === 'attachment' && a.slot === slot && fits(def, a))
+                      .map((a) => a.id)}
+                    unset="nothing"
+                  />
+                ))}
+              </div>
+              {def.slots?.includes('stock') && (
+                <FoldFields
+                  {...b}
+                  path={['model', 'stockFold']}
+                  label="Folding stock mount"
+                  title="Any stock fitted folds on the gun's hinge (an AK-74M's); folded, the stock does nothing"
+                />
+              )}
+            </Group>
+          )}
         </>
       );
     case 'ammo': {
@@ -675,6 +770,7 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
           <Group title="Armor">
             <S {...b} path={['slot']} label="Worn as" options={['helmet', 'body']} />
             <ArmorStats {...b} at={[]} />
+            <BurdenFields {...b} />
           </Group>
           <Group title="Face mask" aside={<span className="ed-note">blank: none</span>}>
             <div className="ie-grid">
@@ -696,7 +792,79 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
               />
             </div>
           </Group>
+          {def.slot === 'helmet' && <HelmetFields {...b} def={def} />}
+          {def.slot === 'body' && <CarrierFields {...b} at={['carrier']} items={items} />}
         </>
+      );
+    case 'plate':
+      return (
+        <Group title="Plate" aside={<span className="ed-note">GZ-4</span>}>
+          <S
+            {...b}
+            path={['material']}
+            label="Material"
+            options={PLATE_MATERIALS}
+            titles={MATERIAL_NOTES}
+            then={(d, m) => {
+              // A preset: fills the stats in, all still editable.
+              if (m) Object.assign(d, MATERIAL_PRESETS[m]);
+            }}
+          />
+          <ArmorStats {...b} at={[]} />
+        </Group>
+      );
+    case 'visor':
+      return (
+        <>
+          <Group title="Visor" aside={<span className="ed-note">GZ-5: armor for the face</span>}>
+            <ArmorStats {...b} at={[]} />
+          </Group>
+          <ViewFields {...b} path={['vision']} title="Its view" />
+        </>
+      );
+    case 'nightVision':
+      return (
+        <Group title="Night vision" aside={<span className="ed-note">GZ-5: client only</span>}>
+          <div className="ie-grid">
+            <HexColor
+              label="Tint"
+              value={def.tint}
+              onChange={(c) => b.edit((d) => put(d, ['tint'], c))}
+            />
+            <N {...b} path={['gain']} label="Brightness (×)" min={1} hint="1 is none" />
+          </div>
+          <div className="ie-grid">
+            <N {...b} path={['noise']} label="Grain (0–1)" min={0} />
+            <N
+              {...b}
+              path={['softness']}
+              label="Softness (0–1)"
+              min={0}
+              hint="Drawn at a lower resolution while on: 1 is 40% of it"
+            />
+          </div>
+          <S
+            {...b}
+            path={['shape']}
+            label="Tube"
+            options={NIGHT_VISION_SHAPES}
+            labels={{ tube: 'one tube', dual: 'two tubes' }}
+          />
+        </Group>
+      );
+    case 'headset':
+      return (
+        <Group title="Headset">
+          <div className="ie-grid">
+            <N
+              {...b}
+              path={['hearing']}
+              label="Hearing (+share)"
+              min={0}
+              hint="How much further and louder the wearer hears: 0.2 is +20% (headsets give 0.1–0.25)"
+            />
+          </div>
+        </Group>
       );
     case 'attachment':
       return <AttachmentFields {...b} def={def} weapons={ofType('weapon')} items={items} />;
@@ -763,7 +931,9 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
               />
             )}
             {def.armor && <ArmorStats {...b} at={['armor']} />}
+            {def.slot !== 'vault' && <BurdenFields {...b} />}
           </Group>
+          {def.armor && <CarrierFields {...b} at={['armor', 'carrier']} items={items} />}
           <SectionFields {...b} def={def} />
         </>
       );
@@ -1000,9 +1170,85 @@ function AttachmentFields(
             if (v === 'optic' && d.optic === undefined)
               put(d, ['optic'], structuredClone(BLANK_OPTIC));
             if (v !== 'optic') put(d, ['optic'], undefined);
+            if (v === 'stock' && d.stock === undefined) put(d, ['stock'], { length: 1 });
+            if (v !== 'magazine') {
+              put(d, ['capacity'], undefined);
+              put(d, ['caliber'], undefined);
+              put(d, ['rows'], undefined);
+            }
+            if (v !== 'muzzle') put(d, ['columns'], undefined);
+            if (v !== 'stock') {
+              put(d, ['stock'], undefined);
+              put(d, ['model', 'fold'], undefined);
+            }
             fitPointsToSlot(d);
           }}
         />
+        {(def.slot === 'magazine' || def.slot === 'muzzle') && (
+          <div className="ie-grid">
+            <N
+              {...b}
+              path={[def.slot === 'magazine' ? 'rows' : 'columns']}
+              label={def.slot === 'magazine' ? 'Adds rows' : 'Adds columns'}
+              min={0}
+              placeholder="0"
+              hint={
+                def.slot === 'magazine'
+                  ? 'Rows it adds under the gun in a grid (a drum or long magazine)'
+                  : 'Cells longer the gun is in a grid with it on (a suppressor)'
+              }
+            />
+          </div>
+        )}
+        {def.slot === 'magazine' && (
+          <>
+            <Tick
+              label="A magazine (keeps its own rounds)"
+              checked={def.capacity !== undefined}
+              title="For guns that take magazines; unticked, it's an extension (a tube's) that adds rounds"
+              onChange={(on) =>
+                b.edit((d) => {
+                  put(d, ['capacity'], on ? 30 : undefined);
+                  put(d, ['caliber'], on ? (calibers(items)[0] ?? 'caliber') : undefined);
+                  if (on) put(d, ['mods', 'magazine'], undefined);
+                })
+              }
+            />
+            {def.capacity !== undefined && (
+              <div className="ie-grid">
+                <N {...b} path={['capacity']} label="Holds (rounds)" min={1} />
+                <P {...b} path={['caliber']} label="Caliber" options={calibers(items)} />
+              </div>
+            )}
+          </>
+        )}
+        {def.stock && (
+          <>
+            <div className="ie-grid">
+              <N
+                {...b}
+                path={['stock', 'length']}
+                label="Adds cells"
+                min={0}
+                hint="How many cells longer the gun is in a grid with it on"
+              />
+              <N
+                {...b}
+                path={['stock', 'foldedLength']}
+                label="Folded adds"
+                min={0}
+                placeholder="0"
+                hint="Cells it adds folded"
+              />
+            </div>
+            <FoldFields
+              {...b}
+              path={['model', 'fold']}
+              label="Folds by itself"
+              title="Folds on its own hinge (or collapses); a gun with a folding mount folds any stock anyway"
+            />
+          </>
+        )}
         {def.optic && (
           <div className="ie-grid">
             <N
@@ -1057,6 +1303,306 @@ function AttachmentFields(
   );
 }
 
+/**
+ * How a stock folds (WF-1): a hinge on one side that it turns about (180° lays it along
+ * the gun), or a slide forward for a collapsing stock. Ticked on, a side-folder on the left.
+ */
+function FoldFields(props: Bound & { path: Path; label: string; title: string }) {
+  const { path, label, title, ...b } = props;
+  const fold = get(b.doc, path) as Fold | undefined;
+  const set = (change: (f: { pivot: number[]; yaw?: number; shift?: number[] }) => void) =>
+    b.edit((d) => {
+      const f = structuredClone(get(d, path)) as {
+        pivot: number[];
+        yaw?: number;
+        shift?: number[];
+      };
+      change(f);
+      if (!f.yaw) delete f.yaw;
+      if (!f.shift?.some((n) => n)) delete f.shift;
+      put(d, path, f);
+    });
+  return (
+    <>
+      <Tick
+        label={label}
+        checked={!!fold}
+        title={title}
+        onChange={(on) =>
+          b.edit((d) => put(d, path, on ? { pivot: [-0.03, 0, 0], yaw: 180 } : undefined))
+        }
+      />
+      {fold && (
+        <div className="ie-grid">
+          <span title="The hinge's x from the stock mount: − left, + right">
+            <Num
+              label="Hinge x (m)"
+              value={fold.pivot[0]}
+              onChange={(v) => set((f) => (f.pivot[0] = v ?? 0))}
+            />
+          </span>
+          <span title="The hinge's z from the stock mount (− forward)">
+            <Num
+              label="Hinge z (m)"
+              value={fold.pivot[2]}
+              onChange={(v) => set((f) => (f.pivot[2] = v ?? 0))}
+            />
+          </span>
+          <span title="How far it turns about the hinge: 180 lays it along the gun">
+            <Num
+              label="Turn (°)"
+              value={fold.yaw}
+              placeholder="0"
+              onChange={(v) => set((f) => (f.yaw = v ?? 0))}
+            />
+          </span>
+          <span title="A collapsing stock: how far it slides, − forward">
+            <Num
+              label="Slide z (m)"
+              value={fold.shift?.[2]}
+              placeholder="0"
+              onChange={(v) => set((f) => (f.shift = [0, 0, v ?? 0]))}
+            />
+          </span>
+        </div>
+      )}
+    </>
+  );
+}
+
+/** What worn gear costs its wearer (GZ-1): aim time and move speed, players only. */
+function BurdenFields(props: Bound) {
+  return (
+    <div className="ie-grid">
+      <N
+        {...props}
+        path={['aimTime']}
+        label="Aim time (×)"
+        min={1}
+        placeholder="1"
+        hint="Aiming in takes this much longer: 1.1 is 10% slower. Players only"
+      />
+      <N
+        {...props}
+        path={['moveSpeed']}
+        label="Move speed (×)"
+        min={0.5}
+        placeholder="1"
+        hint="On top of weight: 0.88 is 12% slower. Players only"
+      />
+    </div>
+  );
+}
+
+/**
+ * A helmet's hearing, ears and view (GZ-2). The boost (a + hearing) shows only when it
+ * covers the ears, as content loading refuses one otherwise.
+ */
+function HelmetFields(props: Bound & { def: Extract<ItemDef, { type: 'armor' }> }) {
+  const { def, ...b } = props;
+  return (
+    <Group title="Head" aside={<span className="ed-note">GZ-2</span>}>
+      <Tick
+        label="Covers the ears (no headset)"
+        checked={!!def.blocksHeadset}
+        title="Full helmets with built-in ear cover: the headset slot is shut while it's worn"
+        onChange={(on) =>
+          b.edit((d) => {
+            put(d, ['blocksHeadset'], on || undefined);
+            const h = d.hearing as number | undefined;
+            if (!on && h !== undefined && h > 0) put(d, ['hearing'], undefined);
+          })
+        }
+      />
+      <div className="ie-grid">
+        <T {...b} path={['visor']} label="Visor mount" title="A visor can be fitted (GZ-5)" />
+        <T
+          {...b}
+          path={['nightVision']}
+          label="Night vision mount"
+          title="Night vision goggles can be fitted (GZ-5); one thing at a time, whichever"
+        />
+        <T
+          {...b}
+          path={['coversFace']}
+          label="Covers the face"
+          title="A full mask (GZ-3): face hits with no visor fitted meet the helmet, not bare skin"
+        />
+      </div>
+      <div className="ie-grid">
+        <N
+          {...b}
+          path={['hearing']}
+          label={def.blocksHeadset ? 'Hearing (±share)' : 'Hearing loss (−share)'}
+          placeholder="0"
+          hint={
+            def.blocksHeadset
+              ? 'Integrated comms may hear better (+0.1); a heavy shell worse (−0.15)'
+              : 'Negative: how much shorter and quieter sounds are (−0.15 for a heavy one)'
+          }
+        />
+      </div>
+      <ViewFields {...b} path={['vision']} title="" />
+    </Group>
+  );
+}
+
+/**
+ * What a helmet or visor takes of the view (GZ-2, GZ-5): a vignette's strength, a hard
+ * shape, and a 16:9 preview drawn as in the game; a visor's with its cracks at half wear.
+ */
+function ViewFields(props: Bound & { path: Path; title: string }) {
+  const { path, title, ...b } = props;
+  const vision = get(b.doc, path) as { vignette?: number; shape?: VisionShape } | undefined;
+  const visor = b.doc.type === 'visor';
+  const body = (
+    <>
+      <div className="ie-grid">
+        <N
+          {...b}
+          path={[...path, 'vignette']}
+          label="Vignette (0–1)"
+          min={0}
+          placeholder="none"
+          hint="A soft darkening round the edges of the view"
+        />
+      </div>
+      <S
+        {...b}
+        path={[...path, 'shape']}
+        label="Hard shape"
+        options={['none', ...VISION_SHAPES]}
+        labels={{ none: 'none', slit: 'T slit', cheeks: 'cheek guards' }}
+        fallback="none"
+        then={(d, v) => {
+          if (v === 'none') put(d, [...path, 'shape'], undefined);
+          // A visor always has a view, if only an empty one.
+          if (visor && get(d, path) === undefined) put(d, path, {});
+        }}
+      />
+      <div
+        className="ie-vision"
+        title={
+          visor
+            ? 'The view as drawn in the game, cracked as at half wear'
+            : 'The view as drawn in the game'
+        }
+      >
+        <div
+          style={{
+            ['--vignette' as string]: String(vision?.vignette ?? 0),
+            background: [
+              visor ? crackBackground(7, 0.5) : '',
+              visionBackground(vision?.shape),
+              `radial-gradient(ellipse at center, transparent 50%, rgb(5 5 5 / ${(vision?.vignette ?? 0) * 0.95}) 100%)`,
+            ]
+              .filter(Boolean)
+              .join(', '),
+          }}
+        />
+      </div>
+    </>
+  );
+  return title ? <Group title={title}>{body}</Group> : body;
+}
+
+/** What each plate material is like (GZ-4, the user's call), for its button's tooltip. */
+const MATERIAL_NOTES: Record<(typeof PLATE_MATERIALS)[number], string> = {
+  ceramic: 'Light and high level, but low durability and terrible repair loss',
+  steel: 'Good durability and repair loss at any level, but very heavy',
+  polyethylene: 'Very light with excellent repair loss and fair durability, but a low level',
+};
+/** What picking a material fills in (Claude's first guesses). Steel keeps the level. */
+const MATERIAL_PRESETS: Record<(typeof PLATE_MATERIALS)[number], Record<string, number>> = {
+  ceramic: { level: 5, durability: 40, repairLoss: 0.3 },
+  steel: { durability: 80, repairLoss: 0.05 },
+  polyethylene: { level: 3, durability: 55, repairLoss: 0.03 },
+};
+
+/**
+ * Body armor or an armored rig as a plate carrier (GZ-4): plate slots, what plates and its
+ * own soft rating cover, the plates it comes with, bulk, footstep noise and swap time.
+ * Ticked off, it protects as before (its own rating over the chest).
+ */
+function CarrierFields(props: Bound & { at: Path; items: ReadonlyMap<string, ItemDef> }) {
+  const { at, items, ...b } = props;
+  const carrier = get(b.doc, at) as CarrierDef | undefined;
+  const plates = [...items.values()].filter((d) => d.type === 'plate').map((d) => d.id);
+  const list = (key: 'plates' | 'plateZones' | 'softZones', options: readonly string[]) => (
+    <Chips
+      options={options}
+      on={(o) => ((carrier?.[key] as string[] | undefined) ?? []).includes(o)}
+      toggle={(o, on) =>
+        b.edit((d) => {
+          const was = (get(d, [...at, key]) as string[] | undefined) ?? [];
+          const next = options.filter((x) => (x === o ? on : was.includes(x)));
+          put(d, [...at, key], next);
+          if (key === 'plates')
+            for (const s of PLATE_SIDES)
+              if (!next.includes(s)) put(d, [...at, 'comesWith', s], undefined);
+        })
+      }
+    />
+  );
+  return (
+    <Group title="Carrier" aside={<span className="ed-note">GZ-4: one check per hit</span>}>
+      <Tick
+        label="A plate carrier"
+        checked={!!carrier}
+        title="Plates in front and back slots take the hits; off, it protects as before"
+        onChange={(on) =>
+          b.edit((d) => put(d, at, on ? { plates: ['front', 'back'], softZones: [] } : undefined))
+        }
+      />
+      {carrier && (
+        <>
+          <Labeled label="Plate slots">{list('plates', PLATE_SIDES)}</Labeled>
+          <Labeled label="Plates cover (blank: thorax)">{list('plateZones', COVER_ZONES)}</Labeled>
+          <Labeled label="Its own rating covers">{list('softZones', COVER_ZONES)}</Labeled>
+          <div className="ie-grid">
+            {(carrier.plates ?? []).map((side) => (
+              <P
+                key={side}
+                {...b}
+                path={[...at, 'comesWith', side]}
+                label={`Comes with (${side})`}
+                options={plates}
+                unset="no plate"
+              />
+            ))}
+          </div>
+          <T {...b} path={[...at, 'blocksRig']} label="Bulky: no chest rig over it" />
+          <div className="ie-grid">
+            <N
+              {...b}
+              path={[...at, 'noise']}
+              label="Footstep noise (×)"
+              min={0.5}
+              placeholder="1"
+              hint="How much further enemies hear your steps: 1.2–1.3 for a heavy one"
+            />
+            <N
+              {...b}
+              path={[...at, 'swapTime']}
+              label="Plate swap (s)"
+              min={0}
+              placeholder={String(CARRIER.swapTime)}
+              hint="Quick-release about 3, cheap about 8"
+            />
+          </div>
+        </>
+      )}
+    </Group>
+  );
+}
+
+/** Every caliber a round in content has, for a magazine's picker. */
+function calibers(items: ReadonlyMap<string, ItemDef>): string[] {
+  const out = new Set<string>();
+  for (const d of items.values()) if (d.type === 'ammo') out.add(d.caliber);
+  return [...out].sort();
+}
+
 /** Where each view is taken from, for its button's tooltip. */
 const VIEW_NOTES: Record<ItemView, string> = {
   top: 'Straight down, the back (−z) at the top',
@@ -1084,17 +1630,18 @@ const VIEW_LABELS: Record<ItemView, string> = {
  * Where the item's picture is taken from (2026-11-02): each view drawn as its tile would
  * be, to click; the one by its kind is marked, and picking it leaves the field out.
  */
-function ViewPicker(props: Bound & { def: ItemDef }) {
-  const { def } = props;
+function ViewPicker(props: Bound & { def: ItemDef; items: ItemDb }) {
+  const { def, items } = props;
   const byKind = viewOf({ ...def, view: undefined } as ItemDef);
   const current = viewOf(def);
-  const key = JSON.stringify([def.model, def.size]);
+  const size = editedSize(def, items);
+  const key = JSON.stringify([def.model, size, def.type === 'weapon' && def.defaults]);
   const arts = useMemo(
-    () => ITEM_VIEWS.map((v) => previewPortrait({ ...def, view: v } as ItemDef, def.size)),
+    () => ITEM_VIEWS.map((v) => previewPortrait({ ...def, view: v } as ItemDef, size, items)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [key],
   );
-  const [w, h] = def.size;
+  const [w, h] = size;
   const scale = 34 / Math.max(w, h);
   return (
     <Group title="Picture" aside={<span className="ed-note">taken from</span>}>
@@ -1126,16 +1673,31 @@ function ViewPicker(props: Bound & { def: ItemDef }) {
   );
 }
 
-function SizePreview({ def }: { def: ItemDef }) {
-  const [w, h] = def.size;
+/**
+ * An item's size as the game shows a new one: a gun's with the parts it comes with (WF-1/2),
+ * its own size if that's missing or still being typed in.
+ */
+function editedSize(def: ItemDef, items: ItemDb): readonly [number, number] {
+  const gun = def.type === 'weapon' && def.defaults ? withDefaults(def, items) : null;
+  try {
+    return gun ? itemSize(gun.db, gun.state) : def.size;
+  } catch {
+    return def.size;
+  }
+}
+
+function SizePreview({ def, items }: { def: ItemDef; items: ItemDb }) {
+  const [w, h] = editedSize(def, items);
+  const bare = def.type === 'weapon' && (w !== def.size[0] || h !== def.size[1]);
   // Redrawn when the model, view or size changes, not on every other edit.
-  const key = JSON.stringify([def.model, def.view, def.size]);
+  const key = JSON.stringify([def.model, def.view, w, h, def.type === 'weapon' && def.defaults]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const art = useMemo(() => previewPortrait(def, def.size), [key]);
+  const art = useMemo(() => previewPortrait(def, [w, h], items), [key]);
   return (
     <div className="ie-card">
       <h4>
         {w}×{h} in the inventory
+        {bare && ` with what it comes with (${def.size[0]}×${def.size[1]} bare)`}
         {def.type === 'container' &&
           ` · ${def.grid[0]}×${def.grid[1]} inside${def.sections ? `, ${def.sections.length} sections` : ''}`}
       </h4>

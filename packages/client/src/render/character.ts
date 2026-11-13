@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { TriangleBuilder } from './geometry';
+import { shadeGlsl } from './material';
 
 /** Characters are drawn this tall, the simulation's standing height. */
 const HEIGHT = 1.8;
@@ -348,7 +349,8 @@ export function cloneCharacter(t: CharacterTemplate): {
 
 /**
  * Unlit vertex colors shaded per face on the GPU from the skinned normal, with the same
- * formula as shade.ts, so the shading stays right as the body moves.
+ * formula as shade.ts plus the key light (material.ts), so the shading stays right as the
+ * body moves.
  */
 function characterMaterial(): THREE.MeshBasicMaterial {
   const m = new THREE.MeshBasicMaterial({ vertexColors: true });
@@ -358,7 +360,7 @@ function characterMaterial(): THREE.MeshBasicMaterial {
       `#include <fog_vertex>
       #ifdef USE_SKINNING
         vec3 shadeN = normalize( mat3( modelMatrix ) * objectNormal );
-        vColor.rgb *= ( shadeN.y >= 0.0 ? 0.7 + 0.3 * shadeN.y : 0.7 + 0.2 * shadeN.y ) + 0.1 * abs( shadeN.x );
+        ${shadeGlsl(true)}
       #endif`,
     );
   };

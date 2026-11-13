@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "freight-elevator-gate",
   "name": "Freight elevator gate",
+  "tags": ["industrial"],
   "colors": {
     "shutter": "#9aa0a4",
     "shutter-dark": "#6e7479",

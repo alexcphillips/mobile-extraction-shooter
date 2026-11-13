@@ -6,6 +6,7 @@ import {
   grenadeEffect,
   isMoney,
   itemDef,
+  itemWeight,
   loadedAmmo,
   objectiveText,
   roundOf,
@@ -23,6 +24,10 @@ import {
   hasSource,
   itemUsage,
   type ItemSource,
+  armorOf,
+  softZonesOf,
+  CARRIER,
+  type CarrierDef,
 } from '@mes/shared';
 import { useEffect, useMemo, type ReactNode } from 'react';
 import { hangarContent, itemOrigins } from '../content';
@@ -112,6 +117,8 @@ export function ItemDetails({
       attachments?.muzzle,
       attachments?.magazine,
       attachments?.laser,
+      attachments?.stock,
+      item.folded,
     ],
   );
   const uses = useMemo(() => itemUsage(quests ?? [], def.id, hangarContent()), [quests, def.id]);
@@ -150,6 +157,10 @@ export function ItemDetails({
           </div>
         </div>
         <dl className="item-details-stats">
+          <div>
+            <dt>Weight</dt>
+            <dd>{weightText(items, item, def.weight)}</dd>
+          </div>
           {item.found && (
             <div>
               <dt>Found in raid</dt>
@@ -250,6 +261,22 @@ function Source({ source: s }: { source: ItemSource }): ReactNode {
   );
 }
 
+/** Kg to three significant figures: "0.012 kg", "2.6 kg", "18.4 kg". */
+export function kgText(kg: number): string {
+  return `${Number(kg.toPrecision(3))} kg`;
+}
+
+/**
+ * An item's weight (BW-3) with what's on and in it: a stack's per one, and a gun's,
+ * bag's or carrier's bare weight when its parts or contents add to it.
+ */
+function weightText(items: ItemDb, item: Item, each: number): string {
+  const total = itemWeight(items, item);
+  if (item.count > 1) return `${kgText(total)} (${kgText(each)} each)`;
+  if (total - each > 1e-6) return `${kgText(total)} (${kgText(each)} bare)`;
+  return kgText(total);
+}
+
 /** What a vendor pays for it, part by part for a gun with attachments or rounds in it. */
 function Value({
   items,
@@ -309,9 +336,13 @@ function kindOf(def: ItemDef): string {
     case 'armor':
       return def.slot === 'helmet' ? 'Helmet' : 'Body armor';
     case 'attachment':
-      return { optic: 'Optic', muzzle: 'Muzzle device', magazine: 'Magazine', laser: 'Laser' }[
-        def.slot
-      ];
+      return {
+        optic: 'Optic',
+        muzzle: 'Muzzle device',
+        magazine: 'Magazine',
+        laser: 'Laser',
+        stock: 'Stock',
+      }[def.slot];
     case 'med':
       return 'Medical';
     case 'container':
@@ -331,8 +362,58 @@ function kindOf(def: ItemDef): string {
       return def.category ?? 'Loot';
     case 'repair':
       return 'Repair kit';
+    case 'headset':
+      return 'Headset';
+    case 'visor':
+      return 'Visor';
+    case 'nightVision':
+      return 'Night vision';
+    case 'plate':
+      return def.material
+        ? `${def.material[0]!.toUpperCase()}${def.material.slice(1)} plate`
+        : 'Plate';
   }
 }
+
+/**
+ * A carrier's rows (GZ-4): the chassis (slots, what its plates and own rating cover, bulk,
+ * noise, swap time), then each plate in it.
+ */
+function carrierRows(items: ItemDb, item: Item, carrier: CarrierDef): Row[] {
+  const zones = (z: readonly string[]) => (z.length ? z.join(' and ') : 'nothing');
+  const out: Row[] = [];
+  if (carrier.plates?.length) {
+    out.push(['Plate slots', carrier.plates.join(' and ')]);
+    out.push(['Plates cover', zones(carrier.plateZones ?? ['thorax'])]);
+  }
+  out.push(['Soft armor covers', zones(softZonesOf(carrier))]);
+  if (carrier.blocksRig) out.push(['Bulky', 'no chest rig over it']);
+  if (carrier.noise && carrier.noise !== 1)
+    out.push(['Footsteps', `heard ${Math.round((carrier.noise - 1) * 100)}% further`]);
+  if (carrier.plates?.length)
+    out.push(['Plate swap', seconds(carrier.swapTime ?? CARRIER.swapTime)]);
+  for (const side of carrier.plates ?? []) {
+    const p = item.plates?.[side];
+    const def = p && armorOf(itemDef(items, p.item));
+    out.push([
+      `${side[0]!.toUpperCase()}${side.slice(1)} plate`,
+      p && def ? (
+        <>
+          <Level level={def.level} />
+          {itemDef(items, p.item).name} · {tenths(p.durability ?? 0)}/
+          {tenths(p.max ?? def.durability)}
+        </>
+      ) : (
+        'empty'
+      ),
+    ]);
+  }
+  return out;
+}
+
+/** A hearing share as a signed percentage: "+20%", "−15%" (GZ-2). */
+const hearingText = (h: number): string =>
+  `${h > 0 ? '+' : '−'}${Math.round(Math.abs(h) * 100)}% range and loudness`;
 
 function Level({ level }: { level: number }): ReactNode {
   return (
@@ -349,6 +430,14 @@ const percent = (f: number): string => `${Math.round(f * 100)}%`;
 function change(m: number): string {
   const p = Math.round((m - 1) * 100);
   return p > 0 ? `+${p}%` : `−${-p}%`;
+}
+
+/** What worn gear costs (GZ-1): aim time and move speed, as "+10%" and "−12%". */
+function burdenRows(def: { aimTime?: number | undefined; moveSpeed?: number | undefined }): Row[] {
+  const out: Row[] = [];
+  if (def.aimTime && def.aimTime !== 1) out.push(['Aim time', change(def.aimTime)]);
+  if (def.moveSpeed && def.moveSpeed !== 1) out.push(['Move speed', change(def.moveSpeed)]);
+  return out;
 }
 
 function modRows(mods: AttachmentMods): Row[] {
@@ -469,7 +558,9 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
     }
     case 'armor':
       return [
-        ...armorRows(item, def),
+        ...(def.carrier ? carrierRows(items, item, def.carrier) : []),
+        ...(def.carrier && !softZonesOf(def.carrier).length ? [] : armorRows(item, def)),
+        ...burdenRows(def),
         // A face mask's cost (AI-7, Jug's).
         ...(def.mask?.edge || def.mask?.muffle
           ? [
@@ -486,6 +577,53 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
               ] as Row,
             ]
           : []),
+        // GZ-5: its mounts, and what's fitted.
+        ...(def.visor || def.nightVision
+          ? [
+              [
+                'Mounts',
+                [def.visor && 'visor', def.nightVision && 'night vision']
+                  .filter(Boolean)
+                  .join(' or '),
+              ] as Row,
+            ]
+          : []),
+        ...(item.fitted
+          ? [
+              [
+                'Fitted',
+                `${itemDef(items, item.fitted.item).name}${item.fitted.durability !== undefined ? ` · ${Math.ceil(item.fitted.durability)} durability` : ''}`,
+              ] as Row,
+            ]
+          : []),
+        // GZ-2: hearing, the ears covered, what it takes of the view.
+        ...(def.hearing ? [['Hearing', hearingText(def.hearing)] as Row] : []),
+        ...(def.blocksHeadset ? [['Ears', 'covered: no headset with it'] as Row] : []),
+        ...(def.coversFace ? [['Face', 'covered, visor or not'] as Row] : []),
+        ...(def.vision?.shape || def.vision?.vignette
+          ? [
+              [
+                'View',
+                def.vision.shape === 'slit'
+                  ? 'a narrow visor slit'
+                  : def.vision.shape === 'cheeks'
+                    ? 'cheek guards at the bottom corners'
+                    : `${Math.round((def.vision.vignette ?? 0) * 100)}% darker at the edges`,
+              ] as Row,
+            ]
+          : []),
+      ];
+    case 'headset':
+      return [['Hearing', hearingText(def.hearing)]];
+    case 'visor':
+      return [...armorRows(item, def), ['Covers', 'the face: head hits from the front']];
+    case 'plate':
+      return [...armorRows(item, def), ['Fits', 'any carrier with a front or back slot']];
+    case 'nightVision':
+      return [
+        ['Fits', 'helmets with a night vision mount'],
+        ['Brightness', `${def.gain}×`],
+        ['View', def.shape === 'dual' ? 'two tubes' : 'one tube'],
       ];
     case 'attachment': {
       const fits = def.weapons
@@ -493,6 +631,25 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
         : `any gun with a ${def.slot} slot`;
       const out: Row[] = [['Fits', fits]];
       if (def.optic) out.push(['Zoom', `${def.optic.zoom}×`]);
+      // A magazine (MG-1): what it holds, and what's in it.
+      if (def.capacity !== undefined) {
+        const round = item.loaded ? roundOf(items, item.loaded) : null;
+        out.push(['Caliber', def.caliber ?? '']);
+        out.push(['Loaded', `${item.mag ?? 0}/${def.capacity}${round ? ` · ${round.name}` : ''}`]);
+      }
+      if (def.stock) {
+        out.push([
+          'Adds',
+          `${def.stock.length} cell${def.stock.length === 1 ? '' : 's'} to the gun's length${def.stock.foldedLength ? ` (${def.stock.foldedLength} folded)` : ''}`,
+        ]);
+      }
+      // WF-2: what it adds to the gun's size in a grid.
+      if (def.rows) out.push(['Adds', `${def.rows} row${def.rows === 1 ? '' : 's'} under the gun`]);
+      if (def.columns)
+        out.push([
+          'Adds',
+          `${def.columns} cell${def.columns === 1 ? '' : 's'} to the gun's length`,
+        ]);
       return [...out, ...modRows(def.mods ?? {})];
     }
     case 'med': {
@@ -509,6 +666,7 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
         ...(def.armor
           ? [...armorRows(item, def.armor), ['Covers', 'Chest; no body armor with it'] as Row]
           : []),
+        ...burdenRows(def),
         [
           'Inside',
           def.sections ? sectionsText(def.sections) : `${def.grid[0]} × ${def.grid[1]} cells`,

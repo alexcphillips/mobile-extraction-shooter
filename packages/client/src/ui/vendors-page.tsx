@@ -4,6 +4,7 @@ import {
   VENDOR_LEVELS,
   buyPrice,
   itemDef,
+  itemSize,
   newStashItem,
   nextRestock,
   offerLevel,
@@ -582,7 +583,7 @@ function OfferCard({
   const need = offerLevel(offer);
   const lock = need > level;
   const price = buyPrice(items, offer, vendor);
-  const url = itemPortrait(items, item, def.size);
+  const url = itemPortrait(items, item, itemSize(items, item));
   const n = offer.count ?? 1;
   return (
     <li>

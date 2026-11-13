@@ -1,0 +1,33 @@
+{
+  "formatVersion": 11,
+  "id": "awm-stock",
+  "name": "AWM stock",
+  "shortName": "Stock",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 10800,
+  "weight": 0.8,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["awm"],
+  "stock": {
+    "length": 1
+  },
+  "mods": {
+    "recoil": 0.65,
+    "ergonomics": 1.15
+  },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.11], "size": [0.045, 0.04, 0.22], "color": "#5a6340" },
+      { "type": "box", "pos": [0, -0.1, 0.14], "size": [0.045, 0.05, 0.2], "color": "#5a6340" },
+      { "type": "box", "pos": [0, -0.04, 0.23], "size": [0.045, 0.12, 0.06], "color": "#5a6340" },
+      { "type": "box", "pos": [0, 0.028, 0.15], "size": [0.04, 0.016, 0.1], "color": "#1d1f21" },
+      { "type": "box", "pos": [0, -0.04, 0.265], "size": [0.048, 0.13, 0.012], "color": "#1d1f21" }
+    ],
+    "fold": {
+      "pivot": [0.028, 0, 0],
+      "yaw": 180
+    }
+  }
+}

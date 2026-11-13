@@ -1,0 +1,33 @@
+{
+  "formatVersion": 11,
+  "id": "mpx-mag",
+  "name": "MPX 30-round magazine",
+  "shortName": "MPX 30",
+  "type": "attachment",
+  "size": [1, 2],
+  "value": 2500,
+  "weight": 0.15,
+  "rarity": "common",
+  "slot": "magazine",
+  "weapons": ["mpx"],
+  "capacity": 30,
+  "caliber": "9x19",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.035, -0.003],
+        "size": [0.024, 0.075, 0.04],
+        "color": "#1d1f21",
+        "pitch": 8
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.09, -0.013],
+        "size": [0.024, 0.045, 0.038],
+        "color": "#1d1f21",
+        "pitch": 16
+      }
+    ]
+  }
+}

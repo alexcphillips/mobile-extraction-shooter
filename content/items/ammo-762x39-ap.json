@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-762x39-ap",
   "name": "7.62×39 mm MAI AP",
   "shortName": "7.62 AP",
   "type": "ammo",
   "size": [1, 1],
   "value": 400,
+  "weight": 0.016,
   "rarity": "legendary",
   "stack": 60,
   "caliber": "7.62x39",

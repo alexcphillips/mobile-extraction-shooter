@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "fuel-pump",
   "name": "Fuel pump",
+  "tags": ["street"],
   "instanced": true,
   "colors": {
     "body": "#c9c4b8",

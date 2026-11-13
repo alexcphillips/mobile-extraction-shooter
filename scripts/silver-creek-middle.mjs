@@ -3,10 +3,10 @@
 // weir ford; the hunting cabin, campsite, deer stands and clear-cut on the ridge; and small
 // groups of trees, each with something solid in it, as cover over the open ground.
 //
-// Claude's calls, easy to change; the reasons are in docs/design/raids-and-maps.md → Silver
-// Creek (the middle and the ridge). World coordinates throughout: x east, z south, y up.
+// Claude's calls, easy to change; the reasons are in docs/design/maps/silver-creek.md
+// (the middle and the ridge). World coordinates throughout: x east, z south, y up.
 
-import { buildingKit } from './silver-creek-kit.mjs';
+import { buildingKit } from './mapkit/building.mjs';
 
 /**
  * h: the generator's helpers (box, drawn, group, prefab, along, label, C, r2, groundAt,

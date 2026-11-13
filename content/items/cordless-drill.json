@@ -1,10 +1,11 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "cordless-drill",
   "name": "Cordless drill",
   "type": "loot",
   "size": [2, 1],
   "value": 2000,
+  "weight": 1.8,
   "rarity": "uncommon",
   "view": "side",
   "model": {

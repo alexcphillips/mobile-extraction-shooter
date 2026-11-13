@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "tech-wall-display",
   "name": "Tech wall display",
+  "tags": ["store"],
   "colors": {
     "panel": "#e9ecef",
     "screen": "#1d1e21",

@@ -3,6 +3,7 @@ import type { Settings } from './settings';
 import type { Gear } from './sim/gear';
 import type { ItemRef } from './sim/looting';
 import type { LeaveReason } from './sim/raid';
+import type { RaidKillXp } from './xp';
 
 /** Bumped when the client/server API changes incompatibly. */
 export const PROTOCOL_VERSION = 1;
@@ -174,6 +175,10 @@ export interface EndRaidRequest {
   /** Seconds in the raid. */
   seconds: number;
   kills: number;
+  /** Each kill's enemy type and whether to the head, for PMC XP (2026-11-11; xp.ts). */
+  killed?: RaidKillXp[];
+  /** Containers they searched first, for PMC XP. */
+  searched?: number;
   /** Where they extracted, or what killed them. */
   detail?: string;
   /** The quest markers they investigated (session 14b), by path id; counted even if they died. */
@@ -284,6 +289,8 @@ export interface PartyMember {
   ready: boolean;
   device: Device | null;
   online: boolean;
+  /** Their PMC level, so the leader sees who is too low for a locked map (2026-11-11). */
+  level: number;
 }
 
 export interface Party {

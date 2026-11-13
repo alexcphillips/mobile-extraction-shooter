@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "medical-cart",
   "name": "Medical cart",
+  "tags": ["medical"],
   "colors": {
     "body": "#e9ecea",
     "drawer": "#a8483a",

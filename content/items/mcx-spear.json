@@ -1,30 +1,36 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "mcx-spear",
   "name": "MCX-SPEAR",
   "type": "weapon",
   "class": "assault",
-  "size": [5, 2],
-  "value": 48000,
+  "size": [4, 2],
+  "value": 39700,
+  "weight": 3.3,
   "rarity": "common",
   "ammo": "ammo-68x51-fmj",
   "hold": "rifle",
   "fireMode": "auto",
   "rpm": 800,
   "magazine": 20,
+  "feed": "magazine",
   "reloadTime": 2.5,
-  "aimTime": 0.28,
+  "aimTime": 0.267,
   "drawTime": 0.9,
   "range": 250,
   "loudness": 220,
-  "slots": ["optic", "muzzle", "laser"],
+  "defaults": {
+    "magazine": "mcx-spear-mag",
+    "stock": "mcx-spear-stock"
+  },
+  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
   "hipSpread": 3.5,
   "aimSpread": 0.35,
   "recoil": {
-    "up": 2.13,
-    "side": 1,
+    "up": 3.55,
+    "side": 1.67,
     "snap": 38,
-    "recovery": 3,
+    "recovery": 2.5,
     "angle": 5
   },
   "sounds": {
@@ -34,18 +40,8 @@
   },
   "model": {
     "parts": [
-      {
-        "type": "box",
-        "pos": [0, 0.012, -0.06],
-        "size": [0.05, 0.06, 0.3],
-        "color": "#a08c64"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.047, -0.13],
-        "size": [0.022, 0.01, 0.48],
-        "color": "#1d1f21"
-      },
+      { "type": "box", "pos": [0, 0.012, -0.06], "size": [0.05, 0.06, 0.3], "color": "#a08c64" },
+      { "type": "box", "pos": [0, 0.047, -0.13], "size": [0.022, 0.01, 0.48], "color": "#1d1f21" },
       {
         "type": "box",
         "pos": [0, 0.0565, 0.08],
@@ -124,12 +120,7 @@
         "size": [0.012, 0.012, 0.02],
         "color": "#1d1f21"
       },
-      {
-        "type": "box",
-        "pos": [0, 0.008, -0.3],
-        "size": [0.054, 0.062, 0.2],
-        "color": "#a08c64"
-      },
+      { "type": "box", "pos": [0, 0.008, -0.3], "size": [0.054, 0.062, 0.2], "color": "#a08c64" },
       {
         "type": "box",
         "pos": [0.028, 0.008, -0.3],
@@ -142,26 +133,7 @@
         "size": [0.003, 0.01, 0.16],
         "color": "#7f6f4f"
       },
-      {
-        "type": "box",
-        "pos": [0, -0.033, 0],
-        "size": [0.046, 0.04, 0.17],
-        "color": "#a08c64"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.09, -0.07],
-        "size": [0.03, 0.09, 0.065],
-        "color": "#1d1f21",
-        "pitch": 6
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.16, -0.08],
-        "size": [0.03, 0.06, 0.06],
-        "color": "#1d1f21",
-        "pitch": 10
-      },
+      { "type": "box", "pos": [0, -0.033, 0], "size": [0.046, 0.04, 0.17], "color": "#a08c64" },
       {
         "type": "box",
         "pos": [0, -0.09, 0.07],
@@ -198,30 +170,7 @@
         "pitch": 90,
         "hiddenBy": "muzzle"
       },
-      {
-        "type": "box",
-        "pos": [0, 0.012, 0.1],
-        "size": [0.036, 0.04, 0.02],
-        "color": "#1d1f21"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.02, 0.17],
-        "size": [0.026, 0.026, 0.12],
-        "color": "#1d1f21"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0, 0.25],
-        "size": [0.04, 0.07, 0.1],
-        "color": "#a08c64"
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.01, 0.305],
-        "size": [0.042, 0.1, 0.012],
-        "color": "#1d1f21"
-      }
+      { "type": "box", "pos": [0, 0.012, 0.1], "size": [0.036, 0.04, 0.02], "color": "#1d1f21" }
     ],
     "grip": [0, -0.085, 0.07],
     "support": [0, -0.02, -0.3],
@@ -230,7 +179,9 @@
     "mounts": {
       "optic": [0, 0.052, 0],
       "muzzle": [0, 0.005, -0.54],
-      "laser": [0.042, -0.003, -0.36]
+      "magazine": [0, -0.045, -0.07],
+      "laser": [0.042, -0.003, -0.36],
+      "stock": [0, 0.02, 0.11]
     }
   }
 }

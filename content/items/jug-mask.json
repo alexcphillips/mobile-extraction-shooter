@@ -1,16 +1,19 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "jug-mask",
   "name": "Jug's mask",
   "shortName": "Jug mask",
   "type": "armor",
   "size": [2, 2],
   "value": 45000,
+  "weight": 4,
   "rarity": "mythic",
   "slot": "helmet",
   "level": 6,
   "durability": 120,
   "repairLoss": 0.06,
+  "blocksHeadset": true,
+  "coversFace": true,
   "mask": {
     "edge": 0.16,
     "muffle": 2200
@@ -35,12 +38,7 @@
         "sides": 10,
         "color": "#4a4e52"
       },
-      {
-        "type": "box",
-        "pos": [0, 1.735, 0.02],
-        "size": [0.03, 0.11, 0.27],
-        "color": "#3d4145"
-      },
+      { "type": "box", "pos": [0, 1.735, 0.02], "size": [0.03, 0.11, 0.27], "color": "#3d4145" },
       {
         "type": "box",
         "pos": [0.128, 1.67, 0.03],
@@ -53,12 +51,7 @@
         "size": [0.034, 0.12, 0.13],
         "color": "#4a4636"
       },
-      {
-        "type": "box",
-        "pos": [0, 1.62, 0.11],
-        "size": [0.24, 0.12, 0.05],
-        "color": "#4a4636"
-      },
+      { "type": "box", "pos": [0, 1.62, 0.11], "size": [0.24, 0.12, 0.05], "color": "#4a4636" },
       {
         "type": "cylinder",
         "pos": [0.152, 1.7, 0.012],

@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-762x39",
   "name": "7.62×39 mm PS",
   "shortName": "7.62 PS",
   "type": "ammo",
   "size": [1, 1],
   "value": 50,
+  "weight": 0.016,
   "rarity": "rare",
   "stack": 60,
   "caliber": "7.62x39",

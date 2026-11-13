@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "openable-truck",
   "name": "openable-truck",
+  "tags": ["vehicle"],
   "colors": {
     "tires": "#303030",
     "truck-red": "#6d3737"

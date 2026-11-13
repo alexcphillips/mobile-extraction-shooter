@@ -1,0 +1,30 @@
+{
+  "formatVersion": 11,
+  "id": "m250-stock",
+  "name": "M250 tactical stock",
+  "shortName": "Stock",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 7800,
+  "weight": 0.8,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["m250"],
+  "stock": {
+    "length": 1
+  },
+  "mods": {
+    "recoil": 0.6,
+    "ergonomics": 1.2,
+    "aimTime": 1.05
+  },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.09], "size": [0.03, 0.03, 0.18], "color": "#a08c64" },
+      { "type": "box", "pos": [0, -0.03, 0.055], "size": [0.026, 0.05, 0.02], "color": "#a08c64" },
+      { "type": "box", "pos": [0, -0.06, 0.125], "size": [0.026, 0.02, 0.12], "color": "#a08c64" },
+      { "type": "box", "pos": [0, 0.022, 0.13], "size": [0.032, 0.014, 0.1], "color": "#7f6f4f" },
+      { "type": "box", "pos": [0, -0.025, 0.19], "size": [0.04, 0.11, 0.014], "color": "#1d1f21" }
+    ]
+  }
+}

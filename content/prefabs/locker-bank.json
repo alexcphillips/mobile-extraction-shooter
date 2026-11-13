@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "locker-bank",
   "name": "Locker bank",
+  "tags": ["industrial"],
   "colors": {
     "body": "#7f8f8a",
     "door": "#93a39e",

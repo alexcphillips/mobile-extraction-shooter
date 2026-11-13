@@ -29,12 +29,30 @@ export const raidSchema = z.strictObject({
    */
   offline: z.literal(true).optional(),
   /**
+   * A map still being built (DS-2, 2026-11-12: District): in the raid list of dev builds
+   * only, tagged "test", and not somewhere items come from. The user says when it's listed.
+   * An optional field, so still format 1.
+   */
+  dev: z.literal(true).optional(),
+  /**
    * Where it sits in the map list, lowest first (MT-2, 2026-11-09: Silver Creek, the starter
    * map, first); left out, after those that have one. An optional field, so still format 1.
    */
   order: z.int().optional(),
   /** Short tags shown on its entry in the map list, such as "starter" (MT-2). */
   tags: z.array(z.string().min(1).max(12)).optional(),
+  /**
+   * The PMC level it unlocks at (2026-11-11: Northpoint at 2); left out, open from the
+   * start. The menu grays it out until then. An optional field, so still format 1.
+   */
+  minLevel: z.int().min(2).optional(),
+  /**
+   * Where its marker sits on the deploy screen's region map, in the map's 0–1000 × 0–600
+   * frame (2026-11-11). Left out, it isn't on the region map. Still format 1.
+   */
+  region: z
+    .strictObject({ x: z.number().min(0).max(1000), y: z.number().min(0).max(600) })
+    .optional(),
 });
 
 export type RaidDef = z.infer<typeof raidSchema>;

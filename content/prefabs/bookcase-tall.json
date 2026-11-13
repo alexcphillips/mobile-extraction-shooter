@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "bookcase-tall",
   "name": "Tall bookcase",
+  "tags": ["home"],
   "colors": {
     "wood": "#7d5a3c",
     "wood-dark": "#5a4029",

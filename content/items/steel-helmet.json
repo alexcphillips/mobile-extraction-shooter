@@ -1,15 +1,21 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "steel-helmet",
   "name": "Steel helmet",
   "type": "armor",
   "size": [2, 2],
   "value": 12000,
+  "weight": 1.3,
   "rarity": "rare",
   "slot": "helmet",
   "level": 3,
   "durability": 40,
   "repairLoss": 0.12,
+  "hearing": -0.1,
+  "vision": {
+    "vignette": 0.15
+  },
+  "nightVision": true,
   "model": {
     "parts": [
       {

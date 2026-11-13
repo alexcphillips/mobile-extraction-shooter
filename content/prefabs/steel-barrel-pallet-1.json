@@ -1,6 +1,7 @@
 {
   "formatVersion": 3,
   "id": "steel-barrel-pallet-1",
+  "tags": ["industrial"],
   "colors": { "wood-pallet": "#a88048" },
   "nodes": [
     {

@@ -1,16 +1,18 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "mag-45acp-30",
   "name": "30-round .45 ACP magazine",
   "shortName": ".45 30",
   "type": "attachment",
   "size": [1, 2],
   "value": 6000,
+  "weight": 0.2,
   "rarity": "common",
   "slot": "magazine",
   "weapons": ["k10"],
+  "capacity": 30,
+  "caliber": ".45acp",
   "mods": {
-    "magazine": 5,
     "reloadTime": 1.05
   },
   "model": {

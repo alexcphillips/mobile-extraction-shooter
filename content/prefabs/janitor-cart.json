@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "janitor-cart",
   "name": "Janitor cart",
+  "tags": ["industrial"],
   "colors": {
     "plastic": "#d8b52e",
     "plastic-dark": "#a88a1f",

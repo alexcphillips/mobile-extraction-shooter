@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-545x39-pp",
   "name": "5.45×39 mm PP",
   "shortName": "5.45 PP",
   "type": "ammo",
   "size": [1, 1],
   "value": 60,
+  "weight": 0.011,
   "rarity": "rare",
   "stack": 60,
   "caliber": "5.45x39",

@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "arcade-cabinet",
   "name": "Arcade cabinet",
+  "tags": ["leisure"],
   "colors": {
     "body": "#1d1a2b",
     "accent": "#d0409a",

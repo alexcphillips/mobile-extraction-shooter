@@ -166,7 +166,7 @@ export function startSquads(
         voiced: !!(type.voice?.breathe || type.voice?.mutter),
         limbHealth: type.limbHealth,
       });
-      equipLoadout(c, items, loadout, rng);
+      equipLoadout(c, items, loadout, rng, !state.zombies);
       rollEnemyLoot(c, items, content.tables, type.loot, undefined, rng);
       // A squad is known by its first leader's id.
       if (slot === 0) squad = c.id;

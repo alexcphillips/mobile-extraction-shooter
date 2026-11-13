@@ -1,7 +1,9 @@
 import { Hono, type Context } from 'hono';
 import {
   SIGNAL,
+  levelOf,
   pickHost,
+  underLevel,
   SOCIAL,
   type Activity,
   type Device,
@@ -271,8 +273,11 @@ export async function partyResponse(db: Db, me: string): Promise<PartyResponse> 
   if (row) {
     const { results } = await db
       .prepare(
-        `SELECT a.id, a.username, a.seen_at, a.device, m.ready FROM party_members m
-         JOIN accounts a ON a.id = m.account_id WHERE m.party_id = ? ORDER BY m.joined_at`,
+        `SELECT a.id, a.username, a.seen_at, a.device, m.ready,
+           json_extract(p.data, '$.xp') AS xp FROM party_members m
+         JOIN accounts a ON a.id = m.account_id
+         LEFT JOIN profiles p ON p.account_id = a.id
+         WHERE m.party_id = ? ORDER BY m.joined_at`,
       )
       .bind(row.id)
       .all<{
@@ -281,6 +286,7 @@ export async function partyResponse(db: Db, me: string): Promise<PartyResponse> 
         seen_at: number;
         device: string | null;
         ready: number;
+        xp: number | null;
       }>();
     const members: PartyMember[] = results.map((m) => ({
       id: m.id,
@@ -288,6 +294,7 @@ export async function partyResponse(db: Db, me: string): Promise<PartyResponse> 
       ready: !!m.ready,
       device: device(m.device),
       online: m.id === me || now - m.seen_at <= SOCIAL.onlineMs,
+      level: levelOf(m.xp ?? 0),
     }));
     // The leader first; the rest in the order they joined.
     members.sort((a, b) => Number(b.id === row.leader) - Number(a.id === row.leader));
@@ -667,6 +674,10 @@ party.post('/start', async (c) => {
   const waiting = p.members.filter((m) => m.id !== me && (!m.online || !m.ready));
   if (waiting.length)
     return fail(c, 'invalid', `waiting for ${waiting.map((m) => m.username).join(', ')}`);
+  // A locked map (minLevel, 2026-11-11) needs every member at its level, not just the leader.
+  const minLevel = raidDef(p.raid)?.minLevel ?? 1;
+  const low = underLevel(p.members, minLevel);
+  if (low) return fail(c, 'invalid', low);
   const host = pickHost(p);
   if (!host) return fail(c, 'invalid', 'no one is online to host');
   await db.batch([

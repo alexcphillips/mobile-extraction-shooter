@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "table-and-chairs",
   "name": "Table and chairs",
+  "tags": ["home"],
   "colors": {
     "wood": "#a98a63",
     "wood-dark": "#7d6346"

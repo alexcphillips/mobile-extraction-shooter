@@ -1,0 +1,28 @@
+{
+  "formatVersion": 11,
+  "id": "mp7-mag",
+  "name": "MP7 30-round magazine",
+  "shortName": "MP7 30",
+  "type": "attachment",
+  "size": [1, 2],
+  "value": 2500,
+  "weight": 0.12,
+  "rarity": "common",
+  "slot": "magazine",
+  "weapons": ["mp7"],
+  "capacity": 30,
+  "caliber": "4.6x30",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "name": "magazine base",
+        "group": "grip",
+        "pos": [0, -0.015, 0.002],
+        "size": [0.026, 0.04, 0.036],
+        "color": "#1d1f21",
+        "pitch": -8
+      }
+    ]
+  }
+}

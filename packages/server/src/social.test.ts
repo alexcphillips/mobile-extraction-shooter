@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   SOCIAL,
+  xpForLevel,
   type FriendsResponse,
   type IceResponse,
   type PartyResponse,
@@ -277,16 +278,43 @@ describe('starting a party raid', () => {
     await json(bob!, 'POST', '/party/join', { code });
     await json(ana!, 'POST', '/presence', { device: 'phone' });
     await json(bob!, 'POST', '/presence', { device: 'pc' });
-    await json(ana!, 'POST', '/party/raid', { raid: 'northpoint' });
+    await json(ana!, 'POST', '/party/raid', { raid: 'silver-creek' });
     expect((await ana!.fails('POST', '/party/start')).message).toMatch(/waiting for bob/);
     await json(bob!, 'POST', '/party/ready', { ready: true });
     expect((await bob!.fails('POST', '/party/start')).message).toMatch(/leader/);
     const started = (await json<PartyResponse>(ana!, 'POST', '/party/start')).party!;
     const bobId = started.members.find((m) => m.username === 'bob')!.id;
-    expect(started.start).toMatchObject({ raid: 'northpoint', host: bobId });
+    expect(started.start).toMatchObject({ raid: 'silver-creek', host: bobId });
     expect(started.members.every((m) => !m.ready)).toBe(true);
     expect((await partyOf(bob!)).party!.start!.session).toBe(started.start!.session);
     await ana!.env.DB.prepare('UPDATE parties SET started_at = 1').run();
     expect((await partyOf(bob!)).party!.start).toBeNull();
+  });
+
+  it("won't start a locked map until everyone has its level, and says who is short", async () => {
+    const [ana, bob] = await players('ana', 'bob');
+    const { code } = (await json<PartyResponse>(ana!, 'POST', '/party')).party!;
+    await json(bob!, 'POST', '/party/join', { code });
+    await json(ana!, 'POST', '/presence', { device: 'pc' });
+    await json(bob!, 'POST', '/presence', { device: 'pc' });
+    await json(ana!, 'POST', '/party/raid', { raid: 'northpoint' });
+    await json(bob!, 'POST', '/party/ready', { ready: true });
+    const level2 = xpForLevel(2);
+    await ana!.env.DB.prepare(
+      `UPDATE profiles SET data = json_set(data, '$.xp', ?) WHERE account_id IN
+       (SELECT id FROM accounts WHERE username = 'ana')`,
+    )
+      .bind(level2)
+      .run();
+    const before = await partyOf(ana!);
+    expect(before.party!.members.map((m) => [m.username, m.level])).toEqual([
+      ['ana', 2],
+      ['bob', 1],
+    ]);
+    expect((await ana!.fails('POST', '/party/start')).message).toBe('bob needs level 2');
+    await ana!.env.DB.prepare(`UPDATE profiles SET data = json_set(data, '$.xp', ?)`)
+      .bind(level2)
+      .run();
+    expect((await json<PartyResponse>(ana!, 'POST', '/party/start')).party!.start).not.toBeNull();
   });
 });

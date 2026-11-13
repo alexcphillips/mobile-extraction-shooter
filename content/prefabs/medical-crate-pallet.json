@@ -1,6 +1,7 @@
 {
   "formatVersion": 3,
   "id": "medical-crate-pallet",
+  "tags": ["medical"],
   "nodes": [
     {
       "type": "group",

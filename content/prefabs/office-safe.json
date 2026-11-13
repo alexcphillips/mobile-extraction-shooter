@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "office-safe",
   "name": "Office safe",
+  "tags": ["office"],
   "colors": {
     "body": "#3a3d42",
     "door": "#50545a",

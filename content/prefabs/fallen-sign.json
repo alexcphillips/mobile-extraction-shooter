@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "fallen-sign",
   "name": "Fallen sign",
+  "tags": ["street", "debris"],
   "colors": {
     "panel": "#2f6b4f",
     "face": "#e9e6df",

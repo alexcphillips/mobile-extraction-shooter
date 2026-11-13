@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "nightstand",
   "name": "Nightstand",
+  "tags": ["home"],
   "colors": {
     "body": "#8a6a4a",
     "shade": "#e8d8a8"

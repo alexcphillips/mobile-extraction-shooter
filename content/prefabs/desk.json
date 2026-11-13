@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "desk",
   "name": "Desk",
+  "tags": ["office"],
   "colors": {
     "wood": "#a98a63",
     "wood-dark": "#7d6346",

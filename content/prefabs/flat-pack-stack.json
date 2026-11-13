@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "flat-pack-stack",
   "name": "Flat-pack stack",
+  "tags": ["industrial"],
   "colors": {
     "pallet": "#a88048",
     "box-a": "#c7a877",

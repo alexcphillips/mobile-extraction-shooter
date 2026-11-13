@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "flamethrower-fuel",
   "name": "Flamethrower fuel",
   "shortName": "Fuel",
   "type": "ammo",
   "size": [1, 1],
   "value": 15,
+  "weight": 0.05,
   "rarity": "common",
   "stack": 100,
   "caliber": "fuel",

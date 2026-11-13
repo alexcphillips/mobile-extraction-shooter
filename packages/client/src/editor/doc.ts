@@ -326,15 +326,18 @@ export function uniqueId(base: string, taken: Set<string>): string {
 
 /**
  * A copy of a node with fresh ids (unique against `taken`, which they're added to). An
- * enemy spawn copied with its patrol keeps following its own copy.
+ * enemy spawn copied with its patrol keeps following its own copy. Copied groups lose
+ * their generator key (`gen`): the copy is the user's.
  */
 export function copyNode(n: MapNode, taken: Set<string>): MapNode {
   const copy = structuredClone(n);
   const renamed = new Map<string, string>();
   const rename = (list: MapNode[]): void => {
     for (const c of list) {
-      if (c.type === 'group') rename(c.nodes);
-      else if (c.id !== undefined) {
+      if (c.type === 'group') {
+        delete c.gen;
+        rename(c.nodes);
+      } else if (c.id !== undefined) {
         const id = uniqueId(c.id, taken);
         renamed.set(c.id, id);
         c.id = id;

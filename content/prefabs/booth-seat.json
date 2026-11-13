@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "booth-seat",
   "name": "Booth",
+  "tags": ["food"],
   "colors": {
     "seat": "#7a2f2f",
     "table": "#c9a877",

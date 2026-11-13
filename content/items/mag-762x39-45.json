@@ -1,16 +1,18 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "mag-762x39-45",
   "name": "45-round 7.62×39 magazine",
   "shortName": "7.62 45",
   "type": "attachment",
   "size": [1, 2],
   "value": 6000,
+  "weight": 0.35,
   "rarity": "common",
   "slot": "magazine",
   "weapons": ["akm"],
+  "capacity": 45,
+  "caliber": "7.62x39",
   "mods": {
-    "magazine": 15,
     "reloadTime": 1.15
   },
   "model": {

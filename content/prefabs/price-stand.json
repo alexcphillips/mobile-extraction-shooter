@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "price-stand",
   "name": "Price stand",
+  "tags": ["store"],
   "colors": {
     "pole": "#3d4148",
     "card": "#e6e0d3",

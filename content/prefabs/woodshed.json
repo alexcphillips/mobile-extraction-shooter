@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "woodshed",
   "name": "Woodshed",
+  "tags": ["home", "logging", "structure"],
   "colors": {
     "timber": "#7a5a3a",
     "timber-dark": "#5e4632",

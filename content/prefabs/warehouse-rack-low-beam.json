@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "warehouse-rack-low-beam",
   "name": "Warehouse pallet rack, low beam",
+  "tags": ["industrial"],
   "colors": {
     "steel": "#3f6496",
     "steel-dark": "#2c4668",

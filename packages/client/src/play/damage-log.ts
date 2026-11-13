@@ -33,6 +33,11 @@ function sourceFor(log: DamageLog, key: string, name: string, cause: DamageSourc
   return s;
 }
 
+/** A hit's zone by name: ZONE_NAMES, or "face" for a head hit to the face (GZ-3). */
+export function zoneName(e: DamageEvent): string {
+  return e.face ? 'face' : ZONE_NAMES[e.zone]!;
+}
+
 /** Records a hit you took; name is the shooter's (unused for a fall). Returns its key. */
 export function logHit(log: DamageLog, e: DamageEvent, name: string): string {
   const key = e.cause === 'fall' ? 'fall' : `${e.by}:${e.cause}`;
@@ -41,7 +46,7 @@ export function logHit(log: DamageLog, e: DamageEvent, name: string): string {
   if (e.cause !== 'explosion' || e.zone === 0) s.hits++;
   s.damage += e.amount;
   s.absorbed += e.absorbed;
-  const zone = ZONE_NAMES[e.zone]!;
+  const zone = zoneName(e);
   if (!s.zones.includes(zone)) s.zones.push(zone);
   return key;
 }
@@ -140,7 +145,7 @@ export function logFight(
   if (e.amount <= 0 && e.absorbed <= 0) return;
   const other = dealt ? e.target : e.by;
   const last = log[log.length - 1];
-  const zone = ZONE_NAMES[e.zone]!;
+  const zone = zoneName(e);
   if (
     last &&
     last.tick === tick &&

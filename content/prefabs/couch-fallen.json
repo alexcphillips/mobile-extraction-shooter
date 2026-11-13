@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "couch-fallen",
   "name": "Fallen couch",
+  "tags": ["home", "debris"],
   "colors": {
     "fabric": "#6b3a3a",
     "leg": "#3a2a1e"

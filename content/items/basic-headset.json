@@ -1,0 +1,53 @@
+{
+  "formatVersion": 11,
+  "id": "basic-headset",
+  "name": "Basic headset",
+  "shortName": "Headset",
+  "type": "headset",
+  "size": [2, 1],
+  "value": 6000,
+  "weight": 0.3,
+  "rarity": "uncommon",
+  "hearing": 0.1,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [-0.1, 1.685, 0.005],
+        "size": [0.032, 0.075, 0.075],
+        "color": "#3a3d40"
+      },
+      {
+        "type": "box",
+        "pos": [0.1, 1.685, 0.005],
+        "size": [0.032, 0.075, 0.075],
+        "color": "#3a3d40"
+      },
+      {
+        "type": "box",
+        "pos": [-0.118, 1.685, 0.005],
+        "size": [0.006, 0.05, 0.05],
+        "color": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0.118, 1.685, 0.005],
+        "size": [0.006, 0.05, 0.05],
+        "color": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [-0.104, 1.75, 0.005],
+        "size": [0.012, 0.07, 0.024],
+        "color": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0.104, 1.75, 0.005],
+        "size": [0.012, 0.07, 0.024],
+        "color": "#1d1f21"
+      },
+      { "type": "box", "pos": [0, 1.8, 0.005], "size": [0.2, 0.014, 0.026], "color": "#1d1f21" }
+    ]
+  }
+}

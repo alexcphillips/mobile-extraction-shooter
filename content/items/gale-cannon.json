@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "gale-cannon",
   "name": "Gale Cannon",
   "type": "weapon",
   "class": "special",
   "size": [4, 2],
   "value": 0,
+  "weight": 6,
   "rarity": "common",
   "ammo": "gale-charge",
   "hold": "rifle",

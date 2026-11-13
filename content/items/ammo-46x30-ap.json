@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-46x30-ap",
   "name": "4.6×30 mm AP SX",
   "shortName": "4.6 AP",
   "type": "ammo",
   "size": [1, 1],
   "value": 450,
+  "weight": 0.007,
   "rarity": "legendary",
   "stack": 60,
   "caliber": "4.6x30",

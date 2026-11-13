@@ -1,0 +1,36 @@
+{
+  "formatVersion": 11,
+  "id": "mp5-stock",
+  "name": "MP5-N skeleton stock",
+  "shortName": "Stock",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 2200,
+  "weight": 0.4,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["mp5"],
+  "stock": {
+    "length": 1
+  },
+  "mods": {
+    "recoil": 0.8,
+    "aimTime": 0.95
+  },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0.016, 0, 0.085], "size": [0.006, 0.012, 0.17], "color": "#1d1f21" },
+      {
+        "type": "box",
+        "pos": [-0.016, 0, 0.085],
+        "size": [0.006, 0.012, 0.17],
+        "color": "#1d1f21"
+      },
+      { "type": "box", "pos": [0, -0.032, 0.175], "size": [0.04, 0.1, 0.014], "color": "#1d1f21" }
+    ],
+    "fold": {
+      "pivot": [0, 0, 0],
+      "shift": [0, 0, -0.15]
+    }
+  }
+}

@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-68x51-fmj",
   "name": "6.8×51 mm SIG FMJ",
   "shortName": "6.8 FMJ",
   "type": "ammo",
   "size": [1, 1],
   "value": 100,
+  "weight": 0.025,
   "rarity": "rare",
   "stack": 40,
   "caliber": "6.8x51",

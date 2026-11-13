@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "dining-set",
   "name": "Dining set",
+  "tags": ["home"],
   "colors": {
     "top": "#c9a877",
     "leg": "#3d4148",

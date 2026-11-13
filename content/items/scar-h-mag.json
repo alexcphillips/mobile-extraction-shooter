@@ -1,0 +1,26 @@
+{
+  "formatVersion": 11,
+  "id": "scar-h-mag",
+  "name": "SCAR-H 20-round magazine",
+  "shortName": "SCAR-H 20",
+  "type": "attachment",
+  "size": [1, 2],
+  "value": 2500,
+  "weight": 0.25,
+  "rarity": "common",
+  "slot": "magazine",
+  "weapons": ["scar-h"],
+  "capacity": 20,
+  "caliber": "7.62x51",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.045, 0],
+        "size": [0.028, 0.09, 0.065],
+        "color": "#1d1f21",
+        "pitch": 3
+      }
+    ]
+  }
+}

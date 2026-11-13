@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "security-shutter",
   "name": "Security shutter",
+  "tags": ["structure"],
   "colors": {
     "slat": "#7f868b",
     "slat-dark": "#5e6468",

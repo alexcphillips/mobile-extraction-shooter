@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "c4",
   "name": "C4 charge",
   "shortName": "C4",
   "type": "grenade",
   "size": [1, 1],
   "value": 8000,
+  "weight": 0.6,
   "rarity": "epic",
   "effect": "c4",
   "fuse": 0.1,

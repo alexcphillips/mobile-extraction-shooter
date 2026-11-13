@@ -1,16 +1,18 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "mag-545x39-45",
-  "name": "45-round 5.45\u00d739 magazine",
+  "name": "45-round 5.45×39 magazine",
   "shortName": "5.45 45",
   "type": "attachment",
   "size": [1, 2],
   "value": 6000,
+  "weight": 0.3,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["ak-74m"],
+  "weapons": ["ak-74m", "aks-74u", "rpk-16"],
+  "capacity": 45,
+  "caliber": "5.45x39",
   "mods": {
-    "magazine": 15,
     "reloadTime": 1.15
   },
   "model": {

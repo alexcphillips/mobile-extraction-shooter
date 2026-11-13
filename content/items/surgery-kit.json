@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "surgery-kit",
   "name": "Field surgery kit",
   "shortName": "Field surgery",
   "type": "med",
   "size": [2, 1],
   "value": 9000,
+  "weight": 0.8,
   "rarity": "uncommon",
   "effect": "surgery",
   "useTime": 7,

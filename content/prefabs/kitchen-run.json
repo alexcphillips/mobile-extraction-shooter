@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "kitchen-run",
   "name": "Kitchen run",
+  "tags": ["food", "home"],
   "colors": {
     "body": "#e9e6df",
     "top": "#3d4148",

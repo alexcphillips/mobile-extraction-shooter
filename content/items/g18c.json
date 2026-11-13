@@ -1,22 +1,27 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "g18c",
   "name": "Glock 18C",
   "type": "weapon",
   "class": "pistol",
   "size": [2, 1],
-  "value": 22000,
+  "value": 20500,
+  "weight": 0.6,
   "rarity": "common",
   "ammo": "ammo-9mm",
   "hold": "pistol",
   "fireMode": "auto",
   "rpm": 1200,
   "magazine": 17,
+  "feed": "magazine",
   "reloadTime": 1.6,
   "aimTime": 0.16,
   "drawTime": 0.35,
   "range": 100,
   "loudness": 120,
+  "defaults": {
+    "magazine": "g18c-mag"
+  },
   "slots": ["muzzle", "magazine", "laser"],
   "hipSpread": 2.2,
   "aimSpread": 0.6,
@@ -34,12 +39,7 @@
   },
   "model": {
     "parts": [
-      {
-        "type": "box",
-        "pos": [0, 0.012, -0.06],
-        "size": [0.024, 0.028, 0.19],
-        "color": "#232425"
-      },
+      { "type": "box", "pos": [0, 0.012, -0.06], "size": [0.024, 0.028, 0.19], "color": "#232425" },
       {
         "type": "box",
         "pos": [0, 0.0265, -0.13],
@@ -129,14 +129,6 @@
         "size": [0.002, 0.055, 0.034],
         "color": "#141516",
         "pitch": -16
-      },
-      {
-        "type": "box",
-        "pos": [0, -0.108, 0.02],
-        "size": [0.024, 0.008, 0.04],
-        "color": "#141516",
-        "pitch": -16,
-        "hiddenBy": "magazine"
       },
       {
         "type": "box",

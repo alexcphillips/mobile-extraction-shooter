@@ -1,10 +1,11 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "quantum-cryptographic-core",
   "name": "Quantum cryptographic core",
   "type": "loot",
   "size": [1, 1],
   "value": 5500,
+  "weight": 0.3,
   "rarity": "mythic",
   "model": {
     "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]

@@ -613,7 +613,7 @@ export function takeLoot(state: SimState, items: ItemDb, c: Character, key: stri
   for (const grid of lootGrids(state, key)) {
     grid.items.forEach((g, i) => {
       const def = itemDef(items, g.item.item);
-      const cells = itemWidth(items, g.item.item, false) * itemHeight(items, g.item.item, false);
+      const cells = itemWidth(items, g.item, false) * itemHeight(items, g.item, false);
       found.push({ grid, i, worth: (def.value * g.item.count) / cells });
     });
   }

@@ -4,7 +4,9 @@ import {
   MAP_FORMAT,
   NavGrid,
   PREFAB_FORMAT,
+  ROAD,
   SPOT,
+  centerline,
   compileMap,
   compileNodes,
   exposedSpawns,
@@ -84,7 +86,17 @@ import {
 } from './curves';
 import { CUT_ABOVE, floorLevels, startCut, stepCut } from './cut';
 import { findOverlaps, forgetPrefabSolids, type Overlaps } from './overlap';
-import { extendMap, newMap, setHeights, type Brush, type Side } from './terrain';
+import {
+  extendMap,
+  LEVEL_EASE,
+  LEVEL_MARGIN_CELLS,
+  levelFootprint,
+  newMap,
+  setHeights,
+  terrainGrid,
+  type Brush,
+  type Side,
+} from './terrain';
 import { EditorView, typing, type Handles, type Moved } from './view';
 import {
   DOOR_HEIGHT,
@@ -192,6 +204,10 @@ function hasZombieMarkers(nodes: readonly MapNode[]): boolean {
 }
 const TOOL_KEYS = { prefab: '6', marker: '7', zone: '8', wall: '9', curve: '0' } as const;
 const DEG = Math.PI / 180;
+/** The biggest footprint leveling takes, either way: past it, it's a group of buildings. */
+const LEVEL_MAX = 150;
+/** How near a road's end must be to another road's end, or past its edge, to join it. */
+const ROAD_SNAP = 3;
 /** How near the last curve's center a click must be to go on it. */
 const CENTER_SNAP = 0.5;
 
@@ -203,7 +219,7 @@ type Patrol = Extract<MapNode, { type: 'patrol' }>;
  * then where it starts).
  */
 export interface Drawing {
-  what: 'patrol' | 'zone' | 'walls' | 'extend' | 'curve' | 'floor' | 'water';
+  what: 'patrol' | 'zone' | 'road' | 'walls' | 'extend' | 'curve' | 'floor' | 'water';
   index?: number;
   points: readonly Vec3[];
 }
@@ -234,7 +250,7 @@ export interface EditorState {
   scope: NodePath;
   /** Indices in the scope's nodes; the last is the active one. */
   selected: readonly number[];
-  tool: 'select' | 'terrain' | 'prefab' | 'marker' | 'zone' | 'wall' | 'curve' | Placeable;
+  tool: 'select' | 'terrain' | 'prefab' | 'marker' | 'zone' | 'road' | 'wall' | 'curve' | Placeable;
   /** The prefab the prefab tool places. */
   placing: string;
   /** What the marker tool places. */
@@ -258,7 +274,11 @@ export interface EditorState {
   drawing: Drawing | null;
   /** The named zone picked in the map's settings, by index. */
   zone: number | null;
-  /** The picked point of the selected patrol, or of the picked zone. */
+  /** The road picked (RD-1: clicked, or in the map's settings), by index. */
+  road: number | null;
+  /** How wide the road tool makes a road. */
+  roadWidth: number;
+  /** The picked point of the selected patrol, or of the picked zone or road. */
   point: number | null;
   /** Whether the navigation overlay is shown. */
   nav: boolean;
@@ -371,6 +391,8 @@ export class MapEditor {
       hole: null,
       drawing: null,
       zone: null,
+      road: null,
+      roadWidth: 7,
       point: null,
       nav: false,
       grid: false,
@@ -503,7 +525,7 @@ export class MapEditor {
   setTool(tool: EditorState['tool']): void {
     if (tool === 'terrain') this.select([]);
     // Zones belong to the map, outside any group.
-    if (tool === 'zone') this.select([], []);
+    if (tool === 'zone' || tool === 'road') this.select([], []);
     this.view.brush = tool === 'terrain' ? this.state.brush : null;
     this.set({
       tool,
@@ -676,7 +698,13 @@ export class MapEditor {
     if (this.state.drawing || this.state.tool !== 'select') return this.placeAt(e);
     const add = e.shiftKey || e.metaKey || e.ctrlKey;
     if (outside) return this.select(outside, []);
-    if (index === null) return add ? undefined : this.select([]);
+    if (index === null) {
+      if (add) return;
+      const road = this.state.scope.length ? null : this.view.roadUnder(e);
+      if (road !== null) return this.pickRoad(road);
+      if (this.state.road !== null) this.set({ road: null, point: null });
+      return this.select([]);
+    }
     const sel = this.state.selected;
     if (!add) return this.select([index]);
     this.select(sel.includes(index) ? sel.filter((i) => i !== index) : [...sel, index]);
@@ -834,12 +862,17 @@ export class MapEditor {
     const sel = valid === scope ? selected.filter((i) => i < count) : [];
     const zone =
       this.state.zone !== null && this.state.zone < map.zones.length ? this.state.zone : null;
+    const road =
+      this.state.road !== null && this.state.road < (map.roads?.length ?? 0)
+        ? this.state.road
+        : null;
     this.set({
       ...this.unsaved(),
       problem: null,
       scope: valid,
       selected: sel,
       zone,
+      road,
       point: valid === scope && sel.join() === selected.join() ? this.state.point : null,
       // What it was placed in may be gone, or moved.
       hole: null,
@@ -931,16 +964,24 @@ export class MapEditor {
 
   /** The handles to show, worked out from the state. */
   private handles(): Handles | null {
-    const { drawing, scope, selected, zone, point, map } = this.state;
+    const { drawing, scope, selected, zone, road, point, map } = this.state;
     if (drawing) {
       const zoneLine = drawing.what === 'zone';
       return {
         points: drawing.points,
         picked: null,
         line: zoneLine ? 'closed' : 'open',
-        terrainOnly: zoneLine,
+        terrainOnly: zoneLine || drawing.what === 'road',
       };
     }
+    const r = road === null || scope.length || selected.length ? undefined : map.roads?.[road];
+    if (r)
+      return {
+        points: r.points.map(([x, zz]) => [x, this.view.groundAt(x, zz), zz]),
+        picked: point,
+        line: 'open',
+        terrainOnly: true,
+      };
     const a = this.active();
     if (selected.length === 1 && a?.type === 'wall' && a.openings.length) {
       // A wall's windows, slid along it.
@@ -982,7 +1023,7 @@ export class MapEditor {
 
   /** A handle was dragged (to `to`) or clicked: moves or picks that point, or ends a drawing. */
   private handleMoved(k: number, to: Vec3 | null): void {
-    const { drawing, zone } = this.state;
+    const { drawing, zone, road } = this.state;
     if (drawing) {
       // Clicking the first corner of walls closes them into a room.
       if (!to && drawing.what === 'walls' && k === 0 && drawing.points.length > 2)
@@ -1018,10 +1059,78 @@ export class MapEditor {
       if (to) this.edit((nodes) => void movePatrolPoint(nodes[i] as Patrol, k, to));
       return this.set({ point: k });
     }
+    if (road !== null) {
+      if (to) {
+        const r = this.state.map.roads![road]!;
+        // A road's ends snap onto other roads, so the two meet.
+        const end = k === 0 || k === r.points.length - 1;
+        const [x, z] = end ? this.roadSnap([to[0], to[2]], road) : [to[0], to[2]];
+        this.editMap((m) => (m.roads![road]!.points[k] = [round(x), round(z)]));
+      }
+      return this.set({ point: k });
+    }
     if (zone !== null) {
       if (to) this.editMap((m) => (m.zones[zone]!.points[k] = [round(to[0]), round(to[2])]));
       this.set({ point: k });
     }
+  }
+
+  /**
+   * Where a road's end goes for a point: on another road's end within ROAD_SNAP, or else on
+   * its centerline within half its width and ROAD_SNAP, or where it is. `skip` is the road
+   * being edited, if any.
+   */
+  private roadSnap(p: readonly [number, number], skip: number | null): [number, number] {
+    const roads = this.state.map.roads ?? [];
+    let best: [number, number] = [p[0], p[1]];
+    let bestD = ROAD_SNAP;
+    roads.forEach((r, i) => {
+      if (i === skip) return;
+      for (const e of [r.points[0]!, r.points[r.points.length - 1]!]) {
+        const d = Math.hypot(e[0] - p[0], e[1] - p[1]);
+        if (d < bestD) [best, bestD] = [[e[0], e[1]], d];
+      }
+    });
+    if (bestD < ROAD_SNAP) return best;
+    let nearest = Infinity;
+    roads.forEach((r, i) => {
+      if (i === skip) return;
+      const { x, z } = centerline(r.points, r.radius ?? ROAD.radius);
+      const reach = r.width / 2 + ROAD_SNAP;
+      for (let k = 0; k + 1 < x.length; k++) {
+        const dx = x[k + 1]! - x[k]!;
+        const dz = z[k + 1]! - z[k]!;
+        const len2 = dx * dx + dz * dz || 1;
+        const u = Math.min(1, Math.max(0, ((p[0] - x[k]!) * dx + (p[1] - z[k]!) * dz) / len2));
+        const qx = x[k]! + dx * u;
+        const qz = z[k]! + dz * u;
+        const d = Math.hypot(qx - p[0], qz - p[1]);
+        if (d < reach && d < nearest) [best, nearest] = [[qx, qz], d];
+      }
+    });
+    return best;
+  }
+
+  /** Deletes the picked road. */
+  deleteRoad(): void {
+    const road = this.state.road;
+    if (road === null) return;
+    this.editMap((m) => {
+      m.roads!.splice(road, 1);
+      if (!m.roads!.length) delete m.roads;
+    });
+    this.pickRoad(null);
+  }
+
+  /** Picks a road (selecting nothing, since roads are the map's), or none. */
+  pickRoad(road: number | null): void {
+    if (road !== null) this.select([], []);
+    this.set({ road, zone: null, point: null });
+  }
+
+  /** The width the road tool makes roads, and the picked road's if one is. */
+  setRoadWidth(width: number): void {
+    this.set({ roadWidth: width });
   }
 
   /** Picks a point of the selected patrol, or of the picked zone, or none. */
@@ -1042,7 +1151,7 @@ export class MapEditor {
 
   pickZone(zone: number | null): void {
     if (zone !== null) this.select([], []);
-    this.set({ zone, point: null });
+    this.set({ zone, road: null, point: null });
   }
 
   /**
@@ -1069,7 +1178,7 @@ export class MapEditor {
    * picked window of a wall.
    */
   deletePoint(): void {
-    const { point, zone } = this.state;
+    const { point, zone, road } = this.state;
     if (point === null) return;
     const i = this.state.selected[0];
     if (this.active()?.type === 'wall' && i !== undefined) {
@@ -1079,6 +1188,12 @@ export class MapEditor {
       );
     } else if (this.active()?.type === 'patrol' && i !== undefined) {
       this.edit((nodes) => void removePatrolPoint(nodes[i] as Patrol, point));
+    } else if (road !== null) {
+      if (this.state.map.roads![road]!.points.length <= 2) {
+        this.set({ message: 'A road needs two points at least: delete the road instead.' });
+        return;
+      }
+      this.editMap((m) => void m.roads![road]!.points.splice(point, 1));
     } else if (zone !== null) {
       if (this.state.map.zones[zone]!.points.length <= 3) {
         this.set({ message: 'A zone needs three corners at least.' });
@@ -1091,7 +1206,18 @@ export class MapEditor {
 
   /** Puts a new corner in the picked zone, halfway along the edge after the picked one. */
   splitZoneEdge(): void {
-    const { point, zone } = this.state;
+    const { point, zone, road } = this.state;
+    if (road !== null && point !== null) {
+      const pts = this.state.map.roads![road]!.points;
+      // After the picked point; after the last, it goes before it instead.
+      const at = point + 1 < pts.length ? point : point - 1;
+      this.editMap((m) => {
+        const p = m.roads![road]!.points;
+        const [a, b] = [p[at]!, p[at + 1]!];
+        p.splice(at + 1, 0, [round((a[0] + b[0]) / 2), round((a[1] + b[1]) / 2)]);
+      });
+      return this.set({ point: at + 1 });
+    }
     if (zone === null || point === null) return;
     this.editMap((m) => {
       const pts = m.zones[zone]!.points;
@@ -1133,6 +1259,11 @@ export class MapEditor {
       p.x = round(Math.round(p.x / grid) * grid);
       p.z = round(Math.round(p.z / grid) * grid);
       p.y = d.what === 'zone' ? this.view.groundAt(p.x, p.z) : this.view.dropPoint(p);
+    }
+    if (d.what === 'road') {
+      // The first point joins a road it's near; the last does when the road is finished.
+      if (!d.points.length) [p.x, p.z] = this.roadSnap([p.x, p.z], null);
+      p.y = this.view.groundAt(p.x, p.z);
     }
     this.set({ drawing: { ...d, points: [...d.points, [round(p.x), round(p.y), round(p.z)]] } });
   }
@@ -1196,7 +1327,8 @@ export class MapEditor {
     const need =
       d.what === 'zone'
         ? 3
-        : d.what === 'patrol' ||
+        : d.what === 'road' ||
+            d.what === 'patrol' ||
             d.what === 'walls' ||
             d.what === 'curve' ||
             d.what === 'floor' ||
@@ -1241,6 +1373,25 @@ export class MapEditor {
       });
       const [w, , d] = floor.size;
       this.set({ message: `Made a ${w} × ${d} m floor. Click its next first corner, or Esc.` });
+    } else if (d.what === 'road') {
+      const road = this.state.map.roads?.length ?? 0;
+      // Only the ends join other roads.
+      const points = pts.map((p) => [round(p[0]), round(p[2])] as [number, number]);
+      const last = this.roadSnap(points[points.length - 1]!, null);
+      points[points.length - 1] = [round(last[0]), round(last[1])];
+      this.editMap((m) => {
+        m.roads ??= [];
+        m.roads.push({
+          id: uniqueId('road', new Set(m.roads.map((r) => r.id))),
+          points,
+          width: this.state.roadWidth,
+        });
+      });
+      this.set({
+        road,
+        message:
+          'Made a road. Drag its points; pick one to delete it or add one after it. Click to start another, or Esc.',
+      });
     } else if (d.what === 'zone') {
       const zone = this.state.map.zones.length;
       this.editMap((m) =>
@@ -1818,9 +1969,46 @@ export class MapEditor {
     });
   }
 
+  /**
+   * Levels the ground under each selected thing to its own height (a building's floor),
+   * a cell and a half past its edge, easing back over LEVEL_EASE meters, or not at all
+   * (`sharp`, so a hill can stand against an uphill wall). One edit, undone as one.
+   */
+  levelUnderSelected(sharp = false): void {
+    const { scope, selected, map } = this.state;
+    if (!selected.length) return;
+    const t = terrainGrid(map);
+    let leveled = 0;
+    for (const i of selected) {
+      const f = this.view.footprint([...scope, i]);
+      if (!f) continue;
+      if (f.w > LEVEL_MAX || f.d > LEVEL_MAX) {
+        this.set({
+          message: `${this.label([...scope, i])} is ${Math.round(f.w)} × ${Math.round(f.d)} m: select one building, not a group of them.`,
+        });
+        return;
+      }
+      const margin = map.terrain.cellSize * LEVEL_MARGIN_CELLS;
+      if (levelFootprint(t, f.outside, f.bounds, round(f.y), margin, sharp ? 0 : LEVEL_EASE))
+        leveled++;
+    }
+    if (!leveled) {
+      this.set({ message: 'The ground under it is level already.' });
+      return;
+    }
+    this.edit((_, m) => setHeights(m, t.heights, t.holes, this.prefabs));
+    this.set({
+      message: `Leveled the ground under ${leveled === 1 ? 'it' : `${leveled} things`}${sharp ? ', with no bank' : `, easing back over ${LEVEL_EASE} m`}.`,
+    });
+  }
+
   private placeAt(e: MouseEvent): void {
     const tool = this.state.tool;
     if (this.state.drawing) return this.addPoint(e);
+    if (tool === 'road') {
+      this.set({ drawing: { what: 'road', points: [] }, road: null, point: null });
+      return this.addPoint(e);
+    }
     if (tool === 'zone' || (tool === 'marker' && this.state.marker === 'patrol')) {
       const what = tool === 'zone' ? 'zone' : 'patrol';
       this.set({ drawing: { what, points: [] } });
@@ -2387,7 +2575,13 @@ export class MapEditor {
       return;
     }
     if (e.key === 'Delete' || e.key === 'Backspace')
-      return run(() => (this.state.point !== null ? this.deletePoint() : this.deleteSelected()));
+      return run(() =>
+        this.state.point !== null
+          ? this.deletePoint()
+          : this.state.road !== null
+            ? this.deleteRoad()
+            : this.deleteSelected(),
+      );
     if (e.key === 'Escape')
       return run(() => {
         if (this.state.drawing) this.set({ drawing: null, message: null });
@@ -2405,6 +2599,7 @@ export class MapEditor {
     }
     for (const [tool, key] of Object.entries(TOOL_KEYS))
       if (e.key === key) return run(() => this.setTool(tool as keyof typeof TOOL_KEYS));
+    if (k === 'o') return run(() => this.setTool('road'));
     if (k === 'n') return run(() => this.setNav(!this.state.nav));
     if (k === 'h') return run(() => this.setGrid(!this.state.grid));
     if (k === 'c') return run(() => this.toggleCut());
@@ -2472,6 +2667,8 @@ function toolHint(
     return 'Drag a rectangle: every cell it touches becomes a hole, for building under the ground; ⇧ fills them. Esc stops.';
   if (tool === 'terrain')
     return 'Drag on the ground to shape it; ⇧ to lower (or raise). [ and ] change the size. Esc stops.';
+  if (tool === 'road')
+    return 'Click the road’s points in turn (corners are rounded); its ends snap onto roads they’re near. Enter or click the last point to finish. Esc stops.';
   if (tool === 'zone' || (tool === 'marker' && marker === 'patrol'))
     return `Click the ${tool === 'zone' ? "zone's corners" : "patrol's points"} in turn; Enter or click a point to finish. Esc stops.`;
   if (tool === 'floor')

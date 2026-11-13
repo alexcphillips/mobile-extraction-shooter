@@ -8,7 +8,7 @@ import { DEFAULT_SKILL, spawnEnemy } from './ai';
 import { FIRE } from './fire';
 import { carriedGrenades } from './grenades';
 import { stow } from './gear';
-import { TOTAL_HP, totalHp } from './health';
+import { HEALTH, TOTAL_HP, totalHp } from './health';
 import { MOVEMENT } from './movement';
 import {
   createState,
@@ -152,10 +152,10 @@ describe('burning', () => {
     expect(state.fires).toHaveLength(0);
     run(state, world, ticks(FUEL.burnTime) + 2);
     expect(t.burn).toBeNull();
-    // Every zone, past armor: about burnDamage × 6 zones × burnTime.
+    // Every zone, past armor: about burnDamage × 7 zones × burnTime.
     const lost = TOTAL_HP - totalHp(t.health);
-    expect(lost).toBeCloseTo(FUEL.burnDamage * 6 * FUEL.burnTime, -1);
-    expect(t.health.hp.every((hp, z) => hp < [35, 85, 60, 60, 65, 65][z]!)).toBe(true);
+    expect(lost).toBeCloseTo(FUEL.burnDamage * 7 * FUEL.burnTime, -1);
+    expect(t.health.hp.every((hp, z) => hp < HEALTH.maxHp[z]!)).toBe(true);
   });
 
   it('is lit again, not stacked, by more flames: one ignite event', () => {

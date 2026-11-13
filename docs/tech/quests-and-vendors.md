@@ -14,6 +14,14 @@ Session 14. Rules in shared `quests.ts`, content in `content/quests.ts`. See des
   - Client: `hud/quest-markers.ts` (one DOM element per marker, moved only when it shifts a whole pixel, the window's size read rather than the element's), `ui/raid-quests.tsx` (the Quests tab), `PlayOptions.profile` instead of `gear`. A raid snapshot saved before 14b gets an empty `investigate` list when resumed.
 - **Quest editor (2026-11-11):** `client/src/quest-editor/` (`chain.ts` the rules: random ids, loops, delete rewiring, lane layout; `editor.ts` state and undo; `panel.tsx`). It checks with `checkQuests` and `questMarkerProblem` (content.ts, which `checkQuestMarkers` now wraps) against each map's quest marker ids, compiled once when it opens. `editor-save.mjs` writes `quests/` and takes `delete: true` for quest files only.
 
+## PMC level
+2026-11-11. Rules in shared `xp.ts` (`XP` limits and numbers, `xpForLevel`, `levelOf`, `levelProgress`, `enemyXp`, `raidXp`, `isRunThrough`). See design → Quests and vendors → PMC level.
+- **Profile** format 19 (migration 18 adds `xp: 0`, and the same migration moves stored British spellings to American, `americanSpelling`). Only the server changes it: `PUT /api/profile` refuses a change.
+- **Quests:** `minLevel` and `rewards.xp` (optional / default 0, so still format 1). `questStatus` returns `hidden` below `minLevel` unless taken; `acceptQuest` refuses it; the vendors page and counts skip hidden quests. `completeQuest` adds the XP. The quest editor edits both.
+- **Enemies:** optional `xp` (still format 2), else `FACTION_XP`. `DeathEvent.head` marks a kill whose killing hit was to the head (`dealDamage`).
+- **Raid result:** `EndRaidRequest.killed` (`{ enemy, head? }`, at most `kills` of them; the client records the dead character's `look.type`) and `searched` (the player's `search` events, at most `XP.maxSearched`). The server's `/end` adds `raidXp(...).total` from them, with enemies bundled for it (`loadEnemies`, shapes only). The client works out the same for the results screen (`RaidResult.xp`, with the XP before) and keeps both counts in the raid snapshot. A run-through calls `settleFound(gear, true)` on the client before sending (the trusted client, as for FIR in general).
+- **Client:** `ui/level-badge.tsx` in the lobby's top bar; `XpSheet` and `LevelLine` in `ui/results.tsx`.
+
 ## Vendors and money
 Session 13b. Rules in shared `vendors.ts`, content in `content/vendors.ts`. See design.md → Quests and vendors → Economy.
 - **`content/vendors/<id>.json`** (format 1): `name`, optional `blurb`, and `sells`, a list of `{ item, count?, attachments? }` (count for stacks, one purchase's worth; attachments a gun comes fitted with, 2026-11-05). `checkVendors` checks the items exist, have a value, aren't money, and fit one stack, and that an offer's attachments fit its gun, one to a slot. `newStashItem` fits them (still with no rounds). Bundled for the server too.

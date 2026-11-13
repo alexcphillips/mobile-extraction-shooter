@@ -3,7 +3,18 @@ import { weaponDef, type AmmoDef } from '../content/items';
 import { createRng, nextFloat } from '../rng';
 import { TICK_RATE } from '../tick';
 import { CollisionWorld } from '../world/collision-world';
-import { CHEST, HEAD, LEFT_ARM, LEFT_LEG, RIGHT_ARM, RIGHT_LEG, TOTAL_HP, totalHp } from './health';
+import {
+  CHEST,
+  HEAD,
+  HEALTH,
+  LEFT_ARM,
+  LEFT_LEG,
+  RIGHT_ARM,
+  RIGHT_LEG,
+  STOMACH,
+  TOTAL_HP,
+  totalHp,
+} from './health';
 import {
   HIT_CAPSULES,
   capsuleEnds,
@@ -25,6 +36,7 @@ import { step } from './step';
 import { TEST_ITEMS } from './test-items';
 import { carriedAmmo, heldWeapon, stow } from './gear';
 import {
+  BREATH,
   attach,
   createWeapon,
   createWeaponStats,
@@ -148,13 +160,30 @@ describe('hit zones', () => {
     // Facing −x, towards the shots, so its right is −z.
     const { state } = target(Math.PI / 2);
     expect(zoneAt(state, 1.62, 0)).toBe(HEAD);
-    expect(zoneAt(state, 1.0, 0)).toBe(CHEST);
+    // GZ-3: the thorax over the stomach.
+    expect(zoneAt(state, 1.4, 0)).toBe(CHEST);
+    expect(zoneAt(state, 1.0, 0)).toBe(STOMACH);
     // The forearms, held forward in front of the chest.
     expect(zoneAt(state, 1.185, 0.045)).toBe(LEFT_ARM);
     expect(zoneAt(state, 1.2, -0.2)).toBe(RIGHT_ARM);
     expect(zoneAt(state, 0.5, 0.11)).toBe(LEFT_LEG);
     expect(zoneAt(state, 0.5, -0.11)).toBe(RIGHT_LEG);
     expect(zoneAt(state, 2.0, 0)).toBe(null);
+  });
+
+  it('counts a head hit from the front under the brow as the face (GZ-3)', () => {
+    const face = (yaw: number, y: number): boolean | null => {
+      const { state } = target(yaw);
+      const hit = createCharacterHit();
+      raycastCharacters(state, -10, y, 0, 1, 0, 0, 100, 0, hit);
+      return hit.zone === HEAD ? hit.face : null;
+    };
+    // Facing the shots (−x): under the brow is the face, over it isn't.
+    expect(face(Math.PI / 2, 1.6)).toBe(true);
+    expect(face(Math.PI / 2, 1.72)).toBe(false);
+    // From behind or the side, never.
+    expect(face(-Math.PI / 2, 1.6)).toBe(false);
+    expect(face(0, 1.6)).toBe(false);
   });
 
   it('turns with yaw', () => {
@@ -245,10 +274,10 @@ describe('firing', () => {
   it('hits what it aims at and leaves an event', () => {
     const { world, state, shooter, target } = range();
     giveWeapon(shooter, TEST_ITEMS, 'rifle');
-    // The chest, below the arms held in front of it.
+    // The stomach, below the arms held in front of the chest.
     const aim = lookAt(shooter, 0, 1.0, 0);
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ ...aim, fire: true }) });
-    expect(target.health.hp[CHEST]).toBe(85 - 40);
+    expect(target.health.hp[STOMACH]).toBe(70 - 40);
     expect(heldWeapon(shooter)?.mag).toBe(29);
     const shot = state.events.find((e) => e.type === 'shot');
     expect(shot).toMatchObject({ by: shooter.id, hit: 'character', target: target.id });
@@ -288,6 +317,156 @@ describe('firing', () => {
     for (let i = 0; i < TICK_RATE; i++)
       step(state, world, TEST_ITEMS, { [shooter.id]: { ...hold, yaw: 0.5 } });
     expect(Math.abs(shooter.lagYaw!)).toBeLessThan(1e-3);
+  });
+
+  describe('feeling hurt (PS-1)', () => {
+    const DEG = Math.PI / 180;
+    /** Two shooters aimed in for a second, stepped in lockstep from here. */
+    function pair() {
+      const a = range();
+      const b = range();
+      for (const s of [a, b]) giveWeapon(s.shooter, TEST_ITEMS, 'rifle');
+      const tick = () => {
+        for (const s of [a, b])
+          step(s.state, s.world, TEST_ITEMS, {
+            [s.shooter.id]: input({ pitch: 1, aim: true }),
+          });
+      };
+      for (let i = 0; i < TICK_RATE; i++) tick();
+      return { a: a.shooter, b: b.shooter, tick };
+    }
+
+    it('low stamina sways more', () => {
+      const { a, b, tick } = pair();
+      b.stamina = 0;
+      tick();
+      expect(Math.abs(b.swayYaw!)).toBeGreaterThan(Math.abs(a.swayYaw!) * 1.7);
+    });
+
+    it('badly hurt adds a faint tremor, not before', () => {
+      const { a, b, tick } = pair();
+      b.health.hp[CHEST] = HEALTH.maxHp[CHEST]! * HEALTH.badlyHurt + 1;
+      tick();
+      expect(b.swayYaw).toBe(a.swayYaw);
+      b.health.hp[CHEST] = HEALTH.maxHp[CHEST]! * HEALTH.badlyHurt - 1;
+      let most = 0;
+      for (let i = 0; i < TICK_RATE; i++) {
+        tick();
+        most = Math.max(most, Math.abs(b.swayYaw! - a.swayYaw!));
+      }
+      expect(most).toBeGreaterThan(0.03 * DEG);
+      expect(most).toBeLessThan(0.1 * DEG);
+    });
+  });
+
+  describe('breath', () => {
+    /** Idle sway this tick as a share of unheld, standing still: lag is 0 with no turning. */
+    function swayShare(state: SimState, c: Character): number {
+      const unheld =
+        c.aim * Math.sin((state.tick - 1) * (1 / TICK_RATE) * 1.3) * ((0.35 * Math.PI) / 180);
+      return c.swayYaw! / unheld;
+    }
+    /** Steps, then the largest and smallest share of unheld sway over the ticks. */
+    function run(s: ReturnType<typeof range>, seconds: number, parts: Partial<PlayerInput>) {
+      let most = 0;
+      let least = Infinity;
+      for (let i = 0; i < Math.round(seconds * TICK_RATE); i++) {
+        step(s.state, s.world, TEST_ITEMS, { [s.shooter.id]: input({ pitch: 1, ...parts }) });
+        if (Math.abs(Math.sin((s.state.tick - 1) * (1 / TICK_RATE) * 1.3)) < 0.3) continue;
+        const share = swayShare(s.state, s.shooter);
+        most = Math.max(most, share);
+        least = Math.min(least, share);
+      }
+      return { most, least };
+    }
+
+    it('steadies the sway while aimed and still, until it runs out', () => {
+      const s = range();
+      giveWeapon(s.shooter, TEST_ITEMS, 'rifle');
+      run(s, 1, { aim: true });
+      expect(s.shooter.aim).toBe(1);
+      expect(swayShare(s.state, s.shooter)).toBeCloseTo(BREATH.steady, 5);
+      expect(run(s, BREATH.hold - 2, { aim: true }).most).toBeCloseTo(BREATH.steady, 5);
+      // It runs out: a wobble worse than today's sway, then today's, never worse, while it
+      // slowly refills.
+      const wobble = run(s, 2, { aim: true });
+      expect(s.shooter.breathOut).toBe(true);
+      expect(wobble.most).toBeGreaterThan(1.3);
+      const after = run(s, 3, { aim: true });
+      expect(after.least).toBeCloseTo(1, 5);
+      expect(after.most).toBeCloseTo(1, 5);
+      expect(s.shooter.breath).toBeCloseTo((4 * BREATH.hold) / BREATH.aimedRefill, 1);
+      // Full again, still aimed: it stays out until the breath button (BW-2).
+      run(s, BREATH.aimedRefill, { aim: true });
+      expect(s.shooter.breath).toBe(BREATH.hold);
+      expect(s.shooter.breathOut).toBe(true);
+      run(s, 1 / TICK_RATE, { aim: true, breathe: true });
+      run(s, 1, { aim: true });
+      expect(s.shooter.breathOut).toBeUndefined();
+      expect(swayShare(s.state, s.shooter)).toBeCloseTo(BREATH.steady, 5);
+    });
+
+    it('lets go and holds again with the breath button, keeping what is left', () => {
+      const s = range();
+      giveWeapon(s.shooter, TEST_ITEMS, 'rifle');
+      run(s, 2, { aim: true });
+      run(s, 1 / TICK_RATE, { aim: true, breathe: true });
+      expect(s.shooter.breathOut).toBe(true);
+      // Let go by hand: no wobble, today's sway, refilling at the aimed rate.
+      const out = run(s, 2, { aim: true });
+      expect(out.most).toBeCloseTo(1, 5);
+      expect(s.shooter.breath).toBeCloseTo(
+        BREATH.hold - 2 + (2 * BREATH.hold) / BREATH.aimedRefill,
+        1,
+      );
+      run(s, 1 / TICK_RATE, { aim: true, breathe: true });
+      run(s, 1, { aim: true });
+      expect(s.shooter.breathOut).toBeUndefined();
+      expect(swayShare(s.state, s.shooter)).toBeCloseTo(BREATH.steady, 5);
+    });
+
+    it('ignores the breath button with the gun down, or with no breath left', () => {
+      const s = range();
+      giveWeapon(s.shooter, TEST_ITEMS, 'rifle');
+      run(s, 1 / TICK_RATE, { breathe: true });
+      expect(s.shooter.breathOut).toBeUndefined();
+      s.shooter.breath = 0;
+      s.shooter.breathOut = true;
+      s.shooter.aim = 1;
+      step(s.state, s.world, TEST_ITEMS, { [s.shooter.id]: input({ aim: true, breathe: true }) });
+      expect(s.shooter.breathOut).toBe(true);
+    });
+
+    it('refills slowly while aimed, faster with the gun down', () => {
+      const s = range();
+      giveWeapon(s.shooter, TEST_ITEMS, 'rifle');
+      s.shooter.breath = 0;
+      run(s, 1, { aim: true });
+      const aimed = s.shooter.breath!;
+      expect(aimed).toBeGreaterThan(0);
+      expect(aimed).toBeLessThan(BREATH.hold / BREATH.aimedRefill);
+      run(s, 1.5, {});
+      expect(s.shooter.breathOut).toBeUndefined();
+      expect(s.shooter.breath).toBeCloseTo(aimed + BREATH.hold / 2, 5);
+      run(s, 3, {});
+      expect(s.shooter.breath).toBe(BREATH.hold);
+    });
+
+    it('is spent while moving aimed, without steadying the gun', () => {
+      const s = range();
+      giveWeapon(s.shooter, TEST_ITEMS, 'rifle');
+      run(s, 2, { aim: true, moveY: 1 });
+      expect(s.shooter.breath).toBeCloseTo(BREATH.hold - 2, 5);
+      expect(s.shooter.steady).toBe(0);
+    });
+
+    it('steadies sway that broken arms made worse by the same share', () => {
+      const s = range();
+      giveWeapon(s.shooter, TEST_ITEMS, 'rifle');
+      s.shooter.health.hp[LEFT_ARM] = 0;
+      run(s, 1, { aim: true });
+      expect(swayShare(s.state, s.shooter)).toBeCloseTo(3 * BREATH.steady, 5);
+    });
   });
 
   it('shoots where the gun points, not the view', () => {
@@ -333,8 +512,8 @@ describe('firing', () => {
     const shots = state.events.filter((e) => e.type === 'shot');
     expect(shots.map((e) => e.pellet)).toEqual([0, 1, 2, 3, 4, 5]);
     expect(shots.every((e) => e.hit === 'character')).toBe(true);
-    // No spread: all six land in the chest.
-    expect(target.health.hp[CHEST]).toBe(85 - 6 * 5);
+    // No spread: all six land in the stomach.
+    expect(target.health.hp[STOMACH]).toBe(70 - 6 * 5);
     expect(heldWeapon(shooter)?.mag).toBe(3);
     // One first-round kick of 2°, worn off for a tick at the in-burst rate.
     const kick =
@@ -488,7 +667,13 @@ describe('firing', () => {
       step(state, world, TEST_ITEMS, { [shooter.id]: input({ ...aim, fire: true }) });
     }
     expect(target.health.dead).toBe(true);
-    expect(state.events).toContainEqual({ type: 'death', target: target.id, by: shooter.id });
+    // Aimed at the head.
+    expect(state.events).toContainEqual({
+      type: 'death',
+      target: target.id,
+      by: shooter.id,
+      head: true,
+    });
     step(state, world, TEST_ITEMS, { [target.id]: input({ fire: true, moveY: 1 }) });
     expect(heldWeapon(target)?.mag).toBe(30);
     expect(target.vz).toBe(0);
@@ -577,6 +762,7 @@ describe('attachments', () => {
       muzzle: 'suppressor',
       magazine: null,
       laser: null,
+      stock: null,
     });
   });
 });

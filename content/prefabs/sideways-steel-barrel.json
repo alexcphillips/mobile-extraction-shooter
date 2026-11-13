@@ -2,5 +2,6 @@
   "formatVersion": 3,
   "id": "sideways-steel-barrel",
   "name": "Steel barrel (on its side)",
+  "tags": ["industrial"],
   "nodes": [{ "type": "prefab", "prefab": "steel-barrel", "pos": [0, 0.297, -0.44], "pitch": 90 }]
 }

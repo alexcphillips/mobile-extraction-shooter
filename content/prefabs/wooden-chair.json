@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "wooden-chair",
   "name": "Wooden chair",
+  "tags": ["home"],
   "colors": {
     "wood": "#a98a63",
     "wood-dark": "#7d6346"

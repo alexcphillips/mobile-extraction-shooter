@@ -50,6 +50,8 @@ export class SoundPlayer {
   /** Between the master and the speakers while muffled (a mask: AI-7), else unused. */
   private muffler: BiquadFilterNode | null = null;
   private muffle: number | null = null;
+  /** How much better or worse the player hears (GZ-2): world sounds' range and loudness. */
+  private hearing = 1;
   private volume = 1;
   private readonly at: Placement = { gain: 1, pan: 0, cutoff: SPATIAL.open };
 
@@ -70,6 +72,14 @@ export class SoundPlayer {
    * Muffles everything above this many Hz (wearing a mask, AI-7), or nothing with null.
    * Cheap to call every frame: it only rewires when the value changes.
    */
+  /**
+   * What's on the player's head (GZ-2): a share, +0.2 is 20% further and louder, −0.15
+   * shorter and quieter. Only sounds placed in the world change.
+   */
+  setHearing(share: number): void {
+    this.hearing = Math.max(0.1, 1 + share);
+  }
+
   setMuffle(hz: number | null): void {
     if (hz === this.muffle) return;
     this.muffle = hz;
@@ -95,9 +105,9 @@ export class SoundPlayer {
   playAt(id: string, x: number, y: number, z: number, options?: PlaceOptions): void {
     const def = this.defs.get(id);
     if (!def) return;
-    const range = options?.range ?? def.range;
+    const range = (options?.range ?? def.range) * this.hearing;
     if (!place(this.at, this.listener, x, y, z, range, options?.occluded ?? false)) return;
-    this.at.gain *= options?.gain ?? 1;
+    this.at.gain *= (options?.gain ?? 1) * Math.min(1.5, this.hearing);
     this.start(id);
   }
 

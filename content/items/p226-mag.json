@@ -1,0 +1,26 @@
+{
+  "formatVersion": 11,
+  "id": "p226-mag",
+  "name": "P226 15-round magazine",
+  "shortName": "P226 15",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 1500,
+  "weight": 0.1,
+  "rarity": "common",
+  "slot": "magazine",
+  "weapons": ["p226"],
+  "capacity": 15,
+  "caliber": "9x19",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.002, 0],
+        "size": [0.024, 0.008, 0.04],
+        "color": "#161718",
+        "pitch": -12
+      }
+    ]
+  }
+}

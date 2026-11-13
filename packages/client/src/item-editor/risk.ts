@@ -23,8 +23,13 @@ export function storageRisks(before: ItemDef, after: ItemDef): string[] {
   switch (after.type) {
     case 'weapon': {
       const b = before as typeof after;
-      if (after.magazine < b.magazine)
+      // A magazine-fed gun holds what its magazine does (MG-1): see the magazine's capacity.
+      if (!after.feed && after.magazine < b.magazine)
         out.push('its magazine is smaller than saved guns may have loaded');
+      if (!after.feed !== !b.feed)
+        out.push(
+          'it changed between magazines and loose rounds: saved ones may be loaded the old way',
+        );
       const lost = (b.slots ?? []).filter((s) => !after.slots?.includes(s));
       if (lost.length) out.push(`saved guns may have something in its ${lost.join(' and ')} slot`);
       break;
@@ -63,6 +68,10 @@ export function storageRisks(before: ItemDef, after: ItemDef): string[] {
         out.push('it fits fewer guns, and saved guns may have it on');
       if ((after.mods?.magazine ?? 0) < (b.mods?.magazine ?? 0))
         out.push('it adds fewer rounds than saved guns may have loaded');
+      if ((after.capacity ?? 0) < (b.capacity ?? 0))
+        out.push('it holds fewer rounds than saved ones may have in them');
+      if (b.caliber && after.caliber !== b.caliber)
+        out.push('its caliber changed, so saved ones may hold rounds it no longer takes');
       break;
     }
     case 'med': {

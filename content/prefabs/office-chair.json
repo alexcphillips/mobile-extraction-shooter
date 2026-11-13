@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "office-chair",
   "name": "Office chair",
+  "tags": ["office"],
   "colors": {
     "fabric": "#2f343b",
     "plastic": "#1d1e21",

@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "skip-bin",
   "name": "Skip bin",
+  "tags": ["street"],
   "colors": {
     "steel": "#b8862e",
     "steel-dark": "#8a6420",

@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "roll-cage",
   "name": "Roll cage",
+  "tags": ["industrial"],
   "colors": {
     "metal": "#8d9296",
     "metal-dark": "#5e6468",

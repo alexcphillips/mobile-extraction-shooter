@@ -1,4 +1,10 @@
-import { itemDef, type ItemDb, type ItemDef, type MedEffect } from '../content/items';
+import {
+  itemDef,
+  type ItemDb,
+  type ItemDef,
+  type MedEffect,
+  type PlateSide,
+} from '../content/items';
 import { removeAt } from '../inventory/grid';
 import { TICK_SECONDS } from '../tick';
 import { CARRIED_GRIDS, QUICK_GRIDS, carriedGrid, heldWeapon } from './gear';
@@ -10,11 +16,14 @@ import {
   LEFT_LEG,
   RIGHT_ARM,
   RIGHT_LEG,
+  STOMACH,
   isBleeding,
+  isLimb,
+  isVital,
   type Health,
   type Zone,
 } from './health';
-import { reachableItem, type ItemRef } from './looting';
+import { insertPlate, reachableItem, type ItemRef } from './looting';
 import { kitUsedUp, repairArmor } from './repair';
 import type { Character, PlayerInput, SimState } from './state';
 
@@ -22,6 +31,7 @@ import type { Character, PlayerInput, SimState } from './state';
 export const TREATMENT_ORDER: readonly Zone[] = [
   HEAD,
   CHEST,
+  STOMACH,
   LEFT_LEG,
   RIGHT_LEG,
   LEFT_ARM,
@@ -35,8 +45,6 @@ export const TREATMENT_ORDER: readonly Zone[] = [
  */
 export const EFFECT_PRIORITY: readonly MedEffect[] = ['bandage', 'splint', 'surgery', 'heal'];
 
-const isLimb = (zone: Zone): boolean => zone !== HEAD && zone !== CHEST;
-
 /** Whether an effect would do something for a zone. */
 export function needs(h: Health, zone: Zone, effect: MedEffect): boolean {
   const hp = h.hp[zone]!;
@@ -46,7 +54,8 @@ export function needs(h: Health, zone: Zone, effect: MedEffect): boolean {
     case 'splint':
       return isLimb(zone) && hp <= 0 && !h.splinted[zone];
     case 'surgery':
-      return isLimb(zone) && hp <= 0;
+      // A broken limb or a blacked stomach (GZ-3).
+      return !isVital(zone) && hp <= 0;
     case 'heal':
       return hp > 0 && hp < HEALTH.maxHp[zone]!;
   }
@@ -92,6 +101,8 @@ export interface MedUse extends MedRef {
   left: number;
   /** A repair kit's: the armor piece, as the sender saw it. */
   armor?: ItemRef;
+  /** A plate going into a carrier (GZ-4): which, and which slot. */
+  plate?: { carrier: ItemRef; side: PlateSide };
 }
 
 /**
@@ -174,7 +185,11 @@ export function updateMedUse(
   const still = carriedGrid(c.gear, u.grid)?.items[u.index]?.item.item === u.item;
   const ref = still ? u : firstCarried(c, u.item);
   if (!ref) return;
-  if (u.armor) finishRepair(state, c, items, ref, u.armor);
+  if (u.plate) {
+    const grid = carriedGrid(c.gear, ref.grid)!;
+    const carrier = reachableItem(state, c, u.plate.carrier);
+    if (carrier) insertPlate(state, c, items, carrier, u.plate.side, grid, ref.index);
+  } else if (u.armor) finishRepair(state, c, items, ref, u.armor);
   else useMed(c, items, ref);
 }
 

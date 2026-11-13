@@ -14,7 +14,7 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import { AIM_FOV, FOV, aimedFov, reticleMarkup } from '../hud/optic';
 import { cloneCharacter, loadCharacter } from '../render/character';
 import { TriangleBuilder } from '../render/geometry';
-import { shadedMaterial } from '../render/material';
+import { itemMaterial } from '../render/material';
 import { Viewmodel } from '../render/viewmodel';
 
 /*
@@ -139,8 +139,8 @@ export class ModelView {
   /** Parts and point dots: rebuilt by show(). */
   private readonly item = new THREE.Group();
   private readonly context = new THREE.Group();
-  private readonly material = shadedMaterial();
-  private readonly faint = shadedMaterial();
+  private readonly material = itemMaterial();
+  private readonly faint = itemMaterial();
   private body: THREE.Object3D | null = null;
   private bodyWanted = false;
   private viewmodel: Viewmodel | null = null;

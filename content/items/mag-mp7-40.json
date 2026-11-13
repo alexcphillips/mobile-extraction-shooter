@@ -1,16 +1,18 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "mag-mp7-40",
   "name": "MP7 40-round magazine",
   "shortName": "MP7 40",
   "type": "attachment",
   "size": [1, 2],
   "value": 5000,
+  "weight": 0.15,
   "rarity": "common",
   "slot": "magazine",
   "weapons": ["mp7"],
+  "capacity": 40,
+  "caliber": "4.6x30",
   "mods": {
-    "magazine": 10,
     "reloadTime": 1.1
   },
   "model": {

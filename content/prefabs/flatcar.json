@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "flatcar",
   "name": "Flatcar",
+  "tags": ["vehicle", "rail"],
   "colors": {
     "body": "#8a4a3a",
     "body-dark": "#6e3a2e",

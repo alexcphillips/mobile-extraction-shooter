@@ -1,4 +1,5 @@
 import {
+  ENEMY_FORMAT,
   HANGAR_FORMAT,
   ITEM_FORMAT,
   QUEST_FORMAT,
@@ -12,6 +13,7 @@ import {
   checkRecipes,
   checkVendors,
   loadById,
+  type EnemyDef,
   type HangarModuleDef,
   type ItemDb,
   type QuestDef,
@@ -37,6 +39,7 @@ let vendors: Map<string, VendorDef> | undefined;
 let quests: Map<string, QuestDef> | undefined;
 let hangar: Map<string, HangarModuleDef> | undefined;
 let recipes: Map<string, RecipeDef> | undefined;
+let enemies: Map<string, EnemyDef> | undefined;
 
 export function loadItems(): ItemDb {
   if (!items) {
@@ -117,4 +120,13 @@ export function loadRecipes(): ReadonlyMap<string, RecipeDef> {
 /** A crafting recipe by id, or undefined. */
 export function recipeDef(id: string): RecipeDef | undefined {
   return loadRecipes().get(id);
+}
+
+/**
+ * Every enemy type, for what killing one is worth (PMC XP, 2026-11-11). Only the files'
+ * shapes are checked: loadouts and looks are the client's business.
+ */
+export function loadEnemies(): ReadonlyMap<string, EnemyDef> {
+  enemies ??= loadById(ENEMY_FORMAT, ofKind('enemies'));
+  return enemies;
 }

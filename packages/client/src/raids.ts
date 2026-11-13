@@ -4,6 +4,7 @@ import type {
   ProfileResponse,
   SimState,
   StartRaidRequest,
+  RaidKillXp,
 } from '@mes/shared';
 import { AccountError, call } from './account';
 import type { DamageLog, FightLog } from './play/damage-log';
@@ -146,6 +147,9 @@ export interface RaidSnapshot {
   kills: number;
   /** Who you killed and when, oldest first; missing from raids saved before 2026-11-11. */
   killList?: { name: string; tick: number }[];
+  /** Kills' enemy types and containers searched, for PMC XP; missing before 2026-11-11. */
+  xpKills?: RaidKillXp[];
+  searched?: number;
   /** What hurt you so far; missing from raids saved before it was kept. */
   taken?: DamageLog;
   /** Hits between you and enemies; missing from raids saved before 2026-11-10. */

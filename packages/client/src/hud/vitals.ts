@@ -8,6 +8,7 @@ import {
   RIGHT_LEG,
   CHEST,
   isBleeding,
+  stomachBlacked,
   isBroken,
   createWeaponStats,
   weaponStats,
@@ -15,7 +16,8 @@ import {
   type Character,
   type ItemDb,
   heldWeapon,
-  carriedAmmo,
+  spareRounds,
+  type SimState,
   roundOf,
   loadedAmmo,
 } from '@mes/shared';
@@ -28,22 +30,25 @@ const stats = createWeaponStats();
 
 /**
  * A front-on body, one shape per zone in Health's order (head, chest, left arm, right arm,
- * left leg, right leg), facing you, so its left side is on your right. Each zone's HP is
- * written beside it (the chest's on it), as Tarkov's health widget does.
+ * left leg, right leg, stomach), facing you, so its left side is on your right. Each zone's
+ * HP is written beside it (the chest's and stomach's on them), as Tarkov's health widget
+ * does. Shapes and texts are matched to zones by their order here, not their attributes.
  */
 const BODY_ICON = `<svg viewBox="0 0 64 60" width="80" height="75">
   <circle data-zone="0" cx="32" cy="6" r="5"/>
-  <rect data-zone="1" x="26" y="13" width="12" height="19" rx="1.5"/>
+  <rect data-zone="1" x="26" y="13" width="12" height="11.5" rx="1.5"/>
   <rect data-zone="2" x="39.5" y="13" width="4.5" height="19" rx="1.5"/>
   <rect data-zone="3" x="20" y="13" width="4.5" height="19" rx="1.5"/>
   <rect data-zone="4" x="32.5" y="33.5" width="5.5" height="26" rx="1.5"/>
   <rect data-zone="5" x="26" y="33.5" width="5.5" height="26" rx="1.5"/>
+  <rect data-zone="6" x="26" y="25" width="12" height="7" rx="1.5"/>
   <text data-hp="0" x="39" y="9"/>
-  <text data-hp="1" x="32" y="25" text-anchor="middle"/>
+  <text data-hp="1" x="32" y="21.5" text-anchor="middle"/>
   <text data-hp="2" x="46" y="25"/>
   <text data-hp="3" x="18" y="25" text-anchor="end"/>
   <text data-hp="4" x="40" y="50"/>
   <text data-hp="5" x="24" y="50" text-anchor="end"/>
+  <text data-hp="6" x="32" y="31" text-anchor="middle"/>
 </svg>`;
 
 /** Zone colors by HP left: full, hurt, badly hurt, nearly gone, and 0 (broken, or dead). */
@@ -100,6 +105,8 @@ export class Vitals {
     vitals: HTMLElement,
     private readonly ammo: HTMLElement,
     private readonly hurt: HTMLElement,
+    /** The faint pain edge while the stomach is blacked (PS-1). */
+    private readonly pain?: HTMLElement,
   ) {
     vitals.innerHTML = `
       <div class="vitals-row">
@@ -130,7 +137,7 @@ export class Vitals {
   }
 
   /** Call once per tick. */
-  update(c: Character, items: ItemDb): void {
+  update(c: Character, items: ItemDb, sim: SimState): void {
     const h = c.health;
     const pool = h.pool;
     this.vitals.classList.toggle('pooled', pool !== undefined);
@@ -164,14 +171,17 @@ export class Vitals {
     const legs = (isBroken(h, LEFT_LEG) ? 1 : 0) + (isBroken(h, RIGHT_LEG) ? 1 : 0);
     const arms = (isBroken(h, LEFT_ARM) ? 1 : 0) + (isBroken(h, RIGHT_ARM) ? 1 : 0);
     const bleeding = isBleeding(h);
-    const key = `${legs}${arms}${bleeding ? 1 : 0}`;
+    const stomach = stomachBlacked(h);
+    const key = `${legs}${arms}${bleeding ? 1 : 0}${stomach ? 1 : 0}`;
     if (key !== this.chipKey) {
       this.chipKey = key;
       const chips: string[] = [];
       if (bleeding) chips.push('<span class="chip bleed">🩸 bleeding</span>');
       if (legs) chips.push(`<span class="chip">🦴 ${legs === 2 ? 'both legs' : 'leg'}</span>`);
       if (arms) chips.push(`<span class="chip">🦴 ${arms === 2 ? 'both arms' : 'arm'}</span>`);
+      if (stomach) chips.push('<span class="chip">🤢 stomach</span>');
       this.chips.innerHTML = chips.join('');
+      this.pain?.classList.toggle('on', stomach);
     }
 
     this.armor(this.helmet, c.gear.helmet, items);
@@ -182,7 +192,8 @@ export class Vitals {
     setHidden(this.ammo, !w);
     if (w) {
       const id = loadedAmmo(items, w);
-      setText(this.rounds, `${w.mag} / ${carriedAmmo(c, id)}`);
+      // With magazines, what's in the ones in reach that fit (MG-1).
+      setText(this.rounds, `${w.mag} / ${spareRounds(sim, c, items, w)}`);
       if (id !== this.roundId) {
         this.roundId = id;
         const def = roundOf(items, id)!;

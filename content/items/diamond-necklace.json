@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "diamond-necklace",
   "name": "Diamond necklace",
   "shortName": "DNeck",
   "type": "loot",
   "size": [1, 2],
   "value": 60000,
+  "weight": 0.1,
   "rarity": "legendary",
   "model": {
     "parts": [

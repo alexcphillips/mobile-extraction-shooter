@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "promo-table",
   "name": "Promo table",
+  "tags": ["store"],
   "colors": {
     "table": "#a58468",
     "top": "#c9a877",

@@ -1,10 +1,11 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "splint",
   "name": "Splint",
   "type": "med",
   "size": [1, 1],
   "value": 600,
+  "weight": 0.15,
   "rarity": "common",
   "effect": "splint",
   "useTime": 3,

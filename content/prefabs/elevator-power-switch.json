@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "elevator-power-switch",
   "name": "Elevator power switch",
+  "tags": ["industrial"],
   "colors": {
     "paint": "#5d6a58",
     "paint-dark": "#4a5546",

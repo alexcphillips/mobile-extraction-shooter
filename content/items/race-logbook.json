@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "race-logbook",
   "name": "Headgate logbook",
   "shortName": "Logbook",
   "type": "quest",
   "size": [1, 2],
   "value": 0,
+  "weight": 0.3,
   "rarity": "common",
   "view": "top",
   "model": {

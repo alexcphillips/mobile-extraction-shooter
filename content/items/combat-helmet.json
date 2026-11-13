@@ -1,15 +1,22 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "combat-helmet",
   "name": "Combat helmet",
   "type": "armor",
   "size": [2, 2],
   "value": 18000,
+  "weight": 1.4,
   "rarity": "epic",
   "slot": "helmet",
   "level": 4,
   "durability": 50,
   "repairLoss": 0.1,
+  "hearing": -0.05,
+  "vision": {
+    "vignette": 0.1
+  },
+  "visor": true,
+  "nightVision": true,
   "model": {
     "parts": [
       {

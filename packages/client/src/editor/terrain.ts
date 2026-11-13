@@ -105,6 +105,49 @@ export function levelCells(t: TerrainGrid, [i0, i1, j0, j1]: CellRect, level: nu
     for (let i = i0; i <= i1; i++) t.heights[j * (t.cols + 1) + i] = level;
 }
 
+/** How far past a footprint the ground is leveled too: a cell and a half, so no cell under a wall slopes up inside it. */
+export const LEVEL_MARGIN_CELLS = 1.5;
+/** How far the ground eases back from a leveled footprint to its own height. */
+export const LEVEL_EASE = 6;
+
+/**
+ * Levels the ground under a footprint (2026-11-13, the user's request: ground over a
+ * building's floor showed inside it): every corner within `margin` of it is set to `y`, and
+ * the ground eases back to its own height over `ease` meters past that (smoothstep; 0 leaves
+ * a sharp step, for a hill against an uphill wall). `outside(x, z)` is how far a point is
+ * outside the footprint (0 inside); `bounds` (minX, minZ, maxX, maxZ) the footprint's
+ * extent in the world. Returns the corners changed, or null.
+ */
+export function levelFootprint(
+  t: TerrainGrid,
+  outside: (x: number, z: number) => number,
+  bounds: readonly [number, number, number, number],
+  y: number,
+  margin: number,
+  ease: number,
+): CellRect | null {
+  const reach = margin + ease;
+  const i0 = Math.max(0, Math.floor((bounds[0] - reach - t.minX) / t.cellSize));
+  const i1 = Math.min(t.cols, Math.ceil((bounds[2] + reach - t.minX) / t.cellSize));
+  const j0 = Math.max(0, Math.floor((bounds[1] - reach - t.minZ) / t.cellSize));
+  const j1 = Math.min(t.rows, Math.ceil((bounds[3] + reach - t.minZ) / t.cellSize));
+  let changed = false;
+  for (let j = j0; j <= j1; j++)
+    for (let i = i0; i <= i1; i++) {
+      const d = outside(t.minX + i * t.cellSize, t.minZ + j * t.cellSize);
+      if (d > reach) continue;
+      const k = j * (t.cols + 1) + i;
+      const before = t.heights[k]!;
+      if (d <= margin) t.heights[k] = y;
+      else {
+        const u = (d - margin) / ease;
+        t.heights[k] = y + (before - y) * u * u * (3 - 2 * u);
+      }
+      changed ||= t.heights[k] !== before;
+    }
+  return changed ? [i0, i1, j0, j1] : null;
+}
+
 /** Makes the cells holes, or fills them back in. */
 export function holeCells(t: TerrainGrid, [i0, i1, j0, j1]: CellRect, hole: boolean): void {
   for (let j = j0; j < j1; j++)

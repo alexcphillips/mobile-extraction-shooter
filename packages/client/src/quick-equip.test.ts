@@ -169,4 +169,72 @@ describe('quick equip', () => {
     expect(quickEquip(s.profile, items)).toBe('full');
     expect(JSON.stringify(p)).toBe(before);
   });
+
+  describe('magazines (MG-4)', () => {
+    const mag = (n = 0, round = 'ammo-556x45'): Item => ({
+      ...one('m416-mag'),
+      ...(n > 0 && { mag: n, loaded: round }),
+    });
+    /** The M416's magazines carried, as [rounds, round]. */
+    const spares = (p: Profile): [number, string | undefined][] =>
+      [
+        ...p.gear.pockets.items,
+        ...(p.gear.rig?.grid?.items ?? []),
+        ...(p.gear.backpack?.grid?.items ?? []),
+      ]
+        .filter((g) => g.item.item === 'm416-mag')
+        .map((g) => [g.item.mag ?? 0, g.item.loaded]);
+
+    it('packs the gun and 3 spares, the highest level that fills each first', () => {
+      const empty = { ...one('m416'), mag: 0 };
+      const p = profile([
+        empty,
+        mag(),
+        mag(10, 'ammo-556x45-fmj'),
+        mag(),
+        mag(),
+        one('ammo-556x45-m995', 50),
+        one('ammo-556x45', 60),
+        one('chest-rig'),
+      ]);
+      const before = JSON.parse(JSON.stringify(p)) as Profile;
+      expect(quickEquip(p, items)).toBe('equipped');
+      const gun = p.gear.primary1!;
+      expect([gun.mag, gun.loaded]).toEqual([30, 'ammo-556x45-m995']);
+      // 20 M995 left can't fill one: M855 fills two, then the 20 M995, as many as there are.
+      expect(spares(p).sort()).toEqual(
+        [
+          [20, 'ammo-556x45-m995'],
+          [30, 'ammo-556x45'],
+          [30, 'ammo-556x45'],
+        ].sort(),
+      );
+      // The FMJ that was in a magazine went back to the stash, loose.
+      expect(rounds(p, 'ammo-556x45-fmj')).toBe(0);
+      sound(before, p);
+    });
+
+    it('short of spares, brings loose rounds for the missing reloads', () => {
+      const p = profile([
+        one('m416'),
+        mag(),
+        one('ammo-556x45', 60),
+        one('ammo-556x45', 60),
+        one('chest-rig'),
+      ]);
+      expect(quickEquip(p, items)).toBe('equipped');
+      expect(p.gear.primary1!.mag).toBe(30);
+      expect(spares(p)).toEqual([[30, 'ammo-556x45']]);
+      expect(rounds(p, 'ammo-556x45') - 30).toBe(60);
+    });
+
+    it('fits a magazine to a gun that has none', () => {
+      const bare = one('m416') as Item & { attachments: Record<string, string | null> };
+      bare.attachments.magazine = null;
+      const p = profile([bare, mag(), one('ammo-556x45', 60), one('ammo-556x45', 60)]);
+      expect(quickEquip(p, items)).toBe('equipped');
+      expect(p.gear.primary1!.attachments!.magazine).toBe('m416-mag');
+      expect(p.gear.primary1!.mag).toBe(30);
+    });
+  });
 });

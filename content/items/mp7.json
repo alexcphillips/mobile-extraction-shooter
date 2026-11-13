@@ -1,28 +1,34 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "mp7",
   "name": "MP7",
   "type": "weapon",
   "class": "smg",
-  "size": [3, 2],
-  "value": 32000,
+  "size": [2, 2],
+  "value": 25700,
+  "weight": 1.5,
   "rarity": "common",
   "ammo": "ammo-46x30",
   "hold": "rifle",
   "fireMode": "auto",
   "rpm": 950,
   "magazine": 30,
+  "feed": "magazine",
   "reloadTime": 2.1,
-  "aimTime": 0.21,
+  "aimTime": 0.221,
   "drawTime": 0.55,
   "range": 100,
   "loudness": 120,
-  "slots": ["optic", "muzzle", "magazine", "laser"],
+  "defaults": {
+    "magazine": "mp7-mag",
+    "stock": "mp7-stock"
+  },
+  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
   "hipSpread": 2,
   "aimSpread": 0.55,
   "recoil": {
-    "up": 1.35,
-    "side": 0.42,
+    "up": 1.69,
+    "side": 0.52,
     "snap": 45,
     "recovery": 3,
     "angle": -6
@@ -288,16 +294,6 @@
       },
       {
         "type": "box",
-        "name": "magazine base",
-        "group": "grip",
-        "pos": [0, -0.145, 0.03],
-        "size": [0.026, 0.04, 0.036],
-        "color": "#1d1f21",
-        "pitch": -8,
-        "hiddenBy": "magazine"
-      },
-      {
-        "type": "box",
         "name": "guard front",
         "group": "trigger",
         "pos": [0, -0.049, -0.065],
@@ -320,38 +316,6 @@
         "size": [0.005, 0.018, 0.006],
         "color": "#141516",
         "pitch": 10
-      },
-      {
-        "type": "box",
-        "name": "stock rod",
-        "group": "stock",
-        "pos": [-0.016, -0.01, 0.15],
-        "size": [0.007, 0.009, 0.16],
-        "color": "#1d1f21"
-      },
-      {
-        "type": "box",
-        "name": "stock rod",
-        "group": "stock",
-        "pos": [0.016, -0.01, 0.15],
-        "size": [0.007, 0.009, 0.16],
-        "color": "#1d1f21"
-      },
-      {
-        "type": "box",
-        "name": "butt plate",
-        "group": "stock",
-        "pos": [0, -0.025, 0.235],
-        "size": [0.045, 0.07, 0.012],
-        "color": "#3a3d40"
-      },
-      {
-        "type": "box",
-        "name": "butt pad",
-        "group": "stock",
-        "pos": [0, -0.025, 0.244],
-        "size": [0.047, 0.074, 0.006],
-        "color": "#141516"
       },
       {
         "type": "box",
@@ -511,7 +475,8 @@
       "optic": [0, 0.045, -0.02],
       "muzzle": [0, 0, -0.19],
       "magazine": [0, -0.13, 0.028],
-      "laser": [0.02, -0.008, -0.18]
+      "laser": [0.02, -0.008, -0.18],
+      "stock": [0, -0.01, 0.07]
     }
   }
 }

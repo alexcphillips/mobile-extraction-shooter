@@ -15,9 +15,10 @@ import {
 import { step } from './step';
 import { equip, heldWeapon, stow } from './gear';
 import { createItem } from './create-item';
-import { CHEST, HEAD, LEFT_LEG, RIGHT_LEG } from './health';
+import { CHEST, HEAD, LEFT_LEG, PAIN, RIGHT_LEG, STOMACH } from './health';
 import { giveWeapon } from './weapons';
-import { TEST_ITEMS } from './test-items';
+import { TEST_ITEMS, carryLoad } from './test-items';
+import { WEIGHT } from './weight';
 
 /** Flat ground, half meters each way from the origin. */
 function makeWorld(boxes: BoxDef[] = [], half = 60, foliage?: BoxDef[]): CollisionWorld {
@@ -105,6 +106,7 @@ function setup(
     ...options.flags,
   });
   const player = spawnCharacter(state, world, px, pz);
+  carryLoad(player, WEIGHT.reference);
   const run = (seconds: number, inp = input()): void => {
     for (let i = 0; i < seconds * TICK_RATE; i++)
       step(state, world, TEST_ITEMS, { [player.id]: inp }, nav);
@@ -301,6 +303,18 @@ describe('enemy hearing', () => {
     expect(runFor(sprinting, 1, input({ moveY: 1, yaw: Math.PI / 2, sprint: true }))).not.toBe(
       'unaware',
     );
+  });
+
+  it('hears a blacked stomach groaning within a sprint’s footsteps, standing still (GZ-3)', () => {
+    // Still and behind it: only the groans carry.
+    const near = setup(0, AI.sprintSteps - 2);
+    near.player.health.hp[STOMACH] = 0;
+    expect(runFor(near, PAIN.first[1] + 0.5)).not.toBe('unaware');
+    const far = setup(0, AI.sprintSteps + 3);
+    far.player.health.hp[STOMACH] = 0;
+    expect(runFor(far, PAIN.first[1] + PAIN.every[1] * 2)).toBe('unaware');
+    // Healthy, nothing.
+    expect(runFor(setup(0, AI.sprintSteps - 2), 5)).toBe('unaware');
   });
 
   it('turns to look, walks over to investigate, then calms down', () => {

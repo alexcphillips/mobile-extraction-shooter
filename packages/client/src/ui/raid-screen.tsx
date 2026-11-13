@@ -1,5 +1,10 @@
 import {
   ARMORED_RIG_WORN,
+  WEIGHT,
+  canSprint,
+  gearWeight,
+  EARS_COVERED,
+  blocksHeadset,
   armorOf,
   isArmoredRig,
   ATTACHMENT_SLOTS,
@@ -7,6 +12,14 @@ import {
   cantSell,
   createWeaponStats,
   itemDef,
+  itemSize,
+  isMagazine,
+  packable,
+  roundOf,
+  carrierOf,
+  softZonesOf,
+  armorStatsOf,
+  stockFolds,
   lootContainerById,
   revealed,
   sellPrice,
@@ -38,10 +51,13 @@ import {
   LEFT_LEG,
   RIGHT_ARM,
   RIGHT_LEG,
+  STOMACH,
+  stomachBlacked,
   isBleeding,
   isBroken,
 } from '@mes/shared';
 import { inputMode } from '../input/mode';
+import { nightVisionOn } from '../play/night-vision';
 import {
   createContext,
   useContext,
@@ -64,6 +80,7 @@ import { favorites, holdsFavorite, toggleFavorite } from './favorites';
 import { settings } from '../settings';
 import { LOADOUT_SPLIT, sectionBoxes } from './inventory-layout';
 import { ZONE_COLORS, zoneColor } from '../hud/vitals';
+import { levelColor } from './levels';
 
 type Tab = 'inventory' | 'map' | 'quests';
 
@@ -97,6 +114,9 @@ interface Props {
 }
 
 /** The in-raid screen: inventory (with looting), map and quests tabs. */
+/** Whether a size is square: turning it changes nothing. */
+const square = ([w, h]: readonly [number, number]): boolean => w === h;
+
 export function RaidScreen({ inv, version, ctx }: Props & { ctx: RaidContext }): ReactNode {
   const [tab, setTab] = useState<Tab>('inventory');
   // Not Esc (2026-10-30): browsers won't capture the mouse again from it. Tab or Close.
@@ -120,6 +140,7 @@ export function RaidScreen({ inv, version, ctx }: Props & { ctx: RaidContext }):
         <span className="raid-spacer" />
         <HealthStrip c={ctx.player} />
         <UsePill inv={inv} />
+        <PackPill inv={inv} />
         <button className="primary" onClick={close}>
           Close
         </button>
@@ -145,7 +166,8 @@ export function RaidScreen({ inv, version, ctx }: Props & { ctx: RaidContext }):
 /**
  * Your health while the raid screen is open (2026-11-06): the HUD's body is too tall for
  * the top bar on a phone, so it hides, and this small one sits in the bar instead. Each
- * zone in its color (bleeding ones pulse), and chips for bleeding and broken limbs; no
+ * zone in its color (bleeding ones pulse), and chips for bleeding, broken limbs and a
+ * blacked stomach; no
  * total, as on the HUD.
  */
 function HealthStrip({ c }: { c: Character }): ReactNode {
@@ -162,7 +184,7 @@ function HealthStrip({ c }: { c: Character }): ReactNode {
       className="raid-health"
       role="img"
       aria-label={`Head ${hp(HEAD)}, chest ${hp(CHEST)}${isBleeding(h) ? ', bleeding' : ''}${broken ? `, ${broken} broken` : ''}`}
-      title={`Head ${hp(HEAD)} · Chest ${hp(CHEST)} · Arms ${hp(LEFT_ARM)}/${hp(RIGHT_ARM)} · Legs ${hp(LEFT_LEG)}/${hp(RIGHT_LEG)}`}
+      title={`Head ${hp(HEAD)} · Chest ${hp(CHEST)} · Stomach ${hp(STOMACH)} · Arms ${hp(LEFT_ARM)}/${hp(RIGHT_ARM)} · Legs ${hp(LEFT_LEG)}/${hp(RIGHT_LEG)}`}
     >
       <svg viewBox="16 0 32 60" width="16" height="28" aria-hidden>
         <circle cx="32" cy="6" r="5" fill={fill(HEAD)} className={bleed(HEAD)} />
@@ -170,10 +192,19 @@ function HealthStrip({ c }: { c: Character }): ReactNode {
           x="26"
           y="13"
           width="12"
-          height="19"
+          height="11.5"
           rx="1.5"
           fill={fill(CHEST)}
           className={bleed(CHEST)}
+        />
+        <rect
+          x="26"
+          y="25"
+          width="12"
+          height="7"
+          rx="1.5"
+          fill={fill(STOMACH)}
+          className={bleed(STOMACH)}
         />
         <rect
           x="39.5"
@@ -219,6 +250,7 @@ function HealthStrip({ c }: { c: Character }): ReactNode {
       </span>
       {isBleeding(h) && <span className="chip bleed">🩸</span>}
       {broken > 0 && <span className="chip">🦴{broken > 1 ? ` ×${broken}` : ''}</span>}
+      {stomachBlacked(h) && <span className="chip">🤢</span>}
     </span>
   );
 }
@@ -229,13 +261,21 @@ const subscribeSettings = (onChange: () => void): (() => void) => settings.subsc
 // (2026-11-09, the user's call; they were under both primaries before).
 const MY_SLOTS: readonly GearSlot[] = [
   'helmet',
+  'headset',
   'bodyArmor',
   'primary1',
   'sidearm',
   'primary2',
   'knife',
 ];
-const BODY_SLOTS: readonly GearSlot[] = ['helmet', 'bodyArmor', 'primary1', 'sidearm', 'primary2'];
+const BODY_SLOTS: readonly GearSlot[] = [
+  'helmet',
+  'headset',
+  'bodyArmor',
+  'primary1',
+  'sidearm',
+  'primary2',
+];
 /**
  * Not on a PC, where the loadout and what you carry are one column (2026-11-09, the user's
  * call): the guns first, then the helmet and armor side by side, then the rig and the rest.
@@ -246,6 +286,7 @@ const PHONE_SLOTS: readonly GearSlot[] = [
   'primary2',
   'knife',
   'helmet',
+  'headset',
   'bodyArmor',
 ];
 const SLOT_NAMES: Record<GearSlot, string> = {
@@ -254,6 +295,7 @@ const SLOT_NAMES: Record<GearSlot, string> = {
   sidearm: 'Sidearm',
   knife: 'Knife',
   helmet: 'Helmet',
+  headset: 'Headset',
   bodyArmor: 'Armor',
   rig: 'Rig',
   backpack: 'Backpack',
@@ -269,6 +311,7 @@ const SLOT_GHOSTS: Partial<Record<GearSlot, string>> = {
   sidearm: 'm9a3',
   knife: 'knife',
   helmet: 'combat-helmet',
+  headset: 'tactical-headset',
   bodyArmor: 'plate-carrier',
   rig: 'chest-rig',
   backpack: 'medium-backpack',
@@ -291,7 +334,12 @@ function SlotGhost({ items, slot }: { items: ItemDb; slot: GearSlot }): ReactNod
 
 /** Primaries are drawn twice as wide, a small slot beside each; the helmet and armor have a row each, centered. */
 const WIDE: ReadonlySet<GearSlot> = new Set(['primary1', 'primary2']);
-const CENTER: ReadonlySet<GearSlot> = new Set(['helmet', 'bodyArmor']);
+const CENTER: ReadonlySet<GearSlot> = new Set(['bodyArmor']);
+/**
+ * GZ-2: on a PC the helmet sits in the middle of its row with the headset to its right; on
+ * a phone the helmet, headset and armor share a row, a third each.
+ */
+const HEAD_SLOTS: Partial<Record<GearSlot, string>> = { helmet: ' head', headset: ' ears' };
 
 /** Your gear and grids, beside what's open (a body, a container, the ground or the stash). */
 export function Inventory({ inv, version }: Props): ReactNode {
@@ -342,7 +390,9 @@ export function Inventory({ inv, version }: Props): ReactNode {
             head={
               <>
                 <Worth n={gearWorth(ctx.items, ctx.player.gear)} label="Gear Value" full />
+                <Load kg={gearWeight(ctx.items, ctx.player.gear)} />
                 <span className="inv-panel-fill" />
+                <PackButton inv={inv} />
                 {/* Not in the stash (2026-11-09, the user's call); still in a raid. */}
                 {!ctx.stash && (
                   <button
@@ -403,11 +453,50 @@ export function Inventory({ inv, version }: Props): ReactNode {
               }
               actions={
                 <>
-                  {'index' in selected && sel.def.size[0] !== sel.def.size[1] && (
+                  {'index' in selected && !square(itemSize(ctx.items, sel.item)) && (
                     <button onClick={() => inv.rotate(selected)}>Rotate</button>
                   )}
-                  {sel.def.type === 'weapon' && (sel.item.mag ?? 0) > 0 && (
-                    <button onClick={() => inv.unload(selected)}>Unload</button>
+                  {(sel.def.type === 'weapon' || isMagazine(sel.def)) &&
+                    (sel.item.mag ?? 0) > 0 && (
+                      <button onClick={() => inv.unload(selected)}>Unload</button>
+                    )}
+                  {!ctx.stash &&
+                    sel.item.fitted &&
+                    itemDef(ctx.items, sel.item.fitted.item).type === 'nightVision' && (
+                      <button
+                        title="On or off while this helmet is worn (N on a keyboard)"
+                        onClick={() => inv.toggleNightVision()}
+                      >
+                        Night vision {nightVisionOn() ? 'off' : 'on'}
+                      </button>
+                    )}
+                  {(['front', 'back'] as const).map(
+                    (side) =>
+                      sel.item.plates?.[side] && (
+                        <button
+                          key={side}
+                          onClick={() => inv.unplate(selected, side, sel.item.plates![side]!.item)}
+                        >
+                          Take out {side} plate
+                        </button>
+                      ),
+                  )}
+                  {sel.item.fitted && (
+                    <button onClick={() => inv.unmount(selected, sel.item.fitted!.item)}>
+                      Take off {tileName(itemDef(ctx.items, sel.item.fitted.item))}
+                    </button>
+                  )}
+                  {stockFolds(ctx.items, sel.item) && (
+                    <button
+                      title={
+                        sel.item.folded
+                          ? 'Unfolds the stock: its handling back, and longer in a grid'
+                          : 'Folds the stock: shorter, but none of its handling'
+                      }
+                      onClick={() => inv.fold(selected, !sel.item.folded)}
+                    >
+                      {sel.item.folded ? 'Unfold' : 'Fold'}
+                    </button>
                   )}
                   {sel.def.type === 'weapon' &&
                     ((sel.item.mag ?? 0) > 0 ||
@@ -530,6 +619,23 @@ export function Worth({
   );
 }
 
+/**
+ * What you carry against the weight thresholds (BW-3): against WEIGHT.from while it
+ * doesn't slow you, then against WEIGHT.heavy, amber while slowed and red with no sprint.
+ */
+function Load({ kg }: { kg: number }): ReactNode {
+  const level = !canSprint(kg) ? 'over' : kg > WEIGHT.from ? 'slow' : '';
+  const limit = kg > WEIGHT.from ? WEIGHT.heavy : WEIGHT.from;
+  const title =
+    `Weight ${kg.toFixed(1)} kg. Over ${WEIGHT.from} kg you move slower, ` +
+    `down to ×${WEIGHT.slowest} at ${WEIGHT.heavy} kg; over ${WEIGHT.heavy} kg you can't sprint.`;
+  return (
+    <span className={`inv-worth inv-load ${level}`} title={title}>
+      Weight <b>{kg.toFixed(1)}</b> / {limit} kg
+    </span>
+  );
+}
+
 const COMPACT = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 });
 
 /**
@@ -608,6 +714,10 @@ const KIND_NAMES: Record<ItemDef['type'], string> = {
   key: 'key',
   quest: 'quest item',
   loot: 'loot',
+  headset: 'headset',
+  visor: 'visor',
+  nightVision: 'night vision',
+  plate: 'plate',
 };
 
 /** The parts of a stack the split's quick buttons take. */
@@ -796,11 +906,54 @@ function UsePill({ inv }: { inv: InventoryController }): ReactNode {
   );
 }
 
+/**
+ * Pack Mags (MG-2): loose rounds in pockets and rig into the magazines there, the fullest
+ * first. A round at a time in a raid (it goes on with the inventory closed), at once in
+ * the stash. Hidden while packing: the pill at the top shows it.
+ */
+function PackButton({ inv }: { inv: InventoryController }): ReactNode {
+  const { player, items } = inv.ctx;
+  if (player.packing) return null;
+  const n = packable(player, items);
+  return (
+    <button
+      className="inv-pack"
+      disabled={n === 0}
+      title={
+        n > 0
+          ? `Loads ${n} loose rounds from pockets and rig into the magazines there, fullest first`
+          : 'No loose rounds in pockets or rig for a magazine there'
+      }
+      onClick={() => inv.pack()}
+    >
+      Pack Mags
+    </button>
+  );
+}
+
+/** Packing or unloading in a raid (MG-2): rounds done of all, a bar; a tap stops it. */
+function PackPill({ inv }: { inv: InventoryController }): ReactNode {
+  const p = inv.ctx.player.packing;
+  if (!p) return null;
+  const done = p.total > 0 ? Math.min(1, p.done / p.total) : 1;
+  const label = p.kind === 'unload' ? 'Unloading' : 'Packing';
+  return (
+    <button className="inv-use" aria-label={`${label}: tap to stop`} onClick={() => inv.stopPack()}>
+      <span className="inv-use-fill" style={{ width: `${done * 100}%` }} />
+      <span className="inv-use-text">
+        {label} · {p.done}/{p.total}
+      </span>
+      <span className="inv-use-stop">✕</span>
+    </button>
+  );
+}
+
 const PART_NAMES: Record<AttachmentSlot, string> = {
   optic: 'Optic',
   muzzle: 'Muzzle',
   magazine: 'Magazine',
   laser: 'Laser',
+  stock: 'Stock',
 };
 
 /**
@@ -1121,16 +1274,17 @@ function Ground({ inv }: { inv: InventoryController }): ReactNode {
       <div className="inv-ground" data-drop={TO_GROUND}>
         {near.map(({ ref, g }) => {
           const def = itemDef(ctx.items, g.item.item);
+          const [sw, sh] = itemSize(ctx.items, g.item);
           return (
             <div
               key={ref.ground}
               className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${holdsFavorite(g.item, favs) ? ' favorite' : ''}`}
               data-ref={JSON.stringify(ref)}
-              data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
+              data-gun={def.type === 'weapon' || isMagazine(def) ? JSON.stringify(ref) : undefined}
               data-armor={armorOf(def) ? JSON.stringify(ref) : undefined}
               style={{
-                width: def.size[0] * cell,
-                height: def.size[1] * cell,
+                width: sw * cell,
+                height: sh * cell,
                 background: tintOf(def),
               }}
               onContextMenu={(e) => {
@@ -1140,8 +1294,8 @@ function Ground({ inv }: { inv: InventoryController }): ReactNode {
               onPointerDown={(e) =>
                 inv.drag.down(e.nativeEvent, {
                   ref,
-                  w: def.size[0],
-                  h: def.size[1],
+                  w: sw,
+                  h: sh,
                   rotated: false,
                   grabX: 0,
                   grabY: 0,
@@ -1268,18 +1422,23 @@ function Slots({
         const def = item && itemDef(inv.ctx.items, item.item);
         const inHand = owner.kind === 'self' && ch.gear.hand === slot && !!item;
         const ref: ItemRef | null = item ? { owner, slot, item: item.item } : null;
-        // Shut while an armored rig is worn (2026-11-11): it's the chest armor then.
-        const shut =
+        // Shut while an armored rig is worn (2026-11-11): it's the chest armor then; the
+        // headset's while the helmet covers the ears (GZ-2).
+        const by =
           slot === 'bodyArmor' &&
-          !item &&
           !!ch.gear.rig &&
-          isArmoredRig(itemDef(inv.ctx.items, ch.gear.rig.item));
+          isArmoredRig(itemDef(inv.ctx.items, ch.gear.rig.item))
+            ? ch.gear.rig
+            : slot === 'headset' && blocksHeadset(inv.ctx.items, ch.gear.helmet)
+              ? ch.gear.helmet
+              : null;
+        const shut = !item && !!by;
         return (
           <div
             key={slot}
-            className={`inv-slot${WIDE.has(slot) ? ' wide' : CENTER.has(slot) ? (centered ? ' center' : ' half') : ''}${shut ? ' shut' : ''}`}
+            className={`inv-slot${WIDE.has(slot) ? ' wide' : CENTER.has(slot) && centered ? ' center' : centered ? (HEAD_SLOTS[slot] ?? '') : ''}${shut ? ' shut' : ''}`}
             data-drop={JSON.stringify({ owner, slot })}
-            title={shut ? ARMORED_RIG_WORN : undefined}
+            title={shut ? (slot === 'headset' ? EARS_COVERED : ARMORED_RIG_WORN) : undefined}
           >
             {/* Named only while empty: the item's own name would show through it. */}
             {!item && !shut && <span className="inv-slot-name">{SLOT_NAMES[slot]}</span>}
@@ -1287,7 +1446,7 @@ function Slots({
             {shut && (
               <span className="inv-slot-shut">
                 {SLOT_NAMES[slot]}
-                <small>{tileName(itemDef(inv.ctx.items, ch.gear.rig!.item))} worn</small>
+                <small>{tileName(itemDef(inv.ctx.items, by!.item))} worn</small>
               </span>
             )}
             {item && def && ref && (
@@ -1295,7 +1454,9 @@ function Slots({
                 className={`inv-item${inHand ? ' in-hand' : ''}${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${holdsFavorite(item, favs, shown) ? ' favorite' : ''}`}
                 data-ref={JSON.stringify(ref)}
                 title={inHand ? 'In hand' : undefined}
-                data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
+                data-gun={
+                  def.type === 'weapon' || isMagazine(def) ? JSON.stringify(ref) : undefined
+                }
                 data-armor={armorOf(def) ? JSON.stringify(ref) : undefined}
                 style={{ background: tintOf(def) }}
                 onContextMenu={(e) => {
@@ -1305,8 +1466,8 @@ function Slots({
                 onPointerDown={(e) =>
                   inv.drag.down(e.nativeEvent, {
                     ref,
-                    w: def.size[0],
-                    h: def.size[1],
+                    w: itemSize(inv.ctx.items, item)[0],
+                    h: itemSize(inv.ctx.items, item)[1],
                     rotated: false,
                     grabX: 0,
                     grabY: 0,
@@ -1348,7 +1509,7 @@ function GridView({
   const hit = stashPageOf(gref.owner) >= 0 ? search?.hit : null;
   const tile = (g: Grid['items'][number], index: number, ox: number, oy: number) => {
     if (shown && !shown.has(g.item)) {
-      const [sw, sh] = itemDef(inv.ctx.items, g.item.item).size;
+      const [sw, sh] = itemSize(inv.ctx.items, g.item);
       return (
         <div
           key={index}
@@ -1366,15 +1527,16 @@ function GridView({
       );
     }
     const def = itemDef(inv.ctx.items, g.item.item);
-    const w = g.rotated ? def.size[1] : def.size[0];
-    const h = g.rotated ? def.size[0] : def.size[1];
+    const size = itemSize(inv.ctx.items, g.item);
+    const w = g.rotated ? size[1] : size[0];
+    const h = g.rotated ? size[0] : size[1];
     const ref: ItemRef = { ...gref, index, item: g.item.item };
     return (
       <div
         key={index}
         className={`inv-item${inv.isSelected(ref) ? ' selected' : ''}${inv.isPicked(ref) ? ' picked' : ''}${inv.isOpenBag(ref) ? ' open' : ''}${hit && !hit(g.item) ? ' dimmed' : ''}${holdsFavorite(g.item, favs) ? ' favorite' : ''}`}
         data-ref={JSON.stringify(ref)}
-        data-gun={def.type === 'weapon' ? JSON.stringify(ref) : undefined}
+        data-gun={def.type === 'weapon' || isMagazine(def) ? JSON.stringify(ref) : undefined}
         data-armor={armorOf(def) ? JSON.stringify(ref) : undefined}
         style={{
           left: (g.x - ox) * cell,
@@ -1392,8 +1554,8 @@ function GridView({
           const r = e.currentTarget.getBoundingClientRect();
           inv.drag.down(e.nativeEvent, {
             ref,
-            w: def.size[0],
-            h: def.size[1],
+            w: size[0],
+            h: size[1],
             rotated: g.rotated,
             grabX: Math.min(w - 1, Math.floor((e.clientX - r.left) / cell)),
             grabY: Math.min(h - 1, Math.floor((e.clientY - r.top) / cell)),
@@ -1464,12 +1626,12 @@ function ItemArt(props: {
   cell?: number;
   rotated?: boolean;
 }): ReactNode {
-  const { def, cell } = props;
-  const url = itemPortrait(props.items, props.item, def.size);
+  const { cell } = props;
+  const [w, h] = itemSize(props.items, props.item);
+  const url = itemPortrait(props.items, props.item, [w, h]);
   if (!url) return null;
   if (cell === undefined)
     return <img className="inv-art inv-art-fit" src={url} alt="" draggable={false} />;
-  const [w, h] = def.size;
   return (
     <img
       className="inv-art"
@@ -1541,12 +1703,28 @@ function ItemLabel({ items, item, def }: { items: ItemDb; item: Item; def: ItemD
       </>
     );
   }
+  if (isMagazine(def)) {
+    // How full it is (MG-1), and a stripe in its round's tip color (its level's, MG-2), so
+    // AP and flesh rounds read at a glance whatever the magazine's own color.
+    const round = (item.mag ?? 0) > 0 && item.loaded ? roundOf(items, item.loaded) : null;
+    return (
+      <>
+        {round && (
+          <span className="inv-item-stripe" style={{ background: levelColor(round.level) }} />
+        )}
+        <span className="inv-item-name">{tileName(def)}</span>
+        <span className="inv-item-badge inv-item-mag">
+          {item.mag ?? 0}/{def.capacity}
+        </span>
+      </>
+    );
+  }
   // No level tag on ammo and armor tiles (2026-11-09): the tile's rarity color says it.
   return (
     <>
       <span className="inv-item-name">{tileName(def)}</span>
       <span className={armorOf(def) ? 'inv-item-badge inv-item-light' : 'inv-item-badge'}>
-        {badge(item, def)}
+        {carrierBadge(items, item, def) ?? badge(item, def)}
       </span>
     </>
   );
@@ -1593,8 +1771,23 @@ export function tenths(n: number): string {
  * The small text in an item's bottom-right corner: a stack's count, durability, a medkit's
  * HP, a med's or key's uses, a rig's cells or a repair kit's points left (whole numbers)…
  */
+/**
+ * A carrier's tile (GZ-4): its plates' levels front/back ("5/4"), "—" for an empty slot;
+ * with no plate slots, its own soft rating's level; null if it isn't a carrier.
+ */
+function carrierBadge(items: ItemDb, item: Item, def: ItemDef): string | null {
+  const carrier = carrierOf(def);
+  if (!carrier) return null;
+  const level = (p: Item | undefined) => (p ? `${armorStatsOf(items, p.item).level}` : '—');
+  if (!carrier.plates?.length) return softZonesOf(carrier).length ? `${armorOf(def)!.level}` : '—';
+  return carrier.plates.map((s) => level(item.plates?.[s])).join('/');
+}
+
 function badge(item: Item, def: ItemDef): string {
   switch (def.type) {
+    case 'plate':
+    case 'visor':
+      return `${tenths(item.durability ?? 0)}/${tenths(item.max ?? def.durability)}`;
     case 'armor':
       // Out of its max now, which repairs wear down (sim/repair.ts).
       return `${tenths(item.durability ?? 0)}/${tenths(item.max ?? def.durability)}`;

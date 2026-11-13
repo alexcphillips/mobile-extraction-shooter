@@ -1,6 +1,7 @@
 {
   "formatVersion": 3,
   "id": "forklift",
+  "tags": ["vehicle", "industrial"],
   "nodes": [
     {
       "type": "box",

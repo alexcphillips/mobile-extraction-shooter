@@ -1,0 +1,31 @@
+{
+  "formatVersion": 11,
+  "id": "mpx-stock",
+  "name": "MPX tactical stock",
+  "shortName": "Stock",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 3100,
+  "weight": 0.4,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["m416", "mcx-spear", "k10", "mpx"],
+  "stock": {
+    "length": 1
+  },
+  "mods": {
+    "recoil": 0.6,
+    "ergonomics": 1.2,
+    "aimTime": 1.05
+  },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.07], "size": [0.02, 0.03, 0.14], "color": "#2b2e31" },
+      { "type": "box", "pos": [0, -0.015, 0.145], "size": [0.036, 0.09, 0.012], "color": "#1d1f21" }
+    ],
+    "fold": {
+      "pivot": [-0.022, 0, 0],
+      "yaw": 180
+    }
+  }
+}

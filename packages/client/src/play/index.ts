@@ -3,6 +3,9 @@ import {
   startTutorial,
   type CompiledTutorial,
   armorDef,
+  hearingOf,
+  type NightVisionDef,
+  type VisorDef,
   CollisionWorld,
   FixedTimestep,
   GRAPHICS_QUALITY,
@@ -47,6 +50,7 @@ import {
   type Outfit,
   type SpawnRequestEvent,
   type CompiledMap,
+  type ItemDb,
   type RaidDef,
   type PlayerInput,
   type Zone,
@@ -85,7 +89,10 @@ import {
   keptGear,
   objectiveText,
   raidObjectives,
+  type RaidObjectives,
   raidProgress,
+  raidXp,
+  type RaidKillXp,
   startQuests,
   type Profile,
   type SimState,
@@ -105,6 +112,7 @@ import {
   startZombies,
   type Powerup,
   type ZombiesDef,
+  BREATH,
 } from '@mes/shared';
 import * as THREE from 'three';
 import { startLoop } from '../app/loop';
@@ -183,6 +191,8 @@ import { CoopGuest, CoopHost, type CoopOptions, type Welcome } from './coop';
 import { giveUp, skipTutorial } from './give-up';
 import { TutorialCard } from '../hud/tutorial-card';
 import { lootableInReach } from './loot';
+import { showNightVision, showVision } from '../render/vision';
+import { nightVisionOn, resetNightVision, toggleNightVision } from './night-vision';
 
 export interface PlayElements {
   canvas: HTMLCanvasElement;
@@ -332,6 +342,21 @@ function outfitOf(type: EnemyDef, outfit: number): Outfit {
   return outfits[outfit] ?? outfits[0]!;
 }
 
+/**
+ * A co-op guest's quest objectives, less any marker this map lacks or item the host doesn't
+ * know (a guest on other content), so they can't fail the host's raid.
+ */
+function knownObjectives(map: CompiledMap, items: ItemDb, o: RaidObjectives): RaidObjectives {
+  const markers = new Set(map.markers.filter((m) => m.type === 'questMarker').map((m) => m.id));
+  return {
+    investigate: o.investigate.filter((id) => markers.has(id)),
+    extract: o.extract
+      .filter((x) => items.has(x.item))
+      .map((x) => ({ item: x.item, spots: x.spots.filter((id) => markers.has(id)) }))
+      .filter((x) => x.spots.length > 0),
+  };
+}
+
 function zombiesRaid(def: ZombiesDef): RaidDef {
   return {
     formatVersion: RAID_FORMAT_VERSION,
@@ -360,7 +385,19 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let guest: CoopGuest | null = null;
   let welcome: Welcome | null = null;
   if (coop?.role === 'guest') {
-    ({ guest, welcome } = await CoopGuest.connect(coop, coop.name, options.profile.gear, status));
+    // Your quests are set up by the host, on your character: tell it what they want here.
+    const objectives = raidObjectives(
+      options.profile,
+      loadQuests().values(),
+      loadRaid(options.raid).map,
+    );
+    ({ guest, welcome } = await CoopGuest.connect(
+      coop,
+      coop.name,
+      options.profile.gear,
+      objectives,
+      status,
+    ));
     status('');
   }
   const zombiesMode = options.zombies ?? null;
@@ -389,7 +426,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     antialias: graphics().antialias,
     powerPreference: 'high-performance',
   });
-  const pixelRatio = (): number => Math.min(window.devicePixelRatio, graphics().pixelRatio);
+  // Night vision's softness draws the scene at a lower resolution (GZ-5): cheaper, not dearer.
+  let nvScale = 1;
+  const pixelRatio = (): number =>
+    Math.min(window.devicePixelRatio, graphics().pixelRatio) * nvScale;
   renderer.setPixelRatio(pixelRatio());
   // Landmarks past the fog, the world over them, then the gun over it, depth cleared
   // between each, so the gun never pokes into walls.
@@ -691,7 +731,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const rx = Math.cos(spawn.yaw);
     const rz = -Math.sin(spawn.yaw);
     const admitted = await host.admit(
-      (_name, gear, i) => {
+      (_name, join, i) => {
         const side = (i % 2 ? -1 : 1) * (Math.floor(i / 2) + 1) * 0.9;
         const c = spawnCharacter(
           sim,
@@ -701,10 +741,14 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
           spawn.yaw,
           spawn.y + 0.5,
         );
-        c.gear = structuredClone(gear);
+        c.gear = structuredClone(join.gear);
         markBrought(c);
         // Beside you, from your spawn: the same extractions as yours.
         openExtractions(sim, c, spawn);
+        // Their quests' markers and items, as for yours. A marker this map lacks (the
+        // guest on other content) is dropped rather than failing the raid.
+        if (join.quests && !zombiesMode && !tutorialMode)
+          startQuests(sim, map, items, c.id, knownObjectives(map, items, join.quests));
         return c;
       },
       { spawn: spawn.id, host: player, name: coop.name },
@@ -930,6 +974,23 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let maskFor: string | null = null;
   maskEl.classList.remove('on');
   sounds().setMuffle(null);
+  // GZ-2: what the helmet takes of the view (one element over the screen, set when the
+  // helmet changes, so nothing per frame), and how well the head's gear hears.
+  const helmetEl = document.getElementById('helmet-view') ?? document.createElement('div');
+  helmetEl.id = 'helmet-view';
+  maskEl.after(helmetEl);
+  helmetEl.classList.remove('on');
+  let hearFor = '';
+  let viewFor = '';
+  sounds().setHearing(0);
+  // GZ-5: night vision, switched by the player (N, or the helmet's details), drawn while on
+  // and goggles are fitted.
+  const nvEl = document.getElementById('nv-view') ?? document.createElement('div');
+  nvEl.id = 'nv-view';
+  helmetEl.after(nvEl);
+  let nvFor: string | null = null;
+  showNightVision(nvEl, null);
+  resetNightVision();
 
   // Debug actions: hurt me, heal me; on screen and keys 7 and 8.
   if (options.debug) {
@@ -952,6 +1013,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let screen: RaidScreenHandle | null = null;
   let opening = false;
   let screenOpen = false;
+  // Packing magazines last frame (MG-2): it starts by letting go of a toggled aim.
+  let wasPacking = false;
   // What the open screen shows beside your gear (a container or body is searched while open).
   let openTarget: Owner | null = null;
   const pending: InventoryAction[] = [];
@@ -1026,6 +1089,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let kills = resume?.kills ?? 0;
   /** Who you killed and when, oldest first (for the results' kill list). */
   const killList: RaidKill[] = resume?.killList ?? [];
+  /** Your kills' enemy types and headshots, for PMC XP (2026-11-11). */
+  const xpKills: RaidKillXp[] = resume?.xpKills ?? [];
+  /** Containers you searched first, for PMC XP. */
+  let searched = resume?.searched ?? 0;
   /** The enemy type that killed you, if one did. */
   let killedBy: string | null = null;
   /** What hurt you, for the results screen after a death. */
@@ -1137,6 +1204,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       keptGear(structuredClone(player.gear), keepAll),
     );
     const isQuestItem = (i: Item): boolean => itemDef(items, i.item).type === 'quest';
+    // What the server will give, worked out the same way (xp.ts).
+    const xp = raidXp(how, seconds, xpKills, searched, types);
     ended = {
       how,
       detail,
@@ -1153,16 +1222,20 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       fight: fightOf(),
       ...(how === 'killed' ? { combat: combatOf(), killedBy: killedBy ?? detail } : {}),
       keptAll: keepAll,
+      xp: { ...xp, before: options.profile.xp },
     };
-    // Sent now, as it is: the server keeps what the outcome allows.
+    // Sent now, as it is: the server keeps what the outcome allows. A run-through brings
+    // nothing new out found in raid.
     const gear = JSON.parse(JSON.stringify(player.gear)) as Gear;
-    settleFound(gear);
+    settleFound(gear, xp.runThrough);
     if (!options.test) {
       saveResult(options.serverRaid, {
         how,
         gear,
         seconds,
         kills,
+        killed: xpKills,
+        searched,
         detail,
         investigated,
         ...(cheats.keepGear ? { keepGear: true } : {}),
@@ -1257,6 +1330,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       player: player.id,
       kills,
       killList,
+      xpKills,
+      searched,
       taken,
       fight,
       sim,
@@ -1306,9 +1381,12 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.lean = controls.lean;
     input.jump = controls.jump;
     input.fire = fire;
+    if (!!player.packing && !wasPacking) controls.dropAim();
+    wasPacking = !!player.packing;
     input.aim = controls.aim;
     input.thumb = !inputMode.desktop;
     input.reload = controls.reload;
+    input.quickReload = controls.quickReload;
     input.draw = controls.draw ?? (controls.swapPrimary ? otherPrimary(player.gear) : null);
     if (input.draw && input.draw !== player.gear.hand && holdsDeathMachine(sim, player))
       el.raidHud.warn('Not while you hold the minigun', performance.now());
@@ -1316,6 +1394,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.grenade = hands.grenadeChoice;
     input.detonate = controls.detonate;
     input.extinguish = controls.extinguish;
+    input.breathe = controls.breathe;
     if (controls.throwPick && !dead) hands.showGrenadePicker(player, items);
     // A tap on the heal button uses what it shows, or stops a med being used.
     input.use = controls.heal ? (player.using ? 'cancel' : hands.choice) : picked;
@@ -1432,10 +1511,13 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       if (dead) closeScreen();
       input.moveX = input.moveY = 0;
       input.sprint = input.jump = input.fire = input.aim = input.reload = false;
+      input.quickReload = false;
       input.throw = input.detonate = false;
     }
     // Jumping lets go of a ladder, and ends sprint lock with it.
     if (controls.jump && player.mode === 'ladder') controls.unlockSprint();
+    // A sprint lock that runs dry drops to a walk (BW-4).
+    if (player.winded) controls.unlockSprint();
 
     if (guest) {
       // A guest's hurt and heal would be undone by the host's next tick.
@@ -1621,6 +1703,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       } else if (e.type === 'death' && e.by === player.id && e.target !== player.id) {
         kills++;
         killList.push({ name: names.get(e.target) ?? 'Unknown', tick: sim.tick });
+        const enemy = entityById(sim, e.target)?.look?.type;
+        if (enemy) xpKills.push(e.head ? { enemy, head: true } : { enemy });
+      } else if (e.type === 'search' && e.by === player.id) {
+        searched++;
       } else if (e.type === 'death' && e.target === player.id) {
         killedBy = names.get(e.by) ?? null;
         if (e.by !== 0 && e.by !== player.id) killerId = e.by;
@@ -1756,10 +1842,23 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     }
     // Spectating, the HUD shows the teammate you watch: their limbs, gun and rounds (the
     // user's call, 2026-11-06).
-    el.vitals.update(watching ?? player, items);
+    el.vitals.update(watching ?? player, items, sim);
     el.raidHud.update(sim, player, ended !== null);
     const flipping = player.switching;
     el.raidHud.setUse(flipping ? flipping.held / world.switches[flipping.index]!.useTime : null);
+    // Held breath left, while aimed and not full (BW-1).
+    const breather = watching ?? player;
+    const breath = breather.breath ?? BREATH.hold;
+    el.raidHud.setBreath(
+      !breather.health.dead && breather.aim >= 0.5 && breath < BREATH.hold
+        ? breath / BREATH.hold
+        : null,
+    );
+    // Stamina, while not full (BW-4).
+    el.raidHud.setStamina(
+      !breather.health.dead && breather.stamina !== undefined ? breather.stamina : null,
+      !!breather.winded,
+    );
     // The item the use button would take: lit up, and named under the crosshair. Picking
     // one up this tick may have moved the rest along the list.
     const onGround = lootable?.kind === 'ground' && sim.ground[lootable.index] === lootable.g;
@@ -2019,6 +2118,41 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       maskEl.classList.toggle('on', !!mask?.edge);
       if (mask?.edge) maskEl.style.setProperty('--edge', `${mask.edge * 100}%`);
       sounds().setMuffle(mask?.muffle ?? null);
+    }
+    // The helmet's view with a visor's over it and its cracks (GZ-5), redrawn as it wears
+    // by a crack at a time, so rarely.
+    const fitted = alive && !ended ? v.gear.helmet?.fitted : undefined;
+    const visor = fitted && items.get(fitted.item)?.type === 'visor' ? fitted : undefined;
+    const visorDef = visor ? (items.get(visor.item) as VisorDef) : undefined;
+    const wear = visor && visorDef ? 1 - (visor.durability ?? 0) / visorDef.durability : 0;
+    const viewKey = `${helmet} ${visor?.item} ${Math.round(wear * 14)}`;
+    if (viewKey !== viewFor) {
+      viewFor = viewKey;
+      const own = helmet ? armorDef(items, helmet).vision : undefined;
+      const vv = visorDef?.vision;
+      showVision(helmetEl, {
+        vignette: Math.max(own?.vignette ?? 0, vv?.vignette ?? 0),
+        shape: vv?.shape ?? own?.shape,
+        cracks: visor ? { seed: visor.seed ?? 1, wear } : undefined,
+      });
+    }
+    if (controls.nightVision) toggleNightVision();
+    const goggles =
+      nightVisionOn() && fitted && items.get(fitted.item)?.type === 'nightVision'
+        ? (items.get(fitted.item) as NightVisionDef)
+        : null;
+    if ((goggles?.id ?? null) !== nvFor) {
+      nvFor = goggles?.id ?? null;
+      showNightVision(nvEl, goggles);
+      renderer.domElement.style.filter = goggles ? `brightness(${goggles.gain})` : '';
+      nvScale = goggles ? 1 - 0.6 * goggles.softness : 1;
+      renderer.setPixelRatio(pixelRatio());
+      resize();
+    }
+    const head = alive && !ended ? `${helmet} ${v.gear.headset?.item ?? ''}` : '';
+    if (head !== hearFor) {
+      hearFor = head;
+      sounds().setHearing(alive && !ended ? hearingOf(items, v.gear) : 0);
     }
     // In a smoke cloud: grayer the deeper in, so being inside one hides the world too.
     let veil = 0;

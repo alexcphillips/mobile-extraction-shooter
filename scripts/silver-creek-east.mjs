@@ -5,11 +5,11 @@
 // tanker on the highway (truck-3), roadworks by the east extract, and cover across the slope
 // and the yard.
 //
-// Claude's calls, easy to change; the reasons are in docs/design/raids-and-maps.md → Silver
-// Creek (the east end). World coordinates throughout: x east, z south, y up. The valley floor
+// Claude's calls, easy to change; the reasons are in docs/design/maps/silver-creek.md
+// (the east end). World coordinates throughout: x east, z south, y up. The valley floor
 // here is flat at y 0; the ridge slope rises north of z 36.
 
-import { buildingKit } from './silver-creek-kit.mjs';
+import { buildingKit } from './mapkit/building.mjs';
 
 /**
  * h: the generator's helpers (box, drawn, group, prefab, along, label, C, r2, groundAt,

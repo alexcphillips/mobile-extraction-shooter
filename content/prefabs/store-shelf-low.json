@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "store-shelf-low",
   "name": "Low store shelf",
+  "tags": ["store"],
   "colors": {
     "body": "#d7d9d8",
     "goods-a": "#b8413a",

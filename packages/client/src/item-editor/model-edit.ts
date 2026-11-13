@@ -40,6 +40,12 @@ export function setSlots(doc: Doc, slots: readonly AttachmentSlot[]): void {
   if (Object.keys(ordered).length) model.mounts = ordered;
   else delete model.mounts;
   for (const p of model.parts) if (p.hiddenBy && !next.includes(p.hiddenBy)) delete p.hiddenBy;
+  // What it comes with, and a folding stock mount, go with their slots (WF-1).
+  const defaults = doc.defaults as Record<string, unknown> | undefined;
+  for (const s of Object.keys(defaults ?? {}))
+    if (!next.includes(s as AttachmentSlot)) delete defaults![s];
+  if (defaults && !Object.keys(defaults).length) delete doc.defaults;
+  if (!next.includes('stock')) delete model.stockFold;
 }
 
 /** After an attachment's slot changes: an optic has a sight point, a muzzle device a muzzle. */

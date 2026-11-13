@@ -1,5 +1,5 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "smartphone",
   "name": "Smartphone",
   "shortName": "Phone",
@@ -7,6 +7,7 @@
   "category": "Electronics",
   "size": [1, 1],
   "value": 5000,
+  "weight": 0.2,
   "rarity": "rare",
   "model": {
     "parts": [

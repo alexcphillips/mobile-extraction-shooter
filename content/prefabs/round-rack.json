@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "round-rack",
   "name": "Round clothes rack",
+  "tags": ["store"],
   "colors": {
     "pole": "#3d4148",
     "cloth": "#b05a7a"

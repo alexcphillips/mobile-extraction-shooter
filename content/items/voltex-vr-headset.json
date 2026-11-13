@@ -1,10 +1,11 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "voltex-vr-headset",
   "name": "VOLTEX VR headset",
   "type": "loot",
   "size": [2, 1],
   "value": 1000,
+  "weight": 0.6,
   "rarity": "legendary",
   "model": {
     "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]

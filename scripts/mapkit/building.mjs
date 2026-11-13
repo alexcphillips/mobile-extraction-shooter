@@ -1,14 +1,19 @@
-// Building helpers shared by the Silver Creek scripts (moved out of silver-creek-west.mjs
-// for MT-7, 2026-11-10): walls with openings, doors, windows, gabled roofs, house shells,
-// slabs with holes and porches. Built in a local frame; see silver-creek-west.mjs for the
-// house-building rules (wall thicknesses, door and window sizes).
+// Building pieces (moved out of silver-creek-west.mjs for MT-7, 2026-11-10; into the map
+// kit for MK-6, 2026-11-12): walls with openings, doors, windows, gabled roofs, house shells,
+// slabs with holes and porches. Built in a local frame (frame.mjs places it); see
+// silver-creek-west.mjs for the house-building rules (wall thicknesses, door and window sizes).
+import * as base from './nodes.mjs';
 
 export const WIN = { bottom: 0.9, top: 2.0 };
 export const DOOR_H = 2.1;
 
-/** The helpers, given the generator's (box, drawn, along, C, r2). */
+/**
+ * The pieces, given the map's colors `C` (glass, timber-dark, dark-concrete, floorboards,
+ * trim, plaster, timber, roof as each piece uses them). box, drawn, along and r2 default to
+ * the kit's own.
+ */
 export function buildingKit(h) {
-  const { box, drawn, along, C, r2 } = h;
+  const { C, box = base.box, drawn = base.drawn, along = base.along, r2 = base.r2 } = h;
   /** A wall along x at z; openings by their x (`at`). Outer walls 0.2, partitions 0.15. */
   const wX = (id, x0, x1, z, bottom, top, color, ops = [], thick = 0.2) => ({
     type: 'wall',

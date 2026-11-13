@@ -1,0 +1,33 @@
+{
+  "formatVersion": 11,
+  "id": "aug-a3-mag",
+  "name": "AUG A3 30-round magazine",
+  "shortName": "AUG A3 30",
+  "type": "attachment",
+  "size": [1, 2],
+  "value": 2500,
+  "weight": 0.15,
+  "rarity": "common",
+  "slot": "magazine",
+  "weapons": ["aug-a3"],
+  "capacity": 30,
+  "caliber": "5.56x45",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.04, 0],
+        "size": [0.028, 0.08, 0.065],
+        "color": "#3a3e3b",
+        "pitch": 8
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.103, -0.023],
+        "size": [0.028, 0.06, 0.06],
+        "color": "#3a3e3b",
+        "pitch": 20
+      }
+    ]
+  }
+}

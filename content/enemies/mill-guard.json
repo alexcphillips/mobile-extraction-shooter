@@ -3,6 +3,7 @@
   "id": "mill-guard",
   "name": "Mill guard",
   "faction": "boss",
+  "xp": 150,
   "loadout": "mill-guard-kit",
   "skill": {
     "reaction": 0.45,

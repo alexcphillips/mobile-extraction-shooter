@@ -1,7 +1,9 @@
 import type { EnemySkill, Faction } from '../content/enemies';
 import {
+  carrierOf,
   grenadeDef,
   grenadeEffect,
+  itemDef,
   weaponDef,
   type GrenadeDef,
   type ItemDb,
@@ -23,7 +25,7 @@ import {
   throwable,
   type Grenade,
 } from './grenades';
-import { HEALTH, LEFT_ARM, RIGHT_LEG, TOTAL_HP, totalHp } from './health';
+import { HEALTH, LEFT_ARM, RIGHT_LEG, TOTAL_HP, isLimb, totalHp, type Zone } from './health';
 import { zoneToTreat, type MedRef } from './meds';
 import { createCharacterHit, raycastCharacters } from './hit-zones';
 import { MOVEMENT } from './movement';
@@ -37,8 +39,9 @@ import {
   type PlayerInput,
   type SimState,
 } from './state';
-import { QUICK_GRIDS, carriedGrid, heldWeapon } from './gear';
-import { createWeaponStats, reloadRound, weaponStats } from './weapons';
+import { QUICK_GRIDS, carriedGrid, chestArmor, heldWeapon } from './gear';
+import { canReload, createWeaponStats, weaponStats } from './weapons';
+import { loadNoise } from './weight';
 import {
   ROUTES,
   chooseExtraction,
@@ -229,6 +232,11 @@ export const AI = {
    * Its aim wanders aimVertical as much up and down as across. Measured standing in the open
    * (PMC at 10 / 15 / 25 m): chest 84 / 70 / 43%, arms 16 / 25 / 45%, head 0 / 5 / 13%, legs
    * none (were 0 / 8 / 18%, aiming at 0.6 with 0.7 vertical wander).
+   * GZ-3 (2026-11-12, client/src/shots-to-kill.measure.test.ts: a PMC's AKM on someone
+   * standing still facing it, hits that landed, at 10 / 25 / 50 m): thorax 30 / 41 / 38%,
+   * stomach 17 / 9 / 13%, face 13 / 18 / 7%, head 9 / 2 / 4%, arms 27 / 26 / 33%, legs 5 / 4 /
+   * 5%. Kept here, over the thorax: aiming at the middle of the torso (0.65) put a fifth of
+   * hits in the legs and took twice the hits to kill through a plate carrier.
    */
   aimHeight: 0.75,
   aimVertical: 0.45,
@@ -1060,7 +1068,7 @@ export function updateAi(
       if ((state.tick + c.id) % AI.perceiveEvery === 0) {
         // Passive (the tutorial's scav, TU-2): nothing is noticed until it's hit.
         if (!ai.passive) look(state, c, ai, world, nav);
-        if (!ai.deaf && !ai.passive) listenForSteps(state, c, ai);
+        if (!ai.deaf && !ai.passive) listenForSteps(state, c, ai, items);
         if (ai.skill.listen && !ai.deaf && !ai.passive) listenForHands(state, c, ai);
         if (ai.squad !== undefined) shareTarget(state, c, ai);
         if (ai.quarry) track(state, c, ai);
@@ -1073,7 +1081,9 @@ export function updateAi(
       behave(state, c, ai, world, items, nav);
       // Out of a fight, it tops its magazine up from what it carries (2026-11-08: PMCs
       // walked into the next fight half empty and ran dry).
-      if (ai.awareness === 'unaware' && !c.using && !ai.zombie) reloadIfLow(c, items, 1);
+      // Its magazines fill as they go in (MG-4, weapons.ts: magRounds), so one is always
+      // full while it has loose rounds; no packing.
+      if (ai.awareness === 'unaware' && !c.using && !ai.zombie) reloadIfLow(state, c, items, 1);
       if (ai.voiced) breathe(state, c, ai);
     }
     // A closed door on the way to the next waypoint opens as it gets there; Jug, alert,
@@ -1456,17 +1466,28 @@ export function exposedSpawns(
 }
 
 /**
+ * How much further a character's footsteps carry for its chest armor (GZ-4: a carrier's
+ * noise) and, a player's, for its load (BW-3): quieter light, louder heavy.
+ */
+function stepNoise(items: ItemDb, e: Character): number {
+  const chest = chestArmor(items, e.gear);
+  const carrier = (chest && carrierOf(itemDef(items, chest.item))?.noise) || 1;
+  return carrier * (e.ai || e.load === undefined ? 1 : loadNoise(e.load));
+}
+
+/**
  * Footsteps: sprinting and walking are heard nearby; crouching is silent. Players' only:
  * enemies don't go looking for each other (AI rework session 1), they fight on sight.
  */
-function listenForSteps(state: SimState, c: Character, ai: AiState): void {
+function listenForSteps(state: SimState, c: Character, ai: AiState, items: ItemDb): void {
   for (const e of state.entities) {
     if (e.ai || e.health.dead || e.admin?.peaceful || e.mode !== 'ground') continue;
     if (e.height < MOVEMENT.standHeight - 0.1) continue;
     const speed = Math.hypot(e.vx, e.vz);
     const range =
       (speed > MOVEMENT.walkSpeed + 0.5 ? AI.sprintSteps : speed > 1 ? AI.walkSteps : 0) *
-      (ai.skill.hearing ?? 1);
+      (ai.skill.hearing ?? 1) *
+      stepNoise(items, e);
     const d = Math.hypot(e.x - c.x, e.y - c.y, e.z - c.z);
     if (d > range) continue;
     if (ai.awareness === 'alert') {
@@ -1567,6 +1588,17 @@ function hearEvents(
     }
     if (ev.type === 'explosion') {
       heardExplosion(state, c, ai, world, ev.x, ev.y, ev.z, ev.loudness * scale, ev.by);
+      continue;
+    }
+    if (ev.type === 'pain') {
+      // A player's blacked stomach groaning (GZ-3): heard as far as sprinting footsteps,
+      // walls or not, and placed as they are. Enemies' groans are for players only.
+      const by = entityById(state, ev.by);
+      if (!by || by.ai || by.health.dead || by.admin?.peaceful) continue;
+      const d = Math.hypot(by.x - c.x, by.y - c.y, by.z - c.z);
+      if (d > AI.sprintSteps * (ai.skill.hearing ?? 1)) continue;
+      if (ai.awareness !== 'alert') heardAt(state, c, ai, by, d, true);
+      else if (by.id === ai.target) setFocus(ai, by.x, by.y, by.z);
       continue;
     }
     if (ev.type === 'glass') {
@@ -2196,7 +2228,7 @@ function behave(
         const across = Math.hypot(ai.focusX - c.x, ai.focusZ - c.z);
         facePitch = Math.atan2(ai.focusY + AI.watchHeight - eyeHeight(c), across);
         ai.input.aim = true;
-        reloadIfLow(c, items, 1);
+        reloadIfLow(state, c, items, 1);
         if (ai.timer <= 0) {
           ai.activity = 'creep';
           ai.hasGoal = false;
@@ -2338,7 +2370,7 @@ function behave(
         }
         faceYaw = yawTo(c, ai.focusX, ai.focusZ);
         // Topping up on the way only out of sight: a reload stops it firing.
-        if (!sees) reloadIfLow(c, items, 1);
+        if (!sees) reloadIfLow(state, c, items, 1);
         // A PMC sprints there (AI rework session 5), turning to face you for the last of it;
         // seeing its target, it walks there firing instead (2026-11-08).
         const sprint =
@@ -2383,7 +2415,7 @@ function behave(
       case 'cover':
         faceYaw = yawTo(c, ai.focusX, ai.focusZ);
         ai.input.crouch = ai.coverLow;
-        reloadIfLow(c, items, 1);
+        reloadIfLow(state, c, items, 1);
         // Time in cover. Once it has crouched and looked again, still seeing its target
         // means it's seen from somewhere else: this cover is no good.
         ai.exposed += DT;
@@ -2484,7 +2516,7 @@ function behave(
         const across = Math.hypot(ai.focusX - c.x, ai.focusZ - c.z);
         facePitch = Math.atan2(ai.focusY + 1.2 - eyeHeight(c), across);
         ai.input.aim = true;
-        reloadIfLow(c, items, 1);
+        reloadIfLow(state, c, items, 1);
         if (ai.timer <= 0) searchOrReturn(state, c, ai);
         break;
       }
@@ -2510,7 +2542,7 @@ function behave(
         const across = Math.hypot(ai.wayX - c.x, ai.wayZ - c.z);
         facePitch = Math.atan2(ai.wayY + 1 - eyeHeight(c), across);
         ai.input.aim = true;
-        reloadIfLow(c, items, 1);
+        reloadIfLow(state, c, items, 1);
         if (
           ai.timer <= 0 &&
           randomSpotNear(state, c, nav, ai.wayX, ai.wayY, ai.wayZ, AI.loiterRadius)
@@ -2855,7 +2887,7 @@ function pickMed(c: Character, items: ItemDb): MedRef | null {
   let low = totalHp(h) < TOTAL_HP * HEAL.hpShare;
   for (let z = 0; z < h.hp.length; z++) {
     if (h.bleeding[z]) bleeding = true;
-    if (z >= LEFT_ARM && h.hp[z]! <= 0 && !h.splinted[z]) broken = true;
+    if (isLimb(z as Zone) && h.hp[z]! <= 0 && !h.splinted[z]) broken = true;
     if (h.hp[z]! > 0 && h.hp[z]! < HEALTH.maxHp[z]! * HEAL.zoneShare) low = true;
   }
   // A medkit only mends a zone with HP left (a broken limb is down to 0).
@@ -3123,7 +3155,7 @@ function raging(
       aimAt(state, c, ai, r.x, ty, r.z);
       const w = heldWeapon(c);
       if (w) {
-        reloadIfLow(c, items, 0);
+        reloadIfLow(state, c, items, 0);
         ai.input.fire =
           w.mag > 0 &&
           w.reloading === 0 &&
@@ -3619,7 +3651,7 @@ function suppress(
   ai.aimError = settled + (ai.aimError - settled) * Math.exp(-DT / ai.skill.aimSettle);
   aimAt(state, c, ai, tx, ty, tz);
   ai.input.aim = across > AI.aimDownRange;
-  reloadIfLow(c, items, 0.3);
+  reloadIfLow(state, c, items, 0.3);
   const ready =
     w.mag > 0 &&
     w.reloading === 0 &&
@@ -4697,7 +4729,7 @@ function fight(
   aimAt(state, c, ai, tx, ty, tz);
   input.aim = sees && across > AI.aimDownRange;
   // Jug empties his drum before reloading (AI-8): volume of fire.
-  reloadIfLow(c, items, sees || ai.skill.charge ? 0 : 0.5);
+  reloadIfLow(state, c, items, sees || ai.skill.charge ? 0 : 0.5);
 
   const ready =
     sees &&
@@ -4801,9 +4833,9 @@ function sidestep(state: SimState, c: Character, ai: AiState, nav: NavGrid): boo
 }
 
 /** Reloads when the magazine is below this fraction of full (0: only when empty). */
-function reloadIfLow(c: Character, items: ItemDb, fraction: number): void {
+function reloadIfLow(state: SimState, c: Character, items: ItemDb, fraction: number): void {
   const w = heldWeapon(c);
-  if (!w || w.reloading > 0 || reloadRound(c, items, w) === null) return;
+  if (!w || w.reloading > 0 || !canReload(state, c, items, w)) return;
   const full = weaponStats(items, w, gunStats).magazine;
   if (w.mag === 0 || w.mag < full * fraction) c.ai!.input.reload = true;
 }

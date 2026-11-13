@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "shed",
   "name": "Shed",
+  "tags": ["home", "structure"],
   "building": { "size": [6.0, 4.5] },
   "colors": {
     "siding": "#a8a090",

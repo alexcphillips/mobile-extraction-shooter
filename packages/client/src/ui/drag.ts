@@ -30,6 +30,16 @@ export interface LoadOn {
   load: ItemRef;
 }
 
+/** Onto a helmet, to fit the visor or goggles dropped (GZ-5). */
+export interface MountOn {
+  mount: ItemRef;
+}
+
+/** Onto a carrier, to put the plate dropped in (GZ-4). */
+export interface PlateOn {
+  plateInto: ItemRef;
+}
+
 /**
  * Something items can be dropped on. Its element has a data-drop attribute describing it,
  * which the host turns into this.
@@ -44,6 +54,10 @@ export type DropZone =
   | { kind: 'into'; owner: Owner }
   /** A repair kit onto armor (an element with a data-armor attribute). */
   | { kind: 'repair'; armor: ItemRef }
+  /** A visor or night vision goggles onto a helmet with the mount (GZ-5, data-armor too). */
+  | { kind: 'mount'; helmet: ItemRef }
+  /** A plate onto a carrier with a plate slot (GZ-4, data-armor too). */
+  | { kind: 'plate'; carrier: ItemRef }
   /** Rounds onto a gun that fires them (an element with a data-gun attribute). */
   | { kind: 'load'; gun: ItemRef };
 
@@ -81,7 +95,10 @@ export interface DragHost {
   armorZone: (src: DragSource, armor: ItemRef) => DropZone | null;
   /** Whether the item may drop on a zone there (x, y: the top-left cell for a grid). */
   canDrop: (src: DragSource, zone: DropZone, x: number, y: number, rotated: boolean) => boolean;
-  drop: (src: DragSource, to: Target | PartSlot | Into | RepairOn | LoadOn) => void;
+  drop: (
+    src: DragSource,
+    to: Target | PartSlot | Into | RepairOn | LoadOn | MountOn | PlateOn,
+  ) => void;
   /** Let go over a zone that won't take it: to say why, if there's a reason worth it. */
   refused?: (src: DragSource, zone: DropZone) => void;
   tap: (src: DragSource) => void;
@@ -284,9 +301,13 @@ export class DragController {
                 ? { into: z.owner }
                 : z.kind === 'repair'
                   ? { repair: z.armor }
-                  : z.kind === 'load'
-                    ? { load: z.gun }
-                    : { gun: z.gun, slot: z.slot },
+                  : z.kind === 'mount'
+                    ? { mount: z.helmet }
+                    : z.kind === 'plate'
+                      ? { plateInto: z.carrier }
+                      : z.kind === 'load'
+                        ? { load: z.gun }
+                        : { gun: z.gun, slot: z.slot },
       );
     } else if (hover) {
       this.host.refused?.(src, hover.zone);

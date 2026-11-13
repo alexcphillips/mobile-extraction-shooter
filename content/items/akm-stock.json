@@ -1,0 +1,45 @@
+{
+  "formatVersion": 11,
+  "id": "akm-stock",
+  "name": "AKM wooden stock",
+  "shortName": "Stock",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 2900,
+  "weight": 0.4,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["akm", "ak-74m", "saiga-12", "rpk-16"],
+  "stock": {
+    "length": 1
+  },
+  "mods": {
+    "recoil": 0.75,
+    "ergonomics": 1.05
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0.13],
+        "size": [0.04, 0.07, 0.26],
+        "color": "#7a4524",
+        "pitch": 8
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.042, 0.215],
+        "size": [0.038, 0.06, 0.09],
+        "color": "#7a4524",
+        "pitch": 8
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.025, 0.263],
+        "size": [0.042, 0.112, 0.012],
+        "color": "#1d1f21",
+        "pitch": 8
+      }
+    ]
+  }
+}

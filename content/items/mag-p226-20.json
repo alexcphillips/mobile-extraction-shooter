@@ -1,16 +1,18 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "mag-p226-20",
   "name": "P226 20-round magazine",
   "shortName": "P226 20",
   "type": "attachment",
   "size": [1, 1],
   "value": 3000,
+  "weight": 0.12,
   "rarity": "common",
   "slot": "magazine",
   "weapons": ["p226"],
+  "capacity": 20,
+  "caliber": "9x19",
   "mods": {
-    "magazine": 5,
     "reloadTime": 1.05
   },
   "model": {

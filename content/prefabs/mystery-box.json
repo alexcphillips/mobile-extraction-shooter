@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "mystery-box",
   "name": "Mystery box",
+  "tags": ["leisure"],
   "colors": {
     "wood-dark": "#5a5148",
     "paint": "#3b2a55",

@@ -3,6 +3,7 @@
   "id": "pmc",
   "name": "PMC",
   "faction": "pmc",
+  "xp": 100,
   "loadout": "pmc-kit",
   "skill": {
     "reaction": 0.45,

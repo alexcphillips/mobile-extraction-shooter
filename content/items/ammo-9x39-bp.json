@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-9x39-bp",
   "name": "9×39 mm BP",
   "shortName": "9x39 BP",
   "type": "ammo",
   "size": [1, 1],
   "value": 450,
+  "weight": 0.023,
   "rarity": "legendary",
   "stack": 50,
   "caliber": "9x39",

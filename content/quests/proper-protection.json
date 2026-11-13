@@ -9,6 +9,7 @@
   "rewards": {
     "money": 40000,
     "items": [{ "item": "tactical-vest" }],
-    "rep": 0.4
+    "rep": 0.4,
+    "xp": 3000
   }
 }

@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "warehouse-rack",
   "name": "Warehouse pallet rack",
+  "tags": ["industrial"],
   "colors": {
     "steel": "#3f6496",
     "steel-dark": "#2c4668",

@@ -1,0 +1,37 @@
+{
+  "formatVersion": 11,
+  "id": "ump45-stock",
+  "name": "UMP 45 polymer stock",
+  "shortName": "Stock",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 2200,
+  "weight": 0.4,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["ump45"],
+  "stock": {
+    "length": 1
+  },
+  "mods": {
+    "recoil": 0.7,
+    "ergonomics": 1.1
+  },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.09], "size": [0.03, 0.02, 0.18], "color": "#262626" },
+      {
+        "type": "box",
+        "pos": [0, -0.06, 0.09],
+        "size": [0.03, 0.02, 0.18],
+        "color": "#262626",
+        "pitch": 4
+      },
+      { "type": "box", "pos": [0, -0.03, 0.18], "size": [0.036, 0.1, 0.012], "color": "#1d1f21" }
+    ],
+    "fold": {
+      "pivot": [0.022, 0, 0],
+      "yaw": 180
+    }
+  }
+}

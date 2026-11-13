@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-9mm-pbp",
   "name": "9 mm PBP",
   "shortName": "9mm PBP",
   "type": "ammo",
   "size": [1, 1],
   "value": 110,
+  "weight": 0.008,
   "rarity": "epic",
   "stack": 60,
   "caliber": "9x19",

@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "armor-repair-kit",
   "name": "Armor repair kit",
   "shortName": "Repair kit",
   "type": "repair",
   "size": [2, 1],
   "value": 12000,
+  "weight": 1.5,
   "rarity": "rare",
   "points": 60,
   "useTime": 8,

@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "treadmill",
   "name": "Treadmill",
+  "tags": ["leisure"],
   "colors": {
     "deck": "#2b2d33",
     "frame": "#7f868a"

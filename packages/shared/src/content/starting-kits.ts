@@ -14,6 +14,8 @@ const stackOf = z.strictObject({
   item: idSchema,
   /** For items that stack; defaults to 1. */
   count: z.int().min(1).optional(),
+  /** A magazine's round (MG-1): it comes full of it. Left out, it comes empty. */
+  loaded: idSchema.optional(),
 });
 
 export const startingKitSchema = z.strictObject({

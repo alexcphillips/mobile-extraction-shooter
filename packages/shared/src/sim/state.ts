@@ -1,5 +1,6 @@
 import { createRng, type Rng } from '../rng';
 import type { AiState, CalloutEvent, VoiceEvent } from './ai';
+import type { PainEvent } from './health';
 import type { CollisionWorld } from '../world/collision-world';
 import { createGear, type Gear, type Hand } from './gear';
 import type { DoorEvent, DoorState } from './doors';
@@ -11,6 +12,7 @@ import type { GroundItem } from './ground';
 import { createHealth, type DamageEvent, type DeathEvent, type Health } from './health';
 import type { InventoryAction, InventoryEvent, LootContainer, SearchEvent } from './looting';
 import type { MedRef, MedUse } from './meds';
+import type { Packing } from './packing';
 import type { SwingEvent } from './melee';
 import { MOVEMENT } from './movement';
 import type { InvestigateEvent, LeaveEvent, LeftRaid, RaidState } from './raid';
@@ -133,6 +135,27 @@ export interface Character {
   extinguish?: number;
   /** The med it's using, or null. */
   using: MedUse | null;
+  /**
+   * A player's load in kg (BW-3, sim/weight.ts): what it wears, holds and carries,
+   * recounted after inventory actions and every WEIGHT.recount s. Missing until counted,
+   * and for enemies, which ignore weight.
+   */
+  load?: number;
+  /**
+   * A player's worn gear's cost (GZ-1, gearBurden in sim/gear.ts): aim time and move speed
+   * multipliers, counted with the load. Missing is none, and enemies have none.
+   */
+  burden?: { aimTime: number; moveSpeed: number };
+  /**
+   * A player's stamina (BW-4, sim/stamina.ts), 0 to 1; missing is full, and enemies have
+   * none. Winded: it ran dry, and there's no sprinting until it's back over STAMINA.recover.
+   */
+  stamina?: number;
+  winded?: boolean;
+  /** Seconds to its next groan while its stomach is blacked (GZ-3, painNoise); else missing. */
+  painIn?: number;
+  /** Packing or unloading magazines (MG-2, sim/packing.ts); missing when not. */
+  packing?: Packing;
   /** The switch it's holding the use button on, and for how many seconds so far. */
   switching?: { index: number; held: number };
   /** Touching barbed wire last tick (TU-2, sim/wire.ts). Missing (older saves) is false. */
@@ -158,6 +181,15 @@ export interface Character {
   /** The turning lag in swayYaw and swayPitch, before aim scales it. Missing is 0. */
   lagYaw?: number;
   lagPitch?: number;
+  /**
+   * A player's breath (BW-1): seconds of held breath left (missing is full), how far it's
+   * steadying the sway, 0 to 1 (missing 0), and seconds left of the wobble when it ran out.
+   */
+  breath?: number;
+  /** Breathing while aimed, refilling slowly, rather than holding: after running out or the breath button (BW-2). */
+  breathOut?: boolean;
+  steady?: number;
+  exhale?: number;
   /** The look last tick, to measure turning. Missing is this tick's. */
   lookYaw?: number;
   lookPitch?: number;
@@ -211,7 +243,8 @@ export type SimEvent =
   | PowerupEvent
   | CalloutEvent
   | VoiceEvent
-  | WireEvent;
+  | WireEvent
+  | PainEvent;
 
 /**
  * An admin gun's shot (WeaponDef.spawns) asking for an enemy of that type here, facing
@@ -329,6 +362,11 @@ export interface PlayerInput {
   /** Start a reload: a press, true for one tick. */
   reload: boolean;
   /**
+   * A fast reload (MG-1): a double-tap of reload, as a press. Magazines only: about 30%
+   * quicker, and the magazine taken out is dropped. During a reload it speeds that one up.
+   */
+  quickReload?: boolean;
+  /**
    * With reload: the round to load, of the gun's caliber (the reload button's picker).
    * Another than the one loaded swaps them. Left out, see reloadRound.
    */
@@ -348,6 +386,11 @@ export interface PlayerInput {
   detonate?: boolean;
   /** Start putting itself out while on fire: a press (2026-10-31). */
   extinguish?: boolean;
+  /**
+   * The breath button (BW-2): a press while aimed. Holding, it breathes out; breathing, it
+   * holds again with what's left. Ignored with the gun down.
+   */
+  breathe?: boolean;
   /** Start using a carried med (a press), or stop using one. */
   use?: MedRef | 'cancel' | null;
   /** Open, close or unlock a door, by its index in world.doors: a press. */

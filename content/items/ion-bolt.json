@@ -1,10 +1,11 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ion-bolt",
   "name": "Ion bolt",
   "type": "grenade",
   "size": [1, 1],
   "value": 0,
+  "weight": 0.3,
   "rarity": "epic",
   "caliber": "ion",
   "stack": 40,

@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "stock-cartons",
   "name": "Pallet of cartons",
+  "tags": ["industrial"],
   "colors": {
     "wood": "#b08a52",
     "wood-dark": "#6f5230",

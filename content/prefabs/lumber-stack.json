@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "lumber-stack",
   "name": "Lumber stack",
+  "tags": ["construction", "logging"],
   "colors": {
     "lumber": "#c49a5e",
     "lumber-dark": "#a57d48",

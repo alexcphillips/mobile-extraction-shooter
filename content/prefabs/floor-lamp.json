@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "floor-lamp",
   "name": "Floor lamp",
+  "tags": ["home"],
   "colors": {
     "pole": "#3d4148",
     "shade": "#e8d8a8"

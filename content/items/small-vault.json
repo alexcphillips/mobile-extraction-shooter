@@ -1,10 +1,11 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "small-vault",
   "name": "Small vault",
   "type": "container",
   "size": [2, 2],
   "value": 0,
+  "weight": 0,
   "rarity": "legendary",
   "view": "angled",
   "slot": "vault",

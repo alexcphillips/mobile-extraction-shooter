@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "vault-door-frame",
   "name": "Vault door frame",
+  "tags": ["store", "structure"],
   "colors": {
     "steel": "#8d9296",
     "steel-dark": "#4a4f54",

@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-762-m62",
   "name": "7.62×51 mm M62",
   "shortName": ".308 M62",
   "type": "ammo",
   "size": [1, 1],
   "value": 110,
+  "weight": 0.025,
   "rarity": "epic",
   "stack": 40,
   "caliber": "7.62x51",

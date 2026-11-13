@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "tv-unit",
   "name": "TV unit",
+  "tags": ["home"],
   "colors": {
     "body": "#8a6a4a",
     "screen": "#1d1e21"

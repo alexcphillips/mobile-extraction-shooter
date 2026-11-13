@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "gantry-crane",
   "name": "Gantry crane",
+  "tags": ["industrial"],
   "colors": {
     "yellow": "#e0a526",
     "yellow-dark": "#c98f1c",

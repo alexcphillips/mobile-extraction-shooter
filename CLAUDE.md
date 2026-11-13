@@ -21,3 +21,4 @@ Read only what the task needs. The big docs are split by topic; open an index, t
 - **American spelling** everywhere: code, content, UI text and docs (color, armor, center, meter, caliber, favorite, gray). Moved from British on 2026-11-11 with `scripts/american-spelling.mjs`, which can be re-run to catch strays.
 - Record new decisions in the docs above as you make them, not only in chat, in the topic file they belong to.
 - **Keep sessions lean on tokens.** Don't read whole docs or big content files (map JSON) to get your bearings: search, or query with a script. Use quiet test output. Keep roadmap notes short and put the detail in the topic docs.
+  - **Maps and prefabs:** never read a map or prefab file whole. Query them with the tools (`scripts/map-report.mjs`, `scripts/prefabs.mjs`) or a `node -e` over the JSON. Read a map's summary at the top of its design file, then search the rest. Report a check as one short table, not logs.

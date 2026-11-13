@@ -1,15 +1,22 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "assault-helmet",
   "name": "Assault helmet",
   "type": "armor",
   "size": [2, 2],
   "value": 27000,
+  "weight": 1.2,
   "rarity": "mythic",
   "slot": "helmet",
   "level": 6,
   "durability": 70,
   "repairLoss": 0.08,
+  "hearing": 0.1,
+  "blocksHeadset": true,
+  "vision": {
+    "shape": "slit"
+  },
+  "nightVision": true,
   "model": {
     "parts": [
       {

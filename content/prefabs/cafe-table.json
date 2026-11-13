@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "cafe-table",
   "name": "Cafe table",
+  "tags": ["food"],
   "colors": {
     "top": "#c9a877",
     "leg": "#3d4148",

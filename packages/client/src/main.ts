@@ -7,6 +7,7 @@ import {
 } from '@mes/shared';
 import { unlockAudioOnTap } from './app/audio';
 import { reloadOnStaleBuild } from './app/stale-build';
+import { holdReloads } from './dev/hold-reload';
 import { GAME_SOUNDS } from './audio/sound-ids';
 import { sounds } from './audio/sounds';
 import { preventZoom } from './app/no-zoom';
@@ -125,6 +126,10 @@ const standalone =
   matchMedia('(display-mode: standalone)').matches ||
   (navigator as { standalone?: boolean }).standalone === true;
 
+// The editor pages hold Vite's reloads for files saved elsewhere (dev/hold-reload.ts).
+const EDITOR_PAGES = ['/editor', '/item-editor', '/loot-editor', '/quest-editor', '/layout', '/sounds'];
+if (import.meta.hot && EDITOR_PAGES.includes(location.pathname)) holdReloads(import.meta.hot);
+
 if (location.pathname === '/bodies') {
   for (const id of ['controls', 'settings-button']) byId(id).hidden = true;
   startBodies(byId('scene') as HTMLCanvasElement, status).catch((err: unknown) => {
@@ -146,6 +151,15 @@ if (location.pathname === '/bodies') {
   import('./quest-editor')
     .then((editor) => editor.startQuestEditor(byId('editor')))
     .catch((err: unknown) => (status.textContent = `quest editor failed: ${message(err)}`));
+} else if (location.pathname === '/layout' && import.meta.env.DEV) {
+  import('./layout-board')
+    .then((board) => board.startLayoutBoard(byId('editor')))
+    .catch((err: unknown) => (status.textContent = `layout board failed: ${message(err)}`));
+} else if (location.pathname === '/prefab-sheet' && import.meta.env.DEV) {
+  for (const id of ['controls', 'settings-button']) byId(id).hidden = true;
+  import('./editor/prefab-sheet')
+    .then((sheet) => sheet.startPrefabSheet(byId('editor')))
+    .catch((err: unknown) => (status.textContent = `prefab sheet failed: ${message(err)}`));
 } else if (location.pathname === '/sounds' && import.meta.env.DEV) {
   import('./sound-editor')
     .then((editor) => editor.startSoundEditor(byId('editor')))
@@ -271,9 +285,16 @@ function playElements(): PlayElements {
     stats: byId('stats'),
     hud,
     optic: new OpticOverlay(byId('optic')),
-    vitals: new Vitals(byId('vitals'), byId('ammo'), byId('hurt')),
+    vitals: new Vitals(byId('vitals'), byId('ammo'), byId('hurt'), byId('pain')),
     hitDirection: new HitDirection(byId('hit-dir')),
-    raidHud: new RaidHud(byId('timer'), byId('extract'), byId('prompt'), byId('use-ring')),
+    raidHud: new RaidHud(
+      byId('timer'),
+      byId('extract'),
+      byId('prompt'),
+      byId('use-ring'),
+      byId('breath-ring'),
+      byId('stamina-bar'),
+    ),
     raid: byId('raid'),
     results: byId('results'),
     enemyBars: byId('enemy-bars'),
@@ -320,7 +341,15 @@ async function runGame(
   // In the list's order (MT-2: the starter map first); the last one played is picked.
   const raids = raidIds()
     .map((id) => loadRaid(id))
-    .map((r) => ({ id: r.id, name: r.name, duration: r.duration, map: r.map, tags: r.tags }));
+    .map((r) => ({
+      id: r.id,
+      name: r.name,
+      duration: r.duration,
+      map: r.map,
+      tags: r.tags,
+      minLevel: r.minLevel,
+      region: r.region,
+    }));
   const play = (
     raid: string,
     serverRaid: string,

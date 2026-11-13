@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "aisle-sign",
   "name": "Aisle sign",
+  "tags": ["store"],
   "colors": {
     "pole": "#3d4148",
     "board": "#2456a4",

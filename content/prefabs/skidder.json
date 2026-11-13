@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "skidder",
   "name": "Skidder",
+  "tags": ["vehicle", "logging"],
   "colors": {
     "paint": "#b8862e",
     "paint-dark": "#7e5c22",

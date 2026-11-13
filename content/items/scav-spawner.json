@@ -6,6 +6,7 @@
   "class": "special",
   "size": [2, 1],
   "value": 0,
+  "weight": 0,
   "rarity": "common",
   "ammo": "ammo-9mm",
   "hold": "pistol",
@@ -19,7 +20,11 @@
   "loudness": 5,
   "hipSpread": 0,
   "aimSpread": 0,
-  "recoil": { "up": 0.3, "side": 0, "recovery": 18 },
+  "recoil": {
+    "up": 0.3,
+    "side": 0,
+    "recovery": 18
+  },
   "sounds": {
     "shot": "crossbow-shot",
     "suppressed": "crossbow-shot",

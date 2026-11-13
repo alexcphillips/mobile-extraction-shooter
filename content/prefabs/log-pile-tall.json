@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "log-pile-tall",
   "name": "Log pile (tall)",
+  "tags": ["logging"],
   "colors": { "bearer": "#4f3a27" },
   "nodes": [
     {

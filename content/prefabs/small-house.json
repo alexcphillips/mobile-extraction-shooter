@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "small-house",
   "name": "Small house",
+  "tags": ["home", "structure"],
   "colors": {
     "walls": "#d9d0c1",
     "roof": "#7f3b2d",

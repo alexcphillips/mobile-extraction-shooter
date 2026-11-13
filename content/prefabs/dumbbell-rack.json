@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "dumbbell-rack",
   "name": "Dumbbell rack",
+  "tags": ["leisure"],
   "colors": {
     "frame": "#2b2d33",
     "weight": "#7f868a"

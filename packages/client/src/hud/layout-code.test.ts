@@ -37,7 +37,7 @@ describe('layout share codes', () => {
     expect(encodeLayout(empty()).length).toBeLessThan(10);
     const full = empty();
     for (const def of CONTROLS) full.placements[def.id] = { x: 0.5, y: 0.5, scale: 1 };
-    expect(encodeLayout(full).length).toBeLessThan(150);
+    expect(encodeLayout(full).length).toBeLessThan(160);
     expect(decodeLayout(encodeLayout(empty()))).toEqual(empty());
   });
 

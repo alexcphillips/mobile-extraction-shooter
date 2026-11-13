@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "tipped-kiosk",
   "name": "Tipped kiosk",
+  "tags": ["store", "debris"],
   "colors": {
     "body": "#b05a7a",
     "top": "#e6e0d3",

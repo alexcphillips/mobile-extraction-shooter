@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "display-case",
   "name": "Display case",
+  "tags": ["store"],
   "colors": {
     "base": "#d7d9d8",
     "glass": "#bfe0e6",

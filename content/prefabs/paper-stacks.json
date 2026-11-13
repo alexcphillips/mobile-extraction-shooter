@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "paper-stacks",
   "name": "Paper stacks",
+  "tags": ["office"],
   "colors": {
     "paper": "#efede7",
     "paper-old": "#dcd6c4",

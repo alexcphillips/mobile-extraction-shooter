@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "cctv-wall",
   "name": "CCTV wall",
+  "tags": ["office"],
   "colors": {
     "frame": "#1d1e21",
     "glow": "#58c0a0",

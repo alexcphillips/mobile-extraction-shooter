@@ -1,22 +1,27 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "p226",
   "name": "P226",
   "type": "weapon",
   "class": "pistol",
   "size": [2, 1],
-  "value": 10000,
+  "value": 8500,
+  "weight": 0.8,
   "rarity": "common",
   "ammo": "ammo-9mm",
   "hold": "pistol",
   "fireMode": "semi",
   "rpm": 450,
   "magazine": 15,
+  "feed": "magazine",
   "reloadTime": 1.6,
   "aimTime": 0.17,
   "drawTime": 0.4,
   "range": 100,
   "loudness": 120,
+  "defaults": {
+    "magazine": "p226-mag"
+  },
   "slots": ["muzzle", "magazine", "laser"],
   "hipSpread": 2,
   "aimSpread": 0.55,
@@ -33,12 +38,7 @@
   },
   "model": {
     "parts": [
-      {
-        "type": "box",
-        "pos": [0, 0.012, -0.06],
-        "size": [0.026, 0.03, 0.19],
-        "color": "#26282a"
-      },
+      { "type": "box", "pos": [0, 0.012, -0.06], "size": [0.026, 0.03, 0.19], "color": "#26282a" },
       {
         "type": "box",
         "pos": [0.0135, 0.012, 0.02],
@@ -78,12 +78,7 @@
         "size": [0.018, 0.004, 0.05],
         "color": "#161718"
       },
-      {
-        "type": "box",
-        "pos": [0, -0.04, -0.058],
-        "size": [0.01, 0.008, 0.05],
-        "color": "#1f2123"
-      },
+      { "type": "box", "pos": [0, -0.04, -0.058], "size": [0.01, 0.008, 0.05], "color": "#1f2123" },
       {
         "type": "box",
         "pos": [0, -0.03, -0.083],
@@ -117,20 +112,7 @@
         "color": "#3a3a3a",
         "pitch": -12
       },
-      {
-        "type": "box",
-        "pos": [0, -0.11, 0.016],
-        "size": [0.024, 0.008, 0.04],
-        "color": "#161718",
-        "pitch": -12,
-        "hiddenBy": "magazine"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.022, 0.03],
-        "size": [0.008, 0.014, 0.01],
-        "color": "#161718"
-      },
+      { "type": "box", "pos": [0, 0.022, 0.03], "size": [0.008, 0.014, 0.01], "color": "#161718" },
       {
         "type": "box",
         "pos": [-0.0145, -0.012, -0.02],

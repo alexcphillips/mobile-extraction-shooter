@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "monitor-desk",
   "name": "Monitor desk",
+  "tags": ["office"],
   "colors": {
     "top": "#5a5f66",
     "leg": "#3d4148",

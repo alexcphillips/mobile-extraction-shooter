@@ -29,6 +29,7 @@ const ammo = m({
   type: 'ammo',
   size: [1, 1],
   value: 100,
+  weight: 1,
   stack: 60,
   caliber: 'round',
   level: 3,
@@ -43,6 +44,7 @@ const gun = m({
   type: 'weapon',
   size: [4, 2],
   value: 100,
+  weight: 1,
   ammo: 'round',
   fireMode: 'auto',
   rpm: 600,
@@ -66,6 +68,7 @@ const scope = m({
   type: 'attachment',
   size: [2, 1],
   value: 100,
+  weight: 1,
   slot: 'optic',
   optic: { zoom: 4, reticle: { color: '#000000', shapes: [dot] } },
 });
@@ -76,6 +79,7 @@ const mag = m({
   type: 'attachment',
   size: [1, 2],
   value: 100,
+  weight: 1,
   slot: 'magazine',
   weapons: ['gun'],
   mods: { magazine: 10 },
@@ -179,7 +183,15 @@ describe('items', () => {
       level: 1,
       armorDamage: 15,
     });
-    const helmet = { id: 'h', name: 'H', type: 'armor', size: [2, 2], value: 1, rarity: 'common' };
+    const helmet = {
+      id: 'h',
+      name: 'H',
+      type: 'armor',
+      size: [2, 2],
+      value: 1,
+      weight: 1,
+      rarity: 'common',
+    };
     const old = { ...helmet, slot: 'helmet', absorb: 0.6, durability: 9, model: { parts: [] } };
     const up = v8({ ...old, model: placeholderModel(old) }, []);
     expect(up).toMatchObject({ level: 4 });
@@ -198,6 +210,7 @@ describe('items', () => {
       name: 'X',
       size: [1, 1],
       value: 10,
+      weight: 1,
     };
     const ok = [
       { ...base, type: 'med', effect: 'bandage', useTime: 2 },
@@ -296,6 +309,7 @@ describe('items', () => {
       name: 'X',
       size: [1, 1],
       value: 10,
+      weight: 1,
     };
     const splint = m({ ...base, type: 'med', effect: 'splint', useTime: 2 });
     expect(v6(splint)).toMatchObject({ sounds: { use: 'bandage-use' } });

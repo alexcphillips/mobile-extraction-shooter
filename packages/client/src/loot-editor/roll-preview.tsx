@@ -3,6 +3,7 @@ import {
   createGrid,
   createRng,
   itemDef,
+  itemSize,
   rollMix,
   type Grid,
   type ItemDb,
@@ -121,8 +122,9 @@ function SampleGrid({ items, grid }: { items: ItemDb; grid: Grid }) {
     <div className="le-sample-grid" style={{ width: grid.w * CELL, height: grid.h * CELL }}>
       {grid.items.map((g, i) => {
         const def = itemDef(items, g.item.item);
-        const w = g.rotated ? def.size[1] : def.size[0];
-        const h = g.rotated ? def.size[0] : def.size[1];
+        const [sw, sh] = itemSize(items, g.item);
+        const w = g.rotated ? sh : sw;
+        const h = g.rotated ? sw : sh;
         return (
           <div
             key={i}

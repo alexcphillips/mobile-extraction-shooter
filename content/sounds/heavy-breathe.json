@@ -1,0 +1,42 @@
+{
+  "formatVersion": 1,
+  "id": "heavy-breathe",
+  "name": "Heavy breathing (badly hurt)",
+  "gain": 0.45,
+  "range": 6,
+  "pitchJitter": 0.08,
+  "layers": [
+    {
+      "source": "noise",
+      "color": "pink",
+      "at": 0,
+      "attack": 0.3,
+      "hold": 0.1,
+      "decay": 0.2,
+      "gain": 0.45,
+      "filter": { "type": "bandpass", "freq": [900, 1400], "q": 1.5 }
+    },
+    {
+      "source": "noise",
+      "color": "pink",
+      "at": 0.7,
+      "attack": 0.06,
+      "hold": 0.25,
+      "decay": 0.45,
+      "curve": 1.5,
+      "gain": 0.55,
+      "filter": { "type": "bandpass", "freq": [800, 500], "q": 1.3 }
+    },
+    {
+      "source": "tone",
+      "wave": "saw",
+      "freq": [120, 100],
+      "at": 0.7,
+      "attack": 0.08,
+      "hold": 0.2,
+      "decay": 0.35,
+      "gain": 0.04,
+      "filter": { "type": "lowpass", "freq": [450, 300], "q": 0.7 }
+    }
+  ]
+}

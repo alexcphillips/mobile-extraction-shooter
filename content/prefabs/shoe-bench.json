@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "shoe-bench",
   "name": "Shoe bench",
+  "tags": ["store"],
   "colors": {
     "seat": "#b05a3a",
     "base": "#3d4148",

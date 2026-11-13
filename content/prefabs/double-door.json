@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "double-door",
   "name": "Double door",
+  "tags": ["structure"],
   "colors": {
     "door": "#6f7f86",
     "frame": "#4d5559",

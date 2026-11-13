@@ -1,4 +1,4 @@
-import { itemDef, stackSize, type AttachmentSlot, type ItemDb } from '../content/items';
+import { itemDef, itemSize, stackSize, type AttachmentSlot, type ItemDb } from '../content/items';
 
 /**
  * One item, or a stack of one kind, wherever it is: in a grid, in a gear slot or on a gun.
@@ -22,6 +22,14 @@ export interface Item {
   loaded?: string;
   /** Guns: the attachment in each slot, or null. */
   attachments?: Record<AttachmentSlot, string | null>;
+  /** Guns: the stock is folded (WF-1): none of its mods, and its folded length. */
+  folded?: true;
+  /** Helmets (GZ-5): the visor or night vision goggles fitted, with their own state. */
+  fitted?: Item;
+  /** Visors (GZ-5): where its cracks run, for the client's drawing only. */
+  seed?: number;
+  /** Carriers (GZ-4): the plates in its front and back slots, with their own durability. */
+  plates?: { front?: Item; back?: Item };
   /** Rigs and backpacks: what's in them. */
   grid?: Grid;
   /** Found in a raid and brought out: what some quests want. Only ever on stored items. */
@@ -143,14 +151,14 @@ export function sameShape(
   });
 }
 
-/** An item's width in a grid, rotated or not. */
-export function itemWidth(items: ItemDb, id: string, rotated: boolean): number {
-  const [w, h] = itemDef(items, id).size;
+/** An item's width in a grid, rotated or not (a gun's follows its stock: itemSize). */
+export function itemWidth(items: ItemDb, item: Item, rotated: boolean): number {
+  const [w, h] = itemSize(items, item);
   return rotated ? h : w;
 }
 
-export function itemHeight(items: ItemDb, id: string, rotated: boolean): number {
-  const [w, h] = itemDef(items, id).size;
+export function itemHeight(items: ItemDb, item: Item, rotated: boolean): number {
+  const [w, h] = itemSize(items, item);
   return rotated ? w : h;
 }
 
@@ -211,8 +219,8 @@ export function isFree(
   for (let i = 0; i < grid.items.length; i++) {
     if (i === ignore) continue;
     const o = grid.items[i]!;
-    const ow = itemWidth(items, o.item.item, o.rotated);
-    const oh = itemHeight(items, o.item.item, o.rotated);
+    const ow = itemWidth(items, o.item, o.rotated);
+    const oh = itemHeight(items, o.item, o.rotated);
     if (x < o.x + ow && o.x < x + w && y < o.y + oh && o.y < y + h) return false;
   }
   return true;
@@ -222,8 +230,8 @@ export function isFree(
 export function itemAt(items: ItemDb, grid: Grid, x: number, y: number): number {
   for (let i = 0; i < grid.items.length; i++) {
     const o = grid.items[i]!;
-    const ow = itemWidth(items, o.item.item, o.rotated);
-    const oh = itemHeight(items, o.item.item, o.rotated);
+    const ow = itemWidth(items, o.item, o.rotated);
+    const oh = itemHeight(items, o.item, o.rotated);
     if (x >= o.x && x < o.x + ow && y >= o.y && y < o.y + oh) return i;
   }
   return -1;
@@ -240,8 +248,8 @@ export interface Spot {
  * The first free spot for an item, row by row from the top left; unrotated anywhere comes
  * before rotated. Null if there's none.
  */
-export function findSpot(items: ItemDb, grid: Grid, id: string, ignore = -1): Spot | null {
-  const [w, h] = itemDef(items, id).size;
+export function findSpot(items: ItemDb, grid: Grid, item: Item, ignore = -1): Spot | null {
+  const [w, h] = itemSize(items, item);
   for (const rotated of w === h ? [false] : [false, true]) {
     const sw = rotated ? h : w;
     const sh = rotated ? w : h;
@@ -264,8 +272,8 @@ export function placeAt(
   rotated: boolean,
 ): boolean {
   if (!canHold(items, grid, item)) return false;
-  const w = itemWidth(items, item.item, rotated);
-  const h = itemHeight(items, item.item, rotated);
+  const w = itemWidth(items, item, rotated);
+  const h = itemHeight(items, item, rotated);
   if (!isFree(items, grid, x, y, w, h)) return false;
   grid.items.push({ x, y, rotated, item });
   return true;
@@ -290,7 +298,7 @@ export function addItem(items: ItemDb, grid: Grid, item: Item): number {
     }
   }
   while (item.count > 0) {
-    const spot = findSpot(items, grid, item.item);
+    const spot = findSpot(items, grid, item);
     if (!spot) break;
     if (item.count <= max) {
       grid.items.push({ ...spot, item });
@@ -337,15 +345,15 @@ function swapSpots(
 ): SwapSpot[] | null {
   const g = from.items[fromIndex];
   if (!g) return null;
-  const w = itemWidth(items, g.item.item, rotated);
-  const h = itemHeight(items, g.item.item, rotated);
+  const w = itemWidth(items, g.item, rotated);
+  const h = itemHeight(items, g.item, rotated);
   if (!inGrid(to, x, y, w, h)) return null;
   const under: number[] = [];
   for (let i = 0; i < to.items.length; i++) {
     const o = to.items[i]!;
     if (o === g) continue;
-    const ow = itemWidth(items, o.item.item, o.rotated);
-    const oh = itemHeight(items, o.item.item, o.rotated);
+    const ow = itemWidth(items, o.item, o.rotated);
+    const oh = itemHeight(items, o.item, o.rotated);
     if (x < o.x + ow && o.x < x + w && y < o.y + oh && o.y < y + h) under.push(i);
   }
   if (!under.length) return null;
@@ -360,7 +368,7 @@ function swapSpots(
   const spots: SwapSpot[] = [];
   const tryAt = (i: number, sx: number, sy: number, turned: boolean): boolean => {
     const o = to.items[i]!;
-    const [iw, ih] = itemDef(items, o.item.item).size;
+    const [iw, ih] = itemSize(items, o.item);
     const ow = turned ? ih : iw;
     const oh = turned ? iw : ih;
     if (!isFree(items, after, sx, sy, ow, oh)) return false;
@@ -377,15 +385,15 @@ function swapSpots(
   }
   // Then the rest, biggest first: turned there, else anywhere in the cells left.
   const area = (i: number): number => {
-    const [iw, ih] = itemDef(items, to.items[i]!.item.item).size;
+    const [iw, ih] = itemSize(items, to.items[i]!.item);
     return iw * ih;
   };
   left.sort((a, b) => area(b) - area(a));
-  const gw = itemWidth(items, g.item.item, g.rotated);
-  const gh = itemHeight(items, g.item.item, g.rotated);
+  const gw = itemWidth(items, g.item, g.rotated);
+  const gh = itemHeight(items, g.item, g.rotated);
   for (const i of left) {
     const o = to.items[i]!;
-    const [iw, ih] = itemDef(items, o.item.item).size;
+    const [iw, ih] = itemSize(items, o.item);
     const turns = iw === ih ? [o.rotated] : [o.rotated, !o.rotated];
     let placed = iw !== ih && tryAt(i, g.x + o.x - x, g.y + o.y - y, !o.rotated);
     for (const turned of turns) {
@@ -446,8 +454,8 @@ export function dropAt(
     if (g.item.count === 0) removeAt(from, fromIndex);
     return true;
   }
-  const w = itemWidth(items, g.item.item, rotated);
-  const h = itemHeight(items, g.item.item, rotated);
+  const w = itemWidth(items, g.item, rotated);
+  const h = itemHeight(items, g.item, rotated);
   if (!isFree(items, to, x, y, w, h, from === to ? fromIndex : -1)) {
     const spots = swap ? swapSpots(items, from, fromIndex, to, x, y, rotated) : null;
     if (!spots) return false;
@@ -477,7 +485,7 @@ export function dropAt(
 export function rotateAt(items: ItemDb, grid: Grid, index: number): boolean {
   const g = grid.items[index];
   if (!g) return false;
-  const [w, h] = itemDef(items, g.item.item).size;
+  const [w, h] = itemSize(items, g.item);
   return w !== h && dropAt(items, grid, index, grid, g.x, g.y, !g.rotated, false);
 }
 

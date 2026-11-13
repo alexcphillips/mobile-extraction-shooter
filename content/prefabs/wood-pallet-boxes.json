@@ -1,6 +1,7 @@
 {
   "formatVersion": 3,
   "id": "wood-pallet-boxes",
+  "tags": ["industrial"],
   "colors": {
     "cardboard": "#c49a63",
     "cardboard-dark": "#b48a55",

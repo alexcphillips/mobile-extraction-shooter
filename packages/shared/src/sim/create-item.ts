@@ -1,6 +1,6 @@
 import { itemDef, sectionsOf, type ItemDb } from '../content/items';
 import { createGrid, type Item } from '../inventory/grid';
-import { createArmor } from './health';
+import { createArmor, withPlates } from './health';
 import { createWeapon } from './weapons';
 
 /**
@@ -15,12 +15,18 @@ export function createItem(items: ItemDb, id: string, count = 1): Item {
       return createWeapon(items, id);
     case 'armor':
       return createArmor(items, id);
+    case 'plate':
+      return createArmor(items, id);
+    case 'visor':
+      // A seed for where its cracks run (GZ-5, the client's): looks only, so not the sim's RNG.
+      return { ...createArmor(items, id), seed: Math.floor(Math.random() * 1e9) };
     case 'container': {
       const grid = createGrid(def.grid[0], def.grid[1], false, sectionsOf(def));
       // A backpack takes empty rigs and backpacks (see Grid.bags).
       if (def.slot === 'backpack') grid.bags = true;
       // An armored rig at full durability, as armor (2026-11-11).
-      if (def.armor) return { item: id, count: 1, grid, durability: def.armor.durability };
+      if (def.armor)
+        return withPlates(items, { item: id, count: 1, grid, durability: def.armor.durability });
       return { item: id, count: 1, grid };
     }
     case 'med':

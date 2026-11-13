@@ -1,10 +1,11 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "high-amp-circuit-breaker",
   "name": "High amp circuit breaker",
   "type": "loot",
   "size": [1, 2],
   "value": 1400,
+  "weight": 0.5,
   "rarity": "uncommon",
   "model": {
     "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]

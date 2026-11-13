@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "executive-desk",
   "name": "Executive desk",
+  "tags": ["office"],
   "colors": {
     "wood": "#4a2f20",
     "wood-dark": "#32201a",

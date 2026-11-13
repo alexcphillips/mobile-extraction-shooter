@@ -67,6 +67,8 @@ interface MapBase {
   /** Water as rects, x, z, w, h. */
   water: [number, number, number, number][];
   waterColor: string;
+  /** Roads (RD-1) as outlines, x,z pairs for a polygon's points, and their colors. */
+  roads: { points: string; fill: string }[];
   /** Every footprint, lowest top first. */
   footprints: Footprint[];
 }
@@ -204,6 +206,7 @@ function buildBase(map: CompiledMap): MapBase {
     groundColor: css(map.terrainColor),
     water,
     waterColor: css(map.water[0]?.color ?? 0x3a6ea5),
+    roads: map.roads.map((r) => ({ points: roadOutline(r.strip), fill: css(r.color) })),
     footprints,
   };
 }
@@ -291,6 +294,19 @@ export function mapLayers(map: CompiledMap, floor = groundFloor(map)): MapLayers
   return { minX: f.x, minZ: f.z, w: f.w, h: f.h, base, layers };
 }
 
+/** A road's strip as a polygon: along its left edge, back along its right. */
+export function roadOutline(strip: readonly number[]): string {
+  const left: string[] = [];
+  const right: string[] = [];
+  for (let k = 0; k < strip.length; k += 6) {
+    left.push(`${round1(strip[k]!)},${round1(strip[k + 2]!)}`);
+    right.push(`${round1(strip[k + 3]!)},${round1(strip[k + 5]!)}`);
+  }
+  return [...left, ...right.reverse()].join(' ');
+}
+
+const round1 = (v: number): number => Math.round(v * 10) / 10;
+
 /** The ground, water and footprints, drawn in map meters; what's below the floor dimmed. */
 export function MapGround({ layers: drawn }: { layers: MapLayers }): ReactNode {
   const { base, layers } = drawn;
@@ -306,6 +322,9 @@ export function MapGround({ layers: drawn }: { layers: MapLayers }): ReactNode {
       <rect x={g.x} y={g.z} width={g.w} height={g.h} fill={base.groundColor} />
       {base.water.map(([x, z, w, h], i) => (
         <rect key={i} x={x} y={z} width={w + 0.05} height={h + 0.05} fill={base.waterColor} />
+      ))}
+      {base.roads.map((r, i) => (
+        <polygon key={`r${i}`} points={r.points} fill={r.fill} />
       ))}
       {layers.below.length > 0 && (
         <>

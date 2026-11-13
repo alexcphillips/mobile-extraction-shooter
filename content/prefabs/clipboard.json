@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "clipboard",
   "name": "Clipboard",
+  "tags": ["office"],
   "colors": {
     "board": "#8a6a45",
     "paper": "#eeece6",

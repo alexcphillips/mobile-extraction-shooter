@@ -1,10 +1,11 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "nuclear-research-files",
   "name": "Nuclear research files",
   "type": "loot",
   "size": [1, 2],
   "value": 1000,
+  "weight": 0.3,
   "rarity": "rare",
   "model": {
     "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]

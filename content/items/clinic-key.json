@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "clinic-key",
   "name": "Medical clinic back door key",
   "shortName": "Clinic key",
   "type": "key",
   "size": [1, 1],
   "value": 20000,
+  "weight": 0.02,
   "rarity": "rare",
   "uses": 3,
   "model": {

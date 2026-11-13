@@ -37,6 +37,7 @@ const CODE_ORDER: readonly ControlId[] = [
   'extinguish',
   'leanLeft',
   'leanRight',
+  'breathe',
 ];
 
 const HIDDEN = 0x40;

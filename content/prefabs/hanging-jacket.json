@@ -1,6 +1,7 @@
 {
   "formatVersion": 3,
   "id": "hanging-jacket",
+  "tags": ["office"],
   "colors": {
     "jacket": "#4a6487",
     "jacket-fold": "#3c5272",

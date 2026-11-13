@@ -1,15 +1,21 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "heavy-helmet",
   "name": "Heavy helmet",
   "type": "armor",
   "size": [2, 2],
   "value": 22000,
+  "weight": 3.5,
   "rarity": "legendary",
   "slot": "helmet",
   "level": 5,
   "durability": 60,
   "repairLoss": 0.09,
+  "hearing": -0.15,
+  "vision": {
+    "shape": "cheeks"
+  },
+  "visor": true,
   "model": {
     "parts": [
       {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { floorAt, placeLabels } from './map-tab';
+import { floorAt, placeLabels, roadOutline } from './map-tab';
 
 describe('the map tab', () => {
   const floors = [
@@ -23,5 +23,11 @@ describe('the map tab', () => {
     expect(placed.map((l) => l.text)).toEqual(['Warehouse', 'Toys']);
     // Zoomed in (a smaller font in meters), they part and both show.
     expect(placeLabels([at(0, 'Warehouse', true), at(3, 'Office')], 0.2)).toHaveLength(2);
+  });
+
+  it('draws a road as its outline: along the left edge, back along the right', () => {
+    // Two samples of a strip 4 m across along +x (x y z left, x y z right each).
+    const strip = [0, 1, -2, 0, 1, 2, 10, 1, -2, 10, 1, 2];
+    expect(roadOutline(strip)).toBe('0,-2 10,-2 10,2 0,2');
   });
 });

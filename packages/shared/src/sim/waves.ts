@@ -314,7 +314,7 @@ function spawnSpot(
     passive: spot.passive,
     harmless: spot.harmless,
   });
-  equipLoadout(c, items, content.loadouts.get(spot.loadout)!, state.rng);
+  equipLoadout(c, items, content.loadouts.get(spot.loadout)!, state.rng, !state.zombies);
   if (!spot.noLoot)
     rollEnemyLoot(c, items, content.tables, type.loot, spot.lootWeights ?? undefined, state.rng);
   return c;
@@ -387,7 +387,7 @@ function spawnSlot(
     c.z = c.ai!.homeZ = spot.z;
     c.y = c.ai!.homeY = world.groundAt(spot.x, spot.z, MOVEMENT.radius, spot.y + 0.5);
   }
-  equipLoadout(c, items, waves.loadouts[spot.loadout]!, state.rng);
+  equipLoadout(c, items, waves.loadouts[spot.loadout]!, state.rng, !state.zombies);
   const tables: LootTables = new Map(Object.entries(waves.tables));
   if (!spot.noLoot)
     rollEnemyLoot(

@@ -1,6 +1,7 @@
 import {
   applyStash,
   itemDef,
+  itemSize,
   pickHost,
   sortGrid,
   nextPagePrice,
@@ -26,6 +27,8 @@ import {
   type SortKey,
   type StashState,
   type VendorDef,
+  levelOf,
+  underLevel,
 } from '@mes/shared';
 import { warmItemOrigins } from '../content';
 import {
@@ -37,6 +40,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { LevelBadge } from './level-badge';
 import { createRoot } from 'react-dom/client';
 import { AccountError, call } from '../account';
 import { ConnTest, type TestReport } from '../net/conn-test';
@@ -94,6 +98,10 @@ export interface RaidChoice {
   map: string;
   /** Shown on its entry: "starter". */
   tags?: string[] | undefined;
+  /** The PMC level it unlocks at; left out, open from the start. */
+  minLevel?: number | undefined;
+  /** Its marker's spot on the deploy screen's region map. */
+  region?: { x: number; y: number } | undefined;
 }
 
 export interface MenuOptions {
@@ -225,7 +233,12 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
   const leading = !!party && !!mine && party.leader === mine.id;
   // In someone else's party, the raid is the leader's pick.
   const partyRaid = party && !leading ? party.raid : null;
-  const raid = opts.raids.find((r) => r.id === (partyRaid ?? raidId)) ?? opts.raids[0];
+  // A raid above the player's PMC level can't be picked (2026-11-11); the leader's pick can.
+  const pmcLevel = levelOf(me.profile.xp);
+  const open = (r: RaidChoice): boolean => (r.minLevel ?? 1) <= pmcLevel;
+  const raid = partyRaid
+    ? (opts.raids.find((r) => r.id === partyRaid) ?? opts.raids[0])
+    : (opts.raids.find((r) => r.id === raidId && open(r)) ?? opts.raids.find(open));
   const together = !!party && party.members.length > 1;
 
   // The connection test (co-op C4): started here, or by a call from another member.
@@ -353,6 +366,8 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
     : [];
   // In someone else's party the leader starts the raid: you say whether you're ready for it.
   const following = together && !leading;
+  // A locked map needs the whole party at its level (2026-11-11): who's short, or null.
+  const tooLow = together && raid ? underLevel(party!.members, raid.minLevel ?? 1) : null;
   const ready = !!mine?.ready;
   const toggleReady = (): void => {
     if (busy) return;
@@ -375,7 +390,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
     : {
         label: busy ? 'Starting…' : together ? 'Start party raid' : 'Start raid',
         primary: true,
-        disabled: !raid || busy || waiting.length > 0,
+        disabled: !raid || busy || waiting.length > 0 || !!tooLow,
         onClick: start,
       };
 
@@ -629,11 +644,13 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
   ];
   const leaderName = party?.members.find((m) => m.id === party.leader)?.username ?? 'the leader';
   const partyStatus = together
-    ? following
-      ? `${leaderName} starts the raid`
-      : waiting.length
-        ? `Waiting for ${waiting.map((m) => m.username).join(', ')}`
-        : 'Everyone is ready'
+    ? tooLow && raid
+      ? `${raid.name}: ${tooLow}`
+      : following
+        ? `${leaderName} starts the raid`
+        : waiting.length
+          ? `Waiting for ${waiting.map((m) => m.username).join(', ')}`
+          : 'Everyone is ready'
     : undefined;
   const nav: NavItem[] = zombies
     ? [
@@ -718,21 +735,11 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
       </button>
       <span className="raid-spacer" />
       {!zombies && (
-        <button
-          className={`lobby-chip${together ? ' active' : ''}`}
-          aria-label="Party"
-          onClick={() => setSheet('party')}
-        >
-          <Icon name="party" size={16} />
-          <span>{party ? `${party.members.length}` : 'Party'}</span>
-          {invites > 0 && <b className="lobby-badge">{invites}</b>}
-        </button>
-      )}
-      {!zombies && (
         <span className="lobby-money" title={`${me.profile.money.toLocaleString()} money`}>
           ${me.profile.money.toLocaleString()}
         </span>
       )}
+      {!zombies && <LevelBadge xp={me.profile.xp} />}
       <span className="lobby-who">{me.username}</span>
       <button
         className="lobby-icon-button"
@@ -833,6 +840,8 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
           name: r.name,
           line: `${Math.round(r.duration / 60)} min`,
           tags: r.tags,
+          at: r.region,
+          needs: open(r) ? null : `Level ${r.minLevel}`,
         }))}
         selected={raid.id}
         onSelect={(id) => {
@@ -901,6 +910,18 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
         <span className="raid-spacer" />
         <div className="lobby-right">
           {side}
+          {/* Party hangs left of Deploy so Deploy keeps the loadout card's width (2026-11-11). */}
+          {!zombies && (
+            <button
+              className={`lobby-chip lobby-party-button${together ? ' active' : ''}`}
+              aria-label="Party"
+              onClick={() => setSheet('party')}
+            >
+              <Icon name="party" size={20} />
+              <span>{party ? `${party.members.length}` : 'Party'}</span>
+              {invites > 0 && <b className="lobby-badge">{invites}</b>}
+            </button>
+          )}
           <button
             className="lobby-deploy-button"
             disabled={zombies ? false : !raid}
@@ -1105,7 +1126,7 @@ function StashPage({
   };
   const page = stash.profile.stash[Math.max(0, shown)]!;
   const used = page.items.reduce(
-    (n, g) => n + itemDef(items, g.item.item).size[0] * itemDef(items, g.item.item).size[1],
+    (n, g) => n + itemSize(items, g.item)[0] * itemSize(items, g.item)[1],
     0,
   );
   const stashWorth = worth(

@@ -49,7 +49,20 @@ const RIFLE: ItemModel = {
   support: [0, -0.03, -0.29],
   muzzle: [0, 0.02, -0.49],
   sight: [0, 0.065, -0.06],
-  mounts: { optic: [0, 0.045, 0], muzzle: [0, 0.02, -0.49], magazine: [0, -0.045, -0.06] },
+  mounts: {
+    optic: [0, 0.045, 0],
+    muzzle: [0, 0.02, -0.49],
+    magazine: [0, -0.045, -0.06],
+    stock: [0, -0.015, 0.06],
+  },
+};
+
+/** A plain butt stock (WF-1), from its front on the gun's stock mount. */
+const STOCK: ItemModel = {
+  parts: [
+    box([0, 0, 0.1], [0.04, 0.07, 0.2], WOOD),
+    box([0, -0.005, 0.205], [0.044, 0.09, 0.012], BLACK),
+  ],
 };
 
 const PISTOL: ItemModel = {
@@ -193,6 +206,7 @@ export function placeholderModel(doc: Readonly<Record<string, unknown>>): ItemMo
       const mods = doc.mods as { loudness?: number } | undefined;
       if (doc.slot === 'optic') return copy((optic?.zoom ?? 1) > 1 ? SCOPE : RED_DOT);
       if (doc.slot === 'muzzle') return copy((mods?.loudness ?? 1) < 1 ? SUPPRESSOR : BRAKE);
+      if (doc.slot === 'stock') return copy(STOCK);
       return copy(LONG_MAG);
     }
     case 'armor':

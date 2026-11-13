@@ -20,6 +20,8 @@ How to design and review map layouts and environments for tactical play. Read th
 8. **Risk should match reward.** Rich loot shouldn't sit in the safest, least-watched corner. Spawns and loot come last (the user places them), but the layout should leave somewhere to make a rich spot contested: exposure, a choke, or being en route to something noisy.
 9. **Every area should have a reason to cross it,** and more than one way through. Areas link into loops (back routes, flanks, shortcuts) so players can rotate rather than funnel.
 10. **Variety, not copy-paste.** Repeated modules (rack lanes, stores, container rows) each get their own arrangement and a tactical purpose. Identical copies read as filler and play the same everywhere.
+11. **Uneven spacing, long crossings at the rich places (the user's call, 2026-11-12).** Space buildings unevenly: some close, some far, never a regular grid or an even ring round a center. Between high-value places, or around a very high-value one (the boss's ground, the richest loot), put a deliberately long or dangerous crossing on the fast route, with a slower covered way round. These are the named exceptions to an open-ground cap such as District's 40 m; elsewhere the cap holds.
+12. **A cluster shares one grid (the user's call, 2026-11-12).** Buildings and yards that stand together line up: the same rotation, or square to it (90°). A building at a different angle needs open space around it so it reads as its own cluster; District's check is no two buildings or yards within 30 m of each other off-grid. Odd angles side by side read as messy. Angled pieces inside an area (container stacks, wrecks, cover rows) are detail, not buildings, and are fine.
 
 ## Numbers that decide what's reachable
 
@@ -66,11 +68,38 @@ Run through this for a new area or a review. Report problems ranked by how much 
 
 Layouts are built from numbers, so verify movement in the sim instead of reasoning about it. The rack nest's first version looked right on paper and failed in the sim.
 
-- **Routes in the sim:** a throwaway vitest under `packages/shared/src/sim/` can load the real map with `loadById(MAP_FORMAT, …)`, `loadById(PREFAB_FORMAT, …)` and `compileMap`, build a `CollisionWorld`, spawn a character with `spawnCharacter(state, world, x, z, yaw, y)`, and `step` it with inputs: walk, jump, ladder, drop. Log x, y, z, mode and leg HP along the way. Yaw 0 faces −z, −π/2 faces +x. Delete the test afterwards. Run it under Node 22.
+- **The map report first** (below): lines, open ground, reach, perches, drops, walks and cost. What follows is for what it doesn't measure.
+- **Routes in the sim:** a throwaway vitest under `packages/shared/src/sim/` can load the real map with `loadById(MAP_FORMAT, …)`, `loadById(PREFAB_FORMAT, …)` and `compileMap`, build a `CollisionWorld`, spawn a character with `spawnCharacter(state, world, x, z, yaw, y)`, and `step` it with inputs: walk, jump, ladder, drop. Log x, y, z, mode and leg HP along the way. Yaw 0 faces −z, −π/2 faces +x. Delete the test afterwards. Run it under Node 22. For a generator piece, `scripts/mapkit/sim.mjs` does this in a few lines (`build`, `walk`, `joined`; tech/editors.md → Map kit).
 - **AI reach:** `new NavGrid(world)`, then `nav.nearest(x, y, z)` for a spot. −1 means the AI can't stand there. Compare `nav.component[...]` either side of a gap to see whether they're linked, and use `nav.componentSizes` to spot small islands the AI can't get to.
 - **Top-down shape:** a script that compiles boxes to world footprints and prints a height map (`.` floor, `o` waist, `#` over eye height, `H` two-high) is a quick way to read lane widths and pockets from the JSON.
 - **Open ground (MT-7):** for an outdoor area, sample every meter across it, cast east and west at standing eye height (solids by `raycast`, leaves by `foliageWithin`, both bounded by the map's edges) and count the share of spots with a clear line of 70 m or more (the AI's sight). Silver Creek's west end measured 19–33%; use that as the yardstick. Five sample lines over-fit: the cover ends up placed to block the lines, not the area.
 - **Looks:** the user usually checks visuals in the game themselves. A headless screenshot through `/play-test?peaceful&at=x,z[,y]` (the map handed over in localStorage `mes.playTest`) works if one's really needed.
+
+## Map report (MK-4, 2026-11-12)
+
+`node scripts/map-report.mjs <map> [--zone <area>] [--detail] [--compare <map|run.json>] [--no-cost]` measures a map on its real collision world and nav grid in a few seconds (Silver Creek 2 s, Northpoint 5 s with the cost). It prints one summary table and a row per named area (the map's `mapLabel`s of size `area`; the whole map if it has none), writes heatmaps (`lines.png`, `open.png`, `nav.png`, 2 px a meter, north up) and `run.json` to `node_modules/.cache/map-report/<map>/`, and `--compare` lines another map's saved run up beside it. `--detail` adds the islands, perches, drops, walks between areas and spawn-to-extraction walks. **Use it instead of throwaway vitests** for anything it measures; keep the sim for a single route (above). Code: `packages/client/src/map-report/` (`measure.ts` pure, for MK-8's editor overlays too; `cost.ts` with three.js).
+
+**What it measures** (numbers in `REPORT`, `measure.ts`):
+- **Lines:** a spot every meter on every nav floor a player reaches, eight looks each at standing eye height (1.6 m), solids and glass-seen-through by raycast, foliage blocking, cut at the map's edge. The share of *looks* (not spots: nearly every spot has one long line somewhere) that see 70 m or 30 m, outdoors (open sky above) and indoors.
+- **Open ground:** a 1 m cell of outdoor ground is "something on it" if a solid rises 0.5 m or more over it, or foliage. **Exposed** ground has nothing within 3 m (a dive away); open ground nearer than that is a lane beside cover. A **crossing** is a straight run over exposed ground on four axes; the report gives the longest and the square meters lying on runs over 40 m (District's cap), plus the biggest open circle (chamfer distance, ±8%).
+- **Reach:** the AI's main area is the nav component holding the most spawns (not the largest: Northpoint's unused ground outside its fences is bigger than the mall). Other components are reached by a player if a jump and vault (1.7 m) or a drop (to 7 m) within a meter crosses to them, checked by overlap so invisible walls count, or by a ladder; transitively. **Pits** are reached and not left; **ways out of the play area** are reached components touching the map's edge. One-node strips (rail and wall tops) are left out.
+- **Perches:** raised spots 2.5 m or more over the ground (or water) under open sky, clustered; how they're reached and from where, and how many of eight looks from the middle see 70 m.
+- **Drops:** edges of reached ground with no rail where the fall is over 3.3 m, grouped in 4 m patches; off the AI's ground first.
+- **Walks:** Dijkstra over the nav grid (8-way, a few percent over a smoothed path; sprint ignores stamina).
+- **Cost:** the map built by the game's `buildMap`; triangles and meshes, and draw calls and triangles in view from 150 spots on the main area × 8 headings, frustum out to the fog at 70° and a phone's 2.16 aspect (no occlusion; the landmark silhouette isn't counted).
+
+**Yardsticks (2026-11-12, the first runs):**
+
+| | Silver Creek | Northpoint |
+|---|---|---|
+| Outdoor looks seeing 70 m / 30 m | 13% / 37% (areas 9–22% / 32–42%) | 3% / 18% (the yard) |
+| Indoor looks seeing 30 m | 13% (areas 10–20%) | 15% |
+| Longest exposed run; on runs over 40 m | 134 m (Company town's roads); 5,475 m² | 59 m; 1,027 m² |
+| Biggest open circle | 36 m | 20 m |
+| Drop patches over 3.3 m (off AI ground) | 15 (6) | 26 (2) |
+| Triangles / meshes; draw calls in view p50 / p95; triangles in view p95 | 205k / 107; 43 / 56; 151k | 282k / 127; 47 / 63; 245k |
+
+The cost matches MT-11's throwaway count (209k and 56; 282k and 63). For District: exposed runs held to 40 m outside the named long crossings (principle 11); outdoor 70 m looks within Silver Creek's 9–22% per area; the mall's indoor 30 m looks near Northpoint's 15%; cost no more than Northpoint's.
 
 ## Worked examples
 

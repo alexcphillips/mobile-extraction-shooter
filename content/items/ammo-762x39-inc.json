@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-762x39-inc",
   "name": "7.62\u00d739 Incendiary",
   "shortName": "7.62 Inc.",
   "type": "ammo",
   "size": [1, 1],
   "value": 130,
+  "weight": 0.016,
   "rarity": "rare",
   "stack": 60,
   "caliber": "7.62x39",

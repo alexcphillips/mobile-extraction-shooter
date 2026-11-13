@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-46x30-jsp",
   "name": "4.6×30 mm JSP SX",
   "shortName": "4.6 JSP",
   "type": "ammo",
   "size": [1, 1],
   "value": 70,
+  "weight": 0.007,
   "rarity": "rare",
   "stack": 60,
   "caliber": "4.6x30",

@@ -37,6 +37,11 @@ How the forklift, pallets, office chair, clipboard and hanging jacket were made 
 - **Paper needs print on what's seen,** or it reads as blank stock, not documents (the user, on the first paper stacks). Vary it so pieces differ: a letter (heading, text lines, signature), a form (dark header bar, ruled rows), a folder (label, red stamp).
 - **Hanging, soft things obey gravity:** narrow, pinched at the hook, folds as strips at slightly different depths, angles and shades, uneven hems (the jacket after the user's reference shot).
 
+## Prefab catalog (MK-5, 2026-11-12)
+Before building a prefab, look for one to reuse: `node scripts/prefabs.mjs <words>` (size, height class, triangles, loot, where it's used), `--sheet` for pictures. Detail: tech/editors.md → Prefab catalog.
+- **Tags** say where a prefab belongs, one or more from this list: `street`, `vehicle`, `rail`, `store`, `food`, `office`, `home`, `leisure`, `medical`, `military`, `industrial`, `construction`, `logging`, `nature`, `structure` (buildings, doors, shutters, fences), `debris`. Tag every new prefab; add a tag to this list only when none fits. Cover isn't a tag: the catalog measures it (the height class) from what collides.
+- **Variants are nested copies, not copies** (the format already does it): a recolor is a prefab holding only the parent at its origin with `colors` overridden (`hazard-barrel-red`); a variant with more is the parent at its origin plus its own parts (`warehouse-rack-stocked-*`). Edit the parent and every variant follows. Removing or swapping a parent's parts has no format: split the parent so both build on a shared base. The catalog shows these as `recolor:` and `on:`.
+
 ## Collision
 - Only the main masses collide: a chair's seat and back, a forklift's body and mast, a pallet's boards.
 - Small details (`collide: false`): wheels, casters, columns, arm rests, handles, clips, text lines, wrap film.
@@ -111,6 +116,14 @@ Items (loot, guns, gear) are `model.parts` in their `content/items` JSON, drawn 
   3. With `npm run dev` up, `node scripts/item-shot.mjs <item-id> --out <scratchpad>/x` prints the budget line and saves the inventory pictures from every view plus the 3D and side views. Look at them and fix what reads wrong (floating parts, a color covering another) before handing over.
   4. Run the tests (`npx vitest run`, Node 22.23.4): the content test validates every item.
   5. Say what was seen and what wasn't, and ask the user how it looks in the game.
+
+## Worn gear (2026-11-12)
+Helmets, visors, headsets, armor, rigs and backpacks make up the character, aimed at the look target in [design/overview.md](design/overview.md) → Characters. The item model rules above apply; on top of them:
+- **Facet, don't round.** The look is flat planes meeting at hard edges: wedges and boxes turned a few degrees, and 5–8-sided cylinders, not smooth many-sided shells. Per-face shading only shows facets that face different ways.
+- **The key light (2026-11-12, the user's call):** item models and characters (not maps) get shade.ts's formula plus a light from the camera's left (`shadeGlsl` in `render/material.ts`): faces turned left of the camera are up to 8% brighter, turned right up to 8% darker. So facets read when they turn left and right as well as up and down; faces turned only toward or away from the camera still barely differ.
+- **What reads at a distance:** the helmet's outline and rails, a dark lens band across the face, the mag pouch row across the chest, two shades per piece (as above). Details under 1 cm vanish on a body across a room.
+- **Budget:** worn gear 1,200 triangles each (`item-editor/budget.ts`); six worn pieces at full budget plus a long gun is over 9,000 before the body, so most pieces should come in well under.
+- **No scratches, scuffs, grime or blood**, not even as 1 mm decals.
 
 ## Item palette (2026-11-09, IE-2)
 The item editor's "house" swatches (`item-editor/palette.ts`), taken from the colors the content's items use most. Start a new item from these; keep two shades per material as for props.

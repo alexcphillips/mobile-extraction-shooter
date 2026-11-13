@@ -25,9 +25,9 @@ describe('grids', () => {
     const g = createGrid(4, 3);
     // The 4×2 rifle fills the top two rows; the 2×1 pistol goes under it.
     expect(addItem(items, g, one('rifle'))).toBe(0);
-    expect(findSpot(items, g, 'pistol')).toEqual({ x: 0, y: 2, rotated: false });
+    expect(findSpot(items, g, one('pistol'))).toEqual({ x: 0, y: 2, rotated: false });
     // A 1×2 magazine only fits a 1-high gap turned on its side.
-    expect(findSpot(items, g, 'big-mag')).toEqual({ x: 0, y: 2, rotated: true });
+    expect(findSpot(items, g, one('big-mag'))).toEqual({ x: 0, y: 2, rotated: true });
     expect(addItem(items, g, one('big-mag'))).toBe(0);
     expect(g.items[1]).toMatchObject({ x: 0, y: 2, rotated: true });
     expect(itemAt(items, g, 1, 2)).toBe(1);
@@ -220,7 +220,7 @@ describe('grids', () => {
     expect(inGrid(g, 0, 0, 1, 2)).toBe(true);
     expect(inGrid(g, 0, 0, 2, 1)).toBe(false);
     // Nothing wider than a pouch: a 2×1 pistol only fits turned upright.
-    expect(findSpot(items, g, 'pistol')).toEqual({ x: 0, y: 0, rotated: true });
+    expect(findSpot(items, g, one('pistol'))).toEqual({ x: 0, y: 0, rotated: true });
     expect(placeAt(items, g, one('pistol'), 1, 0, false)).toBe(false);
     expect(addItem(items, g, one('rifle'))).toBe(1);
     // A backpack's two 2×2 pockets under a 4×1 top, and a cell in neither.

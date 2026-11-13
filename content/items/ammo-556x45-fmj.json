@@ -1,11 +1,12 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "ammo-556x45-fmj",
   "name": "5.56×45 mm FMJ",
   "shortName": "5.56 FMJ",
   "type": "ammo",
   "size": [1, 1],
   "value": 40,
+  "weight": 0.012,
   "rarity": "uncommon",
   "stack": 60,
   "caliber": "5.56x45",

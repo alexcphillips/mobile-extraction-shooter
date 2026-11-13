@@ -1,10 +1,11 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "id": "soft-vest",
   "name": "Soft vest",
   "type": "armor",
   "size": [3, 3],
   "value": 6000,
+  "weight": 2.5,
   "rarity": "common",
   "slot": "body",
   "level": 1,

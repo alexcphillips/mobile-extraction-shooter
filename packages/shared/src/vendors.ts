@@ -1,4 +1,4 @@
-import { itemDef, type ItemDb } from './content/items';
+import { attachmentDef, itemDef, type AttachmentSlot, type ItemDb } from './content/items';
 import { VENDOR_LEVELS, type VendorDef, type VendorOffer } from './content/vendors';
 import { removeAt, type Grid, type Item } from './inventory/grid';
 import { PROFILE, type Profile, type VendorStanding } from './profile';
@@ -72,10 +72,11 @@ export function sellParts(items: ItemDb, item: Item): SellPart[] {
       price: Math.floor(def.value * VENDOR.sellShare * condition(items, item)) * item.count,
     },
   ];
-  if (def.type === 'weapon') {
-    for (const a of Object.values(item.attachments ?? {})) {
-      if (a) parts.push({ id: a, count: 1, price: share(a) });
-    }
+  for (const a of Object.values(item.attachments ?? {})) {
+    if (a) parts.push({ id: a, count: 1, price: share(a) });
+  }
+  // A gun's loaded rounds, or a loose magazine's (MG-1).
+  if (def.type === 'weapon' || item.loaded) {
     const mag = item.mag ?? 0;
     const round = loadedAmmo(items, item);
     if (mag > 0) parts.push({ id: round, count: mag, price: share(round) * mag });
@@ -126,12 +127,20 @@ export function cantSell(items: ItemDb, item: Item): string | null {
 }
 
 /**
- * What an offer costs: the item, and any attachments it comes with, times the vendor's
- * markup (whole money).
+ * What an offer costs: the item, and any attachments it comes with (a gun's own, its
+ * `defaults`, unless the offer fits another in that slot), times the vendor's markup
+ * (whole money).
  */
 export function buyPrice(items: ItemDb, offer: VendorOffer, vendor?: VendorDef): number {
-  const parts = (offer.attachments ?? []).reduce((n, a) => n + itemDef(items, a).value, 0);
-  const base = itemDef(items, offer.item).value * (offer.count ?? 1) + parts;
+  const def = itemDef(items, offer.item);
+  const listed = offer.attachments ?? [];
+  let parts = listed.reduce((n, a) => n + itemDef(items, a).value, 0);
+  if (def.type === 'weapon') {
+    const taken = new Set(listed.map((a) => attachmentDef(items, a).slot));
+    for (const [slot, a] of Object.entries(def.defaults ?? {}))
+      if (!taken.has(slot as AttachmentSlot)) parts += itemDef(items, a).value;
+  }
+  const base = def.value * (offer.count ?? 1) + parts;
   return Math.round(base * (vendor?.markup ?? 1));
 }
 

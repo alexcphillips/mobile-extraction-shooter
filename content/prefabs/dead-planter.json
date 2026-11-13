@@ -2,6 +2,7 @@
   "formatVersion": 3,
   "id": "dead-planter",
   "name": "Dead planter",
+  "tags": ["store", "debris"],
   "colors": {
     "body": "#8a8c82",
     "soil": "#4a3a2c",
