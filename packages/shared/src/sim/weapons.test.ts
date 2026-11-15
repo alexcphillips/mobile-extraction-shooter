@@ -18,6 +18,7 @@ import {
 import {
   HIT_CAPSULES,
   capsuleEnds,
+  holdOf,
   createCharacterHit,
   rayCapsule,
   raycastCharacters,
@@ -34,6 +35,7 @@ import {
 } from './state';
 import { step } from './step';
 import { TEST_ITEMS } from './test-items';
+import { createItem } from './create-item';
 import { carriedAmmo, heldWeapon, stow } from './gear';
 import {
   BREATH,
@@ -144,9 +146,15 @@ function distToSegment(p: number[], a: number[], b: number[]): number {
 describe('hit zones', () => {
   const world = makeWorld();
 
-  function target(yaw = 0): { state: SimState; t: Character } {
+  /** A body to shoot; armed with a test gun (by id) or the knife, or empty-handed. */
+  function target(yaw = 0, held?: string): { state: SimState; t: Character } {
     const state = createState(1);
-    return { state, t: spawnCharacter(state, world, 0, 0, yaw) };
+    const t = spawnCharacter(state, world, 0, 0, yaw);
+    if (held === 'knife') {
+      t.gear.knife = createItem(TEST_ITEMS, 'knife');
+      t.gear.hand = 'knife';
+    } else if (held) giveWeapon(t, TEST_ITEMS, held);
+    return { state, t };
   }
 
   /** Shoots horizontally along +x at a height and sideways offset (z). */
@@ -158,17 +166,41 @@ describe('hit zones', () => {
 
   it('finds each zone on a standing body', () => {
     // Facing −x, towards the shots, so its right is −z.
-    const { state } = target(Math.PI / 2);
+    const { state } = target(Math.PI / 2, 'rifle');
     expect(zoneAt(state, 1.62, 0)).toBe(HEAD);
     // GZ-3: the thorax over the stomach.
     expect(zoneAt(state, 1.4, 0)).toBe(CHEST);
     expect(zoneAt(state, 1.0, 0)).toBe(STOMACH);
-    // The forearms, held forward in front of the chest.
-    expect(zoneAt(state, 1.185, 0.045)).toBe(LEFT_ARM);
-    expect(zoneAt(state, 1.2, -0.2)).toBe(RIGHT_ARM);
+    // The left forearm, held forward across the chest to the gun; the right upper arm out
+    // to the side, the elbow up (CH-3c: clear of the chest).
+    expect(zoneAt(state, 1.28, 0)).toBe(LEFT_ARM);
+    expect(zoneAt(state, 1.37, -0.25)).toBe(RIGHT_ARM);
     expect(zoneAt(state, 0.5, 0.11)).toBe(LEFT_LEG);
     expect(zoneAt(state, 0.5, -0.11)).toBe(RIGHT_LEG);
     expect(zoneAt(state, 2.0, 0)).toBe(null);
+  });
+
+  it('places the arms by what is held (2026-11-13)', () => {
+    expect(holdOf(target(0, 'rifle').t)).toBe('rifle');
+    expect(holdOf(target(0, 'pistol').t)).toBe('pistol');
+    expect(holdOf(target(0, 'knife').t)).toBe('knife');
+    const { t } = target(0);
+    expect(holdOf(t)).toBe('none');
+    t.gear.hand = 'knife';
+    expect(holdOf(t)).toBe('none');
+
+    // Facing the shots (−x), so its right is −z. Each spot is an arm in one hold only.
+    const at = (held: string | undefined, y: number, z: number) =>
+      zoneAt(target(Math.PI / 2, held).state, y, z);
+    // Empty hands hang by the sides, past the stomach.
+    expect(at(undefined, 1.0, -0.245)).toBe(RIGHT_ARM);
+    expect(at('rifle', 1.0, -0.245)).toBe(null);
+    // The knife is held low and forward of the right hip.
+    expect(at('knife', 1.12, -0.22)).toBe(RIGHT_ARM);
+    expect(at('rifle', 1.12, -0.22)).toBe(null);
+    // A pistol's left elbow is out past the side of the chest.
+    expect(at('pistol', 1.29, 0.214)).toBe(LEFT_ARM);
+    expect(at('rifle', 1.29, 0.214)).toBe(null);
   });
 
   it('counts a head hit from the front under the brow as the face (GZ-3)', () => {
@@ -187,13 +219,13 @@ describe('hit zones', () => {
   });
 
   it('turns with yaw', () => {
-    // Facing −z: right is +x, so a ray along +x meets the left upper arm first. It's just
-    // behind the middle (z +0.02).
-    const facingMinusZ = target(0).state;
-    expect(zoneAt(facingMinusZ, 1.25, 0.02)).toBe(LEFT_ARM);
-    // Facing +z: right is −x, so the right upper arm comes first; it's 0.12 m back (−z).
-    const facingPlusZ = target(Math.PI).state;
-    expect(zoneAt(facingPlusZ, 1.25, -0.12)).toBe(RIGHT_ARM);
+    // Facing −z: right is +x, so a ray along +x meets the left upper arm first, by the
+    // shoulder, which the rifle hold turns 9 cm forward (−z).
+    const facingMinusZ = target(0, 'rifle').state;
+    expect(zoneAt(facingMinusZ, 1.42, -0.09)).toBe(LEFT_ARM);
+    // Facing +z: right is −x, so the right upper arm comes first, out to the elbow.
+    const facingPlusZ = target(Math.PI, 'rifle').state;
+    expect(zoneAt(facingPlusZ, 1.37, 0.02)).toBe(RIGHT_ARM);
   });
 
   it('shrinks with crouching', () => {

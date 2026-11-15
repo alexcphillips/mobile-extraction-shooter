@@ -20,56 +20,1656 @@
       "top": "#6b6a4a",
       "bottom": "#4a4f5a",
       "hands": "#3b3530",
-      "feet": "#2e2a26"
+      "feet": "#2e2a26",
+      "plating": [
+        {
+          "bone": "chest",
+          "parts": [
+            {
+              "name": "jacket back",
+              "type": "slab",
+              "pos": [0, 1.36, 0.1],
+              "size": [0.37, 0.23, 0.04],
+              "corners": [0.015, 0.015, 0.015, 0.015],
+              "segments": 1,
+              "color": "#4a4f3c"
+            },
+            {
+              "name": "jacket side L",
+              "type": "box",
+              "pos": [-0.172, 1.36, -0.01],
+              "size": [0.04, 0.23, 0.235],
+              "color": "#4a4f3c"
+            },
+            {
+              "name": "jacket side R",
+              "type": "box",
+              "pos": [0.172, 1.36, -0.01],
+              "size": [0.04, 0.23, 0.235],
+              "color": "#4a4f3c"
+            },
+            {
+              "name": "jacket front L",
+              "type": "box",
+              "pos": [-0.115, 1.36, -0.128],
+              "size": [0.1, 0.22, 0.02],
+              "color": "#4a4f3c"
+            },
+            {
+              "name": "jacket front R",
+              "type": "box",
+              "pos": [0.115, 1.36, -0.128],
+              "size": [0.1, 0.22, 0.02],
+              "color": "#4a4f3c"
+            },
+            {
+              "name": "jacket shoulders",
+              "type": "slab",
+              "pos": [0, 1.485, 0],
+              "size": [0.32, 0.06, 0.2],
+              "corners": [0.05, 0.05, 0.05, 0.05],
+              "segments": 1,
+              "color": "#4a4f3c"
+            },
+            {
+              "name": "collar",
+              "type": "slab",
+              "pos": [0, 1.51, 0.005],
+              "size": [0.24, 0.045, 0.2],
+              "corners": [0.045, 0.045, 0.045, 0.045],
+              "segments": 1,
+              "color": "#3a3e2f"
+            },
+            {
+              "name": "rig panel",
+              "type": "box",
+              "pos": [0, 1.33, -0.152],
+              "size": [0.26, 0.13, 0.03],
+              "color": "#2b2d2a"
+            },
+            {
+              "name": "pouch 1",
+              "type": "box",
+              "pos": [-0.08, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 1",
+              "type": "box",
+              "pos": [-0.08, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "pouch 2",
+              "type": "box",
+              "pos": [0, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 2",
+              "type": "box",
+              "pos": [0, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "pouch 3",
+              "type": "box",
+              "pos": [0.08, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 3",
+              "type": "box",
+              "pos": [0.08, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "rig strap L",
+              "type": "box",
+              "pos": [-0.09, 1.526, -0.005],
+              "size": [0.04, 0.02, 0.25],
+              "color": "#2b2d2a"
+            },
+            {
+              "name": "rig strap R",
+              "type": "box",
+              "pos": [0.09, 1.526, -0.005],
+              "size": [0.04, 0.02, 0.25],
+              "color": "#2b2d2a"
+            }
+          ]
+        },
+        {
+          "bone": "belly",
+          "parts": [
+            {
+              "name": "jacket back low",
+              "type": "box",
+              "pos": [0, 1.19, 0.107],
+              "size": [0.33, 0.18, 0.03],
+              "color": "#4a4f3c"
+            },
+            {
+              "name": "jacket side low L",
+              "type": "box",
+              "pos": [-0.155, 1.19, 0],
+              "size": [0.03, 0.18, 0.21],
+              "color": "#4a4f3c"
+            },
+            {
+              "name": "jacket side low R",
+              "type": "box",
+              "pos": [0.155, 1.19, 0],
+              "size": [0.03, 0.18, 0.21],
+              "color": "#4a4f3c"
+            },
+            {
+              "name": "jacket front low L",
+              "type": "box",
+              "pos": [-0.11, 1.19, -0.109],
+              "size": [0.085, 0.18, 0.02],
+              "color": "#4a4f3c"
+            },
+            {
+              "name": "jacket front low R",
+              "type": "box",
+              "pos": [0.11, 1.19, -0.109],
+              "size": [0.085, 0.18, 0.02],
+              "color": "#4a4f3c"
+            },
+            {
+              "name": "hem",
+              "type": "box",
+              "pos": [0, 1.098, 0],
+              "size": [0.34, 0.025, 0.225],
+              "color": "#3a3e2f"
+            }
+          ]
+        },
+        {
+          "bone": "upperArmL",
+          "mirror": true,
+          "parts": [
+            {
+              "name": "sleeve",
+              "type": "cylinder",
+              "pos": [-0.31, 1.43, 0],
+              "radius": 0.071,
+              "radiusTop": 0.06,
+              "height": 0.28,
+              "sides": 6,
+              "roll": 90,
+              "color": "#4a4f3c"
+            },
+            {
+              "name": "sleeve cuff",
+              "type": "cylinder",
+              "pos": [-0.455, 1.43, 0],
+              "radius": 0.061,
+              "radiusTop": 0.06,
+              "height": 0.025,
+              "sides": 6,
+              "roll": 90,
+              "color": "#3a3e2f"
+            }
+          ]
+        }
+      ]
     },
     {
       "skin": "#e0b896",
       "top": "#c0392b",
       "bottom": "#3d4f6b",
       "hands": "#e0b896",
-      "feet": "#d8d8d0"
+      "feet": "#d8d8d0",
+      "plating": [
+        {
+          "bone": "chest",
+          "parts": [
+            {
+              "name": "jacket back",
+              "type": "slab",
+              "pos": [0, 1.36, 0.1],
+              "size": [0.37, 0.23, 0.04],
+              "corners": [0.015, 0.015, 0.015, 0.015],
+              "segments": 1,
+              "color": "#3b3f45"
+            },
+            {
+              "name": "jacket side L",
+              "type": "box",
+              "pos": [-0.172, 1.36, -0.01],
+              "size": [0.04, 0.23, 0.235],
+              "color": "#3b3f45"
+            },
+            {
+              "name": "jacket side R",
+              "type": "box",
+              "pos": [0.172, 1.36, -0.01],
+              "size": [0.04, 0.23, 0.235],
+              "color": "#3b3f45"
+            },
+            {
+              "name": "jacket front L",
+              "type": "box",
+              "pos": [-0.115, 1.36, -0.128],
+              "size": [0.1, 0.22, 0.02],
+              "color": "#3b3f45"
+            },
+            {
+              "name": "jacket front R",
+              "type": "box",
+              "pos": [0.115, 1.36, -0.128],
+              "size": [0.1, 0.22, 0.02],
+              "color": "#3b3f45"
+            },
+            {
+              "name": "jacket shoulders",
+              "type": "slab",
+              "pos": [0, 1.485, 0],
+              "size": [0.32, 0.06, 0.2],
+              "corners": [0.05, 0.05, 0.05, 0.05],
+              "segments": 1,
+              "color": "#3b3f45"
+            },
+            {
+              "name": "collar",
+              "type": "slab",
+              "pos": [0, 1.51, 0.005],
+              "size": [0.24, 0.045, 0.2],
+              "corners": [0.045, 0.045, 0.045, 0.045],
+              "segments": 1,
+              "color": "#2e3136"
+            },
+            {
+              "name": "rig panel",
+              "type": "box",
+              "pos": [0, 1.33, -0.152],
+              "size": [0.26, 0.13, 0.03],
+              "color": "#2b2d2a"
+            },
+            {
+              "name": "pouch 1",
+              "type": "box",
+              "pos": [-0.08, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 1",
+              "type": "box",
+              "pos": [-0.08, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "pouch 2",
+              "type": "box",
+              "pos": [0, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 2",
+              "type": "box",
+              "pos": [0, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "pouch 3",
+              "type": "box",
+              "pos": [0.08, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 3",
+              "type": "box",
+              "pos": [0.08, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "rig strap L",
+              "type": "box",
+              "pos": [-0.09, 1.526, -0.005],
+              "size": [0.04, 0.02, 0.25],
+              "color": "#2b2d2a"
+            },
+            {
+              "name": "rig strap R",
+              "type": "box",
+              "pos": [0.09, 1.526, -0.005],
+              "size": [0.04, 0.02, 0.25],
+              "color": "#2b2d2a"
+            }
+          ]
+        },
+        {
+          "bone": "belly",
+          "parts": [
+            {
+              "name": "jacket back low",
+              "type": "box",
+              "pos": [0, 1.19, 0.107],
+              "size": [0.33, 0.18, 0.03],
+              "color": "#3b3f45"
+            },
+            {
+              "name": "jacket side low L",
+              "type": "box",
+              "pos": [-0.155, 1.19, 0],
+              "size": [0.03, 0.18, 0.21],
+              "color": "#3b3f45"
+            },
+            {
+              "name": "jacket side low R",
+              "type": "box",
+              "pos": [0.155, 1.19, 0],
+              "size": [0.03, 0.18, 0.21],
+              "color": "#3b3f45"
+            },
+            {
+              "name": "jacket front low L",
+              "type": "box",
+              "pos": [-0.11, 1.19, -0.109],
+              "size": [0.085, 0.18, 0.02],
+              "color": "#3b3f45"
+            },
+            {
+              "name": "jacket front low R",
+              "type": "box",
+              "pos": [0.11, 1.19, -0.109],
+              "size": [0.085, 0.18, 0.02],
+              "color": "#3b3f45"
+            },
+            {
+              "name": "hem",
+              "type": "box",
+              "pos": [0, 1.098, 0],
+              "size": [0.34, 0.025, 0.225],
+              "color": "#2e3136"
+            }
+          ]
+        },
+        {
+          "bone": "upperArmL",
+          "mirror": true,
+          "parts": [
+            {
+              "name": "sleeve",
+              "type": "cylinder",
+              "pos": [-0.31, 1.43, 0],
+              "radius": 0.071,
+              "radiusTop": 0.06,
+              "height": 0.28,
+              "sides": 6,
+              "roll": 90,
+              "color": "#3b3f45"
+            },
+            {
+              "name": "sleeve cuff",
+              "type": "cylinder",
+              "pos": [-0.455, 1.43, 0],
+              "radius": 0.061,
+              "radiusTop": 0.06,
+              "height": 0.025,
+              "sides": 6,
+              "roll": 90,
+              "color": "#2e3136"
+            }
+          ]
+        }
+      ]
     },
     {
       "skin": "#8d5a3b",
       "top": "#2c3e8f",
       "bottom": "#2c3e8f",
       "hands": "#8d5a3b",
-      "feet": "#e6e6e0"
+      "feet": "#e6e6e0",
+      "plating": [
+        {
+          "bone": "chest",
+          "parts": [
+            {
+              "name": "jacket back",
+              "type": "slab",
+              "pos": [0, 1.36, 0.1],
+              "size": [0.37, 0.23, 0.04],
+              "corners": [0.015, 0.015, 0.015, 0.015],
+              "segments": 1,
+              "color": "#5a4a3a"
+            },
+            {
+              "name": "jacket side L",
+              "type": "box",
+              "pos": [-0.172, 1.36, -0.01],
+              "size": [0.04, 0.23, 0.235],
+              "color": "#5a4a3a"
+            },
+            {
+              "name": "jacket side R",
+              "type": "box",
+              "pos": [0.172, 1.36, -0.01],
+              "size": [0.04, 0.23, 0.235],
+              "color": "#5a4a3a"
+            },
+            {
+              "name": "jacket front L",
+              "type": "box",
+              "pos": [-0.115, 1.36, -0.128],
+              "size": [0.1, 0.22, 0.02],
+              "color": "#5a4a3a"
+            },
+            {
+              "name": "jacket front R",
+              "type": "box",
+              "pos": [0.115, 1.36, -0.128],
+              "size": [0.1, 0.22, 0.02],
+              "color": "#5a4a3a"
+            },
+            {
+              "name": "jacket shoulders",
+              "type": "slab",
+              "pos": [0, 1.485, 0],
+              "size": [0.32, 0.06, 0.2],
+              "corners": [0.05, 0.05, 0.05, 0.05],
+              "segments": 1,
+              "color": "#5a4a3a"
+            },
+            {
+              "name": "collar",
+              "type": "slab",
+              "pos": [0, 1.51, 0.005],
+              "size": [0.24, 0.045, 0.2],
+              "corners": [0.045, 0.045, 0.045, 0.045],
+              "segments": 1,
+              "color": "#463a2d"
+            },
+            {
+              "name": "rig panel",
+              "type": "box",
+              "pos": [0, 1.33, -0.152],
+              "size": [0.26, 0.13, 0.03],
+              "color": "#2b2d2a"
+            },
+            {
+              "name": "pouch 1",
+              "type": "box",
+              "pos": [-0.08, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 1",
+              "type": "box",
+              "pos": [-0.08, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "pouch 2",
+              "type": "box",
+              "pos": [0, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 2",
+              "type": "box",
+              "pos": [0, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "pouch 3",
+              "type": "box",
+              "pos": [0.08, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 3",
+              "type": "box",
+              "pos": [0.08, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "rig strap L",
+              "type": "box",
+              "pos": [-0.09, 1.526, -0.005],
+              "size": [0.04, 0.02, 0.25],
+              "color": "#2b2d2a"
+            },
+            {
+              "name": "rig strap R",
+              "type": "box",
+              "pos": [0.09, 1.526, -0.005],
+              "size": [0.04, 0.02, 0.25],
+              "color": "#2b2d2a"
+            }
+          ]
+        },
+        {
+          "bone": "belly",
+          "parts": [
+            {
+              "name": "jacket back low",
+              "type": "box",
+              "pos": [0, 1.19, 0.107],
+              "size": [0.33, 0.18, 0.03],
+              "color": "#5a4a3a"
+            },
+            {
+              "name": "jacket side low L",
+              "type": "box",
+              "pos": [-0.155, 1.19, 0],
+              "size": [0.03, 0.18, 0.21],
+              "color": "#5a4a3a"
+            },
+            {
+              "name": "jacket side low R",
+              "type": "box",
+              "pos": [0.155, 1.19, 0],
+              "size": [0.03, 0.18, 0.21],
+              "color": "#5a4a3a"
+            },
+            {
+              "name": "jacket front low L",
+              "type": "box",
+              "pos": [-0.11, 1.19, -0.109],
+              "size": [0.085, 0.18, 0.02],
+              "color": "#5a4a3a"
+            },
+            {
+              "name": "jacket front low R",
+              "type": "box",
+              "pos": [0.11, 1.19, -0.109],
+              "size": [0.085, 0.18, 0.02],
+              "color": "#5a4a3a"
+            },
+            {
+              "name": "hem",
+              "type": "box",
+              "pos": [0, 1.098, 0],
+              "size": [0.34, 0.025, 0.225],
+              "color": "#463a2d"
+            }
+          ]
+        },
+        {
+          "bone": "upperArmL",
+          "mirror": true,
+          "parts": [
+            {
+              "name": "sleeve",
+              "type": "cylinder",
+              "pos": [-0.31, 1.43, 0],
+              "radius": 0.071,
+              "radiusTop": 0.06,
+              "height": 0.28,
+              "sides": 6,
+              "roll": 90,
+              "color": "#5a4a3a"
+            },
+            {
+              "name": "sleeve cuff",
+              "type": "cylinder",
+              "pos": [-0.455, 1.43, 0],
+              "radius": 0.061,
+              "radiusTop": 0.06,
+              "height": 0.025,
+              "sides": 6,
+              "roll": 90,
+              "color": "#463a2d"
+            }
+          ]
+        }
+      ]
     },
     {
       "skin": "#a8714f",
       "top": "#2e8b74",
       "bottom": "#2e8b74",
       "hands": "#a8714f",
-      "feet": "#2a2a2e"
+      "feet": "#2a2a2e",
+      "plating": [
+        {
+          "bone": "chest",
+          "parts": [
+            {
+              "name": "jacket back",
+              "type": "slab",
+              "pos": [0, 1.36, 0.1],
+              "size": [0.37, 0.23, 0.04],
+              "corners": [0.015, 0.015, 0.015, 0.015],
+              "segments": 1,
+              "color": "#3d4a5e"
+            },
+            {
+              "name": "jacket side L",
+              "type": "box",
+              "pos": [-0.172, 1.36, -0.01],
+              "size": [0.04, 0.23, 0.235],
+              "color": "#3d4a5e"
+            },
+            {
+              "name": "jacket side R",
+              "type": "box",
+              "pos": [0.172, 1.36, -0.01],
+              "size": [0.04, 0.23, 0.235],
+              "color": "#3d4a5e"
+            },
+            {
+              "name": "jacket front L",
+              "type": "box",
+              "pos": [-0.115, 1.36, -0.128],
+              "size": [0.1, 0.22, 0.02],
+              "color": "#3d4a5e"
+            },
+            {
+              "name": "jacket front R",
+              "type": "box",
+              "pos": [0.115, 1.36, -0.128],
+              "size": [0.1, 0.22, 0.02],
+              "color": "#3d4a5e"
+            },
+            {
+              "name": "jacket shoulders",
+              "type": "slab",
+              "pos": [0, 1.485, 0],
+              "size": [0.32, 0.06, 0.2],
+              "corners": [0.05, 0.05, 0.05, 0.05],
+              "segments": 1,
+              "color": "#3d4a5e"
+            },
+            {
+              "name": "collar",
+              "type": "slab",
+              "pos": [0, 1.51, 0.005],
+              "size": [0.24, 0.045, 0.2],
+              "corners": [0.045, 0.045, 0.045, 0.045],
+              "segments": 1,
+              "color": "#303a49"
+            },
+            {
+              "name": "rig panel",
+              "type": "box",
+              "pos": [0, 1.33, -0.152],
+              "size": [0.26, 0.13, 0.03],
+              "color": "#2b2d2a"
+            },
+            {
+              "name": "pouch 1",
+              "type": "box",
+              "pos": [-0.08, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 1",
+              "type": "box",
+              "pos": [-0.08, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "pouch 2",
+              "type": "box",
+              "pos": [0, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 2",
+              "type": "box",
+              "pos": [0, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "pouch 3",
+              "type": "box",
+              "pos": [0.08, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 3",
+              "type": "box",
+              "pos": [0.08, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "rig strap L",
+              "type": "box",
+              "pos": [-0.09, 1.526, -0.005],
+              "size": [0.04, 0.02, 0.25],
+              "color": "#2b2d2a"
+            },
+            {
+              "name": "rig strap R",
+              "type": "box",
+              "pos": [0.09, 1.526, -0.005],
+              "size": [0.04, 0.02, 0.25],
+              "color": "#2b2d2a"
+            }
+          ]
+        },
+        {
+          "bone": "belly",
+          "parts": [
+            {
+              "name": "jacket back low",
+              "type": "box",
+              "pos": [0, 1.19, 0.107],
+              "size": [0.33, 0.18, 0.03],
+              "color": "#3d4a5e"
+            },
+            {
+              "name": "jacket side low L",
+              "type": "box",
+              "pos": [-0.155, 1.19, 0],
+              "size": [0.03, 0.18, 0.21],
+              "color": "#3d4a5e"
+            },
+            {
+              "name": "jacket side low R",
+              "type": "box",
+              "pos": [0.155, 1.19, 0],
+              "size": [0.03, 0.18, 0.21],
+              "color": "#3d4a5e"
+            },
+            {
+              "name": "jacket front low L",
+              "type": "box",
+              "pos": [-0.11, 1.19, -0.109],
+              "size": [0.085, 0.18, 0.02],
+              "color": "#3d4a5e"
+            },
+            {
+              "name": "jacket front low R",
+              "type": "box",
+              "pos": [0.11, 1.19, -0.109],
+              "size": [0.085, 0.18, 0.02],
+              "color": "#3d4a5e"
+            },
+            {
+              "name": "hem",
+              "type": "box",
+              "pos": [0, 1.098, 0],
+              "size": [0.34, 0.025, 0.225],
+              "color": "#303a49"
+            }
+          ]
+        },
+        {
+          "bone": "upperArmL",
+          "mirror": true,
+          "parts": [
+            {
+              "name": "sleeve",
+              "type": "cylinder",
+              "pos": [-0.31, 1.43, 0],
+              "radius": 0.071,
+              "radiusTop": 0.06,
+              "height": 0.28,
+              "sides": 6,
+              "roll": 90,
+              "color": "#3d4a5e"
+            },
+            {
+              "name": "sleeve cuff",
+              "type": "cylinder",
+              "pos": [-0.455, 1.43, 0],
+              "radius": 0.061,
+              "radiusTop": 0.06,
+              "height": 0.025,
+              "sides": 6,
+              "roll": 90,
+              "color": "#303a49"
+            }
+          ]
+        }
+      ]
     },
     {
       "skin": "#f0c8a8",
       "top": "#c9a227",
       "bottom": "#6e6e70",
       "hands": "#f0c8a8",
-      "feet": "#3a3026"
+      "feet": "#3a3026",
+      "plating": [
+        {
+          "bone": "chest",
+          "parts": [
+            {
+              "name": "jacket back",
+              "type": "slab",
+              "pos": [0, 1.36, 0.1],
+              "size": [0.37, 0.23, 0.04],
+              "corners": [0.015, 0.015, 0.015, 0.015],
+              "segments": 1,
+              "color": "#6e6a58"
+            },
+            {
+              "name": "jacket side L",
+              "type": "box",
+              "pos": [-0.172, 1.36, -0.01],
+              "size": [0.04, 0.23, 0.235],
+              "color": "#6e6a58"
+            },
+            {
+              "name": "jacket side R",
+              "type": "box",
+              "pos": [0.172, 1.36, -0.01],
+              "size": [0.04, 0.23, 0.235],
+              "color": "#6e6a58"
+            },
+            {
+              "name": "jacket front L",
+              "type": "box",
+              "pos": [-0.115, 1.36, -0.128],
+              "size": [0.1, 0.22, 0.02],
+              "color": "#6e6a58"
+            },
+            {
+              "name": "jacket front R",
+              "type": "box",
+              "pos": [0.115, 1.36, -0.128],
+              "size": [0.1, 0.22, 0.02],
+              "color": "#6e6a58"
+            },
+            {
+              "name": "jacket shoulders",
+              "type": "slab",
+              "pos": [0, 1.485, 0],
+              "size": [0.32, 0.06, 0.2],
+              "corners": [0.05, 0.05, 0.05, 0.05],
+              "segments": 1,
+              "color": "#6e6a58"
+            },
+            {
+              "name": "collar",
+              "type": "slab",
+              "pos": [0, 1.51, 0.005],
+              "size": [0.24, 0.045, 0.2],
+              "corners": [0.045, 0.045, 0.045, 0.045],
+              "segments": 1,
+              "color": "#565345"
+            },
+            {
+              "name": "rig panel",
+              "type": "box",
+              "pos": [0, 1.33, -0.152],
+              "size": [0.26, 0.13, 0.03],
+              "color": "#2b2d2a"
+            },
+            {
+              "name": "pouch 1",
+              "type": "box",
+              "pos": [-0.08, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 1",
+              "type": "box",
+              "pos": [-0.08, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "pouch 2",
+              "type": "box",
+              "pos": [0, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 2",
+              "type": "box",
+              "pos": [0, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "pouch 3",
+              "type": "box",
+              "pos": [0.08, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 3",
+              "type": "box",
+              "pos": [0.08, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "rig strap L",
+              "type": "box",
+              "pos": [-0.09, 1.526, -0.005],
+              "size": [0.04, 0.02, 0.25],
+              "color": "#2b2d2a"
+            },
+            {
+              "name": "rig strap R",
+              "type": "box",
+              "pos": [0.09, 1.526, -0.005],
+              "size": [0.04, 0.02, 0.25],
+              "color": "#2b2d2a"
+            }
+          ]
+        },
+        {
+          "bone": "belly",
+          "parts": [
+            {
+              "name": "jacket back low",
+              "type": "box",
+              "pos": [0, 1.19, 0.107],
+              "size": [0.33, 0.18, 0.03],
+              "color": "#6e6a58"
+            },
+            {
+              "name": "jacket side low L",
+              "type": "box",
+              "pos": [-0.155, 1.19, 0],
+              "size": [0.03, 0.18, 0.21],
+              "color": "#6e6a58"
+            },
+            {
+              "name": "jacket side low R",
+              "type": "box",
+              "pos": [0.155, 1.19, 0],
+              "size": [0.03, 0.18, 0.21],
+              "color": "#6e6a58"
+            },
+            {
+              "name": "jacket front low L",
+              "type": "box",
+              "pos": [-0.11, 1.19, -0.109],
+              "size": [0.085, 0.18, 0.02],
+              "color": "#6e6a58"
+            },
+            {
+              "name": "jacket front low R",
+              "type": "box",
+              "pos": [0.11, 1.19, -0.109],
+              "size": [0.085, 0.18, 0.02],
+              "color": "#6e6a58"
+            },
+            {
+              "name": "hem",
+              "type": "box",
+              "pos": [0, 1.098, 0],
+              "size": [0.34, 0.025, 0.225],
+              "color": "#565345"
+            }
+          ]
+        },
+        {
+          "bone": "upperArmL",
+          "mirror": true,
+          "parts": [
+            {
+              "name": "sleeve",
+              "type": "cylinder",
+              "pos": [-0.31, 1.43, 0],
+              "radius": 0.071,
+              "radiusTop": 0.06,
+              "height": 0.28,
+              "sides": 6,
+              "roll": 90,
+              "color": "#6e6a58"
+            },
+            {
+              "name": "sleeve cuff",
+              "type": "cylinder",
+              "pos": [-0.455, 1.43, 0],
+              "radius": 0.061,
+              "radiusTop": 0.06,
+              "height": 0.025,
+              "sides": 6,
+              "roll": 90,
+              "color": "#565345"
+            }
+          ]
+        }
+      ]
     },
     {
       "skin": "#c99a78",
       "top": "#6b3fa0",
       "bottom": "#2b2b30",
       "hands": "#2b2b30",
-      "feet": "#2b2b30"
+      "feet": "#2b2b30",
+      "plating": [
+        {
+          "bone": "chest",
+          "parts": [
+            {
+              "name": "jacket back",
+              "type": "slab",
+              "pos": [0, 1.36, 0.1],
+              "size": [0.37, 0.23, 0.04],
+              "corners": [0.015, 0.015, 0.015, 0.015],
+              "segments": 1,
+              "color": "#2f3a2f"
+            },
+            {
+              "name": "jacket side L",
+              "type": "box",
+              "pos": [-0.172, 1.36, -0.01],
+              "size": [0.04, 0.23, 0.235],
+              "color": "#2f3a2f"
+            },
+            {
+              "name": "jacket side R",
+              "type": "box",
+              "pos": [0.172, 1.36, -0.01],
+              "size": [0.04, 0.23, 0.235],
+              "color": "#2f3a2f"
+            },
+            {
+              "name": "jacket front L",
+              "type": "box",
+              "pos": [-0.115, 1.36, -0.128],
+              "size": [0.1, 0.22, 0.02],
+              "color": "#2f3a2f"
+            },
+            {
+              "name": "jacket front R",
+              "type": "box",
+              "pos": [0.115, 1.36, -0.128],
+              "size": [0.1, 0.22, 0.02],
+              "color": "#2f3a2f"
+            },
+            {
+              "name": "jacket shoulders",
+              "type": "slab",
+              "pos": [0, 1.485, 0],
+              "size": [0.32, 0.06, 0.2],
+              "corners": [0.05, 0.05, 0.05, 0.05],
+              "segments": 1,
+              "color": "#2f3a2f"
+            },
+            {
+              "name": "collar",
+              "type": "slab",
+              "pos": [0, 1.51, 0.005],
+              "size": [0.24, 0.045, 0.2],
+              "corners": [0.045, 0.045, 0.045, 0.045],
+              "segments": 1,
+              "color": "#252d25"
+            },
+            {
+              "name": "rig panel",
+              "type": "box",
+              "pos": [0, 1.33, -0.152],
+              "size": [0.26, 0.13, 0.03],
+              "color": "#2b2d2a"
+            },
+            {
+              "name": "pouch 1",
+              "type": "box",
+              "pos": [-0.08, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 1",
+              "type": "box",
+              "pos": [-0.08, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "pouch 2",
+              "type": "box",
+              "pos": [0, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 2",
+              "type": "box",
+              "pos": [0, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "pouch 3",
+              "type": "box",
+              "pos": [0.08, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 3",
+              "type": "box",
+              "pos": [0.08, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "rig strap L",
+              "type": "box",
+              "pos": [-0.09, 1.526, -0.005],
+              "size": [0.04, 0.02, 0.25],
+              "color": "#2b2d2a"
+            },
+            {
+              "name": "rig strap R",
+              "type": "box",
+              "pos": [0.09, 1.526, -0.005],
+              "size": [0.04, 0.02, 0.25],
+              "color": "#2b2d2a"
+            }
+          ]
+        },
+        {
+          "bone": "belly",
+          "parts": [
+            {
+              "name": "jacket back low",
+              "type": "box",
+              "pos": [0, 1.19, 0.107],
+              "size": [0.33, 0.18, 0.03],
+              "color": "#2f3a2f"
+            },
+            {
+              "name": "jacket side low L",
+              "type": "box",
+              "pos": [-0.155, 1.19, 0],
+              "size": [0.03, 0.18, 0.21],
+              "color": "#2f3a2f"
+            },
+            {
+              "name": "jacket side low R",
+              "type": "box",
+              "pos": [0.155, 1.19, 0],
+              "size": [0.03, 0.18, 0.21],
+              "color": "#2f3a2f"
+            },
+            {
+              "name": "jacket front low L",
+              "type": "box",
+              "pos": [-0.11, 1.19, -0.109],
+              "size": [0.085, 0.18, 0.02],
+              "color": "#2f3a2f"
+            },
+            {
+              "name": "jacket front low R",
+              "type": "box",
+              "pos": [0.11, 1.19, -0.109],
+              "size": [0.085, 0.18, 0.02],
+              "color": "#2f3a2f"
+            },
+            {
+              "name": "hem",
+              "type": "box",
+              "pos": [0, 1.098, 0],
+              "size": [0.34, 0.025, 0.225],
+              "color": "#252d25"
+            }
+          ]
+        },
+        {
+          "bone": "upperArmL",
+          "mirror": true,
+          "parts": [
+            {
+              "name": "sleeve",
+              "type": "cylinder",
+              "pos": [-0.31, 1.43, 0],
+              "radius": 0.071,
+              "radiusTop": 0.06,
+              "height": 0.28,
+              "sides": 6,
+              "roll": 90,
+              "color": "#2f3a2f"
+            },
+            {
+              "name": "sleeve cuff",
+              "type": "cylinder",
+              "pos": [-0.455, 1.43, 0],
+              "radius": 0.061,
+              "radiusTop": 0.06,
+              "height": 0.025,
+              "sides": 6,
+              "roll": 90,
+              "color": "#252d25"
+            }
+          ]
+        }
+      ]
     },
     {
       "skin": "#8d5a3b",
       "top": "#d9772b",
       "bottom": "#5a4632",
       "hands": "#3b3530",
-      "feet": "#2e2a26"
+      "feet": "#2e2a26",
+      "plating": [
+        {
+          "bone": "chest",
+          "parts": [
+            {
+              "name": "jacket back",
+              "type": "slab",
+              "pos": [0, 1.36, 0.1],
+              "size": [0.37, 0.23, 0.04],
+              "corners": [0.015, 0.015, 0.015, 0.015],
+              "segments": 1,
+              "color": "#4e4438"
+            },
+            {
+              "name": "jacket side L",
+              "type": "box",
+              "pos": [-0.172, 1.36, -0.01],
+              "size": [0.04, 0.23, 0.235],
+              "color": "#4e4438"
+            },
+            {
+              "name": "jacket side R",
+              "type": "box",
+              "pos": [0.172, 1.36, -0.01],
+              "size": [0.04, 0.23, 0.235],
+              "color": "#4e4438"
+            },
+            {
+              "name": "jacket front L",
+              "type": "box",
+              "pos": [-0.115, 1.36, -0.128],
+              "size": [0.1, 0.22, 0.02],
+              "color": "#4e4438"
+            },
+            {
+              "name": "jacket front R",
+              "type": "box",
+              "pos": [0.115, 1.36, -0.128],
+              "size": [0.1, 0.22, 0.02],
+              "color": "#4e4438"
+            },
+            {
+              "name": "jacket shoulders",
+              "type": "slab",
+              "pos": [0, 1.485, 0],
+              "size": [0.32, 0.06, 0.2],
+              "corners": [0.05, 0.05, 0.05, 0.05],
+              "segments": 1,
+              "color": "#4e4438"
+            },
+            {
+              "name": "collar",
+              "type": "slab",
+              "pos": [0, 1.51, 0.005],
+              "size": [0.24, 0.045, 0.2],
+              "corners": [0.045, 0.045, 0.045, 0.045],
+              "segments": 1,
+              "color": "#3d352c"
+            },
+            {
+              "name": "rig panel",
+              "type": "box",
+              "pos": [0, 1.33, -0.152],
+              "size": [0.26, 0.13, 0.03],
+              "color": "#2b2d2a"
+            },
+            {
+              "name": "pouch 1",
+              "type": "box",
+              "pos": [-0.08, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 1",
+              "type": "box",
+              "pos": [-0.08, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "pouch 2",
+              "type": "box",
+              "pos": [0, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 2",
+              "type": "box",
+              "pos": [0, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "pouch 3",
+              "type": "box",
+              "pos": [0.08, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 3",
+              "type": "box",
+              "pos": [0.08, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "rig strap L",
+              "type": "box",
+              "pos": [-0.09, 1.526, -0.005],
+              "size": [0.04, 0.02, 0.25],
+              "color": "#2b2d2a"
+            },
+            {
+              "name": "rig strap R",
+              "type": "box",
+              "pos": [0.09, 1.526, -0.005],
+              "size": [0.04, 0.02, 0.25],
+              "color": "#2b2d2a"
+            }
+          ]
+        },
+        {
+          "bone": "belly",
+          "parts": [
+            {
+              "name": "jacket back low",
+              "type": "box",
+              "pos": [0, 1.19, 0.107],
+              "size": [0.33, 0.18, 0.03],
+              "color": "#4e4438"
+            },
+            {
+              "name": "jacket side low L",
+              "type": "box",
+              "pos": [-0.155, 1.19, 0],
+              "size": [0.03, 0.18, 0.21],
+              "color": "#4e4438"
+            },
+            {
+              "name": "jacket side low R",
+              "type": "box",
+              "pos": [0.155, 1.19, 0],
+              "size": [0.03, 0.18, 0.21],
+              "color": "#4e4438"
+            },
+            {
+              "name": "jacket front low L",
+              "type": "box",
+              "pos": [-0.11, 1.19, -0.109],
+              "size": [0.085, 0.18, 0.02],
+              "color": "#4e4438"
+            },
+            {
+              "name": "jacket front low R",
+              "type": "box",
+              "pos": [0.11, 1.19, -0.109],
+              "size": [0.085, 0.18, 0.02],
+              "color": "#4e4438"
+            },
+            {
+              "name": "hem",
+              "type": "box",
+              "pos": [0, 1.098, 0],
+              "size": [0.34, 0.025, 0.225],
+              "color": "#3d352c"
+            }
+          ]
+        },
+        {
+          "bone": "upperArmL",
+          "mirror": true,
+          "parts": [
+            {
+              "name": "sleeve",
+              "type": "cylinder",
+              "pos": [-0.31, 1.43, 0],
+              "radius": 0.071,
+              "radiusTop": 0.06,
+              "height": 0.28,
+              "sides": 6,
+              "roll": 90,
+              "color": "#4e4438"
+            },
+            {
+              "name": "sleeve cuff",
+              "type": "cylinder",
+              "pos": [-0.455, 1.43, 0],
+              "radius": 0.061,
+              "radiusTop": 0.06,
+              "height": 0.025,
+              "sides": 6,
+              "roll": 90,
+              "color": "#3d352c"
+            }
+          ]
+        }
+      ]
     },
     {
       "skin": "#e0b896",
       "top": "#8a8d91",
       "bottom": "#3d4f6b",
       "hands": "#e0b896",
-      "feet": "#b23a3a"
+      "feet": "#b23a3a",
+      "plating": [
+        {
+          "bone": "chest",
+          "parts": [
+            {
+              "name": "jacket back",
+              "type": "slab",
+              "pos": [0, 1.36, 0.1],
+              "size": [0.37, 0.23, 0.04],
+              "corners": [0.015, 0.015, 0.015, 0.015],
+              "segments": 1,
+              "color": "#45484d"
+            },
+            {
+              "name": "jacket side L",
+              "type": "box",
+              "pos": [-0.172, 1.36, -0.01],
+              "size": [0.04, 0.23, 0.235],
+              "color": "#45484d"
+            },
+            {
+              "name": "jacket side R",
+              "type": "box",
+              "pos": [0.172, 1.36, -0.01],
+              "size": [0.04, 0.23, 0.235],
+              "color": "#45484d"
+            },
+            {
+              "name": "jacket front L",
+              "type": "box",
+              "pos": [-0.115, 1.36, -0.128],
+              "size": [0.1, 0.22, 0.02],
+              "color": "#45484d"
+            },
+            {
+              "name": "jacket front R",
+              "type": "box",
+              "pos": [0.115, 1.36, -0.128],
+              "size": [0.1, 0.22, 0.02],
+              "color": "#45484d"
+            },
+            {
+              "name": "jacket shoulders",
+              "type": "slab",
+              "pos": [0, 1.485, 0],
+              "size": [0.32, 0.06, 0.2],
+              "corners": [0.05, 0.05, 0.05, 0.05],
+              "segments": 1,
+              "color": "#45484d"
+            },
+            {
+              "name": "collar",
+              "type": "slab",
+              "pos": [0, 1.51, 0.005],
+              "size": [0.24, 0.045, 0.2],
+              "corners": [0.045, 0.045, 0.045, 0.045],
+              "segments": 1,
+              "color": "#36383c"
+            },
+            {
+              "name": "rig panel",
+              "type": "box",
+              "pos": [0, 1.33, -0.152],
+              "size": [0.26, 0.13, 0.03],
+              "color": "#2b2d2a"
+            },
+            {
+              "name": "pouch 1",
+              "type": "box",
+              "pos": [-0.08, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 1",
+              "type": "box",
+              "pos": [-0.08, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "pouch 2",
+              "type": "box",
+              "pos": [0, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 2",
+              "type": "box",
+              "pos": [0, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "pouch 3",
+              "type": "box",
+              "pos": [0.08, 1.345, -0.183],
+              "size": [0.07, 0.09, 0.035],
+              "color": "#3f4636"
+            },
+            {
+              "name": "flap 3",
+              "type": "box",
+              "pos": [0.08, 1.385, -0.184],
+              "size": [0.074, 0.022, 0.039],
+              "color": "#32382b"
+            },
+            {
+              "name": "rig strap L",
+              "type": "box",
+              "pos": [-0.09, 1.526, -0.005],
+              "size": [0.04, 0.02, 0.25],
+              "color": "#2b2d2a"
+            },
+            {
+              "name": "rig strap R",
+              "type": "box",
+              "pos": [0.09, 1.526, -0.005],
+              "size": [0.04, 0.02, 0.25],
+              "color": "#2b2d2a"
+            }
+          ]
+        },
+        {
+          "bone": "belly",
+          "parts": [
+            {
+              "name": "jacket back low",
+              "type": "box",
+              "pos": [0, 1.19, 0.107],
+              "size": [0.33, 0.18, 0.03],
+              "color": "#45484d"
+            },
+            {
+              "name": "jacket side low L",
+              "type": "box",
+              "pos": [-0.155, 1.19, 0],
+              "size": [0.03, 0.18, 0.21],
+              "color": "#45484d"
+            },
+            {
+              "name": "jacket side low R",
+              "type": "box",
+              "pos": [0.155, 1.19, 0],
+              "size": [0.03, 0.18, 0.21],
+              "color": "#45484d"
+            },
+            {
+              "name": "jacket front low L",
+              "type": "box",
+              "pos": [-0.11, 1.19, -0.109],
+              "size": [0.085, 0.18, 0.02],
+              "color": "#45484d"
+            },
+            {
+              "name": "jacket front low R",
+              "type": "box",
+              "pos": [0.11, 1.19, -0.109],
+              "size": [0.085, 0.18, 0.02],
+              "color": "#45484d"
+            },
+            {
+              "name": "hem",
+              "type": "box",
+              "pos": [0, 1.098, 0],
+              "size": [0.34, 0.025, 0.225],
+              "color": "#36383c"
+            }
+          ]
+        },
+        {
+          "bone": "upperArmL",
+          "mirror": true,
+          "parts": [
+            {
+              "name": "sleeve",
+              "type": "cylinder",
+              "pos": [-0.31, 1.43, 0],
+              "radius": 0.071,
+              "radiusTop": 0.06,
+              "height": 0.28,
+              "sides": 6,
+              "roll": 90,
+              "color": "#45484d"
+            },
+            {
+              "name": "sleeve cuff",
+              "type": "cylinder",
+              "pos": [-0.455, 1.43, 0],
+              "radius": 0.061,
+              "radiusTop": 0.06,
+              "height": 0.025,
+              "sides": 6,
+              "roll": 90,
+              "color": "#36383c"
+            }
+          ]
+        }
+      ]
     }
   ],
   "loot": {

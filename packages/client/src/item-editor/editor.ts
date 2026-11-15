@@ -1,10 +1,12 @@
 import {
+  BODY_FORMAT,
   ITEM_FORMAT,
   bagCells,
   bagRarity,
   levelRarity,
   loadContent,
   type Rarity,
+  type BodyDef,
   type ItemDb,
   type ItemDef,
 } from '@mes/shared';
@@ -57,6 +59,20 @@ export function fillRarity(before: Doc | null, doc: Doc): void {
   if (now && now.key !== rarityBasis(before)?.key) doc.rarity = now.rarity;
 }
 
+/**
+ * The body (CH-2) rides along as a pseudo-item under this id (no item id can start with @),
+ * typed 'body' so the model tab can open it; those fields are dropped when it's checked or
+ * saved, to content/characters/body.json.
+ */
+export const BODY_ID = '@body';
+const BODY_FIELDS = { id: BODY_ID, type: 'body', name: 'Body' } as const;
+
+/** The body file's doc from its pseudo-item's JSON. */
+function bodyDoc(json: string): Doc {
+  const { id: _id, type: _type, name: _name, ...doc } = JSON.parse(json) as Doc;
+  return doc;
+}
+
 /** Every item file's JSON by item id. */
 type Files = ReadonlyMap<string, string>;
 
@@ -107,8 +123,13 @@ export class ItemEditor {
   private state: ItemEditorState;
   private readonly listeners = new Set<() => void>();
 
-  constructor(sources: ReadonlyMap<string, ItemDef>, current: string) {
+  constructor(sources: ReadonlyMap<string, ItemDef>, current: string, body?: BodyDef) {
     const files = new Map<string, string>();
+    if (body) {
+      const json = JSON.stringify({ ...BODY_FIELDS, ...body });
+      files.set(BODY_ID, json);
+      this.saved.set(BODY_ID, json);
+    }
     for (const [id, doc] of sources) {
       const json = JSON.stringify(doc);
       files.set(id, json);
@@ -255,6 +276,14 @@ export class ItemEditor {
     for (const [id, json] of this.files) {
       const doc = JSON.parse(json) as ItemDef;
       items.set(id, doc);
+      if (id === BODY_ID) {
+        try {
+          loadContent(BODY_FORMAT, bodyDoc(json), 'content/characters/body.json');
+        } catch (err) {
+          problems.set(id, err instanceof Error ? err.message : String(err));
+        }
+        continue;
+      }
       try {
         db.set(id, loadContent(ITEM_FORMAT, JSON.parse(json), `content/items/${id}.json`));
       } catch (err) {
@@ -298,8 +327,8 @@ export class ItemEditor {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           files: files.map(({ id, json }) => ({
-            file: `items/${id}.json`,
-            doc: JSON.parse(json) as unknown,
+            file: id === BODY_ID ? 'characters/body.json' : `items/${id}.json`,
+            doc: id === BODY_ID ? bodyDoc(json) : (JSON.parse(json) as unknown),
             ...(!this.saved.has(id) && { create: true }),
           })),
         }),
@@ -307,7 +336,9 @@ export class ItemEditor {
       const reply = (await res.json()) as { error?: string };
       if (!res.ok) throw new Error(reply.error ?? `HTTP ${res.status}`);
       for (const { id, json } of files) this.saved.set(id, json);
-      this.refresh(`Saved ${files.map(({ id }) => `content/items/${id}.json`).join(', ')}.`);
+      this.refresh(
+        `Saved ${files.map(({ id }) => (id === BODY_ID ? 'content/characters/body.json' : `content/items/${id}.json`)).join(', ')}.`,
+      );
       this.set({ saving: false });
     } catch (err) {
       this.set({

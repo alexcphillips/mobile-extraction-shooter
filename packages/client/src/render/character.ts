@@ -5,7 +5,7 @@ import {
   type BodyBone,
   type ItemDb,
   type Outfit,
-  type Shape,
+  type ModelShape,
 } from '@mes/shared';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -87,7 +87,7 @@ export interface Gear {
   rig: string | null;
   backpack: string | null;
   /** The gun's or knife's shapes, in its own frame; drawn on the weapon bone. */
-  gun: readonly Shape[] | null;
+  gun: readonly ModelShape[] | null;
 }
 
 /**
@@ -229,7 +229,7 @@ export const NO_GEAR: Gear = { helmet: null, armor: null, rig: null, backpack: n
  * Worn gear's shapes, modeled on the body in game meters facing −z, moved into the rig's
  * rest frame: unscaled, unraised and turned back to face +z.
  */
-function inRestFrame(shapes: Shape[], rest: CharacterTemplate['rest']): Shape[] {
+function inRestFrame(shapes: ModelShape[], rest: CharacterTemplate['rest']): ModelShape[] {
   const k = 1 / rest.scale;
   return shapes.map((s) => {
     const out = { ...s, x: -s.x * k, y: (s.y - rest.y) * k, z: -s.z * k, yaw: s.yaw + Math.PI };
@@ -237,6 +237,10 @@ function inRestFrame(shapes: Shape[], rest: CharacterTemplate['rest']): Shape[] 
       out.radius *= k;
       out.radiusTop *= k;
       out.hy *= k;
+    } else if (out.kind === 'loft') {
+      out.rings = out.rings.map((r) => r.map((n) => n * k));
+    } else if (out.kind === 'hull') {
+      out.points = out.points.map(([x, y, z]) => [x * k, y * k, z * k] as const);
     } else {
       out.hx *= k;
       out.hy *= k;
@@ -266,7 +270,7 @@ export function characterGeometry(
   const cached = t.looks.get(key);
   if (cached) return cached;
 
-  const pieces: { shapes: readonly Shape[]; bone: number }[] = [];
+  const pieces: { shapes: readonly ModelShape[]; bone: number }[] = [];
   // Plating (Jug's limb plates): part of the body, each group on its own bone.
   for (const group of platingShapes(outfit.plating)) {
     const bone = t.bones.get(PLATING_BONES[group.bone]);
@@ -352,7 +356,7 @@ export function cloneCharacter(t: CharacterTemplate): {
  * formula as shade.ts plus the key light (material.ts), so the shading stays right as the
  * body moves.
  */
-function characterMaterial(): THREE.MeshBasicMaterial {
+export function characterMaterial(): THREE.MeshBasicMaterial {
   const m = new THREE.MeshBasicMaterial({ vertexColors: true });
   m.onBeforeCompile = (shader) => {
     shader.vertexShader = shader.vertexShader.replace(

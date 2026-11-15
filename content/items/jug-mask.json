@@ -14,6 +14,7 @@
   "repairLoss": 0.06,
   "blocksHeadset": true,
   "coversFace": true,
+  "hidesHead": true,
   "mask": {
     "edge": 0.16,
     "muffle": 2200

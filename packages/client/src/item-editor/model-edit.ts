@@ -71,6 +71,28 @@ export function newPart(type: ModelPart['type'], at: Vec3): ModelPart {
       corners: [0.02, 0.02, 0.02, 0.02],
       color: '#3a3f44',
     };
+  if (type === 'loft')
+    return {
+      type,
+      pos,
+      rings: [
+        [-0.05, 0.04, 0.04],
+        [0.05, 0.03, 0.03],
+      ],
+      color: '#3a3f44',
+    };
+  if (type === 'hull')
+    return {
+      type,
+      pos,
+      points: [
+        [-0.03, -0.03, -0.03],
+        [0.03, -0.03, -0.03],
+        [0, -0.03, 0.03],
+        [0, 0.03, 0],
+      ],
+      color: '#3a3f44',
+    };
   return { type, pos, size: [0.05, 0.05, 0.1], color: '#3a3f44' };
 }
 
@@ -192,6 +214,24 @@ export function mirrorPart(p: ModelPart, axis: Axis = 'x'): ModelPart {
     // for back: back left with front left, back right with front right.
     if (axis === 'x') out.corners = [br, bl, fl, fr];
     if (axis === 'z') out.corners = [fl, fr, br, bl];
+  }
+  // A loft's rings and a hull's points flip along the mirror's axis in the part's own frame
+  // (the turns above already went the other way); a loft's rings then run back up in y.
+  if (out.type === 'loft') {
+    out.rings = out.rings.map(([y, w, d, dx = 0, dz = 0]) =>
+      axis === 'x'
+        ? [y, w, d, -dx || 0, dz]
+        : axis === 'z'
+          ? [y, w, d, dx, -dz || 0]
+          : [-y || 0, w, d, dx, dz],
+    );
+    if (axis === 'y') out.rings.reverse();
+  } else if (out.type === 'hull') {
+    out.points = out.points.map((q) => {
+      const r: [number, number, number] = [q[0], q[1], q[2]];
+      r[k] = -r[k]! || 0;
+      return r;
+    });
   }
   return out;
 }

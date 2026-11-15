@@ -125,6 +125,27 @@ Helmets, visors, headsets, armor, rigs and backpacks make up the character, aime
 - **Budget:** worn gear 1,200 triangles each (`item-editor/budget.ts`); six worn pieces at full budget plus a long gun is over 9,000 before the body, so most pieces should come in well under.
 - **No scratches, scuffs, grime or blood**, not even as 1 mm decals.
 
+### Fitting worn gear to the body (CH-3, 2026-11-13)
+Check every piece with `node scripts/anim-check.mjs --fit --kit <slot>=<id>` (tech/overview.md → Characters → The fit check) and see it on `/bodies?body=own`. The CH-3 test kit, built to the look target, shows the rules: `combat-helmet`, `heavy-visor` (the plate mask), `tactical-headset`, `plate-carrier`, `chest-rig`.
+- **The layer envelopes (CH-3c, 2026-11-13)** are where the arms keep out, so they are hard rules, checked for every armor and rig between 0.95 and 1.45 m (`fit-check.test.ts`; `skeleton-pose.ts → LAYER_BOXES`). **Body armor:** front and back plates to z −0.17 and +0.15, 15 cm out to the sides up by the armpits; a thin cummerbund only low down (1.17–1.32 m), 18 cm out. **Rigs:** pouches to z −0.225 between 1.22 and 1.37 m, 16.5 cm out; side straps 19 cm out. Shoulder straps above 1.45 m are free. The eight older armors and rigs (made for the pack's body) are outside it and listed in the test for CH-3d to refit.
+- **The armor envelope:** body armor stays within 4.5 cm of the chest's front (z ≥ −0.165 in the rest pose; the chest is at −0.12) and about that at the back and sides. **Rigs start outside it,** with a backing that fills down to the shirt (the chest rig's is 5 cm deep), so a rig sits on a bare chest and over any armor alike, and its straps run where armor hides them (under the carrier's panels, the side straps around the cummerbund).
+- **Helmets** sit on the head volume: a band from 1.69 m (above the brow and ears, so a headset's cups fit under it), faceted 8-sided layers, the shell's side faces about 4 cm off the skull. A helmet is solid in the check, so the head coming out of its bottom isn't a fault; only its outside faces count.
+- **Visors tuck under the helmet's rim**, not over the helmet: the brow bar's top meets the rim (1.69), the mask stands 2–3 cm off the face, cheek plates turned to meet the ear cups so no skin shows at the sides.
+- **Headset cups** sit on the ears (inside face at x ±0.102) and under the helmet's band; spin a rolled cylinder about its own axis with `pitch`, not `yaw` (yaw turns the axis).
+- **Arms are the pose's job, not the gear's:** the pose solver (`clearArms`) keeps arms out of the layer envelope, so build gear inside the envelope and don't hollow it out for arms.
+
+## The body (CH-2; rebuilt CH-3b, 2026-11-13)
+Our character body, `content/characters/body.json`, and the skeleton's bone offsets are **written by `scripts/gen-body.mjs` from one proportions table** (`P`): change the numbers and re-run (`node scripts/gen-body.mjs && npx prettier --write content/characters`). The item editor's **Body** entry shows it; small tweaks there are fine, but a re-run overwrites them, so put lasting changes in the script. The worn gear rules above apply; on top of them:
+- **Proportions (the user's calls):** about 1.78 m to the crown; legs about 48% (hip joints 0.85 m, knees 0.465, ankles 0.075); the head, neck, chest and shoulder joints fixed (1.56, 1.48, 1.28; shoulders ±0.19 at 1.43) because the sim's head and arm zones are fitted to them; hips root 0.91, so the pelvis and belly are longer.
+- **Shapes:** `loft`s for everything round (torso, limbs, neck, skull, boot shafts), `hull`s for faceted pieces (nose, brow, ears, knuckles, knee pads, boots and soles), boxes only for flat things (pockets, patches, the eye band). Limbs taper and bulge (deltoid, forearm, calf set back). The torso is **narrow at the armpits** (±0.155–0.165) so hanging arms clear it, broad across the upper chest.
+- **Clothing as a soldier:** combat shirt (no chest pockets, the user's call; shoulder patches, darker collar and cuffs), cargo pants with knee pads, gloves with knuckle pads and a thumb, boots with toe, heel and sole; a **slim belt** (3.5 cm tall, 4 mm proud).
+- **One or more parts per bone, each part's `group` its bone.** Parts move rigidly with their bone; nothing bends, so a joint is two pieces overlapping.
+- **The rest pose is a T-pose**, arms out along x, palms down, facing −z. Arm lofts are rolled −90 so their rings run out along +x.
+- **The head stays inside the sim's head volume** (a test checks every head vertex). Helmets are built around that volume.
+- **Colors are authored in the body's own `colors`** (a soldier's: green-gray shirt, olive pants, dark gloves, brown-black boots). The game tints each part by its bone's outfit slot (head and neck skin, hands, feet, hips and legs bottom, the rest top) per channel, so shades within a slot keep their ratios (knee pads stay darker than the pants in every outfit).
+- **Budget 1,500 triangles** (the user's call; 1,488 now).
+- **The scav uniform is outfit plating**, modeled on the CH-2 body: it still needs refitting to this body and inside the armor envelope (roadmap CH-3d).
+
 ## Item palette (2026-11-09, IE-2)
 The item editor's "house" swatches (`item-editor/palette.ts`), taken from the colors the content's items use most. Start a new item from these; keep two shades per material as for props.
 

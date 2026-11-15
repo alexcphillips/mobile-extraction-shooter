@@ -500,6 +500,11 @@ const armorSchema = z
      */
     coversFace: z.literal(true).optional(),
     /**
+     * Helmets (CH-2, 2026-11-13): drawn, it hides the body's head (a full shell or mask
+     * that the head would poke through). An open helmet leaves the head showing.
+     */
+    hidesHead: z.literal(true).optional(),
+    /**
      * Helmets (GZ-5): the mounts it has, a visor's and night vision's. Only one thing is
      * fitted at a time, whichever it is (Item.fitted).
      */
@@ -523,9 +528,15 @@ const armorSchema = z
   .refine(
     (a) =>
       a.slot === 'helmet' ||
-      (!a.hearing && !a.blocksHeadset && !a.vision && !a.visor && !a.nightVision && !a.coversFace),
+      (!a.hearing &&
+        !a.blocksHeadset &&
+        !a.vision &&
+        !a.visor &&
+        !a.nightVision &&
+        !a.coversFace &&
+        !a.hidesHead),
     {
-      message: 'only a helmet has hearing, blocksHeadset, vision, coversFace or mounts',
+      message: 'only a helmet has hearing, blocksHeadset, vision, coversFace, hidesHead or mounts',
       path: ['hearing'],
     },
   )

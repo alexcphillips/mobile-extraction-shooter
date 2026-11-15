@@ -12,54 +12,75 @@
   "model": {
     "parts": [
       {
-        "type": "box",
-        "pos": [-0.1, 1.685, 0.005],
-        "size": [0.032, 0.075, 0.075],
-        "color": "#5a6340"
+        "name": "cup R",
+        "type": "cylinder",
+        "pos": [0.122, 1.643, -0.008],
+        "radius": 0.046,
+        "radiusTop": 0.046,
+        "height": 0.04,
+        "sides": 6,
+        "color": "#5a6340",
+        "roll": 90,
+        "pitch": 30
       },
       {
-        "type": "box",
-        "pos": [0.1, 1.685, 0.005],
-        "size": [0.032, 0.075, 0.075],
-        "color": "#5a6340"
+        "name": "cup L",
+        "type": "cylinder",
+        "pos": [-0.122, 1.643, -0.008],
+        "radius": 0.046,
+        "radiusTop": 0.046,
+        "height": 0.04,
+        "sides": 6,
+        "color": "#5a6340",
+        "roll": -90,
+        "pitch": 30
       },
       {
-        "type": "box",
-        "pos": [-0.118, 1.685, 0.005],
-        "size": [0.006, 0.05, 0.05],
-        "color": "#2b2e31"
+        "name": "cup cap R",
+        "type": "cylinder",
+        "pos": [0.146, 1.643, -0.008],
+        "radius": 0.034,
+        "radiusTop": 0.03,
+        "height": 0.012,
+        "sides": 6,
+        "color": "#2b2d2f",
+        "roll": 90,
+        "pitch": 30
       },
       {
-        "type": "box",
-        "pos": [0.118, 1.685, 0.005],
-        "size": [0.006, 0.05, 0.05],
-        "color": "#2b2e31"
+        "name": "cup cap L",
+        "type": "cylinder",
+        "pos": [-0.146, 1.643, -0.008],
+        "radius": 0.034,
+        "radiusTop": 0.03,
+        "height": 0.012,
+        "sides": 6,
+        "color": "#2b2d2f",
+        "roll": -90,
+        "pitch": 30
       },
       {
+        "name": "band side R",
         "type": "box",
-        "pos": [-0.104, 1.75, 0.005],
-        "size": [0.012, 0.07, 0.024],
-        "color": "#2b2e31"
+        "pos": [0.104, 1.725, -0.008],
+        "size": [0.012, 0.075, 0.03],
+        "color": "#2b2d2f",
+        "roll": 14
       },
       {
+        "name": "band side L",
         "type": "box",
-        "pos": [0.104, 1.75, 0.005],
-        "size": [0.012, 0.07, 0.024],
-        "color": "#2b2e31"
-      },
-      { "type": "box", "pos": [0, 1.8, 0.005], "size": [0.2, 0.014, 0.026], "color": "#2b2e31" },
-      {
-        "type": "box",
-        "pos": [-0.095, 1.655, -0.06],
-        "size": [0.008, 0.008, 0.09],
-        "yaw": -20,
-        "color": "#2b2e31"
+        "pos": [-0.104, 1.725, -0.008],
+        "size": [0.012, 0.075, 0.03],
+        "color": "#2b2d2f",
+        "roll": -14
       },
       {
+        "name": "band top",
         "type": "box",
-        "pos": [-0.08, 1.652, -0.105],
-        "size": [0.016, 0.016, 0.02],
-        "color": "#141516"
+        "pos": [0, 1.771, -0.008],
+        "size": [0.19, 0.012, 0.03],
+        "color": "#2b2d2f"
       }
     ]
   }

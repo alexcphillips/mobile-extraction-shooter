@@ -1,4 +1,7 @@
 import {
+  BODY_FORMAT,
+  CLIP_FORMAT,
+  SKELETON_FORMAT,
   containerMix,
   spotMix,
   ENEMY_FORMAT,
@@ -9,6 +12,10 @@ import {
   MAP_FORMAT,
   PREFAB_FORMAT,
   QUEST_FORMAT,
+  loadContent,
+  type BodyDef,
+  type ClipDef,
+  type SkeletonDef,
   RAID_FORMAT,
   SOUND_FORMAT,
   STARTING_KIT_FORMAT,
@@ -126,6 +133,45 @@ const tutorialFiles = import.meta.glob<unknown>('../../../content/tutorials/*.js
   eager: true,
   import: 'default',
 });
+
+const skeletonFile = import.meta.glob<unknown>('../../../content/characters/skeleton.json', {
+  eager: true,
+  import: 'default',
+});
+
+const clipFiles = import.meta.glob<unknown>('../../../content/animations/*.json', {
+  eager: true,
+  import: 'default',
+});
+
+/** Our own character skeleton (CH-1), content/characters/skeleton.json. */
+export function loadSkeleton(): SkeletonDef {
+  const [path, raw] = Object.entries(skeletonFile)[0] ?? [];
+  if (!path) throw new Error('content/characters/skeleton.json is missing');
+  return loadContent(SKELETON_FORMAT, raw, path);
+}
+
+const bodyFile = import.meta.glob<unknown>('../../../content/characters/body.json', {
+  eager: true,
+  import: 'default',
+});
+
+/** Our own body (CH-2), content/characters/body.json. */
+export function loadBody(): BodyDef {
+  const [path, raw] = Object.entries(bodyFile)[0] ?? [];
+  if (!path) throw new Error('content/characters/body.json is missing');
+  return loadContent(BODY_FORMAT, raw, path);
+}
+
+/** The body file as written, for the item editor (see itemSources). */
+export function bodySource(): BodyDef {
+  return Object.values(bodyFile)[0] as BodyDef;
+}
+
+/** Every animation clip in content/animations, by id. */
+export function loadClips(): Map<string, ClipDef> {
+  return loadById(CLIP_FORMAT, clipFiles);
+}
 
 let prefabs: Map<string, PrefabFile> | undefined;
 let items: ItemDb | undefined;

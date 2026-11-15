@@ -6,7 +6,7 @@ import {
   type ItemDef,
   type ItemView,
   type AttachmentSlot,
-  type Shape,
+  type ModelShape,
   type WeaponDef,
   type WeaponState,
 } from '@mes/shared';
@@ -170,7 +170,7 @@ function extent(box: THREE.Box3): [number, number] {
  * with an attachment, with this.
  */
 export function shapesPortrait(
-  shapes: readonly Shape[],
+  shapes: readonly ModelShape[],
   view: ItemView,
   shape?: readonly [number, number],
 ): string | null {
@@ -178,7 +178,7 @@ export function shapesPortrait(
 }
 
 function drawPortrait(
-  shapes: readonly Shape[],
+  shapes: readonly ModelShape[],
   view: ItemView,
   shape?: readonly [number, number],
 ): string | null {

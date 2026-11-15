@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import type { Shape } from './compile';
+import type { ModelShape } from './compile';
+import { convexHull } from './hull';
 
 /*
  * Item models (item format 6, session 18b): an item is drawn as simple shapes, plus the
@@ -91,10 +92,50 @@ export const partSchema = z.discriminatedUnion('type', [
     /** Steps in each rounded corner; defaults to 4. */
     segments: z.int().min(1).max(12).optional(),
   }),
+  /**
+   * Rings stacked up the part's own y (CH-3a, 2026-11-13), joined into one faceted tube
+   * and capped: limbs, a torso, a boot. Each ring is [y, w, d] or [y, w, d, dx, dz]: its
+   * height, its width (x) and depth (z) face to face, and its middle moved over. Rings go
+   * up in y. Every piece between two rings is convex.
+   */
+  z.strictObject({
+    type: z.literal('loft'),
+    ...placed,
+    /** Sides of every ring; defaults to 8. */
+    sides: z.int().min(3).max(16).optional(),
+    rings: z
+      .array(
+        z.union([
+          z.tuple([finite, radius, radius]),
+          z.tuple([finite, radius, radius, finite, finite]),
+        ]),
+      )
+      .min(2)
+      .max(16),
+  }),
+  /**
+   * The convex hull of 4 to 32 points in the part's own frame (CH-3a, 2026-11-13): a
+   * plate, a shell, a pad. Points inside the hull do nothing.
+   */
+  z.strictObject({
+    type: z.literal('hull'),
+    ...placed,
+    points: z.array(vec3Schema).min(4).max(32),
+  }),
 ]);
 export type ModelPart = z.infer<typeof partSchema>;
 
-const parts = z.array(partSchema).min(1);
+const parts = z
+  .array(partSchema)
+  .min(1)
+  .superRefine((list, ctx) =>
+    list.forEach((p, i) => {
+      if (p.type === 'loft' && p.rings.some((r, k) => k > 0 && r[0] <= p.rings[k - 1]![0]))
+        ctx.addIssue({ code: 'custom', path: [i, 'rings'], message: 'rings must go up in y' });
+      if (p.type === 'hull' && !convexHull(p.points))
+        ctx.addIssue({ code: 'custom', path: [i, 'points'], message: 'points are all on a plane' });
+    }),
+  );
 
 /** Anything without points of its own: worn gear, meds, ammo, loot. */
 export const plainModelSchema = z.strictObject({ parts });
@@ -160,10 +201,10 @@ const DEG = Math.PI / 180;
  */
 export function modelShapes(
   model: { readonly parts: readonly ModelPart[] },
-  out: Shape[] = [],
+  out: ModelShape[] = [],
   at: Vec3 = [0, 0, 0],
   fitted?: (slot: AttachmentSlot) => boolean,
-): Shape[] {
+): ModelShape[] {
   for (const p of model.parts) {
     if (p.hiddenBy && fitted?.(p.hiddenBy)) continue;
     const base = {
@@ -195,6 +236,10 @@ export function modelShapes(
         corners: p.corners,
         segments: p.segments ?? 4,
       });
+    } else if (p.type === 'loft') {
+      out.push({ ...base, kind: 'loft', rings: p.rings, sides: p.sides ?? 8 });
+    } else if (p.type === 'hull') {
+      out.push({ ...base, kind: 'hull', points: p.points });
     } else {
       const [w, h, d] = p.size;
       out.push({ ...base, kind: p.type, hx: w / 2, hy: h / 2, hz: d / 2 });

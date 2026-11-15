@@ -46,7 +46,7 @@ export interface Solid {
   y1: number;
 }
 
-interface Placed {
+export interface Placed {
   path: NodePath;
   solids: Solid[];
   buildings: CompiledBuilding[];
@@ -179,7 +179,7 @@ function extent(r: Solid, ax: number, az: number): number {
 }
 
 /** Every shape and prefab in the map, groups opened, with its solids in world space. */
-function placedNodes(map: MapFile, prefabs: PrefabLookup): Placed[] {
+export function placedNodes(map: MapFile, prefabs: PrefabLookup): Placed[] {
   const out: Placed[] = [];
   const walk = (nodes: readonly MapNode[], f: Frame, path: number[]): void => {
     nodes.forEach((n, i) => {

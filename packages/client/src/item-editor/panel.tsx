@@ -45,7 +45,7 @@ import { previewPortrait, viewOf, withDefaults } from '../render/item-portrait';
 import { crackBackground, visionBackground } from '../render/vision';
 import { colorOf, RARITY_COLORS, tileName } from '../ui/raid-screen';
 import { sectionBoxes } from '../ui/inventory-layout';
-import type { Doc, ItemEditor, ItemEditorState } from './editor';
+import { BODY_ID, type Doc, type ItemEditor, type ItemEditorState } from './editor';
 import { fitPointsToSlot, setSlots } from './model-edit';
 import { FitsPage, type OpenFit } from './fits-panel';
 import { Group, Labeled, RarityPicker, S, Segmented, T, Tick } from './form';
@@ -71,6 +71,8 @@ export function ItemEditorPanel({ editor }: { editor: ItemEditor }) {
     setTab('model');
   };
   const def = s.items.get(s.current);
+  /** The body (CH-2) has only a model. */
+  const isBody = s.current === BODY_ID;
   const status = s.message ?? (s.problem ? `Problem: ${s.problem}` : null);
   return (
     <div className="ie">
@@ -102,7 +104,11 @@ export function ItemEditorPanel({ editor }: { editor: ItemEditor }) {
           <button onClick={() => setMaking('new')} title="Make a new item">
             New…
           </button>
-          <button onClick={() => setMaking('copy')} disabled={!def} title="Copy this item">
+          <button
+            onClick={() => setMaking('copy')}
+            disabled={!def || isBody}
+            title="Copy this item"
+          >
             Copy…
           </button>
         </div>
@@ -113,6 +119,13 @@ export function ItemEditorPanel({ editor }: { editor: ItemEditor }) {
             </Toggle>
           ))}
         </div>
+        <button
+          className={isBody ? 'ie-body ie-on' : 'ie-body'}
+          onClick={() => editor.select(BODY_ID)}
+          title="Our character body (content/characters/body.json): one faceted piece per bone"
+        >
+          Body{s.problems.has(BODY_ID) ? ' ⚠' : ''}
+        </button>
         <ItemList state={s} editor={editor} />
         <a className="ie-link" href="/editor">
           Map editor
@@ -120,6 +133,8 @@ export function ItemEditorPanel({ editor }: { editor: ItemEditor }) {
       </aside>
       {!def ? (
         <main />
+      ) : isBody ? (
+        <ModelTab editor={editor} state={s} def={def} />
       ) : tab === 'fits' ? (
         <FitsPage state={s} def={def} open={openFit} />
       ) : tab === 'model' ? (
@@ -1299,6 +1314,12 @@ function HelmetFields(props: Bound & { def: Extract<ItemDef, { type: 'armor' }> 
           path={['coversFace']}
           label="Covers the face"
           title="A full mask (GZ-3): face hits with no visor fitted meet the helmet, not bare skin"
+        />
+        <T
+          {...b}
+          path={['hidesHead']}
+          label="Hides the head"
+          title="A full shell (CH-2): the body's head isn't drawn under it, so it can't poke through"
         />
       </div>
       <div className="ie-grid">

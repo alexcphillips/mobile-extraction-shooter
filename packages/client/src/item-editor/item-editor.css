@@ -29,6 +29,16 @@ body.item-editor #scene {
   border-radius: 6px;
 }
 
+/* The body's entry (CH-2), above the item list. */
+#editor .ie-body {
+  width: 100%;
+  text-align: left;
+}
+
+#editor .ie-body.ie-on {
+  outline: 2px solid #ffe082;
+}
+
 #editor .ie-filter {
   width: 100%;
   box-sizing: border-box;
@@ -947,4 +957,11 @@ body.item-editor #scene {
     transparent 50%,
     rgb(5 5 5 / calc(var(--vignette) * 0.95)) 100%
   );
+}
+
+/* A loft's rings or a hull's points, one row a line (CH-3a). */
+.ie-rows {
+  width: 100%;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
 }

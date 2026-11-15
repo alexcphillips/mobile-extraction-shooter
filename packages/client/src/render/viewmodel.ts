@@ -1,4 +1,4 @@
-import type { ItemDb, Outfit, Shape, WeaponState } from '@mes/shared';
+import type { ItemDb, Outfit, ModelShape, WeaponState } from '@mes/shared';
 import * as THREE from 'three';
 import { DEFAULT_OUTFIT } from './character';
 import { TriangleBuilder } from './geometry';
@@ -12,7 +12,7 @@ function limb(
   hw: number,
   hh: number,
   color: number,
-): Shape {
+): ModelShape {
   const dx = to[0]! - from[0]!;
   const dy = to[1]! - from[1]!;
   const dz = to[2]! - from[2]!;
@@ -40,7 +40,7 @@ type Point = readonly [number, number, number];
  * Low-poly forearms and hands on the gun: the right hand on the grip, the left on the
  * support point (if any), the sleeves running back and down out of view.
  */
-function arms(grip: Point, support: Point | null, outfit: Outfit): Shape[] {
+function arms(grip: Point, support: Point | null, outfit: Outfit): ModelShape[] {
   const sleeve = hex(outfit.top);
   const glove = hex(outfit.hands);
   const [gx, gy, gz] = grip;
@@ -145,7 +145,7 @@ export class Viewmodel {
     this.aimed.copy(KNIFE_HIP);
   }
 
-  private build(shapes: readonly Shape[]): void {
+  private build(shapes: readonly ModelShape[]): void {
     const b = new TriangleBuilder(false);
     for (const s of shapes) b.shape(s);
     this.model.geometry.dispose();

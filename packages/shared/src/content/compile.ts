@@ -11,6 +11,7 @@ import type {
 import { HeightGrid, holeFlags } from '../world/terrain';
 import { gradeRoads, roadStrip, ROAD } from '../world/roads';
 import { ContentError } from './format';
+import { loftRing } from './hull';
 import { wallPieces } from './walls';
 import type { LootMix, MapFile, MapNode, MapZone, PrefabFile } from './schema';
 
@@ -60,6 +61,35 @@ export type Shape =
       corners: readonly [number, number, number, number];
       segments: number;
     });
+
+/**
+ * What item models are drawn from (CH-3a, 2026-11-13): map shapes, plus lofts (rings up
+ * the part's y, [y, w, d, dx?, dz?]; models.ts → loft) and hulls (the convex hull of
+ * points; models.ts → hull), which maps never have.
+ */
+export type ModelShape =
+  | Shape
+  | (ShapeBase & { kind: 'loft'; rings: readonly (readonly number[])[]; sides: number })
+  | (ShapeBase & { kind: 'hull'; points: readonly (readonly [number, number, number])[] });
+
+/**
+ * A shape's half sizes along its own axes, about its pos: what a box of it would be. For
+ * bounds (a loft's or hull's is the box round its points).
+ */
+export function shapeExtent(s: ModelShape): [number, number, number] {
+  if (s.kind === 'cylinder') {
+    const r = Math.max(s.radius, s.radiusTop);
+    return [r, s.hy, r];
+  }
+  if (s.kind === 'loft' || s.kind === 'hull') {
+    const pts =
+      s.kind === 'hull' ? s.points : s.rings.flatMap((r) => loftRing(r, s.sides) as number[][]);
+    const out: [number, number, number] = [0, 0, 0];
+    for (const p of pts) for (let k = 0; k < 3; k++) out[k] = Math.max(out[k]!, Math.abs(p[k]!));
+    return out;
+  }
+  return [s.hx, s.hy, s.hz];
+}
 
 /** Copies of one instanced prefab with one set of colors, drawn as one instanced mesh. */
 export interface InstancedGroup {

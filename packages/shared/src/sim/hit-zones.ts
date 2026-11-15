@@ -28,27 +28,154 @@ export interface HitCapsule {
 }
 
 /**
- * Matched to the drawn body in session 8b. The chest is two capsules side by side, so it's
- * wider than deep like a torso. Since GZ-3 it's the thorax only, from the shoulders to
- * about 1.11 m, and the stomach is two more under it, down to the hips (where the chest
- * used to reach, 0.86 m); where they meet, whichever surface a ray reaches first. Arms are held forward with a gun, as armed characters
- * nearly always are: upper arms down from the shoulders to the elbows, forearms in to the
- * hands in front of the chest, so from the front they cover part of it. Measured from the
- * body holding a rifle and a pistol, aimed and at the low ready.
+ * Fitted to our own skeleton (CH-1, 2026-11-13; content/characters/skeleton.json), which a
+ * client test checks them against. The head is centered over the neck, a little forward
+ * (the skeleton's headVolume is this capsule). The chest is two capsules side by side, so
+ * it's wider than deep like a torso: the thorax (GZ-3), from the shoulders (1.43 m) down,
+ * and the stomach two more under it to the hips; where they meet, whichever surface a ray
+ * reaches first. Legs hang under the hip joints. The arms depend on the hold (ARM_CAPSULES).
+ * CH-3b (2026-11-13): the hips came down 6 cm (shorter legs, longer pelvis), so the
+ * stomach reaches 6 cm lower and the legs stop 6 cm lower.
  */
-export const HIT_CAPSULES: readonly HitCapsule[] = [
-  { zone: HEAD, a: [0.04, 1.58, 0.035], b: [0.04, 1.655, 0.035], radius: 0.125 },
+const BODY_CAPSULES: readonly HitCapsule[] = [
+  { zone: HEAD, a: [0, 1.58, 0.035], b: [0, 1.655, 0.035], radius: 0.125 },
   { zone: CHEST, a: [-0.06, 1.17, 0], b: [-0.06, 1.36, 0], radius: 0.125 },
   { zone: CHEST, a: [0.06, 1.17, 0], b: [0.06, 1.36, 0], radius: 0.125 },
-  { zone: STOMACH, a: [-0.06, 0.98, 0], b: [-0.06, 1.05, 0], radius: 0.12 },
-  { zone: STOMACH, a: [0.06, 0.98, 0], b: [0.06, 1.05, 0], radius: 0.12 },
-  { zone: LEFT_ARM, a: [-0.16, 1.36, -0.03], b: [-0.14, 1.13, 0.02], radius: 0.065 },
-  { zone: LEFT_ARM, a: [-0.14, 1.13, 0.02], b: [0.05, 1.24, 0.22], radius: 0.055 },
-  { zone: RIGHT_ARM, a: [0.22, 1.35, -0.12], b: [0.27, 1.14, -0.1], radius: 0.065 },
-  { zone: RIGHT_ARM, a: [0.27, 1.14, -0.1], b: [0.13, 1.26, 0.12], radius: 0.055 },
-  { zone: LEFT_LEG, a: [-0.11, 0.1, 0], b: [-0.11, 0.86, 0], radius: 0.1 },
-  { zone: RIGHT_LEG, a: [0.11, 0.1, 0], b: [0.11, 0.86, 0], radius: 0.1 },
+  { zone: STOMACH, a: [-0.06, 0.92, 0], b: [-0.06, 1.05, 0], radius: 0.12 },
+  { zone: STOMACH, a: [0.06, 0.92, 0], b: [0.06, 1.05, 0], radius: 0.12 },
+  { zone: LEFT_LEG, a: [-0.1, 0.1, 0], b: [-0.1, 0.8, 0], radius: 0.1 },
+  { zone: RIGHT_LEG, a: [0.1, 0.1, 0], b: [0.1, 0.8, 0], radius: 0.1 },
 ];
+
+/**
+ * What a character wears on its torso, which the arms keep clear of (CH-3c, 2026-11-13): a
+ * rig (over armor or not), body armor, or nothing. From the slots alone, so a raycast needs
+ * no item data; every armor and rig model is kept inside its layer's room (client
+ * render/skeleton-pose.ts → LAYER_BULK, checked by a test), so the drawn arms and these
+ * zones match whatever the item.
+ */
+export const LAYERS = ['bare', 'armor', 'rig'] as const;
+export type Layer = (typeof LAYERS)[number];
+export function layerOf(c: Character): Layer {
+  if (c.gear.rig) return 'rig';
+  return c.gear.bodyArmor ? 'armor' : 'bare';
+}
+
+/** How a character holds its hands, which places its arm zones (holdOf). */
+export const HOLDS = ['rifle', 'pistol', 'knife', 'none'] as const;
+export type Hold = (typeof HOLDS)[number];
+
+/** An arm: upper arm from the shoulder to the elbow, then forearm to the wrist. */
+function arm(
+  zone: Zone,
+  shoulder: readonly [number, number, number],
+  elbow: readonly [number, number, number],
+  wrist: readonly [number, number, number],
+): HitCapsule[] {
+  return [
+    { zone, a: shoulder, b: elbow, radius: 0.065 },
+    { zone, a: elbow, b: wrist, radius: 0.055 },
+  ];
+}
+
+/**
+ * The arms by hold (2026-11-13, the user's call), each the joints of the client's pose for
+ * it (render/skeleton-pose.ts), averaged where it has more than one: a rifle at the low
+ * ready and aimed (holdGun: sight under the eye, butt in the shoulder, the chest turned 29°
+ * so the left shoulder is forward); a pistol the same, pushed out aimed and at the chest
+ * low; the knife ready (holdKnife: low by the right hip, the left hand guarding); empty
+ * hands hanging (armsDown). A slash, reloads and the rest keep the hold's zones.
+ * By layer worn (CH-3c): the client's pose keeps the arms out of the torso and its gear
+ * (clearArms), so a rifle's right elbow is out to the side and hanging hands spread wider
+ * over armor and a rig. Printed by the client test with FIT_ZONES=1.
+ */
+export const ARM_CAPSULES: Readonly<Record<Hold, Readonly<Record<Layer, readonly HitCapsule[]>>>> =
+  {
+    rifle: {
+      bare: [
+        ...arm(LEFT_ARM, [-0.167, 1.43, 0.091], [-0.076, 1.281, 0.329], [0.07, 1.272, 0.493]),
+        ...arm(RIGHT_ARM, [0.167, 1.43, -0.091], [0.324, 1.315, 0.124], [0.09, 1.375, 0.215]),
+      ],
+      armor: [
+        ...arm(LEFT_ARM, [-0.167, 1.43, 0.091], [-0.047, 1.299, 0.329], [0.083, 1.277, 0.508]),
+        ...arm(RIGHT_ARM, [0.167, 1.43, -0.091], [0.333, 1.336, 0.134], [0.103, 1.375, 0.238]),
+      ],
+      rig: [
+        ...arm(LEFT_ARM, [-0.167, 1.43, 0.091], [-0.041, 1.325, 0.337], [0.099, 1.291, 0.518]),
+        ...arm(RIGHT_ARM, [0.167, 1.43, -0.091], [0.336, 1.357, 0.143], [0.119, 1.375, 0.267]),
+      ],
+    },
+    pistol: {
+      bare: [
+        ...arm(LEFT_ARM, [-0.19, 1.43, 0], [-0.214, 1.293, 0.238], [0.018, 1.322, 0.307]),
+        ...arm(RIGHT_ARM, [0.19, 1.43, 0], [0.238, 1.271, 0.19], [0.05, 1.383, 0.327]),
+      ],
+      armor: [
+        ...arm(LEFT_ARM, [-0.19, 1.43, 0], [-0.203, 1.358, 0.278], [0.018, 1.322, 0.333]),
+        ...arm(RIGHT_ARM, [0.19, 1.43, 0], [0.251, 1.297, 0.227], [0.05, 1.383, 0.354]),
+      ],
+      rig: [
+        ...arm(LEFT_ARM, [-0.19, 1.43, 0], [-0.191, 1.375, 0.287], [0.018, 1.322, 0.367]),
+        ...arm(RIGHT_ARM, [0.19, 1.43, 0], [0.256, 1.342, 0.259], [0.05, 1.383, 0.387]),
+      ],
+    },
+    knife: {
+      bare: [
+        ...arm(LEFT_ARM, [-0.19, 1.43, 0], [-0.25, 1.193, 0.173], [-0.05, 1.3, 0.3]),
+        ...arm(RIGHT_ARM, [0.19, 1.43, 0], [0.247, 1.139, 0.047], [0.2, 1.1, 0.3]),
+      ],
+      armor: [
+        ...arm(LEFT_ARM, [-0.19, 1.43, 0], [-0.272, 1.216, 0.193], [-0.05, 1.3, 0.3]),
+        ...arm(RIGHT_ARM, [0.19, 1.43, 0], [0.274, 1.147, 0.055], [0.2, 1.1, 0.3]),
+      ],
+      rig: [
+        ...arm(LEFT_ARM, [-0.19, 1.43, 0], [-0.288, 1.243, 0.213], [-0.05, 1.3, 0.3]),
+        ...arm(RIGHT_ARM, [0.19, 1.43, 0], [0.299, 1.159, 0.067], [0.2, 1.1, 0.3]),
+      ],
+    },
+    none: {
+      bare: [
+        ...arm(LEFT_ARM, [-0.19, 1.43, 0], [-0.238, 1.138, -0.05], [-0.247, 0.903, 0.06]),
+        ...arm(RIGHT_ARM, [0.19, 1.43, 0], [0.238, 1.138, -0.05], [0.247, 0.903, 0.06]),
+      ],
+      armor: [
+        ...arm(LEFT_ARM, [-0.19, 1.43, 0], [-0.268, 1.145, -0.05], [-0.302, 0.912, 0.06]),
+        ...arm(RIGHT_ARM, [0.19, 1.43, 0], [0.268, 1.145, -0.05], [0.302, 0.912, 0.06]),
+      ],
+      rig: [
+        ...arm(LEFT_ARM, [-0.19, 1.43, 0], [-0.288, 1.151, -0.05], [-0.338, 0.921, 0.06]),
+        ...arm(RIGHT_ARM, [0.19, 1.43, 0], [0.288, 1.151, -0.05], [0.338, 0.921, 0.06]),
+      ],
+    },
+  };
+
+/** Every capsule for each hold and layer: the body's, then the arms'. Made once. */
+const BY_HOLD = Object.fromEntries(
+  HOLDS.map((hold) => [
+    hold,
+    Object.fromEntries(LAYERS.map((l) => [l, [...BODY_CAPSULES, ...ARM_CAPSULES[hold][l]]])),
+  ]),
+) as unknown as Readonly<Record<Hold, Readonly<Record<Layer, readonly HitCapsule[]>>>>;
+
+/** A character's capsules with a rifle and nothing worn. */
+export const HIT_CAPSULES: readonly HitCapsule[] = BY_HOLD.rifle.bare;
+
+/** A character's capsules for a hold and what it wears. */
+export function hitCapsules(hold: Hold, layer: Layer = 'bare'): readonly HitCapsule[] {
+  return BY_HOLD[hold][layer];
+}
+
+/**
+ * How a character holds its hands, from its hand slot alone (so a raycast needs no item
+ * data): the sidearm slot only takes pistols and the primaries never do; an empty slot,
+ * or the knife slot with no knife, is empty hands.
+ */
+export function holdOf(c: Character): Hold {
+  const g = c.gear;
+  if (g.hand === 'knife') return g.knife ? 'knife' : 'none';
+  if (!g[g.hand]) return 'none';
+  return g.hand === 'sidearm' ? 'pistol' : 'rifle';
+}
 
 /**
  * How the clips carry the head off its standing place, measured from the drawn body and
@@ -224,7 +351,7 @@ export function raycastCharacters(
     if (c.id === skip || c.health.dead) continue;
     const half = c.height / 2;
     if (raySphere(ox, oy, oz, dx, dy, dz, c.x, c.y + half, c.z, BOUND_RADIUS) >= best) continue;
-    for (const cap of HIT_CAPSULES) {
+    for (const cap of BY_HOLD[holdOf(c)][layerOf(c)]) {
       capsuleEnds(c, cap, A, B);
       const t = rayCapsule(ox, oy, oz, dx, dy, dz, A, B, cap.radius);
       if (t < best) {

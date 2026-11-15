@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ContentError, type ContentFormat } from './format';
 import { attachmentDef, firesRound, fits, mountsOn, weaponDef, type ItemDb } from './items';
-import type { Shape } from './compile';
+import type { ModelShape } from './compile';
 import { modelShapes, partSchema } from './models';
 import { hexColorSchema, idSchema } from './schema';
 
@@ -226,7 +226,7 @@ export const outfitSchema = z.strictObject({
 });
 
 /** A shape reflected across x = 0: the same thing on the body's other side. */
-export function mirrorShape(s: Shape): Shape {
+export function mirrorShape(s: ModelShape): ModelShape {
   const out = { ...s, x: -s.x, yaw: -s.yaw, roll: -s.roll };
   if (out.kind === 'slab') {
     const [bl, br, fr, fl] = out.corners;
@@ -237,6 +237,10 @@ export function mirrorShape(s: Shape): Shape {
       out.bulge = [px, nx, ...rest];
     }
     if (out.lean) out.lean = [-out.lean[0], out.lean[1]];
+  } else if (out.kind === 'loft') {
+    out.rings = out.rings.map(([y, w, d, dx = 0, dz = 0]) => [y!, w!, d!, -dx, dz]);
+  } else if (out.kind === 'hull') {
+    out.points = out.points.map(([x, y, z]) => [-x, y, z] as const);
   }
   return out;
 }
@@ -252,8 +256,8 @@ function twinBone(bone: BodyBone): BodyBone {
 /** An outfit's plating as shapes by bone, mirrored groups doubled. */
 export function platingShapes(
   plating: readonly Plating[] | undefined,
-): { bone: BodyBone; shapes: Shape[] }[] {
-  const out: { bone: BodyBone; shapes: Shape[] }[] = [];
+): { bone: BodyBone; shapes: ModelShape[] }[] {
+  const out: { bone: BodyBone; shapes: ModelShape[] }[] = [];
   for (const group of plating ?? []) {
     const shapes = modelShapes(group);
     out.push({ bone: group.bone, shapes });

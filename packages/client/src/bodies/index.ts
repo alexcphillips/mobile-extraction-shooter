@@ -16,6 +16,7 @@ import { loadEnemies, loadItems } from '../content';
 import { CapsuleBody } from '../render/capsule-body';
 import { DEFAULT_OUTFIT, loadCharacter } from '../render/character';
 import { CharacterBody, CharacterRig } from '../render/character-body';
+import { startOwnBodies } from './own';
 
 /** One pose to show: a character set up in that state. */
 interface Pose {
@@ -76,6 +77,15 @@ const POSES: Pose[] = [
   { name: 'knife', set: knife },
   { name: 'knife slash', set: knife, slash: true },
   { name: 'unarmed', set: () => {} },
+  {
+    // CH-2: a scav's uniform (jacket and chest rig plating), no armor, on the pack's body.
+    name: 'Scav',
+    enemy: 'scav',
+    ownGear: true,
+    set: (c, i) => {
+      giveWeapon(c, i, 'akm');
+    },
+  },
   {
     // Jug standing, his plating (2026-11-08) with his kit.
     name: 'Jug',
@@ -154,9 +164,12 @@ function character(id: number, x: number): Character {
  * zones drawn see-through over them, to check animation and that bodies match their hit
  * zones. ?focus=<n> looks at one, ?view=front|side|back|top turns the camera, ?zones=0
  * hides the hit zones, ?close frames the head, ?t=<seconds> stops time there (for screenshots).
+ * ?body=own shows our own body instead (bodies/own.ts).
  */
 export async function startBodies(canvas: HTMLCanvasElement, status: HTMLElement): Promise<void> {
   const q = new URLSearchParams(location.search);
+  // CH-3: our own body in the fit check's poses, wearing the test kit.
+  if (q.get('body') === 'own') return startOwnBodies(canvas, status, q);
   const items = loadItems();
   const enemies = loadEnemies();
   const rig = new CharacterRig(await loadCharacter('/characters/mannequin.glb'));

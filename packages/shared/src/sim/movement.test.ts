@@ -751,8 +751,9 @@ describe('leaning', () => {
     run(TICK_RATE, RIGHT);
     const leanedHeadY = eyeHeight(c);
     expect(across(leanedHeadY, c.z)).toBeLessThan(Infinity);
-    // Seen from the front: a shot down at x = 0.3 hits the leaned head and missed it upright.
-    const down = (): number => raycastCharacters(state, 0.3, 5, c.z, 0, -1, 0, 10, 0, hit);
+    // Seen from the front: a shot down at x = 0.32 (clear of the right elbow) hits the
+    // leaned head and misses it upright.
+    const down = (): number => raycastCharacters(state, 0.32, 5, c.z, 0, -1, 0, 10, 0, hit);
     expect(down()).toBeLessThan(Infinity);
     expect(hit.zone).toBe(HEAD);
     run(TICK_RATE);
@@ -761,7 +762,7 @@ describe('leaning', () => {
     // The legs stay where they were.
     run(TICK_RATE, RIGHT);
     const shin = (): number => raycastCharacters(state, -5, 0.4, c.z, 1, 0, 0, 10, 0, hit);
-    expect(shin()).toBeCloseTo(5 - 0.11 - 0.1, 5);
+    expect(shin()).toBeCloseTo(5 - 0.1 - 0.1, 5);
     expect(hit.zone).toBe(LEFT_LEG);
   });
 

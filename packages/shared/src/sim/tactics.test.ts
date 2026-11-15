@@ -893,6 +893,7 @@ describe('aim and sprinting (2026-11-08)', () => {
       all,
       head: zones[0]! / all,
       chest: zones[1]! / all,
+      arms: (zones[2]! + zones[3]!) / all,
       legs: (zones[4]! + zones[5]!) / all,
     };
   };
@@ -901,7 +902,9 @@ describe('aim and sprinting (2026-11-08)', () => {
     for (const d of [10, 15]) {
       const r = hitsOn(d);
       expect(r.all).toBeGreaterThan(40);
-      expect(r.chest).toBeGreaterThan(0.6);
+      // Since CH-1's zones the gun arms cross the chest at the aim point and take a share.
+      expect(r.chest + r.arms).toBeGreaterThan(0.9);
+      expect(r.chest).toBeGreaterThan(0.25);
       expect(r.legs).toBeLessThan(0.03);
     }
   });

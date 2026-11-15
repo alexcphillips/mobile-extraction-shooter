@@ -434,13 +434,21 @@ export {
   type Zone,
 } from './sim/health';
 export {
+  ARM_CAPSULES,
   HIT_CAPSULES,
+  HOLDS,
+  hitCapsules,
+  holdOf,
+  LAYERS,
+  layerOf,
+  type Layer,
   headOffset,
   capsuleEnds,
   createCharacterHit,
   raycastCharacters,
   type CharacterHit,
   type HitCapsule,
+  type Hold,
 } from './sim/hit-zones';
 export {
   BREATH,
@@ -646,7 +654,10 @@ export {
   type SearchedLook,
   type PrefabLookup,
   type Shape,
+  type ModelShape,
+  shapeExtent,
 } from './content/compile';
+export { convexHull, loftPieces, loftRing, type P3 } from './content/hull';
 export { wallPieces, type WallOpening, type WallPiece } from './content/walls';
 export {
   SETTINGS_FORMAT,
@@ -866,3 +877,26 @@ export {
   loadNoise,
   loadSpeed,
 } from './sim/weight';
+export {
+  BODY_FORMAT,
+  BODY_FORMAT_VERSION,
+  CLIP_FORMAT,
+  CLIP_FORMAT_VERSION,
+  OUTFIT_SLOTS,
+  bodySchema,
+  outfitSlotOf,
+  LOWER_BONES,
+  MOUNT_SLOTS,
+  SKELETON_BONES,
+  SKELETON_FORMAT,
+  SKELETON_FORMAT_VERSION,
+  clipSchema,
+  skeletonSchema,
+  type BodyDef,
+  type ClipDef,
+  type MountSlot,
+  type OutfitSlot,
+  type SkeletonBone,
+  type SkeletonBoneDef,
+  type SkeletonDef,
+} from './content/skeleton';

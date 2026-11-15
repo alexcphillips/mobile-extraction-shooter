@@ -1,16 +1,22 @@
 import {
   ATTACHMENT_SLOTS,
+  HEAD,
+  HIT_CAPSULES,
   addVec,
+  platingShapes,
   fits,
   foldParts,
   modelShapes,
   partSchema,
   type AttachmentDef,
+  type BodyDef,
+  type Outfit,
+  type SkeletonBone,
   type AttachmentSlot,
   type ItemDb,
   type ItemDef,
   type ModelPart,
-  type Shape,
+  type ModelShape,
   type Vec3,
   type WeaponDef,
   type WeaponState,
@@ -18,6 +24,8 @@ import {
 } from '@mes/shared';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Combo, HexColor, Num, Pick, Text, Toggle } from '../editor/fields';
+import { loadEnemies } from '../content';
+import { tintedHex } from '../render/body-model';
 import { budgetOf, triangleCount } from './budget';
 import type { ItemEditor, ItemEditorState } from './editor';
 import {
@@ -185,6 +193,11 @@ export function ModelTab(props: {
   /** Attachments: the gun it's previewed on. */
   const [onGun, setOnGun] = useState<string | undefined>(undefined);
   const [clip, setClip] = useState<Clip | null>(readClip);
+  /** The body (CH-2): the enemy outfit it's previewed in ('' for its own colors); ?outfit=. */
+  const isBody = (def.type as string) === 'body';
+  const [outfitKey, setOutfitKey] = useState(
+    () => new URLSearchParams(location.search).get('outfit') ?? '',
+  );
   /** IE-2: orbit or a flat view, and the eyedropper (the next part clicked gives its color). */
   const [look, setLook] = useState<Look>('orbit');
   const [dropper, setDropper] = useState(false);
@@ -288,7 +301,24 @@ export function ModelTab(props: {
   const foldedView = folded && !!fold;
 
   // What the view draws, and first person, from the item as edited.
-  const scene = buildScene(def, model, items, fittedOk, gun, foldedView ? fold : null);
+  const built = buildScene(def, model, items, fittedOk, gun, foldedView ? fold : null);
+  // The body (CH-2): previewed in an enemy's outfit, tinted, with its plating (not pickable).
+  const preview = isBody ? BODY_OUTFITS().find((o) => o.key === outfitKey) : undefined;
+  const scene: ModelScene = preview
+    ? {
+        ...built,
+        parts: model.parts.map((p) => ({
+          ...p,
+          color: tintedHex(
+            def as unknown as BodyDef,
+            preview.outfit,
+            p.group as SkeletonBone,
+            p.color,
+          ),
+        })),
+        context: platingShapes(preview.outfit.plating).flatMap((g) => g.shapes),
+      }
+    : built;
   const fp: FirstPerson | null = !db
     ? null
     : def.type === 'weapon'
@@ -469,6 +499,19 @@ export function ModelTab(props: {
       <section className="ed-inspector ie-form">
         <h3>{def.name}</h3>
         <p className="ed-note">{FRAME_NOTES[def.type] ?? FRAME_NOTES.other}</p>
+        {isBody && (
+          <label className="ed-row" title="See the body in an enemy outfit: its colors and plating">
+            outfit{' '}
+            <select value={outfitKey} onChange={(e) => setOutfitKey(e.target.value)}>
+              <option value="">its own colors</option>
+              {BODY_OUTFITS().map((o) => (
+                <option key={o.key} value={o.key}>
+                  {o.key}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <Cost def={def} scene={scene} sceneKey={sceneKey} />
         <h4>parts</h4>
         <PartList
@@ -695,10 +738,30 @@ export function ModelTab(props: {
   );
 }
 
+/** Every enemy outfit, keyed '<enemy>-<n>', for the body's preview. */
+let bodyOutfits: { key: string; outfit: Outfit }[] | undefined;
+function BODY_OUTFITS(): { key: string; outfit: Outfit }[] {
+  bodyOutfits ??= [...loadEnemies().types.values()].flatMap((e) =>
+    (e.outfits ?? []).map((outfit, i) => ({ key: `${e.id}-${i + 1}`, outfit })),
+  );
+  return bodyOutfits;
+}
+
+/** The sim's head capsule in the model's frame (the sim's forward is +; the model's is −z). */
+const HEAD_CAPSULE = HIT_CAPSULES.find((c) => c.zone === HEAD)!;
+const HEAD_WIRE = [
+  {
+    a: [HEAD_CAPSULE.a[0], HEAD_CAPSULE.a[1], -HEAD_CAPSULE.a[2]] as Vec3,
+    b: [HEAD_CAPSULE.b[0], HEAD_CAPSULE.b[1], -HEAD_CAPSULE.b[2]] as Vec3,
+    radius: HEAD_CAPSULE.radius,
+  },
+];
+
 const FRAME_NOTES: Record<string, string> = {
   weapon: 'Meters; the barrel along −z, y up. The origin sits on the body’s weapon bone.',
   attachment: 'Meters; its origin goes on the gun’s mount for its slot.',
   melee: 'Meters; the blade along −z, held at the grip.',
+  body: 'Meters; the rest pose (a T-pose), feet at y = 0, facing −z. Each part’s group is the bone it moves with (hips, spine, chest, neck, head, upperArmL…footR); the head stays inside the sim’s head volume, drawn as a wire.',
   armor: 'Meters, on the body as it stands (feet at 0, facing −z).',
   container: 'Meters, on the body as it stands (feet at 0, facing −z).',
   other: 'Meters. On the ground it rests on its lowest point.',
@@ -723,7 +786,7 @@ function safeShapes(
   parts: readonly ModelPart[],
   at?: Vec3,
   fitted?: (s: AttachmentSlot) => boolean,
-): Shape[] {
+): ModelShape[] {
   try {
     return modelShapes({ parts }, [], at, fitted).filter((s) =>
       Object.values(s).every((v) => typeof v !== 'number' || Number.isFinite(v)),
@@ -752,11 +815,13 @@ function buildScene(
     context: [],
     body: def.type === 'armor' || def.type === 'container',
     sightLine: null,
+    // The body (CH-2): the sim's head volume, which the head stays inside.
+    ...((def.type as string) === 'body' && { wires: HEAD_WIRE }),
   };
   if (def.type === 'weapon') {
     const fittedSlots = new Set(ATTACHMENT_SLOTS.filter((s) => fitted(s)));
     scene.fitted = fittedSlots;
-    const context: Shape[] = [];
+    const context: ModelShape[] = [];
     let sight = pointAt(model, 'sight') ?? null;
     for (const slot of fittedSlots) {
       const a = items.get(fitted(slot)!) as AttachmentDef;
@@ -1005,6 +1070,47 @@ function PickedFields(props: {
   );
 }
 
+/**
+ * Rows of numbers as text, one row a line (a loft's rings, a hull's points, CH-3a). Kept
+ * as typed while a line doesn't parse; saved once every line has a right number of numbers.
+ */
+function NumberRows(props: {
+  rows: readonly (readonly number[])[];
+  width: [number, number];
+  onChange: (rows: number[][]) => void;
+}) {
+  const shown = props.rows.map((r) => r.join(', ')).join('\n');
+  const [text, setText] = useState(shown);
+  // When the part changes from outside (undo, another part picked), show its rows.
+  const [was, setWas] = useState(shown);
+  if (shown !== was) {
+    setWas(shown);
+    setText(shown);
+  }
+  return (
+    <textarea
+      className="ie-rows"
+      rows={Math.min(12, props.rows.length + 1)}
+      value={text}
+      onChange={(e) => {
+        setText(e.target.value);
+        const rows = e.target.value
+          .split('\n')
+          .filter((l) => l.trim())
+          .map((l) =>
+            l
+              .split(/[\s,]+/)
+              .filter(Boolean)
+              .map(Number),
+          );
+        const [a, b] = props.width;
+        if (rows.every((r) => (r.length === a || r.length === b) && r.every(Number.isFinite)))
+          props.onChange(rows);
+      }}
+    />
+  );
+}
+
 /** One part's shape, place and turn. */
 function PartFields(props: { part: ModelPart; edit: (change: (p: ModelPart) => void) => void }) {
   const { part: p, edit } = props;
@@ -1051,10 +1157,48 @@ function PartFields(props: { part: ModelPart; edit: (change: (p: ModelPart) => v
             3,
           )}
         </div>
+      ) : p.type === 'loft' ? (
+        <>
+          <p className="ed-note">
+            Rings up its y, one a line: y, width, depth, and optionally x and z moved over.
+          </p>
+          <NumberRows
+            rows={p.rings}
+            width={[3, 5]}
+            onChange={(rows) =>
+              edit((q) => q.type === 'loft' && (q.rings = rows as typeof q.rings))
+            }
+          />
+          <div className="ed-row">
+            {num(
+              'sides',
+              p.sides ?? 8,
+              (q, v) => q.type === 'loft' && (q.sides = Math.max(3, Math.min(16, Math.round(v)))),
+              3,
+            )}
+          </div>
+        </>
+      ) : p.type === 'hull' ? (
+        <>
+          <p className="ed-note">Points (x, y, z, one a line); it's the shape round them.</p>
+          <NumberRows
+            rows={p.points}
+            width={[3, 3]}
+            onChange={(rows) =>
+              edit((q) => q.type === 'hull' && (q.points = rows as typeof q.points))
+            }
+          />
+        </>
       ) : (
         <div className="ed-row">
           {(['width', 'height', 'depth'] as const).map((label, j) =>
-            num(label, p.size[j], (q, v) => q.type !== 'cylinder' && (q.size[j] = v), 0.0001),
+            num(
+              label,
+              p.size[j],
+              (q, v) =>
+                (q.type === 'box' || q.type === 'wedge' || q.type === 'slab') && (q.size[j] = v),
+              0.0001,
+            ),
           )}
         </div>
       )}

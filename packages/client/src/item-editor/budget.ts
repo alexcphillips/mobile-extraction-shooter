@@ -1,4 +1,4 @@
-import type { ItemDef, Shape } from '@mes/shared';
+import type { ItemDef, ModelShape } from '@mes/shared';
 import { TriangleBuilder } from '../render/geometry';
 
 /*
@@ -16,6 +16,8 @@ export interface Budget {
 }
 
 export function budgetOf(def: ItemDef): Budget {
+  // The body (CH-2; 1,500 since CH-3b, the user's call): drawn on every character.
+  if ((def.type as string) === 'body') return { triangles: 1500, kind: 'body' };
   switch (def.type) {
     case 'weapon':
       return def.hold === 'pistol'
@@ -38,7 +40,7 @@ export function budgetOf(def: ItemDef): Budget {
 }
 
 /** Triangles the game draws for these shapes. */
-export function triangleCount(shapes: readonly Shape[]): number {
+export function triangleCount(shapes: readonly ModelShape[]): number {
   const b = new TriangleBuilder(false);
   for (const s of shapes) b.shape(s);
   return b.triangles;

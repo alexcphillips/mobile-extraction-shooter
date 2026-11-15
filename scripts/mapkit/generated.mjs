@@ -22,7 +22,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
-import { relative } from 'node:path';
+import { basename, relative } from 'node:path';
 import * as prettier from 'prettier';
 import { layout } from '../../packages/client/editor-save.mjs';
 
@@ -415,6 +415,17 @@ export async function writeGenerated({ file, map, by, root, argv, seed }) {
   console.log(`${rel}: ${old ? report(rows) : 'new file'}`);
   if (dryRun) console.log('(dry run: nothing written)');
   else await writeJson(file, merged);
+  // What the editor would outline in red (scripts/map-overlaps.mjs), on the merged map.
+  const { checkMap, formatRows } = await import('../map-overlaps.mjs');
+  const id = basename(file, '.json');
+  const check = checkMap(merged, id);
+  console.log(`${rel} overlaps: ${formatRows(check.map, check.rows, 10)}`);
+  // The gate for showing a map to the user (CLAUDE.md, level-design.md → Review checklist).
+  console.log(
+    check.rows.length
+      ? `${rel}: NOT READY FOR REVIEW (${check.rows.length} overlap problems; fix them before the user sees it)`
+      : `${rel}: overlap check passed, ready for review`,
+  );
   return { map: merged, rows };
 }
 

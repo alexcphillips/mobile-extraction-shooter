@@ -4,7 +4,7 @@ import {
   type ItemDb,
   type ModelPart,
   type OpticDef,
-  type Shape,
+  type ModelShape,
   type Vec3,
   type WeaponState,
 } from '@mes/shared';
@@ -45,11 +45,13 @@ export interface ModelScene {
   fitted: ReadonlySet<AttachmentSlot>;
   points: readonly { key: string; at: Vec3 }[];
   /** Drawn around the item and not pickable, in the item's frame. */
-  context: readonly Shape[];
+  context: readonly ModelShape[];
   /** Worn gear: the body it's modeled on. */
   body: boolean;
   /** Where the eye looks along −z from, when aimed. */
   sightLine: Vec3 | null;
+  /** Capsules drawn as wire, not pickable (the body's head volume). */
+  wires?: readonly { a: Vec3; b: Vec3; radius: number }[];
 }
 
 /** What first person shows: a gun with attachments, or a knife. */
@@ -129,6 +131,8 @@ export class ModelView {
   private look: Look = 'orbit';
   /** Half the height a flat camera shows at zoom 1, in meters. */
   private flatSize = 0.4;
+  /** Flat views that have fitted the model once (setLook). */
+  private readonly framedFlats = new Set<Look>();
   private readonly grids = new THREE.Group();
   private readonly reference = new THREE.Mesh(
     new THREE.PlaneGeometry(1, 1).rotateY(-Math.PI / 2),
@@ -331,6 +335,12 @@ export class ModelView {
       f.controls.target.copy(from);
       f.camera.position.copy(from).addScaledVector(FLAT[look].from, 10);
       f.controls.update();
+      // The first time a flat view opens it fits the model (a body is far bigger than its
+      // default 0.4 m); after that it keeps its own zoom.
+      if (!this.framedFlats.has(look)) {
+        this.framedFlats.add(look);
+        this.frame();
+      }
     }
     // The grid behind the item: in the plane square to the view, a meter back.
     this.grids.rotation.set(0, 0, 0);
@@ -481,6 +491,17 @@ export class ModelView {
       const b = new TriangleBuilder(false);
       for (const s of scene.context) b.shape(s);
       this.context.add(new THREE.Mesh(b.build(), this.material));
+    }
+    for (const w of scene.wires ?? []) {
+      const a = new THREE.Vector3(...w.a);
+      const b = new THREE.Vector3(...w.b);
+      const wire = new THREE.Mesh(
+        new THREE.CapsuleGeometry(w.radius, a.distanceTo(b), 4, 12),
+        new THREE.MeshBasicMaterial({ color: 0x42a5f5, wireframe: true }),
+      );
+      wire.position.addVectors(a, b).multiplyScalar(0.5);
+      wire.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.sub(a).normalize());
+      this.context.add(wire);
     }
     this.bodyWanted = scene.body;
     if (scene.body) void this.loadBody();

@@ -1,4 +1,4 @@
-import type { HeightGridDef, Shape } from '@mes/shared';
+import { convexHull, loftRing, type HeightGridDef, type ModelShape } from '@mes/shared';
 import * as THREE from 'three';
 import type { FaceCull } from './face-cull';
 import { shade } from './shade';
@@ -99,7 +99,7 @@ export class TriangleBuilder {
     }
   }
 
-  shape(s: Shape): void {
+  shape(s: ModelShape): void {
     euler.set(s.pitch, s.yaw, s.roll, 'YXZ');
     matrix.makeRotationFromEuler(euler).setPosition(s.x, s.y, s.z);
     const v = (x: number, y: number, z: number): THREE.Vector3 => new THREE.Vector3(x, y, z);
@@ -188,6 +188,33 @@ export class TriangleBuilder {
         }
         this.poly(bottom, origin, matrix, s.color);
         this.poly(top, origin, matrix, s.color);
+        return;
+      }
+      case 'loft': {
+        // Side triangles ring to ring, each wound away from its segment's middle, and the
+        // two ends capped (CH-3a).
+        const rings = s.rings.map((r) => loftRing(r, s.sides).map(([x, y, z]) => v(x, y, z)));
+        const middle = (ps: readonly THREE.Vector3[]): THREE.Vector3 =>
+          ps.reduce((m, p) => m.add(p), v(0, 0, 0)).multiplyScalar(1 / ps.length);
+        for (let k = 0; k + 1 < rings.length; k++) {
+          const a = rings[k]!;
+          const b = rings[k + 1]!;
+          const mid = middle([...a, ...b]);
+          for (let i = 0; i < s.sides; i++) {
+            const j = (i + 1) % s.sides;
+            this.poly([a[i]!, a[j]!, b[j]!], mid, matrix, s.color);
+            this.poly([a[i]!, b[j]!, b[i]!], mid, matrix, s.color);
+          }
+        }
+        const all = middle(rings.flat());
+        this.poly(rings[0]!, all, matrix, s.color);
+        this.poly(rings[rings.length - 1]!, all, matrix, s.color);
+        return;
+      }
+      case 'hull': {
+        const faces = convexHull(s.points) ?? [];
+        const p = s.points.map(([x, y, z]) => v(x, y, z).applyMatrix4(matrix));
+        for (const [a, b, c] of faces) this.tri(p[a]!, p[b]!, p[c]!, s.color);
         return;
       }
     }

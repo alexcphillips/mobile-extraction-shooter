@@ -1,0 +1,165 @@
+{
+  "formatVersion": 1,
+  "bones": [
+    {
+      "name": "hips",
+      "parent": null,
+      "offset": [0, 0.91, 0]
+    },
+    {
+      "name": "spine",
+      "parent": "hips",
+      "offset": [0, 0.19, 0],
+      "limits": {
+        "min": [-30, -35, -25],
+        "max": [45, 35, 25]
+      }
+    },
+    {
+      "name": "chest",
+      "parent": "spine",
+      "offset": [0, 0.18, 0],
+      "limits": {
+        "min": [-25, -35, -20],
+        "max": [35, 35, 20]
+      }
+    },
+    {
+      "name": "neck",
+      "parent": "chest",
+      "offset": [0, 0.2, 0],
+      "limits": {
+        "min": [-40, -50, -25],
+        "max": [40, 50, 25]
+      }
+    },
+    {
+      "name": "head",
+      "parent": "neck",
+      "offset": [0, 0.08, 0],
+      "limits": {
+        "min": [-40, -40, -25],
+        "max": [40, 40, 25]
+      }
+    },
+    {
+      "name": "upperArmL",
+      "parent": "chest",
+      "offset": [-0.19, 0.15, 0],
+      "limits": {
+        "min": [-180, -100, -100],
+        "max": [180, 100, 90]
+      }
+    },
+    {
+      "name": "forearmL",
+      "parent": "upperArmL",
+      "offset": [-0.3, 0, 0],
+      "limits": {
+        "min": [-90, -150, -10],
+        "max": [90, 0, 10]
+      }
+    },
+    {
+      "name": "handL",
+      "parent": "forearmL",
+      "offset": [-0.26, 0, 0],
+      "limits": {
+        "min": [-90, -70, -80],
+        "max": [90, 70, 80]
+      }
+    },
+    {
+      "name": "upperArmR",
+      "parent": "chest",
+      "offset": [0.19, 0.15, 0],
+      "limits": {
+        "min": [-180, -100, -90],
+        "max": [180, 100, 100]
+      }
+    },
+    {
+      "name": "forearmR",
+      "parent": "upperArmR",
+      "offset": [0.3, 0, 0],
+      "limits": {
+        "min": [-90, 0, -10],
+        "max": [90, 150, 10]
+      }
+    },
+    {
+      "name": "handR",
+      "parent": "forearmR",
+      "offset": [0.26, 0, 0],
+      "limits": {
+        "min": [-90, -70, -80],
+        "max": [90, 70, 80]
+      }
+    },
+    {
+      "name": "thighL",
+      "parent": "hips",
+      "offset": [-0.1, -0.06, 0],
+      "limits": {
+        "min": [-30, -45, -45],
+        "max": [120, 45, 15]
+      }
+    },
+    {
+      "name": "shinL",
+      "parent": "thighL",
+      "offset": [0, -0.385, 0],
+      "limits": {
+        "min": [-150, -10, -5],
+        "max": [0, 10, 5]
+      }
+    },
+    {
+      "name": "footL",
+      "parent": "shinL",
+      "offset": [0, -0.39, 0],
+      "limits": {
+        "min": [-45, -20, -25],
+        "max": [30, 20, 25]
+      }
+    },
+    {
+      "name": "thighR",
+      "parent": "hips",
+      "offset": [0.1, -0.06, 0],
+      "limits": {
+        "min": [-30, -45, -15],
+        "max": [120, 45, 45]
+      }
+    },
+    {
+      "name": "shinR",
+      "parent": "thighR",
+      "offset": [0, -0.385, 0],
+      "limits": {
+        "min": [-150, -10, -5],
+        "max": [0, 10, 5]
+      }
+    },
+    {
+      "name": "footR",
+      "parent": "shinR",
+      "offset": [0, -0.39, 0],
+      "limits": {
+        "min": [-45, -20, -25],
+        "max": [30, 20, 25]
+      }
+    }
+  ],
+  "mounts": {
+    "helmet": "head",
+    "armor": "chest",
+    "rig": "chest",
+    "backpack": "chest"
+  },
+  "headVolume": {
+    "a": [0, 0.02, -0.035],
+    "b": [0, 0.095, -0.035],
+    "radius": 0.125
+  }
+}

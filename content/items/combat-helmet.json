@@ -20,22 +20,90 @@
   "model": {
     "parts": [
       {
+        "name": "band",
         "type": "cylinder",
-        "pos": [0, 1.719, 0],
-        "radius": 0.138,
-        "radiusTop": 0.113,
-        "height": 0.118,
-        "color": "#6b6450"
+        "pos": [0, 1.715, -0.035],
+        "radius": 0.146,
+        "radiusTop": 0.142,
+        "height": 0.05,
+        "sides": 8,
+        "color": "#5d6266",
+        "yaw": 22.5
       },
       {
+        "name": "dome",
         "type": "cylinder",
-        "pos": [0, 1.793, 0],
-        "radius": 0.113,
-        "radiusTop": 0.059,
-        "height": 0.035,
-        "color": "#6b6450"
+        "pos": [0, 1.765, -0.035],
+        "radius": 0.142,
+        "radiusTop": 0.106,
+        "height": 0.05,
+        "sides": 8,
+        "color": "#5d6266",
+        "yaw": 22.5
       },
-      { "type": "box", "pos": [0, 1.775, -0.1], "size": [0.05, 0.03, 0.03], "color": "#2b2d2f" }
+      {
+        "name": "crown",
+        "type": "cylinder",
+        "pos": [0, 1.8, -0.035],
+        "radius": 0.106,
+        "radiusTop": 0.05,
+        "height": 0.02,
+        "sides": 8,
+        "color": "#4e5357",
+        "yaw": 22.5
+      },
+      {
+        "name": "nape",
+        "type": "box",
+        "pos": [0, 1.672, 0.103],
+        "size": [0.15, 0.05, 0.02],
+        "color": "#4e5357",
+        "pitch": -12
+      },
+      {
+        "name": "rail R",
+        "type": "box",
+        "pos": [0.145, 1.716, -0.023],
+        "size": [0.018, 0.026, 0.1],
+        "color": "#6e6a48"
+      },
+      {
+        "name": "rail L",
+        "type": "box",
+        "pos": [-0.145, 1.716, -0.023],
+        "size": [0.018, 0.026, 0.1],
+        "color": "#6e6a48"
+      },
+      {
+        "name": "shroud",
+        "type": "box",
+        "pos": [0, 1.738, -0.177],
+        "size": [0.075, 0.05, 0.016],
+        "color": "#6e6a48",
+        "pitch": 18
+      },
+      {
+        "name": "shroud mount",
+        "type": "box",
+        "pos": [0, 1.722, -0.19],
+        "size": [0.032, 0.022, 0.02],
+        "color": "#2b2d2f"
+      },
+      {
+        "name": "counterweight",
+        "type": "box",
+        "pos": [0, 1.752, 0.105],
+        "size": [0.08, 0.045, 0.026],
+        "color": "#3f4636",
+        "pitch": -28
+      },
+      {
+        "name": "velcro",
+        "type": "box",
+        "pos": [0, 1.79, -0.055],
+        "size": [0.07, 0.008, 0.09],
+        "color": "#3f4636"
+      }
     ]
   }
 }

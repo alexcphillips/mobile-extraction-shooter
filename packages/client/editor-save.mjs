@@ -33,6 +33,8 @@ const DIRS = [
   'loot-containers',
   'quests',
   'layouts',
+  // The body (CH-2), from the item editor; CH-4's clips will join it.
+  'characters',
 ];
 /** The only files that may be deleted: nothing else is checked for what names it. */
 const DELETABLE = /^quests\//;

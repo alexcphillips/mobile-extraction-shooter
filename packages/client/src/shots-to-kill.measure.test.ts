@@ -1,6 +1,7 @@
 import {
   CollisionWorld,
   createArmor,
+  createItem,
   createState,
   DEFAULT_SKILL,
   giveWeapon,
@@ -20,6 +21,7 @@ import { loadEnemies, loadItems } from './content';
 // a player standing still in the open, facing it, with no helmet. How many hits it takes to
 // kill, and where they land. Skipped unless asked for:
 //   MEASURE=1 npx vitest run src/shots-to-kill.measure.test.ts --silent=false
+// HOLD=rifle, pistol or knife arms the player (its arm zones follow); empty-handed without.
 
 const items = loadItems();
 const pmc = loadEnemies().types.get('pmc')!;
@@ -54,6 +56,8 @@ const still: PlayerInput = {
   reload: false,
 };
 
+const HOLD = import.meta.env.HOLD as string | undefined;
+
 /** Hits until the player died (NaN if it lived a minute), counting where they landed. */
 function trial(seed: number, range: number, armor: string | null, zones: number[]): number {
   const state = createState(seed);
@@ -62,6 +66,11 @@ function trial(seed: number, range: number, armor: string | null, zones: number[
   stow(enemy, items, { item: 'ammo-762x39', count: 600 });
   const player = spawnCharacter(state, world, 0, -range);
   if (armor) player.gear.bodyArmor = createArmor(items, armor);
+  // What the player holds places its arm zones (HOLD=rifle|pistol|knife; default empty).
+  if (HOLD === 'knife') {
+    player.gear.knife = createItem(items, 'knife');
+    player.gear.hand = 'knife';
+  } else if (HOLD) giveWeapon(player, items, HOLD === 'pistol' ? 'm9a3' : 'akm');
   let hits = 0;
   for (let t = 0; t < 60 * TICK_RATE && !player.health.dead; t++) {
     state.events.length = 0;

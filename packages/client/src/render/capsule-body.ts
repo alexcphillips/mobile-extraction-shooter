@@ -1,12 +1,18 @@
 import {
+  ARM_CAPSULES,
   HEAD,
   HEALTH,
   HIT_CAPSULES,
+  HOLDS,
+  holdOf,
+  LAYERS,
+  layerOf,
   MOVEMENT,
   ZONE_COUNT,
   headOffset,
   isBroken,
   type Character,
+  type HitCapsule,
   type ItemDb,
   type Zone,
 } from '@mes/shared';
@@ -37,6 +43,8 @@ export class CapsuleBody {
   /** The head's capsule, and where it sits before headOffset. */
   private head: THREE.Mesh | null = null;
   private readonly headAt = new THREE.Vector3();
+  /** The arms for each hold and layer (`rifle-armor`), one shown at a time. */
+  private readonly arms = new Map<string, THREE.Group>();
   private readonly helmet: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>;
   private readonly vest: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>;
 
@@ -48,7 +56,18 @@ export class CapsuleBody {
     const see = opacity < 1 ? { transparent: true, opacity, depthWrite: false } : {};
     const a = new THREE.Vector3();
     const b = new THREE.Vector3();
-    for (const cap of HIT_CAPSULES) {
+    const arms = new Set<HitCapsule>(ARM_CAPSULES.rifle.bare);
+    const all: [HitCapsule, THREE.Group | null][] = HIT_CAPSULES.filter((c) => !arms.has(c)).map(
+      (c) => [c, null],
+    );
+    for (const hold of HOLDS)
+      for (const layer of LAYERS) {
+        const group = new THREE.Group();
+        this.arms.set(`${hold}-${layer}`, group);
+        this.upper.add(group);
+        for (const cap of ARM_CAPSULES[hold][layer]) all.push([cap, group]);
+      }
+    for (const [cap, group] of all) {
       // In three.js local +z is backwards, so forward is −z.
       a.set(cap.a[0], cap.a[1], -cap.a[2]);
       b.set(cap.b[0], cap.b[1], -cap.b[2]);
@@ -67,7 +86,7 @@ export class CapsuleBody {
         this.head = mesh;
         this.headAt.copy(mesh.position);
       }
-      (Math.max(cap.a[1], cap.b[1]) > hips ? this.upper : this.legs).add(mesh);
+      (group ?? (Math.max(cap.a[1], cap.b[1]) > hips ? this.upper : this.legs)).add(mesh);
     }
     this.helmet = new THREE.Mesh(
       new THREE.BoxGeometry(0.3, 0.14, 0.32),
@@ -96,6 +115,8 @@ export class CapsuleBody {
     this.pivot.position.y = hips;
     // Leaning right tips the top towards +x: a turn about +z the other way.
     this.pivot.rotation.z = -(c.lean ?? 0) * MOVEMENT.leanAngle;
+    const shown = `${holdOf(c)}-${layerOf(c)}`;
+    for (const [key, group] of this.arms) group.visible = key === shown;
     headOffset(c, offset);
     this.head?.position.set(
       this.headAt.x + offset[0]!,

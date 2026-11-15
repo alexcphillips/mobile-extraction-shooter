@@ -5,17 +5,20 @@
 // --view (3D, side, top, front; default 3D and side).
 //
 //   node scripts/item-shot.mjs <item-id> [--out <prefix>] [--view side]... [--base <url>]
+// `@body` shoots the character body (content/characters/body.json) in its rest pose;
+// --outfit <enemy>-<n> (scav-3) shows it in that enemy outfit, tinted, with its plating.
 import { chromium } from 'playwright';
 
 const args = process.argv.slice(2);
 const id = args.shift();
 if (!id || id.startsWith('--')) throw new Error('usage: item-shot.mjs <item-id> [options]');
-const opt = { base: 'http://localhost:5180', out: `item-${id}`, views: [] };
+const opt = { base: 'http://localhost:5180', out: `item-${id}`, views: [], query: '' };
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
   if (a === '--out') opt.out = args[++i];
   else if (a === '--view') opt.views.push(args[++i]);
   else if (a === '--base') opt.base = args[++i];
+  else if (a === '--outfit') opt.query += `&outfit=${encodeURIComponent(args[++i])}`;
   else throw new Error(`unknown option ${a}`);
 }
 if (!opt.views.length) opt.views = ['3D', 'side'];
@@ -24,12 +27,15 @@ const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
-await page.goto(`${opt.base}/item-editor?item=${encodeURIComponent(id)}`);
+await page.goto(`${opt.base}/item-editor?item=${encodeURIComponent(id)}${opt.query}`);
 await page.waitForTimeout(2000);
-const pictures = page.getByText('its picture, taken from').locator('..');
-await pictures.screenshot({ path: `${opt.out}-pictures.png` });
-await page.click('button:text-is("model")');
-await page.waitForTimeout(1500);
+// The body (CH-2, `@body`) has no inventory picture and opens on its model.
+if (id !== '@body') {
+  const pictures = page.getByText('its picture, taken from').locator('..');
+  await pictures.screenshot({ path: `${opt.out}-pictures.png` });
+  await page.click('button:text-is("model")');
+  await page.waitForTimeout(1500);
+}
 console.log((await page.getByText(/\d+ parts · \d+ triangles/).textContent())?.trim());
 for (const view of opt.views) {
   await page.click(`button:text-is("${view}")`);

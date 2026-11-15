@@ -52,6 +52,7 @@ From `MOVEMENT` in `packages/shared/src/sim/movement.ts` and design.md. Check th
 
 Run through this for a new area or a review. Report problems ranked by how much they matter, and say what wasn't checked.
 
+- [ ] **Overlaps pass (a gate, the user's rule 2026-11-14):** `node scripts/map-overlaps.mjs <map>` exits 0. Until it does, the map isn't ready for the user's eyes: no walk, review or approval request. Fix the cause in the generator when it's generated.
 - [ ] **Entrances:** how many ways in to each space? Are any one-entry pockets deliberate?
 - [ ] **Lanes:** longest straight run, and where it is? Lane widths, and any squeeze under 1 m on a main route?
 - [ ] **Sightlines:** typical clear line length; the longest lines and whether they're slits; whether each long line has a counter-position.
@@ -76,6 +77,8 @@ Layouts are built from numbers, so verify movement in the sim instead of reasoni
 - **Looks:** the user usually checks visuals in the game themselves. A headless screenshot through `/play-test?peaceful&at=x,z[,y]` (the map handed over in localStorage `mes.playTest`) works if one's really needed.
 
 ## Map report (MK-4, 2026-11-12)
+
+**Overlaps:** `node scripts/map-overlaps.mjs <map>` lists everything the editor would outline in red, plus props sunk into floors and ground showing through floors (tech/editors.md → Overlap check). Run it on every map you make or change. **It must pass before the map goes to the user** (Review checklist, first item).
 
 `node scripts/map-report.mjs <map> [--zone <area>] [--detail] [--compare <map|run.json>] [--no-cost]` measures a map on its real collision world and nav grid in a few seconds (Silver Creek 2 s, Northpoint 5 s with the cost). It prints one summary table and a row per named area (the map's `mapLabel`s of size `area`; the whole map if it has none), writes heatmaps (`lines.png`, `open.png`, `nav.png`, 2 px a meter, north up) and `run.json` to `node_modules/.cache/map-report/<map>/`, and `--compare` lines another map's saved run up beside it. `--detail` adds the islands, perches, drops, walks between areas and spawn-to-extraction walks. **Use it instead of throwaway vitests** for anything it measures; keep the sim for a single route (above). Code: `packages/client/src/map-report/` (`measure.ts` pure, for MK-8's editor overlays too; `cost.ts` with three.js).
 

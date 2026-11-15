@@ -8,14 +8,14 @@ import {
   weaponDef,
   type AttachmentSlot,
   type ItemDb,
-  type Shape,
+  type ModelShape,
   type Vec3,
   type WeaponState,
 } from '@mes/shared';
 
 export interface GunModel {
   hold: 'rifle' | 'pistol';
-  shapes: Shape[];
+  shapes: ModelShape[];
   /** The point the eye lines up with when aimed: the optic's, or the iron sights. */
   sight: Vec3;
   /** Where shots leave: the end of the barrel or of the muzzle device. */
@@ -69,7 +69,7 @@ export function gunModel(w: WeaponState, items: ItemDb): GunModel {
  * A knife in the same frame as a gun: the blade along −z. Drawn in first person and in a
  * body's right hand.
  */
-export function knifeModel(items: ItemDb, id: string): { shapes: Shape[]; grip: Vec3 } {
+export function knifeModel(items: ItemDb, id: string): { shapes: ModelShape[]; grip: Vec3 } {
   const model = meleeDef(items, id).model;
   return { shapes: modelShapes(model), grip: model.grip };
 }
