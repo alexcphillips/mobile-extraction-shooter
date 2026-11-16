@@ -48,19 +48,166 @@ export function kindOf(def: { type: string; slot?: unknown; armor?: unknown }): 
 }
 
 /**
- * A new rig's model, armored or not (2026-11-11, the user's call): the armored chest rig's,
- * worn on the chest, so a new rig isn't a backpack on the back.
+ * A new rig's model, armored or not: worn on the chest, so a new rig isn't a backpack on
+ * the back. The old chest rig's since 2026-11-15 (the user's call), which keeps out of the
+ * arms' way (fit-check.test.ts); every rig shares it until each gets its own.
  */
 const RIG_MODEL: ItemModel = {
   parts: [
-    { type: 'box', pos: [0, 1.22, -0.14], size: [0.33, 0.3, 0.05], color: '#4c5a36' },
-    { type: 'box', pos: [0, 1.22, 0.14], size: [0.33, 0.3, 0.04], color: '#424e2f' },
-    { type: 'box', pos: [0.11, 1.38, 0], size: [0.07, 0.035, 0.29], color: '#4c5a36' },
-    { type: 'box', pos: [-0.11, 1.38, 0], size: [0.07, 0.035, 0.29], color: '#424e2f' },
-    { type: 'box', pos: [-0.12, 1.11, -0.185], size: [0.07, 0.1, 0.04], color: '#3b4529' },
-    { type: 'box', pos: [-0.04, 1.11, -0.185], size: [0.07, 0.1, 0.04], color: '#3b4529' },
-    { type: 'box', pos: [0.04, 1.11, -0.185], size: [0.07, 0.1, 0.04], color: '#3b4529' },
-    { type: 'box', pos: [0.12, 1.11, -0.185], size: [0.07, 0.1, 0.04], color: '#3b4529' },
+    {
+      name: 'backing',
+      type: 'box',
+      pos: [0, 1.3, -0.143],
+      size: [0.33, 0.13, 0.05],
+      color: '#3f4636',
+    },
+    {
+      name: 'pouch -0.105',
+      type: 'box',
+      pos: [-0.105, 1.29, -0.189],
+      size: [0.062, 0.11, 0.042],
+      color: '#5d6266',
+    },
+    {
+      name: 'flap -0.105',
+      type: 'box',
+      pos: [-0.105, 1.352, -0.19],
+      size: [0.066, 0.024, 0.046],
+      color: '#4e5357',
+    },
+    {
+      name: 'tab -0.105',
+      type: 'box',
+      pos: [-0.105, 1.33, -0.213],
+      size: [0.022, 0.03, 0.006],
+      color: '#4e5357',
+    },
+    {
+      name: 'pouch -0.035',
+      type: 'box',
+      pos: [-0.035, 1.29, -0.189],
+      size: [0.062, 0.11, 0.042],
+      color: '#5d6266',
+    },
+    {
+      name: 'flap -0.035',
+      type: 'box',
+      pos: [-0.035, 1.352, -0.19],
+      size: [0.066, 0.024, 0.046],
+      color: '#4e5357',
+    },
+    {
+      name: 'tab -0.035',
+      type: 'box',
+      pos: [-0.035, 1.33, -0.213],
+      size: [0.022, 0.03, 0.006],
+      color: '#4e5357',
+    },
+    {
+      name: 'pouch 0.035',
+      type: 'box',
+      pos: [0.035, 1.29, -0.189],
+      size: [0.062, 0.11, 0.042],
+      color: '#5d6266',
+    },
+    {
+      name: 'flap 0.035',
+      type: 'box',
+      pos: [0.035, 1.352, -0.19],
+      size: [0.066, 0.024, 0.046],
+      color: '#4e5357',
+    },
+    {
+      name: 'tab 0.035',
+      type: 'box',
+      pos: [0.035, 1.33, -0.213],
+      size: [0.022, 0.03, 0.006],
+      color: '#4e5357',
+    },
+    {
+      name: 'pouch 0.105',
+      type: 'box',
+      pos: [0.105, 1.29, -0.189],
+      size: [0.062, 0.11, 0.042],
+      color: '#5d6266',
+    },
+    {
+      name: 'flap 0.105',
+      type: 'box',
+      pos: [0.105, 1.352, -0.19],
+      size: [0.066, 0.024, 0.046],
+      color: '#4e5357',
+    },
+    {
+      name: 'tab 0.105',
+      type: 'box',
+      pos: [0.105, 1.33, -0.213],
+      size: [0.022, 0.03, 0.006],
+      color: '#4e5357',
+    },
+    {
+      name: 'harness front R',
+      type: 'box',
+      pos: [0.115, 1.435, -0.124],
+      size: [0.035, 0.14, 0.012],
+      color: '#3f4636',
+    },
+    {
+      name: 'harness front L',
+      type: 'box',
+      pos: [-0.115, 1.435, -0.124],
+      size: [0.035, 0.14, 0.012],
+      color: '#3f4636',
+    },
+    {
+      name: 'harness top R',
+      type: 'box',
+      pos: [0.13, 1.514, -0.004],
+      size: [0.035, 0.012, 0.24],
+      color: '#3f4636',
+    },
+    {
+      name: 'harness top L',
+      type: 'box',
+      pos: [-0.13, 1.514, -0.004],
+      size: [0.035, 0.012, 0.24],
+      color: '#3f4636',
+    },
+    {
+      name: 'harness back R',
+      type: 'box',
+      pos: [0.115, 1.42, 0.112],
+      size: [0.035, 0.17, 0.012],
+      color: '#3f4636',
+    },
+    {
+      name: 'harness back L',
+      type: 'box',
+      pos: [-0.115, 1.42, 0.112],
+      size: [0.035, 0.17, 0.012],
+      color: '#3f4636',
+    },
+    {
+      name: 'back strap',
+      type: 'box',
+      pos: [0, 1.3, 0.112],
+      size: [0.27, 0.03, 0.012],
+      color: '#3f4636',
+    },
+    {
+      name: 'side strap R',
+      type: 'box',
+      pos: [0.178, 1.3, -0.005],
+      size: [0.025, 0.03, 0.23],
+      color: '#3f4636',
+    },
+    {
+      name: 'side strap L',
+      type: 'box',
+      pos: [-0.178, 1.3, -0.005],
+      size: [0.025, 0.03, 0.23],
+      color: '#3f4636',
+    },
   ],
 };
 

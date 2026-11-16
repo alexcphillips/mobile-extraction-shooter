@@ -84,7 +84,7 @@
   ],
   "rigs": [
     { "weight": 2, "item": null },
-    { "weight": 1, "item": "chest-rig" }
+    { "weight": 1, "item": "m12-patrol-rig" }
   ],
   "backpacks": [
     { "weight": 3, "item": null },

@@ -46,7 +46,7 @@ describe('register', () => {
       'm9a3',
       'tactical-vest',
       'steel-helmet',
-      'chest-rig',
+      'm12-patrol-rig',
       'medium-backpack',
       'field-first-aid-kit',
       'splint',

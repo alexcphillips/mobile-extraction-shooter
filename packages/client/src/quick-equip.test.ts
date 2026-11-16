@@ -65,7 +65,7 @@ describe('quick equip', () => {
       one('steel-helmet'),
       one('small-backpack'),
       one('large-backpack'),
-      one('chest-rig'),
+      one('m12-patrol-rig'),
     ]);
     const before = JSON.parse(JSON.stringify(p)) as Profile;
     expect(quickEquip(p, items)).toBe('equipped');
@@ -76,7 +76,7 @@ describe('quick equip', () => {
     expect(g.bodyArmor?.item).toBe('heavy-plate-carrier');
     expect(g.helmet?.item).toBe('steel-helmet');
     expect(g.backpack?.item).toBe('large-backpack');
-    expect(g.rig?.item).toBe('chest-rig');
+    expect(g.rig?.item).toBe('m12-patrol-rig');
     expect(g.hand).toBe('primary1');
     sound(before, p);
   });
@@ -116,7 +116,7 @@ describe('quick equip', () => {
 
   it('carries meds: a heal, surgery, a tourniquet over bandages, a splint', () => {
     const p = profile([
-      one('chest-rig'),
+      one('m12-patrol-rig'),
       one('field-first-aid-kit'),
       one('surgery-kit'),
       one('bandage'),
@@ -135,7 +135,7 @@ describe('quick equip', () => {
       'surgery-kit',
     ]);
     // Without the tourniquet, two bandages.
-    const q = profile([one('chest-rig'), one('bandage'), one('bandage'), one('bandage')]);
+    const q = profile([one('m12-patrol-rig'), one('bandage'), one('bandage'), one('bandage')]);
     quickEquip(q, items);
     const n = [...q.gear.pockets.items, ...(q.gear.rig?.grid?.items ?? [])].filter(
       (g) => g.item.item === 'bandage',
@@ -147,7 +147,7 @@ describe('quick equip', () => {
     const p = profile([one('ammo-556x45', 60), one('ammo-556x45', 60), one('heavy-helmet')], {
       primary1: 'm416',
       helmet: 'steel-helmet',
-      rig: 'chest-rig',
+      rig: 'm12-patrol-rig',
     });
     const before = JSON.parse(JSON.stringify(p)) as Profile;
     expect(quickEquip(p, items)).toBe('equipped');
@@ -195,7 +195,7 @@ describe('quick equip', () => {
         mag(),
         one('ammo-556x45-m995', 50),
         one('ammo-556x45', 60),
-        one('chest-rig'),
+        one('m12-patrol-rig'),
       ]);
       const before = JSON.parse(JSON.stringify(p)) as Profile;
       expect(quickEquip(p, items)).toBe('equipped');
@@ -220,7 +220,7 @@ describe('quick equip', () => {
         mag(),
         one('ammo-556x45', 60),
         one('ammo-556x45', 60),
-        one('chest-rig'),
+        one('m12-patrol-rig'),
       ]);
       expect(quickEquip(p, items)).toBe('equipped');
       expect(p.gear.primary1!.mag).toBe(30);

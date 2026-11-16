@@ -37,7 +37,7 @@ describe('item editor', () => {
     expect(kindOf(doc)).toBe(kind);
   });
 
-  it("gives a new rig the armored chest rig's model, worn on the chest", () => {
+  it('gives a new rig the shared rig model, worn on the chest', () => {
     const armored = loadItems().get('armored-chest-rig')!;
     for (const kind of ['rig', 'armored rig'] as const) {
       expect(blankItem(kind, 'r', 'R').model).toEqual(armored.model);
@@ -157,14 +157,14 @@ describe('item editor', () => {
       expect.stringMatching(/muzzle and magazine/),
     ]);
     expect(
-      risks('chest-rig', (d) => {
+      risks('m12-patrol-rig', (d) => {
         d.grid = [3, 2];
         delete d.sections;
       }),
     ).toHaveLength(1);
-    expect(risks('chest-rig', (d) => (d.sections = [{ at: [0, 0], size: [4, 2] }]))).toHaveLength(
-      1,
-    );
+    expect(
+      risks('m12-patrol-rig', (d) => (d.sections = [{ at: [0, 0], size: [4, 2] }])),
+    ).toHaveLength(1);
     expect(risks('steel-helmet', (d) => (d.durability = 30))).toHaveLength(1);
     expect(risks('cash', (d) => (d.stack = 100))).toHaveLength(1);
     expect(risks('field-first-aid-kit', (d) => (d.hp = 150))).toHaveLength(1);
@@ -178,7 +178,7 @@ describe('item editor', () => {
     expect(risks('mp-133', (d) => (d.magazine = 8))).toEqual([]);
     expect(risks('mag-9mm-24', (d) => (d.capacity = 30))).toEqual([]);
     expect(risks('m9a3', (d) => (d.rpm = 300))).toEqual([]);
-    expect(risks('chest-rig', (d) => (d.grid = [5, 3]))).toEqual([]);
+    expect(risks('m12-patrol-rig', (d) => (d.grid = [5, 3]))).toEqual([]);
     expect(risks('scope-4x', (d) => (d.weapons = [...(d.weapons as string[]), 'm9a3']))).toEqual(
       [],
     );

@@ -7,7 +7,7 @@
     "sidearm": "m9a3",
     "helmet": "steel-helmet",
     "bodyArmor": "tactical-vest",
-    "rig": "chest-rig",
+    "rig": "m12-patrol-rig",
     "backpack": "medium-backpack"
   },
   "carried": [
@@ -38,9 +38,9 @@
     { "item": "medium-backpack" },
     { "item": "medium-backpack" },
     { "item": "medium-backpack" },
-    { "item": "chest-rig" },
-    { "item": "chest-rig" },
-    { "item": "chest-rig" },
+    { "item": "m12-patrol-rig" },
+    { "item": "m12-patrol-rig" },
+    { "item": "m12-patrol-rig" },
     { "item": "ammo-556x45", "count": 540 },
     { "item": "m416-mag" },
     { "item": "m416-mag" },

@@ -52,7 +52,7 @@ describe('fit check', () => {
     expect(rows.map((r) => r.item)).toEqual([
       '(chest)',
       'plate-carrier',
-      'chest-rig',
+      'm12-patrol-rig',
       'tactical-headset',
       'combat-helmet',
       'heavy-visor',
@@ -92,14 +92,12 @@ describe('fit check', () => {
   it('keeps every armor and rig inside its layer, where the arms keep out (CH-3c)', () => {
     // Made for the pack's body before our own; CH-3d refits them. Nothing new joins this.
     const REFIT = new Set([
-      'armored-chest-rig',
       'assault-armor',
       'heavy-plate-carrier',
       'jug-armor',
       'police-vest',
       'soft-vest',
       'tactical-vest',
-      'trail-4-chest-rig',
     ]);
     for (const def of items.values()) {
       const layer =

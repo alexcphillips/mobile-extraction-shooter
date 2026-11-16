@@ -95,7 +95,7 @@ const POSES: Pose[] = [
       giveWeapon(c, i, 'rpk-16', ['mag-545x39-100-jug', 'red-dot']);
       wearArmor(c, i, 'jug-mask');
       wearArmor(c, i, 'jug-armor');
-      equip(c, i, 'rig', createItem(i, 'chest-rig'));
+      equip(c, i, 'rig', createItem(i, 'm12-patrol-rig'));
     },
   },
   {
@@ -106,7 +106,7 @@ const POSES: Pose[] = [
       giveWeapon(c, i, 'rpk-16', ['mag-545x39-100-jug']);
       wearArmor(c, i, 'jug-mask');
       wearArmor(c, i, 'jug-armor');
-      equip(c, i, 'rig', createItem(i, 'chest-rig'));
+      equip(c, i, 'rig', createItem(i, 'm12-patrol-rig'));
       moving(MOVEMENT.sprintSpeed, 0)(c);
     },
   },

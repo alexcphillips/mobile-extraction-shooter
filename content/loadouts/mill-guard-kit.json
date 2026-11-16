@@ -41,5 +41,5 @@
     { "weight": 1, "item": "police-vest", "condition": [0.7, 1] },
     { "weight": 1, "item": "tactical-vest", "condition": [0.7, 1] }
   ],
-  "rigs": [{ "weight": 1, "item": "chest-rig" }]
+  "rigs": [{ "weight": 1, "item": "m12-patrol-rig" }]
 }

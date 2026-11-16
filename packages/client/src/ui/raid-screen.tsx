@@ -312,7 +312,7 @@ const SLOT_GHOSTS: Partial<Record<GearSlot, string>> = {
   helmet: 'combat-helmet',
   headset: 'tactical-headset',
   bodyArmor: 'plate-carrier',
-  rig: 'chest-rig',
+  rig: 'm12-patrol-rig',
   backpack: 'medium-backpack',
 };
 

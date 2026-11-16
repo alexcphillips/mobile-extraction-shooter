@@ -25,6 +25,6 @@
     { "weight": 4, "item": "plate-carrier", "condition": [0.8, 1] },
     { "weight": 1, "item": "heavy-plate-carrier", "condition": [0.8, 1] }
   ],
-  "rigs": [{ "weight": 1, "item": "chest-rig" }],
+  "rigs": [{ "weight": 1, "item": "m12-patrol-rig" }],
   "meds": [[{ "weight": 1, "item": "bandage" }]]
 }

@@ -66,7 +66,7 @@ export const FIT_KIT: FitKit = {
   visor: 'heavy-visor',
   headset: 'tactical-headset',
   armor: 'plate-carrier',
-  rig: 'chest-rig',
+  rig: 'm12-patrol-rig',
 };
 
 const SPACING = 0.02;
