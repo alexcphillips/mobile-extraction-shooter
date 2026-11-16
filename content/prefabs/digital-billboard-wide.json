@@ -1,0 +1,40 @@
+{
+  "formatVersion": 3,
+  "id": "digital-billboard-wide",
+  "name": "Digital billboard, wide",
+  "tags": ["street"],
+  "colors": {
+    "frame": "#3d4148",
+    "frame-dark": "#2a2c30",
+    "screen": "#2f6f73"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0.0, 0, 0.0],
+      "size": [3.4, 2.6, 0.4],
+      "color": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0, 0.0],
+      "size": [3.5, 0.3, 0.5],
+      "color": "frame-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.9, 0.205],
+      "size": [3.1, 1.55, 0.01],
+      "color": "screen",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.9, -0.205],
+      "size": [3.1, 1.55, 0.01],
+      "color": "screen",
+      "collide": false
+    }
+  ]
+}

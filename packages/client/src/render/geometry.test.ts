@@ -60,3 +60,24 @@ describe('slab parts (2026-11-02)', () => {
     expect(mirrorPart(p)).toMatchObject({ pos: [-0.1, 0, 0], corners: [0.03, 0.04, 0.01, 0.02] });
   });
 });
+
+describe('terrain cliffs (2026-11-14)', () => {
+  it('colors triangles steeper than the walk limit with the cliff color', () => {
+    // Two cells along x: a 0.5 m rise over 2 m (walkable), then 4 m over 2 m (a cliff).
+    const row = [0, 0.5, 4.5];
+    const t = { minX: 0, minZ: 0, cellSize: 2, cols: 2, rows: 1, heights: [...row, ...row] };
+    const b = new TriangleBuilder(false);
+    b.terrain(t, 0, 2, 0, 1, 0x00ff00, 0xff0000);
+    const g = b.build();
+    const pos = g.getAttribute('position');
+    const col = g.getAttribute('color');
+    const seen = { gentle: new Set<string>(), steep: new Set<string>() };
+    for (let v = 0; v < pos.count; v += 3) {
+      const x = (pos.getX(v) + pos.getX(v + 1) + pos.getX(v + 2)) / 3;
+      const rgb = [col.getX(v), col.getY(v), col.getZ(v)].map((n) => Math.round(n)).join();
+      seen[x < 2 ? 'gentle' : 'steep'].add(rgb);
+    }
+    expect([...seen.gentle]).toEqual(['0,1,0']);
+    expect([...seen.steep]).toEqual(['1,0,0']);
+  });
+});

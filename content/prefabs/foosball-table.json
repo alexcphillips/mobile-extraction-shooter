@@ -1,0 +1,139 @@
+{
+  "formatVersion": 3,
+  "id": "foosball-table",
+  "name": "Foosball table",
+  "tags": ["leisure"],
+  "colors": {
+    "body": "#2a2c30",
+    "field": "#2f8a4a",
+    "rod": "#a8acb0",
+    "handle": "#c0302c"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0.0, 0.6, 0.0],
+      "size": [1.2, 0.3, 0.76],
+      "color": "body"
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.9, 0.0],
+      "size": [1.1, 0.005, 0.66],
+      "color": "field",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.55, 0, -0.33],
+      "size": [0.1, 0.6, 0.1],
+      "color": "body",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.55, 0, -0.33],
+      "size": [0.1, 0.6, 0.1],
+      "color": "body",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.55, 0, 0.33],
+      "size": [0.1, 0.6, 0.1],
+      "color": "body",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.55, 0, 0.33],
+      "size": [0.1, 0.6, 0.1],
+      "color": "body",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.45, 0.82, 0.0],
+      "size": [0.02, 0.02, 1.2],
+      "color": "rod",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.45, 0.8, -0.64],
+      "size": [0.06, 0.06, 0.08],
+      "color": "handle",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.27, 0.82, 0.0],
+      "size": [0.02, 0.02, 1.2],
+      "color": "rod",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.27, 0.8, 0.64],
+      "size": [0.06, 0.06, 0.08],
+      "color": "handle",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.09, 0.82, 0.0],
+      "size": [0.02, 0.02, 1.2],
+      "color": "rod",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.09, 0.8, -0.64],
+      "size": [0.06, 0.06, 0.08],
+      "color": "handle",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.09, 0.82, 0.0],
+      "size": [0.02, 0.02, 1.2],
+      "color": "rod",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.09, 0.8, 0.64],
+      "size": [0.06, 0.06, 0.08],
+      "color": "handle",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.27, 0.82, 0.0],
+      "size": [0.02, 0.02, 1.2],
+      "color": "rod",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.27, 0.8, -0.64],
+      "size": [0.06, 0.06, 0.08],
+      "color": "handle",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.45, 0.82, 0.0],
+      "size": [0.02, 0.02, 1.2],
+      "color": "rod",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.45, 0.8, 0.64],
+      "size": [0.06, 0.06, 0.08],
+      "color": "handle",
+      "collide": false
+    }
+  ]
+}

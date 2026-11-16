@@ -1,4 +1,4 @@
-import { convexHull, loftRing, type HeightGridDef, type ModelShape } from '@mes/shared';
+import { MOVEMENT, convexHull, loftRing, type HeightGridDef, type ModelShape } from '@mes/shared';
 import * as THREE from 'three';
 import type { FaceCull } from './face-cull';
 import { shade } from './shade';
@@ -225,7 +225,19 @@ export class TriangleBuilder {
    * Flat cells drawn whole are merged into rectangles (2026-11-07), each a fan through
    * every cell corner round its edge, so what meets it shares its corners (no cracks).
    */
-  terrain(t: HeightGridDef, i0: number, i1: number, j0: number, j1: number, color: number) {
+  /**
+   * Terrain cells [i0, i1) × [j0, j1). Triangles too steep to walk (over MOVEMENT.maxSlope)
+   * take `cliff`, so cliffs read as rock and show where you can't climb.
+   */
+  terrain(
+    t: HeightGridDef,
+    i0: number,
+    i1: number,
+    j0: number,
+    j1: number,
+    color: number,
+    cliff = color,
+  ) {
     const corner = (i: number, j: number, out: THREE.Vector3): THREE.Vector3 =>
       out.set(t.minX + i * t.cellSize, t.heights[j * (t.cols + 1) + i]!, t.minZ + j * t.cellSize);
     const w = i1 - i0;
@@ -244,8 +256,8 @@ export class TriangleBuilder {
           flat[(j - j0) * w + (i - i0)] = 1;
           continue;
         }
-        if (a) this.tri(c00, c01, c10, color);
-        if (b) this.tri(c10, c01, c11, color);
+        if (a) this.tri(c00, c01, c10, steep(c00, c01, c10) ? cliff : color);
+        if (b) this.tri(c10, c01, c11, steep(c10, c01, c11) ? cliff : color);
       }
     }
     // Greedy: as wide as it goes along x, then as deep along z as every row is that wide.
@@ -358,3 +370,15 @@ const c01 = new THREE.Vector3();
 const c11 = new THREE.Vector3();
 const euler = new THREE.Euler();
 const matrix = new THREE.Matrix4();
+
+/** cos² of the steepest walkable slope: a face whose normal is tipped further is a cliff. */
+const WALKABLE_COS2 = 1 / (1 + MOVEMENT.maxSlope * MOVEMENT.maxSlope);
+const s1 = new THREE.Vector3();
+const s2 = new THREE.Vector3();
+
+/** Whether a triangle is steeper than you can walk up. */
+function steep(a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3): boolean {
+  s1.subVectors(b, a).cross(s2.subVectors(c, a));
+  const len2 = s1.lengthSq();
+  return len2 > 0 && (s1.y * s1.y) / len2 < WALKABLE_COS2;
+}

@@ -1,0 +1,52 @@
+{
+  "formatVersion": 3,
+  "id": "ad-shelter",
+  "name": "Ad shelter",
+  "tags": ["street"],
+  "colors": {
+    "frame": "#3d4148",
+    "poster": "#d9a441",
+    "roof": "#9fd0d8"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0.0, 0, 0.0],
+      "size": [4.8, 2.4, 0.2],
+      "color": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.4, 0.105],
+      "size": [4.2, 1.8, 0.01],
+      "color": "poster",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 2.4, 0.8],
+      "size": [4.8, 0.1, 1.8],
+      "color": "roof",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-2.35, 0, 1.55],
+      "size": [0.1, 2.4, 0.1],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [2.35, 0, 1.55],
+      "size": [0.1, 2.4, 0.1],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "prefab",
+      "prefab": "mall-bench",
+      "pos": [0, 0, 0.85]
+    }
+  ]
+}

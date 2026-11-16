@@ -1,0 +1,124 @@
+{
+  "formatVersion": 3,
+  "id": "chandelier",
+  "name": "Chandelier",
+  "tags": ["home", "leisure"],
+  "instanced": true,
+  "colors": {
+    "gold": "#c8a24b",
+    "crystal": "#d8eef2",
+    "candle": "#fff3c4"
+  },
+  "nodes": [
+    {
+      "type": "cylinder",
+      "pos": [0, -0.6, 0],
+      "radius": 0.02,
+      "height": 0.6,
+      "sides": 6,
+      "color": "gold",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, -1.05, 0],
+      "radius": 0.12,
+      "height": 0.45,
+      "sides": 8,
+      "color": "gold",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, -1.06, 0],
+      "radius": 0.72,
+      "height": 0.05,
+      "sides": 12,
+      "color": "gold",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, -0.78, 0],
+      "radius": 0.45,
+      "height": 0.04,
+      "sides": 10,
+      "color": "gold",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, -1.32, 0],
+      "radius": 0.3,
+      "height": 0.26,
+      "sides": 8,
+      "color": "crystal",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, -1.01, 0],
+      "radius": 0.6,
+      "height": 0.008,
+      "sides": 12,
+      "color": "crystal",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.68, -1.02, 0],
+      "size": [0.05, 0.14, 0.05],
+      "color": "candle",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.481, -1.02, 0.481],
+      "size": [0.05, 0.14, 0.05],
+      "color": "candle",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, -1.02, 0.68],
+      "size": [0.05, 0.14, 0.05],
+      "color": "candle",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.481, -1.02, 0.481],
+      "size": [0.05, 0.14, 0.05],
+      "color": "candle",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.68, -1.02, 0],
+      "size": [0.05, 0.14, 0.05],
+      "color": "candle",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.481, -1.02, -0.481],
+      "size": [0.05, 0.14, 0.05],
+      "color": "candle",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, -1.02, -0.68],
+      "size": [0.05, 0.14, 0.05],
+      "color": "candle",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.481, -1.02, -0.481],
+      "size": [0.05, 0.14, 0.05],
+      "color": "candle",
+      "collide": false
+    }
+  ]
+}

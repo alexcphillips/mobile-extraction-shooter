@@ -1,0 +1,83 @@
+{
+  "formatVersion": 3,
+  "id": "bunker-generator",
+  "name": "Generator",
+  "tags": ["military", "industrial"],
+  "colors": {
+    "body": "#5d6a43",
+    "body-dark": "#47522f",
+    "dark": "#2a2c30",
+    "lamp": "#d0342c",
+    "hazard": "#d9a441"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0.0, 0, 0.0],
+      "size": [3.7, 0.2, 1.7],
+      "color": "dark"
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.2, 0.0],
+      "size": [3.6, 1.7, 1.6],
+      "color": "body"
+    },
+    {
+      "type": "box",
+      "pos": [-1.5, 0.4, 0.0],
+      "size": [0.6, 1.3, 1.62],
+      "color": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.5, 0.5, 0.0],
+      "size": [0.5, 1.1, 1.64],
+      "color": "dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.1, 1.9, -0.05],
+      "size": [0.4, 0.4, 0.4],
+      "color": "dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.7, 0.7, 0.805],
+      "size": [1.0, 0.8, 0.01],
+      "color": "dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.425, 1.25, 0.815],
+      "size": [0.15, 0.1, 0.01],
+      "color": "lamp",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.725, 1.25, 0.815],
+      "size": [0.15, 0.1, 0.01],
+      "color": "hazard",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.35, 1.9, 0.0],
+      "size": [1.5, 0.05, 1.2],
+      "color": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.2, 0.83],
+      "size": [3.7, 0.1, 0.06],
+      "color": "hazard",
+      "collide": false
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "formatVersion": 3,
+  "id": "luggage-cart",
+  "name": "Luggage cart",
+  "tags": ["home", "leisure"],
+  "colors": {
+    "brass": "#c8a24b",
+    "carpet": "#7a1f2e",
+    "case": "#3a4a5a",
+    "case-2": "#6a3a24",
+    "case-3": "#8a8e94",
+    "wheel": "#1e1e22"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0.12, 0],
+      "size": [1.25, 0.1, 0.65],
+      "color": "brass"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.22, 0],
+      "size": [1.19, 0.01, 0.59],
+      "color": "carpet",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.58, 0.22, -0.28],
+      "size": [0.04, 1.68, 0.04],
+      "color": "brass",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.58, 0.22, 0.28],
+      "size": [0.04, 1.68, 0.04],
+      "color": "brass",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.58, 1.86, 0],
+      "size": [0.05, 0.05, 0.6],
+      "color": "brass",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.58, 0.05, -0.24],
+      "radius": 0.07,
+      "height": 0.04,
+      "sides": 8,
+      "color": "wheel",
+      "collide": false,
+      "roll": 90
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.58, 0.05, 0.24],
+      "radius": 0.07,
+      "height": 0.04,
+      "sides": 8,
+      "color": "wheel",
+      "collide": false,
+      "roll": 90
+    },
+    {
+      "type": "box",
+      "pos": [0.58, 0.22, -0.28],
+      "size": [0.04, 1.68, 0.04],
+      "color": "brass",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.58, 0.22, 0.28],
+      "size": [0.04, 1.68, 0.04],
+      "color": "brass",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.58, 1.86, 0],
+      "size": [0.05, 0.05, 0.6],
+      "color": "brass",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.58, 0.05, -0.24],
+      "radius": 0.07,
+      "height": 0.04,
+      "sides": 8,
+      "color": "wheel",
+      "collide": false,
+      "roll": 90
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.58, 0.05, 0.24],
+      "radius": 0.07,
+      "height": 0.04,
+      "sides": 8,
+      "color": "wheel",
+      "collide": false,
+      "roll": 90
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.86, 0],
+      "size": [1.2, 0.05, 0.05],
+      "color": "brass",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.25, 0.23, 0.02],
+      "size": [0.62, 0.42, 0.5],
+      "color": "case"
+    },
+    {
+      "type": "box",
+      "pos": [0.32, 0.23, -0.04],
+      "size": [0.4, 0.62, 0.26],
+      "color": "case-2"
+    },
+    {
+      "type": "box",
+      "pos": [-0.22, 0.65, 0],
+      "size": [0.5, 0.16, 0.38],
+      "color": "case-3",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.25, 0.65, 0.02],
+      "size": [0.18, 0.04, 0.03],
+      "color": "wheel",
+      "collide": false
+    }
+  ]
+}

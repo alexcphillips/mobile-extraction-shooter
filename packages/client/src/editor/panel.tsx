@@ -1,4 +1,5 @@
 import {
+  DEFAULT_CLIFF_COLOR,
   RAID,
   ROAD,
   idSchema,
@@ -39,6 +40,8 @@ import {
   ANGLE_SNAPS,
   BRUSH_RADII,
   CAMERA_START,
+  FLY_SPEED_MAX,
+  FLY_SPEED_MIN,
   GRID_SNAPS,
   MARKERS,
   MARKER_LIST,
@@ -49,7 +52,7 @@ import {
   type MarkerKind,
 } from './editor';
 import { HexColor, Num, Pick, Text, Toggle, UNSET } from './fields';
-import { BRUSH_MODES, SIDES, isAreaMode } from './terrain';
+import { BRUSH_HARDNESS, BRUSH_MODES, SIDES, isAreaMode } from './terrain';
 import { PrefabBrowser } from './prefab-browser';
 import { CURVE_MODES, CURVE_NAMES, type CurveSettings } from './curves';
 import { WALL_MODES } from './walls';
@@ -60,7 +63,7 @@ import { WALL_MODES } from './walls';
  * or prefab's own settings when nothing is selected), overlaps, and the status line.
  */
 
-const STRENGTHS = [0.25, 0.5, 1, 2, 4];
+const STRENGTHS = [0.25, 0.5, 1, 2, 4, 8, 16];
 const EXTEND_METERS = [8, 16, 32, 64, 128];
 
 export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonly string[] }) {
@@ -278,7 +281,7 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
                 {m}
               </Toggle>
             ))}
-            {s.brush.mode === 'level' && (
+            {(s.brush.mode === 'level' || s.brush.mode === 'flatten') && (
               <span title="Meters; empty levels to the ground where the drag starts">
                 <Num
                   label="Height"
@@ -298,6 +301,19 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
                     {BRUSH_RADII.map((r) => (
                       <option key={r} value={r}>
                         {r} m
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label title="How sharp the brush's edge is: soft makes rounded hills, cliff steps the ground at the edge">
+                  Edge
+                  <select
+                    value={s.brush.hardness}
+                    onChange={(e) => editor.setBrush({ hardness: Number(e.target.value) })}
+                  >
+                    {BRUSH_HARDNESS.map((h) => (
+                      <option key={h.name} value={h.value}>
+                        {h.name}
                       </option>
                     ))}
                   </select>
@@ -482,6 +498,16 @@ export function EditorPanel({ editor, maps }: { editor: MapEditor; maps: readonl
             </label>
           </>
         )}
+        <span className="ed-sep" />
+        <span title="WASD and Q/E camera speed, times the usual: it still speeds up as you zoom out, and ×3 with Shift. Blank is 1.">
+          <Num
+            label="Camera ×"
+            value={s.flySpeed}
+            min={FLY_SPEED_MIN}
+            placeholder="1"
+            onChange={(v) => editor.setOption({ flySpeed: Math.min(FLY_SPEED_MAX, v ?? 1) })}
+          />
+        </span>
       </div>
 
       <div className="ed-side">
@@ -834,6 +860,13 @@ function MapSettings(props: {
         value={map.terrain.color}
         onChange={(c) => edit((m) => (m.terrain.color = c))}
       />
+      <span title="Ground too steep to walk (over 45°)">
+        <HexColor
+          label="cliff"
+          value={map.terrain.cliffColor ?? DEFAULT_CLIFF_COLOR}
+          onChange={(c) => edit((m) => (m.terrain.cliffColor = c))}
+        />
+      </span>
       <h4 title="Named colors the map's shapes can use: change one and all of them change">
         color slots
       </h4>
@@ -1818,11 +1851,15 @@ function NewPrefab(props: { editor: MapEditor; close: () => void }) {
   );
 }
 
-/** The form for a new map: its id (the file name), name, size and cell size. */
+const NEW_MAP_MIN = 16;
+const NEW_MAP_MAX = 1024;
+
+/** The form for a new map: its id (the file name), name, width, depth and cell size. */
 function NewMap(props: { editor: MapEditor; maps: readonly string[]; close: () => void }) {
   const [id, setId] = useState('');
   const [name, setName] = useState('');
-  const [size, setSize] = useState(192);
+  const [width, setWidth] = useState(192);
+  const [depth, setDepth] = useState(192);
   const [cell, setCell] = useState(2);
   const idProblem = !id
     ? 'needs an id'
@@ -1831,10 +1868,13 @@ function NewMap(props: { editor: MapEditor; maps: readonly string[]; close: () =
       : props.maps.includes(id)
         ? 'that map exists'
         : null;
+  const fits = (v: number) => v >= NEW_MAP_MIN && v <= NEW_MAP_MAX;
+  const sizeProblem =
+    fits(width) && fits(depth) ? null : `width and depth are ${NEW_MAP_MIN}–${NEW_MAP_MAX} m`;
   const make = (): void => {
-    if (idProblem || !name.trim()) return;
+    if (idProblem || sizeProblem || !name.trim()) return;
     if (props.editor.getState().dirty && !confirm('Leave without saving?')) return;
-    void props.editor.createMap(id, name.trim(), size, cell);
+    void props.editor.createMap(id, name.trim(), [width, depth], cell);
   };
   return (
     <div className="ed-modal" onKeyDown={(e) => e.key === 'Escape' && props.close()}>
@@ -1848,18 +1888,33 @@ function NewMap(props: { editor: MapEditor; maps: readonly string[]; close: () =
           name
           <input value={name} onChange={(e) => setName(e.target.value)} />
         </label>
-        <label className="ed-field">
-          size
-          <select value={size} onChange={(e) => setSize(Number(e.target.value))}>
-            {[64, 128, 192, 256, 384].map((v) => (
-              <option key={v} value={v}>
-                {v} m
-              </option>
-            ))}
-          </select>
+        <label className="ed-field" title="East–west extent, along x; rounded to whole cells">
+          width (m)
+          <input
+            type="number"
+            min={NEW_MAP_MIN}
+            max={NEW_MAP_MAX}
+            step={cell}
+            value={width}
+            onChange={(e) => setWidth(e.target.valueAsNumber)}
+          />
         </label>
-        <label className="ed-field">
-          cells
+        <label className="ed-field" title="North–south extent, along z; rounded to whole cells">
+          depth (m)
+          <input
+            type="number"
+            min={NEW_MAP_MIN}
+            max={NEW_MAP_MAX}
+            step={cell}
+            value={depth}
+            onChange={(e) => setDepth(e.target.valueAsNumber)}
+          />
+        </label>
+        <label
+          className="ed-field"
+          title="Spacing of the ground's height points: smaller shapes finer but costs more"
+        >
+          cell size
           <select value={cell} onChange={(e) => setCell(Number(e.target.value))}>
             {[1, 2, 4].map((v) => (
               <option key={v} value={v}>
@@ -1868,9 +1923,10 @@ function NewMap(props: { editor: MapEditor; maps: readonly string[]; close: () =
             ))}
           </select>
         </label>
+        {sizeProblem && <p className="ed-problem">{sizeProblem}</p>}
         {id && idProblem && <p className="ed-problem">{idProblem}</p>}
         <div className="ed-row">
-          <button onClick={make} disabled={!!idProblem || !name.trim()}>
+          <button onClick={make} disabled={!!idProblem || !!sizeProblem || !name.trim()}>
             Make
           </button>
           <button onClick={props.close}>Cancel</button>

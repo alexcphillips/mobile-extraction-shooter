@@ -1,0 +1,75 @@
+{
+  "formatVersion": 3,
+  "id": "bathtub",
+  "name": "Bathtub",
+  "tags": ["home"],
+  "colors": {
+    "enamel": "#f2f0ea",
+    "enamel-dark": "#c9c6bd",
+    "chrome": "#a8acb0",
+    "water": "#8fc4cc"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [0.8, 0.55, 1.7],
+      "color": "enamel"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.551, 0.03],
+      "size": [0.62, 0.004, 1.52],
+      "color": "enamel-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.556, 0.1],
+      "size": [0.56, 0.004, 1.2],
+      "color": "water",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, 0.855],
+      "size": [0.8, 0.5, 0.01],
+      "color": "enamel-dark",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.55, -0.74],
+      "radius": 0.03,
+      "height": 0.18,
+      "sides": 6,
+      "color": "chrome",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.7, -0.7],
+      "size": [0.04, 0.03, 0.14],
+      "color": "chrome",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.14, 0.55, -0.78],
+      "radius": 0.025,
+      "height": 0.1,
+      "sides": 6,
+      "color": "chrome",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.14, 0.55, -0.78],
+      "radius": 0.025,
+      "height": 0.1,
+      "sides": 6,
+      "color": "chrome",
+      "collide": false
+    }
+  ]
+}

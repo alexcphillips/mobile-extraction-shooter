@@ -1,0 +1,27 @@
+{
+  "formatVersion": 3,
+  "id": "led-tile",
+  "name": "LED floor tile",
+  "tags": ["leisure"],
+  "instanced": true,
+  "colors": {
+    "led": "#8a4bff",
+    "edge": "#16151c"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0.0, 0.002, 0.0],
+      "size": [1.94, 0.006, 1.94],
+      "color": "led",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.001, 0.0],
+      "size": [2, 0.001, 2],
+      "color": "edge",
+      "collide": false
+    }
+  ]
+}

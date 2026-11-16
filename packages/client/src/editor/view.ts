@@ -1,4 +1,5 @@
 import {
+  DEFAULT_CLIFF_COLOR,
   HeightGrid,
   ROAD,
   compileNodes,
@@ -75,6 +76,8 @@ export interface ViewOptions {
   snapDown: boolean;
   /** Snap what's dragged flush with, or in line with, the faces of things beside it. */
   objectSnap: boolean;
+  /** WASD/QE camera speed, times the usual (which already grows as you zoom out). */
+  flySpeed: number;
 }
 
 export interface ViewEvents {
@@ -147,6 +150,7 @@ export class EditorView {
   private roads: readonly MapRoad[] = [];
   private readonly roadMeshes = new THREE.Group();
   private terrainColor = 0;
+  private cliffColor = 0;
   private chunks: THREE.Mesh[] = [];
   private chunkCells = 1;
   /** What the ground was built from, to rebuild it only when it changes. */
@@ -242,7 +246,13 @@ export class EditorView {
       ...stencilOp(THREE.ReplaceStencilOp),
     }),
   );
-  options: ViewOptions = { gridSnap: 0.5, angleSnap: 15, snapDown: true, objectSnap: true };
+  options: ViewOptions = {
+    gridSnap: 0.5,
+    angleSnap: 15,
+    snapDown: true,
+    objectSnap: true,
+    flySpeed: 1,
+  };
   /** The snapping grid's lines, drawn over everything round the camera's target. */
   private readonly gridLines = gridLines();
 
@@ -452,7 +462,10 @@ export class EditorView {
     this.orbit.update();
   }
 
-  /** WASD along the ground, Q and E down and up, faster with shift and when zoomed out. */
+  /**
+   * WASD along the ground, Q and E down and up, faster with shift and when zoomed out, all
+   * times the toolbar's camera speed.
+   */
   private fly(dt: number): void {
     const k = this.keys;
     if (k.has('MetaLeft') || k.has('MetaRight') || k.has('ControlLeft')) return;
@@ -461,7 +474,10 @@ export class EditorView {
     const up = (k.has('KeyE') ? 1 : 0) - (k.has('KeyQ') ? 1 : 0);
     if (!fwd && !right && !up) return;
     const dist = this.camera.position.distanceTo(this.orbit.target);
-    const speed = Math.max(4, dist * 0.8) * (k.has('ShiftLeft') || k.has('ShiftRight') ? 3 : 1);
+    const speed =
+      Math.max(4, dist * 0.8) *
+      (k.has('ShiftLeft') || k.has('ShiftRight') ? 3 : 1) *
+      this.options.flySpeed;
     const f = new THREE.Vector3();
     this.camera.getWorldDirection(f);
     f.y = 0;
@@ -535,6 +551,7 @@ export class EditorView {
     this.shown = { ...t, heights: t.heights.slice() };
     this.regrade();
     this.terrainColor = hex(map.terrain.color);
+    this.cliffColor = hex(map.terrain.cliffColor ?? DEFAULT_CLIFF_COLOR);
     this.chunkCells = Math.max(1, Math.round(CHUNK / t.cellSize));
     const nx = Math.ceil(t.cols / this.chunkCells);
     const nz = Math.ceil(t.rows / this.chunkCells);
@@ -688,7 +705,15 @@ export class EditorView {
     const i0 = (k % nx) * n;
     const j0 = Math.floor(k / nx) * n;
     const b = new TriangleBuilder(true);
-    b.terrain(t, i0, Math.min(t.cols, i0 + n), j0, Math.min(t.rows, j0 + n), this.terrainColor);
+    b.terrain(
+      t,
+      i0,
+      Math.min(t.cols, i0 + n),
+      j0,
+      Math.min(t.rows, j0 + n),
+      this.terrainColor,
+      this.cliffColor,
+    );
     const mesh = this.chunks[k]!;
     mesh.geometry.dispose();
     mesh.geometry = b.build();

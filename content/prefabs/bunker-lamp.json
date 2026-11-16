@@ -1,0 +1,40 @@
+{
+  "formatVersion": 3,
+  "id": "bunker-lamp",
+  "name": "Bunker lamp",
+  "tags": ["military", "industrial"],
+  "colors": {
+    "lamp": "#e8a83a",
+    "cage": "#2a2c30"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0.0, -0.22, 0.0],
+      "size": [0.7, 0.1, 0.24],
+      "color": "lamp",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, -0.05, 0.0],
+      "size": [0.8, 0.05, 0.32],
+      "color": "cage",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, -0.25, 0.0],
+      "size": [0.8, 0.2, 0.01],
+      "color": "cage",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, -0.25, 0.0],
+      "size": [0.01, 0.2, 0.32],
+      "color": "cage",
+      "collide": false
+    }
+  ]
+}

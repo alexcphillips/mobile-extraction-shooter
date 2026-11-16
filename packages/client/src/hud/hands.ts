@@ -17,6 +17,7 @@ import {
   type MedRef,
   PACKING,
 } from '@mes/shared';
+import { BodyPicker } from './body-picker';
 import type { Hud } from './hud';
 import type { ControlId } from './layout';
 
@@ -30,23 +31,6 @@ const GRENADE = svg('M10 2h5v2h-1v2.1a7 7 0 1 1-4 0V4h-1zm6 1l4 3-1 1-4-3z');
 const HANDS: readonly Hand[] = ['primary1', 'primary2', 'sidearm', 'knife'];
 /** What takes each one out on a pad (CP-3), shown in place of 1–4 in gamepad mode. */
 const PAD_HANDS = ['△', '△', 'hold △', 'R3'];
-
-/** What a med would do, for the picker. */
-function does(items: ItemDb, c: Character, ref: MedRef): string {
-  const def = medDef(items, ref.item);
-  switch (def.effect) {
-    case 'bandage':
-      return 'stops bleeding';
-    case 'splint':
-      return 'splints a broken limb';
-    case 'surgery':
-      return 'mends a broken limb';
-    case 'heal': {
-      const hp = carriedGrid(c.gear, ref.grid)?.items[ref.index]?.item.left ?? def.hp ?? 0;
-      return `heals, ${Math.round(hp)} HP left`;
-    }
-  }
-}
 
 /** A picker entry: its name, a line under it, and what picking it does. */
 type PickerEntry = [name: string, detail: string, pick: () => void];
@@ -66,8 +50,8 @@ function grenadeDoes(items: ItemDb, id: string): string {
  * The hand-slot buttons and the heal button, written straight to the DOM like the rest of
  * the HUD. Each slot shows what's in it, dimmed when empty and outlined when in hand. The
  * heal button shows the med a tap would use (grayed out when nothing helps), and a ring
- * fills while one is being used. A long press opens a picker of every carried med that
- * would help. The fire button says "knife" with the knife out; aim and reload dim without
+ * fills while one is being used. A long press opens the body picker (BodyPicker): choose
+ * the zone, and the med for it. The fire button says "knife" with the knife out; aim and reload dim without
  * a gun. The grenade button shows the kind a tap throws and how many of it are carried,
  * dimmed with none; a long press picks the kind (2026-10-31). The breath button shows only while aimed (BW-2),
  * saying what a tap does: breathe out while holding, hold while breathing.
@@ -77,6 +61,7 @@ export class HandsHud {
   private readonly ring: SVGCircleElement;
   private readonly healName: HTMLElement;
   private readonly picker: HTMLElement;
+  private readonly body: BodyPicker;
   /** What each picker entry does, and the one a pad has highlighted (CP-1). */
   private picks: (() => void)[] = [];
   private highlight = 0;
@@ -123,18 +108,20 @@ export class HandsHud {
     this.picker.className = 'heal-picker';
     this.picker.hidden = true;
     hud.container.append(this.picker);
+    this.body = new BodyPicker(hud.container, onPick);
     // A tap anywhere else closes the picker.
     window.addEventListener(
       'pointerdown',
       (e) => {
         if (!this.picker.contains(e.target as Node)) this.hidePicker();
+        if (!this.body.el.contains(e.target as Node)) this.body.hide();
       },
       true,
     );
   }
 
   get pickerOpen(): boolean {
-    return !this.picker.hidden;
+    return !this.picker.hidden || this.body.open;
   }
 
   /** The med a tap on the heal button uses, or null when nothing would help. */
@@ -171,6 +158,10 @@ export class HandsHud {
 
     if (this.ticks++ % 3 === 0 || c.using) {
       this.best = c.health.dead ? null : (treatments(c, items)[0] ?? null);
+    }
+    if (this.body.open && this.ticks % 6 === 0) {
+      if (c.health.dead) this.body.hide();
+      else this.body.refresh(c, items);
     }
     // The kind of grenade a tap throws and how many of it are carried, dimmed with none.
     if (this.ticks % 3 === 1) {
@@ -239,14 +230,16 @@ export class HandsHud {
     }
   }
 
-  /** Opens the picker over the heal button: every carried med that would help now. */
+  /** Opens the body picker over the heal button (the screen's middle when it's hidden). */
   showPicker(c: Character, items: ItemDb): void {
-    this.openPicker(
-      'heal',
-      treatments(c, items).map((ref): PickerEntry => {
-        const def = medDef(items, ref.item);
-        return [def.name, `${does(items, c, ref)} · ${def.useTime} s`, () => this.onPick(ref)];
-      }),
+    this.hidePicker();
+    const at = this.hud.button('heal').getBoundingClientRect();
+    const shown = at.width > 0;
+    this.body.show(
+      c,
+      items,
+      shown ? at.left + at.width / 2 : window.innerWidth / 2,
+      window.innerHeight - (shown ? at.top : window.innerHeight / 2) + 8,
     );
   }
 
@@ -318,13 +311,20 @@ export class HandsHud {
 
   /** A pad moves the picker's highlight (−1 up, 1 down), stopping at the ends. */
   stepPick(by: number): void {
+    if (this.body.open) return this.body.step(by);
     if (!this.picks.length) return;
     this.highlight = Math.max(0, Math.min(this.picks.length - 1, this.highlight + by));
     this.showHighlight();
   }
 
+  /** A pad moves sideways in the picker: the body picker's meds for the highlighted zone. */
+  stepPickSide(by: number): void {
+    if (this.body.open) this.body.stepAlt(by);
+  }
+
   /** A pad picks the highlighted entry. */
   choosePick(): void {
+    if (this.body.open) return this.body.choose();
     const pick = this.picks[this.highlight];
     this.hidePicker();
     pick?.();

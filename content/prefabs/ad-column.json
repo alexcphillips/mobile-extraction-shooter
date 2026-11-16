@@ -1,0 +1,48 @@
+{
+  "formatVersion": 3,
+  "id": "ad-column",
+  "name": "Advertising column",
+  "tags": ["street"],
+  "colors": {
+    "column": "#e8e2d2",
+    "poster": "#c0583c",
+    "cap": "#3d4148"
+  },
+  "nodes": [
+    {
+      "type": "cylinder",
+      "pos": [0, 0, 0],
+      "radius": 0.65,
+      "height": 2.9,
+      "sides": 10,
+      "color": "column"
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.8, 0],
+      "radius": 0.67,
+      "height": 1.5,
+      "sides": 10,
+      "color": "poster",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 2.9, 0],
+      "radius": 0.8,
+      "height": 0.25,
+      "sides": 10,
+      "color": "cap",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 3.15, 0],
+      "radius": 0.3,
+      "height": 0.3,
+      "sides": 6,
+      "color": "cap",
+      "collide": false
+    }
+  ]
+}

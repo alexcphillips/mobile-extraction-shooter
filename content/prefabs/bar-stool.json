@@ -1,0 +1,39 @@
+{
+  "formatVersion": 3,
+  "id": "bar-stool",
+  "name": "Bar stool",
+  "tags": ["leisure", "food"],
+  "instanced": true,
+  "colors": {
+    "seat": "#7a1f3a",
+    "chrome": "#a8acb0"
+  },
+  "nodes": [
+    {
+      "type": "cylinder",
+      "pos": [0, 0, 0],
+      "radius": 0.05,
+      "height": 0.7,
+      "sides": 6,
+      "color": "chrome"
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0, 0],
+      "radius": 0.2,
+      "height": 0.03,
+      "sides": 8,
+      "color": "chrome",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.7, 0],
+      "radius": 0.21,
+      "height": 0.08,
+      "sides": 10,
+      "color": "seat",
+      "collide": false
+    }
+  ]
+}

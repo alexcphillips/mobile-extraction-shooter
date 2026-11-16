@@ -1,0 +1,89 @@
+{
+  "formatVersion": 3,
+  "id": "clock-tower",
+  "name": "Clock tower",
+  "tags": ["street", "structure"],
+  "colors": {
+    "stone": "#e6e0d3",
+    "roof": "#8d8a84",
+    "face": "#f4f1e8",
+    "hand": "#2a2c30"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0.0, 0, 0.0],
+      "size": [2.4, 10, 2.4],
+      "color": "stone"
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 10, 0.0],
+      "size": [3.0, 0.6, 3.0],
+      "color": "roof"
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0, 0.0],
+      "size": [2.7, 0.5, 2.7],
+      "color": "roof",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 8.2, 1.205],
+      "size": [1.2, 1.2, 0.01],
+      "color": "face",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 8.8, 1.215],
+      "size": [0.08, 0.5, 0.01],
+      "color": "hand",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 8.2, -1.205],
+      "size": [1.2, 1.2, 0.01],
+      "color": "face",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 8.8, -1.215],
+      "size": [0.08, 0.5, 0.01],
+      "color": "hand",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.205, 8.2, 0.0],
+      "size": [0.01, 1.2, 1.2],
+      "color": "face",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.215, 8.76, 0.18],
+      "size": [0.01, 0.08, 0.44],
+      "color": "hand",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.205, 8.2, 0.0],
+      "size": [0.01, 1.2, 1.2],
+      "color": "face",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.215, 8.76, 0.18],
+      "size": [0.01, 0.08, 0.44],
+      "color": "hand",
+      "collide": false
+    }
+  ]
+}

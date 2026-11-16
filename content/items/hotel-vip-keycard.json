@@ -1,0 +1,33 @@
+{
+  "formatVersion": 12,
+  "id": "hotel-vip-keycard",
+  "name": "Hotel presidential suite keycard",
+  "type": "key",
+  "size": [1, 1],
+  "value": 90000,
+  "weight": 0.01,
+  "rarity": "legendary",
+  "uses": 3,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.16, 0.015, 0.1],
+        "color": "#1e1e22"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.015, 0.03],
+        "size": [0.16, 0.003, 0.02],
+        "color": "#c8a24b"
+      },
+      {
+        "type": "box",
+        "pos": [-0.04, 0.015, -0.02],
+        "size": [0.05, 0.003, 0.04],
+        "color": "#d8d2c4"
+      }
+    ]
+  }
+}

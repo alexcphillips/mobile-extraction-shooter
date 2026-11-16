@@ -330,6 +330,8 @@ export {
   needs,
   startUse,
   treatments,
+  treatmentsFor,
+  medHelpsZone,
   updateMedUse,
   useMed,
   timeToUse,
@@ -482,6 +484,7 @@ export {
 export {
   MAP_FORMAT,
   MAP_FORMAT_VERSION,
+  DEFAULT_CLIFF_COLOR,
   PREFAB_FORMAT,
   PREFAB_FORMAT_VERSION,
   idSchema,

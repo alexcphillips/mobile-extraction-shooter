@@ -24,6 +24,9 @@ const angle = finite.optional();
 export const idSchema = z
   .string()
   .regex(/^[a-z0-9][a-z0-9-]*$/, 'ids are lower-case letters, digits and dashes');
+/** Rock gray for ground too steep to walk, where a map doesn't set its own. */
+export const DEFAULT_CLIFF_COLOR = '#7a776f';
+
 export const hexColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'colors are #rrggbb');
 /** A #rrggbb color, or the name of a color slot in the enclosing prefab or map. */
 export const colorRefSchema = z
@@ -701,6 +704,8 @@ const terrainSchema = z
      */
     holes: z.array(z.tuple([z.number().int(), z.number().int()])).optional(),
     color: hexColorSchema,
+    /** The ground too steep to walk (over `MOVEMENT.maxSlope`); DEFAULT_CLIFF_COLOR if unset. */
+    cliffColor: hexColorSchema.optional(),
   })
   .refine((t) => t.heights.every((row) => row.length === t.heights[0]!.length), {
     message: 'every row of heights must be the same length',

@@ -44,9 +44,23 @@ export interface Brush {
   radius: number;
   /** Raise and lower: meters a second at the middle. Flatten and smooth: how fast, 1 is usual. */
   strength: number;
-  /** Level: the height to level to, or null for the ground where the drag starts. */
+  /** Level and flatten: the height to level to, or null for the ground where the drag starts. */
   height: number | null;
+  /**
+   * Raise, lower, flatten and smooth: the share of the radius at full strength, 0 to 1. 0
+   * falls off smoothly from the middle (rounded hills); 1 is full strength right to the edge,
+   * so the ground steps there over one cell (a cliff, as steep as the cell size allows).
+   */
+  hardness: number;
 }
+
+/** The hardness choices the toolbar offers. */
+export const BRUSH_HARDNESS = [
+  { name: 'soft', value: 0 },
+  { name: 'firm', value: 0.5 },
+  { name: 'hard', value: 0.8 },
+  { name: 'cliff', value: 1 },
+] as const;
 
 /** The terrain as the sim takes it, with its heights as one array. */
 export interface TerrainGrid {
@@ -154,10 +168,15 @@ export function holeCells(t: TerrainGrid, [i0, i1, j0, j1]: CellRect, hole: bool
     for (let i = i0; i < i1; i++) t.holes[j * t.cols + i] = hole ? 1 : 0;
 }
 
-/** 1 in the middle, falling smoothly to 0 at the edge. */
-const falloff = (d: number, r: number): number => {
+/**
+ * 1 out to `hardness` × r, then falling smoothly to 0 at the edge. Hardness 1 is 1 all the
+ * way to the edge.
+ */
+export const falloff = (d: number, r: number, hardness = 0): number => {
   if (d >= r) return 0;
-  const k = 1 - (d / r) ** 2;
+  const inner = r * Math.min(1, Math.max(0, hardness));
+  if (d <= inner) return 1;
+  const k = 1 - ((d - inner) / (r - inner)) ** 2;
   return k * k;
 };
 
@@ -186,7 +205,11 @@ export function applyBrush(
   const before = brush.mode === 'smooth' ? h.slice() : h;
   for (let j = j0; j <= j1; j++) {
     for (let i = i0; i <= i1; i++) {
-      const w = falloff(Math.hypot(t.minX + i * cs - x, t.minZ + j * cs - z), brush.radius);
+      const w = falloff(
+        Math.hypot(t.minX + i * cs - x, t.minZ + j * cs - z),
+        brush.radius,
+        brush.hardness,
+      );
       if (w === 0) continue;
       const k = j * c + i;
       switch (brush.mode) {
@@ -329,18 +352,25 @@ export function extendMap(map: MapFile, side: Side, cells: number): void {
 }
 
 /** A new map: flat ground at 0 centered on the origin, with a player spawn in the middle. */
-export function newMap(id: string, name: string, size: number, cellSize: number): MapFile {
-  const cells = Math.max(2, Math.round(size / cellSize));
-  const half = round((cells * cellSize) / 2);
+/** A blank map centered on the origin; `size` is one side of a square, or [width (x), depth (z)]. */
+export function newMap(
+  id: string,
+  name: string,
+  size: number | readonly [number, number],
+  cellSize: number,
+): MapFile {
+  const [width, depth] = typeof size === 'number' ? [size, size] : size;
+  const cols = Math.max(2, Math.round(width / cellSize));
+  const rows = Math.max(2, Math.round(depth / cellSize));
   return {
     formatVersion: MAP_FORMAT_VERSION,
     id,
     name,
     environment: { sky: '#9fb3c8', fogNear: 48, fogFar: 120 },
     terrain: {
-      origin: [-half, -half],
+      origin: [-round((cols * cellSize) / 2), -round((rows * cellSize) / 2)],
       cellSize,
-      heights: Array.from({ length: cells + 1 }, () => Array<number>(cells + 1).fill(0)),
+      heights: Array.from({ length: rows + 1 }, () => Array<number>(cols + 1).fill(0)),
       color: '#6b8f4e',
     },
     nodes: [{ type: 'playerSpawn', id: 'spawn', pos: [0, 0, 0] }],

@@ -1,0 +1,39 @@
+{
+  "formatVersion": 3,
+  "id": "barrier-block",
+  "name": "Barrier block",
+  "tags": ["military", "construction"],
+  "colors": {
+    "fill": "#b9a57a",
+    "mesh": "#6b6250"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0.0, 0, 0.0],
+      "size": [1.4, 2.2, 1.4],
+      "color": "fill"
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.7, 0.0],
+      "size": [1.44, 0.05, 1.44],
+      "color": "mesh",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 1.5, 0.0],
+      "size": [1.44, 0.05, 1.44],
+      "color": "mesh",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 2.18, 0.0],
+      "size": [1.44, 0.05, 1.44],
+      "color": "mesh",
+      "collide": false
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "formatVersion": 3,
+  "id": "poker-table",
+  "name": "Poker table",
+  "tags": ["leisure"],
+  "colors": {
+    "wood": "#3a2418",
+    "felt": "#2b6b45",
+    "chip-a": "#c0302c",
+    "chip-b": "#e6e0d3",
+    "card": "#f2f0e8"
+  },
+  "nodes": [
+    {
+      "type": "cylinder",
+      "pos": [0, 0, 0],
+      "radius": 0.9,
+      "height": 0.78,
+      "sides": 8,
+      "color": "wood"
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.78, 0],
+      "radius": 0.78,
+      "height": 0.01,
+      "sides": 8,
+      "color": "felt",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.4, 0.79, 0.1],
+      "radius": 0.05,
+      "height": 0.06,
+      "sides": 6,
+      "color": "chip-a",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.3, 0.79, 0.35],
+      "radius": 0.05,
+      "height": 0.06,
+      "sides": 6,
+      "color": "chip-b",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.0, 0.79, -0.45],
+      "radius": 0.05,
+      "height": 0.06,
+      "sides": 6,
+      "color": "chip-a",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.45, 0.79, -0.2],
+      "radius": 0.05,
+      "height": 0.06,
+      "sides": 6,
+      "color": "chip-b",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.79, 0.05],
+      "size": [0.3, 0.01, 0.2],
+      "color": "card",
+      "yaw": 20,
+      "collide": false
+    }
+  ]
+}

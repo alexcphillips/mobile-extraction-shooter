@@ -105,7 +105,7 @@ export function buildMap(map: CompiledMap): MapView {
   const root = new THREE.Group();
   const apart = new Set(map.searchedLooks.flatMap((l) => l.closed));
   const merged = apart.size ? map.shapes.filter((s) => !apart.has(s)) : map.shapes;
-  root.add(buildChunks(map.world.terrain, map.terrainColor, merged, map.roads));
+  root.add(buildChunks(map.world.terrain, map.terrainColor, merged, map.roads, map.cliffColor));
 
   const baked = bakedMaterial();
   const looks = new Map<string, LookView>();
@@ -284,6 +284,7 @@ export function buildChunks(
   terrainColor: number,
   shapes: readonly Shape[],
   roads: readonly CompiledRoad[] = [],
+  cliffColor = terrainColor,
 ): THREE.Group {
   const cells = Math.max(1, Math.round(CHUNK / terrain.cellSize));
   const size = cells * terrain.cellSize;
@@ -332,6 +333,7 @@ export function buildChunks(
         j0,
         Math.min(terrain.rows, j0 + cells),
         terrainColor,
+        cliffColor,
       );
       for (const s of byChunk[cz * nx + cx]!) b.shape(s);
       for (const r of runs[cz * nx + cx]!) b.strip(r.road.strip, r.from, r.to, r.road.color);

@@ -1,0 +1,131 @@
+{
+  "formatVersion": 3,
+  "id": "hotel-bed",
+  "name": "Hotel bed",
+  "tags": ["home"],
+  "colors": {
+    "frame": "#3a2a20",
+    "frame-dark": "#241a14",
+    "linen": "#e8e4da",
+    "throw": "#7a1f2e",
+    "headboard": "#8c7a62",
+    "shade": "#efe2c0"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0.05],
+      "size": [2, 0.32, 2.1],
+      "color": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.32, 0.05],
+      "size": [1.94, 0.26, 2.04],
+      "color": "linen"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.58, 0.72],
+      "size": [1.98, 0.04, 0.6],
+      "color": "throw",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.58, -0.05],
+      "size": [1.96, 0.03, 0.8],
+      "color": "linen",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.48, 0.58, -0.78],
+      "size": [0.74, 0.14, 0.42],
+      "color": "linen",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.48, 0.58, -0.78],
+      "size": [0.74, 0.14, 0.42],
+      "color": "linen",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, -1.05],
+      "size": [2.3, 1.35, 0.1],
+      "color": "headboard"
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.35, -1.05],
+      "size": [2.36, 0.05, 0.14],
+      "color": "frame-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.5, 0, -0.82],
+      "size": [0.55, 0.55, 0.44],
+      "color": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [-1.5, 0.3, -0.595],
+      "size": [0.45, 0.02, 0.01],
+      "color": "frame-dark",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-1.5, 0.551, -0.86],
+      "radius": 0.06,
+      "height": 0.3,
+      "sides": 6,
+      "color": "frame-dark",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-1.5, 0.85, -0.86],
+      "radius": 0.16,
+      "height": 0.24,
+      "sides": 8,
+      "color": "shade",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.5, 0, -0.82],
+      "size": [0.55, 0.55, 0.44],
+      "color": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [1.5, 0.3, -0.595],
+      "size": [0.45, 0.02, 0.01],
+      "color": "frame-dark",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [1.5, 0.551, -0.86],
+      "radius": 0.06,
+      "height": 0.3,
+      "sides": 6,
+      "color": "frame-dark",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [1.5, 0.85, -0.86],
+      "radius": 0.16,
+      "height": 0.24,
+      "sides": 8,
+      "color": "shade",
+      "collide": false
+    }
+  ]
+}

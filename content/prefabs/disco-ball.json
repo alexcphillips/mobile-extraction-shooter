@@ -1,0 +1,64 @@
+{
+  "formatVersion": 3,
+  "id": "disco-ball",
+  "name": "Disco ball",
+  "tags": ["leisure"],
+  "colors": {
+    "mirror": "#d8dce0",
+    "glint": "#8fe6ff",
+    "cord": "#2a2c30"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0.0, -1.0, 0.0],
+      "size": [0.02, 1.0, 0.02],
+      "color": "cord",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, -1.75, 0],
+      "radius": 0.42,
+      "height": 0.75,
+      "sides": 10,
+      "color": "mirror",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, -1.95, 0],
+      "radius": 0.42,
+      "height": 0.2,
+      "sides": 10,
+      "color": "mirror",
+      "radiusTop": 0.0,
+      "pitch": 180,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, -1.0, 0],
+      "radius": 0.42,
+      "height": 0.2,
+      "sides": 10,
+      "color": "mirror",
+      "radiusTop": 0.0,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.33, -1.55, 0.25],
+      "size": [0.06, 0.1, 0.1],
+      "color": "glint",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.33, -1.4, -0.15],
+      "size": [0.06, 0.1, 0.1],
+      "color": "glint",
+      "collide": false
+    }
+  ]
+}

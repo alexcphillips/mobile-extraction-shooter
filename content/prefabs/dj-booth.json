@@ -1,0 +1,108 @@
+{
+  "formatVersion": 3,
+  "id": "dj-booth",
+  "name": "DJ booth",
+  "tags": ["leisure"],
+  "colors": {
+    "body": "#1a1a22",
+    "top": "#2a2c30",
+    "deck": "#3d4148",
+    "led-a": "#ff3fa4",
+    "led-b": "#3fe0ff",
+    "led-c": "#8a4bff"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0.0, 0, 0.0],
+      "size": [3.0, 1.15, 1.1],
+      "color": "body"
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 1.15, 0.0],
+      "size": [2.9, 0.01, 1.0],
+      "color": "top",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.9, 1.16, -0.05],
+      "radius": 0.22,
+      "height": 0.05,
+      "sides": 10,
+      "color": "deck",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.9, 1.21, -0.05],
+      "radius": 0.06,
+      "height": 0.02,
+      "sides": 6,
+      "color": "led-a",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.9, 1.16, -0.05],
+      "radius": 0.22,
+      "height": 0.05,
+      "sides": 10,
+      "color": "deck",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.9, 1.21, -0.05],
+      "radius": 0.06,
+      "height": 0.02,
+      "sides": 6,
+      "color": "led-a",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 1.16, -0.05],
+      "size": [0.6, 0.06, 0.5],
+      "color": "deck",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 1.22, -0.025],
+      "size": [0.5, 0.01, 0.35],
+      "color": "led-b",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 1.16, 0.35],
+      "size": [0.4, 0.26, 0.2],
+      "color": "deck",
+      "pitch": -20,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.2, 0.555],
+      "size": [2.8, 0.08, 0.01],
+      "color": "led-a",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.5, 0.555],
+      "size": [2.8, 0.08, 0.01],
+      "color": "led-b",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.8, 0.555],
+      "size": [2.8, 0.08, 0.01],
+      "color": "led-c",
+      "collide": false
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "formatVersion": 3,
+  "id": "ops-table",
+  "name": "Operations map table",
+  "tags": ["military", "office"],
+  "colors": {
+    "frame": "#3d4148",
+    "map": "#4f7a8a",
+    "marks": "#d9a441"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0.0, 0, 0.0],
+      "size": [3.0, 0.95, 1.6],
+      "color": "frame"
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.95, 0.0],
+      "size": [2.7, 0.01, 1.3],
+      "color": "map",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.45, 0.96, -0.05],
+      "size": [0.3, 0.01, 0.3],
+      "color": "marks",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.65, 0.96, 0.2],
+      "size": [0.5, 0.01, 0.2],
+      "color": "marks",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.85, 0.0],
+      "size": [3.1, 0.1, 1.7],
+      "color": "frame",
+      "collide": false
+    }
+  ]
+}

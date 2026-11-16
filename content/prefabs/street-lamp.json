@@ -1,0 +1,25 @@
+{
+  "formatVersion": 3,
+  "id": "street-lamp",
+  "name": "Street lamp",
+  "tags": ["street"],
+  "colors": {
+    "pole": "#3d4148",
+    "lamp": "#f2e6c0"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0.0, 0, 0.0],
+      "size": [0.16, 4.4, 0.16],
+      "color": "pole"
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 4.4, 0.0],
+      "size": [0.6, 0.2, 0.6],
+      "color": "lamp",
+      "collide": false
+    }
+  ]
+}

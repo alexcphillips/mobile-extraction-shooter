@@ -1083,6 +1083,110 @@ body[data-input='gamepad'] .heal-picker button.highlight {
   background: rgb(70 70 70 / 0.95);
 }
 
+/* The heal button's body picker (2026-11-15): a front-on body, each zone with its med. */
+.body-picker[hidden] {
+  display: none;
+}
+
+.body-picker {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgb(10 10 10 / 0.8);
+  transform: translateX(-50%);
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.body-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 76px);
+  grid-template-areas:
+    '. head .'
+    'larm chest rarm'
+    'larm stom rarm'
+    'lleg any rleg';
+  gap: 4px;
+}
+
+.body-picker button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-height: 40px;
+  padding: 3px;
+  border: 2px solid rgb(255 255 255 / 0.4);
+  border-radius: 8px;
+  background: rgb(30 30 30 / 0.9);
+  color: #fff;
+  font:
+    11px/1.15 ui-monospace,
+    monospace;
+}
+
+.body-picker button b {
+  font-size: 12px;
+}
+
+.body-picker button span {
+  font-size: 10px;
+  opacity: 0.75;
+}
+
+.body-picker .body-grid button.idle {
+  opacity: 0.4;
+}
+
+.body-picker .body-grid button.expanded {
+  background: rgb(70 70 70 / 0.95);
+}
+
+.body-meds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 236px;
+}
+
+.body-meds:empty {
+  display: none;
+}
+
+.body-picker .body-auto {
+  grid-area: any;
+  border-style: dashed;
+}
+
+/* A phone held sideways has about 340 px of height. */
+@media (max-height: 500px) {
+  .body-grid {
+    grid-template-columns: repeat(3, 70px);
+  }
+
+  .body-picker button {
+    min-height: 34px;
+  }
+}
+
+.body-meds button {
+  flex: 1 1 70px;
+  border-color: rgb(255 255 255 / 0.6);
+}
+
+/* What a pad would pick on letting go of L1. */
+body[data-input='gamepad'] .body-picker button.highlight,
+body[data-input='gamepad'] .body-meds button.highlight {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+
 /* ?debug: hurt, heal, next optic and next muzzle (keys 7–0), down the left edge. */
 .debug-actions {
   position: fixed;
@@ -5881,7 +5985,7 @@ body.inv-dragging .item-details.panel {
  * armor (#vitals), rounds (#ammo), the red flash when they're hit (#hurt), and their hand
  * slots, shown but not pressable. Every other control is hidden.
  */
-body.spectating :is(#stick, #sprint-lock, #prompt, #extract, .heal-picker) {
+body.spectating :is(#stick, #sprint-lock, #prompt, #extract, .heal-picker, .body-picker) {
   display: none;
 }
 

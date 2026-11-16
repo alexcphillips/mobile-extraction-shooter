@@ -29,6 +29,8 @@ export interface PadPicker {
   readonly pickerOpen: boolean;
   /** Moves the highlight one entry up (−1) or down (1). */
   stepPick(by: number): void;
+  /** Moves sideways (the body picker's meds for a zone). */
+  stepPickSide(by: number): void;
   /** Picks the highlighted entry and closes the picker. */
   choosePick(): void;
 }
@@ -263,6 +265,8 @@ export class PadDriver {
     const p = this.controls.picker!;
     if (has(pressed, PAD.up)) p.stepPick(-1);
     if (has(pressed, PAD.down)) p.stepPick(1);
+    if (has(pressed, PAD.left)) p.stepPickSide(-1);
+    if (has(pressed, PAD.right)) p.stepPickSide(1);
     const flick = lookY < -PICK_FLICK ? -1 : lookY > PICK_FLICK ? 1 : 0;
     if (flick !== 0 && flick !== this.flick) p.stepPick(flick);
     this.flick = flick;

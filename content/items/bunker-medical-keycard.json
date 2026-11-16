@@ -1,0 +1,33 @@
+{
+  "formatVersion": 12,
+  "id": "bunker-medical-keycard",
+  "name": "Bunker medical keycard",
+  "type": "key",
+  "size": [1, 1],
+  "value": 30000,
+  "weight": 0.01,
+  "rarity": "rare",
+  "uses": 5,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0],
+        "size": [0.16, 0.015, 0.1],
+        "color": "#5f646a"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.015, 0.03],
+        "size": [0.16, 0.003, 0.02],
+        "color": "#3f8f5a"
+      },
+      {
+        "type": "box",
+        "pos": [-0.04, 0.015, -0.02],
+        "size": [0.05, 0.003, 0.04],
+        "color": "#e6e0d3"
+      }
+    ]
+  }
+}

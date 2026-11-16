@@ -1,0 +1,19 @@
+{
+  "formatVersion": 3,
+  "id": "neon-tube",
+  "name": "Neon tube",
+  "tags": ["leisure", "street"],
+  "instanced": true,
+  "colors": {
+    "neon": "#ff3fa4"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0.0, -0.03, 0.0],
+      "size": [2, 0.06, 0.06],
+      "color": "neon",
+      "collide": false
+    }
+  ]
+}

@@ -11,6 +11,7 @@ From before the split: "These decisions were made in design sessions on 2026-10-
 | [design/maps/silver-creek.md](design/maps/silver-creek.md) | Silver Creek, the starter map (summary first) | 23 KB |
 | [design/maps/northpoint.md](design/maps/northpoint.md) | Northpoint, the mall (summary first) | 31 KB |
 | [design/maps/district.md](design/maps/district.md) | District, planned (summary first) | 6 KB |
+| [design/maps/d2.md](design/maps/d2.md) | d2, the hand-built District (summary first) | 4 KB |
 | [design/maps/tutorial.md](design/maps/tutorial.md) | Tutorial house (summary; design in tutorial.md) | 1 KB |
 | [design/maps/mall.md](design/maps/mall.md) | The Mall, deleted (a record) | 3 KB |
 | [design/movement.md](design/movement.md) | Movement (decided 2026-10-26, session 3) | 7 KB |

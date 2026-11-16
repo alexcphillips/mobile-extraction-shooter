@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { findOverlaps, solidsOverlap } from './overlap';
 import {
   applyBrush,
+  falloff,
   cellRect,
   extendMap,
   holeCells,
@@ -116,7 +117,7 @@ describe('brushes', () => {
     const t = terrainGrid(map([]));
     const changed = applyBrush(
       t,
-      { mode: 'raise', radius: 6, strength: 2, height: null },
+      { mode: 'raise', radius: 6, strength: 2, height: null, hardness: 0 },
       0,
       0,
       0.5,
@@ -133,17 +134,63 @@ describe('brushes', () => {
   it('flatten towards the level and smooth towards the neighbors', () => {
     const t = terrainGrid(map([]));
     t.heights[5 * 11 + 5] = 4;
-    applyBrush(t, { mode: 'smooth', radius: 2, strength: 1, height: null }, 0, 0, 1, 0);
+    applyBrush(
+      t,
+      { mode: 'smooth', radius: 2, strength: 1, height: null, hardness: 0 },
+      0,
+      0,
+      1,
+      0,
+    );
     expect(t.heights[5 * 11 + 5]).toBeCloseTo(0);
     t.heights[5 * 11 + 5] = 4;
-    applyBrush(t, { mode: 'flatten', radius: 2, strength: 1, height: null }, 0, 0, 0.1, 1);
+    applyBrush(
+      t,
+      { mode: 'flatten', radius: 2, strength: 1, height: null, hardness: 0 },
+      0,
+      0,
+      0.1,
+      1,
+    );
     expect(t.heights[5 * 11 + 5]).toBeCloseTo(4 - 3 * 0.4);
+  });
+
+  it('a cliff edge raises the whole radius evenly, stepping at the edge', () => {
+    const t = terrainGrid(map([]));
+    applyBrush(
+      t,
+      { mode: 'raise', radius: 6, strength: 2, height: null, hardness: 1 },
+      0,
+      0,
+      0.5,
+      0,
+    );
+    const at = (i: number, j: number) => t.heights[j * 11 + i]!;
+    expect(at(5, 5)).toBeCloseTo(1);
+    expect(at(6, 5)).toBeCloseTo(1);
+    expect(at(7, 5)).toBe(0);
+  });
+
+  it('falloff is full strength out to the hardness, then eases to 0', () => {
+    expect(falloff(4, 8, 0.5)).toBe(1);
+    expect(falloff(6, 8, 0.5)).toBeGreaterThan(0);
+    expect(falloff(6, 8, 0.5)).toBeLessThan(1);
+    expect(falloff(6, 8, 0.5)).toBeGreaterThan(falloff(6, 8, 0));
+    expect(falloff(8, 8, 1)).toBe(0);
+    expect(falloff(7.9, 8, 1)).toBe(1);
   });
 
   it('do nothing off the terrain', () => {
     const t = terrainGrid(map([]));
     expect(
-      applyBrush(t, { mode: 'raise', radius: 2, strength: 1, height: null }, 100, 0, 1, 0),
+      applyBrush(
+        t,
+        { mode: 'raise', radius: 2, strength: 1, height: null, hardness: 0 },
+        100,
+        0,
+        1,
+        0,
+      ),
     ).toBeNull();
   });
 });

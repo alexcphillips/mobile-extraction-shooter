@@ -1,0 +1,40 @@
+{
+  "formatVersion": 3,
+  "id": "dartboard",
+  "name": "Dartboard",
+  "tags": ["leisure"],
+  "colors": {
+    "board": "#1a1a1a",
+    "ring": "#c0302c",
+    "cabinet": "#3a2418"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0.0, 1.33, 0.02],
+      "size": [0.8, 0.8, 0.04],
+      "color": "cabinet",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 1.71, 0.06],
+      "radius": 0.23,
+      "height": 0.04,
+      "sides": 12,
+      "color": "board",
+      "pitch": 90,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 1.705, 0.065],
+      "radius": 0.12,
+      "height": 0.05,
+      "sides": 12,
+      "color": "ring",
+      "pitch": 90,
+      "collide": false
+    }
+  ]
+}

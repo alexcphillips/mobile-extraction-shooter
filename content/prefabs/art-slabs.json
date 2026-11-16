@@ -1,0 +1,41 @@
+{
+  "formatVersion": 3,
+  "id": "art-slabs",
+  "name": "Steel art slabs",
+  "tags": ["street", "leisure"],
+  "colors": {
+    "steel": "#8a4b2e",
+    "steel-dark": "#6a3822"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [-1.6, 0, -0.3],
+      "size": [1.5, 3.0, 0.5],
+      "color": "steel",
+      "yaw": 8
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0, 0.4],
+      "size": [1.5, 3.6, 0.5],
+      "color": "steel",
+      "yaw": -6
+    },
+    {
+      "type": "box",
+      "pos": [1.6, 0, -0.2],
+      "size": [1.5, 2.6, 0.5],
+      "color": "steel",
+      "yaw": 12
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 3.2, 0.4],
+      "size": [1.4, 0.05, 0.52],
+      "color": "steel-dark",
+      "yaw": -6,
+      "collide": false
+    }
+  ]
+}

@@ -9,6 +9,7 @@ import { layoutGround } from './ground.mjs';
 import { box } from './nodes.mjs';
 import { roadStrip } from './road.mjs';
 import { rampRun, runDownFrom, runLength, stairRun } from './runs.mjs';
+import { roomWalls, union } from './rooms.mjs';
 import { readFileSync } from 'node:fs';
 import { build, joined, lib, walk } from './sim.mjs';
 
@@ -286,5 +287,48 @@ describe('layout ground and the shared layout', () => {
         checked++;
       }
     expect(checked).toBeGreaterThan(15000);
+  });
+});
+
+describe('room walls', () => {
+  // Two rooms side by side on the ground, a taller hall beyond them on the same line.
+  const rooms = [
+    { r: [0, 0, 6, 6], yb: 0, yt: 3 },
+    { r: [6, 0, 12, 6], yb: 0, yt: 3 },
+    { r: [0, 6, 12, 14], yb: 0, yt: 6 },
+  ];
+  const shell = (openings) =>
+    build([
+      ...union(
+        rooms.map((r) => r.r),
+        [],
+        -0.2,
+        0,
+        '#888888',
+      ),
+      ...roomWalls({ rooms, openings, inside: '#555555', outside: '#333333' }),
+    ]);
+  const a = [3, 0, 3];
+  const b = [9, 0, 3];
+  const hall = [6, 0, 10];
+  it('a doorway joins two rooms; a shared wall without one keeps them apart', () => {
+    const open = shell([{ axis: 'z', c: 6, at: 3, w: 1.6, y: 0, h: 2.2 }]);
+    expect(joined(open.nav, a, b)).toBe(true);
+    expect(walk(open.world, a, b).reached).toBe(true);
+    expect(joined(shell([]).nav, a, b)).toBe(false);
+  });
+  it("the hall's taller wall stands for the rooms' on the line they share", () => {
+    const walls = roomWalls({ rooms, inside: '#555555', outside: '#333333' }).filter(
+      (n) => n.type === 'wall' && n.pos[2] === 6 && !n.yaw,
+    );
+    expect(walls).toHaveLength(1);
+    expect(walls[0].size[1]).toBe(6);
+    const open = shell([{ axis: 'x', c: 6, at: 3, w: 1.6, y: 0, h: 2.2 }]);
+    expect(joined(open.nav, a, hall)).toBe(true);
+  });
+  it('refuses an opening on no wall', () => {
+    expect(() =>
+      roomWalls({ rooms, openings: [{ axis: 'x', c: 50, at: 3, w: 1, y: 0, h: 2 }] }),
+    ).toThrow(/no wall/);
   });
 });

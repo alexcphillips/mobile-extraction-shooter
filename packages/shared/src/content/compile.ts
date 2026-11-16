@@ -13,6 +13,7 @@ import { gradeRoads, roadStrip, ROAD } from '../world/roads';
 import { ContentError } from './format';
 import { loftRing } from './hull';
 import { wallPieces } from './walls';
+import { DEFAULT_CLIFF_COLOR } from './schema';
 import type { LootMix, MapFile, MapNode, MapZone, PrefabFile } from './schema';
 
 /*
@@ -250,6 +251,8 @@ export interface CompiledMap {
   name: string;
   environment: { sky: number; fogNear: number; fogFar: number };
   terrainColor: number;
+  /** The ground too steep to walk. */
+  cliffColor: number;
   /** Bodies of water, the map's own (MapFile.water) first; the same as world.water. */
   water: CompiledWater[];
   world: WorldDef;
@@ -493,6 +496,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     name: map.name,
     environment: { ...map.environment, sky: hex(map.environment.sky) },
     terrainColor: hex(map.terrain.color),
+    cliffColor: hex(map.terrain.cliffColor ?? DEFAULT_CLIFF_COLOR),
     water: out.water!,
     world: {
       terrain,

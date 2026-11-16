@@ -1,0 +1,104 @@
+{
+  "formatVersion": 3,
+  "id": "grand-piano",
+  "name": "Grand piano",
+  "tags": ["home", "leisure"],
+  "colors": {
+    "case": "#141416",
+    "case-edge": "#2a2a2e",
+    "keys": "#f2f0ea",
+    "keys-dark": "#141416",
+    "bench": "#141416"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0.62, 0.15],
+      "size": [1.5, 0.32, 1.1],
+      "color": "case"
+    },
+    {
+      "type": "box",
+      "pos": [-0.22, 0.62, -0.75],
+      "size": [1.06, 0.32, 0.7],
+      "color": "case",
+      "top": [0.86, 0.7]
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.94, 0.15],
+      "size": [1.46, 0.02, 1.06],
+      "color": "case-edge",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.05, 0.96, -0.2],
+      "size": [1.3, 0.03, 1.5],
+      "color": "case",
+      "collide": false,
+      "roll": 28
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.72, 0.84],
+      "size": [1.4, 0.07, 0.28],
+      "color": "case"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.79, 0.86],
+      "size": [1.32, 0.012, 0.18],
+      "color": "keys",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.8, 0.8],
+      "size": [1.3, 0.012, 0.06],
+      "color": "keys-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.94, 0.66],
+      "size": [0.8, 0.28, 0.02],
+      "color": "case-edge",
+      "collide": false,
+      "pitch": -15
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.65, 0, 0.6],
+      "radius": 0.05,
+      "height": 0.62,
+      "sides": 6,
+      "color": "case",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.65, 0, 0.6],
+      "radius": 0.05,
+      "height": 0.62,
+      "sides": 6,
+      "color": "case",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.4, 0, -0.85],
+      "radius": 0.05,
+      "height": 0.62,
+      "sides": 6,
+      "color": "case",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, 1.45],
+      "size": [0.9, 0.5, 0.36],
+      "color": "bench"
+    }
+  ]
+}

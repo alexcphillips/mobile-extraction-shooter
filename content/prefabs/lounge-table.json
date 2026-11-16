@@ -1,0 +1,29 @@
+{
+  "formatVersion": 3,
+  "id": "lounge-table",
+  "name": "Lounge table",
+  "tags": ["leisure", "home"],
+  "colors": {
+    "base": "#c8a24b",
+    "top": "#9fd0d8"
+  },
+  "nodes": [
+    {
+      "type": "cylinder",
+      "pos": [0, 0, 0],
+      "radius": 0.45,
+      "height": 0.42,
+      "sides": 10,
+      "color": "base"
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.42, 0],
+      "radius": 0.5,
+      "height": 0.03,
+      "sides": 10,
+      "color": "top",
+      "collide": false
+    }
+  ]
+}

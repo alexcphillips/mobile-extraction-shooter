@@ -206,6 +206,20 @@ export interface Hiding {
 export const CAMERA_START = '@camera';
 
 export const GRID_SNAPS = [0, 0.05, 0.1, 0.25, 0.5, 1, 2, 4];
+/** The camera speed multiplier's range, and where this browser keeps it. */
+export const FLY_SPEED_MIN = 0.1;
+export const FLY_SPEED_MAX = 20;
+const FLY_SPEED_KEY = 'editor.flySpeed';
+
+function loadFlySpeed(): number {
+  try {
+    const v = Number(localStorage.getItem(FLY_SPEED_KEY));
+    return v >= FLY_SPEED_MIN && v <= FLY_SPEED_MAX ? v : 1;
+  } catch {
+    return 1;
+  }
+}
+
 export const BRUSH_RADII = [1, 2, 4, 6, 8, 12, 16, 24, 32];
 export const ANGLE_SNAPS = [0, 1, 5, 15, 45, 90];
 const HISTORY = 200;
@@ -267,6 +281,8 @@ export interface EditorState {
   angleSnap: number;
   snapDown: boolean;
   objectSnap: boolean;
+  /** WASD/QE camera speed multiplier; kept in this browser (FLY_SPEED_KEY). */
+  flySpeed: number;
   /** The color new shapes get: the last one set. */
   color: string;
   /** Whether any file (the map or a prefab) differs from what's saved. */
@@ -364,9 +380,10 @@ export class MapEditor {
       hiding: null,
       spawns: [],
       spawnWarnings: [],
-      brush: { mode: 'raise', radius: 6, strength: 1, height: null },
+      brush: { mode: 'raise', radius: 6, strength: 1, height: null, hardness: 0 },
       gizmo: 'translate',
       gridSnap: 0.5,
+      flySpeed: loadFlySpeed(),
       angleSnap: 15,
       snapDown: true,
       objectSnap: true,
@@ -474,14 +491,23 @@ export class MapEditor {
   }
 
   private viewOptions() {
-    const { gridSnap, angleSnap, snapDown, objectSnap } = this.state;
-    return { gridSnap, angleSnap, snapDown, objectSnap };
+    const { gridSnap, angleSnap, snapDown, objectSnap, flySpeed } = this.state;
+    return { gridSnap, angleSnap, snapDown, objectSnap, flySpeed };
   }
 
   setOption(
-    patch: Partial<Pick<EditorState, 'gridSnap' | 'angleSnap' | 'snapDown' | 'objectSnap'>>,
+    patch: Partial<
+      Pick<EditorState, 'gridSnap' | 'angleSnap' | 'snapDown' | 'objectSnap' | 'flySpeed'>
+    >,
   ): void {
     this.set(patch);
+    if (patch.flySpeed !== undefined) {
+      try {
+        localStorage.setItem(FLY_SPEED_KEY, String(patch.flySpeed));
+      } catch {
+        // No storage (private window): it just isn't remembered.
+      }
+    }
     this.view.options = this.viewOptions();
   }
 
@@ -2344,7 +2370,12 @@ export class MapEditor {
    * Makes a new map file and opens it. It's saved straight away (refused if the file
    * exists), so the dev server can serve it to the reloaded page.
    */
-  async createMap(id: string, name: string, size: number, cellSize: number): Promise<void> {
+  async createMap(
+    id: string,
+    name: string,
+    size: readonly [number, number],
+    cellSize: number,
+  ): Promise<void> {
     const map = newMap(id, name, size, cellSize);
     const problem = check(map, this.prefabs, `maps/${id}.json`);
     if (problem) {

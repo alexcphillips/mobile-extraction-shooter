@@ -52,5 +52,6 @@ Each map has its own design file, which starts with a short summary; read that, 
 | Silver Creek | [maps/silver-creek.md](maps/silver-creek.md) | starter map, v1 built, not played yet |
 | Northpoint | [maps/northpoint.md](maps/northpoint.md) | hard map, playable; mall inside only |
 | District | [maps/district.md](maps/district.md) | planning (MK, then DS sessions) |
+| d2 | [maps/d2.md](maps/d2.md) | the user's hand-built District; mall shell 2026-11-14 |
 | Tutorial house | [maps/tutorial.md](maps/tutorial.md) | built; design in tutorial.md |
 | The Mall | [maps/mall.md](maps/mall.md) | deleted 2026-11-09, a record |
