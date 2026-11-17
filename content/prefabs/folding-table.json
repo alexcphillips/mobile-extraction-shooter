@@ -1,0 +1,150 @@
+{
+  "formatVersion": 3,
+  "id": "folding-table",
+  "name": "Folding table",
+  "tags": ["office", "military"],
+  "colors": {
+    "plastic": "#e4e1d8",
+    "plastic-dark": "#c8c4b9",
+    "steel": "#6a6e72",
+    "foot": "#2b2b2b"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0.69, 0],
+      "size": [1.83, 0.05, 0.76],
+      "color": "plastic"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.64, -0.35],
+      "size": [1.79, 0.05, 0.04],
+      "color": "plastic-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.895, 0.64, 0],
+      "size": [0.04, 0.05, 0.68],
+      "color": "plastic-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.74, 0.02, -0.3],
+      "size": [0.03, 0.62, 0.03],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.74, 0, -0.3],
+      "size": [0.045, 0.02, 0.045],
+      "color": "foot",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.55, 0.52, -0.3],
+      "size": [0.38, 0.02, 0.02],
+      "color": "steel",
+      "collide": false,
+      "roll": 18
+    },
+    {
+      "type": "box",
+      "pos": [-0.74, 0.02, 0.3],
+      "size": [0.03, 0.62, 0.03],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.74, 0, 0.3],
+      "size": [0.045, 0.02, 0.045],
+      "color": "foot",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.55, 0.52, 0.3],
+      "size": [0.38, 0.02, 0.02],
+      "color": "steel",
+      "collide": false,
+      "roll": 18
+    },
+    {
+      "type": "box",
+      "pos": [-0.74, 0.1, 0],
+      "size": [0.03, 0.03, 0.6],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.64, 0.35],
+      "size": [1.79, 0.05, 0.04],
+      "color": "plastic-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.895, 0.64, 0],
+      "size": [0.04, 0.05, 0.68],
+      "color": "plastic-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.74, 0.02, -0.3],
+      "size": [0.03, 0.62, 0.03],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.74, 0, -0.3],
+      "size": [0.045, 0.02, 0.045],
+      "color": "foot",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.55, 0.52, -0.3],
+      "size": [0.38, 0.02, 0.02],
+      "color": "steel",
+      "collide": false,
+      "roll": -18
+    },
+    {
+      "type": "box",
+      "pos": [0.74, 0.02, 0.3],
+      "size": [0.03, 0.62, 0.03],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.74, 0, 0.3],
+      "size": [0.045, 0.02, 0.045],
+      "color": "foot",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.55, 0.52, 0.3],
+      "size": [0.38, 0.02, 0.02],
+      "color": "steel",
+      "collide": false,
+      "roll": -18
+    },
+    {
+      "type": "box",
+      "pos": [0.74, 0.1, 0],
+      "size": [0.03, 0.03, 0.6],
+      "color": "steel",
+      "collide": false
+    }
+  ]
+}

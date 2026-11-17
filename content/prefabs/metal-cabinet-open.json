@@ -1,0 +1,200 @@
+{
+  "formatVersion": 3,
+  "id": "metal-cabinet-open",
+  "name": "Metal cabinet (searched)",
+  "tags": ["industrial", "office"],
+  "colors": {
+    "steel": "#6f7a72",
+    "steel-dark": "#58625b",
+    "handle": "#2b2b2b",
+    "inside": "#2e3330",
+    "label": "#e9ebe8",
+    "box": "#b08a5a",
+    "box-dark": "#94704a",
+    "bin": "#3d6fa0",
+    "can": "#c0392b",
+    "paper": "#efece4"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, -0.2875],
+      "size": [1.3, 1.5, 0.025],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.6375, 0, 0],
+      "size": [0.025, 1.5, 0.6],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.6375, 0, 0],
+      "size": [0.025, 1.5, 0.6],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.475, 0],
+      "size": [1.3, 0.025, 0.6],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [1.3, 0.06, 0.6],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.06, -0.272],
+      "size": [1.25, 1.415, 0.004],
+      "color": "inside",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.52, 0.01],
+      "size": [1.25, 0.02, 0.55],
+      "color": "steel-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.99, 0.01],
+      "size": [1.25, 0.02, 0.55],
+      "color": "steel-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.495, 0],
+      "size": [1.32, 0.03, 0.62],
+      "color": "steel-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.706, 0.03, 0.6176],
+      "size": [0.645, 1.42, 0.02],
+      "color": "steel-dark",
+      "collide": false,
+      "yaw": -100
+    },
+    {
+      "type": "box",
+      "pos": [-0.7533, 0.62, 0.886],
+      "size": [0.03, 0.3, 0.025],
+      "color": "handle",
+      "collide": false,
+      "yaw": -100
+    },
+    {
+      "type": "box",
+      "pos": [0.706, 0.03, 0.6176],
+      "size": [0.645, 1.42, 0.02],
+      "color": "steel-dark",
+      "collide": false,
+      "yaw": -80
+    },
+    {
+      "type": "box",
+      "pos": [0.7533, 0.62, 0.886],
+      "size": [0.03, 0.3, 0.025],
+      "color": "handle",
+      "collide": false,
+      "yaw": -80
+    },
+    {
+      "type": "box",
+      "pos": [-0.35, 0.06, 0],
+      "size": [0.42, 0.3, 0.4],
+      "color": "box",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.2, 0.06, 0.02],
+      "size": [0.38, 0.2, 0.42],
+      "color": "bin",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.48, 0.06, 0],
+      "size": [0.2, 0.36, 0.2],
+      "color": "box-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.3, 0.54, 0],
+      "size": [0.5, 0.16, 0.3],
+      "color": "can",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.1, 0.54, 0.05],
+      "size": [0.1, 0.22, 0.1],
+      "color": "can",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.35, 0.54, 0],
+      "size": [0.35, 0.25, 0.35],
+      "color": "box",
+      "collide": false,
+      "yaw": 6
+    },
+    {
+      "type": "box",
+      "pos": [-0.45, 1.01, -0.05],
+      "size": [0.05, 0.3, 0.28],
+      "color": "paper",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.38, 1.01, -0.05],
+      "size": [0.05, 0.3, 0.28],
+      "color": "bin",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.31, 1.01, -0.05],
+      "size": [0.05, 0.3, 0.28],
+      "color": "paper",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.24, 1.01, -0.05],
+      "size": [0.05, 0.3, 0.28],
+      "color": "bin",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.17, 1.01, -0.05],
+      "size": [0.05, 0.3, 0.28],
+      "color": "paper",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.3, 1.01, 0],
+      "size": [0.45, 0.14, 0.32],
+      "color": "box-dark",
+      "collide": false
+    }
+  ]
+}

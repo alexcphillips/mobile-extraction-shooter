@@ -225,7 +225,8 @@ export class HandsHud {
     if (fireKey !== this.fireKey) {
       this.fireKey = fireKey;
       this.hud.button('fire').textContent = knife ? 'knife' : 'fire';
-      this.hud.button('aim').classList.toggle('idle', !gun);
+      // The knife and empty hands can't aim, so the aim button goes (2026-11-16).
+      this.hud.button('aim').classList.toggle('unarmed', !gun);
       this.hud.button('reload').classList.toggle('idle', !gun);
     }
   }

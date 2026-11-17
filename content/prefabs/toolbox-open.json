@@ -1,0 +1,70 @@
+{
+  "formatVersion": 3,
+  "id": "toolbox-open",
+  "name": "Toolbox (searched)",
+  "tags": ["industrial"],
+  "colors": {
+    "paint": "#b8312a",
+    "paint-dark": "#8e2520",
+    "steel": "#9aa0a4",
+    "inside": "#2a2a2a",
+    "handle": "#2b2b2b",
+    "tool": "#c9a227",
+    "grip": "#d24b2a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [0.56, 0.19, 0.24],
+      "color": "paint",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.189, 0],
+      "size": [0.53, 0.002, 0.21],
+      "color": "inside",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.19, -0.21],
+      "size": [0.56, 0.07, 0.012],
+      "color": "paint",
+      "collide": false,
+      "pitch": -75
+    },
+    {
+      "type": "box",
+      "pos": [0.06, 0.19, 0.01],
+      "size": [0.34, 0.05, 0.11],
+      "color": "paint-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.14, 0.2, -0.03],
+      "size": [0.18, 0.025, 0.03],
+      "color": "grip",
+      "collide": false,
+      "yaw": 20
+    },
+    {
+      "type": "box",
+      "pos": [-0.06, 0.2, -0.06],
+      "size": [0.12, 0.02, 0.02],
+      "color": "tool",
+      "collide": false,
+      "yaw": -15
+    },
+    {
+      "type": "box",
+      "pos": [0.18, 0.24, 0.0],
+      "size": [0.14, 0.03, 0.03],
+      "color": "steel",
+      "collide": false,
+      "yaw": 10
+    }
+  ]
+}

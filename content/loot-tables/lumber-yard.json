@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "id": "lumber-yard",
+  "name": "Lumber yard",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "wood-board",
+      "weight": 4
+    },
+    {
+      "item": "box-of-nails",
+      "weight": 4
+    },
+    {
+      "item": "steel-latch-set",
+      "weight": 2
+    },
+    {
+      "item": "steel-angle-bar",
+      "weight": 2
+    },
+    {
+      "item": "insulation-roll",
+      "weight": 1
+    },
+    {
+      "item": "steel-framing",
+      "weight": 1
+    }
+  ]
+}

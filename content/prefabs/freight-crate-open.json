@@ -1,0 +1,157 @@
+{
+  "formatVersion": 3,
+  "id": "freight-crate-open",
+  "name": "Freight crate (searched)",
+  "tags": ["industrial", "rail"],
+  "colors": {
+    "wood": "#a0805a",
+    "wood-dark": "#6e5638",
+    "stencil": "#2e2a26",
+    "mark": "#b0402e",
+    "inside": "#2a241c",
+    "board": "#c49a5e",
+    "carton": "#b08a5a"
+  },
+  "nodes": [
+    {
+      "type": "group",
+      "name": "Freight crate, open",
+      "pos": [0, 0, 0],
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [0, 0.08, 0],
+          "size": [1.56, 0.89, 1.06],
+          "color": "wood",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.97, 0],
+          "size": [1.44, 0.012, 0.94],
+          "color": "inside",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0, -0.38],
+          "size": [1.6, 0.1, 0.12],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0, 0.38],
+          "size": [1.6, 0.1, 0.12],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.1, 0],
+          "size": [1.63, 0.1, 1.13],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.87, 0],
+          "size": [1.63, 0.1, 1.13],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.75, 0.1, -0.56],
+          "size": [0.1, 0.87, 0.03],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.75, 0.1, 0.56],
+          "size": [0.1, 0.87, 0.03],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.75, 0.1, -0.56],
+          "size": [0.1, 0.87, 0.03],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.75, 0.1, 0.56],
+          "size": [0.1, 0.87, 0.03],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, -0.145, -0.562],
+          "size": [0.1, 1.36, 0.03],
+          "color": "wood-dark",
+          "collide": false,
+          "roll": -58
+        },
+        {
+          "type": "box",
+          "pos": [0, -0.145, 0.562],
+          "size": [0.1, 1.36, 0.03],
+          "color": "wood-dark",
+          "collide": false,
+          "roll": 58
+        },
+        {
+          "type": "box",
+          "pos": [1.05, 0, 0],
+          "size": [0.06, 1.12, 1.12],
+          "color": "wood",
+          "collide": false,
+          "roll": -14
+        },
+        {
+          "type": "box",
+          "pos": [1.09, 0.1, 0],
+          "size": [0.08, 0.1, 1.14],
+          "color": "wood-dark",
+          "collide": false,
+          "roll": -14
+        },
+        {
+          "type": "box",
+          "pos": [-0.4, 0.6, -0.15],
+          "size": [0.12, 0.7, 0.05],
+          "color": "board",
+          "collide": false,
+          "roll": 12
+        },
+        {
+          "type": "box",
+          "pos": [-0.25, 0.6, 0.05],
+          "size": [0.12, 0.62, 0.05],
+          "color": "board",
+          "collide": false,
+          "roll": 6
+        },
+        {
+          "type": "box",
+          "pos": [0.3, 0.97, 0.1],
+          "size": [0.45, 0.2, 0.35],
+          "color": "carton",
+          "collide": false,
+          "yaw": 14
+        },
+        {
+          "type": "box",
+          "pos": [0.25, 0.975, -0.3],
+          "size": [0.5, 0.02, 0.25],
+          "color": "stencil",
+          "collide": false
+        }
+      ]
+    }
+  ]
+}

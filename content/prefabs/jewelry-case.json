@@ -1,0 +1,99 @@
+{
+  "formatVersion": 3,
+  "id": "jewelry-case",
+  "name": "Jewelry case",
+  "tags": ["store", "home"],
+  "colors": {
+    "wood": "#4a2c20",
+    "trim": "#c9a44a",
+    "velvet": "#6a1f2e"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [0.5, 0.03, 0.35],
+      "color": "wood"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.31999999999999995, 0],
+      "size": [0.5, 0.03, 0.35],
+      "color": "wood"
+    },
+    {
+      "type": "box",
+      "pos": [-0.235, 0.03, 0],
+      "size": [0.03, 0.29, 0.35],
+      "color": "wood"
+    },
+    {
+      "type": "box",
+      "pos": [0.235, 0.03, 0],
+      "size": [0.03, 0.29, 0.35],
+      "color": "wood"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.03, -0.15999999999999998],
+      "size": [0.44, 0.29, 0.03],
+      "color": "wood"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.345, 0],
+      "size": [0.51, 0.01, 0.36],
+      "color": "trim",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.21, 0, -0.13],
+      "size": [0.04, 0.012, 0.04],
+      "color": "trim",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.21, 0, 0.13],
+      "size": [0.04, 0.012, 0.04],
+      "color": "trim",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.21, 0, -0.13],
+      "size": [0.04, 0.012, 0.04],
+      "color": "trim",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.21, 0, 0.13],
+      "size": [0.04, 0.012, 0.04],
+      "color": "trim",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.03, -0.01],
+      "size": [0.436, 0.012, 0.29],
+      "color": "velvet",
+      "collide": false
+    },
+    {
+      "type": "door",
+      "pos": [0, 0.03, 0.16499999999999998],
+      "size": [0.44, 0.29],
+      "thickness": 0.02,
+      "color": "#5a3626"
+    },
+    {
+      "type": "lootSpawn",
+      "pos": [0, 0.041999999999999996, -0.02],
+      "yaw": 0,
+      "lootTable": "jewelry",
+      "chance": 0.85
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "id": "foreman-luxuries",
+  "name": "The foreman's luxuries",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "estate-reserve-cabernet",
+      "weight": 3
+    },
+    {
+      "item": "black-gold-coffee-beans",
+      "weight": 3
+    },
+    {
+      "item": "midnight-onyx-fountain-pen",
+      "weight": 2
+    },
+    {
+      "item": "thermobrew",
+      "weight": 1.5
+    }
+  ]
+}

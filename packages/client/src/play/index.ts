@@ -875,6 +875,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let screenOpen = false;
   // Packing magazines last frame (MG-2): it starts by letting go of a toggled aim.
   let wasPacking = false;
+  // The hand last frame: switching weapons lets go of a toggled aim (2026-11-16).
+  let lastHand: string | null = null;
   // What the open screen shows beside your gear (a container or body is searched while open).
   let openTarget: Owner | null = null;
   const pending: InventoryAction[] = [];
@@ -1212,7 +1214,12 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.fire = fire;
     if (!!player.packing && !wasPacking) controls.dropAim();
     wasPacking = !!player.packing;
-    input.aim = controls.aim;
+    // A new weapon starts at the hip (a lean stays, without aim on lean's aim), and the knife
+    // or empty hands can't aim at all (controls.canAim gates every aim, aim on lean too).
+    if (lastHand !== null && player.gear.hand !== lastHand) controls.dropAim();
+    lastHand = player.gear.hand;
+    controls.canAim = !!held;
+    input.aim = controls.aim && !!held;
     input.thumb = !inputMode.desktop;
     input.reload = controls.reload;
     input.quickReload = controls.quickReload;

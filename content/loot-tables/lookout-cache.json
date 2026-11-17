@@ -1,0 +1,30 @@
+{
+  "formatVersion": 1,
+  "id": "lookout-cache",
+  "name": "Lookout's cache",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "ammo-762x39",
+      "weight": 3,
+      "count": [10, 30]
+    },
+    {
+      "item": "buckshot",
+      "weight": 3,
+      "count": [6, 15]
+    },
+    {
+      "item": "bottle-of-water",
+      "weight": 2
+    },
+    {
+      "item": "protein-power",
+      "weight": 2
+    },
+    {
+      "item": "military-binoculars",
+      "weight": 0.4
+    }
+  ]
+}

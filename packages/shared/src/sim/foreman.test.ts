@@ -174,6 +174,75 @@ describe('the foreman’s crew (MT-12)', () => {
     expect(visited).toEqual(new Set([0, 1]));
   });
 
+  it('a guard with a post of his own starts on it and walks it, out of the squad (2026-11-17)', () => {
+    const type = (id: string, extra: Partial<EnemyDef> = {}): EnemyDef => ({
+      formatVersion: 2,
+      id,
+      name: id,
+      faction: 'boss',
+      loadout: 'kit',
+      skill: CREW,
+      ...extra,
+    });
+    const kit: LoadoutDef = {
+      formatVersion: 1,
+      id: 'kit',
+      weapons: [{ weight: 1, item: 'rifle', spare: [30, 30] }],
+    };
+    const line = (x0: number, x1: number, z: number): PatrolDef => ({
+      points: [
+        { x: x0, y: 0, z, wait: 2, radius: 1 },
+        { x: x1, y: 0, z, wait: 2, radius: 1 },
+      ],
+      repeatFrom: 0,
+      loop: true,
+    });
+    const content: EnemyContent = {
+      types: new Map([
+        ['foreman', type('foreman', { guards: { enemy: 'guard', count: 3 } })],
+        ['guard', type('guard')],
+      ]),
+      loadouts: new Map([['kit', kit]]),
+      tables: new Map(),
+      patrols: new Map([
+        ['pt', line(0, 10, 0)],
+        ['post', line(-20, -30, 30)],
+      ]),
+    };
+    const map = {
+      markers: [
+        {
+          type: 'enemySpawn',
+          id: 'b',
+          enemy: 'foreman',
+          x: 0,
+          y: 0,
+          z: 0,
+          yaw: 0,
+          patrol: 'pt',
+          guardPatrols: ['post'],
+        },
+      ],
+      zones: [],
+      patrols: [],
+    } as unknown as CompiledMap;
+    const state = createState(3);
+    const world = makeWorld();
+    spawnCharacter(state, world, 70, 70, 0, 1);
+    startRaid(state, map, 1200);
+    const [boss, posted, ...floor] = startEnemies(state, world, map, items, content);
+    // the first guard starts at his post's first stop, not in the formation
+    expect([Math.round(posted!.x), Math.round(posted!.z)]).toEqual([-20, 30]);
+    expect(posted!.ai!.squad).toBeUndefined();
+    expect(floor.every((c) => c.ai!.squad === boss!.id)).toBe(true);
+    // and walks his own patrol, staying on it while the boss walks his
+    const nav = new NavGrid(world);
+    run(state, world, nav, 30);
+    expect(posted!.z).toBeGreaterThan(25);
+    expect(posted!.x).toBeLessThan(-15);
+    expect(floor.every((c) => c.ai!.activity === 'follow')).toBe(true);
+  });
+
   it('pinned behind cover, you draw exactly one flanker, not him, and only after a while', () => {
     for (const seed of [4, 5, 6]) {
       const out = flanks(seed);

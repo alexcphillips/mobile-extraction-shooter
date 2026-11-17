@@ -1,3 +1,4 @@
+import { MOVEMENT } from '../sim/movement';
 import { CellWalk } from '../world/grid';
 import { DIR_Q, DIR_R, type NavGrid } from './nav-grid';
 
@@ -9,6 +10,11 @@ export type PathResult = 'found' | 'partial' | 'none';
 
 /** A search stops after expanding this many nodes; about 60 m of open ground each way. */
 export const MAX_EXPAND = 20000;
+/**
+ * Stepping onto a node that wades costs this much more across (2026-11-16): wading is at
+ * MOVEMENT.wadeSpeed, so the cost is the time. Only raises costs, so the estimate holds.
+ */
+const WADE_COST = 1 / MOVEMENT.wadeSpeed;
 /** Smoothing tries to skip at most this many nodes in one straight line. */
 const MAX_SKIP = 64;
 
@@ -139,7 +145,8 @@ export function findPath(
     for (let d = 0; d < 8; d++) {
       const m = nav.neighbor(n, d);
       if (m < 0 || s.closed[m] === s.search) continue;
-      let g = s.g[n]! + (d < 4 ? cs : diagonal) + Math.abs(nav.nodeY(m) - hn);
+      const across = (d < 4 ? cs : diagonal) * (nav.wading[m] ? WADE_COST : 1);
+      let g = s.g[n]! + across + Math.abs(nav.nodeY(m) - hn);
       if (shun && near(shun, nav.nodeX(m), nav.nodeY(m), nav.nodeZ(m))) g += shun.cost;
       if (s.seen[m] === s.search && g >= s.g[m]!) continue;
       if (s.size >= s.heap.length) break search;
@@ -225,6 +232,15 @@ function crosses(nav: NavGrid, avoid: Avoid, a: number, b: number): boolean {
   return false;
 }
 
+/**
+ * Whether a skip from chain i to k must stay dry: both ends are, so a straight line through
+ * water would cut a corner the search paid to go round (a bridge's approach). One end
+ * wading, the path was in the water anyway.
+ */
+function dryLine(nav: NavGrid, s: Scratch, i: number, k: number): boolean {
+  return !nav.wading[s.chain[i]!] && !nav.wading[s.chain[k]!];
+}
+
 function smooth(nav: NavGrid, s: Scratch, len: number, out: number[], avoid?: Avoid): void {
   let n = s.chain[0]!;
   out.push(nav.nodeX(n), nav.nodeY(n), nav.nodeZ(n));
@@ -234,7 +250,7 @@ function smooth(nav: NavGrid, s: Scratch, len: number, out: number[], avoid?: Av
     while (
       j + 1 < len &&
       j + 1 - i <= MAX_SKIP &&
-      straight(nav, s.walk, s.chain[i]!, s.chain[j + 1]!) &&
+      straight(nav, s.walk, s.chain[i]!, s.chain[j + 1]!, dryLine(nav, s, i, j + 1)) &&
       !(avoid && crosses(nav, avoid, s.chain[i]!, s.chain[j + 1]!))
     )
       j++;
@@ -247,9 +263,9 @@ function smooth(nav: NavGrid, s: Scratch, len: number, out: number[], avoid?: Av
 /**
  * Can a body walk straight from node a to node b? Follows the line through every cell it
  * crosses, each step a link between side-by-side columns, so it can't slip through a
- * corner, over a drop or into a wall.
+ * corner, over a drop or into a wall. With dry, not through a node that wades either.
  */
-export function straight(nav: NavGrid, walk: CellWalk, a: number, b: number): boolean {
+export function straight(nav: NavGrid, walk: CellWalk, a: number, b: number, dry = false): boolean {
   const ax = nav.nodeX(a);
   const az = nav.nodeZ(a);
   const dx = nav.nodeX(b) - ax;
@@ -282,7 +298,7 @@ export function straight(nav: NavGrid, walk: CellWalk, a: number, b: number): bo
     let d = 0;
     while (d < 4 && (DIR_Q[d] !== dq || DIR_R[d] !== dr)) d++;
     node = nav.neighbor(node, d);
-    if (node < 0) return false;
+    if (node < 0 || (dry && nav.wading[node])) return false;
   }
   return node === b;
 }

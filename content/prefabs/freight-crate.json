@@ -1,0 +1,132 @@
+{
+  "formatVersion": 3,
+  "id": "freight-crate",
+  "name": "Freight crate",
+  "tags": ["industrial", "rail"],
+  "colors": {
+    "wood": "#a0805a",
+    "wood-dark": "#6e5638",
+    "stencil": "#2e2a26",
+    "mark": "#b0402e",
+    "inside": "#2a241c"
+  },
+  "nodes": [
+    {
+      "type": "group",
+      "name": "Freight crate",
+      "pos": [0, 0, 0],
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [0, 0.08, 0],
+          "size": [1.56, 0.97, 1.06],
+          "color": "wood"
+        },
+        {
+          "type": "box",
+          "pos": [0, 0, -0.38],
+          "size": [1.6, 0.1, 0.12],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0, 0.38],
+          "size": [1.6, 0.1, 0.12],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.1, 0],
+          "size": [1.63, 0.1, 1.13],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.95, 0],
+          "size": [1.63, 0.1, 1.13],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.75, 0.1, -0.56],
+          "size": [0.1, 0.95, 0.03],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.75, 0.1, 0.56],
+          "size": [0.1, 0.95, 0.03],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.75, 0.1, -0.56],
+          "size": [0.1, 0.95, 0.03],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.75, 0.1, 0.56],
+          "size": [0.1, 0.95, 0.03],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, -0.105, -0.562],
+          "size": [0.1, 1.36, 0.03],
+          "color": "wood-dark",
+          "collide": false,
+          "roll": -58
+        },
+        {
+          "type": "box",
+          "pos": [0, -0.105, 0.562],
+          "size": [0.1, 1.36, 0.03],
+          "color": "wood-dark",
+          "collide": false,
+          "roll": 58
+        },
+        {
+          "type": "box",
+          "pos": [0, 1.05, 0],
+          "size": [1.4, 0.015, 0.03],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.2, 0.45, 0.58],
+          "size": [0.55, 0.22, 0.01],
+          "color": "stencil",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.2, 0.71, 0.58],
+          "size": [0.4, 0.07, 0.01],
+          "color": "stencil",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.42, 0.5, 0.58],
+          "size": [0.18, 0.18, 0.01],
+          "color": "mark",
+          "collide": false
+        }
+      ],
+      "loot": {
+        "container": "freight-crate",
+        "searched": "freight-crate-open"
+      }
+    }
+  ]
+}

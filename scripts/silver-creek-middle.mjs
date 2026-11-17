@@ -67,7 +67,7 @@ function kit(h, s) {
 // ---------------------------------------------------------------------------- the middle
 
 export function buildMiddle(h, s) {
-  const { box, drawn, group, prefab, along, C, r2 } = h;
+  const { box, drawn, group, prefab, along, C, r2, groundAt } = h;
   const { on, bedded, logLine, copse, trailPile } = kit(h, s);
   const { jamCenter, jamHalf, bridgeX, fordX, TRAIL_Y } = s;
 
@@ -77,19 +77,20 @@ export function buildMiddle(h, s) {
   // row 2's cut-through is at the west, row 4's at the east, row 3 stops short with loose
   // logs, and row 5 has one tall pile mid-row to break the line along the deck's south face.
   const ROWS = [
-    { z: 33, piles: [106, 112.1, 118.2], tall: [], loose: [[125.2, 32.4, 16]] },
-    { z: 37.5, piles: [107.5, 116.5, 122.6], tall: [0, 1, 2] }, // cut-through x 110.5–113.5
+    // Piles 6.6 m apart end to end (2026-11-16: 6.1 m put each one's logs into the next).
+    { z: 33, piles: [105.5, 112.1, 118.7], tall: [], loose: [[125.2, 32.4, 16]] },
+    { z: 37.5, piles: [107.5, 116.5, 123.1], tall: [0, 1, 2] }, // cut-through x 110.5–113.5
     {
       z: 42,
-      piles: [106, 112.1],
+      piles: [105.5, 112.1],
       tall: [],
       loose: [
-        [118.2, 41.5, 4],
-        [118.8, 42.6, -7],
+        [118.7, 41.5, 4],
+        [119.3, 42.6, -7],
       ],
     },
-    { z: 46.5, piles: [106, 112.1, 121.5], tall: [0, 1, 2] }, // cut-through x 115.1–118.5
-    { z: 51, piles: [106, 112.1, 118.2], tall: [1] },
+    { z: 46.5, piles: [105.5, 112.1, 121.5], tall: [0, 1, 2] }, // cut-through x 115.1–118.5
+    { z: 51, piles: [105.5, 112.1, 118.7], tall: [1] },
   ];
   const deck = [];
   ROWS.forEach((row, k) => {
@@ -114,13 +115,22 @@ export function buildMiddle(h, s) {
   // The loader crane: the graybox's collision (cab perch at 6.6 m by ladder, player-only; the
   // engine house a 3.3 m drop beside it) dressed with cab windows, a counterweight and an
   // exhaust, and its boom swung out over the deck with a log in the grapple (drawn only).
+  // Rebuilt 2026-11-17 (silver-creek.md → Log deck): the cab and tower keep their solids;
+  // added a slewing ring, a roof lip, a lattice jib, outriggers on the west corners, and the
+  // engine house made a room (doors north and south, the engine, a bench with a toolbox; its
+  // roof is still the 3.3 m step down from the cab), a fuel tank beside it, and the
+  // operator's bag left on the cab roof (`fire-watch`), the prize for climbing up.
   const tip = [117.5, 5.6, 44];
+  const ck = buildingKit(h);
+  const lerp = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+  const jibTop = [130, 6.5, 37];
+  const jibLow = [130, 5.3, 37];
+  const tipLow = [tip[0], tip[1] - 0.5, tip[2]];
+  const CH = { x0: 131.5, x1: 136, z0: 35, z1: 39, fl: 0.1, top: 3.1 };
   const crane = group('Loader crane', [
-    box(127.5, 34.5, 132.5, 39.5, -0.3, 1, C['dark-concrete'], { id: 'crane-base' }),
+    box(127.5, 34.5, 131.5, 39.5, -0.3, 1, C['dark-concrete'], { id: 'crane-base' }),
     box(129, 36, 131, 38, 1, 4.6, C.metal, { id: 'crane-tower' }),
     box(128.5, 35.5, 131.5, 38.5, 4.6, 6.6, C.ladder, { id: 'crane-cab' }),
-    // The engine house: a 3.3 m drop from the cab, then 3.3 m to the ground (MT-3).
-    box(131.5, 35, 136, 39, -0.3, 3.3, C.metal, { id: 'crane-house' }),
     {
       type: 'ladder',
       id: 'crane-ladder',
@@ -131,7 +141,66 @@ export function buildMiddle(h, s) {
     },
     drawn(128.45, 35.8, 131.55, 38.2, 5.0, 6.1, C.glass, { id: 'crane-windows-ns' }),
     drawn(128.8, 35.45, 131.2, 38.55, 5.0, 6.1, C.glass, { id: 'crane-windows-ew' }),
+    drawn(128.35, 35.35, 131.65, 38.65, 6.45, 6.58, C['steel-dark'], { id: 'crane-cab-lip' }),
+    drawn(128.4, 35.4, 131.6, 38.6, 4.6, 4.75, C['steel-dark'], { id: 'crane-cab-sill' }),
+    {
+      type: 'cylinder',
+      id: 'crane-slew-ring',
+      pos: [130, 4.3, 37],
+      radius: 1.6,
+      height: 0.3,
+      sides: 12,
+      color: C.dark,
+      collide: false,
+    },
     drawn(127.3, 36.2, 128.5, 37.8, 4.7, 5.7, C['steel-dark'], { id: 'crane-counterweight' }),
+    drawn(127.25, 36.15, 127.3, 37.85, 5.0, 5.4, C.hazard, { id: 'crane-counterweight-stripe' }),
+    // the jib: the old top chord, a lower chord and lacing between them
+    along(jibTop, tip, 0.55, 0.6, C.ladder, { id: 'crane-jib' }),
+    along(jibLow, tipLow, 0.18, 0.18, C.ladder, { id: 'crane-jib-low', collide: false }),
+    ...[0, 1, 2, 3, 4, 5].map((k) =>
+      along(lerp(jibLow, tipLow, k / 6), lerp(jibTop, tip, (k + 1) / 6), 0.08, 0.08, C.ladder, {
+        id: `crane-jib-lacing-${k + 1}`,
+        collide: false,
+      }),
+    ),
+    drawn(tip[0] - 0.03, tip[2] - 0.03, tip[0] + 0.03, tip[2] + 0.03, 3.5, tip[1], C.dark, {
+      id: 'crane-cable',
+    }),
+    drawn(tip[0] - 0.5, tip[2] - 0.3, tip[0] + 0.5, tip[2] + 0.3, 3.1, 3.5, C['steel-dark'], {
+      id: 'crane-grapple',
+    }),
+    logLine([tip[0] - 3, 2.85, tip[2]], [tip[0] + 3, 2.85, tip[2] + 0.4], 0.27, C.log, {
+      id: 'crane-log',
+      collide: false,
+    }),
+    // outriggers on the west corners, their pads on the ground
+    ...[
+      [127.6, 34.6, 126.0, 33.2],
+      [127.6, 39.4, 126.0, 40.8],
+    ].flatMap(([x0, z0, x1, z1], k) => [
+      along([x0, 0.7, z0], [x1, 0.25, z1], 0.25, 0.25, C.ladder, {
+        id: `crane-outrigger-${k + 1}`,
+        collide: true,
+      }),
+      drawn(x1 - 0.45, z1 - 0.45, x1 + 0.45, z1 + 0.45, 0, 0.15, C['steel-dark'], {
+        id: `crane-outrigger-pad-${k + 1}`,
+      }),
+    ]),
+    // The engine house: walls, the roof at 3.3 (the step down), doors north and south.
+    box(CH.x0, CH.z0, CH.x1, CH.z1, -0.3, CH.fl, C['dark-concrete'], { id: 'crane-house-floor' }),
+    ck.wX('crane-house-n', CH.x0, CH.x1, CH.z0 + 0.1, CH.fl, CH.top, C.metal, [
+      ck.win(132.7, 1.0),
+      ck.door(134.8),
+    ]),
+    ck.wX('crane-house-s', CH.x0, CH.x1, CH.z1 - 0.1, CH.fl, CH.top, C.metal, [ck.door(133.0)]),
+    ck.wZ('crane-house-w', CH.x0 + 0.1, CH.z0 + 0.2, CH.z1 - 0.2, CH.fl, CH.top, C.metal),
+    ck.wZ('crane-house-e', CH.x1 - 0.1, CH.z0 + 0.2, CH.z1 - 0.2, CH.fl, CH.top, C.metal),
+    box(CH.x0 - 0.05, CH.z0 - 0.05, CH.x1 + 0.05, CH.z1 + 0.05, CH.top, 3.3, C.metal, {
+      id: 'crane-house',
+    }),
+    ck.doorX('crane-house-door-n', 134.8, CH.z0 + 0.1, CH.fl),
+    ck.doorX('crane-house-door-s', 133.0, CH.z1 - 0.1, CH.fl),
     {
       type: 'cylinder',
       id: 'crane-exhaust',
@@ -143,39 +212,108 @@ export function buildMiddle(h, s) {
       collide: false,
     },
     drawn(136, 35.6, 136.03, 38.4, 0.6, 2.4, C['steel-dark'], { id: 'crane-louvres' }),
-    drawn(132.4, 39, 133.5, 39.03, 0, 2.1, C['steel-dark'], { id: 'crane-house-door' }),
-    along([130, 6.5, 37], tip, 0.55, 0.6, C.ladder, { id: 'crane-jib' }),
-    drawn(tip[0] - 0.03, tip[2] - 0.03, tip[0] + 0.03, tip[2] + 0.03, 3.5, tip[1], C.dark, {
-      id: 'crane-cable',
-    }),
-    drawn(tip[0] - 0.5, tip[2] - 0.3, tip[0] + 0.5, tip[2] + 0.3, 3.1, 3.5, C['steel-dark'], {
-      id: 'crane-grapple',
-    }),
-    logLine([tip[0] - 3, 2.85, tip[2]], [tip[0] + 3, 2.85, tip[2] + 0.4], 0.27, C.log, {
-      id: 'crane-log',
+    // inside: the engine along the north wall, its radiator, a bench with the toolbox, a lamp
+    box(131.9, 35.5, 133.9, 36.8, CH.fl, 1.5, C.machine, { id: 'crane-engine' }),
+    drawn(133.9, 35.6, 134.0, 36.7, CH.fl + 0.2, 1.4, C.dark, { id: 'crane-radiator' }),
+    drawn(132.6, 35.9, 133.2, 36.4, 1.5, 1.9, C['steel-dark'], { id: 'crane-engine-filter' }),
+    box(135.1, 36.9, CH.x1 - 0.2, CH.z1 - 0.2, CH.fl, 1.0, C.timber, { id: 'crane-bench' }),
+    prefab('toolbox', 135.45, 37.7, { id: 'crane-toolbox', yaw: 90 }, 1.0),
+    drawn(133.6, 36.9, 134.0, 37.3, 2.95, 3.08, C.lamp, { id: 'crane-house-lamp' }),
+    // the fuel tank on its saddles east of the house: waist cover
+    logLine([136.6, 1.0, 36.3], [139.0, 1.0, 36.3], 0.55, C['paint-red'], {
+      id: 'crane-fuel-tank',
       collide: false,
     }),
+    box(136.6, 35.75, 139.0, 36.85, 0.45, 1.55, C['paint-red'], {
+      id: 'crane-fuel-tank-solid',
+      invisible: true,
+      stopsShots: true,
+    }),
+    ...[136.9, 138.7].map((x, k) =>
+      box(x - 0.15, 35.8, x + 0.15, 36.8, 0, 0.45, C['steel-dark'], {
+        id: `crane-fuel-saddle-${k + 1}`,
+      }),
+    ),
+    {
+      type: 'lootSpawn',
+      id: 'crane-cab-bag',
+      pos: [129.2, 6.6, 36.0],
+      lootTable: 'fire-watch',
+      chance: 0.4,
+    },
   ]);
-
   // The rollway: logs pushed off the deck's east end into the pond, and a pile left on the
-  // bank. Cover where the boom's west end meets the shore.
+  // bank. Cover where the boom's west end meets the shore. Rebuilt 2026-11-17: four timber
+  // skids down the bank into the water (drawn), a log held at the top by the stop log
+  // chained to two posts (both waist-high and solid: low cover facing the boom's west end,
+  // too low to stand on as a perch), one mid-roll and one afloat (drawn), and a rack of cant
+  // hooks by the deck.
+  const gy = (x, z) => r2(Math.max(groundAt(x, z), -1.4));
+  const RZ = [46.6, 48.4, 50.2, 52.0];
   const rollway = group('Rollway', [
     prefab('log-pile', 134.2, 47.6, { yaw: 84 }, 0),
-    ...[
-      [
-        [136.2, 0.2, 50.8],
-        [142.5, -0.9, 52.2],
-      ],
-      [
-        [137.5, 0.1, 44.6],
-        [143.2, -0.95, 47.4],
-      ],
-      [
-        [138, -0.2, 49],
-        [144.4, -0.8, 49.9],
-      ],
-    ].map(([a, b], k) =>
-      logLine(a, b, 0.26, C.log, { id: `rollway-log-${k + 1}`, collide: false }),
+    ...RZ.flatMap((z, k) => [
+      along(
+        [135.8, gy(135.8, z) + 0.1, z],
+        [139.0, gy(139.0, z) + 0.1, z],
+        0.22,
+        0.16,
+        C['timber-dark'],
+        {
+          id: `rollway-skid-${k + 1}a`,
+          collide: false,
+        },
+      ),
+      along(
+        [139.0, gy(139.0, z) + 0.1, z],
+        [143.2, gy(143.2, z) + 0.1, z],
+        0.22,
+        0.16,
+        C['timber-dark'],
+        {
+          id: `rollway-skid-${k + 1}b`,
+          collide: false,
+        },
+      ),
+    ]),
+    // the waiting log and the stop log in front of it, both solid; the stop posts and chains
+    logLine([136.6, 0.36, 46.1], [136.6, 0.36, 52.6], 0.3, C.log, { id: 'rollway-log-top' }),
+    logLine([137.4, 0.28, 46.3], [137.4, 0.28, 52.4], 0.22, C['log-end'], {
+      id: 'rollway-stop-log',
+    }),
+    ...[45.8, 52.8].flatMap((z, k) => [
+      box(137.75, z - 0.12, 137.99, z + 0.12, 0, 1.0, C['timber-dark'], {
+        id: `rollway-post-${k + 1}`,
+      }),
+      along([137.87, 0.9, z], [137.4, 0.4, z + (k ? -0.5 : 0.5)], 0.04, 0.04, C.dark, {
+        id: `rollway-chain-${k + 1}`,
+        collide: false,
+      }),
+    ]),
+    logLine(
+      [140.4, gy(140.4, 49.4) + 0.38, 46.4],
+      [140.6, gy(140.6, 49.4) + 0.38, 52.4],
+      0.28,
+      C.log,
+      {
+        id: 'rollway-log-rolling',
+      },
+    ),
+    logLine([146.2, -0.62, 46.8], [145.0, -0.62, 52.8], 0.3, C.log, {
+      id: 'rollway-log-afloat',
+    }),
+    // the cant hook rack: two posts, a bar, three hooks leaning on it
+    ...[133.0, 134.6].map((x, k) =>
+      drawn(x - 0.05, 53.75, x + 0.05, 53.85, 0, 1.1, C['timber-dark'], {
+        id: `rollway-rack-post-${k + 1}`,
+      }),
+    ),
+    drawn(132.9, 53.76, 134.7, 53.84, 1.0, 1.08, C['timber-dark'], { id: 'rollway-rack-bar' }),
+    ...[133.3, 133.8, 134.3].map((x, k) =>
+      along([x, 0, 54.35], [x + 0.08, 1.15, 53.85], 0.05, 0.05, C.timber, {
+        id: `rollway-cant-hook-${k + 1}`,
+        collide: false,
+      }),
     ),
     on('rock-large', 129.5, 52.6, { yaw: 25 }),
   ]);
@@ -187,7 +325,7 @@ export function buildMiddle(h, s) {
   // vault 1.2 m at a time): the tall tops are a player-only layer over the maze, seen from
   // everywhere in it and dropped off unhurt (2.4 m).
   const BLOCKS = [
-    [101, 73, 110, 77, ['TT', 'TT', 'TL']],
+    [101, 73, 110, 77, ['TT', 'TT', 'T-']], // its last stack toppled: below
     [113, 73, 117, 83, ['LL', 'LL', 'L-']],
     [121, 73, 132, 77, ['TT', 'TT', 'TT']],
     [101, 80, 105, 90, ['LT', 'TT', 'TT']],
@@ -220,8 +358,8 @@ export function buildMiddle(h, s) {
   });
   yard.push(
     prefab('forklift', 120.2, 82.4, { yaw: 32 }, 0),
-    prefab('wood-pallet', 106.8, 78.6, { yaw: 8 }, 0),
-    prefab('wood-pallet', 108.1, 78.9, { yaw: -5 }, 0),
+    prefab('wood-pallet', 111.5, 79.2, { yaw: 8 }, 0),
+    prefab('wood-pallet', 111.7, 80.6, { yaw: -5 }, 0),
     prefab('steel-barrel', 133.2, 79.2, {}, 0),
     // The tally shack at the yard's gate, off the lane from the highway.
     prefab(
@@ -233,6 +371,263 @@ export function buildMiddle(h, s) {
     ),
     prefab('flood-light', 99.8, 79.4, { yaw: 120 }, 0),
   );
+
+  // The toppled stack (2026-11-17, the user's pick): block 1's last tall stack lost its top
+  // half into the gate lane. The bottom half stands where it was, slid 0.15 m; the top half
+  // leans on its south face as a low ramp (a way up for players, not the AI), its straps
+  // snapped, and boards spilled across the lane as drawn clutter.
+  {
+    const [x, z] = [107.98, 76.45];
+    const LOW = { lumber: '#c49a5e', 'lumber-dark': '#a57d48' };
+    yard.push(prefab('lumber-stack', x, z, { id: 'toppled-base' }, 0));
+    // the slab, 0.3 m thick: its top edge propped 0.6 m up the base's south face (its end's
+    // bottom corner on the face), its far end on the ground. 0.6 m to the base's top is a
+    // jump for a player and past the AI's 0.45 m step, so the stack tops stay player-only.
+    const h = 0.3;
+    const zb = z + 2.5;
+    let th = 0.4;
+    let za = z + 0.6;
+    let topB = 0.02 + h;
+    for (let i = 0; i < 4; i++) {
+      za = z + 0.6 + h * Math.sin(th);
+      topB = 0.02 + h * Math.cos(th);
+      th = Math.atan2(0.6 - topB, zb - za);
+    }
+    const [ny, nz] = [Math.cos(th) * (h / 2), Math.sin(th) * (h / 2)];
+    yard.push(
+      along([x + 0.4, 0.6 - ny, za - nz], [x + 0.4, topB - ny, zb - nz], 4.4, h, LOW.lumber, {
+        id: 'toppled-half',
+        collide: true,
+      }),
+      along(
+        [x + 0.4, 0.6 + 0.005, za + 0.05],
+        [x + 0.4, topB + 0.005, zb - 0.05],
+        4.2,
+        0.01,
+        LOW['lumber-dark'],
+        { id: 'toppled-half-grain' },
+      ),
+    );
+    // board joints across its top and its two straps down the slope, drawn, so it reads as
+    // a slid stack, not a ramp
+    const topAt = (t) => [0.6 + (topB - 0.6) * t, za + (zb - za) * t];
+    for (let k = 1; k < 7; k++) {
+      const [ty, tz] = topAt(k / 7);
+      yard.push(
+        drawn(
+          x + 0.4 - 2.2,
+          tz - 0.02,
+          x + 0.4 + 2.2,
+          tz + 0.02,
+          ty,
+          ty + 0.012,
+          LOW['lumber-dark'],
+          {
+            id: `toppled-joint-${k}`,
+            pitch: r2((th * 180) / Math.PI),
+          },
+        ),
+      );
+    }
+    for (const [k, dx] of [-1.4, 1.4].entries()) {
+      const [y0, z0] = topAt(0.02);
+      const [y1, z1] = topAt(0.98);
+      yard.push(
+        along(
+          [x + 0.4 + dx, y0 + 0.015, z0],
+          [x + 0.4 + dx, y1 + 0.015, z1],
+          0.05,
+          0.01,
+          '#6e7378',
+          {
+            id: `toppled-half-strap-${k + 1}`,
+          },
+        ),
+      );
+    }
+    // snapped straps hanging off the base, drawn
+    for (const [k, dx] of [-1.4, 1.4].entries())
+      yard.push(
+        along([x + dx, 1.2, z + 0.62], [x + dx + 0.2, 0.35, z + 0.75], 0.05, 0.01, C.steel, {
+          id: `toppled-strap-${k + 1}`,
+        }),
+      );
+    // boards spilled across the lane: [x, z, yaw°], each 3.6 × 0.15 × 0.04, drawn
+    const boards = [
+      [104.6, 79.6, 12],
+      [106.2, 80.3, -8],
+      [109.4, 79.9, 24],
+      [110.6, 80.9, -16],
+      [107.6, 81.1, 4],
+      [105.1, 81.3, -28],
+    ];
+    boards.forEach(([bx, bz, yaw], k) =>
+      yard.push(
+        drawn(
+          bx - 1.8,
+          bz - 0.075,
+          bx + 1.8,
+          bz + 0.075,
+          0.01 + (k % 2) * 0.04,
+          0.05 + (k % 2) * 0.04,
+          k % 2 ? LOW['lumber-dark'] : LOW.lumber,
+          {
+            id: `spilled-board-${k + 1}`,
+            yaw,
+          },
+        ),
+      ),
+    );
+  }
+
+  // The grading shed (2026-11-17, the user's pick): open-sided, roofed, between the yard's
+  // east blocks and the saw hall's west way in, where boards were graded before stacking. A
+  // long grading table down the middle (waist cover, 0.95 m) splits it into two aisles of
+  // 2.2 m; the roof (3.3 to 3.7 m, out of reach from any stack top: the nearest is 3 m off)
+  // is overhead cover from the stack-top perches. The grader's things on the table are a
+  // loose spot (`lumber-yard`); a tally board at the south end, a pallet of sticker bundles,
+  // a hose reel and a water barrel for fires.
+  {
+    const [x0, x1, z0, z1] = [131.5, 137.0, 83.5, 92.5];
+    const xm = (x0 + x1) / 2;
+    const n = [];
+    // posts: corners and the middle of each long side
+    const posts = [
+      [x0, z0],
+      [x1, z0],
+      [x0, (z0 + z1) / 2],
+      [x1, (z0 + z1) / 2],
+      [x0, z1],
+      [x1, z1],
+    ];
+    posts.forEach(([px, pz], k) =>
+      n.push(
+        box(px - 0.1, pz - 0.1, px + 0.1, pz + 0.1, 0, px === x0 ? 3.62 : 3.22, C.timber, {
+          id: `grading-post-${k + 1}`,
+        }),
+      ),
+    );
+    // the roof: a mono-pitch slab falling east, with corrugation ribs drawn on it
+    const [ry0, ry1] = [3.75, 3.35];
+    n.push(
+      along(
+        [x0 - 0.4, ry0, (z0 + z1) / 2],
+        [x1 + 0.4, ry1, (z0 + z1) / 2],
+        z1 - z0 + 0.8,
+        0.12,
+        C.roof,
+        {
+          id: 'grading-roof',
+          collide: true,
+        },
+      ),
+    );
+    for (let k = 0; k < 9; k++) {
+      const rz = z0 - 0.2 + k * ((z1 - z0 + 0.4) / 8);
+      n.push(
+        along(
+          [x0 - 0.4, ry0 + 0.07, rz],
+          [x1 + 0.4, ry1 + 0.07, rz],
+          0.06,
+          0.03,
+          C['timber-dark'],
+          {
+            id: `grading-rib-${k + 1}`,
+          },
+        ),
+      );
+    }
+    // beams under the roof along each long side, drawn
+    n.push(
+      drawn(x0 - 0.1, z0, x0 + 0.1, z1, 3.4, 3.62, C['timber-dark'], { id: 'grading-beam-w' }),
+      drawn(x1 - 0.1, z0, x1 + 0.1, z1, 3.0, 3.22, C['timber-dark'], { id: 'grading-beam-e' }),
+    );
+    // the grading table: a solid bed, rollers and boards on it drawn
+    const [tz0, tz1] = [z0 + 1.0, z1 - 1.0];
+    n.push(box(xm - 0.5, tz0, xm + 0.5, tz1, 0, 0.9, C['timber-dark'], { id: 'grading-table' }));
+    for (let z = tz0 + 0.3; z < tz1; z += 0.7)
+      n.push(
+        drawn(xm - 0.48, z - 0.04, xm + 0.48, z + 0.04, 0.9, 0.95, C.steel, {
+          id: `grading-roller-${Math.round((z - tz0) * 10)}`,
+        }),
+      );
+    n.push(
+      drawn(xm - 0.3, tz0 + 0.6, xm + 0.3, tz0 + 4.2, 0.96, 1.0, C.lumber, {
+        id: 'grading-boards-1',
+        yaw: 3,
+      }),
+      drawn(xm - 0.25, tz0 + 0.8, xm + 0.25, tz0 + 4.0, 1.0, 1.03, '#a57d48', {
+        id: 'grading-boards-2',
+        yaw: -2,
+      }),
+      // the grader's stamp box and crayon tin, at the south end
+      box(xm - 0.25, tz1 - 1.0, xm + 0.15, tz1 - 0.7, 0.9, 1.08, C.timber, {
+        id: 'grading-stamp-box',
+      }),
+      drawn(xm + 0.22, tz1 - 0.95, xm + 0.34, tz1 - 0.83, 0.9, 0.98, C['paint-red'], {
+        id: 'grading-tin',
+      }),
+      {
+        type: 'lootSpawn',
+        id: 'grading-loose',
+        pos: [r2(xm + 0.1), 0.95, r2(tz0 + 5.0)],
+        lootTable: 'lumber-yard',
+        chance: 0.4,
+      },
+    );
+    // tally board facing into the shed, hung on two crossbars between the south corner posts
+    n.push(
+      drawn(x0 + 0.1, z1 - 0.01, x1 - 0.1, z1 + 0.05, 1.2, 1.3, C['timber-dark'], {
+        id: 'tally-rail-low',
+      }),
+      drawn(x0 + 0.1, z1 - 0.01, x1 - 0.1, z1 + 0.05, 1.9, 2.0, C['timber-dark'], {
+        id: 'tally-rail-high',
+      }),
+      drawn(xm - 1.3, z1 - 0.05, xm + 1.3, z1 - 0.01, 1.1, 2.1, C['paint-green'], {
+        id: 'tally-board',
+      }),
+    );
+    for (let k = 0; k < 4; k++)
+      n.push(
+        drawn(
+          xm - 1.1 + k * 0.6,
+          z1 - 0.07,
+          xm - 0.7 + k * 0.6,
+          z1 - 0.05,
+          1.5 + (k % 2) * 0.2,
+          1.53 + (k % 2) * 0.2,
+          C['paint-white'],
+          {
+            id: `tally-mark-${k + 1}`,
+          },
+        ),
+      );
+    // stool at the table, sticker bundles on a pallet, hose reel, water barrel
+    n.push(
+      prefab('wooden-chair', xm - 0.95, tz0 + 2.0, { id: 'grading-stool', yaw: 90 }, 0),
+      prefab('wood-pallet', x1 - 0.85, z0 + 0.95, { id: 'sticker-pallet', yaw: 90 }, 0),
+      drawn(x1 - 1.3, z0 + 0.5, x1 - 0.4, z0 + 1.4, 0.15, 0.45, C['timber-dark'], {
+        id: 'sticker-bundle-1',
+      }),
+      drawn(x1 - 1.25, z0 + 0.55, x1 - 0.45, z0 + 1.35, 0.45, 0.7, '#6e5238', {
+        id: 'sticker-bundle-2',
+        yaw: 6,
+      }),
+      {
+        type: 'cylinder',
+        id: 'hose-reel',
+        pos: [r2(x1 + 0.12), 1.0, r2((z0 + z1) / 2 + 0.6)],
+        radius: 0.35,
+        height: 0.18,
+        roll: 90,
+        sides: 10,
+        color: C['paint-red'],
+        collide: false,
+      },
+      prefab('hazard-barrel-red', x1 + 0.7, z1 + 0.4, { id: 'fire-barrel' }, 0),
+    );
+    yard.push(group('Grading shed', n));
+  }
 
   // ------------------------------------------------------------- open ground
   // Copses and piles that break the field between the deck and the yard, the pond's north
@@ -247,7 +642,7 @@ export function buildMiddle(h, s) {
     ]),
     prefab('log-pile-tall', 101.5, 57.5, { yaw: 30 }, 0),
     prefab('log-pile-tall', 134, 58, { yaw: -30 }, 0),
-    prefab('log-pile-tall', 118, 29.5, { yaw: 5 }, 0),
+    bedded('log-pile-tall', 118, 29.5, 3, 1, { yaw: 5 }),
     bedded('log-pile-tall', 86, 30, 3, 1, { yaw: -8 }),
     prefab('lumber-stack-tall', 131, 67.5, { yaw: 12 }, 0),
     copse('Copse north-west of the pond', [
@@ -262,9 +657,8 @@ export function buildMiddle(h, s) {
     bedded('log-pile-tall', 176, 38, 1, 3, { yaw: 84 }),
     logLine([178.6, 0.2, 40.5], [181.8, -0.9, 45.8], 0.26, C.log, {
       id: 'dump-log-1',
-      collide: false,
     }),
-    logLine([180, 0.2, 39], [184.6, -0.8, 43.6], 0.26, C.log, { id: 'dump-log-2', collide: false }),
+    logLine([180, 0.2, 39], [184.6, -0.8, 43.6], 0.26, C.log, { id: 'dump-log-2' }),
     copse('Copse north-east of the pond', [
       ['pine-tree', 186, 31],
       ['pine-tree', 189.5, 33.5],
@@ -273,7 +667,7 @@ export function buildMiddle(h, s) {
       ['rock', 189, 35.6, 50],
     ]),
     prefab('log-pile-tall', 147, 40, { yaw: 75 }, 0),
-    prefab('log-pile-tall', 196, 40, { yaw: 80 }, 0),
+    prefab('log-pile-tall', 196, 36.5, { yaw: 80 }, 0),
     on('rock-large', 199.5, 35.5, { yaw: -30 }),
     // Between the mill and the highway (the race tunnel runs under z 104–108: kept clear).
     // Solid 2.4 m lumber stacks set across the strip at 35°, so they cut lines along it at eye
@@ -287,10 +681,8 @@ export function buildMiddle(h, s) {
     prefab('lumber-stack-tall', 227, 112, { yaw: -35 }, 0),
     // The south bank, both sides of the ford.
     prefab('lumber-stack-tall', 108, 137, { yaw: -35 }, 0),
-    prefab('lumber-stack-tall', 125, 129.5, { yaw: 35 }, 0),
     prefab('lumber-stack-tall', 196, 127, { yaw: -35 }, 0),
     prefab('lumber-stack-tall', 205, 136, { yaw: 35 }, 0),
-    prefab('lumber-stack-tall', 140, 138.5, { yaw: 30 }, 0),
     prefab('lumber-stack-tall', 150, 124.5, { yaw: 20 }, 0),
     prefab('lumber-stack-tall', 178.5, 124.5, { yaw: -20 }, 0),
     prefab('lumber-stack-tall', 222, 137, { yaw: -30 }, 0),
@@ -341,6 +733,7 @@ export function buildMiddle(h, s) {
       yaw,
       pitch: 12,
       color: C.log,
+      collide: false,
     })),
     ...[
       [
@@ -364,6 +757,42 @@ export function buildMiddle(h, s) {
         [168.5, 1.3, 16.4],
       ],
     ].map(([a, b], k) => logLine(a, b, 0.3, C.log, { id: `jam-tangle-${k + 1}`, collide: false })),
+    // Dressed 2026-11-17: a pack snagged on the jam's upstream edge (`duffle-bag`), searched
+    // standing on the crossing in sight of both banks; a broken pike pole on the logs; on
+    // the west bank a winch on a skid, anchored to a stump, its cable run out to the tangle
+    // (someone tried to pull it clear).
+    prefab('duffle-bag', 157.6, 18.55, { id: 'jam-snagged-pack', yaw: 80 }, TRAIL_Y),
+    along([162.5, TRAIL_Y + 0.05, 19.0], [164.3, TRAIL_Y + 0.07, 19.8], 0.06, 0.06, C.timber, {
+      id: 'jam-pike-pole',
+      collide: false,
+    }),
+    along([164.6, TRAIL_Y + 0.05, 19.9], [165.5, TRAIL_Y + 0.12, 20.6], 0.06, 0.06, C.timber, {
+      id: 'jam-pike-pole-end',
+      collide: false,
+    }),
+    box(145.2, 18.3, 146.8, 19.1, TRAIL_Y, TRAIL_Y + 0.35, C['steel-dark'], {
+      id: 'jam-winch-skid',
+    }),
+    {
+      type: 'cylinder',
+      id: 'jam-winch-drum',
+      pos: [146.0, TRAIL_Y + 0.75 - 0.6, 18.7],
+      radius: 0.4,
+      height: 1.2,
+      roll: 90,
+      sides: 8,
+      color: C['paint-red'],
+      collide: false,
+    },
+    prefab('tree-stump', 143.6, 18.7, { id: 'jam-winch-anchor' }, TRAIL_Y),
+    along([143.8, TRAIL_Y + 0.4, 18.7], [145.3, TRAIL_Y + 0.6, 18.7], 0.03, 0.03, C.dark, {
+      id: 'jam-winch-strop',
+      collide: false,
+    }),
+    along([146.6, TRAIL_Y + 0.75, 18.6], [153.5, 1.4, 16.0], 0.03, 0.03, C.dark, {
+      id: 'jam-winch-cable',
+      collide: false,
+    }),
     // On the trail: tall piles set across it, alternately from its north and south edges
     // (trailPile), and a rock and a bush by the jam's west end.
     trailPile(140, 'n'),
@@ -382,6 +811,13 @@ export function buildMiddle(h, s) {
     const x0 = 131 + k * ((199 - 131 - 7.2) / 9);
     const z = 56 + (k % 2 ? 0.25 : -0.25);
     boom.push(box(x0, z - 0.6, x0 + 7.2, z + 0.6, -0.5, 0.05, C.log, { id: `boom-log-${k + 1}` }));
+    // a painted float mid-log on every other one, to mark the boom (drawn)
+    if (k % 2 === 0)
+      boom.push(
+        drawn(x0 + 3.4, z - 0.22, x0 + 3.8, z + 0.22, 0.05, 0.22, C['paint-red'], {
+          id: `boom-float-${k / 2 + 1}`,
+        }),
+      );
     if (k > 0)
       boom.push(
         drawn(x0 - 0.35, 55.9, x0 + 0.35, 56.1, 0.05, 0.1, C.dark, { id: `boom-chain-${k}` }),
@@ -404,7 +840,26 @@ export function buildMiddle(h, s) {
     doorZ('boom-shack-door-e', 166.4, 56.7, SY),
     box(163.3, 54.1, 166.7, 57.9, shackTop, shackTop + 0.15, C.roof, { id: 'boom-shack-roof' }),
     drawn(164, 57, 164.9, 57.4, SY, SY + 0.75, C['steel-dark'], { id: 'boom-shack-stove' }),
-    prefab('wooden-chair', 165.6, 55.4, { yaw: 200 }, SY),
+    // Dressed 2026-11-17: the boom man's footlocker against the north wall (`footlocker`),
+    // his chair moved to the stove, a lantern, his oilskin on a peg, a bench on the raft.
+    // The quest spot mid-floor stays clear.
+    prefab('wooden-chair', 164.9, 56.4, { yaw: 200 }, SY),
+    prefab('footlocker', 165.65, 54.85, { id: 'boom-shack-footlocker' }, SY),
+    // the boom man's odds and ends by the stove (household)
+    {
+      type: 'lootSpawn',
+      id: 'boom-shack-spot',
+      pos: [164.5, SY, 56.75],
+      lootTable: 'household',
+      chance: 0.25,
+    },
+    drawn(164.38, 57.13, 164.52, 57.27, SY + 0.75, shackTop, C.dark, { id: 'boom-shack-flue' }),
+    drawn(164.98, 55.98, 165.02, 56.02, SY + 1.95, shackTop, C.dark, {
+      id: 'boom-shack-lantern-cord',
+    }),
+    drawn(164.88, 55.88, 165.12, 56.12, SY + 1.7, SY + 1.95, C.lamp, { id: 'boom-shack-lantern' }),
+    drawn(166.22, 55.2, 166.3, 55.9, SY + 0.9, SY + 1.8, C.hazard, { id: 'boom-shack-oilskin' }),
+    box(160.4, 56.6, 161.0, 58.6, SY, SY + 0.45, C['timber-dark'], { id: 'boom-raft-bench' }),
     // pike poles on the raft, a drum and a coil of chain
     along([160.6, 0.1, 52.2], [162.2, 0.25, 59.8], 0.06, 0.06, C.timber, { id: 'pike-pole-1' }),
     along([168.4, 0.1, 52], [169.2, 0.2, 59.4], 0.06, 0.06, C.timber, { id: 'pike-pole-2' }),
@@ -559,7 +1014,8 @@ export function buildMiddle(h, s) {
   // Truck-1 (MT-11, was a plain block): an abandoned box truck, cab east, standing 12° across
   // the north lane and the center line where the block stood, so it shades as much of the
   // road as the 3.5 m block did. The box and cab collide; a body-only blocker under the box
-  // stops a prone crawl beneath; wheels and trim are drawn. In its own frame, along x.
+  // stops a prone crawl beneath; the wheels collide (2026-11-17: no fake cover, a prone
+  // body behind one is covered); trim is drawn. In its own frame, along x.
   const truck1 = group(
     'Box truck',
     [
@@ -580,7 +1036,6 @@ export function buildMiddle(h, s) {
           sides: 10,
           pitch: 90,
           color: C.dark,
-          collide: false,
         })),
       ),
     ],
@@ -598,7 +1053,7 @@ export function buildMiddle(h, s) {
   const ford = group('Weir ford', [
     box(fordX - 6, 139.4, fordX + 6, 140.2, -2.6, -1.9, C.concrete, { id: 'weir' }),
     ...[
-      [-2.5, 134.5],
+      [-1.7, 134.5],
       [1.5, 133.6],
       [3.5, 137.2],
       [-1, 138],
@@ -607,8 +1062,8 @@ export function buildMiddle(h, s) {
         id: `ford-rock-${k + 1}`,
       }),
     ),
-    prefab('rock-large', fordX - 4.2, 135.6, { id: 'ford-boulder-1', yaw: 25 }, -2.6),
-    prefab('rock-large', fordX + 4, 134.4, { id: 'ford-boulder-2', yaw: -60 }, -2.6),
+    prefab('rock-large', fordX - 5, 135.6, { id: 'ford-boulder-1', yaw: 25 }, -2.6),
+    prefab('rock-large', fordX + 4.8, 134.4, { id: 'ford-boulder-2', yaw: -60 }, -2.6),
     drawn(fordX + 6.2, 139.6, fordX + 6.4, 139.8, -2.6, 0.8, C['paint-white'], {
       id: 'ford-gauge',
     }),
@@ -617,15 +1072,13 @@ export function buildMiddle(h, s) {
         id: `ford-gauge-mark-${k + 1}`,
       }),
     ),
-    logLine([fordX - 7, -1.3, 144], [fordX + 5, -1.7, 147.5], 0.32, C.log, {
+    logLine([fordX - 7, -1.3, 144], [fordX + 0.5, -1.55, 146.2], 0.32, C.log, {
       id: 'ford-fallen-tree',
-      collide: false,
+      collide: true,
     }),
+    // Most of it gave way to the powerhouse (2026-11-16); what's left stands by its east wall.
     copse('Copse on the ford west bank', [
-      ['pine-tree', 143, 126.5],
-      ['broadleaf-tree', 146.5, 129],
-      ['pine-tree', 141.5, 130.6],
-      ['bush-tall', 144.6, 131.3],
+      ['bush-tall', 148.2, 134.2],
       ['tree-stump', 147.8, 127.4, 70],
       ['rock-large', 148.6, 131.2, -15],
     ]),
@@ -644,8 +1097,131 @@ export function buildMiddle(h, s) {
     box(156, s.DAM_Z - 1, 176, s.DAM_Z + 1, -4, 2.2, C.concrete, { id: 'dam' }),
   ]);
 
+  // ---- dressed 2026-11-17 (silver-creek.md → Log deck, Mill pond): the scaler's shack at
+  // the deck's south-east corner, paint marks on the row ends, a skiff pulled up on the
+  // north-west shore and loose logs afloat by the rollway.
+  /** The scaler's shack: one room, doors west and east, a window north over the deck. */
+  const SC = { x0: 121, x1: 124, z0: 55, z1: 58, fl: 0.1, top: 2.6 };
+  const scaler = group('Scaler shack', [
+    box(SC.x0, SC.z0, SC.x1, SC.z1, -0.3, SC.fl, C['dark-concrete'], { id: 'scaler-floor' }),
+    ck.wX(
+      'scaler-wall-n',
+      SC.x0,
+      SC.x1,
+      SC.z0 + 0.075,
+      SC.fl,
+      SC.top,
+      C.cabin,
+      [ck.win(122.5, 1.2)],
+      0.15,
+    ),
+    ck.wX(
+      'scaler-wall-s',
+      SC.x0,
+      SC.x1,
+      SC.z1 - 0.075,
+      SC.fl,
+      SC.top,
+      C.cabin,
+      [ck.win(122.5, 0.8)],
+      0.15,
+    ),
+    ck.wZ(
+      'scaler-wall-w',
+      SC.x0 + 0.075,
+      SC.z0 + 0.15,
+      SC.z1 - 0.15,
+      SC.fl,
+      SC.top,
+      C.cabin,
+      [ck.door(57.0)],
+      0.15,
+    ),
+    ck.wZ(
+      'scaler-wall-e',
+      SC.x1 - 0.075,
+      SC.z0 + 0.15,
+      SC.z1 - 0.15,
+      SC.fl,
+      SC.top,
+      C.cabin,
+      [ck.door(57.0)],
+      0.15,
+    ),
+    ck.doorZ('scaler-door-w', SC.x0 + 0.075, 57.0, SC.fl),
+    ck.doorZ('scaler-door-e', SC.x1 - 0.075, 57.0, SC.fl),
+    box(SC.x0 - 0.3, SC.z0 - 0.3, SC.x1 + 0.3, SC.z1 + 0.3, SC.top, SC.top + 0.15, C.roof, {
+      id: 'scaler-roof',
+    }),
+    prefab('desk', 122.5, 55.55, { id: 'scaler-desk' }, SC.fl),
+    prefab('wooden-chair', 122.5, 56.15, { id: 'scaler-chair', yaw: 180 }, SC.fl),
+    {
+      type: 'lootSpawn',
+      id: 'scaler-book',
+      pos: [122.5, SC.fl + 0.75, 55.55],
+      lootTable: 'documents',
+      chance: 0.45,
+    },
+    // the tally board on the south wall, the scale stick leaning in the corner, a stove
+    drawn(121.4, SC.z1 - 0.17, 122.1, SC.z1 - 0.15, SC.fl + 1.2, SC.fl + 1.8, C['paint-white'], {
+      id: 'scaler-tally',
+    }),
+    along([123.7, SC.fl, 57.75], [123.78, SC.fl + 1.3, 57.8], 0.04, 0.03, C['log-end'], {
+      id: 'scaler-stick',
+      collide: false,
+    }),
+    box(123.3, 55.3, 123.8, 55.8, SC.fl, SC.fl + 0.7, C.dark, { id: 'scaler-stove' }),
+    drawn(123.5, 55.5, 123.6, 55.6, SC.fl + 0.7, SC.top + 0.5, C.dark, { id: 'scaler-flue' }),
+    drawn(121.3, SC.z0 - 0.02, 123.7, SC.z0, 2.15, 2.4, C['paint-white'], { id: 'scaler-sign' }),
+  ]);
+  /**
+   * Paint on one log end at each row's east end (the scaler's marks: whose logs, and
+   * checked), drawn. [pile x, row z, pile yaw, the log's offset across the pile, color]: the
+   * bottom log at +z 0.5 (log-pile) or +0.25 (log-pile-tall), its end 3.05 m out.
+   */
+  const marks = [
+    [118.7, 33, -1, 0.5, '#3e5a8a'],
+    [123.1, 37.5, 2, 0.25, C['paint-red']],
+    [112.1, 42, 2, 0.5, '#3e5a8a'],
+    [121.5, 46.5, 0, 0.25, C['paint-red']],
+    [118.7, 51, 1.5, 0.5, '#3e5a8a'],
+  ].map(([px, pz, yaw, lz, c], k) => {
+    const t = (yaw * Math.PI) / 180;
+    const x = px + 3.05 * Math.cos(t) + lz * Math.sin(t);
+    const z = pz - 3.05 * Math.sin(t) + lz * Math.cos(t);
+    return drawn(x, z - 0.13, x + 0.03, z + 0.13, 0.24, 0.5, c, { id: `deck-mark-${k + 1}` });
+  });
+  /** The skiff pulled up on the north-west shore, its bow in the water, oars in it. */
+  const skiff = [
+    box(142.6, 43.05, 146.4, 44.35, -0.1, 0.55, C['paint-green'], { id: 'skiff-hull' }),
+    drawn(142.7, 43.15, 146.3, 44.25, 0.55, 0.57, C['timber-dark'], { id: 'skiff-inside' }),
+    drawn(146.4, 43.25, 147.0, 44.15, 0.0, 0.55, C['paint-green'], {
+      id: 'skiff-bow',
+      top: [0.2, 0.5],
+    }),
+    drawn(142.58, 43.03, 146.42, 44.37, 0.5, 0.6, C['paint-white'], { id: 'skiff-gunwale' }),
+    drawn(144.3, 43.1, 144.5, 44.3, 0.55, 0.62, C.timber, { id: 'skiff-thwart' }),
+    ...[43.4, 44.0].map((z, k) =>
+      along([143.0, 0.62, z], [146.0, 0.66, z + 0.05], 0.05, 0.05, C.timber, {
+        id: `skiff-oar-${k + 1}`,
+        collide: false,
+      }),
+    ),
+  ];
+  const afloat = [
+    [
+      [148.5, -0.62, 48.0],
+      [150.0, -0.62, 53.2],
+    ],
+    [
+      [152.0, -0.62, 45.6],
+      [155.6, -0.62, 49.0],
+    ],
+  ].map(([a, b], k) => logLine(a, b, 0.28, C.log, { id: `pond-log-${k + 1}` }));
+
   return group('Middle', [
-    group('Log deck', [...deck, crane, rollway]),
+    group('Log deck', [...deck, ...marks, crane, rollway, scaler]),
+    group('Pond shore', [...skiff, ...afloat]),
     group('Timber yard', yard),
     logJam,
     group('Log boom', boom),
@@ -756,7 +1332,16 @@ export function buildRidge(h, s) {
     // bunk room: a bunk along the south wall, a footlocker clear of the back door's swing
     box(80.0, 12.7, 82.3, 13.75, FL, FL + 0.35, C.timber, { id: 'cabin-bunk' }),
     prefab('mattress-bed', 81.15, 13.22, { yaw: 90 }, FL + 0.35),
-    drawn(79.8, 11.95, 80.6, 12.6, FL, FL + 0.45, C['timber-dark'], { id: 'cabin-footlocker' }),
+    // the hunter's footlocker (a real one since 2026-11-17: the drawn box looked searchable
+    // and wasn't), and his cache on the table (`lookout-cache`: rounds, food, binoculars)
+    prefab('footlocker', 80.2, 12.27, { id: 'cabin-footlocker' }, FL),
+    {
+      type: 'lootSpawn',
+      id: 'cabin-table-cache',
+      pos: [85.6, r2(FL + 0.75), 11.1],
+      lootTable: 'lookout-cache',
+      chance: 0.4,
+    },
     // the porch (east): a deck a step up, its roof out of reach on two posts
     box(X1, 8.6, 91.2, 13.4, PY - 0.4, FL - 0.02, C.timber, { id: 'cabin-porch' }),
     box(X1, 8.4, 91.4, 13.6, FL + 2.75, FL + 2.87, C.roof, { id: 'cabin-porch-roof' }),
@@ -856,6 +1441,8 @@ export function buildRidge(h, s) {
         id: `camp-tarp-pole-${k + 1}`,
       }),
     ),
+    // a camper's bag left by the bear locker (2026-11-17, `duffle-bag`)
+    prefab('duffle-bag', 120.6, 16.0, { id: 'camp-bag', yaw: 75 }, Y),
     box(118.6, 15.4, 119.9, 16.3, Y, Y + 0.85, C.metal, { id: 'camp-bear-locker' }),
     drawn(118.6, 15.38, 119.9, 15.4, Y + 0.7, Y + 0.74, C['steel-dark'], {
       id: 'camp-bear-locker-lid',
@@ -953,6 +1540,10 @@ export function buildRidge(h, s) {
   ];
   const stumps = STUMPS.map(([px, py]) => [sx(px + 3), sz(py + 3)])
     .filter(([, z]) => z < TRAIL.z0 - 0.5 || z > TRAIL.z1 + 0.5)
+    // Two sketch dots closer than a stump's width are one stump (2026-11-16).
+    .filter(
+      ([x, z], i, all) => !all.slice(0, i).some(([x2, z2]) => Math.hypot(x - x2, z - z2) < 1.4),
+    )
     .map(([x, z], k) => on('tree-stump', x, z, { id: `stump-${k + 1}`, yaw: (k * 47) % 360 }));
   const slash = (id, x, z) => {
     const y = groundAt(x, z);
@@ -987,6 +1578,8 @@ export function buildRidge(h, s) {
     prefab('log-pile', 203.5, 22.1, { yaw: 2 }, TRAIL_Y),
     // fuel tank on a skid
     box(218.2, 21.6, 220.8, 23, TRAIL_Y, TRAIL_Y + 0.15, C['timber-dark'], { id: 'fuel-skid' }),
+    // the skidder driver's toolbox on the skid's end (2026-11-17)
+    prefab('toolbox', 218.6, 22.3, { id: 'landing-toolbox', yaw: 90 }, TRAIL_Y + 0.15),
     {
       type: 'cylinder',
       id: 'fuel-tank',
@@ -1000,7 +1593,7 @@ export function buildRidge(h, s) {
     on('rock-large', 220, 11, { yaw: 15 }),
     bedded('log-pile', 229, 9, 3, 0.8),
     // Piles left along the slope's contour: the clear-cut's only eye-height cover.
-    bedded('log-pile-tall', 204, 13.5, 3, 1, { yaw: 2 }),
+    bedded('log-pile-tall', 206.5, 12.4, 3, 1, { yaw: 2 }),
     bedded('log-pile-tall', 238, 10, 3, 1, { yaw: -3 }),
     bedded('log-pile-tall', 267, 15, 3, 1, { yaw: 1 }),
     on('rock-large', 241, 25.8, { yaw: -40 }),
@@ -1046,6 +1639,14 @@ export function buildRidge(h, s) {
     cabin,
     camp,
     standAt(1, sx(748), sz(115)),
+    // a hunter's cache on stand 1's floor (2026-11-17): a ladder perch, player-only
+    {
+      type: 'lootSpawn',
+      id: 'stand-1-cache',
+      pos: [sx(748), r2(groundAt(sx(748), sz(115)) + 3.65), r2(sz(115) + 0.5)],
+      lootTable: 'lookout-cache',
+      chance: 0.4,
+    },
     standAt(2, sx(910), sz(85)),
     clearCut,
     ridgeCover,

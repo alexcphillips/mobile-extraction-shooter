@@ -1,0 +1,119 @@
+{
+  "formatVersion": 3,
+  "id": "ac-condenser",
+  "name": "AC condenser",
+  "tags": ["industrial", "street"],
+  "colors": {
+    "pad": "#9a978f",
+    "casing": "#d6d4cc",
+    "casing-dark": "#9a9a94",
+    "grille": "#3a3d42",
+    "fins": "#8a8f93",
+    "pipe": "#2b2b2b",
+    "pipe-b": "#c08a4a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [1.1, 0.08, 0.55],
+      "color": "pad"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.08, 0],
+      "size": [0.95, 0.72, 0.42],
+      "color": "casing"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.8, 0],
+      "size": [0.97, 0.03, 0.44],
+      "color": "casing-dark",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.434, 0.21],
+      "radius": 0.27,
+      "height": 0.012,
+      "sides": 12,
+      "color": "grille",
+      "collide": false,
+      "pitch": 90
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.436, 0.214],
+      "radius": 0.06,
+      "height": 0.012,
+      "sides": 8,
+      "color": "casing-dark",
+      "collide": false,
+      "pitch": 90
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.2, 0.213],
+      "size": [0.56, 0.008, 0.004],
+      "color": "casing-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.32, 0.213],
+      "size": [0.56, 0.008, 0.004],
+      "color": "casing-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.44, 0.213],
+      "size": [0.56, 0.008, 0.004],
+      "color": "casing-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.56, 0.213],
+      "size": [0.56, 0.008, 0.004],
+      "color": "casing-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.68, 0.213],
+      "size": [0.56, 0.008, 0.004],
+      "color": "casing-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.476, 0.12, 0],
+      "size": [0.004, 0.64, 0.36],
+      "color": "fins",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.476, 0.12, 0],
+      "size": [0.004, 0.64, 0.36],
+      "color": "fins",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.3, 0.6, -0.235],
+      "size": [0.03, 1.9, 0.03],
+      "color": "pipe",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.36, 0.6, -0.235],
+      "size": [0.02, 1.9, 0.02],
+      "color": "pipe-b",
+      "collide": false
+    }
+  ]
+}

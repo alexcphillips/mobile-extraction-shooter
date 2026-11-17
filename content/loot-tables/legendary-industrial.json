@@ -1,0 +1,20 @@
+{
+  "formatVersion": 1,
+  "id": "legendary-industrial",
+  "name": "Legendary industrial",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "cryogenic-micro-cooler-engine",
+      "weight": 1
+    },
+    {
+      "item": "high-yield-solar-module",
+      "weight": 1
+    },
+    {
+      "item": "nuclear-fuel",
+      "weight": 1
+    }
+  ]
+}

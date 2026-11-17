@@ -144,6 +144,23 @@ describe('loadouts', () => {
     ).not.toThrow();
   });
 
+  it('carries an item by its chance, with the uses left it says (2026-11-17)', () => {
+    const kit = loadout({ carried: [{ item: 'worn-key', chance: 0.5, left: 1 }] });
+    const rng = createRng(7);
+    const c = character();
+    let had = 0;
+    for (let i = 0; i < 400; i++) {
+      equipLoadout(c, TEST_ITEMS, kit, rng);
+      const keys = c.gear.pockets.items.filter((gi) => gi.item.item === 'worn-key');
+      if (keys.length) {
+        had++;
+        // a worn key has 2 uses new; this one has 1 left
+        expect(keys.map((k) => k.item.left)).toEqual([1]);
+      }
+    }
+    expect(had / 400).toBeCloseTo(0.5, 1);
+  });
+
   it('rolls grenades by weight and count, stowed first so they go in the pockets (AI-6)', () => {
     const kit = loadout({
       weapons: [{ weight: 1, item: 'rifle', spare: [200, 200] }],

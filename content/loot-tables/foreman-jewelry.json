@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "id": "foreman-jewelry",
+  "name": "The foreman's jewelry (container-safe: no mythic pieces)",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "gold-watch",
+      "weight": 4
+    },
+    {
+      "item": "royal-heirloom-tiara",
+      "weight": 2
+    },
+    {
+      "item": "ruby-ring",
+      "weight": 1.5
+    },
+    {
+      "item": "diamond-necklace",
+      "weight": 0.5
+    }
+  ]
+}

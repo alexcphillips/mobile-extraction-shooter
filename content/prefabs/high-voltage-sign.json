@@ -1,0 +1,44 @@
+{
+  "formatVersion": 3,
+  "id": "high-voltage-sign",
+  "name": "High voltage sign",
+  "tags": ["industrial", "structure"],
+  "colors": {
+    "plate": "#e8e4da",
+    "sign": "#e0b23a",
+    "ink": "#1d1e21",
+    "band": "#c0392b"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, -0.42, 0.005],
+      "size": [0.42, 0.42, 0.01],
+      "color": "plate",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, -0.34, 0.012],
+      "size": [0.3, 0.26, 0.004],
+      "color": "sign",
+      "collide": false,
+      "top": [0.0, 0.004]
+    },
+    {
+      "type": "box",
+      "pos": [0.02, -0.3, 0.016],
+      "size": [0.035, 0.13, 0.004],
+      "color": "ink",
+      "collide": false,
+      "roll": -20
+    },
+    {
+      "type": "box",
+      "pos": [0, -0.4, 0.012],
+      "size": [0.36, 0.035, 0.004],
+      "color": "band",
+      "collide": false
+    }
+  ]
+}

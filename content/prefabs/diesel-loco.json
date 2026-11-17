@@ -1,0 +1,331 @@
+{
+  "formatVersion": 3,
+  "id": "diesel-loco",
+  "name": "Diesel locomotive",
+  "tags": ["vehicle", "rail"],
+  "colors": {
+    "body": "#3b5a7a",
+    "body-dark": "#2b4259",
+    "stripe": "#e2b33c",
+    "roof": "#5c6064",
+    "steel": "#3e3d3c",
+    "wheel": "#2e2c2b",
+    "glass-dark": "#26323b",
+    "lamp": "#f2ecd0",
+    "tail": "#b8342c",
+    "marks": "#e8e2d2"
+  },
+  "nodes": [
+    { "type": "box", "pos": [-6.3, 0.55, -0.88], "size": [2.6, 0.4, 0.1], "color": "steel" },
+    {
+      "type": "cylinder",
+      "pos": [-7.15, 0.8, -0.72],
+      "radius": 0.46,
+      "height": 0.12,
+      "color": "wheel",
+      "collide": false,
+      "pitch": 90
+    },
+    {
+      "type": "cylinder",
+      "pos": [-5.45, 0.8, -0.72],
+      "radius": 0.46,
+      "height": 0.12,
+      "color": "wheel",
+      "collide": false,
+      "pitch": 90
+    },
+    { "type": "box", "pos": [-6.3, 0.55, 0.88], "size": [2.6, 0.4, 0.1], "color": "steel" },
+    {
+      "type": "cylinder",
+      "pos": [-7.15, 0.8, 0.72],
+      "radius": 0.46,
+      "height": 0.12,
+      "color": "wheel",
+      "collide": false,
+      "pitch": 90
+    },
+    {
+      "type": "cylinder",
+      "pos": [-5.45, 0.8, 0.72],
+      "radius": 0.46,
+      "height": 0.12,
+      "color": "wheel",
+      "collide": false,
+      "pitch": 90
+    },
+    { "type": "box", "pos": [6.3, 0.55, -0.88], "size": [2.6, 0.4, 0.1], "color": "steel" },
+    {
+      "type": "cylinder",
+      "pos": [5.45, 0.8, -0.72],
+      "radius": 0.46,
+      "height": 0.12,
+      "color": "wheel",
+      "collide": false,
+      "pitch": 90
+    },
+    {
+      "type": "cylinder",
+      "pos": [7.15, 0.8, -0.72],
+      "radius": 0.46,
+      "height": 0.12,
+      "color": "wheel",
+      "collide": false,
+      "pitch": 90
+    },
+    { "type": "box", "pos": [6.3, 0.55, 0.88], "size": [2.6, 0.4, 0.1], "color": "steel" },
+    {
+      "type": "cylinder",
+      "pos": [5.45, 0.8, 0.72],
+      "radius": 0.46,
+      "height": 0.12,
+      "color": "wheel",
+      "collide": false,
+      "pitch": 90
+    },
+    {
+      "type": "cylinder",
+      "pos": [7.15, 0.8, 0.72],
+      "radius": 0.46,
+      "height": 0.12,
+      "color": "wheel",
+      "collide": false,
+      "pitch": 90
+    },
+    { "type": "box", "pos": [0.0, 0.45, 0.0], "size": [7.2, 0.7, 2.2], "color": "steel" },
+    {
+      "type": "box",
+      "pos": [0.0, 0.7, 0.0],
+      "size": [7.0, 0.08, 2.222],
+      "color": "body-dark",
+      "collide": false
+    },
+    { "type": "box", "pos": [0.0, 1.15, 0.0], "size": [18.8, 0.3, 2.9], "color": "steel" },
+    {
+      "type": "box",
+      "pos": [0.0, 0.25, 0.0],
+      "size": [18.0, 0.9, 2.4],
+      "color": "steel",
+      "invisible": true
+    },
+    { "type": "box", "pos": [-1.0, 1.45, 0.0], "size": [16.8, 2.75, 3.0], "color": "body" },
+    { "type": "box", "pos": [8.35, 1.45, 0.0], "size": [1.9, 2.75, 3.0], "color": "body" },
+    { "type": "box", "pos": [9.5, 1.45, 0.0], "size": [0.4, 1.25, 3.0], "color": "body" },
+    {
+      "type": "box",
+      "pos": [9.46, 2.7, 0.0],
+      "size": [0.32, 1.25, 2.8],
+      "color": "glass-dark",
+      "top": [0.06, 2.8],
+      "lean": [-0.13, 0]
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 4.2, 0.0],
+      "size": [18.9, 0.2, 3.1],
+      "color": "roof",
+      "bulge": [0, 0, 0, 0.14, 0, 0]
+    },
+    {
+      "type": "box",
+      "pos": [0.15, 2.0, -1.505],
+      "size": [19.1, 0.35, 0.006],
+      "color": "stripe",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [8.4, 2.75, -1.505],
+      "size": [1.2, 0.85, 0.008],
+      "color": "glass-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [7.56, 1.6, -1.505],
+      "size": [0.12, 2.1, 0.008],
+      "color": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-7.6, 2.75, -1.505],
+      "size": [2.6, 1.0, 0.008],
+      "color": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-3.4, 2.75, -1.505],
+      "size": [2.6, 1.0, 0.008],
+      "color": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.8, 2.75, -1.505],
+      "size": [2.6, 1.0, 0.008],
+      "color": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [4.6, 2.75, -1.505],
+      "size": [2.6, 1.0, 0.008],
+      "color": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.1, 1.3, -1.505],
+      "size": [18.2, 0.06, 0.06],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.15, 2.0, 1.505],
+      "size": [19.1, 0.35, 0.006],
+      "color": "stripe",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [8.4, 2.75, 1.505],
+      "size": [1.2, 0.85, 0.008],
+      "color": "glass-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [7.56, 1.6, 1.505],
+      "size": [0.12, 2.1, 0.008],
+      "color": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-7.6, 2.75, 1.505],
+      "size": [2.6, 1.0, 0.008],
+      "color": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-3.4, 2.75, 1.505],
+      "size": [2.6, 1.0, 0.008],
+      "color": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.8, 2.75, 1.505],
+      "size": [2.6, 1.0, 0.008],
+      "color": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [4.6, 2.75, 1.505],
+      "size": [2.6, 1.0, 0.008],
+      "color": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.1, 1.3, 1.505],
+      "size": [18.2, 0.06, 0.06],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-7.4, 4.45, 0.0],
+      "radius": 0.62,
+      "height": 0.08,
+      "color": "body-dark",
+      "collide": false,
+      "sides": 10
+    },
+    {
+      "type": "cylinder",
+      "pos": [-5.6, 4.45, 0.0],
+      "radius": 0.62,
+      "height": 0.08,
+      "color": "body-dark",
+      "collide": false,
+      "sides": 10
+    },
+    {
+      "type": "box",
+      "pos": [-0.5, 4.42, 0.0],
+      "size": [4.0, 0.18, 0.7],
+      "color": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [9.715, 2.25, -0.95],
+      "size": [0.03, 0.25, 0.3],
+      "color": "lamp",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-9.415, 2.25, -0.95],
+      "size": [0.03, 0.2, 0.24],
+      "color": "tail",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [9.715, 2.25, 0.95],
+      "size": [0.03, 0.25, 0.3],
+      "color": "lamp",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-9.415, 2.25, 0.95],
+      "size": [0.03, 0.2, 0.24],
+      "color": "tail",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [9.825, 1.55, 0.0],
+      "size": [0.25, 0.25, 2.9],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [9.775, 1.0, 0.0],
+      "size": [0.15, 0.55, 2.8],
+      "color": "steel",
+      "collide": false,
+      "top": [0.15, 2.8]
+    },
+    {
+      "type": "box",
+      "pos": [9.705, 3.2, 0.0],
+      "size": [0.01, 0.25, 1.0],
+      "color": "marks",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-9.65, 0.95, 0.0],
+      "size": [0.5, 0.25, 0.3],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [9.85, 0.95, 0.0],
+      "size": [0.5, 0.25, 0.3],
+      "color": "steel",
+      "collide": false
+    }
+  ]
+}

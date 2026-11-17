@@ -8,7 +8,211 @@
   "weight": 4,
   "rarity": "mythic",
   "model": {
-    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]
+    "parts": [
+      {
+        "type": "box",
+        "name": "frame top",
+        "group": "frame",
+        "pos": [0, 0.0225, -0.365],
+        "size": [1, 0.045, 0.07],
+        "color": "#c9a03a"
+      },
+      {
+        "type": "box",
+        "name": "frame bottom",
+        "group": "frame",
+        "pos": [0, 0.0225, 0.365],
+        "size": [1, 0.045, 0.07],
+        "color": "#c9a03a"
+      },
+      {
+        "type": "box",
+        "name": "frame left",
+        "group": "frame",
+        "pos": [-0.465, 0.0225, 0],
+        "size": [0.07, 0.045, 0.66],
+        "color": "#c9a03a"
+      },
+      {
+        "type": "box",
+        "name": "frame right",
+        "group": "frame",
+        "pos": [0.465, 0.0225, 0],
+        "size": [0.07, 0.045, 0.66],
+        "color": "#c9a03a"
+      },
+      {
+        "type": "box",
+        "name": "lip top",
+        "group": "frame",
+        "pos": [0, 0.0192, -0.319],
+        "size": [0.86, 0.0385, 0.022],
+        "color": "#6a4a16"
+      },
+      {
+        "type": "box",
+        "name": "lip bottom",
+        "group": "frame",
+        "pos": [0, 0.0192, 0.319],
+        "size": [0.86, 0.0385, 0.022],
+        "color": "#6a4a16"
+      },
+      {
+        "type": "box",
+        "name": "lip left",
+        "group": "frame",
+        "pos": [-0.419, 0.0192, 0],
+        "size": [0.022, 0.0385, 0.616],
+        "color": "#6a4a16"
+      },
+      {
+        "type": "box",
+        "name": "lip right",
+        "group": "frame",
+        "pos": [0.419, 0.0192, 0],
+        "size": [0.022, 0.0385, 0.616],
+        "color": "#6a4a16"
+      },
+      {
+        "type": "box",
+        "name": "canvas",
+        "group": "canvas",
+        "pos": [0, 0.016, 0],
+        "size": [0.816, 0.032, 0.616],
+        "color": "#1a1430"
+      },
+      {
+        "type": "box",
+        "name": "glow",
+        "group": "sky",
+        "pos": [0, 0.032, 0.0385],
+        "size": [0.816, 0.002, 0.1386],
+        "color": "#3a2a5e"
+      },
+      {
+        "type": "box",
+        "name": "planet",
+        "group": "sky",
+        "pos": [-0.0204, 0.0325, -0.1232],
+        "size": [0.2448, 0.003, 0.2156],
+        "color": "#c46a3a"
+      },
+      {
+        "type": "box",
+        "name": "planet band",
+        "group": "sky",
+        "pos": [-0.0204, 0.033, -0.1294],
+        "size": [0.2448, 0.004, 0.037],
+        "color": "#e09a5a"
+      },
+      {
+        "type": "box",
+        "name": "ring",
+        "group": "sky",
+        "pos": [-0.0204, 0.0335, -0.1232],
+        "size": [0.4651, 0.005, 0.0246],
+        "color": "#e8d6a8",
+        "yaw": -14
+      },
+      {
+        "type": "box",
+        "name": "moon 1",
+        "group": "sky",
+        "pos": [0.2509, 0.0325, -0.2279],
+        "size": [0.053, 0.003, 0.0493],
+        "color": "#b8d4e6"
+      },
+      {
+        "type": "box",
+        "name": "moon 2",
+        "group": "sky",
+        "pos": [-0.3305, 0.0325, -0.077],
+        "size": [0.0326, 0.003, 0.0308],
+        "color": "#8ab0c8"
+      },
+      {
+        "type": "box",
+        "name": "star 1",
+        "group": "sky",
+        "pos": [-0.2856, 0.0325, -0.231],
+        "size": [0.0122, 0.003, 0.0092],
+        "color": "#f2eedc"
+      },
+      {
+        "type": "box",
+        "name": "star 2",
+        "group": "sky",
+        "pos": [0.1632, 0.0325, -0.1232],
+        "size": [0.0122, 0.003, 0.0092],
+        "color": "#f2eedc"
+      },
+      {
+        "type": "box",
+        "name": "star 3",
+        "group": "sky",
+        "pos": [0.3264, 0.0325, -0.0616],
+        "size": [0.0122, 0.003, 0.0092],
+        "color": "#f2eedc"
+      },
+      {
+        "type": "box",
+        "name": "star 4",
+        "group": "sky",
+        "pos": [-0.2244, 0.0325, 0.0154],
+        "size": [0.0122, 0.003, 0.0092],
+        "color": "#f2eedc"
+      },
+      {
+        "type": "box",
+        "name": "star 5",
+        "group": "sky",
+        "pos": [0.0612, 0.0325, 0.0462],
+        "size": [0.0122, 0.003, 0.0092],
+        "color": "#f2eedc"
+      },
+      {
+        "type": "box",
+        "name": "star 6",
+        "group": "sky",
+        "pos": [0.306, 0.0325, -0.1848],
+        "size": [0.0122, 0.003, 0.0092],
+        "color": "#f2eedc"
+      },
+      {
+        "type": "box",
+        "name": "cliff",
+        "group": "ground",
+        "pos": [-0.1326, 0.033, 0.2233],
+        "size": [0.5508, 0.004, 0.1694],
+        "color": "#0e0b18"
+      },
+      {
+        "type": "box",
+        "name": "cliff top",
+        "group": "ground",
+        "pos": [-0.1734, 0.0335, 0.1386],
+        "size": [0.4692, 0.005, 0.0308],
+        "color": "#241c38"
+      },
+      {
+        "type": "box",
+        "name": "figure",
+        "group": "ground",
+        "pos": [-0.1204, 0.034, 0.1078],
+        "size": [0.0204, 0.006, 0.0431],
+        "color": "#0a0810"
+      },
+      {
+        "type": "box",
+        "name": "head",
+        "group": "ground",
+        "pos": [-0.1204, 0.034, 0.0816],
+        "size": [0.0163, 0.006, 0.0154],
+        "color": "#0a0810"
+      }
+    ]
   },
-  "category": "Craftwork"
+  "category": "Craftwork",
+  "lean": 12,
+  "view": "top"
 }

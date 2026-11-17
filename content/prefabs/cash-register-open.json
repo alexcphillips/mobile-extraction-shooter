@@ -1,0 +1,88 @@
+{
+  "formatVersion": 3,
+  "id": "cash-register-open",
+  "name": "Cash register (searched)",
+  "tags": ["store"],
+  "colors": {
+    "body": "#2b2d33",
+    "keys": "#8a8f94",
+    "screen": "#4a7a6a",
+    "drawer": "#3a3d44",
+    "inside": "#1a1a1c",
+    "bill": "#6a8a5a"
+  },
+  "nodes": [
+    {
+      "type": "group",
+      "name": "Cash register, open",
+      "pos": [0, 0, 0],
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [0, 0, 0],
+          "size": [0.46, 0.16, 0.42],
+          "color": "body",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.16, -0.1],
+          "size": [0.06, 0.1, 0.06],
+          "color": "body",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.24, -0.1],
+          "size": [0.4, 0.22, 0.06],
+          "color": "body",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.26, -0.065],
+          "size": [0.34, 0.16, 0.01],
+          "color": "screen",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.16, 0.08],
+          "size": [0.38, 0.03, 0.2],
+          "color": "keys",
+          "collide": false,
+          "pitch": -12
+        },
+        {
+          "type": "box",
+          "pos": [0, 0, 0.33],
+          "size": [0.4, 0.08, 0.26],
+          "color": "drawer",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.075, 0.33],
+          "size": [0.36, 0.006, 0.22],
+          "color": "inside",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.1, 0.081, 0.36],
+          "size": [0.07, 0.004, 0.14],
+          "color": "bill",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.08, 0.081, 0.3],
+          "size": [0.07, 0.004, 0.14],
+          "color": "bill",
+          "collide": false,
+          "yaw": 12
+        }
+      ]
+    }
+  ]
+}

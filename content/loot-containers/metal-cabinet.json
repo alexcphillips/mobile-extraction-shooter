@@ -1,0 +1,14 @@
+{
+  "formatVersion": 1,
+  "id": "metal-cabinet",
+  "name": "Metal cabinet",
+  "grid": [3, 4],
+  "loot": {
+    "tables": {
+      "industrial": 0.5,
+      "household": 0.3,
+      "documents": 0.2
+    },
+    "empty": 0.15
+  }
+}

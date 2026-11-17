@@ -8,8 +8,156 @@
   "weight": 2,
   "rarity": "uncommon",
   "model": {
-    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]
+    "parts": [
+      {
+        "type": "box",
+        "name": "frame top",
+        "group": "frame",
+        "pos": [0, 0.015, -0.215],
+        "size": [0.6, 0.03, 0.05],
+        "color": "#6e4a2a"
+      },
+      {
+        "type": "box",
+        "name": "frame bottom",
+        "group": "frame",
+        "pos": [0, 0.015, 0.215],
+        "size": [0.6, 0.03, 0.05],
+        "color": "#6e4a2a"
+      },
+      {
+        "type": "box",
+        "name": "frame left",
+        "group": "frame",
+        "pos": [-0.275, 0.015, 0],
+        "size": [0.05, 0.03, 0.38],
+        "color": "#6e4a2a"
+      },
+      {
+        "type": "box",
+        "name": "frame right",
+        "group": "frame",
+        "pos": [0.275, 0.015, 0],
+        "size": [0.05, 0.03, 0.38],
+        "color": "#6e4a2a"
+      },
+      {
+        "type": "box",
+        "name": "canvas",
+        "group": "canvas",
+        "pos": [0, 0.011, 0],
+        "size": [0.5, 0.022, 0.38],
+        "color": "#2d5a7c"
+      },
+      {
+        "type": "box",
+        "name": "sky high",
+        "group": "scene",
+        "pos": [0, 0.022, -0.125],
+        "size": [0.5, 0.002, 0.13],
+        "color": "#5f86b2"
+      },
+      {
+        "type": "box",
+        "name": "sky low",
+        "group": "scene",
+        "pos": [0, 0.022, -0.01],
+        "size": [0.5, 0.002, 0.1],
+        "color": "#a8c3d8"
+      },
+      {
+        "type": "box",
+        "name": "cliff",
+        "group": "scene",
+        "pos": [0.155, 0.0225, 0.09],
+        "size": [0.19, 0.003, 0.2],
+        "color": "#56664a"
+      },
+      {
+        "type": "box",
+        "name": "cliff ledge",
+        "group": "scene",
+        "pos": [0.125, 0.023, 0.14],
+        "size": [0.25, 0.004, 0.1],
+        "color": "#43523a"
+      },
+      {
+        "type": "box",
+        "name": "wave 1",
+        "group": "scene",
+        "pos": [-0.15, 0.0225, 0.08],
+        "size": [0.06, 0.003, 0.006],
+        "color": "#e6eef2"
+      },
+      {
+        "type": "box",
+        "name": "wave 2",
+        "group": "scene",
+        "pos": [-0.06, 0.0225, 0.12],
+        "size": [0.05, 0.003, 0.006],
+        "color": "#e6eef2"
+      },
+      {
+        "type": "box",
+        "name": "wave 3",
+        "group": "scene",
+        "pos": [-0.18, 0.0225, 0.15],
+        "size": [0.04, 0.003, 0.006],
+        "color": "#e6eef2"
+      },
+      {
+        "type": "box",
+        "name": "beam",
+        "group": "lighthouse",
+        "pos": [0.005, 0.0225, -0.144],
+        "size": [0.25, 0.003, 0.016],
+        "color": "#f4e6a0",
+        "yaw": -8
+      },
+      {
+        "type": "box",
+        "name": "tower",
+        "group": "lighthouse",
+        "pos": [0.15, 0.0235, -0.07],
+        "size": [0.03, 0.005, 0.12],
+        "color": "#f2f0ea"
+      },
+      {
+        "type": "box",
+        "name": "stripe 1",
+        "group": "lighthouse",
+        "pos": [0.15, 0.024, -0.09],
+        "size": [0.032, 0.006, 0.02],
+        "color": "#b8322c"
+      },
+      {
+        "type": "box",
+        "name": "stripe 2",
+        "group": "lighthouse",
+        "pos": [0.15, 0.024, -0.04],
+        "size": [0.032, 0.006, 0.02],
+        "color": "#b8322c"
+      },
+      {
+        "type": "box",
+        "name": "lamp",
+        "group": "lighthouse",
+        "pos": [0.15, 0.024, -0.1425],
+        "size": [0.04, 0.006, 0.025],
+        "color": "#f2d060"
+      },
+      {
+        "type": "box",
+        "name": "cap",
+        "group": "lighthouse",
+        "pos": [0.15, 0.024, -0.165],
+        "size": [0.05, 0.006, 0.02],
+        "color": "#2a2a2a"
+      }
+    ]
   },
   "category": "Craftwork",
-  "shortName": "Lighthouse"
+  "lean": 12,
+  "shortName": "Lighthouse",
+  "view": "top"
 }

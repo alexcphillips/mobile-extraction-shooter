@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "mythic-household",
+  "name": "Mythic household (loose only)",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "limited-edition-slow-cooker",
+      "weight": 1
+    }
+  ]
+}

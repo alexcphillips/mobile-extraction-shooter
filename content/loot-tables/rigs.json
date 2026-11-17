@@ -1,0 +1,60 @@
+{
+  "formatVersion": 1,
+  "id": "rigs",
+  "name": "Rigs and packs",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "scout-utility-rig",
+      "weight": 4
+    },
+    {
+      "item": "trail-4-chest-rig",
+      "weight": 4
+    },
+    {
+      "item": "small-backpack",
+      "weight": 4
+    },
+    {
+      "item": "pathfinder-chest-rig",
+      "weight": 2
+    },
+    {
+      "item": "sentinel-protective-vest",
+      "weight": 2
+    },
+    {
+      "item": "mako-6-chest-rig",
+      "weight": 1
+    },
+    {
+      "item": "mako-12-tactical-rig",
+      "weight": 1
+    },
+    {
+      "item": "armored-chest-rig",
+      "weight": 0.5
+    },
+    {
+      "item": "m24-combat-rig",
+      "weight": 0.4
+    },
+    {
+      "item": "specter-modular-rig",
+      "weight": 0.4
+    },
+    {
+      "item": "viper-12-chest-rig",
+      "weight": 0.4
+    },
+    {
+      "item": "dragoon-chest-rig",
+      "weight": 0.15
+    },
+    {
+      "item": "r-45b-chest-harness",
+      "weight": 0.15
+    }
+  ]
+}

@@ -162,6 +162,12 @@ const boxSchema = z.strictObject({
    * container or a switch, or have collide: false.
    */
   invisible: z.literal(true).optional(),
+  /**
+   * With invisible (2026-11-17, for the fire lookout's slanted legs): solid to shots, sight
+   * and throws as well, a plain box that isn't drawn. Stacked up inside something drawn that
+   * a solid can't follow, such as a leaning post.
+   */
+  stopsShots: z.literal(true).optional(),
   landmark: landmarkSchema,
   loot: lootSchema,
   switch: switchSchema,
@@ -224,6 +230,13 @@ const stairsSchema = z.strictObject({
    * meters above the steps. Drawn only. Left out, there are none.
    */
   sides: positive.optional(),
+  /**
+   * Open underneath (2026-11-16, the user's): the flight is a slab this many meters thick,
+   * measured straight down from the line of the steps (at least one step's rise), on a
+   * sloped soffit, with the space below it open to walk and see under. Left out, the
+   * stairs are solid down to their foot. In a tilted prefab or group they stay solid.
+   */
+  thickness: positive.optional(),
 });
 
 /** pos is the middle of the ladder's foot on the wall face; yaw turns +z out of the wall. */
@@ -385,6 +398,13 @@ const enemySpawnSchema = z.strictObject({
   loadout: idSchema.optional(),
   /** The id of a patrol beside it (in the same map or prefab) to walk; otherwise it guards its spot. */
   patrol: idSchema.optional(),
+  /**
+   * A boss's guards' own patrols, by guard (2026-11-17, the foreman's man on the loft):
+   * the first guard walks the first, and so on; a guard past the list walks the boss's.
+   * One with his own starts at its first stop instead of in formation, still in the boss's
+   * squad. Ids of patrols beside it, as `patrol`. An optional field, so still map format 4.
+   */
+  guardPatrols: z.array(idSchema).optional(),
   /** Spawns at a random spot within this many meters. Defaults to 0. */
   radius: nonNegative.optional(),
   /** The chance it spawns at all, 0 to 1 (1 if left out). */
@@ -434,6 +454,12 @@ const lootSpawnSchema = z
   .strictObject({
     type: z.literal('lootSpawn'),
     ...marker,
+    /**
+     * The way its item faces, in degrees (2026-11-17): set, the item lies turned this way
+     * (not at random) and one that leans (a painting) stands against the spot's point, which
+     * goes on the face of the wall or furniture behind it. Left out, it's turned at random.
+     */
+    yaw: angle,
     lootTable: idSchema.optional(),
     mix: lootMixSchema.optional(),
     /** The chance anything is there, 0 to 1 (1 if left out). */
@@ -762,9 +788,11 @@ export const mapSchema = z
      */
     rotatingExtractions: z.int().min(0).optional(),
     /**
-     * Meters an enemy spawn must keep from every player spawn (2026-11-07, the user's call):
-     * AI.spawnClearance (60) if left out. Being in sight of one within AI.sightRange is
-     * flagged whatever this is. Northpoint uses 0: indoors, walls do the work, and 60 m
+     * Meters what's put in at a raid's start keeps from the players where they started, and
+     * out of their sight (2026-11-07, the user's call; since 2026-11-17 from the spawns used
+     * that raid, not every player spawn, so a map can have spare spawn points: sim/waves.ts
+     * startEnemies). AI.spawnClearance (60) if left out. The editor still flags enemy spawns
+     * near any player spawn, as a warning. Northpoint uses 0: indoors, walls do the work, and 60 m
      * left almost nowhere for enemies between its edge spawns.
      */
     enemyClearance: nonNegative.optional(),

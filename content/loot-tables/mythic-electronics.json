@@ -1,0 +1,28 @@
+{
+  "formatVersion": 1,
+  "id": "mythic-electronics",
+  "name": "Mythic electronics",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "armored-vehicle-battery",
+      "weight": 1
+    },
+    {
+      "item": "combat-systems-terminal",
+      "weight": 1
+    },
+    {
+      "item": "quantum-cryptographic-core",
+      "weight": 1
+    },
+    {
+      "item": "voltex-quantum-storage-array",
+      "weight": 1
+    },
+    {
+      "item": "wifi-toaster",
+      "weight": 1
+    }
+  ]
+}

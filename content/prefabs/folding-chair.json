@@ -1,0 +1,81 @@
+{
+  "formatVersion": 3,
+  "id": "folding-chair",
+  "name": "Folding chair",
+  "tags": ["office", "military"],
+  "instanced": true,
+  "colors": {
+    "plastic": "#3a3d42",
+    "plastic-dark": "#2b2d31",
+    "steel": "#8a8f93"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0.42, 0.02],
+      "size": [0.42, 0.04, 0.4],
+      "color": "plastic"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.6, -0.21],
+      "size": [0.4, 0.26, 0.03],
+      "color": "plastic",
+      "pitch": -8
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.66, -0.19],
+      "size": [0.36, 0.02, 0.005],
+      "color": "plastic-dark",
+      "collide": false,
+      "pitch": -8
+    },
+    {
+      "type": "box",
+      "pos": [-0.195, 0, -0.24],
+      "size": [0.025, 0.9, 0.025],
+      "color": "steel",
+      "collide": false,
+      "pitch": 6
+    },
+    {
+      "type": "box",
+      "pos": [-0.195, 0, 0.17],
+      "size": [0.025, 0.44, 0.025],
+      "color": "steel",
+      "collide": false,
+      "pitch": -10
+    },
+    {
+      "type": "box",
+      "pos": [0.195, 0, -0.24],
+      "size": [0.025, 0.9, 0.025],
+      "color": "steel",
+      "collide": false,
+      "pitch": 6
+    },
+    {
+      "type": "box",
+      "pos": [0.195, 0, 0.17],
+      "size": [0.025, 0.44, 0.025],
+      "color": "steel",
+      "collide": false,
+      "pitch": -10
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.1, 0.2],
+      "size": [0.38, 0.02, 0.02],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.1, -0.25],
+      "size": [0.38, 0.02, 0.02],
+      "color": "steel",
+      "collide": false
+    }
+  ]
+}

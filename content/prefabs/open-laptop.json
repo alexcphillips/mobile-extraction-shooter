@@ -1,0 +1,60 @@
+{
+  "formatVersion": 3,
+  "id": "open-laptop",
+  "name": "Laptop (open)",
+  "tags": ["office"],
+  "instanced": true,
+  "colors": {
+    "case": "#3d4148",
+    "keys": "#1d1e21",
+    "screen": "#5b8fb8",
+    "screen-ink": "#dfeaf2"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [0.34, 0.02, 0.24],
+      "color": "case",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.02, 0.025],
+      "size": [0.3, 0.003, 0.11],
+      "color": "keys",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.02, 0.095],
+      "size": [0.09, 0.002, 0.05],
+      "color": "keys",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.02, -0.125],
+      "size": [0.34, 0.22, 0.01],
+      "color": "case",
+      "collide": false,
+      "pitch": -15
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.035, -0.117],
+      "size": [0.3, 0.18, 0.002],
+      "color": "screen",
+      "collide": false,
+      "pitch": -15
+    },
+    {
+      "type": "box",
+      "pos": [-0.06, 0.12, -0.13],
+      "size": [0.12, 0.02, 0.002],
+      "color": "screen-ink",
+      "collide": false,
+      "pitch": -15
+    }
+  ]
+}

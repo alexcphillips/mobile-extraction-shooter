@@ -14,6 +14,7 @@ import {
   createWeaponStats,
   equipLoadout,
   exposedSpawns,
+  SCAV_WAVES,
   heldWeapon,
   loadedAmmo,
   lootRounds,
@@ -53,11 +54,15 @@ describe('content', () => {
     expect(() => checkEnemySpawns(map)).not.toThrow();
     expect(() => checkDoorKeys(map)).not.toThrow();
     expect(() => checkLootContainers(map)).not.toThrow();
-    // Raids start out of the enemies' sight (the map editor warns about these too), and as
-    // far from them as the map asks (enemyClearance; northpoint asks for none, 2026-11-07).
-    expect(exposedSpawns(map.markers, new CollisionWorld(map.world), map.enemyClearance)).toEqual(
-      [],
-    );
+    // Since 2026-11-17 (the user's call) the sim keeps what starts clear of the spawns
+    // players actually used (enemyClearance, out of sight; sim/waves.ts startEnemies), so a
+    // map may have more spawn points than a raid uses. What's checked here: no enemy spawn
+    // so close to a player spawn that it could never start (SCAV_WAVES.minDistance).
+    expect(
+      exposedSpawns(map.markers, new CollisionWorld(map.world), map.enemyClearance).filter(
+        (e) => e.distance < SCAV_WAVES.minDistance,
+      ),
+    ).toEqual([]);
   });
 
   it('enemy types and loadouts load and their references are sound', () => {

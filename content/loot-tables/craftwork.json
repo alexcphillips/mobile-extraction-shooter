@@ -1,0 +1,64 @@
+{
+  "formatVersion": 1,
+  "id": "craftwork",
+  "name": "Craftwork",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "moon-ornament",
+      "weight": 4
+    },
+    {
+      "item": "turtle-carving",
+      "weight": 4
+    },
+    {
+      "item": "engraved-compass",
+      "weight": 4
+    },
+    {
+      "item": "ornate-teacup",
+      "weight": 2
+    },
+    {
+      "item": "handcrafted-music-box",
+      "weight": 2
+    },
+    {
+      "item": "antique-telescope",
+      "weight": 1.5
+    },
+    {
+      "item": "antique-chess-set",
+      "weight": 1.5
+    },
+    {
+      "item": "crystal-swan-ornament",
+      "weight": 1
+    },
+    {
+      "item": "porcelain-koi-fish",
+      "weight": 0.8
+    },
+    {
+      "item": "golden-harvest",
+      "weight": 0.5
+    },
+    {
+      "item": "waterfall-painting",
+      "weight": 0.5
+    },
+    {
+      "item": "malachite-money-frog",
+      "weight": 0.4
+    },
+    {
+      "item": "apache-helicopter-model",
+      "weight": 0.4
+    },
+    {
+      "item": "lighthouse-painting",
+      "weight": 0.3
+    }
+  ]
+}

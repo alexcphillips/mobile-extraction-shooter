@@ -26,7 +26,7 @@ import { readFileSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import * as prettier from 'prettier';
 import { layout } from '../packages/client/editor-save.mjs';
-import { box, drawn, group, prefab, r2 } from './mapkit/nodes.mjs';
+import { box, drawn, group, prefab, r2, keptPlace, swapIn } from './mapkit/nodes.mjs';
 
 const FILE = new URL('../content/maps/d2.json', import.meta.url).pathname;
 const DRY = process.argv.includes('--dry-run');
@@ -1033,7 +1033,7 @@ const replaced = (n) =>
     n.size[0] >= 36 &&
     n.size[2] >= 36);
 const gone = map.nodes.filter(replaced);
-map.nodes = [...map.nodes.filter((n) => !replaced(n)), group('mall', out)];
+map.nodes = swapIn(map.nodes, replaced, group('mall', out, keptPlace(map.nodes, 'mall')));
 
 // The ground under the footprints, leveled to the ground floor slab's underside.
 const t = map.terrain;

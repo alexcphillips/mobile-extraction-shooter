@@ -1,0 +1,14 @@
+{
+  "formatVersion": 1,
+  "id": "server",
+  "name": "Server",
+  "grid": [3, 4],
+  "loot": {
+    "tables": {
+      "computer-parts-highend": 0.5,
+      "computer-parts-basic": 0.3,
+      "intel": 0.2
+    },
+    "empty": 0.1
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "formatVersion": 1,
+  "id": "craftwork-prize",
+  "name": "Prize craftwork (loose only)",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "portrait-of-the-regent",
+      "weight": 3
+    },
+    {
+      "item": "the-unfinished-masterpiece",
+      "weight": 1.5
+    },
+    {
+      "item": "the-tempest",
+      "weight": 1
+    },
+    {
+      "item": "jade-dragon",
+      "weight": 1
+    },
+    {
+      "item": "gold-bar",
+      "weight": 1
+    }
+  ]
+}

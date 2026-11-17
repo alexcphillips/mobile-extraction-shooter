@@ -1,0 +1,94 @@
+{
+  "formatVersion": 3,
+  "id": "metal-desk",
+  "name": "Metal desk",
+  "tags": ["office", "industrial"],
+  "colors": {
+    "top": "#8a9097",
+    "steel": "#7a8086",
+    "steel-light": "#868c92",
+    "steel-dark": "#4a4f54"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0.72, 0],
+      "size": [1.5, 0.04, 0.75],
+      "color": "top"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.715, 0.376],
+      "size": [1.5, 0.045, 0.006],
+      "color": "steel-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.72, 0, 0],
+      "size": [0.04, 0.72, 0.7],
+      "color": "steel"
+    },
+    {
+      "type": "box",
+      "pos": [0.5, 0, 0],
+      "size": [0.42, 0.72, 0.7],
+      "color": "steel"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.3, -0.34],
+      "size": [1.0, 0.4, 0.02],
+      "color": "steel"
+    },
+    {
+      "type": "box",
+      "pos": [0.5, 0, 0.352],
+      "size": [0.42, 0.06, 0.006],
+      "color": "steel-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.5, 0.07, 0.351],
+      "size": [0.39, 0.2, 0.004],
+      "color": "steel-light",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.5, 0.22, 0.356],
+      "size": [0.14, 0.02, 0.012],
+      "color": "steel-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.5, 0.31, 0.351],
+      "size": [0.39, 0.16, 0.004],
+      "color": "steel-light",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.5, 0.42, 0.356],
+      "size": [0.14, 0.02, 0.012],
+      "color": "steel-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.5, 0.51, 0.351],
+      "size": [0.39, 0.16, 0.004],
+      "color": "steel-light",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.5, 0.62, 0.356],
+      "size": [0.14, 0.02, 0.012],
+      "color": "steel-dark",
+      "collide": false
+    }
+  ]
+}

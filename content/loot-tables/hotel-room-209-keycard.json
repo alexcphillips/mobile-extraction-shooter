@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "hotel-room-209-keycard",
+  "name": "Hotel room 209 keycard",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "hotel-room-209-keycard",
+      "weight": 1
+    }
+  ]
+}

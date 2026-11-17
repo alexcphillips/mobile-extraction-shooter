@@ -155,6 +155,13 @@ function copy<T>(v: T): T {
  * the rest are queued in state.waves.
  * Call after startRaid and after placing the players, so the first scavs keep clear of
  * them too. Returns the enemies put in.
+ *
+ * Clearance (2026-11-17, the user's call): what's put in at the start keeps the map's
+ * enemyClearance (AI.spawnClearance if it has none) from the players where they actually
+ * started, and out of their sight; not from every player spawn on the map, so a map can
+ * have more spawn points than are used in a raid. A start scav with no such spot in its
+ * sector waits for the first wave; any other spawn that close (a once-only scav, a boss and
+ * his guards) isn't put in this raid.
  */
 export function startEnemies(
   state: SimState,
@@ -164,6 +171,7 @@ export function startEnemies(
   content: EnemyContent,
 ): Character[] {
   const rng = state.rng;
+  const clearance = map.enemyClearance ?? AI.spawnClearance;
   const picked = oneOfPicks(rng, map.markers, 'enemySpawn');
   const groups = new Map<string, EnemySpawn[]>();
   for (const m of map.markers) {
@@ -195,9 +203,13 @@ export function startEnemies(
     const spot = waveSpot(world, m, type, content);
     // A spawn put in once (TU-2) is no wave slot, whatever its faction.
     if (type.faction !== 'scav' || m.once) {
+      if (playerDistance(state, world, spot.x, spot.eye, spot.z) < clearance) continue;
       const c = spawnSpot(state, world, items, content, spot);
       out.push(c);
-      if (type.guards) out.push(...spawnGuards(state, world, items, content, spot, c, type.guards));
+      if (type.guards) {
+        const own = (m.guardPatrols ?? []).map((id) => content.patrols.get(id) ?? null);
+        out.push(...spawnGuards(state, world, items, content, spot, c, type.guards, own));
+      }
       continue;
     }
     // A scav's slot: its sector's spawns that are scavs too.
@@ -244,9 +256,17 @@ export function startEnemies(
     const i = order[k]!;
     const slot = waves.slots[i]!;
     if (k < first) {
-      // A clear spot in its sector if there is one, else the one rolled (the map's check
-      // keeps enemy spawns out of sight of player spawns).
-      const spot = clearSpot(state, world, slot) ?? slot.spots[rolled[i]!]!;
+      // A spot in its sector clear of the players by the map's clearance, the one rolled if
+      // it is; with none, it comes in with the first wave instead.
+      const own = slot.spots[rolled[i]!]!;
+      const spot =
+        playerDistance(state, world, own.x, own.eye, own.z) >= clearance
+          ? own
+          : clearSpot(state, world, slot, clearance);
+      if (!spot) {
+        slot.due = state.tick + Math.round(SCAV_WAVES.interval * TICK_RATE);
+        continue;
+      }
       slot.entity = spawnSlot(state, world, items, waves, spot).id;
       waves.spawned++;
       out.push(entityById(state, slot.entity) as Character);
@@ -333,25 +353,33 @@ function spawnGuards(
   spot: WaveSpot,
   boss: Character,
   guards: NonNullable<EnemyDef['guards']>,
+  /** Guards' own patrols, by guard (the spawn's guardPatrols); null walks the boss's. */
+  own: (PatrolDef | null)[] = [],
 ): Character[] {
   const type = content.types.get(guards.enemy)!;
   const ground = { x: boss.x, y: boss.y, z: boss.z, yaw: spot.yaw };
   joinSquad(boss, boss.id, 0);
   const out: Character[] = [];
   for (let slot = 1; slot <= guards.count; slot++) {
-    const [x, z, radius] = place(world, ground, slot);
+    const post = own[slot - 1] ?? null;
+    const first = post?.points[0];
+    // a guard with a post of his own starts at its first stop; the rest in formation
+    const [x, z, radius] = first ? [first.x, first.z, 0] : place(world, ground, slot);
     const c = spawnSpot(state, world, items, content, {
       ...spot,
       id: `${spot.id}:guard-${slot}`,
       x,
       z,
+      ...(first ? { y: first.y } : {}),
       radius,
-      patrol: spot.patrol ? copy(spot.patrol) : null,
+      patrol: post ? copy(post) : spot.patrol ? copy(spot.patrol) : null,
       type: guards.enemy,
       loadout: type.loadout,
       lootWeights: null,
     });
-    joinSquad(c, boss.id, slot);
+    // A guard on a post of his own holds it: not in the squad (a squad member follows its
+    // leader), so he walks his own patrol, on his own ground; same side as the boss.
+    if (!post) joinSquad(c, boss.id, slot);
     out.push(c);
   }
   return out;
@@ -402,20 +430,26 @@ function spawnSlot(
 }
 
 /**
- * A spot in the slot's sector out of every living player's sight and at least
- * minDistance from each, at random, preferring those preferDistance or more away. Null if
- * there's none.
+ * A spot in the slot's sector out of every living player's sight and at least `min`
+ * (minDistance unless given) from each, at random, preferring those preferDistance or more
+ * away. Null if there's none.
  */
-function clearSpot(state: SimState, world: CollisionWorld, slot: WaveSlot): WaveSpot | null {
+function clearSpot(
+  state: SimState,
+  world: CollisionWorld,
+  slot: WaveSlot,
+  min: number = SCAV_WAVES.minDistance,
+): WaveSpot | null {
   let clear = 0;
   let far = 0;
+  const prefer = Math.max(min, SCAV_WAVES.preferDistance);
   for (const s of slot.spots) {
     const d = playerDistance(state, world, s.x, s.eye, s.z);
-    if (d >= SCAV_WAVES.minDistance) clear++;
-    if (d >= SCAV_WAVES.preferDistance) far++;
+    if (d >= min) clear++;
+    if (d >= prefer) far++;
   }
   if (!clear) return null;
-  const wanted = far ? SCAV_WAVES.preferDistance : SCAV_WAVES.minDistance;
+  const wanted = far ? prefer : min;
   let k = nextIntIn(state.rng, 0, (far || clear) - 1);
   for (const s of slot.spots) {
     if (playerDistance(state, world, s.x, s.eye, s.z) < wanted) continue;

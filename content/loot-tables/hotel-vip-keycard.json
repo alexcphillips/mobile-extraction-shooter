@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "hotel-vip-keycard",
+  "name": "Hotel presidential suite keycard",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "hotel-vip-keycard",
+      "weight": 1
+    }
+  ]
+}

@@ -71,6 +71,11 @@ export class Controls {
   crouch = false;
   prone = false;
   aim = false;
+  /**
+   * A gun is in hand, set by the game each tick: the knife and empty hands can't aim, so
+   * every aim (a button, the mouse, Z, aim on lean) is ignored without one (2026-11-16).
+   */
+  canAim = true;
   fire = false;
   /** −1 leaning left, 1 right, 0 upright. */
   lean = 0;
@@ -166,6 +171,11 @@ export class Controls {
   /** Crouched or leaned mid-sprint: sprint stays off until it's let go, or you stand up straight. */
   private sprintHeldOff = false;
   private touchAim = false;
+  /**
+   * The lean that was on when aim was let go (a weapon switch, or no gun): aim on lean
+   * doesn't aim again until the lean changes, so a switch keeps the lean but not the aim.
+   */
+  private leanAimBlocked = 0;
   /** The lean from the buttons, or toggled with Q and E: −1, 0 or 1. */
   private leanOn = 0;
   private touchFire = false;
@@ -230,7 +240,7 @@ export class Controls {
     const k = this.keys;
     this.jump = this.touchJump || k.has('Space');
     const holdZ = settings.current.aim === 'hold' && k.has('KeyZ');
-    this.aim = this.touchAim || this.mouseAim || holdZ;
+    this.aim = this.canAim && (this.touchAim || this.mouseAim || holdZ);
     this.fire = this.touchFire || this.mouseFire;
     this.reload = this.pressedReload;
     this.quickReload = false;
@@ -287,7 +297,10 @@ export class Controls {
     const leanWanted = this.leanOn !== 0 || (settings.current.lean === 'hold' && keyLean !== 0);
     // Aim on lean (a setting): leaning aims for as long as it lasts, and so doesn't sprint.
     // Checked before sprinting, which would straighten up and drop the aim (2026-11-11).
-    if (settings.current.leanAim && leanWanted) this.aim = true;
+    const leanNow = settings.current.lean === 'hold' ? keyLean || this.leanOn : this.leanOn;
+    if (leanNow !== this.leanAimBlocked) this.leanAimBlocked = 0;
+    if (settings.current.leanAim && leanWanted && this.canAim && this.leanAimBlocked === 0)
+      this.aim = true;
     if (this.aim || this.fire) this.sprint = false;
     // Firing ends sprint lock, as aiming does.
     if (this.fire && this.sprintLocked) this.setSprintLock(false);
@@ -496,20 +509,23 @@ export class Controls {
    * stacking a second aim on the lean (2026-11-11, the user's call).
    */
   private straightenToAim(): boolean {
-    if (!settings.current.leanAim || this.leanOn === 0) return false;
+    if (!this.canAim || !settings.current.leanAim || this.leanOn === 0) return false;
     this.setLean(0);
     return true;
   }
 
   /**
    * Lets go of a toggled aim (MG-2): packing magazines starts with the gun down, else a
-   * toggled aim would stop it the moment the inventory closes.
+   * toggled aim would stop it the moment the inventory closes. A weapon switch lets go too,
+   * and stops aim on lean until the lean changes: the lean stays, the aim doesn't.
    */
   dropAim(): void {
     if (this.touchAim) this.setTouchAim(false);
+    this.leanAimBlocked = this.lean;
   }
 
   private toggleAim(): void {
+    if (!this.canAim) return;
     this.setTouchAim(this.straightenToAim() || !this.touchAim);
   }
 

@@ -255,6 +255,31 @@ describe('loot tables', () => {
     expect(JSON.parse(JSON.stringify(ground))).toEqual(ground);
   });
 
+  it('turns an item at random, or as its spot says, without shifting the rolls after it', () => {
+    const spot = (id: string, placed: boolean) => ({
+      type: 'lootSpawn',
+      id,
+      lootTable: 'house',
+      x: 0,
+      y: 0,
+      z: 0,
+      yaw: 1.25,
+      ...(placed ? { placed: true } : {}),
+    });
+    const roll = (first: boolean) => {
+      const state = createState(9);
+      const map = { markers: [spot('a', first), spot('b', false)] } as unknown as CompiledMap;
+      rollLootSpawns(state, map, items, tables);
+      return state.ground;
+    };
+    const [placed, after] = roll(true);
+    expect(placed).toMatchObject({ yaw: 1.25, placed: true });
+    const [random, same] = roll(false);
+    expect(random!.yaw).not.toBe(1.25);
+    expect(random!.placed).toBeUndefined();
+    expect(after).toEqual(same);
+  });
+
   it('uses only one of the loot spawns sharing a oneOf name, picked at random', () => {
     const spot = (id: string, x: number, oneOf?: string) => ({
       type: 'lootSpawn',

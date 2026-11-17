@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "mythic-medical",
+  "name": "Mythic medical (loose only)",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "portable-x-ray-unit",
+      "weight": 1
+    }
+  ]
+}

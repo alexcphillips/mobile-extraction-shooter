@@ -26,7 +26,7 @@ import { readFileSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import * as prettier from 'prettier';
 import { layout } from '../packages/client/editor-save.mjs';
-import { box, drawn, group, prefab, r2 } from './mapkit/nodes.mjs';
+import { box, drawn, group, prefab, r2, keptPlace, swapIn } from './mapkit/nodes.mjs';
 
 const FILE = new URL('../content/maps/d2.json', import.meta.url).pathname;
 const DRY = process.argv.includes('--dry-run');
@@ -522,7 +522,7 @@ const lids = t.holes
   .map(([x0, z0, x1, z1]) => [x0, z0, Math.min(x1, FACADE), z1]);
 add('lid', union(lids, [], HILL - 0.2, HILL, t.color));
 
-map.nodes = [...map.nodes.filter((n) => !replaced(n)), group('bunker', out)];
+map.nodes = swapIn(map.nodes, replaced, group('bunker', out, keptPlace(map.nodes, 'bunker')));
 
 const count = (ns) => ns.reduce((s, n) => s + (n.type === 'group' ? count(n.nodes) : 1), 0);
 console.log(

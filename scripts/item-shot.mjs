@@ -31,7 +31,8 @@ await page.goto(`${opt.base}/item-editor?item=${encodeURIComponent(id)}${opt.que
 await page.waitForTimeout(2000);
 // The body (CH-2, `@body`) has no inventory picture and opens on its model.
 if (id !== '@body') {
-  const pictures = page.getByText('its picture, taken from').locator('..');
+  // the Picture group's tiles, one per view (the caption was "its picture, taken from")
+  const pictures = page.locator('.ie-views');
   await pictures.screenshot({ path: `${opt.out}-pictures.png` });
   await page.click('button:text-is("model")');
   await page.waitForTimeout(1500);

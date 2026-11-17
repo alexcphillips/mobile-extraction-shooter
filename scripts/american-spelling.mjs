@@ -91,7 +91,18 @@ const git = (...args) => execFileSync('git', args, { encoding: 'utf8', maxBuffer
 const any = WORDS.map(([gb]) => gb).join('|');
 let files = [];
 try {
-  files = git('grep', '-I', '-l', '-i', '-E', any, '--', '.', ':!package-lock.json', ...KEEP.map((f) => `:!${f}`))
+  files = git(
+    'grep',
+    '-I',
+    '-l',
+    '-i',
+    '-E',
+    any,
+    '--',
+    '.',
+    ':!package-lock.json',
+    ...KEEP.map((f) => `:!${f}`),
+  )
     .split('\n')
     .filter(Boolean);
 } catch {

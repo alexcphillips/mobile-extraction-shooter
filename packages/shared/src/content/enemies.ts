@@ -423,7 +423,24 @@ export const loadoutSchema = z.strictObject({
    * before anything else so they're in its pockets. None if left out; an optional field,
    * so still format 1.
    */
-  carried: z.array(z.strictObject({ item: idSchema, count: z.int().min(1).optional() })).optional(),
+  carried: z
+    .array(
+      z.strictObject({
+        item: idSchema,
+        count: z.int().min(1).optional(),
+        /**
+         * The chance it's carried at all, 0 to 1 (2026-11-17: the foreman's kiln key some
+         * raids). Always if left out.
+         */
+        chance: z
+          .number()
+          .refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1')
+          .optional(),
+        /** Uses left on it, for an item that has uses (a key): fewer than a new one's. */
+        left: z.int().min(1).optional(),
+      }),
+    )
+    .optional(),
 });
 
 export type EnemyDef = z.infer<typeof enemySchema>;

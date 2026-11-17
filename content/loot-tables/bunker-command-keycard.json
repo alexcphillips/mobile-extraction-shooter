@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "bunker-command-keycard",
+  "name": "Bunker command keycard",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "bunker-command-keycard",
+      "weight": 1
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "formatVersion": 3,
+  "id": "folding-table-set",
+  "name": "Folding table with chairs and laptops",
+  "tags": ["office", "military"],
+  "colors": {
+    "paper": "#efece4",
+    "ink": "#3a3d42",
+    "cable": "#1d1e21"
+  },
+  "nodes": [
+    {
+      "type": "prefab",
+      "prefab": "folding-table",
+      "pos": [0, 0, 0]
+    },
+    {
+      "type": "prefab",
+      "prefab": "folding-chair",
+      "pos": [-0.45, 0, 0.66],
+      "yaw": 180
+    },
+    {
+      "type": "prefab",
+      "prefab": "folding-chair",
+      "pos": [0.45, 0, 0.7],
+      "yaw": 172
+    },
+    {
+      "type": "prefab",
+      "prefab": "folding-chair",
+      "pos": [0.32, 0, -0.78],
+      "yaw": 12
+    },
+    {
+      "type": "prefab",
+      "prefab": "open-laptop",
+      "pos": [-0.45, 0.74, 0.14]
+    },
+    {
+      "type": "prefab",
+      "prefab": "open-laptop",
+      "pos": [0.47, 0.74, 0.16],
+      "yaw": 8
+    },
+    {
+      "type": "prefab",
+      "prefab": "open-laptop",
+      "pos": [0.3, 0.74, -0.16],
+      "yaw": 185
+    },
+    {
+      "type": "box",
+      "pos": [-0.05, 0.741, -0.1],
+      "size": [0.21, 0.004, 0.297],
+      "color": "paper",
+      "collide": false,
+      "yaw": -12
+    },
+    {
+      "type": "box",
+      "pos": [-0.02, 0.746, -0.1],
+      "size": [0.16, 0.002, 0.02],
+      "color": "ink",
+      "collide": false,
+      "yaw": -12
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.741, 0.05],
+      "size": [0.6, 0.006, 0.012],
+      "color": "cable",
+      "collide": false,
+      "yaw": 4
+    }
+  ]
+}

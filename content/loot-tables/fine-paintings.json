@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "fine-paintings",
+  "name": "Fine paintings",
+  "rolls": [1, 1],
+  "items": [
+    { "item": "autumn-overlook", "weight": 1 },
+    { "item": "golden-harvest", "weight": 0.8 },
+    { "item": "lavender-fields", "weight": 0.6 },
+    { "item": "the-tempest", "weight": 0.25 }
+  ]
+}

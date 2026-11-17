@@ -55,18 +55,6 @@
     {
       "item": "strategic-defense-plans",
       "weight": 0.2
-    },
-    {
-      "item": "global-surveillance-database",
-      "weight": 0.05
-    },
-    {
-      "item": "nuclear-launch-protocols",
-      "weight": 0.05
-    },
-    {
-      "item": "project-nightfall-archive",
-      "weight": 0.05
     }
   ]
 }

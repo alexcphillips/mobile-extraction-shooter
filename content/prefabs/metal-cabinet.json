@@ -1,0 +1,134 @@
+{
+  "formatVersion": 3,
+  "id": "metal-cabinet",
+  "name": "Metal cabinet",
+  "tags": ["industrial", "office"],
+  "colors": {
+    "steel": "#6f7a72",
+    "steel-dark": "#58625b",
+    "handle": "#2b2b2b",
+    "inside": "#2e3330",
+    "label": "#e9ebe8",
+    "box": "#b08a5a",
+    "box-dark": "#94704a",
+    "bin": "#3d6fa0",
+    "can": "#c0392b",
+    "paper": "#efece4"
+  },
+  "nodes": [
+    {
+      "type": "group",
+      "pos": [0, 0, 0],
+      "loot": {
+        "container": "metal-cabinet",
+        "searched": "metal-cabinet-open"
+      },
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [0, 0, 0],
+          "size": [1.3, 1.5, 0.6],
+          "color": "steel"
+        },
+        {
+          "type": "box",
+          "pos": [0, 0, 0.302],
+          "size": [1.26, 0.06, 0.004],
+          "color": "steel-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 1.495, 0],
+          "size": [1.32, 0.03, 0.62],
+          "color": "steel-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.07, 0.303],
+          "size": [0.008, 1.38, 0.004],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.325, 0.2, 0.304],
+          "size": [0.485, 1.1, 0.004],
+          "color": "steel-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.05, 0.62, 0.32],
+          "size": [0.025, 0.3, 0.03],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.656, 0.2, 0.28],
+          "size": [0.015, 0.1, 0.03],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.656, 0.7, 0.28],
+          "size": [0.015, 0.1, 0.03],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.656, 1.2, 0.28],
+          "size": [0.015, 0.1, 0.03],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.325, 0.2, 0.304],
+          "size": [0.485, 1.1, 0.004],
+          "color": "steel-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.05, 0.62, 0.32],
+          "size": [0.025, 0.3, 0.03],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.656, 0.2, 0.28],
+          "size": [0.015, 0.1, 0.03],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.656, 0.7, 0.28],
+          "size": [0.015, 0.1, 0.03],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.656, 1.2, 0.28],
+          "size": [0.015, 0.1, 0.03],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.05, 1.0, 0.306],
+          "size": [0.04, 0.04, 0.008],
+          "color": "label",
+          "collide": false
+        }
+      ]
+    }
+  ]
+}

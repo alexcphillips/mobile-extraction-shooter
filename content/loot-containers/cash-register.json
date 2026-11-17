@@ -2,5 +2,11 @@
   "formatVersion": 1,
   "id": "cash-register",
   "name": "Cash register",
-  "grid": [2, 2]
+  "grid": [2, 2],
+  "loot": {
+    "tables": {
+      "till": 1
+    },
+    "empty": 0.3
+  }
 }

@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "bunker-comms-keycard",
+  "name": "Bunker comms keycard",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "bunker-comms-keycard",
+      "weight": 1
+    }
+  ]
+}

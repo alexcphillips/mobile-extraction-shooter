@@ -74,26 +74,31 @@ describe('quest editor', () => {
     expect(e.getState().quests.size).toBe(questDocs().size);
   });
 
+  // Silver Creek's chain (2026-11-17, after Under the mill went): area-familiarization →
+  // proper-protection; shiny-stock and field-dressing stand alone.
   it('renames without touching other quests', () => {
     const e = make();
     e.select('area-familiarization');
     e.edit((q) => (q.name = 'Renamed'));
     expect(e.getState().unsaved).toEqual(['area-familiarization']);
-    expect(e.getState().quests.get('under-the-mill')!.requires).toEqual(['area-familiarization']);
+    expect(e.getState().quests.get('proper-protection')!.requires).toEqual([
+      'area-familiarization',
+    ]);
     expect(e.getState().problem).toBeNull();
   });
 
   it('deletes a quest in the middle of a chain without breaking it, and undoes', () => {
     const e = make();
-    e.remove('under-the-mill');
+    // a quest after proper-protection makes it the middle of a chain of three
+    const last = e.create({ vendor: 'armorer', after: 'proper-protection' });
+    e.remove('proper-protection');
     const s = e.getState();
-    expect(s.quests.has('under-the-mill')).toBe(false);
-    expect(s.quests.get('proper-protection')!.requires).toEqual(['area-familiarization']);
+    expect(s.quests.has('proper-protection')).toBe(false);
+    expect(s.quests.get(last)!.requires).toEqual(['area-familiarization']);
     expect(s.problem).toBeNull();
-    expect([...s.unsaved].sort()).toEqual(['proper-protection', 'under-the-mill']);
+    expect(s.unsaved).toContain('proper-protection');
     e.undo();
-    expect(e.getState().quests.get('proper-protection')!.requires).toEqual(['under-the-mill']);
-    expect(e.getState().unsaved).toEqual([]);
+    expect(e.getState().quests.get(last)!.requires).toEqual(['proper-protection']);
   });
 
   it('makes a quest unlocked by another, for another vendor, that passes the checks', () => {
@@ -125,25 +130,26 @@ describe('quest editor', () => {
     expect(e.getState().problem).toBeNull();
   });
 
-  // Silver Creek's chain: area-familiarization → under-the-mill → proper-protection.
   it('inserts a new quest before one, taking its requirements', () => {
     const e = make();
     const id = e.create({ vendor: 'armorer', before: 'proper-protection' });
     const s = e.getState();
-    expect(s.quests.get(id)!.requires).toEqual(['under-the-mill']);
+    expect(s.quests.get(id)!.requires).toEqual(['area-familiarization']);
     expect(s.quests.get('proper-protection')!.requires).toEqual([id]);
     expect(s.problem).toBeNull();
     e.undo();
     expect(e.getState().quests.has(id)).toBe(false);
-    expect(e.getState().quests.get('proper-protection')!.requires).toEqual(['under-the-mill']);
+    expect(e.getState().quests.get('proper-protection')!.requires).toEqual([
+      'area-familiarization',
+    ]);
   });
 
   it('moves a quest before another in one step, closing the gap it left', () => {
     const e = make();
-    e.move('proper-protection', 'under-the-mill', 'before');
+    e.move('shiny-stock', 'proper-protection', 'before');
     const s = e.getState();
-    expect(s.quests.get('proper-protection')!.requires).toEqual(['area-familiarization']);
-    expect(s.quests.get('under-the-mill')!.requires).toEqual(['proper-protection']);
+    expect(s.quests.get('shiny-stock')!.requires).toEqual(['area-familiarization']);
+    expect(s.quests.get('proper-protection')!.requires).toEqual(['shiny-stock']);
     expect(s.problem).toBeNull();
     e.undo();
     expect(e.getState().unsaved).toEqual([]);
@@ -151,18 +157,19 @@ describe('quest editor', () => {
 
   it('moves a quest after another, its old dependents rewired', () => {
     const e = make();
-    e.move('under-the-mill', 'proper-protection', 'after');
+    e.move('shiny-stock', 'proper-protection', 'before');
+    e.move('shiny-stock', 'proper-protection', 'after');
     const s = e.getState();
     expect(s.quests.get('proper-protection')!.requires).toEqual(['area-familiarization']);
-    expect(s.quests.get('under-the-mill')!.requires).toEqual(['proper-protection']);
+    expect(s.quests.get('shiny-stock')!.requires).toEqual(['proper-protection']);
     expect(s.problem).toBeNull();
   });
 
   it('sets several requirements at once, refusing a loop', () => {
     const e = make();
-    e.setRequires('proper-protection', ['under-the-mill', 'shiny-stock', 'field-dressing']);
+    e.setRequires('proper-protection', ['area-familiarization', 'shiny-stock', 'field-dressing']);
     expect(e.getState().quests.get('proper-protection')!.requires).toEqual([
-      'under-the-mill',
+      'area-familiarization',
       'shiny-stock',
       'field-dressing',
     ]);
@@ -173,8 +180,8 @@ describe('quest editor', () => {
 
   it('gives a quest to another vendor, keeping its links', () => {
     const e = make();
-    e.setVendor('under-the-mill', 'medic');
-    const q = e.getState().quests.get('under-the-mill')!;
+    e.setVendor('proper-protection', 'medic');
+    const q = e.getState().quests.get('proper-protection')!;
     expect(q.vendor).toBe('medic');
     expect(q.requires).toEqual(['area-familiarization']);
   });

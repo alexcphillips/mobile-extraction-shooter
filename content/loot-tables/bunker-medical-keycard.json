@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "bunker-medical-keycard",
+  "name": "Bunker medical keycard",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "bunker-medical-keycard",
+      "weight": 1
+    }
+  ]
+}

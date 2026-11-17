@@ -77,10 +77,6 @@
       "weight": 0.2
     },
     {
-      "item": "portrait-of-the-regent",
-      "weight": 0.2
-    },
-    {
       "item": "royal-heirloom-tiara",
       "weight": 0.2
     },
@@ -97,80 +93,8 @@
       "weight": 0.2
     },
     {
-      "item": "the-unfinished-masterpiece",
-      "weight": 0.2
-    },
-    {
       "item": "voltex-vr-headset",
       "weight": 0.2
-    },
-    {
-      "item": "a-world-beyond",
-      "weight": 0.05
-    },
-    {
-      "item": "armored-vehicle-battery",
-      "weight": 0.05
-    },
-    {
-      "item": "combat-systems-terminal",
-      "weight": 0.05
-    },
-    {
-      "item": "fusion-reactor-core",
-      "weight": 0.05
-    },
-    {
-      "item": "global-surveillance-database",
-      "weight": 0.05
-    },
-    {
-      "item": "gold-bar",
-      "weight": 0.05
-    },
-    {
-      "item": "jade-dragon",
-      "weight": 0.05
-    },
-    {
-      "item": "limited-edition-slow-cooker",
-      "weight": 0.05
-    },
-    {
-      "item": "mircroreactor",
-      "weight": 0.05
-    },
-    {
-      "item": "nuclear-launch-protocols",
-      "weight": 0.05
-    },
-    {
-      "item": "portable-x-ray-unit",
-      "weight": 0.05
-    },
-    {
-      "item": "project-nightfall-archive",
-      "weight": 0.05
-    },
-    {
-      "item": "quantum-cryptographic-core",
-      "weight": 0.05
-    },
-    {
-      "item": "rocket-thruster",
-      "weight": 0.05
-    },
-    {
-      "item": "the-last-supper-of-kings",
-      "weight": 0.05
-    },
-    {
-      "item": "voltex-quantum-storage-array",
-      "weight": 0.05
-    },
-    {
-      "item": "wifi-toaster",
-      "weight": 0.05
     }
   ]
 }

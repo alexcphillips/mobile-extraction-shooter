@@ -1,0 +1,20 @@
+{
+  "formatVersion": 1,
+  "id": "mythic-industrial",
+  "name": "Mythic industrial",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "fusion-reactor-core",
+      "weight": 1
+    },
+    {
+      "item": "mircroreactor",
+      "weight": 1
+    },
+    {
+      "item": "rocket-thruster",
+      "weight": 1
+    }
+  ]
+}

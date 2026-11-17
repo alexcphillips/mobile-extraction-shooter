@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "id": "hydraulics",
+  "name": "Hydraulics",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "pressure-gauge",
+      "weight": 4
+    },
+    {
+      "item": "solenoid-valve",
+      "weight": 3
+    },
+    {
+      "item": "valve-handwheel",
+      "weight": 3
+    },
+    {
+      "item": "corrugated-tubing",
+      "weight": 2
+    },
+    {
+      "item": "compressed-air-tank",
+      "weight": 1
+    },
+    {
+      "item": "hydraulic-press-head",
+      "weight": 0.4
+    }
+  ]
+}

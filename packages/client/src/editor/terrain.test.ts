@@ -247,6 +247,31 @@ describe('overlaps', () => {
     expect(solidsOverlap(a, { ...a, x: 2.5, yaw: Math.PI / 4 }, 0.05)).toBe(false);
   });
 
+  it('measure a sloped solid (a roof slope) under its slope, not its bounds', () => {
+    // A gabled roof, ridge along x at z 0 and y 3, falling 1 in 2 to the eaves at z ±2:
+    // each slope a 0.15 m slab whose bounds reach the ridge.
+    const slope = (s: number) => ({
+      x: 0,
+      z: s,
+      yaw: 0,
+      hx: 3,
+      hz: 1.05,
+      y0: 1.9,
+      y1: 3.1,
+      slope: { top: 2.58, topX: 0, topZ: -0.5 * s, under: 2.42, underX: 0, underZ: -0.5 * s },
+    });
+    const n = slope(-1);
+    const s = slope(1);
+    // The bounds overlap all along the ridge; the slabs only meet there.
+    expect(solidsOverlap(n, s, 0.05, 0.45)).toBe(false);
+    // A ceiling at the eaves' height, under the roof: clear of it but at its edges.
+    const ceiling = { x: 0, z: 0, yaw: 0, hx: 3, hz: 2, y0: 1.9, y1: 2.0 };
+    expect(solidsOverlap(n, ceiling, 0.05, 0.45)).toBe(false);
+    // A crate stood up through the slope cuts into it.
+    const crate = { x: 0, z: -1, yaw: 0, hx: 0.5, hz: 0.5, y0: 1.5, y1: 3 };
+    expect(solidsOverlap(n, crate, 0.05, 0.45)).toBe(true);
+  });
+
   it("don't count joints: cuts thin on two axes", () => {
     const wall = { x: 0, z: 0, yaw: 0, hx: 2, hz: 0.1, y0: 0, y1: 3 };
     // Another wall meeting it at a corner: 0.2 by 0.2 across, 3 m tall.

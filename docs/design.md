@@ -7,8 +7,8 @@ From before the split: "These decisions were made in design sessions on 2026-10-
 | File | Sections | Size |
 |---|---|---|
 | [design/overview.md](design/overview.md) | Vision; Scope; Core loop and progression; Art direction; Sound (session 19, decided with the user 2026-10-30); Trust model; Characters (confirmed 2026-10-26); Future (designed for now, built later; monetization) | 18 KB |
-| [design/raids-and-maps.md](design/raids-and-maps.md) | Raids and maps: rules shared by every map (timer, spawns, terrain, loot, extraction, results, saving, switches, map select); the maps index | 22 KB |
-| [design/maps/silver-creek.md](design/maps/silver-creek.md) | Silver Creek, the starter map (summary first) | 23 KB |
+| [design/raids-and-maps.md](design/raids-and-maps.md) | Raids and maps: rules shared by every map (timer, spawns, terrain, loot, extraction, results, saving, switches, map select); the maps index | 12 KB |
+| [design/maps/silver-creek.md](design/maps/silver-creek.md) | Silver Creek, the starter map (summary first) | 22 KB |
 | [design/maps/northpoint.md](design/maps/northpoint.md) | Northpoint, the mall (summary first) | 31 KB |
 | [design/maps/district.md](design/maps/district.md) | District, planned (summary first) | 6 KB |
 | [design/maps/d2.md](design/maps/d2.md) | d2, the hand-built District (summary first) | 4 KB |

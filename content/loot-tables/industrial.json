@@ -191,18 +191,6 @@
     {
       "item": "nuclear-fuel",
       "weight": 0.2
-    },
-    {
-      "item": "fusion-reactor-core",
-      "weight": 0.05
-    },
-    {
-      "item": "mircroreactor",
-      "weight": 0.05
-    },
-    {
-      "item": "rocket-thruster",
-      "weight": 0.05
     }
   ]
 }

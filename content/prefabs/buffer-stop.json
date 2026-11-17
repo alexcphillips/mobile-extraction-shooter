@@ -1,0 +1,126 @@
+{
+  "formatVersion": 3,
+  "id": "buffer-stop",
+  "name": "Buffer stop",
+  "tags": ["rail"],
+  "colors": { "steel": "#4a4a48", "beam": "#b8342c", "white": "#e8e2d2", "lamp": "#d23a30" },
+  "nodes": [
+    { "type": "box", "pos": [0.1, 0.25, 0.0], "size": [0.8, 1.0, 2.6], "color": "steel" },
+    { "type": "box", "pos": [-0.36, 0.8, 0.0], "size": [0.12, 0.4, 2.7], "color": "beam" },
+    {
+      "type": "box",
+      "pos": [-0.422, 0.85, -1.08],
+      "size": [0.004, 0.3, 0.24],
+      "color": "white",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.422, 0.85, -0.54],
+      "size": [0.004, 0.3, 0.24],
+      "color": "white",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.422, 0.85, 0.0],
+      "size": [0.004, 0.3, 0.24],
+      "color": "white",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.422, 0.85, 0.54],
+      "size": [0.004, 0.3, 0.24],
+      "color": "white",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.422, 0.85, 1.08],
+      "size": [0.004, 0.3, 0.24],
+      "color": "white",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.62, 0.85, -0.85],
+      "radius": 0.2,
+      "height": 0.3,
+      "color": "steel",
+      "collide": false,
+      "roll": 90,
+      "sides": 8
+    },
+    {
+      "type": "box",
+      "pos": [-0.8, 0.8, -0.85],
+      "size": [0.04, 0.4, 0.44],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.35, 0.3, -0.85],
+      "size": [1.7, 0.12, 0.16],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.25, 0.42, -0.85],
+      "size": [1.5, 0.1, 0.12],
+      "color": "steel",
+      "collide": false,
+      "top": [0.1, 0.12],
+      "lean": [-0.7, 0]
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.62, 0.85, 0.85],
+      "radius": 0.2,
+      "height": 0.3,
+      "color": "steel",
+      "collide": false,
+      "roll": 90,
+      "sides": 8
+    },
+    {
+      "type": "box",
+      "pos": [-0.8, 0.8, 0.85],
+      "size": [0.04, 0.4, 0.44],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.35, 0.3, 0.85],
+      "size": [1.7, 0.12, 0.16],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.25, 0.42, 0.85],
+      "size": [1.5, 0.1, 0.12],
+      "color": "steel",
+      "collide": false,
+      "top": [0.1, 0.12],
+      "lean": [-0.7, 0]
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 1.25, 0.0],
+      "size": [0.1, 0.4, 0.24],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 1.65, 0.0],
+      "size": [0.2, 0.2, 0.24],
+      "color": "lamp",
+      "collide": false
+    }
+  ]
+}

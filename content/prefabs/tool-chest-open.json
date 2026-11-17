@@ -1,0 +1,180 @@
+{
+  "formatVersion": 3,
+  "id": "tool-chest-open",
+  "name": "Tool chest (searched)",
+  "tags": ["industrial"],
+  "colors": {
+    "paint": "#b8312a",
+    "paint-dark": "#8e2520",
+    "steel": "#9aa0a4",
+    "inside": "#2a2a2a",
+    "handle": "#2b2b2b",
+    "tool": "#c9a227",
+    "grip": "#d24b2a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0.09, 0],
+      "size": [0.76, 0.93, 0.46],
+      "color": "paint",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.86, 0.232],
+      "size": [0.7, 0.12, 0.004],
+      "color": "paint-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.945, 0.236],
+      "size": [0.56, 0.018, 0.012],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.72, 0.232],
+      "size": [0.7, 0.12, 0.004],
+      "color": "paint-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.805, 0.236],
+      "size": [0.56, 0.018, 0.012],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.58, 0.232],
+      "size": [0.7, 0.12, 0.004],
+      "color": "paint-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.665, 0.236],
+      "size": [0.56, 0.018, 0.012],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.525, 0.236],
+      "size": [0.56, 0.018, 0.012],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.02, 0],
+      "size": [0.77, 0.02, 0.47],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.32, 0, -0.17],
+      "size": [0.06, 0.09, 0.06],
+      "color": "handle",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.32, 0, 0.17],
+      "size": [0.06, 0.09, 0.06],
+      "color": "handle",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.32, 0, -0.17],
+      "size": [0.06, 0.09, 0.06],
+      "color": "handle",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.32, 0, 0.17],
+      "size": [0.06, 0.09, 0.06],
+      "color": "handle",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.41, 0.55, 0],
+      "size": [0.02, 0.3, 0.02],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.395, 0.55, 0],
+      "size": [0.03, 0.02, 0.02],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.395, 0.83, 0],
+      "size": [0.03, 0.02, 0.02],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.38, 0.37],
+      "size": [0.7, 0.18, 0.32],
+      "color": "paint-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.535, 0.37],
+      "size": [0.66, 0.004, 0.28],
+      "color": "inside",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.18, 0.3],
+      "size": [0.7, 0.18, 0.18],
+      "color": "paint-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.335, 0.3],
+      "size": [0.66, 0.004, 0.14],
+      "color": "inside",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.15, 0.53, 0.37],
+      "size": [0.22, 0.03, 0.04],
+      "color": "grip",
+      "collide": false,
+      "yaw": 25
+    },
+    {
+      "type": "box",
+      "pos": [0.12, 0.53, 0.35],
+      "size": [0.2, 0.025, 0.03],
+      "color": "steel",
+      "collide": false,
+      "yaw": -10
+    },
+    {
+      "type": "box",
+      "pos": [0.02, 0.53, 0.43],
+      "size": [0.12, 0.03, 0.05],
+      "color": "tool",
+      "collide": false
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "formatVersion": 3,
+  "id": "boom-barrier-post",
+  "name": "Boom barrier post",
+  "tags": ["street", "industrial"],
+  "colors": {
+    "post": "#e0b23a",
+    "stripe": "#2b2b2b",
+    "arm": "#f2f2f2",
+    "arm-stripe": "#c0392b",
+    "steel": "#4a4f54"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [0.45, 1.05, 0.45],
+      "color": "post"
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.05, 0],
+      "size": [0.4, 0.12, 0.4],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.2, 0.226],
+      "size": [0.45, 0.1, 0.005],
+      "color": "stripe",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.5, 0.226],
+      "size": [0.45, 0.1, 0.005],
+      "color": "stripe",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.8, 0.226],
+      "size": [0.45, 0.1, 0.005],
+      "color": "stripe",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.42, 0.88, 0],
+      "size": [0.3, 0.2, 0.14],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.25, 0.93, 0],
+      "size": [0.1, 0.1, 0.12],
+      "color": "steel",
+      "collide": false
+    }
+  ]
+}

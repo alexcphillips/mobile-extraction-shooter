@@ -8,7 +8,178 @@
   "weight": 2,
   "rarity": "rare",
   "model": {
-    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]
+    "parts": [
+      {
+        "type": "box",
+        "name": "frame top",
+        "group": "frame",
+        "pos": [0, 0.015, -0.215],
+        "size": [0.6, 0.03, 0.05],
+        "color": "#4a3222"
+      },
+      {
+        "type": "box",
+        "name": "frame bottom",
+        "group": "frame",
+        "pos": [0, 0.015, 0.215],
+        "size": [0.6, 0.03, 0.05],
+        "color": "#4a3222"
+      },
+      {
+        "type": "box",
+        "name": "frame left",
+        "group": "frame",
+        "pos": [-0.275, 0.015, 0],
+        "size": [0.05, 0.03, 0.38],
+        "color": "#4a3222"
+      },
+      {
+        "type": "box",
+        "name": "frame right",
+        "group": "frame",
+        "pos": [0.275, 0.015, 0],
+        "size": [0.05, 0.03, 0.38],
+        "color": "#4a3222"
+      },
+      {
+        "type": "box",
+        "name": "lip top",
+        "group": "frame",
+        "pos": [0, 0.013, -0.184],
+        "size": [0.5, 0.026, 0.012],
+        "color": "#b8923a"
+      },
+      {
+        "type": "box",
+        "name": "lip bottom",
+        "group": "frame",
+        "pos": [0, 0.013, 0.184],
+        "size": [0.5, 0.026, 0.012],
+        "color": "#b8923a"
+      },
+      {
+        "type": "box",
+        "name": "lip left",
+        "group": "frame",
+        "pos": [-0.244, 0.013, 0],
+        "size": [0.012, 0.026, 0.356],
+        "color": "#b8923a"
+      },
+      {
+        "type": "box",
+        "name": "lip right",
+        "group": "frame",
+        "pos": [0.244, 0.013, 0],
+        "size": [0.012, 0.026, 0.356],
+        "color": "#b8923a"
+      },
+      {
+        "type": "box",
+        "name": "canvas",
+        "group": "canvas",
+        "pos": [0, 0.011, 0],
+        "size": [0.476, 0.022, 0.356],
+        "color": "#6b7a4a"
+      },
+      {
+        "type": "box",
+        "name": "sky",
+        "group": "scene",
+        "pos": [0, 0.022, -0.1201],
+        "size": [0.476, 0.002, 0.1157],
+        "color": "#e7c48a"
+      },
+      {
+        "type": "box",
+        "name": "far hills",
+        "group": "scene",
+        "pos": [0, 0.0225, -0.0534],
+        "size": [0.476, 0.003, 0.0534],
+        "color": "#6f86a6"
+      },
+      {
+        "type": "box",
+        "name": "near hill",
+        "group": "scene",
+        "pos": [-0.0833, 0.023, -0.0089],
+        "size": [0.3094, 0.004, 0.0534],
+        "color": "#8a9a5c"
+      },
+      {
+        "type": "box",
+        "name": "valley",
+        "group": "scene",
+        "pos": [0.1428, 0.0235, -0.0027],
+        "size": [0.1904, 0.005, 0.0587],
+        "color": "#a8925a"
+      },
+      {
+        "type": "box",
+        "name": "tree 1",
+        "group": "trees",
+        "pos": [-0.1904, 0.024, 0.0445],
+        "size": [0.0952, 0.006, 0.0783],
+        "color": "#c4531f"
+      },
+      {
+        "type": "box",
+        "name": "tree 2",
+        "group": "trees",
+        "pos": [-0.1071, 0.0245, 0.0623],
+        "size": [0.0952, 0.007, 0.0783],
+        "color": "#e08a2a"
+      },
+      {
+        "type": "box",
+        "name": "tree 3",
+        "group": "trees",
+        "pos": [-0.0238, 0.024, 0.0534],
+        "size": [0.0952, 0.006, 0.0783],
+        "color": "#b8321f"
+      },
+      {
+        "type": "box",
+        "name": "tree 4",
+        "group": "trees",
+        "pos": [0.0714, 0.0245, 0.0712],
+        "size": [0.0952, 0.007, 0.0783],
+        "color": "#e0a830"
+      },
+      {
+        "type": "box",
+        "name": "tree 5",
+        "group": "trees",
+        "pos": [0.1666, 0.024, 0.0498],
+        "size": [0.0952, 0.006, 0.0783],
+        "color": "#c4531f"
+      },
+      {
+        "type": "box",
+        "name": "rail",
+        "group": "scene",
+        "pos": [0, 0.025, 0.1335],
+        "size": [0.476, 0.008, 0.0107],
+        "color": "#5a3c26"
+      },
+      {
+        "type": "box",
+        "name": "rail post 1",
+        "group": "scene",
+        "pos": [-0.1368, 0.025, 0.1531],
+        "size": [0.0119, 0.008, 0.0498],
+        "color": "#5a3c26"
+      },
+      {
+        "type": "box",
+        "name": "rail post 2",
+        "group": "scene",
+        "pos": [0.125, 0.025, 0.1531],
+        "size": [0.0119, 0.008, 0.0498],
+        "color": "#5a3c26"
+      }
+    ]
   },
-  "category": "Craftwork"
+  "category": "Craftwork",
+  "lean": 12,
+  "view": "top"
 }

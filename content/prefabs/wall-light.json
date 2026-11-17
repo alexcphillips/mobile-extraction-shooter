@@ -1,0 +1,35 @@
+{
+  "formatVersion": 3,
+  "id": "wall-light",
+  "name": "Wall light",
+  "tags": ["industrial", "street", "structure"],
+  "instanced": true,
+  "colors": {
+    "body": "#3a3d42",
+    "lens": "#f2ecd0"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, -0.12, 0.04],
+      "size": [0.26, 0.24, 0.08],
+      "color": "body",
+      "collide": false,
+      "top": [0.22, 0.06]
+    },
+    {
+      "type": "box",
+      "pos": [0, -0.1, 0.081],
+      "size": [0.18, 0.14, 0.005],
+      "color": "lens",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, -0.15, 0.06],
+      "size": [0.2, 0.02, 0.05],
+      "color": "body",
+      "collide": false
+    }
+  ]
+}

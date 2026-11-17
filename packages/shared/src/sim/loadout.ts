@@ -61,8 +61,14 @@ export function equipLoadout(c: Character, items: ItemDb, loadout: LoadoutDef, r
     else c.gear.rig = null;
   }
   rollContainer(c, items, 'backpack', loadout.backpacks, rng);
-  for (const k of loadout.carried ?? [])
-    for (let i = 0; i < (k.count ?? 1); i++) stow(c, items, createItem(items, k.item));
+  for (const k of loadout.carried ?? []) {
+    if (k.chance !== undefined && nextFloat(rng) >= k.chance) continue;
+    for (let i = 0; i < (k.count ?? 1); i++) {
+      const item = createItem(items, k.item);
+      if (k.left !== undefined && item.left !== undefined) item.left = Math.min(item.left, k.left);
+      stow(c, items, item);
+    }
+  }
   rollGrenades(c, items, loadout.grenades, rng);
   // MG-3: spare magazines first, so they land in pockets and rig, in reach of a reload.
   const loose = spare - stowMagazines(c, items, gun, ammo, spare);

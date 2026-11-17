@@ -1,0 +1,36 @@
+{
+  "formatVersion": 1,
+  "id": "millwright",
+  "name": "Millwright's parts",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "gear-set",
+      "weight": 4
+    },
+    {
+      "item": "steel-latch-set",
+      "weight": 3
+    },
+    {
+      "item": "box-of-screws",
+      "weight": 3
+    },
+    {
+      "item": "valve-handwheel",
+      "weight": 2
+    },
+    {
+      "item": "pressure-gauge",
+      "weight": 2
+    },
+    {
+      "item": "solenoid-valve",
+      "weight": 1
+    },
+    {
+      "item": "compressed-air-tank",
+      "weight": 0.5
+    }
+  ]
+}

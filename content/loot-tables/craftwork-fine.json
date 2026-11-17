@@ -1,0 +1,36 @@
+{
+  "formatVersion": 1,
+  "id": "craftwork-fine",
+  "name": "Fine craftwork",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "gold-watch",
+      "weight": 4
+    },
+    {
+      "item": "royal-heirloom-tiara",
+      "weight": 3
+    },
+    {
+      "item": "marble-toad-sculpture",
+      "weight": 3
+    },
+    {
+      "item": "autumn-overlook",
+      "weight": 2
+    },
+    {
+      "item": "lavender-fields",
+      "weight": 2
+    },
+    {
+      "item": "ruby-ring",
+      "weight": 1.5
+    },
+    {
+      "item": "diamond-necklace",
+      "weight": 0.6
+    }
+  ]
+}

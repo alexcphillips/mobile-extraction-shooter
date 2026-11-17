@@ -1,0 +1,215 @@
+{
+  "formatVersion": 3,
+  "id": "guard-booth",
+  "name": "Guard booth",
+  "tags": ["industrial", "structure", "military"],
+  "colors": {
+    "body": "#d9d4c7",
+    "trim": "#3d5a73",
+    "roof": "#4a4f54",
+    "glass": "#9fc8d0",
+    "counter": "#8a8f93",
+    "screen": "#3fb6d6",
+    "sign": "#f2f2f2",
+    "lamp": "#f2ecd0"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [1.8, 0.12, 2.2],
+      "color": "trim"
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.12, -1.05],
+      "size": [1.8, 0.88, 0.1],
+      "color": "body"
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 2.1, -1.05],
+      "size": [1.8, 0.65, 0.1],
+      "color": "body"
+    },
+    {
+      "type": "box",
+      "pos": [-0.8, 1.0, -1.05],
+      "size": [0.2, 1.1, 0.1],
+      "color": "body"
+    },
+    {
+      "type": "box",
+      "pos": [0.8, 1.0, -1.05],
+      "size": [0.2, 1.1, 0.1],
+      "color": "body"
+    },
+    {
+      "type": "glass",
+      "pos": [0, 1.0, -1.05],
+      "size": [1.4, 1.1],
+      "yaw": 0,
+      "color": "glass"
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.12, 1.05],
+      "size": [1.8, 0.88, 0.1],
+      "color": "body"
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 2.1, 1.05],
+      "size": [1.8, 0.65, 0.1],
+      "color": "body"
+    },
+    {
+      "type": "box",
+      "pos": [-0.8, 1.0, 1.05],
+      "size": [0.2, 1.1, 0.1],
+      "color": "body"
+    },
+    {
+      "type": "box",
+      "pos": [0.8, 1.0, 1.05],
+      "size": [0.2, 1.1, 0.1],
+      "color": "body"
+    },
+    {
+      "type": "glass",
+      "pos": [0, 1.0, 1.05],
+      "size": [1.4, 1.1],
+      "yaw": 0,
+      "color": "glass"
+    },
+    {
+      "type": "box",
+      "pos": [-0.85, 0.12, 0.0],
+      "size": [0.1, 0.88, 2.0],
+      "color": "body"
+    },
+    {
+      "type": "box",
+      "pos": [-0.85, 2.1, 0.0],
+      "size": [0.1, 0.65, 2.0],
+      "color": "body"
+    },
+    {
+      "type": "box",
+      "pos": [-0.85, 1.0, -0.8],
+      "size": [0.1, 1.1, 0.4],
+      "color": "body"
+    },
+    {
+      "type": "box",
+      "pos": [-0.85, 1.0, 0.8],
+      "size": [0.1, 1.1, 0.4],
+      "color": "body"
+    },
+    {
+      "type": "glass",
+      "pos": [-0.85, 1.0, 0],
+      "size": [1.2, 1.1],
+      "yaw": 90,
+      "color": "glass"
+    },
+    {
+      "type": "box",
+      "pos": [0.85, 0.12, -0.725],
+      "size": [0.1, 2.63, 0.55],
+      "color": "body"
+    },
+    {
+      "type": "box",
+      "pos": [0.85, 0.12, 0.725],
+      "size": [0.1, 2.63, 0.55],
+      "color": "body"
+    },
+    {
+      "type": "box",
+      "pos": [0.85, 2.15, 0.0],
+      "size": [0.1, 0.6, 0.9],
+      "color": "body"
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 2.75, 0.0],
+      "size": [2.0, 0.15, 2.4],
+      "color": "roof"
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.9, 0],
+      "size": [2.3, 0.08, 2.7],
+      "color": "roof",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.45, 1.106],
+      "size": [1.6, 0.2, 0.01],
+      "color": "trim",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.52, 1.112],
+      "size": [0.9, 0.06, 0.004],
+      "color": "sign",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.12, 1.106],
+      "size": [1.8, 0.25, 0.01],
+      "color": "trim",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.12, 0.8],
+      "size": [1.5, 0.73, 0.4],
+      "color": "counter"
+    },
+    {
+      "type": "box",
+      "pos": [-0.3, 0.85, 0.85],
+      "size": [0.4, 0.3, 0.04],
+      "color": "trim",
+      "collide": false,
+      "pitch": -10
+    },
+    {
+      "type": "box",
+      "pos": [-0.3, 0.88, 0.82],
+      "size": [0.34, 0.22, 0.01],
+      "color": "screen",
+      "collide": false,
+      "pitch": -10
+    },
+    {
+      "type": "box",
+      "pos": [0.35, 0.85, 0.8],
+      "size": [0.22, 0.01, 0.3],
+      "color": "sign",
+      "collide": false,
+      "yaw": 10
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.1, 0.12, -0.2],
+      "radius": 0.18,
+      "height": 0.55,
+      "sides": 8,
+      "color": "trim",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.7, 0],
+      "size": [0.6, 0.03, 0.3],
+      "color": "lamp",
+      "collide": false
+    }
+  ]
+}

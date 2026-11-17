@@ -8,7 +8,200 @@
   "weight": 4,
   "rarity": "epic",
   "model": {
-    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]
+    "parts": [
+      {
+        "type": "box",
+        "name": "frame top",
+        "group": "frame",
+        "pos": [0, 0.0225, -0.365],
+        "size": [1, 0.045, 0.07],
+        "color": "#3a2a1a"
+      },
+      {
+        "type": "box",
+        "name": "frame bottom",
+        "group": "frame",
+        "pos": [0, 0.0225, 0.365],
+        "size": [1, 0.045, 0.07],
+        "color": "#3a2a1a"
+      },
+      {
+        "type": "box",
+        "name": "frame left",
+        "group": "frame",
+        "pos": [-0.465, 0.0225, 0],
+        "size": [0.07, 0.045, 0.66],
+        "color": "#3a2a1a"
+      },
+      {
+        "type": "box",
+        "name": "frame right",
+        "group": "frame",
+        "pos": [0.465, 0.0225, 0],
+        "size": [0.07, 0.045, 0.66],
+        "color": "#3a2a1a"
+      },
+      {
+        "type": "box",
+        "name": "lip top",
+        "group": "frame",
+        "pos": [0, 0.0192, -0.321],
+        "size": [0.86, 0.0385, 0.018],
+        "color": "#c39a35"
+      },
+      {
+        "type": "box",
+        "name": "lip bottom",
+        "group": "frame",
+        "pos": [0, 0.0192, 0.321],
+        "size": [0.86, 0.0385, 0.018],
+        "color": "#c39a35"
+      },
+      {
+        "type": "box",
+        "name": "lip left",
+        "group": "frame",
+        "pos": [-0.421, 0.0192, 0],
+        "size": [0.018, 0.0385, 0.624],
+        "color": "#c39a35"
+      },
+      {
+        "type": "box",
+        "name": "lip right",
+        "group": "frame",
+        "pos": [0.421, 0.0192, 0],
+        "size": [0.018, 0.0385, 0.624],
+        "color": "#c39a35"
+      },
+      {
+        "type": "box",
+        "name": "canvas",
+        "group": "canvas",
+        "pos": [0, 0.016, 0],
+        "size": [0.824, 0.032, 0.624],
+        "color": "#1f4a4a"
+      },
+      {
+        "type": "box",
+        "name": "sky",
+        "group": "scene",
+        "pos": [0, 0.032, -0.1716],
+        "size": [0.824, 0.002, 0.2808],
+        "color": "#3c4250"
+      },
+      {
+        "type": "box",
+        "name": "cloud 1",
+        "group": "sky",
+        "pos": [-0.1854, 0.0325, -0.2496],
+        "size": [0.4532, 0.003, 0.1248],
+        "color": "#23262e"
+      },
+      {
+        "type": "box",
+        "name": "cloud 2",
+        "group": "sky",
+        "pos": [0.2472, 0.0325, -0.2028],
+        "size": [0.3296, 0.003, 0.1248],
+        "color": "#2c303a"
+      },
+      {
+        "type": "box",
+        "name": "break",
+        "group": "sky",
+        "pos": [0.0515, 0.033, -0.117],
+        "size": [0.1854, 0.004, 0.078],
+        "color": "#a7a28a"
+      },
+      {
+        "type": "box",
+        "name": "bolt 1",
+        "group": "sky",
+        "pos": [0.2081, 0.0335, -0.1591],
+        "size": [0.0206, 0.005, 0.0686],
+        "color": "#f2e06a",
+        "yaw": 15
+      },
+      {
+        "type": "box",
+        "name": "bolt 2",
+        "group": "sky",
+        "pos": [0.1957, 0.0335, -0.0967],
+        "size": [0.0206, 0.005, 0.0686],
+        "color": "#f2e06a",
+        "yaw": -20
+      },
+      {
+        "type": "box",
+        "name": "swell 1",
+        "group": "sea",
+        "pos": [-0.2472, 0.0325, 0.0468],
+        "size": [0.2884, 0.003, 0.0624],
+        "color": "#2c6a62"
+      },
+      {
+        "type": "box",
+        "name": "swell 2",
+        "group": "sea",
+        "pos": [0.1236, 0.0325, 0.1092],
+        "size": [0.3296, 0.003, 0.0624],
+        "color": "#2c6a62"
+      },
+      {
+        "type": "box",
+        "name": "swell 3",
+        "group": "sea",
+        "pos": [-0.1236, 0.0325, 0.1872],
+        "size": [0.3708, 0.003, 0.0624],
+        "color": "#163a3a"
+      },
+      {
+        "type": "box",
+        "name": "foam",
+        "group": "sea",
+        "pos": [-0.0721, 0.033, 0.0156],
+        "size": [0.2266, 0.004, 0.0187],
+        "color": "#d8e6e2"
+      },
+      {
+        "type": "box",
+        "name": "hull",
+        "group": "ship",
+        "pos": [-0.0412, 0.0335, 0.0047],
+        "size": [0.206, 0.005, 0.0406],
+        "color": "#4a2a1a",
+        "yaw": -12
+      },
+      {
+        "type": "box",
+        "name": "mast",
+        "group": "ship",
+        "pos": [-0.0412, 0.0335, -0.1014],
+        "size": [0.0165, 0.005, 0.1716],
+        "color": "#3a2216",
+        "yaw": -12
+      },
+      {
+        "type": "box",
+        "name": "sail 1",
+        "group": "ship",
+        "pos": [-0.0845, 0.034, -0.1014],
+        "size": [0.0783, 0.006, 0.1092],
+        "color": "#e6dcc0",
+        "yaw": -12
+      },
+      {
+        "type": "box",
+        "name": "sail 2",
+        "group": "ship",
+        "pos": [0, 0.034, -0.0889],
+        "size": [0.0659, 0.006, 0.103],
+        "color": "#d4c8aa",
+        "yaw": -12
+      }
+    ]
   },
-  "category": "Craftwork"
+  "category": "Craftwork",
+  "lean": 12,
+  "view": "top"
 }

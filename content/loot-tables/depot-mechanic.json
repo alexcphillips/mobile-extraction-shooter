@@ -1,0 +1,56 @@
+{
+  "formatVersion": 1,
+  "id": "depot-mechanic",
+  "name": "Mechanic's parts",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "gear-set",
+      "weight": 3
+    },
+    {
+      "item": "duct-tape",
+      "weight": 3
+    },
+    {
+      "item": "corrugated-tubing",
+      "weight": 3
+    },
+    {
+      "item": "electrical-tape",
+      "weight": 2
+    },
+    {
+      "item": "pressure-gauge",
+      "weight": 2
+    },
+    {
+      "item": "box-of-screws",
+      "weight": 2
+    },
+    {
+      "item": "rechargeable-battery",
+      "weight": 1.5
+    },
+    {
+      "item": "cordless-drill",
+      "weight": 1
+    },
+    {
+      "item": "angle-grinder",
+      "weight": 1
+    },
+    {
+      "item": "bolt-cutters",
+      "weight": 1
+    },
+    {
+      "item": "compressed-air-tank",
+      "weight": 0.4
+    },
+    {
+      "item": "ev-battery",
+      "weight": 0.15
+    }
+  ]
+}

@@ -8,7 +8,266 @@
   "weight": 8,
   "rarity": "mythic",
   "model": {
-    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]
+    "parts": [
+      {
+        "type": "box",
+        "name": "frame top",
+        "group": "frame",
+        "pos": [0, 0.025, -0.555],
+        "size": [1.6, 0.05, 0.09],
+        "color": "#c39a35"
+      },
+      {
+        "type": "box",
+        "name": "frame bottom",
+        "group": "frame",
+        "pos": [0, 0.025, 0.555],
+        "size": [1.6, 0.05, 0.09],
+        "color": "#c39a35"
+      },
+      {
+        "type": "box",
+        "name": "frame left",
+        "group": "frame",
+        "pos": [-0.755, 0.025, 0],
+        "size": [0.09, 0.05, 1.02],
+        "color": "#c39a35"
+      },
+      {
+        "type": "box",
+        "name": "frame right",
+        "group": "frame",
+        "pos": [0.755, 0.025, 0],
+        "size": [0.09, 0.05, 1.02],
+        "color": "#c39a35"
+      },
+      {
+        "type": "box",
+        "name": "lip top",
+        "group": "frame",
+        "pos": [0, 0.021, -0.499],
+        "size": [1.42, 0.042, 0.022],
+        "color": "#7a5a1e"
+      },
+      {
+        "type": "box",
+        "name": "lip bottom",
+        "group": "frame",
+        "pos": [0, 0.021, 0.499],
+        "size": [1.42, 0.042, 0.022],
+        "color": "#7a5a1e"
+      },
+      {
+        "type": "box",
+        "name": "lip left",
+        "group": "frame",
+        "pos": [-0.699, 0.021, 0],
+        "size": [0.022, 0.042, 0.976],
+        "color": "#7a5a1e"
+      },
+      {
+        "type": "box",
+        "name": "lip right",
+        "group": "frame",
+        "pos": [0.699, 0.021, 0],
+        "size": [0.022, 0.042, 0.976],
+        "color": "#7a5a1e"
+      },
+      {
+        "type": "box",
+        "name": "canvas (floor)",
+        "group": "canvas",
+        "pos": [0, 0.0175, 0],
+        "size": [1.376, 0.035, 0.976],
+        "color": "#4a3226"
+      },
+      {
+        "type": "box",
+        "name": "hall wall",
+        "group": "scene",
+        "pos": [0, 0.035, -0.264],
+        "size": [1.376, 0.002, 0.448],
+        "color": "#2e2224"
+      },
+      {
+        "type": "box",
+        "name": "window 1",
+        "group": "scene",
+        "pos": [-0.45, 0.0355, -0.36],
+        "size": [0.18, 0.003, 0.16],
+        "color": "#c98a4c"
+      },
+      {
+        "type": "box",
+        "name": "window 2",
+        "group": "scene",
+        "pos": [0, 0.0355, -0.36],
+        "size": [0.18, 0.003, 0.16],
+        "color": "#c98a4c"
+      },
+      {
+        "type": "box",
+        "name": "window 3",
+        "group": "scene",
+        "pos": [0.45, 0.0355, -0.36],
+        "size": [0.18, 0.003, 0.16],
+        "color": "#c98a4c"
+      },
+      {
+        "type": "box",
+        "name": "king 1 robe",
+        "group": "kings",
+        "pos": [-0.52, 0.0355, -0.07],
+        "size": [0.17, 0.003, 0.2],
+        "color": "#7a1f2b"
+      },
+      {
+        "type": "box",
+        "name": "king 1 head",
+        "group": "kings",
+        "pos": [-0.52, 0.036, -0.205],
+        "size": [0.08, 0.004, 0.08],
+        "color": "#d9a77c"
+      },
+      {
+        "type": "box",
+        "name": "king 1 crown",
+        "group": "kings",
+        "pos": [-0.52, 0.0365, -0.265],
+        "size": [0.09, 0.005, 0.05],
+        "color": "#e8c24a"
+      },
+      {
+        "type": "box",
+        "name": "king 2 robe",
+        "group": "kings",
+        "pos": [-0.26, 0.0355, -0.07],
+        "size": [0.17, 0.003, 0.2],
+        "color": "#23407a"
+      },
+      {
+        "type": "box",
+        "name": "king 2 head",
+        "group": "kings",
+        "pos": [-0.26, 0.036, -0.205],
+        "size": [0.08, 0.004, 0.08],
+        "color": "#d9a77c"
+      },
+      {
+        "type": "box",
+        "name": "king 2 crown",
+        "group": "kings",
+        "pos": [-0.26, 0.0365, -0.265],
+        "size": [0.09, 0.005, 0.05],
+        "color": "#e8c24a"
+      },
+      {
+        "type": "box",
+        "name": "king 3 robe",
+        "group": "kings",
+        "pos": [0, 0.0355, -0.0913],
+        "size": [0.2125, 0.003, 0.2425],
+        "color": "#5c2a80"
+      },
+      {
+        "type": "box",
+        "name": "king 3 head",
+        "group": "kings",
+        "pos": [0, 0.036, -0.2569],
+        "size": [0.1, 0.004, 0.0988],
+        "color": "#d9a77c"
+      },
+      {
+        "type": "box",
+        "name": "king 3 crown",
+        "group": "kings",
+        "pos": [0, 0.0365, -0.3319],
+        "size": [0.11, 0.005, 0.0613],
+        "color": "#e8c24a"
+      },
+      {
+        "type": "box",
+        "name": "king 4 robe",
+        "group": "kings",
+        "pos": [0.26, 0.0355, -0.07],
+        "size": [0.17, 0.003, 0.2],
+        "color": "#2f5e3a"
+      },
+      {
+        "type": "box",
+        "name": "king 4 head",
+        "group": "kings",
+        "pos": [0.26, 0.036, -0.205],
+        "size": [0.08, 0.004, 0.08],
+        "color": "#d9a77c"
+      },
+      {
+        "type": "box",
+        "name": "king 4 crown",
+        "group": "kings",
+        "pos": [0.26, 0.0365, -0.265],
+        "size": [0.09, 0.005, 0.05],
+        "color": "#e8c24a"
+      },
+      {
+        "type": "box",
+        "name": "king 5 robe",
+        "group": "kings",
+        "pos": [0.52, 0.0355, -0.07],
+        "size": [0.17, 0.003, 0.2],
+        "color": "#9a6418"
+      },
+      {
+        "type": "box",
+        "name": "king 5 head",
+        "group": "kings",
+        "pos": [0.52, 0.036, -0.205],
+        "size": [0.08, 0.004, 0.08],
+        "color": "#d9a77c"
+      },
+      {
+        "type": "box",
+        "name": "king 5 crown",
+        "group": "kings",
+        "pos": [0.52, 0.0365, -0.265],
+        "size": [0.09, 0.005, 0.05],
+        "color": "#e8c24a"
+      },
+      {
+        "type": "box",
+        "name": "tablecloth",
+        "group": "table",
+        "pos": [0, 0.037, 0.1],
+        "size": [1.32, 0.006, 0.2],
+        "color": "#ece4cf"
+      },
+      {
+        "type": "box",
+        "name": "table edge",
+        "group": "table",
+        "pos": [0, 0.037, 0.2225],
+        "size": [1.32, 0.006, 0.045],
+        "color": "#a89c82"
+      },
+      {
+        "type": "box",
+        "name": "gold platter",
+        "group": "table",
+        "pos": [0, 0.0375, 0.1],
+        "size": [0.14, 0.007, 0.06],
+        "color": "#d8b13c"
+      },
+      {
+        "type": "box",
+        "name": "roast",
+        "group": "table",
+        "pos": [-0.32, 0.0375, 0.095],
+        "size": [0.12, 0.007, 0.07],
+        "color": "#7a4526"
+      }
+    ]
   },
-  "category": "Craftwork"
+  "category": "Craftwork",
+  "lean": 12,
+  "view": "top"
 }

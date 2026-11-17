@@ -1,0 +1,191 @@
+{
+  "formatVersion": 3,
+  "id": "roller-grille",
+  "name": "Roller grille",
+  "tags": ["industrial", "structure"],
+  "colors": {
+    "frame": "#4a4f54",
+    "housing": "#5d6468",
+    "bar": "#7a8086",
+    "sign": "#e0b23a",
+    "ink": "#2b2b2b",
+    "band": "#b8352b"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [-1.54, 0, 0],
+      "size": [0.08, 2.8, 0.12],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.54, 0, 0],
+      "size": [0.08, 2.8, 0.12],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.5, 0],
+      "size": [3.16, 0.32, 0.3],
+      "color": "housing",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [3.0, 0.06, 0.06],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.4, 0.06, 0],
+      "size": [0.025, 2.44, 0.025],
+      "color": "bar",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.2, 0.06, 0],
+      "size": [0.025, 2.44, 0.025],
+      "color": "bar",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.0, 0.06, 0],
+      "size": [0.025, 2.44, 0.025],
+      "color": "bar",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.8, 0.06, 0],
+      "size": [0.025, 2.44, 0.025],
+      "color": "bar",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.6, 0.06, 0],
+      "size": [0.025, 2.44, 0.025],
+      "color": "bar",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.4, 0.06, 0],
+      "size": [0.025, 2.44, 0.025],
+      "color": "bar",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.2, 0.06, 0],
+      "size": [0.025, 2.44, 0.025],
+      "color": "bar",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.06, 0],
+      "size": [0.025, 2.44, 0.025],
+      "color": "bar",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.2, 0.06, 0],
+      "size": [0.025, 2.44, 0.025],
+      "color": "bar",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.4, 0.06, 0],
+      "size": [0.025, 2.44, 0.025],
+      "color": "bar",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.6, 0.06, 0],
+      "size": [0.025, 2.44, 0.025],
+      "color": "bar",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.8, 0.06, 0],
+      "size": [0.025, 2.44, 0.025],
+      "color": "bar",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.0, 0.06, 0],
+      "size": [0.025, 2.44, 0.025],
+      "color": "bar",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.2, 0.06, 0],
+      "size": [0.025, 2.44, 0.025],
+      "color": "bar",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.4, 0.06, 0],
+      "size": [0.025, 2.44, 0.025],
+      "color": "bar",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.6, 0],
+      "size": [3.0, 0.04, 0.05],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.25, 0],
+      "size": [3.0, 0.04, 0.05],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.9, 0],
+      "size": [3.0, 0.04, 0.05],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.35, 0.03],
+      "size": [0.5, 0.36, 0.01],
+      "color": "sign",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.45, 0.036],
+      "size": [0.08, 0.16, 0.004],
+      "color": "ink",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.38, 0.036],
+      "size": [0.46, 0.04, 0.004],
+      "color": "band",
+      "collide": false
+    }
+  ]
+}

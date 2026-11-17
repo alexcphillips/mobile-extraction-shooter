@@ -268,6 +268,30 @@ describe('scav waves', () => {
     expect(slot.entity).not.toBe(0);
   });
 
+  it('starts clear of where the players actually are, not of every spawn point (2026-11-17)', () => {
+    // You at (120, 0). A lone start scav 40 m off waits for the first wave; one 100 m off
+    // goes in. A boss and a once-only scav 40 m off aren't put in at all; one 100 m off is.
+    const markers = [
+      spawn('near', 80, 0),
+      spawn('far', 20, 0),
+      spawn('boss-near', 120, 40, { enemy: 'boss' }),
+      spawn('boss-far', 120, -100, { enemy: 'boss' }),
+      spawn('once-near', 160, 0, { once: true }),
+      // a player spawn point nobody used, right by the far scav: no matter
+      { type: 'playerSpawn', id: 'unused', x: 22, y: 0, z: 2, yaw: 0 },
+    ];
+    const { state, started } = raid(markers, 120, 0, 1200, 3);
+    const at = (c: Character) => [Math.round(c.x), Math.round(c.z)];
+    const near = (c: Character) => Math.hypot(c.x - 120, c.z) < AI.spawnClearance;
+    expect(started.filter(near)).toEqual([]);
+    expect(started.some((c) => c.look?.type === 'boss' && (at(c)[1] ?? 0) < -90)).toBe(true);
+    expect(started.filter((c) => c.look?.type === 'boss')).toHaveLength(1);
+    // the near scav's slot isn't started; it's queued for a wave
+    const nearSlot = state.waves!.slots.find((sl) => sl.spots.some((sp) => sp.x === 80))!;
+    expect(nearSlot.entity).toBe(0);
+    expect(nearSlot.due).toBeGreaterThan(state.tick);
+  });
+
   it('keeps its queue in a saved raid', () => {
     const { state, world } = raid(six);
     run(state, world, 30);

@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "id": "saw-filer",
+  "name": "Saw filer's bench",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "angle-grinder",
+      "weight": 4
+    },
+    {
+      "item": "screwdriver",
+      "weight": 3
+    },
+    {
+      "item": "measuring-tape",
+      "weight": 3
+    },
+    {
+      "item": "gear-set",
+      "weight": 2
+    },
+    {
+      "item": "cordless-drill",
+      "weight": 2
+    },
+    {
+      "item": "circular-saw",
+      "weight": 1
+    }
+  ]
+}

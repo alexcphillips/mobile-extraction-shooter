@@ -1,0 +1,66 @@
+{
+  "formatVersion": 3,
+  "id": "ticket-machine",
+  "name": "Ticket machine",
+  "tags": ["street", "rail"],
+  "instanced": true,
+  "colors": {
+    "body": "#d9d4c8",
+    "body-dark": "#4a4d52",
+    "screen": "#3b6e8f",
+    "slot": "#1f1f1f",
+    "accent": "#c0392b"
+  },
+  "nodes": [
+    { "type": "box", "pos": [0.0, 0.0, 0.0], "size": [0.8, 1.85, 0.5], "color": "body" },
+    {
+      "type": "box",
+      "pos": [0.0, 1.85, 0.01],
+      "size": [0.84, 0.1, 0.56],
+      "color": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 1.25, 0.255],
+      "size": [0.6, 0.45, 0.01],
+      "color": "screen",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.185, 0.95, 0.27],
+      "size": [0.27, 0.23, 0.04],
+      "color": "body-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.175, 1.05, 0.26],
+      "size": [0.25, 0.05, 0.02],
+      "color": "slot",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.55, 0.28],
+      "size": [0.3, 0.17, 0.06],
+      "color": "slot",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 1.72, 0.255],
+      "size": [0.8, 0.1, 0.01],
+      "color": "accent",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.0, 0.0],
+      "size": [0.84, 0.08, 0.54],
+      "color": "body-dark",
+      "collide": false
+    }
+  ]
+}

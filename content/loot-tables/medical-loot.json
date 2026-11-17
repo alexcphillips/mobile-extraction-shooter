@@ -91,10 +91,6 @@
     {
       "item": "experimental-drug-formula",
       "weight": 0.2
-    },
-    {
-      "item": "portable-x-ray-unit",
-      "weight": 0.05
     }
   ]
 }

@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "id": "lab-coat",
+  "name": "Lab coat",
+  "grid": [2, 2],
+  "loot": {
+    "tables": {
+      "lab-tech": 0.4,
+      "documents": 0.3
+    },
+    "empty": 0.3
+  }
+}

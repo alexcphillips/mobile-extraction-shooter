@@ -199,13 +199,14 @@ export function rollLootSpawns(
     if (!chance(state.rng, m.chance ?? 1)) continue;
     const id = m.lootTable ?? spotTable(m.mix!, state.rng);
     if (id === NOTHING) continue;
-    state.ground.push({
-      item: rollItem(items, table(tables, id), state.rng),
-      x: m.x,
-      y: m.y,
-      z: m.z,
-      yaw: nextFloat(state.rng) * Math.PI * 2,
-    });
+    const item = rollItem(items, table(tables, id), state.rng);
+    // Rolled either way, so a spot with its own yaw doesn't shift the rolls after it.
+    const turn = nextFloat(state.rng) * Math.PI * 2;
+    state.ground.push(
+      m.placed
+        ? { item, x: m.x, y: m.y, z: m.z, yaw: m.yaw, placed: true }
+        : { item, x: m.x, y: m.y, z: m.z, yaw: turn },
+    );
   }
 }
 

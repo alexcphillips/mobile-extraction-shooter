@@ -1,0 +1,157 @@
+{
+  "formatVersion": 3,
+  "id": "electrical-cabinet",
+  "name": "Electrical cabinet",
+  "tags": ["industrial"],
+  "colors": {
+    "steel": "#b4b8b4",
+    "steel-dark": "#8d928e",
+    "plinth": "#3a3d3b",
+    "handle": "#2b2b2b",
+    "inside": "#5d625f",
+    "warn": "#e8b21c",
+    "warn-dark": "#1f1f1f",
+    "label": "#eceee9",
+    "breaker": "#2f3236",
+    "breaker-lit": "#d8dcd9",
+    "rail": "#9aa0a3",
+    "wire": "#b8402e",
+    "wire-b": "#2f5d9a",
+    "box": "#b08a5a"
+  },
+  "nodes": [
+    {
+      "type": "group",
+      "pos": [0, 0, 0],
+      "loot": { "container": "electrical-cabinet", "searched": "electrical-cabinet-open" },
+      "nodes": [
+        { "type": "box", "pos": [0, 0, 0], "size": [1, 0.1, 0.45], "color": "plinth" },
+        {
+          "type": "box",
+          "pos": [0, 0.1, 0],
+          "size": [1, 1.7999999999999998, 0.45],
+          "color": "steel"
+        },
+        {
+          "type": "box",
+          "pos": [0, 1.88, 0],
+          "size": [1.02, 0.03, 0.47000000000000003],
+          "color": "steel-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.15000000000000002, 0.227],
+          "size": [0.008, 1.6999999999999997, 0.004],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.25, 0.15000000000000002, 0.228],
+          "size": [0.48, 1.6999999999999997, 0.004],
+          "color": "steel-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.25, 0.15000000000000002, 0.228],
+          "size": [0.48, 1.6999999999999997, 0.004],
+          "color": "steel-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.25, 1.12, 0.231],
+          "size": [0.34, 0.26, 0.004],
+          "color": "breaker",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.37, 1.2, 0.233],
+          "size": [0.03, 0.08, 0.004],
+          "color": "breaker-lit",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.31, 1.2, 0.233],
+          "size": [0.03, 0.08, 0.004],
+          "color": "breaker-lit",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.25, 1.2, 0.233],
+          "size": [0.03, 0.08, 0.004],
+          "color": "breaker-lit",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.19, 1.2, 0.233],
+          "size": [0.03, 0.08, 0.004],
+          "color": "breaker-lit",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.13, 1.2, 0.233],
+          "size": [0.03, 0.08, 0.004],
+          "color": "breaker-lit",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.25, 1.38, 0.231],
+          "size": [0.2, 0.2, 0.004],
+          "color": "warn",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.25, 1.44, 0.233],
+          "size": [0.04, 0.08, 0.004],
+          "color": "warn-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.25, 1.73, 0.231],
+          "size": [0.24, 0.05, 0.004],
+          "color": "label",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.04, 0.85, 0.245],
+          "size": [0.025, 0.3, 0.03],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.04, 0.85, 0.245],
+          "size": [0.025, 0.3, 0.03],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.25, 0.25, 0.231],
+          "size": [0.3, 0.1, 0.004],
+          "color": "plinth",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.25, 0.25, 0.231],
+          "size": [0.3, 0.1, 0.004],
+          "color": "plinth",
+          "collide": false
+        }
+      ]
+    }
+  ]
+}

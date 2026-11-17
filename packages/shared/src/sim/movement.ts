@@ -5,7 +5,9 @@ import {
   type CollisionWorld,
   type GroundHit,
   type Ladder,
+  waterLevelAt,
 } from '../world/collision-world';
+import { heldWeapon } from './gear';
 import { legSpeedScale } from './health';
 import { canSprint, loadSpeed } from './weight';
 import { STAMINA, spendStamina, staminaToSprint, updateStamina } from './stamina';
@@ -33,6 +35,12 @@ export const MOVEMENT = {
   packSpeed: 2,
   /** Walking and sprinting are this much faster with the knife out. */
   knifeSpeed: 1.1,
+  /**
+   * Wading (2026-11-16, the user's call): with the water surface at least wadeDepth over
+   * your feet (above the knee), every speed on the ground is times wadeSpeed.
+   */
+  wadeDepth: 0.6,
+  wadeSpeed: 0.7,
   /** Ledges this high are walked onto (kerbs, single steps); in the air, mantled onto. */
   stepUp: 0.45,
   /** Drops this deep are followed down instead of falling. */
@@ -130,12 +138,13 @@ export function moveCharacter(
       mx /= len;
       my /= len;
     }
-    // Firing or aiming stops a sprint, and so does putting yourself out.
+    // Firing or aiming stops a sprint, and so does putting yourself out. Only a gun aims:
+    // aim held with the knife or empty hands doesn't stop a sprint.
     // Players carrying over WEIGHT.heavy can't sprint (BW-3).
     sprint =
       input.sprint &&
       !input.fire &&
-      !input.aim &&
+      !(input.aim && heldWeapon(c)) &&
       my > 0 &&
       (!!c.ai || canSprint(c.load ?? 0)) &&
       staminaToSprint(c);
@@ -200,7 +209,7 @@ function startSlide(c: Character): void {
  * One tick of a slide's speed into c.vx, c.vz: slowing evenly, turning a little towards
  * the stick (wishX, wishZ).
  */
-function slideVelocity(c: Character, wishX: number, wishZ: number): void {
+function slideVelocity(c: Character, wishX: number, wishZ: number, world: CollisionWorld): void {
   const M = MOVEMENT;
   const s = c.slide!;
   s.t += DT;
@@ -216,7 +225,10 @@ function slideVelocity(c: Character, wishX: number, wishZ: number): void {
     s.dx = dx;
   }
   const k = Math.min(1, s.t / M.slideTime);
-  const speed = (M.slideSpeed + (M.slideEndSpeed - M.slideSpeed) * k) * legSpeedScale(c.health);
+  const speed =
+    (M.slideSpeed + (M.slideEndSpeed - M.slideSpeed) * k) *
+    legSpeedScale(c.health) *
+    wadeScale(c, world);
   c.vx = s.dx * speed;
   c.vz = s.dz * speed;
 }
@@ -253,7 +265,7 @@ function walk(
   const M = MOVEMENT;
   const crouched = isCrouched(c);
   if (c.mode === 'ground' && c.slide) {
-    slideVelocity(c, wishX, wishZ);
+    slideVelocity(c, wishX, wishZ, world);
     limitSlope(c, world);
   } else if (c.mode === 'ground') {
     const knife = !crouched && c.gear.hand === 'knife' && c.gear.knife ? M.knifeSpeed : 1;
@@ -262,6 +274,7 @@ function walk(
       (crouched ? crouchSpeed : sprint ? M.sprintSpeed : M.walkSpeed) *
       knife *
       legSpeedScale(c.health) *
+      wadeScale(c, world) *
       (c.ai ? 1 : loadSpeed(c.load ?? 0) * (c.burden?.moveSpeed ?? 1));
     if (c.using) speed = Math.min(speed, M.useSpeed);
     if (c.packing) speed = Math.min(speed, M.packSpeed);
@@ -280,6 +293,7 @@ function walk(
   world.pushOut(pos, M.radius, c.y + M.stepUp, c.y + c.height);
   pos.x = Math.max(t.minX + M.radius, Math.min(t.maxX - M.radius, pos.x));
   pos.z = Math.max(t.minZ + M.radius, Math.min(t.maxZ - M.radius, pos.z));
+  keepOutOfEarth(c, world);
   keepOutOfDeepWater(c, world);
   // Velocity becomes what actually happened, so walls stop momentum.
   c.vx = (pos.x - c.x) / DT;
@@ -333,12 +347,52 @@ function walk(
 }
 
 /**
+ * wadeSpeed when the water surface over (c.x, c.z) is wadeDepth or more above c's feet,
+ * else 1. Measured from the feet, not the terrain, so a slab under the water (the race
+ * tunnel's roof) counts. Water a body or more above the feet is over a tunnel's floor,
+ * not around you, and doesn't count.
+ */
+export function wadeScale(c: Character, world: CollisionWorld): number {
+  return wades(world, c.x, c.y, c.z) ? MOVEMENT.wadeSpeed : 1;
+}
+
+/** Whether feet at y standing at (x, z) wade: see wadeScale. The nav grid's cost uses it too. */
+export function wades(world: CollisionWorld, x: number, y: number, z: number): boolean {
+  if (world.water.length === 0) return false;
+  const depth = waterLevelAt(world.water, x, z) - y;
+  return depth >= MOVEMENT.wadeDepth && depth < MOVEMENT.standHeight;
+}
+
+/**
  * How deep the water is under feet at y standing at (x, z): 0 on a solid (a bridge, a
  * tunnel's floor), else the water over the terrain.
  */
 function waterUnder(x: number, z: number, y: number, world: CollisionWorld): number {
   world.groundAt(x, z, MOVEMENT.radius, y + MOVEMENT.stepUp, groundHit);
   return groundHit.solid >= 0 ? 0 : world.waterDepth(x, z);
+}
+
+/** Whether (x, z) is solid earth above y: terrain (not a hole) over y + stepUp. */
+function inEarth(world: CollisionWorld, x: number, z: number, y: number): boolean {
+  const t = world.terrain;
+  return !t.holeAt(x, z) && t.heightAt(x, z) > y + MOVEMENT.stepUp;
+}
+
+/**
+ * The terrain is solid from below (2026-11-16): under it, in a hole's tunnel or pit, pos
+ * may not move to where the terrain is over your step-up. A push through a thin wall
+ * beside a hole (off a crate stack in the Silver Creek race tunnel) put you there, and
+ * ground-following then lifted you through the roof to the surface. Blocked, it keeps
+ * whichever axis it can, like the deep water. Moves pos only.
+ */
+function keepOutOfEarth(c: Character, world: CollisionWorld): void {
+  if (!inEarth(world, pos.x, pos.z, c.y) || inEarth(world, c.x, c.z, c.y)) return;
+  if (!inEarth(world, pos.x, c.z, c.y)) pos.z = c.z;
+  else if (!inEarth(world, c.x, pos.z, c.y)) pos.x = c.x;
+  else {
+    pos.x = c.x;
+    pos.z = c.z;
+  }
 }
 
 /**
@@ -419,6 +473,9 @@ function startVault(c: Character, world: CollisionWorld): boolean {
   let depth = -1;
   for (let s = 0.05; s <= M.vaultDepth + 0.1; s += 0.1) {
     const h = world.groundAt(c.x + fx * (face + s), c.z + fz * (face + s), 0.01, c.y + M.vaultMax);
+    // groundAt gives the terrain however high: over vaultMax it's earth (behind a tunnel's
+    // wall), not a top, and vaulting onto it went through the roof (2026-11-16).
+    if (h > c.y + M.vaultMax) return false;
     if (h <= low) {
       depth = s;
       break;
@@ -469,6 +526,8 @@ function startVault(c: Character, world: CollisionWorld): boolean {
   if (toZ < t.minZ + M.radius || toZ > t.maxZ - M.radius) return false;
   const floor = onto ? top : world.groundAt(toX, toZ, M.radius, low);
   if (floor < c.y - M.vaultDrop) return false;
+  // Landing in the earth beside a hole (the terrain over low) would lift you onto it.
+  if (!onto && floor > low) return false;
   if (!onto && waterUnder(toX, toZ, floor, world) > DEEP_WATER) return false;
   let toHeight = c.height;
   if (world.overlaps(toX, toZ, M.radius, floor + M.stepUp, floor + M.standHeight)) {
@@ -674,6 +733,7 @@ function shove(c: Character, dx: number, dz: number, world: CollisionWorld): voi
   pos.x = c.x + dx;
   pos.z = c.z + dz;
   world.pushOut(pos, MOVEMENT.radius, c.y + MOVEMENT.stepUp, c.y + c.height);
+  keepOutOfEarth(c, world);
   keepOutOfDeepWater(c, world);
   const t = world.terrain;
   c.x = Math.max(t.minX + MOVEMENT.radius, Math.min(t.maxX - MOVEMENT.radius, pos.x));

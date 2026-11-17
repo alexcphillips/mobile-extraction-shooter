@@ -226,6 +226,8 @@ export type CompiledMarker = Placed<MarkerNode> & {
    * copy's path id, so the group picks the copy as one, with all its spots.
    */
   unit?: string;
+  /** A loot spawn with its own yaw: its item faces that way (GroundItem.placed). */
+  placed?: true;
 };
 
 /**
@@ -370,6 +372,8 @@ interface Sink {
   patrols: CompiledPatrol[] | null;
   /** Invisible boxes' solids: world.blockers. */
   invisible: BoxDef[] | null;
+  /** Invisible boxes that stop shots: in boxes too; here for the editor to draw see-through. */
+  hidden: BoxDef[] | null;
   buildings: CompiledBuilding[] | null;
   /** Instanced prefabs become groups; null flattens them into shapes like any prefab. */
   groups: Map<string, InstancedGroup> | null;
@@ -395,6 +399,7 @@ const DRAW_ONLY: Sink = {
   markers: null,
   patrols: null,
   invisible: null,
+  hidden: null,
   buildings: null,
   groups: null,
   looks: null,
@@ -426,6 +431,7 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
     markers: [],
     patrols: [],
     invisible: [],
+    hidden: null,
     buildings: [],
     groups: new Map(),
     looks: [],
@@ -469,6 +475,9 @@ export function compileMap(map: MapFile, prefabs: PrefabLookup): CompiledMap {
   for (const m of out.markers!) {
     if (m.type === 'enemySpawn' && m.patrol !== undefined && !patrols.has(m.patrol))
       throw new ContentError(source, `${m.id}: no patrol "${m.patrol}" beside it`);
+    if (m.type === 'enemySpawn')
+      for (const g of m.guardPatrols ?? [])
+        if (!patrols.has(g)) throw new ContentError(source, `${m.id}: no patrol "${g}" beside it`);
   }
   const doorIndex = doorFinder(source, out.doors!);
   const switches = out.switches!.map((s) => ({
@@ -546,7 +555,7 @@ export interface CompiledNodes {
   glass: CompiledGlass[];
   markers: CompiledMarker[];
   patrols: CompiledPatrol[];
-  /** Invisible boxes' solids, which the editor draws see-through. */
+  /** Invisible boxes' solids, which the editor draws see-through (stopsShots ones are in boxes too). */
   invisible: BoxDef[];
   buildings: CompiledBuilding[];
   water: CompiledWater[];
@@ -576,6 +585,7 @@ export function compileNodes(
   };
   new Compiler(source, prefabs, null).nodes(nodes, frame(0, 0, 0, 0), slotColors(colors), '', [], {
     ...out,
+    hidden: out.invisible,
     ladders: null,
     groups: null,
     looks: null,
@@ -686,7 +696,21 @@ class Compiler {
         if (landmark) this.node(node, f, scope, id, stack, { ...DRAW_ONLY, shapes: landmark });
         this.node(node, f, scope, id, stack, sink);
       }
-      if ('loot' in node && node.loot) {
+      // A placed prefab that holds one container of its own, given loot: the placement's
+      // loot replaces that container's (2026-11-17), so a footlocker or a tool chest can
+      // roll a place's own tables and keep its searched look.
+      const held =
+        node.type === 'prefab' && 'loot' in node && node.loot && out.markers
+          ? out.markers.slice(markers).filter((m) => m.type === 'lootContainer')
+          : [];
+      if (held.length === 1 && 'loot' in node && node.loot && !node.loot.searched) {
+        const m = held[0] as Extract<CompiledMarker, { type: 'lootContainer' }>;
+        m.container = node.loot.container;
+        if (node.loot.lootTable === undefined) delete m.lootTable;
+        else m.lootTable = node.loot.lootTable;
+        if (node.loot.mix === undefined) delete m.mix;
+        else m.mix = node.loot.mix;
+      } else if ('loot' in node && node.loot) {
         const [x, y, z] = place(f, node.pos);
         // A box or cylinder tilts on its own, about its center: its look stays upright.
         const shape = node.type === 'box' || node.type === 'cylinder';
@@ -866,14 +890,20 @@ class Compiler {
     const [x, y, z] = place(f, node.pos);
     const yaw = f.yaw + ('yaw' in node ? (node.yaw ?? 0) * DEG : 0);
 
-    // Not drawn: a solid only to movement (a map's edge).
+    // Not drawn: a solid only to movement (a map's edge), or to everything with stopsShots.
+    if (node.type === 'box' && node.stopsShots && !node.invisible)
+      this.fail(path, 'stopsShots is for invisible boxes');
     if (node.type === 'box' && node.invisible) {
       if (node.collide === false) this.fail(path, 'an invisible box has to collide');
       if (node.loot || node.switch)
         this.fail(path, "an invisible box can't be a loot container or a switch");
       if (f.tilt || node.pitch || node.roll) this.fail(path, "an invisible box can't tilt");
       const [hx, hy, hz] = [node.size[0] / 2, node.size[1] / 2, node.size[2] / 2];
-      out.invisible?.push(plainBox([x, y + hy, z], hx, hy, hz, yaw));
+      const solid = plainBox([x, y + hy, z], hx, hy, hz, yaw);
+      if (node.stopsShots) {
+        out.boxes?.push(solid);
+        out.hidden?.push(solid);
+      } else out.invisible?.push(solid);
       return;
     }
 
@@ -1034,11 +1064,21 @@ class Compiler {
           low: y,
           high: y + h,
         };
-        if (node.collide !== false) out.ramps?.push(ramp);
+        const n = node.type === 'stairs' ? (node.steps ?? stepsOf(h)) : 0;
+        // Open underneath: a slab under the line of the steps, at least a step's rise thick.
+        const open =
+          node.type === 'stairs' && node.thickness !== undefined
+            ? Math.max(node.thickness, h / n)
+            : 0;
+        if (node.collide !== false) {
+          if (open) out.boxes?.push(stairSlab(ramp, open));
+          else out.ramps?.push(ramp);
+        }
         if (!out.shapes) return;
         if (node.type === 'ramp') out.shapes.push(wedgeOf(ramp, color));
         else {
-          out.shapes.push(...stairSteps(ramp, node.steps ?? stepsOf(h), color));
+          out.shapes.push(...stairSteps(ramp, n, color, open));
+          if (open) out.shapes.push(stairSoffit(ramp, open, color));
           if (node.sides) out.shapes.push(...stairSides(ramp, node.sides, color));
         }
         return;
@@ -1158,9 +1198,14 @@ class Compiler {
         if (MARKER_TYPES.has(node.type) && out.markers) {
           const { pos, ...rest } = node;
           const marker = { ...rest, id: path, x, y, z, yaw } as CompiledMarker;
+          if (node.type === 'lootSpawn' && node.yaw !== undefined) marker.placed = true;
           // A patrol is named beside the spawn; it comes out with its full path.
           if (marker.type === 'enemySpawn' && marker.patrol !== undefined)
             marker.patrol = path.slice(0, path.lastIndexOf('/') + 1) + marker.patrol;
+          if (marker.type === 'enemySpawn' && marker.guardPatrols !== undefined)
+            marker.guardPatrols = marker.guardPatrols.map(
+              (g) => path.slice(0, path.lastIndexOf('/') + 1) + g,
+            );
           out.markers.push(marker);
         }
     }
@@ -1533,28 +1578,93 @@ function wedgeOf(ramp: RampDef, color: number): Shape {
   return { kind: 'wedge', x, y: ramp.bottom + hy, z, yaw, pitch: 0, roll: 0, color, hx, hy, hz };
 }
 
-/** Steps drawn over a ramp: each step's top is at the ramp's height halfway along it. */
-function stairSteps(ramp: RampDef, n: number, color: number): Shape[] {
+/**
+ * Steps drawn over a ramp: each step's top is at the ramp's height halfway along it. Open
+ * underneath (`open`, the slab's thickness), each reaches down only to the soffit under its
+ * back edge, where the soffit (stairSoffit) takes over.
+ */
+function stairSteps(ramp: RampDef, n: number, color: number, open = 0): Shape[] {
   const depth = (2 * ramp.hz) / n;
   const c = Math.cos(ramp.yaw);
   const s = Math.sin(ramp.yaw);
+  const rise = ramp.high - ramp.low;
   return Array.from({ length: n }, (_, i) => {
     const lz = -ramp.hz + (i + 0.5) * depth;
-    const top = ramp.low + ((i + 0.5) / n) * (ramp.high - ramp.low);
+    const top = ramp.low + ((i + 0.5) / n) * rise;
+    const bottom = open
+      ? Math.max(ramp.bottom, ramp.low + ((i + 1) / n) * rise - open)
+      : ramp.bottom;
     return {
       kind: 'box',
       x: ramp.x + lz * s,
-      y: (ramp.bottom + top) / 2,
+      y: (bottom + top) / 2,
       z: ramp.z + lz * c,
       yaw: ramp.yaw,
       pitch: 0,
       roll: 0,
       color,
       hx: ramp.hx,
-      hy: (top - ramp.bottom) / 2,
+      hy: (top - bottom) / 2,
       hz: depth / 2,
     };
   });
+}
+
+/** How far along an open flight (local z) its soffit leaves the floor, and its slope. */
+function soffitStart(ramp: RampDef, open: number): { from: number; k: number } {
+  const k = (ramp.high - ramp.low) / (2 * ramp.hz);
+  return {
+    from: Math.min(ramp.hz, -ramp.hz + Math.max(0, open - (ramp.low - ramp.bottom)) / k),
+    k,
+  };
+}
+
+/**
+ * Open stairs' solid: a slab over the footprint between the ramp's sloped top and a plane
+ * `open` below it, cut off at the bottom (so near the foot it's solid to the floor).
+ */
+function stairSlab(ramp: RampDef, open: number): BoxDef {
+  const k = (ramp.high - ramp.low) / (2 * ramp.hz);
+  const mid = (ramp.low + ramp.high) / 2;
+  return {
+    x: ramp.x,
+    y: (ramp.bottom + ramp.high) / 2,
+    z: ramp.z,
+    hx: ramp.hx,
+    hy: (ramp.high - ramp.bottom) / 2,
+    hz: ramp.hz,
+    yaw: ramp.yaw,
+    slope: { top: mid, topX: 0, topZ: k, under: mid - open, underX: 0, underZ: k },
+  };
+}
+
+/**
+ * Open stairs' soffit: a slab tilted along the flight, its underside on the plane `open`
+ * below the steps' line, from where that plane leaves the floor to the top. Its ends are
+ * square to the slope; the top end is drawn short so it doesn't poke out past the landing.
+ */
+function stairSoffit(ramp: RampDef, open: number, color: number): Shape {
+  const { from, k } = soffitStart(ramp, open);
+  const angle = Math.atan(k);
+  const thick = open * Math.cos(angle);
+  const to = ramp.hz - thick * Math.sin(angle);
+  const mid = (from + to) / 2;
+  const line = ramp.low + (mid + ramp.hz) * k; // the steps' line over the middle
+  const c = Math.cos(ramp.yaw);
+  const s = Math.sin(ramp.yaw);
+  return {
+    kind: 'box',
+    x: ramp.x + mid * s,
+    y: line - open / 2,
+    z: ramp.z + mid * c,
+    yaw: ramp.yaw,
+    pitch: -angle,
+    roll: 0,
+    color,
+    hx: ramp.hx,
+    hy: thick / 2,
+    hz: Math.max(0.01, (to - from) / Math.cos(angle) / 2),
+  };
 }
 
 /**

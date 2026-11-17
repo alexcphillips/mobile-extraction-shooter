@@ -1,0 +1,105 @@
+{
+  "formatVersion": 3,
+  "id": "cable-drum-small",
+  "name": "Cable drum (small)",
+  "tags": ["industrial", "construction"],
+  "colors": {
+    "wood": "#9a7448",
+    "wood-dark": "#7c5a36",
+    "cable": "#2b2b2d",
+    "cable-light": "#45464a",
+    "metal": "#8a8f93"
+  },
+  "nodes": [
+    {
+      "type": "cylinder",
+      "pos": [-0.31, 0.46, 0],
+      "radius": 0.5,
+      "height": 0.08,
+      "sides": 12,
+      "color": "wood",
+      "roll": 90
+    },
+    {
+      "type": "box",
+      "pos": [-0.355, 0.08, 0],
+      "size": [0.02, 0.84, 0.09],
+      "color": "wood-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.355, 0.455, 0],
+      "size": [0.02, 0.09, 0.84],
+      "color": "wood-dark",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.37, 0.49, 0],
+      "radius": 0.07,
+      "height": 0.02,
+      "sides": 6,
+      "color": "metal",
+      "roll": 90,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.31, 0.46, 0],
+      "radius": 0.5,
+      "height": 0.08,
+      "sides": 12,
+      "color": "wood",
+      "roll": 90
+    },
+    {
+      "type": "box",
+      "pos": [0.355, 0.08, 0],
+      "size": [0.02, 0.84, 0.09],
+      "color": "wood-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.355, 0.455, 0],
+      "size": [0.02, 0.09, 0.84],
+      "color": "wood-dark",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.37, 0.49, 0],
+      "radius": 0.07,
+      "height": 0.02,
+      "sides": 6,
+      "color": "metal",
+      "roll": 90,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 0.23, 0],
+      "radius": 0.37,
+      "height": 0.54,
+      "sides": 12,
+      "color": "cable",
+      "roll": 90
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.87, 0.15],
+      "size": [0.52, 0.02, 0.08],
+      "color": "cable-light",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.15, 0.31],
+      "size": [0.06, 0.45, 0.06],
+      "color": "cable",
+      "collide": false,
+      "pitch": 30
+    }
+  ]
+}

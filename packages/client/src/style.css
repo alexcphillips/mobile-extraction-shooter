@@ -993,8 +993,9 @@ body[data-input='gamepad'] .slot-num::after {
   font-size: 9px;
 }
 
-/* Only while aimed (hud/hands.ts, BW-2). */
-.control[data-id='breathe'].unaimed {
+/* Only while aimed (hud/hands.ts, BW-2); aim only with a gun in hand (2026-11-16). */
+.control[data-id='breathe'].unaimed,
+.control[data-id='aim'].unarmed {
   display: none;
 }
 
@@ -1212,7 +1213,8 @@ body[data-input='gamepad'] .body-meds button.highlight {
   border-style: dashed;
 }
 
-#controls.editing .control[data-id='breathe'].unaimed {
+#controls.editing .control[data-id='breathe'].unaimed,
+#controls.editing .control[data-id='aim'].unarmed {
   display: block;
 }
 

@@ -18,11 +18,11 @@
     },
     {
       "item": "lighthouse-painting",
-      "weight": 2
+      "weight": 0.6
     },
     {
       "item": "waterfall-painting",
-      "weight": 2
+      "weight": 0.5
     },
     {
       "item": "antique-telescope",
@@ -34,15 +34,15 @@
     },
     {
       "item": "autumn-overlook",
-      "weight": 1
+      "weight": 0.3
     },
     {
       "item": "golden-harvest",
-      "weight": 1
+      "weight": 0.25
     },
     {
       "item": "lavender-fields",
-      "weight": 1
+      "weight": 0.2
     },
     {
       "item": "antique-chess-set",
@@ -62,7 +62,7 @@
     },
     {
       "item": "the-tempest",
-      "weight": 0.5
+      "weight": 0.12
     },
     {
       "item": "malachite-money-frog",
@@ -74,11 +74,11 @@
     },
     {
       "item": "the-unfinished-masterpiece",
-      "weight": 0.2
+      "weight": 0.04
     },
     {
       "item": "portrait-of-the-regent",
-      "weight": 0.2
+      "weight": 0.05
     },
     {
       "item": "marble-toad-sculpture",
@@ -86,11 +86,11 @@
     },
     {
       "item": "a-world-beyond",
-      "weight": 0.05
+      "weight": 0.012
     },
     {
       "item": "the-last-supper-of-kings",
-      "weight": 0.05
+      "weight": 0.004
     }
   ]
 }

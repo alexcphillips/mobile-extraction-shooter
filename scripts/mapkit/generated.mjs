@@ -426,6 +426,13 @@ export async function writeGenerated({ file, map, by, root, argv, seed }) {
       ? `${rel}: NOT READY FOR REVIEW (${check.rows.length} overlap problems; fix them before the user sees it)`
       : `${rel}: overlap check passed, ready for review`,
   );
+  // Drawn-only shapes that could pass for cover (scripts/map-fake-cover.mjs; level-design.md
+  // 6a): a report, not a gate. Its first line, and the shapes when there are a few.
+  const { scanMap, formatScan } = await import('../map-fake-cover.mjs');
+  const scan = scanMap(merged, id);
+  const lines = formatScan(scan).split('\n');
+  console.log(`${rel} fake cover: ${lines[0]}`);
+  if (scan.rows.length && scan.rows.length <= 10) console.log(lines.slice(1).join('\n'));
   return { map: merged, rows };
 }
 

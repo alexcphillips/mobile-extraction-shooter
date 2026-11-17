@@ -1,0 +1,84 @@
+{
+  "formatVersion": 3,
+  "id": "small-crate-marked",
+  "name": "Small wooden crate (marked)",
+  "tags": ["industrial", "store", "military"],
+  "instanced": true,
+  "colors": {
+    "sticker": "#efece4",
+    "print": "#3a3835",
+    "print-red": "#b8352b",
+    "stencil": "#2b2724"
+  },
+  "nodes": [
+    {
+      "type": "prefab",
+      "prefab": "small-crate",
+      "pos": [0, 0, 0]
+    },
+    {
+      "type": "box",
+      "pos": [0.277, 0.15, 0.02],
+      "size": [0.004, 0.11, 0.16],
+      "color": "sticker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.279, 0.24, 0.02],
+      "size": [0.003, 0.018, 0.14],
+      "color": "print-red",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.279, 0.17, 0.035],
+      "size": [0.003, 0.008, 0.11],
+      "color": "print",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.279, 0.195, 0.035],
+      "size": [0.003, 0.008, 0.085],
+      "color": "print",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.279, 0.22, 0.035],
+      "size": [0.003, 0.008, 0.06],
+      "color": "print",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.13, 0.27, 0.228],
+      "size": [0.035, 0.07, 0.003],
+      "color": "stencil",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.13, 0.33, 0.228],
+      "size": [0.07, 0.03, 0.003],
+      "color": "stencil",
+      "collide": false,
+      "top": [0.0, 0.003]
+    },
+    {
+      "type": "box",
+      "pos": [0.12, 0.29, 0.228],
+      "size": [0.14, 0.03, 0.003],
+      "color": "stencil",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.278, 0.22, 0],
+      "size": [0.004, 0.06, 0.374],
+      "color": "print-red",
+      "collide": false
+    }
+  ]
+}

@@ -2121,9 +2121,13 @@ function Inspector(props: {
         </div>
       )}
       {n.type === 'stairs' && (
-        <div className="ed-row" title="Side walls: how far their sloped top stands above the steps">
+        <div
+          className="ed-row"
+          title="Side walls: how far their sloped top stands above the steps. Open under: the flight's thickness under the steps, with the space below it open (empty: solid to the floor)"
+        >
           {num('steps')}
           {num('sides', 'side walls')}
+          {num('thickness', 'open under')}
         </div>
       )}
       {n.type === 'ladder' && (
@@ -2211,15 +2215,37 @@ function Inspector(props: {
             checked={n.invisible === true}
             onChange={(e) =>
               edit((m) => {
-                const r = m as { invisible?: true; collide?: boolean };
+                const r = m as { invisible?: true; stopsShots?: true; collide?: boolean };
                 if (e.target.checked) {
                   r.invisible = true;
                   delete r.collide;
-                } else delete r.invisible;
+                } else {
+                  delete r.invisible;
+                  delete r.stopsShots;
+                }
               })
             }
           />
           invisible
+        </label>
+      )}
+      {n.type === 'box' && n.invisible && (
+        <label
+          className="ed-field"
+          title="Solid to shots, sight and throws too: a plain box that isn't drawn. For hiding solids inside drawn shapes that can't collide right, like a leaning post."
+        >
+          <input
+            type="checkbox"
+            checked={n.stopsShots === true}
+            onChange={(e) =>
+              edit((m) => {
+                const r = m as { stopsShots?: true };
+                if (e.target.checked) r.stopsShots = true;
+                else delete r.stopsShots;
+              })
+            }
+          />
+          stops shots
         </label>
       )}
       {(n.type === 'box' || n.type === 'cylinder' || n.type === 'group' || n.type === 'prefab') && (

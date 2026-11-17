@@ -29,7 +29,7 @@ import { readFileSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import * as prettier from 'prettier';
 import { layout } from '../packages/client/editor-save.mjs';
-import { along, box, drawn, group, prefab, r2 } from './mapkit/nodes.mjs';
+import { along, box, drawn, group, prefab, r2, keptPlace, swapIn } from './mapkit/nodes.mjs';
 import { roomWalls, union } from './mapkit/rooms.mjs';
 
 const FILE = new URL('../content/maps/d2.json', import.meta.url).pathname;
@@ -143,7 +143,14 @@ const GUEST = [
   // West wing, back stretch (corridor x −10..−7).
   { n: 207, r: [-16, -196.5, -10, -189], side: 'w', door: 's' },
   { n: 208, r: [-16, -204, -10, -196.5], side: 'w', door: 's', state: 'hole' },
-  { n: 209, r: [-7, -204, 2, -196], side: 'e', door: 's', state: 'suite', key: 'hotel-room-209-keycard' },
+  {
+    n: 209,
+    r: [-7, -204, 2, -196],
+    side: 'e',
+    door: 's',
+    state: 'suite',
+    key: 'hotel-room-209-keycard',
+  },
   // East wing, front stretch (corridor x 32..35).
   { n: 210, r: [24, -192.5, 32, -186], side: 'w', door: 's' },
   { n: 211, r: [35, -192.5, 42, -186], side: 'e', door: 'n' },
@@ -154,7 +161,14 @@ const GUEST = [
   // East wing, back stretch (corridor x 29..32).
   { n: 216, r: [24, -214.5, 29, -205], side: 'w', door: 'n' },
   { n: 217, r: [24, -224, 29, -214.5], side: 'w', door: 's', state: 'trashed' },
-  { n: 218, r: [32, -214, 42, -208], side: 'e', door: 'n', state: 'suite', key: 'hotel-room-218-keycard' },
+  {
+    n: 218,
+    r: [32, -214, 42, -208],
+    side: 'e',
+    door: 'n',
+    state: 'suite',
+    key: 'hotel-room-218-keycard',
+  },
 ];
 
 /** A doorway: on the wall along `axis` at line c, centered at, w wide, from floor y up h. */
@@ -322,7 +336,15 @@ const lounge = (x, z, y, couch = '#6a1e26', yaw = 0) => {
 /** A stack of olive military cases, 2 high (over eye height), w along x, d along z. */
 const cases = (x, z, w = 1.2, d = 1.2, y = G) => [
   box(x - w / 2, z - d / 2, x + w / 2, z + d / 2, y, y + 0.95, C.olive),
-  box(x - w / 2 + 0.05, z - d / 2 + 0.05, x + w / 2 - 0.05, z + d / 2 - 0.05, y + 0.95, y + 1.85, C.oliveDark),
+  box(
+    x - w / 2 + 0.05,
+    z - d / 2 + 0.05,
+    x + w / 2 - 0.05,
+    z + d / 2 - 0.05,
+    y + 0.95,
+    y + 1.85,
+    C.oliveDark,
+  ),
   drawn(x - w / 2 - 0.01, z - 0.1, x + w / 2 + 0.01, z + 0.1, y + 0.4, y + 0.5, '#c9c3b0'),
 ];
 
@@ -418,7 +440,8 @@ for (const g of GUEST) {
   }
   if (g.state !== 'hole' && g.state !== 'billet') {
     // TV on the bathroom's end wall, a desk under the window.
-    if (D - 2.2 >= 2.2) nodes.push(tv(at(2.2 + (D - 2.2) / 2), north ? z1 - 0.32 : z0 + 0.32, U, north ? 180 : 0));
+    if (D - 2.2 >= 2.2)
+      nodes.push(tv(at(2.2 + (D - 2.2) / 2), north ? z1 - 0.32 : z0 + 0.32, U, north ? 180 : 0));
     if (g.side === 'w' ? x0 === -16 : x1 === 42)
       nodes.push(desk(at(D - 0.45), (z0 + z1) / 2 + (north ? 0.6 : -0.6), U, s < 0 ? 90 : -90));
     nodes.push(P('floor-lamp', at(D - 0.45), north ? z1 - 0.45 : z0 + 0.45, U));
@@ -444,8 +467,10 @@ function trim([x0, z0, x1, z1]) {
   const on = (c, a, b, axis) =>
     talls.some(([p0, q0, p1, q1]) =>
       axis === 'z'
-        ? (Math.abs(p0 - c) < 1e-6 || Math.abs(p1 - c) < 1e-6) && Math.min(q1, b) - Math.max(q0, a) > 0.01
-        : (Math.abs(q0 - c) < 1e-6 || Math.abs(q1 - c) < 1e-6) && Math.min(p1, b) - Math.max(p0, a) > 0.01,
+        ? (Math.abs(p0 - c) < 1e-6 || Math.abs(p1 - c) < 1e-6) &&
+          Math.min(q1, b) - Math.max(q0, a) > 0.01
+        : (Math.abs(q0 - c) < 1e-6 || Math.abs(q1 - c) < 1e-6) &&
+          Math.min(p1, b) - Math.max(p0, a) > 0.01,
     );
   return [
     on(x0, z0, z1, 'z') ? x0 + T : x0,
@@ -454,14 +479,13 @@ function trim([x0, z0, x1, z1]) {
     on(z1, x0, x1, 'x') ? z1 - T : z1,
   ];
 }
-const inside = (p, q) => p[0] >= q[0] - 1e-6 && p[1] >= q[1] - 1e-6 && p[2] <= q[2] + 1e-6 && p[3] <= q[3] + 1e-6;
+const inside = (p, q) =>
+  p[0] >= q[0] - 1e-6 && p[1] >= q[1] - 1e-6 && p[2] <= q[2] + 1e-6 && p[3] <= q[3] + 1e-6;
 const HOLES_UP = [WELL_MAIN, WELL_KITCHEN, WELL_EAST, HOLE];
 
 add('slabs', [
   // Ground floors.
-  ...rooms
-    .filter((r) => r.yb === G && r.floor)
-    .flatMap((r) => union([r.r], [], 0, G, r.floor)),
+  ...rooms.filter((r) => r.yb === G && r.floor).flatMap((r) => union([r.r], [], 0, G, r.floor)),
   // Upper floors: each room its own color, the bathrooms cut out of their rooms, the wells.
   ...rooms
     .filter((r) => r.yb === U && r.floor)
@@ -482,7 +506,14 @@ add('walls', [...roomWalls({ rooms, openings: OPENINGS, inside: C.inside, outsid
 
 add('stairs and rails', [
   // The main stair in the stair hall, rising north to the landing.
-  { type: 'stairs', pos: [37.5, G, -178.5], yaw: 180, size: [3, U - G, 7], sides: 0.9, color: C.marble },
+  {
+    type: 'stairs',
+    pos: [37.5, G, -178.5],
+    yaw: 180,
+    size: [3, U - G, 7],
+    sides: 0.9,
+    color: C.marble,
+  },
   ...rail(36, -182, 36, -175.1, U),
   ...rail(39, -182, 39, -175.1, U),
   ...rail(36.05, -175, 38.95, -175, U),
@@ -554,7 +585,9 @@ add('facade', [
     drawn(8.6 + i * 1.0, -165.9 + 0.12, 9.2 + i * 1.0, -165.9 + 0.16, 5.4, 6.4, C.gold),
   ),
   // Window frames: bronze mullions on the lobby's curtain glass.
-  ...[4.7, 6, 7.3, 18.7, 20, 21.3].map((x) => drawn(x - 0.04, -165.86, x + 0.04, -165.8, G + 0.6, G + 6.8, C.bronze)),
+  ...[4.7, 6, 7.3, 18.7, 20, 21.3].map((x) =>
+    drawn(x - 0.04, -165.86, x + 0.04, -165.8, G + 0.6, G + 6.8, C.bronze),
+  ),
 ]);
 
 // ---------------------------------------------------------------------------------------
@@ -565,7 +598,9 @@ add('lobby', [
   // ballroom doors, so the entrance and the stair hall don't look through to the stage.
   P('reception-desk', 9, -186.5, G),
   box(4.8, -192.4, 13.4, -192, G, GC - 0.6, C.woodDark),
-  ...Array.from({ length: 6 }, (_, i) => drawn(5.8 + i * 1.1, -191.98, 6.5 + i * 1.1, -191.95, G + 1.6, G + 2.6, C.gold)),
+  ...Array.from({ length: 6 }, (_, i) =>
+    drawn(5.8 + i * 1.1, -191.98, 6.5 + i * 1.1, -191.95, G + 1.6, G + 2.6, C.gold),
+  ),
   // The atrium: a round marble table with flowers, lounges, luggage, chandeliers.
   { type: 'cylinder', pos: [13, G, -174.5], radius: 1.3, height: 0.85, sides: 12, color: C.marble },
   P('potted-plant', 13, -174.5, G + 0.85),
@@ -634,9 +669,24 @@ add('west wing', [
   // Laundry: washers along the west wall, linen shelves, carts.
   ...[-210.5, -209, -207.5, -206, -204.5].flatMap((z) => [
     box(-15.9, z - 0.65, -14.7, z + 0.65, G, G + 1.1, '#e6e4de'),
-    { type: 'cylinder', pos: [-14.68, G + 0.55, z], radius: 0.38, height: 0.02, sides: 10, roll: 90, color: '#3d4148', collide: false },
+    {
+      type: 'cylinder',
+      pos: [-14.68, G + 0.55, z],
+      radius: 0.38,
+      height: 0.02,
+      sides: 10,
+      roll: 90,
+      color: '#3d4148',
+      collide: false,
+    },
   ]),
-  ...[-13, -2.5].map((x) => P('store-shelf', x, -213.4, G, 0, { 'goods-a': C.linen, 'goods-b': '#bdb8aa', 'goods-c': '#f2f0ea' })),
+  ...[-13, -2.5].map((x) =>
+    P('store-shelf', x, -213.4, G, 0, {
+      'goods-a': C.linen,
+      'goods-b': '#bdb8aa',
+      'goods-c': '#f2f0ea',
+    }),
+  ),
   P('roll-cage', -10.5, -205, G, 30, { load: C.linen, 'load-dark': '#bdb8aa' }),
   P('roll-cage', -3, -207.5, G, -15, { load: C.linen, 'load-dark': '#bdb8aa' }),
   P('janitor-cart', -4, -203.4, G),
@@ -659,13 +709,26 @@ add('ballroom', [
   box(6, -224 + T, 20, -220, G, G + 0.6, C.woodDark),
   box(6, -220, 20, -219.4, G, G + 0.3, C.woodDark),
   drawn(7, -223.88, 19, -223.85, G + 1.6, G + 5, '#2f4a3a'),
-  ...Array.from({ length: 5 }, (_, i) => drawn(8 + i * 2.4, -223.85, 9.6 + i * 2.4, -223.82, G + 2.4, G + 4.2, i % 2 ? '#c9c3b0' : '#8a9a7a')),
+  ...Array.from({ length: 5 }, (_, i) =>
+    drawn(
+      8 + i * 2.4,
+      -223.85,
+      9.6 + i * 2.4,
+      -223.82,
+      G + 2.4,
+      G + 4.2,
+      i % 2 ? '#c9c3b0' : '#8a9a7a',
+    ),
+  ),
   P('ops-table', 13, -222, G + 0.6),
   P('ops-table', 10, -209, G),
   P('ops-table', 16.5, -213, G, 90),
   ...[-215.5, -214.8, -214.1, -213.4].map((z) => P('server-rack', 22.8, z, G, -90)),
   ...[-208, -207.3, -206.6].map((z) => P('server-rack', 22.8, z, G, -90)),
-  ...[-215, -212.5, -210, -207.5, -205, -202.5].flatMap((z) => [P('bunk-bed', 3.3, z, G), P('bunk-bed', 5.4, z, G)]),
+  ...[-215, -212.5, -210, -207.5, -205, -202.5].flatMap((z) => [
+    P('bunk-bed', 3.3, z, G),
+    P('bunk-bed', 5.4, z, G),
+  ]),
   ...cases(9.5, -202.5, 2.4, 1.2),
   ...cases(17.5, -205.5),
   ...cases(7.5, -216.5, 1.2, 2.4),
@@ -746,7 +809,11 @@ add('upper floor', [
   P('potted-plant', 25.2, -167.2, U),
   P('mall-bench', 30, -167, U),
   // Linen room.
-  P('store-shelf', -5.5, -195.4, U, 0, { 'goods-a': C.linen, 'goods-b': '#bdb8aa', 'goods-c': '#f2f0ea' }),
+  P('store-shelf', -5.5, -195.4, U, 0, {
+    'goods-a': C.linen,
+    'goods-b': '#bdb8aa',
+    'goods-c': '#f2f0ea',
+  }),
   P('roll-cage', 0.8, -194.5, U, 0, { load: C.linen, 'load-dark': '#bdb8aa' }),
 ]);
 
@@ -809,7 +876,7 @@ add('grounds', [
 const map = JSON.parse(readFileSync(FILE, 'utf8'));
 const replaced = (n) => n.type === 'group' && ['hotel', 'hotel-floorplan'].includes(n.name);
 const gone = map.nodes.filter(replaced);
-map.nodes = [...map.nodes.filter((n) => !replaced(n)), group('hotel', out)];
+map.nodes = swapIn(map.nodes, replaced, group('hotel', out, keptPlace(map.nodes, 'hotel')));
 
 const count = (ns) => ns.reduce((s, n) => s + (n.type === 'group' ? count(n.nodes) : 1), 0);
 console.log(`hotel: ${count(out)} nodes in ${out.length} groups; took out ${gone.length} groups`);

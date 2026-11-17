@@ -111,6 +111,44 @@ describe('compileMap', () => {
     expect(() => compileMap(map([{ ...edge, collide: false }]), prefabs())).toThrow(/collide/);
   });
 
+  it('marks a loot spawn with its own yaw as placed, turned with its group', () => {
+    const spawn = (yaw?: number): MapNode => ({
+      type: 'lootSpawn',
+      pos: [1, 0, 0],
+      lootTable: 'meds',
+      ...(yaw === undefined ? {} : { yaw }),
+    });
+    const m = compileMap(
+      map([{ type: 'group', pos: [0, 0, 0], yaw: 180, nodes: [spawn(90)] } as MapNode, spawn()]),
+      prefabs(),
+    );
+    const [turned, plain] = m.markers.filter((k) => k.type === 'lootSpawn');
+    expect(turned).toMatchObject({ placed: true });
+    expect(turned!.yaw).toBeCloseTo((270 * Math.PI) / 180);
+    expect(plain!.placed).toBeUndefined();
+  });
+
+  it('makes an invisible box with stopsShots a plain box: not drawn, solid to rays too', () => {
+    const post: MapNode = {
+      type: 'box',
+      pos: [0, 0, 0],
+      size: [0.3, 2, 0.3],
+      color: '#ff0000',
+      invisible: true,
+      stopsShots: true,
+    };
+    const m = compileMap(map([post]), prefabs());
+    expect(m.shapes).toHaveLength(0);
+    expect(m.world.blockers).toHaveLength(0);
+    expect(m.world.boxes).toEqual([{ x: 0, y: 1, z: 0, hx: 0.15, hy: 1, hz: 0.15, yaw: 0 }]);
+    const w = new CollisionWorld(m.world);
+    expect(w.raycast(-5, 1, 0, 1, 0, 0, 20)).toBeCloseTo(4.85);
+    // The editor still draws it see-through.
+    expect(compileNodes([post], prefabs()).invisible).toHaveLength(1);
+    const { invisible: _, ...seen } = post;
+    expect(() => compileMap(map([seen]), prefabs())).toThrow(/stopsShots is for invisible/);
+  });
+
   it('builds the terrain grid and centers boxes above their base', () => {
     const m = compileMap(
       map([{ type: 'box', pos: [1, 2, 3], size: [2, 4, 6], yaw: 90, color: '#ff0000' }]),
@@ -493,6 +531,22 @@ describe('compileMap', () => {
     expect(m.shapes).toHaveLength(12 + 2 + 9 + 1);
   });
 
+  it('opens stairs underneath with a thickness: a sloped slab, a soffit drawn under it', () => {
+    const m = compileMap(
+      map([{ type: 'stairs', pos: [0, 0, 0], size: [2, 3, 6], color: '#ffffff', thickness: 0.3 }]),
+      prefabs(),
+    );
+    expect(m.world.ramps).toEqual([]);
+    expect(m.world.boxes).toHaveLength(1);
+    const { slope } = m.world.boxes[0]!;
+    expect(slope).toMatchObject({ top: 1.5, topZ: 0.5, under: 1.2, underZ: 0.5 });
+    const world = new CollisionWorld(m.world);
+    // Head room under the high end; the floor under it is the ground.
+    expect(world.ceilingAt(0, 2.5, 0.3, 0)).toBeCloseTo(1.2 + 0.5 * 2.5);
+    // 12 steps and the soffit.
+    expect(m.shapes).toHaveLength(13);
+  });
+
   it('produces a world the simulation can stand on', () => {
     const m = compileMap(
       map([{ type: 'prefab', prefab: 'crate', pos: [-1, 0, 0] }]),
@@ -754,6 +808,36 @@ describe('compileMap', () => {
       ],
     };
     expect(() => compileMap(map([nested]), prefabs())).toThrow(/can't hold another \(drawer\)/);
+  });
+
+  it("gives a placed prefab's one container the placement's loot (2026-11-17)", () => {
+    const chest: PrefabFile = {
+      formatVersion: 3,
+      id: 'chest',
+      nodes: [
+        {
+          type: 'group',
+          pos: [0, 0, 0],
+          loot: { container: 'tool-cabinet' },
+          nodes: [{ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], color: '#ff0000' }],
+        },
+      ],
+    };
+    const placed = (loot?: MapNode['loot']): MapNode =>
+      ({ type: 'prefab', prefab: 'chest', pos: [5, 0, 0], ...(loot ? { loot } : {}) }) as MapNode;
+    const of = (n: MapNode) =>
+      compileMap(map([n]), prefabs(chest)).markers.filter((k) => k.type === 'lootContainer');
+    // left alone, it's the prefab's own
+    expect(of(placed())).toMatchObject([{ container: 'tool-cabinet' }]);
+    expect(of(placed())[0]).not.toHaveProperty('lootTable');
+    // given loot, still one container, rolling the placement's
+    const mix = { tables: { 'mill-best-parts': 1 } };
+    expect(of(placed({ container: 'tool-cabinet', mix }))).toMatchObject([
+      { container: 'tool-cabinet', mix },
+    ]);
+    expect(of(placed({ container: 'footlocker', lootTable: 'household' }))).toMatchObject([
+      { container: 'footlocker', lootTable: 'household' },
+    ]);
   });
 
   it('loads format 2 maps unchanged', () => {

@@ -1,0 +1,104 @@
+{
+  "formatVersion": 3,
+  "id": "lab-coat",
+  "name": "Lab coat",
+  "tags": ["office", "medical"],
+  "colors": {
+    "coat": "#e9ebe8",
+    "coat-fold": "#c9cdc9",
+    "coat-light": "#f4f5f2",
+    "pen": "#2456a4",
+    "badge": "#3a6ea5",
+    "ink": "#f2f2f2"
+  },
+  "nodes": [
+    {
+      "type": "group",
+      "pos": [0, 0, 0],
+      "loot": {
+        "container": "lab-coat"
+      },
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [0, -0.03, 0.065],
+          "size": [0.38, 0.06, 0.11],
+          "color": "coat",
+          "top": [0.2, 0.11]
+        },
+        {
+          "type": "box",
+          "pos": [-0.118, -0.85, 0.065],
+          "size": [0.135, 0.8, 0.1],
+          "color": "coat",
+          "top": [0.125, 0.1],
+          "roll": 2,
+          "pitch": -2
+        },
+        {
+          "type": "box",
+          "pos": [0.005, -0.834, 0.077],
+          "size": [0.2, 0.8, 0.1],
+          "color": "coat-fold",
+          "top": [0.16, 0.09],
+          "pitch": -3
+        },
+        {
+          "type": "box",
+          "pos": [0.125, -0.85, 0.061],
+          "size": [0.135, 0.8, 0.1],
+          "color": "coat-light",
+          "top": [0.125, 0.1],
+          "roll": -2,
+          "pitch": -1
+        },
+        {
+          "type": "box",
+          "pos": [-0.2, -0.52, 0.095],
+          "size": [0.1, 0.5, 0.08],
+          "color": "coat-fold",
+          "top": [0.08, 0.07],
+          "lean": [0.02, 0],
+          "roll": 3
+        },
+        {
+          "type": "box",
+          "pos": [0.25, -0.55, 0.095],
+          "size": [0.1, 0.52, 0.08],
+          "color": "coat",
+          "top": [0.08, 0.07],
+          "lean": [-0.02, 0],
+          "roll": 4
+        },
+        {
+          "type": "box",
+          "pos": [0.09, -0.3, 0.114],
+          "size": [0.08, 0.09, 0.004],
+          "color": "coat-fold",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.11, -0.25, 0.118],
+          "size": [0.012, 0.07, 0.008],
+          "color": "pen",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.1, -0.34, 0.118],
+          "size": [0.06, 0.08, 0.004],
+          "color": "badge",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.1, -0.32, 0.121],
+          "size": [0.04, 0.02, 0.002],
+          "color": "ink",
+          "collide": false
+        }
+      ]
+    }
+  ]
+}

@@ -114,6 +114,15 @@ describe('walking', () => {
     }
   });
 
+  it('sprints with aim held and no gun in hand (the knife and empty hands cannot aim)', () => {
+    const { c, run } = setup(makeWorld());
+    const inp = input({ moveY: 1, sprint: true, aim: true });
+    run(TICK_RATE, inp);
+    const z = c.z;
+    run(TICK_RATE, inp);
+    expect(z - c.z).toBeCloseTo(MOVEMENT.sprintSpeed, 5);
+  });
+
   it('only sprints forwards, and clamps the stick to length 1', () => {
     const { c, run } = setup(makeWorld());
     run(TICK_RATE, input({ moveY: -1, sprint: true }));
@@ -819,6 +828,18 @@ describe('deep water (MT-1)', () => {
     expect(c.z).toBeLessThan(-4);
   });
 
+  it('slows you by 30% in water above the knee, and not in the shallows or on a bridge', () => {
+    // Speed crossing x 0, the middle of the bed, with the water `level` over it.
+    const speedAt0 = (level: number, parts: Partial<WorldDef> = {}) => {
+      const { c, run } = setup(river(level, parts, -1), -6, 0);
+      while (c.x < 0) run(1, EAST);
+      return Math.hypot(c.vx, c.vz);
+    };
+    expect(speedAt0(0)).toBeCloseTo(MOVEMENT.walkSpeed * 0.7);
+    expect(speedAt0(-0.5)).toBeCloseTo(MOVEMENT.walkSpeed);
+    expect(speedAt0(0, { boxes: [aabb(-6, -0.3, -1, 6, 0.2, 1)] })).toBeCloseTo(MOVEMENT.walkSpeed);
+  });
+
   it('lets you cross on a bridge over it', () => {
     const deck = aabb(-6, -0.3, -1, 6, 0.2, 1);
     const { c, run } = setup(river(0, { boxes: [deck] }), -6, 0);
@@ -870,3 +891,34 @@ describe('deep water (MT-1)', () => {
     expect(d.x).toBeCloseTo(-2.5);
   });
 });
+
+describe('the terrain is solid from below (2026-11-16)', () => {
+  /** A pit through the terrain, x −4..4 and z −10..10, floored at y −4, with no walls. */
+  function pit(boxes: BoxDef[] = []): CollisionWorld {
+    const holes: number[] = Array(50 * 50).fill(0);
+    for (let j = 20; j < 30; j++) for (let i = 23; i < 27; i++) holes[j * 50 + i] = 1;
+    return makeWorld({
+      terrain: { ...flatTerrain(), holes },
+      boxes: [aabb(-4, -4.4, -10, 4, -4, 10), ...boxes],
+    });
+  }
+
+  it("won't walk you out of a hole into the earth (and up onto the surface)", () => {
+    const { c, run } = setup(pit(), 0, 0, -Math.PI / 2, -4);
+    const top = run(TICK_RATE * 3, EAST_RUN);
+    expect(top).toBeLessThan(-3.9);
+    expect(c.x).toBeLessThan(4);
+  });
+
+  it("won't vault over cover at the hole's edge onto the surface", () => {
+    const crate = aabb(2.6, -4, -1, 3.6, -3, 1);
+    const { c, run } = setup(pit([crate]), 0, 0, -Math.PI / 2, -4);
+    let top = -Infinity;
+    for (let k = 0; k < 6; k++)
+      top = Math.max(top, run(10, { ...EAST_RUN, jump: true }), run(10, EAST_RUN));
+    expect(top).toBeLessThan(-2);
+    expect(c.x).toBeLessThan(4);
+  });
+});
+
+const EAST_RUN = input({ moveY: 1, yaw: -Math.PI / 2 });

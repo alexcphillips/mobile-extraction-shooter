@@ -1,0 +1,56 @@
+{
+  "formatVersion": 3,
+  "id": "desk-lamp",
+  "name": "Desk lamp",
+  "tags": ["office", "home"],
+  "instanced": true,
+  "colors": {
+    "metal": "#3a3d42",
+    "shade": "#2f5f4f",
+    "bulb": "#fff2c0"
+  },
+  "nodes": [
+    {
+      "type": "cylinder",
+      "pos": [0, 0.003, 0],
+      "radius": 0.08,
+      "height": 0.02,
+      "sides": 8,
+      "color": "metal",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.02, 0.02],
+      "size": [0.02, 0.3, 0.02],
+      "color": "metal",
+      "collide": false,
+      "pitch": 15
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.185, 0.12],
+      "size": [0.02, 0.24, 0.02],
+      "color": "metal",
+      "collide": false,
+      "pitch": -80
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.245, 0.27],
+      "size": [0.12, 0.08, 0.12],
+      "color": "shade",
+      "collide": false,
+      "top": [0.06, 0.06],
+      "pitch": -15
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.241, 0.277],
+      "size": [0.08, 0.01, 0.08],
+      "color": "bulb",
+      "collide": false,
+      "pitch": -15
+    }
+  ]
+}

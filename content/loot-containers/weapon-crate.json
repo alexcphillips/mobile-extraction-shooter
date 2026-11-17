@@ -6,7 +6,8 @@
   "loot": {
     "tables": {
       "attachments": 1,
-      "weapons": 0.53
+      "weapons": 0.53,
+      "rigs": 0.3
     },
     "each": true
   }

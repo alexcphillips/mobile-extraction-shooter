@@ -8,8 +8,139 @@
   "weight": 2,
   "rarity": "uncommon",
   "model": {
-    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]
+    "parts": [
+      {
+        "type": "box",
+        "name": "frame top",
+        "group": "frame",
+        "pos": [0, 0.015, -0.215],
+        "size": [0.6, 0.03, 0.05],
+        "color": "#6e4a2a"
+      },
+      {
+        "type": "box",
+        "name": "frame bottom",
+        "group": "frame",
+        "pos": [0, 0.015, 0.215],
+        "size": [0.6, 0.03, 0.05],
+        "color": "#6e4a2a"
+      },
+      {
+        "type": "box",
+        "name": "frame left",
+        "group": "frame",
+        "pos": [-0.275, 0.015, 0],
+        "size": [0.05, 0.03, 0.38],
+        "color": "#6e4a2a"
+      },
+      {
+        "type": "box",
+        "name": "frame right",
+        "group": "frame",
+        "pos": [0.275, 0.015, 0],
+        "size": [0.05, 0.03, 0.38],
+        "color": "#6e4a2a"
+      },
+      {
+        "type": "box",
+        "name": "canvas",
+        "group": "canvas",
+        "pos": [0, 0.011, 0],
+        "size": [0.5, 0.022, 0.38],
+        "color": "#3f6b3a"
+      },
+      {
+        "type": "box",
+        "name": "sky",
+        "group": "scene",
+        "pos": [0, 0.022, -0.1472],
+        "size": [0.5, 0.002, 0.0855],
+        "color": "#9cc0d8"
+      },
+      {
+        "type": "box",
+        "name": "cliff left",
+        "group": "scene",
+        "pos": [-0.0838, 0.0225, -0.0047],
+        "size": [0.1075, 0.003, 0.2185],
+        "color": "#7d7f7a"
+      },
+      {
+        "type": "box",
+        "name": "cliff right",
+        "group": "scene",
+        "pos": [0.0838, 0.0225, -0.0047],
+        "size": [0.1075, 0.003, 0.2185],
+        "color": "#6c6e6a"
+      },
+      {
+        "type": "box",
+        "name": "falls",
+        "group": "scene",
+        "pos": [0, 0.0235, -0.0019],
+        "size": [0.065, 0.005, 0.2318],
+        "color": "#dfeef5"
+      },
+      {
+        "type": "box",
+        "name": "falls shade",
+        "group": "scene",
+        "pos": [0.0013, 0.024, 0.0048],
+        "size": [0.0225, 0.006, 0.1995],
+        "color": "#a9cde0"
+      },
+      {
+        "type": "box",
+        "name": "pool",
+        "group": "scene",
+        "pos": [0, 0.023, 0.1425],
+        "size": [0.375, 0.004, 0.095],
+        "color": "#3e7ea0"
+      },
+      {
+        "type": "box",
+        "name": "foam",
+        "group": "scene",
+        "pos": [0, 0.0245, 0.1064],
+        "size": [0.15, 0.007, 0.0228],
+        "color": "#eef5f8"
+      },
+      {
+        "type": "box",
+        "name": "pine 1",
+        "group": "scene",
+        "pos": [-0.2125, 0.023, -0.0095],
+        "size": [0.045, 0.004, 0.171],
+        "color": "#24452a"
+      },
+      {
+        "type": "box",
+        "name": "pine 2",
+        "group": "scene",
+        "pos": [-0.17, 0.023, 0],
+        "size": [0.036, 0.004, 0.152],
+        "color": "#24452a"
+      },
+      {
+        "type": "box",
+        "name": "pine 3",
+        "group": "scene",
+        "pos": [0.18, 0.023, -0.0047],
+        "size": [0.0405, 0.004, 0.1615],
+        "color": "#24452a"
+      },
+      {
+        "type": "box",
+        "name": "pine 4",
+        "group": "scene",
+        "pos": [0.22, 0.023, -0.0142],
+        "size": [0.0495, 0.004, 0.1805],
+        "color": "#24452a"
+      }
+    ]
   },
   "shortName": "Waterfall",
-  "category": "Craftwork"
+  "category": "Craftwork",
+  "lean": 12,
+  "view": "top"
 }

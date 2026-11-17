@@ -1,0 +1,228 @@
+{
+  "formatVersion": 1,
+  "id": "kiln-salvage",
+  "name": "Kiln four salvage (loose only)",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "anchoring-epoxy",
+      "weight": 0.5
+    },
+    {
+      "item": "angle-grinder",
+      "weight": 1
+    },
+    {
+      "item": "armored-vehicle-battery",
+      "weight": 0.12
+    },
+    {
+      "item": "avr-control-board",
+      "weight": 1
+    },
+    {
+      "item": "ballistic-glass-panel",
+      "weight": 2
+    },
+    {
+      "item": "bolt-cutters",
+      "weight": 1
+    },
+    {
+      "item": "box-of-nails",
+      "weight": 0.5
+    },
+    {
+      "item": "box-of-screws",
+      "weight": 0.5
+    },
+    {
+      "item": "bucket-of-paint",
+      "weight": 2
+    },
+    {
+      "item": "carbon-fiber-laminate",
+      "weight": 2
+    },
+    {
+      "item": "caulk-tube",
+      "weight": 0.5
+    },
+    {
+      "item": "circular-saw",
+      "weight": 1
+    },
+    {
+      "item": "compressed-air-tank",
+      "weight": 2
+    },
+    {
+      "item": "condenser-coil",
+      "weight": 2
+    },
+    {
+      "item": "cordless-drill",
+      "weight": 1
+    },
+    {
+      "item": "corrugated-tubing",
+      "weight": 0.5
+    },
+    {
+      "item": "cryogenic-micro-cooler-engine",
+      "weight": 1
+    },
+    {
+      "item": "dehumidifier",
+      "weight": 0.5
+    },
+    {
+      "item": "digital-thermostat",
+      "weight": 2
+    },
+    {
+      "item": "ev-battery",
+      "weight": 2
+    },
+    {
+      "item": "extension-cord",
+      "weight": 0.5
+    },
+    {
+      "item": "fiberglass-roll",
+      "weight": 1
+    },
+    {
+      "item": "fusion-reactor-core",
+      "weight": 0.12
+    },
+    {
+      "item": "gear-set",
+      "weight": 0.5
+    },
+    {
+      "item": "heavy-duty-chain-hoist",
+      "weight": 2
+    },
+    {
+      "item": "high-amp-circuit-breaker",
+      "weight": 1
+    },
+    {
+      "item": "high-voltage-inverter-board",
+      "weight": 1
+    },
+    {
+      "item": "high-yield-solar-module",
+      "weight": 1
+    },
+    {
+      "item": "hydraulic-press-head",
+      "weight": 2
+    },
+    {
+      "item": "industrial-air-duct-fan",
+      "weight": 2
+    },
+    {
+      "item": "insulation-roll",
+      "weight": 1
+    },
+    {
+      "item": "kevlar-composite-sheet",
+      "weight": 2
+    },
+    {
+      "item": "led-tube",
+      "weight": 1
+    },
+    {
+      "item": "measuring-tape",
+      "weight": 0.5
+    },
+    {
+      "item": "mircroreactor",
+      "weight": 0.12
+    },
+    {
+      "item": "nuclear-fuel",
+      "weight": 1
+    },
+    {
+      "item": "pool-pump-impeller-assembly",
+      "weight": 2
+    },
+    {
+      "item": "portable-ac",
+      "weight": 2
+    },
+    {
+      "item": "portable-power-bank",
+      "weight": 0.5
+    },
+    {
+      "item": "power-relay",
+      "weight": 0.5
+    },
+    {
+      "item": "premix-concrete-bag",
+      "weight": 0.5
+    },
+    {
+      "item": "pressure-gauge",
+      "weight": 1
+    },
+    {
+      "item": "refrigerant-canister",
+      "weight": 0.5
+    },
+    {
+      "item": "refrigerator-control-board",
+      "weight": 2
+    },
+    {
+      "item": "rocket-thruster",
+      "weight": 0.12
+    },
+    {
+      "item": "screwdriver",
+      "weight": 0.5
+    },
+    {
+      "item": "security-keypad",
+      "weight": 0.5
+    },
+    {
+      "item": "solenoid-valve",
+      "weight": 1
+    },
+    {
+      "item": "steel-angle-bar",
+      "weight": 1
+    },
+    {
+      "item": "steel-framing",
+      "weight": 2
+    },
+    {
+      "item": "steel-latch-set",
+      "weight": 0.5
+    },
+    {
+      "item": "titanium-turbine-blade",
+      "weight": 2
+    },
+    {
+      "item": "valve-handwheel",
+      "weight": 1
+    },
+    {
+      "item": "waterjet-cutting-head",
+      "weight": 2
+    },
+    {
+      "item": "wood-board",
+      "weight": 0.5
+    }
+  ]
+}

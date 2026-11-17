@@ -1,0 +1,21 @@
+{
+  "formatVersion": 1,
+  "id": "fire-watch",
+  "name": "Fire watch",
+  "rolls": [1, 3],
+  "items": [
+    { "item": "matches", "weight": 4 },
+    { "item": "flip-lighter", "weight": 4 },
+    { "item": "bottle-of-water", "weight": 4 },
+    { "item": "protein-power", "weight": 4 },
+    { "item": "rechargeable-battery", "weight": 4 },
+    { "item": "incident-report", "weight": 4 },
+    { "item": "engraved-compass", "weight": 3 },
+    { "item": "bandage", "weight": 3 },
+    { "item": "buckshot", "weight": 3, "count": [4, 10] },
+    { "item": "thermobrew", "weight": 2 },
+    { "item": "survey-map-collection", "weight": 2 },
+    { "item": "antique-telescope", "weight": 1.5 },
+    { "item": "cat-tourniquet", "weight": 1.5 }
+  ]
+}

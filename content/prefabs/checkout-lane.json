@@ -1,0 +1,129 @@
+{
+  "formatVersion": 3,
+  "id": "checkout-lane",
+  "name": "Checkout lane",
+  "tags": ["store"],
+  "colors": {
+    "body": "#e9e6df",
+    "kick": "#3a3c3f",
+    "belt": "#2b2b2b",
+    "steel": "#6a6e72",
+    "screen": "#1f2328",
+    "light": "#f0c22e",
+    "rack": "#5d6a62",
+    "sweets": "#c94a3a",
+    "sweets-2": "#e0b23a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [0.7, 0.85, 3.0],
+      "color": "body"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [0.72, 0.1, 3.02],
+      "color": "kick",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.85, -0.55],
+      "size": [0.5, 0.03, 1.8],
+      "color": "belt",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.85, 0.45],
+      "size": [0.6, 0.07, 0.05],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.85, 1.05],
+      "size": [0.6, 0.02, 0.8],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.25, 0.85, 0.58],
+      "size": [0.05, 0.14, 0.05],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.25, 0.97, 0.55],
+      "size": [0.34, 0.26, 0.05],
+      "color": "screen",
+      "collide": false,
+      "pitch": -15
+    },
+    {
+      "type": "box",
+      "pos": [-0.2, 0.85, 0.78],
+      "size": [0.1, 0.05, 0.16],
+      "color": "screen",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.3, 0.85, -1.4],
+      "size": [0.06, 1.5, 0.06],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.3, 2.35, -1.4],
+      "size": [0.3, 0.28, 0.12],
+      "color": "light",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.3, 2.42, -1.33],
+      "size": [0.14, 0.14, 0.02],
+      "color": "body",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.55, 0, -1.1],
+      "size": [0.35, 1.1, 0.7],
+      "color": "rack"
+    },
+    {
+      "type": "box",
+      "pos": [-0.55, 0.3, -1.1],
+      "size": [0.37, 0.04, 0.66],
+      "color": "sweets",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.55, 0.5800000000000001, -1.1],
+      "size": [0.37, 0.04, 0.66],
+      "color": "sweets-2",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.55, 0.8600000000000001, -1.1],
+      "size": [0.37, 0.04, 0.66],
+      "color": "sweets",
+      "collide": false
+    },
+    {
+      "type": "prefab",
+      "prefab": "office-chair",
+      "pos": [0.75, 0, 0.6],
+      "yaw": -90
+    }
+  ]
+}

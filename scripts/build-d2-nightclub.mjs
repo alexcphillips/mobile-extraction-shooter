@@ -26,7 +26,7 @@ import { readFileSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import * as prettier from 'prettier';
 import { layout } from '../packages/client/editor-save.mjs';
-import { along, box, drawn, group, prefab, r2 } from './mapkit/nodes.mjs';
+import { along, box, drawn, group, prefab, r2, keptPlace, swapIn } from './mapkit/nodes.mjs';
 import { roomWalls, union } from './mapkit/rooms.mjs';
 
 const FILE = new URL('../content/maps/d2.json', import.meta.url).pathname;
@@ -652,7 +652,7 @@ add('courtyard', [
 const map = JSON.parse(readFileSync(FILE, 'utf8'));
 const replaced = (n) => n.type === 'group' && ['nightclub', 'nightclub-floors'].includes(n.name);
 const gone = map.nodes.filter(replaced);
-map.nodes = [...map.nodes.filter((n) => !replaced(n)), group('nightclub', out)];
+map.nodes = swapIn(map.nodes, replaced, group('nightclub', out, keptPlace(map.nodes, 'nightclub')));
 
 const count = (ns) => ns.reduce((s, n) => s + (n.type === 'group' ? count(n.nodes) : 1), 0);
 console.log(

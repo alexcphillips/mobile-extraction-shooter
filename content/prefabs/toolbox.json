@@ -1,0 +1,82 @@
+{
+  "formatVersion": 3,
+  "id": "toolbox",
+  "name": "Toolbox",
+  "tags": ["industrial"],
+  "colors": {
+    "paint": "#b8312a",
+    "paint-dark": "#8e2520",
+    "steel": "#9aa0a4",
+    "inside": "#2a2a2a",
+    "handle": "#2b2b2b",
+    "tool": "#c9a227",
+    "grip": "#d24b2a"
+  },
+  "nodes": [
+    {
+      "type": "group",
+      "pos": [0, 0, 0],
+      "loot": {
+        "container": "toolbox",
+        "searched": "toolbox-open"
+      },
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [0, 0, 0],
+          "size": [0.56, 0.26, 0.24],
+          "color": "paint"
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.19, 0.121],
+          "size": [0.54, 0.012, 0.004],
+          "color": "paint-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.26, 0],
+          "size": [0.57, 0.015, 0.25],
+          "color": "paint-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.2, 0.143, 0.122],
+          "size": [0.05, 0.035, 0.008],
+          "color": "steel",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.2, 0.143, 0.122],
+          "size": [0.05, 0.035, 0.008],
+          "color": "steel",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.275, 0],
+          "size": [0.22, 0.02, 0.025],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.11, 0.275, 0],
+          "size": [0.02, 0.035, 0.025],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.11, 0.275, 0],
+          "size": [0.02, 0.035, 0.025],
+          "color": "handle",
+          "collide": false
+        }
+      ]
+    }
+  ]
+}

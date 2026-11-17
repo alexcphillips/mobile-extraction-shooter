@@ -1,0 +1,212 @@
+{
+  "formatVersion": 3,
+  "id": "small-crate",
+  "name": "Small wooden crate",
+  "tags": ["industrial", "store", "military"],
+  "instanced": true,
+  "colors": {
+    "wood": "#a87c4a",
+    "frame": "#7a5631",
+    "groove": "#5a3f22",
+    "brace": "#8c653a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [0.514, 0.402, 0.414],
+      "color": "wood"
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, -0.216],
+      "size": [0.55, 0.06, 0.018],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.342, -0.216],
+      "size": [0.55, 0.06, 0.018],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.245, 0.06, -0.216],
+      "size": [0.06, 0.282, 0.018],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.245, 0.06, -0.216],
+      "size": [0.06, 0.282, 0.018],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.176, -0.2142],
+      "size": [0.4942, 0.05, 0.0144],
+      "color": "brace",
+      "collide": false,
+      "roll": -33.25742153496045
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.154, -0.209],
+      "size": [0.43, 0.008, 0.004],
+      "color": "groove",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.248, -0.209],
+      "size": [0.43, 0.008, 0.004],
+      "color": "groove",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0, 0.216],
+      "size": [0.55, 0.06, 0.018],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.342, 0.216],
+      "size": [0.55, 0.06, 0.018],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.245, 0.06, 0.216],
+      "size": [0.06, 0.282, 0.018],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.245, 0.06, 0.216],
+      "size": [0.06, 0.282, 0.018],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.176, 0.2142],
+      "size": [0.4942, 0.05, 0.0144],
+      "color": "brace",
+      "collide": false,
+      "roll": 33.25742153496045
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.154, 0.209],
+      "size": [0.43, 0.008, 0.004],
+      "color": "groove",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.248, 0.209],
+      "size": [0.43, 0.008, 0.004],
+      "color": "groove",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.266, 0, 0],
+      "size": [0.018, 0.06, 0.414],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.266, 0.342, 0],
+      "size": [0.018, 0.06, 0.414],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.259, 0.1528, 0],
+      "size": [0.004, 0.008, 0.394],
+      "color": "groove",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.259, 0.2492, 0],
+      "size": [0.004, 0.008, 0.394],
+      "color": "groove",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.266, 0, 0],
+      "size": [0.018, 0.06, 0.414],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.266, 0.342, 0],
+      "size": [0.018, 0.06, 0.414],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.259, 0.1528, 0],
+      "size": [0.004, 0.008, 0.394],
+      "color": "groove",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.259, 0.2492, 0],
+      "size": [0.004, 0.008, 0.394],
+      "color": "groove",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.402, -0.195],
+      "size": [0.55, 0.018, 0.06],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.402, 0.195],
+      "size": [0.55, 0.018, 0.06],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.245, 0.402, 0],
+      "size": [0.06, 0.018, 0.33],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.245, 0.402, 0],
+      "size": [0.06, 0.018, 0.33],
+      "color": "frame",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.404, 0],
+      "size": [0.008, 0.004, 0.33],
+      "color": "groove",
+      "collide": false
+    }
+  ]
+}

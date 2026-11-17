@@ -1,0 +1,40 @@
+{
+  "formatVersion": 1,
+  "id": "switch-room",
+  "name": "Switch room",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "power-relay",
+      "weight": 4
+    },
+    {
+      "item": "electrical-tape",
+      "weight": 4
+    },
+    {
+      "item": "light-bulb",
+      "weight": 3
+    },
+    {
+      "item": "rechargeable-battery",
+      "weight": 3
+    },
+    {
+      "item": "high-amp-circuit-breaker",
+      "weight": 2
+    },
+    {
+      "item": "avr-control-board",
+      "weight": 2
+    },
+    {
+      "item": "high-voltage-inverter-board",
+      "weight": 1
+    },
+    {
+      "item": "digital-thermostat",
+      "weight": 0.5
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "bunker-armory-keycard",
+  "name": "Bunker armory keycard",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "bunker-armory-keycard",
+      "weight": 1
+    }
+  ]
+}

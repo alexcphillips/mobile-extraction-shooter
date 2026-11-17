@@ -1,0 +1,186 @@
+{
+  "formatVersion": 3,
+  "id": "circuit-breaker",
+  "name": "Circuit breaker",
+  "tags": ["industrial"],
+  "colors": {
+    "steel": "#6a6e72",
+    "concrete": "#a19d94",
+    "cabinet": "#9aa1a6",
+    "porcelain": "#8a4b32",
+    "porcelain-dark": "#6e3a26",
+    "metal": "#c2c6c9",
+    "sign": "#e0b23a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [-1.35, 0, 0],
+      "size": [0.16, 2.2, 0.16],
+      "color": "steel"
+    },
+    {
+      "type": "box",
+      "pos": [-1.35, 0, 0],
+      "size": [0.4, 0.12, 0.4],
+      "color": "concrete",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.35, 0, 0],
+      "size": [0.16, 2.2, 0.16],
+      "color": "steel"
+    },
+    {
+      "type": "box",
+      "pos": [1.35, 0, 0],
+      "size": [0.4, 0.12, 0.4],
+      "color": "concrete",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.2, 0],
+      "size": [3.0, 0.2, 0.3],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.1, 0],
+      "size": [0.9, 1.0, 0.5],
+      "color": "cabinet"
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.45, 0.26],
+      "size": [0.26, 0.22, 0.01],
+      "color": "sign",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.0, 2.4, 0],
+      "size": [0.4, 0.35, 0.4],
+      "color": "cabinet",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-1.0, 2.75, 0],
+      "radius": 0.11,
+      "height": 1.5,
+      "sides": 8,
+      "color": "porcelain",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-1.0, 3.25, 0],
+      "radius": 0.2,
+      "height": 0.06,
+      "sides": 8,
+      "color": "porcelain-dark",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-1.0, 3.75, 0],
+      "radius": 0.2,
+      "height": 0.06,
+      "sides": 8,
+      "color": "porcelain-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.0, 4.25, 0],
+      "size": [0.3, 0.14, 0.2],
+      "color": "metal",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.4, 0],
+      "size": [0.4, 0.35, 0.4],
+      "color": "cabinet",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 2.75, 0],
+      "radius": 0.11,
+      "height": 1.5,
+      "sides": 8,
+      "color": "porcelain",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 3.25, 0],
+      "radius": 0.2,
+      "height": 0.06,
+      "sides": 8,
+      "color": "porcelain-dark",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0, 3.75, 0],
+      "radius": 0.2,
+      "height": 0.06,
+      "sides": 8,
+      "color": "porcelain-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 4.25, 0],
+      "size": [0.3, 0.14, 0.2],
+      "color": "metal",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.0, 2.4, 0],
+      "size": [0.4, 0.35, 0.4],
+      "color": "cabinet",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [1.0, 2.75, 0],
+      "radius": 0.11,
+      "height": 1.5,
+      "sides": 8,
+      "color": "porcelain",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [1.0, 3.25, 0],
+      "radius": 0.2,
+      "height": 0.06,
+      "sides": 8,
+      "color": "porcelain-dark",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [1.0, 3.75, 0],
+      "radius": 0.2,
+      "height": 0.06,
+      "sides": 8,
+      "color": "porcelain-dark",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.0, 4.25, 0],
+      "size": [0.3, 0.14, 0.2],
+      "color": "metal",
+      "collide": false
+    }
+  ]
+}

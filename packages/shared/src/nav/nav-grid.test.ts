@@ -303,3 +303,30 @@ describe('NavGrid and deep water (MT-1)', () => {
     expect(result).toBe('found');
   });
 });
+
+describe('paths and wading water (2026-11-16)', () => {
+  /** Flat ground under a pool 1 m deep, |x| < hx and |z| < 3. */
+  const pool = (hx: number) => makeWorld({ water: [{ x: 0, z: 0, hx, hz: 3, yaw: 0, level: 1 }] });
+
+  it('goes round a pool when that takes less time than wading at 70%', () => {
+    // Straight: 12 m dry + 16 m wading (as 22.9) = 34.9; round its corners about 30.
+    const nav = new NavGrid(pool(8));
+    expect(nav.wading[nav.nearest(0, 0, 0)]).toBe(1);
+    const { result, pts } = route(nav, [-14, 0, 0], [14, 0, 0]);
+    expect(result).toBe('found');
+    for (let i = 0; i + 1 < pts.length; i++) {
+      const [ax, , az] = pts[i]!;
+      const [bx, , bz] = pts[i + 1]!;
+      for (let t = 0; t <= 1; t += 0.05) {
+        const x = ax! + (bx! - ax!) * t;
+        const z = az! + (bz! - az!) * t;
+        expect(Math.abs(x) < 7.9 && Math.abs(z) < 2.9).toBe(false);
+      }
+    }
+  });
+
+  it('wades through when there is no way round', () => {
+    const nav = new NavGrid(pool(20));
+    expect(route(nav, [0, 0, -12], [0, 0, 12]).result).toBe('found');
+  });
+});

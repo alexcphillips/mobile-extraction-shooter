@@ -1,0 +1,167 @@
+{
+  "formatVersion": 3,
+  "id": "rail-signal",
+  "name": "Rail signal",
+  "tags": ["rail"],
+  "instanced": true,
+  "colors": {
+    "concrete": "#8f8c84",
+    "steel": "#4a4a48",
+    "head": "#1f1f1f",
+    "red": "#e0332b",
+    "off": "#3a3a3a"
+  },
+  "nodes": [
+    { "type": "box", "pos": [0.0, 0.0, 0.0], "size": [0.7, 0.3, 0.7], "color": "concrete" },
+    { "type": "box", "pos": [0.0, 0.3, 0.0], "size": [0.16, 4.3, 0.16], "color": "steel" },
+    {
+      "type": "box",
+      "pos": [0.0, 3.4, 0.03],
+      "size": [0.6, 1.2, 0.3],
+      "color": "head",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 3.3, 0.19],
+      "size": [0.84, 1.4, 0.02],
+      "color": "head",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.0, 4.21, 0.2],
+      "radius": 0.11,
+      "height": 0.06,
+      "color": "red",
+      "collide": false,
+      "pitch": 90,
+      "sides": 8
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 4.35, 0.28],
+      "size": [0.28, 0.03, 0.16],
+      "color": "head",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.0, 3.85, 0.2],
+      "radius": 0.11,
+      "height": 0.06,
+      "color": "off",
+      "collide": false,
+      "pitch": 90,
+      "sides": 8
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 3.99, 0.28],
+      "size": [0.28, 0.03, 0.16],
+      "color": "head",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.0, 3.49, 0.2],
+      "radius": 0.11,
+      "height": 0.06,
+      "color": "off",
+      "collide": false,
+      "pitch": 90,
+      "sides": 8
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 3.63, 0.28],
+      "size": [0.28, 0.03, 0.16],
+      "color": "head",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.6, -0.145],
+      "size": [0.36, 0.03, 0.03],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 0.92, -0.145],
+      "size": [0.36, 0.03, 0.03],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 1.24, -0.145],
+      "size": [0.36, 0.03, 0.03],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 1.56, -0.145],
+      "size": [0.36, 0.03, 0.03],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 1.88, -0.145],
+      "size": [0.36, 0.03, 0.03],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 2.2, -0.145],
+      "size": [0.36, 0.03, 0.03],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 2.52, -0.145],
+      "size": [0.36, 0.03, 0.03],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 2.84, -0.145],
+      "size": [0.36, 0.03, 0.03],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 3.16, -0.145],
+      "size": [0.36, 0.03, 0.03],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.19, 0.3, -0.15],
+      "size": [0.02, 3.0, 0.04],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.19, 0.3, -0.15],
+      "size": [0.02, 3.0, 0.04],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.0, 3.25, -0.25],
+      "size": [1.0, 0.05, 0.7],
+      "color": "steel",
+      "collide": false
+    }
+  ]
+}

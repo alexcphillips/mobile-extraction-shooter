@@ -30,6 +30,25 @@ export const group = (name, nodes, extra = {}) => ({
   nodes,
 });
 
+/**
+ * Where the user left a generated group (2026-11-15: they move and turn whole buildings in
+ * the editor): its pos and yaw from the map's nodes, to pass to `group` on a re-run, so a
+ * build script replaces the group's contents but not its placement. Empty if it's new.
+ */
+export function keptPlace(nodes, name) {
+  const g = nodes.find((n) => n.type === 'group' && n.name === name);
+  return g ? { pos: g.pos, ...(g.yaw ? { yaw: g.yaw } : {}) } : {};
+}
+
+/** The map's nodes with those `replaced` swapped for `fresh`, where the first of them stood. */
+export function swapIn(nodes, replaced, fresh) {
+  const at = nodes.findIndex(replaced);
+  const rest = nodes.filter((n) => !replaced(n));
+  if (at < 0) return [...rest, fresh];
+  rest.splice(nodes.slice(0, at).filter((n) => !replaced(n)).length, 0, fresh);
+  return rest;
+}
+
 /** A placed prefab standing at y. */
 export const prefab = (name, x, z, extra = {}, y = 0) => ({
   type: 'prefab',

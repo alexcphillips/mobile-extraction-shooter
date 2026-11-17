@@ -35,7 +35,8 @@ describe('Silver Creek', () => {
       ['east spawn', 315, 90],
       ['company office yard', 30, 47],
       ['sheds', 53, 40],
-      ['fire lookout landing', 30, 8, ground(30, 10.5) + 3.3],
+      ['fire lookout foot', 30, 8],
+      ['lookout hut, inside', 38, 8.5, ground(37.8, 6.4) + 0.15],
       ['houses lane', 50, 81],
       ['gas station', 20, 126],
       ['log deck lane', 110, 40],
@@ -61,6 +62,13 @@ describe('Silver Creek', () => {
       // MT-5: the office roof is a perch the AI can follow you up to, by the stairs.
       ['mill office roof', 187, 98.4, 3.5],
       ['mill office', 186, 99.5, 0.3],
+      // 2026-11-16: the filing loft, its room, the catwalk and the shed roof, by the loft stair.
+      ['filing loft', 149, 96.3, 3.5],
+      ['filing room', 148.5, 99.5, 3.5],
+      ['catwalk', 170, 98.9, 3.5],
+      ['lumber shed roof', 150, 105, 3.3],
+      ['powerhouse control room', 138.5, 137.8, 3.6],
+      ['powerhouse gallery', 125, 138.4, 3.6],
       ['kiln 1', 206.5, 84],
       ['kiln 5', 234.5, 84],
       ['tunnel past the cover', 184, 107, -6],
@@ -74,30 +82,36 @@ describe('Silver Creek', () => {
       ['company office upstairs east', 31, 36, 3.3],
       ['company office chief', 21.5, 36, 3.3],
       ['company office fire escape', 19.25, 40.4, 3.3],
-      ['house 1 hall', 41.5, 72.5, 0.35],
-      ['house 1 living', 38.5, 75, 0.35],
-      ['house 1 kitchen', 43.1, 73.7, 0.35],
-      ['house 1 bedroom', 43.5, 71.5, 0.35],
-      ['house 2 front', 61, 72.5, 0.35],
-      ['house 2 bedroom west', 57, 70.9, 0.35],
-      ['house 2 bathroom', 59.7, 70.5, 0.35],
-      ['house 2 bedroom east', 62, 70.9, 0.35],
-      ['house 3 kitchen', 73, 73.7, 0.35],
-      ['house 3 living', 81.5, 73.3, 0.35],
-      ['house 3 bedroom', 75.5, 71.5, 0.35],
-      ['house 3 caved-in room', 82, 71.5, 0.35],
-      ['house 4 living', 49.1, 89.5, 0.35],
-      ['house 4 bedroom', 45.5, 90.8, 0.35],
-      ['house 4 bathroom', 45.9, 87.2, 0.35],
-      ['house 4 kitchen', 42, 92, 0.35],
-      ['house 5 front room', 64.5, 87, 0.3],
-      ['house 5 kitchen', 64.5, 91.5, 0.3],
-      ['house 5 upstairs', 66, 89.5, 3.3],
-      ['house 5 bedroom 1', 61.5, 86.7, 3.3],
-      ['house 5 bedroom 2', 61.5, 92, 3.3],
-      ['house 6 west', 84.5, 87, 0.35],
-      ['house 6 camp', 83.5, 91, 0.35],
-      ['house 6 east', 78, 88, 0.35],
+      ['house 1 kitchen', 38.5, 73.5, 0.35],
+      ['house 1 entry', 44.8, 74.5, 0.35],
+      ['house 1 living', 42.5, 71.5, 0.35],
+      ['house 1 bedroom', 39.3, 70.5, 0.35],
+      ['house 2 hall', 59.2, 75.5, 0.3],
+      ['house 2 living', 57.3, 73.5, 0.3],
+      ['house 2 dining', 57.7, 68.9, 0.3],
+      ['house 2 library', 62, 73.5, 0.3],
+      ['house 2 kitchen', 62.5, 71.5, 0.3],
+      ['house 2 upstairs hall', 59.1, 72.5, 3.3],
+      ['house 2 master bedroom', 57, 74.5, 3.3],
+      ['house 2 office', 57, 71, 3.3],
+      ['house 2 second bedroom', 62.1, 74, 3.3],
+      ['house 2 bathroom', 62.1, 70, 3.3],
+      ['house 3 west kitchen', 73.9, 73.5, 0.35],
+      ['house 3 west bedroom', 75.5, 70.9, 0.35],
+      ['house 3 east living', 80.9, 73.5, 0.35],
+      ['house 3 kids room', 80.9, 70.7, 0.35],
+      ['house 4 living', 48.5, 88.9, 0.35],
+      ['house 4 kitchen', 42.9, 88.9, 0.35],
+      ['house 4 bedroom', 48, 90.9, 0.35],
+      ['house 4 workroom', 42.7, 91.7, 0.35],
+      ['house 5 living', 65, 87.5, 0.35],
+      ['house 5 bedroom', 66.2, 90.5, 0.35],
+      ['house 5 kitchen', 64, 90.5, 0.35],
+      ['house 5 garage', 58.9, 91, 0.35],
+      ['house 6 dining hall', 81.5, 90.3, 0.35],
+      ['house 6 bedroom', 84.3, 90, 0.35],
+      ['house 6 kitchen', 78.5, 88.5, 0.35],
+      ['house 6 sunroom', 81.5, 92.5, 0.35],
       ['store shop floor', 38, 123, 0.3],
       ['store stockroom', 34.5, 130.5, 0.3],
       ['store office', 41, 130.4, 0.3],
@@ -112,21 +126,47 @@ describe('Silver Creek', () => {
       ['timber yard west lane', 106.5, 88],
       ['timber yard south lane', 106, 100],
       ['timber yard east lane', 122.5, 79],
+      ['grading shed, west aisle', 132.6, 88],
+      ['grading shed, east aisle', 135.9, 88],
       ['trail past a pile (north)', 140, 17.6, ground(140, 20)],
       ['trail past a pile (south)', 179, 22.4, ground(140, 20)],
       ['clear-cut landing, past the skidder', 213, 18.2, ground(140, 20)],
+      // rooms made 2026-11-17: the crane's engine house, the scaler's shack, the headgate house
+      ['crane engine house', 134.2, 37.8, 0.1],
+      ['jack ladder ramp top', 190.2, 72.2, 3.0],
+      ['scaler shack', 122.5, 56.9, 0.1],
+      ['headgate house', 216.5, 101, 0.1],
       ['tunnel west mouth', 113, 106],
       ['tunnel east mouth', 219, 106],
       // MT-8: the east end's rooms, decks and pit, and the way past the yard's tie stacks.
       ['loading tower deck 1', 277.5, 37, 3.3],
       ['loading tower deck 2', 277, 37.5, 6.6],
       ['freight dock', 243, 39.5, 1.2],
+      // the rail yard's rooms (2026-11-17): the open boxcar off the dock's plate, the
+      // caboose by its steps, the section house, the speeder shed
+      ['open boxcar', 252, 44, 1.3],
+      ['caboose', 200, 51, 1.1],
+      ['section house', 214.5, 38.6, 0.15],
+      ['speeder shed', 302.6, 37.8, 0.1],
       ['yard lane past a tie stack', 216, 48.6],
       ['engine shed, road 1', 250, 63],
       ['engine shed pit', 261, 63, -1.4],
       ['engine shed walkway', 258, 65.2],
       ['engine shed, beside the switcher', 260, 70.6],
       ['engine shed tool room', 273.8, 59.5],
+      // the engine shed's rework (2026-11-17): the loco shop's rooms, both stairs, the
+      // balcony and the switcher's hood top by the gangway, the oil house, the fuel stand
+      ['engine shed, east of the pit jack', 267, 63, -1.4],
+      ['loco shop machine shop', 256, 77],
+      ['loco shop battery room', 267, 74.5],
+      ['loco shop stair room', 268, 77],
+      ['loco shop crew room', 257, 78, 3.3],
+      ['loco shop foreman office', 267, 76, 3.3],
+      ['loco shop landing', 252.2, 73.5, 3.3],
+      ['engine shed balcony', 266, 70.7, 3.3],
+      ['switcher hood top', 261, 68, 3.3],
+      ['oil house', 252.5, 55],
+      ['fuel and sand stand', 283, 70.5],
       ['pump house', 296, 73],
       ['bunkhouse west dorm', 290, 94.5, 0.35],
       ['bunkhouse common room', 283, 96.5, 0.35],
@@ -137,6 +177,12 @@ describe('Silver Creek', () => {
       ['equipment depot floor', 245, 128],
       ['equipment depot mezzanine', 257, 127, 3.3],
       ['equipment depot office', 259, 135, 3.3],
+      ['equipment depot walkway', 250, 124.9, 3.3],
+      ['equipment depot crane bridge', 245, 132, 3.3],
+      ['equipment depot parts cage', 258.5, 128],
+      ['tire shop', 229, 132],
+      ['equipment yard', 290.5, 134.8],
+      ['equipment yard container', 284.5, 132.5, 0.2],
       ['fuel bund', 268, 131.5],
     ];
     const cutOff = places.filter(([, x, z, y]) => at(x, z, y) !== main).map(([name]) => name);
@@ -199,10 +245,18 @@ describe('Silver Creek', () => {
     expect(world.doors.filter((d) => d.key === 'kiln-key')).toHaveLength(1);
   });
 
-  it('the creek is too deep to wade away from the crossings', () => {
-    expect(at(166.6, 110, -4)).toBe(-1);
-    expect(at(162, 30, -3.5)).toBe(-1);
-    expect(at(165, 50, -3.5)).toBe(-1);
+  it('the creek and pond are waded anywhere: waist deep, and the AI walks the bed', () => {
+    // They were 2–3 m deep and stopped you like a wall (MT-1) until 2026-11-16.
+    const main = at(5, 60);
+    for (const [x, z] of [
+      [166.6, 110],
+      [162, 30],
+      [165, 50],
+      [166.6, 106], // over the race tunnel's roof
+    ] as const) {
+      if (z !== 106) expect(world.waterDepth(x, z)).toBeLessThanOrEqual(1.01);
+      expect(at(x, z, z === 106 ? -3 : ground(x, z))).toBe(main);
+    }
   });
 
   it('banks are walkable above the deep water: whoever wades in walks back out', () => {
@@ -216,7 +270,8 @@ describe('Silver Creek', () => {
     const walkOut = (x: number, z: number, yaw: number | null): boolean => {
       const state = createState(1);
       const c = spawnCharacter(state, world, x, z, 0, t.heightAt(x, z) + 0.05);
-      for (let k = 0; k < 150; k++) {
+      // 10 s: wading is slow, and along the weir's face it's 9 m to the shore.
+      for (let k = 0; k < 300; k++) {
         t.gradientAt(c.x, c.z, g);
         const uphill = Math.hypot(g.x, g.z) > 0.05 ? Math.atan2(-g.x, -g.z) : c.yaw;
         const input = { moveX: 0, moveY: 1, yaw: yaw ?? uphill, pitch: 0 } as PlayerInput;
@@ -242,6 +297,47 @@ describe('Silver Creek', () => {
     }
     expect(tried).toBeGreaterThan(100);
     expect(stuck).toEqual([]);
+  });
+
+  it('the AI reaches the electrical places: the substation, its switch house, the motor room', () => {
+    // 2026-11-16: electrical loot near the middle, for quests and the hangar.
+    const main = at(5, 60);
+    expect(at(228, 103.5)).toBe(main); // the yard, between its gates
+    expect(at(233.6, 105.6, 0.15)).toBe(main); // the switch house
+    expect(at(144, 77.5, 0.3)).toBe(main); // the motor room
+  });
+
+  it("the race tunnel's cover can't put you through its walls or roof", () => {
+    // Jumping, sprint-jumping and crouch-jumping at the crates pushed you through the 0.5 m
+    // walls into the earth, then up onto the surface; vaulting landed on it (2026-11-16).
+    const escaped: string[] = [];
+    for (let x0 = 130; x0 <= 200; x0 += 3)
+      for (const z0 of [104.8, 105.5, 106.2, 107.2])
+        for (const yaw of [0, Math.PI / 2, Math.PI, -Math.PI / 2])
+          for (const mode of ['jump', 'sprint', 'crouch']) {
+            const state = createState(1);
+            const c = spawnCharacter(state, world, x0, z0, 0, -5.95);
+            if (c.y < -6.1 || c.y > -5.9) continue;
+            for (let k = 0; k < 60; k++) {
+              const input = {
+                moveX: 0,
+                moveY: 1,
+                yaw,
+                pitch: 0,
+                jump: k % 10 === 0,
+                sprint: mode === 'sprint',
+                crouch: mode === 'crouch' && k % 10 > 3,
+              } as PlayerInput;
+              step(state, world, new Map(), { [c.id]: input });
+              // The shafts' stairs and the hatch's ladder are the ways out.
+              const inside = c.x > 128.5 && c.x < 203.5 && Math.abs(c.x - 178.8) > 1.2;
+              if (inside && (c.y > -3.7 || c.z < 104.5 || c.z > 107.5)) {
+                escaped.push(`${mode} from ${x0}, ${z0}`);
+                break;
+              }
+            }
+          }
+    expect(escaped).toEqual([]);
   });
 
   it('ladder perches are player-only: the water tower, deer stands and crane cab', () => {
@@ -277,27 +373,19 @@ describe('Silver Creek', () => {
     expect(Math.min(c.health.hp[4]!, c.health.hp[5]!)).toBe(full);
   });
 
-  it("the fire lookout's cab and upper flights are out of everyone's reach (MT-6)", () => {
+  it("the fire lookout's cab is out of everyone's reach", () => {
     const main = at(5, 60);
-    const landing = ground(30, 10.5) + 3.3;
-    for (const y of [3.3, 5.9, 8.5, 11.1, 13.7]) expect(at(30, 8, landing + y)).not.toBe(main);
-    // the lowest flight starts 3.3 m over the landing: past a jump from the rail's top
-    const state = createState(1);
-    const c = spawnCharacter(state, world, 30, 8, 0, landing + 1.2);
-    let high = c.y;
-    for (let t = 0; t < 120; t++) {
-      step(state, world, new Map(), {
-        [c.id]: {
-          moveX: 0,
-          moveY: 1,
-          yaw: Math.PI / 2,
-          pitch: 0,
-          jump: t % 20 === 0,
-        } as PlayerInput,
-      });
-      high = Math.max(high, c.y);
+    expect(at(30, 8, ground(30, 8) + 17.2)).not.toBe(main);
+  });
+
+  it("the fire lookout's leaning legs stop shots all the way up", () => {
+    // The north-east leg, 3.2 m off the middle at its foot and 2.0 m under the cab.
+    for (const h of [1.5, 8, 15]) {
+      const e = 3.2 - (1.2 * h) / 17;
+      const d = world.raycast(40, ground(30, 8) + h, 8 - e, -1, 0, 0, 20);
+      expect(d).toBeGreaterThan(40 - (30 + e) - 0.3);
+      expect(d).toBeLessThan(40 - (30 + e));
     }
-    expect(high).toBeLessThan(landing + 2.2);
   });
   it('falls (MT-3): the shafts are railed, and the crane and tower drop down unhurt', () => {
     /** Walks from (x, z), spawned on the highest surface below y; returns lowest y, leg HP. */
@@ -327,17 +415,16 @@ describe('Silver Creek', () => {
     expect(walk(302, 72, west, 7)).toEqual([expect.closeTo(0, 1), full]); // platform, pump house
     // MT-5: off the mill office's roof onto the saw floor.
     expect(walk(187, 96, 0, 4)).toEqual([expect.closeTo(0.3, 1), full]);
-    // MT-6: off the open west edges of the lookout's landing and the office's fire escape.
-    expect(walk(29, 8, west, ground(30, 10.5) + 4)).toEqual([
-      expect.closeTo(ground(26, 8), 1),
-      full,
-    ]);
+    // MT-6: off the open west edge of the office's fire escape.
     expect(walk(19.4, 40.4, west, 4)).toEqual([expect.closeTo(0, 1), full]);
     // MT-8: off the loading tower's upper deck, sprinting, onto the lower deck's apron or
     // the chip car flush with it, and on off the car onto the ground; through the gap in
-    // the depot mezzanine's rail onto the floor.
+    // the depot mezzanine's rail onto the floor (over the parts cage's gate, 2026-11-17).
     expect(walk(277, 38, Math.PI, 7, true)).toEqual([expect.closeTo(0, 1), full]);
-    expect(walk(257, 129.8, west, 4)).toEqual([expect.closeTo(0, 1), full]);
+    expect(walk(257, 128.4, west, 4)).toEqual([expect.closeTo(0, 1), full]);
+    // Off the depot's crane bridge and the tire shop's roof (2026-11-17).
+    expect(walk(245, 135, east, 4)).toEqual([expect.closeTo(0, 1), full]);
+    expect(walk(228.5, 132, west, 4)).toEqual([expect.closeTo(0, 1), full]);
   });
 });
 

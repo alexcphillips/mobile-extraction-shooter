@@ -1,0 +1,10 @@
+{
+  "formatVersion": 1,
+  "id": "mythic-paintings",
+  "name": "Mythic paintings",
+  "rolls": [1, 1],
+  "items": [
+    { "item": "a-world-beyond", "weight": 1 },
+    { "item": "the-last-supper-of-kings", "weight": 0.15 }
+  ]
+}

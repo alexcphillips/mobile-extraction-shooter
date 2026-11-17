@@ -8,6 +8,8 @@
 // are in design/ai-scavs-pmcs-bosses.md → Silver Creek (MT-9).
 //
 // World coordinates: x east, z south, y up. Enemy spawns keep 60 m from every player spawn
+// (since 2026-11-17 the sim keeps start enemies 60 m from the spawns actually used; these
+// were placed by the old rule, and the map's check now only asks for 30 m)
 // (the default clearance) and out of their sight; the content test checks it.
 
 /** h: the generator's helpers (group, r2, groundAt). */
@@ -53,8 +55,10 @@ export function buildAi(h) {
   // Nine sectors: two at each end and one on the ridge in the light kit, four round the
   // mill in the usual kit. The ends' second sectors and the ridge are used 60% of raids.
   const enemies = [
-    // West: the far houses, walking the lane between the two rows; the hunting cabin.
-    scav('sc-house-3', 77.5, 72.5, 180, {
+    // West: the far houses (the duplex's kids' room, the sunroom house's dining hall),
+    // walking the lane between the two rows, past the manager's (inside west-1's 60 m, so
+    // no spawn of its own); the hunting cabin.
+    scav('sc-house-3', 81.1, 70.7, 180, {
       light: true,
       oneOf: 'sc-west-houses',
       floor: HOUSE,
@@ -84,7 +88,8 @@ export function buildAi(h) {
     scav('sc-hall-west', 147, 96, 90, { oneOf: 'sc-hall', floor: MILL, patrol: 'pt-hall' }),
     scav('sc-hall-east', 184, 86, -90, { oneOf: 'sc-hall', floor: MILL, patrol: 'pt-hall' }),
     patrol('pt-hall', [
-      [147, 96, 5, 2, MILL],
+      // the filing loft over the west half (2026-11-16): someone walks it
+      [149, 96.3, 5, 0.8, 3.5],
       [164, 98, 3, 2, MILL],
       [184, 86, 5, 2, MILL],
       [148, 77, 3, 2, MILL],
@@ -100,7 +105,15 @@ export function buildAi(h) {
       enemy: 'foreman',
       chance: 0.4,
       patrol: 'pt-foreman',
+      // one guard posted on the filing loft (2026-11-17, the user's call): the hall's high
+      // route, so it's a two-level fight; the other two walk the floor with him
+      guardPatrols: ['pt-foreman-loft'],
     },
+    patrol('pt-foreman-loft', [
+      // the loft's north strip over the floor, then its east end where the catwalk starts
+      [149, 96.3, 12, 0.8, 3.5],
+      [156.5, 98.5, 10, 1, 3.5],
+    ]),
     patrol('pt-foreman', [
       [184, 86, 8, 2, MILL],
       [164, 98, 5, 2, MILL],
@@ -110,10 +123,12 @@ export function buildAi(h) {
     scav('sc-timber-yard', 112, 98, 0, { oneOf: 'sc-yard' }),
     scav('sc-log-deck', 128, 54, 90, { oneOf: 'sc-yard' }),
     scav('sc-burner', 206, 72, 180, { oneOf: 'sc-kilns', patrol: 'pt-kilns' }),
-    scav('sc-kilns', 230, 100, 0, { oneOf: 'sc-kilns', patrol: 'pt-kilns' }),
+    // East of the substation's yard (2026-11-16: it stood where the yard is now).
+    scav('sc-kilns', 239, 101, 0, { oneOf: 'sc-kilns', patrol: 'pt-kilns' }),
     patrol('pt-kilns', [
       [206, 72, 4],
       [208, 100, 4],
+      [228, 104, 4], // the substation's yard, in by its west gate
       [238, 100, 5],
       [222, 74, 4],
     ]),
@@ -126,17 +141,39 @@ export function buildAi(h) {
       oneOf: 'sc-east-yard',
       patrol: 'pt-east-yard',
     }),
+    // through the shed, the loco shop and up to the foreman's office and crew room
+    // (2026-11-17), out to the fuel stand
     scav('sc-engine-shed', 250, 66, 90, {
       light: true,
       oneOf: 'sc-east-yard',
-      patrol: 'pt-east-yard',
+      patrol: 'pt-engine-shed',
     }),
+    patrol('pt-engine-shed', [
+      [250, 66, 5],
+      [259, 77, 4],
+      [267.5, 76.5, 6, 1.5, 3.3],
+      [258, 77.5, 4, 1.5, 3.3],
+      [283, 70.5, 4],
+      [262, 60.5, 4],
+    ]),
     patrol('pt-east-yard', [
       [238, 46, 5],
       [218, 50, 4],
       [250, 66, 5],
     ]),
-    scav('sc-depot', 240, 130, 0, { light: true, oneOf: 'sc-east-south', chance: 0.6 }),
+    scav('sc-depot', 240, 130, 0, {
+      light: true,
+      oneOf: 'sc-east-south',
+      chance: 0.6,
+      patrol: 'pt-depot',
+    }),
+    // through the shed, out of its east door and round the equipment yard (2026-11-17)
+    patrol('pt-depot', [
+      [240, 130, 4],
+      [263, 130, 2],
+      [290.5, 134.8, 4],
+      [263, 130, 1],
+    ]),
     scav('sc-tanker', 232, 116, 90, { light: true, oneOf: 'sc-east-south', chance: 0.6 }),
 
     // The edges (2026-11-11, the user's call: Silver Creek was too quiet, its scavs standing
@@ -159,7 +196,7 @@ export function buildAi(h) {
       ],
       { repeatFrom: 2 },
     ),
-    scav('sc-edge-n', 185, 8, 180, { edge: true, patrol: 'pt-edge-n' }),
+    scav('sc-edge-n', 212, 6, 180, { edge: true, patrol: 'pt-edge-n' }),
     patrol(
       'pt-edge-n',
       [
@@ -227,7 +264,7 @@ export function buildAi(h) {
       ],
       { repeatFrom: 1 },
     ),
-    scav('sc-edge-sc', 150, 147, 0, { edge: true, patrol: 'pt-edge-sc' }),
+    scav('sc-edge-sc', 105, 148, 0, { edge: true, patrol: 'pt-edge-sc' }),
     patrol(
       'pt-edge-sc',
       [
@@ -266,7 +303,7 @@ export function buildAi(h) {
   const pmcSpawns = [
     pmcSpawn('pmc-ridge-west', 104, 24, 180),
     pmcSpawn('pmc-ridge-east', 206, 26, 180),
-    pmcSpawn('pmc-south-west', 116, 144, 0),
+    pmcSpawn('pmc-south-west', 104, 145, 0),
     pmcSpawn('pmc-south-east', 214, 144, 0),
   ];
 
@@ -293,6 +330,11 @@ export function buildAi(h) {
     // The mill's south: the hall, office, timber yard, bridge, ford and tunnel.
     poi('poi-mill-office', 'loot', 186, 97, 'mill-south', { weight: 2, floor: MILL }),
     poi('poi-saw-hall', 'loot', 158, 96, 'mill-south', { weight: 1.5, radius: 12, floor: MILL }),
+    poi('poi-powerhouse', 'loot', 138, 133.5, 'mill-south', {
+      weight: 1.5,
+      radius: 10,
+      floor: 0.3,
+    }),
     poi('poi-timber-yard', 'loot', 116, 98, 'mill-south', { radius: 10 }),
     poi('poi-road-bridge', 'choke', 152, 118, 'mill-south'),
     poi('poi-weir-ford', 'choke', 172, 138, 'mill-south'),
@@ -310,8 +352,10 @@ export function buildAi(h) {
     // The east end: the yard, the shed, the camp and the depot.
     poi('poi-freight-dock', 'loot', 248, 44, 'east', { radius: 10 }),
     poi('poi-engine-shed', 'loot', 262, 65, 'east', { weight: 1.5, radius: 12 }),
+    poi('poi-loco-shop', 'loot', 266, 76, 'east', { radius: 6, floor: 3.3 }),
     poi('poi-bunkhouse', 'loot', 283, 96, 'east', { radius: 10 }),
     poi('poi-depot', 'loot', 247, 132, 'east', { weight: 1.5, radius: 12 }),
+    poi('poi-equipment-yard', 'loot', 287, 135, 'east', { radius: 10 }),
     poi('poi-loading-tower', 'choke', 270, 38, 'east'),
   ];
 

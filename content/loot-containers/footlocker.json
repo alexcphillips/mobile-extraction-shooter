@@ -1,0 +1,16 @@
+{
+  "formatVersion": 1,
+  "id": "footlocker",
+  "name": "Footlocker",
+  "grid": [5, 3],
+  "loot": {
+    "tables": {
+      "fire-watch": 0.6,
+      "household": 0.25,
+      "medical": 0.15,
+      "rigs": 0.12
+    },
+    "empty": 0.3,
+    "each": true
+  }
+}

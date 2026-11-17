@@ -1,0 +1,95 @@
+{
+  "formatVersion": 3,
+  "id": "footlocker",
+  "name": "Footlocker",
+  "tags": ["home", "logging"],
+  "colors": {
+    "wood": "#6e5a3e",
+    "wood-dark": "#4f3f2b",
+    "steel": "#8a8f94",
+    "inside": "#2a241c",
+    "blanket": "#5f6b4a",
+    "tin": "#a3a7ab"
+  },
+  "nodes": [
+    {
+      "type": "group",
+      "name": "Footlocker",
+      "pos": [0, 0, 0],
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [0, 0, 0],
+          "size": [0.9, 0.38, 0.5],
+          "color": "wood"
+        },
+        {
+          "type": "box",
+          "pos": [-0.28, 0, 0],
+          "size": [0.06, 0.383, 0.506],
+          "color": "steel",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.454, 0.22, 0],
+          "size": [0.012, 0.035, 0.16],
+          "color": "steel",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.28, 0, 0],
+          "size": [0.06, 0.383, 0.506],
+          "color": "steel",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.454, 0.22, 0],
+          "size": [0.012, 0.035, 0.16],
+          "color": "steel",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.0, 0],
+          "size": [0.912, 0.04, 0.512],
+          "color": "wood-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.38, 0],
+          "size": [0.92, 0.07, 0.52],
+          "color": "wood-dark"
+        },
+        {
+          "type": "box",
+          "pos": [-0.28, 0.38, 0],
+          "size": [0.06, 0.073, 0.526],
+          "color": "steel",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.28, 0.38, 0],
+          "size": [0.06, 0.073, 0.526],
+          "color": "steel",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.3, 0.262],
+          "size": [0.08, 0.12, 0.016],
+          "color": "steel",
+          "collide": false
+        }
+      ],
+      "loot": {
+        "container": "footlocker",
+        "searched": "footlocker-open"
+      }
+    }
+  ]
+}

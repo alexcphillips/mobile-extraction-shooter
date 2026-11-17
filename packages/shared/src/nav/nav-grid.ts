@@ -1,4 +1,4 @@
-import { MOVEMENT } from '../sim/movement';
+import { MOVEMENT, wades } from '../sim/movement';
 import { DEEP_WATER, type CollisionWorld } from '../world/collision-world';
 
 /** Navigation tuning, in meters. */
@@ -64,6 +64,8 @@ export class NavGrid {
   readonly heights: Float32Array;
   /** Bit d set: linked to the neighbor in direction d. */
   readonly links: Uint8Array;
+  /** 1 where a body standing on the node wades (2026-11-16): slower, so it costs more. */
+  readonly wading: Uint8Array;
   /** Nodes that can reach each other share a component. Numbered from 0. */
   readonly component: Uint32Array;
   componentSizes: readonly number[];
@@ -160,6 +162,9 @@ export class NavGrid {
 
     this.links = new Uint8Array(count);
     for (let k = 0; k < count; k++) this.links[k] = this.findLinks(k, world);
+    this.wading = new Uint8Array(count);
+    for (let k = 0; k < count; k++)
+      this.wading[k] = wades(world, this.nodeX(k), this.heights[k]!, this.nodeZ(k)) ? 1 : 0;
     doorWas.forEach(([open, flipped], i) => world.setDoorOpen(i, open!, flipped));
     goneWas.forEach((gone, i) => world.setDoorGone(i, gone));
     this.doorLinks = world.doors.map((_, i) => this.linksThrough(world, i));

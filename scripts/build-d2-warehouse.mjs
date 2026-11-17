@@ -1,6 +1,6 @@
 // d2's warehouse (2026-11-15, the user's request: "add the warehouse to d2", District's
 // mall warehouse and loading docks, with its container stacks). Placed by Claude, the user's
-// pick of the options: 30 m east of the user's substation footprint (x −22..8, z 93..123),
+// pick of the options: 30 m east of the user's first substation footprint (x −22..8, z 93..123; the user has since moved both),
 // docks facing it, so the two make a service quarter. Written into content/maps/d2.json as
 // one group named `warehouse`. Re-runnable: it replaces its own group, nothing else.
 //
@@ -27,7 +27,7 @@ import { readFileSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import * as prettier from 'prettier';
 import { layout } from '../packages/client/editor-save.mjs';
-import { box, drawn, group, prefab } from './mapkit/nodes.mjs';
+import { box, drawn, group, prefab, keptPlace, swapIn } from './mapkit/nodes.mjs';
 import { roomWalls, union } from './mapkit/rooms.mjs';
 
 const FILE = new URL('../content/maps/d2.json', import.meta.url).pathname;
@@ -56,6 +56,12 @@ const C = {
   lamp: '#f2ecd0',
   glass: '#9fc8d0',
 };
+
+// The freight elevator (2026-11-16, DS-17, the user's brief): in the shed's north-east
+// corner, its gate facing west down the north lane. 6.2 × 7.2 m, 10.85 m tall, so its head
+// stands up through a hole in the roof.
+const LIFT = { x: 84.3, z: 124.75 };
+const LIFT_RECT = [LIFT.x - 3.6, LIFT.z - 3.1, LIFT.x + 3.6, LIFT.z + 3.1];
 
 // The shed and its rooms: [x0, z0, x1, z1].
 const SHED = [40, 90, 88, 128];
@@ -129,7 +135,7 @@ add('shell', [
   // The floor's finish.
   drawn(40.1, 90.1, 87.9, 127.9, F, F + 0.01, C.floor),
   // The roof and its parapet.
-  box(39.9, 89.9, 88.1, 128.1, TOP, ROOF, C.roof),
+  ...union([[39.9, 89.9, 88.1, 128.1]], [LIFT_RECT], TOP, ROOF, C.roof),
   box(39.9, 89.9, 88.1, 90.1, ROOF, ROOF + 0.8, C.outside),
   box(39.9, 127.9, 88.1, 128.1, ROOF, ROOF + 0.8, C.outside),
   box(39.9, 90.1, 40.1, 127.9, ROOF, ROOF + 0.8, C.outside),
@@ -147,9 +153,7 @@ add('shell', [
   ),
 ]);
 
-add('walls', [
-  ...roomWalls({ rooms, openings: OPENINGS, inside: C.inside, outside: C.outside }),
-]);
+add('walls', [...roomWalls({ rooms, openings: OPENINGS, inside: C.inside, outside: C.outside })]);
 
 add('dock', [
   // The apron's yellow edge, a bumper and a leveler at each bay, the shutters.
@@ -212,9 +216,10 @@ add('outside', [
 const RACK_X0 = 61.95;
 const ROWS = [94.1, 99.5, 104.9, 110.3, 115.7, 121.1];
 const gapOf = (r) => [6, 2, 5, 1, 7, 3][r]; // uneven, so no three gaps line up
+const lastBay = (r) => (r === 5 ? 5 : 8); // the north row stops short of the elevator
 const racks = ROWS.flatMap((zc, r) =>
   Array.from({ length: 9 }, (_, i) => i)
-    .filter((i) => i !== gapOf(r))
+    .filter((i) => i !== gapOf(r) && i <= lastBay(r))
     .flatMap((i) => {
       const x = RACK_X0 + i * 2.9;
       const v = (k) => `warehouse-rack-stocked-${1 + ((r * 9 + i * 3 + k) % 7)}`;
@@ -225,7 +230,7 @@ const spineX = (i) => RACK_X0 + i * 2.9;
 const spines = ROWS.flatMap((zc, r) =>
   [
     [0, gapOf(r) - 1],
-    [gapOf(r) + 1, 8],
+    [gapOf(r) + 1, lastBay(r)],
   ].map(([a, b]) =>
     box(spineX(a) - 1.4, zc - 0.02, spineX(b) + 1.4, zc + 0.02, F, F + 5, '#55595c'),
   ),
@@ -247,9 +252,9 @@ add('racks', [
   P('roll-cage', 79.5, 118.4, F, 90),
   P('stock-crate', 70.5, 107.6, F),
   // Pallets along the north wall's lane.
-  P('pallet-variation-1', 78, 126.6, F),
-  P('pallet-variation-2', 80.4, 126.6, F),
-  P('concrete-bag-pallet-1', 85.5, 126.6, F),
+  P('pallet-variation-1', 66, 126.6, F),
+  P('pallet-variation-2', 68.4, 126.6, F),
+  P('concrete-bag-pallet-1', 52.5, 126.6, F),
   // Floor markings: the walkway along the racks' west end.
   drawn(58.6, 106.2, 58.8, 127.9, F + 0.01, F + 0.02, C.yellow),
 ]);
@@ -286,7 +291,14 @@ add('office', [
 
 add('mezzanine', [
   // The stair up from the floor along the mezzanine's east posts, rising south.
-  { type: 'stairs', pos: [56.7, F, 108], yaw: 180, size: [1.4, M - F, 4], sides: 0.9, color: C.steel },
+  {
+    type: 'stairs',
+    pos: [56.7, F, 108],
+    yaw: 180,
+    size: [1.4, M - F, 4],
+    sides: 0.9,
+    color: C.steel,
+  },
   // Rails round its open edges (the stair's top left open).
   ...rail(40.1, 106, 56, 106, M),
   ...rail(57.4, 90.1, 57.4, 106, M),
@@ -304,7 +316,8 @@ add('mezzanine', [
 ]);
 
 // The cans: container stacks north of the shed.
-const can = (x, z, yaw, y = 0, id = 'shipping-container-closed-doors') => P(id, x, z, y, yaw);
+const PAD = 0.05; // the can yard's concrete (2026-11-16)
+const can = (x, z, yaw, y = 0, id = 'shipping-container-closed-doors') => P(id, x, z, y + PAD, yaw);
 add('cans', [
   can(50, 142, 90),
   can(50, 142, 90, 2.8, 'shipping-container-closed-end'),
@@ -315,9 +328,112 @@ add('cans', [
   can(82, 150, -10),
   can(54, 156, 90, 0, 'shipping-container-open-no-doors'),
   can(70, 158, 90),
-  P('forklift', 77, 140, 0, 90),
-  P('hazard-barrel', 62.5, 157, 0),
-  P('steel-barrel', 63.3, 157.4, 0),
+  P('forklift', 77, 140, PAD, 90),
+  P('hazard-barrel', 62.5, 157, PAD),
+  P('steel-barrel', 63.3, 157.4, PAD),
+]);
+
+// ---------------------------------------------------------------------------------------
+// The freight elevator (DS-17). Its gate opens only from the switch house in the can yard,
+// 15 s after the switch is thrown, with the door buzzer at the gate: a race from the switch
+// through the yard into the shed. Loose loot on its deck (the prefab's spots). No map-wide
+// alarm (the user's rule); a buzzer heard round the warehouse needs a ranged noise (open).
+
+add('freight elevator', [
+  prefab('freight-elevator', LIFT.x, LIFT.z, { id: 'warehouse-freight-elevator', yaw: -90 }, F),
+  // Hazard stripes on the floor in front of the gate, a sign beside it.
+  ...[0, 1, 2, 3, 4].map((k) =>
+    drawn(
+      LIFT_RECT[0] - 4.6 + k * 0.9,
+      122.2,
+      LIFT_RECT[0] - 4.2 + k * 0.9,
+      127.6,
+      F + 0.01,
+      F + 0.02,
+      C.yellow,
+    ),
+  ),
+  drawn(LIFT_RECT[0] - 4.8, 122.0, LIFT_RECT[0] - 0.2, 122.1, F + 0.01, F + 0.02, C.yellow),
+  P('high-voltage-sign', 87.88, 120.9, F + 2.2, -90),
+]);
+
+// ---------------------------------------------------------------------------------------
+// The can yard (2026-11-16, the user's brief): a concrete pad under the cans, the compound's
+// concrete wall round its three open sides (the shed's north wall is the fourth), a way in
+// west and north besides the shed's ramp and door, and the switch house in its far corner.
+
+const YARD = [43, 128.25, 88, 164.25]; // wall lines
+const panels = (axis, c, a, b, yaw, skip) => {
+  const nodes = [];
+  for (let m = a + 1.5; m < b; m += 3)
+    if (!skip || Math.abs(m - skip) > 0.1)
+      nodes.push(
+        axis === 'x'
+          ? P('concrete-wall-panel', m, c, 0, yaw)
+          : P('concrete-wall-panel', c, m, 0, yaw),
+      );
+  return nodes;
+};
+add('can yard', [
+  ...union(
+    [[YARD[0] + 0.15, YARD[1], YARD[2] - 0.15, YARD[3] - 0.15]],
+    [
+      [59.8, 128.2, 64.2, 137.8], // the forklift ramp
+      [71.2, 128.2, 72.8, 130.6], // the north door's steps
+    ],
+    0,
+    PAD,
+    C.concrete,
+  ),
+  ...panels('z', YARD[0], YARD[1], YARD[3], -90, 144.75), // west, a way in
+  ...panels('x', YARD[3], YARD[0], YARD[2], 0, 68.5), // north, a way in
+  ...panels('z', YARD[2], YARD[1], YARD[3], 90),
+  P('flood-light', 86.4, 162.6, PAD, -135),
+  P('flood-light', 44.6, 131, PAD, 45),
+]);
+
+// The switch house: a walk-in block hut in the yard's north-west corner, its door east.
+const HUT = [43.45, 158.95, 48.25, 163.95]; // wall center lines
+add('switch house', [
+  box(HUT[0] - 0.1, HUT[1] - 0.1, HUT[2] + 0.1, HUT[3] + 0.1, PAD, PAD + 0.2, C.concrete),
+  ...roomWalls({
+    rooms: [{ r: HUT, yb: PAD + 0.2, yt: 3.0 }],
+    openings: [
+      {
+        axis: 'z',
+        c: HUT[2],
+        at: 161.2,
+        w: 1.1,
+        y: PAD + 0.2,
+        h: 2.2,
+        door: { color: '#4f6a7d', name: 'Switch house' },
+      },
+      { axis: 'x', c: HUT[1], at: 45.9, w: 1.4, y: 1.25, h: 0.9, glass: C.glass },
+    ],
+    inside: C.office,
+    outside: C.outside,
+  }),
+  box(HUT[0] - 0.25, HUT[1] - 0.25, HUT[2] + 0.25, HUT[3] + 0.25, 3.0, 3.15, C.roof),
+  P('wall-light', HUT[2] + 0.1, 161.2 - 0.9, 2.8, 90),
+  P('high-voltage-sign', HUT[2] + 0.11, 160.0, 2.0, 90),
+  // Inside: the elevator's power switch on the west wall, a desk, a panel.
+  prefab(
+    'elevator-power-switch',
+    HUT[0] + 0.21,
+    161.5,
+    {
+      yaw: 90,
+      switch: {
+        name: 'freight elevator power',
+        useTime: 3,
+        rows: [{ opens: 'warehouse-freight-elevator/gate', timer: 15, openNoise: 'door-buzzer' }],
+      },
+    },
+    PAD + 0.2,
+  ),
+  P('metal-desk', 46.4, 159.6, PAD + 0.2),
+  P('office-chair', 46.4, 160.5, PAD + 0.2, 180),
+  P('electrical-panel', 45.4, HUT[3] - 0.1, PAD + 1.1, 180),
 ]);
 
 // ---------------------------------------------------------------------------------------
@@ -326,7 +442,7 @@ add('cans', [
 const map = JSON.parse(readFileSync(FILE, 'utf8'));
 const replaced = (n) => n.type === 'group' && n.name === 'warehouse';
 const gone = map.nodes.filter(replaced);
-map.nodes = [...map.nodes.filter((n) => !replaced(n)), group('warehouse', out)];
+map.nodes = swapIn(map.nodes, replaced, group('warehouse', out, keptPlace(map.nodes, 'warehouse')));
 
 const count = (ns) => ns.reduce((s, n) => s + (n.type === 'group' ? count(n.nodes) : 1), 0);
 console.log(`warehouse: ${count(out)} nodes in ${out.length} groups; replaced ${gone.length}`);

@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "id": "electrical-cabinet",
+  "name": "Electrical cabinet",
+  "grid": [3, 4],
+  "loot": {
+    "tables": {
+      "electrical": 0.8,
+      "industrial": 0.2
+    },
+    "empty": 0.15
+  }
+}

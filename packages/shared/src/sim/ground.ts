@@ -29,6 +29,11 @@ export interface GroundItem {
   y: number;
   z: number;
   yaw: number;
+  /**
+   * Put there facing `yaw` by a loose spot that has one (2026-11-17), so an item that leans
+   * (LootDef.lean, a painting) stands against what's behind the point instead of lying flat.
+   */
+  placed?: true;
 }
 
 /**

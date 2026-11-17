@@ -8,8 +8,171 @@
   "weight": 2,
   "rarity": "rare",
   "model": {
-    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]
+    "parts": [
+      {
+        "type": "box",
+        "name": "frame top",
+        "group": "frame",
+        "pos": [0, 0.015, -0.215],
+        "size": [0.6, 0.03, 0.05],
+        "color": "#4a3222"
+      },
+      {
+        "type": "box",
+        "name": "frame bottom",
+        "group": "frame",
+        "pos": [0, 0.015, 0.215],
+        "size": [0.6, 0.03, 0.05],
+        "color": "#4a3222"
+      },
+      {
+        "type": "box",
+        "name": "frame left",
+        "group": "frame",
+        "pos": [-0.275, 0.015, 0],
+        "size": [0.05, 0.03, 0.38],
+        "color": "#4a3222"
+      },
+      {
+        "type": "box",
+        "name": "frame right",
+        "group": "frame",
+        "pos": [0.275, 0.015, 0],
+        "size": [0.05, 0.03, 0.38],
+        "color": "#4a3222"
+      },
+      {
+        "type": "box",
+        "name": "lip top",
+        "group": "frame",
+        "pos": [0, 0.013, -0.184],
+        "size": [0.5, 0.026, 0.012],
+        "color": "#b8923a"
+      },
+      {
+        "type": "box",
+        "name": "lip bottom",
+        "group": "frame",
+        "pos": [0, 0.013, 0.184],
+        "size": [0.5, 0.026, 0.012],
+        "color": "#b8923a"
+      },
+      {
+        "type": "box",
+        "name": "lip left",
+        "group": "frame",
+        "pos": [-0.244, 0.013, 0],
+        "size": [0.012, 0.026, 0.356],
+        "color": "#b8923a"
+      },
+      {
+        "type": "box",
+        "name": "lip right",
+        "group": "frame",
+        "pos": [0.244, 0.013, 0],
+        "size": [0.012, 0.026, 0.356],
+        "color": "#b8923a"
+      },
+      {
+        "type": "box",
+        "name": "canvas",
+        "group": "canvas",
+        "pos": [0, 0.011, 0],
+        "size": [0.476, 0.022, 0.356],
+        "color": "#d9b04a"
+      },
+      {
+        "type": "box",
+        "name": "sky",
+        "group": "scene",
+        "pos": [0, 0.022, -0.1023],
+        "size": [0.476, 0.002, 0.1513],
+        "color": "#7fb0d8"
+      },
+      {
+        "type": "box",
+        "name": "sun",
+        "group": "scene",
+        "pos": [0.1607, 0.0225, -0.1246],
+        "size": [0.0595, 0.003, 0.0534],
+        "color": "#f6e08a"
+      },
+      {
+        "type": "box",
+        "name": "tree line",
+        "group": "scene",
+        "pos": [0, 0.0225, -0.0249],
+        "size": [0.476, 0.003, 0.0214],
+        "color": "#4f6b3a"
+      },
+      {
+        "type": "box",
+        "name": "barn",
+        "group": "barn",
+        "pos": [-0.1249, 0.023, -0.0463],
+        "size": [0.0833, 0.004, 0.057],
+        "color": "#a8322c"
+      },
+      {
+        "type": "box",
+        "name": "barn roof",
+        "group": "barn",
+        "pos": [-0.125, 0.0235, -0.0819],
+        "size": [0.1023, 0.005, 0.0214],
+        "color": "#4a3a32"
+      },
+      {
+        "type": "box",
+        "name": "barn door",
+        "group": "barn",
+        "pos": [-0.1249, 0.0235, -0.0338],
+        "size": [0.0262, 0.005, 0.032],
+        "color": "#e6dccb"
+      },
+      {
+        "type": "box",
+        "name": "wheat row 1",
+        "group": "field",
+        "pos": [0, 0.0225, 0.0027],
+        "size": [0.476, 0.003, 0.0125],
+        "color": "#c99a34"
+      },
+      {
+        "type": "box",
+        "name": "wheat row 2",
+        "group": "field",
+        "pos": [0, 0.0225, 0.0418],
+        "size": [0.476, 0.003, 0.0125],
+        "color": "#b8862c"
+      },
+      {
+        "type": "box",
+        "name": "wheat row 3",
+        "group": "field",
+        "pos": [0, 0.0225, 0.081],
+        "size": [0.476, 0.003, 0.0125],
+        "color": "#c99a34"
+      },
+      {
+        "type": "box",
+        "name": "wheat row 4",
+        "group": "field",
+        "pos": [0, 0.0225, 0.1201],
+        "size": [0.476, 0.003, 0.0125],
+        "color": "#b8862c"
+      },
+      {
+        "type": "box",
+        "name": "wheat row 5",
+        "group": "field",
+        "pos": [0, 0.0225, 0.1593],
+        "size": [0.476, 0.003, 0.0125],
+        "color": "#c99a34"
+      }
+    ]
   },
   "shortName": "Harvest",
-  "category": "Craftwork"
+  "category": "Craftwork",
+  "lean": 12,
+  "view": "top"
 }

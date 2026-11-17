@@ -1,0 +1,64 @@
+{
+  "formatVersion": 3,
+  "id": "crate-row",
+  "name": "Crates (a row, 3 m)",
+  "tags": ["industrial", "store"],
+  "colors": {},
+  "nodes": [
+    {
+      "type": "prefab",
+      "prefab": "small-crate",
+      "pos": [-1.2, 0, -0.25]
+    },
+    {
+      "type": "prefab",
+      "prefab": "small-crate-marked",
+      "pos": [-0.6, 0, -0.25]
+    },
+    {
+      "type": "prefab",
+      "prefab": "small-crate",
+      "pos": [0, 0, -0.25]
+    },
+    {
+      "type": "prefab",
+      "prefab": "small-crate",
+      "pos": [0.6, 0, -0.25]
+    },
+    {
+      "type": "prefab",
+      "prefab": "small-crate-marked",
+      "pos": [1.2, 0, -0.25],
+      "yaw": 180
+    },
+    {
+      "type": "prefab",
+      "prefab": "small-crate",
+      "pos": [-0.9, 0.42, -0.25],
+      "yaw": 6
+    },
+    {
+      "type": "prefab",
+      "prefab": "small-crate",
+      "pos": [0.3, 0.42, -0.24],
+      "yaw": -4
+    },
+    {
+      "type": "prefab",
+      "prefab": "small-crate",
+      "pos": [-1.05, 0, 0.27],
+      "yaw": 4
+    },
+    {
+      "type": "prefab",
+      "prefab": "small-crate-marked",
+      "pos": [-0.4, 0, 0.25]
+    },
+    {
+      "type": "prefab",
+      "prefab": "small-crate",
+      "pos": [0.75, 0, 0.27],
+      "yaw": -7
+    }
+  ]
+}

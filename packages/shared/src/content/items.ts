@@ -986,6 +986,13 @@ const questSchema = z.strictObject({ ...common, type: z.literal('quest'), ...pla
 const lootSchema = z.strictObject({
   ...common,
   type: z.literal('loot'),
+  /**
+   * Degrees from upright it leans when a loose spot places it facing a way (2026-11-17, for
+   * paintings): it stands on the bottom edge of its picture (the model's +z edge, its face
+   * up), tipped back by this, its back's top against the spot's point. Left out, or dropped
+   * anywhere else, it lies as modeled.
+   */
+  lean: z.number().min(0).max(45).optional(),
   /** Stacks up to this many in one place; left out, it doesn't stack. */
   stack: stackSchema.optional(),
   /**

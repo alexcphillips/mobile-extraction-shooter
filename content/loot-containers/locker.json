@@ -5,7 +5,8 @@
   "grid": [3, 4],
   "loot": {
     "tables": {
-      "household": 1
+      "household": 1,
+      "rigs": 0.15
     }
   }
 }

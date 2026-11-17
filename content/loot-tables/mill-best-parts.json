@@ -1,0 +1,40 @@
+{
+  "formatVersion": 1,
+  "id": "mill-best-parts",
+  "name": "The mill's best parts",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "heavy-duty-chain-hoist",
+      "weight": 3
+    },
+    {
+      "item": "hydraulic-press-head",
+      "weight": 3
+    },
+    {
+      "item": "compressed-air-tank",
+      "weight": 3
+    },
+    {
+      "item": "cordless-drill",
+      "weight": 3
+    },
+    {
+      "item": "waterjet-cutting-head",
+      "weight": 1.5
+    },
+    {
+      "item": "titanium-turbine-blade",
+      "weight": 1
+    },
+    {
+      "item": "cryogenic-micro-cooler-engine",
+      "weight": 0.5
+    },
+    {
+      "item": "high-yield-solar-module",
+      "weight": 0.4
+    }
+  ]
+}

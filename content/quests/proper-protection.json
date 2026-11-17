@@ -4,7 +4,7 @@
   "name": "Proper protection",
   "vendor": "armorer",
   "description": "Steel helmets. Two of them.",
-  "requires": ["under-the-mill"],
+  "requires": ["area-familiarization"],
   "objectives": [{ "id": "hand-over", "type": "handOver", "item": "steel-helmet", "count": 2 }],
   "rewards": {
     "money": 40000,

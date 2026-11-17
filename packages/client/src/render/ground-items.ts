@@ -10,7 +10,9 @@ const LIT = 1.6;
  * Items on the ground, drawn with their models (session 18b) merged into one mesh: one draw
  * call for them all. Rebuilt only when the list changes, which is checked each tick by
  * comparing the items. Guns, knives and magazines lie on their side, body armor, rigs and backpacks
- * on their back; everything else stands as modeled, its lowest point on the ground.
+ * on their back; everything else stands as modeled, its lowest point on the ground. A loot
+ * item with a `lean` (a painting) that a loose spot placed facing a way stands on its
+ * picture's bottom edge, tipped back by the lean, its back's top on the spot's point.
  */
 export class GroundItems {
   readonly root = new THREE.Group();
@@ -54,22 +56,36 @@ export class GroundItems {
     return false;
   }
 
-  /** An item's model as it lies on the ground: centered on its origin, resting on y = 0. */
-  private laidDown(id: string): THREE.BufferGeometry {
-    let g = this.laid.get(id);
-    if (g) return g;
+  /**
+   * An item's model as it lies on the ground: centered on its origin, resting on y = 0. Placed
+   * and leaning, it faces +z with its back's top edge at z = 0 instead.
+   */
+  private laidDown(id: string, placed: boolean): THREE.BufferGeometry {
     const def = itemDef(this.items, id);
+    const lean = placed && def.type === 'loot' ? def.lean : undefined;
+    const key = lean === undefined ? id : `${id}#lean`;
+    let g = this.laid.get(key);
+    if (g) return g;
     const b = new TriangleBuilder(false);
     for (const s of modelShapes(def.model)) b.shape(s);
     g = b.build();
     const long = def.type === 'attachment' && def.slot === 'magazine';
+    if (lean !== undefined) {
+      // Face up and top at -z, turned upright facing +z, then tipped back by the lean.
+      g.rotateX(((90 - lean) * Math.PI) / 180);
+      g.computeBoundingBox();
+      const box = g.boundingBox!;
+      g.translate(-(box.min.x + box.max.x) / 2, -box.min.y, -box.min.z);
+      this.laid.set(key, g);
+      return g;
+    }
     if (def.type === 'weapon' || def.type === 'melee' || long) g.rotateZ(Math.PI / 2);
     else if ((def.type === 'armor' && def.slot === 'body') || def.type === 'container')
       g.rotateX(Math.PI / 2);
     g.computeBoundingBox();
     const box = g.boundingBox!;
     g.translate(-(box.min.x + box.max.x) / 2, -box.min.y, -(box.min.z + box.max.z) / 2);
-    this.laid.set(id, g);
+    this.laid.set(key, g);
     return g;
   }
 
@@ -77,7 +93,7 @@ export class GroundItems {
     this.drawn = ground.slice();
     this.drawnItems = ground.map((g) => g.item);
     this.lit = -1;
-    const parts = ground.map((g) => this.laidDown(g.item.item));
+    const parts = ground.map((g) => this.laidDown(g.item.item, g.placed === true));
     this.starts = [0];
     for (const p of parts) this.starts.push(this.starts.at(-1)! + p.getAttribute('position').count);
     const n = this.starts.at(-1)!;

@@ -1,0 +1,166 @@
+{
+  "formatVersion": 3,
+  "id": "palisade-fence",
+  "name": "Palisade fence",
+  "tags": ["industrial", "structure"],
+  "colors": {
+    "post": "#4f6a58",
+    "rail": "#45604f",
+    "pale": "#5a7663",
+    "pale-light": "#62806c"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [-1.5, 0, 0],
+      "size": [0.1, 2.5, 0.1],
+      "color": "post"
+    },
+    {
+      "type": "box",
+      "pos": [-1.5, 2.5, 0],
+      "size": [0.13, 0.03, 0.13],
+      "color": "post",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [1.5, 0, 0],
+      "size": [0.1, 2.5, 0.1],
+      "color": "post"
+    },
+    {
+      "type": "box",
+      "pos": [1.5, 2.5, 0],
+      "size": [0.13, 0.03, 0.13],
+      "color": "post",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.35, -0.05],
+      "size": [3.0, 0.07, 0.04],
+      "color": "rail",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 2.0, -0.05],
+      "size": [3.0, 0.07, 0.04],
+      "color": "rail",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-1.3125, 0.05, 0.0],
+      "size": [0.07, 2.2, 0.025],
+      "color": "pale-light"
+    },
+    {
+      "type": "box",
+      "pos": [-1.3125, 2.25, 0.0],
+      "size": [0.07, 0.15, 0.025],
+      "color": "pale-light",
+      "collide": false,
+      "top": [0.012, 0.02]
+    },
+    {
+      "type": "box",
+      "pos": [-0.9375, 0.05, 0.0],
+      "size": [0.07, 2.2, 0.025],
+      "color": "pale"
+    },
+    {
+      "type": "box",
+      "pos": [-0.9375, 2.25, 0.0],
+      "size": [0.07, 0.15, 0.025],
+      "color": "pale",
+      "collide": false,
+      "top": [0.012, 0.02]
+    },
+    {
+      "type": "box",
+      "pos": [-0.5625, 0.05, 0.0],
+      "size": [0.07, 2.2, 0.025],
+      "color": "pale-light"
+    },
+    {
+      "type": "box",
+      "pos": [-0.5625, 2.25, 0.0],
+      "size": [0.07, 0.15, 0.025],
+      "color": "pale-light",
+      "collide": false,
+      "top": [0.012, 0.02]
+    },
+    {
+      "type": "box",
+      "pos": [-0.1875, 0.05, 0.0],
+      "size": [0.07, 2.2, 0.025],
+      "color": "pale"
+    },
+    {
+      "type": "box",
+      "pos": [-0.1875, 2.25, 0.0],
+      "size": [0.07, 0.15, 0.025],
+      "color": "pale",
+      "collide": false,
+      "top": [0.012, 0.02]
+    },
+    {
+      "type": "box",
+      "pos": [0.1875, 0.05, 0.0],
+      "size": [0.07, 2.2, 0.025],
+      "color": "pale-light"
+    },
+    {
+      "type": "box",
+      "pos": [0.1875, 2.25, 0.0],
+      "size": [0.07, 0.15, 0.025],
+      "color": "pale-light",
+      "collide": false,
+      "top": [0.012, 0.02]
+    },
+    {
+      "type": "box",
+      "pos": [0.5625, 0.05, 0.0],
+      "size": [0.07, 2.2, 0.025],
+      "color": "pale"
+    },
+    {
+      "type": "box",
+      "pos": [0.5625, 2.25, 0.0],
+      "size": [0.07, 0.15, 0.025],
+      "color": "pale",
+      "collide": false,
+      "top": [0.012, 0.02]
+    },
+    {
+      "type": "box",
+      "pos": [0.9375, 0.05, 0.0],
+      "size": [0.07, 2.2, 0.025],
+      "color": "pale-light"
+    },
+    {
+      "type": "box",
+      "pos": [0.9375, 2.25, 0.0],
+      "size": [0.07, 0.15, 0.025],
+      "color": "pale-light",
+      "collide": false,
+      "top": [0.012, 0.02]
+    },
+    {
+      "type": "box",
+      "pos": [1.3125, 0.05, 0.0],
+      "size": [0.07, 2.2, 0.025],
+      "color": "pale"
+    },
+    {
+      "type": "box",
+      "pos": [1.3125, 2.25, 0.0],
+      "size": [0.07, 0.15, 0.025],
+      "color": "pale",
+      "collide": false,
+      "top": [0.012, 0.02]
+    }
+  ]
+}

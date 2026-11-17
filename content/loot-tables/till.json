@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "id": "till",
+  "name": "Till",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "cash",
+      "weight": 1,
+      "count": [40, 800]
+    }
+  ]
+}

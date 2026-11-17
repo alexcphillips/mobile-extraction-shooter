@@ -1,0 +1,20 @@
+{
+  "formatVersion": 1,
+  "id": "mythic-intel",
+  "name": "Mythic intel (loose only)",
+  "rolls": [1, 1],
+  "items": [
+    {
+      "item": "global-surveillance-database",
+      "weight": 1
+    },
+    {
+      "item": "nuclear-launch-protocols",
+      "weight": 1
+    },
+    {
+      "item": "project-nightfall-archive",
+      "weight": 1
+    }
+  ]
+}

@@ -1,0 +1,313 @@
+{
+  "formatVersion": 3,
+  "id": "electrical-cabinet-open",
+  "name": "Electrical cabinet (searched)",
+  "tags": ["industrial"],
+  "colors": {
+    "steel": "#b4b8b4",
+    "steel-dark": "#8d928e",
+    "plinth": "#3a3d3b",
+    "handle": "#2b2b2b",
+    "inside": "#5d625f",
+    "warn": "#e8b21c",
+    "warn-dark": "#1f1f1f",
+    "label": "#eceee9",
+    "breaker": "#2f3236",
+    "breaker-lit": "#d8dcd9",
+    "rail": "#9aa0a3",
+    "wire": "#b8402e",
+    "wire-b": "#2f5d9a",
+    "box": "#b08a5a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 0, 0],
+      "size": [1, 0.1, 0.45],
+      "color": "plinth",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.1, -0.21000000000000002],
+      "size": [1, 1.7999999999999998, 0.03],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.485, 0.1, 0],
+      "size": [0.03, 1.7999999999999998, 0.45],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.485, 0.1, 0],
+      "size": [0.03, 1.7999999999999998, 0.45],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.8699999999999999, 0],
+      "size": [1, 0.03, 0.45],
+      "color": "steel",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.1, 0],
+      "size": [0.94, 0.02, 0.42000000000000004],
+      "color": "inside",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.13, -0.19],
+      "size": [0.94, 1.6999999999999997, 0.01],
+      "color": "inside",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.584, 0.15000000000000002, -0.005],
+      "size": [0.48, 1.6999999999999997, 0.03],
+      "color": "steel",
+      "collide": false,
+      "yaw": 110
+    },
+    {
+      "type": "box",
+      "pos": [0.584, 0.15000000000000002, -0.005],
+      "size": [0.48, 1.6999999999999997, 0.03],
+      "color": "steel",
+      "collide": false,
+      "yaw": -110
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.55, -0.175],
+      "size": [0.86, 0.035, 0.02],
+      "color": "rail",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.36, 1.5, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.27, 1.5, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.18, 1.5, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker-lit",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.09, 1.5, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.5, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.09, 1.5, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.18, 1.5, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker-lit",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.27, 1.5, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.36, 1.5, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.3, -0.175],
+      "size": [0.86, 0.035, 0.02],
+      "color": "rail",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.36, 1.25, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.27, 1.25, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.18, 1.25, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker-lit",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.09, 1.25, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.25, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.09, 1.25, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.18, 1.25, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker-lit",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.27, 1.25, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.05, -0.175],
+      "size": [0.86, 0.035, 0.02],
+      "color": "rail",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.36, 1, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.27, 1, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.18, 1, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker-lit",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.09, 1, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.09, 1, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.18, 1, -0.135],
+      "size": [0.07, 0.13, 0.07],
+      "color": "breaker-lit",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.3, 0.55, -0.165],
+      "size": [0.03, 0.4, 0.03],
+      "color": "wire",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.24, 0.55, -0.165],
+      "size": [0.03, 0.4, 0.03],
+      "color": "wire-b",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 0.62, -0.155],
+      "size": [0.7, 0.08, 0.06],
+      "color": "breaker",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.15, 0.12000000000000001, 0.02],
+      "size": [0.4, 0.22, 0.3],
+      "color": "box",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.15, 0.33999999999999997, 0.02],
+      "size": [0.4, 0.01, 0.3],
+      "color": "box",
+      "collide": false
+    }
+  ]
+}
