@@ -4,7 +4,7 @@
   "name": "Pressure gauge",
   "type": "loot",
   "size": [1, 2],
-  "value": 1000,
+  "value": 2100,
   "weight": 0.5,
   "rarity": "uncommon",
   "model": {

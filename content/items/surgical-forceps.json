@@ -4,7 +4,7 @@
   "name": "Surgical forceps",
   "type": "loot",
   "size": [1, 1],
-  "value": 700,
+  "value": 1700,
   "weight": 0.05,
   "rarity": "uncommon",
   "model": {

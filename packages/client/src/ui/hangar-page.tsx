@@ -1,100 +1,56 @@
 import {
   POWER_GRID,
-  cantCraft,
   cantUpgrade,
-  craftDuration,
-  craftLeft,
   itemDef,
-  moduleCraft,
   moduleLevel,
-  newStashItem,
   powerNeeded,
-  recipeCost,
   upgradeCost,
-  type Craft,
   type HangarModuleDef,
-  type Item,
   type ItemDb,
   type Profile,
-  type ProfileResponse,
-  type QuestDef,
-  type RecipeDef,
 } from '@mes/shared';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { itemPortrait } from '../render/item-portrait';
-import { ItemDetails } from './item-details';
-import { colorOf } from './raid-screen';
-import { craftTime, timeLeft } from './hangar-text';
+import { useEffect, useState, type ReactNode } from 'react';
 import { ROMAN } from './vendors-page';
 
 /*
  * The Hangar page between raids (session H3; design in docs/hangar.md): the modules down
  * the side with their levels, as the vendors page lists vendors, and the one picked beside
- * them: its levels and what they unlock, what the next one costs (have / need) and Upgrade,
- * the craft running with its time left or Collect, and its recipes with Craft. Upgrading
- * and crafting take items from the stash and ask for a second tap. Time left is on the
- * server's clock (the reply's `now`), not the phone's.
+ * them: its levels and what they unlock, what the next one costs (have / need) and Upgrade.
+ * Upgrading takes items from the stash and asks for a second tap.
  */
 
 /** The modules' colors down the side, in their order (the vendors page's amber first). */
 const COLORS = ['#e3a33a', '#c96a5a', '#6a9fc9', '#6cc98a', '#b08ad0', '#c9b25a', '#5ab8b0'];
 
-/** How far the server's clock is ahead of this device's, from a reply. */
-function skewOf(me: ProfileResponse): number {
-  return me.now - Date.now();
-}
-
 export function HangarPage({
   modules,
-  recipes,
   items,
-  quests,
-  me,
+  profile,
   notice,
   onBack,
   onStash,
   onUpgrade,
-  onCraft,
-  onCollect,
 }: {
   modules: readonly HangarModuleDef[];
-  /** Every recipe, in their order. */
-  recipes: readonly RecipeDef[];
   items: ItemDb;
-  quests: readonly QuestDef[];
-  me: ProfileResponse;
+  profile: Profile;
   notice: string | null;
   onBack: () => void;
   onStash: () => void;
-  /** Each resolves when done or refused. */
+  /** Resolves when done or refused. */
   onUpgrade: (module: HangarModuleDef) => Promise<void>;
-  onCraft: (module: HangarModuleDef, recipe: RecipeDef) => Promise<void>;
-  onCollect: (module: HangarModuleDef) => Promise<void>;
 }): ReactNode {
   const [shown, setShown] = useState(0);
-  const [inspecting, setInspecting] = useState<Item | null>(null);
-  const profile = me.profile;
-  // The server's time, ticking each second while something is crafting.
-  const skew = useMemo(() => skewOf(me), [me]);
-  const [now, setNow] = useState(() => Date.now() + skew);
-  const running = Object.values(profile.crafts).some((c) => craftLeft(c, now) > 0);
-  // A new reply (a craft started) is caught up within the second.
-  useEffect(() => {
-    if (!running) return;
-    const t = setInterval(() => setNow(Date.now() + skew), 1000);
-    return () => clearInterval(t);
-  }, [skew, running]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
-      if (e.code === 'Escape' && !inspecting) onBack();
+      if (e.code === 'Escape') onBack();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onBack, inspecting]);
+  }, [onBack]);
   const module = modules[shown];
   if (!module) return null;
   const color = COLORS[shown % COLORS.length]!;
-  const own = recipes.filter((r) => r.module === module.id);
   return (
     <div className="raid stash vendors hangar" role="dialog" aria-label="Hangar">
       <header className="raid-tabs">
@@ -112,13 +68,8 @@ export function HangarPage({
               module={m}
               color={COLORS[i % COLORS.length]!}
               level={moduleLevel(profile, m.id)}
-              craft={moduleCraft(profile, m.id)}
-              now={now}
               active={i === shown}
-              onClick={() => {
-                setInspecting(null);
-                setShown(i);
-              }}
+              onClick={() => setShown(i)}
             />
           ))}
         </nav>
@@ -130,70 +81,30 @@ export function HangarPage({
             profile={profile}
             onUpgrade={() => onUpgrade(module)}
           />
-          <CraftSlot
-            items={items}
-            module={module}
-            craft={moduleCraft(profile, module.id)}
-            now={now}
-            onInspect={setInspecting}
-            onCollect={() => onCollect(module)}
-          />
-          {own.length > 0 && (
-            <>
-              <h3 className="hangar-heading">Recipes</h3>
-              <ul className="hangar-recipes">
-                {own.map((r) => (
-                  <RecipeCard
-                    key={r.id}
-                    items={items}
-                    module={module}
-                    recipe={r}
-                    profile={profile}
-                    onInspect={setInspecting}
-                    onCraft={() => onCraft(module, r)}
-                  />
-                ))}
-              </ul>
-            </>
-          )}
           <p className="raid-note">
-            Upgrades and crafts take plain items from your stash pages and the rigs and backpacks on
-            them, never your worn gear. Crafts run while the game is closed, one at a time per
-            module; a finished one waits here until you collect it.
+            Upgrades take plain items from your stash pages and the rigs and backpacks on them,
+            never your worn gear.
           </p>
         </section>
       </div>
-      {inspecting && (
-        <ItemDetails
-          items={items}
-          item={inspecting}
-          quests={quests}
-          onClose={() => setInspecting(null)}
-        />
-      )}
     </div>
   );
 }
 
-/** A module in the list down the side: its initial, name and level, and a craft's state. */
+/** A module in the list down the side: its initial, name and level. */
 function ModuleCard({
   module,
   color,
   level,
-  craft,
-  now,
   active,
   onClick,
 }: {
   module: HangarModuleDef;
   color: string;
   level: number;
-  craft: Craft | null;
-  now: number;
   active: boolean;
   onClick: () => void;
 }): ReactNode {
-  const left = craft ? craftLeft(craft, now) : 0;
   return (
     <button
       className={`vendors-card${active ? ' active' : ''}${level ? '' : ' unbuilt'}`}
@@ -209,14 +120,8 @@ function ModuleCard({
         <b>{module.name}</b>
         <span className="vendors-ll" aria-label={level ? `level ${level}` : 'not built'}>
           {level ? ROMAN[level] : 'Not built'}
-          {craft && (
-            <span className={`hangar-card-craft${left ? '' : ' ready'}`}>
-              {left ? ` · ${timeLeft(left)}` : ' · Ready'}
-            </span>
-          )}
         </span>
       </span>
-      {craft && !left ? <span className="vendors-badge">✓</span> : null}
     </button>
   );
 }
@@ -324,151 +229,5 @@ function Need({
     >
       {name} <b>{Math.min(have, 9999)}</b>/{need}
     </span>
-  );
-}
-
-/** A recipe's output as a new item, to draw and inspect. */
-function useOutput(items: ItemDb, item: string, count: number): Item {
-  return useMemo(() => newStashItem(items, { item, count }), [items, item, count]);
-}
-
-/** The craft in the module: running with its time left, or done with Collect. */
-function CraftSlot({
-  items,
-  module,
-  craft,
-  now,
-  onInspect,
-  onCollect,
-}: {
-  items: ItemDb;
-  module: HangarModuleDef;
-  craft: Craft | null;
-  now: number;
-  onInspect: (item: Item) => void;
-  onCollect: () => Promise<void>;
-}): ReactNode {
-  const [busy, setBusy] = useState(false);
-  if (!craft) return null;
-  const left = craftLeft(craft, now);
-  return (
-    <div className={`hangar-craft${left ? '' : ' ready'}`}>
-      {items.has(craft.item) ? (
-        <CraftOutput items={items} item={craft.item} count={craft.count} onInspect={onInspect} />
-      ) : (
-        <span className="hangar-recipe-name">{craft.recipe}</span>
-      )}
-      <span className="hangar-craft-state">
-        {left ? (
-          <>
-            Crafting · <b>{timeLeft(left)}</b> left
-          </>
-        ) : (
-          <b>Ready</b>
-        )}
-      </span>
-      <button
-        className="primary"
-        disabled={busy || left > 0}
-        aria-label={`Collect from the ${module.name}`}
-        onClick={() => {
-          if (busy) return;
-          setBusy(true);
-          void onCollect().finally(() => setBusy(false));
-        }}
-      >
-        {busy ? 'Collecting…' : 'Collect'}
-      </button>
-    </div>
-  );
-}
-
-/** A recipe's output: its picture on its rarity, name and count; a tap opens its details. */
-function CraftOutput({
-  items,
-  item,
-  count,
-  onInspect,
-}: {
-  items: ItemDb;
-  item: string;
-  count: number;
-  onInspect: (item: Item) => void;
-}): ReactNode {
-  const out = useOutput(items, item, count);
-  const def = itemDef(items, item);
-  const url = itemPortrait(items, out, def.size);
-  return (
-    <button
-      className="hangar-output"
-      style={{ ['--rarity' as string]: colorOf(def) }}
-      aria-label={`${def.name}${count > 1 ? ` ×${count}` : ''}: details`}
-      onClick={() => onInspect(out)}
-    >
-      <span className="vendors-offer-art">{url && <img src={url} alt="" draggable={false} />}</span>
-      <span className="hangar-recipe-name">
-        {def.name}
-        {count > 1 && <span> ×{count}</span>}
-      </span>
-    </button>
-  );
-}
-
-/** A recipe: its output, time, inputs (have / need) and Craft, which asks for a second tap. */
-function RecipeCard({
-  items,
-  module,
-  recipe,
-  profile,
-  onInspect,
-  onCraft,
-}: {
-  items: ItemDb;
-  module: HangarModuleDef;
-  recipe: RecipeDef;
-  profile: Profile;
-  onInspect: (item: Item) => void;
-  onCraft: () => Promise<void>;
-}): ReactNode {
-  const [confirming, setConfirming] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const locked = moduleLevel(profile, module.id) < recipe.level;
-  const bad = cantCraft(profile, module, recipe);
-  const craft = (): void => {
-    if (busy) return;
-    if (!confirming) return setConfirming(true);
-    setConfirming(false);
-    setBusy(true);
-    void onCraft().finally(() => setBusy(false));
-  };
-  return (
-    <li className={`hangar-recipe${locked ? ' locked' : ''}`}>
-      <CraftOutput
-        items={items}
-        item={recipe.output.item}
-        count={recipe.output.count ?? 1}
-        onInspect={onInspect}
-      />
-      <div className="hangar-recipe-body">
-        <span className="hangar-recipe-meta">
-          {craftTime(craftDuration(recipe) / 60_000)}
-          {locked && ` · 🔒 level ${ROMAN[recipe.level]}`}
-        </span>
-        <span className="hangar-inputs">
-          {recipeCost(profile, recipe).map((c) => (
-            <Need key={c.item} items={items} item={c.item} have={c.have} need={c.need} />
-          ))}
-        </span>
-        <button
-          className={`primary${confirming ? ' confirm' : ''}`}
-          disabled={busy || !!bad}
-          title={bad ?? undefined}
-          onBlur={() => setConfirming(false)}
-          onClick={craft}
-        >
-          {busy ? 'Starting…' : confirming ? 'Use these items?' : 'Craft'}
-        </button>
-      </div>
-    </li>
   );
 }

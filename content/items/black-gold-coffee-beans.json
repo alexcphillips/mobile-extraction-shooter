@@ -4,7 +4,7 @@
   "name": "Black gold coffee beans",
   "type": "loot",
   "size": [1, 2],
-  "value": 2900,
+  "value": 16300,
   "weight": 0.5,
   "rarity": "epic",
   "model": {

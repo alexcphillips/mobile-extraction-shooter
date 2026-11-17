@@ -53,8 +53,8 @@ export interface ProfileResponse {
   /** The settings last saved from any device, or null if none ever were. */
   settings: SavedSettings | null;
   /**
-   * The server's clock (ms) as it answered (H2): Hangar crafts' `done` is on it, so the
-   * client works out time left from this, not its own clock.
+   * The server's clock (ms) as it answered (H2), so the client works out times from this,
+   * not its own clock.
    */
   now: number;
   /**
@@ -126,21 +126,9 @@ export interface QuestCompleteRequest extends QuestRequest {
   page?: number;
 }
 
-/**
- * The Hangar (H1–H2), each naming the profile version read: POST /api/hangar/:id/upgrade
- * (HangarRequest), /:id/craft (HangarCraftRequest: a recipe id) and /:id/collect
- * (HangarCollectRequest: the output into the stash, page `page` first).
- */
+/** The Hangar (H1), naming the profile version read: POST /api/hangar/:id/upgrade. */
 export interface HangarRequest {
   version: number;
-}
-
-export interface HangarCraftRequest extends HangarRequest {
-  recipe: string;
-}
-
-export interface HangarCollectRequest extends HangarRequest {
-  page?: number;
 }
 
 /**

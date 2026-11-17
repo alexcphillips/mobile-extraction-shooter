@@ -82,6 +82,7 @@
     { "item": "tactical-vest", "weight": 0.8 },
     { "item": "plate-carrier", "weight": 0.5 },
     { "item": "heavy-plate-carrier", "weight": 0.15 },
+    { "item": "armor-repair-kit", "weight": 1 },
     { "item": "assault-armor", "weight": 0.05 },
     { "item": "m12-patrol-rig", "weight": 1 },
     { "item": "medium-backpack", "weight": 1 },

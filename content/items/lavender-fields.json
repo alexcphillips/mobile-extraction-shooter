@@ -4,9 +4,9 @@
   "name": "Lavender fields",
   "type": "loot",
   "size": [2, 2],
-  "value": 5000,
+  "value": 72000,
   "weight": 2,
-  "rarity": "rare",
+  "rarity": "legendary",
   "model": {
     "parts": [
       {

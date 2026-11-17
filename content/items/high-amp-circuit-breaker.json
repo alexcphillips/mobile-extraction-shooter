@@ -4,7 +4,7 @@
   "name": "High amp circuit breaker",
   "type": "loot",
   "size": [1, 2],
-  "value": 1400,
+  "value": 2100,
   "weight": 0.5,
   "rarity": "uncommon",
   "model": {

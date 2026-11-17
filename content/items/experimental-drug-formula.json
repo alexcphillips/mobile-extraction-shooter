@@ -4,7 +4,7 @@
   "name": "Experimental medicine formula",
   "type": "loot",
   "size": [1, 2],
-  "value": 1000,
+  "value": 41000,
   "weight": 0.2,
   "rarity": "legendary",
   "model": {

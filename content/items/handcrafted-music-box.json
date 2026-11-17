@@ -4,7 +4,7 @@
   "name": "Handcrafted music box",
   "type": "loot",
   "size": [1, 1],
-  "value": 1000,
+  "value": 1750,
   "weight": 0.4,
   "rarity": "uncommon",
   "model": {

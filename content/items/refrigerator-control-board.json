@@ -4,7 +4,7 @@
   "name": "Refrigerator control board",
   "type": "loot",
   "size": [1, 1],
-  "value": 1000,
+  "value": 4300,
   "weight": 0.3,
   "rarity": "rare",
   "model": {

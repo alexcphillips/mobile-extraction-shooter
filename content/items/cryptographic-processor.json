@@ -4,7 +4,7 @@
   "name": "Cryptographic processor",
   "type": "loot",
   "size": [2, 1],
-  "value": 3000,
+  "value": 16000,
   "weight": 0.3,
   "rarity": "epic",
   "model": {

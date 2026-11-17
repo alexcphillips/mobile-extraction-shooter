@@ -118,6 +118,7 @@ describe('item editor', () => {
     // The tutorial's front door needs a key item.
     const notAKey = edited('front-door-key', (d) => {
       d.type = 'loot';
+      d.value = 500; // a common loot item's worth, so only the door check fails
       delete d.uses;
     });
     expect(itemContentProblem(notAKey)).toMatch(/door .* not a key item/);

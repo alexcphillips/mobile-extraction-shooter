@@ -4,7 +4,7 @@
   "name": "Microreactor",
   "type": "loot",
   "size": [3, 3],
-  "value": 1000,
+  "value": 212500,
   "weight": 20,
   "rarity": "mythic",
   "model": {

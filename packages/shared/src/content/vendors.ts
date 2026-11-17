@@ -14,6 +14,10 @@ import { idSchema } from './schema';
  * with it (from its quests) and some money spent with it. Each offer is unlocked at a
  * level. A vendor can mark its prices up, and show only some of its offers at a time,
  * a different few every so many hours (the Fence).
+ *
+ * Barters (2026-11-17, the user's call; design/quests-and-vendors.md → Barters): an offer
+ * with `barter` costs those items from the stash instead of money. The most basic gear stays
+ * on sale for cash; barters are how the better gear is had.
  */
 
 export const VENDOR_FORMAT_VERSION = 2;
@@ -29,6 +33,11 @@ const offerSchema = z.strictObject({
   attachments: z.array(idSchema).min(1).optional(),
   /** The vendor's level it's sold from; 1 if left out. */
   level: z.int().min(1).max(VENDOR_LEVELS).optional(),
+  /** A barter: these items from the stash, each once, in place of money. */
+  barter: z
+    .array(z.strictObject({ item: idSchema, count: z.int().min(1) }))
+    .min(1)
+    .optional(),
 });
 
 /** What reaching a level needs: reputation (from quests) and money spent with the vendor. */
@@ -78,7 +87,8 @@ export const VENDOR_FORMAT: ContentFormat<VendorDef> = {
 
 /**
  * Checks that every offer names an item with a value, in a count that fits one stack, and
- * that no vendor sells money; and that a gun's attachments fit it, one to a slot.
+ * that no vendor sells money; that a gun's attachments fit it, one to a slot; and that a
+ * barter takes real items, each once, none of them money, a quest item or what it gives.
  */
 export function checkVendors(vendors: ReadonlyMap<string, VendorDef>, items: ItemDb): void {
   for (const v of vendors.values()) {
@@ -103,6 +113,16 @@ export function checkVendors(vendors: ReadonlyMap<string, VendorDef>, items: Ite
         if (def.type !== 'weapon' || a?.type !== 'attachment' || !fits(def, a) || slots.has(a.slot))
           throw new ContentError(source, `"${id}" doesn't fit "${o.item}"`);
         slots.add(a.slot);
+      }
+      const inputs = new Set<string>();
+      for (const b of o.barter ?? []) {
+        const input = items.get(b.item);
+        if (!input) throw new ContentError(source, `barter for "${o.item}": no item "${b.item}"`);
+        if (input.type === 'quest' || (input.type === 'loot' && input.money))
+          throw new ContentError(source, `barter for "${o.item}" takes "${b.item}"`);
+        if (b.item === o.item || inputs.has(b.item))
+          throw new ContentError(source, `barter for "${o.item}" lists "${b.item}" twice`);
+        inputs.add(b.item);
       }
     }
   }

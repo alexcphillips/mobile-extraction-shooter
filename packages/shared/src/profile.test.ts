@@ -203,8 +203,8 @@ describe('PROFILE_FORMAT', () => {
   it('renames the Quarters module the Stash module, keeping its level (format 16 → 17)', () => {
     const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
     old.formatVersion = 16;
-    old.hangar = { quarters: 2, 'trauma-bay': 1 };
-    expect(loadContent(PROFILE_FORMAT, old, 'p').hangar).toEqual({ 'trauma-bay': 1, stash: 2 });
+    old.hangar = { quarters: 2, 'power-grid': 1 };
+    expect(loadContent(PROFILE_FORMAT, old, 'p').hangar).toEqual({ 'power-grid': 1, stash: 2 });
   });
 
   it('gives every stored gun the stock it was modeled with (format 19 → 20)', () => {
@@ -259,8 +259,19 @@ describe('PROFILE_FORMAT', () => {
     expect(p.xp).toBe(0);
     expect(p.gear.bodyArmor).toBeNull();
     expect(p.vendors).toEqual({ armorer: { rep: 0.2, spent: 5000 } });
-    expect(p.hangar).toEqual({ 'armor-bench': 2 });
+    // Renamed to the armor bench, which format 23 then deleted.
+    expect(p.hangar).toEqual({});
     expect(p.stash[0]!.items[0]!.item.item).toBe('armor-repair-kit');
+  });
+
+  it('takes out crafting and its four modules (format 22 → 23)', () => {
+    const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
+    old.formatVersion = 22;
+    old.hangar = { 'power-grid': 2, 'trauma-bay': 1, 'gun-workshop': 1, stash: 1 };
+    old.crafts = { 'trauma-bay': { recipe: 'r', item: 'bandage', count: 1, done: 1 } };
+    const p = loadContent(PROFILE_FORMAT, old, 'p');
+    expect(p.hangar).toEqual({ 'power-grid': 2, stash: 1 });
+    expect(p).not.toHaveProperty('crafts');
   });
 
   it('takes out the deleted Intel desk, its contracts and drives (format 15 → 16)', () => {
@@ -276,7 +287,7 @@ describe('PROFILE_FORMAT', () => {
     const kept = old.stash[0].items.length - 1;
     const p = loadContent(PROFILE_FORMAT, old, 'p');
     expect(p.hangar).toEqual({ stash: 1 });
-    expect(Object.keys(p.crafts)).toEqual(['trauma-bay']);
+    expect(p).not.toHaveProperty('crafts');
     expect(p).not.toHaveProperty('contracts');
     expect(p.stash[0]!.items).toHaveLength(kept);
     expect(p.stash[0]!.items.some((g) => g.item.item === 'flash-drive')).toBe(false);

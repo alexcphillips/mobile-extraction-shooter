@@ -4,7 +4,7 @@
   "name": "VOLTEX CPU",
   "type": "loot",
   "size": [1, 1],
-  "value": 1000,
+  "value": 13400,
   "weight": 0.05,
   "rarity": "epic",
   "model": {

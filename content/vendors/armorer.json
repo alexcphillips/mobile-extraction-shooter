@@ -37,67 +37,255 @@
     },
     {
       "item": "riot-helmet",
-      "level": 2
+      "level": 2,
+      "barter": [
+        {
+          "item": "digital-thermostat",
+          "count": 1
+        },
+        {
+          "item": "light-bulb",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "police-vest",
-      "level": 2
+      "level": 2,
+      "barter": [
+        {
+          "item": "steel-angle-bar",
+          "count": 3
+        },
+        {
+          "item": "light-bulb",
+          "count": 2
+        }
+      ]
     },
     {
       "item": "medium-backpack",
-      "level": 2
+      "level": 2,
+      "barter": [
+        {
+          "item": "smartphone",
+          "count": 1
+        },
+        {
+          "item": "fiberglass-roll",
+          "count": 1
+        },
+        {
+          "item": "corrugated-tubing",
+          "count": 2
+        }
+      ]
     },
     {
       "item": "armor-repair-kit",
-      "level": 2
+      "level": 2,
+      "barter": [
+        {
+          "item": "bucket-of-paint",
+          "count": 1
+        },
+        {
+          "item": "led-tube",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "steel-plate-3",
-      "level": 2
+      "level": 2,
+      "barter": [
+        {
+          "item": "steel-framing",
+          "count": 1
+        },
+        {
+          "item": "caulk-tube",
+          "count": 3
+        },
+        {
+          "item": "solenoid-valve",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "steel-helmet",
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "industrial-air-duct-fan",
+          "count": 1
+        },
+        {
+          "item": "box-of-screws",
+          "count": 3
+        },
+        {
+          "item": "antique-telescope",
+          "count": 2
+        }
+      ]
     },
     {
       "item": "tactical-vest",
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "portable-ac",
+          "count": 1
+        },
+        {
+          "item": "fiberglass-roll",
+          "count": 3
+        },
+        {
+          "item": "insulation-roll",
+          "count": 2
+        }
+      ]
     },
     {
       "item": "large-backpack",
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "condenser-coil",
+          "count": 1
+        },
+        {
+          "item": "high-voltage-inverter-board",
+          "count": 3
+        }
+      ]
     },
     {
       "item": "tactical-headset",
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "premix-concrete-bag",
+          "count": 3
+        },
+        {
+          "item": "circular-saw",
+          "count": 2
+        }
+      ]
     },
     {
       "item": "face-shield",
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "titanium-turbine-blade",
+          "count": 1
+        },
+        {
+          "item": "thermobrew",
+          "count": 3
+        },
+        {
+          "item": "circular-saw",
+          "count": 2
+        }
+      ]
     },
     {
       "item": "pe-plate-3",
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "laboratory-notebook",
+          "count": 3
+        },
+        {
+          "item": "phase-change-thermal-paste",
+          "count": 2
+        }
+      ]
     },
     {
       "item": "combat-helmet",
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "condenser-coil",
+          "count": 1
+        },
+        {
+          "item": "insulation-roll",
+          "count": 2
+        },
+        {
+          "item": "high-voltage-inverter-board",
+          "count": 3
+        }
+      ]
     },
     {
       "item": "plate-carrier",
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "kevlar-composite-sheet",
+          "count": 1
+        },
+        {
+          "item": "pressure-gauge",
+          "count": 3
+        }
+      ]
     },
     {
       "item": "nvg-monocular",
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "carbon-fiber-laminate",
+          "count": 1
+        },
+        {
+          "item": "high-amp-circuit-breaker",
+          "count": 2
+        }
+      ]
     },
     {
       "item": "ceramic-plate-4",
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "steel-framing",
+          "count": 1
+        },
+        {
+          "item": "steel-angle-bar",
+          "count": 3
+        },
+        {
+          "item": "power-supply-unit",
+          "count": 2
+        }
+      ]
     },
     {
       "item": "steel-plate-4",
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "smartphone",
+          "count": 1
+        },
+        {
+          "item": "high-voltage-inverter-board",
+          "count": 3
+        }
+      ]
     }
   ]
 }

@@ -6,20 +6,18 @@ import type { HangarModuleDef } from './hangar';
 import type { LootContainerDef } from './loot-containers';
 import type { LootTableDef } from './loot-tables';
 import type { QuestDef, QuestObjective } from './quests';
-import type { RecipeDef } from './recipes';
 import type { VendorDef } from './vendors';
 import type { ItemDb } from './items';
 
 /*
  * Where an item comes from and what wants it (UX-2, 2026-11-08), for its details: worked
- * out from content, never written by hand, so it can't go stale. Hangar recipes go in both
- * (H3), and upgrade costs in its uses.
+ * out from content, never written by hand, so it can't go stale. Hangar upgrade costs go in
+ * its uses.
  */
 
-/** The Hangar's content, for the recipes and upgrades an item is in. */
+/** The Hangar's content, for the upgrades an item is in. */
 export interface HangarContent {
   modules: ReadonlyMap<string, HangarModuleDef>;
-  recipes: readonly RecipeDef[];
 }
 
 /** What the index reads. `maps` are the raids' maps, by their raid's name. */
@@ -32,8 +30,6 @@ export interface SourceContent {
   vendors: Iterable<VendorDef>;
   quests: readonly QuestDef[];
   maps: readonly { id: string; name: string; markers: readonly CompiledMarker[] }[];
-  /** Left out (an editor), nothing is crafted. */
-  hangar?: HangarContent;
 }
 
 export interface ItemSource {
@@ -43,21 +39,19 @@ export interface ItemSource {
   loose: string[];
   /** Enemy types that can wear or carry it. */
   enemies: string[];
-  /** Vendors that sell it, at the level they sell it from. */
-  vendors: { vendor: string; level: number }[];
+  /** Vendors that sell it, at the level they sell it from; `barter` if traded for items. */
+  vendors: { vendor: string; level: number; barter?: true }[];
   /** Quests that give it as a reward. */
   rewards: string[];
   /** Quest items: the maps they lie on, for which quest. */
   questSpots: { map: string; quest: string }[];
-  /** Hangar modules that craft it, by name, at the module level it needs. */
-  crafted: { module: string; level: number }[];
 }
 
 export interface ItemUsage {
   /** Quest objectives that want it (to hand over, or bring out). */
   quests: { quest: QuestDef; objective: QuestObjective }[];
-  /** Recipes that take it, with their module's name. */
-  recipes: { recipe: RecipeDef; module: string }[];
+  /** Vendor barters that take it: the vendor's name, its level, what it gives and how many it takes. */
+  barters: { vendor: string; level: number; item: string; count: number }[];
   /** Hangar upgrades that cost it: each module's name with how many each level takes. */
   upgrades: { module: string; levels: { level: number; count: number }[] }[];
 }
@@ -69,7 +63,6 @@ const empty = (): ItemSource => ({
   vendors: [],
   rewards: [],
   questSpots: [],
-  crafted: [],
 });
 
 /** Every item's sources at once (each item with none is left out). */
@@ -131,7 +124,12 @@ export function sourceIndex(c: SourceContent): ReadonlyMap<string, ItemSource> {
   }
 
   for (const v of c.vendors)
-    for (const o of v.sells) of(o.item).vendors.push({ vendor: v.name, level: o.level ?? 1 });
+    for (const o of v.sells)
+      of(o.item).vendors.push({
+        vendor: v.name,
+        level: o.level ?? 1,
+        ...(o.barter && { barter: true as const }),
+      });
 
   for (const q of c.quests) {
     for (const r of q.rewards.items) {
@@ -144,33 +142,26 @@ export function sourceIndex(c: SourceContent): ReadonlyMap<string, ItemSource> {
       of(o.item).questSpots.push({ map, quest: q.name });
     }
   }
-  if (c.hangar)
-    for (const r of c.hangar.recipes) {
-      const module = c.hangar.modules.get(r.module)?.name ?? r.module;
-      // One line per module, at the lowest level any of its recipes for it needs.
-      const crafted = of(r.output.item).crafted;
-      const has = crafted.find((y) => y.module === module);
-      if (has) has.level = Math.min(has.level, r.level);
-      else crafted.push({ module, level: r.level });
-    }
-
   // Content checks already refuse unknown ids; this keeps a half-loaded editor safe.
   for (const i of out.keys()) if (!c.items.has(i)) out.delete(i);
   return out;
 }
 
-/** What wants an item: quests, and the Hangar's recipes and upgrades if given. */
+/** What wants an item: quests, and vendors' barters and the Hangar's upgrades if given. */
 export function itemUsage(
   quests: readonly QuestDef[],
   item: string,
   hangar?: HangarContent,
+  vendors: Iterable<VendorDef> = [],
 ): ItemUsage {
-  const recipes: ItemUsage['recipes'] = [];
+  const barters: ItemUsage['barters'] = [];
+  for (const v of vendors)
+    for (const o of v.sells) {
+      const b = o.barter?.find((x) => x.item === item);
+      if (b) barters.push({ vendor: v.name, level: o.level ?? 1, item: o.item, count: b.count });
+    }
   const upgrades: ItemUsage['upgrades'] = [];
   if (hangar) {
-    for (const recipe of hangar.recipes)
-      if (recipe.inputs.some((i) => i.item === item))
-        recipes.push({ recipe, module: hangar.modules.get(recipe.module)?.name ?? recipe.module });
     for (const m of hangar.modules.values()) {
       const levels: { level: number; count: number }[] = [];
       m.levels.forEach((l, i) => {
@@ -180,7 +171,7 @@ export function itemUsage(
       if (levels.length) upgrades.push({ module: m.name, levels });
     }
   }
-  return { quests: questsFor(quests, item), recipes, upgrades };
+  return { quests: questsFor(quests, item), barters, upgrades };
 }
 
 /** Whether a source has anything in it. */
@@ -192,7 +183,6 @@ export function hasSource(s: ItemSource | undefined): s is ItemSource {
       s.enemies.length > 0 ||
       s.vendors.length > 0 ||
       s.rewards.length > 0 ||
-      s.questSpots.length > 0 ||
-      s.crafted.length > 0)
+      s.questSpots.length > 0)
   );
 }

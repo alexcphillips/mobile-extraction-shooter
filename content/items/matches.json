@@ -4,7 +4,7 @@
   "name": "Matches",
   "type": "loot",
   "size": [1, 1],
-  "value": 1000,
+  "value": 250,
   "weight": 0.02,
   "rarity": "common",
   "model": {

@@ -4,7 +4,7 @@
   "name": "Dehumidifier",
   "type": "loot",
   "size": [2, 2],
-  "value": 1000,
+  "value": 650,
   "weight": 6,
   "rarity": "common",
   "model": {

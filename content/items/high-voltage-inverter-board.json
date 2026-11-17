@@ -4,7 +4,7 @@
   "name": "High-voltage inverter board",
   "type": "loot",
   "size": [1, 1],
-  "value": 1300,
+  "value": 1650,
   "weight": 0.3,
   "rarity": "uncommon",
   "model": {

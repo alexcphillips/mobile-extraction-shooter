@@ -4,9 +4,9 @@
   "name": "Lighthouse painting",
   "type": "loot",
   "size": [2, 2],
-  "value": 4000,
+  "value": 24000,
   "weight": 2,
-  "rarity": "uncommon",
+  "rarity": "epic",
   "model": {
     "parts": [
       {

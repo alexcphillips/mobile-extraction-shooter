@@ -118,7 +118,7 @@ Before building a lot of content and reworking gun and reticle models. Today's g
 ## The Hangar (planned 2026-11-07 with the user)
 The design is [hangar.md](hangar.md). The material items and loot tables are the user's.
 
-- 8 finished sessions in [roadmap-done.md](roadmap-done.md).
+- 9 finished sessions in [roadmap-done.md](roadmap-done.md).
 
 - [ ] **Wipe prod before H4 ships** (no users yet): stored pages and vaults are reshaped on load, but a full old stash could fail its check.
 
@@ -248,14 +248,14 @@ Consumables that give **timed effects**: painkillers hide pain, injectors boost 
     5. **Using them:** use time, can you move or aim while injecting, do they go in the heal picker or their own slot or button? The controller has no buttons left (PC controller notes). [Injectors ~1.5 s, pills ~2 s, walking allowed; they join the heal picker (hold heal), never the tap heal.]
     6. **Do enemies use them?** PMCs popping painkillers and a stim when hurt would make them tougher. [PMCs use painkillers only, later, in an AI session; scavs and Jug don't.]
     7. **HUD:** effect icons with time left, and a tell when one is about to end. [A row of small icons under the body with a ring for time left, blinking the last 10 s.]
-    8. **Where they come from:** loot rarity, vendors, quests, Trauma bay crafting (hangar.md). [Painkillers common in medical loot and sold by the medic; injectors rare loot and craftable; none sold early.]
+    8. **Where they come from:** loot rarity, vendors, quests, vendor barters (design/quests-and-vendors.md → Barters). [Painkillers common in medical loot and sold by the medic; injectors rare loot and bartered; none sold early.]
     9. **Duration ticks in the sim, not the client**, and effects end at extraction and death (nothing carries out of a raid). [Yes.] (Zombies mode was archived 2026-11-13.)
 - [ ] **PK-2. Timed effects and painkillers.** A sim system for timed effects on a character (start, tick, end, saved in state, no per-frame allocation), the effect kinds PK-1 settles for painkillers, the hook in `updateSway`, a painkiller item or two, use from the heal picker, item editor fields, tests.
   - **Read:** design/damage-and-health.md (Timed effects); tech/shared-sim.md; tech/items-and-inventory.md; tech/editors.md.
 - [ ] **PK-3. Injectors.** The injectors PK-1 picks, their benefits and side effects on the PK-2 system, the HUD effect icons, item models in the house style, item editor fields, tests.
   - **Read:** design/damage-and-health.md (Timed effects); docs/props.md (item models); tech/editors.md.
-- [ ] **PK-4. Into the game.** Loot tables, vendor stock, quests if any, and Trauma bay recipes if PK-1 says so.
-  - **Read:** design/damage-and-health.md (Timed effects); hangar.md (Trauma bay).
+- [ ] **PK-4. Into the game.** Loot tables, vendor stock and barters, quests if any.
+  - **Read:** design/damage-and-health.md (Timed effects); design/quests-and-vendors.md (Barters).
 
 ## Replays: death replay and recorded sessions (planned 2026-11-12 with the user)
 The sim runs at 30 ticks a second from inputs with seeded random numbers, but **bit-exact determinism was never required** (tech/shared-sim.md: the co-op host is authoritative), so replaying from inputs has to be made exact first, then kept exact by tests.
@@ -284,7 +284,7 @@ The user's brief: **a few dollars** for extra vault squares, an extra stash page
 - [ ] **MZ-2c. The App Store build.** Capacitor with the built client bundled in (never loaded from our URL), landscape lock, status bar and home indicator hidden, safe areas, audio unlock and gamepad checked in WKWebView; Apple developer account, TestFlight. **Apple's rules:** a full game, not a website wrapper (guideline 4.2), no links out to web pages or payments; **account deletion in the app** (5.1.1(v)); a privacy policy and privacy labels (RP-3's recordings included); account recovery (email or Sign in with Apple), since a paid account behind a password with no reset is a support problem. **Read:** tech/overview.md → Platform; tech/server.md.
 - [ ] **MZ-3. Purchases on the server.** In-app purchase through StoreKit (required for digital goods on iOS; check the current rules on linking out to web payments). The server checks every transaction with Apple (App Store Server API), handles refunds from Apple's server notifications, and has **Restore purchases**. **Purchases are stored apart from the profile and survive prod wipes** (no migrations for now, but paid items can't be wiped); a wipe gives them back on the fresh profile. Tests for granting, refunds and restore.
 - [ ] **MZ-4. The store in the game.** A Store screen in the lobby, the products MZ-1 picks granted from purchases, admin tools to grant or revoke by hand, and a playthrough on TestFlight with sandbox purchases.
-- **Later, not scheduled:** opt-in rewarded ads for a convenience (say a shorter Hangar craft or scav cooldown), only once there are a lot of players, never forced, never needed to progress. It would add an ad SDK, Apple's tracking prompt and privacy labels.
+- **Later, not scheduled:** opt-in rewarded ads for a convenience (say a shorter scav cooldown), only once there are a lot of players, never forced, never needed to progress. It would add an ad SDK, Apple's tracking prompt and privacy labels.
 
 ## Quest objectives overhaul (planned 2026-11-13 with the user)
 The brief is in design/quests-and-vendors.md → Quest objectives overhaul. **Each objective kind and condition goes into the quest editor in the session that adds it**, as with the item editor. **The sim records facts** (kills with their details, zones entered, interactions, the exit used); **shared `quests.ts` judges them** against objectives, so the server's `/end`, the results screen and the in-raid Quests tab use the same rule, and co-op hosts need nothing extra. Quest content is rewritten in place, not migrated (prod gets wiped; no-migrations rule).

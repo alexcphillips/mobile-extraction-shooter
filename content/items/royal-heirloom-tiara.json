@@ -4,7 +4,7 @@
   "name": "Royal heirloom tiara",
   "type": "loot",
   "size": [2, 1],
-  "value": 6000,
+  "value": 40000,
   "weight": 0.5,
   "rarity": "legendary",
   "model": {

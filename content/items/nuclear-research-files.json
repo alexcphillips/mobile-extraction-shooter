@@ -4,7 +4,7 @@
   "name": "Nuclear research files",
   "type": "loot",
   "size": [1, 2],
-  "value": 1000,
+  "value": 5700,
   "weight": 0.3,
   "rarity": "rare",
   "model": {

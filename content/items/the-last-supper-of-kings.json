@@ -4,7 +4,7 @@
   "name": "The last supper of kings",
   "type": "loot",
   "size": [4, 4],
-  "value": 120000,
+  "value": 250000,
   "weight": 8,
   "rarity": "mythic",
   "model": {

@@ -4,7 +4,7 @@
   "name": "Fusion reactor core",
   "type": "loot",
   "size": [3, 3],
-  "value": 1000,
+  "value": 213000,
   "weight": 20,
   "rarity": "mythic",
   "model": {

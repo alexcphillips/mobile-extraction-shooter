@@ -4,7 +4,7 @@
   "name": "Compressed air tank",
   "type": "loot",
   "size": [3, 1],
-  "value": 1000,
+  "value": 6100,
   "weight": 6,
   "rarity": "rare",
   "model": {

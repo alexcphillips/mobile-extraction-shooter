@@ -105,6 +105,24 @@ describe('items', () => {
     );
   });
 
+  it("holds a loot item's value to its rarity's band, but not cash", () => {
+    const loot = {
+      formatVersion: ITEM_FORMAT_VERSION,
+      id: 'gem',
+      name: 'Gem',
+      type: 'loot',
+      size: [1, 1],
+      weight: 0.1,
+    };
+    const item = (rarity: string, value: number, extra = {}) =>
+      db({ ...m({ ...loot, value, ...extra }), rarity });
+    expect(() => checkItems(item('rare', 4000))).not.toThrow();
+    expect(() => checkItems(item('rare', 12000))).not.toThrow();
+    expect(() => checkItems(item('rare', 3999))).toThrow(/rare loot item is worth 4000–12000/);
+    expect(() => checkItems(item('common', 2000))).toThrow(/not 2000/);
+    expect(() => checkItems(item('common', 1, { stack: 500, money: true }))).not.toThrow();
+  });
+
   it('checks that weapons name a real ammo item', () => {
     const items = db(gun, ammo);
     expect(() => checkItems(items)).not.toThrow();

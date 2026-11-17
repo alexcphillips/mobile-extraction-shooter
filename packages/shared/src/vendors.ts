@@ -6,7 +6,7 @@ import { createRng, nextInt } from './rng';
 import { type Gear, type GearSlot } from './sim/gear';
 import { loadedAmmo } from './sim/weapons';
 import type { ItemRef } from './sim/looting';
-import { addToStash, newStashItem, stashGridOf } from './stash';
+import { addToStash, newStashItem, stashCount, stashGridOf, takeFromStash } from './stash';
 
 /*
  * Buying and selling (session 13b, decided with the user 2026-10-27). Every item has a
@@ -195,11 +195,29 @@ export function nextRestock(vendor: VendorDef, now: number): number | null {
 }
 
 /**
+ * For each item a barter takes, `times` over, how many the stash has and how many it
+ * takes; empty for an offer sold for money.
+ */
+export function barterCost(
+  profile: Profile,
+  offer: VendorOffer,
+  times = 1,
+): { item: string; have: number; need: number }[] {
+  return (offer.barter ?? []).map((b) => ({
+    item: b.item,
+    have: stashCount(profile, (i) => i.item === b.item),
+    need: b.count * times,
+  }));
+}
+
+/**
  * Buys `times` of a vendor's offer into the stash, page `page` first, then the others:
- * the money goes down by the price and the spending with the vendor up by it. The offer
- * must be in stock now (vendorStock) and at a level the player has reached. Returns why
- * it can't be (no such offer, too low a level, not enough money, no room), or null once
- * bought; refused, nothing changes.
+ * the money goes down by the price and the spending with the vendor up by it. A barter
+ * takes its items from the stash instead (plain ones, as a quest hand-over does), and
+ * counts its price (buyPrice) as spending, so trading levels a vendor too. The offer must
+ * be in stock now (vendorStock) and at a level the player has reached. Returns why it
+ * can't be (no such offer, too low a level, not enough money or items, no room), or null
+ * once bought; refused, nothing changes.
  */
 export function buyOffer(
   profile: Profile,
@@ -220,11 +238,23 @@ export function buyOffer(
   const need = offerLevel(offer);
   if (vendorLevel(vendor, standing) < need) return `${vendor.name} sells that from level ${need}`;
   const price = buyPrice(items, offer, vendor) * times;
-  if (profile.money < price)
-    return `that costs ${price.toLocaleString('en')}, and you have ${profile.money.toLocaleString('en')}`;
-  if (!addToStash(profile, items, Array<VendorOffer>(times).fill(offer), page, newStashItem))
-    return 'there is no room in your stash';
-  profile.money -= price;
+  if (offer.barter) {
+    const short = barterCost(profile, offer, times).find((c) => c.have < c.need);
+    if (short) return `there aren't enough "${short.item}" in your stash`;
+    // Taking the items first can make the room; put them back if there still isn't any.
+    const before = JSON.parse(JSON.stringify(profile.stash)) as Profile['stash'];
+    for (const b of offer.barter) takeFromStash(profile, (i) => i.item === b.item, b.count * times);
+    if (!addToStash(profile, items, Array<VendorOffer>(times).fill(offer), page, newStashItem)) {
+      profile.stash = before;
+      return 'there is no room in your stash';
+    }
+  } else {
+    if (profile.money < price)
+      return `that costs ${price.toLocaleString('en')}, and you have ${profile.money.toLocaleString('en')}`;
+    if (!addToStash(profile, items, Array<VendorOffer>(times).fill(offer), page, newStashItem))
+      return 'there is no room in your stash';
+    profile.money -= price;
+  }
   profile.vendors[vendor.id] = { ...standing, spent: standing.spent + price };
   return null;
 }

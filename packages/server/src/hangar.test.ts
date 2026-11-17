@@ -1,14 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  addItem,
-  checkRecipes,
-  countItems,
-  createItem,
-  MODULE_LEVELS,
-  POWER_GRID,
-  type RecipeDef,
-} from '@mes/shared';
-import { loadHangar, loadItems, loadRecipes, recipeDef } from './content';
+import { describe, expect, it } from 'vitest';
+import { addItem, countItems, createItem, MODULE_LEVELS, POWER_GRID } from '@mes/shared';
+import { loadHangar, loadItems } from './content';
 import { testEnv } from './test/d1';
 import { TestClient } from './test/client';
 
@@ -29,7 +21,7 @@ describe('the Hangar', () => {
   it('has every module, each with the Power grid able to power its levels', () => {
     const modules = loadHangar();
     expect(modules.get(POWER_GRID)?.levels.length).toBe(MODULE_LEVELS);
-    expect(modules.size).toBe(7);
+    expect(modules.size).toBe(3);
   });
 
   it('upgrades a module a level for its cost, once per version, within the Power grid', async () => {
@@ -37,7 +29,7 @@ describe('the Hangar', () => {
     let me = await client.ok('GET', '/profile');
     expect(me.profile.hangar).toEqual({});
     const before = bandages(me.profile);
-    const noPower = await client.fails('POST', '/hangar/trauma-bay/upgrade', {
+    const noPower = await client.fails('POST', '/hangar/secure-locker/upgrade', {
       version: me.version,
     });
     expect(noPower.message).toMatch(/Power grid at level 1/);
@@ -50,9 +42,9 @@ describe('the Hangar', () => {
     });
     expect(retry.error).toBe('stale');
 
-    me = await client.ok('POST', '/hangar/trauma-bay/upgrade', { version: me.version });
-    expect(me.profile.hangar['trauma-bay']).toBe(1);
-    const capped = await client.fails('POST', '/hangar/trauma-bay/upgrade', {
+    me = await client.ok('POST', '/hangar/secure-locker/upgrade', { version: me.version });
+    expect(me.profile.hangar['secure-locker']).toBe(1);
+    const capped = await client.fails('POST', '/hangar/secure-locker/upgrade', {
       version: me.version,
     });
     expect(capped.message).toMatch(/level 2/);
@@ -135,131 +127,5 @@ describe('the Hangar', () => {
       version: me.version,
     });
     expect(inRaid.error).toBe('in-raid');
-  });
-});
-
-describe('Hangar crafting', () => {
-  const MIN = 60_000;
-  let clock = Date.now();
-  beforeEach(() => {
-    clock = Date.now();
-    vi.spyOn(Date, 'now').mockImplementation(() => clock);
-  });
-  afterEach(() => vi.restoreAllMocks());
-
-  /** A client with the Power grid and the Trauma bay at level 1, and the first aid kit's inputs. */
-  async function ready() {
-    const client = await withBandages(6);
-    await client.editProfile((p) => {
-      addItem(items, p.stash[0]!, createItem(items, 'duct-tape'));
-    });
-    let me = await client.ok('GET', '/profile');
-    me = await client.ok('POST', `/hangar/${POWER_GRID}/upgrade`, { version: me.version });
-    me = await client.ok('POST', '/hangar/trauma-bay/upgrade', { version: me.version });
-    return { client, me };
-  }
-
-  it('has recipes checked against the modules and items', () => {
-    const recipes = loadRecipes();
-    expect(recipes.size).toBeGreaterThan(0);
-    for (const r of recipes.values()) expect(loadHangar().has(r.module)).toBe(true);
-    const base = recipeDef('trauma-first-aid-kit')!;
-    const check = (r: Partial<RecipeDef>) => () =>
-      checkRecipes(new Map([[base.id, { ...base, ...r }]]), loadHangar(), items);
-    expect(check({ output: { item: 'cash' } })).toThrow(/makes money/);
-    expect(check({ output: { item: 'test-notes-item' } })).toThrow(/quest item/);
-    expect(check({ output: { item: 'bandage', count: 1000 } })).toThrow(/than a stack/);
-    expect(check({ module: 'nothing' })).toThrow(/no Hangar module/);
-    expect(check({ level: 4 })).toThrow(/no level 4/);
-  });
-
-  it('crafts on the server clock, and keeps the output until collected', async () => {
-    const { client, me: start } = await ready();
-    let me = start;
-    const recipe = recipeDef('trauma-first-aid-kit')!;
-    const kits = (p: typeof me.profile) => countItems(items, p).get('field-first-aid-kit') ?? 0;
-    const hadKits = kits(me.profile);
-    const hadBandages = bandages(me.profile);
-
-    me = await client.ok('POST', '/hangar/trauma-bay/craft', {
-      version: me.version,
-      recipe: recipe.id,
-    });
-    const craft = me.profile.crafts['trauma-bay']!;
-    expect(craft).toEqual({
-      recipe: recipe.id,
-      item: 'field-first-aid-kit',
-      count: 1,
-      done: clock + recipe.minutes * MIN,
-    });
-    expect(me.now).toBe(clock);
-    expect(bandages(me.profile)).toBe(hadBandages - 2);
-
-    const busy = await client.fails('POST', '/hangar/trauma-bay/craft', {
-      version: me.version,
-      recipe: recipe.id,
-    });
-    expect(busy.message).toMatch(/already making/);
-    const early = await client.fails('POST', '/hangar/trauma-bay/collect', { version: me.version });
-    expect(early.message).toMatch(/hasn't finished/);
-
-    // Long after, as if the app was closed: it waits.
-    clock += recipe.minutes * MIN * 10;
-    me = await client.ok('POST', '/hangar/trauma-bay/collect', { version: me.version });
-    expect(me.profile.crafts).toEqual({});
-    expect(kits(me.profile)).toBe(hadKits + 1);
-    const again = await client.fails('POST', '/hangar/trauma-bay/collect', { version: me.version });
-    expect(again.message).toMatch(/nothing to collect/);
-  });
-
-  it('refuses a recipe of another module, above its level, or without the inputs', async () => {
-    const { client, me } = await ready();
-    const other = await client.fails('POST', '/hangar/trauma-bay/craft', {
-      version: me.version,
-      recipe: 'armor-repair-kit',
-    });
-    expect(other.message).toMatch(/doesn't make that/);
-    const level = await client.fails('POST', '/hangar/trauma-bay/craft', {
-      version: me.version,
-      recipe: 'trauma-surgery-kit',
-    });
-    expect(level.message).toMatch(/level 2/);
-    const unknown = await client.fails('POST', '/hangar/trauma-bay/craft', {
-      version: me.version,
-      recipe: 'nothing',
-    });
-    expect(unknown.message).toMatch(/no such recipe/);
-    await client.editProfile((p) => {
-      for (const page of p.stash)
-        page.items = page.items.filter((g) => g.item.item !== 'duct-tape');
-    });
-    const now = await client.ok('GET', '/profile');
-    const short = await client.fails('POST', '/hangar/trauma-bay/craft', {
-      version: now.version,
-      recipe: 'trauma-first-aid-kit',
-    });
-    expect(short.message).toMatch(/aren't enough "duct-tape"/);
-  });
-
-  it('keeps a finished craft in the module while the stash is full, and refuses PUT changing it', async () => {
-    const { client, me: start } = await ready();
-    let me = await client.ok('POST', '/hangar/trauma-bay/craft', {
-      version: start.version,
-      recipe: 'trauma-first-aid-kit',
-    });
-    const put = await client.fails('PUT', '/profile', {
-      version: me.version,
-      profile: { ...me.profile, crafts: {} },
-    });
-    expect(put.message).toMatch(/Hangar/);
-    clock += 9 * 60 * MIN;
-    await client.editProfile((p) => {
-      for (const page of p.stash)
-        while (addItem(items, page, createItem(items, 'bandage', 1)) === 0);
-    });
-    me = await client.ok('GET', '/profile');
-    const full = await client.fails('POST', '/hangar/trauma-bay/collect', { version: me.version });
-    expect(full.message).toMatch(/no room/);
-    expect((await client.ok('GET', '/profile')).profile.crafts['trauma-bay']).toBeDefined();
   });
 });

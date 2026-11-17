@@ -4,6 +4,7 @@ import {
   LOOT_GUN_MAX_LEVEL,
   VAULT_ITEM,
   VENDOR,
+  itemDef,
   spawnProblems,
   ammoDef,
   buyPrice,
@@ -138,6 +139,33 @@ describe('content', () => {
     expect(loadVendors().size).toBeGreaterThan(0);
     for (const v of loadVendors().values())
       for (const o of v.sells) expect(buyPrice(items, o)).toBeGreaterThan(0);
+  });
+
+  it('barters (BT-1): basic gear is for cash, and what a barter takes is easy enough to find', () => {
+    const items = loadItems();
+    // hangar.md → Where required items come from: in 3+ loot tables, or sold for cash.
+    const tables = new Map<string, number>();
+    for (const t of loadLootTables().values())
+      for (const id of new Set(t.items.map((e) => e.item)))
+        tables.set(id, (tables.get(id) ?? 0) + 1);
+    const forCash = new Set<string>();
+    for (const v of loadVendors().values())
+      for (const o of v.sells) if (!o.barter) forCash.add(o.item);
+    let barters = 0;
+    for (const v of loadVendors().values())
+      for (const o of v.sells) {
+        // The most basic gear, everything a vendor sells at level 1, is never a barter.
+        if ((o.level ?? 1) === 1) expect(o.barter, `${v.id}: ${o.item}`).toBeUndefined();
+        for (const b of o.barter ?? []) {
+          const where = `${v.id}: ${o.item} takes ${b.item}`;
+          expect((tables.get(b.item) ?? 0) >= 3 || forCash.has(b.item), where).toBe(true);
+          // Rare items (loot weight 1 or less) are asked for one at a time.
+          const rarity = itemDef(items, b.item).rarity;
+          if (rarity !== 'common' && rarity !== 'uncommon') expect(b.count, where).toBe(1);
+        }
+        if (o.barter) barters++;
+      }
+    expect(barters).toBeGreaterThan(0);
   });
 
   it('iron sights line up: the post tip on the sight line, level with the notch or centered in the ring', () => {

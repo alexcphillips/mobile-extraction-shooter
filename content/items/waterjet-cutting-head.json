@@ -4,7 +4,7 @@
   "name": "Waterjet cutting head",
   "type": "loot",
   "size": [2, 2],
-  "value": 1000,
+  "value": 20500,
   "weight": 3,
   "rarity": "epic",
   "model": {

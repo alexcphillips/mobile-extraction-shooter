@@ -4,9 +4,9 @@
   "name": "Waterfall painting",
   "type": "loot",
   "size": [2, 2],
-  "value": 1000,
+  "value": 28000,
   "weight": 2,
-  "rarity": "uncommon",
+  "rarity": "epic",
   "model": {
     "parts": [
       {

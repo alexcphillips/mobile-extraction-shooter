@@ -41,8 +41,6 @@ export {
   type SaveSettingsRequest,
   type QuestCompleteRequest,
   type HangarRequest,
-  type HangarCraftRequest,
-  type HangarCollectRequest,
   type QuestHandOverRequest,
   type QuestRequest,
   type SellRequest,
@@ -703,7 +701,6 @@ export {
   STASH_MODULE,
   SECURE_LOCKER,
   settleStash,
-  type Craft,
   type Profile,
   type VendorStanding,
   type QuestState,
@@ -722,6 +719,7 @@ export { QUICK_EQUIP_RELOADS, quickEquip, type QuickEquipResult } from './stash-
 export {
   VENDOR,
   MAX_BUY,
+  barterCost,
   buyOffer,
   buyPrice,
   nextRestock,
@@ -809,27 +807,7 @@ export {
   type HangarModuleDef,
   type HangarModuleLevel,
 } from './content/hangar';
-export {
-  MAX_CRAFT_MINUTES,
-  RECIPE_FORMAT,
-  RECIPE_FORMAT_VERSION,
-  checkRecipes,
-  type RecipeDef,
-} from './content/recipes';
-export {
-  cantCraft,
-  cantUpgrade,
-  collectCraft,
-  craftDuration,
-  craftLeft,
-  moduleCraft,
-  moduleLevel,
-  recipeCost,
-  sameHangar,
-  startCraft,
-  upgradeCost,
-  upgradeModule,
-} from './hangar';
+export { cantUpgrade, moduleLevel, sameHangar, upgradeCost, upgradeModule } from './hangar';
 export { plainItem, stashCount, takeFromStash } from './stash';
 export { pickHost } from './coop/host';
 export { apply, diff, strip, type Patch } from './net/sync';

@@ -4,7 +4,7 @@
   "name": "Personnel records",
   "type": "loot",
   "size": [1, 2],
-  "value": 1000,
+  "value": 350,
   "weight": 0.3,
   "rarity": "common",
   "model": {

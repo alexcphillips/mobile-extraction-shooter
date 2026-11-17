@@ -2,6 +2,7 @@ import {
   MAX_BUY,
   VENDOR,
   VENDOR_LEVELS,
+  barterCost,
   buyPrice,
   itemDef,
   itemSize,
@@ -503,14 +504,15 @@ function TraderShop({
             offer={vendor.sells[i]!}
             item={goods[i]!}
             level={level}
-            money={profile.money}
+            profile={profile}
             onClick={() => setInspecting(i)}
           />
         ))}
         {!offers.length && <li className="raid-note">Nothing here matches.</li>}
       </ul>
       <p className="raid-note">
-        Bought items go into your stash. Buying from a vendor and doing its quests raise your level
+        Bought items go into your stash. A barter takes its items from your stash pages (never your
+        worn gear) in place of money. Buying, trading and doing a vendor's quests raise your level
         with it. To sell, open the stash, select an item and press Sell: vendors pay{' '}
         {Math.round(VENDOR.sellShare * 100)}% of its value, less if it's worn or used.
       </p>
@@ -523,7 +525,7 @@ function TraderShop({
           offer={vendor.sells[inspecting]}
           item={goods[inspecting]!}
           level={level}
-          money={profile.money}
+          profile={profile}
           onBuy={(times) => onBuy(inspecting, times)}
           onClose={() => setInspecting(null)}
         />
@@ -561,14 +563,17 @@ function duration(ms: number): string {
   return m >= 60 ? `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m` : `${m}m`;
 }
 
-/** An offer as a card: its picture, name, price and level; locked above the vendor's level. */
+/**
+ * An offer as a card: its picture, name, price (or a barter's items) and level; locked
+ * above the vendor's level.
+ */
 function OfferCard({
   items,
   vendor,
   offer,
   item,
   level,
-  money,
+  profile,
   onClick,
 }: {
   items: ItemDb;
@@ -576,21 +581,28 @@ function OfferCard({
   offer: VendorOffer;
   item: Item;
   level: number;
-  money: number;
+  profile: ProfileResponse['profile'];
   onClick: () => void;
 }): ReactNode {
+  const money = profile.money;
   const def = itemDef(items, offer.item);
   const need = offerLevel(offer);
   const lock = need > level;
   const price = buyPrice(items, offer, vendor);
   const url = itemPortrait(items, item, itemSize(items, item));
   const n = offer.count ?? 1;
+  const cost = barterCost(profile, offer);
+  const barter = cost.length > 0;
+  const priceText = barter
+    ? cost.map((c) => barterText(items, c.item, c.need)).join(' + ')
+    : price.toLocaleString();
+  const short = barter ? cost.some((c) => c.have < c.need) : money < price;
   return (
     <li>
       <button
-        className={`vendors-offer${lock ? ' locked' : ''}`}
+        className={`vendors-offer${lock ? ' locked' : ''}${barter ? ' barter' : ''}`}
         style={{ ['--rarity' as string]: colorOf(def) }}
-        aria-label={`${def.name}${n > 1 ? ` ×${n}` : ''}, ${price.toLocaleString()}${lock ? `, from level ${need}` : ''}`}
+        aria-label={`${def.name}${n > 1 ? ` ×${n}` : ''}, ${barter ? `barter: ${priceText}` : priceText}${lock ? `, from level ${need}` : ''}`}
         onClick={onClick}
       >
         <span className="vendors-offer-art">
@@ -600,8 +612,9 @@ function OfferCard({
           {def.name}
           {n > 1 && <span> ×{n}</span>}
         </span>
-        <span className={`vendors-offer-price${money < price ? ' short' : ''}`}>
-          {price.toLocaleString()}
+        <span className={`vendors-offer-price${short ? ' short' : ''}`}>
+          {barter && <span className="vendors-barter-tag">⇄ </span>}
+          {priceText}
         </span>
         {need > 1 && (
           <span className="vendors-offer-ll" title={`Sold from level ${need}`}>
@@ -625,7 +638,7 @@ function OfferDetails({
   offer,
   item,
   level,
-  money,
+  profile,
   onBuy,
   onClose,
 }: {
@@ -635,16 +648,24 @@ function OfferDetails({
   offer: VendorOffer;
   item: Item;
   level: number;
-  money: number;
+  profile: ProfileResponse['profile'];
   onBuy: (times: number) => Promise<void>;
   onClose: () => void;
 }): ReactNode {
   const [times, setTimes] = useState(1);
   const [confirming, setConfirming] = useState(false);
   const [buying, setBuying] = useState(false);
+  const money = profile.money;
   const each = buyPrice(items, offer, vendor);
-  const most = Math.max(1, Math.min(MAX_BUY, Math.floor(money / each)));
+  const barter = !!offer.barter;
+  // A barter as many times as the stash's items allow; money for the rest.
+  const affordable = barter
+    ? Math.min(...barterCost(profile, offer).map((c) => Math.floor(c.have / c.need)))
+    : Math.floor(money / each);
+  const most = Math.max(1, Math.min(MAX_BUY, affordable));
   const total = each * times;
+  const cost = barterCost(profile, offer, times);
+  const short = barter ? cost.some((c) => c.have < c.need) : money < total;
   const need = offerLevel(offer);
   const set = (n: number): void => {
     setConfirming(false);
@@ -657,20 +678,38 @@ function OfferDetails({
     setBuying(true);
     void onBuy(times).finally(() => setBuying(false));
   };
+  // What a barter takes, have / need: shown locked too, so you know what to look for.
+  const barterList = barter && (
+    <span className="vendors-barter" aria-label="Barter for">
+      {cost.map((c) => (
+        <span
+          key={c.item}
+          className={`hangar-need${c.have >= c.need ? ' met' : ''}`}
+          aria-label={`${itemDef(items, c.item).name}: ${c.have} of ${c.need}`}
+        >
+          {itemDef(items, c.item).name} <b>{Math.min(c.have, 9999)}</b>/{c.need}
+        </span>
+      ))}
+    </span>
+  );
   return (
     <ItemDetails
       items={items}
       item={item}
       quests={quests}
-      buyFor={each}
+      buyFor={barter ? undefined : each}
       onClose={onClose}
       actions={
         need > level ? (
-          <span className="vendors-locked-note">
-            {vendor.name} sells this from level {ROMAN[need]}.
-          </span>
+          <>
+            {barterList}
+            <span className="vendors-locked-note">
+              {vendor.name} {barter ? 'trades' : 'sells'} this from level {ROMAN[need]}.
+            </span>
+          </>
         ) : (
           <>
+            {barterList}
             <span className="vendors-qty" aria-label="How many">
               <button aria-label="One fewer" disabled={times <= 1} onClick={() => set(times - 1)}>
                 −
@@ -685,19 +724,31 @@ function OfferDetails({
             </span>
             <button
               className={`primary${confirming ? ' confirm' : ''}`}
-              disabled={buying || money < total}
+              disabled={buying || short}
               onBlur={() => setConfirming(false)}
               onClick={buy}
             >
-              {buying
-                ? 'Buying…'
-                : confirming
-                  ? `Buy for ${total.toLocaleString()}?`
-                  : `Buy · ${total.toLocaleString()}`}
+              {barter
+                ? buying
+                  ? 'Trading…'
+                  : confirming
+                    ? 'Trade these items?'
+                    : 'Trade'
+                : buying
+                  ? 'Buying…'
+                  : confirming
+                    ? `Buy for ${total.toLocaleString()}?`
+                    : `Buy · ${total.toLocaleString()}`}
             </button>
           </>
         )
       }
     />
   );
+}
+
+/** "2× Laptop" or "Laptop": a barter's item on an offer card. */
+function barterText(items: ItemDb, item: string, count: number): string {
+  const name = itemDef(items, item).shortName ?? itemDef(items, item).name;
+  return count > 1 ? `${count}× ${name}` : name;
 }

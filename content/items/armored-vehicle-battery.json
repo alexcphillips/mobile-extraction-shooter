@@ -4,7 +4,7 @@
   "name": "Armored vehicle battery",
   "type": "loot",
   "size": [3, 2],
-  "value": 1000,
+  "value": 171000,
   "weight": 15,
   "rarity": "mythic",
   "model": {

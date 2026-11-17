@@ -4,9 +4,9 @@
   "name": "The unfinished masterpiece",
   "type": "loot",
   "size": [3, 3],
-  "value": 50000,
+  "value": 190000,
   "weight": 4,
-  "rarity": "legendary",
+  "rarity": "mythic",
   "model": {
     "parts": [
       {

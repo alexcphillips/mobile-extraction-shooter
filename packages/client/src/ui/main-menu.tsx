@@ -23,7 +23,6 @@ import {
   type SignalsResponse,
   type HangarModuleDef,
   type QuestDef,
-  type RecipeDef,
   type SortKey,
   type StashState,
   type VendorDef,
@@ -85,7 +84,7 @@ import { CategoryIcon } from './category-icons';
 import { questCounts, questsLine } from './quests-page';
 import { VendorsPage } from './vendors-page';
 import { HangarPage } from './hangar-page';
-import { collectedLine, hangarLine, readyCrafts, type Names } from './hangar-text';
+import { hangarLine } from './hangar-text';
 
 /** A raid the menu can start. */
 export interface RaidChoice {
@@ -111,9 +110,8 @@ export interface MenuOptions {
   raid?: string | null;
   vendors: VendorDef[];
   quests: QuestDef[];
-  /** The Hangar's modules (H3), in their order, and every crafting recipe. */
+  /** The Hangar's modules (H3), in their order. */
   hangar: HangarModuleDef[];
-  recipes: RecipeDef[];
   /** Opens the settings screen over the menu; done is called when it closes. */
   openSettings: (done: () => void) => void;
   /** The code of a party invite link the game was opened from, to join on arrival. */
@@ -451,15 +449,11 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
     );
   }
   if (page === 'hangar') {
-    const name = (id: string): string => (opts.items.has(id) ? itemDef(opts.items, id).name : id);
-    const names: Names = { item: name };
     return (
       <HangarPage
         modules={opts.hangar}
-        recipes={opts.recipes}
         items={opts.items}
-        quests={opts.quests}
-        me={me}
+        profile={me.profile}
         notice={notice}
         onBack={() => {
           setNotice(null);
@@ -482,30 +476,6 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
             refused(`The ${m.name} wasn't upgraded`),
           )
         }
-        onCraft={(m, recipe) =>
-          saver
-            .craft(m.id, recipe.id)
-            .then(
-              (r) =>
-                reopen(
-                  r,
-                  startPage,
-                  recipe.output
-                    ? `The ${m.name} is making ${name(recipe.output.item)}.`
-                    : `The ${m.name} is decrypting: collect it here once it's done.`,
-                ),
-              refused(`The ${m.name} didn't start`),
-            )
-        }
-        onCollect={(m) => {
-          const what = me.profile.crafts[m.id];
-          return saver
-            .collectCraft(m.id, startPage)
-            .then(
-              (r) => reopen(r, startPage, collectedLine(names, what)),
-              refused('Nothing was collected'),
-            );
-        }}
       />
     );
   }
@@ -637,7 +607,6 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
       label: 'Hangar',
       icon: 'hangar',
       disabled: !opts.hangar.length,
-      badge: readyCrafts(me),
       title: hangarLine(opts.hangar, me),
       onClick: () => setPage('hangar'),
     },

@@ -2,8 +2,6 @@ import type {
   AdminGiveRequest,
   BuyPageRequest,
   BuyRequest,
-  HangarCollectRequest,
-  HangarCraftRequest,
   HangarRequest,
   ItemRef,
   ProfileResponse,
@@ -135,22 +133,6 @@ export class StashSaver {
     return this.post(`/hangar/${encodeURIComponent(module)}/upgrade`, {
       version: this.me.version,
     } satisfies HangarRequest);
-  }
-
-  /** Starts a recipe in its Hangar module, its inputs from the stash, like buyPage. */
-  craft(module: string, recipe: string): Promise<ProfileResponse> {
-    return this.post(`/hangar/${encodeURIComponent(module)}/craft`, {
-      version: this.me.version,
-      recipe,
-    } satisfies HangarCraftRequest);
-  }
-
-  /** Collects a module's finished craft into the stash, page `page` first, like buyPage. */
-  collectCraft(module: string, page: number): Promise<ProfileResponse> {
-    return this.post(`/hangar/${encodeURIComponent(module)}/collect`, {
-      version: this.me.version,
-      page,
-    } satisfies HangarCollectRequest);
   }
 
   /**

@@ -4,7 +4,7 @@
   "name": "Antique telescope",
   "type": "loot",
   "size": [2, 1],
-  "value": 1000,
+  "value": 2100,
   "weight": 1.5,
   "rarity": "uncommon",
   "model": {

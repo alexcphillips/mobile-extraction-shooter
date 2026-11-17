@@ -37,7 +37,6 @@ import {
   loadItems,
   loadQuests,
   loadHangar,
-  loadRecipes,
   loadRaid,
   loadStartingKit,
   loadTutorial,
@@ -385,7 +384,6 @@ async function runGame(
       vendors: [...loadVendors().values()],
       quests: [...loadQuests().values()],
       hangar: [...loadHangar().values()],
-      recipes: [...loadRecipes().values()],
       joinCode,
       openSettings: (done) => {
         import('./ui/menu')

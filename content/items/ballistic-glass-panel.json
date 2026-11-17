@@ -4,7 +4,7 @@
   "name": "Ballistic glass panel",
   "type": "loot",
   "size": [2, 2],
-  "value": 1000,
+  "value": 7600,
   "weight": 8,
   "rarity": "rare",
   "model": {

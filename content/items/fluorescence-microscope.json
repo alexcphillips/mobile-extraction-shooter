@@ -4,7 +4,7 @@
   "name": "Fluorescence microscope",
   "type": "loot",
   "size": [2, 3],
-  "value": 1000,
+  "value": 22500,
   "weight": 8,
   "rarity": "epic",
   "model": {

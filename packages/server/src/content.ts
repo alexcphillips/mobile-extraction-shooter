@@ -3,14 +3,12 @@ import {
   HANGAR_FORMAT,
   ITEM_FORMAT,
   QUEST_FORMAT,
-  RECIPE_FORMAT,
   RAID_FORMAT,
   STARTING_KIT_FORMAT,
   VENDOR_FORMAT,
   checkHangar,
   checkItems,
   checkQuests,
-  checkRecipes,
   checkVendors,
   loadById,
   type EnemyDef,
@@ -18,7 +16,6 @@ import {
   type ItemDb,
   type QuestDef,
   type RaidDef,
-  type RecipeDef,
   type StartingKitDef,
   type VendorDef,
 } from '@mes/shared';
@@ -38,7 +35,6 @@ let kits: Map<string, StartingKitDef> | undefined;
 let vendors: Map<string, VendorDef> | undefined;
 let quests: Map<string, QuestDef> | undefined;
 let hangar: Map<string, HangarModuleDef> | undefined;
-let recipes: Map<string, RecipeDef> | undefined;
 let enemies: Map<string, EnemyDef> | undefined;
 
 export function loadItems(): ItemDb {
@@ -105,21 +101,6 @@ export function loadHangar(): ReadonlyMap<string, HangarModuleDef> {
 /** A Hangar module by id, or undefined. */
 export function hangarModule(id: string): HangarModuleDef | undefined {
   return loadHangar().get(id);
-}
-
-/** Every crafting recipe, checked against the modules and items. */
-export function loadRecipes(): ReadonlyMap<string, RecipeDef> {
-  if (!recipes) {
-    const all = loadById(RECIPE_FORMAT, ofKind('recipes'));
-    checkRecipes(all, loadHangar(), loadItems());
-    recipes = all;
-  }
-  return recipes;
-}
-
-/** A crafting recipe by id, or undefined. */
-export function recipeDef(id: string): RecipeDef | undefined {
-  return loadRecipes().get(id);
 }
 
 /**

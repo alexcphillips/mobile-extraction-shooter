@@ -4,7 +4,7 @@
   "name": "RAM stick",
   "type": "loot",
   "size": [1, 1],
-  "value": 1000,
+  "value": 4600,
   "weight": 0.03,
   "rarity": "rare",
   "model": {

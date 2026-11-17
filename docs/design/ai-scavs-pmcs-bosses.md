@@ -33,7 +33,7 @@ Three kinds of enemy that differ in **how they behave**, not only in numbers: sc
   - **Field of view:** an enemy type's `fov`; scavs 100°, everyone else 120°.
   - **Low-quality gear (the user's call):** `scav-kit` guns are unmodded (no attachments at all). Rounds are level 1, sometimes level 2 (3 to 1), and shotguns get buckshot only. Armor is none, or level 1, rarely level 2 (bump or riot helmet, soft or police vest), worn to 30–80%.
   - **Civilian outfits:** 8 of them (a red jacket and jeans, navy and teal tracksuits, a mustard hoodie, a purple hoodie, an orange jacket, a gray hoodie, the old olive one), with a range of skin tones.
-  - **Loot:** household 4, electronics 3, basic computer parts 1.5, medical 0.4, military 0.15 (a military item about 1 roll in 60).
+  - **Loot:** household 4, electronics 2 (lowered from 3 on 2026-11-17 so laptops, phones and graphics cards drop less often), basic computer parts 1.5, industrial 1, medical 0.4, military 0.15 (a military item about 1 roll in 60).
 
 **PMCs: the roaming predators.**
 - Other raiders on the same job as you, behaving like players. **3–6 per raid, all at the start, in squads of 2–4**, at player spawns nobody is using (the sight rule applies). **They don't replenish.**

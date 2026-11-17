@@ -4,7 +4,7 @@
   "name": "Rocket thruster",
   "type": "loot",
   "size": [4, 3],
-  "value": 1000,
+  "value": 238500,
   "weight": 15,
   "rarity": "mythic",
   "model": {

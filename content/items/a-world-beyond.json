@@ -4,7 +4,7 @@
   "name": "A world beyond",
   "type": "loot",
   "size": [3, 3],
-  "value": 120000,
+  "value": 220000,
   "weight": 4,
   "rarity": "mythic",
   "model": {

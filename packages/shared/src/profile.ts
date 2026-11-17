@@ -124,7 +124,7 @@ export interface VendorStanding {
 }
 
 export interface Profile {
-  formatVersion: 22;
+  formatVersion: 23;
   money: number;
   /** PMC XP in all (2026-11-11); the level is worked out from it (xp.ts). Only the server changes it. */
   xp: number;
@@ -137,19 +137,6 @@ export interface Profile {
   vendors: Record<string, VendorStanding>;
   /** Each Hangar module's level by its id (H1); a module not here is unbuilt. Only the server changes these. */
   hangar: Record<string, number>;
-  /** The craft in each Hangar module, by module id (H2): running, or done and waiting to be collected. Only the server changes these. */
-  crafts: Record<string, Craft>;
-}
-
-/**
- * A craft in a Hangar module (H2). Its output is copied from the recipe when it starts, so
- * a recipe changed or deleted later can't strand it. `done` is the server's clock (ms).
- */
-export interface Craft {
-  recipe: string;
-  item: string;
-  count: number;
-  done: number;
 }
 
 const count = z.int().min(0);
@@ -216,7 +203,7 @@ const questStateShape = z.discriminatedUnion('status', [
 ]);
 
 const profileShape = z.strictObject({
-  formatVersion: z.literal(22),
+  formatVersion: z.literal(23),
   money: count,
   xp: count,
   stash: z.array(gridShape).min(1),
@@ -224,13 +211,9 @@ const profileShape = z.strictObject({
   quests: z.record(idSchema, questStateShape),
   vendors: z.record(idSchema, z.strictObject({ rep: amount, spent: count })),
   hangar: z.record(idSchema, count),
-  crafts: z.record(
-    idSchema,
-    z.strictObject({ recipe: idSchema, item: idSchema, count: z.int().min(1), done: count }),
-  ),
 });
 
-export const PROFILE_FORMAT_VERSION = 22;
+export const PROFILE_FORMAT_VERSION = 23;
 
 export const PROFILE_FORMAT: ContentFormat<Profile> = {
   kind: 'profile',
@@ -315,6 +298,15 @@ export const PROFILE_FORMAT: ContentFormat<Profile> = {
     },
     // 2026-11-12 (GZ-2): a headset slot, empty.
     21: (doc) => ({ ...doc, gear: { ...(doc.gear as object), headset: null } }),
+    // 2026-11-17: crafting and its four modules were deleted (the user's call; barters to
+    // come). Not a real migration (prod is wiped): it only drops what would fail the shape.
+    22: (doc) => {
+      const { crafts: _crafts, ...rest } = doc;
+      const hangar = { ...(doc.hangar as Record<string, unknown>) };
+      for (const id of ['gun-workshop', 'armor-bench', 'trauma-bay', 'munitions-bench'])
+        delete hangar[id];
+      return { ...rest, hangar };
+    },
   },
 };
 
@@ -603,7 +595,7 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
   return {
-    formatVersion: 22,
+    formatVersion: 23,
     money: kit.money,
     xp: 0,
     stash: [stash],
@@ -611,7 +603,6 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
     quests: {},
     vendors: {},
     hangar: {},
-    crafts: {},
   };
 }
 

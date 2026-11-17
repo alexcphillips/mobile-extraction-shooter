@@ -4,7 +4,7 @@
   "name": "Circular saw",
   "type": "loot",
   "size": [2, 2],
-  "value": 1000,
+  "value": 2500,
   "weight": 4,
   "rarity": "uncommon",
   "model": {

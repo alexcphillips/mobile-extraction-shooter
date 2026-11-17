@@ -30,7 +30,7 @@ import {
   type CarrierDef,
 } from '@mes/shared';
 import { useEffect, useMemo, type ReactNode } from 'react';
-import { hangarContent, itemOrigins } from '../content';
+import { hangarContent, itemOrigins, loadVendors } from '../content';
 import { itemPortrait } from '../render/item-portrait';
 import { levelColor } from './levels';
 import { colorOf, tenths } from './raid-screen';
@@ -121,9 +121,12 @@ export function ItemDetails({
       item.folded,
     ],
   );
-  const uses = useMemo(() => itemUsage(quests ?? [], def.id, hangarContent()), [quests, def.id]);
+  const uses = useMemo(
+    () => itemUsage(quests ?? [], def.id, hangarContent(), loadVendors().values()),
+    [quests, def.id],
+  );
   const usage = uses.quests;
-  const crafting = uses.recipes.length > 0 || uses.upgrades.length > 0;
+  const upgrades = uses.upgrades.length > 0;
   const source = itemOrigins().get(def.id);
   const card = (
     <div
@@ -185,25 +188,22 @@ export function ItemDetails({
             ))}
           </section>
         )}
-        {crafting && (
+        {uses.barters.length > 0 && (
           <section className="item-details-more">
-            <h3>Hangar</h3>
-            {uses.recipes.map(({ recipe, module }) => (
-              <p key={recipe.id}>
+            <h3>Barters</h3>
+            {uses.barters.map((b) => (
+              <p key={`${b.vendor}:${b.item}`}>
                 <b>
-                  {module} {ROMAN[recipe.level]}
+                  {b.vendor} {ROMAN[b.level]}
                 </b>{' '}
-                · {recipe.inputs.find((i) => i.item === def.id)!.count} to{' '}
-                {recipe.output ? (
-                  <>
-                    craft {itemDef(items, recipe.output.item).name}
-                    {(recipe.output.count ?? 1) > 1 && ` ×${recipe.output.count}`}
-                  </>
-                ) : (
-                  'decrypt'
-                )}
+                · {b.count} for {itemDef(items, b.item).name}
               </p>
             ))}
+          </section>
+        )}
+        {upgrades && (
+          <section className="item-details-more">
+            <h3>Hangar</h3>
             {uses.upgrades.map(({ module, levels }) => (
               <p key={module}>
                 <b>{module}</b> · upgrade:{' '}
@@ -240,11 +240,13 @@ function Source({ source: s }: { source: ItemSource }): ReactNode {
   }
   if (s.loose.length) lines.push(['Lying loose', s.loose.join(', ')]);
   if (s.enemies.length) lines.push(['On enemies', s.enemies.join(', ')]);
-  if (s.vendors.length)
-    lines.push(['Sold by', s.vendors.map((v) => `${v.vendor} ${ROMAN[v.level]}`).join(', ')]);
+  const sold = s.vendors.filter((v) => !v.barter);
+  const traded = s.vendors.filter((v) => v.barter);
+  if (sold.length)
+    lines.push(['Sold by', sold.map((v) => `${v.vendor} ${ROMAN[v.level]}`).join(', ')]);
+  if (traded.length)
+    lines.push(['Barter at', traded.map((v) => `${v.vendor} ${ROMAN[v.level]}`).join(', ')]);
   if (s.rewards.length) lines.push(['Quest reward', s.rewards.join(', ')]);
-  if (s.crafted.length)
-    lines.push(['Crafted at', s.crafted.map((c) => `${c.module} ${ROMAN[c.level]}`).join(', ')]);
   for (const q of s.questSpots) lines.push(['Quest spot', `${q.map} (${q.quest})`]);
   return (
     <section className="item-details-more">

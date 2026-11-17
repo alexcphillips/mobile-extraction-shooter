@@ -4,7 +4,7 @@
   "name": "ECG monitor",
   "type": "loot",
   "size": [2, 2],
-  "value": 1000,
+  "value": 7200,
   "weight": 4,
   "rarity": "rare",
   "model": {

@@ -4,7 +4,7 @@
   "name": "Security keypad",
   "type": "loot",
   "size": [1, 1],
-  "value": 1000,
+  "value": 250,
   "weight": 0.3,
   "rarity": "common",
   "model": {

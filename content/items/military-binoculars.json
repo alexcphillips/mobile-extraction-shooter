@@ -4,7 +4,7 @@
   "name": "Military binoculars",
   "type": "loot",
   "size": [2, 2],
-  "value": 1000,
+  "value": 48000,
   "weight": 1,
   "rarity": "legendary",
   "model": {

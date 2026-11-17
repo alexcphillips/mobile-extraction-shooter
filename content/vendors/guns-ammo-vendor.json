@@ -83,19 +83,59 @@
     },
     {
       "item": "mp5",
-      "level": 2
+      "level": 2,
+      "barter": [
+        {
+          "item": "compressed-air-tank",
+          "count": 1
+        },
+        {
+          "item": "phase-change-thermal-paste",
+          "count": 3
+        }
+      ]
     },
     {
       "item": "ump45",
-      "level": 2
+      "level": 2,
+      "barter": [
+        {
+          "item": "titanium-turbine-blade",
+          "count": 1
+        },
+        {
+          "item": "premix-concrete-bag",
+          "count": 3
+        }
+      ]
     },
     {
       "item": "r93",
-      "level": 2
+      "level": 2,
+      "barter": [
+        {
+          "item": "ram-stick",
+          "count": 1
+        },
+        {
+          "item": "bolt-cutters",
+          "count": 3
+        }
+      ]
     },
     {
       "item": "ak-74m",
-      "level": 2
+      "level": 2,
+      "barter": [
+        {
+          "item": "black-gold-coffee-beans",
+          "count": 1
+        },
+        {
+          "item": "high-amp-circuit-breaker",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "ammo-45acp",
@@ -150,131 +190,399 @@
     {
       "item": "ammo-338-ucw",
       "count": 10,
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "fiberglass-roll",
+          "count": 1
+        },
+        {
+          "item": "angle-grinder",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "ammo-45acp-ap",
       "count": 25,
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "premix-concrete-bag",
+          "count": 1
+        },
+        {
+          "item": "corrugated-tubing",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "ammo-46x30-jsp",
       "count": 30,
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "engraved-compass",
+          "count": 3
+        },
+        {
+          "item": "wood-board",
+          "count": 1
+        },
+        {
+          "item": "rechargeable-battery",
+          "count": 2
+        }
+      ]
     },
     {
       "item": "ammo-545x39-pp",
       "count": 30,
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "high-voltage-inverter-board",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "ammo-556x45",
       "count": 30,
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "protein-power",
+          "count": 3
+        },
+        {
+          "item": "box-of-screws",
+          "count": 2
+        }
+      ]
     },
     {
       "item": "ammo-68x51-fmj",
       "count": 20,
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "extension-cord",
+          "count": 3
+        },
+        {
+          "item": "box-of-screws",
+          "count": 2
+        }
+      ]
     },
     {
       "item": "ammo-762-bcp",
       "count": 20,
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "high-amp-circuit-breaker",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "ammo-762x39",
       "count": 30,
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "dehumidifier",
+          "count": 1
+        },
+        {
+          "item": "engraved-compass",
+          "count": 2
+        }
+      ]
     },
     {
       "item": "ammo-9mm-ap",
       "count": 30,
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "anchoring-epoxy",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "ammo-9x39-spp",
       "count": 25,
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "box-of-screws",
+          "count": 3
+        },
+        {
+          "item": "premix-concrete-bag",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "flechette",
       "count": 20,
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "fiberglass-roll",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "slug",
       "count": 20,
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "power-relay",
+          "count": 3
+        },
+        {
+          "item": "light-bulb",
+          "count": 1
+        },
+        {
+          "item": "valve-handwheel",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "frag-grenade",
-      "level": 3
+      "level": 3,
+      "barter": [
+        {
+          "item": "phase-change-thermal-paste",
+          "count": 1
+        },
+        {
+          "item": "power-relay",
+          "count": 3
+        },
+        {
+          "item": "bottle-of-water",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "ammo-338",
       "count": 10,
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "digital-thermostat",
+          "count": 1
+        },
+        {
+          "item": "extension-cord",
+          "count": 3
+        },
+        {
+          "item": "premix-concrete-bag",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "ammo-46x30",
       "count": 30,
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "duct-tape",
+          "count": 3
+        },
+        {
+          "item": "fiberglass-roll",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "ammo-545x39-bp",
       "count": 30,
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "angle-grinder",
+          "count": 1
+        },
+        {
+          "item": "rechargeable-battery",
+          "count": 3
+        },
+        {
+          "item": "light-bulb",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "ammo-556x45-m855a1",
       "count": 30,
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "steel-angle-bar",
+          "count": 1
+        },
+        {
+          "item": "power-relay",
+          "count": 3
+        },
+        {
+          "item": "duct-tape",
+          "count": 2
+        }
+      ]
     },
     {
       "item": "ammo-762",
       "count": 20,
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "measuring-tape",
+          "count": 3
+        },
+        {
+          "item": "gear-set",
+          "count": 3
+        }
+      ]
     },
     {
       "item": "ammo-68x51-hybrid",
       "count": 20,
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "antique-telescope",
+          "count": 1
+        },
+        {
+          "item": "gear-set",
+          "count": 2
+        }
+      ]
     },
     {
       "item": "ammo-762-m62",
       "count": 20,
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "led-tube",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "ammo-762x39-bp",
       "count": 30,
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "high-amp-circuit-breaker",
+          "count": 1
+        },
+        {
+          "item": "avr-control-board",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "ammo-762x54r",
       "count": 20,
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "protein-power",
+          "count": 3
+        },
+        {
+          "item": "portable-power-bank",
+          "count": 3
+        }
+      ]
     },
     {
       "item": "ammo-762x54r-7n1",
       "count": 20,
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "refrigerator-control-board",
+          "count": 1
+        },
+        {
+          "item": "power-relay",
+          "count": 3
+        }
+      ]
     },
     {
       "item": "ammo-9mm-pbp",
       "count": 30,
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "bottle-of-water",
+          "count": 2
+        },
+        {
+          "item": "rechargeable-battery",
+          "count": 3
+        },
+        {
+          "item": "duct-tape",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "ammo-9x39-pab9",
       "count": 25,
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "box-of-nails",
+          "count": 3
+        },
+        {
+          "item": "high-amp-circuit-breaker",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "ammo-9x39-sp6",
       "count": 25,
-      "level": 4
+      "level": 4,
+      "barter": [
+        {
+          "item": "dehumidifier",
+          "count": 3
+        },
+        {
+          "item": "bolt-cutters",
+          "count": 1
+        }
+      ]
     }
   ]
 }

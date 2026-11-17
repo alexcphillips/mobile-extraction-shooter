@@ -4,7 +4,7 @@
   "name": "Sterile dressing pack",
   "type": "loot",
   "size": [1, 2],
-  "value": 1000,
+  "value": 5500,
   "weight": 0.2,
   "rarity": "rare",
   "model": {

@@ -22,12 +22,9 @@ import {
   TUTORIAL_FORMAT,
   VENDOR_FORMAT,
   HANGAR_FORMAT,
-  RECIPE_FORMAT,
   checkHangar,
-  checkRecipes,
   type HangarContent,
   type HangarModuleDef,
-  type RecipeDef,
   checkEnemies,
   checkEnemyLoot,
   checkItems,
@@ -114,11 +111,6 @@ const hangarFiles = import.meta.glob<unknown>('../../../content/hangar/*.json', 
   import: 'default',
 });
 
-const recipeFiles = import.meta.glob<unknown>('../../../content/recipes/*.json', {
-  eager: true,
-  import: 'default',
-});
-
 const questFiles = import.meta.glob<unknown>('../../../content/quests/*.json', {
   eager: true,
   import: 'default',
@@ -183,7 +175,6 @@ let raids: Map<string, RaidDef> | undefined;
 let vendors: ReadonlyMap<string, VendorDef> | undefined;
 let quests: ReadonlyMap<string, QuestDef> | undefined;
 let hangar: ReadonlyMap<string, HangarModuleDef> | undefined;
-let recipes: ReadonlyMap<string, RecipeDef> | undefined;
 let sounds: SoundDb | undefined;
 
 export function mapIds(): string[] {
@@ -231,7 +222,6 @@ export function itemOrigins(): ReadonlyMap<string, ItemSource> {
       vendors: loadVendors().values(),
       quests: [...loadQuests().values()],
       maps: raidMaps,
-      hangar: hangarContent(),
     });
   }
   return origins;
@@ -684,21 +674,9 @@ export function loadHangar(): ReadonlyMap<string, HangarModuleDef> {
   return hangar;
 }
 
-/** Every crafting recipe, checked against the modules and items, in their order in a module. */
-export function loadRecipes(): ReadonlyMap<string, RecipeDef> {
-  if (!recipes) {
-    const all = loadById(RECIPE_FORMAT, recipeFiles);
-    checkRecipes(all, loadHangar(), loadItems());
-    recipes = new Map(
-      [...all].sort(([, a], [, b]) => a.level - b.level || (a.order ?? 0) - (b.order ?? 0)),
-    );
-  }
-  return recipes;
-}
-
-/** The Hangar's modules and recipes, for an item's sources and uses. */
+/** The Hangar's modules, for an item's uses. */
 export function hangarContent(): HangarContent {
-  return { modules: loadHangar(), recipes: [...loadRecipes().values()] };
+  return { modules: loadHangar() };
 }
 
 /** Every quest in content/quests, checked against the vendors and items. */

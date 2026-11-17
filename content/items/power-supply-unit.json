@@ -4,7 +4,7 @@
   "name": "Power supply unit",
   "type": "loot",
   "size": [2, 2],
-  "value": 1000,
+  "value": 2800,
   "weight": 1.5,
   "rarity": "uncommon",
   "model": {

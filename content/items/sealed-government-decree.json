@@ -4,7 +4,7 @@
   "name": "Sealed government decree",
   "type": "loot",
   "size": [1, 2],
-  "value": 1000,
+  "value": 15700,
   "weight": 0.1,
   "rarity": "epic",
   "model": {

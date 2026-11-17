@@ -4,7 +4,7 @@
   "name": "Historical manuscript",
   "type": "loot",
   "size": [1, 2],
-  "value": 1000,
+  "value": 15200,
   "weight": 0.5,
   "rarity": "epic",
   "model": {

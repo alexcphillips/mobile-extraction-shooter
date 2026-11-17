@@ -4,9 +4,9 @@
   "name": "Portrait of the regent",
   "type": "loot",
   "size": [3, 2],
-  "value": 4000,
+  "value": 170000,
   "weight": 4,
-  "rarity": "legendary",
+  "rarity": "mythic",
   "model": {
     "parts": [
       {

@@ -4,7 +4,7 @@
   "name": "ThermoBrew",
   "type": "loot",
   "size": [1, 2],
-  "value": 1200,
+  "value": 1900,
   "weight": 0.5,
   "rarity": "uncommon",
   "model": {

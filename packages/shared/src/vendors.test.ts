@@ -147,6 +147,49 @@ describe('vendors', () => {
     expect(p).toEqual(before);
   });
 
+  it('trades a barter for its items in place of money, all or nothing (2026-11-17)', () => {
+    const v = shop([{ item: 'backpack', barter: [{ item: 'watch', count: 2 }] }]);
+    const p = profile();
+    const watches = (q: Profile) => q.stash.reduce((n, g) => n + countOf(g, 'watch'), 0);
+    // The kit's stash has one watch: one short.
+    expect(watches(p)).toBe(1);
+    expect(buyOffer(p, items, v, 0)).toMatch(/enough "watch"/);
+    addItem(items, p.stash[0]!, createItem(items, 'watch'));
+    expect(buyOffer(p, items, v, 0, 0, 2)).toMatch(/enough "watch"/);
+    expect(buyOffer(p, items, v, 0)).toBeNull();
+    expect(watches(p)).toBe(0);
+    expect(countOf(p.stash[0]!, 'backpack')).toBe(1);
+    // No money changes hands, but the trade counts toward the vendor's level at its price.
+    expect(p.money).toBe(10_000);
+    expect(standingOf(p, 'shop').spent).toBe(buyPrice(items, v.sells[0]!, v));
+
+    // A page full of watches: the two taken don't make room for a backpack, so they stay.
+    for (const page of p.stash) while (addItem(items, page, createItem(items, 'watch')) === 0);
+    const before = clone(p);
+    expect(buyOffer(p, items, v, 0)).toMatch(/no room/);
+    expect(p).toEqual(before);
+  });
+
+  it('checks barters: real items, each once, not money, a quest item or what it gives', () => {
+    const ok = shop([{ item: 'backpack', barter: [{ item: 'watch', count: 2 }] }]);
+    expect(() => checkVendors(new Map([['shop', ok]]), items)).not.toThrow();
+    for (const [barter, why] of [
+      [[{ item: 'nothing', count: 1 }], /no item "nothing"/],
+      [[{ item: 'cash', count: 100 }], /takes "cash"/],
+      [[{ item: 'backpack', count: 1 }], /twice/],
+      [
+        [
+          { item: 'watch', count: 1 },
+          { item: 'watch', count: 1 },
+        ],
+        /twice/,
+      ],
+    ] as const) {
+      const v = shop([{ item: 'backpack', barter: [...barter] }]);
+      expect(() => checkVendors(new Map([['shop', v]]), items)).toThrow(why);
+    }
+  });
+
   it('sells a gun empty, with no rounds or attachments, so it sells back for the gun alone', () => {
     const p = profile();
     expect(buyOffer(p, items, shop([{ item: 'rifle' }]), 0)).toBeNull();

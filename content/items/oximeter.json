@@ -4,7 +4,7 @@
   "name": "Oximeter",
   "type": "loot",
   "size": [1, 1],
-  "value": 1000,
+  "value": 33500,
   "weight": 0.05,
   "rarity": "legendary",
   "model": {

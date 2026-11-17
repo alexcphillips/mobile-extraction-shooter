@@ -4,7 +4,7 @@
   "name": "Military circuit board",
   "type": "loot",
   "size": [1, 1],
-  "value": 2500,
+  "value": 4700,
   "weight": 0.2,
   "rarity": "rare",
   "model": {

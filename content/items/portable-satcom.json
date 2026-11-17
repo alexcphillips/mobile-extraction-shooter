@@ -4,7 +4,7 @@
   "name": "Portable satcom",
   "type": "loot",
   "size": [2, 2],
-  "value": 3800,
+  "value": 50000,
   "weight": 3,
   "rarity": "legendary",
   "model": {

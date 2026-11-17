@@ -4,7 +4,7 @@
   "name": "Encrypted USB drive",
   "type": "loot",
   "size": [1, 1],
-  "value": 1000,
+  "value": 1650,
   "weight": 0.02,
   "rarity": "uncommon",
   "model": {

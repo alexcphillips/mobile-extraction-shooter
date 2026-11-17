@@ -4,7 +4,7 @@
   "name": "Wood board",
   "type": "loot",
   "size": [2, 2],
-  "value": 1000,
+  "value": 700,
   "weight": 2,
   "rarity": "common",
   "model": {

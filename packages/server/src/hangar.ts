@@ -1,7 +1,7 @@
 import { Hono, type Context } from 'hono';
-import { collectCraft, startCraft, upgradeModule, type Profile } from '@mes/shared';
+import { upgradeModule, type Profile } from '@mes/shared';
 import type { AppEnv } from './auth';
-import { hangarModule, loadItems, recipeDef } from './content';
+import { hangarModule, loadItems } from './content';
 import { body, fail, isObject } from './errors';
 import { profileResponse, writeProfile } from './profiles';
 
@@ -10,9 +10,6 @@ import { profileResponse, writeProfile } from './profiles';
  * items from the stash. Names the profile version the client read, like buying, so a
  * retry can't upgrade twice. Refused while the gear is in a raid. PUT /api/profile
  * refuses any change to the Hangar. See shared hangar.ts for the rules.
- *
- * Crafting (H2): POST /:id/craft starts a recipe, POST /:id/collect takes its output once
- * done. Both run on the server's clock (Date.now()), so the client can't hurry a craft.
  */
 
 export const hangar = new Hono<AppEnv>();
@@ -45,24 +42,4 @@ async function change(
 
 hangar.post('/:id/upgrade', (c) =>
   change(c, (profile) => upgradeModule(profile, loadItems(), hangarModule(c.req.param('id'))!)),
-);
-
-/** Body: `{ version, recipe }`. */
-hangar.post('/:id/craft', (c) =>
-  change(c, (profile, raw, now) => {
-    const recipe = typeof raw.recipe === 'string' ? recipeDef(raw.recipe) : undefined;
-    if (!recipe) return 'no such recipe';
-    return startCraft(profile, hangarModule(c.req.param('id'))!, recipe, now);
-  }),
-);
-
-/** Body: `{ version, page? }`: the stash page to put it on first. */
-hangar.post('/:id/collect', (c) =>
-  change(c, (profile, raw, now) => {
-    const page = raw.page ?? 0;
-    if (!Number.isInteger(page) || (page as number) < 0) return 'page must be a whole number';
-    const last = profile.stash.length - 1;
-    const module = hangarModule(c.req.param('id'))!;
-    return collectCraft(profile, loadItems(), module, now, Math.min(page as number, last));
-  }),
 );

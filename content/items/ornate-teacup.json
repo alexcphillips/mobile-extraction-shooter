@@ -4,7 +4,7 @@
   "name": "Ornate teacup",
   "type": "loot",
   "size": [1, 1],
-  "value": 1000,
+  "value": 4100,
   "weight": 0.2,
   "rarity": "rare",
   "model": {

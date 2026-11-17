@@ -109,6 +109,20 @@ export type Rarity = (typeof RARITIES)[number];
 export const COMMON_TYPES: ReadonlySet<string> = new Set(['weapon', 'attachment']);
 
 /**
+ * The value a loot item's rarity allows, inclusive (the user's call, 2026-11-17: loot
+ * prices follow rarity; design/quests-and-vendors.md). Money (cash) is left out.
+ * checkItems holds content to this.
+ */
+export const LOOT_VALUE_BANDS: Readonly<Record<Rarity, readonly [number, number]>> = {
+  common: [200, 1500],
+  uncommon: [1500, 4000],
+  rare: [4000, 12000],
+  epic: [12000, 30000],
+  legendary: [30000, 75000],
+  mythic: [75000, 250000],
+};
+
+/**
  * The most cells a rig or backpack can hold at each rarity, mythic past the last (the
  * user's call, 2026-11-11, replacing 2026-11-09's 8/14/22/32/44). Only the rarity the item
  * editor fills in: content may set another (bagRarity).
@@ -1417,6 +1431,15 @@ export function checkItems(items: ItemDb): void {
     const source = `content/items/${item.id}.json`;
     if (COMMON_TYPES.has(item.type) && item.rarity !== 'common') {
       throw new ContentError(source, `a ${item.type} is always common, not ${item.rarity}`);
+    }
+    if (item.type === 'loot' && !item.money) {
+      const [lo, hi] = LOOT_VALUE_BANDS[item.rarity];
+      if (item.value < lo || item.value > hi) {
+        throw new ContentError(
+          source,
+          `a ${item.rarity} loot item is worth ${lo}–${hi}, not ${item.value}`,
+        );
+      }
     }
     if (item.type === 'weapon') {
       const ammo = roundOf(items, item.ammo);

@@ -4,7 +4,7 @@
   "name": "Nuclear fuel",
   "type": "loot",
   "size": [3, 2],
-  "value": 1000,
+  "value": 57000,
   "weight": 10,
   "rarity": "legendary",
   "model": {

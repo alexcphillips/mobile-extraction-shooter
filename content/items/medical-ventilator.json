@@ -4,7 +4,7 @@
   "name": "Medical ventilator",
   "type": "loot",
   "size": [2, 2],
-  "value": 1000,
+  "value": 48500,
   "weight": 6,
   "rarity": "legendary",
   "model": {

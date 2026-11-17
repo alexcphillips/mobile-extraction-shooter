@@ -4,7 +4,7 @@
   "name": "Refrigerant canister",
   "type": "loot",
   "size": [1, 2],
-  "value": 1000,
+  "value": 400,
   "weight": 2,
   "rarity": "common",
   "model": {

@@ -14,7 +14,6 @@ const KINDS = [
   'items',
   'quests',
   'raids',
-  'recipes',
   'starting-kits',
   'vendors',
 ];

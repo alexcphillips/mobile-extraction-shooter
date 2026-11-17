@@ -4,7 +4,7 @@
   "name": "Condenser coil",
   "type": "loot",
   "size": [2, 2],
-  "value": 1000,
+  "value": 7400,
   "weight": 4,
   "rarity": "rare",
   "model": {

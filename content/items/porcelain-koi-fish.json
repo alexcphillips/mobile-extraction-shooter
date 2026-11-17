@@ -4,7 +4,7 @@
   "name": "Porcelain koi fish",
   "type": "loot",
   "size": [2, 1],
-  "value": 3000,
+  "value": 5800,
   "weight": 0.8,
   "rarity": "rare",
   "model": {

@@ -4,9 +4,9 @@
   "name": "The tempest",
   "type": "loot",
   "size": [3, 3],
-  "value": 90000,
+  "value": 130000,
   "weight": 4,
-  "rarity": "epic",
+  "rarity": "mythic",
   "model": {
     "parts": [
       {

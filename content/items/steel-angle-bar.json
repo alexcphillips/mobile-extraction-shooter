@@ -4,7 +4,7 @@
   "name": "Steel angle bar",
   "type": "loot",
   "size": [3, 1],
-  "value": 1000,
+  "value": 2200,
   "weight": 5,
   "rarity": "uncommon",
   "model": {
