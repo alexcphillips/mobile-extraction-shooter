@@ -65,7 +65,7 @@ describe('vendors', () => {
       version: me.version,
       offer: surgery,
     });
-    expect(locked.message).toMatch(/from level 3/);
+    expect(locked.message).toMatch(`from level ${medic.sells[surgery]!.level}`);
     me = await client.ok('POST', '/vendors/medic/buy', {
       version: me.version,
       offer: bandage,

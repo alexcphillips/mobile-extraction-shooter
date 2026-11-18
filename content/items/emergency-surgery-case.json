@@ -4,10 +4,10 @@
   "name": "Emergency surgery case",
   "type": "med",
   "size": [2, 1],
-  "value": 1000,
+  "value": 10800,
   "weight": 1,
   "rarity": "epic",
-  "effect": "bandage",
+  "effect": "surgery",
   "useTime": 5,
   "sounds": {
     "use": "bandage-use"

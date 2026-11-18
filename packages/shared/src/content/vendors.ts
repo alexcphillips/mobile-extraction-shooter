@@ -17,7 +17,8 @@ import { idSchema } from './schema';
  *
  * Barters (2026-11-17, the user's call; design/quests-and-vendors.md → Barters): an offer
  * with `barter` costs those items from the stash instead of money. The most basic gear stays
- * on sale for cash; barters are how the better gear is had.
+ * on sale for cash at level 1; better gear is sold for cash at its level too, beside its
+ * barter, which costs less in items' value.
  */
 
 export const VENDOR_FORMAT_VERSION = 2;

@@ -4,7 +4,7 @@
   "name": "Scout utility rig",
   "type": "container",
   "size": [3, 2],
-  "value": 6000,
+  "value": 3500,
   "weight": 1,
   "rarity": "common",
   "slot": "rig",

@@ -269,10 +269,34 @@ describe('item editor', () => {
     expect(budgetOf(items.get('m416')!)).toEqual({ triangles: 2000, kind: 'long gun' });
     expect(budgetOf(items.get('m9a3')!).kind).toBe('pistol');
     expect(budgetOf(items.get('red-dot')!).kind).toBe('optic');
+    expect(budgetOf(items.get('the-tempest')!)).toEqual({
+      triangles: 1250,
+      kind: 'mythic painting',
+    });
+    expect(budgetOf(items.get('waterfall-painting')!).kind).toBe('loot');
     const cube = modelShapes({
       parts: [{ type: 'box', pos: [0, 0, 0], size: [1, 1, 1], color: '#000000' }],
     });
     expect(triangleCount(cube)).toBe(12);
+    // A panel is only its face: a rectangle is 2 triangles, a pentagon 3.
+    const flat = (p: Partial<ModelPart>): number =>
+      triangleCount(
+        modelShapes({
+          parts: [{ type: 'panel', pos: [0, 0, 0], color: '#000000', ...p } as ModelPart],
+        }),
+      );
+    expect(flat({ size: [1, 1] })).toBe(2);
+    expect(
+      flat({
+        points: [
+          [0, -1],
+          [1, 0],
+          [0.5, 1],
+          [-0.5, 1],
+          [-1, 0],
+        ],
+      }),
+    ).toBe(3);
     for (const d of items.values())
       expect(triangleCount(modelShapes(d.model)), d.id).toBeLessThanOrEqual(budgetOf(d).triangles);
   });
@@ -326,6 +350,18 @@ describe('item editor', () => {
         size: [0.2, 0.05, 0.3],
         yaw: 40,
         pitch: -10,
+        color: '#000000',
+      },
+      {
+        type: 'panel',
+        pos: [0.1, 0.05, -0.2],
+        points: [
+          [0, -0.1],
+          [0.08, 0.02],
+          [-0.03, 0.06],
+        ],
+        yaw: 25,
+        roll: 15,
         color: '#000000',
       },
     ];
@@ -410,5 +446,92 @@ describe('item editor', () => {
         (l) => l.type === 'line' && l.y1,
       ),
     ).toEqual([4, 6, 8]);
+  });
+});
+
+describe('panels (2026-11-17)', () => {
+  /** The face's normal where the game draws it. */
+  const normal = (p: ModelPart): number[] => {
+    const b = new TriangleBuilder(false);
+    for (const sh of modelShapes({ parts: [p] })) b.shape(sh);
+    const n = b.build().getAttribute('normal');
+    return [n.getX(0), n.getY(0), n.getZ(0)].map((v) => Math.round(v * 1e4) / 1e4 || 0);
+  };
+  const panel = (points: [number, number][]): ModelPart => ({
+    type: 'panel',
+    pos: [0, 0, 0],
+    points,
+    color: '#000000',
+  });
+
+  it('faces up its own y whichever way its corners go round, and down once mirrored across y', () => {
+    const square: [number, number][] = [
+      [0, 0],
+      [1, 0],
+      [1, 1],
+      [0, 1],
+    ];
+    expect(normal(panel(square))).toEqual([0, 1, 0]);
+    expect(normal(panel([...square].reverse()))).toEqual([0, 1, 0]);
+    expect(normal(mirrorPart(panel(square), 'y'))).toEqual([0, -1, 0]);
+    expect(normal(mirrorPart(panel(square), 'x'))).toEqual([0, 1, 0]);
+  });
+
+  it('takes a size or convex points, not both or neither', () => {
+    const check = (p: object): boolean => {
+      const doc = { ...blankItem('loot', 'p', 'P'), model: { parts: [p] } };
+      try {
+        loadContent(ITEM_FORMAT, doc, 'p');
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    const base = { type: 'panel', pos: [0, 0, 0], color: '#000000' };
+    expect(check({ ...base, size: [0.1, 0.1] })).toBe(true);
+    expect(
+      check({
+        ...base,
+        points: [
+          [0, 0],
+          [1, 0],
+          [0, 1],
+        ],
+      }),
+    ).toBe(true);
+    expect(check(base)).toBe(false);
+    expect(
+      check({
+        ...base,
+        size: [0.1, 0.1],
+        points: [
+          [0, 0],
+          [1, 0],
+          [0, 1],
+        ],
+      }),
+    ).toBe(false);
+    // A dart (not convex) and three points in a line.
+    expect(
+      check({
+        ...base,
+        points: [
+          [0, 0],
+          [1, 1],
+          [0, 0.4],
+          [-1, 1],
+        ],
+      }),
+    ).toBe(false);
+    expect(
+      check({
+        ...base,
+        points: [
+          [0, 0],
+          [1, 0],
+          [2, 0],
+        ],
+      }),
+    ).toBe(false);
   });
 });

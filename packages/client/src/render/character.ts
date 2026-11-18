@@ -241,6 +241,8 @@ function inRestFrame(shapes: ModelShape[], rest: CharacterTemplate['rest']): Mod
       out.rings = out.rings.map((r) => r.map((n) => n * k));
     } else if (out.kind === 'hull') {
       out.points = out.points.map(([x, y, z]) => [x * k, y * k, z * k] as const);
+    } else if (out.kind === 'panel') {
+      out.points = out.points.map(([x, z]) => [x * k, z * k] as const);
     } else {
       out.hx *= k;
       out.hy *= k;

@@ -106,6 +106,18 @@
       "item": "ammo-9x39-bp",
       "count": 25,
       "level": 4
+    },
+    {
+      "item": "dragoon-chest-rig",
+      "level": 4
+    },
+    {
+      "item": "r-45b-chest-harness",
+      "level": 4
+    },
+    {
+      "item": "ceramic-plate-5",
+      "level": 4
     }
   ]
 }

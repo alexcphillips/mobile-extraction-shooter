@@ -211,6 +211,12 @@ export class TriangleBuilder {
         this.poly(rings[rings.length - 1]!, all, matrix, s.color);
         return;
       }
+      case 'panel': {
+        // Wound to face up its own +y: the inside point is below it.
+        const ring = s.points.map(([x, z]) => v(x, 0, z));
+        this.poly(ring, v(0, -1, 0), matrix, s.color);
+        return;
+      }
       case 'hull': {
         const faces = convexHull(s.points) ?? [];
         const p = s.points.map(([x, y, z]) => v(x, y, z).applyMatrix4(matrix));

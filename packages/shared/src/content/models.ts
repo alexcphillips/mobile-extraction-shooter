@@ -122,6 +122,23 @@ export const partSchema = z.discriminatedUnion('type', [
     ...placed,
     points: z.array(vec3Schema).min(4).max(32),
   }),
+  /**
+   * A flat face with no thickness, facing up its own +y (2026-11-17, for painting scenes):
+   * a rectangle of `size` (width x, depth z), or the convex polygon through `points`
+   * ([x, z] in order round it). It costs only the triangles of its face, 2 for a
+   * rectangle, where a box costs 12, so a scene laid in layers on a canvas can carry six
+   * times the detail. Seen from below it isn't drawn.
+   */
+  z.strictObject({
+    type: z.literal('panel'),
+    ...placed,
+    size: z.tuple([positive, positive]).optional(),
+    points: z
+      .array(z.tuple([finite, finite]))
+      .min(3)
+      .max(16)
+      .optional(),
+  }),
 ]);
 export type ModelPart = z.infer<typeof partSchema>;
 
@@ -134,6 +151,16 @@ const parts = z
         ctx.addIssue({ code: 'custom', path: [i, 'rings'], message: 'rings must go up in y' });
       if (p.type === 'hull' && !convexHull(p.points))
         ctx.addIssue({ code: 'custom', path: [i, 'points'], message: 'points are all on a plane' });
+      if (p.type === 'panel') {
+        if ((p.size === undefined) === (p.points === undefined))
+          ctx.addIssue({ code: 'custom', path: [i], message: 'a panel takes size or points' });
+        else if (p.points && !convexPolygon(p.points))
+          ctx.addIssue({
+            code: 'custom',
+            path: [i, 'points'],
+            message: 'points must go round a convex shape, in order',
+          });
+      }
     }),
   );
 
@@ -195,6 +222,37 @@ export type Vec3 = readonly [number, number, number];
 
 const DEG = Math.PI / 180;
 
+/** A panel's corners, [x, z] in order round it: its points, or its size's rectangle. */
+export function panelPoints(p: {
+  readonly size?: readonly [number, number] | undefined;
+  readonly points?: readonly (readonly [number, number])[] | undefined;
+}): (readonly [number, number])[] {
+  if (p.points) return [...p.points];
+  const [w, d] = p.size ?? [0, 0];
+  return [
+    [-w / 2, -d / 2],
+    [w / 2, -d / 2],
+    [w / 2, d / 2],
+    [-w / 2, d / 2],
+  ];
+}
+
+/** Whether [x, z] points go round a convex polygon in order (either way), with some area. */
+export function convexPolygon(points: readonly (readonly [number, number])[]): boolean {
+  let sign = 0;
+  const n = points.length;
+  for (let i = 0; i < n; i++) {
+    const [ax, az] = points[i]!;
+    const [bx, bz] = points[(i + 1) % n]!;
+    const [cx, cz] = points[(i + 2) % n]!;
+    const cross = (bx - ax) * (cz - bz) - (bz - az) * (cx - bx);
+    if (Math.abs(cross) < 1e-12) continue;
+    if (sign === 0) sign = Math.sign(cross);
+    else if (Math.sign(cross) !== sign) return false;
+  }
+  return sign !== 0;
+}
+
 /**
  * The shapes of a model's parts, moved by `at` (an attachment onto its mount), leaving out
  * parts hidden by a fitted slot. Appends to `out` and returns it.
@@ -240,6 +298,8 @@ export function modelShapes(
       out.push({ ...base, kind: 'loft', rings: p.rings, sides: p.sides ?? 8 });
     } else if (p.type === 'hull') {
       out.push({ ...base, kind: 'hull', points: p.points });
+    } else if (p.type === 'panel') {
+      out.push({ ...base, kind: 'panel', points: panelPoints(p) });
     } else {
       const [w, h, d] = p.size;
       out.push({ ...base, kind: p.type, hx: w / 2, hy: h / 2, hz: d / 2 });

@@ -263,9 +263,11 @@ interface Solid {
 /** Each shape's convex pieces as solids: a loft's segments each a hull, the rest whole. */
 function pieces(shapes: readonly ModelShape[]): Solid[][] {
   return shapes.map((s) =>
-    s.kind === 'loft'
-      ? loftPieces(s.rings, s.sides).map((points) => solid({ ...s, kind: 'hull', points }))
-      : [solid(s)],
+    s.kind === 'panel'
+      ? [] // No inside to fit.
+      : s.kind === 'loft'
+        ? loftPieces(s.rings, s.sides).map((points) => solid({ ...s, kind: 'hull', points }))
+        : [solid(s)],
   );
 }
 const solids = (shapes: readonly ModelShape[]): Solid[] => pieces(shapes).flat();

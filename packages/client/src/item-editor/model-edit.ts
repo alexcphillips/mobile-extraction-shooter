@@ -81,6 +81,7 @@ export function newPart(type: ModelPart['type'], at: Vec3): ModelPart {
       ],
       color: '#3a3f44',
     };
+  if (type === 'panel') return { type, pos, size: [0.1, 0.08], color: '#3a3f44' };
   if (type === 'hull')
     return {
       type,
@@ -175,6 +176,9 @@ function halfTurn(p: ModelPart, axis: Axis): THREE.Vector3 | null {
   if (p.type === 'wedge') {
     if (axis === 'y') return new THREE.Vector3(0, 0, 1);
     if (axis === 'z') return new THREE.Vector3(0, 1, 0);
+  } else if (p.type === 'panel') {
+    // It faces up its y: flipped along y it faces down, a half turn about x.
+    if (axis === 'y') return new THREE.Vector3(1, 0, 0);
   } else if (p.type === 'cylinder') {
     if (axis === 'x' && (p.sides ?? 8) % 2 === 1) return new THREE.Vector3(0, 1, 0);
     if (axis === 'y' && p.radiusTop !== undefined && p.radiusTop !== p.radius)
@@ -226,6 +230,9 @@ export function mirrorPart(p: ModelPart, axis: Axis = 'x'): ModelPart {
           : [-y || 0, w, d, dx, dz],
     );
     if (axis === 'y') out.rings.reverse();
+  } else if (out.type === 'panel' && out.points) {
+    // Along y the half turn about x flipped its z, so z flips back.
+    out.points = out.points.map(([x, z]) => (axis === 'x' ? [-x || 0, z] : [x, -z || 0]));
   } else if (out.type === 'hull') {
     out.points = out.points.map((q) => {
       const r: [number, number, number] = [q[0], q[1], q[2]];

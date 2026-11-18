@@ -71,7 +71,9 @@ export type Shape =
 export type ModelShape =
   | Shape
   | (ShapeBase & { kind: 'loft'; rings: readonly (readonly number[])[]; sides: number })
-  | (ShapeBase & { kind: 'hull'; points: readonly (readonly [number, number, number])[] });
+  | (ShapeBase & { kind: 'hull'; points: readonly (readonly [number, number, number])[] })
+  /** A flat face up its own +y through [x, z] corners in order (models.ts → panel). */
+  | (ShapeBase & { kind: 'panel'; points: readonly (readonly [number, number])[] });
 
 /**
  * A shape's half sizes along its own axes, about its pos: what a box of it would be. For
@@ -81,6 +83,14 @@ export function shapeExtent(s: ModelShape): [number, number, number] {
   if (s.kind === 'cylinder') {
     const r = Math.max(s.radius, s.radiusTop);
     return [r, s.hy, r];
+  }
+  if (s.kind === 'panel') {
+    const out: [number, number, number] = [0, 0, 0];
+    for (const [x, z] of s.points) {
+      out[0] = Math.max(out[0], Math.abs(x));
+      out[2] = Math.max(out[2], Math.abs(z));
+    }
+    return out;
   }
   if (s.kind === 'loft' || s.kind === 'hull') {
     const pts =

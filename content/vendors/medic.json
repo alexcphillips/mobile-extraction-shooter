@@ -24,18 +24,33 @@
       "item": "bandage"
     },
     {
-      "item": "cat-tourniquet"
+      "item": "splint"
     },
     {
-      "item": "splint"
+      "item": "basic-surgery-kit"
+    },
+    {
+      "item": "medical-pouch"
+    },
+    {
+      "item": "cat-tourniquet",
+      "level": 2
+    },
+    {
+      "item": "surgery-kit",
+      "level": 2
     },
     {
       "item": "field-first-aid-kit",
       "level": 2
     },
     {
-      "item": "surgery-kit",
-      "level": 3
+      "item": "medical-supply-crate",
+      "level": 4
+    },
+    {
+      "item": "emergency-surgery-case",
+      "level": 4
     }
   ]
 }

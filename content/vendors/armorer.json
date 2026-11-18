@@ -27,7 +27,10 @@
       "item": "soft-vest"
     },
     {
-      "item": "m12-patrol-rig"
+      "item": "scout-utility-rig"
+    },
+    {
+      "item": "trail-4-chest-rig"
     },
     {
       "item": "small-backpack"
@@ -37,66 +40,90 @@
     },
     {
       "item": "riot-helmet",
+      "level": 2
+    },
+    {
+      "item": "riot-helmet",
       "level": 2,
       "barter": [
         {
-          "item": "digital-thermostat",
+          "item": "steel-angle-bar",
           "count": 1
         },
         {
-          "item": "light-bulb",
-          "count": 1
+          "item": "anchoring-epoxy",
+          "count": 2
         }
       ]
+    },
+    {
+      "item": "police-vest",
+      "level": 2
     },
     {
       "item": "police-vest",
       "level": 2,
       "barter": [
         {
-          "item": "steel-angle-bar",
+          "item": "fiberglass-roll",
           "count": 3
         },
         {
-          "item": "light-bulb",
+          "item": "steel-angle-bar",
           "count": 2
         }
       ]
     },
     {
-      "item": "medium-backpack",
+      "item": "m12-patrol-rig",
+      "level": 2
+    },
+    {
+      "item": "m12-patrol-rig",
       "level": 2,
       "barter": [
         {
-          "item": "smartphone",
+          "item": "duct-tape",
+          "count": 2
+        },
+        {
+          "item": "bolt-cutters",
           "count": 1
         },
         {
-          "item": "fiberglass-roll",
-          "count": 1
+          "item": "steel-latch-set",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "item": "pathfinder-chest-rig",
+      "level": 2
+    },
+    {
+      "item": "pathfinder-chest-rig",
+      "level": 2,
+      "barter": [
+        {
+          "item": "duct-tape",
+          "count": 2
         },
         {
           "item": "corrugated-tubing",
           "count": 2
-        }
-      ]
-    },
-    {
-      "item": "armor-repair-kit",
-      "level": 2,
-      "barter": [
-        {
-          "item": "bucket-of-paint",
-          "count": 1
         },
         {
-          "item": "led-tube",
-          "count": 1
+          "item": "steel-latch-set",
+          "count": 2
         }
       ]
     },
     {
-      "item": "steel-plate-3",
+      "item": "sentinel-protective-vest",
+      "level": 2
+    },
+    {
+      "item": "sentinel-protective-vest",
       "level": 2,
       "barter": [
         {
@@ -104,78 +131,142 @@
           "count": 1
         },
         {
-          "item": "caulk-tube",
-          "count": 3
+          "item": "fiberglass-roll",
+          "count": 2
         },
         {
-          "item": "solenoid-valve",
-          "count": 1
+          "item": "duct-tape",
+          "count": 2
         }
       ]
+    },
+    {
+      "item": "medium-backpack",
+      "level": 2
+    },
+    {
+      "item": "medium-backpack",
+      "level": 2,
+      "barter": [
+        {
+          "item": "insulation-roll",
+          "count": 2
+        },
+        {
+          "item": "duct-tape",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "item": "armor-repair-kit",
+      "level": 2
+    },
+    {
+      "item": "armor-repair-kit",
+      "level": 2,
+      "barter": [
+        {
+          "item": "steel-framing",
+          "count": 1
+        },
+        {
+          "item": "fiberglass-roll",
+          "count": 2
+        },
+        {
+          "item": "anchoring-epoxy",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "item": "steel-helmet",
+      "level": 3
     },
     {
       "item": "steel-helmet",
       "level": 3,
       "barter": [
         {
-          "item": "industrial-air-duct-fan",
+          "item": "steel-framing",
           "count": 1
         },
         {
-          "item": "box-of-screws",
-          "count": 3
+          "item": "steel-angle-bar",
+          "count": 2
         },
         {
-          "item": "antique-telescope",
-          "count": 2
+          "item": "anchoring-epoxy",
+          "count": 1
         }
       ]
+    },
+    {
+      "item": "tactical-vest",
+      "level": 3
     },
     {
       "item": "tactical-vest",
       "level": 3,
       "barter": [
         {
-          "item": "portable-ac",
+          "item": "titanium-turbine-blade",
+          "count": 1
+        },
+        {
+          "item": "steel-framing",
           "count": 1
         },
         {
           "item": "fiberglass-roll",
           "count": 3
-        },
-        {
-          "item": "insulation-roll",
-          "count": 2
         }
       ]
     },
     {
-      "item": "large-backpack",
+      "item": "steel-plate-3",
+      "level": 3
+    },
+    {
+      "item": "steel-plate-3",
       "level": 3,
       "barter": [
         {
-          "item": "condenser-coil",
+          "item": "steel-framing",
           "count": 1
         },
         {
-          "item": "high-voltage-inverter-board",
+          "item": "steel-angle-bar",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "item": "pe-plate-3",
+      "level": 3
+    },
+    {
+      "item": "pe-plate-3",
+      "level": 3,
+      "barter": [
+        {
+          "item": "fiberglass-roll",
+          "count": 3
+        },
+        {
+          "item": "anchoring-epoxy",
+          "count": 2
+        },
+        {
+          "item": "caulk-tube",
           "count": 3
         }
       ]
     },
     {
-      "item": "tactical-headset",
-      "level": 3,
-      "barter": [
-        {
-          "item": "premix-concrete-bag",
-          "count": 3
-        },
-        {
-          "item": "circular-saw",
-          "count": 2
-        }
-      ]
+      "item": "face-shield",
+      "level": 3
     },
     {
       "item": "face-shield",
@@ -186,46 +277,142 @@
           "count": 1
         },
         {
-          "item": "thermobrew",
-          "count": 3
+          "item": "fiberglass-roll",
+          "count": 2
         },
         {
-          "item": "circular-saw",
+          "item": "anchoring-epoxy",
           "count": 2
         }
       ]
     },
     {
-      "item": "pe-plate-3",
+      "item": "tactical-headset",
+      "level": 3
+    },
+    {
+      "item": "tactical-headset",
       "level": 3,
       "barter": [
         {
-          "item": "laboratory-notebook",
-          "count": 3
+          "item": "smartphone",
+          "count": 1
         },
         {
-          "item": "phase-change-thermal-paste",
+          "item": "avr-control-board",
+          "count": 2
+        },
+        {
+          "item": "power-supply-unit",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "item": "nvg-monocular",
+      "level": 3
+    },
+    {
+      "item": "nvg-monocular",
+      "level": 3,
+      "barter": [
+        {
+          "item": "ev-battery",
+          "count": 1
+        },
+        {
+          "item": "led-tube",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "item": "mako-6-chest-rig",
+      "level": 3
+    },
+    {
+      "item": "mako-6-chest-rig",
+      "level": 3,
+      "barter": [
+        {
+          "item": "bolt-cutters",
+          "count": 1
+        },
+        {
+          "item": "corrugated-tubing",
+          "count": 2
+        },
+        {
+          "item": "duct-tape",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "item": "mako-12-tactical-rig",
+      "level": 3
+    },
+    {
+      "item": "mako-12-tactical-rig",
+      "level": 3,
+      "barter": [
+        {
+          "item": "insulation-roll",
+          "count": 2
+        },
+        {
+          "item": "bolt-cutters",
+          "count": 2
+        },
+        {
+          "item": "duct-tape",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "item": "armored-chest-rig",
+      "level": 3
+    },
+    {
+      "item": "armored-chest-rig",
+      "level": 3,
+      "barter": [
+        {
+          "item": "kevlar-composite-sheet",
+          "count": 1
+        },
+        {
+          "item": "steel-angle-bar",
           "count": 2
         }
       ]
     },
     {
       "item": "combat-helmet",
+      "level": 4
+    },
+    {
+      "item": "combat-helmet",
       "level": 4,
       "barter": [
         {
-          "item": "condenser-coil",
+          "item": "titanium-turbine-blade",
           "count": 1
         },
         {
-          "item": "insulation-roll",
-          "count": 2
+          "item": "steel-framing",
+          "count": 1
         },
         {
-          "item": "high-voltage-inverter-board",
-          "count": 3
+          "item": "fiberglass-roll",
+          "count": 2
         }
       ]
+    },
+    {
+      "item": "plate-carrier",
+      "level": 4
     },
     {
       "item": "plate-carrier",
@@ -236,27 +423,43 @@
           "count": 1
         },
         {
-          "item": "pressure-gauge",
-          "count": 3
-        }
-      ]
-    },
-    {
-      "item": "nvg-monocular",
-      "level": 4,
-      "barter": [
-        {
-          "item": "carbon-fiber-laminate",
-          "count": 1
+          "item": "fiberglass-roll",
+          "count": 2
         },
         {
-          "item": "high-amp-circuit-breaker",
-          "count": 2
+          "item": "steel-angle-bar",
+          "count": 1
         }
       ]
     },
     {
       "item": "ceramic-plate-4",
+      "level": 4
+    },
+    {
+      "item": "ceramic-plate-4",
+      "level": 4,
+      "barter": [
+        {
+          "item": "titanium-turbine-blade",
+          "count": 1
+        },
+        {
+          "item": "steel-framing",
+          "count": 1
+        },
+        {
+          "item": "premix-concrete-bag",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "item": "steel-plate-4",
+      "level": 4
+    },
+    {
+      "item": "steel-plate-4",
       "level": 4,
       "barter": [
         {
@@ -264,25 +467,149 @@
           "count": 1
         },
         {
-          "item": "steel-angle-bar",
-          "count": 3
+          "item": "titanium-turbine-blade",
+          "count": 1
         },
         {
-          "item": "power-supply-unit",
+          "item": "steel-angle-bar",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "item": "heavy-visor",
+      "level": 4
+    },
+    {
+      "item": "heavy-visor",
+      "level": 4,
+      "barter": [
+        {
+          "item": "carbon-fiber-laminate",
+          "count": 1
+        },
+        {
+          "item": "anchoring-epoxy",
           "count": 2
         }
       ]
     },
     {
-      "item": "steel-plate-4",
+      "item": "elite-headset",
+      "level": 4
+    },
+    {
+      "item": "elite-headset",
       "level": 4,
       "barter": [
         {
-          "item": "smartphone",
+          "item": "graphics-card",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "item": "nvg-binocular",
+      "level": 4
+    },
+    {
+      "item": "nvg-binocular",
+      "level": 4,
+      "barter": [
+        {
+          "item": "military-binoculars",
           "count": 1
         },
         {
-          "item": "high-voltage-inverter-board",
+          "item": "led-tube",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "item": "large-backpack",
+      "level": 4
+    },
+    {
+      "item": "large-backpack",
+      "level": 4,
+      "barter": [
+        {
+          "item": "steel-framing",
+          "count": 1
+        },
+        {
+          "item": "insulation-roll",
+          "count": 2
+        },
+        {
+          "item": "duct-tape",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "item": "m24-combat-rig",
+      "level": 4
+    },
+    {
+      "item": "m24-combat-rig",
+      "level": 4,
+      "barter": [
+        {
+          "item": "steel-framing",
+          "count": 1
+        },
+        {
+          "item": "bolt-cutters",
+          "count": 2
+        },
+        {
+          "item": "duct-tape",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "item": "specter-modular-rig",
+      "level": 4
+    },
+    {
+      "item": "specter-modular-rig",
+      "level": 4,
+      "barter": [
+        {
+          "item": "steel-framing",
+          "count": 1
+        },
+        {
+          "item": "insulation-roll",
+          "count": 2
+        },
+        {
+          "item": "corrugated-tubing",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "item": "viper-12-chest-rig",
+      "level": 4
+    },
+    {
+      "item": "viper-12-chest-rig",
+      "level": 4,
+      "barter": [
+        {
+          "item": "titanium-turbine-blade",
+          "count": 1
+        },
+        {
+          "item": "insulation-roll",
+          "count": 2
+        },
+        {
+          "item": "duct-tape",
           "count": 3
         }
       ]

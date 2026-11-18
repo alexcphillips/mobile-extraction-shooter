@@ -241,6 +241,8 @@ export function mirrorShape(s: ModelShape): ModelShape {
     out.rings = out.rings.map(([y, w, d, dx = 0, dz = 0]) => [y!, w!, d!, -dx, dz]);
   } else if (out.kind === 'hull') {
     out.points = out.points.map(([x, y, z]) => [-x, y, z] as const);
+  } else if (out.kind === 'panel') {
+    out.points = out.points.map(([x, z]) => [-x, z] as const);
   }
   return out;
 }

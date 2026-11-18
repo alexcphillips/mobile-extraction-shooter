@@ -534,6 +534,9 @@ export function ModelTab(props: {
           <button onClick={() => addPart('box')}>+ box</button>
           <button onClick={() => addPart('cylinder')}>+ cylinder</button>
           <button onClick={() => addPart('wedge')}>+ wedge</button>
+          <button onClick={() => addPart('panel')} title="A flat face with no thickness, facing up">
+            + panel
+          </button>
           <button
             onClick={() => addPart('slab')}
             title="A box with rounded corners, seen from above"
@@ -1178,6 +1181,32 @@ function PartFields(props: { part: ModelPart; edit: (change: (p: ModelPart) => v
             )}
           </div>
         </>
+      ) : p.type === 'panel' ? (
+        p.points ? (
+          <>
+            <p className="ed-note">
+              Corners (x, z, one a line, in order round it); a flat face up its y.
+            </p>
+            <NumberRows
+              rows={p.points}
+              width={[2, 2]}
+              onChange={(rows) =>
+                edit((q) => q.type === 'panel' && (q.points = rows as typeof q.points))
+              }
+            />
+          </>
+        ) : (
+          <div className="ed-row">
+            {(['width', 'depth'] as const).map((label, j) =>
+              num(
+                label,
+                p.size?.[j] ?? 0.1,
+                (q, v) => q.type === 'panel' && q.size && (q.size[j] = v),
+                0.0001,
+              ),
+            )}
+          </div>
+        )
       ) : p.type === 'hull' ? (
         <>
           <p className="ed-note">Points (x, y, z, one a line); it's the shape round them.</p>

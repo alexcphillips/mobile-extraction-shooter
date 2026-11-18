@@ -34,6 +34,10 @@ export function budgetOf(def: ItemDef): Budget {
       // Worn on every body.
       return { triangles: 1200, kind: 'worn gear' };
     default:
+      // A mythic painting (2026-11-17, the user's call): rare enough to carry a richer scene,
+      // painted in panels (800, then 1,250 for the eternal city traced from its reference).
+      if (def.rarity === 'mythic' && 'lean' in def && def.lean !== undefined)
+        return { triangles: 1250, kind: 'mythic painting' };
       // Loot: on the ground and in pictures, many at once.
       return { triangles: 400, kind: 'loot' };
   }

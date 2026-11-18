@@ -2,7 +2,7 @@
 // in a container or on a body. So no table a container kind, a placed container, a prefab's
 // container or an enemy's loot rolls may hold one. Epic and higher paintings are loose only
 // too (the-tempest, portrait-of-the-regent, the-unfinished-masterpiece, a-world-beyond,
-// the-last-supper-of-kings): listed by hand, since two are modeled without a canvas.
+// the-eternal-city): listed by hand, since two are modeled without a canvas.
 // Gear (ammo, armor) isn't a valuable: the military table's top rounds are the user's call.
 import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -20,7 +20,7 @@ const PAINTINGS_EPIC_UP = new Set([
   'portrait-of-the-regent',
   'the-unfinished-masterpiece',
   'a-world-beyond',
-  'the-last-supper-of-kings',
+  'the-eternal-city',
 ]);
 
 /** The tables a loot field rolls: its one table, its mix's, a container kind's. */
