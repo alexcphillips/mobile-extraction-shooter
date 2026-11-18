@@ -89,10 +89,6 @@
         {
           "item": "bolt-cutters",
           "count": 1
-        },
-        {
-          "item": "steel-latch-set",
-          "count": 2
         }
       ]
     },
@@ -111,10 +107,6 @@
         {
           "item": "corrugated-tubing",
           "count": 2
-        },
-        {
-          "item": "steel-latch-set",
-          "count": 2
         }
       ]
     },
@@ -132,10 +124,6 @@
         },
         {
           "item": "fiberglass-roll",
-          "count": 2
-        },
-        {
-          "item": "duct-tape",
           "count": 2
         }
       ]
@@ -195,10 +183,6 @@
         {
           "item": "steel-angle-bar",
           "count": 2
-        },
-        {
-          "item": "anchoring-epoxy",
-          "count": 1
         }
       ]
     },
@@ -257,10 +241,6 @@
         {
           "item": "anchoring-epoxy",
           "count": 2
-        },
-        {
-          "item": "caulk-tube",
-          "count": 3
         }
       ]
     },
@@ -319,10 +299,6 @@
         {
           "item": "ev-battery",
           "count": 1
-        },
-        {
-          "item": "led-tube",
-          "count": 2
         }
       ]
     },
@@ -362,10 +338,6 @@
         },
         {
           "item": "bolt-cutters",
-          "count": 2
-        },
-        {
-          "item": "duct-tape",
           "count": 2
         }
       ]
@@ -425,10 +397,6 @@
         {
           "item": "fiberglass-roll",
           "count": 2
-        },
-        {
-          "item": "steel-angle-bar",
-          "count": 1
         }
       ]
     },
@@ -487,10 +455,6 @@
         {
           "item": "carbon-fiber-laminate",
           "count": 1
-        },
-        {
-          "item": "anchoring-epoxy",
-          "count": 2
         }
       ]
     },
@@ -518,10 +482,6 @@
       "barter": [
         {
           "item": "military-binoculars",
-          "count": 1
-        },
-        {
-          "item": "led-tube",
           "count": 1
         }
       ]

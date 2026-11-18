@@ -5,7 +5,7 @@
   "type": "weapon",
   "class": "lmg",
   "size": [4, 2],
-  "value": 46800,
+  "value": 114200,
   "weight": 7,
   "rarity": "common",
   "ammo": "ammo-762x54r",

@@ -5,7 +5,7 @@
   "type": "weapon",
   "class": "lmg",
   "size": [4, 2],
-  "value": 51200,
+  "value": 128100,
   "weight": 5.2,
   "rarity": "common",
   "ammo": "ammo-68x51-fmj",

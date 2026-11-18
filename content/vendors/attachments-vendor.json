@@ -1,7 +1,7 @@
 {
   "formatVersion": 2,
   "id": "attachments-vendor",
-  "name": "Parker",
+  "name": "Kessler",
   "blurb": "A skilled weapons technician dealing in firearm modifications, attachments, and components.",
   "order": 2,
   "color": "#6f8fb3",
@@ -247,10 +247,6 @@
         {
           "item": "steel-angle-bar",
           "count": 2
-        },
-        {
-          "item": "steel-latch-set",
-          "count": 3
         }
       ]
     },
@@ -265,10 +261,6 @@
         {
           "item": "steel-angle-bar",
           "count": 2
-        },
-        {
-          "item": "gear-set",
-          "count": 3
         }
       ]
     },
@@ -404,10 +396,6 @@
         },
         {
           "item": "smartphone",
-          "count": 1
-        },
-        {
-          "item": "led-tube",
           "count": 1
         }
       ]

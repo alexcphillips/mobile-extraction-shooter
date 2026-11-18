@@ -135,7 +135,7 @@ Items (loot, guns, gear) are `model.parts` in their `content/items` JSON, drawn 
   5. Say what was seen and what wasn't, and ask the user how it looks in the game.
 
 ## Worn gear (2026-11-12)
-Helmets, visors, headsets, armor, rigs and backpacks make up the character, aimed at the look target in [design/overview.md](design/overview.md) → Characters. The item model rules above apply; on top of them:
+Helmets, visors, headsets, armor, rigs and backpacks make up the character, aimed at the look target in the archived design overview (`docs-archive` tag) → Characters. The item model rules above apply; on top of them:
 - **Facet, don't round.** The look is flat planes meeting at hard edges: wedges and boxes turned a few degrees, and 5–8-sided cylinders, not smooth many-sided shells. Per-face shading only shows facets that face different ways.
 - **The key light (2026-11-12, the user's call):** item models and characters (not maps) get shade.ts's formula plus a light from the camera's left (`shadeGlsl` in `render/material.ts`): faces turned left of the camera are up to 8% brighter, turned right up to 8% darker. So facets read when they turn left and right as well as up and down; faces turned only toward or away from the camera still barely differ.
 - **What reads at a distance:** the helmet's outline and rails, a dark lens band across the face, the mag pouch row across the chest, two shades per piece (as above). Details under 1 cm vanish on a body across a room.

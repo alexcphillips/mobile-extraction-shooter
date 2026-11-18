@@ -16,7 +16,7 @@ import type { VendorDef } from './vendors';
  *   the vault after dying counts too; the server takes it either way. An optional `find`
  *   line shows as a step before it: it ticks in a raid while you carry the item and
  *   isn't saved (the user's call, 2026-11-11), so dying means finding it again.
- * A quest can need a PMC level (`minLevel`): below it, it's hidden (2026-11-11).
+ * A quest can need a PMC level (`minLevel`): below it, it shows locked with the level.
  * Rewards are money, items, rep and XP, claimed into the stash once every objective is done.
  */
 
@@ -84,8 +84,8 @@ export const questSchema = z.strictObject({
   /** Quests that must be done first. */
   requires: z.array(idSchema).default([]),
   /**
-   * The PMC level it needs (2026-11-11): below it the quest doesn't show at all. 1 (any)
-   * if left out; an optional field, so still format 1.
+   * The PMC level it needs: below it the quest shows locked. 1 (any) if left out; an
+   * optional field, so still format 1.
    */
   minLevel: z.int().min(1).max(50).optional(),
   objectives: z.array(objectiveSchema).min(1),

@@ -37,20 +37,82 @@
       "level": 2
     },
     {
+      "item": "cat-tourniquet",
+      "level": 2,
+      "barter": [
+        {
+          "item": "electrical-tape",
+          "count": 3
+        }
+      ]
+    },
+    {
       "item": "surgery-kit",
       "level": 2
+    },
+    {
+      "item": "surgery-kit",
+      "level": 2,
+      "barter": [
+        {
+          "item": "laboratory-notebook",
+          "count": 2
+        },
+        {
+          "item": "thermobrew",
+          "count": 1
+        }
+      ]
     },
     {
       "item": "field-first-aid-kit",
       "level": 2
     },
     {
+      "item": "field-first-aid-kit",
+      "level": 2,
+      "barter": [
+        {
+          "item": "bottle-of-water",
+          "count": 2
+        },
+        {
+          "item": "laboratory-notebook",
+          "count": 1
+        }
+      ]
+    },
+    {
       "item": "medical-supply-crate",
       "level": 4
     },
     {
+      "item": "medical-supply-crate",
+      "level": 4,
+      "barter": [
+        {
+          "item": "ram-stick",
+          "count": 2
+        }
+      ]
+    },
+    {
       "item": "emergency-surgery-case",
       "level": 4
+    },
+    {
+      "item": "emergency-surgery-case",
+      "level": 4,
+      "barter": [
+        {
+          "item": "smartphone",
+          "count": 1
+        },
+        {
+          "item": "laboratory-notebook",
+          "count": 2
+        }
+      ]
     }
   ]
 }

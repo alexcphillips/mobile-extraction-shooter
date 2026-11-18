@@ -5,6 +5,7 @@ import {
   objectiveProgress,
   objectiveText,
   questStatus,
+  questUnderLevel,
   type ItemDb,
   type ProfileResponse,
   type QuestDef,
@@ -31,7 +32,6 @@ const ORDER: Record<QuestStatus, number> = {
   available: 2,
   locked: 3,
   done: 4,
-  hidden: 5,
 };
 
 const STATUS_TEXT: Record<QuestStatus, string> = {
@@ -39,7 +39,6 @@ const STATUS_TEXT: Record<QuestStatus, string> = {
   active: 'Active',
   available: 'New',
   locked: 'Locked',
-  hidden: 'Hidden',
   done: 'Done',
 };
 
@@ -114,8 +113,6 @@ export function vendorQuestCounts(
   for (const q of quests) {
     if (q.vendor !== vendor) continue;
     const s = questStatus(profile, q);
-    // Below its PMC level a quest doesn't show anywhere (2026-11-11).
-    if (s === 'hidden') continue;
     out.all++;
     if (s === 'ready') out.ready++;
     else if (s === 'available') out.fresh++;
@@ -163,7 +160,6 @@ export function TraderQuests({
   const all = quests
     .filter((q) => q.vendor === vendor.id)
     .map((q) => ({ q, status: questStatus(p, q) }))
-    .filter((x) => x.status !== 'hidden')
     .sort((a, b) => ORDER[a.status] - ORDER[b.status]);
   const list = all.filter((x) => SHOWN[show](x.status));
   if (!all.length) {
@@ -204,7 +200,16 @@ export function TraderQuests({
                 <span className={`quests-status ${status}`}>{STATUS_TEXT[status]}</span>
               </div>
               {locked ? (
-                <p className="quests-text">🔒 After {before.join(' and ')}.</p>
+                <p className="quests-text">
+                  🔒{' '}
+                  {[
+                    questUnderLevel(p, q) && `Needs PMC level ${q.minLevel}`,
+                    before.length > 0 && `After ${before.join(' and ')}`,
+                  ]
+                    .filter(Boolean)
+                    .join('. ')}
+                  .
+                </p>
               ) : (
                 <>
                   <p className="quests-text">{q.description}</p>

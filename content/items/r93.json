@@ -5,7 +5,7 @@
   "type": "weapon",
   "class": "sniper",
   "size": [4, 2],
-  "value": 15100,
+  "value": 28500,
   "weight": 4.5,
   "rarity": "common",
   "ammo": "ammo-762-tcw",

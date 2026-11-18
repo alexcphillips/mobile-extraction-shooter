@@ -11,6 +11,7 @@ import {
   handOver,
   handOverCount,
   questStatus,
+  questUnderLevel,
   questsFor,
   raidObjectives,
   raidProgress,
@@ -159,10 +160,11 @@ describe('quests', () => {
     expect(questStatus(p, watches)).toBe('available');
   });
 
-  it('stay hidden below their PMC level, and give XP when finished (2026-11-11)', () => {
+  it('show locked below their PMC level, and give XP when finished', () => {
     const p = profile();
     const veteran = quest({ ...radio, id: 'veteran', minLevel: 3, rewards: { xp: 2500 } });
-    expect(questStatus(p, veteran)).toBe('hidden');
+    expect(questStatus(p, veteran)).toBe('locked');
+    expect(questUnderLevel(p, veteran)).toBe(true);
     expect(acceptQuest(p, veteran)).toMatch(/PMC level 3/);
     // Level 3 needs 3,000 XP.
     p.xp = 3000;

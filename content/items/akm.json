@@ -5,7 +5,7 @@
   "type": "weapon",
   "class": "assault",
   "size": [3, 2],
-  "value": 18600,
+  "value": 35100,
   "weight": 2.8,
   "rarity": "common",
   "ammo": "ammo-762x39",

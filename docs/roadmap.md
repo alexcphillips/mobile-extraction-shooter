@@ -10,32 +10,32 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
 
 ## How to use this file
 - Each session below is sized for one Claude Code session. Start a session with "Do session N from docs/roadmap.md", in a fresh conversation (`/clear` between sessions).
-- Read only what the session needs: its **Read:** line if it has one; otherwise the indexes [design.md](design.md) and [tech-stack.md](tech-stack.md), then only the topic files the work touches. Don't read whole docs to get your bearings.
-- This file holds open work only. Finished sessions and their notes are in [roadmap-done.md](roadmap-done.md); read one there only when you need its history.
+- Read only what the session needs: its **Read:** line if it has one; otherwise the feature doc in [features/](features/) for the work (see [README.md](README.md)). A **Read:** line naming `design/…`, `tech/…` or roadmap-done notes means the archived doc under the `docs-archive` git tag (README → The archive); search it for the topic, don't read it whole.
+- This file holds open work only. Finished sessions are deleted; `git log` keeps the history.
 - At the end of a session:
-  - tick its box and add short notes under it (what was built, anything deferred, decisions made), then move it, with its notes, to the same section in roadmap-done.md and update that section's count here;
-  - record decisions in the design or tech topic file they belong to, not only here.
+  - delete the finished session from this file (keep one line under its milestone only if later sessions depend on what it built);
+  - record changed purpose, rules or decisions in the feature's doc, following [README.md](README.md). Don't record values or history.
 - If a session is too big, split it here before starting rather than leaving it half done.
 
 ## Milestone A: foundation and performance gate
 
-- 2 finished sessions in [roadmap-done.md](roadmap-done.md).
+- 2 finished sessions.
 
 ## Milestone B: a raid you can play offline (no server)
 
-- 15 finished sessions in [roadmap-done.md](roadmap-done.md).
+- 15 finished sessions.
 
 ## Milestone C: the meta loop and server
 
-- 7 finished sessions in [roadmap-done.md](roadmap-done.md).
+- 7 finished sessions.
 
 ## Milestone D: editors
 
-- 7 finished sessions in [roadmap-done.md](roadmap-done.md).
+- 7 finished sessions.
 
 ## Milestone E: content and release
 
-- 31 finished sessions in [roadmap-done.md](roadmap-done.md).
+- 31 finished sessions.
 
 - [ ] **19b. The first real map.**
   - Claude drafts a one-page brief (points of interest, extractions, routes, key rooms) and a rough first version as data; the user reshapes it in the map editor, and Claude fixes the editor where it gets in the way (the user's call, 2026-10-30).
@@ -49,7 +49,7 @@ Co-op, weekly challenges, the flea market and trading are post-v1.
 ## The AI rework: scavs, PMCs and Jug (planned 2026-11-07 with the user)
 The design is in design.md → AI → Scavs, PMCs and bosses. Scavs and PMCs first; **Jug last**, since he reuses squads, suppression, grenades, voice lines and the hunt. Every number is a first guess to tune in play, and each session checks the AI in the sim on Northpoint, including the tick cost with everyone present.
 
-- 22 finished sessions in [roadmap-done.md](roadmap-done.md).
+- 22 finished sessions.
 
 **Questions for the user (raised while planning):**
 - ~~Does Jug kick open **locked** doors?~~ No: unlocked only (the user's call, 2026-11-08).
@@ -72,7 +72,7 @@ The design is in design.md → AI → Scavs, PMCs and bosses. Scavs and PMCs fir
 ## Inventory and controls UX (planned 2026-11-08 with the user, from their mobile UI notes)
 Cut at the user's call: valuables going to the vault by themselves, item and ammo cases, and extra vaults from quests (design.md → Inventory and UI → Not doing).
 
-- 7 finished sessions in [roadmap-done.md](roadmap-done.md).
+- 7 finished sessions.
 
 ## PC controller (planned 2026-11-08 with the user)
 A PS4 controller (DualShock 4) on a PC browser: raids **and** every menu and inventory action, with no mouse needed. **PC browsers only for now** (Chrome first, then Edge and Firefox); not the phone, not Safari (the user's call, 2026-11-08). The user accepts a common shooter layout, as long as everything the game needs fits. **Stop and call out problems** (too few buttons for an action, something a pad can't reach) instead of quietly working around them. See design.md → Controls → Controller (PC).
@@ -98,7 +98,7 @@ A PS4 controller (DualShock 4) on a PC browser: raids **and** every menu and inv
 
 - **The lean problem:** a stick player has no free thumb for leaning. On the D-pad it means letting go of the move stick, which is fine with **toggle** lean (the default: one tap, then back to the stick) and poor with **hold** lean. The other common layout (Siege-style: L3/R3 lean, sprint by pushing the stick to its rim like on touch) frees the D-pad, but at the rim you'd sprint by accident and be heard 35 m away instead of 20. **Decided: D-pad lean** (the user's call, 2026-11-08).
 
-- 3 finished sessions in [roadmap-done.md](roadmap-done.md).
+- 3 finished sessions.
 
 - [ ] **CP-4. Controller not picked up (reported 2026-11-08, Chrome over HTTPS in prod).**
   - Diagnostics added: `input/pad-diagnostics.ts` (pure `diagnose`: no API / blocked by permissions policy or a frame / no pad listed yet / non-standard mapping / ready; `padLog` of connect events, started in main.ts) and `input/pad-test.ts`, a live plain-DOM panel (every pad slot's id, mapping, buttons lit, axes; the input mode and what last switched it; Copy report). Opened from **Settings → Controller → Test controller** (the section now always shows off touch) or `?padtest`. `input/mode.ts` records the cause of each mode switch.
@@ -108,24 +108,24 @@ A PS4 controller (DualShock 4) on a PC browser: raids **and** every menu and inv
 ## Tutorial (planned 2026-11-09 with the user)
 See design.md → Tutorial for the flow and the user's calls (offline before sign-in, nothing kept, a barbed-wire crawl and a bandage, a harmless scav who fires back, a key in his pocket, out through an extraction).
 
-- 3 finished sessions in [roadmap-done.md](roadmap-done.md).
+- 3 finished sessions.
 
 ## Item editor before the content push (planned 2026-11-09 with the user)
 Before building a lot of content and reworking gun and reticle models. Today's guns have 15–28 parts; detailed ones may reach 60–150, and the model tab was built for one part at a time. Sessions 18 and 18b built the editor; see tech-stack.md → Editors.
 
-- 2 finished sessions in [roadmap-done.md](roadmap-done.md).
+- 2 finished sessions.
 
 ## The Hangar (planned 2026-11-07 with the user)
 The design is [hangar.md](hangar.md). The material items and loot tables are the user's.
 
-- 9 finished sessions in [roadmap-done.md](roadmap-done.md).
+- 9 finished sessions.
 
 - [ ] **Wipe prod before H4 ships** (no users yet): stored pages and vaults are reshaped on load, but a full old stash could fail its check.
 
 ## Silver Creek, the starter map (planned 2026-11-09 with the user)
 See design/maps/silver-creek.md for the layout and the user's calls (a Customs-style rectangle about 320 × 150 m, spawns at both ends and extracts at the far end, trees kept to the edges, five river crossings, three landmarks). Sketch: https://claude.ai/artifact/9v38f2y7U7tuf5cdKBxc84. As with Northpoint, the user places spawns and loot, and the bones are approved before detail. The sketch still shows a church; it's now the fire lookout, office and sheds (MT-3).
 
-- 12 finished sessions in [roadmap-done.md](roadmap-done.md). v1 of the map is built; it hasn't been played yet.
+- 12 finished sessions. v1 of the map is built; it hasn't been played yet.
 - 2026-11-17 (not a session): the engine shed reworked: the loco shop on its south wall (machine shop, battery room, crew room, foreman's office), a balcony and a gangway onto the switcher's hood, the oil house, the fuel and sand stand, loot and five quest marker spots (design/maps/silver-creek.md → Engine shed). Built, not walked by the user yet. New prefab `freight-crate`.
 - 2026-11-17 (not a session): the loader crane rebuilt (engine house a room), the rollway, the boom shack and the log jam dressed, loot there and in the kilns (design/maps/silver-creek.md → Log deck, Loot).
 - 2026-11-17 (not a session): the company town: the fake safe a metal cabinet, electrics in the office and the station's stockroom, a cash register (new prefab) and fridge in the store, the box truck's wheels solid, and an open-ground pass (runs over 40 m 3,088 → 1,042 m²).
@@ -155,14 +155,14 @@ Later, not counted in v1 of the map:
 ## Map tools (planned 2026-11-12 with the user)
 Tools for building many maps together: faster loops, better-measured layouts, less repetition, fewer tokens. MK-1 to MK-6 are done. The rest land when a District session needs them. **Kit rule: a generator piece written once lives in its map script; written a second time, it moves to `scripts/mapkit/` with a sim test** (tech/editors.md → Map kit). Tool decisions go in tech/editors.md (editor and board) and level-design.md (the report's measures and yardsticks).
 
-- 6 finished sessions in [roadmap-done.md](roadmap-done.md).
+- 6 finished sessions.
 
 - [ ] **MK-7. Plan variants.** For a room or building, generate several plans into a numbered top-down sheet (with each plan's report numbers: entrances, longest line, cover count), the user picks by number, and the pick is written into the map. For District's stores (DS-8) and in-between pieces.
   - **Read:** MK-3 and MK-4's notes.
 - [ ] **MK-8. Editor overlays.** The report's heatmaps (long lines, open patches, AI sight coverage) painted on the ground in the map editor, updated after an edit settles, so a problem shows while reshaping. Before DS-5.
   - **Read:** tech/editors.md (navigation overlay); MK-4's notes.
 - [ ] **MK-9. Flow runs.** Headless raids (AI-9's runs) with simple player bots (spawn, a POI, an extraction) logging positions, fights and deaths to heatmaps: where fights happen, which routes get used, which areas nobody visits. A pointer, not a verdict: bots don't play like the user. Before DS-15.
-  - **Read:** AI-9's notes in roadmap-done.md; design/ai.md.
+  - **Read:** AI-9's notes (archive); design/ai.md.
 
 **Token habits for map sessions** (in force now; CLAUDE.md's lean-token rule applied to maps): query maps and prefabs with scripts (`map-report`, `prefabs.mjs`, a `node -e` over the JSON), never read a map file; read a map's summary in its design file, then search; one report table per check, not logs; roadmap notes a few lines, detail in the map's design file.
 
@@ -171,7 +171,7 @@ Replace the Quaternius mannequin and clips with our own, **before the real armor
 
 **Our own systems, not the pack's (2026-11-13, the user's call):** our own skeleton in `content/`, our own clip format and player, no GLB, `GLTFLoader` or `AnimationMixer`. Reuse what exists: body pieces are item-model parts made in the **item editor** (palette, budget, faceting), pictures come from **`item-shot.mjs`**, the animation editor is a tab of the item editor on the same save plugin. **The pack stays the default** behind `?body=own` until CH-5 lands legs and stance, so the game is never left in a T-pose.
 
-- 6 finished sessions in [roadmap-done.md](roadmap-done.md) (CH-1 to CH-3c).
+- 6 finished sessions (CH-1 to CH-3c).
 - [ ] **CH-3d. Refits.** The eight older armors and rigs refitted inside the layer envelopes (the `REFIT` list in `fit-check.test.ts`); the scav jacket plating refitted to the CH-3b body and inside the armor envelope; a PMC outfit to wear the kit; the support arm's 2.5 cm on the outer rig pouch at the low ready, if a hold or pouch tweak clears it. No look approval needed (the user approved CH-3's on 2026-11-13).
   - **Read:** props.md → Fitting worn gear and The body; `node scripts/anim-check.mjs --fit --each`.
 - [ ] **CH-4. Animation tools for Claude.** Cycles (walk, run, crawl) come from a gait generator with a few numbers (stride, cadence, bounce, arm swing, lean), mirrored left to right. `scripts/anim-shot.mjs <clip>` (on item-shot's page) renders a filmstrip (frames across the clip, side and front, ground line) and foot and hand trails. `anim-check` prints a table: foot slide while planted, feet through the floor, hands off the grip or magazine, joint limits, the jump at the loop seam. **`anim-check --head`** measures where each clip carries the head and writes the sim's head-offset table (`HEAD_MOVING` and the crouch numbers in `sim/hit-zones.ts`, hand-measured from the pack today), with a test that fails when clips and table disagree, so hits and the drawn head stay matched. The user's editor (an item editor tab): pick a clip, play and scrub, speed, the generator's sliders, nudge one bone on one key, saved to the same JSON.
@@ -184,10 +184,10 @@ A new map, **replacing Northpoint (the user's call, 2026-11-12)**: **a suburban 
 
 **Bones first (the user's call):** POIs as boxes, roads and terrain heights are built, walked and discussed before any detail. The layout lives in one table in the generator (POI positions, footprints, levels, gaps), so stretching or squeezing the map after a review is a re-run. Nothing after DS-3 starts until the user approves the bones. **Every hand-over to the user (DS-3's walk and each later review) needs `node scripts/map-overlaps.mjs district` to pass first** (level-design.md → Review checklist).
 
-- 3 finished sessions in [roadmap-done.md](roadmap-done.md) (DS-1, the sketch; DS-2, the bones graybox; RD-1, roads by hand and the ownership split).
+- 3 finished sessions (DS-1, the sketch; DS-2, the bones graybox; RD-1, roads by hand and the ownership split).
 
 - [ ] **DS-3. Bones review with the user.** *(2026-11-12: the first walk rejected the generated ground and roads; since RD-1 the user shapes the terrain and draws the roads by hand, then walks it again.)* Measured in the sim: walking and sprinting times between areas and edge to edge, the routes around and through the mall, open crossings over 40 m, lines of 70 m+, AI reach between levels, a first triangle and draw-call count. **Before the walk, the overlap check passes:** on 2026-11-14 it listed 30, every mall stair (main, department store, cinema) through its floor slab with no stairwell cut, and the garage ramps through the garage floors; fix them in `district-build.mjs`. The user walks it; we discuss the flow and adjust the table (size included). **The user approves the bones here.**
-  - **Read:** DS-2's notes (roadmap-done.md) and design/maps/district.md → The bones graybox. Walk it from the raid list in a dev build (District, tagged test) or `/editor?map=district` → Play; `node scripts/map-report.mjs district` and `node scripts/district-probe.mjs` measure it. Change the table on the board (`/layout?map=district`), then `node scripts/gen-district.mjs`.
+  - **Read:** DS-2's notes (archive) and design/maps/district.md → The bones graybox. Walk it from the raid list in a dev build (District, tagged test) or `/editor?map=district` → Play; `node scripts/map-report.mjs district` and `node scripts/district-probe.mjs` measure it. Change the table on the board (`/layout?map=district`), then `node scripts/gen-district.mjs`.
   - **Read:** level-design.md; MK-4's notes (the report does the measuring).
 - [ ] **DS-4. Long-range pathfinding** (AI-4's open question): a coarse graph over the nav grid's regions, so long searches across a district stay cheap on a phone. Before any AI work.
   - **Read:** tech/shared-sim.md (navigation); design/ai.md.
@@ -211,27 +211,27 @@ Then the user: spawns, extractions, loot, quests. **Open:** whether District rep
 ## Breath, weight and stamina (planned 2026-11-11 with the user)
 Aim sway makes careful shots frustrating (design/combat.md → Sights move). **Sprint speed stays 6 m/s** (the user's call). **Weight slows players only, never enemies** (the user's call). Every number below is a first guess.
 
-- 4 finished sessions in [roadmap-done.md](roadmap-done.md).
+- 4 finished sessions.
 
 ## Gear stats and hit zones (proposed 2026-11-11 by the user, design to confirm before building)
-- All 5 sessions finished, in [roadmap-done.md](roadmap-done.md).
+- All 5 sessions finished, (git log).
 
 **Every new stat goes into the item editor in the same session that adds it** (the user's note, 2026-11-12), so all of it can be configured there.
 
 ## Magazines as items (planned 2026-11-12 with the user)
 Reverses "packing rounds into magazines, multiple mags" being out (design/overview.md): the user wants it because it's fun, and it makes rigs worth their slots. Loose rounds stay as what you pack from. Every number below is a first guess. Each session puts its new stats in the item editor.
 
-- 4 finished sessions in [roadmap-done.md](roadmap-done.md); none open.
+- 4 finished sessions; none open.
 
 ## Stocks and weapon footprints (planned 2026-11-12 with the user)
 A gun's grid size follows its state, and stocks become parts you swap. Each change is set per item in the item editor; many attachments change nothing. **Saved stashes that no longer fit are fine: prod gets wiped** (no players yet; the user's call), so no stash migration.
 
-- 2 finished sessions in [roadmap-done.md](roadmap-done.md); none left.
+- 2 finished sessions; none left.
 
 ## Pain and tremors (planned 2026-11-12 with the user)
 Painkillers hiding it come with Painkillers and injectors (below).
 
-- 1 finished session in [roadmap-done.md](roadmap-done.md); none open.
+- 1 finished session; none open.
 
 **No suppression effects** (near misses blurring or muffling): dropped by the user, 2026-11-12. **Enemies get no headset hearing**: the cough's range does the job (the user's OK).
 
@@ -248,14 +248,14 @@ Consumables that give **timed effects**: painkillers hide pain, injectors boost 
     5. **Using them:** use time, can you move or aim while injecting, do they go in the heal picker or their own slot or button? The controller has no buttons left (PC controller notes). [Injectors ~1.5 s, pills ~2 s, walking allowed; they join the heal picker (hold heal), never the tap heal.]
     6. **Do enemies use them?** PMCs popping painkillers and a stim when hurt would make them tougher. [PMCs use painkillers only, later, in an AI session; scavs and Jug don't.]
     7. **HUD:** effect icons with time left, and a tell when one is about to end. [A row of small icons under the body with a ring for time left, blinking the last 10 s.]
-    8. **Where they come from:** loot rarity, vendors, quests, vendor barters (design/quests-and-vendors.md → Barters). [Painkillers common in medical loot and sold by the medic; injectors rare loot and bartered; none sold early.]
+    8. **Where they come from:** loot rarity, vendors, quests, vendor barters (features/vendors-and-quests.md → Barters). [Painkillers common in medical loot and sold by the medic; injectors rare loot and bartered; none sold early.]
     9. **Duration ticks in the sim, not the client**, and effects end at extraction and death (nothing carries out of a raid). [Yes.] (Zombies mode was archived 2026-11-13.)
 - [ ] **PK-2. Timed effects and painkillers.** A sim system for timed effects on a character (start, tick, end, saved in state, no per-frame allocation), the effect kinds PK-1 settles for painkillers, the hook in `updateSway`, a painkiller item or two, use from the heal picker, item editor fields, tests.
   - **Read:** design/damage-and-health.md (Timed effects); tech/shared-sim.md; tech/items-and-inventory.md; tech/editors.md.
 - [ ] **PK-3. Injectors.** The injectors PK-1 picks, their benefits and side effects on the PK-2 system, the HUD effect icons, item models in the house style, item editor fields, tests.
   - **Read:** design/damage-and-health.md (Timed effects); docs/props.md (item models); tech/editors.md.
 - [ ] **PK-4. Into the game.** Loot tables, vendor stock and barters, quests if any.
-  - **Read:** design/damage-and-health.md (Timed effects); design/quests-and-vendors.md (Barters).
+  - **Read:** design/damage-and-health.md (Timed effects); features/vendors-and-quests.md (Barters).
 
 ## Replays: death replay and recorded sessions (planned 2026-11-12 with the user)
 The sim runs at 30 ticks a second from inputs with seeded random numbers, but **bit-exact determinism was never required** (tech/shared-sim.md: the co-op host is authoritative), so replaying from inputs has to be made exact first, then kept exact by tests.
@@ -287,10 +287,10 @@ The user's brief: **a few dollars** for extra vault squares, an extra stash page
 - **Later, not scheduled:** opt-in rewarded ads for a convenience (say a shorter scav cooldown), only once there are a lot of players, never forced, never needed to progress. It would add an ad SDK, Apple's tracking prompt and privacy labels.
 
 ## Quest objectives overhaul (planned 2026-11-13 with the user)
-The brief is in design/quests-and-vendors.md → Quest objectives overhaul. **Each objective kind and condition goes into the quest editor in the session that adds it**, as with the item editor. **The sim records facts** (kills with their details, zones entered, interactions, the exit used); **shared `quests.ts` judges them** against objectives, so the server's `/end`, the results screen and the in-raid Quests tab use the same rule, and co-op hosts need nothing extra. Quest content is rewritten in place, not migrated (prod gets wiped; no-migrations rule).
+The brief is in features/vendors-and-quests.md → Planned. **Each objective kind and condition goes into the quest editor in the session that adds it**, as with the item editor. **The sim records facts** (kills with their details, zones entered, interactions, the exit used); **shared `quests.ts` judges them** against objectives, so the server's `/end`, the results screen and the in-raid Quests tab use the same rule, and co-op hosts need nothing extra. Quest content is rewritten in place, not migrated (prod gets wiped; no-migrations rule).
 
-- [ ] **QO-1. Finish the design with the user.** No code. Settle the questions below, write the answers into design/quests-and-vendors.md and tech/quests-and-vendors.md (the objective schema), then rewrite QO-2 onward to fit.
-  - **Read:** design/quests-and-vendors.md (Quests, the overhaul brief); design/raids-and-maps.md (zones, extraction); docs/coop.md (Decided).
+- [ ] **QO-1. Finish the design with the user.** No code. Settle the questions below, write the answers into features/vendors-and-quests.md (Planned) and tech/quests-and-vendors.md (the objective schema), then rewrite QO-2 onward to fit.
+  - **Read:** features/vendors-and-quests.md (Quests, the overhaul brief); design/raids-and-maps.md (zones, extraction); docs/coop.md (Decided).
   - **Questions, most important first** (Claude's suggested default in brackets):
     1. **When is a quest item banked?** [Once you **extract** with it, it stays in the quest inventory until it's used, through any number of deaths. Before that it's lost on death. Vendor-given items are banked from the start. That one rule covers the logbook, the cross-map checkpoint and the markers.]
     2. **Can a quest fail for good?** "Without killing scavs" and "survive this raid" could fail the quest or only reset that raid's try. [Reset the raid's try only. Nothing fails for good, since permanent fails cause burnout too.]
@@ -302,7 +302,7 @@ The brief is in design/quests-and-vendors.md → Quest objectives overhaul. **Ea
     8. **Zone conditions in 3D:** "the mill" vs "the tunnels under the mill" need heights, but named zones are flat. [Quest zones: a named zone with an optional floor and ceiling and a **hidden** tick (no map label), drawn in the map editor.]
     9. **Kill credit in co-op:** the killer only, or the party? [The killer only, as XP already works.]
 - [ ] **QO-2. Found in raid on death, and hand-overs.** Dying or going missing strips FIR from what the raid gained, the vault included; brought-in FIR stays (`settleFound` runs on every outcome now, so a GPU vaulted in a raid you die in comes out FIR). Hand-over objectives get `found` (FIR only), any source, or money. Editor fields, tests.
-  - **Read:** design/quests-and-vendors.md (Hand over, overhaul brief); tech/quests-and-vendors.md; `settleFound` in sim/raid.ts.
+  - **Read:** features/vendors-and-quests.md (Hand over, overhaul brief); tech/quests-and-vendors.md; `settleFound` in sim/raid.ts.
 - [ ] **QO-3. The objective model.** Quest format 2: steps, objectives as `kind` + conditions + count + scope (one raid or cumulative), raid-wide modifiers. A raid **record** the sim fills and `/end` takes (replacing `investigated`, `killed`). One judge in shared `quests.ts` for the server, results screen and Quests tab. Port the five quests and the existing kinds (investigate, extract with a quest item, hand over). The editor shows steps and gets a condition list. Tests.
   - **Read:** tech/quests-and-vendors.md; tech/editors.md (quest editor); QO-1's notes.
 - [ ] **QO-4. Quest zones and discovery.** Zones with floor and ceiling and the hidden tick, in the map editor. The sim records zones entered; the discover objective, with "and survive". The zone condition for later kinds. Tests.
@@ -318,9 +318,9 @@ The brief is in design/quests-and-vendors.md → Quest objectives overhaul. **Ea
 - [ ] **QO-9. Gun stats and build objectives.** The shown stats from QO-1 (ergonomics, stability, weight, capacity, range) in the gun's details panel, then the build objective (thresholds and named attachments, checked against stash guns). Editor fields, tests.
   - **Read:** design/combat.md (attachments, stats); design/inventory-and-ui.md (Item details).
 - [ ] **QO-10. Vendor objectives and rep trade-offs.** A "reach level n with a vendor" objective, and rewards that take rep from other vendors. Editor fields, tests.
-  - **Read:** design/quests-and-vendors.md (Vendor levels).
+  - **Read:** features/vendors-and-quests.md (Vendor levels).
 - [ ] **QO-11. A quest content pass.** Rework Silver Creek's starter chain and write a showcase set that uses every kind, including one chain across two maps with a checkpoint. Check the spots on the maps with the tools, never by reading map files. Required items follow hangar.md → Where required items come from.
-  - **Read:** design/quests-and-vendors.md; design/maps/ for the maps used.
+  - **Read:** features/vendors-and-quests.md; design/maps/ for the maps used.
 
 ## After v1 (not scheduled)
 - Co-op vs. AI, phones and PCs together (a player's device hosts, others connect over WebRTC; client movement prediction, shared loot rolls, quest items only for the holder). The plan, session by session, is [coop.md](coop.md).

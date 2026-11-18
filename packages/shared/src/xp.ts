@@ -4,7 +4,7 @@ import type { RaidOutcome } from './protocol';
 /*
  * The PMC level (2026-11-11, the user's call; design → Quests and vendors → PMC level).
  * One XP total per account, in the profile; the level is worked out from it. Quests give
- * the most (`rewards.xp`) and can need a level to show (`minLevel`). Raids give XP for
+ * the most (`rewards.xp`) and can need a level to be taken (`minLevel`). Raids give XP for
  * kills (more for a headshot kill) and for each container searched first; getting out
  * multiplies it, a run-through halves it. The server works it out from the counts a raid's
  * result reports, the client the same way for the results screen.

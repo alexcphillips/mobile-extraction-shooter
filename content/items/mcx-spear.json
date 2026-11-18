@@ -5,7 +5,7 @@
   "type": "weapon",
   "class": "assault",
   "size": [4, 2],
-  "value": 39700,
+  "value": 150000,
   "weight": 3.3,
   "rarity": "common",
   "ammo": "ammo-68x51-fmj",

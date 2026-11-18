@@ -5,7 +5,7 @@
   "type": "weapon",
   "class": "pistol",
   "size": [2, 1],
-  "value": 20500,
+  "value": 41500,
   "weight": 0.6,
   "rarity": "common",
   "ammo": "ammo-9mm",

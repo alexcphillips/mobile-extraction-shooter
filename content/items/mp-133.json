@@ -5,7 +5,7 @@
   "type": "weapon",
   "class": "shotgun",
   "size": [3, 2],
-  "value": 12300,
+  "value": 20300,
   "weight": 3,
   "rarity": "common",
   "ammo": "buckshot",

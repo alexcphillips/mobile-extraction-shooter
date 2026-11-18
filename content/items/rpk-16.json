@@ -5,7 +5,7 @@
   "type": "weapon",
   "class": "lmg",
   "size": [4, 2],
-  "value": 30900,
+  "value": 67600,
   "weight": 3.4,
   "rarity": "common",
   "ammo": "ammo-545x39",

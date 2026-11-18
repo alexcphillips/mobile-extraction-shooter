@@ -5,7 +5,7 @@
   "type": "weapon",
   "class": "sniper",
   "size": [4, 2],
-  "value": 23900,
+  "value": 46600,
   "weight": 5,
   "rarity": "common",
   "ammo": "ammo-762x54r-hpbt",

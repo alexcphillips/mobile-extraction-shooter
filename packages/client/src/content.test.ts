@@ -4,7 +4,6 @@ import {
   LOOT_GUN_MAX_LEVEL,
   VAULT_ITEM,
   VENDOR,
-  itemDef,
   spawnProblems,
   ammoDef,
   buyPrice,
@@ -13,6 +12,7 @@ import {
   createState,
   createRng,
   createWeaponStats,
+  itemDef,
   equipLoadout,
   exposedSpawns,
   SCAV_WAVES,
@@ -142,6 +142,8 @@ describe('content', () => {
   });
 
   it('barters (BT-1): basic gear is for cash, and what a barter takes is easy enough to find', () => {
+    /** The least share of a barter's value one kind of item may be (no filler). */
+    const FILLER = 0.15;
     const items = loadItems();
     // hangar.md → Where required items come from: in 3+ loot tables, or sold for cash.
     const tables = new Map<string, number>();
@@ -156,12 +158,16 @@ describe('content', () => {
       for (const o of v.sells) {
         // The most basic gear, everything a vendor sells at level 1, is never a barter.
         if ((o.level ?? 1) === 1) expect(o.barter, `${v.id}: ${o.item}`).toBeUndefined();
+        // At most four kinds of item (docs/features/vendors-and-quests.md → Barters).
+        expect((o.barter ?? []).length, `${v.id}: ${o.item}`).toBeLessThanOrEqual(4);
+        // No filler: every kind of item is worth at least FILLER of what the barter takes.
+        const worth = (b: { item: string; count: number }): number =>
+          itemDef(items, b.item).value * b.count;
+        const total = (o.barter ?? []).reduce((n, b) => n + worth(b), 0);
         for (const b of o.barter ?? []) {
           const where = `${v.id}: ${o.item} takes ${b.item}`;
           expect((tables.get(b.item) ?? 0) >= 3 || forCash.has(b.item), where).toBe(true);
-          // Rare items (loot weight 1 or less) are asked for one at a time.
-          const rarity = itemDef(items, b.item).rarity;
-          if (rarity !== 'common' && rarity !== 'uncommon') expect(b.count, where).toBe(1);
+          expect(worth(b) / total, `${where}: filler`).toBeGreaterThanOrEqual(FILLER);
         }
         if (o.barter) barters++;
       }

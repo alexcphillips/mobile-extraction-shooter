@@ -5,7 +5,7 @@
   "type": "weapon",
   "class": "smg",
   "size": [2, 2],
-  "value": 13300,
+  "value": 22700,
   "weight": 2.2,
   "rarity": "common",
   "ammo": "ammo-9mm",

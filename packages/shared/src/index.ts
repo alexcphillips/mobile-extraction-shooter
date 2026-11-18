@@ -776,6 +776,7 @@ export {
   objectiveProgress,
   objectiveText,
   questStatus,
+  questUnderLevel,
   questsFor,
   raidObjectives,
   raidProgress,

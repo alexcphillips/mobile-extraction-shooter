@@ -83,29 +83,17 @@
     },
     {
       "item": "mp5",
-      "level": 2
-    },
-    {
-      "item": "mp5",
       "level": 2,
       "barter": [
         {
           "item": "compressed-air-tank",
-          "count": 1
+          "count": 3
         },
         {
           "item": "cordless-drill",
           "count": 2
-        },
-        {
-          "item": "high-voltage-inverter-board",
-          "count": 2
         }
       ]
-    },
-    {
-      "item": "ump45",
-      "level": 2
     },
     {
       "item": "ump45",
@@ -113,21 +101,13 @@
       "barter": [
         {
           "item": "steel-framing",
-          "count": 1
+          "count": 3
         },
         {
           "item": "angle-grinder",
-          "count": 2
-        },
-        {
-          "item": "power-supply-unit",
-          "count": 1
+          "count": 3
         }
       ]
-    },
-    {
-      "item": "r93",
-      "level": 2
     },
     {
       "item": "r93",
@@ -135,21 +115,13 @@
       "barter": [
         {
           "item": "smartphone",
-          "count": 1
+          "count": 4
         },
         {
           "item": "steel-angle-bar",
-          "count": 3
-        },
-        {
-          "item": "valve-handwheel",
-          "count": 2
+          "count": 4
         }
       ]
-    },
-    {
-      "item": "ak-74m",
-      "level": 2
     },
     {
       "item": "ak-74m",
@@ -157,39 +129,23 @@
       "barter": [
         {
           "item": "black-gold-coffee-beans",
-          "count": 1
-        },
-        {
-          "item": "gear-set",
-          "count": 3
+          "count": 2
         }
       ]
-    },
-    {
-      "item": "g18c",
-      "level": 2
     },
     {
       "item": "g18c",
       "level": 2,
       "barter": [
         {
-          "item": "ram-stick",
+          "item": "graphics-card",
           "count": 1
         },
         {
-          "item": "avr-control-board",
+          "item": "ram-stick",
           "count": 3
-        },
-        {
-          "item": "pressure-gauge",
-          "count": 2
         }
       ]
-    },
-    {
-      "item": "mpx",
-      "level": 2
     },
     {
       "item": "mpx",
@@ -198,12 +154,12 @@
         {
           "item": "ev-battery",
           "count": 1
+        },
+        {
+          "item": "ram-stick",
+          "count": 3
         }
       ]
-    },
-    {
-      "item": "saiga-12",
-      "level": 2
     },
     {
       "item": "saiga-12",
@@ -211,17 +167,9 @@
       "barter": [
         {
           "item": "hydraulic-press-head",
-          "count": 1
-        },
-        {
-          "item": "bolt-cutters",
-          "count": 1
+          "count": 2
         }
       ]
-    },
-    {
-      "item": "sv-98",
-      "level": 2
     },
     {
       "item": "sv-98",
@@ -229,18 +177,13 @@
       "barter": [
         {
           "item": "waterjet-cutting-head",
-          "count": 1
+          "count": 2
         },
         {
           "item": "smartphone",
-          "count": 1
+          "count": 2
         }
       ]
-    },
-    {
-      "item": "aug-a3",
-      "attachments": ["aug-optic"],
-      "level": 2
     },
     {
       "item": "aug-a3",
@@ -249,14 +192,10 @@
       "barter": [
         {
           "item": "carbon-fiber-laminate",
-          "count": 1
+          "count": 2
         },
         {
           "item": "digital-thermostat",
-          "count": 1
-        },
-        {
-          "item": "led-tube",
           "count": 3
         }
       ]
@@ -313,25 +252,13 @@
     },
     {
       "item": "mp7",
-      "level": 3
-    },
-    {
-      "item": "mp7",
       "level": 3,
       "barter": [
         {
           "item": "graphics-card",
-          "count": 1
-        },
-        {
-          "item": "phase-change-thermal-paste",
           "count": 2
         }
       ]
-    },
-    {
-      "item": "m416",
-      "level": 3
     },
     {
       "item": "m416",
@@ -339,21 +266,9 @@
       "barter": [
         {
           "item": "heavy-duty-chain-hoist",
-          "count": 1
-        },
-        {
-          "item": "cordless-drill",
           "count": 2
-        },
-        {
-          "item": "ram-stick",
-          "count": 1
         }
       ]
-    },
-    {
-      "item": "g3",
-      "level": 3
     },
     {
       "item": "g3",
@@ -361,17 +276,13 @@
       "barter": [
         {
           "item": "ruby-ring",
-          "count": 1
+          "count": 2
         },
         {
-          "item": "steel-angle-bar",
-          "count": 3
+          "item": "steel-framing",
+          "count": 2
         }
       ]
-    },
-    {
-      "item": "rpk-16",
-      "level": 3
     },
     {
       "item": "rpk-16",
@@ -379,11 +290,7 @@
       "barter": [
         {
           "item": "gold-watch",
-          "count": 1
-        },
-        {
-          "item": "gear-set",
-          "count": 3
+          "count": 2
         }
       ]
     },
@@ -596,10 +503,6 @@
         {
           "item": "corrugated-tubing",
           "count": 2
-        },
-        {
-          "item": "box-of-nails",
-          "count": 2
         }
       ]
     },
@@ -623,21 +526,13 @@
     },
     {
       "item": "k10",
-      "level": 4
-    },
-    {
-      "item": "k10",
       "level": 4,
       "barter": [
         {
           "item": "estate-reserve-cabernet",
-          "count": 1
+          "count": 2
         }
       ]
-    },
-    {
-      "item": "as-val",
-      "level": 4
     },
     {
       "item": "as-val",
@@ -645,13 +540,9 @@
       "barter": [
         {
           "item": "experimental-drug-formula",
-          "count": 1
+          "count": 2
         }
       ]
-    },
-    {
-      "item": "scar-h",
-      "level": 4
     },
     {
       "item": "scar-h",
@@ -659,31 +550,27 @@
       "barter": [
         {
           "item": "royal-heirloom-tiara",
-          "count": 1
-        },
-        {
-          "item": "bolt-cutters",
           "count": 2
         }
       ]
     },
     {
       "item": "mcx-spear",
-      "level": 4
-    },
-    {
-      "item": "mcx-spear",
       "level": 4,
       "barter": [
         {
-          "item": "slr-camera",
+          "item": "gold-watch",
+          "count": 2
+        },
+        {
+          "item": "military-binoculars",
+          "count": 1
+        },
+        {
+          "item": "waterjet-cutting-head",
           "count": 1
         }
       ]
-    },
-    {
-      "item": "aa-12",
-      "level": 4
     },
     {
       "item": "aa-12",
@@ -691,17 +578,9 @@
       "barter": [
         {
           "item": "cryogenic-micro-cooler-engine",
-          "count": 1
-        },
-        {
-          "item": "compressed-air-tank",
-          "count": 1
+          "count": 2
         }
       ]
-    },
-    {
-      "item": "pkm",
-      "level": 4
     },
     {
       "item": "pkm",
@@ -709,13 +588,9 @@
       "barter": [
         {
           "item": "high-yield-solar-module",
-          "count": 1
+          "count": 2
         }
       ]
-    },
-    {
-      "item": "m250",
-      "level": 4
     },
     {
       "item": "m250",
@@ -723,11 +598,7 @@
       "barter": [
         {
           "item": "satellite-crypto-terminal",
-          "count": 1
-        },
-        {
-          "item": "portable-ac",
-          "count": 1
+          "count": 2
         }
       ]
     },
@@ -759,10 +630,6 @@
       "barter": [
         {
           "item": "titanium-turbine-blade",
-          "count": 1
-        },
-        {
-          "item": "gear-set",
           "count": 1
         }
       ]
@@ -811,10 +678,6 @@
       "barter": [
         {
           "item": "steel-angle-bar",
-          "count": 1
-        },
-        {
-          "item": "box-of-nails",
           "count": 1
         }
       ]
@@ -935,10 +798,6 @@
       "barter": [
         {
           "item": "power-supply-unit",
-          "count": 1
-        },
-        {
-          "item": "box-of-screws",
           "count": 1
         }
       ]

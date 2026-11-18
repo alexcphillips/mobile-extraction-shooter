@@ -16,10 +16,15 @@ import { levelOf } from './xp';
  */
 
 /**
- * Where a quest is for a player. "ready" is active with every objective done; "hidden"
- * needs a higher PMC level than the player's, and shows nowhere (2026-11-11).
+ * Where a quest is for a player. "ready" is active with every objective done; "locked"
+ * waits on the quests it requires, a higher PMC level, or both (questUnderLevel).
  */
-export type QuestStatus = 'hidden' | 'locked' | 'available' | 'active' | 'ready' | 'done';
+export type QuestStatus = 'locked' | 'available' | 'active' | 'ready' | 'done';
+
+/** Whether the player's PMC level is below what a quest needs. */
+export function questUnderLevel(profile: Profile, quest: QuestDef): boolean {
+  return levelOf(profile.xp) < (quest.minLevel ?? 1);
+}
 
 /** How much progress an objective needs: the items to hand over, else 1. */
 export function objectiveGoal(o: QuestObjective): number {
@@ -42,9 +47,8 @@ export function questStatus(profile: Profile, quest: QuestDef): QuestStatus {
     );
     return done ? 'ready' : 'active';
   }
-  if (levelOf(profile.xp) < (quest.minLevel ?? 1)) return 'hidden';
   const open = quest.requires.every((r) => profile.quests[r]?.status === 'done');
-  return open ? 'available' : 'locked';
+  return open && !questUnderLevel(profile, quest) ? 'available' : 'locked';
 }
 
 /** What an objective says, by default from its type and item. */
@@ -82,8 +86,10 @@ export function questsFor(
 /** Accepts a quest that's open to the player. Returns why it can't be, or null. */
 export function acceptQuest(profile: Profile, quest: QuestDef): string | null {
   const status = questStatus(profile, quest);
-  if (status === 'hidden') return `that quest needs PMC level ${quest.minLevel}`;
-  if (status === 'locked') return 'finish the quests before it first';
+  if (status === 'locked')
+    return questUnderLevel(profile, quest)
+      ? `that quest needs PMC level ${quest.minLevel}`
+      : 'finish the quests before it first';
   if (status !== 'available') return 'you already have that quest';
   profile.quests[quest.id] = { status: 'active', progress: {} };
   return null;

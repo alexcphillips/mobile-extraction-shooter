@@ -5,7 +5,7 @@
   "type": "weapon",
   "class": "dmr",
   "size": [4, 1],
-  "value": 10600,
+  "value": 18900,
   "weight": 3.2,
   "rarity": "common",
   "ammo": "ammo-762x39",
