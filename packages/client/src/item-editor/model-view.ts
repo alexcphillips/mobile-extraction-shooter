@@ -121,6 +121,8 @@ export class ModelView {
   private readonly scene = new THREE.Scene();
   private readonly camera = new THREE.PerspectiveCamera(40, 1, 0.005, 50);
   private readonly fpCamera = new THREE.PerspectiveCamera(FOV, 1, 0.01, 100);
+  /** The gun's own camera, as in the game: through a scope the world zooms, the gun doesn't. */
+  private readonly fpGunCamera = new THREE.PerspectiveCamera(FOV, 1, 0.005, 10);
   private readonly fpBackdrop = new THREE.Scene();
   private readonly orbit: OrbitControls;
   /** The flat cameras, each with its own pan and zoom (OrbitControls fixes a camera's up). */
@@ -420,7 +422,8 @@ export class ModelView {
     else vm.setKnife(fp.id, fp.db);
     this.viewmodel = vm;
     const optic = fp.kind === 'gun' && mode === 'aimed' ? fp.optic : null;
-    this.overlay.innerHTML = optic ? reticleMarkup(optic) : '';
+    // As in the game: a scope's reticle is fitted to its lens, the scope its own model.
+    this.overlay.innerHTML = optic ? reticleMarkup(optic, true) : '';
   }
 
   /** Redraws the item; while the gizmo is dragging, waits for it to let go. */
@@ -646,7 +649,7 @@ export class ModelView {
       if (this.canvas.height === Math.floor(h * this.renderer.getPixelRatio())) return;
     }
     this.renderer.setSize(w, h, false);
-    for (const c of [this.camera, this.fpCamera]) {
+    for (const c of [this.camera, this.fpCamera, this.fpGunCamera]) {
       c.aspect = w / Math.max(1, h);
       c.updateProjectionMatrix();
     }
@@ -679,11 +682,20 @@ export class ModelView {
       this.fpCamera.updateProjectionMatrix();
     }
     this.renderer.render(this.fpBackdrop, this.fpCamera);
-    // As in the game: a scope hides the gun behind its mask.
-    vm.visible = zoom <= 1;
-    vm.update(this.fpCamera, now, dtMs, aimed ? 1 : 0, 0, 0, 1, 0);
+    // As in the game: through a scope the world zooms while the gun and scope keep the
+    // aimed field of view, its eyepiece up at the eye framing the lens.
+    const scoped = zoom > 1;
+    const gunFov = scoped ? AIM_FOV : fov;
+    if (this.fpGunCamera.fov !== gunFov) {
+      this.fpGunCamera.fov = gunFov;
+      this.fpGunCamera.updateProjectionMatrix();
+    }
+    this.fpGunCamera.position.copy(this.fpCamera.position);
+    this.fpGunCamera.quaternion.copy(this.fpCamera.quaternion);
+    vm.visible = true;
+    vm.update(this.fpCamera, now, dtMs, aimed ? 1 : 0, 0, 0, 1, 0, 0, 0, scoped);
     this.renderer.clearDepth();
-    this.renderer.render(vm.scene, this.fpCamera);
+    this.renderer.render(vm.scene, this.fpGunCamera);
   }
 }
 

@@ -6,7 +6,7 @@
   "items": [
     {
       "item": "armored-vehicle-battery",
-      "weight": 1
+      "weight": 0.68
     },
     {
       "item": "combat-systems-terminal",
@@ -14,15 +14,15 @@
     },
     {
       "item": "quantum-cryptographic-core",
-      "weight": 1
+      "weight": 0.93
     },
     {
       "item": "voltex-quantum-storage-array",
-      "weight": 1
+      "weight": 0.59
     },
     {
       "item": "wifi-toaster",
-      "weight": 1
+      "weight": 0.74
     }
   ]
 }

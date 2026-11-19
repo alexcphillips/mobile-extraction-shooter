@@ -45,7 +45,11 @@ function rarityBasis(doc: Doc | null): { key: string; rarity: Rarity } | null {
   if (level !== null) return { key: `level ${level}`, rarity: levelRarity(level) };
   const cells = cellsOf(doc);
   if (cells === null) return null;
-  return { key: `cells ${cells}`, rarity: bagRarity(doc as Parameters<typeof bagRarity>[0]) };
+  // The slot is part of the key: a rig and a backpack of one size take different rarities.
+  return {
+    key: `${String(doc.slot)} cells ${cells}`,
+    rarity: bagRarity(doc as Parameters<typeof bagRarity>[0]),
+  };
 }
 
 /**

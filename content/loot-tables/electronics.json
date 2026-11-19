@@ -9,17 +9,8 @@
       "weight": 1
     },
     {
-      "item": "laptop",
-      "weight": 1
-    },
-    {
       "item": "graphics-card",
-      "weight": 0.5
-    },
-    {
-      "item": "cash",
-      "weight": 4,
-      "count": [20, 200]
+      "weight": 0.15
     },
     {
       "item": "portable-power-bank",
@@ -31,43 +22,43 @@
     },
     {
       "item": "rechargeable-battery",
-      "weight": 4
+      "weight": 3.6
     },
     {
       "item": "extension-cord",
-      "weight": 4
+      "weight": 3
     },
     {
       "item": "power-relay",
-      "weight": 4
+      "weight": 3.6
     },
     {
       "item": "led-tube",
-      "weight": 2
+      "weight": 1
     },
     {
       "item": "hd-webcam",
-      "weight": 2
+      "weight": 1
     },
     {
       "item": "avr-control-board",
-      "weight": 2
+      "weight": 1.7
     },
     {
       "item": "high-voltage-inverter-board",
-      "weight": 2
+      "weight": 1.9
     },
     {
       "item": "power-supply-unit",
-      "weight": 2
+      "weight": 1
     },
     {
       "item": "digital-thermostat",
-      "weight": 1
+      "weight": 2
     },
     {
       "item": "refrigerator-control-board",
-      "weight": 1
+      "weight": 2
     },
     {
       "item": "wide-angle-lens",
@@ -78,12 +69,24 @@
       "weight": 1
     },
     {
+      "item": "ssd",
+      "weight": 2
+    },
+    {
       "item": "slr-camera",
       "weight": 0.2
     },
     {
       "item": "voltex-vr-headset",
       "weight": 0.2
+    },
+    {
+      "item": "audio-player",
+      "weight": 1.9
+    },
+    {
+      "item": "flash-drive",
+      "weight": 2
     }
   ]
 }

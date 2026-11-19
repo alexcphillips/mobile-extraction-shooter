@@ -1,7 +1,7 @@
 {
   "formatVersion": 12,
   "id": "plate-carrier",
-  "name": "Plate carrier",
+  "name": "Bulwark plate carrier",
   "type": "armor",
   "size": [3, 3],
   "value": 30000,

@@ -1,0 +1,26 @@
+{
+  "formatVersion": 12,
+  "id": "mag-stanag-20",
+  "name": "STANAG 20-round magazine",
+  "shortName": "STANAG 20",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 1500,
+  "weight": 0.09,
+  "rarity": "common",
+  "slot": "magazine",
+  "weapons": ["adar", "m416"],
+  "capacity": 20,
+  "caliber": "5.56x45",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.045, 0],
+        "size": [0.026, 0.09, 0.06],
+        "color": "#2a2d30",
+        "pitch": 6
+      }
+    ]
+  }
+}

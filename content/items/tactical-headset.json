@@ -1,8 +1,8 @@
 {
   "formatVersion": 12,
   "id": "tactical-headset",
-  "name": "Tactical headset",
-  "shortName": "Tac headset",
+  "name": "Tracker Pro headset",
+  "shortName": "Tracker Pro",
   "type": "headset",
   "size": [2, 1],
   "value": 14000,

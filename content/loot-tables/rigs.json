@@ -17,6 +17,14 @@
       "weight": 4
     },
     {
+      "item": "wayfarer-pack",
+      "weight": 2
+    },
+    {
+      "item": "cascade-assault-pack",
+      "weight": 0.4
+    },
+    {
       "item": "pathfinder-chest-rig",
       "weight": 2
     },
@@ -35,6 +43,18 @@
     {
       "item": "armored-chest-rig",
       "weight": 0.5
+    },
+    {
+      "item": "sabre-armored-rig",
+      "weight": 0.4
+    },
+    {
+      "item": "talon-plate-rig",
+      "weight": 0.25
+    },
+    {
+      "item": "reaper-assault-rig",
+      "weight": 0.1
     },
     {
       "item": "m24-combat-rig",

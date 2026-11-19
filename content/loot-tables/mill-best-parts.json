@@ -10,11 +10,11 @@
     },
     {
       "item": "hydraulic-press-head",
-      "weight": 3
+      "weight": 1.5
     },
     {
       "item": "compressed-air-tank",
-      "weight": 3
+      "weight": 1
     },
     {
       "item": "cordless-drill",
@@ -22,11 +22,11 @@
     },
     {
       "item": "waterjet-cutting-head",
-      "weight": 1.5
+      "weight": 3
     },
     {
       "item": "titanium-turbine-blade",
-      "weight": 1
+      "weight": 3
     },
     {
       "item": "cryogenic-micro-cooler-engine",

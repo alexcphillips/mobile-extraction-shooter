@@ -2,6 +2,7 @@ import type { ItemDb, Outfit, ModelShape, WeaponState } from '@mes/shared';
 import * as THREE from 'three';
 import { DEFAULT_OUTFIT } from './character';
 import { TriangleBuilder } from './geometry';
+import { scopeEyeDistance } from '../hud/optic';
 import { gunKey, gunModel, knifeModel } from './gun-model';
 import { itemMaterial } from './material';
 
@@ -88,6 +89,15 @@ export class Viewmodel {
   private readonly pointing = new THREE.Group();
   private readonly gun = new THREE.Group();
   private readonly model: THREE.Mesh;
+  /** The gun while looking through its scope: its parts in the line of sight left out. */
+  private readonly scopedModel: THREE.Mesh;
+  /**
+   * Looking through a scope, a disc at the eyepiece that writes only depth: drawn first, it
+   * keeps the gun behind it out of the lens, where the zoomed world shows.
+   */
+  private readonly lens: THREE.Mesh;
+  /** Where the gun sits looking through its scope (the eyepiece up at the eye), or null. */
+  private scopeAim: THREE.Vector3 | null = null;
   private readonly flash: THREE.Mesh;
   private readonly muzzle = new THREE.Object3D();
   private readonly aimed = new THREE.Vector3();
@@ -105,12 +115,20 @@ export class Viewmodel {
 
   constructor(private readonly outfit: Outfit = DEFAULT_OUTFIT) {
     this.model = new THREE.Mesh(new THREE.BufferGeometry(), itemMaterial());
+    this.scopedModel = new THREE.Mesh(new THREE.BufferGeometry(), itemMaterial());
+    this.scopedModel.visible = false;
+    this.lens = new THREE.Mesh(
+      new THREE.CircleGeometry(1, 32),
+      new THREE.MeshBasicMaterial({ colorWrite: false }),
+    );
+    this.lens.renderOrder = -1;
+    this.lens.visible = false;
     this.flash = new THREE.Mesh(
       new THREE.BoxGeometry(0.06, 0.06, 0.08),
       new THREE.MeshBasicMaterial({ color: 0xffd36b }),
     );
     // Visible until the first update, so the warm-up draw compiles its shader.
-    this.gun.add(this.model, this.flash, this.muzzle);
+    this.gun.add(this.model, this.scopedModel, this.lens, this.flash, this.muzzle);
     this.pointing.rotation.order = 'YXZ';
     this.pointing.add(this.gun);
     this.holder.add(this.pointing);
@@ -124,11 +142,35 @@ export class Viewmodel {
     this.built = key;
     const gun = gunModel(w, items);
     this.suppressed = gun.suppressed;
-    this.build([...gun.shapes, ...arms(gun.grip, gun.support, this.outfit)]);
+    const hands = arms(gun.grip, gun.support, this.outfit);
+    this.build([...gun.shapes, ...hands]);
+    this.build([...(gun.scope?.shapes ?? []), ...hands], this.scopedModel);
+    // Looking through a scope, its eyepiece (the sight point) comes up to the eye.
+    this.scopeAim = gun.scope
+      ? new THREE.Vector3(
+          -gun.sight[0],
+          -gun.sight[1],
+          -gun.sight[2] - scopeEyeDistance(gun.scope.lens, gun.scope.fill),
+        )
+      : null;
+    if (gun.scope) {
+      this.lens.position.set(...gun.sight);
+      this.lens.scale.setScalar(gun.scope.lens);
+    }
     const pistol = gun.hold === 'pistol';
     this.hip.copy(pistol ? PISTOL_HIP : HIP);
     // Aimed, the sight is on the line straight ahead of the eye.
-    this.aimed.set(-gun.sight[0], -gun.sight[1], pistol ? PISTOL_AIMED_Z : AIMED_Z);
+    // A sight that sets its window's size aimed (optic.fill) is held that close; else the
+    // gun sits as for iron sights.
+    this.aimed.set(
+      -gun.sight[0],
+      -gun.sight[1],
+      gun.window
+        ? -gun.sight[2] - scopeEyeDistance(gun.window.lens, gun.window.fill)
+        : pistol
+          ? PISTOL_AIMED_Z
+          : AIMED_Z,
+    );
     this.flash.position.set(...gun.muzzle);
     this.muzzle.position.set(...gun.muzzle);
   }
@@ -141,15 +183,16 @@ export class Viewmodel {
     this.suppressed = true;
     const knife = knifeModel(items, id);
     this.build([...knife.shapes, ...arms(knife.grip, null, this.outfit)]);
+    this.scopeAim = null;
     this.hip.copy(KNIFE_HIP);
     this.aimed.copy(KNIFE_HIP);
   }
 
-  private build(shapes: readonly ModelShape[]): void {
+  private build(shapes: readonly ModelShape[], mesh = this.model): void {
     const b = new TriangleBuilder(false);
     for (const s of shapes) b.shape(s);
-    this.model.geometry.dispose();
-    this.model.geometry = b.build();
+    mesh.geometry.dispose();
+    mesh.geometry = b.build();
   }
 
   set visible(on: boolean) {
@@ -186,6 +229,7 @@ export class Viewmodel {
     lowered: number,
     pointYaw = 0,
     pointPitch = 0,
+    scoped = false,
   ): void {
     this.holder.position.copy(camera.position);
     this.holder.quaternion.copy(camera.quaternion);
@@ -203,7 +247,13 @@ export class Viewmodel {
     // A slash: out to the right, then across and forward to the left.
     const slash = p >= 0 && p < 1 ? Math.sin(Math.PI * p) : 0;
     const across = p >= 0 && p < 1 ? (1 - Math.cos(Math.PI * p)) / 2 : 0;
-    this.gun.position.lerpVectors(this.hip, this.aimed, aim);
+    // Looking through a scope the eyepiece is at the eye; otherwise between hip and sights.
+    const through = scoped && !!this.scopeAim;
+    this.model.visible = !through;
+    this.scopedModel.visible = through;
+    this.lens.visible = through;
+    if (through) this.gun.position.copy(this.scopeAim!);
+    else this.gun.position.lerpVectors(this.hip, this.aimed, aim);
     this.gun.position.x += swayX - across * 0.26 + slash * 0.04;
     this.gun.position.y += swayY - dip * 0.08 - down * 0.3 - lowered * 0.14 + slash * 0.05;
     this.gun.position.z += this.kick * 0.03 - slash * 0.16 + lowered * 0.04;

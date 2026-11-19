@@ -1222,7 +1222,11 @@ export function buildMiddle(h, s) {
   return group('Middle', [
     group('Log deck', [...deck, ...marks, crane, rollway, scaler]),
     group('Pond shore', [...skiff, ...afloat]),
-    group('Timber yard', yard),
+    group('Timber yard', [
+      ...yard,
+      // the scavs' rounds at their post in the maze
+      prefab('ammo-crate', 112.2, 96.0, { id: 'yard-ammo', yaw: 90 }, 0),
+    ]),
     logJam,
     group('Log boom', boom),
     dam,
@@ -1305,6 +1309,8 @@ export function buildRidge(h, s) {
       collide: false,
     },
     prefab('table-and-chairs', 85.6, 11.4, { yaw: 90 }, FL),
+    // the hunter's rounds under the shelf
+    prefab('ammo-crate', 84.7, 8.7, { id: 'cabin-ammo' }, FL),
     drawn(83, Z0 + 0.2, 86.2, Z0 + 0.5, FL + 1.5, FL + 1.55, C.timber, { id: 'cabin-shelf' }),
     ...[83.4, 83.8, 84.5, 85.6].map((x, k) =>
       drawn(
@@ -1389,6 +1395,8 @@ export function buildRidge(h, s) {
   const camp = group('Campsite', [
     prefab('tent-shelter', 122, 13.2, { id: 'camp-tent-1', yaw: 10 }, Y),
     prefab('tent-shelter', 128.5, 12.8, { id: 'camp-tent-2', yaw: -20 }, Y),
+    // the crew's EMS bag between the tents
+    prefab('ems-bag', 125.3, 13.4, { id: 'camp-ems-bag', yaw: 8 }, Y),
     {
       type: 'cylinder',
       id: 'camp-fire-ring',

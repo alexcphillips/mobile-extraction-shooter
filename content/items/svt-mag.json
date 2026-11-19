@@ -1,0 +1,35 @@
+{
+  "formatVersion": 12,
+  "id": "svt-mag",
+  "name": "SVT-40 10-round magazine",
+  "shortName": "SVT 10",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 1600,
+  "weight": 0.2,
+  "rarity": "common",
+  "slot": "magazine",
+  "weapons": ["svt-40"],
+  "capacity": 10,
+  "caliber": "7.62x54R",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.03, 0],
+        "size": [0.03, 0.06, 0.07],
+        "color": "#3a3c3e",
+        "pitch": 6,
+        "name": "body"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.062, 0.003],
+        "size": [0.033, 0.005, 0.073],
+        "color": "#1d1f21",
+        "pitch": 6,
+        "name": "floorplate"
+      }
+    ]
+  }
+}

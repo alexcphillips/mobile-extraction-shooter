@@ -5,10 +5,6 @@
   "rolls": [1, 2],
   "items": [
     {
-      "item": "brick-set",
-      "weight": 1
-    },
-    {
       "item": "cash",
       "weight": 4,
       "count": [10, 100]

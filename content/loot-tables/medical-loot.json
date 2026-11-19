@@ -10,15 +10,15 @@
     },
     {
       "item": "glass-sample-vial",
-      "weight": 4
+      "weight": 2.3
     },
     {
       "item": "surgical-gloves",
-      "weight": 4
+      "weight": 3.6
     },
     {
       "item": "water-purification-tablets",
-      "weight": 4
+      "weight": 2.3
     },
     {
       "item": "basic-suture-kit",
@@ -30,31 +30,31 @@
     },
     {
       "item": "infusion-set",
-      "weight": 2
+      "weight": 1.9
     },
     {
       "item": "stethoscope",
-      "weight": 2
+      "weight": 1.7
     },
     {
       "item": "surgical-forceps",
-      "weight": 2
+      "weight": 1.9
     },
     {
       "item": "laboratory-notebook",
-      "weight": 2
+      "weight": 1.9
     },
     {
       "item": "bone-saw",
-      "weight": 1
+      "weight": 0.93
     },
     {
       "item": "ecg-monitor",
-      "weight": 1
+      "weight": 0.87
     },
     {
       "item": "electronic-thermometer",
-      "weight": 1
+      "weight": 0.89
     },
     {
       "item": "sterile-dressing-pack",
@@ -78,19 +78,19 @@
     },
     {
       "item": "medical-ventilator",
-      "weight": 0.2
+      "weight": 0.16
     },
     {
       "item": "military-defibrillator",
-      "weight": 0.2
+      "weight": 0.15
     },
     {
       "item": "oximeter",
-      "weight": 0.2
+      "weight": 0.19
     },
     {
       "item": "experimental-drug-formula",
-      "weight": 0.2
+      "weight": 0.18
     }
   ]
 }

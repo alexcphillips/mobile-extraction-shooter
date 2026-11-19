@@ -6,11 +6,11 @@
   "items": [
     {
       "item": "portrait-of-the-regent",
-      "weight": 3
+      "weight": 1
     },
     {
       "item": "the-unfinished-masterpiece",
-      "weight": 1.5
+      "weight": 1
     },
     {
       "item": "the-tempest",
@@ -18,11 +18,11 @@
     },
     {
       "item": "jade-dragon",
-      "weight": 1
+      "weight": 1.5
     },
     {
       "item": "gold-bar",
-      "weight": 1
+      "weight": 3
     }
   ]
 }

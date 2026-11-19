@@ -123,9 +123,9 @@ export const LOOT_VALUE_BANDS: Readonly<Record<Rarity, readonly [number, number]
 };
 
 /**
- * The most cells a rig or backpack can hold at each rarity, mythic past the last (the
- * user's call, 2026-11-11, replacing 2026-11-09's 8/14/22/32/44). Only the rarity the item
- * editor fills in: content may set another (bagRarity).
+ * The most cells a rig can hold at each rarity, mythic past the last (the user's call,
+ * 2026-11-11, replacing 2026-11-09's 8/14/22/32/44). Only the rarity the item editor fills
+ * in: content may set another (bagRarity).
  */
 export const BAG_RARITY_CELLS: readonly (readonly [Rarity, number])[] = [
   ['common', 6],
@@ -133,6 +133,18 @@ export const BAG_RARITY_CELLS: readonly (readonly [Rarity, number])[] = [
   ['rare', 12],
   ['epic', 16],
   ['legendary', 20],
+];
+
+/**
+ * The same for backpacks (the user's call: a backpack holds far more than a rig, so a
+ * rig's scale made a 30-cell pack mythic). Mythic past the last.
+ */
+export const BACKPACK_RARITY_CELLS: readonly (readonly [Rarity, number])[] = [
+  ['common', 9],
+  ['uncommon', 12],
+  ['rare', 20],
+  ['epic', 30],
+  ['legendary', 42],
 ];
 
 /** The cells a rig or backpack holds: its sections', or its whole grid's. */
@@ -145,13 +157,16 @@ export function bagCells(bag: {
 }
 
 /**
- * A rig's or backpack's rarity by the cells it holds (BAG_RARITY_CELLS): what the item
- * editor fills in when its grid or sections change (2026-11-11). A default, not a rule:
- * the editor can set another.
+ * A rig's or backpack's rarity by the cells it holds (BAG_RARITY_CELLS for rigs,
+ * BACKPACK_RARITY_CELLS for backpacks): what the item editor fills in when its grid or
+ * sections change (2026-11-11). A default, not a rule: the editor can set another.
  */
-export function bagRarity(bag: Parameters<typeof bagCells>[0]): Rarity {
+export function bagRarity(
+  bag: Parameters<typeof bagCells>[0] & { slot?: string | undefined },
+): Rarity {
   const cells = bagCells(bag);
-  for (const [rarity, most] of BAG_RARITY_CELLS) if (cells <= most) return rarity;
+  const scale = bag.slot === 'backpack' ? BACKPACK_RARITY_CELLS : BAG_RARITY_CELLS;
+  for (const [rarity, most] of scale) if (cells <= most) return rarity;
   return 'mythic';
 }
 
@@ -672,6 +687,8 @@ const reticleShapeSchema = z.discriminatedUnion('type', [
 
 /** The scope mask's radius in reticle units (% of the screen height). */
 export const SCOPE_RADIUS = 46;
+/** A scope's eyepiece clear radius in meters when its optic doesn't give one (`lens`). */
+export const SCOPE_LENS = 0.017;
 
 /**
  * Stat changes an attachment makes. Each is a multiplier except magazine, which is extra
@@ -717,11 +734,30 @@ const attachmentSchema = z
     /** Optics only: how it looks through it. */
     optic: z
       .strictObject({
-        /** Magnification. Above 1 is a scope: full-screen zoom behind a mask. */
+        /** Magnification. Above 1 is a scope: the whole view zooms while looking through it. */
         zoom: finite.refine((n) => n >= 1, 'must be 1 or more'),
+        /**
+         * Scopes (2026-11-18): the eyepiece's clear radius in meters, at its rear face (the
+         * model's sight point). Looking through, the eye comes up to it and the reticle
+         * fills it. Left out, SCOPE_LENS.
+         */
+        lens: positive.optional(),
+        /**
+         * How much of the screen the lens fills aimed, as a % of the screen height from the
+         * center (radius). Scopes: looking through (a compact combat sight's small eyepiece,
+         * a sniper scope's big one); left out, SCOPE_LENS_FILL. Sights without zoom: their
+         * window (the `lens` radius) is brought this close to the eye (a hoop sight held up
+         * close); left out, they sit where iron sights do.
+         */
+        fill: z.number().min(10).max(48).optional(),
         reticle: z.strictObject({
           color: hexColor,
           shapes: z.array(reticleShapeSchema).min(1),
+          /**
+           * An illuminated reticle (2026-11-18): a soft halo under its shapes, as a lit dot
+           * or ring looks through a red dot or holographic sight. Left out, none.
+           */
+          glow: z.boolean().optional(),
         }),
       })
       .optional(),

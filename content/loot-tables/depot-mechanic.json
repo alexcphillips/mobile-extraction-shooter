@@ -10,35 +10,35 @@
     },
     {
       "item": "duct-tape",
-      "weight": 3
+      "weight": 2
     },
     {
       "item": "corrugated-tubing",
-      "weight": 3
-    },
-    {
-      "item": "electrical-tape",
-      "weight": 2
-    },
-    {
-      "item": "pressure-gauge",
-      "weight": 2
-    },
-    {
-      "item": "box-of-screws",
-      "weight": 2
-    },
-    {
-      "item": "rechargeable-battery",
       "weight": 1.5
     },
     {
-      "item": "cordless-drill",
+      "item": "electrical-tape",
+      "weight": 2.5
+    },
+    {
+      "item": "pressure-gauge",
       "weight": 1
     },
     {
+      "item": "box-of-screws",
+      "weight": 2.5
+    },
+    {
+      "item": "rechargeable-battery",
+      "weight": 3
+    },
+    {
+      "item": "cordless-drill",
+      "weight": 1.5
+    },
+    {
       "item": "angle-grinder",
-      "weight": 1
+      "weight": 1.5
     },
     {
       "item": "bolt-cutters",

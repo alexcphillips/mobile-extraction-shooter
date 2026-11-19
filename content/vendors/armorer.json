@@ -36,6 +36,12 @@
       "item": "small-backpack"
     },
     {
+      "item": "wayfarer-pack"
+    },
+    {
+      "item": "echo-headset"
+    },
+    {
       "item": "basic-headset"
     },
     {
@@ -55,6 +61,14 @@
           "count": 2
         }
       ]
+    },
+    {
+      "item": "scout-high-cut",
+      "level": 2
+    },
+    {
+      "item": "clearguard-riot-visor",
+      "level": 2
     },
     {
       "item": "police-vest",
@@ -147,6 +161,10 @@
       ]
     },
     {
+      "item": "cascade-assault-pack",
+      "level": 2
+    },
+    {
       "item": "armor-repair-kit",
       "level": 2
     },
@@ -187,6 +205,10 @@
       ]
     },
     {
+      "item": "sentry-sealed",
+      "level": 3
+    },
+    {
       "item": "tactical-vest",
       "level": 3
     },
@@ -207,6 +229,14 @@
           "count": 3
         }
       ]
+    },
+    {
+      "item": "warden-soft-armor",
+      "level": 3
+    },
+    {
+      "item": "kite-lv-carrier",
+      "level": 3
     },
     {
       "item": "steel-plate-3",
@@ -276,14 +306,10 @@
       "barter": [
         {
           "item": "smartphone",
-          "count": 1
-        },
-        {
-          "item": "avr-control-board",
           "count": 2
         },
         {
-          "item": "power-supply-unit",
+          "item": "avr-control-board",
           "count": 1
         }
       ]
@@ -343,6 +369,26 @@
       ]
     },
     {
+      "item": "highline-molle-pack",
+      "level": 3
+    },
+    {
+      "item": "tundra-patrol-pack",
+      "level": 3
+    },
+    {
+      "item": "narrows-pack",
+      "level": 3
+    },
+    {
+      "item": "sapper-assault-pack",
+      "level": 3
+    },
+    {
+      "item": "hauler-pack",
+      "level": 3
+    },
+    {
       "item": "armored-chest-rig",
       "level": 3
     },
@@ -359,6 +405,14 @@
           "count": 2
         }
       ]
+    },
+    {
+      "item": "sabre-armored-rig",
+      "level": 3
+    },
+    {
+      "item": "talon-plate-rig",
+      "level": 3
     },
     {
       "item": "combat-helmet",
@@ -383,6 +437,10 @@
       ]
     },
     {
+      "item": "crest-ath-helmet",
+      "level": 4
+    },
+    {
       "item": "plate-carrier",
       "level": 4
     },
@@ -399,6 +457,10 @@
           "count": 2
         }
       ]
+    },
+    {
+      "item": "bastion-soft-armor",
+      "level": 4
     },
     {
       "item": "ceramic-plate-4",
@@ -467,8 +529,8 @@
       "level": 4,
       "barter": [
         {
-          "item": "graphics-card",
-          "count": 1
+          "item": "ram-stick",
+          "count": 2
         }
       ]
     },
@@ -507,6 +569,10 @@
           "count": 3
         }
       ]
+    },
+    {
+      "item": "granite-ruck",
+      "level": 4
     },
     {
       "item": "m24-combat-rig",
@@ -573,6 +639,10 @@
           "count": 3
         }
       ]
+    },
+    {
+      "item": "reaper-assault-rig",
+      "level": 4
     }
   ]
 }

@@ -1,0 +1,155 @@
+{
+  "formatVersion": 12,
+  "id": "bastion-soft-armor",
+  "name": "Bastion soft armor",
+  "type": "armor",
+  "size": [3, 3],
+  "value": 32000,
+  "weight": 6.0,
+  "rarity": "epic",
+  "slot": "body",
+  "level": 4,
+  "durability": 90,
+  "repairLoss": 0.1,
+  "moveSpeed": 0.95,
+  "carrier": { "softZones": ["thorax", "stomach"], "noise": 1.1 },
+  "model": {
+    "parts": [
+      {
+        "name": "front",
+        "type": "slab",
+        "pos": [0, 1.335, -0.14],
+        "size": [0.265, 0.035, 0.29],
+        "corners": [0.07, 0.07, 0.03, 0.03],
+        "segments": 1,
+        "color": "#2d2f31",
+        "pitch": 90
+      },
+      {
+        "name": "front plate",
+        "type": "slab",
+        "pos": [0, 1.35, -0.161],
+        "size": [0.23, 0.007, 0.24],
+        "corners": [0.06, 0.06, 0.02, 0.02],
+        "segments": 1,
+        "color": "#2d2f31",
+        "pitch": 90
+      },
+      {
+        "name": "back",
+        "type": "slab",
+        "pos": [0, 1.335, 0.121],
+        "size": [0.265, 0.035, 0.29],
+        "corners": [0.07, 0.07, 0.03, 0.03],
+        "segments": 1,
+        "color": "#2d2f31",
+        "pitch": 90
+      },
+      {
+        "name": "back plate",
+        "type": "slab",
+        "pos": [0, 1.35, 0.142],
+        "size": [0.23, 0.007, 0.24],
+        "corners": [0.02, 0.02, 0.06, 0.06],
+        "segments": 1,
+        "color": "#2d2f31",
+        "pitch": 90
+      },
+      {
+        "name": "cummerbund R",
+        "type": "box",
+        "pos": [0.17, 1.245, -0.01],
+        "size": [0.02, 0.15, 0.17],
+        "color": "#3c3f42"
+      },
+      {
+        "name": "cummerbund L",
+        "type": "box",
+        "pos": [-0.17, 1.245, -0.01],
+        "size": [0.02, 0.15, 0.17],
+        "color": "#3c3f42"
+      },
+      {
+        "name": "front wrap R",
+        "type": "box",
+        "pos": [0.152, 1.245, -0.112],
+        "size": [0.055, 0.15, 0.02],
+        "color": "#3c3f42",
+        "yaw": -38
+      },
+      {
+        "name": "front wrap L",
+        "type": "box",
+        "pos": [-0.152, 1.245, -0.112],
+        "size": [0.055, 0.15, 0.02],
+        "color": "#3c3f42",
+        "yaw": 38
+      },
+      {
+        "name": "back wrap R",
+        "type": "box",
+        "pos": [0.152, 1.245, 0.092],
+        "size": [0.055, 0.15, 0.02],
+        "color": "#3c3f42",
+        "yaw": 38
+      },
+      {
+        "name": "back wrap L",
+        "type": "box",
+        "pos": [-0.152, 1.245, 0.092],
+        "size": [0.055, 0.15, 0.02],
+        "color": "#3c3f42",
+        "yaw": -38
+      },
+      {
+        "name": "strap R",
+        "type": "box",
+        "pos": [0.08, 1.519, -0.005],
+        "size": [0.042, 0.022, 0.25],
+        "color": "#3c3f42"
+      },
+      {
+        "name": "strap L",
+        "type": "box",
+        "pos": [-0.08, 1.519, -0.005],
+        "size": [0.042, 0.022, 0.25],
+        "color": "#3c3f42"
+      },
+      {
+        "name": "strap front R",
+        "type": "box",
+        "pos": [0.08, 1.497, -0.138],
+        "size": [0.042, 0.05, 0.022],
+        "color": "#3c3f42"
+      },
+      {
+        "name": "strap front L",
+        "type": "box",
+        "pos": [-0.08, 1.497, -0.138],
+        "size": [0.042, 0.05, 0.022],
+        "color": "#3c3f42"
+      },
+      {
+        "name": "strap back R",
+        "type": "box",
+        "pos": [0.08, 1.497, 0.128],
+        "size": [0.042, 0.05, 0.022],
+        "color": "#3c3f42"
+      },
+      {
+        "name": "strap back L",
+        "type": "box",
+        "pos": [-0.08, 1.497, 0.128],
+        "size": [0.042, 0.05, 0.022],
+        "color": "#3c3f42"
+      },
+      {
+        "name": "drag handle",
+        "type": "box",
+        "pos": [0, 1.47, 0.152],
+        "size": [0.08, 0.025, 0.02],
+        "color": "#3c3f42"
+      }
+    ]
+  }
+}

@@ -1,0 +1,280 @@
+{
+  "formatVersion": 12,
+  "id": "uzi",
+  "name": "Uzi",
+  "type": "weapon",
+  "class": "smg",
+  "size": [2, 2],
+  "value": 17500,
+  "weight": 3.5,
+  "rarity": "common",
+  "ammo": "ammo-9mm",
+  "hold": "rifle",
+  "fireMode": "auto",
+  "rpm": 600,
+  "magazine": 32,
+  "feed": "magazine",
+  "reloadTime": 2.4,
+  "ergonomics": 76,
+  "range": 100,
+  "loudness": 110,
+  "defaults": { "magazine": "uzi-mag", "stock": "uzi-stock" },
+  "slots": ["muzzle", "magazine", "laser", "stock"],
+  "hipSpread": 2.3,
+  "aimSpread": 0.7,
+  "recoil": { "up": 1.87, "side": 0.78, "snap": 45, "recovery": 3, "angle": -6 },
+  "sounds": {
+    "shot": "pistol-shot",
+    "suppressed": "pistol-shot-suppressed",
+    "reload": "rifle-reload"
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0.0085, -0.005],
+        "size": [0.046, 0.067, 0.29],
+        "color": "#2c2e30",
+        "name": "receiver"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.043, -0.08],
+        "size": [0.034, 0.002, 0.006],
+        "color": "#18191b",
+        "name": "top cover rib",
+        "group": "receiver"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.043, -0.045],
+        "size": [0.034, 0.002, 0.006],
+        "color": "#18191b",
+        "name": "top cover rib",
+        "group": "receiver"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.043, -0.01],
+        "size": [0.034, 0.002, 0.006],
+        "color": "#18191b",
+        "name": "top cover rib",
+        "group": "receiver"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.043, 0.025],
+        "size": [0.034, 0.002, 0.006],
+        "color": "#18191b",
+        "name": "top cover rib",
+        "group": "receiver"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.043, 0.06],
+        "size": [0.034, 0.002, 0.006],
+        "color": "#18191b",
+        "name": "top cover rib",
+        "group": "receiver"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.049, -0.105],
+        "size": [0.014, 0.012, 0.018],
+        "color": "#18191b",
+        "name": "cocking knob"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.158],
+        "radius": 0.016,
+        "height": 0.016,
+        "color": "#18191b",
+        "pitch": 90,
+        "name": "barrel nut"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.19],
+        "radius": 0.0095,
+        "height": 0.05,
+        "color": "#2c2e30",
+        "pitch": 90,
+        "name": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.219],
+        "radius": 0.011,
+        "height": 0.008,
+        "color": "#18191b",
+        "pitch": 90,
+        "hiddenBy": "muzzle",
+        "name": "muzzle thread"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.04, -0.095],
+        "size": [0.05, 0.03, 0.11],
+        "color": "#4a3f36",
+        "name": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.036, 0.045],
+        "size": [0.04, 0.024, 0.1],
+        "color": "#18191b",
+        "name": "trigger housing"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.085, 0.02],
+        "size": [0.038, 0.085, 0.042],
+        "color": "#4a3f36",
+        "pitch": -5,
+        "name": "pistol grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.08, 0.043],
+        "size": [0.03, 0.055, 0.006],
+        "color": "#18191b",
+        "pitch": -5,
+        "name": "grip safety"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.066, -0.025],
+        "size": [0.01, 0.006, 0.052],
+        "color": "#18191b",
+        "name": "trigger guard"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.057, -0.05],
+        "size": [0.01, 0.022, 0.006],
+        "color": "#18191b",
+        "name": "trigger guard front"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.057, -0.01],
+        "size": [0.006, 0.018, 0.005],
+        "color": "#18191b",
+        "name": "trigger"
+      },
+      {
+        "type": "box",
+        "pos": [0.0235, 0.012, -0.02],
+        "size": [0.002, 0.02, 0.055],
+        "color": "#18191b",
+        "name": "ejection port"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0235, -0.006, 0.07],
+        "size": [0.002, 0.012, 0.014],
+        "color": "#6b6f73",
+        "name": "selector"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.047, 0.118],
+        "size": [0.0145, 0.01, 0.008],
+        "color": "#18191b",
+        "name": "rear sight",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0534, 0.118],
+        "size": [0.0201, 0.0028, 0.008],
+        "color": "#18191b",
+        "name": "rear sight ring",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0086, 0.062, 0.118],
+        "size": [0.0028, 0.0145, 0.008],
+        "color": "#18191b",
+        "name": "rear sight ring",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.0086, 0.062, 0.118],
+        "size": [0.0028, 0.0145, 0.008],
+        "color": "#18191b",
+        "name": "rear sight ring",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0706, 0.118],
+        "size": [0.0201, 0.0028, 0.008],
+        "color": "#18191b",
+        "name": "rear sight ring",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0175, 0.0575, 0.118],
+        "size": [0.004, 0.031, 0.012],
+        "color": "#18191b",
+        "name": "rear sight guard",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.0175, 0.0575, 0.118],
+        "size": [0.004, 0.031, 0.012],
+        "color": "#18191b",
+        "name": "rear sight guard",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0465, -0.135],
+        "size": [0.02, 0.009, 0.01],
+        "color": "#18191b",
+        "name": "front sight",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0565, -0.135],
+        "size": [0.0068, 0.011, 0.006],
+        "color": "#18191b",
+        "name": "front sight post",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0135, 0.057, -0.135],
+        "size": [0.004, 0.03, 0.008],
+        "color": "#18191b",
+        "name": "front sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.0135, 0.057, -0.135],
+        "size": [0.004, 0.03, 0.008],
+        "color": "#18191b",
+        "name": "front sight ear",
+        "group": "iron sights"
+      }
+    ],
+    "grip": [0, -0.085, 0.02],
+    "support": [0, -0.045, -0.095],
+    "muzzle": [0, 0, -0.223],
+    "sight": [0, 0.062, 0.118],
+    "mounts": {
+      "muzzle": [0, 0, -0.215],
+      "magazine": [0, -0.045, 0.02],
+      "laser": [0.026, -0.04, -0.095],
+      "stock": [0, 0.0, 0.14]
+    }
+  }
+}

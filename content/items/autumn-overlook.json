@@ -4,9 +4,9 @@
   "name": "Autumn overlook",
   "type": "loot",
   "size": [2, 2],
-  "value": 60000,
+  "value": 26000,
   "weight": 2,
-  "rarity": "legendary",
+  "rarity": "epic",
   "model": {
     "parts": [
       {

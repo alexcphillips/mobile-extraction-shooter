@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "id": "ems-bag",
+  "name": "EMS bag",
+  "rolls": [1, 2],
+  "items": [
+    { "item": "allergy-medication", "weight": 4 },
+    { "item": "basic-suture-kit", "weight": 4 },
+    { "item": "surgical-gloves", "weight": 3.6 },
+    { "item": "water-purification-tablets", "weight": 2.3 },
+    { "item": "surgical-forceps", "weight": 1.9 },
+    { "item": "infusion-set", "weight": 1.9 },
+    { "item": "stethoscope", "weight": 1.7 },
+    { "item": "sterile-dressing-pack", "weight": 1 },
+    { "item": "electronic-thermometer", "weight": 0.89 },
+    { "item": "blood-pressure-monitor", "weight": 0.5 },
+    { "item": "oximeter", "weight": 0.19 }
+  ]
+}

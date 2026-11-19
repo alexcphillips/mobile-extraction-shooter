@@ -1,0 +1,7 @@
+{
+  "formatVersion": 1,
+  "id": "fine-wine",
+  "name": "Fine wine (loose only)",
+  "rolls": [1, 1],
+  "items": [{ "item": "estate-reserve-cabernet", "weight": 1 }]
+}

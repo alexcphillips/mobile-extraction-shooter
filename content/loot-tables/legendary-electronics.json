@@ -6,27 +6,31 @@
   "items": [
     {
       "item": "flight-data-recorder",
-      "weight": 1
+      "weight": 0.99
     },
     {
       "item": "military-binoculars",
-      "weight": 1
+      "weight": 0.9
     },
     {
       "item": "portable-satcom",
-      "weight": 1
+      "weight": 0.88
     },
     {
       "item": "satellite-crypto-terminal",
-      "weight": 1
+      "weight": 0.86
     },
     {
       "item": "slr-camera",
-      "weight": 1
+      "weight": 0.91
     },
     {
       "item": "voltex-vr-headset",
       "weight": 1
+    },
+    {
+      "item": "cryptographic-processor",
+      "weight": 0.81
     }
   ]
 }

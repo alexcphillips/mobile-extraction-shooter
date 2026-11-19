@@ -114,6 +114,25 @@ describe('content', () => {
     expect(loadLootTables().size).toBeGreaterThan(0);
   });
 
+  it('within a rarity, a pricier loot item is never likelier in a table than a cheaper one', () => {
+    // Rarity is a value tier, not a drop chance: weight alone sets the chance, and inside
+    // one rarity it falls as value rises (docs/features/looting.md). Gear is left out.
+    const items = loadItems();
+    const wrong: string[] = [];
+    for (const t of loadLootTables().values()) {
+      const loot = t.items
+        .map((e) => ({ e, def: items.get(e.item)! }))
+        .filter(({ def }) => def.type === 'loot' && !def.money);
+      for (const a of loot)
+        for (const b of loot)
+          if (a.def.rarity === b.def.rarity && b.def.value > a.def.value && b.e.weight > a.e.weight)
+            wrong.push(
+              `${t.id}: ${b.e.item} (${b.e.weight}) is likelier than cheaper ${a.e.item} (${a.e.weight})`,
+            );
+    }
+    expect(wrong).toEqual([]);
+  });
+
   it('every gun in a loot table comes full, of a common or uncommon round of level 1 or 2', () => {
     const items = loadItems();
     const rng = createRng(1);
@@ -144,6 +163,8 @@ describe('content', () => {
   it('barters (BT-1): basic gear is for cash, and what a barter takes is easy enough to find', () => {
     /** The least share of a barter's value one kind of item may be (no filler). */
     const FILLER = 0.15;
+    /** What a barter's items may be worth, as shares of the item's price. */
+    const BARTER_VALUE = [0.6, 1.05] as const;
     const items = loadItems();
     // hangar.md → Where required items come from: in 3+ loot tables, or sold for cash.
     const tables = new Map<string, number>();
@@ -169,7 +190,16 @@ describe('content', () => {
           expect((tables.get(b.item) ?? 0) >= 3 || forCash.has(b.item), where).toBe(true);
           expect(worth(b) / total, `${where}: filler`).toBeGreaterThanOrEqual(FILLER);
         }
-        if (o.barter) barters++;
+        // Worth about what it costs: between BARTER_VALUE's bounds of the price, so a repricing
+        // that makes a barter a steal or a rip-off shows here.
+        if (o.barter) {
+          const share = total / buyPrice(items, o, v);
+          expect(share, `${v.id}: ${o.item} barter is worth`).toBeGreaterThanOrEqual(
+            BARTER_VALUE[0],
+          );
+          expect(share, `${v.id}: ${o.item} barter is worth`).toBeLessThanOrEqual(BARTER_VALUE[1]);
+          barters++;
+        }
       }
     expect(barters).toBeGreaterThan(0);
   });

@@ -4,9 +4,9 @@
   "name": "Golden harvest",
   "type": "loot",
   "size": [2, 2],
-  "value": 66000,
+  "value": 25000,
   "weight": 2,
-  "rarity": "legendary",
+  "rarity": "epic",
   "model": {
     "parts": [
       {

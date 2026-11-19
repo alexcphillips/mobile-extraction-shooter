@@ -1,0 +1,14 @@
+{
+  "formatVersion": 12,
+  "id": "mantel-clock",
+  "name": "Mantel clock",
+  "type": "loot",
+  "size": [2, 2],
+  "value": 60000,
+  "weight": 0.5,
+  "rarity": "legendary",
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]
+  },
+  "category": "Craftwork"
+}

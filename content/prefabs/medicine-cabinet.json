@@ -1,0 +1,88 @@
+{
+  "formatVersion": 3,
+  "id": "medicine-cabinet",
+  "name": "Medicine cabinet",
+  "tags": ["medical", "home"],
+  "colors": {
+    "body": "#e6e8e6",
+    "door": "#f2f3f1",
+    "cross": "#b83a32",
+    "handle": "#6b7074",
+    "inside": "#b9bdbb",
+    "shelf": "#d3d6d4",
+    "bottle": "#d9822b",
+    "cap": "#f4f4f0",
+    "pack": "#5b8fc0",
+    "pack-b": "#7fb36a",
+    "jar": "#8c4a8a"
+  },
+  "nodes": [
+    {
+      "type": "group",
+      "pos": [0, 0, 0],
+      "loot": {
+        "container": "medicine-cabinet",
+        "searched": "medicine-cabinet-open"
+      },
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [0, 1.2, 0.1],
+          "size": [0.6, 0.72, 0.2],
+          "color": "body"
+        },
+        {
+          "type": "box",
+          "pos": [0, 1.215, 0.202],
+          "size": [0.57, 0.69, 0.004],
+          "color": "door",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.0, 1.5276, 0.208],
+          "size": [0.055, 0.18, 0.004],
+          "color": "cross",
+          "collide": false,
+          "yaw": 0
+        },
+        {
+          "type": "box",
+          "pos": [0.0, 1.5901, 0.208],
+          "size": [0.18, 0.055, 0.004],
+          "color": "cross",
+          "collide": false,
+          "yaw": 0
+        },
+        {
+          "type": "box",
+          "pos": [0.25, 1.5, 0.215],
+          "size": [0.02, 0.12, 0.025],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.25, 1.65, 0.206],
+          "size": [0.025, 0.025, 0.008],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.304, 1.28, 0.19],
+          "size": [0.01, 0.08, 0.02],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.304, 1.76, 0.19],
+          "size": [0.01, 0.08, 0.02],
+          "color": "handle",
+          "collide": false
+        }
+      ]
+    }
+  ]
+}

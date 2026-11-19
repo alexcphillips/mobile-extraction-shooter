@@ -35,11 +35,13 @@
   ],
   "helmets": [
     { "weight": 1, "item": "riot-helmet", "condition": [0.7, 1] },
-    { "weight": 1, "item": "steel-helmet", "condition": [0.7, 1] }
+    { "weight": 1, "item": "steel-helmet", "condition": [0.7, 1] },
+    { "weight": 0.5, "item": "sentry-sealed", "condition": [0.7, 1] }
   ],
   "bodyArmor": [
     { "weight": 1, "item": "police-vest", "condition": [0.7, 1] },
-    { "weight": 1, "item": "tactical-vest", "condition": [0.7, 1] }
+    { "weight": 1, "item": "tactical-vest", "condition": [0.7, 1] },
+    { "weight": 1, "item": "warden-soft-armor", "condition": [0.7, 1] }
   ],
   "rigs": [{ "weight": 1, "item": "m12-patrol-rig" }]
 }

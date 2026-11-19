@@ -1,0 +1,105 @@
+{
+  "formatVersion": 12,
+  "id": "scout-high-cut",
+  "name": "Scout high-cut helmet",
+  "type": "armor",
+  "size": [2, 2],
+  "value": 7000,
+  "weight": 0.9,
+  "rarity": "uncommon",
+  "slot": "helmet",
+  "level": 2,
+  "durability": 28,
+  "repairLoss": 0.14,
+  "vision": { "vignette": 0.05 },
+  "nightVision": true,
+  "model": {
+    "parts": [
+      {
+        "name": "band",
+        "type": "cylinder",
+        "pos": [0, 1.715, -0.035],
+        "radius": 0.146,
+        "radiusTop": 0.142,
+        "height": 0.05,
+        "sides": 8,
+        "color": "#4d4c3b",
+        "yaw": 22.5
+      },
+      {
+        "name": "dome",
+        "type": "cylinder",
+        "pos": [0, 1.765, -0.035],
+        "radius": 0.142,
+        "radiusTop": 0.106,
+        "height": 0.05,
+        "sides": 8,
+        "color": "#4d4c3b",
+        "yaw": 22.5
+      },
+      {
+        "name": "crown",
+        "type": "cylinder",
+        "pos": [0, 1.8, -0.035],
+        "radius": 0.106,
+        "radiusTop": 0.05,
+        "height": 0.02,
+        "sides": 8,
+        "color": "#4e5357",
+        "yaw": 22.5
+      },
+      {
+        "name": "nape",
+        "type": "box",
+        "pos": [0, 1.672, 0.103],
+        "size": [0.15, 0.05, 0.02],
+        "color": "#4e5357",
+        "pitch": -12
+      },
+      {
+        "name": "rail R",
+        "type": "box",
+        "pos": [0.145, 1.716, -0.023],
+        "size": [0.018, 0.026, 0.1],
+        "color": "#6b6a52"
+      },
+      {
+        "name": "rail L",
+        "type": "box",
+        "pos": [-0.145, 1.716, -0.023],
+        "size": [0.018, 0.026, 0.1],
+        "color": "#6b6a52"
+      },
+      {
+        "name": "shroud",
+        "type": "box",
+        "pos": [0, 1.738, -0.177],
+        "size": [0.075, 0.05, 0.016],
+        "color": "#6b6a52",
+        "pitch": 18
+      },
+      {
+        "name": "shroud mount",
+        "type": "box",
+        "pos": [0, 1.722, -0.19],
+        "size": [0.032, 0.022, 0.02],
+        "color": "#2b2d2f"
+      },
+      {
+        "name": "counterweight",
+        "type": "box",
+        "pos": [0, 1.752, 0.105],
+        "size": [0.08, 0.045, 0.026],
+        "color": "#3f4636",
+        "pitch": -28
+      },
+      {
+        "name": "velcro",
+        "type": "box",
+        "pos": [0, 1.79, -0.055],
+        "size": [0.07, 0.008, 0.09],
+        "color": "#3f4636"
+      }
+    ]
+  }
+}

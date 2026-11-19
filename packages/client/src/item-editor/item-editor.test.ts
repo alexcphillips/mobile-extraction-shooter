@@ -82,6 +82,27 @@ describe('item editor', () => {
     expect(vault.rarity).toBe('common');
   });
 
+  it('gives backpacks their own scale: a 30-cell pack is epic, not mythic as a rig would be', () => {
+    type D = Record<string, unknown>;
+    const pack = (grid: [number, number]): D => ({
+      type: 'container',
+      slot: 'backpack',
+      rarity: 'common',
+      grid,
+    });
+    const atlas = pack([5, 6]);
+    fillRarity(pack([3, 2]), atlas);
+    expect(atlas.rarity).toBe('epic');
+    const mule = pack([6, 6]);
+    fillRarity(pack([3, 2]), mule);
+    expect(mule.rarity).toBe('legendary');
+    // A rig turned into a backpack of the same size takes the backpack's rarity.
+    const rig: D = { type: 'container', slot: 'rig', rarity: 'mythic', grid: [5, 6] };
+    const asPack: D = { ...rig, slot: 'backpack' };
+    fillRarity(rig, asPack);
+    expect(asPack.rarity).toBe('epic');
+  });
+
   it("fills in an armored rig's rarity, and armor's, from the armor level", () => {
     type D = Record<string, unknown>;
     const rig = (level: number): D => ({
@@ -269,7 +290,7 @@ describe('item editor', () => {
     expect(budgetOf(items.get('m416')!)).toEqual({ triangles: 2000, kind: 'long gun' });
     expect(budgetOf(items.get('m9a3')!).kind).toBe('pistol');
     expect(budgetOf(items.get('red-dot')!).kind).toBe('optic');
-    expect(budgetOf(items.get('the-tempest')!)).toEqual({
+    expect(budgetOf(items.get('portrait-of-the-regent')!)).toEqual({
       triangles: 1250,
       kind: 'mythic painting',
     });

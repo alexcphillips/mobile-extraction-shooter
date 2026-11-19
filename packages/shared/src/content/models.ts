@@ -46,6 +46,12 @@ const placed = {
    */
   hiddenBy: slotSchema.optional(),
   /**
+   * Scopes only (2026-11-18): the part isn't drawn while looking through the scope, as it
+   * sits in the line of sight (the tube, the caps, a combat sight's body). The eyepiece's
+   * rim and what's outside the line stay, framing the zoomed view.
+   */
+  scopedHidden: z.literal(true).optional(),
+  /**
    * For the item editor only (2026-11-09, IE-1): a part's name ("bolt carrier") and the
    * group it belongs to ("stock"), so a model of many parts can be found and picked a group
    * at a time. The game ignores both, so adding them changed no format version.
@@ -262,9 +268,11 @@ export function modelShapes(
   out: ModelShape[] = [],
   at: Vec3 = [0, 0, 0],
   fitted?: (slot: AttachmentSlot) => boolean,
+  scoped = false,
 ): ModelShape[] {
   for (const p of model.parts) {
     if (p.hiddenBy && fitted?.(p.hiddenBy)) continue;
+    if (scoped && p.scopedHidden) continue;
     const base = {
       x: p.pos[0] + at[0],
       y: p.pos[1] + at[1],

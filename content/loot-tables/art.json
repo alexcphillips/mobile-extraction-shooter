@@ -18,11 +18,11 @@
     },
     {
       "item": "lighthouse-painting",
-      "weight": 0.6
+      "weight": 0.28
     },
     {
       "item": "waterfall-painting",
-      "weight": 0.5
+      "weight": 0.28
     },
     {
       "item": "antique-telescope",
@@ -34,11 +34,11 @@
     },
     {
       "item": "autumn-overlook",
-      "weight": 0.3
+      "weight": 0.5
     },
     {
       "item": "golden-harvest",
-      "weight": 0.25
+      "weight": 0.5
     },
     {
       "item": "lavender-fields",
@@ -46,11 +46,11 @@
     },
     {
       "item": "antique-chess-set",
-      "weight": 1
+      "weight": 0.87
     },
     {
       "item": "crystal-swan-ornament",
-      "weight": 1
+      "weight": 0.95
     },
     {
       "item": "ornate-teacup",
@@ -58,7 +58,7 @@
     },
     {
       "item": "porcelain-koi-fish",
-      "weight": 1
+      "weight": 0.84
     },
     {
       "item": "the-tempest",
@@ -70,7 +70,7 @@
     },
     {
       "item": "historical-manuscript",
-      "weight": 0.5
+      "weight": 0.6
     },
     {
       "item": "the-unfinished-masterpiece",
@@ -91,6 +91,10 @@
     {
       "item": "the-eternal-city",
       "weight": 0.004
+    },
+    {
+      "item": "mantel-clock",
+      "weight": 0.15
     }
   ]
 }

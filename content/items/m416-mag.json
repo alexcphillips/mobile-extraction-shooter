@@ -9,7 +9,7 @@
   "weight": 0.12,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["m416"],
+  "weapons": ["m416", "adar"],
   "capacity": 30,
   "caliber": "5.56x45",
   "model": {

@@ -1,0 +1,159 @@
+{
+  "formatVersion": 12,
+  "id": "kite-lv-carrier",
+  "name": "Kite low-vis carrier",
+  "type": "armor",
+  "size": [3, 3],
+  "value": 24000,
+  "weight": 1.2,
+  "rarity": "rare",
+  "slot": "body",
+  "level": 2,
+  "durability": 65,
+  "repairLoss": 0.12,
+  "carrier": {
+    "plates": ["front", "back"],
+    "softZones": [],
+    "comesWith": { "front": "pe-plate-3", "back": "pe-plate-3" },
+    "swapTime": 5
+  },
+  "model": {
+    "parts": [
+      {
+        "name": "front",
+        "type": "slab",
+        "pos": [0, 1.335, -0.14],
+        "size": [0.265, 0.035, 0.29],
+        "corners": [0.07, 0.07, 0.03, 0.03],
+        "segments": 1,
+        "color": "#7e6c4f",
+        "pitch": 90
+      },
+      {
+        "name": "front plate",
+        "type": "slab",
+        "pos": [0, 1.35, -0.161],
+        "size": [0.23, 0.007, 0.24],
+        "corners": [0.06, 0.06, 0.02, 0.02],
+        "segments": 1,
+        "color": "#7e6c4f",
+        "pitch": 90
+      },
+      {
+        "name": "back",
+        "type": "slab",
+        "pos": [0, 1.335, 0.121],
+        "size": [0.265, 0.035, 0.29],
+        "corners": [0.07, 0.07, 0.03, 0.03],
+        "segments": 1,
+        "color": "#7e6c4f",
+        "pitch": 90
+      },
+      {
+        "name": "back plate",
+        "type": "slab",
+        "pos": [0, 1.35, 0.142],
+        "size": [0.23, 0.007, 0.24],
+        "corners": [0.02, 0.02, 0.06, 0.06],
+        "segments": 1,
+        "color": "#7e6c4f",
+        "pitch": 90
+      },
+      {
+        "name": "cummerbund R",
+        "type": "box",
+        "pos": [0.17, 1.245, -0.01],
+        "size": [0.02, 0.15, 0.17],
+        "color": "#a8916a"
+      },
+      {
+        "name": "cummerbund L",
+        "type": "box",
+        "pos": [-0.17, 1.245, -0.01],
+        "size": [0.02, 0.15, 0.17],
+        "color": "#a8916a"
+      },
+      {
+        "name": "front wrap R",
+        "type": "box",
+        "pos": [0.152, 1.245, -0.112],
+        "size": [0.055, 0.15, 0.02],
+        "color": "#a8916a",
+        "yaw": -38
+      },
+      {
+        "name": "front wrap L",
+        "type": "box",
+        "pos": [-0.152, 1.245, -0.112],
+        "size": [0.055, 0.15, 0.02],
+        "color": "#a8916a",
+        "yaw": 38
+      },
+      {
+        "name": "back wrap R",
+        "type": "box",
+        "pos": [0.152, 1.245, 0.092],
+        "size": [0.055, 0.15, 0.02],
+        "color": "#a8916a",
+        "yaw": 38
+      },
+      {
+        "name": "back wrap L",
+        "type": "box",
+        "pos": [-0.152, 1.245, 0.092],
+        "size": [0.055, 0.15, 0.02],
+        "color": "#a8916a",
+        "yaw": -38
+      },
+      {
+        "name": "strap R",
+        "type": "box",
+        "pos": [0.08, 1.519, -0.005],
+        "size": [0.042, 0.022, 0.25],
+        "color": "#a8916a"
+      },
+      {
+        "name": "strap L",
+        "type": "box",
+        "pos": [-0.08, 1.519, -0.005],
+        "size": [0.042, 0.022, 0.25],
+        "color": "#a8916a"
+      },
+      {
+        "name": "strap front R",
+        "type": "box",
+        "pos": [0.08, 1.497, -0.138],
+        "size": [0.042, 0.05, 0.022],
+        "color": "#a8916a"
+      },
+      {
+        "name": "strap front L",
+        "type": "box",
+        "pos": [-0.08, 1.497, -0.138],
+        "size": [0.042, 0.05, 0.022],
+        "color": "#a8916a"
+      },
+      {
+        "name": "strap back R",
+        "type": "box",
+        "pos": [0.08, 1.497, 0.128],
+        "size": [0.042, 0.05, 0.022],
+        "color": "#a8916a"
+      },
+      {
+        "name": "strap back L",
+        "type": "box",
+        "pos": [-0.08, 1.497, 0.128],
+        "size": [0.042, 0.05, 0.022],
+        "color": "#a8916a"
+      },
+      {
+        "name": "drag handle",
+        "type": "box",
+        "pos": [0, 1.47, 0.152],
+        "size": [0.08, 0.025, 0.02],
+        "color": "#a8916a"
+      }
+    ]
+  }
+}

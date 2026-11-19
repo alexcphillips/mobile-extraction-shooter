@@ -1,0 +1,34 @@
+{
+  "formatVersion": 12,
+  "id": "highline-molle-pack",
+  "name": "Highline MOLLE pack",
+  "type": "container",
+  "size": [3, 4],
+  "value": 17000,
+  "weight": 1.7,
+  "rarity": "rare",
+  "slot": "backpack",
+  "grid": [4, 5],
+  "sections": [
+    { "at": [0, 0], "size": [4, 3] },
+    { "at": [0, 3], "size": [2, 2] },
+    { "at": [2, 3], "size": [2, 2] }
+  ],
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 1.172, 0.242],
+        "size": [0.316, 0.434, 0.207],
+        "color": "#4d483b"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.379, 0.217],
+        "size": [0.276, 0.059, 0.158],
+        "color": "#6b6553"
+      },
+      { "type": "box", "pos": [0, 1.064, 0.325], "size": [0.217, 0.138, 0.059], "color": "#6b6553" }
+    ]
+  }
+}

@@ -6,7 +6,7 @@
   "items": [
     {
       "item": "global-surveillance-database",
-      "weight": 1
+      "weight": 0.68
     },
     {
       "item": "nuclear-launch-protocols",
@@ -14,7 +14,7 @@
     },
     {
       "item": "project-nightfall-archive",
-      "weight": 1
+      "weight": 0.69
     }
   ]
 }

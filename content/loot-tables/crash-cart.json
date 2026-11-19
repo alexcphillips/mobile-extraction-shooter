@@ -1,0 +1,18 @@
+{
+  "formatVersion": 1,
+  "id": "crash-cart",
+  "name": "Crash cart",
+  "rolls": [1, 2],
+  "items": [
+    { "item": "basic-suture-kit", "weight": 3 },
+    { "item": "surgical-gloves", "weight": 3 },
+    { "item": "surgical-forceps", "weight": 2 },
+    { "item": "infusion-set", "weight": 1.9 },
+    { "item": "stethoscope", "weight": 1.7 },
+    { "item": "sterile-dressing-pack", "weight": 1 },
+    { "item": "ecg-monitor", "weight": 0.85 },
+    { "item": "blood-pressure-monitor", "weight": 0.5 },
+    { "item": "oximeter", "weight": 0.2 },
+    { "item": "military-defibrillator", "weight": 0.12 }
+  ]
+}

@@ -1,8 +1,8 @@
 // The user's loot rules (2026-11-17): mythic ("red") valuables are loose loot only, never
 // in a container or on a body. So no table a container kind, a placed container, a prefab's
-// container or an enemy's loot rolls may hold one. Epic and higher paintings are loose only
-// too (the-tempest, portrait-of-the-regent, the-unfinished-masterpiece, a-world-beyond,
-// the-eternal-city): listed by hand, since two are modeled without a canvas.
+// container or an enemy's loot rolls may hold one. Legendary and mythic paintings are loose
+// only too; epic and lower may roll in containers (the user's call). The paintings are
+// listed by hand, since two are modeled without a canvas; their rarity decides the rest.
 // Gear (ammo, armor) isn't a valuable: the military table's top rounds are the user's call.
 import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -15,7 +15,13 @@ const json = (dir) =>
     .filter((f) => f.endsWith('.json'))
     .map((f) => JSON.parse(readFileSync(resolve(CONTENT, dir, f), 'utf8')));
 
-const PAINTINGS_EPIC_UP = new Set([
+/** Every painting; a new one goes here. */
+const PAINTINGS = new Set([
+  'lighthouse-painting',
+  'waterfall-painting',
+  'golden-harvest',
+  'autumn-overlook',
+  'lavender-fields',
   'the-tempest',
   'portrait-of-the-regent',
   'the-unfinished-masterpiece',
@@ -31,11 +37,13 @@ const tablesOf = (l) => [
 ];
 
 describe('loot rules', () => {
-  it('no container or body rolls a mythic valuable or an epic+ painting', () => {
+  it('no container or body rolls a mythic valuable or a legendary or mythic painting', () => {
     const items = new Map(json('items').map((i) => [i.id, i]));
+    for (const id of PAINTINGS) expect(items.has(id), `painting ${id}`).toBe(true);
     const looseOnly = (id) => {
       const i = items.get(id);
-      return !!i && i.type === 'loot' && (i.rarity === 'mythic' || PAINTINGS_EPIC_UP.has(id));
+      if (!i || i.type !== 'loot') return false;
+      return i.rarity === 'mythic' || (PAINTINGS.has(id) && i.rarity === 'legendary');
     };
     const rolled = new Set();
     for (const c of json('loot-containers')) tablesOf(c.loot ?? {}).forEach((t) => rolled.add(t));
@@ -43,7 +51,6 @@ describe('loot rules', () => {
     const walk = (n) => {
       if (Array.isArray(n)) return n.forEach(walk);
       if (!n || typeof n !== 'object') return;
-      const o = n;
       const loot = n.loot;
       if (loot?.container) tablesOf(loot).forEach((t) => rolled.add(t));
       Object.values(n).forEach((v) => typeof v === 'object' && walk(v));

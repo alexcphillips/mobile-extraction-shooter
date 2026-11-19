@@ -9,7 +9,7 @@
   "weight": 0.4,
   "rarity": "common",
   "slot": "stock",
-  "weapons": ["m416", "mcx-spear", "k10", "mpx"],
+  "weapons": ["m416", "mcx-spear", "k10", "mpx", "adar"],
   "stock": {
     "length": 1
   },

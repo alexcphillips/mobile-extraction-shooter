@@ -1,0 +1,48 @@
+{
+  "formatVersion": 12,
+  "id": "adar-stock",
+  "name": "ADAR 2-15 wooden stock",
+  "shortName": "Stock",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 1800,
+  "weight": 0.5,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["adar"],
+  "stock": { "length": 1 },
+  "mods": { "recoil": 0.8, "ergonomics": 2 },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.005, 0.07],
+        "size": [0.036, 0.045, 0.14],
+        "color": "#8a5a32",
+        "name": "comb"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.035, 0.165],
+        "size": [0.038, 0.11, 0.07],
+        "color": "#8a5a32",
+        "name": "butt"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.045, 0.09],
+        "size": [0.03, 0.03, 0.1],
+        "color": "#6e4626",
+        "pitch": 18,
+        "name": "wrist"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.035, 0.2015],
+        "size": [0.034, 0.104, 0.003],
+        "color": "#1d1f21",
+        "name": "butt pad"
+      }
+    ]
+  }
+}

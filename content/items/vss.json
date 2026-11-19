@@ -1,0 +1,157 @@
+{
+  "formatVersion": 12,
+  "id": "vss",
+  "name": "VSS Vintorez",
+  "type": "weapon",
+  "class": "dmr",
+  "size": [4, 2],
+  "value": 62000,
+  "weight": 2.6,
+  "rarity": "common",
+  "ammo": "ammo-9x39",
+  "hold": "rifle",
+  "fireMode": "auto",
+  "rpm": 900,
+  "magazine": 10,
+  "feed": "magazine",
+  "reloadTime": 2.4,
+  "ergonomics": 60,
+  "range": 300,
+  "loudness": 55,
+  "suppressed": true,
+  "defaults": { "magazine": "vss-mag", "stock": "vss-stock" },
+  "slots": ["optic", "magazine", "laser", "stock"],
+  "hipSpread": 2.8,
+  "aimSpread": 0.3,
+  "recoil": { "up": 2.13, "side": 0.79, "snap": 42, "recovery": 3, "angle": -5 },
+  "sounds": {
+    "shot": "rifle-shot-suppressed",
+    "suppressed": "rifle-shot-suppressed",
+    "reload": "rifle-reload"
+  },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, -0.02], "size": [0.046, 0.06, 0.2], "color": "#2b2d2f" },
+      { "type": "box", "pos": [0, 0.034, -0.005], "size": [0.04, 0.012, 0.17], "color": "#1d1f21" },
+      { "type": "box", "pos": [-0.025, 0.005, 0], "size": [0.004, 0.02, 0.1], "color": "#1d1f21" },
+      {
+        "type": "box",
+        "pos": [0.024, 0.012, -0.02],
+        "size": [0.008, 0.01, 0.02],
+        "color": "#1d1f21"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.32],
+        "radius": 0.022,
+        "height": 0.4,
+        "color": "#232527",
+        "pitch": 90
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.524],
+        "radius": 0.02,
+        "height": 0.012,
+        "color": "#1d1f21",
+        "pitch": 90
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.01, -0.18],
+        "size": [0.05, 0.055, 0.12],
+        "color": "#8a5a32",
+        "name": "wooden handguard"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0391, -0.1],
+        "size": [0.0314, 0.0021, 0.008],
+        "color": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "rear sight",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0115, 0.0461, -0.1],
+        "size": [0.0084, 0.0119, 0.008],
+        "color": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "rear sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.0115, 0.0461, -0.1],
+        "size": [0.0084, 0.0119, 0.008],
+        "color": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "rear sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0211, -0.49],
+        "size": [0.0484, 0.0022, 0.01],
+        "color": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0371, -0.49],
+        "size": [0.0092, 0.0298, 0.006],
+        "color": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight post",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0209, 0.0305, -0.49],
+        "size": [0.0065, 0.0167, 0.006],
+        "color": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.0209, 0.0305, -0.49],
+        "size": [0.0065, 0.0167, 0.006],
+        "color": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight ear",
+        "group": "iron sights"
+      },
+      { "type": "box", "pos": [0, -0.045, 0], "size": [0.012, 0.008, 0.06], "color": "#1d1f21" },
+      {
+        "type": "box",
+        "pos": [0, -0.035, -0.005],
+        "size": [0.006, 0.02, 0.006],
+        "color": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.07, 0.05],
+        "size": [0.03, 0.08, 0.035],
+        "color": "#8a5a32",
+        "pitch": -18,
+        "name": "grip"
+      },
+      { "type": "box", "pos": [0, -0.01, 0.09], "size": [0.035, 0.05, 0.02], "color": "#1d1f21" }
+    ],
+    "grip": [0, -0.065, 0.05],
+    "support": [0, -0.03, -0.18],
+    "muzzle": [0, 0, -0.53],
+    "sight": [0, 0.052, -0.1],
+    "mounts": {
+      "optic": [0, 0.04, 0.04],
+      "magazine": [0, -0.028, -0.06],
+      "laser": [0.037, -0.008, -0.24],
+      "stock": [0, 0.005, 0.09]
+    }
+  }
+}

@@ -17,6 +17,9 @@
 //   to the mill.
 import { buildingKit } from './mapkit/building.mjs';
 
+// Grid electrics roll the substation's table, not office/computer electrical (looting.md).
+const GRID_MIX = { tables: { substation: 0.8, industrial: 0.2 }, empty: 0.15 };
+
 export const POWERHOUSE = { x0: 121, xm: 131, x1: 146, z0: 126, z1: 140 };
 
 export function buildPowerhouse(h) {
@@ -165,6 +168,9 @@ export function buildPowerhouse(h) {
     at('toolbox', 126.5, P.z1 - 0.4, P.up, { id: 'ph-gallery-toolbox', yaw: 180 }),
     spot('ph-catwalk-loose', 129.8, P.up, 129.2, 'millwright', 0.3),
     at('locker-bank', 130.6, 134, P.fl, { id: 'ph-lockers', yaw: -90 }),
+    // the crew's first-aid cabinet on the mid wall beside the lockers
+    at('medicine-cabinet', 130.85, 135.6, P.fl, { id: 'ph-first-aid', yaw: -90 }),
+    at('ems-bag', 130.3, 136.6, P.fl, { id: 'ph-ems-bag', yaw: 90 }),
     at('metal-shelving', 122.4, 126.5, P.fl, { id: 'ph-shelving' }),
     at('steel-barrel', 121.7, 138.0, P.fl, { id: 'ph-drum-1' }),
     at('steel-barrel', 121.75, 138.7, P.fl, { id: 'ph-drum-2' }),
@@ -248,8 +254,12 @@ export function buildPowerhouse(h) {
     doorZ('ph-door-cr-e', CR.x1 - 0.07, 137.5, MZ.y, 1.0),
     box(CR.x0, CR.z0 - 0.08, CR.x1, P.z1 - 0.2, 6.4, 6.6, steel, { id: 'ph-cr-roof' }),
     at('monitor-desk', 137.2, 135.8, MZ.y, { id: 'ph-cr-desk-1' }),
-    spot('ph-cr-loose', 136.4, MZ.y + 0.77, 135.75, 'switch-room', 0.4),
-    at('electrical-cabinet', 140.3, P.z1 - 0.45, MZ.y, { id: 'ph-cr-cabinet', yaw: 180 }),
+    spot('ph-cr-loose', 136.4, MZ.y + 0.77, 135.75, 'substation', 0.4),
+    at('electrical-cabinet', 140.3, P.z1 - 0.45, MZ.y, {
+      id: 'ph-cr-cabinet',
+      yaw: 180,
+      loot: { container: 'electrical-cabinet', mix: GRID_MIX },
+    }),
     at('monitor-desk', 140.4, 135.8, MZ.y, { id: 'ph-cr-desk-2' }),
     at('office-chair', 137.2, 136.8, MZ.y, { id: 'ph-cr-chair-1', yaw: 180 }),
     at('office-chair', 140.6, 136.9, MZ.y, { id: 'ph-cr-chair-2', yaw: 160 }),
@@ -273,8 +283,12 @@ export function buildPowerhouse(h) {
     at('electrical-panel', 131.4, 137.6, P.fl, { id: 'ph-panel-1', yaw: 90 }),
     at('ups-cabinet', 138.8, P.z1 - 0.65, P.fl, { id: 'ph-ups', yaw: 180 }),
     at('battery-rack', 141.3, P.z1 - 0.6, P.fl, { id: 'ph-battery-1' }),
-    spot('ph-battery-loose', 141.3, P.fl + 1.3, P.z1 - 0.6, 'switch-room', 0.3),
-    at('electrical-cabinet', 131.6, 136.2, P.fl, { id: 'ph-switch-cabinet', yaw: 90 }),
+    spot('ph-battery-loose', 141.3, P.fl + 1.3, P.z1 - 0.6, 'substation', 0.3),
+    at('electrical-cabinet', 131.6, 136.2, P.fl, {
+      id: 'ph-switch-cabinet',
+      yaw: 90,
+      loot: { container: 'electrical-cabinet', mix: GRID_MIX },
+    }),
     at('battery-rack', 143.8, P.z1 - 0.6, P.fl, { id: 'ph-battery-2' }),
     spot('ph-battery-legendary', 143.8, P.fl + 1.3, P.z1 - 0.6, 'legendary-electronics', 0.06),
     at('circuit-breaker', 141.0, MZ.z0 + 0.45, P.fl, { id: 'ph-breaker' }),
@@ -313,7 +327,11 @@ export function buildPowerhouse(h) {
     drawn(108.5, 130.5, 117.6, 140, -0.05, 0.03, C['ph-gravel'], { id: 'ph-yard-gravel' }),
     at('power-transformer', 112.2, 135.2, 0, { id: 'ph-transformer', yaw: 90 }),
     at('transformer-enclosure', 115.8, 138.2, 0, { id: 'ph-enclosure' }),
-    at('electrical-cabinet', 115.6, 133.2, 0, { id: 'ph-yard-cabinet', yaw: 90 }),
+    at('electrical-cabinet', 115.6, 133.2, 0, {
+      id: 'ph-yard-cabinet',
+      yaw: 90,
+      loot: { container: 'electrical-cabinet', mix: GRID_MIX },
+    }),
     prefab('high-voltage-sign', 115.8, 136.69, { yaw: 180 }, 1.7),
     box(109.85, 130.85, 110.15, 131.15, 0, 8, C.timber, { id: 'ph-yard-pole' }),
     drawn(109.2, 130.9, 110.8, 131.1, 7.4, 7.55, C.timber, { id: 'ph-yard-pole-arm' }),

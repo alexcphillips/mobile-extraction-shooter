@@ -1,0 +1,15 @@
+{
+  "formatVersion": 12,
+  "id": "imperial-matcha",
+  "name": "Imperial matcha",
+  "type": "loot",
+  "size": [1, 1],
+  "value": 6500,
+  "weight": 0.5,
+  "rarity": "rare",
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]
+  },
+  "category": "Household",
+  "shortName": "Matcha"
+}

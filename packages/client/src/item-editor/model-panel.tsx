@@ -567,6 +567,7 @@ export function ModelTab(props: {
             picked={sel}
             groups={groups}
             gun={def.type === 'weapon' ? def : null}
+            scope={def.type === 'attachment' && (def.optic?.zoom ?? 1) > 1}
             edit={editPicked}
             single={
               part && ((change) => editModel((m) => m.parts[sel[0]!] && change(m.parts[sel[0]!]!)))
@@ -879,6 +880,7 @@ function PartList(props: {
       {partLabel(p, i)}
       {p.name && <span className="ed-note"> · {p.type}</span>}
       {p.hiddenBy && <span className="ed-note"> · hidden by {p.hiddenBy}</span>}
+      {p.scopedHidden && <span className="ed-note"> · hidden looking through</span>}
     </li>
   );
   const loose = parts.flatMap((p, i) => (p.group ? [] : [row(p, i)]));
@@ -948,6 +950,8 @@ function PickedFields(props: {
   picked: readonly number[];
   groups: readonly string[];
   gun: WeaponDef | null;
+  /** A magnifying optic: its parts can be hidden while looking through it (scopedHidden). */
+  scope: boolean;
   edit: (change: (p: ModelPart) => void) => void;
   /** Edits the one picked part, when only one is. */
   single: ((change: (p: ModelPart) => void) => void) | undefined;
@@ -1033,6 +1037,21 @@ function PickedFields(props: {
               })
             }
           />
+        )}
+        {props.scope && (
+          <Toggle
+            on={chosen.every((p) => p.scopedHidden)}
+            onClick={() => {
+              const hide = !chosen.every((p) => p.scopedHidden);
+              edit((q) => {
+                if (hide) q.scopedHidden = true;
+                else delete q.scopedHidden;
+              });
+            }}
+            title="Not drawn while looking through the scope: parts in the line of sight (tube, bells, caps). The eyepiece rim stays."
+          >
+            hidden looking through
+          </Toggle>
         )}
       </div>
       <Swatches

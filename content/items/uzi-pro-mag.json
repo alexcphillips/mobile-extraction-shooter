@@ -1,0 +1,35 @@
+{
+  "formatVersion": 12,
+  "id": "uzi-pro-mag",
+  "name": "Uzi Pro 20-round magazine",
+  "shortName": "Uzi Pro 20",
+  "type": "attachment",
+  "size": [1, 2],
+  "value": 2200,
+  "weight": 0.18,
+  "rarity": "common",
+  "slot": "magazine",
+  "weapons": ["uzi-pro"],
+  "capacity": 20,
+  "caliber": "9x19",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.0575, 0.005],
+        "size": [0.024, 0.115, 0.032],
+        "color": "#2f3133",
+        "pitch": -5,
+        "name": "body"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.117, 0.011],
+        "size": [0.028, 0.006, 0.036],
+        "color": "#141516",
+        "pitch": -5,
+        "name": "floorplate"
+      }
+    ]
+  }
+}

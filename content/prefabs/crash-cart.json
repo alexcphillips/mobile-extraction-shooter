@@ -1,0 +1,251 @@
+{
+  "formatVersion": 3,
+  "id": "crash-cart",
+  "name": "Crash cart",
+  "tags": ["medical"],
+  "colors": {
+    "body": "#b8342c",
+    "drawer": "#cf453b",
+    "handle": "#c9cdd0",
+    "trim": "#3a3d40",
+    "top": "#5d6266",
+    "defib": "#e3b12a",
+    "screen": "#2f4a3a",
+    "tank": "#2f7a4a",
+    "inside": "#5a1d19",
+    "pack": "#5b8fc0",
+    "pack-b": "#e9ebe8",
+    "vial": "#cfe3ea",
+    "cap": "#f4f4f0"
+  },
+  "nodes": [
+    {
+      "type": "group",
+      "pos": [0, 0, 0],
+      "loot": {
+        "container": "crash-cart",
+        "searched": "crash-cart-open"
+      },
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [0, 0.12, 0],
+          "size": [0.78, 0.9, 0.55],
+          "color": "body"
+        },
+        {
+          "type": "box",
+          "pos": [0, 1.02, 0],
+          "size": [0.82, 0.035, 0.61],
+          "color": "top",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 1.055, -0.285],
+          "size": [0.82, 0.05, 0.02],
+          "color": "top",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.12, 0.287],
+          "size": [0.81, 0.04, 0.025],
+          "color": "trim",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.401, 1.055, 0],
+          "size": [0.02, 0.05, 0.61],
+          "color": "top",
+          "collide": false
+        },
+        {
+          "type": "cylinder",
+          "pos": [-0.32, 0.03, -0.215],
+          "radius": 0.05,
+          "height": 0.04,
+          "color": "trim",
+          "sides": 8,
+          "collide": false,
+          "roll": 90
+        },
+        {
+          "type": "box",
+          "pos": [-0.32, 0.07, -0.215],
+          "size": [0.05, 0.05, 0.05],
+          "color": "trim",
+          "collide": false
+        },
+        {
+          "type": "cylinder",
+          "pos": [-0.32, 0.03, 0.215],
+          "radius": 0.05,
+          "height": 0.04,
+          "color": "trim",
+          "sides": 8,
+          "collide": false,
+          "roll": 90
+        },
+        {
+          "type": "box",
+          "pos": [-0.32, 0.07, 0.215],
+          "size": [0.05, 0.05, 0.05],
+          "color": "trim",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.401, 1.055, 0],
+          "size": [0.02, 0.05, 0.61],
+          "color": "top",
+          "collide": false
+        },
+        {
+          "type": "cylinder",
+          "pos": [0.32, 0.03, -0.215],
+          "radius": 0.05,
+          "height": 0.04,
+          "color": "trim",
+          "sides": 8,
+          "collide": false,
+          "roll": 90
+        },
+        {
+          "type": "box",
+          "pos": [0.32, 0.07, -0.215],
+          "size": [0.05, 0.05, 0.05],
+          "color": "trim",
+          "collide": false
+        },
+        {
+          "type": "cylinder",
+          "pos": [0.32, 0.03, 0.215],
+          "radius": 0.05,
+          "height": 0.04,
+          "color": "trim",
+          "sides": 8,
+          "collide": false,
+          "roll": 90
+        },
+        {
+          "type": "box",
+          "pos": [0.32, 0.07, 0.215],
+          "size": [0.05, 0.05, 0.05],
+          "color": "trim",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.9, 0.278],
+          "size": [0.72, 0.1, 0.006],
+          "color": "drawer",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.96, 0.29],
+          "size": [0.3, 0.02, 0.02],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.78, 0.278],
+          "size": [0.72, 0.1, 0.006],
+          "color": "drawer",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.84, 0.29],
+          "size": [0.3, 0.02, 0.02],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.6, 0.278],
+          "size": [0.72, 0.16, 0.006],
+          "color": "drawer",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.72, 0.29],
+          "size": [0.3, 0.02, 0.02],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.4, 0.278],
+          "size": [0.72, 0.18, 0.006],
+          "color": "drawer",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.54, 0.29],
+          "size": [0.3, 0.02, 0.02],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.15, 0.278],
+          "size": [0.72, 0.23, 0.006],
+          "color": "drawer",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.34, 0.29],
+          "size": [0.3, 0.02, 0.02],
+          "color": "handle",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.12, 1.055, -0.02],
+          "size": [0.34, 0.16, 0.28],
+          "color": "defib",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.12, 1.13, 0.122],
+          "size": [0.16, 0.07, 0.004],
+          "color": "screen",
+          "collide": false
+        },
+        {
+          "type": "cylinder",
+          "pos": [0.46, 0.35, 0.0],
+          "radius": 0.06,
+          "height": 0.55,
+          "color": "tank",
+          "sides": 8,
+          "collide": false
+        },
+        {
+          "type": "cylinder",
+          "pos": [0.46, 0.9, 0.0],
+          "radius": 0.03,
+          "height": 0.06,
+          "color": "handle",
+          "sides": 8,
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.41, 0.6, 0.0],
+          "size": [0.04, 0.03, 0.14],
+          "color": "trim",
+          "collide": false
+        }
+      ]
+    }
+  ]
+}

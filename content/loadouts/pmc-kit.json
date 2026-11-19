@@ -26,6 +26,14 @@
         {
           "item": "compensator",
           "chance": 0.5
+        },
+        {
+          "item": "brightline-prism",
+          "chance": 0.25
+        },
+        {
+          "item": "talus-combat-optic",
+          "chance": 0.2
         }
       ],
       "ammo": [
@@ -75,6 +83,10 @@
         {
           "item": "mag-545x39-45",
           "chance": 0.3
+        },
+        {
+          "item": "brightline-prism",
+          "chance": 0.25
         }
       ],
       "ammo": [
@@ -124,6 +136,10 @@
         {
           "item": "mag-762x39-45",
           "chance": 0.3
+        },
+        {
+          "item": "brightline-prism",
+          "chance": 0.25
         }
       ],
       "ammo": [
@@ -165,6 +181,10 @@
         {
           "item": "mag-mpx-41",
           "chance": 0.4
+        },
+        {
+          "item": "rally-combat-sight",
+          "chance": 0.15
         }
       ],
       "ammo": [
@@ -202,6 +222,10 @@
         {
           "item": "mag-mp7-40",
           "chance": 0.4
+        },
+        {
+          "item": "rally-combat-sight",
+          "chance": 0.15
         }
       ],
       "ammo": [
@@ -247,6 +271,10 @@
         {
           "item": "compensator",
           "chance": 0.5
+        },
+        {
+          "item": "talus-combat-optic",
+          "chance": 0.2
         }
       ],
       "ammo": [
@@ -325,6 +353,117 @@
           "item": "slug"
         }
       ]
+    },
+    {
+      "weight": 0.8,
+      "item": "uzi-pro",
+      "spare": [120, 210],
+      "attachments": [
+        {
+          "item": "holographic-sight",
+          "chance": 0.5
+        },
+        {
+          "item": "red-dot",
+          "chance": 0.7
+        },
+        {
+          "item": "suppressor",
+          "chance": 0.6
+        },
+        {
+          "item": "mag-uzi-pro-32",
+          "chance": 0.4
+        }
+      ],
+      "ammo": [
+        {
+          "weight": 3,
+          "item": "ammo-9mm"
+        },
+        {
+          "weight": 4,
+          "item": "ammo-9mm-ap"
+        },
+        {
+          "weight": 1.5,
+          "item": "ammo-9mm-pbp"
+        }
+      ]
+    },
+    {
+      "weight": 0.8,
+      "item": "p90",
+      "spare": [100, 200],
+      "attachments": [
+        {
+          "item": "holographic-sight",
+          "chance": 0.5
+        },
+        {
+          "item": "red-dot",
+          "chance": 0.4
+        },
+        {
+          "item": "suppressor",
+          "chance": 0.5
+        },
+        {
+          "item": "rally-combat-sight",
+          "chance": 0.15
+        }
+      ],
+      "ammo": [
+        {
+          "weight": 3,
+          "item": "ammo-57x28-ss197sr"
+        },
+        {
+          "weight": 4,
+          "item": "ammo-57x28-sb193"
+        },
+        {
+          "weight": 1.5,
+          "item": "ammo-57x28"
+        }
+      ]
+    },
+    {
+      "weight": 0.5,
+      "item": "vss",
+      "spare": [60, 120],
+      "attachments": [
+        {
+          "item": "scope-4x",
+          "chance": 0.5
+        },
+        {
+          "item": "red-dot",
+          "chance": 0.3
+        },
+        {
+          "item": "as-val-mag",
+          "chance": 0.4
+        },
+        {
+          "item": "harrow-6x-scope",
+          "chance": 0.3
+        }
+      ],
+      "ammo": [
+        {
+          "weight": 3,
+          "item": "ammo-9x39"
+        },
+        {
+          "weight": 3,
+          "item": "ammo-9x39-spp"
+        },
+        {
+          "weight": 1,
+          "item": "ammo-9x39-pab9"
+        }
+      ]
     }
   ],
   "helmets": [
@@ -370,6 +509,55 @@
           "item": "heavy-visor"
         }
       ]
+    },
+    {
+      "weight": 2,
+      "item": "crest-ath-helmet",
+      "condition": [0.6, 1],
+      "fitted": [
+        {
+          "weight": 3,
+          "item": null
+        },
+        {
+          "weight": 0.6,
+          "item": "nvg-monocular"
+        }
+      ]
+    },
+    {
+      "weight": 1,
+      "item": "sentry-sealed",
+      "condition": [0.6, 1],
+      "fitted": [
+        {
+          "weight": 2,
+          "item": null
+        },
+        {
+          "weight": 1,
+          "item": "face-shield"
+        }
+      ]
+    },
+    {
+      "weight": 0.4,
+      "item": "basalt-mk2-helmet",
+      "condition": [0.6, 1],
+      "fitted": [
+        {
+          "weight": 1,
+          "item": null
+        },
+        {
+          "weight": 1,
+          "item": "heavy-visor"
+        },
+        {
+          "weight": 0.3,
+          "item": "anvil-faceplate"
+        }
+      ]
     }
   ],
   "headsets": [
@@ -388,6 +576,10 @@
     {
       "weight": 0.3,
       "item": "elite-headset"
+    },
+    {
+      "weight": 0.1,
+      "item": "phantom-headset"
     }
   ],
   "bodyArmor": [
@@ -404,6 +596,21 @@
     {
       "weight": 0.6,
       "item": "heavy-plate-carrier",
+      "condition": [0.6, 1]
+    },
+    {
+      "weight": 2,
+      "item": "kite-lv-carrier",
+      "condition": [0.6, 1]
+    },
+    {
+      "weight": 1,
+      "item": "bastion-soft-armor",
+      "condition": [0.6, 1]
+    },
+    {
+      "weight": 0.4,
+      "item": "vanguard-carrier",
       "condition": [0.6, 1]
     }
   ],
@@ -425,6 +632,34 @@
     {
       "weight": 1,
       "item": "large-backpack"
+    },
+    {
+      "weight": 1,
+      "item": "cascade-assault-pack"
+    },
+    {
+      "weight": 1,
+      "item": "highline-molle-pack"
+    },
+    {
+      "weight": 0.2,
+      "item": "mule-expedition-pack"
+    },
+    {
+      "weight": 0.8,
+      "item": "tundra-patrol-pack"
+    },
+    {
+      "weight": 0.8,
+      "item": "sapper-assault-pack"
+    },
+    {
+      "weight": 0.6,
+      "item": "narrows-pack"
+    },
+    {
+      "weight": 0.2,
+      "item": "granite-ruck"
     }
   ],
   "grenades": [

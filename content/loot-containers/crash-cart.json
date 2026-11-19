@@ -1,0 +1,14 @@
+{
+  "formatVersion": 1,
+  "id": "crash-cart",
+  "name": "Crash cart",
+  "grid": [4, 4],
+  "loot": {
+    "tables": {
+      "medical": 0.6,
+      "crash-cart": 0.5
+    },
+    "empty": 0.2,
+    "each": true
+  }
+}

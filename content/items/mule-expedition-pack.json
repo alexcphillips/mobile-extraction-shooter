@@ -1,0 +1,30 @@
+{
+  "formatVersion": 12,
+  "id": "mule-expedition-pack",
+  "name": "Mule expedition pack",
+  "type": "container",
+  "size": [4, 4],
+  "value": 32000,
+  "weight": 3.0,
+  "rarity": "legendary",
+  "slot": "backpack",
+  "grid": [6, 6],
+  "moveSpeed": 0.95,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 1.182, 0.227],
+        "size": [0.296, 0.394, 0.177],
+        "color": "#2c3542"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.379, 0.217],
+        "size": [0.276, 0.059, 0.158],
+        "color": "#3e4a5c"
+      },
+      { "type": "box", "pos": [0, 1.064, 0.325], "size": [0.217, 0.138, 0.059], "color": "#3e4a5c" }
+    ]
+  }
+}

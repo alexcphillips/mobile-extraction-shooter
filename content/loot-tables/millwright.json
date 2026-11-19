@@ -6,11 +6,11 @@
   "items": [
     {
       "item": "gear-set",
-      "weight": 4
+      "weight": 3.5
     },
     {
       "item": "steel-latch-set",
-      "weight": 3
+      "weight": 3.5
     },
     {
       "item": "box-of-screws",
@@ -22,11 +22,11 @@
     },
     {
       "item": "pressure-gauge",
-      "weight": 2
+      "weight": 1
     },
     {
       "item": "solenoid-valve",
-      "weight": 1
+      "weight": 2
     },
     {
       "item": "compressed-air-tank",

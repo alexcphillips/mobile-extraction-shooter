@@ -1,0 +1,27 @@
+{
+  "formatVersion": 12,
+  "id": "five-seven-mag",
+  "name": "Five-seveN 20-round magazine",
+  "shortName": "5-7 20",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 2000,
+  "weight": 0.08,
+  "rarity": "common",
+  "slot": "magazine",
+  "weapons": ["five-seven"],
+  "capacity": 20,
+  "caliber": "5.7x28",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.002, 0],
+        "size": [0.026, 0.008, 0.046],
+        "color": "#141516",
+        "pitch": -16,
+        "name": "base plate"
+      }
+    ]
+  }
+}

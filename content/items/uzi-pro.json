@@ -1,0 +1,299 @@
+{
+  "formatVersion": 12,
+  "id": "uzi-pro",
+  "name": "Uzi Pro",
+  "type": "weapon",
+  "class": "smg",
+  "size": [2, 1],
+  "value": 44000,
+  "weight": 1.6,
+  "rarity": "common",
+  "ammo": "ammo-9mm",
+  "hold": "rifle",
+  "fireMode": "auto",
+  "rpm": 1075,
+  "magazine": 20,
+  "feed": "magazine",
+  "reloadTime": 2.1,
+  "ergonomics": 89,
+  "range": 100,
+  "loudness": 110,
+  "defaults": { "magazine": "uzi-pro-mag", "stock": "uzi-pro-stock" },
+  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
+  "hipSpread": 2.0,
+  "aimSpread": 0.6,
+  "recoil": { "up": 1.94, "side": 0.61, "snap": 45, "recovery": 3, "angle": -6 },
+  "sounds": {
+    "shot": "pistol-shot",
+    "suppressed": "pistol-shot-suppressed",
+    "reload": "rifle-reload"
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0.007, -0.01],
+        "size": [0.04, 0.056, 0.2],
+        "color": "#262828",
+        "name": "receiver"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.037, -0.01],
+        "size": [0.022, 0.004, 0.19],
+        "color": "#141516",
+        "name": "top rail"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0405, -0.06],
+        "size": [0.022, 0.003, 0.006],
+        "color": "#141516",
+        "name": "rail ridge",
+        "group": "top rail",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0405, -0.035],
+        "size": [0.022, 0.003, 0.006],
+        "color": "#141516",
+        "name": "rail ridge",
+        "group": "top rail",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0405, -0.01],
+        "size": [0.022, 0.003, 0.006],
+        "color": "#141516",
+        "name": "rail ridge",
+        "group": "top rail",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0405, 0.015],
+        "size": [0.022, 0.003, 0.006],
+        "color": "#141516",
+        "name": "rail ridge",
+        "group": "top rail",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0405, 0.04],
+        "size": [0.022, 0.003, 0.006],
+        "color": "#141516",
+        "name": "rail ridge",
+        "group": "top rail",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.042, -0.08],
+        "size": [0.012, 0.01, 0.016],
+        "color": "#141516",
+        "name": "cocking knob"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.118],
+        "radius": 0.014,
+        "height": 0.012,
+        "color": "#141516",
+        "pitch": 90,
+        "name": "barrel nut"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.14],
+        "radius": 0.009,
+        "height": 0.035,
+        "color": "#262828",
+        "pitch": 90,
+        "name": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.1615],
+        "radius": 0.0105,
+        "height": 0.008,
+        "color": "#141516",
+        "pitch": 90,
+        "hiddenBy": "muzzle",
+        "name": "muzzle thread"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.035, -0.02],
+        "size": [0.044, 0.026, 0.2],
+        "color": "#3a3d40",
+        "name": "polymer lower"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.06, -0.09],
+        "size": [0.034, 0.035, 0.03],
+        "color": "#3a3d40",
+        "pitch": 12,
+        "name": "hand stop"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.083, 0.02],
+        "size": [0.036, 0.08, 0.04],
+        "color": "#3a3d40",
+        "pitch": -6,
+        "name": "pistol grip"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0185, -0.083, 0.02],
+        "size": [0.002, 0.05, 0.03],
+        "color": "#141516",
+        "pitch": -6,
+        "name": "grip texture"
+      },
+      {
+        "type": "box",
+        "pos": [0.0185, -0.083, 0.02],
+        "size": [0.002, 0.05, 0.03],
+        "color": "#141516",
+        "pitch": -6,
+        "name": "grip texture"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.058, -0.012],
+        "size": [0.006, 0.018, 0.005],
+        "color": "#141516",
+        "name": "trigger"
+      },
+      {
+        "type": "box",
+        "pos": [0.0205, 0.01, -0.03],
+        "size": [0.002, 0.018, 0.045],
+        "color": "#141516",
+        "name": "ejection port"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0225, -0.03, 0.05],
+        "size": [0.002, 0.01, 0.012],
+        "color": "#6b6f73",
+        "name": "selector"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0445, 0.07],
+        "size": [0.0145, 0.011, 0.008],
+        "color": "#141516",
+        "name": "rear sight",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0514, 0.07],
+        "size": [0.0201, 0.0028, 0.008],
+        "color": "#141516",
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0086, 0.06, 0.07],
+        "size": [0.0028, 0.0145, 0.008],
+        "color": "#141516",
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0.0086, 0.06, 0.07],
+        "size": [0.0028, 0.0145, 0.008],
+        "color": "#141516",
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0686, 0.07],
+        "size": [0.0201, 0.0028, 0.008],
+        "color": "#141516",
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0175, 0.055, 0.07],
+        "size": [0.004, 0.032, 0.012],
+        "color": "#141516",
+        "name": "rear sight guard",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0.0175, 0.055, 0.07],
+        "size": [0.004, 0.032, 0.012],
+        "color": "#141516",
+        "name": "rear sight guard",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0435, -0.095],
+        "size": [0.02, 0.009, 0.01],
+        "color": "#141516",
+        "name": "front sight",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.054, -0.095],
+        "size": [0.0068, 0.012, 0.006],
+        "color": "#141516",
+        "name": "front sight post",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0135, 0.0545, -0.095],
+        "size": [0.004, 0.031, 0.008],
+        "color": "#141516",
+        "name": "front sight ear",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0.0135, 0.0545, -0.095],
+        "size": [0.004, 0.031, 0.008],
+        "color": "#141516",
+        "name": "front sight ear",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      }
+    ],
+    "grip": [0, -0.083, 0.02],
+    "support": [0, -0.06, -0.09],
+    "muzzle": [0, 0, -0.166],
+    "sight": [0, 0.06, 0.07],
+    "mounts": {
+      "optic": [0, 0.03900000000000001, 0.03],
+      "muzzle": [0, 0, -0.158],
+      "magazine": [0, -0.045, 0.02],
+      "laser": [0.024, -0.035, -0.07],
+      "stock": [0, 0.0, 0.09]
+    }
+  }
+}

@@ -6,16 +6,16 @@
   "items": [
     { "item": "matches", "weight": 4 },
     { "item": "flip-lighter", "weight": 4 },
-    { "item": "bottle-of-water", "weight": 4 },
+    { "item": "bottle-of-water", "weight": 3 },
     { "item": "protein-power", "weight": 4 },
     { "item": "rechargeable-battery", "weight": 4 },
     { "item": "incident-report", "weight": 4 },
-    { "item": "engraved-compass", "weight": 3 },
+    { "item": "engraved-compass", "weight": 4 },
     { "item": "bandage", "weight": 3 },
     { "item": "buckshot", "weight": 3, "count": [4, 10] },
     { "item": "thermobrew", "weight": 2 },
-    { "item": "survey-map-collection", "weight": 2 },
-    { "item": "antique-telescope", "weight": 1.5 },
+    { "item": "survey-map-collection", "weight": 1.5 },
+    { "item": "antique-telescope", "weight": 2 },
     { "item": "cat-tourniquet", "weight": 1.5 }
   ]
 }

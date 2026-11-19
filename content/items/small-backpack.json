@@ -1,7 +1,7 @@
 {
   "formatVersion": 12,
   "id": "small-backpack",
-  "name": "Small backpack",
+  "name": "Trailhead daypack",
   "type": "container",
   "size": [2, 2],
   "value": 5000,

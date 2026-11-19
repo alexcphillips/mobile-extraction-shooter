@@ -6,7 +6,7 @@
   "items": [
     {
       "item": "refrigerant-canister",
-      "weight": 4
+      "weight": 3.2
     },
     {
       "item": "power-relay",
@@ -14,11 +14,11 @@
     },
     {
       "item": "light-bulb",
-      "weight": 4
+      "weight": 1.6
     },
     {
       "item": "condenser-coil",
-      "weight": 1
+      "weight": 0.76
     },
     {
       "item": "refrigerator-control-board",
@@ -26,7 +26,7 @@
     },
     {
       "item": "digital-thermostat",
-      "weight": 1
+      "weight": 0.99
     }
   ]
 }

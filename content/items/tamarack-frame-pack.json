@@ -1,0 +1,49 @@
+{
+  "formatVersion": 12,
+  "id": "tamarack-frame-pack",
+  "name": "Tamarack frame pack",
+  "type": "container",
+  "size": [4, 5],
+  "value": 36000,
+  "weight": 3.2,
+  "rarity": "legendary",
+  "slot": "backpack",
+  "grid": [5, 8],
+  "sections": [
+    {
+      "at": [0, 0],
+      "size": [5, 4]
+    },
+    {
+      "at": [0, 4],
+      "size": [5, 2]
+    },
+    {
+      "at": [0, 6],
+      "size": [5, 2]
+    }
+  ],
+  "moveSpeed": 0.94,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 1.182, 0.227],
+        "size": [0.296, 0.394, 0.177],
+        "color": "#2d4030"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.379, 0.217],
+        "size": [0.276, 0.059, 0.158],
+        "color": "#3f5a44"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.064, 0.325],
+        "size": [0.217, 0.138, 0.059],
+        "color": "#3f5a44"
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "formatVersion": 1,
+  "id": "substation",
+  "name": "Substation",
+  "rolls": [1, 2],
+  "items": [
+    { "item": "power-relay", "weight": 4 },
+    { "item": "electrical-tape", "weight": 3.7 },
+    { "item": "extension-cord", "weight": 3.4 },
+    { "item": "corrugated-tubing", "weight": 2 },
+    { "item": "high-voltage-inverter-board", "weight": 2 },
+    { "item": "high-amp-circuit-breaker", "weight": 1.8 },
+    { "item": "insulation-roll", "weight": 1.6 },
+    { "item": "ev-battery", "weight": 0.35 }
+  ]
+}

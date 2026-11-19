@@ -25,6 +25,10 @@
     {
       "item": "gold-watch",
       "weight": 0.5
+    },
+    {
+      "item": "label-maker",
+      "weight": 1
     }
   ]
 }

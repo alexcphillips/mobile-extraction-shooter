@@ -1,8 +1,8 @@
 {
   "formatVersion": 12,
   "id": "basic-headset",
-  "name": "Basic headset",
-  "shortName": "Headset",
+  "name": "Relay headset",
+  "shortName": "Relay",
   "type": "headset",
   "size": [2, 1],
   "value": 6000,

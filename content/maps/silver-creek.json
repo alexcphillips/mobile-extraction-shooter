@@ -2060,12 +2060,6 @@
             },
             {
               "type": "prefab",
-              "prefab": "filing-cabinet",
-              "pos": [-6.45, 0.3, 1.55],
-              "yaw": 90
-            },
-            {
-              "type": "prefab",
               "prefab": "metal-cabinet",
               "pos": [-6.48, 0.3, 4.1],
               "id": "co-pay-cabinet",
@@ -2264,14 +2258,15 @@
             },
             {
               "type": "prefab",
-              "prefab": "filing-cabinet",
-              "pos": [6.45, 3.3, -3],
+              "prefab": "office-computer",
+              "pos": [3.62, 4.06, 3.02],
+              "id": "co-drafting-computer",
               "yaw": -90
             },
             {
               "type": "prefab",
               "prefab": "filing-cabinet",
-              "pos": [6.45, 3.3, -2.45],
+              "pos": [6.45, 3.3, -3],
               "yaw": -90
             },
             {
@@ -2301,6 +2296,13 @@
               "prefab": "office-chair",
               "pos": [-4.6, 3.3, -2.9],
               "yaw": -90
+            },
+            {
+              "type": "prefab",
+              "prefab": "office-computer",
+              "pos": [-5.32, 4.06, -2.48],
+              "id": "co-chief-computer",
+              "yaw": 90
             },
             {
               "type": "prefab",
@@ -3720,6 +3722,13 @@
               "type": "prefab",
               "prefab": "crate",
               "pos": [1.25, 0.15, -0.95]
+            },
+            {
+              "type": "prefab",
+              "prefab": "ems-bag",
+              "pos": [-1.45, 0.15, -0.2],
+              "id": "lh-ems-bag",
+              "yaw": -90
             }
           ]
         },
@@ -4469,6 +4478,13 @@
                   "pos": [-3.3, 1.8, -2.2]
                 },
                 {
+                  "type": "lootSpawn",
+                  "id": "house-2-fine-wine",
+                  "pos": [-3.3, 1.07, -1.85],
+                  "lootTable": "fine-wine",
+                  "chance": 0.02
+                },
+                {
                   "type": "prefab",
                   "prefab": "bookcase-tall",
                   "pos": [5.05, 0.3, 2.15],
@@ -4710,6 +4726,12 @@
                   "type": "prefab",
                   "prefab": "toilet",
                   "pos": [2.17, 3.3, -2],
+                  "yaw": 90
+                },
+                {
+                  "type": "prefab",
+                  "prefab": "medicine-cabinet",
+                  "pos": [1.88, 3.3, -2],
                   "yaw": 90
                 },
                 {
@@ -6882,14 +6904,14 @@
                 },
                 {
                   "type": "prefab",
-                  "prefab": "filing-cabinet",
-                  "pos": [-6.5, 0.3, -2.4],
-                  "yaw": 90
+                  "prefab": "toilet",
+                  "pos": [-5.5, 0.3, -4.95]
                 },
                 {
                   "type": "prefab",
-                  "prefab": "toilet",
-                  "pos": [-5.5, 0.3, -4.95]
+                  "prefab": "medicine-cabinet",
+                  "pos": [-5.5, 0.3, -5.3],
+                  "id": "store-meds"
                 }
               ]
             },
@@ -9254,6 +9276,13 @@
                   "id": "fire-barrel"
                 }
               ]
+            },
+            {
+              "type": "prefab",
+              "prefab": "ammo-crate",
+              "pos": [112.2, 0, 96],
+              "id": "yard-ammo",
+              "yaw": 90
             }
           ]
         },
@@ -12815,8 +12844,14 @@
                 {
                   "type": "prefab",
                   "prefab": "clipboard",
-                  "pos": [188.1, 1.06, 96.3],
+                  "pos": [187.3, 1.16, 96.45],
                   "yaw": 20
+                },
+                {
+                  "type": "prefab",
+                  "prefab": "office-computer",
+                  "pos": [188.02, 1.06, 96.28],
+                  "id": "mill-office-computer"
                 },
                 {
                   "type": "lootSpawn",
@@ -12848,6 +12883,24 @@
                   "prefab": "notice-board",
                   "pos": [188.4, 0.3, 101.6],
                   "yaw": 180
+                },
+                {
+                  "type": "prefab",
+                  "prefab": "weapon-crate",
+                  "pos": [188.8, 3.5, 96.6],
+                  "id": "mill-roof-weapons",
+                  "yaw": 90
+                },
+                {
+                  "type": "prefab",
+                  "prefab": "medicine-cabinet",
+                  "pos": [183.2, 0.3, 99],
+                  "yaw": 90
+                },
+                {
+                  "type": "prefab",
+                  "prefab": "ems-bag",
+                  "pos": [185, 0.3, 101.2]
                 }
               ]
             }
@@ -13371,13 +13424,23 @@
               "prefab": "electrical-cabinet",
               "pos": [143.5, 0.3, 79.45],
               "id": "mcc-cabinet",
-              "yaw": 180
+              "yaw": 180,
+              "loot": {
+                "container": "electrical-cabinet",
+                "mix": {
+                  "tables": {
+                    "substation": 0.8,
+                    "industrial": 0.2
+                  },
+                  "empty": 0.15
+                }
+              }
             },
             {
               "type": "lootSpawn",
               "id": "mcc-rack-loose",
               "pos": [140.7, 1.6, 77.4],
-              "lootTable": "switch-room",
+              "lootTable": "substation",
               "chance": 0.5
             },
             {
@@ -15579,52 +15642,54 @@
           "pos": [0, 0, 0],
           "nodes": [
             {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [139.57, -6, 104.93],
-              "yaw": 0
+              "type": "box",
+              "pos": [140, -6, 105.3],
+              "size": [1.8, 1.6, 1.6],
+              "color": "#9a8a62",
+              "id": "race-sandbags",
+              "bulge": [0.06, 0.06, 0, 0, 0.06, 0.06]
+            },
+            {
+              "type": "box",
+              "pos": [140, -5.76, 105.31],
+              "size": [1.84, 0.03, 1.62],
+              "color": "#7e7050",
+              "collide": false
+            },
+            {
+              "type": "box",
+              "pos": [140, -5.48, 105.31],
+              "size": [1.84, 0.03, 1.62],
+              "color": "#7e7050",
+              "collide": false
+            },
+            {
+              "type": "box",
+              "pos": [140, -5.21, 105.31],
+              "size": [1.84, 0.03, 1.62],
+              "color": "#7e7050",
+              "collide": false
+            },
+            {
+              "type": "box",
+              "pos": [140, -4.94, 105.31],
+              "size": [1.84, 0.03, 1.62],
+              "color": "#7e7050",
+              "collide": false
             },
             {
               "type": "prefab",
-              "prefab": "crate",
-              "pos": [140.43, -6, 104.93],
-              "yaw": 0
+              "prefab": "ammo-crate",
+              "pos": [141.9, -6, 104.9],
+              "id": "race-nest-ammo"
             },
             {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [139.67, -5.2, 104.93],
-              "yaw": 7
-            },
-            {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [140.53, -5.2, 104.93],
-              "yaw": 7
-            },
-            {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [139.57, -6, 105.8],
-              "yaw": 0
-            },
-            {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [140.43, -6, 105.8],
-              "yaw": 0
-            },
-            {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [139.67, -5.2, 105.8],
-              "yaw": 7
-            },
-            {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [140.53, -5.2, 105.8],
-              "yaw": 7
+              "type": "box",
+              "pos": [142.95, -6, 105.75],
+              "size": [0.7, 0.1, 0.7],
+              "color": "#5f6b4a",
+              "collide": false,
+              "id": "race-nest-bedroll"
             },
             {
               "type": "box",
@@ -15666,46 +15731,39 @@
               "collide": false
             },
             {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [155.07, -6, 104.93],
-              "yaw": 0
+              "type": "box",
+              "pos": [155.5, -6, 105.3],
+              "size": [1.8, 1.6, 1.6],
+              "color": "#8a6a48",
+              "id": "race-stop-logs"
             },
             {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [155.93, -6, 104.93],
-              "yaw": 0
+              "type": "box",
+              "pos": [155.5, -5.7, 105.31],
+              "size": [1.84, 0.03, 1.62],
+              "color": "#5e4632",
+              "collide": false
             },
             {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [155.17, -5.2, 104.93],
-              "yaw": 7
+              "type": "box",
+              "pos": [155.5, -5.39, 105.31],
+              "size": [1.84, 0.03, 1.62],
+              "color": "#5e4632",
+              "collide": false
             },
             {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [156.03, -5.2, 104.93],
-              "yaw": 7
+              "type": "box",
+              "pos": [155.5, -5.07, 105.31],
+              "size": [1.84, 0.03, 1.62],
+              "color": "#5e4632",
+              "collide": false
             },
             {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [155.07, -6, 105.8],
-              "yaw": 0
-            },
-            {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [155.93, -6, 105.8],
-              "yaw": 0
-            },
-            {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [155.6, -5.2, 105.8],
-              "yaw": 7
+              "type": "box",
+              "pos": [155.5, -4.74, 105.31],
+              "size": [1.84, 0.03, 1.62],
+              "color": "#5e4632",
+              "collide": false
             },
             {
               "type": "box",
@@ -15715,52 +15773,33 @@
               "id": "race-planks"
             },
             {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [183.57, -6, 104.93],
-              "yaw": 0
+              "type": "box",
+              "pos": [184, -6, 105.3],
+              "size": [1.8, 1.6, 1.6],
+              "color": "#4f5a46",
+              "id": "race-keeper-stores",
+              "bulge": [0, 0, 0, 0.08, 0.05, 0.05]
+            },
+            {
+              "type": "box",
+              "pos": [184, -6, 106.12],
+              "size": [2, 0.5, 0.04],
+              "color": "#3e4246",
+              "collide": false,
+              "id": "race-keeper-shelf-foot"
             },
             {
               "type": "prefab",
-              "prefab": "crate",
-              "pos": [184.43, -6, 104.93],
-              "yaw": 0
+              "prefab": "tool-chest",
+              "pos": [185.6, -6, 104.8],
+              "id": "race-keeper-chest"
             },
             {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [183.67, -5.2, 104.93],
-              "yaw": 7
-            },
-            {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [184.53, -5.2, 104.93],
-              "yaw": 7
-            },
-            {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [183.57, -6, 105.8],
-              "yaw": 0
-            },
-            {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [184.43, -6, 105.8],
-              "yaw": 0
-            },
-            {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [184.1, -5.2, 105.8],
-              "yaw": 7
-            },
-            {
-              "type": "prefab",
-              "prefab": "crate",
-              "pos": [185.6, -6, 106.4],
-              "yaw": 35
+              "type": "lootSpawn",
+              "id": "race-keeper-spares",
+              "pos": [184, -4.4, 105.3],
+              "lootTable": "millwright",
+              "chance": 0.3
             },
             {
               "type": "box",
@@ -15775,6 +15814,13 @@
               "size": [1.2, 0.4, 0.3],
               "color": "#3e4246",
               "collide": false
+            },
+            {
+              "type": "lootSpawn",
+              "id": "race-pump-part",
+              "pos": [190, -4.3, 106.7],
+              "lootTable": "hydraulics",
+              "chance": 0.3
             },
             {
               "type": "box",
@@ -19326,7 +19372,7 @@
             },
             {
               "type": "prefab",
-              "prefab": "filing-cabinet",
+              "prefab": "tool-chest",
               "pos": [274.75, 0, 58.6],
               "id": "es-tool-cabinet",
               "yaw": 180
@@ -19871,7 +19917,17 @@
                   "type": "prefab",
                   "prefab": "electrical-cabinet",
                   "pos": [270.9, 0, 72.3],
-                  "id": "sb-charger"
+                  "id": "sb-charger",
+                  "loot": {
+                    "container": "electrical-cabinet",
+                    "mix": {
+                      "tables": {
+                        "substation": 0.8,
+                        "industrial": 0.2
+                      },
+                      "empty": 0.15
+                    }
+                  }
                 },
                 {
                   "type": "box",
@@ -19892,7 +19948,7 @@
                   "type": "lootSpawn",
                   "id": "sb-charger-rack",
                   "pos": [268.6, 1.3, 72.45],
-                  "lootTable": "switch-room",
+                  "lootTable": "substation",
                   "chance": 0.4
                 },
                 {
@@ -19995,9 +20051,16 @@
                 {
                   "type": "lootSpawn",
                   "id": "sb-office-log",
-                  "pos": [271.2, 4.05, 74.1],
+                  "pos": [271.2, 4.05, 74.55],
                   "lootTable": "documents",
                   "chance": 0.5
+                },
+                {
+                  "type": "prefab",
+                  "prefab": "office-computer",
+                  "pos": [271.32, 4.06, 74.08],
+                  "id": "sb-office-computer",
+                  "yaw": -90
                 },
                 {
                   "type": "prefab",
@@ -22206,6 +22269,12 @@
             },
             {
               "type": "prefab",
+              "prefab": "ems-bag",
+              "pos": [-2.2, 0.35, -2.6],
+              "id": "bh-ems-bag"
+            },
+            {
+              "type": "prefab",
               "prefab": "notice-board",
               "pos": [-3.5, 0.35, 2.6],
               "id": "bh-notice",
@@ -22516,6 +22585,13 @@
               "pos": [10.4, 0.35, -1.3],
               "id": "bh-toilet",
               "yaw": -90
+            },
+            {
+              "type": "prefab",
+              "prefab": "medicine-cabinet",
+              "pos": [7.88, 0.35, -2.4],
+              "id": "bh-meds",
+              "yaw": 90
             },
             {
               "type": "prefab",
@@ -24203,17 +24279,18 @@
               "yaw": -90
             },
             {
-              "type": "prefab",
-              "prefab": "filing-cabinet",
-              "pos": [258.2, 3.3, 133],
-              "id": "dp-office-cabinet-2"
-            },
-            {
               "type": "lootSpawn",
               "id": "dp-office-desk-papers",
-              "pos": [260.6, 4.05, 135.7],
+              "pos": [260.6, 4.05, 136.35],
               "lootTable": "documents",
               "chance": 0.5
+            },
+            {
+              "type": "prefab",
+              "prefab": "office-computer",
+              "pos": [260.72, 4.06, 135.88],
+              "id": "dp-office-computer",
+              "yaw": -90
             },
             {
               "type": "prefab",
@@ -24279,6 +24356,12 @@
               "pos": [260.4, 0, 130.6],
               "lootTable": "depot-mechanic",
               "chance": 0.45
+            },
+            {
+              "type": "prefab",
+              "prefab": "weapon-crate",
+              "pos": [258.2, 0, 128.6],
+              "id": "dp-cage-weapons"
             },
             {
               "type": "lootSpawn",
@@ -24582,6 +24665,12 @@
                   "pos": [231.35, 0.95, 126.55],
                   "lootTable": "depot-mechanic",
                   "chance": 0.3
+                },
+                {
+                  "type": "prefab",
+                  "prefab": "ammo-crate",
+                  "pos": [230.5, 3.3, 128],
+                  "id": "ts-roof-ammo"
                 }
               ]
             }
@@ -25402,6 +25491,12 @@
               "id": "rw-site-office"
             },
             {
+              "type": "prefab",
+              "prefab": "ems-bag",
+              "pos": [220, 0, 114],
+              "id": "rw-ems-bag"
+            },
+            {
               "type": "cylinder",
               "pos": [296, -0.48, 112.8],
               "radius": 0.72,
@@ -25938,7 +26033,7 @@
           "pos": [227.9, 0.03, 101.6],
           "mix": {
             "tables": {
-              "electrical": 1,
+              "substation": 2,
               "industrial": 1
             }
           },
@@ -26036,8 +26131,7 @@
                 "container": "electrical-cabinet",
                 "mix": {
                   "tables": {
-                    "electrical": 0.6,
-                    "industrial": 0.4
+                    "substation": 1
                   },
                   "empty": 0.15
                 }
@@ -26047,13 +26141,15 @@
               "type": "lootSpawn",
               "id": "sw-floor-spot",
               "pos": [233.2, 0.15, 106.2],
-              "mix": {
-                "tables": {
-                  "electrical": 2,
-                  "industrial": 1
-                }
-              },
+              "lootTable": "substation",
               "chance": 0.35
+            },
+            {
+              "type": "lootSpawn",
+              "id": "sw-battery-spot",
+              "pos": [232.2, 0.15, 104.6],
+              "lootTable": "substation-battery",
+              "chance": 0.15
             },
             {
               "type": "prefab",
@@ -26498,6 +26594,20 @@
             },
             {
               "type": "prefab",
+              "prefab": "medicine-cabinet",
+              "pos": [130.85, 0.3, 135.6],
+              "id": "ph-first-aid",
+              "yaw": -90
+            },
+            {
+              "type": "prefab",
+              "prefab": "ems-bag",
+              "pos": [130.3, 0.3, 136.6],
+              "id": "ph-ems-bag",
+              "yaw": 90
+            },
+            {
+              "type": "prefab",
               "prefab": "metal-shelving",
               "pos": [122.4, 0.3, 126.5],
               "id": "ph-shelving"
@@ -26726,7 +26836,7 @@
               "type": "lootSpawn",
               "id": "ph-cr-loose",
               "pos": [136.4, 4.37, 135.75],
-              "lootTable": "switch-room",
+              "lootTable": "substation",
               "chance": 0.4
             },
             {
@@ -26734,7 +26844,17 @@
               "prefab": "electrical-cabinet",
               "pos": [140.3, 3.6, 139.55],
               "id": "ph-cr-cabinet",
-              "yaw": 180
+              "yaw": 180,
+              "loot": {
+                "container": "electrical-cabinet",
+                "mix": {
+                  "tables": {
+                    "substation": 0.8,
+                    "industrial": 0.2
+                  },
+                  "empty": 0.15
+                }
+              }
             },
             {
               "type": "prefab",
@@ -26857,7 +26977,7 @@
               "type": "lootSpawn",
               "id": "ph-battery-loose",
               "pos": [141.3, 1.6, 139.4],
-              "lootTable": "switch-room",
+              "lootTable": "substation",
               "chance": 0.3
             },
             {
@@ -26865,7 +26985,17 @@
               "prefab": "electrical-cabinet",
               "pos": [131.6, 0.3, 136.2],
               "id": "ph-switch-cabinet",
-              "yaw": 90
+              "yaw": 90,
+              "loot": {
+                "container": "electrical-cabinet",
+                "mix": {
+                  "tables": {
+                    "substation": 0.8,
+                    "industrial": 0.2
+                  },
+                  "empty": 0.15
+                }
+              }
             },
             {
               "type": "prefab",
@@ -26982,7 +27112,17 @@
               "prefab": "electrical-cabinet",
               "pos": [115.6, 0, 133.2],
               "id": "ph-yard-cabinet",
-              "yaw": 90
+              "yaw": 90,
+              "loot": {
+                "container": "electrical-cabinet",
+                "mix": {
+                  "tables": {
+                    "substation": 0.8,
+                    "industrial": 0.2
+                  },
+                  "empty": 0.15
+                }
+              }
             },
             {
               "type": "prefab",
@@ -27321,6 +27461,12 @@
               "yaw": 90
             },
             {
+              "type": "prefab",
+              "prefab": "ammo-crate",
+              "pos": [84.7, 5.75, 8.7],
+              "id": "cabin-ammo"
+            },
+            {
               "type": "box",
               "pos": [84.6, 7.25, 8.35],
               "size": [3.2, 0.05, 0.3],
@@ -27536,6 +27682,13 @@
               "pos": [128.5, 2.92, 12.8],
               "id": "camp-tent-2",
               "yaw": -20
+            },
+            {
+              "type": "prefab",
+              "prefab": "ems-bag",
+              "pos": [125.3, 2.92, 13.4],
+              "id": "camp-ems-bag",
+              "yaw": 8
             },
             {
               "type": "cylinder",
@@ -30630,18 +30783,18 @@
       "open-ground-cover": "920305953db1",
       "west-end/company-gate": "5dc8382537eb",
       "west-end/trailhead": "5e267db4216c",
-      "west-end/company-office": "50068011517b",
+      "west-end/company-office": "d7fa5e8256cc",
       "west-end/fire-lookout": "7f444d47a241",
-      "west-end/lookout-hut": "75dd848ebf96",
+      "west-end/lookout-hut": "940c8ba60903",
       "west-end/sheds": "427ddf720591",
       "west-end/company-houses/house-1-corner-porch": "34ab4707c44d",
-      "west-end/company-houses/house-2-manager-s": "4788c194a122",
+      "west-end/company-houses/house-2-manager-s": "1ebaaee094e7",
       "west-end/company-houses/house-3-duplex": "69d6dc2562dd",
       "west-end/company-houses/house-4-chimney-core": "fe94f08fbdf4",
       "west-end/company-houses/house-5-garage": "a988f15d8a03",
       "west-end/company-houses/house-6-sunroom": "d518a9b30672",
       "west-end/company-houses": "19d70771ac6e",
-      "west-end/gas-station/store": "4d17b428961d",
+      "west-end/gas-station/store": "5a95a986f3fd",
       "west-end/gas-station": "5b8ed39cde52",
       "west-end/west-end-cover": "2a10372558ba",
       "west-end": "4cb05379d154",
@@ -30651,7 +30804,7 @@
       "middle/log-deck": "83491bf0d27a",
       "middle/pond-shore": "372d224ebe87",
       "middle/timber-yard/grading-shed": "ba0f70ed702a",
-      "middle/timber-yard": "fe0ef9cc5b8a",
+      "middle/timber-yard": "020d561b19ab",
       "middle/log-jam": "a57fe19dbc56",
       "middle/log-boom": "d238a4973ff2",
       "middle/mill-dam": "8be62ba20edb",
@@ -30687,13 +30840,13 @@
       "sawmill-core/sawmill/trimmer": "96ac7e407159",
       "sawmill-core/sawmill/green-chain": "17ce7fbeee45",
       "sawmill-core/sawmill/hall-stock": "0b2d2796c5aa",
-      "sawmill-core/sawmill/mill-office": "88b5c9de32fa",
+      "sawmill-core/sawmill/mill-office": "527f3c1b2d84",
       "sawmill-core/sawmill": "738350915bdf",
       "sawmill-core/saw-hall-upper/filing-loft": "b68dbdb10e66",
       "sawmill-core/saw-hall-upper/catwalk": "80dacd8312e6",
       "sawmill-core/saw-hall-upper/lumber-shed": "336fd26f95f9",
       "sawmill-core/saw-hall-upper": "ee0a2185d7a0",
-      "sawmill-core/motor-room": "4b3f00774e26",
+      "sawmill-core/motor-room": "2f286e2462db",
       "sawmill-core/jack-ladder": "f3ff2ad81309",
       "sawmill-core/teepee-burner": "9e033a76f77a",
       "sawmill-core/teepee-burner-details": "f66e538ecc03",
@@ -30705,7 +30858,7 @@
       "sawmill-core/drying-kilns/kiln-6": "39f98c15b3b2",
       "sawmill-core/drying-kilns": "acb1bb17c612",
       "sawmill-core": "b3d98a2a542b",
-      "mill-race-tunnel/tunnel-cover": "f27bd151068d",
+      "mill-race-tunnel/tunnel-cover": "6d88386666a2",
       "mill-race-tunnel/tunnel-trim": "3c1d26d0e616",
       "mill-race-tunnel": "ffedb0b10453",
       "east-end/rail-yard/chip-car": "ad17e14cc91a",
@@ -30715,25 +30868,25 @@
       "east-end/rail-yard": "ff08d724a55b",
       "east-end/engine-shed-leads": "d8ad2ae27b30",
       "east-end/rail-tunnel": "f33f37f3e35e",
-      "east-end/engine-shed/loco-shop": "3e9a09ab7731",
+      "east-end/engine-shed/loco-shop": "f05807b7aef2",
       "east-end/engine-shed/oil-house": "40bafaa5b2aa",
       "east-end/engine-shed/fuel-and-sand-stand": "61110b3327be",
       "east-end/engine-shed/shed-yard": "2c8713d3374e",
-      "east-end/engine-shed": "d5d0406db3d9",
+      "east-end/engine-shed": "20a544816d74",
       "east-end/water-tower-and-pump-house/water-tower": "8ea08e2ac455",
       "east-end/water-tower-and-pump-house/water-tower-details": "7813390980ed",
       "east-end/water-tower-and-pump-house/pump-house": "f689bf3607d2",
       "east-end/water-tower-and-pump-house": "65ee4cd85c97",
-      "east-end/bunkhouse": "419f1a4c8efa",
+      "east-end/bunkhouse": "cd2de4887288",
       "east-end/cookhouse": "5573d4f25f78",
       "east-end/camp-yard": "c6c3fe41c982",
-      "east-end/equipment-depot/tire-shop": "6bda082d895e",
-      "east-end/equipment-depot": "7d6f17b551f0",
+      "east-end/equipment-depot/tire-shop": "66bca7da51d5",
+      "east-end/equipment-depot": "f21c4d1ff752",
       "east-end/fuel-tanks": "c64edc88df4c",
       "east-end/equipment-yard": "4a8ef1481d09",
       "east-end/tanker": "371c5d78f146",
       "east-end/roadworks/works-van": "84133a3a074a",
-      "east-end/roadworks": "90797d958ba0",
+      "east-end/roadworks": "7d167d2149a9",
       "east-end/east-slope-cover/copse-on-the-east-slope-west": "0577eb6dc36a",
       "east-end/east-slope-cover/copse-on-the-east-slope-middle": "cdacdb002882",
       "east-end/east-slope-cover/copse-on-the-east-slope-east": "885a81160ec2",
@@ -30742,15 +30895,15 @@
       "east-end/east-field-cover": "75591263cbb4",
       "east-end": "c652c36b7164",
       "substation/substation-fence": "81fd1db5a0e9",
-      "substation/switch-house": "04c4cf46bdb2",
-      "substation": "1b8208fa6694",
+      "substation/switch-house": "28109bc7abd5",
+      "substation": "92789b40938d",
       "powerhouse/powerhouse-shell": "1e5d30d3c7a0",
-      "powerhouse/boiler-house": "46f83815bdbc",
-      "powerhouse/turbine-hall": "625d36fc2d2b",
-      "powerhouse/powerhouse-yard": "55b25f05fa0d",
+      "powerhouse/boiler-house": "4787e04c3167",
+      "powerhouse/turbine-hall": "6a34acf0f451",
+      "powerhouse/powerhouse-yard": "346b8ad97071",
       "powerhouse": "e6dc9845fbcd",
-      "ridge/hunting-cabin": "1350da810299",
-      "ridge/campsite": "9b4fff438444",
+      "ridge/hunting-cabin": "e94efea4f05c",
+      "ridge/campsite": "af55a1b674e3",
       "ridge/deer-stand-1": "28b995f125dc",
       "ridge/deer-stand-2": "218eb356d314",
       "ridge/clear-cut/clear-cut-stumps": "3bee115d1d90",

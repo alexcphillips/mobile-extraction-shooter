@@ -9,7 +9,7 @@
   "weight": 0.25,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["g18c"],
+  "weapons": ["g18c", "glock-17"],
   "capacity": 33,
   "caliber": "9x19",
   "mods": {

@@ -6,11 +6,7 @@
   "items": [
     {
       "item": "graphics-card",
-      "weight": 0.5
-    },
-    {
-      "item": "laptop",
-      "weight": 1
+      "weight": 0.15
     },
     {
       "item": "smartphone",
@@ -18,7 +14,7 @@
     },
     {
       "item": "power-supply-unit",
-      "weight": 2
+      "weight": 1
     },
     {
       "item": "phase-change-thermal-paste",
@@ -29,12 +25,28 @@
       "weight": 1
     },
     {
+      "item": "ssd",
+      "weight": 2
+    },
+    {
       "item": "voltex-cpu",
       "weight": 0.5
     },
     {
       "item": "voltex-v450-motherboard",
-      "weight": 0.5
+      "weight": 0.3
+    },
+    {
+      "item": "dvd-drive",
+      "weight": 2
+    },
+    {
+      "item": "cpu-fan",
+      "weight": 1
+    },
+    {
+      "item": "voltex-vr-controller",
+      "weight": 0.4
     }
   ]
 }

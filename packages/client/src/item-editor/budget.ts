@@ -24,8 +24,10 @@ export function budgetOf(def: ItemDef): Budget {
         ? { triangles: 1000, kind: 'pistol' }
         : { triangles: 2000, kind: 'long gun' };
     case 'attachment':
+      // Optics 1,200 (2026-11-18, the user's call: the most looked-at part of the game; a
+      // long gun's 2,000 still counts its fitted optic).
       return def.slot === 'optic'
-        ? { triangles: 500, kind: 'optic' }
+        ? { triangles: 1200, kind: 'optic' }
         : { triangles: 300, kind: `${def.slot} attachment` };
     case 'melee':
       return { triangles: 400, kind: 'knife' };

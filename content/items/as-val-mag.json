@@ -9,7 +9,7 @@
   "weight": 0.15,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["as-val"],
+  "weapons": ["as-val", "vss"],
   "capacity": 20,
   "caliber": "9x39",
   "model": {

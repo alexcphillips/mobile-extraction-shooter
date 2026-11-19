@@ -22,6 +22,9 @@ import { writeGenerated, writeOnce } from './mapkit/generated.mjs';
 import { along, box, drawn, group, prefab as placed, r2 } from './mapkit/nodes.mjs';
 import { terrainGrid } from './mapkit/terrain.mjs';
 
+// Grid electrics roll the substation's table, not office/computer electrical (looting.md).
+const GRID_MIX = { tables: { substation: 0.8, industrial: 0.2 }, empty: 0.15 };
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const MAP_FILE = resolve(ROOT, 'content/maps/silver-creek.json');
 const RAID_FILE = resolve(ROOT, 'content/raids/silver-creek.json');
@@ -595,7 +598,8 @@ const office = group('Mill office', [
   prefab('filing-cabinet', 183.6, 100.9, { yaw: 90 }),
   prefab('filing-cabinet', 183.6, 100.33, { yaw: 90 }), // the user's placement, 2026-11-17
   prefab('paper-stacks', 187.2, 96.4, {}, F + 0.76),
-  prefab('clipboard', 188.1, 96.3, { yaw: 20 }, F + 0.76),
+  prefab('clipboard', 187.3, 96.45, { yaw: 20 }, F + 0.86),
+  prefab('office-computer', 188.02, 96.28, { id: 'mill-office-computer' }, F + 0.76),
   // the foreman's file nobody was meant to see, very rarely (mythic intel: loose only)
   millSpot('mill-office-mythic-intel', 186.4, F + 0.76, 96.5, 'mythic-intel', 0.02),
   // the user's placement, 2026-11-17
@@ -613,6 +617,13 @@ const office = group('Mill office', [
     },
   }),
   prefab('notice-board', 188.4, 101.6, { yaw: 180 }, F),
+  // the foreman's guards' weapon crate on the office roof, where the catwalk lands: the
+  // hall's most exposed place, seen from the whole south half of the floor
+  prefab('weapon-crate', 188.8, 96.6, { id: 'mill-roof-weapons', yaw: 90 }, offTop + 0.2),
+  // the mill's first-aid cabinet on the west wall, between the door and the files
+  prefab('medicine-cabinet', 183.2, 99.0, { yaw: 90 }),
+  // the mill's EMS bag on the floor by the files
+  prefab('ems-bag', 185.0, 101.2, {}),
 ]);
 
 // The motor control room (2026-11-16, the user's ask: electrical loot in the middle of the
@@ -672,8 +683,18 @@ const motorRoom = group('Motor room', [
   prefab('battery-rack', r2(MCC.x0 + 0.4), 78, { id: 'mcc-batteries', yaw: 90 }, F),
   prefab('substation-control-panel', r2(MCC.x1 - 0.2), 75.4, { yaw: -90 }, F),
   prefab('electrical-panel', 144.6, r2(MCC.z1 - 0.2), { yaw: 180 }, F),
-  prefab('electrical-cabinet', 143.5, r2(MCC.z1 - 0.45), { id: 'mcc-cabinet', yaw: 180 }, F),
-  millSpot('mcc-rack-loose', 140.7, F + 1.3, 77.4, 'switch-room', 0.5),
+  prefab(
+    'electrical-cabinet',
+    143.5,
+    r2(MCC.z1 - 0.45),
+    {
+      id: 'mcc-cabinet',
+      yaw: 180,
+      loot: { container: 'electrical-cabinet', mix: GRID_MIX },
+    },
+    F,
+  ),
+  millSpot('mcc-rack-loose', 140.7, F + 1.3, 77.4, 'substation', 0.5),
   millSpot('mcc-rack-legendary', 140.7, F + 1.3, 78.6, 'legendary-industrial', 0.06), // on the battery rack
 ]);
 
@@ -1665,22 +1686,31 @@ const tunnel = group('Mill race tunnel', [
   const fl = T.floor;
   const nIn = T.z0 + 0.5;
   const sIn = T.z1 - 0.5;
-  const crates = (x, zs, layers) =>
-    layers.flatMap((n, y) =>
-      Array.from({ length: n }, (_, i) =>
-        prefab(
-          'crate',
-          x + (i - (n - 1) / 2) * 0.86 + (y % 2) * 0.1,
-          zs,
-          { yaw: y * 7 },
-          fl + y * 0.8,
-        ),
+  // Reworked (the user's ask): the crate stacks read as searchable and weren't. The race is
+  // the mill's dry water channel, so its cover is the race's own things, in the same places
+  // and sizes (the sight lines and the AI's routes are unchanged); the loot is real.
+  const courses = (x0, x1, z0, z1, h, color, step) =>
+    Array.from({ length: Math.floor(h / step) - 1 }, (_, k) =>
+      drawn(
+        x0 - 0.02,
+        z0,
+        x1 + 0.02,
+        z1 + 0.02,
+        fl + (k + 1) * step - 0.025,
+        fl + (k + 1) * step,
+        color,
       ),
     );
   const cover = [
-    // West of the creek, north side: crates two wide, two deep, two high.
-    ...crates(140, nIn + 0.43, [2, 2]),
-    ...crates(140, nIn + 1.3, [2, 2]),
+    // West of the creek, north side: the scav's nest, a sandbag wall facing the west stairs,
+    // his ammo crate tucked behind it against the wall.
+    box(139.1, nIn, 140.9, nIn + 1.6, fl, fl + 1.6, '#9a8a62', {
+      id: 'race-sandbags',
+      bulge: [0.06, 0.06, 0, 0, 0.06, 0.06],
+    }),
+    ...courses(139.1, 140.9, nIn, nIn + 1.6, 1.6, '#7e7050', 0.27),
+    prefab('ammo-crate', 141.9, nIn + 0.4, { id: 'race-nest-ammo' }, fl),
+    drawn(142.6, nIn + 0.9, 143.3, nIn + 1.6, fl, fl + 0.1, '#5f6b4a', { id: 'race-nest-bedroll' }),
     // South side: offcuts stacked against the wall.
     box(151, sIn - 1.6, 153.4, sIn, fl, fl + 1.7, C['timber-dark'], { id: 'race-offcuts' }),
     drawn(150.98, sIn - 1.62, 153.42, sIn, fl + 0.55, fl + 0.6, C.timber),
@@ -1692,18 +1722,38 @@ const tunnel = group('Mill race tunnel', [
       top: [1.6, 1],
     }),
     along([167.4, fl + 0.3, nIn + 1.9], [170.6, fl + 1.5, nIn + 1.2], 1.2, 0.2, C.concrete),
-    // North side again past the offcuts: more crates.
-    ...crates(155.5, nIn + 0.43, [2, 2]),
-    ...crates(155.5, nIn + 1.3, [2, 1]),
+    // North side past the offcuts: the race's stop logs, stacked for the next shutdown.
+    box(154.6, nIn, 156.4, nIn + 1.6, fl, fl + 1.6, C.timber, { id: 'race-stop-logs' }),
+    ...courses(154.6, 156.4, nIn, nIn + 1.6, 1.6, C['timber-dark'], 0.32),
     // South side under the east bank: planks.
     box(172.8, sIn - 1.6, 175.2, sIn, fl, fl + 1.7, C.timber, { id: 'race-planks' }),
-    // East of the hatch, north side: crates, one fallen.
-    ...crates(184, nIn + 0.43, [2, 2]),
-    ...crates(184, nIn + 1.3, [2, 1]),
-    prefab('crate', 185.6, nIn + 1.9, { yaw: 35 }, fl),
-    // South side: an old pump.
+    // East of the hatch, north side: the race keeper's stores (shelves of spares under a
+    // tarp) and his tool chest beside them, a loose part on the shelf's end.
+    box(183.1, nIn, 184.9, nIn + 1.6, fl, fl + 1.6, '#4f5a46', {
+      id: 'race-keeper-stores',
+      bulge: [0, 0, 0, 0.08, 0.05, 0.05],
+    }),
+    drawn(183.0, nIn + 1.6, 185.0, nIn + 1.64, fl, fl + 0.5, C['steel-dark'], {
+      id: 'race-keeper-shelf-foot',
+    }),
+    prefab('tool-chest', 185.6, nIn + 0.3, { id: 'race-keeper-chest' }, fl),
+    {
+      type: 'lootSpawn',
+      id: 'race-keeper-spares',
+      pos: [184.0, fl + 1.6, nIn + 0.8],
+      lootTable: 'millwright',
+      chance: 0.3,
+    },
+    // South side: an old pump, a part off it left on its housing.
     box(189, sIn - 1.6, 191, sIn, fl, fl + 1.7, C.machine, { id: 'race-pump' }),
     drawn(189.4, sIn - 1.9, 190.6, sIn - 1.6, fl + 0.4, fl + 0.8, C['steel-dark']),
+    {
+      type: 'lootSpawn',
+      id: 'race-pump-part',
+      pos: [190, fl + 1.7, sIn - 0.8],
+      lootTable: 'hydraulics',
+      chance: 0.3,
+    },
     // North side by the east shaft: a spare sluice gate leaned on the wall.
     box(195, nIn, 197.2, nIn + 1.6, fl, fl + 1.8, C['steel-dark'], { id: 'race-sluice-gate' }),
     ...[195.5, 196.1, 196.7].map((x) =>

@@ -1,0 +1,29 @@
+{
+  "formatVersion": 12,
+  "id": "wayfarer-pack",
+  "name": "Wayfarer pack",
+  "type": "container",
+  "size": [2, 3],
+  "value": 7500,
+  "weight": 0.8,
+  "rarity": "common",
+  "slot": "backpack",
+  "grid": [3, 3],
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 1.182, 0.227],
+        "size": [0.296, 0.394, 0.177],
+        "color": "#57422c"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.379, 0.217],
+        "size": [0.276, 0.059, 0.158],
+        "color": "#7a5c3e"
+      },
+      { "type": "box", "pos": [0, 1.064, 0.325], "size": [0.217, 0.138, 0.059], "color": "#7a5c3e" }
+    ]
+  }
+}

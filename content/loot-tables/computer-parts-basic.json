@@ -6,7 +6,7 @@
   "items": [
     {
       "item": "power-supply-unit",
-      "weight": 2
+      "weight": 1
     },
     {
       "item": "hd-webcam",
@@ -26,7 +26,23 @@
     },
     {
       "item": "extension-cord",
-      "weight": 4
+      "weight": 3
+    },
+    {
+      "item": "flash-drive",
+      "weight": 2
+    },
+    {
+      "item": "dvd-drive",
+      "weight": 2
+    },
+    {
+      "item": "cpu-fan",
+      "weight": 2
+    },
+    {
+      "item": "mouse",
+      "weight": 2.3
     }
   ]
 }

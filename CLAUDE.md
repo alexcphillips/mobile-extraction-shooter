@@ -7,6 +7,7 @@ Read only what the task needs. **Code and `content/` are the source of truth;** 
 - [docs/features/](docs/features/): one doc per app feature, from the template. If a feature's doc isn't written yet, read the code and search the archive for that topic.
 - [docs/roadmap.md](docs/roadmap.md): the open work, session by session. Find your session, read its **Read:** line, do it, then delete it from the roadmap and record any changed rules or decisions in the feature doc.
 - [docs/props.md](docs/props.md): how to build props and prefabs in the house style (shapes, colors, collision, frame rules), and item models (frames, triangle budgets, the screenshot script).
+- [docs/optics.md](docs/optics.md): how to build optics (sights and scopes) to the bar they need, from the reference build `asp-reflex-sight`. Read it before making or changing an optic.
 - [docs/level-design.md](docs/level-design.md): what we look for in tactical layouts (exposure, lanes, sightlines, what the AI can reach), a review checklist, and how to check movement in the sim. Read it before laying out or reviewing an area. It applies to extraction maps only, not zombies or other modes.
 - [docs/hangar.md](docs/hangar.md): the Hangar, the base between raids (modules and upgrades; crafting was removed for vendor barters).
 - [docs/coop.md](docs/coop.md): the co-op to-do (friends, party, raid server), in the same session format.

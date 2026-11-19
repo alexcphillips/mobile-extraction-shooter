@@ -27,6 +27,12 @@
       "item": "holographic-sight"
     },
     {
+      "item": "sundog-reflex-sight"
+    },
+    {
+      "item": "asp-reflex-sight"
+    },
+    {
       "item": "compensator"
     },
     {
@@ -39,10 +45,19 @@
       "item": "p226-mag"
     },
     {
+      "item": "m1911-mag"
+    },
+    {
       "item": "akm-mag"
     },
     {
       "item": "aks-74u-mag"
+    },
+    {
+      "item": "mag-stanag-20"
+    },
+    {
+      "item": "uzi-mag"
     },
     {
       "item": "sks-stock"
@@ -52,6 +67,12 @@
     },
     {
       "item": "aks-74u-stock"
+    },
+    {
+      "item": "uzi-stock"
+    },
+    {
+      "item": "adar-stock"
     },
     {
       "item": "akm-stock"
@@ -84,17 +105,16 @@
       "barter": [
         {
           "item": "digital-thermostat",
-          "count": 1
-        },
-        {
-          "item": "led-tube",
           "count": 2
         }
       ]
     },
     {
-      "item": "g18c-mag",
+      "item": "brightline-prism",
       "level": 2
+    },
+    {
+      "item": "g18c-mag"
     },
     {
       "item": "ak-74m-mag",
@@ -131,6 +151,14 @@
       "level": 2
     },
     {
+      "item": "five-seven-mag",
+      "level": 2
+    },
+    {
+      "item": "uzi-pro-mag",
+      "level": 2
+    },
+    {
       "item": "r93-mag",
       "level": 2
     },
@@ -140,6 +168,10 @@
     },
     {
       "item": "sv-98-mag",
+      "level": 2
+    },
+    {
+      "item": "svt-mag",
       "level": 2
     },
     {
@@ -303,11 +335,19 @@
       "level": 2
     },
     {
+      "item": "uzi-pro-stock",
+      "level": 2
+    },
+    {
       "item": "saiga-12-stock",
       "level": 2
     },
     {
       "item": "sv-98-stock",
+      "level": 2
+    },
+    {
+      "item": "svt-stock",
       "level": 2
     },
     {
@@ -345,6 +385,14 @@
       "level": 3
     },
     {
+      "item": "vss-mag",
+      "level": 3
+    },
+    {
+      "item": "p90-mag",
+      "level": 3
+    },
+    {
       "item": "rpk-16-mag",
       "level": 3
     },
@@ -367,7 +415,15 @@
       ]
     },
     {
+      "item": "mag-uzi-pro-32",
+      "level": 3
+    },
+    {
       "item": "mp7-stock",
+      "level": 3
+    },
+    {
+      "item": "vss-stock",
       "level": 3
     },
     {
@@ -380,6 +436,18 @@
     },
     {
       "item": "rpk-16-stock",
+      "level": 3
+    },
+    {
+      "item": "rally-combat-sight",
+      "level": 3
+    },
+    {
+      "item": "talus-combat-optic",
+      "level": 3
+    },
+    {
+      "item": "harrow-6x-scope",
       "level": 3
     },
     {
@@ -399,6 +467,10 @@
           "count": 1
         }
       ]
+    },
+    {
+      "item": "longwatch-10x-scope",
+      "level": 4
     },
     {
       "item": "aa-12-mag",

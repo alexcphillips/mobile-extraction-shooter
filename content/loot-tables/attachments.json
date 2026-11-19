@@ -53,6 +53,21 @@
     { "item": "mpx-mag", "weight": 0.4 },
     { "item": "p226-mag", "weight": 0.4 },
     { "item": "rpk-16-mag", "weight": 0.4 },
-    { "item": "saiga-12-mag", "weight": 0.4 }
+    { "item": "saiga-12-mag", "weight": 0.4 },
+    { "item": "uzi-mag", "weight": 0.4 },
+    { "item": "uzi-pro-mag", "weight": 0.4 },
+    { "item": "p90-mag", "weight": 0.4 },
+    { "item": "mag-uzi-pro-32", "weight": 0.3 },
+    { "item": "five-seven-mag", "weight": 0.3 },
+    { "item": "mag-stanag-20", "weight": 0.4 },
+    { "item": "vss-mag", "weight": 0.3 },
+    { "item": "svt-mag", "weight": 0.3 },
+    { "item": "brightline-prism", "weight": 0.4 },
+    { "item": "harrow-6x-scope", "weight": 0.25 },
+    { "item": "longwatch-10x-scope", "weight": 0.12 },
+    { "item": "rally-combat-sight", "weight": 0.3 },
+    { "item": "talus-combat-optic", "weight": 0.25 },
+    { "item": "sundog-reflex-sight", "weight": 0.6 },
+    { "item": "asp-reflex-sight", "weight": 0.6 }
   ]
 }

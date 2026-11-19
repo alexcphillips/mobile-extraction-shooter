@@ -1,0 +1,276 @@
+{
+  "formatVersion": 12,
+  "id": "svt-40",
+  "name": "SVT-40",
+  "type": "weapon",
+  "class": "dmr",
+  "size": [4, 1],
+  "value": 28000,
+  "weight": 3.9,
+  "rarity": "common",
+  "ammo": "ammo-762x54r-hpbt",
+  "hold": "rifle",
+  "fireMode": "semi",
+  "rpm": 300,
+  "magazine": 10,
+  "feed": "magazine",
+  "reloadTime": 2.8,
+  "ergonomics": 50,
+  "range": 350,
+  "loudness": 230,
+  "defaults": { "magazine": "svt-mag", "stock": "svt-stock" },
+  "slots": ["optic", "muzzle", "magazine", "stock"],
+  "hipSpread": 3.2,
+  "aimSpread": 0.18,
+  "recoil": { "up": 4.15, "side": 1.36, "snap": 36, "recovery": 2.73, "angle": 5 },
+  "sounds": {
+    "shot": "rifle-shot",
+    "suppressed": "rifle-shot-suppressed",
+    "reload": "rifle-reload"
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0.005, 0.03],
+        "size": [0.034, 0.045, 0.2],
+        "color": "#3a3c3e",
+        "name": "receiver"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.022, 0.03],
+        "size": [0.04, 0.03, 0.2],
+        "color": "#8a5a32",
+        "name": "stock under receiver"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.02, -0.2],
+        "size": [0.038, 0.05, 0.34],
+        "color": "#8a5a32",
+        "name": "forestock"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.02, -0.25],
+        "size": [0.03, 0.025, 0.26],
+        "color": "#3a3c3e",
+        "name": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0155, 0.02, -0.18],
+        "size": [0.002, 0.01, 0.03],
+        "color": "#1d1f21",
+        "name": "vent",
+        "group": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0155, 0.02, -0.25],
+        "size": [0.002, 0.01, 0.03],
+        "color": "#1d1f21",
+        "name": "vent",
+        "group": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0155, 0.02, -0.32],
+        "size": [0.002, 0.01, 0.03],
+        "color": "#1d1f21",
+        "name": "vent",
+        "group": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [0.0155, 0.02, -0.18],
+        "size": [0.002, 0.01, 0.03],
+        "color": "#1d1f21",
+        "name": "vent",
+        "group": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [0.0155, 0.02, -0.25],
+        "size": [0.002, 0.01, 0.03],
+        "color": "#1d1f21",
+        "name": "vent",
+        "group": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [0.0155, 0.02, -0.32],
+        "size": [0.002, 0.01, 0.03],
+        "color": "#1d1f21",
+        "name": "vent",
+        "group": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0, -0.375],
+        "size": [0.042, 0.062, 0.016],
+        "color": "#3a3c3e",
+        "name": "front band"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, -0.515],
+        "radius": 0.009,
+        "height": 0.3,
+        "color": "#3a3c3e",
+        "pitch": 90,
+        "name": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, -0.69],
+        "radius": 0.014,
+        "height": 0.05,
+        "color": "#1d1f21",
+        "pitch": 90,
+        "hiddenBy": "muzzle",
+        "name": "muzzle brake"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0145, 0.012, -0.68],
+        "size": [0.002, 0.012, 0.006],
+        "color": "#3a3c3e",
+        "hiddenBy": "muzzle",
+        "name": "brake port",
+        "group": "muzzle brake"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0145, 0.012, -0.695],
+        "size": [0.002, 0.012, 0.006],
+        "color": "#3a3c3e",
+        "hiddenBy": "muzzle",
+        "name": "brake port",
+        "group": "muzzle brake"
+      },
+      {
+        "type": "box",
+        "pos": [0.0145, 0.012, -0.68],
+        "size": [0.002, 0.012, 0.006],
+        "color": "#3a3c3e",
+        "hiddenBy": "muzzle",
+        "name": "brake port",
+        "group": "muzzle brake"
+      },
+      {
+        "type": "box",
+        "pos": [0.0145, 0.012, -0.695],
+        "size": [0.002, 0.012, 0.006],
+        "color": "#3a3c3e",
+        "hiddenBy": "muzzle",
+        "name": "brake port",
+        "group": "muzzle brake"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.052, 0.07],
+        "size": [0.01, 0.006, 0.06],
+        "color": "#3a3c3e",
+        "name": "trigger guard"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.042, 0.07],
+        "size": [0.005, 0.016, 0.005],
+        "color": "#1d1f21",
+        "name": "trigger"
+      },
+      {
+        "type": "box",
+        "pos": [0.018, 0.012, 0.05],
+        "size": [0.002, 0.02, 0.05],
+        "color": "#1d1f21",
+        "name": "ejection port"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0374, -0.1],
+        "size": [0.022, 0.0095, 0.012],
+        "color": "#1d1f21",
+        "name": "rear sight",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0065, 0.046, -0.1],
+        "size": [0.007, 0.008, 0.008],
+        "color": "#1d1f21",
+        "name": "rear sight ear",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0.0065, 0.046, -0.1],
+        "size": [0.007, 0.008, 0.008],
+        "color": "#1d1f21",
+        "name": "rear sight ear",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.025, -0.64],
+        "size": [0.012, 0.008, 0.012],
+        "color": "#1d1f21",
+        "name": "front sight",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0395, -0.64],
+        "size": [0.004, 0.021, 0.004],
+        "color": "#1d1f21",
+        "name": "front sight post",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [-0.009, 0.0435, -0.64],
+        "size": [0.002, 0.029, 0.012],
+        "color": "#1d1f21",
+        "name": "front sight hood",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0.009, 0.0435, -0.64],
+        "size": [0.002, 0.029, 0.012],
+        "color": "#1d1f21",
+        "name": "front sight hood",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0595, -0.64],
+        "size": [0.02, 0.003, 0.012],
+        "color": "#1d1f21",
+        "name": "front sight hood top",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      }
+    ],
+    "grip": [0, -0.045, 0.14],
+    "support": [0, -0.03, -0.2],
+    "muzzle": [0, 0.012, -0.717],
+    "sight": [0, 0.05, -0.1],
+    "mounts": {
+      "optic": [0, 0.0275, 0.07],
+      "muzzle": [0, 0.012, -0.665],
+      "magazine": [0, -0.037, 0.02],
+      "stock": [0, -0.01, 0.13]
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "formatVersion": 12,
+  "id": "uzi-mag",
+  "name": "Uzi 32-round magazine",
+  "shortName": "Uzi 32",
+  "type": "attachment",
+  "size": [1, 2],
+  "value": 1800,
+  "weight": 0.23,
+  "rarity": "common",
+  "slot": "magazine",
+  "weapons": ["uzi"],
+  "capacity": 32,
+  "caliber": "9x19",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.0825, 0.0072],
+        "size": [0.024, 0.165, 0.032],
+        "color": "#3a3c3e",
+        "pitch": -5,
+        "name": "body"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.167, 0.0154],
+        "size": [0.028, 0.006, 0.036],
+        "color": "#18191b",
+        "pitch": -5,
+        "name": "floorplate"
+      }
+    ]
+  }
+}

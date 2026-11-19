@@ -31,14 +31,14 @@ Docs hold what the code and content can't tell you: **what a feature is for, the
 
 ## Features
 
-Each feature doc gets written in its own session: read the code for that feature, then ask the user the "why"s. Before asking, search the archive (below) for that one topic. Status: ☐ not written · ☑ written.
+Each feature doc gets written in its own session: read the code for that feature, then ask the user the "why"s. Before asking, search the archive (below) for that one topic. Status: ☐ not written · ◐ started · ☑ written.
 
 - ☐ **combat**: guns, attachments, recoil, aiming, grenades, melee
 - ☐ **damage-and-health**: hit zones, armor and plates, limbs, meds, timed effects
 - ☐ **movement-and-controls**: movement, stamina, touch/keyboard/pad input
 - ☐ **ai**: enemy types, squads, tactics, bosses, hearing
 - ☐ **inventory-and-gear**: grids, worn gear and rigs, weight, packing, item details
-- ☐ **looting**: loot tables, containers, rolls, item sources
+- ◐ [looting](features/looting.md): loot tables, containers, rolls, item sources (started: only the rules settled so far)
 - ☐ **raids**: raid flow, spawns, waves, zones, extraction, switches, doors
 - ☑ [vendors-and-quests](features/vendors-and-quests.md): vendors, barters, rep and levels, quests, XP
 - ☐ **hangar**: the base between raids
@@ -57,6 +57,7 @@ Each feature doc gets written in its own session: read the code for that feature
 These come from before this system. They are kept because no code holds what's in them, but they still carry values and history. Trim them to the rules above when a session touches one.
 - [roadmap.md](roadmap.md): open work.
 - [props.md](props.md): the house style for props and item models.
+- [optics.md](optics.md): how to build optics to the bar they need (the reference build, anatomy, budget, aimed checks, reticles).
 - [level-design.md](level-design.md): what we look for in tactical layouts.
 - [coop.md](coop.md): the co-op plan.
 - [hangar.md](hangar.md): the Hangar plan. Partly stale (crafting was removed for barters).

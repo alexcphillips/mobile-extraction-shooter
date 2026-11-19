@@ -1,8 +1,8 @@
 {
   "formatVersion": 12,
   "id": "elite-headset",
-  "name": "Elite headset",
-  "shortName": "Elite",
+  "name": "Overwatch headset",
+  "shortName": "Overwatch",
   "type": "headset",
   "size": [2, 1],
   "value": 26000,

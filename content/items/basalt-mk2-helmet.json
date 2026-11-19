@@ -1,0 +1,40 @@
+{
+  "formatVersion": 12,
+  "id": "basalt-mk2-helmet",
+  "name": "Basalt Mk II helmet",
+  "type": "armor",
+  "size": [2, 2],
+  "value": 26000,
+  "weight": 3.0,
+  "rarity": "legendary",
+  "slot": "helmet",
+  "level": 5,
+  "durability": 66,
+  "repairLoss": 0.09,
+  "hearing": 0.1,
+  "blocksHeadset": true,
+  "vision": { "shape": "cheeks" },
+  "visor": true,
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 1.719, 0],
+        "radius": 0.138,
+        "radiusTop": 0.113,
+        "height": 0.118,
+        "color": "#45403a"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 1.793, 0],
+        "radius": 0.113,
+        "radiusTop": 0.059,
+        "height": 0.035,
+        "color": "#45403a"
+      },
+      { "type": "box", "pos": [0.12, 1.69, 0], "size": [0.03, 0.08, 0.12], "color": "#312e29" },
+      { "type": "box", "pos": [-0.12, 1.69, 0], "size": [0.03, 0.08, 0.12], "color": "#312e29" }
+    ]
+  }
+}

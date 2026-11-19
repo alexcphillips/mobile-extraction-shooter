@@ -1,7 +1,7 @@
 {
   "formatVersion": 12,
   "id": "g18c-mag",
-  "name": "Glock 18C 17-round magazine",
+  "name": "Glock 17-round magazine",
   "shortName": "Glock 18C 17",
   "type": "attachment",
   "size": [1, 1],
@@ -9,7 +9,7 @@
   "weight": 0.1,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["g18c"],
+  "weapons": ["g18c", "glock-17"],
   "capacity": 17,
   "caliber": "9x19",
   "model": {

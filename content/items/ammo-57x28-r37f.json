@@ -1,0 +1,23 @@
+{
+  "formatVersion": 12,
+  "id": "ammo-57x28-r37f",
+  "name": "5.7×28 mm R37.F",
+  "shortName": "5.7 R37.F",
+  "type": "ammo",
+  "size": [1, 1],
+  "value": 40,
+  "weight": 0.006,
+  "rarity": "common",
+  "stack": 60,
+  "caliber": "5.7x28",
+  "level": 1,
+  "damage": 83,
+  "armorDamage": 1,
+  "bleedChance": 0.4,
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "color": "#a08a44" },
+      { "type": "box", "pos": [0, 0, -0.055], "size": [0.14, 0.07, 0.03], "color": "#b8433a" }
+    ]
+  }
+}

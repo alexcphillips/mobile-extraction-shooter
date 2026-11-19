@@ -1,7 +1,7 @@
 {
   "formatVersion": 12,
   "id": "medium-backpack",
-  "name": "Medium backpack",
+  "name": "Rover pack",
   "type": "container",
   "size": [3, 3],
   "value": 10000,

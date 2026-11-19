@@ -23,11 +23,12 @@
     "m250",
     "mcx-spear",
     "ak-74m",
-    "sks"
+    "sks",
+    "adar",
+    "vss",
+    "svt-40"
   ],
-  "mods": {
-    "aimTime": 1.4
-  },
+  "mods": { "aimTime": 1.4 },
   "optic": {
     "zoom": 4,
     "reticle": {
@@ -40,29 +41,22 @@
         { "type": "line", "x1": 0, "y1": -46, "x2": 0, "y2": 9, "width": 0.25 },
         { "type": "dot", "x": 0, "y": 0, "r": 0.5 }
       ]
-    }
+    },
+    "lens": 0.0165,
+    "fill": 34
   },
   "model": {
     "parts": [
-      {
-        "type": "box",
-        "pos": [0, 0.015, -0.03],
-        "size": [0.016, 0.03, 0.016],
-        "color": "#1d1f21"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.015, -0.13],
-        "size": [0.016, 0.03, 0.016],
-        "color": "#1d1f21"
-      },
+      { "type": "box", "pos": [0, 0.015, -0.03], "size": [0.016, 0.03, 0.016], "color": "#1d1f21" },
+      { "type": "box", "pos": [0, 0.015, -0.13], "size": [0.016, 0.03, 0.016], "color": "#1d1f21" },
       {
         "type": "cylinder",
         "pos": [0, 0.045, -0.08],
         "pitch": 90,
         "radius": 0.016,
         "height": 0.2,
-        "color": "#1d1f21"
+        "color": "#1d1f21",
+        "scopedHidden": true
       },
       {
         "type": "cylinder",
@@ -70,7 +64,8 @@
         "pitch": 90,
         "radius": 0.022,
         "height": 0.05,
-        "color": "#1d1f21"
+        "color": "#1d1f21",
+        "scopedHidden": true
       },
       {
         "type": "cylinder",
@@ -78,9 +73,244 @@
         "pitch": 90,
         "radius": 0.02,
         "height": 0.04,
-        "color": "#1d1f21"
+        "color": "#1d1f21",
+        "scopedHidden": true
+      },
+      {
+        "type": "box",
+        "pos": [-0.00387, 0.02804, 0.048],
+        "size": [0.00865, 0.0018, 0.004],
+        "color": "#1d1f21",
+        "roll": 167.14286,
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [-0.01085, 0.0314, 0.048],
+        "size": [0.00865, 0.0018, 0.004],
+        "color": "#1d1f21",
+        "roll": 141.42857,
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [-0.01568, 0.03745, 0.048],
+        "size": [0.00865, 0.0018, 0.004],
+        "color": "#1d1f21",
+        "roll": 115.71429,
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0174, 0.045, 0.048],
+        "size": [0.00865, 0.0018, 0.004],
+        "color": "#1d1f21",
+        "roll": 90.0,
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [-0.01568, 0.05255, 0.048],
+        "size": [0.00865, 0.0018, 0.004],
+        "color": "#1d1f21",
+        "roll": 64.28571,
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [-0.01085, 0.0586, 0.048],
+        "size": [0.00865, 0.0018, 0.004],
+        "color": "#1d1f21",
+        "roll": 38.57143,
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [-0.00387, 0.06196, 0.048],
+        "size": [0.00865, 0.0018, 0.004],
+        "color": "#1d1f21",
+        "roll": 12.85714,
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [0.00387, 0.06196, 0.048],
+        "size": [0.00865, 0.0018, 0.004],
+        "color": "#1d1f21",
+        "roll": -12.85714,
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [0.01085, 0.0586, 0.048],
+        "size": [0.00865, 0.0018, 0.004],
+        "color": "#1d1f21",
+        "roll": -38.57143,
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [0.01568, 0.05255, 0.048],
+        "size": [0.00865, 0.0018, 0.004],
+        "color": "#1d1f21",
+        "roll": -64.28571,
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [0.0174, 0.045, 0.048],
+        "size": [0.00865, 0.0018, 0.004],
+        "color": "#1d1f21",
+        "roll": -90.0,
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [0.01568, 0.03745, 0.048],
+        "size": [0.00865, 0.0018, 0.004],
+        "color": "#1d1f21",
+        "roll": -115.71429,
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [0.01085, 0.0314, 0.048],
+        "size": [0.00865, 0.0018, 0.004],
+        "color": "#1d1f21",
+        "roll": -141.42857,
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [0.00387, 0.02804, 0.048],
+        "size": [0.00865, 0.0018, 0.004],
+        "color": "#1d1f21",
+        "roll": -167.14286,
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [-0.00544, 0.02472, 0.043],
+        "size": [0.01209, 0.002, 0.006],
+        "color": "#2c2e31",
+        "roll": 165.0,
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [-0.01485, 0.03015, 0.043],
+        "size": [0.01209, 0.002, 0.006],
+        "color": "#2c2e31",
+        "roll": 135.0,
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [-0.02028, 0.03956, 0.043],
+        "size": [0.01209, 0.002, 0.006],
+        "color": "#2c2e31",
+        "roll": 105.0,
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [-0.02028, 0.05044, 0.043],
+        "size": [0.01209, 0.002, 0.006],
+        "color": "#2c2e31",
+        "roll": 75.0,
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [-0.01485, 0.05985, 0.043],
+        "size": [0.01209, 0.002, 0.006],
+        "color": "#2c2e31",
+        "roll": 45.0,
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [-0.00544, 0.06528, 0.043],
+        "size": [0.01209, 0.002, 0.006],
+        "color": "#2c2e31",
+        "roll": 15.0,
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [0.00544, 0.06528, 0.043],
+        "size": [0.01209, 0.002, 0.006],
+        "color": "#2c2e31",
+        "roll": -15.0,
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [0.01485, 0.05985, 0.043],
+        "size": [0.01209, 0.002, 0.006],
+        "color": "#2c2e31",
+        "roll": -45.0,
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [0.02028, 0.05044, 0.043],
+        "size": [0.01209, 0.002, 0.006],
+        "color": "#2c2e31",
+        "roll": -75.0,
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [0.02028, 0.03956, 0.043],
+        "size": [0.01209, 0.002, 0.006],
+        "color": "#2c2e31",
+        "roll": -105.0,
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [0.01485, 0.03015, 0.043],
+        "size": [0.01209, 0.002, 0.006],
+        "color": "#2c2e31",
+        "roll": -135.0,
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "box",
+        "pos": [0.00544, 0.02472, 0.043],
+        "size": [0.01209, 0.002, 0.006],
+        "color": "#2c2e31",
+        "roll": -165.0,
+        "name": "eyepiece step",
+        "group": "eyepiece"
       }
     ],
-    "sight": [0, 0.045, 0]
+    "sight": [0, 0.045, 0.05]
   }
 }

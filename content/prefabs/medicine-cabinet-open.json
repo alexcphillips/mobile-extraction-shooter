@@ -1,0 +1,252 @@
+{
+  "formatVersion": 3,
+  "id": "medicine-cabinet-open",
+  "name": "Medicine cabinet (searched)",
+  "tags": ["medical", "home"],
+  "colors": {
+    "body": "#e6e8e6",
+    "door": "#f2f3f1",
+    "cross": "#b83a32",
+    "handle": "#6b7074",
+    "inside": "#b9bdbb",
+    "shelf": "#d3d6d4",
+    "bottle": "#d9822b",
+    "cap": "#f4f4f0",
+    "pack": "#5b8fc0",
+    "pack-b": "#7fb36a",
+    "jar": "#8c4a8a"
+  },
+  "nodes": [
+    {
+      "type": "box",
+      "pos": [0, 1.2, 0.0075],
+      "size": [0.6, 0.72, 0.015],
+      "color": "body",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.2925, 1.2, 0.1],
+      "size": [0.015, 0.72, 0.2],
+      "color": "body",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.2925, 1.2, 0.1],
+      "size": [0.015, 0.72, 0.2],
+      "color": "body",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.2, 0.1],
+      "size": [0.6, 0.015, 0.2],
+      "color": "body",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.905, 0.1],
+      "size": [0.6, 0.015, 0.2],
+      "color": "body",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.215, 0.017],
+      "size": [0.57, 0.69, 0.003],
+      "color": "inside",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.442, 0.105],
+      "size": [0.57, 0.008, 0.17],
+      "color": "shelf",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0, 1.682, 0.105],
+      "size": [0.57, 0.008, 0.17],
+      "color": "shelf",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.4009, 1.205, 0.4772],
+      "size": [0.59, 0.71, 0.02],
+      "color": "door",
+      "collide": false,
+      "yaw": -110
+    },
+    {
+      "type": "box",
+      "pos": [-0.4141, 1.5276, 0.4724],
+      "size": [0.055, 0.18, 0.004],
+      "color": "cross",
+      "collide": false,
+      "yaw": -110
+    },
+    {
+      "type": "box",
+      "pos": [-0.4141, 1.5901, 0.4724],
+      "size": [0.18, 0.055, 0.004],
+      "color": "cross",
+      "collide": false,
+      "yaw": -110
+    },
+    {
+      "type": "box",
+      "pos": [-0.5035, 1.5, 0.7006],
+      "size": [0.02, 0.12, 0.025],
+      "color": "handle",
+      "collide": false,
+      "yaw": -110
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.22, 1.215, 0.1],
+      "radius": 0.028,
+      "height": 0.1,
+      "color": "bottle",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.22, 1.315, 0.1],
+      "radius": 0.03,
+      "height": 0.025,
+      "color": "cap",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.15, 1.215, 0.13],
+      "radius": 0.028,
+      "height": 0.1,
+      "color": "bottle",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.15, 1.315, 0.13],
+      "radius": 0.03,
+      "height": 0.025,
+      "color": "cap",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.08, 1.215, 0.1],
+      "radius": 0.028,
+      "height": 0.1,
+      "color": "bottle",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [-0.08, 1.315, 0.1],
+      "radius": 0.03,
+      "height": 0.025,
+      "color": "cap",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.08, 1.215, 0.11],
+      "size": [0.16, 0.12, 0.08],
+      "color": "pack",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.22, 1.215, 0.1],
+      "size": [0.09, 0.17, 0.07],
+      "color": "pack-b",
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.16, 1.45, 0.11],
+      "size": [0.2, 0.09, 0.1],
+      "color": "pack-b",
+      "collide": false,
+      "yaw": 4
+    },
+    {
+      "type": "box",
+      "pos": [-0.16, 1.54, 0.11],
+      "size": [0.17, 0.06, 0.09],
+      "color": "pack",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.05, 1.45, 0.11],
+      "radius": 0.045,
+      "height": 0.12,
+      "color": "jar",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.05, 1.57, 0.11],
+      "radius": 0.047,
+      "height": 0.02,
+      "color": "cap",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.2, 1.45, 0.11],
+      "radius": 0.028,
+      "height": 0.13,
+      "color": "bottle",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.2, 1.58, 0.11],
+      "radius": 0.03,
+      "height": 0.025,
+      "color": "cap",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [-0.18, 1.69, 0.11],
+      "size": [0.12, 0.16, 0.06],
+      "color": "pack",
+      "collide": false
+    },
+    {
+      "type": "cylinder",
+      "pos": [0.0, 1.69, 0.11],
+      "radius": 0.026,
+      "height": 0.09,
+      "color": "cap",
+      "sides": 8,
+      "collide": false
+    },
+    {
+      "type": "box",
+      "pos": [0.18, 1.69, 0.12],
+      "size": [0.14, 0.05, 0.1],
+      "color": "pack-b",
+      "collide": false,
+      "yaw": -8
+    }
+  ]
+}

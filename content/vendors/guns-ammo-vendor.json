@@ -27,6 +27,12 @@
       "item": "p226"
     },
     {
+      "item": "glock-17"
+    },
+    {
+      "item": "m1911a1"
+    },
+    {
       "item": "sks"
     },
     {
@@ -39,6 +45,12 @@
       "item": "akm"
     },
     {
+      "item": "adar"
+    },
+    {
+      "item": "uzi"
+    },
+    {
       "item": "ammo-338-tacx",
       "count": 10
     },
@@ -48,6 +60,10 @@
     },
     {
       "item": "ammo-46x30-action",
+      "count": 30
+    },
+    {
+      "item": "ammo-57x28-r37f",
       "count": 30
     },
     {
@@ -128,8 +144,8 @@
       "level": 2,
       "barter": [
         {
-          "item": "black-gold-coffee-beans",
-          "count": 2
+          "item": "power-supply-unit",
+          "count": 4
         }
       ]
     },
@@ -143,7 +159,17 @@
         },
         {
           "item": "ram-stick",
-          "count": 3
+          "count": 1
+        }
+      ]
+    },
+    {
+      "item": "five-seven",
+      "level": 2,
+      "barter": [
+        {
+          "item": "ram-stick",
+          "count": 2
         }
       ]
     },
@@ -157,7 +183,21 @@
         },
         {
           "item": "ram-stick",
-          "count": 3
+          "count": 1
+        }
+      ]
+    },
+    {
+      "item": "uzi-pro",
+      "level": 2,
+      "barter": [
+        {
+          "item": "power-supply-unit",
+          "count": 2
+        },
+        {
+          "item": "ram-stick",
+          "count": 2
         }
       ]
     },
@@ -186,6 +226,20 @@
       ]
     },
     {
+      "item": "svt-40",
+      "level": 2,
+      "barter": [
+        {
+          "item": "ram-stick",
+          "count": 1
+        },
+        {
+          "item": "power-supply-unit",
+          "count": 2
+        }
+      ]
+    },
+    {
       "item": "aug-a3",
       "attachments": ["aug-optic"],
       "level": 2,
@@ -207,6 +261,11 @@
     },
     {
       "item": "ammo-46x30-subsonic",
+      "count": 30,
+      "level": 2
+    },
+    {
+      "item": "ammo-57x28-ss197sr",
       "count": 30,
       "level": 2
     },
@@ -256,6 +315,34 @@
       "barter": [
         {
           "item": "graphics-card",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "item": "vss",
+      "level": 3,
+      "barter": [
+        {
+          "item": "slr-camera",
+          "count": 1
+        },
+        {
+          "item": "ram-stick",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "item": "p90",
+      "level": 3,
+      "barter": [
+        {
+          "item": "graphics-card",
+          "count": 1
+        },
+        {
+          "item": "ram-stick",
           "count": 2
         }
       ]
@@ -345,6 +432,11 @@
           "count": 1
         }
       ]
+    },
+    {
+      "item": "ammo-57x28-sb193",
+      "count": 30,
+      "level": 3
     },
     {
       "item": "ammo-545x39-pp",
@@ -529,7 +621,7 @@
       "level": 4,
       "barter": [
         {
-          "item": "estate-reserve-cabernet",
+          "item": "lavender-fields",
           "count": 2
         }
       ]
@@ -613,8 +705,8 @@
       "level": 4,
       "barter": [
         {
-          "item": "condenser-coil",
-          "count": 1
+          "item": "steel-angle-bar",
+          "count": 3
         }
       ]
     },
@@ -633,6 +725,11 @@
           "count": 1
         }
       ]
+    },
+    {
+      "item": "ammo-57x28",
+      "count": 30,
+      "level": 4
     },
     {
       "item": "ammo-545x39-bp",
@@ -661,8 +758,8 @@
       "level": 4,
       "barter": [
         {
-          "item": "ram-stick",
-          "count": 1
+          "item": "steel-angle-bar",
+          "count": 2
         }
       ]
     },
@@ -713,7 +810,7 @@
       "level": 4,
       "barter": [
         {
-          "item": "led-tube",
+          "item": "steel-angle-bar",
           "count": 1
         }
       ]
@@ -761,7 +858,11 @@
       "level": 4,
       "barter": [
         {
-          "item": "compressed-air-tank",
+          "item": "steel-angle-bar",
+          "count": 1
+        },
+        {
+          "item": "anchoring-epoxy",
           "count": 1
         }
       ]
@@ -797,8 +898,8 @@
       "level": 4,
       "barter": [
         {
-          "item": "power-supply-unit",
-          "count": 1
+          "item": "corrugated-tubing",
+          "count": 2
         }
       ]
     },

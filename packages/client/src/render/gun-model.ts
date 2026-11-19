@@ -5,6 +5,7 @@ import {
   foldParts,
   meleeDef,
   modelShapes,
+  SCOPE_LENS,
   weaponDef,
   type AttachmentSlot,
   type ItemDb,
@@ -23,6 +24,13 @@ export interface GunModel {
   suppressed: boolean;
   grip: Vec3;
   support: Vec3;
+  /**
+   * With a magnifying scope (2026-11-18): the shapes while looking through it (its parts in
+   * the line of sight left out), and its eyepiece's clear radius in meters. Null otherwise.
+   */
+  scope: { shapes: ModelShape[]; lens: number; fill: number | undefined } | null;
+  /** A sight without zoom that sets its window's size aimed (optic.fill): lens and fill. */
+  window: { lens: number; fill: number } | null;
 }
 
 /**
@@ -36,6 +44,10 @@ export function gunModel(w: WeaponState, items: ItemDb): GunModel {
   const a = w.attachments;
   const fitted = (slot: AttachmentSlot): boolean => !!a[slot];
   const shapes = modelShapes(m, [], [0, 0, 0], fitted);
+  const opticDef = a.optic ? attachmentDef(items, a.optic) : null;
+  const magnified = !!opticDef?.optic && opticDef.optic.zoom > 1 && !!m.mounts?.optic;
+  // Looking through a scope: the same gun, without the scope's parts in the line of sight.
+  const scoped = magnified ? modelShapes(m, [], [0, 0, 0], fitted) : null;
   let sight: Vec3 = m.sight;
   let muzzle: Vec3 = m.muzzle;
   let suppressed = gun.suppressed ?? false;
@@ -46,7 +58,9 @@ export function gunModel(w: WeaponState, items: ItemDb): GunModel {
     const def = attachmentDef(items, id);
     // A folded stock turns about its hinge, the gun's or its own (WF-1).
     const fold = slot === 'stock' && w.folded ? (m.stockFold ?? def.model.fold) : undefined;
-    modelShapes(fold ? { parts: foldParts(def.model.parts, fold) } : def.model, shapes, mount);
+    const parts = fold ? { parts: foldParts(def.model.parts, fold) } : def.model;
+    modelShapes(parts, shapes, mount);
+    if (scoped) modelShapes(parts, scoped, mount, undefined, slot === 'optic');
     if (slot === 'optic' && def.model.sight) sight = addVec(mount, def.model.sight);
     if (slot === 'muzzle') {
       if (def.model.muzzle) muzzle = addVec(mount, def.model.muzzle);
@@ -62,6 +76,13 @@ export function gunModel(w: WeaponState, items: ItemDb): GunModel {
     suppressed,
     grip: m.grip,
     support: m.support,
+    scope: scoped
+      ? { shapes: scoped, lens: opticDef!.optic!.lens ?? SCOPE_LENS, fill: opticDef!.optic!.fill }
+      : null,
+    window:
+      !magnified && opticDef?.optic?.fill !== undefined && opticDef.optic.lens !== undefined
+        ? { lens: opticDef.optic.lens, fill: opticDef.optic.fill }
+        : null,
   };
 }
 

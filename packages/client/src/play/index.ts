@@ -161,7 +161,7 @@ import { CoopGuest, CoopHost, type CoopOptions, type Welcome } from './coop';
 import { giveUp, skipTutorial } from './give-up';
 import { TutorialCard } from '../hud/tutorial-card';
 import { lootableInReach } from './loot';
-import { showNightVision, showVision } from '../render/vision';
+import { CRACK_STEPS, showNightVision, showVision } from '../render/vision';
 import { nightVisionOn, resetNightVision, toggleNightVision } from './night-vision';
 
 export interface PlayElements {
@@ -387,6 +387,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   scene.fog = new THREE.Fog(sky, fogNear, fogFar);
   // The far plane follows the fog distance.
   const camera = new THREE.PerspectiveCamera(FOV, 1, 0.05, fogFar);
+  // The gun view's own camera (2026-11-18): the camera's place and turn, but looking
+  // through a scope it keeps the aimed field of view while the world zooms, so the gun and
+  // scope stay their size. Near enough for an eyepiece brought up to the eye.
+  const gunCamera = new THREE.PerspectiveCamera(FOV, 1, 0.005, 10);
   camera.rotation.order = 'YXZ';
   const landmarks = new LandmarkPass(map);
 
@@ -1641,6 +1645,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
+    gunCamera.aspect = w / h;
+    gunCamera.updateProjectionMatrix();
   }
   window.addEventListener('resize', resize);
   resize();
@@ -1656,7 +1662,9 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     if (landmarks.render(renderer, camera)) renderer.clearDepth();
     renderer.render(scene, camera);
     renderer.clearDepth();
-    renderer.render(viewmodel.scene, camera);
+    gunCamera.position.copy(camera.position);
+    gunCamera.quaternion.copy(camera.quaternion);
+    renderer.render(viewmodel.scene, gunCamera);
   }
 
   // Draw everything once now, so uploads and shader compiles don't hitch later.
@@ -1711,6 +1719,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     if (camera.fov !== fov) {
       camera.fov = fov;
       camera.updateProjectionMatrix();
+    }
+    const gunFov = scoped ? AIM_FOV : fov;
+    if (gunCamera.fov !== gunFov) {
+      gunCamera.fov = gunFov;
+      gunCamera.updateProjectionMatrix();
     }
     // Looking turns the view less when zoomed in, so it moves as fast on the screen.
     controls.zoom = scoped ? Math.tan((AIM_FOV / 2) * DEG) / Math.tan((fov / 2) * DEG) : 1;
@@ -1769,7 +1782,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       placeMarker(aimMarker, ex + dx * d, ey + dy * d, ez + dz * d, 0.01);
     }
     const knife = !w && v.gear.hand === 'knife' && !!v.gear.knife;
-    viewmodel.visible = alive && (!!w || knife) && !scoped;
+    viewmodel.visible = alive && (!!w || knife);
     if (w) viewmodel.setGun(w, items);
     else if (knife) viewmodel.setKnife(v.gear.knife!.item, items);
     // Lowered for a med.
@@ -1784,8 +1797,11 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       w?.reloading ?? 0,
       lerp(prev.drawn, cur.drawn),
       lowered,
-      pointYaw,
-      pointPitch,
+      // Looking through a scope the reticle moves zoom times as far on screen as the gun
+      // view would, so its pointing is scaled up to keep the eyepiece round the reticle.
+      scoped ? Math.atan(Math.tan(pointYaw) * controls.zoom) : pointYaw,
+      scoped ? Math.atan(Math.tan(pointPitch) * controls.zoom) : pointPitch,
+      scoped,
     );
     effects.update(performance.now());
     grenades.update(performance.now(), alpha);
@@ -1805,7 +1821,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const visor = fitted && items.get(fitted.item)?.type === 'visor' ? fitted : undefined;
     const visorDef = visor ? (items.get(visor.item) as VisorDef) : undefined;
     const wear = visor && visorDef ? 1 - (visor.durability ?? 0) / visorDef.durability : 0;
-    const viewKey = `${helmet} ${visor?.item} ${Math.round(wear * 14)}`;
+    const viewKey = `${helmet} ${visor?.item} ${Math.round(wear * CRACK_STEPS)}`;
     if (viewKey !== viewFor) {
       viewFor = viewKey;
       const own = helmet ? armorDef(items, helmet).vision : undefined;

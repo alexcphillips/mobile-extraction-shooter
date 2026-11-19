@@ -6,23 +6,23 @@
   "items": [
     {
       "item": "angle-grinder",
-      "weight": 4
+      "weight": 3
     },
     {
       "item": "screwdriver",
-      "weight": 3
+      "weight": 2.7
     },
     {
       "item": "measuring-tape",
-      "weight": 3
+      "weight": 2.7
     },
     {
       "item": "gear-set",
-      "weight": 2
+      "weight": 2.7
     },
     {
       "item": "cordless-drill",
-      "weight": 2
+      "weight": 3
     },
     {
       "item": "circular-saw",

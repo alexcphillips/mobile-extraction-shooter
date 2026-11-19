@@ -12,38 +12,276 @@
   "optic": {
     "zoom": 1,
     "reticle": {
-      "color": "#ff3b30",
-      "shapes": [{ "type": "dot", "x": 0, "y": 0, "r": 0.4 }]
+      "color": "#ff2a1f",
+      "glow": true,
+      "shapes": [{ "type": "dot", "x": 0, "y": 0, "r": 0.45 }]
     }
   },
   "model": {
     "parts": [
-      { "type": "box", "pos": [0, 0.005, -0.085], "size": [0.05, 0.02, 0.04], "color": "#222425" },
       {
         "type": "box",
-        "pos": [0, 0.015, -0.085],
-        "size": [0.04, 0.006, 0.03],
-        "color": "#1d1f21"
-      },
-      { "type": "box", "pos": [0, 0.05, -0.09], "size": [0.04, 0.005, 0.03], "color": "#1d1f21" },
-      {
-        "type": "slab",
-        "pos": [0.02, 0.035, -0.09],
-        "size": [0.005, 0.03, 0.04],
-        "corners": [0, 2, 0, 0],
-        "color": "#1d1f21",
-        "pitch": 90
+        "pos": [0, 0.006, -0.035],
+        "size": [0.032, 0.012, 0.05],
+        "color": "#1b1c1e",
+        "name": "mount"
       },
       {
-        "type": "slab",
-        "pos": [-0.02, 0.035, -0.09],
-        "size": [0.005, 0.03, 0.04],
-        "corners": [2, 0, 0, 0],
-        "color": "#1d1f21",
-        "pitch": 90
+        "type": "box",
+        "pos": [0.018, 0.006, -0.035],
+        "size": [0.004, 0.01, 0.03],
+        "color": "#1b1c1e",
+        "name": "mount clamp"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0155, -0.035],
+        "size": [0.018, 0.008, 0.04],
+        "color": "#26282a",
+        "name": "riser"
+      },
+      {
+        "type": "box",
+        "pos": [0.0, 0.0505, -0.035],
+        "size": [0.0087, 0.004, 0.05],
+        "color": "#2e3134",
+        "roll": 0.0,
+        "name": "tube wall",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [0.0077, 0.0484, -0.035],
+        "size": [0.0087, 0.004, 0.05],
+        "color": "#2e3134",
+        "roll": -30.0,
+        "name": "tube wall",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [0.0134, 0.0428, -0.035],
+        "size": [0.0087, 0.004, 0.05],
+        "color": "#2e3134",
+        "roll": -60.0,
+        "name": "tube wall",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [0.0155, 0.035, -0.035],
+        "size": [0.0087, 0.004, 0.05],
+        "color": "#2e3134",
+        "roll": -90.0,
+        "name": "tube wall",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [0.0134, 0.0273, -0.035],
+        "size": [0.0087, 0.004, 0.05],
+        "color": "#2e3134",
+        "roll": -120.0,
+        "name": "tube wall",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [0.0077, 0.0216, -0.035],
+        "size": [0.0087, 0.004, 0.05],
+        "color": "#2e3134",
+        "roll": -150.0,
+        "name": "tube wall",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [0.0, 0.0195, -0.035],
+        "size": [0.0087, 0.004, 0.05],
+        "color": "#2e3134",
+        "roll": -180.0,
+        "name": "tube wall",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0077, 0.0216, -0.035],
+        "size": [0.0087, 0.004, 0.05],
+        "color": "#2e3134",
+        "roll": -210.0,
+        "name": "tube wall",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0134, 0.0272, -0.035],
+        "size": [0.0087, 0.004, 0.05],
+        "color": "#2e3134",
+        "roll": -240.0,
+        "name": "tube wall",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0155, 0.035, -0.035],
+        "size": [0.0087, 0.004, 0.05],
+        "color": "#2e3134",
+        "roll": -270.0,
+        "name": "tube wall",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0134, 0.0428, -0.035],
+        "size": [0.0087, 0.004, 0.05],
+        "color": "#2e3134",
+        "roll": -300.0,
+        "name": "tube wall",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0078, 0.0484, -0.035],
+        "size": [0.0087, 0.004, 0.05],
+        "color": "#2e3134",
+        "roll": -330.0,
+        "name": "tube wall",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [0.0, 0.0525, -0.066],
+        "size": [0.0098, 0.004, 0.012],
+        "color": "#26282a",
+        "roll": 0.0,
+        "name": "front hood",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [0.0087, 0.0502, -0.066],
+        "size": [0.0098, 0.004, 0.012],
+        "color": "#26282a",
+        "roll": -30.0,
+        "name": "front hood",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [0.0152, 0.0438, -0.066],
+        "size": [0.0098, 0.004, 0.012],
+        "color": "#26282a",
+        "roll": -60.0,
+        "name": "front hood",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [0.0175, 0.035, -0.066],
+        "size": [0.0098, 0.004, 0.012],
+        "color": "#26282a",
+        "roll": -90.0,
+        "name": "front hood",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [0.0152, 0.0263, -0.066],
+        "size": [0.0098, 0.004, 0.012],
+        "color": "#26282a",
+        "roll": -120.0,
+        "name": "front hood",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [0.0087, 0.0198, -0.066],
+        "size": [0.0098, 0.004, 0.012],
+        "color": "#26282a",
+        "roll": -150.0,
+        "name": "front hood",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [0.0, 0.0175, -0.066],
+        "size": [0.0098, 0.004, 0.012],
+        "color": "#26282a",
+        "roll": -180.0,
+        "name": "front hood",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0087, 0.0198, -0.066],
+        "size": [0.0098, 0.004, 0.012],
+        "color": "#26282a",
+        "roll": -210.0,
+        "name": "front hood",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0152, 0.0262, -0.066],
+        "size": [0.0098, 0.004, 0.012],
+        "color": "#26282a",
+        "roll": -240.0,
+        "name": "front hood",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0175, 0.035, -0.066],
+        "size": [0.0098, 0.004, 0.012],
+        "color": "#26282a",
+        "roll": -270.0,
+        "name": "front hood",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0152, 0.0438, -0.066],
+        "size": [0.0098, 0.004, 0.012],
+        "color": "#26282a",
+        "roll": -300.0,
+        "name": "front hood",
+        "group": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0088, 0.0502, -0.066],
+        "size": [0.0098, 0.004, 0.012],
+        "color": "#26282a",
+        "roll": -330.0,
+        "name": "front hood",
+        "group": "tube"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.056, -0.035],
+        "radius": 0.0065,
+        "height": 0.01,
+        "color": "#26282a",
+        "name": "elevation turret"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.021, 0.035, -0.035],
+        "radius": 0.0065,
+        "height": 0.01,
+        "color": "#26282a",
+        "roll": 90,
+        "name": "windage turret"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0195, 0.031, -0.03],
+        "size": [0.004, 0.008, 0.016],
+        "color": "#3a3d40",
+        "name": "brightness dial"
       }
     ],
-    "sight": [0, 0.035, -0.09]
+    "sight": [0, 0.035, -0.035]
   },
   "weapons": [
     "akm",
@@ -66,6 +304,10 @@
     "m250",
     "mcx-spear",
     "ak-74m",
-    "sks"
+    "sks",
+    "uzi-pro",
+    "p90",
+    "adar",
+    "vss"
   ]
 }

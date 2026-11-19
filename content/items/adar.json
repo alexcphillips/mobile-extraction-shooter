@@ -1,0 +1,183 @@
+{
+  "formatVersion": 12,
+  "id": "adar",
+  "name": "ADAR 2-15",
+  "type": "weapon",
+  "class": "assault",
+  "size": [4, 2],
+  "value": 24000,
+  "weight": 3.0,
+  "rarity": "common",
+  "ammo": "ammo-556x45",
+  "hold": "rifle",
+  "fireMode": "semi",
+  "rpm": 800,
+  "magazine": 20,
+  "feed": "magazine",
+  "reloadTime": 2.4,
+  "ergonomics": 64,
+  "range": 250,
+  "loudness": 185,
+  "defaults": { "magazine": "mag-stanag-20", "stock": "adar-stock" },
+  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
+  "hipSpread": 3,
+  "aimSpread": 0.4,
+  "recoil": { "up": 2.96, "side": 1.35, "snap": 42, "recovery": 2.5, "angle": 5 },
+  "sounds": {
+    "shot": "rifle-shot",
+    "suppressed": "rifle-shot-suppressed",
+    "reload": "rifle-reload"
+  },
+  "model": {
+    "parts": [
+      { "type": "box", "pos": [0, 0.02, 0.04], "size": [0.042, 0.045, 0.18], "color": "#232527" },
+      { "type": "box", "pos": [0, 0.05, -0.075], "size": [0.022, 0.012, 0.41], "color": "#1d1f21" },
+      {
+        "type": "box",
+        "pos": [0.0215, 0.02, 0.06],
+        "size": [0.002, 0.018, 0.05],
+        "color": "#1d1f21"
+      },
+      {
+        "type": "box",
+        "pos": [0.024, 0.025, 0.11],
+        "size": [0.008, 0.012, 0.012],
+        "color": "#1d1f21"
+      },
+      { "type": "box", "pos": [0, 0.03, 0.14], "size": [0.03, 0.012, 0.02], "color": "#1d1f21" },
+      {
+        "type": "box",
+        "pos": [0, 0.012, -0.18],
+        "size": [0.048, 0.058, 0.26],
+        "color": "#8a5a32",
+        "name": "wooden handguard"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, -0.365],
+        "radius": 0.01,
+        "height": 0.07,
+        "color": "#1d1f21",
+        "pitch": 90
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, -0.42],
+        "radius": 0.013,
+        "height": 0.04,
+        "color": "#232527",
+        "pitch": 90,
+        "hiddenBy": "muzzle"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0635, 0.11],
+        "size": [0.0119, 0.015, 0.008],
+        "color": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "rear sight",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0699, 0.11],
+        "size": [0.0166, 0.0023, 0.008],
+        "color": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "rear sight ring",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0071, 0.077, 0.11],
+        "size": [0.0023, 0.0119, 0.008],
+        "color": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "rear sight ring",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.0071, 0.077, 0.11],
+        "size": [0.0023, 0.0119, 0.008],
+        "color": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "rear sight ring",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0841, 0.11],
+        "size": [0.0166, 0.0023, 0.008],
+        "color": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "rear sight ring",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0665, -0.31],
+        "size": [0.0075, 0.0211, 0.006],
+        "color": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight post",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.017, 0.0611, -0.31],
+        "size": [0.0053, 0.0104, 0.006],
+        "color": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight ear",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.017, 0.0611, -0.31],
+        "size": [0.0053, 0.0104, 0.006],
+        "color": "#1d1f21",
+        "hiddenBy": "optic",
+        "name": "front sight ear",
+        "group": "iron sights"
+      },
+      { "type": "box", "pos": [0, -0.025, 0.05], "size": [0.04, 0.045, 0.2], "color": "#232527" },
+      { "type": "box", "pos": [0, -0.065, -0.02], "size": [0.036, 0.04, 0.05], "color": "#232527" },
+      { "type": "box", "pos": [0, -0.07, 0.05], "size": [0.012, 0.008, 0.06], "color": "#1d1f21" },
+      { "type": "box", "pos": [0, -0.058, 0.04], "size": [0.006, 0.02, 0.006], "color": "#1d1f21" },
+      {
+        "type": "box",
+        "pos": [0, -0.09, 0.1],
+        "size": [0.032, 0.085, 0.036],
+        "color": "#2b2e31",
+        "pitch": -18
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.015, 0.22],
+        "radius": 0.015,
+        "height": 0.14,
+        "color": "#1d1f21",
+        "pitch": 90
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.012, -0.315],
+        "size": [0.05, 0.05, 0.012],
+        "color": "#1d1f21",
+        "name": "handguard cap"
+      }
+    ],
+    "grip": [0, -0.08, 0.1],
+    "support": [0, -0.025, -0.2],
+    "muzzle": [0, 0.012, -0.44],
+    "sight": [0, 0.077, 0.11],
+    "mounts": {
+      "optic": [0, 0.056, 0.12],
+      "muzzle": [0, 0.012, -0.4],
+      "magazine": [0, -0.08, -0.022],
+      "laser": [0.04, 0.004, -0.26],
+      "stock": [0, 0, 0.2]
+    }
+  }
+}

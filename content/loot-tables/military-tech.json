@@ -9,8 +9,8 @@
       "weight": 0.2
     },
     {
-      "item": "frequency-jammer-module",
-      "weight": 2
+      "item": "ecm-jammer",
+      "weight": 1
     },
     {
       "item": "encrypted-military-radio",
@@ -18,11 +18,7 @@
     },
     {
       "item": "military-circuit-board",
-      "weight": 1
-    },
-    {
-      "item": "military-ssd",
-      "weight": 1
+      "weight": 2
     },
     {
       "item": "encrypted-router",
@@ -30,7 +26,7 @@
     },
     {
       "item": "cryptographic-processor",
-      "weight": 0.5
+      "weight": 0.2
     },
     {
       "item": "portable-satcom",
@@ -42,7 +38,7 @@
     },
     {
       "item": "flight-data-recorder",
-      "weight": 0.2
+      "weight": 0.5
     }
   ]
 }

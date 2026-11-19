@@ -51,8 +51,8 @@ export function buildSubstation(h) {
     prefab('high-voltage-sign', HS.x0 - 0.01, 106.6, { yaw: -90 }, 1.9),
     prefab('wall-light', HS.x0 - 0.01, 104.7, { yaw: -90 }, 2.4),
     // Inside: switchgear on the east wall, the control panel on the north, a wall panel south.
-    // the switchgear is searchable (2026-11-17): a substation's mix of electrical and
-    // industrial, as the electrical cabinets elsewhere
+    // the switchgear is searchable: the substation's own table (grid parts, not the office
+    // and computer electrics of the `electrical` table)
     prefab(
       'switchgear-cabinet',
       HS.x1 - 0.2 - 0.4,
@@ -62,7 +62,7 @@ export function buildSubstation(h) {
         yaw: -90,
         loot: {
           container: 'electrical-cabinet',
-          mix: { tables: { electrical: 0.6, industrial: 0.4 }, empty: 0.15 },
+          mix: { tables: { substation: 1 }, empty: 0.15 },
         },
       },
       HS.fl,
@@ -71,8 +71,16 @@ export function buildSubstation(h) {
       type: 'lootSpawn',
       id: 'sw-floor-spot',
       pos: [233.2, HS.fl, 106.2],
-      mix: { tables: { electrical: 2, industrial: 1 } },
+      lootTable: 'substation',
       chance: 0.35,
+    },
+    // a spare traction battery on the floor in the corner (loose only)
+    {
+      type: 'lootSpawn',
+      id: 'sw-battery-spot',
+      pos: [232.2, HS.fl, 104.6],
+      lootTable: 'substation-battery',
+      chance: 0.15,
     },
     prefab('substation-control-panel', 233.2, HS.z0 + 0.2, { id: 'sw-control-panel' }, HS.fl),
     prefab('electrical-panel', 232.6, HS.z1 - 0.2, { yaw: 180 }, HS.fl),
@@ -94,7 +102,7 @@ export function buildSubstation(h) {
       type: 'lootSpawn',
       id: 'sub-drum-spot',
       pos: [227.9, 0.03, 101.6],
-      mix: { tables: { electrical: 1, industrial: 1 } },
+      mix: { tables: { substation: 2, industrial: 1 } },
       chance: 0.3,
     },
     // Over a jump's reach (3.2 m), so it's no step onto the fence.

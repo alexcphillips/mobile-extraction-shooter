@@ -1,0 +1,42 @@
+{
+  "formatVersion": 12,
+  "id": "packhorse-cargo-pack",
+  "name": "Packhorse cargo pack",
+  "type": "container",
+  "size": [5, 5],
+  "value": 40000,
+  "weight": 3.6,
+  "rarity": "legendary",
+  "slot": "backpack",
+  "grid": [6, 7],
+  "sections": [
+    {
+      "at": [0, 0],
+      "size": [6, 7]
+    }
+  ],
+  "moveSpeed": 0.92,
+  "aimTime": 1.05,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 1.182, 0.227],
+        "size": [0.296, 0.394, 0.177],
+        "color": "#4c392e"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.379, 0.217],
+        "size": [0.276, 0.059, 0.158],
+        "color": "#6a5040"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.064, 0.325],
+        "size": [0.217, 0.138, 0.059],
+        "color": "#6a5040"
+      }
+    ]
+  }
+}

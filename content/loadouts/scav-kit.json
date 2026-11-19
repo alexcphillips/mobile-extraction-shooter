@@ -12,6 +12,24 @@
       ]
     },
     {
+      "weight": 1.5,
+      "item": "glock-17",
+      "spare": [17, 34],
+      "ammo": [
+        { "weight": 3, "item": "ammo-9mm-pso" },
+        { "weight": 1, "item": "ammo-9mm" }
+      ]
+    },
+    {
+      "weight": 1,
+      "item": "m1911a1",
+      "spare": [14, 21],
+      "ammo": [
+        { "weight": 3, "item": "ammo-45acp-jhp" },
+        { "weight": 1, "item": "ammo-45acp" }
+      ]
+    },
+    {
       "weight": 0.6,
       "item": "akm",
       "spare": [30, 90],
@@ -70,12 +88,37 @@
         { "weight": 3, "item": "ammo-45acp-jhp" },
         { "weight": 1, "item": "ammo-45acp" }
       ]
+    },
+    {
+      "weight": 1.6,
+      "item": "uzi",
+      "spare": [32, 96],
+      "ammo": [
+        { "weight": 3, "item": "ammo-9mm-pso" },
+        { "weight": 1, "item": "ammo-9mm" }
+      ]
+    },
+    {
+      "weight": 0.8,
+      "item": "adar",
+      "spare": [20, 60],
+      "ammo": [
+        { "weight": 3, "item": "ammo-556x45-hp" },
+        { "weight": 1, "item": "ammo-556x45-fmj" }
+      ]
+    },
+    {
+      "weight": 0.5,
+      "item": "svt-40",
+      "spare": [10, 30],
+      "ammo": [{ "weight": 1, "item": "ammo-762x54r-hpbt" }]
     }
   ],
   "helmets": [
     { "weight": 4, "item": null },
     { "weight": 2, "item": "bump-helmet", "condition": [0.3, 0.8] },
-    { "weight": 0.5, "item": "riot-helmet", "condition": [0.3, 0.7] }
+    { "weight": 0.5, "item": "riot-helmet", "condition": [0.3, 0.7] },
+    { "weight": 0.3, "item": "scout-high-cut", "condition": [0.3, 0.7] }
   ],
   "bodyArmor": [
     { "weight": 4, "item": null },
@@ -88,6 +131,11 @@
   ],
   "backpacks": [
     { "weight": 3, "item": null },
-    { "weight": 1, "item": "small-backpack" }
+    { "weight": 1, "item": "small-backpack" },
+    { "weight": 0.5, "item": "wayfarer-pack" }
+  ],
+  "headsets": [
+    { "weight": 6, "item": null },
+    { "weight": 1, "item": "echo-headset" }
   ]
 }

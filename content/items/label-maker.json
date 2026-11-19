@@ -1,15 +1,14 @@
 {
   "formatVersion": 12,
-  "id": "military-ssd",
-  "name": "Military SSD",
+  "id": "label-maker",
+  "name": "Label maker",
   "type": "loot",
   "size": [1, 1],
-  "value": 4300,
-  "weight": 0.05,
+  "value": 4000,
+  "weight": 0.5,
   "rarity": "rare",
   "model": {
     "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]
   },
-  "shortName": "SSD",
-  "category": "Electronics"
+  "category": "Household"
 }

@@ -167,6 +167,18 @@
       "item": "ammo-9x39-spp",
       "weight": 1,
       "count": [1, 10]
+    },
+    {
+      "item": "ammo-57x28-ss197sr",
+      "weight": 4
+    },
+    {
+      "item": "ammo-57x28-r37f",
+      "weight": 2
+    },
+    {
+      "item": "ammo-57x28-sb193",
+      "weight": 1
     }
   ]
 }

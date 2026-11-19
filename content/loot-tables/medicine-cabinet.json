@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "id": "medicine-cabinet",
+  "name": "Medicine cabinet",
+  "rolls": [1, 2],
+  "items": [
+    { "item": "allergy-medication", "weight": 4 },
+    { "item": "basic-suture-kit", "weight": 3 },
+    { "item": "surgical-gloves", "weight": 3 },
+    { "item": "toothpaste", "weight": 3 },
+    { "item": "water-purification-tablets", "weight": 2.5 },
+    { "item": "surgical-forceps", "weight": 1.2 },
+    { "item": "sterile-dressing-pack", "weight": 0.8 },
+    { "item": "electronic-thermometer", "weight": 0.6 },
+    { "item": "oximeter", "weight": 0.15 }
+  ]
+}

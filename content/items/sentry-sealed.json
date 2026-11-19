@@ -1,0 +1,40 @@
+{
+  "formatVersion": 12,
+  "id": "sentry-sealed",
+  "name": "Sentry sealed helmet",
+  "type": "armor",
+  "size": [2, 2],
+  "value": 15000,
+  "weight": 1.9,
+  "rarity": "rare",
+  "slot": "helmet",
+  "level": 3,
+  "durability": 42,
+  "repairLoss": 0.12,
+  "hearing": 0.05,
+  "blocksHeadset": true,
+  "vision": { "vignette": 0.2 },
+  "visor": true,
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 1.719, 0],
+        "radius": 0.138,
+        "radiusTop": 0.113,
+        "height": 0.118,
+        "color": "#3d4a5a"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 1.793, 0],
+        "radius": 0.113,
+        "radiusTop": 0.059,
+        "height": 0.035,
+        "color": "#3d4a5a"
+      },
+      { "type": "box", "pos": [0.12, 1.69, 0], "size": [0.03, 0.08, 0.12], "color": "#2b3540" },
+      { "type": "box", "pos": [-0.12, 1.69, 0], "size": [0.03, 0.08, 0.12], "color": "#2b3540" }
+    ]
+  }
+}

@@ -29,43 +29,43 @@
     },
     {
       "item": "alarm-clock",
-      "weight": 4
+      "weight": 2.4
     },
     {
       "item": "duct-tape",
-      "weight": 4
+      "weight": 2
     },
     {
       "item": "electrical-tape",
-      "weight": 4
+      "weight": 3.3
     },
     {
       "item": "flip-lighter",
-      "weight": 4
+      "weight": 2.3
     },
     {
       "item": "laundry-pods",
-      "weight": 4
+      "weight": 3.6
     },
     {
       "item": "light-bulb",
-      "weight": 4
+      "weight": 1.5
     },
     {
       "item": "matches",
-      "weight": 4
+      "weight": 3.6
     },
     {
       "item": "rechargeable-battery",
-      "weight": 4
+      "weight": 3.6
     },
     {
       "item": "toothpaste",
-      "weight": 4
+      "weight": 2.5
     },
     {
       "item": "water-purification-tablets",
-      "weight": 4
+      "weight": 2.3
     },
     {
       "item": "allergy-medication",
@@ -73,7 +73,7 @@
     },
     {
       "item": "drain-cleaner",
-      "weight": 2
+      "weight": 1.9
     },
     {
       "item": "thermobrew",
@@ -88,8 +88,32 @@
       "weight": 0.5
     },
     {
-      "item": "estate-reserve-cabernet",
-      "weight": 0.2
+      "item": "coffee-grinder",
+      "weight": 1.6
+    },
+    {
+      "item": "french-press",
+      "weight": 1.6
+    },
+    {
+      "item": "portable-dehumidifier",
+      "weight": 1.7
+    },
+    {
+      "item": "label-maker",
+      "weight": 1
+    },
+    {
+      "item": "fire-extinguisher",
+      "weight": 1
+    },
+    {
+      "item": "coffee-maker",
+      "weight": 0.5
+    },
+    {
+      "item": "imperial-matcha",
+      "weight": 0.4
     }
   ]
 }

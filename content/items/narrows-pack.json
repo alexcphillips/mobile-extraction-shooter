@@ -1,0 +1,40 @@
+{
+  "formatVersion": 12,
+  "id": "narrows-pack",
+  "name": "Narrows pack",
+  "type": "container",
+  "size": [3, 4],
+  "value": 18000,
+  "weight": 1.8,
+  "rarity": "epic",
+  "slot": "backpack",
+  "grid": [3, 7],
+  "sections": [
+    {
+      "at": [0, 0],
+      "size": [3, 7]
+    }
+  ],
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 1.182, 0.227],
+        "size": [0.296, 0.394, 0.177],
+        "color": "#403529"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.379, 0.217],
+        "size": [0.276, 0.059, 0.158],
+        "color": "#5a4a3a"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.064, 0.325],
+        "size": [0.217, 0.138, 0.059],
+        "color": "#5a4a3a"
+      }
+    ]
+  }
+}

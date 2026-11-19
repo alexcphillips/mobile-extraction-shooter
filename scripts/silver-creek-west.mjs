@@ -234,6 +234,8 @@ export function buildWestEnd(h) {
         },
         at('footlocker', 1.43, 0.4, fl, { id: 'lh-footlocker', yaw: -90 }),
         at('crate', 1.25, -0.95, fl),
+        // the watchman's EMS bag by the west wall, its lid opening into the room
+        at('ems-bag', -1.45, -0.2, fl, { id: 'lh-ems-bag', yaw: -90 }),
       ],
       { pos: [cx, r2(hi), cz] },
     );
@@ -340,7 +342,6 @@ export function buildWestEnd(h) {
       at('office-chair', -3.2, 2.4, fl, { yaw: 90 }),
       at('paper-stacks', -2.4, 2.2, fl + 0.76, { yaw: 90 }),
       at('filing-cabinet', -6.45, 1.0, fl, { yaw: 90 }),
-      at('filing-cabinet', -6.45, 1.55, fl, { yaw: 90 }),
       at('metal-cabinet', -6.48, 4.1, fl, { id: 'co-pay-cabinet', yaw: 90 }),
       // records: shelves of ledgers and cabinets in rows
       at('bookcase-tall', -4.2, -4.57, fl),
@@ -395,13 +396,14 @@ export function buildWestEnd(h) {
       at('desk', 3.5, 2.6, up, { yaw: 90 }),
       at('desk', 3.5, 0.6, up, { yaw: 90 }),
       at('wooden-chair', 2.8, 2.6, up, { yaw: 90 }),
+      at('office-computer', 3.62, 3.02, up + 0.76, { id: 'co-drafting-computer', yaw: -90 }),
       at('filing-cabinet', 6.45, -3.0, up, { yaw: -90 }),
-      at('filing-cabinet', 6.45, -2.45, up, { yaw: -90 }),
       at('paper-stacks', 3.5, 0.6, up + 0.76),
       at('clipboard', -4.0, 2.3, up + 0.76, { yaw: 25 }),
       at('notice-board', 4.0, -4.82, up),
       at('desk', -5.2, -2.9, up, { yaw: 90 }),
       at('office-chair', -4.6, -2.9, up, { yaw: -90 }),
+      at('office-computer', -5.32, -2.48, up + 0.76, { id: 'co-chief-computer', yaw: 90 }),
       at('bookcase-tall', -1.805, -2.9, up, { yaw: -90 }),
     );
     // fire escape on the west wall: a flight rising north to a landing at the upper door
@@ -891,6 +893,8 @@ export function buildWestEnd(h) {
       // dining room, under a chandelier
       at('dining-set', -3.3, -2.2, fl, { yaw: 90 }),
       at('chandelier', -3.3, -2.2, up - 0.2 - 1.3),
+      // the estate reserve on the dining table, very rarely (mythic: loose only)
+      spot(`${id}-fine-wine`, -3.3, fl + 0.77, -1.85, 'fine-wine', 0.02),
       // library
       at('bookcase-tall', 5.05, 2.15, fl, { yaw: -90 }),
       at('couch', 3.6, 2.2, fl, { yaw: 90 }),
@@ -948,6 +952,8 @@ export function buildWestEnd(h) {
       // bathroom
       at('bathtub', 4.4, -3.85, up, { yaw: 90 }),
       at('toilet', 2.175, -2.0, up, { yaw: 90 }),
+      // medicine cabinet on the partition over the toilet
+      at('medicine-cabinet', 1.875, -2.0, up, { yaw: 90 }),
       // landing
       at('duffle-bag', -0.4, -3.9, up),
     );
@@ -1078,8 +1084,9 @@ export function buildWestEnd(h) {
       at('cardboard-bale', 0.2, -3.2, fl + 0.86, { yaw: -8 }),
       at('desk', -4.4, -2.0, fl, { yaw: 180 }),
       at('office-chair', -4.4, -2.9, fl),
-      at('filing-cabinet', -6.5, -2.4, fl, { yaw: 90 }),
       at('toilet', -5.5, -4.95, fl),
+      // medicine cabinet on the back wall over the toilet
+      at('medicine-cabinet', -5.5, -5.3, fl, { id: 'store-meds' }),
     ];
     return group('Store', n, { pos: [38, 0, 127.5], yaw: 180 });
   })();

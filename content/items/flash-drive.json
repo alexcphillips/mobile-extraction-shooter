@@ -1,0 +1,14 @@
+{
+  "formatVersion": 12,
+  "id": "flash-drive",
+  "name": "Flash drive",
+  "type": "loot",
+  "size": [1, 1],
+  "value": 1500,
+  "weight": 0.5,
+  "rarity": "uncommon",
+  "model": {
+    "parts": [{ "type": "box", "pos": [0, 0, 0], "size": [0.14, 0.07, 0.14], "color": "#a08a40" }]
+  },
+  "category": "Electronics"
+}

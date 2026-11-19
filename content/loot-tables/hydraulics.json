@@ -6,7 +6,7 @@
   "items": [
     {
       "item": "pressure-gauge",
-      "weight": 4
+      "weight": 3
     },
     {
       "item": "solenoid-valve",
@@ -14,7 +14,7 @@
     },
     {
       "item": "valve-handwheel",
-      "weight": 3
+      "weight": 4
     },
     {
       "item": "corrugated-tubing",

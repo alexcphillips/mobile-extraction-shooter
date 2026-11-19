@@ -22,15 +22,19 @@
     },
     {
       "item": "lavender-fields",
-      "weight": 2
-    },
-    {
-      "item": "ruby-ring",
       "weight": 1.5
     },
     {
+      "item": "ruby-ring",
+      "weight": 2
+    },
+    {
       "item": "diamond-necklace",
-      "weight": 0.6
+      "weight": 0.8
+    },
+    {
+      "item": "mantel-clock",
+      "weight": 0.8
     }
   ]
 }

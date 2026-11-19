@@ -10,7 +10,7 @@
     },
     {
       "item": "electrical-tape",
-      "weight": 4
+      "weight": 3
     },
     {
       "item": "light-bulb",
@@ -18,11 +18,11 @@
     },
     {
       "item": "rechargeable-battery",
-      "weight": 3
+      "weight": 4
     },
     {
       "item": "high-amp-circuit-breaker",
-      "weight": 2
+      "weight": 1
     },
     {
       "item": "avr-control-board",
@@ -30,7 +30,7 @@
     },
     {
       "item": "high-voltage-inverter-board",
-      "weight": 1
+      "weight": 2
     },
     {
       "item": "digital-thermostat",

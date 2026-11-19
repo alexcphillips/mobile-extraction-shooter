@@ -1,0 +1,55 @@
+{
+  "formatVersion": 12,
+  "id": "uzi-stock",
+  "name": "Uzi folding stock",
+  "shortName": "Stock",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 1600,
+  "weight": 0.5,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["uzi"],
+  "stock": { "length": 1 },
+  "mods": { "recoil": 0.8, "ergonomics": 2 },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.004, 0.006],
+        "size": [0.03, 0.02, 0.012],
+        "color": "#18191b",
+        "name": "hinge"
+      },
+      {
+        "type": "box",
+        "pos": [-0.017, -0.01, 0.125],
+        "size": [0.006, 0.01, 0.235],
+        "color": "#2c2e30",
+        "name": "strut"
+      },
+      {
+        "type": "box",
+        "pos": [0.017, -0.01, 0.125],
+        "size": [0.006, 0.01, 0.235],
+        "color": "#2c2e30",
+        "name": "strut"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.035, 0.245],
+        "size": [0.046, 0.085, 0.01],
+        "color": "#2c2e30",
+        "name": "butt plate"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.035, 0.2515],
+        "size": [0.04, 0.075, 0.003],
+        "color": "#18191b",
+        "name": "butt pad"
+      }
+    ],
+    "fold": { "pivot": [-0.02, 0, 0], "yaw": 180 }
+  }
+}

@@ -13,6 +13,9 @@
 import { buildingKit } from './mapkit/building.mjs';
 import { fenceRun } from './mapkit/fence.mjs';
 
+// Grid electrics roll the substation's table, not office/computer electrical (looting.md).
+const GRID_MIX = { tables: { substation: 0.8, industrial: 0.2 }, empty: 0.15 };
+
 /**
  * h: the generator's helpers (box, drawn, group, prefab, along, label, C, r2, groundAt,
  * groundRange). s: the site (tower {x, z}, PIT {x0, x1, z0, z1}).
@@ -761,7 +764,7 @@ export function buildEastEnd(h, s) {
     box(271.4, ES.z0 + 0.3, ES.x1 - 0.3, 61.08, 3.0, 3.15, C.plaster, { id: 'es-tool-ceiling' }),
     doorX('es-door-tool', 273.6, 61.0, 0),
     at('desk', 271.95, 59.5, 0, { id: 'es-tool-desk', yaw: 90 }),
-    at('filing-cabinet', 274.75, 58.6, 0, { id: 'es-tool-cabinet', yaw: 180 }),
+    at('tool-chest', 274.75, 58.6, 0, { id: 'es-tool-cabinet', yaw: 180 }),
     // workbench, tool cabinet and parts rack along the north wall, a tool board over the
     // bench; a compressor on the walkway between the roads; drums and a sand bin by the
     // south wall
@@ -925,10 +928,13 @@ export function buildEastEnd(h, s) {
     // cabinet, a spare set on a cart. The east end's own electrical spot, and where MT-13's
     // train gets its power.
     at('battery-rack', 268.6, 72.45, 0, { id: 'sb-battery-rack' }),
-    at('electrical-cabinet', 270.9, 72.3, 0, { id: 'sb-charger' }),
+    at('electrical-cabinet', 270.9, 72.3, 0, {
+      id: 'sb-charger',
+      loot: { container: 'electrical-cabinet', mix: GRID_MIX },
+    }),
     box(266.3, 74.95, 267.7, 75.6, 0, 0.8, C['steel-dark'], { id: 'sb-battery-cart' }),
     drawn(266.45, 75.05, 267.55, 75.5, 0.8, 1.15, C.dark, { id: 'sb-battery-cart-load' }),
-    spot('sb-charger-rack', 268.6, 1.3, 72.45, 'switch-room', 0.4),
+    spot('sb-charger-rack', 268.6, 1.3, 72.45, 'substation', 0.4),
     // The stair room: the stair up the south wall to the office.
     {
       type: 'stairs',
@@ -962,7 +968,8 @@ export function buildEastEnd(h, s) {
     // sees the shed floor through its window and is seen from it.
     at('desk', 271.2, 74.5, UP, { id: 'sb-office-desk', yaw: -90 }),
     at('office-chair', 270.4, 74.5, UP, { id: 'sb-office-chair', yaw: 90 }),
-    spot('sb-office-log', 271.2, UP + 0.75, 74.1, 'documents', 0.5),
+    spot('sb-office-log', 271.2, UP + 0.75, 74.55, 'documents', 0.5),
+    at('office-computer', 271.32, 74.08, UP + 0.76, { id: 'sb-office-computer', yaw: -90 }),
     at('metal-cabinet', 264.3, 72.32, UP, { id: 'sb-office-cabinet-metal' }),
     // an ornament on top of it (2026-11-17: regular craftwork in an office, rare)
     spot('sb-office-craft', 264.3, UP + 1.5, 72.32, 'craftwork', 0.1),
@@ -1764,6 +1771,7 @@ export function buildEastEnd(h, s) {
       drawn(2.15, -0.15, 2.35, 0.05, FL + 1.0, sh.top, C.dark, { id: `${id}-flue` }),
       box(2.0, -0.35, 2.5, 0.25, sh.top, rf.ridge + 0.4, C.stone, { id: `${id}-chimney` }),
       at('couch', 1.4, -3.75, FL, { id: `${id}-couch` }),
+      at('ems-bag', -2.2, -2.6, FL, { id: `${id}-ems-bag` }),
       at('notice-board', -3.5, 2.6, FL, { id: `${id}-notice`, yaw: 90 }),
       // east dorm: bunks along the front wall, two heads to the back, a table between
       ...bunk(`${id}-bunk-6`, 5.0, 3.8, true),
@@ -1776,6 +1784,8 @@ export function buildEastEnd(h, s) {
       // washroom
       at('sink-counter', 9.3, -4.0, FL, { id: `${id}-sinks` }),
       at('toilet', 10.4, -1.3, FL, { id: `${id}-toilet`, yaw: -90 }),
+      // medicine cabinet on the washroom's west partition
+      at('medicine-cabinet', 7.875, -2.4, FL, { id: `${id}-meds`, yaw: 90 }),
       // Dressed 2026-11-17: a footlocker at the foot of three bunks (the men's own things,
       // `footlocker`), rugs in the dorms and the common room, a dartboard by the stove,
       // wall lamps; outside, a skirting board, sills, shutters and flower boxes under the
@@ -2226,9 +2236,9 @@ export function buildEastEnd(h, s) {
     at('desk', 260.6, 136.3, U, { id: 'dp-office-desk', yaw: -90 }),
     at('office-chair', 259.9, 136.3, U, { id: 'dp-office-chair', yaw: 90 }),
     at('filing-cabinet', 261.4, 139.3, U, { id: 'dp-office-cabinet', yaw: -90 }),
-    at('filing-cabinet', 258.2, 133.0, U, { id: 'dp-office-cabinet-2' }),
     // the yard ledger and waybills on the desk
-    spot('dp-office-desk-papers', 260.6, U + 0.75, 135.7, 'documents', 0.5),
+    spot('dp-office-desk-papers', 260.6, U + 0.75, 136.35, 'documents', 0.5),
+    at('office-computer', 260.72, 135.88, U + 0.76, { id: 'dp-office-computer', yaw: -90 }),
 
     // ---- the parts cage under the mezzanine: bars west and south, a gate under the rail's
     // gap, the east door its other way in
@@ -2242,6 +2252,8 @@ export function buildEastEnd(h, s) {
     at('steel-barrel', 256.3, 124.7, 0, { id: 'dp-drum-1' }),
     at('steel-barrel', 257.0, 125.1, 0, { id: 'dp-drum-2' }),
     spot('dp-cage-shelf', 260.4, 0, 130.6, 'depot-mechanic', 0.45),
+    // the company's guns, locked in the cage: contested from both ends of the map
+    at('weapon-crate', 258.2, 128.6, 0, { id: 'dp-cage-weapons' }),
     // a place within a place (the user's rule for top-tier loose loot)
     spot('dp-cage-legendary', 257.5, 1.5, 132.85, 'legendary-industrial', 0.05),
 
@@ -2314,6 +2326,8 @@ export function buildEastEnd(h, s) {
     box(230.0, TS.z0 + 0.2, 231.8, 126.9, 0, 0.95, C.timber, { id: 'ts-bench' }),
     at('toolbox', 230.5, 126.55, 0.95, { id: 'ts-toolbox', yaw: 180 }),
     spot('ts-bench-loose', 231.35, 0.95, 126.55, 'depot-mechanic', 0.3),
+    // someone's rounds on the roof perch, away from the ladder
+    at('ammo-crate', 230.5, 128.0, 3.3, { id: 'ts-roof-ammo' }),
   ];
   const depot = group('Equipment depot', [...shed, group('Tire shop', tireShop)]);
 
@@ -2583,6 +2597,8 @@ export function buildEastEnd(h, s) {
     van('rw-van', 228.5, 117.9, 6),
     ...arrowBoard,
     at('portacabin', 216, 113.6, 0, { id: 'rw-site-office' }),
+    // the crew's EMS bag on the ground at the site office's east end
+    at('ems-bag', 220.0, 114.0, 0, { id: 'rw-ems-bag' }),
     ...culverts('rw-culverts-1', 297.5, 112.8),
     ...culverts('rw-culverts-2', 276, 121.9),
     at('jersey-barrier', 291, 116.1, 0, { id: 'rw-barrier-1', yaw: 90 }),

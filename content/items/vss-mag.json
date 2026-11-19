@@ -1,0 +1,26 @@
+{
+  "formatVersion": 12,
+  "id": "vss-mag",
+  "name": "VSS 10-round magazine",
+  "shortName": "VSS 10",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 1800,
+  "weight": 0.09,
+  "rarity": "common",
+  "slot": "magazine",
+  "weapons": ["vss", "as-val"],
+  "capacity": 10,
+  "caliber": "9x39",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.03, 0],
+        "size": [0.028, 0.06, 0.05],
+        "color": "#232527",
+        "pitch": 8
+      }
+    ]
+  }
+}

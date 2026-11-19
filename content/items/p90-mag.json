@@ -1,0 +1,40 @@
+{
+  "formatVersion": 12,
+  "id": "p90-mag",
+  "name": "P90 50-round magazine",
+  "shortName": "P90 50",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 3200,
+  "weight": 0.3,
+  "rarity": "common",
+  "slot": "magazine",
+  "weapons": ["p90"],
+  "capacity": 50,
+  "caliber": "5.7x28",
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0.02, 0],
+        "size": [0.044, 0.04, 0.29],
+        "color": "#6b6555",
+        "name": "body"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0405, 0.0],
+        "size": [0.03, 0.002, 0.25],
+        "color": "#4a4538",
+        "name": "rounds"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.02, 0.149],
+        "size": [0.034, 0.03, 0.008],
+        "color": "#2b2d2f",
+        "name": "catch"
+      }
+    ]
+  }
+}

@@ -1,0 +1,162 @@
+{
+  "formatVersion": 3,
+  "id": "ems-bag",
+  "name": "EMS bag",
+  "tags": ["medical"],
+  "colors": {
+    "bag": "#c0302a",
+    "bag-dark": "#962520",
+    "strap": "#26282a",
+    "zip": "#a3a7ab",
+    "reflect": "#cfd3d6",
+    "patch": "#f1f1ee",
+    "cross": "#c0302a",
+    "inside": "#3a1614",
+    "pack": "#5b8fc0",
+    "pack-b": "#e9ebe8",
+    "roll": "#f4f1e6",
+    "tq": "#2b2b2b",
+    "tq-tab": "#d8432f"
+  },
+  "nodes": [
+    {
+      "type": "group",
+      "name": "Bag",
+      "pos": [0, 0, 0],
+      "loot": {
+        "container": "ems-bag",
+        "searched": "ems-bag-open"
+      },
+      "nodes": [
+        {
+          "type": "box",
+          "pos": [0, 0, 0],
+          "size": [0.72, 0.34, 0.42],
+          "color": "bag",
+          "bulge": [0.03, 0.03, 0, 0, 0.03, 0.03]
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.1, 0.242],
+          "size": [0.68, 0.035, 0.004],
+          "color": "reflect",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.1, -0.242],
+          "size": [0.68, 0.035, 0.004],
+          "color": "reflect",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.392, 0.1, 0],
+          "size": [0.004, 0.035, 0.38],
+          "color": "reflect",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.4, 0.03, 0],
+          "size": [0.04, 0.16, 0.24],
+          "color": "bag-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.392, 0.1, 0],
+          "size": [0.004, 0.035, 0.38],
+          "color": "reflect",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.4, 0.03, 0],
+          "size": [0.04, 0.16, 0.24],
+          "color": "bag-dark",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.1, 0.13, 0.244],
+          "size": [0.16, 0.12, 0.004],
+          "color": "patch",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.1, 0.15, 0.248],
+          "size": [0.025, 0.08, 0.003],
+          "color": "cross",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.1, 0.1775, 0.248],
+          "size": [0.08, 0.025, 0.003],
+          "color": "cross",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.27, 0.241],
+          "size": [0.7, 0.01, 0.004],
+          "color": "zip",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.27, -0.241],
+          "size": [0.7, 0.01, 0.004],
+          "color": "zip",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.391, 0.27, 0],
+          "size": [0.004, 0.01, 0.4],
+          "color": "zip",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0.24, 0.24, 0.245],
+          "size": [0.02, 0.04, 0.008],
+          "color": "zip",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.34, 0.07],
+          "size": [0.32, 0.022, 0.035],
+          "color": "strap",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [0, 0.34, -0.07],
+          "size": [0.32, 0.022, 0.035],
+          "color": "strap",
+          "collide": false
+        },
+        {
+          "type": "box",
+          "pos": [-0.2, 0, 0],
+          "size": [0.04, 0.344, 0.485],
+          "color": "strap",
+          "collide": false,
+          "top": [0.04, 0.39999999999999997]
+        },
+        {
+          "type": "box",
+          "pos": [0.2, 0, 0],
+          "size": [0.04, 0.344, 0.485],
+          "color": "strap",
+          "collide": false,
+          "top": [0.04, 0.39999999999999997]
+        }
+      ]
+    }
+  ]
+}

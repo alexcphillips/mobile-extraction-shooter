@@ -1,7 +1,7 @@
 {
   "formatVersion": 12,
   "id": "police-vest",
-  "name": "Police vest",
+  "name": "Patrolman vest",
   "type": "armor",
   "size": [3, 3],
   "value": 12000,

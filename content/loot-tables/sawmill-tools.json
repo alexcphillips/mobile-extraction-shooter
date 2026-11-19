@@ -6,35 +6,35 @@
   "items": [
     {
       "item": "measuring-tape",
-      "weight": 3
+      "weight": 2.8
     },
     {
       "item": "screwdriver",
-      "weight": 3
+      "weight": 2.8
     },
     {
       "item": "box-of-nails",
-      "weight": 3
+      "weight": 2.8
     },
     {
       "item": "box-of-screws",
-      "weight": 3
+      "weight": 2
     },
     {
       "item": "wood-board",
-      "weight": 2
+      "weight": 1.5
     },
     {
       "item": "gear-set",
-      "weight": 2
+      "weight": 2.8
     },
     {
       "item": "steel-latch-set",
-      "weight": 2
+      "weight": 2.8
     },
     {
       "item": "duct-tape",
-      "weight": 2
+      "weight": 1
     },
     {
       "item": "electrical-tape",
@@ -42,19 +42,19 @@
     },
     {
       "item": "cordless-drill",
-      "weight": 1.5
+      "weight": 1.2
     },
     {
       "item": "circular-saw",
-      "weight": 1.5
+      "weight": 0.6
     },
     {
       "item": "extension-cord",
-      "weight": 1.5
+      "weight": 2
     },
     {
       "item": "angle-grinder",
-      "weight": 1
+      "weight": 1.2
     },
     {
       "item": "bolt-cutters",
@@ -62,7 +62,7 @@
     },
     {
       "item": "caulk-tube",
-      "weight": 1
+      "weight": 2
     },
     {
       "item": "anchoring-epoxy",
@@ -74,11 +74,11 @@
     },
     {
       "item": "valve-handwheel",
-      "weight": 1
+      "weight": 1.5
     },
     {
       "item": "solenoid-valve",
-      "weight": 0.6
+      "weight": 1.2
     },
     {
       "item": "compressed-air-tank",

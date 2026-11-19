@@ -166,6 +166,19 @@ export function ReticleDesigner(props: {
           value={optic.reticle.color}
           onChange={(c) => edit((o) => void (o.reticle.color = c))}
         />
+        <label className="ed-field" title="A soft halo under the reticle, as a lit dot or ring">
+          <input
+            type="checkbox"
+            checked={!!optic.reticle.glow}
+            onChange={(e) =>
+              edit((o) => {
+                if (e.target.checked) o.reticle.glow = true;
+                else delete o.reticle.glow;
+              })
+            }
+          />
+          glow
+        </label>
       </div>
       <p className="ed-note">
         Units are % of the screen height from the aim point, y down; 1 is about {POINTS.toFixed(1)}{' '}

@@ -4,7 +4,7 @@
   "name": "Malachite money frog",
   "type": "loot",
   "size": [1, 1],
-  "value": 12800,
+  "value": 25000,
   "weight": 0.6,
   "rarity": "epic",
   "model": {

@@ -30,11 +30,11 @@
     },
     {
       "item": "antique-chess-set",
-      "weight": 1.5
+      "weight": 1
     },
     {
       "item": "crystal-swan-ornament",
-      "weight": 1
+      "weight": 1.5
     },
     {
       "item": "porcelain-koi-fish",
@@ -46,11 +46,11 @@
     },
     {
       "item": "waterfall-painting",
-      "weight": 0.5
+      "weight": 0.35
     },
     {
       "item": "malachite-money-frog",
-      "weight": 0.4
+      "weight": 0.5
     },
     {
       "item": "apache-helicopter-model",
@@ -58,7 +58,7 @@
     },
     {
       "item": "lighthouse-painting",
-      "weight": 0.3
+      "weight": 0.35
     }
   ]
 }

@@ -1,0 +1,53 @@
+{
+  "formatVersion": 12,
+  "id": "granite-ruck",
+  "name": "Granite ruck",
+  "type": "container",
+  "size": [4, 4],
+  "value": 30000,
+  "weight": 2.8,
+  "rarity": "legendary",
+  "slot": "backpack",
+  "grid": [6, 6],
+  "sections": [
+    {
+      "at": [4, 4],
+      "size": [2, 2]
+    },
+    {
+      "at": [2, 4],
+      "size": [2, 2]
+    },
+    {
+      "at": [0, 4],
+      "size": [2, 2]
+    },
+    {
+      "at": [0, 0],
+      "size": [6, 4]
+    }
+  ],
+  "moveSpeed": 0.96,
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 1.182, 0.227],
+        "size": [0.296, 0.394, 0.177],
+        "color": "#3d3f40"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.379, 0.217],
+        "size": [0.276, 0.059, 0.158],
+        "color": "#55585a"
+      },
+      {
+        "type": "box",
+        "pos": [0, 1.064, 0.325],
+        "size": [0.217, 0.138, 0.059],
+        "color": "#55585a"
+      }
+    ]
+  }
+}
