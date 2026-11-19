@@ -1,0 +1,2392 @@
+{
+  "formatVersion": 12,
+  "id": "skylight-reflex-sight",
+  "name": "Skylight wide reflex sight",
+  "shortName": "Skylight",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 3500,
+  "weight": 0.2,
+  "rarity": "common",
+  "slot": "optic",
+  "weapons": [
+    "akm",
+    "aug-a3",
+    "mp-133",
+    "k10",
+    "mp5",
+    "m416",
+    "scar-h",
+    "as-val",
+    "aks-74u",
+    "aa-12",
+    "saiga-12",
+    "mp7",
+    "mpx",
+    "ump45",
+    "g3",
+    "rpk-16",
+    "pkm",
+    "m250",
+    "mcx-spear",
+    "ak-74m",
+    "sks",
+    "uzi-pro",
+    "p90",
+    "adar",
+    "vss"
+  ],
+  "optic": {
+    "zoom": 1,
+    "reticle": {
+      "color": "#ff2a1f",
+      "glow": true,
+      "shapes": [
+        {
+          "type": "dot",
+          "x": 0,
+          "y": 0,
+          "r": 0.18
+        }
+      ]
+    },
+    "lens": 0.0127,
+    "fill": 17.7
+  },
+  "model": {
+    "sight": [0, 0.0374, -0.054],
+    "parts": [
+      {
+        "type": "slab",
+        "pos": [0, 0.003, -0.036],
+        "size": [0.03, 0.006, 0.07],
+        "color": "#1d1f22",
+        "corners": [0.002, 0.002, 0.002, 0.002],
+        "segments": 2,
+        "name": "rail base",
+        "group": "base"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.003, -0.014],
+        "radius": 0.0022,
+        "height": 0.034,
+        "color": "#5a5f65",
+        "sides": 6,
+        "roll": 90,
+        "name": "cross-bolt",
+        "group": "base"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.003, -0.058],
+        "radius": 0.0022,
+        "height": 0.034,
+        "color": "#5a5f65",
+        "sides": 6,
+        "roll": 90,
+        "name": "cross-bolt",
+        "group": "base"
+      },
+      {
+        "type": "loft",
+        "pos": [0, 0, 0],
+        "color": "#1d1f22",
+        "sides": 4,
+        "rings": [
+          [0.0005, 0.003, 0.012, -0.0165, -0.036],
+          [0.0055, 0.0045, 0.014, -0.017249999999999998, -0.036]
+        ],
+        "name": "dovetail jaw",
+        "group": "base"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0165, 0.0032, -0.036],
+        "radius": 0.004,
+        "height": 0.003,
+        "color": "#5a5f65",
+        "sides": 6,
+        "roll": 90,
+        "name": "tension nut",
+        "group": "base"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0182, 0.0032, -0.036],
+        "radius": 0.0017,
+        "height": 0.0006,
+        "color": "#1d1f22",
+        "sides": 8,
+        "roll": 90,
+        "name": "nut center",
+        "group": "base"
+      },
+      {
+        "type": "hull",
+        "pos": [0, 0, 0],
+        "color": "#2a2c2f",
+        "name": "housing",
+        "group": "housing",
+        "points": [
+          [-0.0175, 0.006, 0.003],
+          [0.0175, 0.006, 0.003],
+          [-0.0175, 0.006, -0.074],
+          [0.0175, 0.006, -0.074],
+          [-0.0175, 0.019, 0.003],
+          [0.0175, 0.019, 0.003],
+          [-0.0175, 0.019, -0.074],
+          [0.0175, 0.019, -0.074],
+          [-0.013500000000000002, 0.024, 0],
+          [0.013500000000000002, 0.024, 0],
+          [-0.013500000000000002, 0.024, -0.071],
+          [0.013500000000000002, 0.024, -0.071]
+        ]
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0125, 0.0032],
+        "size": [0.034, 0.0008, 0.0008],
+        "color": "#1d1f22",
+        "name": "seam",
+        "group": "housing"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0177, 0.0125, -0.0355],
+        "size": [0.0008, 0.0008, 0.076],
+        "color": "#1d1f22",
+        "name": "seam",
+        "group": "housing"
+      },
+      {
+        "type": "box",
+        "pos": [0.0177, 0.0125, -0.0355],
+        "size": [0.0008, 0.0008, 0.076],
+        "color": "#1d1f22",
+        "name": "seam",
+        "group": "housing"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [0.01586, -0.01158],
+          [0.01493, -0.01281],
+          [0.01412, -0.01192],
+          [0.01478, -0.01104]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [0.01493, -0.01281],
+          [0.01362, -0.01362],
+          [0.01318, -0.0125],
+          [0.01412, -0.01192]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [0.01362, -0.01362],
+          [0.0121, -0.0139],
+          [0.0121, -0.0127],
+          [0.01318, -0.0125]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [0.0121, -0.0139],
+          [-0.0121, -0.0139],
+          [-0.0121, -0.0127],
+          [0.0121, -0.0127]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [-0.0121, -0.0139],
+          [-0.01362, -0.01362],
+          [-0.01318, -0.0125],
+          [-0.0121, -0.0127]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [-0.01362, -0.01362],
+          [-0.01493, -0.01281],
+          [-0.01412, -0.01192],
+          [-0.01318, -0.0125]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [-0.01493, -0.01281],
+          [-0.01586, -0.01158],
+          [-0.01478, -0.01104],
+          [-0.01412, -0.01192]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [-0.01586, -0.01158],
+          [-0.01781, -0.00768],
+          [-0.01673, -0.00714],
+          [-0.01478, -0.01104]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [-0.01781, -0.00768],
+          [-0.01822, -0.00627],
+          [-0.01703, -0.00613],
+          [-0.01673, -0.00714]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [-0.01822, -0.00627],
+          [-0.01887, -0.00047],
+          [-0.01768, -0.00033],
+          [-0.01703, -0.00613]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [-0.01887, -0.00047],
+          [-0.01887, 0.00047],
+          [-0.01768, 0.00033],
+          [-0.01768, -0.00033]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [-0.01887, 0.00047],
+          [-0.01822, 0.00627],
+          [-0.01703, 0.00613],
+          [-0.01768, 0.00033]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [-0.01822, 0.00627],
+          [-0.01781, 0.00768],
+          [-0.01673, 0.00714],
+          [-0.01703, 0.00613]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [-0.01781, 0.00768],
+          [-0.01586, 0.01158],
+          [-0.01478, 0.01104],
+          [-0.01673, 0.00714]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [-0.01586, 0.01158],
+          [-0.01493, 0.01281],
+          [-0.01412, 0.01192],
+          [-0.01478, 0.01104]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [-0.01493, 0.01281],
+          [-0.01362, 0.01362],
+          [-0.01318, 0.0125],
+          [-0.01412, 0.01192]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [-0.01362, 0.01362],
+          [-0.0121, 0.0139],
+          [-0.0121, 0.0127],
+          [-0.01318, 0.0125]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [-0.0121, 0.0139],
+          [0.0121, 0.0139],
+          [0.0121, 0.0127],
+          [-0.0121, 0.0127]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [0.0121, 0.0139],
+          [0.01362, 0.01362],
+          [0.01318, 0.0125],
+          [0.0121, 0.0127]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [0.01362, 0.01362],
+          [0.01493, 0.01281],
+          [0.01412, 0.01192],
+          [0.01318, 0.0125]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [0.01493, 0.01281],
+          [0.01586, 0.01158],
+          [0.01478, 0.01104],
+          [0.01412, 0.01192]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [0.01586, 0.01158],
+          [0.01781, 0.00768],
+          [0.01673, 0.00714],
+          [0.01478, 0.01104]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [0.01781, 0.00768],
+          [0.01822, 0.00627],
+          [0.01703, 0.00613],
+          [0.01673, 0.00714]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [0.01822, 0.00627],
+          [0.01887, 0.00047],
+          [0.01768, 0.00033],
+          [0.01703, 0.00613]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [0.01887, 0.00047],
+          [0.01887, -0.00047],
+          [0.01768, -0.00033],
+          [0.01768, 0.00033]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [0.01887, -0.00047],
+          [0.01822, -0.00627],
+          [0.01703, -0.00613],
+          [0.01768, -0.00033]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [0.01822, -0.00627],
+          [0.01781, -0.00768],
+          [0.01673, -0.00714],
+          [0.01703, -0.00613]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.05],
+        "color": "#2a2c2f",
+        "pitch": 90,
+        "points": [
+          [0.01781, -0.00768],
+          [0.01586, -0.01158],
+          [0.01478, -0.01104],
+          [0.01673, -0.00714]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [0.01586, 0.01158],
+          [0.01493, 0.01281],
+          [0.01412, 0.01192],
+          [0.01478, 0.01104]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [0.01493, 0.01281],
+          [0.01362, 0.01362],
+          [0.01318, 0.0125],
+          [0.01412, 0.01192]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [0.01362, 0.01362],
+          [0.0121, 0.0139],
+          [0.0121, 0.0127],
+          [0.01318, 0.0125]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [0.0121, 0.0139],
+          [-0.0121, 0.0139],
+          [-0.0121, 0.0127],
+          [0.0121, 0.0127]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [-0.0121, 0.0139],
+          [-0.01362, 0.01362],
+          [-0.01318, 0.0125],
+          [-0.0121, 0.0127]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [-0.01362, 0.01362],
+          [-0.01493, 0.01281],
+          [-0.01412, 0.01192],
+          [-0.01318, 0.0125]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [-0.01493, 0.01281],
+          [-0.01586, 0.01158],
+          [-0.01478, 0.01104],
+          [-0.01412, 0.01192]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [-0.01586, 0.01158],
+          [-0.01781, 0.00768],
+          [-0.01673, 0.00714],
+          [-0.01478, 0.01104]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [-0.01781, 0.00768],
+          [-0.01822, 0.00627],
+          [-0.01703, 0.00613],
+          [-0.01673, 0.00714]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [-0.01822, 0.00627],
+          [-0.01887, 0.00047],
+          [-0.01768, 0.00033],
+          [-0.01703, 0.00613]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [-0.01887, 0.00047],
+          [-0.01887, -0.00047],
+          [-0.01768, -0.00033],
+          [-0.01768, 0.00033]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [-0.01887, -0.00047],
+          [-0.01822, -0.00627],
+          [-0.01703, -0.00613],
+          [-0.01768, -0.00033]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [-0.01822, -0.00627],
+          [-0.01781, -0.00768],
+          [-0.01673, -0.00714],
+          [-0.01703, -0.00613]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [-0.01781, -0.00768],
+          [-0.01586, -0.01158],
+          [-0.01478, -0.01104],
+          [-0.01673, -0.00714]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [-0.01586, -0.01158],
+          [-0.01493, -0.01281],
+          [-0.01412, -0.01192],
+          [-0.01478, -0.01104]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [-0.01493, -0.01281],
+          [-0.01362, -0.01362],
+          [-0.01318, -0.0125],
+          [-0.01412, -0.01192]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [-0.01362, -0.01362],
+          [-0.0121, -0.0139],
+          [-0.0121, -0.0127],
+          [-0.01318, -0.0125]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [-0.0121, -0.0139],
+          [0.0121, -0.0139],
+          [0.0121, -0.0127],
+          [-0.0121, -0.0127]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [0.0121, -0.0139],
+          [0.01362, -0.01362],
+          [0.01318, -0.0125],
+          [0.0121, -0.0127]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [0.01362, -0.01362],
+          [0.01493, -0.01281],
+          [0.01412, -0.01192],
+          [0.01318, -0.0125]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [0.01493, -0.01281],
+          [0.01586, -0.01158],
+          [0.01478, -0.01104],
+          [0.01412, -0.01192]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [0.01586, -0.01158],
+          [0.01781, -0.00768],
+          [0.01673, -0.00714],
+          [0.01478, -0.01104]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [0.01781, -0.00768],
+          [0.01822, -0.00627],
+          [0.01703, -0.00613],
+          [0.01673, -0.00714]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [0.01822, -0.00627],
+          [0.01887, -0.00047],
+          [0.01768, -0.00033],
+          [0.01703, -0.00613]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [0.01887, -0.00047],
+          [0.01887, 0.00047],
+          [0.01768, 0.00033],
+          [0.01768, -0.00033]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [0.01887, 0.00047],
+          [0.01822, 0.00627],
+          [0.01703, 0.00613],
+          [0.01768, 0.00033]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [0.01822, 0.00627],
+          [0.01781, 0.00768],
+          [0.01673, 0.00714],
+          [0.01703, 0.00613]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.058],
+        "color": "#2a2c2f",
+        "pitch": -90,
+        "points": [
+          [0.01781, 0.00768],
+          [0.01586, 0.01158],
+          [0.01478, 0.01104],
+          [0.01673, 0.00714]
+        ],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01539, 0.04959, -0.054],
+        "color": "#2a2c2f",
+        "roll": -52.86,
+        "size": [0.00154, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01427, 0.05061, -0.054],
+        "color": "#2a2c2f",
+        "roll": -31.72,
+        "size": [0.00154, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01286, 0.05116, -0.054],
+        "color": "#2a2c2f",
+        "roll": -10.57,
+        "size": [0.00154, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0513, -0.054],
+        "color": "#2a2c2f",
+        "roll": 0,
+        "size": [0.0242, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01286, 0.05116, -0.054],
+        "color": "#2a2c2f",
+        "roll": 10.57,
+        "size": [0.00154, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01427, 0.05061, -0.054],
+        "color": "#2a2c2f",
+        "roll": 31.72,
+        "size": [0.00154, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01539, 0.04959, -0.054],
+        "color": "#2a2c2f",
+        "roll": 52.86,
+        "size": [0.00154, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01683, 0.04703, -0.054],
+        "color": "#2a2c2f",
+        "roll": 63.43,
+        "size": [0.00436, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01802, 0.04437, -0.054],
+        "color": "#2a2c2f",
+        "roll": 73.52,
+        "size": [0.00147, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01855, 0.04077, -0.054],
+        "color": "#2a2c2f",
+        "roll": 83.61,
+        "size": [0.00584, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01887, 0.0374, -0.054],
+        "color": "#2a2c2f",
+        "roll": -270,
+        "size": [0.00094, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01855, 0.03403, -0.054],
+        "color": "#2a2c2f",
+        "roll": -263.61,
+        "size": [0.00584, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01802, 0.03043, -0.054],
+        "color": "#2a2c2f",
+        "roll": -253.52,
+        "size": [0.00147, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01683, 0.02777, -0.054],
+        "color": "#2a2c2f",
+        "roll": -243.43,
+        "size": [0.00436, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01539, 0.02521, -0.054],
+        "color": "#2a2c2f",
+        "roll": -232.86,
+        "size": [0.00154, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01427, 0.02419, -0.054],
+        "color": "#2a2c2f",
+        "roll": -211.72,
+        "size": [0.00154, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01427, 0.02419, -0.054],
+        "color": "#2a2c2f",
+        "roll": -148.28,
+        "size": [0.00154, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01539, 0.02521, -0.054],
+        "color": "#2a2c2f",
+        "roll": -127.14,
+        "size": [0.00154, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01683, 0.02777, -0.054],
+        "color": "#2a2c2f",
+        "roll": -116.57,
+        "size": [0.00436, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01802, 0.03043, -0.054],
+        "color": "#2a2c2f",
+        "roll": -106.48,
+        "size": [0.00147, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01855, 0.03403, -0.054],
+        "color": "#2a2c2f",
+        "roll": -96.39,
+        "size": [0.00584, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01887, 0.0374, -0.054],
+        "color": "#2a2c2f",
+        "roll": -90,
+        "size": [0.00094, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01855, 0.04077, -0.054],
+        "color": "#2a2c2f",
+        "roll": -83.61,
+        "size": [0.00584, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01802, 0.04437, -0.054],
+        "color": "#2a2c2f",
+        "roll": -73.52,
+        "size": [0.00147, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01683, 0.04703, -0.054],
+        "color": "#2a2c2f",
+        "roll": -63.43,
+        "size": [0.00436, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01445, 0.04888, -0.054],
+        "color": "#1d1f22",
+        "roll": -232.86,
+        "size": [0.0011, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01365, 0.04961, -0.054],
+        "color": "#1d1f22",
+        "roll": -211.72,
+        "size": [0.0011, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01264, 0.05, -0.054],
+        "color": "#1d1f22",
+        "roll": -190.57,
+        "size": [0.0011, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0501, -0.054],
+        "color": "#1d1f22",
+        "roll": -180,
+        "size": [0.0242, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01264, 0.05, -0.054],
+        "color": "#1d1f22",
+        "roll": -169.43,
+        "size": [0.0011, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01365, 0.04961, -0.054],
+        "color": "#1d1f22",
+        "roll": -148.28,
+        "size": [0.0011, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01445, 0.04888, -0.054],
+        "color": "#1d1f22",
+        "roll": -127.14,
+        "size": [0.0011, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01576, 0.04649, -0.054],
+        "color": "#1d1f22",
+        "roll": -116.57,
+        "size": [0.00436, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01688, 0.04404, -0.054],
+        "color": "#1d1f22",
+        "roll": -106.48,
+        "size": [0.00105, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01736, 0.04063, -0.054],
+        "color": "#1d1f22",
+        "roll": -96.39,
+        "size": [0.00584, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01768, 0.0374, -0.054],
+        "color": "#1d1f22",
+        "roll": -90,
+        "size": [0.00067, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01736, 0.03417, -0.054],
+        "color": "#1d1f22",
+        "roll": -83.61,
+        "size": [0.00584, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01688, 0.03076, -0.054],
+        "color": "#1d1f22",
+        "roll": -73.52,
+        "size": [0.00105, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01576, 0.02831, -0.054],
+        "color": "#1d1f22",
+        "roll": -63.43,
+        "size": [0.00436, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01445, 0.02592, -0.054],
+        "color": "#1d1f22",
+        "roll": -52.86,
+        "size": [0.0011, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01365, 0.02519, -0.054],
+        "color": "#1d1f22",
+        "roll": -31.72,
+        "size": [0.0011, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01264, 0.0248, -0.054],
+        "color": "#1d1f22",
+        "roll": -10.57,
+        "size": [0.0011, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0247, -0.054],
+        "color": "#1d1f22",
+        "roll": 0,
+        "size": [0.0242, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01264, 0.0248, -0.054],
+        "color": "#1d1f22",
+        "roll": 10.57,
+        "size": [0.0011, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01365, 0.02519, -0.054],
+        "color": "#1d1f22",
+        "roll": 31.72,
+        "size": [0.0011, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01445, 0.02592, -0.054],
+        "color": "#1d1f22",
+        "roll": 52.86,
+        "size": [0.0011, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01576, 0.02831, -0.054],
+        "color": "#1d1f22",
+        "roll": 63.43,
+        "size": [0.00436, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01688, 0.03076, -0.054],
+        "color": "#1d1f22",
+        "roll": 73.52,
+        "size": [0.00105, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01736, 0.03417, -0.054],
+        "color": "#1d1f22",
+        "roll": 83.61,
+        "size": [0.00584, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01768, 0.0374, -0.054],
+        "color": "#1d1f22",
+        "roll": 90,
+        "size": [0.00067, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01736, 0.04063, -0.054],
+        "color": "#1d1f22",
+        "roll": -263.61,
+        "size": [0.00584, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01688, 0.04404, -0.054],
+        "color": "#1d1f22",
+        "roll": -253.52,
+        "size": [0.00105, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01576, 0.04649, -0.054],
+        "color": "#1d1f22",
+        "roll": -243.43,
+        "size": [0.00436, 0.008],
+        "name": "window frame",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [0.01478, 0.01104],
+          [0.01412, 0.01192],
+          [0.01371, 0.01148],
+          [0.01425, 0.01077]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [0.01412, 0.01192],
+          [0.01318, 0.0125],
+          [0.01297, 0.01194],
+          [0.01371, 0.01148]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [0.01318, 0.0125],
+          [0.0121, 0.0127],
+          [0.0121, 0.0121],
+          [0.01297, 0.01194]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [0.0121, 0.0127],
+          [-0.0121, 0.0127],
+          [-0.0121, 0.0121],
+          [0.0121, 0.0121]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [-0.0121, 0.0127],
+          [-0.01318, 0.0125],
+          [-0.01297, 0.01194],
+          [-0.0121, 0.0121]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [-0.01318, 0.0125],
+          [-0.01412, 0.01192],
+          [-0.01371, 0.01148],
+          [-0.01297, 0.01194]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [-0.01412, 0.01192],
+          [-0.01478, 0.01104],
+          [-0.01425, 0.01077],
+          [-0.01371, 0.01148]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [-0.01478, 0.01104],
+          [-0.01673, 0.00714],
+          [-0.0162, 0.00687],
+          [-0.01425, 0.01077]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [-0.01673, 0.00714],
+          [-0.01703, 0.00613],
+          [-0.01644, 0.00607],
+          [-0.0162, 0.00687]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [-0.01703, 0.00613],
+          [-0.01768, 0.00033],
+          [-0.01709, 0.00027],
+          [-0.01644, 0.00607]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [-0.01768, 0.00033],
+          [-0.01768, -0.00033],
+          [-0.01709, -0.00027],
+          [-0.01709, 0.00027]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [-0.01768, -0.00033],
+          [-0.01703, -0.00613],
+          [-0.01644, -0.00607],
+          [-0.01709, -0.00027]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [-0.01703, -0.00613],
+          [-0.01673, -0.00714],
+          [-0.0162, -0.00687],
+          [-0.01644, -0.00607]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [-0.01673, -0.00714],
+          [-0.01478, -0.01104],
+          [-0.01425, -0.01077],
+          [-0.0162, -0.00687]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [-0.01478, -0.01104],
+          [-0.01412, -0.01192],
+          [-0.01371, -0.01148],
+          [-0.01425, -0.01077]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [-0.01412, -0.01192],
+          [-0.01318, -0.0125],
+          [-0.01297, -0.01194],
+          [-0.01371, -0.01148]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [-0.01318, -0.0125],
+          [-0.0121, -0.0127],
+          [-0.0121, -0.0121],
+          [-0.01297, -0.01194]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [-0.0121, -0.0127],
+          [0.0121, -0.0127],
+          [0.0121, -0.0121],
+          [-0.0121, -0.0121]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [0.0121, -0.0127],
+          [0.01318, -0.0125],
+          [0.01297, -0.01194],
+          [0.0121, -0.0121]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [0.01318, -0.0125],
+          [0.01412, -0.01192],
+          [0.01371, -0.01148],
+          [0.01297, -0.01194]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [0.01412, -0.01192],
+          [0.01478, -0.01104],
+          [0.01425, -0.01077],
+          [0.01371, -0.01148]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [0.01478, -0.01104],
+          [0.01673, -0.00714],
+          [0.0162, -0.00687],
+          [0.01425, -0.01077]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [0.01673, -0.00714],
+          [0.01703, -0.00613],
+          [0.01644, -0.00607],
+          [0.0162, -0.00687]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [0.01703, -0.00613],
+          [0.01768, -0.00033],
+          [0.01709, -0.00027],
+          [0.01644, -0.00607]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [0.01768, -0.00033],
+          [0.01768, 0.00033],
+          [0.01709, 0.00027],
+          [0.01709, -0.00027]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [0.01768, 0.00033],
+          [0.01703, 0.00613],
+          [0.01644, 0.00607],
+          [0.01709, 0.00027]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [0.01703, 0.00613],
+          [0.01673, 0.00714],
+          [0.0162, 0.00687],
+          [0.01644, 0.00607]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0543],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "points": [
+          [0.01673, 0.00714],
+          [0.01478, 0.01104],
+          [0.01425, 0.01077],
+          [0.0162, 0.00687]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [0.01478, -0.01104],
+          [0.01412, -0.01192],
+          [0.01371, -0.01148],
+          [0.01425, -0.01077]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [0.01412, -0.01192],
+          [0.01318, -0.0125],
+          [0.01297, -0.01194],
+          [0.01371, -0.01148]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [0.01318, -0.0125],
+          [0.0121, -0.0127],
+          [0.0121, -0.0121],
+          [0.01297, -0.01194]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [0.0121, -0.0127],
+          [-0.0121, -0.0127],
+          [-0.0121, -0.0121],
+          [0.0121, -0.0121]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [-0.0121, -0.0127],
+          [-0.01318, -0.0125],
+          [-0.01297, -0.01194],
+          [-0.0121, -0.0121]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [-0.01318, -0.0125],
+          [-0.01412, -0.01192],
+          [-0.01371, -0.01148],
+          [-0.01297, -0.01194]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [-0.01412, -0.01192],
+          [-0.01478, -0.01104],
+          [-0.01425, -0.01077],
+          [-0.01371, -0.01148]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [-0.01478, -0.01104],
+          [-0.01673, -0.00714],
+          [-0.0162, -0.00687],
+          [-0.01425, -0.01077]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [-0.01673, -0.00714],
+          [-0.01703, -0.00613],
+          [-0.01644, -0.00607],
+          [-0.0162, -0.00687]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [-0.01703, -0.00613],
+          [-0.01768, -0.00033],
+          [-0.01709, -0.00027],
+          [-0.01644, -0.00607]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [-0.01768, -0.00033],
+          [-0.01768, 0.00033],
+          [-0.01709, 0.00027],
+          [-0.01709, -0.00027]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [-0.01768, 0.00033],
+          [-0.01703, 0.00613],
+          [-0.01644, 0.00607],
+          [-0.01709, 0.00027]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [-0.01703, 0.00613],
+          [-0.01673, 0.00714],
+          [-0.0162, 0.00687],
+          [-0.01644, 0.00607]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [-0.01673, 0.00714],
+          [-0.01478, 0.01104],
+          [-0.01425, 0.01077],
+          [-0.0162, 0.00687]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [-0.01478, 0.01104],
+          [-0.01412, 0.01192],
+          [-0.01371, 0.01148],
+          [-0.01425, 0.01077]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [-0.01412, 0.01192],
+          [-0.01318, 0.0125],
+          [-0.01297, 0.01194],
+          [-0.01371, 0.01148]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [-0.01318, 0.0125],
+          [-0.0121, 0.0127],
+          [-0.0121, 0.0121],
+          [-0.01297, 0.01194]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [-0.0121, 0.0127],
+          [0.0121, 0.0127],
+          [0.0121, 0.0121],
+          [-0.0121, 0.0121]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [0.0121, 0.0127],
+          [0.01318, 0.0125],
+          [0.01297, 0.01194],
+          [0.0121, 0.0121]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [0.01318, 0.0125],
+          [0.01412, 0.01192],
+          [0.01371, 0.01148],
+          [0.01297, 0.01194]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [0.01412, 0.01192],
+          [0.01478, 0.01104],
+          [0.01425, 0.01077],
+          [0.01371, 0.01148]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [0.01478, 0.01104],
+          [0.01673, 0.00714],
+          [0.0162, 0.00687],
+          [0.01425, 0.01077]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [0.01673, 0.00714],
+          [0.01703, 0.00613],
+          [0.01644, 0.00607],
+          [0.0162, 0.00687]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [0.01703, 0.00613],
+          [0.01768, 0.00033],
+          [0.01709, 0.00027],
+          [0.01644, 0.00607]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [0.01768, 0.00033],
+          [0.01768, -0.00033],
+          [0.01709, -0.00027],
+          [0.01709, 0.00027]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [0.01768, -0.00033],
+          [0.01703, -0.00613],
+          [0.01644, -0.00607],
+          [0.01709, -0.00027]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [0.01703, -0.00613],
+          [0.01673, -0.00714],
+          [0.0162, -0.00687],
+          [0.01644, -0.00607]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0374, -0.0537],
+        "color": "#0e0f11",
+        "pitch": 90,
+        "points": [
+          [0.01673, -0.00714],
+          [0.01478, -0.01104],
+          [0.01425, -0.01077],
+          [0.0162, -0.00687]
+        ],
+        "name": "glass edge",
+        "group": "window"
+      },
+      {
+        "type": "loft",
+        "pos": [0, 0, 0],
+        "color": "#2a2c2f",
+        "sides": 4,
+        "rings": [
+          [0.023, 0.013, 0.013999999999999999, 0, -0.023],
+          [0.0262, 0.009, 0.01, 0, -0.024999999999999998]
+        ],
+        "name": "emitter housing",
+        "group": "emitter"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0251, -0.0305],
+        "size": [0.006, 0.0016],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "name": "emitter lens",
+        "group": "emitter"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.016050000000000002, 0.0045000000000000005],
+        "radius": 0.0032,
+        "height": 0.003,
+        "color": "#1d1f22",
+        "sides": 12,
+        "pitch": 90,
+        "name": "selector knob",
+        "group": "controls"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.016050000000000002, 0.006200000000000001],
+        "radius": 0.0024,
+        "height": 0.0004,
+        "color": "#5a5f65",
+        "sides": 12,
+        "pitch": 90,
+        "name": "knob cap",
+        "group": "controls"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.01725, 0.006500000000000001],
+        "size": [0.0005, 0.0018, 0.0003],
+        "color": "#9a9ea3",
+        "name": "knob index",
+        "group": "controls"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.011150000000000002, 0.004],
+        "size": [0.0011, 0.0011],
+        "color": "#9a9ea3",
+        "pitch": 90,
+        "name": "reticle mark",
+        "group": "controls"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0073500000000000015, 0.004],
+        "size": [0.0011, 0.0011],
+        "color": "#9a9ea3",
+        "pitch": 90,
+        "name": "reticle mark",
+        "group": "controls"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.0032, 0.009250000000000001, 0.004],
+        "size": [0.0011, 0.0011],
+        "color": "#9a9ea3",
+        "pitch": 90,
+        "name": "reticle mark",
+        "group": "controls"
+      },
+      {
+        "type": "panel",
+        "pos": [0.0032, 0.009250000000000001, 0.004],
+        "size": [0.0011, 0.0011],
+        "color": "#9a9ea3",
+        "pitch": 90,
+        "name": "reticle mark",
+        "group": "controls"
+      },
+      {
+        "type": "slab",
+        "pos": [-0.0183, 0.01575, -0.022],
+        "size": [0.0016, 0.004, 0.006],
+        "color": "#1d1f22",
+        "corners": [0.0008, 0.0008, 0.0008, 0.0008],
+        "segments": 2,
+        "name": "brightness up",
+        "group": "controls"
+      },
+      {
+        "type": "slab",
+        "pos": [-0.0183, 0.01575, -0.031],
+        "size": [0.0016, 0.004, 0.006],
+        "color": "#1d1f22",
+        "corners": [0.0008, 0.0008, 0.0008, 0.0008],
+        "segments": 2,
+        "name": "brightness down",
+        "group": "controls"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0187, 0.0125, -0.05],
+        "radius": 0.0055,
+        "height": 0.0024,
+        "color": "#1d1f22",
+        "sides": 16,
+        "roll": 90,
+        "name": "battery cap",
+        "group": "battery"
+      },
+      {
+        "type": "box",
+        "pos": [0.02, 0.0125, -0.05],
+        "size": [0.0006, 0.0008, 0.0065],
+        "color": "#0e0f11",
+        "name": "coin slot",
+        "group": "battery"
+      },
+      {
+        "type": "panel",
+        "pos": [0.018500000000000003, 0.01625, -0.018],
+        "size": [0.0045, 0.014],
+        "color": "#1d1f22",
+        "roll": -90,
+        "name": "serial plate",
+        "group": "hardware"
+      },
+      {
+        "type": "panel",
+        "pos": [0.0187, 0.01705, -0.018],
+        "size": [0.0005, 0.01],
+        "color": "#9a9ea3",
+        "roll": -90,
+        "name": "serial text",
+        "group": "hardware"
+      },
+      {
+        "type": "panel",
+        "pos": [0.0187, 0.01545, -0.018],
+        "size": [0.0005, 0.01],
+        "color": "#9a9ea3",
+        "roll": -90,
+        "name": "serial text",
+        "group": "hardware"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.017800000000000003, 0.0095, -0.003],
+        "radius": 0.0014,
+        "height": 0.0008,
+        "color": "#5a5f65",
+        "sides": 8,
+        "roll": 90,
+        "name": "screw",
+        "group": "hardware"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.017800000000000003, 0.0095, -0.06799999999999999],
+        "radius": 0.0014,
+        "height": 0.0008,
+        "color": "#5a5f65",
+        "sides": 8,
+        "roll": 90,
+        "name": "screw",
+        "group": "hardware"
+      }
+    ]
+  }
+}

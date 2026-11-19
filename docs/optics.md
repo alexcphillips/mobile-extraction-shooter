@@ -2,10 +2,21 @@
 
 Optics are the most looked-at thing in the game: every aimed second is spent through one. So each sight is built to a higher bar than other items, from a real-world reference, and checked aimed, not just in the item picture *(user's call)*. `asp-reflex-sight` is the reference build: when in doubt, open it in the item editor and do what it does.
 
+## Where to look
+
+Read only the part you need; search these by name rather than reading them whole.
+- **Part shapes and their fields:** `partSchema` in [models.ts](../packages/shared/src/content/models.ts).
+- **Optic fields** (`zoom`, `lens`, `fill`, `reticle`, `glow`): the `optic` object in [items.ts](../packages/shared/src/content/items.ts).
+- **Triangle budget:** `budgetOf` in [budget.ts](../packages/client/src/item-editor/budget.ts).
+- **Hull and loft geometry** (the flatness check, how loft rings are placed): `convexHull` and `loftRing` in [hull.ts](../packages/shared/src/content/hull.ts).
+- **Generator helpers:** [optic-kit.mjs](../scripts/optic-kit.mjs): `coreOutline` and `roundOutline` (window shapes), `ringFaces` and `edgeFaces` (a frame's faces), `writeItem` (writes the model prettier-formatted; `--dry` checks for hand edits). Read its header and signatures, not more.
+- **Pictures:** the header comment of [item-shot.mjs](../scripts/item-shot.mjs). Needs the dev server.
+- **The reference build:** query `asp-reflex-sight` with a `node -e` over its JSON, grouping parts by `group`/`name`/`type`; don't read it whole.
+
 ## The process
 
 1. **Start from a reference.** A photo or a game screenshot of the real sight, from the front (aimed) and the side. Note what makes it read as itself: the window's shape, how it joins the base, the controls, the reticle. Give it our own name, never a product's or another game's *(user's call)*.
-2. **Build it from a generator script** in the scratchpad (helpers for box, cylinder, slab, hull, loft, panel), so positions are computed and a change is a re-run. Keep every size that other parts hang off as one named constant (the housing's half width, the window's radius, the seat's top), and place attached parts from it, so resizing one keeps the rest attached.
+2. **Build it from a generator script** in the scratchpad that imports [optic-kit.mjs](../scripts/optic-kit.mjs) by path (window outlines, frame faces, writing the item), so positions are computed and a change is a re-run. Keep every size that other parts hang off as one named constant (the housing's half width, the window's radius, the seat's top), and place attached parts from it, so resizing one keeps the rest attached.
 3. **Once the user edits the JSON, the JSON is the model.** Never re-run an old script over a hand edit (the user tunes the sight point and other values by eye). Make later changes in the JSON or the item editor.
 4. **Check it three ways**, every round: `node scripts/item-shot.mjs <id> --view 3D --view front --aimed --on <gun>` saves the item pictures, the 3D and front views and the aimed view; the item editor's reticle panel shows the reticle at its real units; and the content tests (`npx vitest run`) validate the model. Look at every picture before handing it over, and say what wasn't checked.
 
@@ -14,6 +25,24 @@ Optics are the most looked-at thing in the game: every aimed second is spent thr
 The item-model frame from [props.md](props.md) → Item models: meters, the front at −z, y up, a part's `pos` is its **center** (not its base, unlike map shapes). The origin is the gun's optic mount: the bottom middle of the sight's base. **Nothing goes below y = 0**: it would sink into the gun's receiver.
 
 The **sight point** (`model.sight`) is where the eye lines up: the middle of the window as seen. Where a base cuts off the window's bottom, that's lower than the window's own center by eye; the user sets the final height by eye in the aimed view.
+
+## Part shapes: how they behave
+
+### Panels: which way they face
+A panel faces up its own +y and is drawn from that side only; its `points` are `[x, z]` in its own frame. Rotation is yaw, pitch, roll (order YXZ).
+- **Facing the front (−z):** `pitch: -90`. Its local z becomes world +y, so points are `[x, y]` from `pos`.
+- **Facing the eye (+z):** `pitch: 90`. Its local z becomes world −y, so points are `[x, −y]`.
+- **A face along an edge** (a frame's inner or outer side): `roll` alone, `size: [edge length, depth]`. With roll θ the panel's normal is (−sin θ, cos θ, 0), so for a wanted normal (nx, ny), θ = atan2(ny, nx) − 90°.
+- `points` must go round a convex shape in order. A frame is built as one quad per segment, never one ring polygon.
+
+### Window outlines: a core grown by a radius
+Draw a non-round window as a convex core polygon grown outward by a radius (each corner becomes an arc): `coreOutline` in the kit, or `roundOutline` for a hoop. Sample every outline at the **same normal angles**: the outer edge, the inner edge, the glass edge and any lip are then concentric, the frame is the same thickness all the way round, and each quad between two outlines is convex. Changing the core's corner points reshapes the window without touching the rest.
+
+### Small solids: lofts, not hulls
+The hull's flatness check uses fixed thresholds, so a hull smaller than a couple of centimeters fails as "points are all on a plane". Use a loft: with `sides: 4` each ring is a `w × d` rectangle (moved by `dx, dz`), so two rings make a box that tapers or leans (a jaw, an emitter hump).
+
+### Generated parts and hand edits
+Before re-running a generator over an item, run it with `--dry` (`writeItem` then writes nothing and says whether the file would change). If it differs, the user has edited it; work in the JSON from then on.
 
 ## Anatomy: what a sight needs
 

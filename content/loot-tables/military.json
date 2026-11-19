@@ -79,7 +79,7 @@
     { "item": "mag-762x39-45", "weight": 1 },
     { "item": "mag-545x39-95", "weight": 0.3 },
     { "item": "red-dot", "weight": 1 },
-    { "item": "sundog-reflex-sight", "weight": 0.6 },
+    { "item": "skylight-reflex-sight", "weight": 0.6 },
     { "item": "asp-reflex-sight", "weight": 0.6 },
     { "item": "scope-4x", "weight": 0.5 },
     { "item": "talus-combat-optic", "weight": 0.25 },

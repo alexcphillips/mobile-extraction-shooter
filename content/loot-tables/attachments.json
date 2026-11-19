@@ -67,7 +67,7 @@
     { "item": "longwatch-10x-scope", "weight": 0.12 },
     { "item": "rally-combat-sight", "weight": 0.3 },
     { "item": "talus-combat-optic", "weight": 0.25 },
-    { "item": "sundog-reflex-sight", "weight": 0.6 },
+    { "item": "skylight-reflex-sight", "weight": 0.6 },
     { "item": "asp-reflex-sight", "weight": 0.6 }
   ]
 }
