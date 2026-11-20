@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "ammo-338-ucw",
   "name": ".338 Lapua Magnum UCW",
   "shortName": ".338 UCW",
@@ -14,6 +14,7 @@
   "damage": 121,
   "armorDamage": 20,
   "bleedChance": 0.45,
+  "falloff": { "from": 250, "to": 650, "floor": 0.75 },
   "model": {
     "parts": [
       { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "color": "#b39448" },

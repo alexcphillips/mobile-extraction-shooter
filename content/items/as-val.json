@@ -1,11 +1,12 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "as-val",
   "name": "AS VAL",
   "type": "weapon",
   "class": "assault",
-  "size": [3, 2],
-  "value": 75400,
+  "platform": "as-val",
+  "size": [4, 2],
+  "value": 80400,
   "weight": 2.2,
   "rarity": "common",
   "ammo": "ammo-9x39",
@@ -14,21 +15,27 @@
   "rpm": 900,
   "magazine": 20,
   "feed": "magazine",
-  "reloadTime": 2.4,
-  "ergonomics": 64,
-  "range": 200,
-  "loudness": 55,
+  "reloadTime": 2.36,
+  "stats": {
+    "recoilUp": 59,
+    "recoilSide": 58,
+    "stability": 51,
+    "handling": 67,
+    "hipFire": 30,
+    "accuracy": 30,
+    "range": 65,
+    "loudness": 52
+  },
+  "barrelRange": 0.85,
   "suppressed": true,
   "defaults": {
-    "magazine": "as-val-mag",
-    "stock": "as-val-stock"
+    "magazine": "as-val-mag"
   },
-  "slots": ["optic", "magazine", "laser", "stock"],
-  "hipSpread": 2.5,
-  "aimSpread": 0.5,
+  "slots": ["optic", "magazine", "rightRail", "stock"],
+  "stock": {
+    "length": 1
+  },
   "recoil": {
-    "up": 2.13,
-    "side": 0.79,
     "snap": 42,
     "recovery": 3,
     "angle": -5
@@ -143,7 +150,31 @@
         "color": "#2a2724",
         "pitch": -18
       },
-      { "type": "box", "pos": [0, -0.01, 0.09], "size": [0.035, 0.05, 0.02], "color": "#1d1f21" }
+      { "type": "box", "pos": [0, -0.01, 0.09], "size": [0.035, 0.05, 0.02], "color": "#1d1f21" },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.005, 0.2],
+        "radius": 0.008,
+        "height": 0.22,
+        "color": "#1d1f21",
+        "pitch": 90,
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.045, 0.2],
+        "size": [0.012, 0.012, 0.22],
+        "color": "#1d1f21",
+        "pitch": 14,
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.025, 0.315],
+        "size": [0.03, 0.1, 0.012],
+        "color": "#1d1f21",
+        "hiddenBy": "stock"
+      }
     ],
     "grip": [0, -0.065, 0.05],
     "support": [0, -0.03, -0.18],
@@ -152,8 +183,12 @@
     "mounts": {
       "optic": [0, 0.04, 0.04],
       "magazine": [0, -0.028, -0.06],
-      "laser": [0.037, -0.008, -0.24],
+      "rightRail": [0.037, -0.008, -0.24],
       "stock": [0, 0.005, 0.09]
+    },
+    "factoryFold": {
+      "pivot": [-0.019, 0, 0],
+      "yaw": 180
     }
   }
 }

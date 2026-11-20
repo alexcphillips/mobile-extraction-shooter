@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "sentry-sealed",
   "name": "Sentry sealed helmet",
   "type": "armor",

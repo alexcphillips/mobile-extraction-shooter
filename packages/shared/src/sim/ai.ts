@@ -4,6 +4,7 @@ import {
   grenadeDef,
   grenadeEffect,
   itemDef,
+  statAt,
   weaponDef,
   type GrenadeDef,
   type ItemDb,
@@ -3045,7 +3046,12 @@ function pinDown(
     return false;
   const across = Math.hypot(x - c.x, z - c.z);
   const w = heldWeapon(c);
-  if (!w || across < JUG.chargeClose || across > weaponDef(items, w.item).range) return false;
+  if (
+    !w ||
+    across < JUG.chargeClose ||
+    across > statAt('range', weaponDef(items, w.item).stats.range)
+  )
+    return false;
   const ty = y + MOVEMENT.standHeight * 0.6;
   if (!landsNear(world, c, x, ty, z)) return false;
   aimAt(state, c, ai, x, ty, z);
@@ -3618,7 +3624,7 @@ function suppress(
   const ready =
     w.mag > 0 &&
     w.reloading === 0 &&
-    across <= def.range &&
+    across <= statAt('range', def.stats.range) &&
     Math.abs(angleDiff(c.yaw, aimYaw)) < AI.fireCone * DEG;
   const lands = landsNear(world, c, tx, ty, tz);
   if (ai.burst <= 0 && ai.pause <= 0 && ready && lands) {
@@ -4471,7 +4477,9 @@ function fight(
     // rather than shooting into its edge (2026-11-08).
     ((ai.skill.charge && headOnly) ||
       across >
-        (ai.skill.charge ? JUG.chargeClose : Math.min(def.range * AI.engageRange, AI.maxEngage))) &&
+        (ai.skill.charge
+          ? JUG.chargeClose
+          : Math.min(statAt('range', def.stats.range) * AI.engageRange, AI.maxEngage))) &&
     // Holding its ground (skill.anchored, MT-12), only after a target on it.
     mayGo(ai, target.x, target.z)
   ) {
@@ -4502,7 +4510,7 @@ function fight(
     ai.reaction <= 0 &&
     w.mag > 0 &&
     w.reloading === 0 &&
-    across <= def.range &&
+    across <= statAt('range', def.stats.range) &&
     Math.abs(angleDiff(c.yaw, aimYaw)) < AI.fireCone * DEG;
   const semi = def.fireMode === 'semi';
   if (ai.burst <= 0 && ai.pause <= 0 && ready) {

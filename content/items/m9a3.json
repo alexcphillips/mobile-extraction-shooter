@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "m9a3",
   "name": "M9A3",
   "type": "weapon",
@@ -15,18 +15,22 @@
   "magazine": 17,
   "feed": "magazine",
   "reloadTime": 1.6,
-  "ergonomics": 82,
-  "range": 100,
-  "loudness": 120,
+  "stats": {
+    "recoilUp": 71,
+    "recoilSide": 59,
+    "stability": 35,
+    "handling": 82,
+    "hipFire": 35,
+    "accuracy": 28,
+    "range": 50,
+    "loudness": 69
+  },
+  "barrelRange": 0.9,
   "defaults": {
     "magazine": "m9a3-mag"
   },
-  "slots": ["muzzle", "magazine", "laser"],
-  "hipSpread": 2,
-  "aimSpread": 0.55,
+  "slots": ["muzzle", "magazine", "rightRail"],
   "recoil": {
-    "up": 3,
-    "side": 0.66,
     "snap": 45,
     "recovery": 6
   },
@@ -180,7 +184,7 @@
     "mounts": {
       "muzzle": [0, 0.012, -0.165],
       "magazine": [0, -0.108, 0.014],
-      "laser": [0, -0.038, -0.135]
+      "rightRail": [0, -0.038, -0.135]
     }
   }
 }

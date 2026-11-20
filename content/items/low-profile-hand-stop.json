@@ -1,0 +1,54 @@
+{
+  "formatVersion": 13,
+  "id": "low-profile-hand-stop",
+  "name": "Low profile hand stop",
+  "shortName": "Low Pro",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 3200,
+  "weight": 0.03,
+  "rarity": "common",
+  "slot": "foregrip",
+  "mods": {
+    "handling": 9,
+    "recoilUp": 3,
+    "recoilSide": 3
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "slab",
+        "pos": [0, -0.003, 0],
+        "size": [0.018, 0.006, 0.03],
+        "color": "#1d1f21",
+        "corners": [0.0015, 0.0015, 0.0015, 0.0015],
+        "segments": 1,
+        "name": "rail clamp",
+        "group": "clamp"
+      },
+      {
+        "type": "box",
+        "pos": [0.0094, -0.004, 0],
+        "size": [0.002, 0.004, 0.01],
+        "color": "#8d8f91",
+        "name": "clamp screw",
+        "group": "clamp"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0095, 0.001],
+        "size": [0.015, 0.007, 0.026],
+        "color": "#141516",
+        "name": "body"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0155, -0.0105],
+        "size": [0.015, 0.007, 0.005],
+        "color": "#141516",
+        "name": "front lip"
+      }
+    ],
+    "support": [0, 0, 0.04]
+  }
+}

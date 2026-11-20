@@ -65,8 +65,13 @@ function arms(grip: Point, support: Point | null, outfit: Outfit): ModelShape[] 
 }
 
 /** Where the gun sits relative to the camera, from the hip and aimed down the sight. */
-const HIP = new THREE.Vector3(0.13, -0.14, -0.42);
-const AIMED_Z = -0.3;
+const HIP = new THREE.Vector3(0.1, -0.115, -0.46);
+/**
+ * Aimed down iron sights, how far the gun's butt is behind the eye: the stock in the
+ * shoulder and the cheek on it, so the rear sight sits as close as on the real gun (an AR's
+ * about 9 cm, an AK's notch far up the gun). Optics set their own distance.
+ */
+const BUTT_BEHIND_EYE = 0.12;
 /** A pistol is held further out. */
 const PISTOL_HIP = new THREE.Vector3(0.12, -0.13, -0.38);
 const PISTOL_AIMED_Z = -0.34;
@@ -98,7 +103,12 @@ export class Viewmodel {
   private readonly lens: THREE.Mesh;
   /** Where the gun sits looking through its scope (the eyepiece up at the eye), or null. */
   private scopeAim: THREE.Vector3 | null = null;
+  /** The sight point and the roll aimed (an offset optic's cant), from the gun model. */
+  private sightPoint: readonly [number, number, number] = [0, 0, 0];
+  private aimRoll = 0;
   private readonly flash: THREE.Mesh;
+  /** Each fitted laser's lens, where its beam leaves (beams run along −z). */
+  private readonly lasers: THREE.Object3D[] = [];
   private readonly muzzle = new THREE.Object3D();
   private readonly aimed = new THREE.Vector3();
   private readonly hip = new THREE.Vector3();
@@ -169,10 +179,20 @@ export class Viewmodel {
         ? -gun.sight[2] - scopeEyeDistance(gun.window.lens, gun.window.fill)
         : pistol
           ? PISTOL_AIMED_Z
-          : AIMED_Z,
+          : BUTT_BEHIND_EYE - gun.butt,
     );
     this.flash.position.set(...gun.muzzle);
     this.muzzle.position.set(...gun.muzzle);
+    for (const l of this.lasers) this.gun.remove(l);
+    this.lasers.length = 0;
+    for (const at of gun.lasers) {
+      const l = new THREE.Object3D();
+      l.position.set(...at);
+      this.gun.add(l);
+      this.lasers.push(l);
+    }
+    this.sightPoint = gun.sight;
+    this.aimRoll = gun.roll;
   }
 
   /** Shows a knife in the right hand. */
@@ -181,6 +201,8 @@ export class Viewmodel {
     if (this.built === key) return;
     this.built = key;
     this.suppressed = true;
+    for (const l of this.lasers) this.gun.remove(l);
+    this.lasers.length = 0;
     const knife = knifeModel(items, id);
     this.build([...knife.shapes, ...arms(knife.grip, null, this.outfit)]);
     this.scopeAim = null;
@@ -199,9 +221,12 @@ export class Viewmodel {
     this.holder.visible = on;
   }
 
-  /** A shot: kick back and flash (no flash through a suppressor). */
-  fired(now: number): void {
-    this.kick = Math.min(1.5, this.kick + 1);
+  /**
+   * A shot: kick back and flash (no flash through a suppressor). jump is the gun's
+   * stability as a scale (jumpAt): 1 is a middling gun's kick.
+   */
+  fired(now: number, jump = 1): void {
+    this.kick = Math.min(1.5 * jump, this.kick + jump);
     if (!this.suppressed) this.flashUntil = now + 40;
   }
 
@@ -254,18 +279,54 @@ export class Viewmodel {
     this.lens.visible = through;
     if (through) this.gun.position.copy(this.scopeAim!);
     else this.gun.position.lerpVectors(this.hip, this.aimed, aim);
+    // A canted sight: the gun rolls as it comes up, about the sight point, so the sight stays
+    // on the line ahead of the eye.
+    const roll = this.aimRoll * aim;
+    if (roll) {
+      const [sx, sy] = this.sightPoint;
+      const c = Math.cos(roll);
+      const s = Math.sin(roll);
+      this.gun.position.x += aim * (sx - (c * sx - s * sy));
+      this.gun.position.y += aim * (sy - (s * sx + c * sy));
+    }
     this.gun.position.x += swayX - across * 0.26 + slash * 0.04;
     this.gun.position.y += swayY - dip * 0.08 - down * 0.3 - lowered * 0.14 + slash * 0.05;
     this.gun.position.z += this.kick * 0.03 - slash * 0.16 + lowered * 0.04;
     this.gun.rotation.x = this.kick * 0.04 * (1 - aim) - dip * 0.35 - down * 1.1 - lowered * 0.7;
     this.gun.rotation.y = slash * 0.9;
-    this.gun.rotation.z = dip * 0.5 - slash * 1.2;
+    this.gun.rotation.z = dip * 0.5 - slash * 1.2 + roll;
     this.flash.visible = now < this.flashUntil;
+  }
+
+  /** How many lasers the gun has. */
+  get laserCount(): number {
+    return this.lasers.length;
+  }
+
+  /** Laser i's lens in the world, where its beam starts. */
+  laserWorld(i: number, out: THREE.Vector3): THREE.Vector3 {
+    this.holder.updateMatrixWorld();
+    return this.matchView(this.lasers[i]!.getWorldPosition(out));
   }
 
   /** The muzzle's position in the world, for tracers. */
   muzzleWorld(out: THREE.Vector3): THREE.Vector3 {
     this.holder.updateMatrixWorld();
-    return this.muzzle.getWorldPosition(out);
+    return this.matchView(this.muzzle.getWorldPosition(out));
+  }
+
+  /**
+   * gunToWorld (hud/optic.ts) for the world view this frame, set by the game: the gun is
+   * drawn with its own field of view, so a point taken off it for the world is moved out
+   * from the view's center by this, to land on the pixel where the gun shows it.
+   */
+  toWorld = 1;
+
+  private matchView(p: THREE.Vector3): THREE.Vector3 {
+    if (this.toWorld === 1) return p;
+    this.holder.worldToLocal(p);
+    p.x *= this.toWorld;
+    p.y *= this.toWorld;
+    return this.holder.localToWorld(p);
   }
 }

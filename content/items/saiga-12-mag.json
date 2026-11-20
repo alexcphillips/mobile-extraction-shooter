@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "saiga-12-mag",
   "name": "Saiga-12 5-round magazine",
   "shortName": "Saiga-12 5",
@@ -9,7 +9,7 @@
   "weight": 0.3,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["saiga-12"],
+  "platforms": ["ak"],
   "capacity": 5,
   "caliber": "12g",
   "model": {

@@ -81,6 +81,8 @@ const PRESSES = {
   draw: null,
   throw: false,
   breathe: false,
+  sight: false,
+  laser: false,
   use: null,
   door: null,
   search: null,

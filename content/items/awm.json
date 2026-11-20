@@ -1,11 +1,11 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "awm",
   "name": "AWM",
   "type": "weapon",
   "class": "sniper",
-  "size": [4, 2],
-  "value": 140000,
+  "size": [5, 2],
+  "value": 150800,
   "weight": 5.5,
   "rarity": "common",
   "ammo": "ammo-338",
@@ -15,21 +15,26 @@
   "magazine": 5,
   "feed": "magazine",
   "reloadTime": 3.6,
-  "ergonomics": 33,
-  "range": 650,
-  "loudness": 300,
-  "defaults": {
-    "magazine": "awm-mag",
-    "stock": "awm-stock"
+  "stats": {
+    "recoilUp": 88,
+    "recoilSide": 80,
+    "stability": 90,
+    "handling": 33,
+    "hipFire": 9,
+    "accuracy": 80,
+    "range": 91,
+    "loudness": 89
   },
-  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
-  "hipSpread": 6.5,
-  "aimSpread": 0.05,
+  "defaults": {
+    "magazine": "awm-mag"
+  },
+  "slots": ["optic", "muzzle", "magazine", "rightRail", "stock"],
+  "stock": {
+    "length": 1
+  },
   "recoil": {
-    "up": 10.15,
-    "side": 2.57,
     "snap": 28,
-    "recovery": 2.61
+    "recovery": 3
   },
   "sounds": {
     "shot": "sniper-shot",
@@ -146,6 +151,41 @@
         "hiddenBy": "optic",
         "name": "front sight ear",
         "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0, 0.2],
+        "size": [0.045, 0.04, 0.22],
+        "color": "#5a6340",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.1, 0.23],
+        "size": [0.045, 0.05, 0.2],
+        "color": "#5a6340",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.04, 0.32],
+        "size": [0.045, 0.12, 0.06],
+        "color": "#5a6340",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.028, 0.24],
+        "size": [0.04, 0.016, 0.1],
+        "color": "#1d1f21",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.04, 0.355],
+        "size": [0.048, 0.13, 0.012],
+        "color": "#1d1f21",
+        "hiddenBy": "stock"
       }
     ],
     "grip": [0, -0.08, 0.09],
@@ -156,8 +196,12 @@
       "optic": [0, 0.039, 0.04],
       "muzzle": [0, 0, -0.81],
       "magazine": [0, -0.05, -0.06],
-      "laser": [0.037, -0.008, -0.36],
+      "rightRail": [0.037, -0.008, -0.36],
       "stock": [0, 0, 0.09]
+    },
+    "factoryFold": {
+      "pivot": [0.028, 0, 0],
+      "yaw": 180
     }
   }
 }

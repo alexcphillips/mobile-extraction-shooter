@@ -4,10 +4,9 @@ import {
   itemSize,
   pickHost,
   sortGrid,
-  nextPagePrice,
-  nextPageStashLevel,
-  boughtPages,
+  plainPages,
   sortToCategoryPages,
+  PROFILE,
   STASH_MODULE,
   openStash,
   quickEquip,
@@ -153,6 +152,8 @@ function loadoutLine(items: ItemDb, me: ProfileResponse): string {
 
 function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => void }) {
   const [page, setPage] = useState<Page>('menu');
+  /** The module the Hangar opens on: the stash's + opens it on Stash. */
+  const [hangarStart, setHangarStart] = useState<string | null>(null);
   const [, redraw] = useReducer((n: number) => n + 1, 0);
   const [notice, setNotice] = useState<string | null>(null);
   // The stash being edited, wrapped for the inventory; replaced when the server's copy wins.
@@ -452,6 +453,7 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
     return (
       <HangarPage
         modules={opts.hangar}
+        start={hangarStart}
         items={opts.items}
         profile={me.profile}
         notice={notice}
@@ -538,21 +540,14 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
               refused(`${name} wasn't sold`),
             );
         }}
-        onBuyPage={() =>
-          saver.buyPage().then(
-            (bought) => {
-              setNotice(null);
-              // Open on the new page.
-              setStartPage(bought.profile.stash.length - 1);
-              setStash(openStash(bought.profile));
-              return true;
-            },
-            (err: unknown) => {
-              if (!(err instanceof AccountError)) throw err;
-              setNotice(`The page wasn't bought: ${err.message}`);
-              return false;
-            },
-          )
+        onUpgradePage={
+          opts.hangar.some((m) => m.id === STASH_MODULE)
+            ? () => {
+                setNotice(null);
+                setHangarStart(STASH_MODULE);
+                setPage('hangar');
+              }
+            : null
         }
       />
     );
@@ -608,7 +603,10 @@ function Menu({ opts, onRaid }: { opts: MenuOptions; onRaid: (c: MenuChoice) => 
       icon: 'hangar',
       disabled: !opts.hangar.length,
       title: hangarLine(opts.hangar, me),
-      onClick: () => setPage('hangar'),
+      onClick: () => {
+        setHangarStart(null);
+        setPage('hangar');
+      },
     },
     {
       id: 'friends',
@@ -861,7 +859,7 @@ function StashPage({
   saver,
   notice,
   onBack,
-  onBuyPage,
+  onUpgradePage,
   onSell,
   startPage,
 }: {
@@ -871,19 +869,14 @@ function StashPage({
   saver: StashSaver;
   notice: string | null;
   onBack: () => void;
-  /** Buys the next page; resolves with whether it was bought. */
-  onBuyPage: () => Promise<boolean>;
+  /** Opens the Hangar on the Stash module, whose next level gives the next page; null without one. */
+  onUpgradePage: (() => void) | null;
   /** Sells items, all or none; the page shown is kept. Resolves when sold or refused. */
   onSell: (refs: ItemRef[], page: number) => Promise<void>;
   /** The page to show when the stash is (re)opened. */
   startPage: number;
 }): ReactNode {
   const [version, bump] = useReducer((n: number) => n + 1, 0);
-  // Buying asks for a second tap.
-  const [confirming, setConfirming] = useState(false);
-  const [buying, setBuying] = useState(false);
-  // The locked next page's tooltip: which Stash level it needs (H4).
-  const [lockTip, setLockTip] = useState(false);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<Category>('all');
   const [sortOpen, setSortOpen] = useState(false);
@@ -897,18 +890,15 @@ function StashPage({
   }, [toast]);
   const hit = searcher(items, query, category);
   const hits = stash.profile.stash.map((page) => (hit ? countHits(page, hit) : 0));
-  const price = nextPagePrice(stash.profile);
-  // The next page needs Stash a level higher (H4); below it, the tab shows a lock.
-  const needs = nextPageStashLevel(stash.profile);
-  const locked = needs !== null && (stash.profile.hangar[STASH_MODULE] ?? 0) < needs;
-  const bought = boughtPages(stash.profile);
+  // Each Stash module level gives the next page (H4); the + shows that upgrade.
+  const plain = plainPages(stash.profile);
   /** Leaving the stash: auto sort puts loose items onto their category pages first (H4). */
   const close = (): void => {
     if (sortToCategoryPages(items, stash.profile)) saver.changed();
     onBack();
   };
   // The controller's open "container" is the page shown: a double-tap into the stash
-  // tries it first. A new stash (a page bought, or reloaded) opens on startPage.
+  // tries it first. A new stash (a page added, or reloaded) opens on startPage.
   const inv = useMemo(() => {
     const pageOf = (): number => Math.max(0, stashPageOf(ctrl.target ?? { kind: 'self' }));
     const ctrl: InventoryController = new InventoryController(
@@ -948,17 +938,7 @@ function StashPage({
     return () => window.removeEventListener('keydown', onKey);
   });
   const show = (p: number): void => {
-    setConfirming(false);
     inv.setTarget(stashOwner(p));
-  };
-  const buy = (): void => {
-    if (!confirming) {
-      setConfirming(true);
-      return;
-    }
-    setConfirming(false);
-    setBuying(true);
-    void onBuyPage().then(() => setBuying(false));
   };
   /** Sorts the page shown (2026-11-06); refused, it says so and nothing moves. */
   const sort = (by: SortKey): void => {
@@ -1013,7 +993,7 @@ function StashPage({
             title={g.only ? `${label} page: only ${label.toLowerCase()} go here` : undefined}
             data-drop={JSON.stringify({ into: stashOwner(p) })}
             onClick={() => show(p)}
-            // The next page's button comes after the bought pages, before the category ones.
+            // The next page's button comes after the plain pages, before the category ones.
             style={{ order: g.only ? 2 : 0 }}
           >
             {g.only ? <CategoryIcon id={g.only} /> : p + 1}
@@ -1022,46 +1002,22 @@ function StashPage({
         );
       })}
       {/*
-        The next page: a + that buys it (two taps), or with Stash too low a lock whose
-        tap says the level it needs (H4; a lock with a placeholder tooltip from 2026-11-09).
+        The next page: a + that opens the Hangar on the Stash module, whose next level
+        gives it (the user's call). After the plain pages, before the category ones.
       */}
-      {price !== null && !locked && (
+      {onUpgradePage && plain < PROFILE.maxPages && (
         <button
-          className={`stash-buy${confirming ? ' confirm' : ''}`}
-          title={`Buy page ${bought + 1} for ${price.toLocaleString()}`}
-          disabled={buying || stash.profile.money < price}
-          onClick={buy}
-          onBlur={() => setConfirming(false)}
+          className="stash-buy"
+          title={`Page ${plain + 1} comes with Stash module level ${plain} (Hangar)`}
+          aria-label={`Page ${plain + 1}: see the Stash module in the Hangar`}
+          onClick={() => {
+            close();
+            onUpgradePage();
+          }}
           style={{ order: 1 }}
         >
-          {buying ? '…' : confirming ? `Buy · ${price.toLocaleString()}?` : '+'}
+          +
         </button>
-      )}
-      {price !== null && locked && (
-        <span className="stash-lock-wrap" style={{ order: 1 }}>
-          <button
-            className={`stash-lock${lockTip ? ' tip-open' : ''}`}
-            aria-label={`Page ${bought + 1}, locked`}
-            aria-describedby={lockTip ? 'stash-lock-tip' : undefined}
-            onClick={() => setLockTip(!lockTip)}
-            onBlur={() => setLockTip(false)}
-          >
-            <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
-              <path
-                d="M4.5 7V5a3.5 3.5 0 0 1 7 0v2"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-              />
-              <rect x="3" y="7" width="10" height="7.5" rx="1.2" fill="currentColor" />
-            </svg>
-          </button>
-          {lockTip && (
-            <span id="stash-lock-tip" className="stash-lock-tip" role="tooltip">
-              Page {bought + 1} needs Stash module level {needs} (Hangar)
-            </span>
-          )}
-        </span>
       )}
     </div>
   );

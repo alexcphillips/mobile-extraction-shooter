@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "asp-reflex-sight",
   "name": "Asp reflex sight",
   "shortName": "Asp",
@@ -10,32 +10,20 @@
   "rarity": "common",
   "slot": "optic",
   "weapons": [
-    "akm",
     "aug-a3",
     "mp-133",
-    "k10",
     "mp5",
-    "m416",
     "scar-h",
-    "as-val",
-    "aks-74u",
     "aa-12",
-    "saiga-12",
     "mp7",
-    "mpx",
     "ump45",
     "g3",
-    "rpk-16",
     "pkm",
     "m250",
-    "mcx-spear",
-    "ak-74m",
     "sks",
-    "uzi-pro",
-    "p90",
-    "adar",
-    "vss"
+    "p90"
   ],
+  "platforms": ["ar15", "ak", "as-val", "uzi"],
   "optic": {
     "zoom": 1,
     "reticle": {

@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "mag-uzi-pro-32",
   "name": "Uzi Pro 32-round magazine",
   "shortName": "Uzi Pro 32",
@@ -12,7 +12,9 @@
   "weapons": ["uzi-pro"],
   "capacity": 32,
   "caliber": "9x19",
-  "mods": { "reloadTime": 1.1 },
+  "mods": {
+    "reloadTime": 1.1
+  },
   "model": {
     "parts": [
       {

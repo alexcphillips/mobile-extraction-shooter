@@ -2,10 +2,11 @@ import { z } from 'zod';
 import type { ContentFormat } from './content/format';
 import {
   ATTACHMENT_SLOTS,
+  noAttachments,
   armorOf,
   firesRound,
   isArmoredRig,
-  fits,
+  fitsIn,
   isMagazine,
   carrierOf,
   mountsOn,
@@ -75,11 +76,10 @@ export const PROFILE = {
    */
   stash: [10, 20],
   /**
-   * What each extra stash page costs, in order: everyone starts with one, so the most is
-   * one more than there are prices. First guesses (session 13), kept against the item
-   * values in 13b. Each needs Stash a level higher (H4): page 2 at level 1, and so on.
+   * The most stash pages (not category pages). Everyone starts with one, and each Stash
+   * module level gives the next, free with the upgrade (the user's call): page 2 at level 1.
    */
-  pagePrices: [100_000, 250_000, 500_000],
+  maxPages: 4,
   /**
    * The vault's size, [width, height], by the Secure locker's level (H4): 2 wide and 1
    * tall unbuilt (the user's call, hangar.md), up to 3×3. The steps between are
@@ -124,11 +124,11 @@ export interface VendorStanding {
 }
 
 export interface Profile {
-  formatVersion: 23;
+  formatVersion: 24;
   money: number;
   /** PMC XP in all (2026-11-11); the level is worked out from it (xp.ts). Only the server changes it. */
   xp: number;
-  /** The stash's pages, bought with money (at least one). */
+  /** The stash's pages (at least one): one, and one more for each Stash module level. */
   stash: Grid[];
   gear: Gear;
   /** Only the server changes these (PUT /api/profile refuses it). */
@@ -155,6 +155,8 @@ const itemShape: z.ZodType = z.lazy(() =>
     loaded: idSchema.optional(),
     attachments: z.record(z.enum(ATTACHMENT_SLOTS), idSchema.nullable()).optional(),
     folded: z.literal(true).optional(),
+    laserOff: z.literal(true).optional(),
+    sight: z.int().min(1).optional(),
     fitted: itemShape.optional(),
     plates: z.strictObject({ front: itemShape.optional(), back: itemShape.optional() }).optional(),
     seed: z.int().optional(),
@@ -203,7 +205,7 @@ const questStateShape = z.discriminatedUnion('status', [
 ]);
 
 const profileShape = z.strictObject({
-  formatVersion: z.literal(23),
+  formatVersion: z.literal(24),
   money: count,
   xp: count,
   stash: z.array(gridShape).min(1),
@@ -213,7 +215,7 @@ const profileShape = z.strictObject({
   hangar: z.record(idSchema, count),
 });
 
-export const PROFILE_FORMAT_VERSION = 23;
+export const PROFILE_FORMAT_VERSION = 24;
 
 export const PROFILE_FORMAT: ContentFormat<Profile> = {
   kind: 'profile',
@@ -306,6 +308,17 @@ export const PROFILE_FORMAT: ContentFormat<Profile> = {
       for (const id of ['gun-workshop', 'armor-bench', 'trauma-bay', 'munitions-bench'])
         delete hangar[id];
       return { ...rest, hangar };
+    },
+    // 2026-11-19: the laser slot became the left and right rails, and the offset optic,
+    // barrel, foregrip and rear grip slots came. A stored laser goes on the right rail.
+    23: (doc) => {
+      eachObject(doc, (o) => {
+        const a = o.attachments as Record<string, unknown> | undefined;
+        if (!a || !('laser' in a)) return;
+        const { laser, ...rest } = a;
+        o.attachments = { ...noAttachments(), ...rest, rightRail: laser ?? null };
+      });
+      return doc;
     },
   },
 };
@@ -512,7 +525,10 @@ function unload(doc: Record<string, unknown>, gun: string): Record<string, unkno
 function dropOptics(doc: Record<string, unknown>, gun: string): Record<string, unknown> {
   eachObject(doc, (o) => {
     const a = o.attachments as Record<string, unknown> | undefined;
-    if (o.item === gun && a?.optic) a.optic = null;
+    if (o.item === gun && a?.optic) {
+      a.optic = null;
+      delete o.sight;
+    }
   });
   return doc;
 }
@@ -595,7 +611,7 @@ export function newProfile(items: ItemDb, kit: StartingKitDef): Profile {
       throw new Error(`kit ${kit.id}: no room in the stash for "${s.item}"`);
   }
   return {
-    formatVersion: 23,
+    formatVersion: 24,
     money: kit.money,
     xp: 0,
     stash: [stash],
@@ -612,37 +628,15 @@ export const SECURE_LOCKER = 'secure-locker';
 
 const levelOf = (p: Profile, module: string) => p.hangar[module] ?? 0;
 
-/** How many bought pages (not category pages) a profile has: they come first. */
-export function boughtPages(p: Profile): number {
+/** How many plain pages (not category pages) a profile has: they come first. */
+export function plainPages(p: Profile): number {
   const n = p.stash.findIndex((g) => g.only);
   return n < 0 ? p.stash.length : n;
 }
 
-/** What the next stash page costs, or null if there are already as many as there can be. */
-export function nextPagePrice(p: Profile): number | null {
-  return PROFILE.pagePrices[boughtPages(p) - 1] ?? null;
-}
-
-/** The Stash level the next page needs (H4), or null if there are no more pages. */
-export function nextPageStashLevel(p: Profile): number | null {
-  return nextPagePrice(p) === null ? null : boughtPages(p);
-}
-
-/**
- * Buys the next stash page, empty, after the bought ones (before any category pages): the
- * money goes down by its price. Returns why it can't (no more pages, Stash too low, not
- * enough money), or null once bought. The server does this; the client only shows the price.
- */
-export function buyStashPage(p: Profile): string | null {
-  const price = nextPagePrice(p);
-  if (price === null) return 'the stash has every page it can';
-  const level = nextPageStashLevel(p)!;
-  if (levelOf(p, STASH_MODULE) < level)
-    return `the next page needs the Stash module at level ${level}`;
-  if (p.money < price) return `a page costs ${price}, and you have ${p.money}`;
-  p.money -= price;
-  p.stash.splice(boughtPages(p), 0, createGrid(PROFILE.stash[0], PROFILE.stash[1], true));
-  return null;
+/** How many plain pages a profile's Stash level gives: one more than the level, up to the most. */
+export function stashPagesAt(p: Profile): number {
+  return Math.min(PROFILE.maxPages, levelOf(p, STASH_MODULE) + 1);
 }
 
 /** The vault's size, [width, height], at a profile's Secure locker level. */
@@ -660,8 +654,9 @@ export function categoryPages(
 
 /**
  * Gives a profile the stash space its Hangar levels give (H4): the vault at the Secure
- * locker's size (see reshape: what no longer fits goes to the stash), and any category
- * page Stash has unlocked, empty, at the end. Run after an upgrade, and on stored
+ * locker's size (see reshape: what no longer fits goes to the stash), a plain page for each
+ * Stash level, empty, after the plain ones, and any category page Stash has unlocked,
+ * empty, at the end. Run after an upgrade, and on stored
  * profiles where settleVault ran (only ever on what the server stored: a raid's vault
  * must come back the size it went in, checkGear's job).
  */
@@ -669,6 +664,8 @@ export function settleHangarSpace(items: ItemDb, p: Profile): void {
   const [w, h] = vaultSize(p);
   const vault = p.gear.vault;
   if (vault && (vault.w !== w || vault.h !== h)) reshape(items, vault, w, h, undefined, p.stash);
+  for (let n = plainPages(p); n < stashPagesAt(p); n++)
+    p.stash.splice(n, 0, createGrid(PROFILE.stash[0], PROFILE.stash[1], true));
   for (const c of categoryPages(p)) {
     if (p.stash.some((g) => g.only === c.only)) continue;
     const page = createGrid(c.size[0], c.size[1]);
@@ -685,7 +682,7 @@ export function settleHangarSpace(items: ItemDb, p: Profile): void {
  */
 export function sortToCategoryPages(items: ItemDb, p: Profile): boolean {
   let moved = false;
-  for (const page of p.stash.slice(0, boughtPages(p))) {
+  for (const page of p.stash.slice(0, plainPages(p))) {
     page.items = page.items.filter((g) => {
       const to = p.stash.find((c) => c.only && canHold(items, c, g.item));
       if (!to) return true;
@@ -956,9 +953,9 @@ export function overRepaired(items: ItemDb, before: Profile, after: Profile): bo
  */
 export function checkProfile(items: ItemDb, p: Profile): string | null {
   if (p.money > PROFILE.maxMoney) return `money ${p.money} is over the limit`;
-  const bought = boughtPages(p);
-  if (bought > PROFILE.pagePrices.length + 1)
-    return `${bought} stash pages is more than there can be`;
+  const bought = plainPages(p);
+  if (bought !== stashPagesAt(p))
+    return `${bought} stash pages, not the ${stashPagesAt(p)} the Stash level gives`;
   // The category pages Stash has unlocked, each once, after the bought ones (H4).
   const cats = categoryPages(p);
   if (p.stash.length - bought !== cats.length)
@@ -1130,7 +1127,7 @@ function checkWeapon(items: ItemDb, item: Item, def: WeaponDef, at: string): str
     const id = item.attachments[slot];
     if (!id) continue;
     const a = items.get(id);
-    if (a?.type !== 'attachment' || a.slot !== slot || !fits(def, a as AttachmentDef))
+    if (a?.type !== 'attachment' || !fitsIn(items, def, a as AttachmentDef, slot))
       return `${at}: "${id}" doesn't fit its ${slot} slot`;
   }
   if (item.folded && !stockFolds(items, item)) return `${at}: folded, with no stock that folds`;

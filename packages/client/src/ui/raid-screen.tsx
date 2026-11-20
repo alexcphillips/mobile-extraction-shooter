@@ -28,6 +28,10 @@ import {
   stashPageOf,
   timeToUse,
   weaponStats,
+  attachmentDef,
+  pointsOf,
+  GUN_STATS,
+  type GunStat,
   type Character,
   type GearSlot,
   type Grid,
@@ -71,6 +75,7 @@ import {
 import { itemPortrait } from '../render/item-portrait';
 import { refKey, type InventoryController, type OpenBag } from './inventory-controller';
 import { ItemDetails } from './item-details';
+import { modChips } from './stat-bars';
 import { MapTab } from './map-tab';
 import type { RaidContext } from './raid';
 import { RaidQuests } from './raid-quests';
@@ -949,9 +954,14 @@ function PackPill({ inv }: { inv: InventoryController }): ReactNode {
 
 const PART_NAMES: Record<AttachmentSlot, string> = {
   optic: 'Optic',
+  offsetOptic: 'Offset optic',
   muzzle: 'Muzzle',
+  barrel: 'Barrel',
+  foregrip: 'Foregrip',
+  leftRail: 'Left rail',
+  rightRail: 'Right rail',
+  grip: 'Grip',
   magazine: 'Magazine',
-  laser: 'Laser',
   stock: 'Stock',
 };
 
@@ -1025,6 +1035,7 @@ function Picker({
       {part && (
         <button onClick={() => inv.detach({ gun: gunRef, slot, part })}>
           Take off <span>into your pockets, rig or backpack</span>
+          <PartChanges items={inv.ctx.items} gun={gun} slot={slot} to={null} />
         </button>
       )}
       {choices.map((c) => (
@@ -1033,6 +1044,7 @@ function Picker({
           <span>
             {c.owner.kind === 'self' ? `your ${GRID_LABELS[c.where]}` : inv.ctx.nameOf(c.owner)}
           </span>
+          <PartChanges items={inv.ctx.items} gun={gun} slot={slot} to={c.def.id} />
         </button>
       ))}
       {!choices.length && (
@@ -1042,6 +1054,46 @@ function Picker({
       )}
     </div>
   );
+}
+
+/**
+ * What putting a part in a slot (or taking it out, `to` null) does to the gun as it is
+ * (WS-3): its stats' points, then the exceptions to handling against the part it replaces.
+ */
+function PartChanges({
+  items,
+  gun,
+  slot,
+  to,
+}: {
+  items: ItemDb;
+  gun: Item;
+  slot: AttachmentSlot;
+  to: string | null;
+}): ReactNode {
+  const now = {
+    item: gun.item,
+    attachments: (gun.attachments ?? {}) as Partial<Record<AttachmentSlot, string | null>>,
+    folded: gun.folded,
+    laserOff: (gun as Partial<WeaponState>).laserOff,
+  };
+  const then = { ...now, attachments: { ...now.attachments, [slot]: to } };
+  const points: Partial<Record<GunStat, number>> = {};
+  for (const stat of GUN_STATS)
+    points[stat] = pointsOf(items, then, stat) - pointsOf(items, now, stat);
+  // A folded stock's mods count for nothing either way.
+  const counts = !(slot === 'stock' && gun.folded);
+  const modsOf = (id: string | null | undefined) =>
+    (counts && id ? attachmentDef(items, id).mods : undefined) ?? {};
+  const was = modsOf(now.attachments[slot]);
+  const will = modsOf(to);
+  const chips = modChips(points, {
+    aimTime: (will.aimTime ?? 1) / (was.aimTime ?? 1),
+    reloadTime: (will.reloadTime ?? 1) / (was.reloadTime ?? 1),
+    magazine: (will.magazine ?? 0) - (was.magazine ?? 0),
+  });
+  if (!chips.length) return null;
+  return <span className="inv-picker-changes">{chips}</span>;
 }
 
 function Loot({ inv }: { inv: InventoryController }): ReactNode {

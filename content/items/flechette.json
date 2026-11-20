@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "flechette",
   "name": "12-gauge flechette",
   "shortName": "12ga Flech.",
@@ -14,6 +14,7 @@
   "damage": 21,
   "armorDamage": 3,
   "bleedChance": 0.3,
+  "falloff": { "from": 10, "to": 45, "floor": 0.3 },
   "pellets": 8,
   "pelletSpread": 2.4,
   "model": {

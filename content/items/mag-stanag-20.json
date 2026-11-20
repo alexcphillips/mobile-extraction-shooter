@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "mag-stanag-20",
   "name": "STANAG 20-round magazine",
   "shortName": "STANAG 20",
@@ -9,7 +9,7 @@
   "weight": 0.09,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["adar", "m416"],
+  "platforms": ["ar15"],
   "capacity": 20,
   "caliber": "5.56x45",
   "model": {

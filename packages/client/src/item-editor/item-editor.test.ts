@@ -133,7 +133,7 @@ describe('item editor', () => {
   it('finds what an edit breaks elsewhere in content/', () => {
     // An attachment lists the gun it fits; a loadout puts a suppressor on the PMCs' rifle.
     const noMags = edited('akm', (d) => setSlots(d, ['optic', 'muzzle', 'stock']));
-    expect(itemContentProblem(noMags)).toMatch(/akm-mag.*no magazine slot/);
+    expect(itemContentProblem(noMags)).toMatch(/akm-mag.*fits no gun on platform "ak"/);
     const noMuzzle = edited('akm', (d) => setSlots(d, ['optic', 'magazine', 'stock']));
     expect(itemContentProblem(noMuzzle)).toMatch(/loadouts\/pmc-kit.*suppressor/);
     // The tutorial's front door needs a key item.
@@ -194,8 +194,14 @@ describe('item editor', () => {
       risks('mag-mp133-8', (d) => ((d.mods as { magazine: number }).magazine = 1)),
     ).toHaveLength(1);
     expect(risks('mag-9mm-24', (d) => (d.capacity = 20))).toHaveLength(1);
-    expect(risks('suppressor', (d) => (d.weapons = ['m9a3']))).toHaveLength(1);
+    expect(risks('laser-sight', (d) => (d.weapons = ['m9a3']))).toHaveLength(1);
+    // Classes (AT-3): one dropped from a part narrows it.
+    expect(risks('field-suppressor', (d) => (d.classes = ['pistol']))).toHaveLength(1);
     expect(risks('front-door-key', (d) => (d.uses = 5))).toHaveLength(1);
+    // Platforms (AT-1): one dropped from a part, or a gun moved off its platform.
+    expect(risks('mag-stanag-20', (d) => (d.platforms = ['ak']))).toHaveLength(1);
+    expect(risks('m416', (d) => (d.platform = 'ak'))).toHaveLength(1);
+    expect(risks('mag-stanag-20', (d) => (d.weapons = ['mp5']))).toEqual([]);
     // Making things bigger, or changing what doesn't limit saved items, is safe.
     expect(risks('mp-133', (d) => (d.magazine = 8))).toEqual([]);
     expect(risks('mag-9mm-24', (d) => (d.capacity = 30))).toEqual([]);
@@ -287,7 +293,7 @@ describe('item editor', () => {
 
   it('counts triangles against a budget by kind, and content is within it', () => {
     const items = loadItems();
-    expect(budgetOf(items.get('m416')!)).toEqual({ triangles: 2000, kind: 'long gun' });
+    expect(budgetOf(items.get('m416')!)).toEqual({ triangles: 3500, kind: 'long gun' });
     expect(budgetOf(items.get('m9a3')!).kind).toBe('pistol');
     expect(budgetOf(items.get('red-dot')!).kind).toBe('optic');
     expect(budgetOf(items.get('portrait-of-the-regent')!)).toEqual({

@@ -227,6 +227,14 @@ describe('content', () => {
       for (const t of conePosts) expect(t, `${def.id} front post`).toBeCloseTo(sight[1], 3);
       for (const p of named('rear sight ear'))
         expect(top(p), `${def.id} rear notch`).toBeCloseTo(sight[1], 3);
+      // A round aperture built from panels (GM-1): each face panel's pos is the ring's
+      // center (the skins along its edges, rolled, sit on their segments).
+      for (const p of parts.filter(
+        (p) => p.type === 'panel' && p.name === 'rear sight ring' && !p.roll,
+      )) {
+        expect(p.pos[0], `${def.id} rear ring x`).toBeCloseTo(sight[0], 3);
+        expect(p.pos[1], `${def.id} rear ring y`).toBeCloseTo(sight[1], 3);
+      }
       const ring = named('rear sight ring');
       if (ring.some((p) => p.roll)) {
         // A round aperture (boxes rolled round a circle) is centered on the line.

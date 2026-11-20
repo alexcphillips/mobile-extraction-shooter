@@ -156,6 +156,8 @@ export function moveCharacter(
   } else {
     c.jumpHeld = false;
   }
+  // The gun is down while sprinting, and comes up after (WS-4, updateWeapon).
+  c.sprinting = sprint;
   // Stamina (BW-4): sprinting on the ground drains it, anything else refills it.
   updateStamina(c, sprint && c.mode === 'ground' && !c.slide && my > 0);
   if (c.slide && c.mode !== 'ground') c.slide = null;
@@ -275,7 +277,9 @@ function walk(
       knife *
       legSpeedScale(c.health) *
       wadeScale(c, world) *
-      (c.ai ? 1 : loadSpeed(c.load ?? 0) * (c.burden?.moveSpeed ?? 1));
+      (c.ai ? 1 : loadSpeed(c.load ?? 0) * (c.burden?.moveSpeed ?? 1)) *
+      // Aiming slows it by its gun's handling, as far as it's aimed (WS-4), AI too.
+      (1 - (1 - (c.aimMove ?? 1)) * c.aim);
     if (c.using) speed = Math.min(speed, M.useSpeed);
     if (c.packing) speed = Math.min(speed, M.packSpeed);
     c.vx = wishX * speed;

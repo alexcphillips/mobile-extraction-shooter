@@ -1,0 +1,120 @@
+{
+  "formatVersion": 13,
+  "id": "breach-brake",
+  "name": "Breach muzzle brake",
+  "shortName": "Breach",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 5500,
+  "weight": 0.2,
+  "rarity": "common",
+  "slot": "muzzle",
+  "classes": ["shotgun"],
+  "mods": {
+    "recoilUp": -15,
+    "recoilSide": -15,
+    "handling": -3,
+    "stability": -3,
+    "loudness": 3
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.03],
+        "pitch": 90,
+        "radius": 0.0165,
+        "height": 0.06,
+        "color": "#1d1f21",
+        "name": "body"
+      },
+      {
+        "type": "box",
+        "pos": [-0.015, 0, -0.02],
+        "size": [0.016, 0.006, 0.01],
+        "color": "#141516",
+        "roll": 90,
+        "name": "side port"
+      },
+      {
+        "type": "box",
+        "pos": [-0.015, 0, -0.038],
+        "size": [0.016, 0.006, 0.01],
+        "color": "#141516",
+        "roll": 90,
+        "name": "side port"
+      },
+      {
+        "type": "box",
+        "pos": [0.015, 0, -0.02],
+        "size": [0.016, 0.006, 0.01],
+        "color": "#141516",
+        "roll": 270,
+        "name": "side port"
+      },
+      {
+        "type": "box",
+        "pos": [0.015, 0, -0.038],
+        "size": [0.016, 0.006, 0.01],
+        "color": "#141516",
+        "roll": 270,
+        "name": "side port"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.0085, 0.0085, -0.066],
+        "pitch": -90,
+        "radius": 0.004,
+        "radiusTop": 0,
+        "height": 0.012,
+        "sides": 4,
+        "color": "#3a3d40",
+        "name": "tooth"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.0085, -0.0085, -0.066],
+        "pitch": -90,
+        "radius": 0.004,
+        "radiusTop": 0,
+        "height": 0.012,
+        "sides": 4,
+        "color": "#3a3d40",
+        "name": "tooth"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0085, -0.0085, -0.066],
+        "pitch": -90,
+        "radius": 0.004,
+        "radiusTop": 0,
+        "height": 0.012,
+        "sides": 4,
+        "color": "#3a3d40",
+        "name": "tooth"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0085, 0.0085, -0.066],
+        "pitch": -90,
+        "radius": 0.004,
+        "radiusTop": 0,
+        "height": 0.012,
+        "sides": 4,
+        "color": "#3a3d40",
+        "name": "tooth"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.061],
+        "pitch": 90,
+        "radius": 0.009,
+        "height": 0.002,
+        "color": "#141516",
+        "sides": 6,
+        "name": "bore"
+      }
+    ],
+    "muzzle": [0, 0, -0.062]
+  }
+}

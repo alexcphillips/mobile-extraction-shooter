@@ -39,6 +39,8 @@ const CODE_ORDER: readonly (ControlId | null)[] = [
   'leanLeft',
   'leanRight',
   'breathe',
+  'sight',
+  'laser',
 ];
 
 const HIDDEN = 0x40;

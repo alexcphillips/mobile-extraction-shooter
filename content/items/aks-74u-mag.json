@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "aks-74u-mag",
   "name": "AKS-74U 30-round magazine",
   "shortName": "AKS-74U 30",
@@ -9,7 +9,7 @@
   "weight": 0.22,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["ak-74m", "aks-74u", "rpk-16"],
+  "platforms": ["ak"],
   "capacity": 30,
   "caliber": "5.45x39",
   "model": {

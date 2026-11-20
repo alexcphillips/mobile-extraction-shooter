@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "longwatch-10x-scope",
   "name": "Longwatch 10× sniper scope",
   "shortName": "Longwatch 10×",
@@ -10,7 +10,9 @@
   "rarity": "common",
   "slot": "optic",
   "weapons": ["sv-98", "r93", "awm", "svt-40", "scar-h", "g3", "mcx-spear"],
-  "mods": { "aimTime": 1.7 },
+  "mods": {
+    "aimTime": 1.7
+  },
   "optic": {
     "zoom": 10,
     "reticle": {

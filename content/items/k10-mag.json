@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "k10-mag",
   "name": "K10 25-round magazine",
   "shortName": "K10 25",
@@ -9,7 +9,7 @@
   "weight": 0.2,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["k10"],
+  "platforms": ["ar15"],
   "capacity": 25,
   "caliber": ".45acp",
   "model": {

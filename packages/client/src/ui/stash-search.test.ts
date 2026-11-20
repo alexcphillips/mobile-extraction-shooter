@@ -1,4 +1,4 @@
-import type { Item, ItemDb } from '@mes/shared';
+import { type Item, type ItemDb, noAttachments } from '@mes/shared';
 import { describe, expect, it } from 'vitest';
 import { countHits, searcher } from './stash-search';
 
@@ -16,7 +16,7 @@ const items = new Map(
 const plain = (item: string): Item => ({ item, count: 1 });
 const akm: Item = {
   ...plain('akm'),
-  attachments: { optic: 'dot', muzzle: null, magazine: null, laser: null, stock: null },
+  attachments: { ...noAttachments(), optic: 'dot' },
 };
 
 describe('stash search', () => {

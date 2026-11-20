@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "brightline-prism",
   "name": "Brightline 3× prism sight",
   "shortName": "Brightline 3×",
@@ -21,19 +21,20 @@
     "rpk-16",
     "pkm",
     "m250",
-    "as-val",
-    "vss",
     "sks",
     "adar",
     "svt-40"
   ],
-  "mods": { "aimTime": 1.25 },
+  "platforms": ["as-val"],
+  "mods": {
+    "aimTime": 1.25
+  },
   "optic": {
     "zoom": 3,
     "reticle": {
       "color": "#ff4a2f",
       "shapes": [
-        { "type": "triangle", "x1": 0, "y1": 0, "x2": -1.4, "y2": 2.0, "x3": 1.4, "y3": 2.0 },
+        { "type": "triangle", "x1": 0, "y1": 0, "x2": -1.4, "y2": 2, "x3": 1.4, "y3": 2 },
         { "type": "arc", "x": 0, "y": 0.6, "r": 6, "width": 0.45, "from": -135, "to": 135 },
         { "type": "line", "x1": 0, "y1": 3.2, "x2": 0, "y2": 7, "width": 0.3 },
         { "type": "line", "x1": -1.2, "y1": 5, "x2": 1.2, "y2": 5, "width": 0.3 }

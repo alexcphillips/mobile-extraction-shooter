@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { CompiledMap } from '../content/compile';
 import { LOOT_CONTAINER_FORMAT_VERSION, type LootContainerDef } from '../content/loot-containers';
 import { addItem, countOf, createGrid, placeAt } from '../inventory/grid';
-import { ITEM_FORMAT_VERSION, type ItemDef } from '../content/items';
+import { ITEM_FORMAT_VERSION, noAttachments, type ItemDef } from '../content/items';
 import { CollisionWorld } from '../world/collision-world';
 import { spawnEnemy } from './ai';
 import { createItem } from './create-item';
@@ -918,12 +918,7 @@ describe('looting', () => {
     rifle.mag = 50;
     const gun = { owner: self, slot: 'primary1', item: 'rifle' } as const;
     expect(act({ type: 'strip', gun })).toBe(true);
-    expect(rifle.attachments).toMatchObject({
-      optic: null,
-      muzzle: null,
-      magazine: null,
-      laser: null,
-    });
+    expect(rifle.attachments).toEqual(noAttachments());
     expect(rifle.mag).toBe(0);
     const pack = c.gear.backpack!.grid;
     for (const id of ['scope', 'suppressor', 'big-mag']) expect(countOf(pack, id)).toBe(1);

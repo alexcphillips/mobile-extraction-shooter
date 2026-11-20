@@ -5,12 +5,9 @@ import { addItem, countOf, createGrid } from './inventory/grid';
 import {
   PROFILE,
   PROFILE_FORMAT,
-  buyStashPage,
   checkProfile,
   itemGained,
   newProfile,
-  nextPagePrice,
-  nextPageStashLevel,
   settleHangarSpace,
   STASH_MODULE,
   type Profile,
@@ -231,9 +228,8 @@ describe('the stash', () => {
 
   it('sends a double-tap to the page shown, then the others', () => {
     const p = profile();
-    p.money = PROFILE.pagePrices[0];
     p.hangar[STASH_MODULE] = 1;
-    expect(buyStashPage(p)).toBeNull();
+    settleHangarSpace(items, p);
     const s = openStash(p);
     // Page 2 shown and full: the helmet goes to page 1.
     while (addItem(items, p.stash[1]!, createItem(items, 'watch')) === 0);
@@ -281,9 +277,8 @@ describe('the stash', () => {
 
   it('moves part of a stack by double-tap, on to the next page when one is full', () => {
     const p = profile();
-    p.money = PROFILE.pagePrices[0];
     p.hangar[STASH_MODULE] = 1;
-    expect(buyStashPage(p)).toBeNull();
+    settleHangarSpace(items, p);
     const s = openStash(p);
     // Page 2 full, with room for 10 more rounds on its last stack.
     while (addItem(items, p.stash[1]!, createItem(items, 'watch')) === 0);
@@ -376,39 +371,36 @@ describe('the stash', () => {
 });
 
 describe('stash pages', () => {
-  it('cost money, one after another, up to the last', () => {
+  it('come one a Stash level, up to the last, before the category pages', () => {
     const p = profile();
-    expect(nextPagePrice(p)).toBe(PROFILE.pagePrices[0]);
-    p.money = PROFILE.pagePrices.reduce((a, b) => a + b, 0) + 5;
-    // Each needs Stash a level higher (H4).
-    expect(nextPageStashLevel(p)).toBe(1);
-    expect(buyStashPage(p)).toMatch(/Stash module at level 1/);
     expect(p.stash).toHaveLength(1);
-    for (let i = 0; i < PROFILE.pagePrices.length; i++) {
-      p.hangar[STASH_MODULE] = i + 1;
-      expect(buyStashPage(p)).toBeNull();
-      expect(buyStashPage(p)).toMatch(new RegExp(`level ${i + 2}|every page`));
+    for (let level = 1; level <= PROFILE.maxPages - 1; level++) {
+      p.hangar[STASH_MODULE] = level;
+      // A level's page is missing until it's settled (the upgrade does that).
+      expect(checkProfile(items, p)).toMatch(/stash pages/);
+      settleHangarSpace(items, p);
+      expect(checkProfile(items, p)).toBeNull();
     }
-    expect(p.stash).toHaveLength(PROFILE.pagePrices.length + 1);
-    expect(p.money).toBe(5);
-    expect(nextPagePrice(p)).toBeNull();
-    expect(buyStashPage(p)).toMatch(/every page/);
-    // Stash 3 has the category pages too.
-    expect(checkProfile(items, p)).toMatch(/category pages/);
+    // Stash 3 has the category pages too, after the plain ones.
+    expect(p.stash.map((g) => g.only ?? null)).toEqual([
+      null,
+      null,
+      null,
+      null,
+      'guns',
+      'ammo',
+      'meds',
+    ]);
+    // A level past the last page gives no more.
+    p.hangar[STASH_MODULE] = PROFILE.maxPages + 2;
     settleHangarSpace(items, p);
-    expect(checkProfile(items, p)).toBeNull();
+    expect(p.stash.filter((g) => !g.only)).toHaveLength(PROFILE.maxPages);
+    // One more than the level gives is refused, as is one fewer.
+    p.hangar[STASH_MODULE] = PROFILE.maxPages - 1;
     p.stash.unshift(createGrid(PROFILE.stash[0], PROFILE.stash[1], true));
-    expect(checkProfile(items, p)).toMatch(/more than there can be/);
-  });
-
-  it('puts a bought page before the category pages', () => {
-    const p = profile();
-    p.hangar[STASH_MODULE] = 3;
-    settleHangarSpace(items, p);
-    p.money = PROFILE.pagePrices[0];
-    expect(buyStashPage(p)).toBeNull();
-    expect(p.stash.map((g) => g.only ?? null)).toEqual([null, null, 'guns', 'ammo', 'meds']);
-    expect(checkProfile(items, p)).toBeNull();
+    expect(checkProfile(items, p)).toMatch(/stash pages/);
+    p.stash.splice(0, 2);
+    expect(checkProfile(items, p)).toMatch(/stash pages/);
   });
 
   it('turns an old one-grid stash into the first page', () => {

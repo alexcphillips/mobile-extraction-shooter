@@ -16,7 +16,9 @@ export type ControlId =
   | 'grenade'
   | 'leanLeft'
   | 'leanRight'
-  | 'breathe';
+  | 'breathe'
+  | 'sight'
+  | 'laser';
 
 export interface ControlDef {
   id: ControlId;
@@ -57,6 +59,11 @@ export const CONTROLS: readonly ControlDef[] = [
   { id: 'leanRight', label: 'lean ▶', size: 46, x: 0.86, y: 0.3 },
   // The breath button (BW-2): only shown while aimed, between use and aim.
   { id: 'breathe', label: 'breathe', size: 46, x: 0.71, y: 0.67 },
+  // The sight button: only shown while aimed with a two-sight optic, between aim and crouch.
+  { id: 'sight', label: 'sight', size: 44, x: 0.8, y: 0.88 },
+  // The laser switch: only shown with a laser on the gun; up top, out of the thumb's path
+  // between fire and lean, since it's never needed in a hurry.
+  { id: 'laser', label: 'laser', size: 42, x: 0.82, y: 0.12 },
 ];
 
 /** Whether a layout hides a control. Required controls always show. */

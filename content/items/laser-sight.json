@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "laser-sight",
   "name": "Laser sight",
   "shortName": "Laser",
@@ -8,9 +8,9 @@
   "value": 3500,
   "weight": 0.1,
   "rarity": "common",
-  "slot": "laser",
+  "slot": "rail",
   "mods": {
-    "hipSpread": 0.7
+    "hipFire": 8
   },
   "model": {
     "parts": [
@@ -31,6 +31,7 @@
         "color": "#3a3d40"
       },
       { "type": "box", "pos": [0, 0, 0.031], "size": [0.02, 0.02, 0.003], "color": "#3a3d40" }
-    ]
+    ],
+    "laser": [0, 0, -0.033]
   }
 }

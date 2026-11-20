@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "ammo-762x54r-7n1",
   "name": "7.62×54R 7N1",
   "shortName": "54R 7N1",
@@ -14,6 +14,7 @@
   "damage": 73,
   "armorDamage": 34,
   "bleedChance": 0.37,
+  "falloff": { "from": 120, "to": 450, "floor": 0.7 },
   "model": {
     "parts": [
       { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "color": "#7f7a4e" },

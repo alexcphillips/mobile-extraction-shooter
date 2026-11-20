@@ -1,0 +1,66 @@
+{
+  "formatVersion": 13,
+  "id": "specter-suppressor",
+  "name": "Specter tactical suppressor",
+  "shortName": "Specter",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 24000,
+  "weight": 0.55,
+  "rarity": "common",
+  "slot": "muzzle",
+  "classes": ["assault", "smg", "dmr", "sniper", "lmg"],
+  "mods": {
+    "range": 3,
+    "recoilUp": -3,
+    "recoilSide": -3,
+    "handling": -3,
+    "loudness": -26
+  },
+  "columns": 1,
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.012],
+        "pitch": 90,
+        "radius": 0.0235,
+        "height": 0.024,
+        "color": "#1d1f21",
+        "sides": 10,
+        "name": "mount"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.103],
+        "pitch": 90,
+        "radius": 0.022,
+        "height": 0.166,
+        "color": "#a08c64",
+        "sides": 10,
+        "name": "tube"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.189],
+        "pitch": 90,
+        "radius": 0.0232,
+        "height": 0.014,
+        "color": "#1d1f21",
+        "sides": 10,
+        "name": "end cap"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.197],
+        "pitch": 90,
+        "radius": 0.007,
+        "height": 0.002,
+        "color": "#141516",
+        "sides": 6,
+        "name": "bore"
+      }
+    ],
+    "muzzle": [0, 0, -0.198]
+  }
+}

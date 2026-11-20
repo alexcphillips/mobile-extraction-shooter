@@ -1,0 +1,79 @@
+{
+  "formatVersion": 13,
+  "id": "ridgeback-compensator",
+  "name": "Ridgeback vertical compensator",
+  "shortName": "Ridgeback",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 3000,
+  "weight": 0.09,
+  "rarity": "common",
+  "slot": "muzzle",
+  "classes": ["assault", "smg", "dmr", "sniper", "lmg"],
+  "mods": {
+    "recoilUp": -3,
+    "stability": 3,
+    "handling": -1
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.0275],
+        "pitch": 90,
+        "radius": 0.0145,
+        "height": 0.055,
+        "color": "#1d1f21",
+        "name": "body"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.014, -0.0275],
+        "size": [0.008, 0.006, 0.05],
+        "color": "#2b2d2f",
+        "name": "ridge"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0155, -0.012],
+        "size": [0.0095, 0.008, 0.006],
+        "color": "#141516",
+        "name": "top port"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0155, -0.026],
+        "size": [0.0095, 0.008, 0.006],
+        "color": "#141516",
+        "name": "top port"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0155, -0.04],
+        "size": [0.0095, 0.008, 0.006],
+        "color": "#141516",
+        "name": "top port"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.054],
+        "pitch": 90,
+        "radius": 0.0155,
+        "height": 0.006,
+        "color": "#2b2d2f",
+        "name": "crown"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.058],
+        "pitch": 90,
+        "radius": 0.006,
+        "height": 0.002,
+        "color": "#141516",
+        "sides": 6,
+        "name": "bore"
+      }
+    ],
+    "muzzle": [0, 0, -0.059]
+  }
+}

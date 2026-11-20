@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { itemSize } from '../content/items';
+import {
+  clampPoints,
+  FOLDED_STOCK,
+  GUN_STATS,
+  itemSize,
+  pointsOf,
+  statAt,
+  stockFolds,
+} from '../content/items';
 import { foldParts } from '../content/models';
 import { placeAt, type Item } from '../inventory/grid';
 import { buyPrice } from '../vendors';
@@ -9,7 +17,14 @@ import { equip } from './gear';
 import { applyInventory, FOLD_TIME, type InventoryAction, type Owner } from './looting';
 import { createState, spawnCharacter } from './state';
 import { TEST_ITEMS as items } from './test-items';
-import { createWeapon, createWeaponStats, detach, weaponStats, type WeaponState } from './weapons';
+import {
+  attach,
+  createWeapon,
+  createWeaponStats,
+  detach,
+  weaponStats,
+  type WeaponState,
+} from './weapons';
 
 // WF-1: stocks as parts, folding, and a gun's size following its stock.
 
@@ -34,42 +49,56 @@ function setup() {
 }
 
 describe('stocks', () => {
-  it('come on a new gun by default, and set its length', () => {
+  it('a new gun comes bare: its factory stock is in its size, a fitted one takes its place', () => {
     const gun = createWeapon(items, 'carbine');
-    expect(gun.attachments.stock).toBe('stock');
-    expect(itemSize(items, gun)).toEqual([4, 2]);
-    detach(gun, items, 'stock');
+    expect(gun.attachments.stock).toBeNull();
     expect(itemSize(items, gun)).toEqual([3, 2]);
-    // Asking for another stock puts it on over the default.
+    expect(itemSize(items, createWeapon(items, 'carbine', ['stock']))).toEqual([4, 2]);
+    // The folder's one-cell factory stock is in its size, and a one-cell stock takes its place.
+    const folder = createWeapon(items, 'folder');
+    expect(itemSize(items, folder)).toEqual([4, 2]);
+    expect(itemSize(items, createWeapon(items, 'folder', ['stock']))).toEqual([4, 2]);
+    folder.folded = true;
+    expect(itemSize(items, folder)).toEqual([3, 2]);
     const other = createWeapon(items, 'carbine', ['folding-stock']);
-    expect(other.attachments.stock).toBe('folding-stock');
     expect(itemSize(items, other)).toEqual([5, 2]);
     other.folded = true;
     expect(itemSize(items, other)).toEqual([4, 2]);
+    // Taking it off puts the factory stock back.
+    detach(other, items, 'stock');
+    expect(itemSize(items, other)).toEqual([3, 2]);
   });
 
-  it('are the big recoil part: off, or folded, none of their mods apply', () => {
+  it("a fitted stock adds its points to the gun's own; folded, the fold change applies", () => {
     const s = createWeaponStats();
     const gun = createWeapon(items, 'carbine');
     weaponStats(items, gun, s);
-    expect([s.recoilUp, s.recoilSide, s.recoilRecovery]).toEqual([1, 0.5, 20]);
+    expect(s.recoilUp).toBeCloseTo(1);
+    expect(s.recoilSide).toBeCloseTo(0.5);
+    expect(s.recoilRecovery).toBe(10);
     const folding = createWeapon(items, 'carbine', ['folding-stock']);
-    expect(weaponStats(items, folding, s).recoilUp).toBe(0.5);
+    expect(weaponStats(items, folding, s).recoilUp).toBeCloseTo(0.25);
     folding.folded = true;
-    expect(weaponStats(items, folding, s).recoilUp).toBe(2);
-    detach(gun, items, 'stock');
-    expect(weaponStats(items, gun, s).recoilUp).toBe(2);
+    const folded = { ...gun, folded: true as const };
+    expect(weaponStats(items, folding, s).recoilUp).toBeCloseTo(
+      statAt('recoilUp', pointsOf(items, folded, 'recoilUp')),
+    );
+    for (const stat of GUN_STATS)
+      expect(pointsOf(items, folded, stat)).toBe(
+        clampPoints(pointsOf(items, gun, stat) + (FOLDED_STOCK[stat] ?? 0)),
+      );
+    expect(FOLDED_STOCK.handling).toBeGreaterThan(0);
+    expect(FOLDED_STOCK.stability).toBeLessThan(0);
   });
 
-  it('a vendor charges for the stock a gun comes with', () => {
-    expect(buyPrice(items, { item: 'carbine' } as never)).toBe(200);
+  it('a vendor charges for the gun, and for any stock the offer fits', () => {
+    expect(buyPrice(items, { item: 'carbine' } as never)).toBe(100);
     expect(buyPrice(items, { item: 'carbine', attachments: ['folding-stock'] } as never)).toBe(200);
   });
 
   it('going on a gun in a grid needs the cells it grows into', () => {
     const { pack, act, inPack } = setup();
     const gun = createWeapon(items, 'carbine');
-    detach(gun, items, 'stock');
     expect(placeAt(items, pack, gun, 0, 0, false)).toBe(true); // 3 × 2 at the top left
     const stock = createItem(items, 'stock');
     expect(placeAt(items, pack, stock, 2, 2, false)).toBe(true);
@@ -91,7 +120,6 @@ describe('stocks', () => {
   it('a stock lying where the gun grows can still go on it', () => {
     const { pack, act, inPack } = setup();
     const gun = createWeapon(items, 'carbine');
-    detach(gun, items, 'stock');
     placeAt(items, pack, gun, 0, 0, false);
     placeAt(items, pack, createItem(items, 'stock'), 3, 0, true);
     expect(act({ type: 'attach', gun: inPack(0, 'carbine'), from: inPack(1, 'stock') })).toBe(true);
@@ -129,6 +157,22 @@ describe('folding', () => {
     expect(act({ type: 'fold', gun: hand, folded: false }, true)).toBe(true);
     expect(gun.folded).toBeUndefined();
     expect(c.draw).toBe(0);
+  });
+
+  it('a factory stock folds by itself, and with a fixed stock fitted the gun no longer folds', () => {
+    const gun = createWeapon(items, 'folder');
+    expect(stockFolds(items, gun)).toBe(true);
+    expect(stockFolds(items, createWeapon(items, 'carbine'))).toBe(false);
+    expect(stockFolds(items, createWeapon(items, 'folder', ['stock']))).toBe(false);
+    expect(stockFolds(items, createWeapon(items, 'folder', ['folding-stock']))).toBe(true);
+  });
+
+  it('a stock going on a gun with its factory stock folded leaves it unfolded', () => {
+    const gun = createWeapon(items, 'folder');
+    gun.folded = true;
+    attach(gun, items, 'stock');
+    expect(gun.folded).toBeUndefined();
+    expect(stockFolds(items, gun)).toBe(false);
   });
 
   it('taking a folded stock off leaves the gun unfolded', () => {

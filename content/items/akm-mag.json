@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "akm-mag",
   "name": "AKM 30-round magazine",
   "shortName": "AKM 30",
@@ -9,7 +9,7 @@
   "weight": 0.3,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["akm"],
+  "platforms": ["ak"],
   "capacity": 30,
   "caliber": "7.62x39",
   "model": {

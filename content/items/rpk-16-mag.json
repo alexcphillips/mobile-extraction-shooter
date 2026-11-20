@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "rpk-16-mag",
   "name": "RPK-16 45-round magazine",
   "shortName": "RPK-16 45",
@@ -9,7 +9,7 @@
   "weight": 0.25,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["ak-74m", "aks-74u", "rpk-16"],
+  "platforms": ["ak"],
   "capacity": 45,
   "caliber": "5.45x39",
   "model": {

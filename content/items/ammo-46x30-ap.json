@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "ammo-46x30-ap",
   "name": "4.6×30 mm AP SX",
   "shortName": "4.6 AP",
@@ -14,6 +14,7 @@
   "damage": 30,
   "armorDamage": 22,
   "bleedChance": 0.22,
+  "falloff": { "from": 30, "to": 110, "floor": 0.6 },
   "model": {
     "parts": [
       { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "color": "#a08a44" },

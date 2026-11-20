@@ -6,6 +6,7 @@ import {
   heldWeapon,
   soundLength,
   spawnCharacter,
+  statAt,
   weaponDef,
   type SimEvent,
   type SoundDef,
@@ -188,7 +189,8 @@ describe('sound cues', () => {
       loudness,
       pellet: 0,
     });
-    sim.events = [shot(def.loudness), shot(def.loudness * 0.3)];
+    const loud = statAt('loudness', def.stats.loudness);
+    sim.events = [shot(loud), shot(loud * 0.3)];
     cues.tick(sim, player, 0);
     expect(played.map((p) => p.id)).toEqual([
       def.sounds.shot,
@@ -199,7 +201,7 @@ describe('sound cues', () => {
       GAME_SOUNDS.impactWorld,
     ]);
     // Heard as far as the shot's loudness.
-    expect(played[3]!.options?.range).toBeCloseTo(def.loudness * 0.3);
+    expect(played[3]!.options?.range).toBeCloseTo(loud * 0.3);
   });
 
   it('plays a reload as it starts, once, muffled behind a wall', () => {

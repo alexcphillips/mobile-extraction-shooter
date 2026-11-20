@@ -1,0 +1,130 @@
+{
+  "formatVersion": 13,
+  "id": "helix-compensator",
+  "name": "Helix compensator",
+  "shortName": "Helix",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 11000,
+  "weight": 0.12,
+  "rarity": "common",
+  "slot": "muzzle",
+  "classes": ["assault", "smg", "dmr", "sniper", "lmg"],
+  "mods": {
+    "recoilUp": -9,
+    "recoilSide": -9,
+    "accuracy": 3,
+    "stability": -3
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.031],
+        "pitch": 90,
+        "radius": 0.0145,
+        "height": 0.062,
+        "color": "#3a3d40",
+        "name": "body"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0145, -0.009],
+        "size": [0.011, 0.004, 0.006],
+        "color": "#141516",
+        "name": "helix cut"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0093, 0.0111, -0.0135],
+        "size": [0.011, 0.004, 0.006],
+        "color": "#141516",
+        "roll": 40,
+        "name": "helix cut"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0143, 0.0025, -0.018],
+        "size": [0.011, 0.004, 0.006],
+        "color": "#141516",
+        "roll": 80,
+        "name": "helix cut"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0126, -0.0072, -0.0225],
+        "size": [0.011, 0.004, 0.006],
+        "color": "#141516",
+        "roll": 120,
+        "name": "helix cut"
+      },
+      {
+        "type": "box",
+        "pos": [-0.005, -0.0136, -0.027],
+        "size": [0.011, 0.004, 0.006],
+        "color": "#141516",
+        "roll": 160,
+        "name": "helix cut"
+      },
+      {
+        "type": "box",
+        "pos": [0.005, -0.0136, -0.0315],
+        "size": [0.011, 0.004, 0.006],
+        "color": "#141516",
+        "roll": 200,
+        "name": "helix cut"
+      },
+      {
+        "type": "box",
+        "pos": [0.0126, -0.0073, -0.036],
+        "size": [0.011, 0.004, 0.006],
+        "color": "#141516",
+        "roll": 240,
+        "name": "helix cut"
+      },
+      {
+        "type": "box",
+        "pos": [0.0143, 0.0025, -0.0405],
+        "size": [0.011, 0.004, 0.006],
+        "color": "#141516",
+        "roll": 280,
+        "name": "helix cut"
+      },
+      {
+        "type": "box",
+        "pos": [0.0093, 0.0111, -0.045],
+        "size": [0.011, 0.004, 0.006],
+        "color": "#141516",
+        "roll": 320,
+        "name": "helix cut"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0145, -0.0495],
+        "size": [0.011, 0.004, 0.006],
+        "color": "#141516",
+        "name": "helix cut"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.061],
+        "pitch": 90,
+        "radius": 0.0155,
+        "height": 0.006,
+        "color": "#1d1f21",
+        "name": "crown"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.065],
+        "pitch": 90,
+        "radius": 0.006,
+        "height": 0.002,
+        "color": "#141516",
+        "sides": 6,
+        "name": "bore"
+      }
+    ],
+    "muzzle": [0, 0, -0.066]
+  }
+}

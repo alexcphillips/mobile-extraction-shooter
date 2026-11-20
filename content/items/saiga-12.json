@@ -1,11 +1,12 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "saiga-12",
   "name": "Saiga-12",
   "type": "weapon",
   "class": "shotgun",
-  "size": [3, 2],
-  "value": 46600,
+  "platform": "ak",
+  "size": [4, 2],
+  "value": 50200,
   "weight": 3,
   "rarity": "common",
   "ammo": "buckshot",
@@ -15,21 +16,27 @@
   "magazine": 5,
   "feed": "magazine",
   "reloadTime": 2.4,
-  "ergonomics": 53,
-  "range": 60,
-  "loudness": 200,
-  "defaults": {
-    "magazine": "saiga-12-mag",
-    "stock": "saiga-12-stock"
+  "stats": {
+    "recoilUp": 79,
+    "recoilSide": 73,
+    "stability": 61,
+    "handling": 53,
+    "hipFire": 41,
+    "accuracy": 35,
+    "range": 39,
+    "loudness": 80
   },
-  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
-  "hipSpread": 1.5,
-  "aimSpread": 0.4,
+  "barrelRange": 0.95,
+  "defaults": {
+    "magazine": "saiga-12-mag"
+  },
+  "slots": ["optic", "muzzle", "magazine", "rightRail", "stock"],
+  "stock": {
+    "length": 1
+  },
   "recoil": {
-    "up": 6.33,
-    "side": 1.77,
     "snap": 36,
-    "recovery": 3.64
+    "recovery": 4
   },
   "sounds": {
     "shot": "shotgun-shot",
@@ -146,7 +153,22 @@
         "color": "#232323",
         "pitch": -18
       },
-      { "type": "box", "pos": [0, -0.005, 0.1], "size": [0.04, 0.05, 0.02], "color": "#1d1f21" }
+      { "type": "box", "pos": [0, -0.005, 0.1], "size": [0.04, 0.05, 0.02], "color": "#1d1f21" },
+      {
+        "type": "box",
+        "pos": [0, -0.01, 0.22],
+        "size": [0.04, 0.06, 0.2],
+        "color": "#232323",
+        "pitch": 5,
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.02, 0.325],
+        "size": [0.044, 0.1, 0.012],
+        "color": "#1d1f21",
+        "hiddenBy": "stock"
+      }
     ],
     "grip": [0, -0.07, 0.05],
     "support": [0, -0.03, -0.23],
@@ -156,8 +178,12 @@
       "optic": [0, 0.041, 0.02],
       "muzzle": [0, 0.005, -0.56],
       "magazine": [0, -0.03, -0.08],
-      "laser": [0.039, -0.003, -0.29],
+      "rightRail": [0.039, -0.003, -0.29],
       "stock": [0, -0.01, 0.12]
+    },
+    "factoryFold": {
+      "pivot": [-0.026, 0, 0],
+      "yaw": 180
     }
   }
 }

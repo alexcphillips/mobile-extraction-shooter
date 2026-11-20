@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "condenser-coil",
   "name": "Condenser coil",
   "type": "loot",

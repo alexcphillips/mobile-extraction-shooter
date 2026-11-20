@@ -1,0 +1,53 @@
+{
+  "formatVersion": 13,
+  "id": "conceal-flash-hider",
+  "name": "Conceal flash hider",
+  "shortName": "Conceal",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 5000,
+  "weight": 0.1,
+  "rarity": "common",
+  "slot": "muzzle",
+  "classes": ["assault", "smg", "dmr", "sniper", "lmg"],
+  "mods": {
+    "recoilUp": -6,
+    "recoilSide": -6,
+    "handling": -3
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.005],
+        "pitch": 90,
+        "radius": 0.0135,
+        "height": 0.01,
+        "color": "#2b2d2f",
+        "name": "collar"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.032],
+        "pitch": 90,
+        "radius": 0.0175,
+        "height": 0.048,
+        "color": "#1d1f21",
+        "radiusTop": 0.0125,
+        "sides": 10,
+        "name": "bell"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.057],
+        "pitch": 90,
+        "radius": 0.0125,
+        "height": 0.002,
+        "color": "#141516",
+        "sides": 6,
+        "name": "bore"
+      }
+    ],
+    "muzzle": [0, 0, -0.058]
+  }
+}

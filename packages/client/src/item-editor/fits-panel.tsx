@@ -75,7 +75,7 @@ function fitsOf(gun: WeaponDef, items: ItemDb, only: AttachmentDef | null): Fit[
   for (const slot of ATTACHMENT_SLOTS) {
     if (!gun.slots?.includes(slot)) continue;
     for (const a of items.values()) {
-      if (a.type !== 'attachment' || a.slot !== slot || !fits(gun, a)) continue;
+      if (a.type !== 'attachment' || a.slot !== slot || !fits(items, gun, a)) continue;
       if (only && a.id !== only.id) continue;
       const optic = slot === 'optic' ? a : null;
       out.push({
@@ -118,7 +118,7 @@ export function FitsPage(props: {
             : def?.type === 'weapon'
               ? g.id === def.id
               : def?.type === 'attachment'
-                ? fits(g, def)
+                ? fits(db, g, def)
                 : false,
         )
         .sort((a, b) => a.name.localeCompare(b.name));

@@ -231,37 +231,10 @@ describe('PUT /profile', () => {
     profile.money -= 1000;
     profile.stash.push(structuredClone(profile.stash[0]!));
     expect((await client.fails('PUT', '/profile', { version, profile })).message).toMatch(
-      /only added by buying/,
+      /stash pages/,
     );
     profile.stash.pop();
     profile.xp += 1000;
     expect((await client.fails('PUT', '/profile', { version, profile })).message).toMatch(/XP/);
-  });
-});
-
-describe('POST /stash/pages', () => {
-  it('buys a page with money, once per version, and not in a raid', async () => {
-    const client = await signedIn();
-    const me = await client.ok('GET', '/profile');
-    const broke = await client.fails('POST', '/stash/pages', { version: me.version });
-    // It needs the Stash module at level 1 (H4).
-    expect(broke.message).toMatch(/Stash module at level 1/);
-    await client.editProfile((p) => (p.hangar.stash = 1));
-    expect((await client.fails('POST', '/stash/pages', { version: me.version })).message).toMatch(
-      /costs 100000/,
-    );
-    await client.setMoney(120_000);
-    const bought = await client.ok('POST', '/stash/pages', { version: me.version });
-    expect(bought.profile.stash).toHaveLength(2);
-    expect(bought.profile.stash[1]!.items).toEqual([]);
-    expect(bought.profile.money).toBe(20_000);
-    // A retry with the old version doesn't buy another.
-    expect((await client.fails('POST', '/stash/pages', { version: me.version })).error).toBe(
-      'stale',
-    );
-    const { raid } = await client.ok('POST', '/raids', { raid: 'northpoint' });
-    const v = (await client.ok('GET', '/profile')).version;
-    expect((await client.fails('POST', '/stash/pages', { version: v })).error).toBe('in-raid');
-    expect(raid).not.toBeNull();
   });
 });

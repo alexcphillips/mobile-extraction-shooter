@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ContentError, type ContentFormat } from './format';
-import { fits, stackSize, type ItemDb } from './items';
+import { placeParts, stackSize, type ItemDb } from './items';
 import { idSchema } from './schema';
 
 /*
@@ -108,12 +108,11 @@ export function checkVendors(vendors: ReadonlyMap<string, VendorDef>, items: Ite
       if (def.type === 'loot' && def.money) throw new ContentError(source, 'sells money');
       if ((o.count ?? 1) > stackSize(def))
         throw new ContentError(source, `${o.count} "${o.item}" is more than a stack`);
-      const slots = new Set<string>();
-      for (const id of o.attachments ?? []) {
-        const a = items.get(id);
-        if (def.type !== 'weapon' || a?.type !== 'attachment' || !fits(def, a) || slots.has(a.slot))
-          throw new ContentError(source, `"${id}" doesn't fit "${o.item}"`);
-        slots.add(a.slot);
+      const ids = o.attachments ?? [];
+      if (ids.length) {
+        const placed = def.type === 'weapon' ? placeParts(def, items, ids) : ids.map(() => null);
+        const i = placed.indexOf(null);
+        if (i >= 0) throw new ContentError(source, `"${ids[i]}" doesn't fit "${o.item}"`);
       }
       const inputs = new Set<string>();
       for (const b of o.barter ?? []) {

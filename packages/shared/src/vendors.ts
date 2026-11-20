@@ -1,4 +1,4 @@
-import { attachmentDef, itemDef, type AttachmentSlot, type ItemDb } from './content/items';
+import { itemDef, placeParts, type AttachmentSlot, type ItemDb } from './content/items';
 import { VENDOR_LEVELS, type VendorDef, type VendorOffer } from './content/vendors';
 import { removeAt, type Grid, type Item } from './inventory/grid';
 import { PROFILE, type Profile, type VendorStanding } from './profile';
@@ -136,7 +136,7 @@ export function buyPrice(items: ItemDb, offer: VendorOffer, vendor?: VendorDef):
   const listed = offer.attachments ?? [];
   let parts = listed.reduce((n, a) => n + itemDef(items, a).value, 0);
   if (def.type === 'weapon') {
-    const taken = new Set(listed.map((a) => attachmentDef(items, a).slot));
+    const taken = new Set(placeParts(def, items, listed));
     for (const [slot, a] of Object.entries(def.defaults ?? {}))
       if (!taken.has(slot as AttachmentSlot)) parts += itemDef(items, a).value;
   }

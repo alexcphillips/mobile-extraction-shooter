@@ -5,9 +5,17 @@ import {
   ITEM_FORMAT_VERSION,
   checkItems,
   defaultSounds,
+  fits,
+  pointsFor,
+  pointsForScale,
+  statAt,
   weaponDef,
+  type CurvedStat,
   type ItemDef,
+  type WeaponDef,
 } from './items';
+
+const pointsRound = (stat: CurvedStat, v: number) => Math.round(pointsFor(stat, v));
 import { modelShapes, type WeaponModel } from './models';
 import { placeholderModel } from './placeholder-models';
 
@@ -50,14 +58,32 @@ const gun = m({
   rpm: 600,
   magazine: 30,
   reloadTime: 2,
+  stats: {
+    recoilUp: 50,
+    recoilSide: 50,
+    stability: 50,
+    handling: 67,
+    hipFire: 26,
+    accuracy: 30,
+    range: 59,
+    loudness: 74,
+  },
+  slots: ['optic', 'magazine'],
+  recoil: { snap: 40, recovery: 12 },
+});
+
+/** The gun as format 12 had it, before points. */
+const { stats: _stats, ...gunBase } = gun;
+const gunV12 = {
+  ...gunBase,
+  formatVersion: 12,
   ergonomics: 67,
   range: 150,
   loudness: 150,
-  slots: ['optic', 'magazine'],
   hipSpread: 3,
   aimSpread: 0.5,
   recoil: { up: 0.8, side: 0.3, snap: 40, recovery: 12 },
-});
+};
 
 const dot = { type: 'dot', x: 0, y: 0, r: 1 };
 const scope = m({
@@ -132,9 +158,10 @@ describe('items', () => {
   });
 
   it('upgrades format 1 weapons with a default loudness', () => {
-    const { loudness: _, slots: __, size: ___, ...old } = gun;
+    const { loudness: _, slots: __, size: ___, ...old } = gunV12;
     const def = loadContent(ITEM_FORMAT, { ...old, formatVersion: 1 }, 'gun.json');
-    expect(def).toMatchObject({ loudness: 150, formatVersion: ITEM_FORMAT_VERSION });
+    const loudness = pointsRound('loudness', 150);
+    expect(def).toMatchObject({ stats: { loudness }, formatVersion: ITEM_FORMAT_VERSION });
     expect(def.type === 'weapon' && def.slots).toBe(undefined);
   });
 
@@ -170,23 +197,61 @@ describe('items', () => {
   });
 
   it("upgrades format 11 guns to ergonomics, and attachments' ergonomics to recovery", () => {
-    const { ergonomics: _, ...rest } = gun as { ergonomics: number };
+    const { ergonomics: _, ...rest } = gunV12;
     const old = { ...rest, formatVersion: 11, aimTime: 0.25, drawTime: 0.8 };
     const def = loadContent(ITEM_FORMAT, old, 'g.json');
-    expect(def).toMatchObject({ ergonomics: 67 });
+    expect(def).toMatchObject({ stats: { handling: 67 } });
     expect(def).not.toHaveProperty('aimTime');
     expect(def).not.toHaveProperty('drawTime');
+  });
+
+  it("upgrades format 12 guns' stats and attachments' mods to points", () => {
+    const def = loadContent(ITEM_FORMAT, gunV12, 'g.json') as WeaponDef;
+    expect(def.stats).toEqual({
+      recoilUp: pointsRound('recoilUp', 0.8),
+      recoilSide: pointsRound('recoilSide', 0.3),
+      stability: 50,
+      handling: 67,
+      hipFire: pointsRound('hipFire', 3),
+      accuracy: pointsRound('accuracy', 0.5),
+      range: pointsRound('range', 150),
+      loudness: pointsRound('loudness', 150),
+    });
+    expect(def.recoil).toEqual({ snap: 40, recovery: 12 });
+    // Values come back within half a point of what they were.
+    const close = (stat: CurvedStat, was: number) =>
+      expect(Math.abs(statAt(stat, def.stats[stat]) / was - 1)).toBeLessThan(0.025);
+    close('recoilUp', 0.8);
+    close('hipFire', 3);
+    close('range', 150);
     const stock = {
       ...mag,
       id: 'st',
       slot: 'stock',
       stock: { length: 1 },
-      formatVersion: 11,
-      mods: { recoil: 0.6, ergonomics: 1.2, aimTime: 1.05 },
+      formatVersion: 12,
+      mods: {
+        recoil: 0.8,
+        recoilUp: 0.9,
+        spread: 0.85,
+        recovery: 1.2,
+        ergonomics: -3,
+        aimTime: 1.1,
+      },
     };
     expect(loadContent(ITEM_FORMAT, stock, 's.json')).toMatchObject({
-      mods: { recoil: 0.6, recovery: 1.2, ergonomics: -3 },
+      mods: {
+        recoilUp: Math.round(pointsForScale('recoilUp', 0.72)),
+        recoilSide: Math.round(pointsForScale('recoilSide', 0.8)),
+        hipFire: Math.round(pointsForScale('hipFire', 0.85)),
+        accuracy: Math.round(pointsForScale('accuracy', 0.85)),
+        handling: -3,
+        aimTime: 1.1,
+      },
     });
+    expect(loadContent(ITEM_FORMAT, stock, 's.json').type === 'attachment').toBe(true);
+    const mods = (loadContent(ITEM_FORMAT, stock, 's.json') as { mods: object }).mods;
+    expect(mods).not.toHaveProperty('recovery');
   });
 
   it('upgrades format 4 items with a value by type, and repair kits with a use time', () => {
@@ -304,6 +369,77 @@ describe('items', () => {
     expect(() => checkItems(db(m({ ...gun, slots: ['optic'] }), ammo, mag))).toThrow(
       /no magazine slot/,
     );
+  });
+
+  describe('platforms (AT-1)', () => {
+    const other = m({ ...ammo, id: 'other', caliber: 'other' });
+    const on = (id: string, platform?: string, extra: object = {}) =>
+      m({ ...gun, id, ...(platform && { platform }), ...extra });
+    const sight = (extra: object) => m({ ...scope, id: 'p', ...extra });
+    /** The guns a part fits, of these, once checkItems passes them (if asked). */
+    const fitted = (guns: object[], part: object, check = true) => {
+      const items = db(ammo, other, ...guns, part);
+      if (check) checkItems(items);
+      const def = items.get('p')!;
+      return [...items.values()]
+        .filter((g) => g.type === 'weapon' && def.type === 'attachment' && fits(items, g, def))
+        .map((g) => g.id);
+    };
+    const guns = [on('a', 'ar'), on('b', 'ar'), on('d')];
+
+    it('fits guns on a listed platform, and listed guns beside them', () => {
+      expect(fitted(guns, sight({ platforms: ['ar'] }))).toEqual(['a', 'b']);
+      expect(fitted(guns, sight({ platforms: ['ar'], weapons: ['d'] }))).toEqual(['a', 'b', 'd']);
+    });
+
+    it('fits a magazine only to magazine-fed platform guns of its caliber', () => {
+      const fed = { feed: 'magazine' };
+      const mags = [
+        on('a', 'ar', fed),
+        on('c', 'ar', { ...fed, ammo: 'other' }),
+        on('t', 'ar'), // loose rounds: no magazine goes in
+      ];
+      const { mods: _, weapons: _w, ...rest } = mag;
+      const box = m({ ...rest, id: 'p', capacity: 30, caliber: 'round', platforms: ['ar'] });
+      expect(fitted(mags, box, false)).toEqual(['a']);
+    });
+
+    it('refuses a platform no gun is on, or one it fits none of', () => {
+      expect(() => fitted(guns, sight({ platforms: ['ak'] }))).toThrow(
+        /no gun is on platform "ak"/,
+      );
+      const bare = [on('a', 'ar', { slots: ['magazine'] }), on('d')];
+      expect(() => fitted(bare, sight({ platforms: ['ar'] }))).toThrow(
+        /fits no gun on platform "ar"/,
+      );
+    });
+
+    it('refuses a gun listed that fits by its platform already', () => {
+      expect(() => fitted(guns, sight({ platforms: ['ar'], weapons: ['a'] }))).toThrow(
+        /fits by its platform too/,
+      );
+    });
+
+    it('fits guns of a listed class beside listed platforms and guns (AT-3)', () => {
+      const kinds = [
+        on('a', 'ar', { class: 'assault' }),
+        on('s', 'ar', { class: 'shotgun' }),
+        on('d', undefined, { class: 'pistol' }),
+      ];
+      expect(fitted(kinds, sight({ classes: ['assault'] }))).toEqual(['a']);
+      expect(fitted(kinds, sight({ classes: ['assault', 'pistol'] }))).toEqual(['a', 'd']);
+      expect(fitted(kinds, sight({ classes: ['shotgun'], weapons: ['d'] }))).toEqual(['s', 'd']);
+      expect(() => fitted(kinds, sight({ classes: ['pistol'], weapons: ['d'] }))).toThrow(
+        /fits by its class too/,
+      );
+      expect(() => fitted(kinds, sight({ classes: ['sniper'] }))).toThrow(/fits no sniper gun/);
+    });
+
+    it('needs a magazine to list guns or platforms', () => {
+      const { mods: _, weapons: _w, ...rest } = mag;
+      const box = m({ ...rest, id: 'p', capacity: 30, caliber: 'round' });
+      expect(() => loadContent(ITEM_FORMAT, box, 'x.json')).toThrow(/weapons or platforms/);
+    });
   });
 
   it('upgrades format 5 items with the placeholder model of their kind', () => {

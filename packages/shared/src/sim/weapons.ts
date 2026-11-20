@@ -1,11 +1,20 @@
 import {
   ATTACHMENT_SLOTS,
-  ERGO,
+  GUN_STATS,
+  HANDLING,
+  PELLET_SPREAD_AT,
   aimTimeAt,
+  aimMoveAt,
+  raiseTimeAt,
   attachmentDef,
   caliberOf,
-  ergonomicsOf,
+  sightsOf,
+  pointsOf,
+  statAt,
   fits,
+  fitsIn,
+  noAttachments,
+  slotsOfKind,
   isMagazine,
   magazineFed,
   roundCaliber,
@@ -15,6 +24,7 @@ import {
   weaponDef,
   type AmmoDef,
   type AttachmentSlot,
+  type GunStat,
   type ItemDb,
   type WeaponDef,
 } from '../content/items';
@@ -22,7 +32,7 @@ import { addItem, removeAt, type Grid, type Item } from '../inventory/grid';
 import { nextFloat } from '../rng';
 import { TICK_SECONDS } from '../tick';
 import { createRayHit, type CollisionWorld } from '../world/collision-world';
-import { HEALTH, badlyHurt, brokenArms, shootCharacter } from './health';
+import { HEALTH, badlyHurt, brokenArms, shootCharacter, type Wound } from './health';
 import {
   CARRIED_GRIDS,
   QUICK_GRIDS,
@@ -144,8 +154,8 @@ export interface WeaponState extends Item {
 export interface WeaponStats {
   magazine: number;
   reloadTime: number;
-  /** Handling with its attachments' points (ERGO): sets aim time and aimed sway. */
-  ergonomics: number;
+  /** Its eight stats as points with its attachments' (GUN_STATS), clamped to 0–100. */
+  points: Record<GunStat, number>;
   aimTime: number;
   hipSpread: number;
   aimSpread: number;
@@ -156,16 +166,35 @@ export interface WeaponStats {
   recoilAngle: number;
   /** The round past which a burst stops climbing; 0 never. */
   recoilStableAfter: number;
-  /** The gun's recoil recovery with its attachments' recovery. */
+  /** The gun's recoil recovery: its own, which no attachment changes. */
   recoilRecovery: number;
   loudness: number;
+  /**
+   * How far its round keeps its damage (falloffAt), against the barrel the round's falloff
+   * is set for: its own barrel's `barrelRange`, stretched by the share its attachments'
+   * range points move its range.
+   */
+  rangeScale: number;
+  /** Where shots stop, in meters. */
+  range: number;
+  /** A pellet round's spread is times this: its accuracy against PELLET_SPREAD_AT (AT-3). */
+  pelletScale: number;
 }
 
 export function createWeaponStats(): WeaponStats {
   return {
     magazine: 0,
     reloadTime: 0,
-    ergonomics: 0,
+    points: {
+      recoilUp: 0,
+      recoilSide: 0,
+      stability: 0,
+      handling: 0,
+      hipFire: 0,
+      accuracy: 0,
+      range: 0,
+      loudness: 0,
+    },
     aimTime: 0,
     hipSpread: 0,
     aimSpread: 0,
@@ -176,6 +205,9 @@ export function createWeaponStats(): WeaponStats {
     recoilStableAfter: 0,
     recoilRecovery: 0,
     loudness: 0,
+    rangeScale: 1,
+    range: 0,
+    pelletScale: 1,
   };
 }
 
@@ -191,36 +223,57 @@ export function weaponStats(items: ItemDb, w: WeaponState, out: WeaponStats): We
   const def = weaponDef(items, w.item);
   // A magazine-fed gun holds what its magazine does, nothing without one (MG-1).
   out.magazine = magazineFed(def) ? capacityOf(items, w.attachments.magazine) : def.magazine;
-  out.reloadTime = def.reloadTime;
-  out.ergonomics = ergonomicsOf(items, w);
-  out.aimTime = aimTimeAt(out.ergonomics);
-  out.hipSpread = def.hipSpread;
-  out.aimSpread = def.aimSpread;
-  out.recoilUp = def.recoil.up;
-  out.recoilSide = def.recoil.side;
+  const p = out.points;
+  for (const stat of GUN_STATS) p[stat] = pointsOf(items, w, stat);
+  // Handling points from its attachments speed its reload from the gun's own (HANDLING).
+  const handier = p.handling - def.stats.handling;
+  out.reloadTime = def.reloadTime * Math.max(0.1, 1 - handier * HANDLING.reloadPerPoint);
+  out.aimTime = aimTimeAt(p.handling);
+  out.hipSpread = statAt('hipFire', p.hipFire);
+  out.aimSpread = statAt('accuracy', p.accuracy);
+  out.pelletScale = out.aimSpread / statAt('accuracy', PELLET_SPREAD_AT);
+  out.recoilUp = statAt('recoilUp', p.recoilUp);
+  out.recoilSide = statAt('recoilSide', p.recoilSide);
   out.recoilSnap = def.recoil.snap;
   out.recoilAngle = def.recoil.angle ?? 0;
   out.recoilStableAfter = def.recoil.stableAfter ?? 0;
   out.recoilRecovery = def.recoil.recovery;
-  out.loudness = def.loudness;
+  out.loudness = statAt('loudness', p.loudness);
+  out.range = statAt('range', p.range);
+  out.rangeScale = ((def.barrelRange ?? 1) * out.range) / statAt('range', def.stats.range);
+  // The exceptions to handling a part names (aimTime, reloadTime), and magazines.
   for (const slot of ATTACHMENT_SLOTS) {
     const id = w.attachments[slot];
-    // A folded stock counts as not there (WF-1).
+    // A folded stock counts as not there (WF-1), and a laser switched off.
     if (slot === 'stock' && w.folded) continue;
-    const m = id === null ? undefined : attachmentDef(items, id).mods;
+    const a = id === null ? undefined : attachmentDef(items, id);
+    if (w.laserOff && a?.model.laser) continue;
+    const m = a?.mods;
     if (!m) continue;
     out.magazine += m.magazine ?? 0;
     out.reloadTime *= m.reloadTime ?? 1;
     out.aimTime *= m.aimTime ?? 1;
-    out.hipSpread *= (m.spread ?? 1) * (m.hipSpread ?? 1);
-    out.aimSpread *= m.spread ?? 1;
-    out.recoilUp *= (m.recoil ?? 1) * (m.recoilUp ?? 1);
-    out.recoilSide *= (m.recoil ?? 1) * (m.recoilSide ?? 1);
-    out.recoilRecovery *= m.recovery ?? 1;
-    out.loudness *= m.loudness ?? 1;
   }
   return out;
 }
+
+/**
+ * The share of a round's damage left at a distance (its `falloff`): all of it out to
+ * `from`, falling in a straight line to `floor` at `to`, and `floor` beyond. Both
+ * distances stretch by the gun's rangeScale (a long barrel's).
+ */
+export function falloffAt(ammo: AmmoDef, distance: number, rangeScale = 1): number {
+  const f = ammo.falloff;
+  if (!f) return 1;
+  const from = f.from * rangeScale;
+  const to = f.to * rangeScale;
+  if (distance <= from) return 1;
+  if (distance >= to) return f.floor;
+  return 1 - ((1 - f.floor) * (distance - from)) / (to - from);
+}
+
+/** A round's hit, its damage and armor damage scaled by falloffAt; reused, no allocation. */
+const fallen: Wound = { damage: 0, level: 1, armorDamage: 0, bleedChance: 0 };
 
 /** A shot fired this tick, from the shooter's eye to where it stopped. */
 export interface ShotEvent {
@@ -261,12 +314,13 @@ export function createWeapon(
     cooldown: 0,
     reloading: 0,
     triggerHeld: false,
-    attachments: { optic: null, muzzle: null, magazine: null, laser: null, stock: null },
+    attachments: noAttachments(),
   };
   const def = weaponDef(items, id);
   if (ammo !== undefined && ammo !== def.ammo) w.loaded = ammo;
   // What it comes with (its own stock), then what was asked for over it.
-  for (const a of Object.values(def.defaults ?? {})) attach(w, items, a);
+  for (const [slot, a] of Object.entries(def.defaults ?? {}))
+    attach(w, items, a, slot as AttachmentSlot);
   for (const a of attachments) attach(w, items, a);
   w.mag = weaponStats(items, w, stats).magazine;
   return w;
@@ -334,16 +388,41 @@ export function giveWeapon(
 }
 
 /**
- * Puts an attachment on a gun, replacing whatever was in its slot. Throws if it doesn't
- * fit, so check with fits() first. Returns the rounds that no longer fit (a smaller
- * magazine), which the caller should put somewhere.
+ * The slot an attachment would go in on this gun: `slot` if given and it fits there, else
+ * the first of its kind's slots the gun has that's empty, else the first it has (a rail
+ * item goes on a free rail, or replaces what's on the left one). Null if it doesn't fit.
  */
-export function attach(w: WeaponState, items: ItemDb, id: string): number {
+export function slotFor(
+  gun: { item: string; attachments?: Partial<Record<AttachmentSlot, string | null>> },
+  items: ItemDb,
+  id: string,
+  slot?: AttachmentSlot,
+): AttachmentSlot | null {
+  const def = weaponDef(items, gun.item);
   const a = attachmentDef(items, id);
-  if (!fits(weaponDef(items, w.item), a)) throw new Error(`"${id}" doesn't fit "${w.item}"`);
-  w.attachments[a.slot] = id;
-  return a.slot === 'magazine' ? magazineChanged(w, items) : 0;
+  if (slot) return fitsIn(items, def, a, slot) ? slot : null;
+  const open = slotsOfKind(a.slot).filter((s) => fitsIn(items, def, a, s));
+  return open.find((s) => !gun.attachments?.[s]) ?? open[0] ?? null;
 }
+
+/**
+ * Puts an attachment on a gun (in `slot`, or where slotFor puts it), replacing whatever
+ * was there. Throws if it doesn't fit, so check with fits() first. Returns the rounds that
+ * no longer fit (a smaller magazine), which the caller should put somewhere.
+ */
+export function attach(w: WeaponState, items: ItemDb, id: string, slot?: AttachmentSlot): number {
+  const at = slotFor(w, items, id, slot);
+  if (!at) throw new Error(`"${id}" doesn't fit "${w.item}"${slot ? ` in its ${slot}` : ''}`);
+  // A sight that changes puts the gun back on its first sight (sightsOf).
+  if (isSightSlot(at) && w.attachments[at] !== id) delete w.sight;
+  w.attachments[at] = id;
+  // A stock going on unfolds the gun: the factory one may have been folded (AT-1b).
+  if (at === 'stock') delete w.folded;
+  return at === 'magazine' ? magazineChanged(w, items) : 0;
+}
+
+/** Slots whose part adds or changes a sight (sightsOf). */
+const isSightSlot = (slot: AttachmentSlot): boolean => slot === 'optic' || slot === 'offsetOptic';
 
 /**
  * Takes the attachment out of a slot (read it from w.attachments first). Returns the
@@ -352,7 +431,40 @@ export function attach(w: WeaponState, items: ItemDb, id: string): number {
 export function detach(w: WeaponState, items: ItemDb, slot: AttachmentSlot): number {
   w.attachments[slot] = null;
   if (slot === 'stock') delete w.folded;
+  if (!hasLaser(w, items)) delete w.laserOff;
+  if (isSightSlot(slot)) delete w.sight;
   return slot === 'magazine' ? magazineChanged(w, items) : 0;
+}
+
+/**
+ * Steps to the gun's next sight (sightsOf: a scope, the red dot on it, later a canted
+ * sight), back to the first after the last. Returns whether it changed: a gun with one
+ * sight doesn't.
+ */
+export function switchSight(w: Item, items: ItemDb): boolean {
+  const n = sightsOf(w, items).length;
+  if (n < 2) return false;
+  const next = ((w.sight ?? 0) + 1) % n;
+  if (next) w.sight = next;
+  else delete w.sight;
+  return true;
+}
+
+/** Whether a gun has a laser fitted: an attachment whose model has a beam point. */
+export function hasLaser(w: Item, items: ItemDb): boolean {
+  for (const slot of ATTACHMENT_SLOTS) {
+    const id = w.attachments?.[slot];
+    if (id && attachmentDef(items, id).model.laser) return true;
+  }
+  return false;
+}
+
+/** Switches a gun's lasers on or off, if it has one; returns whether it changed. */
+export function toggleLaser(w: Item, items: ItemDb): boolean {
+  if (!hasLaser(w, items)) return false;
+  if (w.laserOff) delete w.laserOff;
+  else w.laserOff = true;
+  return true;
 }
 
 /**
@@ -407,7 +519,8 @@ export function partOut(
 export function partIn(w: WeaponState, items: ItemDb, part: Item): number {
   const def = attachmentDef(items, part.item);
   if (!isMagazine(def)) return attach(w, items, def.id);
-  if (!fits(weaponDef(items, w.item), def)) throw new Error(`"${def.id}" doesn't fit "${w.item}"`);
+  if (!fits(items, weaponDef(items, w.item), def))
+    throw new Error(`"${def.id}" doesn't fit "${w.item}"`);
   w.attachments.magazine = def.id;
   w.mag = part.mag ?? 0;
   w.reloading = 0;
@@ -507,7 +620,7 @@ function findMagazine(
       const m = grid.items[j]!.item;
       if ((m.mag ?? 0) === 0 && !c.ai) continue;
       const def = items.get(m.item);
-      if (!def || !isMagazine(def) || !fits(gun, def)) continue;
+      if (!def || !isMagazine(def) || !fits(items, gun, def)) continue;
       const n = magRounds(c, m, def.capacity, round);
       if (n === 0) continue;
       const wanted = !!want && m.loaded === want;
@@ -534,7 +647,7 @@ export function spareRounds(state: SimState, c: Character, items: ItemDb, w: Wea
     if (!grid) continue;
     for (const g of grid.items) {
       const m = items.get(g.item.item);
-      if (m && isMagazine(m) && fits(def, m)) n += g.item.mag ?? 0;
+      if (m && isMagazine(m) && fits(items, def, m)) n += g.item.mag ?? 0;
     }
   }
   return n;
@@ -559,14 +672,14 @@ function armScale(c: Character, perArm: number): number {
 /**
  * A player's gun off the view this tick: the sim's, so shots and co-op hosts agree. Sway
  * comes from the tick rather than the random numbers, and enemies have none. `aiming` is
- * whether they're aiming in, which holds their breath. The gun's ergonomics scale its idle
- * sway (ERGO); the lag when turning follows its aim time.
+ * whether they're aiming in, which holds their breath. The gun's handling scales its idle
+ * sway (HANDLING); the lag when turning follows its aim time.
  */
 function updateSway(
   state: SimState,
   c: Character,
   aimTime: number,
-  ergonomics: number,
+  handling: number,
   aiming: boolean,
   breathe = false,
 ): void {
@@ -592,7 +705,7 @@ function updateSway(
     (1 + brokenArms(c.health) * SWAY_BROKEN_ARM) *
     (1 + tired * SWAY_TIRED) *
     (1 + (SWAY_MOVING - 1) * moving) *
-    swayAt(ergonomics) *
+    swayAt(handling) *
     breath;
   let tremorYaw = 0;
   let tremorPitch = 0;
@@ -662,7 +775,9 @@ export function updateWeapon(
   const w = heldWeapon(c);
   if (!w) {
     c.aim = 0;
-    updateSway(state, c, UNARMED_AIM_TIME, ERGO.swayAt, false);
+    c.aimMove = 1;
+    c.raised = c.sprinting ? 0 : 1;
+    updateSway(state, c, UNARMED_AIM_TIME, HANDLING.swayAt, false);
     settleRecoil(c, RECOIL.unarmedSnap, RECOIL.unarmedRecovery, false);
     return;
   }
@@ -677,10 +792,23 @@ export function updateWeapon(
   // Broken arms and worn gear (GZ-1, players only) slow aiming in.
   const aimStep =
     DT / (s.aimTime * armScale(c, HEALTH.brokenArmAimTime) * (c.burden?.aimTime ?? 1));
+  // WS-4: moving aimed is slowed by handling, and after a sprint the gun takes its time
+  // to come up, slowed by broken arms as aiming is, before it fires.
+  c.aimMove = aimMoveAt(s.points.handling);
+  c.raised = c.sprinting
+    ? 0
+    : Math.min(
+        1,
+        (c.raised ?? 1) +
+          DT / (raiseTimeAt(s.points.handling) * armScale(c, HEALTH.brokenArmAimTime)),
+      );
+  const up = c.raised >= 1;
   // Using a med lowers the gun.
   const aiming = !!input?.aim && free && !c.using;
   c.aim = Math.max(0, Math.min(1, c.aim + (aiming ? aimStep : -aimStep)));
-  updateSway(state, c, s.aimTime, s.ergonomics, aiming, !!input?.breathe);
+  updateSway(state, c, s.aimTime, s.points.handling, aiming, !!input?.breathe);
+  if (input?.sight) switchSight(w, items);
+  if (input?.laser) toggleLaser(w, items);
 
   const quick = !!input?.quickReload && usesMagazines(state, c, def);
   if (w.reloading > 0) {
@@ -695,7 +823,8 @@ export function updateWeapon(
     startReload(state, c, items, w, s, input?.ammo, quick);
   }
 
-  const trigger = !!input?.fire && free;
+  // Held while the gun comes up, it fires once it's up: a semi-auto's first pull too.
+  const trigger = !!input?.fire && free && up;
   const pulled = trigger && !w.triggerHeld;
   w.triggerHeld = trigger;
   if (trigger && w.reloading === 0) {
@@ -872,7 +1001,7 @@ function fire(
   if (!ammo.pellets) {
     castShot(state, c, yaw, pitch, def, s, ammo, world, items, 0);
   } else {
-    const pelletSpread = (ammo.pelletSpread ?? 0) * DEG;
+    const pelletSpread = (ammo.pelletSpread ?? 0) * s.pelletScale * DEG;
     for (let i = 0; i < ammo.pellets; i++) {
       // Each pellet strays from the shot's line in a cone of its own.
       const stray = pelletSpread * Math.sqrt(nextFloat(state.rng));
@@ -883,6 +1012,17 @@ function fire(
   }
 
   kickRecoil(state, c, s.recoilUp, s.recoilSide, s.recoilAngle, s.recoilStableAfter);
+}
+
+/** The round as it hits at a distance: itself at full damage, else `fallen` scaled. */
+function hitWith(ammo: AmmoDef, distance: number, rangeScale: number): Wound {
+  const k = falloffAt(ammo, distance, rangeScale);
+  if (k >= 1) return ammo;
+  fallen.damage = ammo.damage * k;
+  fallen.armorDamage = ammo.armorDamage * k;
+  fallen.level = ammo.level;
+  fallen.bleedChance = ammo.bleedChance;
+  return fallen;
 }
 
 /** One bullet or pellet from the shooter's eye along yaw and pitch: hits and its event. */
@@ -906,28 +1046,17 @@ function castShot(
   const oy = eyeHeight(c);
   const oz = eyeZ(c);
 
-  let wd = world.raycast(ox, oy, oz, dx, dy, dz, def.range, worldHit);
+  let wd = world.raycast(ox, oy, oz, dx, dy, dz, s.range, worldHit);
   // Glass in the way breaks and the shot goes on, unless it hits someone before it.
   for (let n = 0; n < GLASS.maxPerShot; n++) {
     const pane = glassHit(world, worldHit);
     if (pane < 0) break;
     if (raycastCharacters(state, ox, oy, oz, dx, dy, dz, wd, c.id, charHit) < Infinity) break;
     breakGlass(state, world, pane, c.id);
-    wd = world.raycast(ox, oy, oz, dx, dy, dz, def.range, worldHit);
+    wd = world.raycast(ox, oy, oz, dx, dy, dz, s.range, worldHit);
   }
-  const cd = raycastCharacters(
-    state,
-    ox,
-    oy,
-    oz,
-    dx,
-    dy,
-    dz,
-    Math.min(wd, def.range),
-    c.id,
-    charHit,
-  );
-  const d = Math.min(wd, cd, def.range);
+  const cd = raycastCharacters(state, ox, oy, oz, dx, dy, dz, Math.min(wd, s.range), c.id, charHit);
+  const d = Math.min(wd, cd, s.range);
   let hit: ShotEvent['hit'] = 'none';
   if (cd < Infinity) {
     hit = 'character';
@@ -939,7 +1068,7 @@ function castShot(
         items,
         target,
         charHit.zone,
-        ammo,
+        hitWith(ammo, cd, s.rangeScale),
         c.id,
         'shot',
         c.x,

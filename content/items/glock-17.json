@@ -1,9 +1,10 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "glock-17",
   "name": "Glock 17",
   "type": "weapon",
   "class": "pistol",
+  "platform": "glock",
   "size": [2, 1],
   "value": 12000,
   "weight": 0.6,
@@ -15,14 +16,25 @@
   "magazine": 17,
   "feed": "magazine",
   "reloadTime": 1.6,
-  "ergonomics": 87,
-  "range": 100,
-  "loudness": 120,
-  "defaults": { "magazine": "g18c-mag" },
-  "slots": ["muzzle", "magazine", "laser"],
-  "hipSpread": 2.0,
-  "aimSpread": 0.55,
-  "recoil": { "up": 2.31, "side": 0.61, "snap": 45, "recovery": 6 },
+  "stats": {
+    "recoilUp": 65,
+    "recoilSide": 58,
+    "stability": 32,
+    "handling": 87,
+    "hipFire": 35,
+    "accuracy": 28,
+    "range": 50,
+    "loudness": 69
+  },
+  "barrelRange": 0.9,
+  "defaults": {
+    "magazine": "g18c-mag"
+  },
+  "slots": ["muzzle", "magazine", "rightRail"],
+  "recoil": {
+    "snap": 45,
+    "recovery": 6
+  },
   "sounds": {
     "shot": "pistol-shot",
     "suppressed": "pistol-shot-suppressed",
@@ -173,7 +185,7 @@
     "mounts": {
       "muzzle": [0, 0.012, -0.155],
       "magazine": [0, -0.106, 0.02],
-      "laser": [0, -0.038, -0.12]
+      "rightRail": [0, -0.038, -0.12]
     }
   }
 }

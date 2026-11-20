@@ -8,6 +8,7 @@ import {
   foldParts,
   modelShapes,
   partSchema,
+  sightsOf,
   type AttachmentDef,
   type BodyDef,
   type Outfit,
@@ -21,6 +22,9 @@ import {
   type WeaponDef,
   type WeaponState,
   type Fold,
+  noAttachments,
+  fitsIn,
+  slotsOfKind,
 } from '@mes/shared';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Combo, HexColor, Num, Pick, Text, Toggle } from '../editor/fields';
@@ -79,7 +83,17 @@ function pointKeys(def: ItemDef): string[] {
         ...ATTACHMENT_SLOTS.filter((s) => def.slots?.includes(s)).map((s) => `mounts.${s}`),
       ];
     case 'attachment':
-      return def.slot === 'optic' ? ['sight'] : def.slot === 'muzzle' ? ['muzzle'] : [];
+      return (
+        {
+          optic: ['sight'],
+          offsetOptic: ['sight'],
+          muzzle: ['muzzle'],
+          barrel: ['muzzle'],
+          foregrip: ['support'],
+          grip: ['grip'],
+          rail: ['laser'],
+        }[def.slot as string] ?? []
+      );
     case 'melee':
       return ['grip'];
     default:
@@ -92,6 +106,7 @@ const POINT_NOTES: Record<string, string> = {
   support: 'the left hand',
   muzzle: 'where shots leave',
   sight: 'the eye lines up here, aimed',
+  laser: 'a laser’s beam leaves here, along −z',
   'mounts.optic': 'an optic’s origin goes here',
   'mounts.muzzle': 'a muzzle device’s origin goes here',
   'mounts.magazine': 'a magazine’s origin goes here',
@@ -149,6 +164,7 @@ export const gunState = (
   item: string,
   attachments: Partial<Record<AttachmentSlot, string>>,
   folded = false,
+  sight = 0,
 ): WeaponState =>
   ({
     item,
@@ -156,14 +172,9 @@ export const gunState = (
     cooldown: 0,
     reloading: 0,
     triggerHeld: false,
-    attachments: {
-      optic: attachments.optic ?? null,
-      muzzle: attachments.muzzle ?? null,
-      magazine: attachments.magazine ?? null,
-      laser: attachments.laser ?? null,
-      stock: attachments.stock ?? null,
-    },
+    attachments: { ...noAttachments(), ...attachments },
     ...(folded && attachments.stock && { folded: true }),
+    ...(sight > 0 && { sight }),
   }) as WeaponState;
 
 export function ModelTab(props: {
@@ -190,6 +201,8 @@ export function ModelTab(props: {
   );
   /** WF-1: the stock previewed folded (nothing can be picked while it is). */
   const [folded, setFolded] = useState(false);
+  /** Which of the gun's sights it's previewed aimed with (sightsOf): 0 the first. */
+  const [sight, setSight] = useState(0);
   /** Attachments: the gun it's previewed on. */
   const [onGun, setOnGun] = useState<string | undefined>(undefined);
   const [clip, setClip] = useState<Clip | null>(readClip);
@@ -276,18 +289,20 @@ export function ModelTab(props: {
   const db = s.db;
   const items = db ?? s.items;
   const guns = [...items.values()].filter(
-    (g): g is WeaponDef => g.type === 'weapon' && def.type === 'attachment' && fits(g, def),
+    (g): g is WeaponDef => g.type === 'weapon' && def.type === 'attachment' && fits(items, g, def),
   );
   const gun = def.type === 'attachment' ? (guns.find((g) => g.id === onGun) ?? guns[0]) : undefined;
   const fittedOk = (slot: AttachmentSlot): string | undefined => {
     const id = fitted[slot];
     const a = id ? items.get(id) : undefined;
-    return def.type === 'weapon' && a?.type === 'attachment' && a.slot === slot && fits(def, a)
+    // A rail item's kind is `rail`, for either rail slot: fitsIn checks the slot.
+    return def.type === 'weapon' && a?.type === 'attachment' && fitsIn(items, def, a, slot)
       ? id
       : undefined;
   };
 
-  // WF-1: how the previewed stock folds, if it does: the gun's mount, else the stock's own.
+  // WF-1: how the previewed stock folds, if it does: the gun's mount, else the stock's own,
+  // or with none fitted the gun's factory stock's (AT-1b).
   const stockId =
     def.type === 'weapon'
       ? fittedOk('stock')
@@ -296,8 +311,12 @@ export function ModelTab(props: {
         : undefined;
   const stockDef = stockId ? items.get(stockId) : undefined;
   const mountFold = def.type === 'weapon' ? def.model.stockFold : gun?.model.stockFold;
+  const factory = def.type === 'weapon' && !stockId && !!def.stock;
   const fold =
-    mountFold ?? (stockDef?.type === 'attachment' ? stockDef.model.fold : undefined) ?? null;
+    (factory ? (def.model.stockFold ?? def.model.factoryFold) : undefined) ??
+    (stockId ? mountFold : undefined) ??
+    (stockDef?.type === 'attachment' ? stockDef.model.fold : undefined) ??
+    null;
   const foldedView = folded && !!fold;
 
   // What the view draws, and first person, from the item as edited.
@@ -328,20 +347,24 @@ export function ModelTab(props: {
             def.id,
             Object.fromEntries(ATTACHMENT_SLOTS.map((k) => [k, fittedOk(k)])),
             foldedView,
+            sight,
           ),
           db,
-          optic: opticOf(db, fittedOk('optic')),
+          optic: null,
         }
       : def.type === 'attachment' && gun
         ? {
             kind: 'gun',
-            gun: gunState(gun.id, { [def.slot]: def.id }, foldedView),
+            gun: gunState(gun.id, { [def.slot]: def.id }, foldedView, sight),
             db,
-            optic: def.slot === 'optic' ? (def.optic ?? null) : null,
+            optic: null,
           }
         : def.type === 'melee'
           ? { kind: 'knife', id: def.id, db }
           : null;
+  // Aimed, it looks through the sight the preview gun is set to (sightsOf), as the game does.
+  const sights = fp?.kind === 'gun' && db ? sightsOf(fp.gun, db) : [];
+  if (fp?.kind === 'gun') fp.optic = (sights[sight] ?? sights[0])?.look ?? null;
   const sceneKey = JSON.stringify(scene);
   useEffect(() => {
     view.current?.show(scene, picked);
@@ -639,6 +662,15 @@ export function ModelTab(props: {
               {m}
             </Toggle>
           ))}
+          {mode === 'aimed' && sights.length > 1 && (
+            <Toggle
+              on={sight > 0}
+              onClick={() => setSight((sight + 1) % sights.length)}
+              title="Step to the gun's next sight (a scope's red dot on top), as the sight button does"
+            >
+              {`sight ${Math.min(sight, sights.length - 1) + 1}/${sights.length}`}
+            </Toggle>
+          )}
           {mode === 'build' &&
             (['orbit', ...FLAT_LOOKS] as const).map((l, i) => (
               <Toggle
@@ -686,7 +718,7 @@ export function ModelTab(props: {
                 label={slot}
                 value={fittedOk(slot)}
                 options={[...items.values()]
-                  .filter((a) => a.type === 'attachment' && a.slot === slot && fits(def, a))
+                  .filter((a) => a.type === 'attachment' && fitsIn(items, def, a, slot))
                   .map((a) => a.id)}
                 unset="none"
                 onChange={(v) => setFitted((f) => ({ ...f, [slot]: v }))}
@@ -835,14 +867,28 @@ function buildScene(
       context.push(...safeShapes(parts, mount));
       if (slot === 'optic' && a.model.sight) sight = addVec(mount, a.model.sight);
     }
+    // Its factory stock folded (AT-1b): hidden in place, drawn folded as context.
+    const stockMount = pointAt(model, 'mounts.stock');
+    if (fold && !fittedSlots.has('stock') && stockMount) {
+      fittedSlots.add('stock');
+      const own = model.parts.filter((p) => p.hiddenBy === 'stock');
+      context.push(
+        ...safeShapes(safeFold(own, { ...fold, pivot: addVec(fold.pivot, stockMount) })),
+      );
+    }
     scene.context = context;
     scene.sightLine = sight;
   } else if (def.type === 'attachment') {
-    const mount = gun?.model.mounts?.[def.slot];
+    // Previewed in the first slot of its kind the gun has (a rail item on its right rail
+    // if it has one, else its left).
+    const slot = gun
+      ? [...slotsOfKind(def.slot)].reverse().find((s) => gun.slots?.includes(s))
+      : undefined;
+    const mount = slot ? gun?.model.mounts?.[slot] : undefined;
     if (gun && mount) {
       // The gun around it, moved so this attachment's origin stays at the origin.
       const back: Vec3 = [-mount[0], -mount[1], -mount[2]];
-      scene.context = safeShapes(gun.model.parts, back, (s) => s === def.slot);
+      scene.context = safeShapes(gun.model.parts, back, (s) => s === slot);
     }
     if (fold) {
       // Folded: drawn as context, so nothing is picked or moved where it doesn't live.
@@ -850,7 +896,8 @@ function buildScene(
       scene.parts = [];
       scene.points = [];
     }
-    if (def.slot === 'optic') scene.sightLine = pointAt(model, 'sight') ?? null;
+    if (def.slot === 'optic' || def.slot === 'offsetOptic')
+      scene.sightLine = pointAt(model, 'sight') ?? null;
   }
   return scene;
 }

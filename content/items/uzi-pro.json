@@ -1,11 +1,12 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "uzi-pro",
   "name": "Uzi Pro",
   "type": "weapon",
   "class": "smg",
-  "size": [2, 1],
-  "value": 44000,
+  "platform": "uzi",
+  "size": [3, 1],
+  "value": 46800,
   "weight": 1.6,
   "rarity": "common",
   "ammo": "ammo-9mm",
@@ -14,15 +15,30 @@
   "rpm": 1075,
   "magazine": 20,
   "feed": "magazine",
-  "reloadTime": 2.1,
-  "ergonomics": 89,
-  "range": 100,
-  "loudness": 110,
-  "defaults": { "magazine": "uzi-pro-mag", "stock": "uzi-pro-stock" },
-  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
-  "hipSpread": 2.0,
-  "aimSpread": 0.6,
-  "recoil": { "up": 1.94, "side": 0.61, "snap": 45, "recovery": 3, "angle": -6 },
+  "reloadTime": 2.07,
+  "stats": {
+    "recoilUp": 57,
+    "recoilSide": 53,
+    "stability": 44,
+    "handling": 92,
+    "hipFire": 35,
+    "accuracy": 26,
+    "range": 50,
+    "loudness": 67
+  },
+  "barrelRange": 0.95,
+  "defaults": {
+    "magazine": "uzi-pro-mag"
+  },
+  "slots": ["optic", "muzzle", "magazine", "rightRail", "stock"],
+  "stock": {
+    "length": 1
+  },
+  "recoil": {
+    "snap": 45,
+    "recovery": 3,
+    "angle": -6
+  },
   "sounds": {
     "shot": "pistol-shot",
     "suppressed": "pistol-shot-suppressed",
@@ -282,6 +298,38 @@
         "name": "front sight ear",
         "group": "iron sights",
         "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.004, 0.098],
+        "size": [0.034, 0.03, 0.016],
+        "color": "#3a3d40",
+        "name": "hinge",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.01, 0.2],
+        "size": [0.014, 0.022, 0.19],
+        "color": "#3a3d40",
+        "name": "strut",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03, 0.305],
+        "size": [0.04, 0.08, 0.022],
+        "color": "#3a3d40",
+        "name": "butt",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03, 0.3175],
+        "size": [0.036, 0.072, 0.003],
+        "color": "#141516",
+        "name": "butt pad",
+        "hiddenBy": "stock"
       }
     ],
     "grip": [0, -0.083, 0.02],
@@ -292,8 +340,12 @@
       "optic": [0, 0.03900000000000001, 0.03],
       "muzzle": [0, 0, -0.158],
       "magazine": [0, -0.045, 0.02],
-      "laser": [0.024, -0.035, -0.07],
-      "stock": [0, 0.0, 0.09]
+      "rightRail": [0.024, -0.035, -0.07],
+      "stock": [0, 0, 0.09]
+    },
+    "factoryFold": {
+      "pivot": [0.02, 0, 0],
+      "yaw": -180
     }
   }
 }

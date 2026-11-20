@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "m416-mag",
   "name": "M416 30-round magazine",
   "shortName": "M416 30",
@@ -9,7 +9,7 @@
   "weight": 0.12,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["m416", "adar"],
+  "platforms": ["ar15"],
   "capacity": 30,
   "caliber": "5.56x45",
   "model": {

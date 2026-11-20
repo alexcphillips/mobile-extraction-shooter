@@ -1,0 +1,73 @@
+{
+  "formatVersion": 13,
+  "id": "cyclone-flash-hider",
+  "name": "Cyclone flash hider",
+  "shortName": "Cyclone",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 2500,
+  "weight": 0.07,
+  "rarity": "common",
+  "slot": "muzzle",
+  "classes": ["assault", "smg", "dmr", "sniper", "lmg"],
+  "mods": {
+    "stability": 3,
+    "handling": -1
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.007],
+        "pitch": 90,
+        "radius": 0.0135,
+        "height": 0.014,
+        "color": "#1d1f21",
+        "name": "collar"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.031],
+        "pitch": 90,
+        "radius": 0.0085,
+        "height": 0.038,
+        "color": "#141516",
+        "sides": 6,
+        "name": "core"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0081, 0.0081, -0.032],
+        "size": [0.006, 0.004, 0.04],
+        "color": "#3a3d40",
+        "roll": 45,
+        "name": "prong"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0081, -0.0081, -0.032],
+        "size": [0.006, 0.004, 0.04],
+        "color": "#3a3d40",
+        "roll": 135,
+        "name": "prong"
+      },
+      {
+        "type": "box",
+        "pos": [0.0081, -0.0081, -0.032],
+        "size": [0.006, 0.004, 0.04],
+        "color": "#3a3d40",
+        "roll": 225,
+        "name": "prong"
+      },
+      {
+        "type": "box",
+        "pos": [0.0081, 0.0081, -0.032],
+        "size": [0.006, 0.004, 0.04],
+        "color": "#3a3d40",
+        "roll": 315,
+        "name": "prong"
+      }
+    ],
+    "muzzle": [0, 0, -0.052]
+  }
+}

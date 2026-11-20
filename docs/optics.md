@@ -15,7 +15,7 @@ Read only the part you need; search these by name rather than reading them whole
 
 ## The process
 
-1. **Start from a reference.** A photo or a game screenshot of the real sight, from the front (aimed) and the side. Note what makes it read as itself: the window's shape, how it joins the base, the controls, the reticle. Give it our own name, never a product's or another game's *(user's call)*.
+1. **Start from a reference.** A photo or a game screenshot of the real sight, from the front (aimed) and the side. Note what makes it read as itself: the window's shape, how it joins the base, the controls, the reticle. Give it our own name, never a product's or another game's *(user's call)*. A gun's own optic may carry the gun's name, as `aug-optic` does *(user's call)*.
 2. **Build it from a generator script** in the scratchpad that imports [optic-kit.mjs](../scripts/optic-kit.mjs) by path (window outlines, frame faces, writing the item), so positions are computed and a change is a re-run. Keep every size that other parts hang off as one named constant (the housing's half width, the window's radius, the seat's top), and place attached parts from it, so resizing one keeps the rest attached.
 3. **Once the user edits the JSON, the JSON is the model.** Never re-run an old script over a hand edit (the user tunes the sight point and other values by eye). Make later changes in the JSON or the item editor.
 4. **Check it three ways**, every round: `node scripts/item-shot.mjs <id> --view 3D --view front --aimed --on <gun>` saves the item pictures, the 3D and front views and the aimed view; the item editor's reticle panel shows the reticle at its real units; and the content tests (`npx vitest run`) validate the model. Look at every picture before handing it over, and say what wasn't checked.
@@ -71,11 +71,21 @@ The optic budget is the number in `budgetOf` ([budget.ts](../packages/client/src
 
 ## Aimed: how big the window looks
 
-`optic.lens` is the window's clear radius and `optic.fill` how much of the screen it fills aimed (both in [items.ts](../packages/shared/src/content/items.ts)). A sight without `fill` sits where iron sights do; with it, it's held that close to the eye, as `asp-reflex-sight` holds its hoop up like a classic hoop sight. Scopes always use them: see [props.md](props.md) → Item models for how scopes are built to be looked through (`scopedHidden`, the eyepiece rim), and no two scopes share a rim.
+`optic.lens` is the window's clear radius and `optic.fill` how much of the screen it fills aimed (both in [items.ts](../packages/shared/src/content/items.ts)). A sight without `fill` sits where iron sights do; with it, it's held that close to the eye, as `asp-reflex-sight` holds its hoop up like a classic hoop sight. **Tube sights tunnel:** with `fill` set the eye is only a few centimeters behind the rear face, so a tube's far end looks much smaller than its near end and its dark inside eats the view. Keep an unmagnified tube short with a thin wall, so the clear view stays wide round the dot (`red-dot`). A hood in front of a window is the same: keep it shallow and wider inside than the window, so aimed it hides behind the window's frame (`holographic-sight`). Scopes always use them: see [props.md](props.md) → Item models for how scopes are built to be looked through (`scopedHidden`, the eyepiece rim), and no two scopes share a rim. Details that sit on a `scopedHidden` part (seams, panels, bands, ring screws) are `scopedHidden` too: left drawn, they float in view at the edges of the lens while looking through.
 
 ## Reticles
 
 Units are % of the screen height from the aim point, y down (the item editor's reticle panel says how big one unit is on a phone). For a sight without zoom the reticle is drawn at those units; a scope's is fitted to its lens.
-- **Lit reticles glow** (`reticle.glow`): the halo is drawn only under the shapes in the reticle's own color, so etched shapes with their own color (black stadia under a red chevron) stay sharp.
+- **Lit reticles glow** (`reticle.glow`, `true` or a strength below 1 for a softer halo, set by eye): the halo is drawn only under the shapes in the reticle's own color, so etched shapes with their own color (black stadia under a red chevron) stay sharp.
 - **Build it from the reference's shapes**, line by line. A T made of three lines that stop short of a gap at the aim point reads very differently from a solid T.
 - **Expect to tune line width, length and gaps** with the user over a few rounds: they're the most visible numbers in the game. Keep them as named values in the script while building, so each round is one change.
+
+## More than one sight on a gun
+
+A gun can have more than one sight, and the player switches between them while aimed. The sight button appears only then and says which sight a tap goes to; on PC it's V, on a gamepad D-pad up.
+- **The list is the one source:** `sightsOf` in [items.ts](../packages/shared/src/content/items.ts) gives a gun's sights in the order the button steps through them, and the gun stores which one it's on (`sight`, an index). The gun view, the HUD reticle, the HUD button and the item editor all read the list, so a new kind of sight is added there and nowhere else.
+- **A second sight on the same optic** (a red dot riding on a scope) is its `optic.alt`: zoom, reticle, lens and fill like the optic's own, plus its own sight point in the model. `tandem-combo-sight` is the reference. Keep its `fill` small: a big one pulls it so close that the scope behind it passes the eye and the sight fills the view (a test in gun-model.test.ts checks the eyepiece stays ahead).
+- **Offset (canted) optics** are their own slot: a small sight on an arm round the rail, whose `optic.cant` is how far the gun rolls (its top to the left) to bring it up level. It joins the list after the main optic's sights; the gun rolls about the sight point as it comes up, so the sight stays on the line ahead of the eye. `offset-reflex-sight` is the reference.
+- **Changing the optic resets the choice** to the first sight, so a gun never stays on a sight it no longer has.
+- **On a two-sight optic, the second sight's top may show above the scope's rim while looking through it.** That can be its rim mark. Parts in the line of sight are still `scopedHidden`.
+- **Check every sight aimed:** `item-shot.mjs --aimed --alt` looks through the second one, and the editor's aimed view has a sight button that steps through them.

@@ -27,14 +27,14 @@ So a quest or an upgrade never stalls on one unlucky item (the user's ask, 2026-
 | Module | What it does |
 |---|---|
 | **Power grid** | The spine: its level caps every other module's level. No fuel to top up. |
-| **Stash** (`stash`) | Stash space. Its level unlocks the right to **buy** the next stash page (still paid for with money, so pages stay a money sink). Later levels unlock **category pages** in place of Tarkov-style cases. |
+| **Stash** (`stash`) | Stash space. Each level **gives** the next stash page with the upgrade (no separate purchase; the user's call). The stash's + next to its page tabs opens the Hangar on this module. Later levels unlock **category pages** in place of Tarkov-style cases. |
 | **Secure locker** | The vault, **1×2 at the start (1 tall, 2 wide), up to 3×3**. Its upgrades are the most expensive of every module; the user will balance them. |
 
 ## Sizes (Claude's placeholders until the user balances them)
 All in `PROFILE` (shared `profile.ts`). The starting stash and vault are small on purpose, and the modules grow them.
-- Every bought stash page is **10×20**. Stash module level n lets you buy page n + 1 (100k, 250k, 500k), so level 3 allows the 4th and last page.
+- Every plain stash page is **10×20**. Stash module level n gives page n + 1, so level 3 gives the 4th and last page. A profile always has exactly the pages its level gives: the server adds missing ones when it loads or upgrades a profile, and refuses a save with more or fewer.
 - Stash module level 3 also gives three **category pages, Guns, Ammo and Meds, 10×10 each**, free. They hold only their kinds (Guns: guns, melee and attachments; Ammo: rounds and grenades; Meds: meds and repair kits) and no bags.
-- **Auto sort on close:** leaving the stash moves loose items from the bought pages onto their category page where there's room.
+- **Auto sort on close:** leaving the stash moves loose items from the plain pages onto their category page where there's room.
 - Vault by Secure locker level: **2 wide × 1 tall**, then 2×2, 3 wide × 2 tall, 3×3.
 
 ## Removed: crafting (the user's call, 2026-11-17)

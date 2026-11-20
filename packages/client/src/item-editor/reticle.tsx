@@ -179,6 +179,20 @@ export function ReticleDesigner(props: {
           />
           glow
         </label>
+        {optic.reticle.glow !== undefined && optic.reticle.glow !== false && (
+          <Num
+            label="strength"
+            value={typeof optic.reticle.glow === 'number' ? optic.reticle.glow : 1}
+            min={0.1}
+            onChange={(v) =>
+              edit((o) => {
+                // Full strength is stored as `true`, as before strengths existed.
+                if (v === undefined || v >= 1) o.reticle.glow = true;
+                else o.reticle.glow = Math.max(0.1, v);
+              })
+            }
+          />
+        )}
       </div>
       <p className="ed-note">
         Units are % of the screen height from the aim point, y down; 1 is about {POINTS.toFixed(1)}{' '}

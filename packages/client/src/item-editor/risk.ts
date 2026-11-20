@@ -32,6 +32,8 @@ export function storageRisks(before: ItemDef, after: ItemDef): string[] {
         );
       const lost = (b.slots ?? []).filter((s) => !after.slots?.includes(s));
       if (lost.length) out.push(`saved guns may have something in its ${lost.join(' and ')} slot`);
+      if (b.platform && after.platform !== b.platform)
+        out.push(`saved guns may have parts on that fit it as ${b.platform}`);
       break;
     }
     case 'ammo': {
@@ -64,8 +66,7 @@ export function storageRisks(before: ItemDef, after: ItemDef): string[] {
     case 'attachment': {
       const b = before as typeof after;
       if (after.slot !== b.slot) out.push('saved guns have it in the old slot');
-      else if (after.weapons && !covers(after.weapons, b.weapons))
-        out.push('it fits fewer guns, and saved guns may have it on');
+      else if (fitsFewer(after, b)) out.push('it fits fewer guns, and saved guns may have it on');
       if ((after.mods?.magazine ?? 0) < (b.mods?.magazine ?? 0))
         out.push('it adds fewer rounds than saved guns may have loaded');
       if ((after.capacity ?? 0) < (b.capacity ?? 0))
@@ -95,7 +96,26 @@ export function storageRisks(before: ItemDef, after: ItemDef): string[] {
   return out;
 }
 
-/** Whether the new list of guns still has every gun of the old one (none: every gun). */
-function covers(after: readonly string[], before: readonly string[] | undefined): boolean {
-  return !!before && before.every((w) => after.includes(w));
+type Lists = {
+  weapons?: readonly string[] | undefined;
+  platforms?: readonly string[] | undefined;
+  classes?: readonly string[] | undefined;
+};
+
+/**
+ * Whether an attachment's lists of guns, platforms (AT-1) and classes (AT-3) may take in
+ * fewer guns: it has lists now, and had none or one of the old ones lost an entry. Without
+ * the items it can't tell a gun moved onto a listed platform, so that warns too.
+ */
+function fitsFewer(after: Lists, before: Lists): boolean {
+  const none = (l: Lists) => !l.weapons && !l.platforms && !l.classes;
+  if (none(after)) return false;
+  if (none(before)) return true;
+  const lost = (a?: readonly string[], b?: readonly string[]) =>
+    !!b && b.some((x) => !a?.includes(x));
+  return (
+    lost(after.weapons, before.weapons) ||
+    lost(after.platforms, before.platforms) ||
+    lost(after.classes, before.classes)
+  );
 }

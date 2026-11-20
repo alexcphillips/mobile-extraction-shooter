@@ -374,6 +374,21 @@ export class CharacterBody {
     this.cur.yaw = ch.yaw;
   }
 
+  /** How many lasers its gun has. */
+  get laserCount(): number {
+    return this.gun?.lasers.length ?? 0;
+  }
+
+  /**
+   * Laser i's lens in the world (from) and the way its gun points (dir, unit): the gun's
+   * frame is the weapon bone's, its barrel along −z.
+   */
+  laserRay(i: number, from: THREE.Vector3, dir: THREE.Vector3): void {
+    const m = this.bone.weapon.matrixWorld;
+    from.set(...this.gun!.lasers[i]!).applyMatrix4(m);
+    dir.setFromMatrixColumn(m, 2).normalize().negate();
+  }
+
   /** It fired: the gun kicks. */
   fired(): void {
     this.kick = Math.min(1.5, this.kick + 1);

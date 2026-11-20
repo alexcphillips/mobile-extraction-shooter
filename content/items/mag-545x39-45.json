@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "mag-545x39-45",
   "name": "45-round 5.45×39 magazine",
   "shortName": "5.45 45",
@@ -9,7 +9,7 @@
   "weight": 0.3,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["ak-74m", "aks-74u", "rpk-16"],
+  "platforms": ["ak"],
   "capacity": 45,
   "caliber": "5.45x39",
   "mods": {

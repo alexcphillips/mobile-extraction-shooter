@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "talus-combat-optic",
   "name": "Talus 4× combat optic",
   "shortName": "Talus 4×",
@@ -21,18 +21,19 @@
     "rpk-16",
     "pkm",
     "m250",
-    "as-val",
-    "vss",
     "sks",
     "adar",
     "svt-40"
   ],
-  "mods": { "aimTime": 1.35 },
+  "platforms": ["as-val"],
+  "mods": {
+    "aimTime": 1.35
+  },
   "optic": {
     "zoom": 4,
     "reticle": {
       "color": "#ff3b2f",
-      "glow": true,
+      "glow": 0.6,
       "shapes": [
         { "type": "line", "x1": 0, "y1": 0, "x2": -3, "y2": 3.9, "width": 0.8 },
         { "type": "line", "x1": 0, "y1": 0, "x2": 3, "y2": 3.9, "width": 0.8 },
@@ -99,290 +100,1513 @@
     "fill": 30
   },
   "model": {
+    "sight": [0, 0.04, 0.015],
     "parts": [
       {
-        "type": "box",
-        "pos": [0, 0.006, -0.05],
-        "size": [0.03, 0.012, 0.07],
-        "color": "#3a342a",
-        "name": "mount"
-      },
-      {
-        "type": "box",
-        "pos": [0.017, 0.006, -0.05],
-        "size": [0.004, 0.012, 0.03],
-        "color": "#3a342a",
-        "name": "thumb nut"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.03, -0.05],
-        "size": [0.034, 0.036, 0.07],
+        "type": "hull",
+        "pos": [0, 0, 0],
         "color": "#8f7d5a",
-        "name": "body",
+        "name": "housing",
+        "group": "housing",
+        "scopedHidden": true,
+        "points": [
+          [-0.0175, 0.012, -0.012],
+          [0.0175, 0.012, -0.012],
+          [-0.0175, 0.012, -0.084],
+          [0.0175, 0.012, -0.084],
+          [-0.0175, 0.048, -0.012],
+          [0.0175, 0.048, -0.012],
+          [-0.0175, 0.044, -0.084],
+          [0.0175, 0.044, -0.084],
+          [-0.0125, 0.0535, -0.016],
+          [0.0125, 0.0535, -0.016],
+          [-0.0125, 0.0535, -0.05800000000000001],
+          [0.0125, 0.0535, -0.05800000000000001],
+          [-0.0125, 0.0455, -0.082],
+          [0.0125, 0.0455, -0.082]
+        ]
+      },
+      {
+        "type": "box",
+        "pos": [-0.0177, 0.0175, -0.048],
+        "size": [0.0008, 0.005, 0.07],
+        "color": "#7a6a4c",
+        "name": "lower band",
+        "group": "housing",
+        "scopedHidden": true
+      },
+      {
+        "type": "panel",
+        "pos": [-0.0178, 0.035, -0.058],
+        "size": [0.012, 0.022],
+        "color": "#7a6a4c",
+        "roll": 90,
+        "name": "side panel",
+        "group": "housing",
         "scopedHidden": true
       },
       {
         "type": "box",
-        "pos": [0, 0.049, -0.05],
-        "size": [0.012, 0.004, 0.06],
-        "color": "#4fd06a",
-        "name": "fiber light pipe"
+        "pos": [0.0177, 0.0175, -0.048],
+        "size": [0.0008, 0.005, 0.07],
+        "color": "#7a6a4c",
+        "name": "lower band",
+        "group": "housing",
+        "scopedHidden": true
       },
       {
-        "type": "box",
-        "pos": [-0.0075, 0.0505, -0.05],
-        "size": [0.003, 0.003, 0.062],
-        "color": "#3a342a",
-        "name": "fiber guard rail"
+        "type": "panel",
+        "pos": [0.0178, 0.035, -0.058],
+        "size": [0.012, 0.022],
+        "color": "#7a6a4c",
+        "roll": -90,
+        "name": "side panel",
+        "group": "housing",
+        "scopedHidden": true
       },
       {
-        "type": "box",
-        "pos": [0.0075, 0.0505, -0.05],
-        "size": [0.003, 0.003, 0.062],
+        "type": "hull",
+        "pos": [0, 0, 0],
+        "color": "#8f7d5a",
+        "name": "objective",
+        "group": "objective",
+        "scopedHidden": true,
+        "points": [
+          [0.01709, 0.04708, -0.08],
+          [0.00708, 0.05709, -0.08],
+          [-0.00708, 0.05709, -0.08],
+          [-0.01709, 0.04708, -0.08],
+          [-0.01709, 0.03292, -0.08],
+          [-0.00708, 0.02291, -0.08],
+          [0.00708, 0.02291, -0.08],
+          [0.01709, 0.03292, -0.08],
+          [0.01986, 0.04823, -0.09],
+          [0.00823, 0.05986, -0.09],
+          [-0.00823, 0.05986, -0.09],
+          [-0.01986, 0.04823, -0.09],
+          [-0.01986, 0.03177, -0.09],
+          [-0.00823, 0.02014, -0.09],
+          [0.00823, 0.02014, -0.09],
+          [0.01986, 0.03177, -0.09],
+          [0.01986, 0.04823, -0.118],
+          [0.00823, 0.05986, -0.118],
+          [-0.00823, 0.05986, -0.118],
+          [-0.01986, 0.04823, -0.118],
+          [-0.01986, 0.03177, -0.118],
+          [-0.00823, 0.02014, -0.118],
+          [0.00823, 0.02014, -0.118],
+          [0.01986, 0.03177, -0.118]
+        ]
+      },
+      {
+        "type": "hull",
+        "pos": [0, 0, 0],
         "color": "#3a342a",
-        "name": "fiber guard rail"
+        "name": "objective lip",
+        "group": "objective",
+        "scopedHidden": true,
+        "points": [
+          [0.02033, 0.04842, -0.1175],
+          [0.00842, 0.06033, -0.1175],
+          [-0.00842, 0.06033, -0.1175],
+          [-0.02033, 0.04842, -0.1175],
+          [-0.02033, 0.03158, -0.1175],
+          [-0.00842, 0.01967, -0.1175],
+          [0.00842, 0.01967, -0.1175],
+          [0.02033, 0.03158, -0.1175],
+          [0.02033, 0.04842, -0.12],
+          [0.00842, 0.06033, -0.12],
+          [-0.00842, 0.06033, -0.12],
+          [-0.02033, 0.04842, -0.12],
+          [-0.02033, 0.03158, -0.12],
+          [-0.00842, 0.01967, -0.12],
+          [0.00842, 0.01967, -0.12],
+          [0.02033, 0.03158, -0.12]
+        ]
       },
       {
         "type": "cylinder",
-        "pos": [0, 0.04, -0.1],
-        "radius": 0.022,
-        "height": 0.03,
-        "color": "#8f7d5a",
+        "pos": [0, 0.04, -0.1206],
+        "radius": 0.017499999999999998,
+        "height": 0.0012,
+        "color": "#0e0f11",
+        "sides": 16,
         "pitch": 90,
-        "name": "objective bell",
+        "name": "objective glass",
+        "group": "objective",
         "scopedHidden": true
       },
       {
         "type": "cylinder",
-        "pos": [0, 0.04, -0.1155],
-        "radius": 0.021,
-        "height": 0.002,
-        "color": "#3a342a",
-        "pitch": 90,
-        "name": "objective rim",
-        "scopedHidden": true
-      },
-      {
-        "type": "cylinder",
-        "pos": [0, 0.04, 0.0],
-        "radius": 0.016,
-        "height": 0.03,
+        "pos": [0, 0.04, 0.0025],
+        "radius": 0.0155,
+        "radiusTop": 0.0141,
+        "height": 0.023,
         "color": "#8f7d5a",
+        "sides": 16,
         "pitch": 90,
         "name": "eyepiece",
+        "group": "eyepiece body",
         "scopedHidden": true
       },
       {
         "type": "cylinder",
-        "pos": [0, 0.04, 0.0155],
-        "radius": 0.0155,
-        "height": 0.002,
+        "pos": [0, 0.04, -0.01],
+        "radius": 0.0163,
+        "height": 0.003,
+        "color": "#3a342a",
+        "sides": 16,
+        "pitch": 90,
+        "name": "eyepiece collar",
+        "group": "eyepiece body",
+        "scopedHidden": true
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.04, 0.0125],
+        "radius": 0.012700000000000001,
+        "height": 0.0008,
+        "color": "#0e0f11",
+        "sides": 16,
+        "pitch": 90,
+        "name": "eyepiece glass",
+        "group": "eyepiece body",
+        "scopedHidden": true
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
         "color": "#3a342a",
         "pitch": 90,
+        "points": [
+          [0.0137, 0],
+          [0.01323, -0.00355],
+          [0.01207, -0.00324],
+          [0.0125, 0]
+        ],
         "name": "eyepiece rim",
-        "scopedHidden": true
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [0.01323, -0.00355],
+          [0.01186, -0.00685],
+          [0.01083, -0.00625],
+          [0.01207, -0.00324]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [0.01186, -0.00685],
+          [0.00969, -0.00969],
+          [0.00884, -0.00884],
+          [0.01083, -0.00625]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [0.00969, -0.00969],
+          [0.00685, -0.01186],
+          [0.00625, -0.01083],
+          [0.00884, -0.00884]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [0.00685, -0.01186],
+          [0.00355, -0.01323],
+          [0.00324, -0.01207],
+          [0.00625, -0.01083]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [0.00355, -0.01323],
+          [0, -0.0137],
+          [0, -0.0125],
+          [0.00324, -0.01207]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [0, -0.0137],
+          [-0.00355, -0.01323],
+          [-0.00324, -0.01207],
+          [0, -0.0125]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [-0.00355, -0.01323],
+          [-0.00685, -0.01186],
+          [-0.00625, -0.01083],
+          [-0.00324, -0.01207]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [-0.00685, -0.01186],
+          [-0.00969, -0.00969],
+          [-0.00884, -0.00884],
+          [-0.00625, -0.01083]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [-0.00969, -0.00969],
+          [-0.01186, -0.00685],
+          [-0.01083, -0.00625],
+          [-0.00884, -0.00884]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [-0.01186, -0.00685],
+          [-0.01323, -0.00355],
+          [-0.01207, -0.00324],
+          [-0.01083, -0.00625]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [-0.01323, -0.00355],
+          [-0.0137, 0],
+          [-0.0125, 0],
+          [-0.01207, -0.00324]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [-0.0137, 0],
+          [-0.01323, 0.00355],
+          [-0.01207, 0.00324],
+          [-0.0125, 0]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [-0.01323, 0.00355],
+          [-0.01186, 0.00685],
+          [-0.01083, 0.00625],
+          [-0.01207, 0.00324]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [-0.01186, 0.00685],
+          [-0.00969, 0.00969],
+          [-0.00884, 0.00884],
+          [-0.01083, 0.00625]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [-0.00969, 0.00969],
+          [-0.00685, 0.01186],
+          [-0.00625, 0.01083],
+          [-0.00884, 0.00884]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [-0.00685, 0.01186],
+          [-0.00355, 0.01323],
+          [-0.00324, 0.01207],
+          [-0.00625, 0.01083]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [-0.00355, 0.01323],
+          [0, 0.0137],
+          [0, 0.0125],
+          [-0.00324, 0.01207]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [0, 0.0137],
+          [0.00355, 0.01323],
+          [0.00324, 0.01207],
+          [0, 0.0125]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [0.00355, 0.01323],
+          [0.00685, 0.01186],
+          [0.00625, 0.01083],
+          [0.00324, 0.01207]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [0.00685, 0.01186],
+          [0.00969, 0.00969],
+          [0.00884, 0.00884],
+          [0.00625, 0.01083]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [0.00969, 0.00969],
+          [0.01186, 0.00685],
+          [0.01083, 0.00625],
+          [0.00884, 0.00884]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [0.01186, 0.00685],
+          [0.01323, 0.00355],
+          [0.01207, 0.00324],
+          [0.01083, 0.00625]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.015],
+        "color": "#3a342a",
+        "pitch": 90,
+        "points": [
+          [0.01323, 0.00355],
+          [0.0137, 0],
+          [0.0125, 0],
+          [0.01207, 0.00324]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01347, 0.04177, 0.01425],
+        "color": "#3a342a",
+        "roll": -82.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01255, 0.0452, 0.01425],
+        "color": "#3a342a",
+        "roll": -67.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01078, 0.04827, 0.01425],
+        "color": "#3a342a",
+        "roll": -52.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00827, 0.05078, 0.01425],
+        "color": "#3a342a",
+        "roll": -37.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.0052, 0.05255, 0.01425],
+        "color": "#3a342a",
+        "roll": -22.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00177, 0.05347, 0.01425],
+        "color": "#3a342a",
+        "roll": -7.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00177, 0.05347, 0.01425],
+        "color": "#3a342a",
+        "roll": 7.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.0052, 0.05255, 0.01425],
+        "color": "#3a342a",
+        "roll": 22.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00827, 0.05078, 0.01425],
+        "color": "#3a342a",
+        "roll": 37.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01078, 0.04827, 0.01425],
+        "color": "#3a342a",
+        "roll": 52.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01255, 0.0452, 0.01425],
+        "color": "#3a342a",
+        "roll": 67.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01347, 0.04177, 0.01425],
+        "color": "#3a342a",
+        "roll": 82.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01347, 0.03823, 0.01425],
+        "color": "#3a342a",
+        "roll": -262.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01255, 0.0348, 0.01425],
+        "color": "#3a342a",
+        "roll": -247.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01078, 0.03173, 0.01425],
+        "color": "#3a342a",
+        "roll": -232.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00827, 0.02922, 0.01425],
+        "color": "#3a342a",
+        "roll": -217.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.0052, 0.02745, 0.01425],
+        "color": "#3a342a",
+        "roll": -202.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00177, 0.02653, 0.01425],
+        "color": "#3a342a",
+        "roll": -187.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00177, 0.02653, 0.01425],
+        "color": "#3a342a",
+        "roll": -172.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.0052, 0.02745, 0.01425],
+        "color": "#3a342a",
+        "roll": -157.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00827, 0.02922, 0.01425],
+        "color": "#3a342a",
+        "roll": -142.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01078, 0.03173, 0.01425],
+        "color": "#3a342a",
+        "roll": -127.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01255, 0.0348, 0.01425],
+        "color": "#3a342a",
+        "roll": -112.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01347, 0.03823, 0.01425],
+        "color": "#3a342a",
+        "roll": -97.5,
+        "size": [0.00358, 0.0015],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.013],
+        "color": "#2a2620",
+        "pitch": 90,
+        "points": [
+          [0.0152, 0],
+          [0.01468, -0.00393],
+          [0.01323, -0.00355],
+          [0.0137, 0]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.013],
+        "color": "#2a2620",
+        "pitch": 90,
+        "points": [
+          [0.01468, -0.00393],
+          [0.01316, -0.0076],
+          [0.01186, -0.00685],
+          [0.01323, -0.00355]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.013],
+        "color": "#2a2620",
+        "pitch": 90,
+        "points": [
+          [0.01316, -0.0076],
+          [0.01075, -0.01075],
+          [0.00969, -0.00969],
+          [0.01186, -0.00685]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.013],
+        "color": "#2a2620",
+        "pitch": 90,
+        "points": [
+          [0.01075, -0.01075],
+          [0.0076, -0.01316],
+          [0.00685, -0.01186],
+          [0.00969, -0.00969]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.013],
+        "color": "#2a2620",
+        "pitch": 90,
+        "points": [
+          [0.0076, -0.01316],
+          [0.00393, -0.01468],
+          [0.00355, -0.01323],
+          [0.00685, -0.01186]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.013],
+        "color": "#2a2620",
+        "pitch": 90,
+        "points": [
+          [0.00393, -0.01468],
+          [0, -0.0152],
+          [0, -0.0137],
+          [0.00355, -0.01323]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.013],
+        "color": "#2a2620",
+        "pitch": 90,
+        "points": [
+          [0, -0.0152],
+          [-0.00393, -0.01468],
+          [-0.00355, -0.01323],
+          [0, -0.0137]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.013],
+        "color": "#2a2620",
+        "pitch": 90,
+        "points": [
+          [-0.00393, -0.01468],
+          [-0.0076, -0.01316],
+          [-0.00685, -0.01186],
+          [-0.00355, -0.01323]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.013],
+        "color": "#2a2620",
+        "pitch": 90,
+        "points": [
+          [-0.0076, -0.01316],
+          [-0.01075, -0.01075],
+          [-0.00969, -0.00969],
+          [-0.00685, -0.01186]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.013],
+        "color": "#2a2620",
+        "pitch": 90,
+        "points": [
+          [-0.01075, -0.01075],
+          [-0.01316, -0.0076],
+          [-0.01186, -0.00685],
+          [-0.00969, -0.00969]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.013],
+        "color": "#2a2620",
+        "pitch": 90,
+        "points": [
+          [-0.01316, -0.0076],
+          [-0.01468, -0.00393],
+          [-0.01323, -0.00355],
+          [-0.01186, -0.00685]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.013],
+        "color": "#2a2620",
+        "pitch": 90,
+        "points": [
+          [-0.01468, -0.00393],
+          [-0.0152, 0],
+          [-0.0137, 0],
+          [-0.01323, -0.00355]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.013],
+        "color": "#2a2620",
+        "pitch": 90,
+        "points": [
+          [-0.0152, 0],
+          [-0.01468, 0.00393],
+          [-0.01323, 0.00355],
+          [-0.0137, 0]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.013],
+        "color": "#2a2620",
+        "pitch": 90,
+        "points": [
+          [0.01468, 0.00393],
+          [0.0152, 0],
+          [0.0137, 0],
+          [0.01323, 0.00355]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.006],
+        "color": "#2a2620",
+        "pitch": -90,
+        "points": [
+          [0.0152, 0],
+          [0.01468, 0.00393],
+          [0.01323, 0.00355],
+          [0.0137, 0]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.006],
+        "color": "#2a2620",
+        "pitch": -90,
+        "points": [
+          [0.01468, 0.00393],
+          [0.01316, 0.0076],
+          [0.01186, 0.00685],
+          [0.01323, 0.00355]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.006],
+        "color": "#2a2620",
+        "pitch": -90,
+        "points": [
+          [0.01316, 0.0076],
+          [0.01075, 0.01075],
+          [0.00969, 0.00969],
+          [0.01186, 0.00685]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.006],
+        "color": "#2a2620",
+        "pitch": -90,
+        "points": [
+          [0.01075, 0.01075],
+          [0.0076, 0.01316],
+          [0.00685, 0.01186],
+          [0.00969, 0.00969]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.006],
+        "color": "#2a2620",
+        "pitch": -90,
+        "points": [
+          [0.0076, 0.01316],
+          [0.00393, 0.01468],
+          [0.00355, 0.01323],
+          [0.00685, 0.01186]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.006],
+        "color": "#2a2620",
+        "pitch": -90,
+        "points": [
+          [0.00393, 0.01468],
+          [0, 0.0152],
+          [0, 0.0137],
+          [0.00355, 0.01323]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.006],
+        "color": "#2a2620",
+        "pitch": -90,
+        "points": [
+          [0, 0.0152],
+          [-0.00393, 0.01468],
+          [-0.00355, 0.01323],
+          [0, 0.0137]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.006],
+        "color": "#2a2620",
+        "pitch": -90,
+        "points": [
+          [-0.00393, 0.01468],
+          [-0.0076, 0.01316],
+          [-0.00685, 0.01186],
+          [-0.00355, 0.01323]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.006],
+        "color": "#2a2620",
+        "pitch": -90,
+        "points": [
+          [-0.0076, 0.01316],
+          [-0.01075, 0.01075],
+          [-0.00969, 0.00969],
+          [-0.00685, 0.01186]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.006],
+        "color": "#2a2620",
+        "pitch": -90,
+        "points": [
+          [-0.01075, 0.01075],
+          [-0.01316, 0.0076],
+          [-0.01186, 0.00685],
+          [-0.00969, 0.00969]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.006],
+        "color": "#2a2620",
+        "pitch": -90,
+        "points": [
+          [-0.01316, 0.0076],
+          [-0.01468, 0.00393],
+          [-0.01323, 0.00355],
+          [-0.01186, 0.00685]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.006],
+        "color": "#2a2620",
+        "pitch": -90,
+        "points": [
+          [-0.01468, 0.00393],
+          [-0.0152, 0],
+          [-0.0137, 0],
+          [-0.01323, 0.00355]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.006],
+        "color": "#2a2620",
+        "pitch": -90,
+        "points": [
+          [-0.0152, 0],
+          [-0.01468, -0.00393],
+          [-0.01323, -0.00355],
+          [-0.0137, 0]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.04, 0.006],
+        "color": "#2a2620",
+        "pitch": -90,
+        "points": [
+          [0.01468, -0.00393],
+          [0.0152, 0],
+          [0.0137, 0],
+          [0.01323, -0.00355]
+        ],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01494, 0.04197, 0.0095],
+        "color": "#2a2620",
+        "roll": -82.5,
+        "size": [0.00397, 0.007],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01392, 0.04577, 0.0095],
+        "color": "#2a2620",
+        "roll": -67.5,
+        "size": [0.00397, 0.007],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01196, 0.04917, 0.0095],
+        "color": "#2a2620",
+        "roll": -52.5,
+        "size": [0.00397, 0.007],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00917, 0.05196, 0.0095],
+        "color": "#2a2620",
+        "roll": -37.5,
+        "size": [0.00397, 0.007],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00577, 0.05392, 0.0095],
+        "color": "#2a2620",
+        "roll": -22.5,
+        "size": [0.00397, 0.007],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00197, 0.05494, 0.0095],
+        "color": "#2a2620",
+        "roll": -7.5,
+        "size": [0.00397, 0.007],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00197, 0.05494, 0.0095],
+        "color": "#2a2620",
+        "roll": 7.5,
+        "size": [0.00397, 0.007],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00577, 0.05392, 0.0095],
+        "color": "#2a2620",
+        "roll": 22.5,
+        "size": [0.00397, 0.007],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00917, 0.05196, 0.0095],
+        "color": "#2a2620",
+        "roll": 37.5,
+        "size": [0.00397, 0.007],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01196, 0.04917, 0.0095],
+        "color": "#2a2620",
+        "roll": 52.5,
+        "size": [0.00397, 0.007],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01392, 0.04577, 0.0095],
+        "color": "#2a2620",
+        "roll": 67.5,
+        "size": [0.00397, 0.007],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01494, 0.04197, 0.0095],
+        "color": "#2a2620",
+        "roll": 82.5,
+        "size": [0.00397, 0.007],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01494, 0.03803, 0.0095],
+        "color": "#2a2620",
+        "roll": -262.5,
+        "size": [0.00397, 0.007],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01494, 0.03803, 0.0095],
+        "color": "#2a2620",
+        "roll": -97.5,
+        "size": [0.00397, 0.007],
+        "name": "rubber eye guard",
+        "group": "eyepiece"
+      },
+      {
+        "type": "slab",
+        "pos": [0, 0.0553, -0.034],
+        "size": [0.0156, 0.0036, 0.032],
+        "color": "#3a342a",
+        "corners": [0.001, 0.001, 0.001, 0.001],
+        "segments": 1,
+        "name": "top rail",
+        "group": "top"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0569, -0.0225],
+        "size": [0.0164, 0.0012, 0.0036],
+        "color": "#2a2620",
+        "name": "rail slot",
+        "group": "top"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0569, -0.031],
+        "size": [0.0164, 0.0012, 0.0036],
+        "color": "#2a2620",
+        "name": "rail slot",
+        "group": "top"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0569, -0.0395],
+        "size": [0.0164, 0.0012, 0.0036],
+        "color": "#2a2620",
+        "name": "rail slot",
+        "group": "top"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0569, -0.048],
+        "size": [0.0164, 0.0012, 0.0036],
+        "color": "#2a2620",
+        "name": "rail slot",
+        "group": "top"
       },
       {
         "type": "cylinder",
-        "pos": [0, 0.054, -0.07],
-        "radius": 0.006,
-        "height": 0.008,
-        "color": "#3a342a",
-        "pitch": 0,
-        "name": "elevation adjuster"
+        "pos": [0, 0.0535, -0.064],
+        "radius": 0.0064,
+        "height": 0.003,
+        "color": "#7a6a4c",
+        "sides": 8,
+        "name": "elevation boss",
+        "group": "adjusters"
       },
       {
         "type": "cylinder",
-        "pos": [0.019, 0.04, -0.07],
-        "radius": 0.006,
-        "height": 0.008,
+        "pos": [0, 0.0566, -0.064],
+        "radius": 0.0055,
+        "height": 0.0034,
         "color": "#3a342a",
-        "pitch": 0,
+        "sides": 12,
+        "name": "elevation cap",
+        "group": "adjusters"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0584, -0.064],
+        "size": [0.0058, 0.0004, 0.0007],
+        "color": "#2a2620",
+        "name": "elevation slot",
+        "group": "adjusters"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.019, 0.038, -0.064],
+        "radius": 0.0064,
+        "height": 0.003,
+        "color": "#7a6a4c",
+        "sides": 8,
         "roll": 90,
-        "name": "windage adjuster"
+        "name": "windage boss",
+        "group": "adjusters"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0221, 0.038, -0.064],
+        "radius": 0.0055,
+        "height": 0.0034,
+        "color": "#3a342a",
+        "sides": 12,
+        "roll": 90,
+        "name": "windage cap",
+        "group": "adjusters"
       },
       {
         "type": "box",
-        "pos": [-0.00298, 0.02694, 0.013],
-        "size": [0.00683, 0.0018, 0.004],
-        "color": "#8f7d5a",
-        "roll": 167.14286,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [-0.00835, 0.02952, 0.013],
-        "size": [0.00683, 0.0018, 0.004],
-        "color": "#8f7d5a",
-        "roll": 141.42857,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [-0.01207, 0.03419, 0.013],
-        "size": [0.00683, 0.0018, 0.004],
-        "color": "#8f7d5a",
-        "roll": 115.71429,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [-0.0134, 0.04, 0.013],
-        "size": [0.00683, 0.0018, 0.004],
-        "color": "#8f7d5a",
-        "roll": 90.0,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [-0.01207, 0.04581, 0.013],
-        "size": [0.00683, 0.0018, 0.004],
-        "color": "#8f7d5a",
-        "roll": 64.28571,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [-0.00835, 0.05048, 0.013],
-        "size": [0.00683, 0.0018, 0.004],
-        "color": "#8f7d5a",
-        "roll": 38.57143,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [-0.00298, 0.05306, 0.013],
-        "size": [0.00683, 0.0018, 0.004],
-        "color": "#8f7d5a",
-        "roll": 12.85714,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.00298, 0.05306, 0.013],
-        "size": [0.00683, 0.0018, 0.004],
-        "color": "#8f7d5a",
-        "roll": -12.85714,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.00835, 0.05048, 0.013],
-        "size": [0.00683, 0.0018, 0.004],
-        "color": "#8f7d5a",
-        "roll": -38.57143,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.01207, 0.04581, 0.013],
-        "size": [0.00683, 0.0018, 0.004],
-        "color": "#8f7d5a",
-        "roll": -64.28571,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.0134, 0.04, 0.013],
-        "size": [0.00683, 0.0018, 0.004],
-        "color": "#8f7d5a",
-        "roll": -90.0,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.01207, 0.03419, 0.013],
-        "size": [0.00683, 0.0018, 0.004],
-        "color": "#8f7d5a",
-        "roll": -115.71429,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.00835, 0.02952, 0.013],
-        "size": [0.00683, 0.0018, 0.004],
-        "color": "#8f7d5a",
-        "roll": -141.42857,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.00298, 0.02694, 0.013],
-        "size": [0.00683, 0.0018, 0.004],
-        "color": "#8f7d5a",
-        "roll": -167.14286,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [-0.01414, 0.0461, 0.0135],
-        "size": [0.00812, 0.0022, 0.004],
+        "pos": [0.0239, 0.038, -0.064],
+        "size": [0.0004, 0.0007, 0.0058],
         "color": "#2a2620",
-        "roll": 66.66667,
-        "name": "rubber eye guard",
-        "group": "eyepiece"
+        "name": "windage slot",
+        "group": "adjusters"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.02, 0.038, -0.032],
+        "radius": 0.0072,
+        "height": 0.005,
+        "color": "#3a342a",
+        "sides": 12,
+        "roll": 90,
+        "name": "illumination dial",
+        "group": "controls"
       },
       {
         "type": "box",
-        "pos": [-0.0099, 0.0518, 0.0135],
-        "size": [0.00812, 0.0022, 0.004],
+        "pos": [-0.02, 0.0416, -0.02576],
+        "size": [0.0044, 0.0012, 0.0012],
         "color": "#2a2620",
-        "roll": 40.0,
-        "name": "rubber eye guard",
-        "group": "eyepiece"
+        "pitch": -30,
+        "name": "knurl",
+        "group": "controls"
       },
       {
         "type": "box",
-        "pos": [-0.00355, 0.05498, 0.0135],
-        "size": [0.00812, 0.0022, 0.004],
+        "pos": [-0.02, 0.0452, -0.032],
+        "size": [0.0044, 0.0012, 0.0012],
         "color": "#2a2620",
-        "roll": 13.33333,
-        "name": "rubber eye guard",
-        "group": "eyepiece"
+        "pitch": -90,
+        "name": "knurl",
+        "group": "controls"
       },
       {
         "type": "box",
-        "pos": [0.00355, 0.05498, 0.0135],
-        "size": [0.00812, 0.0022, 0.004],
+        "pos": [-0.02, 0.0416, -0.03824],
+        "size": [0.0044, 0.0012, 0.0012],
         "color": "#2a2620",
-        "roll": -13.33333,
-        "name": "rubber eye guard",
-        "group": "eyepiece"
+        "pitch": -150,
+        "name": "knurl",
+        "group": "controls"
       },
       {
         "type": "box",
-        "pos": [0.0099, 0.0518, 0.0135],
-        "size": [0.00812, 0.0022, 0.004],
+        "pos": [-0.02, 0.0344, -0.03824],
+        "size": [0.0044, 0.0012, 0.0012],
         "color": "#2a2620",
-        "roll": -40.0,
-        "name": "rubber eye guard",
-        "group": "eyepiece"
+        "pitch": -210,
+        "name": "knurl",
+        "group": "controls"
       },
       {
         "type": "box",
-        "pos": [0.01414, 0.0461, 0.0135],
-        "size": [0.00812, 0.0022, 0.004],
+        "pos": [-0.02, 0.0308, -0.032],
+        "size": [0.0044, 0.0012, 0.0012],
         "color": "#2a2620",
-        "roll": -66.66667,
-        "name": "rubber eye guard",
-        "group": "eyepiece"
+        "pitch": -270,
+        "name": "knurl",
+        "group": "controls"
+      },
+      {
+        "type": "box",
+        "pos": [-0.02, 0.0344, -0.02576],
+        "size": [0.0044, 0.0012, 0.0012],
+        "color": "#2a2620",
+        "pitch": -330,
+        "name": "knurl",
+        "group": "controls"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.0228, 0.038, -0.032],
+        "radius": 0.0048,
+        "height": 0.0006,
+        "color": "#7a6a4c",
+        "sides": 12,
+        "roll": 90,
+        "name": "dial cap",
+        "group": "controls"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0232, 0.0412, -0.032],
+        "size": [0.0003, 0.0022, 0.0006],
+        "color": "#d8d0bc",
+        "name": "dial index",
+        "group": "controls"
+      },
+      {
+        "type": "slab",
+        "pos": [0, 0.006, -0.0475],
+        "size": [0.025, 0.012, 0.065],
+        "color": "#3a342a",
+        "corners": [0.002, 0.002, 0.002, 0.002],
+        "segments": 2,
+        "name": "mount",
+        "group": "mount"
+      },
+      {
+        "type": "loft",
+        "pos": [0, 0, 0],
+        "color": "#3a342a",
+        "sides": 4,
+        "rings": [
+          [0.0005, 0.003, 0.05, -0.014, -0.0475],
+          [0.0055, 0.0045, 0.054, -0.014750000000000001, -0.0475]
+        ],
+        "name": "dovetail jaw",
+        "group": "mount"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0141, 0.0042, -0.023],
+        "radius": 0.0034,
+        "height": 0.0032,
+        "color": "#5a5f65",
+        "sides": 8,
+        "roll": 90,
+        "name": "lever pivot",
+        "group": "mount"
+      },
+      {
+        "type": "slab",
+        "pos": [0.0141, 0.0042, -0.034],
+        "size": [0.0024, 0.0048, 0.022],
+        "color": "#7a6a4c",
+        "corners": [0.0015, 0.0015, 0.0015, 0.0015],
+        "segments": 2,
+        "name": "throw lever",
+        "group": "mount"
+      },
+      {
+        "type": "box",
+        "pos": [0.0155, 0.0042, -0.042],
+        "size": [0.0008, 0.003, 0.004],
+        "color": "#2a2620",
+        "name": "lever grip",
+        "group": "mount"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0141, 0.0042, -0.072],
+        "radius": 0.0034,
+        "height": 0.0032,
+        "color": "#5a5f65",
+        "sides": 8,
+        "roll": 90,
+        "name": "lever pivot",
+        "group": "mount"
+      },
+      {
+        "type": "slab",
+        "pos": [0.0141, 0.0042, -0.061],
+        "size": [0.0024, 0.0048, 0.022],
+        "color": "#7a6a4c",
+        "corners": [0.0015, 0.0015, 0.0015, 0.0015],
+        "segments": 2,
+        "name": "throw lever",
+        "group": "mount"
+      },
+      {
+        "type": "box",
+        "pos": [0.0155, 0.0042, -0.053],
+        "size": [0.0008, 0.003, 0.004],
+        "color": "#2a2620",
+        "name": "lever grip",
+        "group": "mount"
       }
-    ],
-    "sight": [0, 0.04, 0.015]
+    ]
   }
 }

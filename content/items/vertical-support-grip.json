@@ -1,0 +1,88 @@
+{
+  "formatVersion": 13,
+  "id": "vertical-support-grip",
+  "name": "Vertical support grip",
+  "shortName": "Vertical",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 3000,
+  "weight": 0.12,
+  "rarity": "common",
+  "slot": "foregrip",
+  "mods": {
+    "recoilUp": -6,
+    "recoilSide": -6,
+    "stability": -6
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "slab",
+        "pos": [0, -0.003, 0],
+        "size": [0.018, 0.006, 0.032],
+        "color": "#1d1f21",
+        "corners": [0.0015, 0.0015, 0.0015, 0.0015],
+        "segments": 1,
+        "name": "rail clamp",
+        "group": "clamp"
+      },
+      {
+        "type": "box",
+        "pos": [0.0094, -0.004, 0],
+        "size": [0.002, 0.004, 0.01],
+        "color": "#8d8f91",
+        "name": "clamp screw",
+        "group": "clamp"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.035, 0],
+        "radius": 0.0102,
+        "radiusTop": 0.0118,
+        "height": 0.058,
+        "color": "#2b2d2f",
+        "sides": 8,
+        "yaw": 22.5,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.018, -0.0106],
+        "size": [0.012, 0.004, 0.003],
+        "color": "#1d1f21",
+        "name": "finger ridge",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.032, -0.0106],
+        "size": [0.012, 0.004, 0.003],
+        "color": "#1d1f21",
+        "name": "finger ridge",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.046, -0.0106],
+        "size": [0.012, 0.004, 0.003],
+        "color": "#1d1f21",
+        "name": "finger ridge",
+        "group": "grip"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.066, 0],
+        "radius": 0.0112,
+        "radiusTop": 0.0112,
+        "height": 0.004,
+        "color": "#1d1f21",
+        "sides": 8,
+        "yaw": 22.5,
+        "name": "end cap",
+        "group": "grip"
+      }
+    ],
+    "support": [0, -0.034, 0]
+  }
+}

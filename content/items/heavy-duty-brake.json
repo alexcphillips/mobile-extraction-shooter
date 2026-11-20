@@ -1,0 +1,92 @@
+{
+  "formatVersion": 13,
+  "id": "heavy-duty-brake",
+  "name": "Heavy Duty muzzle brake",
+  "shortName": "HD brake",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 7500,
+  "weight": 0.26,
+  "rarity": "common",
+  "slot": "muzzle",
+  "classes": ["assault", "smg", "dmr", "sniper", "lmg"],
+  "mods": {
+    "recoilUp": -9,
+    "recoilSide": -9,
+    "handling": -6,
+    "loudness": 3
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.008],
+        "pitch": 90,
+        "radius": 0.0165,
+        "height": 0.016,
+        "color": "#1d1f21",
+        "name": "collar"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0, -0.046],
+        "size": [0.042, 0.038, 0.064],
+        "color": "#2b2d2f",
+        "name": "body"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0205, 0, -0.03],
+        "size": [0.006, 0.028, 0.016],
+        "color": "#141516",
+        "name": "side window"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0205, 0, -0.054],
+        "size": [0.006, 0.028, 0.016],
+        "color": "#141516",
+        "name": "side window"
+      },
+      {
+        "type": "box",
+        "pos": [0.0205, 0, -0.03],
+        "size": [0.006, 0.028, 0.016],
+        "color": "#141516",
+        "name": "side window"
+      },
+      {
+        "type": "box",
+        "pos": [0.0205, 0, -0.054],
+        "size": [0.006, 0.028, 0.016],
+        "color": "#141516",
+        "name": "side window"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0185, -0.03],
+        "size": [0.024, 0.006, 0.008],
+        "color": "#141516",
+        "name": "top vent"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0185, -0.054],
+        "size": [0.024, 0.006, 0.008],
+        "color": "#141516",
+        "name": "top vent"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.079],
+        "pitch": 90,
+        "radius": 0.008,
+        "height": 0.002,
+        "color": "#141516",
+        "sides": 6,
+        "name": "bore"
+      }
+    ],
+    "muzzle": [0, 0, -0.08]
+  }
+}

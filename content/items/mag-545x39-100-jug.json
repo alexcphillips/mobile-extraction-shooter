@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "mag-545x39-100-jug",
   "name": "Jug's 100-round 5.45×39 drum",
   "shortName": "Jug drum",
@@ -9,12 +9,12 @@
   "weight": 1,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["ak-74m", "aks-74u", "rpk-16"],
+  "platforms": ["ak"],
   "capacity": 100,
   "caliber": "5.45x39",
   "mods": {
     "reloadTime": 1.8,
-    "aimTime": 1.15
+    "handling": -10
   },
   "rows": 1,
   "model": {

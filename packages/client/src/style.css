@@ -851,6 +851,8 @@ body:is([data-input='desktop'], [data-input='gamepad'])
       [data-id='crouch'],
       [data-id='grenade'],
       [data-id='breathe'],
+      [data-id='sight'],
+      [data-id='laser'],
       [data-id='leanLeft'],
       [data-id='leanRight']
     )
@@ -993,8 +995,11 @@ body[data-input='gamepad'] .slot-num::after {
   font-size: 9px;
 }
 
-/* Only while aimed (hud/hands.ts, BW-2); aim only with a gun in hand (2026-11-16). */
+/* Only while aimed (hud/hands.ts, BW-2; sight only with a two-sight optic); aim only with a
+ * gun in hand (2026-11-16); laser only with a laser on the gun. */
 .control[data-id='breathe'].unaimed,
+.control[data-id='sight'].unaimed,
+.control[data-id='laser'].unarmed,
 .control[data-id='aim'].unarmed {
   display: none;
 }
@@ -1214,6 +1219,8 @@ body[data-input='gamepad'] .body-meds button.highlight {
 }
 
 #controls.editing .control[data-id='breathe'].unaimed,
+#controls.editing .control[data-id='sight'].unaimed,
+#controls.editing .control[data-id='laser'].unarmed,
 #controls.editing .control[data-id='aim'].unarmed {
   display: block;
 }
@@ -2526,6 +2533,18 @@ body:has(#raid:not([hidden])) #vitals {
   font-size: 11px;
 }
 
+/* What a choice does to the gun (WS-3), on its own line under the name. */
+.raid .inv-picker button {
+  flex-wrap: wrap;
+}
+
+.inv-picker button .inv-picker-changes {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+}
+
 /*
  * Landscape only: on a phone held upright, cover everything (the game pauses too). Above
  * every screen, the menu and the stash included (2026-11-06: without a z-index the menu,
@@ -3486,7 +3505,7 @@ body:has(#layout-bar) #menu {
 }
 
 /*
- * Stash page tabs and buying the next page, down the right of the grid (UX-3, 2026-11-08),
+ * Stash page tabs and the next page's +, down the right of the grid (UX-3, 2026-11-08),
  * staying in view under the search box while the page scrolls. PAGE_TABS in
  * ui/inventory-layout.ts is this strip's width and the gap before it.
  */
@@ -3503,7 +3522,6 @@ body:has(#layout-bar) #menu {
   display: flex;
   flex: none;
   flex-direction: column;
-  /* The buy button's confirm is wider than the strip: it reaches left, over the grid. */
   align-items: flex-end;
   gap: 4px;
   width: 28px;
@@ -3521,48 +3539,6 @@ body:has(#layout-bar) #menu {
   border-color: var(--ui-accent);
   background: #2c343b;
   color: #ffd27a;
-}
-
-/* The next page, locked (2026-11-09); a tap shows its tooltip to the left, over the grid. */
-.stash-lock-wrap {
-  position: relative;
-  display: flex;
-}
-
-.raid .stash-pages button.stash-lock {
-  display: grid;
-  place-items: center;
-  color: #8a96a0;
-}
-
-.raid .stash-pages button.stash-lock.tip-open {
-  color: #e8ecef;
-}
-
-.stash-lock-tip {
-  position: absolute;
-  top: 50%;
-  right: calc(100% + 6px);
-  transform: translateY(-50%);
-  padding: 5px 8px;
-  border: 1px solid var(--ui-line);
-  border-radius: 4px;
-  background: #1b2227;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);
-  color: #dfe5ea;
-  font-size: 12px;
-  white-space: nowrap;
-  pointer-events: none;
-}
-
-.raid .stash-pages button.stash-buy:disabled {
-  opacity: 0.45;
-}
-
-.raid .stash-pages button.stash-buy.confirm {
-  border-color: #6cff8a;
-  background: #6cff8a;
-  color: #000;
 }
 
 /* Dragging an item onto a page's tab puts it in that page. */
@@ -5508,6 +5484,56 @@ body.inv-dragging .item-details.panel {
   display: block;
   height: 100%;
   background: #e3a33a;
+}
+
+/* A part's change (WS-3): a bar from the middle, a point to a percent as on a gun's. */
+.stat-change {
+  position: relative;
+}
+
+.stat-change::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #5a6670;
+}
+
+.stat-change i {
+  position: absolute;
+  top: 0;
+}
+
+/* Whether a change helps the gun: more kick or noise is worse, more of the rest better. */
+.stat-good {
+  color: #7cc46b;
+}
+
+.stat-bad {
+  color: #e0675a;
+}
+
+.stat-good .stat-bar i {
+  background: #7cc46b;
+}
+
+.stat-bad .stat-bar i {
+  background: #e0675a;
+}
+
+/* A changed stat in a short line, in the part picker. */
+.stat-chip {
+  font-style: normal;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* Handling's parts, under its bar. */
+.item-details-stats div.sub dt {
+  padding-left: 12px;
+  font-size: 0.92em;
 }
 
 .item-details-stats dd {

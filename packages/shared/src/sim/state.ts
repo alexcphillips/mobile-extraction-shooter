@@ -112,6 +112,18 @@ export interface Character {
   aim: number;
   /** Seconds left taking out what's in its hands; it can't fire, swing or aim until 0. */
   draw: number;
+  /** Sprinting this tick (WS-4, set by moveCharacter): the gun is down. Missing is not. */
+  sprinting?: boolean;
+  /**
+   * How far its gun is back up after a sprint (WS-4), 0 to 1 over raiseTimeAt; it fires
+   * only at 1. Missing (older saves) is up.
+   */
+  raised?: number;
+  /**
+   * Its held gun's move speed fully aimed, as a scale (WS-4, aimMoveAt), set by
+   * updateWeapon for moveCharacter's next tick. Missing is 1.
+   */
+  aimMove?: number;
   /** Seconds until the knife can swing again. */
   swing: number;
   /** Seconds until it can throw another grenade; missing (as in older saves) is 0. */
@@ -353,6 +365,13 @@ export interface PlayerInput {
    * holds again with what's left. Ignored with the gun down.
    */
   breathe?: boolean;
+  /**
+   * Switch to the optic's other sight (a press): a two-sight optic's scope and the red dot
+   * riding on it (`optic.alt`). Ignored without one.
+   */
+  sight?: boolean;
+  /** Switch the gun's lasers on or off (a press). Ignored without one. */
+  laser?: boolean;
   /** Start using a carried med (a press), or stop using one. */
   use?: MedRef | 'cancel' | null;
   /** Open, close or unlock a door, by its index in world.doors: a press. */

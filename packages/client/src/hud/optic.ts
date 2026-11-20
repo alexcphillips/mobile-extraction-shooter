@@ -1,11 +1,45 @@
-import { SCOPE_RADIUS, type OpticDef, type ReticleShape } from '@mes/shared';
+import { SCOPE_RADIUS, type ReticleShape, type SightDef } from '@mes/shared';
 
 const SVG = 'http://www.w3.org/2000/svg';
-
-/** The camera's vertical field of view in degrees: from the hip, and aimed down irons or a red dot. */
-export const FOV = 70;
-export const AIM_FOV = 55;
 const DEG = Math.PI / 180;
+
+/**
+ * A PC (a fine pointer that hovers), read once at load so the view never jumps when the
+ * input changes mid-raid. False outside a browser (tests).
+ */
+const DESKTOP =
+  typeof matchMedia === 'function' && matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+/**
+ * The world camera's vertical field of view in degrees from the hip: a phone held sideways
+ * is so wide that 70 already reads as wide, and a PC's 16:9 gets the usual standard, about
+ * 90° across (the user's call: each its own).
+ */
+export const FOV = DESKTOP ? 60 : 70;
+/** Aimed down irons or a red dot. */
+export const AIM_FOV = 55;
+/**
+ * The first-person gun's own field of view from the hip (GM-1, the user's call for the
+ * Tarkov feel): much narrower than the world's, like a long lens, so the gun looks big and
+ * flat instead of slanting hard toward the middle of the screen. Aiming widens it to
+ * AIM_FOV, which every optic is built for, so aimed the gun and the world line up exactly.
+ */
+export const GUN_FOV = 42;
+
+/** The gun's field of view at `aim` (0 hip, 1 aimed); a scope looked through is aimed. */
+export function gunFov(aim: number, scoped = false): number {
+  return scoped ? AIM_FOV : GUN_FOV + (AIM_FOV - GUN_FOV) * aim;
+}
+
+/**
+ * How much bigger the world camera draws a point than the gun camera: a point on the gun
+ * at camera-space x, y lands on the same pixel in the world view at x and y times this
+ * (tracers and laser beams from the muzzle), and an angle the gun points at matches the
+ * world's at atan(tan(angle) / this).
+ */
+export function gunToWorld(worldFov: number, gunFovNow: number): number {
+  return Math.tan((worldFov / 2) * DEG) / Math.tan((gunFovNow / 2) * DEG);
+}
 
 /**
  * Looking through a scope (2026-11-18, the user's call: the whole view zooms, the gun and
@@ -64,12 +98,18 @@ function shapeSvg(s: ReticleShape): string {
  * and a dot as a soft disc (its gradient fades to clear). Plain fills and strokes, no SVG
  * filter, so moving the reticle each frame stays cheap on a phone.
  */
-function glowSvg(s: ReticleShape, color: string, wide: number, opacity: number): string {
+function glowSvg(
+  s: ReticleShape,
+  color: string,
+  gradient: string,
+  wide: number,
+  opacity: number,
+): string {
   const c = s.color ?? color;
   const o = `stroke-opacity="${opacity}"`;
   switch (s.type) {
     case 'dot':
-      return `<circle cx="${s.x}" cy="${s.y}" r="${s.r * (1 + wide)}" stroke="none" fill="url(#glow-${color.slice(1)})" />`;
+      return `<circle cx="${s.x}" cy="${s.y}" r="${s.r * (1 + wide)}" stroke="none" fill="url(#${gradient})" />`;
     case 'line':
       return `<line x1="${s.x1}" y1="${s.y1}" x2="${s.x2}" y2="${s.y2}" stroke="${c}" ${o} stroke-linecap="round" stroke-width="${s.width * wide}" />`;
     case 'ring':
@@ -84,21 +124,24 @@ function glowSvg(s: ReticleShape, color: string, wide: number, opacity: number):
 /**
  * The halo layers under an illuminated reticle: a wide faint one, a narrower brighter one.
  * Only the lit shapes glow, those in the reticle's color: a shape with its own color (the
- * black stadia under a red chevron) is etched, not lit.
+ * black stadia under a red chevron) is etched, not lit. A numeric `glow` scales every
+ * layer's opacity.
  */
-function glowMarkup(optic: OpticDef): string {
-  const { color } = optic.reticle;
+function glowMarkup(optic: SightDef): string {
+  const { color, glow } = optic.reticle;
+  const k = typeof glow === 'number' ? glow : 1;
   const shapes = optic.reticle.shapes.filter((s) => !s.color);
+  const id = `glow-${color.slice(1)}-${Math.round(k * 100)}`;
   const defs =
-    `<defs><radialGradient id="glow-${color.slice(1)}"><stop offset="0" stop-color="${color}" stop-opacity="0.55" />` +
-    `<stop offset="0.35" stop-color="${color}" stop-opacity="0.22" />` +
+    `<defs><radialGradient id="${id}"><stop offset="0" stop-color="${color}" stop-opacity="${0.55 * k}" />` +
+    `<stop offset="0.35" stop-color="${color}" stop-opacity="${0.22 * k}" />` +
     `<stop offset="1" stop-color="${color}" stop-opacity="0" /></radialGradient></defs>`;
   return (
     defs +
-    `<g>${shapes.map((s) => glowSvg(s, color, 3.2, 0.14)).join('')}</g>` +
+    `<g>${shapes.map((s) => glowSvg(s, color, id, 3.2, 0.14 * k)).join('')}</g>` +
     `<g>${shapes
       .filter((s) => s.type !== 'dot')
-      .map((s) => glowSvg(s, color, 1.8, 0.3))
+      .map((s) => glowSvg(s, color, id, 1.8, 0.3 * k))
       .join('')}</g>`
   );
 }
@@ -108,7 +151,7 @@ function glowMarkup(optic: OpticDef): string {
  * a scope's mask, an illuminated reticle's halo, then the reticle. The item editor draws its
  * preview with this too.
  */
-export function reticleMarkup(optic: OpticDef, throughScope = false): string {
+export function reticleMarkup(optic: SightDef, throughScope = false): string {
   const { color, shapes } = optic.reticle;
   const r = SCOPE_RADIUS;
   if (throughScope && optic.zoom > 1) {
@@ -147,7 +190,7 @@ export class OpticOverlay {
   private readonly svg: SVGSVGElement;
   private readonly picture: SVGGElement;
   private readonly offset: SVGTransform;
-  private optic: OpticDef | null = null;
+  private optic: SightDef | null = null;
   private shown = false;
 
   constructor(private readonly el: HTMLElement) {
@@ -163,7 +206,7 @@ export class OpticOverlay {
   }
 
   /** The optic on the gun, or null for iron sights. */
-  set(optic: OpticDef | null): void {
+  set(optic: SightDef | null): void {
     if (optic === this.optic) return;
     this.optic = optic;
     if (!optic) {

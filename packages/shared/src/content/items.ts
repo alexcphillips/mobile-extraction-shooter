@@ -6,14 +6,28 @@ import {
   meleeModelSchema,
   plainModelSchema,
   slotSchema,
+  kindSchema,
+  slotsOfKind,
+  type AttachmentKind,
   weaponModelSchema,
+  addVec,
   type AttachmentSlot,
   type ModelPart,
+  type Vec3,
+  vec3Schema,
 } from './models';
 import { placeholderModel } from './placeholder-models';
 import { idSchema } from './schema';
 
-export { ATTACHMENT_SLOTS, type AttachmentSlot } from './models';
+export {
+  ATTACHMENT_KINDS,
+  ATTACHMENT_SLOTS,
+  kindOfSlot,
+  noAttachments,
+  slotsOfKind,
+  type AttachmentKind,
+  type AttachmentSlot,
+} from './models';
 
 /*
  * Item files (content/items/<id>.json): every kind of item, its size in the inventory
@@ -24,6 +38,18 @@ const finite = z.number().refine(Number.isFinite, 'must be a finite number');
 const positive = finite.refine((n) => n > 0, 'must be greater than 0');
 const nonNegative = finite.refine((n) => n >= 0, 'must be 0 or more');
 const fraction = finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1');
+const points = z.number().min(0).max(100);
+/** A gun's eight stats as points (GUN_STATS, features/weapon-stats.md). */
+const statsSchema = z.strictObject({
+  recoilUp: points,
+  recoilSide: points,
+  stability: points,
+  handling: points,
+  hipFire: points,
+  accuracy: points,
+  range: points,
+  loudness: points,
+});
 
 /**
  * 2 (session 6b): weapons gained loudness and slots; attachments were added.
@@ -46,16 +72,18 @@ const fraction = finite.refine((n) => n >= 0 && n <= 1, 'must be from 0 to 1');
  * 12 (2026-11-13): guns' aim and draw times became one ergonomics (ERGO), and an
  *    attachment's `ergonomics` became points added to it; what it was (a recoil recovery
  *    multiplier) is now `recovery`.
+ * 13 (WS-1): a gun's shown stats became points in `stats` (GUN_STATS, STAT_CURVES), and an
+ *    attachment's mods became points added to them; recovery mods were dropped.
  */
-export const ITEM_FORMAT_VERSION = 12;
+export const ITEM_FORMAT_VERSION = 13;
 
 /**
- * Ergonomics (2026-11-13, the user's call, after Tarkov): one handling number per gun, 0 to
- * 100, higher handier, plus its attachments' points. It sets how long aiming in takes (and
- * the sights' lag when turning, which follows aim time), how long taking it out takes, and
- * how much the sights sway when aimed. Fitted so the guns' aim times stayed what they were.
+ * Handling (2026-11-13, the user's call, after Tarkov): one number per gun, 0 to 100, higher
+ * handier, plus its attachments' points. It sets how long aiming in takes (and the sights'
+ * lag when turning, which follows aim time), how long taking it out takes, and how much the
+ * sights sway when aimed. Fitted so the guns' aim times stayed what they were.
  */
-export const ERGO = {
+export const HANDLING = {
   /** Aim time at 0, and what each point takes off it, in seconds. */
   aimAt0: 0.55,
   aimPerPoint: 0.0045,
@@ -65,6 +93,27 @@ export const ERGO = {
   /** Aimed sway is 1× at this, and this much more (less) for each point below (above). */
   swayAt: 50,
   swayPerPoint: 0.008,
+  /**
+   * Reload time is the gun's own at its own handling, and this much shorter (longer) for each
+   * point its attachments add (take off).
+   */
+  reloadPerPoint: 0.005,
+  /**
+   * ADS move speed (WS-4): fully aimed, moving is times this at 0 points, plus
+   * aimMovePerPoint a point, between minAimMove and maxAimMove. The floor is the user's
+   * call: the heaviest builds can still strafe. Partly aimed, partly slowed.
+   */
+  aimMoveAt0: 0.35,
+  aimMovePerPoint: 0.006,
+  minAimMove: 0.5,
+  maxAimMove: 0.9,
+  /**
+   * Sprint-to-fire (WS-4): seconds for the gun to come up after a sprint at 0 points, and
+   * what each point takes off it. It doesn't fire until it's up.
+   */
+  raiseAt0: 0.5,
+  raisePerPoint: 0.004,
+  minRaise: 0.1,
   /** The fastest aim and draw, and the least and most sway, whatever the points. */
   minAim: 0.12,
   minDraw: 0.25,
@@ -72,20 +121,128 @@ export const ERGO = {
   maxSway: 1.6,
 } as const;
 
-/** Clamped to 0–100. */
-const ergo = (points: number): number => Math.max(0, Math.min(100, points));
-/** Seconds from the hip to fully aimed, for this much ergonomics. */
+/** Points clamped to 0–100. */
+export const clampPoints = (points: number): number => Math.max(0, Math.min(100, points));
+/** Seconds from the hip to fully aimed, for this much handling. */
 export const aimTimeAt = (points: number): number =>
-  Math.max(ERGO.minAim, ERGO.aimAt0 - ERGO.aimPerPoint * ergo(points));
-/** Seconds to take the gun out, for this much ergonomics. */
+  Math.max(HANDLING.minAim, HANDLING.aimAt0 - HANDLING.aimPerPoint * clampPoints(points));
+/** Seconds to take the gun out, for this much handling. */
 export const drawTimeAt = (points: number): number =>
-  Math.max(ERGO.minDraw, ERGO.drawAt0 - ERGO.drawPerPoint * ergo(points));
-/** Aimed sway's scale, for this much ergonomics. */
+  Math.max(HANDLING.minDraw, HANDLING.drawAt0 - HANDLING.drawPerPoint * clampPoints(points));
+/** Moving fully aimed, as a scale of the speed it would be, for this much handling (WS-4). */
+export const aimMoveAt = (points: number): number =>
+  Math.min(
+    HANDLING.maxAimMove,
+    Math.max(
+      HANDLING.minAimMove,
+      HANDLING.aimMoveAt0 + HANDLING.aimMovePerPoint * clampPoints(points),
+    ),
+  );
+/** Seconds from the end of a sprint until the gun can fire, for this much handling (WS-4). */
+export const raiseTimeAt = (points: number): number =>
+  Math.max(HANDLING.minRaise, HANDLING.raiseAt0 - HANDLING.raisePerPoint * clampPoints(points));
+/** Aimed sway's scale, for this much handling. */
 export const swayAt = (points: number): number =>
   Math.min(
-    ERGO.maxSway,
-    Math.max(ERGO.minSway, 1 + (ERGO.swayAt - ergo(points)) * ERGO.swayPerPoint),
+    HANDLING.maxSway,
+    Math.max(HANDLING.minSway, 1 + (HANDLING.swayAt - clampPoints(points)) * HANDLING.swayPerPoint),
   );
+
+/**
+ * Stability (the user's call): how much the view and the gun on screen jump with each shot,
+ * 0 to 100, higher steadier, plus its attachments' points. Display only: where shots go is
+ * recoil's, so a jump never moves the aim, it only hides the target for a moment. Aimed
+ * sway is handling's, not this.
+ */
+export const STABILITY = {
+  /** The jump is 1× at this, and this much more (less) for each point below (above). */
+  jumpAt: 50,
+  jumpPerPoint: 0.014,
+  /** The least and most jump, whatever the points. */
+  minJump: 0.3,
+  maxJump: 1.7,
+} as const;
+
+/** The view and gun's jump per shot, as a scale, for this much stability. */
+export const jumpAt = (points: number): number =>
+  Math.min(
+    STABILITY.maxJump,
+    Math.max(
+      STABILITY.minJump,
+      1 + (STABILITY.jumpAt - clampPoints(points)) * STABILITY.jumpPerPoint,
+    ),
+  );
+
+/** The eight stats every gun and part shows, in the order they're shown (features/weapon-stats.md). */
+export const GUN_STATS = [
+  'recoilUp',
+  'recoilSide',
+  'stability',
+  'handling',
+  'hipFire',
+  'accuracy',
+  'range',
+  'loudness',
+] as const;
+export type GunStat = (typeof GUN_STATS)[number];
+
+/**
+ * What a folded stock does to a gun (AT-1b, the user's call): some extra mobility and a
+ * shorter gun, at a significant cost in control, bad for mid-range fights. The same on every
+ * gun, factory stock or fitted, on top of the gun's own points (a folded fitted stock's own
+ * points don't apply).
+ */
+export const FOLDED_STOCK: Readonly<Partial<Record<GunStat, number>>> = {
+  handling: 5,
+  recoilUp: 16,
+  recoilSide: 16,
+  stability: -22,
+};
+
+/**
+ * The curves of the stats that aren't handling or stability (WS-1, the user's call): each
+ * runs from its value at 0 points to its value at 100 by the same share per point, so a
+ * part's points change any gun by the same share. Every curve spans 100×: a point is worth
+ * about 4.7%, and 15 points doubles or halves.
+ */
+export const STAT_CURVES = {
+  /** Kick up per round, in degrees. */
+  recoilUp: { at0: 0.08, at100: 8 },
+  /** Random kick sideways per round, up to this either way, in degrees. */
+  recoilSide: { at0: 0.03, at100: 3 },
+  /** The most a hip-fired shot strays, in degrees: higher is tighter. */
+  hipFire: { at0: 10, at100: 0.1 },
+  /** The most an aimed shot strays, in degrees: higher is tighter. */
+  accuracy: { at0: 2, at100: 0.02 },
+  /** Where shots stop, in meters; points above the gun's own also stretch its round's falloff. */
+  range: { at0: 10, at100: 1000 },
+  /** How far away a shot is heard, in meters. */
+  loudness: { at0: 5, at100: 500 },
+} as const;
+export type CurvedStat = keyof typeof STAT_CURVES;
+
+/**
+ * A pellet round's `pelletSpread` is its spread from a gun at this many accuracy points; more
+ * points tighten it (and fewer widen it) by the same share as aimed spread (AT-3: a choke's
+ * accuracy works on the pellets, which dwarf a gun's aimed spread).
+ */
+export const PELLET_SPREAD_AT = 35;
+
+/** What this many points of a curved stat comes to (clamped to 0–100). */
+export function statAt(stat: CurvedStat, points: number): number {
+  const c = STAT_CURVES[stat];
+  return c.at0 * (c.at100 / c.at0) ** (clampPoints(points) / 100);
+}
+/** The points a value of a curved stat sits at, unclamped and unrounded. */
+export function pointsFor(stat: CurvedStat, value: number): number {
+  const c = STAT_CURVES[stat];
+  return (100 * Math.log(value / c.at0)) / Math.log(c.at100 / c.at0);
+}
+/** The points that multiply a curved stat by this (a change, not a level). */
+export function pointsForScale(stat: CurvedStat, scale: number): number {
+  const c = STAT_CURVES[stat];
+  return (100 * Math.log(scale)) / Math.log(c.at100 / c.at0);
+}
 
 /**
  * Ammo and armor levels (a round's from its Tarkov penetration), 1 to LEVELS: gray, green, blue, purple,
@@ -261,6 +418,11 @@ const weaponSchema = z
      * assault.
      */
     class: z.enum(WEAPON_CLASSES).optional(),
+    /**
+     * Its family (AT-1): guns whose parts swap, such as ar15 or ak. An attachment that
+     * lists the platform fits it (fitsIn). Left out, it's on no platform.
+     */
+    platform: idSchema.optional(),
     /** auto keeps firing while the trigger is held; semi fires once per pull. */
     fireMode: z.enum(['auto', 'semi']),
     /** Rounds per minute; for semi, the fastest it can be pulled. */
@@ -278,37 +440,42 @@ const weaponSchema = z
     feed: z.literal('magazine').optional(),
     reloadTime: positive,
     /**
-     * Handling, 0 to 100 (ERGO, 2026-11-13): aim time, draw time and aimed sway, with its
-     * attachments' points added.
+     * Its eight stats as points, 0 to 100 (GUN_STATS): attachments add theirs on top.
+     * Handling and stability have their own curves, the rest STAT_CURVES.
      */
-    ergonomics: z.number().min(0).max(100),
-    /** Shots stop here. */
-    range: positive,
-    /** How far away a shot can be heard (by AI, from session 7). Suppressors shrink it. */
-    loudness: positive,
+    stats: statsSchema,
+    /**
+     * Its own barrel against the one its round's falloff is set for: how far the round keeps
+     * its damage, as a scale (a carbine's short barrel below 1, an LMG's long one above).
+     * Left out, 1. A fitted barrel's range points move it from there.
+     */
+    barrelRange: positive.optional(),
     /**
      * A built-in suppressor that can't come off (the AS VAL, 2026-11-05): no muzzle flash.
      * Its loudness and shot sound are already the suppressed ones, and it has no muzzle slot.
      */
     suppressed: z.literal(true).optional(),
     /**
-     * The attachments a new one comes with, by slot (WF-1, 2026-11-12: its own stock), from
-     * a vendor, loot or a loadout. Each must fit it. Loadouts may put others on top.
+     * What a new one comes with (AT-1b): its magazine, and nothing else, from a vendor, loot
+     * or a loadout. It must fit it. Loadouts may put others on.
      */
-    defaults: z.partialRecord(slotSchema, idSchema).optional(),
+    defaults: z.partialRecord(z.literal('magazine'), idSchema).optional(),
+    /**
+     * Its factory stock (AT-1b), drawn by its model (parts hidden by a fitted stock): not
+     * an item, no points of its own, can't come off. The cells it takes of the gun's size,
+     * and folded (`foldedLength`, 0 if left out). It folds by the gun's stock mount
+     * (`model.stockFold`) or its own (`model.factoryFold`).
+     */
+    stock: z
+      .strictObject({ length: z.int().min(0), foldedLength: z.int().min(0).optional() })
+      .optional(),
     /** The attachment slots it has, each at most once. None if left out. */
     slots: z
       .array(slotSchema)
       .refine((a) => new Set(a).size === a.length, 'lists a slot twice')
       .optional(),
-    /** The most a shot strays from where you aim, in degrees, from the hip and aimed. */
-    hipSpread: nonNegative,
-    aimSpread: nonNegative,
+    /** Its recoil's hidden traits (features/weapon-stats.md): no attachment changes these. */
     recoil: z.strictObject({
-      /** Kick upwards per round. */
-      up: nonNegative,
-      /** Random kick sideways per round, up to this much either way. */
-      side: nonNegative,
       /**
        * How fast the gun reaches each kick: its spring's frequency, per second. Higher is
        * snappier; around 40 lands a kick in about a tenth of a second.
@@ -369,6 +536,27 @@ const weaponSchema = z
         });
       }
     }
+    if (w.stock && !slots.includes('stock')) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'a factory stock needs a stock slot',
+        path: ['stock'],
+      });
+    }
+    if (w.model.factoryFold && !w.stock) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'only a factory stock folds by itself (stock)',
+        path: ['model', 'factoryFold'],
+      });
+    }
+    if (w.stock && w.stock.length > w.size[0]) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'its factory stock is longer than the gun',
+        path: ['stock', 'length'],
+      });
+    }
     if (w.model.stockFold && !slots.includes('stock')) {
       ctx.addIssue({
         code: 'custom',
@@ -407,8 +595,21 @@ const ammoSchema = z
     bleedChance: fraction,
     /** Shotgun shells: one round fires this many pellets, each its own hit. Defaults to 1. */
     pellets: z.int().min(2).optional(),
-    /** With pellets: the most each pellet strays from the shot's line, in degrees. */
+    /**
+     * With pellets: the most each pellet strays from the shot's line, in degrees, from a gun
+     * at PELLET_SPREAD_AT accuracy points.
+     */
     pelletSpread: nonNegative.optional(),
+    /**
+     * How its damage falls off with distance (falloffAt): all of it out to `from` meters,
+     * then down in a straight line to `floor` (a share of it) at `to`, and `floor` beyond.
+     * Armor damage falls the same; penetration level doesn't. Left out, none. A gun's
+     * `range` mods (a barrel's) stretch both distances.
+     */
+    falloff: z
+      .strictObject({ from: nonNegative, to: positive, floor: fraction })
+      .refine((f) => f.to > f.from, { message: 'to must be past from', path: ['to'] })
+      .optional(),
     ...plainModel,
   })
   .refine((a) => (a.pellets === undefined) === (a.pelletSpread === undefined), {
@@ -691,38 +892,73 @@ export const SCOPE_RADIUS = 46;
 export const SCOPE_LENS = 0.017;
 
 /**
- * Stat changes an attachment makes. Each is a multiplier except magazine, which is extra
- * rounds. A gun's stats are its own with every attachment's changes applied.
+ * Stat changes an attachment makes. The eight stats (GUN_STATS) are points added to the gun's,
+ * less than 0 to take them off. The exceptions to handling a part can name (aimTime,
+ * reloadTime) multiply; magazine is extra rounds.
  */
 const modsSchema = z.strictObject({
-  /** Hip and aimed spread. */
-  spread: positive.optional(),
-  /** Hip spread only, on top of spread (lasers, 2026-11-11). */
-  hipSpread: positive.optional(),
-  /** Kick up and sideways. */
-  recoil: positive.optional(),
-  /** Kick up only, and sideways only, on top of recoil. */
-  recoilUp: positive.optional(),
-  recoilSide: positive.optional(),
-  /** Multiplies how fast recoil wears off (above 1 recovers faster). Was `ergonomics` before 12. */
-  recovery: positive.optional(),
-  /** Ergonomics points added to the gun's (ERGO), less than 0 to take them off. */
-  ergonomics: finite.optional(),
-  /** Multiplies aim time after ergonomics (a magnified scope's slower look through it). */
+  recoilUp: finite.optional(),
+  recoilSide: finite.optional(),
+  stability: finite.optional(),
+  handling: finite.optional(),
+  hipFire: finite.optional(),
+  accuracy: finite.optional(),
+  /** Moves where shots stop and stretches its round's falloff by the same share. */
+  range: finite.optional(),
+  loudness: finite.optional(),
+  /** Multiplies aim time after handling (a magnified optic's slower look through it). */
   aimTime: positive.optional(),
+  /** Multiplies reload time after handling (a large magazine's slower reload). */
   reloadTime: positive.optional(),
-  loudness: positive.optional(),
   /** Extra rounds in the gun. */
   magazine: z.int().min(1).optional(),
+});
+
+/** One sight of an optic: how it looks through it. */
+const sightSchema = z.strictObject({
+  /** Magnification. Above 1 is a scope: the whole view zooms while looking through it. */
+  zoom: finite.refine((n) => n >= 1, 'must be 1 or more'),
+  /**
+   * Scopes (2026-11-18): the eyepiece's clear radius in meters, at its rear face (the
+   * model's sight point). Looking through, the eye comes up to it and the reticle
+   * fills it. Left out, SCOPE_LENS.
+   */
+  lens: positive.optional(),
+  /**
+   * How much of the screen the lens fills aimed, as a % of the screen height from the
+   * center (radius). Scopes: looking through (a compact combat sight's small eyepiece,
+   * a sniper scope's big one); left out, SCOPE_LENS_FILL. Sights without zoom: their
+   * window (the `lens` radius) is brought this close to the eye (a hoop sight held up
+   * close); left out, they sit where iron sights do. A dot riding on a scope fills
+   * little, so it's held far enough out that the scope's eyepiece stays ahead of the eye.
+   */
+  fill: z.number().min(5).max(48).optional(),
+  reticle: z.strictObject({
+    color: hexColor,
+    shapes: z.array(reticleShapeSchema).min(1),
+    /**
+     * An illuminated reticle (2026-11-18): a soft halo under its shapes, as a lit dot
+     * or ring looks through a red dot or holographic sight. Left out, none. A number
+     * is its strength (1 is `true`'s), for a lit reticle that should glow less.
+     */
+    glow: z.union([z.boolean(), z.number().min(0.1).max(1)]).optional(),
+  }),
 });
 
 const attachmentSchema = z
   .strictObject({
     ...common,
     type: z.literal('attachment'),
-    slot: slotSchema,
-    /** The guns it fits. Left out, it fits every gun with its slot. */
+    /** Its kind: which gun slots it goes in (slotsOfKind: a rail item on either rail). */
+    slot: kindSchema,
+    /**
+     * The guns it fits: those in `weapons`, those on a platform in `platforms` (AT-1), and
+     * those of a class in `classes` (AT-3: rifle muzzles skip shotguns, shotgun ones fit only
+     * them). With none of the three, it fits every gun with its slot.
+     */
     weapons: z.array(idSchema).min(1).optional(),
+    platforms: z.array(idSchema).min(1).optional(),
+    classes: z.array(z.enum(WEAPON_CLASSES)).min(1).optional(),
     mods: modsSchema.optional(),
     /**
      * Magazines (MG-1): the rounds it holds and their caliber, so it's a magazine item that
@@ -731,41 +967,29 @@ const attachmentSchema = z
      */
     capacity: z.int().min(1).optional(),
     caliber: z.string().min(1).optional(),
-    /** Optics only: how it looks through it. */
-    optic: z
-      .strictObject({
-        /** Magnification. Above 1 is a scope: the whole view zooms while looking through it. */
-        zoom: finite.refine((n) => n >= 1, 'must be 1 or more'),
+    /**
+     * Optics only: how it looks through it. `alt` is a second sight on the same optic (a
+     * small red dot riding on a scope), with its own sight point in the model; the gun's
+     * `sight` says which is in use (sightsOf).
+     */
+    optic: sightSchema
+      .extend({
+        alt: sightSchema.extend({ sight: vec3Schema }).optional(),
         /**
-         * Scopes (2026-11-18): the eyepiece's clear radius in meters, at its rear face (the
-         * model's sight point). Looking through, the eye comes up to it and the reticle
-         * fills it. Left out, SCOPE_LENS.
+         * Offset optics only: degrees the gun rolls (to the left, + rolls its top left) to
+         * bring this sight up level, as it sits that far round the rail to the right.
          */
-        lens: positive.optional(),
-        /**
-         * How much of the screen the lens fills aimed, as a % of the screen height from the
-         * center (radius). Scopes: looking through (a compact combat sight's small eyepiece,
-         * a sniper scope's big one); left out, SCOPE_LENS_FILL. Sights without zoom: their
-         * window (the `lens` radius) is brought this close to the eye (a hoop sight held up
-         * close); left out, they sit where iron sights do.
-         */
-        fill: z.number().min(10).max(48).optional(),
-        reticle: z.strictObject({
-          color: hexColor,
-          shapes: z.array(reticleShapeSchema).min(1),
-          /**
-           * An illuminated reticle (2026-11-18): a soft halo under its shapes, as a lit dot
-           * or ring looks through a red dot or holographic sight. Left out, none.
-           */
-          glow: z.boolean().optional(),
-        }),
+        cant: finite
+          .refine((n) => n !== 0 && Math.abs(n) <= 90, 'between -90 and 90, not 0')
+          .optional(),
       })
       .optional(),
     /**
-     * Stocks only (WF-1, 2026-11-12): how many grid cells it adds to the gun's length
-     * (its width, unrotated), and folded (`foldedLength`, 0 if left out). A folded stock
-     * counts as not there: none of its mods apply. It folds if its model has a fold, or
-     * the gun's stock mount does.
+     * Stocks only (WF-1, 2026-11-12): how many grid cells it takes on the gun's length
+     * (its width, unrotated), and folded (`foldedLength`, 0 if left out), in place of the
+     * gun's factory stock's (AT-1b). A folded stock counts as not there: none of its mods
+     * apply, and FOLDED_STOCK does. It folds if its model has a fold, or the gun's stock
+     * mount does.
      */
     stock: z
       .strictObject({
@@ -786,8 +1010,8 @@ const attachmentSchema = z
     message: 'only a magazine adds rows',
     path: ['rows'],
   })
-  .refine((a) => a.columns === undefined || a.slot === 'muzzle', {
-    message: 'only a muzzle device adds columns',
+  .refine((a) => a.columns === undefined || a.slot === 'muzzle' || a.slot === 'barrel', {
+    message: 'only a muzzle device or a barrel adds columns',
     path: ['columns'],
   })
   .refine((a) => (a.capacity === undefined) === (a.caliber === undefined), {
@@ -798,8 +1022,8 @@ const attachmentSchema = z
     message: 'only a magazine-slot part holds rounds, and then it adds none (mods.magazine)',
     path: ['capacity'],
   })
-  .refine((a) => a.capacity === undefined || !!a.weapons, {
-    message: 'a magazine lists the guns it fits (weapons)',
+  .refine((a) => a.capacity === undefined || !!a.weapons || !!a.platforms, {
+    message: 'a magazine lists the guns it fits (weapons or platforms)',
     path: ['weapons'],
   })
   .refine((a) => (a.slot === 'stock') === !!a.stock, {
@@ -810,18 +1034,35 @@ const attachmentSchema = z
     message: 'only a stock folds',
     path: ['model', 'fold'],
   })
-  .refine((a) => (a.slot === 'optic') === !!a.optic, {
+  .refine((a) => isOpticKind(a.slot) === !!a.optic, {
     message: 'optics need an optic section, and only optics may have one',
     path: ['optic'],
   })
-  .refine((a) => (a.slot === 'optic') === !!a.model.sight, {
+  .refine((a) => isOpticKind(a.slot) === !!a.model.sight, {
     message: 'optics need a sight point, and only optics may have one',
     path: ['model', 'sight'],
   })
-  .refine((a) => (a.slot === 'muzzle') === !!a.model.muzzle, {
-    message: 'muzzle devices need a muzzle point, and only they may have one',
+  .refine((a) => (a.slot === 'offsetOptic') === (a.optic?.cant !== undefined), {
+    message: 'an offset optic needs its cant, and only an offset optic may have one',
+    path: ['optic', 'cant'],
+  })
+  .refine((a) => (a.slot === 'muzzle' || a.slot === 'barrel') === !!a.model.muzzle, {
+    message: 'muzzle devices and barrels need a muzzle point, and only they may have one',
     path: ['model', 'muzzle'],
+  })
+  .refine((a) => (a.slot === 'foregrip') === !!a.model.support, {
+    message: 'foregrips need a support point, and only they may have one',
+    path: ['model', 'support'],
+  })
+  .refine((a) => a.slot === 'grip' || !a.model.grip, {
+    message: 'only a rear grip has a grip point',
+    path: ['model', 'grip'],
   });
+
+/** Kinds looked through: an optic, or an offset optic on the side of the rail. */
+function isOpticKind(kind: AttachmentKind): boolean {
+  return kind === 'optic' || kind === 'offsetOptic';
+}
 
 /** What a med does. Each use treats one zone, the first in TREATMENT_ORDER that needs it. */
 export const MED_EFFECTS = ['bandage', 'splint', 'surgery', 'heal'] as const;
@@ -1130,6 +1371,9 @@ export function mountsOn(helmet: ItemDef, part: ItemDef): boolean {
 }
 export type AttachmentMods = z.infer<typeof modsSchema>;
 export type OpticDef = NonNullable<AttachmentDef['optic']>;
+/** One sight of an optic: the optic itself, or its `alt`. */
+export type SightDef = z.infer<typeof sightSchema>;
+
 export type ReticleShape = z.infer<typeof reticleShapeSchema>;
 export type { ModelPart };
 
@@ -1215,13 +1459,16 @@ export const ITEM_FORMAT: ContentFormat<ItemDef> = {
     // Weights, guessed from the type (the content files set their own). An older file
     // given its weight by hand keeps it.
     10: (doc) => ({ ...doc, weight: doc.weight ?? weightGuess(doc.type) }),
-    // Ergonomics from the aim time (ERGO's fit), and the old ergonomics multiplier as
+    // Ergonomics from the aim time (HANDLING's fit), and the old ergonomics multiplier as
     // recovery. A stock's aim time becomes points, as the content's were converted.
     11: (doc) => {
       if (doc.type === 'weapon') {
         const { aimTime, drawTime: _, ...rest } = doc as { aimTime?: number; drawTime?: number };
         if (aimTime === undefined) return rest;
-        return { ...rest, ergonomics: Math.round((ERGO.aimAt0 - aimTime) / ERGO.aimPerPoint) };
+        return {
+          ...rest,
+          ergonomics: Math.round((HANDLING.aimAt0 - aimTime) / HANDLING.aimPerPoint),
+        };
       }
       if (doc.type !== 'attachment' || !doc.mods) return doc;
       const { ergonomics, aimTime, ...mods } = doc.mods as Record<string, number | undefined>;
@@ -1232,6 +1479,66 @@ export const ITEM_FORMAT: ContentFormat<ItemDef> = {
         out.ergonomics = Math.round((1 - aimTime) * 60);
       else if (aimTime !== undefined) out.aimTime = aimTime;
       return { ...doc, mods: out };
+    },
+    // Points (WS-1): a gun's values at the points they sit at on the curves, and an
+    // attachment's multipliers as the points that make the same change, both rounded.
+    // Recovery mods are dropped: recovery is the gun's alone.
+    12: (doc) => {
+      const r = Math.round;
+      // A gun already in points (a test's, given an older version) passes as it is.
+      if (doc.type === 'weapon' && !doc.stats) {
+        const { ergonomics, stability, range, loudness, hipSpread, aimSpread, recoil, ...rest } =
+          doc as Record<string, unknown> & {
+            ergonomics: number;
+            stability?: number;
+            range: number;
+            loudness: number;
+            hipSpread: number;
+            aimSpread: number;
+            recoil: { up: number; side: number };
+          };
+        const { up, side, ...hidden } = recoil;
+        const at = (stat: CurvedStat, v: number) => clampPoints(r(pointsFor(stat, v)));
+        return {
+          ...rest,
+          stats: {
+            recoilUp: at('recoilUp', up),
+            recoilSide: at('recoilSide', side),
+            stability: stability ?? 50,
+            handling: ergonomics,
+            hipFire: at('hipFire', hipSpread),
+            accuracy: at('accuracy', aimSpread),
+            range: at('range', range),
+            loudness: at('loudness', loudness),
+          },
+          recoil: hidden,
+        };
+      }
+      if (doc.type !== 'attachment' || !doc.mods) return doc;
+      const m = doc.mods as Record<string, number | undefined>;
+      const out: Record<string, number> = {};
+      const add = (stat: string, n: number) => {
+        if (r(n) !== 0) out[stat] = r(n);
+      };
+      const scale = (stat: CurvedStat, ...ks: (string | undefined)[]) =>
+        add(
+          stat,
+          pointsForScale(
+            stat,
+            ks.reduce((p, k) => p * (m[k!] ?? 1), 1),
+          ),
+        );
+      scale('recoilUp', 'recoil', 'recoilUp');
+      scale('recoilSide', 'recoil', 'recoilSide');
+      if (m.stability) out.stability = m.stability;
+      if (m.ergonomics) out.handling = m.ergonomics;
+      scale('hipFire', 'spread', 'hipSpread');
+      scale('accuracy', 'spread');
+      scale('range', 'range');
+      scale('loudness', 'loudness');
+      for (const k of ['aimTime', 'reloadTime', 'magazine']) if (m[k] !== undefined) out[k] = m[k]!;
+      const { mods: _, ...rest } = doc;
+      return Object.keys(out).length ? { ...rest, mods: out } : rest;
     },
   },
 };
@@ -1313,24 +1620,29 @@ function itemOf<T extends ItemDef['type']>(
 export const weaponDef = (items: ItemDb, id: string): WeaponDef => itemOf(items, id, 'weapon');
 
 /**
- * A gun's ergonomics with its attachments' points (ERGO): a folded stock counts as not
- * there (WF-1). Clamped to 0–100.
+ * One of a gun's stats as points with its attachments' added, clamped to 0–100. A folded
+ * stock counts as not there (WF-1) and adds FOLDED_STOCK's (AT-1b); a laser switched off
+ * counts as not there.
  */
-export function ergonomicsOf(
+export function pointsOf(
   items: ItemDb,
   w: {
     item: string;
     attachments: Readonly<Partial<Record<AttachmentSlot, string | null>>>;
     folded?: boolean | undefined;
+    laserOff?: boolean | undefined;
   },
+  stat: GunStat,
 ): number {
-  let points = weaponDef(items, w.item).ergonomics;
+  let points = weaponDef(items, w.item).stats[stat] + (w.folded ? (FOLDED_STOCK[stat] ?? 0) : 0);
   for (const slot of ATTACHMENT_SLOTS) {
     const id = w.attachments[slot];
     if (!id || (slot === 'stock' && w.folded)) continue;
-    points += attachmentDef(items, id).mods?.ergonomics ?? 0;
+    const a = attachmentDef(items, id);
+    if (w.laserOff && a.model.laser) continue;
+    points += a.mods?.[stat] ?? 0;
   }
-  return Math.max(0, Math.min(100, points));
+  return clampPoints(points);
 }
 export const ammoDef = (items: ItemDb, id: string): AmmoDef => itemOf(items, id, 'ammo');
 export const armorDef = (items: ItemDb, id: string): ArmorDef => itemOf(items, id, 'armor');
@@ -1362,6 +1674,60 @@ export const levelRarity = (level: number): Rarity =>
 export const attachmentDef = (items: ItemDb, id: string): AttachmentDef =>
   itemOf(items, id, 'attachment');
 export const medDef = (items: ItemDb, id: string): MedDef => itemOf(items, id, 'med');
+
+/**
+ * One way to aim a gun: what's looked through (`look`, null for the iron sights) and where
+ * the eye lines up, in the gun's frame. The sight button steps through a gun's (sightsOf).
+ */
+export interface SightChoice {
+  look: SightDef | null;
+  point: Vec3;
+  /** Degrees the gun rolls (its top to the left) to bring this sight up level: 0 but canted. */
+  roll: number;
+}
+
+/**
+ * The ways a gun can be aimed, in the order the sight button steps through them: the optic
+ * (or the iron sights without one), the optic's second sight (`optic.alt`, a red dot riding
+ * on a scope), then an offset optic on the side of the rail, with the gun rolled to it.
+ */
+export function sightsOf(
+  gun: { item: string; attachments?: Partial<Record<AttachmentSlot, string | null>> },
+  items: ItemDb,
+): SightChoice[] {
+  const model = weaponDef(items, gun.item).model;
+  const out: SightChoice[] = [];
+  const id = gun.attachments?.optic;
+  const mount = model.mounts?.optic;
+  if (id && mount) {
+    const def = attachmentDef(items, id);
+    const own = def.model.sight ? addVec(mount, def.model.sight) : model.sight;
+    out.push({ look: def.optic ?? null, point: own, roll: 0 });
+    if (def.optic?.alt)
+      out.push({ look: def.optic.alt, point: addVec(mount, def.optic.alt.sight), roll: 0 });
+  } else out.push({ look: null, point: model.sight, roll: 0 });
+  const offset = gun.attachments?.offsetOptic;
+  const side = model.mounts?.offsetOptic;
+  if (offset && side) {
+    const def = attachmentDef(items, offset);
+    if (def.optic && def.model.sight)
+      out.push({
+        look: def.optic,
+        point: addVec(side, def.model.sight),
+        roll: def.optic.cant ?? 0,
+      });
+  }
+  return out;
+}
+
+/** The sight a gun is aimed with: its `sight` index into sightsOf, the first if out of range. */
+export function currentSight(
+  gun: Parameters<typeof sightsOf>[0] & { sight?: number },
+  items: ItemDb,
+): SightChoice {
+  const all = sightsOf(gun, items);
+  return all[gun.sight ?? 0] ?? all[0]!;
+}
 export const meleeDef = (items: ItemDb, id: string): MeleeDef => itemOf(items, id, 'melee');
 export const grenadeDef = (items: ItemDb, id: string): GrenadeDef => itemOf(items, id, 'grenade');
 /** What a grenade does: its effect, a frag if it doesn't say. */
@@ -1382,12 +1748,71 @@ export function stackSize(def: ItemDef): number {
   return (def.type === 'ammo' || def.type === 'loot') && def.stack ? def.stack : 1;
 }
 
-/** Whether an attachment can go on a gun: the gun has its slot, and it's on its list if any. */
-export function fits(weapon: WeaponDef, attachment: AttachmentDef): boolean {
+/** Whether an attachment can go on a gun in any slot of its kind (fitsIn). */
+export function fits(items: ItemDb, weapon: WeaponDef, attachment: AttachmentDef): boolean {
+  return slotsOfKind(attachment.slot).some((slot) => fitsIn(items, weapon, attachment, slot));
+}
+
+/**
+ * Where each of these parts goes on the gun, in order: the first slot of its kind it fits
+ * that an earlier one hasn't taken (two lasers go on both rails), or null where none is
+ * left or it doesn't fit.
+ */
+export function placeParts(
+  weapon: WeaponDef,
+  items: ItemDb,
+  ids: readonly string[],
+): (AttachmentSlot | null)[] {
+  const taken = new Set<AttachmentSlot>();
+  return ids.map((id) => {
+    const a = items.get(id);
+    if (a?.type !== 'attachment') return null;
+    const slot =
+      slotsOfKind(a.slot).find((s) => !taken.has(s) && fitsIn(items, weapon, a, s)) ?? null;
+    if (slot) taken.add(slot);
+    return slot;
+  });
+}
+
+/**
+ * Whether an attachment goes in this slot of the gun: the slot is its kind's and the gun
+ * has it, the gun is on its lists if it has any (listsGun), and a magazine-slot part can
+ * feed it (feedsGun).
+ */
+export function fitsIn(
+  items: ItemDb,
+  weapon: WeaponDef,
+  attachment: AttachmentDef,
+  slot: AttachmentSlot,
+): boolean {
   return (
-    !!weapon.slots?.includes(attachment.slot) &&
-    (!attachment.weapons || attachment.weapons.includes(weapon.id))
+    slotsOfKind(attachment.slot).includes(slot) &&
+    !!weapon.slots?.includes(slot) &&
+    listsGun(weapon, attachment) &&
+    feedsGun(items, weapon, attachment)
   );
+}
+
+/** Whether an attachment's lists take in a gun: by id, platform or class, or it has no lists. */
+export function listsGun(weapon: WeaponDef, attachment: AttachmentDef): boolean {
+  const { weapons, platforms, classes } = attachment;
+  if (!weapons && !platforms && !classes) return true;
+  return (
+    !!weapons?.includes(weapon.id) ||
+    (!!weapon.platform && !!platforms?.includes(weapon.platform)) ||
+    (!!weapon.class && !!classes?.includes(weapon.class))
+  );
+}
+
+/**
+ * Whether a magazine-slot part suits the gun's feed (AT-1): a magazine goes in a
+ * magazine-fed gun of its caliber, so a 5.45 magazine on the ak platform skips the AKM;
+ * an extension goes in a gun that isn't. Other parts always do.
+ */
+function feedsGun(items: ItemDb, weapon: WeaponDef, attachment: AttachmentDef): boolean {
+  if (attachment.slot !== 'magazine') return true;
+  if (!isMagazine(attachment)) return !magazineFed(weapon);
+  return magazineFed(weapon) && attachment.caliber === caliberOf(items, weapon);
 }
 
 /** Whether an item is a magazine that holds its own rounds (MG-1). */
@@ -1400,20 +1825,25 @@ export function isMagazine(
 /** Whether a gun takes magazine items (MG-1). */
 export const magazineFed = (def: WeaponDef): boolean => def.feed === 'magazine';
 
-/** Whether the stock on a gun folds: the stock folds by itself, or the gun's mount does. */
+/**
+ * Whether the stock on a gun folds: the gun's mount folds any stock; otherwise a fitted
+ * stock folds by itself, or with none fitted the factory stock does (AT-1b).
+ */
 export function stockFolds(
   items: ItemDb,
   gun: { item: string; attachments?: Record<AttachmentSlot, string | null> },
 ): boolean {
+  const def = weaponDef(items, gun.item);
   const id = gun.attachments?.stock;
-  if (!id) return false;
-  return !!weaponDef(items, gun.item).model.stockFold || !!attachmentDef(items, id).model.fold;
+  if (id) return !!def.model.stockFold || !!attachmentDef(items, id).model.fold;
+  return !!def.stock && (!!def.model.stockFold || !!def.model.factoryFold);
 }
 
 /**
  * An item's size in a grid, [width, height] unrotated: its own, and for a gun its length
- * grows by its stock's (folded or not, WF-1) and its muzzle device's columns, and its
- * height by its magazine's rows (WF-2). Allocates nothing unless a gun grows.
+ * changes by a fitted stock's in place of its factory stock's (folded or not, WF-1,
+ * AT-1b) and grows by its muzzle device's columns, and its height by its magazine's rows
+ * (WF-2). Allocates nothing unless a gun's size changes.
  */
 export function itemSize(
   items: ItemDb,
@@ -1424,9 +1854,10 @@ export function itemSize(
   if (!a) return def.size;
   let w = 0;
   let h = 0;
-  if (a.stock) {
-    const s = attachmentDef(items, a.stock).stock;
-    w += (item.folded ? s?.foldedLength : s?.length) ?? 0;
+  // The factory stock's cells are in the gun's size; a fitted one's take their place.
+  if (def.type === 'weapon' && (a.stock || item.folded)) {
+    const s = a.stock ? attachmentDef(items, a.stock).stock : def.stock;
+    w += ((item.folded ? s?.foldedLength : s?.length) ?? 0) - (def.stock?.length ?? 0);
   }
   if (a.muzzle) w += attachmentDef(items, a.muzzle).columns ?? 0;
   if (a.magazine) h += attachmentDef(items, a.magazine).rows ?? 0;
@@ -1497,10 +1928,13 @@ export function checkItems(items: ItemDb): void {
       }
       for (const [slot, id] of Object.entries(item.defaults ?? {})) {
         const part = items.get(id);
-        if (part?.type !== 'attachment' || part.slot !== slot) {
-          throw new ContentError(source, `default ${slot} "${id}" is not a ${slot} attachment`);
+        if (
+          part?.type !== 'attachment' ||
+          !slotsOfKind(part.slot).includes(slot as AttachmentSlot)
+        ) {
+          throw new ContentError(source, `default ${slot} "${id}" doesn't go in a ${slot} slot`);
         }
-        if (!fits(item, part)) {
+        if (!fitsIn(items, item, part, slot as AttachmentSlot)) {
           throw new ContentError(source, `default ${slot} "${id}" doesn't fit it`);
         }
       }
@@ -1522,8 +1956,14 @@ export function checkItems(items: ItemDb): void {
         if (weapon?.type !== 'weapon') {
           throw new ContentError(source, `"${id}" in weapons is not a weapon`);
         }
-        if (!fits(weapon, item)) {
+        if (!slotsOfKind(item.slot).some((s) => weapon.slots?.includes(s))) {
           throw new ContentError(source, `weapon "${id}" has no ${item.slot} slot`);
+        }
+        if (weapon.platform && item.platforms?.includes(weapon.platform)) {
+          throw new ContentError(source, `weapon "${id}" is listed, and fits by its platform too`);
+        }
+        if (weapon.class && item.classes?.includes(weapon.class)) {
+          throw new ContentError(source, `weapon "${id}" is listed, and fits by its class too`);
         }
         if (item.slot === 'magazine' && isMagazine(item) !== magazineFed(weapon)) {
           throw new ContentError(
@@ -1535,6 +1975,26 @@ export function checkItems(items: ItemDb): void {
         }
         if (isMagazine(item) && item.caliber !== caliberOf(items, weapon)) {
           throw new ContentError(source, `weapon "${id}" fires ${caliberOf(items, weapon)}`);
+        }
+      }
+      // A platform it names must bring it at least one gun (a typo, or none of its guns has
+      // the slot, or for a magazine none feeds from it).
+      for (const platform of item.platforms ?? []) {
+        const on = [...items.values()].filter(
+          (w): w is WeaponDef => w.type === 'weapon' && w.platform === platform,
+        );
+        if (!on.length) throw new ContentError(source, `no gun is on platform "${platform}"`);
+        if (!on.some((w) => fits(items, w, item))) {
+          throw new ContentError(source, `it fits no gun on platform "${platform}"`);
+        }
+      }
+      // Likewise a class it names (AT-3).
+      for (const cls of item.classes ?? []) {
+        const of = [...items.values()].filter(
+          (w): w is WeaponDef => w.type === 'weapon' && w.class === cls,
+        );
+        if (!of.some((w) => fits(items, w, item))) {
+          throw new ContentError(source, `it fits no ${cls} gun`);
         }
       }
     }

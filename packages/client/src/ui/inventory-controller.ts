@@ -44,6 +44,9 @@ import {
   type PartRef,
   type MedRef,
   type Target,
+  fitsIn,
+  slotFor,
+  slotsOfKind,
 } from '@mes/shared';
 import {
   DragController,
@@ -390,8 +393,10 @@ export class InventoryController implements DragHost {
   /** Puts a loose attachment on the selected gun. */
   attach(from: ItemRef): void {
     if (!this.selected) return;
+    // Into the slot whose picker it was chosen from (a rail item on that rail).
+    const slot = this.picking ?? undefined;
     this.picking = null;
-    this.ctx.send({ type: 'attach', gun: this.selected, from });
+    this.ctx.send({ type: 'attach', gun: this.selected, from, ...(slot && { slot }) });
     this.redraw();
   }
 
@@ -466,8 +471,8 @@ export class InventoryController implements DragHost {
         const grid = gridOf(this.ctx.sim, this.ctx.player, { owner, grid: name });
         grid?.items.forEach((g, index) => {
           const def = itemDef(items, g.item.item);
-          if (def.type !== 'attachment' || def.slot !== slot || seen.has(def.id)) return;
-          if (!fits(weapon, def)) return;
+          if (def.type !== 'attachment' || seen.has(def.id)) return;
+          if (!fitsIn(items, weapon, def, slot)) return;
           seen.add(def.id);
           out.push({ ref: { owner, grid: name, index, item: def.id }, def, where: name, owner });
         });
@@ -619,10 +624,20 @@ export class InventoryController implements DragHost {
     if (!isPart(ref) && part?.type === 'ammo' && target && isMagazine(target)) {
       return part.caliber === target.caliber ? { kind: 'load', gun } : null;
     }
-    if (part?.type !== 'attachment' || target?.type !== 'weapon' || !fits(target, part)) {
+    if (
+      part?.type !== 'attachment' ||
+      target?.type !== 'weapon' ||
+      !fits(this.ctx.items, target, part)
+    ) {
       return null;
     }
-    return { kind: 'part', gun, slot: part.slot };
+    // Dropped on the gun, it goes where the sim will put it (a free rail first).
+    const gunItem = this.find(gun)!.item;
+    return {
+      kind: 'part',
+      gun,
+      slot: slotFor(gunItem, this.ctx.items, part.id) ?? slotsOfKind(part.slot)[0]!,
+    };
   }
 
   armorZone(src: DragSource, armor: ItemRef): DropZone | null {
@@ -691,8 +706,7 @@ export class InventoryController implements DragHost {
         !!gun &&
         'index' in src.ref &&
         found.def.type === 'attachment' &&
-        found.def.slot === zone.slot &&
-        fits(weaponDef(items, gun.item.item), found.def)
+        fitsIn(items, weaponDef(items, gun.item.item), found.def, zone.slot)
       );
     }
     if (zone.kind === 'slot') {

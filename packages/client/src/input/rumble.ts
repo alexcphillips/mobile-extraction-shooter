@@ -13,11 +13,11 @@ export interface Pulse {
 }
 
 /** A kick up (`recoil.up`) this big or more fires at full rumble: a pump shotgun, the AWM. */
-const FULL_KICK = 6;
+const FULL_KICK = 4.2;
 
 /**
- * Firing your own gun: sized by its kick up (`recoil.up`: about 0.9 for an SMG, 1.4 for an
- * AK, 3 for a pistol, 6 for a pump shotgun), on a square root so light guns still buzz.
+ * Firing your own gun: sized by its kick up (`recoil.up`: about 0.6 for an SMG, 1 for an
+ * AK, 2 for a pistol, 4 for a pump shotgun), on a square root so light guns still buzz.
  * Short, so a full-auto gun at 10 rounds a second still feels like separate shots.
  */
 export function firePulse(kickUp: number, out: Pulse): Pulse {

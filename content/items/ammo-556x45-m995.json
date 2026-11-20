@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "ammo-556x45-m995",
   "name": "5.56×45 mm M995",
   "shortName": "5.56 M995",
@@ -14,6 +14,7 @@
   "damage": 36,
   "armorDamage": 25,
   "bleedChance": 0.22,
+  "falloff": { "from": 80, "to": 300, "floor": 0.65 },
   "model": {
     "parts": [
       { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "color": "#6f6a3e" },

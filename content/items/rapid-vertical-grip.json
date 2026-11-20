@@ -1,0 +1,63 @@
+{
+  "formatVersion": 13,
+  "id": "rapid-vertical-grip",
+  "name": "Rapid vertical grip",
+  "shortName": "Rapid",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 4200,
+  "weight": 0.07,
+  "rarity": "common",
+  "slot": "foregrip",
+  "mods": {
+    "handling": 9,
+    "stability": -2
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "slab",
+        "pos": [0, -0.003, 0],
+        "size": [0.018, 0.006, 0.028],
+        "color": "#1d1f21",
+        "corners": [0.0015, 0.0015, 0.0015, 0.0015],
+        "segments": 1,
+        "name": "rail clamp",
+        "group": "clamp"
+      },
+      {
+        "type": "box",
+        "pos": [0.0094, -0.004, 0],
+        "size": [0.002, 0.004, 0.01],
+        "color": "#8d8f91",
+        "name": "clamp screw",
+        "group": "clamp"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.026, 0],
+        "radius": 0.0095,
+        "radiusTop": 0.011,
+        "height": 0.04,
+        "color": "#a08c64",
+        "sides": 6,
+        "yaw": 22.5,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.048, 0],
+        "radius": 0.0102,
+        "radiusTop": 0.0102,
+        "height": 0.004,
+        "color": "#1d1f21",
+        "sides": 6,
+        "yaw": 22.5,
+        "name": "end cap",
+        "group": "grip"
+      }
+    ],
+    "support": [0, -0.026, 0]
+  }
+}

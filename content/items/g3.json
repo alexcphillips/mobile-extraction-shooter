@@ -1,11 +1,11 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "g3",
   "name": "G3",
   "type": "weapon",
   "class": "assault",
-  "size": [4, 2],
-  "value": 65600,
+  "size": [5, 2],
+  "value": 70200,
   "weight": 3.8,
   "rarity": "common",
   "ammo": "ammo-762",
@@ -15,21 +15,27 @@
   "magazine": 20,
   "feed": "magazine",
   "reloadTime": 2.6,
-  "ergonomics": 49,
-  "range": 275,
-  "loudness": 220,
-  "defaults": {
-    "magazine": "g3-mag",
-    "stock": "g3-stock"
+  "stats": {
+    "recoilUp": 73,
+    "recoilSide": 68,
+    "stability": 71,
+    "handling": 49,
+    "hipFire": 23,
+    "accuracy": 38,
+    "range": 72,
+    "loudness": 82
   },
-  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
-  "hipSpread": 3.5,
-  "aimSpread": 0.35,
+  "barrelRange": 1.1,
+  "defaults": {
+    "magazine": "g3-mag"
+  },
+  "slots": ["optic", "muzzle", "magazine", "rightRail", "stock"],
+  "stock": {
+    "length": 1
+  },
   "recoil": {
-    "up": 4.83,
-    "side": 1.43,
     "snap": 36,
-    "recovery": 2.73,
+    "recovery": 3,
     "angle": 4
   },
   "sounds": {
@@ -190,6 +196,21 @@
         "size": [0.034, 0.085, 0.04],
         "color": "#3a4030",
         "pitch": -15
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.01, 0.27],
+        "size": [0.048, 0.08, 0.28],
+        "color": "#3a4030",
+        "pitch": 4,
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.02, 0.415],
+        "size": [0.05, 0.11, 0.014],
+        "color": "#1d1f21",
+        "hiddenBy": "stock"
       }
     ],
     "grip": [0, -0.085, 0.07],
@@ -200,7 +221,7 @@
       "optic": [0, 0.04, 0.04],
       "muzzle": [0, 0, -0.54],
       "magazine": [0, -0.045, -0.085],
-      "laser": [0.041, -0.008, -0.34],
+      "rightRail": [0.041, -0.008, -0.34],
       "stock": [0, -0.01, 0.13]
     }
   }

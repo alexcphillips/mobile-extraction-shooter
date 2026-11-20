@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "flight-data-recorder",
   "name": "Flight data recorder",
   "type": "loot",

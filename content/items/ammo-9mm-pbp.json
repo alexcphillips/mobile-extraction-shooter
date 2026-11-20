@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "ammo-9mm-pbp",
   "name": "9 mm PBP",
   "shortName": "9mm PBP",
@@ -14,6 +14,7 @@
   "damage": 37,
   "armorDamage": 19,
   "bleedChance": 0.15,
+  "falloff": { "from": 20, "to": 80, "floor": 0.55 },
   "model": {
     "parts": [
       { "type": "box", "pos": [0, 0, 0.015], "size": [0.14, 0.07, 0.11], "color": "#9a8238" },

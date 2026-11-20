@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "pressure-gauge",
   "name": "Pressure gauge",
   "type": "loot",

@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "mcx-spear-mag",
   "name": "MCX-SPEAR 20-round magazine",
   "shortName": "MCX-SPEAR 20",
@@ -9,7 +9,7 @@
   "weight": 0.25,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["mcx-spear"],
+  "platforms": ["ar15"],
   "capacity": 20,
   "caliber": "6.8x51",
   "model": {

@@ -34,6 +34,7 @@ Docs hold what the code and content can't tell you: **what a feature is for, the
 Each feature doc gets written in its own session: read the code for that feature, then ask the user the "why"s. Before asking, search the archive (below) for that one topic. Status: ☐ not written · ◐ started · ☑ written.
 
 - ☐ **combat**: guns, attachments, recoil, aiming, grenades, melee
+- ☑ [weapon-stats](features/weapon-stats.md): the shown gun stats, points, and what attachments may change (split from combat)
 - ☐ **damage-and-health**: hit zones, armor and plates, limbs, meds, timed effects
 - ☐ **movement-and-controls**: movement, stamina, touch/keyboard/pad input
 - ☐ **ai**: enemy types, squads, tactics, bosses, hearing

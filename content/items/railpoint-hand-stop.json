@@ -1,0 +1,60 @@
+{
+  "formatVersion": 13,
+  "id": "railpoint-hand-stop",
+  "name": "Railpoint hand stop",
+  "shortName": "Railpoint",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 2600,
+  "weight": 0.05,
+  "rarity": "common",
+  "slot": "foregrip",
+  "mods": {
+    "stability": 6,
+    "handling": -1
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "slab",
+        "pos": [0, -0.003, 0],
+        "size": [0.018, 0.006, 0.034],
+        "color": "#1d1f21",
+        "corners": [0.0015, 0.0015, 0.0015, 0.0015],
+        "segments": 1,
+        "name": "rail clamp",
+        "group": "clamp"
+      },
+      {
+        "type": "box",
+        "pos": [0.0094, -0.004, 0],
+        "size": [0.002, 0.004, 0.01],
+        "color": "#8d8f91",
+        "name": "clamp screw",
+        "group": "clamp"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.012, 0.002],
+        "size": [0.016, 0.012, 0.03],
+        "color": "#a08c64",
+        "name": "body"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0205, -0.012],
+        "size": [0.016, 0.013, 0.008],
+        "color": "#a08c64",
+        "name": "front lip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.016, 0.006],
+        "size": [0.0172, 0.004, 0.014],
+        "color": "#b49a6c",
+        "name": "grip band"
+      }
+    ],
+    "support": [0, 0, 0.045]
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "p226",
   "name": "P226",
   "type": "weapon",
@@ -15,18 +15,22 @@
   "magazine": 15,
   "feed": "magazine",
   "reloadTime": 1.6,
-  "ergonomics": 84,
-  "range": 100,
-  "loudness": 120,
+  "stats": {
+    "recoilUp": 70,
+    "recoilSide": 59,
+    "stability": 35,
+    "handling": 84,
+    "hipFire": 35,
+    "accuracy": 28,
+    "range": 50,
+    "loudness": 69
+  },
+  "barrelRange": 0.9,
   "defaults": {
     "magazine": "p226-mag"
   },
-  "slots": ["muzzle", "magazine", "laser"],
-  "hipSpread": 2,
-  "aimSpread": 0.55,
+  "slots": ["muzzle", "magazine", "rightRail"],
   "recoil": {
-    "up": 2.85,
-    "side": 0.65,
     "snap": 45,
     "recovery": 6
   },
@@ -182,7 +186,7 @@
     "mounts": {
       "muzzle": [0, 0.012, -0.155],
       "magazine": [0, -0.108, 0.016],
-      "laser": [0, -0.041, -0.125]
+      "rightRail": [0, -0.041, -0.125]
     }
   }
 }

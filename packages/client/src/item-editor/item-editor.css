@@ -965,3 +965,25 @@ body.item-editor #scene {
   font-family: ui-monospace, monospace;
   font-size: 12px;
 }
+
+/* The eight gun stats as bars under their fields (WS-3), one column: the panel is narrow. */
+.ie-statbars {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+  margin: 8px 0 0;
+}
+
+.ie-statbars div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ie-statbars dt {
+  color: #9aa6b0;
+}
+
+.ie-statbars dd {
+  margin: 0;
+}

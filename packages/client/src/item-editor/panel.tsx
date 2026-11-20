@@ -1,8 +1,15 @@
 import {
   ATTACHMENT_SLOTS,
   aimTimeAt,
+  aimMoveAt,
+  raiseTimeAt,
   drawTimeAt,
   swayAt,
+  jumpAt,
+  clampPoints,
+  statAt,
+  GUN_STATS,
+  type GunStat,
   bagCells,
   GRENADE_EFFECTS,
   MED_EFFECTS,
@@ -28,6 +35,8 @@ import {
   CARRIER,
   type CarrierDef,
   type VisionShape,
+  ATTACHMENT_KINDS,
+  slotsOfKind,
 } from '@mes/shared';
 import {
   Fragment,
@@ -44,6 +53,7 @@ import { HexColor, Num, Text, Toggle } from '../editor/fields';
 import { previewPortrait, viewOf, withDefaults } from '../render/item-portrait';
 import { crackBackground, visionBackground } from '../render/vision';
 import { colorOf, RARITY_COLORS, tileName } from '../ui/raid-screen';
+import { StatChange, StatScore } from '../ui/stat-bars';
 import { sectionBoxes } from '../ui/inventory-layout';
 import { BODY_ID, type Doc, type ItemEditor, type ItemEditorState } from './editor';
 import { fitPointsToSlot, setSlots } from './model-edit';
@@ -498,7 +508,17 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
       return (
         <>
           <Group title="Gun">
-            <P {...b} path={['ammo']} label="Ammo" options={ofType('ammo')} />
+            <div className="ie-grid">
+              <P {...b} path={['ammo']} label="Ammo" options={ofType('ammo')} />
+              <C
+                {...b}
+                path={['platform']}
+                label="Platform"
+                options={platformsOf(items)}
+                unset="none"
+                newLabel="New platform"
+              />
+            </div>
             <div className="ie-grid">
               <S
                 {...b}
@@ -518,37 +538,42 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
             <div className="ie-grid">
               <N {...b} path={['rpm']} label="Rounds/min" min={0} />
               <N {...b} path={['magazine']} label="Magazine" min={1} />
-              <N {...b} path={['range']} label="Range (m)" min={0} />
+              <N
+                {...b}
+                path={['barrelRange']}
+                label="Barrel range"
+                min={0}
+                placeholder="1"
+                hint="Its own barrel: how far its round keeps its damage, below 1 for a short barrel"
+              />
             </div>
             <div className="ie-grid">
               <N {...b} path={['reloadTime']} label="Reload (s)" min={0} />
-              <N
-                {...b}
-                path={['ergonomics']}
-                label="Ergonomics"
-                min={0}
-                hint={`0–100: aim ${fmt(aimTimeAt(def.ergonomics), 3)} s, draw ${fmt(drawTimeAt(def.ergonomics), 2)} s, sway ×${fmt(swayAt(def.ergonomics), 2)}`}
-              />
-            </div>
-            <div className="ie-grid">
-              <N
-                {...b}
-                path={['loudness']}
-                label="Heard to (m)"
-                min={0}
-                hint="How far away enemies hear a shot"
-              />
             </div>
           </Group>
-          <Group title="Accuracy" aside={<span className="ed-note">degrees</span>}>
-            <div className="ie-grid">
-              <N {...b} path={['hipSpread']} label="Hip spread" min={0} />
-              <N {...b} path={['aimSpread']} label="Aimed spread" min={0} />
+          <Group title="Stats" aside={<span className="ed-note">points, 0–100</span>}>
+            <div className="ie-grid ie-grid-4">
+              {GUN_STATS.map((stat) => (
+                <N
+                  key={stat}
+                  {...b}
+                  path={['stats', stat]}
+                  label={STAT_LABELS[stat]}
+                  min={0}
+                  hint={statHint(stat, def.stats[stat])}
+                />
+              ))}
             </div>
-            <div className="ie-grid">
-              <N {...b} path={['recoil', 'up']} label="Kick up" min={0} />
-              <N {...b} path={['recoil', 'side']} label="Kick sideways" min={0} />
-            </div>
+            <StatBars>
+              {(stat) => (
+                <StatScore value={def.stats[stat]} title={statHint(stat, def.stats[stat])} />
+              )}
+            </StatBars>
+          </Group>
+          <Group
+            title="Recoil"
+            aside={<span className="ed-note">its own, no part changes these</span>}
+          >
             <div className="ie-grid">
               <N
                 {...b}
@@ -598,33 +623,82 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
               }
             />
           </Group>
-          {!!def.slots?.length && (
+          {def.slots?.includes('magazine') && (
             <Group
               title="Comes with"
-              aside={<span className="ed-note">from vendors, loot and loadouts</span>}
+              aside={
+                <span className="ed-note">from vendors, loot and loadouts; only a magazine</span>
+              }
             >
               <div className="ie-grid">
-                {(def.slots ?? []).map((slot) => (
-                  <P
-                    key={slot}
-                    {...b}
-                    path={['defaults', slot]}
-                    label={slot}
-                    options={[...items.values()]
-                      .filter((a) => a.type === 'attachment' && a.slot === slot && fits(def, a))
-                      .map((a) => a.id)}
-                    unset="nothing"
-                  />
-                ))}
+                <P
+                  {...b}
+                  path={['defaults', 'magazine']}
+                  label="magazine"
+                  options={[...items.values()]
+                    .filter(
+                      (a) =>
+                        a.type === 'attachment' && a.slot === 'magazine' && fits(items, def, a),
+                    )
+                    .map((a) => a.id)}
+                  unset="nothing"
+                />
               </div>
-              {def.slots?.includes('stock') && (
+            </Group>
+          )}
+          {def.slots?.includes('stock') && (
+            <Group
+              title="Factory stock"
+              aside={
+                <span className="ed-note">
+                  its parts hidden by a stock; not an item, no points, can't come off
+                </span>
+              }
+            >
+              <Tick
+                label="Has a factory stock"
+                checked={!!def.stock}
+                title="Drawn by the gun's model until a stock is fitted; its cells are in the gun's size"
+                onChange={(on) =>
+                  b.edit((d) => {
+                    put(d, ['stock'], on ? { length: 1 } : undefined);
+                    if (!on) put(d, ['model', 'factoryFold'], undefined);
+                  })
+                }
+              />
+              {def.stock && (
+                <div className="ie-grid">
+                  <N
+                    {...b}
+                    path={['stock', 'length']}
+                    label="Cells"
+                    min={0}
+                    hint="How many of the gun's cells are its factory stock; a fitted stock's take their place"
+                  />
+                  <N
+                    {...b}
+                    path={['stock', 'foldedLength']}
+                    label="Folded cells"
+                    min={0}
+                    placeholder="0"
+                    hint="Cells it takes folded"
+                  />
+                </div>
+              )}
+              {def.stock && !def.model.stockFold && (
                 <FoldFields
                   {...b}
-                  path={['model', 'stockFold']}
-                  label="Folding stock mount"
-                  title="Any stock fitted folds on the gun's hinge (an AK-74M's); folded, the stock does nothing"
+                  path={['model', 'factoryFold']}
+                  label="Factory stock folds"
+                  title="How its factory stock folds by itself, from the stock mount; folded, the fold change applies"
                 />
               )}
+              <FoldFields
+                {...b}
+                path={['model', 'stockFold']}
+                label="Folding stock mount"
+                title="Any stock fitted folds on the gun's hinge (an AK-74M's), the factory one too; folded, the stock's points don't apply and the fold change does"
+              />
             </Group>
           )}
         </>
@@ -674,6 +748,29 @@ function TypeFields(props: Bound & { def: ItemDef; items: ReadonlyMap<string, It
               hint="Durability lost per hit, less against armor above its level"
             />
             <N {...b} path={['bleedChance']} label="Bleed chance (0–1)" min={0} />
+          </div>
+          <div className="ie-grid">
+            <N
+              {...b}
+              path={['falloff', 'from']}
+              label="Full damage to (m)"
+              min={0}
+              hint="Damage falloff: all of it out to here"
+            />
+            <N
+              {...b}
+              path={['falloff', 'to']}
+              label="Falls off to (m)"
+              min={0}
+              hint="Down in a straight line to the floor at this distance"
+            />
+            <N
+              {...b}
+              path={['falloff', 'floor']}
+              label="Floor (0–1)"
+              min={0}
+              hint="The share of its damage left past the falloff"
+            />
           </div>
         </Group>
       );
@@ -1019,15 +1116,57 @@ const MED_NOTES: Record<(typeof MED_EFFECTS)[number], string> = {
 };
 
 const MODS: [key: string, label: string, hint: string][] = [
-  ['recoil', 'Recoil', 'Kick up and sideways'],
-  ['recoilUp', 'Kick up', 'On top of recoil'],
-  ['recoilSide', 'Kick sideways', 'On top of recoil'],
-  ['recovery', 'Recovery', 'Above 1 recovers from recoil faster'],
-  ['spread', 'Spread', 'Hip and aimed spread'],
-  ['aimTime', 'Aim time', ''],
-  ['reloadTime', 'Reload', ''],
-  ['loudness', 'Loudness', 'Below 1 is quieter'],
+  ['aimTime', 'Aim time', 'Only for a part special this way (a magnified optic)'],
+  ['reloadTime', 'Reload', 'Only for a part special this way (a large magazine)'],
 ];
+
+/** The gun stats' labels in the editor. */
+const STAT_LABELS: Record<GunStat, string> = {
+  recoilUp: 'Vertical recoil',
+  recoilSide: 'Horizontal recoil',
+  stability: 'Stability',
+  handling: 'Handling',
+  hipFire: 'Hip-fire',
+  accuracy: 'Accuracy',
+  range: 'Range',
+  loudness: 'Loudness',
+};
+
+/** The eight stats as bars under their fields (WS-3), as item details shows them. */
+function StatBars({ children }: { children: (stat: GunStat) => ReactNode }) {
+  return (
+    <dl className="ie-statbars">
+      {GUN_STATS.map((stat) => (
+        <div key={stat}>
+          <dt>{STAT_LABELS[stat]}</dt>
+          <dd>{children(stat)}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/** What a gun stat's points work out to, for its field's hint. */
+function statHint(stat: GunStat, p: number): string {
+  switch (stat) {
+    case 'handling':
+      return `aim ${fmt(aimTimeAt(p), 3)} s, draw ${fmt(drawTimeAt(p), 2)} s, sway ×${fmt(swayAt(p), 2)}, sprint to fire ${fmt(raiseTimeAt(p), 2)} s, moving aimed ×${fmt(aimMoveAt(p), 2)}`;
+    case 'stability':
+      return `view and gun jump ×${fmt(jumpAt(p), 2)} per shot`;
+    case 'recoilUp':
+      return `${fmt(statAt(stat, p), 2)}° kick up per shot`;
+    case 'recoilSide':
+      return `up to ${fmt(statAt(stat, p), 2)}° kick sideways per shot`;
+    case 'hipFire':
+      return `${fmt(statAt(stat, p), 2)}° spread from the hip`;
+    case 'accuracy':
+      return `${fmt(statAt(stat, p), 3)}° spread aimed`;
+    case 'range':
+      return `shots stop at ${fmt(statAt(stat, p), 0)} m`;
+    case 'loudness':
+      return `heard from ${fmt(statAt(stat, p), 0)} m`;
+  }
+}
 
 function AttachmentFields(
   props: Bound & { def: AttachmentDef; weapons: string[]; items: ReadonlyMap<string, ItemDef> },
@@ -1035,28 +1174,43 @@ function AttachmentFields(
   const { def, weapons, items, ...b } = props;
   const withSlot = weapons.filter((w) => {
     const g = items.get(w);
-    return g?.type === 'weapon' && g.slots?.includes(def.slot);
+    return g?.type === 'weapon' && slotsOfKind(def.slot).some((s) => g.slots?.includes(s));
   });
   const listed = def.weapons ?? [];
+  const platforms = def.platforms ?? [];
+  // Platforms with a gun that has its slot (AT-1), and any it lists already.
+  const slotPlatforms = withSlot.flatMap((w) => {
+    const g = items.get(w);
+    return g?.type === 'weapon' && g.platform ? [g.platform] : [];
+  });
+  const classes: string[] = def.classes ?? [];
+  // Classes with a gun that has its slot (AT-3), and any it lists already.
+  const slotClasses = withSlot.flatMap((w) => {
+    const g = items.get(w);
+    return g?.type === 'weapon' && g.class ? [g.class] : [];
+  });
+  const restricted = listed.length > 0 || platforms.length > 0 || classes.length > 0;
   return (
     <>
       <Group title="Attachment">
         <S
           {...b}
           path={['slot']}
-          label="Slot"
-          options={ATTACHMENT_SLOTS}
+          label="Kind"
+          options={ATTACHMENT_KINDS}
           then={(d, v) => {
-            if (v === 'optic' && d.optic === undefined)
-              put(d, ['optic'], structuredClone(BLANK_OPTIC));
-            if (v !== 'optic') put(d, ['optic'], undefined);
+            const optic = v === 'optic' || v === 'offsetOptic';
+            if (optic && d.optic === undefined) put(d, ['optic'], structuredClone(BLANK_OPTIC));
+            if (!optic) put(d, ['optic'], undefined);
+            if (v === 'offsetOptic') put(d, ['optic', 'cant'], 45);
+            else if (optic) put(d, ['optic', 'cant'], undefined);
             if (v === 'stock' && d.stock === undefined) put(d, ['stock'], { length: 1 });
             if (v !== 'magazine') {
               put(d, ['capacity'], undefined);
               put(d, ['caliber'], undefined);
               put(d, ['rows'], undefined);
             }
-            if (v !== 'muzzle') put(d, ['columns'], undefined);
+            if (v !== 'muzzle' && v !== 'barrel') put(d, ['columns'], undefined);
             if (v !== 'stock') {
               put(d, ['stock'], undefined);
               put(d, ['model', 'fold'], undefined);
@@ -1064,7 +1218,7 @@ function AttachmentFields(
             fitPointsToSlot(d);
           }}
         />
-        {(def.slot === 'magazine' || def.slot === 'muzzle') && (
+        {(def.slot === 'magazine' || def.slot === 'muzzle' || def.slot === 'barrel') && (
           <div className="ie-grid">
             <N
               {...b}
@@ -1108,9 +1262,9 @@ function AttachmentFields(
               <N
                 {...b}
                 path={['stock', 'length']}
-                label="Adds cells"
+                label="Cells"
                 min={0}
-                hint="How many cells longer the gun is in a grid with it on"
+                hint="Cells it takes on the gun's length, in place of the gun's factory stock's"
               />
               <N
                 {...b}
@@ -1145,12 +1299,47 @@ function AttachmentFields(
         title="Fits"
         aside={
           <span className="ed-note">
-            {listed.length ? 'only those picked' : `every gun with a ${def.slot} slot`}
+            {restricted
+              ? 'guns of the classes and on the platforms picked, and the guns picked'
+              : `every gun with a ${def.slot} slot`}
           </span>
         }
       >
         <Chips
-          options={[...new Set([...withSlot, ...listed])]}
+          options={[...new Set([...slotPlatforms, ...platforms])].sort()}
+          on={(p) => platforms.includes(p)}
+          toggle={(p, on) =>
+            b.edit((d) => {
+              const next = [...new Set([...slotPlatforms, ...platforms])]
+                .sort()
+                .filter((x) => (x === p ? on : platforms.includes(x)));
+              put(d, ['platforms'], next.length ? next : undefined);
+            })
+          }
+        />
+        <Chips
+          options={[...new Set([...slotClasses, ...classes])].sort()}
+          on={(c) => classes.includes(c)}
+          toggle={(c, on) =>
+            b.edit((d) => {
+              const next = [...new Set([...slotClasses, ...classes])]
+                .sort()
+                .filter((x) => (x === c ? on : classes.includes(x)));
+              put(d, ['classes'], next.length ? next : undefined);
+            })
+          }
+        />
+        <Chips
+          options={[...new Set([...withSlot, ...listed])].filter((w) => {
+            // A gun on a picked platform or of a picked class fits already, so it isn't
+            // offered (checkItems).
+            const g = items.get(w);
+            return (
+              listed.includes(w) ||
+              g?.type !== 'weapon' ||
+              (!platforms.includes(g.platform ?? '') && !classes.includes(g.class ?? ''))
+            );
+          })}
           on={(w) => listed.includes(w)}
           toggle={(w, on) =>
             b.edit((d) => {
@@ -1162,6 +1351,22 @@ function AttachmentFields(
       </Group>
       <Group
         title="Changes to the gun"
+        aside={<span className="ed-note">points added, below 0 takes off; blank: none</span>}
+      >
+        <div className="ie-grid ie-grid-4">
+          {GUN_STATS.map((stat) => (
+            <N key={stat} {...b} path={['mods', stat]} label={STAT_LABELS[stat]} placeholder="0" />
+          ))}
+        </div>
+        <StatBars>
+          {(stat) => {
+            const by = def.mods?.[stat];
+            return by ? <StatChange stat={stat} by={by} /> : <span className="ed-note">—</span>;
+          }}
+        </StatBars>
+      </Group>
+      <Group
+        title="Exceptions to handling"
         aside={<span className="ed-note">× each, blank: none</span>}
       >
         <div className="ie-grid ie-grid-4">
@@ -1177,13 +1382,6 @@ function AttachmentFields(
             />
           ))}
           <N {...b} path={['mods', 'magazine']} label="Extra rounds" min={1} placeholder="0" />
-          <N
-            {...b}
-            path={['mods', 'ergonomics']}
-            label="Ergonomics (+)"
-            placeholder="0"
-            hint="Points added to the gun's ergonomics; below 0 takes them off"
-          />
         </div>
       </Group>
     </>
@@ -1490,6 +1688,13 @@ function CarrierFields(props: Bound & { at: Path; items: ReadonlyMap<string, Ite
 }
 
 /** Every caliber a round in content has, for a magazine's picker. */
+/** Every platform a gun is on (AT-1). */
+function platformsOf(items: ReadonlyMap<string, ItemDef>): string[] {
+  const out = new Set<string>();
+  for (const d of items.values()) if (d.type === 'weapon' && d.platform) out.add(d.platform);
+  return [...out].sort();
+}
+
 function calibers(items: ReadonlyMap<string, ItemDef>): string[] {
   const out = new Set<string>();
   for (const d of items.values()) if (d.type === 'ammo') out.add(d.caliber);
@@ -1972,7 +2177,7 @@ function Facts({ def, db }: { def: ItemDef; db: ItemDb }) {
     }
     case 'attachment':
       for (const g of db.values()) {
-        if (g.type !== 'weapon' || !fits(g, def)) continue;
+        if (g.type !== 'weapon' || !fits(db, g, def)) continue;
         const changes = gunChanges(g, def);
         lines.push(`On ${g.name}: ${changes.length ? changes.join(', ') : 'no stat changes'}.`);
       }
@@ -2018,15 +2223,18 @@ function gunChanges(g: WeaponDef, a: AttachmentDef): string[] {
     if (by !== undefined && by !== 1) out.push(`${label} ${fmt(from)} → ${fmt(from * by)}${unit}`);
   };
   if (m.magazine) out.push(`magazine ${g.magazine} → ${g.magazine + m.magazine}`);
-  show('aimed spread', g.aimSpread, m.spread, '°');
-  show('kick up', g.recoil.up, (m.recoil ?? 1) * (m.recoilUp ?? 1), '°');
-  show('kick sideways', g.recoil.side, (m.recoil ?? 1) * (m.recoilSide ?? 1), '°');
-  show('recovery', g.recoil.recovery, m.recovery, '/s');
-  if (m.ergonomics)
-    out.push(`ergonomics ${fmt(g.ergonomics)} → ${fmt(g.ergonomics + m.ergonomics)}`);
-  show('aim', aimTimeAt(g.ergonomics + (m.ergonomics ?? 0)), m.aimTime, ' s');
+  for (const stat of GUN_STATS) {
+    const by = m[stat];
+    if (!by) continue;
+    const from = g.stats[stat];
+    const to = clampPoints(from + by);
+    out.push(
+      `${STAT_LABELS[stat].toLowerCase()} ${fmt(from)} → ${fmt(to)} (${statHint(stat, to)})`,
+    );
+  }
+  const handling = clampPoints(g.stats.handling + (m.handling ?? 0));
+  show('aim', aimTimeAt(handling), m.aimTime, ' s');
   show('reload', g.reloadTime, m.reloadTime, ' s');
-  show('heard to', g.loudness, m.loudness, ' m');
   return out;
 }
 

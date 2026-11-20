@@ -1,0 +1,66 @@
+{
+  "formatVersion": 13,
+  "id": "canted-support-grip",
+  "name": "Canted support grip",
+  "shortName": "Canted",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 6500,
+  "weight": 0.11,
+  "rarity": "common",
+  "slot": "foregrip",
+  "mods": {
+    "recoilSide": -9,
+    "stability": 9,
+    "handling": -3
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "slab",
+        "pos": [0, -0.003, 0],
+        "size": [0.018, 0.006, 0.032],
+        "color": "#1d1f21",
+        "corners": [0.0015, 0.0015, 0.0015, 0.0015],
+        "segments": 1,
+        "name": "rail clamp",
+        "group": "clamp"
+      },
+      {
+        "type": "box",
+        "pos": [0.0094, -0.004, 0],
+        "size": [0.002, 0.004, 0.01],
+        "color": "#8d8f91",
+        "name": "clamp screw",
+        "group": "clamp"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.01, -0.031, 0],
+        "radius": 0.01,
+        "radiusTop": 0.0115,
+        "height": 0.054,
+        "color": "#3a3d40",
+        "sides": 8,
+        "yaw": 22.5,
+        "name": "canted grip",
+        "group": "grip",
+        "roll": 22
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0215, -0.057, 0],
+        "radius": 0.011,
+        "radiusTop": 0.011,
+        "height": 0.006,
+        "color": "#1d1f21",
+        "sides": 8,
+        "yaw": 22.5,
+        "name": "end cap",
+        "group": "grip",
+        "roll": 22
+      }
+    ],
+    "support": [0.012, -0.03, 0]
+  }
+}

@@ -9,6 +9,7 @@ import {
   type ModelShape,
   type WeaponDef,
   type WeaponState,
+  noAttachments,
 } from '@mes/shared';
 import * as THREE from 'three';
 import { TriangleBuilder } from './geometry';
@@ -134,7 +135,7 @@ export function withDefaults(
     cooldown: 0,
     reloading: 0,
     triggerHeld: false,
-    attachments: { optic: null, muzzle: null, magazine: null, laser: null, stock: null },
+    attachments: noAttachments(),
   } as WeaponState;
   let any = false;
   for (const [slot, id] of Object.entries(def.defaults ?? {}) as [AttachmentSlot, string][]) {

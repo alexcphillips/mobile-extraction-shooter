@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "m1911a1",
   "name": "M1911A1",
   "type": "weapon",
@@ -15,14 +15,23 @@
   "magazine": 7,
   "feed": "magazine",
   "reloadTime": 1.7,
-  "ergonomics": 83,
-  "range": 100,
-  "loudness": 120,
+  "stats": {
+    "recoilUp": 73,
+    "recoilSide": 64,
+    "stability": 38,
+    "handling": 83,
+    "hipFire": 34,
+    "accuracy": 26,
+    "range": 50,
+    "loudness": 69
+  },
+  "barrelRange": 0.9,
   "defaults": { "magazine": "m1911-mag" },
-  "slots": ["muzzle", "magazine", "laser"],
-  "hipSpread": 2.1,
-  "aimSpread": 0.6,
-  "recoil": { "up": 3.36, "side": 0.83, "snap": 45, "recovery": 6 },
+  "slots": ["muzzle", "magazine", "rightRail"],
+  "recoil": {
+    "snap": 45,
+    "recovery": 6
+  },
   "sounds": {
     "shot": "pistol-shot",
     "suppressed": "pistol-shot-suppressed",
@@ -224,7 +233,7 @@
     "mounts": {
       "muzzle": [0, 0.012, -0.162],
       "magazine": [0, -0.096, 0.02],
-      "laser": [0, -0.035, -0.115]
+      "rightRail": [0, -0.035, -0.115]
     }
   }
 }

@@ -24,6 +24,13 @@ export interface Item {
   attachments?: Record<AttachmentSlot, string | null>;
   /** Guns: the stock is folded (WF-1): none of its mods, and its folded length. */
   folded?: true;
+  /** Guns: its lasers are switched off: no beam, and none of their mods. Left out, on. */
+  laserOff?: true;
+  /**
+   * Guns: which of its sights it's aimed with, an index into sightsOf (a scope's red dot
+   * on top is 1); left out, the first. Cleared when the optic comes off or is swapped.
+   */
+  sight?: number;
   /** Helmets (GZ-5): the visor or night vision goggles fitted, with their own state. */
   fitted?: Item;
   /** Visors (GZ-5): where its cracks run, for the client's drawing only. */

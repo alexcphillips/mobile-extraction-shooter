@@ -417,6 +417,8 @@ describe('PMC fighting', () => {
 });
 
 describe('PMC grenades', () => {
+  /** A seed whose squad throws behind the wall within the test's time (re-pick if moves change). */
+  const THROWS = 14;
   /** A squad of n carrying `kit` each, standing `dist` m north of a 3 m wall you hide 2 m behind. */
   function behindWall(
     seed: number,
@@ -442,7 +444,8 @@ describe('PMC grenades', () => {
   }
 
   it('lobs a frag over your cover that lands by you; its mates take nothing', () => {
-    const { state, world, nav, team, me } = behindWall(2, 18);
+    // A seed where a throw comes in time: most don't, the squad pushes in shooting instead.
+    const { state, world, nav, team, me } = behindWall(THROWS, 18);
     const ids = new Set(team.map((m) => m.id));
     let thrown = 0;
     let off = Infinity;
@@ -537,7 +540,7 @@ describe('PMC grenades', () => {
   });
 
   it('a raid saved while it turns to throw carries on the same', () => {
-    const { state, world, nav, team } = behindWall(2, 18);
+    const { state, world, nav, team } = behindWall(THROWS, 18);
     let saved: SimState | null = null;
     for (let i = 0; i < 15 * TICK_RATE && !saved; i++) {
       step(state, world, items, {}, nav);

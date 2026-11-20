@@ -1,0 +1,97 @@
+{
+  "formatVersion": 13,
+  "id": "slotted-cage-compensator",
+  "name": "Slotted cage compensator",
+  "shortName": "Cage",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 4500,
+  "weight": 0.18,
+  "rarity": "common",
+  "slot": "muzzle",
+  "classes": ["shotgun"],
+  "mods": {
+    "recoilUp": -12,
+    "recoilSide": -12,
+    "handling": -6
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.035],
+        "pitch": 90,
+        "radius": 0.017,
+        "height": 0.07,
+        "color": "#2b2d2f",
+        "name": "body"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.016, -0.02],
+        "size": [0.005, 0.006, 0.022],
+        "color": "#141516",
+        "name": "slot"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.016, -0.048],
+        "size": [0.005, 0.006, 0.022],
+        "color": "#141516",
+        "name": "slot"
+      },
+      {
+        "type": "box",
+        "pos": [-0.016, 0, -0.02],
+        "size": [0.005, 0.006, 0.022],
+        "color": "#141516",
+        "roll": 90,
+        "name": "slot"
+      },
+      {
+        "type": "box",
+        "pos": [-0.016, 0, -0.048],
+        "size": [0.005, 0.006, 0.022],
+        "color": "#141516",
+        "roll": 90,
+        "name": "slot"
+      },
+      {
+        "type": "box",
+        "pos": [0.016, 0, -0.02],
+        "size": [0.005, 0.006, 0.022],
+        "color": "#141516",
+        "roll": 270,
+        "name": "slot"
+      },
+      {
+        "type": "box",
+        "pos": [0.016, 0, -0.048],
+        "size": [0.005, 0.006, 0.022],
+        "color": "#141516",
+        "roll": 270,
+        "name": "slot"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.069],
+        "pitch": 90,
+        "radius": 0.018,
+        "height": 0.006,
+        "color": "#1d1f21",
+        "name": "crown"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.073],
+        "pitch": 90,
+        "radius": 0.009,
+        "height": 0.002,
+        "color": "#141516",
+        "sides": 6,
+        "name": "bore"
+      }
+    ],
+    "muzzle": [0, 0, -0.074]
+  }
+}

@@ -1,5 +1,6 @@
 import {
   BODY_FORMAT,
+  fits,
   CLIP_FORMAT,
   SKELETON_FORMAT,
   containerMix,
@@ -811,7 +812,14 @@ export function itemUses(id: string, items: ItemDb): string[] {
   const out: string[] = [];
   for (const def of items.values()) {
     if (def.type === 'weapon' && def.ammo === id) out.push(`${def.id} fires it`);
-    if (def.type === 'attachment' && def.weapons?.includes(id)) out.push(`${def.id} fits it`);
+    const gun = items.get(id);
+    if (
+      def.type === 'attachment' &&
+      (def.weapons || def.platforms) &&
+      gun?.type === 'weapon' &&
+      fits(items, gun, def)
+    )
+      out.push(`${def.id} fits it`);
   }
   const kinds: [string, ReadonlyMap<string, unknown>][] = [
     ['loadout', c.loadouts],

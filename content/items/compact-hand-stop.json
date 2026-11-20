@@ -1,0 +1,46 @@
+{
+  "formatVersion": 13,
+  "id": "compact-hand-stop",
+  "name": "Compact hand stop",
+  "shortName": "Compact",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 1500,
+  "weight": 0.03,
+  "rarity": "common",
+  "slot": "foregrip",
+  "mods": {
+    "handling": 3,
+    "stability": -1
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "slab",
+        "pos": [0, -0.003, 0],
+        "size": [0.018, 0.006, 0.022],
+        "color": "#3f4636",
+        "corners": [0.0015, 0.0015, 0.0015, 0.0015],
+        "segments": 1,
+        "name": "rail clamp",
+        "group": "clamp"
+      },
+      {
+        "type": "box",
+        "pos": [0.0094, -0.004, 0],
+        "size": [0.002, 0.004, 0.01],
+        "color": "#8d8f91",
+        "name": "clamp screw",
+        "group": "clamp"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0135, -0.004],
+        "size": [0.015, 0.015, 0.01],
+        "color": "#5a6340",
+        "name": "stop"
+      }
+    ],
+    "support": [0, 0, 0.035]
+  }
+}

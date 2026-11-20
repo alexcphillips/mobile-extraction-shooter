@@ -1,0 +1,67 @@
+{
+  "formatVersion": 13,
+  "id": "vector-mk3-foregrip",
+  "name": "Vector MK3 foregrip",
+  "shortName": "MK3",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 6000,
+  "weight": 0.13,
+  "rarity": "common",
+  "slot": "foregrip",
+  "mods": {
+    "stability": 6,
+    "recoilUp": -9,
+    "recoilSide": 3,
+    "handling": -3
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "slab",
+        "pos": [0, -0.003, 0],
+        "size": [0.018, 0.006, 0.036],
+        "color": "#1d1f21",
+        "corners": [0.0015, 0.0015, 0.0015, 0.0015],
+        "segments": 1,
+        "name": "rail clamp",
+        "group": "clamp"
+      },
+      {
+        "type": "box",
+        "pos": [0.0094, -0.004, 0],
+        "size": [0.002, 0.004, 0.01],
+        "color": "#8d8f91",
+        "name": "clamp screw",
+        "group": "clamp"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.0353, -0.0062],
+        "radius": 0.0105,
+        "radiusTop": 0.0118,
+        "height": 0.06,
+        "color": "#b49a6c",
+        "sides": 8,
+        "yaw": 22.5,
+        "name": "grip",
+        "group": "grip",
+        "pitch": 12
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.0676, -0.0131],
+        "radius": 0.0135,
+        "radiusTop": 0.0135,
+        "height": 0.01,
+        "color": "#a08c64",
+        "sides": 8,
+        "yaw": 22.5,
+        "name": "bulb",
+        "group": "grip",
+        "pitch": 12
+      }
+    ],
+    "support": [0, -0.035, -0.006]
+  }
+}

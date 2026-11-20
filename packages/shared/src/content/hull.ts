@@ -36,10 +36,12 @@ export function convexHull(points: readonly P3[]): [number, number, number][] | 
       const l = dot(d, d);
       if (l > far) [far, i0, i1] = [l, i, j];
     }
-  if (far < EPS) return null;
+  if (far < EPS * EPS) return null;
   const axis = sub(points[i1]!, points[i0]!);
   let i2 = -1;
-  far = EPS;
+  // Off the line by more than a millionth of its length (relative, so a gun's
+  // millimeter-sized parts count as solids: |axis × v|² is |axis|² times the distance²).
+  far = EPS * EPS * 100 * far * far;
   for (let i = 0; i < n; i++) {
     const c = cross(axis, sub(points[i]!, points[i0]!));
     const l = dot(c, c);

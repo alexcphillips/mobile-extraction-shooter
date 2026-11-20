@@ -1,0 +1,66 @@
+{
+  "formatVersion": 13,
+  "id": "tightbore-choke",
+  "name": "Tightbore choke",
+  "shortName": "Tightbore",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 3500,
+  "weight": 0.08,
+  "rarity": "common",
+  "slot": "muzzle",
+  "classes": ["shotgun"],
+  "mods": {
+    "recoilUp": -9,
+    "recoilSide": -9,
+    "accuracy": 3,
+    "handling": -6
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.016],
+        "pitch": 90,
+        "radius": 0.0132,
+        "height": 0.032,
+        "color": "#1d1f21",
+        "name": "tube"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0128, -0.012],
+        "size": [0.006, 0.004, 0.005],
+        "color": "#141516",
+        "name": "top port"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0128, -0.022],
+        "size": [0.006, 0.004, 0.005],
+        "color": "#141516",
+        "name": "top port"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.033],
+        "pitch": 90,
+        "radius": 0.0142,
+        "height": 0.006,
+        "color": "#8d8f91",
+        "name": "lip"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.037],
+        "pitch": 90,
+        "radius": 0.0095,
+        "height": 0.002,
+        "color": "#141516",
+        "sides": 6,
+        "name": "bore"
+      }
+    ],
+    "muzzle": [0, 0, -0.038]
+  }
+}

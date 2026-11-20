@@ -1,9 +1,10 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "g18c",
   "name": "Glock 18C",
   "type": "weapon",
   "class": "pistol",
+  "platform": "glock",
   "size": [2, 1],
   "value": 41500,
   "weight": 0.6,
@@ -15,18 +16,22 @@
   "magazine": 17,
   "feed": "magazine",
   "reloadTime": 1.6,
-  "ergonomics": 87,
-  "range": 100,
-  "loudness": 120,
+  "stats": {
+    "recoilUp": 65,
+    "recoilSide": 60,
+    "stability": 32,
+    "handling": 87,
+    "hipFire": 33,
+    "accuracy": 26,
+    "range": 50,
+    "loudness": 69
+  },
+  "barrelRange": 0.9,
   "defaults": {
     "magazine": "g18c-mag"
   },
-  "slots": ["muzzle", "magazine", "laser"],
-  "hipSpread": 2.2,
-  "aimSpread": 0.6,
+  "slots": ["muzzle", "magazine", "rightRail"],
   "recoil": {
-    "up": 2.28,
-    "side": 0.67,
     "snap": 45,
     "recovery": 4,
     "angle": -6
@@ -199,7 +204,7 @@
     "mounts": {
       "muzzle": [0, 0.012, -0.155],
       "magazine": [0, -0.106, 0.02],
-      "laser": [0, -0.038, -0.12]
+      "rightRail": [0, -0.038, -0.12]
     }
   }
 }

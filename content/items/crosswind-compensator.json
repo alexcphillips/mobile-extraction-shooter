@@ -1,0 +1,99 @@
+{
+  "formatVersion": 13,
+  "id": "crosswind-compensator",
+  "name": "Crosswind horizontal compensator",
+  "shortName": "Crosswind",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 3000,
+  "weight": 0.09,
+  "rarity": "common",
+  "slot": "muzzle",
+  "classes": ["assault", "smg", "dmr", "sniper", "lmg"],
+  "mods": {
+    "recoilSide": -3,
+    "stability": 3,
+    "handling": -1
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.025],
+        "pitch": 90,
+        "radius": 0.015,
+        "height": 0.05,
+        "color": "#3a3d40",
+        "name": "body"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0135, 0, -0.013],
+        "size": [0.01, 0.006, 0.007],
+        "color": "#141516",
+        "roll": 90,
+        "name": "side port"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0135, 0, -0.025],
+        "size": [0.01, 0.006, 0.007],
+        "color": "#141516",
+        "roll": 90,
+        "name": "side port"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0135, 0, -0.037],
+        "size": [0.01, 0.006, 0.007],
+        "color": "#141516",
+        "roll": 90,
+        "name": "side port"
+      },
+      {
+        "type": "box",
+        "pos": [0.0135, 0, -0.013],
+        "size": [0.01, 0.006, 0.007],
+        "color": "#141516",
+        "roll": 270,
+        "name": "side port"
+      },
+      {
+        "type": "box",
+        "pos": [0.0135, 0, -0.025],
+        "size": [0.01, 0.006, 0.007],
+        "color": "#141516",
+        "roll": 270,
+        "name": "side port"
+      },
+      {
+        "type": "box",
+        "pos": [0.0135, 0, -0.037],
+        "size": [0.01, 0.006, 0.007],
+        "color": "#141516",
+        "roll": 270,
+        "name": "side port"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.049],
+        "pitch": 90,
+        "radius": 0.016,
+        "height": 0.006,
+        "color": "#1d1f21",
+        "name": "crown"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.053],
+        "pitch": 90,
+        "radius": 0.006,
+        "height": 0.002,
+        "color": "#141516",
+        "sides": 6,
+        "name": "bore"
+      }
+    ],
+    "muzzle": [0, 0, -0.054]
+  }
+}

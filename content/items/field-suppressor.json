@@ -1,0 +1,63 @@
+{
+  "formatVersion": 13,
+  "id": "field-suppressor",
+  "name": "Field suppressor",
+  "shortName": "Field",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 15000,
+  "weight": 0.45,
+  "rarity": "common",
+  "slot": "muzzle",
+  "classes": ["assault", "smg", "dmr", "sniper", "lmg", "pistol"],
+  "mods": {
+    "recoilUp": -3,
+    "recoilSide": -3,
+    "stability": 3,
+    "handling": -2,
+    "loudness": -26
+  },
+  "columns": 1,
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.01],
+        "pitch": 90,
+        "radius": 0.0215,
+        "height": 0.02,
+        "color": "#3a3d40",
+        "name": "mount"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.087],
+        "pitch": 90,
+        "radius": 0.02,
+        "height": 0.142,
+        "color": "#1d1f21",
+        "name": "tube"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.159],
+        "pitch": 90,
+        "radius": 0.021,
+        "height": 0.01,
+        "color": "#2b2d2f",
+        "name": "end cap"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.165],
+        "pitch": 90,
+        "radius": 0.006,
+        "height": 0.002,
+        "color": "#141516",
+        "sides": 6,
+        "name": "bore"
+      }
+    ],
+    "muzzle": [0, 0, -0.166]
+  }
+}

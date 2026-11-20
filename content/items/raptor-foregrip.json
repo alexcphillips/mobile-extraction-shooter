@@ -1,0 +1,72 @@
+{
+  "formatVersion": 13,
+  "id": "raptor-foregrip",
+  "name": "Raptor foregrip",
+  "shortName": "Raptor",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 2800,
+  "weight": 0.1,
+  "rarity": "common",
+  "slot": "foregrip",
+  "mods": {
+    "recoilUp": -3,
+    "stability": 3,
+    "handling": -1
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "slab",
+        "pos": [0, -0.003, 0],
+        "size": [0.018, 0.006, 0.034],
+        "color": "#1d1f21",
+        "corners": [0.0015, 0.0015, 0.0015, 0.0015],
+        "segments": 1,
+        "name": "rail clamp",
+        "group": "clamp"
+      },
+      {
+        "type": "box",
+        "pos": [0.0094, -0.004, 0],
+        "size": [0.002, 0.004, 0.01],
+        "color": "#8d8f91",
+        "name": "clamp screw",
+        "group": "clamp"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.034, 0],
+        "radius": 0.0105,
+        "radiusTop": 0.0115,
+        "height": 0.056,
+        "color": "#3a3d40",
+        "sides": 8,
+        "yaw": 22.5,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03, -0.012],
+        "size": [0.004, 0.044, 0.006],
+        "color": "#1d1f21",
+        "name": "front fin",
+        "group": "grip"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.0645, 0],
+        "radius": 0.0122,
+        "radiusTop": 0.0122,
+        "height": 0.005,
+        "color": "#1d1f21",
+        "sides": 8,
+        "yaw": 22.5,
+        "name": "end cap",
+        "group": "grip"
+      }
+    ],
+    "support": [0, -0.034, 0]
+  }
+}

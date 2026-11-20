@@ -1,4 +1,6 @@
 import {
+  sightsOf,
+  hasLaser,
   throwable,
   QUICK_GRIDS,
   carriedGrenade,
@@ -77,6 +79,10 @@ export class HandsHud {
   private grenadeNext: string | null = null;
   /** The breath button's look: '' hidden, else the label it shows. */
   private breathKey = '';
+  /** The sight button's look: '' hidden, else the sight a tap goes to. */
+  private sightKey = '';
+  /** The laser button's look: 0 hidden (no laser on the gun), 1 off, 2 on. */
+  private laserKey = -1;
   private ticks = 0;
   private readonly packRing: SVGCircleElement;
   private packing = false;
@@ -98,6 +104,8 @@ export class HandsHud {
     this.grenadeCount = grenade.querySelector('.slot-num')!;
     this.grenadeName = grenade.querySelector('.heal-name')!;
     hud.button('breathe').classList.add('unaimed');
+    hud.button('sight').classList.add('unaimed');
+    hud.button('laser').classList.add('unarmed');
     // A ring that fills while packing or unloading magazines (MG-2); a reload stops it.
     const reload = hud.button('reload');
     reload.innerHTML =
@@ -189,6 +197,33 @@ export class HandsHud {
       const b = this.hud.button('breathe');
       b.classList.toggle('unaimed', !aimed);
       if (aimed) b.textContent = breathKey;
+    }
+    // The sight button: while aimed with a gun that has more than one sight, saying which a
+    // tap goes to next.
+    const held = aimed ? heldWeapon(c) : null;
+    const sights = held ? sightsOf(held, items) : [];
+    const next = sights.length > 1 ? sights[((held!.sight ?? 0) + 1) % sights.length]! : null;
+    const sightKey = !next
+      ? ''
+      : !next.look
+        ? 'irons'
+        : next.look.zoom > 1
+          ? `${next.look.zoom}×`
+          : 'dot';
+    if (sightKey !== this.sightKey) {
+      this.sightKey = sightKey;
+      const b = this.hud.button('sight');
+      b.classList.toggle('unaimed', !sightKey);
+      if (sightKey) b.textContent = sightKey;
+    }
+    // The laser button: with a laser on the gun in hand, lit while it's on.
+    const inHand = c.health.dead ? null : heldWeapon(c);
+    const laserKey = !inHand || !hasLaser(inHand, items) ? 0 : inHand.laserOff ? 1 : 2;
+    if (laserKey !== this.laserKey) {
+      this.laserKey = laserKey;
+      const b = this.hud.button('laser');
+      b.classList.toggle('unarmed', !laserKey);
+      b.classList.toggle('active', laserKey === 2);
     }
     const name = c.using
       ? itemDef(items, c.using.item).name

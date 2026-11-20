@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "uzi-pro-mag",
   "name": "Uzi Pro 20-round magazine",
   "shortName": "Uzi Pro 20",
@@ -9,7 +9,7 @@
   "weight": 0.18,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["uzi-pro"],
+  "platforms": ["uzi"],
   "capacity": 20,
   "caliber": "9x19",
   "model": {

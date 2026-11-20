@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "mpx-mag",
   "name": "MPX 30-round magazine",
   "shortName": "MPX 30",
@@ -9,7 +9,7 @@
   "weight": 0.15,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["mpx"],
+  "platforms": ["ar15"],
   "capacity": 30,
   "caliber": "9x19",
   "model": {

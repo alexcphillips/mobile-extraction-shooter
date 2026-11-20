@@ -16,6 +16,7 @@ import {
   NavGrid,
   ammoDef,
   attachmentDef,
+  currentSight,
   brokenArms,
   createCharacterHit,
   createRayHit,
@@ -53,6 +54,10 @@ import {
   type PlayerInput,
   type Zone,
   heldWeapon,
+  jumpAt,
+  statAt,
+  weaponStats,
+  createWeaponStats,
   entityById,
   loadedAmmo,
   placeLootContainers,
@@ -117,7 +122,7 @@ import {
 import { Stats } from '../debug/stats';
 import { HandsHud } from '../hud/hands';
 import type { Hud } from '../hud/hud';
-import { AIM_FOV, FOV, aimedFov, type OpticOverlay } from '../hud/optic';
+import { AIM_FOV, FOV, aimedFov, gunFov, gunToWorld, type OpticOverlay } from '../hud/optic';
 import { EnemyBars } from '../hud/enemy-bars';
 import type { RaidHud } from '../hud/raid-hud';
 import { SpectateBar } from '../hud/spectate';
@@ -152,6 +157,7 @@ import { GroundItems } from '../render/ground-items';
 import { LandmarkPass } from '../render/landmarks';
 import { buildMap, updateDoors, updateGlass, updateSearchedLooks } from '../render/map';
 import { AiDebug, buildNavOverlay } from '../render/nav-debug';
+import { Lasers } from '../render/lasers';
 import { Viewmodel } from '../render/viewmodel';
 import { settings } from '../settings';
 import type { RaidScreenHandle } from '../ui/raid';
@@ -253,6 +259,14 @@ const RETICLE_IN = 0.95;
 /** How far into aiming a scope switches to its full-screen zoom. */
 const SCOPE_IN = 0.9;
 const DEG = Math.PI / 180;
+/**
+ * The view's jump per shot at a middling stability (jumpAt's 1×), in degrees: up, and the
+ * most either way sideways. Display only, like the gun's kick: the reticle stays where shots go.
+ */
+const SHOT_JUMP_UP = 0.5;
+const SHOT_JUMP_SIDE = 0.25;
+/** Milliseconds for the view's jump to fade to a third. */
+const SHOT_JUMP_FADE = 60;
 /** The view tilts this much of the body's lean angle. */
 const LEAN_ROLL = 0.35;
 /** With ?respawn, dead enemies come back at their spawn after this long. */
@@ -426,6 +440,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const grenades = new GrenadeViews(items, world);
   scene.add(grenades.root);
   const viewmodel = new Viewmodel();
+  const lasers = new Lasers();
+  scene.add(lasers.root);
   const cues = new SoundCues(sounds(), world, items, types);
   // Rendered now rather than as each is first heard (if audio is unlocked yet).
   sounds().prepare();
@@ -735,7 +751,7 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     const w = heldWeapon(player);
     const knife = player.gear.knife;
     let range: number;
-    if (w) range = weaponDef(items, w.item).range;
+    if (w) range = statAt('range', weaponDef(items, w.item).stats.range);
     else if (knife && knifeOut()) range = meleeDef(items, knife.item).reach;
     else return false;
     const yaw = controls.yaw + player.recoilYaw + (player.swayYaw ?? 0);
@@ -812,6 +828,42 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   const shotMarkers = options.debug ? Array.from({ length: 5 }, () => debugMarker(0xff00ff)) : [];
   let nextShotMarker = 0;
   const markerHit = createRayHit();
+
+  /** How far a laser reaches (m), and how far away someone else's is drawn. */
+  const LASER_RANGE = 100;
+  const LASER_SEEN = 60;
+  const laserHit = createRayHit();
+  const laserFrom = new THREE.Vector3();
+  const laserDir = new THREE.Vector3();
+  /**
+   * How far a laser goes along a unit direction before it lands on something (through
+   * glass, as light does) or someone other than skip, or Infinity within range.
+   */
+  function laserReach(
+    ox: number,
+    oy: number,
+    oz: number,
+    dx: number,
+    dy: number,
+    dz: number,
+    skip: number,
+  ): number {
+    const wall = world.raycast(ox, oy, oz, dx, dy, dz, LASER_RANGE, laserHit, true);
+    const reach = Math.min(wall, LASER_RANGE);
+    return Math.min(wall, raycastCharacters(sim, ox, oy, oz, dx, dy, dz, reach, skip));
+  }
+  /** Someone else's lasers, along their gun, when they're near enough to see. */
+  function bodyLasers(c: Character, body: CharacterBody, viewer: Character): void {
+    if (c === viewer || c.health.dead || !body.laserCount || !body.root.visible) return;
+    if (heldWeapon(c)?.laserOff) return;
+    if (camera.position.distanceToSquared(body.root.position) > LASER_SEEN ** 2) return;
+    for (let i = 0; i < body.laserCount; i++) {
+      body.laserRay(i, laserFrom, laserDir);
+      const { x, y, z } = laserFrom;
+      const d = laserReach(x, y, z, laserDir.x, laserDir.y, laserDir.z, c.id);
+      lasers.add(x, y, z, laserDir.x, laserDir.y, laserDir.z, d);
+    }
+  }
   /** Keeps a marker about the same size on screen at any distance. */
   function placeMarker(m: THREE.Mesh, x: number, y: number, z: number, size: number): void {
     m.position.set(x, y, z);
@@ -1110,6 +1162,10 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
   let watching: Character | null = null;
   /** The view's sideways jolt from the last hit (TU-1), radians; it fades each frame. */
   let punchRoll = 0;
+  /** The view's jump from the viewer's own shots (STABILITY), radians; it fades each frame. */
+  let jumpPitch = 0;
+  let jumpYaw = 0;
+  const jumpStats = createWeaponStats();
   const spectateBar = coop
     ? new SpectateBar(
         () => watch(-1),
@@ -1231,6 +1287,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     input.throw = controls.throw;
     input.grenade = hands.grenadeChoice;
     input.breathe = controls.breathe;
+    input.sight = controls.sight;
+    input.laser = controls.laser;
     if (controls.throwPick && !dead) hands.showGrenadePicker(player, items);
     // A tap on the heal button uses what it shows, or stops a med being used.
     input.use = controls.heal ? (player.using ? 'cancel' : hands.choice) : picked;
@@ -1409,12 +1467,21 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       }
       if (e.type === 'shot' && e.by === player.id && e.pellet === 0) {
         const gun = heldWeapon(player);
-        rumble.fired(gun ? weaponDef(items, gun.item).recoil.up : 1, now);
+        rumble.fired(gun ? statAt('recoilUp', weaponDef(items, gun.item).stats.recoilUp) : 1, now);
       }
       if (e.type === 'shot') {
         const color = TRACER_COLOR;
         if (e.by === viewer.id) {
-          if (e.pellet === 0) viewmodel.fired(now);
+          if (e.pellet === 0) {
+            const gun = heldWeapon(viewer);
+            const jump = gun ? jumpAt(weaponStats(items, gun, jumpStats).points.stability) : 1;
+            viewmodel.fired(now, jump);
+            jumpPitch = Math.min(
+              3 * SHOT_JUMP_UP * jump * DEG,
+              jumpPitch + SHOT_JUMP_UP * jump * DEG,
+            );
+            jumpYaw += (Math.random() * 2 - 1) * SHOT_JUMP_SIDE * jump * DEG;
+          }
           viewmodel.muzzleWorld(muzzle);
           effects.tracer(now, muzzle.x, muzzle.y, muzzle.z, e.toX, e.toY, e.toZ, color);
         } else {
@@ -1676,8 +1743,13 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     }
   });
   grenades.warm(true);
+  lasers.begin(camera);
+  lasers.add(camera.position.x, camera.position.y, camera.position.z, 0, 0, -1, 1);
+  lasers.end();
   render();
   grenades.warm(false);
+  lasers.begin(camera);
+  lasers.end();
   for (const o of culled) o.frustumCulled = true;
 
   const loop = new FixedTimestep();
@@ -1706,12 +1778,13 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     // Leaning tilts the view a third as far as the body (about 10°), towards the lean.
     // A hit's jolt (TU-1) fades in about a fifth of a second.
     punchRoll *= Math.exp(-dtMs / 70);
+    jumpPitch *= Math.exp(-dtMs / SHOT_JUMP_FADE);
+    jumpYaw *= Math.exp(-dtMs / SHOT_JUMP_FADE);
     const roll = -lerp(prev.lean, cur.lean) * MOVEMENT.leanAngle * LEAN_ROLL + punchRoll;
     const aim = lerp(prev.aim, cur.aim);
     const w = heldWeapon(v);
-    const optic = w?.attachments.optic
-      ? (attachmentDef(items, w.attachments.optic).optic ?? null)
-      : null;
+    // The sight it's aimed with (its `sight`): an optic, the red dot riding on a scope.
+    const optic = w ? currentSight(w, items).look : null;
     const zoom = optic?.zoom ?? 1;
     // A scope snaps to its zoom behind the mask once aimed; until then it's like irons.
     const scoped = zoom > 1 && aim >= SCOPE_IN;
@@ -1720,21 +1793,25 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       camera.fov = fov;
       camera.updateProjectionMatrix();
     }
-    const gunFov = scoped ? AIM_FOV : fov;
-    if (gunCamera.fov !== gunFov) {
-      gunCamera.fov = gunFov;
+    // The gun keeps its own field of view (GUN_FOV); what's drawn from it into the world
+    // (tracers, laser beams) and where it points are matched to the world's view.
+    const gunView = gunFov(aim, scoped);
+    viewmodel.toWorld = gunToWorld(fov, gunView);
+    if (gunCamera.fov !== gunView) {
+      gunCamera.fov = gunView;
       gunCamera.updateProjectionMatrix();
     }
     // Looking turns the view less when zoomed in, so it moves as fast on the screen.
     controls.zoom = scoped ? Math.tan((AIM_FOV / 2) * DEG) / Math.tan((fov / 2) * DEG) : 1;
     // Aimed, recoil's first few degrees climb the sights and the rest the view (gunRecoil);
     // sway is all the gun's. The view's share is eased between ticks, so it stays smooth;
-    // the sights' isn't (below).
+    // the sights' isn't (below). The shot's jump (STABILITY) moves only the view, divided by
+    // the zoom so a scope shows it as big as iron sights do.
     const rp = lerp(prev.rp, cur.rp);
     const ry = lerp(prev.ry, cur.ry);
     camera.rotation.set(
-      pitch + rp - gunRecoil(rp, aim, controls.zoom),
-      yaw + ry - gunRecoil(ry, aim, controls.zoom),
+      pitch + rp - gunRecoil(rp, aim, controls.zoom) + jumpPitch / controls.zoom,
+      yaw + ry - gunRecoil(ry, aim, controls.zoom) + jumpYaw / controls.zoom,
       roll,
     );
     const alive = !v.health.dead;
@@ -1785,8 +1862,8 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
     viewmodel.visible = alive && (!!w || knife);
     if (w) viewmodel.setGun(w, items);
     else if (knife) viewmodel.setKnife(v.gear.knife!.item, items);
-    // Lowered for a med.
-    const down = v.using ? 1 : 0;
+    // Lowered for a med, and while sprinting until the gun is back up (WS-4).
+    const down = v.using ? 1 : 1 - (v.raised ?? 1);
     lowered += (down - lowered) * (1 - Math.exp(-dtMs / 90));
     viewmodel.update(
       camera,
@@ -1797,12 +1874,37 @@ export async function startPlay(el: PlayElements, options: PlayOptions): Promise
       w?.reloading ?? 0,
       lerp(prev.drawn, cur.drawn),
       lowered,
-      // Looking through a scope the reticle moves zoom times as far on screen as the gun
-      // view would, so its pointing is scaled up to keep the eyepiece round the reticle.
-      scoped ? Math.atan(Math.tan(pointYaw) * controls.zoom) : pointYaw,
-      scoped ? Math.atan(Math.tan(pointPitch) * controls.zoom) : pointPitch,
+      // The world view draws an angle bigger or smaller on screen than the gun's view does
+      // (zoomed through a scope, wider from the hip), so the gun's pointing is scaled to land
+      // on the same spot: the eyepiece stays round the reticle, the muzzle on the shot.
+      Math.atan(Math.tan(pointYaw) / viewmodel.toWorld),
+      Math.atan(Math.tan(pointPitch) / viewmodel.toWorld),
       scoped,
     );
+    // Lasers, while switched on: yours lands where your shots go, from the lens on the gun you see (no beam
+    // through a scope, where the zoom puts the gun's lens off its place), and only with the
+    // gun up; everyone else's runs along their gun.
+    lasers.begin(camera);
+    const ready = alive && !!w && !w.laserOff && !w.reloading && !v.using && cur.drawn >= 1;
+    if (ready && viewmodel.laserCount) {
+      const { x: ox, y: oy, z: oz } = camera.position;
+      const dx = -Math.sin(aimYaw) * aimCos;
+      const dy = Math.sin(aimPitch);
+      const dz = -Math.cos(aimYaw) * aimCos;
+      const d = laserReach(ox, oy, oz, dx, dy, dz, v.id);
+      const end = Math.min(d, LASER_RANGE);
+      for (let i = 0; i < viewmodel.laserCount; i++) {
+        const from = viewmodel.laserWorld(i, laserFrom);
+        laserDir.set(ox + dx * end - from.x, oy + dy * end - from.y, oz + dz * end - from.z);
+        const len = laserDir.length();
+        laserDir.divideScalar(len);
+        const at = d < Infinity ? len : Infinity;
+        lasers.add(from.x, from.y, from.z, laserDir.x, laserDir.y, laserDir.z, at, !scoped);
+      }
+    }
+    for (const e of enemies) bodyLasers(e.c, e.body, v);
+    for (const o of others) bodyLasers(o.c, o.body, v);
+    lasers.end();
     effects.update(performance.now());
     grenades.update(performance.now(), alpha);
     // Wearing a mask (AI-7, Jug's): the view's edges hidden and every sound muffled, until

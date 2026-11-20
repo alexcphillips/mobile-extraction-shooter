@@ -1,11 +1,12 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "uzi",
   "name": "Uzi",
   "type": "weapon",
   "class": "smg",
-  "size": [2, 2],
-  "value": 17500,
+  "platform": "uzi",
+  "size": [3, 2],
+  "value": 19100,
   "weight": 3.5,
   "rarity": "common",
   "ammo": "ammo-9mm",
@@ -14,15 +15,30 @@
   "rpm": 600,
   "magazine": 32,
   "feed": "magazine",
-  "reloadTime": 2.4,
-  "ergonomics": 76,
-  "range": 100,
-  "loudness": 110,
-  "defaults": { "magazine": "uzi-mag", "stock": "uzi-stock" },
-  "slots": ["muzzle", "magazine", "laser", "stock"],
-  "hipSpread": 2.3,
-  "aimSpread": 0.7,
-  "recoil": { "up": 1.87, "side": 0.78, "snap": 45, "recovery": 3, "angle": -6 },
+  "reloadTime": 2.38,
+  "stats": {
+    "recoilUp": 56,
+    "recoilSide": 58,
+    "stability": 67,
+    "handling": 78,
+    "hipFire": 32,
+    "accuracy": 23,
+    "range": 50,
+    "loudness": 67
+  },
+  "barrelRange": 1.05,
+  "defaults": {
+    "magazine": "uzi-mag"
+  },
+  "slots": ["muzzle", "magazine", "rightRail", "stock"],
+  "stock": {
+    "length": 1
+  },
+  "recoil": {
+    "snap": 45,
+    "recovery": 3,
+    "angle": -6
+  },
   "sounds": {
     "shot": "pistol-shot",
     "suppressed": "pistol-shot-suppressed",
@@ -264,6 +280,46 @@
         "color": "#18191b",
         "name": "front sight ear",
         "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.004, 0.146],
+        "size": [0.03, 0.02, 0.012],
+        "color": "#18191b",
+        "name": "hinge",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [-0.017, -0.01, 0.265],
+        "size": [0.006, 0.01, 0.235],
+        "color": "#2c2e30",
+        "name": "strut",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0.017, -0.01, 0.265],
+        "size": [0.006, 0.01, 0.235],
+        "color": "#2c2e30",
+        "name": "strut",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.035, 0.385],
+        "size": [0.046, 0.085, 0.01],
+        "color": "#2c2e30",
+        "name": "butt plate",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.035, 0.3915],
+        "size": [0.04, 0.075, 0.003],
+        "color": "#18191b",
+        "name": "butt pad",
+        "hiddenBy": "stock"
       }
     ],
     "grip": [0, -0.085, 0.02],
@@ -273,8 +329,12 @@
     "mounts": {
       "muzzle": [0, 0, -0.215],
       "magazine": [0, -0.045, 0.02],
-      "laser": [0.026, -0.04, -0.095],
-      "stock": [0, 0.0, 0.14]
+      "rightRail": [0.026, -0.04, -0.095],
+      "stock": [0, 0, 0.14]
+    },
+    "factoryFold": {
+      "pivot": [-0.02, 0, 0],
+      "yaw": 180
     }
   }
 }

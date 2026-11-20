@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "mag-mp133-8",
   "name": "MP-133 8-shell magazine",
   "shortName": "MP-133 8",
@@ -11,8 +11,8 @@
   "slot": "magazine",
   "weapons": ["mp-133"],
   "mods": {
-    "magazine": 2,
-    "reloadTime": 1.33
+    "reloadTime": 1.33,
+    "magazine": 2
   },
   "model": {
     "parts": [

@@ -1,11 +1,12 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "mpx",
   "name": "MPX",
   "type": "weapon",
   "class": "smg",
-  "size": [2, 2],
-  "value": 39700,
+  "platform": "ar15",
+  "size": [3, 2],
+  "value": 42800,
   "weight": 2.2,
   "rarity": "common",
   "ammo": "ammo-9mm",
@@ -14,22 +15,28 @@
   "rpm": 850,
   "magazine": 30,
   "feed": "magazine",
-  "reloadTime": 2.1,
-  "ergonomics": 67,
-  "range": 100,
-  "loudness": 115,
-  "defaults": {
-    "magazine": "mpx-mag",
-    "stock": "mpx-stock"
+  "reloadTime": 2.13,
+  "stats": {
+    "recoilUp": 54,
+    "recoilSide": 58,
+    "stability": 51,
+    "handling": 64,
+    "hipFire": 34,
+    "accuracy": 26,
+    "range": 50,
+    "loudness": 68
   },
-  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
-  "hipSpread": 2.1,
-  "aimSpread": 0.6,
+  "barrelRange": 1.1,
+  "defaults": {
+    "magazine": "mpx-mag"
+  },
+  "slots": ["optic", "muzzle", "magazine", "rightRail", "stock"],
+  "stock": {
+    "length": 1
+  },
   "recoil": {
-    "up": 2.33,
-    "side": 1.05,
     "snap": 45,
-    "recovery": 2.5,
+    "recovery": 3,
     "angle": -5
   },
   "sounds": {
@@ -165,6 +172,20 @@
         "hiddenBy": "optic",
         "name": "front sight ear",
         "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0, 0.2],
+        "size": [0.02, 0.03, 0.14],
+        "color": "#2b2e31",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.015, 0.275],
+        "size": [0.036, 0.09, 0.012],
+        "color": "#1d1f21",
+        "hiddenBy": "stock"
       }
     ],
     "grip": [0, -0.075, 0.08],
@@ -175,8 +196,12 @@
       "optic": [0, 0.052, 0.06],
       "muzzle": [0, 0.012, -0.255],
       "magazine": [0, -0.07, -0.022],
-      "laser": [0.037, 0.004, -0.2],
+      "rightRail": [0.037, 0.004, -0.2],
       "stock": [0, 0, 0.13]
+    },
+    "factoryFold": {
+      "pivot": [-0.022, 0, 0],
+      "yaw": 180
     }
   }
 }

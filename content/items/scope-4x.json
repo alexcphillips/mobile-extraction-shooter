@@ -1,7 +1,8 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "scope-4x",
-  "name": "4× scope",
+  "name": "Hedgerow 4× hunting scope",
+  "shortName": "Hedgerow 4×",
   "type": "attachment",
   "size": [2, 1],
   "value": 18000,
@@ -14,7 +15,6 @@
     "m416",
     "scar-h",
     "g3",
-    "as-val",
     "sv-98",
     "r93",
     "awm",
@@ -25,10 +25,12 @@
     "ak-74m",
     "sks",
     "adar",
-    "vss",
     "svt-40"
   ],
-  "mods": { "aimTime": 1.4 },
+  "platforms": ["as-val"],
+  "mods": {
+    "aimTime": 1.4
+  },
   "optic": {
     "zoom": 4,
     "reticle": {
@@ -46,271 +48,1431 @@
     "fill": 34
   },
   "model": {
+    "sight": [0, 0.045, 0.05],
     "parts": [
-      { "type": "box", "pos": [0, 0.015, -0.03], "size": [0.016, 0.03, 0.016], "color": "#1d1f21" },
-      { "type": "box", "pos": [0, 0.015, -0.13], "size": [0.016, 0.03, 0.016], "color": "#1d1f21" },
       {
         "type": "cylinder",
-        "pos": [0, 0.045, -0.08],
+        "pos": [0, 0.045, 0.0255],
+        "radius": 0.0158,
+        "radiusTop": 0.0203,
+        "height": 0.027,
+        "color": "#232528",
+        "sides": 16,
         "pitch": 90,
-        "radius": 0.016,
-        "height": 0.2,
-        "color": "#1d1f21",
+        "name": "eyepiece bell",
+        "group": "eyepiece body",
         "scopedHidden": true
       },
       {
         "type": "cylinder",
-        "pos": [0, 0.045, -0.2],
+        "pos": [0, 0.045, 0.023],
+        "radius": 0.018000000000000002,
+        "radiusTop": 0.0184,
+        "height": 0.01,
+        "color": "#18191b",
+        "sides": 16,
         "pitch": 90,
-        "radius": 0.022,
-        "height": 0.05,
-        "color": "#1d1f21",
+        "name": "focus ring",
+        "group": "eyepiece body",
+        "scopedHidden": true
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [0.0215, 0],
+          [0.02077, -0.00556],
+          [0.0171, -0.00458],
+          [0.0177, 0]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [0.02077, -0.00556],
+          [0.01862, -0.01075],
+          [0.01533, -0.00885],
+          [0.0171, -0.00458]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [0.01862, -0.01075],
+          [0.0152, -0.0152],
+          [0.01252, -0.01252],
+          [0.01533, -0.00885]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [0.0152, -0.0152],
+          [0.01075, -0.01862],
+          [0.00885, -0.01533],
+          [0.01252, -0.01252]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [0.01075, -0.01862],
+          [0.00556, -0.02077],
+          [0.00458, -0.0171],
+          [0.00885, -0.01533]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [0.00556, -0.02077],
+          [0, -0.0215],
+          [0, -0.0177],
+          [0.00458, -0.0171]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [0, -0.0215],
+          [-0.00556, -0.02077],
+          [-0.00458, -0.0171],
+          [0, -0.0177]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [-0.00556, -0.02077],
+          [-0.01075, -0.01862],
+          [-0.00885, -0.01533],
+          [-0.00458, -0.0171]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [-0.01075, -0.01862],
+          [-0.0152, -0.0152],
+          [-0.01252, -0.01252],
+          [-0.00885, -0.01533]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [-0.0152, -0.0152],
+          [-0.01862, -0.01075],
+          [-0.01533, -0.00885],
+          [-0.01252, -0.01252]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [-0.01862, -0.01075],
+          [-0.02077, -0.00556],
+          [-0.0171, -0.00458],
+          [-0.01533, -0.00885]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [-0.02077, -0.00556],
+          [-0.0215, 0],
+          [-0.0177, 0],
+          [-0.0171, -0.00458]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [-0.0215, 0],
+          [-0.02077, 0.00556],
+          [-0.0171, 0.00458],
+          [-0.0177, 0]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [-0.02077, 0.00556],
+          [-0.01862, 0.01075],
+          [-0.01533, 0.00885],
+          [-0.0171, 0.00458]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [-0.01862, 0.01075],
+          [-0.0152, 0.0152],
+          [-0.01252, 0.01252],
+          [-0.01533, 0.00885]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [-0.0152, 0.0152],
+          [-0.01075, 0.01862],
+          [-0.00885, 0.01533],
+          [-0.01252, 0.01252]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [-0.01075, 0.01862],
+          [-0.00556, 0.02077],
+          [-0.00458, 0.0171],
+          [-0.00885, 0.01533]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [-0.00556, 0.02077],
+          [0, 0.0215],
+          [0, 0.0177],
+          [-0.00458, 0.0171]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [0, 0.0215],
+          [0.00556, 0.02077],
+          [0.00458, 0.0171],
+          [0, 0.0177]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [0.00556, 0.02077],
+          [0.01075, 0.01862],
+          [0.00885, 0.01533],
+          [0.00458, 0.0171]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [0.01075, 0.01862],
+          [0.0152, 0.0152],
+          [0.01252, 0.01252],
+          [0.00885, 0.01533]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [0.0152, 0.0152],
+          [0.01862, 0.01075],
+          [0.01533, 0.00885],
+          [0.01252, 0.01252]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [0.01862, 0.01075],
+          [0.02077, 0.00556],
+          [0.0171, 0.00458],
+          [0.01533, 0.00885]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.044],
+        "color": "#2c2e31",
+        "pitch": 90,
+        "points": [
+          [0.02077, 0.00556],
+          [0.0215, 0],
+          [0.0177, 0],
+          [0.0171, 0.00458]
+        ],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.02113, 0.04778, 0.0415],
+        "color": "#232528",
+        "roll": -82.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01969, 0.05316, 0.0415],
+        "color": "#232528",
+        "roll": -67.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01691, 0.05798, 0.0415],
+        "color": "#232528",
+        "roll": -52.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01298, 0.06191, 0.0415],
+        "color": "#232528",
+        "roll": -37.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00816, 0.06469, 0.0415],
+        "color": "#232528",
+        "roll": -22.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00278, 0.06613, 0.0415],
+        "color": "#232528",
+        "roll": -7.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00278, 0.06613, 0.0415],
+        "color": "#232528",
+        "roll": 7.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00816, 0.06469, 0.0415],
+        "color": "#232528",
+        "roll": 22.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01298, 0.06191, 0.0415],
+        "color": "#232528",
+        "roll": 37.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01691, 0.05798, 0.0415],
+        "color": "#232528",
+        "roll": 52.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01969, 0.05316, 0.0415],
+        "color": "#232528",
+        "roll": 67.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.02113, 0.04778, 0.0415],
+        "color": "#232528",
+        "roll": 82.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.02113, 0.04222, 0.0415],
+        "color": "#232528",
+        "roll": -262.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01969, 0.03684, 0.0415],
+        "color": "#232528",
+        "roll": -247.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01691, 0.03202, 0.0415],
+        "color": "#232528",
+        "roll": -232.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01298, 0.02809, 0.0415],
+        "color": "#232528",
+        "roll": -217.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00816, 0.02531, 0.0415],
+        "color": "#232528",
+        "roll": -202.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00278, 0.02387, 0.0415],
+        "color": "#232528",
+        "roll": -187.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00278, 0.02387, 0.0415],
+        "color": "#232528",
+        "roll": -172.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00816, 0.02531, 0.0415],
+        "color": "#232528",
+        "roll": -157.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01298, 0.02809, 0.0415],
+        "color": "#232528",
+        "roll": -142.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01691, 0.03202, 0.0415],
+        "color": "#232528",
+        "roll": -127.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01969, 0.03684, 0.0415],
+        "color": "#232528",
+        "roll": -112.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.02113, 0.04222, 0.0415],
+        "color": "#232528",
+        "roll": -97.5,
+        "size": [0.00561, 0.005],
+        "name": "eyepiece step",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.0174, 0.04729, 0.047],
+        "color": "#232528",
+        "roll": -82.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01621, 0.05172, 0.047],
+        "color": "#232528",
+        "roll": -67.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01392, 0.05568, 0.047],
+        "color": "#232528",
+        "roll": -52.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01068, 0.05892, 0.047],
+        "color": "#232528",
+        "roll": -37.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00672, 0.06121, 0.047],
+        "color": "#232528",
+        "roll": -22.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00229, 0.0624, 0.047],
+        "color": "#232528",
+        "roll": -7.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00229, 0.0624, 0.047],
+        "color": "#232528",
+        "roll": 7.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00672, 0.06121, 0.047],
+        "color": "#232528",
+        "roll": 22.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01068, 0.05892, 0.047],
+        "color": "#232528",
+        "roll": 37.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01392, 0.05568, 0.047],
+        "color": "#232528",
+        "roll": 52.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01621, 0.05172, 0.047],
+        "color": "#232528",
+        "roll": 67.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.0174, 0.04729, 0.047],
+        "color": "#232528",
+        "roll": 82.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.0174, 0.04271, 0.047],
+        "color": "#232528",
+        "roll": -262.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01621, 0.03828, 0.047],
+        "color": "#232528",
+        "roll": -247.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01392, 0.03432, 0.047],
+        "color": "#232528",
+        "roll": -232.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.01068, 0.03108, 0.047],
+        "color": "#232528",
+        "roll": -217.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00672, 0.02879, 0.047],
+        "color": "#232528",
+        "roll": -202.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00229, 0.0276, 0.047],
+        "color": "#232528",
+        "roll": -187.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00229, 0.0276, 0.047],
+        "color": "#232528",
+        "roll": -172.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00672, 0.02879, 0.047],
+        "color": "#232528",
+        "roll": -157.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01068, 0.03108, 0.047],
+        "color": "#232528",
+        "roll": -142.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01392, 0.03432, 0.047],
+        "color": "#232528",
+        "roll": -127.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.01621, 0.03828, 0.047],
+        "color": "#232528",
+        "roll": -112.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0.0174, 0.04271, 0.047],
+        "color": "#232528",
+        "roll": -97.5,
+        "size": [0.00462, 0.006],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [0.0177, 0],
+          [0.0171, -0.00458],
+          [0.01594, -0.00427],
+          [0.0165, 0]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [0.0171, -0.00458],
+          [0.01533, -0.00885],
+          [0.01429, -0.00825],
+          [0.01594, -0.00427]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [0.01533, -0.00885],
+          [0.01252, -0.01252],
+          [0.01167, -0.01167],
+          [0.01429, -0.00825]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [0.01252, -0.01252],
+          [0.00885, -0.01533],
+          [0.00825, -0.01429],
+          [0.01167, -0.01167]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [0.00885, -0.01533],
+          [0.00458, -0.0171],
+          [0.00427, -0.01594],
+          [0.00825, -0.01429]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [0.00458, -0.0171],
+          [0, -0.0177],
+          [0, -0.0165],
+          [0.00427, -0.01594]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [0, -0.0177],
+          [-0.00458, -0.0171],
+          [-0.00427, -0.01594],
+          [0, -0.0165]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [-0.00458, -0.0171],
+          [-0.00885, -0.01533],
+          [-0.00825, -0.01429],
+          [-0.00427, -0.01594]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [-0.00885, -0.01533],
+          [-0.01252, -0.01252],
+          [-0.01167, -0.01167],
+          [-0.00825, -0.01429]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [-0.01252, -0.01252],
+          [-0.01533, -0.00885],
+          [-0.01429, -0.00825],
+          [-0.01167, -0.01167]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [-0.01533, -0.00885],
+          [-0.0171, -0.00458],
+          [-0.01594, -0.00427],
+          [-0.01429, -0.00825]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [-0.0171, -0.00458],
+          [-0.0177, 0],
+          [-0.0165, 0],
+          [-0.01594, -0.00427]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [-0.0177, 0],
+          [-0.0171, 0.00458],
+          [-0.01594, 0.00427],
+          [-0.0165, 0]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [-0.0171, 0.00458],
+          [-0.01533, 0.00885],
+          [-0.01429, 0.00825],
+          [-0.01594, 0.00427]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [-0.01533, 0.00885],
+          [-0.01252, 0.01252],
+          [-0.01167, 0.01167],
+          [-0.01429, 0.00825]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [-0.01252, 0.01252],
+          [-0.00885, 0.01533],
+          [-0.00825, 0.01429],
+          [-0.01167, 0.01167]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [-0.00885, 0.01533],
+          [-0.00458, 0.0171],
+          [-0.00427, 0.01594],
+          [-0.00825, 0.01429]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [-0.00458, 0.0171],
+          [0, 0.0177],
+          [0, 0.0165],
+          [-0.00427, 0.01594]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [0, 0.0177],
+          [0.00458, 0.0171],
+          [0.00427, 0.01594],
+          [0, 0.0165]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [0.00458, 0.0171],
+          [0.00885, 0.01533],
+          [0.00825, 0.01429],
+          [0.00427, 0.01594]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [0.00885, 0.01533],
+          [0.01252, 0.01252],
+          [0.01167, 0.01167],
+          [0.00825, 0.01429]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [0.01252, 0.01252],
+          [0.01533, 0.00885],
+          [0.01429, 0.00825],
+          [0.01167, 0.01167]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [0.01533, 0.00885],
+          [0.0171, 0.00458],
+          [0.01594, 0.00427],
+          [0.01429, 0.00825]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, 0.05],
+        "color": "#18191b",
+        "pitch": 90,
+        "points": [
+          [0.0171, 0.00458],
+          [0.0177, 0],
+          [0.0165, 0],
+          [0.01594, 0.00427]
+        ],
+        "name": "eyepiece rim",
+        "group": "eyepiece"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.045, -0.076],
+        "radius": 0.0135,
+        "height": 0.178,
+        "color": "#232528",
+        "sides": 16,
+        "pitch": 90,
+        "name": "tube",
+        "group": "scope",
         "scopedHidden": true
       },
       {
         "type": "cylinder",
-        "pos": [0, 0.045, 0.03],
+        "pos": [0, 0.045, -0.075],
+        "radius": 0.0163,
+        "height": 0.028,
+        "color": "#232528",
+        "sides": 12,
         "pitch": 90,
-        "radius": 0.02,
-        "height": 0.04,
-        "color": "#1d1f21",
+        "name": "saddle",
+        "group": "scope",
+        "scopedHidden": true
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.045, -0.175],
+        "radius": 0.0225,
+        "radiusTop": 0.0135,
+        "height": 0.02,
+        "color": "#232528",
+        "sides": 16,
+        "pitch": 90,
+        "name": "cone",
+        "group": "scope",
+        "scopedHidden": true
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.045, -0.2035],
+        "radius": 0.0225,
+        "height": 0.037,
+        "color": "#232528",
+        "sides": 16,
+        "pitch": 90,
+        "name": "objective bell",
+        "group": "scope",
+        "scopedHidden": true
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.045, -0.2224],
+        "color": "#0e0f11",
+        "pitch": -90,
+        "name": "objective glass",
+        "group": "scope",
+        "scopedHidden": true,
+        "points": [
+          [0.0199, 0],
+          [0.01723, 0.00995],
+          [0.00995, 0.01723],
+          [0, 0.0199],
+          [-0.00995, 0.01723],
+          [-0.01723, 0.00995],
+          [-0.0199, 0],
+          [-0.01723, -0.00995],
+          [-0.00995, -0.01723],
+          [0, -0.0199],
+          [0.00995, -0.01723],
+          [0.01723, -0.00995]
+        ]
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.0633, -0.075],
+        "radius": 0.0072,
+        "height": 0.005,
+        "color": "#232528",
+        "sides": 8,
+        "name": "elevation base",
+        "group": "turrets"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.0685, -0.075],
+        "radius": 0.0068,
+        "height": 0.0058,
+        "color": "#18191b",
+        "sides": 12,
+        "name": "elevation turret",
+        "group": "turrets"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0643, -0.0677],
+        "size": [0.0004, 0.0022, 0.0004],
+        "color": "#9a9ea3",
+        "name": "elevation index",
+        "group": "turrets"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0183, 0.045, -0.075],
+        "radius": 0.0072,
+        "height": 0.005,
+        "color": "#232528",
+        "sides": 8,
+        "roll": 90,
+        "name": "windage base",
+        "group": "turrets"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0235, 0.045, -0.075],
+        "radius": 0.0068,
+        "height": 0.0058,
+        "color": "#18191b",
+        "sides": 12,
+        "roll": 90,
+        "name": "windage turret",
+        "group": "turrets"
+      },
+      {
+        "type": "box",
+        "pos": [0.0193, 0.045, -0.0677],
+        "size": [0.0022, 0.0004, 0.0004],
+        "color": "#9a9ea3",
+        "name": "windage index",
+        "group": "turrets"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.0179, 0.045, -0.075],
+        "radius": 0.0058,
+        "height": 0.0034,
+        "color": "#18191b",
+        "sides": 8,
+        "roll": 90,
+        "name": "battery cap",
+        "group": "turrets"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.045, -0.02],
+        "radius": 0.0157,
+        "height": 0.011,
+        "color": "#232528",
+        "sides": 12,
+        "pitch": 90,
+        "name": "ring",
+        "group": "mount",
         "scopedHidden": true
       },
       {
         "type": "box",
-        "pos": [-0.00387, 0.02804, 0.048],
-        "size": [0.00865, 0.0018, 0.004],
-        "color": "#1d1f21",
-        "roll": 167.14286,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
+        "pos": [-0.0169, 0.045, -0.02],
+        "size": [0.003, 0.005, 0.011],
+        "color": "#232528",
+        "name": "ring boss",
+        "group": "mount",
+        "scopedHidden": true
       },
       {
         "type": "box",
-        "pos": [-0.01085, 0.0314, 0.048],
-        "size": [0.00865, 0.0018, 0.004],
-        "color": "#1d1f21",
-        "roll": 141.42857,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
+        "pos": [0.0169, 0.045, -0.02],
+        "size": [0.003, 0.005, 0.011],
+        "color": "#232528",
+        "name": "ring boss",
+        "group": "mount",
+        "scopedHidden": true
+      },
+      {
+        "type": "hull",
+        "pos": [0, 0, 0],
+        "color": "#232528",
+        "name": "ring base",
+        "group": "mount",
+        "points": [
+          [-0.011, 0.0065, -0.0125],
+          [0.011, 0.0065, -0.0125],
+          [-0.011, 0.0065, -0.0275],
+          [0.011, 0.0065, -0.0275],
+          [-0.0065, 0.0323, -0.0145],
+          [0.0065, 0.0323, -0.0145],
+          [-0.0065, 0.0323, -0.025500000000000002],
+          [0.0065, 0.0323, -0.025500000000000002]
+        ]
+      },
+      {
+        "type": "slab",
+        "pos": [0, 0.0035, -0.02],
+        "size": [0.024, 0.007, 0.017],
+        "color": "#18191b",
+        "corners": [0.0015, 0.0015, 0.0015, 0.0015],
+        "segments": 1,
+        "name": "rail clamp",
+        "group": "mount"
       },
       {
         "type": "box",
-        "pos": [-0.01568, 0.03745, 0.048],
-        "size": [0.00865, 0.0018, 0.004],
-        "color": "#1d1f21",
-        "roll": 115.71429,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
+        "pos": [0, 0.0032, -0.02],
+        "size": [0.027, 0.003, 0.003],
+        "color": "#5a5f65",
+        "name": "cross-bolt",
+        "group": "mount"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0136, 0.0032, -0.02],
+        "radius": 0.0034,
+        "height": 0.0024,
+        "color": "#18191b",
+        "sides": 6,
+        "roll": 90,
+        "name": "clamp nut",
+        "group": "mount"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.045, -0.13],
+        "radius": 0.0157,
+        "height": 0.011,
+        "color": "#232528",
+        "sides": 12,
+        "pitch": 90,
+        "name": "ring",
+        "group": "mount",
+        "scopedHidden": true
       },
       {
         "type": "box",
-        "pos": [-0.0174, 0.045, 0.048],
-        "size": [0.00865, 0.0018, 0.004],
-        "color": "#1d1f21",
-        "roll": 90.0,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
+        "pos": [-0.0169, 0.045, -0.13],
+        "size": [0.003, 0.005, 0.011],
+        "color": "#232528",
+        "name": "ring boss",
+        "group": "mount",
+        "scopedHidden": true
       },
       {
         "type": "box",
-        "pos": [-0.01568, 0.05255, 0.048],
-        "size": [0.00865, 0.0018, 0.004],
-        "color": "#1d1f21",
-        "roll": 64.28571,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
+        "pos": [0.0169, 0.045, -0.13],
+        "size": [0.003, 0.005, 0.011],
+        "color": "#232528",
+        "name": "ring boss",
+        "group": "mount",
+        "scopedHidden": true
+      },
+      {
+        "type": "hull",
+        "pos": [0, 0, 0],
+        "color": "#232528",
+        "name": "ring base",
+        "group": "mount",
+        "points": [
+          [-0.011, 0.0065, -0.1225],
+          [0.011, 0.0065, -0.1225],
+          [-0.011, 0.0065, -0.1375],
+          [0.011, 0.0065, -0.1375],
+          [-0.0065, 0.0323, -0.1245],
+          [0.0065, 0.0323, -0.1245],
+          [-0.0065, 0.0323, -0.1355],
+          [0.0065, 0.0323, -0.1355]
+        ]
+      },
+      {
+        "type": "slab",
+        "pos": [0, 0.0035, -0.13],
+        "size": [0.024, 0.007, 0.017],
+        "color": "#18191b",
+        "corners": [0.0015, 0.0015, 0.0015, 0.0015],
+        "segments": 1,
+        "name": "rail clamp",
+        "group": "mount"
       },
       {
         "type": "box",
-        "pos": [-0.01085, 0.0586, 0.048],
-        "size": [0.00865, 0.0018, 0.004],
-        "color": "#1d1f21",
-        "roll": 38.57143,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
+        "pos": [0, 0.0032, -0.13],
+        "size": [0.027, 0.003, 0.003],
+        "color": "#5a5f65",
+        "name": "cross-bolt",
+        "group": "mount"
       },
       {
-        "type": "box",
-        "pos": [-0.00387, 0.06196, 0.048],
-        "size": [0.00865, 0.0018, 0.004],
-        "color": "#1d1f21",
-        "roll": 12.85714,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.00387, 0.06196, 0.048],
-        "size": [0.00865, 0.0018, 0.004],
-        "color": "#1d1f21",
-        "roll": -12.85714,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.01085, 0.0586, 0.048],
-        "size": [0.00865, 0.0018, 0.004],
-        "color": "#1d1f21",
-        "roll": -38.57143,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.01568, 0.05255, 0.048],
-        "size": [0.00865, 0.0018, 0.004],
-        "color": "#1d1f21",
-        "roll": -64.28571,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.0174, 0.045, 0.048],
-        "size": [0.00865, 0.0018, 0.004],
-        "color": "#1d1f21",
-        "roll": -90.0,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.01568, 0.03745, 0.048],
-        "size": [0.00865, 0.0018, 0.004],
-        "color": "#1d1f21",
-        "roll": -115.71429,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.01085, 0.0314, 0.048],
-        "size": [0.00865, 0.0018, 0.004],
-        "color": "#1d1f21",
-        "roll": -141.42857,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.00387, 0.02804, 0.048],
-        "size": [0.00865, 0.0018, 0.004],
-        "color": "#1d1f21",
-        "roll": -167.14286,
-        "name": "eyepiece rim",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [-0.00544, 0.02472, 0.043],
-        "size": [0.01209, 0.002, 0.006],
-        "color": "#2c2e31",
-        "roll": 165.0,
-        "name": "eyepiece step",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [-0.01485, 0.03015, 0.043],
-        "size": [0.01209, 0.002, 0.006],
-        "color": "#2c2e31",
-        "roll": 135.0,
-        "name": "eyepiece step",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [-0.02028, 0.03956, 0.043],
-        "size": [0.01209, 0.002, 0.006],
-        "color": "#2c2e31",
-        "roll": 105.0,
-        "name": "eyepiece step",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [-0.02028, 0.05044, 0.043],
-        "size": [0.01209, 0.002, 0.006],
-        "color": "#2c2e31",
-        "roll": 75.0,
-        "name": "eyepiece step",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [-0.01485, 0.05985, 0.043],
-        "size": [0.01209, 0.002, 0.006],
-        "color": "#2c2e31",
-        "roll": 45.0,
-        "name": "eyepiece step",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [-0.00544, 0.06528, 0.043],
-        "size": [0.01209, 0.002, 0.006],
-        "color": "#2c2e31",
-        "roll": 15.0,
-        "name": "eyepiece step",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.00544, 0.06528, 0.043],
-        "size": [0.01209, 0.002, 0.006],
-        "color": "#2c2e31",
-        "roll": -15.0,
-        "name": "eyepiece step",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.01485, 0.05985, 0.043],
-        "size": [0.01209, 0.002, 0.006],
-        "color": "#2c2e31",
-        "roll": -45.0,
-        "name": "eyepiece step",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.02028, 0.05044, 0.043],
-        "size": [0.01209, 0.002, 0.006],
-        "color": "#2c2e31",
-        "roll": -75.0,
-        "name": "eyepiece step",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.02028, 0.03956, 0.043],
-        "size": [0.01209, 0.002, 0.006],
-        "color": "#2c2e31",
-        "roll": -105.0,
-        "name": "eyepiece step",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.01485, 0.03015, 0.043],
-        "size": [0.01209, 0.002, 0.006],
-        "color": "#2c2e31",
-        "roll": -135.0,
-        "name": "eyepiece step",
-        "group": "eyepiece"
-      },
-      {
-        "type": "box",
-        "pos": [0.00544, 0.02472, 0.043],
-        "size": [0.01209, 0.002, 0.006],
-        "color": "#2c2e31",
-        "roll": -165.0,
-        "name": "eyepiece step",
-        "group": "eyepiece"
+        "type": "cylinder",
+        "pos": [0.0136, 0.0032, -0.13],
+        "radius": 0.0034,
+        "height": 0.0024,
+        "color": "#18191b",
+        "sides": 6,
+        "roll": 90,
+        "name": "clamp nut",
+        "group": "mount"
       }
-    ],
-    "sight": [0, 0.045, 0.05]
+    ]
   }
 }

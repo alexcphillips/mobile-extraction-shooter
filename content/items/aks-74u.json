@@ -1,11 +1,12 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "aks-74u",
   "name": "AKS-74U",
   "type": "weapon",
   "class": "assault",
-  "size": [2, 2],
-  "value": 19800,
+  "platform": "ak",
+  "size": [3, 2],
+  "value": 21700,
   "weight": 2.2,
   "rarity": "common",
   "ammo": "ammo-545x39",
@@ -14,20 +15,26 @@
   "rpm": 650,
   "magazine": 30,
   "feed": "magazine",
-  "reloadTime": 2.3,
-  "ergonomics": 61,
-  "range": 150,
-  "loudness": 185,
-  "defaults": {
-    "magazine": "aks-74u-mag",
-    "stock": "aks-74u-stock"
+  "reloadTime": 2.27,
+  "stats": {
+    "recoilUp": 60,
+    "recoilSide": 59,
+    "stability": 51,
+    "handling": 64,
+    "hipFire": 28,
+    "accuracy": 26,
+    "range": 59,
+    "loudness": 78
   },
-  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
-  "hipSpread": 2.8,
-  "aimSpread": 0.6,
+  "barrelRange": 0.7,
+  "defaults": {
+    "magazine": "aks-74u-mag"
+  },
+  "slots": ["optic", "muzzle", "magazine", "rightRail", "stock"],
+  "stock": {
+    "length": 1
+  },
   "recoil": {
-    "up": 2.31,
-    "side": 0.8,
     "snap": 42,
     "recovery": 3,
     "angle": 6
@@ -136,7 +143,29 @@
         "color": "#5a3420",
         "pitch": -18
       },
-      { "type": "box", "pos": [0, -0.01, 0.1], "size": [0.04, 0.05, 0.02], "color": "#1d1f21" }
+      { "type": "box", "pos": [0, -0.01, 0.1], "size": [0.04, 0.05, 0.02], "color": "#1d1f21" },
+      {
+        "type": "box",
+        "pos": [0, 0.01, 0.2],
+        "size": [0.012, 0.012, 0.2],
+        "color": "#1d1f21",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.04, 0.19],
+        "size": [0.012, 0.012, 0.21],
+        "color": "#1d1f21",
+        "pitch": 14,
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.025, 0.3],
+        "size": [0.03, 0.1, 0.014],
+        "color": "#1d1f21",
+        "hiddenBy": "stock"
+      }
     ],
     "grip": [0, -0.07, 0.05],
     "support": [0, -0.03, -0.21],
@@ -146,8 +175,12 @@
       "optic": [0, 0.041, 0.04],
       "muzzle": [0, 0.005, -0.32],
       "magazine": [0, -0.03, -0.07],
-      "laser": [0.037, -0.003, -0.27],
+      "rightRail": [0.037, -0.003, -0.27],
       "stock": [0, 0.01, 0.085]
+    },
+    "factoryFold": {
+      "pivot": [-0.019, 0, 0],
+      "yaw": 180
     }
   }
 }

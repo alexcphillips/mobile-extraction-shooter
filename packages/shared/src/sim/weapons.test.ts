@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { swayAt, weaponDef, type AmmoDef } from '../content/items';
+import {
+  currentSight,
+  noAttachments,
+  pointsFor,
+  pointsForScale,
+  sightsOf,
+  statAt,
+  swayAt,
+  weaponDef,
+  type AmmoDef,
+  type AttachmentDef,
+} from '../content/items';
 import { createRng, nextFloat } from '../rng';
 import { TICK_RATE } from '../tick';
 import { CollisionWorld } from '../world/collision-world';
@@ -43,6 +54,9 @@ import {
   createWeapon,
   createWeaponStats,
   detach,
+  falloffAt,
+  switchSight,
+  toggleLaser,
   giveWeapon,
   loadedAmmo,
   reloadRound,
@@ -315,6 +329,51 @@ describe('firing', () => {
     expect(shot).toMatchObject({ by: shooter.id, hit: 'character', target: target.id });
   });
 
+  it("does less damage past its round's falloff, and a range mod stretches it", () => {
+    const round = TEST_ITEMS.get('round') as AmmoDef;
+    const items = new Map(TEST_ITEMS).set('round', {
+      ...round,
+      falloff: { from: 2, to: 6, floor: 0.5 },
+    });
+    const fallen = items.get('round') as AmmoDef;
+    expect(falloffAt(fallen, 1)).toBe(1);
+    expect(falloffAt(fallen, 4)).toBeCloseTo(0.75);
+    expect(falloffAt(fallen, 20)).toBe(0.5);
+    // Twice the range scale: full damage to 4 m, the floor from 12 m.
+    expect(falloffAt(fallen, 4, 2)).toBe(1);
+    expect(falloffAt(fallen, 8, 2)).toBeCloseTo(0.75);
+    // The target is 10 m off: past the falloff, half of 40.
+    const { world, state, shooter, target } = range();
+    giveWeapon(shooter, items, 'rifle');
+    const aim = lookAt(shooter, 0, 1.0, 0);
+    step(state, world, items, { [shooter.id]: input({ ...aim, fire: true }) });
+    expect(target.health.hp[STOMACH]).toBeCloseTo(70 - 20);
+  });
+
+  it("scales falloff by the gun's own barrel, stretched by a fitted barrel's range points", () => {
+    const rifle = weaponDef(TEST_ITEMS, 'rifle');
+    const items = new Map(TEST_ITEMS)
+      .set('rifle', { ...rifle, barrelRange: 0.8, slots: [...rifle.slots!, 'barrel'] })
+      .set('long-barrel', {
+        ...(TEST_ITEMS.get('suppressor') as AttachmentDef),
+        id: 'long-barrel',
+        slot: 'barrel',
+        mods: { range: pointsForScale('range', 1.25) },
+        model: { parts: [], muzzle: [0, 0, -0.1] },
+      });
+    const own = weaponStats(items, createWeapon(items, 'rifle'), createWeaponStats());
+    expect(own.rangeScale).toBeCloseTo(0.8);
+    // Its range was set with its own barrel, so the cutoff doesn't move.
+    expect(own.range).toBeCloseTo(statAt('range', rifle.stats.range));
+    const long = weaponStats(
+      items,
+      createWeapon(items, 'rifle', ['long-barrel']),
+      createWeaponStats(),
+    );
+    expect(long.rangeScale).toBeCloseTo(0.8 * 1.25);
+    expect(long.range).toBeCloseTo(statAt('range', rifle.stats.range) * 1.25);
+  });
+
   it('fires at the weapon rate while held, and kicks the view up', () => {
     const { world, state, shooter } = range();
     giveWeapon(shooter, TEST_ITEMS, 'rifle');
@@ -394,10 +453,10 @@ describe('firing', () => {
   describe('breath', () => {
     /**
      * Idle sway this tick as a share of unheld, standing still: lag is 0 with no turning.
-     * Unheld includes the test rifle's ergonomics (ERGO).
+     * Unheld includes the test rifle's handling (HANDLING).
      */
     function swayShare(state: SimState, c: Character): number {
-      const gun = swayAt(weaponDef(TEST_ITEMS, 'rifle').ergonomics);
+      const gun = swayAt(weaponDef(TEST_ITEMS, 'rifle').stats.handling);
       const unheld =
         c.aim * Math.sin((state.tick - 1) * (1 / TICK_RATE) * 1.3) * ((0.35 * Math.PI) / 180) * gun;
       return c.swayYaw! / unheld;
@@ -515,9 +574,10 @@ describe('firing', () => {
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ pitch: 0.5, aim: true, fire: true }) });
     const shot = state.events.find((e) => e.type === 'shot');
     if (shot?.type !== 'shot') throw new Error('no shot');
-    // The rifle has no spread when aimed, so all of this is the gun's lag, to the right of −z.
+    // The rifle is as accurate as points go (0.02° aimed), so nearly all of this is the
+    // gun's lag, to the right of −z.
     const yaw = Math.atan2(-(shot.toX - shot.fromX), -(shot.toZ - shot.fromZ));
-    expect(yaw).toBeCloseTo(shooter.swayYaw!, 5);
+    expect(yaw).toBeCloseTo(shooter.swayYaw!, 3);
     expect(yaw).toBeLessThan(0.006);
     expect(yaw).toBeGreaterThan(0.002);
   });
@@ -726,17 +786,28 @@ describe('firing', () => {
 
 describe('attachments', () => {
   const world = makeWorld();
+  /** The test rifle with 3° of hip spread and 0.5° aimed. */
+  const spreadRifle = () => {
+    const rifle = weaponDef(TEST_ITEMS, 'rifle');
+    const stats = {
+      ...rifle.stats,
+      hipFire: pointsFor('hipFire', 3),
+      accuracy: pointsFor('accuracy', 0.5),
+    };
+    return { ...rifle, stats };
+  };
 
   it('changes the stats and the shot loudness', () => {
     const state = createState(1);
     const shooter = spawnCharacter(state, world, 0, 0);
     giveWeapon(shooter, TEST_ITEMS, 'rifle', ['suppressor', 'scope']);
     const s = weaponStats(TEST_ITEMS, heldWeapon(shooter)!, createWeaponStats());
-    expect(s.loudness).toBe(150 * 0.25);
-    expect(s.recoilUp).toBe(0.5);
+    expect(s.loudness).toBeCloseTo(150 * 0.25);
+    expect(s.recoilUp).toBeCloseTo(0.5);
     expect(s.aimTime).toBe(0.4);
     step(state, world, TEST_ITEMS, { [shooter.id]: input({ pitch: 1, fire: true }) });
-    expect(state.events.find((e) => e.type === 'shot')).toMatchObject({ loudness: 37.5 });
+    const shot = state.events.find((e) => e.type === 'shot');
+    expect(shot?.type === 'shot' && shot.loudness).toBeCloseTo(37.5);
     // Half the rifle's kick of 1°.
     const kick =
       0.5 *
@@ -748,11 +819,29 @@ describe('attachments', () => {
   });
 
   it('tightens hip-fire spread with a laser, not aimed spread', () => {
-    const rifle = { ...weaponDef(TEST_ITEMS, 'rifle'), hipSpread: 3, aimSpread: 0.5 };
-    const items = new Map(TEST_ITEMS).set('rifle', rifle);
+    const items = new Map(TEST_ITEMS).set('rifle', spreadRifle());
     const s = weaponStats(items, createWeapon(items, 'rifle', ['laser']), createWeaponStats());
-    expect(s.hipSpread).toBe(1.5);
-    expect(s.aimSpread).toBe(0.5);
+    expect(s.hipSpread).toBeCloseTo(1.5);
+    expect(s.aimSpread).toBeCloseTo(0.5);
+  });
+
+  it('switches lasers on and off with the laser button, off losing their mods', () => {
+    const items = new Map(TEST_ITEMS).set('rifle', spreadRifle());
+    const state = createState(1);
+    const shooter = spawnCharacter(state, world, 0, 0);
+    giveWeapon(shooter, items, 'rifle', ['laser']);
+    const w = heldWeapon(shooter)!;
+    step(state, world, items, { [shooter.id]: input({ laser: true }) });
+    expect(w.laserOff).toBe(true);
+    expect(weaponStats(items, w, createWeaponStats()).hipSpread).toBeCloseTo(3);
+    step(state, world, items, { [shooter.id]: input({ laser: true }) });
+    expect(w.laserOff).toBeUndefined();
+    expect(weaponStats(items, w, createWeaponStats()).hipSpread).toBeCloseTo(1.5);
+    // Off, then the laser taken off: nothing left to be off.
+    toggleLaser(w, items);
+    detach(w, items, 'rightRail');
+    expect(w.laserOff).toBeUndefined();
+    expect(toggleLaser(w, items)).toBe(false);
   });
 
   it('fills a bigger magazine, and reloads up to it', () => {
@@ -784,6 +873,29 @@ describe('attachments', () => {
     expect(detach(w, TEST_ITEMS, 'magazine')).toBe(0);
   });
 
+  it("steps through a combo scope's sights with the sight button, cleared by an optic change", () => {
+    const state = createState(1);
+    const shooter = spawnCharacter(state, world, 0, 0);
+    giveWeapon(shooter, TEST_ITEMS, 'rifle', ['combo-scope']);
+    const w = heldWeapon(shooter)!;
+    expect(sightsOf(w, TEST_ITEMS).map((s) => s.look?.zoom)).toEqual([4, 1]);
+    expect(currentSight(w, TEST_ITEMS).look?.zoom).toBe(4);
+    step(state, world, TEST_ITEMS, { [shooter.id]: input({ sight: true }) });
+    expect(w.sight).toBe(1);
+    const dot = currentSight(w, TEST_ITEMS);
+    expect(dot.look?.zoom).toBe(1);
+    // The red dot's own sight point, on the optic's mount.
+    const mount = weaponDef(TEST_ITEMS, 'rifle').model.mounts!.optic!;
+    expect(dot.point[1]).toBeCloseTo(mount[1] + 0.07);
+    // Pressed again, back to the scope; a plain scope has nothing to switch to.
+    step(state, world, TEST_ITEMS, { [shooter.id]: input({ sight: true }) });
+    expect(w.sight).toBeUndefined();
+    expect(switchSight(w, TEST_ITEMS)).toBe(true);
+    attach(w, TEST_ITEMS, 'scope');
+    expect(w.sight).toBeUndefined();
+    expect(switchSight(w, TEST_ITEMS)).toBe(false);
+  });
+
   it('only goes on guns it fits', () => {
     const state = createState(1);
     const shooter = spawnCharacter(state, world, 0, 0);
@@ -793,12 +905,6 @@ describe('attachments', () => {
     expect(() => attach(w, TEST_ITEMS, 'scope')).toThrow(/doesn't fit/);
     expect(() => attach(w, TEST_ITEMS, 'big-mag')).toThrow(/doesn't fit/);
     attach(w, TEST_ITEMS, 'suppressor');
-    expect(w.attachments).toEqual({
-      optic: null,
-      muzzle: 'suppressor',
-      magazine: null,
-      laser: null,
-      stock: null,
-    });
+    expect(w.attachments).toEqual({ ...noAttachments(), muzzle: 'suppressor' });
   });
 });

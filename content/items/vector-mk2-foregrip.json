@@ -1,0 +1,76 @@
+{
+  "formatVersion": 13,
+  "id": "vector-mk2-foregrip",
+  "name": "Vector MK2 foregrip",
+  "shortName": "MK2",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 9500,
+  "weight": 0.09,
+  "rarity": "common",
+  "slot": "foregrip",
+  "mods": {
+    "recoilUp": -9,
+    "recoilSide": -9,
+    "handling": 9,
+    "stability": -9
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "slab",
+        "pos": [0, -0.003, 0],
+        "size": [0.018, 0.006, 0.03],
+        "color": "#1d1f21",
+        "corners": [0.0015, 0.0015, 0.0015, 0.0015],
+        "segments": 1,
+        "name": "rail clamp",
+        "group": "clamp"
+      },
+      {
+        "type": "box",
+        "pos": [0.0094, -0.004, 0],
+        "size": [0.002, 0.004, 0.01],
+        "color": "#8d8f91",
+        "name": "clamp screw",
+        "group": "clamp"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.0282, -0.006],
+        "radius": 0.0098,
+        "radiusTop": 0.0112,
+        "height": 0.046,
+        "color": "#1d1f21",
+        "sides": 8,
+        "yaw": 22.5,
+        "name": "grip",
+        "group": "grip",
+        "pitch": 15
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0255, 0.0042],
+        "size": [0.0105, 0.032, 0.003],
+        "color": "#a08c64",
+        "name": "back insert",
+        "group": "grip",
+        "pitch": 15
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.0519, -0.0123],
+        "radius": 0.0106,
+        "radiusTop": 0.0106,
+        "height": 0.005,
+        "color": "#2b2d2f",
+        "sides": 8,
+        "yaw": 22.5,
+        "name": "end cap",
+        "group": "grip",
+        "pitch": 15
+      }
+    ],
+    "support": [0, -0.028, -0.006]
+  }
+}

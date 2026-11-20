@@ -3,7 +3,7 @@ import {
   type AttachmentSlot,
   type ItemDb,
   type ModelPart,
-  type OpticDef,
+  type SightDef,
   type ModelShape,
   type Vec3,
   type WeaponState,
@@ -11,7 +11,7 @@ import {
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
-import { AIM_FOV, FOV, aimedFov, reticleMarkup } from '../hud/optic';
+import { AIM_FOV, FOV, aimedFov, gunFov as gunFovAt, reticleMarkup } from '../hud/optic';
 import { cloneCharacter, loadCharacter } from '../render/character';
 import { TriangleBuilder } from '../render/geometry';
 import { itemMaterial } from '../render/material';
@@ -56,7 +56,7 @@ export interface ModelScene {
 
 /** What first person shows: a gun with attachments, or a knife. */
 export type FirstPerson =
-  | { kind: 'gun'; gun: WeaponState; db: ItemDb; optic: OpticDef | null }
+  | { kind: 'gun'; gun: WeaponState; db: ItemDb; optic: SightDef | null }
   | { kind: 'knife'; id: string; db: ItemDb };
 
 export type ViewMode = 'build' | 'hip' | 'aimed';
@@ -685,7 +685,8 @@ export class ModelView {
     // As in the game: through a scope the world zooms while the gun and scope keep the
     // aimed field of view, its eyepiece up at the eye framing the lens.
     const scoped = zoom > 1;
-    const gunFov = scoped ? AIM_FOV : fov;
+    // The gun's own field of view, as the game draws it (hud/optic.ts).
+    const gunFov = gunFovAt(aimed ? 1 : 0, scoped);
     if (this.fpGunCamera.fov !== gunFov) {
       this.fpGunCamera.fov = gunFov;
       this.fpGunCamera.updateProjectionMatrix();

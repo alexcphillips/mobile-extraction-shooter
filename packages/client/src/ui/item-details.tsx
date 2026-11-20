@@ -1,10 +1,16 @@
 import {
   caliberOf,
+  fits,
+  type WeaponDef,
   condition,
   createWeaponStats,
   drawTimeAt,
   firesRound,
   grenadeEffect,
+  jumpAt,
+  swayAt,
+  aimMoveAt,
+  raiseTimeAt,
   isMoney,
   itemDef,
   itemWeight,
@@ -13,6 +19,9 @@ import {
   roundOf,
   sellParts,
   weaponStats,
+  GUN_STATS,
+  type GunStat,
+  type WeaponStats,
   type AttachmentMods,
   type Item,
   type ItemDb,
@@ -28,12 +37,15 @@ import {
   softZonesOf,
   CARRIER,
   type CarrierDef,
+  ATTACHMENT_SLOTS,
+  type AttachmentKind,
 } from '@mes/shared';
 import { useEffect, useMemo, type ReactNode } from 'react';
 import { hangarContent, itemOrigins, loadVendors } from '../content';
 import { itemPortrait } from '../render/item-portrait';
 import { levelColor } from './levels';
 import { colorOf, tenths } from './raid-screen';
+import { signedShare, STAT_NAMES, StatChange, StatScore } from './stat-bars';
 
 /*
  * The item details (2026-10-30, after Delta Force): a tap on any item, in a raid or
@@ -62,7 +74,8 @@ const MED_EFFECTS: Record<string, string> = {
   surgery: 'Brings a broken limb back to 1 HP.',
 };
 
-type Row = [label: string, value: ReactNode];
+/** A label and its value; a sub row is indented under the one above (Handling's parts). */
+type Row = [label: string, value: ReactNode, sub?: true];
 
 // Scratch for a gun's stats with its attachments.
 const stats = createWeaponStats();
@@ -113,11 +126,7 @@ export function ItemDetails({
     [
       items,
       item.item,
-      attachments?.optic,
-      attachments?.muzzle,
-      attachments?.magazine,
-      attachments?.laser,
-      attachments?.stock,
+      attachments && ATTACHMENT_SLOTS.map((s) => attachments[s]).join(' '),
       item.folded,
     ],
   );
@@ -170,8 +179,8 @@ export function ItemDetails({
               <dd>Yes</dd>
             </div>
           )}
-          {rows(items, item, def).map(([label, value]) => (
-            <div key={label}>
+          {rows(items, item, def).map(([label, value, sub]) => (
+            <div key={label} className={sub ? 'sub' : undefined}>
               <dt>{label}</dt>
               <dd>{value}</dd>
             </div>
@@ -329,6 +338,19 @@ function Value({
   );
 }
 
+/** What each kind of attachment is called in its details. */
+const KIND_NAMES: Record<AttachmentKind, string> = {
+  optic: 'Optic',
+  offsetOptic: 'Offset optic',
+  muzzle: 'Muzzle device',
+  barrel: 'Barrel',
+  foregrip: 'Foregrip',
+  rail: 'Rail device',
+  grip: 'Grip',
+  magazine: 'Magazine',
+  stock: 'Stock',
+};
+
 function kindOf(def: ItemDef): string {
   switch (def.type) {
     case 'weapon':
@@ -338,13 +360,7 @@ function kindOf(def: ItemDef): string {
     case 'armor':
       return def.slot === 'helmet' ? 'Helmet' : 'Body armor';
     case 'attachment':
-      return {
-        optic: 'Optic',
-        muzzle: 'Muzzle device',
-        magazine: 'Magazine',
-        laser: 'Laser',
-        stock: 'Stock',
-      }[def.slot];
+      return KIND_NAMES[def.slot];
     case 'med':
       return 'Medical';
     case 'container':
@@ -427,60 +443,70 @@ function Level({ level }: { level: number }): ReactNode {
 
 const seconds = (s: number): string => `${+s.toFixed(2)} s`;
 
-/*
- * Gun stats as scores (2026-11-13, the user's call): ergonomics is the gun's own number
- * (ERGO); accuracy and recoil are fixed scales of the sim's degrees, so a new gun never
- * moves the others' numbers. Accuracy is 100 less ACCURACY_PER_DEG for each degree of aimed
- * spread; recoil is the kick in degrees times RECOIL_UP and RECOIL_SIDE (lower is better).
- */
-const ACCURACY_PER_DEG = 60;
-const RECOIL_UP = 40;
-const RECOIL_SIDE = 100;
-
-/** A 0–100 score with a bar, for the gun rows. */
-function Score({ value, title }: { value: number; title?: string }): ReactNode {
-  const v = Math.max(0, Math.min(100, Math.round(value)));
-  return (
-    <span className="stat-score" title={title}>
-      <span className="stat-bar">
-        <i style={{ width: `${v}%` }} />
-      </span>
-      {v}
-    </span>
-  );
+/** What a gun stat's points come to, for its bar's title. */
+function statTitle(s: WeaponStats, stat: GunStat): string {
+  switch (stat) {
+    case 'recoilUp':
+      return `Kick ${+s.recoilUp.toFixed(2)}° up per shot`;
+    case 'recoilSide':
+      return `Kick up to ${+s.recoilSide.toFixed(2)}° sideways per shot`;
+    case 'stability':
+      return `View and gun jump ×${+jumpAt(s.points.stability).toFixed(2)} per shot`;
+    case 'handling':
+      return `Aim ${seconds(s.aimTime)} · draw ${seconds(drawTimeAt(s.points.handling))}`;
+    case 'hipFire':
+      return `${+s.hipSpread.toFixed(1)}° from the hip`;
+    case 'accuracy':
+      return `${+s.aimSpread.toFixed(2)}° aimed`;
+    case 'range':
+      return `Shots stop at ${Math.round(s.range)} m`;
+    case 'loudness':
+      return `Heard from ${Math.round(s.loudness)} m`;
+  }
 }
 
-/** Points added or taken off: "+5", "−3". */
-const points = (n: number): string => (n > 0 ? `+${n}` : `−${-n}`);
 const percent = (f: number): string => `${Math.round(f * 100)}%`;
 
-/** An attachment's change to a stat, as a percentage: "−20%". */
-function change(m: number): string {
-  const p = Math.round((m - 1) * 100);
-  return p > 0 ? `+${p}%` : `−${-p}%`;
+/** Handling's parts for a gun as built (features/weapon-stats.md → Handling). */
+function handlingRows(s: WeaponStats): Row[] {
+  const sway = swayAt(s.points.handling);
+  return [
+    ['Aim', seconds(s.aimTime), true],
+    ['Draw', seconds(drawTimeAt(s.points.handling)), true],
+    ['Aimed sway', sway === 1 ? 'normal' : signedShare(sway), true],
+    ['Reload', seconds(s.reloadTime), true],
+    ['Sprint to fire', seconds(raiseTimeAt(s.points.handling)), true],
+    ['Moving aimed', `${Math.round(aimMoveAt(s.points.handling) * 100)}% speed`, true],
+  ];
 }
 
 /** What worn gear costs (GZ-1): aim time and move speed, as "+10%" and "−12%". */
 function burdenRows(def: { aimTime?: number | undefined; moveSpeed?: number | undefined }): Row[] {
   const out: Row[] = [];
-  if (def.aimTime && def.aimTime !== 1) out.push(['Aim time', change(def.aimTime)]);
-  if (def.moveSpeed && def.moveSpeed !== 1) out.push(['Move speed', change(def.moveSpeed)]);
+  if (def.aimTime && def.aimTime !== 1) out.push(['Aim time', signedShare(def.aimTime)]);
+  if (def.moveSpeed && def.moveSpeed !== 1) out.push(['Move speed', signedShare(def.moveSpeed)]);
   return out;
 }
 
 function modRows(mods: AttachmentMods): Row[] {
   const out: Row[] = [];
   if (mods.magazine) out.push(['Magazine', `+${mods.magazine} rounds`]);
-  if (mods.spread) out.push(['Spread', change(mods.spread)]);
-  if (mods.hipSpread) out.push(['Hip-fire spread', change(mods.hipSpread)]);
-  if (mods.recoil) out.push(['Recoil', change(mods.recoil)]);
-  if (mods.recoilUp) out.push(['Vertical recoil', change(mods.recoilUp)]);
-  if (mods.recoilSide) out.push(['Horizontal recoil', change(mods.recoilSide)]);
-  if (mods.ergonomics) out.push(['Ergonomics', points(mods.ergonomics)]);
-  if (mods.recovery) out.push(['Recoil recovery', change(mods.recovery)]);
-  if (mods.aimTime) out.push(['Aim time', change(mods.aimTime)]);
-  if (mods.reloadTime) out.push(['Reload time', change(mods.reloadTime)]);
-  if (mods.loudness) out.push(['Loudness', change(mods.loudness)]);
+  for (const stat of GUN_STATS) {
+    const n = mods[stat];
+    if (n) out.push([STAT_NAMES[stat], <StatChange key={stat} stat={stat} by={n} />]);
+  }
+  // The exceptions to handling it names: more time is worse.
+  for (const [label, m] of [
+    ['Aim time', mods.aimTime],
+    ['Reload time', mods.reloadTime],
+  ] as const)
+    if (m && m !== 1)
+      out.push([
+        label,
+        <span key={label} className={m < 1 ? 'stat-good' : 'stat-bad'}>
+          {signedShare(m)}
+        </span>,
+      ]);
   return out;
 }
 
@@ -502,30 +528,18 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
             {round.pellets ? ` × ${round.pellets}` : ''} · {round.armorDamage} to armor
           </>,
         ],
-        [
-          'Ergonomics',
-          <Score
-            key="e"
-            value={s.ergonomics}
-            title={`Aim ${seconds(s.aimTime)} · draw ${seconds(drawTimeAt(s.ergonomics))}`}
-          />,
-        ],
-        [
-          'Accuracy',
-          <>
-            <Score
-              value={100 - ACCURACY_PER_DEG * s.aimSpread}
-              title={`${+s.aimSpread.toFixed(2)}° aimed`}
-            />
-            <small> · hip {+s.hipSpread.toFixed(1)}°</small>
-          </>,
-        ],
-        [
-          'Recoil',
-          `${Math.round(s.recoilUp * RECOIL_UP)} vertical · ${Math.round(s.recoilSide * RECOIL_SIDE)} horizontal`,
-        ],
-        ['Reload', seconds(s.reloadTime)],
-        ['Range', `${def.range} m`],
+        ...GUN_STATS.flatMap((stat): Row[] => [
+          [
+            STAT_NAMES[stat],
+            <StatScore key={stat} value={s.points[stat]} title={statTitle(s, stat)} />,
+          ],
+          // What Handling works out to, under its bar (WS-3).
+          ...(stat === 'handling' ? handlingRows(s) : []),
+        ]),
+        ['Shots stop at', `${Math.round(s.range)} m`],
+        ...(round.falloff
+          ? ([['Full damage to', `${Math.round(round.falloff.from * s.rangeScale)} m`]] as Row[])
+          : []),
         ['Heard from', `${Math.round(s.loudness)} m`],
       ];
     }
@@ -539,6 +553,14 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
         ['Damage', `${def.damage}${def.pellets ? ` × ${def.pellets} pellets` : ''}`],
         ['Armor damage', `${def.armorDamage}`],
         ['Bleed chance', percent(def.bleedChance)],
+        ...(def.falloff
+          ? ([
+              [
+                'Damage falloff',
+                `full to ${def.falloff.from} m · ${percent(def.falloff.floor)} from ${def.falloff.to} m`,
+              ],
+            ] as Row[])
+          : []),
         ['Stack', `${item.count} / ${def.stack}`],
         ['Fired by', guns.length ? guns.map((g) => g.name).join(', ') : 'no gun yet'],
       ];
@@ -613,10 +635,15 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
         ['View', def.shape === 'dual' ? 'two tubes' : 'one tube'],
       ];
     case 'attachment': {
-      const fits = def.weapons
-        ? def.weapons.map((id) => itemDef(items, id).name).join(', ')
-        : `any gun with a ${def.slot} slot`;
-      const out: Row[] = [['Fits', fits]];
+      // By name, the guns its lists come to (a platform's, AT-1), or any with its slot.
+      const fitsGuns =
+        def.weapons || def.platforms
+          ? [...items.values()]
+              .filter((g): g is WeaponDef => g.type === 'weapon' && fits(items, g, def))
+              .map((g) => g.name)
+              .join(', ')
+          : `any gun with a ${def.slot} slot`;
+      const out: Row[] = [['Fits', fitsGuns]];
       if (def.optic) out.push(['Zoom', `${def.optic.zoom}×`]);
       // A magazine (MG-1): what it holds, and what's in it.
       if (def.capacity !== undefined) {

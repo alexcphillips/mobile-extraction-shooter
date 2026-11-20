@@ -5,6 +5,7 @@ import {
   attachmentDef,
   firesRound,
   fits,
+  fitsIn,
   isMagazine,
   itemDef,
   magazineFed,
@@ -66,6 +67,7 @@ import { repairable } from './repair';
 import { eyeHeight, eyeX, eyeZ, type Character, type EntityId, type SimState } from './state';
 import {
   attach,
+  slotFor,
   createWeaponStats,
   detach,
   loadedAmmo,
@@ -248,7 +250,8 @@ export type InventoryAction =
   | { type: 'rotate'; at: InGrid }
   | { type: 'quick'; from: ItemRef; to: Owner; grid?: GridName; inside?: BagRef; count?: number }
   | { type: 'split'; at: InGrid; count: number }
-  | { type: 'attach'; gun: ItemRef; from: ItemRef | PartRef }
+  /** `slot`: which slot it goes in (a rail item's rail); left out, slotFor's choice. */
+  | { type: 'attach'; gun: ItemRef; from: ItemRef | PartRef; slot?: AttachmentSlot }
   | {
       type: 'detach';
       gun: ItemRef;
@@ -527,8 +530,8 @@ export function applyInventory(
       return splitStack(ctx, action.at, action.count);
     case 'attach':
       return 'gun' in action.from
-        ? movePart(ctx, action.from, action.gun)
-        : attachPart(ctx, action.gun, action.from);
+        ? movePart(ctx, action.from, action.gun, action.slot)
+        : attachPart(ctx, action.gun, action.from, action.slot);
     case 'detach':
       return detachPart(ctx, action.gun, action.slot, action.part, action.to);
     case 'repair':
@@ -1017,7 +1020,8 @@ function roomAs(
     ...((change.folded ?? gun.folded) && { folded: true }),
   };
   if (change.slot) next.attachments![change.slot] = change.part ?? null;
-  if (change.slot === 'stock' && !change.part) delete next.folded;
+  // A stock going on or off leaves the gun unfolded (AT-1b: the factory one folds too).
+  if (change.slot === 'stock') delete next.folded;
   const { grid, g } = f;
   const w = itemWidth(items, next, g.rotated);
   const h = itemHeight(items, next, g.rotated);
@@ -1159,16 +1163,18 @@ function fold(ctx: Ctx, gunRef: ItemRef, folded: boolean): boolean {
   return true;
 }
 
-function attachPart(ctx: Ctx, gunRef: ItemRef, fromRef: ItemRef): boolean {
+function attachPart(ctx: Ctx, gunRef: ItemRef, fromRef: ItemRef, toSlot?: AttachmentSlot): boolean {
   const { state, c, items } = ctx;
   const at = findGunAt(ctx, gunRef);
   const gun = at?.item;
   const from = find(state, c, fromRef);
   if (!at || !gun || from?.at !== 'grid') return false;
   const def = itemDef(items, from.item.item);
-  if (def.type !== 'attachment' || !fits(weaponDef(items, gun.item), def)) return false;
-  if (!roomAs(ctx, at, { slot: def.slot, part: def.id }, from.item)) return false;
-  const old = gun.attachments[def.slot];
+  if (def.type !== 'attachment') return false;
+  const slot = slotFor(gun, items, def.id, toSlot);
+  if (!slot) return false;
+  if (!roomAs(ctx, at, { slot, part: def.id }, from.item)) return false;
+  const old = gun.attachments[slot];
   const { grid, index, g } = from;
   removeAt(grid, index);
   if (isMagazine(def)) {
@@ -1196,7 +1202,7 @@ function attachPart(ctx: Ctx, gunRef: ItemRef, fromRef: ItemRef): boolean {
       addItem(items, grid, oldPart) === 0;
     if (!placed) stowOrDrop(ctx, oldPart);
   }
-  stowRounds(ctx, loadedAmmo(items, gun), attach(gun, items, def.id));
+  stowRounds(ctx, loadedAmmo(items, gun), attach(gun, items, def.id, slot));
   return true;
 }
 
@@ -1231,7 +1237,7 @@ function detachPart(
 }
 
 /** Moves a part from one gun to another, swapping with what's there if it fits the first. */
-function movePart(ctx: Ctx, from: PartRef, toRef: ItemRef): boolean {
+function movePart(ctx: Ctx, from: PartRef, toRef: ItemRef, toSlot?: AttachmentSlot): boolean {
   const { items } = ctx;
   const fa = findGunAt(ctx, from.gun);
   const fb = findGunAt(ctx, toRef);
@@ -1239,23 +1245,25 @@ function movePart(ctx: Ctx, from: PartRef, toRef: ItemRef): boolean {
   const b = fb?.item;
   if (!fa || !fb || !a || !b || a === b || a.attachments[from.slot] !== from.part) return false;
   const def = attachmentDef(items, from.part);
-  if (!fits(weaponDef(items, b.item), def)) return false;
-  const slot = def.slot;
+  const slot = slotFor(b, items, def.id, toSlot);
+  if (!slot) return false;
   const old = b.attachments[slot];
-  const swap = old !== null && fits(weaponDef(items, a.item), attachmentDef(items, old));
+  // What was there swaps onto the first gun if it goes in the slot this came out of.
+  const swap =
+    old !== null && fitsIn(items, weaponDef(items, a.item), attachmentDef(items, old), from.slot);
   if (!roomAs(ctx, fb, { slot, part: def.id })) return false;
-  if (swap && !roomAs(ctx, fa, { slot, part: old })) return false;
+  if (swap && !roomAs(ctx, fa, { slot: from.slot, part: old })) return false;
   if (isMagazine(def)) {
     // Magazines move with their rounds (MG-1).
-    const moving = partOut(a, items, slot).part;
+    const moving = partOut(a, items, from.slot).part;
     const theirs = old !== null ? partOut(b, items, slot).part : null;
     partIn(b, items, moving);
     if (theirs && swap) partIn(a, items, theirs);
     else if (theirs) stowOrDrop(ctx, cameOffGun(ctx.c, theirs));
     return true;
   }
-  const outA = swap ? attach(a, items, old) : detach(a, items, slot);
-  const outB = attach(b, items, def.id);
+  const outA = swap ? attach(a, items, old, from.slot) : detach(a, items, from.slot);
+  const outB = attach(b, items, def.id, slot);
   // What was on the second gun goes into what you carry if it can't go on the first.
   if (old !== null && !swap) stowOrDrop(ctx, cameOffGun(ctx.c, createItem(items, old)));
   stowRounds(ctx, loadedAmmo(items, a), outA);

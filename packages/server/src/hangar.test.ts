@@ -58,7 +58,7 @@ describe('the Hangar', () => {
     expect(bandages(me.profile)).toBe(before - 1 - MODULE_LEVELS);
   });
 
-  it('grows the vault with the Secure locker and adds category pages with Stash (H4)', async () => {
+  it('grows the vault with the Secure locker and adds pages with Stash (H4)', async () => {
     const client = await withBandages(10);
     await client.editProfile((p) => (p.hangar[POWER_GRID] = MODULE_LEVELS));
     let me = await client.ok('GET', '/profile');
@@ -68,28 +68,29 @@ describe('the Hangar', () => {
       me = await client.ok('POST', '/hangar/stash/upgrade', { version: me.version });
     }
     expect(me.profile.gear.vault).toMatchObject({ w: 3, h: 3 });
-    expect(me.profile.stash.map((g) => g.only ?? null)).toEqual([null, 'guns', 'ammo', 'meds']);
-    // PUT can't drop a category page, nor shrink the vault back.
-    const dropped = await client.fails('PUT', '/profile', {
-      version: me.version,
-      profile: { ...me.profile, stash: me.profile.stash.slice(0, 3) },
-    });
-    expect(dropped.error).toBe('invalid');
-    const small = structuredClone(me.profile);
-    small.gear.vault!.h = 2;
-    expect(
-      (await client.fails('PUT', '/profile', { version: me.version, profile: small })).message,
-    ).toMatch(/vault: must be 3×3/);
-    // A page bought now goes before them.
-    await client.setMoney(1_000_000);
-    me = await client.ok('POST', '/stash/pages', { version: me.version });
+    // A plain page for each level, then the category pages.
     expect(me.profile.stash.map((g) => g.only ?? null)).toEqual([
+      null,
+      null,
       null,
       null,
       'guns',
       'ammo',
       'meds',
     ]);
+    // PUT can't drop a page of either kind, nor shrink the vault back.
+    for (const stash of [me.profile.stash.slice(0, 6), me.profile.stash.slice(1)]) {
+      const dropped = await client.fails('PUT', '/profile', {
+        version: me.version,
+        profile: { ...me.profile, stash },
+      });
+      expect(dropped.error).toBe('invalid');
+    }
+    const small = structuredClone(me.profile);
+    small.gear.vault!.h = 2;
+    expect(
+      (await client.fails('PUT', '/profile', { version: me.version, profile: small })).message,
+    ).toMatch(/vault: must be 3×3/);
   });
 
   it('refuses an upgrade without the items, and leaves the stash alone', async () => {

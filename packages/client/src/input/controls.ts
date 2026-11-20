@@ -54,7 +54,8 @@ interface MoveTouch {
  * and the right one aims. WASD, Shift sprint, Space jump (or vault), C crouch, X prone
  * (a toggle; C, Space or sprinting gets up), Q and E lean left and right, R reload,
  * F use, I or Tab the bag, 1–4 take out primary 1, primary 2, sidearm or knife,
- * H heal (held, picks), G throw a grenade (held, picks which),
+ * H heal (held, picks), G throw a grenade (held, picks which), V the other sight of a
+ * two-sight optic while aimed, L the gun's lasers on or off,
  * Z aims too (for a trackpad), 7 and 8 the debug actions. Mouse pointers never drive the
  * touch stick; CSS hides the touch-only buttons. (Before 2026-11-01, Q aimed, E was use
  * and F fired; leaning took Q and E.)
@@ -110,6 +111,10 @@ export class Controls {
   throwPick = false;
   /** The breath button (BW-2): let a held breath go, or hold again. Shift, L3 or its button, while aimed. */
   breathe = false;
+  /** The sight button: switch a two-sight optic's sight (V, D-pad up or its button, while aimed). */
+  sight = false;
+  /** The laser button: switch the gun's lasers on or off (L, D-pad down or its button). */
+  laser = false;
   /** A debug action (0 or 1), or -1. */
   debug = -1;
   /** Look speed multiplier from aim assist, set by the game while the crosshair is on an enemy. */
@@ -191,6 +196,8 @@ export class Controls {
   private pressedThrow = false;
   private pressedThrowPick = false;
   private pressedBreathe = false;
+  private pressedSight = false;
+  private pressedLaser = false;
   private pressedDebug = -1;
   private readonly keys = new Set<string>();
   /** H or G while held: called with whether the release is a tap. */
@@ -259,12 +266,16 @@ export class Controls {
     this.throw = this.pressedThrow;
     this.throwPick = this.pressedThrowPick;
     this.breathe = this.pressedBreathe;
+    this.sight = this.pressedSight;
+    this.laser = this.pressedLaser;
     this.nightVision = this.pressedNightVision;
     this.debug = this.pressedDebug;
     this.pressedReload = this.pressedInteract = this.pressedBag = false;
     this.pressedHeal = this.pressedHealPick = false;
     this.pressedThrow = this.pressedThrowPick = false;
     this.pressedBreathe = false;
+    this.pressedSight = false;
+    this.pressedLaser = false;
     this.pressedNightVision = false;
     this.pressedDraw = null;
     this.pressedSwap = false;
@@ -479,6 +490,14 @@ export class Controls {
         this.pressedBreathe = true;
         held(() => {});
         break;
+      case 'sight':
+        this.pressedSight = true;
+        held(() => {});
+        break;
+      case 'laser':
+        this.pressedLaser = true;
+        held(() => {});
+        break;
       case 'grenade':
       case 'heal': {
         // A tap uses (or throws) the default when it lifts; holding opens the picker instead.
@@ -599,6 +618,8 @@ export class Controls {
         () => (this.pressedThrowPick = true),
       );
     else if (e.code === 'KeyN') this.pressedNightVision = true;
+    else if (e.code === 'KeyV' && this.aim) this.pressedSight = true;
+    else if (e.code === 'KeyL') this.pressedLaser = true;
     else if (e.code === 'KeyI' || e.code === 'Tab') {
       e.preventDefault();
       this.pressedBag = true;

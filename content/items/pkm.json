@@ -1,11 +1,11 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "pkm",
   "name": "PKM",
   "type": "weapon",
   "class": "lmg",
-  "size": [4, 2],
-  "value": 114200,
+  "size": [5, 2],
+  "value": 121400,
   "weight": 7,
   "rarity": "common",
   "ammo": "ammo-762x54r",
@@ -15,21 +15,27 @@
   "magazine": 100,
   "feed": "magazine",
   "reloadTime": 5,
-  "ergonomics": 29,
-  "range": 375,
-  "loudness": 240,
-  "defaults": {
-    "magazine": "pkm-mag",
-    "stock": "pkm-stock"
+  "stats": {
+    "recoilUp": 62,
+    "recoilSide": 72,
+    "stability": 90,
+    "handling": 29,
+    "hipFire": 15,
+    "accuracy": 35,
+    "range": 79,
+    "loudness": 84
   },
-  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
-  "hipSpread": 5,
-  "aimSpread": 0.4,
+  "barrelRange": 1.15,
+  "defaults": {
+    "magazine": "pkm-mag"
+  },
+  "slots": ["optic", "muzzle", "magazine", "rightRail", "stock"],
+  "stock": {
+    "length": 1
+  },
   "recoil": {
-    "up": 2.93,
-    "side": 1.73,
     "snap": 36,
-    "recovery": 2.73,
+    "recovery": 3,
     "angle": 5
   },
   "sounds": {
@@ -174,6 +180,34 @@
         "color": "#2b2d2f",
         "pitch": 90,
         "hiddenBy": "muzzle"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0, 0.2],
+        "size": [0.036, 0.04, 0.22],
+        "color": "#232527",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.07, 0.255],
+        "size": [0.03, 0.025, 0.14],
+        "color": "#232527",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.04, 0.17],
+        "size": [0.03, 0.07, 0.02],
+        "color": "#232527",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03, 0.315],
+        "size": [0.042, 0.12, 0.012],
+        "color": "#1d1f21",
+        "hiddenBy": "stock"
       }
     ],
     "grip": [0, -0.07, 0.05],
@@ -184,7 +218,7 @@
       "optic": [0, 0.049, -0.04],
       "muzzle": [0, 0.005, -0.75],
       "magazine": [0, -0.03, -0.09],
-      "laser": [0.026, -0.003, -0.32],
+      "rightRail": [0.026, -0.003, -0.32],
       "stock": [0, 0, 0.09]
     }
   }

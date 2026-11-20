@@ -1,11 +1,11 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "svt-40",
   "name": "SVT-40",
   "type": "weapon",
   "class": "dmr",
-  "size": [4, 1],
-  "value": 28000,
+  "size": [5, 1],
+  "value": 29600,
   "weight": 3.9,
   "rarity": "common",
   "ammo": "ammo-762x54r-hpbt",
@@ -15,14 +15,29 @@
   "magazine": 10,
   "feed": "magazine",
   "reloadTime": 2.8,
-  "ergonomics": 50,
-  "range": 350,
-  "loudness": 230,
-  "defaults": { "magazine": "svt-mag", "stock": "svt-stock" },
+  "stats": {
+    "recoilUp": 72,
+    "recoilSide": 69,
+    "stability": 72,
+    "handling": 50,
+    "hipFire": 25,
+    "accuracy": 52,
+    "range": 77,
+    "loudness": 83
+  },
+  "barrelRange": 1.1,
+  "defaults": {
+    "magazine": "svt-mag"
+  },
   "slots": ["optic", "muzzle", "magazine", "stock"],
-  "hipSpread": 3.2,
-  "aimSpread": 0.18,
-  "recoil": { "up": 4.15, "side": 1.36, "snap": 36, "recovery": 2.73, "angle": 5 },
+  "stock": {
+    "length": 1
+  },
+  "recoil": {
+    "snap": 36,
+    "recovery": 2.87,
+    "angle": 5
+  },
   "sounds": {
     "shot": "rifle-shot",
     "suppressed": "rifle-shot-suppressed",
@@ -108,7 +123,7 @@
       },
       {
         "type": "box",
-        "pos": [0, 0.0, -0.375],
+        "pos": [0, 0, -0.375],
         "size": [0.042, 0.062, 0.016],
         "color": "#3a3c3e",
         "name": "front band"
@@ -260,6 +275,41 @@
         "name": "front sight hood top",
         "group": "iron sights",
         "hiddenBy": "optic"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03, 0.19],
+        "size": [0.034, 0.055, 0.12],
+        "color": "#8a5a32",
+        "name": "wrist",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.055, 0.35],
+        "size": [0.042, 0.1, 0.22],
+        "color": "#8a5a32",
+        "pitch": 6,
+        "name": "butt",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.035, 0.25],
+        "size": [0.03, 0.02, 0.06],
+        "color": "#6e4626",
+        "pitch": -10,
+        "name": "comb",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.067, 0.4615],
+        "size": [0.04, 0.1, 0.006],
+        "color": "#3a3c3e",
+        "pitch": 6,
+        "name": "butt plate",
+        "hiddenBy": "stock"
       }
     ],
     "grip": [0, -0.045, 0.14],

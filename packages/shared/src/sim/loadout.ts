@@ -1,5 +1,6 @@
 import {
   attachmentDef,
+  placeParts,
   isArmoredRig,
   itemDef,
   magazineFed,
@@ -35,12 +36,12 @@ export function equipLoadout(c: Character, items: ItemDb, loadout: LoadoutDef, r
   c.gear.vault = vault;
 
   const w = byWeight(rng, loadout.weapons);
-  const taken = new Set<string>();
   const attachments: string[] = [];
+  const gunDef = weaponDef(items, w.item);
   for (const a of w.attachments ?? []) {
-    const slot = attachmentDef(items, a.item).slot;
-    if (taken.has(slot) || nextFloat(rng) >= (a.chance ?? 1)) continue;
-    taken.add(slot);
+    // One per slot: a part with no slot of its kind left (a second optic) is skipped.
+    if (nextFloat(rng) >= (a.chance ?? 1)) continue;
+    if (placeParts(gunDef, items, [...attachments, a.item]).at(-1) === null) continue;
     attachments.push(a.item);
   }
   const spare = Math.round(nextRange(rng, w.spare[0], w.spare[1]));

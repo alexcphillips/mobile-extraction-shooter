@@ -1,0 +1,93 @@
+{
+  "formatVersion": 13,
+  "id": "contoured-grip",
+  "name": "Contoured pistol grip",
+  "shortName": "Grip",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 2200,
+  "weight": 0.08,
+  "rarity": "common",
+  "slot": "grip",
+  "mods": {
+    "recoilSide": -1,
+    "handling": 3
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.0409, 0.01329],
+        "size": [0.03, 0.086, 0.034],
+        "color": "#26282b",
+        "pitch": -18,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.04004, 0.02983],
+        "size": [0.032, 0.042, 0.006],
+        "color": "#26282b",
+        "pitch": -18,
+        "name": "palm swell",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.02624, -0.00956],
+        "size": [0.026, 0.006, 0.002],
+        "color": "#1b1c1e",
+        "pitch": -18,
+        "name": "finger groove",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.04431, -0.00369],
+        "size": [0.026, 0.006, 0.002],
+        "color": "#1b1c1e",
+        "pitch": -18,
+        "name": "finger groove",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.06238, 0.00218],
+        "size": [0.026, 0.006, 0.002],
+        "color": "#1b1c1e",
+        "pitch": -18,
+        "name": "finger groove",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0153, -0.04028, 0.01519],
+        "size": [0.0008, 0.05, 0.022],
+        "color": "#1b1c1e",
+        "pitch": -18,
+        "name": "texture panel",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0.0153, -0.04028, 0.01519],
+        "size": [0.0008, 0.05, 0.022],
+        "color": "#1b1c1e",
+        "pitch": -18,
+        "name": "texture panel",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.08338, 0.02814],
+        "size": [0.033, 0.004, 0.037],
+        "color": "#1b1c1e",
+        "pitch": -18,
+        "name": "base plate",
+        "group": "grip"
+      }
+    ],
+    "grip": [0, -0.035, 0.014]
+  }
+}

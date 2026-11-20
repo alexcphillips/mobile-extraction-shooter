@@ -24,6 +24,7 @@ const COLORS = ['#e3a33a', '#c96a5a', '#6a9fc9', '#6cc98a', '#b08ad0', '#c9b25a'
 
 export function HangarPage({
   modules,
+  start,
   items,
   profile,
   notice,
@@ -32,6 +33,8 @@ export function HangarPage({
   onUpgrade,
 }: {
   modules: readonly HangarModuleDef[];
+  /** The module to show first (its id), or null for the first one. */
+  start?: string | null;
   items: ItemDb;
   profile: Profile;
   notice: string | null;
@@ -40,7 +43,12 @@ export function HangarPage({
   /** Resolves when done or refused. */
   onUpgrade: (module: HangarModuleDef) => Promise<void>;
 }): ReactNode {
-  const [shown, setShown] = useState(0);
+  const [shown, setShown] = useState(() =>
+    Math.max(
+      0,
+      modules.findIndex((m) => m.id === start),
+    ),
+  );
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
       if (e.code === 'Escape') onBack();

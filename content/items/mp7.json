@@ -1,11 +1,11 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "mp7",
   "name": "MP7",
   "type": "weapon",
   "class": "smg",
-  "size": [2, 2],
-  "value": 52000,
+  "size": [3, 2],
+  "value": 55800,
   "weight": 1.5,
   "rarity": "common",
   "ammo": "ammo-46x30",
@@ -14,20 +14,25 @@
   "rpm": 950,
   "magazine": 30,
   "feed": "magazine",
-  "reloadTime": 2.1,
-  "ergonomics": 73,
-  "range": 100,
-  "loudness": 120,
-  "defaults": {
-    "magazine": "mp7-mag",
-    "stock": "mp7-stock"
+  "reloadTime": 2.07,
+  "stats": {
+    "recoilUp": 53,
+    "recoilSide": 49,
+    "stability": 43,
+    "handling": 76,
+    "hipFire": 35,
+    "accuracy": 28,
+    "range": 50,
+    "loudness": 69
   },
-  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
-  "hipSpread": 2,
-  "aimSpread": 0.55,
+  "defaults": {
+    "magazine": "mp7-mag"
+  },
+  "slots": ["optic", "muzzle", "magazine", "rightRail", "stock"],
+  "stock": {
+    "length": 1
+  },
   "recoil": {
-    "up": 1.69,
-    "side": 0.52,
     "snap": 45,
     "recovery": 3,
     "angle": -6
@@ -464,6 +469,42 @@
         "hiddenBy": "optic",
         "group": "iron sights",
         "name": "front sight ear"
+      },
+      {
+        "type": "box",
+        "name": "stock rod",
+        "group": "stock",
+        "pos": [-0.016, -0.01, 0.15],
+        "size": [0.007, 0.009, 0.16],
+        "color": "#1d1f21",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "name": "stock rod",
+        "group": "stock",
+        "pos": [0.016, -0.01, 0.15],
+        "size": [0.007, 0.009, 0.16],
+        "color": "#1d1f21",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "name": "butt plate",
+        "group": "stock",
+        "pos": [0, -0.025, 0.235],
+        "size": [0.045, 0.07, 0.012],
+        "color": "#3a3d40",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "name": "butt pad",
+        "group": "stock",
+        "pos": [0, -0.025, 0.244],
+        "size": [0.047, 0.074, 0.006],
+        "color": "#141516",
+        "hiddenBy": "stock"
       }
     ],
     "grip": [0, -0.07, 0.02],
@@ -474,8 +515,12 @@
       "optic": [0, 0.045, 0.02],
       "muzzle": [0, 0, -0.19],
       "magazine": [0, -0.13, 0.028],
-      "laser": [0.02, -0.008, -0.18],
+      "rightRail": [0.02, -0.008, -0.18],
       "stock": [0, -0.01, 0.07]
+    },
+    "factoryFold": {
+      "pivot": [0, 0, 0],
+      "shift": [0, 0, -0.14]
     }
   }
 }

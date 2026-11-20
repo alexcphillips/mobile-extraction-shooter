@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "five-seven",
   "name": "Five-seveN",
   "type": "weapon",
@@ -15,14 +15,23 @@
   "magazine": 20,
   "feed": "magazine",
   "reloadTime": 1.6,
-  "ergonomics": 86,
-  "range": 100,
-  "loudness": 120,
+  "stats": {
+    "recoilUp": 63,
+    "recoilSide": 56,
+    "stability": 35,
+    "handling": 86,
+    "hipFire": 35,
+    "accuracy": 30,
+    "range": 50,
+    "loudness": 69
+  },
+  "barrelRange": 0.85,
   "defaults": { "magazine": "five-seven-mag" },
-  "slots": ["muzzle", "magazine", "laser"],
-  "hipSpread": 2.0,
-  "aimSpread": 0.5,
-  "recoil": { "up": 2.09, "side": 0.56, "snap": 45, "recovery": 6 },
+  "slots": ["muzzle", "magazine", "rightRail"],
+  "recoil": {
+    "snap": 45,
+    "recovery": 6
+  },
   "sounds": {
     "shot": "pistol-shot",
     "suppressed": "pistol-shot-suppressed",
@@ -194,7 +203,7 @@
     "mounts": {
       "muzzle": [0, 0.012, -0.155],
       "magazine": [0, -0.106, 0.02],
-      "laser": [0, -0.038, -0.12]
+      "rightRail": [0, -0.038, -0.12]
     }
   }
 }

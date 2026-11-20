@@ -1,6 +1,5 @@
 import type {
   AdminGiveRequest,
-  BuyPageRequest,
   BuyRequest,
   HangarRequest,
   ItemRef,
@@ -71,16 +70,7 @@ export class StashSaver {
     return this.status;
   }
 
-  /**
-   * Buys the next stash page on the server, once everything is saved. Resolves with the
-   * profile it replies with, which the stash should be reopened on; throws an AccountError
-   * to show (offline, not enough money).
-   */
-  buyPage(): Promise<ProfileResponse> {
-    return this.post('/stash/pages', { version: this.me.version } satisfies BuyPageRequest);
-  }
-
-  /** Buys a vendor's offer into the stash (session 13b), like buyPage. */
+  /** Buys a vendor's offer into the stash (session 13b), like upgradeModule. */
   buy(vendor: string, offer: number, page: number, times = 1): Promise<ProfileResponse> {
     return this.post(`/vendors/${encodeURIComponent(vendor)}/buy`, {
       version: this.me.version,
@@ -90,12 +80,12 @@ export class StashSaver {
     } satisfies BuyRequest);
   }
 
-  /** Sells items from the gear or the stash, all or none (session 13b), like buyPage. */
+  /** Sells items from the gear or the stash, all or none (session 13b), like upgradeModule. */
   sell(from: ItemRef[]): Promise<ProfileResponse> {
     return this.post('/vendors/sell', { version: this.me.version, from } satisfies SellRequest);
   }
 
-  /** Gives new items into the stash, free (dev server only), like buyPage. */
+  /** Gives new items into the stash, free (dev server only), like upgradeModule. */
   give(item: string, count: number, page: number): Promise<ProfileResponse> {
     return this.post('/admin/give', {
       version: this.me.version,
@@ -105,14 +95,14 @@ export class StashSaver {
     } satisfies AdminGiveRequest);
   }
 
-  /** Accepts a quest (session 14), like buyPage. */
+  /** Accepts a quest (session 14), like upgradeModule. */
   acceptQuest(quest: string): Promise<ProfileResponse> {
     return this.post(`/quests/${encodeURIComponent(quest)}/accept`, {
       version: this.me.version,
     } satisfies QuestRequest);
   }
 
-  /** Hands over an objective's items from the stash, like buyPage. */
+  /** Hands over an objective's items from the stash, like upgradeModule. */
   handOver(quest: string, objective: string): Promise<ProfileResponse> {
     return this.post(`/quests/${encodeURIComponent(quest)}/hand-over`, {
       version: this.me.version,
@@ -120,7 +110,7 @@ export class StashSaver {
     } satisfies QuestHandOverRequest);
   }
 
-  /** Claims a finished quest's rewards into the stash, page `page` first, like buyPage. */
+  /** Claims a finished quest's rewards into the stash, page `page` first, like upgradeModule. */
   completeQuest(quest: string, page: number): Promise<ProfileResponse> {
     return this.post(`/quests/${encodeURIComponent(quest)}/complete`, {
       version: this.me.version,
@@ -128,7 +118,11 @@ export class StashSaver {
     } satisfies QuestCompleteRequest);
   }
 
-  /** Upgrades a Hangar module a level (H3), paid from the stash, like buyPage. */
+  /**
+   * Upgrades a Hangar module a level (H3), paid from the stash, on the server once
+   * everything is saved. Resolves with the profile it replies with, which the stash should
+   * be reopened on; throws an AccountError to show (offline, not enough items).
+   */
   upgradeModule(module: string): Promise<ProfileResponse> {
     return this.post(`/hangar/${encodeURIComponent(module)}/upgrade`, {
       version: this.me.version,

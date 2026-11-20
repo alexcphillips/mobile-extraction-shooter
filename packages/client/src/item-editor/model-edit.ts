@@ -5,6 +5,7 @@ import {
   type ModelPart,
   type Vec3,
   type WeaponModel,
+  type AttachmentKind,
 } from '@mes/shared';
 import * as THREE from 'three';
 import type { Doc } from './editor';
@@ -40,22 +41,34 @@ export function setSlots(doc: Doc, slots: readonly AttachmentSlot[]): void {
   if (Object.keys(ordered).length) model.mounts = ordered;
   else delete model.mounts;
   for (const p of model.parts) if (p.hiddenBy && !next.includes(p.hiddenBy)) delete p.hiddenBy;
-  // What it comes with, and a folding stock mount, go with their slots (WF-1).
+  // What it comes with, a folding stock mount and its factory stock go with their slots
+  // (WF-1, AT-1b): without a stock slot, the factory stock's parts are just the gun's.
   const defaults = doc.defaults as Record<string, unknown> | undefined;
   for (const s of Object.keys(defaults ?? {}))
     if (!next.includes(s as AttachmentSlot)) delete defaults![s];
   if (defaults && !Object.keys(defaults).length) delete doc.defaults;
-  if (!next.includes('stock')) delete model.stockFold;
+  if (!next.includes('stock')) {
+    delete model.stockFold;
+    delete model.factoryFold;
+    delete doc.stock;
+  }
 }
 
-/** After an attachment's slot changes: an optic has a sight point, a muzzle device a muzzle. */
+/**
+ * After an attachment's kind changes: an optic has a sight point, a muzzle device or a
+ * barrel a muzzle point, a foregrip a support point, a rear grip may have a grip point.
+ */
 export function fitPointsToSlot(doc: Doc): void {
   const model = modelOf(doc);
-  const slot = doc.slot as AttachmentSlot;
-  if (slot === 'optic') model.sight ??= [0, 0.04, 0];
+  const kind = doc.slot as AttachmentKind;
+  if (kind === 'optic' || kind === 'offsetOptic') model.sight ??= [0, 0.04, 0];
   else delete model.sight;
-  if (slot === 'muzzle') model.muzzle ??= [0, 0, -0.05];
+  if (kind === 'muzzle' || kind === 'barrel') model.muzzle ??= [0, 0, -0.05];
   else delete model.muzzle;
+  if (kind === 'foregrip') model.support ??= [0, -0.04, 0];
+  else delete model.support;
+  if (kind !== 'grip') delete model.grip;
+  if (kind !== 'rail') delete model.laser;
 }
 
 /** A new part of a type, small and gray, at a point. */

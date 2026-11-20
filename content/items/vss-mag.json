@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "vss-mag",
   "name": "VSS 10-round magazine",
   "shortName": "VSS 10",
@@ -9,7 +9,7 @@
   "weight": 0.09,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["vss", "as-val"],
+  "platforms": ["as-val"],
   "capacity": 10,
   "caliber": "9x39",
   "model": {

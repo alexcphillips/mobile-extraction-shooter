@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "aug-a3",
   "name": "AUG A3",
   "type": "weapon",
@@ -15,18 +15,22 @@
   "magazine": 30,
   "feed": "magazine",
   "reloadTime": 2.6,
-  "ergonomics": 78,
-  "range": 250,
-  "loudness": 180,
+  "stats": {
+    "recoilUp": 59,
+    "recoilSide": 57,
+    "stability": 63,
+    "handling": 78,
+    "hipFire": 26,
+    "accuracy": 35,
+    "range": 70,
+    "loudness": 78
+  },
+  "barrelRange": 1.05,
   "defaults": {
     "magazine": "aug-a3-mag"
   },
-  "slots": ["optic", "muzzle", "magazine", "laser"],
-  "hipSpread": 3,
-  "aimSpread": 0.4,
+  "slots": ["optic", "muzzle", "magazine", "rightRail"],
   "recoil": {
-    "up": 1.7,
-    "side": 0.58,
     "snap": 42,
     "recovery": 3,
     "angle": 4
@@ -218,7 +222,7 @@
       "optic": [0, 0.065, 0.08],
       "muzzle": [0, 0.012, -0.44],
       "magazine": [0, -0.045, 0.07],
-      "laser": [0.024, 0.004, -0.27]
+      "rightRail": [0.024, 0.004, -0.27]
     }
   }
 }

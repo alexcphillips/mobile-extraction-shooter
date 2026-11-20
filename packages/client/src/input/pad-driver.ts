@@ -250,6 +250,14 @@ export class PadDriver {
       case PAD.touchpad:
         c.press('bag')();
         break;
+      case PAD.up:
+        // While aimed: a two-sight optic's other sight.
+        if (!picking && c.aim) c.press('sight')();
+        break;
+      case PAD.down:
+        // The gun's lasers on or off.
+        if (!picking) c.press('laser')();
+        break;
     }
   }
 

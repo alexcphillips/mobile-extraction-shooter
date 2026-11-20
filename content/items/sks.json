@@ -1,11 +1,11 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "sks",
   "name": "SKS",
   "type": "weapon",
   "class": "dmr",
-  "size": [4, 1],
-  "value": 18900,
+  "size": [5, 1],
+  "value": 20300,
   "weight": 3.2,
   "rarity": "common",
   "ammo": "ammo-762x39",
@@ -14,20 +14,24 @@
   "rpm": 300,
   "magazine": 10,
   "reloadTime": 2.6,
-  "ergonomics": 56,
-  "range": 200,
-  "loudness": 190,
-  "defaults": {
-    "stock": "sks-stock"
+  "stats": {
+    "recoilUp": 66,
+    "recoilSide": 65,
+    "stability": 63,
+    "handling": 56,
+    "hipFire": 26,
+    "accuracy": 50,
+    "range": 65,
+    "loudness": 79
   },
-  "slots": ["optic", "muzzle", "laser", "stock"],
-  "hipSpread": 3,
-  "aimSpread": 0.2,
+  "barrelRange": 1.1,
+  "slots": ["optic", "muzzle", "rightRail", "stock"],
+  "stock": {
+    "length": 1
+  },
   "recoil": {
-    "up": 3.08,
-    "side": 1.13,
     "snap": 40,
-    "recovery": 2.86,
+    "recovery": 3,
     "angle": 5
   },
   "sounds": {
@@ -128,6 +132,22 @@
         "size": [0.036, 0.05, 0.12],
         "color": "#5a3420",
         "pitch": 6
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.05, 0.28],
+        "size": [0.04, 0.08, 0.2],
+        "color": "#7a4524",
+        "pitch": 8,
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.065, 0.385],
+        "size": [0.042, 0.1, 0.012],
+        "color": "#1d1f21",
+        "pitch": 8,
+        "hiddenBy": "stock"
       }
     ],
     "grip": [0, -0.04, 0.08],
@@ -137,7 +157,7 @@
     "mounts": {
       "optic": [0, 0.038, 0.04],
       "muzzle": [0, 0.005, -0.62],
-      "laser": [0.035, -0.003, -0.31],
+      "rightRail": [0.035, -0.003, -0.31],
       "stock": [0, -0.05, 0.18]
     }
   }

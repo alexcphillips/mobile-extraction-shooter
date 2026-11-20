@@ -1,0 +1,100 @@
+{
+  "formatVersion": 13,
+  "id": "vertical-precision-grip",
+  "name": "Vertical precision grip",
+  "shortName": "Precision",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 8500,
+  "weight": 0.15,
+  "rarity": "common",
+  "slot": "foregrip",
+  "mods": {
+    "recoilUp": -9,
+    "stability": 9,
+    "handling": -3
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "slab",
+        "pos": [0, -0.003, 0],
+        "size": [0.018, 0.006, 0.034],
+        "color": "#1d1f21",
+        "corners": [0.0015, 0.0015, 0.0015, 0.0015],
+        "segments": 1,
+        "name": "rail clamp",
+        "group": "clamp"
+      },
+      {
+        "type": "box",
+        "pos": [0.0094, -0.004, 0],
+        "size": [0.002, 0.004, 0.01],
+        "color": "#8d8f91",
+        "name": "clamp screw",
+        "group": "clamp"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.04, 0],
+        "radius": 0.0108,
+        "radiusTop": 0.0118,
+        "height": 0.068,
+        "color": "#1d1f21",
+        "sides": 10,
+        "yaw": 22.5,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.022, 0],
+        "radius": 0.0125,
+        "radiusTop": 0.0125,
+        "height": 0.004,
+        "color": "#3a3d40",
+        "sides": 10,
+        "yaw": 22.5,
+        "name": "grip ring",
+        "group": "grip"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.04, 0],
+        "radius": 0.0125,
+        "radiusTop": 0.0125,
+        "height": 0.004,
+        "color": "#3a3d40",
+        "sides": 10,
+        "yaw": 22.5,
+        "name": "grip ring",
+        "group": "grip"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.058, 0],
+        "radius": 0.0125,
+        "radiusTop": 0.0125,
+        "height": 0.004,
+        "color": "#3a3d40",
+        "sides": 10,
+        "yaw": 22.5,
+        "name": "grip ring",
+        "group": "grip"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.077, 0],
+        "radius": 0.0098,
+        "radiusTop": 0.0098,
+        "height": 0.006,
+        "color": "#8d8f91",
+        "sides": 10,
+        "yaw": 22.5,
+        "name": "storage cap",
+        "group": "grip"
+      }
+    ],
+    "support": [0, -0.04, 0]
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "uzi-mag",
   "name": "Uzi 32-round magazine",
   "shortName": "Uzi 32",
@@ -9,7 +9,7 @@
   "weight": 0.23,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["uzi"],
+  "platforms": ["uzi"],
   "capacity": 32,
   "caliber": "9x19",
   "model": {

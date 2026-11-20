@@ -253,13 +253,18 @@ function blankStats(kind: ItemKind, id: string, name: string, ammo: string) {
         rpm: 600,
         magazine: 30,
         reloadTime: 2.4,
-        ergonomics: 55,
-        range: 150,
-        loudness: 150,
+        stats: {
+          recoilUp: 47,
+          recoilSide: 49,
+          stability: 50,
+          handling: 55,
+          hipFire: 26,
+          accuracy: 30,
+          range: 59,
+          loudness: 74,
+        },
         slots: ['optic', 'muzzle', 'magazine'],
-        hipSpread: 3,
-        aimSpread: 0.5,
-        recoil: { up: 1, side: 0.4, snap: 40, recovery: 4 },
+        recoil: { snap: 40, recovery: 4 },
       };
     case 'ammo':
       return {
@@ -275,7 +280,14 @@ function blankStats(kind: ItemKind, id: string, name: string, ammo: string) {
         bleedChance: 0.2,
       };
     case 'attachment':
-      return { ...common, type, size: [1, 1], value: 5_000, slot: 'muzzle', mods: { recoil: 0.9 } };
+      return {
+        ...common,
+        type,
+        size: [1, 1],
+        value: 5_000,
+        slot: 'muzzle',
+        mods: { recoilUp: -2, recoilSide: -2 },
+      };
     case 'armor':
       return {
         ...common,

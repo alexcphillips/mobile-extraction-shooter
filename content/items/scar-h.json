@@ -1,11 +1,11 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "scar-h",
   "name": "SCAR-H",
   "type": "weapon",
   "class": "assault",
-  "size": [4, 2],
-  "value": 84000,
+  "size": [5, 2],
+  "value": 89400,
   "weight": 3.2,
   "rarity": "common",
   "ammo": "ammo-762",
@@ -14,22 +14,27 @@
   "rpm": 600,
   "magazine": 20,
   "feed": "magazine",
-  "reloadTime": 2.5,
-  "ergonomics": 63,
-  "range": 250,
-  "loudness": 220,
-  "defaults": {
-    "magazine": "scar-h-mag",
-    "stock": "scar-h-stock"
+  "reloadTime": 2.54,
+  "stats": {
+    "recoilUp": 71,
+    "recoilSide": 72,
+    "stability": 63,
+    "handling": 60,
+    "hipFire": 23,
+    "accuracy": 38,
+    "range": 70,
+    "loudness": 82
   },
-  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
-  "hipSpread": 3.5,
-  "aimSpread": 0.35,
+  "defaults": {
+    "magazine": "scar-h-mag"
+  },
+  "slots": ["optic", "muzzle", "magazine", "rightRail", "stock"],
+  "stock": {
+    "length": 1
+  },
   "recoil": {
-    "up": 4.97,
-    "side": 1.98,
     "snap": 38,
-    "recovery": 2.5,
+    "recovery": 3,
     "angle": 6
   },
   "sounds": {
@@ -176,7 +181,36 @@
         "color": "#1d1f21",
         "pitch": -18
       },
-      { "type": "box", "pos": [0, 0.01, 0.125], "size": [0.04, 0.05, 0.03], "color": "#1d1f21" }
+      { "type": "box", "pos": [0, 0.01, 0.125], "size": [0.04, 0.05, 0.03], "color": "#1d1f21" },
+      {
+        "type": "box",
+        "pos": [0, 0.02, 0.23],
+        "size": [0.04, 0.04, 0.18],
+        "color": "#a08c64",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03, 0.235],
+        "size": [0.03, 0.025, 0.19],
+        "color": "#a08c64",
+        "pitch": 14,
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.045, 0.25],
+        "size": [0.036, 0.015, 0.1],
+        "color": "#1d1f21",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.015, 0.325],
+        "size": [0.044, 0.11, 0.012],
+        "color": "#1d1f21",
+        "hiddenBy": "stock"
+      }
     ],
     "grip": [0, -0.08, 0.1],
     "support": [0, -0.01, -0.24],
@@ -186,8 +220,12 @@
       "optic": [0, 0.057, 0.08],
       "muzzle": [0, 0.012, -0.44],
       "magazine": [0, -0.07, -0.02],
-      "laser": [0.04, 0.004, -0.3],
+      "rightRail": [0.04, 0.004, -0.3],
       "stock": [0, 0.02, 0.14]
+    },
+    "factoryFold": {
+      "pivot": [0.026, 0, 0],
+      "yaw": 180
     }
   }
 }

@@ -1,4 +1,4 @@
-import type { Item } from '@mes/shared';
+import { type Item, noAttachments } from '@mes/shared';
 import { describe, expect, it } from 'vitest';
 import { holdsFavorite } from './favorites';
 
@@ -13,7 +13,7 @@ describe('favorites', () => {
     // A gun with a favorite fitted.
     const gun: Item = {
       ...plain('akm'),
-      attachments: { optic: 'red-dot', muzzle: null, magazine: null, laser: null, stock: null },
+      attachments: { ...noAttachments(), optic: 'red-dot' },
     };
     expect(holdsFavorite(gun, favs)).toBe(true);
     // A backpack with one inside, however deep.

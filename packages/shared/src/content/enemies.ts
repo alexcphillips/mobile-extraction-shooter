@@ -522,7 +522,7 @@ export function checkEnemies(
       check(() => {
         const gun = weaponDef(items, w.item);
         for (const a of w.attachments ?? []) {
-          if (!fits(gun, attachmentDef(items, a.item)))
+          if (!fits(items, gun, attachmentDef(items, a.item)))
             throw new Error(`"${a.item}" doesn't fit "${w.item}"`);
         }
         for (const a of w.ammo ?? []) {

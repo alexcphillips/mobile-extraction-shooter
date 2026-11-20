@@ -205,7 +205,9 @@ export function placeholderModel(doc: Readonly<Record<string, unknown>>): ItemMo
       const optic = doc.optic as { zoom?: number } | undefined;
       const mods = doc.mods as { loudness?: number } | undefined;
       if (doc.slot === 'optic') return copy((optic?.zoom ?? 1) > 1 ? SCOPE : RED_DOT);
-      if (doc.slot === 'muzzle') return copy((mods?.loudness ?? 1) < 1 ? SUPPRESSOR : BRAKE);
+      // Quieter: points below 0, or (an old file's, before format 13) a multiplier below 1.
+      const l = mods?.loudness ?? 0;
+      if (doc.slot === 'muzzle') return copy(l < 0 || (l > 0 && l < 1) ? SUPPRESSOR : BRAKE);
       if (doc.slot === 'stock') return copy(STOCK);
       return copy(LONG_MAG);
     }

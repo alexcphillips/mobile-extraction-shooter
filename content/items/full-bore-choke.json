@@ -1,0 +1,62 @@
+{
+  "formatVersion": 13,
+  "id": "full-bore-choke",
+  "name": "Full Bore choke",
+  "shortName": "Full Bore",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 7000,
+  "weight": 0.1,
+  "rarity": "common",
+  "slot": "muzzle",
+  "classes": ["shotgun"],
+  "mods": {
+    "recoilUp": -12,
+    "recoilSide": -12,
+    "accuracy": 6,
+    "handling": -9
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.004],
+        "pitch": 90,
+        "radius": 0.015,
+        "height": 0.016,
+        "color": "#2b2d2f",
+        "sides": 12,
+        "name": "knurled ring"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.03],
+        "pitch": 90,
+        "radius": 0.0135,
+        "height": 0.04,
+        "color": "#8d8f91",
+        "name": "tube"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.0425],
+        "pitch": 90,
+        "radius": 0.0142,
+        "height": 0.005,
+        "color": "#b08d3c",
+        "name": "band"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.051],
+        "pitch": 90,
+        "radius": 0.0095,
+        "height": 0.002,
+        "color": "#141516",
+        "sides": 6,
+        "name": "bore"
+      }
+    ],
+    "muzzle": [0, 0, -0.052]
+  }
+}

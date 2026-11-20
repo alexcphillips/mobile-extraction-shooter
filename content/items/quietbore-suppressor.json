@@ -1,0 +1,65 @@
+{
+  "formatVersion": 13,
+  "id": "quietbore-suppressor",
+  "name": "Quietbore suppressor",
+  "shortName": "Quietbore",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 13000,
+  "weight": 0.7,
+  "rarity": "common",
+  "slot": "muzzle",
+  "classes": ["shotgun"],
+  "mods": {
+    "recoilUp": -9,
+    "recoilSide": -9,
+    "handling": -6,
+    "loudness": -26
+  },
+  "columns": 1,
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.011],
+        "pitch": 90,
+        "radius": 0.0285,
+        "height": 0.022,
+        "color": "#3a3d40",
+        "sides": 10,
+        "name": "mount"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.104],
+        "pitch": 90,
+        "radius": 0.027,
+        "height": 0.172,
+        "color": "#2b2d2f",
+        "sides": 10,
+        "name": "tube"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.192],
+        "pitch": 90,
+        "radius": 0.028,
+        "height": 0.012,
+        "color": "#1d1f21",
+        "sides": 10,
+        "name": "end cap"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.199],
+        "pitch": 90,
+        "radius": 0.01,
+        "height": 0.002,
+        "color": "#141516",
+        "sides": 6,
+        "name": "bore"
+      }
+    ],
+    "muzzle": [0, 0, -0.2]
+  }
+}

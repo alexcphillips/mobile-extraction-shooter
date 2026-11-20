@@ -1,7 +1,7 @@
 import {
   carrierOf,
   drawTimeAt,
-  ergonomicsOf,
+  pointsOf,
   isArmoredRig,
   itemDef,
   type ItemDb,
@@ -271,8 +271,8 @@ export function drawTime(items: ItemDb, gear: Gear, hand: Hand): number {
   const it = gear[hand];
   if (!it) return 0;
   const def = itemDef(items, it.item);
-  // A gun's comes from its ergonomics, attachments' points included (ERGO).
-  if (def.type === 'weapon') return drawTimeAt(ergonomicsOf(items, it as WeaponState));
+  // A gun's comes from its handling, attachments' points included (HANDLING).
+  if (def.type === 'weapon') return drawTimeAt(pointsOf(items, it as WeaponState, 'handling'));
   return def.type === 'melee' ? def.drawTime : 0;
 }
 

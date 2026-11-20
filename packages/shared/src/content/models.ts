@@ -26,13 +26,64 @@ const radius = finite.refine((n) => n >= 0, 'must be 0 or more');
 const color = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'colors are #rrggbb');
 
 /**
- * The fixed attachment slots a gun can have. The laser (2026-11-11) only tightens hip fire.
- * The stock (WF-1, 2026-11-12) is the biggest recoil and handling part, and sets how long
- * the gun is in a grid.
+ * The fixed attachment slots a gun can have, in the order they're listed. The stock (WF-1,
+ * 2026-11-12) is the biggest recoil and handling part, and sets how long the gun is in a
+ * grid. 2026-11-19: the laser slot became the left and right rails (for lights later), and
+ * the offset optic, barrel, foregrip and rear grip slots came.
  */
-export const ATTACHMENT_SLOTS = ['optic', 'muzzle', 'magazine', 'laser', 'stock'] as const;
+export const ATTACHMENT_SLOTS = [
+  'optic',
+  'offsetOptic',
+  'muzzle',
+  'barrel',
+  'foregrip',
+  'leftRail',
+  'rightRail',
+  'grip',
+  'magazine',
+  'stock',
+] as const;
 export type AttachmentSlot = (typeof ATTACHMENT_SLOTS)[number];
 export const slotSchema = z.enum(ATTACHMENT_SLOTS);
+
+/**
+ * What kind of attachment an item is (its `slot` field): which gun slots it goes in. Each
+ * kind goes in the slot of its name, except a rail item (a laser, a light), which goes on
+ * either rail.
+ */
+export const ATTACHMENT_KINDS = [
+  'optic',
+  'offsetOptic',
+  'muzzle',
+  'barrel',
+  'foregrip',
+  'rail',
+  'grip',
+  'magazine',
+  'stock',
+] as const;
+export type AttachmentKind = (typeof ATTACHMENT_KINDS)[number];
+export const kindSchema = z.enum(ATTACHMENT_KINDS);
+
+const RAILS: readonly AttachmentSlot[] = ['leftRail', 'rightRail'];
+
+/** The gun slots an attachment of this kind goes in. */
+export function slotsOfKind(kind: AttachmentKind): readonly AttachmentSlot[] {
+  return kind === 'rail' ? RAILS : [kind];
+}
+
+/** A gun's attachments with nothing fitted: every slot null. */
+export function noAttachments(): Record<AttachmentSlot, string | null> {
+  return Object.fromEntries(ATTACHMENT_SLOTS.map((s) => [s, null])) as Record<
+    AttachmentSlot,
+    string | null
+  >;
+}
+
+/** The kind of attachment a gun slot takes. */
+export function kindOfSlot(slot: AttachmentSlot): AttachmentKind {
+  return slot === 'leftRail' || slot === 'rightRail' ? 'rail' : slot;
+}
 
 const placed = {
   pos: vec3Schema,
@@ -201,14 +252,28 @@ export const weaponModelSchema = z.strictObject({
    * or not the stock folds by itself. Needs a stock mount.
    */
   stockFold: foldSchema.optional(),
+  /**
+   * How its factory stock folds by itself (AT-1b): its parts hidden by a stock turn this
+   * way, from the stock mount. Fitted stocks fold their own way; `stockFold` overrides both.
+   */
+  factoryFold: foldSchema.optional(),
 });
 
 export const attachmentModelSchema = z.strictObject({
   parts,
   /** Optics: where the eye lines up when aiming through it, from its origin. */
   sight: vec3Schema.optional(),
-  /** Muzzle devices: where shots leave, from its origin. */
+  /**
+   * Muzzle devices: where shots leave, from its origin. Barrels: where the muzzle slot is
+   * (the barrel's end), from its origin.
+   */
   muzzle: vec3Schema.optional(),
+  /** Foregrips: where the support hand holds, from its origin. */
+  support: vec3Schema.optional(),
+  /** Rear grips: where the firing hand holds, from its origin. */
+  grip: vec3Schema.optional(),
+  /** Lasers: where the beam leaves (it runs along −z), from its origin. */
+  laser: vec3Schema.optional(),
   /** Stocks that fold by themselves (WF-1): how, from its origin. */
   fold: foldSchema.optional(),
 });

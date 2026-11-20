@@ -82,11 +82,6 @@ export interface SaveProfileRequest {
   freeRepairs?: boolean;
 }
 
-/** POST /api/stash/pages: buys the next stash page, if there's money for it. */
-export interface BuyPageRequest {
-  version: number;
-}
-
 /**
  * POST /api/vendors/:id/buy (session 13b): buys one of a vendor's offers, by its index in
  * the vendor's list, into the stash, page `page` (from 0) first.

@@ -1,11 +1,12 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "k10",
   "name": "K10",
   "type": "weapon",
   "class": "smg",
-  "size": [2, 2],
-  "value": 71500,
+  "platform": "ar15",
+  "size": [3, 2],
+  "value": 76300,
   "weight": 2,
   "rarity": "common",
   "ammo": "ammo-45acp",
@@ -14,22 +15,27 @@
   "rpm": 1100,
   "magazine": 25,
   "feed": "magazine",
-  "reloadTime": 2.2,
-  "ergonomics": 76,
-  "range": 80,
-  "loudness": 110,
-  "defaults": {
-    "magazine": "k10-mag",
-    "stock": "k10-stock"
+  "reloadTime": 2.23,
+  "stats": {
+    "recoilUp": 57,
+    "recoilSide": 64,
+    "stability": 49,
+    "handling": 73,
+    "hipFire": 35,
+    "accuracy": 26,
+    "range": 45,
+    "loudness": 67
   },
-  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
-  "hipSpread": 2,
-  "aimSpread": 0.6,
+  "defaults": {
+    "magazine": "k10-mag"
+  },
+  "slots": ["optic", "muzzle", "magazine", "rightRail", "stock"],
+  "stock": {
+    "length": 1
+  },
   "recoil": {
-    "up": 2.58,
-    "side": 1.33,
     "snap": 45,
-    "recovery": 2.5,
+    "recovery": 3,
     "angle": -8
   },
   "sounds": {
@@ -182,6 +188,36 @@
         "hiddenBy": "optic",
         "name": "front sight ear",
         "group": "iron sights"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.01, 0.16],
+        "radius": 0.013,
+        "height": 0.13,
+        "color": "#1d1f21",
+        "pitch": 90,
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.005, 0.24],
+        "size": [0.036, 0.06, 0.12],
+        "color": "#2b2e31",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.05, 0.27],
+        "size": [0.034, 0.04, 0.06],
+        "color": "#2b2e31",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.02, 0.303],
+        "size": [0.038, 0.11, 0.01],
+        "color": "#1d1f21",
+        "hiddenBy": "stock"
       }
     ],
     "grip": [0, -0.07, 0.03],
@@ -192,8 +228,12 @@
       "optic": [0, 0.04, 0.04],
       "muzzle": [0, 0, -0.25],
       "magazine": [0, -0.1, -0.09],
-      "laser": [0.038, -0.008, -0.15],
+      "rightRail": [0.038, -0.008, -0.15],
       "stock": [0, 0.01, 0.095]
+    },
+    "factoryFold": {
+      "pivot": [0.023, 0, 0],
+      "yaw": 180
     }
   }
 }

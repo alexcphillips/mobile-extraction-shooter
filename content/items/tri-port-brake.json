@@ -1,0 +1,84 @@
+{
+  "formatVersion": 13,
+  "id": "tri-port-brake",
+  "name": "Tri-Port muzzle brake",
+  "shortName": "Tri-Port",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 4500,
+  "weight": 0.14,
+  "rarity": "common",
+  "slot": "muzzle",
+  "classes": ["assault", "smg", "dmr", "sniper", "lmg"],
+  "mods": {
+    "recoilUp": -6,
+    "recoilSide": -6,
+    "stability": 3,
+    "handling": -3,
+    "loudness": 3
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, -0.03],
+        "size": [0.032, 0.032, 0.06],
+        "color": "#3a3d40",
+        "name": "body"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0155, 0, -0.014],
+        "size": [0.005, 0.022, 0.008],
+        "color": "#141516",
+        "name": "side port"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0155, 0, -0.03],
+        "size": [0.005, 0.022, 0.008],
+        "color": "#141516",
+        "name": "side port"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0155, 0, -0.046],
+        "size": [0.005, 0.022, 0.008],
+        "color": "#141516",
+        "name": "side port"
+      },
+      {
+        "type": "box",
+        "pos": [0.0155, 0, -0.014],
+        "size": [0.005, 0.022, 0.008],
+        "color": "#141516",
+        "name": "side port"
+      },
+      {
+        "type": "box",
+        "pos": [0.0155, 0, -0.03],
+        "size": [0.005, 0.022, 0.008],
+        "color": "#141516",
+        "name": "side port"
+      },
+      {
+        "type": "box",
+        "pos": [0.0155, 0, -0.046],
+        "size": [0.005, 0.022, 0.008],
+        "color": "#141516",
+        "name": "side port"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.061],
+        "pitch": 90,
+        "radius": 0.007,
+        "height": 0.002,
+        "color": "#141516",
+        "sides": 6,
+        "name": "bore"
+      }
+    ],
+    "muzzle": [0, 0, -0.062]
+  }
+}

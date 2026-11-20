@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "p90",
   "name": "P90",
   "type": "weapon",
@@ -15,14 +15,24 @@
   "magazine": 50,
   "feed": "magazine",
   "reloadTime": 2.6,
-  "ergonomics": 80,
-  "range": 125,
-  "loudness": 115,
+  "stats": {
+    "recoilUp": 56,
+    "recoilSide": 57,
+    "stability": 56,
+    "handling": 80,
+    "hipFire": 34,
+    "accuracy": 28,
+    "range": 55,
+    "loudness": 68
+  },
+  "barrelRange": 1.05,
   "defaults": { "magazine": "p90-mag" },
-  "slots": ["optic", "muzzle", "magazine", "laser"],
-  "hipSpread": 2.1,
-  "aimSpread": 0.55,
-  "recoil": { "up": 1.5, "side": 0.6, "snap": 45, "recovery": 3, "angle": -6 },
+  "slots": ["optic", "muzzle", "magazine", "rightRail"],
+  "recoil": {
+    "snap": 45,
+    "recovery": 3,
+    "angle": -6
+  },
   "sounds": {
     "shot": "pistol-shot",
     "suppressed": "pistol-shot-suppressed",
@@ -194,7 +204,7 @@
       "optic": [0, 0.065, -0.02],
       "muzzle": [0, 0, -0.275],
       "magazine": [0, 0.024, -0.025],
-      "laser": [0.03, -0.03, -0.17]
+      "rightRail": [0.03, -0.03, -0.17]
     }
   }
 }

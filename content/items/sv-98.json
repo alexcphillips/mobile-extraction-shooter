@@ -1,11 +1,11 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "sv-98",
   "name": "SV-98",
   "type": "weapon",
   "class": "sniper",
-  "size": [4, 2],
-  "value": 46600,
+  "size": [5, 2],
+  "value": 50200,
   "weight": 5,
   "rarity": "common",
   "ammo": "ammo-762x54r-hpbt",
@@ -15,21 +15,27 @@
   "magazine": 10,
   "feed": "magazine",
   "reloadTime": 3.4,
-  "ergonomics": 33,
-  "range": 500,
-  "loudness": 260,
-  "defaults": {
-    "magazine": "sv-98-mag",
-    "stock": "sv-98-stock"
+  "stats": {
+    "recoilUp": 76,
+    "recoilSide": 80,
+    "stability": 85,
+    "handling": 33,
+    "hipFire": 11,
+    "accuracy": 80,
+    "range": 85,
+    "loudness": 86
   },
-  "slots": ["optic", "muzzle", "magazine", "laser", "stock"],
-  "hipSpread": 6,
-  "aimSpread": 0.05,
+  "barrelRange": 1.05,
+  "defaults": {
+    "magazine": "sv-98-mag"
+  },
+  "slots": ["optic", "muzzle", "magazine", "rightRail", "stock"],
+  "stock": {
+    "length": 1
+  },
   "recoil": {
-    "up": 5.72,
-    "side": 2.57,
     "snap": 30,
-    "recovery": 2.61
+    "recovery": 3
   },
   "sounds": {
     "shot": "sniper-shot",
@@ -146,6 +152,41 @@
         "size": [0.035, 0.09, 0.04],
         "color": "#3f4636",
         "pitch": -20
+      },
+      {
+        "type": "box",
+        "pos": [0, 0, 0.185],
+        "size": [0.045, 0.04, 0.23],
+        "color": "#3f4636",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.1, 0.22],
+        "size": [0.045, 0.05, 0.2],
+        "color": "#3f4636",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.04, 0.3],
+        "size": [0.045, 0.12, 0.08],
+        "color": "#3f4636",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.028, 0.25],
+        "size": [0.04, 0.015, 0.1],
+        "color": "#30362a",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.04, 0.345],
+        "size": [0.048, 0.13, 0.012],
+        "color": "#1d1f21",
+        "hiddenBy": "stock"
       }
     ],
     "grip": [0, -0.08, 0.09],
@@ -156,7 +197,7 @@
       "optic": [0, 0.038, 0.04],
       "muzzle": [0, 0, -0.74],
       "magazine": [0, -0.05, -0.06],
-      "laser": [0.037, -0.008, -0.36],
+      "rightRail": [0.037, -0.008, -0.36],
       "stock": [0, 0, 0.07]
     }
   }

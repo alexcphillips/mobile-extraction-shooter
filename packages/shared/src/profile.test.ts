@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { loadContent } from './content/format';
 import { STARTING_KIT_FORMAT } from './content/starting-kits';
+import { noAttachments } from './content/items';
 import { addItem, placeAt } from './inventory/grid';
 import {
   PROFILE_FORMAT,
@@ -142,9 +143,9 @@ describe('PROFILE_FORMAT', () => {
     const p = loadContent(PROFILE_FORMAT, old, 'p');
     expect(p.gear.primary1!.item).toBe('m9a3');
     expect(p.gear.primary1!.attachments).toEqual({
+      ...noAttachments(),
       ...attachments,
       optic: null,
-      laser: null,
       stock: null,
     });
     expect(p.stash[0]!.items[0]!.item.item).toBe('m9a3');
@@ -239,11 +240,40 @@ describe('PROFILE_FORMAT', () => {
     expect(loadContent(PROFILE_FORMAT, old, 'p').gear.headset).toBeNull();
   });
 
-  it('gives every stored gun an empty laser slot (format 17 → 18)', () => {
+  it('gives every stored gun an empty laser slot (format 17 → 18), now its right rail', () => {
     const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
     old.formatVersion = 17;
-    delete old.gear.primary1.attachments.laser;
-    expect(loadContent(PROFILE_FORMAT, old, 'p').gear.primary1!.attachments!.laser).toBeNull();
+    const {
+      leftRail: _l,
+      rightRail: _r,
+      offsetOptic: _o,
+      barrel: _b,
+      foregrip: _f,
+      grip: _g,
+      ...a
+    } = old.gear.primary1.attachments;
+    old.gear.primary1.attachments = a;
+    expect(loadContent(PROFILE_FORMAT, old, 'p').gear.primary1!.attachments!.rightRail).toBeNull();
+  });
+
+  it('moves a stored laser to the right rail and adds the new slots (format 23 → 24)', () => {
+    const old = JSON.parse(JSON.stringify(newProfile(items, kit)));
+    old.formatVersion = 23;
+    const {
+      leftRail: _l,
+      rightRail: _r,
+      offsetOptic: _o,
+      barrel: _b,
+      foregrip: _f,
+      grip: _g,
+      ...a
+    } = old.gear.primary1.attachments;
+    old.gear.primary1.attachments = { ...a, laser: 'laser-sight' };
+    const gun = loadContent(PROFILE_FORMAT, old, 'p').gear.primary1!;
+    expect(gun.attachments!.rightRail).toBe('laser-sight');
+    expect(gun.attachments!.leftRail).toBeNull();
+    expect(gun.attachments!.barrel).toBeNull();
+    expect('laser' in gun.attachments!).toBe(false);
   });
 
   it('starts the PMC level at 0 and moves British spellings to American (format 18 → 19)', () => {
@@ -475,19 +505,28 @@ describe('settleHangarSpace (H4)', () => {
   it('adds the category pages at Stash level 3, once, and checks them', () => {
     const p = profile();
     p.hangar[STASH_MODULE] = 3;
-    expect(checkProfile(items, p)).toMatch(/category pages/);
+    expect(checkProfile(items, p)).toMatch(/stash pages/);
     settleHangarSpace(items, p);
     settleHangarSpace(items, p);
-    expect(p.stash.map((g) => g.only ?? null)).toEqual([null, 'guns', 'ammo', 'meds']);
+    // After the plain pages Stash 3 gives.
+    expect(p.stash.map((g) => g.only ?? null)).toEqual([
+      null,
+      null,
+      null,
+      null,
+      'guns',
+      'ammo',
+      'meds',
+    ]);
     expect(checkProfile(items, p)).toBeNull();
     // Only their kinds go in.
-    expect(addItem(items, p.stash[2]!, createItem(items, 'round', 30))).toBe(0);
-    expect(addItem(items, p.stash[2]!, createItem(items, 'watch'))).toBe(1);
-    p.stash[3]!.items.push({ x: 0, y: 0, rotated: false, item: createItem(items, 'watch') });
-    expect(checkProfile(items, p)).toMatch(/can't go in stash page 4/);
-    p.stash[3]!.items = [];
+    expect(addItem(items, p.stash[5]!, createItem(items, 'round', 30))).toBe(0);
+    expect(addItem(items, p.stash[5]!, createItem(items, 'watch'))).toBe(1);
+    p.stash[6]!.items.push({ x: 0, y: 0, rotated: false, item: createItem(items, 'watch') });
+    expect(checkProfile(items, p)).toMatch(/can't go in stash page 7/);
+    p.stash[6]!.items = [];
     // Not dropped, nor swapped about.
-    p.stash.splice(1, 1);
+    p.stash.splice(4, 1);
     expect(checkProfile(items, p)).toMatch(/category pages/);
   });
 
@@ -500,11 +539,11 @@ describe('settleHangarSpace (H4)', () => {
     addItem(items, page, createItem(items, 'round', 40));
     addItem(items, page, createItem(items, 'bandage'));
     addItem(items, page, createItem(items, 'watch'));
-    addItem(items, p.stash[2]!, createItem(items, 'round', 30));
+    addItem(items, p.stash[5]!, createItem(items, 'round', 30));
     expect(sortToCategoryPages(items, p)).toBe(true);
     expect(page.items.map((g) => g.item.item)).toEqual(['watch']);
-    expect(p.stash[2]!.items.reduce((n, g) => n + g.item.count, 0)).toBe(70);
-    expect(p.stash[3]!.items.map((g) => [g.item.item, g.item.count])).toEqual([['bandage', 1]]);
+    expect(p.stash[5]!.items.reduce((n, g) => n + g.item.count, 0)).toBe(70);
+    expect(p.stash[6]!.items.map((g) => [g.item.item, g.item.count])).toEqual([['bandage', 1]]);
     expect(sortToCategoryPages(items, p)).toBe(false);
     expect(checkProfile(items, p)).toBeNull();
   });

@@ -1,8 +1,12 @@
 import {
   bagRarity,
   defaultSounds,
-  ERGO,
+  HANDLING,
   ITEM_FORMAT_VERSION,
+  clampPoints,
+  pointsFor,
+  pointsForScale,
+  type CurvedStat,
   type ItemDb,
   type ItemDef,
 } from '../content/items';
@@ -10,8 +14,26 @@ import type { ItemModel } from '../content/models';
 import { addItem, type Grid } from '../inventory/grid';
 import { placeholderModel } from '../content/placeholder-models';
 
-/** The test guns' ergonomics: a 0.2 s aim (and a draw of about 0.5 s). */
-const AIM_02 = (ERGO.aimAt0 - 0.2) / ERGO.aimPerPoint;
+/** The test guns' handling: a 0.2 s aim (and a draw of about 0.5 s). */
+const AIM_02 = (HANDLING.aimAt0 - 0.2) / HANDLING.aimPerPoint;
+
+/**
+ * The points a test gun's value sits at, unrounded so the sim gets the value back. Zero
+ * spread or kick is as near as the curves go: 100 points of hip-fire or accuracy, 0 of recoil.
+ */
+const at = (stat: CurvedStat, value: number) => clampPoints(value ? pointsFor(stat, value) : 0);
+const gunStats = (o: { range: number; loudness: number; up: number; side: number }) => ({
+  recoilUp: at('recoilUp', o.up),
+  recoilSide: at('recoilSide', o.side),
+  stability: 50,
+  handling: AIM_02,
+  hipFire: 100,
+  accuracy: 100,
+  range: at('range', o.range),
+  loudness: at('loudness', o.loudness),
+});
+/** An attachment's multipliers as points. */
+const scale = (stat: CurvedStat, by: number) => pointsForScale(stat, by);
 
 function common(id: string, size: [number, number]) {
   return {
@@ -40,13 +62,9 @@ const defs = [
     rpm: 600,
     magazine: 30,
     reloadTime: 2,
-    ergonomics: AIM_02,
-    range: 200,
-    loudness: 150,
-    slots: ['optic', 'muzzle', 'magazine', 'laser'],
-    hipSpread: 0,
-    aimSpread: 0,
-    recoil: { up: 1, side: 0, snap: 40, recovery: 10 },
+    stats: gunStats({ range: 200, loudness: 150, up: 1, side: 0 }),
+    slots: ['optic', 'muzzle', 'magazine', 'rightRail'],
+    recoil: { snap: 40, recovery: 10 },
   },
   {
     formatVersion: ITEM_FORMAT_VERSION,
@@ -61,13 +79,9 @@ const defs = [
     rpm: 600,
     magazine: 12,
     reloadTime: 1,
-    ergonomics: AIM_02,
-    range: 100,
-    loudness: 100,
+    stats: gunStats({ range: 100, loudness: 100, up: 0, side: 0 }),
     slots: ['muzzle'],
-    hipSpread: 0,
-    aimSpread: 0,
-    recoil: { up: 0, side: 0, snap: 40, recovery: 10 },
+    recoil: { snap: 40, recovery: 10 },
   },
   {
     formatVersion: ITEM_FORMAT_VERSION,
@@ -81,12 +95,8 @@ const defs = [
     rpm: 60,
     magazine: 4,
     reloadTime: 2,
-    ergonomics: AIM_02,
-    range: 50,
-    loudness: 150,
-    hipSpread: 0,
-    aimSpread: 0,
-    recoil: { up: 2, side: 0, snap: 40, recovery: 10 },
+    stats: gunStats({ range: 50, loudness: 150, up: 2, side: 0 }),
+    recoil: { snap: 40, recovery: 10 },
   },
   {
     formatVersion: ITEM_FORMAT_VERSION,
@@ -196,13 +206,36 @@ const defs = [
   },
   {
     formatVersion: ITEM_FORMAT_VERSION,
+    id: 'combo-scope',
+    size: [2, 1],
+    value: 100,
+    name: 'Combo scope',
+    type: 'attachment',
+    slot: 'optic',
+    // A scope with a red dot riding on top (optic.alt), for the sight button.
+    optic: {
+      zoom: 4,
+      reticle: { color: '#000000', shapes: [{ type: 'dot', x: 0, y: 0, r: 1 }] },
+      alt: {
+        zoom: 1,
+        reticle: { color: '#ff0000', shapes: [{ type: 'dot', x: 0, y: 0, r: 0.3 }] },
+        sight: [0, 0.07, -0.04],
+      },
+    },
+  },
+  {
+    formatVersion: ITEM_FORMAT_VERSION,
     id: 'suppressor',
     size: [2, 1],
     value: 100,
     name: 'Suppressor',
     type: 'attachment',
     slot: 'muzzle',
-    mods: { loudness: 0.25, recoil: 0.5 },
+    mods: {
+      loudness: scale('loudness', 0.25),
+      recoilUp: scale('recoilUp', 0.5),
+      recoilSide: scale('recoilSide', 0.5),
+    },
   },
   {
     formatVersion: ITEM_FORMAT_VERSION,
@@ -222,10 +255,10 @@ const defs = [
     value: 100,
     name: 'Laser',
     type: 'attachment',
-    slot: 'laser',
-    mods: { hipSpread: 0.5 },
+    slot: 'rail',
+    mods: { hipFire: scale('hipFire', 0.5) },
   },
-  // WF-1: a carbine whose stock is a part, a fixed stock and a folding one.
+  // WF-1, AT-1b: a carbine with a stub factory stock (no cells), a fixed stock and a folding one.
   {
     formatVersion: ITEM_FORMAT_VERSION,
     id: 'carbine',
@@ -238,28 +271,42 @@ const defs = [
     rpm: 600,
     magazine: 30,
     reloadTime: 2,
-    ergonomics: AIM_02,
-    range: 200,
-    loudness: 150,
-    defaults: { stock: 'stock' },
+    stats: gunStats({ range: 200, loudness: 150, up: 1, side: 0.5 }),
+    stock: { length: 0 },
     slots: ['optic', 'stock'],
-    hipSpread: 0,
-    aimSpread: 0,
-    recoil: { up: 2, side: 1, snap: 40, recovery: 10 },
+    recoil: { snap: 40, recovery: 10 },
+  },
+  // AT-1b: the carbine with a factory stock that folds by itself, a cell shorter folded.
+  {
+    formatVersion: ITEM_FORMAT_VERSION,
+    id: 'folder',
+    size: [4, 2],
+    value: 100,
+    name: 'Folder',
+    type: 'weapon',
+    ammo: 'round',
+    fireMode: 'auto',
+    rpm: 600,
+    magazine: 30,
+    reloadTime: 2,
+    stats: gunStats({ range: 200, loudness: 150, up: 1, side: 0.5 }),
+    stock: { length: 1 },
+    slots: ['optic', 'stock'],
+    recoil: { snap: 40, recovery: 10 },
   },
   {
     ...common('stock', [2, 1]),
     type: 'attachment',
     slot: 'stock',
     stock: { length: 1 },
-    mods: { recoil: 0.5, recovery: 2 },
+    mods: { recoilUp: scale('recoilUp', 0.5), recoilSide: scale('recoilSide', 0.5) },
   },
   {
     ...common('folding-stock', [2, 1]),
     type: 'attachment',
     slot: 'stock',
     stock: { length: 2, foldedLength: 1 },
-    mods: { recoil: 0.25 },
+    mods: { recoilUp: scale('recoilUp', 0.25), recoilSide: scale('recoilSide', 0.25) },
   },
   // MG-1: a gun that takes magazines, its own and a big one.
   {
@@ -275,14 +322,10 @@ const defs = [
     magazine: 20,
     feed: 'magazine',
     reloadTime: 2,
-    ergonomics: AIM_02,
-    range: 200,
-    loudness: 150,
+    stats: gunStats({ range: 200, loudness: 150, up: 1, side: 0 }),
     defaults: { magazine: 'smg-mag' },
     slots: ['muzzle', 'magazine'],
-    hipSpread: 0,
-    aimSpread: 0,
-    recoil: { up: 1, side: 0, snap: 40, recovery: 10 },
+    recoil: { snap: 40, recovery: 10 },
   },
   {
     ...common('smg-mag', [1, 1]),
@@ -308,7 +351,7 @@ const defs = [
     type: 'attachment',
     slot: 'muzzle',
     columns: 1,
-    mods: { loudness: 0.25 },
+    mods: { loudness: scale('loudness', 0.25) },
   },
   // GZ-2: a headset, and a helmet that covers the ears with comms built in.
   { ...common('headset', [2, 1]), type: 'headset', hearing: 0.2 },
@@ -443,9 +486,17 @@ function bagOf(d: Record<string, unknown>): Parameters<typeof bagRarity>[0] | nu
     : null;
 }
 
-/** The folding stock folds by itself, about a hinge on its left. */
+/** The folding stock folds by itself, about a hinge on its left, as the folder's own does. */
 function withFold(id: string, model: ItemModel): ItemModel {
-  return id === 'folding-stock' ? { ...model, fold: { pivot: [-0.03, 0, 0], yaw: 180 } } : model;
+  const fold = { pivot: [-0.03, 0, 0], yaw: 180 } as const;
+  if (id === 'folding-stock') return { ...model, fold: { ...fold, pivot: [...fold.pivot] } };
+  if (id === 'folder') return { ...model, factoryFold: { ...fold, pivot: [...fold.pivot] } };
+  return model;
+}
+
+/** The laser has a beam point, which makes it a laser (hasLaser) that can be switched off. */
+function withLaser(id: string, model: ItemModel): ItemModel {
+  return id === 'laser' ? { ...model, laser: [0, 0, -0.03] } : model;
 }
 
 export const TEST_ITEMS: ItemDb = new Map(
@@ -460,7 +511,7 @@ export const TEST_ITEMS: ItemDb = new Map(
         // A rig's or backpack's rarity by its cells (bagRarity); the rest are common.
         rarity: bagOf(d) ? bagRarity(bagOf(d)!) : 'common',
         ...(sounds && { sounds }),
-        model: withFold(d.id, placeholderModel(d)),
+        model: withLaser(d.id, withFold(d.id, placeholderModel(d))),
       } as ItemDef,
     ];
   }),

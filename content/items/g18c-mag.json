@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "g18c-mag",
   "name": "Glock 17-round magazine",
   "shortName": "Glock 18C 17",
@@ -9,7 +9,7 @@
   "weight": 0.1,
   "rarity": "common",
   "slot": "magazine",
-  "weapons": ["g18c", "glock-17"],
+  "platforms": ["glock"],
   "capacity": 17,
   "caliber": "9x19",
   "model": {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { AttachmentDef } from '../content/items';
+import { pointsForScale, type AttachmentDef } from '../content/items';
 import { TICK_RATE } from '../tick';
 import { MOVEMENT } from './movement';
 import { RECOIL, gunRecoil, kickRecoil, recoilScale, settleRecoil } from './recoil';
@@ -203,18 +203,30 @@ describe('recoil', () => {
 });
 
 describe('recoil attachment mods', () => {
-  it('scales kick up, sideways and recovery separately', () => {
+  it("moves kick up and sideways separately, and leaves recovery the gun's", () => {
+    // The carbine, which kicks sideways too, without its stock.
     const items = new Map(TEST_ITEMS);
+    const carbine = TEST_ITEMS.get('carbine')!;
+    items.set('rifle', {
+      ...carbine,
+      id: 'rifle',
+      defaults: {},
+      slots: ['muzzle'],
+    } as typeof carbine);
     const brake = TEST_ITEMS.get('suppressor') as AttachmentDef;
     items.set('suppressor', {
       ...brake,
-      mods: { recoilUp: 0.5, recoilSide: 0.8, recovery: 1.5 },
+      mods: {
+        recoilUp: pointsForScale('recoilUp', 0.5),
+        recoilSide: pointsForScale('recoilSide', 0.8),
+        stability: 20,
+      },
     });
     const bare = weaponStats(items, createWeapon(items, 'rifle'), createWeaponStats());
     const s = weaponStats(items, createWeapon(items, 'rifle', ['suppressor']), createWeaponStats());
     expect(s.recoilUp).toBeCloseTo(bare.recoilUp * 0.5);
     expect(s.recoilSide).toBeCloseTo(bare.recoilSide * 0.8);
-    expect(s.recoilRecovery).toBeCloseTo(bare.recoilRecovery * 1.5);
+    expect(s.recoilRecovery).toBe(bare.recoilRecovery);
     expect(s.recoilSnap).toBe(bare.recoilSnap);
   });
 });

@@ -186,7 +186,7 @@ function magsFor(p: Pool, items: ItemDb, def: WeaponDef): Item[] {
   const out: Item[] = [];
   for (const it of poolItems(p)) {
     const d = itemDef(items, it.item);
-    if (isMagazine(d) && fits(def, d)) out.push(it);
+    if (isMagazine(d) && fits(items, def, d)) out.push(it);
   }
   const cap = (it: Item): number => (itemDef(items, it.item) as { capacity: number }).capacity;
   return out.sort((a, b) => cap(b) - cap(a) || (b.mag ?? 0) - (a.mag ?? 0));

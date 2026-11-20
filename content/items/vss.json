@@ -1,11 +1,12 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "id": "vss",
   "name": "VSS Vintorez",
   "type": "weapon",
   "class": "dmr",
-  "size": [4, 2],
-  "value": 62000,
+  "platform": "as-val",
+  "size": [5, 2],
+  "value": 66000,
   "weight": 2.6,
   "rarity": "common",
   "ammo": "ammo-9x39",
@@ -14,16 +15,31 @@
   "rpm": 900,
   "magazine": 10,
   "feed": "magazine",
-  "reloadTime": 2.4,
-  "ergonomics": 60,
-  "range": 300,
-  "loudness": 55,
+  "reloadTime": 2.39,
+  "stats": {
+    "recoilUp": 58,
+    "recoilSide": 57,
+    "stability": 56,
+    "handling": 61,
+    "hipFire": 28,
+    "accuracy": 41,
+    "range": 74,
+    "loudness": 52
+  },
+  "barrelRange": 0.9,
   "suppressed": true,
-  "defaults": { "magazine": "vss-mag", "stock": "vss-stock" },
-  "slots": ["optic", "magazine", "laser", "stock"],
-  "hipSpread": 2.8,
-  "aimSpread": 0.3,
-  "recoil": { "up": 2.13, "side": 0.79, "snap": 42, "recovery": 3, "angle": -5 },
+  "defaults": {
+    "magazine": "vss-mag"
+  },
+  "slots": ["optic", "magazine", "rightRail", "stock"],
+  "stock": {
+    "length": 1
+  },
+  "recoil": {
+    "snap": 42,
+    "recovery": 3,
+    "angle": -5
+  },
   "sounds": {
     "shot": "rifle-shot-suppressed",
     "suppressed": "rifle-shot-suppressed",
@@ -141,7 +157,47 @@
         "pitch": -18,
         "name": "grip"
       },
-      { "type": "box", "pos": [0, -0.01, 0.09], "size": [0.035, 0.05, 0.02], "color": "#1d1f21" }
+      { "type": "box", "pos": [0, -0.01, 0.09], "size": [0.035, 0.05, 0.02], "color": "#1d1f21" },
+      {
+        "type": "box",
+        "pos": [0, 0.005, 0.2],
+        "size": [0.032, 0.03, 0.22],
+        "color": "#8a5a32",
+        "name": "top bar",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.075, 0.22],
+        "size": [0.03, 0.026, 0.19],
+        "color": "#8a5a32",
+        "name": "lower bar",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.035, 0.115],
+        "size": [0.03, 0.09, 0.03],
+        "color": "#6e4626",
+        "name": "thumbhole front",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03, 0.315],
+        "size": [0.036, 0.12, 0.02],
+        "color": "#8a5a32",
+        "name": "butt",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03, 0.3265],
+        "size": [0.032, 0.112, 0.003],
+        "color": "#1d1f21",
+        "name": "butt pad",
+        "hiddenBy": "stock"
+      }
     ],
     "grip": [0, -0.065, 0.05],
     "support": [0, -0.03, -0.18],
@@ -150,7 +206,7 @@
     "mounts": {
       "optic": [0, 0.04, 0.04],
       "magazine": [0, -0.028, -0.06],
-      "laser": [0.037, -0.008, -0.24],
+      "rightRail": [0.037, -0.008, -0.24],
       "stock": [0, 0.005, 0.09]
     }
   }

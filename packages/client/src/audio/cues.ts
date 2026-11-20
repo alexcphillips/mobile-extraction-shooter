@@ -9,6 +9,7 @@ import {
   itemDef,
   itemSounds,
   meleeDef,
+  statAt,
   weaponDef,
   type Character,
   type CollisionWorld,
@@ -129,7 +130,9 @@ export class SoundCues {
         if (w && e.pellet === 0) {
           const def = weaponDef(this.items, w.item);
           const id =
-            e.loudness < def.loudness * SUPPRESSED ? def.sounds.suppressed : def.sounds.shot;
+            e.loudness < statAt('loudness', def.stats.loudness) * SUPPRESSED
+              ? def.sounds.suppressed
+              : def.sounds.shot;
           if (own) this.sound.play(id);
           else this.at(id, e.fromX, e.fromY, e.fromZ, e.loudness);
         }
