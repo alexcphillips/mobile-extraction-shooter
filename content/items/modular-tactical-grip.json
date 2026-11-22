@@ -1,0 +1,61 @@
+{
+  "formatVersion": 13,
+  "id": "modular-tactical-grip",
+  "name": "Modular tactical grip",
+  "shortName": "Modular",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 2500,
+  "weight": 0.09,
+  "rarity": "common",
+  "slot": "grip",
+  "platforms": ["ar15"],
+  "mods": {
+    "recoilUp": -3,
+    "recoilSide": -3,
+    "handling": 3,
+    "stability": -1
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.04394, 0.01298],
+        "size": [0.029, 0.084, 0.034],
+        "color": "#3a3d40",
+        "pitch": -18,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0149, -0.04266, 0.01151],
+        "size": [0.0008, 0.04872, 0.02108],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "texture panel",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0.0149, -0.04266, 0.01151],
+        "size": [0.0008, 0.04872, 0.02108],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "texture panel",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.08579, 0.02658],
+        "size": [0.023, 0.004, 0.026],
+        "color": "#8d8f91",
+        "pitch": -18,
+        "name": "storage cap",
+        "group": "grip"
+      }
+    ],
+    "grip": [0, -0.03755, 0.0109]
+  },
+  "weapons": ["g3", "m250"]
+}

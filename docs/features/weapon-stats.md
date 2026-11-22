@@ -37,12 +37,19 @@ Shown on every gun and part, in this order:
 - **A factory stock is in the gun's size and value.** A fitted stock's cells take the place of the factory stock's, and taking a fitted stock off puts the factory one back.
 - **Stocks tame recoil with recoil and stability points.** A light stock trades some of that for handling.
 - **Accuracy moves mainly with barrels.** Long or heavy barrels add accuracy and range and cost handling; short barrels do the reverse *(user's call)*. Barrels don't move hip-fire. Grips, stocks and foregrips don't touch accuracy; a few muzzles (chokes, a precision compensator) add a little.
+- **A barrel's accuracy goes by its length** *(user's call)*: one longer than the gun's own (it costs handling) adds accuracy; a shorter one (it adds handling) takes accuracy off, and range by the same points. The list's accuracy marks give how much, never which way. A barrel that only tames recoil and adds range, at its gun's length, leaves accuracy alone.
+- **A barrel can add rounds** (a shotgun's, with a longer tube under it): the same `magazine` mod as a tube extension, and taking it off hands back what no longer fits.
 - **Stability is one stat for both axes** *(user's call)*. It moves the view and the gun, not where the shot goes.
 - **A folded stock and a laser switched off count as not fitted**: none of their points apply.
-- **Any folded stock applies the fold change** *(user's call)* (`FOLDED_STOCK`): some extra mobility and a shorter gun, at a significant cost in recoil and stability that hurts mid-range fights. It's the same on every gun, factory stock or fitted. Compact stocks are a real alternative: more mobile than folding without its full loss of control. A factory stock folds on the gun's folding mount or its own fold. A stock going on or off unfolds the gun.
+- **Any folded stock applies the fold change** *(user's call)* (`FOLDED_STOCK`): some extra mobility and a shorter gun, at a significant cost in recoil and stability that hurts mid-range fights. It's the same on every gun, factory stock or fitted. Compact stocks are a real alternative: more mobile than folding without its full loss of control. A stock going on or off unfolds the gun.
+- **Folding is an SMG's identity** *(user's call)*: only a few factory stocks fold (the `mp7`'s and `uzi`'s, and the `aks-74u`'s as the one rifle), each on its own fold (`model.factoryFold`). No lmg, sniper, shotgun, pistol or `ar15` gun folds, no gun has a folding stock mount, and no fitted stock folds yet; the content test holds this.
+- **A stock that rides a buffer tube doesn't fold** *(user's call)*: neither the tube nor a stock on it turns, so an `ar15` gun has no fold, factory stock or fitted.
+- **The buffer tube belongs to the stock** *(user's call)*: an `ar15` gun's tube is part of its factory stock, and every AR stock brings its own, so a stock is drawn whole on any gun that takes it. A bare tube is a stock of its own, made per gun, not per platform (`m416-buffer-tube`).
+- **A stock kit is a stock with its own foregrip** (`model.foregrip`, drawn on the gun's foregrip mount so it sits under any gun's handguard). It fits only a gun with a foregrip slot, and while it's on that slot can't be used (`blockedBy`): its points stand for both parts. Putting one on takes a fitted foregrip off into what you carry; a foregrip doesn't go on over one.
+- **The end pad is close to no stock** *(user's call)*: `reinforced-end-pad` fits every SMG without a buffer tube, adds no length, and is more mobile than a folded stock with nearly its loss of control. End pads and plates don't go on a tube gun *(user's call)*: they'd sit partway along the tube; its compact stocks are its light option, and on the `m416` its bare tube is lighter still.
 - **What a part fits** (`fitsIn`): the gun has a slot of its kind, and the gun is on the part's lists: a gun named in `weapons`, a gun whose `platform` is in `platforms`, or a gun whose `class` is in `classes`. With no list the part is universal. A magazine fits only a magazine-fed gun of its caliber, so one magazine can name a platform that mixes calibers.
 - **A platform is a family whose parts swap** (`ar15`, `ak`), named on the gun. Parts for a family list the platform, so a new gun on it takes them all. Parts sorted by role, like optics kept off bolt-action rifles, list their guns, since a platform doesn't say what a gun is for. A gun doesn't need a platform.
-- **A part never lists a gun its platforms or classes already cover**, and every platform or class it names must bring it at least one gun (`checkItems`).
+- **A part never lists a gun its platforms or classes already cover**, and every platform it names must bring it at least one gun (`checkItems`). A class may bring none yet, and a listed gun may not have the slot yet (a magazine's must), so parts can come before their guns get the slot in their rebuild.
 - **Muzzles fit by class** *(user's call)*: rifle muzzles fit every long gun but shotguns, shotgun muzzles fit only shotguns, and pistols take only the suppressors meant for them.
 - **A suppressor is a full cut in loudness, the same on every can** *(user's call)*: its other stats set it apart. A cut a few points deep wouldn't change what the AI hears. The shot sounds suppressed by that cut alone, whatever the part.
 - **Muzzle brakes are louder** *(user's call)*: a brake gets one more step of control than a compensator or flash hider like it, paid for in loudness, so brakes are the most control and the loudest.
@@ -58,16 +65,17 @@ Shown on every gun and part, in this order:
 - **Parts meant for ADS speed or ADS move speed get handling points** *(user's call)*, not an exception of their own.
 - **Recovery isn't shown or moddable** *(user's call)*: it's part of a gun's character. Parts meant to tame recoil over a burst use stability points instead.
 - **Accuracy stays a stat** *(user's call)*: without aimed spread every gun's first aimed shot lands on the dot, and a DMR's edge at distance would come only from range. It's kept coarse enough to see at this game's distances.
-- **The AR-15 platform is wide** *(user's call)*: every gun that takes an AR stock, not only true AR-15s. Its stocks fit all of them; barrels that don't fit every one list their guns.
+- **The AR-15 platform is wide** *(user's call)*: every gun that takes an AR stock, not only true AR-15s. Its stocks fit all of them; barrels that don't fit every one list their guns. The `m250` is the exception *(user's call)*: it takes AR stocks and grips by name, off the platform.
+- **A gun that takes AR grips but not AR stocks is listed on the grips by name** *(user's call)*, not put on the platform, which would bring it the stocks too (the `g3`).
 - **ADS move speed and sprint-to-fire are mechanics, not only numbers**: they change how fights feel on a thumbstick, so they're tuned in play with the AI, not in content alone.
 
 ## Where it lives
 
 - Code: `packages/shared/src/sim/weapons.ts` (`weaponStats`: a gun's stats with its parts), `packages/shared/src/content/items.ts` (schemas, `GUN_STATS`, `STAT_CURVES`, `HANDLING` and `STABILITY` curves, `statAt`, `pointsOf`), `packages/shared/src/sim/recoil.ts`, `packages/shared/src/sim/movement.ts`
-- Content: `content/items/` (weapon and attachment items)
+- Content: `content/items/` (weapon and attachment items); `scripts/stocks.mjs` writes the stocks and stock kits (run with `--dry` first: an edited file is the source after that)
 - UI: `packages/client/src/ui/stat-bars.tsx` (the bars and +/-, shared), `packages/client/src/ui/item-details.tsx`, the part picker in `packages/client/src/ui/raid-screen.tsx` (`PartChanges`), `packages/client/src/item-editor/panel.tsx`
 - Review: `node scripts/weapon-stats.mjs [gun ...] [--against <dir|git-ref>]` prints every gun with its default parts, or what changed against other content
-- Tests: `packages/shared/src/sim/points.test.ts` (curves, stacking), `packages/shared/src/sim/handling.test.ts`, `packages/shared/src/sim/weapons.test.ts`, `packages/shared/src/sim/recoil.test.ts`
+- Tests: `packages/shared/src/sim/points.test.ts` (curves, stacking), `packages/shared/src/sim/stock-kits.test.ts`, `packages/shared/src/sim/handling.test.ts`, `packages/shared/src/sim/weapons.test.ts`, `packages/shared/src/sim/recoil.test.ts`
 
 ## Open questions
 

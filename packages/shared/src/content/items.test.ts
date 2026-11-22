@@ -432,7 +432,13 @@ describe('items', () => {
       expect(() => fitted(kinds, sight({ classes: ['pistol'], weapons: ['d'] }))).toThrow(
         /fits by its class too/,
       );
-      expect(() => fitted(kinds, sight({ classes: ['sniper'] }))).toThrow(/fits no sniper gun/);
+      // A class with no gun that has the slot yet is allowed: it fits nothing for now.
+      expect(fitted(kinds, sight({ classes: ['sniper'] }))).toEqual([]);
+    });
+
+    it('lets a part list a gun that has no slot for it yet, fitting nothing (AT-6)', () => {
+      const bare = [on('a', 'ar'), on('d', undefined, { slots: ['magazine'] })];
+      expect(fitted(bare, sight({ weapons: ['d'] }))).toEqual([]);
     });
 
     it('needs a magazine to list guns or platforms', () => {

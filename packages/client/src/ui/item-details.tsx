@@ -1,6 +1,7 @@
 import {
   caliberOf,
   fits,
+  isStockKit,
   type WeaponDef,
   condition,
   createWeaponStats,
@@ -637,7 +638,7 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
     case 'attachment': {
       // By name, the guns its lists come to (a platform's, AT-1), or any with its slot.
       const fitsGuns =
-        def.weapons || def.platforms
+        def.weapons || def.platforms || def.classes || isStockKit(def)
           ? [...items.values()]
               .filter((g): g is WeaponDef => g.type === 'weapon' && fits(items, g, def))
               .map((g) => g.name)
@@ -657,6 +658,8 @@ function rows(items: ItemDb, item: Item, def: ItemDef): Row[] {
           `${def.stock.length} cell${def.stock.length === 1 ? '' : 's'} to the gun's length${def.stock.foldedLength ? ` (${def.stock.foldedLength} folded)` : ''}`,
         ]);
       }
+      // AT-7b: a stock kit's own foregrip takes the gun's foregrip slot.
+      if (isStockKit(def)) out.push(['Foregrip', "built in: the gun's foregrip slot stays empty"]);
       // WF-2: what it adds to the gun's size in a grid.
       if (def.rows) out.push(['Adds', `${def.rows} row${def.rows === 1 ? '' : 's'} under the gun`]);
       if (def.columns)

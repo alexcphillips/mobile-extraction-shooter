@@ -1,0 +1,136 @@
+{
+  "formatVersion": 13,
+  "id": "balanced-tactical-grip",
+  "name": "Balanced tactical grip",
+  "shortName": "Balanced",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 3500,
+  "weight": 0.07,
+  "rarity": "common",
+  "slot": "grip",
+  "classes": ["smg"],
+  "mods": {
+    "recoilUp": -3,
+    "recoilSide": -3,
+    "stability": 3,
+    "handling": 2
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.04014, 0.01174],
+        "size": [0.027, 0.076, 0.032],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.025, -0.01053],
+        "size": [0.023, 0.006, 0.002],
+        "color": "#141516",
+        "pitch": -18,
+        "name": "finger groove",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.06837, 0.00357],
+        "size": [0.023, 0.006, 0.002],
+        "color": "#141516",
+        "pitch": -18,
+        "name": "finger groove",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.07818, 0.0241],
+        "size": [0.03, 0.004, 0.035],
+        "color": "#a08c64",
+        "pitch": -18,
+        "name": "base plate",
+        "group": "grip"
+      }
+    ],
+    "grip": [0, -0.03436, 0.00986],
+    "magwell": {
+      "parts": [
+        {
+          "type": "hull",
+          "pos": [0, -0.04771, 0.00457],
+          "points": [
+            [0.0165, 0.04721, -0.03457],
+            [-0.0165, 0.04721, -0.03457],
+            [0.0165, 0.04721, 0.02743],
+            [-0.0165, 0.04721, 0.02743],
+            [0.0165, 0.00771, 0.02943],
+            [-0.0165, 0.00771, 0.02943],
+            [0.0165, -0.03129, 0.02543],
+            [-0.0165, -0.03129, 0.02543],
+            [0.0165, -0.03529, 0.02143],
+            [-0.0165, -0.03529, 0.02143],
+            [0.0165, -0.03529, -0.03257],
+            [-0.0165, -0.03529, -0.03257],
+            [0.0165, -0.00029, -0.03657],
+            [-0.0165, -0.00029, -0.03657]
+          ],
+          "color": "#1d1f21",
+          "name": "grip shell",
+          "group": "grip"
+        },
+        {
+          "type": "box",
+          "pos": [0.0168, -0.044, 0.001],
+          "size": [0.0008, 0.048, 0.048],
+          "color": "#303236",
+          "name": "side panel",
+          "group": "grip"
+        },
+        {
+          "type": "box",
+          "pos": [-0.0168, -0.044, 0.001],
+          "size": [0.0008, 0.048, 0.048],
+          "color": "#303236",
+          "name": "side panel",
+          "group": "grip"
+        },
+        {
+          "type": "box",
+          "pos": [0, -0.026, -0.0315],
+          "size": [0.027, 0.005, 0.002],
+          "color": "#141516",
+          "name": "finger groove",
+          "group": "grip"
+        },
+        {
+          "type": "box",
+          "pos": [0, -0.05, -0.0315],
+          "size": [0.027, 0.005, 0.002],
+          "color": "#141516",
+          "name": "finger groove",
+          "group": "grip"
+        },
+        {
+          "type": "box",
+          "pos": [0, -0.072, -0.0315],
+          "size": [0.027, 0.005, 0.002],
+          "color": "#141516",
+          "name": "finger groove",
+          "group": "grip"
+        },
+        {
+          "type": "box",
+          "pos": [0, -0.081, 0.001],
+          "size": [0.035, 0.004, 0.064],
+          "color": "#a08c64",
+          "name": "base plate",
+          "group": "grip"
+        }
+      ],
+      "grip": [0, -0.042, 0.001]
+    }
+  }
+}

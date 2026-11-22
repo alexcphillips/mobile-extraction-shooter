@@ -1,0 +1,70 @@
+{
+  "formatVersion": 13,
+  "id": "reinforced-battle-grip",
+  "name": "Reinforced battle grip",
+  "shortName": "Battle",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 5500,
+  "weight": 0.1,
+  "rarity": "common",
+  "slot": "grip",
+  "platforms": ["ar15"],
+  "mods": {
+    "recoilUp": -6,
+    "recoilSide": -6,
+    "handling": 6,
+    "stability": -2
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.0449, 0.01329],
+        "size": [0.03, 0.086, 0.035],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.02756, -0.01127],
+        "size": [0.026, 0.006, 0.002],
+        "color": "#141516",
+        "pitch": -18,
+        "name": "finger groove",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.07663, 0.00467],
+        "size": [0.026, 0.006, 0.002],
+        "color": "#141516",
+        "pitch": -18,
+        "name": "finger groove",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.00275, 0.02325],
+        "size": [0.028, 0.006, 0.012],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "beavertail",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.08769, 0.02719],
+        "size": [0.033, 0.004, 0.038],
+        "color": "#3a3d40",
+        "pitch": -18,
+        "name": "base plate",
+        "group": "grip"
+      }
+    ],
+    "grip": [0, -0.03835, 0.01116]
+  },
+  "weapons": ["g3", "m250"]
+}

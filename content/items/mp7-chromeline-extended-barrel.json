@@ -1,0 +1,69 @@
+{
+  "formatVersion": 13,
+  "id": "mp7-chromeline-extended-barrel",
+  "name": "Chromeline extended barrel",
+  "shortName": "Chromeline",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 11000,
+  "weight": 0.14,
+  "rarity": "common",
+  "slot": "barrel",
+  "weapons": ["mp7"],
+  "mods": {
+    "recoilUp": -9,
+    "recoilSide": -9,
+    "range": 12,
+    "stability": 9,
+    "handling": -6
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.03],
+        "radius": 0.00825,
+        "height": 0.068,
+        "color": "#8a9098",
+        "sides": 10,
+        "pitch": 90,
+        "name": "barrel",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.035],
+        "radius": 0.00938,
+        "height": 0.006,
+        "color": "#26282b",
+        "sides": 10,
+        "pitch": 90,
+        "name": "collar",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.0065],
+        "radius": 0.00975,
+        "height": 0.009,
+        "color": "#26282b",
+        "sides": 10,
+        "pitch": 90,
+        "name": "barrel nut",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.066],
+        "radius": 0.00645,
+        "height": 0.008,
+        "color": "#5a5f65",
+        "sides": 10,
+        "pitch": 90,
+        "name": "thread",
+        "group": "barrel"
+      }
+    ],
+    "muzzle": [0, 0, -0.07]
+  }
+}

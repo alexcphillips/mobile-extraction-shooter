@@ -1,0 +1,125 @@
+{
+  "formatVersion": 13,
+  "id": "ak-lightweight-skeleton-stock",
+  "name": "AK lightweight skeleton stock",
+  "shortName": "AK skel",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 6000,
+  "weight": 0.24,
+  "rarity": "common",
+  "slot": "stock",
+  "platforms": ["ak"],
+  "stock": {
+    "length": 1
+  },
+  "mods": {
+    "handling": 12,
+    "recoilUp": 6,
+    "recoilSide": 6,
+    "stability": -6
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0.004, 0.012],
+        "size": [0.03, 0.05, 0.024],
+        "color": "#2a2c2f",
+        "name": "receiver adapter",
+        "group": "stock"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.0165, 0.012],
+        "roll": 90,
+        "radius": 0.0022,
+        "height": 0.032,
+        "color": "#55585d",
+        "name": "pin",
+        "group": "stock"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.0085, 0.012],
+        "roll": 90,
+        "radius": 0.0022,
+        "height": 0.032,
+        "color": "#55585d",
+        "name": "pin",
+        "group": "stock"
+      },
+      {
+        "type": "hull",
+        "pos": [0, 0.0165, 0.13],
+        "points": [
+          [0.0065, 0.0135, -0.11],
+          [-0.0065, 0.0135, -0.11],
+          [0.0065, 0.0025, -0.11],
+          [-0.0065, 0.0025, -0.11],
+          [0.0065, -0.0135, 0.11],
+          [-0.0065, -0.0135, 0.11],
+          [0.0065, -0.0025, 0.11],
+          [-0.0065, -0.0025, 0.11]
+        ],
+        "color": "#3a3d41",
+        "name": "top bar",
+        "group": "stock"
+      },
+      {
+        "type": "hull",
+        "pos": [0, -0.0475, 0.129],
+        "points": [
+          [0.0065, 0.0355, -0.109],
+          [-0.0065, 0.0355, -0.109],
+          [0.0065, 0.0255, -0.109],
+          [-0.0065, 0.0255, -0.109],
+          [0.0065, -0.0365, 0.107],
+          [-0.0065, -0.0365, 0.107],
+          [0.0065, -0.0245, 0.111],
+          [-0.0065, -0.0245, 0.111]
+        ],
+        "color": "#3a3d41",
+        "name": "lower bar",
+        "group": "stock"
+      },
+      {
+        "type": "hull",
+        "pos": [0, -0.03525, 0.24],
+        "points": [
+          [0.0165, 0.05125, -0.012],
+          [-0.0165, 0.05125, -0.012],
+          [0.0165, 0.05225, 0.01],
+          [-0.0165, 0.05225, 0.01],
+          [0.0165, -0.05275, 0.01],
+          [-0.0165, -0.05275, 0.01],
+          [0.0165, -0.05075, -0.008],
+          [-0.0165, -0.05075, -0.008]
+        ],
+        "color": "#3a3d41",
+        "name": "butt",
+        "group": "stock"
+      },
+      {
+        "type": "slab",
+        "pos": [0, -0.0355, 0.2575],
+        "size": [0.036, 0.105, 0.015],
+        "corners": [0.004, 0.004, 0.004, 0.004],
+        "segments": 2,
+        "color": "#18191a",
+        "name": "butt pad",
+        "group": "stock"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.08, 0.215],
+        "roll": 90,
+        "radius": 0.0032,
+        "height": 0.02,
+        "color": "#202123",
+        "name": "sling loop",
+        "group": "stock"
+      }
+    ]
+  }
+}

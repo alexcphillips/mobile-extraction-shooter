@@ -1,0 +1,75 @@
+{
+  "formatVersion": 13,
+  "id": "p90-recoil-pad",
+  "name": "P90 recoil pad",
+  "shortName": "Recoil pad",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 3000,
+  "weight": 0.12,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["p90"],
+  "stock": {
+    "length": 0
+  },
+  "mods": {
+    "recoilUp": -9,
+    "recoilSide": -9,
+    "handling": -6
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, 0, 0.003],
+        "size": [0.048, 0.11, 0.006],
+        "color": "#3a3d41",
+        "name": "spacer",
+        "group": "stock"
+      },
+      {
+        "type": "slab",
+        "pos": [0, 0, 0.0155],
+        "size": [0.05, 0.112, 0.019],
+        "corners": [0.006, 0.006, 0.006, 0.006],
+        "segments": 2,
+        "color": "#18191a",
+        "name": "recoil pad",
+        "group": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.036, 0.0252],
+        "size": [0.038, 0.002, 0.0006],
+        "color": "#161719",
+        "name": "pad rib",
+        "group": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.012, 0.0252],
+        "size": [0.038, 0.002, 0.0006],
+        "color": "#161719",
+        "name": "pad rib",
+        "group": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.012, 0.0252],
+        "size": [0.038, 0.002, 0.0006],
+        "color": "#161719",
+        "name": "pad rib",
+        "group": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.036, 0.0252],
+        "size": [0.038, 0.002, 0.0006],
+        "color": "#161719",
+        "name": "pad rib",
+        "group": "stock"
+      }
+    ]
+  }
+}

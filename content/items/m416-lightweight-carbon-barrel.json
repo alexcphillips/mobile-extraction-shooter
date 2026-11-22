@@ -1,0 +1,113 @@
+{
+  "formatVersion": 13,
+  "id": "m416-lightweight-carbon-barrel",
+  "name": "Lightweight carbon barrel",
+  "shortName": "Carbon",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 9750,
+  "weight": 0.28,
+  "rarity": "common",
+  "slot": "barrel",
+  "weapons": ["m416"],
+  "mods": {
+    "recoilUp": -9,
+    "recoilSide": -9,
+    "range": 9,
+    "handling": -3,
+    "accuracy": 6
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.06],
+        "radius": 0.00931,
+        "height": 0.128,
+        "color": "#5a5f65",
+        "sides": 10,
+        "pitch": 90,
+        "name": "barrel",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.065],
+        "radius": 0.01254,
+        "height": 0.098,
+        "color": "#2c2f33",
+        "sides": 12,
+        "pitch": 90,
+        "name": "carbon sleeve",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.0065],
+        "radius": 0.01274,
+        "height": 0.009,
+        "color": "#26282b",
+        "sides": 10,
+        "pitch": 90,
+        "name": "barrel nut",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.126],
+        "radius": 0.00843,
+        "height": 0.008,
+        "color": "#5a5f65",
+        "sides": 10,
+        "pitch": 90,
+        "name": "thread",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.0405],
+        "radius": 0.01274,
+        "height": 0.003,
+        "color": "#41454b",
+        "sides": 10,
+        "pitch": 90,
+        "name": "weave band",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.065],
+        "radius": 0.01274,
+        "height": 0.003,
+        "color": "#41454b",
+        "sides": 10,
+        "pitch": 90,
+        "name": "weave band",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.0895],
+        "radius": 0.01274,
+        "height": 0.003,
+        "color": "#41454b",
+        "sides": 10,
+        "pitch": 90,
+        "name": "weave band",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.116],
+        "radius": 0.01078,
+        "height": 0.004,
+        "color": "#26282b",
+        "sides": 10,
+        "pitch": 90,
+        "name": "sleeve cap",
+        "group": "barrel"
+      }
+    ],
+    "muzzle": [0, 0, -0.13]
+  }
+}

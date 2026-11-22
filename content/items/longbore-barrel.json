@@ -1,0 +1,106 @@
+{
+  "formatVersion": 13,
+  "id": "longbore-barrel",
+  "name": "Longbore barrel",
+  "shortName": "Longbore",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 8500,
+  "weight": 0.78,
+  "rarity": "common",
+  "slot": "barrel",
+  "classes": ["shotgun"],
+  "mods": {
+    "recoilUp": -12,
+    "recoilSide": -12,
+    "accuracy": 3,
+    "handling": -6
+  },
+  "columns": 1,
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.095],
+        "radius": 0.01208,
+        "height": 0.198,
+        "color": "#1b1c1e",
+        "sides": 10,
+        "pitch": 90,
+        "name": "barrel",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.0065],
+        "radius": 0.01495,
+        "height": 0.009,
+        "color": "#26282b",
+        "sides": 10,
+        "pitch": 90,
+        "name": "barrel nut",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.196],
+        "radius": 0.00989,
+        "height": 0.008,
+        "color": "#5a5f65",
+        "sides": 10,
+        "pitch": 90,
+        "name": "thread",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.01608, -0.1],
+        "size": [0.006, 0.0015, 0.18],
+        "color": "#26282b",
+        "name": "vent rib",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.01388, -0.012],
+        "size": [0.004, 0.0032, 0.003],
+        "color": "#26282b",
+        "name": "rib post",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.01388, -0.06867],
+        "size": [0.004, 0.0032, 0.003],
+        "color": "#26282b",
+        "name": "rib post",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.01388, -0.12533],
+        "size": [0.004, 0.0032, 0.003],
+        "color": "#26282b",
+        "name": "rib post",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.01388, -0.182],
+        "size": [0.004, 0.0032, 0.003],
+        "color": "#26282b",
+        "name": "rib post",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.01828, -0.188],
+        "size": [0.002, 0.003, 0.002],
+        "color": "#c9c2a8",
+        "name": "bead",
+        "group": "barrel"
+      }
+    ],
+    "muzzle": [0, 0, -0.2]
+  }
+}

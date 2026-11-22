@@ -25,11 +25,13 @@ import {
   noAttachments,
   fitsIn,
   slotsOfKind,
+  fittedLook,
 } from '@mes/shared';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Combo, HexColor, Num, Pick, Text, Toggle } from '../editor/fields';
 import { loadEnemies } from '../content';
 import { tintedHex } from '../render/body-model';
+import { shiftForBarrel } from '../render/gun-model';
 import { budgetOf, triangleCount } from './budget';
 import type { ItemEditor, ItemEditorState } from './editor';
 import {
@@ -92,6 +94,8 @@ function pointKeys(def: ItemDef): string[] {
           foregrip: ['support'],
           grip: ['grip'],
           rail: ['laser'],
+          // A stock kit's support point is from the gun's foregrip mount (AT-7b).
+          stock: def.model.foregrip ? ['foregrip.support'] : [],
         }[def.slot as string] ?? []
       );
     case 'melee':
@@ -107,6 +111,7 @@ const POINT_NOTES: Record<string, string> = {
   muzzle: 'where shots leave',
   sight: 'the eye lines up here, aimed',
   laser: 'a laser’s beam leaves here, along −z',
+  'foregrip.support': 'the left hand, from the gun’s foregrip mount',
   'mounts.optic': 'an optic’s origin goes here',
   'mounts.muzzle': 'a muzzle device’s origin goes here',
   'mounts.magazine': 'a magazine’s origin goes here',
@@ -859,22 +864,46 @@ function buildScene(
     scene.fitted = fittedSlots;
     const context: ModelShape[] = [];
     let sight = pointAt(model, 'sight') ?? null;
+    // A fitted barrel moves where the barrel ends, as in the game (gunModel): a muzzle
+    // device, or the gun's own (hidden in place), rides on the end of it.
+    const barrel = fitted('barrel');
+    const shift = shiftForBarrel(
+      pointAt(model, 'mounts.barrel'),
+      pointAt(model, 'mounts.muzzle') ?? pointAt(model, 'muzzle') ?? [0, 0, 0],
+      barrel ? (items.get(barrel) as AttachmentDef | undefined)?.model.muzzle : undefined,
+    );
+    let kitForegrip = false;
     for (const slot of fittedSlots) {
       const a = items.get(fitted(slot)!) as AttachmentDef;
-      const mount = pointAt(model, `mounts.${slot}`);
-      if (!mount) continue;
-      const parts = slot === 'stock' && fold ? safeFold(a.model.parts, fold) : a.model.parts;
+      const at = pointAt(model, `mounts.${slot}`);
+      if (!at) continue;
+      const mount = slot === 'muzzle' ? addVec(at, shift) : at;
+      // A rear grip on a gun whose grip wraps the magazine well draws its look for it.
+      const look = fittedLook(model as { magwellGrip?: true | undefined }, slot, a.model);
+      const parts = slot === 'stock' && fold ? safeFold(look.parts, fold) : look.parts;
       context.push(...safeShapes(parts, mount));
+      // A stock kit's own foregrip, on this gun's foregrip mount (AT-7b).
+      const under = pointAt(model, 'mounts.foregrip');
+      if (slot === 'stock' && a.model.foregrip && under) {
+        context.push(...safeShapes(a.model.foregrip.parts, under));
+        kitForegrip = true;
+      }
       if (slot === 'optic' && a.model.sight) sight = addVec(mount, a.model.sight);
     }
     // Its factory stock folded (AT-1b): hidden in place, drawn folded as context.
     const stockMount = pointAt(model, 'mounts.stock');
+    if (kitForegrip) fittedSlots.add('foregrip');
     if (fold && !fittedSlots.has('stock') && stockMount) {
       fittedSlots.add('stock');
       const own = model.parts.filter((p) => p.hiddenBy === 'stock');
       context.push(
         ...safeShapes(safeFold(own, { ...fold, pivot: addVec(fold.pivot, stockMount) })),
       );
+    }
+    if (shift.some((v) => v !== 0) && !fittedSlots.has('muzzle')) {
+      fittedSlots.add('muzzle');
+      const tip = model.parts.filter((p) => p.hiddenBy === 'muzzle');
+      context.push(...safeShapes(tip, shift));
     }
     scene.context = context;
     scene.sightLine = sight;
@@ -888,7 +917,26 @@ function buildScene(
     if (gun && mount) {
       // The gun around it, moved so this attachment's origin stays at the origin.
       const back: Vec3 = [-mount[0], -mount[1], -mount[2]];
-      scene.context = safeShapes(gun.model.parts, back, (s) => s === slot);
+      const hides = (s: AttachmentSlot) => s === slot;
+      // A barrel carries the gun's own muzzle device on its end, as in the game.
+      const shift = shiftForBarrel(
+        gun.model.mounts?.barrel,
+        gun.model.mounts?.muzzle ?? gun.model.muzzle,
+        def.slot === 'barrel' ? pointAt(model, 'muzzle') : undefined,
+      );
+      const own = gun.model.parts.filter((p) => p.hiddenBy !== 'muzzle');
+      const tip = gun.model.parts.filter((p) => p.hiddenBy === 'muzzle');
+      // A stock kit's own foregrip sits on the gun's foregrip mount, hiding what's there.
+      const kit = slot === 'stock' ? (model.foregrip as Model | undefined) : undefined;
+      const under = gun.model.mounts?.foregrip;
+      const kitHides = (s: AttachmentSlot) => hides(s) || (!!kit && s === 'foregrip');
+      scene.context = [
+        ...safeShapes(own, back, kitHides),
+        ...safeShapes(tip, addVec(back, shift), kitHides),
+        ...(kit && under && Array.isArray(kit.parts)
+          ? safeShapes(kit.parts, addVec(back, under))
+          : []),
+      ];
     }
     if (fold) {
       // Folded: drawn as context, so nothing is picked or moved where it doesn't live.

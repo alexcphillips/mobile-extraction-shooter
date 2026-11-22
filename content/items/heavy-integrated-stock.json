@@ -1,0 +1,246 @@
+{
+  "formatVersion": 13,
+  "id": "heavy-integrated-stock",
+  "name": "Heavy integrated stock",
+  "shortName": "Heavy int",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 15000,
+  "weight": 0.85,
+  "rarity": "common",
+  "slot": "stock",
+  "platforms": ["ar15"],
+  "stock": {
+    "length": 1
+  },
+  "mods": {
+    "recoilUp": -12,
+    "recoilSide": -12,
+    "stability": 12,
+    "handling": -9
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.049],
+        "pitch": 90,
+        "radius": 0.0175,
+        "height": 0.01,
+        "color": "#161719",
+        "name": "castle nut",
+        "group": "stock",
+        "sides": 6
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, 0.033],
+        "pitch": 90,
+        "radius": 0.0148,
+        "height": 0.166,
+        "color": "#202123",
+        "name": "buffer tube",
+        "group": "stock",
+        "sides": 8
+      },
+      {
+        "type": "hull",
+        "pos": [0, 0.01138, 0.045],
+        "points": [
+          [-0.0145, -0.01738, -0.045],
+          [-0.0145, -0.01738, 0.045],
+          [0.0145, -0.01738, -0.045],
+          [0.0145, -0.01738, 0.045],
+          [0.019, -0.01287, -0.045],
+          [0.019, -0.01287, 0.045],
+          [0.019, 0.01263, -0.045],
+          [0.019, 0.01263, 0.045],
+          [0.014, 0.01763, -0.045],
+          [0.014, 0.01763, 0.045],
+          [-0.014, 0.01763, -0.045],
+          [-0.014, 0.01763, 0.045],
+          [-0.019, 0.01263, -0.045],
+          [-0.019, 0.01263, 0.045],
+          [-0.019, -0.01287, -0.045],
+          [-0.019, -0.01287, 0.045]
+        ],
+        "color": "#3a3d41",
+        "name": "sleeve",
+        "group": "stock"
+      },
+      {
+        "type": "hull",
+        "pos": [0, -0.0232, 0.102],
+        "points": [
+          [0.021, 0.0552, -0.02],
+          [-0.021, 0.0552, -0.02],
+          [0.021, 0.0572, 0.018],
+          [-0.021, 0.0572, 0.018],
+          [0.021, -0.0588, 0.018],
+          [-0.021, -0.0588, 0.018],
+          [0.021, -0.0568, 0],
+          [-0.021, -0.0568, 0],
+          [0.021, 0.0032, -0.016],
+          [-0.021, 0.0032, -0.016]
+        ],
+        "color": "#3a3d41",
+        "name": "butt",
+        "group": "stock"
+      },
+      {
+        "type": "hull",
+        "pos": [0, -0.0415, 0.075],
+        "points": [
+          [0.012, 0.0375, -0.057],
+          [-0.012, 0.0375, -0.057],
+          [0.012, 0.0375, 0.005],
+          [-0.012, 0.0375, 0.005],
+          [0.012, -0.0365, 0.033],
+          [-0.012, -0.0365, 0.033],
+          [0.012, -0.0385, 0.019],
+          [-0.012, -0.0385, 0.019]
+        ],
+        "color": "#3a3d41",
+        "name": "web",
+        "group": "stock"
+      },
+      {
+        "type": "slab",
+        "pos": [0, -0.024, 0.1275],
+        "size": [0.045, 0.116, 0.015],
+        "corners": [0.004, 0.004, 0.004, 0.004],
+        "segments": 2,
+        "color": "#18191a",
+        "name": "butt pad",
+        "group": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.008, 0.02],
+        "size": [0.008, 0.005, 0.028],
+        "color": "#161719",
+        "name": "adjustment lever",
+        "group": "stock"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.075, 0.108],
+        "roll": 90,
+        "radius": 0.0032,
+        "height": 0.046,
+        "color": "#202123",
+        "name": "sling loop",
+        "group": "stock"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.016, -0.0155, 0.0815],
+        "pitch": 90,
+        "radius": 0.0085,
+        "height": 0.075,
+        "color": "#45494e",
+        "name": "storage tube",
+        "group": "stock",
+        "sides": 8
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.016, -0.0155, 0.04175],
+        "pitch": 90,
+        "radius": 0.0072,
+        "height": 0.0055,
+        "color": "#18191a",
+        "name": "storage tube cap",
+        "group": "stock",
+        "sides": 5
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.016, -0.0155, 0.0815],
+        "pitch": 90,
+        "radius": 0.0085,
+        "height": 0.075,
+        "color": "#45494e",
+        "name": "storage tube",
+        "group": "stock",
+        "sides": 8
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.016, -0.0155, 0.04175],
+        "pitch": 90,
+        "radius": 0.0072,
+        "height": 0.0055,
+        "color": "#18191a",
+        "name": "storage tube cap",
+        "group": "stock",
+        "sides": 5
+      },
+      {
+        "type": "box",
+        "pos": [0.0196, 0.01305, 0.048],
+        "size": [0.0012, 0.0174, 0.06],
+        "color": "#2a2c2f",
+        "name": "side plate",
+        "group": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0196, 0.01305, 0.048],
+        "size": [0.0012, 0.0174, 0.06],
+        "color": "#2a2c2f",
+        "name": "side plate",
+        "group": "stock"
+      }
+    ],
+    "foregrip": {
+      "parts": [
+        {
+          "type": "slab",
+          "pos": [0, -0.003, 0],
+          "size": [0.02, 0.006, 0.036],
+          "color": "#161719",
+          "corners": [0.0015, 0.0015, 0.0015, 0.0015],
+          "segments": 1,
+          "name": "rail clamp",
+          "group": "foregrip"
+        },
+        {
+          "type": "box",
+          "pos": [0.0105, -0.004, 0],
+          "size": [0.002, 0.004, 0.01],
+          "color": "#55585d",
+          "name": "clamp screw",
+          "group": "foregrip"
+        },
+        {
+          "type": "cylinder",
+          "pos": [0, -0.037, 0],
+          "radius": 0.012,
+          "radiusTop": 0.0135,
+          "height": 0.062,
+          "pitch": 0,
+          "color": "#3a3d41",
+          "sides": 8,
+          "yaw": 22.5,
+          "name": "grip",
+          "group": "foregrip"
+        },
+        {
+          "type": "cylinder",
+          "pos": [0, -0.07, 0],
+          "radius": 0.013,
+          "height": 0.004,
+          "pitch": 0,
+          "color": "#18191a",
+          "sides": 8,
+          "yaw": 22.5,
+          "name": "end cap",
+          "group": "foregrip"
+        }
+      ],
+      "support": [0, -0.034, 0]
+    }
+  },
+  "weapons": ["m250"]
+}

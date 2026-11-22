@@ -1,0 +1,61 @@
+{
+  "formatVersion": 13,
+  "id": "heavy-support-grip",
+  "name": "Heavy support grip",
+  "shortName": "Support",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 4000,
+  "weight": 0.12,
+  "rarity": "common",
+  "slot": "grip",
+  "platforms": ["ar15"],
+  "mods": {
+    "recoilUp": -3,
+    "recoilSide": -3,
+    "handling": 2,
+    "stability": 3
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.04585, 0.0136],
+        "size": [0.031, 0.088, 0.036],
+        "color": "#5a6340",
+        "pitch": -18,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03982, 0.03214],
+        "size": [0.033, 0.0396, 0.004],
+        "color": "#5a6340",
+        "pitch": -18,
+        "name": "palm swell",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0026, 0.02373],
+        "size": [0.029, 0.006, 0.012],
+        "color": "#5a6340",
+        "pitch": -18,
+        "name": "beavertail",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0896, 0.02781],
+        "size": [0.034, 0.004, 0.039],
+        "color": "#3f4636",
+        "pitch": -18,
+        "name": "base plate",
+        "group": "grip"
+      }
+    ],
+    "grip": [0, -0.03915, 0.01142]
+  },
+  "weapons": ["g3", "m250"]
+}

@@ -1,0 +1,97 @@
+{
+  "formatVersion": 13,
+  "id": "ergonomic-precision-grip",
+  "name": "Ergonomic precision grip",
+  "shortName": "Ergo Precision",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 9000,
+  "weight": 0.1,
+  "rarity": "common",
+  "slot": "grip",
+  "platforms": ["ar15"],
+  "mods": {
+    "handling": 3,
+    "stability": 12,
+    "recoilUp": 3,
+    "recoilSide": 3
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.0449, 0.01329],
+        "size": [0.03, 0.086, 0.035],
+        "color": "#2b2d2f",
+        "pitch": -18,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.02756, -0.01127],
+        "size": [0.026, 0.006, 0.002],
+        "color": "#141516",
+        "pitch": -18,
+        "name": "finger groove",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.05209, -0.0033],
+        "size": [0.026, 0.006, 0.002],
+        "color": "#141516",
+        "pitch": -18,
+        "name": "finger groove",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.07663, 0.00467],
+        "size": [0.026, 0.006, 0.002],
+        "color": "#141516",
+        "pitch": -18,
+        "name": "finger groove",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03902, 0.03136],
+        "size": [0.032, 0.0387, 0.004],
+        "color": "#2b2d2f",
+        "pitch": -18,
+        "name": "palm swell",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0154, -0.04357, 0.01181],
+        "size": [0.0008, 0.04988, 0.0217],
+        "color": "#141516",
+        "pitch": -18,
+        "name": "texture panel",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0.0154, -0.04357, 0.01181],
+        "size": [0.0008, 0.04988, 0.0217],
+        "color": "#141516",
+        "pitch": -18,
+        "name": "texture panel",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.08769, 0.02719],
+        "size": [0.033, 0.004, 0.038],
+        "color": "#141516",
+        "pitch": -18,
+        "name": "base plate",
+        "group": "grip"
+      }
+    ],
+    "grip": [0, -0.03835, 0.01116]
+  },
+  "weapons": ["g3", "m250"]
+}

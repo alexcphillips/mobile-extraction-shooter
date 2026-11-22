@@ -1,0 +1,70 @@
+{
+  "formatVersion": 13,
+  "id": "m416-buffer-tube",
+  "name": "M416 buffer tube",
+  "shortName": "Tube",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 1500,
+  "weight": 0.1,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["m416"],
+  "stock": {
+    "length": 0
+  },
+  "mods": {
+    "handling": 12,
+    "recoilUp": 12,
+    "recoilSide": 12,
+    "stability": -15
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.049],
+        "pitch": 90,
+        "radius": 0.0175,
+        "height": 0.01,
+        "color": "#161719",
+        "name": "castle nut",
+        "group": "stock",
+        "sides": 6
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, 0.034],
+        "pitch": 90,
+        "radius": 0.0148,
+        "height": 0.168,
+        "color": "#202123",
+        "name": "buffer tube",
+        "group": "stock",
+        "sides": 8
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, 0.121],
+        "pitch": 90,
+        "radius": 0.0156,
+        "height": 0.006,
+        "color": "#18191a",
+        "name": "tube cap",
+        "group": "stock",
+        "sides": 10
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.0415],
+        "roll": 90,
+        "radius": 0.0045,
+        "height": 0.04,
+        "color": "#2a2c2f",
+        "name": "sling plate",
+        "group": "stock",
+        "sides": 6
+      }
+    ]
+  }
+}

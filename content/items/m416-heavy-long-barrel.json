@@ -1,0 +1,71 @@
+{
+  "formatVersion": 13,
+  "id": "m416-heavy-long-barrel",
+  "name": "Heavy long barrel",
+  "shortName": "Heavy long",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 13000,
+  "weight": 0.68,
+  "rarity": "common",
+  "slot": "barrel",
+  "weapons": ["m416"],
+  "mods": {
+    "recoilUp": -12,
+    "recoilSide": -12,
+    "range": 12,
+    "stability": 6,
+    "handling": -12,
+    "accuracy": 6
+  },
+  "columns": 1,
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.067],
+        "radius": 0.01333,
+        "height": 0.142,
+        "color": "#1e1f21",
+        "sides": 12,
+        "pitch": 90,
+        "name": "barrel",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.146],
+        "radius": 0.01078,
+        "height": 0.016,
+        "color": "#1b1c1e",
+        "sides": 10,
+        "pitch": 90,
+        "name": "crown step",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.0075],
+        "radius": 0.0145,
+        "height": 0.011,
+        "color": "#26282b",
+        "sides": 12,
+        "pitch": 90,
+        "name": "barrel nut",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.156],
+        "radius": 0.00843,
+        "height": 0.008,
+        "color": "#5a5f65",
+        "sides": 10,
+        "pitch": 90,
+        "name": "thread",
+        "group": "barrel"
+      }
+    ],
+    "muzzle": [0, 0, -0.16]
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "formatVersion": 13,
+  "id": "lightweight-combat-grip",
+  "name": "Lightweight combat grip",
+  "shortName": "LW Combat",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 8500,
+  "weight": 0.06,
+  "rarity": "common",
+  "slot": "grip",
+  "platforms": ["ar15"],
+  "mods": {
+    "recoilUp": -6,
+    "recoilSide": -6,
+    "handling": 12,
+    "stability": -6
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.04204, 0.01236],
+        "size": [0.026, 0.08, 0.031],
+        "color": "#a08c64",
+        "pitch": -18,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.02568, -0.00978],
+        "size": [0.022, 0.006, 0.002],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "finger groove",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.07133, 0.00505],
+        "size": [0.022, 0.006, 0.002],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "finger groove",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0134, -0.02967, 0.0116],
+        "size": [0.0008, 0.016, 0.01395],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "cutout",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0134, -0.05478, 0.01976],
+        "size": [0.0008, 0.016, 0.01395],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "cutout",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0.0134, -0.02967, 0.0116],
+        "size": [0.0008, 0.016, 0.01395],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "cutout",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0.0134, -0.05478, 0.01976],
+        "size": [0.0008, 0.016, 0.01395],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "cutout",
+        "group": "grip"
+      }
+    ],
+    "grip": [0, -0.03596, 0.01038]
+  },
+  "weapons": ["g3", "m250"]
+}

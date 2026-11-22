@@ -1,0 +1,94 @@
+{
+  "formatVersion": 13,
+  "id": "ak-precision-grip",
+  "name": "AK precision grip",
+  "shortName": "AK Precision",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 4500,
+  "weight": 0.1,
+  "rarity": "common",
+  "slot": "grip",
+  "platforms": ["ak"],
+  "mods": {
+    "stability": 6,
+    "handling": -1
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.04535, 0.01505],
+        "size": [0.03, 0.088, 0.037],
+        "color": "#2b2d2f",
+        "pitch": -20,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03851, 0.03384],
+        "size": [0.032, 0.0396, 0.004],
+        "color": "#2b2d2f",
+        "pitch": -20,
+        "name": "palm swell",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0155, -0.04256, 0.0227],
+        "size": [0.001, 0.06336, 0.003],
+        "color": "#141516",
+        "pitch": -20,
+        "name": "side rib",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0155, -0.04813, 0.0074],
+        "size": [0.001, 0.06336, 0.003],
+        "color": "#141516",
+        "pitch": -20,
+        "name": "side rib",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0.0155, -0.04256, 0.0227],
+        "size": [0.001, 0.06336, 0.003],
+        "color": "#141516",
+        "pitch": -20,
+        "name": "side rib",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0.0155, -0.04813, 0.0074],
+        "size": [0.001, 0.06336, 0.003],
+        "color": "#141516",
+        "pitch": -20,
+        "name": "side rib",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0016, 0.02413],
+        "size": [0.028, 0.006, 0.012],
+        "color": "#2b2d2f",
+        "pitch": -20,
+        "name": "beavertail",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.08857, 0.03078],
+        "size": [0.033, 0.004, 0.04],
+        "color": "#141516",
+        "pitch": -20,
+        "name": "base plate",
+        "group": "grip"
+      }
+    ],
+    "grip": [0, -0.03873, 0.01264]
+  }
+}

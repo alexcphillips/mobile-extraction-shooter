@@ -1,0 +1,61 @@
+{
+  "formatVersion": 13,
+  "id": "standard-ar-grip",
+  "name": "Standard AR grip",
+  "shortName": "Standard",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 3000,
+  "weight": 0.08,
+  "rarity": "common",
+  "slot": "grip",
+  "platforms": ["ar15"],
+  "mods": {
+    "recoilUp": -6,
+    "recoilSide": -6,
+    "stability": 6,
+    "handling": -2
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.04294, 0.01573],
+        "size": [0.029, 0.084, 0.034],
+        "color": "#1d1f21",
+        "pitch": -22,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0149, -0.04176, 0.01418],
+        "size": [0.0008, 0.04872, 0.02108],
+        "color": "#141516",
+        "pitch": -22,
+        "name": "texture panel",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0.0149, -0.04176, 0.01418],
+        "size": [0.0008, 0.04872, 0.02108],
+        "color": "#141516",
+        "pitch": -22,
+        "name": "texture panel",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.08374, 0.03222],
+        "size": [0.032, 0.004, 0.037],
+        "color": "#2b2d2f",
+        "pitch": -22,
+        "name": "base plate",
+        "group": "grip"
+      }
+    ],
+    "grip": [0, -0.03671, 0.01322]
+  },
+  "weapons": ["g3", "m250"]
+}

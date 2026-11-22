@@ -6,6 +6,7 @@ import {
   armorOf,
   firesRound,
   isArmoredRig,
+  blockedBy,
   fitsIn,
   isMagazine,
   carrierOf,
@@ -1129,6 +1130,8 @@ function checkWeapon(items: ItemDb, item: Item, def: WeaponDef, at: string): str
     const a = items.get(id);
     if (a?.type !== 'attachment' || !fitsIn(items, def, a as AttachmentDef, slot))
       return `${at}: "${id}" doesn't fit its ${slot} slot`;
+    const by = blockedBy(items, item, slot);
+    if (by) return `${at}: "${id}" is in the ${slot} slot "${by}" blocks`;
   }
   if (item.folded && !stockFolds(items, item)) return `${at}: folded, with no stock that folds`;
   const w = { cooldown: 0, reloading: 0, triggerHeld: false, ...item } as WeaponState;

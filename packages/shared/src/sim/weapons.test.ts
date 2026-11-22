@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  attachmentDef,
   currentSight,
   noAttachments,
   pointsFor,
@@ -10,6 +11,7 @@ import {
   weaponDef,
   type AmmoDef,
   type AttachmentDef,
+  type ItemDef,
 } from '../content/items';
 import { createRng, nextFloat } from '../rng';
 import { TICK_RATE } from '../tick';
@@ -871,6 +873,31 @@ describe('attachments', () => {
     expect(w.mag).toBe(30);
     expect(w.reloading).toBe(0);
     expect(detach(w, TEST_ITEMS, 'magazine')).toBe(0);
+  });
+
+  it('hands back rounds when a barrel that adds them comes off or is swapped (AT-6)', () => {
+    const rifle = weaponDef(TEST_ITEMS, 'rifle');
+    const barrel = (id: string, magazine?: number) =>
+      ({
+        ...attachmentDef(TEST_ITEMS, 'big-mag'),
+        id,
+        slot: 'barrel',
+        mods: { magazine },
+      }) as ItemDef;
+    const items = new Map(TEST_ITEMS)
+      .set('rifle', { ...rifle, slots: [...rifle.slots!, 'barrel'] })
+      .set('tube-barrel', barrel('tube-barrel', 2))
+      .set('plain-barrel', barrel('plain-barrel'));
+    const w = createWeapon(items, 'rifle', ['tube-barrel']);
+    expect(w.mag).toBe(32);
+    w.reloading = 1;
+    expect(attach(w, items, 'plain-barrel')).toBe(2);
+    expect(w.mag).toBe(30);
+    expect(w.reloading).toBe(0);
+    attach(w, items, 'tube-barrel');
+    w.mag = 32;
+    expect(detach(w, items, 'barrel')).toBe(2);
+    expect(w.mag).toBe(30);
   });
 
   it("steps through a combo scope's sights with the sight button, cleared by an optic change", () => {

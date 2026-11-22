@@ -1,0 +1,69 @@
+{
+  "formatVersion": 13,
+  "id": "mp5-tactical-balanced-barrel",
+  "name": "Tactical balanced barrel",
+  "shortName": "Balanced",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 5500,
+  "weight": 0.12,
+  "rarity": "common",
+  "slot": "barrel",
+  "weapons": ["mp5"],
+  "mods": {
+    "recoilUp": -3,
+    "recoilSide": -3,
+    "range": 3,
+    "handling": 2,
+    "stability": 3
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.0085],
+        "radius": 0.01037,
+        "height": 0.025,
+        "color": "#1b1c1e",
+        "sides": 10,
+        "pitch": 90,
+        "name": "barrel",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.025],
+        "radius": 0.00893,
+        "height": 0.008,
+        "color": "#1b1c1e",
+        "sides": 10,
+        "pitch": 90,
+        "name": "barrel taper",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.0065],
+        "radius": 0.01105,
+        "height": 0.009,
+        "color": "#26282b",
+        "sides": 10,
+        "pitch": 90,
+        "name": "barrel nut",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.031],
+        "radius": 0.00731,
+        "height": 0.008,
+        "color": "#5a5f65",
+        "sides": 10,
+        "pitch": 90,
+        "name": "thread",
+        "group": "barrel"
+      }
+    ],
+    "muzzle": [0, 0, -0.035]
+  }
+}

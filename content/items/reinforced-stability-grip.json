@@ -1,0 +1,129 @@
+{
+  "formatVersion": 13,
+  "id": "reinforced-stability-grip",
+  "name": "Reinforced stability grip",
+  "shortName": "Reinforced",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 6500,
+  "weight": 0.1,
+  "rarity": "common",
+  "slot": "grip",
+  "classes": ["smg"],
+  "mods": {
+    "recoilUp": -9,
+    "recoilSide": -9,
+    "stability": 9,
+    "handling": -6
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.04204, 0.01236],
+        "size": [0.029, 0.08, 0.034],
+        "color": "#3a3d40",
+        "pitch": -18,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03633, 0.02996],
+        "size": [0.031, 0.036, 0.004],
+        "color": "#3a3d40",
+        "pitch": -18,
+        "name": "palm swell",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0149, -0.04083, 0.01092],
+        "size": [0.0008, 0.0464, 0.02108],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "texture panel",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0.0149, -0.04083, 0.01092],
+        "size": [0.0008, 0.0464, 0.02108],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "texture panel",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.08199, 0.02534],
+        "size": [0.032, 0.004, 0.037],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "base plate",
+        "group": "grip"
+      }
+    ],
+    "grip": [0, -0.03596, 0.01038],
+    "magwell": {
+      "parts": [
+        {
+          "type": "hull",
+          "pos": [0, -0.04771, 0.00571],
+          "points": [
+            [0.0175, 0.04721, -0.03571],
+            [-0.0175, 0.04721, -0.03571],
+            [0.0175, 0.04721, 0.02829],
+            [-0.0175, 0.04721, 0.02829],
+            [0.0175, 0.00771, 0.03029],
+            [-0.0175, 0.00771, 0.03029],
+            [0.0175, -0.03129, 0.02629],
+            [-0.0175, -0.03129, 0.02629],
+            [0.0175, -0.03529, 0.02229],
+            [-0.0175, -0.03529, 0.02229],
+            [0.0175, -0.03529, -0.03371],
+            [-0.0175, -0.03529, -0.03371],
+            [0.0175, -0.00029, -0.03771],
+            [-0.0175, -0.00029, -0.03771]
+          ],
+          "color": "#3a3d40",
+          "name": "grip shell",
+          "group": "grip"
+        },
+        {
+          "type": "box",
+          "pos": [0, -0.036, 0.037],
+          "size": [0.031, 0.036, 0.004],
+          "color": "#3a3d40",
+          "name": "palm swell",
+          "group": "grip"
+        },
+        {
+          "type": "box",
+          "pos": [0.0178, -0.044, 0.002],
+          "size": [0.0008, 0.048, 0.05],
+          "color": "#1d1f21",
+          "name": "texture panel",
+          "group": "grip"
+        },
+        {
+          "type": "box",
+          "pos": [-0.0178, -0.044, 0.002],
+          "size": [0.0008, 0.048, 0.05],
+          "color": "#1d1f21",
+          "name": "texture panel",
+          "group": "grip"
+        },
+        {
+          "type": "box",
+          "pos": [0, -0.081, 0.002],
+          "size": [0.037, 0.004, 0.066],
+          "color": "#1d1f21",
+          "name": "base plate",
+          "group": "grip"
+        }
+      ],
+      "grip": [0, -0.042, 0.002]
+    }
+  }
+}

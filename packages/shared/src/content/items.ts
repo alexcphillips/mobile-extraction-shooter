@@ -1034,6 +1034,10 @@ const attachmentSchema = z
     message: 'only a stock folds',
     path: ['model', 'fold'],
   })
+  .refine((a) => a.slot === 'stock' || !a.model.foregrip, {
+    message: 'only a stock kit has a built-in foregrip',
+    path: ['model', 'foregrip'],
+  })
   .refine((a) => isOpticKind(a.slot) === !!a.optic, {
     message: 'optics need an optic section, and only optics may have one',
     path: ['optic'],
@@ -1057,6 +1061,10 @@ const attachmentSchema = z
   .refine((a) => a.slot === 'grip' || !a.model.grip, {
     message: 'only a rear grip has a grip point',
     path: ['model', 'grip'],
+  })
+  .refine((a) => a.slot === 'grip' || !a.model.magwell, {
+    message: 'only a rear grip has a magazine-well look',
+    path: ['model', 'magwell'],
   });
 
 /** Kinds looked through: an optic, or an offset optic on the side of the rail. */
@@ -1756,7 +1764,7 @@ export function fits(items: ItemDb, weapon: WeaponDef, attachment: AttachmentDef
 /**
  * Where each of these parts goes on the gun, in order: the first slot of its kind it fits
  * that an earlier one hasn't taken (two lasers go on both rails), or null where none is
- * left or it doesn't fit.
+ * left or it doesn't fit. A stock kit takes the foregrip slot too (slotsTakenBy).
  */
 export function placeParts(
   weapon: WeaponDef,
@@ -1767,9 +1775,12 @@ export function placeParts(
   return ids.map((id) => {
     const a = items.get(id);
     if (a?.type !== 'attachment') return null;
-    const slot =
-      slotsOfKind(a.slot).find((s) => !taken.has(s) && fitsIn(items, weapon, a, s)) ?? null;
-    if (slot) taken.add(slot);
+    // A stock kit needs the foregrip slot free, and keeps it so (AT-7b).
+    const also = slotsTakenBy(a);
+    const slot = also.some((s) => taken.has(s))
+      ? null
+      : (slotsOfKind(a.slot).find((s) => !taken.has(s) && fitsIn(items, weapon, a, s)) ?? null);
+    if (slot) for (const s of [slot, ...also]) taken.add(s);
     return slot;
   });
 }
@@ -1789,7 +1800,53 @@ export function fitsIn(
     slotsOfKind(attachment.slot).includes(slot) &&
     !!weapon.slots?.includes(slot) &&
     listsGun(weapon, attachment) &&
-    feedsGun(items, weapon, attachment)
+    feedsGun(items, weapon, attachment) &&
+    // A stock kit's foregrip goes on the gun's foregrip mount (AT-7b).
+    (!isStockKit(attachment) || !!weapon.slots?.includes('foregrip'))
+  );
+}
+
+/** Whether a part is a stock kit: a stock with a built-in foregrip (AT-7b). */
+export const isStockKit = (def: AttachmentDef): boolean =>
+  def.slot === 'stock' && !!def.model.foregrip;
+
+/**
+ * The fitted part that keeps a gun's slot from being used, or null: a stock kit blocks the
+ * foregrip slot while it's on (AT-7b), folded or not.
+ */
+export function blockedBy(
+  items: ItemDb,
+  gun: { attachments?: Partial<Record<AttachmentSlot, string | null>> | undefined },
+  slot: AttachmentSlot,
+): string | null {
+  if (slot !== 'foregrip') return null;
+  const stock = gun.attachments?.stock;
+  return stock && isStockKit(attachmentDef(items, stock)) ? stock : null;
+}
+
+/**
+ * The slots a part takes off a gun as it goes on, besides its own: a stock kit takes the
+ * foregrip slot (AT-7b). Whatever is fitted there has to come off first.
+ */
+export function slotsTakenBy(def: AttachmentDef): readonly AttachmentSlot[] {
+  return isStockKit(def) ? FOREGRIP_ONLY : NONE;
+}
+const FOREGRIP_ONLY: readonly AttachmentSlot[] = ['foregrip'];
+const NONE: readonly AttachmentSlot[] = [];
+
+/**
+ * Whether a part goes in this slot of this gun as it is: it fits the slot (fitsIn) and
+ * nothing fitted blocks it (blockedBy). Going in the stock slot replaces the stock there,
+ * so that stock blocking nothing new is fine.
+ */
+export function fitsOn(
+  items: ItemDb,
+  gun: { item: string; attachments?: Partial<Record<AttachmentSlot, string | null>> | undefined },
+  attachment: AttachmentDef,
+  slot: AttachmentSlot,
+): boolean {
+  return (
+    fitsIn(items, weaponDef(items, gun.item), attachment, slot) && !blockedBy(items, gun, slot)
   );
 }
 
@@ -1956,7 +2013,12 @@ export function checkItems(items: ItemDb): void {
         if (weapon?.type !== 'weapon') {
           throw new ContentError(source, `"${id}" in weapons is not a weapon`);
         }
-        if (!slotsOfKind(item.slot).some((s) => weapon.slots?.includes(s))) {
+        // A listed gun may not have the slot yet (AT-6: barrels for guns that get theirs
+        // in their GM rebuild), so it fits nothing for now; a magazine's gun must.
+        if (
+          item.slot === 'magazine' &&
+          !slotsOfKind(item.slot).some((s) => weapon.slots?.includes(s))
+        ) {
           throw new ContentError(source, `weapon "${id}" has no ${item.slot} slot`);
         }
         if (weapon.platform && item.platforms?.includes(weapon.platform)) {
@@ -1988,14 +2050,16 @@ export function checkItems(items: ItemDb): void {
           throw new ContentError(source, `it fits no gun on platform "${platform}"`);
         }
       }
-      // Likewise a class it names (AT-3).
-      for (const cls of item.classes ?? []) {
-        const of = [...items.values()].filter(
-          (w): w is WeaponDef => w.type === 'weapon' && w.class === cls,
+      // A class it names may bring it no gun yet (AT-5: SMG grips before the SMGs get their
+      // slots); the schema's list of classes already catches a typo.
+      // A grip that fits a gun whose grip wraps the magazine well needs its look for it
+      // (GM-4), so it never draws a solid grip through the magazine.
+      if (item.slot === 'grip' && !item.model.magwell) {
+        const gun = [...items.values()].find(
+          (w): w is WeaponDef =>
+            w.type === 'weapon' && !!w.model.magwellGrip && fits(items, w, item),
         );
-        if (!of.some((w) => fits(items, w, item))) {
-          throw new ContentError(source, `it fits no ${cls} gun`);
-        }
+        if (gun) throw new ContentError(source, `it fits "${gun.id}" and has no magwell look`);
       }
     }
   }

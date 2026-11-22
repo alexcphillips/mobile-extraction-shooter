@@ -1,0 +1,88 @@
+{
+  "formatVersion": 13,
+  "id": "mp133-extended-heavy-barrel",
+  "name": "Extended heavy barrel",
+  "shortName": "Ext. heavy",
+  "type": "attachment",
+  "size": [3, 1],
+  "value": 7750,
+  "weight": 0.91,
+  "rarity": "common",
+  "slot": "barrel",
+  "weapons": ["mp-133"],
+  "mods": {
+    "range": 12,
+    "accuracy": 6,
+    "magazine": 2,
+    "handling": -12
+  },
+  "columns": 1,
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.115],
+        "radius": 0.01288,
+        "height": 0.238,
+        "color": "#1b1c1e",
+        "sides": 10,
+        "pitch": 90,
+        "name": "barrel",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.0065],
+        "radius": 0.01495,
+        "height": 0.009,
+        "color": "#26282b",
+        "sides": 10,
+        "pitch": 90,
+        "name": "barrel nut",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.236],
+        "radius": 0.00989,
+        "height": 0.008,
+        "color": "#5a5f65",
+        "sides": 10,
+        "pitch": 90,
+        "name": "thread",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.02645, -0.105],
+        "radius": 0.01093,
+        "height": 0.21,
+        "color": "#232426",
+        "sides": 10,
+        "pitch": 90,
+        "name": "magazine tube",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.02645, -0.214],
+        "radius": 0.01173,
+        "height": 0.008,
+        "color": "#26282b",
+        "sides": 10,
+        "pitch": 90,
+        "name": "tube cap",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.01322, -0.195],
+        "size": [0.0253, 0.0414, 0.012],
+        "color": "#26282b",
+        "name": "barrel clamp",
+        "group": "barrel"
+      }
+    ],
+    "muzzle": [0, 0, -0.24]
+  }
+}

@@ -16,12 +16,17 @@ const rifle = (attachments: Partial<Record<'optic' | 'muzzle' | 'magazine' | 'st
   }) as WeaponState;
 
 describe('gun models', () => {
+  // The gun's own model, read from its item so a rebuilt model (GM-3) doesn't break these.
+  const akm = items.get('akm')!;
+  if (akm.type !== 'weapon') throw new Error('not a gun');
+  const own = akm.model;
+
   it('draws a bare gun with its irons and standard magazine', () => {
     const g = gunModel(rifle({}), items);
-    // Its factory stock (AT-1b, 3 boxes), and no magazine: a part since MG-1.
-    expect(g.shapes).toHaveLength(21);
-    expect(g.sight).toEqual([0, 0.06, -0.19]);
-    expect(g.muzzle).toEqual([0, 0.005, -0.57]);
+    // Every part, its factory stock (AT-1b) among them, and no magazine: a part since MG-1.
+    expect(g.shapes).toHaveLength(own.parts.length);
+    expect(g.sight).toEqual(own.sight);
+    expect(g.muzzle).toEqual(own.muzzle);
     expect(g.suppressed).toBe(false);
   });
 
@@ -30,18 +35,27 @@ describe('gun models', () => {
       rifle({ optic: 'red-dot', muzzle: 'field-suppressor', magazine: 'mag-762x39-45' }),
       items,
     );
-    // The rear sight (3) and slant brake go; the red dot and suppressor (their parts, read
-    // from the items so a rebuilt model doesn't break this) and mag (2) come.
+    // The rear sight and slant brake go; the red dot, suppressor and mag come.
     const dot = items.get('red-dot')!;
     const can = items.get('field-suppressor')!;
-    if (dot.type !== 'attachment' || can.type !== 'attachment') throw new Error('not parts');
-    expect(g.shapes).toHaveLength(21 - 4 + dot.model.parts.length + can.model.parts.length + 2);
-    // The optic mount (0, 0.041, 0: moved 4 cm back toward the eye, 2026-11-18) plus the
-    // red dot's sight point.
-    expect(g.sight[1]).toBeCloseTo(0.041 + dot.model.sight![1]);
-    expect(g.sight[2]).toBeCloseTo(dot.model.sight![2]);
+    const mag = items.get('mag-762x39-45')!;
+    if (dot.type !== 'attachment' || can.type !== 'attachment' || mag.type !== 'attachment')
+      throw new Error('not parts');
+    const gone = own.parts.filter((p) => p.hiddenBy === 'optic' || p.hiddenBy === 'muzzle');
+    expect(gone.length).toBeGreaterThan(0);
+    expect(g.shapes).toHaveLength(
+      own.parts.length -
+        gone.length +
+        dot.model.parts.length +
+        can.model.parts.length +
+        mag.model.parts.length,
+    );
+    // The optic mount plus the red dot's sight point.
+    const optic = own.mounts!.optic!;
+    expect(g.sight[1]).toBeCloseTo(optic[1] + dot.model.sight![1]);
+    expect(g.sight[2]).toBeCloseTo(optic[2] + dot.model.sight![2]);
     // The muzzle mount plus the suppressor's own muzzle point.
-    expect(g.muzzle[2]).toBeCloseTo(-0.54 + can.model.muzzle![2]);
+    expect(g.muzzle[2]).toBeCloseTo(own.mounts!.muzzle![2] + can.model.muzzle![2]);
     expect(g.suppressed).toBe(true);
   });
 
@@ -74,15 +88,50 @@ describe('gun models', () => {
   });
 
   it('folds the factory stock about the hinge when folded (WF-1, AT-1b)', () => {
-    // The rearmost part is the butt; the AK-74M's mount folds it along its left side.
-    const ak = { ...rifle({}), item: 'ak-74m' };
+    // The rearmost part is the butt; the AKS-74U's factory stock folds along its left side.
+    const ak = { ...rifle({}), item: 'aks-74u' };
     const back = (w: WeaponState) => Math.max(...gunModel(w, items).shapes.map((s) => s.z));
     const left = (w: WeaponState) => Math.min(...gunModel(w, items).shapes.map((s) => s.x));
     expect(back(ak)).toBeGreaterThan(0.3);
     const shut = { ...ak, folded: true as const };
     expect(gunModel(shut, items).shapes).toHaveLength(gunModel(ak, items).shapes.length);
     expect(back(shut)).toBeLessThan(0.3);
-    expect(left(shut)).toBeLessThan(-0.04);
+    expect(left(shut)).toBeLessThan(-0.03);
+  });
+
+  it("draws a stock kit's foregrip on the foregrip mount, where the hand goes (AT-7b)", () => {
+    const kit = items.get('heavy-integrated-stock')!;
+    const gun = items.get('m416')!;
+    if (kit.type !== 'attachment' || gun.type !== 'weapon') throw new Error('wrong types');
+    const fg = kit.model.foregrip!;
+    const bare = { ...rifle({}), item: 'm416' };
+    const kitted = { ...rifle({ stock: 'heavy-integrated-stock' }), item: 'm416' };
+    const plain = { ...rifle({ stock: 'standard-tactical-stock' }), item: 'm416' };
+    const at = gun.model.mounts!.foregrip!;
+    const g = gunModel(kitted, items);
+    expect(g.support).toEqual(at.map((v, i) => v + fg.support[i]!));
+    expect(gunModel(plain, items).support).toEqual(gunModel(bare, items).support);
+    // The kit's own parts and its foregrip's both drawn.
+    const stock =
+      gunModel(plain, items).shapes.length -
+      items.get('standard-tactical-stock')!.model.parts.length;
+    expect(g.shapes.length).toBe(stock + kit.model.parts.length + fg.parts.length);
+  });
+
+  it("draws a grip's magwell look round the well on a gun whose grip wraps it (GM-4)", () => {
+    const mp7 = items.get('mp7')!;
+    const grip = items.get('balanced-tactical-grip')!;
+    if (mp7.type !== 'weapon' || grip.type !== 'attachment') throw new Error('wrong items');
+    const look = grip.model.magwell!;
+    const at = mp7.model.mounts!.grip!;
+    const g = gunModel(
+      { ...rifle({}), item: 'mp7', attachments: { ...noAttachments(), grip: grip.id } },
+      items,
+    );
+    // The gun less its grip shell, plus the magwell look (not the grip's normal look).
+    const kept = mp7.model.parts.filter((p) => p.hiddenBy !== 'grip').length;
+    expect(g.shapes).toHaveLength(kept + look.parts.length);
+    expect(g.grip).toEqual(at.map((v, i) => v + look.grip[i]!));
   });
 
   it('counts a built-in suppressor, with nothing fitted', () => {

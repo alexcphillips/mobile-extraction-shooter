@@ -535,6 +535,10 @@ export {
   firesRound,
   fits,
   fitsIn,
+  fitsOn,
+  blockedBy,
+  isStockKit,
+  slotsTakenBy,
   itemDef,
   itemSchema,
   itemSize,
@@ -628,7 +632,9 @@ export {
 } from './content/sounds';
 export {
   addVec,
+  fittedLook,
   foldParts,
+  MAGWELL_WELL,
   modelShapes,
   partSchema,
   type AttachmentModel,

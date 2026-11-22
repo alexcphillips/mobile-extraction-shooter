@@ -1,0 +1,52 @@
+{
+  "formatVersion": 13,
+  "id": "reinforced-end-pad",
+  "name": "Reinforced end pad",
+  "shortName": "End pad",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 2500,
+  "weight": 0.08,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["mp5", "mp7", "ump45", "uzi", "uzi-pro"],
+  "stock": {
+    "length": 0
+  },
+  "mods": {
+    "handling": 9,
+    "recoilUp": 12,
+    "recoilSide": 12,
+    "stability": -18
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.008, 0.01],
+        "size": [0.03, 0.036, 0.02],
+        "color": "#2a2c2f",
+        "name": "adapter",
+        "group": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.022, 0.023],
+        "size": [0.04, 0.084, 0.006],
+        "color": "#3a3d41",
+        "name": "backing plate",
+        "group": "stock"
+      },
+      {
+        "type": "slab",
+        "pos": [0, -0.023, 0.0345],
+        "size": [0.04, 0.086, 0.015],
+        "corners": [0.004, 0.004, 0.004, 0.004],
+        "segments": 2,
+        "color": "#18191a",
+        "name": "butt pad",
+        "group": "stock"
+      }
+    ]
+  }
+}

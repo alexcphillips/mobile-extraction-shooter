@@ -1,30 +1,31 @@
 {
   "formatVersion": 13,
-  "id": "m416-long-barrel",
-  "name": "M416 long barrel",
-  "shortName": "Long barrel",
+  "id": "mp5-cqb-lightweight-barrel",
+  "name": "CQB lightweight barrel",
+  "shortName": "CQB light",
   "type": "attachment",
-  "size": [2, 1],
-  "value": 6500,
-  "weight": 0.35,
+  "size": [1, 1],
+  "value": 7750,
+  "weight": 0.1,
   "rarity": "common",
   "slot": "barrel",
-  "weapons": ["m416"],
+  "weapons": ["mp5"],
   "mods": {
-    "recoilUp": -1,
-    "recoilSide": -1,
-    "handling": -4,
-    "accuracy": 4,
-    "range": 4
+    "recoilUp": -6,
+    "recoilSide": -6,
+    "handling": 12,
+    "accuracy": -6,
+    "range": -6,
+    "stability": -9
   },
   "model": {
     "parts": [
       {
         "type": "cylinder",
-        "pos": [0, 0, -0.065],
-        "radius": 0.0098,
-        "height": 0.13,
-        "color": "#1b1c1e",
+        "pos": [0, 0, -0.005],
+        "radius": 0.00867,
+        "height": 0.018,
+        "color": "#25272a",
         "sides": 10,
         "pitch": 90,
         "name": "barrel",
@@ -32,9 +33,9 @@
       },
       {
         "type": "cylinder",
-        "pos": [0, 0, -0.012],
-        "radius": 0.0112,
-        "height": 0.01,
+        "pos": [0, 0, -0.0065],
+        "radius": 0.01105,
+        "height": 0.009,
         "color": "#26282b",
         "sides": 10,
         "pitch": 90,
@@ -43,8 +44,8 @@
       },
       {
         "type": "cylinder",
-        "pos": [0, 0, -0.126],
-        "radius": 0.0084,
+        "pos": [0, 0, -0.016],
+        "radius": 0.00731,
         "height": 0.008,
         "color": "#5a5f65",
         "sides": 10,
@@ -53,6 +54,6 @@
         "group": "barrel"
       }
     ],
-    "muzzle": [0, 0, -0.13]
+    "muzzle": [0, 0, -0.02]
   }
 }

@@ -1,0 +1,68 @@
+{
+  "formatVersion": 13,
+  "id": "ak-standard-grip",
+  "name": "AK standard grip",
+  "shortName": "AK Standard",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 2500,
+  "weight": 0.08,
+  "rarity": "common",
+  "slot": "grip",
+  "platforms": ["ak"],
+  "mods": {
+    "recoilUp": -6,
+    "recoilSide": -6,
+    "handling": -2
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.04535, 0.01505],
+        "size": [0.028, 0.088, 0.037],
+        "color": "#6b3a2e",
+        "pitch": -20,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0145, -0.04256, 0.0227],
+        "size": [0.001, 0.06336, 0.003],
+        "color": "#4e2a21",
+        "pitch": -20,
+        "name": "side rib",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0145, -0.04813, 0.0074],
+        "size": [0.001, 0.06336, 0.003],
+        "color": "#4e2a21",
+        "pitch": -20,
+        "name": "side rib",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0.0145, -0.04256, 0.0227],
+        "size": [0.001, 0.06336, 0.003],
+        "color": "#4e2a21",
+        "pitch": -20,
+        "name": "side rib",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0.0145, -0.04813, 0.0074],
+        "size": [0.001, 0.06336, 0.003],
+        "color": "#4e2a21",
+        "pitch": -20,
+        "name": "side rib",
+        "group": "grip"
+      }
+    ],
+    "grip": [0, -0.03873, 0.01264]
+  }
+}

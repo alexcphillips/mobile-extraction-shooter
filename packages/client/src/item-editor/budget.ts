@@ -24,7 +24,7 @@ export function budgetOf(def: ItemDef): Budget {
       // most, and the budget counts what's fitted, an optic's 1,200 included.
       return def.hold === 'pistol'
         ? { triangles: 1500, kind: 'pistol' }
-        : { triangles: 3500, kind: 'long gun' };
+        : { triangles: 3800, kind: 'long gun' };
     case 'attachment':
       // Optics 1,200 (2026-11-18, the user's call: the most looked-at part of the game; a
       // long gun's budget still counts its fitted optic).

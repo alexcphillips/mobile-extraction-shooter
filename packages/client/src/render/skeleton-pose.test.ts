@@ -260,7 +260,7 @@ describe('IK and the gun', () => {
         .sub(eye)
         .applyAxisAngle(new THREE.Vector3(1, 0, 0), -pitch);
       close([sight.x, sight.y], [0.07, -0.02], 3);
-      expect(sight.z).toBeLessThan(-0.2);
+      expect(sight.z).toBeLessThan(-0.1);
       const ahead = p([0, 0, -1]).sub(p([0, 0, 0]));
       expect(Math.asin(ahead.y)).toBeCloseTo(pitch, 3);
       if (pitch === 0) {

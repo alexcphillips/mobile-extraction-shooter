@@ -173,14 +173,6 @@
       },
       {
         "type": "box",
-        "pos": [0, 0.0431, -0.2005],
-        "size": [0.0215, 0.0052, 0.269],
-        "color": "#161719",
-        "name": "handguard rail base",
-        "group": "rails"
-      },
-      {
-        "type": "box",
         "pos": [0, 0.0476, -0.0565],
         "size": [0.0215, 0.0048, 0.0053],
         "color": "#2a2c2f",
@@ -321,6 +313,14 @@
         "size": [0.0215, 0.0048, 0.0053],
         "color": "#2a2c2f",
         "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0431, -0.2005],
+        "size": [0.0215, 0.0052, 0.269],
+        "color": "#161719",
+        "name": "handguard rail base",
         "group": "rails"
       },
       {
@@ -1162,7 +1162,8 @@
         "color": "#161719",
         "name": "castle nut",
         "group": "buffer tube",
-        "sides": 8
+        "sides": 8,
+        "hiddenBy": "stock"
       },
       {
         "type": "cylinder",
@@ -1173,7 +1174,8 @@
         "color": "#202123",
         "name": "end plate",
         "group": "buffer tube",
-        "sides": 8
+        "sides": 8,
+        "hiddenBy": "stock"
       },
       {
         "type": "cylinder",
@@ -1184,7 +1186,8 @@
         "color": "#202123",
         "name": "buffer tube",
         "group": "buffer tube",
-        "sides": 10
+        "sides": 10,
+        "hiddenBy": "stock"
       },
       {
         "type": "hull",

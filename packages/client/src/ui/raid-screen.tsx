@@ -29,6 +29,8 @@ import {
   timeToUse,
   weaponStats,
   attachmentDef,
+  blockedBy,
+  slotsTakenBy,
   pointsOf,
   GUN_STATS,
   type GunStat,
@@ -988,6 +990,8 @@ function Parts({
         {ATTACHMENT_SLOTS.filter((s) => weapon.slots?.includes(s)).map((slot) => {
           const part = item.attachments?.[slot] ?? null;
           const def = part === null ? null : itemDef(items, part);
+          // A stock kit's own foregrip fills the foregrip slot (AT-7b).
+          const blocked = part === null && !!blockedBy(items, item, slot);
           return (
             <button
               key={slot}
@@ -997,7 +1001,7 @@ function Parts({
             >
               <span className="inv-part-slot">{PART_NAMES[slot]}</span>
               <span className={def ? 'inv-part-name' : 'inv-part-empty'}>
-                {def ? def.name : 'none'}
+                {def ? def.name : blocked ? 'built into the stock' : 'none'}
               </span>
             </button>
           );
@@ -1030,6 +1034,16 @@ function Picker({
 }): ReactNode {
   const part = gun.attachments?.[slot] ?? null;
   const choices = inv.partChoices(gun, slot);
+  const by = blockedBy(inv.ctx.items, gun, slot);
+  if (by) {
+    return (
+      <div className="inv-picker" role="menu">
+        <p className="raid-note">
+          The {itemDef(inv.ctx.items, by).name} has its own foregrip. Take the stock off to fit one.
+        </p>
+      </div>
+    );
+  }
   return (
     <div className="inv-picker" role="menu">
       {part && (
@@ -1043,6 +1057,9 @@ function Picker({
           {c.def.name}
           <span>
             {c.owner.kind === 'self' ? `your ${GRID_LABELS[c.where]}` : inv.ctx.nameOf(c.owner)}
+            {slotsTakenBy(attachmentDef(inv.ctx.items, c.def.id)).some(
+              (t) => gun.attachments?.[t],
+            ) && ', takes the foregrip off'}
           </span>
           <PartChanges items={inv.ctx.items} gun={gun} slot={slot} to={c.def.id} />
         </button>
@@ -1078,6 +1095,8 @@ function PartChanges({
     laserOff: (gun as Partial<WeaponState>).laserOff,
   };
   const then = { ...now, attachments: { ...now.attachments, [slot]: to } };
+  // A stock kit going on takes the foregrip off with it (AT-7b).
+  if (to) for (const t of slotsTakenBy(attachmentDef(items, to))) then.attachments[t] = null;
   const points: Partial<Record<GunStat, number>> = {};
   for (const stat of GUN_STATS)
     points[stat] = pointsOf(items, then, stat) - pointsOf(items, now, stat);

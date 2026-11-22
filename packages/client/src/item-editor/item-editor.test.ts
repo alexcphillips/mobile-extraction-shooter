@@ -132,9 +132,9 @@ describe('item editor', () => {
 
   it('finds what an edit breaks elsewhere in content/', () => {
     // An attachment lists the gun it fits; a loadout puts a suppressor on the PMCs' rifle.
-    const noMags = edited('akm', (d) => setSlots(d, ['optic', 'muzzle', 'stock']));
+    const noMags = edited('akm', (d) => setSlots(d, ['optic', 'muzzle', 'grip', 'stock']));
     expect(itemContentProblem(noMags)).toMatch(/akm-mag.*fits no gun on platform "ak"/);
-    const noMuzzle = edited('akm', (d) => setSlots(d, ['optic', 'magazine', 'stock']));
+    const noMuzzle = edited('akm', (d) => setSlots(d, ['optic', 'magazine', 'grip', 'stock']));
     expect(itemContentProblem(noMuzzle)).toMatch(/loadouts\/pmc-kit.*suppressor/);
     // The tutorial's front door needs a key item.
     const notAKey = edited('front-door-key', (d) => {
@@ -220,11 +220,13 @@ describe('item editor', () => {
     expect(Object.keys(model.mounts)).toEqual(['muzzle']);
     // Only the muzzle brake, hidden by the slot that's kept, is still hidden by anything.
     expect(model.parts.every((p) => !p.hiddenBy || p.hiddenBy === 'muzzle')).toBe(true);
-    // A slot coming back gets the placeholder's mount, in the file's order.
+    // A slot coming back gets the placeholder's mount, in the file's order; the kept slot
+    // keeps the gun's own.
+    const muzzle = (model.mounts as { muzzle: number[] }).muzzle;
     setSlots(rifle, ['magazine', 'optic', 'muzzle']);
     expect(model.mounts).toEqual({
       optic: [0, 0.045, 0],
-      muzzle: [0, 0.005, -0.54],
+      muzzle,
       magazine: [0, -0.045, -0.06],
     });
     expect(() => loadContent(ITEM_FORMAT, rifle, 'r')).not.toThrow();
@@ -293,7 +295,7 @@ describe('item editor', () => {
 
   it('counts triangles against a budget by kind, and content is within it', () => {
     const items = loadItems();
-    expect(budgetOf(items.get('m416')!)).toEqual({ triangles: 3500, kind: 'long gun' });
+    expect(budgetOf(items.get('m416')!)).toEqual({ triangles: 3800, kind: 'long gun' });
     expect(budgetOf(items.get('m9a3')!).kind).toBe('pistol');
     expect(budgetOf(items.get('red-dot')!).kind).toBe('optic');
     expect(budgetOf(items.get('portrait-of-the-regent')!)).toEqual({

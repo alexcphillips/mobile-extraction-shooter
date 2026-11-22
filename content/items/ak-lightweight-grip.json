@@ -1,0 +1,69 @@
+{
+  "formatVersion": 13,
+  "id": "ak-lightweight-grip",
+  "name": "AK lightweight grip",
+  "shortName": "AK Light",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 8500,
+  "weight": 0.06,
+  "rarity": "common",
+  "slot": "grip",
+  "platforms": ["ak"],
+  "mods": {
+    "recoilUp": -6,
+    "recoilSide": -6,
+    "handling": 12,
+    "stability": -6
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.04347, 0.01436],
+        "size": [0.026, 0.084, 0.034],
+        "color": "#5a6340",
+        "pitch": -20,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0134, -0.03046, 0.01325],
+        "size": [0.0008, 0.0168, 0.0153],
+        "color": "#3f4636",
+        "pitch": -20,
+        "name": "cutout",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0134, -0.05651, 0.02273],
+        "size": [0.0008, 0.0168, 0.0153],
+        "color": "#3f4636",
+        "pitch": -20,
+        "name": "cutout",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0.0134, -0.03046, 0.01325],
+        "size": [0.0008, 0.0168, 0.0153],
+        "color": "#3f4636",
+        "pitch": -20,
+        "name": "cutout",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0.0134, -0.05651, 0.02273],
+        "size": [0.0008, 0.0168, 0.0153],
+        "color": "#3f4636",
+        "pitch": -20,
+        "name": "cutout",
+        "group": "grip"
+      }
+    ],
+    "grip": [0, -0.03715, 0.01207]
+  }
+}

@@ -3,6 +3,8 @@ import {
   currentSight,
   ATTACHMENT_SLOTS,
   attachmentDef,
+  blockedBy,
+  fittedLook,
   foldParts,
   meleeDef,
   modelShapes,
@@ -54,7 +56,8 @@ export function gunModel(w: WeaponState, items: ItemDb): GunModel {
   const gun = weaponDef(items, w.item);
   const m = gun.model;
   const a = w.attachments;
-  const fitted = (slot: AttachmentSlot): boolean => !!a[slot];
+  // A slot a stock kit blocks counts as filled: its foregrip is there (AT-7b).
+  const fitted = (slot: AttachmentSlot): boolean => !!a[slot] || !!blockedBy(items, w, slot);
   // A fitted barrel moves where the barrel ends (barrelShift): the gun's own muzzle device
   // (its parts hidden by a muzzle) rides on the end of it.
   const shift = barrelShift(w, items);
@@ -89,7 +92,9 @@ export function gunModel(w: WeaponState, items: ItemDb): GunModel {
     const at = m.mounts?.[slot];
     if (!id || !at) continue;
     const mount = slot === 'muzzle' ? addVec(at, shift) : at;
-    const def = attachmentDef(items, id);
+    // A rear grip on a gun whose grip wraps the magazine well draws its look for it (GM-4).
+    const def = { ...attachmentDef(items, id) };
+    def.model = fittedLook(m, slot, def.model);
     // A folded stock turns about its hinge, the gun's or its own (WF-1).
     const fold = slot === 'stock' && w.folded ? (m.stockFold ?? def.model.fold) : undefined;
     const parts = fold ? { parts: foldParts(def.model.parts, fold) } : def.model;
@@ -104,6 +109,14 @@ export function gunModel(w: WeaponState, items: ItemDb): GunModel {
     // A foregrip takes the support hand, a rear grip the firing hand.
     if (slot === 'foregrip' && def.model.support) support = addVec(mount, def.model.support);
     if (slot === 'grip' && def.model.grip) grip = addVec(mount, def.model.grip);
+    // A stock kit's own foregrip sits on the gun's foregrip mount and takes the hand (AT-7b).
+    const kit = slot === 'stock' ? def.model.foregrip : undefined;
+    const under = m.mounts?.foregrip;
+    if (kit && under) {
+      modelShapes(kit, shapes, under);
+      if (scoped) modelShapes(kit, scoped, under);
+      support = addVec(under, kit.support);
+    }
   }
   return {
     hold: gun.hold ?? 'rifle',
@@ -149,12 +162,19 @@ export function backOf(parts: readonly ModelPart[]): number {
  * Zero without one.
  */
 export function barrelShift(w: WeaponState, items: ItemDb): Vec3 {
-  const m = weaponDef(items, w.item).model;
   const id = w.attachments.barrel;
-  const at = m.mounts?.barrel;
-  const end = id && at ? attachmentDef(items, id).model.muzzle : undefined;
+  const end = id ? attachmentDef(items, id).model.muzzle : undefined;
+  const m = weaponDef(items, w.item).model;
+  return shiftForBarrel(m.mounts?.barrel, m.mounts?.muzzle ?? m.muzzle, end);
+}
+
+/**
+ * The same from the points themselves: the gun's barrel mount, its own barrel's end (its
+ * muzzle mount, else its muzzle) and the fitted barrel's muzzle point, so the item editor
+ * can draw a model being edited as the game does.
+ */
+export function shiftForBarrel(at: Vec3 | undefined, was: Vec3, end: Vec3 | undefined): Vec3 {
   if (!at || !end) return [0, 0, 0];
-  const was = m.mounts?.muzzle ?? m.muzzle;
   return [at[0] + end[0] - was[0], at[1] + end[1] - was[1], at[2] + end[2] - was[2]];
 }
 

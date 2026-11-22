@@ -1,0 +1,83 @@
+{
+  "formatVersion": 13,
+  "id": "compact-end-plate",
+  "name": "Compact end plate",
+  "shortName": "End plate",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 4000,
+  "weight": 0.12,
+  "rarity": "common",
+  "slot": "stock",
+  "weapons": ["mp7"],
+  "stock": {
+    "length": 1
+  },
+  "mods": {
+    "handling": 12,
+    "recoilUp": 12,
+    "recoilSide": 12,
+    "stability": -6
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.004, 0.008],
+        "size": [0.036, 0.024, 0.016],
+        "color": "#2a2c2f",
+        "name": "adapter",
+        "group": "stock"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0125, -0.004, 0.064],
+        "pitch": 90,
+        "radius": 0.0035,
+        "height": 0.096,
+        "color": "#202123",
+        "name": "rod",
+        "group": "stock",
+        "sides": 6
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.0125, -0.004, 0.064],
+        "pitch": 90,
+        "radius": 0.0035,
+        "height": 0.096,
+        "color": "#202123",
+        "name": "rod",
+        "group": "stock",
+        "sides": 6
+      },
+      {
+        "type": "hull",
+        "pos": [0, -0.0225, 0.115],
+        "points": [
+          [0.0165, 0.0345, -0.005],
+          [-0.0165, 0.0345, -0.005],
+          [0.0165, 0.0345, 0.005],
+          [-0.0165, 0.0345, 0.005],
+          [0.0165, -0.0355, 0.005],
+          [-0.0165, -0.0355, 0.005],
+          [0.0165, -0.0335, -0.005],
+          [-0.0165, -0.0335, -0.005]
+        ],
+        "color": "#3a3d41",
+        "name": "end plate",
+        "group": "stock"
+      },
+      {
+        "type": "slab",
+        "pos": [0, -0.023, 0.1255],
+        "size": [0.036, 0.07, 0.015],
+        "corners": [0.004, 0.004, 0.004, 0.004],
+        "segments": 2,
+        "color": "#18191a",
+        "name": "butt pad",
+        "group": "stock"
+      }
+    ]
+  }
+}

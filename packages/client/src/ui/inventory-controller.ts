@@ -25,7 +25,6 @@ import {
   sameStack,
   sellPrice,
   stackSize,
-  weaponDef,
   medHelps,
   type AttachmentSlot,
   type BagRef,
@@ -44,7 +43,7 @@ import {
   type PartRef,
   type MedRef,
   type Target,
-  fitsIn,
+  fitsOn,
   slotFor,
   slotsOfKind,
 } from '@mes/shared';
@@ -462,7 +461,6 @@ export class InventoryController implements DragHost {
    */
   partChoices(gun: Item, slot: AttachmentSlot): PartChoice[] {
     const { items } = this.ctx;
-    const weapon = weaponDef(items, gun.item);
     const out: PartChoice[] = [];
     const seen = new Set<string>();
     const owners = this.target && this.reach ? [SELF, this.target] : [SELF];
@@ -472,7 +470,7 @@ export class InventoryController implements DragHost {
         grid?.items.forEach((g, index) => {
           const def = itemDef(items, g.item.item);
           if (def.type !== 'attachment' || seen.has(def.id)) return;
-          if (!fitsIn(items, weapon, def, slot)) return;
+          if (!fitsOn(items, gun, def, slot)) return;
           seen.add(def.id);
           out.push({ ref: { owner, grid: name, index, item: def.id }, def, where: name, owner });
         });
@@ -706,7 +704,7 @@ export class InventoryController implements DragHost {
         !!gun &&
         'index' in src.ref &&
         found.def.type === 'attachment' &&
-        fitsIn(items, weaponDef(items, gun.item.item), found.def, zone.slot)
+        fitsOn(items, gun.item, found.def, zone.slot)
       );
     }
     if (zone.kind === 'slot') {

@@ -1,0 +1,59 @@
+{
+  "formatVersion": 13,
+  "id": "m416-compact-assault-barrel",
+  "name": "Compact assault barrel",
+  "shortName": "Compact",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 7750,
+  "weight": 0.18,
+  "rarity": "common",
+  "slot": "barrel",
+  "weapons": ["m416"],
+  "mods": {
+    "recoilUp": -6,
+    "recoilSide": -6,
+    "handling": 12,
+    "accuracy": -6,
+    "range": -6,
+    "stability": -9
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.008],
+        "radius": 0.01,
+        "height": 0.024,
+        "color": "#25272a",
+        "sides": 10,
+        "pitch": 90,
+        "name": "barrel",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.0065],
+        "radius": 0.01274,
+        "height": 0.009,
+        "color": "#26282b",
+        "sides": 10,
+        "pitch": 90,
+        "name": "barrel nut",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.022],
+        "radius": 0.00843,
+        "height": 0.008,
+        "color": "#5a5f65",
+        "sides": 10,
+        "pitch": 90,
+        "name": "thread",
+        "group": "barrel"
+      }
+    ],
+    "muzzle": [0, 0, -0.026]
+  }
+}

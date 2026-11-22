@@ -1,0 +1,59 @@
+{
+  "formatVersion": 13,
+  "id": "lightweight-ergonomic-grip",
+  "name": "Lightweight ergonomic grip",
+  "shortName": "LW Ergo",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 2800,
+  "weight": 0.06,
+  "rarity": "common",
+  "slot": "grip",
+  "platforms": ["ar15"],
+  "mods": {
+    "handling": 6,
+    "stability": -2
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.04204, 0.01236],
+        "size": [0.027, 0.08, 0.032],
+        "color": "#b49a6c",
+        "pitch": -18,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.02584, -0.01025],
+        "size": [0.023, 0.006, 0.002],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "finger groove",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.04866, -0.00284],
+        "size": [0.023, 0.006, 0.002],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "finger groove",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.07149, 0.00458],
+        "size": [0.023, 0.006, 0.002],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "finger groove",
+        "group": "grip"
+      }
+    ],
+    "grip": [0, -0.03596, 0.01038]
+  },
+  "weapons": ["g3", "m250"]
+}

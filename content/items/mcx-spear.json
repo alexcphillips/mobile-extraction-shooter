@@ -30,7 +30,7 @@
   "defaults": {
     "magazine": "mcx-spear-mag"
   },
-  "slots": ["optic", "muzzle", "magazine", "rightRail", "stock"],
+  "slots": ["optic", "muzzle", "foregrip", "rightRail", "grip", "magazine", "stock"],
   "stock": {
     "length": 1
   },
@@ -46,173 +46,3970 @@
   },
   "model": {
     "parts": [
-      { "type": "box", "pos": [0, 0.012, -0.06], "size": [0.05, 0.06, 0.3], "color": "#a08c64" },
-      { "type": "box", "pos": [0, 0.047, -0.13], "size": [0.022, 0.01, 0.48], "color": "#1d1f21" },
       {
-        "type": "box",
-        "pos": [0, 0.0565, 0.08],
-        "size": [0.0138, 0.0091, 0.008],
-        "color": "#1d1f21",
-        "hiddenBy": "optic",
-        "name": "rear sight",
-        "group": "iron sights"
+        "type": "hull",
+        "pos": [0, 0.02467, 0.023],
+        "points": [
+          [-0.0155, -0.02467, -0.101],
+          [-0.0155, -0.02467, 0.101],
+          [0.0155, -0.02467, -0.101],
+          [0.0155, -0.02467, 0.101],
+          [0.0155, 0.00933, -0.101],
+          [0.0155, 0.00933, 0.101],
+          [0.0102, 0.01533, -0.101],
+          [0.0102, 0.01533, 0.101],
+          [-0.0102, 0.01533, -0.101],
+          [-0.0102, 0.01533, 0.101],
+          [-0.0155, 0.00933, -0.101],
+          [-0.0155, 0.00933, 0.101]
+        ],
+        "color": "#2a2c2f",
+        "name": "upper receiver",
+        "group": "upper receiver"
       },
       {
         "type": "box",
-        "pos": [0, 0.0597, 0.08],
-        "size": [0.0192, 0.0027, 0.008],
-        "color": "#1d1f21",
-        "hiddenBy": "optic",
-        "name": "rear sight ring",
-        "group": "iron sights"
+        "pos": [0.0158, 0.02, 0.03],
+        "size": [0.001, 0.014, 0.056],
+        "color": "#161719",
+        "name": "ejection port",
+        "group": "upper receiver"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0.0163, 0.0105, 0.03],
+        "pitch": 90,
+        "radius": 0.0016,
+        "height": 0.06,
+        "color": "#55585d",
+        "name": "dust cover hinge",
+        "group": "upper receiver"
+      },
+      {
+        "type": "hull",
+        "pos": [0.0175, 0.028, 0.063],
+        "points": [
+          [0.004, -0.01, -0.005],
+          [-0.004, -0.01, -0.005],
+          [0.004, 0.008, -0.005],
+          [-0.004, 0.008, -0.005],
+          [0.004, 0.008, 0.003],
+          [-0.004, 0.008, 0.003],
+          [0.004, -0.006, 0.007],
+          [-0.004, -0.006, 0.007]
+        ],
+        "color": "#2a2c2f",
+        "name": "brass deflector",
+        "group": "upper receiver"
       },
       {
         "type": "box",
-        "pos": [-0.0083, 0.068, 0.08],
-        "size": [0.0027, 0.0138, 0.008],
-        "color": "#1d1f21",
-        "hiddenBy": "optic",
-        "name": "rear sight ring",
-        "group": "iron sights"
+        "pos": [0, 0.034, 0.132],
+        "size": [0.012, 0.008, 0.018],
+        "color": "#202123",
+        "name": "charging handle",
+        "group": "upper receiver"
       },
       {
         "type": "box",
-        "pos": [0.0083, 0.068, 0.08],
-        "size": [0.0027, 0.0138, 0.008],
-        "color": "#1d1f21",
-        "hiddenBy": "optic",
-        "name": "rear sight ring",
-        "group": "iron sights"
+        "pos": [0, 0.034, 0.1385],
+        "size": [0.04, 0.0085, 0.007],
+        "color": "#202123",
+        "name": "charging handle wings",
+        "group": "upper receiver"
       },
       {
         "type": "box",
-        "pos": [0, 0.0763, 0.08],
-        "size": [0.0192, 0.0027, 0.008],
-        "color": "#1d1f21",
-        "hiddenBy": "optic",
-        "name": "rear sight ring",
-        "group": "iron sights"
+        "pos": [-0.0165, 0.034, 0.133],
+        "size": [0.006, 0.006, 0.01],
+        "color": "#55585d",
+        "name": "charging handle latch",
+        "group": "upper receiver"
       },
       {
         "type": "box",
-        "pos": [0, 0.0566, -0.36],
-        "size": [0.0081, 0.0228, 0.006],
-        "color": "#1d1f21",
-        "hiddenBy": "optic",
-        "name": "front sight post",
-        "group": "iron sights"
+        "pos": [0.0159, 0.003, -0.039],
+        "size": [0.0008, 0.006, 0.074],
+        "color": "#2a2c2f",
+        "name": "upper skirt",
+        "group": "upper receiver"
       },
       {
         "type": "box",
-        "pos": [-0.0184, 0.0508, -0.36],
-        "size": [0.0058, 0.0113, 0.006],
-        "color": "#1d1f21",
-        "hiddenBy": "optic",
-        "name": "front sight ear",
-        "group": "iron sights"
+        "pos": [-0.0159, 0.003, -0.039],
+        "size": [0.0008, 0.006, 0.074],
+        "color": "#2a2c2f",
+        "name": "upper skirt",
+        "group": "upper receiver"
       },
       {
         "type": "box",
-        "pos": [0.0184, 0.0508, -0.36],
-        "size": [0.0058, 0.0113, 0.006],
-        "color": "#1d1f21",
-        "hiddenBy": "optic",
-        "name": "front sight ear",
-        "group": "iron sights"
+        "pos": [-0.0158, 0.024, -0.03],
+        "size": [0.001, 0.006, 0.082],
+        "color": "#161719",
+        "name": "charging slot",
+        "group": "upper receiver"
       },
       {
         "type": "box",
-        "pos": [-0.029, 0.02, -0.15],
-        "size": [0.012, 0.012, 0.02],
-        "color": "#1d1f21"
-      },
-      { "type": "box", "pos": [0, 0.008, -0.3], "size": [0.054, 0.062, 0.2], "color": "#a08c64" },
-      {
-        "type": "box",
-        "pos": [0.028, 0.008, -0.3],
-        "size": [0.003, 0.01, 0.16],
-        "color": "#7f6f4f"
+        "pos": [-0.0215, 0.024, -0.062],
+        "size": [0.012, 0.007, 0.01],
+        "color": "#202123",
+        "name": "side charging handle",
+        "group": "upper receiver"
       },
       {
         "type": "box",
-        "pos": [-0.028, 0.008, -0.3],
-        "size": [0.003, 0.01, 0.16],
-        "color": "#7f6f4f"
+        "pos": [-0.027, 0.024, -0.062],
+        "size": [0.004, 0.011, 0.013],
+        "color": "#3a3d41",
+        "name": "side charging handle knob",
+        "group": "upper receiver",
+        "pitch": 0
       },
-      { "type": "box", "pos": [0, -0.033, 0], "size": [0.046, 0.04, 0.17], "color": "#a08c64" },
       {
         "type": "box",
-        "pos": [0, -0.09, 0.07],
-        "size": [0.032, 0.085, 0.036],
-        "color": "#1d1f21",
+        "pos": [0, 0.0426, 0.0235],
+        "size": [0.0215, 0.0052, 0.195],
+        "color": "#161719",
+        "name": "top rail base",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, -0.0665],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, -0.0565],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, -0.0465],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, -0.0365],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, -0.0265],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, -0.0165],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, -0.0065],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, 0.0035],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, 0.0135],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, 0.0235],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, 0.0335],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, 0.0435],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, 0.0535],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, 0.0635],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, 0.0735],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, 0.0835],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, 0.0935],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, 0.1035],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0476, 0.1135],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "top rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0431, -0.2515],
+        "size": [0.0215, 0.0052, 0.351],
+        "color": "#161719",
+        "name": "handguard rail base",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.4175],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.4075],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.3975],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.3875],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.3775],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.3675],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.3575],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.3475],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.3375],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.3275],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.3175],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.3075],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.2975],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.2875],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.2775],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.2675],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.2575],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.2475],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.2375],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.2275],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.2175],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.2075],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.1975],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.1875],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.1775],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.1675],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.1575],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.1475],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.1375],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.1275],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.1175],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.1075],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.0975],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0481, -0.0875],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "handguard rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "hull",
+        "pos": [0, 0.012, -0.253],
+        "points": [
+          [-0.016, 0.0285, -0.177],
+          [-0.016, 0.0285, 0.177],
+          [0.016, 0.0285, -0.177],
+          [0.016, 0.0285, 0.177],
+          [0.0255, 0.019, -0.177],
+          [0.0255, 0.019, 0.177],
+          [0.0255, -0.019, -0.177],
+          [0.0255, -0.019, 0.177],
+          [0.016, -0.0285, -0.177],
+          [0.016, -0.0285, 0.177],
+          [-0.016, -0.0285, -0.177],
+          [-0.016, -0.0285, 0.177],
+          [-0.0255, -0.019, -0.177],
+          [-0.0255, -0.019, 0.177],
+          [-0.0255, 0.019, -0.177],
+          [-0.0255, 0.019, 0.177]
+        ],
+        "color": "#34373b",
+        "name": "handguard",
+        "group": "handguard"
+      },
+      {
+        "type": "hull",
+        "pos": [0, 0.012, -0.42875],
+        "points": [
+          [-0.0166, 0.0291, -0.00275],
+          [-0.0166, 0.0291, 0.00275],
+          [0.0166, 0.0291, -0.00275],
+          [0.0166, 0.0291, 0.00275],
+          [0.0261, 0.0196, -0.00275],
+          [0.0261, 0.0196, 0.00275],
+          [0.0261, -0.0196, -0.00275],
+          [0.0261, -0.0196, 0.00275],
+          [0.0166, -0.0291, -0.00275],
+          [0.0166, -0.0291, 0.00275],
+          [-0.0166, -0.0291, -0.00275],
+          [-0.0166, -0.0291, 0.00275],
+          [-0.0261, -0.0196, -0.00275],
+          [-0.0261, -0.0196, 0.00275],
+          [-0.0261, 0.0196, -0.00275],
+          [-0.0261, 0.0196, 0.00275]
+        ],
+        "color": "#161719",
+        "name": "handguard end cap",
+        "group": "handguard"
+      },
+      {
+        "type": "hull",
+        "pos": [0, 0.0107, -0.077],
+        "points": [
+          [-0.0166, 0.0278, -0.003],
+          [-0.0166, 0.0278, 0.003],
+          [0.0166, 0.0278, -0.003],
+          [0.0166, 0.0278, 0.003],
+          [0.0261, 0.0183, -0.003],
+          [0.0261, 0.0183, 0.003],
+          [0.0261, -0.0183, -0.003],
+          [0.0261, -0.0183, 0.003],
+          [0.0166, -0.0278, -0.003],
+          [0.0166, -0.0278, 0.003],
+          [-0.0166, -0.0278, -0.003],
+          [-0.0166, -0.0278, 0.003],
+          [-0.0261, -0.0183, -0.003],
+          [-0.0261, -0.0183, 0.003],
+          [-0.0261, 0.0183, -0.003],
+          [-0.0261, 0.0183, 0.003]
+        ],
+        "color": "#2a2c2f",
+        "name": "handguard collar",
+        "group": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [0.0257, 0.0125, -0.29],
+        "size": [0.001, 0.0075, 0.03],
+        "color": "#161719",
+        "name": "m-lok slot",
+        "group": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [0.0257, 0.0125, -0.155],
+        "size": [0.001, 0.0075, 0.03],
+        "color": "#161719",
+        "name": "m-lok slot",
+        "group": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0257, 0.0125, -0.41],
+        "size": [0.001, 0.0075, 0.03],
+        "color": "#161719",
+        "name": "m-lok slot",
+        "group": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0257, 0.0125, -0.365],
+        "size": [0.001, 0.0075, 0.03],
+        "color": "#161719",
+        "name": "m-lok slot",
+        "group": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0257, 0.0125, -0.32],
+        "size": [0.001, 0.0075, 0.03],
+        "color": "#161719",
+        "name": "m-lok slot",
+        "group": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0257, 0.0125, -0.275],
+        "size": [0.001, 0.0075, 0.03],
+        "color": "#161719",
+        "name": "m-lok slot",
+        "group": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0257, 0.0125, -0.23],
+        "size": [0.001, 0.0075, 0.03],
+        "color": "#161719",
+        "name": "m-lok slot",
+        "group": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0257, 0.0125, -0.185],
+        "size": [0.001, 0.0075, 0.03],
+        "color": "#161719",
+        "name": "m-lok slot",
+        "group": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0257, 0.0125, -0.14],
+        "size": [0.001, 0.0075, 0.03],
+        "color": "#161719",
+        "name": "m-lok slot",
+        "group": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0257, 0.0125, -0.1],
+        "size": [0.001, 0.0075, 0.03],
+        "color": "#161719",
+        "name": "m-lok slot",
+        "group": "handguard"
+      },
+      {
+        "type": "box",
+        "pos": [0.028, 0.0125, -0.3575],
+        "size": [0.006, 0.0215, 0.045],
+        "color": "#161719",
+        "name": "side rail base",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0.0332, 0.0125, -0.3725],
+        "size": [0.0048, 0.0215, 0.0053],
+        "color": "#34373b",
+        "name": "side rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0.0332, 0.0125, -0.3625],
+        "size": [0.0048, 0.0215, 0.0053],
+        "color": "#34373b",
+        "name": "side rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0.0332, 0.0125, -0.3525],
+        "size": [0.0048, 0.0215, 0.0053],
+        "color": "#34373b",
+        "name": "side rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0.0332, 0.0125, -0.3425],
+        "size": [0.0048, 0.0215, 0.0053],
+        "color": "#34373b",
+        "name": "side rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.019, -0.255],
+        "size": [0.0215, 0.006, 0.11],
+        "color": "#161719",
+        "name": "bottom rail base",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0242, -0.305],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "bottom rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0242, -0.295],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "bottom rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0242, -0.285],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "bottom rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0242, -0.275],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "bottom rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0242, -0.265],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "bottom rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0242, -0.255],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "bottom rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0242, -0.245],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "bottom rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0242, -0.235],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "bottom rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0242, -0.225],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "bottom rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0242, -0.215],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "bottom rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0242, -0.205],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#34373b",
+        "name": "bottom rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.027, 0.012, -0.088],
+        "roll": 90,
+        "radius": 0.0055,
+        "height": 0.004,
+        "color": "#161719",
+        "name": "sling cup",
+        "group": "handguard",
+        "sides": 6
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, -0.449],
+        "pitch": 90,
+        "radius": 0.0095,
+        "height": 0.046,
+        "color": "#202123",
+        "name": "barrel",
+        "group": "barrel",
+        "sides": 8
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, -0.476],
+        "pitch": 90,
+        "radius": 0.0128,
+        "height": 0.016,
+        "color": "#202123",
+        "name": "flash hider shoulder",
+        "group": "flash hider",
+        "sides": 10,
+        "hiddenBy": "muzzle"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, -0.506],
+        "pitch": 90,
+        "radius": 0.0114,
+        "height": 0.044,
+        "color": "#202123",
+        "name": "flash hider",
+        "group": "flash hider",
+        "sides": 9,
+        "hiddenBy": "muzzle"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0233, -0.508],
+        "size": [0.0028, 0.0012, 0.04],
+        "color": "#161719",
+        "name": "flash hider slot",
+        "group": "flash hider",
+        "roll": 0,
+        "hiddenBy": "muzzle"
+      },
+      {
+        "type": "box",
+        "pos": [0.00979, 0.00635, -0.508],
+        "size": [0.0028, 0.0012, 0.04],
+        "color": "#161719",
+        "name": "flash hider slot",
+        "group": "flash hider",
+        "roll": -120,
+        "hiddenBy": "muzzle"
+      },
+      {
+        "type": "box",
+        "pos": [-0.00979, 0.00635, -0.508],
+        "size": [0.0028, 0.0012, 0.04],
+        "color": "#161719",
+        "name": "flash hider slot",
+        "group": "flash hider",
+        "roll": -240,
+        "hiddenBy": "muzzle"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, -0.52875],
+        "pitch": 90,
+        "radius": 0.0095,
+        "height": 0.0015,
+        "color": "#161719",
+        "name": "flash hider crown",
+        "group": "flash hider",
+        "sides": 9,
+        "hiddenBy": "muzzle"
+      },
+      {
+        "type": "hull",
+        "pos": [0, -0.01614, 0.05029],
+        "points": [
+          [0.0145, 0.01564, -0.12629],
+          [-0.0145, 0.01564, -0.12629],
+          [0.0145, 0.01564, 0.07771],
+          [-0.0145, 0.01564, 0.07771],
+          [0.0145, 0.00214, 0.08171],
+          [-0.0145, 0.00214, 0.08171],
+          [0.0145, -0.00886, 0.07571],
+          [-0.0145, -0.00886, 0.07571],
+          [0.0145, -0.01436, 0.05571],
+          [-0.0145, -0.01436, 0.05571],
+          [0.0145, -0.01436, -0.03829],
+          [-0.0145, -0.01436, -0.03829],
+          [0.0145, 0.00414, -0.12629],
+          [-0.0145, 0.00414, -0.12629]
+        ],
+        "color": "#2a2c2f",
+        "name": "lower receiver",
+        "group": "lower receiver"
+      },
+      {
+        "type": "hull",
+        "pos": [0, -0.03517, -0.03367],
+        "points": [
+          [0.0162, 0.03117, -0.03633],
+          [-0.0162, 0.03117, -0.03633],
+          [0.0162, 0.03117, 0.03867],
+          [-0.0162, 0.03117, 0.03867],
+          [0.0172, -0.01383, 0.03867],
+          [-0.0172, -0.01383, 0.03867],
+          [0.0182, -0.02033, 0.03967],
+          [-0.0182, -0.02033, 0.03967],
+          [0.0182, -0.02033, -0.04133],
+          [-0.0182, -0.02033, -0.04133],
+          [0.0172, -0.00783, -0.03933],
+          [-0.0172, -0.00783, -0.03933]
+        ],
+        "color": "#2a2c2f",
+        "name": "magazine well",
+        "group": "lower receiver"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0553, -0.0345],
+        "size": [0.0304, 0.001, 0.074],
+        "color": "#161719",
+        "name": "magazine well mouth",
+        "group": "lower receiver"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.048, 0.048],
+        "size": [0.011, 0.004, 0.07],
+        "color": "#2a2c2f",
+        "name": "trigger guard",
+        "group": "lower receiver"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.039, 0.0155],
+        "size": [0.011, 0.018, 0.005],
+        "color": "#2a2c2f",
+        "name": "trigger guard front",
+        "group": "lower receiver"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.039, 0.044],
+        "size": [0.005, 0.016, 0.005],
+        "color": "#202123",
+        "name": "trigger",
+        "group": "lower receiver",
         "pitch": -18
       },
       {
         "type": "box",
-        "pos": [0, -0.058, 0.015],
-        "size": [0.012, 0.006, 0.06],
-        "color": "#1d1f21"
+        "pos": [-0.0155, -0.012, 0.1],
+        "size": [0.002, 0.005, 0.018],
+        "color": "#55585d",
+        "name": "selector",
+        "group": "lower receiver",
+        "pitch": 25
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.015, -0.012, 0.1],
+        "roll": 90,
+        "radius": 0.004,
+        "height": 0.002,
+        "color": "#202123",
+        "name": "selector hub",
+        "group": "lower receiver"
       },
       {
         "type": "box",
-        "pos": [0, -0.048, 0.005],
-        "size": [0.006, 0.018, 0.006],
-        "color": "#1d1f21"
+        "pos": [-0.0153, -0.008, 0.013],
+        "size": [0.0016, 0.012, 0.006],
+        "color": "#202123",
+        "name": "bolt catch",
+        "group": "lower receiver"
       },
       {
         "type": "cylinder",
-        "pos": [0, 0.005, -0.47],
-        "radius": 0.011,
-        "height": 0.14,
-        "color": "#1d1f21",
-        "pitch": 90
+        "pos": [0.0157, -0.022, 0.02],
+        "roll": 90,
+        "radius": 0.0035,
+        "height": 0.003,
+        "color": "#202123",
+        "name": "magazine release",
+        "group": "lower receiver"
       },
       {
         "type": "cylinder",
-        "pos": [0, 0.005, -0.565],
-        "radius": 0.014,
-        "height": 0.05,
-        "color": "#1d1f21",
+        "pos": [0, -0.006, -0.058],
+        "roll": 90,
+        "radius": 0.0026,
+        "height": 0.0306,
+        "color": "#55585d",
+        "name": "front pin",
+        "group": "lower receiver"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.006, 0.118],
+        "roll": 90,
+        "radius": 0.0026,
+        "height": 0.0306,
+        "color": "#55585d",
+        "name": "rear pin",
+        "group": "lower receiver"
+      },
+      {
+        "type": "hull",
+        "pos": [0, -0.07371, 0.11814],
+        "points": [
+          [0.014, 0.04771, -0.03914],
+          [-0.014, 0.04771, -0.03914],
+          [0.014, 0.04771, -0.00314],
+          [-0.014, 0.04771, -0.00314],
+          [0.014, 0.00371, 0.01586],
+          [-0.014, 0.00371, 0.01586],
+          [0.014, -0.03429, 0.02986],
+          [-0.014, -0.03429, 0.02986],
+          [0.014, -0.03929, 0.02286],
+          [-0.014, -0.03929, 0.02286],
+          [0.014, -0.03729, -0.00014],
+          [-0.014, -0.03729, -0.00014],
+          [0.014, 0.01171, -0.02614],
+          [-0.014, 0.01171, -0.02614]
+        ],
+        "color": "#3a3d41",
+        "name": "pistol grip",
+        "group": "grip",
+        "hiddenBy": "grip"
+      },
+      {
+        "type": "hull",
+        "pos": [0, -0.1105, 0.1325],
+        "points": [
+          [0.0145, 0.0045, -0.0155],
+          [-0.0145, 0.0045, -0.0155],
+          [0.0145, 0.0045, 0.0135],
+          [-0.0145, 0.0045, 0.0135],
+          [0.0145, -0.004, 0.0165],
+          [-0.0145, -0.004, 0.0165],
+          [0.0145, -0.005, -0.0145],
+          [-0.0145, -0.005, -0.0145]
+        ],
+        "color": "#18191a",
+        "name": "grip cap",
+        "group": "grip",
+        "hiddenBy": "grip"
+      },
+      {
+        "type": "hull",
+        "pos": [0, -0.068, 0.13075],
+        "points": [
+          [0.0142, 0.038, -0.01775],
+          [-0.0142, 0.038, -0.01775],
+          [0.0142, 0.038, -0.01475],
+          [-0.0142, 0.038, -0.01475],
+          [0.0142, -0.038, 0.01825],
+          [-0.0142, -0.038, 0.01825],
+          [0.0142, -0.038, 0.01425],
+          [-0.0142, -0.038, 0.01425]
+        ],
+        "color": "#45494e",
+        "name": "grip backstrap",
+        "group": "grip",
+        "hiddenBy": "grip"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, 0.131],
         "pitch": 90,
-        "hiddenBy": "muzzle"
+        "radius": 0.0175,
+        "height": 0.01,
+        "color": "#161719",
+        "name": "castle nut",
+        "group": "buffer tube",
+        "sides": 8,
+        "hiddenBy": "stock"
       },
-      { "type": "box", "pos": [0, 0.012, 0.1], "size": [0.036, 0.04, 0.02], "color": "#1d1f21" },
       {
-        "type": "box",
-        "pos": [0, 0.02, 0.17],
-        "size": [0.026, 0.026, 0.12],
-        "color": "#1d1f21",
+        "type": "cylinder",
+        "pos": [0, 0.012, 0.1255],
+        "pitch": 90,
+        "radius": 0.0165,
+        "height": 0.003,
+        "color": "#202123",
+        "name": "end plate",
+        "group": "buffer tube",
+        "sides": 8,
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, 0.216],
+        "pitch": 90,
+        "radius": 0.0148,
+        "height": 0.172,
+        "color": "#202123",
+        "name": "buffer tube",
+        "group": "buffer tube",
+        "sides": 10,
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "hull",
+        "pos": [0, 0.01225, 0.2415],
+        "points": [
+          [-0.0125, -0.01925, -0.0615],
+          [-0.0125, -0.01925, 0.0615],
+          [0.0125, -0.01925, -0.0615],
+          [0.0125, -0.01925, 0.0615],
+          [0.0175, -0.01425, -0.0615],
+          [0.0175, -0.01425, 0.0615],
+          [0.0175, 0.01475, -0.0615],
+          [0.0175, 0.01475, 0.0615],
+          [0.0135, 0.01875, -0.0615],
+          [0.0135, 0.01875, 0.0615],
+          [-0.0135, 0.01875, -0.0615],
+          [-0.0135, 0.01875, 0.0615],
+          [-0.0175, 0.01475, -0.0615],
+          [-0.0175, 0.01475, 0.0615],
+          [-0.0175, -0.01425, -0.0615],
+          [-0.0175, -0.01425, 0.0615]
+        ],
+        "color": "#3a3d41",
+        "name": "stock sleeve",
+        "group": "stock",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "hull",
+        "pos": [0, 0.03488, 0.25625],
+        "points": [
+          [0.0115, -0.00438, -0.05125],
+          [-0.0115, -0.00438, -0.05125],
+          [0.0115, 0.00412, -0.03425],
+          [-0.0115, 0.00412, -0.03425],
+          [0.0115, 0.00462, 0.04275],
+          [-0.0115, 0.00462, 0.04275],
+          [0.0115, -0.00438, 0.04275],
+          [-0.0115, -0.00438, 0.04275]
+        ],
+        "color": "#45494e",
+        "name": "cheek riser",
+        "group": "stock",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "hull",
+        "pos": [0, -0.0226, 0.2856],
+        "points": [
+          [0.0185, 0.0526, -0.0196],
+          [-0.0185, 0.0526, -0.0196],
+          [0.0185, 0.0536, 0.0194],
+          [-0.0185, 0.0536, 0.0194],
+          [0.0185, -0.0554, 0.0194],
+          [-0.0185, -0.0554, 0.0194],
+          [0.0185, -0.0534, -0.0016],
+          [-0.0185, -0.0534, -0.0016],
+          [0.0185, 0.0026, -0.0176],
+          [-0.0185, 0.0026, -0.0176]
+        ],
+        "color": "#3a3d41",
+        "name": "stock butt",
+        "group": "stock",
         "hiddenBy": "stock"
       },
       {
         "type": "box",
-        "pos": [0, 0, 0.25],
-        "size": [0.04, 0.07, 0.1],
-        "color": "#a08c64",
+        "pos": [0.0187, -0.04, 0.29],
+        "size": [0.0006, 0.034, 0.012],
+        "color": "#161719",
+        "name": "stock butt slot",
+        "group": "stock",
         "hiddenBy": "stock"
       },
       {
         "type": "box",
-        "pos": [0, -0.01, 0.305],
-        "size": [0.042, 0.1, 0.012],
-        "color": "#1d1f21",
+        "pos": [-0.0187, -0.04, 0.29],
+        "size": [0.0006, 0.034, 0.012],
+        "color": "#161719",
+        "name": "stock butt slot",
+        "group": "stock",
         "hiddenBy": "stock"
+      },
+      {
+        "type": "hull",
+        "pos": [0, -0.0395, 0.2415],
+        "points": [
+          [0.0068, 0.0345, -0.0455],
+          [-0.0068, 0.0345, -0.0455],
+          [0.0068, 0.0345, -0.0295],
+          [-0.0068, 0.0345, -0.0295],
+          [0.0068, -0.0335, 0.0445],
+          [-0.0068, -0.0335, 0.0445],
+          [0.0068, -0.0355, 0.0305],
+          [-0.0068, -0.0355, 0.0305]
+        ],
+        "color": "#3a3d41",
+        "name": "stock strut",
+        "group": "stock",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "slab",
+        "pos": [0, -0.0235, 0.3125],
+        "size": [0.0405, 0.115, 0.015],
+        "corners": [0.004, 0.004, 0.004, 0.004],
+        "segments": 2,
+        "color": "#18191a",
+        "name": "butt pad",
+        "group": "stock",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.009, 0.2],
+        "size": [0.008, 0.005, 0.03],
+        "color": "#161719",
+        "name": "adjustment lever",
+        "group": "stock",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.07, 0.296],
+        "roll": 90,
+        "radius": 0.0032,
+        "height": 0.022,
+        "color": "#202123",
+        "name": "sling loop",
+        "group": "stock",
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, 0.29],
+        "roll": 90,
+        "radius": 0.0022,
+        "height": 0.0362,
+        "color": "#55585d",
+        "name": "sleeve pin",
+        "group": "stock",
+        "sides": 6,
+        "hiddenBy": "stock"
+      },
+      {
+        "type": "hull",
+        "pos": [0, 0.0524, 0.108],
+        "points": [
+          [-0.0092, -0.0029, -0.008],
+          [-0.0092, -0.0029, 0.008],
+          [0.0092, -0.0029, -0.008],
+          [0.0092, -0.0029, 0.008],
+          [0.0092, 0.0007, -0.008],
+          [0.0092, 0.0007, 0.008],
+          [0.0077, 0.0022, -0.008],
+          [0.0077, 0.0022, 0.008],
+          [-0.0077, 0.0022, -0.008],
+          [-0.0077, 0.0022, 0.008],
+          [-0.0092, 0.0007, -0.008],
+          [-0.0092, 0.0007, 0.008]
+        ],
+        "color": "#2a2c2f",
+        "name": "rear sight",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.0098, 0.0518, 0.108],
+        "roll": 90,
+        "radius": 0.0021,
+        "height": 0.0014,
+        "color": "#55585d",
+        "name": "rear sight bolt",
+        "group": "iron sights",
+        "sides": 6,
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.0557, 0.1115],
+        "roll": 90,
+        "radius": 0.0017,
+        "height": 0.0152,
+        "color": "#202123",
+        "name": "rear sight hinge",
+        "group": "iron sights",
+        "sides": 8,
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "hull",
+        "pos": [0, 0.06044, 0.108],
+        "points": [
+          [-0.0094, -0.00681, -0.005],
+          [-0.0094, -0.00681, 0.005],
+          [-0.00925, -0.00743, -0.005],
+          [-0.00925, -0.00743, 0.005],
+          [-0.00881, -0.00788, -0.005],
+          [-0.00881, -0.00788, 0.005],
+          [-0.0082, -0.00804, -0.005],
+          [-0.0082, -0.00804, 0.005],
+          [0.0082, -0.00804, -0.005],
+          [0.0082, -0.00804, 0.005],
+          [0.00881, -0.00788, -0.005],
+          [0.00881, -0.00788, 0.005],
+          [0.00925, -0.00743, -0.005],
+          [0.00925, -0.00743, 0.005],
+          [0.0094, -0.00681, -0.005],
+          [0.0094, -0.00681, 0.005],
+          [0.009, 0.00939, -0.005],
+          [0.009, 0.00939, 0.005],
+          [0.00864, 0.01022, -0.005],
+          [0.00864, 0.01022, 0.005],
+          [0.0078, 0.01056, -0.005],
+          [0.0078, 0.01056, 0.005],
+          [-0.0078, 0.01056, -0.005],
+          [-0.0078, 0.01056, 0.005],
+          [-0.00864, 0.01022, -0.005],
+          [-0.00864, 0.01022, 0.005],
+          [-0.009, 0.00939, -0.005],
+          [-0.009, 0.00939, 0.005]
+        ],
+        "color": "#25272a",
+        "name": "rear sight housing",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "hull",
+        "pos": [0.00629, 0.07314, 0.108],
+        "points": [
+          [-0.00239, -0.00364, -0.005],
+          [-0.00239, -0.00364, 0.005],
+          [-0.00222, -0.00406, -0.005],
+          [-0.00222, -0.00406, 0.005],
+          [-0.00179, -0.00424, -0.005],
+          [-0.00179, -0.00424, 0.005],
+          [0.00151, -0.00424, -0.005],
+          [0.00151, -0.00424, 0.005],
+          [0.00181, -0.00415, -0.005],
+          [0.00181, -0.00415, 0.005],
+          [0.00203, -0.00392, -0.005],
+          [0.00203, -0.00392, 0.005],
+          [0.00211, -0.00361, -0.005],
+          [0.00211, -0.00361, 0.005],
+          [0.00181, 0.00369, -0.005],
+          [0.00181, 0.00369, 0.005],
+          [0.00162, 0.0041, -0.005],
+          [0.00162, 0.0041, 0.005],
+          [0.00121, 0.00426, -0.005],
+          [0.00121, 0.00426, 0.005],
+          [-0.00009, 0.00426, -0.005],
+          [-0.00009, 0.00426, 0.005],
+          [-0.00036, 0.0042, -0.005],
+          [-0.00036, 0.0042, 0.005],
+          [-0.00057, 0.00403, -0.005],
+          [-0.00057, 0.00403, 0.005],
+          [-0.00227, 0.00183, -0.005],
+          [-0.00227, 0.00183, 0.005],
+          [-0.00239, 0.00146, -0.005],
+          [-0.00239, 0.00146, 0.005]
+        ],
+        "color": "#25272a",
+        "name": "rear sight hood",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "hull",
+        "pos": [-0.00629, 0.07314, 0.108],
+        "points": [
+          [0.00239, 0.00146, -0.005],
+          [0.00239, 0.00146, 0.005],
+          [0.00227, 0.00183, -0.005],
+          [0.00227, 0.00183, 0.005],
+          [0.00057, 0.00403, -0.005],
+          [0.00057, 0.00403, 0.005],
+          [0.00036, 0.0042, -0.005],
+          [0.00036, 0.0042, 0.005],
+          [0.00009, 0.00426, -0.005],
+          [0.00009, 0.00426, 0.005],
+          [-0.00121, 0.00426, -0.005],
+          [-0.00121, 0.00426, 0.005],
+          [-0.00162, 0.0041, -0.005],
+          [-0.00162, 0.0041, 0.005],
+          [-0.00181, 0.00369, -0.005],
+          [-0.00181, 0.00369, 0.005],
+          [-0.00211, -0.00361, -0.005],
+          [-0.00211, -0.00361, 0.005],
+          [-0.00203, -0.00392, -0.005],
+          [-0.00203, -0.00392, 0.005],
+          [-0.00181, -0.00415, -0.005],
+          [-0.00181, -0.00415, 0.005],
+          [-0.00151, -0.00424, -0.005],
+          [-0.00151, -0.00424, 0.005],
+          [0.00179, -0.00424, -0.005],
+          [0.00179, -0.00424, 0.005],
+          [0.00222, -0.00406, -0.005],
+          [0.00222, -0.00406, 0.005],
+          [0.00239, -0.00364, -0.005],
+          [0.00239, -0.00364, 0.005]
+        ],
+        "color": "#25272a",
+        "name": "rear sight hood",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0, 0.1138],
+        "pitch": 90,
+        "points": [
+          [-0.0062, -0.0568],
+          [0.0062, -0.0568],
+          [0.0058, -0.0676],
+          [-0.0058, -0.0676]
+        ],
+        "color": "#1c1e20",
+        "name": "rear sight panel",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.0658, 0.114],
+        "pitch": 90,
+        "size": [0.0008, 0.0022],
+        "color": "#575b61",
+        "name": "rear sight index",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.0038, 0],
+          [0.00367, -0.00098],
+          [0.0029, -0.00078],
+          [0.003, 0]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.00367, -0.00098],
+          [0.00329, -0.0019],
+          [0.0026, -0.0015],
+          [0.0029, -0.00078]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.00329, -0.0019],
+          [0.00269, -0.00269],
+          [0.00212, -0.00212],
+          [0.0026, -0.0015]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.00269, -0.00269],
+          [0.0019, -0.00329],
+          [0.0015, -0.0026],
+          [0.00212, -0.00212]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.0019, -0.00329],
+          [0.00098, -0.00367],
+          [0.00078, -0.0029],
+          [0.0015, -0.0026]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.00098, -0.00367],
+          [0, -0.0038],
+          [0, -0.003],
+          [0.00078, -0.0029]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0, -0.0038],
+          [-0.00098, -0.00367],
+          [-0.00078, -0.0029],
+          [0, -0.003]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.00098, -0.00367],
+          [-0.0019, -0.00329],
+          [-0.0015, -0.0026],
+          [-0.00078, -0.0029]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.0019, -0.00329],
+          [-0.00269, -0.00269],
+          [-0.00212, -0.00212],
+          [-0.0015, -0.0026]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.00269, -0.00269],
+          [-0.00329, -0.0019],
+          [-0.0026, -0.0015],
+          [-0.00212, -0.00212]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.00329, -0.0019],
+          [-0.00367, -0.00098],
+          [-0.0029, -0.00078],
+          [-0.0026, -0.0015]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.00367, -0.00098],
+          [-0.0038, 0],
+          [-0.003, 0],
+          [-0.0029, -0.00078]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.0038, 0],
+          [-0.00367, 0.00098],
+          [-0.0029, 0.00078],
+          [-0.003, 0]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.00367, 0.00098],
+          [-0.00329, 0.0019],
+          [-0.0026, 0.0015],
+          [-0.0029, 0.00078]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.00329, 0.0019],
+          [-0.00269, 0.00269],
+          [-0.00212, 0.00212],
+          [-0.0026, 0.0015]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.00269, 0.00269],
+          [-0.0019, 0.00329],
+          [-0.0015, 0.0026],
+          [-0.00212, 0.00212]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.0019, 0.00329],
+          [-0.00098, 0.00367],
+          [-0.00078, 0.0029],
+          [-0.0015, 0.0026]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.00098, 0.00367],
+          [0, 0.0038],
+          [0, 0.003],
+          [-0.00078, 0.0029]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0, 0.0038],
+          [0.00098, 0.00367],
+          [0.00078, 0.0029],
+          [0, 0.003]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.00098, 0.00367],
+          [0.0019, 0.00329],
+          [0.0015, 0.0026],
+          [0.00078, 0.0029]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.0019, 0.00329],
+          [0.00269, 0.00269],
+          [0.00212, 0.00212],
+          [0.0015, 0.0026]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.00269, 0.00269],
+          [0.00329, 0.0019],
+          [0.0026, 0.0015],
+          [0.00212, 0.00212]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.00329, 0.0019],
+          [0.00367, 0.00098],
+          [0.0029, 0.00078],
+          [0.0026, 0.0015]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1115],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.00367, 0.00098],
+          [0.0038, 0],
+          [0.003, 0],
+          [0.0029, 0.00078]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [0.003, 0],
+          [0.0029, -0.00078],
+          [0.00261, -0.0007],
+          [0.0027, 0]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [0.0029, -0.00078],
+          [0.0026, -0.0015],
+          [0.00234, -0.00135],
+          [0.00261, -0.0007]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [0.0026, -0.0015],
+          [0.00212, -0.00212],
+          [0.00191, -0.00191],
+          [0.00234, -0.00135]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [0.00212, -0.00212],
+          [0.0015, -0.0026],
+          [0.00135, -0.00234],
+          [0.00191, -0.00191]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [0.0015, -0.0026],
+          [0.00078, -0.0029],
+          [0.0007, -0.00261],
+          [0.00135, -0.00234]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [0.00078, -0.0029],
+          [0, -0.003],
+          [0, -0.0027],
+          [0.0007, -0.00261]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [0, -0.003],
+          [-0.00078, -0.0029],
+          [-0.0007, -0.00261],
+          [0, -0.0027]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [-0.00078, -0.0029],
+          [-0.0015, -0.0026],
+          [-0.00135, -0.00234],
+          [-0.0007, -0.00261]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [-0.0015, -0.0026],
+          [-0.00212, -0.00212],
+          [-0.00191, -0.00191],
+          [-0.00135, -0.00234]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [-0.00212, -0.00212],
+          [-0.0026, -0.0015],
+          [-0.00234, -0.00135],
+          [-0.00191, -0.00191]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [-0.0026, -0.0015],
+          [-0.0029, -0.00078],
+          [-0.00261, -0.0007],
+          [-0.00234, -0.00135]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [-0.0029, -0.00078],
+          [-0.003, 0],
+          [-0.0027, 0],
+          [-0.00261, -0.0007]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [-0.003, 0],
+          [-0.0029, 0.00078],
+          [-0.00261, 0.0007],
+          [-0.0027, 0]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [-0.0029, 0.00078],
+          [-0.0026, 0.0015],
+          [-0.00234, 0.00135],
+          [-0.00261, 0.0007]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [-0.0026, 0.0015],
+          [-0.00212, 0.00212],
+          [-0.00191, 0.00191],
+          [-0.00234, 0.00135]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [-0.00212, 0.00212],
+          [-0.0015, 0.0026],
+          [-0.00135, 0.00234],
+          [-0.00191, 0.00191]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [-0.0015, 0.0026],
+          [-0.00078, 0.0029],
+          [-0.0007, 0.00261],
+          [-0.00135, 0.00234]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [-0.00078, 0.0029],
+          [0, 0.003],
+          [0, 0.0027],
+          [-0.0007, 0.00261]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [0, 0.003],
+          [0.00078, 0.0029],
+          [0.0007, 0.00261],
+          [0, 0.0027]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [0.00078, 0.0029],
+          [0.0015, 0.0026],
+          [0.00135, 0.00234],
+          [0.0007, 0.00261]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [0.0015, 0.0026],
+          [0.00212, 0.00212],
+          [0.00191, 0.00191],
+          [0.00135, 0.00234]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [0.00212, 0.00212],
+          [0.0026, 0.0015],
+          [0.00234, 0.00135],
+          [0.00191, 0.00191]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [0.0026, 0.0015],
+          [0.0029, 0.00078],
+          [0.00261, 0.0007],
+          [0.00234, 0.00135]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1117],
+        "color": "#575b61",
+        "pitch": 90,
+        "points": [
+          [0.0029, 0.00078],
+          [0.003, 0],
+          [0.0027, 0],
+          [0.00261, 0.0007]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.0038, 0],
+          [0.00367, 0.00098],
+          [0.00261, 0.0007],
+          [0.0027, 0]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.00367, 0.00098],
+          [0.00329, 0.0019],
+          [0.00234, 0.00135],
+          [0.00261, 0.0007]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.00329, 0.0019],
+          [0.00269, 0.00269],
+          [0.00191, 0.00191],
+          [0.00234, 0.00135]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.00269, 0.00269],
+          [0.0019, 0.00329],
+          [0.00135, 0.00234],
+          [0.00191, 0.00191]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.0019, 0.00329],
+          [0.00098, 0.00367],
+          [0.0007, 0.00261],
+          [0.00135, 0.00234]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.00098, 0.00367],
+          [0, 0.0038],
+          [0, 0.0027],
+          [0.0007, 0.00261]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0, 0.0038],
+          [-0.00098, 0.00367],
+          [-0.0007, 0.00261],
+          [0, 0.0027]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.00098, 0.00367],
+          [-0.0019, 0.00329],
+          [-0.00135, 0.00234],
+          [-0.0007, 0.00261]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.0019, 0.00329],
+          [-0.00269, 0.00269],
+          [-0.00191, 0.00191],
+          [-0.00135, 0.00234]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.00269, 0.00269],
+          [-0.00329, 0.0019],
+          [-0.00234, 0.00135],
+          [-0.00191, 0.00191]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.00329, 0.0019],
+          [-0.00367, 0.00098],
+          [-0.00261, 0.0007],
+          [-0.00234, 0.00135]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.00367, 0.00098],
+          [-0.0038, 0],
+          [-0.0027, 0],
+          [-0.00261, 0.0007]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.0038, 0],
+          [-0.00367, -0.00098],
+          [-0.00261, -0.0007],
+          [-0.0027, 0]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.00367, -0.00098],
+          [-0.00329, -0.0019],
+          [-0.00234, -0.00135],
+          [-0.00261, -0.0007]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.00329, -0.0019],
+          [-0.00269, -0.00269],
+          [-0.00191, -0.00191],
+          [-0.00234, -0.00135]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.00269, -0.00269],
+          [-0.0019, -0.00329],
+          [-0.00135, -0.00234],
+          [-0.00191, -0.00191]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.0019, -0.00329],
+          [-0.00098, -0.00367],
+          [-0.0007, -0.00261],
+          [-0.00135, -0.00234]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.00098, -0.00367],
+          [0, -0.0038],
+          [0, -0.0027],
+          [-0.0007, -0.00261]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0, -0.0038],
+          [0.00098, -0.00367],
+          [0.0007, -0.00261],
+          [0, -0.0027]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.00098, -0.00367],
+          [0.0019, -0.00329],
+          [0.00135, -0.00234],
+          [0.0007, -0.00261]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.0019, -0.00329],
+          [0.00269, -0.00269],
+          [0.00191, -0.00191],
+          [0.00135, -0.00234]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.00269, -0.00269],
+          [0.00329, -0.0019],
+          [0.00234, -0.00135],
+          [0.00191, -0.00191]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.00329, -0.0019],
+          [0.00367, -0.00098],
+          [0.00261, -0.0007],
+          [0.00234, -0.00135]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, 0.1045],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.00367, -0.00098],
+          [0.0038, 0],
+          [0.0027, 0],
+          [0.00261, -0.0007]
+        ],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00374, 0.07449, 0.108],
+        "color": "#25272a",
+        "roll": -82.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00348, 0.07544, 0.108],
+        "color": "#25272a",
+        "roll": -67.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00299, 0.07629, 0.108],
+        "color": "#25272a",
+        "roll": -52.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00229, 0.07699, 0.108],
+        "color": "#25272a",
+        "roll": -37.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00144, 0.07748, 0.108],
+        "color": "#25272a",
+        "roll": -22.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00049, 0.07774, 0.108],
+        "color": "#25272a",
+        "roll": -7.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00049, 0.07774, 0.108],
+        "color": "#25272a",
+        "roll": 7.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00144, 0.07748, 0.108],
+        "color": "#25272a",
+        "roll": 22.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00229, 0.07699, 0.108],
+        "color": "#25272a",
+        "roll": 37.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00299, 0.07629, 0.108],
+        "color": "#25272a",
+        "roll": 52.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00348, 0.07544, 0.108],
+        "color": "#25272a",
+        "roll": 67.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00374, 0.07449, 0.108],
+        "color": "#25272a",
+        "roll": 82.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00374, 0.07351, 0.108],
+        "color": "#25272a",
+        "roll": -262.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00348, 0.07256, 0.108],
+        "color": "#25272a",
+        "roll": -247.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00299, 0.07171, 0.108],
+        "color": "#25272a",
+        "roll": -232.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00229, 0.07101, 0.108],
+        "color": "#25272a",
+        "roll": -217.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00144, 0.07052, 0.108],
+        "color": "#25272a",
+        "roll": -202.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00049, 0.07026, 0.108],
+        "color": "#25272a",
+        "roll": -187.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00049, 0.07026, 0.108],
+        "color": "#25272a",
+        "roll": -172.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00144, 0.07052, 0.108],
+        "color": "#25272a",
+        "roll": -157.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00229, 0.07101, 0.108],
+        "color": "#25272a",
+        "roll": -142.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00299, 0.07171, 0.108],
+        "color": "#25272a",
+        "roll": -127.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00348, 0.07256, 0.108],
+        "color": "#25272a",
+        "roll": -112.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00374, 0.07351, 0.108],
+        "color": "#25272a",
+        "roll": -97.5,
+        "size": [0.00099, 0.007],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00265, 0.07435, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -262.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00247, 0.07502, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -247.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00212, 0.07563, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -232.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00163, 0.07612, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -217.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00102, 0.07647, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -202.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00035, 0.07665, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -187.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00035, 0.07665, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -172.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00102, 0.07647, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -157.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00163, 0.07612, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -142.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00212, 0.07563, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -127.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00247, 0.07502, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -112.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00265, 0.07435, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -97.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00265, 0.07365, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -82.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00247, 0.07298, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -67.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00212, 0.07237, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -52.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00163, 0.07188, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -37.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00102, 0.07153, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -22.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00035, 0.07135, 0.1081],
+        "color": "#0d0e0f",
+        "roll": -7.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00035, 0.07135, 0.1081],
+        "color": "#0d0e0f",
+        "roll": 7.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00102, 0.07153, 0.1081],
+        "color": "#0d0e0f",
+        "roll": 22.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00163, 0.07188, 0.1081],
+        "color": "#0d0e0f",
+        "roll": 37.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00212, 0.07237, 0.1081],
+        "color": "#0d0e0f",
+        "roll": 52.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00247, 0.07298, 0.1081],
+        "color": "#0d0e0f",
+        "roll": 67.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00265, 0.07365, 0.1081],
+        "color": "#0d0e0f",
+        "roll": 82.5,
+        "size": [0.0007, 0.0072],
+        "name": "rear sight ring",
+        "group": "iron sights",
+        "hiddenBy": "optic"
+      },
+      {
+        "type": "hull",
+        "pos": [0, 0.0524, -0.41],
+        "points": [
+          [-0.0092, -0.0029, -0.006],
+          [-0.0092, -0.0029, 0.006],
+          [0.0092, -0.0029, -0.006],
+          [0.0092, -0.0029, 0.006],
+          [0.0092, 0.0007, -0.006],
+          [0.0092, 0.0007, 0.006],
+          [0.0077, 0.0022, -0.006],
+          [0.0077, 0.0022, 0.006],
+          [-0.0077, 0.0022, -0.006],
+          [-0.0077, 0.0022, 0.006],
+          [-0.0092, 0.0007, -0.006],
+          [-0.0092, 0.0007, 0.006]
+        ],
+        "color": "#2a2c2f",
+        "name": "front sight",
+        "group": "iron sights"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.0098, 0.0518, -0.41],
+        "roll": 90,
+        "radius": 0.0021,
+        "height": 0.0014,
+        "color": "#55585d",
+        "name": "front sight bolt",
+        "group": "iron sights",
+        "sides": 6
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.0568, -0.41],
+        "roll": 90,
+        "radius": 0.0024,
+        "height": 0.0072,
+        "color": "#25272a",
+        "name": "front sight knuckle",
+        "group": "iron sights",
+        "sides": 8
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.0568, -0.41],
+        "roll": 90,
+        "radius": 0.0011,
+        "height": 0.0104,
+        "color": "#202123",
+        "name": "front sight pin",
+        "group": "iron sights",
+        "sides": 6
+      },
+      {
+        "type": "box",
+        "pos": [0.0044, 0.0552, -0.41],
+        "size": [0.0016, 0.0058, 0.0056],
+        "color": "#2a2c2f",
+        "name": "front sight lug",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0044, 0.0552, -0.41],
+        "size": [0.0016, 0.0058, 0.0056],
+        "color": "#2a2c2f",
+        "name": "front sight lug",
+        "group": "iron sights"
+      },
+      {
+        "type": "hull",
+        "pos": [0, 0.06148, -0.41],
+        "points": [
+          [-0.004, -0.00463, -0.0016],
+          [-0.004, -0.00463, 0.0016],
+          [-0.00393, -0.00495, -0.0016],
+          [-0.00393, -0.00495, 0.0016],
+          [-0.00371, -0.00519, -0.0016],
+          [-0.00371, -0.00519, 0.0016],
+          [-0.0034, -0.00528, -0.0016],
+          [-0.0034, -0.00528, 0.0016],
+          [0.0034, -0.00528, -0.0016],
+          [0.0034, -0.00528, 0.0016],
+          [0.00371, -0.00519, -0.0016],
+          [0.00371, -0.00519, 0.0016],
+          [0.00393, -0.00495, -0.0016],
+          [0.00393, -0.00495, 0.0016],
+          [0.004, -0.00463, -0.0016],
+          [0.004, -0.00463, 0.0016],
+          [0.0032, 0.00637, -0.0016],
+          [0.0032, 0.00637, 0.0016],
+          [0.00301, 0.00676, -0.0016],
+          [0.00301, 0.00676, 0.0016],
+          [0.0026, 0.00692, -0.0016],
+          [0.0026, 0.00692, 0.0016],
+          [-0.0026, 0.00692, -0.0016],
+          [-0.0026, 0.00692, 0.0016],
+          [-0.00301, 0.00676, -0.0016],
+          [-0.00301, 0.00676, 0.0016],
+          [-0.0032, 0.00637, -0.0016],
+          [-0.0032, 0.00637, 0.0016]
+        ],
+        "color": "#25272a",
+        "name": "front sight blade",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.065, -0.4082],
+        "pitch": 90,
+        "points": [
+          [0.0011, 0],
+          [0.00089, 0.00065],
+          [0.00034, 0.00105],
+          [-0.00034, 0.00105],
+          [-0.00089, 0.00065],
+          [-0.0011, 0],
+          [-0.00089, -0.00065],
+          [-0.00034, -0.00105],
+          [0.00034, -0.00105],
+          [0.00089, -0.00065]
+        ],
+        "color": "#0d0e0f",
+        "name": "front sight hole",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4084],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.0064, 0],
+          [0.00609, -0.00198],
+          [0.00437, -0.00142],
+          [0.0046, 0]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4084],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.00609, -0.00198],
+          [0.00518, -0.00376],
+          [0.00372, -0.0027],
+          [0.00437, -0.00142]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4084],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.00518, -0.00376],
+          [0.00376, -0.00518],
+          [0.0027, -0.00372],
+          [0.00372, -0.0027]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4084],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.00376, -0.00518],
+          [-0.00518, -0.00376],
+          [-0.00372, -0.0027],
+          [-0.0027, -0.00372]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4084],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.00518, -0.00376],
+          [-0.00609, -0.00198],
+          [-0.00437, -0.00142],
+          [-0.00372, -0.0027]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4084],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.00609, -0.00198],
+          [-0.0064, 0],
+          [-0.0046, 0],
+          [-0.00437, -0.00142]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4084],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.0064, 0],
+          [-0.00609, 0.00198],
+          [-0.00437, 0.00142],
+          [-0.0046, 0]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4084],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.00609, 0.00198],
+          [-0.00518, 0.00376],
+          [-0.00372, 0.0027],
+          [-0.00437, 0.00142]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4084],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.00518, 0.00376],
+          [-0.00376, 0.00518],
+          [-0.0027, 0.00372],
+          [-0.00372, 0.0027]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4084],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.00376, 0.00518],
+          [-0.00198, 0.00609],
+          [-0.00142, 0.00437],
+          [-0.0027, 0.00372]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4084],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [-0.00198, 0.00609],
+          [0, 0.0064],
+          [0, 0.0046],
+          [-0.00142, 0.00437]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4084],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0, 0.0064],
+          [0.00198, 0.00609],
+          [0.00142, 0.00437],
+          [0, 0.0046]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4084],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.00198, 0.00609],
+          [0.00376, 0.00518],
+          [0.0027, 0.00372],
+          [0.00142, 0.00437]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4084],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.00376, 0.00518],
+          [0.00518, 0.00376],
+          [0.00372, 0.0027],
+          [0.0027, 0.00372]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4084],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.00518, 0.00376],
+          [0.00609, 0.00198],
+          [0.00437, 0.00142],
+          [0.00372, 0.0027]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4084],
+        "color": "#25272a",
+        "pitch": 90,
+        "points": [
+          [0.00609, 0.00198],
+          [0.0064, 0],
+          [0.0046, 0],
+          [0.00437, 0.00142]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4116],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.0064, 0],
+          [0.00609, 0.00198],
+          [0.00437, 0.00142],
+          [0.0046, 0]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4116],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.00609, 0.00198],
+          [0.00518, 0.00376],
+          [0.00372, 0.0027],
+          [0.00437, 0.00142]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4116],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.00518, 0.00376],
+          [0.00376, 0.00518],
+          [0.0027, 0.00372],
+          [0.00372, 0.0027]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4116],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.00376, 0.00518],
+          [-0.00518, 0.00376],
+          [-0.00372, 0.0027],
+          [-0.0027, 0.00372]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4116],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.00518, 0.00376],
+          [-0.00609, 0.00198],
+          [-0.00437, 0.00142],
+          [-0.00372, 0.0027]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4116],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.00609, 0.00198],
+          [-0.0064, 0],
+          [-0.0046, 0],
+          [-0.00437, 0.00142]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4116],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.0064, 0],
+          [-0.00609, -0.00198],
+          [-0.00437, -0.00142],
+          [-0.0046, 0]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4116],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.00609, -0.00198],
+          [-0.00518, -0.00376],
+          [-0.00372, -0.0027],
+          [-0.00437, -0.00142]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4116],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.00518, -0.00376],
+          [-0.00376, -0.00518],
+          [-0.0027, -0.00372],
+          [-0.00372, -0.0027]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4116],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.00376, -0.00518],
+          [-0.00198, -0.00609],
+          [-0.00142, -0.00437],
+          [-0.0027, -0.00372]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4116],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [-0.00198, -0.00609],
+          [0, -0.0064],
+          [0, -0.0046],
+          [-0.00142, -0.00437]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4116],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0, -0.0064],
+          [0.00198, -0.00609],
+          [0.00142, -0.00437],
+          [0, -0.0046]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4116],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.00198, -0.00609],
+          [0.00376, -0.00518],
+          [0.0027, -0.00372],
+          [0.00142, -0.00437]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4116],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.00376, -0.00518],
+          [0.00518, -0.00376],
+          [0.00372, -0.0027],
+          [0.0027, -0.00372]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4116],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.00518, -0.00376],
+          [0.00609, -0.00198],
+          [0.00437, -0.00142],
+          [0.00372, -0.0027]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.074, -0.4116],
+        "color": "#25272a",
+        "pitch": -90,
+        "points": [
+          [0.00609, -0.00198],
+          [0.0064, 0],
+          [0.0046, 0],
+          [0.00437, -0.00142]
+        ],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00624, 0.07499, -0.41],
+        "color": "#25272a",
+        "roll": -81,
+        "size": [0.002, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00563, 0.07687, -0.41],
+        "color": "#25272a",
+        "roll": -63,
+        "size": [0.002, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00447, 0.07847, -0.41],
+        "color": "#25272a",
+        "roll": -45,
+        "size": [0.002, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00447, 0.07847, -0.41],
+        "color": "#25272a",
+        "roll": 45,
+        "size": [0.002, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00563, 0.07687, -0.41],
+        "color": "#25272a",
+        "roll": 63,
+        "size": [0.002, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00624, 0.07499, -0.41],
+        "color": "#25272a",
+        "roll": 81,
+        "size": [0.002, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00624, 0.07301, -0.41],
+        "color": "#25272a",
+        "roll": -261,
+        "size": [0.002, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00563, 0.07113, -0.41],
+        "color": "#25272a",
+        "roll": -243,
+        "size": [0.002, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00447, 0.06953, -0.41],
+        "color": "#25272a",
+        "roll": -225,
+        "size": [0.002, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00287, 0.06837, -0.41],
+        "color": "#25272a",
+        "roll": -207,
+        "size": [0.002, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00099, 0.06776, -0.41],
+        "color": "#25272a",
+        "roll": -189,
+        "size": [0.002, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00099, 0.06776, -0.41],
+        "color": "#25272a",
+        "roll": -171,
+        "size": [0.002, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00287, 0.06837, -0.41],
+        "color": "#25272a",
+        "roll": -153,
+        "size": [0.002, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00447, 0.06953, -0.41],
+        "color": "#25272a",
+        "roll": -135,
+        "size": [0.002, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00563, 0.07113, -0.41],
+        "color": "#25272a",
+        "roll": -117,
+        "size": [0.002, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00624, 0.07301, -0.41],
+        "color": "#25272a",
+        "roll": -99,
+        "size": [0.002, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00449, 0.07471, -0.41],
+        "color": "#25272a",
+        "roll": -261,
+        "size": [0.00144, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00405, 0.07606, -0.41],
+        "color": "#25272a",
+        "roll": -243,
+        "size": [0.00144, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00321, 0.07721, -0.41],
+        "color": "#25272a",
+        "roll": -225,
+        "size": [0.00144, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00321, 0.07721, -0.41],
+        "color": "#25272a",
+        "roll": -135,
+        "size": [0.00144, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00405, 0.07606, -0.41],
+        "color": "#25272a",
+        "roll": -117,
+        "size": [0.00144, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00449, 0.07471, -0.41],
+        "color": "#25272a",
+        "roll": -99,
+        "size": [0.00144, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00449, 0.07329, -0.41],
+        "color": "#25272a",
+        "roll": -81,
+        "size": [0.00144, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00405, 0.07194, -0.41],
+        "color": "#25272a",
+        "roll": -63,
+        "size": [0.00144, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00321, 0.07079, -0.41],
+        "color": "#25272a",
+        "roll": -45,
+        "size": [0.00144, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00206, 0.06995, -0.41],
+        "color": "#25272a",
+        "roll": -27,
+        "size": [0.00144, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [-0.00071, 0.06951, -0.41],
+        "color": "#25272a",
+        "roll": -9,
+        "size": [0.00144, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00071, 0.06951, -0.41],
+        "color": "#25272a",
+        "roll": 9,
+        "size": [0.00144, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00206, 0.06995, -0.41],
+        "color": "#25272a",
+        "roll": 27,
+        "size": [0.00144, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00321, 0.07079, -0.41],
+        "color": "#25272a",
+        "roll": 45,
+        "size": [0.00144, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00405, 0.07194, -0.41],
+        "color": "#25272a",
+        "roll": 63,
+        "size": [0.00144, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0.00449, 0.07329, -0.41],
+        "color": "#25272a",
+        "roll": 81,
+        "size": [0.00144, 0.0032],
+        "name": "front sight hood",
+        "group": "iron sights"
+      },
+      {
+        "type": "box",
+        "pos": [0.00323, 0.07845, -0.41],
+        "size": [0.0003, 0.0018, 0.0032],
+        "color": "#25272a",
+        "name": "front sight hood",
+        "group": "iron sights",
+        "roll": -36
+      },
+      {
+        "type": "box",
+        "pos": [-0.00323, 0.07845, -0.41],
+        "size": [0.0003, 0.0018, 0.0032],
+        "color": "#25272a",
+        "name": "front sight hood",
+        "group": "iron sights",
+        "roll": 36
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0715, -0.41],
+        "size": [0.0019, 0.005, 0.0019],
+        "color": "#25272a",
+        "name": "front sight post",
+        "group": "iron sights"
       }
     ],
-    "grip": [0, -0.085, 0.07],
-    "support": [0, -0.02, -0.3],
-    "muzzle": [0, 0.005, -0.59],
-    "sight": [0, 0.068, 0.08],
+    "grip": [0, -0.068, 0.112],
+    "support": [0, -0.0225, -0.25],
+    "muzzle": [0, 0.012, -0.5295],
+    "sight": [0, 0.074, 0.108],
     "mounts": {
-      "optic": [0, 0.052, 0.04],
-      "muzzle": [0, 0.005, -0.54],
-      "magazine": [0, -0.045, -0.07],
-      "rightRail": [0.042, -0.003, -0.36],
-      "stock": [0, 0.02, 0.11]
-    },
-    "factoryFold": {
-      "pivot": [-0.025, 0, 0],
-      "yaw": 180
+      "optic": [0, 0.05, 0.07],
+      "muzzle": [0, 0.012, -0.47],
+      "foregrip": [0, -0.0264, -0.25],
+      "rightRail": [0.047, 0.0125, -0.3575],
+      "grip": [0, -0.0305, 0.083],
+      "magazine": [0, -0.055, -0.03],
+      "stock": [0, 0.012, 0.18]
     }
   }
 }

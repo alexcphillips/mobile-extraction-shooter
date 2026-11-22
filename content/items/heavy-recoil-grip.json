@@ -1,0 +1,77 @@
+{
+  "formatVersion": 13,
+  "id": "heavy-recoil-grip",
+  "name": "Heavy recoil grip",
+  "shortName": "Heavy Recoil",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 8000,
+  "weight": 0.13,
+  "rarity": "common",
+  "slot": "grip",
+  "platforms": ["ak"],
+  "mods": {
+    "recoilUp": -12,
+    "recoilSide": -12,
+    "handling": -6
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.04629, 0.01539],
+        "size": [0.032, 0.09, 0.04],
+        "color": "#1d1f21",
+        "pitch": -20,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03893, 0.03559],
+        "size": [0.034, 0.0405, 0.004],
+        "color": "#1d1f21",
+        "pitch": -20,
+        "name": "palm swell",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.02219, 0.02897],
+        "size": [0.029, 0.003, 0.003],
+        "color": "#141516",
+        "pitch": -20,
+        "name": "back rib",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03488, 0.03359],
+        "size": [0.029, 0.003, 0.003],
+        "color": "#141516",
+        "pitch": -20,
+        "name": "back rib",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.04756, 0.0382],
+        "size": [0.029, 0.003, 0.003],
+        "color": "#141516",
+        "pitch": -20,
+        "name": "back rib",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.09045, 0.03147],
+        "size": [0.035, 0.004, 0.043],
+        "color": "#3a3d40",
+        "pitch": -20,
+        "name": "base plate",
+        "group": "grip"
+      }
+    ],
+    "grip": [0, -0.03952, 0.01293]
+  }
+}

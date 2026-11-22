@@ -14,8 +14,10 @@ import {
   CARRIER,
   type PlateSide,
   roundOf,
+  slotsTakenBy,
   stockFolds,
   weaponDef,
+  type AttachmentDef,
   type AttachmentSlot,
   type ItemDb,
 } from '../content/items';
@@ -1193,6 +1195,8 @@ function attachPart(ctx: Ctx, gunRef: ItemRef, fromRef: ItemRef, toSlot?: Attach
       c.draw = Math.max(c.draw, weaponStats(items, gun, loadStats).reloadTime);
     return true;
   }
+  // A stock kit takes the foregrip's slot: that foregrip comes off into what c carries.
+  clearTaken(ctx, gun, def);
   // What was on the gun goes where the new part was, else anywhere in that grid or carried.
   if (old !== null) {
     const oldPart = createItem(items, old);
@@ -1236,6 +1240,19 @@ function detachPart(
   return true;
 }
 
+/**
+ * Takes off what's in the slots a part takes as it goes on (slotsTakenBy: the foregrip
+ * under a stock kit, AT-7b), into what c carries or onto the ground.
+ */
+function clearTaken(ctx: Ctx, gun: WeaponState, def: AttachmentDef): void {
+  for (const slot of slotsTakenBy(def)) {
+    if (!gun.attachments[slot]) continue;
+    const { part, rounds } = partOut(gun, ctx.items, slot);
+    stowOrDrop(ctx, cameOffGun(ctx.c, part));
+    stowRounds(ctx, loadedAmmo(ctx.items, gun), rounds);
+  }
+}
+
 /** Moves a part from one gun to another, swapping with what's there if it fits the first. */
 function movePart(ctx: Ctx, from: PartRef, toRef: ItemRef, toSlot?: AttachmentSlot): boolean {
   const { items } = ctx;
@@ -1262,7 +1279,10 @@ function movePart(ctx: Ctx, from: PartRef, toRef: ItemRef, toSlot?: AttachmentSl
     else if (theirs) stowOrDrop(ctx, cameOffGun(ctx.c, theirs));
     return true;
   }
+  // A stock kit swapping onto the first gun takes its foregrip off (AT-7b).
+  if (swap) clearTaken(ctx, a, attachmentDef(items, old));
   const outA = swap ? attach(a, items, old, from.slot) : detach(a, items, from.slot);
+  clearTaken(ctx, b, def);
   const outB = attach(b, items, def.id, slot);
   // What was on the second gun goes into what you carry if it can't go on the first.
   if (old !== null && !swap) stowOrDrop(ctx, cameOffGun(ctx.c, createItem(items, old)));

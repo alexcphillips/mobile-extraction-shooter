@@ -1,0 +1,79 @@
+{
+  "formatVersion": 13,
+  "id": "mp5-recon-extended-barrel",
+  "name": "Recon extended barrel",
+  "shortName": "Recon",
+  "type": "attachment",
+  "size": [2, 1],
+  "value": 8500,
+  "weight": 0.16,
+  "rarity": "common",
+  "slot": "barrel",
+  "weapons": ["mp5"],
+  "mods": {
+    "recoilUp": -9,
+    "recoilSide": -9,
+    "range": 9,
+    "handling": -4
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.01375],
+        "radius": 0.00952,
+        "height": 0.0355,
+        "color": "#1b1c1e",
+        "sides": 10,
+        "pitch": 90,
+        "name": "barrel",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.04775],
+        "radius": 0.00833,
+        "height": 0.0325,
+        "color": "#1b1c1e",
+        "sides": 10,
+        "pitch": 90,
+        "name": "barrel taper",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.0315],
+        "radius": 0.00986,
+        "height": 0.004,
+        "color": "#26282b",
+        "sides": 10,
+        "pitch": 90,
+        "name": "step",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.0065],
+        "radius": 0.01105,
+        "height": 0.009,
+        "color": "#26282b",
+        "sides": 10,
+        "pitch": 90,
+        "name": "barrel nut",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.066],
+        "radius": 0.00731,
+        "height": 0.008,
+        "color": "#5a5f65",
+        "sides": 10,
+        "pitch": 90,
+        "name": "thread",
+        "group": "barrel"
+      }
+    ],
+    "muzzle": [0, 0, -0.07]
+  }
+}

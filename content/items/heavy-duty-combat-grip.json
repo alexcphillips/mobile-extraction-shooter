@@ -1,0 +1,79 @@
+{
+  "formatVersion": 13,
+  "id": "heavy-duty-combat-grip",
+  "name": "Heavy Duty combat grip",
+  "shortName": "HD Combat",
+  "type": "attachment",
+  "size": [1, 1],
+  "value": 7500,
+  "weight": 0.14,
+  "rarity": "common",
+  "slot": "grip",
+  "platforms": ["ar15"],
+  "mods": {
+    "recoilUp": -9,
+    "recoilSide": -9,
+    "stability": 9,
+    "handling": -6
+  },
+  "model": {
+    "parts": [
+      {
+        "type": "box",
+        "pos": [0, -0.0468, 0.01391],
+        "size": [0.033, 0.09, 0.038],
+        "color": "#3f4636",
+        "pitch": -18,
+        "name": "grip",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0235, 0.02736],
+        "size": [0.03, 0.003, 0.003],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "back rib",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.03634, 0.03154],
+        "size": [0.03, 0.003, 0.003],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "back rib",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.04918, 0.03571],
+        "size": [0.03, 0.003, 0.003],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "back rib",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0915, 0.02843],
+        "size": [0.036, 0.004, 0.041],
+        "color": "#1d1f21",
+        "pitch": -18,
+        "name": "base plate",
+        "group": "grip"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.09483, 0.02951],
+        "size": [0.027, 0.004, 0.03],
+        "color": "#8d8f91",
+        "pitch": -18,
+        "name": "storage cap",
+        "group": "grip"
+      }
+    ],
+    "grip": [0, -0.03995, 0.01168]
+  },
+  "weapons": ["g3", "m250"]
+}

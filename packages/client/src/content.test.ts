@@ -204,6 +204,23 @@ describe('content', () => {
     expect(barters).toBeGreaterThan(0);
   });
 
+  it('folding is an SMG identity: only a few factory stocks fold, and no fitted stock does', () => {
+    // The user's call: no lmg, sniper, shotgun, pistol or `ar15` gun folds; the aks-74u is
+    // the one rifle that does. A fitted stock folding (its own fold, or a gun's folding
+    // mount) isn't used yet.
+    const folds: string[] = [];
+    for (const def of loadItems().values()) {
+      if (def.type === 'attachment') expect(def.model.fold, def.id).toBeUndefined();
+      if (def.type !== 'weapon') continue;
+      expect(def.model.stockFold, def.id).toBeUndefined();
+      if (!def.model.factoryFold) continue;
+      folds.push(def.id);
+      expect(def.platform, def.id).not.toBe('ar15');
+      expect(def.class === 'smg' || def.id === 'aks-74u', def.id).toBe(true);
+    }
+    expect(folds.sort()).toEqual(['aks-74u', 'mp7', 'uzi']);
+  });
+
   it('iron sights line up: the post tip on the sight line, level with the notch or centered in the ring', () => {
     // Aimed, the eye sits on model.sight's height looking along −z (render/viewmodel.ts).
     let guns = 0;

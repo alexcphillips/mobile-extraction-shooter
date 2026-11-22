@@ -12,7 +12,8 @@ import {
   pointsOf,
   statAt,
   fits,
-  fitsIn,
+  fitsOn,
+  slotsTakenBy,
   noAttachments,
   slotsOfKind,
   isMagazine,
@@ -390,7 +391,8 @@ export function giveWeapon(
 /**
  * The slot an attachment would go in on this gun: `slot` if given and it fits there, else
  * the first of its kind's slots the gun has that's empty, else the first it has (a rail
- * item goes on a free rail, or replaces what's on the left one). Null if it doesn't fit.
+ * item goes on a free rail, or replaces what's on the left one). Null if it doesn't fit, or
+ * a fitted part blocks the slot (blockedBy).
  */
 export function slotFor(
   gun: { item: string; attachments?: Partial<Record<AttachmentSlot, string | null>> },
@@ -398,27 +400,32 @@ export function slotFor(
   id: string,
   slot?: AttachmentSlot,
 ): AttachmentSlot | null {
-  const def = weaponDef(items, gun.item);
   const a = attachmentDef(items, id);
-  if (slot) return fitsIn(items, def, a, slot) ? slot : null;
-  const open = slotsOfKind(a.slot).filter((s) => fitsIn(items, def, a, s));
+  // A slot a fitted part blocks (a stock kit's foregrip, AT-7b) takes nothing.
+  if (slot) return fitsOn(items, gun, a, slot) ? slot : null;
+  const open = slotsOfKind(a.slot).filter((s) => fitsOn(items, gun, a, s));
   return open.find((s) => !gun.attachments?.[s]) ?? open[0] ?? null;
 }
 
 /**
  * Puts an attachment on a gun (in `slot`, or where slotFor puts it), replacing whatever
- * was there. Throws if it doesn't fit, so check with fits() first. Returns the rounds that
- * no longer fit (a smaller magazine), which the caller should put somewhere.
+ * was there. Throws if it doesn't fit, or if a slot it takes (slotsTakenBy) isn't empty, so
+ * check with fits() and clear those first. Returns the rounds that no longer fit (a smaller
+ * magazine), which the caller should put somewhere.
  */
 export function attach(w: WeaponState, items: ItemDb, id: string, slot?: AttachmentSlot): number {
   const at = slotFor(w, items, id, slot);
   if (!at) throw new Error(`"${id}" doesn't fit "${w.item}"${slot ? ` in its ${slot}` : ''}`);
+  // A stock kit doesn't go on over a foregrip: take that off first (AT-7b).
+  const taken = slotsTakenBy(attachmentDef(items, id)).find((t) => w.attachments[t]);
+  if (taken) throw new Error(`"${id}" needs "${w.item}"'s ${taken} slot empty`);
   // A sight that changes puts the gun back on its first sight (sightsOf).
   if (isSightSlot(at) && w.attachments[at] !== id) delete w.sight;
+  const was = w.attachments[at];
   w.attachments[at] = id;
   // A stock going on unfolds the gun: the factory one may have been folded (AT-1b).
   if (at === 'stock') delete w.folded;
-  return at === 'magazine' ? magazineChanged(w, items) : 0;
+  return changesRounds(items, at, was, id) ? magazineChanged(w, items) : 0;
 }
 
 /** Slots whose part adds or changes a sight (sightsOf). */
@@ -429,11 +436,26 @@ const isSightSlot = (slot: AttachmentSlot): boolean => slot === 'optic' || slot 
  * rounds that no longer fit, which the caller should put somewhere.
  */
 export function detach(w: WeaponState, items: ItemDb, slot: AttachmentSlot): number {
+  const was = w.attachments[slot];
   w.attachments[slot] = null;
   if (slot === 'stock') delete w.folded;
   if (!hasLaser(w, items)) delete w.laserOff;
   if (isSightSlot(slot)) delete w.sight;
-  return slot === 'magazine' ? magazineChanged(w, items) : 0;
+  return changesRounds(items, slot, was, null) ? magazineChanged(w, items) : 0;
+}
+
+/**
+ * Whether swapping a slot's part can change what the gun holds: the magazine slot, or a
+ * part elsewhere that adds rounds (AT-6: a shotgun barrel with a longer tube).
+ */
+function changesRounds(
+  items: ItemDb,
+  slot: AttachmentSlot,
+  was: string | null | undefined,
+  now: string | null,
+): boolean {
+  if (slot === 'magazine') return true;
+  return [was, now].some((id) => !!id && !!attachmentDef(items, id).mods?.magazine);
 }
 
 /**

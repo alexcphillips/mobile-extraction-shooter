@@ -257,6 +257,12 @@ export const weaponModelSchema = z.strictObject({
    * way, from the stock mount. Fitted stocks fold their own way; `stockFold` overrides both.
    */
   factoryFold: foldSchema.optional(),
+  /**
+   * Its grip wraps the magazine well (the MP7's, GM-4): a fitted rear grip draws its
+   * `magwell` look, a shell round the well, from the grip mount (the well's top, at its
+   * center), and the well inside stays so the magazine keeps its home. Needs a grip mount.
+   */
+  magwellGrip: z.literal(true).optional(),
 });
 
 export const attachmentModelSchema = z.strictObject({
@@ -276,7 +282,41 @@ export const attachmentModelSchema = z.strictObject({
   laser: vec3Schema.optional(),
   /** Stocks that fold by themselves (WF-1): how, from its origin. */
   fold: foldSchema.optional(),
+  /**
+   * Stock kits (AT-7b): the stock's built-in foregrip, drawn on the gun's foregrip mount
+   * (its parts and `support` are from that mount, not the stock's), so it sits under any
+   * gun's handguard. While the kit is fitted the gun's foregrip slot can't be used.
+   */
+  foregrip: z.strictObject({ parts, support: vec3Schema }).optional(),
+  /**
+   * Rear grips (GM-4): the same grip's look on a gun whose grip wraps the magazine well
+   * (`magwellGrip`): a shell round the well, from the gun's grip mount, and where the hand
+   * holds. Its stats are the grip's own; only the look changes. The shell fits the standard
+   * well (MAGWELL_WELL) so one look suits every such gun.
+   */
+  magwell: z.strictObject({ parts, grip: vec3Schema }).optional(),
 });
+
+/**
+ * The magazine well a `magwellGrip` gun builds inside its grip, from the grip mount (the
+ * well's top center): half width, half length along z, depth. Every grip's `magwell` shell
+ * is built round it (scripts/grip-magwell.mjs).
+ */
+export const MAGWELL_WELL = { halfWidth: 0.0125, halfLength: 0.022, depth: 0.086 } as const;
+
+/**
+ * What a fitted attachment draws on a gun: its own model, or for a rear grip on a gun
+ * whose grip wraps the magazine well, its `magwell` look and hand point.
+ */
+export function fittedLook(
+  gun: { magwellGrip?: true | undefined },
+  slot: string,
+  model: AttachmentModel,
+): AttachmentModel {
+  if (slot === 'grip' && gun.magwellGrip && model.magwell)
+    return { ...model, parts: model.magwell.parts, grip: model.magwell.grip };
+  return model;
+}
 
 export const meleeModelSchema = z.strictObject({
   parts,
