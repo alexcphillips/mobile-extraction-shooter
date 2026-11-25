@@ -21,65 +21,174 @@
     "parts": [
       {
         "type": "cylinder",
-        "pos": [0, 0, -0.115],
-        "radius": 0.01288,
-        "height": 0.238,
-        "color": "#1b1c1e",
-        "sides": 10,
+        "pos": [0, 0, -0.0045],
         "pitch": 90,
-        "name": "barrel",
-        "group": "barrel"
-      },
-      {
-        "type": "cylinder",
-        "pos": [0, 0, -0.0065],
-        "radius": 0.01495,
+        "radius": 0.014,
         "height": 0.009,
-        "color": "#26282b",
-        "sides": 10,
-        "pitch": 90,
+        "color": "#2a2c2f",
         "name": "barrel nut",
-        "group": "barrel"
+        "group": "barrel",
+        "sides": 10
       },
       {
         "type": "cylinder",
-        "pos": [0, 0, -0.236],
-        "radius": 0.00989,
-        "height": 0.008,
-        "color": "#5a5f65",
-        "sides": 10,
+        "pos": [0, 0, -0.124],
         "pitch": 90,
-        "name": "thread",
-        "group": "barrel"
+        "radius": 0.0113,
+        "height": 0.232,
+        "color": "#1b1c1e",
+        "name": "barrel",
+        "group": "barrel",
+        "sides": 10
       },
       {
-        "type": "cylinder",
-        "pos": [0, -0.02645, -0.105],
-        "radius": 0.01093,
-        "height": 0.21,
-        "color": "#232426",
-        "sides": 10,
-        "pitch": 90,
-        "name": "magazine tube",
-        "group": "barrel"
-      },
-      {
-        "type": "cylinder",
-        "pos": [0, -0.02645, -0.214],
-        "radius": 0.01173,
-        "height": 0.008,
+        "type": "box",
+        "pos": [0, 0.029, -0.123],
+        "size": [0.0072, 0.0032, 0.226],
         "color": "#26282b",
-        "sides": 10,
-        "pitch": 90,
-        "name": "tube cap",
+        "name": "vent rib",
         "group": "barrel"
       },
       {
         "type": "box",
-        "pos": [0, -0.01322, -0.195],
-        "size": [0.0253, 0.0414, 0.012],
+        "pos": [0, 0.01885, -0.123],
+        "size": [0.0028, 0.0171, 0.226],
         "color": "#26282b",
-        "name": "barrel clamp",
+        "name": "rib web",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.01935, -0.217],
+        "size": [0.0031, 0.0121, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.01935, -0.187],
+        "size": [0.0031, 0.0121, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.01935, -0.157],
+        "size": [0.0031, 0.0121, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.01935, -0.127],
+        "size": [0.0031, 0.0121, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.01935, -0.097],
+        "size": [0.0031, 0.0121, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.01935, -0.067],
+        "size": [0.0031, 0.0121, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.01935, -0.037],
+        "size": [0.0031, 0.0121, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.03285, -0.232],
+        "radius": 0.0026,
+        "radiusTop": 0.0018,
+        "height": 0.0045,
+        "sides": 8,
+        "color": "#c9c3b4",
+        "name": "front sight post",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0, -0.2403],
+        "pitch": 90,
+        "points": [
+          [0.0085, 0],
+          [0.00688, 0.005],
+          [0.00263, 0.00808],
+          [-0.00263, 0.00808],
+          [-0.00688, 0.005],
+          [-0.0085, 0],
+          [-0.00688, -0.005],
+          [-0.00263, -0.00808],
+          [0.00263, -0.00808],
+          [0.00688, -0.005]
+        ],
+        "color": "#0d0e0f",
+        "name": "muzzle bore",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.0265, -0.106],
+        "pitch": 90,
+        "radius": 0.0121,
+        "height": 0.208,
+        "color": "#1b1c1e",
+        "name": "magazine tube",
+        "group": "barrel",
+        "sides": 8
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.0265, -0.214],
+        "pitch": 90,
+        "radius": 0.0127,
+        "height": 0.008,
+        "color": "#2a2c2f",
+        "name": "tube cap",
+        "group": "barrel",
+        "sides": 8
+      },
+      {
+        "type": "hull",
+        "pos": [0, -0.0133, -0.2],
+        "points": [
+          [-0.009, 0.0266, 0.006],
+          [-0.009, 0.0266, -0.006],
+          [0.009, 0.0266, 0.006],
+          [0.009, 0.0266, -0.006],
+          [0.0135, 0.0133, 0.006],
+          [0.0135, 0.0133, -0.006],
+          [0.0135, -0.0132, 0.006],
+          [0.0135, -0.0132, -0.006],
+          [0.009, -0.0267, 0.006],
+          [0.009, -0.0267, -0.006],
+          [-0.009, -0.0267, 0.006],
+          [-0.009, -0.0267, -0.006],
+          [-0.0135, -0.0132, 0.006],
+          [-0.0135, -0.0132, -0.006],
+          [-0.0135, 0.0133, 0.006],
+          [-0.0135, 0.0133, -0.006]
+        ],
+        "color": "#2a2c2f",
+        "name": "barrel band",
         "group": "barrel"
       }
     ],

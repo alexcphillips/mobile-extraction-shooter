@@ -21,68 +21,134 @@
     "parts": [
       {
         "type": "cylinder",
-        "pos": [0, 0, -0.03],
-        "radius": 0.01208,
-        "height": 0.068,
-        "color": "#1b1c1e",
-        "sides": 10,
+        "pos": [0, 0, -0.0045],
         "pitch": 90,
-        "name": "barrel",
-        "group": "barrel"
-      },
-      {
-        "type": "cylinder",
-        "pos": [0, 0, -0.0065],
-        "radius": 0.01495,
+        "radius": 0.014,
         "height": 0.009,
-        "color": "#26282b",
-        "sides": 10,
-        "pitch": 90,
+        "color": "#2a2c2f",
         "name": "barrel nut",
-        "group": "barrel"
+        "group": "barrel",
+        "sides": 10
       },
       {
         "type": "cylinder",
-        "pos": [0, 0, -0.066],
-        "radius": 0.00989,
-        "height": 0.008,
-        "color": "#5a5f65",
-        "sides": 10,
+        "pos": [0, 0, -0.039],
         "pitch": 90,
-        "name": "thread",
-        "group": "barrel"
+        "radius": 0.0105,
+        "height": 0.062,
+        "color": "#1b1c1e",
+        "name": "barrel",
+        "group": "barrel",
+        "sides": 10
       },
       {
         "type": "box",
-        "pos": [0, 0.01608, -0.035],
-        "size": [0.006, 0.0015, 0.05],
+        "pos": [0, 0.029, -0.038],
+        "size": [0.0072, 0.0032, 0.056],
         "color": "#26282b",
         "name": "vent rib",
         "group": "barrel"
       },
       {
         "type": "box",
-        "pos": [0, 0.01388, -0.012],
-        "size": [0.004, 0.0032, 0.003],
+        "pos": [0, 0.01845, -0.038],
+        "size": [0.0028, 0.0179, 0.056],
         "color": "#26282b",
-        "name": "rib post",
+        "name": "rib web",
         "group": "barrel"
       },
       {
         "type": "box",
-        "pos": [0, 0.01388, -0.052],
-        "size": [0.004, 0.0032, 0.003],
-        "color": "#26282b",
-        "name": "rib post",
+        "pos": [0, 0.01895, -0.047],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.03285, -0.062],
+        "radius": 0.0026,
+        "radiusTop": 0.0018,
+        "height": 0.0045,
+        "sides": 8,
+        "color": "#c9c3b4",
+        "name": "front sight post",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0, -0.0703],
+        "pitch": 90,
+        "points": [
+          [0.0077, 0],
+          [0.00623, 0.00453],
+          [0.00238, 0.00732],
+          [-0.00238, 0.00732],
+          [-0.00623, 0.00453],
+          [-0.0077, 0],
+          [-0.00623, -0.00453],
+          [-0.00238, -0.00732],
+          [0.00238, -0.00732],
+          [0.00623, -0.00453]
+        ],
+        "color": "#0d0e0f",
+        "name": "muzzle bore",
         "group": "barrel"
       },
       {
         "type": "box",
-        "pos": [0, 0.01828, -0.058],
-        "size": [0.002, 0.003, 0.002],
-        "color": "#c9c2a8",
-        "name": "bead",
-        "group": "barrel"
+        "pos": [0.0062, 0.0082, -0.058],
+        "size": [0.0034, 0.001, 0.006],
+        "color": "#0d0e0f",
+        "name": "port",
+        "group": "barrel",
+        "roll": -38
+      },
+      {
+        "type": "box",
+        "pos": [0.0062, 0.0082, -0.048],
+        "size": [0.0034, 0.001, 0.006],
+        "color": "#0d0e0f",
+        "name": "port",
+        "group": "barrel",
+        "roll": -38
+      },
+      {
+        "type": "box",
+        "pos": [0.0062, 0.0082, -0.038],
+        "size": [0.0034, 0.001, 0.006],
+        "color": "#0d0e0f",
+        "name": "port",
+        "group": "barrel",
+        "roll": -38
+      },
+      {
+        "type": "box",
+        "pos": [-0.0062, 0.0082, -0.058],
+        "size": [0.0034, 0.001, 0.006],
+        "color": "#0d0e0f",
+        "name": "port",
+        "group": "barrel",
+        "roll": 38
+      },
+      {
+        "type": "box",
+        "pos": [-0.0062, 0.0082, -0.048],
+        "size": [0.0034, 0.001, 0.006],
+        "color": "#0d0e0f",
+        "name": "port",
+        "group": "barrel",
+        "roll": 38
+      },
+      {
+        "type": "box",
+        "pos": [-0.0062, 0.0082, -0.038],
+        "size": [0.0034, 0.001, 0.006],
+        "color": "#0d0e0f",
+        "name": "port",
+        "group": "barrel",
+        "roll": 38
       }
     ],
     "muzzle": [0, 0, -0.07]

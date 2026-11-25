@@ -18,19 +18,36 @@
     "parts": [
       {
         "type": "cylinder",
-        "pos": [0, 0, -0.045],
-        "radius": 0.011,
-        "height": 0.09,
-        "color": "#1d1f21",
-        "pitch": 90
+        "pos": [0, 0, -0.0445],
+        "pitch": 90,
+        "radius": 0.0108,
+        "height": 0.091,
+        "color": "#1b1c1e",
+        "name": "tube extension",
+        "group": "magazine",
+        "sides": 10
       },
       {
         "type": "cylinder",
-        "pos": [0, 0, -0.095],
-        "radius": 0.012,
-        "height": 0.012,
-        "color": "#2a2c2e",
-        "pitch": 90
+        "pos": [0, 0, -0.0065],
+        "pitch": 90,
+        "radius": 0.0113,
+        "height": 0.005,
+        "color": "#2d3034",
+        "name": "joint",
+        "group": "magazine",
+        "sides": 10
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0, -0.0955],
+        "pitch": 90,
+        "radius": 0.0116,
+        "height": 0.011,
+        "color": "#2a2c2f",
+        "name": "tube cap",
+        "group": "magazine",
+        "sides": 10
       }
     ]
   }

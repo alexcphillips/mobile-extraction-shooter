@@ -74,7 +74,8 @@ const HIP = new THREE.Vector3(0.1, -0.115, -0.46);
 const BUTT_BEHIND_EYE = 0.12;
 /** A pistol is held further out. */
 const PISTOL_HIP = new THREE.Vector3(0.12, -0.13, -0.38);
-const PISTOL_AIMED_Z = -0.34;
+/** Aimed, nearer than arm's length, so the notch and post read on a phone. */
+const PISTOL_AIMED_Z = -0.26;
 /** The knife is held low to the right, and never aimed. */
 const KNIFE_HIP = new THREE.Vector3(0.16, -0.12, -0.46);
 /** How long a swing's slash takes on screen, at most (it's shorter if the knife is faster). */

@@ -24,10 +24,7 @@
     "range": 39,
     "loudness": 80
   },
-  "slots": ["optic", "muzzle", "magazine", "rightRail", "stock"],
-  "stock": {
-    "length": 1
-  },
+  "slots": ["optic", "muzzle", "barrel", "rightRail", "magazine"],
   "recoil": {
     "snap": 35,
     "recovery": 4
@@ -39,114 +36,847 @@
   },
   "model": {
     "parts": [
-      { "type": "box", "pos": [0, 0, -0.05], "size": [0.05, 0.065, 0.24], "color": "#2a2c2e" },
+      {
+        "type": "hull",
+        "pos": [0, -0.00225, 0.02238],
+        "points": [
+          [0.0165, 0.03125, -0.12238],
+          [-0.0165, 0.03125, -0.12238],
+          [0.0165, 0.03125, 0.05262],
+          [-0.0165, 0.03125, 0.05262],
+          [0.0165, 0.02325, 0.07862],
+          [-0.0165, 0.02325, 0.07862],
+          [0.0165, 0.01525, 0.08262],
+          [-0.0165, 0.01525, 0.08262],
+          [0.0165, -0.01775, 0.08262],
+          [-0.0165, -0.01775, 0.08262],
+          [0.0165, -0.02975, 0.06262],
+          [-0.0165, -0.02975, 0.06262],
+          [0.0165, -0.02975, -0.11437],
+          [-0.0165, -0.02975, -0.11437],
+          [0.0165, -0.02375, -0.12238],
+          [-0.0165, -0.02375, -0.12238]
+        ],
+        "color": "#2a2c2f",
+        "name": "receiver",
+        "group": "receiver"
+      },
       {
         "type": "box",
-        "pos": [0.0255, 0.012, -0.06],
-        "size": [0.002, 0.018, 0.06],
-        "color": "#161718"
+        "pos": [0.0168, 0.014, -0.035],
+        "size": [0.0008, 0.016, 0.06],
+        "color": "#161719",
+        "name": "ejection port",
+        "group": "receiver"
+      },
+      {
+        "type": "box",
+        "pos": [0.0171, 0.014, -0.035],
+        "size": [0.0008, 0.011, 0.054],
+        "color": "#202123",
+        "name": "bolt",
+        "group": "receiver"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.0323, -0.035],
+        "size": [0.025, 0.0008, 0.07],
+        "color": "#161719",
+        "name": "loading port",
+        "group": "receiver"
+      },
+      {
+        "type": "box",
+        "pos": [0.0168, -0.01, 0.02],
+        "size": [0.0006, 0.012, 0.15],
+        "color": "#45494e",
+        "name": "receiver flat",
+        "group": "receiver"
       },
       {
         "type": "cylinder",
-        "pos": [0, 0.012, -0.42],
-        "radius": 0.012,
-        "height": 0.5,
-        "color": "#1d1f21",
-        "pitch": 90
-      },
-      { "type": "box", "pos": [0, 0.026, -0.42], "size": [0.006, 0.004, 0.48], "color": "#2a2c2e" },
-      {
-        "type": "box",
-        "pos": [0, 0.0295, -0.66],
-        "size": [0.005, 0.003, 0.012],
-        "color": "#c9c2a8",
-        "name": "front sight",
-        "group": "iron sights"
-      },
-      {
-        "type": "box",
-        "pos": [0, 0.0355, -0.66],
-        "size": [0.009, 0.009, 0.009],
-        "color": "#d9b85c",
-        "name": "front bead",
-        "group": "iron sights"
+        "pos": [0.0167, -0.023, 0.04],
+        "roll": 90,
+        "radius": 0.002,
+        "height": 0.0008,
+        "color": "#55585d",
+        "name": "trigger pin",
+        "group": "receiver",
+        "sides": 6
       },
       {
         "type": "cylinder",
-        "pos": [0, -0.02, -0.35],
-        "radius": 0.011,
-        "height": 0.36,
-        "color": "#1d1f21",
-        "pitch": 90
+        "pos": [0.0167, -0.023, 0.088],
+        "roll": 90,
+        "radius": 0.002,
+        "height": 0.0008,
+        "color": "#55585d",
+        "name": "trigger pin",
+        "group": "receiver",
+        "sides": 6
+      },
+      {
+        "type": "box",
+        "pos": [-0.0168, -0.01, 0.02],
+        "size": [0.0006, 0.012, 0.15],
+        "color": "#45494e",
+        "name": "receiver flat",
+        "group": "receiver"
       },
       {
         "type": "cylinder",
-        "pos": [0, -0.02, -0.535],
-        "radius": 0.012,
-        "height": 0.012,
-        "color": "#2a2c2e",
+        "pos": [-0.0167, -0.023, 0.04],
+        "roll": 90,
+        "radius": 0.002,
+        "height": 0.0008,
+        "color": "#55585d",
+        "name": "trigger pin",
+        "group": "receiver",
+        "sides": 6
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.0167, -0.023, 0.088],
+        "roll": 90,
+        "radius": 0.002,
+        "height": 0.0008,
+        "color": "#55585d",
+        "name": "trigger pin",
+        "group": "receiver",
+        "sides": 6
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.036, 0.088],
+        "roll": 90,
+        "radius": 0.0036,
+        "height": 0.036,
+        "color": "#55585d",
+        "name": "safety",
+        "group": "receiver",
+        "sides": 8
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.056, 0.062],
+        "size": [0.01, 0.004, 0.064],
+        "color": "#2a2c2f",
+        "name": "trigger guard",
+        "group": "trigger"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.044, 0.028],
+        "size": [0.01, 0.026, 0.004],
+        "color": "#2a2c2f",
+        "name": "trigger guard",
+        "group": "trigger"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.044, 0.095],
+        "size": [0.01, 0.026, 0.004],
+        "color": "#2a2c2f",
+        "name": "trigger guard",
+        "group": "trigger"
+      },
+      {
+        "type": "box",
+        "pos": [0, -0.043, 0.054],
+        "size": [0.005, 0.02, 0.005],
+        "color": "#202123",
+        "name": "trigger",
+        "group": "trigger",
+        "pitch": -14
+      },
+      {
+        "type": "box",
+        "pos": [-0.0035, -0.038, 0.036],
+        "size": [0.003, 0.008, 0.004],
+        "color": "#55585d",
+        "name": "action release",
+        "group": "trigger"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0311, -0.0085],
+        "size": [0.0215, 0.0052, 0.159],
+        "color": "#161719",
+        "name": "saddle rail base",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0361, -0.0785],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "saddle rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0361, -0.0685],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "saddle rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0361, -0.0585],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "saddle rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0361, -0.0485],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "saddle rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0361, -0.0385],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "saddle rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0361, -0.0285],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "saddle rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0361, -0.0185],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "saddle rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0361, -0.0085],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "saddle rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0361, 0.0015],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "saddle rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0361, 0.0115],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "saddle rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0361, 0.0215],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "saddle rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0361, 0.0315],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "saddle rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0361, 0.0415],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "saddle rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0361, 0.0515],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "saddle rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.0361, 0.0615],
+        "size": [0.0215, 0.0048, 0.0053],
+        "color": "#2a2c2f",
+        "name": "saddle rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0.0173, 0.024, -0.0085],
+        "size": [0.0016, 0.012, 0.155],
+        "color": "#2a2c2f",
+        "name": "saddle",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0173, 0.024, -0.0085],
+        "size": [0.0016, 0.012, 0.155],
+        "color": "#2a2c2f",
+        "name": "saddle",
+        "group": "rails"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, -0.263],
         "pitch": 90,
+        "radius": 0.0105,
+        "height": 0.33,
+        "color": "#1b1c1e",
+        "name": "barrel",
+        "group": "barrel",
+        "sides": 10
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.041, -0.262],
+        "size": [0.0072, 0.0032, 0.324],
+        "color": "#26282b",
+        "name": "vent rib",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.03045, -0.262],
+        "size": [0.0028, 0.0179, 0.324],
+        "color": "#26282b",
+        "name": "rib web",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.03095, -0.405],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.03095, -0.375],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.03095, -0.345],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.03095, -0.315],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.03095, -0.285],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.03095, -0.255],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.03095, -0.225],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.03095, -0.195],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.03095, -0.165],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.03095, -0.135],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.012, -0.4283],
+        "pitch": 90,
+        "points": [
+          [0.0077, 0],
+          [0.00623, 0.00453],
+          [0.00238, 0.00732],
+          [-0.00238, 0.00732],
+          [-0.00623, 0.00453],
+          [-0.0077, 0],
+          [-0.00623, -0.00453],
+          [-0.00238, -0.00732],
+          [0.00238, -0.00732],
+          [0.00623, -0.00453]
+        ],
+        "color": "#0d0e0f",
+        "name": "muzzle bore",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.012, -0.5],
+        "pitch": 90,
+        "radius": 0.0105,
+        "height": 0.12,
+        "color": "#1b1c1e",
+        "name": "barrel",
+        "group": "barrel",
+        "sides": 10,
+        "hiddenBy": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.041, -0.499],
+        "size": [0.0072, 0.0032, 0.114],
+        "color": "#26282b",
+        "name": "vent rib",
+        "group": "barrel",
+        "hiddenBy": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.03045, -0.499],
+        "size": [0.0028, 0.0179, 0.114],
+        "color": "#26282b",
+        "name": "rib web",
+        "group": "barrel",
+        "hiddenBy": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.03095, -0.537],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel",
+        "hiddenBy": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.03095, -0.507],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel",
+        "hiddenBy": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.03095, -0.477],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel",
+        "hiddenBy": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.04485, -0.552],
+        "radius": 0.0026,
+        "radiusTop": 0.0018,
+        "height": 0.0045,
+        "sides": 8,
+        "color": "#c9c3b4",
+        "name": "front sight post",
+        "group": "iron sights",
+        "hiddenBy": "barrel"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0.012, -0.5603],
+        "pitch": 90,
+        "points": [
+          [0.0077, 0],
+          [0.00623, 0.00453],
+          [0.00238, 0.00732],
+          [-0.00238, 0.00732],
+          [-0.00623, 0.00453],
+          [-0.0077, 0],
+          [-0.00623, -0.00453],
+          [-0.00238, -0.00732],
+          [0.00238, -0.00732],
+          [0.00623, -0.00453]
+        ],
+        "color": "#0d0e0f",
+        "name": "muzzle bore",
+        "group": "barrel",
+        "hiddenBy": "barrel"
+      },
+      {
+        "type": "hull",
+        "pos": [0, -0.0015, -0.416],
+        "points": [
+          [-0.009, 0.026, 0.022],
+          [-0.009, 0.026, -0.022],
+          [0.009, 0.026, 0.022],
+          [0.009, 0.026, -0.022],
+          [0.0135, 0.0135, 0.022],
+          [0.0135, 0.0135, -0.022],
+          [0.0135, -0.013, 0.022],
+          [0.0135, -0.013, -0.022],
+          [0.009, -0.0265, 0.022],
+          [0.009, -0.0265, -0.022],
+          [-0.009, -0.0265, 0.022],
+          [-0.009, -0.0265, -0.022],
+          [-0.0135, -0.013, 0.022],
+          [-0.0135, -0.013, -0.022],
+          [-0.0135, 0.0135, 0.022],
+          [-0.0135, 0.0135, -0.022]
+        ],
+        "color": "#2a2c2f",
+        "name": "barrel band",
+        "group": "barrel band"
+      },
+      {
+        "type": "cylinder",
+        "pos": [-0.014, -0.0065, -0.416],
+        "roll": 90,
+        "radius": 0.0022,
+        "height": 0.002,
+        "color": "#55585d",
+        "name": "band screw",
+        "group": "barrel band",
+        "sides": 6
+      },
+      {
+        "type": "box",
+        "pos": [0.0165, -0.00125, -0.416],
+        "size": [0.006, 0.0215, 0.04],
+        "color": "#161719",
+        "name": "side rail base",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0.0217, -0.00125, -0.431],
+        "size": [0.0048, 0.0215, 0.0053],
+        "color": "#2a2c2f",
+        "name": "side rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0.0217, -0.00125, -0.421],
+        "size": [0.0048, 0.0215, 0.0053],
+        "color": "#2a2c2f",
+        "name": "side rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0.0217, -0.00125, -0.411],
+        "size": [0.0048, 0.0215, 0.0053],
+        "color": "#2a2c2f",
+        "name": "side rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "box",
+        "pos": [0.0217, -0.00125, -0.401],
+        "size": [0.0048, 0.0215, 0.0053],
+        "color": "#2a2c2f",
+        "name": "side rail tooth",
+        "group": "rails"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.0145, -0.238],
+        "pitch": 90,
+        "radius": 0.0108,
+        "height": 0.28,
+        "color": "#202123",
+        "name": "magazine tube",
+        "group": "magazine tube",
+        "sides": 10
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.0145, -0.3825],
+        "pitch": 90,
+        "radius": 0.0116,
+        "height": 0.011,
+        "color": "#2a2c2f",
+        "name": "tube cap",
+        "group": "magazine tube",
+        "sides": 10,
         "hiddenBy": "magazine"
       },
-      { "type": "box", "pos": [0, -0.022, -0.32], "size": [0.048, 0.04, 0.15], "color": "#262626" },
       {
-        "type": "box",
-        "pos": [0.0245, -0.022, -0.32],
-        "size": [0.002, 0.006, 0.13],
-        "color": "#161718"
+        "type": "hull",
+        "pos": [0, -0.011, -0.22],
+        "points": [
+          [-0.015, 0.021, -0.09],
+          [-0.015, 0.021, 0.09],
+          [0.015, 0.021, -0.09],
+          [0.015, 0.021, 0.09],
+          [0.021, 0.011, -0.09],
+          [0.021, 0.011, 0.09],
+          [0.021, -0.0115, -0.09],
+          [0.021, -0.0115, 0.09],
+          [0.014, -0.0205, -0.09],
+          [0.014, -0.0205, 0.09],
+          [-0.014, -0.0205, -0.09],
+          [-0.014, -0.0205, 0.09],
+          [-0.021, -0.0115, -0.09],
+          [-0.021, -0.0115, 0.09],
+          [-0.021, 0.011, -0.09],
+          [-0.021, 0.011, 0.09]
+        ],
+        "color": "#3a3d41",
+        "name": "forend",
+        "group": "forend"
       },
       {
         "type": "box",
-        "pos": [-0.0245, -0.022, -0.32],
-        "size": [0.002, 0.006, 0.13],
-        "color": "#161718"
+        "pos": [0.0212, -0.0125, -0.28],
+        "size": [0.0008, 0.016, 0.004],
+        "color": "#161719",
+        "name": "forend groove",
+        "group": "forend"
       },
       {
         "type": "box",
-        "pos": [0, -0.045, 0.045],
-        "size": [0.012, 0.008, 0.07],
-        "color": "#1d1f21"
+        "pos": [0.0212, -0.0125, -0.26],
+        "size": [0.0008, 0.016, 0.004],
+        "color": "#161719",
+        "name": "forend groove",
+        "group": "forend"
       },
       {
         "type": "box",
-        "pos": [0, -0.038, 0.035],
-        "size": [0.006, 0.02, 0.006],
-        "color": "#1d1f21"
+        "pos": [0.0212, -0.0125, -0.24],
+        "size": [0.0008, 0.016, 0.004],
+        "color": "#161719",
+        "name": "forend groove",
+        "group": "forend"
       },
       {
         "type": "box",
-        "pos": [0, -0.045, 0.12],
-        "size": [0.04, 0.05, 0.1],
-        "color": "#262626",
-        "pitch": -15
+        "pos": [0.0212, -0.0125, -0.22],
+        "size": [0.0008, 0.016, 0.004],
+        "color": "#161719",
+        "name": "forend groove",
+        "group": "forend"
       },
       {
         "type": "box",
-        "pos": [0, -0.035, 0.255],
-        "size": [0.045, 0.07, 0.2],
-        "color": "#262626",
-        "pitch": 6,
-        "hiddenBy": "stock"
+        "pos": [0.0212, -0.0125, -0.2],
+        "size": [0.0008, 0.016, 0.004],
+        "color": "#161719",
+        "name": "forend groove",
+        "group": "forend"
       },
       {
         "type": "box",
-        "pos": [0, -0.052, 0.355],
-        "size": [0.047, 0.11, 0.014],
-        "color": "#161718",
-        "pitch": 6,
-        "hiddenBy": "stock"
+        "pos": [0.0212, -0.0125, -0.18],
+        "size": [0.0008, 0.016, 0.004],
+        "color": "#161719",
+        "name": "forend groove",
+        "group": "forend"
+      },
+      {
+        "type": "box",
+        "pos": [0.0212, -0.0125, -0.16],
+        "size": [0.0008, 0.016, 0.004],
+        "color": "#161719",
+        "name": "forend groove",
+        "group": "forend"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0212, -0.0125, -0.28],
+        "size": [0.0008, 0.016, 0.004],
+        "color": "#161719",
+        "name": "forend groove",
+        "group": "forend"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0212, -0.0125, -0.26],
+        "size": [0.0008, 0.016, 0.004],
+        "color": "#161719",
+        "name": "forend groove",
+        "group": "forend"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0212, -0.0125, -0.24],
+        "size": [0.0008, 0.016, 0.004],
+        "color": "#161719",
+        "name": "forend groove",
+        "group": "forend"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0212, -0.0125, -0.22],
+        "size": [0.0008, 0.016, 0.004],
+        "color": "#161719",
+        "name": "forend groove",
+        "group": "forend"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0212, -0.0125, -0.2],
+        "size": [0.0008, 0.016, 0.004],
+        "color": "#161719",
+        "name": "forend groove",
+        "group": "forend"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0212, -0.0125, -0.18],
+        "size": [0.0008, 0.016, 0.004],
+        "color": "#161719",
+        "name": "forend groove",
+        "group": "forend"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0212, -0.0125, -0.16],
+        "size": [0.0008, 0.016, 0.004],
+        "color": "#161719",
+        "name": "forend groove",
+        "group": "forend"
+      },
+      {
+        "type": "box",
+        "pos": [0.0105, -0.0075, -0.115],
+        "size": [0.002, 0.004, 0.034],
+        "color": "#202123",
+        "name": "action bar",
+        "group": "forend"
+      },
+      {
+        "type": "box",
+        "pos": [-0.0105, -0.0075, -0.115],
+        "size": [0.002, 0.004, 0.034],
+        "color": "#202123",
+        "name": "action bar",
+        "group": "forend"
+      },
+      {
+        "type": "hull",
+        "pos": [0, -0.02775, 0.2515],
+        "points": [
+          [0.0152, 0.04075, -0.1485],
+          [-0.0152, 0.04075, -0.1485],
+          [0.0152, 0.04375, 0.1485],
+          [-0.0152, 0.04375, 0.1485],
+          [0.0152, -0.08825, 0.1485],
+          [-0.0152, -0.08825, 0.1485],
+          [0.0152, 0.00375, -0.1485],
+          [-0.0152, 0.00375, -0.1485]
+        ],
+        "color": "#3a3d41",
+        "name": "stock",
+        "group": "stock"
+      },
+      {
+        "type": "hull",
+        "pos": [0, 0.01468, 0.2965],
+        "points": [
+          [0.0128, 0.00583, -0.0915],
+          [-0.0128, 0.00583, -0.0915],
+          [0.0128, 0.00252, 0.0915],
+          [-0.0128, 0.00252, 0.0915],
+          [0.0128, -0.00567, 0.0915],
+          [-0.0128, -0.00567, 0.0915],
+          [0.0128, -0.00268, -0.0915],
+          [-0.0128, -0.00268, -0.0915]
+        ],
+        "color": "#45494e",
+        "name": "comb",
+        "group": "stock"
+      },
+      {
+        "type": "slab",
+        "pos": [0, -0.05, 0.407],
+        "size": [0.032, 0.132, 0.014],
+        "corners": [0.005, 0.005, 0.005, 0.005],
+        "segments": 2,
+        "color": "#18191a",
+        "name": "butt pad",
+        "group": "stock"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, -0.1, 0.355],
+        "roll": 90,
+        "radius": 0.004,
+        "height": 0.004,
+        "color": "#202123",
+        "name": "sling swivel",
+        "group": "stock",
+        "sides": 8,
+        "pitch": 0
       }
     ],
-    "grip": [0, -0.05, 0.1],
-    "support": [0, -0.022, -0.32],
-    "muzzle": [0, 0.012, -0.67],
-    "sight": [0, 0.04, -0.06],
+    "grip": [0, -0.062, 0.128],
+    "support": [0, -0.0315, -0.22],
+    "muzzle": [0, 0.012, -0.56],
+    "sight": [0, 0.0471, 0.065],
     "mounts": {
-      "optic": [0, 0.0325, 0.02],
-      "muzzle": [0, 0.012, -0.67],
-      "magazine": [0, -0.02, -0.53],
-      "rightRail": [0.036, 0.004, -0.38],
-      "stock": [0, -0.035, 0.155]
+      "optic": [0, 0.0385, 0.01],
+      "muzzle": [0, 0.012, -0.56],
+      "barrel": [0, 0.012, -0.44],
+      "rightRail": [0.0355, -0.00125, -0.416],
+      "magazine": [0, -0.0145, -0.378]
     }
   }
 }

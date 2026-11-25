@@ -21,83 +21,111 @@
     "parts": [
       {
         "type": "cylinder",
-        "pos": [0, 0, -0.095],
-        "radius": 0.01208,
-        "height": 0.198,
-        "color": "#1b1c1e",
-        "sides": 10,
+        "pos": [0, 0, -0.0045],
         "pitch": 90,
-        "name": "barrel",
-        "group": "barrel"
-      },
-      {
-        "type": "cylinder",
-        "pos": [0, 0, -0.0065],
-        "radius": 0.01495,
+        "radius": 0.014,
         "height": 0.009,
-        "color": "#26282b",
-        "sides": 10,
-        "pitch": 90,
+        "color": "#2a2c2f",
         "name": "barrel nut",
-        "group": "barrel"
+        "group": "barrel",
+        "sides": 10
       },
       {
         "type": "cylinder",
-        "pos": [0, 0, -0.196],
-        "radius": 0.00989,
-        "height": 0.008,
-        "color": "#5a5f65",
-        "sides": 10,
+        "pos": [0, 0, -0.104],
         "pitch": 90,
-        "name": "thread",
-        "group": "barrel"
+        "radius": 0.0105,
+        "height": 0.192,
+        "color": "#1b1c1e",
+        "name": "barrel",
+        "group": "barrel",
+        "sides": 10
       },
       {
         "type": "box",
-        "pos": [0, 0.01608, -0.1],
-        "size": [0.006, 0.0015, 0.18],
+        "pos": [0, 0.029, -0.103],
+        "size": [0.0072, 0.0032, 0.186],
         "color": "#26282b",
         "name": "vent rib",
         "group": "barrel"
       },
       {
         "type": "box",
-        "pos": [0, 0.01388, -0.012],
-        "size": [0.004, 0.0032, 0.003],
+        "pos": [0, 0.01845, -0.103],
+        "size": [0.0028, 0.0179, 0.186],
         "color": "#26282b",
-        "name": "rib post",
+        "name": "rib web",
         "group": "barrel"
       },
       {
         "type": "box",
-        "pos": [0, 0.01388, -0.06867],
-        "size": [0.004, 0.0032, 0.003],
-        "color": "#26282b",
-        "name": "rib post",
+        "pos": [0, 0.01895, -0.177],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
         "group": "barrel"
       },
       {
         "type": "box",
-        "pos": [0, 0.01388, -0.12533],
-        "size": [0.004, 0.0032, 0.003],
-        "color": "#26282b",
-        "name": "rib post",
+        "pos": [0, 0.01895, -0.147],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
         "group": "barrel"
       },
       {
         "type": "box",
-        "pos": [0, 0.01388, -0.182],
-        "size": [0.004, 0.0032, 0.003],
-        "color": "#26282b",
-        "name": "rib post",
+        "pos": [0, 0.01895, -0.117],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
         "group": "barrel"
       },
       {
         "type": "box",
-        "pos": [0, 0.01828, -0.188],
-        "size": [0.002, 0.003, 0.002],
-        "color": "#c9c2a8",
-        "name": "bead",
+        "pos": [0, 0.01895, -0.087],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "box",
+        "pos": [0, 0.01895, -0.057],
+        "size": [0.0031, 0.0129, 0.014],
+        "color": "#0d0e0f",
+        "name": "rib vent",
+        "group": "barrel"
+      },
+      {
+        "type": "cylinder",
+        "pos": [0, 0.03285, -0.192],
+        "radius": 0.0026,
+        "radiusTop": 0.0018,
+        "height": 0.0045,
+        "sides": 8,
+        "color": "#c9c3b4",
+        "name": "front sight post",
+        "group": "iron sights"
+      },
+      {
+        "type": "panel",
+        "pos": [0, 0, -0.2003],
+        "pitch": 90,
+        "points": [
+          [0.0077, 0],
+          [0.00623, 0.00453],
+          [0.00238, 0.00732],
+          [-0.00238, 0.00732],
+          [-0.00623, 0.00453],
+          [-0.0077, 0],
+          [-0.00623, -0.00453],
+          [-0.00238, -0.00732],
+          [0.00238, -0.00732],
+          [0.00623, -0.00453]
+        ],
+        "color": "#0d0e0f",
+        "name": "muzzle bore",
         "group": "barrel"
       }
     ],

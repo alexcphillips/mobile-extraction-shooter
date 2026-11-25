@@ -1,4 +1,4 @@
-// HK-style iron sights shared by the roller-delayed and polymer SMGs (GM-4: mp5, ump45): the
+// HK-style iron sights shared by the roller-delayed and polymer SMGs (GM-4: mp5, g3; the ump45 takes the ring): the
 // drum rear sight and the front post in a full ring hood. Aimed, the ring sits centered in
 // the drum's peep with air round it (a ghost ring, docs/guns.md → Iron sights).
 //

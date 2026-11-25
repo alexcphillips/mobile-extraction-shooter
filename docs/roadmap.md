@@ -326,7 +326,6 @@ The brief is in features/vendors-and-quests.md → Planned. **Each objective kin
 The parts, and how to turn their marks into points: [reference/attachment-list.md](reference/attachment-list.md). Rules: [features/weapon-stats.md](features/weapon-stats.md). Each part gets a model in the house style ([props.md](props.md) → item models), a value and a rarity; loot tables and vendors come in a later content pass. Delete a slot's section from the list once it's built.
 
 - **Which guns get which slots** *(agreed with the user; adjust in each GM session)*. Foregrip and rear grip: m416, akm, adar, mcx-spear, mpx, ak-74m, aks-74u, rpk-16, saiga-12, scar-h, g3, mp7, m250. Foregrip only (the grip is part of the body): mp5, ump45, k10. Barrel, only where the list has barrels: m416, akm, ak-74m, mp5, mp7, mp-133, saiga-12, aa-12. None of the three: pistols, awm, sv-98, r93, sks, svt-40, pkm, as-val, vss, uzi, uzi-pro, aug-a3, p90.
-- [ ] **GM-7. Shotguns and pistols** (mp-133, aa-12, the pistols), each rebuilt to [guns.md](guns.md) with its slots (above), mounts and factory parts, and every part that fits it checked in screenshots (`gun-fits.mjs`). A gun's barrels are already made (AT-6) with rough models: its session adds the barrel slot and mount and fits their models to it. Split any that runs long.
 
 ## After v1 (not scheduled)
 - Co-op vs. AI, phones and PCs together (a player's device hosts, others connect over WebRTC; client movement prediction, shared loot rolls, quest items only for the holder). The plan, session by session, is [coop.md](coop.md).

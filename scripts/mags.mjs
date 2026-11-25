@@ -9,6 +9,7 @@
 // The JSON is the model once anyone edits it: run with --dry first, and if it says a file
 // differs, leave that one out (it would undo the edit).
 import { gunParts, writeModel } from './gun-kit.mjs';
+import { PISTOL, pistolMag, pistolPieces } from './gun-pistol.mjs';
 
 const DIR = new URL('../content/items/', import.meta.url).pathname;
 const BODY = '#232528'; // stamped steel body
@@ -20,6 +21,60 @@ const SLOT = '#161719'; // the catch notch
 const at = (pts, w) => pts.map(([y, z]) => [y, z, w]);
 
 const BUILD = {
+  // The pistols': a full box that goes up inside the raked grip, so only its base plate (and
+  // an extended one's lower body) shows on the gun.
+  'g18c-mag': (k) => pistolMag(k, PISTOL.glock, { color: '#1b1c1e', colorPlate: '#1f2123' }),
+  'mag-glock-33': (k) =>
+    pistolMag(k, PISTOL.glock, { below: 0.07, extended: true, color: '#1b1c1e' }),
+  'm9a3-mag': (k) => pistolMag(k, PISTOL.m9a3, {}),
+  'mag-9mm-24': (k) => pistolMag(k, PISTOL.m9a3, { below: 0.033, extended: true }),
+  'p226-mag': (k) => pistolMag(k, PISTOL.p226, {}),
+  'mag-p226-20': (k) => pistolMag(k, PISTOL.p226, { below: 0.024, extended: true, holes: 4 }),
+  'm1911-mag': (k) => pistolMag(k, PISTOL.m1911a1, { plate: 0.0035, holes: 4 }),
+  'five-seven-mag': (k) => pistolMag(k, PISTOL['five-seven'], { holes: 5, color: '#1b1c1e' }),
+  // The MPX's: a long smoky polymer box curving forward, leaning as its well does.
+  'mpx-mag': (k) => mpxMag(k, 0.125),
+  'mag-mpx-41': (k) => mpxMag(k, 0.17),
+  // The UMP45's: a long straight box leaning forward, its witness slot down the side.
+  'ump45-mag': (k) => {
+    const W = 0.0135;
+    const D = 0.155;
+    const z = (y) => y * 0.17;
+    const run = (y0, y1, a, b) => [
+      [y0, z(y0) + a],
+      [y0, z(y0) + b],
+      [y1, z(y1) + b],
+      [y1, z(y1) + a],
+    ];
+    const { decals, circle } = pistolPieces(k);
+    k.prism('magazine', 'magazine body', at(run(0.004, -D, -0.0235, 0.0235), W), '#2b2e31');
+    k.prism('magazine', 'magazine spine', at(run(0, -D + 0.002, 0.012, 0.0245), W + 0.0008), BODY);
+    decals('magazine', 'witness slot', W + 0.0003, run(-0.02, -0.108, -0.006, -0.0015), SLOT);
+    for (let i = 0; i < 6; i++) {
+      const y = -0.028 - i * 0.0145;
+      decals(
+        'magazine',
+        'witness round',
+        W + 0.0006,
+        circle(0.0016, [y, z(y) - 0.0037], 6),
+        '#a8884a',
+      );
+    }
+    k.prism(
+      'magazine',
+      'base plate',
+      at(
+        [
+          [-D + 0.003, z(-D) - 0.0265],
+          [-D + 0.003, z(-D) + 0.027],
+          [-D - 0.009, z(-D) + 0.0265],
+          [-D - 0.009, z(-D) - 0.03],
+        ],
+        W + 0.0022,
+      ),
+      PLATE,
+    );
+  },
   // The G3's: a long steel 20-rounder curving gently forward toward its foot, two pressed
   // ribs down each side, a flat base plate.
   'g3-mag': (k) => {
@@ -465,6 +520,92 @@ const BUILD = {
     );
     k.box('magazine', 'catch notch', [0, -0.012, 0.0333], [0.012, 0.007, 0.001], SLOT);
   },
+  // The MP-133's tube extension, in the tube's own frame (the mount is the tube's front on
+  // its axis): a length of tube going on forward, the cap at its end.
+  'mag-mp133-8': (k) => {
+    k.tubeZ('magazine', 'tube extension', 0, 0.001, -0.09, 0.0108, '#1b1c1e', { sides: 10 });
+    k.tubeZ('magazine', 'joint', 0, -0.004, -0.009, 0.0113, RIB, { sides: 10 });
+    k.tubeZ('magazine', 'tube cap', 0, -0.09, -0.101, 0.0116, '#2a2c2f', { sides: 10 });
+  },
+  // The AA-12's 8-round box: wide and deep for the shells, straight, ribbed, a base plate.
+  'aa-12-mag': (k) => {
+    const W = 0.0195;
+    k.prism(
+      'magazine',
+      'magazine body',
+      at(
+        [
+          [0, -0.043],
+          [0, 0.043],
+          [-0.118, 0.04],
+          [-0.118, -0.046],
+        ],
+        W,
+      ),
+      BODY,
+    );
+    for (const s of [1, -1])
+      k.prism(
+        'magazine',
+        'magazine rib',
+        at(
+          [
+            [-0.012, -0.022],
+            [-0.012, 0.018],
+            [-0.11, 0.016],
+            [-0.11, -0.024],
+          ],
+          0.0005,
+        ),
+        RIB,
+        {
+          x: s * (W + 0.0003),
+        },
+      );
+    k.prism(
+      'magazine',
+      'base plate',
+      at(
+        [
+          [-0.117, -0.048],
+          [-0.117, 0.042],
+          [-0.126, 0.042],
+          [-0.126, -0.048],
+        ],
+        W + 0.0015,
+      ),
+      PLATE,
+    );
+    k.box('magazine', 'catch notch', [0, -0.008, 0.0433], [0.014, 0.007, 0.001], SLOT);
+  },
+  // The AA-12's 20-round drum: a short neck into the well and a big round drum under it,
+  // its axis across the gun, a lighter cover on each face and a winding knob.
+  'mag-aa12-20': (k) => {
+    const R = 0.068;
+    const CY = -0.03 - R;
+    k.prism(
+      'magazine',
+      'drum neck',
+      at(
+        [
+          [0, -0.042],
+          [0, 0.042],
+          [-0.034, 0.042],
+          [-0.034, -0.042],
+        ],
+        0.019,
+      ),
+      BODY,
+    );
+    k.tubeX('magazine', 'drum', [0, CY, 0], R, 0.074, BODY, { sides: 16 });
+    for (const s of [1, -1]) {
+      k.tubeX('magazine', 'drum cover', [s * 0.0372, CY, 0], R - 0.008, 0.0012, PLATE, {
+        sides: 16,
+      });
+      k.tubeX('magazine', 'drum hub', [s * 0.0384, CY, 0], 0.016, 0.0016, RIB, { sides: 10 });
+    }
+    k.tubeX('magazine', 'winding knob', [0.041, CY, 0], 0.008, 0.005, SLOT, { sides: 8 });
+  },
   'p90-mag': (k) => {
     const W = 0.021;
     k.prism(
@@ -489,6 +630,60 @@ const BUILD = {
     k.box('magazine', 'magazine latch', [0, 0.016, 0.1305], [0.02, 0.016, 0.005], PLATE);
   },
 };
+
+/** The MPX's magazine, `depth` below its well's mouth, its curve in three straight runs. */
+function mpxMag(k, depth) {
+  const W = 0.0122;
+  // The middle of the body at a depth, and its half depth: the curve steepens going down.
+  const mid = (y) => y * 0.2 - y * y * 1.3;
+  const HD = 0.0195;
+  const ys = [0.004, -depth * 0.36, -depth * 0.7, -depth];
+  const SMOKE = '#43474b';
+  for (let i = 0; i < 3; i++)
+    k.prism(
+      'magazine',
+      'magazine body',
+      at(
+        [
+          [ys[i] + (i ? 0.0004 : 0), mid(ys[i]) - HD],
+          [ys[i] + (i ? 0.0004 : 0), mid(ys[i]) + HD],
+          [ys[i + 1], mid(ys[i + 1]) + HD],
+          [ys[i + 1], mid(ys[i + 1]) - HD],
+        ],
+        W,
+      ),
+      SMOKE,
+    );
+  // Dark seams down each side, following the curve: panels, 2 triangles each.
+  const { decals } = pistolPieces(k);
+  for (const dz of [-0.0085, 0.0075])
+    for (let i = 0; i < 3; i++) {
+      const y0 = i ? ys[i] : -0.002;
+      const y1 = i === 2 ? -depth + 0.006 : ys[i + 1];
+      const at4 = [
+        [y0, mid(y0) + dz - 0.0012],
+        [y0, mid(y0) + dz + 0.0012],
+        [y1, mid(y1) + dz + 0.0012],
+        [y1, mid(y1) + dz - 0.0012],
+      ];
+      decals('magazine', 'magazine seam', W + 0.0004, at4, RIB);
+    }
+  const z = mid(-depth);
+  k.prism(
+    'magazine',
+    'base plate',
+    at(
+      [
+        [-depth + 0.004, z - HD - 0.002],
+        [-depth - 0.002, z + HD + 0.0025],
+        [-depth - 0.0095, z + HD - 0.0005],
+        [-depth - 0.0065, z - HD - 0.0045],
+      ],
+      W + 0.0016,
+    ),
+    BODY,
+  );
+}
 
 /** An `uzi` magazine, `depth` below its mount at the receiver's bottom. */
 function uziMag(k, depth) {

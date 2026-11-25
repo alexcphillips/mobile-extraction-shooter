@@ -1,306 +1,596 @@
-// The UMP45's model (GM-4): a .45 polymer SMG, long and square. What makes it read as
-// itself: a slab-sided box receiver the whole length of the gun with a long top rail, its
-// front a squared nose with rails on the side and underneath, a straight magazine well,
-// the grip molded into the lower with a big guard, the cocking handle forward on the left,
-// HK drum and ring sights on the rail (gun-hk.mjs), and a skeleton stock that folds to the
-// right. Its grip is part of the lower (no grip slot) and it has no barrel slot. Replaces
-// only `model` in its item file. See docs/guns.md.
+// The UMP45's model, from the user's reference picture: one polymer body in a single shade.
+// What makes it read as itself: a low front half with toothed side rails and a narrow spine
+// over it, the full-height receiver behind, a short rail ending at the hump of the rear
+// sight, a tall front sight tower, a long straight magazine leaning forward, and a stock
+// with a small and a large window. Its grip is part of the body (no grip slot) and it has no
+// barrel slot; the stock doesn't fold. Replaces only `model` in its item file. See
+// docs/guns.md.
 //
 //   node scripts/gun-ump45.mjs [--dry]
 //
 // The JSON is the model once anyone edits it: run with --dry first, and if it says the file
 // differs, don't run it (it would undo the edit).
-import fs from 'node:fs';
-import { gunParts, v3, writeModel } from './gun-kit.mjs';
+import { gunParts, writeModel } from './gun-kit.mjs';
 import { AR, arPieces } from './gun-ar15.mjs';
 import { hkSights } from './gun-hk.mjs';
+import { pistolPieces } from './gun-pistol.mjs';
+import { uziPieces } from './gun-uzi-kit.mjs';
 
 const FILE = new URL('../content/items/ump45.json', import.meta.url).pathname;
-const ITEM = JSON.parse(fs.readFileSync(FILE, 'utf8'));
-const { REC, SLOT, POLY, POLY_HI, STEEL, RUBBER, PIN } = AR;
+const { REC, SLOT, HG, POLY_HI, STEEL, RUBBER, PIN } = AR;
+const BODY = HG; // the whole body, one shade
+const DARK = REC; // panels, rails' teeth
 
 // ---- Key sizes everything hangs off
 const B = 0; // bore height
-const UW = 0.046; // the receiver's width
+const W = 0.0205; // the receiver's half width
 const UTOP = 0.026; // the receiver's top, under the rail
-const UBOT = -0.012; // where the upper meets the lower
-const UZ0 = -0.215; // the nose's face
-const UZ1 = 0.115; // the receiver's rear: the stock's hinge
+const FZ = -0.238; // the front face
+const SHZ = -0.098; // where the low front half meets the receiver
+const RZ1 = 0.13; // the receiver's rear
+const FW = 0.0182; // the front half's half width
+const FTOP = 0.0115; // its shoulder, under the spine
+const FBOT = -0.0205;
 const RAIL_BASE = UTOP + 0.0005;
 const TEETH_Y0 = RAIL_BASE + 0.0052;
 const RAIL_TOP = TEETH_Y0 + 0.0048; // top of the teeth: the optic mount's height
 const RAIL_W = 0.0215;
 const SIGHT_Y = RAIL_TOP + 0.016; // under the lowest optic's dot
-const REAR_Z = 0.096;
-const FRONT_Z = -0.2;
-const LW = 0.042; // the lower's width
-const LBOT = -0.036; // the lower's bottom
-const NOSE_BOT = -0.03; // the nose's bottom, where the bottom rail goes
-const MUZZLE_Z = -0.252; // the barrel's end: where a muzzle device goes on
-const MAG = [0, -0.047, -0.052]; // the magazine's mouth
-const WELL = [-0.08, -0.024]; // the magazine well along z
-const STOCK = [0, 0.008, UZ1 + 0.002];
+const REAR_Z = 0.09;
+const FRONT_Z = -0.224;
+const LW = 0.0188; // the lower's half width
+const LBOT = -0.039;
+const MUZZLE_Z = -0.256; // the barrel's end: where a muzzle device goes on
+const MAG = [0, -0.06, -0.086]; // the magazine's mouth
+const STOCK = [0, 0.008, RZ1 + 0.004];
 
 const kit = gunParts();
-const { parts, add, box, tubeZ, tubeX, prism, extrudeZ } = kit;
+const { parts, box, tubeZ, tubeX, prism, extrudeZ } = kit;
 const ar = arPieces(kit, { RAIL_BASE, RAIL_TOP, TEETH_Y0, RAIL_W });
 const hk = hkSights(kit);
+const { decal, decals, circle, rect, band } = pistolPieces(kit);
+const uzi = uziPieces(kit, { B, RW: W, RTOP: UTOP, RBOT: LBOT, SIGHT_Y });
+const side = (pts, w) => pts.map(([y, z]) => [y, z, w]);
 
-// ================= Receiver: the box upper, its top edges chamfered under the rail, a long
-// recessed panel down each side, the nose squared off round the barrel
+// ================= Receiver: full height behind, shoulders down to the front half
 const UP = 'receiver';
 extrudeZ(
   UP,
   'receiver',
   [
-    [-UW / 2, UBOT],
-    [UW / 2, UBOT],
-    [UW / 2, UTOP - 0.006],
-    [UW / 2 - 0.006, UTOP],
-    [-UW / 2 + 0.006, UTOP],
-    [-UW / 2, UTOP - 0.006],
+    [-W, -0.0125],
+    [W, -0.0125],
+    [W, 0.0185],
+    [W - 0.0075, UTOP],
+    [-W + 0.0075, UTOP],
+    [-W, 0.0185],
   ],
-  UZ0,
-  UZ1,
-  REC,
+  SHZ,
+  RZ1,
+  BODY,
+);
+// The front half: low and square, a narrow spine along its top to the front sight.
+extrudeZ(
+  UP,
+  'front half',
+  [
+    [-FW + 0.003, FBOT],
+    [FW - 0.003, FBOT],
+    [FW, FBOT + 0.003],
+    [FW, FTOP - 0.003],
+    [FW - 0.004, FTOP],
+    [-FW + 0.004, FTOP],
+    [-FW, FTOP - 0.003],
+    [-FW, FBOT + 0.003],
+  ],
+  FZ,
+  SHZ + 0.002,
+  BODY,
+);
+extrudeZ(
+  UP,
+  'spine',
+  [
+    [-0.0115, FTOP - 0.001],
+    [0.0115, FTOP - 0.001],
+    [0.0115, UTOP - 0.0055],
+    [0.0085, UTOP - 0.0015],
+    [-0.0085, UTOP - 0.0015],
+    [-0.0115, UTOP - 0.0055],
+  ],
+  FZ + 0.004,
+  SHZ + 0.002,
+  BODY,
+);
+prism(
+  UP,
+  'shoulder',
+  side(
+    [
+      [FTOP - 0.001, SHZ - 0.02],
+      [UTOP - 0.008, SHZ + 0.001],
+      [FTOP - 0.001, SHZ + 0.001],
+    ],
+    FW - 0.001,
+  ),
+  BODY,
 );
 box(
   UP,
-  'nose face',
-  [0, (UBOT + UTOP) / 2 - 0.004, UZ0 - 0.0006],
-  [UW - 0.01, UTOP - UBOT - 0.012, 0.0012],
+  'front face',
+  [0, (FTOP + FBOT) / 2 - 0.001, FZ - 0.0004],
+  [2 * FW - 0.01, FTOP - FBOT - 0.01, 0.0008],
   SLOT,
 );
-for (const s of [1, -1]) {
-  box(UP, 'side panel', [s * (UW / 2 + 0.0003), 0.008, -0.03], [0.0008, 0.02, 0.17], '#25272a');
-  // The ribs along the nose, either side.
-  for (let i = 0; i < 3; i++)
-    box(
-      UP,
-      'nose rib',
-      [s * (UW / 2 + 0.0004), 0.016 - i * 0.008, -0.175],
-      [0.001, 0.003, 0.05],
-      '#303236',
-    );
-}
-box(UP, 'ejection port', [UW / 2 + 0.0008, 0.006, 0.01], [0.001, 0.016, 0.05], SLOT);
-// The cocking handle forward on the left, folding out of its slot.
-box(UP, 'cocking slot', [-(UW / 2 + 0.0004), 0.017, -0.105], [0.001, 0.005, 0.1], SLOT);
-box(UP, 'cocking handle', [-(UW / 2 + 0.005), 0.017, -0.148], [0.01, 0.006, 0.008], STEEL);
-box(UP, 'cocking handle knob', [-(UW / 2 + 0.011), 0.017, -0.148], [0.005, 0.012, 0.012], POLY);
-// The end plate at the back with the stock's hinge block on the right.
-box(
+// The cocking slot along the spine, its handle forward on the left.
+decals(UP, 'cocking slot', 0.0118, rect(0.0135, 0.0185, -0.212, -0.112), SLOT);
+box(UP, 'cocking handle', [-0.017, 0.016, -0.172], [0.011, 0.0055, 0.008], STEEL);
+prism(
   UP,
-  'end plate',
-  [0, (UBOT + UTOP) / 2, UZ1 + 0.0015],
-  [UW - 0.006, UTOP - UBOT - 0.006, 0.003],
-  '#25272a',
+  'cocking knob',
+  side(
+    [
+      [0.0115, -0.18],
+      [0.0205, -0.178],
+      [0.0205, -0.167],
+      [0.0115, -0.165],
+    ],
+    0.0028,
+  ),
+  DARK,
+  { x: -0.0238 },
 );
-box(UP, 'stock hinge', [UW / 2 - 0.002, STOCK[1], UZ1 + 0.004], [0.01, 0.026, 0.008], STEEL);
-tubeX(UP, 'hinge pin', [UW / 2 + 0.0035, STOCK[1], UZ1 + 0.004], 0.0022, 0.028, PIN, {
-  roll: 0,
-  sides: 6,
-});
-ar.topRail({ name: 'top rail', z0: UZ0 + 0.004, z1: UZ1 - 0.004 });
-// The side rail at the nose (right) and its twin on the left.
-const SIDE_RAIL_Z = [-0.212, -0.166];
-const RAIL_Y = 0.004;
+// The oval cut behind the side rails, a lighter insert in it.
+const oval = (hy, hz) =>
+  [...circle(hy, [-0.004, 0], 12)].map(([y, z]) => [
+    y,
+    -0.119 + z + (Math.abs(z) < 1e-6 ? 0 : Math.sign(z) * hz),
+  ]);
+decals(UP, 'front cut', FW + 0.0003, oval(0.0058, 0.0075), SLOT);
+decals(UP, 'cut insert', FW + 0.0006, oval(0.003, 0.0055), PIN);
+// The right side's ejection port; a flat panel and stamped lines on the left.
+decal(UP, 'ejection port', 1, W + 0.0003, rect(-0.003, 0.0145, -0.072, -0.018), SLOT);
+decal(UP, 'bolt', 1, W + 0.0006, rect(0.0005, 0.011, -0.069, -0.03), STEEL);
+decals(UP, 'receiver seam', W + 0.0003, rect(-0.0128, -0.0118, SHZ + 0.004, RZ1 - 0.004), DARK);
+decal(UP, 'stamp', -1, W + 0.0004, rect(0.0085, 0.0098, -0.064, -0.047), POLY_HI);
+decal(UP, 'stamp', -1, W + 0.0004, rect(0.0085, 0.0098, -0.036, -0.012), POLY_HI);
+decal(UP, 'stamp', -1, W + 0.0004, rect(0.0048, 0.0058, -0.036, -0.02), POLY_HI);
+decal(UP, 'plate', -1, W + 0.0003, rect(-0.005, 0.0025, 0.012, 0.046), DARK);
+decal(UP, 'plate mark', -1, W + 0.0006, rect(-0.002, -0.0005, 0.016, 0.042), POLY_HI);
+ar.topRail({ name: 'top rail', z0: -0.092, z1: 0.056, color: DARK });
+// The hump's foot behind the rail: low, so it stays under an optic.
+prism(
+  UP,
+  'hump foot',
+  side(
+    [
+      [UTOP - 0.0005, 0.056],
+      [RAIL_TOP - 0.001, 0.058],
+      [RAIL_TOP - 0.001, 0.112],
+      [UTOP - 0.0005, 0.126],
+    ],
+    0.0154,
+  ),
+  BODY,
+);
+
+const SIDE_RAIL_Z = [-0.232, -0.146];
+const RAIL_Y = -0.004;
 const RAIL_X = ar.sideRail({
   s: 1,
-  x0: UW / 2 - 0.0005,
+  x0: FW - 0.0005,
   y: RAIL_Y,
   z0: SIDE_RAIL_Z[0],
   z1: SIDE_RAIL_Z[1],
-  color: REC,
+  color: DARK,
 });
 ar.sideRail({
   s: -1,
-  x0: UW / 2 - 0.0005,
+  x0: FW - 0.0005,
   y: RAIL_Y,
   z0: SIDE_RAIL_Z[0],
   z1: SIDE_RAIL_Z[1],
-  color: REC,
+  color: DARK,
 });
+const FG_Z = [-0.23, -0.142];
+const FOREGRIP_Y = ar.bottomRail({ bot: FBOT, z0: FG_Z[0], z1: FG_Z[1], color: DARK });
 
-// ================= Lower: polymer under the receiver, the nose's underside with a rail, a
-// lighter edge, the magazine well, guard and grip
+// ================= Lower: slab sides, its belly stepping down to the well
 const LO = 'lower receiver';
 prism(
   LO,
-  'lower receiver',
-  [
-    [UBOT + 0.0005, UZ0 + 0.002],
-    [UBOT + 0.0005, UZ1],
-    [LBOT + 0.006, UZ1],
-    [LBOT, UZ1 - 0.02],
-    [LBOT, WELL[0] - 0.012],
-    [NOSE_BOT, -0.14],
-    [NOSE_BOT, UZ0 + 0.004],
-  ].map(([y, z]) => [y, z, LW / 2]),
-  POLY,
+  'lower',
+  side(
+    [
+      [-0.012, -0.112],
+      [-0.012, RZ1 - 0.001],
+      [-0.02, RZ1 - 0.002],
+      [LBOT, 0.088],
+      [LBOT, -0.05],
+      [-0.024, -0.112],
+    ],
+    LW,
+  ),
+  BODY,
 );
-box(LO, 'lower edge', [0, LBOT - 0.0004, 0.03], [LW - 0.008, 0.001, 0.13], POLY_HI);
-const FG_Z = [-0.21, -0.152];
-const FOREGRIP_Y = ar.bottomRail({ bot: NOSE_BOT, z0: FG_Z[0], z1: FG_Z[1], color: REC });
-// The straight magazine well, a step narrower than the lower, its mouth darker.
 prism(
   LO,
   'magazine well',
   [
-    [LBOT + 0.002, WELL[0]],
-    [LBOT + 0.002, WELL[1]],
-    [MAG[1], WELL[1]],
-    [MAG[1], WELL[0]],
-  ].map(([y, z]) => [y, z, 0.0175]),
-  POLY,
+    [-0.018, -0.114, 0.0172],
+    [-0.018, -0.052, 0.0172],
+    [-0.052, -0.0555, 0.0176],
+    [MAG[1], -0.0585, 0.0182],
+    [MAG[1], -0.1165, 0.0182],
+    [-0.05, -0.1165, 0.0176],
+  ],
+  BODY,
 );
-box(LO, 'magazine well mouth', [0, MAG[1] - 0.0003, MAG[2]], [0.03, 0.001, 0.052], SLOT);
-box(LO, 'magazine release', [0, MAG[1] + 0.006, WELL[1] + 0.003], [0.014, 0.008, 0.005], STEEL);
-// The guard: big, from behind the well to the grip.
-const GZ = [WELL[1] + 0.004, 0.046];
-box(LO, 'trigger guard', [0, -0.07, (GZ[0] + GZ[1]) / 2], [0.013, 0.004, GZ[1] - GZ[0]], POLY);
-box(
+decals(
   LO,
-  'trigger guard front',
-  [0, (LBOT - 0.07) / 2, GZ[0] + 0.002],
-  [0.013, LBOT + 0.07 + 0.002, 0.004],
-  POLY,
+  'well rib',
+  0.0182,
+  [
+    [-0.026, -0.108],
+    [-0.026, -0.1045],
+    [-0.052, -0.1075],
+    [-0.052, -0.111],
+  ],
+  DARK,
 );
-box(LO, 'trigger', [0, -0.05, 0.004], [0.005, 0.02, 0.005], STEEL, { pitch: -12 });
-// The selector either side over the grip.
+box(LO, 'magazine release', [0, -0.05, -0.0515], [0.013, 0.018, 0.0045], STEEL, { pitch: 8 });
+prism(
+  LO,
+  'release paddle',
+  side(
+    [
+      [-0.054, -0.053],
+      [-0.056, -0.0485],
+      [-0.072, -0.049],
+      [-0.071, -0.053],
+    ],
+    0.006,
+  ),
+  DARK,
+);
+// The guard: its front raked down from the belly, flat along the bottom, up into the grip.
+band(
+  LO,
+  'trigger guard',
+  [
+    [LBOT + 0.002, -0.044],
+    [-0.061, -0.034],
+    [-0.0715, -0.022],
+    [-0.0735, 0.014],
+    [-0.066, 0.034],
+    [-0.058, 0.052],
+  ],
+  [
+    [LBOT + 0.002, -0.0385],
+    [-0.0595, -0.0295],
+    [-0.068, -0.02],
+    [-0.0697, 0.0125],
+    [-0.062, 0.031],
+    [-0.05, 0.047],
+  ],
+  0.0065,
+  BODY,
+);
+band(
+  LO,
+  'trigger',
+  [
+    [LBOT + 0.001, 0.002],
+    [-0.052, 0.0065],
+    [-0.063, 0.0015],
+  ],
+  [
+    [LBOT + 0.001, 0.0095],
+    [-0.052, 0.011],
+    [-0.063, 0.0045],
+  ],
+  0.0026,
+  DARK,
+);
 for (const s of [1, -1]) {
-  tubeX(LO, 'selector hub', [s * (LW / 2 + 0.0006), -0.024, 0.066], 0.0045, 0.0016, STEEL);
-  box(LO, 'selector', [s * (LW / 2 + 0.0012), -0.021, 0.06], [0.0016, 0.004, 0.016], PIN, {
-    pitch: 55,
+  tubeX(LO, 'selector hub', [s * (LW + 0.0012), -0.0215, 0.053], 0.0058, 0.0026, STEEL, {
+    sides: 10,
   });
+  box(LO, 'selector', [s * (LW + 0.0028), -0.0185, 0.0475], [0.0014, 0.004, 0.0165], PIN, {
+    pitch: 35,
+  });
+  for (let i = 0; i < 3; i++)
+    decal(
+      LO,
+      'selector mark',
+      s,
+      LW + 0.0004,
+      rect(-0.0315 + i * 0.0045, -0.0295 + i * 0.0045, 0.0665 + i * 0.002, 0.0705 + i * 0.002),
+      i === 1 ? '#b8392e' : POLY_HI,
+    );
 }
-tubeX(LO, 'takedown pin', [0, -0.02, -0.19], 0.0024, LW + 0.0016, PIN, { sides: 6 });
-tubeX(LO, 'takedown pin', [0, -0.02, 0.1], 0.0024, LW + 0.0016, PIN, { sides: 6 });
-// The grip, molded into the lower: raked, a stippled panel each side, a lighter backstrap.
+for (const [y, z, r] of [
+  [-0.02, -0.044, 0.0032],
+  [-0.028, -0.006, 0.0022],
+  [-0.025, 0.026, 0.0026],
+  [-0.018, 0.112, 0.0036],
+])
+  decals(LO, 'pin', LW + 0.0005, circle(r, [y, z], 8), PIN);
+decal(LO, 'bolt catch', -1, LW + 0.0005, rect(-0.036, -0.017, -0.0605, -0.0575), STEEL);
+box(LO, 'bolt catch', [-(LW + 0.0013), -0.0215, -0.059], [0.0026, 0.0065, 0.009], STEEL);
+
+// ================= Grip: part of the body, raked, its sides checkered
 const GR = 'grip';
 prism(
   GR,
   'grip',
-  [
-    [LBOT + 0.002, 0.042],
-    [LBOT + 0.002, 0.084],
-    [-0.128, 0.108],
-    [-0.131, 0.1],
-    [-0.128, 0.068],
-    [-0.07, 0.05],
-  ].map(([y, z]) => [y, z, 0.0155]),
-  POLY,
+  side(
+    [
+      [LBOT + 0.003, 0.043],
+      [LBOT + 0.003, 0.092],
+      [-0.054, 0.0865],
+      [-0.08, 0.0915],
+      [-0.082, 0.0555],
+    ],
+    0.0158,
+  ),
+  BODY,
 );
 prism(
   GR,
-  'grip backstrap',
-  [
-    [LBOT + 0.001, 0.083],
-    [LBOT + 0.001, 0.0858],
-    [-0.126, 0.1098],
-    [-0.126, 0.107],
-  ].map(([y, z]) => [y, z, 0.0142]),
-  POLY_HI,
+  'grip',
+  side(
+    [
+      [-0.0795, 0.0548],
+      [-0.0795, 0.0914],
+      [-0.116, 0.107],
+      [-0.1255, 0.1075],
+      [-0.132, 0.0775],
+      [-0.128, 0.0725],
+    ],
+    0.0162,
+  ),
+  BODY,
 );
-for (const s of [1, -1])
-  box(GR, 'grip panel', [s * 0.0157, -0.086, 0.077], [0.0008, 0.05, 0.026], '#303236', {
-    pitch: -15,
-  });
-box(GR, 'grip cap', [0, -0.1305, 0.0855], [0.029, 0.003, 0.03], RUBBER);
+decals(
+  GR,
+  'grip panel',
+  0.0165,
+  [
+    [-0.06, 0.0545],
+    [-0.063, 0.082],
+    [-0.115, 0.1],
+    [-0.121, 0.077],
+  ],
+  DARK,
+);
+for (let i = 0; i < 7; i++) {
+  const y = -0.067 - i * 0.0075;
+  const z = 0.0585 + (-0.067 - y) * 0.36;
+  decals(
+    GR,
+    'grip texture',
+    0.0168,
+    [
+      [y, z],
+      [y - 0.0042, z + 0.0235],
+      [y - 0.0057, z + 0.0235],
+      [y - 0.0015, z],
+    ],
+    BODY,
+  );
+}
+prism(
+  GR,
+  'grip cap',
+  side(
+    [
+      [-0.1245, 0.1078],
+      [-0.1315, 0.0772],
+      [-0.134, 0.0782],
+      [-0.127, 0.1085],
+    ],
+    0.0145,
+  ),
+  RUBBER,
+);
 
 // ================= Barrel (stays: no barrel slot) and flash hider (hidden by a muzzle device)
-tubeZ('barrel', 'barrel', B, UZ0 + 0.002, MUZZLE_Z - 0.001, 0.0095, STEEL, { sides: 10 });
-tubeZ('barrel', 'barrel nut', B, UZ0 + 0.0005, UZ0 - 0.006, 0.0115, STEEL, { sides: 10 });
-tubeZ('muzzle', 'flash hider', B, MUZZLE_Z + 0.001, MUZZLE_Z - 0.024, 0.0098, STEEL, {
+tubeZ('barrel', 'barrel nut', B, FZ + 0.001, FZ - 0.006, 0.0125, STEEL, { sides: 10 });
+tubeZ('barrel', 'barrel', B, FZ + 0.002, MUZZLE_Z - 0.001, 0.0088, STEEL, { sides: 10 });
+tubeZ('muzzle', 'muzzle collar', B, MUZZLE_Z + 0.001, MUZZLE_Z - 0.008, 0.0108, STEEL, {
+  sides: 10,
+  hiddenBy: 'muzzle',
+});
+tubeZ('muzzle', 'muzzle', B, MUZZLE_Z - 0.007, MUZZLE_Z - 0.02, 0.0092, STEEL, {
   sides: 8,
   hiddenBy: 'muzzle',
 });
-for (let i = 0; i < 4; i++) {
-  const a = (i * 90 + 45) * (Math.PI / 180);
-  box(
-    'muzzle',
-    'flash hider slot',
-    [0.0094 * Math.cos(a), B + 0.0094 * Math.sin(a), MUZZLE_Z - 0.015],
-    [0.0012, 0.0012, 0.014],
-    '#161719',
-    { hiddenBy: 'muzzle' },
-  );
-}
+tubeZ('muzzle', 'bore', B, MUZZLE_Z - 0.0195, MUZZLE_Z - 0.0204, 0.006, SLOT, {
+  sides: 8,
+  hiddenBy: 'muzzle',
+});
 
-// ================= The skeleton stock (factory, hidden by a fitted stock): a frame of a top
-// and a bottom bar to the butt, folding to the right about the hinge
+// ================= The stock (factory, hidden by a fitted one): a neck on the hinge, the top
+// and bottom bars to the butt, a web between leaving a small window and a large one
+box(UP, 'end plate', [0, 0.004, RZ1 + 0.002], [0.034, 0.034, 0.004], DARK);
+tubeX(UP, 'hinge button', [0, 0.0135, RZ1 - 0.006], 0.0052, 2 * W + 0.004, DARK, { sides: 8 });
 const ST = 'stock';
 const hide = { hiddenBy: 'stock' };
-const SZ = [STOCK[2] + 0.006, 0.33]; // the stock along z
-box(ST, 'stock knuckle', [0, STOCK[1], SZ[0] + 0.006], [0.024, 0.03, 0.012], POLY, hide);
-box(
+const SZ0 = STOCK[2];
+const BZ = 0.332;
+const SW = 0.0095;
+prism(
   ST,
-  'stock top bar',
-  [0, STOCK[1] + 0.011, (SZ[0] + SZ[1]) / 2],
-  [0.016, 0.008, SZ[1] - SZ[0]],
-  POLY,
+  'stock neck',
+  side(
+    [
+      [0.0205, SZ0],
+      [0.019, SZ0 + 0.046],
+      [-0.0105, SZ0 + 0.046],
+      [-0.006, SZ0],
+    ],
+    SW + 0.002,
+  ),
+  BODY,
   hide,
 );
-box(
+for (let i = 0; i < 4; i++)
+  for (const s of [1, -1])
+    decal(
+      ST,
+      'neck rib',
+      s,
+      SW + 0.0023,
+      rect(-0.002, 0.0155, SZ0 + 0.004 + i * 0.005, SZ0 + 0.0065 + i * 0.005),
+      SLOT,
+      hide,
+    );
+prism(
   ST,
-  'stock top edge',
-  [0, STOCK[1] + 0.0155, (SZ[0] + SZ[1]) / 2],
-  [0.012, 0.001, SZ[1] - SZ[0] - 0.01],
-  POLY_HI,
+  'stock top bar',
+  side(
+    [
+      [0.0192, SZ0 + 0.045],
+      [0.0225, BZ - 0.02],
+      [0.0085, BZ - 0.02],
+      [0.0065, SZ0 + 0.045],
+    ],
+    SW,
+  ),
+  BODY,
   hide,
 );
 prism(
   ST,
   'stock bottom bar',
-  [
-    [STOCK[1] - 0.006, SZ[0] + 0.01],
-    [STOCK[1] - 0.014, SZ[0] + 0.01],
-    [-0.072, SZ[1] - 0.012],
-    [-0.062, SZ[1] - 0.012],
-  ].map(([y, z]) => [y, z, 0.006]),
-  POLY,
+  side(
+    [
+      [0.002, SZ0 + 0.045],
+      [-0.0105, SZ0 + 0.045],
+      [-0.068, BZ - 0.03],
+      [-0.054, BZ - 0.026],
+    ],
+    SW - 0.001,
+  ),
+  BODY,
+  hide,
+);
+// The web: joins both bars between the two windows.
+prism(
+  ST,
+  'stock web',
+  side(
+    [
+      [0.0085, SZ0 + 0.086],
+      [0.0095, SZ0 + 0.108],
+      [-0.0335, SZ0 + 0.12],
+      [-0.0265, SZ0 + 0.096],
+      [-0.008, SZ0 + 0.088],
+    ],
+    SW - 0.002,
+  ),
+  BODY,
   hide,
 );
 prism(
   ST,
   'stock butt',
-  [
-    [STOCK[1] + 0.015, SZ[1] - 0.014],
-    [STOCK[1] + 0.015, SZ[1]],
-    [-0.082, SZ[1]],
-    [-0.082, SZ[1] - 0.016],
-  ].map(([y, z]) => [y, z, 0.012]),
-  POLY,
+  side(
+    [
+      [0.023, BZ - 0.032],
+      [0.0245, BZ],
+      [-0.072, BZ - 0.008],
+      [-0.072, BZ - 0.034],
+      [-0.05, BZ - 0.026],
+    ],
+    SW + 0.003,
+  ),
+  BODY,
   hide,
 );
-add({
-  type: 'slab',
-  pos: v3([0, (STOCK[1] + 0.015 - 0.082) / 2, SZ[1] + 0.005]),
-  size: v3([0.027, STOCK[1] + 0.015 + 0.082, 0.01]),
-  corners: [0.005, 0.005, 0.005, 0.005],
-  segments: 2,
-  color: RUBBER,
-  name: 'butt pad',
-  group: ST,
-  ...hide,
-});
-tubeX(ST, 'sling loop', [0, -0.07, SZ[1] - 0.022], 0.003, 0.02, STEEL, hide);
+prism(
+  ST,
+  'butt pad',
+  side(
+    [
+      [0.0252, BZ - 0.0005],
+      [0.0235, BZ + 0.0085],
+      [-0.07, BZ + 0.0015],
+      [-0.0735, BZ - 0.0085],
+    ],
+    SW + 0.004,
+  ),
+  RUBBER,
+  hide,
+);
+for (const s of [1, -1]) {
+  decal(ST, 'stock bolt', s, SW + 0.0034, circle(0.0034, [-0.061, BZ - 0.02], 8), SLOT, hide);
+  decal(
+    ST,
+    'stock groove',
+    s,
+    SW + 0.0004,
+    [
+      [0.0128, SZ0 + 0.052],
+      [0.0142, SZ0 + 0.052],
+      [0.0166, BZ - 0.04],
+      [0.0152, BZ - 0.04],
+    ],
+    DARK,
+    hide,
+  );
+}
 
-// ================= Iron sights: the HK drum and ring on the top rail
-hk.ringFront({ SIGHT_Y, FRONT_Z, BASE_Y: RAIL_TOP - 0.0005 });
-hk.drumRear({ SIGHT_Y, REAR_Z, BASE_Y: RAIL_TOP - 0.0005 });
+// ================= Iron sights: a ghost-ring peep in the hump (hidden by an optic), and a
+// post in a full ring on a tall tower (it stays)
+const IS = 'iron sights';
+const oh = { hiddenBy: 'optic' };
+uzi.peepRear({ REAR_Z, base: RAIL_TOP - 0.0015, hide: true });
+// The hump: a cheek each side of the peep, upright in front, falling away behind.
+for (const s of [1, -1])
+  prism(
+    IS,
+    'sight hump',
+    side(
+      [
+        [RAIL_TOP - 0.0015, 0.064],
+        [SIGHT_Y + 0.0035, 0.07],
+        [SIGHT_Y + 0.0035, 0.086],
+        [RAIL_TOP + 0.004, 0.108],
+        [RAIL_TOP - 0.0015, 0.1105],
+      ],
+      0.0019,
+    ),
+    BODY,
+    { x: s * 0.0133, ...oh },
+  );
+prism(
+  IS,
+  'front sight tower',
+  side(
+    [
+      [UTOP - 0.002, FRONT_Z - 0.011],
+      [SIGHT_Y - 0.0145, FRONT_Z - 0.0095],
+      [SIGHT_Y - 0.0105, FRONT_Z - 0.0045],
+      [SIGHT_Y - 0.0105, FRONT_Z + 0.0045],
+      [UTOP - 0.002, FRONT_Z + 0.02],
+    ],
+    0.0062,
+  ),
+  BODY,
+);
+hk.ringFront({ SIGHT_Y, FRONT_Z, BASE_Y: UTOP + 0.004, scale: 1.25 });
 
 // ---- Points and mounts
-const { factoryFold } = ITEM.model ?? {};
 const model = {
   parts,
   grip: [0, -0.078, 0.074],
   support: [0, FOREGRIP_Y - 0.002, (FG_Z[0] + FG_Z[1]) / 2],
-  muzzle: [0, B, MUZZLE_Z - 0.024],
+  muzzle: [0, B, MUZZLE_Z - 0.02],
   sight: [0, SIGHT_Y, REAR_Z],
-  ...(factoryFold && { factoryFold }),
   mounts: {
-    optic: [0, RAIL_TOP, 0.03],
+    optic: [0, RAIL_TOP, 0.038],
     muzzle: [0, B, MUZZLE_Z],
     foregrip: [0, FOREGRIP_Y, (FG_Z[0] + FG_Z[1]) / 2],
     rightRail: [RAIL_X, RAIL_Y, (SIDE_RAIL_Z[0] + SIDE_RAIL_Z[1]) / 2],
