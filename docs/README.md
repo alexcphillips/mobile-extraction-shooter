@@ -52,6 +52,7 @@ Each feature doc gets written in its own session: read the code for that feature
 - ☐ **editors**: map, item, loot, quest, sound editors, layout board
 - ☐ **content-pipeline**: formats, schemas, compile, bundling
 - ☐ **maps/<map>**: one per playable map, covering its layout intent and areas
+  - ◐ [maps/port](features/maps/port.md): the six-party harbor map (bones built)
 
 ## Other docs (older format, to be trimmed)
 

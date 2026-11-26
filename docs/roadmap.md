@@ -208,6 +208,24 @@ A new map, **replacing Northpoint (the user's call, 2026-11-12)**: **a suburban 
 
 Then the user: spawns, extractions, loot, quests. **Open:** whether District replaces Northpoint (quests, server tests and the raid id use `northpoint`) or both stay; raid length (about 25 minutes, to confirm in DS-3).
 
+## Port (planned 2026-11-25 with the user)
+The big six-party map: a harbor with ten places in three tiers, built by `scripts/gen-port.mjs` the Silver Creek way. Purpose, places and rules: [features/maps/port.md](features/maps/port.md). The bones are built (massing boxes, terrain, sea and quays, roads and rail, the boardable ship, the dry dock's basin, spawns and test extracts). Every session re-runs the generator, passes the overlap check and reads `node scripts/map-report.mjs port` before handing over.
+
+- [ ] **PT-1. Bones walk with the user.** Dev build, raid list → Port. Settle the size (whether to grow it for 150 m spawns), the name, the places' footprints, and the roads. Change the generator's tables and re-run.
+- [ ] **PT-2. The in-between.** Open ground is the bones' worst number: break runs over 40 m with vehicles, cargo, stacks and walls, except the named long crossings (the ship to the dry dock, the tower's south side). Add hard cover at each spawn, and pieces that block the sightline between neighboring spawns.
+  - **Read:** level-design.md (Principles 5, 6 and 11; the open-ground check).
+- [ ] **PT-3. The ship.** Holds dressed, the engine room under the aft deck, the superstructure's rooms and stairs, the bridge as an exposed perch, the forecastle. The boss's ground.
+- [ ] **PT-4. The dry dock.** The workshop hall, the hull's insides, the space under the keel, the pump house and the gate's machinery.
+- [ ] **PT-5. The warehouse.** The rack hall and the cold store (freezer rooms, strip curtains, short lines), the loading dock, a bonded cage.
+- [ ] **PT-6. Customs.** Office floors, the truck inspection hall, the seizure vault (keyed), the compound.
+- [ ] **PT-7. The control tower.** Office floors, the server and camera rooms, the tower's stair and its top as a perch seen from everywhere.
+- [ ] **PT-8. The secondaries:** the container yard (real containers, the crane's cab perch), the coast guard station (boathouse, radar room, the keyed armory away from spawns), the dorms (rooms, the infirmary, the upstairs bridges), the lockups (keyed units), the fuel depot (bunds, pump house). Split this session if it's too big.
+- [ ] **PT-9. The minis.**
+- [ ] **PT-10. AI.** Scavs, PMC squads starting from unused spawn points, points of interest, the boss on the ship. Do DS-4 (long-range pathfinding) first: the map's nav is about 2.5 times Silver Creek's.
+- [ ] **PT-11. Palette, finish and performance.**
+
+Then the user: loot, final extractions, quests.
+
 ## Breath, weight and stamina (planned 2026-11-11 with the user)
 Aim sway makes careful shots frustrating (design/combat.md → Sights move). **Sprint speed stays 6 m/s** (the user's call). **Weight slows players only, never enemies** (the user's call). Every number below is a first guess.
 
